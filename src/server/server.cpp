@@ -312,7 +312,7 @@ void ServerDialog::ensureEnableAI(){
 void ServerDialog::updateButtonEnablility(QAbstractButton *button)
 {
     if(!button)return;
-    if(button->objectName().contains("scenario")
+    /*if(button->objectName().contains("scenario")
             || button->objectName().contains("mini")
             || button->objectName().contains("1v1")
             || button->objectName().contains("1v3"))
@@ -323,7 +323,7 @@ void ServerDialog::updateButtonEnablility(QAbstractButton *button)
     else
     {
         //basara_checkbox->setEnabled(true);
-    }
+    }*/
 
     if(button->objectName().contains("mini")){
         mini_scene_button->setEnabled(true);
@@ -656,8 +656,8 @@ QGroupBox *ServerDialog::createGameModeBox(){
                                           false);
 
         //item_list << HLay(scenario_button, scenario_ComboBox);
-        item_list << HLay(mini_scenes, mini_scene_ComboBox);
-        item_list << HLay(mini_scenes, mini_scene_button);
+        //item_list << HLay(mini_scenes, mini_scene_ComboBox);
+        //item_list << HLay(mini_scenes, mini_scene_button);
     }
 
     QVBoxLayout *left = new QVBoxLayout;

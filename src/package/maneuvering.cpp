@@ -248,7 +248,7 @@ public:
                         room->setEmotion(player, "armor/silver_lion");
                         RecoverStruct recover;
                         recover.card = card;
-                        room->recover(player, recover);
+						room->recover(player, recover);
                     }
                     return false;
                 }
