@@ -472,6 +472,9 @@ enum TriggerEvent{
 
     ChoiceMade,
 
+	// For вс only
+	PhaseSkipped,
+
     // For hulao pass only
     StageChange,
 

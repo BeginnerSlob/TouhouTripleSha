@@ -82,7 +82,7 @@ Engine::Engine()
     foreach(QString name, package_names)
         addPackage(name);
 
-    _loadMiniScenarios();
+    //_loadMiniScenarios();
     _loadModScenarios();
     m_customScene = new CustomScenario();
 
@@ -91,10 +91,10 @@ Engine::Engine()
     // available game modes
     modes["02p"] = tr("2 players");
     //modes["02pbb"] = tr("2 players (using blance beam)");
-    modes["02_1v1"] = tr("2 players (KOF style)");
+    //modes["02_1v1"] = tr("2 players (KOF style)");
     modes["03p"] = tr("3 players");
     modes["04p"] = tr("4 players");
-    modes["04_1v3"] = tr("4 players (Hulao Pass)");
+    //modes["04_1v3"] = tr("4 players (Hulao Pass)");
     modes["05p"] = tr("5 players");
     modes["06p"] = tr("6 players");
     modes["06pd"] = tr("6 players (2 renegades)");
@@ -460,7 +460,7 @@ SkillCard *Engine::cloneSkillCard(const QString &name) const{
 }
 
 QString Engine::getVersionNumber() const{
-    return "20130131(0008)";
+    return "20130202(0009)";
 }
 
 QString Engine::getVersion() const{

@@ -1030,7 +1030,7 @@ bool QSanRoomSkin::_loadLayoutConfig(const Json::Value &layoutConfig)
         tryParse(config["textArea"][i], _m_dashboardLayout.m_skillTextArea[i]);
         _m_dashboardLayout.m_skillTextFonts[i].tryParse(config["textFont"][i]);
     }
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < QSanInvokeSkillButton::S_NUM_SKILL_TYPES; i++)
     {
         QString key;
         switch((QSanInvokeSkillButton::SkillType)i)
