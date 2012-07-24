@@ -1,4 +1,0 @@
-TouhouTripleSha
-===============
-
-TouhouMOD of NewQSanguosha
