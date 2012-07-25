@@ -607,7 +607,7 @@ QGroupBox *ServerDialog::createGameModeBox(){
 		mini_scene_ComboBox = new QComboBox;
 		int index = -1;
 		int stage = Config.value("MiniSceneStage",1).toInt();
-		for(int i =1;i<=stage;i++)
+		for(int i = 1;i <= stage;i++)
 		{
 			QString name = QString::number(i);
 			name = name.rightJustified(2,'0');
@@ -865,7 +865,7 @@ bool ServerDialog::config(){
 	Config.FreeAssignSelf = free_assign_self_checkbox->isChecked() && free_assign_checkbox->isEnabled();
 	Config.ForbidSIMC = forbid_same_ip_checkbox->isChecked();
 	Config.DisableChat = disable_chat_checkbox->isChecked();
-	Config.Enable2ndGeneral = false;
+	Config.Enable2ndGeneral = second_general_checkbox->isChecked();
 	Config.EnableScene = scene_checkbox->isChecked();		//changjing
 	Config.EnableSame = same_checkbox->isChecked();
 	Config.EnableBasara= basara_checkbox->isChecked() && basara_checkbox->isEnabled();

@@ -172,7 +172,7 @@ void IQSanComponentSkin::QSanShadowTextFont::paintText(QPainter* painter, QRect 
     QImage image(pos.width(), pos.height(), QImage::Format_ARGB32);
     image.fill(Qt::transparent);
     QPainter imagePainter(&image);
-    // @todo: currently, we have not considered _m_shadowOffset yet
+    // @todo: currently, we have not considered _m_sahdowOffset yet
     QSanSimpleTextFont::paintText(&imagePainter, QRect(m_shadowRadius, m_shadowRadius,
         pos.width() - m_shadowRadius * 2, pos.height() - m_shadowRadius * 2), align, text);
     if (m_shadowRadius < 0 || (m_shadowRadius == 0 && m_shadowOffset.x() == 0 && m_shadowOffset.y() == 0))
@@ -194,7 +194,7 @@ void IQSanComponentSkin::QSanShadowTextFont::paintText(QGraphicsPixmapItem* pixm
     QImage image(pos.width(), pos.height(), QImage::Format_ARGB32);
     image.fill(Qt::transparent);
     QPainter imagePainter(&image);
-    // @todo: currently, we have not considered _m_sahdowOffset yet
+    // @todo: currently, we have not considered _m_shadowOffset yet
     QSanSimpleTextFont::paintText(&imagePainter, QRect(m_shadowRadius, m_shadowRadius,
         pos.width() - m_shadowRadius * 2, pos.height() - m_shadowRadius * 2), align, text);
     QImage shadow = QSanUiUtils::produceShadow(image, m_shadowColor, m_shadowRadius, m_shadowDecadeFactor);
