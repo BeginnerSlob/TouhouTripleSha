@@ -22,7 +22,6 @@
 "dashboardRightFrame": "image/system/dashboard-avatar.png",
 "dashboardMiddleFrame": "image/system/dashboard-hand.png",
 "dashboardHandCardNum": "image/system/handcard.png",
-"dashboardHandCardNumF": "image/system/handcardf.png",
 "dashboardFaceTurnedMask": "image/generals/big/faceturned.png",
 "dashboardBlankGeneral": "image/generals/small/blank.png",
 "dashboardChain": ["image/system/chain.png",[0, 0, 134, 19]],
@@ -47,23 +46,21 @@
 "magatamas4": "image/system/magatamas/4.png",
 "magatamas5": "image/system/magatamas/5.png",
 "tableBg": "image/system/tableBg.jpg",
-"photoExtraSkillBg": "image/system/huashenSkillBg.png",
-"dashboardExtraSkillBg": "image/system/huashenSkillBg.png",
 
 // general default directories
 "playerGeneralIcon-default-0": "image/generals/tiny/%1.png",
 "playerGeneralIcon-default-1": ["image/generals/avatar/%1.png",[28, 42, 220, 132], [148, 89]],
 "playerGeneralIcon-default-2": ["image/generals/avatar/%1.png",[64, 44, 154, 154]],
-"playerGeneralIcon-default-4": ["image/generals/avatar/%1.png",[53, 20, 126, 178], [63, 89]], //secondary avatar for photo
+"playerGeneralIcon-default-4": ["image/generals/avatar/%1.png",[71, 28, 134, 134], [51, 51]], //small avatar for photo
 "playerGeneralIcon-default-5": ["image/generals/avatar/%1.png",[71, 28, 124, 134], [61, 70]],  //small avatar for dashboard
-"playerGeneralIcon-default-6": ["image/generals/avatar/%1.png",[60, 30, 208, 125], [148, 89]],  	//primary avatar for photo
+"playerGeneralIcon-default-6": ["image/generals/avatar/%1.png",[8, 46, 220, 132]],  //primary avatar for photo
 "playerGeneralIcon-default-7": ["image/generals/avatar/%1.png",[80, 28, 134, 134]],  //primary avatar for dashboard
 
 "generalCircleImage-0": "image/generals/double-general/circle-photo.png",
 "generalCircleImage-1": "image/generals/double-general/circle-dashboard.png",
 
-"generalCircleMask-0": "image/generals/double-general/circle-photo-mask.png",
-"generalCircleMask-1": ["image/generals/double-general/circle-dashboard-mask.png", [73, 0, 61, 70]],
+"generalCircleMask-0": ["image/generals/double-general/circle-photo-mask.png", [21, 38, 51, 51]],
+"generalCircleMask-1": ["image/generals/double-general/circle-dashboard-mask.png", [73, 0, 71, 71]],
 
 // generals defined later will override default path and also previously defined generals
 "playerGeneralIcon-anjiang-2": "image/generals/big/anjiang.png", 
@@ -133,6 +130,25 @@
 // card relevant
 "handCardBack": "image/system/card-back.png",
 "generalCardBack": "image/system/unknown.png",
+
+
+// animations
+"animations": [
+   // standard
+   "analeptic", "chain", "damage",
+   "duel", "equipborder", "fire_slash",
+   "jink", "killer", "no-success", "peach",
+   "slash_black", "slash_red", "success",
+   "thunder_slash",
+   // equip
+   "armor/eight_diagram", "armor/renwang_shield",
+   "armor/silver_lion", "armor/vine",
+   "armor/vineburn", "weapon/axe", "weapon/blade",
+   "weapon/crossbow", "weapon/double_sword", "weapon/fan",
+   "weapon/guding_blade", "weapon/halberd",
+   "weapon/ice_sword", "weapon/kylin_bow",
+   "weapon/qinggang_sword", "weapon/sp_moonspear",
+   "weapon/spear"],
 
 // equips
 "photoEquip-Axe": "image/equips/icon/spear.png",

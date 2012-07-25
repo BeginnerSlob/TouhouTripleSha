@@ -193,15 +193,15 @@ local t = {
 
 }
 
-local ohorses = {"chitu", "dayuan", "zixing"}
-local dhorses = {"zhuahuangfeidian", "dilu", "jueying", "hualiu"}
+local ohorses = {"ChiTu", "DaYuan", "ZiXing"}
+local dhorses = {"ZhuaHuangFeiDian", "DiLu", "JueYing", "HuaLiu"}
 
 for _, horse in ipairs(ohorses) do
-	t[":" .. horse] = t[":-1 horse"]
+	t[":" .. horse] = t[":-1 Horse"]
 end
 
 for _, horse in ipairs(dhorses) do
-	t[":" .. horse] = t[":+1 horse"]
+	t[":" .. horse] = t[":+1 Horse"]
 end
 
 return t
