@@ -157,7 +157,7 @@ RoomScene::RoomScene(QMainWindow *main_window):
     connect(ClientInstance, SIGNAL(skill_acquired(const ClientPlayer*,QString)), this, SLOT(acquireSkill(const ClientPlayer*,QString)));
     connect(ClientInstance, SIGNAL(animated(QString,QStringList)), this, SLOT(doAnimation(QString,QStringList)));
     connect(ClientInstance, SIGNAL(role_state_changed(QString)),this, SLOT(updateRoles(QString)));
-    connect(ClientInstance, SIGNAL(event_received(const Json::Value)), this, SLOT(handleEventEffect(const Json::Value))); 
+    connect(ClientInstance, SIGNAL(event_received(const Json::Value)), this, SLOT(handleGameEvent(const Json::Value))); 
 
     connect(ClientInstance, SIGNAL(game_started()), this, SLOT(onGameStart()));
     connect(ClientInstance, SIGNAL(game_over()), this, SLOT(onGameOver()));
@@ -360,7 +360,7 @@ RoomScene::RoomScene(QMainWindow *main_window):
     animations = new EffectAnimation();
 }
 
-void RoomScene::handleEventEffect(const Json::Value &arg)
+void RoomScene::handleGameEvent(const Json::Value &arg)
 {
     GameEventType eventType = (GameEventType)arg[0].asInt();
     switch(eventType){
@@ -368,7 +368,7 @@ void RoomScene::handleEventEffect(const Json::Value &arg)
     case S_GAME_EVENT_PLAYER_DYING: {
         /* the codes below causes crash
         const Player* player = name2photo[arg[1].asCString()]->getPlayer();
-        Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath("sos", player->getGeneral()->isMale())); */
+        Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath("sos", player->isMale())); */
         break;
     }
 
@@ -454,10 +454,50 @@ void RoomScene::handleEventEffect(const Json::Value &arg)
         updateSkillButtons();
         break;
     }
+
+    case S_GAME_EVENT_CHANGE_GENDER:{
+        QString player_name = arg[1].asCString();
+        General::Gender gender =  (General::Gender)arg[2].asInt();
+
+        ClientPlayer *player = ClientInstance->getPlayer(player_name);
+
+        player->setGender(gender);
+
+        break;
+    }
+
+    case S_GAME_EVENT_CHANGE_HERO: {
+        QString playerName = arg[1].asCString();
+        QString newHeroName =  arg[2].asCString();
+        bool isSecondaryHero = arg[3].asBool();
+        bool senLog = arg[4].asBool();
+        ClientPlayer *player = ClientInstance->getPlayer(playerName);
+        if(senLog)
+            log_box->appendLog("#Transfigure", player->getGeneralName(), QStringList(), QString(), newHeroName);
+        if (player != Self) break;     
+        const General* oldHero = isSecondaryHero ? player->getGeneral2() : player->getGeneral();
+        const General* newHero = Sanguosha->getGeneral(newHeroName);
+        if (oldHero) 
+        {
+            foreach (const Skill *skill, oldHero->getVisibleSkills()){
+                detachSkill(skill->objectName());
+            }
+        }
+
+        if (newHero)
+        {
+            foreach (const Skill *skill, newHero->getVisibleSkills()){
+                attachSkill(skill->objectName(), false);
+            }            
+        }
+        break;
+    }
+
     default:
         break;
     }
 }
+     
 
 QGraphicsItem *RoomScene::createDashboardButtons(){
     QGraphicsItem *widget = new QGraphicsPixmapItem(
@@ -1613,7 +1653,7 @@ void RoomScene::getCards(int moveId, QList<CardsMoveStruct> card_moves)
             card->setFootnote(_translateMovementReason(movement.reason));
         }
         bringToFront(to_container);
-        to_container->addCardItems(cards, movement.to_place);
+        to_container->addCardItems(cards, movement);
         keepGetCardLog(movement);
     }
     _m_cardsMoveStash[moveId].clear();
@@ -2524,7 +2564,7 @@ void RoomScene::changeHp(const QString &who, int delta, DamageStruct::Nature nat
         case -1: {
                 ClientPlayer *player = ClientInstance->getPlayer(who);
                 int r = qrand() % 3 + 1;
-                if(player->getGeneral()->isMale())
+                if(player->isMale())
                     damage_effect = QString("injure1-male%1").arg(r);
                 else
                     damage_effect = QString("injure1-female%1").arg(r);
@@ -3019,7 +3059,12 @@ void RoomScene::takeAmazingGrace(ClientPlayer *taker, int card_id){
         log_box->appendLog(type, from_general, QStringList(), card_str);
         GenericCardContainer* container = _getGenericCardContainer(Player::PlaceHand, taker);
         bringToFront(container);
-        container->addCardItems(items, Player::PlaceHand);
+        CardsMoveStruct move;
+        move.card_ids.append(card_id);
+        move.from_place = Player::PlaceWuGu;
+        move.to_place = Player::PlaceHand;
+        move.to = taker;
+        container->addCardItems(items, move);
     }
     else delete copy;
 }
@@ -3034,7 +3079,10 @@ void RoomScene::showCard(const QString &player_name, int card_id){
     CardMoveReason reason(CardMoveReason::S_REASON_DEMONSTRATE, player->objectName());
     card_items[0]->setFootnote(_translateMovementReason(reason));
     bringToFront(m_tablePile);
-    m_tablePile->addCardItems(card_items, Player::PlaceTable);
+    CardsMoveStruct move;
+    move.from_place = Player::PlaceHand;
+    move.to_place = Player::PlaceTable;
+    m_tablePile->addCardItems(card_items, move);
 
     QString card_str = QString::number(card_id);
     log_box->appendLog("$ShowCard", player->getGeneralName(), QStringList(), card_str);
@@ -3500,10 +3548,15 @@ void RoomScene::doHuashen(const QString &, const QStringList &args){
     foreach(QString arg, args){
         huashen_list << arg;
         CardItem *item = new CardItem(arg);
-        item->scaleSmoothly(0.5);
+        item->setPos(this->m_tableCenterPos);
+        addItem(item);
         generals.append(item);
-    }    
-    dashboard->addCardItems(generals, Player::PlaceSpecial);
+    }
+    CardsMoveStruct move;
+    move.from_place = Player::DrawPile;
+    move.to_place = Player::PlaceSpecial;
+    move.to_pile_name = "huashen";
+    dashboard->addCardItems(generals, move);
 
     Self->tag["Huashens"] = huashen_list;
 }

@@ -1595,7 +1595,7 @@
     <message>
         <location filename="../../src/dialog/generaloverview.ui" line="63"/>
         <source>Gender</source>
-        <translation>性别</translation>
+        <translation>属性</translation>
     </message>
     <message>
         <location filename="../../src/dialog/generaloverview.ui" line="68"/>
@@ -1641,12 +1641,12 @@
     <message>
         <location filename="../../src/dialog/generaloverview.cpp" line="49"/>
         <source>Male</source>
-        <translation>男性</translation>
+        <translation>空属性</translation>
     </message>
     <message>
         <location filename="../../src/dialog/generaloverview.cpp" line="49"/>
         <source>Female</source>
-        <translation>女性</translation>
+        <translation>幻属性</translation>
     </message>
     <message>
         <location filename="../../src/dialog/generaloverview.cpp" line="160"/>

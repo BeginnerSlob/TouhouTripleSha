@@ -54,7 +54,7 @@ public:
         room->broadcastSkillInvoke(objectName());
         QVariant tohelp = QVariant::fromValue((PlayerStar)caocao);
         foreach(ServerPlayer *liege, lieges){
-            const Card *jink = room->askForCard(liege, "jink", "@hujia-jink:" + caocao->objectName(), tohelp);
+            const Card *jink = room->askForCard(liege, "jink", "@hujia-jink:" + caocao->objectName(), tohelp, CardResponsed, caocao);
             if(jink){
                 room->provide(jink);
                 return true;
@@ -497,7 +497,7 @@ public:
 
         QVariant tohelp = QVariant::fromValue((PlayerStar)liubei);
         foreach(ServerPlayer *liege, lieges){
-            const Card *slash = room->askForCard(liege, "slash", "@jijiang-slash:" + liubei->objectName(), tohelp);
+            const Card *slash = room->askForCard(liege, "slash", "@jijiang-slash:" + liubei->objectName(), tohelp, CardResponsed, liubei);
             if(slash){
                 room->provide(slash);
                 return true;
@@ -725,7 +725,7 @@ public:
             CardUseStruct use = data.value<CardUseStruct>();
             card = use.card;
         }else if(triggerEvent == CardResponsed)
-            card = data.value<CardStar>();
+            card = data.value<ResponsedStruct>().m_card;
 
         if(card->isNDTrick()){            
             if(room->askForSkillInvoke(yueying, objectName())){
@@ -802,7 +802,7 @@ public:
             RecoverStruct rec = data.value<RecoverStruct>();
             if(rec.card && rec.card->hasFlag("jiuyuan"))
             {
-                int index = rec.who->getGeneral()->isMale() ? 2 : 3;
+                int index = rec.who->isMale() ? 2 : 3;
 
                 room->broadcastSkillInvoke("jiuyuan", index);
 
@@ -880,7 +880,7 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *lvmeng, QVariant &data) const{
         if(triggerEvent == CardResponsed && lvmeng->getPhase() == Player::Play){
-            CardStar card_star = data.value<CardStar>();
+            CardStar card_star = data.value<ResponsedStruct>().m_card;
             if(card_star->isKindOf("Slash"))
                 lvmeng->setFlags("keji_use_slash");
         }
@@ -1124,9 +1124,9 @@ public:
             QString slasher = player->objectName();
 
             const Card *first_jink = NULL, *second_jink = NULL;
-            first_jink = room->askForCard(effect.to, "jink", "@wushuang-jink-1:" + slasher, QVariant(), CardUsed);
+            first_jink = room->askForCard(effect.to, "jink", "@wushuang-jink-1:" + slasher, QVariant(), CardUsed, player);
             if(first_jink)
-                second_jink = room->askForCard(effect.to, "jink", "@wushuang-jink-2:" + slasher, QVariant(), CardUsed);
+                second_jink = room->askForCard(effect.to, "jink", "@wushuang-jink-2:" + slasher, QVariant(), CardUsed, player);
 
             Card *jink = NULL;
             if(first_jink && second_jink){
@@ -1365,6 +1365,8 @@ void StandardPackage::addGenerals(){
     diaochan->addSkill(new Biyue);
     diaochan->addSkill(new SPConvertSkill("tuoqiao", "diaochan", "sp_diaochan"));
 
+    new General(this, "anjiang", "god", 4,true, true, true);
+
     // for skill cards
     addMetaObject<ZhihengCard>();
     addMetaObject<RendeCard>();
@@ -1569,8 +1571,6 @@ TestPackage::TestPackage()
 
     new General(this, "sujiang", "god", 5, true, true);
     new General(this, "sujiangf", "god", 5, false, true);
-
-    new General(this, "anjiang", "god", 4,true, true, true);
     addMetaObject<YihunCard>();
 }
 

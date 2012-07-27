@@ -7,10 +7,10 @@
 
 Player::Player(QObject *parent)
     :QObject(parent), owner(false), ready(false), general(NULL), general2(NULL),
-    hp(-1), max_hp(-1), state("online"), seat(0), alive(true),
-    phase(NotActive),
-    weapon(NULL), armor(NULL), defensive_horse(NULL), offensive_horse(NULL),
-    face_up(true), chained(false)
+      m_gender(General::SexLess), hp(-1), max_hp(-1), state("online"), seat(0), alive(true),
+      phase(NotActive),
+      weapon(NULL), armor(NULL), defensive_horse(NULL), offensive_horse(NULL),
+      face_up(true), chained(false)
 {
 }
 
@@ -80,10 +80,27 @@ bool Player::isWounded() const{
 }
 
 General::Gender Player::getGender() const{
-    if(general)
-        return general->getGender();
-    else
-        return General::Neuter;
+    return m_gender;
+}
+
+void Player::setGender(General::Gender gender){
+    m_gender = gender;
+}
+
+bool Player::isSexLess() const{
+    return m_gender == General::SexLess;
+}
+
+bool Player::isMale() const{
+    return m_gender == General::Male;
+}
+
+bool Player::isFemale() const{
+    return m_gender == General::Female;
+}
+
+bool Player::isNeuter() const{
+    return m_gender == General::Neuter;
 }
 
 int Player::getSeat() const{
@@ -190,6 +207,7 @@ void Player::setGeneral(const General *new_general){
 
 void Player::setGeneralName(const QString &general_name){
     const General *new_general = Sanguosha->getGeneral(general_name);
+    Q_ASSERT(general_name.isNull() || general_name.isEmpty() || new_general != NULL);
     setGeneral(new_general);
 }
 
@@ -775,6 +793,7 @@ void Player::copyFrom(Player* p)
     b->acquired_skills  = QSet<QString> (a->acquired_skills);
     b->flags            = QSet<QString> (a->flags);
     b->history          = QHash<QString, int> (a->history);
+    b->m_gender         = a->m_gender;
 
     b->hp               = a->hp;
     b->max_hp           = a->max_hp;

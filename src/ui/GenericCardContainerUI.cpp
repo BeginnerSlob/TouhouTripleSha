@@ -112,14 +112,14 @@ void GenericCardContainer::_playMoveCardsAnimation(QList<CardItem*> &cards, bool
     animation->start();
 }
 
-void GenericCardContainer::addCardItems(QList<CardItem*> &card_items, Player::Place place)
+void GenericCardContainer::addCardItems(QList<CardItem*> &card_items, const CardsMoveStruct &moveInfo)
 {
     foreach (CardItem* card_item, card_items)
     {        
         card_item->setPos(mapFromScene(card_item->scenePos()));
         card_item->setParentItem(this);        
     }
-    bool destroy = _addCardItems(card_items, place);
+    bool destroy = _addCardItems(card_items, moveInfo);
     _playMoveCardsAnimation(card_items, destroy);
 }
 
@@ -205,7 +205,7 @@ void PlayerCardContainer::showProgressBar(Countdown countdown)
 
 QPixmap PlayerCardContainer::_getAvatarIcon(QString heroName)
 {
-    int avatarSize = ServerInfo.Enable2ndGeneral ? _m_layout->m_primaryAvatarSize : _m_layout->m_avatarSize;
+    int avatarSize = m_player->getGeneral2() ? _m_layout->m_primaryAvatarSize : _m_layout->m_avatarSize;
     return G_ROOM_SKIN.getGeneralPixmap(heroName, (QSanRoomSkin::GeneralIconSize)avatarSize);
 }
 
@@ -261,6 +261,7 @@ QPixmap PlayerCardContainer::paintByMask(QPixmap &source){
 
 void PlayerCardContainer::updateSmallAvatar()
 {
+    updateAvatar();
     const General *general = NULL;
     if (m_player) general = m_player->getGeneral2();
     if (general != NULL) {
@@ -404,7 +405,7 @@ void PlayerCardContainer::updateHandcardNum()
     if (!m_player || !m_player->getGeneral()) return;
     _m_layout->m_handCardFont.paintText(_m_handCardNumText, _m_layout->m_handCardArea, 
         Qt::AlignCenter, QString::number(m_player->getHandcardNum()));
-    _paintPixmap(_m_handCardBg, _m_layout->m_handCardArea, (m_player && m_player->getGeneral() && m_player->getGeneral()->isMale()) ? QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM : QSanRoomSkin::S_SKIN_KEY_HANDCARDNUMF, this->_getAvatarParent());
+	_paintPixmap(_m_handCardBg, _m_layout->m_handCardArea, (m_player && m_player->isMale()) ? QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM : QSanRoomSkin::S_SKIN_KEY_HANDCARDNUMF, this->_getAvatarParent());
     _m_handCardNumText->setVisible(true);
 }
 
