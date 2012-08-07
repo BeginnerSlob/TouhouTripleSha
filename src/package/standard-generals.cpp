@@ -275,11 +275,13 @@ public:
                 << objectName() << judge->reason << judge->card->getEffectIdString();
         QString prompt = prompt_list.join(":");
         const Card *card = room->askForCard(player, "@guicai", prompt, data, AskForRetrial);
-
-        if(player->hasSkill("jilve"))
-            room->retrial(card, player, judge, "jilve");
-        else
+        if (card != NULL){
+            if (player->hasInnateSkill("guicai") || !player->hasSkill("jilve"))
+                room->broadcastSkillInvoke(objectName());
+            else
+                room->broadcastSkillInvoke("jilve", 1);
             room->retrial(card, player, judge, objectName());
+        }
 
         return false;
     }
@@ -1431,8 +1433,9 @@ public:
             CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
             if(move->from != sp_shenzhaoyun)
                 return false;
-            if(sp_shenzhaoyun->getHandcardNum()<4 && sp_shenzhaoyun->getPhase() != Player::Discard && room->askForSkillInvoke(sp_shenzhaoyun,objectName()))
-                sp_shenzhaoyun->drawCards(4-sp_shenzhaoyun->getHandcardNum());
+            if(sp_shenzhaoyun->getHandcardNum() < 4 && sp_shenzhaoyun->getPhase() != Player::Discard && 
+               room->askForSkillInvoke(sp_shenzhaoyun,objectName()))
+                sp_shenzhaoyun->drawCards(4 - sp_shenzhaoyun->getHandcardNum());
         }
         return false;
     }
