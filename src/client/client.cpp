@@ -220,10 +220,10 @@ void Client::networkDelayTest(const QString &){
     request("networkDelayTest .");
 }
 
-void Client::replyToServer(CommandType command, const Json::Value &arg){    
+void Client::replyToServer(CommandType command, const Json::Value &arg){
     if(socket)
     {
-        QSanGeneralPacket packet(S_CLIENT_REPLY, command);
+        QSanGeneralPacket packet(S_SRC_CLIENT | S_TYPE_REPLY | S_DEST_ROOM, command);
         packet.m_localSerial = _m_lastServerSerial;
         packet.setMessageBody(arg);
         socket->send(toQString(packet.toString()));
@@ -236,10 +236,10 @@ void Client::handleGameEvent(const Json::Value &arg)
 }
 
 void Client::requestToServer(CommandType command, const Json::Value &arg)
-{    
+{
     if(socket)
     {
-        QSanGeneralPacket packet(S_CLIENT_REQUEST, command);        
+        QSanGeneralPacket packet(S_SRC_CLIENT | S_TYPE_REQUEST | S_DEST_ROOM, command);
         packet.setMessageBody(arg);
         socket->send(toQString(packet.toString()));
     }
@@ -295,14 +295,14 @@ void Client::processServerPacket(const char *cmd){
     QSanGeneralPacket packet;
     if (packet.parse(cmd))
     {
-        if (packet.getPacketType() == S_SERVER_NOTIFICATION)
+        if (packet.getPacketType() == S_TYPE_NOTIFICATION)
         {
             CallBack callback = m_callbacks[packet.getCommandType()];
             if (callback) {            
                 (this->*callback)(packet.getMessageBody());
             }
         }
-        else if (packet.getPacketType() == S_SERVER_REQUEST)
+        else if (packet.getPacketType() == S_TYPE_REQUEST)
             processServerRequest(packet);
     }
     else processObsoleteServerPacket(cmd);
@@ -980,6 +980,13 @@ bool Client::save(const QString &filename) const{
         return false;
 }
 
+QList<QString> Client::getRecords() const{
+    if(recorder)
+        return recorder->getRecords();
+    else
+        return QList<QString>();
+}
+
 void Client::setLines(const QString &filename){
     QRegExp rx(".+/(\\w+\\d?).ogg");
     if(rx.exactMatch(filename)){
@@ -1559,28 +1566,14 @@ void Client::speak(const QString &speak_data){
 }
 
 void Client::moveFocus(const Json::Value &focus){
-    QString who;
+    QStringList players;
     Countdown countdown;
-    if (focus.isString())
-    {
-        who = toQString(focus);
-        countdown.m_type = Countdown::S_COUNTDOWN_NO_LIMIT;
-    }
-    else
-    {
-        Q_ASSERT(focus.isArray() && focus.size() == 2);
-        who = toQString(focus[0]);
-    
-        bool success = countdown.tryParse(focus[1]);
-        if (!success)
-        {
-            Q_ASSERT(focus[1].isInt());
-            CommandType command = (CommandType)focus[1].asInt();
-            countdown.m_max = ServerInfo.getCommandTimeout(command, S_CLIENT_INSTANCE);
-            countdown.m_type = Countdown::S_COUNTDOWN_USE_DEFAULT;
-        }
-    }
-    emit focus_moved(who, countdown);
+
+    Q_ASSERT(focus.isArray() && focus.size() == 3);
+    tryParse(focus[0], players);
+    // focus[1] is the moveFocus reason, which is unused for now.
+    countdown.tryParse(focus[2]);
+    emit focus_moved(players, countdown);
 }
 
 void Client::setEmotion(const QString &set_str){

@@ -76,6 +76,7 @@ public:
     ClientPlayer *getPlayer(const QString &name);
     void kick(const QString &to_kick);
     bool save(const QString &filename) const;
+    QList<QString> getRecords() const;
     void setLines(const QString &skill_name);
     QString getSkillLine() const;
     Replayer *getReplayer() const;
@@ -289,7 +290,7 @@ signals:
     void log_received(const QString &log_str);
     void guanxing(const QList<int> &card_ids, bool up_only);
     void gongxin(const QList<int> &card_ids, bool enable_heart);
-    void focus_moved(const QString &focus, QSanProtocol::Countdown countdown);
+    void focus_moved(const QStringList &focus, QSanProtocol::Countdown countdown);
     void emotion_set(const QString &target, const QString &emotion);
     void skill_invoked(const QString &who, const QString &skill_name);
     void skill_acquired(const ClientPlayer *player, const QString &skill_name);

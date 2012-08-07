@@ -337,6 +337,10 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQString(
             xstart = (boundingBox.width() - fontSize.width()) / 2;
         else if (hAlign & Qt::AlignRight)
             xstart = boundingBox.right() - spacing - fontSize.width();
+        else {
+            xstart = 0;
+            Q_ASSERT(false);
+        }
         
         if (vAlign & Qt::AlignTop) {            
             ystart = spacing;
@@ -344,6 +348,9 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQString(
             ystart = (boundingBox.height() - currentY) / 2;
         } else if (vAlign & Qt::AlignBottom) {
             ystart = boundingBox.height() - currentY - spacing;
+        } else {
+            ystart = 0;
+            Q_ASSERT(false);
         }
     }
     else
@@ -354,6 +361,10 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQString(
             ystart = (boundingBox.height() - fontSize.height()) / 2;
         else if (vAlign & Qt::AlignBottom)
             ystart = boundingBox.bottom() - spacing - fontSize.height();
+        else {
+            ystart = 0;
+            Q_ASSERT(false);
+        }
 
         if (hAlign & Qt::AlignLeft) {            
             xstart = spacing;
@@ -361,6 +372,9 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQString(
             xstart = (boundingBox.width() - currentX) / 2;
         } else if (hAlign & Qt::AlignRight) {
             xstart = boundingBox.right() - currentX - spacing;
+        } else {
+            xstart = 0;
+            Q_ASSERT(false);
         }
     }
     if (xstart < 0) xstart = 0;
@@ -528,6 +542,9 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQStringMultiLine(
         xstart = (boundingBox.width() - maxX) / 2;
     } else if (hAlign & Qt::AlignRight) {
         xstart = boundingBox.right() - maxX - spacing;
+    } else {
+        xstart = 0;
+        Q_ASSERT(false);
     }
     if (vAlign & Qt::AlignTop) {
         ystart = spacing;
@@ -535,6 +552,9 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQStringMultiLine(
         ystart = (boundingBox.height() - maxY) / 2;
     } else if (vAlign & Qt::AlignBottom) {
         ystart = boundingBox.height() - maxY - spacing;
+    } else {
+        ystart = 0;
+        Q_ASSERT(false);
     }
     if (xstart < 0) xstart = 0;
     if (ystart < 0) ystart = 0;

@@ -71,15 +71,15 @@ void HuangtianCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
         room->setEmotion(zhangjiao, "good");
         QList<ServerPlayer *> zhangjiaos;
         QList<ServerPlayer *> players = room->getOtherPlayers(source);
-        ServerPlayer *lordplayer = NULL;
-        if(source->isLord())
-            lordplayer = source;
+        //ServerPlayer *lordplayer = NULL;
+        //if(source->isLord())
+        //    lordplayer = source;
         foreach(ServerPlayer *p, players){
             if(p->hasLordSkill("huangtian") && !p->hasFlag("HuangtianInvoked")){
                 zhangjiaos << p;
             }
-            if(p->isLord())
-                lordplayer = p;
+            //if(p->isLord())
+            //    lordplayer = p;
         }
         if(zhangjiaos.empty())
             room->setPlayerFlag(source, "ForbidHuangtian");
@@ -156,8 +156,10 @@ public:
         QString prompt = prompt_list.join(":");
         const Card *card = room->askForCard(player, "@guidao", prompt, data, AskForRetrial);
 
-        room->retrial(card, player, judge, objectName(), true);
-
+        if (card != NULL){
+            room->broadcastSkillInvoke(objectName());
+            room->retrial(card, player, judge, objectName(), true);
+        }
         return false;
     }
 };

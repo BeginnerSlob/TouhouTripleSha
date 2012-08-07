@@ -1489,7 +1489,7 @@
     <message>
         <location filename="../../src/core/engine.cpp" line="395"/>
         <source>NewQSanguosha</source>
-        <translation>新太阳神三国杀</translation>
+        <translation>东方绮符剧</translation>
     </message>
     <message>
         <location filename="../../src/core/engine.cpp" line="76"/>
