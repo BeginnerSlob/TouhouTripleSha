@@ -252,6 +252,7 @@ public:
     void bury();
     void throwAllMarks();
     void clearPrivatePiles();
+    void removePileByName(const char *pileName);
     void drawCards(int n, bool set_emotion = true, const char *reason = NULL);
     bool askForSkillInvoke(const char *skill_name, const QVariant &data = QVariant());
     QList<int> forceToDiscard(int discard_num, bool include_equip);
@@ -528,6 +529,12 @@ struct PhaseChangeStruct{
     Player::Phase to;
 };
 
+struct ResponsedStruct{
+    ResponsedStruct();
+    const Card *m_card;
+    ServerPlayer *m_who;
+};
+
 enum TriggerEvent{
     NonTrigger,
 
@@ -715,6 +722,9 @@ public:
     WrappedCard* toWrapped(){
         return qobject_cast<WrappedCard*>($self);
     }
+    TrickCard* toTrick(){
+        return qobject_cast<TrickCard*>($self);
+    }
 };
 
 class WrappedCard : public Card
@@ -778,7 +788,7 @@ public:
     const CardPattern *getPattern(const char *name) const;
     QList<const Skill *> getRelatedSkills(const char *skill_name) const;
 
-    QStringList getScenarioNames() const;
+    QStringList getModScenarioNames() const;
     void addScenario(Scenario *scenario);
     const Scenario *getScenario(const char *name) const;
 
@@ -972,7 +982,7 @@ public:
     QList<ServerPlayer *> findPlayersBySkillName(const QString &skill_name, bool include_dead = false) const;
     void installEquip(ServerPlayer *player, const char *equip_name);
     void resetAI(ServerPlayer *player);
-    void changeHero(ServerPlayer *player, const QString &new_general, bool full_state, bool invokeStart,
+    void changeHero(ServerPlayer *player, const char *new_general, bool full_state, bool invokeStart,
                     bool isSecondaryHero, bool sendLog);
     void swapSeat(ServerPlayer *a, ServerPlayer *b);
     lua_State *getLuaState() const;
@@ -1037,8 +1047,8 @@ public:
     bool isCanceled(const CardEffectStruct &effect);
     int askForCardChosen(ServerPlayer *player, ServerPlayer *who, const char *flags, const char *reason);
     const Card *askForCard(ServerPlayer *player, const char *pattern,
-							const char *prompt, const QVariant &data = QVariant(),
-							TriggerEvent trigger_event = CardResponsed, ServerPlayer *to = NULL);
+                            const char *prompt, const QVariant &data = QVariant(),
+                            TriggerEvent trigger_event = CardResponsed, ServerPlayer *to = NULL);
     bool askForUseCard(ServerPlayer *player, const char *pattern, const char *prompt, int notice_index = -1);
     bool askForUseSlashTo(ServerPlayer *slasher, ServerPlayer *victim, const char *prompt);
     bool askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims, const char *prompt);

@@ -33,6 +33,8 @@ public:
     QString translate(const QString &to_translate) const;
     lua_State *getLuaState() const;
 
+    int getMiniSceneCounts();
+
     void addPackage(Package *package);
     void addBanPackage(const QString &package_name);
     QStringList getBanPackages() const;
@@ -60,12 +62,10 @@ public:
     const CardPattern *getPattern(const QString &name) const;
     QList<const Skill *> getRelatedSkills(const QString &skill_name) const;
 
-    QStringList getScenarioNames() const;
+    QStringList getModScenarioNames() const;
     void addScenario(Scenario *scenario);
     const Scenario *getScenario(const QString &name) const;
-
     void addPackage(const QString &name);
-    void addScenario(const QString &name);
 
     const General *getGeneral(const QString &name) const;
     int getGeneralCount(bool include_banned = false) const;
@@ -104,6 +104,9 @@ public:
     Room* currentRoom();
 
 private:
+    void _loadMiniScenarios();
+    void _loadModScenarios();
+
     QMutex m_mutex;
     QHash<QString, QString> translations;
     QHash<QString, const General *> generals, hidden_generals;
@@ -120,11 +123,12 @@ private:
     QList<const DistanceSkill *> distance_skills;
     QList<const MaxCardsSkill *> maxcards_skills;
 
-    QHash<QString, const Scenario *> scenarios;
-
     QList<Card*> cards;
     QStringList lord_list, nonlord_list;
     QSet<QString> ban_package;
+    QHash<QString, Scenario *> m_scenarios;
+    QHash<QString, Scenario *> m_miniScenes;
+    Scenario *m_customScene;
 
     lua_State *lua;
 };

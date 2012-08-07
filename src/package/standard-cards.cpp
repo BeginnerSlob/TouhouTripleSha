@@ -55,9 +55,7 @@ void Slash::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets
         room->setEmotion(source,"weapon/crossbow");
     else if(isVirtualCard() && getSkillName() == "Spear")
         room->setEmotion(source,"weapon/spear");
-    else if (targets.length()>1
-            && source->handCards().size() == 0
-            && source->hasWeapon("Halberd"))
+    else if (targets.length()>1 && source->isKongcheng() && source->hasWeapon("Halberd"))
         room->setEmotion(source,"weapon/halberd");
     else if (isVirtualCard() && getSkillName() == "Fan")
         room->setEmotion(source,"weapon/fan");
@@ -95,6 +93,22 @@ bool Slash::targetsFeasible(const QList<const Player *> &targets, const Player *
 }
 
 bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if(Self->hasFlag("slashTargetFix")){
+        if(targets.isEmpty())
+            return  to_select->hasFlag("SlashAssignee") && Self->canSlash(to_select, false);
+        else
+        {
+            bool canSelect = false;
+            foreach(const Player *p, targets){
+                if(p->hasFlag("SlashAssignee")){
+                    canSelect = true;
+                    break;
+                }
+            }
+            if(!canSelect) return false;
+        }
+    }
+    
     int slash_targets = 1;
     if(Self->hasWeapon("Halberd") && Self->isLastHandCard(this))
         slash_targets += 2;
@@ -129,8 +143,6 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
     if(Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
         rangefix += 1;
 
-    if(Self->hasFlag("slashTargetFix") && targets.isEmpty())
-        return  to_select->hasFlag("SlashAssignee") && Self->canSlash(to_select, false);
     return Self->canSlash(to_select, distance_limit, rangefix);
 }
 
@@ -200,8 +212,9 @@ public:
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         CardUseStruct use = data.value<CardUseStruct>();
-        if(use.from->objectName() != player->objectName())
+        if(use.from != player)
             return false;
+
         foreach(ServerPlayer *to, use.to){
             if(use.from->isMale() != to->isMale()
                 && !to->isSexLess()
@@ -500,10 +513,6 @@ public:
             instance = new EightDiagramSkill;
 
         return instance;
-    }
-
-    virtual int getPriority() const{
-        return 2;
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{

@@ -402,10 +402,12 @@ void PlayerCardContainer::updateDrankState()
 
 void PlayerCardContainer::updateHandcardNum()
 {
-    if (!m_player || !m_player->getGeneral()) return;
+    int num = 0;    
+    if (m_player && m_player->getGeneral()) num = m_player->getHandcardNum();
+    Q_ASSERT(num >= 0);
     _m_layout->m_handCardFont.paintText(_m_handCardNumText, _m_layout->m_handCardArea, 
-        Qt::AlignCenter, QString::number(m_player->getHandcardNum()));
-	_paintPixmap(_m_handCardBg, _m_layout->m_handCardArea, (m_player && m_player->isMale()) ? QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM : QSanRoomSkin::S_SKIN_KEY_HANDCARDNUMF, this->_getAvatarParent());
+        Qt::AlignCenter, QString::number(num));
+    _paintPixmap(_m_handCardBg, _m_layout->m_handCardArea, (m_player && m_player->isMale()) ? QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM : QSanRoomSkin::S_SKIN_KEY_HANDCARDNUMF, this->_getAvatarParent());
     _m_handCardNumText->setVisible(true);
 }
 

@@ -253,9 +253,9 @@ void QSanSkillButton::setSkill(const Skill* skill)
      if (skill == NULL) skill = _m_skill;
 
      Skill::Frequency freq = skill->getFrequency();
-     if ((freq == Skill::Frequent || freq == Skill::NotFrequent) &&
+     if (freq == Skill::Frequent || (freq == Skill::NotFrequent &&
          skill->inherits("TriggerSkill") && !skill->inherits("WeaponSkill")
-         && !skill->inherits("ArmorSkill") && _m_viewAsSkill == NULL) {            
+         && !skill->inherits("ArmorSkill") && _m_viewAsSkill == NULL)) {            
          setStyle(QSanButton::S_STYLE_TOGGLE);
          if (freq == Skill::Frequent)
             setState(QSanButton::S_STATE_DOWN);
@@ -273,10 +273,7 @@ void QSanSkillButton::setSkill(const Skill* skill)
          else
              _setSkillType(QSanInvokeSkillButton::S_SKILL_PROACTIVE);
 
-         if (skill->inherits("ZeroCardViewAsSkill"))
-             setStyle(QSanButton::S_STYLE_PUSH);
-         else
-             setStyle(QSanButton::S_STYLE_TOGGLE);
+         setStyle(QSanButton::S_STYLE_TOGGLE);
 
          _m_emitDeactivateSignal = true;
 
