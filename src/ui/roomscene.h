@@ -260,9 +260,6 @@ private:
     QGraphicsPixmapItem *m_rolesBox;
     QGraphicsTextItem *m_pileCardNumInfoTextBox;
     QGraphicsPixmapItem *m_tableBg;
-#ifdef AUDIO_SUPPORT
-    QSharedMemory *memory;
-#endif
 
     // for 3v3 & 1v1 mode
     QSanSelectableItem *selector_box;
@@ -334,7 +331,8 @@ private:
     void _dispersePhotos(QList<Photo*> &photos, QRectF disperseRegion,
                          Qt::Orientation orientation, Qt::Alignment align);
 
-
+    // for miniscenes
+    int _m_currentStage;
 private slots:
     void fillCards(const QList<int>& card_ids);
     void updateSkillButtons();
@@ -407,6 +405,7 @@ private slots:
     void revealGeneral(bool self, const QString &general);
 
     void skillStateChange(const QString &skill_name);
+    void trust();
 signals:
     void restart();
     void return_to_start();

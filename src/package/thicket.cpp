@@ -105,10 +105,33 @@ public:
     }
 };
 
+class DummyViewAsSkill: public ViewAsSkill{
+public:
+    DummyViewAsSkill(): ViewAsSkill(""){
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &, const Card *) const{
+        return false;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &) const{
+        return NULL;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *) const{
+        return false;
+    }
+};
+
 class Songwei: public TriggerSkill{
 public:
     Songwei():TriggerSkill("songwei$"){
         events << FinishJudge;
+        view_as_skill = new DummyViewAsSkill;
+    }
+
+    virtual int getPriority() const{
+        return 2;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
@@ -120,17 +143,29 @@ public:
         CardStar card = judge->card;
 
         if(card->isBlack()){
-            if (player == NULL) return false;
-            QList<ServerPlayer *> players = room->getOtherPlayers(player);
-            foreach(ServerPlayer *p, players){
-                QVariant who = QVariant::fromValue(p);
-                if(p->hasLordSkill("songwei") && player->askForSkillInvoke("songwei", who)){
+            QList<ServerPlayer *> caopis;
+            foreach(ServerPlayer *p, room->getOtherPlayers(player)){
+                if(p->hasLordSkill(objectName()))
+                    caopis << p;
+            }
+            
+            while(!caopis.isEmpty()){
+                if(player->askForSkillInvoke(objectName())){
+                    ServerPlayer *caopi = room->askForPlayerChosen(player, caopis, objectName());
                     if(player->isMale())
                         room->broadcastSkillInvoke(objectName(), 1);
                     else
                         room->broadcastSkillInvoke(objectName(), 2);
-                    p->drawCards(1);
-                }
+                    caopi->drawCards(1);
+                    caopi->setFlags("songweiused");      //for AI
+                    caopis.removeOne(caopi);
+                }else
+                    break;
+            }
+                    
+            foreach(ServerPlayer *caopi, caopis){        //for AI
+                if(caopi->hasFlag("songweiused"))
+                    caopi->setFlags("-songweiused");
             }
         }
 
@@ -858,6 +893,7 @@ class Baonue: public TriggerSkill{
 public:
     Baonue():TriggerSkill("baonue$"){
         events << Damage << PreHpReduced;
+        view_as_skill = new DummyViewAsSkill;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
@@ -871,20 +907,21 @@ public:
         else if (triggerEvent == Damage && player->tag.value("InvokeBaonue", false).toBool())
         {
             QList<ServerPlayer *> dongzhuos;
-            QList<ServerPlayer *> players = room->getOtherPlayers(player);
-            foreach(ServerPlayer *p, players){
-                if(p->hasLordSkill("baonue")){
+            foreach(ServerPlayer *p, room->getOtherPlayers(player)){
+                if(p->hasLordSkill(objectName())){
                     dongzhuos << p;
                 }
             }
 
-            foreach(ServerPlayer *dongzhuo, dongzhuos){
-                QVariant who = QVariant::fromValue(dongzhuo);
-                if(player->askForSkillInvoke(objectName(), who)){
+            while(!dongzhuos.isEmpty()){
+                if(player->askForSkillInvoke(objectName())){
+                    ServerPlayer *dongzhuo = room->askForPlayerChosen(player, dongzhuos, objectName());
+                    dongzhuo->setFlags("baonueused");           //for AI
+                    dongzhuos.removeOne(dongzhuo);
                     JudgeStruct judge;
                     judge.pattern = QRegExp("(.*):(spade):(.*)");
                     judge.good = true;
-                    judge.reason = "baonue";
+                    judge.reason = objectName();
                     judge.who = player;
 
                     room->judge(judge);
@@ -896,10 +933,15 @@ public:
                         recover.who = player;
                         room->recover(dongzhuo, recover);
                     }
-                }
+                }else
+                    break;
+            }
+
+            foreach(ServerPlayer *dongzhuo, dongzhuos){        //for AI
+                if(dongzhuo->hasFlag("baonueused"))
+                    dongzhuo->setFlags("-baonueused");
             }
         }
-
         return false;
     }
 };

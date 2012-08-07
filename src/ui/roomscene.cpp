@@ -294,10 +294,6 @@ RoomScene::RoomScene(QMainWindow *main_window):
         addItem(prompt_box);
     }
 
-#ifdef AUDIO_SUPPORT
-    memory = new QSharedMemory("QSanguosha", this);
-#endif
-
     timer_id = 0;
     tick = 0;
 
@@ -517,7 +513,7 @@ QGraphicsItem *RoomScene::createDashboardButtons(){
     trust_button = new QSanButton("platter", "trust", widget);
     trust_button->setStyle(QSanButton::S_STYLE_TOGGLE);
     trust_button->setRect(G_DASHBOARD_LAYOUT.m_trustButtonArea);
-    connect(trust_button, SIGNAL(clicked()), ClientInstance, SLOT(trust()));
+    connect(trust_button, SIGNAL(clicked()), this, SLOT(trust()));
     connect(Self, SIGNAL(state_changed()), this, SLOT(updateTrustButton()));
 
     // set them all disabled
@@ -848,7 +844,7 @@ void RoomScene::updateTable()
         QRectF(0, 0, col1 + col2, row1)
     };
 
-    Qt::Alignment aligns[] = {
+    static Qt::Alignment aligns[] = {
         Qt::AlignRight | Qt::AlignTop,
         Qt::AlignHCenter | Qt::AlignTop,
         Qt::AlignLeft | Qt::AlignTop,
@@ -856,6 +852,17 @@ void RoomScene::updateTable()
         Qt::AlignLeft | Qt::AlignVCenter,
         Qt::AlignRight | Qt::AlignVCenter,
         Qt::AlignLeft | Qt::AlignVCenter,
+        Qt::AlignHCenter | Qt::AlignTop,
+    };
+
+    static Qt::Alignment kofAligns[] = {
+        Qt::AlignRight | Qt::AlignTop,
+        Qt::AlignHCenter | Qt::AlignTop,
+        Qt::AlignLeft | Qt::AlignTop,
+        Qt::AlignRight | Qt::AlignBottom,
+        Qt::AlignLeft | Qt::AlignBottom,
+        Qt::AlignRight | Qt::AlignBottom,
+        Qt::AlignLeft | Qt::AlignBottom,
         Qt::AlignHCenter | Qt::AlignTop,
     };
 
@@ -915,7 +922,9 @@ void RoomScene::updateTable()
     for (int i = 0; i < C_NUM_REGIONS; i++)
     {
         if (photosInRegion[i].isEmpty()) continue;
-        Qt::Alignment align = aligns[i];
+        Qt::Alignment align;
+        if (pkMode) align = kofAligns[i];
+        else align = aligns[i];
         Qt::Orientation orient = orients[i];
         
         // if (pkMode) align = Qt::AlignBottom;
@@ -1180,12 +1189,16 @@ void RoomScene::updateSelectedTargets(){
             selected_targets.append(player);
         else{
             selected_targets.removeAll(player);
-            //======================================
-            if(player->hasFlag("SlashAssignee")){
-                selected_targets.clear();
-                unselectAllTargets(NULL);
+            foreach(const Player *cp, selected_targets)
+            {
+                QList<const Player*> tempPlayers = QList<const Player*>(selected_targets);
+                tempPlayers.removeAll(cp);
+                if(!card->targetFilter(tempPlayers, cp, Self)){
+                    selected_targets.clear();
+                    unselectAllTargets();
+                    return;
+                }
             }
-            //======================================
         }
 
         ok_button->setEnabled(card->targetsFeasible(selected_targets, Self));
@@ -2705,15 +2718,17 @@ void RoomScene::addRestartButton(QDialog *dialog){
     if(Config.GameMode.contains("_mini_") && Self->property("win").toBool())
     {
         QString id = Config.GameMode;
-        id.replace("_mini_","");
-        int stage = Config.value("MiniSceneStage",1).toInt();
+        id.replace("_mini_", "");
         int current = id.toInt();
-        if((stage == current) && stage<20)
+        if (current != _m_currentStage)
+        {
+            Q_ASSERT(_m_currentStage == current - 1);
             goto_next = true;
+        }
     }
 
     QPushButton *restart_button;
-      restart_button = new QPushButton(goto_next ? tr("Next Stage") : tr("Restart Game"));
+    restart_button = new QPushButton(goto_next ? tr("Next Stage") : tr("Restart Game"));
     QPushButton *return_button = new QPushButton(tr("Return to main menu"));
     QHBoxLayout *hlayout = new QHBoxLayout;
     hlayout->addStretch();
@@ -3272,8 +3287,13 @@ void RoomScene::onGameStart(){
     }
 
 #endif
-
-    if(ServerInfo.GameMode == "06_3v3" || ServerInfo.GameMode == "02_1v1"){
+    if (Config.GameMode.contains("_mini_"))
+    {
+        QString id = Config.GameMode;
+        id.replace("_mini_", "");
+        _m_currentStage = id.toInt();
+    }
+    else if (ServerInfo.GameMode == "06_3v3" || ServerInfo.GameMode == "02_1v1"){
         selector_box->deleteLater();
         selector_box = NULL;
 
@@ -3306,30 +3326,6 @@ void RoomScene::onGameStart(){
 #ifdef AUDIO_SUPPORT
 
     if(!Config.EnableBgMusic)
-        return;
-
-    bool play_music = false;
-    if(memory->isAttached() || memory->attach()){
-        memory->lock();
-
-        char *username = static_cast<char *>(memory->data());
-        const char *my_username = Config.UserName.toAscii();
-        play_music = qstrcmp(username, my_username) == 0;
-
-        memory->unlock();
-    }else if(memory->create(255)){
-        memory->lock();
-
-        void *data = memory->data();
-        const char *username = Config.UserName.toAscii();
-        memcpy(data, username, qstrlen(username));
-
-        play_music = true;
-
-        memory->unlock();
-    }
-
-    if(!play_music)
         return;
 
     // start playing background music
@@ -3439,9 +3435,19 @@ void RoomScene::doMovingAnimation(const QString &name, const QStringList &args){
     item->setZValue(10086.0);
     addItem(item);
 
-    QPointF from = getAnimationObject(args.at(0))->scenePos();
-    QPointF to = getAnimationObject(args.at(1))->scenePos();
+    QGraphicsObject *fromItem = getAnimationObject(args.at(0));
+    QGraphicsObject *toItem = getAnimationObject(args.at(1));
 
+    QPointF from = fromItem->scenePos();
+    QPointF to = toItem->scenePos();
+    if(fromItem == dashboard)
+    {
+        from.setX(fromItem->boundingRect().width() / 2);
+    }
+    if(toItem == dashboard)
+    {
+        to.setX(toItem->boundingRect().width() / 2);
+    }
     QSequentialAnimationGroup *group = new QSequentialAnimationGroup;
 
     QPropertyAnimation *move = new QPropertyAnimation(item, "pos");
@@ -3860,6 +3866,12 @@ void RoomScene::skillStateChange(const QString &skill_name){
     }
     else if(skill_name == "-shuangxiong")
         detachSkill("shuangxiong");
+}
+
+void RoomScene::trust(){
+    if(Self->getState() != "trust")
+        doCancelButton();
+    ClientInstance->trust();
 }
 
 void RoomScene::startArrange(){
