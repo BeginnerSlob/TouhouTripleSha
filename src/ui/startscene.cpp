@@ -123,12 +123,12 @@ void StartScene::printServerInfo(){
                         tr("There is no time limit") :
                         tr("Operation timeout is %1 seconds").arg(Config.OperationTimeout));
 
-    if(Config.ContestMode)
-        server_log->append(tr("The contest mode is enabled"));
+    /*if(Config.ContestMode)
+        server_log->append(tr("The contest mode is enabled"));*/
 
     server_log->append(tr("Free general choose is %1").arg(Config.FreeChoose ? tr("Enabled") : tr("Disabled")));
 
-    if(Config.Enable2ndGeneral){
+    /*if(Config.Enable2ndGeneral){
         QString scheme_str;
         switch(Config.MaxHpScheme){
         case 0: scheme_str = tr("sum - 3"); break;
@@ -138,13 +138,13 @@ void StartScene::printServerInfo(){
 
         server_log->append(tr("Secondary general is enabled, max hp scheme is %1").arg(scheme_str));
     }else
-        server_log->append(tr("Seconardary general is disabled"));
+        server_log->append(tr("Seconardary general is disabled"));*/
 
     server_log->append( Config.EnableScene ?
                         tr("Scene Mode is enabled") :
                         tr("Scene Mode is disabled"));
 
-    server_log->append( Config.EnableSame ?
+    /*server_log->append( Config.EnableSame ?
                         tr("Same Mode is enabled") :
                         tr("Same Mode is disabled"));
 
@@ -154,7 +154,7 @@ void StartScene::printServerInfo(){
 
     server_log->append( Config.EnableHegemony ?
                         tr("Hegemony Mode is enabled") :
-                        tr("Hegemony Mode is disabled"));
+                        tr("Hegemony Mode is disabled"));*/
 
     if(Config.EnableAI){
         server_log->append(tr("This server is AI enabled, AI delay is %1 milliseconds").arg(Config.AIDelay));

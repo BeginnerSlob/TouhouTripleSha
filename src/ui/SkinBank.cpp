@@ -45,6 +45,7 @@ const char* QSanRoomSkin::S_SKIN_KEY_SELECTED_FRAME = "%1FrameWhenSelected";
 const char* QSanRoomSkin::S_SKIN_KEY_FOCUS_FRAME = "%1FocusFrame%2";
 const char* QSanRoomSkin::S_SKIN_KEY_KINGDOM_ICON = "kingdomIcon-%1";
 const char* QSanRoomSkin::S_SKIN_KEY_KINGDOM_COLOR_MASK = "kingdomColorMask-%1";
+const char* QSanRoomSkin::S_SKIN_KEY_AVATAR_NAME_ITEM = "playerNameItem-%1";
 const char* QSanRoomSkin::S_SKIN_KEY_VOTES_NUMBER = "votesNum-%1";
 const char* QSanRoomSkin::S_SKIN_KEY_SAVE_ME_ICON = "saveMe";
 const char* QSanRoomSkin::S_SKIN_KEY_ACTIONED_ICON = "playerActioned";
@@ -359,7 +360,7 @@ QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const Q
 
     QString key = QString(QSanRoomSkin::S_SKIN_KEY_PLAYER_AUDIO_EFFECT).arg(category).arg(eventName);
 
-    if (index == -1)
+    if (index < 0)
         fileName = getRandomAudioFileName(key);
     else
     {
@@ -367,7 +368,11 @@ QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const Q
         if(!fileNames.isEmpty())
         {
             if (fileNames.length() >= index) return fileNames[index - 1];
-            else return fileNames[qrand() % fileNames.length()];
+            else {
+                while (index > fileNames.length())
+                    index -= fileNames.length();
+                return fileNames[index - 1];
+            }
         }
     }
 
@@ -378,12 +383,16 @@ QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const Q
         if(skill) fileNames = skill->getSources();
         if(!fileNames.isEmpty())
         {
-            if (index == -1)
+            if (index < 0)
                 fileName = fileNames.at(qrand() % fileNames.length());
             else
             {
                 if (fileNames.length() >= index) return fileNames[index - 1];
-                else return fileNames[qrand() % fileNames.length()];
+                else {
+                    while (index > fileNames.length())
+                        index -= fileNames.length();
+                    return fileNames[index - 1];
+                }
             }
         }
     }
@@ -750,12 +759,12 @@ QPixmap IQSanComponentSkin::getPixmap(const QString &key, const QString &arg) co
     return S_IMAGE_KEY2PIXMAP[totalKey];
 }
 
- QPixmap IQSanComponentSkin::getPixmapFileName(const QString &key) const
+QPixmap IQSanComponentSkin::getPixmapFileName(const QString &key) const
  {
      return _readConfig(_m_imageConfig, key);
  }
 
- QPixmap IQSanComponentSkin::getPixmapFromFileName(const QString &fileName) const
+QPixmap IQSanComponentSkin::getPixmapFromFileName(const QString &fileName) const
 {
     return QSanPixmapCache::getPixmap(fileName, fileName);
 }
@@ -845,6 +854,10 @@ bool QSanRoomSkin::_loadLayoutConfig(const Json::Value &layoutConfig)
     tryParse(config["cardAvatarArea"], _m_commonLayout.m_cardAvatarArea);
     tryParse(config["chooseGeneralBoxSwitchIconSizeThreshold"], 
              _m_commonLayout.m_chooseGeneralBoxSwitchIconSizeThreshold);
+    tryParse(config["chooseGeneralBoxSwitchIconEachRow"],
+             _m_commonLayout.m_chooseGeneralBoxSwitchIconEachRow);
+    tryParse(config["chooseGeneralBoxSwitchIconEachRowForTooManyGenerals"],
+             _m_commonLayout.m_chooseGeneralBoxSwitchIconEachRowForTooManyGenerals);
     tryParse(config["chooseGeneralBoxDenseIconSize"],
              _m_commonLayout.m_chooseGeneralBoxDenseIconSize);
     tryParse(config["chooseGeneralBoxSparseIconSize"],
@@ -869,6 +882,7 @@ bool QSanRoomSkin::_loadLayoutConfig(const Json::Value &layoutConfig)
     tryParse(config["photoHDistance"], _m_roomLayout.m_photoHDistance);
     tryParse(config["photoVDistance"], _m_roomLayout.m_photoVDistance);
     tryParse(config["photoDashboardPadding"], _m_roomLayout.m_photoDashboardPadding);
+    tryParse(config["photoRoomPadding"], _m_roomLayout.m_photoRoomPadding);
     tryParse(config["roleBoxHeight"], _m_roomLayout.m_roleBoxHeight);
     tryParse(config["scenePadding"], _m_roomLayout.m_scenePadding);
 
@@ -888,8 +902,7 @@ bool QSanRoomSkin::_loadLayoutConfig(const Json::Value &layoutConfig)
         }
 
         tryParse(playerConfig["normalHeight"], layout->m_normalHeight);
-        // @todo: focusFrameArea has not been parsed for dashboard
-        // @todo: rename this to "handCardNumIconArea"
+
         tryParse(playerConfig["handCardNumIconArea"], layout->m_handCardArea);
         for (int j = 0; j < 4; j++)
         {

@@ -17,11 +17,11 @@ GameRule::GameRule(QObject *)
 
     events << GameStart << TurnStart << EventPhaseStart << CardUsed
            << CardEffected << CardFinished
-           << HpRecover << HpLost
+           << HpRecover << HpLost << PostHpReduced
            << EventLoseSkill << EventAcquireSkill
            << AskForPeaches << AskForPeachesDone << Dying << Death << GameOverJudge
            << SlashHit << SlashMissed << SlashEffected << SlashProceed
-           << ConfirmDamage << PreHpReduced << DamageDone << PostHpReduced << DamageComplete
+           << ConfirmDamage << PreHpReduced << DamageDone << DamageComplete
            << StartJudge << FinishRetrial << FinishJudge
            << Pindian;
 }
@@ -78,10 +78,10 @@ void GameRule::onPhaseChange(ServerPlayer *player) const{
             while(player->isAlive()){
                 CardUseStruct card_use;
                 room->activate(player, card_use);
-                if(card_use.isValid()){
+                if (card_use.card != NULL) {
                     room->useCard(card_use);
-                }else
-                    break;
+                }
+                else break;
             }
             break;
         }
@@ -161,7 +161,10 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
     switch(triggerEvent){
     case TurnStart:{
             player = room->getCurrent();
-            if(!player->faceUp())
+            if (player->hasFlag("drank")) {
+                room->setPlayerFlag(player, "-drank");
+            }
+            if (!player->faceUp())
                 player->turnOver();
             else if(player->isAlive())
                 player->play();
@@ -241,7 +244,6 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
     case HpLost:{
             int lose = data.toInt();
 
-
             LogMessage log;
             log.type = "#LoseHp";
             log.from = player;
@@ -252,7 +254,20 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
             QString str = QString("%1:%2L").arg(player->objectName()).arg(-lose);
             room->broadcastInvoke("hpChange", str);
 
-            if(player->getHp() <= 0)
+            QVariant data2 = QVariant::fromValue(lose);
+            room->getThread()->trigger(PostHpReduced, room, player, data2);
+
+            break;
+    }
+
+    case PostHpReduced:{
+            if (player->getHp() > 0)
+                break;
+
+            if (data.canConvert<DamageStruct>()) {
+                DamageStruct damage = data.value<DamageStruct>();
+                room->enterDying(player, &damage);
+            } else
                 room->enterDying(player, NULL);
 
             break;
@@ -368,20 +383,9 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
             room->sendDamageLog(damage);
 
             room->applyDamage(player, damage);
-            
+            room->getThread()->trigger(PostHpReduced, room, player, data);
             break;
         }
-
-    case PostHpReduced:{
-            DamageStruct damage = data.value<DamageStruct>();
-
-            if(player->getHp() <= 0){
-                room->enterDying(player, &damage);
-            }
-            
-            break;
-        }
-
     case DamageComplete:{
             DamageStruct damage = data.value<DamageStruct>();
             if(room->getMode() == "02_1v1" && player->isDead()){
@@ -522,7 +526,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
 
     case StartJudge:{
             int card_id = room->drawCard();
-
+            room->getThread()->delay(Config.S_JUDGE_SHORT_DELAY);
             JudgeStar judge = data.value<JudgeStar>();
             judge->card = Sanguosha->getCard(card_id);
 
@@ -536,13 +540,13 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
                              CardMoveReason(CardMoveReason::S_REASON_JUDGE,
                              judge->who->objectName(),
                              QString(), QString(), judge->reason), true);
+            judge->updateResult();
             room->getThread()->delay(Config.S_JUDGE_SHORT_DELAY);
             break;
         }
 
     case FinishRetrial:{
             JudgeStar judge = data.value<JudgeStar>();
-
             if(judge->play_animation)
                 room->sendJudgeResult(judge);
 

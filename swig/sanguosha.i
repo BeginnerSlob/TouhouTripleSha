@@ -181,7 +181,7 @@ public:
     void setChained(bool chained);
     bool isChained() const;
 
-    bool canSlash(const Player *other, bool distance_limit = true, int rangefix = 0) const;
+    bool canSlash(const Player *other, const Card *slash = NULL, bool distance_limit = true, int rangefix = 0) const;
     int getCardCount(bool include_equip) const;
 
     QList<int> getPile(const char *pile_name);
@@ -449,9 +449,17 @@ struct SlashEffectStruct{
 };
 
 struct CardUseStruct{
+    enum CardUseReason
+    {
+        CARD_USE_REASON_UNKNOWN,
+        CARD_USE_REASON_PLAY,
+        CARD_USE_REASON_RESPONSE
+    } m_reason;
+
     CardUseStruct();
-    bool isValid() const;
-    void parse(const char *str, Room *room);
+    bool isValid(const char *pattern) const;
+    void parse(const QString &str, Room *room);
+    bool tryParse(const Json::Value&, Room *room);
 
     const Card *card;
     ServerPlayer *from;
@@ -549,6 +557,7 @@ enum TriggerEvent{
     HpLost,
     HpChanged,
     MaxHpChanged,
+    PostHpReduced,
 
     EventLoseSkill,
     EventAcquireSkill,
@@ -568,7 +577,6 @@ enum TriggerEvent{
     DamageInflicted,  // the moment for -- tianxiang..
     PreHpReduced,     // the moment before Hpreduce
     DamageDone,       // it's time to do the damage
-    PostHpReduced,    // the moment after Hpreduce
     Damage,           // the moment for -- lieren..
     Damaged,          // the moment for -- yiji..
     DamageComplete,   // the moment for trigger iron chain
@@ -1016,9 +1024,9 @@ public:
     void obtainCard(ServerPlayer *target, const Card *card, bool unhide = true);
     void obtainCard(ServerPlayer *target, int card_id, bool unhide = true);
 
-    void throwCard(int card_id, ServerPlayer *who);
-    void throwCard(const Card *card, ServerPlayer *who);    
-    void throwCard(const Card *card, const CardMoveReason &reason, ServerPlayer *who);
+    void throwCard(int card_id, ServerPlayer *who, ServerPlayer *thrower = NULL);
+    void throwCard(const Card *card, ServerPlayer *who, ServerPlayer *thrower = NULL);    
+    void throwCard(const Card *card, const CardMoveReason &reason, ServerPlayer *who, ServerPlayer *thrower = NULL);
     
     void moveCardTo(const Card* card, ServerPlayer* dstPlayer, Player::Place dstPlace,
                     bool forceMoveVisible = false);
@@ -1041,7 +1049,8 @@ public:
     QString askForChoice(ServerPlayer *player, const char *skill_name, const char *choices, const QVariant &data = QVariant());
     bool askForDiscard(ServerPlayer *target, const char *reason, int discard_num, int min_num,
             bool optional = false, bool include_equip = false, const char *prompt = NULL);
-    const Card *askForExchange(ServerPlayer *player, const char *reason, int discard_num, bool include_equip = false, const char *prompt = NULL);
+    const Card *askForExchange(ServerPlayer *player, const char *reason, int discard_num, bool include_equip = false,
+            const char *prompt = NULL, bool optional = false);
     bool askForNullification(const TrickCard *trick, ServerPlayer *from, ServerPlayer *to, bool positive);
     bool isCanceled(const CardEffectStruct &effect);
     int askForCardChosen(ServerPlayer *player, ServerPlayer *who, const char *flags, const char *reason);

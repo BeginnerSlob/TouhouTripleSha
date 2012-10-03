@@ -1,5 +1,5 @@
 #include "engine.h"
-#include "standard-skillcards.h"
+#include "standard-generals.h"
 #include "carditem.h"
 #include "scenerule.h"
 

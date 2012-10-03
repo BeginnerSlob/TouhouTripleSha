@@ -125,6 +125,7 @@ public:
         double m_chatBoxHeightPercentage;
         double m_infoPlaneWidthPercentage;
         double m_photoDashboardPadding;
+        double m_photoRoomPadding;
         int m_photoHDistance;
         int m_photoVDistance;
         QSize m_minimumSceneSize;
@@ -265,6 +266,8 @@ public:
         // when # of generals < switchIconSizeThreadshold
         QSize m_chooseGeneralBoxDenseIconSize;
         int m_chooseGeneralBoxSwitchIconSizeThreshold;
+        int m_chooseGeneralBoxSwitchIconEachRow;
+        int m_chooseGeneralBoxSwitchIconEachRowForTooManyGenerals;
     };
 
     enum GeneralIconSize
@@ -346,6 +349,7 @@ public:
     static const char* S_SKIN_KEY_ACTIONED_ICON;
     static const char* S_SKIN_KEY_KINGDOM_ICON;
     static const char* S_SKIN_KEY_KINGDOM_COLOR_MASK;
+    static const char* S_SKIN_KEY_AVATAR_NAME_ITEM;
     static const char* S_SKIN_KEY_VOTES_NUMBER;
     static const char* S_SKIN_KEY_HAND_CARD_BACK;
     static const char* S_SKIN_KEY_HAND_CARD_SUIT;

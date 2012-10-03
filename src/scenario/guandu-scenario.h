@@ -4,7 +4,7 @@
 #include "scenario.h"
 #include "card.h"
 #include "standard.h"
-#include "standard-skillcards.h"
+#include "standard-generals.h"
 
 class ZhanShuangxiongCard: public SkillCard{
     Q_OBJECT

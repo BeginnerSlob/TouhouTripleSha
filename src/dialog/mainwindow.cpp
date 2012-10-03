@@ -111,7 +111,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     addAction(ui->actionShow_Hide_Menu);
     addAction(ui->actionFullscreen);
-    addAction(ui->actionMinimize_to_system_tray);
 
     systray = NULL;
 }
@@ -135,12 +134,6 @@ void MainWindow::restoreFromConfig(){
 void MainWindow::closeEvent(QCloseEvent *event){
     Config.setValue("WindowSize", size());
     Config.setValue("WindowPosition", pos());
-
-    if(systray){
-        systray->showMessage(windowTitle(), tr("Game is minimized"));
-        hide();
-        event->ignore();
-    }
 }
 
 MainWindow::~MainWindow()
@@ -154,7 +147,8 @@ void MainWindow::gotoScene(QGraphicsScene *scene){
         this->scene->deleteLater();
     this->scene = scene;
     view->setScene(scene);
-    QResizeEvent e(view->size(), view->size());
+    /* @todo: Need a better way to replace the magic number '4' */
+    QResizeEvent e(QSize(view->size().width() - 4, view->size().height() - 4), view->size());
     view->resizeEvent(&e);
     changeBackground();
 }
@@ -358,7 +352,7 @@ void MainWindow::gotoStartScene(){
         start_scene->addButton(action);
 
     setCentralWidget(view);
-    restoreFromConfig();
+    //restoreFromConfig();
 
     ui->menuCheat->setEnabled(false);
     ui->actionGet_card->disconnect();
@@ -371,7 +365,6 @@ void MainWindow::gotoStartScene(){
 
     addAction(ui->actionShow_Hide_Menu);
     addAction(ui->actionFullscreen);
-    addAction(ui->actionMinimize_to_system_tray);
 
     systray = NULL;
     delete ClientInstance;
@@ -462,14 +455,13 @@ void MainWindow::setBackgroundBrush(bool centerAsOrigin){
     if(scene){
         QPixmap pixmap(Config.BackgroundImage);        
         QBrush brush(pixmap);
-        qreal sx = qMax((qreal)width(), scene->width()) / qreal(pixmap.width());
-        qreal sy = qMax((qreal)height(), scene->height()) / qreal(pixmap.height());
+        qreal sx = (qreal)width() / qreal(pixmap.width());
+        qreal sy = (qreal)height() / qreal(pixmap.height());
                
 
         QTransform transform;
         if (centerAsOrigin)
-            transform.translate(-qMax((qreal)width(), scene->width()) / 2,
-                -qMax((qreal)height(), scene->height()) / 2);        
+            transform.translate(-(qreal)width() / 2, -(qreal)height() / 2);
         transform.scale(sx, sy);
         brush.setTransform(transform);
         scene->setBackgroundBrush(brush);
@@ -712,6 +704,7 @@ void MainWindow::on_actionRecord_analysis_triggered(){
                                                     location,
                                                     tr("Pure text replay file (*.txt);; Image replay file (*.png)"));
 
+    if(filename.isEmpty()) return;
 
     QDialog *rec_dialog = new QDialog(this);
     rec_dialog->setWindowTitle(tr("Record Analysis"));
@@ -780,7 +773,7 @@ void MainWindow::on_actionRecord_analysis_triggered(){
         table->setItem(i, 8, item);
 
         item = new QTableWidgetItem;
-  //      item->setText(Sanguosha->translate(rec->m_designation));
+        item->setText(rec->m_designation.join(", "));
         table->setItem(i, 9, item);
         i++;
     }

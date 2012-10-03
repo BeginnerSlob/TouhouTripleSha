@@ -93,18 +93,24 @@ private:
     int revealed;
 };
 
-class ReplayerControlBar: public QGraphicsProxyWidget{
+class ReplayerControlBar: public QGraphicsObject
+{
     Q_OBJECT
 
 public:
     ReplayerControlBar(Dashboard *dashboard);
     static QString FormatTime(int secs);
+    virtual QRectF boundingRect() const;
 
 public slots:
-    void toggle();
     void setTime(int secs);
     void setSpeed(qreal speed);
-
+    
+protected:
+    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    static const int S_BUTTON_GAP = 3;
+    static const int S_BUTTON_WIDTH = 25;
+    static const int S_BUTTON_HEIGHT = 21;
 private:
     QLabel *time_label;
     QString duration_str;
@@ -219,7 +225,6 @@ private:
     QMainWindow *main_window;
     QSanButton *ok_button, *cancel_button, *discard_button;
     QSanButton *trust_button;
-    QPushButton *m_reverseSelectionButton, *m_sortHandcardButton, *m_freeDiscardButton;
     QMenu *known_cards_menu, *change_general_menu;
     Window *prompt_box;
     QGraphicsItem *control_panel;
@@ -259,6 +264,8 @@ private:
     QGraphicsPixmapItem *m_rolesBox;
     QGraphicsTextItem *m_pileCardNumInfoTextBox;
     QGraphicsPixmapItem *m_tableBg;
+    int m_tablew;
+    int m_tableh;
 
     // for 3v3 & 1v1 mode
     QSanSelectableItem *selector_box;
@@ -269,6 +276,7 @@ private:
     Button *arrange_button;
     KOFOrderBox *enemy_box, *self_box;
     QPointF m_tableCenterPos;
+    ReplayerControlBar *m_replayControl;
 
     struct _MoveCardsClassifier
     {
@@ -291,7 +299,7 @@ private:
 
     // @todo: this function shouldn't be here. But it's here anyway, before someone find a better
     // home for it.
-    QString _translateMovementReason(const CardMoveReason& reason);
+    QString _translateMovement(const CardsMoveStruct& move);
 
     void useCard(const Card *card);
     void fillTable(QTableWidget *table, const QList<const ClientPlayer *> &players);
@@ -348,6 +356,7 @@ private slots:
     void startInXs();
     void hideAvatars();
     void changeHp(const QString &who, int delta, DamageStruct::Nature nature, bool losthp);
+    void changeMaxHp(const QString &who, int delta);
     void moveFocus(const QStringList &who, QSanProtocol::Countdown);
     void setEmotion(const QString &who, const QString &emotion);
     void setEmotion(const QString &who, const QString &emotion, bool permanent);

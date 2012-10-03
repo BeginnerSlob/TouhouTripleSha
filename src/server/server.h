@@ -92,16 +92,20 @@ private:
     QCheckBox *free_choose_checkbox;
     QCheckBox *free_assign_checkbox;
     QCheckBox *free_assign_self_checkbox;
+    QCheckBox *without_lordskill_checkbox;
     QSpinBox *maxchoice_spinbox;
+    QSpinBox *lord_maxchoice_spinbox;
+    QSpinBox *nonlord_maxchoice_spinbox;
     QCheckBox *forbid_same_ip_checkbox;
     QCheckBox *disable_chat_checkbox;
-    QCheckBox *second_general_checkbox;
+    //QCheckBox *second_general_checkbox;
     QCheckBox *scene_checkbox;	//changjing
-    QCheckBox *same_checkbox;
-    QCheckBox *basara_checkbox;
-    QCheckBox *hegemony_checkbox;
-    QLabel *max_hp_label;
-    QComboBox *max_hp_scheme_ComboBox;
+    //QCheckBox *same_checkbox;
+    //QCheckBox *basara_checkbox;
+    //QCheckBox *hegemony_checkbox;
+    //QSpinBox *hegemony_maxchoice_spinbox;
+    //QLabel *max_hp_label;
+    //QComboBox *max_hp_scheme_ComboBox;
     QCheckBox *announce_ip_checkbox;
     QComboBox *scenario_ComboBox;
     QComboBox *mini_scene_ComboBox;

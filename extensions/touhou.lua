@@ -90,12 +90,17 @@ dofile "lua/sgs_ex.lua"
 thqiji=sgs.CreateTriggerSkill{
 	name="thqiji",
 	frequency=sgs.Skill_Frequent,
-	events={sgs.CardDiscarded},
+	events={sgs.CardDiscarded,sgs.EventPhaseChanging},
 	on_trigger=function(self,event,player,data)
 		local room=player:getRoom()
+		if event==sgs.EventPhaseChanging then
+			room:setPlayerMark(player,"thqiji",0)
+		end
 		if player:getPhase() ~= sgs.Player_Discard then return false end  
         local card=data:toCard()
-        if (card:subcardsLength() < 2) then return false end
+        local card_ids=card:getSubcards()
+		room:setPlayerMark(player,"thqiji",player:getMark("thqiji")+card_ids:length())
+		if player:getMark("thqiji")<2 then return end
         if not room:askForSkillInvoke(player,self:objectName()) then return false end
 		local recover=sgs.RecoverStruct()
 			recover.recover=1
@@ -110,12 +115,19 @@ thjiyicard=sgs.CreateSkillCard{
 	name="thjiyicard",
 	target_fixed=false,
 	filter=function(self, targets, to_select, player)
-		return not to_select:isKongcheng() and to_select:getSeat()~=player:getSeat() and #targets==0
+		return not to_select:isKongcheng() and to_select:objectName()~=player:objectName() and #targets==0
 	end,
 	
 	on_use=function(self, room, source, targets)
 		local card=room:askForCardShow(targets[1],source,"@thjiyi")
 		room:showCard(targets[1],card:getId())
+		if card:getType() == "trick" then
+			if not room:askForCard(source,".Trick","@thjiyi",sgs.QVariant(),sgs.NonTrigger) then
+				targets[1]:drawCards(1)
+			end
+		else
+			source:obtainCard(card)
+		end
 	end,
 }
 
@@ -299,6 +311,7 @@ thhongye=sgs.CreateTriggerSkill{
 		local room=player:getRoom()
 		local splayer=room:findPlayerBySkillName(self:objectName())
 		if not splayer then return end
+		if player:objectName()==splayer:objectName() then return end
 		if splayer:isKongcheng() then return end
 		if splayer:getPhase()~=sgs.Player_NotActive then return end
 		if not splayer:askForSkillInvoke(self:objectName()) then return end
@@ -607,7 +620,7 @@ thqianyi=sgs.CreateTriggerSkill{
 		if event==sgs.CardUsed then
 			card=data:toCardUse().card
 		else
-			card=data:toCard()
+			card=data:toResponsed().m_card
 		end
 		if not card:isKindOf("Jink") then return false end
 		if not player:askForSkillInvoke(self:objectName()) then return end
@@ -701,9 +714,6 @@ thkunyicard=sgs.CreateSkillCard{
 		source:gainMark("@kunyiused")
 		source:turnOver()
 		local damage=sgs.DamageStruct()
-			damage.damage=1
-			damage.nature=sgs.DamageStruct_Normal 
-			damage.chain=false 
 			damage.from=source
 			damage.to=targets[1]
 		room:damage(damage)
@@ -799,18 +809,18 @@ thcannue=sgs.CreateViewAsSkill{
 }
 
 --[肆暴] 你可以将一张装备牌当【酒】使用。 
-thsibaovs=sgs.CreateViewAsSkill{
-	name="thsibaovs",
+thsibao=sgs.CreateViewAsSkill{
+	name="thsibao",
 	n=1,
 	view_filter=function(self, selected, to_select)
 		return to_select:isKindOf("EquipCard")
 	end,
 	view_as=function(self, cards)
 		if #cards~=1 then return nil end		
-		local YScard=sgs.Sanguosha:cloneCard("analeptic",cards[1]:getSuit(),cards[1]:getNumber())			
-			YScard:addSubcard(cards[1])
-			YScard:setSkillName("thsibao")
-		return YScard	
+		local SBcard=sgs.Sanguosha:cloneCard("analeptic",cards[1]:getSuit(),cards[1]:getNumber())			
+			SBcard:addSubcard(cards[1])
+			SBcard:setSkillName(self:objectName())
+		return SBcard	
 	end,
 
 	enabled_at_play=function(self, player)
@@ -818,30 +828,7 @@ thsibaovs=sgs.CreateViewAsSkill{
 	end,
 	
 	enabled_at_response=function(self,player,pattern) 
-		return pattern=="Analeptic"
-	end,
-}
-
-thsibao=sgs.CreateTriggerSkill{
-	name="thsibao",
-	frequency=sgs.Skill_NotFrequent,
-	events={sgs.AskForPeaches},
-	priority=1,
-	view_as_skill=thsibaovs,
-	on_trigger=function(self,event,player,data)
-		local dying=data:toDying()
-		if dying.who:objectName()~=player:objectName() then return end
-		local room=player:getRoom()
-		local recover = sgs.RecoverStruct()
-			recover.who = player
-		if player:getHp()>0 then return end
-		local card=room:askForCard(player,"Analeptic","@thsibao",sgs.CardUsed)
-		while card do
-				recover.card = card
-			room:recover(player, recover)
-			if player:getHp()>0 then break end
-			card=room:askForCard(player,"Analeptic","@thsibao",sgs.CardUsed)
-		end
+		return pattern=="peach+analeptic"
 	end,
 }
 
@@ -1146,6 +1133,7 @@ thyanluncard=sgs.CreateSkillCard{
 	end,
 	on_use=function(self, room, source, targets)
 		local win=source:pindian(targets[1],"thyanlun",sgs.Sanguosha:getCard(self:getEffectiveId()))
+		room:broadcastSkillInvoke("yanlun",1)
 		if win then
 			room:setPlayerFlag(source,"yanlun")
 		else
@@ -1174,11 +1162,11 @@ thyanlunvs=sgs.CreateViewAsSkill{
 		local YLcard
 		if sgs.Self:hasFlag("yanlun") then
 			YLcard=sgs.Sanguosha:cloneCard("fire_attack",cards[1]:getSuit(),cards[1]:getNumber())
+			YLcard:setSKillName(self:objectName())
 		else
 			YLcard=thyanluncard:clone()
 		end
 		YLcard:addSubcard(cards[1])
-		YLcard:setSkillName("thyanlun")
 		return YLcard
 	end,
 	enabled_at_play=function(self, player)
@@ -1219,6 +1207,9 @@ thyanluntr=sgs.CreateTriggerSkill{
 		if not player:hasFlag("yanlun") then return end
 		local effect=data:toCardEffect()
 		if not effect.card:isKindOf("FireAttack") then return false end
+		if effect.card:getSkillName() and effect.card:getSkillName()=="yanlunvs" then
+			room:broadcastSkillInvoke("yanlun",math.random(2,3))
+		end
 		local room=player:getRoom()
 		local thread=room:getThread()
 		local new_data = sgs.QVariant()
@@ -1573,22 +1564,9 @@ thwujiandis=sgs.CreateDistanceSkill{
 }
 
 ----hana006
---[戏画] 出牌阶段，你可以选择一至四项：1. 弃置两张红桃牌并回复1点体力 2. 弃置两张草花牌并弃置一名其他角色的一张牌 3. 弃置两张方片牌并令一名其他角色摸两张牌，然后该角色须弃置一张牌 4. 弃置两张黑桃牌并令一名其他角色摸两张牌，然后该角色将其武将牌翻面 
+--[戏画] 出牌阶段，你可以选择一至四项：1. 弃置两张黑桃牌并回复1点体力 2. 弃置两张方片牌并弃置一名其他角色区域的一张牌 3. 弃置两张草花牌并令一名其他角色摸两张牌，然后该角色须弃置一张牌 4. 弃置两张红桃牌并令一名其他角色摸一张牌，然后该角色将其武将牌翻面 
 thxihuaspadecard=sgs.CreateSkillCard{
 	name="thxihuaspadecard",
-	target_fixed=false,
-	will_throw=true,
-	filter=function(self, targets, to_select, player)
-		return #targets==0
-	end,
-	on_use=function(self, room, source, targets)
-		targets[1]:drawCards(2)
-		targets[1]:turnOver()
-	end,
-}
-
-thxihuaheartcard=sgs.CreateSkillCard{
-	name="thxihuaheartcard",
 	target_fixed=true,
 	will_throw=true,
 	on_use=function(self, room, source, targets)
@@ -1600,25 +1578,21 @@ thxihuaheartcard=sgs.CreateSkillCard{
 	end,
 }
 
-thxihuaclubcard=sgs.CreateSkillCard{
-	name="thxihuaclubcard",
+thxihuaheartcard=sgs.CreateSkillCard{
+	name="thxihuaheartcard",
 	target_fixed=false,
 	will_throw=true,
 	filter=function(self, targets, to_select, player)
-		return #targets==0 and to_select:objectName()~=player:objectName() and not to_select:isNude()
+		return #targets==0
 	end,
 	on_use=function(self, room, source, targets)
-		local card_id=room:askForCardChosen(source,targets[1],"he","thxihua")
-		local reason=sgs.CardMoveReason()
-		reason.m_reason   = sgs.CardMoveReason_S_REASON_DISMANTLE
-		reason.m_playerId = source:objectName()
-    	reason.m_targetId = targets[1]:objectName()
-		room:moveCardTo(sgs.Sanguosha:getCard(card_id), nil, nil, sgs.Player_DiscardPile, reason)
+		targets[1]:drawCards(1)
+		targets[1]:turnOver()
 	end,
 }
 
-thxihuadiamondcard=sgs.CreateSkillCard{
-	name="thxihuadiamondcard",
+thxihuaclubcard=sgs.CreateSkillCard{
+	name="thxihuaclubcard",
 	target_fixed=false,
 	will_throw=true,
 	filter=function(self, targets, to_select, player)
@@ -1629,6 +1603,23 @@ thxihuadiamondcard=sgs.CreateSkillCard{
 		if not targets[1]:isNude() then
 			room:askForDiscard(targets[1],"thxihua",1,1,false,true)
 		end
+	end,
+}
+
+thxihuadiamondcard=sgs.CreateSkillCard{
+	name="thxihuadiamondcard",
+	target_fixed=false,
+	will_throw=true,
+	filter=function(self, targets, to_select, player)
+		return #targets==0 and to_select:objectName()~=player:objectName() and not to_select:isNude()
+	end,
+	on_use=function(self, room, source, targets)
+		local card_id=room:askForCardChosen(source,targets[1],"hej","thxihua")
+		local reason=sgs.CardMoveReason()
+		reason.m_reason   = sgs.CardMoveReason_S_REASON_DISMANTLE
+		reason.m_playerId = source:objectName()
+    	reason.m_targetId = targets[1]:objectName()
+		room:moveCardTo(sgs.Sanguosha:getCard(card_id), nil, nil, sgs.Player_DiscardPile, reason)
 	end,
 }
 
@@ -1689,7 +1680,7 @@ thanyun=sgs.CreateTriggerSkill{
 
 --[迷蒙] 你可将你最后的手牌当除【无中生有】、【五谷丰登】、【顺手牵羊】、【桃园结义】和【万箭齐发】以外的基本牌或非延时类锦囊牌使用或者打出。
 all_card={}
-card_pattern={}
+--card_pattern={}
 ban_card={"amazing_grace", "archery_attack", "ex_nihilo", "god_salvation", "snatch", "nullification", "jink"}
 thmimengcard=sgs.CreateSkillCard{
 	name="thmimengcard",
@@ -1709,7 +1700,7 @@ thmimengcard=sgs.CreateSkillCard{
 				table.removeOne(all_card, name)
 			end
 		end
-		if not (source:canSlashWithoutCrossbow() or (source:getWeapon() and source:getWeapon():className() == "Crossbow")) then
+		if not (source:canSlashWithoutCrossbow() or (source:getWeapon() and source:getWeapon():getClassName() == "Crossbow")) then
 			table.removeOne(all_card, "slash")
 			table.removeOne(all_card, "thunder_slash")
 			table.removeOne(all_card, "fire_slash")
@@ -1724,7 +1715,7 @@ thmimengcard=sgs.CreateSkillCard{
 		choice=room:askForChoice(source, "thmimeng", table.concat(all_card, "+"))
 		local card
 		for id=0,159,1 do
-			card=sgs.Sanguosha:getCard(id)
+			card=sgs.Sanguosha:getCard(id):getRealCard()
 			if card:objectName()==choice then
 				room:setPlayerMark(source,"thmimengmark",id+1)
 				break
@@ -1734,6 +1725,18 @@ thmimengcard=sgs.CreateSkillCard{
 		--table.insert(card_pattern, choice)
 		room:askForUseCard(source, "@@thmimeng", "@thmimeng")
 		room:setPlayerMark(source,"thmimengmark",0)
+	end,
+}
+
+thmimengslashcard=sgs.CreateSkillCard{
+	name="thmimengslashcard",
+	target_fixed=true,
+	on_use=function(self, room, source, targets)
+		local choice=room:askForChoice(source,"thmimeng","slash+fire_slash+thunder_slash")
+		if choice=="slash" then
+			choice="normal_slash"
+		end
+		room:askForUseCard(source, choice,"@thmimengsave")
 	end,
 }
 
@@ -1776,13 +1779,19 @@ thmimeng=sgs.CreateViewAsSkill{
 	end,
 
 	view_as=function(self, cards)
-		if #card_pattern == 0 and sgs.Self:getMark("thmimengmark")<=0 then return thmimengcard:clone() end
-		if card_pattern[1]=="peach+analeptic" then
+		if --[[#card_pattern == 0 and ]]sgs.Self:getMark("thmimengmark")<=0 then return thmimengcard:clone() end
+		--[[if card_pattern[1]=="peach+analeptic" then
+			return thmimengpeachcard:clone()
+		end]]
+		local id=sgs.Self:getMark("thmimengmark")-1
+		if id==998 then
+			return thmimengslashcard:clone()
+		end
+		if id==997 then
 			return thmimengpeachcard:clone()
 		end
 		if #cards~=1 then return nil end
 		local card,cardname
-		local id=sgs.Self:getMark("thmimengmark")-1
 		if id~=-1 then
 			cardname=sgs.Sanguosha:getCard(id):objectName()
 		end
@@ -1790,8 +1799,8 @@ thmimeng=sgs.CreateViewAsSkill{
 			card=thmimengironchaincard:clone()
 		elseif cardname then
 			card=sgs.Sanguosha:cloneCard(cardname, cards[1]:getSuit(), cards[1]:getNumber())
-		else
-			card=sgs.Sanguosha:cloneCard(card_pattern[1], cards[1]:getSuit(), cards[1]:getNumber())
+		--[[else
+			card=sgs.Sanguosha:cloneCard(card_pattern[1], cards[1]:getSuit(), cards[1]:getNumber())]]
 		end
 		card:addSubcard(cards[1])
 		card:setSkillName(self:objectName())
@@ -1799,22 +1808,40 @@ thmimeng=sgs.CreateViewAsSkill{
 	end,
 
 	enabled_at_play=function(self, player)
-		if #card_pattern ~= 0 then
+		--[[if #card_pattern ~= 0 then
 			table.remove(card_pattern)
-		end
-		if player:getMark("thmimengmark")~=0 then
-			player:setMark("thmimengmark",0)
-		end
+		end]]
+		player:setMark("thmimengmark",0)
+		--if #card_pattern == 0 then
 		return player:getHandcardNum()==1
+		--end
 	end,
 	
 	enabled_at_response=function(self,player,pattern)
 		if player:getHandcardNum()~=1 then return false end
-		if pattern=="slash" or pattern=="jink" or pattern=="peach" or pattern=="analeptic" or pattern=="peach+analeptic" or pattern=="nullification" then
+		if pattern == "@@thmimeng" then
+			return true
+		end
+		player:setMark("thmimengmark",0)
+		if pattern=="peach+analeptic" then
+			player:setMark("thmimengmark",998)
+		elseif pattern=="slash" then
+			player:setMark("thmimengmark",999)
+		else
+			if pattern=="normal_slash" then
+				pattern="slash"
+			end
+			for id=0,159,1 do
+				if sgs.Sanguosha:getCard(id):getRealCard():objectName()==pattern then
+					player:setMark("thmimengmark",id+1)
+				end
+			end
+		end
+		--[[if pattern=="slash" or pattern=="jink" or pattern=="peach" or pattern=="analeptic" or pattern=="peach+analeptic" or pattern=="nullification" then
 			table.remove(card_pattern)
 			table.insert(card_pattern, pattern)
-		end
-		return (#card_pattern ~= 0 or pattern == "@@thmimeng")
+		end]]
+		return player:getMark("thmimengmark")~=0
 	end,
 	
 	enabled_at_nullification=function(self, player)
@@ -2401,30 +2428,25 @@ thliuzhen=sgs.CreateTriggerSkill{
 thliuzhen_buff=sgs.CreateTriggerSkill{
 	name="#thliuzhen_buff",
 	frequency=sgs.Skill_Compulsory,
-	events={sgs.CardUsed},
+	events={sgs.SlashMissed},
 	on_trigger=function(self,event,player,data)
 		local room=player:getRoom()
-		local card=data:toCardUse().card
-		if not card:isKindOf("Jink") then return end
-		local splayer=room:findPlayerBySkillName("thliuzhen")
-		if player:hasFlag("liuzhennew") then
+		local effect=data:toSlashEffect()
+		if effect.to:hasFlag("liuzhennew") then
 			local log= sgs.LogMessage()
 				log.type = "#thliuzhentr"
-				log.from = splayer
-				log.to:append(player)
+				log.from = player
+				log.to:append(effect.to)
 				log.arg  = "thliuzhen"
 			room:sendLog(log)
-			if splayer:getCardCount(true)>1 then
-				if not room:askForDiscard(splayer,"thliuzhen",2,2,true,true) then
-					room:loseHp(splayer)
+			if player:getCardCount(true)>1 then
+				if not room:askForDiscard(player,"thliuzhen",2,2,true,true) then
+					room:loseHp(player)
 				end
 			else
-				room:loseHp(splayer)
+				room:loseHp(player)
 			end
 		end
-	end,
-	can_trigger=function(self,target)
-		return true
 	end,
 }
 
@@ -3137,29 +3159,6 @@ thfuyue=sgs.CreateTriggerSkill{
 	end,
 }
 
-thyewang=sgs.CreateTriggerSkill{
-	name="thyewang$",
-	frequency=sgs.Skill_NotFrequent,
-	events={sgs.EventPhaseStart},
-	on_trigger=function(self,event,player,data)
-		local room=player:getRoom()
-		local splayer=room:findPlayerBySkillName(self:objectName())
-		if player:getPhase()==sgs.Player_Play then
-			if player:getKingdom() ~= "qun" and player:hasSkill("thyewangvs") then
-				room:detachSkillFromPlayer(player,"thyewangvs")
-			end
-		end
-		if splayer:hasLordSkill("thyewang") then
-			if player:getKingdom() == "qun" and not player:hasSkill("thyewangvs") then
-				room:attachSkillToPlayer(player,"thyewangvs")
-			end
-		end
-	end,
-	can_trigger=function()
-		return true
-	end
-}
-
 ----tsuki001
 --[锁命] 每当你受到1点伤害后，你可以指定一名角色，横置或重置其武将牌。
 thsuoming=sgs.CreateTriggerSkill{
@@ -3226,7 +3225,7 @@ thyewangcard=sgs.CreateSkillCard{
 	will_throw=false,
 	on_use = function(self, room, source, targets)
 		local invoke=true
-		for _,p in sgs.qlist(room:getAllPlayers()) do
+		for _,p in sgs.qlist(room:getOtherPlayers(source)) do
 			if p:isChained() then
 				invoke=false
 				break
@@ -3238,10 +3237,10 @@ thyewangcard=sgs.CreateSkillCard{
 		if invoke then
 			for _,p in sgs.qlist(room:getAllPlayers()) do
 				if p:hasLordSkill("thyewang") then
-					targets:append(p)
+					lords:append(p)
 				end
 			end
-			if targets:isEmpty() then return end
+			if lords:isEmpty() then return end
 			target=room:askForPlayerChosen(source,lords,"thyewang")
 				log.type = "#thyewang"
 				log.from = player
@@ -3324,11 +3323,15 @@ thkaiyun=sgs.CreateTriggerSkill{
 	events={sgs.AskForRetrial},
 	on_trigger=function(self, event, player, data)
 		local room=player:getRoom()
-		local tuzi=room:findPlayerBySkillName(self:objectName())
 		local judge=data:toJudge() 
-		if tuzi:isNude() then return end
-		if (room:askForSkillInvoke(tuzi, self:objectName(),data) ~= true) then return false end
+		if player:isNude() then return end
+		if (room:askForSkillInvoke(player, self:objectName(),data) ~= true) then return false end
 		if not room:askForDiscard(player,self:objectName(),1,1,true,true) then return false end 
+		if judge.who:objectName()==player:objectName() then
+			room:broadcastSkillInvoke(self:objectName(),math.random(3,4))
+		else
+			room:broadcastSkillInvoke(self:objectName(),math.random(1,2))
+		end
 		local card_ids=room:getNCards(2)
 		room:fillAG(card_ids,player)
 		card_id=room:askForAG(player, card_ids, false, self:objectName())
@@ -3356,6 +3359,7 @@ thjiaotu=sgs.CreateTriggerSkill{
 			for i=1,damage.damage,1 do
 				if tuzi:isNude() then break end
 				if not room:askForSkillInvoke(tuzi,self:objectName(),data) then break end
+				room:broadcastSkillInvoke(self:objectName())
 				judge=sgs.JudgeStruct()
 					judge.pattern=sgs.QRegExp("(.*):(heart):(.*)")
 					judge.good=true
@@ -3387,9 +3391,9 @@ thjiaotu=sgs.CreateTriggerSkill{
 }
 
 ----tsuki007
---[寸劲] 若你的装备区没有武器牌，当你使用的【杀】被【闪】抵消时，你可以弃置一张牌，则此【杀】依然造成伤害。 
-thcunjin=sgs.CreateTriggerSkill{
-	name="thcunjin",
+--[寸刭] 若你的装备区没有武器牌，当你使用的【杀】被【闪】抵消时，你可以弃置一张牌，则此【杀】依然造成伤害。 
+thcunjing=sgs.CreateTriggerSkill{
+	name="thcunjing",
 	frequency=sgs.Skill_NotFrequent,
 	events={sgs.SlashMissed},
 	on_trigger=function(self,event,player,data)
@@ -3398,6 +3402,7 @@ thcunjin=sgs.CreateTriggerSkill{
 		if player:getWeapon() then return end
 		if not player:askForSkillInvoke(self:objectName(),data) then return end
 		if not room:askForDiscard(player,self:objectName(),1,1,true,true) then return end
+		room:broadcastSkillInvoke(self:objectName())
 		room:slashResult(effect, nil)
 		return true
 	end,
@@ -3409,6 +3414,7 @@ thlianhuacard=sgs.CreateSkillCard{
 	target_fixed=true,
 	will_throw=true,
 	on_use=function(self, room, source, targets)
+		room:broadcastSkillInvoke("thlianhua")
 		local card=room:peek()
 		source:drawCards(1)
 		local target=room:askForPlayerChosen(source,room:getAllPlayers(),"thlianhua")
@@ -3507,15 +3513,13 @@ thshennaovs=sgs.CreateViewAsSkill{
 	name="thshennaovs",
 	n=1,
 	view_filter = function(self, selected, to_select)
-		if sgs.Self:getHandcardNum()>=sgs.Self:getHp() then
-			return not to_select:isEquipped()
-		else
-			return false
-		end
+		return not to_select:isEquipped()
 	end,
 	view_as = function(self, cards)
-		if sgs.Self:getHandcardNum()<sgs.Self:getHp() then return thshennaocard:clone() end
-		if sgs.Self:getHandcardNum()>sgs.Self:getHp() and #cards==0 then return end
+		if sgs.Self:getHandcardNum()>=sgs.Self:getHp() and #cards==0 then return end
+		if sgs.Self:getHandcardNum()<sgs.Self:getHp() then
+			return thshennaocard:clone()
+		end
 		local num=0
 		local suit=sgs.Card_NoSuit
 		if #cards==1 then
@@ -3523,20 +3527,23 @@ thshennaovs=sgs.CreateViewAsSkill{
 			suit=cards[1]:getSuit()
 		end
 		local card=sgs.Sanguosha:cloneCard("nullification",suit,num)
+		card:setSkillName("thshennao")
+		if sgs.Self:getHandcardNum()<sgs.Self:getHp() then
+			return card
+		end
 		if #cards==1 then
 			card:addSubcard(cards[1])
 		end
-        card:setSkillName("thshennao")
 		return card
 	end,
 	enabled_at_play=function(self, player)
 		return false
 	end,
 	enabled_at_response=function(self,player,pattern) 
-		return pattern=="nullification"
+		return pattern=="nullification" and (player:getHandcardNum()>=player:getHp() or player:getHp()>0)
 	end,
 	enabled_at_nullification = function(self, player)
-		return true
+		return player:isAlive()
 	end
 }
 
@@ -3546,15 +3553,15 @@ thshennao=sgs.CreateTriggerSkill{
 	events={sgs.CardUsed},
 	view_as_skill=thshennaovs,
 	on_trigger=function(self,event,player,data)
-		local use=data:toCardUse()
-		if use.card:getSkillName()~="thshennaocard" then return end
+		local card=data:toCardUse().card
+		if card:getSkillName() ~= "thshennaocard" then return end
 		local room=player:getRoom()
 		player:drawCards(1)
 		room:loseHp(player)
 	end,
 }
 
---[妙药] 每当你使用或打出一张【闪】时，你可以回复1点体力。
+--[妙药] 每当你使用或打出一张【闪】时，若你的体力值为1，你可以回复1点体力。
 thmiaoyao=sgs.CreateTriggerSkill{
 	name="thmiaoyao",
 	frequency=sgs.Skill_Frequent,
@@ -3564,10 +3571,10 @@ thmiaoyao=sgs.CreateTriggerSkill{
 		if event == sgs.CardUsed then
 			card=data:toCardUse().card
 		else
-			card=data:toCard()
+			card=data:toResponsed().m_card
 		end
 		if not card:isKindOf("Jink") then return end
-		if not player:isWounded() then return end
+		if player:getHp()~=1 or not player:isWounded() then return end
 		if not player:askForSkillInvoke(self:objectName()) then return end
 		local room=player:getRoom()
 		local recover = sgs.RecoverStruct()
@@ -4713,7 +4720,7 @@ thbingzhang=sgs.CreateTriggerSkill{
 	end,
 }
 
---[极武] 锁定技，你的【桃】和【酒】均视为【闪】。弃牌阶段外，每当你的【闪】置入弃牌堆或其他角色每获得你的一张手牌时，你摸一张牌。
+--[极武] 锁定技，你的【桃】和【酒】均视为【闪】。弃牌阶段外，每当你的【闪】、【桃】或【酒】置入弃牌堆或其他角色每获得你的一张手牌时，你摸一张牌。
 thjiwu=sgs.CreateFilterSkill{
 	name="thjiwu",
 	view_filter=function(self,to_select)
@@ -5227,6 +5234,7 @@ thluanshencard=sgs.CreateSkillCard{
 		return #targets==0 and to_select:objectName()~=player:objectName()
 	end,
 	on_use = function(self, room, source, targets)
+		room:broadcastSkillInvoke("thluanshen")
 		room:fillAG(self:getSubcards())
 		room:getThread():delay(2000)
 		local target=targets[1]
@@ -5267,7 +5275,7 @@ thluanshen=sgs.CreateViewAsSkill{
 		return card
 	end,
 	enabled_at_play=function(self, player)
-		return not player:hasUsed("#thluanshencard")
+		return not player:hasUsed("#thluanshencard") and player:getHandcardNum()>player:getHp()
 	end,
 }
 
@@ -5383,7 +5391,7 @@ tsuki003:addSkill(thkuangqi)
 tsuki004:addSkill(thkaiyun)
 tsuki004:addSkill(thjiaotu)
 
-tsuki007:addSkill(thcunjin)
+tsuki007:addSkill(thcunjing)
 tsuki007:addSkill(thlianhua)
 
 tsuki008:addSkill(thqishu)
@@ -5461,7 +5469,6 @@ sgs.LoadTranslationTable{
 	
 	["#kaze002"]="幻想风靡",
 	["kaze002"]="射命丸文",
-	["&kaze002"]="文",
 	["designer:kaze002"]="幻桜落 | Codeby:Slob",
 	["illustrator:kaze002"]="水佾",
 	["cv:kaze002"]="飞鸟",
@@ -5473,7 +5480,6 @@ sgs.LoadTranslationTable{
 	
 	["#kaze003"]="花果子念报记者",
 	["kaze003"]="姬海棠羽立",
-	["&kaze003"]="羽立",
 	["designer:kaze003"]="神·冥狐 | Codeby:Slob",
 	["illustrator:kaze003"]="nyanya",
 	["cv:kaze003"]="暂无",
@@ -5517,7 +5523,6 @@ sgs.LoadTranslationTable{
 	
 	["#kaze007"]="大江山岚",
 	["kaze007"]="星熊勇仪",
-	["&kaze007"]="勇仪",
 	["designer:kaze007"]="幻桜落 | Codeby:Slob",
 	["illustrator:kaze007"]="けん",
 	["cv:kaze007"]="向晚",
@@ -5531,7 +5536,6 @@ sgs.LoadTranslationTable{
 	
 	["#kaze008"]="山与湖的化身",
 	["kaze008"]="八坂神奈子",
-	["&kaze008"]="神奈子",
 	["designer:kaze008"]="妒天のPAD | Codeby:Slob",
 	["illustrator:kaze008"]="Gekka",
 	["cv:kaze008"]="暂无",
@@ -5546,7 +5550,6 @@ sgs.LoadTranslationTable{
 	
 	["#kaze009"]="土著神的顶点",
 	["kaze009"]="洩矢诹访子",
-	["&kaze009"]="诹访子",
 	["designer:kaze009"]="幻桜落 | Codeby:Slob",
 	["illustrator:kaze009"]="An2A",
 	["cv:kaze009"]="暂无",
@@ -5579,12 +5582,9 @@ sgs.LoadTranslationTable{
 	["@thcannue-slash"]="请对目标使用一张【杀】",
 	["thsibao"]="肆暴",
 	[":thsibao"]="你可以将一张装备牌当【酒】使用。",
-	["thsibaovs"]="肆暴",
-	["@thsibao"]="你可以发动【肆暴】将一张装备牌当【酒】来自救。",
 	
 	["#kaze011"]="暗之窟的明之网",
 	["kaze011"]="黑谷山女",
-	["&kaze011"]="山女",
 	["designer:kaze011"]="正体不明 | Codeby:Slob",
 	["illustrator:kaze011"]="ふーかでぃあ",
 	["cv:kaze011"]="暂无",
@@ -5602,7 +5602,6 @@ sgs.LoadTranslationTable{
 	
 	["#kaze012"]="绿眼的嫉妒",
 	["kaze012"]="水桥帕露西",
-	["&kaze012"]="帕露西",
 	["designer:kaze012"]="幻桜落 | Codeby:Slob",
 	["illustrator:kaze012"]="ラムディア",
 	["cv:kaze012"]="暂无",
@@ -5634,10 +5633,10 @@ sgs.LoadTranslationTable{
 	
 	["#kaze015"]="地狱的轮祸",
 	["kaze015"]="火焰猫燐",
-	["&kaze015"]="燐",
 	["designer:kaze015"]="幻桜落 | Codeby:Ellis&Slob",
 	["illustrator:kaze015"]="七乃瀨",
 	["cv:kaze015"]="暂无",
+	--["~kaze015"]="玩火...必自焚...",
 	["thyanlun"]="焰轮",
 	[":thyanlun"]="出牌阶段，你可以与一名其他角色拼点。若你赢，你获得以下技能直到回合结束：你可以将一张红色手牌当【火攻】使用；你使用【火攻】时可弃置与目标角色展示的手牌颜色相同的手牌；你每使用【火攻】造成一次伤害后，可以摸一张牌。若你没赢，则其对你造成1点火焰伤害。每阶段限一次。",
 	["thyanlunvs"]="焰轮",
@@ -5645,10 +5644,12 @@ sgs.LoadTranslationTable{
 	["@fire-attackex"]="%src 展示的牌的颜色为 %arg，请弃置相同颜色的牌",
 	["black"]="黑色",
 	["red"]="红色",
+	["thyanlun1"]="前进！地狱之轮！",
+	["thyanlun2"]="在地狱的烈焰中燃烧吧！",
+	["thyanlun3"]="让烈焰净化一切！",
 	
 	["#kaze016"]="热恼的神之火",
 	["kaze016"]="灵乌路空",
-	["&kaze016"]="空",
 	["designer:kaze016"]="幻桜落 | Codeby:Slob",
 	["illustrator:kaze016"]="正体不明",
 	["cv:kaze016"]="暂无",
@@ -5663,7 +5664,6 @@ sgs.LoadTranslationTable{
 	
 	["#kaze017"]="紧闭的恋之扉",
 	["kaze017"]="古明地恋",
-	["&kaze017"]="恋",
 	["designer:kaze017"]="冬天吃雪糕 | Codeby:Ellis&Slob",
 	["illustrator:kaze017"]="bon",
 	["cv:kaze017"]="暂无",
@@ -5675,7 +5675,6 @@ sgs.LoadTranslationTable{
 	
 	["#hana003"]="三途川的引路人",
 	["hana003"]="小野塚小町",
-	["&hana003"]="小町",
 	["designer:hana003"]="幻桜落 | Codeby:Slob",
 	["illustrator:hana003"]="ideolo",
 	["cv:hana003"]="飞鸟",
@@ -5699,16 +5698,15 @@ sgs.LoadTranslationTable{
 	
 	["#hana006"]="佐渡的狸妖",
 	["hana006"]="二岩猯藏",
-	["&hana006"]="猯藏",
 	["designer:hana006"]="妒天のPAD | Codeby:Slob",
 	["illustrator:hana006"]="八重樫 南",
 	["cv:hana006"]="暂无",
 	["thxihua"]="戏画",
 	[":thxihua"]="出牌阶段，你可以选择一至四项： \
-1. 弃置两张红桃牌并回复1点体力 \
-2. 弃置两张草花牌并弃置一名其他角色的一张牌 \
-3. 弃置两张方片牌并令一名其他角色摸两张牌，然后该角色须弃置一张牌 \
-4. 弃置两张黑桃牌并令一名其他角色摸两张牌，然后该角色将其武将牌翻面。",
+1. 弃置两张黑桃牌并回复1点体力 \
+2. 弃置两张方片牌并弃置一名其他角色区域的一张牌 \
+3. 弃置两张草花牌并令一名其他角色摸两张牌，然后该角色须弃置一张牌 \
+4. 弃置两张红桃牌并令一名其他角色摸一张牌，然后该角色将其武将牌翻面。",
 	["thxihuaspadecard"]="戏画",
 	["thxihuaheartcard"]="戏画",
 	["thxihuadiamondcard"]="戏画",
@@ -5740,7 +5738,6 @@ sgs.LoadTranslationTable{
 	
 	["#hana008"]="独臂有角的仙人",
 	["hana008"]="茨木华扇",
-	["&hana008"]="华扇",
 	["designer:hana008"]="jachsu | Codeby:Slob",
 	["illustrator:hana008"]="米白",
 	["cv:hana008"]="暂无",
@@ -5757,7 +5754,6 @@ sgs.LoadTranslationTable{
 	
 	["#hana011"]="春告的妖精",
 	["hana011"]="莉莉•白",
-	["&hana011"]="莉莉",
 	["designer:hana011"]="妒天のPAD | Codeby:Slob",
 	["illustrator:hana011"]="sola7764",
 	["cv:hana011"]="暂无",
@@ -5772,7 +5768,6 @@ sgs.LoadTranslationTable{
 	
 	["#hana013"]="忠实的死体",
 	["hana013"]="宫古芳香",
-	["&hana013"]="芳香",
 	["designer:hana013"]="幻桜落 | Codeby:Slob",
 	["illustrator:hana013"]="KS",
 	["cv:hana013"]="暂无",
@@ -5786,7 +5781,6 @@ sgs.LoadTranslationTable{
 	
 	["#hana016"]="阴阳圣童女",
 	["hana016"]="物部布都",
-	["&hana016"]="布都",
 	["designer:hana016"]="幻桜落 | Codeby:Slob",
 	["illustrator:hana016"]="ファルまろ",
 	["cv:hana016"]="暂无",
@@ -5801,7 +5795,6 @@ sgs.LoadTranslationTable{
 	
 	["#hana017"]="圣德道士",
 	["hana017"]="丰聪耳神子",
-	["&hana017"]="神子",
 	["designer:hana017"]="幻桜落 | Codeby:Slob",
 	["illustrator:hana017"]="いちやん",
 	["cv:hana017"]="凉子",
@@ -5813,7 +5806,7 @@ sgs.LoadTranslationTable{
 	["thwuwu"]="无忤",
 	[":thwuwu"]="<b>锁定技</b>，弃牌阶段结束时，若你在此阶段没有弃置手牌，你须弃置一张手牌。",
 	["$thwuwu1"]="以和为贵，以和为贵呀。",
-	["$thwuwu2"]="居庙堂者，以无忤为宗。",
+	["$thwuwu2"]="居庙堂者，当以无忤为宗。",
 	["thrudao"]="入道",
 	[":thrudao"]="<b>觉醒技</b>，回合开始阶段开始时，若你没有手牌，你须摸两张牌，然后减少3点体力上限，并失去技能“无忤”。",
 	["#thrudao"]="%from 没有手牌，触发了觉醒技【%arg】",
@@ -5821,10 +5814,10 @@ sgs.LoadTranslationTable{
 	
 	["#hana018"]="非想非非想之女",
 	["hana018"]="比那名居天子",
-	["&hana018"]="天子",
 	["designer:hana018"]="晓ャ绝对 | Codeby:Slob",
 	["illustrator:hana018"]="田中にゃん",
 	["cv:hana018"]="暂无",
+	--["~hana018"]="铭志，天地...不仁...",
 	["thliuzhen"]="六震",
 	[":thliuzhen"]="出牌阶段，你使用【杀】指定目标后，可以选择任意名你攻击范围内的不为该【杀】目标的其他角色。该【杀】在结算后置入弃牌堆，你获得之并对你所选的角色使用，其中每有一名角色使用【闪】抵消了该【杀】的效果，你须弃置两张牌或失去1点体力。每阶段限一次。",
 	["thliuzhenvs"]="六震",
@@ -5832,17 +5825,20 @@ sgs.LoadTranslationTable{
 	["thliuzhen_buff"]="六震",
 	["@thliuzhen"]="你可以使用技能【六震】",
 	["~thliuzhen"]="选择任意名不为该【杀】目标的其他角色→点击确定",
-	["#thliuzhentr"]="%to 闪避了 %from 的【杀】，【%arg】的效果被触发",
+	["#thliuzhentr"]="%to 抵消了 %from 的【杀】，触发【%arg】",
+	["$thliuzhen1"]="铭志，念地运遐迩，肃诸天，非所及也。",
+	["$thliuzhen2"]="铭志，相地命万千，含六合，其道穷也。",
 	["thtiandao"]="天道",
 	[":thtiandao"]="<b>主公技</b>，当你处于濒死状态时，其他花势力的角色可以将黑桃2~9的手牌当【桃】使用。",
 	["@thtiandao"]="你可以发动【天道】将黑桃2~9的手牌当【桃】使用",
 	["~thtiandao"]="选择一张黑桃2~9的手牌→点击确定",
 	["thtiandaovs"]="天道",
 	["thtiandaocard"]="天道",
+	["$thtiandao1"]="铭志，囚封天之道，众生需渡无量劫。",
+	["$thtiandao2"]="铭志，锁亡天之运，众生不得真道，常沉苦海。",
 	
 	["#yuki001"]="乐园的巫女",
 	["yuki001"]="博丽灵梦",
-	["&yuki001"]="灵梦",
 	["designer:yuki001"]="幻桜落 | Codeby:Slob",
 	["illustrator:yuki001"]="深崎暮人",
 	["cv:yuki001"]="暂无",
@@ -5863,7 +5859,6 @@ sgs.LoadTranslationTable{
 	
 	["#yuki002"]="疏雨的百鬼夜行",
 	["yuki002"]="伊吹萃香",
-	["&yuki002"]="萃香",
 	["designer:yuki002"]="幻桜落 | Codeby:Slob",
 	["illustrator:yuki002"]="正体不明",
 	["cv:yuki002"]="暂无",
@@ -5876,7 +5871,6 @@ sgs.LoadTranslationTable{
 	
 	["#yuki003"]="半分幻的庭师",
 	["yuki003"]="魂魄妖梦",
-	["&yuki003"]="妖梦",
 	["designer:yuki003"]="Why. | Codeby:Slob",
 	["illustrator:yuki003"]="さくやついたち",
 	["cv:yuki003"]="向晚",
@@ -5890,7 +5884,6 @@ sgs.LoadTranslationTable{
 	
 	["#yuki004"]="七色的人形使",
 	["yuki004"]="爱丽丝•玛嘉特洛伊德",
-	["&yuki004"]="爱丽丝",
 	["designer:yuki004"]="CoffeeNO加糖 | Codeby:Slob",
 	["illustrator:yuki004"]="しろさ",
 	["cv:yuki004"]="暂无",
@@ -5901,7 +5894,6 @@ sgs.LoadTranslationTable{
 	
 	["#yuki005"]="幻想乡的记忆",
 	["yuki005"]="稗田阿求",
-	["&yuki005"]="阿求",
 	["designer:yuki005"]="弱弱的diyer | Codeby:Slob",
 	["illustrator:yuki005"]="Dinyc",
 	["cv:yuki005"]="暂无",
@@ -5926,7 +5918,6 @@ sgs.LoadTranslationTable{
 	
 	["#yuki017"]="惨憺的大海原",
 	["yuki017"]="村纱水蜜",
-	["&yuki017"]="水蜜",
 	["designer:yuki017"]="幻桜落 | Codeby:Slob",
 	["illustrator:yuki017"]="ひそな",
 	["cv:yuki017"]="暂无",
@@ -5941,7 +5932,6 @@ sgs.LoadTranslationTable{
 	
 	["#yuki018"]="天衣无缝的亡灵",
 	["yuki018"]="西行寺幽幽子",
-	["&yuki018"]="幽幽子",
 	["designer:yuki018"]="零度雨 | Codeby:Slob",
 	["illustrator:yuki018"]="ukyo_rst",
 	["cv:yuki018"]="暂无",
@@ -5959,7 +5949,6 @@ sgs.LoadTranslationTable{
 	
 	["#tsuki001"]="永远的赤色幼月",
 	["tsuki001"]="蕾米莉亚•斯卡雷特",
-	["&tsuki001"]="蕾米莉亚",
 	["designer:tsuki001"]="幻桜落 | Codeby:Slob",
 	["illustrator:tsuki001"]="ideolo",
 	["cv:tsuki001"]="暂无",
@@ -5978,7 +5967,6 @@ sgs.LoadTranslationTable{
 	
 	["#tsuki003"]="晴岚的赤瞳",
 	["tsuki003"]="铃仙•优昙华院•稻叶",
-	["&tsuki003"]="铃仙",
 	["designer:tsuki003"]="幻桜落 | Codeby:Slob",
 	["illustrator:tsuki003"]="正体不明",
 	["cv:tsuki003"]="暂无",
@@ -5992,26 +5980,37 @@ sgs.LoadTranslationTable{
 	["designer:tsuki004"]="幻桜落 | Codeby:Slob",
 	["illustrator:tsuki004"]="すばち",
 	["cv:tsuki004"]="暂无",
+	["~tsuki004"]="笨蛋笨...啊！",
 	["thkaiyun"]="开运",
 	[":thkaiyun"]="在一名角色的判定牌生效前，你可以弃置一张牌，然后观看牌堆顶的两张牌，将其中一张牌代替判定牌，然后获得另一张牌。",
+	["$thkaiyun1"]="嘛~看本大人的心情啦~",
+	["$thkaiyun2"]="幸运...？嘻~这可由不得你哟？",
+	["$thkaiyun3"]="不愧是最可爱聪明的本大人呢~",
+	["$thkaiyun4"]="嘻~羡慕也没有用哟？",
 	["thjiaotu"]="狡兔",
 	[":thjiaotu"]="每当你受到1点伤害后，可以令伤害来源进行一次判定，若结果不为红桃，该角色获得技能“无谋”直到该角色的下一个回合结束。",
 	["@jiaotu"]="狡兔",
+	["$thjiaotu1"]="笨蛋笨蛋！",
+	["$thjiaotu2"]="嘻~愚蠢的家伙。",
 	
 	["#tsuki007"]="虹色的门番",
 	["tsuki007"]="红美铃",
 	["designer:tsuki007"]="零度雨 | Codeby:Slob",
 	["illustrator:tsuki007"]="miya9",
-	["cv:tsuki007"]="暂无",
-	["thcunjin"]="寸劲",
-	[":thcunjin"]="若你的装备区没有武器牌，当你使用的【杀】被【闪】抵消时，你可以弃置一张牌，则此【杀】依然造成伤害。",
+	["cv:tsuki007"]="向晚",
+	["~tsuki007"]="对不起...大小姐...",
+	["thcunjing"]="寸刭",
+	[":thcunjing"]="若你的装备区没有武器牌，当你使用的【杀】被【闪】抵消时，你可以弃置一张牌，则此【杀】依然造成伤害。",
+	["$thcunjing1"]="方寸之间，人尽敌国！",
+	["$thcunjing2"]="喝！",
 	["thlianhua"]="莲华",
 	[":thlianhua"]="出牌阶段，你可弃置一张装备牌，然后观看牌堆顶的一张牌并将其交给一名角色。",
 	["thlianhuacard"]="莲华",
+	["$thlianhua1"]="兵甲，无益也。",
+	["$thlianhua2"]="草木竹石，亦可伤人！",
 	
 	["#tsuki008"]="完美潇洒的从者",
 	["tsuki008"]="十六夜咲夜",
-	["&tsuki008"]="咲夜",
 	["~tsuki008"]="真是...精彩...",
 	["designer:tsuki008"]="scorpio | Codeby:Slob",
 	["illustrator:tsuki008"]="雨神",
@@ -6032,7 +6031,6 @@ sgs.LoadTranslationTable{
 	
 	["#tsuki009"]="宙古的大贤者",
 	["tsuki009"]="八意永琳",
-	["&tsuki009"]="永琳",
 	["designer:tsuki009"]="狐耳魔师 | Codeby:Slob",
 	["illustrator:tsuki009"]="結之",
 	["cv:tsuki009"]="暂无",
@@ -6045,7 +6043,6 @@ sgs.LoadTranslationTable{
 	
 	["#tsuki011"]="惑心的夜雀",
 	["tsuki011"]="米斯蒂亚•萝蕾莱",
-	["&tsuki011"]="米斯蒂亚",
 	["designer:tsuki011"]="殇の腥 | Codeby:Slob",
 	["illustrator:tsuki011"]="水佾",
 	["cv:tsuki011"]="暂无",
@@ -6057,7 +6054,6 @@ sgs.LoadTranslationTable{
 	
 	["#tsuki012"]="耀目的日光",
 	["tsuki012"]="桑妮•米尔克",
-	["&tsuki012"]="桑妮",
 	["designer:tsuki012"]="幻桜落 | Codeby:Slob",
 	["illustrator:tsuki012"]="kinakomoti",
 	["cv:tsuki012"]="暂无",
@@ -6068,7 +6064,6 @@ sgs.LoadTranslationTable{
 	
 	["#tsuki014"]="灿烂的星光",
 	["tsuki014"]="斯塔•莎菲雅",
-	["&tsuki014"]="斯塔",
 	["designer:tsuki014"]="jachsu&幻桜落 | Codeby:Slob",
 	["illustrator:tsuki014"]="kinakomoti",
 	["cv:tsuki014"]="暂无",
@@ -6085,7 +6080,6 @@ sgs.LoadTranslationTable{
 	
 	["#tsuki016"]="神灵依凭的月姬",
 	["tsuki016"]="绵月依姬",
-	["&tsuki016"]="依姬",
 	["designer:tsuki016"]="妒天のPAD | Codeby:Slob",
 	["illustrator:tsuki016"]="ideolo",
 	["cv:tsuki016"]="暂无",
@@ -6095,7 +6089,6 @@ sgs.LoadTranslationTable{
 	
 	["#tsuki017"]="海与山的境界",
 	["tsuki017"]="绵月丰姬",
-	["&tsuki017"]="丰姬",
 	["designer:tsuki017"]="妒天のPAD | Codeby:Slob",
 	["illustrator:tsuki017"]="PFALZ",
 	["cv:tsuki017"]="暂无",
@@ -6109,14 +6102,12 @@ sgs.LoadTranslationTable{
 	
 	["#tsuki018"]="永远与须臾的罪人",
 	["tsuki018"]="蓬莱山辉夜",
-	["&tsuki018"]="辉夜",
 	["designer:tsuki018"]="幻桜落 | Codeby:Slob",
 	["illustrator:tsuki018"]="Emiaエミア",
 	["cv:tsuki018"]="暂无",
 	
 	["#kami002"]="天道是非",
 	["kami002"]="比那名居天子",
-	["&kami002"]="天子",
 	["designer:kami002"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami002"]="ななしな",
 	["cv:kami002"]="暂无",
@@ -6142,7 +6133,6 @@ sgs.LoadTranslationTable{
 	
 	["#kami004"]="子夜的女皇",
 	["kami004"]="蕾米莉亚•斯卡雷特",
-	["&kami004"]="蕾米莉亚",
 	["designer:kami004"]="昂翼天使 | Codeby:Slob",
 	["illustrator:kami004"]="墨洲",
 	["cv:kami004"]="暂无",
@@ -6167,7 +6157,6 @@ sgs.LoadTranslationTable{
 	
 	["#kami009"]="心华之殇",
 	["kami009"]="古明地觉",
-	["&kami009"]="觉",
 	["designer:kami009"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami009"]="サクラメ ( 厄年 )",
 	["cv:kami009"]="暂无",
@@ -6188,24 +6177,22 @@ sgs.LoadTranslationTable{
 	
 	["#kami013"]="鸣蛙不输风雨",
 	["kami013"]="洩矢诹访子",
-	["&kami013"]="诹访子",
 	["designer:kami013"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami013"]="正体不明",
 	["cv:kami013"]="暂无",
 	["thsanling"]="散灵", 
 	[":thsanling"]="<b>锁定技</b>，一名角色的回合结束后，若你没有手牌，你立即死亡。",
 	["thbingzhang"]="冰障",
-	[":thbingzhang"]="每当你受到伤害时，你可以弃置两张牌，然后防止此伤害。",
+	[":thbingzhang"]="每当你受到伤害或失去体力时，你可以弃置两张牌，然后防止此伤害或此次失去体力。",
 	["thjiwu"]="极武", 
-	[":thjiwu"]="<b>锁定技</b>，你的【桃】和【酒】均视为【闪】。弃牌阶段外，每当你的【闪】置入弃牌堆；或每当其他角色获得一次你的手牌时，你摸一张牌。",
+	[":thjiwu"]="<b>锁定技</b>，你的【桃】和【酒】均视为【闪】。弃牌阶段外，每当你的【闪】、【桃】或【酒】置入弃牌堆；或每当其他角色获得一张你的手牌时，你摸一张牌。",
 	["thsisui"]="祀祟",
-	[":thsisui"]="回合开始阶段开始时，你可以令所有其他角色弃置一张手牌，然后你可以从弃牌堆获得剩余牌中的至多三张牌并交分别交给任意角色。",
+	[":thsisui"]="回合开始阶段开始时，你可以令所有其他角色弃置一张手牌，然后你可以从弃牌堆获得剩余牌中的至多三张牌，并依次交给一名角色。",
 	["thzhanying"]="湛樱",
 	[":thzhanying"]="<b>锁定技</b>，你始终跳过你的摸牌阶段；你的手牌上限+4。",
 	
 	["#sp002"]="穿壁的邪仙娘娘",
 	["sp002"]="SP霍青娥",
-	["&sp002"]="霍青娥",
 	["designer:sp002"]="幻桜落 | Codeby:Slob",
 	["illustrator:sp002"]="米白",
 	["cv:sp002"]="暂无",
@@ -6221,7 +6208,6 @@ sgs.LoadTranslationTable{
 	
 	["#bangai001"]="大空之弦",
 	["bangai001"]="宇佐见莲子",
-	["&bangai001"]="莲子",
 	["designer:bangai001"]="幻桜落 | Codeby:Slob",
 	["illustrator:bangai001"]="安威拓郎",
 	["cv:bangai004"]="暂无",
@@ -6262,9 +6248,12 @@ sgs.LoadTranslationTable{
 	["bangai013"]="矜羯罗",
 	["designer:bangai013"]="狐耳魔师 | Codeby:Slob",
 	["illustrator:bangai013"]="ワカニタ",
-	["cv:bangai013"]="暂无",
+	["cv:bangai013"]="向晚",
+	["~bangai013"]="善哉善哉...无上甚深圆满正等觉...",
 	["thluanshen"]="乱神",
 	[":thluanshen"]="出牌阶段，若你的手牌数大于体力值，你可以展示任意张手牌并让一名其他角色选择一项：弃置你展示的牌并弃置等量的牌；或获得你展示的牌，然后将手牌补至等同于其体力上限的张数并将其武将牌翻面。每阶段限一次。",
 	["thluanshencard"]="乱神",
+	["$thluanshen1"]="休怪我做金刚怒目！",
+	["$thluanshen2"]="大胆！",
 	
 }

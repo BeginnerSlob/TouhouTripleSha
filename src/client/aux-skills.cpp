@@ -3,7 +3,7 @@
 #include "carditem.h"
 #include "standard.h"
 #include "clientplayer.h"
-#include "standard-skillcards.h"
+#include "standard-generals.h"
 #include "engine.h"
 
 DiscardSkill::DiscardSkill()

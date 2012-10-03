@@ -218,7 +218,6 @@ public:
 
                 const Card *card = room->askForCard(source, ".enyuan", "@enyuanheart", QVariant(), NonTrigger);
                 if(card){
-                    room->showCard(source, card->getEffectiveId());
                     player->obtainCard(card);
                 }else{
                     room->loseHp(source);
@@ -294,7 +293,7 @@ public:
                 choicelist << "nothing";
                 QList<ServerPlayer *> targets1;
                 foreach(ServerPlayer *target, room->getAlivePlayers()){
-                    if(lingtong->canSlash(target, false))
+                    if(lingtong->canSlash(target, NULL, false))
                         targets1 << target;
                 }
                 if (!targets1.isEmpty()) choicelist << "slash";

@@ -272,7 +272,10 @@ const Card *TrustAI::askForNullification(const TrickCard *trick, ServerPlayer *,
 
         foreach(const Card *card, cards){
             if(card->isKindOf("Nullification"))
+            {
+                
                 return card;
+            }
         }
     }
 
@@ -324,7 +327,7 @@ const Card *TrustAI::askForPindian(ServerPlayer *requestor, const QString &reaso
     qSort(cards.begin(), cards.end(), CompareByNumber);
 
     // zhiba special case
-    if(reason == "zhiba" && self->hasLordSkill("sunce_zhiba"))
+    if(reason == "zhiba_pindian" && self->hasLordSkill("sunce_zhiba"))
         return cards.last();
 
     if(requestor != self && isFriend(requestor))
