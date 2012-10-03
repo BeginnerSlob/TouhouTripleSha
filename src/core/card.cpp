@@ -262,6 +262,18 @@ bool Card::isVirtualCard() const{
     return m_id < 0;
 }
 
+Card *Card::tryParse(Json::Value val)
+{
+    Q_ASSERT(FALSE); // NOT_IMPLEMENTED!
+    return NULL;
+}
+
+Json::Value Card::toJsonValue() const
+{
+    Q_ASSERT(FALSE); // NOT_IMPLEMENTED!
+    return Json::Value::null;
+}
+
 const Card *Card::Parse(const QString &str){
     static QMap<QString, Card::Suit> suit_map;
     if(suit_map.isEmpty()){
@@ -312,8 +324,13 @@ const Card *Card::Parse(const QString &str){
             card->addSubcard(subcard_id.toInt());
 
         // skill name
-        QString m_skillName = card_name.remove("Card").toLower();
-        card->setSkillName(m_skillName);
+        // @todo: This is extremely dirty and would cause endless troubles.
+        QString skillName = card->getSkillName();
+        if (skillName.isNull())
+        {
+            skillName = card_name.remove("Card").toLower();
+            card->setSkillName(skillName);
+        }
         if(!card_suit.isEmpty())
             card->setSuit(suit_map.value(card_suit, Card::NoSuit));
         if(!card_number.isEmpty()){

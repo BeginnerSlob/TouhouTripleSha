@@ -7,6 +7,7 @@
 #include "ai.h"
 #include "jsonutils.h"
 #include "settings.h"
+#include "standard.h"
 
 #include <QTime>
 #include <json/json.h>
@@ -78,10 +79,8 @@ bool JudgeStructPattern::match(const Player *player, const Card *card) const{
         return false;
 
     if(isRegex){
-        QString class_name = card->metaObject()->className();
+        QString class_name = card->getClassName();
         Card::Suit suit = card->getSuit();
-        if(player->hasSkill("hongyan") && suit == Card::Spade)
-            suit = Card::Heart;
 
         QString number = card->getNumberString();
         QString card_str = QString("%1:%2:%3").arg(class_name).arg(Card::Suit2String(suit)).arg(number);
@@ -110,7 +109,7 @@ JudgeStructPattern &JudgeStructPattern::operator =(const QString &str){
 // members should be initilized the same order as defined
 JudgeStruct::JudgeStruct()
     : negative(false), play_animation(false), who(NULL), card(NULL),
-    good(true), time_consuming(false)
+    good(true), time_consuming(false), _m_result(TRIAL_RESULT_UNKNOWN)
 {
 
 }
@@ -122,17 +121,27 @@ bool JudgeStruct::isEffected(){
         return isBad();
 }
 
-bool JudgeStruct::isGood(const Card *card) const{
-    if(card == NULL)
-        card = this->card;
-
-    if(good)
-        return pattern.match(who, card);
-    else
-        return !pattern.match(who, card);
+void JudgeStruct::updateResult()
+{
+    bool effected = (good == pattern.match(who, card));
+    if (effected) _m_result = TRIAL_RESULT_GOOD;
+    else _m_result = TRIAL_RESULT_BAD;
 }
 
-bool JudgeStruct::isBad() const{
+bool JudgeStruct::isGood() const
+{
+    Q_ASSERT(_m_result != TRIAL_RESULT_UNKNOWN);
+    return _m_result == TRIAL_RESULT_GOOD;
+}
+
+bool JudgeStruct::isGood(const Card *card) const
+{
+    Q_ASSERT(card);
+    return good == pattern.match(who, card);
+}
+
+bool JudgeStruct::isBad() const
+{
     return ! isGood();
 }
 
@@ -145,8 +154,8 @@ CardUseStruct::CardUseStruct()
 {
 }
 
-bool CardUseStruct::isValid() const{
-    return card != NULL;
+bool CardUseStruct::isValid(const QString &pattern) const{
+    return(card != NULL);
 }
 
 bool CardUseStruct::tryParse(const Json::Value &usage, Room *room){

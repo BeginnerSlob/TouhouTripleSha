@@ -233,12 +233,10 @@ void PlayerCardContainer::updateAvatar()
                          G_ROOM_SKIN.getPixmap(QString(QSanRoomSkin::S_SKIN_KEY_KINGDOM_COLOR_MASK)
                                                .arg(kingdom)),
                          this->_getAvatarParent());
-            QString name = Sanguosha->translate("&" + general->objectName());
-            if (name.startsWith("&"))
-                name = Sanguosha->translate(general->objectName());
-            _m_layout->m_avatarNameFont.paintText(_m_avatarNameItem, 
-                                                  _m_layout->m_avatarNameArea,
-                                                  Qt::AlignLeft | Qt::AlignJustify, name);
+            QString name = general->objectName();
+            _paintPixmap(_m_avatarNameItem, _m_layout->m_avatarNameArea,
+                         _getPixmap(QSanRoomSkin::S_SKIN_KEY_AVATAR_NAME_ITEM, name),
+                         this->_getAvatarParent());
         }        
     } else {
         _paintPixmap(_m_avatarIcon, _m_layout->m_avatarArea,
@@ -741,7 +739,7 @@ void PlayerCardContainer::addEquips(QList<CardItem*> &equips)
      Q_ASSERT(m_player->hasSkill("huashen"));
      QPixmap pixmap = _getAvatarIcon(generalName);
      if (pixmap.size() != _m_layout->m_avatarArea.size())
-         pixmap = pixmap.scaled(_m_layout->m_avatarArea.size());
+         pixmap = pixmap.scaled(_m_layout->m_avatarArea.size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
      stopHuaShen();
      _m_huashenAnimation = G_ROOM_SKIN.createHuaShenAnimation(
          pixmap,
@@ -1006,6 +1004,7 @@ void PlayerCardContainer::updateVotes(){
                      _getPixmap(QSanRoomSkin::S_SKIN_KEY_VOTES_NUMBER, QString::number(_m_votesGot)),
                      _getAvatarParent());
         _m_votesItem->setZValue(1);
+        _m_votesItem->show();
     }
 }
 

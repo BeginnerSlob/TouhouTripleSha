@@ -308,6 +308,7 @@ public:
                     judge.good = false;
                     judge.reason = "tuntian";
                     judge.who = player;
+                    judge.play_animation = true;
                     room->judge(judge);
                 }
             }else if(triggerEvent == FinishJudge){
@@ -447,7 +448,10 @@ public:
         if(use.from->objectName() == sunce->objectName() || use.to.contains(sunce)){
             if(use.card->isKindOf("Duel") || (use.card->isKindOf("Slash") && use.card->isRed())){
                 if(sunce->askForSkillInvoke(objectName(), data)){
-                    sunce->getRoom()->broadcastSkillInvoke(objectName());
+                    int index = qrand() % 2 + 1;
+                    if (!sunce->hasInnateSkill(objectName()) && sunce->hasSkill("mouduan"))
+                        index += 2;
+                    room->broadcastSkillInvoke(objectName(), index);
                     sunce->drawCards(1);
                 }
             }
@@ -497,6 +501,7 @@ public:
 ZhibaCard::ZhibaCard(){
     mute = true;
     will_throw = false;
+    m_skillName = "zhiba_pindian";
 }
 
 bool ZhibaCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
@@ -515,18 +520,13 @@ void ZhibaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
     }
 
     room->broadcastSkillInvoke("sunce_zhiba", 1);
-    source->pindian(sunce, "zhiba", this);
+    source->pindian(sunce, "zhiba_pindian", this);
     QList<ServerPlayer *> sunces;
     QList<ServerPlayer *> players = room->getOtherPlayers(source);
-    //ServerPlayer *lordplayer = NULL;
-    //if(source->isLord())
-    //    lordplayer = source;
     foreach(ServerPlayer *p, players){
         if(p->hasLordSkill("sunce_zhiba") && !p->hasFlag("ZhibaInvoked")){
             sunces << p;
         }
-        //if(p->isLord())
-        //    lordplayer = p;
     }
     if(sunces.empty())
         room->setPlayerFlag(source, "ForbidZhiba");
@@ -539,14 +539,6 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        //const Player *lord = NULL;
-        //if(player->isLord())
-        //    lord = player;
-        //QList<const Player *> players = player->getSiblings();
-        //foreach(const Player *p, players){
-        //    if(p->isLord())
-        //        lord = p;
-        //}
         return player->getKingdom() == "wu" && !player->isKongcheng() && !player->hasFlag("ForbidZhiba");
     }
 
@@ -565,7 +557,7 @@ public:
 class SunceZhiba: public TriggerSkill{
 public:
     SunceZhiba():TriggerSkill("sunce_zhiba$"){
-        events << GameStart << Pindian << EventPhaseStart;
+        events << GameStart << Pindian << EventPhaseChanging;
     }
 
     virtual int getPriority() const{
@@ -584,16 +576,25 @@ public:
             }
         }else if(triggerEvent == Pindian){
             PindianStar pindian = data.value<PindianStar>();
-            if(pindian->reason != "zhiba" || !pindian->to->hasLordSkill(objectName()))
+            if(pindian->reason != "zhiba_pindian" || !pindian->to->hasLordSkill(objectName()))
                 return false;
             if(!pindian->isSuccess()){
-                room->broadcastSkillInvoke(objectName(), 2);
-                pindian->to->obtainCard(pindian->from_card);
-                pindian->to->obtainCard(pindian->to_card);
+                if (room->askForChoice(pindian->to, "sunce_zhiba", "yes+no") == "yes") {
+                    room->broadcastSkillInvoke(objectName(), 2);
+                    
+                    pindian->to->obtainCard(pindian->from_card);
+                    pindian->to->obtainCard(pindian->to_card);
+                }
+                else {
+                    room->broadcastSkillInvoke(objectName(), 4);
+                }
             }
             else
                 room->broadcastSkillInvoke(objectName(), 3);
-        }else if(triggerEvent == EventPhaseStart && player->getPhase() == Player::NotActive){
+        }else if(triggerEvent == EventPhaseChanging){
+            PhaseChangeStruct phase_change = data.value<PhaseChangeStruct>();
+            if (phase_change.from != Player::Play)
+                return false;
             if(player->hasFlag("ForbidZhiba")){
                 room->setPlayerFlag(player, "-ForbidZhiba");
             }
@@ -615,7 +616,7 @@ TiaoxinCard::TiaoxinCard(){
 }
 
 bool TiaoxinCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select->canSlash(Self);
+    return targets.isEmpty() && to_select->inMyAttackRange(Self) && to_select != Self;
 }
 
 void TiaoxinCard::onEffect(const CardEffectStruct &effect) const{
@@ -627,7 +628,7 @@ void TiaoxinCard::onEffect(const CardEffectStruct &effect) const{
         room->broadcastSkillInvoke("tiaoxin", qrand() % 2 + 1);
 
     if(!room->askForUseSlashTo(effect.to, effect.from, "@tiaoxin-slash:" + effect.from->objectName()) && !effect.to->isNude())
-        room->throwCard(room->askForCardChosen(effect.from, effect.to, "he", "tiaoxin"), effect.to);
+        room->throwCard(room->askForCardChosen(effect.from, effect.to, "he", "tiaoxin"), effect.to, effect.from);
 }
 
 class Tiaoxin: public ZeroCardViewAsSkill{
@@ -714,6 +715,13 @@ void ZhijianCard::onEffect(const CardEffectStruct &effect) const{
     ServerPlayer *erzhang = effect.from;
     erzhang->getRoom()->moveCardTo(this, erzhang, effect.to, Player::PlaceEquip,
         CardMoveReason(CardMoveReason::S_REASON_USE, erzhang->objectName(), "zhijian", QString()));
+
+    LogMessage log;
+    log.type = "$ZhijianEquip";
+    log.from = effect.to;
+    log.card_str = Sanguosha->getCard(subcards.first())->getEffectIdString();
+    erzhang->getRoom()->sendLog(log);
+
     erzhang->drawCards(1);
 }
 
@@ -748,6 +756,9 @@ public:
         ServerPlayer *erzhang = room->findPlayerBySkillName(objectName());
         ServerPlayer *current = room->getCurrent();
         CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
+
+        if((move->reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) != CardMoveReason::S_REASON_DISCARD)
+            return false;
 
         if(player != move->from || erzhang == NULL || erzhang == current)
             return false;

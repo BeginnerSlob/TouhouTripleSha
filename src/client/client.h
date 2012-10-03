@@ -77,11 +77,11 @@ public:
     void kick(const QString &to_kick);
     bool save(const QString &filename) const;
     QList<QString> getRecords() const;
+    QString getReplayPath() const;
     void setLines(const QString &skill_name);
     QString getSkillLine() const;
     Replayer *getReplayer() const;
     QString getPlayerName(const QString &str);
-    QString getPattern() const;
     QString getSkillNameToInvoke() const;    
 
     QTextDocument *getLinesDoc() const;
@@ -102,6 +102,7 @@ public:
     void activate(const Json::Value &playerId);
     void startGame(const QString &);
     void hpChange(const QString &change_str);
+    void maxhpChange(const QString &change_str);
     void resetPiles(const QString &);
     void setPileNumber(const QString &pile_num);
     void gameOver(const Json::Value &);
@@ -237,7 +238,6 @@ private:
     QTextDocument *lines_doc, *prompt_doc;
     int pile_num;
     QString skill_title, skill_line;
-    QString card_pattern;
     QString skill_to_invoke;
 
     unsigned int _m_lastServerSerial;
@@ -281,6 +281,7 @@ signals:
     
     void seats_arranged(const QList<const ClientPlayer*> &seats);
     void hp_changed(const QString &who, int delta, DamageStruct::Nature nature, bool losthp);
+    void maxhp_changed(const QString &who, int delta);
     void status_changed(Client::Status oldStatus, Client::Status newStatus);
     void avatars_hiden();
     void pile_reset();

@@ -172,9 +172,20 @@ QWidget *ServerDialog::createAdvancedTab(){
     free_assign_self_checkbox->setEnabled(free_assign_checkbox->isChecked());
     connect(free_assign_checkbox,SIGNAL(toggled(bool)), free_assign_self_checkbox, SLOT(setEnabled(bool)));
 
+    without_lordskill_checkbox = new QCheckBox(tr("Without Lordskill"));
+    without_lordskill_checkbox->setChecked(Config.value("WithoutLordskill", false).toBool());
+
     maxchoice_spinbox = new QSpinBox;
     maxchoice_spinbox->setRange(3, 10);
     maxchoice_spinbox->setValue(Config.value("MaxChoice", 5).toInt());
+
+    lord_maxchoice_spinbox = new QSpinBox;
+    lord_maxchoice_spinbox->setRange(-1, 10);
+    lord_maxchoice_spinbox->setValue(Config.value("LordMaxChoice", -1).toInt());
+
+    nonlord_maxchoice_spinbox = new QSpinBox;
+    nonlord_maxchoice_spinbox->setRange(0, 10);
+    nonlord_maxchoice_spinbox->setValue(Config.value("NonLordMaxChoice", 2).toInt());
 
     forbid_same_ip_checkbox = new QCheckBox(tr("Forbid same IP with multiple connection"));
     forbid_same_ip_checkbox->setChecked(Config.ForbidSIMC);
@@ -182,13 +193,13 @@ QWidget *ServerDialog::createAdvancedTab(){
     disable_chat_checkbox = new QCheckBox(tr("Disable chat"));
     disable_chat_checkbox->setChecked(Config.DisableChat);
 
-    second_general_checkbox = new QCheckBox(tr("Enable second general"));
+    //second_general_checkbox = new QCheckBox(tr("Enable second general"));
 
     scene_checkbox  = new QCheckBox(tr("Enable Scene"));
 
     scene_checkbox->setChecked(Config.EnableScene);	//changjing
 
-    same_checkbox  = new QCheckBox(tr("Enable Same"));
+    /*same_checkbox  = new QCheckBox(tr("Enable Same"));
     same_checkbox->setChecked(Config.EnableSame);
 
     max_hp_label = new QLabel(tr("Max HP scheme"));
@@ -208,6 +219,10 @@ QWidget *ServerDialog::createAdvancedTab(){
     hegemony_checkbox->setChecked(Config.EnableHegemony);
     hegemony_checkbox->setEnabled(basara_checkbox->isChecked());
     connect(basara_checkbox,SIGNAL(toggled(bool)),hegemony_checkbox, SLOT(setEnabled(bool)));
+
+    hegemony_maxchoice_spinbox = new QSpinBox;
+    hegemony_maxchoice_spinbox->setRange(5, 10);
+    hegemony_maxchoice_spinbox->setValue(Config.value("HegemonyMaxChoice", 7).toInt());*/
 
     announce_ip_checkbox = new QCheckBox(tr("Annouce my IP in WAN"));
     announce_ip_checkbox->setChecked(Config.AnnounceIP);
@@ -235,11 +250,15 @@ QWidget *ServerDialog::createAdvancedTab(){
     layout->addWidget(disable_chat_checkbox);
     layout->addLayout(HLay(free_choose_checkbox, free_assign_checkbox));
     layout->addWidget(free_assign_self_checkbox);
+    layout->addWidget(without_lordskill_checkbox);
     layout->addLayout(HLay(new QLabel(tr("Upperlimit for general")), maxchoice_spinbox));
-    layout->addWidget(second_general_checkbox);
-    layout->addLayout(HLay(max_hp_label, max_hp_scheme_ComboBox));
-    layout->addLayout(HLay(basara_checkbox, hegemony_checkbox));
-    layout->addLayout(HLay(scene_checkbox, same_checkbox));
+    layout->addLayout(HLay(new QLabel(tr("Upperlimit for lord")), lord_maxchoice_spinbox));
+    layout->addLayout(HLay(new QLabel(tr("Upperlimit for non-lord")), nonlord_maxchoice_spinbox));
+    //layout->addWidget(second_general_checkbox);
+    //layout->addLayout(HLay(max_hp_label, max_hp_scheme_ComboBox));
+    //layout->addLayout(HLay(basara_checkbox, hegemony_checkbox));
+    //layout->addLayout(HLay(new QLabel(tr("Upperlimit for hegemony")), hegemony_maxchoice_spinbox));
+    //layout->addLayout(HLay(scene_checkbox, same_checkbox));
     layout->addWidget(announce_ip_checkbox);
     layout->addLayout(HLay(new QLabel(tr("Address")), address_edit));
     layout->addWidget(detect_button);
@@ -249,10 +268,10 @@ QWidget *ServerDialog::createAdvancedTab(){
     QWidget *widget = new QWidget;
     widget->setLayout(layout);
 
-    max_hp_label->setVisible(Config.Enable2ndGeneral);
-    connect(second_general_checkbox, SIGNAL(toggled(bool)), max_hp_label, SLOT(setVisible(bool)));
-    max_hp_scheme_ComboBox->setVisible(Config.Enable2ndGeneral);
-    connect(second_general_checkbox, SIGNAL(toggled(bool)), max_hp_scheme_ComboBox, SLOT(setVisible(bool)));
+    //max_hp_label->setVisible(Config.Enable2ndGeneral);
+    //connect(second_general_checkbox, SIGNAL(toggled(bool)), max_hp_label, SLOT(setVisible(bool)));
+    //max_hp_scheme_ComboBox->setVisible(Config.Enable2ndGeneral);
+    //connect(second_general_checkbox, SIGNAL(toggled(bool)), max_hp_scheme_ComboBox, SLOT(setVisible(bool)));
 
     return widget;
 }
@@ -298,22 +317,22 @@ void ServerDialog::updateButtonEnablility(QAbstractButton *button)
             || button->objectName().contains("1v1")
             || button->objectName().contains("1v3"))
     {
-        basara_checkbox->setChecked(false);
-        basara_checkbox->setEnabled(false);
+        //basara_checkbox->setChecked(false);
+        //basara_checkbox->setEnabled(false);
     }
     else
     {
-        basara_checkbox->setEnabled(true);
+        //basara_checkbox->setEnabled(true);
     }
 
     if(button->objectName().contains("mini")){
         mini_scene_button->setEnabled(true);
-        second_general_checkbox->setChecked(false);
-        second_general_checkbox->setEnabled(false);
+        //second_general_checkbox->setChecked(false);
+        //second_general_checkbox->setEnabled(false);
     }
     else
     {
-        second_general_checkbox->setEnabled(true);
+        //second_general_checkbox->setEnabled(true);
         mini_scene_button->setEnabled(false);
     }
 }
@@ -579,7 +598,7 @@ QGroupBox *ServerDialog::createGameModeBox(){
 
     {
         // add scenario modes
-        QRadioButton *scenario_button = new QRadioButton(tr("Scenario mode"));
+        /*QRadioButton *scenario_button = new QRadioButton(tr("Scenario mode"));
         scenario_button->setObjectName("scenario");
         mode_group->addButton(scenario_button);
 
@@ -599,7 +618,7 @@ QGroupBox *ServerDialog::createGameModeBox(){
                 scenario_button->setChecked(true);
                 scenario_ComboBox->setCurrentIndex(index);
             }
-        }
+        }*/
         //mini scenes
         QRadioButton *mini_scenes = new QRadioButton(tr("Mini Scenes"));
         mini_scenes->setObjectName("mini");
@@ -636,7 +655,7 @@ QGroupBox *ServerDialog::createGameModeBox(){
                                           mode_group->checkedButton()->objectName() == "mini" :
                                           false);
 
-        item_list << HLay(scenario_button, scenario_ComboBox);
+        //item_list << HLay(scenario_button, scenario_ComboBox);
         item_list << HLay(mini_scenes, mini_scene_ComboBox);
         item_list << HLay(mini_scenes, mini_scene_button);
     }
@@ -647,7 +666,7 @@ QGroupBox *ServerDialog::createGameModeBox(){
     for(int i = 0; i < item_list.length(); i++){
         QObject *item = item_list.at(i);
 
-        QVBoxLayout *side = i < item_list.length()/2 - 2 ? left : right;
+        QVBoxLayout *side = i < item_list.length()/2 ? left : right;
 
         if(item->isWidgetType()){
             QWidget *widget = qobject_cast<QWidget *>(item);
@@ -863,12 +882,12 @@ bool ServerDialog::config(){
     Config.FreeAssignSelf = free_assign_self_checkbox->isChecked() && free_assign_checkbox->isEnabled();
     Config.ForbidSIMC = forbid_same_ip_checkbox->isChecked();
     Config.DisableChat = disable_chat_checkbox->isChecked();
-    Config.Enable2ndGeneral = second_general_checkbox->isChecked();
+    //Config.Enable2ndGeneral = second_general_checkbox->isChecked();
     Config.EnableScene = scene_checkbox->isChecked();		//changjing
-    Config.EnableSame = same_checkbox->isChecked();
-    Config.EnableBasara= basara_checkbox->isChecked() && basara_checkbox->isEnabled();
-    Config.EnableHegemony = hegemony_checkbox->isChecked() && hegemony_checkbox->isEnabled();
-    Config.MaxHpScheme = max_hp_scheme_ComboBox->currentIndex();
+    //Config.EnableSame = same_checkbox->isChecked();
+    //Config.EnableBasara= basara_checkbox->isChecked() && basara_checkbox->isEnabled();
+    //Config.EnableHegemony = hegemony_checkbox->isChecked() && hegemony_checkbox->isEnabled();
+    //Config.MaxHpScheme = max_hp_scheme_ComboBox->currentIndex();
     Config.AnnounceIP = announce_ip_checkbox->isChecked();
     Config.Address = address_edit->text();
     Config.EnableAI = ai_enable_checkbox->isChecked();
@@ -896,15 +915,19 @@ bool ServerDialog::config(){
     Config.setValue("FreeChoose", Config.FreeChoose);
     Config.setValue("FreeAssign", free_assign_checkbox->isChecked());
     Config.setValue("FreeAssignSelf", Config.FreeAssignSelf);
+    Config.setValue("WithoutLordskill", without_lordskill_checkbox->isChecked());
     Config.setValue("MaxChoice", maxchoice_spinbox->value());
+    Config.setValue("LordMaxChoice", lord_maxchoice_spinbox->value());
+    Config.setValue("NonLordMaxChoice", nonlord_maxchoice_spinbox->value());
     Config.setValue("ForbidSIMC", Config.ForbidSIMC);
     Config.setValue("DisableChat", Config.DisableChat);
-    Config.setValue("Enable2ndGeneral", Config.Enable2ndGeneral);
+    //Config.setValue("Enable2ndGeneral", Config.Enable2ndGeneral);
     Config.setValue("EnableScene", Config.EnableScene);	//changjing
-    Config.setValue("EnableSame", Config.EnableSame);
-    Config.setValue("EnableBasara",Config.EnableBasara);
-    Config.setValue("EnableHegemony",Config.EnableHegemony);
-    Config.setValue("MaxHpScheme", Config.MaxHpScheme);
+    //Config.setValue("EnableSame", Config.EnableSame);
+    //Config.setValue("EnableBasara",Config.EnableBasara);
+    //Config.setValue("EnableHegemony",Config.EnableHegemony);
+    //Config.setValue("HegemonyMaxChoice", hegemony_maxchoice_spinbox->value());
+    //Config.setValue("MaxHpScheme", Config.MaxHpScheme);
     Config.setValue("EnableAI", Config.EnableAI);
     Config.setValue("RolePredictable", role_predictable_checkbox->isChecked());
     Config.setValue("AIChat", ai_chat_checkbox->isChecked());

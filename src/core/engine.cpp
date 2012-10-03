@@ -53,10 +53,10 @@ void Engine::_loadMiniScenarios()
 
 void Engine::_loadModScenarios()
 {
-    addScenario(new GuanduScenario());
-    addScenario(new CoupleScenario());
-    addScenario(new ZombieScenario());
-    addScenario(new ImpasseScenario());
+    //addScenario(new GuanduScenario());
+    //addScenario(new CoupleScenario());
+    //addScenario(new ZombieScenario());
+    //addScenario(new ImpasseScenario());
 }
 
 void Engine::addPackage(const QString &name){
@@ -98,7 +98,7 @@ Engine::Engine()
     modes["05p"] = tr("5 players");
     modes["06p"] = tr("6 players");
     modes["06pd"] = tr("6 players (2 renegades)");
-    modes["06_3v3"] = tr("6 players (3v3)");
+    //modes["06_3v3"] = tr("6 players (3v3)");
     modes["07p"] = tr("7 players");
     modes["08p"] = tr("8 players");
     modes["08pd"] = tr("8 players (2 renegades)");
@@ -318,7 +318,8 @@ void Engine::unregisterRoom() {
     m_mutex.unlock();
 }
 
-QObject* Engine::currentRoomObject() {
+QObject* Engine::currentRoomObject()
+{
     QObject* room = NULL;
     m_mutex.lock();
     room = m_rooms[QThread::currentThread()];
@@ -327,11 +328,28 @@ QObject* Engine::currentRoomObject() {
     return room;
 }
 
-Room* Engine::currentRoom(){
+Room* Engine::currentRoom()
+{
     QObject* roomObject = currentRoomObject();
     Room *room = qobject_cast<Room*>(roomObject);
     Q_ASSERT(room != NULL);
     return room;
+}
+
+RoomState* Engine::currentRoomState()
+{
+    QObject *roomObject = currentRoomObject();
+    Room *room = qobject_cast<Room*>(roomObject);
+    if (room != NULL)
+    {
+        return room->getRoomState();
+    }
+    else
+    {
+        Client *client = qobject_cast<Client*>(roomObject);
+        Q_ASSERT(client != NULL);
+        return client->getRoomState();
+    }
 }
 
 WrappedCard *Engine::getWrappedCard(int cardId) {
@@ -419,7 +437,7 @@ SkillCard *Engine::cloneSkillCard(const QString &name) const{
 }
 
 QString Engine::getVersionNumber() const{
-    return "20120807";
+    return "20120921(0002)";
 }
 
 QString Engine::getVersion() const{
@@ -436,7 +454,7 @@ QString Engine::getVersionName() const{
 }
 
 QString Engine::getMODName() const{
-    return "0.01Beta";
+    return "official";
 }
 
 QStringList Engine::getExtensions() const{
@@ -667,6 +685,14 @@ QStringList Engine::getRandomLords() const{
         lords << alord;
     }
 
+    int lord_num = Config.value("LordMaxChoice", -1).toInt();
+    if (lord_num != -1 && lord_num < lords.length()) {
+        int to_remove = lords.length() - lord_num;
+        for (int i = 0; i < to_remove; i++) {
+            lords.removeAt(qrand() % lords.length());
+        }
+    }
+
     QStringList nonlord_list;
     foreach(QString nonlord, this->nonlord_list){
         const General *general = generals.value(nonlord);
@@ -685,8 +711,10 @@ QStringList Engine::getRandomLords() const{
     qShuffle(nonlord_list);
 
     int i;
-    const static int extra = 2;
-    for(i=0; i< extra; i++)
+    int extra = Config.value("NonLordMaxChoice", 2).toInt();
+    if (lord_num == 0 && extra == 0)
+        extra = 1;
+    for(i = 0; i < extra; i++)
         lords << nonlord_list.at(i);
 
     return lords;
@@ -794,6 +822,16 @@ void Engine::playSkillAudioEffect(const QString &skill_name, int index) const{
 
 const Skill *Engine::getSkill(const QString &skill_name) const{
     return skills.value(skill_name, NULL);
+}
+
+const Skill *Engine::getSkill(const EquipCard *equip) const{
+    const Skill* skill;
+    if (equip == NULL) skill = NULL;
+    else {
+        skill = Sanguosha->getSkill(equip->objectName());
+        if (skill == NULL) skill = equip->getSkill();
+    }
+    return skill;
 }
 
 QStringList Engine::getSkillNames() const{

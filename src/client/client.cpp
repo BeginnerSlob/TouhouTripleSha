@@ -53,8 +53,9 @@ Client::Client(QObject *parent, const QString &filename)
 
     callbacks["startGame"] = &Client::startGame;
     m_callbacks[S_COMMAND_GAME_OVER] = &Client::gameOver;
-
+	
     callbacks["hpChange"] = &Client::hpChange;
+    callbacks["maxhpChange"] = &Client::maxhpChange;
     callbacks["killPlayer"] = &Client::killPlayer;
     callbacks["revivePlayer"] = &Client::revivePlayer;
     m_callbacks[S_COMMAND_SHOW_CARD] = &Client::showCard;
@@ -303,7 +304,10 @@ void Client::processServerPacket(const char *cmd){
             }
         }
         else if (packet.getPacketType() == S_TYPE_REQUEST)
-            processServerRequest(packet);
+        {
+            if (!replayer)
+                processServerRequest(packet);
+        }
     }
     else processObsoleteServerPacket(cmd);
 }
@@ -565,7 +569,7 @@ void Client::onPlayerUseCard(const Card *card, const QList<const Player *> &targ
         //    request(QString("useCard %1->%2").arg(card->toString()).arg(target_names.join("+")));
 
         if(status == Responsing)
-            card_pattern.clear();
+            _m_roomState.setCurrentCardUsePattern(QString());
     }
 
     setStatus(NotActive);
@@ -660,9 +664,28 @@ void Client::hpChange(const QString &change_str){
     emit hp_changed(who, delta, nature, nature_str == "L");
 }
 
+void Client::maxhpChange(const QString &change_str){
+    QRegExp rx("(.+):(-?\\d+)");
+
+    if(!rx.exactMatch(change_str))
+        return;
+
+    QStringList texts = rx.capturedTexts();
+    QString who = texts.at(1);
+    int delta = texts.at(2).toInt();
+
+    emit maxhp_changed(who, delta);
+}
+
 void Client::setStatus(Status status){    
     Status old_status = this->status;
     this->status = status;
+    if (status == Client::Playing)
+        _m_roomState.setCurrentCardUseReason(CardUseStruct::CARD_USE_REASON_PLAY);
+    else if (status == Client::Responsing)
+        _m_roomState.setCurrentCardUseReason(CardUseStruct::CARD_USE_REASON_RESPONSE);
+    else
+        _m_roomState.setCurrentCardUseReason(CardUseStruct::CARD_USE_REASON_UNKNOWN);
     emit status_changed(old_status, status);
 }
 
@@ -699,10 +722,6 @@ QString Client::getPlayerName(const QString &str){
 
     }else
         return Sanguosha->translate(str);
-}
-
-QString Client::getPattern() const{
-    return card_pattern;
 }
 
 QString Client::getSkillNameToInvoke() const{
@@ -755,7 +774,8 @@ QString Client::_processCardPattern(const QString &pattern){
 void Client::_askForCardOrUseCard(const Json::Value &cardUsage){
     if (!cardUsage.isArray() || !cardUsage[0].isString() || !cardUsage[1].isString())
         return;
-    card_pattern = toQString(cardUsage[0]);
+    QString card_pattern = toQString(cardUsage[0]);
+    _m_roomState.setCurrentCardUsePattern(card_pattern);
     QStringList texts = toQString(cardUsage[1]).split(":");
     int index = -1;
     if(cardUsage[2].isInt())
@@ -871,7 +891,7 @@ void Client::askForNullification(const Json::Value &arg){
                             .arg(Sanguosha->translate(target_player->getGeneralName())));
     }
 
-    card_pattern = "nullification";
+    _m_roomState.setCurrentCardUsePattern("nullification");
     m_isDiscardActionRefusable = true;
     m_isUseCard = false;
 
@@ -955,7 +975,7 @@ void Client::onPlayerResponseCard(const Card *card){
         replyToServer(S_COMMAND_RESPONSE_CARD, Json::Value::null);
         //request("responseCard .");
 
-    card_pattern.clear();
+    _m_roomState.setCurrentCardUsePattern(QString());
     setStatus(NotActive);
 }
 
@@ -985,6 +1005,13 @@ QList<QString> Client::getRecords() const{
         return recorder->getRecords();
     else
         return QList<QString>();
+}
+
+QString Client::getReplayPath() const{
+    if(replayer)
+        return replayer->getPath();
+    else
+        return QString();
 }
 
 void Client::setLines(const QString &filename){
@@ -1074,7 +1101,8 @@ void Client::askForDiscard(const Json::Value &req){
 }
 
 void Client::askForExchange(const Json::Value &exchange_str){
-    if (!exchange_str.isArray() || !exchange_str[0].isInt() || !exchange_str[1].isBool() || !exchange_str[2].isString())
+    if (!exchange_str.isArray() || !exchange_str[0].isInt() || !exchange_str[1].isBool()
+        || !exchange_str[2].isString() || !exchange_str[3].isBool())
     {
         QMessageBox::warning(NULL, tr("Warning"), tr("Exchange string is not well formatted!"));
         return;
@@ -1084,7 +1112,7 @@ void Client::askForExchange(const Json::Value &exchange_str){
     m_canDiscardEquip = exchange_str[1].asBool();
     QString prompt = exchange_str[2].asCString();
     min_num = discard_num;
-    m_isDiscardActionRefusable = false;
+    m_isDiscardActionRefusable = exchange_str[3].asBool();
 
     if(prompt.isEmpty())
         prompt = tr("Please give %1 cards to exchange").arg(discard_num);
@@ -1100,6 +1128,7 @@ void Client::askForExchange(const Json::Value &exchange_str){
 }
 
 void Client::gameOver(const Json::Value &arg){
+    disconnectFromHost();
     m_isGameOver = true;
     setStatus(Client::NotActive);
     QString winner = toQString(arg[0]);
@@ -1337,13 +1366,14 @@ void Client::askForSinglePeach(const Json::Value &arg){
     ClientPlayer *dying = getPlayer(toQString(arg[0]));
     int peaches = arg[1].asInt();
 
+    // @todo: anti-cheating of askForSinglePeach is not done yet!!!
     if(dying == Self){
         prompt_doc->setHtml(tr("You are dying, please provide %1 peach(es)(or analeptic) to save yourself").arg(peaches));
-        card_pattern = "peach+analeptic";
+        _m_roomState.setCurrentCardUsePattern("peach+analeptic");
     }else{
         QString dying_general = Sanguosha->translate(dying->getGeneralName());
         prompt_doc->setHtml(tr("%1 is dying, please provide %2 peach(es) to save him").arg(dying_general).arg(peaches));
-        card_pattern = "peach";
+        _m_roomState.setCurrentCardUsePattern("peach");
     }
 
     m_isDiscardActionRefusable = true;
@@ -1356,7 +1386,7 @@ void Client::askForCardShow(const Json::Value &requestor){
     QString name = Sanguosha->translate(toQString(requestor));
     prompt_doc->setHtml(tr("%1 request you to show one hand card").arg(name));
 
-    card_pattern = ".";
+    _m_roomState.setCurrentCardUsePattern(".");
     m_isUseCard = false;
     setStatus(AskForShowOrPindian);
 }
@@ -1476,7 +1506,7 @@ void Client::askForPindian(const Json::Value &ask_str){
         prompt_doc->setHtml(tr("%1 ask for you to play a card to pindian").arg(requestor));
     }
     m_isUseCard = false;
-    card_pattern = ".";
+    _m_roomState.setCurrentCardUsePattern(".");
     setStatus(AskForShowOrPindian);
 }
 
@@ -1488,7 +1518,7 @@ void Client::askForYiji(const Json::Value &card_list){
     QStringList card_str;
     for (unsigned int i = 0; i < card_list.size(); i++)
         card_str << QString::number(card_list[i].asInt());       
-    card_pattern = card_str.join("+");
+    _m_roomState.setCurrentCardUsePattern(card_str.join("+"));
     setStatus(AskForYiji);
 }
 

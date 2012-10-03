@@ -10,7 +10,7 @@ GongxinCard::GongxinCard(){
 }
 
 bool GongxinCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self ; 
+    return targets.isEmpty(); 
 }
 
 void GongxinCard::onEffect(const CardEffectStruct &effect) const{
@@ -85,8 +85,10 @@ public:
         JudgeStruct judge;
         judge.pattern = QRegExp("(Peach|GodSalvation):(.*):(.*)");
         judge.good = true;
+        judge.negative = true;
         judge.reason = "wuhun";
         judge.who = foe;
+        judge.play_animation = true;
 
         room->judge(judge);
 
@@ -195,6 +197,7 @@ void YeyanCard::damage(ServerPlayer *shenzhouyu, ServerPlayer *target, int point
 
 GreatYeyanCard::GreatYeyanCard(){
     mute = true;
+    m_skillName = "yeyan";
 }
 
 bool GreatYeyanCard::targetFilter(const QList<const Player *> &targets,
@@ -272,6 +275,7 @@ void GreatYeyanCard::use(Room *room, ServerPlayer *shenzhouyu, QList<ServerPlaye
 
 SmallYeyanCard::SmallYeyanCard(){
     mute = true;
+    m_skillName = "yeyan";
 }
 
 bool SmallYeyanCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
@@ -1054,7 +1058,7 @@ class Jilve: public TriggerSkill{
 public:
     Jilve():TriggerSkill("jilve"){
         events << CardUsed << CardResponsed // jizhi
-                << AskForRetrial // guicai
+                << AskForRetrial // tiansuo
                 << Damaged; // fangzhu
 
         view_as_skill = new JilveViewAsSkill;
@@ -1080,10 +1084,10 @@ public:
                 player->drawCards(1);
             }
         }else if(triggerEvent == AskForRetrial){
-            const TriggerSkill *guicai = Sanguosha->getTriggerSkill("guicai");
-            if(guicai && !player->isKongcheng() && !player->hasSkill("guicai") && player->askForSkillInvoke("jilve", data)){
+            const TriggerSkill *tiansuo = Sanguosha->getTriggerSkill("tiansuo");
+            if(tiansuo && !player->isKongcheng() && !player->hasSkill("tiansuo") && player->askForSkillInvoke("jilve", data)){
                 player->loseMark("@bear");
-                guicai->trigger(triggerEvent, room, player, data);
+                tiansuo->trigger(triggerEvent, room, player, data);
             }
         }else if(triggerEvent == Damaged){
             const TriggerSkill *fangzhu = Sanguosha->getTriggerSkill("fangzhu");
@@ -1274,8 +1278,8 @@ public:
             return card->getSuit() == suit;
         }
 
-        switch(ClientInstance->getStatus()){
-        case Client::Playing:{
+        switch(Sanguosha->currentRoomState()->getCurrentCardUseReason()){
+        case CardUseStruct::CARD_USE_REASON_PLAY:{
                 if(Self->isWounded() && card->getSuit() == Card::Heart)
                     return true;
                 else if(Slash::IsAvailable(Self) && card->getSuit() == Card::Diamond)
@@ -1284,8 +1288,9 @@ public:
                     return false;
             }
 
-        case Client::Responsing:{
-                QString pattern = ClientInstance->getPattern();
+        case CardUseStruct::CARD_USE_REASON_RESPONSE: 
+            {
+                QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
                 if(pattern == "jink")
                     return card->getSuit() == Card::Club;
                 else if(pattern == "nullification")

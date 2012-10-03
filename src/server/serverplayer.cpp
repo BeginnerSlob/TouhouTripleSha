@@ -528,9 +528,6 @@ bool ServerPlayer::pindian(ServerPlayer *target, const QString &reason, const Ca
     pindian_struct.reason = reason;
 
     PindianStar pindian_star = &pindian_struct;
-    QVariant data = QVariant::fromValue(pindian_star);
-    room->getThread()->trigger(Pindian, room, this, data);
-
     bool success = pindian_star->from_card->getNumber() > pindian_star->to_card->getNumber();
     log.type = success ? "#PindianSuccess" : "#PindianFailure";
     log.from = this;
@@ -543,6 +540,9 @@ bool ServerPlayer::pindian(ServerPlayer *target, const QString &reason, const Ca
         room->setEmotion(this, "success");
     else
         room->setEmotion(this, "no-success");
+
+    QVariant data = QVariant::fromValue(pindian_star);
+    room->getThread()->trigger(Pindian, room, this, data);
 
     return success;
 }
@@ -684,8 +684,8 @@ void ServerPlayer::skip(Player::Phase phase){
 void ServerPlayer::insertPhase(Player::Phase phase){
     PhaseStruct _phase;
     _phase.phase = phase;
-    phases.insert(_m_phases_index + 1, phase);
-    _m_phases_state.insert(_m_phases_index + 1, _phase);
+    phases.insert(_m_phases_index, phase);
+    _m_phases_state.insert(_m_phases_index, _phase);
 }
 
 bool ServerPlayer::isSkipped(Player::Phase phase){
@@ -980,7 +980,7 @@ void ServerPlayer::gainAnExtraTurn(ServerPlayer *clearflag){
     ServerPlayer *current = room->getCurrent();
 
     room->setCurrent(this);
-    room->removeTag("Zhichi");
+
     if(clearflag)
         clearflag->clearFlags();
     room->setPlayerFlag(this, "isExtraTurn");

@@ -1,6 +1,6 @@
 #include "zombie-scenario.h"
 #include "engine.h"
-#include "standard-skillcards.h"
+#include "standard-generals.h"
 #include "clientplayer.h"
 #include "client.h"
 #include "carditem.h"
@@ -336,7 +336,7 @@ public:
     }
 };
 
-ZombieScenario::ZombieScenario()
+/*ZombieScenario::ZombieScenario()
     :Scenario("zombie_mode")
 {
     rule = new ZombieRule(this);
@@ -353,5 +353,5 @@ ZombieScenario::ZombieScenario()
 
     addMetaObject<PeachingCard>();
     addMetaObject<GanranEquip>();
-}
+}*/
 

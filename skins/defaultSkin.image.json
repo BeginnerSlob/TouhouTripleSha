@@ -22,6 +22,7 @@
 "dashboardRightFrame": "image/system/dashboard-avatar.png",
 "dashboardMiddleFrame": "image/system/dashboard-hand.png",
 "dashboardHandCardNum": "image/system/handcard.png",
+"dashboardHandCardNumF": "image/system/handcardf.png",
 "dashboardFaceTurnedMask": "image/generals/big/faceturned.png",
 "dashboardBlankGeneral": "image/generals/small/blank.png",
 "dashboardChain": ["image/system/chain.png",[0, 0, 134, 19]],
@@ -51,8 +52,8 @@
 
 // general default directories
 "playerGeneralIcon-default-0": "image/generals/tiny/%1.png",
-"playerGeneralIcon-default-1": ["image/generals/avatar/%1.png",[28, 46, 220, 132], [148, 89]],
-"playerGeneralIcon-default-2": ["image/generals/avatar/%1.png",[71, 28, 145, 145], [134, 134]],
+"playerGeneralIcon-default-1": ["image/generals/avatar/%1.png",[28, 42, 220, 132], [148, 89]],
+"playerGeneralIcon-default-2": ["image/generals/avatar/%1.png",[62, 44, 154, 154], [134, 134]],
 "playerGeneralIcon-default-4": ["image/generals/avatar/%1.png",[53, 20, 126, 178], [63, 89]], //secondary avatar for photo
 "playerGeneralIcon-default-5": ["image/generals/avatar/%1.png",[71, 28, 124, 134], [61, 70]],  //small avatar for dashboard
 "playerGeneralIcon-default-6": ["image/generals/avatar/%1.png",[60, 30, 208, 125], [148, 89]],  	//primary avatar for photo
@@ -63,6 +64,8 @@
 
 "generalCircleMask-0": "image/generals/double-general/circle-photo-mask.png",
 "generalCircleMask-1": ["image/generals/double-general/circle-dashboard-mask.png", [73, 0, 61, 70]],
+
+"playerNameItem-default": "image/generals/name/%1.png", 
 
 // generals defined later will override default path and also previously defined generals
 "playerGeneralIcon-anjiang-2": "image/generals/big/anjiang.png", 
@@ -205,7 +208,6 @@
 "handCardMainPhoto-default": "image/card/%1.jpg",
 "handCardMainPhoto-unknown": "image/system/card-back.png",
 
-"handCardMainPhoto-noszhangchunhua": "image/card/zhangchunhua.jpg",
 
 "handCardNumber-black-default": "image/system/black/%1.png",
 "handCardNumber-red-default": "image/system/red/%1.png",

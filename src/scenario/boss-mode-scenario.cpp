@@ -1,6 +1,6 @@
 #include "boss-mode-scenario.h"
 #include "engine.h"
-#include "standard-skillcards.h"
+#include "standard-generals.h"
 #include "clientplayer.h"
 #include "client.h"
 #include "carditem.h"
@@ -265,7 +265,7 @@ public:
 
         dummy_skills << "xinsheng" << "wuhu" << "kuangfeng" << "dawu" << "wumou" << "wuqian" 
                      << "shenfen" << "renjie" << "weidi" << "danji" << "shiyong" << "zhiba"
-                     << "super_guanxing" << "yihun" << "shihun" << "chongzhen" << "tongxin"
+                     << "super_guanxing" << "chongzhen" << "tongxin"
                      << "liqian" << "shenjun" << "xunzhi" << "shenli" << "yishe" << "yitian";
                      
         available_wake_skills << "hunzi" << "zhiji" << "kegou";

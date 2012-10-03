@@ -159,12 +159,6 @@
     <ClCompile Include="..\..\src\package\god.cpp">
       <Filter>package</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\package\lingpackage.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\package\joypackage.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\package\maneuvering.cpp">
       <Filter>package</Filter>
     </ClCompile>
@@ -189,9 +183,6 @@
     <ClCompile Include="..\..\src\package\standard-generals.cpp">
       <Filter>package</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\package\standard-skillcards.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\package\standard.cpp">
       <Filter>package</Filter>
     </ClCompile>
@@ -199,12 +190,6 @@
       <Filter>package</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\package\wind.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\package\wisdompackage.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\package\yitianpackage.cpp">
       <Filter>package</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\package\yjcm-package.cpp">
@@ -405,15 +390,6 @@
     <ClCompile Include="..\..\src\ui\GenericCardContainerUI.cpp">
       <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="Debug\moc_zombie-scenario.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_zombie-scenario.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\scenario\zombie-scenario.cpp">
-      <Filter>scenario</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\core\record-analysis.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
@@ -421,6 +397,12 @@
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="Release\moc_record-analysis.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_standard-generals.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_standard-generals.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
   </ItemGroup>
@@ -536,19 +518,10 @@
     <CustomBuild Include="..\..\src\package\standard-equips.h">
       <Filter>package</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\src\package\standard-skillcards.h">
-      <Filter>package</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\src\package\standard.h">
       <Filter>package</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\wind.h">
-      <Filter>package</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\src\package\wisdompackage.h">
-      <Filter>package</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\src\package\yitianpackage.h">
       <Filter>package</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\yjcm-package.h">
@@ -566,13 +539,7 @@
     <CustomBuild Include="..\..\src\package\maneuvering.h">
       <Filter>package</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\src\package\joypackage.h">
-      <Filter>package</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\src\package\god.h">
-      <Filter>package</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\src\package\lingpackage.h">
       <Filter>package</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\firepackage.h">
@@ -683,11 +650,11 @@
     <CustomBuild Include="..\..\src\ui\GenericCardContainerUI.h">
       <Filter>ui</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\src\scenario\zombie-scenario.h">
-      <Filter>scenario</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\src\core\record-analysis.h">
       <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\package\standard-generals.h">
+      <Filter>package</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -877,12 +844,6 @@
     <ClCompile Include="release\moc_god.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="debug\moc_lingpackage.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="release\moc_lingpackage.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="debug\moc_guandu-scenario.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
@@ -899,12 +860,6 @@
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="release\moc_indicatoritem.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="debug\moc_joypackage.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="release\moc_joypackage.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="debug\moc_lua-wrapper.cpp">
@@ -1099,12 +1054,6 @@
     <ClCompile Include="release\moc_standard-equips.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="debug\moc_standard-skillcards.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="release\moc_standard-skillcards.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="debug\moc_standard.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
@@ -1133,18 +1082,6 @@
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="release\moc_window.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="debug\moc_wisdompackage.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="release\moc_wisdompackage.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="debug\moc_yitianpackage.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="release\moc_yitianpackage.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="debug\moc_yjcm-package.cpp">
@@ -1194,6 +1131,7 @@
     <None Include="..\..\swig\qvariant.i">
       <Filter>Swig Files</Filter>
     </None>
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\src\dialog\cardoverview.ui">

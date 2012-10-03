@@ -1,7 +1,7 @@
 #include "sp-package.h"
 #include "general.h"
 #include "skill.h"
-#include "standard-skillcards.h"
+#include "standard-generals.h"
 #include "carditem.h"
 #include "engine.h"
 #include "maneuvering.h"
@@ -268,37 +268,21 @@ void WeidiCard::onUse(Room *room, const CardUseStruct &card_use) const{
     if(yuanshu->hasLordSkill("jijiang") && room->getLord()->hasLordSkill("jijiang") && Slash::IsAvailable(yuanshu))
         choices << "jijiang";
 
-    if(yuanshu->hasLordSkill("weidai") && room->getLord()->hasLordSkill("weidai") && Analeptic::IsAvailable(yuanshu))
-        choices << "weidai";
-
     if(choices.isEmpty())
         return;
 
-    QString choice;
-    if(choices.length() == 1)
-        choice = choices.first();
-    else
-        choice = room->askForChoice(yuanshu, "weidi", "jijiang+weidai");
+    QList<ServerPlayer *> targets;
+    foreach(ServerPlayer* target, room->getOtherPlayers(yuanshu)){
+        if(yuanshu->canSlash(target))
+            targets << target;
+    }
 
-    if(choice == "jijiang"){
-        QList<ServerPlayer *> targets;
-        foreach(ServerPlayer* target, room->getOtherPlayers(yuanshu)){
-            if(yuanshu->canSlash(target))
-                targets << target;
-        }
-
-        ServerPlayer* target = room->askForPlayerChosen(yuanshu, targets, "jijiang");
-        if(target){
-            CardUseStruct use;
-            use.card = new JijiangCard;
-            use.from = yuanshu;
-            use.to << target;
-            room->useCard(use);
-        }
-    }else{
+    ServerPlayer* target = room->askForPlayerChosen(yuanshu, targets, "jijiang");
+    if(target){
         CardUseStruct use;
-        use.card = new WeidaiCard;
+        use.card = new JijiangCard;
         use.from = yuanshu;
+        use.to << target;
         room->useCard(use);
     }
 }
@@ -309,8 +293,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return (player->hasLordSkill("jijiang") && Slash::IsAvailable(player))
-                ||(player->hasLordSkill("weidai") && Analeptic::IsAvailable(player));
+        return player->hasLordSkill("jijiang") && Slash::IsAvailable(player);
     }
 
     virtual const Card *viewAs() const{
@@ -351,27 +334,28 @@ public:
 class YicongEffect: public TriggerSkill{
 public:
     YicongEffect():TriggerSkill("#yicong_effect"){
-        events << DamageDone << HpLost << HpRecover;
+        events << PostHpReduced << HpRecover;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         int hp = player->getHp();
         int index = 0;
-        if (triggerEvent == DamageDone){
-            DamageStruct damage = data.value<DamageStruct>();
-            if (hp > 2 && hp - damage.damage <= 2)
-                index = 2;
-        }
-        else if (triggerEvent == HpLost){
-            int lost = data.toInt();
-            if (hp > 2 && hp - lost <= 2)
-                index = 2;
-        }
-        else if (triggerEvent == HpRecover){
+        if (triggerEvent == HpRecover){
             RecoverStruct recover = data.value<RecoverStruct>();
             if (hp <= 2 && hp + recover.recover > 2)
                 index = 1;
         }
+        else if (triggerEvent == PostHpReduced){
+            int reduce = 0;
+            if (data.canConvert<DamageStruct>()) {
+                DamageStruct damage = data.value<DamageStruct>();
+                reduce = damage.damage;
+            } else
+                reduce = data.toInt();
+            if (hp <= 2 && hp + reduce > 2)
+                index = 2;
+        }
+
 
         if (index){
             room->broadcastSkillInvoke("yicong", index);
@@ -409,7 +393,7 @@ public:
             QString pattern = QString(".%1").arg(suit_str.at(0).toUpper());
             QString prompt = QString("@xiuluo:::%1").arg(suit_str);
             if(room->askForCard(target, pattern, prompt, QVariant(), CardDiscarded)){
-                room->throwCard(card, target);
+                room->throwCard(card, NULL);
                 once_success = true;
             }
         }while(!target->getCards("j").isEmpty() && once_success);
