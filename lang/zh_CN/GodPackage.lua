@@ -172,7 +172,7 @@ return {
 	["$renjie"] = "韬光养晦，静待时机。",
 	["$baiyin"] = "是可忍，孰不可忍！",
 	["$jilve1"] = "天意如何，我命由我。", -- tiansuo
-	["$jilve2"] = "远逐敌雠，拔除异己。", -- fangzhu
+	["$jilve2"] = "远逐敌雠，拔除异己。", -- bisuo
 	["$jilve3"] = "心狠手毒，方能成事。", -- wansha
 	["$jilve4"] = "且暂思量，再作打算。", -- zhiheng
 	["$jilve5"] = "此计即成，彼计亦得。", -- jizhi

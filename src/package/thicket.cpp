@@ -9,190 +9,6 @@
 #include "engine.h"
 #include "general.h"
 
-class Xingshang: public TriggerSkill{
-public:
-    Xingshang():TriggerSkill("xingshang"){
-        events << Death;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && !target->hasSkill(objectName());
-    }
-
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if(player->isNude())
-            return false;
-        QList<ServerPlayer *> caopis = room->findPlayersBySkillName(objectName());
-        foreach(ServerPlayer *caopi, caopis){
-            if(caopi->isAlive() && room->askForSkillInvoke(caopi, objectName(), data)){
-                if(player->isCaoCao()){
-                    room->broadcastSkillInvoke(objectName(), 3);
-                }else if(player->isMale())
-                    room->broadcastSkillInvoke(objectName(), 1);
-                else
-                    room->broadcastSkillInvoke(objectName(), 2);
-
-                caopi->obtainCard(player->getWeapon());
-                caopi->obtainCard(player->getArmor());
-                caopi->obtainCard(player->getDefensiveHorse());
-                caopi->obtainCard(player->getOffensiveHorse());
-
-                DummyCard *all_cards = player->wholeHandCards();
-                if(all_cards){
-                    CardMoveReason reason(CardMoveReason::S_REASON_RECYCLE, caopi->objectName());
-                    room->obtainCard(caopi, all_cards, reason, false);
-                    delete all_cards;
-                }
-                break;
-            }
-        }
-        return false;
-    }
-};
-
-FangzhuCard::FangzhuCard(){
-    mute = true;
-}
-
-void FangzhuCard::onEffect(const CardEffectStruct &effect) const{
-    int x = effect.from->getLostHp();
-
-    effect.to->drawCards(x);
-
-    Room *room = effect.to->getRoom();
-
-    int index;
-    if(effect.to->faceUp()){
-        QString to_exile = effect.to->getGeneralName();
-        bool is_brother = to_exile == "caozhi" || to_exile == "caochong";
-        index = is_brother ? 3 : 1;
-    }else
-        index = 2;
-    if(!effect.from->hasSkill("jilve"))
-        room->broadcastSkillInvoke("fangzhu", index);
-
-    effect.to->turnOver();
-}
-
-class FangzhuViewAsSkill: public ZeroCardViewAsSkill{
-public:
-    FangzhuViewAsSkill():ZeroCardViewAsSkill("fangzhu"){
-
-    }
-
-    virtual bool isEnabledAtPlay(const Player *) const{
-        return false;
-    }
-
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
-        return pattern == "@@fangzhu";
-    }
-
-    virtual const Card *viewAs() const{
-        return new FangzhuCard;
-    }
-};
-
-class Fangzhu: public MasochismSkill{
-public:
-    Fangzhu():MasochismSkill("fangzhu"){
-        view_as_skill = new FangzhuViewAsSkill;
-    }
-
-    virtual void onDamaged(ServerPlayer *caopi, const DamageStruct &damage) const{
-        Room *room = caopi->getRoom();
-        room->askForUseCard(caopi, "@@fangzhu", "@fangzhu");
-    }
-};
-
-class DummyViewAsSkill: public ViewAsSkill{
-public:
-    DummyViewAsSkill(): ViewAsSkill(""){
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &, const Card *) const{
-        return false;
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &) const{
-        return NULL;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *) const{
-        return false;
-    }
-};
-
-class Songwei: public TriggerSkill{
-public:
-    Songwei():TriggerSkill("songwei$"){
-        events << FinishJudge;
-        view_as_skill = new DummyViewAsSkill;
-    }
-
-    virtual int getPriority() const{
-        return 2;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->getKingdom() == "wei";
-    }
-
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        JudgeStar judge = data.value<JudgeStar>();
-        CardStar card = judge->card;
-
-        if(card->isBlack()){
-            QList<ServerPlayer *> caopis;
-            foreach(ServerPlayer *p, room->getOtherPlayers(player)){
-                if(p->hasLordSkill(objectName()))
-                    caopis << p;
-            }
-            
-            while(!caopis.isEmpty()){
-                if(player->askForSkillInvoke(objectName())){
-                    ServerPlayer *caopi = room->askForPlayerChosen(player, caopis, objectName());
-                    if(player->isMale())
-                        room->broadcastSkillInvoke(objectName(), 1);
-                    else
-                        room->broadcastSkillInvoke(objectName(), 2);
-                    caopi->drawCards(1);
-                    caopi->setFlags("songweiused");      //for AI
-                    caopis.removeOne(caopi);
-                }else
-                    break;
-            }
-                    
-            foreach(ServerPlayer *caopi, room->getAllPlayers()){        //for AI
-                if(caopi->hasFlag("songweiused"))
-                    caopi->setFlags("-songweiused");
-            }
-        }
-
-        return false;
-    }
-};
-
-class Duanliang: public OneCardViewAsSkill{
-public:
-    Duanliang():OneCardViewAsSkill("duanliang"){
-
-    }
-
-    virtual bool viewFilter(const Card *card) const{
-        return card->isBlack() && !card->isKindOf("TrickCard");
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const{
-
-        SupplyShortage *shortage = new SupplyShortage(originalCard->getSuit(), originalCard->getNumber());
-        shortage->setSkillName(objectName());
-        shortage->addSubcard(originalCard);
-
-        return shortage;
-    }
-};
-
 class SavageAssaultAvoid: public TriggerSkill{
 public:
     SavageAssaultAvoid(const QString &avoid_skill)
@@ -903,7 +719,7 @@ class Baonue: public TriggerSkill{
 public:
     Baonue():TriggerSkill("baonue$"){
         events << Damage << PreHpReduced;
-        view_as_skill = new DummyViewAsSkill;
+        //view_as_skill = new DummyViewAsSkill;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
@@ -959,7 +775,7 @@ public:
 ThicketPackage::ThicketPackage()
     :Package("thicket")
 {
-    General *xuhuang, *caopi, *menghuo, *zhurong, *sunjian, *lusu, *dongzhuo, *jiaxu;
+    /*General *xuhuang, *caopi, *menghuo, *zhurong, *sunjian, *lusu, *dongzhuo, *jiaxu;
 
     xuhuang = new General(this, "xuhuang", "wei");
     xuhuang->addSkill(new Duanliang);
@@ -1009,8 +825,7 @@ ThicketPackage::ThicketPackage()
     addMetaObject<DimengCard>();
     addMetaObject<LuanwuCard>();
     addMetaObject<YinghunCard>();
-    addMetaObject<FangzhuCard>();
-    addMetaObject<HaoshiCard>();
+    addMetaObject<HaoshiCard>();*/
 }
 
 ADD_PACKAGE(Thicket)

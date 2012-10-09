@@ -180,9 +180,6 @@
     <ClCompile Include="..\..\src\package\standard-cards.cpp">
       <Filter>package</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\package\standard-generals.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\package\standard.cpp">
       <Filter>package</Filter>
     </ClCompile>
@@ -404,6 +401,9 @@
     </ClCompile>
     <ClCompile Include="Release\moc_standard-generals.cpp">
       <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\package\standard-generals-bloom.cpp">
+      <Filter>package</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

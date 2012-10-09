@@ -100,7 +100,7 @@ Client::Client(QObject *parent, const QString &filename)
     m_interactions[S_COMMAND_ASK_PEACH] = &Client::askForSinglePeach;
     m_interactions[S_COMMAND_SKILL_GUANXING] = &Client::askForGuanxing;
     m_interactions[S_COMMAND_SKILL_GONGXIN] = &Client::askForGongxin;
-    m_interactions[S_COMMAND_SKILL_YIJI] = &Client::askForYiji;
+    m_interactions[S_COMMAND_SKILL_YUMENG] = &Client::askForYumeng;
     m_interactions[S_COMMAND_PLAY_CARD] = &Client::activate;
     m_interactions[S_COMMAND_DISCARD_CARD] = &Client::askForDiscard;
     m_interactions[S_COMMAND_CHOOSE_SUIT] = &Client::askForSuit;
@@ -1510,7 +1510,7 @@ void Client::askForPindian(const Json::Value &ask_str){
     setStatus(AskForShowOrPindian);
 }
 
-void Client::askForYiji(const Json::Value &card_list){
+void Client::askForYumeng(const Json::Value &card_list){
     if (!card_list.isArray()) return;
     int count = card_list.size();
     prompt_doc->setHtml(tr("Please distribute %1 cards as you wish").arg(count));
@@ -1519,7 +1519,7 @@ void Client::askForYiji(const Json::Value &card_list){
     for (unsigned int i = 0; i < card_list.size(); i++)
         card_str << QString::number(card_list[i].asInt());       
     _m_roomState.setCurrentCardUsePattern(card_str.join("+"));
-    setStatus(AskForYiji);
+    setStatus(AskForYumeng);
 }
 
 void Client::askForPlayerChosen(const Json::Value &players){
@@ -1534,7 +1534,7 @@ void Client::askForPlayerChosen(const Json::Value &players){
     setStatus(AskForPlayerChoose);
 }
 
-void Client::onPlayerReplyYiji(const Card *card, const Player *to){
+void Client::onPlayerReplyYumeng(const Card *card, const Player *to){
     Json::Value req;
     if (!card) req = Json::Value::null;
     else 
@@ -1543,7 +1543,7 @@ void Client::onPlayerReplyYiji(const Card *card, const Player *to){
         req[0] = toJsonArray(card->getSubcards());
         req[1] = toJsonString(to->objectName());
     }        
-    replyToServer(S_COMMAND_SKILL_YIJI, req);
+    replyToServer(S_COMMAND_SKILL_YUMENG, req);
 
     setStatus(NotActive);
 }

@@ -30,7 +30,7 @@ public:
         AskForSkillInvoke,
         AskForAG,
         AskForPlayerChoose,
-        AskForYiji,
+        AskForYumeng,
         AskForGuanxing,
         AskForGongxin,
         AskForShowOrPindian
@@ -68,7 +68,7 @@ public:
     void onPlayerResponseCard(const Card *card);
     void onPlayerInvokeSkill(bool invoke);
     void onPlayerDiscardCards(const Card *card);
-    void onPlayerReplyYiji(const Card *card, const Player *to);
+    void onPlayerReplyYumeng(const Card *card, const Player *to);
     void onPlayerReplyGuanxing(const QList<int> &up_cards, const QList<int> &down_cards);
     void onPlayerAssignRole(const QList<QString> &names, const QList<QString> &roles);
     QList<const ClientPlayer *> getPlayers() const;
@@ -152,7 +152,7 @@ public:
     void askForCardChosen(const Json::Value &);
     void askForPlayerChosen(const Json::Value &);
     void askForGeneral(const Json::Value &);
-    void askForYiji(const Json::Value &);
+    void askForYumeng(const Json::Value &);
     void askForGuanxing(const Json::Value &);
     void askForGongxin(const Json::Value &);
     void askForAssign(const Json::Value &); // Assign roles at the beginning of game

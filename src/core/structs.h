@@ -146,7 +146,7 @@ public:
     //subcategory of show
     static const int S_REASON_TURNOVER = 0x18;          // show n cards from drawpile
     static const int S_REASON_JUDGE = 0x28;             // show a card from drawpile for judge
-    static const int S_REASON_PREVIEW = 0x38;           // Not done yet, plan for view some cards for self only(guanxing yiji miji)
+    static const int S_REASON_PREVIEW = 0x38;           // Not done yet, plan for view some cards for self only(guanxing yumeng miji)
     static const int S_REASON_DEMONSTRATE = 0x48;       // show a card which copy one to move to table
 
     //subcategory of transfer
@@ -412,7 +412,7 @@ enum TriggerEvent{
     PreHpReduced,     // the moment before Hpreduce
     DamageDone,       // it's time to do the damage
     Damage,           // the moment for -- lieren..
-    Damaged,          // the moment for -- yiji..
+    Damaged,          // the moment for -- yumeng..
     DamageComplete,   // the moment for trigger iron chain
 
     Dying,

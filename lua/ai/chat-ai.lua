@@ -19,10 +19,10 @@ function speakTrigger(card,from,to,event)
 		speak(from,"leiji_jink")
 	elseif card:isKindOf("QuhuCard") then
 		speak(from,"quhu")
-	elseif card:isKindOf("Slash") and from:hasSkill("wusheng") and to:hasSkill("yizhong") then
-		speak(from,"wusheng_yizhong")
-	elseif card:isKindOf("Slash") and to:hasSkill("yiji") and (to:getHp()<=1) then
-		speak(to,"guojia_weak")
+	elseif card:isKindOf("Slash") and from:hasSkill("wusheng") and to:hasSkill("zhuyan") then
+		speak(from,"wusheng_zhuyan")
+	elseif card:isKindOf("Slash") and to:hasSkill("yumeng") and (to:getHp()<=1) then
+		speak(to,"bloom006_weak")
 	elseif card:isKindOf("SavageAssault") and (to:hasSkill("kongcheng") or to:hasSkill("huoji")) then
 		speak(to,"daxiang")
 	elseif card:isKindOf("FireAttack") and to:hasSkill("luanji") then
@@ -44,7 +44,7 @@ end
 
 sgs.ai_chat={}
 
-sgs.ai_chat.yiji=
+sgs.ai_chat.yumeng=
 {
 "再用力一点",
 "要死了啊!"
@@ -143,8 +143,8 @@ sgs.ai_chat.quhu=
 "哟，拼点吧"
 }
 
---wusheng to yizhong
-sgs.ai_chat.wusheng_yizhong=
+--wusheng to zhuyan
+sgs.ai_chat.wusheng_zhuyan=
 {
 "诶你技能是啥来着？",
 "在杀的颜色这个问题上咱是色盲",
@@ -165,7 +165,7 @@ sgs.ai_chat.ganglie_death=
 "菊花残，满地伤。。。"
 }
 
-sgs.ai_chat.guojia_weak=
+sgs.ai_chat.bloom006_weak=
 {
 "擦，再卖血会卖死的",
 "不敢再卖了诶诶诶诶"
@@ -178,7 +178,7 @@ sgs.ai_chat.yuanshao_fire=
 "又烧啊，饶了我吧。。。"
 }
 
---xuchu
+--bloom005
 sgs.ai_chat.luoyi=
 {
 "不脱光衣服干不过你"

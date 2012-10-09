@@ -740,7 +740,7 @@
     </ClCompile>
     <ClCompile Include="..\..\src\ui\sprite.cpp" />
     <ClCompile Include="..\..\src\package\standard-cards.cpp" />
-    <ClCompile Include="..\..\src\package\standard-generals.cpp" />
+    <ClCompile Include="..\..\src\package\standard-generals-bloom.cpp" />
     <ClCompile Include="..\..\src\package\standard.cpp" />
     <ClCompile Include="..\..\src\ui\startscene.cpp" />
     <ClCompile Include="..\..\src\package\thicket.cpp" />

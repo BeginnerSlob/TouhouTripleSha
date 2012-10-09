@@ -143,61 +143,6 @@ public:
     }
 };
 
-QiangxiCard::QiangxiCard(){
-    once = true;
-}
-
-bool QiangxiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if(!targets.isEmpty())
-        return false;
-
-    if(!subcards.isEmpty() && Self->getWeapon() && Self->getWeapon()->getId() == subcards.first())
-        return Self->distanceTo(to_select) <= 1;
-
-    return Self->inMyAttackRange(to_select);
-}
-
-void QiangxiCard::onEffect(const CardEffectStruct &effect) const{
-    Room *room = effect.to->getRoom();
-
-    if(subcards.isEmpty())
-        room->loseHp(effect.from);
-
-    DamageStruct damage;
-    damage.card = NULL;
-    damage.from = effect.from;
-    damage.to = effect.to;
-
-    room->damage(damage);
-}
-
-class Qiangxi: public ViewAsSkill{
-public:
-    Qiangxi():ViewAsSkill("qiangxi"){
-
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return ! player->hasUsed("QiangxiCard");
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        return selected.isEmpty() && to_select->isKindOf("Weapon");
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if(cards.isEmpty())
-            return new QiangxiCard;
-        else if(cards.length() == 1){
-            QiangxiCard *card = new QiangxiCard;
-            card->addSubcards(cards);
-
-            return card;
-        }else
-            return NULL;
-    }
-};
-
 class Luanji:public ViewAsSkill{
 public:
     Luanji():ViewAsSkill("luanji"){
@@ -555,7 +500,7 @@ public:
 FirePackage::FirePackage()
     :Package("fire")
 {
-    General *dianwei, *xunyu, *pangtong, *wolong, *taishici, *yuanshao, *yanliangwenchou, *pangde;
+    /*General *dianwei, *xunyu, *pangtong, *wolong, *taishici, *yuanshao, *yanliangwenchou, *pangde;
 
     dianwei = new General(this, "dianwei", "wei");
     dianwei->addSkill(new Qiangxi);
@@ -592,8 +537,7 @@ FirePackage::FirePackage()
 
     addMetaObject<QuhuCard>();
     addMetaObject<JiemingCard>();
-    addMetaObject<QiangxiCard>();
-    addMetaObject<TianyiCard>();
+    addMetaObject<TianyiCard>();*/
 }
 
 ADD_PACKAGE(Fire);

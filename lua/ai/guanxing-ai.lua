@@ -104,7 +104,7 @@ local function GuanXing(self, cards)
 	--end
 	
 	local pos = 1
-	local luoshen_flag = false
+	local mengyang_flag = false
 	local next_judge = {}
 	local next_player = self.player:getNextAlive()
 	judge = next_player:getCards("j")
@@ -127,7 +127,7 @@ local function GuanXing(self, cards)
 			end
 			
 			if self:isFriend(next_player) then 
-				if next_player:hasSkill("luoshen") then
+				if next_player:hasSkill("mengyang") then
 					if for_judge:isBlack() then
 						table.insert(next_judge, for_judge)
 						table.remove(bottom, index)	
@@ -147,12 +147,12 @@ local function GuanXing(self, cards)
 					end
 				end
 			else
-				if next_player:hasSkill("luoshen") and for_judge:isRed() and not luoshen_flag then
+				if next_player:hasSkill("mengyang") and for_judge:isRed() and not mengyang_flag then
 					table.insert(next_judge, for_judge)
 					table.remove(bottom, index)	
 					has_judged = true
 					judged_list[pos] = 1
-					luoshen_flag = true
+					mengyang_flag = true
 					break
 				else
 					if (judge_str == for_judge:getSuitString() and judge_str == "spade" and lightning_flag) 

@@ -126,7 +126,7 @@ function sgs.ai_skill_invoke.kuiwei(self, data)
     local weapon = 0
     if not self.player:faceUp() then return true end
 	for _, friend in ipairs(self.friends) do
-		if self:hasSkills("fangzhu|jilve", friend) then return true end
+		if self:hasSkills("bisuo|jilve", friend) then return true end
 	end
 	for _, aplayer in sgs.qlist(self.room:getAlivePlayers()) do
 	    if aplayer:getWeapon() then weapon = weapon + 1 end
@@ -603,7 +603,7 @@ sgs.ai_skill_use_func.YinlingCard=function(card,use,self)
 
 	for _, friend in ipairs(friends) do
 		if self:isEquip("SilverLion", friend) and self:hasTrickEffective(card, friend) and 
-		friend:isWounded() and not self:hasSkills("longhun|duanliang|qixi|guidao|lijian|jujian",friend) then
+		friend:isWounded() and not self:hasSkills("longhun|fenghou|qixi|guidao|lijian|jujian",friend) then
 			hasLion = true
 			target = friend
 		end

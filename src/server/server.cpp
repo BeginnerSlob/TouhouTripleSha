@@ -936,12 +936,12 @@ bool ServerDialog::config(){
     Config.setValue("AnnounceIP", Config.AnnounceIP);
     Config.setValue("Address", Config.Address);
 
-    Config.beginGroup("3v3");
+    /*Config.beginGroup("3v3");
     Config.setValue("UsingExtension", !standard_3v3_radiobutton->isChecked() && !new_3v3_radiobutton->isChecked());
     Config.setValue("RoleChoose", role_choose_ComboBox->itemData(role_choose_ComboBox->currentIndex()).toString());
     Config.setValue("ExcludeDisaster", exclude_disaster_checkbox->isChecked());
     Config.setValue("UsingNewMode", new_3v3_radiobutton->isChecked());
-    Config.endGroup();
+    Config.endGroup();*/
 
     QSet<QString> ban_packages;
     QList<QAbstractButton *> checkboxes = extension_group->buttons();

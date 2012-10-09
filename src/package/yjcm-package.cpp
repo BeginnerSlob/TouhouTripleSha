@@ -7,198 +7,6 @@
 #include "ai.h"
 #include "general.h"
 
-class Yizhong: public TriggerSkill{
-public:
-    Yizhong():TriggerSkill("yizhong"){
-        events << SlashEffected;
-        frequency = Compulsory;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && TriggerSkill::triggerable(target) && target->getArmor() == NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        SlashEffectStruct effect = data.value<SlashEffectStruct>();
-
-		if(effect.slash->isBlack() && effect.nature==DamageStruct::Normal){
-            player->getRoom()->broadcastSkillInvoke(objectName());
-
-            LogMessage log;
-            log.type = "#SkillNullify";
-            log.from = player;
-            log.arg = objectName();
-            log.arg2 = effect.slash->objectName();
-
-            player->getRoom()->sendLog(log);
-
-            return true;
-        }
-
-        return false;
-    }
-};
-
-class Piaonian: public TriggerSkill{
-public:
-    Piaonian():TriggerSkill("piaonian"){
-        events << TargetConfirming;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *victim, QVariant &data) const{
-        ServerPlayer *yujin = room->findPlayerBySkillName(objectName());
-
-        if(yujin == NULL)
-            return false;
-
-        if(yujin == victim)
-            return false;
-
-		if(yujin->getPhase() != Player::NotActive)
-            return false;
-
-        CardUseStruct use = data.value<CardUseStruct>();
-
-        if(use.card && use.card->isKindOf("Slash") && use.to.contains(victim) && yujin->inMyAttackRange(victim) && yujin->askForSkillInvoke(objectName())){
-            if(!room->askForCard(yujin, "Armor", "@piaonian", QVariant(), CardDiscarded)){
-                room->setPlayerProperty(victim, "chained", true);
-                room->setPlayerProperty(yujin, "chained", true);
-			}
-			
-            use.to.insert(use.to.indexOf(victim), yujin);
-            use.to.removeOne(victim);
-
-            data = QVariant::fromValue(use);
-
-            return true;
-        }
-
-        return false;
-    }
-};
-
-class Luoying: public TriggerSkill{
-public:
-    Luoying():TriggerSkill("luoying"){
-        events << CardsMoveOneTime;
-        frequency = Frequent;
-        default_choice = "no";
-    }
-
-    virtual int getPriority() const{
-        return 4;
-    }
-
-    virtual bool trigger(TriggerEvent , Room* room, ServerPlayer *caozhi, QVariant &data) const{
-        CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
-        if(move->from == caozhi || move->from == NULL)
-            return false;
-        if(move->to_place == Player::DiscardPile
-                && ((move->reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD
-                    ||move->reason.m_reason == CardMoveReason::S_REASON_JUDGEDONE)){
-            QList<CardsMoveStruct> exchangeMove;
-            CardsMoveStruct luoyingMove;
-            luoyingMove.to = caozhi;
-            luoyingMove.to_place = Player::PlaceHand;
-
-            for(int i = 0; i < move->card_ids.size(); i++){
-                int card_id = move->card_ids[i];
-                if(Sanguosha->getCard(card_id)->getSuit() != Card::Club
-                        || move->from_places[i] == Player::PlaceDelayedTrick
-                        || move->from_places[i] == Player::PlaceSpecial
-                        || room->getCardPlace(card_id) != Player::DiscardPile)
-                    continue;
-
-                luoyingMove.card_ids << card_id;
-            }
-
-            if(luoyingMove.card_ids.empty() || !caozhi->askForSkillInvoke(objectName(), data))
-                return false;
-
-            if(luoyingMove.card_ids.size() > 1){
-                while(!luoyingMove.card_ids.isEmpty()){
-                    room->fillAG(luoyingMove.card_ids, caozhi);
-                    int card_id = room->askForAG(caozhi, luoyingMove.card_ids, true, "luoying");
-                    caozhi->invoke("clearAG");
-                    if(card_id == -1)
-                        break;
-                    luoyingMove.card_ids.removeOne(card_id);
-                }
-                if(luoyingMove.card_ids.empty())
-                    return false;
-            }
-
-            if(move->from->getGeneralName() == "zhenji")
-                room->broadcastSkillInvoke("luoying", 2);
-            else
-                room->broadcastSkillInvoke("luoying", 1);
-            exchangeMove.push_back(luoyingMove);
-            // iwillback
-            room->moveCardsAtomic(exchangeMove, true);
-        }
-        return false;
-    }
-};
-
-class Jiushi: public ZeroCardViewAsSkill{
-public:
-    Jiushi():ZeroCardViewAsSkill("jiushi"){
-        Analeptic *analeptic = new Analeptic(Card::NoSuit, 0);
-        analeptic->setSkillName("jiushi");
-
-        this->analeptic = analeptic;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return Analeptic::IsAvailable(player) && player->faceUp();
-    }
-
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        return  pattern.contains("analeptic") && player->faceUp();
-    }
-
-    virtual const Card *viewAs() const{
-        return analeptic;
-    }
-
-    virtual int getEffectIndex(const ServerPlayer *, const Card *) const{
-        return qrand() % 2 + 1;
-    }
-
-private:
-    const Analeptic *analeptic;
-};
-
-class JiushiFlip: public TriggerSkill{
-public:
-    JiushiFlip():TriggerSkill("#jiushi-flip"){
-        events << CardUsed << PreHpReduced << DamageComplete;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if(triggerEvent == CardUsed){
-            CardUseStruct use = data.value<CardUseStruct>();
-            if(use.card->getSkillName() == "jiushi")
-                player->turnOver();
-        }else if(triggerEvent == PreHpReduced){
-            player->tag["PredamagedFace"] = player->faceUp();
-        }else if(triggerEvent == DamageComplete){
-            bool faceup = player->tag.value("PredamagedFace", true).toBool();
-            player->tag.remove("PredamagedFace");
-            if(!faceup && !player->faceUp() && player->askForSkillInvoke("jiushi", data)){
-                room->broadcastSkillInvoke("jiushi", 3);
-                player->turnOver();
-            }
-        }
-
-        return false;
-    }
-};
-
 class Wuyan: public TriggerSkill{
 public:
     Wuyan():TriggerSkill("wuyan"){
@@ -1379,13 +1187,7 @@ public:
 };
 
 YJCMPackage::YJCMPackage():Package("YJCM"){
-    General *caozhi = new General(this, "caozhi", "wei", 3);
-    caozhi->addSkill(new Luoying);
-    caozhi->addSkill(new Jiushi);
-    caozhi->addSkill(new JiushiFlip);
-    related_skills.insertMulti("jiushi", "#jiushi-flip");
-
-    General *chengong = new General(this, "chengong", "qun", 3);
+    /*General *chengong = new General(this, "chengong", "qun", 3);
     chengong->addSkill(new Zhichi);
     chengong->addSkill(new ZhichiClear);
     chengong->addSkill(new Mingce);
@@ -1445,7 +1247,7 @@ YJCMPackage::YJCMPackage():Package("YJCM"){
     addMetaObject<XinzhanCard>();
     addMetaObject<JujianCard>();
     addMetaObject<PaiyiCard>();
-    skills << new Paiyi;
+    skills << new Paiyi;*/
 }
 
 ADD_PACKAGE(YJCM)

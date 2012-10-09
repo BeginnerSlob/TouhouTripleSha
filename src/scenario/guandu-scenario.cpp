@@ -29,21 +29,21 @@ void ZhanShuangxiongCard::use(Room *room, ServerPlayer *source, QList<ServerPlay
     room->setTag("ZhanShuangxiong", true);
 }
 
-class GreatYiji: public MasochismSkill{
+class GreatYumeng: public MasochismSkill{
 public:
-    GreatYiji():MasochismSkill("greatyiji"){
+    GreatYumeng():MasochismSkill("greatyumeng"){
         frequency = Compulsory;
     }
 
-    virtual void onDamaged(ServerPlayer *guojia, const DamageStruct &damage) const{
-        Room *room = guojia->getRoom();
+    virtual void onDamaged(ServerPlayer *player, const DamageStruct &damage) const{
+        Room *room = player->getRoom();
 
         room->broadcastSkillInvoke(objectName());
         int n = damage.damage * 3;
-        guojia->drawCards(n);
-        QList<int> yiji_cards = guojia->handCards().mid(guojia->getHandcardNum() - n);
+        player->drawCards(n);
+        QList<int> yumeng_cards = player->handCards().mid(player->getHandcardNum() - n);
 
-        while(room->askForYiji(guojia, yiji_cards))
+        while(room->askForYumeng(player, yumeng_cards))
             ; // empty loop
     }
 };
@@ -272,7 +272,7 @@ GuanduScenario::GuanduScenario()
 
     skills << new SmallTuxi
             << new ZhanShuangxiong
-            << new GreatYiji
+            << new GreatYumeng
             << new DamageBeforePlay;
 
     addMetaObject<ZhanShuangxiongCard>();
@@ -299,8 +299,8 @@ void GuanduScenario::onTagSet(Room *room, const QString &key) const{
     }
     if(zhanshuangxiong && burnwuchao){
         ServerPlayer *guojia = room->findPlayer("guojia");
-        if(guojia && !guojia->hasSkill("greatyiji")){
-            room->acquireSkill(guojia, "greatyiji");
+        if(guojia && !guojia->hasSkill("greatyumeng")){
+            room->acquireSkill(guojia, "greatyumeng");
             room->acquireSkill(guojia, "damagebeforeplay", false);
         }
     }

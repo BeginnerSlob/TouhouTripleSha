@@ -243,7 +243,7 @@ private:
     ResponseSkill *response_skill;
     ShowOrPindianSkill *showorpindian_skill;
     DiscardSkill *discard_skill;
-    YijiViewAsSkill *yiji_skill;
+    YumengViewAsSkill *yumeng_skill;
     ChoosePlayerSkill *choose_skill;
 
     QList<const Player *> selected_targets;

@@ -24,17 +24,6 @@ return {
 	["LihunGoBack"] = "请分配给对方 %arg 张牌（包括装备）",
 	[":lihun"] = "出牌阶段，你可以弃置一张牌并将你的武将牌翻面，若如此做，指定一名男性角色，获得其所有手牌。出牌阶段结束时，你须为该角色每一点体力分配给其一张牌。每回合限一次。",
 
-	["#bgm_caoren"] = "轻国的帝王",
-	["bgm_caoren"] = "泉此方",
-	["illustrator:bgm_caoren"] = "张帅",
-	["designer:bgm_caoren"] = "Danny",
-	["kuiwei"] = "宅魂",
-	[":kuiwei"] = "回合结束阶段开始时，你可以摸2+X张牌，然后将你的武将牌翻面。若如此做，在你的下一个摸牌阶段开始时，你须弃置X张牌（X为场上武器牌的数量）。",
-	["yanzheng"] = "佛脚",
-	[":yanzheng"] = "若你的手牌数大于你的体力值，你可以将你装备区里的装备牌当【无懈可击】使用。",
-	["@kuiwei"] = "宅魂",
-	["#KuiweiDiscard"] = "%from 的【%arg2】技能被触发，需要弃掉 %arg 张牌";
-
 	["#bgm_pangtong"] = "荆楚之高俊",
 	["bgm_pangtong"] = "☆SP庞统",
 	["&bgm_pangtong"] = "庞统",
