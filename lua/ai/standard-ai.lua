@@ -225,12 +225,12 @@ end
 
 sgs.ai_chaofeng.guojia = -4
 
-sgs.ai_view_as.qingguo = function(card, player, card_place)
+sgs.ai_view_as.zhongyan = function(card, player, card_place)
     local suit = card:getSuitString()
     local number = card:getNumberString()
     local card_id = card:getEffectiveId()
     if card:isBlack() and card_place ~= sgs.Player_PlaceEquip then
-        return ("jink:qingguo[%s:%s]=%d"):format(suit, number, card_id)
+        return ("jink:zhongyan[%s:%s]=%d"):format(suit, number, card_id)
     end
 end
 

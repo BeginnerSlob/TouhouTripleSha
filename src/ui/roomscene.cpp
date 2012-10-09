@@ -122,7 +122,7 @@ RoomScene::RoomScene(QMainWindow *main_window):
     response_skill = new ResponseSkill;
     showorpindian_skill = new ShowOrPindianSkill;
     discard_skill = new DiscardSkill;
-    yiji_skill = new YijiViewAsSkill;
+    yumeng_skill = new YumengViewAsSkill;
     choose_skill = new ChoosePlayerSkill;
 
     known_cards_menu = new QMenu(main_window);
@@ -1973,10 +1973,10 @@ void RoomScene::useSelectedCard(){
             break;
         }
 
-    case Client::AskForYiji:{
+    case Client::AskForYumeng:{
             const Card *card = dashboard->pendingCard();
             if(card){
-                ClientInstance->onPlayerReplyYiji(card, selected_targets.first());
+                ClientInstance->onPlayerReplyYumeng(card, selected_targets.first());
                 dashboard->stopPending();
                 prompt_box->disappear();
             }
@@ -2137,7 +2137,7 @@ void RoomScene::doTimeout(){
             ClientInstance->onPlayerChooseAG(card_id);
         break;}        
     case Client::AskForSkillInvoke:
-    case Client::AskForYiji:{
+    case Client::AskForYumeng:{
         cancel_button->click();
         break;}
     case Client::AskForGuanxing:
@@ -2346,13 +2346,13 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
             break;
         }
 
-    case Client::AskForYiji:{
+    case Client::AskForYumeng:{
             ok_button->setEnabled(false);
             cancel_button->setEnabled(true);
             discard_button->setEnabled(false);
 
-            yiji_skill->setCards(Sanguosha->currentRoomState()->getCurrentCardUsePattern());
-            dashboard->startPending(yiji_skill);
+            yumeng_skill->setCards(Sanguosha->currentRoomState()->getCurrentCardUsePattern());
+            dashboard->startPending(yumeng_skill);
 
             showPromptBox();
 
@@ -2498,9 +2498,9 @@ void RoomScene::doCancelButton(){
             break;
         }
 
-    case Client::AskForYiji:{
+    case Client::AskForYumeng:{
             dashboard->stopPending();
-            ClientInstance->onPlayerReplyYiji(NULL, NULL);
+            ClientInstance->onPlayerReplyYumeng(NULL, NULL);
             prompt_box->disappear();
             break;
         }

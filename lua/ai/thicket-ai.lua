@@ -1,6 +1,6 @@
-sgs.ai_skill_invoke.xingshang = true
+sgs.ai_skill_invoke.tanwan = true
 
-sgs.ai_skill_use["@@fangzhu"] = function(self, prompt)
+sgs.ai_skill_use["@@bisuo"] = function(self, prompt)
 	self:sort(self.friends_noself)
 	local target
 	for _, friend in ipairs(self.friends_noself) do
@@ -34,7 +34,7 @@ sgs.ai_skill_use["@@fangzhu"] = function(self, prompt)
 	end
 
 	if target then
-		return "@FangzhuCard=.->" .. target:objectName()
+		return "@BisuoCard=.->" .. target:objectName()
 	else
 		return "."
 	end
@@ -58,7 +58,7 @@ sgs.ai_skill_playerchosen.songwei = function(self, targets)
 	return targets[1]
 end
 
-sgs.ai_card_intention.FangzhuCard = function(card, from, tos)
+sgs.ai_card_intention.BisuoCard = function(card, from, tos)
 	if from:getLostHp() < 3 then
 		sgs.updateIntention(from, tos[1], 80/from:getLostHp())
 	end
@@ -66,10 +66,10 @@ end
 
 sgs.ai_chaofeng.caopi = -3
 
-duanliang_skill={}
-duanliang_skill.name="duanliang"
-table.insert(sgs.ai_skills,duanliang_skill)
-duanliang_skill.getTurnUseCard=function(self)
+fenghou_skill={}
+fenghou_skill.name="fenghou"
+table.insert(sgs.ai_skills,fenghou_skill)
+fenghou_skill.getTurnUseCard=function(self)
 	local cards = self.player:getCards("he")
 	cards=sgs.QList2Table(cards)
 
@@ -88,7 +88,7 @@ duanliang_skill.getTurnUseCard=function(self)
 	local suit = card:getSuitString()
 	local number = card:getNumberString()
 	local card_id = card:getEffectiveId()
-	local card_str = ("supply_shortage:duanliang[%s:%s]=%d"):format(suit, number, card_id)
+	local card_str = ("supply_shortage:fenghou[%s:%s]=%d"):format(suit, number, card_id)
 	local skillcard = sgs.Card_Parse(card_str)
 
 	assert(skillcard)

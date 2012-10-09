@@ -145,104 +145,6 @@ public:
     }
 };
 
-class Kuiwei: public TriggerSkill{
-public:
-    Kuiwei(): TriggerSkill("kuiwei"){
-        events << EventPhaseStart;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target && target->isAlive() && (target->hasSkill(objectName()) || target->getMark("@kuiwei")>0);
-    }
-
-    virtual int getPriority() const{
-        return 3;
-    }
-
-    int getWeaponCount(ServerPlayer *caoren) const{
-        int n = 0;
-        foreach(ServerPlayer *p, caoren->getRoom()->getAlivePlayers()){
-            if(p->getWeapon())
-                n ++;
-        }
-
-        return n;
-    }
-
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *caoren, QVariant &) const{
-		if(caoren->hasSkill(objectName()) && caoren->getPhase() == Player::Finish){
-            if(!caoren->askForSkillInvoke(objectName()))
-                return false;
-
-            int n = getWeaponCount(caoren);
-            caoren->drawCards(n+2);
-            caoren->turnOver();
-            room->broadcastSkillInvoke("kuiwei", 1);
-            if(caoren->getMark("@kuiwei") == 0)
-                caoren->gainMark("@kuiwei");
-        }
-        else if(caoren->getPhase() == Player::Draw){
-            if(caoren->getMark("@kuiwei") == 0)
-                return false;
-
-            int n = getWeaponCount(caoren);
-            if(n > 0){
-                LogMessage log;
-                log.type = "#KuiweiDiscard";
-                log.from = caoren;
-                log.arg = QString::number(n);
-                log.arg2 = objectName();
-                room->sendLog(log);
-                room->broadcastSkillInvoke("kuiwei", 2);
-                if(caoren->getCards("he").length() <= n){
-                    caoren->throwAllHandCardsAndEquips();
-                }
-                else{
-                    room->askForDiscard(caoren, objectName(), n, n, false, true);
-                }
-            }
-
-            caoren->loseMark("@kuiwei");
-        }
-        return false;
-    }
-};
-
-class Yanzheng: public OneCardViewAsSkill{
-public:
-    Yanzheng():OneCardViewAsSkill("yanzheng"){
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return false;
-    }
-
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        return pattern == "nullification" && player->getHandcardNum() > player->getHp();
-    }
-
-    virtual bool viewFilter(const Card* to_select) const{
-        return to_select->isEquipped();
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const{
-        Card *ncard = new Nullification(originalCard->getSuit(), originalCard->getNumber());
-        ncard->addSubcard(originalCard);
-        ncard->setSkillName(objectName());
-
-        return ncard;
-    }
-
-    virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
-        foreach(const Card *card, player->getHandcards()){
-            if(card->objectName() == "nullification")
-                return true;
-        }
-
-        return player->getHandcardNum() > player->getHp() && !player->getEquips().isEmpty();
-    }
-};
-
 class Manjuan: public TriggerSkill{
 public:
     Manjuan(): TriggerSkill("manjuan"){
@@ -1242,7 +1144,7 @@ public:
 };
 
 BGMPackage::BGMPackage():Package("BGM"){
-    General *bgm_zhaoyun = new General(this, "bgm_zhaoyun", "qun", 3);
+    /*General *bgm_zhaoyun = new General(this, "bgm_zhaoyun", "qun", 3);
     bgm_zhaoyun->addSkill("longdan");
     bgm_zhaoyun->addSkill(new ChongZhen);
 
@@ -1296,7 +1198,7 @@ BGMPackage::BGMPackage():Package("BGM"){
     addMetaObject<DaheCard>();
     addMetaObject<TanhuCard>();
     addMetaObject<YanxiaoCard>();
-    addMetaObject<YinlingCard>();
+    addMetaObject<YinlingCard>();*/
 }
 
 ADD_PACKAGE(BGM)

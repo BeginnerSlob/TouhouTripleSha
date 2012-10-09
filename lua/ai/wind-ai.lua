@@ -1,4 +1,4 @@
-sgs.ai_skill_use["@@shensu1"]=function(self,prompt)
+sgs.ai_skill_use["@@xunyu1"]=function(self,prompt)
 	self:updatePlayers()
 	self:sort(self.enemies,"defense")
 	if self.player:containsTrick("lightning") and self.player:getCards("j"):length()==1
@@ -16,7 +16,7 @@ sgs.ai_skill_use["@@shensu1"]=function(self,prompt)
 			
 		if enemy:hasSkill("kongcheng") and enemy:isKongcheng() then
 		elseif self:slashProhibit(nil, enemy) then
-		elseif def<6 and eff then return "@ShensuCard=.->"..enemy:objectName()
+		elseif def<6 and eff then return "@XunyuCard=.->"..enemy:objectName()
 
 		elseif selfSub>=2 then return "."
 		elseif selfDef<6 then return "." end
@@ -32,7 +32,7 @@ sgs.ai_skill_use["@@shensu1"]=function(self,prompt)
 
 		if enemy:hasSkill("kongcheng") and enemy:isKongcheng() then
 		elseif self:slashProhibit(nil, enemy) then
-		elseif eff and def<8 then return "@ShensuCard=.->"..enemy:objectName()
+		elseif eff and def<8 then return "@XunyuCard=.->"..enemy:objectName()
 		else return "." end
 	end
 	return "."
@@ -45,7 +45,7 @@ sgs.ai_get_cardType=function(card)
 	if card:isKindOf("DefensiveHorse") then return 4 end
 end
 
-sgs.ai_skill_use["@@shensu2"]=function(self,prompt)
+sgs.ai_skill_use["@@xunyu2"]=function(self,prompt)
 	self:updatePlayers()
 	self:sort(self.enemies,"defense")
 	
@@ -60,7 +60,7 @@ sgs.ai_skill_use["@@shensu2"]=function(self,prompt)
 	local hasCard={0, 0, 0, 0}
 	
 	for _,card in ipairs(cards) do
-		if card:isKindOf("EquipCard") then
+		if not card:isKindOf("TrickCard") then
 			hasCard[sgs.ai_get_cardType(card)] = hasCard[sgs.ai_get_cardType(card)]+1
 		end		
 	end
@@ -99,15 +99,15 @@ sgs.ai_skill_use["@@shensu2"]=function(self,prompt)
 		if selfSub<0 then return "." end
 	end
 	
-	if best_target then return "@ShensuCard="..eCard:getEffectiveId().."->"..best_target:objectName() end
-	if target then return "@ShensuCard="..eCard:getEffectiveId().."->"..target:objectName() end
+	if best_target then return "@XunyuCard="..eCard:getEffectiveId().."->"..best_target:objectName() end
+	if target then return "@XunyuCard="..eCard:getEffectiveId().."->"..target:objectName() end
 	
 	return "."
 end
 
-sgs.ai_cardneed.shensu = sgs.ai_cardneed.equip
+sgs.ai_cardneed.xunyu = sgs.ai_cardneed.equip
 
-sgs.ai_card_intention.ShensuCard = 80
+sgs.ai_card_intention.XunyuCard = 80
 
 sgs.xiahouyuan_keep_value = 
 {
@@ -132,7 +132,7 @@ sgs.xiahouyuan_keep_value =
 function sgs.ai_skill_invoke.jushou(self, data)
 	if not self.player:faceUp() then return true end
 	for _, friend in ipairs(self.friends) do
-		if self:hasSkills("fangzhu|jilve", friend) then return true end
+		if self:hasSkills("bisuo|jilve", friend) then return true end
 	end
 	return self:isWeak()
 end
@@ -337,7 +337,7 @@ sgs.ai_skill_use["@@tianxiang"] = function(self, data)
 	for _, enemy in ipairs(self.enemies) do
 		if (enemy:getHp() <= dmg.damage) then
 
-		if (enemy:getHandcardNum() <= 2) or self:hasSkills("guose|leiji|ganglie|enyuan|qingguo|wuyan|kongcheng", enemy)
+		if (enemy:getHandcardNum() <= 2) or self:hasSkills("guose|leiji|ganglie|enyuan|zhongyan|wuyan|kongcheng", enemy)
 			or enemy:containsTrick("indulgence") then return "@TianxiangCard="..card_id.."->"..enemy:objectName() end
 		end
 	end
@@ -346,7 +346,7 @@ sgs.ai_skill_use["@@tianxiang"] = function(self, data)
 		if (friend:getLostHp() + dmg.damage>1) then
 			if friend:isChained() and #self:getChainedFriends()>1 and dmg.nature>0 then
 			elseif friend:getHp() >= 2 and dmg.damage<2 and 
-				(self:hasSkills("yiji|buqu|shuangxiong|zaiqi|yinghun|jianxiong|fangzhu", friend) 
+				(self:hasSkills("yumeng|buqu|shuangxiong|zaiqi|yinghun|jianxiong|bisuo", friend) 
 				or (friend:getHandcardNum()<3 and friend:hasSkill("rende"))
 				)
 				then return "@TianxiangCard="..card_id.."->"..friend:objectName()
@@ -358,7 +358,7 @@ sgs.ai_skill_use["@@tianxiang"] = function(self, data)
 		if enemy:getLostHp() <= 1 or dmg.damage>1 then
 
 			if (enemy:getHandcardNum() <= 2)
-				or enemy:containsTrick("indulgence") or self:hasSkills("guose|leiji|ganglie|enyuan|qingguo|wuyan|kongcheng", enemy)
+				or enemy:containsTrick("indulgence") or self:hasSkills("guose|leiji|ganglie|enyuan|zhongyan|wuyan|kongcheng", enemy)
 			then return "@TianxiangCard="..card_id.."->"..enemy:objectName() end
 		end
 	end

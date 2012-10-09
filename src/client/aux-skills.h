@@ -63,11 +63,11 @@ private:
     DummyCard *card;
 };
 
-class YijiViewAsSkill : public ViewAsSkill{
+class YumengViewAsSkill : public ViewAsSkill{
     Q_OBJECT
 
 public:
-    explicit YijiViewAsSkill();
+    explicit YumengViewAsSkill();
     void setCards(const QString &card_str);
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const;

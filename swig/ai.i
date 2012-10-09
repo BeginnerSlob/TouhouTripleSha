@@ -179,9 +179,9 @@ AI *Room::cloneAI(ServerPlayer *player){
     return new TrustAI(player);
 }
 
-ServerPlayer *LuaAI::askForYiji(const QList<int> &cards, int &card_id){
+ServerPlayer *LuaAI::askForYumeng(const QList<int> &cards, int &card_id){
     if(callback == 0)
-        return TrustAI::askForYiji(cards, card_id);
+        return TrustAI::askForYumeng(cards, card_id);
 
     lua_State *L = room->getLuaState();
 

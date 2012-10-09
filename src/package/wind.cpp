@@ -261,96 +261,6 @@ public:
     }
 };
 
-ShensuCard::ShensuCard(){
-    mute = true;
-}
-
-bool ShensuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if(!targets.isEmpty())
-        return false;
-
-    if(to_select->hasSkill("kongcheng") && to_select->isKongcheng())
-        return false;
-
-    if(to_select == Self)
-        return false;
-
-    return true;
-}
-
-void ShensuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    Slash *slash = new Slash(Card::NoSuit, 0);
-    slash->setSkillName("shensu");
-    CardUseStruct use;
-    use.card = slash;
-    use.from = source;
-    use.to = targets;
-
-    room->useCard(use);
-}
-
-class ShensuViewAsSkill: public ViewAsSkill{
-public:
-    ShensuViewAsSkill():ViewAsSkill("shensu"){
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return false;
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        if (Sanguosha->currentRoomState()->getCurrentCardUsePattern().endsWith("1"))
-            return false;
-        else
-            return selected.isEmpty() && !to_select->isKindOf("TrickCard");
-    }
-
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        return  pattern.startsWith("@@shensu");
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if(Sanguosha->currentRoomState()->getCurrentCardUsePattern().endsWith("1")){
-            if(cards.isEmpty())
-                return new ShensuCard;
-            else
-                return NULL;
-        }else{
-            if(cards.length() != 1)
-                return NULL;
-
-            ShensuCard *card = new ShensuCard;
-            card->addSubcards(cards);
-
-            return card;
-        }
-    }
-};
-
-class Shensu: public TriggerSkill{
-public:
-    Shensu():TriggerSkill("shensu"){
-        events << EventPhaseChanging;
-        view_as_skill = new ShensuViewAsSkill;
-    }
-
-    virtual bool trigger(TriggerEvent , Room *room, ServerPlayer *xiahouyuan, QVariant &data) const{
-        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-        if(change.to == Player::Judge && !xiahouyuan->isSkipped(Player::Judge)
-                && !xiahouyuan->isSkipped(Player::Draw)){
-            if(room->askForUseCard(xiahouyuan, "@@shensu1", "@shensu1", 1)){
-                xiahouyuan->skip(Player::Judge);
-                xiahouyuan->skip(Player::Draw);
-            }
-        }else if(change.to == Player::Play && !xiahouyuan->isSkipped(Player::Play)){
-            if(room->askForUseCard(xiahouyuan, "@@shensu2", "@shensu2", 2)){
-                xiahouyuan->skip(Player::Play);
-            }
-        }
-        return false;
-    }
-};
-
 class Jushou: public PhaseChangeSkill{
 public:
     Jushou():PhaseChangeSkill("jushou"){
@@ -1076,7 +986,7 @@ public:
 WindPackage::WindPackage()
     :Package("wind")
 {
-    General *xiahouyuan, *caoren, *huangzhong, *weiyan, *zhangjiao, *zhoutai;
+    /*General *xiahouyuan, *caoren, *huangzhong, *weiyan, *zhangjiao, *zhoutai;
 
     xiahouyuan = new General(this, "xiahouyuan", "wei");
     xiahouyuan->addSkill(new Shensu);
@@ -1107,7 +1017,6 @@ WindPackage::WindPackage()
     General *yuji = new General(this, "yuji", "qun", 3);
     yuji->addSkill(new Guhuo);
 
-    addMetaObject<ShensuCard>();
     addMetaObject<TianxiangCard>();
     addMetaObject<GuidaoCard>();
     addMetaObject<HuangtianCard>();
@@ -1115,7 +1024,7 @@ WindPackage::WindPackage()
     addMetaObject<GuhuoCard>();
 
     skills << new HuangtianViewAsSkill;
-
+	*/
 }
 
 ADD_PACKAGE(Wind)

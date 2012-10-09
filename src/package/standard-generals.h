@@ -117,4 +117,43 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class XunyuCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE XunyuCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class MancaiCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE MancaiCard();
+
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class QiangxiCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE QiangxiCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class BisuoCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE BisuoCard();
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 #endif // STANDARDSKILLCARDS_H

@@ -45,8 +45,8 @@ end
 
 function SmartAI:slashIsEffective(slash, to)
     if to:hasSkill("zuixiang") and to:isLocked(slash) then return false end
-    if to:hasSkill("yizhong") and not to:getArmor() then
-        if slash:isBlack() then
+    if to:hasSkill("zhuyan") and not to:getArmor() then
+        if slash:isBlack() and slash.nature == sgs.DamageStruct_Normal then
             return false
         end
     end
@@ -205,7 +205,7 @@ function SmartAI:useCardSlash(card, use)
     end
 
     for _, friend in ipairs(self.friends_noself) do
-        if friend:hasSkill("yiji") and friend:getLostHp() < 1 and
+        if friend:hasSkill("yumeng") and friend:getLostHp() < 1 and
             not (friend:containsTrick("indulgence") or friend:containsTrick("supply_shortage")) then
             local slash_prohibit = false
             slash_prohibit = self:slashProhibit(card, friend)
@@ -216,7 +216,7 @@ function SmartAI:useCardSlash(card, use)
                     use.card = card
                     if use.to then
                         use.to:append(friend)
-                        self:speak("yiji")
+                        self:speak("yumeng")
                         if self.slash_targets <= use.to:length() then return end
                     end
                 end
@@ -274,7 +274,7 @@ sgs.ai_card_intention.Slash = function(card,from,tos)
             end
         end
         speakTrigger(card,from,to)
-        if to:hasSkill("yiji") then
+        if to:hasSkill("yumeng") then
             -- value = value*(2-to:getHp())/1.1
             value = math.max(value*(2-to:getHp())/1.1, 0)
         end
@@ -896,14 +896,14 @@ function SmartAI:getValuableCard(who)
 
     local equips = sgs.QList2Table(who:getEquips())
     for _,equip in ipairs(equips) do
-        if who:hasSkill("shensu") then return equip:getEffectiveId() end
+        if who:hasSkill("xunyu") then return equip:getEffectiveId() end
         if who:hasSkill("longhun") and not equip:getSuit() == sgs.Card_Diamond then  return equip:getEffectiveId() end
         if who:hasSkill("qixi") and equip:isBlack() then  return equip:getEffectiveId() end
         if who:hasSkill("guidao") and equip:isBlack() then  return equip:getEffectiveId() end
         if who:hasSkill("guose") and equip:getSuit() == sgs.Card_Diamond then  return equip:getEffectiveId() end
         if who:hasSkill("jijiu") and equip:isRed() then  return equip:getEffectiveId() end
         if who:hasSkill("wusheng") and equip:isRed() then  return equip:getEffectiveId() end
-        if who:hasSkill("duanliang") and equip:isBlack() then  return equip:getEffectiveId() end
+        if who:hasSkill("fenghou") and equip:isBlack() then  return equip:getEffectiveId() end
     end
 
     if armor and self:evaluateArmor(armor, who)>0
@@ -999,7 +999,7 @@ function SmartAI:useCardSnatchOrDismantlement(card, use)
             return
         end
         if self:isEquip("SilverLion", friend) and self:hasTrickEffective(card, friend) and 
-        friend:isWounded() and not self:hasSkills("longhun|duanliang|qixi|guidao|lijian|jujian",friend) then
+        friend:isWounded() and not self:hasSkills("longhun|fenghou|qixi|guidao|lijian|jujian",friend) then
             hasLion = true
             target = friend
         end

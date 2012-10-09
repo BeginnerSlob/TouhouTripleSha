@@ -130,7 +130,7 @@ end
 function sgs.ai_skill_invoke.neojushou(self, data)
 	if not self.player:faceUp() then return true end
 	for _, friend in ipairs(self.friends) do
-		if self:hasSkills("fangzhu|jilve", friend) then return true end
+		if self:hasSkills("bisuo|jilve", friend) then return true end
 	end
 	return self:isWeak()
 end

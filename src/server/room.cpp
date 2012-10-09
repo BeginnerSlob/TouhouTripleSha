@@ -4527,14 +4527,14 @@ void Room::retrial(const Card *card, ServerPlayer *player, JudgeStar judge,
         tag["retrial"] = true;
 }
 
-bool Room::askForYiji(ServerPlayer *guojia, QList<int> &cards){
+bool Room::askForYumeng(ServerPlayer *player, QList<int> &cards){
     if(cards.isEmpty())
         return false;
-    notifyMoveFocus(guojia, S_COMMAND_SKILL_YIJI);
-    AI *ai = guojia->getAI();
+    notifyMoveFocus(player, S_COMMAND_SKILL_YUMENG);
+    AI *ai = player->getAI();
     if(ai){
         int card_id;
-        ServerPlayer *who = ai->askForYiji(cards, card_id);
+        ServerPlayer *who = ai->askForYumeng(cards, card_id);
         if(who){
             cards.removeOne(card_id);
             moveCardTo(Sanguosha->getCard(card_id), who, Player::PlaceHand, false);
@@ -4543,10 +4543,10 @@ bool Room::askForYiji(ServerPlayer *guojia, QList<int> &cards){
             return false;
     }else{
 
-        bool success = doRequest(guojia, S_COMMAND_SKILL_YIJI, toJsonArray(cards), true);         
+        bool success = doRequest(player, S_COMMAND_SKILL_YUMENG, toJsonArray(cards), true);         
 
         //Validate client response
-        Json::Value clientReply = guojia->getClientReply();
+        Json::Value clientReply = player->getClientReply();
         if(!success || !clientReply.isArray()
             || clientReply.size() != 2)
             return false;

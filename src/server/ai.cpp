@@ -389,7 +389,7 @@ const Card *TrustAI::askForSinglePeach(ServerPlayer *dying) {
     return NULL;
 }
 
-ServerPlayer *TrustAI::askForYiji(const QList<int> &, int &){
+ServerPlayer *TrustAI::askForYumeng(const QList<int> &, int &){
     return NULL;
 }
 

@@ -115,24 +115,24 @@ const Card *FreeDiscardSkill::viewAs(const QList<const Card *> &cards) const{
 
 // -------------------------------------------
 
-YijiViewAsSkill::YijiViewAsSkill()
-    :ViewAsSkill("yiji")
+YumengViewAsSkill::YumengViewAsSkill()
+    :ViewAsSkill("yumeng")
 {
     card = new RendeCard;
 }
 
-void YijiViewAsSkill::setCards(const QString &card_str)
+void YumengViewAsSkill::setCards(const QString &card_str)
 {
     QStringList cards = card_str.split("+");
     ids = Card::StringsToIds(cards);
 }
 
-bool YijiViewAsSkill::viewFilter(const QList<const Card *> &, const Card* card) const
+bool YumengViewAsSkill::viewFilter(const QList<const Card *> &, const Card* card) const
 {
     return ids.contains(card->getId());
 }
 
-const Card *YijiViewAsSkill::viewAs(const QList<const Card *> &cards) const
+const Card *YumengViewAsSkill::viewAs(const QList<const Card *> &cards) const
 {
     if(cards.isEmpty())
         return NULL;

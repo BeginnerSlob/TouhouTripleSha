@@ -10,7 +10,7 @@ function sgs.ai_skill_invoke.jiushi(self, data)
 	return not self.player:faceUp()
 end
 
-sgs.ai_skill_askforag.luoying = function(self, card_ids)
+sgs.ai_skill_askforag.shihua = function(self, card_ids)
 	return -1
 end
 
@@ -78,7 +78,7 @@ sgs.xushu_keep_value =
 	SavageAssault = 5
 }
 
-function sgs.ai_armor_value.yizhong(card)
+function sgs.ai_armor_value.zhuyan(card)
 	if not card then return 4 end
 end
 
@@ -656,7 +656,7 @@ sgs.ai_skill_use_func.PaiyiCard = function(card, use, self)
 	if not target then
 		for _, friend in ipairs(self.friends_noself) do
 			if friend:getHandcardNum() > 1 and friend:getHandcardNum() + 2 > self.player:getHandcardNum() 
-			and self:hasSkills("jieming|yiji|xinsheng|fangzhu|guixin",friend) then
+			and self:hasSkills("jieming|yumeng|xinsheng|bisuo|guixin",friend) then
 				target = friend
 			end
 			if target then break end

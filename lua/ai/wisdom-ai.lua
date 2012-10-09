@@ -196,7 +196,7 @@ sgs.ai_skill_use["@@bawang"] = function(self, prompt)
 	end
 end
 
-sgs.ai_card_intention.BawangCard = sgs.ai_card_intention.ShensuCard
+sgs.ai_card_intention.BawangCard = sgs.ai_card_intention.XunyuCard
 
 sgs.ai_skill_use["@@weidai"] = function(self, prompt)
 	return "@WeidaiCard=.->."
