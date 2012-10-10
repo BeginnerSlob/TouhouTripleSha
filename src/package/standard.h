@@ -11,7 +11,10 @@ class StandardPackage:public Package{
 
 public:
     StandardPackage();
-    void addGenerals();
+    void addWindGenerals();
+    void addBloomGenerals();
+    void addSnowGenerals();
+    void addLunaGenerals();
 };
 
 class TestPackage: public Package{

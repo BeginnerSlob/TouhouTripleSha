@@ -111,7 +111,7 @@ function SmartAI:useCardSlash(card, use)
 
     self.predictedRange = self.player:getAttackRange()
     if self.player:hasSkill("qingnang") and self:isWeak() and self:getOverflow() == 0 then return end
-    local huatuo = self.room:findPlayerBySkillName("jijiu")
+    local huatuo = self.room:findPlayerBySkillName("huichun")
     for _, friend in ipairs(self.friends_noself) do
         local slash_prohibit = false
         slash_prohibit = self:slashProhibit(card,friend)
@@ -299,7 +299,7 @@ sgs.ai_skill_cardask["slash-jink"] = function(self, data, pattern, target)
         end
     else
         if not effect.slash:hasFlag("drank") then
-            if target:hasSkill("mengjin") and self.player:hasSkill("jijiu") then return "." end
+            if target:hasSkill("mengjin") and self.player:hasSkill("huichun") then return "." end
         end
         if not (self.player:getHandcardNum() == 1 and self:hasSkills(sgs.need_kongcheng)) and not target:hasSkill("qianxi") then
             if self:isEquip("Axe", target) then
@@ -741,7 +741,7 @@ function SmartAI:useCardDuel(duel, use)
     local target 
     local n1 = self:getCardsNum("Slash")
     if self.player:hasSkill("wushuang") then n1 = n1 * 2 end
-    local huatuo = self.room:findPlayerBySkillName("jijiu")
+    local huatuo = self.room:findPlayerBySkillName("huichun")
     for _, friend in ipairs(friends) do
         if friend:hasSkill("jieming") and self.player:hasSkill("rende") and (huatuo and self:isFriend(huatuo))then
             use.card = duel
@@ -816,8 +816,8 @@ function SmartAI:useCardDuel(duel, use)
 end
 
 sgs.ai_card_intention.Duel=function(card,from,tos,source)
-    if sgs.ai_lijian_effect then 
-        sgs.ai_lijian_effect = false
+    if sgs.ai_moyu_effect then 
+        sgs.ai_moyu_effect = false
         return
     end
     sgs.updateIntentions(from, tos, 80)
@@ -901,7 +901,7 @@ function SmartAI:getValuableCard(who)
         if who:hasSkill("qixi") and equip:isBlack() then  return equip:getEffectiveId() end
         if who:hasSkill("guidao") and equip:isBlack() then  return equip:getEffectiveId() end
         if who:hasSkill("guose") and equip:getSuit() == sgs.Card_Diamond then  return equip:getEffectiveId() end
-        if who:hasSkill("jijiu") and equip:isRed() then  return equip:getEffectiveId() end
+        if who:hasSkill("huichun") and equip:isRed() then  return equip:getEffectiveId() end
         if who:hasSkill("wusheng") and equip:isRed() then  return equip:getEffectiveId() end
         if who:hasSkill("fenghou") and equip:isBlack() then  return equip:getEffectiveId() end
     end
@@ -999,7 +999,7 @@ function SmartAI:useCardSnatchOrDismantlement(card, use)
             return
         end
         if self:isEquip("SilverLion", friend) and self:hasTrickEffective(card, friend) and 
-        friend:isWounded() and not self:hasSkills("longhun|fenghou|qixi|guidao|lijian|jujian",friend) then
+        friend:isWounded() and not self:hasSkills("longhun|fenghou|qixi|guidao|moyu|jujian",friend) then
             hasLion = true
             target = friend
         end
@@ -1102,7 +1102,7 @@ function SmartAI:useCardCollateral(card, use)
 
     for _, friend in ipairs(self.friends_noself) do
         if friend:getWeapon() and self:hasSkills(sgs.lose_equip_skill, friend) 
-            and not friend:hasSkill("weimu")
+            and not friend:hasSkill("moyu")
             and not self.room:isProhibited(self.player, friend, card) then
 
             for _, enemy in ipairs(self.enemies) do
@@ -1122,7 +1122,7 @@ function SmartAI:useCardCollateral(card, use)
         if not self.room:isProhibited(self.player, enemy, card)
             and self:hasTrickEffective(card, enemy)
             and not self:hasSkills(sgs.lose_equip_skill, enemy)
-            and not enemy:hasSkill("weimu")
+            and not enemy:hasSkill("moyu")
             and enemy:getWeapon() then
 
             for _, enemy2 in ipairs(self.enemies) do
@@ -1198,7 +1198,7 @@ function SmartAI:useCardIndulgence(card, use)
     
     local enemies = self:exclude(self.enemies, card)
     for _, enemy in ipairs(enemies) do
-        if self:hasSkills("lijian|fanjian",enemy) and not enemy:containsTrick("indulgence") and not enemy:isKongcheng() and enemy:faceUp() and self:objectiveLevel(enemy) > 3 then
+        if self:hasSkills("moyu|fanjian",enemy) and not enemy:containsTrick("indulgence") and not enemy:isKongcheng() and enemy:faceUp() and self:objectiveLevel(enemy) > 3 then
             use.card = card
             if use.to then use.to:append(enemy) end
             return
@@ -1222,7 +1222,7 @@ sgs.dynamic_value.control_usecard.Indulgence = true
 
 function SmartAI:useCardLightning(card, use)
     if self.player:containsTrick("lightning") then return end
-    if self.player:hasSkill("weimu") and card:isBlack() then return end
+    if self.player:hasSkill("moyu") and card:isBlack() then return end
     if self.room:isProhibited(self.player, self.player, card) then end
 
     --if not self:hasWizard(self.enemies) then--and self.room:isProhibited(self.player, self.player, card) then

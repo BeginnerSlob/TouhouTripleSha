@@ -405,6 +405,9 @@
     <ClCompile Include="..\..\src\package\standard-generals-bloom.cpp">
       <Filter>package</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\package\standard-generals-luna.cpp">
+      <Filter>package</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\src\server\ai.h">

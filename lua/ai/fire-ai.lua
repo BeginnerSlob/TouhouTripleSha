@@ -379,10 +379,10 @@ sgs.ai_use_priority.TianyiCard = 4.2
 
 sgs.ai_chaofeng.taishici = 3
 
-local luanji_skill={}
-luanji_skill.name="luanji"
-table.insert(sgs.ai_skills,luanji_skill)
-luanji_skill.getTurnUseCard=function(self)
+local xinghuang_skill={}
+xinghuang_skill.name="xinghuang"
+table.insert(sgs.ai_skills,xinghuang_skill)
+xinghuang_skill.getTurnUseCard=function(self)
 	local first_found, second_found = false, false
 	local first_card, second_card
 	if self.player:getHandcardNum() >= 2 then
@@ -407,10 +407,10 @@ luanji_skill.getTurnUseCard=function(self)
 	end
 
 	if first_found and second_found then
-		local luanji_card = {}
+		local xinghuang_card = {}
 		local first_suit, first_number, first_id = first_card:getSuitString(), first_card:getNumberString(), first_card:getId()
 		local second_suit, second_number, second_id = second_card:getSuitString(), second_card:getNumberString(), second_card:getId()
-		local card_str = ("archery_attack:luanji[%s:%s]=%d+%d"):format(first_suit, first_number, first_id, second_id)
+		local card_str = ("archery_attack:xinghuang[%s:%s]=%d+%d"):format(first_suit, first_number, first_id, second_id)
 		local archeryattack = sgs.Card_Parse(card_str)
 		assert(archeryattack)
 		return archeryattack
@@ -419,7 +419,7 @@ end
 
 sgs.ai_chaofeng.yuanshao = 1
 
-sgs.ai_skill_invoke.shuangxiong=function(self,data)
+sgs.ai_skill_invoke.shuangniang=function(self,data)
 	if self.player:isSkipped(sgs.Player_Play) or self.player:getHp() < 2 then
 		return false
 	end
@@ -445,13 +445,13 @@ sgs.ai_skill_invoke.shuangxiong=function(self,data)
 	return self.player:getHandcardNum()>=self.player:getHp() and target > 0
 end
 
-local shuangxiong_skill={}
-shuangxiong_skill.name="shuangxiong"
-table.insert(sgs.ai_skills,shuangxiong_skill)
-shuangxiong_skill.getTurnUseCard=function(self)
+local shuangniang_skill={}
+shuangniang_skill.name="shuangniang"
+table.insert(sgs.ai_skills,shuangniang_skill)
+shuangniang_skill.getTurnUseCard=function(self)
 
-	if not self.player:getMark("shuangxiong") then return nil end
-	local mark=self.player:getMark("shuangxiong")
+	if not self.player:getMark("shuangniang") then return nil end
+	local mark=self.player:getMark("shuangniang")
 
 	local cards = self.player:getCards("h")
 	cards=sgs.QList2Table(cards)
@@ -469,7 +469,7 @@ shuangxiong_skill.getTurnUseCard=function(self)
 	local suit = card:getSuitString()
 	local number = card:getNumberString()
 	local card_id = card:getEffectiveId()
-	local card_str = ("duel:shuangxiong[%s:%s]=%d"):format(suit, number, card_id)
+	local card_str = ("duel:shuangniang[%s:%s]=%d"):format(suit, number, card_id)
 	local skillcard = sgs.Card_Parse(card_str)
 	assert(skillcard)
 	return skillcard

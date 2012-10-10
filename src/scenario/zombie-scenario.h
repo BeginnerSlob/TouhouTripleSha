@@ -30,13 +30,13 @@ public:
     Q_INVOKABLE GanranEquip(Card::Suit suit, int number);
 };
 
-class PeachingCard: public QingnangCard{
+/*class PeachingCard: public QingnangCard{
     Q_OBJECT
 
 public:
     Q_INVOKABLE PeachingCard();
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-};
+};*/
 
 
 #endif // ZOMBIE_MODE_H

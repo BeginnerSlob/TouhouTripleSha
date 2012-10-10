@@ -11,7 +11,7 @@ local function findPlayerForModifyKingdom(self, players)
 				if isGood ~= sameKingdom then
 					return player
 				end
-			elseif lord:hasLordSkill("xueyi") and not player:isLord() then
+			elseif lord:hasLordSkill("puzhao") and not player:isLord() then
 				local isQun = player:getKingdom() == "qun"
 				if isGood ~= isQun then
 					return player
@@ -36,9 +36,9 @@ local function chooseKingdomForPlayer(self, to_modify)
 				end
 			end
 		end
-	elseif lord:hasLordSkill("xueyi") and not to_modify:isLord() then
+	elseif lord:hasLordSkill("puzhao") and not to_modify:isLord() then
 		return isGood and "qun" or "wei"
-	elseif self.player:hasLordSkill("xueyi") then
+	elseif self.player:hasLordSkill("puzhao") then
 		return "qun"
 	end
 
@@ -52,7 +52,7 @@ sgs.ai_skill_choice.weiwudi_guixin = function(self, choices)
 	end
 
 	if choices ~= "modify+obtain" then
-		if choices:match("xueyi") and not self.room:getLieges("qun", self.player):isEmpty() then return "xueyi" end
+		if choices:match("puzhao") and not self.room:getLieges("qun", self.player):isEmpty() then return "puzhao" end
 		if choices:match("weidai") and self:isWeak() then return "weidai" end
 		if choices:match("ruoyu") then return "ruoyu" end
 		local choice_table = choices:split("+")

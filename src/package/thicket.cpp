@@ -481,108 +481,6 @@ public:
     }
 };
 
-class Luanwu: public ZeroCardViewAsSkill{
-public:
-    Luanwu():ZeroCardViewAsSkill("luanwu"){
-        frequency = Limited;
-    }
-
-    virtual const Card *viewAs() const{
-        return new LuanwuCard;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getMark("@chaos") >= 1;
-    }
-};
-
-LuanwuCard::LuanwuCard(){
-    target_fixed = true;
-}
-
-void LuanwuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    source->loseMark("@chaos");
-    room->broadcastInvoke("animate", "lightbox:$luanwu");
-
-    QList<ServerPlayer *> players = room->getOtherPlayers(source);
-    foreach(ServerPlayer *player, players){
-        if(player->isAlive())
-            room->cardEffect(this, source, player);
-    }
-}
-
-void LuanwuCard::onEffect(const CardEffectStruct &effect) const{
-    Room *room = effect.to->getRoom();
-
-    QList<ServerPlayer *> players = room->getOtherPlayers(effect.to);
-    QList<int> distance_list;
-    int nearest = 1000;
-    foreach(ServerPlayer *player, players){
-        int distance = effect.to->distanceTo(player);
-        distance_list << distance;
-
-        nearest = qMin(nearest, distance);
-    }
-
-    QList<ServerPlayer *> luanwu_targets;
-    for(int i = 0; i < distance_list.length(); i++){
-        if(distance_list.at(i) == nearest && effect.to->canSlash(players.at(i))){
-            luanwu_targets << players.at(i);
-        }
-    }
-
-    if(!luanwu_targets.isEmpty()){
-        if(!room->askForUseSlashTo(effect.to, luanwu_targets, "@luanwu-slash"))
-           room->loseHp(effect.to);
-    }else
-        room->loseHp(effect.to);
-}
-
-class Wansha: public TriggerSkill{
-public:
-    Wansha():TriggerSkill("wansha"){
-        events << Dying;
-        frequency = Compulsory;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return (target != NULL);
-    }
-
-    virtual bool trigger(TriggerEvent , Room* room, ServerPlayer *player, QVariant &data) const{
-        ServerPlayer *jiaxu = room->findPlayerBySkillName(objectName());
-        if(jiaxu && jiaxu->objectName() == room->getCurrent()->objectName()){
-            if(!jiaxu->hasSkill("jilve"))
-                room->broadcastSkillInvoke(objectName());
-            else
-                room->broadcastSkillInvoke("jilve", 3);
-
-            LogMessage log;
-            log.from = jiaxu;
-            log.arg = "wansha";
-            if(jiaxu != player){
-                log.type = "#WanshaTwo";
-                log.to << player;
-            }else{
-                log.type = "#WanshaOne";
-            }
-            room->sendLog(log);
-        }
-        return false;
-    }
-};
-
-class Weimu: public ProhibitSkill{
-public:
-    Weimu():ProhibitSkill("weimu"){
-
-    }
-
-    virtual bool isProhibited(const Player *, const Player *, const Card *card) const{
-        return card->isKindOf("TrickCard") && card->isBlack();
-    }
-};
-
 class Jiuchi: public OneCardViewAsSkill{
 public:
     Jiuchi():OneCardViewAsSkill("jiuchi"){
@@ -814,16 +712,7 @@ ThicketPackage::ThicketPackage()
     dongzhuo->addSkill(new Benghuai);
     dongzhuo->addSkill(new Baonue);
 
-    jiaxu = new General(this, "jiaxu", "qun", 3);
-    jiaxu->addSkill(new Wansha);
-    jiaxu->addSkill(new MarkAssignSkill("@chaos", 1));
-    jiaxu->addSkill(new Weimu);
-    jiaxu->addSkill(new Luanwu);
-    jiaxu->addSkill(new SPConvertSkill("guiwei", "jiaxu", "sp_jiaxu"));
-    related_skills.insertMulti("luanwu", "#@chaos-1");
-
     addMetaObject<DimengCard>();
-    addMetaObject<LuanwuCard>();
     addMetaObject<YinghunCard>();
     addMetaObject<HaoshiCard>();*/
 }

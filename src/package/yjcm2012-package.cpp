@@ -8,75 +8,6 @@
 #include "god.h"
 #include "maneuvering.h"
 
-class Zhenlie: public TriggerSkill{
-public:
-    Zhenlie():TriggerSkill("zhenlie"){
-        events << AskForRetrial;
-    }
-
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        JudgeStar judge = data.value<JudgeStar>();
-        if(judge->who->objectName() != player->objectName())
-            return false;
-
-        if(player->askForSkillInvoke(objectName(), data)){
-            int card_id = room->drawCard();
-            room->broadcastSkillInvoke(objectName(), room->getCurrent() == player ? 2 : 1);
-            room->getThread()->delay();
-            const Card *card = Sanguosha->getCard(card_id);
-
-            room->retrial(card, player, judge, objectName());
-        }
-        return false;
-    }
-};
-
-class Miji: public PhaseChangeSkill{
-public:
-    Miji():PhaseChangeSkill("miji"){
-        frequency = Frequent;
-    }
-
-    virtual bool onPhaseChange(ServerPlayer *wangyi) const{
-        if(!wangyi->isWounded())
-            return false;
-        if(wangyi->getPhase() == Player::Start || wangyi->getPhase() == Player::Finish){
-            if(!wangyi->askForSkillInvoke(objectName()))
-                return false;
-            Room *room = wangyi->getRoom();
-            room->broadcastSkillInvoke(objectName(), 1);
-            JudgeStruct judge;
-            judge.pattern = QRegExp("(.*):(club|spade):(.*)");
-            judge.good = true;
-            judge.reason = objectName();
-            judge.who = wangyi;
-
-            room->judge(judge);
-
-            if(judge.isGood()){
-                int x = wangyi->getLostHp();
-                wangyi->drawCards(x); //It should be preview, not draw
-                ServerPlayer *target = room->askForPlayerChosen(wangyi, room->getAllPlayers(), objectName());
-
-                if (target == wangyi)
-                    room->broadcastSkillInvoke(objectName(), 2);
-                else if (target->getGeneralName().contains("machao"))
-                    room->broadcastSkillInvoke(objectName(), 4);
-                else
-                    room->broadcastSkillInvoke(objectName(), 3);
-
-                QList<const Card *> miji_cards = wangyi->getHandcards().mid(wangyi->getHandcardNum() - x);
-                foreach(const Card *card, miji_cards){
-                    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, wangyi->objectName());
-                    reason.m_playerId == target->objectName();
-                    room->obtainCard(target, card, reason, false);
-                }
-            }
-        }
-        return false;
-    }
-};
-
 QiceCard::QiceCard(){
     will_throw = false;
 }
@@ -885,10 +816,6 @@ YJCM2012Package::YJCM2012Package():Package("YJCM2012"){
     General *madai = new General(this, "madai", "shu");
     madai->addSkill(new Qianxi);
     madai->addSkill("mashu");
-
-    General *wangyi = new General(this, "wangyi", "wei", 3, false);
-    wangyi->addSkill(new Zhenlie);
-    wangyi->addSkill(new Miji);
 
     General *xunyou = new General(this, "xunyou", "wei", 3);
     xunyou->addSkill(new Qice);

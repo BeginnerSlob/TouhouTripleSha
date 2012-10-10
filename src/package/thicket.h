@@ -41,14 +41,4 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class LuanwuCard: public SkillCard{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE LuanwuCard();
-
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-    virtual void onEffect(const CardEffectStruct &effect) const;
-};
-
 #endif // THICKET_H
