@@ -4,7 +4,7 @@ sgs.ai_skill_use["@@bisuo"] = function(self, prompt)
 	self:sort(self.friends_noself)
 	local target
 	for _, friend in ipairs(self.friends_noself) do
-		if self.player:getLostHp() > 1 and friend:hasSkill("jijiu") then
+		if self.player:getLostHp() > 1 and friend:hasSkill("huichun") then
 			target = friend
 			break
 		end
@@ -25,7 +25,7 @@ sgs.ai_skill_use["@@bisuo"] = function(self, prompt)
 		else
 			self:sort(self.enemies)
 			for _, enemy in ipairs(self.enemies) do
-				if enemy:faceUp() and not (((enemy:hasSkill("jushou") or enemy:hasSkill("kuiwei")) and enemy:getPhase() == sgs.Player_Play) or enemy:hasSkill("jijiu")) then
+				if enemy:faceUp() and not (((enemy:hasSkill("jushou") or enemy:hasSkill("kuiwei")) and enemy:getPhase() == sgs.Player_Play) or enemy:hasSkill("huichun")) then
 					target = enemy
 					break
 				end
@@ -285,11 +285,11 @@ sgs.dynamic_value.control_card.DimengCard = true
 
 sgs.ai_chaofeng.lusu = 4
 
-luanwu_skill={}
-luanwu_skill.name="luanwu"
-table.insert(sgs.ai_skills, luanwu_skill)
-luanwu_skill.getTurnUseCard=function(self)
-	if self.player:getMark("@chaos") <= 0 then return end
+wenyue_skill={}
+wenyue_skill.name="wenyue"
+table.insert(sgs.ai_skills, wenyue_skill)
+wenyue_skill.getTurnUseCard=function(self)
+	if self.player:getMark("@wenyue") <= 0 then return end
 	local good, bad = 0, 0
 	local lord = self.room:getLord()
 	if self.role ~= "rebel" and self:isWeak(lord) then return end
@@ -338,7 +338,7 @@ sgs.ai_skill_use_func.LuanwuCard=function(card,use,self)
 	use.card = card
 end
 
-sgs.ai_skill_playerchosen.luanwu = sgs.ai_skill_playerchosen.zero_card_as_slash
+sgs.ai_skill_playerchosen.wenyue = sgs.ai_skill_playerchosen.zero_card_as_slash
 
 sgs.dynamic_value.damage_card.LuanwuCard = true
 

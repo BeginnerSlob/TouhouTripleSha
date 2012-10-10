@@ -118,7 +118,7 @@ const Card *FreeDiscardSkill::viewAs(const QList<const Card *> &cards) const{
 YumengViewAsSkill::YumengViewAsSkill()
     :ViewAsSkill("yumeng")
 {
-    card = new RendeCard;
+    //card = new RendeCard;
 }
 
 void YumengViewAsSkill::setCards(const QString &card_str)

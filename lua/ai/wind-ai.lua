@@ -346,7 +346,7 @@ sgs.ai_skill_use["@@tianxiang"] = function(self, data)
 		if (friend:getLostHp() + dmg.damage>1) then
 			if friend:isChained() and #self:getChainedFriends()>1 and dmg.nature>0 then
 			elseif friend:getHp() >= 2 and dmg.damage<2 and 
-				(self:hasSkills("yumeng|buqu|shuangxiong|zaiqi|yinghun|jianxiong|bisuo", friend) 
+				(self:hasSkills("yumeng|buqu|shuangniang|zaiqi|yinghun|jianxiong|bisuo", friend) 
 				or (friend:getHandcardNum()<3 and friend:hasSkill("rende"))
 				)
 				then return "@TianxiangCard="..card_id.."->"..friend:objectName()

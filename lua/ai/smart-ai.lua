@@ -75,10 +75,10 @@ function setInitialTables()
 	sgs.masochism_skill = 		"huanji|jieming|yumeng|ganglie|enyuan|bisuo|guixin|quanji"
 	sgs.wizard_skill = 			"tiansuo|guidao|jilve|tiandu"
 	sgs.wizard_harm_skill = 	"tiansuo|guidao|jilve"
-	sgs.priority_skill = 		"dimeng|haoshi|qingnang|jizhi|guzheng|qixi|jieyin|guose|fenghou|jujian|fanjian|lijian|manjuan|lihun"
-	sgs.save_skill = 			"jijiu|buyi|jiefan|chunlao"
+	sgs.priority_skill = 		"dimeng|haoshi|qingnang|jizhi|guzheng|qixi|jieyin|guose|fenghou|jujian|fanjian|moyu|manjuan|lihun"
+	sgs.save_skill = 			"huichun|buyi|jiefan|chunlao"
 	sgs.exclusive_skill = 		"huilei|duanchang|enyuan|wuhun|buqu|yumeng|ganglie|guixin|jieming|miji"
-	sgs.cardneed_skill =        "paoxiao|tianyi|xianzhen|shuangxiong|jizhi|guose|fenghou|qixi|qingnang|" ..
+	sgs.cardneed_skill =        "paoxiao|tianyi|xianzhen|shuangniang|jizhi|guose|fenghou|qixi|qingnang|" ..
 								"jieyin|renjie|zhiheng|rende|jujian|tiansuo|guidao|jilve|longhun|wusheng|longdan"
 	sgs.drawpeach_skill =       "tuxi|mancai"
 	sgs.recover_skill =         "rende|kuanggu|zaiqi|jieyin|qingnang|yinghun"
@@ -281,7 +281,7 @@ function SmartAI:getUseValue(card)
 		end
 	elseif card:getTypeId() == sgs.Card_Trick then
 		if self.player:getWeapon() and not self:hasSkills(sgs.lose_equip_skill) and card:isKindOf("Collateral") then v = 2 end
-		if self.player:getMark("shuangxiong") and card:isKindOf("Duel") then v = 8 end
+		if self.player:getMark("shuangniang") and card:isKindOf("Duel") then v = 8 end
 		if self.player:hasSkill("jizhi") then v = 8.7 end
 		if self.player:hasSkill("wumou") and card:isNDTrick() and not card:isKindOf("AOE") then
 			if not (card:isKindOf("Duel") and self.player:hasUsed("WuqianCard")) then v = 1 end
@@ -2195,13 +2195,13 @@ function SmartAI:getCardNeedPlayer(cards)
 	end
 
 	for _,player in ipairs(friends) do
-		if player:hasSkill("jieming") or player:hasSkill("jijiu") then
+		if player:hasSkill("jieming") or player:hasSkill("huichun") then
 			specialnum = specialnum + 1
 		end
 	end
 	if specialnum > 1 and #cardtogivespecial == 0 then
 		local xunyu = self.room:findPlayerBySkillName("jieming")
-		local huatuo = self.room:findPlayerBySkillName("jijiu")
+		local huatuo = self.room:findPlayerBySkillName("huichun")
 		local no_distance = self.slash_distance_limit
 		local redcardnum = 0
 		for _,acard in ipairs(cards) do
@@ -2282,7 +2282,7 @@ function SmartAI:getCardNeedPlayer(cards)
 		end
 
 		for _, friend in ipairs(friends) do
-			if friend:hasSkill("shuangxiong")  and not friend:containsTrick("indulgence") and not friend:containsTrick("supply_shortage") and friend:faceUp() then
+			if friend:hasSkill("shuangniang")  and not friend:containsTrick("indulgence") and not friend:containsTrick("supply_shortage") and friend:faceUp() then
 				for _, hcard in ipairs(cardtogive) do
 					if #cardtogive > 1 then 
 						return hcard, friend
@@ -3168,7 +3168,7 @@ function getCardsNum(class_name, player)
 			return num+(player:getHandcardNum()-shownum)/3
 		end
 	elseif class_name == "Peach" then
-		if player:hasSkill("jijiu") then
+		if player:hasSkill("huichun") then
 			return num + redpeach + (player:getHandcardNum()-shownum)/1.2
 		elseif player:hasSkill("longhun") then
 			return num+heartpeach+(player:getHandcardNum()-shownum)/3
@@ -3673,7 +3673,7 @@ function SmartAI:useTrickCard(card, use)
 		if good > 0 then
 			use.card = card
 		end
-		if self:hasSkills("jianxiong|luanji|manjuan",self.player) then
+		if self:hasSkills("jianxiong|xinghuang|manjuan",self.player) then
 			if good > -10 then use.card = card end
 		end
 	else
@@ -3785,7 +3785,7 @@ function SmartAI:useEquipCard(card, use)
 		or (self.player:hasSkill("yongsi") and self:getOverflow() < 3)
 		or (self:hasSkills("qixi|fenghou") and (card:isBlack() or same:isBlack()))
 		or (self:hasSkills("guose|longhun") and (card:getSuit() == sgs.Card_Diamond or same:getSuit() == sgs.Card_Diamond))
-		or (self:hasSkill("jijiu") and (card:isRed() or same:isRed())) then return end
+		or (self:hasSkill("huichun") and (card:isRed() or same:isRed())) then return end
 	end
 	self:useCardByClassName(card, use)
 	if use.card or use.broken then return end

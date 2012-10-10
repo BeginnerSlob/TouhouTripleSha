@@ -250,7 +250,7 @@ rende_skill.getTurnUseCard=function(self)
     for _, player in ipairs(self.friends_noself) do
         if ((player:hasSkill("haoshi") and not player:containsTrick("supply_shortage")) 
             or player:hasSkill("longluo") or (not player:containsTrick("indulgence") and  player:hasSkill("yishe"))
-            and player:faceUp()) or player:hasSkill("jijiu") then
+            and player:faceUp()) or player:hasSkill("huichun") then
             return sgs.Card_Parse("@RendeCard=.")
         end
     end
@@ -979,12 +979,12 @@ sgs.ai_card_intention.QingnangCard = -100
 
 sgs.dynamic_value.benefit.QingnangCard = true
 
-sgs.ai_view_as.jijiu = function(card, player, card_place)
+sgs.ai_view_as.huichun = function(card, player, card_place)
     local suit = card:getSuitString()
     local number = card:getNumberString()
     local card_id = card:getEffectiveId()
     if card:isRed() and player:getPhase()==sgs.Player_NotActive then
-        return ("peach:jijiu[%s:%s]=%d"):format(suit, number, card_id)
+        return ("peach:huichun[%s:%s]=%d"):format(suit, number, card_id)
     end
 end
 
@@ -1008,18 +1008,18 @@ end
 
 sgs.ai_chaofeng.lvbu = 1
 
-local lijian_skill={}
-lijian_skill.name="lijian"
-table.insert(sgs.ai_skills,lijian_skill)
-lijian_skill.getTurnUseCard=function(self)
-    if self.player:hasUsed("LijianCard") then
+local moyu_skill={}
+moyu_skill.name="moyu"
+table.insert(sgs.ai_skills,moyu_skill)
+moyu_skill.getTurnUseCard=function(self)
+    if self.player:hasUsed("MoyuCard") then
         return 
     end
     if not self.player:isNude() then
         local card
         local card_id
         if self:isEquip("SilverLion") and self.player:isWounded() then
-            card = sgs.Card_Parse("@LijianCard=" .. self.player:getArmor():getId())
+            card = sgs.Card_Parse("@MoyuCard=" .. self.player:getArmor():getId())
         elseif self.player:getHandcardNum() > self.player:getHp() then
             local cards = self.player:getHandcards()
             cards=sgs.QList2Table(cards)
@@ -1052,14 +1052,14 @@ lijian_skill.getTurnUseCard=function(self)
         if not card_id then
             return nil
         else
-            card = sgs.Card_Parse("@LijianCard=" .. card_id)
+            card = sgs.Card_Parse("@MoyuCard=" .. card_id)
             return card
         end
     end
     return nil
 end
 
-sgs.ai_skill_use_func.LijianCard=function(card,use,self)
+sgs.ai_skill_use_func.MoyuCard=function(card,use,self)
     local findFriend_maxSlash=function(self,first)
         self:log("Looking for the friend!")
         local maxSlash = 0
@@ -1081,7 +1081,7 @@ sgs.ai_skill_use_func.LijianCard=function(card,use,self)
         return nil
     end
 
-    if not self.player:hasUsed("LijianCard") then
+    if not self.player:hasUsed("MoyuCard") then
         self:sort(self.enemies, "hp")
         local males = {}
         local first, second
@@ -1140,24 +1140,24 @@ sgs.ai_skill_use_func.LijianCard=function(card,use,self)
     end
 end
 
-sgs.ai_use_value.LijianCard = 8.5
-sgs.ai_use_priority.LijianCard = 4
+sgs.ai_use_value.MoyuCard = 8.5
+sgs.ai_use_priority.MoyuCard = 4
 
-lijian_filter = function(player, carduse)
-    if carduse.card:isKindOf("LijianCard") then
-        sgs.ai_lijian_effect = true
+moyu_filter = function(player, carduse)
+    if carduse.card:isKindOf("MoyuCard") then
+        sgs.ai_moyu_effect = true
     end
 end
 
-table.insert(sgs.ai_choicemade_filter.cardUsed, lijian_filter)
+table.insert(sgs.ai_choicemade_filter.cardUsed, moyu_filter)
 
-sgs.ai_card_intention.LijianCard = function(card, from, to)
+sgs.ai_card_intention.MoyuCard = function(card, from, to)
     if sgs.evaluateRoleTrends(to[1]) == sgs.evaluateRoleTrends(to[2]) then
         sgs.updateIntentions(from, to, 40)
     end
 end
 
-sgs.dynamic_value.damage_card.LijianCard = true
+sgs.dynamic_value.damage_card.MoyuCard = true
 
 sgs.ai_chaofeng.diaochan = 4
 
