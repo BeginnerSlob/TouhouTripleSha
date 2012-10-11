@@ -388,7 +388,7 @@
       <Filter>ui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\record-analysis.cpp">
-      <Filter>Generated Files</Filter>
+      <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="Debug\moc_record-analysis.cpp">
       <Filter>Generated Files\Debug</Filter>
@@ -654,7 +654,7 @@
       <Filter>ui</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\core\record-analysis.h">
-      <Filter>Generated Files</Filter>
+      <Filter>core</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\standard-generals.h">
       <Filter>package</Filter>

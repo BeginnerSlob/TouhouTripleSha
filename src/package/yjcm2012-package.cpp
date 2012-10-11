@@ -369,45 +369,6 @@ public:
     }
 };
 
-class Zishou:public DrawCardsSkill{
-public:
-    Zishou():DrawCardsSkill("zishou"){
-    }
-
-    virtual int getDrawNum(ServerPlayer *liubiao, int n) const{
-        Room *room = liubiao->getRoom();
-        if(liubiao->isWounded() && room->askForSkillInvoke(liubiao, objectName())){
-            room->broadcastSkillInvoke(objectName());
-            liubiao->clearHistory();
-            liubiao->skip(Player::Play);
-            return n + liubiao->getLostHp();
-        }else
-            return n;
-    }
-};
-
-class Zongshi: public MaxCardsSkill{
-public:
-    Zongshi():MaxCardsSkill("zongshi"){
-    }
-    virtual int getExtra(const Player *target) const{
-        int extra = 0;
-        QSet<QString> kingdom_set;
-        if(target->parent()){
-            foreach(const Player *player, target->parent()->findChildren<const Player *>()){
-                if(player->isAlive()){
-                    kingdom_set << player->getKingdom();
-                }
-            }
-        }
-        extra = kingdom_set.size();
-        if(target->hasSkill(objectName()))
-            return extra;
-        else
-            return 0;
-    }
-};
-
 class Shiyong: public TriggerSkill{
 public:
     Shiyong():TriggerSkill("shiyong"){
@@ -778,10 +739,9 @@ public:
     }
 };
 
-
 YJCM2012Package::YJCM2012Package():Package("YJCM2012"){
 
-    General *bulianshi = new General(this, "bulianshi", "wu", 3, false);
+    /*General *bulianshi = new General(this, "bulianshi", "wu", 3, false);
     bulianshi->addSkill(new Anxu);
     bulianshi->addSkill(new Zhuiyi);
 
@@ -809,10 +769,6 @@ YJCM2012Package::YJCM2012Package():Package("YJCM2012"){
     liaohua->addSkill(new MarkAssignSkill("@laoji", 1));
     liaohua->addSkill(new Fuli);
 
-    General *liubiao = new General(this, "liubiao", "qun", 4);
-    liubiao->addSkill(new Zishou);
-    liubiao->addSkill(new Zongshi);
-
     General *madai = new General(this, "madai", "shu");
     madai->addSkill(new Qianxi);
     madai->addSkill("mashu");
@@ -823,7 +779,7 @@ YJCM2012Package::YJCM2012Package():Package("YJCM2012"){
 
     addMetaObject<QiceCard>();
     addMetaObject<ChunlaoCard>();
-    addMetaObject<AnxuCard>();
+    addMetaObject<AnxuCard>();*/
 }
 
 ADD_PACKAGE(YJCM2012)

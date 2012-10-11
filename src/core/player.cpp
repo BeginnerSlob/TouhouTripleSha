@@ -316,7 +316,7 @@ bool Player::hasLordSkill(const QString &skill_name, bool include_lose) const{
     if(isLord() || ServerInfo.EnableHegemony)
         return skills.contains(skill_name) || (include_lose && hasInnateSkill(skill_name));
 
-    if(hasSkill("weidi")){
+    if(hasSkill("shengzun")){
         foreach(const Player *player, getSiblings()){
             if(player->isLord())
                 return player->hasLordSkill(skill_name);

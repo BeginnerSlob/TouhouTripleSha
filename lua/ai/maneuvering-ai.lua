@@ -157,7 +157,7 @@ function SmartAI:useCardSupplyShortage(card, use)
 	table.sort(self.enemies, handcard_subtract_hp)
 	local enemies = self:exclude(self.enemies, card)
 	for _, enemy in ipairs(enemies) do
-		if (self:hasSkills("yongsi|haoshi|tuxi", enemy) or (enemy:hasSkill("zaiqi") and enemy:getLostHp() > 1)) and
+		if (self:hasSkills("chenyan|haoshi|tuxi", enemy) or (enemy:hasSkill("zaiqi") and enemy:getLostHp() > 1)) and
 			not enemy:containsTrick("supply_shortage") and enemy:faceUp() and self:objectiveLevel(enemy) > 3 then
 			use.card = card
 			if use.to then use.to:append(enemy) end
@@ -166,7 +166,7 @@ function SmartAI:useCardSupplyShortage(card, use)
 		end
 	end
 	for _, enemy in ipairs(enemies) do
-		if ((#enemies == 1) or not self:hasSkills("tiandu|guidao",enemy)) and not enemy:containsTrick("supply_shortage") and enemy:faceUp() and self:objectiveLevel(enemy) > 3 then
+		if ((#enemies == 1) or not self:hasSkills("tiandu|tianshi",enemy)) and not enemy:containsTrick("supply_shortage") and enemy:faceUp() and self:objectiveLevel(enemy) > 3 then
 			use.card = card
 			if use.to then use.to:append(enemy) end
 

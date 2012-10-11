@@ -9,36 +9,6 @@
 #include <QButtonGroup>
 #include <QDialog>
 
-
-class GuidaoCard: public SkillCard{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE GuidaoCard();
-
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-};
-
-class LeijiCard: public SkillCard{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE LeijiCard();
-
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual void onEffect(const CardEffectStruct &effect) const;
-};
-
-class HuangtianCard: public SkillCard{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE HuangtianCard();
-
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-};
-
 class TianxiangCard: public SkillCard{
     Q_OBJECT
 

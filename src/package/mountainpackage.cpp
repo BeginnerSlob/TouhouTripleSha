@@ -13,118 +13,6 @@
 
 #include <QCommandLinkButton>
 
-class Beige: public TriggerSkill{
-public:
-    Beige():TriggerSkill("beige"){
-        events << Damaged;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        DamageStruct damage = data.value<DamageStruct>();
-        if(damage.card == NULL || !damage.card->isKindOf("Slash") || damage.to->isDead())
-            return false;
-
-        QList<ServerPlayer *> cais = room->findPlayersBySkillName(objectName());
-        foreach(ServerPlayer *caiwenji, cais){
-            if(!caiwenji->isNude() && caiwenji->askForSkillInvoke(objectName(), data)){
-                room->askForDiscard(caiwenji, "beige", 1, 1, false, true);
-
-                JudgeStruct judge;
-                judge.pattern = QRegExp("(.*):(.*):(.*)");
-                judge.good = true;
-                judge.who = player;
-                judge.reason = objectName();
-
-                room->judge(judge);
-
-                switch(judge.card->getSuit()){
-                case Card::Heart:{
-                        room->broadcastSkillInvoke(objectName(), 4);
-                        RecoverStruct recover;
-                        recover.who = caiwenji;
-                        room->recover(player, recover);
-
-                        break;
-                    }
-
-                case Card::Diamond:{
-                        room->broadcastSkillInvoke(objectName(), 3);
-                        player->drawCards(2);
-                        break;
-                    }
-
-                case Card::Club:{
-                        room->broadcastSkillInvoke(objectName(), 1);
-                        if(damage.from && damage.from->isAlive()){
-                            int to_discard = qMin(2, damage.from->getCardCount(true));
-                            if(to_discard != 0)
-                                room->askForDiscard(damage.from, "beige", to_discard, to_discard, false, true);
-                        }
-
-                        break;
-                    }
-
-                case Card::Spade:{
-                        room->broadcastSkillInvoke(objectName(), 2);
-                        if(damage.from && damage.from->isAlive())
-                            damage.from->turnOver();
-
-                        break;
-                    }
-
-                default:
-                    break;
-                }
-            }
-        }
-        return false;
-    }
-};
-
-class Duanchang: public TriggerSkill{
-public:
-    Duanchang():TriggerSkill("duanchang"){
-        events << Death;
-
-        frequency = Compulsory;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->hasSkill(objectName());
-    }
-
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        DamageStar damage = data.value<DamageStar>();
-
-        if(damage && damage->from){
-            LogMessage log;
-            log.type = "#DuanchangLoseSkills";
-            log.from = player;
-            log.to << damage->from;
-            log.arg = objectName();
-            room->sendLog(log);
-            room->broadcastSkillInvoke(objectName());
-
-            QList<const Skill *> skills = damage->from->getVisibleSkillList();
-            foreach(const Skill *skill, skills){
-                if(skill->getLocation() == Skill::Right)
-                    room->detachSkillFromPlayer(damage->from, skill->objectName());
-            }
-            damage->from->gainMark("@duanchang");
-            if(damage->from->getKingdom() != damage->from->getGeneral()->getKingdom())
-                room->setPlayerProperty(damage->from, "kingdom", damage->from->getGeneral()->getKingdom());
-            if(damage->from->getGender() != damage->from->getGeneral()->getGender())
-                damage->from->setGender(damage->from->getGeneral()->getGender());
-        }
-
-        return false;
-    }
-};
-
 class Tuntian: public DistanceSkill{
 public:
     Tuntian():DistanceSkill("tuntian"){
@@ -1133,11 +1021,6 @@ MountainPackage::MountainPackage()
 
     related_skills.insertMulti("huashen", "#huashen-begin");
     related_skills.insertMulti("huashen", "#huashen-end");
-
-    General *caiwenji = new General(this, "caiwenji", "qun", 3, false);
-    caiwenji->addSkill(new Beige);
-    caiwenji->addSkill(new Duanchang);
-    caiwenji->addSkill(new SPConvertSkill("guixiang", "caiwenji", "sp_caiwenji"));
 
     addMetaObject<QiaobianCard>();
     addMetaObject<TiaoxinCard>();

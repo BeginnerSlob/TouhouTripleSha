@@ -393,7 +393,7 @@ end
 sgs.ai_use_priority.GuihanCard = 8
 
 sgs.ai_skill_invoke.caizhaoji_hujia = function(self, data)
-	local zhangjiao = self.room:findPlayerBySkillName("guidao")
+	local zhangjiao = self.room:findPlayerBySkillName("tianshi")
 	if zhangjiao and self:isEnemy(zhangjiao) and zhangjiao:getCards("he"):length()>2 then return false end
 	return true
 end
@@ -423,7 +423,7 @@ function sgs.ai_skill_invoke.shaoying(self, data)
 		end
 	end
 	if enemynum < 1 then return false end
-	local zhangjiao = self.room:findPlayerBySkillName("guidao")
+	local zhangjiao = self.room:findPlayerBySkillName("tianshi")
 	if not zhangjiao or self:isFriend(zhangjiao) then return true end
 	if not zhangjiao:getCards("e"):isEmpty() then
 		for _, card in sgs.qlist(zhangjiao:getCards("e")) do

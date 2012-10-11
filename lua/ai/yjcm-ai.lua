@@ -478,10 +478,10 @@ sgs.ai_use_priority.MingceCard = 4
 sgs.ai_card_intention.MingceCard = -70
 
 sgs.ai_cardneed.mingce = sgs.ai_cardneed.equip
-local jinjiu_skill={}
-jinjiu_skill.name="jinjiu"
-table.insert(sgs.ai_skills,jinjiu_skill)
-jinjiu_skill.getTurnUseCard=function(self)
+local guozai_skill={}
+guozai_skill.name="guozai"
+table.insert(sgs.ai_skills,guozai_skill)
+guozai_skill.getTurnUseCard=function(self)
 	local cards = self.player:getCards("h")
 	cards=sgs.QList2Table(cards)
 
@@ -500,42 +500,42 @@ jinjiu_skill.getTurnUseCard=function(self)
 		local suit = anal_card:getSuitString()
 		local number = anal_card:getNumberString()
 		local card_id = anal_card:getEffectiveId()
-		local card_str = ("slash:jinjiu[%s:%s]=%d"):format(suit, number, card_id)
+		local card_str = ("slash:guozai[%s:%s]=%d"):format(suit, number, card_id)
 		local slash = sgs.Card_Parse(card_str)
 
 		return slash
 	end
 end
 
-sgs.ai_filterskill_filter.jinjiu = function(card, card_place)
+sgs.ai_filterskill_filter.guozai = function(card, card_place)
 	local suit = card:getSuitString()
 	local number = card:getNumberString()
 	local card_id = card:getEffectiveId()
-	if card:isKindOf("Analeptic") then return ("slash:jinjiu[%s:%s]=%d"):format(suit, number, card_id) end
+	if card:isKindOf("Analeptic") then return ("slash:guozai[%s:%s]=%d"):format(suit, number, card_id) end
 end
 
-local xianzhen_skill={}
-xianzhen_skill.name="xianzhen"
-table.insert(sgs.ai_skills,xianzhen_skill)
-xianzhen_skill.getTurnUseCard=function(self)
-	if not self.player:hasUsed("XianzhenCard") and not self.player:isKongcheng() then return sgs.Card_Parse("@XianzhenCard=.") 
-	elseif self.player:hasUsed("XianzhenCard") and self.player:hasFlag("xianzhen_success") then
-		local card_str = "@XianzhenSlashCard=."
+local lvdong_skill={}
+lvdong_skill.name="lvdong"
+table.insert(sgs.ai_skills,lvdong_skill)
+lvdong_skill.getTurnUseCard=function(self)
+	if not self.player:hasUsed("LvdongCard") and not self.player:isKongcheng() then return sgs.Card_Parse("@LvdongCard=.") 
+	elseif self.player:hasUsed("LvdongCard") and self.player:hasFlag("lvdong_success") then
+		local card_str = "@LvdongSlashCard=."
 		local card = sgs.Card_Parse(card_str)
 		return card
 	end
 end
 
-sgs.ai_skill_use_func.XianzhenSlashCard=function(card,use,self)
-	local target = self.player:getTag("XianzhenTarget"):toPlayer()
-	if self:askForCard("slash", "@xianzhen-slash") == "." then return end
+sgs.ai_skill_use_func.LvdongSlashCard=function(card,use,self)
+	local target = self.player:getTag("LvdongTarget"):toPlayer()
+	if self:askForCard("slash", "@lvdong-slash") == "." then return end
 	
 	if self:getCard("Slash") and self.player:canSlash(target, card, false) and target:isAlive() then
 		use.card=card
 	end
 end
 
-sgs.ai_skill_use_func.XianzhenCard=function(card,use,self)
+sgs.ai_skill_use_func.LvdongCard=function(card,use,self)
 
 	self:sort(self.enemies, "handcard")
 	local max_card = self:getMaxCard()
@@ -558,7 +558,7 @@ sgs.ai_skill_use_func.XianzhenCard=function(card,use,self)
 				if (enemy_max_card and max_point > enemy_max_card:getNumber() and allknown > 0)
 					or (enemy_max_card and max_point > enemy_max_card:getNumber() and allknown < 1 and max_point > 10) 
 					or (not enemy_max_card and max_point > 10) then
-					use.card = sgs.Card_Parse("@XianzhenCard=" .. max_card:getId())
+					use.card = sgs.Card_Parse("@LvdongCard=" .. max_card:getId())
 					if use.to then use.to:append(enemy) end
 					return
 				end
@@ -572,7 +572,7 @@ sgs.ai_skill_use_func.XianzhenCard=function(card,use,self)
 	if shouldUse then
 		for _, enemy in ipairs(self.enemies) do
 			if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() and not enemy:hasSkill("tuntian") then
-				use.card = sgs.Card_Parse("@XianzhenCard=" .. cards[1]:getId())
+				use.card = sgs.Card_Parse("@LvdongCard=" .. cards[1]:getId())
 				if use.to then use.to:append(enemy) end
 				return
 			end
@@ -580,20 +580,20 @@ sgs.ai_skill_use_func.XianzhenCard=function(card,use,self)
 	end
 end
 
-sgs.ai_cardneed.xianzhen = sgs.ai_cardneed.bignumber
-function sgs.ai_skill_pindian.xianzhen(minusecard, self, requestor)
+sgs.ai_cardneed.lvdong = sgs.ai_cardneed.bignumber
+function sgs.ai_skill_pindian.lvdong(minusecard, self, requestor)
 	if self:isFriend(requestor) then return end
 	if requestor:getHandcardNum() <= 2 then return minusecard end
 end
 
-sgs.ai_card_intention.XianzhenCard = 70
+sgs.ai_card_intention.LvdongCard = 70
 
-sgs.dynamic_value.control_card.XianzhenCard = true
+sgs.dynamic_value.control_card.LvdongCard = true
 
-sgs.ai_use_value.XianzhenCard = 9.2
-sgs.ai_use_priority.XianzhenCard = 9.2
+sgs.ai_use_value.LvdongCard = 9.2
+sgs.ai_use_priority.LvdongCard = 9.2
 
-sgs.ai_skill_cardask["@xianzhen-slash"] = function(self)
+sgs.ai_skill_cardask["@lvdong-slash"] = function(self)
 	if self.player:hasSkill("tianxiang") then
 		local dmgStr = {damage = 1, nature = 0}
 		local willTianxiang = sgs.ai_skill_use["@tianxiang"](self, dmgStr)
@@ -601,7 +601,7 @@ sgs.ai_skill_cardask["@xianzhen-slash"] = function(self)
 	elseif self.player:hasSkill("longhun") and self.player:getHp() > 1 then
 		return "."
 	end
-	local target = self.player:getTag("XianzhenTarget"):toPlayer()
+	local target = self.player:getTag("LvdongTarget"):toPlayer()
 	local slashes = self:getCards("Slash")
 	for _, slash in ipairs(slashes) do
 		if self:slashIsEffective(slash, target) then return slash:toString() end
@@ -609,8 +609,8 @@ sgs.ai_skill_cardask["@xianzhen-slash"] = function(self)
 	return "."
 end
 
-sgs.ai_use_value.XianzhenSlashCard = 9.2
-sgs.ai_use_priority.XianzhenSlashCard = 2.6
+sgs.ai_use_value.LvdongSlashCard = 9.2
+sgs.ai_use_priority.LvdongSlashCard = 2.6
 
 sgs.ai_skill_discard.quanji = function(self)
 	local to_discard = {}

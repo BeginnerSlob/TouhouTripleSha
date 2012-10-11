@@ -13,11 +13,11 @@ end
 sgs.ai_skill_playerchosen.SPMoonSpear = sgs.ai_skill_playerchosen.zero_card_as_slash
 sgs.ai_playerchosen_intention.SPMoonSpear = 80
 
-function sgs.ai_slash_prohibit.weidi(self, to, card)
+function sgs.ai_slash_prohibit.shengzun(self, to, card)
 	if to:isLord() then return false end
 	local lord = self.room:getLord()
 	for _, askill in sgs.qlist(lord:getVisibleSkillList()) do
-		if askill:objectName() ~= "weidi" and askill:isLordSkill() then
+		if askill:objectName() ~= "shengzun" and askill:isLordSkill() then
 			local filter = sgs.ai_slash_prohibit[askill:objectName()]
 			if  type(filter) == "function" and filter(self, to, card) then return true end
 		end

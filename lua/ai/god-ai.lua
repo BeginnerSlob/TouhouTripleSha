@@ -94,7 +94,7 @@ function SmartAI:cantbeHurt(player)
 		elseif maxfriendmark+1 > maxenemymark then 
 			return true
 		end
-	elseif player:hasSkill("duanchang") then
+	elseif player:hasSkill("qihuang") then
 		if player:getHp() < 2 then
 			if self:isFriend(player) then
 				return true

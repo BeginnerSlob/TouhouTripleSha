@@ -107,15 +107,6 @@ return {
 	["#JiefanNull2"] = "%from 已经死透了，解烦效果二无法执行。",
 	["#JiefanNull3"] = "因为当前为 %from 的回合， %to 不处于濒死状态，解烦效果二无法执行。",
 
-	["#liubiao"] = "跨蹈汉南",
-	["liubiao"] = "刘表",
-	["designer:liubiao"] = "管乐",
-	["illustrator:liubiao"] = "关东煮",
-	["zishou"] = "自守",
-	[":zishou"] = "摸牌阶段，若你已受伤，你可以额外摸X张牌（X为你已损失的体力值），然后跳过你的出牌阶段。",
-	["zongshi"] = "宗室",
-	[":zongshi"] = "<b>锁定技</b>，你的手牌上限+X（X为现存势力数）。",
-
 	["#huaxiong"] = "魔将",
 	["huaxiong"] = "华雄",
 	["designer:huaxiong"] = "小立",

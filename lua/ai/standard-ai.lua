@@ -475,7 +475,7 @@ sgs.zhaoyun_keep_value =
 
 sgs.ai_skill_invoke.tieji = function(self, data)
     local target = data:toPlayer()
-    local zj = self.room:findPlayerBySkillName("guidao")
+    local zj = self.room:findPlayerBySkillName("tianshi")
     if zj and self:isEnemy(zj) and self:canRetrial(zj) then
         return false
     else
