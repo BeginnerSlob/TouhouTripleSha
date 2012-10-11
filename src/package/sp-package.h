@@ -12,15 +12,6 @@ public:
     SPPackage();
 };
 
-class WeidiCard: public SkillCard{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE WeidiCard();
-
-    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
-};
-
 class SPCardPackage: public Package{
     Q_OBJECT
 

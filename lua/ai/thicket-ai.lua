@@ -200,7 +200,7 @@ local function getBeggar(self)
 end
 
 sgs.ai_skill_invoke.haoshi = function(self, data)
-	if self.player:getHandcardNum() <= 1 and not self.player:hasSkill("yongsi") then
+	if self.player:getHandcardNum() <= 1 and not self.player:hasSkill("chenyan") then
 		return true
 	end
 

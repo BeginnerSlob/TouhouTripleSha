@@ -73,13 +73,13 @@ function setInitialTables()
 	sgs.lose_equip_skill = 		"xiaoji|xuanfeng|nosxuanfeng"
 	sgs.need_kongcheng = 		"lianying|kongcheng"
 	sgs.masochism_skill = 		"huanji|jieming|yumeng|ganglie|enyuan|bisuo|guixin|quanji"
-	sgs.wizard_skill = 			"tiansuo|guidao|jilve|tiandu"
-	sgs.wizard_harm_skill = 	"tiansuo|guidao|jilve"
+	sgs.wizard_skill = 			"tiansuo|tianshi|jilve|tiandu"
+	sgs.wizard_harm_skill = 	"tiansuo|tianshi|jilve"
 	sgs.priority_skill = 		"dimeng|haoshi|qingnang|jizhi|guzheng|qixi|jieyin|guose|fenghou|jujian|fanjian|moyu|manjuan|lihun"
 	sgs.save_skill = 			"huichun|buyi|jiefan|chunlao"
-	sgs.exclusive_skill = 		"huilei|duanchang|enyuan|wuhun|buqu|yumeng|ganglie|guixin|jieming|miji"
-	sgs.cardneed_skill =        "paoxiao|tianyi|xianzhen|shuangniang|jizhi|guose|fenghou|qixi|qingnang|" ..
-								"jieyin|renjie|zhiheng|rende|jujian|tiansuo|guidao|jilve|longhun|wusheng|longdan"
+	sgs.exclusive_skill = 		"huilei|qihuang|enyuan|wuhun|buqu|yumeng|ganglie|guixin|jieming|miji"
+	sgs.cardneed_skill =        "paoxiao|tianyi|lvdong|shuangniang|jizhi|guose|fenghou|qixi|qingnang|" ..
+								"jieyin|renjie|zhiheng|rende|jujian|tiansuo|tianshi|jilve|longhun|wusheng|longdan"
 	sgs.drawpeach_skill =       "tuxi|mancai"
 	sgs.recover_skill =         "rende|kuanggu|zaiqi|jieyin|qingnang|yinghun"
 	
@@ -507,7 +507,7 @@ function SmartAI:cardNeed(card)
 		if self.player:getHp() < 2 then return 10 end
 	end
 	if card:isKindOf("Slash") and (self:getCardsNum("Slash") > 0) then return 4 end
-	if card:isKindOf("Crossbow") and  self:hasSkills("mengyang|yongsi|kurou|keji|wusheng|wushen",self.player) then return 20 end
+	if card:isKindOf("Crossbow") and  self:hasSkills("mengyang|chenyan|kurou|keji|wusheng|wushen",self.player) then return 20 end
 	if card:isKindOf("Axe") and  self:hasSkills("luoyi|jiushi|jiuchi|pojun",self.player) then return 15 end
 	if card:isKindOf("Weapon") and (not self.player:getWeapon()) and (self:getCardsNum("Slash") > 1) then return 6 end
 	if card:isKindOf("Nullification") and self:getCardsNum("Nullification") == 0 then
@@ -1662,8 +1662,8 @@ function SmartAI:filterEvent(event, player, data)
 	elseif event == sgs.StartJudge then
 		local judge = data:toJudge()
 		local reason = judge.reason
-		if reason == "beige" then
-			local caiwenji = self.room:findPlayerBySkillName("beige")
+		if reason == "huiyao" then
+			local caiwenji = self.room:findPlayerBySkillName("huiyao")
 			local intention = -60
 			if player:objectName() == caiwenji:objectName() then intention = 0 end
 			sgs.ai_card_intention.general(caiwenji, player, intention)
@@ -1810,7 +1810,7 @@ function SmartAI:askForNullification(trick, from, to, positive)
 		if self:isFriend(to) then
 			if not (to:hasSkill("guanxing") and global_room:alivePlayerCount() > 4) then 
 				if (trick:isKindOf("Indulgence") and not to:hasSkill("tuxi")) or 
-					(trick:isKindOf("SupplyShortage") and not self:hasSkills("guidao|tiandu",to) and to:getMark("@kuiwei") == 0) then
+					(trick:isKindOf("SupplyShortage") and not self:hasSkills("tianshi|tiandu",to) and to:getMark("@kuiwei") == 0) then
 					return null_card
 				end
 			end 
@@ -2292,7 +2292,7 @@ function SmartAI:getCardNeedPlayer(cards)
 		end
 
 		for _, friend in ipairs(friends) do
-			if friend:hasSkill("xianzhen") or friend:hasSkill("tianyi")  and not friend:containsTrick("indulgence") and friend:faceUp() then
+			if friend:hasSkill("lvdong") or friend:hasSkill("tianyi")  and not friend:containsTrick("indulgence") and friend:faceUp() then
 				for _, hcard in ipairs(cardtogive) do
 					local givebigdone = 0
 					if #cardtogive > 1 and givebigdone ~= 1 and hcard:getNumber() > 10 then 
@@ -2301,7 +2301,7 @@ function SmartAI:getCardNeedPlayer(cards)
 					end
 				end
 				for _, hcard in ipairs(cardtogive) do
-					if #cardtogive > 1 and givebigdone == 1 and (giveslashnum < 2 or friend:hasSkill("xianzhen")) and hcard:isKindOf("Slash") then
+					if #cardtogive > 1 and givebigdone == 1 and (giveslashnum < 2 or friend:hasSkill("lvdong")) and hcard:isKindOf("Slash") then
 						giveslashnum = giveslashnum + 1
 						return hcard, friend
 					end
@@ -2806,7 +2806,7 @@ end
 
 function SmartAI:canRetrial(player) 
 	player = player or self.player
-	if player:hasSkill("guidao") then
+	if player:hasSkill("tianshi") then
 		local blackequipnum = 0
 		for _,equip in sgs.qlist(player:getEquips()) do
 			if equip:isBlack() then blackequipnum = blackequipnum+1 end
@@ -3782,7 +3782,7 @@ function SmartAI:useEquipCard(card, use)
 	local same = self:getSameEquip(card)
 	if same then
 		if (self:hasSkills("rende|qingnang|gongqi"))
-		or (self.player:hasSkill("yongsi") and self:getOverflow() < 3)
+		or (self.player:hasSkill("chenyan") and self:getOverflow() < 3)
 		or (self:hasSkills("qixi|fenghou") and (card:isBlack() or same:isBlack()))
 		or (self:hasSkills("guose|longhun") and (card:getSuit() == sgs.Card_Diamond or same:getSuit() == sgs.Card_Diamond))
 		or (self:hasSkill("huichun") and (card:isRed() or same:isRed())) then return end

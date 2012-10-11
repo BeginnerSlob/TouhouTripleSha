@@ -453,132 +453,6 @@ public:
     }
 };
 
-XianzhenCard::XianzhenCard(){
-    once = true;
-    will_throw = false;
-}
-
-bool XianzhenCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select != Self && ! to_select->isKongcheng();
-}
-
-void XianzhenCard::onEffect(const CardEffectStruct &effect) const{
-    Room *room = effect.from->getRoom();
-
-    const Card *card = Sanguosha->getCard(subcards.first());
-    if(effect.from->pindian(effect.to, "xianzhen", card)){
-        PlayerStar target = effect.to;
-        effect.from->tag["XianzhenTarget"] = QVariant::fromValue(target);
-        room->setPlayerFlag(effect.from, "xianzhen_success");
-        room->setFixedDistance(effect.from, effect.to, 1);
-        room->setPlayerFlag(effect.to, "wuqian");
-    }else{
-        room->setPlayerFlag(effect.from, "xianzhen_failed");
-    }
-}
-
-XianzhenSlashCard::XianzhenSlashCard(){
-    target_fixed = true;
-    can_jilei = true;
-}
-
-void XianzhenSlashCard::onUse(Room *room, const CardUseStruct &card_use) const{
-    ServerPlayer *target = card_use.from->tag["XianzhenTarget"].value<PlayerStar>();
-    if(target == NULL || target->isDead())
-        return;
-
-    if(!card_use.from->canSlash(target, NULL, false))
-        return;
-
-    room->askForUseSlashTo(card_use.from, target, "@xianzhen-slash");
-}
-
-class XianzhenViewAsSkill: public ViewAsSkill{
-public:
-    XianzhenViewAsSkill():ViewAsSkill(""){
-
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return ! player->hasUsed("XianzhenCard") || player->hasFlag("xianzhen_success");
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        if(!selected.isEmpty())
-            return false;
-
-        if(Self->hasUsed("XianzhenCard"))
-            return false;
-
-        return !to_select->isEquipped();
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if(! Self->hasUsed("XianzhenCard")){
-            if(cards.length() != 1)
-                return NULL;
-
-            XianzhenCard *card = new XianzhenCard;
-            card->addSubcards(cards);
-            return card;
-        }else if(Self->hasFlag("xianzhen_success")){
-            if(!cards.isEmpty())
-                return NULL;
-
-            return new XianzhenSlashCard;
-        }else
-            return NULL;
-    }
-};
-
-class Xianzhen: public TriggerSkill{
-public:
-    Xianzhen():TriggerSkill("xianzhen"){
-        view_as_skill = new XianzhenViewAsSkill;
-
-        events << EventPhaseStart << Death;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->hasSkill("xianzhen");
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *gaoshun, QVariant &data) const{
-        ServerPlayer *target = gaoshun->tag["XianzhenTarget"].value<PlayerStar>();
-
-        if(triggerEvent == Death || triggerEvent == EventPhaseStart){
-            if((triggerEvent == Death || gaoshun->getPhase() == Player::Finish) && target){
-                    Room *room = gaoshun->getRoom();
-                    room->setFixedDistance(gaoshun, target, -1);
-                    gaoshun->tag.remove("XianzhenTarget");
-                    room->setPlayerFlag(target, "-wuqian");
-            }
-        }
-        return false;
-    }
-};
-
-class Jinjiu: public FilterSkill{
-public:
-    Jinjiu():FilterSkill("jinjiu"){
-
-    }
-
-    virtual bool viewFilter(const Card* to_select) const{
-        Room *room = Sanguosha->currentRoom();
-        Player::Place place = room->getCardPlace(to_select->getEffectiveId());
-        return place == Player::PlaceHand && to_select->objectName() == "analeptic";
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const{
-        Slash *slash = new Slash(originalCard->getSuit(), originalCard->getNumber());
-        slash->setSkillName(objectName());
-        WrappedCard *card = Sanguosha->getWrappedCard(originalCard->getId());
-        card->takeOver(slash);
-        return card;
-    }
-};
-
 MingceCard::MingceCard(){
     once = true;
     will_throw = false;
@@ -1079,10 +953,6 @@ YJCMPackage::YJCMPackage():Package("YJCM"){
     fazheng->addSkill(new Enyuan);
     fazheng->addSkill(new Xuanhuo);
 
-    General *gaoshun = new General(this, "gaoshun", "qun");
-    gaoshun->addSkill(new Xianzhen);
-    gaoshun->addSkill(new Jinjiu);
-
     General *lingtong = new General(this, "lingtong", "wu");
     lingtong->addSkill(new Xuanfeng);
 
@@ -1122,8 +992,6 @@ YJCMPackage::YJCMPackage():Package("YJCM"){
 
     addMetaObject<MingceCard>();
     addMetaObject<GanluCard>();
-    addMetaObject<XianzhenCard>();
-    addMetaObject<XianzhenSlashCard>();
     addMetaObject<XuanfengCard>();
     addMetaObject<XuanhuoCard>();
     addMetaObject<XinzhanCard>();

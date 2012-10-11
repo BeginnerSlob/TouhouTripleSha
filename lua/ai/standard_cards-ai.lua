@@ -64,7 +64,7 @@ function SmartAI:slashIsEffective(slash, to)
     if self.player:hasSkill("zonghuo") then nature = sgs.DamageStruct_Fire end
     if not self:damageIsEffective(to, nature) then return false end
 
-    if self.player:hasWeapon("QinggangSword") or (self.player:hasFlag("xianzhen_success") and self.room:getTag("XianzhenTarget"):toPlayer() == to) then
+    if self.player:hasWeapon("QinggangSword") or (self.player:hasFlag("lvdong_success") and self.room:getTag("LvdongTarget"):toPlayer() == to) then
         return true
     end
 
@@ -606,7 +606,7 @@ sgs.ai_skill_invoke.EightDiagram = function(self, data)
     if sgs.hujiasource and not self:isFriend(sgs.hujiasource) then return false end
     if sgs.lianlisource and not self:isFriend(sgs.lianlisource) then return false end
     if self.player:hasSkill("tiandu") then return true end
-    if self:hasSkills("guidao", self.enemies) and self:getFinalRetrial(sgs.hujiasource) == 2 then
+    if self:hasSkills("tianshi", self.enemies) and self:getFinalRetrial(sgs.hujiasource) == 2 then
         return false
     end	
     if self:getDamagedEffects(self) then return false end
@@ -614,7 +614,7 @@ sgs.ai_skill_invoke.EightDiagram = function(self, data)
 end
 
 function sgs.ai_armor_value.EightDiagram(player, self)
-    local haszj = self:hasSkills("guidao", self:getEnemies(player))
+    local haszj = self:hasSkills("tianshi", self:getEnemies(player))
     if haszj then 
         return 2
     end
@@ -859,7 +859,7 @@ function SmartAI:getDangerousCard(who)
     if (weapon and weapon:isKindOf("Spear") and who:hasSkill("paoxiao"))  then return  weapon:getEffectiveId() end
     if (weapon and weapon:isKindOf("Axe") and self:hasSkills("luoyi|pojun|jiushi|jiuchi", who)) then return weapon:getEffectiveId() end
     if (who:getArmor() and who:getArmor():isKindOf("EightDiagram") and who:getArmor():getSuit() == sgs.Card_Spade and who:hasSkill("leiji")) then return who:getArmor():getEffectiveId() end
-    if (weapon and weapon:isKindOf("SPMoonSpear") and self:hasSkills("guidao|chongzhen|tiansuo|jilve", who)) then return weapon:getEffectiveId() end
+    if (weapon and weapon:isKindOf("SPMoonSpear") and self:hasSkills("tianshi|chongzhen|tiansuo|jilve", who)) then return weapon:getEffectiveId() end
     if (weapon and who:hasSkill("liegong")) then return weapon:getEffectiveId() end
 end
 
@@ -899,7 +899,7 @@ function SmartAI:getValuableCard(who)
         if who:hasSkill("xunyu") then return equip:getEffectiveId() end
         if who:hasSkill("longhun") and not equip:getSuit() == sgs.Card_Diamond then  return equip:getEffectiveId() end
         if who:hasSkill("qixi") and equip:isBlack() then  return equip:getEffectiveId() end
-        if who:hasSkill("guidao") and equip:isBlack() then  return equip:getEffectiveId() end
+        if who:hasSkill("tianshi") and equip:isBlack() then  return equip:getEffectiveId() end
         if who:hasSkill("guose") and equip:getSuit() == sgs.Card_Diamond then  return equip:getEffectiveId() end
         if who:hasSkill("huichun") and equip:isRed() then  return equip:getEffectiveId() end
         if who:hasSkill("wusheng") and equip:isRed() then  return equip:getEffectiveId() end
@@ -999,7 +999,7 @@ function SmartAI:useCardSnatchOrDismantlement(card, use)
             return
         end
         if self:isEquip("SilverLion", friend) and self:hasTrickEffective(card, friend) and 
-        friend:isWounded() and not self:hasSkills("longhun|fenghou|qixi|guidao|moyu|jujian",friend) then
+        friend:isWounded() and not self:hasSkills("longhun|fenghou|qixi|tianshi|moyu|jujian",friend) then
             hasLion = true
             target = friend
         end

@@ -145,7 +145,7 @@ end
 sgs.ai_chaofeng.huangzhong = 1
 sgs.ai_chaofeng.weiyan = -2
 
-sgs.ai_skill_cardask["@guidao-card"]=function(self, data)
+sgs.ai_skill_cardask["@tianshi-card"]=function(self, data)
 	local judge = data:toJudge()
 	local all_cards = self.player:getCards("he")
 	if all_cards:isEmpty() then return "." end
@@ -162,12 +162,12 @@ sgs.ai_skill_cardask["@guidao-card"]=function(self, data)
 		if self:needRetrial(judge) then
 			self:sortByUseValue(cards, true)
 			if self:getUseValue(judge.card) > self:getUseValue(cards[1]) then
-				return "@GuidaoCard[" .. cards[1]:getSuitString() .. ":" .. cards[1]:getNumberString() .."]=" .. cards[1]:getId()
+				return "@TianshiCard[" .. cards[1]:getSuitString() .. ":" .. cards[1]:getNumberString() .."]=" .. cards[1]:getId()
 			end
 		end
 	elseif self:needRetrial(judge) or self:getUseValue(judge.card) > self:getUseValue(sgs.Sanguosha:getCard(card_id)) then
 		local card = sgs.Sanguosha:getCard(card_id)
-		return "@GuidaoCard[" .. card:getSuitString() .. ":" .. card:getNumberString() .. "]=" .. card_id
+		return "@TianshiCard[" .. card:getSuitString() .. ":" .. card:getNumberString() .. "]=" .. card_id
 	end
 	
 	return "."
@@ -215,12 +215,12 @@ function sgs.ai_cardneed.leiji(to, card, self)
 	return card:isKindOf("Jink") and self:getCardsNum("Jink")>1
 end
 
-local huangtianv_skill={}
-huangtianv_skill.name="huangtianv"
-table.insert(sgs.ai_skills,huangtianv_skill)
+local yujiv_skill={}
+yujiv_skill.name="yujiv"
+table.insert(sgs.ai_skills,yujiv_skill)
 
-huangtianv_skill.getTurnUseCard=function(self)
-	if self.player:hasFlag("ForbidHuangtian") then return nil end
+yujiv_skill.getTurnUseCard=function(self)
+	if self.player:hasFlag("ForbidYuji") then return nil end
 	if self.player:getKingdom() ~= "qun" then return nil end
 
 	local cards = self.player:getCards("h")	
@@ -242,17 +242,17 @@ huangtianv_skill.getTurnUseCard=function(self)
 	end
 	
 	local card_id = card:getEffectiveId()
-	local card_str = "@HuangtianCard="..card_id
+	local card_str = "@YujiCard="..card_id
 	local skillcard = sgs.Card_Parse(card_str)
 		
 	assert(skillcard)
 	return skillcard
 end
 
-sgs.ai_skill_use_func.HuangtianCard=function(card,use,self)
+sgs.ai_skill_use_func.YujiCard=function(card,use,self)
 	local targets = {}
 	for _, friend in ipairs(self.friends_noself) do
-		if friend:hasLordSkill("huangtian") and not friend:hasFlag("HuangtianInvoked") then
+		if friend:hasLordSkill("yuji") and not friend:hasFlag("YujiInvoked") then
 			table.insert(targets, friend)
 		end
 	end
@@ -266,10 +266,10 @@ sgs.ai_skill_use_func.HuangtianCard=function(card,use,self)
 	end
 end
 
-sgs.ai_card_intention.HuangtianCard = -80
+sgs.ai_card_intention.YujiCard = -80
 
-sgs.ai_use_priority.HuangtianCard = 10
-sgs.ai_use_value.HuangtianCard = 8.5
+sgs.ai_use_priority.YujiCard = 10
+sgs.ai_use_value.YujiCard = 8.5
 
 sgs.zhangjiao_suit_value = 
 {

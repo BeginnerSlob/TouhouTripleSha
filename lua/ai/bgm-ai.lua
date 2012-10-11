@@ -603,7 +603,7 @@ sgs.ai_skill_use_func.YinlingCard=function(card,use,self)
 
 	for _, friend in ipairs(friends) do
 		if self:isEquip("SilverLion", friend) and self:hasTrickEffective(card, friend) and 
-		friend:isWounded() and not self:hasSkills("longhun|fenghou|qixi|guidao|moyu|jujian",friend) then
+		friend:isWounded() and not self:hasSkills("longhun|fenghou|qixi|tianshi|moyu|jujian",friend) then
 			hasLion = true
 			target = friend
 		end
