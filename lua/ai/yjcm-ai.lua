@@ -14,7 +14,7 @@ sgs.ai_skill_askforag.shihua = function(self, card_ids)
 	return -1
 end
 
-sgs.ai_skill_use["@@jujian"] = function(self, prompt)
+sgs.ai_skill_use["@@sishi2"] = function(self, prompt)
 	local needfriend = 0
 	local nobasiccard = -1
 	local cards = self.player:getCards("he")
@@ -37,23 +37,23 @@ sgs.ai_skill_use["@@jujian"] = function(self, prompt)
 	self:sort(self.friends_noself,"defense")
 	for _, friend in ipairs(self.friends_noself) do
 		if not friend:faceUp() then
-			return "@JujianCard="..nobasiccard.."->"..friend:objectName()
+			return "@Sishi2Card="..nobasiccard.."->"..friend:objectName()
 		end
 	end
 	for _, friend in ipairs(self.friends_noself) do
 		if friend:getArmor() and friend:getArmor():objectName() == "Vine" and (friend:isChained() and not self:isGoodChainPartner(friend)) then
-			return "@JujianCard="..nobasiccard.."->"..friend:objectName()
+			return "@Sishi2Card="..nobasiccard.."->"..friend:objectName()
 		end
 	end
 	for _, friend in ipairs(self.friends_noself) do
 		if self:isWeak(friend) then
-			return "@JujianCard="..nobasiccard.."->"..friend:objectName()
+			return "@Sishi2Card="..nobasiccard.."->"..friend:objectName()
 		end
 	end
-	return "@JujianCard="..nobasiccard.."->"..self.friends_noself[1]:objectName()
+	return "@Sishi2Card="..nobasiccard.."->"..self.friends_noself[1]:objectName()
 end
 
-sgs.ai_skill_choice.jujian = function(self, choices)
+sgs.ai_skill_choice.sishi2 = function(self, choices)
 	if not self.player:faceUp() then return "reset" end
 	if self:isEquip("Vine") and self.player:isChained() and not self:isGoodChainPartner() then 
 		return "reset"
@@ -62,7 +62,7 @@ sgs.ai_skill_choice.jujian = function(self, choices)
 	return "draw"
 end
 
-sgs.ai_card_intention.JujianCard = -100
+sgs.ai_card_intention.Sishi2Card = -100
 
 sgs.xushu_keep_value = 
 {
@@ -82,23 +82,23 @@ function sgs.ai_armor_value.zhuyan(card)
 	if not card then return 4 end
 end
 
-local xinzhan_skill={}
-xinzhan_skill.name="xinzhan"
-table.insert(sgs.ai_skills,xinzhan_skill)
-xinzhan_skill.getTurnUseCard=function(self)
-	if not self.player:hasUsed("XinzhanCard") and self.player:getHandcardNum() > self.player:getMaxHp() then
-		return sgs.Card_Parse("@XinzhanCard=.")
+local xinchao_skill={}
+xinchao_skill.name="xinchao"
+table.insert(sgs.ai_skills,xinchao_skill)
+xinchao_skill.getTurnUseCard=function(self)
+	if not self.player:hasUsed("XinchaoCard") and self.player:getHandcardNum() > self.player:getMaxHp() then
+		return sgs.Card_Parse("@XinchaoCard=.")
 	end
 end
 
-sgs.ai_skill_use_func.XinzhanCard=function(card,use,self)
+sgs.ai_skill_use_func.XinchaoCard=function(card,use,self)
 	use.card = card
 end
 
-sgs.ai_use_value.XinzhanCard = 4.4
-sgs.ai_use_priority.XinzhanCard = 9.2
+sgs.ai_use_value.XinchaoCard = 4.4
+sgs.ai_use_priority.XinchaoCard = 9.2
 
-function sgs.ai_slash_prohibit.huilei(self, to)
+function sgs.ai_slash_prohibit.shangshi(self, to)
 	if self.player:hasSkill("jueqing") then return false end
 	if self:isFriend(to) and self:isWeak(to) then return true end
 	return #self.enemies>1 and self:isWeak(to) and self.player:getHandcardNum()>3
@@ -110,17 +110,17 @@ sgs.ai_skill_invoke.enyuan = function(self, data)
 	local damage = data:toDamage()
 	local from = damage.from
 	local source = self.room:getCurrent()
-	local xuanhuotarget 
+	local xxuuaannhhuuootarget 
 	if from then
 		return not self:isFriend(from)
 	else
 		for _, player in sgs.qlist(self.room:getAlivePlayers()) do
-			if player:hasFlag("xuanhuo_target") then
-				xuanhuotarget = player
+			if player:hasFlag("xxuuaannhhuuoo_target") then
+				xxuuaannhhuuootarget = player
 			end
 		end
-		if xuanhuotarget then
-			return self:isFriend(xuanhuotarget)
+		if xxuuaannhhuuootarget then
+			return self:isFriend(xxuuaannhhuuootarget)
 		else
 			return self:isFriend(source)
 		end
@@ -144,13 +144,13 @@ function sgs.ai_slash_prohibit.enyuan(self)
 	if self:isWeak() then return true end
 end
 
-sgs.ai_skill_use["@@xuanhuo"] = function(self, prompt)
+sgs.ai_skill_use["@@xxuuaannhhuuoo"] = function(self, prompt)
 	local lord = self.room:getLord()
 	local killloyal = 0
 	local robequip = 0
 	if self:isEnemy(lord) then 
 		for _, enemy in ipairs(self.enemies) do
-			if lord:canSlash(enemy) and (enemy:getHp() < 2 and not enemy:hasSkill("buqu"))
+			if lord:canSlash(enemy) and (enemy:getHp() < 2 and not enemy:hasSkill("susheng"))
 			and sgs.getDefense(enemy) < 2 then
 				killloyal = killloyal + 1
 			end
@@ -164,39 +164,39 @@ sgs.ai_skill_use["@@xuanhuo"] = function(self, prompt)
 	end
 	if #self.enemies < 2 and killloyal < 1 and robequip < 1 then return "." end
 	if self:isEnemy(lord) and killloyal > 0 then
-		self.room:setPlayerFlag(lord, "xuanhuo_target")
-		return "@XuanhuoCard=.->"..lord:objectName()
+		self.room:setPlayerFlag(lord, "xxuuaannhhuuoo_target")
+		return "@XXuuaannhhuuooCard=.->"..lord:objectName()
 	end
 	for _, enemy in ipairs(self.enemies) do
 		if enemy:getCards("e"):length() > 1 and self:getCardsNum("Slash", enemy) == 0 
 		and not self:hasSkills(sgs.lose_equip_skill,enemy) then
-			self.room:setPlayerFlag(enemy, "xuanhuo_target")
-			return "@XuanhuoCard=.->"..enemy:objectName()
+			self.room:setPlayerFlag(enemy, "xxuuaannhhuuoo_target")
+			return "@XXuuaannhhuuooCard=.->"..enemy:objectName()
 		end
 	end
 	self:sort(self.enemies,"defense")
 	for _, friend in ipairs(self.friends_noself) do
 		for _, enemy in ipairs(self.enemies) do
-			if friend:canSlash(enemy) and (enemy:getHp() < 2 and not enemy:hasSkill("buqu"))
+			if friend:canSlash(enemy) and (enemy:getHp() < 2 and not enemy:hasSkill("susheng"))
 			and sgs.getDefense(enemy) < 2 then
-				self.room:setPlayerFlag(friend, "xuanhuo_target")
-				return "@XuanhuoCard=.->"..friend:objectName()
+				self.room:setPlayerFlag(friend, "xxuuaannhhuuoo_target")
+				return "@XXuuaannhhuuooCard=.->"..friend:objectName()
 			end
 		end
 	end
 	for _, friend in ipairs(self.friends_noself) do
 		if self:hasSkills(sgs.lose_equip_skill, friend) and not friend:getEquips():isEmpty() then
-			self.room:setPlayerFlag(friend, "xuanhuo_target")
-			return "@XuanhuoCard=.->"..friend:objectName()
+			self.room:setPlayerFlag(friend, "xxuuaannhhuuoo_target")
+			return "@XXuuaannhhuuooCard=.->"..friend:objectName()
 		end
 	end
 	self:sort(self.friends_noself,"defense")
-		self.room:setPlayerFlag(self.friends_noself[1], "xuanhuo_target")
-		return "@XuanhuoCard=.->"..self.friends_noself[1]:objectName()
+		self.room:setPlayerFlag(self.friends_noself[1], "xxuuaannhhuuoo_target")
+		return "@XXuuaannhhuuooCard=.->"..self.friends_noself[1]:objectName()
 end
 
-sgs.ai_skill_choice.xuanhuo = function(self, choices)
-	local fazheng = self.room:findPlayerBySkillName("xuanhuo")
+sgs.ai_skill_choice.xxuuaannhhuuoo = function(self, choices)
+	local fazheng = self.room:findPlayerBySkillName("xxuuaannhhuuoo")
 	if fazheng and not self:isFriend(fazheng) then 
 		for _, friend in ipairs(self.friends_noself) do
 			if self.player:canSlash(friend) and self:isWeak(friend) then
@@ -206,7 +206,7 @@ sgs.ai_skill_choice.xuanhuo = function(self, choices)
 		return "slash"
 	end
 	for _, enemy in ipairs(self.enemies) do
-		if self.player:canSlash(enemy) and (enemy:getHp() < 2 and not enemy:hasSkill("buqu"))
+		if self.player:canSlash(enemy) and (enemy:getHp() < 2 and not enemy:hasSkill("susheng"))
 		and sgs.getDefense(enemy) < 2 then
 			return "slash"
 		end
@@ -214,17 +214,17 @@ sgs.ai_skill_choice.xuanhuo = function(self, choices)
 	return "give"
 end
 
-sgs.ai_skill_playerchosen.xuanhuo = function(self, targets)
+sgs.ai_skill_playerchosen.xxuuaannhhuuoo = function(self, targets)
 	targets = sgs.QList2Table(targets)
 	self:sort(targets,"defense")
 	for _, target in ipairs(targets) do
-		if self:isEnemy(target) and not target:hasSkill("buqu") then
+		if self:isEnemy(target) and not target:hasSkill("susheng") then
 			return target
 		end
 	end
 end
 
-sgs.ai_skill_cardask["xuanhuo-slash"] = function(self, data, pattern, target, target2)
+sgs.ai_skill_cardask["xxuuaannhhuuoo-slash"] = function(self, data, pattern, target, target2)
 	if target and target2  and self:isEnemy(target2) then
 		for _, slash in ipairs(self:getCards("Slash")) do
 			if self:slashIsEffective(slash, target2) then 
@@ -247,8 +247,8 @@ sgs.ai_skill_cardask["xuanhuo-slash"] = function(self, data, pattern, target, ta
 	return "."
 end
 
-sgs.ai_playerchosen_intention.xuanhuo = 80
-sgs.ai_card_intention.XuanhuoCard = -30
+sgs.ai_playerchosen_intention.xxuuaannhhuuoo = 80
+sgs.ai_card_intention.XXuuaannhhuuooCard = -30
 
 sgs.ai_chaofeng.fazheng = -3
 
@@ -300,7 +300,7 @@ end
 
 
 
-sgs.ai_skill_invoke.pojun = function(self, data)
+sgs.ai_skill_invoke.zhongqu = function(self, data)
 	local damage = data:toDamage()
 
 	if not damage.to:faceUp() then
@@ -426,7 +426,7 @@ sgs.ai_skill_use_func.MingceCard=function(card,use,self)
 	self:sort(self.friends_noself, "defense")
 	local friends = self.friends_noself
 	for _, friend in ipairs(friends) do
-		if friend:getHp() <= 2 and friend:getHandcardNum() < 2 and not (friend:hasSkill("kongcheng") and friend:isKongcheng()) then
+		if friend:getHp() <= 2 and friend:getHandcardNum() < 2 and not (friend:hasSkill("jingmo") and friend:isKongcheng()) then
 			target = friend
 			break
 		end
@@ -435,7 +435,7 @@ sgs.ai_skill_use_func.MingceCard=function(card,use,self)
 	if not target then
 		local maxAttackRange=0
 		for _, friend in ipairs(friends) do
-			if friend:getAttackRange() > maxAttackRange and not (friend:hasSkill("kongcheng") and friend:isKongcheng()) then
+			if friend:getAttackRange() > maxAttackRange and not (friend:hasSkill("jingmo") and friend:isKongcheng()) then
 				maxAttackRange = friend:getAttackRange()
 				target = friend
 			end
@@ -443,7 +443,7 @@ sgs.ai_skill_use_func.MingceCard=function(card,use,self)
 	end
 
 	if not target then
-		local zhugeliang = self.room:findPlayerBySkillName("kongcheng")
+		local zhugeliang = self.room:findPlayerBySkillName("jingmo")
 		if zhugeliang and zhugeliang:isKongcheng() and zhugeliang:getHp() < 2 and zhugeliang:objectName() ~= self.player:objectName() then
 			target = zhugeliang
 		end
@@ -549,7 +549,7 @@ sgs.ai_skill_use_func.LvdongCard=function(card,use,self)
 		local dummy_use = {isDummy = true}
 		self:useBasicCard(slash, dummy_use)
 		for _, enemy in ipairs(self.enemies) do
-			if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+			if not (enemy:hasSkill("jingmo") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
 				local enemy_max_card = self:getMaxCard(enemy)
 				local allknown = 0
 				if self:getKnownNum(enemy) == enemy:getHandcardNum() then
@@ -571,7 +571,7 @@ sgs.ai_skill_use_func.LvdongCard=function(card,use,self)
 	local shouldUse = self:getOverflow() > 0
 	if shouldUse then
 		for _, enemy in ipairs(self.enemies) do
-			if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() and not enemy:hasSkill("tuntian") then
+			if not (enemy:hasSkill("jingmo") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() and not enemy:hasSkill("tuntian") then
 				use.card = sgs.Card_Parse("@LvdongCard=" .. cards[1]:getId())
 				if use.to then use.to:append(enemy) end
 				return
@@ -594,9 +594,9 @@ sgs.ai_use_value.LvdongCard = 9.2
 sgs.ai_use_priority.LvdongCard = 9.2
 
 sgs.ai_skill_cardask["@lvdong-slash"] = function(self)
-	if self.player:hasSkill("tianxiang") then
+	if self.player:hasSkill("zhihui") then
 		local dmgStr = {damage = 1, nature = 0}
-		local willTianxiang = sgs.ai_skill_use["@tianxiang"](self, dmgStr)
+		local willTianxiang = sgs.ai_skill_use["@zhihui"](self, dmgStr)
 		if willTianxiang ~= "." then return "." end
 	elseif self.player:hasSkill("longhun") and self.player:getHp() > 1 then
 		return "."

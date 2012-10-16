@@ -72,7 +72,7 @@ public:
 
     // consts
     static const int S_CHOOSE_GENERAL_TIMEOUT;
-    static const int S_GUANXING_TIMEOUT;
+    static const int S_YUXI_TIMEOUT;
     static const int S_SURRNDER_REQUEST_MIN_INTERVAL;
     static const int S_PROGRESS_BAR_UPDATE_INTERVAL;
     static const int S_SERVER_TIMEOUT_GRACIOUS_PERIOD;

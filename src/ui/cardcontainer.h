@@ -68,16 +68,16 @@ signals:
     void item_gongxined(int card_id);
 };
 
-class GuanxingBox: public QSanSelectableItem{
+class YuxiBox: public QSanSelectableItem{
     Q_OBJECT
 
 public:
-    GuanxingBox();
+    YuxiBox();
     void clear();
     void reply();
 
 public slots:
-    void doGuanxing(const QList<int> &card_ids, bool up_only);
+    void doYuxi(const QList<int> &card_ids, bool up_only);
     void adjust();
 
 private:

@@ -408,6 +408,12 @@
     <ClCompile Include="..\..\src\package\standard-generals-luna.cpp">
       <Filter>package</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\package\standard-generals-snow.cpp">
+      <Filter>package</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\package\standard-generals-wind.cpp">
+      <Filter>package</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\src\server\ai.h">

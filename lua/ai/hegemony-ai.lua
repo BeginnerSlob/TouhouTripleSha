@@ -43,7 +43,7 @@ if sgs.GetConfig("EnableHegemony", false) then
 		end
 		local vequips, defense = 0
 		if self.player:getWeapon() or self:hasHegSkills("yitian", players) then vequips = vequips + 1 end
-		if (self.player:getArmor() and self:evaluateArmor()>0) or self:hasHegSkills("bazhen|zhuyan", players) then
+		if (self.player:getArmor() and self:evaluateArmor()>0) or self:hasHegSkills("shengtang|zhuyan", players) then
 			vequips = vequips + 2 defense = true end
 		if self.player:getDefensiveHorse() or self:hasHegSkills("feiying", players) then vequips = vequips + 1.5 defense = true end
 		if self.player:getOffensiveHorse() or self:hasHegSkills("mashu", players) then vequips = vequips + 0.5 end

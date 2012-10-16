@@ -74,7 +74,7 @@ end
 
 function sgs.ai_armor_value.Vine(player, self)
 	for _, enemy in ipairs(self:getEnemies(player)) do
-		if (enemy:canSlash(player) and self:isEquip("Fan",enemy)) or self:hasSkills("huoji|shaoying", enemy) then return -1 end
+		if (enemy:canSlash(player) and self:isEquip("Fan",enemy)) or self:hasSkills("longxi|shaoying", enemy) then return -1 end
 		if enemy:objectName() == self.player:objectName() and (self:getCardId("FireSlash", enemy) or self:getCardId("FireAttack",enemy)) then return -1 end
 	end
 	if #(self:getEnemies(player))<3 then return 4 end
@@ -206,7 +206,7 @@ function SmartAI:isGoodChainPartner(player)
 	if player:getRole() == "lord" then
 		return false
 	end
-	if player:hasSkill("buqu") or (self:hasSkills("yumeng|jieming|guixin",player) and player:getHp() > 1) or
+	if player:hasSkill("susheng") or (self:hasSkills("yumeng|jieming|guixin",player) and player:getHp() > 1) or
 		(self.player:hasSkill("niepan") and self.player:getMark("@@nirvana") > 0) or 
 			player:hasSkill("fuli") and player:getMark("@laoji") > 0 then  
 		return true
@@ -231,12 +231,12 @@ function SmartAI:isGoodChainTarget(who)
 		if self:isGoodChainPartner(friend) then 
 			good = good+1 
 		end
-		if self:isWeak(friend) and not friend:hasSkill("buqu") then 
+		if self:isWeak(friend) and not friend:hasSkill("susheng") then 
 			good = good-1 
 		end
 	end
 	for _, enemy in ipairs(self:getChainedEnemies(self.player)) do
-		if enemy:getHp() < 3 and not enemy:hasSkill("buqu") and enemy:getRole() == "lord" and self.player:getRole() == "renegade" then
+		if enemy:getHp() < 3 and not enemy:hasSkill("susheng") and enemy:getRole() == "lord" and self.player:getRole() == "renegade" then
 			return false
 		end
 		if self:cantbeHurt(enemy) then
@@ -245,7 +245,7 @@ function SmartAI:isGoodChainTarget(who)
 		if self:isGoodChainPartner(enemy) then 
 			bad = bad+1 
 		end
-		if self:isWeak(enemy) and not enemy:hasSkill("buqu") then 
+		if self:isWeak(enemy) and not enemy:hasSkill("susheng") then 
 			bad = bad-1 
 		end
 	end
@@ -256,7 +256,7 @@ end
 function SmartAI:useCardIronChain(card, use)    
 	use.card = card
 	if #self.enemies == 1 and #(self:getChainedFriends()) <= 1 then return end
-	if self:needBear() then return end
+	if self:needBear(self.player) then return end
 	local friendtargets = {}
 	local enemytargets = {}
 	local yangxiu = self.room:findPlayerBySkillName("danlao")
@@ -314,7 +314,7 @@ sgs.ai_use_priority.IronChain = 2.8
 sgs.dynamic_value.benefit.IronChain = true
 
 function SmartAI:useCardFireAttack(fire_attack, use)  
-	if self.player:hasSkill("wuyan") then return end
+	if self.player:hasSkill("mitu") then return end
 	if self.player:hasSkill("noswuyan") then return end
 	local lack = {
 		spade = true,
@@ -332,7 +332,7 @@ function SmartAI:useCardFireAttack(fire_attack, use)
 		end
 	end
 
-	if self.player:hasSkill("hongyan") then
+	if self.player:hasSkill("chiqiu") then
 		lack.spade = true
 	end
 
@@ -387,7 +387,7 @@ sgs.ai_cardshow.fire_attack = function(self, requestor)
 	club = 2,
 	diamond = 1
 	}
-	if self.player:hasSkill("hongyan") then
+	if self.player:hasSkill("chiqiu") then
 		priority  =
 		{
 			heart = 4,
@@ -405,9 +405,9 @@ sgs.ai_cardshow.fire_attack = function(self, requestor)
 			index = priority[card:getSuitString()]
 		end
 	end
-	if self.player:hasSkill("hongyan") and result:getSuit() == sgs.Card_Spade then
+	if self.player:hasSkill("chiqiu") and result:getSuit() == sgs.Card_Spade then
 		result = sgs.Sanguosha:cloneCard(result:objectName(), sgs.Card_Heart, result:getNumber())
-		result:setSkillName("hongyan")
+		result:setSkillName("chiqiu")
 	end
 
 	return result

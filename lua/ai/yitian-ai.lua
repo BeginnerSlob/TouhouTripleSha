@@ -149,7 +149,7 @@ sgs.ai_skill_use["@@jueji"]=function(self,prompt)
 	local handcard
 	if not self.enemies then return end
 	for _, enemy in ipairs(self.enemies) do
-		if not target or (enemy:getHandcardNum()<handcard and enemy:getHandcardNum()>0 and not (enemy:getHandcardNum()==1 and self:hasSkills(sgs.need_kongcheng,enemy))) then
+		if not target or (enemy:getHandcardNum()<handcard and enemy:getHandcardNum()>0 and not (enemy:getHandcardNum()==1 and self:hasSkills(sgs.need_jingmo,enemy))) then
 			target=enemy
 			handcard=enemy:getHandcardNum()
 		end
@@ -214,7 +214,7 @@ sgs.ai_skill_choice.wuling = function(self, choices)
 			if self:isEquip("GaleShell", enemy) or self:isEquip("Vine", enemy) then return "wind" end
 		end
 		for _,friend in ipairs(self.friends) do
-			if friend:hasSkill("huoji") then return "wind" end
+			if friend:hasSkill("longxi") then return "wind" end
 		end
 		if #(self:getChainedFriends()) < #(self:getChainedEnemies()) and
 			#(self:getChainedFriends()) + #(self:getChainedEnemies()) > 1 then return "wind" end

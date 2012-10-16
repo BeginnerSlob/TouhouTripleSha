@@ -8,7 +8,7 @@ sgs.ai_skill_invoke["weapon_recast"] = function(self, data)
 end
 
 sgs.ai_skill_invoke["draw_1v3"] = function(self, data)
-	return not (self.player:hasSkill("kongcheng") and self.player:isKongcheng())
+	return not (self.player:hasSkill("jingmo") and self.player:isKongcheng())
 end
 
 sgs.ai_skill_invoke.xiuluo = function(self, data)

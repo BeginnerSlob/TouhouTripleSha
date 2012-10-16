@@ -161,6 +161,8 @@
     <ClCompile Include="..\..\src\core\util.cpp" />
     <ClCompile Include="..\..\src\core\WrappedCard.cpp" />
     <ClCompile Include="..\..\src\package\standard-generals-luna.cpp" />
+    <ClCompile Include="..\..\src\package\standard-generals-snow.cpp" />
+    <ClCompile Include="..\..\src\package\standard-generals-wind.cpp" />
     <ClCompile Include="..\..\src\ui\TablePile.cpp" />
     <ClCompile Include="..\..\src\ui\GenericCardContainerUI.cpp" />
     <ClCompile Include="..\..\src\ui\magatamasItem.cpp" />

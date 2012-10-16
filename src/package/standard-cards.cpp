@@ -21,7 +21,7 @@ void Slash::setNature(DamageStruct::Nature nature){
 }
 
 bool Slash::IsAvailable(const Player *player){
-    if(player->hasFlag("tianyi_failed") || player->hasFlag("lvdong_failed"))
+    if(player->hasFlag("jianmie_failed") || player->hasFlag("lvdong_failed"))
         return false;
 
     return (player->hasWeapon("Crossbow") || player->canSlashWithoutCrossbow());
@@ -124,15 +124,15 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
         slash_targets += 2;
 
     bool distance_limit = true;
-    if(Self->hasFlag("tianyi_success")){
+    if(Self->hasFlag("jianmie_success")){
         distance_limit = false;
         slash_targets++;
     }
 
-    if(targets.length() >= slash_targets)
-        return false;
-
     if(isKindOf("WushenSlash"))
+        distance_limit = false;
+
+    if(getSuit() == Card::Heart && Self->hasSkill("zhenhong"))
         distance_limit = false;
 
     if(Self->hasFlag("jiangchi_invoke"))
@@ -147,7 +147,29 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
     if(Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
         rangefix += 1;
 
-    return Self->canSlash(to_select, this, distance_limit, rangefix);
+	if(targets.length() >= slash_targets) {
+		bool hasUsed = false;
+        if (Self->hasSkill("xindu") && targets.length() == slash_targets) {
+            foreach(const Player *p, targets) {
+				if(Self->distanceTo(p) == 1) {
+					hasUsed = true;
+					break;
+				}
+			}
+
+			if(hasUsed)
+				return Self->canSlash(to_select, this, distance_limit, rangefix);
+			else
+				return Self->canSlash(to_select, this) && Self->distanceTo(to_select) == 1;
+		}
+        else
+            return false;
+    }
+
+	if (Self->hasSkill("xiagong") && !Self->getWeapon())
+		return Self->canSlash(to_select, this, false) && Self->distanceTo(to_select) <= 2;
+	else
+		return Self->canSlash(to_select, this, distance_limit, rangefix);
 }
 
 Jink::Jink(Suit suit, int number):BasicCard(suit, number){
@@ -265,7 +287,7 @@ public:
                 bool do_anim = false;
                 foreach(ServerPlayer *p, use.to){
                     p->addMark("qinggang");
-                    if (p->getArmor() || p->hasSkill("bazhen")) do_anim = true;
+                    if (p->getArmor() || p->hasSkill("shengtang")) do_anim = true;
                 }
                 if (do_anim){
                     room->setEmotion(use.from, "weapon/qinggang_sword");
@@ -918,7 +940,7 @@ bool Snatch::targetFilter(const QList<const Player *> &targets, const Player *to
     if(to_select == Self)
         return false;
 
-    if(Self->distanceTo(to_select) > 1 && !Self->hasSkill("qicai"))
+    if(Self->distanceTo(to_select) > 1 && !Self->hasSkill("jizhi"))
         return false;
 
     return true;

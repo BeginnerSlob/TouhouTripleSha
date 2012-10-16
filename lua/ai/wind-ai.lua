@@ -14,7 +14,7 @@ sgs.ai_skill_use["@@xunyu1"]=function(self,prompt)
 			((amr:isKindOf("Vine") and not self.player:hasWeapon("Fan"))
 			or (amr:objectName()=="EightDiagram"))
 			
-		if enemy:hasSkill("kongcheng") and enemy:isKongcheng() then
+		if enemy:hasSkill("jingmo") and enemy:isKongcheng() then
 		elseif self:slashProhibit(nil, enemy) then
 		elseif def<6 and eff then return "@XunyuCard=.->"..enemy:objectName()
 
@@ -30,7 +30,7 @@ sgs.ai_skill_use["@@xunyu1"]=function(self,prompt)
 			((amr:isKindOf("Vine") and not self.player:hasWeapon("Fan"))
 			or (amr:objectName()=="EightDiagram"))
 
-		if enemy:hasSkill("kongcheng") and enemy:isKongcheng() then
+		if enemy:hasSkill("jingmo") and enemy:isKongcheng() then
 		elseif self:slashProhibit(nil, enemy) then
 		elseif eff and def<8 then return "@XunyuCard=.->"..enemy:objectName()
 		else return "." end
@@ -84,9 +84,9 @@ sgs.ai_skill_use["@@xunyu2"]=function(self,prompt)
 		local amr=enemy:getArmor()
 		local eff=(not amr) or self.player:hasWeapon("QinggangSword") or not
 			((amr:isKindOf("Vine") and not self.player:hasWeapon("Fan"))
-			or (amr:objectName()=="EightDiagram") or enemy:hasSkill("bazhen"))
+			or (amr:objectName()=="EightDiagram") or enemy:hasSkill("shengtang"))
 
-		if enemy:hasSkill("kongcheng") and enemy:isKongcheng() then
+		if enemy:hasSkill("jingmo") and enemy:isKongcheng() then
 		elseif self:slashProhibit(nil, enemy) then
 		elseif eff then
 			if enemy:getHp() == 1 and self:getCardsNum("Jink", enemy) == 0 then best_target = enemy break end
@@ -187,7 +187,7 @@ sgs.ai_skill_use["@@leiji"]=function(self,prompt)
 	self:updatePlayers()
 	self:sort(self.enemies,"hp")
 	for _,enemy in ipairs(self.enemies) do
-		if not self:isEquip("SilverLion", enemy) and not enemy:hasSkill("hongyan") and
+		if not self:isEquip("SilverLion", enemy) and not enemy:hasSkill("chiqiu") and
 			self:objectiveLevel(enemy) > 3 and not self:cantbeHurt(enemy) and not (enemy:isChained() and not self:isGoodChainTarget(enemy)) then
 			return "@LeijiCard=.->"..enemy:objectName()
 		end
@@ -258,7 +258,7 @@ sgs.ai_skill_use_func.YujiCard=function(card,use,self)
 	end
 	
 	if #targets == 0 then return end
-	if self:needBear() then return "." end
+	if self:needBear(self.player) then return "." end
 	use.card=card
 	self:sort(targets, "defense")
 	if use.to then
@@ -279,7 +279,7 @@ sgs.zhangjiao_suit_value =
 
 sgs.ai_chaofeng.zhangjiao = 4
 
-sgs.ai_skill_askforag.buqu = function(self, card_ids)
+sgs.ai_skill_askforag.susheng = function(self, card_ids)
 	for i, card_id in ipairs(card_ids) do
 		for j, card_id2 in ipairs(card_ids) do
 			if i ~= j and sgs.Sanguosha:getCard(card_id):getNumber() == sgs.Sanguosha:getCard(card_id2):getNumber() then
@@ -291,7 +291,7 @@ sgs.ai_skill_askforag.buqu = function(self, card_ids)
 	return card_ids[1]
 end
 
-function sgs.ai_skill_invoke.buqu(self, data)
+function sgs.ai_skill_invoke.susheng(self, data)
 	if #self.enemies == 1 and self.enemies[1]:hasSkill("guhuo") then
 		return false
 	else
@@ -301,13 +301,13 @@ end
 
 sgs.ai_chaofeng.zhoutai = -4
 
-function sgs.ai_filterskill_filter.hongyan(card, card_place)
+function sgs.ai_filterskill_filter.chiqiu(card, card_place)
 	if card:getSuit() == sgs.Card_Spade then
-		return ("%s:hongyan[heart:%s]=%d"):format(card:objectName(), card:getNumberString(), card:getEffectiveId())
+		return ("%s:chiqiu[heart:%s]=%d"):format(card:objectName(), card:getNumberString(), card:getEffectiveId())
 	end
 end
 
-sgs.ai_skill_use["@@tianxiang"] = function(self, data)
+sgs.ai_skill_use["@@zhihui"] = function(self, data)
 	local friend_lost_hp = 10
 	local friend_hp = 0
 	local card_id
@@ -315,7 +315,7 @@ sgs.ai_skill_use["@@tianxiang"] = function(self, data)
 	local cant_use_skill
 	local dmg
 
-	if data == "@tianxiang-card" then
+	if data == "@zhihui-card" then
 		dmg = self.player:getTag("TianxiangDamage"):toDamage()
 	else
 		dmg = data
@@ -325,7 +325,7 @@ sgs.ai_skill_use["@@tianxiang"] = function(self, data)
 	cards=sgs.QList2Table(cards)
 	self:sortByUseValue(cards,true)
 	for _,card in ipairs(cards) do
-		if ((card:getSuit() == sgs.Card_Spade and self:hasSkill("hongyan")) or card:getSuit() == sgs.Card_Heart) and not card:isKindOf("Peach") then
+		if ((card:getSuit() == sgs.Card_Spade and self:hasSkill("chiqiu")) or card:getSuit() == sgs.Card_Heart) and not card:isKindOf("Peach") then
 			card_id = card:getId()
 			break
 		end
@@ -337,7 +337,7 @@ sgs.ai_skill_use["@@tianxiang"] = function(self, data)
 	for _, enemy in ipairs(self.enemies) do
 		if (enemy:getHp() <= dmg.damage) then
 
-		if (enemy:getHandcardNum() <= 2) or self:hasSkills("guose|leiji|ganglie|enyuan|zhongyan|wuyan|kongcheng", enemy)
+		if (enemy:getHandcardNum() <= 2) or self:hasSkills("guose|leiji|ganglie|enyuan|zhongyan|mitu|jingmo", enemy)
 			or enemy:containsTrick("indulgence") then return "@TianxiangCard="..card_id.."->"..enemy:objectName() end
 		end
 	end
@@ -346,11 +346,11 @@ sgs.ai_skill_use["@@tianxiang"] = function(self, data)
 		if (friend:getLostHp() + dmg.damage>1) then
 			if friend:isChained() and #self:getChainedFriends()>1 and dmg.nature>0 then
 			elseif friend:getHp() >= 2 and dmg.damage<2 and 
-				(self:hasSkills("yumeng|buqu|shuangniang|zaiqi|yinghun|jianxiong|bisuo", friend) 
+				(self:hasSkills("yumeng|susheng|shuangniang|zaiqi|liangban|jianxiong|bisuo", friend) 
 				or (friend:getHandcardNum()<3 and friend:hasSkill("rende"))
 				)
 				then return "@TianxiangCard="..card_id.."->"..friend:objectName()
-			elseif friend:hasSkill("buqu") then return "@TianxiangCard="..card_id.."->"..friend:objectName() end
+			elseif friend:hasSkill("susheng") then return "@TianxiangCard="..card_id.."->"..friend:objectName() end
 		end
 	end
 
@@ -358,7 +358,7 @@ sgs.ai_skill_use["@@tianxiang"] = function(self, data)
 		if enemy:getLostHp() <= 1 or dmg.damage>1 then
 
 			if (enemy:getHandcardNum() <= 2)
-				or enemy:containsTrick("indulgence") or self:hasSkills("guose|leiji|ganglie|enyuan|zhongyan|wuyan|kongcheng", enemy)
+				or enemy:containsTrick("indulgence") or self:hasSkills("guose|leiji|ganglie|enyuan|zhongyan|mitu|jingmo", enemy)
 			then return "@TianxiangCard="..card_id.."->"..enemy:objectName() end
 		end
 	end
@@ -373,7 +373,7 @@ sgs.ai_skill_use["@@tianxiang"] = function(self, data)
 	return "."
 end
 
-function sgs.ai_slash_prohibit.tianxiang(self, to)
+function sgs.ai_slash_prohibit.zhihui(self, to)
 	if self:isFriend(to) then return false end
 	return self:cantbeHurt(to)
 end

@@ -11,15 +11,6 @@ public:
     ThicketPackage();
 };
 
-class YinghunCard: public SkillCard{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE YinghunCard();
-
-    virtual void onEffect(const CardEffectStruct &effect) const;
-};
-
 class HaoshiCard: public SkillCard{
     Q_OBJECT
 
