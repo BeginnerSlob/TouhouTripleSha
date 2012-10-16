@@ -383,11 +383,12 @@ public:
     static const int S_REASON_GOTBACK = 0x37;           // from placetable to hand
     static const int S_REASON_RECYCLE = 0x47;           // from discardpile to hand
     static const int S_REASON_ROB = 0x57;               // got a definite card from other's hand
+	static const int S_REASON_PREVIEWGIVE = 0x67;       // give cards after previewing, i.e. Yiji & Miji
 
     //subcategory of show
     static const int S_REASON_TURNOVER = 0x18;          // show n cards  from drawpile
     static const int S_REASON_JUDGE = 0x28;             // show a card  from drawpile for judge
-    static const int S_REASON_PREVIEW = 0x38;           // Not done yet, plan for view some cards for self only(guanxing yumeng miji)
+    static const int S_REASON_PREVIEW = 0x38;           // Not done yet, plan for view some cards for self only(yuxi yumeng miji)
     static const int S_REASON_DEMONSTRATE = 0x48;       // show a card which copy one to move to table
 
     //subcategory of transfer
@@ -952,7 +953,7 @@ public:
     void sendJudgeResult(const JudgeStar judge);
     QList<int> getNCards(int n, bool update_pile_number = true);
     ServerPlayer *getLord() const;
-    void askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, bool up_only);
+    void askForYuxi(ServerPlayer *zhuge, const QList<int> &cards, bool up_only);
     void doGongxin(ServerPlayer *shenlumeng, ServerPlayer *target);
     int drawCard();
     const Card *peek();
@@ -1062,7 +1063,7 @@ public:
     bool askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims, const char *prompt);
     int askForAG(ServerPlayer *player, const QList<int> &card_ids, bool refusable, const char *reason);
     const Card *askForCardShow(ServerPlayer *player, ServerPlayer *requestor, const char *reason);
-    bool askForYumeng(ServerPlayer *guojia, QList<int> &cards);
+    bool askForYumeng(ServerPlayer *player, QList<int> &cards, bool is_preview = true, bool visible = false);
     const Card *askForPindian(ServerPlayer *player, ServerPlayer *from, ServerPlayer *to, const char *reason);
     ServerPlayer *askForPlayerChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets, const char *reason);
     QString askForGeneral(ServerPlayer *player, const QStringList &generals, char *default_choice = NULL);    

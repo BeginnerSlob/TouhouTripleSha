@@ -14,7 +14,7 @@ sgs.ai_skill_invoke.qianxi = function(self, data)
 	local target = damage.to
 	if self:isFriend(target) then return false end
 	if target:getLostHp() >= 2 and target:getHp() <= 1 then return false end
-	if self:hasSkills(sgs.masochism_skill,target) or self:hasSkills(sgs.recover_skill,target) or self:hasSkills("longhun|buqu",target) then return true end
+	if self:hasSkills(sgs.masochism_skill,target) or self:hasSkills(sgs.recover_skill,target) or self:hasSkills("longhun|susheng",target) then return true end
 	if damage.damage > 1 then return false end
 	return (target:getMaxHp() - target:getHp()) < 2 
 end
@@ -76,7 +76,7 @@ sgs.ai_skill_choice.jiangchi = function(self, choices)
 			((amr:isKindOf("Vine") and not self.player:hasWeapon("Fan"))
 			or (amr:objectName()=="EightDiagram"))
 			
-		if enemy:hasSkill("kongcheng") and enemy:isKongcheng() then
+		if enemy:hasSkill("jingmo") and enemy:isKongcheng() then
 		elseif self:slashProhibit(nil, enemy) then
 		elseif def<6 and eff and needburst > 0 then return "chi"
 		end	
@@ -89,7 +89,7 @@ sgs.ai_skill_choice.jiangchi = function(self, choices)
 			((amr:isKindOf("Vine") and not self.player:hasWeapon("Fan"))
 			or (amr:objectName()=="EightDiagram"))
 
-		if enemy:hasSkill("kongcheng") and enemy:isKongcheng() then
+		if enemy:hasSkill("jingmo") and enemy:isKongcheng() then
 		elseif self:slashProhibit(nil, enemy) then
 		elseif eff and def<8 and needburst > 0 then return "chi"
 		end
@@ -98,19 +98,19 @@ sgs.ai_skill_choice.jiangchi = function(self, choices)
 	return "cancel"
 end
 
-sgs.ai_view_as.gongqi = function(card, player, card_place)
+sgs.ai_view_as.xuanren = function(card, player, card_place)
 	local suit = card:getSuitString()
 	local number = card:getNumberString()
 	local card_id = card:getEffectiveId()
 	if card:getTypeId() == sgs.Card_Equip then
-		return ("slash:gongqi[%s:%s]=%d"):format(suit, number, card_id)
+		return ("slash:xuanren[%s:%s]=%d"):format(suit, number, card_id)
 	end
 end
 
-local gongqi_skill={}
-gongqi_skill.name="gongqi"
-table.insert(sgs.ai_skills,wusheng_skill)
-gongqi_skill.getTurnUseCard=function(self,inclusive)
+local xuanren_skill={}
+xuanren_skill.name="xuanren"
+table.insert(sgs.ai_skills,xuanren_skill)
+xuanren_skill.getTurnUseCard=function(self,inclusive)
 	local cards = self.player:getCards("he")
 	cards=sgs.QList2Table(cards)
 	
@@ -129,7 +129,7 @@ gongqi_skill.getTurnUseCard=function(self,inclusive)
 		local suit = equip_card:getSuitString()
 		local number = equip_card:getNumberString()
 		local card_id = equip_card:getEffectiveId()
-		local card_str = ("slash:gongqi[%s:%s]=%d"):format(suit, number, card_id)
+		local card_str = ("slash:xuanren[%s:%s]=%d"):format(suit, number, card_id)
 		local slash = sgs.Card_Parse(card_str)
 		
 		assert(slash)
@@ -138,7 +138,7 @@ gongqi_skill.getTurnUseCard=function(self,inclusive)
 	end
 end
 
-sgs.ai_skill_invoke.jiefan = function(self, data)
+sgs.ai_skill_invoke.jieyou = function(self, data)
 	local dying = data:toDying()
 	local slashnum = 0
 	local friend = dying.who
@@ -152,7 +152,7 @@ sgs.ai_skill_invoke.jiefan = function(self, data)
 		and (currentplayer:getHandcardNum() > 2 or self:isEquip("EightDiagram", currentplayer))) and slashnum > 0
 end
 
-sgs.ai_skill_cardask["jiefan-slash"] = function(self, data, pattern, target)
+sgs.ai_skill_cardask["jieyou-slash"] = function(self, data, pattern, target)
 	target = target or global_room:getCurrent()
 	for _, slash in ipairs(self:getCards("Slash")) do
 		if self:slashIsEffective(slash, target) then 

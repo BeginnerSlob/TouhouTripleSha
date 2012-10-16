@@ -31,7 +31,7 @@ public:
         AskForAG,
         AskForPlayerChoose,
         AskForYumeng,
-        AskForGuanxing,
+        AskForYuxi,
         AskForGongxin,
         AskForShowOrPindian
     };
@@ -69,7 +69,7 @@ public:
     void onPlayerInvokeSkill(bool invoke);
     void onPlayerDiscardCards(const Card *card);
     void onPlayerReplyYumeng(const Card *card, const Player *to);
-    void onPlayerReplyGuanxing(const QList<int> &up_cards, const QList<int> &down_cards);
+    void onPlayerReplyYuxi(const QList<int> &up_cards, const QList<int> &down_cards);
     void onPlayerAssignRole(const QList<QString> &names, const QList<QString> &roles);
     QList<const ClientPlayer *> getPlayers() const;
     void speakToServer(const QString &text);
@@ -153,7 +153,7 @@ public:
     void askForPlayerChosen(const Json::Value &);
     void askForGeneral(const Json::Value &);
     void askForYumeng(const Json::Value &);
-    void askForGuanxing(const Json::Value &);
+    void askForYuxi(const Json::Value &);
     void askForGongxin(const Json::Value &);
     void askForAssign(const Json::Value &); // Assign roles at the beginning of game
     void askForSurrender(const Json::Value &);
@@ -289,7 +289,7 @@ signals:
     void player_revived(const QString &who);
     void card_shown(const QString &player_name, int card_id);
     void log_received(const QString &log_str);
-    void guanxing(const QList<int> &card_ids, bool up_only);
+    void yuxi(const QList<int> &card_ids, bool up_only);
     void gongxin(const QList<int> &card_ids, bool enable_heart);
     void focus_moved(const QStringList &focus, QSanProtocol::Countdown countdown);
     void emotion_set(const QString &target, const QString &emotion);

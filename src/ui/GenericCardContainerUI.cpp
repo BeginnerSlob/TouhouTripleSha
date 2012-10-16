@@ -359,7 +359,7 @@ void PlayerCardContainer::updatePile(const QString &pile_name)
         menu->setProperty("private_pile", "true");
 
         //Sort the cards in pile by number can let players know what is in this pile more clear.
-        //If someone has "buqu", we can got which card he need or which he hate easier.
+        //If someone has "susheng", we can got which card he need or which he hate easier.
         QList<const Card *> cards;
         foreach(int card_id, pile){
             const Card *card = Sanguosha->getCard(card_id);

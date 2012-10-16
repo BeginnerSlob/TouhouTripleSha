@@ -6,85 +6,6 @@
 #include "carditem.h"
 #include "engine.h"
 
-
-LuoyiCard::LuoyiCard(){
-    once = true;
-    target_fixed = true;
-}
-
-void LuoyiCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    source->setFlags("luoyi");
-}
-
-class NeoLuoyi: public OneCardViewAsSkill{
-public:
-    NeoLuoyi():OneCardViewAsSkill("neoluoyi"){
-
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("LuoyiCard") && !player->isNude();
-    }
-
-    virtual bool viewFilter(const Card *card) const{
-        return card->isKindOf("EquipCard");
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const{
-        LuoyiCard *card = new LuoyiCard;
-        card->addSubcard(originalCard);
-        return card;
-    }
-};
-
-NeoFanjianCard::NeoFanjianCard(){
-    once = true;
-}
-
-void NeoFanjianCard::onEffect(const CardEffectStruct &effect) const{
-    ServerPlayer *zhouyu = effect.from;
-    ServerPlayer *target = effect.to;
-    Room *room = zhouyu->getRoom();
-
-    int card_id = room->askForCardChosen(zhouyu, zhouyu, "h", "neofanjian");
-    room->broadcastSkillInvoke("fanjian");
-    const Card *card = Sanguosha->getCard(card_id);
-    Card::Suit suit = room->askForSuit(target, "neofanjian");
-
-    LogMessage log;
-    log.type = "#ChooseSuit";
-    log.from = target;
-    log.arg = Card::Suit2String(suit);
-    room->sendLog(log);
-
-    room->getThread()->delay();
-    target->obtainCard(card);
-
-    if(card->getSuit() != suit){
-        DamageStruct damage;
-        damage.card = NULL;
-        damage.from = zhouyu;
-        damage.to = target;
-
-        room->damage(damage);
-    }
-}
-
-class NeoFanjian:public ZeroCardViewAsSkill{
-public:
-    NeoFanjian():ZeroCardViewAsSkill("neofanjian"){
-
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->isKongcheng() && ! player->hasUsed("NeoFanjianCard");
-    }
-
-    virtual const Card *viewAs() const{
-        return new NeoFanjianCard;
-    }
-};
-
 class Yishi: public TriggerSkill{
 public:
     Yishi():TriggerSkill("yishi"){
@@ -227,10 +148,6 @@ LingPackage::LingPackage()
     General * neo_xuchu = new General(this, "neo_xuchu", "wei");
     neo_xuchu->addSkill(new NeoLuoyi);
     neo_xuchu->addSkill("#luoyi");
-
-    General * neo_zhouyu = new General(this, "neo_zhouyu", "wu", 3);
-    neo_zhouyu->addSkill("yingzi");
-    neo_zhouyu->addSkill(new NeoFanjian);
 
 
     General * neo_guanyu = new General(this, "neo_guanyu", "shu");

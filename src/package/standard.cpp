@@ -379,9 +379,9 @@ EquipCard::Location Horse::location() const{
 StandardPackage::StandardPackage()
     :Package("standard")
 {
-    //addWindGenerals();
+    addWindGenerals();
     addBloomGenerals();
-    //addSnowGenerals();
+    addSnowGenerals();
     addLunaGenerals();
 
     patterns["."] = new ExpPattern(".|.|.|hand");

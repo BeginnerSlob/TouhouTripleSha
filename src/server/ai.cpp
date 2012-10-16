@@ -393,7 +393,7 @@ ServerPlayer *TrustAI::askForYumeng(const QList<int> &, int &){
     return NULL;
 }
 
-void TrustAI::askForGuanxing(const QList<int> &cards, QList<int> &up, QList<int> &bottom, bool up_only){
+void TrustAI::askForYuxi(const QList<int> &cards, QList<int> &up, QList<int> &bottom, bool up_only){
     Q_UNUSED(bottom);
     Q_UNUSED(up_only);
 
@@ -516,7 +516,7 @@ void LuaAI::reportError(lua_State *L){
     lua_pop(L, 1);
 }
 
-void LuaAI::askForGuanxing(const QList<int> &cards, QList<int> &up, QList<int> &bottom, bool up_only){
+void LuaAI::askForYuxi(const QList<int> &cards, QList<int> &up, QList<int> &bottom, bool up_only){
     lua_State *L = room->getLuaState();
 
     pushCallback(L, __FUNCTION__);
@@ -526,7 +526,7 @@ void LuaAI::askForGuanxing(const QList<int> &cards, QList<int> &up, QList<int> &
     int error = lua_pcall(L, 3, 2, 0);
     if(error){
         reportError(L);
-        return TrustAI::askForGuanxing(cards, up, bottom, up_only);
+        return TrustAI::askForYuxi(cards, up, bottom, up_only);
     }
 
     getTable(L, bottom);

@@ -58,23 +58,23 @@ end
 
 sgs.ai_use_priority.LuoyiCard = 9.2
 
-local neofanjian_skill={}
-neofanjian_skill.name="neofanjian"
-table.insert(sgs.ai_skills,neofanjian_skill)
-neofanjian_skill.getTurnUseCard=function(self)
+local neoguideng_skill={}
+neoguideng_skill.name="neoguideng"
+table.insert(sgs.ai_skills,neoguideng_skill)
+neoguideng_skill.getTurnUseCard=function(self)
 	if self.player:isKongcheng() then return nil end
-	if self.player:usedTimes("NeoFanjianCard")>0 then return nil end
+	if self.player:usedTimes("NeoGuidengCard")>0 then return nil end
 
 	local cards = self.player:getHandcards()
 
-	local card_str = "@NeoFanjianCard=."
-	local fanjianCard = sgs.Card_Parse(card_str)
-	assert(fanjianCard)
+	local card_str = "@NeoGuidengCard=."
+	local guidengCard = sgs.Card_Parse(card_str)
+	assert(guidengCard)
 
-	return fanjianCard		
+	return guidengCard		
 end
 
-sgs.ai_skill_use_func.NeoFanjianCard=function(card,use,self)
+sgs.ai_skill_use_func.NeoGuidengCard=function(card,use,self)
 	self:sort(self.enemies, "hp")
 			
 	for _, enemy in ipairs(self.enemies) do		
@@ -87,15 +87,15 @@ sgs.ai_skill_use_func.NeoFanjianCard=function(card,use,self)
 	end
 end
 
-sgs.ai_skill_cardchosen.neofanjian = function(self)
+sgs.ai_skill_cardchosen.neoguideng = function(self)
 	local cards = sgs.QList2Table(self.player:getHandcards())
 	self:sortByKeepValue(cards)
 	return cards[1]
 end
 
-sgs.ai_card_intention.NeoFanjianCard = 70
+sgs.ai_card_intention.NeoGuidengCard = 70
 
-function sgs.ai_skill_suit.neofanjian()
+function sgs.ai_skill_suit.neoguideng()
 	local map = {0, 0, 1, 2, 2, 3, 3, 3}
 	return map[math.random(1,8)]
 end
@@ -147,7 +147,7 @@ end
 sgs.ai_skill_choice.neoganglie = function(self, choices)
 	local target
 	for _, player in sgs.qlist(self.room:getOtherPlayers(self.player)) do
-		if player:hasFlag("xuanhuo_target") then
+		if player:hasFlag("xxuuaannhhuuoo_target") then
 			target = player
 			self.room:setPlayerFlag(target, "-ganglie_target")
 		end

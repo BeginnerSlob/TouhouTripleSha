@@ -558,7 +558,7 @@ public:
     virtual void onGameStart(ServerPlayer *lvmeng) const{
         Room *room = lvmeng->getRoom();
         lvmeng->gainMark("@wu");
-        room->acquireSkill(lvmeng, "jiang");
+        room->acquireSkill(lvmeng, "heyi");
         room->acquireSkill(lvmeng, "qianxun");
     }
 };
@@ -582,9 +582,9 @@ public:
                 room->broadcastSkillInvoke(objectName());
                 player->loseMark("@wu");
                 player->gainMark("@wen");
-                room->detachSkillFromPlayer(player, "jiang");
+                room->detachSkillFromPlayer(player, "heyi");
                 room->detachSkillFromPlayer(player, "qianxun");
-                room->acquireSkill(player, "yingzi");
+                room->acquireSkill(player, "chenhong");
                 room->acquireSkill(player, "keji");
             }
         }
@@ -596,9 +596,9 @@ public:
                     room->broadcastSkillInvoke(objectName());
                     lvmeng->loseMark("@wen");
                     lvmeng->gainMark("@wu");
-                    room->detachSkillFromPlayer(lvmeng, "yingzi");
+                    room->detachSkillFromPlayer(lvmeng, "chenhong");
                     room->detachSkillFromPlayer(lvmeng, "keji");
-                    room->acquireSkill(lvmeng, "jiang");
+                    room->acquireSkill(lvmeng, "heyi");
                     room->acquireSkill(lvmeng, "qianxun");
                 }
             }
@@ -621,12 +621,12 @@ public:
         if (data.toString() == "mouduan") {
             if (player->getMark("@wu") > 0) {
                 player->loseMark("@wu");
-                room->detachSkillFromPlayer(player, "jiang");
+                room->detachSkillFromPlayer(player, "heyi");
                 room->detachSkillFromPlayer(player, "qianxun");
             }
             else if (player->getMark("@wen") > 0) {
                 player->loseMark("@wen");
-                room->detachSkillFromPlayer(player, "yingzi");
+                room->detachSkillFromPlayer(player, "chenhong");
                 room->detachSkillFromPlayer(player, "keji");
             }
         }

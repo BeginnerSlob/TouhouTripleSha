@@ -235,14 +235,14 @@ void CardContainer::view(const ClientPlayer *player){
     fillCards(card_ids);    
 }
 
-GuanxingBox::GuanxingBox()
-    :QSanSelectableItem("image/system/guanxing-box.png", true)
+YuxiBox::YuxiBox()
+    :QSanSelectableItem("image/system/yuxi-box.png", true)
 {
     setFlag(ItemIsFocusable);
     setFlag(ItemIsMovable);
 }
 
-void GuanxingBox::doGuanxing(const QList<int> &card_ids, bool up_only){
+void YuxiBox::doYuxi(const QList<int> &card_ids, bool up_only){
     if(card_ids.isEmpty()){
         clear();
         return;
@@ -273,7 +273,7 @@ void GuanxingBox::doGuanxing(const QList<int> &card_ids, bool up_only){
     }
 }
 
-void GuanxingBox::adjust(){
+void YuxiBox::adjust(){
     CardItem *item = qobject_cast<CardItem*>(sender());
 
     if(item == NULL)
@@ -306,7 +306,7 @@ void GuanxingBox::adjust(){
     }
 }
 
-void GuanxingBox::clear()
+void YuxiBox::clear()
 {
     foreach(CardItem *card_item, up_items)
         card_item->deleteLater();
@@ -320,7 +320,7 @@ void GuanxingBox::clear()
     hide();
 }
 
-void GuanxingBox::reply(){
+void YuxiBox::reply(){
     QList<int> up_cards, down_cards;
     foreach(CardItem *card_item, up_items)
         up_cards << card_item->getCard()->getId();
@@ -328,7 +328,6 @@ void GuanxingBox::reply(){
     foreach(CardItem *card_item, down_items)
         down_cards << card_item->getCard()->getId();
 
-    ClientInstance->onPlayerReplyGuanxing(up_cards, down_cards);
+    ClientInstance->onPlayerReplyYuxi(up_cards, down_cards);
     clear();
 }
-

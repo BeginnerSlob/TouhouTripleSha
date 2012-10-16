@@ -176,14 +176,14 @@ RoomScene::RoomScene(QMainWindow *main_window):
     connect(ClientInstance, SIGNAL(start_in_xs()), this, SLOT(startInXs()));
 
     {
-        guanxing_box = new GuanxingBox;
-        guanxing_box->hide();
-        addItem(guanxing_box);
-        guanxing_box->setZValue(20000.0);
+        yuxi_box = new YuxiBox;
+        yuxi_box->hide();
+        addItem(yuxi_box);
+        yuxi_box->setZValue(20000.0);
 
-        connect(ClientInstance, SIGNAL(guanxing(QList<int>,bool)), guanxing_box, SLOT(doGuanxing(QList<int>,bool)));
+        connect(ClientInstance, SIGNAL(yuxi(QList<int>,bool)), yuxi_box, SLOT(doYuxi(QList<int>,bool)));
 
-        guanxing_box->moveBy(-120, 0);
+        yuxi_box->moveBy(-120, 0);
     }
 
     {
@@ -883,7 +883,7 @@ void RoomScene::updateTable()
                          _m_roomLayout->m_discardPileMinWidth), _m_commonLayout->m_cardNormalHeight);
     m_tablePile->adjustCards();
     card_container->setPos(m_tableCenterPos);
-    guanxing_box->setPos(m_tableCenterPos);
+    yuxi_box->setPos(m_tableCenterPos);
     prompt_box->setPos(m_tableCenterPos);
 
     int* seatToRegion;
@@ -1984,8 +1984,8 @@ void RoomScene::useSelectedCard(){
             break;
         }
 
-    case Client::AskForGuanxing:{
-            guanxing_box->reply();
+    case Client::AskForYuxi:{
+            yuxi_box->reply();
 
             break;
         }
@@ -2140,7 +2140,7 @@ void RoomScene::doTimeout(){
     case Client::AskForYumeng:{
         cancel_button->click();
         break;}
-    case Client::AskForGuanxing:
+    case Client::AskForYuxi:
     case Client::AskForGongxin:{
         ok_button->click();
         break;}
@@ -2189,10 +2189,10 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
                     m_choiceDialog->hide();
                 }
             }
-            else if (oldStatus == Client::AskForGuanxing ||
+            else if (oldStatus == Client::AskForYuxi ||
                      oldStatus == Client::AskForGongxin)
             {
-                guanxing_box->clear();
+                yuxi_box->clear();
                 if(!card_container->retained())
                     card_container->clear();
             }
@@ -2358,7 +2358,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
 
             break;
         }
-    case Client::AskForGuanxing:{
+    case Client::AskForYuxi:{
             ok_button->setEnabled(true);
             cancel_button->setEnabled(false);
             discard_button->setEnabled(false);

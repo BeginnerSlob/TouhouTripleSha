@@ -263,9 +263,9 @@ public:
 SPCardPackage::SPCardPackage()
     :Package("sp_cards")
 {
-    (new SPMoonSpear)->setParent(this);
+    //(new SPMoonSpear)->setParent(this);
 
-    type = CardPack;
+    //type = CardPack;
 }
 
 ADD_PACKAGE(SPCard)
@@ -292,7 +292,7 @@ SPPackage::SPPackage()
     sp_pangde->addSkill("mashu");
 
     General *sp_guanyu = new General(this, "sp_guanyu", "wei", 4);
-    sp_guanyu->addSkill("wusheng");
+    sp_guanyu->addSkill("chilian");
     sp_guanyu->addSkill(new Danji);
 
     General *shenlvbu1 = new General(this, "shenlvbu1", "god", 8, true, true);

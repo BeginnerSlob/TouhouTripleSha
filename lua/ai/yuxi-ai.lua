@@ -246,7 +246,7 @@ local function XinZhan(self, cards)
 	return up, {}
 end
 
-function SmartAI:askForGuanxing(cards, up_only)
+function SmartAI:askForYuxi(cards, up_only)
 	if not up_only then return GuanXing(self,cards)
 	else return XinZhan(self, cards)
 	end

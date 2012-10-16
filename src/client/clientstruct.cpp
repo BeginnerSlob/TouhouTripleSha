@@ -18,9 +18,9 @@ time_t ServerInfoStruct::getCommandTimeout(QSanProtocol::CommandType command, QS
     {
         timeOut = Config.S_CHOOSE_GENERAL_TIMEOUT * 1000;
     }
-    else if (command == QSanProtocol::S_COMMAND_SKILL_GUANXING)
+    else if (command == QSanProtocol::S_COMMAND_SKILL_YUXI)
     {
-        timeOut = Config.S_GUANXING_TIMEOUT * 1000;
+        timeOut = Config.S_YUXI_TIMEOUT * 1000;
     }
     else
     {

@@ -98,7 +98,7 @@ Client::Client(QObject *parent, const QString &filename)
     m_interactions[S_COMMAND_CHOOSE_DIRECTION] = &Client::askForDirection;
     m_interactions[S_COMMAND_EXCHANGE_CARD] = &Client::askForExchange;
     m_interactions[S_COMMAND_ASK_PEACH] = &Client::askForSinglePeach;
-    m_interactions[S_COMMAND_SKILL_GUANXING] = &Client::askForGuanxing;
+    m_interactions[S_COMMAND_SKILL_YUXI] = &Client::askForYuxi;
     m_interactions[S_COMMAND_SKILL_GONGXIN] = &Client::askForGongxin;
     m_interactions[S_COMMAND_SKILL_YUMENG] = &Client::askForYumeng;
     m_interactions[S_COMMAND_PLAY_CARD] = &Client::activate;
@@ -1463,14 +1463,14 @@ void Client::onPlayerAssignRole(const QList<QString> &names, const QList<QString
     replyToServer(S_COMMAND_CHOOSE_ROLE, reply);
 }
 
-void Client::askForGuanxing(const Json::Value &arg){
+void Client::askForYuxi(const Json::Value &arg){
     Json::Value deck = arg[0];
     bool up_only = arg[1].asBool();
     QList<int> card_ids;
     tryParse(deck, card_ids);
     
-    emit guanxing(card_ids, up_only);
-    setStatus(AskForGuanxing);
+    emit yuxi(card_ids, up_only);
+    setStatus(AskForYuxi);
 }
 
 void Client::askForGongxin(const Json::Value &arg){
@@ -1548,13 +1548,13 @@ void Client::onPlayerReplyYumeng(const Card *card, const Player *to){
     setStatus(NotActive);
 }
 
-void Client::onPlayerReplyGuanxing(const QList<int> &up_cards, const QList<int> &down_cards){
+void Client::onPlayerReplyYuxi(const QList<int> &up_cards, const QList<int> &down_cards){
     Json::Value decks(Json::arrayValue);
     decks[0] = toJsonArray(up_cards);
     decks[1] = toJsonArray(down_cards);
 
-    replyToServer(S_COMMAND_SKILL_GUANXING, decks);
-    //request(QString("replyGuanxing %1:%2").arg(up_items.join("+")).arg(down_items.join("+")));
+    replyToServer(S_COMMAND_SKILL_YUXI, decks);
+    //request(QString("replyYuxi %1:%2").arg(up_items.join("+")).arg(down_items.join("+")));
 
     setStatus(NotActive);
 }

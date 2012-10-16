@@ -179,181 +179,6 @@ public:
     }
 };
 
-class Jiang: public TriggerSkill{
-public:
-    Jiang():TriggerSkill("jiang"){
-        events << TargetConfirmed;
-
-        frequency = Frequent;
-    }
-
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *sunce, QVariant &data) const{
-        CardUseStruct use = data.value<CardUseStruct>();
-        if(use.from->objectName() == sunce->objectName() || use.to.contains(sunce)){
-            if(use.card->isKindOf("Duel") || (use.card->isKindOf("Slash") && use.card->isRed())){
-                if(sunce->askForSkillInvoke(objectName(), data)){
-                    int index = qrand() % 2 + 1;
-                    if (!sunce->hasInnateSkill(objectName()) && sunce->hasSkill("mouduan"))
-                        index += 2;
-                    room->broadcastSkillInvoke(objectName(), index);
-                    sunce->drawCards(1);
-                }
-            }
-        }
-
-        return false;
-    }
-};
-
-class Hunzi: public PhaseChangeSkill{
-public:
-    Hunzi():PhaseChangeSkill("hunzi"){
-        frequency = Wake;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && PhaseChangeSkill::triggerable(target)
-                && target->getMark("hunzi") == 0
-                && target->getPhase() == Player::Start
-                && target->getHp() == 1;
-    }
-
-    virtual bool onPhaseChange(ServerPlayer *sunce) const{
-        Room *room = sunce->getRoom();
-
-        LogMessage log;
-        log.type = "#HunziWake";
-        log.from = sunce;
-        log.arg = objectName();
-        room->sendLog(log);
-
-        room->broadcastSkillInvoke(objectName());
-        room->broadcastInvoke("animate", "lightbox:$Hunzi:5000");
-        room->getThread()->delay(5000);
-        sunce->gainMark("@waked");
-        room->loseMaxHp(sunce);
-
-        room->acquireSkill(sunce, "yinghun");
-        room->acquireSkill(sunce, "yingzi");
-
-        room->setPlayerMark(sunce, "hunzi", 1);
-
-        return false;
-    }
-};
-
-ZhibaCard::ZhibaCard(){
-    mute = true;
-    will_throw = false;
-    m_skillName = "zhiba_pindian";
-}
-
-bool ZhibaCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select->hasLordSkill("sunce_zhiba") && to_select != Self
-            && !to_select->isKongcheng() && !to_select->hasFlag("ZhibaInvoked");
-}
-
-void ZhibaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    ServerPlayer *sunce = targets.first();
-    room->setPlayerFlag(sunce, "ZhibaInvoked");
-    if(sunce->getMark("hunzi") > 0 &&
-       room->askForChoice(sunce, "zhiba_pindian", "accept+reject") == "reject")
-    {
-        room->broadcastSkillInvoke("sunce_zhiba", 4);
-        return;
-    }
-
-    room->broadcastSkillInvoke("sunce_zhiba", 1);
-    source->pindian(sunce, "zhiba_pindian", this);
-    QList<ServerPlayer *> sunces;
-    QList<ServerPlayer *> players = room->getOtherPlayers(source);
-    foreach(ServerPlayer *p, players){
-        if(p->hasLordSkill("sunce_zhiba") && !p->hasFlag("ZhibaInvoked")){
-            sunces << p;
-        }
-    }
-    if(sunces.empty())
-        room->setPlayerFlag(source, "ForbidZhiba");
-}
-
-class ZhibaPindian: public OneCardViewAsSkill{
-public:
-    ZhibaPindian():OneCardViewAsSkill("zhiba_pindian"){
-
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getKingdom() == "wu" && !player->isKongcheng() && !player->hasFlag("ForbidZhiba");
-    }
-
-    virtual bool viewFilter(const Card* to_select) const{
-        return ! to_select->isEquipped();
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const{
-        ZhibaCard *card = new ZhibaCard;
-        card->addSubcard(originalCard);
-
-        return card;
-    }
-};
-
-class SunceZhiba: public TriggerSkill{
-public:
-    SunceZhiba():TriggerSkill("sunce_zhiba$"){
-        events << GameStart << Pindian << EventPhaseChanging;
-    }
-
-    virtual int getPriority() const{
-        return -1;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if(triggerEvent == GameStart && player->hasLordSkill(objectName())){
-            foreach(ServerPlayer *p, room->getOtherPlayers(player)){
-                if(!p->hasSkill("zhiba_pindian"))
-                    room->attachSkillToPlayer(p, "zhiba_pindian");
-            }
-        }else if(triggerEvent == Pindian){
-            PindianStar pindian = data.value<PindianStar>();
-            if(pindian->reason != "zhiba_pindian" || !pindian->to->hasLordSkill(objectName()))
-                return false;
-            if(!pindian->isSuccess()){
-                if (room->askForChoice(pindian->to, "sunce_zhiba", "yes+no") == "yes") {
-                    room->broadcastSkillInvoke(objectName(), 2);
-                    
-                    pindian->to->obtainCard(pindian->from_card);
-                    pindian->to->obtainCard(pindian->to_card);
-                }
-                else {
-                    room->broadcastSkillInvoke(objectName(), 4);
-                }
-            }
-            else
-                room->broadcastSkillInvoke(objectName(), 3);
-        }else if(triggerEvent == EventPhaseChanging){
-            PhaseChangeStruct phase_change = data.value<PhaseChangeStruct>();
-            if (phase_change.from != Player::Play)
-                return false;
-            if(player->hasFlag("ForbidZhiba")){
-                room->setPlayerFlag(player, "-ForbidZhiba");
-            }
-            QList<ServerPlayer *> players = room->getOtherPlayers(player);
-            foreach(ServerPlayer *p, players){
-                if(p->hasFlag("ZhibaInvoked")){
-                    room->setPlayerFlag(p, "-ZhibaInvoked");
-                }
-            }
-        }
-
-        return false;
-    }
-};
-
 TiaoxinCard::TiaoxinCard(){
     once = true;
     mute = true;
@@ -366,7 +191,7 @@ bool TiaoxinCard::targetFilter(const QList<const Player *> &targets, const Playe
 void TiaoxinCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
 
-    if(effect.from->hasArmorEffect("EightDiagram") || effect.from->hasSkill("bazhen"))
+    if(effect.from->hasArmorEffect("EightDiagram") || effect.from->hasSkill("shengtang"))
         room->broadcastSkillInvoke("tiaoxin", 3);
     else
         room->broadcastSkillInvoke("tiaoxin", qrand() % 2 + 1);
@@ -433,143 +258,9 @@ public:
 
         room->setPlayerMark(jiangwei, "zhiji", 1);
         jiangwei->gainMark("@waked");
-        room->acquireSkill(jiangwei, "guanxing");
+        room->acquireSkill(jiangwei, "yuxi");
 
         room->loseMaxHp(jiangwei);
-
-        return false;
-    }
-};
-
-ZhijianCard::ZhijianCard(){
-    will_throw = false;
-}
-
-bool ZhijianCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if(!targets.isEmpty() || to_select == Self)
-        return false;
-
-    const Card *card = Sanguosha->getCard(subcards.first());
-    const EquipCard *equip = qobject_cast<const EquipCard *>(card->getRealCard());
-    int equip_index = static_cast<int>(equip->location());
-    return to_select->getEquip(equip_index) == NULL;
-}
-
-void ZhijianCard::onEffect(const CardEffectStruct &effect) const{
-    ServerPlayer *erzhang = effect.from;
-    erzhang->getRoom()->moveCardTo(this, erzhang, effect.to, Player::PlaceEquip,
-        CardMoveReason(CardMoveReason::S_REASON_USE, erzhang->objectName(), "zhijian", QString()));
-
-    LogMessage log;
-    log.type = "$ZhijianEquip";
-    log.from = effect.to;
-    log.card_str = Sanguosha->getCard(subcards.first())->getEffectIdString();
-    erzhang->getRoom()->sendLog(log);
-
-    erzhang->drawCards(1);
-}
-
-class Zhijian: public OneCardViewAsSkill{
-public:
-    Zhijian():OneCardViewAsSkill("zhijian"){
-
-    }
-
-    virtual bool viewFilter(const Card* to_select) const{
-        return !to_select->isEquipped() && to_select->getTypeId() == Card::Equip;
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const{
-        ZhijianCard *zhijian_card = new ZhijianCard();
-        zhijian_card->addSubcard(originalCard);
-        return zhijian_card;
-    }
-};
-
-class Guzheng: public TriggerSkill{
-public:
-    Guzheng():TriggerSkill("guzheng"){
-        events << CardsMoveOneTime;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        ServerPlayer *erzhang = room->findPlayerBySkillName(objectName());
-        ServerPlayer *current = room->getCurrent();
-        CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
-
-        if((move->reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) != CardMoveReason::S_REASON_DISCARD)
-            return false;
-
-        if(player != move->from || erzhang == NULL || erzhang == current)
-            return false;
-
-        if(current->getPhase() == Player::Discard){
-            QVariantList guzheng = erzhang->tag["Guzheng"].toList();
-
-            foreach (int card_id, move->card_ids)
-                guzheng << card_id;
-
-            erzhang->tag["Guzheng"] = guzheng;
-        }
-
-        return false;
-    }
-};
-
-class GuzhengGet: public TriggerSkill{
-public:
-    GuzhengGet():TriggerSkill("#guzheng-get"){
-        events << EventPhaseEnd;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && !target->hasSkill("guzheng") && target->getPhase() == Player::Discard;
-    }
-
-    virtual bool trigger(TriggerEvent , Room *room, ServerPlayer *player, QVariant &) const{
-        if(player->isDead())
-            return false;
-
-        ServerPlayer *erzhang = room->findPlayerBySkillName(objectName());
-        if(erzhang == NULL)
-            return false;
-
-        QVariantList guzheng_cards = erzhang->tag["Guzheng"].toList();
-        erzhang->tag.remove("Guzheng");
-
-        QList<int> cards;
-        foreach(QVariant card_data, guzheng_cards){
-            int card_id = card_data.toInt();
-            if(room->getCardPlace(card_id) == Player::DiscardPile)
-                cards << card_id;
-        }
-
-        if(cards.isEmpty())
-            return false;
-
-        if(erzhang->askForSkillInvoke("guzheng", cards.length())){
-            room->broadcastSkillInvoke("guzheng");
-            room->fillAG(cards, erzhang);
-
-            int to_back = room->askForAG(erzhang, cards, false, objectName());
-            player->obtainCard(Sanguosha->getCard(to_back));
-
-            cards.removeOne(to_back);
-
-            erzhang->invoke("clearAG");
-
-            CardsMoveStruct move;
-            move.card_ids = cards;
-            move.to = erzhang;
-            move.to_place = Player::PlaceHand;
-            QList<CardsMoveStruct> moves;
-            moves.append(move);
-            room->moveCardsAtomic(moves, true);
-        }
 
         return false;
     }
@@ -992,7 +683,7 @@ MountainPackage::MountainPackage()
     General *jiangwei = new General(this, "jiangwei", "shu");
     jiangwei->addSkill(new Tiaoxin);
     jiangwei->addSkill(new Zhiji);
-    related_skills.insertMulti("zhiji", "guanxing");
+    related_skills.insertMulti("zhiji", "yuxi");
 
     General *liushan = new General(this, "liushan$", "shu", 3);
     liushan->addSkill(new Xiangle);
@@ -1000,18 +691,6 @@ MountainPackage::MountainPackage()
     liushan->addSkill(new FangquanGive);
     liushan->addSkill(new Ruoyu);
     related_skills.insertMulti("fangquan", "#fangquan-give");
-
-    General *sunce = new General(this, "sunce$", "wu");
-    sunce->addSkill(new Jiang);
-    sunce->addSkill(new Hunzi);
-    sunce->addSkill(new SunceZhiba);
-    related_skills.insertMulti("hunzi", "yinghun");
-
-    General *erzhang = new General(this, "erzhang", "wu", 3);
-    erzhang->addSkill(new Zhijian);
-    erzhang->addSkill(new Guzheng);
-    erzhang->addSkill(new GuzhengGet);
-    related_skills.insertMulti("guzheng", "#guzheng-get");
 
     General *zuoci = new General(this, "zuoci", "qun", 3);
     zuoci->addSkill(new Huashen);
@@ -1025,10 +704,9 @@ MountainPackage::MountainPackage()
     addMetaObject<QiaobianCard>();
     addMetaObject<TiaoxinCard>();
     addMetaObject<ZhijianCard>();
-    addMetaObject<ZhibaCard>();
     addMetaObject<JixiCard>();
 
-    skills << new ZhibaPindian << new Jixi;*/
+    skills << new Jixi;*/
 }
 
 ADD_PACKAGE(Mountain)

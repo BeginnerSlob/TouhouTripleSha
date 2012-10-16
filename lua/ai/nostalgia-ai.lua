@@ -112,16 +112,16 @@ function sgs.ai_slash_prohibit.nosenyuan(self)
 	if self:isWeak() then return true end
 end
 
-nosxuanhuo_skill={}
-nosxuanhuo_skill.name="nosxuanhuo"
-table.insert(sgs.ai_skills,nosxuanhuo_skill)
-nosxuanhuo_skill.getTurnUseCard=function(self)
-	if not self.player:hasUsed("NosXuanhuoCard") then
-		return sgs.Card_Parse("@NosXuanhuoCard=.")
+nosxxuuaannhhuuoo_skill={}
+nosxxuuaannhhuuoo_skill.name="nosxxuuaannhhuuoo"
+table.insert(sgs.ai_skills,nosxxuuaannhhuuoo_skill)
+nosxxuuaannhhuuoo_skill.getTurnUseCard=function(self)
+	if not self.player:hasUsed("NosXXuuaannhhuuooCard") then
+		return sgs.Card_Parse("@NosXXuuaannhhuuooCard=.")
 	end
 end
 
-sgs.ai_skill_use_func.NosXuanhuoCard = function(card, use, self)
+sgs.ai_skill_use_func.NosXXuuaannhhuuooCard = function(card, use, self)
 	local cards = self.player:getHandcards()
 	cards=sgs.QList2Table(cards)
 	self:sortByUseValue(cards,true)
@@ -131,7 +131,7 @@ sgs.ai_skill_use_func.NosXuanhuoCard = function(card, use, self)
 		if self:hasSkills(sgs.lose_equip_skill, friend) and not friend:getEquips():isEmpty() then
 			for _, card in ipairs(cards) do
 				if card:getSuit() == sgs.Card_Heart and self.player:getHandcardNum() > 1 then
-					use.card = sgs.Card_Parse("@NosXuanhuoCard=" .. card:getEffectiveId())
+					use.card = sgs.Card_Parse("@NosXXuuaannhhuuooCard=" .. card:getEffectiveId())
 					target = friend
 					break
 				end
@@ -144,7 +144,7 @@ sgs.ai_skill_use_func.NosXuanhuoCard = function(card, use, self)
 			if not enemy:isKongcheng() then
 				for _, card in ipairs(cards)do
 					if card:getSuit() == sgs.Card_Heart and not card:isKindOf("Peach")  and self.player:getHandcardNum() > 1 then
-						use.card = sgs.Card_Parse("@NosXuanhuoCard=" .. card:getEffectiveId())
+						use.card = sgs.Card_Parse("@NosXXuuaannhhuuooCard=" .. card:getEffectiveId())
 						target = enemy
 						break
 					end
@@ -155,17 +155,17 @@ sgs.ai_skill_use_func.NosXuanhuoCard = function(card, use, self)
 	end
 
 	if target then
-		self.room:setPlayerFlag(target, "xuanhuo_target")
+		self.room:setPlayerFlag(target, "xxuuaannhhuuoo_target")
 		if use.to then
 			use.to:append(target)
 		end
 	end
 end
 
-sgs.ai_skill_playerchosen.nosxuanhuo = function(self, targets)
+sgs.ai_skill_playerchosen.nosxxuuaannhhuuoo = function(self, targets)
 	for _, player in sgs.qlist(targets) do
 		if (player:getHandcardNum() <= 2 or player:getHp() < 2) and self:isFriend(player) 
-			and not player:hasFlag("xuanhuo_target") and not self:needKongcheng(player) and not player:hasSkill("manjuan") then
+			and not player:hasFlag("xxuuaannhhuuoo_target") and not self:needKongcheng(player) and not player:hasSkill("manjuan") then
 			return player
 		end
 	end

@@ -1358,6 +1358,10 @@ public:
         events << CardsMoveOneTime;
     }
 
+    virtual int getPriority() const{
+        return 4;
+    }
+
     virtual bool trigger(TriggerEvent , Room* room, ServerPlayer *player, QVariant &data) const{
         CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
         if(move->from != player)
@@ -1369,28 +1373,51 @@ public:
             QList<int> shuhui_card;
             foreach(int card_id, move->card_ids){
                 if(room->getCardPlace(card_id) == Player::DiscardPile
-						&& (move->from_places[i] == Player::PlaceHand || move->from_places[i] == Player::PlaceEquip)){
-                    shuhui_card << card_id;
+                    && (move->from_places[i] == Player::PlaceHand || move->from_places[i] == Player::PlaceEquip)){
+                        shuhui_card << card_id;
                 }
                 i++;
             }
+            if (shuhui_card.isEmpty())
+                return false;
 
-			if(i > 0)
-				if(player->askForSkillInvoke(objectName())) {
-					for (int j = 0; j < i; j++) {
-						room->fillAG(shuhui_card, player);
-						int id = room->askForAG(player, shuhui_card, true, objectName());
-						player->invoke("clearAG");
-						if(id == -1)
-							break;
-						Card *card = Sanguosha->getCard(id);
-						ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName());
-						target->obtainCard(card);
-						shuhui_card.removeOne(id);
-					}
-				}
+            if (!player->askForSkillInvoke(objectName(), data))
+                return false;
+            room->setPlayerFlag(player, "Shuhui_InTempMoving");
 
+            CardsMoveStruct move2;
+            move2.card_ids = shuhui_card;
+            move2.to_place = Player::PlaceHand;
+            move2.to = player;
+            room->moveCardsAtomic(move2, true);
+
+            while(room->askForYumeng(player, shuhui_card, false, true)) {}
+
+            CardsMoveStruct move3;
+            move3.card_ids = shuhui_card;
+            move3.to_place = Player::DiscardPile;
+            move3.reason = move->reason;
+            room->moveCardsAtomic(move3, true);
+
+            room->setPlayerFlag(player, "-Shuhui_InTempMoving");
         }
+        return false;
+    }
+};
+
+class ShuhuiAvoidTriggeringCardsMove: public TriggerSkill{
+public:
+    ShuhuiAvoidTriggeringCardsMove():TriggerSkill("#shuhui-avoid-triggering-cards-move"){
+        events << CardsMoveOneTime;
+    }
+
+    virtual int getPriority() const{
+        return 10;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *, ServerPlayer *player, QVariant &) const{
+        if (player->hasFlag("Shuhui_InTempMoving"))
+            return true;
         return false;
     }
 };
@@ -1411,6 +1438,9 @@ public:
 				if(!p->isKongcheng())
 					targets << p;
 
+			if(targets.isEmpty())
+				return false;
+
 			ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
 			bool success = player->pindian(target, objectName(), NULL);
 			if(success) {
@@ -1420,13 +1450,14 @@ public:
 				foreach(ServerPlayer *p, room->getOtherPlayers(player))
 					if(!player->isProhibited(p, slash))
 						victims << p;
-
-				ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName());
-				CardUseStruct use;
-				use.card = slash;
-				use.from = player;
-				use.to << victim;
-				room->useCard(use, false);
+				if(!victims.isEmpty()) {
+					ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName());
+					CardUseStruct use;
+					use.card = slash;
+					use.from = player;
+					use.to << victim;
+					room->useCard(use, false);
+				}
 			} else
 				return true;
 		}
@@ -1493,6 +1524,8 @@ void StandardPackage::addLunaGenerals(){
     General *luna020 = new General(this, "luna020", "qun", 3);
     luna020->addSkill(new Wenxin);
     luna020->addSkill(new Shuhui);
+    luna020->addSkill(new ShuhuiAvoidTriggeringCardsMove);
+    related_skills.insertMulti("shuhui", "#shuhui-avoid-triggering-cards-move");
 
     General *luna021 = new General(this, "luna021", "qun");
     luna021->addSkill(new Shuangren);

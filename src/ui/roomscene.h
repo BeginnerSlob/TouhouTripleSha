@@ -16,7 +16,7 @@
 class Window;
 class Button;
 class CardContainer;
-class GuanxingBox;
+class YuxiBox;
 class QSanButton;
 class QGroupBox;
 struct RoomLayout;
@@ -248,7 +248,7 @@ private:
 
     QList<const Player *> selected_targets;
 
-    GuanxingBox *guanxing_box;
+    YuxiBox *yuxi_box;
 
     QList<CardItem *> gongxin_items;
 

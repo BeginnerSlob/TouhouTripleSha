@@ -26,7 +26,7 @@ sgs.ai_skill_use_func.JuaoCard = function(card, use, self)
 				end
 			end
 		end
-		if friend:hasSkill("jizhi") then
+		if friend:hasSkill("huiquan") then
 			for _, hcard in sgs.qlist(cards) do
 				if hcard:isKindOf("TrickCard") and not hcard:isKindOf("DelayedTrick") then
 					table.insert(givecard, hcard:getId())
@@ -54,7 +54,7 @@ sgs.ai_skill_use_func.JuaoCard = function(card, use, self)
 				end
 			end
 		end
-		if friend:hasSkill("xiaoji") then
+		if friend:hasSkill("cuimeng") then
 			for _, hcard in sgs.qlist(cards) do
 				if hcard:isKindOf("EquipCard") then
 					table.insert(givecard, hcard:getId())
@@ -177,7 +177,7 @@ end
 sgs.ai_skill_use["@@bawang"] = function(self, prompt)
 	local first_index, second_index
 	for i=1, #self.enemies do
-		if not (self.enemies[i]:hasSkill("kongcheng") and self.enemies[i]:isKongcheng()) then
+		if not (self.enemies[i]:hasSkill("jingmo") and self.enemies[i]:isKongcheng()) then
 			if not first_index then
 				first_index = i
 			else

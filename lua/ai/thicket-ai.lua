@@ -129,11 +129,11 @@ function sgs.ai_skill_pindian.lieren(minusecard, self, requestor)
 	return self:getMaxCard(self.player):getId()
 end
 
-sgs.ai_skill_choice.yinghun = function(self, choices)
-	return self.yinghunchoice
+sgs.ai_skill_choice.liangban = function(self, choices)
+	return self.liangbanchoice
 end
 
-sgs.ai_skill_use["@@yinghun"] = function(self, prompt)
+sgs.ai_skill_use["@@liangban"] = function(self, prompt)
 	local x = self.player:getLostHp()
 	if x == 1 and #self.friends == 1 then
 		return "."
@@ -142,31 +142,31 @@ sgs.ai_skill_use["@@yinghun"] = function(self, prompt)
 	if #self.friends > 1 then
 		for _, friend in ipairs(self.friends_noself) do
 			if self:hasSkills(sgs.lose_equip_skill, friend) then
-				self.yinghun = friend
-				self.yinghunchoice = "dxt1"
+				self.liangban = friend
+				self.liangbanchoice = "dxt1"
 				break
 			end
 		end
 		self:sort(self.friends_noself, "chaofeng")
 		for _, afriend in ipairs(self.friends_noself) do
-			if not afriend:hasSkill("manjuan") then self.yinghun = afriend end
+			if not afriend:hasSkill("manjuan") then self.liangban = afriend end
 		end
-		if self.yinghun and not self.yinghunchoice then self.yinghunchoice = "dxt1" end
+		if self.liangban and not self.liangbanchoice then self.liangbanchoice = "dxt1" end
 	else
 		self:sort(self.enemies, "handcard")
 		for index = #self.enemies, 1, -1 do
 			local enemy = self.enemies[index]
 			if not enemy:isNude() and not (self:hasSkills(sgs.lose_equip_skill, enemy) and
 			   not (enemy:getCards("he"):length() < x or sgs.getDefense(enemy) < 3)) then
-				self.yinghun = enemy
-				self.yinghunchoice = "d1tx"
+				self.liangban = enemy
+				self.liangbanchoice = "d1tx"
 				break
 			end
 		end
 	end
 
-	if self.yinghun then
-		return "@YinghunCard=.->" .. self.yinghun:objectName()
+	if self.liangban then
+		return "@LiangbanCard=.->" .. self.liangban:objectName()
 	else
 		return "."
 	end

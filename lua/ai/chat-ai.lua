@@ -19,11 +19,11 @@ function speakTrigger(card,from,to,event)
 		speak(from,"leiji_jink")
 	elseif card:isKindOf("QuhuCard") then
 		speak(from,"quhu")
-	elseif card:isKindOf("Slash") and from:hasSkill("wusheng") and to:hasSkill("zhuyan") then
-		speak(from,"wusheng_zhuyan")
+	elseif card:isKindOf("Slash") and from:hasSkill("chilian") and to:hasSkill("zhuyan") then
+		speak(from,"chilian_zhuyan")
 	elseif card:isKindOf("Slash") and to:hasSkill("yumeng") and (to:getHp()<=1) then
 		speak(to,"bloom006_weak")
-	elseif card:isKindOf("SavageAssault") and (to:hasSkill("kongcheng") or to:hasSkill("huoji")) then
+	elseif card:isKindOf("SavageAssault") and (to:hasSkill("jingmo") or to:hasSkill("longxi")) then
 		speak(to,"daxiang")
 	elseif card:isKindOf("FireAttack") and to:hasSkill("xinghuang") then
 		speak(to,"yuanshao_fire")
@@ -143,8 +143,8 @@ sgs.ai_chat.quhu=
 "哟，拼点吧"
 }
 
---wusheng to zhuyan
-sgs.ai_chat.wusheng_zhuyan=
+--chilian to zhuyan
+sgs.ai_chat.chilian_zhuyan=
 {
 "诶你技能是啥来着？",
 "在杀的颜色这个问题上咱是色盲",

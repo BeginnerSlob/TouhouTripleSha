@@ -408,11 +408,11 @@ bool SupplyShortage::targetFilter(const QList<const Player *> &targets, const Pl
     if (to_select->containsTrick(objectName()))
         return false;
 
-    if (Self->hasSkill("qicai"))
+    if (Self->hasSkill("jizhi"))
         return true;
 
     int distance = Self->distanceTo(to_select);
-    if (Self->hasSkill("duanliang"))
+    if (Self->hasSkill("fenghou"))
         return distance <= 2;
     else
         return distance <= 1;

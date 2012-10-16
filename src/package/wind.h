@@ -9,15 +9,6 @@
 #include <QButtonGroup>
 #include <QDialog>
 
-class TianxiangCard: public SkillCard{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE TianxiangCard();
-
-    virtual void onEffect(const CardEffectStruct &effect) const;
-};
-
 class GuhuoCard: public SkillCard{
     Q_OBJECT
 

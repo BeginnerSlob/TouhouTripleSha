@@ -454,8 +454,8 @@ void Room::gameOver(const QString &winner){
 void Room::slashEffect(const SlashEffectStruct &effect){
     effect.from->addMark("SlashCount");
 
-    if(effect.from->getMark("SlashCount") > 1 && effect.from->hasSkill("paoxiao"))
-        broadcastSkillInvoke("paoxiao");
+    if(effect.from->getMark("SlashCount") > 1 && effect.from->hasSkill("hupao"))
+        broadcastSkillInvoke("hupao");
 
     QVariant data = QVariant::fromValue(effect);
 
@@ -3951,30 +3951,30 @@ ServerPlayer *Room::getLord() const{
     return NULL;
 }
 
-void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, bool up_only){
+void Room::askForYuxi(ServerPlayer *player, const QList<int> &cards, bool up_only){
     QList<int> top_cards, bottom_cards;
-    notifyMoveFocus(zhuge, S_COMMAND_SKILL_GUANXING);
-    AI *ai = zhuge->getAI();
+    notifyMoveFocus(player, S_COMMAND_SKILL_YUXI);
+    AI *ai = player->getAI();
     if(ai){
-        ai->askForGuanxing(cards, top_cards, bottom_cards, up_only);
+        ai->askForYuxi(cards, top_cards, bottom_cards, up_only);
     }else if(up_only && cards.length() == 1){
         top_cards = cards;
     }else{
-        Json::Value guanxingArgs(Json::arrayValue);
-        guanxingArgs[0] = toJsonArray(cards);        
-        guanxingArgs[1] = up_only;
-        bool success = doRequest(zhuge, S_COMMAND_SKILL_GUANXING, guanxingArgs, true);
+        Json::Value yuxiArgs(Json::arrayValue);
+        yuxiArgs[0] = toJsonArray(cards);        
+        yuxiArgs[1] = up_only;
+        bool success = doRequest(player, S_COMMAND_SKILL_YUXI, yuxiArgs, true);
 
         //@todo: sanity check if this logic is correct
         if(!success){
-            // the method "askForGuanxing" without any arguments
-            // means to clear all the guanxing items
-            //zhuge->invoke("doGuanxing");
+            // the method "askForYuxi" without any arguments
+            // means to clear all the yuxi items
+            //player->invoke("doYuxi");
             foreach (int card_id, cards)
                 m_drawPile->prepend(card_id);
             return;
         }
-        Json::Value clientReply = zhuge->getClientReply();
+        Json::Value clientReply = player->getClientReply();
         if (clientReply.isArray() && clientReply.size() == 2)
         {
             success &= tryParse(clientReply[0], top_cards);
@@ -3992,8 +3992,8 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, bool up_
 
     if (!up_only) {
         LogMessage log;
-        log.type = "#GuanxingResult";
-        log.from = zhuge;
+        log.type = "#YuxiResult";
+        log.from = player;
         log.arg = QString::number(top_cards.length());
         log.arg2 = QString::number(bottom_cards.length());
         sendLog(log);
@@ -4527,9 +4527,14 @@ void Room::retrial(const Card *card, ServerPlayer *player, JudgeStar judge,
         tag["retrial"] = true;
 }
 
-bool Room::askForYumeng(ServerPlayer *player, QList<int> &cards){
+bool Room::askForYumeng(ServerPlayer *player, QList<int> &cards, bool is_preview, bool visible){
     if(cards.isEmpty())
         return false;
+    CardMoveReason reason(NULL, player->objectName());
+    if (is_preview)
+        reason.m_reason = CardMoveReason::S_REASON_PREVIEWGIVE;
+    else
+        reason.m_reason = CardMoveReason::S_REASON_GIVE;
     notifyMoveFocus(player, S_COMMAND_SKILL_YUMENG);
     AI *ai = player->getAI();
     if(ai){
@@ -4537,7 +4542,7 @@ bool Room::askForYumeng(ServerPlayer *player, QList<int> &cards){
         ServerPlayer *who = ai->askForYumeng(cards, card_id);
         if(who){
             cards.removeOne(card_id);
-            moveCardTo(Sanguosha->getCard(card_id), who, Player::PlaceHand, false);
+            moveCardTo(Sanguosha->getCard(card_id), who, Player::PlaceHand, reason, visible);
             return true;
         }else
             return false;
@@ -4568,10 +4573,8 @@ bool Room::askForYumeng(ServerPlayer *player, QList<int> &cards){
             dummy_card->addSubcard(card_id);
         }
 
-        moveCardTo(dummy_card, who, Player::PlaceHand, false);
+        moveCardTo(dummy_card, who, Player::PlaceHand, reason, visible);
         delete dummy_card;
-
-        setEmotion(who, "draw-card");
 
         return true;
 

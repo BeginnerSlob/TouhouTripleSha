@@ -192,12 +192,12 @@ public:
                 return false;
 
             if(player->getWeapon() == NULL){
-                if(!player->hasSkill("paoxiao"))
-                    room->acquireSkill(player, "paoxiao");
+                if(!player->hasSkill("hupao"))
+                    room->acquireSkill(player, "hupao");
             }
             else{
-                if(player->hasSkill("paoxiao"))
-                    room->detachSkillFromPlayer(player, "paoxiao");
+                if(player->hasSkill("hupao"))
+                    room->detachSkillFromPlayer(player, "hupao");
             }
 
             QList<ServerPlayer *> players = room->getAllPlayers();
@@ -261,14 +261,14 @@ public:
 
         boss_banlist << "yuanshao" << "yanliangwenchou" << "zhaoyun" << "guanyu" << "shencaocao";
 
-        boss_skillbanned << "luanji" << "shuangxiong" << "longdan" << "wusheng" << "guixin";
+        boss_skillbanned << "luanji" << "shuangxiong" << "longdan" << "chilian" << "guixin";
 
         dummy_skills << "xinsheng" << "wuhu" << "kuangfeng" << "dawu" << "wumou" << "wuqian" 
                      << "shenfen" << "renjie" << "weidi" << "danji" << "shiyong" << "zhiba"
                      << "super_guanxing" << "chongzhen" << "tongxin"
                      << "liqian" << "shenjun" << "xunzhi" << "shenli" << "yishe" << "yitian";
                      
-        available_wake_skills << "hunzi" << "zhiji" << "kegou";
+        available_wake_skills << "chizhu" << "zhiji" << "kegou";
     }
 
     void getRandomSkill(ServerPlayer *player, bool need_trans = false) const{
@@ -483,7 +483,7 @@ public:
                     room->acquireSkill(player, "duduan");
                     room->acquireSkill(player, "jizhan");
                     if(player->getWeapon() == NULL){
-                        room->acquireSkill(player, "paoxiao");
+                        room->acquireSkill(player, "hupao");
                     }
 
                     QList<const Card *> judges = player->getCards("j");

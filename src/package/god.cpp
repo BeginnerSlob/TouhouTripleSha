@@ -1057,7 +1057,7 @@ public:
 class Jilve: public TriggerSkill{
 public:
     Jilve():TriggerSkill("jilve"){
-        events << CardUsed << CardResponsed // jizhi
+        events << CardUsed << CardResponsed // huiquan
                 << AskForRetrial // tiansuo
                 << Damaged; // fangzhu
 
@@ -1078,7 +1078,7 @@ public:
             else
                 card = data.value<ResponsedStruct>().m_card;
 
-            if(card->isNDTrick() && !player->hasSkill("jizhi") && player->askForSkillInvoke("jilve", data)){
+            if(card->isNDTrick() && !player->hasSkill("huiquan") && player->askForSkillInvoke("jilve", data)){
                 player->loseMark("@bear");
                 room->broadcastSkillInvoke("jilve", 5);
                 player->drawCards(1);
