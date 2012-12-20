@@ -322,7 +322,7 @@ public:
     virtual const Card *viewAs(const Card *originalCard) const{
         LuoyiCard *card = new LuoyiCard;
         card->addSubcard(originalCard);
-		card->setSkillName(objectName());
+        card->setSkillName(objectName());
         return card;
     }
 };
@@ -726,7 +726,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &) const{
-		if(player->hasSkill(objectName()) && player->getPhase() == Player::Finish){
+        if(player->hasSkill(objectName()) && player->getPhase() == Player::Finish){
             if(!player->askForSkillInvoke(objectName()))
                 return false;
 
@@ -1125,7 +1125,7 @@ public:
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         SlashEffectStruct effect = data.value<SlashEffectStruct>();
 
-		if(effect.slash->isBlack() && effect.nature == DamageStruct::Normal){
+        if(effect.slash->isBlack() && effect.nature == DamageStruct::Normal){
 
             LogMessage log;
             log.type = "#SkillNullify";
@@ -1161,7 +1161,7 @@ public:
         if(player == victim)
             return false;
 
-		if(player->getPhase() != Player::NotActive)
+        if(player->getPhase() != Player::NotActive)
             return false;
 
         CardUseStruct use = data.value<CardUseStruct>();
@@ -1170,8 +1170,8 @@ public:
             if(!room->askForCard(player, "Armor", "@piaonian", QVariant(), CardDiscarded)){
                 room->setPlayerProperty(victim, "chained", true);
                 room->setPlayerProperty(player, "chained", true);
-			}
-			
+            }
+            
             use.to.insert(use.to.indexOf(victim), player);
             use.to.removeOne(victim);
 
@@ -1360,31 +1360,31 @@ public:
 
 class Xiaorui: public TriggerSkill{
 public:
-	Xiaorui():TriggerSkill("xiaorui"){
-		events << EventPhaseStart;
-	}
+    Xiaorui():TriggerSkill("xiaorui"){
+        events << EventPhaseStart;
+    }
 
-	virtual bool triggerable(const ServerPlayer *target) const{
+    virtual bool triggerable(const ServerPlayer *target) const{
         return target != NULL;
     }
 
-	virtual bool trigger(TriggerEvent , Room* room, ServerPlayer *player, QVariant &data) const{
-		ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
+    virtual bool trigger(TriggerEvent , Room* room, ServerPlayer *player, QVariant &data) const{
+        ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
 
-		if(player == splayer)
-			return false;
+        if(player == splayer)
+            return false;
 
-		if(player->getPhase() == Player::Finish)
-			if(splayer->askForSkillInvoke(objectName()))
-				if(room->askForCard(splayer, "BasicCard", "@xiaoruiask", QVariant(), CardDiscarded))
-					if(!room->askForCard(player, "EquipCard#TrickCard", "@xiaoruiresp", QVariant(), CardDiscarded)){
-						DamageStruct damage;
-						damage.from = splayer;
-						damage.to = player;
-						room->damage(damage);
-					}
+        if(player->getPhase() == Player::Finish)
+            if(splayer->askForSkillInvoke(objectName()))
+                if(room->askForCard(splayer, "BasicCard", "@xiaoruiask", QVariant(), CardDiscarded))
+                    if(!room->askForCard(player, "EquipCard#TrickCard", "@xiaoruiresp", QVariant(), CardDiscarded)){
+                        DamageStruct damage;
+                        damage.from = splayer;
+                        damage.to = player;
+                        room->damage(damage);
+                    }
 
-		return false;
+        return false;
     }
 };
 

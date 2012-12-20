@@ -92,7 +92,7 @@ public:
         return GuhuoDialog::getInstance("qice", false);
     }
 
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
         return !to_select->isEquipped();
     }
 
@@ -405,7 +405,7 @@ public:
         return Slash::IsAvailable(player);
     }
 
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
         return  pattern == "slash";
     }
 
@@ -467,10 +467,6 @@ void ChunlaoCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) con
 class ChunlaoViewAsSkill:public ViewAsSkill{
 public:
     ChunlaoViewAsSkill():ViewAsSkill("chunlao"){
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return false;
     }
 
     virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{

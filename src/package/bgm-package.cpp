@@ -539,8 +539,8 @@ public:
 
         return false;
     }
-	
-	virtual int getEffectIndex(const ServerPlayer *, const Card *) const{
+    
+    virtual int getEffectIndex(const ServerPlayer *, const Card *) const{
         return 1;
     }
 };

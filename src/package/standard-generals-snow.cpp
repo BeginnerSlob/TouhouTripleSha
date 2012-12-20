@@ -215,7 +215,7 @@ public:
                         }
                     }
                 }
-				player->tag.remove("xuanhuo-card");
+                player->tag.remove("xuanhuo-card");
             }
         }
 
@@ -247,15 +247,15 @@ YuanheCard::YuanheCard(){
 }
 
 bool YuanheCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-	return to_select != Self;
+    return to_select != Self;
 }
 
 void YuanheCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-	ServerPlayer *target = targets.first();
-	source->drawCards(2);
-	target->drawCards(2);
-	room->askForDiscard(source, "yuanhe", 2, 2, false, true);
-	room->askForDiscard(target, "yuanhe", 2, 2, false, true);
+    ServerPlayer *target = targets.first();
+    source->drawCards(2);
+    target->drawCards(2);
+    room->askForDiscard(source, "yuanhe", 2, 2, false, true);
+    room->askForDiscard(target, "yuanhe", 2, 2, false, true);
 }
 
 class Yuanhe: public OneCardViewAsSkill{
@@ -277,7 +277,7 @@ public:
         card->addSubcard(originalCard);
 
         return card;
-	}
+    }
 };
 
 YuluCard::YuluCard(){
@@ -347,8 +347,8 @@ public:
             foreach(Player::Place place, move->from_places)
                 if(place == Player::PlaceEquip){
                     invoke = true;
-					break;
-				}
+                    break;
+                }
 
             if(invoke && room->askForSkillInvoke(player, objectName())){
                 room->broadcastSkillInvoke(objectName());
@@ -927,11 +927,11 @@ public:
 class Eli: public TriggerSkill{
 public:
     Eli():TriggerSkill("eli"){
-        events << CardsMoveOneTime << EventPhaseStart << EventPhaseEnd;
+        events << CardsMoveOneTime << EventPhaseChanging << EventPhaseEnd;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if(triggerEvent == EventPhaseStart){
+        if(triggerEvent == EventPhaseChanging){
             player->setMark("eli", 0);
         }
         else if(triggerEvent == CardsMoveOneTime)
@@ -943,22 +943,22 @@ public:
             if(move->to_place == Player::DiscardPile && player->getPhase() == Player::Discard)
                 player->setMark("eli", player->getMark("eli") + move->card_ids.length());
         }
-		else if(triggerEvent == EventPhaseEnd && player->getHp() <= 0 && player->getMark("eli") >= 2 && player->askForSkillInvoke(objectName())){
-			SavageAssault *nanman = new SavageAssault(Card::NoSuit, 0);
-			nanman->setSkillName(objectName());
-			CardUseStruct use;
-			use.from = player;
-			use.card = nanman;
+        else if(triggerEvent == EventPhaseEnd && player->getHp() <= 0 && player->getMark("eli") >= 2 && player->askForSkillInvoke(objectName())){
+            SavageAssault *nanman = new SavageAssault(Card::NoSuit, 0);
+            nanman->setSkillName(objectName());
+            CardUseStruct use;
+            use.from = player;
+            use.card = nanman;
 
-			foreach(ServerPlayer *p, room->getOtherPlayers(player))
-				if(!player->isProhibited(p, nanman))
-					use.to << p;
+            foreach(ServerPlayer *p, room->getOtherPlayers(player))
+                if(!player->isProhibited(p, nanman))
+                    use.to << p;
 
-			if(use.to.isEmpty())
-				return false;
+            if(use.to.isEmpty())
+                return false;
 
-			room->useCard(use, true);
-		}
+            room->useCard(use, true);
+        }
 
         return false;
     }
@@ -1259,7 +1259,7 @@ public:
             DyingStruct dying = data.value<DyingStruct>();
 
             if(dying.who->getHp() > 0 || player->isNude() || current->isDead() || !player->canSlash(current, NULL, false))
-				return false;
+                return false;
 
             room->setPlayerFlag(player, "jieyouUsed");
             room->setTag("JieyouTarget", data);
@@ -1291,7 +1291,7 @@ public:
                 }
                 else
                 {
-					Peach *peach = new Peach(Card::NoSuit, 0);
+                    Peach *peach = new Peach(Card::NoSuit, 0);
                     peach->setSkillName(objectName());
                     CardUseStruct use;
                     use.card = peach;
@@ -1386,8 +1386,8 @@ public:
 };
 
 void StandardPackage::addSnowGenerals(){
-	General *snow002 = new General(this, "snow002", "wu");
-	snow002->addSkill(new Kuipo);
+    General *snow002 = new General(this, "snow002", "wu");
+    snow002->addSkill(new Kuipo);
 
     General *snow005 = new General(this, "snow005", "wu", 3);
     snow005->addSkill(new Guideng);
@@ -1446,7 +1446,7 @@ void StandardPackage::addSnowGenerals(){
     General *snow022 = new General(this, "snow022", "wu");
     snow022->addSkill(new Skill("xindu"));
     snow022->addSkill(new Fenxun);
-	
+    
     addMetaObject<GuidengCard>();
     addMetaObject<XuanhuoCard>();
     addMetaObject<YuanheCard>();
@@ -1458,5 +1458,5 @@ void StandardPackage::addSnowGenerals(){
     addMetaObject<AnxuCard>();
     addMetaObject<FenxunCard>();
 
-	skills << new BianshengPindian;
+    skills << new BianshengPindian;
 }
