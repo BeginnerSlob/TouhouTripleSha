@@ -138,13 +138,13 @@ void StartScene::printServerInfo(){
 
         server_log->append(tr("Secondary general is enabled, max hp scheme is %1").arg(scheme_str));
     }else
-        server_log->append(tr("Seconardary general is disabled"));*/
+        server_log->append(tr("Seconardary general is disabled"));
 
     server_log->append( Config.EnableScene ?
                         tr("Scene Mode is enabled") :
                         tr("Scene Mode is disabled"));
 
-    /*server_log->append( Config.EnableSame ?
+    server_log->append( Config.EnableSame ?
                         tr("Same Mode is enabled") :
                         tr("Same Mode is disabled"));
 

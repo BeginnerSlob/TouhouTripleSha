@@ -156,8 +156,8 @@ int Player::getAttackRange() const{
         Q_ASSERT(card);
         return card->getRange();
     }
-    else if(hasSkill("zhengfeng"))
-        return hp;
+    else if(hasSkill("silian"))
+        return 3;
     else
         return 1;
 }

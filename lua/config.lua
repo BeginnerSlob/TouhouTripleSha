@@ -7,11 +7,13 @@ config = {
         "StandardCard",
         "StandardExCard",
         "Maneuvering",
-        "SPCard",
+        --[["SPCard",
         "Nostalgia",
-        "New3v3Card",
+        "New3v3Card",]]
 
         "Standard",
+        "Touhou",
+        "Bangai",
         --[["Wind",
         "Fire",
         "Thicket",

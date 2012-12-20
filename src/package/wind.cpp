@@ -401,7 +401,7 @@ WindPackage::WindPackage()
     yuji->addSkill(new Guhuo);
 
     addMetaObject<GuhuoCard>();
-	*/
+    */
 }
 
 ADD_PACKAGE(Wind)

@@ -1035,7 +1035,7 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
     bool continuable = false;
     card = card->validateInResposing(player, continuable);
     const Card* result = NULL;
-	
+    
     if(card){
         if (trigger_event == CardResponsed || trigger_event == CardUsed) {
             LogMessage log;
@@ -1110,7 +1110,7 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
     return result;
 }
 
-bool Room::askForUseCard(ServerPlayer *player, const QString &pattern, const QString &prompt, int notice_index){
+bool Room::askForUseCard(ServerPlayer *player, const QString &pattern, const QString &prompt, int notice_index, bool add_history){
     notifyMoveFocus(player, S_COMMAND_USE_CARD);
     _m_roomState.setCurrentCardUsePattern(pattern);
     _m_roomState.setCurrentCardUseReason(CardUseStruct::CARD_USE_REASON_RESPONSE);
@@ -1147,7 +1147,7 @@ bool Room::askForUseCard(ServerPlayer *player, const QString &pattern, const QSt
     if (isCardUsed && card_use.isValid(pattern)){
         QVariant decisionData = QVariant::fromValue(card_use);
         thread->trigger(ChoiceMade, this, player, decisionData);
-        useCard(card_use);
+        useCard(card_use, add_history);
         return true;        
     }else{
         QVariant decisionData = QVariant::fromValue("askForUseCard:"+pattern+":"+prompt+":nil");
@@ -1157,7 +1157,7 @@ bool Room::askForUseCard(ServerPlayer *player, const QString &pattern, const QSt
     return false;
 }
 
-bool Room::askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims, const QString &prompt){
+bool Room::askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims, const QString &prompt, bool add_history){
     Q_ASSERT(!victims.isEmpty());
 
     //The realization of this function in the Slash::onUse and Slash::targetFilter.
@@ -1174,13 +1174,13 @@ bool Room::askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims
 
     do{
         setPlayerFlag(slasher, "-guhuo_failed");
-        use = askForUseCard(slasher, "slash", prompt);
+        use = askForUseCard(slasher, "slash", prompt, add_history);
     }while(slasher->hasFlag("guhuo_failed"));
 
     if(slasher->hasFlag("jijiang_failed")){
         do{
             setPlayerFlag(slasher, "-guhuo_failed");
-            use = askForUseCard(slasher, "slash", prompt);
+            use = askForUseCard(slasher, "slash", prompt, add_history);
         }while(slasher->hasFlag("guhuo_failed"));
         setPlayerFlag(slasher, "-jijiang_failed");
     }
@@ -1196,11 +1196,11 @@ bool Room::askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims
     return use;
 }
 
-bool Room::askForUseSlashTo(ServerPlayer *slasher, ServerPlayer *victim, const QString &prompt){
+bool Room::askForUseSlashTo(ServerPlayer *slasher, ServerPlayer *victim, const QString &prompt, bool add_history){
     Q_ASSERT(victim != NULL);
     QList<ServerPlayer *> victims;
     victims << victim;
-    return askForUseSlashTo(slasher, victims, prompt);
+    return askForUseSlashTo(slasher, victims, prompt, add_history);
 }
 
 int Room::askForAG(ServerPlayer *player, const QList<int> &card_ids, bool refusable, const QString &reason){
@@ -2649,7 +2649,7 @@ void Room::damage(DamageStruct &damage_data){
         return;
 
     QVariant data = QVariant::fromValue(damage_data);
-	
+    
     if(!damage_data.chain && !damage_data.transfer && damage_data.from){
         // ComfirmDamage
         thread->trigger(ConfirmDamage, this, damage_data.from, data);
@@ -4037,7 +4037,7 @@ void Room::doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target){
         if(nextplayer->containsTrick("indulgence"))
             hasindul = true;
         foreach(const Card *card, cards){
-            if(card->getSuit() == Card::Heart || (card->getSuit() == Card::Spade && target->hasSkill("hongyan"))){
+            if(card->getSuit() == Card::Heart || (card->getSuit() == Card::Spade && target->hasSkill("chiqiu"))){
                 has_null = card;
                 if(card->isKindOf("Jink"))
                     has_jink = card;
@@ -4102,32 +4102,42 @@ void Room::doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target){
 
 const Card *Room::askForPindian(ServerPlayer *player, ServerPlayer *from, ServerPlayer *to, const QString &reason)
 {
-    Q_ASSERT(!player->isKongcheng());
     notifyMoveFocus(player, S_COMMAND_PINDIAN);
-    if(player->getHandcardNum() == 1){
-        return player->getHandcards().first();
-    }
+    QVariant asked = "pindiancard";
+    thread->trigger(CardAsked, this, player, asked);
+    const Card *card;
+    if(has_provided){
+        card = provided;
+        provided = NULL;
+        has_provided = false;
+        return card;
+    }else {
+        Q_ASSERT(!player->isKongcheng());
+        if(player->getHandcardNum() == 1){
+            return player->getHandcards().first();
+        }
 
-    AI *ai = player->getAI();
-    if(ai){
-        thread->delay(Config.AIDelay);
-        return ai->askForPindian(from, reason);
-    }
+        AI *ai = player->getAI();
+        if(ai){
+            thread->delay(Config.AIDelay);
+            return ai->askForPindian(from, reason);
+        }
 
-    bool success = doRequest(player, S_COMMAND_PINDIAN, toJsonArray(from->objectName(), to->objectName()), true);
+        bool success = doRequest(player, S_COMMAND_PINDIAN, toJsonArray(from->objectName(), to->objectName()), true);
 
-    Json::Value clientReply = player->getClientReply();    
-    if(!success || !clientReply.isString()){
-        int card_id = player->getRandomHandCardId();
-        return Sanguosha->getCard(card_id);
-    }else{        
-        const Card *card = Card::Parse(toQString(clientReply));
-        if(card->isVirtualCard()){
-            const Card *real_card = Sanguosha->getCard(card->getEffectiveId());
-            delete card;
-            return real_card;
-        }else
-            return card;
+        Json::Value clientReply = player->getClientReply();    
+        if(!success || !clientReply.isString()){
+            int card_id = player->getRandomHandCardId();
+            return Sanguosha->getCard(card_id);
+        }else{        
+            const Card *card = Card::Parse(toQString(clientReply));
+            if(card->isVirtualCard()){
+                const Card *real_card = Sanguosha->getCard(card->getEffectiveId());
+                delete card;
+                return real_card;
+            }else
+                return card;
+        }
     }
 }
 
@@ -4452,6 +4462,11 @@ void Room::showAllCards(ServerPlayer *player, ServerPlayer *to){
     }
 
     if (isUnicast){
+        LogMessage log;
+        log.type = "$ShowAllCardsToOther";
+        log.from = player;
+        log.to << to;
+        sendLog(log);
         notifyMoveFocus(to, S_COMMAND_SKILL_GONGXIN);
         doRequest(to, S_COMMAND_SKILL_GONGXIN, gongxinArgs, true);
     }

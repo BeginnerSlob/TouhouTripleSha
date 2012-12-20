@@ -53,7 +53,7 @@ Client::Client(QObject *parent, const QString &filename)
 
     callbacks["startGame"] = &Client::startGame;
     m_callbacks[S_COMMAND_GAME_OVER] = &Client::gameOver;
-	
+    
     callbacks["hpChange"] = &Client::hpChange;
     callbacks["maxhpChange"] = &Client::maxhpChange;
     callbacks["killPlayer"] = &Client::killPlayer;
@@ -382,7 +382,7 @@ void Client::updateProperty(const Json::Value &arg)
     QString object_name = toQString(arg[0]);
     ClientPlayer *player = getPlayer(object_name);
     if (!player) return; 
-    player->setProperty(arg[1].asCString(), toQString(arg[2]));	
+    player->setProperty(arg[1].asCString(), toQString(arg[2]));    
 }
 
 void Client::removePlayer(const QString &player_name){

@@ -147,29 +147,29 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
     if(Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
         rangefix += 1;
 
-	if(targets.length() >= slash_targets) {
-		bool hasUsed = false;
+    if(targets.length() >= slash_targets) {
+        bool hasUsed = false;
         if (Self->hasSkill("xindu") && targets.length() == slash_targets) {
             foreach(const Player *p, targets) {
-				if(Self->distanceTo(p) == 1) {
-					hasUsed = true;
-					break;
-				}
-			}
+                if(Self->distanceTo(p) == 1) {
+                    hasUsed = true;
+                    break;
+                }
+            }
 
-			if(hasUsed)
-				return Self->canSlash(to_select, this, distance_limit, rangefix);
-			else
-				return Self->canSlash(to_select, this) && Self->distanceTo(to_select) == 1;
-		}
+            if(hasUsed)
+                return Self->canSlash(to_select, this, distance_limit, rangefix);
+            else
+                return Self->canSlash(to_select, this) && Self->distanceTo(to_select) == 1;
+        }
         else
             return false;
     }
 
-	if (Self->hasSkill("xiagong") && !Self->getWeapon())
-		return Self->canSlash(to_select, this, false) && Self->distanceTo(to_select) <= 2;
-	else
-		return Self->canSlash(to_select, this, distance_limit, rangefix);
+    if (Self->hasSkill("xiagong") && !Self->getWeapon())
+        return Self->canSlash(to_select, this, false) && Self->distanceTo(to_select) <= 2;
+    else
+        return Self->canSlash(to_select, this, distance_limit, rangefix);
 }
 
 Jink::Jink(Suit suit, int number):BasicCard(suit, number){

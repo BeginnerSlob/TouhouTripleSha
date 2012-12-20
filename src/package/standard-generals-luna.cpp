@@ -135,8 +135,8 @@ public:
 
 class WudiViewAsSkill:public ViewAsSkill{
 public:
-	WudiViewAsSkill():ViewAsSkill("wudi"){
-	}
+    WudiViewAsSkill():ViewAsSkill("wudi"){
+    }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
         return !player->hasFlag("wudiused");
@@ -166,19 +166,19 @@ public:
 
 class Wudi:public TriggerSkill{
 public:
-	Wudi():TriggerSkill("wudi"){
-		view_as_skill = new WudiViewAsSkill;
-		events << CardUsed;
-	}
+    Wudi():TriggerSkill("wudi"){
+        view_as_skill = new WudiViewAsSkill;
+        events << CardUsed;
+    }
 
-	virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-		CardUseStruct &use = data.value<CardUseStruct>();
+    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        CardUseStruct &use = data.value<CardUseStruct>();
 
-		if(use.card && use.card->getSkillName() == "wudi")
-			room->setPlayerFlag(player, "wudiused");
+        if(use.card && use.card->getSkillName() == "wudi")
+            room->setPlayerFlag(player, "wudiused");
 
-		return false;
-	}
+        return false;
+    }
 };
 
 MoyuCard::MoyuCard(){
@@ -529,16 +529,16 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         if(triggerEvent == Damage) {
-			DamageStruct &damage = data.value<DamageStruct>();
+            DamageStruct &damage = data.value<DamageStruct>();
 
-			if(damage.card && damage.card->isKindOf("Slash") && damage.card->isRed()
-					&& !damage.chain && !damage.transfer)
-				if(player->askForSkillInvoke(objectName()))
-					player->drawCards(1);
-			
-			return false;
-		}
-		SlashEffectStruct effect = data.value<SlashEffectStruct>();
+            if(damage.card && damage.card->isKindOf("Slash") && damage.card->isRed()
+                    && !damage.chain && !damage.transfer)
+                if(player->askForSkillInvoke(objectName()))
+                    player->drawCards(1);
+            
+            return false;
+        }
+        SlashEffectStruct effect = data.value<SlashEffectStruct>();
         if(effect.to->isAlive() && !effect.to->isNude()){
             if(player->askForSkillInvoke(objectName(), data)){
                 room->broadcastSkillInvoke(objectName());
@@ -1269,37 +1269,37 @@ public:
                 invoke = true;
         }
 
-		if(invoke && player->askForSkillInvoke(objectName())){
+        if(invoke && player->askForSkillInvoke(objectName())){
             room->broadcastSkillInvoke(objectName());
-			QStringList choices;
-			choices << "draw";
+            QStringList choices;
+            choices << "draw";
 
-			foreach(ServerPlayer *p, room->getOtherPlayers(player))
-				if(!p->isAllNude()) {
-					choices << "discard";
-					break;
-				}
+            foreach(ServerPlayer *p, room->getOtherPlayers(player))
+                if(!p->isAllNude()) {
+                    choices << "discard";
+                    break;
+                }
 
-			QString choice;
+            QString choice;
 
-			if(choices.length() > 1)
-				choice = room->askForChoice(player, objectName(), choices.join("+"));
-			else
-				choice = "draw";
+            if(choices.length() > 1)
+                choice = room->askForChoice(player, objectName(), choices.join("+"));
+            else
+                choice = "draw";
 
-			if(choice == "draw")
-				player->drawCards(1);
-			else {
-				QList<ServerPlayer *> victims;
-				foreach(ServerPlayer *p, room->getOtherPlayers(player))
-					if(!p->isAllNude())
-						victims << p;
+            if(choice == "draw")
+                player->drawCards(1);
+            else {
+                QList<ServerPlayer *> victims;
+                foreach(ServerPlayer *p, room->getOtherPlayers(player))
+                    if(!p->isAllNude())
+                        victims << p;
 
-				ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName());
-				int card_id = room->askForCardChosen(player, victim, "hej", objectName());
-				room->throwCard(card_id, victim, player);
-			}
-		}
+                ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName());
+                int card_id = room->askForCardChosen(player, victim, "hej", objectName());
+                room->throwCard(card_id, victim, player);
+            }
+        }
         return false;
     }
 };
@@ -1311,45 +1311,45 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-		DamageStruct &damage = data.value<DamageStruct>();
-		if(damage.from == NULL)
-			return false;
+        DamageStruct &damage = data.value<DamageStruct>();
+        if(damage.from == NULL)
+            return false;
 
-		LogMessage log;
-		log.type = "#TriggerSkill";
-		log.from = player;
-		log.arg = objectName();
-		room->sendLog(log);
+        LogMessage log;
+        log.type = "#TriggerSkill";
+        log.from = player;
+        log.arg = objectName();
+        room->sendLog(log);
 
-		QStringList choices;
-		choices << "show" << "reduce";
-		QString choice = room->askForChoice(damage.from, objectName(), choices.join("+"));
-		if(choice == "reduce") {
-			LogMessage log;
-			log.type = "#WenxinDecrease";
-			log.from = damage.from;
-			log.to << player;
-			log.arg = QString::number(damage.damage);
-			log.arg2 = QString::number(--damage.damage);
-			room->sendLog(log);
+        QStringList choices;
+        choices << "show" << "reduce";
+        QString choice = room->askForChoice(damage.from, objectName(), choices.join("+"));
+        if(choice == "reduce") {
+            LogMessage log;
+            log.type = "#WenxinDecrease";
+            log.from = damage.from;
+            log.to << player;
+            log.arg = QString::number(damage.damage);
+            log.arg2 = QString::number(--damage.damage);
+            room->sendLog(log);
 
-			if(damage.damage <= 0) {
-				LogMessage log;
-				log.type = "#ZeroDamage";
-				log.from = damage.from;
-				log.to << player;
-				room->sendLog(log);
+            if(damage.damage <= 0) {
+                LogMessage log;
+                log.type = "#ZeroDamage";
+                log.from = damage.from;
+                log.to << player;
+                room->sendLog(log);
 
-				return true;
-			} else
-				data = QVariant::fromValue(damage);
+                return true;
+            } else
+                data = QVariant::fromValue(damage);
 
-			return false;
-		} else
-			room->showAllCards(damage.from, NULL);
+            return false;
+        } else
+            room->showAllCards(damage.from, NULL);
 
-		return false;
-	}
+        return false;
+    }
 };
 
 class Shuhui: public TriggerSkill{
@@ -1429,52 +1429,52 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-		if(player->getPhase() != Player::Play)
-			return false;
+        if(player->getPhase() != Player::Play)
+            return false;
 
-		if(player->askForSkillInvoke(objectName())){
-			QList<ServerPlayer *> targets;
-			foreach(ServerPlayer *p, room->getOtherPlayers(player))
-				if(!p->isKongcheng())
-					targets << p;
+        if(player->askForSkillInvoke(objectName())){
+            QList<ServerPlayer *> targets;
+            foreach(ServerPlayer *p, room->getOtherPlayers(player))
+                if(!p->isKongcheng())
+                    targets << p;
 
-			if(targets.isEmpty())
-				return false;
+            if(targets.isEmpty())
+                return false;
 
-			ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
-			bool success = player->pindian(target, objectName(), NULL);
-			if(success) {
-				Slash *slash = new Slash(Card::NoSuit, 0);
-				slash->setSkillName(objectName());
-				QList<ServerPlayer *> victims;
-				foreach(ServerPlayer *p, room->getOtherPlayers(player))
-					if(!player->isProhibited(p, slash))
-						victims << p;
-				if(!victims.isEmpty()) {
-					ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName());
-					CardUseStruct use;
-					use.card = slash;
-					use.from = player;
-					use.to << victim;
-					room->useCard(use, false);
-				}
-			} else
-				return true;
-		}
-		return false;
-	}
+            ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
+            bool success = player->pindian(target, objectName(), NULL);
+            if(success) {
+                Slash *slash = new Slash(Card::NoSuit, 0);
+                slash->setSkillName(objectName());
+                QList<ServerPlayer *> victims;
+                foreach(ServerPlayer *p, room->getOtherPlayers(player))
+                    if(!player->isProhibited(p, slash))
+                        victims << p;
+                if(!victims.isEmpty()) {
+                    ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName());
+                    CardUseStruct use;
+                    use.card = slash;
+                    use.from = player;
+                    use.to << victim;
+                    room->useCard(use, false);
+                }
+            } else
+                return true;
+        }
+        return false;
+    }
 };
 
 void StandardPackage::addLunaGenerals(){
-	General *luna001 = new General(this, "luna001", "qun", 3);
+    General *luna001 = new General(this, "luna001", "qun", 3);
     luna001->addSkill(new Huichun);
     luna001->addSkill(new Qingnang);
 
-	General *luna002 = new General(this, "luna002", "qun");
+    General *luna002 = new General(this, "luna002", "qun");
     luna002->addSkill(new Wushuang);
     luna002->addSkill(new Wudi);
 
-	General *luna003 = new General(this, "luna003", "qun", 3, false);
+    General *luna003 = new General(this, "luna003", "qun", 3, false);
     luna003->addSkill(new Moyu);
     luna003->addSkill(new Zhuoyue);
 
@@ -1529,7 +1529,7 @@ void StandardPackage::addLunaGenerals(){
 
     General *luna021 = new General(this, "luna021", "qun");
     luna021->addSkill(new Shuangren);
-	
+    
     addMetaObject<QingnangCard>();
     addMetaObject<MoyuCard>();
     addMetaObject<WenyueCard>();
