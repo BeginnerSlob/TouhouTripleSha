@@ -41,7 +41,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *caocao, QVariant &data) const{
-        QString pattern = data.toString();
+        QString pattern = data.toStringList().first();
         if(pattern != "jink")
             return false;
 
@@ -55,7 +55,8 @@ public:
         room->broadcastSkillInvoke(objectName());
         QVariant tohelp = QVariant::fromValue((PlayerStar)caocao);
         foreach(ServerPlayer *liege, lieges){
-            const Card *jink = room->askForCard(liege, "jink", "@hujia-jink:" + caocao->objectName(), tohelp, CardResponsed, caocao);
+            const Card *jink = room->askForCard(liege, "jink", "@hujia-jink:" + caocao->objectName(),
+                                                tohelp, Card::MethodResponse, caocao);
             if(jink){
                 room->provide(jink);
                 return true;
@@ -69,7 +70,7 @@ public:
 TiansuoCard::TiansuoCard(){
     target_fixed = true;
     will_throw = false;
-    can_jilei = true;
+    handling_method = Card::MethodResponse;
 }
 
 void TiansuoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
@@ -119,7 +120,7 @@ public:
         prompt_list << "@tiansuo-card" << judge->who->objectName()
                 << objectName() << judge->reason << judge->card->getEffectIdString();
         QString prompt = prompt_list.join(":");
-        const Card *card = room->askForCard(player, "@tiansuo", prompt, data, AskForRetrial);
+        const Card *card = room->askForCard(player, "@tiansuo", prompt, data, Card::MethodResponse, judge->who, true);
         if (card != NULL){
             if (player->hasInnateSkill("tiansuo") || !player->hasSkill("jilve"))
                 room->broadcastSkillInvoke(objectName());
@@ -465,7 +466,7 @@ bool XunyuCard::targetFilter(const QList<const Player *> &targets, const Player 
 }
 
 void XunyuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    Slash *slash = new Slash(Card::NoSuit, 0);
+    Slash *slash = new Slash(Card::NoSuitNoColor, 0);
     slash->setSkillName("xunyu");
     CardUseStruct use;
     use.card = slash;
@@ -492,7 +493,12 @@ public:
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        return  pattern.startsWith("@@xunyu");
+        Slash *slash = new Slash(Card::NoSuitNoColor, 0);
+        slash->deleteLater();
+        if (pattern.startsWith("@@xunyu") && !player->isCardLimited(slash, Card::MethodUse))
+            return true;
+
+        return false;
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
@@ -1059,7 +1065,7 @@ public:
 class Jiushi: public ZeroCardViewAsSkill{
 public:
     Jiushi():ZeroCardViewAsSkill("jiushi"){
-        Analeptic *analeptic = new Analeptic(Card::NoSuit, 0);
+        Analeptic *analeptic = new Analeptic(Card::NoSuitNoColor, 0);
         analeptic->setSkillName("jiushi");
 
         this->analeptic = analeptic;
@@ -1167,7 +1173,7 @@ public:
         CardUseStruct use = data.value<CardUseStruct>();
 
         if(use.card && use.card->isKindOf("Slash") && use.to.contains(victim) && player->inMyAttackRange(victim) && player->askForSkillInvoke(objectName())){
-            if(!room->askForCard(player, "Armor", "@piaonian", QVariant(), CardDiscarded)){
+            if(!room->askForCard(player, "Armor", "@piaonian")){
                 room->setPlayerProperty(victim, "chained", true);
                 room->setPlayerProperty(player, "chained", true);
             }
@@ -1376,8 +1382,8 @@ public:
 
         if(player->getPhase() == Player::Finish)
             if(splayer->askForSkillInvoke(objectName()))
-                if(room->askForCard(splayer, "BasicCard", "@xiaoruiask", QVariant(), CardDiscarded))
-                    if(!room->askForCard(player, "EquipCard#TrickCard", "@xiaoruiresp", QVariant(), CardDiscarded)){
+                if(room->askForCard(splayer, "BasicCard", "@xiaoruiask"))
+                    if(!room->askForCard(player, "EquipCard#TrickCard", "@xiaoruiresp")){
                         DamageStruct damage;
                         damage.from = splayer;
                         damage.to = player;
@@ -1390,6 +1396,7 @@ public:
 
 RendeCard::RendeCard(){
     will_throw = false;
+    handling_method = Card::MethodNone;
 }
 
 void RendeCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
@@ -1477,7 +1484,7 @@ void JijiangCard::use(Room *room, ServerPlayer *liubei, QList<ServerPlayer *> &t
 
     QVariant tohelp = QVariant::fromValue((PlayerStar)liubei);
     foreach(ServerPlayer *liege, lieges){
-        slash = room->askForCard(liege, "slash", "@jijiang-slash:" + liubei->objectName(), tohelp, CardResponsed, liubei);
+        slash = room->askForCard(liege, "slash", "@jijiang-slash:" + liubei->objectName(), toslash, Card::MethodResponse, liubei);
         if(slash){
             CardUseStruct card_use;
             card_use.card = slash;
@@ -1498,7 +1505,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->hasLordSkill("jijiang") && Slash::IsAvailable(player);
+        return player->hasLordSkill("jijiang") && Slash::IsAvailable(player, NULL);
     }
 
     virtual const Card *viewAs() const{
@@ -1506,7 +1513,7 @@ public:
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        return pattern == "slash" && !ClientInstance->hasNoTargetResponsing() && !player->hasFlag("jijiang_failed");
+        return pattern == "slash" && !ClientInstance->hasNoTargetResponding() && !player->hasFlag("jijiang_failed");
     }
 };
 
@@ -1524,7 +1531,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *liubei, QVariant &data) const{
-        QString pattern = data.toString();
+        QString pattern = data.toStringList().first();
         if(pattern != "slash")
             return false;
                 
@@ -1539,7 +1546,7 @@ public:
 
         QVariant tohelp = QVariant::fromValue((PlayerStar)liubei);
         foreach(ServerPlayer *liege, lieges){
-            const Card *slash = room->askForCard(liege, "slash", "@jijiang-slash:" + liubei->objectName(), tohelp, CardResponsed, liubei);
+            const Card *slash = room->askForCard(liege, "slash", "@jijiang-slash:" + liubei->objectName(), QVariant(), Card::MethodResponse, liubei);
             if(slash){
                 room->provide(slash);
                 return true;
@@ -1563,6 +1570,7 @@ ZhihengCard::ZhihengCard(){
     once = true;
     mute = true;
     will_throw = false;
+    handling_method = Card::MethodDiscard;
 }
 
 void ZhihengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
@@ -1678,13 +1686,13 @@ public:
 class Keji: public TriggerSkill{
 public:
     Keji():TriggerSkill("keji"){
-        events << EventPhaseChanging << CardResponsed;
+        events << EventPhaseChanging << CardResponded;
         frequency = Frequent;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *lvmeng, QVariant &data) const{
-        if(triggerEvent == CardResponsed && lvmeng->getPhase() == Player::Play){
-            CardStar card_star = data.value<ResponsedStruct>().m_card;
+        if(triggerEvent == CardResponded && lvmeng->getPhase() == Player::Play){
+            CardStar card_star = data.value<CardResponseStruct>().m_card;
             if(card_star->isKindOf("Slash"))
                 lvmeng->setFlags("keji_use_slash");
         }

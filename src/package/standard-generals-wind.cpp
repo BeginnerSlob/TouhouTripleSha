@@ -16,7 +16,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return Slash::IsAvailable(player);
+        return Slash::IsAvailable(player, NULL);
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
@@ -176,7 +176,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return Slash::IsAvailable(player);
+        return Slash::IsAvailable(player, NULL);
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
@@ -203,7 +203,7 @@ class Qizhou: public TriggerSkill{
 public:
     Qizhou():TriggerSkill("qizhou"){
         frequency = Frequent;
-        events << TargetConfirmed << CardUsed << CardResponsed;
+        events << TargetConfirmed << CardUsed << CardResponded;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
@@ -212,15 +212,15 @@ public:
             CardUseStruct &use = data.value<CardUseStruct>();
             card = use.card;
         }
-        else if(triggerEvent == CardResponsed) {
-            ResponsedStruct &resp = data.value<ResponsedStruct>();
+        else if(triggerEvent == CardResponded) {
+            CardResponseStruct &resp = data.value<CardResponseStruct>();
             card = resp.m_card;
         }
 
         if(card == NULL || !card->isVirtualCard())
             return false;
 
-        if((triggerEvent == CardUsed || triggerEvent == CardResponsed) && card->isKindOf("Jink"))
+        if((triggerEvent == CardUsed || triggerEvent == CardResponded) && card->isKindOf("Jink"))
             if(player->askForSkillInvoke(objectName()))
                 player->drawCards(1);
 
@@ -235,9 +235,9 @@ public:
     }
 };
 
-class Jibu2: public DistanceSkill{
+class Jibu: public DistanceSkill{
 public:
-    Jibu2():DistanceSkill("jibu2")
+    Jibu():DistanceSkill("jibu")
     {
     }
 
@@ -313,7 +313,7 @@ class Huiquan:public TriggerSkill{
 public:
     Huiquan():TriggerSkill("huiquan"){
         frequency = Frequent;
-        events << CardUsed << CardResponsed;
+        events << CardUsed << CardResponded;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
@@ -322,8 +322,8 @@ public:
         if(triggerEvent == CardUsed){
             CardUseStruct use = data.value<CardUseStruct>();
             card = use.card;
-        }else if(triggerEvent == CardResponsed)
-            card = data.value<ResponsedStruct>().m_card;
+        }else if(triggerEvent == CardResponded)
+            card = data.value<CardResponseStruct>().m_card;
 
         if(card->isNDTrick()){            
             if(room->askForSkillInvoke(player, objectName())){
@@ -512,11 +512,11 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return target != NULL && TriggerSkill::triggerable(target) && !target->getArmor()
-                && !target->hasFlag("wuqian") && target->getMark("qinggang") == 0;
+               && target->getMark("qinggang") == 0;
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        QString pattern = data.toString();
+        QString pattern = data.toStringList().first();
 
         if(pattern != "jink")
             return false;
@@ -529,11 +529,11 @@ public:
             judge.who = player;
             judge.play_animation = true;
 
-            room->setEmotion(player, "armor/eight_diagram");
             room->judge(judge);
 
             if(judge.isGood()){
-                Jink *jink = new Jink(Card::NoSuit, 0);
+				room->setEmotion(player, "armor/eight_diagram");
+                Jink *jink = new Jink(Card::NoSuitNoColor, 0);
                 jink->setSkillName(objectName());
                 room->provide(jink);
                 return true;
@@ -903,7 +903,7 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
-        if(damage.card && damage.card->getTypeId() == Card::Trick){
+        if(damage.card && damage.card->getTypeId() == Card::TypeTrick){
             if((triggerEvent == DamageInflicted && player->hasSkill(objectName()))
                     || (triggerEvent == DamageCaused && damage.from && damage.from->isAlive() 
                     && damage.from->hasSkill(objectName()))) {
@@ -1049,7 +1049,7 @@ void StandardPackage::addWindGenerals(){
     wind005->addSkill(new Qizhou);
 
     General *wind006 = new General(this, "wind006", "shu");
-    wind006->addSkill(new Jibu2);
+    wind006->addSkill(new Jibu);
     wind006->addSkill(new Yufeng);
 
     General *wind007 = new General(this, "wind007", "shu", 3, false);

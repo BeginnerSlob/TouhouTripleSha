@@ -502,6 +502,7 @@ BianshengCard::BianshengCard(){
     mute = true;
     will_throw = false;
     m_skillName = "biansheng_pindian";
+    handling_method = Card::MethodPindian;
 }
 
 bool BianshengCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
@@ -707,6 +708,7 @@ public:
 JianmieCard::JianmieCard(){
     once = true;
     will_throw = false;
+    handling_method = Card::MethodPindian;
 }
 
 bool JianmieCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
@@ -718,7 +720,7 @@ void JianmieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
     if(success){
         room->setPlayerFlag(source, "jianmie_success");
     }else{
-        room->setPlayerFlag(source, "jianmie_failed");
+        room->setPlayerCardLimitation(source, "use", "Slash", true);
     }
 }
 
@@ -944,7 +946,7 @@ public:
                 player->setMark("eli", player->getMark("eli") + move->card_ids.length());
         }
         else if(triggerEvent == EventPhaseEnd && player->getHp() <= 0 && player->getMark("eli") >= 2 && player->askForSkillInvoke(objectName())){
-            SavageAssault *nanman = new SavageAssault(Card::NoSuit, 0);
+            SavageAssault *nanman = new SavageAssault(Card::NoSuitNoColor, 0);
             nanman->setSkillName(objectName());
             CardUseStruct use;
             use.from = player;
@@ -966,6 +968,7 @@ public:
 
 JibanCard::JibanCard(){
     will_throw = false;
+    handling_method = Card::MethodNone;
 }
 
 bool JibanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
@@ -999,7 +1002,7 @@ public:
     }
 
     virtual bool viewFilter(const Card* to_select) const{
-        return !to_select->isEquipped() && to_select->getTypeId() == Card::Equip;
+        return !to_select->isEquipped() && to_select->getTypeId() == Card::TypeEquip;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
@@ -1212,7 +1215,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return Slash::IsAvailable(player);
+        return Slash::IsAvailable(player, NULL);
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
@@ -1220,7 +1223,7 @@ public:
     }
 
     virtual bool viewFilter(const Card *to_select) const{
-        return to_select->getTypeId() == Card::Equip;
+        return to_select->getTypeId() == Card::TypeEquip;
     }
 
     const Card *viewAs(const Card *originalCard) const{
@@ -1291,7 +1294,7 @@ public:
                 }
                 else
                 {
-                    Peach *peach = new Peach(Card::NoSuit, 0);
+                    Peach *peach = new Peach(Card::NoSuitNoColor, 0);
                     peach->setSkillName(objectName());
                     CardUseStruct use;
                     use.card = peach;

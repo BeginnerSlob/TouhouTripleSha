@@ -103,7 +103,7 @@ void Settings::init(){
 #endif
 
     if(UserName == "Admin" || UserName == "Administrator")
-        UserName = tr("Sanguosha-fans");
+        UserName = tr("Touhou-fans");
     ServerName = value("ServerName", tr("%1's server").arg(UserName)).toString();
 
     HostAddress = value("HostAddress", "127.0.0.1").toString();
@@ -116,6 +116,7 @@ void Settings::init(){
     NeverNullifyMyTrick = value("NeverNullifyMyTrick", true).toBool();
     EnableMinimizeDialog = value("EnableMinimizeDialog", false).toBool();
     EnableAutoTarget = value("EnableAutoTarget", false).toBool();
+    EnableIntellectualSelection = value("EnableIntellectualSelection", false).toBool();
     NullificationCountDown = value("NullificationCountDown", 8).toInt();
     OperationTimeout = value("OperationTimeout", 15).toInt();
     OperationNoLimit = value("OperationNoLimit", false).toBool();

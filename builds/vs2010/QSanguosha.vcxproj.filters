@@ -69,9 +69,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\swig\sanguosha_wrap.cxx">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\client\aux-skills.cpp">
       <Filter>client</Filter>
     </ClCompile>
@@ -437,6 +434,15 @@
     </ClCompile>
     <ClCompile Include="Release\moc_bangai.cpp">
       <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\swig\sanguosha_wrap.cxx">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\package\touhou-tsuki.cpp">
+      <Filter>package</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\package\touhou-yuki.cpp">
+      <Filter>package</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

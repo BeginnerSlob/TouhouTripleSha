@@ -19,13 +19,10 @@ const Card::Suit Card::AllSuits[4] = {
 
 Card::Card(Suit suit, int number, bool target_fixed)
     :target_fixed(target_fixed), once(false), mute(false),
-     will_throw(true), has_preact(false),
+     will_throw(true), has_preact(false), can_recast(false),
      m_suit(suit), m_number(number), m_id(-1)
 {
-    can_jilei = will_throw;
-
-    if(number < 1 || number > 13)
-        number = 0;
+    handling_method = will_throw ? Card::MethodDiscard : Card::MethodUse;
 }
 
 QString Card::getSuitString() const{
@@ -38,6 +35,8 @@ QString Card::Suit2String(Suit suit){
     case Heart: return "heart";
     case Club: return "club";
     case Diamond: return "diamond";
+    case NoSuitBlack: return "no_suit_black";
+    case NoSuitRed: return "no_suit_red";
     default: return "no_suit";
     }
 }
@@ -64,11 +63,11 @@ QList<int> Card::StringsToIds(const QStringList &strings){
 }
 
 bool Card::isRed() const{
-    return m_suit == Heart || m_suit == Diamond;
+    return m_suit == Heart || m_suit == Diamond || m_suit == NoSuitRed;
 }
 
 bool Card::isBlack() const{
-    return m_suit == Spade || m_suit == Club;
+    return m_suit == Spade || m_suit == Club || m_suit == NoSuitRed;
 }
 
 int Card::getId() const{
@@ -129,11 +128,15 @@ bool Card::sameColorWith(const Card *other) const{
 Card::Color Card::getColor() const{
     switch(m_suit){
     case Spade:
-    case Club: return Black;
+    case Club:
+    case NoSuitBlack:
+            return Black;
     case Heart:
-    case Diamond: return Red;
+    case Diamond:
+    case NoSuitRed:
+            return Red;
     default:
-        return Colorless;
+            return Colorless;
     }
 }
 
@@ -153,7 +156,7 @@ bool Card::CompareByColor(const Card *a, const Card *b){
 }
 
 bool Card::CompareBySuitNumber(const Card *a, const Card *b){
-    static Suit new_suits[] = { Spade, Heart, Club, Diamond, NoSuit};
+    static Suit new_suits[] = {Spade, Heart, Club, Diamond, NoSuitBlack, NoSuitRed, NoSuitNoColor};
     Suit suit1 = new_suits[a->getSuit()];
     Suit suit2 = new_suits[b->getSuit()];
 
@@ -173,7 +176,7 @@ bool Card::CompareByType(const Card *a, const Card *b){
 }
 
 bool Card::isNDTrick() const{
-    return getTypeId() == Trick && !isKindOf("DelayedTrick");
+    return getTypeId() == TypeTrick && !isKindOf("DelayedTrick");
 }
 
 QString Card::getPackage() const{
@@ -196,12 +199,31 @@ QString Card::getLogName() const{
     QString suit_char;
     QString number_string;
 
-    if(m_suit != Card::NoSuit)
-        suit_char = QString("<img src='image/system/log/%1.png' height = 12/>").arg(getSuitString());
-    else
-        suit_char = tr("NoSuit");
+    switch (m_suit) {
+    case Spade:
+    case Heart:
+    case Club:
+    case Diamond: {
+            suit_char = QString("<img src='image/system/log/%1.png' height = 12/>").arg(getSuitString());
+            break;
+        }
+    case NoSuitRed: {
+            suit_char = tr("NoSuitRed");
+            break;
+        }
+    case NoSuitBlack: {
+            suit_char = tr("NoSuitBlack");
+            break;
+        }
+    case NoSuitNoColor: {
+            suit_char = tr("NoSuitNoColor");
+            break;
+        }
+    default:
+            break;
+    }
 
-    if(m_number != 0)
+    if (m_number > 0 && m_number <= 13)
         number_string = getNumberString();
 
     return QString("%1[%2%3]").arg(getName()).arg(suit_char).arg(number_string);
@@ -281,7 +303,9 @@ const Card *Card::Parse(const QString &str){
         suit_map.insert("club", Card::Club);
         suit_map.insert("heart", Card::Heart);
         suit_map.insert("diamond", Card::Diamond);
-        suit_map.insert("no_suit", Card::NoSuit);
+        suit_map.insert("no_suit_red", Card::NoSuitRed);
+        suit_map.insert("no_suit_black", Card::NoSuitBlack);
+        suit_map.insert("no_suit", Card::NoSuitNoColor);
     }
 
     if(str.startsWith(QChar('@'))){
@@ -332,7 +356,7 @@ const Card *Card::Parse(const QString &str){
             card->setSkillName(skillName);
         }
         if(!card_suit.isEmpty())
-            card->setSuit(suit_map.value(card_suit, Card::NoSuit));
+            card->setSuit(suit_map.value(card_suit, Card::NoSuitNoColor));
         if(!card_number.isEmpty()){
             int number = 0;
             if(card_number == "A")
@@ -384,7 +408,7 @@ const Card *Card::Parse(const QString &str){
         if(subcard_str != ".")
             subcard_ids = subcard_str.split("+");
 
-        Suit suit = suit_map.value(suit_string, Card::NoSuit);
+        Suit suit = suit_map.value(suit_string, Card::NoSuitNoColor);
 
         int number = 0;
         if(number_string == "A")
@@ -484,7 +508,7 @@ void Card::onUse(Room *room, const CardUseStruct &use) const{
     QVariant data = QVariant::fromValue(card_use);
     RoomThread *thread = room->getThread();
  
-    if(getTypeId() != Card::Skill){
+    if(getTypeId() != Card::TypeSkill){
         CardMoveReason reason(CardMoveReason::S_REASON_USE, player->objectName(), QString(), this->getSkillName(), QString());
         if (card_use.to.size() == 1)
             reason.m_targetId = card_use.to.first()->objectName();
@@ -564,7 +588,10 @@ void Card::clearSubcards(){
 }
 
 bool Card::isAvailable(const Player *player) const{
-    return !player->isJilei(this) && !player->isLocked(this);
+    if (!can_recast)
+        return !player->isCardLimited(this, handling_method);
+    else
+        return !player->isCardLimited(this, handling_method) || !player->isCardLimited(this, Card::MethodRecast);
 }
 
 const Card *Card::validate(const CardUseStruct *) const{
@@ -588,12 +615,16 @@ bool Card::willThrow() const{
     return will_throw;
 }
 
-bool Card::canJilei() const{
-    return can_jilei;
+bool Card::canRecast() const{
+    return can_recast;
 }
 
 bool Card::hasPreAction() const{
     return has_preact;
+}
+
+Card::HandlingMethod Card::getHandlingMethod() const{
+    return handling_method;
 }
 
 void Card::setFlags(const QString &flag) const{
@@ -623,7 +654,7 @@ void Card::clearFlags() const{
 // ---------   Skill card     ------------------
 
 SkillCard::SkillCard()
-    :Card(NoSuit, 0)
+    :Card(NoSuitNoColor, 0)
 {
 }
 
@@ -640,7 +671,7 @@ QString SkillCard::getSubtype() const{
 }
 
 Card::CardType SkillCard::getTypeId() const{
-    return Card::Skill;
+    return Card::TypeSkill;
 }
 
 QString SkillCard::toString() const{

@@ -32,6 +32,8 @@ public:
 
     explicit Skill(const QString &name, Frequency frequent = NotFrequent);
     bool isLordSkill() const;
+    bool isAttachedLordSkill() const;
+    bool isSPConvertSkill() const;
     QString getDescription() const;
     QString getNotice(int index) const;
     QString getText() const;
@@ -52,6 +54,8 @@ public:
 protected:
     Frequency frequency;
     QString default_choice;
+    bool sp_convert_skill;
+    bool attached_lord_skill;
 
 private:
     bool lord_skill;
@@ -182,6 +186,7 @@ class GameStartSkill: public TriggerSkill{
 public:
     GameStartSkill(const QString &name);
 
+    virtual bool triggerable(const ServerPlayer *target) const;
     virtual bool trigger(TriggerEvent event, Room* room, ServerPlayer *player, QVariant &data) const;
     virtual void onGameStart(ServerPlayer *player) const = 0;
 };

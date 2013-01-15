@@ -3379,13 +3379,14 @@ function SmartAI:fillSkillCards(cards)
 	end
 end
 
-function SmartAI:useSkillCard(card,use)
-	local name
+function SmartAI:useSkillCard(card, use)
+	local name = ""
 	if card:isKindOf("LuaSkillCard") then
 		name = "#" .. card:objectName()
 	else
 		name = card:getClassName()
 	end
+	if not sgs.ai_skill_use_func[name] then return end
 	sgs.ai_skill_use_func[name](card, use, self)
 	if use.to then
 		if not use.to:isEmpty() and sgs.dynamic_value.damage_card[name] then

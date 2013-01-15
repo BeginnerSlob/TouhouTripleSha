@@ -9,7 +9,7 @@
 class MoonSpearSkill: public WeaponSkill{
 public:
     MoonSpearSkill():WeaponSkill("MoonSpear"){
-        events << CardFinished << CardResponsed;
+        events << CardFinished << CardResponded;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
@@ -24,8 +24,8 @@ public:
             if(card == player->tag["MoonSpearSlash"].value<CardStar>()){
                 card = NULL;
             }
-        }else if(triggerEvent == CardResponsed){
-            card = data.value<ResponsedStruct>().m_card;
+        }else if(triggerEvent == CardResponded){
+            card = data.value<CardResponseStruct>().m_card;
             player->tag["MoonSpearSlash"] = data;
         }
 
@@ -45,7 +45,6 @@ MoonSpear::MoonSpear(Suit suit, int number)
     :Weapon(suit, number, 3)
 {
     setObjectName("MoonSpear");
-    skill = new MoonSpearSkill;
 }
 
 NostalgiaPackage::NostalgiaPackage()
@@ -55,6 +54,8 @@ NostalgiaPackage::NostalgiaPackage()
 
     Card *moon_spear = new MoonSpear;
     moon_spear->setParent(this);
+
+    skills << new MoonSpearSkill;
 }
 
 // old yjcm's generals
@@ -76,7 +77,7 @@ public:
         if(effect.to == effect.from)
             return false;
 
-        if(effect.card->getTypeId() == Card::Trick){
+        if(effect.card->getTypeId() == Card::TypeTrick){
             Room *room = player->getRoom();
 
             if((effect.from && effect.from->hasSkill(objectName()))){
@@ -215,8 +216,8 @@ public:
             ServerPlayer *source = damage.from;
             if(source && source != player){
                 room->broadcastSkillInvoke("enyuan", qrand() % 2 + 3);
-
-                const Card *card = room->askForCard(source, ".enyuan", "@enyuanheart", QVariant(), NonTrigger);
+				
+                const Card *card = room->askForCard(source, ".enyuan", "@enyuanheart", QVariant(), Card::MethodNone);
                 if(card){
                     player->obtainCard(card);
                 }else{
@@ -232,6 +233,7 @@ public:
 NosXuanhuoCard::NosXuanhuoCard(){
     once = true;
     will_throw = false;
+    handling_method = Card::MethodNone;
     mute = true;
 }
 
@@ -296,7 +298,9 @@ public:
                     if(lingtong->canSlash(target, NULL, false))
                         targets1 << target;
                 }
-                if (!targets1.isEmpty()) choicelist << "slash";
+                Slash *slashx = new Slash(Card::NoSuitNoColor, 0);
+                if (!targets1.isEmpty() && !lingtong->isCardLimited(slashx, Card::MethodUse)) choicelist << "slash";
+                slashx->deleteLater();
                 QList<ServerPlayer *> targets2;
                 foreach(ServerPlayer *p, room->getOtherPlayers(lingtong)){
                     if(lingtong->distanceTo(p) <= 1)
@@ -304,17 +308,13 @@ public:
                 }
                 if (!targets2.isEmpty()) choicelist << "damage";
 
-                QString choice;
-                if (choicelist.length() == 1)
-                    return false;
-                else
-                    choice = room->askForChoice(lingtong, objectName(), choicelist.join("+"));
-
+                QString choice = room->askForChoice(lingtong, objectName(), choicelist.join("+"));
 
                 if(choice == "slash"){
                     ServerPlayer *target = room->askForPlayerChosen(lingtong, targets1, "xuanfeng-slash");
 
-                    Slash *slash = new Slash(Card::NoSuit, 0);
+                    room->broadcastSkillInvoke("xuanfeng", 1);
+                    Slash *slash = new Slash(Card::NoSuitNoColor, 0);
                     slash->setSkillName("nosxuanfeng");
 
                     CardUseStruct card_use;
@@ -323,7 +323,7 @@ public:
                     card_use.to << target;
                     room->useCard(card_use, false);
                 }else if(choice == "damage"){
-                    room->broadcastSkillInvoke("xuanfeng");
+                    room->broadcastSkillInvoke("xuanfeng", 2);
 
                     ServerPlayer *target = room->askForPlayerChosen(lingtong, targets2, "xuanfeng-damage");
 
@@ -339,7 +339,7 @@ public:
     }
 };
 
-class NosShangshi: public Shangshi{
+/*class NosShangshi: public Shangshi{
 public:
     NosShangshi():Shangshi("nosshangshi", 998)
     {
@@ -366,12 +366,12 @@ public:
     virtual QString getEffectName() const{
         return "nosshangshi";
     }
-};
+};*/
 
 NostalGeneralPackage::NostalGeneralPackage()
     :Package("nostal_general")
 {
-    General *nosfazheng = new General(this, "nosfazheng", "shu", 3);
+    /*General *nosfazheng = new General(this, "nosfazheng", "shu", 3);
     nosfazheng->addSkill(new NosEnyuan);
     patterns.insert(".enyuan", new EnyuanPattern);
     nosfazheng->addSkill(new NosXuanhuo);
@@ -390,7 +390,7 @@ NostalGeneralPackage::NostalGeneralPackage()
     related_skills.insertMulti("nosshangshi", "#nosshangshi");
 
     addMetaObject<NosXuanhuoCard>();
-    addMetaObject<NosJujianCard>();
+    addMetaObject<NosJujianCard>();*/
 }
 
 ADD_PACKAGE(Nostalgia)

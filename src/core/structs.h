@@ -46,6 +46,8 @@ struct CardEffectStruct{
 struct SlashEffectStruct{
     SlashEffectStruct();
 
+    int jink_num;
+
     const Slash *slash;
     const Card *jink;
 
@@ -280,6 +282,7 @@ struct DyingStruct{
 
     ServerPlayer *who; // who is ask for help
     DamageStruct *damage; // if it is NULL that means the dying is caused by losing hp
+    QList<ServerPlayer *> savers; // savers are the available players who can use peach for the dying player
 };
 
 struct RecoverStruct{
@@ -354,27 +357,40 @@ struct PhaseStruct{
     bool finished;
 };
 
-struct ResponsedStruct{
-    inline ResponsedStruct()
-    {
+struct CardResponseStruct {
+    inline CardResponseStruct() {
         m_card = NULL;
         m_who = NULL;
+        m_isUse = false;
     }
 
-    inline ResponsedStruct(const Card* card)
-    {
+    inline CardResponseStruct(const Card* card) {
         m_card = card;
         m_who = NULL;
+        m_isUse = false;
     }
 
-    inline ResponsedStruct(const Card* card, ServerPlayer *who)
-    {
+    inline CardResponseStruct(const Card* card, ServerPlayer *who) {
         m_card = card;
         m_who = who;
+        m_isUse = false;
+    }
+
+    inline CardResponseStruct(const Card* card, bool isUse) {
+        m_card = card;
+        m_who = NULL;
+        m_isUse = isUse;
+    }
+
+    inline CardResponseStruct(const Card* card, ServerPlayer *who, bool isUse) {
+        m_card = card;
+        m_who = who;
+        m_isUse = isUse;
     }
 
     const Card *m_card;
     ServerPlayer *m_who;
+    bool m_isUse;
 };
 
 enum TriggerEvent{
@@ -415,22 +431,26 @@ enum TriggerEvent{
     Damage,           // the moment for -- lieren..
     Damaged,          // the moment for -- yumeng..
     DamageComplete,   // the moment for trigger iron chain
-
+	
     Dying,
+    PreAskForPeaches,
     AskForPeaches,
     AskForPeachesDone,
     Death,
     GameOverJudge,
     GameFinished,
 
+    SlashEffectStart,
     SlashEffect,
     SlashEffected,
     SlashProceed,
     SlashHit,
     SlashMissed,
 
+    JinkEffect,
+
     CardAsked,
-    CardResponsed,
+    CardResponded,
     CardDiscarded,
     CardsMoveOneTime,
     CardDrawing,
@@ -481,5 +501,5 @@ Q_DECLARE_METATYPE(JudgeStar)
 Q_DECLARE_METATYPE(DamageStar)
 Q_DECLARE_METATYPE(PindianStar)
 Q_DECLARE_METATYPE(PhaseChangeStruct)
-Q_DECLARE_METATYPE(ResponsedStruct)
+Q_DECLARE_METATYPE(CardResponseStruct)
 #endif // STRUCTS_H

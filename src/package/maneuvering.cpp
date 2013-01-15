@@ -81,26 +81,6 @@ void Analeptic::onEffect(const CardEffectStruct &effect) const{
     }
 }
 
-class FireFanSkill: public WeaponSkill{
-public:
-    FireFanSkill():WeaponSkill("Fan"){
-        events << SlashEffect;
-    }
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        SlashEffectStruct effect = data.value<SlashEffectStruct>();
-        if(!effect.slash->getSkillName().isEmpty() && effect.slash->getSubcards().length() > 0)
-            return false;
-        if(effect.nature == DamageStruct::Normal){
-            if(room->askForSkillInvoke(player, objectName(), data)){
-                room->setEmotion(player, "weapon/fan");
-                effect.nature = DamageStruct::Fire;
-                data = QVariant::fromValue(effect);
-            }
-        }
-        return false;
-    }
-};
-
 class FanSkill: public OneCardViewAsSkill{
 public:
     FanSkill():OneCardViewAsSkill("Fan"){
@@ -108,11 +88,11 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return Slash::IsAvailable(player);
+        return Slash::IsAvailable(player, NULL) && player->getMark("Equips_Nullified_to_Yourself") == 0;
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        return  pattern == "slash";
+        return  pattern == "slash" && player->getMark("Equips_Nullified_to_Yourself") == 0;
     }
 
     virtual bool viewFilter(const Card* to_select) const{
@@ -130,7 +110,6 @@ public:
 
 Fan::Fan(Suit suit, int number):Weapon(suit, number, 4){
     setObjectName("Fan");
-    skill = new FireFanSkill;
 }
 
 class GudingBladeSkill: public WeaponSkill{
@@ -141,10 +120,11 @@ public:
 
     virtual bool trigger(TriggerEvent , Room* room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
-        if(damage.card && damage.card->isKindOf("Slash") &&
-            damage.to->isKongcheng() && !damage.chain && !damage.transfer)
+        if(damage.card && damage.card->isKindOf("Slash")
+           && damage.to->getMark("Equips_of_Others_Nullified_to_You") == 0
+           && damage.to->isKongcheng() && !damage.chain && !damage.transfer)
         {
-            room->setEmotion(damage.to, "weapon/guding_blade");
+            room->setEmotion(player, "weapon/guding_blade");
 
             LogMessage log;
             log.type = "#GudingBladeEffect";
@@ -163,7 +143,6 @@ public:
 
 GudingBlade::GudingBlade(Suit suit, int number):Weapon(suit, number, 2){
     setObjectName("GudingBlade");
-    skill = new GudingBladeSkill;
 }
 
 class VineSkill: public ArmorSkill{
@@ -220,7 +199,6 @@ public:
 
 Vine::Vine(Suit suit, int number):Armor(suit, number){
     setObjectName("Vine");
-    skill = new VineSkill;
 }
 
 class SilverLionSkill: public ArmorSkill{
@@ -229,12 +207,10 @@ public:
         events << DamageInflicted << CardsMoveOneTime;
     }
 
-    virtual int getPriority() const {
-        return -2;
-    }
-
     virtual bool triggerable(const ServerPlayer *target) const{
-        return target && target->isAlive() && target->getMark("qinggang") == 0 && !target->hasFlag("wuqian");
+        return target && target->isAlive()
+               && target->getMark("qinggang") == 0
+               && target->getMark("Equips_Nullified_to_Yourself") == 0;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
@@ -264,7 +240,7 @@ public:
                 if(card->objectName() == objectName()){
                     room->setPlayerFlag(player, "-lion_rec");
                     if (player->isWounded()){
-                        player->getRoom()->setEmotion(player, "armor/silver_lion");
+                        room->setEmotion(player, "armor/silver_lion");
                         RecoverStruct recover;
                         recover.card = card;
                         room->recover(player, recover);
@@ -280,11 +256,10 @@ public:
 
 SilverLion::SilverLion(Suit suit, int number):Armor(suit, number){
     setObjectName("SilverLion");
-    skill = new SilverLionSkill;
 }
 
 void SilverLion::onUninstall(ServerPlayer *player) const{
-    if(player->isAlive() && !player->hasFlag("wuqian") && player->getMark("qinggang") == 0){
+    if(player->isAlive() && player->getMark("qinggang") == 0 && player->getMark("Equips_Nullified_to_Yourself") == 0){
         player->getRoom()->setPlayerFlag(player, "lion_rec");
     }
 }
@@ -319,7 +294,7 @@ void FireAttack::onEffect(const CardEffectStruct &effect) const{
     QString suit_str = card->getSuitString();
     QString pattern = QString(".%1").arg(suit_str.at(0).toUpper());
     QString prompt = QString("@fire-attack:%1::%2").arg(effect.to->getGeneralName()).arg(suit_str);
-    if(room->askForCard(effect.from, pattern, prompt, QVariant(), CardDiscarded)){
+    if(effect.from->isAlive() && room->askForCard(effect.from, pattern, prompt)){
         DamageStruct damage;
         damage.card = this;
         damage.from = effect.from;
@@ -337,6 +312,7 @@ IronChain::IronChain(Card::Suit suit, int number)
     :TrickCard(suit, number, false)
 {
     setObjectName("iron_chain");
+    can_recast = true;
 }
 
 QString IronChain::getSubtype() const{
@@ -344,14 +320,18 @@ QString IronChain::getSubtype() const{
 }
 
 bool IronChain::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if(targets.length() >= 2)
+    if (Self->isCardLimited(this, Card::MethodUse))
+        return false;
+    if (targets.length() >= 2)
         return false;
 
     return true;
 }
 
 bool IronChain::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-    if(getSkillName() == "guhuo" || getSkillName() == "qice" || getSkillName() == "thmimeng")
+    if (Self->isCardLimited(this, Card::MethodUse))
+        return targets.length() == 0;
+    if (getSkillName() == "guhuo" || getSkillName() == "qice" || getSkillName() == "thmimeng")
         return targets.length() == 1 || targets.length() == 2;
     else
         return targets.length() <= 2;
@@ -408,11 +388,11 @@ bool SupplyShortage::targetFilter(const QList<const Player *> &targets, const Pl
     if (to_select->containsTrick(objectName()))
         return false;
 
-    if (Self->hasSkill("jizhi"))
+    if (Self->hasSkill("jizhi", false))
         return true;
 
     int distance = Self->distanceTo(to_select);
-    if (Self->hasSkill("fenghou"))
+    if (Self->hasSkill("fenghou", false))
         return distance <= 2;
     else
         return distance <= 1;
@@ -495,7 +475,8 @@ ManeuveringPackage::ManeuveringPackage()
         card->setParent(this);
 
     type = CardPack;
-    skills << new FanSkill;
+    skills << new GudingBladeSkill << new FanSkill
+           << new VineSkill << new SilverLionSkill;
 }
 
 ADD_PACKAGE(Maneuvering)

@@ -12,6 +12,7 @@ public:
     void setNum(int num);
     void setMinNum(int minnum);
     void setIncludeEquip(bool include_equip);
+    void setIsDiscard(bool is_discard);
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const;
     virtual const Card *viewAs(const QList<const Card *> &cards) const;
@@ -21,6 +22,7 @@ private:
     int num;
     int minnum;
     bool include_equip;
+    bool is_discard;
 };
 
 class CardPattern;
@@ -33,11 +35,13 @@ public:
     virtual bool matchPattern(const Player *player, const Card *card) const;
 
     virtual void setPattern(const QString &pattern);
+    virtual void setRequire(const Card::HandlingMethod require);
     virtual bool viewFilter(const Card* to_select) const;
     virtual const Card *viewAs(const Card *originalCard) const;
 
 protected:
     const CardPattern *pattern;
+    Card::HandlingMethod require;
 };
 
 class ShowOrPindianSkill: public ResponseSkill{

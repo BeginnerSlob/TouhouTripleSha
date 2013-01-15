@@ -10,6 +10,7 @@
 
 QiceCard::QiceCard(){
     will_throw = false;
+    handling_method = Card::MethodNone;
 }
 
 bool QiceCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
@@ -39,15 +40,15 @@ Card::Suit QiceCard::getSuit(QList<int> cardid_list) const{
         color_set << cd->getColor();
     }
     if(color_set.size() == 2)
-        return Card::NoSuit;
+        return Card::NoSuitNoColor;
     else{
         if(suit_set.size() == 1)
             return Sanguosha->getCard(cardid_list.first())->getSuit();
         else{
             if(Sanguosha->getCard(cardid_list.first())->isBlack())
-                return Card::Spade;
+                return Card::NoSuitBlack;
             else
-                return Card::Heart;
+                return Card::NoSuitRed;
         }
     }
 }
@@ -177,7 +178,7 @@ public:
             log.type = "#Jiangchi1";
             room->sendLog(log);
             room->broadcastSkillInvoke(objectName(), 1);
-            room->setPlayerCardLock(caozhang, "Slash");
+            room->setPlayerCardLimitation(caozhang, "use,response", "Slash", true);
             return n + 1;
         }else{
             log.type = "#Jiangchi2";
@@ -186,22 +187,6 @@ public:
             room->setPlayerFlag(caozhang, "jiangchi_invoke");
             return n - 1;
         }
-    }
-};
-
-class JiangchiClear: public PhaseChangeSkill{
-public:
-    JiangchiClear():PhaseChangeSkill("#jiangchi-clear"){
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && PhaseChangeSkill::triggerable(target);
-    }
-
-    virtual bool onPhaseChange(ServerPlayer *caozhang) const{
-        if(caozhang->getPhase() == Player::NotActive && caozhang->hasCardLock("Slash"))
-            caozhang->getRoom()->setPlayerCardLock(caozhang, "-Slash");
-        return false;
     }
 };
 
@@ -402,7 +387,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return Slash::IsAvailable(player);
+        return Slash::IsAvailable(player, NULL);
     }
 
     virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
@@ -456,6 +441,7 @@ public:
 ChunlaoCard::ChunlaoCard(){
     will_throw = false;
     target_fixed = true;
+    handling_method = Card::MethodNone;
 }
 
 void ChunlaoCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const{
@@ -513,7 +499,7 @@ public:
                 if(card_id != -1){
                     CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "chunlao", QString());
                     room->throwCard(Sanguosha->getCard(card_id), reason, NULL);
-                    Analeptic *analeptic = new Analeptic(Card::NoSuit, 0);
+                    Analeptic *analeptic = new Analeptic(Card::NoSuitNoColor, 0);
                     analeptic->setSkillName(objectName());
                     CardUseStruct use;
                     use.card = analeptic;
@@ -531,8 +517,6 @@ YJCM2012Package::YJCM2012Package():Package("YJCM2012"){
 
     /*General *caozhang = new General(this, "caozhang", "wei");
     caozhang->addSkill(new Jiangchi);
-    caozhang->addSkill(new JiangchiClear);
-    related_skills.insertMulti("jiangchi", "#jiangchi-clear");
 
     General *chengpu = new General(this, "chengpu", "wu");
     chengpu->addSkill(new Lihuo);

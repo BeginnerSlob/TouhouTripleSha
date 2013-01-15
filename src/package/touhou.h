@@ -261,4 +261,34 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class ThDongmoCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThDongmoCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThKujieCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThKujieCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThJinguoCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThJinguoCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 #endif // TOUHOU_H

@@ -28,7 +28,7 @@ class BasicCard:public Card{
     Q_OBJECT
 
 public:
-    BasicCard(Suit suit, int number):Card(suit, number){}
+    BasicCard(Suit suit, int number):Card(suit, number) { handling_method = Card::MethodUse;}
     virtual QString getType() const;
     virtual CardType getTypeId() const;
 };
@@ -62,9 +62,8 @@ public:
         DefensiveHorseLocation = 2,
         OffensiveHorseLocation = 3
     };
-
-    EquipCard(Suit suit, int number):Card(suit, number, true), skill(NULL){}
-    TriggerSkill *getSkill() const;
+	
+    EquipCard(Suit suit, int number):Card(suit, number, true) { handling_method = Card::MethodUse;}
 
     virtual QString getType() const;
     virtual CardType getTypeId() const;
@@ -77,9 +76,6 @@ public:
 
     virtual Location location() const = 0;
     virtual QString label() const = 0;
-
-protected:
-    TriggerSkill *skill;
 };
 
 class GlobalEffect:public TrickCard{
@@ -89,6 +85,7 @@ public:
     Q_INVOKABLE GlobalEffect(Card::Suit suit, int number):TrickCard(suit, number, false){ target_fixed = true;}
     virtual QString getSubtype() const;
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+    virtual bool isAvailable(const Player *player) const;
 };
 
 class GodSalvation:public GlobalEffect{
@@ -168,6 +165,7 @@ class ExNihilo: public SingleTargetTrick{
 public:
     Q_INVOKABLE ExNihilo(Card::Suit suit, int number);
     virtual void onEffect(const CardEffectStruct &effect) const;
+    virtual bool isAvailable(const Player *player) const;
 };
 
 class Duel:public SingleTargetTrick{
@@ -247,6 +245,7 @@ public:
     virtual Location location() const;
     virtual QString label() const;
     virtual QString getCommonEffectName() const;
+    virtual bool isAvailable(const Player *player) const;
 
 protected:
     int range;
@@ -317,7 +316,7 @@ public:
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual bool isAvailable(const Player *player) const;
 
-    static bool IsAvailable(const Player *player);
+    static bool IsAvailable(const Player *player, const Card *slash = NULL);
 
 protected:
     DamageStruct::Nature nature;

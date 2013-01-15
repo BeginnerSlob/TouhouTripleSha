@@ -21,7 +21,7 @@ void HongyuanCard::onEffect(const CardEffectStruct &effect) const{
    effect.to->drawCards(1);
 }
 
-class HongyuanViewAsSkill: public ZeroCardViewAsSkill{
+/*class HongyuanViewAsSkill: public ZeroCardViewAsSkill{
 public:
     HongyuanViewAsSkill():ZeroCardViewAsSkill("hongyuan"){
     }
@@ -80,19 +80,19 @@ public:
         }
         return false;
     }
-};
+};*/
 
 HuanshiCard::HuanshiCard(){
     target_fixed = true;
     will_throw = false;
-    can_jilei = true;
+    handling_method = Card::MethodResponse;
 }
 
 void HuanshiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
 
 }
 
-class HuanshiViewAsSkill:public OneCardViewAsSkill{
+/*class HuanshiViewAsSkill:public OneCardViewAsSkill{
 public:
     HuanshiViewAsSkill():OneCardViewAsSkill("huanshi"){
     }
@@ -218,12 +218,12 @@ public:
         }
         return false;
     }
-};
+};*/
 
 New3v3CardPackage::New3v3CardPackage()
     :Package("New3v3Card")
 {
-    QList<Card *> cards;
+    /*QList<Card *> cards;
     cards << new SupplyShortage(Card::Spade, 1)
           << new SupplyShortage(Card::Club, 12)
           << new Nullification(Card::Heart, 12);
@@ -231,19 +231,19 @@ New3v3CardPackage::New3v3CardPackage()
     foreach(Card *card, cards)
         card->setParent(this);
 
-    type = CardPack;
+    type = CardPack;*/
 }
 
 ADD_PACKAGE(New3v3Card)
 
 Special3v3Package::Special3v3Package():Package("Special3v3")
 {
-    General *zhugejin = new General(this, "zhugejin", "wu", 3, true);
+    /*General *zhugejin = new General(this, "zhugejin", "wu", 3, true);
     zhugejin->addSkill(new Huanshi);
     zhugejin->addSkill(new Hongyuan);
     zhugejin->addSkill(new HongyuanAct);
     zhugejin->addSkill(new Mingzhe);
-    related_skills.insertMulti("hongyuan", "#hongyuan");
+    related_skills.insertMulti("hongyuan", "#hongyuan");*/
 
     addMetaObject<HuanshiCard>();
     addMetaObject<HongyuanCard>();

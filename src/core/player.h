@@ -135,7 +135,7 @@ public:
     void detachAllSkills();
     virtual void addSkill(const QString &skill_name);
     virtual void loseSkill(const QString &skill_name);
-    bool hasSkill(const QString &skill_name) const;
+    bool hasSkill(const QString &skill_name, bool include_lose = false) const;
     bool hasInnateSkill(const QString &skill_name) const;
     bool hasLordSkill(const QString &skill_name, bool include_lose = false) const;
     virtual QString getGameMode() const = 0;
@@ -189,9 +189,10 @@ public:
     int usedTimes(const QString &card_class) const;
     int getSlashCount() const;
 
+    bool hasEquipSkill(const QString &skill_name) const;
     QSet<const TriggerSkill *> getTriggerSkills() const;
-    QSet<const Skill *> getVisibleSkills() const;
-    QList<const Skill *> getVisibleSkillList() const;
+    QSet<const Skill *> getVisibleSkills(bool include_equip = false) const;
+    QList<const Skill *> getVisibleSkillList(bool include_equip = false) const;
     QSet<QString> getAcquiredSkills() const;
 
     virtual bool isProhibited(const Player *to, const Card *card) const;
@@ -203,7 +204,11 @@ public:
 
     void setCardLocked(const QString &name);
     bool isLocked(const Card *card) const;
-    bool hasCardLock(const QString &card_str) const;
+
+    void setCardLimitation(const QString &limit_list, const QString &pattern, bool single_turn = false);
+    void removeCardLimitation(const QString &limit_list, const QString &pattern);
+    void clearCardLimitation(bool single_turn = false);
+    bool isCardLimited(const Card *card, Card::HandlingMethod method, bool isHandcard = false) const;
 
     bool isCaoCao() const;
     void copyFrom(Player* p);
@@ -240,8 +245,7 @@ private:
     QList<int> judging_area;
     QHash<const Player *, int> fixed_distance;
 
-    QSet<QString> jilei_set;
-    QSet<QString> lock_card;
+    QMap<Card::HandlingMethod, QStringList> card_limitation;
 
 signals:
     void general_changed();

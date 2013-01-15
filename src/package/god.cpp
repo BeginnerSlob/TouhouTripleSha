@@ -476,7 +476,7 @@ class Wumou:public TriggerSkill{
 public:
     Wumou():TriggerSkill("wumou"){
         frequency = Compulsory;
-        events << CardUsed << CardResponsed;
+        events << CardUsed << CardResponded;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
@@ -484,8 +484,8 @@ public:
         if(triggerEvent == CardUsed){
             CardUseStruct use = data.value<CardUseStruct>();
             card = use.card;
-        }else if(triggerEvent == CardResponsed)
-            card = data.value<ResponsedStruct>().m_card;
+        }else if(triggerEvent == CardResponded)
+            card = data.value<CardResponseStruct>().m_card;
 
         if(card->isNDTrick()){
             room->broadcastSkillInvoke(objectName());
@@ -560,7 +560,7 @@ void WuqianCard::onEffect(const CardEffectStruct &effect) const{
 
     effect.from->loseMark("@wrath", 2);
     room->acquireSkill(effect.from, "wushuang", false);
-    room->setPlayerFlag(effect.to,"wuqian");
+    effect.to->addMark("qinggang");
 }
 
 class WuqianViewAsSkill: public ZeroCardViewAsSkill{
@@ -581,7 +581,7 @@ public:
 class Wuqian: public TriggerSkill{
 public:
     Wuqian():TriggerSkill("wuqian"){
-        events << EventPhaseStart << Death;
+        events << EventPhaseChanging << Death;
         view_as_skill = new WuqianViewAsSkill;
     }
 
@@ -590,16 +590,15 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-
-        if(triggerEvent == EventPhaseStart || triggerEvent == Death){
-            if(player->hasSkill(objectName()) && (triggerEvent == Death || player->getPhase() == Player::NotActive)){
-                foreach(ServerPlayer *p , room->getAllPlayers())
-                    if(p->hasFlag("wuqian"))
-                        room->setPlayerFlag(p, "-wuqian");
-                if(!player->hasInnateSkill("wushuang"))
-                    room->detachSkillFromPlayer(player, "wushuang");
-            }
+		if (triggerEvent == EventPhaseChanging){
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to != Player::NotActive)
+                return false;
         }
+
+        foreach (ServerPlayer *p , room->getAllPlayers())
+            p->removeMark("qinggang");
+        room->detachSkillFromPlayer(player, "wushuang");
 
         return false;
     }
@@ -741,7 +740,7 @@ public:
 };
 
 KuangfengCard::KuangfengCard(){
-
+    handling_method = Card::MethodNone;
 }
 
 bool KuangfengCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
@@ -857,7 +856,7 @@ public:
 };
 
 DawuCard::DawuCard(){
-
+    handling_method = Card::MethodNone;
 }
 
 bool DawuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
@@ -1057,7 +1056,7 @@ public:
 class Jilve: public TriggerSkill{
 public:
     Jilve():TriggerSkill("jilve"){
-        events << CardUsed << CardResponsed // huiquan
+        events << CardUsed << CardResponded // huiquan
                 << AskForRetrial // tiansuo
                 << Damaged; // fangzhu
 
@@ -1071,12 +1070,12 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         player->setMark("JilveEvent",(int)triggerEvent);
-        if(triggerEvent == CardUsed || triggerEvent == CardResponsed){
+        if(triggerEvent == CardUsed || triggerEvent == CardResponded){
             CardStar card = NULL;
             if(triggerEvent == CardUsed)
                 card = data.value<CardUseStruct>().card;
             else
-                card = data.value<ResponsedStruct>().m_card;
+                card = data.value<CardResponseStruct>().m_card;
 
             if(card->isNDTrick() && !player->hasSkill("huiquan") && player->askForSkillInvoke("jilve", data)){
                 player->loseMark("@bear");
@@ -1282,7 +1281,7 @@ public:
         case CardUseStruct::CARD_USE_REASON_PLAY:{
                 if(Self->isWounded() && card->getSuit() == Card::Heart)
                     return true;
-                else if(Slash::IsAvailable(Self) && card->getSuit() == Card::Diamond)
+                else if(Slash::IsAvailable(Self, NULL) && card->getSuit() == Card::Diamond)
                     return true;
                 else
                     return false;

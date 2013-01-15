@@ -318,9 +318,9 @@ QGroupBox *ThMimengDialog::createLeft(){
 
     QList<const Card *> cards = Sanguosha->findChildren<const Card *>();
     foreach(const Card *card, cards){
-        if(card->getTypeId() == Card::Basic && !map.contains(card->objectName())
+        if(card->getTypeId() == Card::TypeBasic && !map.contains(card->objectName())
            && !Config.BanPackages.contains(card->getPackage())){
-            Card *c = Sanguosha->cloneCard(card->objectName(), Card::NoSuit, 0);
+            Card *c = Sanguosha->cloneCard(card->objectName(), Card::NoSuitNoColor, 0);
             c->setParent(this);
 
             layout->addWidget(createButton(c));
@@ -350,7 +350,7 @@ QGroupBox *ThMimengDialog::createRight(){
     foreach(const Card *card, cards){
         if(card->isNDTrick() && !map.contains(card->objectName()) && !ban_list.contains(card->getClassName())
            && !Config.BanPackages.contains(card->getPackage())){
-            Card *c = Sanguosha->cloneCard(card->objectName(), Card::NoSuit, 0);
+            Card *c = Sanguosha->cloneCard(card->objectName(), Card::NoSuitNoColor, 0);
             c->setSkillName(object_name);
             c->setParent(this);
 
@@ -391,8 +391,8 @@ bool ThMimengCard::targetFilter(const QList<const Player *> &targets, const Play
 bool ThMimengCard::targetFixed() const{
     if(Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE)
     {
-        if(!ClientInstance->hasNoTargetResponsing()){
-            CardStar card = Sanguosha->cloneCard(user_string, NoSuit, 0);
+        if(!ClientInstance->hasNoTargetResponding()){
+            CardStar card = Sanguosha->cloneCard(user_string, NoSuitNoColor, 0);
             Self->tag["thmimeng"] = QVariant::fromValue(card);
             return card && card->targetFixed();
         }
@@ -711,6 +711,53 @@ public:
 	}
 };
 
+class ThGuaitan: public TriggerSkill{
+public:
+	ThGuaitan():TriggerSkill("thguaitan"){
+		events << EventPhaseStart << Damage;
+	}
+
+	virtual bool triggerable(ServerPlayer *target) const{
+		return (target != NULL);
+	}
+
+	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+		if (triggerEvent == Damage && TriggerSkill::triggerable(player))
+		{
+			DamageStruct damage = data.value<DamageStruct>();
+			if (!damage.chain && !damage.transfer && player->askForSkillInvoke(objectName()))
+			{
+				QString choice = room->askForChoice(player, objectName(), "basic+equip+trick");
+				
+				QStringList guaitanlist = damage.to->tag.value("guaitan").toStringList();
+				if (choice == "basic")
+					choice = "BasicCard";
+				else if (choice == "equip")
+					choice = "EquipCard";
+				else
+					choice = "TrickCard";
+
+				choice = choice + "|.|.|hand"; // Handcards only
+				if (!guaitanlist.contains(choice))
+					guaitanlist << choice;
+
+				damage.to->tag["guaitan"] = QVariant::fromValue(guaitanlist);
+			}
+		}
+		else if (triggerEvent == EventPhaseStart)
+			if (player->getPhase() == Player::RoundStart && !player->tag.value("guaitan").toStringList().isEmpty())
+			{
+				QStringList guaitanlist = player->tag.value("guaitan").toStringList();
+				foreach(QString str, guaitanlist)
+					room->setPlayerCardLimitation(player, "use,response", str, true);
+
+				player->tag["guaitan"] = QVariant::fromValue(QStringList());
+			}
+
+		return false;
+	}
+};
+
 class ThYinghua: public TriggerSkill{
 public:
 	ThYinghua():TriggerSkill("thyinghua"){
@@ -922,7 +969,7 @@ public:
 
 		if(splayer->askForSkillInvoke(objectName())){
 			bool invoke = false;
-			if(!player->isKongcheng() && room->askForCard(splayer, ".black", "@thshengzhi", data, CardDiscarded))
+			if(!player->isKongcheng() && room->askForCard(splayer, ".black", "@thshengzhi", data))
 				invoke = true;
 
 			if(!invoke && !splayer->getPile("shijiepile").isEmpty()){
@@ -1171,6 +1218,10 @@ void TouhouPackage::addHanaGenerals(){
 	General *hana011 = new General(this, "hana011", "wei", 3);
 	hana011->addSkill(new ThBaochun);
 	hana011->addSkill(new ThTanchun);
+
+	General *hana012 = new General(this, "hana012", "wei");
+	hana012->addSkill(new ThGuaitan);
+	hana012->addSkill("xiagong");
 
 	General *hana013 = new General(this, "hana013", "wei");
 	hana013->addSkill(new ThYinghua);

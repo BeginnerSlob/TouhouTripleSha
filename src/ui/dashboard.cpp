@@ -162,6 +162,34 @@ void Dashboard::setTrust(bool trust){
     trusting_text->setVisible(trust);
 }
 
+void Dashboard::killPlayer()
+{
+    trusting_item->hide();
+    trusting_text->hide();
+    _m_roleComboBox->fix(m_player->getRole());
+    _m_roleComboBox->setEnabled(false);
+    _updateDeathIcon();
+    _m_saveMeIcon->hide();
+    if (_m_votesItem)
+        _m_votesItem->hide();
+    if (_m_distanceItem)
+        _m_distanceItem->hide();
+    QGraphicsColorizeEffect* effect = new QGraphicsColorizeEffect();
+    effect->setColor(_m_layout->m_deathEffectColor);
+    effect->setStrength(1.0);
+    this->setGraphicsEffect(effect);
+    refresh();
+    _m_deathIcon->show();
+}
+
+void Dashboard::revivePlayer()
+{
+    this->setGraphicsEffect(NULL);
+    Q_ASSERT(_m_deathIcon);
+    _m_deathIcon->hide();
+    refresh();
+}
+
 bool Dashboard::_addCardItems(QList<CardItem*> &card_items, const CardsMoveStruct &moveInfo)
 {
     Player::Place place = moveInfo.to_place;
@@ -215,9 +243,9 @@ void Dashboard::_addHandCard(CardItem* card_item)
     connect(card_item, SIGNAL(leave_hover()), this, SLOT(onCardItemLeaveHover()));      
 }
 
-void Dashboard::selectCard(const QString &pattern, bool forward){
-    if(selected)
-        selectCard(selected, true); // adjust the position
+void Dashboard::selectCard(const QString &pattern, bool forward, bool multiple, bool only){
+    if (!multiple && selected && selected->isSelected())
+        selected->clickItem();
 
     // find all cards that match the card type
     QList<CardItem*> matches;
@@ -229,9 +257,11 @@ void Dashboard::selectCard(const QString &pattern, bool forward){
         }
     }
 
-    if(matches.isEmpty()){
-        unselectAll();
-        return;
+    if(matches.isEmpty() || (only && matches.length() != 1)){
+        if (!multiple || !selected) {
+            unselectAll();
+            return;
+        }
     }
 
     int index = matches.indexOf(selected);
@@ -242,14 +272,22 @@ void Dashboard::selectCard(const QString &pattern, bool forward){
         index = (index - 1 + n) % n;
 
     CardItem *to_select = matches[index];
+    if (!to_select->isSelected())
+        to_select->clickItem();
+    else if (to_select->isSelected() && (!multiple || (multiple && to_select != selected)))
+       to_select->clickItem();
+    selected = to_select;
 
-    if(to_select != selected){
-        if(selected)
-            selectCard(selected, false);
-        selectCard(to_select, true);
-        selected = to_select;
+    adjustCards();
+}
 
-        emit card_selected(selected->getCard());
+void Dashboard::selectEquip(int position) {
+    int i = position - 1;
+    if(_m_equipCards[i] != NULL){
+        if(_m_equipCards[i]->isMarkable()) {
+            _m_equipCards[i]->mark(!_m_equipCards[i]->isMarked());
+            update();
+        }
     }
 }
 
@@ -745,44 +783,18 @@ void Dashboard::sortCards(bool doAnimation){
 }
 
 void Dashboard::reverseSelection(){
-    /*
-    if(view_as_skill == NULL)
+    if (!view_as_skill)
         return;
-
-    m_mutexEnableCards.lock();
-
-    QSet<const Card *> selected_set;
-    foreach (CardItem* item, pendings)
-        selected_set.insert(item->getCard());
-    unselectAll();
-
-    foreach(CardItem *item, m_handCards)
-        item->setEnabled(false);
-
-    pendings.clear();
-
-    QList<const Card*> pendingCards; 
-    foreach(CardItem *item, m_handCards){
-        const Card* card = item->getCard();
-        if (view_as_skill->viewFilter(pendingCards, card) &&
-            !selected_set.contains(card))
-        {
-            pendings << item;
-            item->setEnabled(true);
-            selectCard(item, true);
+    QList<CardItem *> selected_items;
+    foreach (CardItem *item, m_handCards)
+        if (item->isSelected()) {
+            item->clickItem();
+            selected_items << item;
         }
-    }
-    
+    foreach (CardItem *item, m_handCards)
+        if (item->isEnabled() && !selected_items.contains(item))
+            item->clickItem();
     adjustCards();
-    
-    if (pending_card && pending_card->isVirtualCard() &&
-        pending_card->parent() == NULL) {
-        delete pending_card;
-    }
-
-    pending_card = view_as_skill->viewAs(pendingCards);
-    m_mutexEnableCards.unlock();
-    emit card_selected(pending_card);*/
 }
 
 void Dashboard::disableAllCards(){

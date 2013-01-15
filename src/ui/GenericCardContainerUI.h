@@ -59,6 +59,7 @@ public:
     inline void setMaxVotes(int maxVotes) { _m_maxVotes = maxVotes; }
     // See _m_floatingArea for more information
     inline QRect getFloatingArea() const { return _m_floatingAreaRect; }
+    inline void setSaveMeIcon(bool visible) { _m_saveMeIcon->setVisible(visible); }
     void setFloatingArea(QRect rect);
     
     // repaintAll is different from refresh in that it recreates all controls and is
@@ -87,6 +88,7 @@ public slots:
     void updateRole(const QString &role);
     void updateMarks();
     void updateVotes();
+    void showDistance();
     virtual void refresh();
 
 protected:
@@ -195,6 +197,9 @@ protected:
     // The following stuffs for mulitple votes required for yeyan
     int _m_votesGot, _m_maxVotes;
     QGraphicsPixmapItem *_m_votesItem;
+
+    // The following stuffs for distance
+    QGraphicsPixmapItem *_m_distanceItem;
     
     // animations
     QAbstractAnimation *_m_huashenAnimation;

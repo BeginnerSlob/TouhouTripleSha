@@ -92,9 +92,14 @@ public:
         return m_card->willThrow();
     }
 
-    inline virtual bool canJilei() const {
+    inline virtual bool canRecast() const {
         Q_ASSERT(m_card != NULL);
-        return m_card->canJilei();
+        return m_card->canRecast();
+    }
+
+    inline virtual Card::HandlingMethod getHandlingMethod() const {
+        Q_ASSERT(m_card != NULL);
+        return m_card->getHandlingMethod();
     }
 
     inline virtual bool hasPreAction() const {

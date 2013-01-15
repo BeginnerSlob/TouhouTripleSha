@@ -1,4 +1,5 @@
 #include "skill.h"
+#include "settings.h"
 #include "engine.h"
 #include "player.h"
 #include "room.h"
@@ -9,7 +10,7 @@
 #include <QFile>
 
 Skill::Skill(const QString &name, Frequency frequency)
-    :frequency(frequency), default_choice("no")
+    : frequency(frequency), default_choice("no"), sp_convert_skill(false), attached_lord_skill(false)
 {
     static QChar lord_symbol('$');
 
@@ -26,6 +27,14 @@ Skill::Skill(const QString &name, Frequency frequency)
 
 bool Skill::isLordSkill() const{
     return lord_skill;
+}
+
+bool Skill::isAttachedLordSkill() const{
+    return attached_lord_skill;
+}
+
+bool Skill::isSPConvertSkill() const{
+    return sp_convert_skill;
 }
 
 QString Skill::getDescription() const{
@@ -329,21 +338,28 @@ GameStartSkill::GameStartSkill(const QString &name)
 }
 
 bool GameStartSkill::trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &) const{
-    onGameStart(player);
-    return false;
+    return TriggerSkill::triggerable(player)
+           && (!sp_convert_skill || (sp_convert_skill && Config.value("EnableSPConvert", true).toBool()));
+}
+
+bool GameStartSkill::triggerable(const ServerPlayer *target) const{
+    return TriggerSkill::triggerable(target)
+           && (!sp_convert_skill || (sp_convert_skill && Config.value("EnableSPConvert", true).toBool()));
 }
 
 SPConvertSkill::SPConvertSkill(const QString &name, const QString &from, const QString &to)
     :GameStartSkill(name), from(from), to(to)
 {
-    frequency = Limited;
+    sp_convert_skill = true;
 }
 
 bool SPConvertSkill::triggerable(const ServerPlayer *target) const{
     if (target == NULL) return false;
     QString package = Sanguosha->getGeneral(to)->getPackage();
     if(Sanguosha->getBanPackages().contains(package)) return false;
-    return GameStartSkill::triggerable(target) && target->getGeneralName() == from;
+    bool canInvoke = ServerInfo.GameMode.endsWith("p") || ServerInfo.GameMode.endsWith("pd")
+                     || ServerInfo.GameMode.endsWith("pz");
+    return GameStartSkill::triggerable(target) && target->getGeneralName() == from && canInvoke;
 }
 
 void SPConvertSkill::onGameStart(ServerPlayer *player) const{
@@ -394,6 +410,7 @@ WeaponSkill::WeaponSkill(const QString &name)
 
 bool WeaponSkill::triggerable(const ServerPlayer *target) const{
     if (target == NULL) return false;
+    if (target->getMark("Equips_Nullified_to_Yourself") > 0) return false;
     return target->hasWeapon(objectName());
 }
 
@@ -404,9 +421,9 @@ ArmorSkill::ArmorSkill(const QString &name)
 }
 
 bool ArmorSkill::triggerable(const ServerPlayer *target) const{
-    if (target == NULL || target->getArmor() == NULL) return false;
-    const Armor *armor = qobject_cast<const Armor *>(target->getArmor()->getRealCard());
-    return target->hasArmorEffect(objectName()) && armor->getSkill() == this;
+    if (target == NULL || target->getArmor() == NULL || target->getMark("Equips_Nullified_to_Yourself") > 0)
+        return false;
+    return target->hasArmorEffect(objectName());
 }
 
 MarkAssignSkill::MarkAssignSkill(const QString &mark, int n)

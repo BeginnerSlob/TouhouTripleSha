@@ -77,6 +77,7 @@ Client::Client(QObject *parent, const QString &filename)
     callbacks["animate"] = &Client::animate;
     callbacks["setScreenName"] = &Client::setScreenName;
     callbacks["setFixedDistance"] = &Client::setFixedDistance;
+    callbacks["cardLimitation"] = &Client::cardLimitation;
     callbacks["jilei"] = &Client::jilei;
     callbacks["cardLock"] = &Client::cardLock;
     callbacks["pile"] = &Client::pile;
@@ -568,7 +569,7 @@ void Client::onPlayerUseCard(const Card *card, const QList<const Player *> &targ
         //else
         //    request(QString("useCard %1->%2").arg(card->toString()).arg(target_names.join("+")));
 
-        if(status == Responsing)
+        if(status == Responding)
             _m_roomState.setCurrentCardUsePattern(QString());
     }
 
@@ -682,7 +683,7 @@ void Client::setStatus(Status status){
     this->status = status;
     if (status == Client::Playing)
         _m_roomState.setCurrentCardUseReason(CardUseStruct::CARD_USE_REASON_PLAY);
-    else if (status == Client::Responsing)
+    else if (status == Client::Responding)
         _m_roomState.setCurrentCardUseReason(CardUseStruct::CARD_USE_REASON_RESPONSE);
     else
         _m_roomState.setCurrentCardUseReason(CardUseStruct::CARD_USE_REASON_UNKNOWN);
@@ -691,6 +692,34 @@ void Client::setStatus(Status status){
 
 Client::Status Client::getStatus() const{
     return status;
+}
+
+void Client::cardLimitation(const QString &limit_str) {
+    if (limit_str == "@1")
+        Self->clearCardLimitation(true);
+    else if (limit_str == "@0")
+        Self->clearCardLimitation(false);
+    else {
+        QString _limit_str = limit_str;
+        bool remove = false;
+        if (limit_str.startsWith('-')) {
+            remove = true;
+            _limit_str = limit_str.mid(1, limit_str.length() - 1);
+        }
+        QRegExp rx("(.+):(.+):([01])");
+
+        if (!rx.exactMatch(_limit_str))
+            return;
+
+        QStringList texts = rx.capturedTexts();
+        QString limit_list = texts.at(1);
+        QString pattern = texts.at(2);
+        bool single_turn = (texts.at(3) == "1");
+        if (!remove)
+            Self->setCardLimitation(limit_list, pattern, single_turn);
+        else
+            Self->removeCardLimitation(limit_list, pattern);
+    }
 }
 
 void Client::jilei(const QString &jilei_str){
@@ -805,7 +834,7 @@ void Client::_askForCardOrUseCard(const Json::Value &cardUsage){
         }
     }
 
-    setStatus(Responsing);
+    setStatus(Responding);
 }
 
 void Client::askForCard(const Json::Value &req){
@@ -874,7 +903,7 @@ void Client::askForNullification(const Json::Value &arg){
         source = getPlayer(source_name.asCString());
 
     if(Config.NeverNullifyMyTrick && source == Self){
-        if(trick_card->isKindOf("SingleTargetTrick") || trick_card->objectName() == "iron_chain"){
+        if(trick_card->isKindOf("SingleTargetTrick") || trick_card->isKindOf("IronChain")){
             onPlayerResponseCard(NULL);
             return;
         }
@@ -883,19 +912,19 @@ void Client::askForNullification(const Json::Value &arg){
     if(source == NULL){
         prompt_doc->setHtml(tr("Do you want to use nullification to trick card %1 from %2?")
                             .arg(Sanguosha->translate(trick_card->objectName()))
-                            .arg(Sanguosha->translate(target_player->getGeneralName())));
+                            .arg(getPlayerName(target_player->objectName())));
     }else{
         prompt_doc->setHtml(tr("%1 used trick card %2 to %3 <br>Do you want to use nullification?")
-                            .arg(Sanguosha->translate(source->getGeneralName()))
+                            .arg(getPlayerName(source->objectName()))
                             .arg(Sanguosha->translate(trick_name))
-                            .arg(Sanguosha->translate(target_player->getGeneralName())));
+                            .arg(getPlayerName(target_player->objectName())));
     }
 
     _m_roomState.setCurrentCardUsePattern("nullification");
     m_isDiscardActionRefusable = true;
     m_isUseCard = false;
 
-    setStatus(Responsing);
+    setStatus(RespondingUse);
 }
 
 void Client::onPlayerChooseCard(int card_id){
@@ -946,8 +975,8 @@ void Client::addHistory(const QString &add_str){
         emit card_used();
         return;
     }
-
-    QRegExp rx("(.+)(#\\d+)?");
+	
+    QRegExp rx("(.+):(-?\\d+)?");
     if(rx.exactMatch(add_str)){
         QStringList texts = rx.capturedTexts();
         QString card_name = texts.at(1);
@@ -955,7 +984,7 @@ void Client::addHistory(const QString &add_str){
 
         int times = 1;
         if(!times_str.isEmpty()){
-            times_str.remove(QChar('#'));
+            //times_str.remove(QChar('@'));
             times = times_str.toInt();
         }
 
@@ -979,8 +1008,9 @@ void Client::onPlayerResponseCard(const Card *card){
     setStatus(NotActive);
 }
 
-bool Client::hasNoTargetResponsing() const{
-    return status == Responsing && !m_isUseCard;
+bool Client::hasNoTargetResponding() const{
+    return ((status & ClientStatusBasicMask) == Responding)
+            && !m_isUseCard;
 }
 
 ClientPlayer *Client::getPlayer(const QString &name){
@@ -1378,7 +1408,7 @@ void Client::askForSinglePeach(const Json::Value &arg){
 
     m_isDiscardActionRefusable = true;
     m_isUseCard = false;
-    setStatus(Responsing);
+    setStatus(Responding);
 }
 
 void Client::askForCardShow(const Json::Value &requestor){
