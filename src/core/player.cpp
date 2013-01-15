@@ -156,7 +156,7 @@ int Player::getAttackRange() const{
         Q_ASSERT(card);
         return card->getRange();
     }
-    else if(hasSkill("silian"))
+    else if(hasSkill("thsilian"))
         return 3;
     else
         return 1;
@@ -290,9 +290,9 @@ bool Player::isLord() const{
     return getRole() == "lord";
 }
 
-bool Player::hasSkill(const QString &skill_name) const{
+bool Player::hasSkill(const QString &skill_name, bool include_lose) const{
     return skills.contains(skill_name)
-            || acquired_skills.contains(skill_name);
+           || acquired_skills.contains(skill_name);
 }
 
 bool Player::hasInnateSkill(const QString &skill_name) const{
@@ -462,7 +462,7 @@ bool Player::hasWeapon(const QString &weapon_name) const{
 }
 
 bool Player::hasArmorEffect(const QString &armor_name) const{
-    return armor != NULL && !hasFlag("wuqian") && getMark("qinggang") == 0 && armor->objectName() == armor_name;
+    return armor != NULL && getMark("qinggang") == 0 && armor->objectName() == armor_name;
 }
 
 QList<const Card *> Player::getJudgingArea() const
@@ -614,7 +614,7 @@ bool Player::canSlash(const Player *other, const Card *slash, bool distance_limi
         return false;
 
     if (!slash)
-        slash = new Slash(Card::NoSuit, 0);
+        slash = new Slash(Card::NoSuitNoColor, 0);
     if (isProhibited(other, slash))
          return false;
 
@@ -690,31 +690,44 @@ int Player::usedTimes(const QString &card_class) const
     return history.value(card_class, 0);
 }
 
-QSet<const TriggerSkill *> Player::getTriggerSkills() const
-{
+bool Player::hasEquipSkill(const QString &skill_name) const{
+    if (weapon) {
+        const Weapon *weaponc = qobject_cast<const Weapon *>(weapon->getRealCard());
+        if (Sanguosha->getSkill(weaponc) && Sanguosha->getSkill(weaponc)->objectName() == skill_name)
+            return true;
+    }
+    if (armor) {
+        const Armor *armorc = qobject_cast<const Armor *>(armor->getRealCard());
+        if (Sanguosha->getSkill(armorc) && Sanguosha->getSkill(armorc)->objectName() == skill_name)
+            return true;
+    }
+    return false;
+}
+
+QSet<const TriggerSkill *> Player::getTriggerSkills() const{
     QSet<const TriggerSkill *> skillList;
 
-    foreach(QString skill_name, skills + acquired_skills.toList()){
+    foreach (QString skill_name, skills + acquired_skills.toList()) {
         const TriggerSkill *skill = Sanguosha->getTriggerSkill(skill_name);
-        if(skill)
+        if (skill && !hasEquipSkill(skill->objectName()))
             skillList << skill;
     }
 
     return skillList;
 }
 
-QSet<const Skill *> Player::getVisibleSkills() const
-{
-    return getVisibleSkillList().toSet();
+QSet<const Skill *> Player::getVisibleSkills(bool include_equip) const{
+    return getVisibleSkillList(include_equip).toSet();
 }
 
-QList<const Skill *> Player::getVisibleSkillList() const
-{
+QList<const Skill *> Player::getVisibleSkillList(bool include_equip) const{
     QList<const Skill *> skillList;
 
-    foreach(QString skill_name, skills + acquired_skills.toList()){
+    foreach (QString skill_name, skills + acquired_skills.toList()) {
         const Skill *skill = Sanguosha->getSkill(skill_name);
-        if(skill->isVisible())
+        if (skill
+            && ((!include_equip && !hasEquipSkill(skill->objectName())) || include_equip)
+            && skill->isVisible())
             skillList << skill;
     }
 
@@ -745,83 +758,111 @@ bool Player::canSlashWithoutCrossbow() const
     return slash_count < valid_slash_count;
 }
 
-void Player::jilei(const QString &type)
-{
-    if(type == ".")
-        jilei_set.clear();
-    else if(type == "basic")
-        jilei_set << "BasicCard";
-    else if(type == "trick")
-        jilei_set << "TrickCard";
-    else if(type == "equip")
-        jilei_set << "EquipCard";
-    else
-        jilei_set << type;
+void Player::jilei(const QString &type) {
+    if (type == "clear") { // Clear
+        removeCardLimitation("use,response,discard", "BasicCard|.|.|hand@1");
+        removeCardLimitation("use,response,discard", "EquipCard|.|.|hand@1");
+        removeCardLimitation("use,response,discard", "TrickCard|.|.|hand@1");
+        return;
+    }
+    QList<Card::HandlingMethod> limit_method;
+    limit_method << Card::MethodUse << Card::MethodResponse << Card::MethodDiscard;
+    QString _type = type;
+    if (type == "basic")
+        _type = "BasicCard";
+    else if (type == "equip")
+        _type = "EquipCard";
+    else if (type == "trick")
+        _type = "TrickCard";
+    _type = _type + "|.|.|hand"; // Handcards only
+    foreach (Card::HandlingMethod method, limit_method)
+        card_limitation[method] << _type + "@1";
 }
 
-bool Player::isJilei(const Card *card) const
-{
-    if(card->getTypeId() == Card::Skill) {
-        if(!card->canJilei())
-            return false;
 
+
+bool Player::isJilei(const Card *card) const{
+    // Not handcard only!!!
+    return isCardLimited(card, Card::MethodDiscard);
+}
+
+void Player::setCardLocked(const QString &name) {
+    static QChar unset_symbol('-');
+    if (name.isEmpty())
+        return;
+    else if (name.startsWith(unset_symbol)) {
+        QString copy = name.mid(1, name.length() - 1);
+        removeCardLimitation("use,response", copy + "@0");
+    } else
+        setCardLimitation("use,response", name + "@0");
+}
+
+bool Player::isLocked(const Card *card) const{
+    return isCardLimited(card, Card::MethodUse);
+}
+
+void Player::setCardLimitation(const QString &limit_list, const QString &pattern, bool single_turn) {
+    QStringList limit_type = limit_list.split(",");
+    QString _pattern = pattern;
+    if (!pattern.endsWith("@1") && !pattern.endsWith("@0")) {
+        QString symb = single_turn ? "@1" : "@0";
+        _pattern = _pattern + symb;
+    }
+    foreach (QString limit, limit_type) {
+        Card::HandlingMethod method = Sanguosha->getCardHandlingMethod(limit);
+        card_limitation[method] << _pattern;
+    }
+}
+
+void Player::removeCardLimitation(const QString &limit_list, const QString &pattern) {
+    QStringList limit_type = limit_list.split(",");
+    QString _pattern = pattern;
+    if (!_pattern.endsWith("@1") && !_pattern.endsWith("@0"))
+        _pattern = _pattern + "@0";
+    foreach (QString limit, limit_type) {
+        Card::HandlingMethod method = Sanguosha->getCardHandlingMethod(limit);
+        card_limitation[method].removeOne(_pattern);
+    }
+}
+
+void Player::clearCardLimitation(bool single_turn) {
+    QList<Card::HandlingMethod> limit_type;
+    limit_type << Card::MethodUse << Card::MethodResponse << Card::MethodDiscard
+               << Card::MethodRecast << Card::MethodPindian;
+    foreach (Card::HandlingMethod method, limit_type) {
+        QStringList limit_patterns = card_limitation[method];
+        foreach (QString pattern, limit_patterns) {
+            if (!single_turn || (single_turn && pattern.endsWith("@1")))
+                card_limitation[method].removeAll(pattern);
+        }
+    }
+}
+
+bool Player::isCardLimited(const Card *card, Card::HandlingMethod method, bool isHandcard) const{
+    if (method == Card::MethodNone)
+        return false;
+    if (card->getTypeId() == Card::TypeSkill && method == card->getHandlingMethod()) {
         foreach(int card_id, card->getSubcards()) {
             const Card *c = Sanguosha->getCard(card_id);
-            foreach(QString pattern, jilei_set.toList()){
-                ExpPattern p(pattern);
-                if(p.match(this,c) && !hasEquip(c)) return true;
+            foreach (QString pattern, card_limitation[method]) {
+                QString _pattern = pattern.split("@").first();
+                if (isHandcard)
+                    _pattern.replace("hand", ".");
+                ExpPattern p(_pattern);
+                if (p.match(this, c)) return true;
             }
         }
     } else {
-        if(card->getSubcards().isEmpty())
-            foreach(QString pattern, jilei_set.toList()){
-                ExpPattern p(pattern);
-                if(p.match(this,card)) return true;
-            }
-        else{
-            foreach(int card_id, card->getSubcards()){
-                const Card *c = Sanguosha->getCard(card_id);
-                foreach(QString pattern, jilei_set.toList()){
-                    ExpPattern p(pattern);
-                    if(p.match(this,card) && !hasEquip(c)) return true;
-                }
-            }
+        foreach (QString pattern, card_limitation[method]) {
+            QString _pattern = pattern.split("@").first();
+            if (isHandcard)
+                _pattern.replace("hand", ".");
+            ExpPattern p(_pattern);
+            if (p.match(this, card)) return true;
         }
     }
 
     return false;
-}
-
-void Player::setCardLocked(const QString &name)
-{
-    static QChar unset_symbol('-');
-    if(name.isEmpty())
-        return;
-    else if(name == ".")
-        lock_card.clear();
-    else if(name.startsWith(unset_symbol)){
-        QString copy = name;
-        copy.remove(unset_symbol);
-        lock_card.remove(copy);
-    }
-    else if(!lock_card.contains(name))
-        lock_card << name;
-}
-
-bool Player::isLocked(const Card *card) const
-{
-    foreach(QString card_name, lock_card){
-        if (card->isKindOf(card_name.toStdString().c_str())){
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool Player::hasCardLock(const QString &card_str) const
-{
-    return lock_card.contains(card_str);
 }
 
 bool Player::isCaoCao() const
@@ -858,7 +899,7 @@ void Player::copyFrom(Player* p)
     b->chained          = a->chained;
     b->judging_area     = QList<int> (a->judging_area);
     b->fixed_distance   = QHash<const Player *, int> (a->fixed_distance);
-    b->jilei_set        = QSet<QString> (a->jilei_set);
+    b->card_limitation  = QMap<Card::HandlingMethod, QStringList> (a->card_limitation);
 
     b->tag              = QVariantMap(a->tag);
 }

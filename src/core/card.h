@@ -35,19 +35,21 @@ class Card : public QObject
 
     Q_ENUMS(Suit)
     Q_ENUMS(CardType)
+
 public:
     // enumeration type
-    enum Suit {Spade, Club, Heart, Diamond, NoSuit};
+    enum Suit {Spade, Club, Heart, Diamond, NoSuitBlack, NoSuitRed, NoSuitNoColor};
     enum Color{Red, Black, Colorless};
+    enum HandlingMethod{MethodNone, MethodUse, MethodResponse, MethodDiscard, MethodRecast, MethodPindian};
 
     static const Suit AllSuits[4];
 
     // card types
     enum CardType{
-        Skill,
-        Basic,
-        Trick,
-        Equip
+        TypeSkill,
+        TypeBasic,
+        TypeTrick,
+        TypeEquip
     };
 
     // constructor
@@ -81,8 +83,9 @@ public:
     virtual bool isOnce() const;
     virtual bool isMute() const;
     virtual bool willThrow() const;
-    virtual bool canJilei() const;
+    virtual bool canRecast() const;
     virtual bool hasPreAction() const;
+    virtual Card::HandlingMethod getHandlingMethod() const;
 
     virtual void setFlags(const QString &flag) const;
     inline void setFlags(const QStringList &fs) { flags = fs; }
@@ -159,12 +162,13 @@ protected:
     bool once;
     bool mute;
     bool will_throw;
-    bool can_jilei;
     bool has_preact;
+    bool can_recast;
     Suit m_suit;
     int m_number;
     int m_id;
     QString m_skillName;
+    Card::HandlingMethod handling_method;
 
     mutable QStringList flags;
 };

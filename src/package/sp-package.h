@@ -12,7 +12,7 @@ public:
     SPPackage();
 };
 
-class SPCardPackage: public Package{
+/*class SPCardPackage: public Package{
     Q_OBJECT
 
 public:
@@ -24,6 +24,6 @@ class SPMoonSpear:public Weapon{
 
 public:
     Q_INVOKABLE SPMoonSpear(Card::Suit suit = Diamond, int number = 12);
-};
+};*/
 
 #endif // SPPACKAGE_H

@@ -47,8 +47,11 @@ public:
     
     void highlightEquip(QString skillName, bool hightlight);
 
-    void setTrust(bool trust);    
-    void selectCard(const QString &pattern, bool forward = true);
+    void setTrust(bool trust);
+    virtual void killPlayer();
+    virtual void revivePlayer();
+    void selectCard(const QString &pattern, bool forward = true, bool multiple = false, bool only = false);
+    void selectEquip(int position);
     void useSelected();
     const Card *getSelected() const;
     void unselectAll();

@@ -46,12 +46,12 @@ CardEffectStruct::CardEffectStruct()
 }
 
 SlashEffectStruct::SlashEffectStruct()
-    :slash(NULL), jink(NULL), from(NULL), to(NULL), drank(false), nature(DamageStruct::Normal)
+    :jink_num(1), slash(NULL), jink(NULL), from(NULL), to(NULL), drank(false), nature(DamageStruct::Normal)
 {
 }
 
 DyingStruct::DyingStruct()
-    :who(NULL), damage(NULL)
+    :who(NULL), damage(NULL), savers(QList<ServerPlayer *>())
 {
 }
 
@@ -313,8 +313,6 @@ void RoomThread::run(){
     GameRule *game_rule;
     if(room->getMode() == "04_1v3")
         game_rule = new HulaoPassMode(this);
-    else if(Config.EnableScene)    //changjing
-        game_rule = new SceneRule(this);    //changjing
     else
         game_rule = new GameRule(this);
 
@@ -405,7 +403,7 @@ void RoomThread::run(){
 
 static bool CompareByPriority(const TriggerSkill *a, const TriggerSkill *b){
     if(a->getPriority() == b->getPriority())
-        return b->inherits("WeaponSkill") || b->inherits("ArmorSkill");
+        return b->inherits("WeaponSkill") || b->inherits("ArmorSkill") || b->inherits("GameRule");
     return a->getPriority() > b->getPriority();
 }
 
@@ -452,10 +450,10 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *ta
 }
 
 void RoomThread::addTriggerSkill(const TriggerSkill *skill){
-    if(skillSet.contains(skill))
+	if(skill == NULL || skillSet.contains(skill->objectName()))
         return;
 
-    skillSet << skill;
+    skillSet << skill->objectName();
 
     QList<TriggerEvent> events = skill->getTriggerEvents();
     foreach(TriggerEvent triggerEvent, events){
@@ -468,7 +466,8 @@ void RoomThread::addTriggerSkill(const TriggerSkill *skill){
     if(skill->isVisible()){
         foreach(const Skill *skill, Sanguosha->getRelatedSkills(skill->objectName())){
             const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(skill);
-            addTriggerSkill(trigger_skill);
+            if (trigger_skill)
+				addTriggerSkill(trigger_skill);
         }
     }
 }

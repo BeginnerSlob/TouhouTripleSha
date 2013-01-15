@@ -302,7 +302,7 @@ const Card *TrustAI::askForCard(const QString &pattern, const QString &prompt, c
     return NULL;
 }
 
-QString TrustAI::askForUseCard(const QString &, const QString &) {
+QString TrustAI::askForUseCard(const QString &, const QString &, const Card::HandlingMethod) {
     return ".";
 }
 
@@ -367,7 +367,7 @@ const Card *TrustAI::askForSinglePeach(ServerPlayer *dying) {
             }
 
             if(self->hasSkill("jiushi") && self->faceUp()){
-                Analeptic *analeptic = new Analeptic(Card::NoSuit, 0);
+                Analeptic *analeptic = new Analeptic(Card::NoSuitNoColor, 0);
                 analeptic->setSkillName("jiushi");
                 return analeptic;
             }
@@ -408,9 +408,9 @@ LuaAI::LuaAI(ServerPlayer *player)
 }
 
 
-QString LuaAI::askForUseCard(const QString &pattern, const QString &prompt){
+QString LuaAI::askForUseCard(const QString &pattern, const QString &prompt, const Card::HandlingMethod method){
     if(callback == 0)
-        return TrustAI::askForUseCard(pattern, prompt);
+        return TrustAI::askForUseCard(pattern, prompt, method);
 
     lua_State *L = room->getLuaState();
 

@@ -54,7 +54,7 @@ void ThJiyiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &ta
     const Card *card = room->askForCardShow(target, source, "@thjiyi");
     room->showCard(target, card->getId());
     if(card->getType() == "trick") {
-        const Card *card2 = room->askForCard(source, ".Trick", "@thjiyi", QVariant(), NonTrigger);
+		const Card *card2 = room->askForCard(source, ".Trick", "@thjiyi", QVariant(), Card::MethodNone);
         if(!card2)
             target->drawCards(1);
         else
@@ -88,7 +88,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        QString pattern = data.toString();
+        QString pattern = data.toStringList().first();
         if(pattern != "pindiancard")
             return false;
                 
@@ -103,7 +103,7 @@ public:
 
         QVariant tohelp = QVariant::fromValue((PlayerStar)player);
         foreach(ServerPlayer *liege, lieges){
-            const Card *card = room->askForCard(liege, ".", "@thqiyuan-pindiancard:" + player->objectName(), tohelp, NonTrigger, player);
+			const Card *card = room->askForCard(liege, ".", "@thqiyuan-pindiancard:" + player->objectName(), tohelp, Card::MethodNone, player);
             if(card){
                 room->provide(card);
                 return true;
@@ -477,7 +477,7 @@ void ThBishaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
         ServerPlayer *victim = room->askForPlayerChosen(source, victims, "thbisha");
         room->setFixedDistance(source, victim, 1);
         room->setPlayerFlag(victim, "bishatarget");
-        Slash *slash = new Slash(Card::NoSuit, 0);
+        Slash *slash = new Slash(Card::NoSuitNoColor, 0);
         slash->setSkillName("thbisha");
         CardUseStruct use;
         use.card = slash;
@@ -623,7 +623,7 @@ public:
 class ThQianyi:public TriggerSkill{
 public:
     ThQianyi():TriggerSkill("thqianyi"){
-        events << CardUsed << CardResponsed;
+        events << CardUsed << CardResponded;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
@@ -634,7 +634,7 @@ public:
         if(triggerEvent == CardUsed)
             card = data.value<CardUseStruct>().card;
         else
-            card = data.value<ResponsedStruct>().m_card;
+            card = data.value<CardResponseStruct>().m_card;
         
         if(!card || !card->isKindOf("Jink"))
             return false;
@@ -685,7 +685,7 @@ bool ThHuosuiCard::targetFilter(const QList<const Player *> &targets, const Play
 
 void ThHuosuiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *target = targets.first();
-    if(!room->askForCard(target, "jink", "@thhuosuijink"))
+	if(!room->askForCard(target, "jink", "@thhuosuijink", QVariant(), Card::MethodResponse))
         if(!room->askForUseSlashTo(source, target, "@thhuosui-slash"))
             source->drawCards(1);
 }
@@ -751,9 +751,9 @@ void ThKunyiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
     room->damage(damage);
 }
 
-class ThKunyi: public ZeroCardViewAsSkill{
+class ThKunyiViewAsSkill: public ZeroCardViewAsSkill{
 public:
-    ThKunyi():ZeroCardViewAsSkill("thkunyi"){
+    ThKunyiViewAsSkill():ZeroCardViewAsSkill("thkunyi"){
         frequency = Limited;
     }
 
@@ -764,6 +764,20 @@ public:
     virtual bool isEnabledAtPlay(const Player *player) const{
         return player->getMark("@kunyi") > 0;
     }
+};
+
+class ThKunyi: public TriggerSkill{
+public:
+	ThKunyi():TriggerSkill("thkunyi") {
+		events << GameStart;
+		view_as_skill = new ThKunyiViewAsSkill;
+	}
+
+    virtual bool trigger(TriggerEvent, Room *, ServerPlayer *player, QVariant &data) const{
+		player->gainMark("@kunyi");
+
+		return false;
+	}
 };
 
 ThCannueCard::ThCannueCard(){
@@ -1284,7 +1298,7 @@ public:
 
             QString pattern = "."+color;
             QString prompt = QString("@fire-attackex:%1::%2").arg(effect.to->getGeneralName()).arg(color);
-            if(room->askForCard(effect.from, pattern, prompt, QVariant(), CardDiscarded)) {
+            if(room->askForCard(effect.from, pattern, prompt)) {
                 DamageStruct damage;
                 damage.card = effect.card;
                 damage.from = effect.from;
@@ -1331,7 +1345,7 @@ public:
 class ThYanxing:public TriggerSkill{
 public:
     ThYanxing():TriggerSkill("thyanxing"){
-        events << EventPhaseChanging << DamageComplete;
+        events << DamageComplete;
         view_as_skill = new ThYanxingViewAsSkill;
     }
 
@@ -1339,29 +1353,17 @@ public:
         return target != NULL;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-        if(triggerEvent == EventPhaseChanging && player == splayer) {
-            PhaseChangeStruct &change = data.value<PhaseChangeStruct>();
-            if(change.to == Player::NotActive)
-                room->setPlayerFlag(splayer, "-thyanxing");
-
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        DamageStruct &damage = data.value<DamageStruct>();
+        if(!damage.from || !damage.from->hasFlag("thyanxing"))
             return false;
-        }
-        else if(triggerEvent == DamageComplete) {
-            if(!splayer->hasFlag("thyanxing"))
-                return false;
         
-            DamageStruct &damage = data.value<DamageStruct>();
-            if(damage.from == splayer && damage.card != NULL && damage.card->isKindOf("NatureSlash") 
-                    && splayer->askForSkillInvoke(objectName())) {
-                DamageStruct newdamage;
-                newdamage.from = damage.from;
-                newdamage.to = damage.to;
-                room->damage(newdamage);
-            }
-
-            return false;
+		if(damage.card && damage.card->isKindOf("NatureSlash") && damage.to->isAlive() 
+				&& damage.from->askForSkillInvoke(objectName())) {
+            DamageStruct newdamage;
+            newdamage.from = damage.from;
+            newdamage.to = damage.to;
+            room->damage(newdamage);
         }
 
         return false;
@@ -1374,13 +1376,13 @@ public:
     }
 
     virtual bool viewFilter(const Card* to_select) const{
-        Room *room = Sanguosha->currentRoom();
         int minnum = 998;
-        foreach(ServerPlayer *p, room->getAllPlayers())
+		QList<const Player *> siblings = Self->getSiblings();
+		siblings << Self;
+        foreach(const Player *p, siblings)
             if(p->getHp() < minnum)
                 minnum = p->getHp();
 
-        ServerPlayer *Self = room->findPlayerBySkillName(objectName());
         return Self->getHp() > minnum && (to_select->isKindOf("Lightning") || (to_select->isKindOf("Jink") && to_select->getSuit() == Card::Diamond));
     }
     
@@ -1526,8 +1528,6 @@ void TouhouPackage::addKazeGenerals(){
     kaze009->addSkill(new ThHuosui);
     kaze009->addSkill(new ThTiandi);
     kaze009->addSkill(new ThKunyi);
-    kaze009->addSkill(new MarkAssignSkill("@kunyi", 1));
-    related_skills.insertMulti("thkunyi", "#@kunyi-1");
 
     General *kaze010 = new General(this, "kaze010", "shu", 3);
     kaze010->addSkill(new ThCannue);
@@ -1574,5 +1574,3 @@ void TouhouPackage::addKazeGenerals(){
     addMetaObject<ThYanxingCard>();
     addMetaObject<ThMaihuoCard>();
 }
-
-ADD_PACKAGE(Touhou)

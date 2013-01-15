@@ -112,11 +112,11 @@ public:
         $self->setValue(QVariant::fromValue(move));
     }
 
-    ResponsedStruct toResponsed() const{
-        return $self->value<ResponsedStruct>();
+    CardResponseStruct toCardResponse() const{
+        return $self->value<CardResponseStruct>();
     }
     
-    void setValue(ResponsedStruct *resp){
+    void setValue(CardResponseStruct *resp){
         $self->setValue(QVariant::fromValue(*resp));
     }
 };

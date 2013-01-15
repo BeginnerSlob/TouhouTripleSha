@@ -12,6 +12,7 @@
 HaoshiCard::HaoshiCard(){
     will_throw = false;
     mute = true;
+    handling_method = Card::MethodNone;
 }
 
 bool HaoshiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
@@ -232,56 +233,72 @@ public:
     }
 };
 
-class Roulin: public TriggerSkill{
+class Roulin:public TriggerSkill{
 public:
     Roulin():TriggerSkill("roulin"){
-        events << SlashProceed;
-
+        events << TargetConfirmed << CardFinished;
         frequency = Compulsory;
-    }
-
-    const Card *askForDoubleJink(ServerPlayer *player, ServerPlayer *slasher, const QString &reason) const{
-        Room *room = player->getRoom();
-
-        const Card *first_jink = NULL, *second_jink = NULL;
-        first_jink = room->askForCard(player, "jink", QString("@%1-jink-1").arg(reason), QVariant(), CardUsed, slasher);
-        if(first_jink)
-            second_jink = room->askForCard(player, "jink", QString("@%1-jink-2").arg(reason), QVariant(), CardUsed, slasher);
-
-        Card *jink = NULL;
-        if(first_jink && second_jink){
-            jink = new DummyCard;
-            jink->addSubcard(first_jink);
-            jink->addSubcard(second_jink);
-        }
-
-        return jink;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return target != NULL && (target->hasSkill(objectName()) || target->isFemale());
     }
 
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *, QVariant &data) const{
-        SlashEffectStruct effect = data.value<SlashEffectStruct>();
-        if(effect.from->hasSkill(objectName()) && effect.to->isFemale()){
-            // dongzhuo slash female
-            ServerPlayer *female = effect.to;
+    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        if (triggerEvent == TargetConfirmed){
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash")){
+                int mark_n = player->getMark("double_jink" + use.card->getEffectIdString());
+                int count = 0;
+                bool play_effect = false;
+                if (TriggerSkill::triggerable(use.from)){
+                    count = 1;
+                    foreach(ServerPlayer *p, use.to){
+                        if (p->isFemale()){
+                            play_effect = true;
+                            mark_n += count;
+                            room->setPlayerMark(use.from, "double_jink" + use.card->getEffectIdString(), mark_n);
+                        }
+                        count *= 10;
+                    }
+                    if (play_effect){
+                        LogMessage log;
+                        log.from = use.from;
+                        log.arg = objectName();
+                        log.type = "#TriggerSkill";
+                        room->sendLog(log);
 
-            room->broadcastSkillInvoke(objectName(), 1);
-
-            room->slashResult(effect, askForDoubleJink(female, effect.from, "roulin1"));
-            return true;
-
-        }else if(effect.from->isFemale() && effect.to->hasSkill(objectName())){
-            // female slash dongzhuo
-            ServerPlayer *dongzhuo = effect.to;
-
-            int index = effect.drank ? 3 : 2;
-            room->broadcastSkillInvoke(objectName(), index);
-            room->slashResult(effect, askForDoubleJink(dongzhuo, effect.from, "roulin2"));
-
-            return true;
+                        room->broadcastSkillInvoke(objectName(), 1);
+                    }
+                }
+                else if (use.from->isFemale()){
+                    count = 1;
+                    foreach(ServerPlayer *p, use.to){
+                        if (p->hasSkill(objectName())){
+                            play_effect = true;
+                            mark_n += count;
+                            room->setPlayerMark(use.from, "double_jink" + use.card->getEffectIdString(), mark_n);
+                        }
+                        count *= 10;
+                    }
+                    if (play_effect) {
+                        foreach(ServerPlayer *p, use.to){
+                            if (p->hasSkill(objectName())){
+                                LogMessage log;
+                                log.from = p;
+                                log.arg = objectName();
+                                log.type = "#TriggerSkill";
+                                room->sendLog(log);
+                            }
+                        }
+                        room->broadcastSkillInvoke(objectName(), 2);
+                    }
+                }
+            }
+        }else if(triggerEvent == CardFinished){
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash"))
+                room->setPlayerMark(use.from, "double_jink" + use.card->getEffectIdString(), 0);
         }
 
         return false;

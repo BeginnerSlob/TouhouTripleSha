@@ -59,6 +59,7 @@ public:
     bool EnableMinimizeDialog;
     bool NeverNullifyMyTrick;
     bool EnableAutoTarget;
+    bool EnableIntellectualSelection;
     int NullificationCountDown;
     int OperationTimeout;
     bool OperationNoLimit;

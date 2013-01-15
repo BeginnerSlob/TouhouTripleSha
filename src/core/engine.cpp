@@ -258,6 +258,23 @@ const CardPattern *Engine::getPattern(const QString &name) const{
     return new ExpPattern(name);
 }
 
+const Card::HandlingMethod Engine::getCardHandlingMethod(const QString &method_name) const{
+    if (method_name == "use")
+        return Card::MethodUse;
+    else if (method_name == "response")
+        return Card::MethodResponse;
+    else if (method_name == "discard")
+        return Card::MethodDiscard;
+    else if (method_name == "recast")
+        return Card::MethodRecast;
+    else if (method_name == "pindian")
+        return Card::MethodPindian;
+    else {
+        Q_ASSERT(false);
+        return Card::MethodNone;
+    }
+}
+
 QList<const Skill *> Engine::getRelatedSkills(const QString &skill_name) const{
     QList<const Skill *> skills;
     foreach(QString name, related_skills.values(skill_name))
@@ -437,7 +454,7 @@ SkillCard *Engine::cloneSkillCard(const QString &name) const{
 }
 
 QString Engine::getVersionNumber() const{
-    return "20120921(0002)";
+    return "20121221(0003)";
 }
 
 QString Engine::getVersion() const{
@@ -450,11 +467,11 @@ QString Engine::getVersion() const{
 }
 
 QString Engine::getVersionName() const{
-    return tr("NewQSanguosha");
+    return tr("touhoukifugeki");
 }
 
 QString Engine::getMODName() const{
-    return "official";
+    return "TouhouMOD";
 }
 
 QStringList Engine::getExtensions() const{
@@ -826,11 +843,11 @@ const Skill *Engine::getSkill(const QString &skill_name) const{
 
 const Skill *Engine::getSkill(const EquipCard *equip) const{
     const Skill* skill;
-    if (equip == NULL) skill = NULL;
-    else {
+    if (equip == NULL)
+        skill = NULL;
+    else
         skill = Sanguosha->getSkill(equip->objectName());
-        if (skill == NULL) skill = equip->getSkill();
-    }
+
     return skill;
 }
 

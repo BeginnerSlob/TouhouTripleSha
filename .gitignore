@@ -31,4 +31,6 @@ builds/vs2010/*.user
 builds/vs2010/*.opensdf
 builds/vs2010/QSanguosha.suo
 Bin/
+*.dmp
+*.pdb
 tags

@@ -268,6 +268,7 @@ public:
 MingceCard::MingceCard(){
     once = true;
     will_throw = false;
+    handling_method = Card::MethodNone;
 }
 
 void MingceCard::onEffect(const CardEffectStruct &effect) const{
@@ -298,7 +299,7 @@ void MingceCard::onEffect(const CardEffectStruct &effect) const{
         if(!targets.isEmpty()){
             ServerPlayer *target = room->askForPlayerChosen(effect.from, targets, "mingce");
 
-            Slash *slash = new Slash(Card::NoSuit, 0);
+            Slash *slash = new Slash(Card::NoSuitNoColor, 0);
             slash->setSkillName("mingce");
             CardUseStruct card_use;
             card_use.from = effect.to;
@@ -324,7 +325,7 @@ public:
 
     virtual bool viewFilter(const Card* to_select) const{
         const Card *c = to_select;
-        return c->getTypeId() == Card::Equip || c->isKindOf("Slash");
+        return c->getTypeId() == Card::TypeEquip || c->isKindOf("Slash");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
@@ -390,7 +391,7 @@ public:
                 return false;
 
             CardEffectStruct effect = data.value<CardEffectStruct>();
-            if(effect.card->isKindOf("Slash") || effect.card->getTypeId() == Card::Trick){
+            if(effect.card->isKindOf("Slash") || effect.card->getTypeId() == Card::TypeTrick){
                 LogMessage log;
                 log.type = "#ZhichiAvoid";
                 log.from = player;
@@ -503,7 +504,7 @@ public:
 
                 room->showCard(player, card->getEffectiveId());
 
-                if(card->getTypeId() != Card::Basic){
+                if(card->getTypeId() != Card::TypeBasic){
                     room->throwCard(card, player);
 
                     room->broadcastSkillInvoke(objectName());

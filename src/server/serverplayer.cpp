@@ -160,7 +160,7 @@ void ServerPlayer::bury(){
     throwAllMarks();
     clearPrivatePiles();
 
-    room->clearPlayerCardLock(this);
+    room->clearPlayerCardLimitation(this, false);
 }
 
 void ServerPlayer::throwAllCards(){
@@ -368,11 +368,19 @@ void ServerPlayer::removeCard(const Card *card, Place place){
             Q_ASSERT(equip != NULL);
 
             equip->onUninstall(this);
-            LogMessage log;
-            log.type = "$Uninstall";
-            log.card_str = wrapped->toString();
-            log.from = this;
-            room->sendLog(log);
+            bool show_log = true;
+            foreach(QString flag, flags)
+                if (flag.endsWith("_InTempMoving") || flag == "AskForCardsChoosing"){
+                    show_log = false;
+                    break;
+                }
+            if (show_log) {
+                LogMessage log;
+                log.type = "$Uninstall";
+                log.card_str = wrapped->toString();
+                log.from = this;
+                room->sendLog(log);
+            }
             break;
         }
 

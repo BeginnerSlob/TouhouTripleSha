@@ -36,6 +36,8 @@ public:
 
 GuhuoCard::GuhuoCard(){
     mute = true;
+    will_throw = false;
+    handling_method = Card::MethodNone;
 }
 
 bool GuhuoCard::guhuo(ServerPlayer* yuji, const QString& message) const{
@@ -173,12 +175,14 @@ GuhuoDialog::GuhuoDialog(const QString &object, bool left, bool right):object_na
 }
 
 void GuhuoDialog::popup(){
+    //if(ClientInstance->getStatus() != Client::Playing)
     if (Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY)
         return;
 
     foreach(QAbstractButton *button, group->buttons()){
         const Card *card = map[button->objectName()];
-        button->setEnabled(card->isAvailable(Self));
+        bool enabled = !Self->isCardLimited(card, Card::MethodUse, true) && card->isAvailable(Self);
+        button->setEnabled(enabled);
     }
 
     Self->tag.remove(object_name);
@@ -200,8 +204,8 @@ QGroupBox *GuhuoDialog::createLeft(){
 
     QList<const Card *> cards = Sanguosha->findChildren<const Card *>();
     foreach(const Card *card, cards){
-        if(card->getTypeId() == Card::Basic && !map.contains(card->objectName())){
-            Card *c = Sanguosha->cloneCard(card->objectName(), Card::NoSuit, 0);
+        if(card->getTypeId() == Card::TypeBasic && !map.contains(card->objectName())){
+            Card *c = Sanguosha->cloneCard(card->objectName(), Card::NoSuitNoColor, 0);
             c->setParent(this);
 
             layout->addWidget(createButton(c));
@@ -228,7 +232,7 @@ QGroupBox *GuhuoDialog::createRight(){
     QList<const Card *> cards = Sanguosha->findChildren<const Card *>();
     foreach(const Card *card, cards){
         if(card->isNDTrick() && !map.contains(card->objectName())){
-            Card *c = Sanguosha->cloneCard(card->objectName(), Card::NoSuit, 0);
+            Card *c = Sanguosha->cloneCard(card->objectName(), Card::NoSuitNoColor, 0);
             c->setSkillName(object_name);
             c->setParent(this);
 
@@ -268,8 +272,8 @@ bool GuhuoCard::targetFilter(const QList<const Player *> &targets, const Player 
 bool GuhuoCard::targetFixed() const{
     if(Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_RESPONSE)
     {
-        if(!ClientInstance->hasNoTargetResponsing()){
-            CardStar card = Sanguosha->cloneCard(user_string, NoSuit, 0);
+        if(!ClientInstance->hasNoTargetResponding()){
+            CardStar card = Sanguosha->cloneCard(user_string, NoSuitNoColor, 0);
             Self->tag["guhuo"] = QVariant::fromValue(card);
             return card && card->targetFixed();
         }

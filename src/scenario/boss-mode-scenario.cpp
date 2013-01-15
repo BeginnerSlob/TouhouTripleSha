@@ -192,12 +192,12 @@ public:
                 return false;
 
             if(player->getWeapon() == NULL){
-                if(!player->hasSkill("hupao"))
+                if(!player->hasSkill("hupao", false))
                     room->acquireSkill(player, "hupao");
             }
             else{
-                if(player->hasSkill("hupao"))
-                    room->detachSkillFromPlayer(player, "hupao");
+                if(player->hasSkill("hupao", false))
+                    room->detachSkillFromPlayer(player, "hupao", false);
             }
 
             QList<ServerPlayer *> players = room->getAllPlayers();
@@ -326,7 +326,7 @@ public:
 
     bool hasSameSkill(Room *room, QString skill_name) const{
         foreach(ServerPlayer *player, room->getAllPlayers()){
-            QList<const Skill *> skills = player->getVisibleSkillList();
+            QList<const Skill *> skills = player->getVisibleSkillList(false);
             const Skill *skill = Sanguosha->getSkill(skill_name);
             if(skills.contains(skill))
                 return true;
@@ -453,7 +453,7 @@ public:
                 if(damage->from->getRole() == damage->to->getRole())
                     damage->from->throwAllHandCards();
                 else{
-                    if(damage->to->hasSkill("huilei")){
+                    if(damage->to->hasSkill("huilei", false)){
                         damage->from->throwAllHandCards();
                         damage->from->throwAllEquips();
                     }

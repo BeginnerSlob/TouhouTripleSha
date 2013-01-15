@@ -2,6 +2,7 @@
 #include "serverplayer.h"
 #include "room.h"
 #include "standard.h"
+#include "maneuvering.h"
 #include "engine.h"
 #include "settings.h"
 
@@ -19,8 +20,8 @@ GameRule::GameRule(QObject *)
            << CardEffected << CardFinished
            << HpRecover << HpLost << PostHpReduced
            << EventLoseSkill << EventAcquireSkill
-           << AskForPeaches << AskForPeachesDone << Dying << Death << GameOverJudge
-           << SlashHit << SlashMissed << SlashEffected << SlashProceed
+           << AskForPeaches << AskForPeachesDone << Death << GameOverJudge
+           << SlashEffectStart << SlashHit << SlashMissed << SlashEffected << SlashProceed
            << ConfirmDamage << PreHpReduced << DamageDone << DamageComplete
            << StartJudge << FinishRetrial << FinishJudge
            << Pindian;
@@ -164,8 +165,11 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
             if (player->hasFlag("drank")) {
                 room->setPlayerFlag(player, "-drank");
             }
-            if (!player->faceUp())
+            if (!player->faceUp()) {
+                if (room->getTag("FirstRound").toBool())
+					room->setTag("FirstRound", false);
                 player->turnOver();
+			}
             else if(player->isAlive())
                 player->play();
 
@@ -179,10 +183,17 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
                 const Card *card = card_use.card;
                 RoomThread *thread = room->getThread();
 
-                card_use.from->broadcastSkillInvoke(card);
+                if (!card->hasFlag("lihuo")) {
+                    if (card->hasFlag("isFireSlash")) {
+                        FireSlash *fire_slash = new FireSlash(card->getSuit(), card->getNumber());
+                        card_use.from->broadcastSkillInvoke(fire_slash);
+                        fire_slash->deleteLater();
+                    } else
+                        card_use.from->broadcastSkillInvoke(card);
+                }
 
-                if(card_use.card->hasPreAction())
-                    card_use.card->doPreAction(room, card_use);
+                if(card->hasPreAction())
+                    card->doPreAction(room, card_use);
 
                 ServerPlayer *target;
                 QList<ServerPlayer *> targets = card_use.to;
@@ -213,7 +224,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
             CardUseStruct use = data.value<CardUseStruct>();
             foreach(ServerPlayer *p, use.to)
                 if(p->getMark("qinggang") > 0)
-                    p->setMark("qinggang", 0);
+                    room->setPlayerMark(p, "qinggang", p->getMark("qinggang") - 1);
             room->clearCardFlag(use.card);
 
             break;
@@ -273,47 +284,19 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
             break;
     }
 
-    case Dying:{
-            if(player->getHp() > 0){
-                player->setFlags("-dying");
-                break;
-            }
-
-            LogMessage log;
-            log.type = "#AskForPeaches";
-            log.from = player;
-            log.to = room->getAllPlayers();
-            log.arg = QString::number(1 - player->getHp());
-            room->sendLog(log);
-
-            RoomThread *thread = room->getThread();
-            foreach(ServerPlayer *saver, room->getAllPlayers()){
-                if(player->getHp() > 0)
-                    break;
-
-                thread->trigger(AskForPeaches, room, saver, data);
-            }
-
-            player->setFlags("-dying");
-            thread->trigger(AskForPeachesDone, room, player, data);
-
-            break;
-        }
-
     case AskForPeaches:{
             DyingStruct dying = data.value<DyingStruct>();
-            ServerPlayer *current = room->getCurrent();
-            ServerPlayer *jiaxu = NULL;
             const Card *peach = NULL;
-            if(current->hasSkill("wansha"))
-                jiaxu = current;
+            ServerPlayer *current = room->getCurrent();
 
-            while(dying.who->getHp() <= 0){
-                if(!current->hasSkill("wansha") || current->isDead() || dying.who->objectName() == player->objectName()
-                        || player->hasFlag("dying") || player == jiaxu)
-                    if(dying.who->isAlive())
-                        peach = room->askForSinglePeach(player, dying.who);
-                if(peach == NULL)
+            while (dying.who->getHp() <= 0) {
+                if (!dying.savers.contains(player))
+                    if (current && current->hasSkill("wansha") && current->isAlive())
+                        break;
+
+                if (dying.who->isAlive())
+                    peach = room->askForSinglePeach(player, dying.who);
+                if (peach == NULL)
                     break;
 
                 CardUseStruct use;
@@ -427,7 +410,31 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
                 if(room->isCanceled(effect))
                     return true;
 
-                effect.card->onEffect(effect);
+                if (effect.to->isAlive() || effect.card->isKindOf("Slash"))
+                    effect.card->onEffect(effect);
+            }
+
+            break;
+        }
+
+    case SlashEffectStart:{
+            SlashEffectStruct effect = data.value<SlashEffectStruct>();
+            int n_nj = effect.from->getMark("no_jink" + effect.slash->getEffectIdString());
+            room->setPlayerMark(effect.from, "no_jink" + effect.slash->getEffectIdString(), n_nj / 10);
+
+            if(effect.jink_num > 0){
+                if (n_nj % 10){
+                    effect.jink_num = 0;
+                    data = QVariant::fromValue(effect);
+                }
+            }
+            int n_dj = effect.from->getMark("double_jink" + effect.slash->getEffectIdString());
+            room->setPlayerMark(effect.from, "double_jink" + effect.slash->getEffectIdString(), n_dj / 10);
+            if(effect.jink_num == 1){
+                if (n_dj % 10) {
+                    effect.jink_num = 2;
+                    data = QVariant::fromValue(effect);
+                }
             }
 
             break;
@@ -437,17 +444,39 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
             SlashEffectStruct effect = data.value<SlashEffectStruct>();
 
             QVariant data = QVariant::fromValue(effect);
-            room->getThread()->trigger(SlashProceed, room, effect.from, data);
-
+            if (effect.jink_num > 0){
+                room->getThread()->trigger(SlashProceed, room, effect.from, data);
+            }
+            else
+                room->slashResult(effect, NULL);
             break;
         }
 
     case SlashProceed:{
             SlashEffectStruct effect = data.value<SlashEffectStruct>();
-
             QString slasher = effect.from->objectName();
-            const Card *jink = room->askForCard(effect.to, "jink", "slash-jink:" + slasher, data, CardUsed, effect.from);
-            room->slashResult(effect, jink);
+            if (!effect.to->isAlive())
+                break;
+            if (effect.jink_num == 2){
+                const Card *first_jink = NULL, *second_jink = NULL;
+                Card *jink = NULL;
+                first_jink = room->askForCard(effect.to, "jink", "@double-jink-1:" + slasher, QVariant(), Card::MethodUse, effect.from);
+                if(room->isJinkEffected(effect.to, first_jink)) {
+                    second_jink = room->askForCard(effect.to, "jink", "@double-jink-2:" + slasher, QVariant(), Card::MethodUse, effect.from);
+
+                    if(room->isJinkEffected(effect.to, second_jink)){
+                        jink = new DummyCard;
+                        jink->addSubcard(first_jink);
+                        jink->addSubcard(second_jink);
+                    }
+                }
+
+                room->slashResult(effect, jink);
+            }
+            else{
+                const Card *jink = room->askForCard(effect.to, "jink", "slash-jink:" + slasher, data, Card::MethodUse, effect.from);
+                room->slashResult(effect, room->isJinkEffected(effect.to, jink) ? jink : NULL);
+            }
 
             break;
         }
@@ -763,10 +792,19 @@ bool HulaoPassMode::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer 
                     }
     case CardUsed:{
         CardUseStruct use = data.value<CardUseStruct>();
-        if(use.card->isKindOf("Weapon") && player->askForSkillInvoke("weapon_recast", data)){
-            player->broadcastSkillInvoke("@recast");
+        if(use.card->isKindOf("Weapon")
+           && (player->isCardLimited(use.card, Card::MethodUse) || player->askForSkillInvoke("weapon_recast", data))){
             CardMoveReason reason(CardMoveReason::S_REASON_RECAST, player->objectName());
-            room->throwCard(use.card, reason, NULL);
+            reason.m_skillName = "weapon_recast";
+            room->moveCardTo(use.card, player, NULL, Player::DiscardPile, reason);
+            player->broadcastSkillInvoke("@recast");
+
+            LogMessage log;
+            log.type = "#Card_Recast";
+            log.from = player;
+            log.card_str = use.card->toString();
+            room->sendLog(log);
+
             player->drawCards(1);
             return false;
         }

@@ -4,6 +4,8 @@ TouhouPackage::TouhouPackage():Package("touhou")
 {
     addKazeGenerals();
     addHanaGenerals();
-    //addYukiGenerals();
-    //addTsukiGenerals();
+    addYukiGenerals();
+    addTsukiGenerals();
 }
+
+ADD_PACKAGE(Touhou)

@@ -198,7 +198,6 @@ protected:
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     virtual void keyReleaseEvent(QKeyEvent *event);
     //this method causes crashes
-    //virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
     QMutex m_roomMutex;
     QMutex m_zValueMutex;    
 
@@ -263,9 +262,6 @@ private:
     QPixmap m_rolesBoxBackground;
     QGraphicsPixmapItem *m_rolesBox;
     QGraphicsTextItem *m_pileCardNumInfoTextBox;
-    QGraphicsPixmapItem *m_tableBg;
-    int m_tablew;
-    int m_tableh;
 
     // for 3v3 & 1v1 mode
     QSanSelectableItem *selector_box;
@@ -386,11 +382,6 @@ private slots:
     //animations
     void onSelectChange();
     void onEnabledChange();
-
-#ifdef JOYSTICK_SUPPORT
-    void onJoyButtonClicked(int bit);
-    void onJoyDirectionClicked(int direction);
-#endif
 
     void takeAmazingGrace(ClientPlayer *taker, int card_id);
 

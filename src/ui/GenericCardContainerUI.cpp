@@ -690,8 +690,7 @@ void PlayerCardContainer::addEquips(QList<CardItem*> &equips)
         _mutexEquipAnim.unlock();
         // _paintPixmap(_m_equipRegions[index], _m_layout->m_equipAreas[index], 
         //             _getEquipPixmap(equip_card), _getEquipParent());
-        const Skill *skill = equip_card->getSkill();
-        if(skill == NULL) skill = Sanguosha->getSkill(equip_card->objectName());
+        const Skill *skill = Sanguosha->getSkill(equip_card->objectName());
         if(skill == NULL) continue;
         emit add_equip_skill(skill, true);
     }
@@ -725,8 +724,7 @@ void PlayerCardContainer::addEquips(QList<CardItem*> &equips)
         _m_equipAnim[index]->start();
         _mutexEquipAnim.unlock();
 
-        const Skill *skill = equip_card->getSkill();
-        if(skill == NULL) skill = Sanguosha->getSkill(equip_card->objectName());
+        const Skill *skill = Sanguosha->getSkill(equip_card->objectName());
         if(skill != NULL) emit remove_equip_skill(skill->objectName());
     }
     return result;
@@ -804,6 +802,7 @@ PlayerCardContainer::PlayerCardContainer()
     _m_votesGot = 0;
     _m_maxVotes = 1;
     _m_votesItem = NULL;
+    _m_distanceItem = NULL;
     _m_groupMain = new QGraphicsPixmapItem(this);
     _m_groupMain->setFlag(ItemHasNoContents);
     _m_groupMain->setPos(0, 0);
@@ -856,6 +855,7 @@ void PlayerCardContainer::_adjustComponentZValues()
     // layout
     if (!_startLaying()) return;
     _layUnder(_m_floatingArea);
+    _layUnder(_m_distanceItem);
     _layUnder(_m_votesItem);
     foreach (QGraphicsItem* pile, _m_privatePiles.values())
         _layUnder(pile);
@@ -974,6 +974,10 @@ void PlayerCardContainer::killPlayer()
     _m_roleComboBox->setEnabled(false);
     _updateDeathIcon();
     _m_saveMeIcon->hide();
+    if (_m_votesItem)
+        _m_votesItem->hide();
+    if (_m_distanceItem)
+        _m_distanceItem->hide();
     QGraphicsColorizeEffect* effect = new QGraphicsColorizeEffect();
     effect->setColor(_m_layout->m_deathEffectColor);
     effect->setStrength(1.0);
@@ -1006,6 +1010,26 @@ void PlayerCardContainer::updateVotes(){
         _m_votesItem->setZValue(1);
         _m_votesItem->show();
     }
+}
+
+void PlayerCardContainer::showDistance() {
+    bool isNull = (_m_distanceItem == NULL);
+    _paintPixmap(_m_distanceItem, _m_layout->m_votesIconRegion,
+                 _getPixmap(QSanRoomSkin::S_SKIN_KEY_VOTES_NUMBER, QString::number(Self->distanceTo(m_player))),
+                 _getAvatarParent());
+    _m_distanceItem->setZValue(1.1);
+    if (!Self->inMyAttackRange(m_player)) {
+        QGraphicsColorizeEffect* effect = new QGraphicsColorizeEffect();
+        effect->setColor(_m_layout->m_deathEffectColor);
+        effect->setStrength(1.0);
+        _m_distanceItem->setGraphicsEffect(effect);
+    } else {
+        _m_distanceItem->setGraphicsEffect(NULL);
+    }
+    if (_m_distanceItem->isVisible() && !isNull)
+        _m_distanceItem->hide();
+    else
+        _m_distanceItem->show();
 }
 
 void PlayerCardContainer::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)

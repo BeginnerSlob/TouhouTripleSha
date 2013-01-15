@@ -45,7 +45,6 @@ public:
     };
 
     EquipCard(Suit suit, int number):Card(suit, number, true), skill(NULL){}
-    TriggerSkill *getSkill() const;    
 
     virtual QString getType() const;
     virtual CardType getTypeId() const;
@@ -57,9 +56,6 @@ public:
 
     virtual Location location() const = 0;
     virtual QString label() const = 0;
-
-protected:
-    TriggerSkill *skill;
 };
 
 class Weapon:public EquipCard{
