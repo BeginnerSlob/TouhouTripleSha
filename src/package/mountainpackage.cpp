@@ -64,7 +64,7 @@ public:
             }
         }
         else if (triggerEvent == EventLoseSkill && data.toString() == "tuntian")
-            player->removePileByName("field");
+            player->clearOnePrivatePile("field");
 
         return false;
     }

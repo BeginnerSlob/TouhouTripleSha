@@ -62,6 +62,7 @@ public:
 
     // property setters/getters
     int getHp() const;
+    int getHpPoints() const;
     void setHp(int hp);
     int getMaxHp() const;
     void setMaxHp(int max_hp);

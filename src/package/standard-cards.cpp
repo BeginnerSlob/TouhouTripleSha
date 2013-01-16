@@ -30,7 +30,7 @@ bool Slash::IsAvailable(const Player *player, const Card *slash){
 	else if (player->isCardLimited(slash, Card::MethodUse))
         return false;
 
-    return (player->hasWeapon("crossbow") || player->canSlashWithoutCrossbow());
+    return (player->hasWeapon("Crossbow") || player->canSlashWithoutCrossbow());
 }
 
 bool Slash::isAvailable(const Player *player) const{

@@ -10,6 +10,224 @@
 #include "engine.h"
 #include "general.h"
 
+class ThHuaji:public TriggerSkill{
+public:
+	ThHuaji():TriggerSkill("thhuaji"){
+		events << CardUsed << CardResponding;
+	}
+
+	virtual bool triggerable(const ServerPlayer *target) const{
+        return target != NULL;
+    }
+
+	virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
+		ServerPlayer *current = room->getCurrent();
+
+		if (current->isDead() || !splayer || player == splayer || splayer != current)
+			return false;
+
+		const Card *card;
+		if (triggerEvent == CardResponding)
+			card = data.value<CardResponseStruct>().m_card;
+		else if (triggerEvent == CardUsed)
+		{
+			card = data.value<CardUseStruct>().card;
+			if (card->isKindOf("Nullification"))
+				return false;
+		}
+
+		QString pattern = card->objectName();
+		if (pattern.contains("slash"))
+			pattern = "slash";
+
+		if (splayer->askForSkillInvoke(objectName()) && room->askForCard(splayer, ".|club,heart", "@thhuajiuse")
+			&& !room->askForCard(player, pattern, "@thhuaji:::" + pattern, QVariant(), Card::MethodDiscard))
+		{
+			return true;
+		}
+
+		return false;
+	}
+};
+
+class ThFeizhan:public TriggerSkill{
+public:
+	ThFeizhan():TriggerSkill("thfeizhan$"){
+		events << EventPhaseStart;
+		frequency = Wake;
+	}
+
+	virtual bool triggerable(const ServerPlayer *target) const{
+		int min = 998;
+		foreach (const Player *p, target->getSiblings())
+		{
+			if (p->getHpPoints() < min)
+				min = p->getHpPoints();
+		}
+		if (target->getHpPoints() > min)
+			return false;
+
+		return TriggerSkill::triggerable(target)
+			&& target->hasLordSkill(objectName())
+			&& target->getPhase() == Player::Start
+			&& target->getMark(objectName()) <= 0;
+	}
+
+	virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+		player->addMark(objectName());
+		player->gainMark("@waked");
+		QStringList choices;
+		if (player->isWounded())
+			choices << "recover";
+		choices << "draw";
+
+		QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+		if (choice == "recover")
+		{
+			RecoverStruct recover;
+			recover.who = player;
+			room->recover(player, recover);
+		}
+		else
+			player->drawCards(2);
+
+		room->acquireSkill(player, "hujia");
+		return false;
+	}
+};
+
+ThJiewuCard::ThJiewuCard(){
+}
+
+bool ThJiewuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+	return targets.isEmpty() && !to_select->isNude() && Self->inMyAttackRange(to_select) && to_select != Self;
+}
+
+void ThJiewuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+	ServerPlayer *target = targets.first();
+	int card_id = room->askForCardChosen(source, target, "he", "thjiedao");
+	room->obtainCard(source, card_id, room->getCardPlace(card_id) == Player::PlaceEquip);
+	Slash *slash = new Slash(NoSuitNoColor, 0);
+	slash->setSkillName("thjiewu");
+	source->addMark("qinggang");
+	CardUseStruct use;
+	use.card = slash;
+	use.from = target;
+	use.to << source;
+	room->useCard(use);
+	source->removeMark("qinggang");
+}
+
+class ThJiewu:public ZeroCardViewAsSkill{
+public:
+	ThJiewu():ZeroCardViewAsSkill("thjiewu"){
+	}
+
+	virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("ThJiewuCard");
+    }
+
+    virtual const Card *viewAs() const{
+        return new ThJiewuCard;
+    }
+};
+
+class ThGenxing:public TriggerSkill{
+public:
+	ThGenxing():TriggerSkill("thgenxing"){
+		events << EventPhaseStart;
+		frequency = Wake;
+	}
+
+	virtual bool triggerable(const ServerPlayer *target) const{
+		return TriggerSkill::triggerable(target)
+			&& target->getHpPoints() == 1
+			&& target->getPhase() == Player::Start
+			&& target->getMark(objectName()) <= 0;
+	}
+
+	virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+		player->addMark(objectName());
+		player->gainMark("@waked");
+		QStringList choices;
+		if (player->isWounded())
+			choices << "recover";
+		choices << "draw";
+
+		QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+		if (choice == "recover")
+		{
+			RecoverStruct recover;
+			recover.who = player;
+			room->recover(player, recover);
+		}
+		else
+			player->drawCards(2);
+
+		room->loseMaxHp(player);
+		room->acquireSkill(player, "thmopao");
+		return false;
+	}
+};
+
+ThMopaoCard::ThMopaoCard(){
+}
+
+bool ThMopaoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+	return targets.isEmpty() && to_select != Self;
+}
+
+void ThMopaoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+	ServerPlayer *target = targets.first();
+	target->drawCards(1);
+	DamageStruct damage;
+	damage.from = source;
+	damage.to = target;
+	damage.nature = DamageStruct::Fire;
+	room->damage(damage);
+}
+
+class ThMopaoViewAsSkill: public ZeroCardViewAsSkill{
+public:
+    ThMopaoViewAsSkill():ZeroCardViewAsSkill("thmopao"){
+
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return false;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+        return  pattern == "@@thmopao";
+    }
+
+    virtual const Card *viewAs() const{
+        return new ThMopaoCard;
+    }
+};
+
+class ThMopao: public TriggerSkill{
+public:
+    ThMopao():TriggerSkill("thmopao"){
+        events << CardResponded;
+        view_as_skill = new ThMopaoViewAsSkill;
+    }
+
+    virtual int getPriority() const{
+        return 3;
+    }
+
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        if (player == NULL) return false;
+        CardStar card_star = data.value<CardResponseStruct>().m_card;
+        if (!card_star->isKindOf("Jink"))
+            return false;
+        room->askForUseCard(player, "@@thmopao", "@thmopao");
+
+        return false;
+    }
+};
 class ThBian:public TriggerSkill{
 public:
     ThBian():TriggerSkill("thbian"){
@@ -1199,6 +1417,15 @@ public:
 
 
 void TouhouPackage::addHanaGenerals(){
+    General *hana001 = new General(this, "hana001$", "wei");
+    hana001->addSkill(new ThHuaji);
+    hana001->addSkill(new ThFeizhan);
+
+    General *hana002 = new General(this, "hana002", "wei");
+    hana002->addSkill(new ThJiewu);
+    hana002->addSkill(new ThGenxing);
+    hana002->addRelateSkill("thmopao");
+
     General *hana003 = new General(this, "hana003", "wei", 3, false);
     hana003->addSkill(new ThBian);
     hana003->addSkill(new ThGuihang);
@@ -1239,7 +1466,9 @@ void TouhouPackage::addHanaGenerals(){
 	
 	//General *hana018 = new General(this, "hana018$", "wei");
 	//hana018->addSkill(new ThLiuzhen);
-
+	
+    addMetaObject<ThJiewuCard>();
+    addMetaObject<ThMopaoCard>();
     addMetaObject<ThWujianCard>();
     addMetaObject<ThXihuaCard>();
     addMetaObject<ThMimengCard>();
@@ -1249,5 +1478,5 @@ void TouhouPackage::addHanaGenerals(){
     addMetaObject<ThShijieCard>();
     //addMetaObject<ThLiuzhenCard>();
 	
-    skills << new ThWujianDistanceSkill << new ThQuanshanGive;
+    skills << new ThWujianDistanceSkill << new ThQuanshanGive << new ThMopao;
 }

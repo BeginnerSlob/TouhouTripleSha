@@ -162,7 +162,8 @@ public:
 		if (pattern != "slash" && pattern != "jink")
 			return false;
 
-		if (!player->askForSkillInvoke(objectName()));
+		if (!player->askForSkillInvoke(objectName()))
+			return false;
 		int card_id = room->drawCard();
 		CardsMoveStruct move, move2;
         move.card_ids.append(card_id);
