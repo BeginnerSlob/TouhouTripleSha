@@ -263,8 +263,8 @@ public:
     void throwAllCards();
     void bury();
     void throwAllMarks();
+    void clearOnePrivatePile(QString pile_name);
     void clearPrivatePiles();
-    void removePileByName(const char *pileName);
     void drawCards(int n, bool set_emotion = true, const char *reason = NULL);
     bool askForSkillInvoke(const char *skill_name, const QVariant &data = QVariant());
     QList<int> forceToDiscard(int discard_num, bool include_equip);

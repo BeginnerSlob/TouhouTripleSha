@@ -1074,13 +1074,11 @@ public:
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
+        return target && !target->hasSkill("yinling") && target->getPile("brocade").length() > 0;
     }
 
     virtual bool trigger(TriggerEvent, Room* , ServerPlayer *player, QVariant &data) const{
-        if (data.toString() != "yinling")
-            return false;
-        player->removePileByName("brocade");
+        player->clearOnePrivatePile("brocade");
         return false;
     }
 };

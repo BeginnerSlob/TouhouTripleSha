@@ -711,7 +711,7 @@ public:
                 && shenzhuge->getPile("stars").length() > 0 && shenzhuge->getPhase() == Player::Draw)
             Exchange(shenzhuge);
         else if(triggerEvent == EventLoseSkill && data.toString() == objectName()){
-            shenzhuge->removePileByName("stars");
+            shenzhuge->clearOnePrivatePile("stars");
         }
         return false;
     }

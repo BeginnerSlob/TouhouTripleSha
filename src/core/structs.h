@@ -450,6 +450,7 @@ enum TriggerEvent{
     JinkEffect,
 
     CardAsked,
+    CardResponding,
     CardResponded,
     CardDiscarded,
     CardsMoveOneTime,

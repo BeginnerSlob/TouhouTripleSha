@@ -577,7 +577,7 @@ public:
 
     virtual bool trigger(TriggerEvent , Room *, ServerPlayer *player, QVariant &data) const{
         if(data.toString() == "quanji")
-            player->removePileByName("power");
+            player->clearOnePrivatePile("power");
         return false;
     }
 };

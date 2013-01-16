@@ -821,7 +821,7 @@ public:
                 && player->getPile("sushengpile").length() > 0)
             Remove(player);
         else if(triggerEvent == EventLoseSkill && data.toString() == "susheng"){
-            player->removePileByName("susheng");
+            player->clearOnePrivatePile("susheng");
             if(player->getHp() <= 0)
                 room->enterDying(player, NULL);
         }

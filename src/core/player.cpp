@@ -55,6 +55,10 @@ int Player::getHp() const{
     return hp;
 }
 
+int Player::getHpPoints() const{
+    return qMax(hp, 0);
+}
+
 int Player::getMaxHp() const{
     return max_hp;
 }
@@ -509,7 +513,7 @@ int Player::getMaxCards() const
     }
     extra += Sanguosha->correctMaxCards(this);
 
-    return (qMax(hp,0) + rule + extra);
+    return qMax((getHpPoints() + rule + extra), 0);
 }
 
 QString Player::getKingdom() const

@@ -984,6 +984,20 @@ bool Room::_askForNullification(const TrickCard *trick, ServerPlayer *from, Serv
         use.from = repliedPlayer;
         useCard(use);
 
+		if (card && card->isKindOf("Nullification"))
+		{
+            CardResponseStruct resp(card, to, true);
+            QVariant data = QVariant::fromValue(resp);
+			bool useless = thread->trigger(CardResponding, this, repliedPlayer, data);
+			if (useless)
+			{
+				if (continuable)
+					return _askForNullification(trick, from, to, positive, aiHelper);
+				else
+					return false;
+			}
+		}
+
         LogMessage log;
         log.type = "#NullificationDetails";
         log.from = from;
@@ -996,7 +1010,7 @@ bool Room::_askForNullification(const TrickCard *trick, ServerPlayer *from, Serv
 
         thread->trigger(ChoiceMade, this, repliedPlayer, decisionData);
         setTag("NullifyingTimes",getTag("NullifyingTimes").toInt()+1);
-        bool result = !_askForNullification((TrickCard*)card->getRealCard(), repliedPlayer, to, !positive, aiHelper);
+        bool result = !_askForNullification((TrickCard*)card->getRealCard(), repliedPlayer, to, (getTag("NullifyingTimes").toInt() + 1) % 2, aiHelper);
         return result;
 }
 
@@ -1119,7 +1133,6 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
 
     bool continuable = false;
     card = card->validateInResposing(player, continuable);
-    const Card* result = NULL;
 	
     if(card){
         if ((method == Card::MethodUse || method == Card::MethodResponse) && !isRetrial) {
@@ -1179,6 +1192,9 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
             if (!(method == Card::MethodUse && pattern == "slash")) {
                 CardResponseStruct resp(card, to, method == Card::MethodUse);
                 QVariant data = QVariant::fromValue(resp);
+                bool canceled = thread->trigger(CardResponding, this, player, data);
+				if (canceled)
+					return NULL;
                 thread->trigger(CardResponded, this, player, data);
                 if (method == Card::MethodUse) {
                     if (getCardPlace(card->getEffectiveId()) == Player::PlaceTable) {
@@ -1195,14 +1211,14 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
                 }
             }
         }
-        result = card;
+        return card;
     } else if(continuable) {
         setPlayerFlag(player, "continuing");
-        result = askForCard(player, pattern, prompt, data, method, to, isRetrial);
+        return askForCard(player, pattern, prompt, data, method, to, isRetrial);
     } else {
-        result = NULL;
+        return NULL;
     }
-    return result;
+    return NULL;
 }
 
 bool Room::askForUseCard(ServerPlayer *player, const QString &pattern, const QString &prompt, int notice_index,
