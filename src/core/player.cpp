@@ -160,7 +160,7 @@ int Player::getAttackRange() const{
         Q_ASSERT(card);
         return card->getRange();
     }
-    else if(hasSkill("thsilian"))
+    else if(hasSkill("thsilian") && !getWeapon())
         return 3;
     else
         return 1;

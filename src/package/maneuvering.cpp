@@ -43,12 +43,21 @@ QString Analeptic::getSubtype() const{
     return "buff_card";
 }
 
-bool Analeptic::IsAvailable(const Player *player){
-    return !player->hasUsed("Analeptic");
+bool Analeptic::IsAvailable(const Player *player, const Card *analeptic){
+	if (!analeptic) {
+		Analeptic *analeptic = new Analeptic(Card::NoSuitNoColor, 0);
+		analeptic->deleteLater();
+		if (player->isCardLimited(analeptic, Card::MethodUse))
+			return false;
+	}
+	else if (player->isCardLimited(analeptic, Card::MethodUse))
+		return false;
+
+    return !player->isProhibited(player, analeptic) && !player->hasUsed("Analeptic");
 }
 
 bool Analeptic::isAvailable(const Player *player) const{
-    return IsAvailable(player) && BasicCard::isAvailable(player);
+    return IsAvailable(player, this) && BasicCard::isAvailable(player);
 }
 
 void Analeptic::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
@@ -106,7 +115,6 @@ public:
         return acard;
     }
 };
-
 
 Fan::Fan(Suit suit, int number):Weapon(suit, number, 4){
     setObjectName("Fan");
@@ -224,7 +232,7 @@ public:
                 log.from = player;
                 log.arg = QString::number(damage.damage);
                 log.arg2 = objectName();
-                player->getRoom()->sendLog(log);
+                room->sendLog(log);
 
                 damage.damage = 1;
                 data = QVariant::fromValue(damage);

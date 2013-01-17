@@ -189,6 +189,12 @@ const ViewAsSkill* ViewAsSkill::parseViewAsSkill(const Skill *skill)
         const ViewAsSkill *view_as_skill = trigger_skill->getViewAsSkill();
         if (view_as_skill != NULL) return view_as_skill;
     }
+    if (skill->inherits("ProhibitSkill")) {
+        const ProhibitSkill *prohibit_skill = qobject_cast<const ProhibitSkill *>(skill);
+        Q_ASSERT(prohibit_skill != NULL);
+        const ViewAsSkill *view_as_skill = prohibit_skill->getViewAsSkill();
+        if (view_as_skill != NULL) return view_as_skill;
+    }
     return NULL;
 }
 
@@ -389,8 +395,12 @@ void SPConvertSkill::onGameStart(ServerPlayer *player) const{
 }
 
 ProhibitSkill::ProhibitSkill(const QString &name)
-    :Skill(name, Skill::Compulsory)
+    :Skill(name, Skill::Compulsory), view_as_skill(NULL)
 {
+}
+
+const ViewAsSkill *ProhibitSkill::getViewAsSkill() const{
+    return view_as_skill;
 }
 
 DistanceSkill::DistanceSkill(const QString &name)

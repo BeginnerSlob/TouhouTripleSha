@@ -69,8 +69,8 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
                     room->setCardFlag(this, "lihuo");
                     room->setCardFlag(this, "isFireSlash");
                 }
-            if (player->hasSkill("fan") && !hasFlag("isFireSlash")) {
-                if (room->askForSkillInvoke(player, "fan", data)) {
+            if (player->hasSkill("Fan") && !hasFlag("isFireSlash")) {
+                if (room->askForSkillInvoke(player, "Fan", data)) {
                     room->setEmotion(player, "weapon/fan");
                     room->setCardFlag(this, "isFireSlash");
                 }
@@ -200,6 +200,9 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
         || (getSuit() == Card::Heart && Self->hasSkill("wushen"))) // Be care!!!!
         distance_limit = false;
 
+    if (isKindOf("ThunderSlash") && Self->hasSkill("thyuchang"))
+        distance_limit = false;
+
     if(getSuit() == Card::Heart && Self->hasSkill("zhenhong"))
         distance_limit = false;
 
@@ -241,7 +244,7 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
             if(hasUsed)
                 return Self->canSlash(to_select, this, distance_limit, rangefix);
             else
-                return Self->canSlash(to_select, this) && Self->distanceTo(to_select) == 1;
+                return Self->canSlash(to_select, this, false) && Self->distanceTo(to_select) == 1;
         }
         else
             return false;
@@ -279,7 +282,7 @@ QString Peach::getSubtype() const{
 void Peach::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     BasicCard::use(room, source, targets);
     if(targets.isEmpty())
-        room->cardEffect(this, source, source);   
+        room->cardEffect(this, source, source);
 }
 
 void Peach::onEffect(const CardEffectStruct &effect) const{
@@ -861,7 +864,7 @@ bool Collateral::targetFilter(const QList<const Player *> &targets,
         else return false;
     }
 
-    return to_select->getWeapon() != NULL && to_select != Self;
+    return !Self->isProhibited(to_select, this) && to_select->getWeapon() != NULL && to_select != Self;
 }
 
 void Collateral::onUse(Room *room, const CardUseStruct &card_use) const{
@@ -1133,7 +1136,7 @@ bool Disaster::isAvailable(const Player *player) const{
     if(player->containsTrick(objectName()))
         return false;
 
-    return ! player->isProhibited(player, this);
+    return !player->isProhibited(player, this);
 }
 
 Lightning::Lightning(Suit suit, int number):Disaster(suit, number){
