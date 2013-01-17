@@ -78,7 +78,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return Analeptic::IsAvailable(player);
+        return Analeptic::IsAvailable(player, NULL);
     }
 
     virtual bool viewFilter(const Card* card) const{

@@ -51,6 +51,10 @@ Card::CardType EquipCard::getTypeId() const{
     return TypeEquip;
 }
 
+bool EquipCard::isAvailable(const Player *player) const{
+    return !player->isProhibited(player, this);
+}
+
 void EquipCard::onUse(Room *room, const CardUseStruct &card_use) const{
     ServerPlayer *player = card_use.from;
 
@@ -322,9 +326,9 @@ Weapon::Weapon(Suit suit, int number, int range)
 bool Weapon::isAvailable(const Player *player) const{
     QString mode = player->getGameMode();
     if (mode == "04_1v3")
-        return !player->isCardLimited(this, Card::MethodUse) || !player->isCardLimited(this, Card::MethodRecast);
+        return (!player->isCardLimited(this, Card::MethodUse) && !player->isProhibited(player, this)) || !player->isCardLimited(this, Card::MethodRecast);
     else
-        return !player->isCardLimited(this, Card::MethodUse);
+        return !player->isCardLimited(this, Card::MethodUse) && !player->isProhibited(player, this);
 }
 
 int Weapon::getRange() const{

@@ -1175,12 +1175,12 @@ void RoomScene::updateTargetsEnablity(const Card *card){
         if (item->isSelected()) continue;
 
         //=====================================
-        bool weimuFailure = player->hasSkill("weimu") && card && card->isKindOf("Collateral")
+        bool moyu2Failure = player->hasSkill("moyu2") && card && card->isKindOf("Collateral")
                 && !selected_targets.isEmpty();
         //=====================================
 
         bool enabled = (card == NULL) ||
-                    ((weimuFailure || !Sanguosha->isProhibited(Self, player, card))
+                    ((moyu2Failure || !Sanguosha->isProhibited(Self, player, card))
                         && maxVotes > 0);
         
         QGraphicsItem* animationTarget = item->getMouseClickReceiver();
