@@ -262,6 +262,9 @@ private:
     QPixmap m_rolesBoxBackground;
     QGraphicsPixmapItem *m_rolesBox;
     QGraphicsTextItem *m_pileCardNumInfoTextBox;
+    QGraphicsPixmapItem *m_tableBg;
+    int m_tablew;
+    int m_tableh;
 
     // for 3v3 & 1v1 mode
     QSanSelectableItem *selector_box;

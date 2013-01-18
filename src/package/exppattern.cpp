@@ -26,19 +26,24 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
 
     bool checkpoint = false;
     QStringList card_types = factors.at(0).split(',');
-    foreach (QString name, card_types) {
-        if (name == ".") {
-            checkpoint = true;
-        } else {
-			bool positive = true;
-			if (name.startsWith('^')) {
-				positive = false;
-				name = name.mid(1);
-			}
-			if (card->isKindOf(name.toLocal8Bit().data()) || card->getEffectiveId() == name.toInt())
-				checkpoint = positive;
-			else
-				checkpoint = !positive;
+    foreach (QString or_name, card_types) {
+        checkpoint = false;
+        foreach (QString name, or_name.split('+')) {
+            if (name == ".") {
+                checkpoint = true;
+            } else {
+                bool isInt = false;
+			    bool positive = true;
+			    if (name.startsWith('^')) {
+				    positive = false;
+				    name = name.mid(1);
+			    }
+			    if (card->isKindOf(name.toLocal8Bit().data()) || (card->getEffectiveId() == name.toInt(&isInt) && isInt))
+				    checkpoint = positive;
+			    else
+				    checkpoint = !positive;
+		    }
+		    if (checkpoint) break;
 		}
 		if (checkpoint) break;
     }

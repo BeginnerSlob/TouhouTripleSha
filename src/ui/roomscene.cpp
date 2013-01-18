@@ -305,6 +305,9 @@ RoomScene::RoomScene(QMainWindow *main_window):
     timer_id = 0;
     tick = 0;
 
+    m_tableBg = new QGraphicsPixmapItem(NULL, this);
+    m_tableBg->setZValue(-100000);
+
     QHBoxLayout* skill_dock_layout = new QHBoxLayout;
     QMargins margins = skill_dock_layout->contentsMargins();
     margins.setTop(0);
@@ -686,14 +689,21 @@ void RoomScene::adjustItems()
     chat_widget->setPos(infoPlane.right() - chat_widget->boundingRect().width(),
         chat_edit_widget->y() + (_m_roomLayout->m_chatTextBoxHeight - chat_widget->boundingRect().height()) / 2);
 
-    padding += _m_roomLayout->m_photoRoomPadding;
+    //padding += _m_roomLayout->m_photoRoomPadding;
     if (self_box)
         self_box->setPos(infoPlane.left() - padding - self_box->boundingRect().width(), 
-        sceneRect().height() - padding - self_box->boundingRect().height()
+        sceneRect().height() - padding * 3 - self_box->boundingRect().height()
         - G_DASHBOARD_LAYOUT.m_normalHeight - G_DASHBOARD_LAYOUT.m_floatingAreaHeight);
     if (enemy_box)
         enemy_box->setPos(padding * 2, padding * 2);
 
+    m_tablew = displayRegion.width() - infoPlane.width();
+    m_tableh = displayRegion.height() - dashboard->boundingRect().height();
+    QPixmap tableBg = G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_TABLE_BG)
+        .scaled(m_tablew, m_tableh, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    m_tableh -= _m_roomLayout->m_photoDashboardPadding;
+    m_tableBg->setPos(padding, padding);
+    m_tableBg->setPixmap(tableBg);
     updateTable();
     updateRolesBox();
 }

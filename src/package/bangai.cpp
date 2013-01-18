@@ -811,7 +811,7 @@ BangaiPackage::BangaiPackage()
 	bangai004->addSkill(new ThYaomei);
 	bangai004->addSkill(new ThZhongjie);
 
-	General *bangai009 = new General(this, "bangai009", "shu");
+	General *bangai009 = new General(this, "bangai009", "wei");
 	bangai009->addSkill(new ThSilian);
 	bangai009->addSkill(new ThSilianGet);
 	bangai009->addSkill(new ThSilianTriggerSkill);
