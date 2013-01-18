@@ -1661,7 +1661,6 @@
     <None Include="..\..\swig\naturalvar.i" />
     <None Include="..\..\swig\qvariant.i" />
     <None Include="..\..\swig\sanguosha.i" />
-    <None Include="ClassDiagram1.cd" />
     <None Include="sanguosha.ts">
       <SubType>Designer</SubType>
     </None>
