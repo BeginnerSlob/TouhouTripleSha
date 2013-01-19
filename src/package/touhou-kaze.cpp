@@ -686,7 +686,7 @@ bool ThHuosuiCard::targetFilter(const QList<const Player *> &targets, const Play
 void ThHuosuiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *target = targets.first();
 	if(!room->askForCard(target, "jink", "@thhuosuijink", QVariant(), Card::MethodResponse))
-        if(!room->askForUseSlashTo(source, target, "@thhuosui-slash"))
+        if(!room->askForUseSlashTo(source, target, "@thhuosui-slash", false))
             source->drawCards(1);
 }
 
@@ -1376,15 +1376,17 @@ public:
     }
 
     virtual bool viewFilter(const Card* to_select) const{
-        int minnum = 998;
-		QList<const Player *> siblings = Self->getSiblings();
-		siblings << Self;
-        foreach(const Player *p, siblings)
-            if(p->getHp() < minnum)
-                minnum = p->getHp();
+		if (!to_select->isKindOf("Lightning") && !(to_select->isKindOf("Jink") && to_select->getSuit() == Card::Diamond))
+			return false;
 
-        return Self->getHp() > minnum && (to_select->isKindOf("Lightning") || (to_select->isKindOf("Jink") && to_select->getSuit() == Card::Diamond));
-    }
+		Room *room = Sanguosha->currentRoom();
+		ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
+        foreach(const Player *p, room->getAllPlayers())
+            if (splayer->getHpPoints() > p->getHpPoints())
+                return true;
+
+		return false;
+	}
     
     virtual const Card *viewAs(const Card *originalCard) const{
         FireSlash *huosha = new FireSlash(originalCard->getSuit(), originalCard->getNumber());
@@ -1399,15 +1401,16 @@ class ThHereStateChange:public TriggerSkill{
 public:
     ThHereStateChange():TriggerSkill("#thhere"){
         frequency = Compulsory;
-        events << GameStart << HpChanged;
+        events << HpChanged;
     }
 
-    virtual int getPriority() const{
-        return -1;
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target != NULL;
     }
 
     virtual bool trigger(TriggerEvent , Room* room, ServerPlayer *player, QVariant &data) const{
-        room->filterCards(player, player->getCards("he"), true);
+		ServerPlayer *p = room->findPlayerBySkillName("thhere");
+        room->filterCards(p, p->getCards("he"), true);
         return false;
     }
 };

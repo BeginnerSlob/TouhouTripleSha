@@ -1500,8 +1500,7 @@ ThLiuzhenCard::ThLiuzhenCard(){
 }
 
 bool ThLiuzhenCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *player) const{
-	CardStar slash = Self->tag.value("LiuzhenSlash", NULL).value<CardStar>();
-	return !to_select->hasFlag("liuzhenold") && player->canSlash(to_select, slash);
+	return !to_select->hasFlag("liuzhenold") && player->inMyAttackRange(to_select) && to_select != player;
 }
 
 void ThLiuzhenCard::onEffect(const CardEffectStruct &effect) const{
@@ -1546,10 +1545,8 @@ public:
 				foreach(ServerPlayer *tar, use.to)
 					room->setPlayerFlag(tar, "liuzhenold");
 
-				Self->tag["LiuzhenSlash"] = QVariant::fromValue(use.card);
 				if (room->askForUseCard(player, "@@thliuzhen", "@thliuzhen"))
 					room->setPlayerFlag(player, "liuzhenuse");
-				Self->tag.remove("ThTingwuTarget");
 
 				foreach(ServerPlayer *tar, use.to)
 					room->setPlayerFlag(tar, "-liuzhenold");

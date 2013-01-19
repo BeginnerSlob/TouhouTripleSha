@@ -152,22 +152,21 @@ void Slash::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets
 
 void Slash::onEffect(const CardEffectStruct &card_effect) const{
     Room *room = card_effect.from->getRoom();
-    bool drank = false;
     if (card_effect.from->hasFlag("drank")) {
-        drank = true;
-    }
-    if (drank) {
         room->setCardFlag(this, "drank");
         room->setPlayerFlag(card_effect.from, "-drank");
     }
 
     SlashEffectStruct effect;
     effect.from = card_effect.from;
-    effect.nature = nature;
+    if (hasFlag("isFireSlash") && nature == DamageStruct::Normal)
+        effect.nature = DamageStruct::Fire;
+    else
+        effect.nature = nature;
     effect.slash = this;
 
     effect.to = card_effect.to;
-    effect.drank = drank;
+    effect.drank = this->hasFlag("drank");
 
     room->slashEffect(effect);
 }
@@ -181,7 +180,7 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
     if(Self->hasWeapon("Halberd") && Self->isLastHandCard(this))
         slash_targets += 2;
 
-    if(Self->hasSkill("lihuo") && isKindOf("FireSlash"))
+    if(Self->hasSkill("lihuo") && (isKindOf("FireSlash") || hasFlag("isFireSlash")))
         slash_targets++;
 
     if(Self->hasSkill("shenji") && Self->getWeapon() == NULL)
@@ -660,8 +659,6 @@ public:
         return -2;
     }
 };
-
-
 
 EightDiagram::EightDiagram(Suit suit, int number)
     :Armor(suit, number){
