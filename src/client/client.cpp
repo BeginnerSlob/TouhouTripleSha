@@ -1547,7 +1547,7 @@ void Client::askForYumeng(const Json::Value &card_list){
     //@todo: use cards directly rather than the QString
     QStringList card_str;
     for (unsigned int i = 0; i < card_list.size(); i++)
-        card_str << QString::number(card_list[i].asInt());       
+        card_str << QString::number(card_list[i].asInt());
     _m_roomState.setCurrentCardUsePattern(card_str.join("+"));
     setStatus(AskForYumeng);
 }

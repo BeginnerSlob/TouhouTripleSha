@@ -610,7 +610,6 @@ bool Card::isMute() const{
     return mute;
 }
 
-
 bool Card::willThrow() const{
     return will_throw;
 }

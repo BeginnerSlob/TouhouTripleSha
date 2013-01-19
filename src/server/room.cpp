@@ -1194,7 +1194,10 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
                 QVariant data = QVariant::fromValue(resp);
                 bool canceled = thread->trigger(CardResponding, this, player, data);
 				if (canceled)
-					return NULL;
+					if(continuable) {
+						setPlayerFlag(player, "continuing");
+						return askForCard(player, pattern, prompt, data, method, to, isRetrial);
+					}
                 thread->trigger(CardResponded, this, player, data);
                 if (method == Card::MethodUse) {
                     if (getCardPlace(card->getEffectiveId()) == Player::PlaceTable) {
