@@ -14,6 +14,7 @@ class ThDunjia:public TriggerSkill{
 public:
 	ThDunjia():TriggerSkill("thdunjia"){
 		events << Damage;
+		frequency = Frequent;
 	}
 
 	virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
@@ -23,6 +24,9 @@ public:
 
 		int n = qAbs(player->getEquips().size() - damage.to->getEquips().size());
 		if (n == 0)
+			return false;
+
+		if (!player->askForSkillInvoke(objectName()))
 			return false;
 
 		QStringList choices;

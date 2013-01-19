@@ -1798,50 +1798,67 @@ void RoomScene::keepLoseCardLog(const CardsMoveStruct &move)
 void RoomScene::keepGetCardLog(const CardsMoveStruct &move)
 {
     if (move.card_ids.isEmpty()) return;
+    if (move.to && (move.to_place == Player::PlaceHand || move.to_place == Player::PlaceEquip)) {
+        foreach (QString flag, move.to->getFlags().split("+"))
+            if (flag.endsWith("_InTempMoving"))
+                return;
+    }
     //DrawNCards
     if (move.from_place == Player::DrawPile && move.to_place == Player::PlaceHand)
     {
-        QString to_general = move.to->getGeneralName();
-        log_box->appendLog("#DrawNCards", to_general, QStringList(), QString(),
-                            QString::number(move.card_ids.length()));
+        QString to_general = move.to->objectName();
+        if (move.to == Self) {
+            log_box->appendLog("$DrawCards", to_general, QStringList(), Card::IdsToStrings(move.card_ids).join("+"),
+                               QString::number(move.card_ids.length()));
+        }
+        else {
+            log_box->appendLog("#DrawNCards", to_general, QStringList(), QString(),
+                               QString::number(move.card_ids.length()));
+        }
     }
     if(move.from_place == Player::PlaceTable && move.to_place == Player::PlaceHand)
     {
-        QString to_general = move.to->getGeneralName();
+        QString to_general = move.to->objectName();
         foreach(int card_id, move.card_ids){
             if(card_id != -1)
                 log_box->appendLog("$GotCardBack", to_general, QStringList(), QString::number(card_id));
         }
     }
-    if(move.from_place == Player::DiscardPile && move.to_place == Player::PlaceHand)
+    if(move.from_place == Player::DiscardPile && move.to_place == Player::PlaceHand && move.from == NULL)
     {
-        QString to_general = move.to->getGeneralName();
-        foreach(int card_id, move.card_ids)
-            log_box->appendLog("$RecycleCard", to_general, QStringList(), QString::number(card_id));
+        QString to_general = move.to->objectName();
+        QString card_str = Card::IdsToStrings(move.card_ids).join("+");
+        log_box->appendLog("$RecycleCard", to_general, QStringList(), card_str);
     }
     if(move.from && move.from_place != Player::PlaceHand && move.to_place != Player::PlaceDelayedTrick
         && move.from_place != Player::PlaceJudge && move.to && move.from != move.to)
     {
-        QString from_general = move.from->getGeneralName();
+        QString from_general = move.from->objectName();
         QStringList tos;
-        tos << move.to->getGeneralName();
+        tos << move.to->objectName();
         int hide = 0;
+        QString card_str = QString();
         foreach(int card_id, move.card_ids)
         {
-            if(card_id != Card::S_UNKNOWN_CARD_ID)
-                log_box->appendLog("$MoveCard", from_general, tos, QString::number(card_id));
-            else
+            if (card_id != Card::S_UNKNOWN_CARD_ID) {
+                if(card_str.isEmpty())
+                    card_str = QString::number(card_id);
+                else
+                    card_str += "+" + QString::number(card_id);
+            } else
                 hide++;
         }
+        if (!card_str.isEmpty())
+            log_box->appendLog("$MoveCard", from_general, tos, card_str);
         if(hide > 0)
             log_box->appendLog("#MoveNCards", from_general, tos, QString(),
             QString::number(hide));
     }
     if(move.from_place == Player::PlaceHand && move.to_place == Player::PlaceHand)
     {
-        QString from_general = move.from->getGeneralName();
+        QString from_general = move.from->objectName();
         QStringList tos;
-        tos << move.to->getGeneralName();
+        tos << move.to->objectName();
         bool hiden = false;
         foreach(int card_id, move.card_ids)
             if(card_id == Card::S_UNKNOWN_CARD_ID){
@@ -1853,8 +1870,7 @@ void RoomScene::keepGetCardLog(const CardsMoveStruct &move)
                                QString::number(move.card_ids.length()));
         else
         {
-            foreach(int card_id, move.card_ids)
-            log_box->appendLog("$MoveCard", from_general, tos, QString::number(card_id));
+            log_box->appendLog("$MoveCard", from_general, tos, Card::IdsToStrings(move.card_ids).join("+"));
         }
     }
     if(move.from && move.to){
@@ -1878,7 +1894,7 @@ void RoomScene::keepGetCardLog(const CardsMoveStruct &move)
     }
     if(move.from && move.to && move.from_place == Player::PlaceEquip && move.to_place == Player::PlaceEquip){
         QString type = "$Install";
-        QString to_general = move.to->getGeneralName();
+        QString to_general = move.to->objectName();
         foreach(int card_id, move.card_ids)
             log_box->appendLog(type, to_general, QStringList(), QString::number(card_id));
     }
@@ -1887,16 +1903,10 @@ void RoomScene::keepGetCardLog(const CardsMoveStruct &move)
         Photo *srcphoto = name2photo[move.reason.m_playerId];
         QString to_general;
         if (srcphoto != NULL)
-            to_general = srcphoto->getPlayer()->getGeneralName();
+            to_general = srcphoto->getPlayer()->objectName();
         else if (move.reason.m_playerId == Self->objectName())
-            to_general = Self->getGeneralName();
-        QString card_str = QString();
-        foreach(int card_id, move.card_ids)
-            if(card_str.isEmpty())
-                card_str = QString::number(card_id);
-            else
-                card_str += "+" + QString::number(card_id);
-        log_box->appendLog(type, to_general, QStringList(), card_str);
+            to_general = Self->objectName();
+        log_box->appendLog(type, to_general, QStringList(), Card::IdsToStrings(move.card_ids).join("+"));
     }
 }
 
@@ -3405,10 +3415,10 @@ void RoomScene::onGameStart(){
 
     // updateStatus(ClientInstance->getStatus(), ClientInstance->getStatus());
 
-    QList<const ClientPlayer *> players = ClientInstance->getPlayers();
+    /*QList<const ClientPlayer *> players = ClientInstance->getPlayers();
     foreach(const ClientPlayer *player, players){
         connect(player, SIGNAL(phase_changed()), log_box, SLOT(appendSeparator()));
-    }
+    }*/
 
     connect(Self, SIGNAL(skill_state_changed(QString)), this, SLOT(skillStateChange(QString)));
 
