@@ -1392,16 +1392,15 @@ public:
 
     virtual bool trigger(TriggerEvent , Room* room, ServerPlayer *player, QVariant &data) const{
         CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
-        if(move->from != player)
+        if (move->from != player)
             return false;
-        if(move->to_place == Player::DiscardPile
-                && ((move->reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)){
+        if (move->to_place == Player::DiscardPile
+           && ((move->reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)){
 
             int i = 0;
             QList<int> shuhui_card;
             foreach(int card_id, move->card_ids){
-                if(room->getCardPlace(card_id) == Player::DiscardPile
-                    && (move->from_places[i] == Player::PlaceHand || move->from_places[i] == Player::PlaceEquip)){
+                if(move->from_places[i] == Player::PlaceHand || move->from_places[i] == Player::PlaceEquip){
                         shuhui_card << card_id;
                 }
                 i++;
@@ -1415,17 +1414,23 @@ public:
 
             CardsMoveStruct move2;
             move2.card_ids = shuhui_card;
-            move2.to_place = Player::PlaceHand;
-            move2.to = player;
-            room->moveCardsAtomic(move2, true);
-
-            while(room->askForYumeng(player, shuhui_card, false, true)) {}
+			move2.to_place = Player::DiscardPile;
+            move2.to = NULL;
+            room->moveCards/*Atomic*/(move2, true);
 
             CardsMoveStruct move3;
             move3.card_ids = shuhui_card;
-            move3.to_place = Player::DiscardPile;
-            move3.reason = move->reason;
-            room->moveCardsAtomic(move3, true);
+            move3.to_place = Player::PlaceHand;
+            move3.to = player;
+            room->moveCards/*Atomic*/(move3, true);
+
+            while(room->askForYumeng(player, shuhui_card, false, true));
+
+            CardsMoveStruct move4;
+            move4.card_ids = shuhui_card;
+            move4.to_place = Player::DiscardPile;
+            move4.reason = move->reason;
+            room->moveCards/*Atomic*/(move4, true);
 
             room->setPlayerFlag(player, "-Shuhui_InTempMoving");
         }
