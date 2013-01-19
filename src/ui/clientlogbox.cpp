@@ -186,12 +186,6 @@ void ClientLogBox::appendLog(const QString &log_str){
     appendLog(type, from, tos, card_str, arg, arg2);
 }
 
-void ClientLogBox::appendSeparator(){
-    const Player *player = qobject_cast<const Player *>(sender());
-    if(player->getPhase() == Player::NotActive)
-        append("<font color='white'>------------------------</font>");
-}
-
 void ClientLogBox::append(const QString &text)
 {
     QTextEdit::append(QString("<p style=\"margin:3px p2x; line-height:120%;\">%1</p>").arg(text));
