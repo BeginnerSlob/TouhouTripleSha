@@ -171,7 +171,7 @@ public:
 		if (triggerEvent == CardUsed)
 		{
 			CardUseStruct use = data.value<CardUseStruct>();
-			if (use.to.contains(use.from))
+			if (use.to.isEmpty() && use.to.contains(use.from))
 				return false;
 
 			if (use.card->isKindOf("Peach"))
@@ -184,7 +184,7 @@ public:
 				return doQiebao(room, player, card_ids);
 			}
 		}
-		else if (triggerEvent == CardsMoveOneTime && TriggerSkill::triggerable(player))
+		else if (triggerEvent == BeforeCardsMoveOneTime && TriggerSkill::triggerable(player))
 		{
 			CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
 			if (!move->from || !move->to || move->from == move->to)
@@ -218,7 +218,7 @@ public:
 			return false;
 
 		if (change.to == Player::Draw || change.to == Player::Play)
-			if (player->askForSkillInvoke(objectName()))
+			if (player->askForSkillInvoke(objectName(), QVariant::fromValue(QString::number((int)change.to))))
 			{
 				player->skip(change.to);
 				player->gainMark("@fadeng");
@@ -243,7 +243,7 @@ public:
 		if (change.from == Player::Play || change.from == Player::Draw)
 		{
 			int n = (int)change.from;
-			if (!player->hasFlag(objectName() + QString::number(n)) && player->askForSkillInvoke(objectName()))
+			if (!player->hasFlag(objectName() + QString::number(n)) && player->askForSkillInvoke(objectName(), QVariant::fromValue(QString::number((int)change.to))))
 			{
 				room->setPlayerFlag(player, objectName() + QString::number(n));
 				player->loseMark("@fadeng");
@@ -256,7 +256,7 @@ public:
 		if (change.to == Player::Judge || change.to == Player::Discard)
 		{
 			int n = (int)change.to;
-			if (!player->hasFlag(objectName() + QString::number(n)) && player->askForSkillInvoke(objectName()))
+			if (!player->hasFlag(objectName() + QString::number(n)) && player->askForSkillInvoke(objectName(), QVariant::fromValue(QString::number((int)change.to))))
 			{
 				room->setPlayerFlag(player, objectName() + QString::number(n));
 				player->loseMark("@fadeng");

@@ -31,6 +31,8 @@ public:
 
 GuidengCard::GuidengCard(){
     once = true;
+	handling_method = MethodNone;
+	will_throw = false;
 }
 
 void GuidengCard::onEffect(const CardEffectStruct &effect) const{
@@ -38,10 +40,10 @@ void GuidengCard::onEffect(const CardEffectStruct &effect) const{
     ServerPlayer *target = effect.to;
     Room *room = player->getRoom();
 
-    int card_id = room->askForCardChosen(player, player, "h", "guideng");
+    int card_id = getSubcards().first();
     room->broadcastSkillInvoke("guideng");
     const Card *card = Sanguosha->getCard(card_id);
-    Card::Suit suit = room->askForSuit(player, "guideng");
+    Card::Suit suit = room->askForSuit(target, "guideng");
 
     LogMessage log;
     log.type = "#ChooseSuit";
@@ -62,9 +64,9 @@ void GuidengCard::onEffect(const CardEffectStruct &effect) const{
     }
 }
 
-class Guideng:public ZeroCardViewAsSkill{
+class Guideng:public OneCardViewAsSkill{
 public:
-    Guideng():ZeroCardViewAsSkill("guideng"){
+    Guideng():OneCardViewAsSkill("guideng"){
 
     }
 
@@ -72,8 +74,14 @@ public:
         return !player->isKongcheng() && ! player->hasUsed("GuidengCard");
     }
 
-    virtual const Card *viewAs() const{
-        return new GuidengCard;
+    virtual bool viewFilter(const Card *to_select) const{
+		return !to_select->isEquipped();
+	}
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+		GuidengCard *card = new GuidengCard;
+		card->addSubcard(originalCard);
+		return card;
     }
 };
 
