@@ -53,7 +53,7 @@ public:
 
         if(triggerEvent == CardFinished){
             foreach(ServerPlayer *p, use.to)
-                p->removeMark("qinggang");
+                p->removeMark("Qinggang_Armor_Nullified");
 
             return false;
         }
@@ -65,7 +65,7 @@ public:
             log.arg = objectName();
             room->sendLog(log);
             foreach(ServerPlayer *p, use.to)
-                p->addMark("qinggang");
+                p->addMark("Qinggang_Armor_Nullified");
         }
 
         return false;
@@ -512,7 +512,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return target != NULL && TriggerSkill::triggerable(target) && !target->getArmor()
-               && target->getMark("qinggang") == 0;
+               && target->getMark("Qinggang_Armor_Nullified") == 0;
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{

@@ -202,12 +202,12 @@ public:
 
             QList<ServerPlayer *> players = room->getAllPlayers();
             foreach(ServerPlayer *player, players){
-                player->setMark("qinggang", 0);
+                player->setMark("Qinggang_Armor_Nullified", 0);
             }
         }
         else{
             SlashEffectStruct effect = data.value<SlashEffectStruct>();
-            effect.to->addMark("qinggang");
+            effect.to->addMark("Qinggang_Armor_Nullified");
         }
         return false;
     }

@@ -21,7 +21,7 @@ GameRule::GameRule(QObject *)
            << HpRecover << HpLost << PostHpReduced
            << EventLoseSkill << EventAcquireSkill
            << AskForPeaches << AskForPeachesDone << Death << GameOverJudge
-           << SlashEffectStart << SlashHit << SlashMissed << SlashEffected << SlashProceed
+           << SlashEffectStart << SlashHit << SlashEffected << SlashProceed
            << ConfirmDamage << PreHpReduced << DamageDone << DamageComplete
            << StartJudge << FinishRetrial << FinishJudge
            << Pindian;
@@ -222,9 +222,6 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
         }
     case CardFinished: {
             CardUseStruct use = data.value<CardUseStruct>();
-            foreach(ServerPlayer *p, use.to)
-                if(p->getMark("qinggang") > 0)
-                    room->setPlayerMark(p, "qinggang", p->getMark("qinggang") - 1);
             room->clearCardFlag(use.card);
 
             break;
@@ -363,6 +360,14 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
 
     case DamageDone:{
             DamageStruct damage = data.value<DamageStruct>();
+            if (damage.from && !damage.from->isAlive())
+                damage.from = NULL;
+            data = QVariant::fromValue(damage);
+            if(damage.card && damage.card->isKindOf("Slash") && player->getMark("Qinggang_Armor_Nullified") > 0) {
+                room->setPlayerMark(player, "Qinggang_Armor_Nullified", player->getMark("Qinggang_Armor_Nullified") - 1);
+                room->setPlayerMark(player, "Qinggang_Armor_Nullified_Clear",
+                                    player->getMark("Qinggang_Armor_Nullified_Clear") + 1);
+            }
             room->sendDamageLog(damage);
 
             room->applyDamage(player, damage);
@@ -371,11 +376,14 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
         }
     case DamageComplete:{
             DamageStruct damage = data.value<DamageStruct>();
-            if(room->getMode() == "02_1v1" && player->isDead()){
-                QString new_general = player->tag["1v1ChangeGeneral"].toString();
-                if(!new_general.isEmpty())
-                    changeGeneral1v1(player);
+            if (player->getMark("Qinggang_Armor_Nullified_Clear") == 0) {
+                if (damage.card && damage.card->isKindOf("Slash") && player->getMark("Qinggang_Armor_Nullified") > 0)
+                    room->setPlayerMark(player, "Qinggang_Armor_Nullified", player->getMark("Qinggang_Armor_Nullified") - 1);
+            } else {
+                room->setPlayerMark(player, "Qinggang_Armor_Nullified_Clear",
+                                    player->getMark("Qinggang_Armor_Nullified_Clear") - 1);
             }
+
             if(player->isChained() && player->getMark("unchain") > 0){
                 room->setPlayerProperty(player, "chained", false);
                 room->setPlayerMark(player, "unchain", 0);
@@ -400,6 +408,11 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
                         }
                     }
                 }
+            }
+            if(room->getMode() == "02_1v1" && player->isDead()){
+                QString new_general = player->tag["1v1ChangeGeneral"].toString();
+                if(!new_general.isEmpty())
+                    changeGeneral1v1(player);
             }
             break;
         }
@@ -494,13 +507,6 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
             damage.nature = effect.nature;
             room->damage(damage);
 
-            break;
-        }
-
-    case SlashMissed:{
-            SlashEffectStruct effect = data.value<SlashEffectStruct>();
-            if(effect.to->getMark("qinggang") > 0)
-                effect.to->setMark("qinggang", 0);
             break;
         }
 

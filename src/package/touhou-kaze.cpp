@@ -483,9 +483,9 @@ void ThBishaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
         use.card = slash;
         use.from = source;
         use.to << victim;
-        victim->addMark("qinggang");
+        victim->addMark("Qinggang_Armor_Nullified");
         room->useCard(use, false);
-        victim->removeMark("qinggang");
+        victim->removeMark("Qinggang_Armor_Nullified");
     }
 }
 
@@ -623,18 +623,14 @@ public:
 class ThQianyi:public TriggerSkill{
 public:
     ThQianyi():TriggerSkill("thqianyi"){
-        events << CardUsed << CardResponded;
+        events << CardResponded;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         if(player->getPhase() != Player::NotActive)
             return false;
 
-        const Card *card;
-        if(triggerEvent == CardUsed)
-            card = data.value<CardUseStruct>().card;
-        else
-            card = data.value<CardResponseStruct>().m_card;
+        const Card *card = data.value<CardResponseStruct>().m_card;
         
         if(!card || !card->isKindOf("Jink"))
             return false;
@@ -666,7 +662,7 @@ public:
             }
         }
         player->invoke("clearAG");
-        if(card_id != -1)
+        if(card_id == -1)
             return false;
 
         target = room->askForPlayerChosen(player, room->getOtherPlayers(target), objectName());
