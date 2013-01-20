@@ -13,6 +13,7 @@ config = {
 
         "Standard",
         "Touhou",
+        "Kami",
         "Bangai",
         "SP",
         --[["Wind",

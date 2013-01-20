@@ -1,3 +1,8 @@
+-- translation for Kami Package
+
+return {
+	["kami"] = "神",
+
 	["#kami001"]="往昔的圣迹",
 	["kami001"]="东风谷早苗",
 	["designer:kami001"]="幻桜落 | Codeby:Slob",
@@ -47,4 +52,4 @@
 	["thmanxiao"]="满咲",
 	[":thmanxiao"]="<b>锁定技</b>，你每拥有1枚“桜咲”标记，你的手牌上限便+1。当你拥有4枚“桜咲”标记时，你立即死亡。",
 	
-	
+}
