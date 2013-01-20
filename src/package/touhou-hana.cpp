@@ -1114,7 +1114,7 @@ public:
 		if (triggerEvent == Damage && TriggerSkill::triggerable(player))
 		{
 			DamageStruct damage = data.value<DamageStruct>();
-			if (!damage.chain && !damage.transfer && player->askForSkillInvoke(objectName()))
+			if (player->askForSkillInvoke(objectName()))
 			{
 				QString choice = room->askForChoice(player, objectName(), "basic+equip+trick");
 				
