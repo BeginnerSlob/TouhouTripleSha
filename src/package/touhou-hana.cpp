@@ -59,8 +59,9 @@ public:
 	}
 
 	virtual bool triggerable(const ServerPlayer *target) const{
+		Room *room = target->getRoom();
 		int min = 998;
-		foreach (const Player *p, target->getSiblings())
+		foreach (ServerPlayer *p, room->getAllPlayers())
 		{
 			if (p->getHpPoints() < min)
 				min = p->getHpPoints();
@@ -736,6 +737,7 @@ const Card *ThMimengCard::validateInResposing(ServerPlayer *user, bool &continua
     const Card *card = Sanguosha->getCard(subcards.first());
     Card *use_card = Sanguosha->cloneCard(to_use, card->getSuit(), card->getNumber());
     use_card->setSkillName("thmimeng");
+	use_card->addSubcard(this);
     use_card->deleteLater();
     return use_card;
 }

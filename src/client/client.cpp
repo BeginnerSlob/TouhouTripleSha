@@ -924,7 +924,7 @@ void Client::askForNullification(const Json::Value &arg){
     m_isDiscardActionRefusable = true;
     m_isUseCard = false;
 
-    setStatus(RespondingUse);
+    setStatus(Responding);
 }
 
 void Client::onPlayerChooseCard(int card_id){

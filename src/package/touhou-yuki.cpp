@@ -126,12 +126,8 @@ public:
 class ThQiebao:public TriggerSkill{
 public:
 	ThQiebao():TriggerSkill("thqiebao"){
-		events << CardUsed << CardsMoveOneTime;
+		events << CardUsed << BeforeCardsMoveOneTime;
 	}
-
-    virtual int getPriority() const{
-        return 4;
-    }
 	
 	virtual bool triggerable(ServerPlayer *target) const{
 		return target != NULL;

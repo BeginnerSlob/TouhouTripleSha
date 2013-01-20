@@ -344,8 +344,8 @@ GameStartSkill::GameStartSkill(const QString &name)
 }
 
 bool GameStartSkill::trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &) const{
-    return TriggerSkill::triggerable(player)
-           && (!sp_convert_skill || (sp_convert_skill && Config.value("EnableSPConvert", true).toBool()));
+    onGameStart(player);
+    return false;
 }
 
 bool GameStartSkill::triggerable(const ServerPlayer *target) const{
@@ -431,7 +431,7 @@ ArmorSkill::ArmorSkill(const QString &name)
 }
 
 bool ArmorSkill::triggerable(const ServerPlayer *target) const{
-    if (target == NULL || target->getArmor() == NULL || target->getMark("Equips_Nullified_to_Yourself") > 0)
+    if (target == NULL || target->getArmor() == NULL)
         return false;
     return target->hasArmorEffect(objectName());
 }

@@ -1412,17 +1412,11 @@ public:
                 return false;
             room->setPlayerFlag(player, "Shuhui_InTempMoving");
 
-            CardsMoveStruct move2;
-            move2.card_ids = shuhui_card;
-			move2.to_place = Player::DiscardPile;
-            move2.to = NULL;
-            room->moveCards/*Atomic*/(move2, true);
-
             CardsMoveStruct move3;
             move3.card_ids = shuhui_card;
             move3.to_place = Player::PlaceHand;
             move3.to = player;
-            room->moveCards/*Atomic*/(move3, true);
+            room->moveCardsAtomic(move3, true);
 
             while(room->askForYumeng(player, shuhui_card, false, true));
 
@@ -1430,7 +1424,7 @@ public:
             move4.card_ids = shuhui_card;
             move4.to_place = Player::DiscardPile;
             move4.reason = move->reason;
-            room->moveCards/*Atomic*/(move4, true);
+            room->moveCardsAtomic(move4, true);
 
             room->setPlayerFlag(player, "-Shuhui_InTempMoving");
         }

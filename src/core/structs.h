@@ -453,6 +453,7 @@ enum TriggerEvent{
     CardResponding,
     CardResponded,
     CardDiscarded,
+    BeforeCardsMoveOneTime,
     CardsMoveOneTime,
     CardDrawing,
     CardDrawnDone,
