@@ -21,6 +21,11 @@ void ClientLogBox::appendLog(
         QString arg,
         QString arg2)
 {
+	if (type == "$AppendSeparator") {
+        append(QString(tr("<font color='%1'>------------------------------</font>")).arg(Config.TextEditColor.name()));
+        return;
+    }
+
     QString from;
     if(!from_general.isEmpty()){
         from = ClientInstance->getPlayerName(from_general);
@@ -33,7 +38,6 @@ void ClientLogBox::appendLog(
         foreach(QString to, tos)
             to_list << ClientInstance->getPlayerName(to);
         to = to_list.join(",");
-        arg = Sanguosha->translate(arg);
 
         to = bold(to, Qt::red);
     }
@@ -44,7 +48,7 @@ void ClientLogBox::appendLog(
         QString log_name;
         foreach(QString one_card, card_str.split("+")){
             const Card *card;
-            if(type == "$JudgeResult")
+            if(type == "$JudgeResult" || type == "$PasteCard")
                 card = Sanguosha->getCard(one_card.toInt());
             else
                 card = Sanguosha->getEngineCard(one_card.toInt());
@@ -60,102 +64,95 @@ void ClientLogBox::appendLog(
         log.replace("%to", to);
         log.replace("%card", log_name);
 
+        if (!arg2.isEmpty()) {
+            arg2 = bold(Sanguosha->translate(arg2), Qt::yellow);
+            log.replace("%arg2", arg2);
+        }
+
+        if (!arg.isEmpty()) {
+            arg = bold(Sanguosha->translate(arg), Qt::yellow);
+            log.replace("%arg", arg);
+        }
+
         log = QString("<font color='%2'>%1</font>").arg(log).arg(Config.TextEditColor.name());
         append(log);
 
         return;
     }
 
-    if(!card_str.isEmpty()){
+    if (!card_str.isEmpty() && !from_general.isEmpty()) {
         // do Indicator animation
-        foreach(QString to, tos){
+        foreach (QString to, tos)
             RoomSceneInstance->showIndicator(from_general, to);
-        }
 
         const Card *card = Card::Parse(card_str);
-        if(card == NULL)
-            return;
+        if (card == NULL) return;
+
         QString card_name = card->getLogName();
         card_name = bold(card_name, Qt::yellow);
 
         QString reason = tr("using");
-        if (type.endsWith("_Resp"))
-            reason = tr("playing");
-        if (type.endsWith("_Recast"))
-            reason = tr("recasting");
+        if (type.endsWith("_Resp")) reason = tr("playing");
+        if (type.endsWith("_Recast")) reason = tr("recasting");
 
-        if(card->isVirtualCard()){
+        if (card->isVirtualCard()) {
             QString skill_name = Sanguosha->translate(card->getSkillName());
             skill_name = bold(skill_name, Qt::yellow);
 
             QList<int> card_ids = card->getSubcards();
             QStringList subcard_list;
-            foreach(int card_id, card_ids){
+            foreach (int card_id, card_ids) {
                 const Card *subcard = Sanguosha->getCard(card_id);
                 subcard_list << bold(subcard->getLogName(), Qt::yellow);
             }
 
-            QString subcard_str = subcard_list.join(",");
-            if(card->getTypeId() == Card::TypeSkill){
+            QString subcard_str = subcard_list.join(", ");
+            if (card->getTypeId() == Card::TypeSkill) {
                 const SkillCard *skill_card = qobject_cast<const SkillCard *>(card);
-                if(subcard_list.isEmpty() || !skill_card->willThrow())
+                if (subcard_list.isEmpty() || !skill_card->willThrow())
                     log = tr("%from use skill [%1]").arg(skill_name);
-                else{
-                    if(card->isKindOf("DummyCard"))
+                else {
+                    if (card->isKindOf("DummyCard"))
                         skill_name = bold(Sanguosha->translate("free-discard"), Qt::yellow);
                     log = tr("%from use skill [%1], and the cost is %2").arg(skill_name).arg(subcard_str);
                 }
-            }else{
-                if(subcard_list.isEmpty())
+            } else {
+                if (subcard_list.isEmpty())
                     log = tr("%from use skill [%1], %3 [%2]").arg(skill_name).arg(card_name).arg(reason);
                 else
-                    log = tr("%from use skill [%1] %4 %2 as %3")
-                          .arg(skill_name)
-                          .arg(subcard_str)
-                          .arg(card_name)
-                          .arg(reason);
+                    log = tr("%from use skill [%1] %4 %2 as %3").arg(skill_name).arg(subcard_str).arg(card_name).arg(reason);
             }
 
             delete card;
-        }else if(card->isModified() && card->getSkillName() != QString()){
+        } else if (card->isModified() && card->getSkillName() != QString()) {
             const Card *real = Sanguosha->getEngineCard(card->getEffectiveId());
             QString skill_name = Sanguosha->translate(card->getSkillName());
             skill_name = bold(skill_name, Qt::yellow);
 
             QString subcard_str = bold(real->getLogName(), Qt::yellow);
 
-            log = tr("%from use skill [%1] %4 %2 as %3")
-                    .arg(skill_name)
-                    .arg(subcard_str)
-                    .arg(card_name)
-                    .arg(reason);
-        }
-        else
+            log = tr("%from use skill [%1] %4 %2 as %3").arg(skill_name).arg(subcard_str).arg(card_name).arg(reason);
+        } else
             log = tr("%from %2 %1").arg(card_name).arg(reason);
 
-        if(!to.isEmpty())
-            log.append(tr(", target is %to"));
-
-
-
-    }else
+        if (!to.isEmpty()) log.append(tr(", target is %to"));
+    } else
         log = Sanguosha->translate(type);
 
     log.replace("%from", from);
     log.replace("%to", to);
 
-    if(!arg2.isEmpty()){
+    if (!arg2.isEmpty()) {
         arg2 = bold(Sanguosha->translate(arg2), Qt::yellow);
         log.replace("%arg2", arg2);
     }
 
-    if(!arg.isEmpty()){
+    if (!arg.isEmpty()) {
         arg = bold(Sanguosha->translate(arg), Qt::yellow);
         log.replace("%arg", arg);
     }
 
     log = QString("<font color='%2'>%1</font>").arg(log).arg(Config.TextEditColor.name());
-
     append(log);
 }
 

@@ -3356,8 +3356,8 @@ void Room::moveCardsAtomic(QList<CardsMoveStruct> cards_moves, bool forceMoveVis
 {
     cards_moves = _breakDownCardMoves(cards_moves);
 
-    //trigger event
-    QList<CardsMoveOneTimeStruct> moveOneTimes = _mergeMoves(cards_moves);
+	// judge will break
+	QList<CardsMoveOneTimeStruct> moveOneTimes = _mergeMoves(cards_moves);
     foreach(CardsMoveOneTimeStruct moveOneTime, moveOneTimes)
     {
         if(moveOneTime.card_ids.size() == 0) continue;
@@ -3372,8 +3372,8 @@ void Room::moveCardsAtomic(QList<CardsMoveStruct> cards_moves, bool forceMoveVis
 			}
 		if (trigger)
 			foreach(ServerPlayer *player, getAllPlayers())
-				if (thread->trigger(CardsMoveOneTime, this, player, data))
-					return;
+				if (thread->trigger(BeforeCardsMoveOneTime, this, player, data))
+					return ;
     }
 
     notifyMoveCards(true, cards_moves, forceMoveVisible);
@@ -3440,6 +3440,24 @@ void Room::moveCardsAtomic(QList<CardsMoveStruct> cards_moves, bool forceMoveVis
     }
     foreach (CardsMoveStruct move, cards_moves)
         updateCardsOnGet(move);
+
+    //trigger event
+    foreach(CardsMoveOneTimeStruct moveOneTime, moveOneTimes)
+    {
+        if(moveOneTime.card_ids.size() == 0) continue;
+        CardsMoveOneTimeStar one_time_star = &moveOneTime;
+        QVariant data = QVariant::fromValue(one_time_star);
+		bool trigger = true;
+        foreach(ServerPlayer *player, getAllPlayers())
+			if (player->hasFlag("AskForCardsChoosing"))
+			{
+				trigger = false;
+				break;
+			}
+		if (trigger)
+			foreach(ServerPlayer *player, getAllPlayers())
+				thread->trigger(CardsMoveOneTime, this, player, data);
+    }
 }
 
 QList<CardsMoveStruct> Room::_breakDownCardMoves(QList<CardsMoveStruct> &cards_moves)

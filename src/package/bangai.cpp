@@ -302,6 +302,129 @@ public:
 	}
 };
 
+class ThXijing: public TriggerSkill{
+public:
+	ThXijing(): TriggerSkill("thxijing"){
+		events << CardsMoveOneTime;
+	}
+
+	virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+		if (player->getPhase() != Player::NotActive)
+			return false;
+
+		CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
+		if (move->from != player
+			|| move->to_place != Player::DiscardPile)
+			return false;
+		
+		for (int i = 0; i < move->card_ids.length(); i++)
+			if (move->from_places[i] != Player::PlaceSpecial
+				&& move->from_places[i] != Player::PlaceDelayedTrick)
+			{
+				if (player->askForSkillInvoke(objectName()))
+					break;
+				else
+					return false;
+			}
+
+		//lose
+		CardsMoveStruct move1(QList<int>(),
+			NULL,
+			Player::DiscardPile,
+			move->reason);
+
+		//get
+        CardMoveReason reason(CardMoveReason::S_REASON_RECYCLE,
+            player->objectName(),
+            objectName(),
+            QString());
+        CardsMoveStruct move2(QList<int>(),
+            player,
+            Player::PlaceHand,
+            reason);
+
+		for (int i = 0; i < move->card_ids.length(); i++)
+		{
+			if (move->from_places[i] != Player::PlaceSpecial
+				&& move->from_places[i] != Player::PlaceDelayedTrick)
+			{
+				const Card *c = Sanguosha->getEngineCard(move->card_ids[i]);
+				QString pattern = "@thxijing:" + c->getSuitString()
+					+ ":" + QString::number(c->getNumber())
+					+ ":" + c->objectName();
+				const Card *card = room->askForCard(player, ".", pattern, QVariant(), Card::MethodNone);
+				
+				if (card)
+				{
+					move1.card_ids.append(card->getEffectiveId());
+					move2.card_ids.append(move->card_ids[i]);
+				}
+			}
+		}
+
+		if (move1.card_ids.length() == move1.card_ids.length()
+			&& !move1.card_ids.isEmpty())
+		{
+			QList<CardsMoveStruct> moves;
+			moves.push_back(move1);
+			moves.push_back(move2);
+			room->setPlayerFlag(player, "ThXijing_InTempMoving");
+			room->moveCardsAtomic(moves, true);
+			room->setPlayerFlag(player, "-ThXijing_InTempMoving");
+		}
+
+		return false;
+	}
+};
+
+class ThXijingAvoidTriggeringCardsMove: public TriggerSkill{
+public:
+    ThXijingAvoidTriggeringCardsMove():TriggerSkill("#thxijing"){
+        events << CardsMoveOneTime;
+    }
+
+    virtual int getPriority() const{
+        return 10;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *, ServerPlayer *player, QVariant &) const{
+        if (player->hasFlag("ThXijing_InTempMoving"))
+            return true;
+        return false;
+    }
+};
+
+class ThMengwei: public TriggerSkill{
+public:
+	ThMengwei():TriggerSkill("thmengwei"){
+		events << EventPhaseStart;
+		frequency = Frequent;
+	}
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target != NULL ;
+    }
+
+	virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+		if (player->getPhase() == Player::Finish && TriggerSkill::triggerable(player) && player->isKongcheng())
+		{
+			if (player->askForSkillInvoke(objectName()))
+				player->drawCards(2);
+		}
+		else if (player->getPhase() == Player::Start)
+		{
+			ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
+			if (!splayer || player == splayer)
+				return false;
+
+			if (splayer->isKongcheng() && splayer->askForSkillInvoke(objectName()))
+				splayer->drawCards(1);
+		}
+
+		return false;
+	}
+};
+
 class ThWeide: public TriggerSkill{
 public:
 	ThWeide():TriggerSkill("thweide"){
@@ -810,6 +933,12 @@ BangaiPackage::BangaiPackage()
 	bangai004->addSkill(new ThZusha);
 	bangai004->addSkill(new ThYaomei);
 	bangai004->addSkill(new ThZhongjie);
+
+	General *bangai005 = new General(this, "bangai005", "shu", 3);
+	bangai005->addSkill(new ThXijing);
+	bangai005->addSkill(new ThXijingAvoidTriggeringCardsMove);
+	bangai005->addSkill(new ThMengwei);
+    related_skills.insertMulti("thxijing", "#thxijing");
 
 	General *bangai010 = new General(this, "bangai010", "wei");
 	bangai010->addSkill(new ThWeide);

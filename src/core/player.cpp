@@ -466,7 +466,15 @@ bool Player::hasWeapon(const QString &weapon_name) const{
 }
 
 bool Player::hasArmorEffect(const QString &armor_name) const{
-    return armor != NULL && getMark("qinggang") == 0 && armor->objectName() == armor_name;
+    if (getMark("Qinggang_Armor_Nullified") > 0 || getMark("Armor_Nullified") > 0
+        || getMark("Equips_Nullified_to_Yourself") > 0)
+        return false;
+    if (armor_name == "bazhen") {
+        if (armor == NULL && alive && hasSkill("bazhen")) return true;
+    } else {
+        if (armor && armor->objectName() == armor_name) return true;
+    }
+    return false;
 }
 
 QList<const Card *> Player::getJudgingArea() const

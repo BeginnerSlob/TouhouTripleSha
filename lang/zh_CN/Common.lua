@@ -4,7 +4,7 @@ return {
 	["spade"] = "黑桃",
 	["club"] = "梅花",
 	["heart"] = "红桃",
-	["diamond"] = "方块",
+	["diamond"] = "方片",
 	["no_suit"] = "无色",
 	["basic"] = "基本牌",
 	["trick"] = "锦囊牌",

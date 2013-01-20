@@ -1388,6 +1388,91 @@ public:
     }
 };
 
+MengjingCard::MengjingCard() {
+    target_fixed = true;
+}
+
+void MengjingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    room->setPlayerFlag(source, "InfinityAttackRange");
+    const Card *cd = Sanguosha->getCard(subcards.first());
+    if (cd->isKindOf("EquipCard")) {
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getOtherPlayers(source))
+            if (!p->isNude()) targets << p;
+        if (!targets.isEmpty() && source->askForSkillInvoke("mengjing")) {
+            ServerPlayer *to_discard = room->askForPlayerChosen(source, targets, "mengjing");
+            room->throwCard(room->askForCardChosen(source, to_discard, "he", "mengjing"), to_discard, source);
+        }
+    }
+}
+
+class Mengjing: public OneCardViewAsSkill {
+public:
+    Mengjing(): OneCardViewAsSkill("mengjing") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("MengjingCard");
+    }
+
+    virtual bool viewFilter(const Card *) const{
+        return true;
+    }
+
+    virtual const Card *viewAs(const Card *originalcard) const{
+        MengjingCard *card = new MengjingCard;
+        card->addSubcard(originalcard->getId());
+        card->setSkillName(objectName());
+        return card;
+    }
+};
+
+ZhizhanCard::ZhizhanCard() {
+    mute = true;
+}
+
+bool ZhizhanCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const{
+    return targets.isEmpty();
+}
+
+void ZhizhanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    source->loseMark("@zhizhan");
+    ServerPlayer *target = targets.first();
+    source->tag["ZhizhanTarget"] = QVariant::fromValue((PlayerStar)target);
+    //room->broadcastInvoke("animate", "lightbox:$JiefanAnimate:2500");
+    //room->getThread()->delay(2000);
+
+    foreach (ServerPlayer *player, room->getAllPlayers()) {
+        if (player->isAlive() && player->inMyAttackRange(target))
+            room->cardEffect(this, source, player);
+    }
+    source->tag.remove("ZhizhanTarget");
+}
+
+void ZhizhanCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.to->getRoom();
+
+    PlayerStar target = effect.from->tag["ZhizhanTarget"].value<PlayerStar>();
+    QVariant data = effect.from->tag["ZhizhanTarget"];
+    if (target && !room->askForCard(effect.to, ".Weapon", "@zhizhan-discard", data))
+        target->drawCards(1);
+}
+
+class Zhizhan: public ZeroCardViewAsSkill {
+public:
+    Zhizhan(): ZeroCardViewAsSkill("zhizhan") {
+        frequency = Limited;
+    }
+
+    virtual const Card *viewAs() const{
+        return new ZhizhanCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->getMark("@zhizhan") >= 1;
+    }
+};
+
 void StandardPackage::addSnowGenerals(){
     General *snow002 = new General(this, "snow002", "wu");
     snow002->addSkill(new Kuipo);
@@ -1449,6 +1534,12 @@ void StandardPackage::addSnowGenerals(){
     General *snow022 = new General(this, "snow022", "wu");
     snow022->addSkill(new Skill("xindu"));
     snow022->addSkill(new Fenxun);
+
+	General *snow024 = new General(this, "snow024", "wu");
+    snow024->addSkill(new Mengjing);
+    snow024->addSkill(new Zhizhan);
+    snow024->addSkill(new MarkAssignSkill("@zhizhan", 1));
+    related_skills.insertMulti("zhizhan", "#@zhizhan-1");
     
     addMetaObject<GuidengCard>();
     addMetaObject<XuanhuoCard>();
@@ -1460,6 +1551,8 @@ void StandardPackage::addSnowGenerals(){
     addMetaObject<JianmieCard>();
     addMetaObject<AnxuCard>();
     addMetaObject<FenxunCard>();
+    addMetaObject<MengjingCard>();
+    addMetaObject<ZhizhanCard>();
 
     skills << new BianshengPindian;
 }
