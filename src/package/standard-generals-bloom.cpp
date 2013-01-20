@@ -1377,7 +1377,7 @@ public:
     virtual bool trigger(TriggerEvent , Room* room, ServerPlayer *player, QVariant &data) const{
         ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
 
-        if(player == splayer)
+        if(!splayer || player == splayer)
             return false;
 
         if(player->getPhase() == Player::Finish)

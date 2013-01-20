@@ -9,6 +9,7 @@
 #include "client.h"
 #include "engine.h"
 #include "general.h"
+#include "card.h"
 
 class ThHuaji:public TriggerSkill{
 public:
@@ -944,11 +945,33 @@ public:
 			if (card == NULL)
 				return false;
 
+			int n = (int)card->getSuit();
+			n++;
+			room->setPlayerMark(player, objectName(), n);
 			QString suitstr = card->getSuitString();
 			foreach(ServerPlayer *p, room->getOtherPlayers(player))
-				room->setPlayerCardLimitation(p, "use,response", ".|"+suitstr, true);
+				room->setPlayerCardLimitation(p, "use,response", ".|"+suitstr, false);
 		}
+		else if (player->getPhase() == Player::NotActive && player->getMark(objectName()) > 0)
+		{
+			int n = player->getMark(objectName()) - 1;
+			room->setPlayerMark(player, objectName(), 0);
 
+			QList<Card::Suit> suits;
+			suits << Card::Spade << Card::Heart << Card::Club << Card::Diamond;
+			QString suitstr;
+			foreach (Card::Suit a, suits)
+				if (a == n)
+				{
+					suitstr = Card::Suit2String(a);
+					break;
+				}
+			if (suitstr.isEmpty())
+				return false;
+
+			foreach(ServerPlayer *p, room->getOtherPlayers(player))
+				room->removePlayerCardLimitation(p, "use,response", ".|"+suitstr);
+		}
 		return false;
 	}
 };
@@ -1491,7 +1514,7 @@ public:
 		room->getThread()->delay();
 		player->drawCards(2);
 		room->loseMaxHp(player, 3);
-		player->detachSkill("thwuwu");
+		room->detachSkillFromPlayer(player, "thwuwu");
 		player->addMark(objectName());
 		player->gainMark("@waked");
 		return false;

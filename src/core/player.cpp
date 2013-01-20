@@ -469,8 +469,8 @@ bool Player::hasArmorEffect(const QString &armor_name) const{
     if (getMark("Qinggang_Armor_Nullified") > 0 || getMark("Armor_Nullified") > 0
         || getMark("Equips_Nullified_to_Yourself") > 0)
         return false;
-    if (armor_name == "bazhen") {
-        if (armor == NULL && alive && hasSkill("bazhen")) return true;
+    if (armor_name == "shengtang") {
+        if (armor == NULL && alive && hasSkill("shengtang")) return true;
     } else {
         if (armor && armor->objectName() == armor_name) return true;
     }

@@ -506,10 +506,14 @@ void Room::slashEffect(const SlashEffectStruct &effect){
     thread->trigger(SlashEffectStart, this, effect.from, data);
     bool broken = thread->trigger(SlashEffect, this, effect.from, data);
     if(!broken)
-        thread->trigger(SlashEffected, this, effect.to, data);
+        if (thread->trigger(SlashEffected, this, effect.to, data))
+			if (effect.to->getMark("Qinggang_Armor_Nullified") > 0)
+				setPlayerMark(effect.to, "Qinggang_Armor_Nullified", effect.to->getMark("Qinggang_Armor_Nullified") - 1);
 }
 
 void Room::slashResult(const SlashEffectStruct &effect, const Card *jink){
+    if (!effect.to->isAlive())
+        return;
     SlashEffectStruct result_effect = effect;
     result_effect.jink = jink;
 
@@ -519,6 +523,8 @@ void Room::slashResult(const SlashEffectStruct &effect, const Card *jink){
         thread->trigger(SlashHit, this, effect.from, data);
     else{
         setEmotion(effect.to, "jink");
+        if (effect.to->getMark("Qinggang_Armor_Nullified") > 0)
+            setPlayerMark(effect.to, "Qinggang_Armor_Nullified", effect.to->getMark("Qinggang_Armor_Nullified") - 1);
         thread->trigger(SlashMissed, this, effect.from, data);
     }
 }
@@ -2826,10 +2832,7 @@ bool Room::isJinkEffected(ServerPlayer *user, const Card *jink) {
 }
 
 void Room::damage(DamageStruct &damage_data){
-    if(damage_data.to == NULL)
-        return;
-
-    if(damage_data.to->isDead())
+    if(damage_data.to == NULL || damage_data.to->isDead())
         return;
 
     QVariant data = QVariant::fromValue(damage_data);
@@ -2841,7 +2844,11 @@ void Room::damage(DamageStruct &damage_data){
 
         // Predamage
         if(thread->trigger(Predamage, this, damage_data.from, data))
-            return;
+		{
+            if (damage_data.card && damage_data.card->isKindOf("Slash") && damage_data.to->getMark("Qinggang_Armor_Nullified") > 0)
+				setPlayerMark(damage_data.to, "Qinggang_Armor_Nullified", damage_data.to->getMark("Qinggang_Armor_Nullified") - 1);
+			return;
+		}
     }
 
     do{

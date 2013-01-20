@@ -954,7 +954,7 @@ void LvdongCard::onEffect(const CardEffectStruct &effect) const{
         effect.from->tag["LvdongTarget"] = QVariant::fromValue(target);
         room->setPlayerFlag(effect.from, "lvdong_success");
         room->setFixedDistance(effect.from, effect.to, 1);
-        effect.to->addMark("qinggang");
+        effect.to->addMark("Armor_Nullified");
     }else{
         room->setPlayerCardLimitation(effect.from, "use", "Slash", true);
     }
@@ -1036,13 +1036,11 @@ public:
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         ServerPlayer *target = player->tag["LvdongTarget"].value<PlayerStar>();
 
-        if(triggerEvent == Death || triggerEvent == EventPhaseStart){
-            if((triggerEvent == Death || player->getPhase() == Player::Finish) && target){
-                    Room *room = player->getRoom();
-                    room->setFixedDistance(player, target, -1);
-                    player->tag.remove("LvdongTarget");
-                    room->setPlayerFlag(target, "-wuqian");
-            }
+        if((triggerEvent == Death || player->getPhase() == Player::Finish) && target){
+            Room *room = player->getRoom();
+            room->setFixedDistance(player, target, -1);
+            player->tag.remove("LvdongTarget");
+			target->removeMark("Armor_Nullified");
         }
         return false;
     }
