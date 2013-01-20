@@ -67,7 +67,7 @@ bool Card::isRed() const{
 }
 
 bool Card::isBlack() const{
-    return m_suit == Spade || m_suit == Club || m_suit == NoSuitRed;
+    return m_suit == Spade || m_suit == Club || m_suit == NoSuitBlack;
 }
 
 int Card::getId() const{
