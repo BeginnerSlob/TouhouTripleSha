@@ -123,7 +123,7 @@ public:
 		}
 
 
-		if (card_ids.size() <= 1)
+		if (card_ids.isEmpty())
 			return false;
 
 		room->askForYuxi(player, card_ids, true);

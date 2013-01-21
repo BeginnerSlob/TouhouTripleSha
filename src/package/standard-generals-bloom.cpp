@@ -1797,7 +1797,7 @@ void StandardPackage::addBloomGenerals(){
     bloom016->addSkill(new JiushiFlip);
     related_skills.insertMulti("jiushi", "#jiushi-flip");
 
-    General *bloom017 = new General(this, "bloom017", "wei", 3);
+    General *bloom017 = new General(this, "bloom017", "wei");
     bloom017->addSkill(new Zhuyan);
     bloom017->addSkill(new Piaonian);
 

@@ -676,7 +676,7 @@ ThHuosuiCard::ThHuosuiCard(){
 }
 
 bool ThHuosuiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && Self->inMyAttackRange(to_select);
+    return targets.isEmpty() && Self->inMyAttackRange(to_select) && to_select != Self;
 }
 
 void ThHuosuiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
