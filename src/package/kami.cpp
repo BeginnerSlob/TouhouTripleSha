@@ -156,13 +156,6 @@ public:
         if(player->askForSkillInvoke(objectName(), data)){
             room->broadcastSkillInvoke(objectName());
 
-            if(player->isChained()){
-                if(dying_data.damage == NULL || dying_data.damage->nature == DamageStruct::Normal)
-                    room->setPlayerProperty(player, "chained", false);
-            }
-            if(!player->faceUp())
-                player->turnOver();
-
             room->setPlayerProperty(player, "hp", qMin(1, player->getMaxHp()));
 			player->gainMark("@yingxiao");
 			if (player->getMark("@yingxiao") >= 4 && player->hasSkill("thmanxiao"))
@@ -174,6 +167,13 @@ public:
 				room->sendLog(log);
 				player->getRoom()->killPlayer(player, NULL);
 			}
+
+            if(player->isChained()){
+                if(dying_data.damage == NULL || dying_data.damage->nature == DamageStruct::Normal)
+                    room->setPlayerProperty(player, "chained", false);
+            }
+            if(!player->faceUp())
+                player->turnOver();
         }
 
         return false;
@@ -188,8 +188,7 @@ public:
 
 	virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
-		if (damage.card && damage.card->isKindOf("Slash")
-			&& damage.card->isRed() && !damage.chain && !damage.transfer
+		if (damage.card && damage.card->isRed() && !damage.chain && !damage.transfer
 			&& player->askForSkillInvoke(objectName()))
 		{
 			room->loseMaxHp(damage.to);
@@ -214,12 +213,8 @@ public:
 ThYouyaCard::ThYouyaCard(){
 }
 
-bool ThYouyaCard::targetFilter(const QList<const Player *> &, const Player *, const Player *) const{
-	return true;
-}
-
-bool ThYouyaCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-	return targets.length() == Self->getMark("@yingxiao");
+bool ThYouyaCard::targetFilter(const QList<const Player *> &selected, const Player *, const Player *) const{
+	return selected.length() < Self->getMark("@yingxiao");
 }
 
 void ThYouyaCard::onEffect(const CardEffectStruct &effect) const{
