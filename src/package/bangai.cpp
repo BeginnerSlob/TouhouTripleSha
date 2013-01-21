@@ -80,6 +80,127 @@ public:
 	}
 };
 
+class ThChuandao: public TriggerSkill{
+public:
+	ThChuandao(): TriggerSkill("thchuandao"){
+		events << DrawNCards << Death;
+	}
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target != NULL;
+    }
+
+	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+		if (triggerEvent == DrawNCards && player->getMark("@yaoshu") > 0 && player->askForSkillInvoke(objectName()))
+            data = data.toInt() + 1;
+		else if (triggerEvent == Death && player->hasSkill(objectName()))
+		{
+			ServerPlayer *target;
+			foreach(ServerPlayer *p, room->getAllPlayers())
+				if (p->getMark("@yaoshu") > 0)
+				{
+					target = p;
+					break;
+				}
+
+			if (target == NULL)
+				return false;
+
+			QList<ServerPlayer *> targets = room->getOtherPlayers(player);
+			targets.removeOne(target);
+			if (targets.isEmpty())
+				return false;
+
+			if (player->askForSkillInvoke(objectName()))
+			{
+				target->loseAllMarks("@yaoshu");
+				target = room->askForPlayerChosen(player, targets, objectName());
+				target->gainMark("@yaoshu");
+			}
+
+			target->drawCards(2);
+
+			room->acquireSkill(target, objectName());
+		}
+
+		return false;
+	}
+};
+
+ThShoujuanCard::ThShoujuanCard(){
+}
+
+bool ThShoujuanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+	return targets.isEmpty() && to_select != Self;
+}
+
+void ThShoujuanCard::onEffect(const CardEffectStruct &effect) const{
+	effect.from->loseAllMarks("@yaoshu");
+	effect.to->gainMark("@yaoshu");
+}
+
+class ThShoujuanViewAsSkill: public ZeroCardViewAsSkill{
+public:
+	ThShoujuanViewAsSkill(): ZeroCardViewAsSkill("thshoujuan"){
+	}
+
+	virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->getMark("@yaoshu") > 0;
+    }
+
+    virtual const Card *viewAs() const{
+        return new ThShoujuanCard;
+    }
+};
+
+class ThShoujuan: public TriggerSkill{
+public:
+	ThShoujuan(): TriggerSkill("thshoujuan"){
+		events << Dying << DamageCaused;
+		view_as_skill = new ThShoujuanViewAsSkill;
+	}
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target != NULL && target->isAlive() && target->getMark("@yaoshu") > 0;
+    }
+
+	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+		ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
+		if (!splayer)
+			return false;
+		
+		if (triggerEvent == DamageCaused)
+		{
+			DamageStruct damage = data.value<DamageStruct>();
+			if (damage.to != splayer || player == splayer)
+				return false;
+		}
+
+		if(splayer->askForSkillInvoke(objectName()))
+		{
+			splayer->turnOver();
+			room->moveCardTo(player->wholeHandCards(), splayer, Player::PlaceHand);
+			player->loseAllMarks("@yaoshu");
+			splayer->gainMark("@yaoshu");
+		}
+
+		return false;
+	}
+};
+
+class ThShuling: public TriggerSkill{
+public:
+	ThShuling(): TriggerSkill("thshuling"){
+		events << GameStart;
+		frequency = Compulsory;
+	}
+
+	virtual bool trigger(TriggerEvent, Room *, ServerPlayer *player, QVariant &) const{
+		player->gainMark("@yaoshu");
+		return false;
+	}
+};
+
 class ThBanyue: public TriggerSkill{
 public:
 	ThBanyue():TriggerSkill("thbanyue"){
@@ -309,7 +430,7 @@ public:
 	}
 
 	virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-		if (player->getPhase() != Player::NotActive)
+		if (player->getPhase() != Player::NotActive || player->isKongcheng())
 			return false;
 
 		CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
@@ -926,6 +1047,11 @@ BangaiPackage::BangaiPackage()
 	General *bangai001 = new General(this, "bangai001", "shu");
 	bangai001->addSkill(new ThBianfang);
 
+	General *bangai002 = new General(this, "bangai002", "wei", 3);
+	bangai002->addSkill(new ThChuandao);
+	bangai002->addSkill(new ThShoujuan);
+	bangai002->addSkill(new ThShuling);
+
 	General *bangai003 = new General(this, "bangai003", "wu");
 	bangai003->addSkill(new ThBanyue);
 
@@ -963,6 +1089,7 @@ BangaiPackage::BangaiPackage()
 	bangai016->addSkill(new ThZhanfuClear);
     related_skills.insertMulti("thzhanfu", "#thzhanfu");
 	
+    addMetaObject<ThShoujuanCard>();
     addMetaObject<ThZushaCard>();
     addMetaObject<ThYaomeiCard>();
     addMetaObject<ThLingzhanCard>();

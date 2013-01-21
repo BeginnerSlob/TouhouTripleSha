@@ -1204,6 +1204,8 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
 						setPlayerFlag(player, "continuing");
 						return askForCard(player, pattern, prompt, data, method, to, isRetrial);
 					}
+					else
+						return false;
                 thread->trigger(CardResponded, this, player, data);
                 if (method == Card::MethodUse) {
                     if (getCardPlace(card->getEffectiveId()) == Player::PlaceTable) {
@@ -1316,7 +1318,7 @@ bool Room::askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims
 
     do{
         setPlayerFlag(slasher, "-guhuo_failed");
-        use = askForUseCard(slasher, "slash", prompt);
+        use = askForUseCard(slasher, "slash", prompt, -1, Card::MethodUse, add_history);
     }while(slasher->hasFlag("guhuo_failed"));
 
     if(slasher->hasFlag("jijiang_failed")){

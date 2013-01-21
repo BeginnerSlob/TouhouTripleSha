@@ -243,7 +243,7 @@ public:
 		if (change.from == Player::Play || change.from == Player::Draw)
 		{
 			int n = (int)change.from;
-			if (!player->hasFlag(objectName() + QString::number(n)) && player->askForSkillInvoke(objectName(), QVariant::fromValue(QString::number((int)change.to))))
+			if (!player->hasFlag(objectName() + QString::number(n)) && player->askForSkillInvoke(objectName(), QVariant::fromValue(QString::number((int)change.from))))
 			{
 				room->setPlayerFlag(player, objectName() + QString::number(n));
 				player->loseMark("@fadeng");

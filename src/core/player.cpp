@@ -155,15 +155,20 @@ void Player::clearFlags(){
 }
 
 int Player::getAttackRange() const{
+	int original_range = 1;
+	int weapon_range = 0;
     if(weapon > 0){
         const Weapon *card = qobject_cast<const Weapon*>(weapon->getRealCard());
         Q_ASSERT(card);
-        return card->getRange();
+        weapon_range = card->getRange();
     }
-    else if(hasSkill("thsilian") && !getWeapon())
-        return 3;
-    else
-        return 1;
+	else if (hasSkill("thsilian"))
+		weapon_range = 3;
+
+	if (hasFlag("InfinityAttackRange") || getMark("InfinityAttackRange") > 0)
+		original_range = 10000; // Actually infinity
+
+	return qMax(original_range, weapon_range);
 }
 
 bool Player::inMyAttackRange(const Player *other) const{
