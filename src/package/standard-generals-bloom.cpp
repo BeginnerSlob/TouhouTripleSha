@@ -1786,7 +1786,7 @@ void StandardPackage::addBloomGenerals(){
     General *bloom012 = new General(this, "bloom012", "wei");
     bloom012->addSkill(new Qiangxi);
 
-    General *bloom014 = new General(this, "bloom014$", "wei");
+    General *bloom014 = new General(this, "bloom014$", "wei", 3);
     bloom014->addSkill(new Tanwan);
     bloom014->addSkill(new Bisuo);
     bloom014->addSkill(new Songwei);

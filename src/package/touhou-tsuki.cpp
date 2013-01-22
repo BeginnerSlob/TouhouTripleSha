@@ -196,7 +196,7 @@ void TouhouPackage::addTsukiGenerals(){
 	tsuki002->addSkill(new ThJinguo);
 	tsuki002->addSkill(new ThShixue);
 
-	General *tsuki005 = new General(this, "tsuki005", "qun");
+	General *tsuki005 = new General(this, "tsuki005", "qun", 3);
 	tsuki005->addSkill(new ThShouye);
 	tsuki005->addSkill(new ThXushi);
 

@@ -996,12 +996,7 @@ bool Room::_askForNullification(const TrickCard *trick, ServerPlayer *from, Serv
             QVariant data = QVariant::fromValue(resp);
 			bool useless = thread->trigger(CardResponding, this, repliedPlayer, data);
 			if (useless)
-			{
-				if (continuable)
-					return _askForNullification(trick, from, to, positive, aiHelper);
-				else
-					return false;
-			}
+				return false;
 		}
 
         LogMessage log;
@@ -1091,8 +1086,6 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
         thread->trigger(CardAsked, this, player, asked_data);
     if (!player->isAlive()) return NULL;
 
-    if (player->hasFlag("continuing"))
-        setPlayerFlag(player, "-continuing");
     if(has_provided){
         card = provided;
         provided = NULL;
@@ -1129,6 +1122,9 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
             }
         }
     }
+
+    if (player->hasFlag("continuing"))
+        setPlayerFlag(player, "-continuing");
 
     if(card == NULL)
     {
@@ -1200,12 +1196,7 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
                 QVariant data = QVariant::fromValue(resp);
                 bool canceled = thread->trigger(CardResponding, this, player, data);
 				if (canceled)
-					if(continuable) {
-						setPlayerFlag(player, "continuing");
-						return askForCard(player, pattern, prompt, data, method, to, isRetrial);
-					}
-					else
-						return false;
+					return NULL;
                 thread->trigger(CardResponded, this, player, data);
                 if (method == Card::MethodUse) {
                     if (getCardPlace(card->getEffectiveId()) == Player::PlaceTable) {
@@ -3126,7 +3117,7 @@ void Room::drawCards(QList<ServerPlayer*> players, int n, const QString &reason)
     foreach (ServerPlayer* player, players) {
         QVariant data = QVariant::fromValue(n);
         thread->trigger(CardDrawnDone, this, player, data);
-    }      
+    }
 }
 
 // 'thrower == NULL' means that it is 'who' himself that throws the card
@@ -4313,6 +4304,17 @@ void Room::askForYuxi(ServerPlayer *player, const QList<int> &cards, bool up_onl
         log.arg2 = QString::number(bottom_cards.length());
         sendLog(log);
     }
+
+	if (player->hasSkill("thkexing") && up_only)
+	{
+		qSwap(top_cards, bottom_cards);
+		LogMessage log;
+		log.type = "$ThKexing"; 
+		log.from = player;
+	    log.card_str = Card::IdsToStrings(bottom_cards).join("+");
+		log.arg = "thkexing";
+		sendLog(log);
+	}
 
     QListIterator<int> i(top_cards);
     i.toBack();

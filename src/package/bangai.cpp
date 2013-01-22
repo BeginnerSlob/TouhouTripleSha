@@ -470,10 +470,16 @@ public:
 				&& move->from_places[i] != Player::PlaceDelayedTrick)
 			{
 				const Card *c = Sanguosha->getEngineCard(move->card_ids[i]);
-				QString pattern = "@thxijing:" + c->getSuitString()
+				QString prompt = "@thxijing:" + c->getSuitString()
 					+ ":" + QString::number(c->getNumber())
 					+ ":" + c->objectName();
-				const Card *card = room->askForCard(player, ".", pattern, QVariant(), Card::MethodNone);
+				QString pattern = ".";
+				if (c->isBlack())
+					pattern = ".black";
+				else if (c->isRed())
+					pattern = ".red";
+
+				const Card *card = room->askForCard(player, pattern, prompt, QVariant(), Card::MethodNone);
 				
 				if (card)
 				{
@@ -529,8 +535,8 @@ public:
 	virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
 		if (player->getPhase() == Player::Finish && TriggerSkill::triggerable(player) && player->isKongcheng())
 		{
-			if (player->askForSkillInvoke(objectName()))
-				player->drawCards(2);
+			if (player->getHandcardNum() < 2 && player->askForSkillInvoke(objectName()))
+				player->drawCards(2 - player->getHandcardNum());
 		}
 		else if (player->getPhase() == Player::Start)
 		{

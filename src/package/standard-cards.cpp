@@ -787,8 +787,9 @@ void ArcheryAttack::onEffect(const CardEffectStruct &effect) const{
                                         effect.from->isAlive() ? effect.from : NULL);		
     if(jink && jink->getSkillName() != "EightDiagram" && jink->getSkillName() != "shengtang")
         room->setEmotion(effect.to, "jink");
-    else{
-        DamageStruct damage;
+    if (!jink)
+	{
+		DamageStruct damage;
         damage.card = this;
         damage.damage = 1;
         if(effect.from->isAlive())
