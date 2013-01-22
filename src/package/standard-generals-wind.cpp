@@ -325,7 +325,7 @@ public:
         }else if(triggerEvent == CardResponded)
             card = data.value<CardResponseStruct>().m_card;
 
-        if(card->isNDTrick()){            
+        if(card->isKindOf("TrickCard")){            
             if(room->askForSkillInvoke(player, objectName())){
                 room->broadcastSkillInvoke(objectName());
                 player->drawCards(1);

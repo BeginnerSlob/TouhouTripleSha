@@ -701,9 +701,7 @@ MountainPackage::MountainPackage()
     related_skills.insertMulti("huashen", "#huashen-begin");
     related_skills.insertMulti("huashen", "#huashen-end");
 
-    addMetaObject<QiaobianCard>();
     addMetaObject<TiaoxinCard>();
-    addMetaObject<ZhijianCard>();
     addMetaObject<JixiCard>();
 
     skills << new Jixi;*/

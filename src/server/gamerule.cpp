@@ -165,6 +165,11 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
             if (player->hasFlag("drank")) {
                 room->setPlayerFlag(player, "-drank");
             }
+
+            LogMessage log;
+            log.type = "$AppendSeparator";
+            room->sendLog(log);
+
             if (!player->faceUp()) {
                 if (room->getTag("FirstRound").toBool())
 					room->setTag("FirstRound", false);
@@ -852,6 +857,10 @@ bool HulaoPassMode::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer 
 
     case TurnStart:{
             if(player->isLord()){
+                LogMessage log;
+                log.type = "$AppendSeparator";
+                room->sendLog(log);
+
                 if(!player->faceUp())
                     player->turnOver();
                 else
@@ -883,10 +892,16 @@ bool HulaoPassMode::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer 
                         room->setPlayerProperty(player, "hp", player->getHp() + 1);
                     }else
                         player->drawCards(1, false);
-                }else if(!player->faceUp())
-                    player->turnOver();
-                else
-                    player->play();
+                }else {
+                    LogMessage log;
+                    log.type = "$AppendSeparator";
+                    room->sendLog(log);
+
+                    if (!player->faceUp())
+                        player->turnOver();
+                    else
+                        player->play();
+				}
             }
 
             return false;

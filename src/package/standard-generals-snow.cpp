@@ -1557,6 +1557,7 @@ void StandardPackage::addSnowGenerals(){
     addMetaObject<BianshengCard>();
     addMetaObject<ZhihuiCard>();
     addMetaObject<JianmieCard>();
+    addMetaObject<JibanCard>();
     addMetaObject<AnxuCard>();
     addMetaObject<FenxunCard>();
     addMetaObject<MengjingCard>();

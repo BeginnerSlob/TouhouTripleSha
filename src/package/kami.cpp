@@ -10,6 +10,185 @@
 #include "engine.h"
 #include "general.h"
 
+class ThKexing: public TriggerSkill{
+public:
+	ThKexing(): TriggerSkill("thkexing"){
+		events << EventPhaseStart;
+		frequency = Frequent;
+	}
+
+	virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+		if (player->getPhase() != Player::Start || !player->askForSkillInvoke(objectName()))
+			return false;
+
+		QList<int> card_ids = room->getNCards(3, false);
+		
+		while (!card_ids.isEmpty())
+		{
+			room->fillAG(card_ids, player);
+			CardMoveReason reason(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
+			bool broken = false;
+			foreach (int id, card_ids)
+			{
+				Card *card = Sanguosha->getCard(id);
+				if (card->isKindOf("TrickCard"))
+				{
+					room->moveCardTo(card, NULL, NULL, Player::DiscardPile, reason, true);
+					card_ids.removeOne(id);
+					player->invoke("clearAG");
+					broken = true;
+					break;
+				}
+			}
+
+			if (broken)
+				continue;
+
+			if (card_ids.isEmpty())
+				return false;
+
+            int card_id = room->askForAG(player, card_ids, true, objectName());
+			if (card_id == -1)
+			{
+				player->invoke("clearAG");
+				break;
+			}
+
+			Card *card = Sanguosha->getCard(card_id);
+			room->moveCardTo(card, NULL, NULL, Player::DiscardPile, reason, true);
+
+			card_ids.removeOne(card_id);
+			player->invoke("clearAG");
+		}
+
+
+		if (card_ids.isEmpty())
+			return false;
+
+		room->askForYuxi(player, card_ids, true);
+
+		return false;
+	}
+};
+
+ThShenfengCard::ThShenfengCard(){
+	will_throw = false;
+	handling_method = MethodNone;
+}
+
+bool ThShenfengCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+	return targets.isEmpty() && to_select->getHpPoints() > Self->getHpPoints();
+}
+
+void ThShenfengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+	ServerPlayer *target = targets.first();
+	target->obtainCard(this);
+	QList<ServerPlayer *> victims;
+	foreach(ServerPlayer *p, room->getOtherPlayers(target))
+		if (target->distanceTo(p) == 1)
+			victims << p;
+
+	if (victims.isEmpty())
+		return;
+
+	ServerPlayer *victim = room->askForPlayerChosen(source, victims, "thshenfeng");
+
+	if (!victim)
+		victim = victims.first();
+
+	DamageStruct damage;
+	damage.from = target;
+	damage.to = victim;
+	room->damage(damage);
+}
+
+class ThShenfeng: public ViewAsSkill{
+public:
+	ThShenfeng(): ViewAsSkill("thshenfeng"){
+	}
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+		if (selected.length() >= 2)
+			return false;
+		else if (!selected.isEmpty())
+			return to_select->getSuit() == selected.first()->getSuit();
+		else
+			return true;
+	}
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+		if (cards.length() != 2)
+			return NULL;
+		else
+		{
+			ThShenfengCard *card = new ThShenfengCard;
+			card->addSubcards(cards);
+			return card;
+		}
+	}
+	
+	virtual bool isEnabledAtPlay(const Player *player) const{
+		return !player->hasUsed("ThShenfengCard");
+	}
+};
+
+class ThKaihai: public TriggerSkill{
+public:
+	ThKaihai(): TriggerSkill("thkaihai"){
+		events << CardsMoveOneTime;
+		frequency = Frequent;		
+	}
+
+	virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+		CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
+        if (move->from == player && move->from_places.contains(Player::PlaceHand) && player->isKongcheng()){
+            if (player->askForSkillInvoke(objectName())){
+                room->broadcastSkillInvoke(objectName());
+                QList<CardsMoveStruct> moves;
+				QList<int> card_ids;
+				QList<int> notify_card_ids;
+				
+				QList<int> &drawPile = room->getDrawPile();
+				if(drawPile.isEmpty())
+					room->swapPile();
+				RoomThread *thread = room->getThread();
+				thread->trigger(FetchDrawPileCard, room, NULL);
+				int card_id = drawPile.takeLast();
+				card_ids << card_id;
+				const Card *card = Sanguosha->getCard(card_id);
+
+				QVariant data1 = QVariant::fromValue(card_id);
+				if (thread->trigger(CardDrawing, room, player, data1))
+					return false;
+
+				player->drawCard(card);
+
+				notify_card_ids << card_id;
+
+				// update place_map & owner_map
+				room->setCardMapping(card_id, player, Player::PlaceHand);
+				
+				if(notify_card_ids.isEmpty())
+					return false;
+
+				CardsMoveStruct move1;
+				move1.card_ids = card_ids;
+				move1.from = NULL; move1.from_place = Player::DrawPile;
+				move1.to = player; move1.to_place = Player::PlaceHand; move1.to_player_name = player->objectName();     
+				moves.append(move1);
+
+				room->notifyMoveCards(true, moves, false);
+				room->updateCardsOnLose(move1);
+				room->notifyMoveCards(false, moves, false);
+				room->updateCardsOnGet(move1);
+				QVariant data2 = QVariant::fromValue(1);
+				thread->trigger(CardDrawnDone, room, player, data2);
+            }
+        }
+        return false;
+	}
+};
+
 class ThJiguang: public TriggerSkill{
 public:
 	ThJiguang(): TriggerSkill("thjiguang"){
@@ -153,7 +332,7 @@ public:
         if(dying_data.who != player)
             return false;
 
-        if(player->askForSkillInvoke(objectName(), data)){
+        if(player->hasSkill("thmanxiao") && player->askForSkillInvoke(objectName(), data)){
             room->broadcastSkillInvoke(objectName());
 
             room->setPlayerProperty(player, "hp", qMin(1, player->getMaxHp()));
@@ -189,7 +368,7 @@ public:
 	virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
 		if (damage.card && damage.card->isRed() && !damage.chain && !damage.transfer
-			&& player->askForSkillInvoke(objectName()))
+			&& player->hasSkill("thmanxiao") && player->askForSkillInvoke(objectName()))
 		{
 			room->loseMaxHp(damage.to);
 			player->gainMark("@yingxiao");
@@ -280,6 +459,11 @@ KamiPackage::KamiPackage()
     :Package("kami")
 {
 
+	General *kami001 = new General(this, "kami001", "god", 3);
+	kami001->addSkill(new ThKexing);
+	kami001->addSkill(new ThShenfeng);
+	kami001->addSkill(new ThKaihai);
+
 	General *kami002 = new General(this, "kami002", "god");
 	kami002->addSkill(new ThJiguang);
 	kami002->addSkill(new ThJiguangBuff);
@@ -290,6 +474,11 @@ KamiPackage::KamiPackage()
 	kami007->addSkill(new ThYouya);
 	kami007->addSkill(new ThManxiao);
 
+	General *kami008 = new General(this, "kami008", "god", 3);
+	//kami008->addSkill(new ThJinlu);
+	//kami008->addSkill(new ThKuangli);
+	
+    addMetaObject<ThShenfengCard>();
     addMetaObject<ThYouyaCard>();
 
 	skills << new ThJiguangDistanceSkill << new ThJiguangGivenSkill;

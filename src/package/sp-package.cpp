@@ -80,15 +80,15 @@ public:
 	}
 	
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-		QString pattern = data.toStringList().first();
-        if(pattern != "jink" || !player->askForSkillInvoke(objectName()))
+		QString asked_pattern = data.toStringList().first();
+        if(asked_pattern != "jink" || !player->askForSkillInvoke(objectName()))
             return false;
 
         int n = qMin(4, room->alivePlayerCount());
         
 		QList<int> card_ids = room->getNCards(n, false);
 		
-		bool red_can = true;
+		bool can_change = true;
 		while (!card_ids.isEmpty())
 		{
 			room->fillAG(card_ids, player);
@@ -102,15 +102,24 @@ public:
 			Card *card = Sanguosha->getCard(card_id);
 			QStringList choices;
 			choices << "discard";
-			if (card->isRed() && red_can)
+			if (can_change)
 				choices << "get";
 
 			QString choice = room->askForChoice(player, objectName(), choices.join("+"));
 
 			if (choice == "get")
 			{
-				room->obtainCard(player, card_id);
-				red_can = false;
+				QString pattern = ".";
+				if (card->isRed())
+					pattern = ".red";
+				else if (card->isBlack())
+					pattern = ".black";
+
+				if (room->askForCard(player, pattern, objectName()))
+				{
+					room->obtainCard(player, card_id);
+					can_change = false;
+				}
 			}
 			else
 			{

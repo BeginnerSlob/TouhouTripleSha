@@ -788,7 +788,7 @@ void ThCannueCard::onEffect(const CardEffectStruct &effect) const{
     effect.to->obtainCard(this);
     Room *room = effect.to->getRoom();
     QString choice = room->askForChoice(effect.to, "thcannue", "slash+other");
-    if(choice == "slash") {
+    if (choice == "slash") {
         QList<ServerPlayer *> targets;
         foreach(ServerPlayer *player, room->getOtherPlayers(effect.to))
             if(effect.to->canSlash(player) && player != effect.from)
@@ -800,8 +800,11 @@ void ThCannueCard::onEffect(const CardEffectStruct &effect) const{
                 choice = "other";
         }
         else
-            choice="other";
+            choice = "other";
     }
+	else
+		choice = "other";
+
     if(choice == "other") {
         choice = room->askForChoice(effect.from, "thcannue", "get+hit");
         if(choice == "get") {
