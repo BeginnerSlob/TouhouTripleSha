@@ -206,9 +206,9 @@ public:
 	}
 };
 
-class ThBaota:public TriggerSkill{
+class ThLingta:public TriggerSkill{
 public:
-	ThBaota():TriggerSkill("thbaota"){
+	ThLingta():TriggerSkill("thlingta"){
 		events << EventPhaseChanging;
 	}
 
@@ -404,7 +404,7 @@ void TouhouPackage::addYukiGenerals(){
 	yuki014->addSkill(new ThQiebao);
 
 	General *yuki015 = new General(this, "yuki015", "wu");
-	yuki015->addSkill(new ThBaota);
+	yuki015->addSkill(new ThLingta);
 	yuki015->addSkill(new ThWeiguang);
 	yuki015->addSkill(new ThChuhui);
 

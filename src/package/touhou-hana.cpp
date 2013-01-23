@@ -1127,8 +1127,8 @@ public:
 		events << EventPhaseStart << Damage;
 	}
 
-	virtual bool triggerable(ServerPlayer *target) const{
-		return (target != NULL);
+	virtual bool triggerable(const ServerPlayer *target) const{
+		return target != NULL;
 	}
 
 	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
@@ -1163,23 +1163,15 @@ public:
 			}
 		}
 		else if (triggerEvent == EventPhaseStart)
-			if (player->getPhase() == Player::RoundStart && !player->tag.value("guaitan").toStringList().isEmpty())
+			if (player->getPhase() == Player::RoundStart)
 			{
 				QStringList guaitanlist = player->tag.value("guaitan").toStringList();
 				foreach(QString str, guaitanlist)
 				{
 					LogMessage log;
-					ServerPlayer *splayer = room->findPlayerBySkillName(objectName(), true);
-					if (splayer != NULL)
-					{
-						log.type = "#ThGuaitanTrigger";
-						log.from = splayer;
-					}
-					else
-						log.type = "#ThGuaitanTriggerNoSource";
-					
+					log.type = "#ThGuaitanTrigger";
+					log.from = player;
 					log.arg = str.left(5).toLower();
-					log.to << player;
 					log.arg2 = objectName();
 					
 					room->sendLog(log);
