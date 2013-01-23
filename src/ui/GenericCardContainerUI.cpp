@@ -415,7 +415,8 @@ void PlayerCardContainer::updateMarks()
     QRect parentRect = _getMarkParent()->boundingRect().toRect();
     QSize markSize = _m_markItem->boundingRect().size().toSize();
     QRect newRect = _m_layout->m_markTextArea.getTranslatedRect(parentRect, markSize);
-    _m_markItem->setPos(newRect.topLeft());
+    //_m_markItem->setPos(newRect.topLeft());
+	_m_markItem->setPos(newRect.left(), newRect.top() + newRect.height() / 2);
 }
 
 void PlayerCardContainer::_updateEquips()

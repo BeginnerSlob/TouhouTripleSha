@@ -203,14 +203,15 @@ class Qizhou: public TriggerSkill{
 public:
     Qizhou():TriggerSkill("qizhou"){
         frequency = Frequent;
-        events << TargetConfirmed << CardUsed << CardResponded;
+        events << TargetConfirmed << CardResponded;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         const Card *card;
-        if(triggerEvent == CardUsed || triggerEvent == TargetConfirmed) {
+        if(triggerEvent == TargetConfirmed) {
             CardUseStruct &use = data.value<CardUseStruct>();
-            card = use.card;
+			if (use.from == player)
+				card = use.card;
         }
         else if(triggerEvent == CardResponded) {
             CardResponseStruct &resp = data.value<CardResponseStruct>();
@@ -220,7 +221,7 @@ public:
         if(card == NULL || !card->isVirtualCard())
             return false;
 
-        if((triggerEvent == CardUsed || triggerEvent == CardResponded) && card->isKindOf("Jink"))
+        if(triggerEvent == CardResponded && card->isKindOf("Jink"))
             if(player->askForSkillInvoke(objectName()))
                 player->drawCards(1);
 
