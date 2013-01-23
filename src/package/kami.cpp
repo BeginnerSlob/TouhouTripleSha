@@ -691,7 +691,7 @@ public:
 	}
 
 	virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &) const{
-		if (player->getPhase() == Player::Start)
+		if (player->getPhase() == Player::Play)
 			room->askForUseCard(player, "@@thchuangxin", "@thchuangxin");
 		else if (player->getPhase() == Player::NotActive)
 		{
@@ -755,7 +755,7 @@ public:
 	}
 
 	virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &) const{
-		if (player->getPhase() == Player::Start)
+		if (player->getPhase() == Player::RoundStart)
 			room->askForUseCard(player, "@@thtianxin", "@thtianxin");
 		else if (player->getPhase() == Player::NotActive)
 		{

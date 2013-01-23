@@ -14,12 +14,18 @@
 ThJinguoCard::ThJinguoCard(){
 }
 
-bool ThJinguoCard::targetFixed() const{
-	return !subcardsLength();
+bool ThJinguoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+	if (subcardsLength() == 0)
+		return false;
+	else
+		return targets.isEmpty() && to_select != Self;
 }
 
-bool ThJinguoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-	return targets.isEmpty() && to_select != Self;
+bool ThJinguoCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+	if (subcardsLength() == 0)
+		return targets.isEmpty();
+	else
+		return !targets.isEmpty();
 }
 
 void ThJinguoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
@@ -68,7 +74,7 @@ public:
 		}
 		else if (!cards.isEmpty())
 		{
-			Indulgence *le = new Indulgence(Card::NoSuitNoColor, 0);
+			Indulgence *le = new Indulgence(cards.first()->getSuit(), cards.first()->getNumber());
 			le->addSubcards(cards);
 			le->setSkillName(objectName());
 			return le;
