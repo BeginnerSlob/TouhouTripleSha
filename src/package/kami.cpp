@@ -517,8 +517,8 @@ public:
         if(triggerEvent == EventPhaseEnd && player->getPhase() == Player::Play && player->hasFlag("ThJinluUsed")){
             ServerPlayer *target = NULL;
             foreach(ServerPlayer *other, room->getOtherPlayers(player)){
-                if(other->hasFlag("LihunTarget")){
-                    other->setFlags("-LihunTarget");
+                if(other->hasFlag("ThJinluTarget")){
+                    other->setFlags("-ThJinluTarget");
                     target = other;
                     break;
                 }
@@ -530,10 +530,9 @@ public:
             DummyCard *to_goback;
             if(player->getCardCount(true) <= target->getHp())
             {
-                to_goback = player->isKongcheng() ? new DummyCard : player->wholeHandCards();
-                for (int i = 0;i < 4; i++)
-                    if(player->getEquip(i))
-                        to_goback->addSubcard(player->getEquip(i)->getEffectiveId());
+                to_goback = new DummyCard;
+				if (!player->isKongcheng())
+					to_goback->addSubcards(player->getCards("he"));
             }
             else
                 to_goback = (DummyCard *)room->askForExchange(player, objectName(), target->getHp(), true, "ThJinluGoBack");
@@ -792,9 +791,9 @@ KamiPackage::KamiPackage()
 	kami008->addSkill(new ThKuangli);
 
 	General *kami009 = new General(this, "kami009", "god");
-	kami008->addSkill(new ThYuxin);
-	kami008->addSkill(new ThChuangxin);
-	kami008->addSkill(new ThTianxin);
+	kami009->addSkill(new ThYuxin);
+	kami009->addSkill(new ThChuangxin);
+	kami009->addSkill(new ThTianxin);
 	
     addMetaObject<ThShenfengCard>();
     addMetaObject<ThYouyaCard>();

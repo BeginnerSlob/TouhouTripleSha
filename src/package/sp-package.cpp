@@ -56,6 +56,11 @@ public:
 		else if (triggerEvent == CardEffected)
 		{
 			CardEffectStruct effect = data.value<CardEffectStruct>();
+			if (!effect.card->isKindOf("Dismantlement")
+				&& !effect.card->isKindOf("Collateral")
+				&& !effect.card->isKindOf("Duel"))
+				return false;
+			
 			if (effect.to->getMark("chuangshitarget") > 0)
 			{
 				effect.to->removeMark("chuangshitarget");
@@ -107,9 +112,9 @@ public:
 			{
 				QString pattern = ".";
 				if (card->isRed())
-					pattern = ".red";
+					pattern = ".|.|.|.|red";
 				else if (card->isBlack())
-					pattern = ".black";
+					pattern = ".|.|.|.|black";
 
 				if (room->askForCard(player, pattern, objectName()))
 				{
