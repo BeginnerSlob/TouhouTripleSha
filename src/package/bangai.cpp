@@ -16,7 +16,7 @@ public:
 
 	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
 		DamageStruct damage = data.value<DamageStruct>();
-		if (!player->isWounded() || !damage.card->isKindOf("Slash"))
+		if (!player->isWounded() || !damage.card || !damage.card->isKindOf("Slash"))
 			return false;
 		if (triggerEvent == Damage && (damage.chain || damage.transfer))
 			return false;
@@ -96,7 +96,9 @@ public:
 		else if (triggerEvent == Death && player->hasSkill(objectName()))
 		{
 			ServerPlayer *target;
-			foreach(ServerPlayer *p, room->getAllPlayers())
+			QList<ServerPlayer *> players = room->getAllPlayers();
+			players << player;
+			foreach(ServerPlayer *p, players)
 				if (p->getMark("@yaoshu") > 0)
 				{
 					target = p;
@@ -105,9 +107,9 @@ public:
 
 			if (target == NULL)
 				return false;
-
-			QList<ServerPlayer *> targets = room->getOtherPlayers(player);
-			targets.removeOne(target);
+			QList<ServerPlayer *> targets = room->getAllPlayers();
+			if (target != player)
+				targets.removeOne(target);
 			if (targets.isEmpty())
 				return false;
 
@@ -237,6 +239,7 @@ public:
 					ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
 					use.to << target;
 					qSort(use.to.begin(), use.to.end(), ServerPlayer::CompareByActionOrder);
+					data = QVariant::fromValue(use);
 				}
 			}
 		}
@@ -440,7 +443,8 @@ public:
 		
 		for (int i = 0; i < move->card_ids.length(); i++)
 			if (move->from_places[i] != Player::PlaceSpecial
-				&& move->from_places[i] != Player::PlaceDelayedTrick)
+				&& move->from_places[i] != Player::PlaceDelayedTrick
+				&& !Sanguosha->getEngineCard(move->card_ids[i])->isKindOf("EquipCard"))
 			{
 				if (player->askForSkillInvoke(objectName()))
 					break;
@@ -467,7 +471,8 @@ public:
 		for (int i = 0; i < move->card_ids.length(); i++)
 		{
 			if (move->from_places[i] != Player::PlaceSpecial
-				&& move->from_places[i] != Player::PlaceDelayedTrick)
+				&& move->from_places[i] != Player::PlaceDelayedTrick
+				&& !Sanguosha->getEngineCard(move->card_ids[i])->isKindOf("EquipCard"))
 			{
 				const Card *c = Sanguosha->getEngineCard(move->card_ids[i]);
 				QString prompt = "@thxijing:" + c->getSuitString()
@@ -533,9 +538,9 @@ public:
     }
 
 	virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-		if (player->getPhase() == Player::Finish && TriggerSkill::triggerable(player) && player->isKongcheng())
+		if (player->getPhase() == Player::Finish && TriggerSkill::triggerable(player) && player->getHandcardNum() < 2)
 		{
-			if (player->getHandcardNum() < 2 && player->askForSkillInvoke(objectName()))
+			if (player->askForSkillInvoke(objectName()))
 				player->drawCards(2 - player->getHandcardNum());
 		}
 		else if (player->getPhase() == Player::Start)
@@ -735,7 +740,7 @@ public:
 	}
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-		return !player->hasUsed("ThLuanshenCard") && player->getHandcardNum() > player->getHpPoints();
+		return !player->hasUsed("ThLuanshenCard") && player->getHandcardNum() >= player->getHpPoints();
 	}
 };
 
@@ -1075,10 +1080,6 @@ BangaiPackage::BangaiPackage()
 	General *bangai010 = new General(this, "bangai010", "wei");
 	bangai010->addSkill(new ThWeide);
 
-	General *bangai011 = new General(this, "bangai011", "wu");
-	bangai011->addSkill(new ThXiangrui);
-	bangai011->addSkill(new ThXingxie);
-
 	General *bangai013 = new General(this, "bangai013", "shu");
 	bangai013->addSkill(new ThLuanshen);
 
@@ -1090,6 +1091,10 @@ BangaiPackage::BangaiPackage()
     related_skills.insertMulti("thsilian", "#thsilian");
     related_skills.insertMulti("thsilian", "#thsilian-weapon");
 
+	General *bangai015 = new General(this, "bangai015", "wu");
+	bangai015->addSkill(new ThXiangrui);
+	bangai015->addSkill(new ThXingxie);
+
 	General *bangai016 = new General(this, "bangai016", "qun");
 	bangai016->addSkill(new ThZhanfu);
 	bangai016->addSkill(new ThZhanfuClear);
@@ -1098,9 +1103,9 @@ BangaiPackage::BangaiPackage()
     addMetaObject<ThShoujuanCard>();
     addMetaObject<ThZushaCard>();
     addMetaObject<ThYaomeiCard>();
+    addMetaObject<ThLuanshenCard>();
     addMetaObject<ThLingzhanCard>();
     addMetaObject<ThXingxieCard>();
-    addMetaObject<ThLuanshenCard>();
 }
 
 ADD_PACKAGE(Bangai)

@@ -41,7 +41,6 @@ public:
 				if (target)
 				{
 					target->addMark("chuangshitarget");
-					use.card->setFlags("chuangshi" + target->objectName());
 					targets.removeOne(target);
 					Slash *slash = new Slash(Card::NoSuitNoColor, 0);
 					slash->setSkillName(objectName());
@@ -57,13 +56,10 @@ public:
 		else if (triggerEvent == CardEffected)
 		{
 			CardEffectStruct effect = data.value<CardEffectStruct>();
-			if (effect.card->hasFlag("chuangshi" + effect.to->objectName())
-				&& effect.to->getMark("chuangshitarget") > 0)
+			if (effect.to->getMark("chuangshitarget") > 0)
 			{
 				effect.to->removeMark("chuangshitarget");
-				if (effect.to->getMark("chuangshitarget") <= 0)
-					effect.card->setFlags("-chuangshi" + effect.to->objectName());
-
+				
 				return true;
 			}
 		}
@@ -118,16 +114,17 @@ public:
 				if (room->askForCard(player, pattern, objectName()))
 				{
 					room->obtainCard(player, card_id);
+					card_ids.removeOne(card_id);
 					can_change = false;
 				}
 			}
 			else
 			{
+				card_ids.removeOne(card_id);
 				CardMoveReason reason(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
 				room->moveCardTo(card, NULL, NULL, Player::DiscardPile, reason);
 			}
 
-			card_ids.removeOne(card_id);
 			player->invoke("clearAG");
 		}
 

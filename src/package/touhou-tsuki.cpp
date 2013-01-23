@@ -9,28 +9,30 @@
 #include "client.h"
 #include "engine.h"
 #include "general.h"
+#include "card.h"
 
 ThJinguoCard::ThJinguoCard(){
-	handling_method = Card::MethodNone;
-	will_throw = false;
+}
+
+bool ThJinguoCard::targetFixed() const{
+	return !subcardsLength();
 }
 
 bool ThJinguoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-	return targets.isEmpty() && to_select->isWounded() && to_select != Self;
+	return targets.isEmpty() && to_select != Self;
 }
 
 void ThJinguoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-	room->showCard(source, getEffectiveId());
-	ServerPlayer *target = targets.first();
-	QStringList choices;
-	choices << "give";
-	if (target->getHandcardNum() > 1)
-		choices << "discard";
-	QString choice = room->askForChoice(target, "thjinguo", choices.join("+"));
-	if (choice == "discard")
+	if (subcardsLength() == 0)
+		room->setPlayerFlag(source, "thjinguoinvoke");
+	else
 	{
-		room->throwCard(this, source);
-        DummyCard *dummy = room->askForCardsChosen(source, target, "h", "thjinguo", 2);
+		ServerPlayer *target = targets.first();
+		DummyCard *dummy = new DummyCard;
+		if (target->getCardCount(true) < 2)
+			dummy->addSubcards(target->getCards("he"));
+		else
+			dummy = room->askForCardsChosen(source, target, "h", "thjinguo", 2);
         if (dummy->subcardsLength() > 0)
             source->obtainCard(dummy, false);
         dummy->deleteLater();
@@ -38,40 +40,41 @@ void ThJinguoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
 		recover.who = source;
 		room->recover(target, recover);
 	}
-	else
-		room->setPlayerFlag(source, "thjinguoinvoke");
 }
 
-class ThJinguo:public OneCardViewAsSkill{
+class ThJinguo:public ViewAsSkill{
 public:
-	ThJinguo():OneCardViewAsSkill("thjinguo"){
+	ThJinguo():ViewAsSkill("thjinguo"){
 	}
 
-	virtual bool viewFilter(const Card *to_select) const{
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
 		if(!Self->hasFlag("thjinguoinvoke"))
 		{
-			return to_select->getSuit() == Card::Heart;
+			return selected.isEmpty() && to_select->getSuit() == Card::Heart;
 		}
 		else
 		{
-			return to_select->getSuit() == Card::Heart && to_select->isKindOf("BasicCard");
+			return selected.isEmpty() && to_select->getSuit() == Card::Heart && !to_select->isKindOf("TrickCard");
 		}
 	}
 
-	virtual const Card *viewAs(const Card *originalCard) const{
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
 		if(!Self->hasFlag("thjinguoinvoke"))
 		{
 			ThJinguoCard *card = new ThJinguoCard;
-			card->addSubcard(originalCard);
+			if (!cards.isEmpty())
+				card->addSubcards(cards);
 			return card;
 		}
-		else
+		else if (!cards.isEmpty())
 		{
 			Indulgence *le = new Indulgence(Card::NoSuitNoColor, 0);
-			le->addSubcard(originalCard);
+			le->addSubcards(cards);
 			le->setSkillName(objectName());
 			return le;
 		}
+		else
+			return NULL;
 	}
 
     virtual bool isEnabledAtPlay(const Player *player) const{
@@ -98,8 +101,21 @@ public:
 			log.arg = objectName();
 			room->sendLog(log);
 
-			if (player->getCardCount(true) < 2 || !room->askForDiscard(player, objectName(), 2, 2, true, true))
-				room->loseHp(player);
+			QStringList choices;
+			choices << "draw";
+			if (player->isWounded())
+				choices << "recover";
+
+			QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+			
+			if (choice == "recover")
+			{
+				RecoverStruct recover;
+				recover.who = player;
+				room->recover(player, recover);
+			}
+			else
+				player->drawCards(2);
 
 			room->loseMaxHp(player);
 			room->acquireSkill(player, "kuanggu");

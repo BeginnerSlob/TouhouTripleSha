@@ -266,7 +266,7 @@ public:
 			else
 				return false;
 		else if (triggerEvent == Damage)
-			if (splayer->getMark("@jgnongwu") < 1 && player->distanceTo(damage.to) <= 1
+			if (splayer->getMark("@jgnongwu") > 0 && player->distanceTo(damage.to) <= 1
 				&& damage.card->isKindOf("Slash"))
 			{
 				RecoverStruct recover;
@@ -399,7 +399,13 @@ bool ThYouyaCard::targetFilter(const QList<const Player *> &selected, const Play
 void ThYouyaCard::onEffect(const CardEffectStruct &effect) const{
 	Room *room = effect.from->getRoom();
 	if (!room->askForCard(effect.to, "jink", "@thyouya-jink:" + effect.from->objectName(), QVariant(), Card::MethodResponse, effect.from))
-		effect.from->drawCards(1);
+	{
+		int card_id = room->askForCardChosen(effect.from, effect.to, "he", "thyouya");
+		room->moveCardTo(Sanguosha->getCard(card_id),
+						 effect.from,
+						 Player::PlaceHand,
+						 room->getCardPlace(card_id) == Player::PlaceEquip);
+	}
 }
 
 class ThYouyaViewAsSkill: public OneCardViewAsSkill{
@@ -455,6 +461,111 @@ public:
 	}
 };
 
+ThJinluCard::ThJinluCard(){
+}
+
+bool ThJinluCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && to_select != Self;
+}
+
+void ThJinluCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+
+    DummyCard *dummy_card = new DummyCard;
+    foreach(const Card *cd, effect.to->getCards("he")){
+        dummy_card->addSubcard(cd);
+    }
+    if (!effect.to->isKongcheng())
+    {
+        CardMoveReason reason(CardMoveReason::S_REASON_TRANSFER, effect.from->objectName(),
+            effect.to->objectName(), "thjinlu", QString());
+        room->moveCardTo(dummy_card, effect.to, effect.from, Player::PlaceHand, reason, false);
+    }
+    effect.to->setFlags("ThJinluTarget");
+	room->setPlayerFlag(effect.from, "ThJinluUsed");
+}
+
+class ThJinluViewAsSkill: public OneCardViewAsSkill{
+public:
+    ThJinluViewAsSkill():OneCardViewAsSkill("thjinlu"){
+
+    }
+
+    virtual bool viewFilter(const Card* to_select) const{
+        return true;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("ThJinluCard");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        Card *card = new ThJinluCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+};
+
+class ThJinlu: public TriggerSkill{
+public:
+    ThJinlu():TriggerSkill("thjinlu"){
+        events << EventPhaseEnd << EventPhaseStart;
+        view_as_skill = new ThJinluViewAsSkill;
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &) const{
+        if(triggerEvent == EventPhaseEnd && player->getPhase() == Player::Play && player->hasFlag("ThJinluUsed")){
+            ServerPlayer *target = NULL;
+            foreach(ServerPlayer *other, room->getOtherPlayers(player)){
+                if(other->hasFlag("LihunTarget")){
+                    other->setFlags("-LihunTarget");
+                    target = other;
+                    break;
+                }
+            }
+
+            if(!target || target->getHpPoints() < 1 || player->isNude())
+                return false;
+
+            DummyCard *to_goback;
+            if(player->getCardCount(true) <= target->getHp())
+            {
+                to_goback = player->isKongcheng() ? new DummyCard : player->wholeHandCards();
+                for (int i = 0;i < 4; i++)
+                    if(player->getEquip(i))
+                        to_goback->addSubcard(player->getEquip(i)->getEffectiveId());
+            }
+            else
+                to_goback = (DummyCard *)room->askForExchange(player, objectName(), target->getHp(), true, "ThJinluGoBack");
+
+            CardMoveReason reason(CardMoveReason::S_REASON_GIVE, player->objectName(),
+                                  target->objectName(), objectName(), QString());
+            reason.m_playerId = target->objectName();
+            room->moveCardTo(to_goback, player, target, Player::PlaceHand, reason);
+            delete to_goback;
+        }
+		else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Finish && player->hasFlag("ThJinluUsed"))
+			player->turnOver();
+
+        return false;
+    }
+};
+
+class ThKuangli: public TriggerSkill{
+public:
+	ThKuangli(): TriggerSkill("thkuangli"){
+		events << TurnedOver << HpChanged;
+		frequency = Frequent;
+	}
+	
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &) const{
+		if (player->askForSkillInvoke(objectName()))
+			player->drawCards(1);
+
+		return false;
+	}
+};
+
 KamiPackage::KamiPackage()
     :Package("kami")
 {
@@ -475,11 +586,12 @@ KamiPackage::KamiPackage()
 	kami007->addSkill(new ThManxiao);
 
 	General *kami008 = new General(this, "kami008", "god", 3);
-	//kami008->addSkill(new ThJinlu);
-	//kami008->addSkill(new ThKuangli);
+	kami008->addSkill(new ThJinlu);
+	kami008->addSkill(new ThKuangli);
 	
     addMetaObject<ThShenfengCard>();
     addMetaObject<ThYouyaCard>();
+	addMetaObject<ThJinluCard>();
 
 	skills << new ThJiguangDistanceSkill << new ThJiguangGivenSkill;
 }
