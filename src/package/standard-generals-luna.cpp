@@ -468,13 +468,14 @@ public:
     }
 };
 
-WenyueCard::WenyueCard(){
+WenleCard::WenleCard(){
     target_fixed = true;
 }
 
-void WenyueCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    source->loseMark("@wenyue");
-    room->broadcastInvoke("animate", "lightbox:$wenyue");
+void WenleCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    source->loseMark("@wenle");
+    source->gainMark("@wenleused");
+    room->broadcastInvoke("animate", "lightbox:$wenle");
 
     QList<ServerPlayer *> players = room->getOtherPlayers(source);
     foreach(ServerPlayer *player, players){
@@ -483,7 +484,7 @@ void WenyueCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) 
     }
 }
 
-void WenyueCard::onEffect(const CardEffectStruct &effect) const{
+void WenleCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.to->getRoom();
 
     QList<ServerPlayer *> players = room->getOtherPlayers(effect.to);
@@ -496,32 +497,32 @@ void WenyueCard::onEffect(const CardEffectStruct &effect) const{
         nearest = qMin(nearest, distance);
     }
 
-    QList<ServerPlayer *> wenyue_targets;
+    QList<ServerPlayer *> wenle_targets;
     for(int i = 0; i < distance_list.length(); i++){
         if(distance_list.at(i) == nearest && effect.to->canSlash(players.at(i))){
-            wenyue_targets << players.at(i);
+            wenle_targets << players.at(i);
         }
     }
 
-    if(!wenyue_targets.isEmpty()){
-        if(!room->askForUseSlashTo(effect.to, wenyue_targets, "@wenyue-slash"))
+    if(!wenle_targets.isEmpty()){
+        if(!room->askForUseSlashTo(effect.to, wenle_targets, "@wenle-slash"))
            room->loseHp(effect.to);
     }else
         room->loseHp(effect.to);
 }
 
-class Wenyue: public ZeroCardViewAsSkill{
+class Wenle: public ZeroCardViewAsSkill{
 public:
-    Wenyue():ZeroCardViewAsSkill("wenyue"){
+    Wenle():ZeroCardViewAsSkill("wenle"){
         frequency = Limited;
     }
 
     virtual const Card *viewAs() const{
-        return new WenyueCard;
+        return new WenleCard;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getMark("@wenyue") >= 1;
+        return player->getMark("@wenle") >= 1;
     }
 };
 
@@ -1512,10 +1513,10 @@ void StandardPackage::addLunaGenerals(){
 
     General *luna007 = new General(this, "luna007", "qun", 3);
     luna007->addSkill(new Sishi);
-    luna007->addSkill(new MarkAssignSkill("@wenyue", 1));
-    luna007->addSkill(new Wenyue);
+    luna007->addSkill(new MarkAssignSkill("@wenle", 1));
+    luna007->addSkill(new Wenle);
     luna007->addSkill(new Moyu2);
-    related_skills.insertMulti("wenyue", "#@wenyue-1");
+    related_skills.insertMulti("wenle", "#@wenle-1");
 
     General *luna008 = new General(this, "luna008", "qun");
     luna008->addSkill("jibu");
@@ -1557,7 +1558,7 @@ void StandardPackage::addLunaGenerals(){
     
     addMetaObject<QingnangCard>();
     addMetaObject<MoyuCard>();
-    addMetaObject<WenyueCard>();
+    addMetaObject<WenleCard>();
     addMetaObject<LeijiCard>();
     addMetaObject<TianshiCard>();
     addMetaObject<YujiCard>();

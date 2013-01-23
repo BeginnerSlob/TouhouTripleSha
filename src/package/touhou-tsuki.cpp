@@ -82,21 +82,21 @@ public:
 	}
 };
 
-class ThShixue:public TriggerSkill{
+class ThLianxue:public TriggerSkill{
 public:
-	ThShixue():TriggerSkill("thshixue"){
+	ThLianxue():TriggerSkill("thlianxue"){
 		events << EventPhaseStart;
 		frequency = Wake;
 	}
 
 	virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-		if (player->getPhase() != Player::Start || player->getMark(objectName()) > 0)
+		if (player->getPhase() != Player::Start || player->getMark("@lianxue") > 0)
 			return false;
 
 		if (player->getEquip(2) || player->getEquip(3))
 		{
 			LogMessage log;
-			log.type = "#ThShixueWake";
+			log.type = "#ThLianxueWake";
 			log.from = player;
 			log.arg = objectName();
 			room->sendLog(log);
@@ -119,8 +119,7 @@ public:
 
 			room->loseMaxHp(player);
 			room->acquireSkill(player, "kuanggu");
-			player->gainMark("@waked");
-			player->addMark(objectName());
+			player->gainMark("@lianxue");
 		}
 
 		return false;
@@ -210,7 +209,7 @@ public:
 void TouhouPackage::addTsukiGenerals(){
 	General *tsuki002 = new General(this, "tsuki002", "qun");
 	tsuki002->addSkill(new ThJinguo);
-	tsuki002->addSkill(new ThShixue);
+	tsuki002->addSkill(new ThLianxue);
 
 	General *tsuki005 = new General(this, "tsuki005", "qun", 3);
 	tsuki005->addSkill(new ThShouye);

@@ -1848,4 +1848,6 @@ void StandardPackage::addBloomGenerals(){
     addMetaObject<BisuoCard>();
 
     addMetaObject<RendeCard>();
+	
+	skills << new Hujia;
 }

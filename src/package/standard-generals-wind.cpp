@@ -480,8 +480,9 @@ public:
         if(player->askForSkillInvoke(objectName(), data)){
             //room->broadcastInvoke("animate", "lightbox:$niepan");
             room->broadcastSkillInvoke(objectName());
-
+			
             player->loseMark("@niepan");
+            player->gainMark("@niepanused");
 
             QList<const Card *> tricks = player->getJudgingArea();
             foreach(const Card *trick, tricks)
