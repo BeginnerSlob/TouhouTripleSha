@@ -5,18 +5,6 @@
 #include "maneuvering.h"
 #include "general.h"
 
-GongxinCard::GongxinCard(){
-    once = true;
-}
-
-bool GongxinCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty(); 
-}
-
-void GongxinCard::onEffect(const CardEffectStruct &effect) const{
-    effect.from->getRoom()->doGongxin(effect.from, effect.to);
-}
-
 class Wuhun: public TriggerSkill{
 public:
     Wuhun():TriggerSkill("wuhun"){
@@ -165,21 +153,6 @@ public:
         room->broadcastInvoke("clearAG");
 
         return true;
-    }
-};
-
-class Gongxin: public ZeroCardViewAsSkill{
-public:
-    Gongxin():ZeroCardViewAsSkill("gongxin"){
-        default_choice = "discard";
-    }
-
-    virtual const Card *viewAs() const{
-        return new GongxinCard;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("GongxinCard");
     }
 };
 
@@ -1373,7 +1346,7 @@ public:
 
 GodPackage::GodPackage()
     :Package("god")
-{
+{/*
     General *shenguanyu = new General(this, "shenguanyu", "god", 5);
     shenguanyu->addSkill(new Wushen);
     shenguanyu->addSkill(new Wuhun);
@@ -1433,7 +1406,6 @@ GodPackage::GodPackage()
     related_skills.insertMulti("lianpo", "#lianpo-count");
     related_skills.insertMulti("lianpo", "#lianpo-do");
 
-    addMetaObject<GongxinCard>();
     addMetaObject<YeyanCard>();
     addMetaObject<ShenfenCard>();
     addMetaObject<GreatYeyanCard>();
@@ -1445,6 +1417,7 @@ GodPackage::GodPackage()
     addMetaObject<JilveCard>();
 
     skills << new Jilve << new JilveClear;
+	*/
 }
 
 ADD_PACKAGE(God)

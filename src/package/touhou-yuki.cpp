@@ -171,7 +171,7 @@ public:
 		if (triggerEvent == CardUsed)
 		{
 			CardUseStruct use = data.value<CardUseStruct>();
-			if (use.to.isEmpty() && use.to.contains(use.from))
+			if (use.to.isEmpty() || use.to.contains(use.from))
 				return false;
 
 			if (use.card->isKindOf("Peach"))

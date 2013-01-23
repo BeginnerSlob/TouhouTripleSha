@@ -566,6 +566,208 @@ public:
 	}
 };
 
+class ThYuxin: public TriggerSkill{
+public:
+	ThYuxin(): TriggerSkill("thyuxin"){
+		events << EventPhaseStart;
+	}
+
+	virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &) const{
+		if (player->getPhase() != Player::Draw || player->isNude()
+			|| !player->askForSkillInvoke(objectName())
+			|| !room->askForDiscard(player, objectName(), 1, 1, true, true))
+			return false;
+		
+		int card1 = room->drawCard();
+        int card2 = room->drawCard();
+        CardsMoveStruct move, move2;
+        move.card_ids.append(card1);
+        move.card_ids.append(card2);
+        move.reason = CardMoveReason(CardMoveReason::S_REASON_TURNOVER, player->objectName(), objectName(), QString());
+        move.to_place = Player::PlaceTable;
+        room->moveCardsAtomic(move, true);
+        room->getThread()->delay();
+        move2 = move;
+        move2.to_place = Player::PlaceHand;
+        move2.to = player;
+        move2.reason.m_reason = CardMoveReason::S_REASON_DRAW;
+        room->moveCardsAtomic(move2, true);
+		if (Sanguosha->getEngineCard(card1)->getSuit() == Card::Heart
+			&& Sanguosha->getEngineCard(card2)->getSuit() == Card::Heart)
+		{
+			QList<ServerPlayer *> targets;
+			foreach(ServerPlayer *p, room->getAllPlayers())
+				if (p->isWounded())
+					targets << p;
+
+			if (!targets.isEmpty())
+			{
+				ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
+				RecoverStruct recover;
+				recover.who = player;
+				room->recover(target, recover);
+			}
+		}
+
+		return false;
+	}
+};
+
+GongxinCard::GongxinCard(){
+    once = true;
+}
+
+bool GongxinCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty(); 
+}
+
+void GongxinCard::onEffect(const CardEffectStruct &effect) const{
+    effect.from->getRoom()->doGongxin(effect.from, effect.to);
+}
+
+class Gongxin: public ZeroCardViewAsSkill{
+public:
+    Gongxin():ZeroCardViewAsSkill("gongxin"){
+        default_choice = "discard";
+    }
+
+    virtual const Card *viewAs() const{
+        return new GongxinCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("GongxinCard");
+    }
+};
+
+ThChuangxinCard::ThChuangxinCard(){
+	target_fixed = true;
+}
+
+void ThChuangxinCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+	if (subcardsLength() == 1)
+	{
+		QString choice = room->askForChoice(source, "thchuangxin", "gongxin+zhuoyue");
+		room->acquireSkill(source, choice);
+	}
+	else
+	{
+		room->acquireSkill(source, "gongxin");
+		room->acquireSkill(source, "zhuoyue");
+	}
+};
+
+class ThChuangxinViewAsSkill :public ViewAsSkill{
+public:
+	ThChuangxinViewAsSkill():ViewAsSkill("thchuangxin"){
+	}
+
+	virtual bool isEnabledAtPlay(const Player *player) const{
+        return false;
+    }
+
+	virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
+        return pattern=="@@thchuangxin";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *) const{
+        return selected.length() < 2;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.length() == 0) 
+            return NULL;
+
+        ThChuangxinCard *card = new ThChuangxinCard;
+        card->addSubcards(cards);
+        return card;
+    }
+};
+
+class ThChuangxin: public TriggerSkill{
+public:
+	ThChuangxin(): TriggerSkill("thchuangxin"){
+		events << EventPhaseStart;
+		view_as_skill = new ThChuangxinViewAsSkill;
+	}
+
+	virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &) const{
+		if (player->getPhase() == Player::Start)
+			room->askForUseCard(player, "@@thchuangxin", "@thchuangxin");
+		else if (player->getPhase() == Player::NotActive)
+		{
+			room->detachSkillFromPlayer(player, "gongxin");
+			room->detachSkillFromPlayer(player, "zhuoyue");
+		}
+
+		return false;
+	}
+};
+
+ThTianxinCard::ThTianxinCard(){
+	target_fixed = true;
+}
+
+void ThTianxinCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+	if (subcardsLength() == 1)
+	{
+		QString choice = room->askForChoice(source, "thtianxin", "yuxi+tiandu");
+		room->acquireSkill(source, choice);
+	}
+	else
+	{
+		room->acquireSkill(source, "yuxi");
+		room->acquireSkill(source, "tiandu");
+	}
+};
+
+class ThTianxinViewAsSkill :public ViewAsSkill{
+public:
+	ThTianxinViewAsSkill():ViewAsSkill("thtianxin"){
+	}
+
+	virtual bool isEnabledAtPlay(const Player *player) const{
+        return false;
+    }
+
+	virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
+        return pattern=="@@thtianxin";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *) const{
+        return selected.length() < 2;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.length() == 0) 
+            return NULL;
+
+        ThTianxinCard *card = new ThTianxinCard;
+        card->addSubcards(cards);
+        return card;
+    }
+};
+
+class ThTianxin: public TriggerSkill{
+public:
+	ThTianxin(): TriggerSkill("thtianxin"){
+		events << EventPhaseStart;
+		view_as_skill = new ThTianxinViewAsSkill;
+	}
+
+	virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &) const{
+		if (player->getPhase() == Player::Start)
+			room->askForUseCard(player, "@@thtianxin", "@thtianxin");
+		else if (player->getPhase() == Player::NotActive)
+		{
+			room->detachSkillFromPlayer(player, "yuxi");
+			room->detachSkillFromPlayer(player, "tiandu");
+		}
+
+		return false;
+	}
+};
+
 KamiPackage::KamiPackage()
     :Package("kami")
 {
@@ -588,12 +790,20 @@ KamiPackage::KamiPackage()
 	General *kami008 = new General(this, "kami008", "god", 3);
 	kami008->addSkill(new ThJinlu);
 	kami008->addSkill(new ThKuangli);
+
+	General *kami009 = new General(this, "kami009", "god");
+	kami008->addSkill(new ThYuxin);
+	kami008->addSkill(new ThChuangxin);
+	kami008->addSkill(new ThTianxin);
 	
     addMetaObject<ThShenfengCard>();
     addMetaObject<ThYouyaCard>();
 	addMetaObject<ThJinluCard>();
+    addMetaObject<GongxinCard>();
+    addMetaObject<ThChuangxinCard>();
+    addMetaObject<ThTianxinCard>();
 
-	skills << new ThJiguangDistanceSkill << new ThJiguangGivenSkill;
+	skills << new ThJiguangDistanceSkill << new ThJiguangGivenSkill << new Gongxin;
 }
 
 ADD_PACKAGE(Kami)

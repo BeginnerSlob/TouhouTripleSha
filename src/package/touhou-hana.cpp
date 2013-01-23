@@ -73,12 +73,11 @@ public:
 		return TriggerSkill::triggerable(target)
 			&& target->hasLordSkill(objectName())
 			&& target->getPhase() == Player::Start
-			&& target->getMark(objectName()) <= 0;
+			&& target->getMark("@feizhan") <= 0;
 	}
 
 	virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-		player->addMark(objectName());
-		player->gainMark("@waked");
+		player->gainMark("@feizhan");
 		QStringList choices;
 		if (player->isWounded())
 			choices << "recover";
@@ -146,12 +145,11 @@ public:
 		return TriggerSkill::triggerable(target)
 			&& target->getHpPoints() == 1
 			&& target->getPhase() == Player::Start
-			&& target->getMark(objectName()) <= 0;
+			&& target->getMark("@genxing") <= 0;
 	}
 
 	virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-		player->addMark(objectName());
-		player->gainMark("@waked");
+		player->gainMark("@genxing");
 		QStringList choices;
 		if (player->isWounded())
 			choices << "recover";
@@ -1141,6 +1139,13 @@ public:
 			{
 				QString choice = room->askForChoice(player, objectName(), "basic+equip+trick");
 				
+				LogMessage log;
+				log.type = "#ThGuaitan";
+				log.from = player;
+				log.to << damage.to;
+				log.arg = choice;
+				room->sendLog(log);
+
 				QStringList guaitanlist = damage.to->tag.value("guaitan").toStringList();
 				if (choice == "basic")
 					choice = "BasicCard";
@@ -1153,6 +1158,7 @@ public:
 				if (!guaitanlist.contains(choice))
 					guaitanlist << choice;
 
+				damage.to->gainMark("@guaitan");
 				damage.to->tag["guaitan"] = QVariant::fromValue(guaitanlist);
 			}
 		}
@@ -1161,8 +1167,24 @@ public:
 			{
 				QStringList guaitanlist = player->tag.value("guaitan").toStringList();
 				foreach(QString str, guaitanlist)
+				{
+					LogMessage log;
+					ServerPlayer *splayer = room->findPlayerBySkillName(objectName(), true);
+					if (splayer != NULL)
+					{
+						log.type = "#ThGuaitanTrigger";
+						log.from = splayer;
+					}
+					else
+						log.type = "#ThGuaitanTriggerNoSource";
+					
+					log.arg = str.left(5).toLower();
+					log.to << player;
+					log.arg2 = objectName();
+					
+					room->sendLog(log);
 					room->setPlayerCardLimitation(player, "use,response", str, true);
-
+				}
 				player->tag["guaitan"] = QVariant::fromValue(QStringList());
 			}
 
@@ -1452,7 +1474,7 @@ public:
 		int card_id = room->askForCardChosen(splayer, splayer, "he", objectName());
 		room->broadcastSkillInvoke(objectName());
 		const Card *card = Sanguosha->getCard(card_id);
-		player->addToPile("#thzhaoyupile", card_id, false);
+		splayer->addToPile("#thzhaoyupile", card_id, false);
 		Player *p = (Player *)player;
 		p->removeCard(card, room->getCardPlace(card_id));
 		QList<int> &drawPile = room->getDrawPile();
@@ -1498,7 +1520,7 @@ public:
 	}
 
 	virtual bool trigger(TriggerEvent , Room *, ServerPlayer *player, QVariant &) const{
-		if(player->getMark(objectName()) > 0)
+		if(player->getMark("@rudao") > 0)
 			return false;
 
 		if(player->getPhase() != Player::Start || !player->isKongcheng())
@@ -1515,8 +1537,7 @@ public:
 		player->drawCards(2);
 		room->loseMaxHp(player, 3);
 		room->detachSkillFromPlayer(player, "thwuwu");
-		player->addMark(objectName());
-		player->gainMark("@waked");
+		player->gainMark("@rudao");
 		return false;
 	}
 };

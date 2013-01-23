@@ -477,7 +477,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return target != NULL && PhaseChangeSkill::triggerable(target)
-                && target->getMark("chizhu") == 0
+                && target->getMark("@chizhu") == 0
                 && target->getPhase() == Player::Start
                 && target->getHp() <= 2;
     }
@@ -494,13 +494,11 @@ public:
         room->broadcastSkillInvoke(objectName());
         //room->broadcastInvoke("animate", "lightbox:$chizhu:5000");
         //room->getThread()->delay(5000);
-        player->gainMark("@waked");
+        player->gainMark("@chizhu");
         room->loseMaxHp(player);
 
         room->acquireSkill(player, "liangban");
         room->acquireSkill(player, "chenhong");
-
-        room->setPlayerMark(player, "chizhu", 1);
 
         return false;
     }
@@ -1445,6 +1443,7 @@ bool ZhizhanCard::targetFilter(const QList<const Player *> &targets, const Playe
 
 void ZhizhanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     source->loseMark("@zhizhan");
+	source->gainMark("@zhizhanused");
     ServerPlayer *target = targets.first();
     source->tag["ZhizhanTarget"] = QVariant::fromValue((PlayerStar)target);
     //room->broadcastInvoke("animate", "lightbox:$JiefanAnimate:2500");
