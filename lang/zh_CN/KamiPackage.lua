@@ -132,7 +132,7 @@ return {
 	[":thzhanying"]="<b>锁定技</b>，你始终跳过你的摸牌阶段；你的手牌上限+4。",
 	
 	["#kami014"]="诞妄的妖姬",
-	["kami014"]="封兽鵺",--神 - 空 - 3血
+	["kami014"]="封兽鵺",--神 - 幻 - 3血
 	["designer:kami014"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami014"]="正体不明",
 	["cv:kami014"]="暂无",
