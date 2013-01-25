@@ -592,7 +592,7 @@ public:
             player->obtainCard(dummy, false);
         dummy->deleteLater();
 
-		return false;
+		return true;
 	}
 };
 
