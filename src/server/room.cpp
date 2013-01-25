@@ -2783,7 +2783,9 @@ void Room::recover(ServerPlayer *player, const RecoverStruct &recover, bool set_
 
     if(set_emotion){
         setEmotion(player, "recover");
-    }
+    };
+
+    thread->trigger(HpRecovered, this, player, data);
 }
 
 bool Room::cardEffect(const Card *card, ServerPlayer *from, ServerPlayer *to){
@@ -4849,6 +4851,7 @@ void Room::retrial(const Card *card, ServerPlayer *player, JudgeStar judge,
         log.type = "$ChangedJudge";
         log.from = player;
         log.to << judge->who;
+		log.arg = skill_name;
         log.card_str = card->getEffectIdString();
         sendLog(log);
 

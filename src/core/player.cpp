@@ -4,6 +4,7 @@
 #include "client.h"
 #include "standard.h"
 #include "settings.h"
+#include "standard-equips.h"
 
 Player::Player(QObject *parent)
     :QObject(parent), owner(false), ready(false), general(NULL), general2(NULL),
@@ -387,7 +388,19 @@ void Player::setPhaseString(const QString &phase_str){
 }
 
 void Player::setEquip(WrappedCard *equip){
-    const EquipCard *card = qobject_cast<const EquipCard *>(equip->getRealCard());
+	const Card *acard = equip->getRealCard();
+	const EquipCard *card = NULL;
+	if (!acard->isKindOf("EquipCard") && hasSkill("liannufuck"))
+	{
+		Crossbow *liannu = new Crossbow(acard->getSuit(), acard->getNumber());
+		liannu->setSkillName(objectName());
+        equip = Sanguosha->getWrappedCard(acard->getId());
+        equip->takeOver(liannu);
+		card = qobject_cast<const EquipCard *>(equip->getRealCard());
+	}
+	else
+		card = qobject_cast<const EquipCard *>(equip->getRealCard());
+	
     Q_ASSERT(card != NULL);
     switch(card->location()){
     case EquipCard::WeaponLocation: weapon = equip; break;

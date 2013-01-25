@@ -10,6 +10,7 @@
 #include "engine.h"
 #include "general.h"
 #include "card.h"
+#include "standard-equips.h"
 
 class ThHuaji:public TriggerSkill{
 public:
@@ -1176,7 +1177,19 @@ public:
 					
 					room->sendLog(log);
 					room->setPlayerCardLimitation(player, "use,response", str, true);
+					room->setPlayerMark(player, "@guaitan", 0);
+					room->setPlayerMark(player, objectName(), 1);
 				}
+			}
+			else if (player->getPhase() == Player::NotActive && player->getMark(objectName()) > 0)
+			{
+				QStringList guaitanlist = player->tag.value("guaitan").toStringList();
+				foreach(QString str, guaitanlist)
+				{
+					room->removePlayerCardLimitation(player, "use,response", str + "@1");
+				}
+				
+				room->setPlayerMark(player, objectName(), 0);
 				player->tag["guaitan"] = QVariant::fromValue(QStringList());
 			}
 
@@ -1709,6 +1722,26 @@ public:
 	}
 };
 
+class LiannuFuck : public FilterSkill{
+public:
+	LiannuFuck():FilterSkill("liannufuck"){
+	}
+	
+	virtual bool viewFilter(const Card* to_select) const{
+        Room *room = Sanguosha->currentRoom();
+        Player::Place place = room->getCardPlace(to_select->getEffectiveId());
+        return to_select->getSuit() == Card::Heart && (place == Player::PlaceHand || place == Player::PlaceEquip);
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        Crossbow *slash = new Crossbow(originalCard->getSuit(), originalCard->getNumber());
+        slash->setSkillName(objectName());
+        WrappedCard *card = Sanguosha->getWrappedCard(originalCard->getId());
+        card->takeOver(slash);
+        return card;
+    }
+};
+
 void TouhouPackage::addHanaGenerals(){
     General *hana001 = new General(this, "hana001$", "wei");
     hana001->addSkill(new ThHuaji);
@@ -1770,6 +1803,7 @@ void TouhouPackage::addHanaGenerals(){
 	General *hana018 = new General(this, "hana018$", "wei");
 	hana018->addSkill(new ThLiuzhen);
 	hana018->addSkill(new ThTiandao);
+	//hana018->addSkill(new LiannuFuck);
 	
     addMetaObject<ThJiewuCard>();
     addMetaObject<ThMopaoCard>();

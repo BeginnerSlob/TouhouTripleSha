@@ -986,11 +986,7 @@ public:
 class Shushen: public TriggerSkill{
 public:
     Shushen():TriggerSkill("shushen"){
-        events << HpRecover;
-    }
-
-    virtual int getPriority() const{
-        return -1;
+        events << HpRecovered;
     }
 
     virtual bool trigger(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const{
