@@ -296,12 +296,15 @@ void Room::killPlayer(ServerPlayer *victim, DamageStruct *reason){
 
     m_alivePlayers.removeOne(victim);
 
+    QVariant data = QVariant::fromValue(reason);
+    thread->trigger(BeforeGameOverJudge, this, victim, data);
+
+    updateStateItem();
+
     LogMessage log;
     log.to << victim;
     log.arg = Config.EnableHegemony ? victim->getKingdom() : victim->getRole();
     log.from = killer;
-
-    updateStateItem();
 
     if(killer){
         if(killer == victim)
@@ -316,7 +319,6 @@ void Room::killPlayer(ServerPlayer *victim, DamageStruct *reason){
 
     broadcastProperty(victim, "alive");
 
-    QVariant data = QVariant::fromValue(reason);
     broadcastProperty(victim, "role");
     broadcastInvoke("killPlayer", victim->objectName());
 

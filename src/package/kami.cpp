@@ -1011,6 +1011,90 @@ public:
 	}
 };
 
+class ThLuli: public TriggerSkill{
+public:
+    ThLuli(): TriggerSkill("thluli"){
+        events << DamageCaused << DamageInflicted;
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        if(triggerEvent == DamageCaused){
+            if(damage.to && damage.to->isAlive()
+               && damage.to->getHp() >= player->getHp() && damage.to != player && !player->isKongcheng())
+                if(room->askForCard(player, ".black", "@ThLuliIncrease")){
+                    LogMessage log;
+                    log.type = "#ThLuliIncrease";
+                    log.from = player;
+                    log.arg = QString::number(damage.damage);
+                    log.arg2 = QString::number(++damage.damage);
+                    room->sendLog(log);
+
+                    data = QVariant::fromValue(damage);
+                }
+        }else if(triggerEvent == DamageInflicted){
+            if(damage.from && damage.from->isAlive()
+               && damage.from->getHp() >= player->getHp() && damage.from != player && !player->isKongcheng())
+                if(room->askForCard(player, ".red", "@ThLuliDecrease")){
+                    LogMessage log;
+                    log.type = "#ThLuliDecrease";
+                    log.from = player;
+                    log.arg = QString::number(damage.damage);
+                    log.arg2 = QString::number(--damage.damage);
+                    room->sendLog(log);
+
+                    if (damage.damage < 1){
+                        LogMessage log;
+                        log.type = "#ZeroDamage";
+                        log.from = damage.from;
+                        log.to << player;
+                        room->sendLog(log);
+                        return true;
+                    }
+                    data = QVariant::fromValue(damage);
+                }
+        }
+
+        return false;
+    }
+};
+
+class ThGuihuan: public TriggerSkill {
+public:
+    ThGuihuan(): TriggerSkill("thguihuan") {
+        events << BeforeGameOverJudge;
+        frequency = Limited;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target != NULL;
+    }
+
+    virtual bool trigger(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const{
+        if (!room->getMode().endsWith("p") && !room->getMode().endsWith("pd") && !room->getMode().endsWith("pz"))
+            return false;
+        DamageStar damage = data.value<DamageStar>();
+        if (damage == NULL)
+            return false;
+        ServerPlayer *killer = damage->from;
+        if (killer == NULL || killer->isLord() || player->isLord() || player->getHp() > 0)
+            return false;
+        if (!TriggerSkill::triggerable(killer) || killer->getMark("@guihuan") == 0)
+            return false;
+        if (room->askForSkillInvoke(killer, objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            killer->loseMark("@guihuan");
+            killer->gainMark("@guihuanused");
+            QString role1 = killer->getRole();
+            killer->setRole(player->getRole());
+            room->setPlayerProperty(killer, "role", player->getRole());
+            player->setRole(role1);
+            room->setPlayerProperty(player, "role", role1);
+        }
+        return false;
+    }
+};
+
 class ThZhizun: public PhaseChangeSkill{
 public:
     ThZhizun():PhaseChangeSkill("thzhizun"){
@@ -1144,7 +1228,13 @@ KamiPackage::KamiPackage()
 	kami013->addSkill(new ThZhanying);
 	kami013->addSkill(new ThZhanyingTriggerSkill);
     related_skills.insertMulti("thzhanying", "#thzhanying");
-	
+
+	General *kami014 = new General(this, "kami014", "god", 3, false);	
+	kami014->addSkill(new ThLuli);
+	kami014->addSkill(new ThGuihuan);
+    kami014->addSkill(new MarkAssignSkill("@guihuan", 1));
+    related_skills.insertMulti("thguihuan", "#@guihuan-1");
+
 	General *kami015 = new General(this, "kami015", "god", 3);
 	kami015->addSkill(new ThZhizun);
 	kami015->addSkill(new ThFeiying);
