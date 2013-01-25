@@ -8,6 +8,7 @@
 #include "banpair.h"
 #include "lua-wrapper.h"
 #include "jsonutils.h"
+#include "standard-equips.h"
 
 using namespace QSanProtocol;
 using namespace QSanProtocol::Utils;
@@ -409,8 +410,20 @@ void ServerPlayer::addCard(const Card *card, Place place){
 
     case PlaceEquip: {
             WrappedCard *wrapped = Sanguosha->getWrappedCard(card->getEffectiveId());
-            const EquipCard *equip = qobject_cast<const EquipCard *>(card->getRealCard());
-            setEquip(wrapped);
+			const Card *acard = wrapped->getRealCard();
+			const EquipCard *equip = NULL;
+			//liannufuck hack
+			if (!acard->isKindOf("EquipCard") && hasSkill("liannufuck"))
+			{
+				Crossbow *liannu = new Crossbow(acard->getSuit(), acard->getNumber());
+				liannu->setSkillName(objectName());
+				wrapped->takeOver(liannu);
+				equip = qobject_cast<const EquipCard *>(wrapped->getRealCard());
+			}
+			else
+				equip = qobject_cast<const EquipCard *>(card->getRealCard());
+            //------------------------------------
+			setEquip(wrapped);
             equip->onInstall(this);
             break;
         }

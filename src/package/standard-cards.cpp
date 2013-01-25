@@ -122,7 +122,7 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
         room->setEmotion(player,"weapon/fan");
     if (player->getPhase() == Player::Play
         && player->hasFlag("MoreSlashInOneTurn")
-        && player->hasWeapon("crossbow")
+        && player->hasWeapon("Crossbow")
         && !player->hasSkill("hupao"))
         room->setEmotion(player,"weapon/crossbow");
     if (isKindOf("ThunderSlash"))
