@@ -415,6 +415,8 @@ void RoomScene::handleGameEvent(const Json::Value &arg)
         {
             container->stopHuaShen();
         }
+
+		container->updateAvatarTooltip();
         break;
     }
     case S_GAME_EVENT_ACQUIRE_SKILL:{
@@ -426,6 +428,9 @@ void RoomScene::handleGameEvent(const Json::Value &arg)
         player->acquireSkill(skill_name);
         acquireSkill(player, skill_name);
 
+		PlayerCardContainer *container = (PlayerCardContainer *)_getGenericCardContainer(Player::PlaceHand, player);
+        container->updateAvatarTooltip();
+
         break;
     }
     case S_GAME_EVENT_ADD_SKILL:{
@@ -435,6 +440,9 @@ void RoomScene::handleGameEvent(const Json::Value &arg)
         ClientPlayer *player = ClientInstance->getPlayer(player_name);
 
         player->addSkill(skill_name);
+
+		PlayerCardContainer *container = (PlayerCardContainer *)_getGenericCardContainer(Player::PlaceHand, player);
+        container->updateAvatarTooltip();
 
         break;
     }

@@ -823,7 +823,8 @@ public:
 				recover.who = splayer;
 				room->recover(splayer, recover);
 			}
-			room->throwCard(room->askForCardChosen(splayer, player, "h", objectName()), player, splayer);
+			if (player->isAlive() && !player->isKongcheng())
+				room->throwCard(room->askForCardChosen(splayer, player, "h", objectName()), player, splayer);
 		}
 
 		return false;

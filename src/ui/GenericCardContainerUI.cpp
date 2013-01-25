@@ -767,7 +767,13 @@ void PlayerCardContainer::addEquips(QList<CardItem*> &equips)
          _clearPixmap(_m_extraSkillBg);
          _clearPixmap(_m_extraSkillText);
      }
- }
+}
+ 
+void PlayerCardContainer::updateAvatarTooltip()
+{
+    if (m_player)
+        _m_avatarArea->setToolTip(m_player->getSkillDescription());
+}
 
 PlayerCardContainer::PlayerCardContainer()
 {
