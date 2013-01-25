@@ -767,10 +767,10 @@ public:
 	}
 };
 
-/*class ThWunan: public TriggerSkill{
+class ThWunan: public TriggerSkill{
 public:
 	ThWunan(): TriggerSkill("thwunan"){
-		events << CardUsed << HpRecovered << Damaged << CardResponded << Damage << PreHpReduced;
+		events << CardUsed << HpRecovered << Damaged << CardResponded << DamageCaused;
 	}
 
 	virtual bool triggerable(const ServerPlayer *target) const{
@@ -779,7 +779,7 @@ public:
 
 	virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
 		ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-		if (splayer == NULL)
+		if (splayer == NULL || splayer == player || splayer->isKongcheng())
 			return false;
 
 		if (triggerEvent == CardUsed)
@@ -808,13 +808,27 @@ public:
 				|| resp.m_card->getSkillName() != "EightDiagram")
 				return false;
 		}
-		else if (triggerEvent == Damage)
+		else if (triggerEvent == DamageCaused)
 		{
 			DamageStruct damage = data.value<DamageStruct>();
-			if ()
+			if (!damage.card || !damage.card->isKindOf("Slash") || !damage.to->isKongcheng())
+				return false;
+		}
+
+		if (splayer->askForSkillInvoke(objectName()) && room->askForDiscard(splayer, objectName(), 1, 1, true, false))
+		{
+			if (splayer->isWounded())
+			{
+				RecoverStruct recover;
+				recover.who = splayer;
+				room->recover(splayer, recover);
+			}
+			room->throwCard(room->askForCardChosen(splayer, player, "h", objectName()), player, splayer);
+		}
+
 		return false;
 	}
-};*/
+};
 
 class ThSanling: public TriggerSkill{
 public:
@@ -997,6 +1011,97 @@ public:
 	}
 };
 
+class ThZhizun: public PhaseChangeSkill{
+public:
+    ThZhizun():PhaseChangeSkill("thzhizun"){
+
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        if(player->getPhase() != Player::Finish)
+            return false;
+
+        Room *room = player->getRoom();
+        if(!player->askForSkillInvoke(objectName()))
+            return false;
+
+        QString choice = room->askForChoice(player, objectName(), "modify+obtain");
+
+        if(choice == "modify")
+		{
+            ServerPlayer *to_modify = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName());
+			QStringList kingdoms;
+			kingdoms << "shu" << "wei" << "wu" << "qun";
+            kingdoms.removeOne(to_modify->getKingdom());
+			QString kingdom = room->askForChoice(player, objectName(), kingdoms.join("+"));
+            QString old_kingdom = to_modify->getKingdom();
+            room->setPlayerProperty(to_modify, "kingdom", kingdom);
+
+            LogMessage log;
+            log.type = "#ChangeKingdom";
+            log.from = player;
+            log.to << to_modify;
+            log.arg = old_kingdom;
+            log.arg2 = kingdom;
+            room->sendLog(log);
+
+        }
+		else if(choice == "obtain")
+		{
+            QStringList lords = Sanguosha->getLords();
+            QList<ServerPlayer *> players = room->getOtherPlayers(player);
+            foreach(ServerPlayer *player, players){
+                lords.removeOne(player->getGeneralName());
+            }
+
+			QStringList lord_skills_can;
+			lord_skills_can << "jijiang" << "hujia" << "jiuyuan" << "yuji" 
+				<< "thqiyuan" << "songwei" << "thchundu" << "baonue";
+
+            QStringList lord_skills;
+            foreach(QString lord, lords){
+                const General *general = Sanguosha->getGeneral(lord);
+                QList<const Skill *> skills = general->findChildren<const Skill *>();
+                foreach(const Skill *skill, skills){
+                    if (skill->isLordSkill() && !player->hasSkill(skill->objectName())
+						&& lord_skills_can.contains(skill->objectName().remove("$")))
+                        lord_skills << skill->objectName();
+                }
+            }
+
+            if(!lord_skills.isEmpty()){
+                QString skill_name = room->askForChoice(player, objectName(), lord_skills.join("+"));
+
+                const Skill *skill = Sanguosha->getSkill(skill_name);
+                room->acquireSkill(player, skill);
+
+                if(skill->inherits("GameStartSkill")){
+                    const GameStartSkill *game_start_skill = qobject_cast<const GameStartSkill *>(skill);
+                    game_start_skill->onGameStart(player);
+                }
+            }
+        }
+
+        room->broadcastSkillInvoke(objectName());
+
+        return false;
+    }
+};
+
+class ThFeiying: public DistanceSkill{
+public:
+    ThFeiying(): DistanceSkill("thfeiying"){
+
+    }
+
+    virtual int getCorrect(const Player *from, const Player *to) const{
+        if(to->hasSkill(objectName()))
+            return 1;
+        else
+            return 0;
+    }
+};
+
 KamiPackage::KamiPackage()
     :Package("kami")
 {
@@ -1026,6 +1131,9 @@ KamiPackage::KamiPackage()
 	kami009->addSkill(new ThChuangxin);
 	kami009->addSkill(new ThTianxin);
 
+	General *kami012 = new General(this, "kami012", "god");
+	kami012->addSkill(new ThWunan);
+
 	General *kami013 = new General(this, "kami013", "god", 1, false);
 	kami013->addSkill(new ThSanling);
 	kami013->addSkill(new ThBingzhang);
@@ -1037,6 +1145,10 @@ KamiPackage::KamiPackage()
 	kami013->addSkill(new ThZhanyingTriggerSkill);
     related_skills.insertMulti("thzhanying", "#thzhanying");
 	
+	General *kami015 = new General(this, "kami015", "god", 3);
+	kami015->addSkill(new ThZhizun);
+	kami015->addSkill(new ThFeiying);
+
     addMetaObject<ThShenfengCard>();
     addMetaObject<ThYouyaCard>();
 	addMetaObject<ThJinluCard>();
