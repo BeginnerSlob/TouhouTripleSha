@@ -2696,12 +2696,12 @@ void Room::useCard(const CardUseStruct &use, bool add_history){
         else
             key = card->getClassName();
 
-        bool slash_record =
-            key.contains("Slash") &&
-            card_use.from->getSlashCount() > 0 &&
-            card_use.from->hasWeapon("crossbow");
+        bool slash_not_record = key.contains("Slash")
+                            && slash_count > 0
+                            && (card_use.from->hasWeapon("Crossbow")
+                                || Sanguosha->correctCardTarget(TargetModSkill::Residue, card_use.from, card) > 500);
 
-        if(!slash_record){
+        if (!slash_not_record) {
             card_use.from->addHistory(key);
             card_use.from->invoke("addHistory", key + ":");
         }

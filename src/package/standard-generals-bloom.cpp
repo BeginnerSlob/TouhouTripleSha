@@ -707,6 +707,21 @@ public:
     }
 };
 
+class FenghouTargetMod: public TargetModSkill {
+public:
+    FenghouTargetMod(): TargetModSkill("#fenghou-target") {
+        frequency = NotFrequent;
+        pattern = "SupplyShortage";
+    }
+
+    virtual int getDistanceLimit(const Player *from, const Card *) const{
+        if (from->hasSkill("fenghou"))
+            return 1;
+        else
+            return 0;
+    }
+};
+
 class Zhaihun: public TriggerSkill{
 public:
     Zhaihun(): TriggerSkill("zhaihun"){
@@ -1778,6 +1793,8 @@ void StandardPackage::addBloomGenerals(){
 
     General *bloom010 = new General(this, "bloom010", "wei");
     bloom010->addSkill(new Fenghou);
+    bloom010->addSkill(new FenghouTargetMod);
+    related_skills.insertMulti("fenghou", "#fenghou-target");
 
     General *bloom011 = new General(this, "bloom011", "wei");
     bloom011->addSkill(new Zhaihun);

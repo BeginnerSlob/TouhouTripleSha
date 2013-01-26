@@ -413,6 +413,27 @@ MaxCardsSkill::MaxCardsSkill(const QString &name)
 {
 }
 
+TargetModSkill::TargetModSkill(const QString &name)
+    : Skill(name, Skill::Compulsory), pattern("Slash")
+{
+}
+
+QString TargetModSkill::getPattern() const{
+    return pattern;
+}
+
+int TargetModSkill::getResidueNum(const Player *, const Card *) const{
+    return 0;
+}
+
+int TargetModSkill::getDistanceLimit(const Player *, const Card *) const{
+    return 0;
+}
+
+int TargetModSkill::getExtraTargetNum(const Player *, const Card *) const{
+    return 0;
+}
+
 WeaponSkill::WeaponSkill(const QString &name)
     :TriggerSkill(name)
 {

@@ -1,5 +1,6 @@
 #include "standard.h"
 #include "standard-equips.h"
+#include "maneuvering.h"
 #include "general.h"
 #include "engine.h"
 #include "client.h"
@@ -56,7 +57,7 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
     if (objectName() == "slash") {
         bool has_changed = false;
         QString skill_name = getSkillName();
-        if (!skill_name.isEmpty()){
+        if (!skill_name.isEmpty()) {
             const Skill *skill = Sanguosha->getSkill(skill_name);
             if (skill && !skill->inherits("FilterSkill") && skill->objectName() != "guhuo")
                 has_changed = true;
@@ -65,26 +66,31 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
             QVariant data = QVariant::fromValue(use);
             if (player->hasSkill("lihuo"))
                 if (room->askForSkillInvoke(player, "lihuo", data)) {
-                    room->broadcastSkillInvoke("lihuo", 1);
-                    room->setCardFlag(this, "lihuo");
-                    room->setCardFlag(this, "isFireSlash");
+                    FireSlash *fire_slash = new FireSlash(getSuit(), getNumber());
+                    if (subcardsLength() > 0)
+                        fire_slash->addSubcard(this);
+                    fire_slash->setSkillName("lihuo");
+                    use.card = fire_slash;
                 }
-            if (player->hasSkill("Fan") && !hasFlag("isFireSlash")) {
-                if (room->askForSkillInvoke(player, "Fan", data)) {
-                    room->setEmotion(player, "weapon/fan");
-                    room->setCardFlag(this, "isFireSlash");
+            if (player->hasSkill("fan") && !use.card->isKindOf("FireSlash")) {
+                if (room->askForSkillInvoke(player, "fan", data)) {
+                    FireSlash *fire_slash = new FireSlash(getSuit(), getNumber());
+                    if (subcardsLength() > 0)
+                        fire_slash->addSubcard(this);
+                    fire_slash->setSkillName("fan");
+                    use.card = fire_slash;
                 }
             }
         }
     }
-    if (isVirtualCard() && subcardsLength() == 0) {
+    if ((use.card->isVirtualCard() && use.card->subcardsLength() == 0) || (getSkillName() == "guhuo" && use.card != this)) {
         QList<ServerPlayer *> targets_ts;
         while (true) {
-            QList<const Player*> targets_const;
+            QList<const Player *> targets_const;
             foreach (ServerPlayer *p, use.to)
                 targets_const << qobject_cast<const Player *>(p);
             foreach (ServerPlayer *p, room->getAlivePlayers())
-                if (!use.to.contains(p) && targetFilter(targets_const, p, use.from))
+                if (!use.to.contains(p) && use.card->targetFilter(targets_const, p, use.from))
                     targets_ts << p;
             if (targets_ts.isEmpty())
                 break;
@@ -92,16 +98,14 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
                 ServerPlayer *extra_target = room->askForPlayerChosen(player, targets_ts, "slash_extra_targets");
                 use.to.append(extra_target);
                 qSort(use.to.begin(), use.to.end(), ServerPlayer::CompareByActionOrder);
-            }
-            else
+            } else
                 break;
             targets_ts.clear();
             targets_const.clear();
         }
     }
 
-    if (player->getPhase() == Player::Play
-        && player->hasFlag("MoreSlashInOneTurn")) {
+    if (player->getPhase() == Player::Play && player->hasFlag("MoreSlashInOneTurn")) {
         if (player->hasSkill("hupao"))
             room->broadcastSkillInvoke("hupao");
         else if (player->hasSkill("huxiao"))
@@ -109,29 +113,30 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
     }
     if (use.to.size() > 1 && player->hasSkill("shenji"))
         room->broadcastSkillInvoke("shenji");
-    else if (use.to.size() > 1 && (hasFlag("isFireSlash") || isKindOf("FireSlash")) && player->hasSkill("lihuo") && getSkillName() != "lihuo")
+    else if (use.to.size() > 1 && player->hasSkill("lihuo") && use.card->isKindOf("FireSlash") && use.card->getSkillName() != "lihuo")
         room->broadcastSkillInvoke("lihuo", 1);
     else if (use.to.size() > 1 && player->hasSkill("xindu"))
         room->broadcastSkillInvoke("xindu");
 
-    if (isVirtualCard() && getSkillName() == "Spear")
+    if (isVirtualCard() && use.card->getSkillName() == "Spear")
         room->setEmotion(player,"weapon/spear");
     else if (use.to.size() > 1 && player->hasWeapon("Halberd") && player->isLastHandCard(this))
         room->setEmotion(player,"weapon/halberd");
-    else if (isVirtualCard() && getSkillName() == "Fan")
+    else if (isVirtualCard() && use.card->getSkillName() == "Fan")
         room->setEmotion(player,"weapon/fan");
     if (player->getPhase() == Player::Play
         && player->hasFlag("MoreSlashInOneTurn")
         && player->hasWeapon("Crossbow")
-        && !player->hasSkill("hupao"))
+        && !player->hasSkill("hupao")
+        && !player->hasSkill("huxiao"))
         room->setEmotion(player,"weapon/crossbow");
-    if (isKindOf("ThunderSlash"))
+    if (use.card->isKindOf("ThunderSlash"))
         room->setEmotion(player, "thunder_slash");
-    else if (isKindOf("FireSlash") || hasFlag("isFireSlash"))
+    else if (use.card->isKindOf("FireSlash"))
         room->setEmotion(player, "fire_slash");
-    else if (isRed())
+    else if (use.card->isRed())
         room->setEmotion(player, "slash_red");
-    else if (isBlack())
+    else if (use.card->isBlack())
         room->setEmotion(player, "slash_black");
     else
         room->setEmotion(player, "killer");
@@ -176,51 +181,29 @@ bool Slash::targetsFeasible(const QList<const Player *> &targets, const Player *
 }
 
 bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{    
-    int slash_targets = 1;
-    if(Self->hasWeapon("Halberd") && Self->isLastHandCard(this))
-        slash_targets += 2;
-
-    if(Self->hasSkill("lihuo") && (isKindOf("FireSlash") || hasFlag("isFireSlash")))
-        slash_targets++;
-
-    if(Self->hasSkill("shenji") && Self->getWeapon() == NULL)
-        slash_targets += 2;
-
-    bool distance_limit = true;
-    if(Self->hasFlag("jianmie_success")){
-        distance_limit = false;
-        slash_targets++;
-    }
-
-    if(Self->hasFlag("jiangchi_invoke") || Self->hasFlag("slashNoDistanceLimit"))
-        distance_limit = false;
-
-    if (isKindOf("WushenSlash")
-        || (getSuit() == Card::Heart && Self->hasSkill("wushen"))) // Be care!!!!
-        distance_limit = false;
-
-    if (isKindOf("ThunderSlash") && Self->hasSkill("thyuchang"))
-        distance_limit = false;
-
-    if(getSuit() == Card::Heart && Self->hasSkill("zhenhong"))
+    int slash_targets = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
+    bool distance_limit = ((1 + Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, Self, this)) < 500);
+    if (Self->hasFlag("slashNoDistanceLimit"))
         distance_limit = false;
 
     int rangefix = 0;
-    if(Self->getWeapon() && subcards.contains(Self->getWeapon()->getId())){
-        const Weapon* weapon = qobject_cast<const Weapon*>(Self->getWeapon()->getRealCard());
+    if (Self->getWeapon() && subcards.contains(Self->getWeapon()->getId())) {
+        const Weapon *weapon = qobject_cast<const Weapon *>(Self->getWeapon()->getRealCard());
         rangefix += weapon->getRange() - 1;
     }
 
-    if(Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
+    if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
         rangefix += 1;
 
-    if(Self->hasFlag("slashTargetFix")){
-        if(targets.isEmpty())
-            return  to_select->hasFlag("SlashAssignee") && Self->canSlash(to_select, this, distance_limit, rangefix);
-        else
-        {
+	if (Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, Self, this) != 0)
+		rangefix -= Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, Self, this);
+
+    if (Self->hasFlag("slashTargetFix")) {
+        if (targets.isEmpty())
+            return to_select->hasFlag("SlashAssignee") && Self->canSlash(to_select, this, distance_limit, rangefix);
+        else {
             bool canSelect = false;
-            foreach(const Player *p, targets){
+            foreach (const Player *p, targets) {
                 if(p->hasFlag("SlashAssignee")){
                     canSelect = true;
                     break;
@@ -230,29 +213,34 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
         }
     }
 
-    if(targets.length() >= slash_targets) {
-        bool hasUsed = false;
+    if (targets.length() >= slash_targets) {
         if (Self->hasSkill("xindu") && targets.length() == slash_targets) {
-            foreach(const Player *p, targets) {
-                if(Self->distanceTo(p) == 1) {
-                    hasUsed = true;
+            bool hasExtraTarget = false;
+            foreach (const Player *p, targets)
+                if (Self->distanceTo(p) == 1) {
+                    hasExtraTarget = true;
                     break;
                 }
-            }
-
-            if(hasUsed)
+            if (hasExtraTarget)
                 return Self->canSlash(to_select, this, distance_limit, rangefix);
             else
-                return Self->canSlash(to_select, this, false) && Self->distanceTo(to_select) == 1;
-        }
-        else
+                return Self->canSlash(to_select, this) && Self->distanceTo(to_select) == 1;
+        } else
             return false;
     }
 
-    if (Self->hasSkill("xiagong") && !Self->getWeapon())
+    return Self->canSlash(to_select, this, distance_limit, rangefix);
+
+    /*if (isKindOf("ThunderSlash") && Self->hasSkill("thyuchang"))
+        distance_limit = false;
+
+    if(getSuit() == Card::Heart && Self->hasSkill("zhenhong"))
+        distance_limit = false;*/
+
+    /*if (Self->hasSkill("xiagong") && !Self->getWeapon())
         return Self->canSlash(to_select, this, false) && Self->distanceTo(to_select) <= 2;
     else
-        return Self->canSlash(to_select, this, distance_limit, rangefix);
+        return Self->canSlash(to_select, this, distance_limit, rangefix);*/
 }
 
 Jink::Jink(Suit suit, int number):BasicCard(suit, number){
@@ -569,6 +557,19 @@ Axe::Axe(Suit suit, int number)
 {
     setObjectName("Axe");
 }
+
+class HalberdSkill: public TargetModSkill {
+public:
+    HalberdSkill(): TargetModSkill("Halberd") {
+    }
+
+    virtual int getExtraTargetNum(const Player *from, const Card *card) const{
+        if (from->hasWeapon("Halberd") && from->isLastHandCard(card))
+            return 2;
+        else
+            return 0;
+    }
+};
 
 Halberd::Halberd(Suit suit, int number)
     :Weapon(suit, number, 4)
@@ -971,10 +972,13 @@ Duel::Duel(Suit suit, int number)
 }
 
 bool Duel::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if(to_select == Self)
+    int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
+    if (targets.length() >= total_num)
+        return false;
+    if (to_select == Self)
         return false;
 
-    return targets.isEmpty();
+    return true;
 }
 
 void Duel::onEffect(const CardEffectStruct &effect) const{
@@ -1039,16 +1043,30 @@ Snatch::Snatch(Suit suit, int number):SingleTargetTrick(suit, number, true) {
 }
 
 bool Snatch::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if(!targets.isEmpty())
+    int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
+    if (targets.length() >= total_num)
         return false;
 
-    if(to_select->isAllNude())
+    if (to_select->isAllNude())
         return false;
 
-    if(to_select == Self)
+    if (to_select == Self)
         return false;
 
-    if(Self->distanceTo(to_select, getSkillName() == "jixi" ? 1 : 0) > 1 && !Self->hasSkill("jizhi"))
+    int distance_limit = 1 + Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, Self, this);
+    int rangefix = 0;
+    if (Self->getWeapon() && subcards.contains(Self->getWeapon()->getId())){
+        const Weapon *weapon = qobject_cast<const Weapon *>(Self->getWeapon()->getRealCard());
+        rangefix += weapon->getRange() - 1;
+    }
+
+    if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
+        rangefix += 1;
+
+    if (getSkillName() == "jixi")
+        rangefix += 1;
+
+    if (Self->distanceTo(to_select, rangefix) > distance_limit)
         return false;
 
     return true;
@@ -1072,13 +1090,14 @@ Dismantlement::Dismantlement(Suit suit, int number)
 }
 
 bool Dismantlement::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if(!targets.isEmpty())
+    int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
+    if (targets.length() >= total_num)
         return false;
 
-    if(to_select->isAllNude())
+    if (to_select->isAllNude())
         return false;
 
-    if(to_select == Self)
+    if (to_select == Self)
         return false;
 
     return true;
@@ -1328,7 +1347,7 @@ StandardCardPackage::StandardCardPackage()
         << new EightDiagram(Card::Club);
 	
         skills << new DoubleSwordSkill << new QinggangSwordSkill
-               << new BladeSkill << new SpearSkill << new AxeSkill
+               << new BladeSkill << new SpearSkill << new AxeSkill << new HalberdSkill
                << new KylinBowSkill << new EightDiagramSkill;
 
     {

@@ -1231,26 +1231,15 @@ public:
 class ThYanlun:public TriggerSkill{
 public:
     ThYanlun():TriggerSkill("thyanlun"){
-        events << EventPhaseChanging << Damage;
+        events << Damage;
         view_as_skill = new ThYanlunViewAsSkill;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if(triggerEvent == Damage) {
-            DamageStruct &damage = data.value<DamageStruct>();
-            if(player->hasFlag("yanlun") && damage.card->isKindOf("FireAttack")
-                    && player->askForSkillInvoke(objectName()))
-                player->drawCards(1);
-
-            return false;
-        }
-        else if(triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct &change = data.value<PhaseChangeStruct>();
-            if(change.to == Player::NotActive && player->hasFlag("yanlun"))
-                room->setPlayerFlag(player, "-yanlun");
-
-            return false;
-        }
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        DamageStruct &damage = data.value<DamageStruct>();
+        if(player->hasFlag("yanlun") && damage.card->isKindOf("FireAttack")
+                && player->askForSkillInvoke(objectName()))
+            player->drawCards(1);
 
         return false;
     }

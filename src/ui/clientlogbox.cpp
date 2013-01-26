@@ -22,7 +22,7 @@ void ClientLogBox::appendLog(
         QString arg2)
 {
 	if (type == "$AppendSeparator") {
-        append(QString(tr("<font color='%1'>------------------------------</font>")).arg(Config.TextEditColor.name()));
+        append(QString("<font color='%1'>------------------------------</font>").arg(Config.TextEditColor.name()));
         return;
     }
 

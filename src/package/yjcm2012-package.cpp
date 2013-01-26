@@ -190,6 +190,27 @@ public:
     }
 };
 
+class JiangchiTargetMod: public TargetModSkill {
+public:
+    JiangchiTargetMod(): TargetModSkill("#jiangchi-target") {
+        frequency = NotFrequent;
+    }
+
+    virtual int getResidueNum(const Player *from, const Card *) const{
+        if (from->hasSkill("jiangchi") && from->hasFlag("jiangchi_invoke"))
+            return 1;
+        else
+            return 0;
+    }
+
+    virtual int getDistanceLimit(const Player *from, const Card *) const{
+        if (from->hasSkill("jiangchi") && from->hasFlag("jiangchi_invoke"))
+            return 1000;
+        else
+            return 0;
+    }
+};
+
 class Qianxi: public TriggerSkill{
 public:
     Qianxi():TriggerSkill("qianxi"){
@@ -438,6 +459,20 @@ public:
     }
 };
 
+class LihuoTargetMod: public TargetModSkill {
+public:
+    LihuoTargetMod(): TargetModSkill("#lihuo-target") {
+        frequency = NotFrequent;
+    }
+
+    virtual int getExtraTargetNum(const Player *from, const Card *card) const{
+        if (from->hasSkill("lihuo") && card->isKindOf("FireSlash"))
+            return 1;
+        else
+            return 0;
+    }
+};
+
 ChunlaoCard::ChunlaoCard(){
     will_throw = false;
     target_fixed = true;
@@ -517,9 +552,13 @@ YJCM2012Package::YJCM2012Package():Package("YJCM2012"){
 
     /*General *caozhang = new General(this, "caozhang", "wei");
     caozhang->addSkill(new Jiangchi);
+    caozhang->addSkill(new JiangchiTargetMod);
+    related_skills.insertMulti("jiangchi", "#jiangchi-target");
 
     General *chengpu = new General(this, "chengpu", "wu");
     chengpu->addSkill(new Lihuo);
+    chengpu->addSkill(new LihuoTargetMod);
+    related_skills.insertMulti("lihuo", "#lihuo-target");
     chengpu->addSkill(new Chunlao);
 
     General *guanxingzhangbao = new General(this, "guanxingzhangbao", "shu");

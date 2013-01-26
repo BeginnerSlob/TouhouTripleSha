@@ -10,63 +10,40 @@
 class ThChuangshi:public TriggerSkill{
 public:
 	ThChuangshi():TriggerSkill("thchuangshi"){
-		events << TargetConfirmed << CardEffected;
+		events << CardEffected;
 	}
 	
-	virtual bool triggerable(ServerPlayer *target) const {
-		return (target != NULL);
+	virtual bool triggerable(const ServerPlayer *target) const {
+		return target != NULL;
 	}
 	
-	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
-		if (triggerEvent == TargetConfirmed && TriggerSkill::triggerable(player))
-		{
-			CardUseStruct use = data.value<CardUseStruct>();
-			if (use.from == player)
-				return false;
-			if (!use.card->isKindOf("Dismantlement")
-				&& !use.card->isKindOf("Collateral")
-				&& !use.card->isKindOf("Duel"))
-				return false;
-			QList<ServerPlayer *> targets;
-			foreach (ServerPlayer *p, use.to)
-				if (player->inMyAttackRange(p))
-					targets << p;
+	virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
+		ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
+		if (!splayer)
+			return false;
 
-			if (targets.isEmpty())
-				return false;
+		CardEffectStruct effect = data.value<CardEffectStruct>();
+		if (effect.from == splayer)
+			return false;
+		if (!effect.card->isKindOf("Dismantlement")
+			&& !effect.card->isKindOf("Collateral")
+			&& !effect.card->isKindOf("Duel"))
+			return false;
+		
+		if (!splayer->inMyAttackRange(player))
+			return false;
 
-			while (!targets.isEmpty() && player->askForSkillInvoke(objectName()))
-			{
-				ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
-				if (target)
-				{
-					target->addMark("chuangshitarget");
-					targets.removeOne(target);
-					Slash *slash = new Slash(Card::NoSuitNoColor, 0);
-					slash->setSkillName(objectName());
-					slash->deleteLater();
-					CardUseStruct newuse;
-					newuse.card = slash;
-					newuse.from = use.from;
-					newuse.to << player;
-					room->useCard(newuse, false);
-				}
-			}
-		}
-		else if (triggerEvent == CardEffected)
+		if (splayer->askForSkillInvoke(objectName()))
 		{
-			CardEffectStruct effect = data.value<CardEffectStruct>();
-			if (!effect.card->isKindOf("Dismantlement")
-				&& !effect.card->isKindOf("Collateral")
-				&& !effect.card->isKindOf("Duel"))
-				return false;
-			
-			if (effect.to->getMark("chuangshitarget") > 0)
-			{
-				effect.to->removeMark("chuangshitarget");
-				
-				return true;
-			}
+			Slash *slash = new Slash(Card::NoSuitNoColor, 0);
+			slash->setSkillName(objectName());
+			slash->deleteLater();
+			CardUseStruct newuse;
+			newuse.card = slash;
+			newuse.from = effect.from;
+			newuse.to << splayer;
+			room->useCard(newuse, false);
+			return true;
 		}
 
 		return false;
