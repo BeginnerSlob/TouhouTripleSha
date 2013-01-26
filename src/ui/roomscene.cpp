@@ -457,7 +457,10 @@ void RoomScene::handleGameEvent(const Json::Value &arg)
         break;
     }
     case S_GAME_EVENT_UPDATE_SKILL:{
-        updateSkillButtons();
+        foreach (Photo *photo, photos)
+            photo->updateAvatarTooltip();
+        dashboard->updateAvatarTooltip();
+		updateSkillButtons();
         break;
     }
 

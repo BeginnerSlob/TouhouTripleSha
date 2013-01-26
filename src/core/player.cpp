@@ -770,7 +770,7 @@ QSet<QString> Player::getAcquiredSkills() const
 }
 
 QString Player::getSkillDescription() const{
-    QString description;
+    QString description = QString();
 
     foreach (const Skill *skill, getVisibleSkillList()) {
         if (!hasSkill(skill->objectName()))
@@ -781,6 +781,7 @@ QString Player::getSkillDescription() const{
         description.append(QString("<b>%1</b>: %2 <br/> <br/>").arg(skill_name).arg(desc));
     }
 
+	if (description.isEmpty()) description = tr("No skills");
     return description;
 }
 
@@ -791,15 +792,11 @@ bool Player::isProhibited(const Player *to, const Card *card) const
 
 bool Player::canSlashWithoutCrossbow() const
 {
-    if(hasSkill("hupao"))
-        return true;
-
     int slash_count = getSlashCount();
     int valid_slash_count = 1;
-    if(hasFlag("jianmie_success"))
-        valid_slash_count++;
-    if(hasFlag("jiangchi_invoke"))
-        valid_slash_count++;
+    Slash *slash = new Slash(Card::NoSuitNoColor, 0);
+    slash->deleteLater();
+    valid_slash_count += Sanguosha->correctCardTarget(TargetModSkill::Residue, this, slash);
     return slash_count < valid_slash_count;
 }
 

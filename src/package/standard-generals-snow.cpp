@@ -572,15 +572,18 @@ public:
 	}
 
 	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-		ServerPlayer *splayer = room->findPlayerBySkillName("biansheng", true);
-		if (!splayer)
-			return false;
-
 		if (triggerEvent == EventPhaseEnd && player->hasSkill("biansheng_pindian"))
 			room->detachSkillFromPlayer(player, "biansheng_pindian", true);
 		else if (triggerEvent == EventPhaseStart)
 		{
-			if (player->getPhase() == Player::Play && !player->hasSkill("biansheng_pindian") && splayer->isAlive() && splayer->hasLordSkill("biansheng") && player->getKingdom() == "wu" && player != splayer)
+			bool can_invoke = false;
+			foreach(ServerPlayer *p, room->getOtherPlayers(player))
+				if (p->hasLordSkill("thyewang"))
+				{
+					can_invoke = true;
+					break;
+				}
+			if (can_invoke && player->getPhase() == Player::Play && !player->hasSkill("biansheng_pindian") && player->getKingdom() == "qun")
 				room->attachSkillToPlayer(player, "biansheng_pindian");
 		}
 		else if (triggerEvent == EventPhaseChanging)
@@ -767,6 +770,34 @@ public:
     }
 };
 
+class JianmieTargetMod: public TargetModSkill {
+public:
+    JianmieTargetMod(): TargetModSkill("#jianmie-target") {
+        frequency = NotFrequent;
+    }
+
+    virtual int getResidueNum(const Player *from, const Card *) const{
+        if (from->hasSkill("jianmie") && from->hasFlag("jianmie_success"))
+            return 1;
+        else
+            return 0;
+    }
+
+    virtual int getDistanceLimit(const Player *from, const Card *) const{
+        if (from->hasSkill("jianmie") && from->hasFlag("jianmie_success"))
+            return 1000;
+        else
+            return 0;
+    }
+
+    virtual int getExtraTargetNum(const Player *from, const Card *) const{
+        if (from->hasSkill("jianmie") && from->hasFlag("jianmie_success"))
+            return 1;
+        else
+            return 0;
+    }
+};
+
 class SushengRemove: public TriggerSkill{
 public:
     SushengRemove():TriggerSkill("#susheng-remove"){
@@ -838,8 +869,8 @@ public:
         events << PostHpReduced << AskForPeachesDone;
     }
 
-    virtual bool trigger(TriggerEvent event, Room* room, ServerPlayer *player, QVariant &) const{
-        if(event == PostHpReduced && player->getHp() < 1){
+    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &) const{
+        if(triggerEvent == PostHpReduced && player->getHp() < 1){
             if(room->askForSkillInvoke(player, objectName())){
                 room->setTag("Susheng", player->objectName());
                 room->broadcastSkillInvoke(objectName());
@@ -870,7 +901,7 @@ public:
                     return true;
                 }
             }
-        }else if(event == AskForPeachesDone){
+        }else if(triggerEvent == AskForPeachesDone){
             const QList<int> &susheng = player->getPile("sushengpile");
 
             if(player->getHp() > 0)
@@ -1226,14 +1257,34 @@ public:
     }
 
     virtual bool viewFilter(const Card *to_select) const{
-        return to_select->getTypeId() == Card::TypeEquip;
+        if (to_select->getTypeId() != Card::TypeEquip)
+            return false;
+
+        if (Self->getWeapon() && to_select->getEffectiveId() == Self->getWeapon()->getId() && to_select->objectName() == "Crossbow")
+            return Self->canSlashWithoutCrossbow();
+        else
+            return true;
     }
 
     const Card *viewAs(const Card *originalCard) const{
-        WushenSlash *slash = new WushenSlash(originalCard->getSuit(), originalCard->getNumber());
+        Slash *slash = new Slash(originalCard->getSuit(), originalCard->getNumber());
         slash->addSubcard(originalCard);
         slash->setSkillName(objectName());
         return slash;
+    }
+};
+
+class XuanrenTargetMod: public TargetModSkill {
+public:
+    XuanrenTargetMod(): TargetModSkill("#xuanren-target") {
+        frequency = NotFrequent;
+    }
+
+    virtual int getDistanceLimit(const Player *, const Card *card) const{
+        if (card->getSkillName() == "xuanren")
+            return 1000;
+        else
+            return 0;
     }
 };
 
@@ -1244,60 +1295,73 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if (player == NULL) return false;
-
         ServerPlayer *current = room->getCurrent();
-        if(!current || current->isDead())
+        if (!current || current->isDead())
             return false;
-        if(triggerEvent == CardUsed)
-        {
-            if(!player->hasFlag("jieyouUsed"))
+        if (triggerEvent == CardUsed) {
+            if (!player->hasFlag("jieyouUsed"))
                 return false;
 
             CardUseStruct use = data.value<CardUseStruct>();
-            if(use.card->isKindOf("Slash"))
-            {
-                room->broadcastSkillInvoke(objectName());
+            if (use.card->isKindOf("Slash")) {
                 room->setPlayerFlag(player, "-jieyouUsed");
                 room->setCardFlag(use.card, "jieyou-slash");
             }
-        }else if(triggerEvent == Dying  && player->getPhase() == Player::NotActive && player->askForSkillInvoke(objectName(), data)){
+        } else if (triggerEvent == AskForPeaches && current->objectName() != player->objectName()) {
             DyingStruct dying = data.value<DyingStruct>();
 
-            if(dying.who->getHp() > 0 || player->isNude() || current->isDead() || !player->canSlash(current, NULL, false))
-                return false;
+            forever {
+                if (player->hasFlag("jieyou_failed")) {
+                    room->setPlayerFlag(player, "-jieyou_failed");
+                    break;
+                }
 
-            room->setPlayerFlag(player, "jieyouUsed");
-            room->setTag("JieyouTarget", data);
-            if(!room->askForUseSlashTo(player, current, "jieyou-slash:" + dying.who->objectName())) {
-                room->setPlayerFlag(player, "-jieyouUsed");
-                room->removeTag("JieyouTarget");
-                return false;
+                if (dying.who->getHp() > 0 || player->isNude()
+                    || !player->canSlash(current, NULL, false) || !current
+                    || current->isDead() || !room->askForSkillInvoke(player, objectName(), data))
+                    break;
+
+                room->setPlayerFlag(player, "jieyouUsed");
+                room->setTag("JieyouTarget", data);
+				room->setPlayerFlag(player, "slashNoDistanceLimit");
+                bool use_slash = room->askForUseSlashTo(player, current, "jieyou-slash:" + current->objectName(), false);
+				room->setPlayerFlag(player, "-slashNoDistanceLimit");
+                if (!use_slash) {
+                    room->setPlayerFlag(player, "-jieyouUsed");
+                    room->removeTag("JieyouTarget");
+                    break;
+                }
             }
-        }
-        else if(triggerEvent == DamageCaused){
+        } else if(triggerEvent == DamageCaused) {
             DamageStruct damage = data.value<DamageStruct>();
-            if(damage.card && damage.card->isKindOf("Slash") && damage.card->hasFlag("jieyou-slash")){
+            if (damage.card && damage.card->isKindOf("Slash") && damage.card->hasFlag("jieyou-slash")) {
+                LogMessage log2;
+                log2.type = "#JieyouPrevent";
+                log2.from = player;
+                log2.to << damage.to;
+                room->sendLog(log2);
 
                 DyingStruct dying = room->getTag("JieyouTarget").value<DyingStruct>();
 
                 ServerPlayer *target = dying.who;
-                if(target && target->getHp() > 0){
+                if (target && target->getHp() > 0) {
                     LogMessage log;
                     log.type = "#JieyouNull1";
                     log.from = dying.who;
                     room->sendLog(log);
-                }
-                else if(target && target->isDead()){
+                } else if (target && target->isDead()) {
                     LogMessage log;
                     log.type = "#JieyouNull2";
                     log.from = dying.who;
                     log.to << player;
                     room->sendLog(log);
-                }
-                else
-                {
-                    Peach *peach = new Peach(Card::NoSuitNoColor, 0);
+                } else if(current && current->hasSkill("sishi") && current->isAlive() && target != player) {
+                    LogMessage log;
+                    log.type = "#JieyouNull3";
+                    log.from = current;
+                    room->sendLog(log);
+                } else {
+					Peach *peach = new Peach(Card::NoSuitNoColor, 0);
                     peach->setSkillName(objectName());
                     CardUseStruct use;
                     use.card = peach;
@@ -1310,11 +1374,10 @@ public:
                 return true;
             }
             return false;
-        }
-        else if(triggerEvent == CardFinished && !room->getTag("JieyouTarget").isNull()){
+        } else if (triggerEvent == CardFinished && !room->getTag("JieyouTarget").isNull()) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if(use.card->hasFlag("jieyou-slash")){
-                if(!use.card->hasFlag("jieyou_success"))
+            if (use.card->hasFlag("jieyou-slash")) {
+                if (!use.card->hasFlag("jieyou_success"))
                     room->setPlayerFlag(player, "jieyou_failed");
                 room->removeTag("JieyouTarget");
             }
@@ -1375,8 +1438,8 @@ public:
         return target != NULL && target->tag["FenxunTarget"].value<PlayerStar>() != NULL;
     }
 
-    virtual bool trigger(TriggerEvent event, Room* room, ServerPlayer *player, QVariant &data) const{
-        if (event == EventPhaseChanging){
+    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        if (triggerEvent == EventPhaseChanging){
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to != Player::NotActive)
                 return false;
@@ -1511,6 +1574,8 @@ void StandardPackage::addSnowGenerals(){
 
     General *snow012 = new General(this, "snow012", "wu");
     snow012->addSkill(new Jianmie);
+    snow012->addSkill(new JianmieTargetMod);
+    related_skills.insertMulti("jianmie", "#jianmie-target");
 
     General *snow013 = new General(this, "snow013", "wu");
     snow013->addSkill(new Susheng);
@@ -1533,6 +1598,8 @@ void StandardPackage::addSnowGenerals(){
 
     General *snow021 = new General(this, "snow021", "wu");
     snow021->addSkill(new Xuanren);
+    snow021->addSkill(new XuanrenTargetMod);
+    related_skills.insertMulti("xuanren", "#xuanren-target");
     snow021->addSkill(new Jieyou);
 
     General *snow022 = new General(this, "snow022", "wu");

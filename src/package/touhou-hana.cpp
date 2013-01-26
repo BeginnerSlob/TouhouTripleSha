@@ -386,6 +386,32 @@ public:
     }
 };
 
+class ThXuelan: public TriggerSkill {
+public:
+	ThXuelan(): TriggerSkill("thxuelan") {
+		events << CardEffected;
+	}
+	
+	virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
+		ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
+		if (!splayer || splayer->isNude())
+			return false;
+
+		CardEffectStruct effect = data.value<CardEffectStruct>();
+		if (!effect.card->isKindOf("Peach"))
+			return false;
+
+		if (splayer->askForSkillInvoke(objectName()) && room->askForCard(splayer, ".|.|.|.|red", "@thxuelan"))
+		{
+			if (player->getMaxHp() < (player->isLord() && room->getPlayers().size() >= 5) ? player->getGeneral()->getMaxHp() + 1 : player->getGeneral()->getMaxHp())
+				room->setPlayerProperty(player, "maxhp", player->getMaxHp() + 1);
+			return true;
+		}
+
+		return false;
+	}
+};
+
 class ThXinwang: public TriggerSkill{
 public:
 	ThXinwang(): TriggerSkill("thxinwang"){
@@ -553,6 +579,19 @@ public:
         WrappedCard *card = Sanguosha->getWrappedCard(originalCard->getId());
         card->takeOver(slash);
         return card;
+    }
+};
+
+class ThYuchangTargetMod: public TargetModSkill {
+public:
+	ThYuchangTargetMod(): TargetModSkill("#thyuchang-target"){
+	}
+
+	virtual int getDistanceLimit(const Player *from, const Card *card) const{
+        if (from->hasSkill("thyuchang") && card->isKindOf("ThunderSlash"))
+            return 1000;
+        else
+            return 0;
     }
 };
 
@@ -1846,13 +1885,15 @@ void TouhouPackage::addHanaGenerals(){
     hana003->addSkill(new ThWujian);
 
     General *hana004 = new General(this, "hana004", "wei", 3);
-    //hana004->addSkill(new ThXuelan);
+    hana004->addSkill(new ThXuelan);
     hana004->addSkill(new ThXinwang);
     hana004->addSkill(new ThJuedu);
 
     General *hana005 = new General(this, "hana005", "wei");
     hana005->addSkill(new ThTingwu);
     hana005->addSkill(new ThYuchang);
+    hana005->addSkill(new ThYuchangTargetMod);
+    related_skills.insertMulti("thyuchang", "#thyuchang-target");
 
     General *hana006 = new General(this, "hana006", "wei");
     hana006->addSkill(new ThXihua);

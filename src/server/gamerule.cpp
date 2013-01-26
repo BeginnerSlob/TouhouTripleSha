@@ -188,14 +188,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
                 const Card *card = card_use.card;
                 RoomThread *thread = room->getThread();
 
-                if (!card->hasFlag("lihuo")) {
-                    if (card->hasFlag("isFireSlash")) {
-                        FireSlash *fire_slash = new FireSlash(card->getSuit(), card->getNumber());
-                        card_use.from->broadcastSkillInvoke(fire_slash);
-                        fire_slash->deleteLater();
-                    } else
-                        card_use.from->broadcastSkillInvoke(card);
-                }
+                card_use.from->broadcastSkillInvoke(card);
 
                 if(card->hasPreAction())
                     card->doPreAction(room, card_use);

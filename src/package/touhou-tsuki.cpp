@@ -11,6 +11,169 @@
 #include "general.h"
 #include "card.h"
 
+class ThSuoming: public TriggerSkill{
+public:
+	ThSuoming(): TriggerSkill("thsuoming"){
+		events << Damaged;
+	}
+	
+	virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+		int damage = data.value<DamageStruct>().damage;
+		LogMessage log;
+		log.type = "#ThSuoming";
+		log.from = player;
+		while(damage --)
+		{
+			if (!player->askForSkillInvoke(objectName()))
+				return false;
+			ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), objectName());
+			log.to << target;
+			log.arg = objectName();
+			log.arg2 = target->isChained() ? "chongzhi" : "hengzhi";
+			room->sendLog(log);
+			log.to.removeOne(target);
+			room->setPlayerProperty(target, "chained", !target->isChained());
+		}
+
+		return false;
+	}
+};
+
+class ThChiwu: public TriggerSkill {
+public:
+	ThChiwu(): TriggerSkill("thchiwu") {
+		events << CardEffected << SlashEffected;
+		frequency = Compulsory;
+	}
+
+	virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+		if (!player->isChained())
+			return false;
+
+		if(triggerEvent == SlashEffected){
+            SlashEffectStruct effect = data.value<SlashEffectStruct>();
+            if(effect.nature == DamageStruct::Normal){
+				LogMessage log;
+				log.from = player;
+				log.type = "#ThChiwu";
+				log.to << effect.from;
+				log.arg  = objectName();
+                log.arg2 = effect.slash->objectName();
+                room->sendLog(log);
+
+                return true;
+            }
+        }else if(triggerEvent == CardEffected){
+            CardEffectStruct effect = data.value<CardEffectStruct>();
+            if(effect.card->isKindOf("Duel")){
+                LogMessage log;
+                log.from = player;
+				log.type = "#ThChiwu";
+				log.to << effect.from;
+                log.arg = objectName();
+                log.arg2 = effect.card->objectName();
+                room->sendLog(log);
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+};
+
+ThYewangCard::ThYewangCard(){
+    m_skillName = "thyewangv";
+    mute = true;
+}
+
+void ThYewangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    ServerPlayer *target = targets.first();
+    if(target->hasLordSkill("thyewang")){
+        room->setPlayerFlag(target, "ThYewangInvoked");
+		room->setPlayerProperty(target, "chained", true);
+        QList<ServerPlayer *> lords;
+        QList<ServerPlayer *> players = room->getOtherPlayers(source);
+        foreach(ServerPlayer *p, players){
+            if(p->hasLordSkill("thyewang") && !p->hasFlag("ThYewangInvoked")){
+                lords << p;
+            }
+        }
+        if(lords.empty())
+            room->setPlayerFlag(source, "ForbidThYewang");
+    }
+}
+
+bool ThYewangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && to_select->hasLordSkill("thyewang")
+            && to_select != Self && !to_select->hasFlag("ThYewangInvoked");
+}
+
+class ThYewangViewAsSkill: public ZeroCardViewAsSkill {
+public:
+    ThYewangViewAsSkill(): ZeroCardViewAsSkill("thyewangv"){
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+		if (Self->isChained())
+			return false;
+		foreach (const Player *p, Self->getSiblings())
+			if (p->isChained())
+				return false;
+
+        return player->getKingdom() == "qun" && !player->hasFlag("ForbidThYewang");
+    }
+
+    virtual const Card *viewAs() const{
+        return new ThYewangCard;
+    }
+};
+
+class ThYewang: public TriggerSkill{
+public:
+	ThYewang(): TriggerSkill("thyewang$"){
+		events << EventPhaseStart << EventPhaseEnd << EventPhaseChanging;
+	}
+	
+	virtual bool triggerable(const ServerPlayer *target) const{
+		return target != NULL;
+	}
+
+	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+		if (triggerEvent == EventPhaseEnd && player->hasSkill("thyewangv"))
+			room->detachSkillFromPlayer(player, "thyewangv", true);
+		else if (triggerEvent == EventPhaseStart)
+		{
+			bool can_invoke = false;
+			foreach(ServerPlayer *p, room->getOtherPlayers(player))
+				if (p->hasLordSkill("thyewang"))
+				{
+					can_invoke = true;
+					break;
+				}
+			if (can_invoke && player->getPhase() == Player::Play && !player->hasSkill("thyewangv") && player->getKingdom() == "qun")
+				room->attachSkillToPlayer(player, "thyewangv");
+		}
+		else if (triggerEvent == EventPhaseChanging)
+		{
+			PhaseChangeStruct phase_change = data.value<PhaseChangeStruct>();
+            if (phase_change.from != Player::Play)
+                  return false;
+            if (player->hasFlag("ForbidThYewang")) {
+                room->setPlayerFlag(player, "-ForbidThYewang");
+            }
+            QList<ServerPlayer *> players = room->getOtherPlayers(player);
+            foreach(ServerPlayer *p, players){
+                if(p->hasFlag("ThYewangInvoked")){
+                    room->setPlayerFlag(p, "-ThYewangInvoked");
+                }
+            }
+		}
+
+		return false;
+	}
+};
+
 ThJinguoCard::ThJinguoCard(){
 }
 
@@ -213,6 +376,11 @@ public:
 };
 
 void TouhouPackage::addTsukiGenerals(){
+	General *tsuki001 = new General(this, "tsuki001$", "qun");
+	tsuki001->addSkill(new ThSuoming);
+	tsuki001->addSkill(new ThChiwu);
+	tsuki001->addSkill(new ThYewang);
+
 	General *tsuki002 = new General(this, "tsuki002", "qun");
 	tsuki002->addSkill(new ThJinguo);
 	tsuki002->addSkill(new ThLianxue);
@@ -220,6 +388,9 @@ void TouhouPackage::addTsukiGenerals(){
 	General *tsuki005 = new General(this, "tsuki005", "qun", 3);
 	tsuki005->addSkill(new ThShouye);
 	tsuki005->addSkill(new ThXushi);
-
+	
+    addMetaObject<ThYewangCard>();
     addMetaObject<ThJinguoCard>();
+
+	skills << new ThYewangViewAsSkill;
 }

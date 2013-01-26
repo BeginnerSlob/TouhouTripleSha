@@ -72,6 +72,32 @@ public:
     }
 };
 
+class ZhenhongTargetMod: public TargetModSkill {
+public:
+	ZhenhongTargetMod(): TargetModSkill("#zhenhong-target") {
+    }
+
+    virtual int getDistanceLimit(const Player *from, const Card *card) const{
+        if (from->hasSkill("zhenhong") && card->getSuit() == Card::Heart)
+            return 1000;
+        else
+            return 0;
+    }
+};
+
+class Hupao: public TargetModSkill {
+public:
+    Hupao(): TargetModSkill("hupao") {
+    }
+
+    virtual int getResidueNum(const Player *from, const Card *) const{
+        if (from->hasSkill(objectName()))
+            return 1000;
+        else
+            return 0;
+    }
+};
+
 class Jiuli:public OneCardViewAsSkill{
 public:
     Jiuli():OneCardViewAsSkill("jiuli"){
@@ -334,6 +360,33 @@ public:
         }
 
         return false;
+    }
+};
+
+class Jizhi: public TargetModSkill {
+public:
+    Jizhi(): TargetModSkill("jizhi") {
+        pattern = "TrickCard";
+    }
+
+    virtual int getDistanceLimit(const Player *from, const Card *) const{
+        if (from->hasSkill(objectName()))
+            return 1000;
+        else
+            return 0;
+    }
+};
+
+class Xiagong: public TargetModSkill {
+public:
+	Xiagong(): TargetModSkill("xiagong") {
+	}
+
+	virtual int getDistanceLimit(const Player *from, const Card *) const{
+        if (from->getWeapon() == NULL && from->hasSkill(objectName()))
+            return 1;
+        else
+            return 0;
     }
 };
 
@@ -1031,9 +1084,11 @@ void StandardPackage::addWindGenerals(){
     General *wind002 = new General(this, "wind002", "shu");
     wind002->addSkill(new Chilian);
     wind002->addSkill(new Zhenhong);
+    wind002->addSkill(new ZhenhongTargetMod);
+    related_skills.insertMulti("zhenhong", "#zhenhong-target");
 
     General *wind003 = new General(this, "wind003", "shu");
-    wind003->addSkill(new Skill("hupao"));
+    wind003->addSkill(new Hupao);
     wind003->addSkill(new Jiuli);
 
     General *wind004 = new General(this, "wind004", "shu", 3);
@@ -1052,10 +1107,10 @@ void StandardPackage::addWindGenerals(){
 
     General *wind007 = new General(this, "wind007", "shu", 3, false);
     wind007->addSkill(new Huiquan);
-    wind007->addSkill(new Skill("jizhi", Skill::Compulsory));
+    wind007->addSkill(new Jizhi);
 
     General *wind008 = new General(this, "wind008", "shu");
-    wind008->addSkill(new Skill("xiagong"));
+    wind008->addSkill(new Xiagong);
     wind008->addSkill(new Liegong);
 
     General *wind009 = new General(this, "wind009", "shu");

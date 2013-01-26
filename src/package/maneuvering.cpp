@@ -44,16 +44,14 @@ QString Analeptic::getSubtype() const{
 }
 
 bool Analeptic::IsAvailable(const Player *player, const Card *analeptic){
-	if (!analeptic) {
-		Analeptic *analeptic = new Analeptic(Card::NoSuitNoColor, 0);
-		analeptic->deleteLater();
-		if (player->isCardLimited(analeptic, Card::MethodUse))
-			return false;
-	}
-	else if (player->isCardLimited(analeptic, Card::MethodUse))
-		return false;
+	Analeptic *jiu = new Analeptic(Card::NoSuitNoColor, 0);
+    jiu->deleteLater();
+	if (player->isCardLimited(analeptic == NULL ? jiu : analeptic, Card::MethodUse)
+        || player->isProhibited(player, analeptic == NULL ? jiu : analeptic))
+            return false;
 
-    return !player->isProhibited(player, analeptic) && !player->hasUsed("Analeptic");
+    return player->usedTimes("Analeptic") <= Sanguosha->correctCardTarget(TargetModSkill::Residue, player, jiu);
+
 }
 
 bool Analeptic::isAvailable(const Player *player) const{
@@ -281,13 +279,14 @@ FireAttack::FireAttack(Card::Suit suit, int number)
 }
 
 bool FireAttack::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if(!targets.isEmpty())
+    int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
+    if (targets.length() >= total_num)
         return false;
 
-    if(to_select->isKongcheng())
+    if (to_select->isKongcheng())
         return false;
 
-    if(to_select == Self)
+    if (to_select == Self)
         return Self->getHandcardNum() >= 2;
     else
         return true;
@@ -330,9 +329,10 @@ QString IronChain::getSubtype() const{
 }
 
 bool IronChain::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if (Self->isCardLimited(this, Card::MethodUse))
+    int total_num = 2 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
+    if (targets.length() >= total_num)
         return false;
-    if (targets.length() >= 2)
+    if (Self->isCardLimited(this, Card::MethodUse))
         return false;
 
     return true;
@@ -398,14 +398,20 @@ bool SupplyShortage::targetFilter(const QList<const Player *> &targets, const Pl
     if (to_select->containsTrick(objectName()))
         return false;
 
-    if (Self->hasSkill("jizhi", false))
-        return true;
+    int distance_limit = 1 + Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, Self, this);
+    int rangefix = 0;
+    if (Self->getWeapon() && subcards.contains(Self->getWeapon()->getId())){
+        const Weapon *weapon = qobject_cast<const Weapon *>(Self->getWeapon()->getRealCard());
+        rangefix += weapon->getRange() - 1;
+    }
 
-    int distance = Self->distanceTo(to_select);
-    if (Self->hasSkill("fenghou", false))
-        return distance <= 2;
-    else
-        return distance <= 1;
+    if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
+        rangefix += 1;
+
+    if (Self->distanceTo(to_select, rangefix) > distance_limit)
+        return false;
+
+    return true;
 }
 
 void SupplyShortage::takeEffect(ServerPlayer *target) const{

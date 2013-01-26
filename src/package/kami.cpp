@@ -854,7 +854,7 @@ public:
 			log.from = splayer;
 			log.arg  = objectName();
 			room->sendLog(log);
-			room->loseMaxHp(splayer, 2);
+			room->killPlayer(splayer, NULL);
 		}
 
 		return false;

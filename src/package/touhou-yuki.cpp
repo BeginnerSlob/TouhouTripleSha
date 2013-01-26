@@ -126,14 +126,14 @@ public:
 class ThQiebao:public TriggerSkill{
 public:
 	ThQiebao():TriggerSkill("thqiebao"){
-		events << CardUsed << BeforeCardsMoveOneTime;
+		events << CardUsed << CardEffected << BeforeCardsMoveOneTime;
 	}
 	
 	virtual bool triggerable(ServerPlayer *target) const{
 		return target != NULL;
 	}
 
-	bool doQiebao(Room* room, ServerPlayer *player, QList<int> card_ids) const {
+	bool doQiebao(Room* room, ServerPlayer *player, QList<int> card_ids, bool discard) const {
 		if (card_ids.isEmpty())
 			return false;
 
@@ -152,17 +152,20 @@ public:
 		{
 			qiebaoMove.to = player;
 			qiebaoMove.to_place = Player::PlaceHand;
+			qiebaoMove.card_ids = card_ids;
+			exchangeMove.push_back(qiebaoMove);
+			room->moveCardsAtomic(exchangeMove, false);
 		}
-		else
+		else if (discard)
 		{
 			qiebaoMove.to = NULL;
 			qiebaoMove.to_place = Player::DiscardPile;
 			CardMoveReason reason(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
 			qiebaoMove.reason = reason;
+			qiebaoMove.card_ids = card_ids;
+			exchangeMove.push_back(qiebaoMove);
+			room->moveCardsAtomic(exchangeMove, false);
 		}
-		qiebaoMove.card_ids = card_ids;
-        exchangeMove.push_back(qiebaoMove);
-        room->moveCardsAtomic(exchangeMove, false);
 
 		return true;
 	}
@@ -181,8 +184,15 @@ public:
 					card_ids = use.card->getSubcards();
 				else
 					card_ids << use.card->getEffectiveId();
-				return doQiebao(room, player, card_ids);
+				if (doQiebao(room, player, card_ids, false))
+					use.card->setFlags("qiebaoinvoke");
 			}
+		}
+		else if (triggerEvent == CardEffected)
+		{
+			CardEffectStruct effect = data.value<CardEffectStruct>();
+			if (effect.card->hasFlag("qiebaoinvoke"))
+				return true;
 		}
 		else if (triggerEvent == BeforeCardsMoveOneTime && TriggerSkill::triggerable(player))
 		{
@@ -199,9 +209,10 @@ public:
 						qiebaolist << card_id;
 				}
 
-				return doQiebao(room, player, qiebaolist);
+				return doQiebao(room, player, qiebaolist, true);
 			}
         }
+
 		return false;
 	}
 };

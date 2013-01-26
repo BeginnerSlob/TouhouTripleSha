@@ -791,7 +791,7 @@ public:
 
 class Yuji:public TriggerSkill{
 public:
-	Yuji():TriggerSkill("yuji"){
+	Yuji():TriggerSkill("yuji$"){
 		events << EventPhaseStart << EventPhaseEnd << EventPhaseChanging;
 	}
 	
@@ -800,15 +800,18 @@ public:
 	}
 
 	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-		ServerPlayer *splayer = room->findPlayerBySkillName("yuji", true);
-		if (!splayer)
-			return false;
-
 		if (triggerEvent == EventPhaseEnd && player->hasSkill("yujiv"))
 			room->detachSkillFromPlayer(player, "yujiv", true);
 		else if (triggerEvent == EventPhaseStart)
 		{
-			if (player->getPhase() == Player::Play && !player->hasSkill("yujiv") && splayer->isAlive() && splayer->hasLordSkill("yuji") && player->getKingdom() == "qun" && player != splayer)
+			bool can_invoke = false;
+			foreach(ServerPlayer *p, room->getOtherPlayers(player))
+				if (p->hasLordSkill("thyewang"))
+				{
+					can_invoke = true;
+					break;
+				}
+			if (can_invoke && player->getPhase() == Player::Play && !player->hasSkill("yujiv") && player->getKingdom() == "qun")
 				room->attachSkillToPlayer(player, "yujiv");
 		}
 		else if (triggerEvent == EventPhaseChanging)
