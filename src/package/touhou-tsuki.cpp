@@ -38,7 +38,7 @@ void ThJinguoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
 		if (target->getCardCount(true) < 2)
 			dummy->addSubcards(target->getCards("he"));
 		else
-			dummy = room->askForCardsChosen(source, target, "h", "thjinguo", 2);
+			dummy = room->askForCardsChosen(source, target, "he", "thjinguo", 2);
         if (dummy->subcardsLength() > 0)
             source->obtainCard(dummy, false);
         dummy->deleteLater();
