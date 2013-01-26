@@ -386,6 +386,94 @@ public:
     }
 };
 
+class ThXinwang: public TriggerSkill{
+public:
+	ThXinwang(): TriggerSkill("thxinwang"){
+		events << CardsMoveOneTime;
+		frequency = Frequent;
+	}
+
+	virtual bool trigger(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const{
+		if(player->getPhase() != Player::NotActive)
+            return false;
+
+        CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
+        if(move->from != player)
+            return false;
+
+        CardMoveReason reason = move->reason;
+
+        if((reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_USE
+                || (reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD
+                || (reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_RESPONSE){
+            const Card *card;
+            int i = 0;
+            foreach(int card_id, move->card_ids)
+			{
+                card = Sanguosha->getCard(card_id);
+				if(card->getSuit() == Card::Heart && (move->from_places[i] == Player::PlaceHand || move->from_places[i] == Player::PlaceEquip)
+                    && player->askForSkillInvoke(objectName(), data))
+				{
+                    room->broadcastSkillInvoke(objectName());
+                    QStringList choices;
+					choices << "draw";
+					QList<ServerPlayer *> targets;
+					foreach (ServerPlayer *p, room->getOtherPlayers(player))
+						if (p->isWounded())
+							targets << p;
+
+					if (!targets.isEmpty())
+						choices << "recover";
+
+					QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+					if (choice == "recover")
+					{
+						ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
+						if (target)
+						{
+							RecoverStruct recover;
+							recover.who = player;
+							room->recover(target, recover);
+						}
+					}
+					else
+						player->drawCards(1);
+                }
+                i++;
+            }
+        }
+
+        return false;
+	}
+};
+
+class ThJuedu: public TriggerSkill{
+public:
+    ThJuedu():TriggerSkill("thjuedu"){
+        events << Death;
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target != NULL && target->hasSkill(objectName());
+    }
+
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        DamageStar damage = data.value<DamageStar>();
+        ServerPlayer *killer = damage ? damage->from : NULL;
+
+        if(killer){
+            Room *room = player->getRoom();
+            if(killer != player && !killer->hasSkill("benghuai")){
+                killer->gainMark("@juedu");
+                room->acquireSkill(killer, "benghuai");
+            }
+        }
+
+        return false;
+    }
+};
+
 class ThTingwu: public TriggerSkill{
 public:
     ThTingwu():TriggerSkill("thtingwu"){
@@ -1756,6 +1844,11 @@ void TouhouPackage::addHanaGenerals(){
     hana003->addSkill(new ThBian);
     hana003->addSkill(new ThGuihang);
     hana003->addSkill(new ThWujian);
+
+    General *hana004 = new General(this, "hana004", "wei", 3);
+    //hana004->addSkill(new ThXuelan);
+    hana004->addSkill(new ThXinwang);
+    hana004->addSkill(new ThJuedu);
 
     General *hana005 = new General(this, "hana005", "wei");
     hana005->addSkill(new ThTingwu);

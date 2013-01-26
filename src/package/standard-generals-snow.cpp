@@ -561,47 +561,33 @@ public:
     }
 };
 
-class Biansheng: public TriggerSkill{
+class Biansheng:public TriggerSkill{
 public:
-    Biansheng():TriggerSkill("biansheng$"){
-        events << GameStart << Pindian << EventPhaseChanging;
-    }
+	Biansheng():TriggerSkill("biansheng$"){
+		events << EventPhaseStart << EventPhaseEnd << EventPhaseChanging << Pindian;
+	}
+	
+	virtual bool triggerable(const ServerPlayer *target) const{
+		return target != NULL;
+	}
 
-    virtual int getPriority() const{
-        return -1;
-    }
+	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+		ServerPlayer *splayer = room->findPlayerBySkillName("biansheng", true);
+		if (!splayer)
+			return false;
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if(triggerEvent == GameStart && player->hasLordSkill(objectName())){
-            foreach(ServerPlayer *p, room->getOtherPlayers(player)){
-                if(!p->hasSkill("biansheng_pindian"))
-                    room->attachSkillToPlayer(p, "biansheng_pindian");
-            }
-        }else if(triggerEvent == Pindian){
-            PindianStar pindian = data.value<PindianStar>();
-            if(pindian->reason != "biansheng_pindian" || !pindian->to->hasLordSkill(objectName()))
-                return false;
-            if(!pindian->isSuccess()){
-                if (room->askForChoice(pindian->to, "biansheng", "yes+no") == "yes") {
-                    //room->broadcastSkillInvoke(objectName(), 2);
-                    
-                    pindian->to->obtainCard(pindian->from_card);
-                    pindian->to->obtainCard(pindian->to_card);
-                }
-                else {
-                    //room->broadcastSkillInvoke(objectName(), 4);
-                }
-            }
-            //else
-                //room->broadcastSkillInvoke(objectName(), 3);
-        }else if(triggerEvent == EventPhaseChanging){
-            PhaseChangeStruct phase_change = data.value<PhaseChangeStruct>();
+		if (triggerEvent == EventPhaseEnd && player->hasSkill("biansheng_pindian"))
+			room->detachSkillFromPlayer(player, "biansheng_pindian", true);
+		else if (triggerEvent == EventPhaseStart)
+		{
+			if (player->getPhase() == Player::Play && !player->hasSkill("biansheng_pindian") && splayer->isAlive() && splayer->hasLordSkill("biansheng") && player->getKingdom() == "wu" && player != splayer)
+				room->attachSkillToPlayer(player, "biansheng_pindian");
+		}
+		else if (triggerEvent == EventPhaseChanging)
+		{
+			PhaseChangeStruct phase_change = data.value<PhaseChangeStruct>();
             if (phase_change.from != Player::Play)
-                return false;
+                  return false;
             if(player->hasFlag("ForbidBiansheng")){
                 room->setPlayerFlag(player, "-ForbidBiansheng");
             }
@@ -611,10 +597,21 @@ public:
                     room->setPlayerFlag(p, "-BianshengInvoked");
                 }
             }
+		}
+		else if(triggerEvent == Pindian)
+		{
+            PindianStar pindian = data.value<PindianStar>();
+            if(pindian->reason != "biansheng_pindian" || !pindian->to->hasLordSkill(objectName()))
+                return false;
+            if(!pindian->isSuccess())
+                if (room->askForChoice(pindian->to, "biansheng", "yes+no") == "yes") {                    
+                    pindian->to->obtainCard(pindian->from_card);
+                    pindian->to->obtainCard(pindian->to_card);
+                }
         }
 
-        return false;
-    }
+		return false;
+	}
 };
 
 ZhihuiCard::ZhihuiCard()

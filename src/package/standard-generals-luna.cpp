@@ -789,25 +789,31 @@ public:
     }
 };
 
-class Yuji: public TriggerSkill{
+class Yuji:public TriggerSkill{
 public:
-    Yuji():TriggerSkill("yuji$"){
-        events << GameStart << EventPhaseChanging;
-    }
+	Yuji():TriggerSkill("yuji"){
+		events << EventPhaseStart << EventPhaseEnd << EventPhaseChanging;
+	}
+	
+	virtual bool triggerable(const ServerPlayer *target) const{
+		return target != NULL;
+	}
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
+	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+		ServerPlayer *splayer = room->findPlayerBySkillName("yuji", true);
+		if (!splayer)
+			return false;
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if(triggerEvent == GameStart && player->hasLordSkill(objectName())){
-            foreach(ServerPlayer *p, room->getOtherPlayers(player)){
-                if(!p->hasSkill("yujiv"))
-                    room->attachSkillToPlayer(p, "yujiv");
-            }
-        }
-        else if(triggerEvent == EventPhaseChanging){
-            PhaseChangeStruct phase_change = data.value<PhaseChangeStruct>();
+		if (triggerEvent == EventPhaseEnd && player->hasSkill("yujiv"))
+			room->detachSkillFromPlayer(player, "yujiv", true);
+		else if (triggerEvent == EventPhaseStart)
+		{
+			if (player->getPhase() == Player::Play && !player->hasSkill("yujiv") && splayer->isAlive() && splayer->hasLordSkill("yuji") && player->getKingdom() == "qun" && player != splayer)
+				room->attachSkillToPlayer(player, "yujiv");
+		}
+		else if (triggerEvent == EventPhaseChanging)
+		{
+			PhaseChangeStruct phase_change = data.value<PhaseChangeStruct>();
             if (phase_change.from != Player::Play)
                   return false;
             if(player->hasFlag("ForbidYuji")){
@@ -819,9 +825,10 @@ public:
                     room->setPlayerFlag(p, "-YujiInvoked");
                 }
             }
-        }
-        return false;
-    }
+		}
+
+		return false;
+	}
 };
 
 class Huiyao: public TriggerSkill{
