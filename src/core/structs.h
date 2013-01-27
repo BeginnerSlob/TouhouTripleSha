@@ -421,6 +421,7 @@ enum TriggerEvent{
 
     Pindian,
     TurnedOver,
+    ChainStateChanged,
 
     ConfirmDamage,    // confirm the damage's count and damage's nature
     Predamage,        // trigger the certain skill -- jueqing

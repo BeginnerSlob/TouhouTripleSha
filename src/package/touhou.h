@@ -331,4 +331,13 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class ThKaiyunCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThKaiyunCard();
+	
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 #endif // TOUHOU_H

@@ -906,33 +906,37 @@ void ServerPlayer::marshal(ServerPlayer *player) const{
 
     if(!isKongcheng()){
         if(player != this){
-            player->invoke("drawNCards",
+            /*player->invoke("drawNCards",
                            QString("%1:%2")
                            .arg(objectName())
-                           .arg(getHandcardNum()));
+                           .arg(getHandcardNum()));*/
+			player->setProperty("handcard_num", getHandcardNum());
         }else{
-            QStringList card_str;
+            //QStringList card_str;
             foreach(const Card* card, handcards){
-                card_str << QString::number(card->getId());
+                //card_str << QString::number(card->getId());
+				player->addCard(card, PlaceHand);
             }
 
-            player->invoke("drawCards", card_str.join("+"));
+            //player->invoke("drawCards", card_str.join("+"));
         }
     }
 
 
     foreach(const Card *equip, getEquips()){
-        player->invoke("moveCard",
+        /*player->invoke("moveCard",
                        QString("%1:_@=->%2@equip")
                        .arg(equip->getId())
-                       .arg(objectName()));
+                       .arg(objectName()));*/
+		player->addCard(equip, PlaceEquip);
     }
 
     foreach(const Card *card, getJudgingArea()){
-        player->invoke("moveCard",
+        /*player->invoke("moveCard",
                        QString("%1:_@=->%2@judging")
                        .arg(card->getId())
-                       .arg(objectName()));
+                       .arg(objectName()));*/
+		player->addCard(card, PlaceDelayedTrick);
     }
 
     foreach(QString mark_name, marks.keys()){
@@ -950,7 +954,8 @@ void ServerPlayer::marshal(ServerPlayer *player) const{
     }
 
     foreach(QString skill_name, acquired_skills){
-        player->invoke("acquireSkill", QString("%1:%2").arg(objectName()).arg(skill_name));
+        //player->invoke("acquireSkill", QString("%1:%2").arg(objectName()).arg(skill_name));
+		player->acquireSkill(skill_name);
     }
 
     foreach(QString flag, flags){
@@ -960,7 +965,7 @@ void ServerPlayer::marshal(ServerPlayer *player) const{
     foreach(QString item, history.keys()){
         int value = history.value(item);
         if(value > 0)
-            player->invoke("addHistory", QString("%1#%2").arg(item).arg(value));
+            player->invoke("addHistory", QString("%1:%2").arg(item).arg(value));
     }
 }
 

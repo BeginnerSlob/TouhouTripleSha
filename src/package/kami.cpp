@@ -553,7 +553,7 @@ public:
 class ThKuangli: public TriggerSkill{
 public:
 	ThKuangli(): TriggerSkill("thkuangli"){
-		events << TurnedOver << HpChanged;
+		events << TurnedOver << ChainStateChanged;
 		frequency = Frequent;
 	}
 	

@@ -445,35 +445,6 @@ public:
     }
 };
 
-class Wumou:public TriggerSkill{
-public:
-    Wumou():TriggerSkill("wumou"){
-        frequency = Compulsory;
-        events << CardUsed << CardResponded;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        CardStar card = NULL;
-        if(triggerEvent == CardUsed){
-            CardUseStruct use = data.value<CardUseStruct>();
-            card = use.card;
-        }else if(triggerEvent == CardResponded)
-            card = data.value<CardResponseStruct>().m_card;
-
-        if(card->isNDTrick()){
-            room->broadcastSkillInvoke(objectName());
-
-            int num = player->getMark("@wrath");
-            if(num >= 1 && room->askForChoice(player, objectName(), "discard+losehp") == "discard"){
-                player->loseMark("@wrath");
-            }else
-                room->loseHp(player);
-        }
-
-        return false;
-    }
-};
-
 class Shenfen:public ZeroCardViewAsSkill{
 public:
     Shenfen():ZeroCardViewAsSkill("shenfen"){
@@ -1249,7 +1220,7 @@ public:
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *card) const{
         int n = qMax(1, Self->getHp());
 
-        if(selected.length() >= n)
+        if(selected.length() >= n || card->hasFlag("using"))
             return false;
 
         if(n > 1 && !selected.isEmpty()){

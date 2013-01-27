@@ -222,7 +222,7 @@ OneCardViewAsSkill::OneCardViewAsSkill(const QString &name)
 }
 
 bool OneCardViewAsSkill::viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-    return selected.isEmpty() && viewFilter(to_select);
+    return selected.isEmpty() && !to_select->hasFlag("using") && viewFilter(to_select);
 }
 
 const Card *OneCardViewAsSkill::viewAs(const QList<const Card *> &cards) const{

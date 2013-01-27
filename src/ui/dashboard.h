@@ -50,7 +50,8 @@ public:
     void setTrust(bool trust);
     virtual void killPlayer();
     virtual void revivePlayer();
-    void selectCard(const QString &pattern, bool forward = true, bool multiple = false, bool only = false);
+    void selectCard(const QString &pattern, bool forward = true, bool multiple = false);
+	void selectOnlyCard();
     void selectEquip(int position);
     void useSelected();
     const Card *getSelected() const;

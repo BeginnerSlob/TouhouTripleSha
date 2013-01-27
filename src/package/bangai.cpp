@@ -560,39 +560,46 @@ public:
 class ThWeide: public TriggerSkill{
 public:
 	ThWeide():TriggerSkill("thweide"){
-		events << EventPhaseStart;
+		events << DrawNCards << EventPhaseEnd;
 	}
 
-	virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-		if(player->getPhase() != Player::Draw || !player->isWounded() || !player->askForSkillInvoke(objectName()))
-			return false;
+	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+		if (triggerEvent == DrawNCards && player->isWounded())
+		{
+			QList<ServerPlayer *> targets;
+			foreach (ServerPlayer *p, room->getOtherPlayers(player))
+				if (p->isWounded())
+					targets << p;
 
-		int x = player->getLostHp();
-		ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName());
-		target->drawCards(x);
+			if (targets.isEmpty() || !player->askForSkillInvoke(objectName()))
+				return false;
 
-		int n = 0;
-		foreach(ServerPlayer *p, room->getOtherPlayers(player)) {
-			if(p->getHandcardNum() > n)
-				n = p->getHandcardNum();
+			room->setPlayerFlag(player, "thweideused");
+			int x = qMin(player->getLostHp(), 2);
+			data = data.toInt() - x;
+
+			ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
+			target->drawCards(x);
+		}
+		else if (triggerEvent == EventPhaseEnd && player->getPhase() == Player::Draw && player->hasFlag("thweideused"))
+		{
+			room->setPlayerFlag(player, "-thweideused");
+			QList<ServerPlayer *> victims;
+			foreach (ServerPlayer *p, room->getOtherPlayers(player))
+				if (p->getHpPoints() >= player->getHpPoints())
+					victims << p;
+
+			if (victims.isEmpty())
+				return false;
+
+			ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName());
+			DummyCard *dummy = room->askForCardsChosen(player, victim, "h", objectName(), qMin(player->getLostHp(), 2));
+			if (dummy->subcardsLength() > 0)
+				player->obtainCard(dummy, false);
+			dummy->deleteLater();
 		}
 
-		if(n == 0)
-			return true;
-
-		QList<ServerPlayer *> targets;
-		foreach(ServerPlayer *p, room->getOtherPlayers(player)) {
-			if(p->getHandcardNum() == n)
-				targets << p;
-		}
-
-		target = room->askForPlayerChosen(player, targets, objectName());
-        DummyCard *dummy = room->askForCardsChosen(player, target, "h", objectName(), x);
-        if (dummy->subcardsLength() > 0)
-            player->obtainCard(dummy, false);
-        dummy->deleteLater();
-
-		return true;
+		return false;
 	}
 };
 
@@ -661,10 +668,14 @@ public:
 	}
 
     virtual bool isEnabledAtPlay(const Player *player) const{
+		bool invoke = false;
 		foreach(const Player *p, player->getSiblings())
-			if (p->getEquips().isEmpty())
-				return false;
-		return player->getMark("@xingxie") > 0 && !player->isKongcheng();
+			if (!p->getEquips().isEmpty())
+			{
+				invoke = true;
+				break;
+			}
+		return invoke && player->getMark("@xingxie") > 0 && !player->isKongcheng();
 	}
 };
 
@@ -980,6 +991,51 @@ public:
 	}
 };
 
+class ThWuqi: public TriggerSkill {
+public:
+	ThWuqi(): TriggerSkill("thwuqi") {
+		events << TargetConfirming << CardEffected;
+		frequency = Compulsory;
+	}
+
+	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+		if (triggerEvent == TargetConfirming)
+		{
+			CardUseStruct use = data.value<CardUseStruct>();
+			if (use.card->isNDTrick() && use.card->isBlack())
+			{
+				if (room->askForChoice(use.from, objectName(), "show+cancel") == "show")
+				{
+					room->showAllCards(use.from, player);
+					player->drawCards(1);
+				}
+				else
+					player->tag["ThWuqi"] = use.card->toString();
+			}
+		}
+		else if (triggerEvent == CardEffected)
+		{
+            if (!player->isAlive() || !player->hasSkill(objectName()))
+                return false;
+
+            CardEffectStruct effect = data.value<CardEffectStruct>();
+            if (player->tag["ThWuqi"].isNull() || player->tag["ThWuqi"].toString() != effect.card->toString())
+                return false;
+
+            player->tag["ThWuqi"] = QVariant(QString());
+
+            LogMessage log;
+            log.type = "#ThWuqiAvoid";
+            log.from = player;
+            log.arg = effect.card->objectName();
+            log.arg2 = objectName();
+            room->sendLog(log);
+
+            return true;
+        }
+	}
+};
+
 class ThZhanfu: public TriggerSkill{
 public:
 	ThZhanfu():TriggerSkill("thzhanfu"){
@@ -1095,7 +1151,8 @@ BangaiPackage::BangaiPackage()
 	bangai015->addSkill(new ThXiangrui);
 	bangai015->addSkill(new ThXingxie);
 
-	General *bangai016 = new General(this, "bangai016", "qun");
+	General *bangai016 = new General(this, "bangai016", "qun", 3);
+	bangai016->addSkill(new ThWuqi);
 	bangai016->addSkill(new ThZhanfu);
 	bangai016->addSkill(new ThZhanfuClear);
     related_skills.insertMulti("thzhanfu", "#thzhanfu");
