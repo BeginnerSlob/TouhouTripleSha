@@ -72,12 +72,12 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
                     fire_slash->setSkillName("lihuo");
                     use.card = fire_slash;
                 }
-            if (player->hasSkill("fan") && !use.card->isKindOf("FireSlash")) {
-                if (room->askForSkillInvoke(player, "fan", data)) {
+            if (player->hasSkill("Fan") && !use.card->isKindOf("FireSlash")) {
+                if (room->askForSkillInvoke(player, "Fan", data)) {
                     FireSlash *fire_slash = new FireSlash(getSuit(), getNumber());
                     if (subcardsLength() > 0)
                         fire_slash->addSubcard(this);
-                    fire_slash->setSkillName("fan");
+                    fire_slash->setSkillName("Fan");
                     use.card = fire_slash;
                 }
             }

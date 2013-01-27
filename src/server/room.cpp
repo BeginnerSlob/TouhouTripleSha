@@ -1099,25 +1099,11 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
             if(card)
                 thread->delay();
         }else{
-            QString method_str;
-            switch(method) {
-            case Card::MethodNone: {
-                    method_str = "none";
-                    break;
-                }
-            case Card::MethodDiscard: {
-                    method_str = "discard";
-                    break;
-                }
-            case Card::MethodUse: {
-                    method_str = "use";
-                    break;
-            }
-            default:
-                    method_str = "response";
-            }
-
-            bool success = doRequest(player, S_COMMAND_RESPONSE_CARD, toJsonArray(pattern, prompt, method_str), true);
+            Json::Value arg(Json::arrayValue);
+            arg[0] = toJsonString(pattern);
+            arg[1] = toJsonString(prompt);
+            arg[2] = int(method);
+			bool success = doRequest(player, S_COMMAND_RESPONSE_CARD, arg, true);
             Json::Value clientReply = player->getClientReply();
             if (success && !clientReply.isNull()){
                 card = Card::Parse(toQString(clientReply));
@@ -1250,25 +1236,8 @@ bool Room::askForUseCard(ServerPlayer *player, const QString &pattern, const QSt
         Json::Value ask_str(Json::arrayValue);
         ask_str[0] = toJsonString(pattern);
         ask_str[1] = toJsonString(prompt);
-        QString event;
-        switch (method) {
-        case Card::MethodResponse: {
-                event = "response";
-                break;
-            }
-        case Card::MethodDiscard: {
-                event = "discard";
-                break;
-            }
-        case Card::MethodUse: {
-                event = "use";
-                break;
-        }
-        default:
-                event = "none";
-        }
-        ask_str[2] = toJsonString(event);
-        ask_str[3] = notice_index;
+        ask_str[2] = int(method);
+		ask_str[3] = notice_index;
         bool success = doRequest(player, S_COMMAND_USE_CARD, ask_str, true);
         if(success)
         {
@@ -1447,13 +1416,14 @@ void Room::setPlayerProperty(ServerPlayer *player, const char *property_name, co
     player->setProperty(property_name, value);
     broadcastProperty(player, property_name);
 
-    if(strcmp(property_name, "hp") == 0){
+    if(strcmp(property_name, "hp") == 0)
         thread->trigger(HpChanged, this, player);
-    }
 
-    if(strcmp(property_name, "maxhp") == 0){
+    if(strcmp(property_name, "maxhp") == 0)
         thread->trigger(MaxHpChanged, this, player);
-    }
+
+    if (strcmp(property_name, "chained") == 0)
+        thread->trigger(ChainStateChanged, this, player);
 }
 
 void Room::setPlayerMark(ServerPlayer *player, const QString &mark, int value){
@@ -2684,23 +2654,22 @@ void Room::useCard(const CardUseStruct &use, bool add_history){
        && (!card->canRecast() || (card->canRecast() && card_use.from->isCardLimited(card, Card::MethodRecast))))
         return;
 
-    card = card_use.card->validate(&card_use);
-    if (!card) return;
-
-    int slash_count = card_use.from->getSlashCount();
-
-    if(card_use.from->getPhase() == Player::Play && add_history){
-        QString key;
-        if(card->inherits("LuaSkillCard"))
-            key = "#" + card->objectName();
-        else
-            key = card->getClassName();
-
-        bool slash_not_record = key.contains("Slash")
+    QString key;
+    if(card->inherits("LuaSkillCard"))
+        key = "#" + card->objectName();
+    else
+        key = card->getClassName();
+	
+	int slash_count = card_use.from->getSlashCount();
+	bool slash_not_record = key.contains("Slash")
                             && slash_count > 0
                             && (card_use.from->hasWeapon("Crossbow")
                                 || Sanguosha->correctCardTarget(TargetModSkill::Residue, card_use.from, card) > 500);
 
+    card = card_use.card->validate(&card_use);
+    if (!card) return;
+
+    if(card_use.from->getPhase() == Player::Play && add_history){
         if (!slash_not_record) {
             card_use.from->addHistory(key);
             card_use.from->invoke("addHistory", key + ":");
@@ -2936,19 +2905,19 @@ ServerPlayer *Room::getFront(ServerPlayer *a, ServerPlayer *b) const{
 }
 
 void Room::reconnect(ServerPlayer *player, ClientSocket *socket){
-    /*
-    player->setSocket(socket);
+    /*player->setSocket(socket);
     player->setState("online");
 
     marshal(player);
 
-    broadcastProperty(player, "state"); */
+    broadcastProperty(player, "state");*/
 }
 
 void Room::marshal(ServerPlayer *player){
     notifyProperty(player, player, "objectName");
     notifyProperty(player, player, "role");
-    player->unicast(".flags marshalling");
+    //player->unicast(".flags marshalling");
+	player->setFlags("marshalling");
 
     foreach(ServerPlayer *p, m_players){
         if(p != player)
@@ -2975,7 +2944,8 @@ void Room::marshal(ServerPlayer *player){
         p->marshal(player);
     }
 
-    player->unicast(".flags -marshalling");
+    //player->unicast(".flags -marshalling");
+	player->setFlags("-marshalling");
     player->invoke("setPileNumber", QString::number(m_drawPile->length()));
 }
 

@@ -243,7 +243,7 @@ void Dashboard::_addHandCard(CardItem* card_item)
     connect(card_item, SIGNAL(leave_hover()), this, SLOT(onCardItemLeaveHover()));      
 }
 
-void Dashboard::selectCard(const QString &pattern, bool forward, bool multiple, bool only){
+void Dashboard::selectCard(const QString &pattern, bool forward, bool multiple){
     if (!multiple && selected && selected->isSelected())
         selected->clickItem();
 
@@ -257,7 +257,7 @@ void Dashboard::selectCard(const QString &pattern, bool forward, bool multiple, 
         }
     }
 
-    if(matches.isEmpty() || (only && matches.length() != 1)){
+    if(matches.isEmpty()){
         if (!multiple || !selected) {
             unselectAll();
             return;
@@ -279,6 +279,44 @@ void Dashboard::selectCard(const QString &pattern, bool forward, bool multiple, 
     selected = to_select;
 
     adjustCards();
+}
+
+void Dashboard::selectOnlyCard() {
+    if (selected && selected->isSelected())
+        selected->clickItem();
+
+    int count = 0, equip_pos = -1;
+    bool is_equip = false;
+    CardItem *item = NULL;
+
+    foreach (CardItem *card_item, m_handCards) {
+        if (card_item->isEnabled()) {
+            item = card_item;
+            count++;
+            if (count > 1) {
+                unselectAll();
+                return;
+            }
+        }
+    }
+
+    for (int i = 0; i < 4; i++) {
+        if (_m_equipCards[i] && _m_equipCards[i]->isMarkable()) {
+            is_equip = true;
+            equip_pos = i;
+            count++;
+            if (count > 1) return;
+        }
+    }
+    if (count == 0) return;
+    if (is_equip) {
+        _m_equipCards[equip_pos]->mark(!_m_equipCards[equip_pos]->isMarked());
+        update();
+    } else if (item) {
+        item->clickItem();
+        selected = item;
+        adjustCards();
+    }
 }
 
 void Dashboard::selectEquip(int position) {

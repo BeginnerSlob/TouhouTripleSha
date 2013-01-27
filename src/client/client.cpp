@@ -807,8 +807,8 @@ void Client::_askForCardOrUseCard(const Json::Value &cardUsage){
     _m_roomState.setCurrentCardUsePattern(card_pattern);
     QStringList texts = toQString(cardUsage[1]).split(":");
     int index = -1;
-    if(cardUsage[2].isInt())
-        index = cardUsage[2].asInt();
+    if (cardUsage[3].isInt() && cardUsage[3].asInt() > 0)
+        index = cardUsage[3].asInt();
 
     if(texts.isEmpty()){
         return;
@@ -834,7 +834,17 @@ void Client::_askForCardOrUseCard(const Json::Value &cardUsage){
         }
     }
 
-    setStatus(Responding);
+    Status status = Responding;
+    if (cardUsage[2].isInt()) {
+        Card::HandlingMethod method = (Card::HandlingMethod)(cardUsage[2].asInt());
+        switch (method) {
+        case Card::MethodDiscard: status = RespondingForDiscard; break;
+        case Card::MethodUse: status = RespondingUse; break;
+        case Card::MethodResponse: status = Responding; break;
+        default: status = RespondingNonTrigger; break;
+        }
+    }
+    setStatus(status);
 }
 
 void Client::askForCard(const Json::Value &req){

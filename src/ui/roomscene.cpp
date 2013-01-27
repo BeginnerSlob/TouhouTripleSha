@@ -1196,12 +1196,12 @@ void RoomScene::updateTargetsEnablity(const Card *card){
         if (item->isSelected()) continue;
 
         //=====================================
-        bool moyu2Failure = player->hasSkill("moyu2") && card && card->isKindOf("Collateral")
+		bool prohibitedFailure = card && Sanguosha->isProhibited(Self, player, card) && card->isKindOf("Collateral")
                 && !selected_targets.isEmpty();
         //=====================================
 
         bool enabled = (card == NULL) ||
-                    ((moyu2Failure || !Sanguosha->isProhibited(Self, player, card))
+                    ((prohibitedFailure || !Sanguosha->isProhibited(Self, player, card))
                         && maxVotes > 0);
         
         QGraphicsItem* animationTarget = item->getMouseClickReceiver();
@@ -2329,7 +2329,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
                     }
                     dashboard->startPending(skill);
                     if (skill->inherits("OneCardViewAsSkill") && Config.EnableIntellectualSelection)
-                        dashboard->selectCard(".", true, false, true);
+                        dashboard->selectOnlyCard();
                 }
             }else{
                 response_skill->setPattern(pattern);
@@ -2343,7 +2343,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
                     response_skill->setRequire(Card::MethodResponse);
                 dashboard->startPending(response_skill);
                 if (Config.EnableIntellectualSelection)
-                    dashboard->selectCard(".", true, false, true);
+                    dashboard->selectOnlyCard();
             }
             break;
         }
@@ -2519,7 +2519,7 @@ void RoomScene::onSkillActivated() {
         if(card && card->targetFixed() && card->isAvailable(Self)){
             useSelectedCard();
         } else if (skill->inherits("OneCardViewAsSkill") && Config.EnableIntellectualSelection)
-            dashboard->selectCard(".", true, false, true);
+            dashboard->selectOnlyCard();
     }
 }
 
