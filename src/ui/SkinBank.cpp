@@ -16,6 +16,7 @@ using namespace std;
 using namespace QSanProtocol::Utils;
 
 const char* IQSanComponentSkin::S_SKIN_KEY_DEFAULT = "default";
+const char *IQSanComponentSkin::S_SKIN_KEY_DEFAULT_SECOND = "default2";
 const char* QSanRoomSkin::S_SKIN_KEY_PHOTO = "photo";
 const char* QSanRoomSkin::S_SKIN_KEY_ROOM = "room";
 const char* QSanRoomSkin::S_SKIN_KEY_COMMON = "common";
@@ -287,6 +288,9 @@ QString QSanRoomSkin::getCardMainPixmapPath(const QString &cardName) const
     {
         QString fileName = toQString(_m_imageConfig[QString(S_SKIN_KEY_HAND_CARD_MAIN_PHOTO)
                                      .arg("default").toAscii().constData()]).arg(cardName);
+        if (!QFile::exists(fileName))
+            fileName = toQString(_m_imageConfig[QString(S_SKIN_KEY_HAND_CARD_MAIN_PHOTO)
+                                 .arg("default2").toAscii().constData()]).arg(cardName);
         return fileName;
     }
 }
@@ -729,6 +733,12 @@ QPixmap IQSanComponentSkin::getPixmap(const QString &key, const QString &arg) co
         S_IMAGE_GROUP_KEYS[groupKey].append(totalKey);
         QString fileNameToResolve = _readImageConfig(groupKey, clipRegion, clipping, scaleRegion, scaled);
         fileName = fileNameToResolve.arg(arg);
+        if (!QFile::exists(fileName)) {
+            groupKey = key.arg(S_SKIN_KEY_DEFAULT_SECOND);
+            S_IMAGE_GROUP_KEYS[groupKey].append(totalKey);
+            QString fileNameToResolve = _readImageConfig(groupKey, clipRegion, clipping, scaleRegion, scaled);
+            fileName = fileNameToResolve.arg(arg);
+        }
     }
 
     if (!S_IMAGE_KEY2PIXMAP.contains(totalKey))

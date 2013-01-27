@@ -66,7 +66,10 @@ void GenericCardContainer::_disperseCards(QList<CardItem*> &cards, QRectF fillRe
         CardItem* card = cards[i];
         double newX = 0;
         if (align == Qt::AlignHCenter)
+		{
+			double step = qMin((double)cardWidth + 11, (maxWidth - cardWidth) / (numCards - 1));
             newX = fillRegion.center().x() + step * (i - (numCards - 1) / 2.0);
+		}
         else if (align == Qt::AlignLeft)
             newX = fillRegion.left() + step * i + card->boundingRect().width() / 2.0;
         else if (align == Qt::AlignRight)

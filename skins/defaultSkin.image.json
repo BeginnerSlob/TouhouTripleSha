@@ -205,9 +205,9 @@
 "kingdomColorMask-wu": "image/kingdom/frame/wu.png",
 "kingdomIcon-wu": "image/kingdom/icon/wu.png",
 // cards
-"handCardMainPhoto-default": "image/card/%1.jpg",
+"handCardMainPhoto-default": "image/card/%1.png",
+"handCardMainPhoto-default2": "image/generals/card/%1.jpg",
 "handCardMainPhoto-unknown": "image/system/card-back.png",
-
 
 "handCardNumber-black-default": "image/system/black/%1.png",
 "handCardNumber-red-default": "image/system/red/%1.png",
