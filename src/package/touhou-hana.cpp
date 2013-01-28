@@ -112,13 +112,12 @@ void ThJiewuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
 	room->obtainCard(source, card_id, room->getCardPlace(card_id) == Player::PlaceEquip);
 	Slash *slash = new Slash(NoSuitNoColor, 0);
 	slash->setSkillName("thjiewu");
-	source->addMark("qinggang");
+	source->addMark("Qinggang_Armor_Nullified");
 	CardUseStruct use;
 	use.card = slash;
 	use.from = target;
 	use.to << source;
 	room->useCard(use);
-	source->removeMark("qinggang");
 }
 
 class ThJiewu:public ZeroCardViewAsSkill{

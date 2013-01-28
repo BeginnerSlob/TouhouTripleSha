@@ -16,7 +16,7 @@
 #include "SkinBank.h"
 #include "wind.h"
 #include "record-analysis.h"
-#include "mountainpackage.h"
+//#include "mountainpackage.h"
 
 #include <QPropertyAnimation>
 #include <QParallelAnimationGroup>
@@ -1278,8 +1278,8 @@ void RoomScene::keyReleaseEvent(QKeyEvent *event){
             if (Self->hasSkill("huashen")) {
                 const Skill *huashen_skill = Sanguosha->getSkill("huashen");
                 if (huashen_skill) {
-                    HuashenDialog *dialog = qobject_cast<HuashenDialog *>(huashen_skill->getDialog());
-                    if (dialog) dialog->popup();
+                    //HuashenDialog *dialog = qobject_cast<HuashenDialog *>(huashen_skill->getDialog());
+                    //if (dialog) dialog->popup();
                 }
             }
             break;
@@ -1363,7 +1363,6 @@ void RoomScene::keyReleaseEvent(QKeyEvent *event){
         }
     }
 }
-
 
 void RoomScene::chooseGeneral(const QStringList &generals){
     QApplication::alert(main_window);

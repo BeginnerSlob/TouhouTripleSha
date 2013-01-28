@@ -1007,8 +1007,8 @@ bool Room::_askForNullification(const TrickCard *trick, ServerPlayer *from, Serv
         log.to << to;
         log.arg = trick_name;
         sendLog(log);
-        QVariant decisionData = QVariant::fromValue("Nullification:" + QString(trick->metaObject()->className()) +
-            ":" + to->objectName() + ":" + (positive?"true":"false"));
+        QVariant decisionData = QVariant::fromValue("Nullification:" + QString(trick->getClassName()) +
+            ":" + to->objectName() + ":" + (positive ? "true":"false"));
 
 
         thread->trigger(ChoiceMade, this, repliedPlayer, decisionData);
@@ -2651,7 +2651,7 @@ void Room::useCard(const CardUseStruct &use, bool add_history){
     const Card *card = card_use.card;
 
     if (card_use.from->isCardLimited(card, card->getHandlingMethod())
-       && (!card->canRecast() || (card->canRecast() && card_use.from->isCardLimited(card, Card::MethodRecast))))
+       && (!card->canRecast() || card_use.from->isCardLimited(card, Card::MethodRecast)))
         return;
 
     QString key;

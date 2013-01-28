@@ -1096,7 +1096,7 @@ public:
 
 		bool invoke = false;
 		for (int i = 0; i < move->card_ids.length(); i++)
-			if (move->card_ids.at(i) == id) {
+			if (move->card_ids[i] == id) {
 				invoke = true;
 				break;
 			}

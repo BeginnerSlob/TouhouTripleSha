@@ -380,7 +380,7 @@ public:
         }
         else{
             foreach(ServerPlayer *p,room->getAlivePlayers())
-                p->setMark("qinggang", 0);
+                p->setMark("Qinggang_Armor_Nullified", 0);
         }
         return false;
     }

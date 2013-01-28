@@ -1,4 +1,4 @@
-#include "sp-package.h"
+#include "sp.h"
 #include "general.h"
 #include "skill.h"
 #include "standard-generals.h"
