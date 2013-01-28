@@ -181,7 +181,7 @@ void ClientPlayer::setMark(const QString &mark, int value){
         if(itor.key().startsWith("@") && itor.value() > 0){
             QString mark_text = QString("<img src='image/mark/%1.png' />").arg(itor.key());
             if(itor.value() != 1)
-                mark_text.append(QString("%1").arg(itor.value()));
+                mark_text.append(QString("<font color = black>%1</font>").arg(itor.value()));
             // @todo: add an option so that mark can be placed horizontally.
             mark_text.append("<br>");
             text.append(mark_text);

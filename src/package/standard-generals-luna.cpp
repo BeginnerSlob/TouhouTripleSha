@@ -504,11 +504,8 @@ void WenleCard::onEffect(const CardEffectStruct &effect) const{
         }
     }
 
-    if(!wenle_targets.isEmpty()){
-        if(!room->askForUseSlashTo(effect.to, wenle_targets, "@wenle-slash"))
+    if(wenle_targets.isEmpty() || !room->askForUseSlashTo(effect.to, wenle_targets, "@wenle-slash"))
            room->loseHp(effect.to);
-    }else
-        room->loseHp(effect.to);
 }
 
 class Wenle: public ZeroCardViewAsSkill{

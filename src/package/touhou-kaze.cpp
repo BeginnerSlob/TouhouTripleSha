@@ -485,7 +485,6 @@ void ThBishaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
         use.to << victim;
         victim->addMark("Qinggang_Armor_Nullified");
         room->useCard(use, false);
-        victim->removeMark("Qinggang_Armor_Nullified");
     }
 }
 

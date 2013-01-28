@@ -549,6 +549,85 @@ public:
 	}
 };
 
+class ThFenghuang: public TriggerSkill {
+public:
+	ThFenghuang(): TriggerSkill("thfenghuang") {
+		events << ChainStateChanged;
+		frequency = Frequent;
+	}
+
+	virtual bool triggerable(const ServerPlayer *target) const {
+		return target != NULL;
+	}
+
+	virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *, QVariant &data) const{
+		ServerPlayer *player = room->findPlayerBySkillName(objectName());
+		if (!player)
+			return false;
+
+		if (player->askForSkillInvoke(objectName()))
+			player->drawCards(1);
+
+		return false;
+	}
+};
+
+class ThKuaiqing: public TriggerSkill {
+public:
+	ThKuaiqing(): TriggerSkill("thkuaiqing") {
+		events << TrickCardCanceling;
+		frequency = Compulsory;
+	}
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target != NULL;
+    }
+	
+	virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
+        CardEffectStruct effect = data.value<CardEffectStruct>();
+        if (effect.from && effect.from->hasSkill(objectName()) && effect.from->isAlive()
+            && !player->isWounded())
+		{
+			LogMessage log;
+			log.type = "#TriggerSkill";
+			log.from = effect.from;
+			log.arg = objectName();
+			room->sendLog(log);
+            return true;
+		}
+
+		return false;
+	}
+};
+
+class ThBumie: public TriggerSkill {
+public:
+	ThBumie(): TriggerSkill("thbumie") {
+		events << DamageInflicted;
+		frequency = Limited;
+	}
+
+	virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
+		if (player->getMark("@bumie") <= 0)
+			return false;
+
+		DamageStruct damage = data.value<DamageStruct>();
+		if (damage.from && damage.from->isAlive() && damage.from != player && player->askForSkillInvoke(objectName()))
+		{
+			damage.to = damage.from;
+			damage.transfer = true;
+			player->loseMark("@bumie");
+			player->gainMark("@bumieused");
+			room->damage(damage);
+			if (damage.from->isAlive())
+				damage.from->turnOver();
+			return true;
+		}
+
+		return false;
+	}
+};
+
 void TouhouPackage::addTsukiGenerals(){
 	General *tsuki001 = new General(this, "tsuki001$", "qun");
 	tsuki001->addSkill(new ThSuoming);
@@ -569,6 +648,13 @@ void TouhouPackage::addTsukiGenerals(){
 	General *tsuki005 = new General(this, "tsuki005", "qun", 3);
 	tsuki005->addSkill(new ThShouye);
 	tsuki005->addSkill(new ThXushi);
+	
+	General *tsuki006 = new General(this, "tsuki006", "qun", 3);
+	tsuki006->addSkill(new ThFenghuang);
+	tsuki006->addSkill(new ThKuaiqing);
+	tsuki006->addSkill(new ThBumie);
+    tsuki006->addSkill(new MarkAssignSkill("@bumie", 1));
+    related_skills.insertMulti("thbumie", "#@bumie-1");
 	
     addMetaObject<ThYewangCard>();
     addMetaObject<ThJinguoCard>();
