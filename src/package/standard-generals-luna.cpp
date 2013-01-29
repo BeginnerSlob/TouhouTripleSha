@@ -529,8 +529,8 @@ public:
 
     }
 
-    virtual bool isProhibited(const Player *, const Player *, const Card *card) const{
-        return card->isKindOf("TrickCard") && card->isBlack();
+    virtual bool isProhibited(const Player *from, const Player *to, const Card *card) const{
+        return to->hasSkill(objectName()) && card->isKindOf("TrickCard") && card->isBlack();
     }
 };
 

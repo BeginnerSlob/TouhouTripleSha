@@ -1004,6 +1004,11 @@ public:
 			CardUseStruct use = data.value<CardUseStruct>();
 			if (use.card->isNDTrick() && use.card->isBlack())
 			{
+				LogMessage log;
+				log.type = "#TriggerSkill";
+				log.from = player;
+				log.arg = objectName();
+				room->sendLog(log);
 				if (room->askForChoice(use.from, objectName(), "show+cancel") == "show")
 				{
 					room->showAllCards(use.from, player);

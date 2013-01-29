@@ -885,7 +885,7 @@ const ViewAsSkill *Engine::getViewAsSkill(const QString &skill_name) const{
 
 const ProhibitSkill *Engine::isProhibited(const Player *from, const Player *to, const Card *card) const{
     foreach(const ProhibitSkill *skill, prohibit_skills){
-        if(to->hasSkill(skill->objectName()) && skill->isProhibited(from, to, card))
+        if(skill->isProhibited(from, to, card))
             return skill;
     }
 
