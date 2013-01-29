@@ -247,7 +247,7 @@ public:
     }
 
     virtual bool isProhibited(const Player *from, const Player *to, const Card *card) const{
-        return card->isKindOf("DelayedTrick");
+        return to->hasSkill(objectName()) && card->isKindOf("DelayedTrick");
     }
 };
 

@@ -148,7 +148,7 @@ public:
 
     virtual bool isProhibited(const Player *from, const Player *to, const Card *card) const{
         if(card->isKindOf("Slash") || card->isKindOf("Duel"))
-            return to->isKongcheng();
+            return to->hasSkill(objectName()) && to->isKongcheng();
         else
             return false;
     }

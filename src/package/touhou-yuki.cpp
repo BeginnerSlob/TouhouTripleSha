@@ -129,7 +129,7 @@ public:
 		events << CardUsed << CardEffected << BeforeCardsMoveOneTime;
 	}
 	
-	virtual bool triggerable(ServerPlayer *target) const{
+	virtual bool triggerable(const ServerPlayer *target) const{
 		return target != NULL;
 	}
 
@@ -302,7 +302,7 @@ ThKujieCard::ThKujieCard(){
 }
 
 bool ThKujieCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-	return targets.isEmpty() && to_select->hasSkill("thkujie") && Self != to_select;
+	return targets.isEmpty() && Self->inMyAttackRange(to_select) && to_select->hasSkill("thkujie") && Self != to_select;
 }
 
 void ThKujieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
@@ -351,7 +351,7 @@ public:
 			room->detachSkillFromPlayer(player, "thkujievs", true);
 		else if (triggerEvent == EventPhaseStart)
 		{
-			if (player->getPhase() == Player::Play && !player->hasSkill("thkujievs") && splayer->isAlive() && player->inMyAttackRange(splayer) && player != splayer)
+			if (player->getPhase() == Player::Play && !player->hasSkill("thkujievs") && splayer->isAlive() && player != splayer)
 				room->attachSkillToPlayer(player, "thkujievs");
 			else if (player->getPhase() == Player::NotActive && splayer->isAlive() && splayer->hasFlag("thkujieused"))
 			{
