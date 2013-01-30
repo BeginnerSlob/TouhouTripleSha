@@ -10,6 +10,74 @@
 #include "engine.h"
 #include "general.h"
 
+class ThJianmo: public TriggerSkill {
+public:
+	ThJianmo(): TriggerSkill("thjianmo") {
+		events << EventPhaseStart << EventPhaseChanging << CardUsed << CardEffected;
+	}
+
+	virtual bool triggerable(const ServerPlayer *target) const{
+		return target != NULL;
+	}
+
+	virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+		if (triggerEvent == EventPhaseChanging)
+		{	
+			if (player->hasFlag("jianmoinvoke"))
+				room->setPlayerFlag(player, "-jianmoinvoke");
+			room->removePlayerCardLimitation(player, "use,response", "slash@0");
+		}
+		else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Play)
+		{
+			ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
+			if (!splayer || player == splayer)
+				return false;
+
+			if (player->getHandcardNum() >= player->getMaxHp() && splayer->askForSkillInvoke(objectName()))
+				if (room->askForChoice(player, objectName(), "jian+mo") == "jian")
+				{
+					LogMessage log;
+					log.type = "#thjianmochoose1";
+					log.from = player;
+					log.arg = "1";
+					room->sendLog(log);
+					player->drawCards(1);
+					room->setPlayerCardLimitation(player, "use,response", "slash", false);
+				}
+				else
+				{
+					LogMessage log;
+					log.type = "#thjianmochoose1";
+					log.from = player;
+					log.arg = "1";
+					room->sendLog(log);
+					room->setPlayerFlag(player,"jianmoinvoke");
+				}
+		}
+		else if (triggerEvent == CardUsed)
+		{
+			CardUseStruct use = data.value<CardUseStruct>();
+			if (use.card->hasFlag("jianmoavoid"))
+				use.card->setFlags("-jianmoavoid");
+			if (use.card->isKindOf("Slash") && use.from->hasFlag("jianmoinvoke"))
+			{
+				LogMessage log;
+				log.type = "#ThJianmo";
+				log.from = player;
+				log.arg = objectName();
+				log.arg2 = use.card->objectName();
+				room->sendLog(log);
+
+				if (!room->askForCard(player, "..", "@thjianmo"))
+					use.card->setFlags("jianmoavoid");
+			}
+		}
+		else if (triggerEvent == CardEffected && data.value<CardEffectStruct>().card->hasFlag("jianmoavoid"))
+			return true;
+
+		return false;
+	}
+};
 class ThDunjia:public TriggerSkill{
 public:
 	ThDunjia():TriggerSkill("thdunjia"){
@@ -403,6 +471,9 @@ public:
 };
 
 void TouhouPackage::addYukiGenerals(){
+	General *yuki001 = new General(this, "yuki001$", "wu");
+	yuki001->addSkill(new ThJianmo);
+
 	General *yuki006 = new General(this, "yuki006", "wu");
 	yuki006->addSkill("jibu");
 	yuki006->addSkill(new ThDunjia);
