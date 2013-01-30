@@ -903,12 +903,12 @@ void ThHeiguanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
 		room->obtainCard(source,
 			             room->askForCardChosen(source, target, "h", objectName()),
 						 false);
-		room->setPlayerMark(target, "heiguanprotect", 1);
+		target->gainMark("@heiguan2");
 	}
 	else
 	{
 		target->obtainCard(this);
-		room->setPlayerMark(target, "heiguanprohibit", 1);
+		target->gainMark("@heiguan1");
 	}
 }
 
@@ -944,9 +944,9 @@ public:
         if (!card->isKindOf("Slash"))
 			return false;
 
-		if (to->hasSkill(objectName()) && from->getMark("heiguanprohibit") > 0)
+		if (to->hasSkill(objectName()) && from->getMark("@heiguan1") > 0)
 			return true;
-		else if (to->getMark("heiguanprotect") > 0)
+		else if (to->getMark("@heiguan2") > 0)
 			return true;
 		else
 			return false;
@@ -968,8 +968,8 @@ public:
 		{
 			foreach (ServerPlayer *p, room->getOtherPlayers(player))
 			{
-				room->setPlayerMark(p, "heiguanprohibit", 0);
-				room->setPlayerMark(p, "heiguanprotect", 0);
+				room->setPlayerMark(p, "@heiguan1", 0);
+				room->setPlayerMark(p, "@heiguan2", 0);
 			}
 		}
 
@@ -1455,7 +1455,7 @@ void TouhouPackage::addTsukiGenerals(){
 	General *tsuki003 = new General(this, "tsuki003", "qun");
 	tsuki003->addSkill(new ThKuangqi);
 
-	General *tsuki004 = new General(this, "tsuki004", "qun", 4, false);
+	General *tsuki004 = new General(this, "tsuki004", "qun", 3, false);
 	tsuki004->addSkill(new ThKaiyun);
 	tsuki004->addSkill(new ThJiaotu);
 

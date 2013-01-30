@@ -1277,6 +1277,8 @@ public:
 				log.arg = choice;
 				room->sendLog(log);
 
+				room->setPlayerMark(damage.to, "@guaitan_" + choice, 1);
+
 				QStringList guaitanlist = damage.to->tag.value("guaitan").toStringList();
 				if (choice == "basic")
 					choice = "BasicCard";
@@ -1289,7 +1291,6 @@ public:
 				if (!guaitanlist.contains(choice))
 					guaitanlist << choice;
 
-				damage.to->gainMark("@guaitan");
 				damage.to->tag["guaitan"] = QVariant::fromValue(guaitanlist);
 			}
 		}
@@ -1307,7 +1308,7 @@ public:
 					
 					room->sendLog(log);
 					room->setPlayerCardLimitation(player, "use,response", str, true);
-					room->setPlayerMark(player, "@guaitan", 0);
+					room->setPlayerMark(player, "@guaitan_" + log.arg, 0);
 					room->setPlayerMark(player, objectName(), 1);
 				}
 			}
