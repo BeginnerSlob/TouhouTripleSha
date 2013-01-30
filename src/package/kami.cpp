@@ -1133,31 +1133,32 @@ public:
         }
 		else if(choice == "obtain")
 		{
-            QStringList lords = Sanguosha->getLords();
+            QStringList lords;
             QList<ServerPlayer *> players = room->getOtherPlayers(player);
             foreach(ServerPlayer *player, players){
-                lords.removeOne(player->getGeneralName());
+                lords << player->getGeneralName();
             }
 
-			QStringList lord_skills_can;
-			lord_skills_can << "jijiang" << "hujia" << "jiuyuan" << "yuji" 
+			QStringList lord_skills;
+			lord_skills << "jijiang" << "hujia" << "jiuyuan" << "yuji" 
 				<< "thqiyuan" << "songwei" << "thchundu" << "baonue";
 
-            QStringList lord_skills;
             foreach(QString lord, lords){
                 const General *general = Sanguosha->getGeneral(lord);
                 QList<const Skill *> skills = general->findChildren<const Skill *>();
                 foreach(const Skill *skill, skills){
-                    if (skill->isLordSkill() && !player->hasSkill(skill->objectName())
-						&& lord_skills_can.contains(skill->objectName().remove("$")))
-                        lord_skills << skill->objectName();
+                    if (skill->isLordSkill() && player->hasSkill(skill->objectName()))
+                        lord_skills.removeOne(skill->objectName());
                 }
             }
 
             if(!lord_skills.isEmpty()){
                 QString skill_name = room->askForChoice(player, objectName(), lord_skills.join("+"));
 
-                const Skill *skill = Sanguosha->getSkill(skill_name);
+                if (skill_name.isEmpty())
+					return false;
+
+				const Skill *skill = Sanguosha->getSkill(skill_name);
                 room->acquireSkill(player, skill);
 
                 if(skill->inherits("GameStartSkill")){
