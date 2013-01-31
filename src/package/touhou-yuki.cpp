@@ -378,6 +378,95 @@ public:
 	}
 };
 
+ThYuanqiCard::ThYuanqiCard(){
+	target_fixed = true;
+}
+
+void ThYuanqiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const {
+	JudgeStruct judge;
+    judge.pattern = QRegExp("(.*):(.*):(.*)");
+	judge.good = true;
+    judge.reason = objectName();
+    judge.who = source;
+	room->judge(judge);
+
+	QList<int> card_ids;
+	foreach (int card_id, source->handCards())
+		if (Sanguosha->getCard(card_id)->sameColorWith(judge.card))
+			card_ids << card_id;
+
+	if (card_ids.isEmpty())
+		return ;
+
+	room->fillAG(card_ids, source);
+	int card_id = room->askForAG(source, card_ids, true, "thyuanqi");
+	source->invoke("clearAG");
+
+	if (card_id == -1)
+		return ;
+
+	ServerPlayer *target = room->askForPlayerChosen(source, room->getOtherPlayers(source), "thyuanqi");
+	room->obtainCard(target, card_id);
+
+	QString choice = "draw";
+	if (!target->isNude())
+		choice = room->askForChoice(target, "thyuanqi", "draw+throw");
+
+	if (choice == "draw")
+	{
+		target->drawCards(1);
+		room->loseHp(target);
+	}
+	else
+	{
+		room->throwCard(card_id, target);
+		int id = room->askForCardChosen(source, target, "he", "thyuanqi");
+		room->obtainCard(source, id, room->getCardPlace(id) != Player::PlaceHand);
+	}
+}
+
+class ThYuanqi: public ZeroCardViewAsSkill {
+public:
+	ThYuanqi(): ZeroCardViewAsSkill("thyuanqi") {
+	}
+
+	virtual const Card *viewAs() const{
+        return new ThYuanqiCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("ThYuanqiCard");
+    }
+};
+
+class ThMoji: public TriggerSkill {
+public:
+	ThMoji(): TriggerSkill("thmoji") {
+		events << EventPhaseStart << CardsMoveOneTime;
+		frequency = Compulsory;
+	}
+
+	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+		bool invoke = triggerEvent == EventPhaseStart && player->getHandcardNum() < 2;
+		if (triggerEvent == CardsMoveOneTime)
+		{
+			CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
+			invoke = move->from == player && move->from_places.contains(Player::PlaceHand) && player->getHandcardNum() < 2;
+		}
+		if (invoke && player->getPhase() == Player::NotActive)
+		{
+			LogMessage log;
+			log.type = "#TriggerSkill";
+			log.from = player;
+			log.arg = objectName();
+			room->sendLog(log);
+			
+			player->drawCards(2 - player->getHandcardNum());
+		}
+		return false;
+	}
+};
+
 class ThDunjia:public TriggerSkill{
 public:
 	ThDunjia():TriggerSkill("thdunjia"){
@@ -468,9 +557,9 @@ public:
 	}
 };
 
-class ThJidong:public TriggerSkill{
+class ThLinhan:public TriggerSkill{
 public:
-	ThJidong():TriggerSkill("thjidong"){
+	ThLinhan():TriggerSkill("thlinhan"){
 		events << CardResponded;
 		frequency = Frequent;
 	}
@@ -683,6 +772,7 @@ void ThKujieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
 class ThKujieViewAsSkill:public OneCardViewAsSkill{
 public:
 	ThKujieViewAsSkill():OneCardViewAsSkill("thkujievs"){
+        attached_lord_skill = true;
 	}
 
     virtual bool viewFilter(const Card *to_select) const{
@@ -788,6 +878,10 @@ void TouhouPackage::addYukiGenerals(){
 	
 	General *yuki004 = new General(this, "yuki004", "wu");
 	yuki004->addSkill(new ThZhancao);
+	
+	General *yuki005 = new General(this, "yuki005", "wu", 3, false);
+	yuki005->addSkill(new ThYuanqi);
+	yuki005->addSkill(new ThMoji);
 
 	General *yuki006 = new General(this, "yuki006", "wu");
 	yuki006->addSkill("jibu");
@@ -795,7 +889,7 @@ void TouhouPackage::addYukiGenerals(){
 
 	General *yuki011 = new General(this, "yuki011", "wu", 3);
 	yuki011->addSkill(new ThDongmo);
-	yuki011->addSkill(new ThJidong);
+	yuki011->addSkill(new ThLinhan);
 
 	General *yuki014 = new General(this, "yuki014", "wu");
 	yuki014->addSkill(new ThQiebao);
@@ -809,6 +903,7 @@ void TouhouPackage::addYukiGenerals(){
 	yuki016->addSkill(new ThKujie);
 	yuki016->addSkill(new ThYinbi);
 	
+    addMetaObject<ThYuanqiCard>();
     addMetaObject<ThDongmoCard>();
     addMetaObject<ThKujieCard>();
 

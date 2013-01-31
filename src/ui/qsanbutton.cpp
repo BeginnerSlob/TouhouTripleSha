@@ -250,7 +250,9 @@ void QSanSkillButton::setSkill(const Skill* skill)
          _m_canDisable = false;
      } else if (freq == Skill::Limited || freq == Skill::NotFrequent) {
          setState(QSanButton::S_STATE_DISABLED);            
-         if (freq == Skill::Limited)
+         if (skill->isAttachedLordSkill())
+             _setSkillType(QSanInvokeSkillButton::S_SKILL_ATTACHEDLORD);
+         else if (freq == Skill::Limited)
              _setSkillType(QSanInvokeSkillButton::S_SKILL_ONEOFF_SPELL);
          else
              _setSkillType(QSanInvokeSkillButton::S_SKILL_PROACTIVE);
@@ -347,16 +349,27 @@ void QSanInvokeSkillDock::update()
 {
     if(!_m_buttons.isEmpty())
     {
-        int numButtons = _m_buttons.length();
-        int rows = (numButtons - 1) / 3 + 1;
+        QList<QSanInvokeSkillButton *> regular_buttons, lordskill_buttons, all_buttons;
+        foreach(QSanInvokeSkillButton *btn, _m_buttons) {
+            if (btn->getSkill()->isAttachedLordSkill())
+                lordskill_buttons << btn;
+            else
+                regular_buttons << btn;
+        }
+        all_buttons = regular_buttons + lordskill_buttons;
+
+        int numButtons = regular_buttons.length();
+        int lordskillNum = lordskill_buttons.length();
+        Q_ASSERT(lordskillNum <= 3); // HuangTian, ZhiBa and DrJiuYuan
+        int rows = (numButtons == 0) ? 0 : (numButtons - 1) / 3 + 1;
         int rowH = G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height();
-        int* btnNum = new int[rows + 1]; // we allocate one more row in case we need it.
+        int *btnNum = new int[rows + 1 + 1]; // we allocate one more row in case we need it.
         int remainingBtns = numButtons;
-        for (int i = 0; i < rows; i++)
-        {
+        for (int i = 0; i < rows; i++) {
             btnNum[i] = qMin(3, remainingBtns);
             remainingBtns -= 3;
         }
+        if (lordskillNum > 0) btnNum[rows] = lordskillNum;
 
         // If the buttons in rows are 3, 1, then balance them to 2, 2
         if (rows >= 2)

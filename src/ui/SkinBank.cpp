@@ -1050,6 +1050,9 @@ bool QSanRoomSkin::_loadLayoutConfig(const Json::Value &layoutConfig)
         case QSanInvokeSkillButton::S_SKILL_PROACTIVE:
             key = "proactiveFontColor";
             break;
+        case QSanInvokeSkillButton::S_SKILL_ATTACHEDLORD:
+			key = "attachedlordFontColor";
+			break;
         default:
             Q_ASSERT(false);
             break;
@@ -1057,7 +1060,7 @@ bool QSanRoomSkin::_loadLayoutConfig(const Json::Value &layoutConfig)
         for (int j = 0; j < 4; j++)
         {
             int index = i * 4 + j;
-            QByteArray arr = key.toAscii();;
+            QByteArray arr = key.toAscii();
             const char* sKey = arr.constData();
             tryParse(config[sKey][j][0], _m_dashboardLayout.m_skillTextColors[index]);
             tryParse(config[sKey][j][1], _m_dashboardLayout.m_skillTextShadowColors[index]);

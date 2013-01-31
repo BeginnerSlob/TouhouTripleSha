@@ -33,10 +33,8 @@ public:
     explicit Skill(const QString &name, Frequency frequent = NotFrequent);
     bool isLordSkill() const;
     bool isAttachedLordSkill() const;
-    bool isSPConvertSkill() const;
     QString getDescription() const;
     QString getNotice(int index) const;
-    QString getText() const;
     bool isVisible() const;
 
     virtual QString getDefaultChoice(ServerPlayer *player) const;
@@ -54,7 +52,6 @@ public:
 protected:
     Frequency frequency;
     QString default_choice;
-    bool sp_convert_skill;
     bool attached_lord_skill;
 
 private:

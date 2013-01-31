@@ -294,6 +294,7 @@ public:
 class ThJiguangGivenSkill: public OneCardViewAsSkill{
 public:
 	ThJiguangGivenSkill(): OneCardViewAsSkill("thjiguanggivenskill"){
+        attached_lord_skill = true;
 	}
 
     virtual bool isEnabledAtPlay(const Player *player) const{
@@ -317,15 +318,96 @@ public:
     }
 };
 
+class ThMengsheng: public TriggerSkill {
+public:
+	ThMengsheng(): TriggerSkill("thmengsheng") {
+		events << Damaged << EventPhaseChanging << Death;
+	}
+
+	virtual bool triggerable(const ServerPlayer *target) const {
+		return target != NULL && target->hasSkill(objectName());
+	}
+
+	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
+		if (triggerEvent == Damaged && TriggerSkill::triggerable(player) && player->askForSkillInvoke(objectName()))
+		{
+			DamageStruct damage = data.value<DamageStruct>();
+			if (!damage.from->isKongcheng())
+				room->obtainCard(player, room->askForCardChosen(player, damage.from, "h", objectName()), false);
+
+			if (damage.from->tag.value("ThMengsheng").isNull())
+			{
+				QStringList skills;
+				foreach(const Skill *skill, damage.from->getVisibleSkillList())
+					if (skill->getLocation() == Skill::Right && !skill->isAttachedLordSkill())
+					{
+						skills << skill->objectName();
+						room->detachSkillFromPlayer(damage.from, skill->objectName());
+					}
+				
+				damage.from->gainMark("@mengsheng");
+				damage.from->tag["ThMengsheng"] = QVariant::fromValue(skills);
+				if (player == room->getCurrent())
+					room->setPlayerFlag(player, "thmengshengusing");
+			}
+		}
+		else
+		{
+			if (triggerEvent == EventPhaseChanging && (player->hasFlag("thmengshengusing") || data.value<PhaseChangeStruct>().to != Player::NotActive))
+				return false;
+
+			foreach (ServerPlayer *p, room->getAllPlayers())
+				if (!p->tag.value("ThMengsheng").isNull())
+				{
+					QStringList skills = p->tag.value("ThMengsheng").toStringList();
+					p->tag.remove("ThMengsheng");
+					room->setPlayerMark(p, "@mengsheng", 0);
+					foreach (QString skill, skills)
+						room->acquireSkill(p, skill);
+				}
+		}
+
+		return false;
+	}
+};
+
+class ThQixiang: public TriggerSkill {
+public:
+	ThQixiang(): TriggerSkill("thqixiang") {
+		events << EventPhaseEnd;
+	}
+
+	virtual bool triggerable(const ServerPlayer *target) const {
+		return target != NULL;
+	}
+
+	virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
+		ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
+
+		if (!splayer || splayer == player || splayer->isKongcheng())
+			return false;
+
+		if (player->getPhase() == Player::Discard && splayer->askForSkillInvoke(objectName()) && room->askForCard(splayer, ".", "@thqixiang"))
+		{
+			QString choice = "draw";
+			if (!player->isKongcheng())
+				choice = room->askForChoice(splayer, objectName(), "draw+discard");
+
+			if (choice == "draw")
+				player->drawCards(1);
+			else
+				room->askForDiscard(player, objectName(), 1, 1);
+		}
+
+		return false;
+	}
+};
+
 class ThFanhun: public TriggerSkill{
 public:
     ThFanhun(): TriggerSkill("thfanhun") {
         events << AskForPeaches;
 	}
-
-	virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && TriggerSkill::triggerable(target);
-    }
 
 	virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         DyingStruct dying_data = data.value<DyingStruct>();
@@ -774,7 +856,7 @@ public:
 	}
 
 	virtual bool triggerable(const ServerPlayer *target) const{
-		return target != NULL;
+		return target != NULL && target->isAlive();
 	}
 
 	virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
@@ -1201,6 +1283,10 @@ KamiPackage::KamiPackage()
 	kami002->addSkill(new ThJiguang);
 	kami002->addSkill(new ThJiguangBuff);
     related_skills.insertMulti("thjiguang", "#thjiguang");
+
+	General *kami003 = new General(this, "kami003", "god", 3);
+	kami003->addSkill(new ThMengsheng);
+	kami003->addSkill(new ThQixiang);
 
 	General *kami007 = new General(this, "kami007", "god", 2, false);
 	kami007->addSkill(new ThFanhun);

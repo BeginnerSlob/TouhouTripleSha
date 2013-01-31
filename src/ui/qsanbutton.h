@@ -58,7 +58,7 @@ class QSanSkillButton: public QSanButton
 {
     Q_OBJECT
 public:
-    enum SkillType { S_SKILL_PROACTIVE, S_SKILL_FREQUENT, S_SKILL_COMPULSORY,
+    enum SkillType { S_SKILL_ATTACHEDLORD, S_SKILL_PROACTIVE, S_SKILL_FREQUENT, S_SKILL_COMPULSORY,
                      S_SKILL_AWAKEN, S_SKILL_ONEOFF_SPELL, S_NUM_SKILL_TYPES };
     inline static QString getSkillTypeString(SkillType type)
     {
@@ -68,6 +68,7 @@ public:
         else if (type == QSanSkillButton::S_SKILL_FREQUENT) arg1 = "frequent";
         else if (type == QSanSkillButton::S_SKILL_ONEOFF_SPELL) arg1 = "oneoff";
         else if (type == QSanSkillButton::S_SKILL_PROACTIVE) arg1 = "proactive";
+        else if (type == QSanSkillButton::S_SKILL_ATTACHEDLORD) arg1 = "attachedlord";
         return arg1;
     }
     virtual void setSkill(const Skill* skill);   
