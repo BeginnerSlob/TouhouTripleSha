@@ -33,7 +33,7 @@ public:
         AskForPlayerChoose = 0x08,
         AskForYumeng = 0x09,
         AskForYuxi = 0x0A,
-        AskForGongxin = 0x0B,
+        AskForLingshi = 0x0B,
         AskForShowOrPindian = 0x0c,
 
         RespondingUse = 0x11,
@@ -162,7 +162,7 @@ public:
     void askForGeneral(const Json::Value &);
     void askForYumeng(const Json::Value &);
     void askForYuxi(const Json::Value &);
-    void askForGongxin(const Json::Value &);
+    void askForLingshi(const Json::Value &);
     void askForAssign(const Json::Value &); // Assign roles at the beginning of game
     void askForSurrender(const Json::Value &);
     void handleGameEvent(const Json::Value &);
@@ -220,7 +220,7 @@ public slots:
     void fillRobots();
     void arrange(const QStringList &order);
     
-    void onPlayerReplyGongxin(int card_id = -1);
+    void onPlayerReplyLingshi(int card_id = -1);
 
 protected:
     // operation countdown
@@ -298,7 +298,7 @@ signals:
     void card_shown(const QString &player_name, int card_id);
     void log_received(const QString &log_str);
     void yuxi(const QList<int> &card_ids, bool up_only);
-    void gongxin(const QList<int> &card_ids, bool enable_heart);
+    void lingshi(const QList<int> &card_ids, bool enable_heart);
     void focus_moved(const QStringList &focus, QSanProtocol::Countdown countdown);
     void emotion_set(const QString &target, const QString &emotion);
     void skill_invoked(const QString &who, const QString &skill_name);

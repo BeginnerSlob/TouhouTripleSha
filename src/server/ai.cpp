@@ -344,45 +344,13 @@ ServerPlayer *TrustAI::askForPlayerChosen(const QList<ServerPlayer *> &targets, 
 }
 
 const Card *TrustAI::askForSinglePeach(ServerPlayer *dying) {
-    if(isFriend(dying)){
+    if (isFriend(dying)) {
         QList<const Card *> cards = self->getHandcards();
-        foreach(const Card *card, cards){
-            if(card->isKindOf("Peach"))
+        foreach (const Card *card, cards) {
+            if (card->isKindOf("Peach"))
                 return card;
-
-            if(card->isKindOf("Analeptic") && dying == self)
+            if (card->isKindOf("Analeptic") && dying == self)
                 return card;
-        }
-
-        if(dying == self){
-            if(self->hasSkill("jiuchi")){
-                foreach(const Card *card, cards){
-                    if(card->getSuit() == Card::Spade){
-                        Analeptic *analeptic = new Analeptic(Card::Spade, card->getNumber());
-                        analeptic->addSubcard(card);
-                        analeptic->setSkillName("jiuchi");
-                        return analeptic;
-                    }
-                }
-            }
-
-            if(self->hasSkill("jiushi") && self->faceUp()){
-                Analeptic *analeptic = new Analeptic(Card::NoSuitNoColor, 0);
-                analeptic->setSkillName("jiushi");
-                return analeptic;
-            }
-        }
-
-        if(self->hasSkill("jijiu") && self->getPhase() == Player::NotActive){
-            cards = self->getCards("he");
-            foreach(const Card *card, cards){
-                if(card->isRed()){
-                    Peach *peach = new Peach(card->getSuit(), card->getNumber());
-                    peach->addSubcard(card);
-                    peach->setSkillName("jijiu");
-                    return peach;
-                }
-            }
         }
     }
 

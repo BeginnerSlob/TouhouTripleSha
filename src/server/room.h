@@ -86,7 +86,7 @@ public:
     QList<int> getNCards(int n, bool update_pile_number = true);
     ServerPlayer *getLord() const;
     void askForYuxi(ServerPlayer *zhuge, const QList<int> &cards, bool up_only);
-    void doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target);
+    void doLingshi(ServerPlayer *shenlvmeng, ServerPlayer *target);
     int drawCard();
     QList<int> drawCards(int num);
     const Card *peek();

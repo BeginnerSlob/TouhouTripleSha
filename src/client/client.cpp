@@ -69,8 +69,8 @@ Client::Client(QObject *parent, const QString &filename)
     //callbacks["moveFocus"] = &Client::moveFocus;
     callbacks["setEmotion"] = &Client::setEmotion;
     m_callbacks[S_COMMAND_INVOKE_SKILL] = &Client::skillInvoked;
-    m_callbacks[S_COMMAND_SHOW_ALL_CARDS] = &Client::askForGongxin;
-    m_callbacks[S_COMMAND_SKILL_GONGXIN] = &Client::askForGongxin;
+    m_callbacks[S_COMMAND_SHOW_ALL_CARDS] = &Client::askForLingshi;
+    m_callbacks[S_COMMAND_SKILL_LINGSHI] = &Client::askForLingshi;
     m_callbacks[S_COMMAND_LOG_EVENT] = &Client::handleGameEvent;
     //callbacks["skillInvoked"] = &Client::skillInvoked;
     callbacks["addHistory"] = &Client::addHistory;
@@ -100,7 +100,7 @@ Client::Client(QObject *parent, const QString &filename)
     m_interactions[S_COMMAND_EXCHANGE_CARD] = &Client::askForExchange;
     m_interactions[S_COMMAND_ASK_PEACH] = &Client::askForSinglePeach;
     m_interactions[S_COMMAND_SKILL_YUXI] = &Client::askForYuxi;
-    m_interactions[S_COMMAND_SKILL_GONGXIN] = &Client::askForGongxin;
+    m_interactions[S_COMMAND_SKILL_LINGSHI] = &Client::askForLingshi;
     m_interactions[S_COMMAND_SKILL_YUMENG] = &Client::askForYumeng;
     m_interactions[S_COMMAND_PLAY_CARD] = &Client::activate;
     m_interactions[S_COMMAND_DISCARD_CARD] = &Client::askForDiscard;
@@ -1513,7 +1513,7 @@ void Client::askForYuxi(const Json::Value &arg){
     setStatus(AskForYuxi);
 }
 
-void Client::askForGongxin(const Json::Value &arg){
+void Client::askForLingshi(const Json::Value &arg){
     if (!arg.isArray() || arg.size() != 3
         || !arg[0].isString() || ! arg[1].isBool())
         return;
@@ -1524,15 +1524,15 @@ void Client::askForGongxin(const Json::Value &arg){
 
     who->setCards(card_ids);
 
-    emit gongxin(card_ids, enable_heart);
-    setStatus(AskForGongxin);
+    emit lingshi(card_ids, enable_heart);
+    setStatus(AskForLingshi);
 }
 
-void Client::onPlayerReplyGongxin(int card_id){
+void Client::onPlayerReplyLingshi(int card_id){
     Json::Value reply = Json::Value::null;
     if(card_id != -1)
         reply = card_id;    
-    replyToServer(S_COMMAND_SKILL_GONGXIN, reply);
+    replyToServer(S_COMMAND_SKILL_LINGSHI, reply);
     setStatus(NotActive);
 }
 

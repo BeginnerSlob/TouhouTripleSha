@@ -34,7 +34,7 @@ public:
     virtual QList<CardItem*> removeCardItems(const QList<int> &card_ids, Player::Place place);    
     int getFirstEnabled() const;
     void startChoose();
-    void startGongxin();
+    void startLingshi();
     void addCloseButton(bool dispose = false);
     void view(const ClientPlayer *player);
     virtual QRectF boundingRect() const;
@@ -61,11 +61,11 @@ private:
 private slots:
     void grabItem();
     void chooseItem();
-    void gongxinItem();
+    void lingshiItem();
 
 signals:
     void item_chosen(int card_id);
-    void item_gongxined(int card_id);
+    void item_lingshied(int card_id);
 };
 
 class YuxiBox: public QSanSelectableItem{

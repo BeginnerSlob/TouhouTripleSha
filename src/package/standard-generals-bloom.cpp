@@ -1580,124 +1580,6 @@ public:
     }
 };
 
-ZhihengCard::ZhihengCard(){
-    target_fixed = true;
-    once = true;
-    mute = true;
-    will_throw = false;
-    handling_method = Card::MethodDiscard;
-}
-
-void ZhihengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    room->throwCard(this, source);
-    if(!source->hasSkill("jilve"))
-        room->broadcastSkillInvoke("zhiheng");
-    if(source->isAlive())
-        room->drawCards(source, subcards.length());
-}
-
-class Zhiheng:public ViewAsSkill{
-public:
-    Zhiheng():ViewAsSkill("zhiheng"){
-
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &, const Card *) const{
-        return true;
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if(cards.isEmpty())
-            return NULL;
-
-        ZhihengCard *zhiheng_card = new ZhihengCard;
-        zhiheng_card->addSubcards(cards);
-        zhiheng_card->setSkillName(objectName());
-        return zhiheng_card;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("ZhihengCard");
-    }
-};
-
-class Jiuyuan: public TriggerSkill{
-public:
-    Jiuyuan():TriggerSkill("jiuyuan$"){
-        events << Dying << AskForPeachesDone << TargetConfirmed << HpRecover;
-        frequency = Compulsory;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->hasLordSkill(objectName());
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *sunquan, QVariant &data) const{
-        switch(triggerEvent){
-        case Dying: {
-                foreach(ServerPlayer *wu, room->getOtherPlayers(sunquan)){
-                    if(wu->getKingdom() == "wu"){
-                        room->broadcastSkillInvoke("jiuyuan", 1);
-                        break;
-                    }
-                }
-
-                break;
-            }
-
-        case TargetConfirmed: {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if(use.card->isKindOf("Peach") && use.from && use.from->getKingdom() == "wu"
-                    && sunquan != use.from && sunquan->hasFlag("dying"))
-            {
-                room->setPlayerFlag(sunquan, "jiuyuan");
-                room->setCardFlag(use.card, "jiuyuan");
-            }
-            break;
-        }
-
-        case HpRecover: {
-            RecoverStruct rec = data.value<RecoverStruct>();
-            if(rec.card && rec.card->hasFlag("jiuyuan"))
-            {
-                int index = rec.who->isMale() ? 2 : 3;
-
-                room->broadcastSkillInvoke("jiuyuan", index);
-
-                LogMessage log;
-                log.type = "#JiuyuanExtraRecover";
-                log.from = sunquan;
-                log.to << rec.who;
-                log.arg = objectName();
-                room->sendLog(log);
-
-                rec.recover ++;
-
-                data = QVariant::fromValue(rec);
-            }
-            break;
-        }
-
-        case AskForPeachesDone:{
-                if(sunquan->hasFlag("jiuyuan")){
-                    room->setPlayerFlag(sunquan, "-jiuyuan");
-                    if(sunquan->getHp() > 0){
-                        room->getThread()->delay(2000);
-                        room->broadcastSkillInvoke("jiuyuan", 4);
-                    }
-                }
-
-                break;
-            }
-
-        default:
-            break;
-        }
-
-        return false;
-    }
-};
-
 class Keji: public TriggerSkill{
 public:
     Keji():TriggerSkill("keji"){
@@ -1837,9 +1719,6 @@ void StandardPackage::addBloomGenerals(){
     liubei->addSkill(new Jijiang);
 
     General *sunquan, *zhouyu, *lvmeng, *luxun, *ganning, *huanggai, *daqiao, *sunshangxiang;
-    sunquan = new General(this, "sunquan$", "wu");
-    sunquan->addSkill(new Zhiheng);
-    sunquan->addSkill(new Jiuyuan);
 
     lvmeng = new General(this, "lvmeng", "wu");
     lvmeng->addSkill(new Keji);
@@ -1850,7 +1729,7 @@ void StandardPackage::addBloomGenerals(){
     //new General(this, "anjiang", "god", 4,true, true, true);*/
 
     // for skill cards
-    //addMetaObject<ZhihengCard>();
+    
     addMetaObject<LuoyiCard>();
     addMetaObject<TuxiCard>();
     //addMetaObject<JieyinCard>();

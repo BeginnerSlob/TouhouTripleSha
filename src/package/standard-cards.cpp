@@ -880,14 +880,9 @@ void Collateral::onUse(Room *room, const CardUseStruct &card_use) const{
     SingleTargetTrick::onUse(room, new_use);
 }
 
-
 bool Collateral::doCollateral(Room *room, ServerPlayer *killer, ServerPlayer *victim, const QString &prompt) const{
     bool useSlash = false;
-    if(killer->canSlash(victim))
-    {
-        useSlash = room->askForUseSlashTo(killer, victim, prompt);
-    }
-    return useSlash;
+    return useSlash = room->askForUseSlashTo(killer, victim, prompt);
 }
 
 void Collateral::onEffect(const CardEffectStruct &effect) const{
@@ -904,7 +899,7 @@ void Collateral::onEffect(const CardEffectStruct &effect) const{
     room->sendLog(log);
 
     WrappedCard *weapon = killer->getWeapon();
-    if(weapon == NULL || victim == NULL)
+    if(victim == NULL)
         return;
 
     QString prompt = QString("collateral-slash:%1:%2")
