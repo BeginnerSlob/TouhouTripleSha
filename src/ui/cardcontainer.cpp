@@ -169,10 +169,10 @@ void CardContainer::startChoose(){
     }
 }
 
-void CardContainer::startGongxin(){
+void CardContainer::startLingshi(){
     foreach (CardItem *item, items){
         if(item->getCard()->getSuit() == Card::Heart){
-            connect(item, SIGNAL(double_clicked()), this, SLOT(gongxinItem()));
+            connect(item, SIGNAL(double_clicked()), this, SLOT(lingshiItem()));
         }
     }
 }
@@ -202,10 +202,10 @@ void CardContainer::chooseItem(){
     }
 }
 
-void CardContainer::gongxinItem(){
+void CardContainer::lingshiItem(){
     CardItem *card_item = qobject_cast<CardItem *>(sender());
     if(card_item){
-        emit item_gongxined(card_item->getCard()->getId());
+        emit item_lingshied(card_item->getCard()->getId());
         clear();
     }
 }

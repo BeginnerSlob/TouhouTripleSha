@@ -119,10 +119,13 @@ public:
 				target = room->askForPlayerChosen(player, targets, objectName());
 				target->gainMark("@yaoshu");
 			}
+			
+			if (target != player)
+			{
+				target->drawCards(2);
 
-			target->drawCards(2);
-
-			room->acquireSkill(target, objectName());
+				room->acquireSkill(target, objectName());
+			}
 		}
 
 		return false;
@@ -177,6 +180,8 @@ public:
 			if (damage.to != splayer || player == splayer)
 				return false;
 		}
+		else if (triggerEvent == Dying && splayer == player)
+			return false;
 
 		if(splayer->askForSkillInvoke(objectName()))
 		{

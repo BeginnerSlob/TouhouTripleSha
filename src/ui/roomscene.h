@@ -249,7 +249,7 @@ private:
 
     YuxiBox *yuxi_box;
 
-    QList<CardItem *> gongxin_items;
+    QList<CardItem *> lingshi_items;
 
     ClientLogBox *log_box;
     QTextEdit *chat_box;
@@ -391,7 +391,7 @@ private slots:
     void attachSkill(const QString &skill_name, bool from_left);
     void detachSkill(const QString &skill_name);
 
-    void doGongxin(const QList<int> &card_ids, bool enable_heart);
+    void doLingshi(const QList<int> &card_ids, bool enable_heart);
 
     void startAssign();
 

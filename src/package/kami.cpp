@@ -694,33 +694,6 @@ public:
 	}
 };
 
-GongxinCard::GongxinCard(){
-    once = true;
-}
-
-bool GongxinCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty(); 
-}
-
-void GongxinCard::onEffect(const CardEffectStruct &effect) const{
-    effect.from->getRoom()->doGongxin(effect.from, effect.to);
-}
-
-class Gongxin: public ZeroCardViewAsSkill{
-public:
-    Gongxin():ZeroCardViewAsSkill("gongxin"){
-        default_choice = "discard";
-    }
-
-    virtual const Card *viewAs() const{
-        return new GongxinCard;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("GongxinCard");
-    }
-};
-
 ThChuangxinCard::ThChuangxinCard(){
 	target_fixed = true;
 }
@@ -728,12 +701,12 @@ ThChuangxinCard::ThChuangxinCard(){
 void ThChuangxinCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
 	if (subcardsLength() == 1)
 	{
-		QString choice = room->askForChoice(source, "thchuangxin", "gongxin+zhuoyue");
+		QString choice = room->askForChoice(source, "thchuangxin", "lingshi+zhuoyue");
 		room->acquireSkill(source, choice);
 	}
 	else
 	{
-		room->acquireSkill(source, "gongxin");
+		room->acquireSkill(source, "lingshi");
 		room->acquireSkill(source, "zhuoyue");
 	}
 };
@@ -777,7 +750,7 @@ public:
 			room->askForUseCard(player, "@@thchuangxin", "@thchuangxin");
 		else if (player->getPhase() == Player::NotActive)
 		{
-			room->detachSkillFromPlayer(player, "gongxin");
+			room->detachSkillFromPlayer(player, "lingshi");
 			room->detachSkillFromPlayer(player, "zhuoyue");
 		}
 
@@ -1222,8 +1195,8 @@ public:
             }
 
 			QStringList lord_skills;
-			lord_skills << "jijiang" << "hujia" << "jiuyuan" << "yuji" 
-				<< "thqiyuan" << "songwei" << "thchundu" << "baonue";
+			lord_skills << "jijiang" << "hujia" << "jiyuan" << "yuji" 
+				<< "thqiyuan" << "songwei" << "thchundu" << "wuhua";
 
             foreach(QString lord, lords){
                 const General *general = Sanguosha->getGeneral(lord);
@@ -1330,11 +1303,10 @@ KamiPackage::KamiPackage()
     addMetaObject<ThShenfengCard>();
     addMetaObject<ThYouyaCard>();
 	addMetaObject<ThJinluCard>();
-    addMetaObject<GongxinCard>();
     addMetaObject<ThChuangxinCard>();
     addMetaObject<ThTianxinCard>();
 
-	skills << new ThJiguangDistanceSkill << new ThJiguangGivenSkill << new Gongxin;
+	skills << new ThJiguangDistanceSkill << new ThJiguangGivenSkill;
 }
 
 ADD_PACKAGE(Kami)

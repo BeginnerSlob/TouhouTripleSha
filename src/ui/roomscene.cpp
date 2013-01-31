@@ -157,7 +157,7 @@ RoomScene::RoomScene(QMainWindow *main_window):
     connect(ClientInstance, SIGNAL(player_killed(QString)), this, SLOT(killPlayer(QString)));
     connect(ClientInstance, SIGNAL(player_revived(QString)), this, SLOT(revivePlayer(QString)));
     connect(ClientInstance, SIGNAL(card_shown(QString,int)), this, SLOT(showCard(QString,int)));
-    connect(ClientInstance, SIGNAL(gongxin(QList<int>, bool)), this, SLOT(doGongxin(QList<int>, bool)));
+    connect(ClientInstance, SIGNAL(lingshi(QList<int>, bool)), this, SLOT(doLingshi(QList<int>, bool)));
     connect(ClientInstance, SIGNAL(focus_moved(QStringList, QSanProtocol::Countdown)), this, SLOT(moveFocus(QStringList, QSanProtocol::Countdown)));
     connect(ClientInstance, SIGNAL(emotion_set(QString,QString)), this, SLOT(setEmotion(QString,QString)));
     connect(ClientInstance, SIGNAL(skill_invoked(QString,QString)), this, SLOT(showSkillInvocation(QString,QString)));
@@ -195,7 +195,7 @@ RoomScene::RoomScene(QMainWindow *main_window):
         card_container->setZValue(9.0);
 
         connect(card_container, SIGNAL(item_chosen(int)), ClientInstance, SLOT(onPlayerChooseAG(int)));
-        connect(card_container, SIGNAL(item_gongxined(int)), ClientInstance, SLOT(onPlayerReplyGongxin(int)));
+        connect(card_container, SIGNAL(item_lingshied(int)), ClientInstance, SLOT(onPlayerReplyLingshi(int)));
 
         connect(ClientInstance, SIGNAL(ag_filled(QList<int>)), this, SLOT(fillCards(QList<int>)));
         connect(ClientInstance, SIGNAL(ag_taken(ClientPlayer*,int)), this, SLOT(takeAmazingGrace(ClientPlayer*,int)));
@@ -2076,8 +2076,8 @@ void RoomScene::useSelectedCard(){
             break;
         }
 
-    case Client::AskForGongxin:{
-            ClientInstance->onPlayerReplyGongxin();
+    case Client::AskForLingshi:{
+            ClientInstance->onPlayerReplyLingshi();
             card_container->clear();
 
             break;
@@ -2232,7 +2232,7 @@ void RoomScene::doTimeout(){
         cancel_button->click();
         break;}
     case Client::AskForYuxi:
-    case Client::AskForGongxin:{
+    case Client::AskForLingshi:{
         ok_button->click();
         break;}
     default:
@@ -2281,7 +2281,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
                 }
             }
             else if (oldStatus == Client::AskForYuxi ||
-                     oldStatus == Client::AskForGongxin)
+                     oldStatus == Client::AskForLingshi)
             {
                 yuxi_box->clear();
                 if(!card_container->retained())
@@ -2472,7 +2472,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
             break;
         }
 
-    case Client::AskForGongxin:{
+    case Client::AskForLingshi:{
             ok_button->setEnabled(true);
             cancel_button->setEnabled(false);
             discard_button->setEnabled(false);
@@ -3275,10 +3275,10 @@ void RoomScene::fillCards(const QList<int> &card_ids)
     card_container->show();
 }
 
-void RoomScene::doGongxin(const QList<int> &card_ids, bool enable_heart){
+void RoomScene::doLingshi(const QList<int> &card_ids, bool enable_heart){
     fillCards(card_ids);
     if(enable_heart)
-        card_container->startGongxin();
+        card_container->startLingshi();
     else
         card_container->addCloseButton();
     

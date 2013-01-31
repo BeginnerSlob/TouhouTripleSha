@@ -11,6 +11,85 @@
 #include "ai.h"
 #include "god.h"
 
+ZhihengCard::ZhihengCard(){
+    target_fixed = true;
+    once = true;
+    mute = true;
+    will_throw = false;
+    handling_method = Card::MethodDiscard;
+}
+
+void ZhihengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    room->throwCard(this, source);
+    if(!source->hasSkill("jilve"))
+        room->broadcastSkillInvoke("zhiheng");
+    if(source->isAlive())
+        room->drawCards(source, subcards.length());
+}
+
+class Zhiheng:public ViewAsSkill{
+public:
+    Zhiheng():ViewAsSkill("zhiheng"){
+
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *) const{
+        return selected.length() < Self->getMaxHp();
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if(cards.isEmpty())
+            return NULL;
+
+        ZhihengCard *zhiheng_card = new ZhihengCard;
+        zhiheng_card->addSubcards(cards);
+        zhiheng_card->setSkillName(objectName());
+        return zhiheng_card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("ZhihengCard");
+    }
+};
+
+class Jiyuan: public TriggerSkill{
+public:
+    Jiyuan():TriggerSkill("jiyuan$"){
+        events << TargetConfirmed << HpRecover;
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target != NULL && target->hasLordSkill("jiyuan");
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (triggerEvent == TargetConfirmed) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Peach") && use.from && use.from->getKingdom() == "wu"
+                && player != use.from) {
+                room->setCardFlag(use.card, "jiyuan");
+            }
+        } else if (triggerEvent == HpRecover) {
+            RecoverStruct rec = data.value<RecoverStruct>();
+            if (rec.card && rec.card->hasFlag("jiyuan")) {
+
+                LogMessage log;
+                log.type = "#JiyuanExtraRecover";
+                log.from = player;
+                log.to << rec.who;
+                log.arg = objectName();
+                room->sendLog(log);
+
+                rec.recover++;
+                data = QVariant::fromValue(rec);
+            }
+        }
+
+        return false;
+    }
+};
+
 class Kuipo: public OneCardViewAsSkill{
 public:
     Kuipo():OneCardViewAsSkill("kuipo"){
@@ -1540,7 +1619,98 @@ public:
     }
 };
 
+static bool CompareBySuit(int card1, int card2) {
+    const Card *c1 = Sanguosha->getCard(card1);
+    const Card *c2 = Sanguosha->getCard(card2);
+
+    int a = static_cast<int>(c1->getSuit());
+    int b = static_cast<int>(c2->getSuit());
+
+    return a < b;
+}
+
+class Lvejue: public PhaseChangeSkill {
+public:
+    Lvejue(): PhaseChangeSkill("lvejue") {
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        if (player->getPhase() != Player::Draw)
+            return false;
+
+        Room *room = player->getRoom();
+        if (!player->askForSkillInvoke(objectName()))
+            return false;
+
+        room->broadcastSkillInvoke(objectName());
+
+        QList<int> card_ids = room->getNCards(5);
+        qSort(card_ids.begin(), card_ids.end(), CompareBySuit);
+        room->fillAG(card_ids);
+
+        while (!card_ids.isEmpty()) {
+            int card_id = room->askForAG(player, card_ids, true, objectName());
+			if (card_id == -1)
+			{
+				foreach (int card_id, card_ids)
+                    room->takeAG(NULL, card_id);
+				break;
+			}
+            card_ids.removeOne(card_id);
+            // throw the rest cards that matches the same suit
+            const Card *card = Sanguosha->getCard(card_id);
+            Card::Suit suit = card->getSuit();
+
+            room->takeAG(player, card_id);
+
+            QMutableListIterator<int> itor(card_ids);
+            while (itor.hasNext()) {
+                const Card *c = Sanguosha->getCard(itor.next());
+                if (c->getSuit() == suit) {
+                    itor.remove();
+                    room->takeAG(NULL, c->getId());
+                }
+            }
+        }
+
+        room->broadcastInvoke("clearAG");
+
+        return true;
+    }
+};
+
+LingshiCard::LingshiCard(){
+    once = true;
+}
+
+bool LingshiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty(); 
+}
+
+void LingshiCard::onEffect(const CardEffectStruct &effect) const{
+    effect.from->getRoom()->doLingshi(effect.from, effect.to);
+}
+
+class Lingshi: public ZeroCardViewAsSkill{
+public:
+    Lingshi():ZeroCardViewAsSkill("lingshi"){
+        default_choice = "discard";
+    }
+
+    virtual const Card *viewAs() const{
+        return new LingshiCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("LingshiCard");
+    }
+};
+
 void StandardPackage::addSnowGenerals(){
+	General *snow001 = new General(this, "snow001$", "wu");
+    snow001->addSkill(new Zhiheng);
+    snow001->addSkill(new Jiyuan);
+
     General *snow002 = new General(this, "snow002", "wu");
     snow002->addSkill(new Kuipo);
 
@@ -1611,7 +1781,12 @@ void StandardPackage::addSnowGenerals(){
     snow024->addSkill(new Zhizhan);
     snow024->addSkill(new MarkAssignSkill("@zhizhan", 1));
     related_skills.insertMulti("zhizhan", "#@zhizhan-1");
-    
+
+	General *snow029 = new General(this, "snow029", "wu", 3);
+	snow029->addSkill(new Lvejue);
+	snow029->addSkill(new Lingshi);
+
+	addMetaObject<ZhihengCard>();
     addMetaObject<GuidengCard>();
     addMetaObject<XuanhuoCard>();
     addMetaObject<YuanheCard>();
@@ -1625,6 +1800,7 @@ void StandardPackage::addSnowGenerals(){
     addMetaObject<FenxunCard>();
     addMetaObject<MengjingCard>();
     addMetaObject<ZhizhanCard>();
+	addMetaObject<LingshiCard>();
 
     skills << new BianshengPindian;
 }

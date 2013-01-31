@@ -64,7 +64,7 @@ void Room::initCallbacks(){
     m_requestResponsePair[S_COMMAND_PINDIAN] = S_COMMAND_RESPONSE_CARD;
     m_requestResponsePair[S_COMMAND_EXCHANGE_CARD] = S_COMMAND_DISCARD_CARD;
     m_requestResponsePair[S_COMMAND_CHOOSE_DIRECTION] = S_COMMAND_MULTIPLE_CHOICE;
-    m_requestResponsePair[S_COMMAND_SHOW_ALL_CARDS] = S_COMMAND_SKILL_GONGXIN;
+    m_requestResponsePair[S_COMMAND_SHOW_ALL_CARDS] = S_COMMAND_SKILL_LINGSHI;
 
     // client request handlers
     m_callbacks[S_COMMAND_SURRENDER] = &Room::processRequestSurrender;
@@ -4084,10 +4084,10 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
                 }
 
                 if (card_num < min_num && !jilei_list.isEmpty()) {
-                    Json::Value gongxinArgs(Json::arrayValue);
-                    gongxinArgs[0] = toJsonString(player->objectName());
-                    gongxinArgs[1] = false;
-                    gongxinArgs[2] = toJsonArray(jilei_list);
+                    Json::Value lingshiArgs(Json::arrayValue);
+                    lingshiArgs[0] = toJsonString(player->objectName());
+                    lingshiArgs[1] = false;
+                    lingshiArgs[2] = toJsonArray(jilei_list);
 
                     foreach(int cardId, jilei_list)
                     {
@@ -4110,7 +4110,7 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
                     log.card_str = Card::IdsToStrings(jilei_list).join("+");
                     sendLog(log);
 
-                    doBroadcastNotify(S_COMMAND_SHOW_ALL_CARDS, gongxinArgs);
+                    doBroadcastNotify(S_COMMAND_SHOW_ALL_CARDS, lingshiArgs);
                 }
 
                 dummy->deleteLater();
@@ -4300,21 +4300,21 @@ void Room::askForYuxi(ServerPlayer *player, const QList<int> &cards, bool up_onl
         m_drawPile->append(i.next());
 }
 
-void Room::doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target){    
-    notifyMoveFocus(shenlvmeng, S_COMMAND_SKILL_GONGXIN);
+void Room::doLingshi(ServerPlayer *shenlvmeng, ServerPlayer *target){    
+    notifyMoveFocus(shenlvmeng, S_COMMAND_SKILL_LINGSHI);
     //@todo: this thing should be put in AI!!!!!!!!!!
     if(!shenlvmeng->isOnline()){
-        //@todo: when we do like this,ai of gongxin in god-ai.lua does not work
-        /*int gongxin_id = -1;
-        gongxin_id = askForCardChosen(shenlvmeng, target, "h", "gongxin");
-        if(gongxin_id > -1 && Sanguosha->getCard(gongxin_id)->getSuit() == Card::Heart){
-        if(askForChoice(shenlvmeng, "gongxin", "discard+put") == "put")
-        moveCardTo(Sanguosha->getCard(gongxin_id), target, NULL, Player::DrawPile, true);
+        //@todo: when we do like this,ai of lingshi in god-ai.lua does not work
+        /*int lingshi_id = -1;
+        lingshi_id = askForCardChosen(shenlvmeng, target, "h", "lingshi");
+        if(lingshi_id > -1 && Sanguosha->getCard(lingshi_id)->getSuit() == Card::Heart){
+        if(askForChoice(shenlvmeng, "lingshi", "discard+put") == "put")
+        moveCardTo(Sanguosha->getCard(lingshi_id), target, NULL, Player::DrawPile, true);
         else
-        throwCard(gongxin_id, target);
+        throwCard(lingshi_id, target);
         }*/
 
-        // a better way of using gongxin for ai, but we still want to move this to god-ai.lua
+        // a better way of using lingshi for ai, but we still want to move this to god-ai.lua
         QList<const Card *> cards = target->getHandcards();
         const Card *has_jink = NULL;
         const Card *has_peach = NULL;
@@ -4365,11 +4365,11 @@ void Room::doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target){
             notifyResetCard(shenlvmeng, cardId);
     }
 
-    Json::Value gongxinArgs(Json::arrayValue);    
-    gongxinArgs[0] = toJsonString(target->objectName());
-    gongxinArgs[1] = true;
-    gongxinArgs[2] = toJsonArray(target->handCards());
-    bool success = doRequest(shenlvmeng, S_COMMAND_SKILL_GONGXIN, gongxinArgs, true);
+    Json::Value lingshiArgs(Json::arrayValue);    
+    lingshiArgs[0] = toJsonString(target->objectName());
+    lingshiArgs[1] = true;
+    lingshiArgs[2] = toJsonArray(target->handCards());
+    bool success = doRequest(shenlvmeng, S_COMMAND_SKILL_LINGSHI, lingshiArgs, true);
     Json::Value clientReply = shenlvmeng->getClientReply();
     if (!success || !clientReply.isInt() 
         || !target->handCards().contains(clientReply.asInt()))
@@ -4377,7 +4377,7 @@ void Room::doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target){
 
     int card_id = clientReply.asInt();
 
-    QString result = askForChoice(shenlvmeng, "gongxin", "discard+put");
+    QString result = askForChoice(shenlvmeng, "lingshi", "discard+put");
     if(result == "discard")
         throwCard(card_id, target);
     else{
@@ -4737,10 +4737,10 @@ void Room::showAllCards(ServerPlayer *player, ServerPlayer *to){
     // notifyMoveFocus(player);
     if (player->isKongcheng())
         return;
-    Json::Value gongxinArgs(Json::arrayValue);    
-    gongxinArgs[0] = toJsonString(player->objectName());
-    gongxinArgs[1] = false;
-    gongxinArgs[2] = toJsonArray(player->handCards());    
+    Json::Value lingshiArgs(Json::arrayValue);    
+    lingshiArgs[0] = toJsonString(player->objectName());
+    lingshiArgs[1] = false;
+    lingshiArgs[2] = toJsonArray(player->handCards());    
 
     bool isUnicast = (to != NULL);
 
@@ -4768,8 +4768,8 @@ void Room::showAllCards(ServerPlayer *player, ServerPlayer *to){
         log.from = player;
         log.to << to;
         sendLog(log);
-        notifyMoveFocus(to, S_COMMAND_SKILL_GONGXIN);
-        doRequest(to, S_COMMAND_SKILL_GONGXIN, gongxinArgs, true);
+        notifyMoveFocus(to, S_COMMAND_SKILL_LINGSHI);
+        doRequest(to, S_COMMAND_SKILL_LINGSHI, lingshiArgs, true);
     }
     else{
         LogMessage log;
@@ -4781,7 +4781,7 @@ void Room::showAllCards(ServerPlayer *player, ServerPlayer *to){
         log.card_str = Card::IdsToStrings(player->handCards()).join("+");
         sendLog(log);
 
-        doBroadcastNotify(S_COMMAND_SHOW_ALL_CARDS, gongxinArgs);
+        doBroadcastNotify(S_COMMAND_SHOW_ALL_CARDS, lingshiArgs);
     }
 }
 

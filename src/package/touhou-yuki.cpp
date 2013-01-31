@@ -506,6 +506,179 @@ public:
 	}
 };
 
+ThChouceCard::ThChouceCard(){
+	will_throw = false;
+}
+
+bool ThChouceCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+	return targets.isEmpty();
+}
+
+const Card *ThChouceCard::validate(const CardUseStruct *card_use) const{
+	const Card *card = Sanguosha->getCard(getSubcards().first());
+	Card *use_card = Sanguosha->cloneCard(card->objectName(), card->getSuit(), card->getNumber());
+	use_card->addSubcard(card);
+	use_card->setSkillName("thchouce");
+	Room *room = card_use->from->getRoom();
+	if(use_card->isKindOf("Collateral"))
+	{
+		QList<ServerPlayer *> victims;
+		foreach(ServerPlayer *p, room->getOtherPlayers(card_use->to.first()))
+			if (card_use->to.first()->canSlash(p))
+				victims << p;
+
+		room->removeTag("collateralVictim");
+		if (!victims.isEmpty())
+		{
+			ServerPlayer *victim = room->askForPlayerChosen(card_use->from, victims, objectName());
+			room->setTag("collateralVictim", QVariant::fromValue((PlayerStar)victim));
+		}
+	}
+	
+	room->setPlayerMark(card_use->from, "ThChouce", use_card->getNumber());
+	card_use->from->addMark("choucecount");
+
+	return use_card;
+}
+
+class ThChouceViewAsSkill: public OneCardViewAsSkill {
+public:
+	ThChouceViewAsSkill(): OneCardViewAsSkill("thchouce") {
+	}
+
+	virtual bool isEnabledAtPlay(const Player *player) const{
+        return true;
+    }
+
+    virtual bool viewFilter(const Card* to_select) const{
+        return to_select->getNumber() > Self->getMark("ThChouce") && !to_select->isKindOf("EquipCard") && !to_select->isEquipped();
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        ThChouceCard *card = new ThChouceCard;
+		card->addSubcard(originalCard);
+		return card;
+    }
+};
+
+class ThChouce: public TriggerSkill {
+public:
+    ThChouce(): TriggerSkill("thchouce"){
+        events << CardUsed << EventPhaseStart;
+		view_as_skill = new ThChouceViewAsSkill;
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if(triggerEvent == EventPhaseStart){
+            if(player->getPhase() == Player::RoundStart){
+				room->setPlayerMark(player, "ThChouce", 0);
+				room->setPlayerMark(player, "choucecount", 0);
+                room->setPlayerFlag(player, "-ThChouce_failed");
+                return false;
+            }
+        }
+		else if (triggerEvent == CardUsed)
+		{
+			if(room->getCurrent() != player)
+				return false;
+			CardUseStruct use = data.value<CardUseStruct>();
+			if (use.card->getTypeId() == Card::TypeSkill || use.card->getSkillName() == objectName())
+				return false;
+
+			const Card *usecard = use.card;
+
+			int precardnum = player->getMark("ThChouce"); //the cardnumber store of thchouce
+			if(!player->hasFlag("ThChouce_failed") && usecard->getNumber() > precardnum && player->askForSkillInvoke(objectName(), data))
+			{
+				ServerPlayer *target;
+				target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName());
+				use.to.clear();
+				use.to << target;
+				if(usecard->isKindOf("Collateral"))
+				{
+					QList<ServerPlayer *> victims;
+					foreach(ServerPlayer *p, room->getOtherPlayers(target))
+						if (target->canSlash(p))
+							victims << p;
+
+					room->removeTag("collateralVictim");
+					if (!victims.isEmpty())
+					{
+						ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName());
+						room->setTag("collateralVictim", QVariant::fromValue((PlayerStar)victim));
+					}
+				}	
+
+				LogMessage log;
+				log.type = "$ThChouce";
+				log.from = player;
+				log.to = use.to;
+				log.card_str = usecard->getEffectIdString();
+				room->sendLog(log);
+				player->addMark("choucecount"); //the count of thchouce
+			}
+			else
+				room->setPlayerFlag(player, "ThChouce_failed");
+
+			room->setPlayerMark(player, "ThChouce", usecard->getNumber());
+			data = QVariant::fromValue(use);
+		}
+
+        return false;
+    }
+};
+
+class ThZhanshi: public PhaseChangeSkill{
+public:
+    ThZhanshi(): PhaseChangeSkill("thzhanshi"){
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+                && target->getPhase() == Player::NotActive
+                && !target->hasFlag("ThChouce_failed");
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *target) const{
+        if(target->getMark("choucecount") >= 3){
+            target->setMark("choucecount", 0);
+			target->gainMark("@tianji");
+            target->gainAnExtraTurn(target);
+        }
+        return false;
+    }
+};
+
+class ThHuanzang: public TriggerSkill{
+public:
+	ThHuanzang(): TriggerSkill("thhuanzang"){
+        events << EventPhaseStart;
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return TriggerSkill::triggerable(target) && target->getMark("@tianji") > 0;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        player->loseMark("@tianji");
+
+		JudgeStruct judge;
+		judge.pattern = QRegExp("(.*):(spade):(.*)");
+		judge.good = false;
+		judge.reason = objectName();
+		judge.who = player;
+    
+		room->judge(judge);
+
+		if (judge.isBad())
+			room->loseHp(player);
+
+        return false;
+    }
+};
+
 ThDongmoCard::ThDongmoCard(){
 	handling_method = Card::MethodNone;
 }
@@ -887,6 +1060,11 @@ void TouhouPackage::addYukiGenerals(){
 	yuki006->addSkill("jibu");
 	yuki006->addSkill(new ThDunjia);
 
+	General *yuki007 = new General(this, "yuki007", "wu", 3);
+	yuki007->addSkill(new ThChouce);
+	yuki007->addSkill(new ThZhanshi);
+	yuki007->addSkill(new ThHuanzang);
+
 	General *yuki011 = new General(this, "yuki011", "wu", 3);
 	yuki011->addSkill(new ThDongmo);
 	yuki011->addSkill(new ThLinhan);
@@ -904,6 +1082,7 @@ void TouhouPackage::addYukiGenerals(){
 	yuki016->addSkill(new ThYinbi);
 	
     addMetaObject<ThYuanqiCard>();
+    addMetaObject<ThChouceCard>();
     addMetaObject<ThDongmoCard>();
     addMetaObject<ThKujieCard>();
 
