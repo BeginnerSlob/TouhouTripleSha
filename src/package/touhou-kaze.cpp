@@ -518,18 +518,26 @@ public:
 class ThBisha:public TriggerSkill {
 public:
     ThBisha():TriggerSkill("thbisha"){
-        events << EventPhaseChanging;
+        events << EventPhaseChanging << Death;
         view_as_skill = new ThBishaViewAsSkill;
     }
 
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        PhaseChangeStruct &change = data.value<PhaseChangeStruct>();
-        if(change.to == Player::NotActive)
-            foreach(ServerPlayer *p, room->getOtherPlayers(player))
-                if(p->hasFlag("bishatarget")) {
-                    room->setFixedDistance(player, p, -1);
-                    room->setPlayerFlag(p, "-bishatarget");
-                }
+	virtual bool triggerable(const ServerPlayer *target) const {
+		return target && target->hasSkill(objectName());
+	}
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        if (triggerEvent == EventPhaseChanging)
+		{
+			PhaseChangeStruct &change = data.value<PhaseChangeStruct>();
+			if (player->isDead() || change.to != Player::NotActive)
+				return false;
+		}
+		foreach(ServerPlayer *p, room->getOtherPlayers(player))
+            if(p->hasFlag("bishatarget")) {
+                room->setFixedDistance(player, p, -1);
+                room->setPlayerFlag(p, "-bishatarget");
+            }
 
         return false;
     }

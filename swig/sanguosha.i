@@ -864,7 +864,6 @@ public:
     explicit Skill(const char *name, Frequency frequent = NotFrequent);
     bool isLordSkill() const;
     QString getDescription() const;
-    QString getText() const;
     bool isVisible() const;
 
     virtual QString getDefaultChoice(ServerPlayer *player) const;

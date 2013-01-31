@@ -179,7 +179,7 @@ void GeneralOverview::on_tableWidget_itemSelectionChanged()
     ui->generalPhoto->setPixmap(G_ROOM_SKIN.getCardMainPixmap(general->objectName()));
     QList<const Skill *> skills = general->getVisibleSkillList();
     foreach(const Skill *skill, skills){
-        if (skill->isSPConvertSkill())
+        if (skill->inherits("SPConvertSkill"))
             skills.removeOne(skill);
     }
 

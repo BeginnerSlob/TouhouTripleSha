@@ -10,7 +10,7 @@
 #include <QFile>
 
 Skill::Skill(const QString &name, Frequency frequency)
-    : frequency(frequency), default_choice("no"), sp_convert_skill(false), attached_lord_skill(false)
+    : frequency(frequency), default_choice("no"), attached_lord_skill(false)
 {
     static QChar lord_symbol('$');
 
@@ -33,10 +33,6 @@ bool Skill::isAttachedLordSkill() const{
     return attached_lord_skill;
 }
 
-bool Skill::isSPConvertSkill() const{
-    return sp_convert_skill;
-}
-
 QString Skill::getDescription() const{
     QString des_src = Sanguosha->translate(":" + objectName());
     if(des_src == ":" + objectName())
@@ -51,22 +47,8 @@ QString Skill::getNotice(int index) const{
     return Sanguosha->translate(QString("~%1%2").arg(objectName()).arg(index));
 }
 
-QString Skill::getText() const{
-    QString skill_name = Sanguosha->translate(objectName());
-
-    switch(frequency){
-    case Skill::NotFrequent:
-    case Skill::Frequent: break;
-    case Skill::Limited: skill_name.append(tr(" [Limited]")); break;
-    case Skill::Compulsory: skill_name.append(tr(" [Compulsory]")); break;
-    case Skill::Wake: skill_name.append(tr(" [Wake]")); break;
-    }
-
-    return skill_name;
-}
-
 bool Skill::isVisible() const{
-    return ! objectName().startsWith("#");
+    return !objectName().startsWith("#");
 }
 
 QString Skill::getDefaultChoice(ServerPlayer *) const{
@@ -349,14 +331,12 @@ bool GameStartSkill::trigger(TriggerEvent, Room* room, ServerPlayer *player, QVa
 }
 
 bool GameStartSkill::triggerable(const ServerPlayer *target) const{
-    return TriggerSkill::triggerable(target)
-           && (!sp_convert_skill || (sp_convert_skill && Config.value("EnableSPConvert", true).toBool()));
+    return TriggerSkill::triggerable(target);
 }
 
 SPConvertSkill::SPConvertSkill(const QString &name, const QString &from, const QString &to)
     :GameStartSkill(name), from(from), to(to)
 {
-    sp_convert_skill = true;
 }
 
 bool SPConvertSkill::triggerable(const ServerPlayer *target) const{

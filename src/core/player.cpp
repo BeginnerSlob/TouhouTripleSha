@@ -773,7 +773,7 @@ QString Player::getSkillDescription() const{
     QString description = QString();
 
     foreach (const Skill *skill, getVisibleSkillList()) {
-        if (!hasSkill(skill->objectName()))
+        if (skill->isAttachedLordSkill() || !hasSkill(skill->objectName()))
             continue;
         QString skill_name = Sanguosha->translate(skill->objectName());
         QString desc = skill->getDescription();

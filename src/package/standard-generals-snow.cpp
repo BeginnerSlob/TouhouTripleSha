@@ -542,7 +542,7 @@ void BianshengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
 class BianshengPindian: public OneCardViewAsSkill{
 public:
     BianshengPindian():OneCardViewAsSkill("biansheng_pindian"){
-
+        attached_lord_skill = true;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{

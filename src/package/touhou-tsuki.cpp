@@ -112,6 +112,7 @@ bool ThYewangCard::targetFilter(const QList<const Player *> &targets, const Play
 class ThYewangViewAsSkill: public ZeroCardViewAsSkill {
 public:
     ThYewangViewAsSkill(): ZeroCardViewAsSkill("thyewangv"){
+        attached_lord_skill = true;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{

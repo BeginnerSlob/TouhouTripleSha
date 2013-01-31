@@ -766,7 +766,7 @@ bool YujiCard::targetFilter(const QList<const Player *> &targets, const Player *
 class YujiViewAsSkill: public OneCardViewAsSkill{
 public:
     YujiViewAsSkill():OneCardViewAsSkill("yujiv"){
-
+        attached_lord_skill = true;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
@@ -929,7 +929,7 @@ public:
 
             QList<const Skill *> skills = damage->from->getVisibleSkillList();
             foreach(const Skill *skill, skills){
-                if(skill->getLocation() == Skill::Right)
+                if(skill->getLocation() == Skill::Right && !skill->isAttachedLordSkill())
                     room->detachSkillFromPlayer(damage->from, skill->objectName());
             }
             damage->from->gainMark("@qihuang");

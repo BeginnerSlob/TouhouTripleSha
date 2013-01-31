@@ -1788,6 +1788,7 @@ public:
 class ThTiandaoViewAsSkill: public OneCardViewAsSkill{
 public:
 	ThTiandaoViewAsSkill():OneCardViewAsSkill("thtiandaov"){
+		attached_lord_skill = true;
 	}
 
     virtual bool viewFilter(const Card *to_select) const{
