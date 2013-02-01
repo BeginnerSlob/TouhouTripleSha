@@ -52,6 +52,10 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
         foreach (ServerPlayer *target, room->getAlivePlayers())
             if (target->hasFlag("SlashAssignee"))
                 room->setPlayerFlag(target, "-SlashAssignee");
+		if (player->hasFlag("slashNoDistanceLimit"))
+            room->setPlayerFlag(player, "-slashNoDistanceLimit");
+        if (player->hasFlag("slashDisableExtraTarget"))
+            room->setPlayerFlag(player, "-slashDisableExtraTarget");
     }
 
     if (objectName() == "slash") {
@@ -118,7 +122,15 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
     else if (use.to.size() > 1 && player->hasSkill("xindu"))
         room->broadcastSkillInvoke("xindu");
 
-    if (isVirtualCard() && use.card->getSkillName() == "Spear")
+    if (use.from->hasFlag("BladeUse")) {
+        room->setEmotion(player, "weapon/blade");
+
+        LogMessage log;
+        log.type = "#BladeUse";
+        log.from = use.from;
+        log.to << use.to;
+        room->sendLog(log);
+    } else if (isVirtualCard() && use.card->getSkillName() == "Spear")
         room->setEmotion(player,"weapon/spear");
     else if (use.to.size() > 1 && player->hasWeapon("Halberd") && player->isLastHandCard(this))
         room->setEmotion(player,"weapon/halberd");
@@ -145,7 +157,11 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
 }
 
 void Slash::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    BasicCard::use(room, source, targets);
+    foreach (ServerPlayer *target, targets)
+		if (target->hasFlag("CollateralTarget"))
+			room->setPlayerFlag(target, "-CollateralTarget");
+
+	BasicCard::use(room, source, targets);
 
     if (hasFlag("drank")) {
         LogMessage log;
@@ -202,6 +218,7 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
         if (targets.isEmpty())
             return to_select->hasFlag("SlashAssignee") && Self->canSlash(to_select, this, distance_limit, rangefix);
         else {
+			if (Self->hasFlag("slashDisableExtraTarget")) return false;
             bool canSelect = false;
             foreach (const Player *p, targets) {
                 if(p->hasFlag("SlashAssignee")){
@@ -400,38 +417,20 @@ public:
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         SlashEffectStruct effect = data.value<SlashEffectStruct>();
-
         if (!effect.to->isAlive() || effect.to->getMark("Equips_of_Others_Nullified_to_You") > 0)
             return false;
         if (!effect.from->canSlash(effect.to, NULL, false))
             return false;
 
-        const Card *card = NULL;
-        room->setCardFlag(player->getWeapon()->getId(), "using");
-        card = room->askForCard(player, "slash", "blade-slash:" + effect.to->objectName(), QVariant(), Card::MethodUse, effect.to);
-        if (player->getWeapon())
-            room->setCardFlag(player->getWeapon()->getId(), "-using");
-        if(card){
-            room->setEmotion(player, "weapon/blade");
-            // if player is drank, unset his flag
-            if(player->hasFlag("drank"))
-                room->setPlayerFlag(player, "-drank");
-
-            LogMessage log;
-            log.type = "#BladeUse";
-            log.from = effect.from;
-            log.to << effect.to;
-            room->sendLog(log);
-
-            CardUseStruct use;
-            use.card = card;
-            use.from = player;
-            use.to << effect.to;
-            room->useCard(use, false);
-        }
+        int weapon_id = player->getWeapon()->getId();
+        room->setCardFlag(weapon_id, "using");
+        room->setPlayerFlag(effect.from, "BladeUse");
+        room->askForUseSlashTo(effect.from, effect.to, QString("blade-slash:%1").arg(effect.to->objectName()), false, false, true);
+        room->setPlayerFlag(effect.from, "-BladeUse");
+        room->setCardFlag(weapon_id, "-using");
 
         return false;
-	}
+    }
 };
 
 Blade::Blade(Suit suit, int number)
@@ -471,7 +470,13 @@ public:
         else if(first->isRed() && second->isRed())
             suit = Card::NoSuitRed;
 
-        Slash *slash = new Slash(suit, 0);
+		int number;
+		if (first->getNumber() && second->getNumber())
+			number = first->getNumber();
+		else
+			number = 0;
+
+        Slash *slash = new Slash(suit, number);
         slash->setSkillName(objectName());
         slash->addSubcard(first);
         slash->addSubcard(second);
@@ -882,7 +887,13 @@ void Collateral::onUse(Room *room, const CardUseStruct &card_use) const{
 
 bool Collateral::doCollateral(Room *room, ServerPlayer *killer, ServerPlayer *victim, const QString &prompt) const{
     bool useSlash = false;
-    return useSlash = room->askForUseSlashTo(killer, victim, prompt);
+	if (killer->canSlash(victim, NULL, false))
+	{
+		room->setPlayerFlag(killer, "CollateralUsing");
+        useSlash = room->askForUseSlashTo(killer, victim, prompt);
+		room->setPlayerFlag(killer, "-CollateralUsing");
+	}
+    return useSlash;
 }
 
 void Collateral::onEffect(const CardEffectStruct &effect) const{
@@ -890,7 +901,6 @@ void Collateral::onEffect(const CardEffectStruct &effect) const{
     Room *room = source->getRoom();
     ServerPlayer *killer = effect.to;
     ServerPlayer *victim = room->getTag("collateralVictim").value<PlayerStar>();
-    room->removeTag("collateralVictim");
 
     LogMessage log;
     log.type = "#CollateralSlash";
@@ -927,6 +937,8 @@ void Collateral::onEffect(const CardEffectStruct &effect) const{
             }
         }
     }
+
+    room->removeTag("collateralVictim");
 }
 
 Nullification::Nullification(Suit suit, int number)

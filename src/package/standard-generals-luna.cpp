@@ -168,8 +168,10 @@ public:
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
         if(cards.length() == 2){
             const Card *first = cards.first();
+			const Card *second = cards.last();
             Card::Suit suit = first->isRed() ? Card::NoSuitRed : Card::NoSuitBlack;
-            Duel *aa = new Duel(suit, 0);
+            int number = first->getNumber() == second->getNumber() ? first->getNumber() : 0;
+			Duel *aa = new Duel(suit, number);
             aa->addSubcards(cards);
             aa->setSkillName("wudi");
             return aa;
@@ -321,8 +323,10 @@ public:
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
         if(cards.length() == 2){
             const Card *first = cards.first();
+			const Card *second = cards.last();
             Card::Suit suit = first->isRed() ? Card::NoSuitRed : Card::NoSuitBlack;
-            ArcheryAttack *aa = new ArcheryAttack(suit, 0);
+            int number = first->getNumber() == second->getNumber() ? first->getNumber() : 0;
+			ArcheryAttack *aa = new ArcheryAttack(suit, number);
             aa->addSubcards(cards);
             aa->setSkillName(objectName());
             return aa;

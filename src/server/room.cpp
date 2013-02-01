@@ -1261,17 +1261,23 @@ bool Room::askForUseCard(ServerPlayer *player, const QString &pattern, const QSt
     return false;
 }
 
-bool Room::askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims, const QString &prompt, bool add_history){
+bool Room::askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims, const QString &prompt, bool distance_limit, bool add_history, bool disable_extra){
     Q_ASSERT(!victims.isEmpty());
 
     //The realization of this function in the Slash::onUse and Slash::targetFilter.
     setPlayerFlag(slasher, "slashTargetFix");
+    if (!distance_limit)
+        setPlayerFlag(slasher, "slashNoDistanceLimit");
+    if (disable_extra)
+        setPlayerFlag(slasher, "slashDisableExtraTarget");
     if (victims.length() == 1)
         setPlayerFlag(slasher, "slashTargetFixToOne");
     foreach(ServerPlayer *victim, victims)
-    {
+	{
         setPlayerFlag(victim, "SlashAssignee");
-    }
+		if (slasher->hasFlag("CollateralUsing"))
+			setPlayerFlag(victim, "CollateralTarget");
+	}
 
     //the special case for jijiang and guhuo
     setPlayerFlag(slasher, "-jijiang_failed");
@@ -1286,7 +1292,7 @@ bool Room::askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims
     if(slasher->hasFlag("jijiang_failed")){
         do{
             setPlayerFlag(slasher, "-guhuo_failed");
-            use = askForUseCard(slasher, "slash", prompt);
+            use = askForUseCard(slasher, "slash", prompt, -1, Card::MethodUse, add_history);
         }while(slasher->hasFlag("guhuo_failed"));
         setPlayerFlag(slasher, "-jijiang_failed");
     }
@@ -1295,19 +1301,38 @@ bool Room::askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims
         setPlayerFlag(slasher, "-slashTargetFix");
         setPlayerFlag(slasher, "-slashTargetFixToOne");
         foreach(ServerPlayer *victim, victims)
-        {
             setPlayerFlag(victim, "-SlashAssignee");
-        }
+        if (slasher->hasFlag("slashNoDistanceLimit"))
+            setPlayerFlag(slasher, "-slashNoDistanceLimit");
+        if (slasher->hasFlag("slashDisableExtraTarget"))
+            setPlayerFlag(slasher, "-slashDisableExtraTarget");
     }
+	
+	if (slasher->hasFlag("CollateralUsing"))
+	{
+		bool collateral_success = false;
+		foreach(ServerPlayer *victim, victims)
+		{
+			if (victim->hasFlag("CollateralTarget"))
+				setPlayerFlag(victim, "-CollateralTarget");
+			else
+				collateral_success = true;
+		}
+
+		if (collateral_success && use)
+			return true;
+		else
+			return false;
+	}
 
     return use;
 }
 
-bool Room::askForUseSlashTo(ServerPlayer *slasher, ServerPlayer *victim, const QString &prompt, bool add_history){
+bool Room::askForUseSlashTo(ServerPlayer *slasher, ServerPlayer *victim, const QString &prompt,bool distance_limit, bool add_history, bool disable_extra){
     Q_ASSERT(victim != NULL);
     QList<ServerPlayer *> victims;
     victims << victim;
-    return askForUseSlashTo(slasher, victims, prompt, add_history);
+    return askForUseSlashTo(slasher, victims, prompt, distance_limit, add_history, disable_extra);
 }
 
 int Room::askForAG(ServerPlayer *player, const QList<int> &card_ids, bool refusable, const QString &reason){

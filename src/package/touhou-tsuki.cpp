@@ -271,22 +271,6 @@ public:
 			log.arg = objectName();
 			room->sendLog(log);
 
-			QStringList choices;
-			choices << "draw";
-			if (player->isWounded())
-				choices << "recover";
-
-			QString choice = room->askForChoice(player, objectName(), choices.join("+"));
-			
-			if (choice == "recover")
-			{
-				RecoverStruct recover;
-				recover.who = player;
-				room->recover(player, recover);
-			}
-			else
-				player->drawCards(2);
-
 			room->loseMaxHp(player);
 			room->acquireSkill(player, "kuanggu");
 			player->gainMark("@lianxue");
@@ -1346,7 +1330,7 @@ public:
 				int card_id = room->askForCardChosen(player, target, "hej", objectName());
 				room->moveCardTo(Sanguosha->getCard(card_id), player, Player::PlaceHand, room->getCardPlace(card_id) != Player::PlaceHand);
 				player->addMark(objectName());
-				room->askForUseSlashTo(player, target, "@thshenyou:" + target->objectName(), false);
+				room->askForUseSlashTo(player, target, "@thshenyou:" + target->objectName(), true, false);
 				player->removeMark(objectName());
 				return true;
 			}

@@ -870,6 +870,9 @@ public:
 				return false;
 		}
 
+		if (!player->isAlive())
+			return false;
+
 		if (splayer->askForSkillInvoke(objectName()) && room->askForDiscard(splayer, objectName(), 1, 1, true, false))
 		{
 			if (splayer->isWounded())
@@ -878,7 +881,7 @@ public:
 				recover.who = splayer;
 				room->recover(splayer, recover);
 			}
-			if (player->isAlive() && !player->isKongcheng())
+			if (!player->isKongcheng())
 				room->throwCard(room->askForCardChosen(splayer, player, "h", objectName()), player, splayer);
 		}
 
