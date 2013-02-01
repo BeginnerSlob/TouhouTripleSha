@@ -510,8 +510,22 @@ ThChouceCard::ThChouceCard(){
 	will_throw = false;
 }
 
-bool ThChouceCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-	return targets.isEmpty();
+bool ThChouceCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const {
+	const Card *card = Sanguosha->getCard(getSubcards().first());
+	if (!card)
+		return false;
+
+	if (!targets.isEmpty() && card->isKindOf("Collateral"))
+		return targets[0]->canSlash(to_select);
+
+	return targets.isEmpty() && !Self->isProhibited(to_select, card);
+}
+
+bool ThChouceCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const {
+	if (Sanguosha->getCard(getSubcards().first())->isKindOf("Collateral"))
+		return targets.length() == 2;
+	
+	return !targets.isEmpty();
 }
 
 const Card *ThChouceCard::validate(const CardUseStruct *card_use) const{
@@ -520,20 +534,6 @@ const Card *ThChouceCard::validate(const CardUseStruct *card_use) const{
 	use_card->addSubcard(card);
 	use_card->setSkillName("thchouce");
 	Room *room = card_use->from->getRoom();
-	if(use_card->isKindOf("Collateral"))
-	{
-		QList<ServerPlayer *> victims;
-		foreach(ServerPlayer *p, room->getOtherPlayers(card_use->to.first()))
-			if (card_use->to.first()->canSlash(p))
-				victims << p;
-
-		room->removeTag("collateralVictim");
-		if (!victims.isEmpty())
-		{
-			ServerPlayer *victim = room->askForPlayerChosen(card_use->from, victims, objectName());
-			room->setTag("collateralVictim", QVariant::fromValue((PlayerStar)victim));
-		}
-	}
 	
 	room->setPlayerMark(card_use->from, "ThChouce", use_card->getNumber());
 	card_use->from->addMark("choucecount");
@@ -551,7 +551,16 @@ public:
     }
 
     virtual bool viewFilter(const Card* to_select) const{
-        return to_select->getNumber() > Self->getMark("ThChouce") && !to_select->isKindOf("EquipCard") && !to_select->isEquipped();
+		if (to_select->isKindOf("Slash"))
+			return Slash::IsAvailable(Self, to_select);
+		else if (to_select->isKindOf("Analeptic"))
+			return Analeptic::IsAvailable(Self, to_select);
+		else
+			return to_select->getNumber() > Self->getMark("ThChouce")
+				&& !to_select->isKindOf("EquipCard")
+				&& !to_select->isKindOf("Jink")
+				&& !to_select->isKindOf("Nullification")
+				&& !to_select->isEquipped();
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
@@ -564,7 +573,7 @@ public:
 class ThChouce: public TriggerSkill {
 public:
     ThChouce(): TriggerSkill("thchouce"){
-        events << CardUsed << EventPhaseStart;
+        events << CardUsed << CardResponded << EventPhaseStart;
 		view_as_skill = new ThChouceViewAsSkill;
     }
 
@@ -577,16 +586,40 @@ public:
                 return false;
             }
         }
-		else if (triggerEvent == CardUsed)
+		else if (triggerEvent == CardUsed || triggerEvent == CardResponded)
 		{
-			if(room->getCurrent() != player)
+			if(player->getPhase() != Player::Play)
 				return false;
-			CardUseStruct use = data.value<CardUseStruct>();
-			if (use.card->getTypeId() == Card::TypeSkill || use.card->getSkillName() == objectName())
+			const Card *usecard = NULL;
+			if (triggerEvent == CardUsed)
+			{
+				CardUseStruct use = data.value<CardUseStruct>();
+				usecard = use.card;
+			}
+			else if (triggerEvent == CardResponded)
+			{
+				CardResponseStruct resp = data.value<CardResponseStruct>();
+				if (resp.m_isUse)
+					usecard = resp.m_card;
+				else
+					usecard = NULL;
+			}
+			if (!usecard || usecard->getTypeId() == Card::TypeSkill || usecard->getSkillName() == objectName())
 				return false;
 
-			const Card *usecard = use.card;
+			if (usecard->isKindOf("Jink") || usecard->isKindOf("Nullification"))
+			{
+				room->setPlayerFlag(player, "ThChouce_failed");
 
+				if (usecard->getNumber() == 0)
+					room->setPlayerMark(player, "ThChouce", 13);
+				else
+					room->setPlayerMark(player, "ThChouce", usecard->getNumber());
+
+				return false;
+			}
+			
+			CardUseStruct use = data.value<CardUseStruct>();	
 			int precardnum = player->getMark("ThChouce"); //the cardnumber store of thchouce
 			if(!player->hasFlag("ThChouce_failed") && usecard->getNumber() > precardnum && player->askForSkillInvoke(objectName(), data))
 			{
@@ -613,6 +646,7 @@ public:
 				log.type = "$ThChouce";
 				log.from = player;
 				log.to = use.to;
+				log.arg = objectName();
 				log.card_str = usecard->getEffectIdString();
 				room->sendLog(log);
 				player->addMark("choucecount"); //the count of thchouce
@@ -620,7 +654,10 @@ public:
 			else
 				room->setPlayerFlag(player, "ThChouce_failed");
 
-			room->setPlayerMark(player, "ThChouce", usecard->getNumber());
+			if (usecard->getNumber() == 0)
+				room->setPlayerMark(player, "ThChouce", 13);
+			else
+				room->setPlayerMark(player, "ThChouce", usecard->getNumber());
 			data = QVariant::fromValue(use);
 		}
 
@@ -677,6 +714,86 @@ public:
 
         return false;
     }
+};
+
+class ThZiyun: public ProhibitSkill {
+public:
+	ThZiyun(): ProhibitSkill("thziyun") {
+	}
+
+	virtual bool isProhibited(const Player *from, const Player *to, const Card *card) const {
+		if (to->hasSkill(objectName()))
+			return card->isKindOf("SupplyShortage") && card->isKindOf("Lightning");
+		
+		return false;
+	}
+};
+
+class ThChuiji: public TriggerSkill {
+public:
+	ThChuiji(): TriggerSkill("thchuiji") {
+		events << CardsMoveOneTime;
+	}
+
+	virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+		CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
+		if (move->from == player && (move->from_places.contains(Player::PlaceHand) || move->from_places.contains(Player::PlaceEquip)))
+		{
+			bool invoke = false;
+			if (player->isWounded())
+				invoke = true;
+			else
+				foreach (ServerPlayer *p, room->getOtherPlayers(player))
+					if (!p->isNude() || p->isWounded())
+					{
+						invoke = true;
+						break;
+					}
+
+			if (!invoke)
+				return false;
+
+			if (player->getPhase() == Player::NotActive && player->askForSkillInvoke(objectName()))
+			{
+				JudgeStruct judge;
+				judge.pattern = QRegExp("(.*):(.*):(.*)");
+				judge.good = true;
+				judge.reason = objectName();
+				judge.who = player;
+				room->judge(judge);
+
+				QList<ServerPlayer *> targets;
+				if (judge.card->isRed())
+				{
+					foreach (ServerPlayer *p, room->getAlivePlayers())
+						if (p->isWounded())
+							targets << p;
+
+					if (targets.isEmpty())
+						return false;
+
+					ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
+					RecoverStruct recover;
+					recover.who = player;
+					room->recover(target, recover);
+				}
+				else if (judge.card->isBlack())
+				{
+					foreach (ServerPlayer *p, room->getOtherPlayers(player))
+						if (!p->isNude())
+							targets << p;
+
+					if (targets.isEmpty())
+						return false;
+
+					ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
+					room->askForDiscard(target, objectName(), 1, 1, false, true);
+				}
+			}
+		}
+
+		return false;
+	}
 };
 
 ThDongmoCard::ThDongmoCard(){
@@ -803,18 +920,30 @@ public:
 	virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
 		if (triggerEvent == CardUsed)
 		{
+			ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
+			if (!splayer)
+				return false;
+
 			CardUseStruct use = data.value<CardUseStruct>();
 			if (use.to.isEmpty())
 				return false;
 
+			if (use.to.contains(use.from))
+			{
+				QList<ServerPlayer *> targets = use.to;
+				targets.removeAll(use.from);
+				if (targets.isEmpty())
+					return false;
+			}
+
 			if (use.card->isKindOf("Peach"))
-			{	
+			{
 				QList<int> card_ids;
 				if (use.card->isVirtualCard())
 					card_ids = use.card->getSubcards();
 				else
 					card_ids << use.card->getEffectiveId();
-				if (doQiebao(room, player, card_ids, false))
+				if (doQiebao(room, splayer, card_ids, false))
 					use.card->setFlags("qiebaoinvoke");
 			}
 		}
@@ -1065,6 +1194,10 @@ void TouhouPackage::addYukiGenerals(){
 	yuki007->addSkill(new ThZhanshi);
 	yuki007->addSkill(new ThHuanzang);
 
+	General *yuki008 = new General(this, "yuki008", "wu", 3);
+	yuki008->addSkill(new ThZiyun);
+	yuki008->addSkill(new ThChuiji);
+	
 	General *yuki011 = new General(this, "yuki011", "wu", 3);
 	yuki011->addSkill(new ThDongmo);
 	yuki011->addSkill(new ThLinhan);

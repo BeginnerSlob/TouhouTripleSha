@@ -1402,9 +1402,7 @@ public:
 
                 room->setPlayerFlag(player, "jieyouUsed");
                 room->setTag("JieyouTarget", data);
-				room->setPlayerFlag(player, "slashNoDistanceLimit");
-                bool use_slash = room->askForUseSlashTo(player, current, "jieyou-slash:" + current->objectName(), false);
-				room->setPlayerFlag(player, "-slashNoDistanceLimit");
+                bool use_slash = room->askForUseSlashTo(player, current, "jieyou-slash:" + current->objectName(), false, false);
                 if (!use_slash) {
                     room->setPlayerFlag(player, "-jieyouUsed");
                     room->removeTag("JieyouTarget");

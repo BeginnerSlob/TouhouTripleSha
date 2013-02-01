@@ -306,6 +306,7 @@ public:
     Q_INVOKABLE ThChouceCard();
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
     virtual const Card *validate(const CardUseStruct *card_use) const;
 };
 

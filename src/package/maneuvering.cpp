@@ -51,7 +51,6 @@ bool Analeptic::IsAvailable(const Player *player, const Card *analeptic){
             return false;
 
     return player->usedTimes("Analeptic") <= Sanguosha->correctCardTarget(TargetModSkill::Residue, player, jiu);
-
 }
 
 bool Analeptic::isAvailable(const Player *player) const{
@@ -72,7 +71,7 @@ void Analeptic::onEffect(const CardEffectStruct &effect) const{
     QString animation_str = QString("analeptic:%1:%2").arg(who).arg(who);
     room->broadcastInvoke("animate", animation_str);
 
-    if(effect.to->hasFlag("dying")){
+    if(effect.from->hasFlag("dying")){
         // recover hp
         RecoverStruct recover;
         recover.card = this;

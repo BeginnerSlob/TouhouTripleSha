@@ -406,7 +406,7 @@ public:
 			if (player->isLord() && room->getPlayers().size() >= 5) 
 				n++;
 
-			if (player->getMaxHp() < n)
+			if (player->getMaxHp() <= n)
 				room->setPlayerProperty(player, "maxhp", player->getMaxHp() + 1);
 			return true;
 		}
@@ -1308,7 +1308,6 @@ public:
 					
 					room->sendLog(log);
 					room->setPlayerCardLimitation(player, "use,response", str, true);
-					room->setPlayerMark(player, "@guaitan_" + log.arg, 0);
 					room->setPlayerMark(player, objectName(), 1);
 				}
 			}
@@ -1320,6 +1319,9 @@ public:
 					room->removePlayerCardLimitation(player, "use,response", str + "@1");
 				}
 				
+				room->setPlayerMark(player, "@guaitan_basic", 0);
+				room->setPlayerMark(player, "@guaitan_equip", 0);
+				room->setPlayerMark(player, "@guaitan_trick", 0);
 				room->setPlayerMark(player, objectName(), 0);
 				player->tag["guaitan"] = QVariant::fromValue(QStringList());
 			}
