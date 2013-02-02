@@ -1308,22 +1308,16 @@ public:
 					
 					room->sendLog(log);
 					room->setPlayerCardLimitation(player, "use,response", str, true);
+					player->tag["guaitan"] = QVariant::fromValue(QStringList());
 					room->setPlayerMark(player, objectName(), 1);
 				}
 			}
 			else if (player->getPhase() == Player::NotActive && player->getMark(objectName()) > 0)
 			{
-				QStringList guaitanlist = player->tag.value("guaitan").toStringList();
-				foreach(QString str, guaitanlist)
-				{
-					room->removePlayerCardLimitation(player, "use,response", str + "@1");
-				}
-				
 				room->setPlayerMark(player, "@guaitan_basic", 0);
 				room->setPlayerMark(player, "@guaitan_equip", 0);
 				room->setPlayerMark(player, "@guaitan_trick", 0);
 				room->setPlayerMark(player, objectName(), 0);
-				player->tag["guaitan"] = QVariant::fromValue(QStringList());
 			}
 
 		return false;
