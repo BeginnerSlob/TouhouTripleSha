@@ -554,6 +554,7 @@ public:
 			return Analeptic::IsAvailable(Self, to_select);
 		else
 			return to_select->getNumber() > Self->getMark("ThChouce")
+				&& !to_select->isKindOf("AmazingGrace")
 				&& !to_select->isKindOf("EquipCard")
 				&& !to_select->isKindOf("Jink")
 				&& !to_select->isKindOf("Nullification")
@@ -720,7 +721,7 @@ public:
 
 	virtual bool isProhibited(const Player *from, const Player *to, const Card *card) const {
 		if (to->hasSkill(objectName()))
-			return card->isKindOf("SupplyShortage") && card->isKindOf("Lightning");
+			return card->isKindOf("SupplyShortage") || card->isKindOf("Lightning");
 		
 		return false;
 	}
