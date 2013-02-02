@@ -796,6 +796,31 @@ public:
 	}
 };
 
+class ThHanpo: public TriggerSkill {
+public:
+	ThHanpo(): TriggerSkill("thhanpo") {
+		events << DamageCaused << DamageInflicted;
+		frequency = Compulsory;
+	}
+
+	virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+		DamageStruct damage = data.value<DamageStruct>();
+		if (triggerEvent == DamageCaused && (damage.to == player || damage.nature != DamageStruct::Fire))
+			return false;
+		else if (triggerEvent == DamageInflicted && damage.nature != DamageStruct::Fire)
+			return false;
+
+		LogMessage log;
+		log.type = "#TriggerSkill";
+		log.from = player;
+		log.arg = objectName();
+		room->sendLog(log);
+
+		return true;
+	}
+};
+
+
 ThDongmoCard::ThDongmoCard(){
 	handling_method = Card::MethodNone;
 }

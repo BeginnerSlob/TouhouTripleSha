@@ -977,7 +977,7 @@ public:
 		{
 			bool can_invoke = false;
 			foreach(ServerPlayer *p, room->getOtherPlayers(player))
-				if (p->hasLordSkill("thyewang"))
+				if (p->hasLordSkill("yuji"))
 				{
 					can_invoke = true;
 					break;

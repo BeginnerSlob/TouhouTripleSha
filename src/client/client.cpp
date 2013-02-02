@@ -704,7 +704,7 @@ void Client::cardLimitation(const QString &limit_str) {
         bool remove = false;
         if (limit_str.startsWith('-')) {
             remove = true;
-            _limit_str = limit_str.mid(1, limit_str.length() - 1);
+            _limit_str = limit_str.mid(1);
         }
         QRegExp rx("(.+):(.+):([01])");
 
@@ -1461,6 +1461,7 @@ void Client::clearTurnTag(){
 
     case Player::NotActive:{
             Self->clearFlags();
+            Self->clearCardLimitation(true);
             break;
         }
 
