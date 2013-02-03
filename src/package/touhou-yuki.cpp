@@ -1454,7 +1454,7 @@ ThLingdieCard::ThLingdieCard(){
 }
 
 bool ThLingdieCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const {
-	return targets.isEmpty() && to_select != Self;
+	return targets.isEmpty();
 }
 
 void ThLingdieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
@@ -1500,6 +1500,8 @@ public:
 ThFuyueCard::ThFuyueCard() {
 	m_skillName = "thfuyuev";
 	mute = true;
+	will_throw = false;
+	handling_method = MethodPindian;
 }
 
 void ThFuyueCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{

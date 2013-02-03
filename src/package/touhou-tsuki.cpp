@@ -312,6 +312,7 @@ public:
 
 ThKaiyunCard::ThKaiyunCard(){
     target_fixed = true;
+	mute = true;
 }
 
 void ThKaiyunCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
@@ -369,35 +370,6 @@ public:
 
 		return false;
 	}
-};
-
-class Wumou:public TriggerSkill{
-public:
-    Wumou():TriggerSkill("wumou"){
-        frequency = Compulsory;
-        events << CardUsed << CardResponded;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        CardStar card = NULL;
-        if(triggerEvent == CardUsed){
-            CardUseStruct use = data.value<CardUseStruct>();
-            card = use.card;
-        }else if(triggerEvent == CardResponded)
-            card = data.value<CardResponseStruct>().m_card;
-
-        if(card->isNDTrick()){
-            room->broadcastSkillInvoke(objectName());
-
-            int num = player->getMark("@wrath");
-            if(num >= 1 && room->askForChoice(player, objectName(), "discard+losehp") == "discard"){
-                player->loseMark("@wrath");
-            }else
-                room->loseHp(player);
-        }
-
-        return false;
-    }
 };
 
 class ThJiaotu: public TriggerSkill {
@@ -1074,14 +1046,7 @@ public:
 
 	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
 		if (triggerEvent == Damaged && TriggerSkill::triggerable(player))
-		{
-			LogMessage log;
-			log.type = "#TriggerSkill";
-			log.from = player;
-			log.arg = objectName();
-			room->sendLog(log);
-            player->addMark("zhehui");
-        }
+			player->addMark("zhehui");
 		else if (triggerEvent == DamageInflicted && TriggerSkill::triggerable(player))
 		{
             if (player->getMark("zhehui") > 0)
@@ -1376,8 +1341,11 @@ public:
 
 					if (judge.isGood())
 					{
-						splayer->tag["ThGuixu"] = use.card->toString();
 						splayer->addToPile("guixupile", use.card);
+						if (use.card->isNDTrick())
+							splayer->tag["ThGuixu"] = use.card->toString();
+						else
+							return true;
 					}
 				}
 			}
@@ -1502,5 +1470,5 @@ void TouhouPackage::addTsukiGenerals(){
     addMetaObject<ThExiCard>();
     addMetaObject<ThTianqueCard>();
 
-	skills << new ThYewangViewAsSkill << new Wumou;
+	skills << new ThYewangViewAsSkill;
 }

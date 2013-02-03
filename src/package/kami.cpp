@@ -1198,7 +1198,7 @@ public:
             }
 
 			QStringList lord_skills;
-			lord_skills << "jijiang" << "hujia" << "jiyuan" << "yuji" 
+			lord_skills << "liqi" << "huanwei" << "jiyuan" << "yuji" 
 				<< "thqiyuan" << "songwei" << "thchundu" << "wuhua";
 
             foreach(QString lord, lords){

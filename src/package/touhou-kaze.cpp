@@ -672,8 +672,8 @@ public:
         if(card_id == -1)
             return false;
 
-        target = room->askForPlayerChosen(player, room->getOtherPlayers(target), objectName());
-        target->obtainCard(newcard);
+        ServerPlayer *target2 = room->askForPlayerChosen(player, room->getOtherPlayers(target), objectName());
+        target2->obtainCard(newcard);
 
         return false;
     }
@@ -794,37 +794,37 @@ bool ThCannueCard::targetFilter(const QList<const Player *> &targets, const Play
 void ThCannueCard::onEffect(const CardEffectStruct &effect) const{
     effect.to->obtainCard(this);
     Room *room = effect.to->getRoom();
-    QString choice = room->askForChoice(effect.to, "thcannue", "slash+other");
-    if (choice == "slash") {
-        QList<ServerPlayer *> targets;
-        foreach(ServerPlayer *player, room->getOtherPlayers(effect.to))
-            if(effect.to->canSlash(player) && player != effect.from)
-                targets << player;
+	QList<ServerPlayer *> targets;
+    foreach(ServerPlayer *player, room->getOtherPlayers(effect.to))
+        if(effect.to->canSlash(player))
+            targets << player;
 
-        if(!targets.isEmpty()) {
-            ServerPlayer *target = room->askForPlayerChosen(effect.from, targets, "thcannue");
-            if(!room->askForUseSlashTo(effect.to, target, "@thcannue-slash"))
-                choice = "other";
-        }
-        else
-            choice = "other";
-    }
-	else
-		choice = "other";
+    if(!targets.isEmpty())
+	{
+        ServerPlayer *target = room->askForPlayerChosen(effect.from, targets, "thcannue");
+		
+		LogMessage log;
+	    log.type = "#CollateralSlash";
+		log.from = effect.from;
+		log.to << target;
+		room->sendLog(log);
 
-    if(choice == "other") {
-        choice = room->askForChoice(effect.from, "thcannue", "get+hit");
-        if(choice == "get") {
-            int card_id = room->askForCardChosen(effect.from, effect.to, "he", "thcannue");
-            effect.from->obtainCard(Sanguosha->getCard(card_id));
-        }
-        else {
-            DamageStruct damage;
-            damage.from = effect.from;
-            damage.to = effect.to;
-            room->damage(damage);
-        }
+		if (room->askForUseSlashTo(effect.to, target, "@thcannue-slash"))
+			return ;
+	}
+	
+    QString choice = room->askForChoice(effect.from, "thcannue", "get+hit");
+    if(choice == "get") {
+        int card_id = room->askForCardChosen(effect.from, effect.to, "he", "thcannue");
+        effect.from->obtainCard(Sanguosha->getCard(card_id));
     }
+    else
+	{
+        DamageStruct damage;
+        damage.from = effect.from;
+        damage.to = effect.to;
+        room->damage(damage);
+	}
 };
 
 class ThCannue:public OneCardViewAsSkill{
@@ -857,7 +857,7 @@ public:
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        return pattern == "peach+analeptic";
+        return pattern.contains("analeptic");
     }
 
     virtual bool viewFilter(const Card* to_select) const{
@@ -1130,9 +1130,9 @@ public:
     }
 };
 
-class ThFengrang:public TriggerSkill{
+class ThFengren:public TriggerSkill{
 public:
-    ThFengrang():TriggerSkill("thfengrang"){
+    ThFengren():TriggerSkill("thfengren"){
         frequency = Compulsory;
         events << EventPhaseStart;
     }
@@ -1180,7 +1180,106 @@ public:
     }
 };
 
-ThYanlunCard::ThYanlunCard(){
+class ThKudao: public TriggerSkill {
+public:
+	ThKudao(): TriggerSkill("thkudao") {
+		events << TargetConfirmed << CardUsed << CardResponded;
+		frequency = Compulsory;
+	}
+
+	virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+		ServerPlayer *target = NULL;
+		if (triggerEvent == TargetConfirmed)
+		{
+			CardUseStruct use = data.value<CardUseStruct>();
+			if (!use.from || use.from != player || !use.card->isRed() || use.to.isEmpty() || use.to.length() > 1 || use.to[0] == player)
+				return false;
+
+			target = use.to[0];
+		}
+		else if (triggerEvent == CardUsed)
+		{
+			CardUseStruct use = data.value<CardUseStruct>();
+			if (use.from->hasFlag("CollateralUsing") && use.card->isKindOf("Slash") && use.card->isRed())
+			{
+				foreach (ServerPlayer *p, room->getAlivePlayers())
+					if (p->hasFlag("CollateralSource"))
+					{
+						target = p;
+						break;
+					}
+			}
+		}
+		else if (triggerEvent == CardResponded)
+		{
+			CardResponseStruct resp = data.value<CardResponseStruct>();
+
+			if (resp.m_card->isRed() && resp.m_card->isKindOf("BasicCard"))
+				target = resp.m_who;
+		}
+
+		if (target == NULL || target == player)
+			return false;
+
+		if (!target->isKongcheng())
+		{	
+			LogMessage log;
+			log.type = "#TriggerSkill";
+			log.from = player;
+			log.arg = objectName();
+			room->sendLog(log);
+
+			player->addToPile("kudaopile", room->askForCardChosen(player, target, "h", objectName()));
+		}
+
+		return false;
+	}
+};
+
+class ThSuilun: public TriggerSkill {
+public:
+	ThSuilun(): TriggerSkill("thsuilun") {
+		events << EventPhaseStart;
+	}
+
+	virtual bool trigger(TriggerEvent , Room* room, ServerPlayer *player, QVariant &) const{
+		if (player->getPhase() != Player::NotActive)
+			return false;
+
+		QList<QList<int>> lists;
+		for (int i = 0; i < 4; i++)
+			lists << QList<int>();
+		
+		foreach (int card_id, player->getPile("kudaopile"))
+			lists[(int)Sanguosha->getCard(card_id)->getSuit()] << card_id;
+
+		for (int i = 0; i < 4; i++)
+			if (lists[i].isEmpty())
+				return false;
+
+		if (player->askForSkillInvoke(objectName()))
+		{
+			DummyCard *dummy = new DummyCard;
+			for (int i = 0; i < 4; i++)
+			{
+				room->fillAG(lists[i], player);
+				int id = room->askForAG(player, lists[i], false, objectName());
+				player->invoke("clearAG");
+				if (id != -1)
+					dummy->addSubcard(id);
+			}
+			if (dummy->subcardsLength() != 4)
+				return false;
+
+			room->throwCard(dummy, player);
+			player->gainAnExtraTurn(player);
+		}
+		
+		return false;
+	}
+};
+
+ThYanlunCard::ThYanlunCard() {
     will_throw = false;
     mute = true;
 }
@@ -1191,17 +1290,12 @@ bool ThYanlunCard::targetFilter(const QList<const Player *> &targets, const Play
 
 void ThYanlunCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *target = targets.first();
+    room->broadcastSkillInvoke("thyanlun", 1);
     bool success = source->pindian(target, "thyanlun", Sanguosha->getCard(getEffectiveId()));
-    room->broadcastSkillInvoke("yanlun", 1);
     if(success)
         room->setPlayerFlag(source, "yanlun");
-    else {
-        DamageStruct damage;
-        damage.from = target;
-        damage.to = source;
-        damage.nature = DamageStruct::Fire;
-        room->damage(damage);
-    }
+	else
+		room->setPlayerCardLimitation(source, "use", "TrickCard", true);
 }
 
 class ThYanlunViewAsSkill:public OneCardViewAsSkill{
@@ -1224,7 +1318,7 @@ public:
         if(Self->hasFlag("yanlun")) {
             FireAttack *huogong = new FireAttack(originalCard->getSuit(), originalCard->getNumber());
             huogong->addSubcard(originalCard);
-            huogong->setSkillName("thyanlun_fire_attack");
+            huogong->setSkillName("thyanlun");
             return huogong;
         }
         else {
@@ -1242,13 +1336,17 @@ public:
         view_as_skill = new ThYanlunViewAsSkill;
     }
 
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent, Room *, ServerPlayer *player, QVariant &data) const{
         DamageStruct &damage = data.value<DamageStruct>();
         if(player->hasFlag("yanlun") && damage.card->isKindOf("FireAttack")
                 && player->askForSkillInvoke(objectName()))
             player->drawCards(1);
 
         return false;
+    }
+
+	virtual int getEffectIndex(const ServerPlayer *, const Card *) const{
+        return 0;
     }
 };
 
@@ -1268,7 +1366,7 @@ public:
         if(!player->hasFlag("yanlun") || !effect.card->isKindOf("FireAttack"))
             return false;
 
-        if(effect.card->getSkillName() == "thyanlun_fire_attack")
+        if(effect.card->getSkillName() == "thyanlun")
             room->broadcastSkillInvoke("thyanlun", qrand() % 2 + 2);
 
         RoomThread *thread=room->getThread();
@@ -1540,8 +1638,12 @@ void TouhouPackage::addKazeGenerals(){
 
     General *kaze013 = new General(this, "kaze013", "shu", 3);
     kaze013->addSkill(new ThDasui);
-    kaze013->addSkill(new ThFengrang);
+    kaze013->addSkill(new ThFengren);
     kaze013->addSkill(new ThFuli);
+
+    General *kaze014 = new General(this, "kaze014", "shu", 3);
+    kaze014->addSkill(new ThKudao);
+    kaze014->addSkill(new ThSuilun);
 
     General *kaze015 = new General(this, "kaze015", "shu");
     kaze015->addSkill(new ThYanlun);

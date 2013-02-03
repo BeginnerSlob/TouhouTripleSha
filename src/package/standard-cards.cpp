@@ -471,7 +471,7 @@ public:
             suit = Card::NoSuitRed;
 
 		int number;
-		if (first->getNumber() && second->getNumber())
+		if (first->getNumber() == second->getNumber())
 			number = first->getNumber();
 		else
 			number = 0;
@@ -915,6 +915,7 @@ void Collateral::onEffect(const CardEffectStruct &effect) const{
     QString prompt = QString("collateral-slash:%1:%2")
             .arg(source->objectName()).arg(victim->objectName());
 
+	room->setPlayerFlag(source, "CollateralSource");
     if (victim->isDead()){
         if(source->isAlive() && killer->isAlive() && killer->getWeapon()){
             source->obtainCard(weapon);
@@ -937,7 +938,8 @@ void Collateral::onEffect(const CardEffectStruct &effect) const{
             }
         }
     }
-
+	
+	room->setPlayerFlag(source, "-CollateralSource");
     room->removeTag("collateralVictim");
 }
 

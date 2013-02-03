@@ -94,7 +94,7 @@ public:
 		else
 			player->drawCards(2);
 
-		room->acquireSkill(player, "hujia");
+		room->acquireSkill(player, "huanwei");
 		return false;
 	}
 };
@@ -1168,6 +1168,7 @@ public:
 
 ThMengyaCard::ThMengyaCard(){
 	will_throw = false;
+	handling_method = MethodNone;
 }
 
 bool ThMengyaCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
@@ -1175,7 +1176,7 @@ bool ThMengyaCard::targetFilter(const QList<const Player *> &targets, const Play
 }
 
 void ThMengyaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-	targets.first()->obtainCard(this, false);
+	targets.first()->obtainCard(this);
 	source->drawCards(subcardsLength());
 }
 
