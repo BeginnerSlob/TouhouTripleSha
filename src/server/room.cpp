@@ -1126,16 +1126,14 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
 	
     if(card){
         if ((method == Card::MethodUse || method == Card::MethodResponse) && !isRetrial) {
-            if (!(method == Card::MethodUse && pattern == "slash")) {
-                LogMessage log;
-                log.card_str = card->toString();
-                log.from = player;
-                log.type = QString("#%1").arg(card->getClassName());
-                if (method == Card::MethodResponse)
-                    log.type += "_Resp";
-                sendLog(log);
-                player->broadcastSkillInvoke(card);
-            }
+            LogMessage log;
+            log.card_str = card->toString();
+            log.from = player;
+            log.type = QString("#%1").arg(card->getClassName());
+            if (method == Card::MethodResponse)
+                log.type += "_Resp";
+            sendLog(log);
+            player->broadcastSkillInvoke(card);
         } else if (method == Card::MethodDiscard) {
             LogMessage log;
             log.type = "$DiscardCard";
@@ -1156,10 +1154,8 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
 
     if (card) {
         if(method == Card::MethodUse){
-            if(pattern != "slash"){
-                CardMoveReason reason(CardMoveReason::S_REASON_LETUSE, player->objectName(), QString(), card->getSkillName(), QString());
-                moveCardTo(card, player, NULL, Player::PlaceTable, reason, true);
-            }
+            CardMoveReason reason(CardMoveReason::S_REASON_LETUSE, player->objectName(), QString(), card->getSkillName(), QString());
+            moveCardTo(card, player, NULL, Player::PlaceTable, reason, true);
         }
         /*else if(pattern == "nullification"){
             CardMoveReason reason(CardMoveReason::S_REASON_LETUSE, player->objectName());
@@ -1178,30 +1174,27 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
         QVariant decisionData = QVariant::fromValue("cardResponded:"+pattern+":"+prompt+":_"+card->toString()+"_");
         thread->trigger(ChoiceMade, this, player, decisionData);
 
+		bool cancelled = false;
         if ((method == Card::MethodUse || method == Card::MethodResponse) && !isRetrial) {
-            if (!(method == Card::MethodUse && pattern == "slash")) {
-                CardResponseStruct resp(card, to, method == Card::MethodUse);
-                QVariant data = QVariant::fromValue(resp);
-                bool canceled = thread->trigger(CardResponding, this, player, data);
-				if (canceled)
-					return NULL;
-                thread->trigger(CardResponded, this, player, data);
-                if (method == Card::MethodUse) {
-                    if (getCardPlace(card->getEffectiveId()) == Player::PlaceTable) {
-                        CardMoveReason reason(CardMoveReason::S_REASON_LETUSE, player->objectName(),
-                                              QString(), card->getSkillName(), QString());
-                        moveCardTo(card, player, NULL, Player::DiscardPile, reason, true);
-                    }
-                    CardUseStruct card_use;
-                    card_use.card = card;
-                    card_use.from = player;
-                    if (to) card_use.to << to;
-                    QVariant data2 = QVariant::fromValue(card_use);
-                    thread->trigger(CardFinished, this, player, data2);
+            CardResponseStruct resp(card, to, method == Card::MethodUse);
+            QVariant data = QVariant::fromValue(resp);
+            cancelled = thread->trigger(CardResponding, this, player, data);
+            thread->trigger(CardResponded, this, player, data);
+            if (method == Card::MethodUse) {
+                if (getCardPlace(card->getEffectiveId()) == Player::PlaceTable) {
+                    CardMoveReason reason(CardMoveReason::S_REASON_LETUSE, player->objectName(),
+                                          QString(), card->getSkillName(), QString());
+                    moveCardTo(card, player, NULL, Player::DiscardPile, reason, true);
                 }
+                CardUseStruct card_use;
+                card_use.card = card;
+                card_use.from = player;
+                if (to) card_use.to << to;
+                QVariant data2 = QVariant::fromValue(card_use);
+                thread->trigger(CardFinished, this, player, data2);
             }
         }
-        return card;
+        return cancelled ? NULL : card;
     } else if(continuable) {
         setPlayerFlag(player, "continuing");
         return askForCard(player, pattern, prompt, data, method, to, isRetrial);
@@ -1279,8 +1272,8 @@ bool Room::askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims
 			setPlayerFlag(victim, "CollateralTarget");
 	}
 
-    //the special case for jijiang and guhuo
-    setPlayerFlag(slasher, "-jijiang_failed");
+    //the special case for liqi and guhuo
+    setPlayerFlag(slasher, "-liqi_failed");
 
     bool use = false;
 
@@ -1289,12 +1282,12 @@ bool Room::askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims
         use = askForUseCard(slasher, "slash", prompt, -1, Card::MethodUse, add_history);
     }while(slasher->hasFlag("guhuo_failed"));
 
-    if(slasher->hasFlag("jijiang_failed")){
+    if(slasher->hasFlag("liqi_failed")){
         do{
             setPlayerFlag(slasher, "-guhuo_failed");
             use = askForUseCard(slasher, "slash", prompt, -1, Card::MethodUse, add_history);
         }while(slasher->hasFlag("guhuo_failed"));
-        setPlayerFlag(slasher, "-jijiang_failed");
+        setPlayerFlag(slasher, "-liqi_failed");
     }
 
     if(!use){

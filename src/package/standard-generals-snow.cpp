@@ -9,7 +9,6 @@
 #include "standard-generals.h"
 #include "maneuvering.h"
 #include "ai.h"
-#include "god.h"
 
 ZhihengCard::ZhihengCard(){
     target_fixed = true;
@@ -1700,6 +1699,202 @@ public:
     }
 };
 
+class Longxi: public TriggerSkill {
+public:
+    Longxi(): TriggerSkill("longxi") {
+        events << CardsMoveOneTime << EventPhaseStart << EventPhaseEnd;
+        default_choice = "down";
+    }
+
+    void perform(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        QString result = room->askForChoice(player, objectName(), "up+down");
+        QList<ServerPlayer *> all_players = room->getAllPlayers();
+        if (result == "up") {
+            room->broadcastSkillInvoke(objectName(), 2);
+            foreach (ServerPlayer *player, all_players) {
+                RecoverStruct recover;
+                recover.who = player;
+                room->recover(player, recover);
+            }
+        } else if (result == "down") {
+            foreach (ServerPlayer *player, all_players) {
+                room->loseHp(player);
+            }
+
+            room->broadcastSkillInvoke(objectName(), 1);
+        }
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (player->getPhase() != Player::Discard)
+            return false;
+
+        if (triggerEvent == CardsMoveOneTime) {
+            CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
+            if (move->from == player && move->to_place == Player::DiscardPile
+                && (move->reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
+                player->setMark("longxi", player->getMark("longxi") + move->card_ids.size());
+            }
+        } else if (triggerEvent == EventPhaseStart) {
+            player->setMark("longxi", 0);
+        } else if (triggerEvent == EventPhaseStart && player->getMark("longxi") > 2 && player->askForSkillInvoke(objectName()))
+			perform(player);
+
+        return false;
+    }
+};
+
+void YeyanCard::damage(ServerPlayer *player, ServerPlayer *target, int point) const{
+    DamageStruct damage;
+
+    damage.card = NULL;
+    damage.from = player;
+    damage.to = target;
+    damage.damage = point;
+    damage.nature = DamageStruct::Fire;
+
+    player->getRoom()->damage(damage);
+}
+
+GreatYeyanCard::GreatYeyanCard() {
+    mute = true;
+    m_skillName = "yeyan";
+}
+
+bool GreatYeyanCard::targetFilter(const QList<const Player *> &, const Player *, const Player *) const{
+    Q_ASSERT(false);
+    return false;
+}
+
+bool GreatYeyanCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
+    if (subcards.length() != 4) return false;
+    QList<Card::Suit> allsuits;
+    foreach (int cardId, subcards) {
+        const Card *card = Sanguosha->getCard(cardId);
+        if (allsuits.contains(card->getSuit())) return false;
+        allsuits.append(card->getSuit());
+    }
+    
+    //We can only assign 2 damage to one player
+    //If we select only one target only once, we assign 3 damage to the target
+    if (targets.toSet().size() == 1)
+        return true;
+    else if (targets.toSet().size() == 2)
+        return targets.size() == 3;
+    return false;
+}
+
+bool GreatYeyanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select,
+                                  const Player *, int &maxVotes) const{
+    int i = 0;
+    foreach(const Player *player, targets)
+        if (player == to_select) i++;
+    maxVotes = qMax(3 - targets.size(),0) + i;
+    return maxVotes > 0;
+}
+
+void GreatYeyanCard::use(Room *room, ServerPlayer *player, QList<ServerPlayer *> &targets) const{
+    int criticaltarget = 0;
+    int totalvictim = 0;
+    QMap<ServerPlayer *, int> map;
+
+    foreach(ServerPlayer *sp, targets)
+        map[sp]++;
+
+    if (targets.size() == 1)
+        map[targets.first()] += 2;
+
+    foreach(ServerPlayer *sp, map.keys()){
+        if(map[sp] > 1)
+            criticaltarget++;
+        totalvictim++;
+    }
+    if (criticaltarget > 0) {
+        room->loseHp(player, 3);
+        player->loseMark("@yeyan");
+        player->gainMark("@yeyanused");
+        if (totalvictim > 1) {
+            //room->broadcastInvoke("animate", "lightbox:$YeyanAnimate");
+            room->broadcastSkillInvoke("yeyan", 2);
+        } else {
+            //room->broadcastInvoke("animate", "lightbox:$YeyanAnimate");
+            room->broadcastSkillInvoke("yeyan", 1);
+        }
+        QList<ServerPlayer *>targets = map.keys();
+        if (targets.size() > 1)
+            qSort(targets.begin(), targets.end(), ServerPlayer::CompareByActionOrder);
+        foreach (ServerPlayer *sp, targets)
+            damage(player, sp, map[sp]);
+    }
+}
+
+SmallYeyanCard::SmallYeyanCard() {
+    mute = true;
+    m_skillName = "yeyan";
+}
+
+bool SmallYeyanCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
+    return !targets.isEmpty();
+}
+
+bool SmallYeyanCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const{
+    return targets.length() < 3;
+}
+
+void SmallYeyanCard::use(Room *room, ServerPlayer *player, QList<ServerPlayer *> &targets) const{
+    //room->broadcastInvoke("animate", "lightbox:$YeyanAnimate");
+    room->broadcastSkillInvoke("yeyan", 3);
+    player->loseMark("@yeyan");
+    player->gainMark("@yeyanused");
+    Card::use(room, player, targets);
+}
+
+void SmallYeyanCard::onEffect(const CardEffectStruct &effect) const{
+    damage(effect.from, effect.to, 1);
+}
+
+class Yeyan: public ViewAsSkill {
+public:
+    Yeyan(): ViewAsSkill("yeyan") {
+        frequency = Limited;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->getMark("@yeyan") > 1;
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        if (selected.length() >= 4)
+            return false;
+
+        if (to_select->isEquipped())
+            return false;
+
+        if (Self->isJilei(to_select))
+            return false;
+
+        foreach (const Card *item, selected) {
+            if (to_select->getSuit() == item->getSuit())
+                return false;
+        }
+
+        return true;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.length()  == 0) 
+            return new SmallYeyanCard;
+        if (cards.length() != 4)
+            return NULL;
+
+        GreatYeyanCard *card = new GreatYeyanCard;
+        card->addSubcards(cards);
+
+        return card;
+    }
+};
+
 void StandardPackage::addSnowGenerals(){
 	General *snow001 = new General(this, "snow001$", "wu");
     snow001->addSkill(new Zhiheng);
@@ -1779,6 +1974,12 @@ void StandardPackage::addSnowGenerals(){
 	General *snow029 = new General(this, "snow029", "wu", 3);
 	snow029->addSkill(new Lvejue);
 	snow029->addSkill(new Lingshi);
+	
+    General *snow030 = new General(this, "snow030", "god");
+    snow030->addSkill(new Longxi);
+    snow030->addSkill(new MarkAssignSkill("@yeyan", 1));
+    snow030->addSkill(new Yeyan);
+    related_skills.insertMulti("yeyan", "#@yeyan-1");
 
 	addMetaObject<ZhihengCard>();
     addMetaObject<GuidengCard>();
@@ -1795,6 +1996,9 @@ void StandardPackage::addSnowGenerals(){
     addMetaObject<MengjingCard>();
     addMetaObject<ZhizhanCard>();
 	addMetaObject<LingshiCard>();
+    addMetaObject<YeyanCard>();
+    addMetaObject<GreatYeyanCard>();
+    addMetaObject<SmallYeyanCard>();
 
     skills << new BianshengPindian;
 }

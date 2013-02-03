@@ -5,7 +5,6 @@
 #include "carditem.h"
 #include "engine.h"
 #include "maneuvering.h"
-#include "wisdompackage.h"
 
 class ThChuangshi:public TriggerSkill{
 public:
