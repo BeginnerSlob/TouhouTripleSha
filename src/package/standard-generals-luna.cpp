@@ -1254,18 +1254,8 @@ public:
     Tianjing():MaxCardsSkill("tianjing"){
     }
     virtual int getExtra(const Player *target) const{
-        int extra = 0;
-        QSet<QString> kingdom_set;
-        if(target->parent()){
-            foreach(const Player *player, target->parent()->findChildren<const Player *>()){
-                if(player->isAlive()){
-                    kingdom_set << player->getKingdom();
-                }
-            }
-        }
-        extra = kingdom_set.size();
-        if(target->hasSkill(objectName()))
-            return extra;
+        if(target->hasSkill(objectName()) && target->isWounded())
+            return 4;
         else
             return 0;
     }

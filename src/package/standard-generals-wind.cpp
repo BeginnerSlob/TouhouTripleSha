@@ -322,9 +322,9 @@ public:
     }
 };
 
-class Jingmo: public ProhibitSkill{
+class Jingyou: public ProhibitSkill{
 public:
-    Jingmo():ProhibitSkill("jingmo"){
+    Jingyou():ProhibitSkill("jingyou"){
 
     }
 
@@ -336,9 +336,9 @@ public:
     }
 };
 
-class JingmoEffect: public TriggerSkill{
+class JingyouEffect: public TriggerSkill{
 public:
-    JingmoEffect():TriggerSkill("#jingmo-effect"){
+    JingyouEffect():TriggerSkill("#jingyou-effect"){
         frequency = Compulsory;
 
         events << CardsMoveOneTime;
@@ -1438,9 +1438,9 @@ void StandardPackage::addWindGenerals(){
 
     General *wind004 = new General(this, "wind004", "shu", 3);
     wind004->addSkill(new Yuxi);
-    wind004->addSkill(new Jingmo);
-    wind004->addSkill(new JingmoEffect);
-    related_skills.insertMulti("jingmo", "#jingmo-effect");
+    wind004->addSkill(new Jingyou);
+    wind004->addSkill(new JingyouEffect);
+    related_skills.insertMulti("jingyou", "#jingyou-effect");
 
     General *wind005 = new General(this, "wind005", "shu", 3);
     wind005->addSkill(new Huahuan);
