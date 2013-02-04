@@ -46,7 +46,7 @@ void GeneralOverview::fillGenerals(const QList<const General *> &generals){
         name = Sanguosha->translate(general->objectName());
 
         kingdom = Sanguosha->translate(general->getKingdom());
-        gender = general->isMale() ? tr("Male") : tr("Female");
+        gender = general->objectName() == "sp999" ? tr("Te") : (general->isMale() ? tr("Male") : tr("Female"));
         max_hp = QString::number(general->getMaxHp());
         package = Sanguosha->translate(general->getPackage());
 

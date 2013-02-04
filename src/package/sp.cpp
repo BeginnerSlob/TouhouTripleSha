@@ -126,6 +126,10 @@ SPPackage::SPPackage()
 	General *sp004 = new General(this, "sp004", "qun", 3);
 	sp004->addSkill(new ThChuangshi);
 	sp004->addSkill(new ThGaotian);
+
+	General *sp999 = new General(this, "sp999", "te", 5, true, true);
+	sp999->addSkill("jibu");
+	sp999->addSkill(new Skill("thfeiniang", Skill::Compulsory));
 }
 
 ADD_PACKAGE(SP)

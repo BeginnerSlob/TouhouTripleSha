@@ -243,6 +243,15 @@ public:
 						return false;
 					ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
 					use.to << target;
+					
+					LogMessage log;
+					log.type = "#ThBanyue";
+					log.from = player;
+					log.to << target;
+					log.arg = objectName();
+					log.arg2 = use.card->objectName();
+					room->sendLog(log);
+					
 					qSort(use.to.begin(), use.to.end(), ServerPlayer::CompareByActionOrder);
 					data = QVariant::fromValue(use);
 				}
@@ -1053,6 +1062,13 @@ public:
 		const Card *card = room->askForCardShow(target, player, "@thzhanfuchoose:" + player->getGeneralName());
 		if(card != NULL) {
 			QString choice = room->askForChoice(player, objectName(), "basic+equip+trick");
+			
+			LogMessage log;
+			log.type = "#ThZhanfu";
+			log.from = player;
+			log.arg = choice;
+			room->sendLog(log);
+
 			room->showCard(target, card->getId());
 			if(card->getType() == choice)
 				room->loseHp(target);
