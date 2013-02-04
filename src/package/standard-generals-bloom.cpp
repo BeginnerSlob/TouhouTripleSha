@@ -1720,28 +1720,14 @@ void StandardPackage::addBloomGenerals(){
     bloom030->addSkill(new Tiangai);
     bloom030->addRelateSkill("jilve");
     related_skills.insertMulti("jilve", "#jilve-clear");
-
-    /*General *sunquan, *zhouyu, *lvmeng, *luxun, *ganning, *huanggai, *daqiao, *sunshangxiang;
-
-    lvmeng = new General(this, "lvmeng", "wu");
-    lvmeng->addSkill(new Keji);
-
-    huanggai = new General(this, "huanggai", "wu");
-    huanggai->addSkill(new Kurou);
-
-    //new General(this, "anjiang", "god", 4,true, true, true);*/
-
-    // for skill cards
     
     addMetaObject<LuoyiCard>();
     addMetaObject<LianbaoCard>();
-    //addMetaObject<JieyinCard>();
-    //addMetaObject<KurouCard>();
-    //addMetaObject<LijianCard>();
     addMetaObject<TiansuoCard>();
-    //addMetaObject<LiuliCard>();
     addMetaObject<XunyuCard>();
     addMetaObject<MancaiCard>();
     addMetaObject<QiangxiCard>();
     addMetaObject<BisuoCard>();
+
+	skills << new Jilve << new JilveClear;
 }

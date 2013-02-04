@@ -1925,7 +1925,7 @@ void StandardPackage::addLunaGenerals(){
     General *luna024 = new General(this, "luna024", "qun");
     luna024->addSkill(new Longya);
     
-	General *luna029 = new General(this, "luna029", "god", 5);
+	General *luna029 = new General(this, "luna029", "qun", 5);
     luna029->addSkill(new Zhuohuo);
     luna029->addSkill(new MarkAssignSkill("@mailun", 2));
     luna029->addSkill(new Wumou);

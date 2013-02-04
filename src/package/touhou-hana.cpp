@@ -390,6 +390,10 @@ public:
 	ThXuelan(): TriggerSkill("thxuelan") {
 		events << CardEffected;
 	}
+
+	virtual bool triggerable(const ServerPlayer *target) const {
+		return target != NULL;
+	}
 	
 	virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
 		ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
