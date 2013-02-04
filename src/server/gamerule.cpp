@@ -124,6 +124,7 @@ void GameRule::onPhaseChange(ServerPlayer *player) const{
 
             player->clearFlags();
             player->clearHistory();
+			room->clearPlayerCardLimitation(player, true);
 
             return;
         }

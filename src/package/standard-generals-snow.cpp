@@ -1738,7 +1738,7 @@ public:
             }
         } else if (triggerEvent == EventPhaseStart) {
             player->setMark("longxi", 0);
-        } else if (triggerEvent == EventPhaseStart && player->getMark("longxi") > 2 && player->askForSkillInvoke(objectName()))
+        } else if (triggerEvent == EventPhaseEnd && player->getMark("longxi") > 2 && player->askForSkillInvoke(objectName()))
 			perform(player);
 
         return false;
@@ -1861,7 +1861,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getMark("@yeyan") > 1;
+        return player->getMark("@yeyan") > 0;
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
@@ -1975,7 +1975,7 @@ void StandardPackage::addSnowGenerals(){
 	snow029->addSkill(new Lvejue);
 	snow029->addSkill(new Lingshi);
 	
-    General *snow030 = new General(this, "snow030", "god");
+    General *snow030 = new General(this, "snow030", "wu");
     snow030->addSkill(new Longxi);
     snow030->addSkill(new MarkAssignSkill("@yeyan", 1));
     snow030->addSkill(new Yeyan);

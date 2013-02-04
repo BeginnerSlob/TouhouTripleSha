@@ -1129,6 +1129,13 @@ public:
 			if (player->getPhase() == Player::NotActive && player->askForSkillInvoke(objectName()))
 			{
 				ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), objectName());
+				LogMessage log;
+				log.type = "#ThSuoming";
+				log.from = player;
+				log.to << target;
+				log.arg = objectName();
+				log.arg2 = target->isChained() ? "chongzhi" : "hengzhi";
+				room->sendLog(log);
 				room->setPlayerProperty(target, "chained", !target->isChained());
 			}
 
@@ -1178,6 +1185,14 @@ public:
 		{
 			if (splayer->askForSkillInvoke(objectName()))
 			{
+				LogMessage log;
+				log.type = "#ThKuangxiang";
+				log.from = splayer;
+				log.to << splayer;
+				log.arg = objectName();
+				log.arg2 = use.card->objectName();
+				room->sendLog(log);
+
 				foreach (ServerPlayer *p, use.to)
 					if (p->isChained())
 						p->addMark("@kuangxiang");
@@ -1197,11 +1212,18 @@ public:
 		if (use.to.contains(splayer) && !leftchained.isEmpty())
 			if (splayer->askForSkillInvoke(objectName()))
 			{
+				LogMessage log;
+				log.type = "#ThKuangxiang";
+				log.from = splayer;
 				foreach (ServerPlayer *p, leftchained)
 				{
 					p->addMark("@kuangxiang");
+					log.to << p;
 					use.to << p;
 				}
+				log.arg = objectName();
+				log.arg2 = use.card->objectName();
+				room->sendLog(log);
 				used = true;
 			}
 		
