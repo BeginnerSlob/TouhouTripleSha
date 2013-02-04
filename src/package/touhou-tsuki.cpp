@@ -1117,6 +1117,130 @@ public:
 	}
 };
 
+class ThChenji: public TriggerSkill {
+public:
+	ThChenji(): TriggerSkill("thchenji") {
+		events << CardsMoveOneTime;
+	}
+
+	virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+		CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
+		if (move->from == player && (move->from_places.contains(Player::PlaceHand) || move->from_places.contains(Player::PlaceEquip)))
+			if (player->getPhase() == Player::NotActive && player->askForSkillInvoke(objectName()))
+			{
+				ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), objectName());
+				room->setPlayerProperty(target, "chained", !target->isChained());
+			}
+
+		return false;
+	}
+};
+
+class ThKuangxiang: public TriggerSkill {
+public:
+	ThKuangxiang(): TriggerSkill("thkuangxiang") {
+		events << CardUsed;
+	}
+
+	virtual bool triggerable(const ServerPlayer *target) const {
+		return target != NULL;
+	}
+
+	virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+		ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
+		if (splayer == NULL)
+			return false;
+
+		CardUseStruct use = data.value<CardUseStruct>();
+		
+		if (!use.card->isNDTrick() && !use.card->isKindOf("BasicCard"))
+			return false;
+
+		if (use.to.isEmpty())
+			use.to << use.from;
+
+		bool used = false;
+		
+		//----------------------------------------------------------
+		
+		bool invoke1 = true;
+		bool chained1 = false;
+		foreach (ServerPlayer *p, use.to)
+		{
+			if (p == splayer)
+				invoke1 = false;
+			
+			if (p->isChained())
+				chained1 = true;
+		}
+
+		if (invoke1 && chained1)
+		{
+			if (splayer->askForSkillInvoke(objectName()))
+			{
+				foreach (ServerPlayer *p, use.to)
+					if (p->isChained())
+						p->addMark("@kuangxiang");
+
+				use.to << splayer;
+				used = true;
+			}
+		}
+
+		//------------------------------------------
+
+		QList<ServerPlayer *> leftchained;
+		foreach (ServerPlayer *p, room->getOtherPlayers(splayer))
+			if (!use.to.contains(p) && p->isChained())
+				leftchained << p;
+
+		if (use.to.contains(splayer) && !leftchained.isEmpty())
+			if (splayer->askForSkillInvoke(objectName()))
+			{
+				foreach (ServerPlayer *p, leftchained)
+				{
+					p->addMark("@kuangxiang");
+					use.to << p;
+				}
+				used = true;
+			}
+		
+		if (used)
+		{
+			room->setTag("ThKuangxiangCard", QVariant::fromValue(use.card->toString()));
+			qSort(use.to.begin(), use.to.end(), ServerPlayer::CompareByActionOrder);
+			data = QVariant::fromValue(use);
+		}
+
+		return false;
+	}
+};
+
+class ThKuangxiangClear: public TriggerSkill {
+public:
+	ThKuangxiangClear(): TriggerSkill("#thkuangxiang") {
+		events << CardFinished;
+	}
+
+	virtual bool triggerable(const ServerPlayer *target) const {
+		return target != NULL;
+	}
+
+	virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+		QString cardstr = room->getTag("ThKuangxiangCard").toString();
+		if (data.value<CardUseStruct>().card->toString() == cardstr)
+			foreach (ServerPlayer *p, room->getAllPlayers())
+				if (p->getMark("@kuangxiang") > 0)
+				{
+					p->removeMark("@kuangxiang");
+					if (p->isChained())
+						room->setPlayerProperty(p, "chained" ,false);
+				}
+
+		return false;
+	}
+};
+
 ThExiCard::ThExiCard(){
 }
 
@@ -1726,6 +1850,12 @@ void TouhouPackage::addTsukiGenerals(){
 	
 	General *tsuki012 = new General(this, "tsuki012", "qun");
 	tsuki012->addSkill(new ThZhehui);
+	
+	General *tsuki013 = new General(this, "tsuki013", "qun", 3);
+	tsuki013->addSkill(new ThChenji);
+	tsuki013->addSkill(new ThKuangxiang);
+	tsuki013->addSkill(new ThKuangxiangClear);
+    related_skills.insertMulti("thkuangxiang", "#thkuangxiang");
 
     General *tsuki014 = new General(this, "tsuki014", "qun", 3);
 	tsuki014->addSkill(new ThExi);

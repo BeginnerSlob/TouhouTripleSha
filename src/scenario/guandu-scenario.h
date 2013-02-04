@@ -16,7 +16,7 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class SmallTuxiCard: public TuxiCard{
+class SmallTuxiCard: public LianbaoCard{
     Q_OBJECT
 
 public:

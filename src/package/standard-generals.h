@@ -32,20 +32,20 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class LianbaoCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE LianbaoCard();
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 class LuoyiCard:public SkillCard{
     Q_OBJECT
 
 public:
     Q_INVOKABLE LuoyiCard();
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-};
-
-class TuxiCard: public SkillCard{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE TuxiCard();
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
@@ -98,6 +98,15 @@ public:
 
 private:
     int n;
+};
+
+class JilveCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE JilveCard();
+
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
 class GuidengCard: public SkillCard{
