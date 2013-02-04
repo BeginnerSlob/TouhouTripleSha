@@ -77,6 +77,7 @@ return {
 	["shu"] = "风",
 	["wu"] = "雪",
 	["qun"] = "月",
+	["te"] = "特",
 
 	["#Murder"] = "%to【%arg】 阵亡，伤害来源是 %from",
 	["#Suicide"] = "%to【%arg】 自杀",
