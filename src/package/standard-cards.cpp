@@ -851,38 +851,19 @@ bool Collateral::isAvailable(const Player *player) const{
     return canUse && SingleTargetTrick::isAvailable(player);
 }
 
-bool Collateral::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
-    return targets.length() == 2;
-}
+bool Collateral::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const {
+	int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
+    if (targets.length() >= total_num)
+        return false;
+    
+	if (to_select == Self)
+        return false;
 
-bool Collateral::targetFilter(const QList<const Player *> &targets, 
-                              const Player *to_select, const Player *Self) const{
-    if(!targets.isEmpty())
-    {
-        // @todo: fix this. We should probably keep the codes here, but change the code in
-        // roomscene such that if it is collateral, then targetFilter's result is overrode
-        Q_ASSERT(targets.length() <= 2);
-        if (targets.length() == 2) return false;
-        const Player* slashFrom = targets[0];
-        if (slashFrom->canSlash(to_select)) return true;
-        else return false;
-    }
+    foreach(const Player *p, to_select->getSiblings())
+		if (to_select->canSlash(p))
+			return !Self->isProhibited(to_select, this) && to_select->getWeapon() != NULL;
 
-    return !Self->isProhibited(to_select, this) && to_select->getWeapon() != NULL && to_select != Self;
-}
-
-void Collateral::onUse(Room *room, const CardUseStruct &card_use) const{
-    Q_ASSERT(card_use.to.length() == 2);
-    ServerPlayer *killer = card_use.to.at(0);
-    ServerPlayer *victim = card_use.to.at(1);
-
-    CardUseStruct new_use = card_use;
-    new_use.to.removeAt(1);
-
-    room->setTag("collateralVictim", QVariant::fromValue((PlayerStar)victim));
-    room->broadcastInvoke("animate", QString("indicate:%1:%2").arg(killer->objectName()).arg(victim->objectName()));
-
-    SingleTargetTrick::onUse(room, new_use);
+	return false;
 }
 
 bool Collateral::doCollateral(Room *room, ServerPlayer *killer, ServerPlayer *victim, const QString &prompt) const{
@@ -901,12 +882,6 @@ void Collateral::onEffect(const CardEffectStruct &effect) const{
     Room *room = source->getRoom();
     ServerPlayer *killer = effect.to;
     ServerPlayer *victim = room->getTag("collateralVictim").value<PlayerStar>();
-
-    LogMessage log;
-    log.type = "#CollateralSlash";
-    log.from = source;
-    log.to << victim;
-    room->sendLog(log);
 
     WrappedCard *weapon = killer->getWeapon();
     if(victim == NULL)

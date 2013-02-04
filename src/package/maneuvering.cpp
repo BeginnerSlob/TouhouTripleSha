@@ -285,8 +285,8 @@ bool FireAttack::targetFilter(const QList<const Player *> &targets, const Player
     if (to_select->isKongcheng())
         return false;
 
-    if (to_select == Self)
-        return Self->getHandcardNum() >= 2;
+    if (to_select == Self && Self->isLastHandCard(this))
+        return false;
     else
         return true;
 }

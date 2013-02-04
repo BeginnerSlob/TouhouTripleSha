@@ -177,15 +177,15 @@ QWidget *ServerDialog::createAdvancedTab(){
 
     maxchoice_spinbox = new QSpinBox;
     maxchoice_spinbox->setRange(3, 10);
-    maxchoice_spinbox->setValue(Config.value("MaxChoice", 5).toInt());
+    maxchoice_spinbox->setValue(Config.value("MaxChoice", 6).toInt());
 
     lord_maxchoice_spinbox = new QSpinBox;
     lord_maxchoice_spinbox->setRange(-1, 10);
-    lord_maxchoice_spinbox->setValue(Config.value("LordMaxChoice", -1).toInt());
+    lord_maxchoice_spinbox->setValue(Config.value("LordMaxChoice", 6).toInt());
 
     nonlord_maxchoice_spinbox = new QSpinBox;
     nonlord_maxchoice_spinbox->setRange(0, 10);
-    nonlord_maxchoice_spinbox->setValue(Config.value("NonLordMaxChoice", 2).toInt());
+    nonlord_maxchoice_spinbox->setValue(Config.value("NonLordMaxChoice", 4).toInt());
 
     forbid_same_ip_checkbox = new QCheckBox(tr("Forbid same IP with multiple connection"));
     forbid_same_ip_checkbox->setChecked(Config.ForbidSIMC);
