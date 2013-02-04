@@ -554,10 +554,9 @@ void ThJinluCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
 
     DummyCard *dummy_card = new DummyCard;
-    foreach(const Card *cd, effect.to->getCards("he")){
-        dummy_card->addSubcard(cd);
-    }
-    if (!effect.to->isKongcheng())
+    dummy_card->addSubcards(effect.to->getCards("he"));
+	dummy_card->deleteLater();
+	if (!dummy_card->getSubcards().isEmpty())
     {
         CardMoveReason reason(CardMoveReason::S_REASON_TRANSFER, effect.from->objectName(),
             effect.to->objectName(), "thjinlu", QString());

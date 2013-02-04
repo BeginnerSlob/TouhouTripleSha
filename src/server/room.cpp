@@ -890,8 +890,6 @@ void Room::obtainCard(ServerPlayer *target, int card_id, bool unhide){
 bool Room::isCanceled(const CardEffectStruct &effect){
     if (!effect.card->isCancelable(effect))
         return false;
-    if (effect.from && effect.from->hasSkill("tanhu") && effect.to && effect.to->hasFlag("TanhuTarget"))
-        return false;
 
     const TrickCard *trick = qobject_cast<const TrickCard *>(effect.card->getRealCard());
     if(trick){
@@ -2791,20 +2789,13 @@ bool Room::cardEffect(const CardEffectStruct &effect){
     if(effect.to->isDead() && !effect.card->isKindOf("Slash")) // Be care!!!
         return false;
 
-	CardEffectStruct effecta;
-	effecta.from = effect.from;
-	effecta.to = effect.to;
-	effecta.card = effect.card;
-
-    QVariant data = QVariant::fromValue(effecta);
-    bool broken = false;
-    if(effect.from)
-        broken = thread->trigger(CardEffect, this, effect.from, data);
-
-    if(broken)
-        return false;
-
-    return !thread->trigger(CardEffected, this, effect.to, data);
+    QVariant data = QVariant::fromValue((CardEffectStruct)effect);
+    
+	if(effect.from)
+        if (thread->trigger(CardEffect, this, effect.from, data))
+			return false;
+    
+	return !thread->trigger(CardEffected, this, effect.to, data);
 }
 
 bool Room::isJinkEffected(ServerPlayer *user, const Card *jink) {

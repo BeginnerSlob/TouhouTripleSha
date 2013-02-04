@@ -512,17 +512,11 @@ bool ThChouceCard::targetFilter(const QList<const Player *> &targets, const Play
 	if (!card)
 		return false;
 
-	if (!targets.isEmpty() && card->isKindOf("Collateral"))
-		return targets[0]->canSlash(to_select);
-
 	return targets.isEmpty() && !Self->isProhibited(to_select, card);
 }
 
 bool ThChouceCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const {
-	if (Sanguosha->getCard(getSubcards().first())->isKindOf("Collateral"))
-		return targets.length() == 2;
-	
-	return !targets.isEmpty();
+	return Sanguosha->getCard(getSubcards()[0])->targetsFeasible(targets, Self);
 }
 
 const Card *ThChouceCard::validate(const CardUseStruct *card_use) const{
@@ -619,35 +613,28 @@ public:
 			
 			CardUseStruct use = data.value<CardUseStruct>();	
 			int precardnum = player->getMark("ThChouce"); //the cardnumber store of thchouce
-			if(!player->hasFlag("ThChouce_failed") && usecard->getNumber() > precardnum && player->askForSkillInvoke(objectName(), data))
+			if(!player->hasFlag("ThChouce_failed") && usecard->getNumber() > precardnum)
 			{
-				ServerPlayer *target;
-				target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName());
-				use.to.clear();
-				use.to << target;
-				if(usecard->isKindOf("Collateral"))
+				QList<ServerPlayer *> targets;
+				foreach (ServerPlayer *p, room->getAlivePlayers())
+					if (!player->isProhibited(p, use.card))
+						targets << p;
+
+				if (!targets.isEmpty() && player->askForSkillInvoke(objectName(), data))
 				{
-					QList<ServerPlayer *> victims;
-					foreach(ServerPlayer *p, room->getOtherPlayers(target))
-						if (target->canSlash(p))
-							victims << p;
-
-					room->removeTag("collateralVictim");
-					if (!victims.isEmpty())
-					{
-						ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName());
-						room->setTag("collateralVictim", QVariant::fromValue((PlayerStar)victim));
-					}
-				}	
-
-				LogMessage log;
-				log.type = "$ThChouce";
-				log.from = player;
-				log.to = use.to;
-				log.arg = objectName();
-				log.card_str = usecard->getEffectIdString();
-				room->sendLog(log);
-				player->addMark("choucecount"); //the count of thchouce
+					ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName());
+					use.to.clear();
+					use.to << target;
+					
+					LogMessage log;
+					log.type = "$ThChouce";
+					log.from = player;
+					log.to = use.to;
+					log.arg = objectName();
+					log.card_str = usecard->getEffectIdString();
+					room->sendLog(log);
+					player->addMark("choucecount"); //the count of thchouce
+				}
 			}
 			else
 				room->setPlayerFlag(player, "ThChouce_failed");

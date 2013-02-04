@@ -419,6 +419,29 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
     case CardEffected:{
             if(data.canConvert<CardEffectStruct>()){
                 CardEffectStruct effect = data.value<CardEffectStruct>();
+				// jiedao hack ==========================
+				if (effect.card->isKindOf("Collateral"))
+				{
+					QList<ServerPlayer *> targets;
+					foreach (ServerPlayer *p, room->getAllPlayers())
+						if (effect.to->canSlash(p))
+							targets << p;
+
+					if (targets.isEmpty())
+						return true;
+					else
+					{
+						ServerPlayer *target = room->askForPlayerChosen(effect.from, targets, "collateral");
+						LogMessage log;
+						log.type = "#CollateralSlash";
+						log.from = effect.from;
+						log.to << target;
+						room->sendLog(log);
+						
+						room->setTag("collateralVictim", QVariant::fromValue((PlayerStar)target));
+					}
+				}
+				//=======================================
                 if(room->isCanceled(effect))
                     return true;
 

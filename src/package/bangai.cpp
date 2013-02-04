@@ -823,37 +823,24 @@ public:
 		events << SlashMissed;
 	}
 
+	virtual bool triggerable(const ServerPlayer *target) const {
+		if (target->getMark("Equips_Nullified_to_Yourself") > 0) return false;
+		return !target->getWeapon() && target->hasSkill("thsilian");
+	}
+
 	virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-		if (player->getWeapon())
-			return false;
-
 		SlashEffectStruct effect = data.value<SlashEffectStruct>();
-
         if (!effect.to->isAlive() || effect.to->getMark("Equips_of_Others_Nullified_to_You") > 0)
             return false;
         if (!effect.from->canSlash(effect.to, NULL, false))
             return false;
 
-        const Card *card = NULL;
-        card = room->askForCard(player, "slash", "blade-slash:" + effect.to->objectName(), QVariant(), Card::MethodUse, effect.to);
-        if(card){
-            room->setEmotion(player, "weapon/blade");
-            // if player is drank, unset his flag
-            if(player->hasFlag("drank"))
-                room->setPlayerFlag(player, "-drank");
-
-            LogMessage log;
-            log.type = "#BladeUse";
-            log.from = effect.from;
-            log.to << effect.to;
-            room->sendLog(log);
-
-            CardUseStruct use;
-            use.card = card;
-            use.from = player;
-            use.to << effect.to;
-            room->useCard(use, false);
-        }
+        int weapon_id = player->getWeapon()->getId();
+        room->setCardFlag(weapon_id, "using");
+        room->setPlayerFlag(effect.from, "BladeUse");
+        room->askForUseSlashTo(effect.from, effect.to, QString("blade-slash:%1").arg(effect.to->objectName()), false, false, true);
+        room->setPlayerFlag(effect.from, "-BladeUse");
+        room->setCardFlag(weapon_id, "-using");
 
         return false;
     }
