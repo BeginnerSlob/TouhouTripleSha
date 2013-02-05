@@ -112,8 +112,8 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
     if (player->getPhase() == Player::Play && player->hasFlag("MoreSlashInOneTurn")) {
         if (player->hasSkill("hupao"))
             room->broadcastSkillInvoke("hupao");
-        else if (player->hasSkill("huxiao"))
-            room->broadcastSkillInvoke("huxiao");
+        else if (player->hasSkill("canyue"))
+            room->broadcastSkillInvoke("canyue");
     }
     if (use.to.size() > 1 && player->hasSkill("shenji"))
         room->broadcastSkillInvoke("shenji");
@@ -140,7 +140,7 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
         && player->hasFlag("MoreSlashInOneTurn")
         && player->hasWeapon("Crossbow")
         && !player->hasSkill("hupao")
-        && !player->hasSkill("huxiao"))
+        && !player->hasSkill("canyue"))
         room->setEmotion(player,"weapon/crossbow");
     if (use.card->isKindOf("ThunderSlash"))
         room->setEmotion(player, "thunder_slash");

@@ -1367,6 +1367,36 @@ public:
     }
 };
 
+class Wanhun: public TriggerSkill {
+public:
+    Wanhun(): TriggerSkill("wanhun") {
+        events << DamageCaused;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        DamageStruct damage = data.value<DamageStruct>();
+
+        if (player->distanceTo(damage.to) < 2 && damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))
+            && !damage.chain && !damage.transfer && player->askForSkillInvoke(objectName(), data)){
+            room->broadcastSkillInvoke(objectName(), 1);
+            JudgeStruct judge;
+            judge.pattern = QRegExp("(.*):(heart):(.*)");
+            judge.good = false;
+            judge.who = player;
+            judge.reason = objectName();
+
+            room->judge(judge);
+            if (judge.isGood()) {
+                room->broadcastSkillInvoke(objectName(), 2);
+                room->loseMaxHp(damage.to);
+                return true;
+            } else
+                room->broadcastSkillInvoke(objectName(), 3);
+        }
+        return false;
+    }
+};
+
 class Shushen: public TriggerSkill{
 public:
     Shushen():TriggerSkill("shushen"){
@@ -1410,6 +1440,176 @@ public:
         return false;
     }
 };
+
+XielunCard::XielunCard() {
+}
+
+bool XielunCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (targets.length() >= Self->getLostHp())
+        return false;
+
+    if (to_select == Self)
+        return false;
+
+    int range_fix = 0;
+    if (Self->getWeapon() && Self->getWeapon()->getEffectiveId() == getEffectiveId()) {
+        const Weapon *weapon = qobject_cast<const Weapon *>(Self->getWeapon()->getRealCard());
+        range_fix += weapon->getRange() - 1;
+    } else if (Self->getOffensiveHorse() && Self->getOffensiveHorse()->getEffectiveId() == getEffectiveId())
+        range_fix += 1;
+
+    return Self->distanceTo(to_select, range_fix) <= Self->getAttackRange();
+}
+
+void XielunCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    DamageStruct damage;
+    damage.from = source;
+
+    foreach (ServerPlayer *p, targets) {
+        damage.to = p;
+        room->damage(damage);
+    }
+    foreach (ServerPlayer *p, targets) {
+        if (p->isAlive())
+            p->drawCards(1);
+    }
+}
+
+class Xielun: public OneCardViewAsSkill {
+public:
+    Xielun(): OneCardViewAsSkill("xielun") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->getLostHp() > 0 && !player->isNude() && !player->hasUsed("XielunCard");
+    }
+
+    virtual bool viewFilter(const Card *to_select) const{
+        return to_select->isRed() && !Self->isJilei(to_select);
+    }
+
+    virtual const Card *viewAs(const Card *originalcard) const{
+        XielunCard *first = new XielunCard;
+        first->addSubcard(originalcard->getId());
+        first->setSkillName(objectName());
+        return first;
+    }
+};
+
+class Canyue: public TargetModSkill {
+public:
+    Canyue(): TargetModSkill("canyue") {
+    }
+
+    virtual int getResidueNum(const Player *from, const Card *) const{
+        if (from->hasSkill(objectName()))
+            return from->getMark(objectName());
+        else
+            return 0;
+    }
+};
+
+class CanyueCount: public TriggerSkill {
+public:
+    CanyueCount(): TriggerSkill("#canyue-count") {
+        events << SlashMissed << EventPhaseChanging;
+    }
+
+    virtual bool trigger(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (event == SlashMissed) {
+            if (player->getPhase() == Player::Play)
+                room->setPlayerMark(player, "canyue", player->getMark("canyue") + 1);
+        } else if (event == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.from == Player::Play)
+                if (player->getMark("canyue") > 0)
+                    room->setPlayerMark(player, "canyue", 0);
+        }
+
+        return false;
+    }
+};
+
+class CanyueClear: public TriggerSkill {
+public:
+    CanyueClear(): TriggerSkill("#canyue-clear") {
+        events << EventLoseSkill;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target && !target->hasSkill("canyue") && target->getMark("canyue") > 0;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+        room->setPlayerMark(player, "canyue", 0);
+        return false;
+    }
+};
+
+class JiumingCount: public TriggerSkill {
+public:
+    JiumingCount(): TriggerSkill("#jiuming-count") {
+        events << DamageDone << EventPhaseChanging;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target != NULL;
+    }
+
+    virtual bool trigger(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (event == DamageDone) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.from && damage.from->isAlive() && damage.from == room->getCurrent() && damage.from->getMark("jiuming") == 0)
+                room->setPlayerMark(damage.from, "jiuming_damage", damage.from->getMark("jiuming_damage") + damage.damage);
+        } else if (event == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive)
+                if (player->getMark("jiuming_damage") > 0)
+                    room->setPlayerMark(player, "jiuming_damage", 0);
+        }
+
+        return false;
+    }
+};
+
+class Jiuming: public PhaseChangeSkill {
+public:
+    Jiuming(): PhaseChangeSkill("jiuming") {
+        frequency = Wake;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+               && target->getPhase() == Player::Finish
+               && target->getMark("@jiuming") == 0
+               && target->getMark("jiuming_damage") >= 3;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+
+        LogMessage log;
+        log.type = "#JiumingWake";
+        log.from = player;
+        log.arg = QString::number(player->getMark("jiuming_damage"));
+        log.arg2 = objectName();
+        room->sendLog(log);
+
+        room->broadcastSkillInvoke(objectName());
+
+        player->gainMark("@jiuming");
+
+        room->setPlayerProperty(player, "maxhp", player->getMaxHp() + 1);
+		RecoverStruct recover;
+        recover.who = player;
+        room->recover(player, recover);
+
+        room->detachSkillFromPlayer(player, "canyue");
+        
+        return false;
+    }
+};
+
 
 void StandardPackage::addWindGenerals(){
 	General *wind001 = new General(this, "wind001$", "shu");
@@ -1489,12 +1689,28 @@ void StandardPackage::addWindGenerals(){
     wind018->addSkill(new Mitu);
     wind018->addSkill(new Sishi2);
 
+	General *wind019 = new General(this, "wind019", "shu");
+    wind019->addSkill("xiagong");
+    wind019->addSkill(new Wanhun);
+
     General *wind022 = new General(this, "wind022", "shu", 3, false);
     wind022->addSkill(new Shushen);
     wind022->addSkill(new Qiaoxia);
+
+    General *wind023 = new General(this, "wind023", "shu", 3, false);
+    wind022->addSkill(new Xielun);
+    wind022->addSkill(new Canyue);
+    wind022->addSkill(new CanyueCount);
+    wind022->addSkill(new CanyueClear);
+    wind022->addSkill(new Jiuming);
+    wind022->addSkill(new JiumingCount);
+    related_skills.insertMulti("jiuming", "#jiuming-count");
+    related_skills.insertMulti("canyue", "#canyue-count");
+    related_skills.insertMulti("canyue", "#canyue-clear");
     
     addMetaObject<FunuanCard>();
     addMetaObject<LiqiCard>();
     addMetaObject<XinchaoCard>();
     addMetaObject<Sishi2Card>();
+    addMetaObject<XielunCard>();
 }

@@ -577,11 +577,7 @@ void PlayerCardContainer::addDelayedTricks(QList<CardItem*> &tricks)
         _paintPixmap(item, start, G_ROOM_SKIN.getCardJudgeIconPixmap(trick->getCard()->objectName()));
         trick->setHomeOpacity(0.0);
         trick->setHomePos(start.center());
-        QString toolTip;
-        if(trick->getCard()->isVirtualCard())
-            toolTip = Sanguosha->getCard(trick->getCard()->getSubcards().at(0))->getDescription();
-        else
-            toolTip = trick->getCard()->getDescription();
+        QString toolTip = Sanguosha->getEngineCard(trick->getCard()->getEffectiveId())->getDescription();
         trick->setToolTip(toolTip);
         _m_judgeCards.append(trick);
         _m_judgeIcons.append(item);
