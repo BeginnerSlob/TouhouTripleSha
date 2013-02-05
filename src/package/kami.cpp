@@ -325,7 +325,7 @@ public:
 	}
 
 	virtual bool triggerable(const ServerPlayer *target) const {
-		return target != NULL && target->hasSkill(objectName());
+		return target != NULL && target->hasInnateSkill(objectName());
 	}
 
 	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
@@ -353,7 +353,7 @@ public:
 		}
 		else
 		{
-			if (triggerEvent == EventPhaseChanging && (player->hasFlag("thmengshengusing") || data.value<PhaseChangeStruct>().to != Player::NotActive))
+			if (triggerEvent == EventPhaseChanging && (player->hasFlag("thmengshengusing") || data.value<PhaseChangeStruct>().to != Player::RoundEnd))
 				return false;
 
 			foreach (ServerPlayer *p, room->getAllPlayers())
