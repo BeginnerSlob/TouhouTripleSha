@@ -1698,12 +1698,12 @@ void StandardPackage::addWindGenerals(){
     wind022->addSkill(new Qiaoxia);
 
     General *wind023 = new General(this, "wind023", "shu", 3, false);
-    wind022->addSkill(new Xielun);
-    wind022->addSkill(new Canyue);
-    wind022->addSkill(new CanyueCount);
-    wind022->addSkill(new CanyueClear);
-    wind022->addSkill(new Jiuming);
-    wind022->addSkill(new JiumingCount);
+    wind023->addSkill(new Xielun);
+    wind023->addSkill(new Canyue);
+    wind023->addSkill(new CanyueCount);
+    wind023->addSkill(new CanyueClear);
+    wind023->addSkill(new Jiuming);
+    wind023->addSkill(new JiumingCount);
     related_skills.insertMulti("jiuming", "#jiuming-count");
     related_skills.insertMulti("canyue", "#canyue-count");
     related_skills.insertMulti("canyue", "#canyue-clear");
