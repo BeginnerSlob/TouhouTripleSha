@@ -693,9 +693,9 @@ public:
     }
 };
 
-class Fenghou: public OneCardViewAsSkill{
+class Kujie: public OneCardViewAsSkill{
 public:
-    Fenghou():OneCardViewAsSkill("fenghou"){
+    Kujie():OneCardViewAsSkill("kujie"){
 
     }
 
@@ -713,15 +713,15 @@ public:
     }
 };
 
-class FenghouTargetMod: public TargetModSkill {
+class KujieTargetMod: public TargetModSkill {
 public:
-    FenghouTargetMod(): TargetModSkill("#fenghou-target") {
+    KujieTargetMod(): TargetModSkill("#kujie-target") {
         frequency = NotFrequent;
         pattern = "SupplyShortage";
     }
 
     virtual int getDistanceLimit(const Player *from, const Card *) const{
-        if (from->hasSkill("fenghou"))
+        if (from->hasSkill("kujie"))
             return 1;
         else
             return 0;
@@ -1676,9 +1676,9 @@ void StandardPackage::addBloomGenerals(){
     bloom009->addSkill(new Mancai);
 
     General *bloom010 = new General(this, "bloom010", "wei");
-    bloom010->addSkill(new Fenghou);
-    bloom010->addSkill(new FenghouTargetMod);
-    related_skills.insertMulti("fenghou", "#fenghou-target");
+    bloom010->addSkill(new Kujie);
+    bloom010->addSkill(new KujieTargetMod);
+    related_skills.insertMulti("kujie", "#kujie-target");
 
     General *bloom011 = new General(this, "bloom011", "wei");
     bloom011->addSkill(new Zhaihun);
