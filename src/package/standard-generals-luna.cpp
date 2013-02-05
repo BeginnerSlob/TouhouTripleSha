@@ -649,7 +649,6 @@ WenleCard::WenleCard(){
 void WenleCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
     source->loseMark("@wenle");
     source->gainMark("@wenleused");
-    room->broadcastInvoke("animate", "lightbox:$wenle");
 
     QList<ServerPlayer *> players = room->getOtherPlayers(source);
     foreach(ServerPlayer *player, players){
