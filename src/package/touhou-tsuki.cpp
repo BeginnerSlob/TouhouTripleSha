@@ -413,7 +413,7 @@ public:
 				}
 			}
 		}
-		else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::NotActive && player->getMark("@jiaotu") > 0)
+		else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::RoundEnd && player->getMark("@jiaotu") > 0)
 		{
 			if (!player->hasFlag(objectName()))
 			{
@@ -1631,7 +1631,6 @@ class ThShiming: public TriggerSkill {
 public:
 	ThShiming(): TriggerSkill("thshiming") {
 		events << EventPhaseStart;
-		frequency = Frequent;
 	}
 
 	virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const {

@@ -415,32 +415,22 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        const Card *card;
         if(triggerEvent == TargetConfirmed) {
-            CardUseStruct &use = data.value<CardUseStruct>();
-			if (use.from == player)
-				card = use.card;
+            CardUseStruct use = data.value<CardUseStruct>();
+			if (use.from == player && use.card->isKindOf("Slash") && use.card->isVirtualCard())
+			{
+				foreach(ServerPlayer *p, use.to)
+					if(!p->isNude() && player->askForSkillInvoke(objectName()))
+						room->obtainCard(player, room->askForCardChosen(player, p, "h", objectName()), false);
+			}
         }
         else if(triggerEvent == CardResponded) {
-            CardResponseStruct &resp = data.value<CardResponseStruct>();
-            card = resp.m_card;
+            CardResponseStruct resp = data.value<CardResponseStruct>();
+			if (resp.m_card->isVirtualCard() && resp.m_card->isKindOf("Jink") && player->askForSkillInvoke(objectName()))
+				player->drawCards(1);
         }
-
-        if(card == NULL || !card->isVirtualCard())
-            return false;
-
-        if(triggerEvent == CardResponded && card->isKindOf("Jink"))
-            if(player->askForSkillInvoke(objectName()))
-                player->drawCards(1);
-
-        if(triggerEvent == TargetConfirmed && card->isKindOf("Slash")) {
-            CardUseStruct &use = data.value<CardUseStruct>();
-            foreach(ServerPlayer *p, use.to)
-                if(!p->isNude() && player->askForSkillInvoke(objectName()))
-                    room->obtainCard(player, room->askForCardChosen(player, p, "he", objectName()), false);
-        }
-
-        return false;
+		
+		return false;
     }
 };
 
