@@ -811,7 +811,7 @@ public:
     }
 
 	virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
-		return true;
+		return player->isAlive();
 	}
 };
 

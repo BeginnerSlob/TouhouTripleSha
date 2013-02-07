@@ -1738,7 +1738,7 @@ public:
             }
         } else if (triggerEvent == EventPhaseStart) {
             player->setMark("longxi", 0);
-        } else if (triggerEvent == EventPhaseEnd && player->getMark("longxi") > 2 && player->askForSkillInvoke(objectName()))
+        } else if (triggerEvent == EventPhaseEnd && player->getMark("longxi") >= 2 && player->askForSkillInvoke(objectName()))
 			perform(player);
 
         return false;

@@ -287,7 +287,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
 
             while (dying.who->getHp() <= 0) {
                 if (!dying.savers.contains(player))
-                    if (current && current->hasSkill("wansha") && current->isAlive())
+                    if (current && current->hasSkill("sishi") && current->isAlive())
                         break;
 
                 if (dying.who->isAlive())

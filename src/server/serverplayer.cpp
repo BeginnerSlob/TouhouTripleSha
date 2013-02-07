@@ -507,6 +507,12 @@ bool ServerPlayer::hasNullification() const{
                 const ViewAsSkill* vsskill = qobject_cast<const ViewAsSkill*>(trigger_skill->getViewAsSkill());
                 if(vsskill && vsskill->isEnabledAtNullification(this)) return true;
             }
+        }else if(skill->inherits("ProhibitSkill")){
+            const ProhibitSkill* prohibit_skill = qobject_cast<const ProhibitSkill*>(skill);
+            if(prohibit_skill && prohibit_skill->getViewAsSkill()){
+                const ViewAsSkill* vsskill = qobject_cast<const ViewAsSkill*>(prohibit_skill->getViewAsSkill());
+                if(vsskill && vsskill->isEnabledAtNullification(this)) return true;
+            }
         }
     }
 
