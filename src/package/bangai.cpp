@@ -844,13 +844,10 @@ public:
         if (!effect.from->canSlash(effect.to, NULL, false))
             return false;
 
-        int weapon_id = player->getWeapon()->getId();
-        room->setCardFlag(weapon_id, "using");
         room->setPlayerFlag(effect.from, "BladeUse");
         room->askForUseSlashTo(effect.from, effect.to, QString("blade-slash:%1").arg(effect.to->objectName()), false, false, true);
         room->setPlayerFlag(effect.from, "-BladeUse");
-        room->setCardFlag(weapon_id, "-using");
-
+        
         return false;
     }
 };
