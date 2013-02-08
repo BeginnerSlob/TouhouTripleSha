@@ -403,7 +403,7 @@ enum TriggerEvent{
     EventPhaseChanging,
 
     DrawNCards,
-	
+    
     HpRecover,
     HpRecovered,
     HpLost,
@@ -433,7 +433,7 @@ enum TriggerEvent{
     Damage,           // the moment for -- lieren..
     Damaged,          // the moment for -- yumeng..
     DamageComplete,   // the moment for trigger iron chain
-	
+    
     Dying,
     PreAskForPeaches,
     AskForPeaches,
@@ -472,8 +472,8 @@ enum TriggerEvent{
 
     ChoiceMade,
 
-	// For вс only
-	PhaseSkipped,
+    // For вс only
+    PhaseSkipped,
 
     // For hulao pass only
     StageChange,

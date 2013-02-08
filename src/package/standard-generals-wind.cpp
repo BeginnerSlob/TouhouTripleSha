@@ -16,15 +16,15 @@ FunuanCard::FunuanCard(){
 }
 
 bool FunuanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const {
-	if (!targets.isEmpty())
-		return false;
-	if (to_select == Self)
-		return false;
+    if (!targets.isEmpty())
+        return false;
+    if (to_select == Self)
+        return false;
 
-	if (Self->getMark("funuantarget") >= 2)
-		return to_select->getMark("funuantarget") > 0;
-	else
-		return true;
+    if (Self->getMark("funuantarget") >= 2)
+        return to_select->getMark("funuantarget") > 0;
+    else
+        return true;
 }
 
 void FunuanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
@@ -43,7 +43,7 @@ void FunuanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &ta
     reason.m_playerId = target->objectName();
     room->obtainCard(target, this, reason, false);
 
-	target->addMark("funuantarget");
+    target->addMark("funuantarget");
     source->addMark("funuantarget");
     int old_value = source->getMark("funuan");
     int new_value = old_value + subcards.length();
@@ -92,9 +92,9 @@ public:
 
     virtual bool onPhaseChange(ServerPlayer *target) const{
         Room *room = target->getRoom();
-		room->setPlayerMark(target, "funuan", 0);
-		foreach (ServerPlayer *p, room->getAlivePlayers())
-			room->setPlayerMark(p, "funuantarget", 0);
+        room->setPlayerMark(target, "funuan", 0);
+        foreach (ServerPlayer *p, room->getAlivePlayers())
+            room->setPlayerMark(p, "funuantarget", 0);
         return false;
     }
 };
@@ -256,7 +256,7 @@ public:
 
 class ZhenhongTargetMod: public TargetModSkill {
 public:
-	ZhenhongTargetMod(): TargetModSkill("#zhenhong-target") {
+    ZhenhongTargetMod(): TargetModSkill("#zhenhong-target") {
     }
 
     virtual int getDistanceLimit(const Player *from, const Card *card) const{
@@ -417,20 +417,20 @@ public:
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         if(triggerEvent == TargetConfirmed) {
             CardUseStruct use = data.value<CardUseStruct>();
-			if (use.from == player && use.card->isKindOf("Slash") && use.card->isVirtualCard())
-			{
-				foreach(ServerPlayer *p, use.to)
-					if(!p->isNude() && player->askForSkillInvoke(objectName()))
-						room->obtainCard(player, room->askForCardChosen(player, p, "h", objectName()), false);
-			}
+            if (use.from == player && use.card->isKindOf("Slash") && use.card->isVirtualCard())
+            {
+                foreach(ServerPlayer *p, use.to)
+                    if(!p->isNude() && player->askForSkillInvoke(objectName()))
+                        room->obtainCard(player, room->askForCardChosen(player, p, "h", objectName()), false);
+            }
         }
         else if(triggerEvent == CardResponded) {
             CardResponseStruct resp = data.value<CardResponseStruct>();
-			if (resp.m_card->isVirtualCard() && resp.m_card->isKindOf("Jink") && player->askForSkillInvoke(objectName()))
-				player->drawCards(1);
+            if (resp.m_card->isVirtualCard() && resp.m_card->isKindOf("Jink") && player->askForSkillInvoke(objectName()))
+                player->drawCards(1);
         }
-		
-		return false;
+        
+        return false;
     }
 };
 
@@ -551,10 +551,10 @@ public:
 
 class Xiagong: public TargetModSkill {
 public:
-	Xiagong(): TargetModSkill("xiagong") {
-	}
+    Xiagong(): TargetModSkill("xiagong") {
+    }
 
-	virtual int getDistanceLimit(const Player *from, const Card *) const{
+    virtual int getDistanceLimit(const Player *from, const Card *) const{
         if (from->getWeapon() == NULL && from->hasSkill(objectName()))
             return 1;
         else
@@ -705,7 +705,7 @@ public:
         if(player->askForSkillInvoke(objectName(), data)){
             //room->broadcastInvoke("animate", "lightbox:$niepan");
             room->broadcastSkillInvoke(objectName());
-			
+            
             player->loseMark("@niepan");
             player->gainMark("@niepanused");
 
@@ -759,7 +759,7 @@ public:
             room->judge(judge);
 
             if(judge.isGood()){
-				room->setEmotion(player, "armor/eight_diagram");
+                room->setEmotion(player, "armor/eight_diagram");
                 Jink *jink = new Jink(Card::NoSuitNoColor, 0);
                 jink->setSkillName(objectName());
                 room->provide(jink);
@@ -1600,7 +1600,7 @@ public:
         player->gainMark("@jiuming");
 
         room->setPlayerProperty(player, "maxhp", player->getMaxHp() + 1);
-		RecoverStruct recover;
+        RecoverStruct recover;
         recover.who = player;
         room->recover(player, recover);
 
@@ -1612,9 +1612,9 @@ public:
 
 
 void StandardPackage::addWindGenerals(){
-	General *wind001 = new General(this, "wind001$", "shu");
-	wind001->addSkill(new Funuan);
-	wind001->addSkill(new Liqi);
+    General *wind001 = new General(this, "wind001$", "shu");
+    wind001->addSkill(new Funuan);
+    wind001->addSkill(new Liqi);
 
     General *wind002 = new General(this, "wind002", "shu");
     wind002->addSkill(new Chilian);
@@ -1662,7 +1662,7 @@ void StandardPackage::addWindGenerals(){
     wind011->addSkill(new Cangyan);
     wind011->addSkill(new Jinzhou);
 
-	General *wind013 = new General(this, "wind013$", "shu", 3);
+    General *wind013 = new General(this, "wind013$", "shu", 3);
     wind013->addSkill(new Manbo);
     wind013->addSkill(new Baishen);
     wind013->addSkill(new BaishenGive);
@@ -1689,7 +1689,7 @@ void StandardPackage::addWindGenerals(){
     wind018->addSkill(new Mitu);
     wind018->addSkill(new Sishi2);
 
-	General *wind019 = new General(this, "wind019", "shu");
+    General *wind019 = new General(this, "wind019", "shu");
     wind019->addSkill("xiagong");
     wind019->addSkill(new Wanhun);
 

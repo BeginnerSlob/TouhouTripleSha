@@ -206,7 +206,7 @@ class ProhibitSkill: public Skill{
 
 public:
     ProhibitSkill(const QString &name);
-	
+    
     const ViewAsSkill *getViewAsSkill() const;
     virtual bool isProhibited(const Player *from, const Player *to, const Card *card) const = 0;
 protected:

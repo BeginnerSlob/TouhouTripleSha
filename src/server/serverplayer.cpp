@@ -410,20 +410,8 @@ void ServerPlayer::addCard(const Card *card, Place place){
 
     case PlaceEquip: {
             WrappedCard *wrapped = Sanguosha->getWrappedCard(card->getEffectiveId());
-			const Card *acard = wrapped->getRealCard();
-			const EquipCard *equip = NULL;
-			//liannufuck hack
-			if (!acard->isKindOf("EquipCard") && hasSkill("liannufuck"))
-			{
-				Crossbow *liannu = new Crossbow(acard->getSuit(), acard->getNumber());
-				liannu->setSkillName(objectName());
-				wrapped->takeOver(liannu);
-				equip = qobject_cast<const EquipCard *>(wrapped->getRealCard());
-			}
-			else
-				equip = qobject_cast<const EquipCard *>(card->getRealCard());
-            //------------------------------------
-			setEquip(wrapped);
+            const EquipCard *equip = qobject_cast<const EquipCard *>(card->getRealCard());
+            setEquip(wrapped);
             equip->onInstall(this);
             break;
         }
@@ -700,9 +688,9 @@ void ServerPlayer::skip(Player::Phase phase){
     log.from = this;
     log.arg = phase_strings.at(index);
     room->sendLog(log);
-	
-	QVariant data = QVariant::fromValue(index);
-	room->getThread()->trigger(PhaseSkipped, room, this, data);
+    
+    QVariant data = QVariant::fromValue(index);
+    room->getThread()->trigger(PhaseSkipped, room, this, data);
 }
 
 void ServerPlayer::insertPhase(Player::Phase phase){
@@ -919,12 +907,12 @@ void ServerPlayer::marshal(ServerPlayer *player) const{
                            QString("%1:%2")
                            .arg(objectName())
                            .arg(getHandcardNum()));*/
-			player->setProperty("handcard_num", getHandcardNum());
+            player->setProperty("handcard_num", getHandcardNum());
         }else{
             //QStringList card_str;
             foreach(const Card* card, handcards){
                 //card_str << QString::number(card->getId());
-				player->addCard(card, PlaceHand);
+                player->addCard(card, PlaceHand);
             }
 
             //player->invoke("drawCards", card_str.join("+"));
@@ -937,7 +925,7 @@ void ServerPlayer::marshal(ServerPlayer *player) const{
                        QString("%1:_@=->%2@equip")
                        .arg(equip->getId())
                        .arg(objectName()));*/
-		player->addCard(equip, PlaceEquip);
+        player->addCard(equip, PlaceEquip);
     }
 
     foreach(const Card *card, getJudgingArea()){
@@ -945,7 +933,7 @@ void ServerPlayer::marshal(ServerPlayer *player) const{
                        QString("%1:_@=->%2@judging")
                        .arg(card->getId())
                        .arg(objectName()));*/
-		player->addCard(card, PlaceDelayedTrick);
+        player->addCard(card, PlaceDelayedTrick);
     }
 
     foreach(QString mark_name, marks.keys()){
@@ -964,7 +952,7 @@ void ServerPlayer::marshal(ServerPlayer *player) const{
 
     foreach(QString skill_name, acquired_skills){
         //player->invoke("acquireSkill", QString("%1:%2").arg(objectName()).arg(skill_name));
-		player->acquireSkill(skill_name);
+        player->acquireSkill(skill_name);
     }
 
     foreach(QString flag, flags){

@@ -124,7 +124,7 @@ void GameRule::onPhaseChange(ServerPlayer *player) const{
 
             player->clearFlags();
             player->clearHistory();
-			room->clearPlayerCardLimitation(player, true);
+            room->clearPlayerCardLimitation(player, true);
 
             return;
         }
@@ -173,9 +173,9 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
 
             if (!player->faceUp()) {
                 if (room->getTag("FirstRound").toBool())
-					room->setTag("FirstRound", false);
+                    room->setTag("FirstRound", false);
                 player->turnOver();
-			}
+            }
             else if(player->isAlive())
                 player->play();
 
@@ -420,29 +420,29 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
     case CardEffected:{
             if(data.canConvert<CardEffectStruct>()){
                 CardEffectStruct effect = data.value<CardEffectStruct>();
-				// jiedao hack ==========================
-				if (effect.card->isKindOf("Collateral"))
-				{
-					QList<ServerPlayer *> targets;
-					foreach (ServerPlayer *p, room->getAllPlayers())
-						if (effect.to->canSlash(p))
-							targets << p;
+                // jiedao hack ==========================
+                if (effect.card->isKindOf("Collateral"))
+                {
+                    QList<ServerPlayer *> targets;
+                    foreach (ServerPlayer *p, room->getAllPlayers())
+                        if (effect.to->canSlash(p))
+                            targets << p;
 
-					if (targets.isEmpty())
-						return true;
-					else
-					{
-						ServerPlayer *target = room->askForPlayerChosen(effect.from, targets, "collateral");
-						LogMessage log;
-						log.type = "#CollateralSlash";
-						log.from = effect.from;
-						log.to << target;
-						room->sendLog(log);
-						
-						room->setTag("collateralVictim", QVariant::fromValue((PlayerStar)target));
-					}
-				}
-				//=======================================
+                    if (targets.isEmpty())
+                        return true;
+                    else
+                    {
+                        ServerPlayer *target = room->askForPlayerChosen(effect.from, targets, "collateral");
+                        LogMessage log;
+                        log.type = "#CollateralSlash";
+                        log.from = effect.from;
+                        log.to << target;
+                        room->sendLog(log);
+                        
+                        room->setTag("collateralVictim", QVariant::fromValue((PlayerStar)target));
+                    }
+                }
+                //=======================================
                 if(room->isCanceled(effect))
                     return true;
 
@@ -919,7 +919,7 @@ bool HulaoPassMode::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer 
                         player->turnOver();
                     else
                         player->play();
-				}
+                }
             }
 
             return false;

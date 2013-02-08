@@ -274,8 +274,8 @@ void GeneralOverview::on_tableWidget_itemDoubleClicked(QTableWidgetItem*)
     if(ServerInfo.FreeChoose && Self){
         int row = ui->tableWidget->currentRow();
         QString general_name = ui->tableWidget->item(row, 0)->data(Qt::UserRole).toString();
-		if (general_name == "sp999")
-			return ;
+        if (general_name == "sp999")
+            return ;
         ClientInstance->requestCheatChangeGeneral(general_name);
     }
 }

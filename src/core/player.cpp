@@ -156,20 +156,20 @@ void Player::clearFlags(){
 }
 
 int Player::getAttackRange() const{
-	int original_range = 1;
-	int weapon_range = 0;
+    int original_range = 1;
+    int weapon_range = 0;
     if(weapon > 0){
         const Weapon *card = qobject_cast<const Weapon*>(weapon->getRealCard());
         Q_ASSERT(card);
         weapon_range = card->getRange();
     }
-	else if (hasSkill("thsilian"))
-		weapon_range = 3;
+    else if (hasSkill("thsilian"))
+        weapon_range = 3;
 
-	if (hasFlag("InfinityAttackRange") || getMark("InfinityAttackRange") > 0)
-		original_range = 10000; // Actually infinity
+    if (hasFlag("InfinityAttackRange") || getMark("InfinityAttackRange") > 0)
+        original_range = 10000; // Actually infinity
 
-	return qMax(original_range, weapon_range);
+    return qMax(original_range, weapon_range);
 }
 
 bool Player::inMyAttackRange(const Player *other) const{
@@ -364,6 +364,7 @@ QString Player::getPhaseString() const{
     case Draw: return "draw";
     case Play: return "play";
     case Discard: return "discard";
+    case RoundEnd: return "round_end";
     case Finish: return "finish";
     case NotActive:
     default:
@@ -381,6 +382,7 @@ void Player::setPhaseString(const QString &phase_str){
         phase_map.insert("play", Play);
         phase_map.insert("discard", Discard);
         phase_map.insert("finish", Finish);
+        phase_map.insert("round_end", RoundEnd);
         phase_map.insert("not_active", NotActive);
     }
 
@@ -388,19 +390,8 @@ void Player::setPhaseString(const QString &phase_str){
 }
 
 void Player::setEquip(WrappedCard *equip){
-	const Card *acard = equip->getRealCard();
-	const EquipCard *card = NULL;
-	if (!acard->isKindOf("EquipCard") && hasSkill("liannufuck"))
-	{
-		Crossbow *liannu = new Crossbow(acard->getSuit(), acard->getNumber());
-		liannu->setSkillName(objectName());
-        equip = Sanguosha->getWrappedCard(acard->getId());
-        equip->takeOver(liannu);
-		card = qobject_cast<const EquipCard *>(equip->getRealCard());
-	}
-	else
-		card = qobject_cast<const EquipCard *>(equip->getRealCard());
-	
+    const EquipCard *card = qobject_cast<const EquipCard *>(equip->getRealCard());
+    
     Q_ASSERT(card != NULL);
     switch(card->location()){
     case EquipCard::WeaponLocation: weapon = equip; break;
@@ -411,7 +402,7 @@ void Player::setEquip(WrappedCard *equip){
 }
 
 void Player::removeEquip(WrappedCard *equip){
-    const EquipCard *card = qobject_cast<const EquipCard *>(Sanguosha->getEngineCard(equip->getId()));
+    const EquipCard *card = qobject_cast<const EquipCard *>(equip->getRealCard());
     Q_ASSERT(card != NULL);
     switch(card->location()){
     case EquipCard::WeaponLocation: weapon = NULL; break;
@@ -781,7 +772,7 @@ QString Player::getSkillDescription() const{
         description.append(QString("<b>%1</b>: %2 <br/> <br/>").arg(skill_name).arg(desc));
     }
 
-	if (description.isEmpty()) description = tr("No skills");
+    if (description.isEmpty()) description = tr("No skills");
     return description;
 }
 

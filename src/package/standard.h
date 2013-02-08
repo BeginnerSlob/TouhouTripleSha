@@ -62,12 +62,12 @@ public:
         DefensiveHorseLocation = 2,
         OffensiveHorseLocation = 3
     };
-	
+    
     EquipCard(Suit suit, int number):Card(suit, number, true) { handling_method = Card::MethodUse;}
 
     virtual QString getType() const;
     virtual CardType getTypeId() const;
-	
+    
     virtual bool isAvailable(const Player *player) const;
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
