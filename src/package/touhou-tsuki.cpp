@@ -633,10 +633,6 @@ public:
 	ThLianhua(): OneCardViewAsSkill("thlianhua") {
 	}
 
-	virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("ThLianhuaCard");
-    }
-
     virtual bool viewFilter(const Card* to_select) const{
         return to_select->isKindOf("EquipCard");
     }
@@ -1160,7 +1156,7 @@ public:
 
 		CardUseStruct use = data.value<CardUseStruct>();
 		
-		if (!use.card->isNDTrick() && !use.card->isKindOf("BasicCard"))
+		if ((!use.card->isNDTrick() && !use.card->isKindOf("BasicCard")) || use.card->isKindOf("Jink") || use.card->isKindOf("Nullification"))
 			return false;
 
 		if (use.to.isEmpty())
