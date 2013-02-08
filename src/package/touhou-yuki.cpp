@@ -516,7 +516,7 @@ bool ThChouceCard::targetFilter(const QList<const Player *> &targets, const Play
 }
 
 bool ThChouceCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const {
-	return Sanguosha->getCard(getSubcards()[0])->targetsFeasible(targets, Self);
+	return targets.length() == 1;
 }
 
 const Card *ThChouceCard::validate(const CardUseStruct *card_use) const{
@@ -542,13 +542,15 @@ public:
     }
 
     virtual bool viewFilter(const Card* to_select) const{
+		if (to_select->getNumber() <= Self->getMark("ThChouce"))
+			return false;
+
 		if (to_select->isKindOf("Slash"))
 			return Slash::IsAvailable(Self, to_select);
 		else if (to_select->isKindOf("Analeptic"))
 			return Analeptic::IsAvailable(Self, to_select);
 		else
-			return to_select->getNumber() > Self->getMark("ThChouce")
-				&& !to_select->isKindOf("AmazingGrace")
+			return !to_select->isKindOf("AmazingGrace")
 				&& !to_select->isKindOf("EquipCard")
 				&& !to_select->isKindOf("Jink")
 				&& !to_select->isKindOf("Nullification")
