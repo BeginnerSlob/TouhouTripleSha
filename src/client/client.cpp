@@ -985,7 +985,7 @@ void Client::addHistory(const QString &add_str){
         emit card_used();
         return;
     }
-	
+    
     QRegExp rx("(.+):(-?\\d+)?");
     if(rx.exactMatch(add_str)){
         QStringList texts = rx.capturedTexts();

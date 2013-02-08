@@ -105,8 +105,8 @@ public:
 
 GuidengCard::GuidengCard(){
     once = true;
-	handling_method = MethodNone;
-	will_throw = false;
+    handling_method = MethodNone;
+    will_throw = false;
 }
 
 void GuidengCard::onEffect(const CardEffectStruct &effect) const{
@@ -149,13 +149,13 @@ public:
     }
 
     virtual bool viewFilter(const Card *to_select) const{
-		return !to_select->isEquipped();
-	}
+        return !to_select->isEquipped();
+    }
 
     virtual const Card *viewAs(const Card *originalCard) const{
-		GuidengCard *card = new GuidengCard;
-		card->addSubcard(originalCard);
-		return card;
+        GuidengCard *card = new GuidengCard;
+        card->addSubcard(originalCard);
+        return card;
     }
 };
 
@@ -637,32 +637,32 @@ public:
 
 class Biansheng:public TriggerSkill{
 public:
-	Biansheng():TriggerSkill("biansheng$"){
-		events << EventPhaseStart << EventPhaseEnd << EventPhaseChanging << Pindian;
-	}
-	
-	virtual bool triggerable(const ServerPlayer *target) const{
-		return target != NULL;
-	}
+    Biansheng():TriggerSkill("biansheng$"){
+        events << EventPhaseStart << EventPhaseEnd << EventPhaseChanging << Pindian;
+    }
+    
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target != NULL;
+    }
 
-	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-		if (triggerEvent == EventPhaseEnd && player->hasSkill("biansheng_pindian"))
-			room->detachSkillFromPlayer(player, "biansheng_pindian", true);
-		else if (triggerEvent == EventPhaseStart)
-		{
-			bool can_invoke = false;
-			foreach(ServerPlayer *p, room->getOtherPlayers(player))
-				if (p->hasLordSkill("biansheng"))
-				{
-					can_invoke = true;
-					break;
-				}
-			if (can_invoke && player->getPhase() == Player::Play && !player->hasSkill("biansheng_pindian") && player->getKingdom() == "qun")
-				room->attachSkillToPlayer(player, "biansheng_pindian");
-		}
-		else if (triggerEvent == EventPhaseChanging)
-		{
-			PhaseChangeStruct phase_change = data.value<PhaseChangeStruct>();
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (triggerEvent == EventPhaseEnd && player->hasSkill("biansheng_pindian"))
+            room->detachSkillFromPlayer(player, "biansheng_pindian", true);
+        else if (triggerEvent == EventPhaseStart)
+        {
+            bool can_invoke = false;
+            foreach(ServerPlayer *p, room->getOtherPlayers(player))
+                if (p->hasLordSkill("biansheng"))
+                {
+                    can_invoke = true;
+                    break;
+                }
+            if (can_invoke && player->getPhase() == Player::Play && !player->hasSkill("biansheng_pindian") && player->getKingdom() == "qun")
+                room->attachSkillToPlayer(player, "biansheng_pindian");
+        }
+        else if (triggerEvent == EventPhaseChanging)
+        {
+            PhaseChangeStruct phase_change = data.value<PhaseChangeStruct>();
             if (phase_change.from != Player::Play)
                   return false;
             if(player->hasFlag("ForbidBiansheng")){
@@ -674,9 +674,9 @@ public:
                     room->setPlayerFlag(p, "-BianshengInvoked");
                 }
             }
-		}
-		else if(triggerEvent == Pindian)
-		{
+        }
+        else if(triggerEvent == Pindian)
+        {
             PindianStar pindian = data.value<PindianStar>();
             if(pindian->reason != "biansheng_pindian" || !pindian->to->hasLordSkill(objectName()))
                 return false;
@@ -687,8 +687,8 @@ public:
                 }
         }
 
-		return false;
-	}
+        return false;
+    }
 };
 
 ZhihuiCard::ZhihuiCard()
@@ -1433,7 +1433,7 @@ public:
                     log.from = current;
                     room->sendLog(log);
                 } else {
-					Peach *peach = new Peach(Card::NoSuitNoColor, 0);
+                    Peach *peach = new Peach(Card::NoSuitNoColor, 0);
                     peach->setSkillName(objectName());
                     CardUseStruct use;
                     use.card = peach;
@@ -1575,7 +1575,7 @@ bool ZhizhanCard::targetFilter(const QList<const Player *> &targets, const Playe
 
 void ZhizhanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     source->loseMark("@zhizhan");
-	source->gainMark("@zhizhanused");
+    source->gainMark("@zhizhanused");
     ServerPlayer *target = targets.first();
     source->tag["ZhizhanTarget"] = QVariant::fromValue((PlayerStar)target);
     //room->broadcastInvoke("animate", "lightbox:$JiefanAnimate:2500");
@@ -1643,12 +1643,12 @@ public:
 
         while (!card_ids.isEmpty()) {
             int card_id = room->askForAG(player, card_ids, true, objectName());
-			if (card_id == -1)
-			{
-				foreach (int card_id, card_ids)
+            if (card_id == -1)
+            {
+                foreach (int card_id, card_ids)
                     room->takeAG(NULL, card_id);
-				break;
-			}
+                break;
+            }
             card_ids.removeOne(card_id);
             // throw the rest cards that matches the same suit
             const Card *card = Sanguosha->getCard(card_id);
@@ -1739,7 +1739,7 @@ public:
         } else if (triggerEvent == EventPhaseStart) {
             player->setMark("longxi", 0);
         } else if (triggerEvent == EventPhaseEnd && player->getMark("longxi") >= 2 && player->askForSkillInvoke(objectName()))
-			perform(player);
+            perform(player);
 
         return false;
     }
@@ -1896,7 +1896,7 @@ public:
 };
 
 void StandardPackage::addSnowGenerals(){
-	General *snow001 = new General(this, "snow001$", "wu");
+    General *snow001 = new General(this, "snow001$", "wu");
     snow001->addSkill(new Zhiheng);
     snow001->addSkill(new Jiyuan);
 
@@ -1965,23 +1965,23 @@ void StandardPackage::addSnowGenerals(){
     snow022->addSkill(new Skill("xindu"));
     snow022->addSkill(new Fenxun);
 
-	General *snow024 = new General(this, "snow024", "wu");
+    General *snow024 = new General(this, "snow024", "wu");
     snow024->addSkill(new Mengjing);
     snow024->addSkill(new Zhizhan);
     snow024->addSkill(new MarkAssignSkill("@zhizhan", 1));
     related_skills.insertMulti("zhizhan", "#@zhizhan-1");
 
-	General *snow029 = new General(this, "snow029", "wu", 3);
-	snow029->addSkill(new Lvejue);
-	snow029->addSkill(new Lingshi);
-	
+    General *snow029 = new General(this, "snow029", "wu", 3);
+    snow029->addSkill(new Lvejue);
+    snow029->addSkill(new Lingshi);
+    
     General *snow030 = new General(this, "snow030", "wu");
     snow030->addSkill(new Longxi);
     snow030->addSkill(new MarkAssignSkill("@yeyan", 1));
     snow030->addSkill(new Yeyan);
     related_skills.insertMulti("yeyan", "#@yeyan-1");
 
-	addMetaObject<ZhihengCard>();
+    addMetaObject<ZhihengCard>();
     addMetaObject<GuidengCard>();
     addMetaObject<XuanhuoCard>();
     addMetaObject<YuanheCard>();
@@ -1995,7 +1995,7 @@ void StandardPackage::addSnowGenerals(){
     addMetaObject<FenxunCard>();
     addMetaObject<MengjingCard>();
     addMetaObject<ZhizhanCard>();
-	addMetaObject<LingshiCard>();
+    addMetaObject<LingshiCard>();
     addMetaObject<YeyanCard>();
     addMetaObject<GreatYeyanCard>();
     addMetaObject<SmallYeyanCard>();
