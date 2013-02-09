@@ -524,7 +524,8 @@ void Room::slashResult(const SlashEffectStruct &effect, const Card *jink){
     if(jink == NULL)
         thread->trigger(SlashHit, this, effect.from, data);
     else{
-        setEmotion(effect.to, "jink");
+        if (jink->getSkillName() != "EightDiagram" && jink->getSkillName() != "shengtang")
+            setEmotion(effect.to, "jink");
         if (effect.to->getMark("Qinggang_Armor_Nullified") > 0)
             setPlayerMark(effect.to, "Qinggang_Armor_Nullified", effect.to->getMark("Qinggang_Armor_Nullified") - 1);
         thread->trigger(SlashMissed, this, effect.from, data);
@@ -1086,6 +1087,8 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
         thread->trigger(CardAsked, this, player, asked_data);
     if (!player->isAlive()) return NULL;
 
+    if (player->hasFlag("continuing"))
+        setPlayerFlag(player, "-continuing");
     if(has_provided){
         card = provided;
         provided = NULL;
@@ -1108,9 +1111,6 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
             }
         }
     }
-
-    if (player->hasFlag("continuing"))
-        setPlayerFlag(player, "-continuing");
 
     if(card == NULL)
     {

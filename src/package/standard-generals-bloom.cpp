@@ -1169,9 +1169,9 @@ public:
     }
 };
 
-class Piaonian: public TriggerSkill{
+class Piaohu: public TriggerSkill{
 public:
-    Piaonian():TriggerSkill("piaonian"){
+    Piaohu():TriggerSkill("piaohu"){
         events << TargetConfirming;
     }
 
@@ -1194,7 +1194,7 @@ public:
         CardUseStruct use = data.value<CardUseStruct>();
 
         if(use.card && use.card->isKindOf("Slash") && use.to.contains(victim) && player->inMyAttackRange(victim) && player->askForSkillInvoke(objectName())){
-            if(!room->askForCard(player, "Armor", "@piaonian")){
+            if(!room->askForCard(player, "Armor", "@piaohu")){
                 room->setPlayerProperty(victim, "chained", true);
                 room->setPlayerProperty(player, "chained", true);
             }
@@ -1412,6 +1412,76 @@ public:
                     }
 
         return false;
+    }
+};
+
+XinbanCard::XinbanCard() {
+    mute = true;
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+bool XinbanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (!targets.isEmpty())
+        return false;
+
+    const Card *card = Sanguosha->getCard(subcards.first());
+    const EquipCard *equip = qobject_cast<const EquipCard *>(card->getRealCard());
+    int equip_index = static_cast<int>(equip->location());
+    return to_select->getEquip(equip_index) == NULL;
+}
+
+void XinbanCard::onEffect(const CardEffectStruct &effect) const{
+    ServerPlayer *player = effect.from;
+    Room *room = player->getRoom();
+    room->moveCardTo(this, player, effect.to, Player::PlaceEquip,
+                     CardMoveReason(CardMoveReason::S_REASON_PUT, player->objectName(), "xinban", QString()));
+
+    const Card *card = Sanguosha->getCard(subcards.first());
+
+    LogMessage log;
+    log.type = "$JibanEquip";
+    log.from = effect.to;
+    log.card_str = QString::number(card->getEffectiveId());
+    room->sendLog(log);
+
+    if (card->isKindOf("Weapon")) {
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getAllPlayers())
+            if (effect.to->inMyAttackRange(p) && !p->isAllNude())
+                targets << p;
+
+        if (!targets.isEmpty()) {
+            ServerPlayer *to_dismantle = room->askForPlayerChosen(player, targets, "xinban");
+            int card_id = room->askForCardChosen(player, to_dismantle, "hej", "xinban");
+            room->throwCard(Sanguosha->getCard(card_id), to_dismantle, player);
+        }
+    } else if (card->isKindOf("Armor")) {
+        effect.to->drawCards(2);
+    } else if (card->isKindOf("Horse") && effect.to->isWounded()) {
+        RecoverStruct recover;
+        recover.who = effect.from;
+        room->recover(effect.to, recover);
+    }
+}
+
+class Xinban: public OneCardViewAsSkill {
+public:
+    Xinban(): OneCardViewAsSkill("xinban") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("XinbanCard");
+    }
+
+    virtual bool viewFilter(const Card *to_select) const{
+        return to_select->isKindOf("EquipCard");
+    }
+
+    virtual const Card *viewAs(const Card *originalcard) const{
+        XinbanCard *card = new XinbanCard;
+        card->addSubcard(originalcard);
+        return card;
     }
 };
 
@@ -1717,7 +1787,7 @@ void StandardPackage::addBloomGenerals(){
 
     General *bloom017 = new General(this, "bloom017", "wei");
     bloom017->addSkill(new Zhuyan);
-    bloom017->addSkill(new Piaonian);
+    bloom017->addSkill(new Piaohu);
 
     General *bloom018 = new General(this, "bloom018", "wei", 3, false);
     bloom018->addSkill(new Xuwu);
@@ -1731,6 +1801,9 @@ void StandardPackage::addBloomGenerals(){
 
     General *bloom023 = new General(this, "bloom023", "wei");
     bloom023->addSkill(new Xiaorui);
+
+    General *bloom024 = new General(this, "bloom024", "wei");
+    bloom024->addSkill(new Xinban);
 
     General *bloom030 = new General(this, "bloom030", "wei");
     bloom030->addSkill(new Renjia);
@@ -1746,6 +1819,8 @@ void StandardPackage::addBloomGenerals(){
     addMetaObject<MancaiCard>();
     addMetaObject<QiangxiCard>();
     addMetaObject<BisuoCard>();
+    addMetaObject<XinbanCard>();
+    addMetaObject<JilveCard>();
 
     skills << new Jilve << new JilveClear << new JilveAvoidTriggeringCardsMove;
 }

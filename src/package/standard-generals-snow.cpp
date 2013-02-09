@@ -110,6 +110,8 @@ GuidengCard::GuidengCard(){
 }
 
 void GuidengCard::onEffect(const CardEffectStruct &effect) const{
+    if (subcardsLength() == 0)
+        return ;
     ServerPlayer *player = effect.from;
     ServerPlayer *target = effect.to;
     Room *room = player->getRoom();
