@@ -405,11 +405,7 @@ public:
 
         if (splayer->askForSkillInvoke(objectName()) && room->askForCard(splayer, ".|.|.|.|red", "@thxuelan"))
         {
-            int n = player->getGeneral()->getMaxHp();
-            if (player->isLord() && room->getPlayers().size() >= 5) 
-                n++;
-
-            if (player->getMaxHp() <= n)
+            if (player->getMaxHp() <= player->getGeneralMaxHp())
                 room->setPlayerProperty(player, "maxhp", player->getMaxHp() + 1);
             return true;
         }

@@ -187,7 +187,7 @@ void Slash::onEffect(const CardEffectStruct &card_effect) const{
     effect.slash = this;
 
     effect.to = card_effect.to;
-    effect.drank = this->hasFlag("drank");
+    effect.drank = hasFlag("drank");
 
     room->slashEffect(effect);
 }

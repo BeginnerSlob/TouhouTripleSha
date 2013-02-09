@@ -403,6 +403,165 @@ public:
     }
 };
 
+ThGugaoCard::ThGugaoCard() {
+    will_throw = false;
+    handling_method = MethodPindian;
+}
+
+bool ThGugaoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const {
+    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
+}
+
+void ThGugaoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const {
+    ServerPlayer *target = targets[0];
+    bool win = source->pindian(target, "thgugao", this);
+    if (win)
+    {
+        room->setPlayerFlag(source, "thgugao");
+        DamageStruct damage;
+        damage.from = source;
+        damage.to = target;
+        room->damage(damage);
+    }
+    else
+    {
+        if (source->hasFlag("thgugao"))
+            room->setPlayerFlag(source, "thgugao");
+        if (source->getMark("@qianyu") <= 0)
+        {
+            DamageStruct damage;
+            damage.from = target;
+            damage.to = source;
+            room->damage(damage);
+        }
+    }
+}
+
+class ThGugao: public OneCardViewAsSkill {
+public:
+    ThGugao(): OneCardViewAsSkill("thgugao") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("ThGugaoCard") || (player->getMark("@huangyi") > 0 && player->hasFlag("thgugao"));
+    }
+
+    virtual bool viewFilter(const Card* to_select) const{
+        return !to_select->isEquipped();
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        ThGugaoCard *card = new ThGugaoCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+};
+
+class ThQianyu: public TriggerSkill {
+public:
+    ThQianyu(): TriggerSkill("thqianyu") {
+        events << EventPhaseStart;
+        frequency = Wake;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const {
+        return target != NULL;
+    }
+
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
+        if (!splayer || splayer->getHp() != 1)
+            return false;
+
+        if (player->getPhase() == Player::Finish && splayer->getMark("@qianyu") <= 0)
+        {
+            room->setPlayerMark(splayer, "qianyuextra", 1);
+            LogMessage log;
+            log.type = "#ThQianyu";
+            log.from = splayer;
+            log.arg = objectName();
+            log.arg2 = QString::number(splayer->getHp());
+            room->sendLog(log);
+
+            player->gainMark("@qianyu");
+            room->loseMaxHp(splayer, 3);
+            room->acquireSkill(splayer, "thkuangmo");
+        }
+        else if (player->getPhase() == Player::NotActive && splayer->getMark("qianyuextra") > 0)
+        {
+            room->setPlayerMark(splayer, "qianyuextra", 0);
+            splayer->gainAnExtraTurn(player);
+        }
+
+        return false;
+    }
+};
+
+class ThKuangmo: public TriggerSkill {
+public:
+    ThKuangmo(): TriggerSkill("thkuangmo") {
+        events << Damage;
+        frequency = Compulsory;
+    }
+
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.card && damage.card->isKindOf("Slash"))
+            return false;
+        if (!damage.from->hasSkill("thgugao"))
+            return false;
+
+        while (damage.damage--)
+        {
+            LogMessage log;
+            log.type = "#TriggerSkill";
+            log.from = player;
+            log.arg = objectName();
+            room->sendLog(log);
+
+            room->setPlayerProperty(player, "maxhp", player->getMaxHp() + 1);
+            RecoverStruct recover;
+            recover.who = player;
+            room->recover(player, recover);
+        }
+
+        return false;
+    }
+};
+
+class ThHuangyi: public TriggerSkill {
+public:
+    ThHuangyi(): TriggerSkill("thhuangyi") {
+        events << EventPhaseStart;
+        frequency = Wake;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const {
+        return target && target->getPhase() == Player::Start
+                      && target->getMark("@huangyi") <= 0
+                      && target->getMark("@qianyu") > 0
+                      && target->getMaxHp() > target->getGeneralMaxHp();
+    }
+
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        player->gainMark("@huangyi");
+        int n = player->getMaxHp() - player->getGeneralMaxHp();
+        room->loseMaxHp(player, n);
+        player->drawCards(n);
+
+        if (player->isWounded())
+        {
+            RecoverStruct recover;
+            recover.who = player;
+            room->recover(player, recover);
+        }
+
+        room->detachSkillFromPlayer(player, "thkuangmo");
+
+        return false;
+    }
+};
+
 class ThFanhun: public TriggerSkill{
 public:
     ThFanhun(): TriggerSkill("thfanhun") {
@@ -1263,6 +1422,12 @@ KamiPackage::KamiPackage()
     kami003->addSkill(new ThMengsheng);
     kami003->addSkill(new ThQixiang);
 
+    General *kami004 = new General(this, "kami004", "god");
+    kami004->addSkill(new ThGugao);
+    kami004->addSkill(new ThQianyu);
+    kami004->addRelateSkill("thkuangmo");
+    kami004->addSkill(new ThHuangyi);
+
     General *kami007 = new General(this, "kami007", "god", 2, false);
     kami007->addSkill(new ThFanhun);
     kami007->addSkill(new ThYoushang);
@@ -1301,14 +1466,15 @@ KamiPackage::KamiPackage()
     General *kami015 = new General(this, "kami015", "god", 3);
     kami015->addSkill(new ThZhizun);
     kami015->addSkill(new ThFeiying);
-
+    
     addMetaObject<ThShenfengCard>();
+    addMetaObject<ThGugaoCard>();
     addMetaObject<ThYouyaCard>();
     addMetaObject<ThJinluCard>();
     addMetaObject<ThChuangxinCard>();
     addMetaObject<ThTianxinCard>();
 
-    skills << new ThJiguangDistanceSkill << new ThJiguangGivenSkill;
+    skills << new ThJiguangDistanceSkill << new ThJiguangGivenSkill << new ThKuangmo;
 }
 
 ADD_PACKAGE(Kami)
