@@ -52,7 +52,7 @@ return {
 	[":thzhongjie"] = "<b>锁定技</b>，若你的装备区里没有防具牌，你受到伤害时，若该伤害多于1点，则防止多余的伤害。",
 	
 	["#bangai005"] = "朝霭的幻世",
-	["bangai005"] = "玛艾露贝莉•赫恩",--花 - 空 - 3血
+	["bangai005"] = "玛艾露贝莉•赫恩",--风 - 空 - 3血
 	["designer:bangai005"] = "幻桜落 | Codeby:Slob",
 	["illustrator:bangai005"] = "正体不明",
 	["cv:bangai005"] = "暂无",
