@@ -830,7 +830,7 @@ public:
                 return false;
 
             QString phase_str = (phase == Player::Play) ? "play" : "draw";
-            if (room->askForCard(splayer, ".|.|.|.|red", "@zhengguan:::" + phase_str))
+            if (room->askForCard(splayer, ".|.|.|.|red", "@zhengguan:::" + phase_str, data, objectName()))
             {
                 LogMessage log;
                 log.type = "#ThZhengguan";

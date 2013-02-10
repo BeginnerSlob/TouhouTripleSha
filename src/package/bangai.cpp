@@ -698,7 +698,7 @@ public:
                 return false;
 
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("Slash") && room->askForCard(splayer, ".black", "@thhuilun"))
+            if (use.card->isKindOf("Slash") && room->askForCard(splayer, ".black", "@thhuilun", QVariant(), objectName()))
             {
                 LogMessage log;
                 log.type = "#ThHuilun";

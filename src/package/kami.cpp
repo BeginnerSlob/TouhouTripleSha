@@ -387,7 +387,7 @@ public:
         if (!splayer || splayer == player || splayer->isKongcheng())
             return false;
 
-        if (player->getPhase() == Player::Discard && splayer->askForSkillInvoke(objectName()) && room->askForCard(splayer, ".", "@thqixiang"))
+        if (player->getPhase() == Player::Discard && room->askForCard(splayer, ".", "@thqixiang", data, objectName()))
         {
             QString choice = "draw";
             if (!player->isKongcheng())
@@ -1239,7 +1239,7 @@ public:
         if(triggerEvent == DamageCaused){
             if(damage.to && damage.to->isAlive()
                && damage.to->getHp() >= player->getHp() && damage.to != player && !player->isKongcheng())
-                if(room->askForCard(player, ".black", "@ThLuliIncrease")){
+                if(room->askForCard(player, ".black", "@ThLuliIncrease", data, objectName())){
                     LogMessage log;
                     log.type = "#ThLuliIncrease";
                     log.from = player;
@@ -1252,7 +1252,7 @@ public:
         }else if(triggerEvent == DamageInflicted){
             if(damage.from && damage.from->isAlive()
                && damage.from->getHp() >= player->getHp() && damage.from != player && !player->isKongcheng())
-                if(room->askForCard(player, ".red", "@ThLuliDecrease")){
+                if(room->askForCard(player, ".red", "@ThLuliDecrease", data, objectName())){
                     LogMessage log;
                     log.type = "#ThLuliDecrease";
                     log.from = player;

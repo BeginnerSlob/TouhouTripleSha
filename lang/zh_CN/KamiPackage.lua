@@ -52,7 +52,7 @@ return {
 	["@mengsheng"]="梦生",
 	["thqixiang"]="绮想",
 	[":thqixiang"]="其他角色的弃牌阶段结束时，你可弃置一张手牌，令其摸一张牌或弃置一张手牌。",
-	["@thqixiang"]="请弃置一张手牌发动“绮想”",
+	["@thqixiang"]="你可以弃置一张手牌发动“绮想”",
 	["thqixiang:draw"]="摸一张牌",
 	["thqixiang:discard"]="弃置一张牌",
 	

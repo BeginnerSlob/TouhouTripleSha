@@ -539,7 +539,7 @@ public:
         if (!effect.to->isAlive() || effect.to->getMark("Equips_of_Others_Nullified_to_You") > 0)
             return false;
         
-        CardStar card = room->askForCard(player, "@Axe", "@axe:" + effect.to->objectName(), data);
+        CardStar card = room->askForCard(player, "@Axe", "@axe:" + effect.to->objectName(), data, objectName());
         if(card){
             room->setEmotion(effect.to, "weapon/axe");
 

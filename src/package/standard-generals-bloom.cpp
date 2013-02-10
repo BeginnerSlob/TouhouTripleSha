@@ -1402,14 +1402,13 @@ public:
             return false;
 
         if(player->getPhase() == Player::Finish)
-            if(splayer->askForSkillInvoke(objectName()))
-                if(room->askForCard(splayer, "BasicCard", "@xiaoruiask"))
-                    if(!room->askForCard(player, "EquipCard#TrickCard", "@xiaoruiresp")){
-                        DamageStruct damage;
-                        damage.from = splayer;
-                        damage.to = player;
-                        room->damage(damage);
-                    }
+            if(room->askForCard(splayer, "BasicCard", "@xiaoruiask", data, objectName()))
+                if(!room->askForCard(player, "EquipCard#TrickCard", "@xiaoruiresp")){
+                    DamageStruct damage;
+                    damage.from = splayer;
+                    damage.to = player;
+                    room->damage(damage);
+                }
 
         return false;
     }

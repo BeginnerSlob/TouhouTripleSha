@@ -42,7 +42,7 @@ public:
         if (pattern.contains("slash"))
             pattern = "slash";
 
-        if (splayer->askForSkillInvoke(objectName()) && room->askForCard(splayer, ".|club,heart", "@thhuajiuse")
+        if (room->askForCard(splayer, ".|club,heart", "@thhuajiuse", data, objectName())
             && !room->askForCard(player, pattern, "@thhuaji:::" + pattern, QVariant(), Card::MethodDiscard))
         {
             return true;
@@ -403,7 +403,7 @@ public:
         if (!effect.card->isKindOf("Peach"))
             return false;
 
-        if (splayer->askForSkillInvoke(objectName()) && room->askForCard(splayer, ".|.|.|.|red", "@thxuelan"))
+        if (room->askForCard(splayer, ".|.|.|.|red", "@thxuelan", data, objectName()))
         {
             if (player->getMaxHp() <= player->getGeneralMaxHp())
                 room->setPlayerProperty(player, "maxhp", player->getMaxHp() + 1);
@@ -1067,9 +1067,9 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if (player->getPhase() == Player::Start && player->askForSkillInvoke(objectName()))
+        if (player->getPhase() == Player::Start)
         {
-            const Card *card = room->askForCard(player, "^EquipCard", "@thyingdeng");
+            const Card *card = room->askForCard(player, "^EquipCard", "@thyingdeng", data, objectName());
             if (card == NULL)
                 return false;
 

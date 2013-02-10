@@ -293,7 +293,7 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))
             && !damage.transfer && !damage.chain
-            && room->askForCard(player, "Peach,Analeptic,EquipCard", "@thkuangqi"))
+            && room->askForCard(player, "Peach,Analeptic,EquipCard", "@thkuangqi", data, objectName()))
         {
             LogMessage log;
             log.type = "#ThKuangqi";
@@ -595,7 +595,7 @@ public:
         SlashEffectStruct effect = data.value<SlashEffectStruct>();
         if (player->getWeapon())
             return false;
-        if (room->askForCard(player, "..", "@thcunjing"))
+        if (room->askForCard(player, "..", "@thcunjing", data, objectName()))
         {
             LogMessage log;
             log.type = "#ThCunjing";
@@ -1583,7 +1583,7 @@ public:
               || use.card->isKindOf("IronChain")))
             return false;
         
-        const Card *key = room->askForCard(player, ".|.|.|.|black", "@thyongye");
+        const Card *key = room->askForCard(player, ".|.|.|.|black", "@thyongye", data, objectName());
         
         if (!key)
             return false;

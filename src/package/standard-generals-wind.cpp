@@ -846,7 +846,7 @@ public:
                 room->sendLog(log);
 
                 QVariant dataforai = QVariant::fromValue(player);
-                if (!room->askForCard(use.from, ".Basic", "@manbo-discard", dataforai))
+                if (!room->askForCard(use.from, ".Basic", "@manbo-discard", dataforai, "manbo"))
                     player->addMark("manbo");
             }
         } else {
