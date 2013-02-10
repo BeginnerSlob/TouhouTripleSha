@@ -1051,8 +1051,8 @@ bool QSanRoomSkin::_loadLayoutConfig(const Json::Value &layoutConfig)
             key = "proactiveFontColor";
             break;
         case QSanInvokeSkillButton::S_SKILL_ATTACHEDLORD:
-			key = "attachedlordFontColor";
-			break;
+            key = "attachedlordFontColor";
+            break;
         default:
             Q_ASSERT(false);
             break;

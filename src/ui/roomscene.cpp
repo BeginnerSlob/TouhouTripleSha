@@ -415,7 +415,7 @@ void RoomScene::handleGameEvent(const Json::Value &arg)
             container->stopHuaShen();
         }
 
-		container->updateAvatarTooltip();
+        container->updateAvatarTooltip();
         break;
     }
     case S_GAME_EVENT_ACQUIRE_SKILL:{
@@ -427,7 +427,7 @@ void RoomScene::handleGameEvent(const Json::Value &arg)
         player->acquireSkill(skill_name);
         acquireSkill(player, skill_name);
 
-		PlayerCardContainer *container = (PlayerCardContainer *)_getGenericCardContainer(Player::PlaceHand, player);
+        PlayerCardContainer *container = (PlayerCardContainer *)_getGenericCardContainer(Player::PlaceHand, player);
         container->updateAvatarTooltip();
 
         break;
@@ -440,7 +440,7 @@ void RoomScene::handleGameEvent(const Json::Value &arg)
 
         player->addSkill(skill_name);
 
-		PlayerCardContainer *container = (PlayerCardContainer *)_getGenericCardContainer(Player::PlaceHand, player);
+        PlayerCardContainer *container = (PlayerCardContainer *)_getGenericCardContainer(Player::PlaceHand, player);
         container->updateAvatarTooltip();
 
         break;
@@ -459,7 +459,7 @@ void RoomScene::handleGameEvent(const Json::Value &arg)
         foreach (Photo *photo, photos)
             photo->updateAvatarTooltip();
         dashboard->updateAvatarTooltip();
-		updateSkillButtons();
+        updateSkillButtons();
         break;
     }
 
@@ -1266,7 +1266,7 @@ void RoomScene::keyReleaseEvent(QKeyEvent *event){
                 ClientInstance->fillRobots();
             break;
         }
-	case Qt::Key_F12: {
+    case Qt::Key_F12: {
             if (Self->hasSkill("huashen")) {
                 const Skill *huashen_skill = Sanguosha->getSkill("huashen");
                 if (huashen_skill) {

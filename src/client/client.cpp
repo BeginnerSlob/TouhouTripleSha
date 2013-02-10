@@ -683,7 +683,7 @@ void Client::setStatus(Status status){
     this->status = status;
     if (status == Client::Playing)
         _m_roomState.setCurrentCardUseReason(CardUseStruct::CARD_USE_REASON_PLAY);
-    else if (status == Client::Responding)
+    else if ((status & ClientStatusBasicMask) == Responding)
         _m_roomState.setCurrentCardUseReason(CardUseStruct::CARD_USE_REASON_RESPONSE);
     else
         _m_roomState.setCurrentCardUseReason(CardUseStruct::CARD_USE_REASON_UNKNOWN);
@@ -985,7 +985,7 @@ void Client::addHistory(const QString &add_str){
         emit card_used();
         return;
     }
-	
+    
     QRegExp rx("(.+):(-?\\d+)?");
     if(rx.exactMatch(add_str)){
         QStringList texts = rx.capturedTexts();

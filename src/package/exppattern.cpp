@@ -33,19 +33,19 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
                 checkpoint = true;
             } else {
                 bool isInt = false;
-			    bool positive = true;
-			    if (name.startsWith('^')) {
-				    positive = false;
-				    name = name.mid(1);
-			    }
-			    if (card->isKindOf(name.toLocal8Bit().data()) || (card->getEffectiveId() == name.toInt(&isInt) && isInt))
-				    checkpoint = positive;
-			    else
-				    checkpoint = !positive;
-		    }
-		    if (checkpoint) break;
-		}
-		if (checkpoint) break;
+                bool positive = true;
+                if (name.startsWith('^')) {
+                    positive = false;
+                    name = name.mid(1);
+                }
+                if (card->isKindOf(name.toLocal8Bit().data()) || (card->getEffectiveId() == name.toInt(&isInt) && isInt))
+                    checkpoint = positive;
+                else
+                    checkpoint = !positive;
+            }
+            if (checkpoint) break;
+        }
+        if (checkpoint) break;
     }
     if (!checkpoint) return false;
     if (factors.size() < 2) return true;

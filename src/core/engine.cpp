@@ -460,7 +460,7 @@ SkillCard *Engine::cloneSkillCard(const QString &name) const{
 }
 
 QString Engine::getVersionNumber() const{
-    return "20130204(0010)";
+    return "20130205(0011)";
 }
 
 QString Engine::getVersion() const{
@@ -879,7 +879,10 @@ const ViewAsSkill *Engine::getViewAsSkill(const QString &skill_name) const{
     else if(skill->inherits("TriggerSkill")){
         const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(skill);
         return trigger_skill->getViewAsSkill();
-    }else
+    }else if(skill->inherits("ProhibitSkill")){
+        const ProhibitSkill *prohibit_skill = qobject_cast<const ProhibitSkill *>(skill);
+        return prohibit_skill->getViewAsSkill();
+    }else 
         return NULL;
 }
 

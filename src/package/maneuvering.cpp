@@ -44,9 +44,9 @@ QString Analeptic::getSubtype() const{
 }
 
 bool Analeptic::IsAvailable(const Player *player, const Card *analeptic){
-	Analeptic *jiu = new Analeptic(Card::NoSuitNoColor, 0);
+    Analeptic *jiu = new Analeptic(Card::NoSuitNoColor, 0);
     jiu->deleteLater();
-	if (player->isCardLimited(analeptic == NULL ? jiu : analeptic, Card::MethodUse)
+    if (player->isCardLimited(analeptic == NULL ? jiu : analeptic, Card::MethodUse)
         || player->isProhibited(player, analeptic == NULL ? jiu : analeptic))
             return false;
 
@@ -248,7 +248,7 @@ public:
                         room->setEmotion(player, "armor/silver_lion");
                         RecoverStruct recover;
                         recover.card = card;
-						room->recover(player, recover);
+                        room->recover(player, recover);
                     }
                     return false;
                 }

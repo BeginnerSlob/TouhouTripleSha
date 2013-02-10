@@ -168,10 +168,10 @@ public:
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
         if(cards.length() == 2){
             const Card *first = cards.first();
-			const Card *second = cards.last();
+            const Card *second = cards.last();
             Card::Suit suit = first->isRed() ? Card::NoSuitRed : Card::NoSuitBlack;
             int number = first->getNumber() == second->getNumber() ? first->getNumber() : 0;
-			Duel *aa = new Duel(suit, number);
+            Duel *aa = new Duel(suit, number);
             aa->addSubcards(cards);
             aa->setSkillName("wudi");
             return aa;
@@ -323,10 +323,10 @@ public:
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
         if(cards.length() == 2){
             const Card *first = cards.first();
-			const Card *second = cards.last();
+            const Card *second = cards.last();
             Card::Suit suit = first->isRed() ? Card::NoSuitRed : Card::NoSuitBlack;
             int number = first->getNumber() == second->getNumber() ? first->getNumber() : 0;
-			ArcheryAttack *aa = new ArcheryAttack(suit, number);
+            ArcheryAttack *aa = new ArcheryAttack(suit, number);
             aa->addSubcards(cards);
             aa->setSkillName(objectName());
             return aa;
@@ -961,32 +961,32 @@ public:
 
 class Yuji:public TriggerSkill{
 public:
-	Yuji():TriggerSkill("yuji$"){
-		events << EventPhaseStart << EventPhaseEnd << EventPhaseChanging;
-	}
-	
-	virtual bool triggerable(const ServerPlayer *target) const{
-		return target != NULL;
-	}
+    Yuji():TriggerSkill("yuji$"){
+        events << EventPhaseStart << EventPhaseEnd << EventPhaseChanging;
+    }
+    
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target != NULL;
+    }
 
-	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-		if (triggerEvent == EventPhaseEnd && player->hasSkill("yujiv"))
-			room->detachSkillFromPlayer(player, "yujiv", true);
-		else if (triggerEvent == EventPhaseStart)
-		{
-			bool can_invoke = false;
-			foreach(ServerPlayer *p, room->getOtherPlayers(player))
-				if (p->hasLordSkill("yuji"))
-				{
-					can_invoke = true;
-					break;
-				}
-			if (can_invoke && player->getPhase() == Player::Play && !player->hasSkill("yujiv") && player->getKingdom() == "qun")
-				room->attachSkillToPlayer(player, "yujiv");
-		}
-		else if (triggerEvent == EventPhaseChanging)
-		{
-			PhaseChangeStruct phase_change = data.value<PhaseChangeStruct>();
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (triggerEvent == EventPhaseEnd && player->hasSkill("yujiv"))
+            room->detachSkillFromPlayer(player, "yujiv", true);
+        else if (triggerEvent == EventPhaseStart)
+        {
+            bool can_invoke = false;
+            foreach(ServerPlayer *p, room->getOtherPlayers(player))
+                if (p->hasLordSkill("yuji"))
+                {
+                    can_invoke = true;
+                    break;
+                }
+            if (can_invoke && player->getPhase() == Player::Play && !player->hasSkill("yujiv") && player->getKingdom() == "qun")
+                room->attachSkillToPlayer(player, "yujiv");
+        }
+        else if (triggerEvent == EventPhaseChanging)
+        {
+            PhaseChangeStruct phase_change = data.value<PhaseChangeStruct>();
             if (phase_change.from != Player::Play)
                   return false;
             if(player->hasFlag("ForbidYuji")){
@@ -998,10 +998,10 @@ public:
                     room->setPlayerFlag(p, "-YujiInvoked");
                 }
             }
-		}
+        }
 
-		return false;
-	}
+        return false;
+    }
 };
 
 class Huiyao: public TriggerSkill{
@@ -1221,7 +1221,7 @@ public:
             Room *room = player->getRoom();
             room->setFixedDistance(player, target, -1);
             player->tag.remove("LvdongTarget");
-			target->removeMark("Armor_Nullified");
+            target->removeMark("Armor_Nullified");
         }
         return false;
     }
@@ -1821,7 +1821,7 @@ void TianwuCard::use(Room *room, ServerPlayer *player, QList<ServerPlayer *> &) 
         damage.to = player;
 
         room->damage(damage);
-	}
+    }
 
     foreach (ServerPlayer *player, players) {
         QList<const Card *> equips = player->getEquips();
@@ -1924,7 +1924,7 @@ void StandardPackage::addLunaGenerals(){
     General *luna024 = new General(this, "luna024", "qun");
     luna024->addSkill(new Longya);
     
-	General *luna029 = new General(this, "luna029", "qun", 5);
+    General *luna029 = new General(this, "luna029", "qun", 5);
     luna029->addSkill(new Zhuohuo);
     luna029->addSkill(new MarkAssignSkill("@mailun", 2));
     luna029->addSkill(new Wumou);

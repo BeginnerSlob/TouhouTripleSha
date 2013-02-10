@@ -66,10 +66,10 @@ void GenericCardContainer::_disperseCards(QList<CardItem*> &cards, QRectF fillRe
         CardItem* card = cards[i];
         double newX = 0;
         if (align == Qt::AlignHCenter)
-		{
-			double step = qMin((double)cardWidth + 11, (maxWidth - cardWidth) / (numCards - 1));
+        {
+            double step = qMin((double)cardWidth + 11, (maxWidth - cardWidth) / (numCards - 1));
             newX = fillRegion.center().x() + step * (i - (numCards - 1) / 2.0);
-		}
+        }
         else if (align == Qt::AlignLeft)
             newX = fillRegion.left() + step * i + card->boundingRect().width() / 2.0;
         else if (align == Qt::AlignRight)
@@ -419,7 +419,7 @@ void PlayerCardContainer::updateMarks()
     QSize markSize = _m_markItem->boundingRect().size().toSize();
     QRect newRect = _m_layout->m_markTextArea.getTranslatedRect(parentRect, markSize);
     //_m_markItem->setPos(newRect.topLeft());
-	_m_markItem->setPos(newRect.left(), newRect.top() + newRect.height() / 2);
+    _m_markItem->setPos(newRect.left(), newRect.top() + newRect.height() / 2);
 }
 
 void PlayerCardContainer::_updateEquips()
@@ -701,7 +701,7 @@ void PlayerCardContainer::addEquips(QList<CardItem*> &equips)
     QList<CardItem*> result;
     foreach (int card_id, cardIds)
     {
-        const EquipCard *equip_card = qobject_cast<const EquipCard *>(Sanguosha->getEngineCard(card_id));
+        const EquipCard *equip_card = qobject_cast<const EquipCard *>(Sanguosha->getWrappedCard(card_id)->getRealCard());
         int index = (int)(equip_card->location());
         Q_ASSERT(_m_equipCards[index] != NULL);
         CardItem* equip = _m_equipCards[index];

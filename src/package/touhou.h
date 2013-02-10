@@ -275,7 +275,7 @@ class ThShijieCard: public SkillCard{
 
 public:
     Q_INVOKABLE ThShijieCard();
-	
+    
     virtual const Card *validate(const CardUseStruct *card_use) const;
     virtual const Card *validateInResposing(ServerPlayer *user, bool &continuable) const;
 };
@@ -316,7 +316,7 @@ class ThBingpuCard: public SkillCard{
 public:
     Q_INVOKABLE ThBingpuCard();
 
-	virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
 class ThHuanfaCard: public SkillCard {
@@ -393,7 +393,7 @@ class ThJinguoCard: public SkillCard{
 
 public:
     Q_INVOKABLE ThJinguoCard();
-	
+    
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
@@ -404,7 +404,7 @@ class ThKaiyunCard: public SkillCard{
 
 public:
     Q_INVOKABLE ThKaiyunCard();
-	
+    
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
@@ -413,7 +413,7 @@ class ThLianhuaCard: public SkillCard{
 
 public:
     Q_INVOKABLE ThLianhuaCard();
-	
+    
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
@@ -422,7 +422,7 @@ class ThShennaoCard: public SkillCard{
 
 public:
     Q_INVOKABLE ThShennaoCard();
-	
+    
     virtual const Card *validate(const CardUseStruct *card_use) const;
     virtual const Card *validateInResposing(ServerPlayer *user, bool &continuable) const;
 };
@@ -432,7 +432,7 @@ class ThHeiguanCard: public SkillCard{
 
 public:
     Q_INVOKABLE ThHeiguanCard();
-	
+    
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
@@ -442,7 +442,7 @@ class ThMiquCard: public SkillCard{
 
 public:
     Q_INVOKABLE ThMiquCard();
-	
+    
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
@@ -451,9 +451,9 @@ class ThExiCard: public SkillCard{
 
 public:
     Q_INVOKABLE ThExiCard();
-	
+    
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-	virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
@@ -471,7 +471,7 @@ class ThShenbaoCard: public SkillCard{
 
 public:
     Q_INVOKABLE ThShenbaoCard();
-	
+    
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };

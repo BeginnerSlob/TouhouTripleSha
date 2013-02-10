@@ -183,7 +183,8 @@ void ClientPlayer::setMark(const QString &mark, int value){
             if(itor.value() != 1)
                 mark_text.append(QString("<font color = black>%1</font>").arg(itor.value()));
             // @todo: add an option so that mark can be placed horizontally.
-            mark_text.append("<br>");
+            if (this != Self)
+                mark_text.append("<br>");
             text.append(mark_text);
         }
     }
