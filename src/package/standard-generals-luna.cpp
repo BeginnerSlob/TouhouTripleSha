@@ -188,7 +188,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        CardUseStruct &use = data.value<CardUseStruct>();
+        CardUseStruct use = data.value<CardUseStruct>();
 
         if(use.card && use.card->getSkillName() == "wudi")
             room->setPlayerFlag(player, "wudiused");
@@ -719,7 +719,7 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         if(triggerEvent == Damage) {
-            DamageStruct &damage = data.value<DamageStruct>();
+            DamageStruct damage = data.value<DamageStruct>();
 
             if(damage.card && damage.card->isKindOf("Slash") && damage.card->isRed()
                     && !damage.chain && !damage.transfer)
@@ -1486,7 +1486,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        DamageStruct &damage = data.value<DamageStruct>();
+        DamageStruct damage = data.value<DamageStruct>();
         if(damage.from == NULL)
             return false;
 

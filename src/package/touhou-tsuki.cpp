@@ -1675,14 +1675,14 @@ public:
 
 			if (choice == "red")
 			{
-				player->obtainCard(get_red);
-				CardMoveReason &reason = CardMoveReason(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
+                player->obtainCard(get_red);
+                CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
 				room->moveCardTo(disc_red, NULL, Player::DiscardPile, reason, true);
 			}
 			else if (choice == "nine")
 			{
-				player->obtainCard(get_nine);
-				CardMoveReason &reason = CardMoveReason(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
+                player->obtainCard(get_nine);
+                CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
 				room->moveCardTo(disc_nine, NULL, Player::DiscardPile, reason, true);
 			}
 			else
@@ -1691,8 +1691,8 @@ public:
 				foreach (int id, card_ids)
 					dummy->addSubcard(id);
 
-				dummy->deleteLater();
-				CardMoveReason &reason = CardMoveReason(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
+                dummy->deleteLater();
+                CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
 				room->moveCardTo(dummy, NULL, Player::DiscardPile, reason, true);
 			}
 

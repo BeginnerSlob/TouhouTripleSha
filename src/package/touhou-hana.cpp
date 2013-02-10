@@ -245,7 +245,7 @@ public:
             return false;
 
         if(triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct &change = data.value<PhaseChangeStruct>();
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if(change.to == Player::NotActive && splayer->getMark("thbian") > 0)
                 splayer->removeMark("thbian");
 
@@ -359,7 +359,7 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         if(triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct &change = data.value<PhaseChangeStruct>();
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if(change.to != Player::Start)
                 return false;
         }
