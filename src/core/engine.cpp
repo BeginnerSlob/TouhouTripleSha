@@ -12,10 +12,8 @@
 #include "structs.h"
 #include "RoomState.h"
 
-#include "guandu-scenario.h"
 #include "couple-scenario.h"
 #include "boss-mode-scenario.h"
-#include "zombie-scenario.h"
 
 #include <QFile>
 #include <QTextStream>
