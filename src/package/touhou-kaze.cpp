@@ -220,7 +220,7 @@ public:
     }
     
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        DamageStruct &damage = data.value<DamageStruct>();
+        DamageStruct damage = data.value<DamageStruct>();
         for(int i = 0; i < damage.damage; i++) {
             if(!player->askForSkillInvoke(objectName(), data))
                 break;
@@ -255,7 +255,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        DamageStruct &damage = data.value<DamageStruct>();
+        DamageStruct damage = data.value<DamageStruct>();
         ServerPlayer *victim = damage.to;
         if(victim == NULL || victim->isDead())
             return false;
@@ -348,7 +348,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        DyingStruct &dying = data.value<DyingStruct>();
+        DyingStruct dying = data.value<DyingStruct>();
         if(dying.who != player)
             return false;
 
@@ -529,7 +529,7 @@ public:
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         if (triggerEvent == EventPhaseChanging)
 		{
-			PhaseChangeStruct &change = data.value<PhaseChangeStruct>();
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
 			if (player->isDead() || change.to != Player::NotActive)
 				return false;
 		}
@@ -1170,7 +1170,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        CardUseStruct &use = data.value<CardUseStruct>();
+        CardUseStruct use = data.value<CardUseStruct>();
         ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
         if(use.from != splayer && use.to.contains(splayer) && use.card->isKindOf("Slash")
                 && splayer->askForSkillInvoke(objectName()))
@@ -1246,7 +1246,7 @@ public:
 		if (player->getPhase() != Player::NotActive)
 			return false;
 
-		QList<QList<int>> lists;
+        QList<QList<int> > lists;
 		for (int i = 0; i < 4; i++)
 			lists << QList<int>();
 		
@@ -1337,7 +1337,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room *, ServerPlayer *player, QVariant &data) const{
-        DamageStruct &damage = data.value<DamageStruct>();
+        DamageStruct damage = data.value<DamageStruct>();
         if(player->hasFlag("yanlun") && damage.card->isKindOf("FireAttack")
                 && player->askForSkillInvoke(objectName()))
             player->drawCards(1);
@@ -1362,7 +1362,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        CardEffectStruct &effect = data.value<CardEffectStruct>();
+        CardEffectStruct effect = data.value<CardEffectStruct>();
         if(!player->hasFlag("yanlun") || !effect.card->isKindOf("FireAttack"))
             return false;
 
@@ -1447,7 +1447,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        DamageStruct &damage = data.value<DamageStruct>();
+        DamageStruct damage = data.value<DamageStruct>();
         if(!damage.from || !damage.from->hasFlag("thyanxing"))
             return false;
         
@@ -1575,13 +1575,13 @@ public:
 
         if(triggerEvent == Predamage) {
             room->sendLog(log);
-            DamageStruct &damage = data.value<DamageStruct>();
+            DamageStruct damage = data.value<DamageStruct>();
             damage.from = NULL;
             data = QVariant::fromValue((DamageStruct)damage);
             return false;
         }
         else if(triggerEvent == CardEffected) {
-            CardEffectStruct &effect = data.value<CardEffectStruct>();
+            CardEffectStruct effect = data.value<CardEffectStruct>();
             if((effect.card->isNDTrick() || effect.card->isKindOf("Slash")) && !effect.from->isWounded()) {
                 room->sendLog(log);
                 return true;

@@ -231,7 +231,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        CardUseStruct &use = data.value<CardUseStruct>();
+        CardUseStruct use = data.value<CardUseStruct>();
 
         if(triggerEvent == CardFinished){
             foreach(ServerPlayer *p, use.to)
@@ -1404,7 +1404,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const{
-        RecoverStruct &recover = data.value<RecoverStruct>();
+        RecoverStruct recover = data.value<RecoverStruct>();
         for (int i = 0; i < recover.recover; i++) {
             if (room->askForSkillInvoke(player, objectName())) {
                 ServerPlayer *target1 = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName());

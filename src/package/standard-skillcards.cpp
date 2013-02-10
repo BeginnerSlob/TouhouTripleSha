@@ -1,5 +1,4 @@
 #include "standard.h"
-#include "standard-skillcards.h"
 #include "room.h"
 #include "clientplayer.h"
 #include "engine.h"
