@@ -450,7 +450,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *ta
 }
 
 void RoomThread::addTriggerSkill(const TriggerSkill *skill){
-	if(skill == NULL || skillSet.contains(skill->objectName()))
+    if(skill == NULL || skillSet.contains(skill->objectName()))
         return;
 
     skillSet << skill->objectName();
@@ -467,7 +467,7 @@ void RoomThread::addTriggerSkill(const TriggerSkill *skill){
         foreach(const Skill *skill, Sanguosha->getRelatedSkills(skill->objectName())){
             const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(skill);
             if (trigger_skill)
-				addTriggerSkill(trigger_skill);
+                addTriggerSkill(trigger_skill);
         }
     }
 }

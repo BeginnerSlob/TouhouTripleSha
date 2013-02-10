@@ -22,10 +22,10 @@ public:
 
             QVariant data = QVariant::fromValue(card);
             if(room->askForSkillInvoke(player, objectName(), data)){
-				room->broadcastSkillInvoke(objectName());
-				QList<ServerPlayer *> targets = damage.from == NULL ? room->getAlivePlayers() : room->getOtherPlayers(damage.from);
-				ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
-				target->obtainCard(card);
+                room->broadcastSkillInvoke(objectName());
+                QList<ServerPlayer *> targets = damage.from == NULL ? room->getAlivePlayers() : room->getOtherPlayers(damage.from);
+                ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
+                target->obtainCard(card);
             }
         }
     }
@@ -1169,9 +1169,9 @@ public:
     }
 };
 
-class Piaonian: public TriggerSkill{
+class Piaohu: public TriggerSkill{
 public:
-    Piaonian():TriggerSkill("piaonian"){
+    Piaohu():TriggerSkill("piaohu"){
         events << TargetConfirming;
     }
 
@@ -1194,7 +1194,7 @@ public:
         CardUseStruct use = data.value<CardUseStruct>();
 
         if(use.card && use.card->isKindOf("Slash") && use.to.contains(victim) && player->inMyAttackRange(victim) && player->askForSkillInvoke(objectName())){
-            if(!room->askForCard(player, "Armor", "@piaonian")){
+            if(!room->askForCard(player, "Armor", "@piaohu")){
                 room->setPlayerProperty(victim, "chained", true);
                 room->setPlayerProperty(player, "chained", true);
             }
@@ -1415,6 +1415,76 @@ public:
     }
 };
 
+XinbanCard::XinbanCard() {
+    mute = true;
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+bool XinbanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (!targets.isEmpty())
+        return false;
+
+    const Card *card = Sanguosha->getCard(subcards.first());
+    const EquipCard *equip = qobject_cast<const EquipCard *>(card->getRealCard());
+    int equip_index = static_cast<int>(equip->location());
+    return to_select->getEquip(equip_index) == NULL;
+}
+
+void XinbanCard::onEffect(const CardEffectStruct &effect) const{
+    ServerPlayer *player = effect.from;
+    Room *room = player->getRoom();
+    room->moveCardTo(this, player, effect.to, Player::PlaceEquip,
+                     CardMoveReason(CardMoveReason::S_REASON_PUT, player->objectName(), "xinban", QString()));
+
+    const Card *card = Sanguosha->getCard(subcards.first());
+
+    LogMessage log;
+    log.type = "$JibanEquip";
+    log.from = effect.to;
+    log.card_str = QString::number(card->getEffectiveId());
+    room->sendLog(log);
+
+    if (card->isKindOf("Weapon")) {
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getAllPlayers())
+            if (effect.to->inMyAttackRange(p) && !p->isAllNude())
+                targets << p;
+
+        if (!targets.isEmpty()) {
+            ServerPlayer *to_dismantle = room->askForPlayerChosen(player, targets, "xinban");
+            int card_id = room->askForCardChosen(player, to_dismantle, "hej", "xinban");
+            room->throwCard(Sanguosha->getCard(card_id), to_dismantle, player);
+        }
+    } else if (card->isKindOf("Armor")) {
+        effect.to->drawCards(2);
+    } else if (card->isKindOf("Horse") && effect.to->isWounded()) {
+        RecoverStruct recover;
+        recover.who = effect.from;
+        room->recover(effect.to, recover);
+    }
+}
+
+class Xinban: public OneCardViewAsSkill {
+public:
+    Xinban(): OneCardViewAsSkill("xinban") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("XinbanCard");
+    }
+
+    virtual bool viewFilter(const Card *to_select) const{
+        return to_select->isKindOf("EquipCard");
+    }
+
+    virtual const Card *viewAs(const Card *originalcard) const{
+        XinbanCard *card = new XinbanCard;
+        card->addSubcard(originalcard);
+        return card;
+    }
+};
+
 class Renjia: public TriggerSkill {
 public:
     Renjia(): TriggerSkill("renjia") {
@@ -1508,7 +1578,7 @@ public:
     Jilve(): TriggerSkill("jilve") {
         events << CardUsed << CardResponded // huiquan
                << CardsMoveOneTime // xijing
-			   << EventPhaseStart; // yuxi
+               << EventPhaseStart; // yuxi
         view_as_skill = new JilveViewAsSkill;
     }
 
@@ -1518,7 +1588,7 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         if (triggerEvent == CardUsed || triggerEvent == CardResponded)
-		{
+        {
             CardStar card = NULL;
             if (triggerEvent == CardUsed)
                 card = data.value<CardUseStruct>().card;
@@ -1526,98 +1596,115 @@ public:
                 card = data.value<CardResponseStruct>().m_card;
 
             if (card->isNDTrick() && player->askForSkillInvoke(objectName(), data))
-			{
+            {
                 player->loseMark("@tianjia");
                 player->drawCards(1);
             }
         }
-		else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Start && player->askForSkillInvoke(objectName()))
-		{
-			player->loseMark("@tianjia");
-			int n = qMin(5, room->alivePlayerCount());
+        else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Start && player->askForSkillInvoke(objectName()))
+        {
+            player->loseMark("@tianjia");
+            int n = qMin(5, room->alivePlayerCount());
             room->askForYuxi(player, room->getNCards(n, false), false);
-		}
-		else if (triggerEvent == CardsMoveOneTime)
-		{
-			CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
-			if (move->from != player
-				|| move->to_place != Player::DiscardPile)
-				return false;
-		
-			for (int i = 0; i < move->card_ids.length(); i++)
-				if (move->from_places[i] != Player::PlaceSpecial
-					&& move->from_places[i] != Player::PlaceDelayedTrick
-					&& !Sanguosha->getEngineCard(move->card_ids[i])->isKindOf("EquipCard"))
-				{
-					if (player->askForSkillInvoke(objectName()))
-						break;
-					else
-						return false;
-				}
+        }
+        else if (triggerEvent == CardsMoveOneTime)
+        {
+            CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
+            if (move->from != player
+                || move->to_place != Player::DiscardPile)
+                return false;
+        
+            for (int i = 0; i < move->card_ids.length(); i++)
+                if (move->from_places[i] != Player::PlaceSpecial
+                    && move->from_places[i] != Player::PlaceDelayedTrick
+                    && !Sanguosha->getEngineCard(move->card_ids[i])->isKindOf("EquipCard"))
+                {
+                    if (player->askForSkillInvoke(objectName()))
+                        break;
+                    else
+                        return false;
+                }
 
-			//lose
-			CardsMoveStruct move1(QList<int>(),
-				NULL,
-				Player::DiscardPile,
-				move->reason);
+            //lose
+            CardsMoveStruct move1(QList<int>(),
+                NULL,
+                Player::DiscardPile,
+                move->reason);
 
-			//get
-		    CardMoveReason reason(CardMoveReason::S_REASON_RECYCLE,
-			    player->objectName(),
-				objectName(),
-				QString());
-				CardsMoveStruct move2(QList<int>(),
-				player,
-				Player::PlaceHand,
-				reason);
+            //get
+            CardMoveReason reason(CardMoveReason::S_REASON_RECYCLE,
+                player->objectName(),
+                objectName(),
+                QString());
+                CardsMoveStruct move2(QList<int>(),
+                player,
+                Player::PlaceHand,
+                reason);
 
-			for (int i = 0; i < move->card_ids.length(); i++)
-			{
-				if (move->from_places[i] != Player::PlaceSpecial
-					&& move->from_places[i] != Player::PlaceDelayedTrick
-					&& !Sanguosha->getEngineCard(move->card_ids[i])->isKindOf("EquipCard"))
-				{
-					const Card *c = Sanguosha->getEngineCard(move->card_ids[i]);
-					QString prompt = "@thxijing:" + c->getSuitString()
-						+ ":" + QString::number(c->getNumber())
-						+ ":" + c->objectName();
-					QString pattern = ".";
-					if (c->isBlack())
-						pattern = ".black";
-					else if (c->isRed())
-						pattern = ".red";
+            for (int i = 0; i < move->card_ids.length(); i++)
+            {
+                if (move->from_places[i] != Player::PlaceSpecial
+                    && move->from_places[i] != Player::PlaceDelayedTrick
+                    && !Sanguosha->getEngineCard(move->card_ids[i])->isKindOf("EquipCard"))
+                {
+                    const Card *c = Sanguosha->getEngineCard(move->card_ids[i]);
+                    QString prompt = "@thxijing:" + c->getSuitString()
+                        + ":" + QString::number(c->getNumber())
+                        + ":" + c->objectName();
+                    QString pattern = ".";
+                    if (c->isBlack())
+                        pattern = ".black";
+                    else if (c->isRed())
+                        pattern = ".red";
 
-					if (player->getMark("@tianjia") > 0)
-					{
-						const Card *card = room->askForCard(player, pattern, prompt, QVariant(), Card::MethodNone);
-				
-						if (card)
-						{
-							player->loseMark("@tianjia");
-							move1.card_ids.append(card->getEffectiveId());
-							move2.card_ids.append(move->card_ids[i]);
-						}
-					}
-				}
-			}
+                    if (player->getMark("@tianjia") > 0)
+                    {
+                        const Card *card = room->askForCard(player, pattern, prompt, QVariant(), Card::MethodNone);
+                
+                        if (card)
+                        {
+                            player->loseMark("@tianjia");
+                            move1.card_ids.append(card->getEffectiveId());
+                            move2.card_ids.append(move->card_ids[i]);
+                        }
+                    }
+                }
+            }
 
-			if (move1.card_ids.length() == move1.card_ids.length()
-				&& !move1.card_ids.isEmpty())
-			{
-				QList<CardsMoveStruct> moves;
-				moves.push_back(move1);
-				moves.push_back(move2);
-				room->setPlayerFlag(player, "ThXijing_InTempMoving");
-				room->moveCardsAtomic(moves, true);
-				room->setPlayerFlag(player, "-ThXijing_InTempMoving");
-			}
-		}
+            if (move1.card_ids.length() == move1.card_ids.length()
+                && !move1.card_ids.isEmpty())
+            {
+                QList<CardsMoveStruct> moves;
+                moves.push_back(move1);
+                moves.push_back(move2);
+                room->setPlayerFlag(player, "Jilve_InTempMoving");
+                room->moveCardsAtomic(moves, true);
+                room->setPlayerFlag(player, "-Jilve_InTempMoving");
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 
     virtual Location getLocation() const{
         return Right;
+    }
+};
+
+class JilveAvoidTriggeringCardsMove: public TriggerSkill{
+public:
+    JilveAvoidTriggeringCardsMove():TriggerSkill("#jilve-move"){
+        events << CardsMoveOneTime;
+    }
+
+    virtual int getPriority() const{
+        return 10;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *, ServerPlayer *player, QVariant &) const{
+        if (player->hasFlag("Jilve_InTempMoving"))
+            return true;
+        return false;
     }
 };
 
@@ -1700,7 +1787,7 @@ void StandardPackage::addBloomGenerals(){
 
     General *bloom017 = new General(this, "bloom017", "wei");
     bloom017->addSkill(new Zhuyan);
-    bloom017->addSkill(new Piaonian);
+    bloom017->addSkill(new Piaohu);
 
     General *bloom018 = new General(this, "bloom018", "wei", 3, false);
     bloom018->addSkill(new Xuwu);
@@ -1715,11 +1802,15 @@ void StandardPackage::addBloomGenerals(){
     General *bloom023 = new General(this, "bloom023", "wei");
     bloom023->addSkill(new Xiaorui);
 
-	General *bloom030 = new General(this, "bloom030", "wei");
-	bloom030->addSkill(new Renjia);
+    General *bloom024 = new General(this, "bloom024", "wei");
+    bloom024->addSkill(new Xinban);
+
+    General *bloom030 = new General(this, "bloom030", "wei");
+    bloom030->addSkill(new Renjia);
     bloom030->addSkill(new Tiangai);
     bloom030->addRelateSkill("jilve");
     related_skills.insertMulti("jilve", "#jilve-clear");
+    related_skills.insertMulti("jilve", "#jilve-move");
     
     addMetaObject<LuoyiCard>();
     addMetaObject<LianbaoCard>();
@@ -1728,6 +1819,8 @@ void StandardPackage::addBloomGenerals(){
     addMetaObject<MancaiCard>();
     addMetaObject<QiangxiCard>();
     addMetaObject<BisuoCard>();
+    addMetaObject<XinbanCard>();
+    addMetaObject<JilveCard>();
 
-	skills << new Jilve << new JilveClear;
+    skills << new Jilve << new JilveClear << new JilveAvoidTriggeringCardsMove;
 }

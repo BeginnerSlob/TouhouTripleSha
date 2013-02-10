@@ -23,12 +23,12 @@ void Slash::setNature(DamageStruct::Nature nature){
 
 bool Slash::IsAvailable(const Player *player, const Card *slash){
     if (!slash) {
-		Slash *slash = new Slash(Card::NoSuitNoColor, 0);
-		slash->deleteLater();
-		if (player->isCardLimited(slash, Card::MethodUse))
-			return false;
-	}
-	else if (player->isCardLimited(slash, Card::MethodUse))
+        Slash *slash = new Slash(Card::NoSuitNoColor, 0);
+        slash->deleteLater();
+        if (player->isCardLimited(slash, Card::MethodUse))
+            return false;
+    }
+    else if (player->isCardLimited(slash, Card::MethodUse))
         return false;
 
     return (player->hasWeapon("Crossbow") || player->canSlashWithoutCrossbow());
@@ -52,7 +52,7 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
         foreach (ServerPlayer *target, room->getAlivePlayers())
             if (target->hasFlag("SlashAssignee"))
                 room->setPlayerFlag(target, "-SlashAssignee");
-		if (player->hasFlag("slashNoDistanceLimit"))
+        if (player->hasFlag("slashNoDistanceLimit"))
             room->setPlayerFlag(player, "-slashNoDistanceLimit");
         if (player->hasFlag("slashDisableExtraTarget"))
             room->setPlayerFlag(player, "-slashDisableExtraTarget");
@@ -158,10 +158,10 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
 
 void Slash::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     foreach (ServerPlayer *target, targets)
-		if (target->hasFlag("CollateralTarget"))
-			room->setPlayerFlag(target, "-CollateralTarget");
+        if (target->hasFlag("CollateralTarget"))
+            room->setPlayerFlag(target, "-CollateralTarget");
 
-	BasicCard::use(room, source, targets);
+    BasicCard::use(room, source, targets);
 
     if (hasFlag("drank")) {
         LogMessage log;
@@ -187,7 +187,7 @@ void Slash::onEffect(const CardEffectStruct &card_effect) const{
     effect.slash = this;
 
     effect.to = card_effect.to;
-    effect.drank = this->hasFlag("drank");
+    effect.drank = hasFlag("drank");
 
     room->slashEffect(effect);
 }
@@ -211,14 +211,14 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
     if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
         rangefix += 1;
 
-	if (Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, Self, this) != 0)
-		rangefix -= Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, Self, this);
+    if (Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, Self, this) != 0)
+        rangefix -= Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, Self, this);
 
     if (Self->hasFlag("slashTargetFix")) {
         if (targets.isEmpty())
             return to_select->hasFlag("SlashAssignee") && Self->canSlash(to_select, this, distance_limit, rangefix);
         else {
-			if (Self->hasFlag("slashDisableExtraTarget")) return false;
+            if (Self->hasFlag("slashDisableExtraTarget")) return false;
             bool canSelect = false;
             foreach (const Player *p, targets) {
                 if(p->hasFlag("SlashAssignee")){
@@ -387,7 +387,7 @@ public:
                 bool do_anim = false;
                 foreach (ServerPlayer *p, use.to.toSet()) {
                     if (p->getMark("Equips_of_Others_Nullified_to_You") == 0) {
-						p->addMark("Qinggang_Armor_Nullified");
+                        p->addMark("Qinggang_Armor_Nullified");
                         if (p->getArmor() || p->hasSkill("shengtang"))  do_anim = true;
                     }
                 }
@@ -470,11 +470,11 @@ public:
         else if(first->isRed() && second->isRed())
             suit = Card::NoSuitRed;
 
-		int number;
-		if (first->getNumber() == second->getNumber())
-			number = first->getNumber();
-		else
-			number = 0;
+        int number;
+        if (first->getNumber() == second->getNumber())
+            number = first->getNumber();
+        else
+            number = 0;
 
         Slash *slash = new Slash(suit, number);
         slash->setSkillName(objectName());
@@ -538,7 +538,7 @@ public:
 
         if (!effect.to->isAlive() || effect.to->getMark("Equips_of_Others_Nullified_to_You") > 0)
             return false;
-		
+        
         CardStar card = room->askForCard(player, "@Axe", "@axe:" + effect.to->objectName(), data);
         if(card){
             room->setEmotion(effect.to, "weapon/axe");
@@ -760,7 +760,7 @@ void SavageAssault::onEffect(const CardEffectStruct &effect) const{
     if (slash) {
         if (slash->getSkillName() == "Spear") room->setEmotion(effect.to, "weapon/spear");
         room->setEmotion(effect.to, "killer");
-	}
+    }
     else{
         DamageStruct damage;
         damage.card = this;
@@ -790,12 +790,12 @@ void ArcheryAttack::onEffect(const CardEffectStruct &effect) const{
                                         "archery-attack-jink:" + effect.from->objectName(),
                                         QVariant(),
                                         Card::MethodResponse,
-                                        effect.from->isAlive() ? effect.from : NULL);		
+                                        effect.from->isAlive() ? effect.from : NULL);        
     if(jink && jink->getSkillName() != "EightDiagram" && jink->getSkillName() != "shengtang")
         room->setEmotion(effect.to, "jink");
     if (!jink)
-	{
-		DamageStruct damage;
+    {
+        DamageStruct damage;
         damage.card = this;
         damage.damage = 1;
         if(effect.from->isAlive())
@@ -852,28 +852,28 @@ bool Collateral::isAvailable(const Player *player) const{
 }
 
 bool Collateral::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const {
-	int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
+    int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
     if (targets.length() >= total_num)
         return false;
     
-	if (to_select == Self)
+    if (to_select == Self)
         return false;
 
     foreach(const Player *p, to_select->getSiblings())
-		if (to_select->canSlash(p))
-			return !Self->isProhibited(to_select, this) && to_select->getWeapon() != NULL;
+        if (to_select->canSlash(p))
+            return !Self->isProhibited(to_select, this) && to_select->getWeapon() != NULL;
 
-	return false;
+    return false;
 }
 
 bool Collateral::doCollateral(Room *room, ServerPlayer *killer, ServerPlayer *victim, const QString &prompt) const{
     bool useSlash = false;
-	if (killer->canSlash(victim, NULL, false))
-	{
-		room->setPlayerFlag(killer, "CollateralUsing");
+    if (killer->canSlash(victim, NULL, false))
+    {
+        room->setPlayerFlag(killer, "CollateralUsing");
         useSlash = room->askForUseSlashTo(killer, victim, prompt);
-		room->setPlayerFlag(killer, "-CollateralUsing");
-	}
+        room->setPlayerFlag(killer, "-CollateralUsing");
+    }
     return useSlash;
 }
 
@@ -890,7 +890,7 @@ void Collateral::onEffect(const CardEffectStruct &effect) const{
     QString prompt = QString("collateral-slash:%1:%2")
             .arg(source->objectName()).arg(victim->objectName());
 
-	room->setPlayerFlag(source, "CollateralSource");
+    room->setPlayerFlag(source, "CollateralSource");
     if (victim->isDead()){
         if(source->isAlive() && killer->isAlive() && killer->getWeapon()){
             source->obtainCard(weapon);
@@ -913,8 +913,8 @@ void Collateral::onEffect(const CardEffectStruct &effect) const{
             }
         }
     }
-	
-	room->setPlayerFlag(source, "-CollateralSource");
+    
+    room->setPlayerFlag(source, "-CollateralSource");
     room->removeTag("collateralVictim");
 }
 
@@ -925,7 +925,7 @@ Nullification::Nullification(Suit suit, int number)
 }
 
 void Nullification::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-	// does nothing, just throw it
+    // does nothing, just throw it
     CardMoveReason reason(CardMoveReason::S_REASON_USE, source->objectName());
     room->moveCardTo(this, source, NULL, Player::DiscardPile, reason);
 }
@@ -1170,7 +1170,7 @@ public:
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
-		
+        
         if(damage.card && damage.card->isKindOf("Slash")
            && damage.to->getMark("Equips_of_Others_Nullified_to_You") == 0
            && !damage.to->isNude()
@@ -1329,7 +1329,7 @@ StandardCardPackage::StandardCardPackage()
 
         << new EightDiagram(Card::Spade)
         << new EightDiagram(Card::Club);
-	
+    
         skills << new DoubleSwordSkill << new QinggangSwordSkill
                << new BladeSkill << new SpearSkill << new AxeSkill << new HalberdSkill
                << new KylinBowSkill << new EightDiagramSkill;

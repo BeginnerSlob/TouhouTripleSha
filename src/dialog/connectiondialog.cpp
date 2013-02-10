@@ -26,8 +26,8 @@ void ConnectionDialog::showAvatarList()
     ui->avatarList->clear();
     QList<const General*> generals = Sanguosha->findChildren<const General*>();
     foreach(const General *general, generals){
-		if (general->objectName() == "sp999")
-			continue;
+        if (general->objectName() == "sp999")
+            continue;
 
         QIcon icon(G_ROOM_SKIN.getGeneralPixmap(general->objectName(), QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE));
         QString text = Sanguosha->translate(general->objectName());
