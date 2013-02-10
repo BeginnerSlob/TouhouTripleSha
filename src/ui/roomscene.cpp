@@ -1805,6 +1805,32 @@ void RoomScene::keepGetCardLog(const CardsMoveStruct &move)
             if (flag.endsWith("_InTempMoving"))
                 return;
     }
+    //private pile
+    if (move.to_place == Player::PlaceSpecial && !move.to_pile_name.isNull() && !move.to_pile_name.startsWith('#')) {
+        bool hiden = false;
+        foreach (int card_id, move.card_ids)
+            if (card_id == Card::S_UNKNOWN_CARD_ID) {
+                hiden = true;
+                break;
+            }
+        if (hiden)
+            log_box->appendLog("#RemoveFromGame", QString(), QStringList(), QString(), move.to_pile_name, QString::number(move.card_ids.length()));
+        else
+            log_box->appendLog("$AddToPile", QString(), QStringList(), Card::IdsToStrings(move.card_ids).join("+"), move.to_pile_name);
+    }
+    if (move.from_place == Player::PlaceSpecial && move.to
+        && move.reason.m_reason == CardMoveReason::S_REASON_EXCHANGE_FROM_PILE) {
+        bool hiden = false;
+        foreach (int card_id, move.card_ids)
+            if (card_id == Card::S_UNKNOWN_CARD_ID) {
+                hiden = true;
+                break;
+            }
+        if (!hiden)
+            log_box->appendLog("$GotCardFromPile", move.to->objectName(), QStringList(), Card::IdsToStrings(move.card_ids).join("+"), move.from_pile_name);
+        else
+            log_box->appendLog("#GotNCardFromPile", move.to->objectName(), QStringList(), QString(), move.from_pile_name, QString::number(move.card_ids.length()));
+    }
     //DrawNCards
     if (move.from_place == Player::DrawPile && move.to_place == Player::PlaceHand)
     {

@@ -135,7 +135,7 @@ public:
         if (!splayer || !player->isWounded())
             return false;
 
-        if (room->askForCard(splayer, "..", "@shenshi:" + player->objectName()))
+        if (room->askForCard(splayer, "..", "@shenshi:" + player->objectName(), data, objectName()))
         {
             LogMessage log;
             log.type = "#ThShenshi";
@@ -274,7 +274,7 @@ public:
                 else if (card->isBlack())
                     pattern = ".|.|.|.|black";
 
-                if (room->askForCard(player, pattern, objectName()))
+                if (room->askForCard(player, pattern, "@gaotian", data, objectName()))
                 {
                     room->obtainCard(player, card_id);
                     card_ids.removeOne(card_id);

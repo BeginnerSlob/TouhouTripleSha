@@ -300,8 +300,10 @@ public:
     bool isCanceled(const CardEffectStruct &effect);
     DummyCard *askForCardsChosen(ServerPlayer *player, ServerPlayer *who, const QString &flags, const QString &reason, int n = 1);
     int askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QString &flags, const QString &reason);
+    const Card *askForCard(ServerPlayer *player, const QString &pattern, const QString &prompt, const QVariant &data, const QString &skill_name);
     const Card *askForCard(ServerPlayer *player, const QString &pattern, const QString &prompt, const QVariant &data = QVariant(),
-                           Card::HandlingMethod method = Card::MethodDiscard, ServerPlayer *to = NULL, bool isRetrial = false);
+                           Card::HandlingMethod method = Card::MethodDiscard, ServerPlayer *to = NULL, bool isRetrial = false,
+                           const QString &skill_name = QString());
     bool askForUseCard(ServerPlayer *player, const QString &pattern, const QString &prompt, int notice_index = -1,
                        Card::HandlingMethod method = Card::MethodUse, bool add_history = true);
     bool askForUseSlashTo(ServerPlayer *slasher, ServerPlayer *victim, const QString &prompt, bool distance_limit = true, bool add_history = true, bool disable_extra = false);
