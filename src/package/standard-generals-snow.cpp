@@ -1252,6 +1252,108 @@ public:
     }
 };
 
+class Yuanfa: public TriggerSkill {
+public:
+    Yuanfa(): TriggerSkill("yuanfa") {
+        events << Dying;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        DyingStruct dying = data.value<DyingStruct>();
+        if (dying.who->isKongcheng()) return false;
+        if (dying.who->getHp() < 1 && player->askForSkillInvoke(objectName(), data)) {
+            const Card *card = NULL;
+            if (dying.who == player)
+                card = room->askForCardShow(dying.who, player, objectName());
+            else {
+                int card_id = room->askForCardChosen(player, dying.who, "h", objectName());
+                card = Sanguosha->getCard(card_id);
+            }
+
+            room->showCard(dying.who, card->getEffectiveId());
+
+            if (card->getTypeId() != Card::TypeBasic) {
+                if (!dying.who->isHuyin(card))
+                    room->throwCard(card, dying.who);
+
+                room->broadcastSkillInvoke(objectName());
+
+                RecoverStruct recover;
+                recover.who = player;
+                room->recover(dying.who, recover);
+            }
+        }
+        return dying.who->getHp() > 0;
+    }
+};
+
+GuanjuCard::GuanjuCard() {
+}
+
+void GuanjuCard::swapEquip(ServerPlayer *first, ServerPlayer *second) const{
+    Room *room = first->getRoom();
+
+    QList<int> equips1, equips2;
+    foreach (const Card *equip, first->getEquips())
+        equips1.append(equip->getId());
+    foreach (const Card *equip, second->getEquips())
+        equips2.append(equip->getId());
+
+    QList<CardsMoveStruct> exchangeMove;
+    CardsMoveStruct move1;
+    move1.card_ids = equips1;
+    move1.to = second;
+    move1.to_place = Player::PlaceEquip;
+    CardsMoveStruct move2;
+    move2.card_ids = equips2;
+    move2.to = first;
+    move2.to_place = Player::PlaceEquip;
+    exchangeMove.push_back(move2);
+    exchangeMove.push_back(move1);
+    room->moveCards(exchangeMove, false);
+}
+
+bool GuanjuCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    return targets.length() == 2;
+}
+
+bool GuanjuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    switch (targets.length()) {
+    case 0: return true;
+    case 1: {
+            int n1 = targets.first()->getEquips().length();
+            int n2 = to_select->getEquips().length();
+            return qAbs(n1 - n2) <= Self->getLostHp();
+        }
+    default:
+        return false;
+    }
+}
+
+void GuanjuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    swapEquip(targets.first(), targets[1]);
+
+    LogMessage log;
+    log.type = "#GuanjuSwap";
+    log.from = source;
+    log.to = targets;
+    room->sendLog(log);
+}
+
+class Guanju: public ZeroCardViewAsSkill {
+public:
+    Guanju(): ZeroCardViewAsSkill("guanju") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("GuanjuCard");
+    }
+
+    virtual const Card *viewAs() const{
+        return new GuanjuCard;
+    }
+};
+
 class Zhongqu: public TriggerSkill{
 public:
     Zhongqu():TriggerSkill("zhongqu"){
@@ -1996,6 +2098,10 @@ void StandardPackage::addSnowGenerals(){
     snow015->addSkill(new JizhouGet);
     related_skills.insertMulti("jizhou", "#jizhou-get");
 
+    General *snow017 = new General(this, "snow017", "wu", 3, false);
+    snow017->addSkill(new Yuanfa);
+    snow017->addSkill(new Guanju);
+
     General *snow018 = new General(this, "snow018", "wu");
     snow018->addSkill(new Zhongqu);
 
@@ -2040,6 +2146,7 @@ void StandardPackage::addSnowGenerals(){
     addMetaObject<ZhihuiCard>();
     addMetaObject<JianmieCard>();
     addMetaObject<JibanCard>();
+    addMetaObject<GuanjuCard>();
     addMetaObject<AnxuCard>();
     addMetaObject<FenxunCard>();
     addMetaObject<MengjingCard>();
