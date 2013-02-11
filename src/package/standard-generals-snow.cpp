@@ -1329,30 +1329,32 @@ protected:
     }
 };
 
-class Zhuiyi: public TriggerSkill{
+class Zhuiyi: public TriggerSkill {
 public:
-    Zhuiyi():TriggerSkill("zhuiyi"){
-        events << Death ;
+    Zhuiyi(): TriggerSkill("zhuiyi") {
+        events << Death;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return target != NULL && target->hasSkill(objectName());
     }
 
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        DamageStar damage = data.value<DamageStar>();
-        QList<ServerPlayer *> targets = (damage && damage->from) ?
-                            room->getOtherPlayers(damage->from) : room->getAlivePlayers();
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who != player)
+            return false;
+        QList<ServerPlayer *> targets = (death.damage && death.damage->from) ? room->getOtherPlayers(death.damage->from) :
+                                                                               room->getAlivePlayers();
 
-        if(targets.isEmpty() || !player->askForSkillInvoke(objectName(), data))
+        QVariant data_for_ai = QVariant::fromValue(death.damage);
+        if (targets.isEmpty() || !player->askForSkillInvoke(objectName(), data_for_ai))
             return false;
 
         ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
-
-        room->broadcastSkillInvoke(objectName());
+        
         target->drawCards(3);
         RecoverStruct recover;
-        recover.who = target;
+        recover.who = player;
         recover.recover = 1;
         room->recover(target, recover, true);
         return false;
@@ -1408,7 +1410,7 @@ public:
 class Jieyou : public TriggerSkill{
 public:
     Jieyou():TriggerSkill("jieyou"){
-        events << Dying << DamageCaused << CardFinished << CardUsed;
+        events << AskForPeaches << DamageCaused << CardFinished << CardUsed;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
@@ -1424,7 +1426,8 @@ public:
                 room->setPlayerFlag(player, "-jieyouUsed");
                 room->setCardFlag(use.card, "jieyou-slash");
             }
-        } else if (triggerEvent == AskForPeaches && current->objectName() != player->objectName()) {
+        } else if (triggerEvent == AskForPeaches && current != player
+                   && room->askForSkillInvoke(player, objectName(), data)) {
             DyingStruct dying = data.value<DyingStruct>();
 
             forever {
@@ -1433,9 +1436,8 @@ public:
                     break;
                 }
 
-                if (dying.who->getHp() > 0 || player->isNude()
-                    || !player->canSlash(current, NULL, false) || !current
-                    || current->isDead() || !room->askForSkillInvoke(player, objectName(), data))
+                if (dying.who->getHp() > 0 || player->isNude() || !current
+                    || current->isDead() || !player->canSlash(current, NULL, false))
                     break;
 
                 room->setPlayerFlag(player, "jieyouUsed");
@@ -1502,13 +1504,11 @@ public:
     }
 };
 
-FenxunCard::FenxunCard(){
-    once = true;
-    will_throw = true;
+FenxunCard::FenxunCard() {
 }
 
 bool FenxunCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select != Self ;
+    return targets.isEmpty() && to_select != Self;
 }
 
 void FenxunCard::onEffect(const CardEffectStruct &effect) const{
@@ -1517,53 +1517,54 @@ void FenxunCard::onEffect(const CardEffectStruct &effect) const{
     room->setFixedDistance(effect.from, effect.to, 1);
 }
 
-class FenxunViewAsSkill:public OneCardViewAsSkill{
+class FenxunViewAsSkill: public OneCardViewAsSkill {
 public:
-    FenxunViewAsSkill():OneCardViewAsSkill("fenxun"){
+    FenxunViewAsSkill(): OneCardViewAsSkill("fenxun") {
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("FenxunCard");
-    }
-
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        return false;
+        return !player->isNude() && !player->hasUsed("FenxunCard");
     }
 
     virtual bool viewFilter(const Card *to_select) const{
-        return true;
+        return !Self->isHuyin(to_select);
     }
 
-    virtual const Card *viewAs(const Card* originalcard) const{
-        FenxunCard *card = new FenxunCard;
-        card->addSubcard(originalcard->getId());
-        card->setSkillName(objectName());
-        return card;
+    virtual const Card *viewAs(const Card *originalcard) const{
+        FenxunCard *first = new FenxunCard;
+        first->addSubcard(originalcard->getId());
+        first->setSkillName(objectName());
+        return first;
     }
 };
 
-class Fenxun: public TriggerSkill{
+class Fenxun: public TriggerSkill {
 public:
-    Fenxun():TriggerSkill("fenxun"){
-        view_as_skill = new FenxunViewAsSkill;
+    Fenxun(): TriggerSkill("fenxun") {
         events << EventPhaseChanging << Death << EventLoseSkill;
+        view_as_skill = new FenxunViewAsSkill;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return target != NULL && target->tag["FenxunTarget"].value<PlayerStar>() != NULL;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == EventPhaseChanging){
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *dingfeng, QVariant &data) const{
+        if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to != Player::NotActive)
                 return false;
         }
-        ServerPlayer *target = player->tag["FenxunTarget"].value<PlayerStar>();
+        if (triggerEvent == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != dingfeng)
+                return false;
+        }
+        ServerPlayer *target = dingfeng->tag["FenxunTarget"].value<PlayerStar>();
 
-        if(target){
-            room->setFixedDistance(player, target, -1);
-            player->tag.remove("FenxunTarget");
+        if (target) {
+            room->setFixedDistance(dingfeng, target, -1);
+            dingfeng->tag.remove("FenxunTarget");
         }
         return false;
     }

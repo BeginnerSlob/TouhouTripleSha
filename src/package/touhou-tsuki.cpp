@@ -928,13 +928,19 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == Death || player->getPhase() == Player::RoundStart)
+        if (triggerEvent == Death)
         {
-            foreach (ServerPlayer *p, room->getOtherPlayers(player))
-            {
-                room->setPlayerMark(p, "@heiguan1", 0);
-                room->setPlayerMark(p, "@heiguan2", 0);
-            }
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player)
+                return false;
+        }
+        else if (player->getPhase() != Player::RoundStart)
+            return false;
+
+        foreach (ServerPlayer *p, room->getOtherPlayers(player))
+        {
+            room->setPlayerMark(p, "@heiguan1", 0);
+            room->setPlayerMark(p, "@heiguan2", 0);
         }
 
         return false;
@@ -1387,7 +1393,11 @@ public:
         events << Dying;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        DyingStruct dying = data.value<DyingStruct>();
+        if (dying.who != player)
+            return false;
+
         QList<ServerPlayer *> targets;
         foreach (ServerPlayer *p, room->getOtherPlayers(player))
             if (!p->isKongcheng())

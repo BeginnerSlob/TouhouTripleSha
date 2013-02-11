@@ -196,9 +196,16 @@ public:
         frequency = Frequent;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         if ((triggerEvent == Death || player->getPhase() == Player::RoundStart) && !player->tag.value("ThJiguang").toString().isEmpty())
         {
+            if (triggerEvent == Death)
+            {
+                DeathStruct death = data.value<DeathStruct>();
+                if (death.who != player)
+                    return false;
+            }
+
             QString name = player->tag.value("ThJiguang").toString();
             if (triggerEvent != Death)
                 player->loseAllMarks("@" + name);
@@ -354,6 +361,9 @@ public:
         else
         {
             if (triggerEvent == EventPhaseChanging && (player->hasFlag("thmengshengusing") || data.value<PhaseChangeStruct>().to != Player::RoundEnd))
+                return false;
+
+            if (triggerEvent == Death && data.value<DeathStruct>().who != player)
                 return false;
 
             foreach (ServerPlayer *p, room->getAllPlayers())

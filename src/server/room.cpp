@@ -201,7 +201,12 @@ void Room::enterDying(ServerPlayer *player, DamageStruct *reason){
     dying.savers = getAllPlayers();
 
     QVariant dying_data = QVariant::fromValue(dying);// be care
-    thread->trigger(Dying, this, player, dying_data);
+    foreach (ServerPlayer *p, getAllPlayers()) {
+        if (player->getHp() > 0)
+            break;
+        if (thread->trigger(Dying, this, p, dying_data))
+            break;
+    }
 
     if (player->getHp() > 0) {
         setPlayerFlag(player, "-dying");
@@ -280,15 +285,13 @@ void Room::updateStateItem(){
 
 void Room::killPlayer(ServerPlayer *victim, DamageStruct *reason){
     ServerPlayer *killer = reason ? reason->from : NULL;
-    if(Config.ContestMode && killer){
-        killer->addVictim(victim);
-    }
+    QList<ServerPlayer *> players_with_victim = getAllPlayers();
 
     victim->setAlive(false);
 
     int index = m_alivePlayers.indexOf(victim);
-    int i;
-    for(i=index+1; i<m_alivePlayers.length(); i++){
+    for(int i = index + 1; i < m_alivePlayers.length(); i++)
+    {
         ServerPlayer *p = m_alivePlayers.at(i);
         p->setSeat(p->getSeat() - 1);
         broadcastProperty(p, "seat");
@@ -324,7 +327,15 @@ void Room::killPlayer(ServerPlayer *victim, DamageStruct *reason){
 
     if (thread->trigger(GameOverJudge, this, victim, data)) return;
 
-    thread->trigger(Death, this, victim, data);
+    DeathStruct death;
+    death.who = victim;
+    death.damage = reason;
+
+    QVariant death_data = QVariant::fromValue(death);
+    foreach (ServerPlayer *p, players_with_victim)
+        if (p->isAlive() || p == victim)
+            thread->trigger(Death, this, p, death_data);
+
     victim->detachAllSkills();
 
     if(Config.EnableAI){

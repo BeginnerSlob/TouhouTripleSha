@@ -96,6 +96,10 @@ public:
             data = data.toInt() + 1;
         else if (triggerEvent == Death && player->hasSkill(objectName()))
         {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player)
+                return false;
+
             ServerPlayer *target;
             QList<ServerPlayer *> players = room->getAllPlayers();
             players << player;
@@ -181,8 +185,9 @@ public:
             if (damage.to != splayer || player == splayer)
                 return false;
         }
-        else if (triggerEvent == Dying && splayer == player)
-            return false;
+        else if (triggerEvent == Dying && TriggerSkill::triggerable(player))
+            if (data.value<DyingStruct>().who == player)
+                return false;
 
         if(splayer->askForSkillInvoke(objectName()))
         {

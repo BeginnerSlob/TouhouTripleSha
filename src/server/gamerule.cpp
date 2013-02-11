@@ -553,16 +553,19 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
         }
 
     case Death:{
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player)
+                return false;
+        
             player->bury();
 
             if(room->getTag("SkipNormalDeathProcess").toBool())
                 return false;
 
-            DamageStar damage = data.value<DamageStar>();
+            DamageStar damage = death.damage;
             ServerPlayer *killer = damage ? damage->from : NULL;
-            if(killer){
+            if(killer)
                 rewardAndPunish(killer, player);
-            }
 
             if(room->getMode() == "02_1v1"){
                 QStringList list = player->tag["1v1Arrange"].toStringList();
@@ -570,8 +573,6 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
                 if(!list.isEmpty()){
                     player->tag["1v1ChangeGeneral"] = list.takeFirst();
                     player->tag["1v1Arrange"] = list;
-
-                    DamageStar damage = data.value<DamageStar>();
 
                     if(damage == NULL){
                         changeGeneral1v1(player);

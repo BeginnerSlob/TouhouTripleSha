@@ -375,29 +375,24 @@ DoubleSword::DoubleSword(Suit suit, int number)
 class QinggangSwordSkill: public WeaponSkill{
 public:
     QinggangSwordSkill():WeaponSkill("QinggangSword"){
-        events << TargetConfirmed << Death;
+        events << TargetConfirmed;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == TargetConfirmed) {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (WeaponSkill::triggerable(use.from) && use.from == player && use.card->isKindOf("Slash")) {
-                bool do_anim = false;
-                foreach (ServerPlayer *p, use.to.toSet()) {
-                    if (p->getMark("Equips_of_Others_Nullified_to_You") == 0) {
-                        p->addMark("Qinggang_Armor_Nullified");
-                        if (p->getArmor() || p->hasSkill("shengtang"))  do_anim = true;
-                    }
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (WeaponSkill::triggerable(use.from) && use.from == player && use.card->isKindOf("Slash")) {
+            bool do_anim = false;
+            foreach (ServerPlayer *p, use.to.toSet()) {
+                if (p->getMark("Equips_of_Others_Nullified_to_You") == 0) {
+                    p->addMark("Qinggang_Armor_Nullified");
+                    if (p->getArmor() || p->hasSkill("shengtang"))  do_anim = true;
                 }
-                if (do_anim)
-                    room->setEmotion(use.from, "weapon/qinggang_sword");
             }
+            if (do_anim)
+                room->setEmotion(use.from, "weapon/qinggang_sword");
         }
-        else{
-            foreach(ServerPlayer *p,room->getAlivePlayers())
-                p->setMark("Qinggang_Armor_Nullified", 0);
-        }
-        return false;
+
+		return false;
     }
 };
 

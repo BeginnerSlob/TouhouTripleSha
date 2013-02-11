@@ -1347,26 +1347,23 @@ public:
     }
 };
 
-class Shangshi: public TriggerSkill{
+class Shangshi: public TriggerSkill {
 public:
-    Shangshi():TriggerSkill("shangshi"){
+    Shangshi():TriggerSkill("shangshi") {
         events << Death;
-        frequency = NotFrequent;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return target != NULL && target->hasSkill(objectName());
     }
 
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        DamageStar damage = data.value<DamageStar>();
-        ServerPlayer *killer = damage ? damage->from : NULL;
-        if(killer && player->askForSkillInvoke(objectName())) {
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who != player)
+            return false;
+        ServerPlayer *killer = death.damage ? death.damage->from : NULL;
+        if (killer && player->askForSkillInvoke(objectName()))
             killer->throwAllHandCardsAndEquips();
-
-            QString killer_name = killer->getGeneralName();
-            room->broadcastSkillInvoke(objectName());
-        }
 
         return false;
     }

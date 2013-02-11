@@ -1013,30 +1013,25 @@ public:
         events << Death;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && !target->hasSkill(objectName());
-    }
-
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if(player->isNude())
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who == player)
             return false;
-        QList<ServerPlayer *> players = room->findPlayersBySkillName(objectName());
-        foreach(ServerPlayer *p, players){
-            if(p->isAlive() && room->askForSkillInvoke(p, objectName(), data)){
 
-                p->obtainCard(player->getWeapon());
-                p->obtainCard(player->getArmor());
-                p->obtainCard(player->getDefensiveHorse());
-                p->obtainCard(player->getOffensiveHorse());
+        if (death.who->isNude())
+            return false;
+        if (player->isAlive() && player->askForSkillInvoke(objectName(), data)) {
+            room->broadcastSkillInvoke(objectName());
 
-                DummyCard *all_cards = player->wholeHandCards();
-                if(all_cards){
-                    CardMoveReason reason(CardMoveReason::S_REASON_RECYCLE, p->objectName());
-                    room->obtainCard(p, all_cards, reason, false);
-                    delete all_cards;
-                }
-                break;
+            DummyCard *dummy = new DummyCard;
+            QList <const Card *> cards = death.who->getCards("he");
+            dummy->addSubcards(cards);
+
+            if (dummy->subcardsLength() > 0) {
+                CardMoveReason reason(CardMoveReason::S_REASON_RECYCLE, player->objectName());
+                room->obtainCard(player, dummy, reason, false);
             }
+            delete dummy;
         }
         return false;
     }
@@ -1664,10 +1659,14 @@ public:
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to != Player::RoundEnd)
                 return false;
-        } else if (triggerEvent == Death) {
-            if (target != room->getCurrent())
+        } else if (triggerEvent == Death && TriggerSkill::triggerable(target)) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != room->getCurrent())
                 return false;
         }
+        else
+            return false;
+
         QList<ServerPlayer *> players = room->getAllPlayers();
         foreach (ServerPlayer *player, players) {
             if (player->hasFlag("huyin")) {

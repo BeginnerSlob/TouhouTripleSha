@@ -533,6 +533,12 @@ public:
             if (player->isDead() || change.to != Player::NotActive)
                 return false;
         }
+        else if (triggerEvent == Death)
+        {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player)
+                return false;
+        }
         foreach(ServerPlayer *p, room->getOtherPlayers(player))
             if(p->hasFlag("bishatarget")) {
                 room->setFixedDistance(player, p, -1);

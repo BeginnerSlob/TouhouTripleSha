@@ -55,6 +55,11 @@ DyingStruct::DyingStruct()
 {
 }
 
+DeathStruct::DeathStruct()
+    :who(NULL), damage(NULL)
+{
+}
+
 RecoverStruct::RecoverStruct()
     :recover(1), who(NULL), card(NULL)
 {
