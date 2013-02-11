@@ -821,7 +821,8 @@ public:
 			log.arg = objectName();
 			room->sendLog(log);
 
-			player->drawCards(qMax(((Weapon *)player->getWeapon())->getRange(), 2));
+			int n = qMax((qobject_cast<const Weapon*>(player->getWeapon()->getRealCard()))->getRange(), 2);
+			player->drawCards(n);
 			return true;
 		}
 		else if (triggerEvent == SlashProceed && player->getArmor())
@@ -833,6 +834,7 @@ public:
 			room->sendLog(log);
 			
 			room->slashResult(data.value<SlashEffectStruct>(), NULL);
+			return true;
 		}
 
 		return false;
