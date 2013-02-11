@@ -805,6 +805,60 @@ public:
     }
 };
 
+class ThMozhuang: public TriggerSkill {
+public:
+	ThMozhuang(): TriggerSkill("thmozhuang") {
+		events << DrawNCards << SlashProceed;
+		frequency = Compulsory;
+	}
+
+	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
+		if (triggerEvent == DrawNCards && player->getWeapon())
+		{
+			LogMessage log;
+			log.type = "#TriggerSkill";
+			log.from = player;
+			log.arg = objectName();
+			room->sendLog(log);
+
+			player->drawCards(qMax(((Weapon *)player->getWeapon())->getRange(), 2));
+			return true;
+		}
+		else if (triggerEvent == SlashProceed && player->getArmor())
+		{
+			LogMessage log;
+			log.type = "#TriggerSkill";
+			log.from = player;
+			log.arg = objectName();
+			room->sendLog(log);
+			
+			room->slashResult(data.value<SlashEffectStruct>(), NULL);
+		}
+
+		return false;
+	}
+};
+
+class ThMozhuangMaxCardsSkill: public MaxCardsSkill {
+public:
+	ThMozhuangMaxCardsSkill(): MaxCardsSkill("#thmozhuang") {
+	}
+
+    virtual int getExtra(const Player *target) const{
+        if (target->hasSkill("thmozhuang"))
+		{
+			int horses = 0;
+			if (target->getOffensiveHorse())
+				horses++;
+			if (target->getDefensiveHorse())
+				horses++;
+            return horses;
+		}
+        else
+            return 0;
+    }
+};
+
 class ThWeide: public TriggerSkill{
 public:
     ThWeide():TriggerSkill("thweide"){
@@ -1392,6 +1446,11 @@ BangaiPackage::BangaiPackage()
     General *bangai008 = new General(this, "bangai008", "qun", 3);
     bangai008->addSkill(new ThYubo);
     bangai008->addSkill(new ThQiongfa);
+
+    General *bangai009 = new General(this, "bangai009", "shu");
+    bangai009->addSkill(new ThMozhuang);
+    bangai009->addSkill(new ThMozhuangMaxCardsSkill);
+    related_skills.insertMulti("thmozhuang", "#thmozhuang");
 
     General *bangai010 = new General(this, "bangai010", "wei");
     bangai010->addSkill(new ThWeide);

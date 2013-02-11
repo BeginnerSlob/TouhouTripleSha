@@ -508,7 +508,7 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.card && damage.card->isKindOf("Slash"))
             return false;
-        if (!damage.from->hasSkill("thgugao"))
+		if (!damage.from->hasSkill("thgugao") || damage.from == damage.to)
             return false;
 
         while (damage.damage--)
