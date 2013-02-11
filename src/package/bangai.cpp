@@ -961,7 +961,7 @@ ThSixiangCard::ThSixiangCard(){
 }
 
 bool ThSixiangCard::targetFixed() const {
-	return Sanguosha->getCard(getEffectiveId())->getSuit() == Card::Spade;
+    return Sanguosha->getCard(getEffectiveId())->getSuit() == Card::Spade;
 }
     
 bool ThSixiangCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{

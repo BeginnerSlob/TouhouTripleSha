@@ -78,7 +78,7 @@ Client::Client(QObject *parent, const QString &filename)
     callbacks["setScreenName"] = &Client::setScreenName;
     callbacks["setFixedDistance"] = &Client::setFixedDistance;
     callbacks["cardLimitation"] = &Client::cardLimitation;
-    callbacks["jilei"] = &Client::jilei;
+    callbacks["huyin"] = &Client::huyin;
     callbacks["cardLock"] = &Client::cardLock;
     callbacks["pile"] = &Client::pile;
 
@@ -722,8 +722,8 @@ void Client::cardLimitation(const QString &limit_str) {
     }
 }
 
-void Client::jilei(const QString &jilei_str){
-    Self->jilei(jilei_str);
+void Client::huyin(const QString &huyin_str){
+    Self->huyin(huyin_str);
 }
 
 void Client::cardLock(const QString &card_str){

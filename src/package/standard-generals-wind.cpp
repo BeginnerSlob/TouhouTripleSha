@@ -900,10 +900,10 @@ public:
 
 class Mohua: public FilterSkill {
 public:
-	Mohua(): FilterSkill("mohua") {
-	}
+    Mohua(): FilterSkill("mohua") {
+    }
 
-	static WrappedCard *changeToClub(int cardId){
+    static WrappedCard *changeToClub(int cardId){
         WrappedCard *new_card = Sanguosha->getWrappedCard(cardId);
         new_card->setSkillName("mohua");
         new_card->setSuit(Card::Club);
@@ -1493,6 +1493,59 @@ public:
     }
 };
 
+class XieyongViewAsSkill: public OneCardViewAsSkill {
+public:
+    XieyongViewAsSkill(): OneCardViewAsSkill("xieyong") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        Slash *slash = new Slash(Card::Diamond, 0);
+        slash->deleteLater();
+        return slash->isAvailable(player);
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+        return  pattern == "slash";
+    }
+
+    virtual bool viewFilter(const Card* card) const{
+        if(card->getSuit() != Card::Diamond)
+            return false;
+
+        if(Self->getWeapon() && card->getEffectiveId() == Self->getWeapon()->getId() && card->objectName() == "Crossbow")
+        {
+            Slash *slash = new Slash(Card::Diamond, card->getNumber());
+            slash->deleteLater();
+            return Self->canSlashWithoutCrossbow() || Self->canUseExtraSlash(slash);
+        }
+        else
+            return true;
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        Card *slash = new Slash(originalCard->getSuit(), originalCard->getNumber());
+        slash->addSubcard(originalCard->getId());
+        slash->setSkillName(objectName());
+        return slash;
+    }
+};
+
+class Xieyong: public TriggerSkill {
+public:
+    Xieyong(): TriggerSkill("xieyong") {
+        events << CardUsed;
+        view_as_skill = new XieyongViewAsSkill;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("Slash"))
+            room->setPlayerMark(player, objectName(), use.card->getColor() + 1);
+
+        return false;
+    }
+};
+
 class Shushen: public TriggerSkill{
 public:
     Shushen():TriggerSkill("shushen"){
@@ -1581,7 +1634,7 @@ public:
     }
 
     virtual bool viewFilter(const Card *to_select) const{
-        return to_select->isRed() && !Self->isJilei(to_select);
+        return to_select->isRed() && !Self->isHuyin(to_select);
     }
 
     virtual const Card *viewAs(const Card *originalcard) const{
@@ -1706,6 +1759,51 @@ public:
     }
 };
 
+class Xiewang: public TriggerSkill {
+public:
+    Xiewang(): TriggerSkill("xiewang") {
+        events << GameStart << HpChanged << MaxHpChanged << EventAcquireSkill << EventLoseSkill;
+        frequency = Compulsory;
+    }
+
+    static void XiewangChange(Room *room, ServerPlayer *player, int hp, const QString &skill_name) {
+        QStringList xiewang_skills = player->tag["XiewangSkills"].toStringList();
+        if (player->getHpPoints() <= hp) {
+            if (!xiewang_skills.contains(skill_name)) {
+                room->broadcastSkillInvoke("xiewang");
+                room->acquireSkill(player, skill_name);
+                xiewang_skills << skill_name;
+            }
+        } else {
+            room->detachSkillFromPlayer(player, skill_name);
+            xiewang_skills.removeOne(skill_name);
+        }
+        player->tag["XiewangSkills"] = QVariant::fromValue(xiewang_skills);
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target != NULL;
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (triggerEvent == EventLoseSkill) {
+            if (data.toString() == objectName()) {
+                QStringList xiewang_skills = player->tag["XiewangSkills"].toStringList();
+                foreach (QString skill_name, xiewang_skills)
+                    room->detachSkillFromPlayer(player, skill_name);
+                player->tag["XiewangSkills"] = QVariant();
+            }
+            return false;
+        }
+
+        if (!TriggerSkill::triggerable(player)) return false;
+
+        XiewangChange(room, player, 1, "thshenyou");
+        XiewangChange(room, player, 2, "thkuangqi");
+        XiewangChange(room, player, 3, "tiaoxin");
+        return false;
+    }
+};
 
 void StandardPackage::addWindGenerals(){
     General *wind001 = new General(this, "wind001$", "shu");
@@ -1794,6 +1892,9 @@ void StandardPackage::addWindGenerals(){
     wind019->addSkill("xiagong");
     wind019->addSkill(new Wanhun);
 
+    General *wind021 = new General(this, "wind021", "shu");
+    wind021->addSkill(new Xieyong);
+
     General *wind022 = new General(this, "wind022", "shu", 3, false);
     wind022->addSkill(new Shushen);
     wind022->addSkill(new Qiaoxia);
@@ -1808,6 +1909,10 @@ void StandardPackage::addWindGenerals(){
     related_skills.insertMulti("jiuming", "#jiuming-count");
     related_skills.insertMulti("canyue", "#canyue-count");
     related_skills.insertMulti("canyue", "#canyue-clear");
+
+    General *wind024 = new General(this, "wind024", "shu");
+    wind024->addSkill(new Xiewang);
+    wind024->addSkill("shengzun");
     
     addMetaObject<FunuanCard>();
     addMetaObject<LiqiCard>();

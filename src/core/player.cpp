@@ -780,6 +780,17 @@ bool Player::isProhibited(const Player *to, const Card *card) const
     return Sanguosha->isProhibited(this, to, card);
 }
 
+bool Player::canUseExtraSlash(const Card *slash) const
+{
+    if (isCardLimited(slash, Card::MethodUse))
+        return false;
+
+    if (hasSkill("xieyong"))
+        return getMark("xieyong") != slash->getColor() + 1;
+
+    return false;
+}
+
 bool Player::canSlashWithoutCrossbow() const
 {
     int slash_count = getSlashCount();
@@ -790,7 +801,7 @@ bool Player::canSlashWithoutCrossbow() const
     return slash_count < valid_slash_count;
 }
 
-void Player::jilei(const QString &type) {
+void Player::huyin(const QString &type) {
     if (type == "clear") { // Clear
         removeCardLimitation("use,response,discard", "BasicCard|.|.|hand@1");
         removeCardLimitation("use,response,discard", "EquipCard|.|.|hand@1");
@@ -813,7 +824,7 @@ void Player::jilei(const QString &type) {
 
 
 
-bool Player::isJilei(const Card *card) const{
+bool Player::isHuyin(const Card *card) const{
     // Not handcard only!!!
     return isCardLimited(card, Card::MethodDiscard);
 }

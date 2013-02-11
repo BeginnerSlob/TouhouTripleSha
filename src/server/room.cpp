@@ -1474,9 +1474,9 @@ void Room::setPlayerCardLock(ServerPlayer *player, const QString &name){
     player->invoke("cardLock", name);
 }
 
-void Room::setPlayerJilei(ServerPlayer *player, const QString &name) {
-    player->jilei(name);
-    player->invoke("jilei", name);
+void Room::setPlayerHuyin(ServerPlayer *player, const QString &name) {
+    player->huyin(name);
+    player->invoke("huyin", name);
 }
 
 void Room::setCardFlag(const Card *card, const QString &flag, ServerPlayer *who){
@@ -4061,18 +4061,18 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
         notifyMoveFocus(player, S_COMMAND_DISCARD_CARD);
         if (!optional) {
             DummyCard *dummy = new DummyCard;
-            QList<int> jilei_list;
+            QList<int> huyin_list;
             QList <const Card*> handcards = player->getHandcards();
             foreach(const Card *card, handcards){
-                if(!player->isJilei(card))
+                if(!player->isHuyin(card))
                     dummy->addSubcard(card);
                 else
-                    jilei_list << card->getId();
+                    huyin_list << card->getId();
             }
             if (include_equip) {
                 QList <const Card*> equips = player->getEquips();
                 foreach(const Card *card, equips){
-                    if(!player->isJilei(card))
+                    if(!player->isHuyin(card))
                         dummy->addSubcard(card);
                 }
             }
@@ -4095,13 +4095,13 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
                     thread->trigger(ChoiceMade, this, player, data);
                 }
 
-                if (card_num < min_num && !jilei_list.isEmpty()) {
+                if (card_num < min_num && !huyin_list.isEmpty()) {
                     Json::Value lingshiArgs(Json::arrayValue);
                     lingshiArgs[0] = toJsonString(player->objectName());
                     lingshiArgs[1] = false;
-                    lingshiArgs[2] = toJsonArray(jilei_list);
+                    lingshiArgs[2] = toJsonArray(huyin_list);
 
-                    foreach(int cardId, jilei_list)
+                    foreach(int cardId, huyin_list)
                     {
                         WrappedCard *card = Sanguosha->getWrappedCard(cardId);
                         if(card->isModified()){
@@ -4114,12 +4114,12 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
                     }
 
                     LogMessage log;
-                    log.type = "$JileiShowAllCards";
+                    log.type = "$HuyinShowAllCards";
                     log.from = player;
-                    foreach(int card_id, jilei_list){
+                    foreach(int card_id, huyin_list){
                         setCardFlag(card_id, "visible");
                     }
-                    log.card_str = Card::IdsToStrings(jilei_list).join("+");
+                    log.card_str = Card::IdsToStrings(huyin_list).join("+");
                     sendLog(log);
 
                     doBroadcastNotify(S_COMMAND_SHOW_ALL_CARDS, lingshiArgs);

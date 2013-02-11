@@ -23,19 +23,17 @@ void Slash::setNature(DamageStruct::Nature nature){
 
 bool Slash::IsAvailable(const Player *player, const Card *slash){
     if (!slash) {
-        Slash *slash = new Slash(Card::NoSuitNoColor, 0);
-        slash->deleteLater();
-        if (player->isCardLimited(slash, Card::MethodUse))
-            return false;
+        slash = new Slash(Card::NoSuitNoColor, 0);
     }
-    else if (player->isCardLimited(slash, Card::MethodUse))
+    
+    if (player->isCardLimited(slash, Card::MethodUse))
         return false;
 
     return (player->hasWeapon("Crossbow") || player->canSlashWithoutCrossbow());
 }
 
 bool Slash::isAvailable(const Player *player) const{
-    return IsAvailable(player, this) && BasicCard::isAvailable(player);
+    return (IsAvailable(player, this) || player->canUseExtraSlash(this)) && BasicCard::isAvailable(player);
 }
 
 QString Slash::getSubtype() const{
@@ -446,7 +444,9 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return Slash::IsAvailable(player, NULL) && player->getMark("Equips_Nullified_to_Yourself") == 0;
+        Slash *slash = new Slash(Card::NoSuitNoColor, 0);
+        slash->deleteLater();
+        return !player->isCardLimited(slash, Card::MethodUse, true) && player->getMark("Equips_Nullified_to_Yourself") == 0;
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
