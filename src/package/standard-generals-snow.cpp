@@ -103,6 +103,47 @@ public:
     }
 };
 
+KurouCard::KurouCard() {
+    target_fixed = true;
+}
+
+void KurouCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    room->loseHp(source);
+    if (source->isAlive())
+        room->drawCards(source, 2);
+}
+
+class Kurou: public ZeroCardViewAsSkill {
+public:
+    Kurou(): ZeroCardViewAsSkill("kurou") {
+    }
+
+    virtual const Card *viewAs() const{
+        return new KurouCard;
+    }
+};
+
+class Zaiqi: public TriggerSkill {
+public:
+    Zaiqi(): TriggerSkill("zaiqi") {
+        events << HpRecover;
+        frequency = Frequent;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        RecoverStruct recover = data.value<RecoverStruct>();
+        if (player->hasFlag("dying"))
+            while(recover.recover--)
+            {
+                if (!player->askForSkillInvoke(objectName()))
+                    break;
+                player->drawCards(1);
+            }
+
+        return false;
+    }
+};
+
 GuidengCard::GuidengCard(){
     once = true;
     handling_method = MethodNone;
@@ -1905,6 +1946,10 @@ void StandardPackage::addSnowGenerals(){
     General *snow002 = new General(this, "snow002", "wu");
     snow002->addSkill(new Kuipo);
 
+    General *snow004 = new General(this, "snow004", "wu");
+    snow004->addSkill(new Kurou);
+    snow004->addSkill(new Zaiqi);
+
     General *snow005 = new General(this, "snow005", "wu", 3);
     snow005->addSkill(new Guideng);
     snow005->addSkill(new Chenhong);
@@ -1984,6 +2029,7 @@ void StandardPackage::addSnowGenerals(){
     related_skills.insertMulti("yeyan", "#@yeyan-1");
 
     addMetaObject<ZhihengCard>();
+    addMetaObject<KurouCard>();
     addMetaObject<GuidengCard>();
     addMetaObject<XuanhuoCard>();
     addMetaObject<YuanheCard>();

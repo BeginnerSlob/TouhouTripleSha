@@ -597,79 +597,113 @@ public:
     }
 };
 
-/*ThXihuaCard::ThXihuaCard(){
-}
-
-bool ThXihuaCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-    if(Sanguosha->getCard(getEffectiveId())->getSuit() != Card::Spade)
-        return targets.size() == 1;
-    else
-        return targets.isEmpty();
+ThXihuaCard::ThXihuaCard(){
+    will_throw = false;
+    handling_method = MethodNone;
 }
 
 bool ThXihuaCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    Card::Suit suit = Sanguosha->getCard(getEffectiveId())->getSuit();
-    if(suit == Card::Spade)
+    if (!targets.isEmpty())
         return false;
-    else if(suit == Card::Diamond)
-        return targets.isEmpty() && !to_select->isAllNude() && to_select != Self;
-    else
-        return targets.isEmpty() && to_select != Self;
+    Duel *duel = new Duel(NoSuitNoColor, 0);
+    duel->deleteLater();
+    Slash *slash = new Slash(NoSuitNoColor, 0);
+    slash->deleteLater();
+    if (Self->isProhibited(to_select, duel) && Self->isProhibited(to_select, slash))
+        return false;
+
+    return to_select != Self;
 }
 
 void ThXihuaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    Card::Suit suit = Sanguosha->getCard(getEffectiveId())->getSuit();
-    ServerPlayer *target = NULL;
-    if(!targets.isEmpty())
-        target = targets.first();
+    source->addToPile("xihuapile", this, false);
+    ServerPlayer *target = targets[0];
+    QStringList choices;
+    Slash *slash = new Slash(NoSuitNoColor, 0);
+    slash->setSkillName("thxihua");
+    slash->deleteLater();
+    Duel *duel = new Duel(NoSuitNoColor, 0);
+    duel->setSkillName("thxihua");
+    duel->deleteLater();
+    if (slash->isAvailable(source) && !source->isProhibited(target, slash))
+        choices << "slash";
 
-    if(suit == Card::Spade)
+    if (duel->isAvailable(source) && !source->isProhibited(target, duel))
+        choices << "duel";
+
+    QString choice = room->askForChoice(source, "thxihua", choices.join("+"));
+    if (choice == "slash")
     {
-        RecoverStruct recover;
-        recover.who = source;
-        room->recover(source, recover);
+        CardUseStruct use;
+        use.from = source;
+        use.to << target;
+        use.card = slash;
+        room->useCard(use);
     }
-    else if(suit == Card::Heart)
+    else if (choice == "duel")
     {
-        target->drawCards(1);
-        target->turnOver();
+        CardUseStruct use;
+        use.from = source;
+        use.to << target;
+        use.card = duel;
+        room->useCard(use);
     }
-    else if(suit == Card::Club)
-    {
-        target->drawCards(2);
-        if(!target->isNude())
-            room->askForDiscard(target, "thxihua", 1, 1, false, true);
-    }
-    else if(suit == Card::Diamond)
-    {
-        int card_id = room->askForCardChosen(source, target, "hej", "thxihua");
-        room->throwCard(card_id, target, source);
-    }
+
+    source->clearOnePrivatePile("xihuapile");
 }
 
-class ThXihua:public ViewAsSkill{
+class ThXihuaViewAsSkill: public OneCardViewAsSkill{
 public:
-    ThXihua():ViewAsSkill("thxihua"){
+    ThXihuaViewAsSkill(): OneCardViewAsSkill("thxihua"){
     }
 
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        if(selected.isEmpty())
-            return !(!Self->isWounded() && to_select->getSuit() == Card::Spade);
-        else if(selected.length() == 1)
-            return to_select->getSuit() == selected.first()->getSuit();
-        else
-            return false;
+    virtual bool isEnabledAtPlay(const Player *player) const {
+        return false;
     }
 
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if(cards.length() == 2){
-            ThXihuaCard *card = new ThXihuaCard;
-            card->addSubcards(cards);
-            return card;
-        }else
-            return NULL;
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const {
+        return pattern == "@@thxihua";
     }
-};*/
+
+    virtual bool viewFilter(const Card *to_select) const{
+        return !to_select->isEquipped();
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        ThXihuaCard *card = new ThXihuaCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+};
+
+class ThXihua: public TriggerSkill {
+public:
+    ThXihua(): TriggerSkill("thxihua") {
+        events << Predamage << EventPhaseStart;
+		view_as_skill = new ThXihuaViewAsSkill;
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Start)
+            room->askForUseCard(player, "@@thxihua", "@thxihua", -1, Card::MethodNone);
+        else if (triggerEvent == Predamage)
+        {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card && damage.card->getSkillName() == objectName()
+                && damage.from && !damage.from->getPile("xihuapile").isEmpty())
+            {
+                int id = damage.from->getPile("xihuapile").first();
+                room->showCard(damage.from, id);
+                if (Sanguosha->getCard(id)->isKindOf("Slash"))
+                    damage.from->drawCards(1);
+                else
+                    return true;
+            }
+        }
+
+        return false;
+    }
+};
 
 ThMimengCard::ThMimengCard(){
     mute = true;
@@ -2045,8 +2079,8 @@ void TouhouPackage::addHanaGenerals(){
     hana005->addSkill(new ThYuchangTargetMod);
     related_skills.insertMulti("thyuchang", "#thyuchang-target");
 
-    /*General *hana006 = new General(this, "hana006", "wei");
-    hana006->addSkill(new ThXihua);*/
+    General *hana006 = new General(this, "hana006", "wei");
+    hana006->addSkill(new ThXihua);
 
     General *hana007 = new General(this, "hana007", "wei", 3, false);
     hana007->addSkill(new ThMimeng);
@@ -2098,7 +2132,7 @@ void TouhouPackage::addHanaGenerals(){
     addMetaObject<ThJiewuCard>();
     addMetaObject<ThMopaoCard>();
     addMetaObject<ThWujianCard>();
-    //addMetaObject<ThXihuaCard>();
+    addMetaObject<ThXihuaCard>();
     addMetaObject<ThMimengCard>();
     addMetaObject<ThQuanshanGiveCard>();
     addMetaObject<ThQuanshanCard>();
