@@ -1074,15 +1074,21 @@ void ThDuanzuiCard::onEffect(const CardEffectStruct &effect) const {
     const Card *card = Sanguosha->getCard(card_id);
     Card *use_card;
     if (card->isKindOf("Slash"))
-        use_card = new Duel(NoSuitNoColor, 0);
-    else if (card->isKindOf("Jink"))
-        use_card = new Slash(NoSuitNoColor, 0);
-
-    if (use_card)
     {
         CardUseStruct use;
         use.from = effect.from;
         use.to << effect.to;
+        use_card = new Duel(NoSuitNoColor, 0);
+        use_card->setSkillName("thduanzui");
+        use.card = use_card;
+        room->useCard(use);
+    }
+    else if (card->isKindOf("Jink"))
+    {
+        CardUseStruct use;
+        use.from = effect.from;
+        use.to << effect.to;
+        use_card = new Slash(NoSuitNoColor, 0);
         use_card->setSkillName("thduanzui");
         use.card = use_card;
         room->useCard(use);
