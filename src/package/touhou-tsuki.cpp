@@ -1904,5 +1904,5 @@ void TouhouPackage::addTsukiGenerals(){
     addMetaObject<ThTianqueCard>();
     addMetaObject<ThShenbaoCard>();
 
-	skills << new ThYewangViewAsSkill;
+    skills << new ThYewangViewAsSkill;
 }

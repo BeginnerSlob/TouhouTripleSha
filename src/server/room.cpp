@@ -1147,7 +1147,7 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
                 to_discard.append(card->getSubcards());
             else
                 to_discard << card->getEffectiveId();
-			log.card_str = Card::IdsToStrings(to_discard).join("+");
+            log.card_str = Card::IdsToStrings(to_discard).join("+");
             if (!skill_name.isEmpty())
                 log.arg = skill_name;
             sendLog(log);
