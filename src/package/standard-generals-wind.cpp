@@ -824,6 +824,102 @@ public:
     }
 };
 
+TiaoxinCard::TiaoxinCard() {
+}
+
+bool TiaoxinCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && to_select->inMyAttackRange(Self) && to_select != Self;
+}
+
+void TiaoxinCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    bool use_slash = false;
+    if (effect.to->canSlash(effect.from, NULL, false))
+        use_slash = room->askForUseSlashTo(effect.to, effect.from, "@tiaoxin-slash:" + effect.from->objectName());
+    if (!use_slash && !effect.to->isNude())
+        room->throwCard(room->askForCardChosen(effect.from, effect.to, "he", "tiaoxin"), effect.to, effect.from);
+}
+
+class Tiaoxin: public ZeroCardViewAsSkill {
+public:
+    Tiaoxin(): ZeroCardViewAsSkill("tiaoxin") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("TiaoxinCard");
+    }
+
+    virtual const Card *viewAs() const{
+        return new TiaoxinCard;
+    }
+};
+
+class Shengtian: public PhaseChangeSkill {
+public:
+    Shengtian(): PhaseChangeSkill("shengtian") {
+        frequency = Wake;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+               && target->getMark("@shengtian") == 0
+               && target->getPhase() == Player::Start
+               && target->isKongcheng();
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+
+        LogMessage log;
+        log.type = "#ShengtianWake";
+        log.from = player;
+        log.arg = objectName();
+        room->sendLog(log);
+
+        room->broadcastSkillInvoke(objectName());
+
+        player->gainMark("@shengtian");
+        if (player->isWounded() && room->askForChoice(player, objectName(), "recover+draw") == "recover")
+        {
+            RecoverStruct recover;
+            recover.who = player;
+            room->recover(player, recover);
+        }
+        else
+        {
+            room->drawCards(player, 2);
+        }
+        room->loseMaxHp(player);
+
+        room->acquireSkill(player, "xuanwu");
+        room->acquireSkill(player, "mohua");
+
+        return false;
+    }
+};
+
+class Mohua: public FilterSkill {
+public:
+	Mohua(): FilterSkill("mohua") {
+	}
+
+	static WrappedCard *changeToClub(int cardId){
+        WrappedCard *new_card = Sanguosha->getWrappedCard(cardId);
+        new_card->setSkillName("mohua");
+        new_card->setSuit(Card::Club);
+        new_card->setModified(true);
+        return new_card;
+    }
+
+    virtual bool viewFilter(const Card* to_select) const{
+        return to_select->getSuit() == Card::Diamond;
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        return changeToClub(originalCard->getEffectiveId());
+    }
+};
+
 class Manbo: public TriggerSkill {
 public:
     Manbo(): TriggerSkill("manbo") {
@@ -1662,6 +1758,11 @@ void StandardPackage::addWindGenerals(){
     wind011->addSkill(new Cangyan);
     wind011->addSkill(new Jinzhou);
 
+    General *wind012 = new General(this, "wind012", "shu");
+    wind012->addSkill(new Tiaoxin);
+    wind012->addSkill(new Shengtian);
+    wind012->addRelateSkill("mohua");
+
     General *wind013 = new General(this, "wind013$", "shu", 3);
     wind013->addSkill(new Manbo);
     wind013->addSkill(new Baishen);
@@ -1710,7 +1811,10 @@ void StandardPackage::addWindGenerals(){
     
     addMetaObject<FunuanCard>();
     addMetaObject<LiqiCard>();
+    addMetaObject<TiaoxinCard>();
     addMetaObject<XinchaoCard>();
     addMetaObject<Sishi2Card>();
     addMetaObject<XielunCard>();
+
+    skills << new Mohua;
 }
