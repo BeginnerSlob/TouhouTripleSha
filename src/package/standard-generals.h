@@ -159,6 +159,15 @@ public:
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
+class KurouCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE KurouCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 class GuidengCard: public SkillCard{
     Q_OBJECT
 
@@ -426,14 +435,6 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
-/*class KurouCard: public SkillCard{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE KurouCard();
-
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-};*/
 
 class LiqiCard: public SkillCard{
     Q_OBJECT
