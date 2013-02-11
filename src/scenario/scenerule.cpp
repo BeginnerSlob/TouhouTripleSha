@@ -2,6 +2,7 @@
 #include "standard-generals.h"
 #include "carditem.h"
 #include "scenerule.h"
+#include "room.h"
 
 #include <QTime>
 
