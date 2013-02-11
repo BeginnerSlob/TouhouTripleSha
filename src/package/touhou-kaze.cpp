@@ -872,90 +872,82 @@ public:
     }
 };
 
-ThWangminCard::ThWangminCard(){
-    will_throw = false;
-}
-
-bool ThWangminCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select != Self;
-}
-
-void ThWangminCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    source->addToPile("wangminpile", this, false);
-    targets.first()->gainMark("@zhusi");
-}
-
-class ThWangminViewAsSkill:public OneCardViewAsSkill{
+class ThWangqin: public TriggerSkill {
 public:
-    ThWangminViewAsSkill():OneCardViewAsSkill("thwangmin"){
+    ThWangqin(): TriggerSkill("thwangqin") {
+        events << CardUsed << CardResponded;
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getPile("wangminpile").isEmpty();
-    }
-
-    virtual bool viewFilter(const Card* to_select) const{
-        return !to_select->isEquipped();
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const{
-        ThWangminCard *card = new ThWangminCard;
-        card->addSubcard(originalCard->getId());
-        return card;
-    }
-};
-
-class ThWangmin:public TriggerSkill{
-public:
-    ThWangmin():TriggerSkill("thwangmin"){
-        events << EventPhaseStart;
-        view_as_skill = new ThWangminViewAsSkill;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
+    virtual bool triggerable(const ServerPlayer *target) const {
         return target != NULL;
     }
 
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if(player->getPhase() != Player::Play)
+    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        const Card *card = NULL;
+        if (triggerEvent == CardUsed)
+        {
+            CardUseStruct use = data.value<CardUseStruct>();
+            card = use.card;
+        }
+        else if (triggerEvent == CardResponded)
+        {
+            CardResponseStruct resp = data.value<CardResponseStruct>();
+            card = resp.m_card;
+        }
+
+        if (!card->isRed())
             return false;
 
-        if(player->getMark("@zhusi") < 1)
-            return false;
-
-        player->loseAllMarks("@zhusi");
         ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-        if(splayer == NULL || splayer->getPile("wangminpile").isEmpty())
+        if (!splayer || splayer == player)
             return false;
 
-        const Card *card = room->askForCardShow(player, splayer, objectName());
-        room->showCard(player, card->getId());
-        room->showCard(splayer, splayer->getPile("wangminpile").first());
-        const Card *newcard = Sanguosha->getCard(splayer->getPile("wangminpile").first());
-        int ninus = qAbs(card->getNumber() - newcard->getNumber());
-        QString choice = "cancel";
-        if(ninus > splayer->getHp() + 2)
-            if(!player->isNude())
-                choice = room->askForChoice(splayer, objectName(), "discard+get+cancel");
-            else
-                choice = room->askForChoice(splayer, objectName(), "discard+cancel");
+        if (player->isChained() && !splayer->faceUp() && splayer->askForSkillInvoke(objectName()))
+        {
+            splayer->turnOver();
+            player->turnOver();
+            room->setPlayerProperty(player, "chained", false);
+        }
 
-        if(choice == "discard") {
-            room->throwCard(newcard, splayer);
-            DamageStruct damage;
-            damage.from = splayer;
-            damage.to = player;
-            room->damage(damage);
+        return false;
+    }
+};
+
+class ThFusuo: public TriggerSkill {
+public:
+    ThFusuo(): TriggerSkill("thfusuo") {
+        events << EventPhaseStart;
+    }
+
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        if (player->getPhase() == Player::Start && player->askForSkillInvoke(objectName()))
+        {
+            player->turnOver();
+            QList<ServerPlayer *> targets;
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                if (!p->isChained())
+                    targets << p;
+
+            if (!targets.isEmpty())
+            {
+                ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
+                room->setPlayerProperty(target, "chained", true);
+            }
+
+            room->setPlayerFlag(player, "fusuoinvoke");
         }
-        else if(choice == "get") {
-            splayer->obtainCard(newcard);
-            int card_id = room->askForCardChosen(splayer, player, "he", objectName());
-            room->throwCard(card_id, player, splayer);
+        else if (player->getPhase() == Player::Finish && player->hasFlag("fusuoinvoke"))
+        {
+            LogMessage log;
+            log.type = "#TriggerSkill";
+            log.from = player;
+            log.arg = objectName();
+            room->sendLog(log);
+
+            if (!room->askForCard(player, "^BasicCard", "@thfusuo"))
+                room->loseHp(player);
         }
-        else {
-            player->obtainCard(newcard);
-            player->drawCards(1);
-        }
+
         return false;
     }
 };
@@ -1630,7 +1622,8 @@ void TouhouPackage::addKazeGenerals(){
     kaze010->addSkill(new ThSibao);
 
     General *kaze011 = new General(this, "kaze011", "shu");
-    kaze011->addSkill(new ThWangmin);
+    kaze011->addSkill(new ThWangqin);
+    kaze011->addSkill(new ThFusuo);
 
     General *kaze012 = new General(this, "kaze012", "shu");
     kaze012->addSkill(new ThGelong);
@@ -1667,7 +1660,6 @@ void TouhouPackage::addKazeGenerals(){
     addMetaObject<ThHuosuiCard>();
     addMetaObject<ThKunyiCard>();
     addMetaObject<ThCannueCard>();
-    addMetaObject<ThWangminCard>();
     addMetaObject<ThGelongCard>();
     addMetaObject<ThDasuiCard>();
     addMetaObject<ThYanlunCard>();
