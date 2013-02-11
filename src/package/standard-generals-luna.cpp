@@ -1089,8 +1089,11 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        DamageStar damage = data.value<DamageStar>();
-
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who != player)
+            return false;
+        
+        DamageStar damage = death.damage;
         if(damage && damage->from){
             LogMessage log;
             log.type = "#QihuangLoseSkills";
@@ -1105,11 +1108,10 @@ public:
                 if(skill->getLocation() == Skill::Right && !skill->isAttachedLordSkill())
                     room->detachSkillFromPlayer(damage->from, skill->objectName());
             }
+            if (death.damage->from->getHp() <= 0)
+                room->enterDying(death.damage->from, NULL);
+
             damage->from->gainMark("@qihuang");
-            if(damage->from->getKingdom() != damage->from->getGeneral()->getKingdom())
-                room->setPlayerProperty(damage->from, "kingdom", damage->from->getGeneral()->getKingdom());
-            if(damage->from->getGender() != damage->from->getGeneral()->getGender())
-                damage->from->setGender(damage->from->getGeneral()->getGender());
         }
 
         return false;
@@ -1185,7 +1187,7 @@ public:
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if(! Self->hasUsed("LvdongCard")){
+        if(!Self->hasUsed("LvdongCard")){
             if(cards.length() != 1)
                 return NULL;
 
@@ -1205,20 +1207,27 @@ public:
 class Lvdong: public TriggerSkill{
 public:
     Lvdong():TriggerSkill("lvdong"){
+        events << EventPhaseChanging << Death << EventLoseSkill;
         view_as_skill = new LvdongViewAsSkill;
-
-        events << EventPhaseStart << Death;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->hasSkill("lvdong");
+        return target != NULL && target->tag["LvdongTarget"].value<PlayerStar>() != NULL;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (event == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to != Player::NotActive)
+                return false;
+        }
+        if (event == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player)
+                return false;
+        }
         ServerPlayer *target = player->tag["LvdongTarget"].value<PlayerStar>();
-
-        if((triggerEvent == Death || player->getPhase() == Player::Finish) && target){
-            Room *room = player->getRoom();
+        if (target) {
             room->setFixedDistance(player, target, -1);
             player->tag.remove("LvdongTarget");
             target->removeMark("Armor_Nullified");
@@ -1790,6 +1799,11 @@ public:
         if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to != Player::NotActive)
+                return false;
+        }
+        if (triggerEvent == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player)
                 return false;
         }
 

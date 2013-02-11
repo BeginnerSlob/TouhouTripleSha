@@ -285,6 +285,13 @@ struct DyingStruct{
     QList<ServerPlayer *> savers; // savers are the available players who can use peach for the dying player
 };
 
+struct DeathStruct {
+    DeathStruct();
+
+    ServerPlayer *who; // who is dead
+    DamageStruct *damage; // if it is NULL that means the dying is caused by losing hp
+};
+
 struct RecoverStruct{
     RecoverStruct();
 
@@ -505,6 +512,7 @@ Q_DECLARE_METATYPE(CardMoveStar)
 Q_DECLARE_METATYPE(CardStar)
 Q_DECLARE_METATYPE(PlayerStar)
 Q_DECLARE_METATYPE(DyingStruct)
+Q_DECLARE_METATYPE(DeathStruct)
 Q_DECLARE_METATYPE(RecoverStruct)
 Q_DECLARE_METATYPE(JudgeStar)
 Q_DECLARE_METATYPE(DamageStar)

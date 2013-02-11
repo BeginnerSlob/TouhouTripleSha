@@ -453,7 +453,7 @@ public:
                 if(damage->from->getRole() == damage->to->getRole())
                     damage->from->throwAllHandCards();
                 else{
-                    if(damage->to->hasSkill("huilei", false)){
+                    if(damage->to->hasSkill("shangshi", false)){
                         damage->from->throwAllHandCards();
                         damage->from->throwAllEquips();
                     }

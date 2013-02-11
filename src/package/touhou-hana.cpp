@@ -238,31 +238,32 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-
-        if(splayer == NULL)
-            return false;
-
         if(triggerEvent == EventPhaseChanging) {
+            ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
+            if(!splayer)
+                return false;
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if(change.to == Player::NotActive && splayer->getMark("thbian") > 0)
+            if(change.to == Player::RoundEnd && splayer->getMark("thbian") > 0)
                 splayer->removeMark("thbian");
 
             return false;
         }
+        else if (TriggerSkill::triggerable(player))
+        {
+            DyingStruct dying = data.value<DyingStruct>();
+            if(dying.who->getHp() > 0)
+                return false;
 
-        if(player->getHp() > 0)
-            return false;
+            if(player->getMark("thbian") > 0 || player->getHandcardNum() < 2)
+                return false;
 
-        if(splayer->getMark("thbian") > 0 || splayer->getHandcardNum() < 2)
-            return false;
-
-        if(splayer->askForSkillInvoke(objectName()))
-            if(room->askForDiscard(splayer, objectName(), 2, 2, true, false)) {
-                room->broadcastSkillInvoke(objectName());
-                splayer->addMark("thbian");
-                room->loseHp(player);
-            }
+            if(player->askForSkillInvoke(objectName()))
+                if(room->askForDiscard(player, objectName(), 2, 2, true, false)) {
+                    room->broadcastSkillInvoke(objectName());
+                    player->addMark("thbian");
+                    room->loseHp(dying.who);
+                }
+        }
 
         return false;
     }
@@ -271,32 +272,23 @@ public:
 class ThGuihang:public TriggerSkill{
 public:
     ThGuihang():TriggerSkill("thguihang"){
-        events << Dying << EventPhaseChanging;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
+        events << Dying;
     }
 
     virtual bool trigger(TriggerEvent , Room* room, ServerPlayer *player, QVariant &data) const{
-        ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-        if(splayer == NULL)
+        DyingStruct dying = data.value<DyingStruct>();
+        if(dying.who->getHp() > 0)
             return false;
-
-        if(player->getHp() > 0)
+        if(dying.who->isKongcheng())
             return false;
-
-        if(player->isKongcheng())
-            return false;
-
-        if(room->askForSkillInvoke(splayer, objectName())) {
+        if(room->askForSkillInvoke(player, objectName())) {
             int card_id;
-            if(splayer == player)
-                card_id = room->askForCardShow(splayer, splayer, "@thguihang")->getId();
+            if(player == dying.who)
+                card_id = room->askForCardShow(player, player, "@thguihang")->getId();
             else
-                card_id = room->askForCardChosen(splayer, player, "h", objectName());
+                card_id = room->askForCardChosen(player, dying.who, "h", objectName());
             
-            room->showCard(player, card_id);
+            room->showCard(dying.who, card_id);
 
             room->broadcastSkillInvoke(objectName());
             const Card *card = Sanguosha->getCard(card_id);
@@ -305,8 +297,8 @@ public:
 
             room->throwCard(card, player);
             RecoverStruct recover;
-            recover.who = splayer;
-            room->recover(player, recover);
+            recover.who = player;
+            room->recover(dying.who, recover);
         }
 
         return false;
@@ -360,6 +352,12 @@ public:
         if(triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if(change.to != Player::Start)
+                return false;
+        }
+        else if (triggerEvent == Death)
+        {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player)
                 return false;
         }
         
@@ -487,8 +485,10 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        DamageStar damage = data.value<DamageStar>();
-        ServerPlayer *killer = damage ? damage->from : NULL;
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who != player)
+            return false;
+        ServerPlayer *killer = death.damage ? death.damage->from : NULL;
 
         if(killer){
             Room *room = player->getRoom();
@@ -680,7 +680,7 @@ class ThXihua: public TriggerSkill {
 public:
     ThXihua(): TriggerSkill("thxihua") {
         events << Predamage << EventPhaseStart;
-		view_as_skill = new ThXihuaViewAsSkill;
+        view_as_skill = new ThXihuaViewAsSkill;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
@@ -1521,9 +1521,12 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == Dying && player->getHp() < 1)
+        if (triggerEvent == Dying && TriggerSkill::triggerable(player))
         {
             DyingStruct dying = data.value<DyingStruct>();
+            if (dying.who->getHp() > 0)
+                return false;
+
             DamageStar damage = dying.damage;
             if (dying.who == NULL || !damage || !damage->from || !damage->from->hasSkill(objectName()))
             {
@@ -2029,8 +2032,9 @@ public:
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         if (triggerEvent == Dying)
         {
-            room->setPlayerFlag(player, "tiandaoinvoke");
-            foreach (ServerPlayer *p, room->getLieges("wei", player))
+            DyingStruct dying = data.value<DyingStruct>();
+            room->setPlayerFlag(dying.who, "tiandaoinvoke");
+            foreach (ServerPlayer *p, room->getLieges("wei", dying.who))
             {
                 if (p->getKingdom() == "wei" && !p->hasSkill("thtiandaov"))
                     room->attachSkillToPlayer(p, "thtiandaov");

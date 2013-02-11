@@ -507,6 +507,13 @@ struct DyingStruct{
     DamageStruct *damage; // if it is NULL that means the dying is caused by losing hp
 };
 
+struct DeathStruct{
+    DeathStruct();
+
+    ServerPlayer *who; // who is dead
+    DamageStruct *damage; // if it is NULL that means the dying is caused by losing hp
+};
+
 struct RecoverStruct{
     RecoverStruct();
 
