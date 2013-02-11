@@ -989,6 +989,7 @@ bool Room::_askForNullification(const TrickCard *trick, ServerPlayer *from, Serv
         CardUseStruct use;
         use.card = card;
         use.from = repliedPlayer;
+        use.m_reason = CardUseStruct::CARD_USE_REASON_RESPONSE;
         useCard(use);
 
         if (card && card->isKindOf("Nullification"))
@@ -2693,7 +2694,7 @@ void Room::useCard(const CardUseStruct &use, bool add_history){
             card_use.from->invoke("addHistory", key + ":");
         }
 
-        broadcastInvoke("addHistory","pushPile");
+        broadcastInvoke("addHistory", "pushPile");
     }
 
     if(card_use.card->getRealCard() == card){

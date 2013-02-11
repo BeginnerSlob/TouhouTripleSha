@@ -1512,13 +1512,19 @@ public:
                 else if (damage->from->askForSkillInvoke(objectName()))
                 {
                     ServerPlayer *target = room->askForPlayerChosen(damage->from, targets, objectName());
+                    LogMessage log;
+                    log.type = "#ThLeishi";
+                    log.from = damage->from;
+                    log.to << target;
+                    log.arg = objectName();
+                    room->sendLog(log);
                     damage->from->tag["ThLeishiTarget"] = QVariant::fromValue(target);
                 }
             }
 
             return false;
         }
-        else if (triggerEvent == DamageComplete && TriggerSkill::triggerable(player))
+        else if (triggerEvent == DamageComplete)
         {
             DamageStruct damage = data.value<DamageStruct>();
             if (!damage.from || damage.from->isDead())

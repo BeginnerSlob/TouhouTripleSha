@@ -787,6 +787,71 @@ public:
     }
 };
 
+class ThLingya: public TriggerSkill {
+public:
+    ThLingya(): TriggerSkill("thlingya") {
+        events << CardFinished;
+        frequency = Frequent;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const {
+        return target != NULL;
+    }
+
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        ServerPlayer *current = room->getCurrent();
+        if (current->hasSkill(objectName()) && current != player && current->askForSkillInvoke(objectName()))
+        {
+            QStringList choices;
+            if (!player->isKongcheng())
+                choices << "discard";
+            choices << "letdraw";
+
+            QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+            if (choice == "discard")
+                room->askForDiscard(player, objectName(), 1, 1, false, true);
+            else
+                current->drawCards(1);
+        }
+
+        return false;
+    }
+};
+
+class ThHeimu: public TriggerSkill {
+public:
+    ThHeimu(): TriggerSkill("thheimu") {
+        events << CardUsed;
+    }
+
+    virtual int getPriority() const{
+        return 5;
+    }
+
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (player->getPhase() == Player::Play && use.m_reason == CardUseStruct::CARD_USE_REASON_PLAY
+            && use.card->getTypeId() != Card::TypeSkill && player->askForSkillInvoke(objectName()))
+        {
+            const CardMoveReason &reason = CardMoveReason(CardMoveReason::S_REASON_PUT, player->objectName());
+            room->moveCardTo(use.card, NULL, Player::DiscardPile, reason, true);
+            QString key = use.card->getClassName();
+            player->addHistory(key, -1);
+            player->invoke("addHistory", key + ":-1");
+            if (use.to.isEmpty())
+                use.to << use.from;
+
+            ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName());
+            use.from = target;
+            room->useCard(use);
+
+            return true;
+        }
+
+        return false;
+    }
+};
+
 class ThHanpo: public TriggerSkill {
 public:
     ThHanpo(): TriggerSkill("thhanpo") {
@@ -1626,6 +1691,10 @@ void TouhouPackage::addYukiGenerals(){
     General *yuki008 = new General(this, "yuki008", "wu", 3);
     yuki008->addSkill(new ThZiyun);
     yuki008->addSkill(new ThChuiji);
+
+    General *yuki009 = new General(this, "yuki009", "wu");
+    yuki009->addSkill(new ThLingya);
+    yuki009->addSkill(new ThHeimu);
 
     General *yuki010 = new General(this, "yuki010", "wu");
     yuki010->addSkill(new ThHanpo);

@@ -1423,6 +1423,7 @@ class Benyin: public TriggerSkill{
 public:
     Benyin():TriggerSkill("benyin"){
         events << PostHpReduced << HpRecover;
+        frequency = Frequent;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
