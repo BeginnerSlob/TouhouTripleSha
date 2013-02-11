@@ -1476,6 +1476,120 @@ public:
     }
 };
 
+class ThLeishi: public TriggerSkill {
+public:
+    ThLeishi(): TriggerSkill("thleishi") {
+        events << Dying << DamageComplete;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const {
+        return target != NULL;
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (triggerEvent == Dying && player->getHp() < 1)
+        {
+            DyingStruct dying = data.value<DyingStruct>();
+            DamageStar damage = dying.damage;
+            if (dying.who == NULL || !damage || !damage->from || !damage->from->hasSkill(objectName()))
+            {
+                damage->from->tag.remove("ThLeishiTarget");
+            }
+            else
+            {
+                int min_dis = 998;
+                foreach (ServerPlayer *p, room->getOtherPlayers(dying.who))
+                    if (dying.who->distanceTo(p) < min_dis)
+                        min_dis = dying.who->distanceTo(p);
+
+                QList<ServerPlayer *> targets;
+                foreach (ServerPlayer *p, room->getOtherPlayers(dying.who))
+                    if (dying.who->distanceTo(p) == min_dis)
+                        targets << p;
+
+                if (targets.isEmpty())
+                    damage->from->tag.remove("ThLeishiTarget");
+                else if (damage->from->askForSkillInvoke(objectName()))
+                {
+                    ServerPlayer *target = room->askForPlayerChosen(damage->from, targets, objectName());
+                    damage->from->tag["ThLeishiTarget"] = QVariant::fromValue(target);
+                }
+            }
+
+            return false;
+        }
+        else if (triggerEvent == DamageComplete && TriggerSkill::triggerable(player))
+        {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (!damage.from || damage.from->isDead())
+                return false;
+            PlayerStar target = damage.from->tag.value("ThLeishiTarget", NULL).value<PlayerStar>();
+            damage.from->tag.remove("ThLeishiTarget");
+
+            if (!target || target->isDead())
+                return false;
+
+            DamageStruct thleishi_damage;
+            thleishi_damage.nature = DamageStruct::Thunder;
+            thleishi_damage.from = damage.from;
+            thleishi_damage.to = target;
+            
+            room->damage(thleishi_damage);
+            
+            return false;
+        }
+
+        return false;
+    }
+};
+
+class ThShanling: public TriggerSkill {
+public:
+    ThShanling(): TriggerSkill("thshanling") {
+        events << EventPhaseStart;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const {
+        return TriggerSkill::triggerable(target) && target->getPhase() == Player::Start;
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        bool can_invoke = true;
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
+            if (player->getHpPoints() > p->getHpPoints()) {
+                can_invoke = false;
+                break;
+            }
+        }
+
+        if (can_invoke)
+        {
+            int min_dis = 998;
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                if (player->distanceTo(p) < min_dis)
+                    min_dis = player->distanceTo(p);
+
+            QList<ServerPlayer *> targets;
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                if (player->distanceTo(p) == min_dis)
+                    targets << p;
+
+            if (!targets.isEmpty() && player->askForSkillInvoke(objectName()))
+            {
+                ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
+                DamageStruct damage;
+                damage.nature = DamageStruct::Thunder;
+                damage.from = player;
+                damage.to = target;
+            
+                room->damage(damage);
+            }
+        }
+
+        return false;
+    }
+};
+
 ThShijieCard::ThShijieCard(){
     target_fixed = true;
     will_throw = false;
@@ -1957,7 +2071,11 @@ void TouhouPackage::addHanaGenerals(){
     hana013->addSkill(new ThYinghua);
     hana013->addSkill(new ThLiaoyu);
     hana013->addSkill(new ThHouzhi);
-    
+
+    General *hana015 = new General(this, "hana015", "wei", 3);
+    hana015->addSkill(new ThLeishi);
+    hana015->addSkill(new ThShanling);
+
     General *hana016 = new General(this, "hana016", "wei", 3);
     hana016->addSkill(new ThShijie);
     hana016->addSkill(new ThShengzhi);

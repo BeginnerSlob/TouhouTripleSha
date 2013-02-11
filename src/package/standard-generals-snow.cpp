@@ -874,71 +874,6 @@ public:
     }
 };
 
-class SushengRemove: public TriggerSkill{
-public:
-    SushengRemove():TriggerSkill("#susheng-remove"){
-        events << HpRecover << EventLoseSkill;
-    }
-
-    virtual int getPriority() const{
-        return -1;
-    }
-
-    static void Remove(ServerPlayer *player){
-        Room *room = player->getRoom();
-        QList<int> susheng(player->getPile("sushengpile"));
-
-        CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "susheng", QString());
-        int need = 1 - player->getHp();
-        if(need <= 0){
-            // clear all the susheng cards
-            foreach(int card_id, susheng) {
-
-                LogMessage log;
-                log.type = "$SushengRemove";
-                log.from = player;
-                log.card_str = Sanguosha->getCard(card_id)->toString();
-                room->sendLog(log);
-
-                room->throwCard(Sanguosha->getCard(card_id), reason, NULL);
-            }
-        }else{
-            int to_remove = susheng.length() - need;
-
-            for(int i = 0; i < to_remove; i++){
-                room->fillAG(susheng);
-                int card_id = room->askForAG(player, susheng, false, "susheng");
-
-                LogMessage log;
-                log.type = "$SushengRemove";
-                log.from = player;
-                log.card_str = Sanguosha->getCard(card_id)->toString();
-                room->sendLog(log);
-
-                susheng.removeOne(card_id);
-                room->throwCard(Sanguosha->getCard(card_id), reason, NULL);
-                room->broadcastInvoke("clearAG");
-            }
-        }
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if(triggerEvent == HpRecover && TriggerSkill::triggerable(player)
-                && player->getPile("sushengpile").length() > 0)
-            Remove(player);
-        else if(triggerEvent == EventLoseSkill && data.toString() == "susheng"){
-            player->clearOnePrivatePile("susheng");
-            if(player->getHp() <= 0)
-                room->enterDying(player, NULL);
-        }
-        return false;
-    }
-};
-
 class Susheng: public TriggerSkill{
 public:
     Susheng():TriggerSkill("susheng"){
@@ -1031,6 +966,71 @@ public:
                     }
                 }
             }
+        }
+        return false;
+    }
+};
+
+class SushengRemove: public TriggerSkill{
+public:
+    SushengRemove():TriggerSkill("#susheng-remove"){
+        events << HpRecover << EventLoseSkill;
+    }
+
+    virtual int getPriority() const{
+        return -1;
+    }
+
+    static void Remove(ServerPlayer *player){
+        Room *room = player->getRoom();
+        QList<int> susheng(player->getPile("sushengpile"));
+
+        CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "susheng", QString());
+        int need = 1 - player->getHp();
+        if(need <= 0){
+            // clear all the susheng cards
+            foreach(int card_id, susheng) {
+
+                LogMessage log;
+                log.type = "$SushengRemove";
+                log.from = player;
+                log.card_str = Sanguosha->getCard(card_id)->toString();
+                room->sendLog(log);
+
+                room->throwCard(Sanguosha->getCard(card_id), reason, NULL);
+            }
+        }else{
+            int to_remove = susheng.length() - need;
+
+            for(int i = 0; i < to_remove; i++){
+                room->fillAG(susheng);
+                int card_id = room->askForAG(player, susheng, false, "susheng");
+
+                LogMessage log;
+                log.type = "$SushengRemove";
+                log.from = player;
+                log.card_str = Sanguosha->getCard(card_id)->toString();
+                room->sendLog(log);
+
+                susheng.removeOne(card_id);
+                room->throwCard(Sanguosha->getCard(card_id), reason, NULL);
+                room->broadcastInvoke("clearAG");
+            }
+        }
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target != NULL;
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        if(triggerEvent == HpRecover && TriggerSkill::triggerable(player)
+                && player->getPile("sushengpile").length() > 0)
+            Remove(player);
+        else if(triggerEvent == EventLoseSkill && data.toString() == "susheng"){
+            player->clearOnePrivatePile("susheng");
+            if(player->getHp() <= 0)
+                room->enterDying(player, NULL);
         }
         return false;
     }

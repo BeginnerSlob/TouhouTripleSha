@@ -416,7 +416,7 @@ return {
 	["#hana015"]="神明末裔的亡灵",
 	["hana015"]="苏我屠自古",--花 - 空 - 3血
 	["designer:hana015"]="幻桜落 | Codeby:Slob",
-	["illustrator:hana015"]="ファルまろ",
+	["illustrator:hana015"]="正体不明",
 	["cv:hana015"]="暂无",
 	["thleishi"]="雷矢",
 	[":thleishi"]="若你造成伤害令其他角色进入濒死状态时，你可以指定与该角色距离最近的一名角色，在伤害结算后，对其造成1点雷电伤害。",
