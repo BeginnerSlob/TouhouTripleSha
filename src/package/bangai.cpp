@@ -907,95 +907,54 @@ public:
     }
 };
 
-class ThXiangrui: public TriggerSkill{
+ThGuijuanCard::ThGuijuanCard() {
+	target_fixed = true;
+}
+
+void ThGuijuanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const {
+	source->drawCards(1);
+	const Card *card = source->getHandcards().last();
+	room->showCard(source, card->getId());
+	if (!card->isAvailable(source) || !room->askForUseCard(source, card->getEffectIdString(), "@thguijuan"))
+		room->loseHp(source);
+}
+
+class ThGuijuan: public ZeroCardViewAsSkill {
 public:
-    ThXiangrui():TriggerSkill("thxiangrui"){
-        events << EventPhaseStart;
-    }
+	ThGuijuan(): ZeroCardViewAsSkill("thguijuan") {
+	}
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        if (player->getPhase() != Player::Discard || player->getHandcardNum() == player->getHpPoints())
-            return false;
-
-        int x = player->getHandcardNum() - player->getHpPoints();
-        if (player->askForSkillInvoke(objectName()))
-        {
-            if (x > 0)
-            {
-                ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName());
-                target->drawCards(x);
-            }
-            else if (x < 0)
-                player->drawCards(-x);
-        }
-
-        return false;
+	virtual const Card *viewAs() const{
+        return new ThGuijuanCard;
     }
 };
 
-ThXingxieCard::ThXingxieCard(){
-    target_fixed = true;
-}
-
-void ThXingxieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    source->loseMark("@xingxie");
-    source->gainMark("@xingxieused");
-
-    foreach(ServerPlayer *p, room->getOtherPlayers(source))
-    {
-        DummyCard *card = new DummyCard;
-        card->addSubcards(p->getEquips());
-
-        if (card->subcardsLength() == 0)
-            break;
-
-        p->obtainCard(card);
-    }
-}
-
-class ThXingxieViewAsSkill: public ViewAsSkill{
+class ThZhayou: public TriggerSkill {
 public:
-    ThXingxieViewAsSkill():ViewAsSkill("thxingxie"){
-    }
+	ThZhayou(): TriggerSkill("thzhayou") {
+		events << SlashMissed;
+	}
 
-    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
-        return !to_select->isEquipped();
-    }
+	virtual bool triggerable(const ServerPlayer *target) const {
+		return target != NULL;
+	}
 
-    virtual const Card *viewAs(const QList<const Card *> &cards) const {
-        if (cards.length() < Self->getHandcardNum())
-            return NULL;
+	virtual bool trigger(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const{
+		SlashEffectStruct effect = data.value<SlashEffectStruct>();
+		if (effect.to->isAlive() && effect.to->hasSkill(objectName()) && effect.to->askForSkillInvoke(objectName()))
+		{	
+			effect.to->drawCards(1);
+			if (!room->askForUseSlashTo(effect.from, effect.to, "@thzhayou:" + effect.to->objectName()))
+			{
+				DamageStruct damage;
+				damage.from = effect.to;
+				damage.to = effect.from;
+				room->damage(damage);
+			}
+		}
 
-        ThXingxieCard *card = new ThXingxieCard;
-        card->addSubcards(cards);
-        return card;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        bool invoke = false;
-        foreach(const Player *p, player->getSiblings())
-            if (!p->getEquips().isEmpty())
-            {
-                invoke = true;
-                break;
-            }
-        return invoke && player->getMark("@xingxie") > 0 && !player->isKongcheng();
-    }
-};
-
-class ThXingxie: public TriggerSkill{
-public:
-    ThXingxie():TriggerSkill("thxingxie"){
-        events << GameStart;
-        frequency = Limited;
-        view_as_skill = new ThXingxieViewAsSkill;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *, ServerPlayer *player, QVariant &) const{
-        player->gainMark("@xingxie");
-
-        return false;
-    }
+		return false;
+	}
 };
 
 ThLuanshenCard::ThLuanshenCard(){
@@ -1279,6 +1238,97 @@ public:
     }
 };
 
+class ThXiangrui: public TriggerSkill{
+public:
+    ThXiangrui():TriggerSkill("thxiangrui"){
+        events << EventPhaseStart;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+        if (player->getPhase() != Player::Discard || player->getHandcardNum() == player->getHpPoints())
+            return false;
+
+        int x = player->getHandcardNum() - player->getHpPoints();
+        if (player->askForSkillInvoke(objectName()))
+        {
+            if (x > 0)
+            {
+                ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName());
+                target->drawCards(x);
+            }
+            else if (x < 0)
+                player->drawCards(-x);
+        }
+
+        return false;
+    }
+};
+
+ThXingxieCard::ThXingxieCard(){
+    target_fixed = true;
+}
+
+void ThXingxieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    source->loseMark("@xingxie");
+    source->gainMark("@xingxieused");
+
+    foreach(ServerPlayer *p, room->getOtherPlayers(source))
+    {
+        DummyCard *card = new DummyCard;
+        card->addSubcards(p->getEquips());
+
+        if (card->subcardsLength() == 0)
+            break;
+
+        p->obtainCard(card);
+    }
+}
+
+class ThXingxieViewAsSkill: public ViewAsSkill{
+public:
+    ThXingxieViewAsSkill():ViewAsSkill("thxingxie"){
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
+        return !to_select->isEquipped();
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const {
+        if (cards.length() < Self->getHandcardNum())
+            return NULL;
+
+        ThXingxieCard *card = new ThXingxieCard;
+        card->addSubcards(cards);
+        return card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        bool invoke = false;
+        foreach(const Player *p, player->getSiblings())
+            if (!p->getEquips().isEmpty())
+            {
+                invoke = true;
+                break;
+            }
+        return invoke && player->getMark("@xingxie") > 0 && !player->isKongcheng();
+    }
+};
+
+class ThXingxie: public TriggerSkill{
+public:
+    ThXingxie():TriggerSkill("thxingxie"){
+        events << GameStart;
+        frequency = Limited;
+        view_as_skill = new ThXingxieViewAsSkill;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *, ServerPlayer *player, QVariant &) const{
+        player->gainMark("@xingxie");
+
+        return false;
+    }
+};
+
 class ThWuqi: public TriggerSkill {
 public:
     ThWuqi(): TriggerSkill("thwuqi") {
@@ -1457,6 +1507,10 @@ BangaiPackage::BangaiPackage()
     General *bangai010 = new General(this, "bangai010", "wei");
     bangai010->addSkill(new ThWeide);
 
+    General *bangai011 = new General(this, "bangai011", "wu", 3, false);
+    bangai011->addSkill(new ThGuijuan);
+    bangai011->addSkill(new ThZhayou);
+
     General *bangai013 = new General(this, "bangai013", "shu");
     bangai013->addSkill(new ThLuanshen);
 
@@ -1482,6 +1536,7 @@ BangaiPackage::BangaiPackage()
     addMetaObject<ThZushaCard>();
     addMetaObject<ThYaomeiCard>();
     addMetaObject<ThYuboCard>();
+    addMetaObject<ThGuijuanCard>();
     addMetaObject<ThLuanshenCard>();
     addMetaObject<ThLingzhanCard>();
     addMetaObject<ThXingxieCard>();

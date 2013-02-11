@@ -52,6 +52,25 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class ThGuijuanCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThGuijuanCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThLuanshenCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThLuanshenCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 class ThLingzhanCard: public SkillCard{
     Q_OBJECT
 
@@ -69,16 +88,6 @@ class ThXingxieCard: public SkillCard{
 public:
     Q_INVOKABLE ThXingxieCard();
 
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-};
-
-class ThLuanshenCard: public SkillCard{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE ThLuanshenCard();
-
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
