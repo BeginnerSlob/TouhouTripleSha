@@ -807,55 +807,55 @@ public:
 
 class ThMozhuang: public TriggerSkill {
 public:
-	ThMozhuang(): TriggerSkill("thmozhuang") {
-		events << DrawNCards << SlashProceed;
-		frequency = Compulsory;
-	}
+    ThMozhuang(): TriggerSkill("thmozhuang") {
+        events << DrawNCards << SlashProceed;
+        frequency = Compulsory;
+    }
 
-	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
-		if (triggerEvent == DrawNCards && player->getWeapon())
-		{
-			LogMessage log;
-			log.type = "#TriggerSkill";
-			log.from = player;
-			log.arg = objectName();
-			room->sendLog(log);
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
+        if (triggerEvent == DrawNCards && player->getWeapon())
+        {
+            LogMessage log;
+            log.type = "#TriggerSkill";
+            log.from = player;
+            log.arg = objectName();
+            room->sendLog(log);
 
-			int n = qMax((qobject_cast<const Weapon*>(player->getWeapon()->getRealCard()))->getRange(), 2);
-			player->drawCards(n);
-			return true;
-		}
-		else if (triggerEvent == SlashProceed && player->getArmor())
-		{
-			LogMessage log;
-			log.type = "#TriggerSkill";
-			log.from = player;
-			log.arg = objectName();
-			room->sendLog(log);
-			
-			room->slashResult(data.value<SlashEffectStruct>(), NULL);
-			return true;
-		}
+            int n = qMax((qobject_cast<const Weapon*>(player->getWeapon()->getRealCard()))->getRange(), 2);
+            player->drawCards(n);
+            return true;
+        }
+        else if (triggerEvent == SlashProceed && player->getArmor())
+        {
+            LogMessage log;
+            log.type = "#TriggerSkill";
+            log.from = player;
+            log.arg = objectName();
+            room->sendLog(log);
+            
+            room->slashResult(data.value<SlashEffectStruct>(), NULL);
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 };
 
 class ThMozhuangMaxCardsSkill: public MaxCardsSkill {
 public:
-	ThMozhuangMaxCardsSkill(): MaxCardsSkill("#thmozhuang") {
-	}
+    ThMozhuangMaxCardsSkill(): MaxCardsSkill("#thmozhuang") {
+    }
 
     virtual int getExtra(const Player *target) const{
         if (target->hasSkill("thmozhuang"))
-		{
-			int horses = 0;
-			if (target->getOffensiveHorse())
-				horses++;
-			if (target->getDefensiveHorse())
-				horses++;
+        {
+            int horses = 0;
+            if (target->getOffensiveHorse())
+                horses++;
+            if (target->getDefensiveHorse())
+                horses++;
             return horses;
-		}
+        }
         else
             return 0;
     }
@@ -908,53 +908,53 @@ public:
 };
 
 ThGuijuanCard::ThGuijuanCard() {
-	target_fixed = true;
+    target_fixed = true;
 }
 
 void ThGuijuanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const {
-	source->drawCards(1);
-	const Card *card = source->getHandcards().last();
-	room->showCard(source, card->getId());
-	if (!card->isAvailable(source) || !room->askForUseCard(source, card->getEffectIdString(), "@thguijuan"))
-		room->loseHp(source);
+    source->drawCards(1);
+    const Card *card = source->getHandcards().last();
+    room->showCard(source, card->getId());
+    if (!card->isAvailable(source) || !room->askForUseCard(source, card->getEffectIdString(), "@thguijuan"))
+        room->loseHp(source);
 }
 
 class ThGuijuan: public ZeroCardViewAsSkill {
 public:
-	ThGuijuan(): ZeroCardViewAsSkill("thguijuan") {
-	}
+    ThGuijuan(): ZeroCardViewAsSkill("thguijuan") {
+    }
 
-	virtual const Card *viewAs() const{
+    virtual const Card *viewAs() const{
         return new ThGuijuanCard;
     }
 };
 
 class ThZhayou: public TriggerSkill {
 public:
-	ThZhayou(): TriggerSkill("thzhayou") {
-		events << SlashMissed;
-	}
+    ThZhayou(): TriggerSkill("thzhayou") {
+        events << SlashMissed;
+    }
 
-	virtual bool triggerable(const ServerPlayer *target) const {
-		return target != NULL;
-	}
+    virtual bool triggerable(const ServerPlayer *target) const {
+        return target != NULL;
+    }
 
-	virtual bool trigger(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const{
-		SlashEffectStruct effect = data.value<SlashEffectStruct>();
-		if (effect.to->isAlive() && effect.to->hasSkill(objectName()) && effect.to->askForSkillInvoke(objectName()))
-		{	
-			effect.to->drawCards(1);
-			if (!room->askForUseSlashTo(effect.from, effect.to, "@thzhayou:" + effect.to->objectName()))
-			{
-				DamageStruct damage;
-				damage.from = effect.to;
-				damage.to = effect.from;
-				room->damage(damage);
-			}
-		}
+    virtual bool trigger(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const{
+        SlashEffectStruct effect = data.value<SlashEffectStruct>();
+        if (effect.to->isAlive() && effect.to->hasSkill(objectName()) && effect.to->askForSkillInvoke(objectName()))
+        {    
+            effect.to->drawCards(1);
+            if (!room->askForUseSlashTo(effect.from, effect.to, "@thzhayou:" + effect.to->objectName()))
+            {
+                DamageStruct damage;
+                damage.from = effect.to;
+                damage.to = effect.from;
+                room->damage(damage);
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 };
 
 ThLuanshenCard::ThLuanshenCard(){
