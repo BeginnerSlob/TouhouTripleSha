@@ -1426,7 +1426,7 @@ public:
         {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.card && damage.card->isKindOf("Slash")
-                && player->getMark(objectName()) > 0)
+                && player->getMark(objectName()) > 0 && player->askForSkillInvoke(objectName()))
             {
                 room->loseHp(damage.to, damage.damage);
                 return true;

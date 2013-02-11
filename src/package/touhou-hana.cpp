@@ -597,7 +597,7 @@ public:
     }
 };
 
-ThXihuaCard::ThXihuaCard(){
+/*ThXihuaCard::ThXihuaCard(){
 }
 
 bool ThXihuaCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
@@ -669,7 +669,7 @@ public:
         }else
             return NULL;
     }
-};
+};*/
 
 ThMimengCard::ThMimengCard(){
     mute = true;
@@ -2045,8 +2045,8 @@ void TouhouPackage::addHanaGenerals(){
     hana005->addSkill(new ThYuchangTargetMod);
     related_skills.insertMulti("thyuchang", "#thyuchang-target");
 
-    General *hana006 = new General(this, "hana006", "wei");
-    hana006->addSkill(new ThXihua);
+    /*General *hana006 = new General(this, "hana006", "wei");
+    hana006->addSkill(new ThXihua);*/
 
     General *hana007 = new General(this, "hana007", "wei", 3, false);
     hana007->addSkill(new ThMimeng);
@@ -2098,7 +2098,7 @@ void TouhouPackage::addHanaGenerals(){
     addMetaObject<ThJiewuCard>();
     addMetaObject<ThMopaoCard>();
     addMetaObject<ThWujianCard>();
-    addMetaObject<ThXihuaCard>();
+    //addMetaObject<ThXihuaCard>();
     addMetaObject<ThMimengCard>();
     addMetaObject<ThQuanshanGiveCard>();
     addMetaObject<ThQuanshanCard>();
