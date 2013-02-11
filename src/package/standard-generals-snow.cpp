@@ -1873,7 +1873,7 @@ public:
         if (to_select->isEquipped())
             return false;
 
-        if (Self->isJilei(to_select))
+        if (Self->isHuyin(to_select))
             return false;
 
         foreach (const Card *item, selected) {

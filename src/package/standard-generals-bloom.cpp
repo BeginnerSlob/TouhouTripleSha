@@ -879,6 +879,134 @@ public:
     }
 };
 
+YushenCard::YushenCard() {
+    mute = true;
+    will_throw = false;
+    handling_method = Card::MethodPindian;
+}
+
+bool YushenCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (!targets.isEmpty())
+        return false;
+
+    if (to_select->getHp() <= Self->getHp())
+        return false;
+
+    if (to_select->isKongcheng())
+        return false;
+
+    return true;
+}
+
+void YushenCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    ServerPlayer *tiger = targets.first();
+
+    room->broadcastSkillInvoke("yushen", 1);
+
+    bool success = source->pindian(tiger, "yushen", this);
+    if (success) {
+        room->broadcastSkillInvoke("yushen", 2);
+
+        QList<ServerPlayer *> players = room->getOtherPlayers(tiger), wolves;
+        foreach (ServerPlayer *player, players) {
+            if (tiger->inMyAttackRange(player))
+                wolves << player;
+        }
+
+        if (wolves.isEmpty()) {
+            LogMessage log;
+            log.type = "#YushenNoWolf";
+            log.from = source;
+            log.to << tiger;
+            room->sendLog(log);
+
+            return;
+        }
+
+        ServerPlayer *wolf = room->askForPlayerChosen(source, wolves, "yushen");
+
+        DamageStruct damage;
+        damage.from = tiger;
+        damage.to = wolf;
+
+        room->damage(damage);
+
+    } else {
+        DamageStruct damage;
+        damage.card = NULL;
+        damage.from = tiger;
+        damage.to = source;
+
+        room->damage(damage);
+    }
+}
+
+class Yushen: public OneCardViewAsSkill {
+public:
+    Yushen(): OneCardViewAsSkill("yushen") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("YushenCard") && !player->isKongcheng();
+    }
+
+    virtual bool viewFilter(const Card *to_select) const{
+        return !to_select->isEquipped();
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        YushenCard *card = new YushenCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+};
+
+JiemingCard::JiemingCard() {
+}
+
+bool JiemingCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const{
+    return targets.isEmpty();
+}
+
+void JiemingCard::onEffect(const CardEffectStruct &effect) const{
+    int upper = qMin(5, effect.to->getMaxHp());
+    int x = upper - effect.to->getHandcardNum();
+    if (x <= 0)
+        return;
+
+    effect.to->drawCards(x);
+}
+
+class JiemingViewAsSkill: public ZeroCardViewAsSkill {
+public:
+    JiemingViewAsSkill(): ZeroCardViewAsSkill("jieming") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *) const{
+        return false;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
+        return pattern == "@@jieming";
+    }
+
+    virtual const Card *viewAs() const{
+        return new JiemingCard;
+    }
+};
+
+class Jieming: public MasochismSkill {
+public:
+    Jieming(): MasochismSkill("jieming") {
+        view_as_skill = new JiemingViewAsSkill;
+    }
+
+    virtual void onDamaged(ServerPlayer *player, const DamageStruct &damage) const{
+        Room *room = player->getRoom();
+        room->askForUseCard(player, "@@jieming", "@jieming");
+    }
+};
+
 class Tanwan: public TriggerSkill{
 public:
     Tanwan():TriggerSkill("tanwan"){
@@ -1484,6 +1612,127 @@ public:
     }
 };
 
+class Huyin: public TriggerSkill {
+public:
+    Huyin(): TriggerSkill("huyin") {
+        events << Damaged;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *yangxiu, QVariant &data) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        ServerPlayer *current = room->getCurrent();
+        if (!current || current->isDead())
+            return false;
+
+        if (damage.from == NULL)
+           return false;
+
+        if (room->askForSkillInvoke(yangxiu, objectName(), data)) {
+            QString choice = room->askForChoice(yangxiu, objectName(), "basic+equip+trick");
+            room->broadcastSkillInvoke(objectName());
+
+            room->setPlayerHuyin(damage.from, choice);
+            room->setPlayerFlag(damage.from, "huyin");
+
+            LogMessage log;
+            log.type = "#Huyin";
+            log.from = yangxiu;
+            log.to << damage.from;
+            log.arg = choice;
+            room->sendLog(log);
+
+            /*if (damage.from->getMark("@huyin_" + choice) == 0)
+                damage.from->gainMark("@huyin_" + choice);*/
+        }
+
+        return false;
+    }
+};
+
+class HuyinClear: public TriggerSkill {
+public:
+    HuyinClear(): TriggerSkill("#huyin-clear") {
+        events << EventPhaseChanging << Death;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target != NULL;
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data) const{
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to != Player::RoundEnd)
+                return false;
+        } else if (triggerEvent == Death) {
+            if (target != room->getCurrent())
+                return false;
+        }
+        QList<ServerPlayer *> players = room->getAllPlayers();
+        foreach (ServerPlayer *player, players) {
+            if (player->hasFlag("huyin")) {
+                room->setPlayerFlag(player, "-huyin");
+
+                LogMessage log;
+                log.type = "#HuyinClear";
+                log.from = player;
+                room->sendLog(log);
+
+                //player->loseMark("@huyin_basic");
+                //player->loseMark("@huyin_equip");
+                //player->loseMark("@huyin_trick");
+                room->setPlayerHuyin(player, "clear");
+            }
+        }
+
+        return false;
+    }
+};
+
+class Hongce: public TriggerSkill {
+public:
+    Hongce(): TriggerSkill("hongce") {
+        events << TargetConfirmed << CardEffected;
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (triggerEvent == TargetConfirmed) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (!use.to.contains(player)
+                || !use.card->isKindOf("TrickCard")
+                || !room->askForSkillInvoke(player, objectName(), data))
+                return false;
+
+            room->broadcastSkillInvoke(objectName());
+            player->drawCards(1);
+            if (use.to.length() > 1)
+                player->tag["Hongce"] = use.card->toString();
+            else
+                player->tag["Hongce"] = QVariant(QString());
+        } else {
+            if (!player->isAlive() || !player->hasSkill(objectName()))
+                return false;
+
+            CardEffectStruct effect = data.value<CardEffectStruct>();
+            if (player->tag["Hongce"].isNull() || player->tag["Hongce"].toString() != effect.card->toString())
+                return false;
+
+            player->tag["Hongce"] = QVariant(QString());
+
+            LogMessage log;
+            log.type = "#HongceAvoid";
+            log.from = player;
+            log.arg = effect.card->objectName();
+            log.arg2 = objectName();
+            room->sendLog(log);
+
+            return true;
+        }
+
+        return false;
+    }
+};
+
 class Renjia: public TriggerSkill {
 public:
     Renjia(): TriggerSkill("renjia") {
@@ -1773,6 +2022,10 @@ void StandardPackage::addBloomGenerals(){
     General *bloom012 = new General(this, "bloom012", "wei");
     bloom012->addSkill(new Qiangxi);
 
+    General *bloom013 = new General(this, "bloom013", "wei", 3);
+    bloom013->addSkill(new Yushen);
+    bloom013->addSkill(new Jieming);
+
     General *bloom014 = new General(this, "bloom014$", "wei", 3);
     bloom014->addSkill(new Tanwan);
     bloom014->addSkill(new Bisuo);
@@ -1817,6 +2070,8 @@ void StandardPackage::addBloomGenerals(){
     addMetaObject<XunyuCard>();
     addMetaObject<MancaiCard>();
     addMetaObject<QiangxiCard>();
+    addMetaObject<YushenCard>();
+    addMetaObject<JiemingCard>();
     addMetaObject<BisuoCard>();
     addMetaObject<XinbanCard>();
     addMetaObject<JilveCard>();

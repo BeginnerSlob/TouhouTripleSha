@@ -129,7 +129,7 @@ public:
     void skillInvoked(const Json::Value &invoke_str);
     void animate(const QString &animate_str);
     void cardLimitation(const QString &limit_str);
-    void jilei(const QString &jilei_str);
+    void huyin(const QString &huyin_str);
     void cardLock(const QString &card_str);
     void setScreenName(const QString &set_str);
     void setFixedDistance(const QString &set_str);

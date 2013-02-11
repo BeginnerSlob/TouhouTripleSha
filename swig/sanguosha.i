@@ -208,11 +208,12 @@ public:
     QSet<QString> getAcquiredSkills() const;
 
     virtual bool isProhibited(const Player *to, const Card *card) const;
+    bool canUseExtraSlash(const Card *slash) const;
     bool canSlashWithoutCrossbow() const;
     virtual bool isLastHandCard(const Card *card) const = 0;
 
-    void jilei(const char *type);
-    bool isJilei(const Card *card) const;
+    void huyin(const char *type);
+    bool isHuyin(const Card *card) const;
 
     void setCardLocked(const char *name);
     bool isLocked(const Card *card) const;
@@ -956,7 +957,7 @@ public:
                                     const char *pattern);
     void clearPlayerCardLimitation(ServerPlayer *player, bool single_turn);
     void setPlayerCardLock(ServerPlayer *player, const char *name);
-    void setPlayerJilei(ServerPlayer *player, const char *name);
+    void setPlayerHuyin(ServerPlayer *player, const char *name);
     void setCardFlag(const Card *card, const char *flag, ServerPlayer *who = NULL);
     void setCardFlag(int card_id, const char *flag, ServerPlayer *who = NULL);
     void clearCardFlag(const Card *card, ServerPlayer *who = NULL);

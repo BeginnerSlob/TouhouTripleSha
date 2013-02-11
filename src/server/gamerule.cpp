@@ -90,18 +90,18 @@ void GameRule::onPhaseChange(ServerPlayer *player) const{
 
     case Player::Discard:{
             int discard_num, keep_num;
-            QSet<const Card *> jilei_cards;
+            QSet<const Card *> huyin_cards;
             QList<const Card *> handcards;
             do
             {
                 handcards = player->getHandcards();
                 foreach(const Card *card, handcards){
-                    if(player->isJilei(card))
-                        jilei_cards << card;
+                    if(player->isHuyin(card))
+                        huyin_cards << card;
                 }
-                keep_num = qMax(player->getMaxCards(), jilei_cards.size());
+                keep_num = qMax(player->getMaxCards(), huyin_cards.size());
                 discard_num = player->getHandcardNum() - keep_num;
-                jilei_cards.clear();
+                huyin_cards.clear();
                 if (discard_num > 0)
                     room->askForDiscard(player, "gamerule", discard_num, 1);
             }while (discard_num > 0);

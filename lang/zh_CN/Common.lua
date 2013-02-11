@@ -113,7 +113,7 @@ return {
 	["$ShowCard"] = "%from 展示了 %card",
 	["$ShowAllCards"] = "%from 展示了所有手牌 %card",
 	["$ShowAllCardsToOther"] = "%from 向 %to 展示了所有手牌",
-	["$JileiShowAllCards"] = "%from 受“<font color=\"yellow\"><b>鸡肋</b></font>”效果影响，展示了剩余手牌 %card",
+	["$HuyinShowAllCards"] = "%from 受“<font color=\"yellow\"><b>弧音</b></font>”效果影响，展示了剩余手牌 %card",
 	["$PutCard"] = "%from 的 %card 被置于牌堆顶",
 	["normal_nature"] = "无属性",
 	["fire_nature"] = "火焰属性",

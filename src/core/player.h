@@ -198,11 +198,12 @@ public:
     QString getSkillDescription() const;
 
     virtual bool isProhibited(const Player *to, const Card *card) const;
+    bool canUseExtraSlash(const Card *slash) const;
     bool canSlashWithoutCrossbow() const;
     virtual bool isLastHandCard(const Card *card) const = 0;
 
-    void jilei(const QString &type);
-    bool isJilei(const Card *card) const;
+    void huyin(const QString &type);
+    bool isHuyin(const Card *card) const;
 
     void setCardLocked(const QString &name);
     bool isLocked(const Card *card) const;

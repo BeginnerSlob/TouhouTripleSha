@@ -1312,16 +1312,16 @@ public:
         }else if(triggerEvent == EventPhaseStart && player->getPhase() == Player::Discard){
             int x = getKingdoms(player) + 1;
             int total = 0;
-            QSet<const Card *> jilei_cards;
+            QSet<const Card *> huyin_cards;
             QList<const Card *> handcards = player->getHandcards();
             foreach(const Card *card, handcards){
-                if(player->isJilei(card))
-                    jilei_cards << card;
+                if(player->isHuyin(card))
+                    huyin_cards << card;
             }
-            total = handcards.size() - jilei_cards.size() + player->getEquips().length();
+            total = handcards.size() - huyin_cards.size() + player->getEquips().length();
 
             if(x >= total){
-                if (player->hasFlag("jilei")){
+                if (player->hasFlag("huyin")){
                     LogMessage log;
                     log.type = "#ChenyanBad";
                     log.from = player;
@@ -1329,7 +1329,7 @@ public:
                     log.arg2 = objectName();
                     room->sendLog(log);
                     DummyCard *dummy_card = new DummyCard;
-                    foreach(const Card *card, handcards.toSet() - jilei_cards){
+                    foreach(const Card *card, handcards.toSet() - huyin_cards){
                         dummy_card->addSubcard(card);
                     }
                     QList<const Card *> equips = player->getEquips();
