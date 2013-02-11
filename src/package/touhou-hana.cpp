@@ -1060,6 +1060,49 @@ public:
      }
 };
 
+ThDuanzuiCard::ThDuanzuiCard() {
+}
+
+bool ThDuanzuiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const {
+    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
+}
+
+void ThDuanzuiCard::onEffect(const CardEffectStruct &effect) const {
+    Room *room = effect.from->getRoom();
+    int card_id = room->askForCardChosen(effect.from, effect.to, "h", objectName());
+    room->showCard(effect.to, card_id);
+    const Card *card = Sanguosha->getCard(card_id);
+    Card *use_card;
+    if (card->isKindOf("Slash"))
+        use_card = new Duel(NoSuitNoColor, 0);
+    else if (card->isKindOf("Jink"))
+        use_card = new Slash(NoSuitNoColor, 0);
+
+    if (use_card)
+    {
+        CardUseStruct use;
+        use.from = effect.from;
+        use.to << effect.to;
+        use_card->setSkillName("thduanzui");
+        use.card = use_card;
+        room->useCard(use);
+    }
+};
+
+class ThDuanzui: public ZeroCardViewAsSkill {
+public:
+    ThDuanzui(): ZeroCardViewAsSkill("thduanzui") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("ThDuanzuiCard");
+    }
+
+    virtual const Card *viewAs() const{
+        return new ThDuanzuiCard;
+    }
+};
+
 class ThYingdeng:public TriggerSkill{
 public:
     ThYingdeng():TriggerSkill("thyingdeng"){
@@ -1887,6 +1930,9 @@ void TouhouPackage::addHanaGenerals(){
     hana008->addSkill(new ThQuanshan);
     hana008->addSkill(new ThXiangang);
 
+    General *hana009 = new General(this, "hana009", "wei");
+    hana009->addSkill(new ThDuanzui);
+
     General *hana010 = new General(this, "hana010", "wei");
     hana010->addSkill(new ThYingdeng);
     hana010->addSkill(new ThZheyin);
@@ -1926,6 +1972,7 @@ void TouhouPackage::addHanaGenerals(){
     addMetaObject<ThMimengCard>();
     addMetaObject<ThQuanshanGiveCard>();
     addMetaObject<ThQuanshanCard>();
+    addMetaObject<ThDuanzuiCard>();
     addMetaObject<ThZheyinCard>();
     addMetaObject<ThMengyaCard>();
     addMetaObject<ThShijieCard>();
