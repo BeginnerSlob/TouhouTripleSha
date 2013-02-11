@@ -1148,9 +1148,9 @@ public:
     }
 };
 
-class Zaiqi: public PhaseChangeSkill{
+class Zailuan: public PhaseChangeSkill{
 public:
-    Zaiqi():PhaseChangeSkill("zaiqi"){
+    Zailuan():PhaseChangeSkill("zailuan"){
 
     }
 
@@ -1773,7 +1773,7 @@ void StandardPackage::addWindGenerals(){
     General *wind014 = new General(this, "wind014", "shu");
     wind014->addSkill(new SavageAssaultAvoid("huoshou"));
     wind014->addSkill(new Huoshou);
-    wind014->addSkill(new Zaiqi);
+    wind014->addSkill(new Zailuan);
     related_skills.insertMulti("huoshou", "#sa_avoid_huoshou");
 
     General *wind015 = new General(this, "wind015", "shu", 4, false);
