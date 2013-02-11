@@ -957,6 +957,84 @@ public:
     }
 };
 
+ThSixiangCard::ThSixiangCard(){
+}
+
+bool ThSixiangCard::targetFixed() const {
+	return Sanguosha->getCard(getEffectiveId())->getSuit() == Card::Spade;
+}
+    
+bool ThSixiangCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    if(Sanguosha->getCard(getEffectiveId())->getSuit() != Card::Spade)
+        return targets.size() == 1;
+    else
+        return targets.isEmpty();
+}
+
+bool ThSixiangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    Card::Suit suit = Sanguosha->getCard(getEffectiveId())->getSuit();
+    if(suit == Card::Spade)
+        return false;
+    else if(suit == Card::Diamond)
+        return targets.isEmpty() && !to_select->isAllNude() && to_select != Self;
+    else
+        return targets.isEmpty() && to_select != Self;
+}
+
+void ThSixiangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    Card::Suit suit = Sanguosha->getCard(getEffectiveId())->getSuit();
+    ServerPlayer *target = NULL;
+    if(!targets.isEmpty())
+        target = targets.first();
+
+    if(suit == Card::Spade)
+    {
+        RecoverStruct recover;
+        recover.who = source;
+        room->recover(source, recover);
+    }
+    else if(suit == Card::Heart)
+    {
+        target->drawCards(1);
+        target->turnOver();
+    }
+    else if(suit == Card::Club)
+    {
+        target->drawCards(2);
+        if(!target->isNude())
+            room->askForDiscard(target, "thsixiang", 1, 1, false, true);
+    }
+    else if(suit == Card::Diamond)
+    {
+        int card_id = room->askForCardChosen(source, target, "hej", "thsixiang");
+        room->throwCard(card_id, target, source);
+    }
+}
+
+class ThSixiang:public ViewAsSkill{
+public:
+    ThSixiang():ViewAsSkill("thsixiang"){
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        if(selected.isEmpty())
+            return !(!Self->isWounded() && to_select->getSuit() == Card::Spade);
+        else if(selected.length() == 1)
+            return to_select->getSuit() == selected.first()->getSuit();
+        else
+            return false;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if(cards.length() == 2){
+            ThSixiangCard *card = new ThSixiangCard;
+            card->addSubcards(cards);
+            return card;
+        }else
+            return NULL;
+    }
+};
+
 ThLuanshenCard::ThLuanshenCard(){
     will_throw = false;
     handling_method = MethodNone;
@@ -1511,6 +1589,9 @@ BangaiPackage::BangaiPackage()
     bangai011->addSkill(new ThGuijuan);
     bangai011->addSkill(new ThZhayou);
 
+    General *bangai012 = new General(this, "bangai012", "qun");
+    bangai012->addSkill(new ThSixiang);
+
     General *bangai013 = new General(this, "bangai013", "shu");
     bangai013->addSkill(new ThLuanshen);
 
@@ -1537,6 +1618,7 @@ BangaiPackage::BangaiPackage()
     addMetaObject<ThYaomeiCard>();
     addMetaObject<ThYuboCard>();
     addMetaObject<ThGuijuanCard>();
+    addMetaObject<ThSixiangCard>();
     addMetaObject<ThLuanshenCard>();
     addMetaObject<ThLingzhanCard>();
     addMetaObject<ThXingxieCard>();
