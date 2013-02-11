@@ -14,26 +14,37 @@
 class ThSuoming: public TriggerSkill{
 public:
     ThSuoming(): TriggerSkill("thsuoming"){
-        events << Damaged;
+        events << Damaged << ChainStateChanged << TurnedOver;
     }
-    
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        int damage = data.value<DamageStruct>().damage;
+
+    void doSuoming(Room *room, ServerPlayer *player) const {
         LogMessage log;
         log.type = "#ThSuoming";
         log.from = player;
-        while(damage --)
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), objectName());
+        log.to << target;
+        log.arg = objectName();
+        log.arg2 = target->isChained() ? "chongzhi" : "hengzhi";
+        room->sendLog(log);
+        log.to.removeOne(target);
+        room->setPlayerProperty(target, "chained", !target->isChained());
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        if (triggerEvent == Damaged)
         {
-            if (!player->askForSkillInvoke(objectName()))
-                return false;
-            ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), objectName());
-            log.to << target;
-            log.arg = objectName();
-            log.arg2 = target->isChained() ? "chongzhi" : "hengzhi";
-            room->sendLog(log);
-            log.to.removeOne(target);
-            room->setPlayerProperty(target, "chained", !target->isChained());
+            int damage = data.value<DamageStruct>().damage;
+            while(damage --)
+            {
+                if (!player->askForSkillInvoke(objectName()))
+                    return false;
+                doSuoming(room, player);
+            }
         }
+        else if (triggerEvent == ChainStateChanged && player->isChained() && player->askForSkillInvoke(objectName()))
+            doSuoming(room, player);
+        else if (triggerEvent == TurnedOver && player->askForSkillInvoke(objectName()))
+            doSuoming(room, player);
 
         return false;
     }

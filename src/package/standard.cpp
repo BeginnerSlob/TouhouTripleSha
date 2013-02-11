@@ -72,37 +72,32 @@ void EquipCard::onUse(Room *room, const CardUseStruct &card_use) const{
 void EquipCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     int equipped_id = Card::S_UNKNOWN_CARD_ID;
     ServerPlayer *target = targets.value(0, source);
-    if (room->getCardOwner(getId()) != source) return;
     if (target->getEquip(location()))
         equipped_id = target->getEquip(location())->getEffectiveId();
 
-    if (room->getCardPlace(getId()) == Player::PlaceHand)
-        {
-            QList<CardsMoveStruct> exchangeMove;
-            CardsMoveStruct move1;
-            move1.card_ids << getId();
-            move1.to = target;
-            move1.to_place = Player::PlaceEquip;
-            move1.reason = CardMoveReason(CardMoveReason::S_REASON_USE, target->objectName());
-            exchangeMove.push_back(move1);
-            if(equipped_id != Card::S_UNKNOWN_CARD_ID)
-            {
-                CardsMoveStruct move2;
-                move2.card_ids << equipped_id;
-                move2.to = NULL;
-                move2.to_place = Player::DiscardPile;
-                move2.reason = CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, target->objectName());
-                exchangeMove.push_back(move2);
-            }
-            LogMessage log;
-            log.from = target;
-            log.type = "$Install";
-            log.card_str = QString::number(getEffectiveId());
-            room->sendLog(log);
+    QList<CardsMoveStruct> exchangeMove;
+    CardsMoveStruct move1;
+    move1.card_ids << getId();
+    move1.to = target;
+    move1.to_place = Player::PlaceEquip;
+    move1.reason = CardMoveReason(CardMoveReason::S_REASON_USE, target->objectName());
+    exchangeMove.push_back(move1);
+    if(equipped_id != Card::S_UNKNOWN_CARD_ID)
+    {
+        CardsMoveStruct move2;
+        move2.card_ids << equipped_id;
+        move2.to = NULL;
+        move2.to_place = Player::DiscardPile;
+        move2.reason = CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, target->objectName());
+        exchangeMove.push_back(move2);
+    }
+    LogMessage log;
+    log.from = target;
+    log.type = "$Install";
+    log.card_str = QString::number(getEffectiveId());
+    room->sendLog(log);
 
-            room->moveCardsAtomic(exchangeMove, true);
-        }
-
+    room->moveCardsAtomic(exchangeMove, true);
 }
 
 void EquipCard::onInstall(ServerPlayer *player) const{
@@ -130,25 +125,29 @@ QString GlobalEffect::getSubtype() const{
 }
 
 void GlobalEffect::onUse(Room *room, const CardUseStruct &card_use) const{
-    ServerPlayer *source = card_use.from;
-    QList<ServerPlayer *> targets, all_players = room->getAllPlayers();
-    foreach(ServerPlayer *player, all_players){
-        const ProhibitSkill *skill = room->isProhibited(source, player, this);
-        if(skill){
-            LogMessage log;
-            log.type = "#SkillAvoid";
-            log.from = player;
-            log.arg = skill->objectName();
-            log.arg2 = objectName();
-            room->sendLog(log);
+    CardUseStruct use = card_use;
+    if (use.to.isEmpty())
+    {
+        ServerPlayer *source = use.from;
+        QList<ServerPlayer *> targets, other_players = room->getAllPlayers();
+        foreach(ServerPlayer *player, other_players){
+            const ProhibitSkill *skill = room->isProhibited(source, player, this);
+            if(skill){
+                LogMessage log;
+                log.type = "#SkillAvoid";
+                log.from = player;
+                log.arg = skill->objectName();
+                log.arg2 = objectName();
+                room->sendLog(log);
 
-            room->broadcastSkillInvoke(skill->objectName());
-        }else
-            targets << player;
+                room->broadcastSkillInvoke(skill->objectName());
+            }else
+                targets << player;
+        }
+
+        use.to = targets;
     }
 
-    CardUseStruct use = card_use;
-    use.to = targets;
     TrickCard::onUse(room, use);
 }
 
@@ -192,25 +191,29 @@ bool AOE::isAvailable(const Player *player) const{
 }
 
 void AOE::onUse(Room *room, const CardUseStruct &card_use) const{
-    ServerPlayer *source = card_use.from;
-    QList<ServerPlayer *> targets, other_players = room->getOtherPlayers(source);
-    foreach(ServerPlayer *player, other_players){
-        const ProhibitSkill *skill = room->isProhibited(source, player, this);
-        if(skill){
-            LogMessage log;
-            log.type = "#SkillAvoid";
-            log.from = player;
-            log.arg = skill->objectName();
-            log.arg2 = objectName();
-            room->sendLog(log);
+    CardUseStruct use = card_use;
+    if (card_use.to.isEmpty())
+    {
+        ServerPlayer *source = use.from;
+        QList<ServerPlayer *> targets, other_players = room->getOtherPlayers(source);
+        foreach(ServerPlayer *player, other_players){
+            const ProhibitSkill *skill = room->isProhibited(source, player, this);
+            if(skill){
+                LogMessage log;
+                log.type = "#SkillAvoid";
+                log.from = player;
+                log.arg = skill->objectName();
+                log.arg2 = objectName();
+                room->sendLog(log);
 
-            room->broadcastSkillInvoke(skill->objectName());
-        }else
-            targets << player;
+                room->broadcastSkillInvoke(skill->objectName());
+            }else
+                targets << player;
+        }
+
+        use.to = targets;
     }
 
-    CardUseStruct use = card_use;
-    use.to = targets;
     TrickCard::onUse(room, use);
 }
 
@@ -245,8 +248,8 @@ void DelayedTrick::onUse(Room *room, const CardUseStruct &card_use) const{
 
 void DelayedTrick::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *target = targets.value(0, source);
-    CardMoveReason reason(CardMoveReason::S_REASON_USE, source->objectName(), target->objectName(), this->getSkillName(), QString());
-    room->moveCardTo(this, source, target, Player::PlaceDelayedTrick, reason, true);
+    CardMoveReason reason(CardMoveReason::S_REASON_USE, source->objectName(), target->objectName(), getSkillName(), QString());
+    room->moveCardTo(this, target, Player::PlaceDelayedTrick, reason, true);
 }
 
 QString DelayedTrick::getSubtype() const{
