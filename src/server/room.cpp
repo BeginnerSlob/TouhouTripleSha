@@ -3108,6 +3108,8 @@ void Room::drawCards(QList<ServerPlayer*> players, int n, const QString &reason)
     notifyMoveCards(true, moves, false);
     foreach (CardsMoveStruct move, moves)
         updateCardsOnLose(move);
+    foreach (CardsMoveStruct move, moves)
+        updateCardsOnMoving(move);
     notifyMoveCards(false, moves, false);
     foreach (CardsMoveStruct move, moves)
         updateCardsOnGet(move);
@@ -3404,6 +3406,8 @@ void Room::moveCardsAtomic(QList<CardsMoveStruct> cards_moves, bool forceMoveVis
     foreach (CardsMoveStruct move, cards_moves)
         updateCardsOnLose(move);
 
+    foreach (CardsMoveStruct move, cards_moves)
+        updateCardsOnMoving(move);
     // Now, process add cards
     notifyMoveCards(false, cards_moves, forceMoveVisible);
     for (int i = 0; i <  cards_moves.size(); i++)
@@ -3583,7 +3587,10 @@ void Room::_moveCards(QList<CardsMoveStruct> cards_moves, bool forceMoveVisible,
                 i--;
             }
         }
-    }    
+    }
+
+    foreach (CardsMoveStruct move, cards_moves)
+        updateCardsOnMoving(move);
 
     // Now, process add cards
     notifyMoveCards(false, origin, forceMoveVisible);
@@ -3663,6 +3670,25 @@ void Room::updateCardsOnLose(const CardsMoveStruct &move)
                 notifyResetCard((ServerPlayer*)move.from, move.card_ids[i]);
             }
         }
+    }
+}
+
+void Room::updateCardsOnMoving(const CardsMoveStruct &move)
+{
+    ServerPlayer *player = (ServerPlayer *)move.from;
+    if (player != NULL && move.to_place == Player::PlaceEquip){
+        for (int i = 0; i < move.card_ids.size(); i++)
+        {
+            WrappedCard* card = qobject_cast<WrappedCard* >(getCard(move.card_ids[i]));
+            const Card *engine_card = Sanguosha->getEngineCard(move.card_ids[i]);
+            
+            Card *trick = Sanguosha->cloneCard(card->getRealCard());
+            trick->setSuit(engine_card->getSuit());
+            trick->setNumber(engine_card->getNumber());
+            card->takeOver(trick);
+            broadcastUpdateCard(getPlayers(), move.card_ids[i], card);
+        }
+        return;
     }
 }
 

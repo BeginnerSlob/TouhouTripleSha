@@ -331,6 +331,7 @@ public:
     inline virtual Card* getCard(int cardId) const { return _m_roomState.getCard(cardId); }
     inline virtual void resetCard(int cardId) { _m_roomState.resetCard(cardId); }
     virtual void updateCardsOnLose(const CardsMoveStruct &move);
+    virtual void updateCardsOnMoving(const CardsMoveStruct &move);
     virtual void updateCardsOnGet(const CardsMoveStruct &move);
 
 protected:
