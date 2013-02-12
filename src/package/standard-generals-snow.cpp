@@ -1380,6 +1380,180 @@ public:
     }
 };
 
+class LingpaoViewAsSkill: public OneCardViewAsSkill {
+public:
+    LingpaoViewAsSkill(): OneCardViewAsSkill("lingpao") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return Slash::IsAvailable(player);
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
+        return  pattern == "slash";
+    }
+
+    virtual bool viewFilter(const Card *to_select) const{
+        return to_select->objectName() == "slash";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        Card *acard = new FireSlash(originalCard->getSuit(), originalCard->getNumber());
+        acard->addSubcard(originalCard->getId());
+        acard->setSkillName(objectName());
+        return acard;
+    }
+};
+
+class Lingpao: public TriggerSkill {
+public:
+    Lingpao(): TriggerSkill("lingpao") {
+        events << DamageDone << CardFinished;
+        view_as_skill = new LingpaoViewAsSkill;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target != NULL;
+    }
+
+    virtual bool trigger(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (event == DamageDone) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card && damage.card->isKindOf("Slash") && damage.card->getSkillName() == objectName())
+                damage.from->tag["InvokeLingpao"] = true;
+        } else if (TriggerSkill::triggerable(player) && player->tag.value("InvokeLingpao", false).toBool()) {
+            LogMessage log;
+            log.type = "#TriggerSkill";
+            log.from = player;
+            log.arg = objectName();
+            room->sendLog(log);
+
+            player->tag["InvokeLingpao"] = false;
+            room->broadcastSkillInvoke("lingpao", 2);
+            room->loseHp(player, 1);
+        }
+        return false;
+    }
+
+    virtual int getEffectIndex(const ServerPlayer *, const Card *) const {
+        return 1;
+    }
+};
+
+class LingpaoTargetMod: public TargetModSkill {
+public:
+    LingpaoTargetMod(): TargetModSkill("#lingpao-target") {
+        frequency = NotFrequent;
+    }
+
+    virtual int getExtraTargetNum(const Player *from, const Card *card) const{
+        if (from->hasSkill("lingpao") && card->isKindOf("FireSlash"))
+            return 1;
+        else
+            return 0;
+    }
+};
+
+XiaozuiCard::XiaozuiCard() {
+    will_throw = false;
+    target_fixed = true;
+    handling_method = Card::MethodNone;
+}
+
+void XiaozuiCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    source->addToPile("xiaozuipile", this);
+}
+
+class XiaozuiViewAsSkill: public ViewAsSkill {
+public:
+    XiaozuiViewAsSkill(): ViewAsSkill("xiaozui") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *) const{
+        return false;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
+        return pattern == "@@xiaozui";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
+        return to_select->isKindOf("Slash");
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.length() == 0)
+            return NULL;
+
+        Card *acard = new XiaozuiCard;
+        acard->addSubcards(cards);
+        acard->setSkillName(objectName());
+        return acard;
+    }
+};
+
+class Xiaozui: public TriggerSkill {
+public:
+    Xiaozui(): TriggerSkill("xiaozui") {
+        events << EventPhaseStart << AskForPeaches;
+        view_as_skill = new XiaozuiViewAsSkill;
+    }
+
+    virtual bool trigger(TriggerEvent event, Room *room, ServerPlayer *chengpu, QVariant &data) const{
+        if (event == EventPhaseStart && chengpu->getPhase() == Player::Finish
+            && !chengpu->isKongcheng() && chengpu->getPile("xiaozuipile").isEmpty()) {
+            room->askForUseCard(chengpu, "@@xiaozui", "@xiaozui", -1, Card::MethodNone);
+        } else if (event == AskForPeaches && !chengpu->getPile("xiaozuipile").isEmpty()) {
+            DyingStruct dying = data.value<DyingStruct>();
+            while (dying.who->getHp() < 1 && !chengpu->getPile("xiaozuipile").isEmpty()
+                   && chengpu->askForSkillInvoke(objectName(), data)) {
+                QList<int> cards = chengpu->getPile("xiaozuipile");
+                room->fillAG(cards, chengpu);
+                int card_id = room->askForAG(chengpu, cards, true, objectName());
+                room->broadcastInvoke("clearAG");
+                if (card_id != -1) {
+                    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "xiaozui", QString());
+                    room->throwCard(Sanguosha->getCard(card_id), reason, NULL);
+                    Peach *peach = new Peach(Card::NoSuitNoColor, 0);
+                    peach->setSkillName(objectName());
+                    CardUseStruct use;
+                    use.card = peach;
+                    use.from = dying.who;
+                    use.to << dying.who;
+                    room->useCard(use);
+                }
+            }
+        }
+        return false;
+    }
+
+    virtual int getEffectIndex(const ServerPlayer *player, const Card *card) const {
+        if (card->isKindOf("Analeptic")) {
+            if (player->getGeneralName().contains("zhouyu"))
+                return 3;
+            else
+                return 2;
+        } else
+            return 1;
+    }
+};
+
+class XiaozuiClear: public TriggerSkill {
+public:
+    XiaozuiClear(): TriggerSkill("#xiaozui-clear") {
+        events << EventLoseSkill;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target && !target->hasSkill("xiaozui") && target->getPile("xiaozuipile").length() > 0;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *, ServerPlayer *player, QVariant &) const{
+        player->clearOnePrivatePile("xiaozuipile");
+        return false;
+    }
+};
+
 AnxuCard::AnxuCard(){
     once = true;
 }
@@ -2105,6 +2279,14 @@ void StandardPackage::addSnowGenerals(){
     General *snow018 = new General(this, "snow018", "wu");
     snow018->addSkill(new Zhongqu);
 
+    General *snow019 = new General(this, "snow019", "wu");
+    snow019->addSkill(new Lingpao);
+    snow019->addSkill(new LingpaoTargetMod);
+    snow019->addSkill(new Xiaozui);
+    snow019->addSkill(new XiaozuiClear);
+    related_skills.insertMulti("lingpao", "#lingpao-target");
+    related_skills.insertMulti("xiaozui", "#xiaozui-clear");
+
     General *snow020 = new General(this, "snow020", "wu", 3, false);
     snow020->addSkill(new Anxu);
     snow020->addSkill(new Zhuiyi);
@@ -2147,6 +2329,7 @@ void StandardPackage::addSnowGenerals(){
     addMetaObject<JianmieCard>();
     addMetaObject<JibanCard>();
     addMetaObject<GuanjuCard>();
+    addMetaObject<XiaozuiCard>();
     addMetaObject<AnxuCard>();
     addMetaObject<FenxunCard>();
     addMetaObject<MengjingCard>();

@@ -265,6 +265,15 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class XiaozuiCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE XiaozuiCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 class AnxuCard: public SkillCard{
     Q_OBJECT
 
