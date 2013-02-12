@@ -1854,7 +1854,7 @@ public:
             int n = qMin(5, room->alivePlayerCount());
             room->askForYuxi(player, room->getNCards(n, false), false);
         }
-        else if (triggerEvent == CardsMoveOneTime)
+        else if (triggerEvent == CardsMoveOneTime && room->getCurrent() != player)
         {
             CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
             if (move->from != player
@@ -2055,6 +2055,12 @@ void StandardPackage::addBloomGenerals(){
 
     General *bloom024 = new General(this, "bloom024", "wei");
     bloom024->addSkill(new Xinban);
+
+    General *bloom028 = new General(this, "bloom028", "wei", 3);
+    bloom028->addSkill(new Huyin);
+    bloom028->addSkill(new HuyinClear);
+    related_skills.insertMulti("huyin", "#huyin-clear");
+    bloom028->addSkill(new Hongce);
 
     General *bloom030 = new General(this, "bloom030", "wei");
     bloom030->addSkill(new Renjia);

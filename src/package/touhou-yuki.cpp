@@ -821,32 +821,38 @@ public:
 class ThHeimu: public TriggerSkill {
 public:
     ThHeimu(): TriggerSkill("thheimu") {
-        events << CardUsed;
+        events << CardUsed << EventPhaseChanging;
     }
 
     virtual int getPriority() const{
         return 5;
     }
 
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (player->getPhase() == Player::Play && use.m_reason == CardUseStruct::CARD_USE_REASON_PLAY
-            && use.card->getTypeId() != Card::TypeSkill && player->askForSkillInvoke(objectName()))
+    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        if (triggerEvent == CardUsed && player->getMark(objectName()) == 0)
         {
-            const CardMoveReason &reason = CardMoveReason(CardMoveReason::S_REASON_PUT, player->objectName());
-            room->moveCardTo(use.card, NULL, Player::DiscardPile, reason, true);
-            QString key = use.card->getClassName();
-            player->addHistory(key, -1);
-            player->invoke("addHistory", key + ":-1");
-            if (use.to.isEmpty())
-                use.to << use.from;
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (player->getPhase() == Player::Play && use.m_reason == CardUseStruct::CARD_USE_REASON_PLAY
+                && use.card->getTypeId() != Card::TypeSkill && player->askForSkillInvoke(objectName()))
+            {
+                room->setPlayerMark(player, objectName(), 1);
+                const CardMoveReason &reason = CardMoveReason(CardMoveReason::S_REASON_PUT, player->objectName());
+                room->moveCardTo(use.card, NULL, Player::DiscardPile, reason, true);
+                QString key = use.card->getClassName();
+                player->addHistory(key, -1);
+                player->invoke("addHistory", key + ":-1");
+                if (use.to.isEmpty())
+                    use.to << use.from;
 
-            ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName());
-            use.from = target;
-            room->useCard(use);
+                ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName());
+                use.from = target;
+                room->useCard(use);
 
-            return true;
+                return true;
+            }
         }
+        else if (triggerEvent == EventPhaseChanging)
+            room->setPlayerMark(player, objectName(), 0);
 
         return false;
     }
