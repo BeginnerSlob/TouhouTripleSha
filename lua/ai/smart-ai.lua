@@ -1731,7 +1731,7 @@ function SmartAI:askForDiscard(reason, discard_num, min_num, optional, include_e
 	end
 
 	local flag = "h"
-	if include_equip and (self.player:getEquips():isEmpty() or not self.player:isJilei(self.player:getEquips():first())) then flag = flag .. "e" end
+	if include_equip and (self.player:getEquips():isEmpty() or not self.player:isHuyin(self.player:getEquips():first())) then flag = flag .. "e" end
 	local cards = self.player:getCards(flag)
 	local to_discard = {}
 	cards = sgs.QList2Table(cards)
@@ -1759,7 +1759,7 @@ function SmartAI:askForDiscard(reason, discard_num, min_num, optional, include_e
 	end
 	for _, card in ipairs(cards) do
 		if (self.player:hasSkill("qinyin") and #to_discard >= least) or #to_discard >= discard_num then break end
-		if not self.player:isJilei(card) then table.insert(to_discard, card:getId()) end
+		if not self.player:isHuyin(card) then table.insert(to_discard, card:getId()) end
 	end
 	return to_discard
 end
@@ -2593,7 +2593,7 @@ end
 
 function SmartAI:askForSinglePeach(dying)
 	local card_str
-	local forbid = sgs.Sanguosha:cloneCard("peach", sgs.Card_NoSuit, 0)
+	local forbid = sgs.Sanguosha:cloneCard("peach", sgs.Card_NoSuitNoColor, 0)
 	if self.player:isLocked(forbid) or dying:isLocked(forbid) then return "." end
 	if self:isFriend(dying) then
 		if self:needDeath(dying) then return "." end
@@ -2720,7 +2720,7 @@ function SmartAI:activate(use)
 	self.toUse  = self:getTurnUse()
 	self:sortByDynamicUsePriority(self.toUse)
 	for _, card in ipairs(self.toUse) do
-		if not self.player:isJilei(card) and not self.player:isLocked(card) then
+		if not self.player:isHuyin(card) and not self.player:isLocked(card) then
 			local type = card:getTypeId()
 			self["use" .. sgs.ai_type_name[type + 1] .. "Card"](self, card, use)
 
@@ -2901,7 +2901,7 @@ function SmartAI:getDamagedEffects(self, player)
 end
 
 local function prohibitUseDirectly(card, player)
-	if player:isLocked(card) or player:isJilei(card) then return true end
+	if player:isLocked(card) or player:isHuyin(card) then return true end
 	
 	local _, flist = sgs.getSkillLists(player)
 	for _, askill in ipairs(flist) do
@@ -2930,7 +2930,7 @@ local function getSkillViewCard(card, class_name, player, card_place)
 			local skill_card_str = callback(card, player, card_place, class_name)
 			if skill_card_str then
 				local skill_card = sgs.Card_Parse(skill_card_str)
-				if skill_card:isKindOf(class_name) and not player:isJilei(skill_card) then return skill_card_str end
+				if skill_card:isKindOf(class_name) and not player:isHuyin(skill_card) then return skill_card_str end
 			end
 		end
 	end
