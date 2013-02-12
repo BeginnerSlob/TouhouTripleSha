@@ -66,12 +66,12 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
         }
         if (!has_changed || subcardsLength() == 0) {
             QVariant data = QVariant::fromValue(use);
-            if (player->hasSkill("lihuo"))
-                if (room->askForSkillInvoke(player, "lihuo", data)) {
+            if (player->hasSkill("lingpao"))
+                if (room->askForSkillInvoke(player, "lingpao", data)) {
                     FireSlash *fire_slash = new FireSlash(getSuit(), getNumber());
                     if (subcardsLength() > 0)
                         fire_slash->addSubcard(this);
-                    fire_slash->setSkillName("lihuo");
+                    fire_slash->setSkillName("lingpao");
                     use.card = fire_slash;
                 }
             if (player->hasSkill("Fan") && !use.card->isKindOf("FireSlash")) {
@@ -96,7 +96,7 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
                     targets_ts << p;
             if (targets_ts.isEmpty())
                 break;
-            else if (room->askForChoice(player, "slash_extra_targets", "yes+no") == "yes") {
+            else if (room->askForSkillInvoke(player, "slash_extra_targets", "yes")) {
                 ServerPlayer *extra_target = room->askForPlayerChosen(player, targets_ts, "slash_extra_targets");
                 use.to.append(extra_target);
                 qSort(use.to.begin(), use.to.end(), ServerPlayer::CompareByActionOrder);

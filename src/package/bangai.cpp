@@ -813,12 +813,16 @@ public:
 class ThMozhuang: public TriggerSkill {
 public:
     ThMozhuang(): TriggerSkill("thmozhuang") {
-        events << DrawNCards << SlashProceed;
+        events << DrawNCards << TargetConfirmed << CardFinished;
         frequency = Compulsory;
     }
 
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target && target->hasSkill(objectName());
+    }
+
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
-        if (triggerEvent == DrawNCards && player->getWeapon())
+        if (triggerEvent == DrawNCards && player->getWeapon() && TriggerSkill::triggerable(player))
         {
             LogMessage log;
             log.type = "#TriggerSkill";
@@ -830,16 +834,27 @@ public:
             player->drawCards(n);
             return true;
         }
-        else if (triggerEvent == SlashProceed && player->getArmor())
-        {
-            LogMessage log;
-            log.type = "#TriggerSkill";
-            log.from = player;
-            log.arg = objectName();
-            room->sendLog(log);
-            
-            room->slashResult(data.value<SlashEffectStruct>(), NULL);
-            return true;
+        else if (triggerEvent == TargetConfirmed && player->getArmor()) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (!player->isAlive() || player != use.from || !use.card->isKindOf("Slash"))
+                return false;
+            int count = 1;
+            int mark_n = player->getMark("no_jink" + use.card->toString());
+            foreach (ServerPlayer *p, use.to) {
+				LogMessage log;
+                log.type = "#NoJink";
+                log.from = p;
+                room->sendLog(log);
+
+				mark_n += count;
+                room->setPlayerMark(player, "no_jink" + use.card->toString(), mark_n);
+
+                count *= 10;
+            }
+        } else if (triggerEvent == CardFinished) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash"))
+                room->setPlayerMark(player, "no_jink" + use.card->toString(), 0);
         }
 
         return false;

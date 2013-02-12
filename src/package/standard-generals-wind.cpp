@@ -451,60 +451,54 @@ public:
 class Yufeng:public TriggerSkill{
 public:
     Yufeng():TriggerSkill("yufeng"){
-        events << TargetConfirmed << SlashProceed << CardFinished;
+        events << TargetConfirmed << CardFinished;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target && target->hasSkill(objectName());
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-
-        if(triggerEvent == TargetConfirmed){
+		if (triggerEvent == TargetConfirmed) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if(!use.card->isKindOf("Slash") || use.from != player)
-                   return false;
-
-            foreach(ServerPlayer *target, use.to){
-                bool invoke = player->askForSkillInvoke(objectName(), QVariant::fromValue(target));
-                JudgeStruct judge;
-                if(invoke){
+            if (!player->isAlive() || player != use.from || !use.card->isKindOf("Slash"))
+                return false;
+            int count = 1;
+            int mark_n = player->getMark("no_jink" + use.card->toString());
+            foreach (ServerPlayer *p, use.to) {
+                if (player->askForSkillInvoke(objectName(), QVariant::fromValue(p))) {
                     room->broadcastSkillInvoke(objectName());
 
-                    judge.pattern = QRegExp("(.*):(.*):(.*)");
+                    p->setFlags("TiejiTarget"); // For AI
+
+                    JudgeStruct judge;
+                    judge.pattern = QRegExp("(.*):(heart|diamond):(.*)");
                     judge.good = true;
                     judge.reason = objectName();
                     judge.who = player;
 
                     room->judge(judge);
-                }
+                    if (judge.isGood()) {
+                        LogMessage log;
+                        log.type = "#NoJink";
+                        log.from = p;
+                        room->sendLog(log);
 
-                if(invoke && judge.card->isBlack())
-                    player->obtainCard(judge.card);
+                        mark_n += count;
+                        room->setPlayerMark(player, "no_jink" + use.card->toString(), mark_n);
+                    }
 
-                QVariantList yufengList = target->tag["Yufeng"].toList();
-                yufengList << (invoke && judge.card->isRed());
-                target->tag["Yufeng"] = yufengList;
-                target->setFlags("YufengTarget");
-            }
-        }
-        else if(triggerEvent == SlashProceed){
-            SlashEffectStruct effect = data.value<SlashEffectStruct>();
-            effect.to->setFlags("-YufengTarget");
-            QVariantList yufengList = effect.to->tag["Yufeng"].toList();
-            if(!yufengList.isEmpty()){
-                bool hit = yufengList.takeFirst().toBool();
-                effect.to->tag["Yufeng"] = yufengList;
-                if(hit){
-                    room->slashResult(effect, NULL);
-                    return true;
+                    p->setFlags("-TiejiTarget");
                 }
+                count *= 10;
             }
-        }
-        else if(triggerEvent == CardFinished){
+        } else if (triggerEvent == CardFinished) {
             CardUseStruct use = data.value<CardUseStruct>();
-            foreach(ServerPlayer *target, use.to){
-                if(target->hasFlag("YufengTarget"))
-                    target->tag.remove("Yufeng");
-            }
+            if (use.card->isKindOf("Slash"))
+                room->setPlayerMark(player, "no_jink" + use.card->toString(), 0);
         }
-        return false;
+
+		return false;
     }
 };
 
@@ -565,46 +559,40 @@ public:
 class Liegong:public TriggerSkill{
 public:
     Liegong():TriggerSkill("liegong"){
-        events << TargetConfirmed << SlashProceed << CardFinished;
+        events << TargetConfirmed << CardFinished;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target && target->hasSkill(objectName());
     }
 
     virtual bool trigger(TriggerEvent triggerEvent , Room* room, ServerPlayer *player, QVariant &data) const{
-        if(triggerEvent == TargetConfirmed){
+        if (triggerEvent == TargetConfirmed) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if(!use.card->isKindOf("Slash") || use.from != player || player->getPhase() != Player::Play)
-                   return false;
-
-            foreach(ServerPlayer *target, use.to){
-                int handcardnum = target->getHandcardNum();
-                if(handcardnum >= player->getHp() || handcardnum <= player->getAttackRange()){
-                    bool invoke = player->askForSkillInvoke("liegong", QVariant::fromValue(target));
-                    QVariantList liegongList = target->tag["Liegong"].toList();
-                    liegongList << invoke;
-                    target->tag["Liegong"] = liegongList;
-                    target->setFlags("LiegongTarget");
-                }
-            }
-        }
-        else if(triggerEvent == SlashProceed){
-            SlashEffectStruct effect = data.value<SlashEffectStruct>();
-            effect.to->setFlags("-LiegongTarget");
-            QVariantList liegongList = effect.to->tag["Liegong"].toList();
-            if(!liegongList.isEmpty()){
-                bool invoke = liegongList.takeFirst().toBool();
-                effect.to->tag["Liegong"] = liegongList;
-                if(invoke){
+            if (!player->isAlive() || player != use.from || player->getPhase() != Player::Play || !use.card->isKindOf("Slash"))
+                return false;
+            int count = 1;
+            int mark_n = player->getMark("no_jink" + use.card->toString());
+            foreach (ServerPlayer *p, use.to) {
+                int handcardnum = p->getHandcardNum();
+                if ((player->getHp() <= handcardnum || player->getAttackRange() >= handcardnum)
+                    && player->askForSkillInvoke(objectName(), QVariant::fromValue(p))) {
                     room->broadcastSkillInvoke(objectName());
-                    room->slashResult(effect, NULL);
-                    return true;
+
+                    LogMessage log;
+                    log.type = "#NoJink";
+                    log.from = p;
+                    room->sendLog(log);
+
+                    mark_n += count;
+                    room->setPlayerMark(player, "no_jink" + use.card->toString(), mark_n);
                 }
+                count *= 10;
             }
-        }
-        else if(triggerEvent == CardFinished){
+        } else if (triggerEvent == CardFinished) {
             CardUseStruct use = data.value<CardUseStruct>();
-            foreach(ServerPlayer *target, use.to){
-                if(target->hasFlag("LiegongTarget"))
-                    target->tag.remove("Liegong");
-            }
+            if (use.card->isKindOf("Slash"))
+                room->setPlayerMark(player, "no_jink" + use.card->toString(), 0);
         }
 
         return false;

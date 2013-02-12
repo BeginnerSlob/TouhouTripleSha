@@ -456,23 +456,25 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
 
     case SlashEffectStart:{
             SlashEffectStruct effect = data.value<SlashEffectStruct>();
-            int n_nj = effect.from->getMark("no_jink" + effect.slash->getEffectIdString());
-            room->setPlayerMark(effect.from, "no_jink" + effect.slash->getEffectIdString(), n_nj / 10);
+            int n_nj = effect.from->getMark("no_jink" + effect.slash->toString());
+            room->setPlayerMark(effect.from, "no_jink" + effect.slash->toString(), n_nj / 10);
 
-            if(effect.jink_num > 0){
-                if (n_nj % 10){
+            if (effect.jink_num > 0) {
+                if (n_nj % 10) {
                     effect.jink_num = 0;
                     data = QVariant::fromValue(effect);
                 }
             }
-            int n_dj = effect.from->getMark("double_jink" + effect.slash->getEffectIdString());
-            room->setPlayerMark(effect.from, "double_jink" + effect.slash->getEffectIdString(), n_dj / 10);
-            if(effect.jink_num == 1){
+            int n_dj = effect.from->getMark("double_jink" + effect.slash->toString());
+            room->setPlayerMark(effect.from, "double_jink" + effect.slash->toString(), n_dj / 10);
+            if (effect.jink_num == 1) {
                 if (n_dj % 10) {
                     effect.jink_num = 2;
                     data = QVariant::fromValue(effect);
                 }
             }
+
+            break;
 
             break;
         }
