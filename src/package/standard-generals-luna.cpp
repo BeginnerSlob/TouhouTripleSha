@@ -103,13 +103,13 @@ public:
         if (event == TargetConfirmed) {
             CardUseStruct use = data.value<CardUseStruct>();
             bool can_invoke = false;
-            if (use.card->isKindOf("Slash") && TriggerSkill::triggerable(use.from) && use.from == player){
+            if (use.card->isKindOf("Slash") && TriggerSkill::triggerable(use.from) && use.from == player) {
                 can_invoke = true;
                 int count = 1;
-                int mark_n = player->getMark("double_jink" + use.card->getEffectIdString());
+                int mark_n = player->getMark("double_jink" + use.card->toString());
                 for (int i = 0; i < use.to.length(); i++) {
                     mark_n += count;
-                    room->setPlayerMark(player, "double_jink" + use.card->getEffectIdString(), mark_n);
+                    room->setPlayerMark(player, "double_jink" + use.card->toString(), mark_n);
                     count *= 10;
                 }
             }
@@ -134,9 +134,9 @@ public:
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("Slash")) {
                 if (player->hasSkill(objectName()))
-                    room->setPlayerMark(player, "double_jink" + use.card->getEffectIdString(), 0);
+                    room->setPlayerMark(player, "double_jink" + use.card->toString(), 0);
             } else if (use.card->isKindOf("Duel")) {
-                foreach(ServerPlayer *lvbu, room->getAllPlayers())
+                foreach (ServerPlayer *lvbu, room->getAllPlayers())
                     if (lvbu->getMark("WushuangTarget") > 0)
                         room->setPlayerMark(lvbu, "WushuangTarget", 0);
             }

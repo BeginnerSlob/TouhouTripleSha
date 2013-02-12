@@ -56,7 +56,7 @@ Card::CardType EquipCard::getTypeId() const{
 }
 
 bool EquipCard::isAvailable(const Player *player) const{
-    return !player->isProhibited(player, this);
+    return !player->isProhibited(player, this) && Card::isAvailable(player);
 }
 
 void EquipCard::onUse(Room *room, const CardUseStruct &card_use) const{

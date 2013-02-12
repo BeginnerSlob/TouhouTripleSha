@@ -2681,7 +2681,7 @@ void Room::useCard(const CardUseStruct &use, bool add_history){
     const Card *card = card_use.card;
 
     if (card_use.from->isCardLimited(card, card->getHandlingMethod())
-       && (!card->canRecast() || card_use.from->isCardLimited(card, Card::MethodRecast)))
+        || (card->canRecast() && card_use.from->isCardLimited(card, Card::MethodRecast)))
         return;
 
     QString key;
@@ -4467,27 +4467,25 @@ ServerPlayer *Room::askForPlayerChosen(ServerPlayer *player, const QList<ServerP
 
     notifyMoveFocus(player, S_COMMAND_CHOOSE_PLAYER);
     AI *ai = player->getAI();
-    ServerPlayer* choice;
-    if(ai)
+    ServerPlayer *choice = NULL;
+    if (ai)
         choice = ai->askForPlayerChosen(targets, skillName);
-    else{
+    else {
         Json::Value req;
         req[0] = Json::Value(Json::arrayValue);
         req[1] = toJsonString(skillName);
-        foreach(ServerPlayer *target, targets)
+        foreach (ServerPlayer *target, targets)
             req[0].append(toJsonString(target->objectName()));
         bool success = doRequest(player, S_COMMAND_CHOOSE_PLAYER, req, true);
 
-        //executeCommand(player, "askForPlayerChosen", "choosePlayerCommand", ask_str, ".");
-        choice = NULL;
         Json::Value clientReply = player->getClientReply();
         if (success && clientReply.isString())
-        {
             choice = findChild<ServerPlayer *>(clientReply.asCString());
-        }           
+        if (choice == NULL)
+            choice = targets.at(qrand() % targets.length());
     }
-    if(choice){
-        QVariant data=QString("%1:%2:%3").arg("playerChosen").arg(skillName).arg(choice->objectName());
+    if (choice) {
+        QVariant data = QString("%1:%2:%3").arg("playerChosen").arg(skillName).arg(choice->objectName());
         thread->trigger(ChoiceMade, this, player, data);
     }
     return choice;
