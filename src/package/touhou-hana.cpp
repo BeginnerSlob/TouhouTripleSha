@@ -263,6 +263,8 @@ public:
                     player->addMark("thbian");
                     room->loseHp(dying.who);
                 }
+
+             return dying.who->getHp() > 0;
         }
 
         return false;
@@ -301,7 +303,7 @@ public:
             room->recover(dying.who, recover);
         }
 
-        return false;
+		return dying.who->getHp() > 0;
     }
 };
 

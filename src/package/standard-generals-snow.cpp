@@ -1386,7 +1386,9 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return Slash::IsAvailable(player);
+		FireSlash *slash = new FireSlash(Card::NoSuitNoColor, 0);
+		slash->deleteLater();
+		return slash->isAvailable(player);
     }
 
     virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
@@ -1686,7 +1688,7 @@ public:
 class Jieyou : public TriggerSkill{
 public:
     Jieyou():TriggerSkill("jieyou"){
-        events << AskForPeaches << DamageCaused << CardFinished << CardUsed;
+        events << Dying << DamageCaused << CardFinished << CardUsed;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
@@ -1702,8 +1704,7 @@ public:
                 room->setPlayerFlag(player, "-jieyouUsed");
                 room->setCardFlag(use.card, "jieyou-slash");
             }
-        } else if (triggerEvent == AskForPeaches && current != player
-                   && room->askForSkillInvoke(player, objectName(), data)) {
+        } else if (triggerEvent == Dying && room->askForSkillInvoke(player, objectName(), data)) {
             DyingStruct dying = data.value<DyingStruct>();
 
             forever {
@@ -1713,18 +1714,20 @@ public:
                 }
 
                 if (dying.who->getHp() > 0 || player->isNude() || !current
-                    || current->isDead() || !player->canSlash(current, NULL, false))
+                    || current->isDead())
                     break;
 
                 room->setPlayerFlag(player, "jieyouUsed");
                 room->setTag("JieyouTarget", data);
-                bool use_slash = room->askForUseSlashTo(player, current, "jieyou-slash:" + current->objectName(), false, false);
+                bool use_slash = room->askForUseSlashTo(player, current, "jieyou-slash:" + current->objectName(), true, false);
                 if (!use_slash) {
                     room->setPlayerFlag(player, "-jieyouUsed");
                     room->removeTag("JieyouTarget");
                     break;
                 }
             }
+
+            return dying.who->getHp() > 0;
         } else if(triggerEvent == DamageCaused) {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.card && damage.card->isKindOf("Slash") && damage.card->hasFlag("jieyou-slash")) {
@@ -1994,10 +1997,6 @@ public:
 
 LingshiCard::LingshiCard(){
     once = true;
-}
-
-bool LingshiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty(); 
 }
 
 void LingshiCard::onEffect(const CardEffectStruct &effect) const{
