@@ -1752,11 +1752,6 @@ public:
                     log.from = dying.who;
                     log.to << player;
                     room->sendLog(log);
-                } else if(current && current->hasSkill("sishi") && current->isAlive() && target != player) {
-                    LogMessage log;
-                    log.type = "#JieyouNull3";
-                    log.from = current;
-                    room->sendLog(log);
                 } else {
                     Peach *peach = new Peach(Card::NoSuitNoColor, 0);
                     peach->setSkillName(objectName());
