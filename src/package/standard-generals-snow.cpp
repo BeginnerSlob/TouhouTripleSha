@@ -1386,9 +1386,9 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-		FireSlash *slash = new FireSlash(Card::NoSuitNoColor, 0);
-		slash->deleteLater();
-		return slash->isAvailable(player);
+        FireSlash *slash = new FireSlash(Card::NoSuitNoColor, 0);
+        slash->deleteLater();
+        return slash->isAvailable(player);
     }
 
     virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
@@ -1422,15 +1422,16 @@ public:
         if (event == DamageDone) {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.card && damage.card->isKindOf("Slash") && damage.card->getSkillName() == objectName())
-                damage.from->tag["InvokeLingpao"] = true;
-        } else if (TriggerSkill::triggerable(player) && player->tag.value("InvokeLingpao", false).toBool()) {
+                damage.from->tag["LingpaoSlash"] = QVariant::fromValue(damage.card);
+        } else if (TriggerSkill::triggerable(player) && !player->tag.value("LingpaoSlash").isNull()
+                   && data.value<CardUseStruct>().card == player->tag.value("LingpaoSlash").value<CardStar>()) {
             LogMessage log;
             log.type = "#TriggerSkill";
             log.from = player;
             log.arg = objectName();
             room->sendLog(log);
 
-            player->tag["InvokeLingpao"] = false;
+            player->tag.remove("LingpaoSlash");
             room->broadcastSkillInvoke("lingpao", 2);
             room->loseHp(player, 1);
         }

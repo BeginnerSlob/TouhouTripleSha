@@ -303,7 +303,7 @@ public:
             room->recover(dying.who, recover);
         }
 
-		return dying.who->getHp() > 0;
+        return dying.who->getHp() > 0;
     }
 };
 
