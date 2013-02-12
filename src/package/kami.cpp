@@ -493,7 +493,7 @@ public:
             log.arg2 = QString::number(splayer->getHp());
             room->sendLog(log);
 
-            player->gainMark("@qianyu");
+            splayer->gainMark("@qianyu");
             room->loseMaxHp(splayer, 3);
             room->acquireSkill(splayer, "thkuangmo");
         }
