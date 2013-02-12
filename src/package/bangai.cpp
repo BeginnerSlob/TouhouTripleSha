@@ -841,12 +841,18 @@ public:
             int count = 1;
             int mark_n = player->getMark("no_jink" + use.card->toString());
             foreach (ServerPlayer *p, use.to) {
-				LogMessage log;
-                log.type = "#NoJink";
-                log.from = p;
+                LogMessage log;
+                log.type = "#TriggerSkill";
+                log.from = player;
+                log.arg = objectName();
                 room->sendLog(log);
+                
+                LogMessage log2;
+                log2.type = "#NoJink";
+                log2.from = p;
+                room->sendLog(log2);
 
-				mark_n += count;
+                mark_n += count;
                 room->setPlayerMark(player, "no_jink" + use.card->toString(), mark_n);
 
                 count *= 10;

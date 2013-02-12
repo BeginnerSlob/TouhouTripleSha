@@ -459,7 +459,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-		if (triggerEvent == TargetConfirmed) {
+        if (triggerEvent == TargetConfirmed) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (!player->isAlive() || player != use.from || !use.card->isKindOf("Slash"))
                 return false;
@@ -498,7 +498,7 @@ public:
                 room->setPlayerMark(player, "no_jink" + use.card->toString(), 0);
         }
 
-		return false;
+        return false;
     }
 };
 
