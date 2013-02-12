@@ -1083,6 +1083,9 @@ public:
                 return false;
 
             CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->hasFlag("qiebaoinvoke"))
+                use.card->setFlags("-qiebaoinvoke");
+            
             if (use.to.isEmpty())
                 return false;
 
