@@ -49,8 +49,8 @@
 "magatamas4": "image/system/magatamas/4.png",
 "magatamas5": "image/system/magatamas/5.png",
 "tableBg": "image/system/tableBg.jpg",
-"photoExtraSkillBg": "image/system/huashenSkillBg.png",
-"dashboardExtraSkillBg": "image/system/huashenSkillBg.png",
+"photoExtraSkillBg": "image/system/huanshenSkillBg.png",
+"dashboardExtraSkillBg": "image/system/huanshenSkillBg.png",
 
 // general default directories
 "playerGeneralIcon-default-0": "image/generals/tiny/%1.png",

@@ -15,7 +15,7 @@
 #include "audio.h"
 #include "SkinBank.h"
 #include "record-analysis.h"
-//#include "mountainpackage.h"
+#include "standard-generals.h"
 
 #include <QPropertyAnimation>
 #include <QParallelAnimationGroup>
@@ -369,13 +369,13 @@ void RoomScene::handleGameEvent(const Json::Value &arg)
         break;
     }
 
-    case S_GAME_EVENT_HUASHEN: {
+    case S_GAME_EVENT_HUANSHEN: {
 
         ClientPlayer* player = ClientInstance->getPlayer(arg[1].asCString());
-        QString huashenGeneral = arg[2].asCString();
-        QString huashenSkill = arg[3].asCString();
+        QString huanshenGeneral = arg[2].asCString();
+        QString huanshenSkill = arg[3].asCString();
         PlayerCardContainer *container = (PlayerCardContainer*)_getGenericCardContainer(Player::PlaceHand, player);
-        container->startHuaShen(huashenGeneral, huashenSkill);
+        container->startHuanShen(huanshenGeneral, huanshenSkill);
         break;
     }
 
@@ -408,11 +408,11 @@ void RoomScene::handleGameEvent(const Json::Value &arg)
         if(player == Self)
             detachSkill(skill_name);
         
-        // stop huashen animation
+        // stop huanshen animation
         PlayerCardContainer *container = (PlayerCardContainer*)_getGenericCardContainer(Player::PlaceHand, player);
-        if (!player->hasSkill("huashen"))
+        if (!player->hasSkill("huanshen"))
         {
-            container->stopHuaShen();
+            container->stopHuanShen();
         }
 
         container->updateAvatarTooltip();
@@ -1272,11 +1272,11 @@ void RoomScene::keyReleaseEvent(QKeyEvent *event){
             break;
         }
     case Qt::Key_F12: {
-            if (Self->hasSkill("huashen")) {
-                const Skill *huashen_skill = Sanguosha->getSkill("huashen");
-                if (huashen_skill) {
-                    //HuashenDialog *dialog = qobject_cast<HuashenDialog *>(huashen_skill->getDialog());
-                    //if (dialog) dialog->popup();
+            if (Self->hasSkill("huanshen")) {
+                const Skill *huanshen_skill = Sanguosha->getSkill("huanshen");
+                if (huanshen_skill) {
+                    HuanshenDialog *dialog = qobject_cast<HuanshenDialog *>(huanshen_skill->getDialog());
+                    if (dialog) dialog->popup();
                 }
             }
             break;
@@ -3695,11 +3695,11 @@ void RoomScene::doLightboxAnimation(const QString &, const QStringList &args){
     connect(appear, SIGNAL(finished()), this, SLOT(removeLightBox()));
 }
 
-void RoomScene::doHuashen(const QString &, const QStringList &args){
-    QVariantList huashen_list = Self->tag["Huashens"].toList();
+void RoomScene::doHuanshen(const QString &, const QStringList &args){
+    QVariantList huanshen_list = Self->tag["Huanshens"].toList();
     QList<CardItem*> generals;
     foreach(QString arg, args){
-        huashen_list << arg;
+        huanshen_list << arg;
         CardItem *item = new CardItem(arg);
         item->setPos(this->m_tableCenterPos);
         addItem(item);
@@ -3708,10 +3708,10 @@ void RoomScene::doHuashen(const QString &, const QStringList &args){
     CardsMoveStruct move;
     move.from_place = Player::DrawPile;
     move.to_place = Player::PlaceSpecial;
-    move.to_pile_name = "huashen";
+    move.to_pile_name = "huanshen";
     dashboard->addCardItems(generals, move);
 
-    Self->tag["Huashens"] = huashen_list;
+    Self->tag["Huanshens"] = huanshen_list;
 }
 
 void RoomScene::showIndicator(const QString &from, const QString &to){
@@ -3758,7 +3758,7 @@ void RoomScene::doAnimation(const QString &name, const QStringList &args){
         map["typhoon"] = &RoomScene::doAppearingAnimation;
 
         map["lightbox"] = &RoomScene::doLightboxAnimation;
-        map["huashen"] = &RoomScene::doHuashen;
+        map["huanshen"] = &RoomScene::doHuanshen;
         map["indicate"] = &RoomScene::doIndicate;
     }
 

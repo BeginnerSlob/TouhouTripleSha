@@ -468,9 +468,9 @@ void PlayerCardContainer::repaintAll()
     _updateEquips();
     updateDelayedTricks();
 
-    if (_m_huashenAnimation != NULL)
+    if (_m_huanshenAnimation != NULL)
     {
-        startHuaShen(_m_huashenGeneralName, _m_huashenSkillName);
+        startHuanShen(_m_huanshenGeneralName, _m_huanshenSkillName);
     }
 
     _paintPixmap(_m_faceTurnedIcon, _m_layout->m_avatarArea, QSanRoomSkin::S_SKIN_KEY_FACETURNEDMASK,
@@ -701,7 +701,10 @@ void PlayerCardContainer::addEquips(QList<CardItem*> &equips)
     QList<CardItem*> result;
     foreach (int card_id, cardIds)
     {
-        const EquipCard *equip_card = qobject_cast<const EquipCard *>(Sanguosha->getWrappedCard(card_id)->getRealCard());
+        const Card *src_card = Sanguosha->getEngineCard(card_id);
+        if (!src_card || !src_card->isKindOf("EquipCard"))
+            src_card = Sanguosha->getWrappedCard(card_id)->getRealCard();
+        const EquipCard *equip_card = qobject_cast<const EquipCard *>(src_card);
         int index = (int)(equip_card->location());
         Q_ASSERT(_m_equipCards[index] != NULL);
         CardItem* equip = _m_equipCards[index];
@@ -730,21 +733,21 @@ void PlayerCardContainer::addEquips(QList<CardItem*> &equips)
     return result;
  }
 
- void PlayerCardContainer::startHuaShen(QString generalName, QString skillName)
+ void PlayerCardContainer::startHuanShen(QString generalName, QString skillName)
  {
-     _m_huashenGeneralName = generalName;
-     _m_huashenSkillName = skillName;
-     Q_ASSERT(m_player->hasSkill("huashen"));
+     _m_huanshenGeneralName = generalName;
+     _m_huanshenSkillName = skillName;
+     Q_ASSERT(m_player->hasSkill("huanshen"));
      QPixmap pixmap = _getAvatarIcon(generalName);
      if (pixmap.size() != _m_layout->m_avatarArea.size())
          pixmap = pixmap.scaled(_m_layout->m_avatarArea.size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-     stopHuaShen();
-     _m_huashenAnimation = G_ROOM_SKIN.createHuaShenAnimation(
+     stopHuanShen();
+     _m_huanshenAnimation = G_ROOM_SKIN.createHuanShenAnimation(
          pixmap,
          _m_layout->m_avatarArea.topLeft(),
          _getAvatarParent(),
-         _m_huashenItem);
-     _m_huashenAnimation->start();
+         _m_huanshenItem);
+     _m_huanshenAnimation->start();
      _paintPixmap(_m_extraSkillBg, _m_layout->m_extraSkillArea, QSanRoomSkin::S_SKIN_KEY_EXTRA_SKILL_BG, _getAvatarParent());
      _m_extraSkillBg->show();
      _m_layout->m_extraSkillFont.paintText(_m_extraSkillText, _m_layout->m_extraSkillTextArea, Qt::AlignCenter,
@@ -754,15 +757,15 @@ void PlayerCardContainer::addEquips(QList<CardItem*> &equips)
      _adjustComponentZValues();
  }
 
- void PlayerCardContainer::stopHuaShen()
+ void PlayerCardContainer::stopHuanShen()
  {
-     if (_m_huashenAnimation != NULL)
+     if (_m_huanshenAnimation != NULL)
      {
-         _m_huashenAnimation->stop();
-         _m_huashenAnimation->deleteLater();
-         delete _m_huashenItem;
-         _m_huashenAnimation = NULL;
-         _m_huashenItem = NULL;
+         _m_huanshenAnimation->stop();
+         _m_huanshenAnimation->deleteLater();
+         delete _m_huanshenItem;
+         _m_huanshenAnimation = NULL;
+         _m_huanshenItem = NULL;
          _clearPixmap(_m_extraSkillBg);
          _clearPixmap(_m_extraSkillText);
      }
@@ -799,8 +802,8 @@ PlayerCardContainer::PlayerCardContainer()
         _m_equipAnim[i] = NULL;
         _m_equipLabel[i] = NULL;
     }
-    _m_huashenItem = NULL;
-    _m_huashenAnimation = NULL;
+    _m_huanshenItem = NULL;
+    _m_huanshenAnimation = NULL;
     _m_extraSkillBg = NULL;
     _m_extraSkillText = NULL;
 
@@ -893,7 +896,7 @@ void PlayerCardContainer::_adjustComponentZValues()
     _layUnder(_m_avatarArea);
     _layUnder(_m_circleItem);
     _layUnder(_m_smallAvatarIcon);
-    _layUnder(_m_huashenItem);
+    _layUnder(_m_huanshenItem);
     _layUnder(_m_avatarIcon);    
 }
 

@@ -128,18 +128,6 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class Nvelian: public TriggerSkill{
-    Q_OBJECT
-
-public:
-    Nvelian(const QString &name, int n);
-    virtual bool trigger(TriggerEvent event,  Room* room, ServerPlayer *player, QVariant &data) const;
-    virtual QString getEffectName() const;
-
-private:
-    int n;
-};
-
 class XinbanCard: public SkillCard {
     Q_OBJECT
 
@@ -347,6 +335,18 @@ public:
 
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+#include "generaloverview.h"
+
+class HuanshenDialog: public GeneralOverview {
+    Q_OBJECT
+
+public:
+    HuanshenDialog();
+
+public slots:
+    void popup();
 };
 
 class LeijiCard: public SkillCard{

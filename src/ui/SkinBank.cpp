@@ -785,12 +785,12 @@ bool QSanRoomSkin::_loadAnimationConfig(const Json::Value &animationConfig)
 }
 
 QAbstractAnimation* 
-QSanRoomSkin::createHuaShenAnimation(QPixmap &huashenAvatar, QPoint topLeft, QGraphicsItem *parent,
-                                     QGraphicsItem* &huashenAvatarCreated) const
+QSanRoomSkin::createHuanShenAnimation(QPixmap &huanshenAvatar, QPoint topLeft, QGraphicsItem *parent,
+                                     QGraphicsItem* &huanshenAvatarCreated) const
 {
     QLabel* avatar = new QLabel;
     avatar->setStyleSheet("QLabel{ background-color: transparent;}");
-    avatar->setPixmap(huashenAvatar);
+    avatar->setPixmap(huanshenAvatar);
     QGraphicsProxyWidget* widget = new QGraphicsProxyWidget(parent);
     widget->setWidget(avatar);
     widget->setPos(topLeft);
@@ -798,12 +798,12 @@ QSanRoomSkin::createHuaShenAnimation(QPixmap &huashenAvatar, QPoint topLeft, QGr
 
     QPropertyAnimation *animation = new QPropertyAnimation(widget, "opacity");
     animation->setLoopCount(2000);
-    Json::Value huashenConfig = _m_animationConfig["huashen"];
+    Json::Value huanshenConfig = _m_animationConfig["huanshen"];
     int duration;
-    if (tryParse(huashenConfig[0], duration) && huashenConfig[1].isArray())
+    if (tryParse(huanshenConfig[0], duration) && huanshenConfig[1].isArray())
     {
         animation->setDuration(duration);
-        Json::Value keyValues = huashenConfig[1];
+        Json::Value keyValues = huanshenConfig[1];
         for (unsigned int i = 0; i < keyValues.size(); i++)
         {
             Json::Value keyValue = keyValues[i];
@@ -814,7 +814,7 @@ QSanRoomSkin::createHuaShenAnimation(QPixmap &huashenAvatar, QPoint topLeft, QGr
             animation->setKeyValueAt(step, val);
         }
     }
-    huashenAvatarCreated = widget;
+    huanshenAvatarCreated = widget;
     return animation;
 }
 

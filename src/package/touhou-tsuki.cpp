@@ -1422,6 +1422,108 @@ public:
     }
 };
 
+class ThAnbing: public TriggerSkill {
+public:
+    ThAnbing(): TriggerSkill("thanbing") {
+        events << CardUsed << EventPhaseChanging;
+        frequency = Compulsory;
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (triggerEvent == EventPhaseChanging)
+        {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::Play)
+                room->setPlayerMark(player, objectName(), 0);
+            else if (change.to == Player::Discard && player->getMark(objectName()) == 0)
+            {
+                LogMessage log;
+                log.type = "#TriggerSkill";
+                log.from = player;
+                log.arg = objectName();
+                room->sendLog(log);
+                player->skip(change.to);
+            }
+        }
+        else if (player->getPhase() == Player::Play)
+        {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("TrickCard"))
+                player->addMark(objectName());
+        }
+
+        return false;
+    }
+};
+
+class ThAnbingMaxCardsSkill: public MaxCardsSkill {
+public:
+    ThAnbingMaxCardsSkill(): MaxCardsSkill("#thanbing") {
+    }
+
+    virtual int getExtra(const Player *target) const{
+        if (target->hasSkill(objectName()))
+            return -1;
+        else
+            return 0;
+    }
+};
+
+class ThHuilveViewAsSkill: public OneCardViewAsSkill {
+public:
+    ThHuilveViewAsSkill(): OneCardViewAsSkill("thhuilve") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        if (Self->tag.value("ThHuilveCard").isNull())
+            return false;
+        Card *trick = Sanguosha->cloneCard(Self->tag.value("ThHuilveCard").toStringList().last(), Card::NoSuitNoColor, 0);
+        trick->deleteLater();
+        return trick->isAvailable(player);
+    }
+
+    virtual bool viewFilter(const Card* card) const{
+        return !card->isEquipped() && card->getSuitString() == Self->tag.value("ThHuilveCard").toStringList().first();
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        Card *trick = Sanguosha->cloneCard(Self->tag.value("ThHuilveCard").toStringList().last(), originalCard->getSuit(), originalCard->getNumber());
+        trick->addSubcard(originalCard->getId());
+        trick->setSkillName(objectName());
+        return trick;
+    }
+};
+
+class ThHuilve: public TriggerSkill {
+public:
+    ThHuilve(): TriggerSkill("thhuilve") {
+        events << CardUsed << EventPhaseStart;
+        view_as_skill = new ThHuilveViewAsSkill;
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room *, ServerPlayer *, QVariant &data) const{
+        if (triggerEvent == CardUsed)
+        {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (!use.card->isNDTrick())
+                return false;
+
+            if (use.card->isKindOf("Nullification") || use.card->isVirtualCard())
+                Self->tag.remove("ThHuilveCard");
+            else
+            {
+                QStringList card_info;
+                card_info << use.card->getSuitString() << use.card->objectName();
+                Self->tag["ThHuilveCard"] = QVariant::fromValue(card_info);
+            }
+        }
+        else
+            Self->tag.remove("ThHuilveCard");
+
+        return false;
+    }
+};
+
 class ThShenyou: public TriggerSkill {
 public:
     ThShenyou(): TriggerSkill("thshenyou"){
@@ -1899,6 +2001,13 @@ void TouhouPackage::addTsukiGenerals(){
     General *tsuki014 = new General(this, "tsuki014", "qun", 3);
     tsuki014->addSkill(new ThExi);
     tsuki014->addSkill(new ThXinglu);
+
+    General *tsuki015 = new General(this, "tsuki015", "qun", 3, false);
+    tsuki015->addSkill(new ThAnbing);
+    tsuki015->addSkill(new ThAnbingMaxCardsSkill);
+    related_skills.insertMulti("thanbing", "#thanbing");
+    tsuki015->addSkill(new ThHuilve);
+    tsuki015->addSkill("jizhi");
 
     General *tsuki016 = new General(this, "tsuki016", "qun");
     tsuki016->addSkill(new ThShenyou);

@@ -310,8 +310,8 @@ public:
     QPixmap getProgressBarPixmap(int percentile) const;
 
     // Animations
-    QAbstractAnimation* createHuaShenAnimation(QPixmap &huashenAvatar, QPoint topLeft, QGraphicsItem *parent,
-                                               QGraphicsItem* &huashenItemCreated) const;
+    QAbstractAnimation* createHuanShenAnimation(QPixmap &huanshenAvatar, QPoint topLeft, QGraphicsItem *parent,
+                                               QGraphicsItem* &huanshenItemCreated) const;
 
     // static consts
     // main keys
