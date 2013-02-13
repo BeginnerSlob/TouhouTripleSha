@@ -685,19 +685,42 @@ public:
         view_as_skill = new ThXihuaViewAsSkill;
     }
 
+    virtual bool triggerable(const ServerPlayer *target) const {
+        return target && target->isAlive();
+    }
+
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Start)
+        if (triggerEvent == EventPhaseStart && TriggerSkill::triggerable(player) && player->getPhase() == Player::Start)
             room->askForUseCard(player, "@@thxihua", "@thxihua", -1, Card::MethodNone);
         else if (triggerEvent == Predamage)
         {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.card && damage.card->getSkillName() == objectName()
-                && damage.from && !damage.from->getPile("xihuapile").isEmpty())
+            if (damage.card && damage.card->getSkillName() == objectName())
             {
-                int id = damage.from->getPile("xihuapile").first();
-                room->showCard(damage.from, id);
+                int id = -1;
+                ServerPlayer *owner, *victim;
+                if (damage.from && !damage.from->getPile("xihuapile").isEmpty())
+                {
+                    id = damage.from->getPile("xihuapile").first();
+                    owner = damage.from;
+                    victim = damage.to;
+                }
+                else if (damage.to && !damage.to->getPile("xihuapile").isEmpty())
+                {
+                    id = damage.to->getPile("xihuapile").first();
+                    owner = damage.to;
+                    victim = damage.from;
+                }
+
+                if (id == -1)
+                    return false;
+
+                room->showCard(owner, id);
                 if (Sanguosha->getCard(id)->isKindOf("Slash"))
-                    damage.from->drawCards(1);
+                {
+                    int card_id = room->askForCardChosen(owner, victim, "h", objectName());
+                    room->throwCard(card_id, victim, owner);
+                }
                 else
                     return true;
             }
@@ -1108,13 +1131,13 @@ void ThDuanzuiCard::onEffect(const CardEffectStruct &effect) const {
     int card_id = room->askForCardChosen(effect.from, effect.to, "h", objectName());
     room->showCard(effect.to, card_id);
     const Card *card = Sanguosha->getCard(card_id);
-    Card *use_card;
     if (card->isKindOf("Slash"))
     {
         CardUseStruct use;
         use.from = effect.from;
         use.to << effect.to;
-        use_card = new Duel(NoSuitNoColor, 0);
+        Duel *use_card = new Duel(NoSuitNoColor, 0);
+        use_card->setCancelable(false);
         use_card->setSkillName("thduanzui");
         use.card = use_card;
         room->useCard(use);
@@ -1124,7 +1147,7 @@ void ThDuanzuiCard::onEffect(const CardEffectStruct &effect) const {
         CardUseStruct use;
         use.from = effect.from;
         use.to << effect.to;
-        use_card = new Slash(NoSuitNoColor, 0);
+        Slash *use_card = new Slash(NoSuitNoColor, 0);
         use_card->setSkillName("thduanzui");
         use.card = use_card;
         room->useCard(use);

@@ -10,6 +10,8 @@
 #include "maneuvering.h"
 #include "ai.h"
 
+#include "jsonutils.h"
+
 class Huichun: public OneCardViewAsSkill{
 public:
     Huichun():OneCardViewAsSkill("huichun"){
@@ -741,6 +743,276 @@ public:
     }
 };
 
+class Huanshen: public GameStartSkill {
+public:
+    Huanshen(): GameStartSkill("huanshen") {
+    }
+
+    static void playAudioEffect(ServerPlayer *player, const QString &skill_name) {
+        player->getRoom()->broadcastSkillInvoke(skill_name,  player->isMale(), -1);
+    }
+
+    static void AcquireGenerals(ServerPlayer *player, int n) {
+        QStringList list = GetAvailableGenerals(player);
+        qShuffle(list);
+
+        QStringList acquired = list.mid(0, n);
+        QVariantList huanshens = player->tag["Huanshens"].toList();
+        foreach (QString huanshen, acquired) {
+            huanshens << huanshen;
+            const General *general = Sanguosha->getGeneral(huanshen);
+            foreach (const TriggerSkill *skill, general->getTriggerSkills()) {
+                player->getRoom()->getThread()->addTriggerSkill(skill);
+            }
+        }
+
+        player->tag["Huanshens"] = huanshens;
+
+        player->invoke("animate", "huanshen:" + acquired.join(":"));
+
+        LogMessage log;
+        log.type = "#GetHuanshen";
+        log.from = player;
+        log.arg = QString::number(n);
+        log.arg2 = QString::number(huanshens.length());
+        player->getRoom()->sendLog(log);
+
+        player->getRoom()->setPlayerMark(player, "@huanshen", huanshens.length());
+    }
+
+    static QStringList GetAvailableGenerals(ServerPlayer *player) {
+        QSet<QString> all = Sanguosha->getLimitedGeneralNames().toSet();
+        Room *room = player->getRoom();
+        if (room->getMode().endsWith("p")
+            || room->getMode().endsWith("pd")
+            || room->getMode().endsWith("pz"))
+            all.subtract(Config.value("Banlist/Roles", "").toStringList().toSet());
+        else if (room->getMode() == "04_1v3")
+            all.subtract(Config.value("Banlist/HulaoPass", "").toStringList().toSet());
+        QSet<QString> huanshen_set, room_set;
+        QVariantList huanshens = player->tag["Huanshens"].toList();
+        foreach (QVariant huanshen, huanshens)
+            huanshen_set << huanshen.toString();
+        QList<const ServerPlayer *> players = room->findChildren<const ServerPlayer *>();
+        foreach (const ServerPlayer *player, players) {
+            if (!player->isAlive()) continue;
+            room_set << player->getGeneralName();
+            if (player->getGeneral2())
+                room_set << player->getGeneral2Name();
+        }
+
+        static QSet<QString> banned;
+        if (banned.isEmpty())
+            banned << "luna009";
+
+        return (all - banned - huanshen_set - room_set).toList();
+    }
+
+    static QString SelectSkill(ServerPlayer *player) {
+        Room *room = player->getRoom();
+        playAudioEffect(player, "huanshen");
+
+        QString huanshen_skill = player->tag["HuanshenSkill"].toString();
+        if (!huanshen_skill.isEmpty())
+            room->detachSkillFromPlayer(player, huanshen_skill);
+
+        QVariantList huanshens = player->tag["Huanshens"].toList();
+        if (huanshens.isEmpty())
+            return QString();
+
+        QStringList huanshen_generals;
+        foreach (QVariant huanshen, huanshens)
+            huanshen_generals << huanshen.toString();
+
+        QStringList skill_names;
+        QString skill_name;
+        const General *general = NULL;
+        AI* ai = player->getAI();
+        if (ai) {
+            QHash<QString, const General *> hash;
+            foreach (QString general_name, huanshen_generals) {
+                const General *general = Sanguosha->getGeneral(general_name);
+                foreach (const Skill *skill, general->getVisibleSkillList()) {
+                    if (skill->isLordSkill() || skill->inherits("SPConvertSkill")
+                        || skill->getFrequency() == Skill::Limited
+                        || skill->getFrequency() == Skill::Wake)
+                        continue;
+
+                    if (!skill_names.contains(skill->objectName())) {
+                        hash[skill->objectName()] = general;
+                        skill_names << skill->objectName();
+                    }
+                }
+            }
+            Q_ASSERT(skill_names.length() > 0);
+            skill_name = ai->askForChoice("huanshen", skill_names.join("+"), QVariant());
+            general = hash[skill_name];
+            Q_ASSERT(general != NULL);
+        } else {
+            QString general_name = room->askForGeneral(player, huanshen_generals);
+            general = Sanguosha->getGeneral(general_name);
+
+            foreach (const Skill *skill, general->getVisibleSkillList()) {
+                if (skill->isLordSkill() || skill->inherits("SPConvertSkill")
+                    || skill->getFrequency() == Skill::Limited
+                    || skill->getFrequency() == Skill::Wake)
+                    continue;
+
+                skill_names << skill->objectName();
+            }
+
+            if (skill_names.isEmpty())
+                return QString();
+
+            skill_name = room->askForChoice(player, "huanshen", skill_names.join("+"));
+        }
+
+        QString kingdom = general->getKingdom();
+        
+        if (player->getKingdom() != kingdom) {
+            if (kingdom == "god") {
+                kingdom = room->askForKingdom(player);
+
+                LogMessage log;
+                log.type = "#ChooseKingdom";
+                log.from = player;
+                log.arg = kingdom;
+                room->sendLog(log);
+            }
+            room->setPlayerProperty(player, "kingdom", kingdom);
+        }
+
+        if (player->getGender() != general->getGender())
+            player->setGender(general->getGender());
+
+        Q_ASSERT(!skill_name.isNull() && !skill_name.isEmpty());
+
+        Json::Value arg(Json::arrayValue);
+        arg[0] = (int)QSanProtocol::S_GAME_EVENT_HUANSHEN;
+        arg[1] = QSanProtocol::Utils::toJsonString(player->objectName());
+        arg[2] = QSanProtocol::Utils::toJsonString(general->objectName());
+        arg[3] = QSanProtocol::Utils::toJsonString(skill_name);
+        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
+
+        player->tag["HuanshenSkill"] = skill_name;
+        
+        room->acquireSkill(player, skill_name);
+
+        if (player->getHp() <= 0)
+            room->enterDying(player, NULL);
+
+        return skill_name;
+    }
+
+    virtual void onGameStart(ServerPlayer *player) const{
+        AcquireGenerals(player, 2);
+        SelectSkill(player);
+    }
+
+    virtual QDialog *getDialog() const{
+        static HuanshenDialog *dialog;
+
+        if (dialog == NULL)
+            dialog = new HuanshenDialog;
+
+        return dialog;
+    }
+};
+
+HuanshenDialog::HuanshenDialog() {
+    setWindowTitle(Sanguosha->translate("huanshen"));
+}
+
+void HuanshenDialog::popup() {
+    QVariantList huanshen_list = Self->tag["Huanshens"].toList();
+    QList<const General *> huanshens;
+    foreach (QVariant huanshen, huanshen_list)
+        huanshens << Sanguosha->getGeneral(huanshen.toString());
+
+    fillGenerals(huanshens);
+    show();
+}
+
+class HuanshenBegin: public PhaseChangeSkill {
+public:
+    HuanshenBegin(): PhaseChangeSkill("#huanshen-begin") {
+    }
+
+    virtual int getPriority() const{
+        return 4;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target) && target->getPhase() == Player::RoundStart;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        if (player->askForSkillInvoke("huanshen"))
+            Huanshen::SelectSkill(player);
+        return false;
+    }
+};
+
+class HuanshenEnd: public TriggerSkill {
+public:
+    HuanshenEnd(): TriggerSkill("#huanshen-end") {
+        events << EventPhaseChanging;
+    }
+
+    virtual int getPriority() const{
+        return 1;
+    }
+
+    virtual bool trigger(TriggerEvent , Room *, ServerPlayer *player, QVariant &data) const{
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (change.to != Player::NotActive)
+            return false;
+        if (player->askForSkillInvoke("huanshen"))
+            Huanshen::SelectSkill(player);
+        return false;
+    }
+};
+
+class HuanshenClear: public TriggerSkill {
+public:
+    HuanshenClear(): TriggerSkill("#huanshen-clear") {
+        events << EventLoseSkill;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target && !target->hasSkill("huanshen") && !target->tag["Huanshens"].toList().isEmpty();
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &)const{
+        if (player->getKingdom() != player->getGeneral()->getKingdom() && player->getGeneral()->getKingdom() != "god")
+            room->setPlayerProperty(player, "kingdom", player->getGeneral()->getKingdom());
+        if (player->getGender() != player->getGeneral()->getGender())
+            player->setGender(player->getGeneral()->getGender());
+        room->detachSkillFromPlayer(player, player->tag["HuanshenSkill"].toString());
+        player->tag.remove("Huanshens");
+        room->setPlayerMark(player, "@huanshen", 0);
+        return false;
+    }
+};
+
+class Lingqi: public MasochismSkill {
+public:
+    Lingqi(): MasochismSkill("lingqi") {
+        frequency = Frequent;
+    }
+
+    virtual void onDamaged(ServerPlayer *player, const DamageStruct &damage) const{
+        int n = damage.damage;
+        if (n == 0)
+            return;
+
+        if (player->askForSkillInvoke(objectName())) {
+            Huanshen::playAudioEffect(player, objectName());
+            Huanshen::AcquireGenerals(player, n);
+        }
+    }
+};
+
 LeijiCard::LeijiCard(){
 
 }
@@ -1261,6 +1533,7 @@ class Tianjing: public MaxCardsSkill{
 public:
     Tianjing():MaxCardsSkill("tianjing"){
     }
+
     virtual int getExtra(const Player *target) const{
         if(target->hasSkill(objectName()) && target->isWounded())
             return 4;
@@ -1901,6 +2174,16 @@ void StandardPackage::addLunaGenerals(){
     General *luna008 = new General(this, "luna008", "qun");
     luna008->addSkill("jibu");
     luna008->addSkill(new Mengjin);
+
+    General *luna009 = new General(this, "luna009", "qun", 3);
+    luna009->addSkill(new Huanshen);
+    luna009->addSkill(new HuanshenBegin);
+    luna009->addSkill(new HuanshenEnd);
+    luna009->addSkill(new HuanshenClear);
+    luna009->addSkill(new Lingqi);
+    related_skills.insertMulti("huanshen", "#huanshen-begin");
+    related_skills.insertMulti("huanshen", "#huanshen-end");
+    related_skills.insertMulti("huanshen", "#huanshen-clear");
 
     General *luna010 = new General(this, "luna010$", "qun", 3);
     luna010->addSkill(new Leiji);

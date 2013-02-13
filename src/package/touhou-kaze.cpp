@@ -302,13 +302,13 @@ public:
             return false;
         
         ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-        if(splayer == NULL || player == splayer || splayer->isKongcheng() || splayer->getPhase() != Player::NotActive)
+        if(splayer == NULL || player == splayer || splayer->isKongcheng() || splayer == room->getCurrent())
             return false;
 
-        if(splayer->askForSkillInvoke(objectName())) {
-            room->broadcastSkillInvoke(objectName());
-            room->askForUseSlashTo(splayer, player, "@thhongye");
-        }
+        room->setPlayerFlag(splayer, "ThHongyeUse");
+        room->askForUseSlashTo(splayer, player, "@thhongye");
+        room->setPlayerFlag(splayer, "-ThHongyeUse");
+
         return false;
     }
 };

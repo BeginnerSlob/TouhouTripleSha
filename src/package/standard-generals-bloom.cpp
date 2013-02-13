@@ -1356,98 +1356,64 @@ public:
     }
 };
 
-Nvelian::Nvelian(const QString &name, int n)
-    :TriggerSkill(name), n(n)
-{
-}
-
-QString Nvelian::getEffectName()const{
-    return objectName();
-}
-
-bool Nvelian::trigger(TriggerEvent triggerEvent,  Room* room, ServerPlayer *player, QVariant &data) const
-{
-    if(triggerEvent == EventPhaseChanging && data.value<PhaseChangeStruct>().to != Player::Finish)
-        return false;
-
-    if(triggerEvent == EventAcquireSkill && data.toString() != getEffectName())
-        return false;
-
-    if(triggerEvent == HpRecover && player->getHp() <= 0)
-        return false;
-
-    if(triggerEvent == PostHpReduced || triggerEvent == HpLost){
-        int delta = 0;
-        if (triggerEvent == PostHpReduced)
-            delta = data.value<DamageStruct>().damage;
-        else
-            delta = data.toInt();
-
-        if (delta + player->getHp() <= 0)
-            return false;
+class Nvelian: public TriggerSkill {
+public:
+    Nvelian(): TriggerSkill("nvelian") {
+        events << HpChanged << MaxHpChanged << CardsMoveOneTime << EventPhaseChanging;
+        frequency = Frequent;
     }
 
-    if(triggerEvent == CardsMoveOneTime)
-    {
-        if(player->getPhase() == Player::Discard)
-            return false;
-        CardsMoveOneTimeStar cards_move = data.value<CardsMoveOneTimeStar>();
-        bool canInvoke = false;
-        if(cards_move->from == player)
-            canInvoke = cards_move->from_places.contains(Player::PlaceHand);
-        else if(cards_move->to == player)
-            canInvoke = cards_move->to_place == Player::PlaceHand;
-        if(!canInvoke)
-            return false;
-    }
-
-    const int count = qMin(qMin(player->getLostHp(), player->getMaxHp()), n) - player->getHandcardNum();
-
-    if(count <= 0)
-        return false;
-
-    if(frequency == Compulsory || player->askForSkillInvoke(getEffectName())){
-        if(frequency == Compulsory){
-            LogMessage log;
-            log.type = "#TriggerSkill";
-            log.from = player;
-            log.arg = "nvelian";
-            room->sendLog(log);
+    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        int losthp = qMin(player->getLostHp(), 2);
+        if (triggerEvent == CardsMoveOneTime)
+        {
+            CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
+            if (player->getPhase() == Player::Discard)
+            {
+                bool changed = false;
+                if (move->from == player && move->from_places.contains(Player::PlaceHand))
+                    changed = true;
+                if (move->to == player && move->to_place == Player::PlaceHand)
+                    changed = true;
+                if (changed)
+                    player->addMark(objectName());
+            }
         }
-        room->broadcastSkillInvoke("nvelian");
-        player->drawCards(count);
-    }
+        if (triggerEvent == HpChanged || triggerEvent == MaxHpChanged)
+        {
+            if (player->getPhase() == Player::Discard)
+                player->addMark(objectName());
+        }
+        else if (triggerEvent == CardsMoveOneTime)
+        {
+            CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
+            bool can_invoke = false;
+            if (move->from == player && move->from_places.contains(Player::PlaceHand))
+                can_invoke = true;
+            if (move->to == player && move->to_place == Player::PlaceHand)
+                can_invoke = true;
+            if (!can_invoke)
+                return false;
+        }
+        else if (triggerEvent == EventPhaseChanging)
+        {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to != Player::Finish)
+                return false;
+            if (player->getMark(objectName()) <= 0)
+                return false;
+            else
+                player->setMark(objectName(), 0);
+        }
 
-    return false;
-}
+        if (player->getHandcardNum() < losthp && player->getPhase() != Player::Discard
+            && player->askForSkillInvoke(objectName()))
+        {
+            player->drawCards(losthp - player->getHandcardNum());
+            room->broadcastSkillInvoke(objectName());
+        }
 
-class NvelianStateChanged: public Nvelian{
-public:
-    NvelianStateChanged():Nvelian("nvelian", 2)
-    {
-        frequency = Frequent;
-        events << PostHpReduced << HpLost << HpRecover << MaxHpChanged << EventPhaseChanging << EventAcquireSkill;
-    }
-
-    virtual int getPriority() const{
-        return -1;
-    }
-};
-
-class NvelianCardMove: public Nvelian{
-public:
-    NvelianCardMove():Nvelian("#nvelian", 2)
-    {
-        frequency = Frequent;
-        events << CardsMoveOneTime << CardDrawnDone;
-    }
-
-    virtual int getPriority() const{
-        return 2;
-    }
-
-    virtual QString getEffectName() const{
-        return "nvelian";
+        return false;
     }
 };
 
@@ -2042,9 +2008,7 @@ void StandardPackage::addBloomGenerals(){
 
     General *bloom018 = new General(this, "bloom018", "wei", 3, false);
     bloom018->addSkill(new Xuwu);
-    bloom018->addSkill(new NvelianStateChanged);
-    bloom018->addSkill(new NvelianCardMove);
-    related_skills.insertMulti("nvelian", "#nvelian");
+    bloom018->addSkill(new Nvelian);
 
     General *bloom022 = new General(this, "bloom022", "wei", 3, false);
     bloom022->addSkill(new Lundao);

@@ -120,7 +120,8 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
     else if (use.to.size() > 1 && player->hasSkill("xindu"))
         room->broadcastSkillInvoke("xindu");
 
-    if (use.from->hasFlag("BladeUse")) {
+    if (use.from->hasFlag("BladeUse"))
+    {
         room->setEmotion(player, "weapon/blade");
 
         LogMessage log;
@@ -128,7 +129,18 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
         log.from = use.from;
         log.to << use.to;
         room->sendLog(log);
-    } else if (isVirtualCard() && use.card->getSkillName() == "Spear")
+    }
+    else if (use.from->hasFlag("ThHongyeUse"))
+    {
+        LogMessage log;
+        log.type = "#InvokeSkill";
+        log.from = use.from;
+        log.arg = "thhongye";
+        room->sendLog(log);
+
+        room->broadcastSkillInvoke("thhongye");
+    }
+    else if (isVirtualCard() && use.card->getSkillName() == "Spear")
         room->setEmotion(player,"weapon/spear");
     else if (use.to.size() > 1 && player->hasWeapon("Halberd") && player->isLastHandCard(this))
         room->setEmotion(player,"weapon/halberd");

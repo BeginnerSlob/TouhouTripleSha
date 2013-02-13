@@ -811,16 +811,21 @@ public:
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         ServerPlayer *current = room->getCurrent();
-        if (current->hasSkill(objectName()) && current != player && current->askForSkillInvoke(objectName()))
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (current->hasSkill(objectName()) && current != player && use.card->isRed()
+            && current->askForSkillInvoke(objectName()))
         {
             QStringList choices;
+            choices << "letdraw";
             if (!player->isNude())
                 choices << "discard";
-            choices << "letdraw";
 
             QString choice = room->askForChoice(player, objectName(), choices.join("+"));
             if (choice == "discard")
-                room->askForDiscard(player, objectName(), 1, 1, false, true);
+            {
+                int card_id = room->askForCardChosen(current, player, "he", objectName());
+                room->throwCard(card_id, player, current);
+            }
             else
                 current->drawCards(1);
         }

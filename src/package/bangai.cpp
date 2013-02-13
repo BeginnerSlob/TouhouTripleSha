@@ -836,7 +836,7 @@ public:
         }
         else if (triggerEvent == TargetConfirmed && player->getArmor()) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (!player->isAlive() || player != use.from || !use.card->isKindOf("Slash"))
+            if (!player->isAlive() || player != use.from || !use.card->isKindOf("Slash") || player->getPhase() != Player::Play)
                 return false;
             int count = 1;
             int mark_n = player->getMark("no_jink" + use.card->toString());
