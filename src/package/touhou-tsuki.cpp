@@ -1692,13 +1692,13 @@ public:
 
             if (choice == "red")
             {
-                player->obtainCard(get_red);
+                room->moveCardTo(get_red, player, Player::PlaceHand, true);
                 CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
                 room->moveCardTo(disc_red, NULL, Player::DiscardPile, reason, true);
             }
             else if (choice == "nine")
             {
-                player->obtainCard(get_nine);
+                room->moveCardTo(get_nine, player, Player::PlaceHand, true);
                 CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
                 room->moveCardTo(disc_nine, NULL, Player::DiscardPile, reason, true);
             }
@@ -1764,6 +1764,7 @@ public:
     ThShenbao(): TriggerSkill("thshenbao") {
         events << EventPhaseStart;
         view_as_skill = new ThShenbaoViewAsSkill;
+        frequency = Limited;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const {
