@@ -487,6 +487,8 @@ public:
                         mark_n += count;
                         room->setPlayerMark(player, "no_jink" + use.card->toString(), mark_n);
                     }
+                    else
+                        player->obtainCard(judge.card);
 
                     p->setFlags("-TiejiTarget");
                 }

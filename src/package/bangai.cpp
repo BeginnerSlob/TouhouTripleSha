@@ -1497,7 +1497,7 @@ public:
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *target, QVariant &data) const{
         ServerPlayer *player = room->findPlayerBySkillName(objectName());
-        if(!player || player == target || target->getPhase() != Player::Play || target->isKongcheng() || !player->askForSkillInvoke(objectName()))
+        if(!player || player == target || target->getPhase() != Player::Start || target->isKongcheng() || !player->askForSkillInvoke(objectName()))
             return false;
 
         const Card *card = room->askForCardShow(target, player, "@thzhanfuchoose:" + player->getGeneralName());
