@@ -671,6 +671,11 @@ public:
     virtual bool onPhaseChange(ServerPlayer *target) const{
         if(target->getMark("choucecount") >= 3){
             target->setMark("choucecount", 0);
+            LogMessage log;
+            log.type = "#TriggerSkill";
+            log.from = target;
+            log.arg = objectName();
+            target->getRoom()->sendLog(log);
             target->gainMark("@tianji");
             target->gainAnExtraTurn(target);
         }
@@ -690,6 +695,12 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        LogMessage log;
+        log.type = "#TriggerSkill";
+        log.from = player;
+        log.arg = objectName();
+        room->sendLog(log);
+        
         player->loseMark("@tianji");
 
         JudgeStruct judge;
@@ -803,7 +814,7 @@ public:
         if (current->hasSkill(objectName()) && current != player && current->askForSkillInvoke(objectName()))
         {
             QStringList choices;
-            if (!player->isKongcheng())
+            if (!player->isNude())
                 choices << "discard";
             choices << "letdraw";
 

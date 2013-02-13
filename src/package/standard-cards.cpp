@@ -64,7 +64,7 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
             if (skill && !skill->inherits("FilterSkill") && skill->objectName() != "guhuo")
                 has_changed = true;
         }
-        if (!has_changed || subcardsLength() == 0) {
+        if (!has_changed || (isVirtualCard() && subcardsLength() == 0)) {
             QVariant data = QVariant::fromValue(use);
             if (player->hasSkill("lingpao"))
                 if (room->askForSkillInvoke(player, "lingpao", data)) {

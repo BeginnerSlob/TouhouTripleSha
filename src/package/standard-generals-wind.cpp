@@ -417,7 +417,7 @@ public:
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         if(triggerEvent == TargetConfirmed) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.from == player && use.card->isKindOf("Slash") && use.card->isVirtualCard())
+            if (use.from == player && use.card->isKindOf("Slash") && use.card->isVirtualCard() && use.card->subcardsLength() != 0)
             {
                 foreach(ServerPlayer *p, use.to)
                     if(!p->isNude() && player->askForSkillInvoke(objectName()))
@@ -426,7 +426,7 @@ public:
         }
         else if(triggerEvent == CardResponded) {
             CardResponseStruct resp = data.value<CardResponseStruct>();
-            if (resp.m_card->isVirtualCard() && resp.m_card->isKindOf("Jink") && player->askForSkillInvoke(objectName()))
+            if (resp.m_card->isVirtualCard() && resp.m_card->subcardsLength() != 0 && resp.m_card->isKindOf("Jink") && player->askForSkillInvoke(objectName()))
                 player->drawCards(1);
         }
         
@@ -1457,7 +1457,7 @@ public:
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
 
-        if (player->distanceTo(damage.to) < 2 && damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))
+        if (player->distanceTo(damage.to) <= 2 && damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))
             && !damage.chain && !damage.transfer && player->askForSkillInvoke(objectName(), data)){
             room->broadcastSkillInvoke(objectName(), 1);
             JudgeStruct judge;

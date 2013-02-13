@@ -208,11 +208,6 @@ void Client::signup(){
         QString base64 = Config.UserName.toUtf8().toBase64();
         QString command = Config.value("EnableReconnection", false).toBool() ? "signupr" : "signup";
         QString signup_str = QString("%1 %2:%3").arg(command).arg(base64).arg(Config.UserAvatar);
-        QString password = Config.Password;
-        if(!password.isEmpty()){
-            password = QCryptographicHash::hash(password.toAscii(), QCryptographicHash::Md5).toHex();
-            signup_str.append(":" + password);
-        }
         request(signup_str);
     }
 }

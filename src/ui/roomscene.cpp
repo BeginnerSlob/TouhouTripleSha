@@ -562,9 +562,15 @@ ReplayerControlBar::ReplayerControlBar(Dashboard *dashboard){
     speed_up->setPos(step * 3, 0);
 
     time_label = new QLabel;
+    time_label->setAttribute(Qt::WA_NoSystemBackground);
+    time_label->setText("-----------------------------------------------------");
     QPalette palette;
     palette.setColor(QPalette::WindowText, Config.TextEditColor);
     time_label->setPalette(palette);
+
+    QGraphicsProxyWidget *widget = new QGraphicsProxyWidget(this);
+    widget->setWidget(time_label);
+    widget->setPos(step * 4, 0);
 
     Replayer *replayer = ClientInstance->getReplayer();
     connect(play, SIGNAL(clicked()), replayer, SLOT(toggle()));
