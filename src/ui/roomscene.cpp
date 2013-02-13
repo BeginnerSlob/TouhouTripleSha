@@ -2733,11 +2733,10 @@ void RoomScene::changeMaxHp(const QString &who, int delta) {
 }
 
 void RoomScene::onStandoff(){
-    freeze();
+    log_box->append(QString(tr("<font color='%1'>---------- Game Finish ----------</font>").arg(Config.TextEditColor.name())));
 
-#ifdef AUDIO_SUPPORT
+    freeze();
     Sanguosha->playSystemAudioEffect("standoff");
-#endif
 
     QDialog *dialog = new QDialog(main_window);
     dialog->resize(500, 600);
@@ -2757,6 +2756,8 @@ void RoomScene::onStandoff(){
 }
 
 void RoomScene::onGameOver(){
+    log_box->append(QString(tr("<font color='%1'>---------- Game Finish ----------</font>").arg(Config.TextEditColor.name())));
+
     m_roomMutex.lock();
     freeze();
 
@@ -3448,7 +3449,7 @@ void RoomScene::onGameStart(){
     if(control_panel)
         control_panel->hide();
 
-    log_box->append(tr("<font color='white'>------- Game Start --------</font>"));
+    log_box->append(QString(tr("<font color='%1'>---------- Game Start ----------</font>").arg(Config.TextEditColor.name())));
 
     // updateStatus(ClientInstance->getStatus(), ClientInstance->getStatus());
 
