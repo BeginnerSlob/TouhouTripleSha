@@ -480,6 +480,26 @@ private:
     static bool hasShuGenerals(const Player *player);
 };
 
+class KouzhuCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE KouzhuCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class JiaojinCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE JiaojinCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class SuikongCard: public SkillCard{
     Q_OBJECT
 

@@ -436,7 +436,7 @@ void ThGugaoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
     else
     {
         if (source->hasFlag("thgugao"))
-            room->setPlayerFlag(source, "thgugao");
+            room->setPlayerFlag(source, "-thgugao");
         if (source->getMark("@qianyu") <= 0)
         {
             DamageStruct damage;
