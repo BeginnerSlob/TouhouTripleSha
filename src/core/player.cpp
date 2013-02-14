@@ -165,6 +165,22 @@ int Player::getAttackRange() const{
     }
     else if (hasSkill("thsilian"))
         weapon_range = 3;
+    else if (getMark("thmicaitarget") > 0)
+    {
+        const Player *src = NULL;
+        foreach (const Player *p, getSiblings())
+            if (p->getMark("thmicaisource") > 0)
+            {
+                src = p;
+                break;
+            }
+        if(src && src->weapon > 0)
+        {
+            const Weapon *card = qobject_cast<const Weapon*>(src->weapon->getRealCard());
+            Q_ASSERT(card);
+            weapon_range = card->getRange();
+        }
+    }
 
     if (hasFlag("InfinityAttackRange") || getMark("InfinityAttackRange") > 0)
         original_range = 10000; // Actually infinity
@@ -474,6 +490,20 @@ const EquipCard *Player::getEquip(int index) const{
 }
 
 bool Player::hasWeapon(const QString &weapon_name) const{
+    if (weapon == NULL && weapon_name == "Blade" && hasSkill("silian"))
+        return true;
+    else if (weapon == NULL && !hasSkill("silian") && getMark("thmicaitarget") > 0)
+    {
+        const Player *src = NULL;
+        foreach (const Player *p, getSiblings())
+            if (p->getMark("thmicaisource") > 0)
+            {
+                src = p;
+                break;
+            }
+        if (src)
+            return src->hasWeapon(weapon_name);
+    }
     return weapon && weapon->objectName() == weapon_name;
 }
 
@@ -714,6 +744,22 @@ int Player::usedTimes(const QString &card_class) const
 }
 
 bool Player::hasEquipSkill(const QString &skill_name) const{
+    if (getMark("thmicaitarget") > 0)
+    {
+        if ((Sanguosha->getSkill(skill_name)->inherits("ArmorSkill") && !armor && !hasSkill("shengtang"))
+            || (!Sanguosha->getSkill(skill_name)->inherits("ArmorSkill") && !weapon && !hasSkill("silian")))
+        {
+            const Player *src = NULL;
+            foreach (const Player *p, getSiblings())
+                if (p->getMark("thmicaisource") > 0)
+                {
+                    src = p;
+                    break;
+                }
+            if (src)
+                return src->hasEquipSkill(skill_name);
+        }
+    }
     if (weapon) {
         const Weapon *weaponc = qobject_cast<const Weapon *>(weapon->getRealCard());
         if (Sanguosha->getSkill(weaponc) && Sanguosha->getSkill(weaponc)->objectName() == skill_name)

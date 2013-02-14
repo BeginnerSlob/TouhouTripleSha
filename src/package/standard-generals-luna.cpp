@@ -1121,7 +1121,6 @@ public:
 
     virtual const Card *viewAs(const Card *originalCard) const{
         TianshiCard *tianshiCard = new TianshiCard;
-        tianshiCard->setSuit(originalCard->getSuit());
         tianshiCard->addSubcard(originalCard);
 
         return tianshiCard;
