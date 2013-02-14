@@ -130,7 +130,7 @@ public:
         if (Self->isChained())
             return false;
         foreach (const Player *p, Self->getSiblings())
-            if (p->isChained())
+            if (p->isAlive() && p->isChained())
                 return false;
 
         return player->getKingdom() == "qun" && !player->hasFlag("ForbidThYewang");

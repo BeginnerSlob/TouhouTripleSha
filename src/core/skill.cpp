@@ -416,6 +416,21 @@ WeaponSkill::WeaponSkill(const QString &name)
 
 bool WeaponSkill::triggerable(const ServerPlayer *target) const{
     if (target == NULL) return false;
+    if (target->getMark("thmicaitarget") > 0 && !target->getWeapon() && !target->hasSkill("silian"))
+    {
+        const Player *src = NULL;
+        foreach (const Player *p, target->getSiblings())
+            if (p->getMark("thmicaisource") > 0)
+            {
+                src = p;
+                break;
+            }
+        if (src)
+        {
+            ServerPlayer *source = (ServerPlayer *)src;
+            return triggerable(source);
+        }
+    }
     if (target->getMark("Equips_Nullified_to_Yourself") > 0) return false;
     return target->hasWeapon(objectName());
 }
@@ -427,7 +442,24 @@ ArmorSkill::ArmorSkill(const QString &name)
 }
 
 bool ArmorSkill::triggerable(const ServerPlayer *target) const{
-    if (target == NULL || target->getArmor() == NULL)
+    if (target == NULL)
+        return false;
+    if (target->getMark("thmicaitarget") > 0 && !target->getArmor() && !target->hasSkill("shengtang"))
+    {
+        const Player *src = NULL;
+        foreach (const Player *p, target->getSiblings())
+            if (p->getMark("thmicaisource") > 0)
+            {
+                src = p;
+                break;
+            }
+        if (src)
+        {
+            ServerPlayer *source = (ServerPlayer *)src;
+            return triggerable(source);
+        }
+    }
+    if (target->getArmor() == NULL)
         return false;
     return target->hasArmorEffect(objectName());
 }

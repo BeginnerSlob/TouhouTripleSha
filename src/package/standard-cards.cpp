@@ -428,11 +428,13 @@ public:
             return false;
 
         int weapon_id = player->getWeapon()->getId();
-        room->setCardFlag(weapon_id, "using");
+        if (player->getWeapon())
+            room->setCardFlag(weapon_id, "using");
         room->setPlayerFlag(effect.from, "BladeUse");
         room->askForUseSlashTo(effect.from, effect.to, QString("blade-slash:%1").arg(effect.to->objectName()), false, false, true);
         room->setPlayerFlag(effect.from, "-BladeUse");
-        room->setCardFlag(weapon_id, "-using");
+        if (player->getWeapon())
+            room->setCardFlag(weapon_id, "-using");
 
         return false;
     }
@@ -643,7 +645,8 @@ public:
         QString asked = data.toStringList().first();
         if(asked == "jink"){
             if(room->askForSkillInvoke(player, objectName())){
-                room->setCardFlag(player->getArmor()->getId(), "using");
+                if (player->getArmor())
+                    room->setCardFlag(player->getArmor()->getId(), "using");
                 JudgeStruct judge;
                 judge.pattern = QRegExp("(.*):(heart|diamond):(.*)");
                 judge.good = true;
