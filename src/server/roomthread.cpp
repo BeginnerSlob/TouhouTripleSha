@@ -372,10 +372,10 @@ void RoomThread::run(){
                             room->setPlayerFlag(player, "-actioned");
 
                         if(player->getPhase() != Player::NotActive){
-							
-							QVariant trigger_data = QVariant::fromValue((PlayerStar)player);
-							foreach (ServerPlayer *p, room->getAllPlayers())
-								trigger(EventPhaseEnd, room, p, trigger_data);
+                            
+                            QVariant trigger_data = QVariant::fromValue((PlayerStar)player);
+                            foreach (ServerPlayer *p, room->getAllPlayers())
+                                trigger(EventPhaseEnd, room, p, trigger_data);
 
                             player->changePhase(player->getPhase(), Player::NotActive);
                         }

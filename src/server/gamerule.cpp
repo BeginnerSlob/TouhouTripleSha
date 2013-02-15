@@ -87,8 +87,8 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
         }
 
     case EventPhaseStart: {
-		if (data.value<PlayerStar>() != player)
-			break;
+        if (data.value<PlayerStar>() != player)
+            break;
         switch(player->getPhase()){
             case Player::PhaseNone: {
                 Q_ASSERT(false);

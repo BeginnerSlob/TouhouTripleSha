@@ -691,11 +691,11 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         if (triggerEvent == EventPhaseChanging && TriggerSkill::triggerable(player))
-		{
-			PhaseChangeStruct change =  data.value<PhaseChangeStruct>();
-			if (change.to == Player::Play)
-				room->setPlayerMark(change.who, "thhuilun", 0);
-		}
+        {
+            PhaseChangeStruct change =  data.value<PhaseChangeStruct>();
+            if (change.to == Player::Play)
+                room->setPlayerMark(change.who, "thhuilun", 0);
+        }
         else if (triggerEvent == CardUsed)
         {
             ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
@@ -907,7 +907,7 @@ public:
             target->drawCards(x);
         }
         else if (triggerEvent == EventPhaseEnd && data.value<PlayerStar>() == player
-				 && player->getPhase() == Player::Draw && player->hasFlag("thweideused"))
+                 && player->getPhase() == Player::Draw && player->hasFlag("thweideused"))
         {
             room->setPlayerFlag(player, "-thweideused");
             QList<ServerPlayer *> victims;
