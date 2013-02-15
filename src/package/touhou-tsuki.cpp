@@ -1161,15 +1161,7 @@ public:
         events << CardUsed;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const {
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-        if (splayer == NULL)
-            return false;
-
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *splayer, QVariant &data) const{
         CardUseStruct use = data.value<CardUseStruct>();
         
         if ((!use.card->isNDTrick() && !use.card->isKindOf("BasicCard")) || use.card->isKindOf("Jink") || use.card->isKindOf("Nullification"))
@@ -1453,7 +1445,7 @@ public:
         else if (player->getPhase() == Player::Play)
         {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("TrickCard"))
+            if (use.from == player && use.card->isKindOf("TrickCard"))
                 player->addMark(objectName());
         }
 
@@ -1515,7 +1507,7 @@ public:
         if (triggerEvent == CardUsed)
         {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (!use.card->isNDTrick())
+            if (use.from != player || !use.card->isNDTrick())
                 return false;
 
             if (use.card->isKindOf("Nullification") || use.card->isVirtualCard())
@@ -1599,34 +1591,31 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == CardUsed)
+        if (triggerEvent == CardUsed && TriggerSkill::triggerable(player))
         {
             CardUseStruct use = data.value<CardUseStruct>();
-            ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-            if (!splayer)
-                return false;
-            if (!splayer->tag.value("ThGuixu").isNull())
-                splayer->tag["ThGuixu"] = QVariant(QString());
-            if (use.from == splayer || splayer->getPile("guixupile").length() > 1
-                || splayer == room->getCurrent())
+            if (!player->tag.value("ThGuixu").isNull())
+                player->tag["ThGuixu"] = QVariant(QString());
+            if (use.from == player || player->getPile("guixupile").length() > 1
+                || player == room->getCurrent())
                 return false;
             if (use.card->isKindOf("TrickCard") && !use.card->isKindOf("Nullification"))
             {
-                if (splayer->askForSkillInvoke(objectName()))
+                if (player->askForSkillInvoke(objectName()))
                 {
                     JudgeStruct judge;
                     judge.pattern = QRegExp("(.*):(heart|diamond):(.*)");
                     judge.good = true;
                     judge.reason = objectName();
-                    judge.who = splayer;
+                    judge.who = player;
 
                     room->judge(judge);
 
                     if (judge.isGood())
                     {
-                        splayer->addToPile("guixupile", use.card);
+                        player->addToPile("guixupile", use.card);
                         if (use.card->isNDTrick())
-                            splayer->tag["ThGuixu"] = use.card->toString();
+                            player->tag["ThGuixu"] = use.card->toString();
                         else
                             return true;
                     }
@@ -1712,6 +1701,9 @@ public:
         
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         CardUseStruct use = data.value<CardUseStruct>();
+		if (use.from != player)
+			return false;
+
         if (!(use.card->isKindOf("Duel")
               || use.card->isKindOf("Snatch")
               || use.card->isKindOf("Dismantlement")

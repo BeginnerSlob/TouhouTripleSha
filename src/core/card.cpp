@@ -521,7 +521,9 @@ void Card::onUse(Room *room, const CardUseStruct &use) const{
         room->moveCardTo(this, player, NULL, Player::DiscardPile, reason, true);
     }
 
-    thread->trigger(CardUsed, room, player, data);
+    foreach(ServerPlayer *p, room->getAllPlayers())
+		if (thread->trigger(CardUsed, room, p, data))
+			break;
 
     thread->trigger(CardFinished, room, player, data);
 }

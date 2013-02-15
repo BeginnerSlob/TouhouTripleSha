@@ -959,6 +959,11 @@ public:
                     room->setTag("Susheng", QVariant());
                     return true;
                 }
+                else
+                {
+                    room->setTag("Susheng", QVariant());
+                    player->clearOnePrivatePile("sushengpile");
+                }
             }
         }else if(triggerEvent == AskForPeachesDone){
             const QList<int> &susheng = player->getPile("sushengpile");
@@ -1696,10 +1701,9 @@ public:
         if (!current || current->isDead())
             return false;
         if (triggerEvent == CardUsed) {
-            if (!player->hasFlag("jieyouUsed"))
-                return false;
-
             CardUseStruct use = data.value<CardUseStruct>();
+			if (use.from != player || !player->hasFlag("jieyouUsed"))
+				return false;
             if (use.card->isKindOf("Slash")) {
                 room->setPlayerFlag(player, "-jieyouUsed");
                 room->setCardFlag(use.card, "jieyou-slash");

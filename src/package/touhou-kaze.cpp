@@ -1072,29 +1072,37 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         const Card *card = NULL;
-        if (triggerEvent == CardUsed)
+		ServerPlayer *owner = NULL, *target = NULL;
+        if (triggerEvent == CardUsed && TriggerSkill::triggerable(player))
         {
             CardUseStruct use = data.value<CardUseStruct>();
+			if (use.from == player)
+				return false;
             card = use.card;
+			owner = player;
+			target = use.from;
         }
         else if (triggerEvent == CardResponded)
         {
+			ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
+			if (!splayer || splayer == player)
+				return false;
             CardResponseStruct resp = data.value<CardResponseStruct>();
             card = resp.m_card;
+			owner = splayer;
+			target = player;
         }
+		else
+			return false;
 
-        if (!card->isRed())
+        if (!card || !card->isRed())
             return false;
 
-        ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-        if (!splayer || splayer == player)
-            return false;
-
-        if (player->isChained() && !splayer->faceUp() && splayer->askForSkillInvoke(objectName()))
+        if (target->isChained() && !owner->faceUp() && owner->askForSkillInvoke(objectName()))
         {
-            splayer->turnOver();
-            player->turnOver();
-            room->setPlayerProperty(player, "chained", false);
+            owner->turnOver();
+            target->turnOver();
+            room->setPlayerProperty(target, "chained", false);
         }
 
         return false;
@@ -1377,7 +1385,7 @@ public:
         else if (triggerEvent == CardUsed)
         {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.from->hasFlag("CollateralUsing") && use.card->isKindOf("Slash") && use.card->isRed())
+            if (use.from == player && use.from->hasFlag("CollateralUsing") && use.card->isKindOf("Slash") && use.card->isRed())
             {
                 foreach (ServerPlayer *p, room->getAlivePlayers())
                     if (p->hasFlag("CollateralSource"))

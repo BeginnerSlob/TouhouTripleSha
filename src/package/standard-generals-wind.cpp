@@ -510,19 +510,13 @@ class Huiquan:public TriggerSkill{
 public:
     Huiquan():TriggerSkill("huiquan"){
         frequency = Frequent;
-        events << CardUsed << CardResponded;
+        events << CardUsed;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if (player == NULL) return false;
-        CardStar card = NULL;
-        if(triggerEvent == CardUsed){
-            CardUseStruct use = data.value<CardUseStruct>();
-            card = use.card;
-        }else if(triggerEvent == CardResponded)
-            card = data.value<CardResponseStruct>().m_card;
-
-        if(card->isKindOf("TrickCard")){            
+        CardUseStruct use = data.value<CardUseStruct>();
+        
+        if(use.from == player && use.card->isKindOf("TrickCard")){
             if(room->askForSkillInvoke(player, objectName())){
                 room->broadcastSkillInvoke(objectName());
                 player->drawCards(1);
@@ -1243,29 +1237,14 @@ public:
 class Lieren: public TriggerSkill{
 public:
     Lieren():TriggerSkill("lieren"){
-        events << Damage << CardUsed << CardFinished;
+        events << Damage;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        CardUseStruct use = data.value<CardUseStruct>();
         DamageStruct damage = data.value<DamageStruct>();
-        if(triggerEvent == CardUsed) {
-            if(use.card->isKindOf("Duel"))
-                player->tag["LierenDuelInvoke"] = true;
-
-            return false;
-        }
-
-        if(triggerEvent == CardFinished) {
-            if(use.card->isKindOf("Duel") && player->tag.value("LierenDuelInvoke", false).toBool())
-                player->tag["LierenDuelInvoke"] = false;
-
-            return false;
-        }
         ServerPlayer *target = damage.to;
-        if(damage.card && (damage.card->isKindOf("Slash") || (damage.card->isKindOf("Duel") 
-                && player->tag.value("LierenDuelInvoke", false).toBool())) && !player->isKongcheng()
-                && !target->isKongcheng() && target != player && !damage.chain && !damage.transfer){
+        if(damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))
+			&& !player->isKongcheng() && !target->isKongcheng() && target != player && !damage.chain && !damage.transfer){
             if(room->askForSkillInvoke(player, objectName(), data)){
                 room->broadcastSkillInvoke(objectName(), 1);
 

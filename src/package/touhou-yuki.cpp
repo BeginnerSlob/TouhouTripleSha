@@ -55,7 +55,7 @@ public:
                     room->setPlayerFlag(srcplayer,"jianmoinvoke");
                 }
         }
-        else if (triggerEvent == CardUsed)
+        else if (triggerEvent == CardUsed && TriggerSkill::triggerable(player))
         {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->hasFlag("jianmoavoid"))
@@ -64,12 +64,12 @@ public:
             {
                 LogMessage log;
                 log.type = "#ThJianmo";
-                log.from = player;
+                log.from = use.from;
                 log.arg = objectName();
                 log.arg2 = use.card->objectName();
                 room->sendLog(log);
 
-                if (!room->askForCard(player, "..", "@thjianmo"))
+                if (!room->askForCard(use.from, "..", "@thjianmo"))
                     use.card->setFlags("jianmoavoid");
             }
         }
@@ -126,15 +126,30 @@ public:
     }
 
     virtual bool triggerable(const ServerPlayer *target) const {
-        return target != NULL && target->getKingdom() == "wu";
+        return target != NULL;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
         const Card *trigger_card;
-        if (triggerEvent == CardUsed)
-            trigger_card = data.value<CardUseStruct>().card;
-        else if (triggerEvent == CardResponded && data.value<CardResponseStruct>().m_isUse)
-            trigger_card = data.value<CardResponseStruct>().m_card;
+		ServerPlayer *trigger_player = NULL;
+        if (triggerEvent == CardUsed && TriggerSkill::triggerable(player))
+		{
+			CardUseStruct use = data.value<CardUseStruct>();
+			if (!use.from || use.from->getKingdom() != "wu")
+				return false;
+			trigger_card = use.card;
+			trigger_player = use.from;
+		}
+        else if (triggerEvent == CardResponded)
+		{
+			CardResponseStruct resp = data.value<CardResponseStruct>();
+			if (player->getKingdom() != "wu" || !resp.m_isUse)
+				return false;
+			trigger_card = resp.m_card;
+			trigger_player = player;
+		}
+		else
+			return false;
 
         if (trigger_card == NULL)
             return false;
@@ -142,7 +157,7 @@ public:
         if (trigger_card->isKindOf("BasicCard") && trigger_card->getSuit() == Card::Heart)
         {
             QList<ServerPlayer *> targets;
-            foreach (ServerPlayer *p, room->getOtherPlayers(player))
+            foreach (ServerPlayer *p, room->getOtherPlayers(trigger_player))
             {
                 if (p->hasLordSkill(objectName()))
                     targets << p;
@@ -150,9 +165,9 @@ public:
             
             while (!targets.isEmpty())
             {
-                if (player->askForSkillInvoke(objectName()))
+                if (trigger_player->askForSkillInvoke(objectName()))
                 {
-                    ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
+                    ServerPlayer *target = room->askForPlayerChosen(trigger_player, targets, objectName());
                     targets.removeOne(target);
                     const Card *card = room->peek();
                     target->drawCards(1);
@@ -245,7 +260,8 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if (data.value<CardUseStruct>().card->isKindOf("Analeptic"))
+        CardUseStruct use = data.value<CardUseStruct>();
+		if (use.from == player && use.card->isKindOf("Analeptic"))
         {
             LogMessage log;
             log.type = "#TriggerSkill";
@@ -599,6 +615,8 @@ public:
             if (triggerEvent == CardUsed)
             {
                 CardUseStruct use = data.value<CardUseStruct>();
+				if (use.from != player)
+					return false;
                 usecard = use.card;
             }
             else if (triggerEvent == CardResponded)
@@ -862,7 +880,7 @@ public:
         if (triggerEvent == CardUsed && player->getMark(objectName()) == 0)
         {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (player->getPhase() == Player::Play && use.m_reason == CardUseStruct::CARD_USE_REASON_PLAY
+			if (use.from == player && player->getPhase() == Player::Play && use.m_reason == CardUseStruct::CARD_USE_REASON_PLAY
                 && use.card->getTypeId() != Card::TypeSkill && player->askForSkillInvoke(objectName()))
             {
                 room->setPlayerMark(player, objectName(), 1);
@@ -1110,12 +1128,8 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == CardUsed)
+        if (triggerEvent == CardUsed && TriggerSkill::triggerable(player))
         {
-            ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-            if (!splayer)
-                return false;
-
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->hasFlag("qiebaoinvoke"))
                 use.card->setFlags("-qiebaoinvoke");
@@ -1138,7 +1152,7 @@ public:
                     card_ids = use.card->getSubcards();
                 else
                     card_ids << use.card->getEffectiveId();
-                if (doQiebao(room, splayer, card_ids, false))
+                if (doQiebao(room, player, card_ids, false))
                     use.card->setFlags("qiebaoinvoke");
             }
         }
