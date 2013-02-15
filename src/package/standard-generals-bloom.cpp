@@ -1088,29 +1088,11 @@ public:
     }
 };
 
-class DummyViewAsSkill: public ViewAsSkill{
+class SongweiGivenSkill: public TriggerSkill{
 public:
-    DummyViewAsSkill(): ViewAsSkill(""){
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &, const Card *) const{
-        return false;
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &) const{
-        return NULL;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *) const{
-        return false;
-    }
-};
-
-class Songwei: public TriggerSkill{
-public:
-    Songwei():TriggerSkill("songwei$"){
+    SongweiGivenSkill():TriggerSkill("#songwei"){
         events << FinishJudge;
-        view_as_skill = new DummyViewAsSkill;
+        attached_lord_skill = true;
     }
 
     virtual int getPriority() const{
@@ -1118,7 +1100,7 @@ public:
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->getKingdom() == "wei";
+        return TriggerSkill::triggerable(target) && target->getKingdom() == "wei";
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
@@ -1128,31 +1110,34 @@ public:
         if(card->isBlack()){
             QList<ServerPlayer *> targets;
             foreach(ServerPlayer *p, room->getOtherPlayers(player)){
-                if(p->hasLordSkill(objectName()))
+                if(p->hasLordSkill("songwei"))
                     targets << p;
             }
             
             while(!targets.isEmpty()){
-                if(player->askForSkillInvoke(objectName())){
-                    ServerPlayer *caopi = room->askForPlayerChosen(player, targets, objectName());
-                    if(player->isMale())
-                        room->broadcastSkillInvoke(objectName(), 1);
-                    else
-                        room->broadcastSkillInvoke(objectName(), 2);
+                if(player->askForSkillInvoke("songwei")){
+                    ServerPlayer *caopi = room->askForPlayerChosen(player, targets, "songwei");
                     caopi->drawCards(1);
-                    caopi->setFlags("songweiused");      //for AI
                     targets.removeOne(caopi);
                 }else
                     break;
             }
-                    
-            foreach(ServerPlayer *p, room->getAllPlayers()){        //for AI
-                if(p->hasFlag("songweiused"))
-                    p->setFlags("-songweiused");
-            }
         }
 
         return false;
+    }
+};
+
+class Songwei: public GameStartSkill {
+public:
+    Songwei(): GameStartSkill("songwei$") {
+    }
+
+    virtual void onGameStart(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        foreach (ServerPlayer *p, room->getAllPlayers())
+            if (!p->hasSkill("#songwei"))
+                room->acquireSkill(p, new SongweiGivenSkill);
     }
 };
 
@@ -2049,5 +2034,5 @@ void StandardPackage::addBloomGenerals(){
     addMetaObject<XinbanCard>();
     addMetaObject<JilveCard>();
 
-    skills << new Jilve << new JilveClear << new JilveAvoidTriggeringCardsMove;
+    skills << new SongweiGivenSkill << new Jilve << new JilveClear << new JilveAvoidTriggeringCardsMove;
 }

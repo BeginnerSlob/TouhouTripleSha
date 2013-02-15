@@ -222,14 +222,9 @@ public:
         view_as_skill = new ThMopaoViewAsSkill;
     }
 
-    virtual int getPriority() const{
-        return 3;
-    }
-
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if (player == NULL) return false;
-        CardStar card_star = data.value<CardResponseStruct>().m_card;
-        if (!card_star->isKindOf("Jink"))
+        CardResponseStruct resp = data.value<CardResponseStruct>();
+        if (resp.m_src != player || !resp.m_card->isKindOf("Jink"))
             return false;
         room->askForUseCard(player, "@@thmopao", "@thmopao");
 

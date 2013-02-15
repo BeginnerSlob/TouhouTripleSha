@@ -377,35 +377,47 @@ struct CardResponseStruct {
     inline CardResponseStruct() {
         m_card = NULL;
         m_who = NULL;
+        m_src = NULL;
         m_isUse = false;
     }
 
     inline CardResponseStruct(const Card* card) {
         m_card = card;
         m_who = NULL;
+        m_src = NULL;
         m_isUse = false;
     }
 
     inline CardResponseStruct(const Card* card, ServerPlayer *who) {
         m_card = card;
         m_who = who;
+        m_src = NULL;
         m_isUse = false;
     }
 
     inline CardResponseStruct(const Card* card, bool isUse) {
         m_card = card;
         m_who = NULL;
+        m_src = NULL;
         m_isUse = isUse;
     }
 
     inline CardResponseStruct(const Card* card, ServerPlayer *who, bool isUse) {
         m_card = card;
         m_who = who;
+        m_src = NULL;
+        m_isUse = isUse;
+    }
+
+    inline CardResponseStruct(const Card* card, ServerPlayer *who, ServerPlayer *src, bool isUse) {
+        m_card = card;
+        m_who = who;
+        m_src = src;
         m_isUse = isUse;
     }
 
     const Card *m_card;
-    ServerPlayer *m_who;
+    ServerPlayer *m_who, *m_src;
     bool m_isUse;
 };
 
