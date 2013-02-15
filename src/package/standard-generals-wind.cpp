@@ -428,7 +428,8 @@ public:
         }
         else if(triggerEvent == CardResponded) {
             CardResponseStruct resp = data.value<CardResponseStruct>();
-            if (resp.m_card->isVirtualCard() && resp.m_card->subcardsLength() != 0 && resp.m_card->isKindOf("Jink") && player->askForSkillInvoke(objectName()))
+            if (resp.m_src == player && resp.m_card->isVirtualCard() && resp.m_card->subcardsLength() != 0
+                && resp.m_card->isKindOf("Jink") && player->askForSkillInvoke(objectName()))
                 player->drawCards(1);
         }
         

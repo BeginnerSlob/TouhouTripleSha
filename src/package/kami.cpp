@@ -1033,12 +1033,13 @@ public:
                 return false;
             target = damage.to;
         }
-        else if (triggerEvent == CardResponded)
+        else if (triggerEvent == CardResponded && TriggerSkill::triggerable(player))
         {
             CardResponseStruct resp = data.value<CardResponseStruct>();
             if (!resp.m_card->isKindOf("Jink")
                 || resp.m_card->getSkillName() != "EightDiagram")
                 return false;
+            target = resp.m_src;
         }
         else if (triggerEvent == DamageCaused)
         {

@@ -119,34 +119,28 @@ public:
     }
 };
 
-class ThChundu: public TriggerSkill {
+class ThChunduGivenSkill: public TriggerSkill {
 public:
-    ThChundu(): TriggerSkill("thchundu$") {
+    ThChunduGivenSkill(): TriggerSkill("#thchundu") {
         events << CardUsed << CardResponded;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const {
-        return target != NULL;
+        attached_lord_skill = true;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
         const Card *trigger_card;
-        ServerPlayer *trigger_player = NULL;
-        if (triggerEvent == CardUsed && TriggerSkill::triggerable(player))
+        if (triggerEvent == CardUsed)
         {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (!use.from || use.from->getKingdom() != "wu")
+            if (!use.from || use.from!=player || player->getKingdom() != "wu")
                 return false;
             trigger_card = use.card;
-            trigger_player = use.from;
         }
         else if (triggerEvent == CardResponded)
         {
             CardResponseStruct resp = data.value<CardResponseStruct>();
-            if (player->getKingdom() != "wu" || !resp.m_isUse)
+            if (resp.m_src != player || !resp.m_isUse || player->getKingdom() != "wu")
                 return false;
             trigger_card = resp.m_card;
-            trigger_player = player;
         }
         else
             return false;
@@ -157,23 +151,23 @@ public:
         if (trigger_card->isKindOf("BasicCard") && trigger_card->getSuit() == Card::Heart)
         {
             QList<ServerPlayer *> targets;
-            foreach (ServerPlayer *p, room->getOtherPlayers(trigger_player))
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
             {
-                if (p->hasLordSkill(objectName()))
+                if (p->hasLordSkill("thchundu"))
                     targets << p;
             }
             
             while (!targets.isEmpty())
             {
-                if (trigger_player->askForSkillInvoke(objectName()))
+                if (player->askForSkillInvoke("thchundu"))
                 {
-                    ServerPlayer *target = room->askForPlayerChosen(trigger_player, targets, objectName());
+                    ServerPlayer *target = room->askForPlayerChosen(player, targets, "thchundu");
                     targets.removeOne(target);
                     const Card *card = room->peek();
                     target->drawCards(1);
-                    if (room->askForChoice(target, objectName(), "give+throw") == "give")
+                    if (room->askForChoice(target, "thchundu", "give+throw") == "give")
                     {
-                        ServerPlayer *tar = room->askForPlayerChosen(target, room->getOtherPlayers(target), objectName());
+                        ServerPlayer *tar = room->askForPlayerChosen(target, room->getOtherPlayers(target), "thchundu");
                         room->moveCardTo(card, tar, Player::PlaceHand, false);
                     }
                     else
@@ -188,6 +182,19 @@ public:
         }
 
         return false;
+    }
+};
+
+class ThChundu: public GameStartSkill {
+public:
+    ThChundu(): GameStartSkill("thchundu$") {
+    }
+
+    virtual void onGameStart(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        foreach (ServerPlayer *p, room->getAllPlayers())
+            if (!p->hasSkill("#thchundu"))
+                room->acquireSkill(p, new ThChunduGivenSkill);
     }
 };
 
@@ -622,12 +629,11 @@ public:
             else if (triggerEvent == CardResponded)
             {
                 CardResponseStruct resp = data.value<CardResponseStruct>();
-                if (resp.m_isUse)
-                    usecard = resp.m_card;
-                else
-                    usecard = NULL;
+                if (resp.m_src != player || !resp.m_isUse)
+                    return false;
+                usecard = resp.m_card;
             }
-            if (!usecard || usecard->getTypeId() == Card::TypeSkill || usecard->getSkillName() == objectName())
+            if (usecard->getTypeId() == Card::TypeSkill || usecard->getSkillName() == objectName())
                 return false;
 
             if (usecard->isKindOf("Jink") || usecard->isKindOf("Nullification"))
@@ -1066,15 +1072,10 @@ public:
         events << CardResponded;
         frequency = Frequent;
     }
-    
-    virtual int getPriority() const{
-        return 3;
-    }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if (player == NULL) return false;
-        CardStar card_star = data.value<CardResponseStruct>().m_card;
-        if (!card_star->isKindOf("Jink"))
+        CardResponseStruct resp = data.value<CardResponseStruct>();
+        if (resp.m_src != player || !resp.m_card->isKindOf("Jink"))
             return false;
         if (player->askForSkillInvoke(objectName()))
             player->drawCards(1);
@@ -1803,6 +1804,6 @@ void TouhouPackage::addYukiGenerals(){
     addMetaObject<ThLingdieCard>();
     addMetaObject<ThFuyueCard>();
 
-    skills << new ThKujieViewAsSkill << new ThFuyueViewAsSkill;
+    skills << new ThChunduGivenSkill << new ThKujieViewAsSkill << new ThFuyueViewAsSkill;
 }
 

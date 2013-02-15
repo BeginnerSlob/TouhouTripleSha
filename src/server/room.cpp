@@ -1188,10 +1188,11 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
 
         bool cancelled = false;
         if ((method == Card::MethodUse || method == Card::MethodResponse) && !isRetrial) {
-            CardResponseStruct resp(card, to, method == Card::MethodUse);
+            CardResponseStruct resp(card, to, player, method == Card::MethodUse);
             QVariant data = QVariant::fromValue(resp);
             cancelled = thread->trigger(CardResponding, this, player, data);
-            thread->trigger(CardResponded, this, player, data);
+            foreach (ServerPlayer *p, getAllPlayers())
+                thread->trigger(CardResponded, this, p, data);
             if (method == Card::MethodUse) {
                 if (getCardPlace(card->getEffectiveId()) == Player::PlaceTable) {
                     CardMoveReason reason(CardMoveReason::S_REASON_LETUSE, player->objectName(),
@@ -2794,7 +2795,7 @@ void Room::recover(ServerPlayer *player, const RecoverStruct &recover, bool set_
 
     QVariant new_data = QVariant::fromValue(recovered);
     foreach (ServerPlayer *p, getAllPlayers())
-        thread->trigger(HpRecovered, this, player, new_data);
+        thread->trigger(HpRecovered, this, p, new_data);
 }
 
 bool Room::cardEffect(const Card *card, ServerPlayer *from, ServerPlayer *to){
@@ -4890,7 +4891,7 @@ void Room::retrial(const Card *card, ServerPlayer *player, JudgeStar judge,
         judge->updateResult();
 
         if  (triggerResponsed){
-            CardResponseStruct resp(card, judge->who);
+            CardResponseStruct resp(card, judge->who, player, false);
             QVariant data = QVariant::fromValue(resp);
             thread->trigger(CardResponded, this, player, data);
         }

@@ -826,10 +826,11 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if(player->getPhase() != Player::NotActive)
+        CardResponseStruct resp = data.value<CardResponseStruct>();
+        if(resp.m_src != player || player->getPhase() != Player::NotActive)
             return false;
 
-        const Card *card = data.value<CardResponseStruct>().m_card;
+        const Card *card = resp.m_card;
         
         if(!card || !card->isKindOf("Jink"))
             return false;
@@ -1070,14 +1071,10 @@ public:
         events << CardUsed << CardResponded;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const {
-        return target != NULL;
-    }
-
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         const Card *card = NULL;
         ServerPlayer *owner = NULL, *target = NULL;
-        if (triggerEvent == CardUsed && TriggerSkill::triggerable(player))
+        if (triggerEvent == CardUsed)
         {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.from == player)
@@ -1088,13 +1085,12 @@ public:
         }
         else if (triggerEvent == CardResponded)
         {
-            ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-            if (!splayer || splayer == player)
-                return false;
             CardResponseStruct resp = data.value<CardResponseStruct>();
+            if (resp.m_src == player)
+                return false;
             card = resp.m_card;
-            owner = splayer;
-            target = player;
+            owner = player;
+            target = resp.m_src;
         }
         else
             return false;
@@ -1403,7 +1399,7 @@ public:
         {
             CardResponseStruct resp = data.value<CardResponseStruct>();
 
-            if (resp.m_card->isRed() && resp.m_card->isKindOf("BasicCard"))
+            if (resp.m_src == player && resp.m_card->isRed() && resp.m_card->isKindOf("BasicCard"))
                 target = resp.m_who;
         }
 

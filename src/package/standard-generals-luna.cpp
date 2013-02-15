@@ -552,30 +552,33 @@ public:
     }
 };
 
-class Wuhua: public TriggerSkill {
+class WuhuaGivenSkill: public TriggerSkill {
 public:
-    Wuhua(): TriggerSkill("wuhua$") {
+	WuhuaGivenSkill(): TriggerSkill("#wuhua") {
         events << Damage << DamageDone;
+        attached_lord_skill = true;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
+    virtual bool triggerable(const ServerPlayer *target) const {
         return target != NULL;
     }
 
-    virtual bool trigger(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
-        if (event == DamageDone && damage.from)
+        if (triggerEvent == DamageDone && damage.from)
             damage.from->tag["InvokeWuhua"] = damage.from->getKingdom() == "qun";
-        else if (event == Damage && player->tag.value("InvokeWuhua", false).toBool() && player->isAlive()) {
+        else if (triggerEvent == Damage && TriggerSkill::triggerable(player)
+                 && player->tag.value("InvokeWuhua", false).toBool())
+        {
             QList<ServerPlayer *> dongzhuos;
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                if (p->hasLordSkill(objectName()))
+                if (p->hasLordSkill("wuhua"))
                     dongzhuos << p;
             }
 
             while (!dongzhuos.isEmpty()) {
-                if (player->askForSkillInvoke(objectName())) {
-                    ServerPlayer *dongzhuo = room->askForPlayerChosen(player, dongzhuos, objectName());
+                if (player->askForSkillInvoke("wuhua")) {
+                    ServerPlayer *dongzhuo = room->askForPlayerChosen(player, dongzhuos, "wuhua");
                     dongzhuos.removeOne(dongzhuo);
 
                     JudgeStruct judge;
@@ -587,7 +590,7 @@ public:
                     room->judge(judge);
 
                     if (judge.isGood()) {
-                        room->broadcastSkillInvoke(objectName());
+                        room->broadcastSkillInvoke("wuhua");
 
                         RecoverStruct recover;
                         recover.who = player;
@@ -598,6 +601,19 @@ public:
             }
         }
         return false;
+    }
+};
+
+class Wuhua: public GameStartSkill {
+public:
+    Wuhua(): GameStartSkill("wuhua$") {
+    }
+
+    virtual void onGameStart(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        foreach (ServerPlayer *p, room->getAllPlayers())
+            if (!p->hasSkill("#wuhua"))
+                room->acquireSkill(p, new WuhuaGivenSkill);
     }
 };
 
@@ -1071,13 +1087,11 @@ public:
         view_as_skill = new LeijiViewAsSkill;
     }
 
-    virtual int getPriority() const{
-        return 3;
-    }
-
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if (player == NULL) return false;
-        CardStar card_star = data.value<CardResponseStruct>().m_card;
+        CardResponseStruct resp = data.value<CardResponseStruct>();
+        if (resp.m_src != player)
+            return false;
+        CardStar card_star = resp.m_card;
         if (!card_star->isKindOf("Jink"))
             return false;
         room->askForUseCard(player, "@@leiji", "@leiji");
@@ -2589,5 +2603,5 @@ void StandardPackage::addLunaGenerals(){
     addMetaObject<SuikongCard>();
     addMetaObject<TianwuCard>();
 
-    skills << new YujiViewAsSkill;
+    skills << new YujiViewAsSkill << new WuhuaGivenSkill;
 }

@@ -833,9 +833,8 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if (player == NULL) return false;
-        CardStar card_star = data.value<CardResponseStruct>().m_card;
-        if (!card_star->isKindOf("Jink") || player->getHp() != 1)
+        CardResponseStruct resp = data.value<CardResponseStruct>();
+        if (resp.m_src != player || !resp.m_card->isKindOf("Jink") || player->getHp() != 1)
             return false;
 
         if (player->isWounded() && player->askForSkillInvoke(objectName()))
