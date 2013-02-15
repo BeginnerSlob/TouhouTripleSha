@@ -921,7 +921,8 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
-        if (triggerEvent == DamageCaused && (damage.to == player || damage.nature != DamageStruct::Fire))
+        if (triggerEvent == DamageCaused && damage.from && damage.from == player
+            && (damage.to == player || damage.nature != DamageStruct::Fire))
             return false;
         else if (triggerEvent == DamageInflicted && damage.nature != DamageStruct::Fire)
             return false;

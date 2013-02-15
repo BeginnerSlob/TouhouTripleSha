@@ -2856,16 +2856,20 @@ void Room::damage(DamageStruct &damage_data){
             break;
 
         // DamageCaused
-        if(damage_data.from){
-            if(thread->trigger(DamageCaused, this, damage_data.from, data))
+        bool broken = false;
+        foreach (ServerPlayer *p, getAllPlayers())
+            if(thread->trigger(DamageCaused, this, p, data))
+            {
+                broken = true;
                 break;
-        }
+            }
+        if (broken)
+            break;
 
         damage_data = data.value<DamageStruct>();
 
         // DamageInflicted
-        bool broken = thread->trigger(DamageInflicted, this, damage_data.to, data);
-        if(broken)
+        if (thread->trigger(DamageInflicted, this, damage_data.to, data))
             break;
 
         // PreHpReduced

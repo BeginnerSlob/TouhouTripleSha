@@ -601,8 +601,10 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
 
         QStringList horses;
-        if(damage.card && damage.card->isKindOf("Slash") && !damage.chain && !damage.transfer
-           && damage.to->getMark("Equips_of_Others_Nullified_to_You") == 0){
+        if (damage.from && damage.from == player && damage.card && damage.card->isKindOf("Slash")
+            && !damage.chain && !damage.transfer
+            && damage.to->getMark("Equips_of_Others_Nullified_to_You") == 0)
+        {
             if(damage.to->getDefensiveHorse())
                 horses << "dhorse";
             if(damage.to->getOffensiveHorse())
@@ -1181,7 +1183,7 @@ public:
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
         
-        if(damage.card && damage.card->isKindOf("Slash")
+        if(damage.from && damage.from == player && damage.card && damage.card->isKindOf("Slash")
            && damage.to->getMark("Equips_of_Others_Nullified_to_You") == 0
            && !damage.to->isNude()
            && !damage.chain && !damage.transfer && player->askForSkillInvoke(objectName(), data)){

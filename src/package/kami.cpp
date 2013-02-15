@@ -621,8 +621,11 @@ public:
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.card && damage.card->isRed() && !damage.chain && !damage.transfer
-            && player->hasSkill("thmanxiao") && player->askForSkillInvoke(objectName()))
+        if (damage.from && damage.from == player
+            && damage.card && damage.card->isRed()
+            && !damage.chain && !damage.transfer
+            && player->hasSkill("thmanxiao")
+            && player->askForSkillInvoke(objectName()))
         {
             room->loseMaxHp(damage.to);
             player->gainMark("@yingxiao");
@@ -1001,24 +1004,16 @@ public:
         events << CardUsed << HpRecovered << Damaged << CardResponded << DamageCaused;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->isAlive();
-    }
-
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-        if (splayer == NULL || splayer == player || splayer->isKongcheng())
-            return false;
-
         ServerPlayer *target = NULL;
-        if (triggerEvent == CardUsed && TriggerSkill::triggerable(player))
+        if (triggerEvent == CardUsed)
         {
             CardUseStruct use = data.value<CardUseStruct>();
             if ((!use.card->isKindOf("GodSalvation") && !use.card->isKindOf("AmazingGrace")))
                 return false;
             target = use.from;
         }
-        else if (triggerEvent == HpRecovered && TriggerSkill::triggerable(player))
+        else if (triggerEvent == HpRecovered)
         {
             RecoveredStruct recover = data.value<RecoveredStruct>();
             int hp = recover.target->getHpPoints();
@@ -1026,14 +1021,14 @@ public:
                 return false;
             target = recover.target;
         }
-        else if (triggerEvent == Damaged && TriggerSkill::triggerable(player))
+        else if (triggerEvent == Damaged)
         {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.to == player || damage.nature != DamageStruct::Fire)
                 return false;
             target = damage.to;
         }
-        else if (triggerEvent == CardResponded && TriggerSkill::triggerable(player))
+        else if (triggerEvent == CardResponded)
         {
             CardResponseStruct resp = data.value<CardResponseStruct>();
             if (!resp.m_card->isKindOf("Jink")
@@ -1044,27 +1039,26 @@ public:
         else if (triggerEvent == DamageCaused)
         {
             DamageStruct damage = data.value<DamageStruct>();
-            if (!damage.card || !damage.card->isKindOf("Slash") || !damage.to->isKongcheng())
+            if (!damage.from || !damage.card || !damage.card->isKindOf("Slash") || !damage.to->isKongcheng())
                 return false;
+            target = damage.from;
         }
         else
             return false;
 
-        if (target == player)
-            return false;
-        if (!player->isAlive())
+        if (target == player || target->isDead())
             return false;
 
-        if (splayer->askForSkillInvoke(objectName()) && room->askForDiscard(splayer, objectName(), 1, 1, true, false))
+        if (room->askForCard(player, ".", "@thwunan", QVariant(), objectName()))
         {
-            if (splayer->isWounded())
+            if (player->isWounded())
             {
                 RecoverStruct recover;
-                recover.who = splayer;
-                room->recover(splayer, recover);
+                recover.who = player;
+                room->recover(player, recover);
             }
-            if (!player->isKongcheng())
-                room->throwCard(room->askForCardChosen(splayer, player, "h", objectName()), player, splayer);
+            if (!target->isKongcheng())
+                room->throwCard(room->askForCardChosen(player, target, "h", objectName()), target, player);
         }
 
         return false;
@@ -1257,8 +1251,8 @@ public:
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
         if(triggerEvent == DamageCaused){
-            if(damage.to && damage.to->isAlive()
-               && damage.to->getHp() >= player->getHp() && damage.to != player && !player->isKongcheng())
+            if (damage.from && damage.from == player && damage.to->getHpPoints() >= player->getHpPoints()
+                && damage.to != player && !player->isKongcheng())
                 if(room->askForCard(player, ".black", "@ThLuliIncrease", data, objectName())){
                     LogMessage log;
                     log.type = "#ThLuliIncrease";
