@@ -1594,7 +1594,7 @@ public:
         if (damage.from == NULL)
            return false;
 
-        if (room->askForSkillInvoke(yangxiu, objectName(), data)) {
+        if (damage.to == yangxiu && room->askForSkillInvoke(yangxiu, objectName(), data)) {
             QString choice = room->askForChoice(yangxiu, objectName(), "basic+equip+trick");
             room->broadcastSkillInvoke(objectName());
 
@@ -1721,8 +1721,10 @@ public:
                 }
             }
         } else if (triggerEvent == Damaged) {
-            room->broadcastSkillInvoke(objectName());
             DamageStruct damage = data.value<DamageStruct>();
+            if (damage.to != player)
+                return false;
+            room->broadcastSkillInvoke(objectName());
             player->gainMark("@tianjia", damage.damage);
         }
 

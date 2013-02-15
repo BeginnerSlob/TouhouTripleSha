@@ -66,6 +66,12 @@ RecoverStruct::RecoverStruct()
 
 }
 
+RecoveredStruct::RecoveredStruct()
+    :recover(1), source(NULL), target(NULL), card(NULL)
+{
+
+}
+
 PindianStruct::PindianStruct()
     :from(NULL), to(NULL), from_card(NULL), to_card(NULL)
 {

@@ -198,7 +198,7 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         if ((triggerEvent == Death || (data.value<PlayerStar>() == player && player->getPhase() == Player::RoundStart))
-            && !player->tag.value("ThJiguang").toString().isEmpty())
+            && !room->getTag("ThJiguang").toString().isEmpty())
         {
             if (triggerEvent == Death)
             {
@@ -207,7 +207,7 @@ public:
                     return false;
             }
 
-            QString name = player->tag.value("ThJiguang").toString();
+            QString name = room->getTag("ThJiguang").toString();
             if (triggerEvent != Death)
                 player->loseAllMarks("@" + name);
             if (name == "jgfengyu")
@@ -222,13 +222,13 @@ public:
             QStringList choices;
             choices << "jglieri" << "jgfengyu" << "jghuangsha" << "jgtantian" << "jgnongwu";
             if (!player->askForSkillInvoke(objectName()))
-                player->tag.remove("ThJiguang");
+                room->setTag("ThJiguang", QVariant::fromValue(QString()));
             else
             {
-                QString name = player->tag.value("ThJiguang").toString();
+                QString name = room->getTag("ThJiguang").toString();
                 choices.removeOne(name);
                 QString choice = room->askForChoice(player, objectName(), choices.join("+"));
-                player->tag["ThJiguang"] = QVariant::fromValue(choice);
+                room->setTag("ThJiguang", QVariant::fromValue(choice));
                 player->gainMark("@" + choice);
                 if (choice == "jgfengyu")
                     foreach(ServerPlayer *p, room->getAllPlayers())
@@ -254,18 +254,15 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        ServerPlayer *splayer = room->findPlayerBySkillName("thjiguang");
-        if (splayer == NULL)
-            return false;
         DamageStruct damage = data.value<DamageStruct>();
         if (triggerEvent == DamageInflicted)
-            if (damage.nature == DamageStruct::Fire && splayer->getMark("@jglieri") > 0)
+            if (damage.nature == DamageStruct::Fire && room->getTag("ThJiguang").toString() == "jglieri")
             {
                 damage.damage++;
                 data = QVariant::fromValue(damage);
                 return false;
             }
-            else if (damage.damage > 1 && splayer->getMark("@jghuangsha") > 0)
+            else if (damage.damage > 1 && room->getTag("ThJiguang").toString() == "jghuangsha")
             {
                 damage.damage = 1;
                 data = QVariant::fromValue(damage);
@@ -274,11 +271,11 @@ public:
             else
                 return false;
         else if (triggerEvent == Damage)
-            if (splayer->getMark("@jgnongwu") > 0 && player->distanceTo(damage.to) <= 1
+            if (room->getTag("ThJiguang").toString() == "jgnongwu" && player->distanceTo(damage.to) <= 1
                 && damage.card->isKindOf("Slash"))
             {
                 RecoverStruct recover;
-                recover.who = splayer;
+                recover.who = player;
                 room->recover(player, recover);
             }
 
@@ -337,9 +334,12 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
-        if (triggerEvent == Damaged && TriggerSkill::triggerable(player) && player->askForSkillInvoke(objectName()))
+        if (triggerEvent == Damaged && TriggerSkill::triggerable(player))
         {
             DamageStruct damage = data.value<DamageStruct>();
+            if (damage.to != player || !player->askForSkillInvoke(objectName()))
+                return false;
+
             if (!damage.from->isKongcheng())
                 room->obtainCard(player, room->askForCardChosen(player, damage.from, "h", objectName()), false);
 
@@ -1010,24 +1010,28 @@ public:
         if (splayer == NULL || splayer == player || splayer->isKongcheng())
             return false;
 
+        ServerPlayer *target = NULL;
         if (triggerEvent == CardUsed && TriggerSkill::triggerable(player))
         {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.from == player || (!use.card->isKindOf("GodSalvation") && !use.card->isKindOf("AmazingGrace")))
+            if ((!use.card->isKindOf("GodSalvation") && !use.card->isKindOf("AmazingGrace")))
                 return false;
+            target = use.from;
         }
-        else if (triggerEvent == HpRecovered)
+        else if (triggerEvent == HpRecovered && TriggerSkill::triggerable(player))
         {
-            RecoverStruct recover = data.value<RecoverStruct>();
-            int hp = player->getHpPoints();
+            RecoveredStruct recover = data.value<RecoveredStruct>();
+            int hp = recover.target->getHpPoints();
             if (hp < 1 || hp - recover.recover > 0)
                 return false;
+            target = recover.target;
         }
-        else if (triggerEvent == Damaged)
+        else if (triggerEvent == Damaged && TriggerSkill::triggerable(player))
         {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.nature != DamageStruct::Fire)
+            if (damage.to == player || damage.nature != DamageStruct::Fire)
                 return false;
+            target = damage.to;
         }
         else if (triggerEvent == CardResponded)
         {
@@ -1042,7 +1046,11 @@ public:
             if (!damage.card || !damage.card->isKindOf("Slash") || !damage.to->isKongcheng())
                 return false;
         }
+        else
+            return false;
 
+        if (target == player)
+            return false;
         if (!player->isAlive())
             return false;
 

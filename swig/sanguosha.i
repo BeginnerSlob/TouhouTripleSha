@@ -522,6 +522,14 @@ struct RecoverStruct{
     const Card *card;
 };
 
+struct RecoveredStruct{
+    RecoveredStruct();
+
+    int recover;
+    ServerPlayer *source, *target;
+    const Card *card;
+};
+
 struct JudgeStruct{
     JudgeStruct();
     bool isGood(const Card *card = NULL) const;
@@ -556,6 +564,7 @@ struct PhaseChangeStruct{
     PhaseChangeStruct();
     Player::Phase from;
     Player::Phase to;
+    ServerPlayer *who;
 };
 
 struct CardResponseStruct{

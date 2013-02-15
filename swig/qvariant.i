@@ -83,13 +83,21 @@ public:
     DamageStar toDamageStar() const{
         return $self->value<DamageStar>();
     }
-
+	
     void setValue(RecoverStruct *recover){
         $self->setValue(QVariant::fromValue(*recover));
     }
 
     RecoverStruct toRecover() const{
         return $self->value<RecoverStruct>();
+    }
+
+    void setValue(RecoveredStruct *recovered){
+        $self->setValue(QVariant::fromValue(*recovered));
+    }
+
+    RecoveredStruct toRecovered() const{
+        return $self->value<RecoveredStruct>();
     }
 
     JudgeStruct *toJudge() const{

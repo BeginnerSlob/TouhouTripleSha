@@ -2786,7 +2786,15 @@ void Room::recover(ServerPlayer *player, const RecoverStruct &recover, bool set_
         setEmotion(player, "recover");
     };
 
-    thread->trigger(HpRecovered, this, player, data);
+    RecoveredStruct recovered;
+    recovered.recover = recover.recover;
+    recovered.card = recover.card;
+    recovered.source = recover.who;
+    recovered.target = player;
+
+    QVariant new_data = QVariant::fromValue(recovered);
+    foreach (ServerPlayer *p, getAllPlayers())
+        thread->trigger(HpRecovered, this, player, new_data);
 }
 
 bool Room::cardEffect(const Card *card, ServerPlayer *from, ServerPlayer *to){
@@ -2873,7 +2881,8 @@ void Room::damage(DamageStruct &damage_data){
         }
 
         // damaged
-        thread->trigger(Damaged, this, damage_data.to, data);
+        foreach (ServerPlayer *p, getAllPlayers())
+            thread->trigger(Damaged, this, p, data);
     }while(false);
 
     damage_data = data.value<DamageStruct>();

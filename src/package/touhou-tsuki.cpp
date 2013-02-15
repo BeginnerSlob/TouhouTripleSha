@@ -33,8 +33,10 @@ public:
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         if (triggerEvent == Damaged)
         {
-            int damage = data.value<DamageStruct>().damage;
-            while(damage --)
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.to != player)
+                return false;
+            while(damage.damage --)
             {
                 if (!player->askForSkillInvoke(objectName()))
                     return false;
@@ -399,6 +401,8 @@ public:
         if (triggerEvent == Damaged)
         {
             DamageStruct damage = data.value<DamageStruct>();
+            if (damage.to != player)
+                return false;
             if (!damage.from)
                 return false;
 
@@ -1054,7 +1058,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == Damaged)
+        if (triggerEvent == Damaged && data.value<DamageStruct>().to == player)
             player->addMark("zhehui");
         else if (triggerEvent == DamageInflicted)
         {
@@ -1701,8 +1705,8 @@ public:
         
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         CardUseStruct use = data.value<CardUseStruct>();
-		if (use.from != player)
-			return false;
+        if (use.from != player)
+            return false;
 
         if (!(use.card->isKindOf("Duel")
               || use.card->isKindOf("Snatch")

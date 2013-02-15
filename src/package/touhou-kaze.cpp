@@ -221,6 +221,8 @@ public:
     
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
+        if (damage.to != player)
+            return false;
         for(int i = 0; i < damage.damage; i++) {
             if(!player->askForSkillInvoke(objectName(), data))
                 break;
@@ -739,6 +741,8 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        if (data.value<DamageStruct>().to != player)
+            return false;
         if(!player->askForSkillInvoke(objectName()))
             return false;
 
@@ -1072,28 +1076,28 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         const Card *card = NULL;
-		ServerPlayer *owner = NULL, *target = NULL;
+        ServerPlayer *owner = NULL, *target = NULL;
         if (triggerEvent == CardUsed && TriggerSkill::triggerable(player))
         {
             CardUseStruct use = data.value<CardUseStruct>();
-			if (use.from == player)
-				return false;
+            if (use.from == player)
+                return false;
             card = use.card;
-			owner = player;
-			target = use.from;
+            owner = player;
+            target = use.from;
         }
         else if (triggerEvent == CardResponded)
         {
-			ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-			if (!splayer || splayer == player)
-				return false;
+            ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
+            if (!splayer || splayer == player)
+                return false;
             CardResponseStruct resp = data.value<CardResponseStruct>();
             card = resp.m_card;
-			owner = splayer;
-			target = player;
+            owner = splayer;
+            target = player;
         }
-		else
-			return false;
+        else
+            return false;
 
         if (!card || !card->isRed())
             return false;

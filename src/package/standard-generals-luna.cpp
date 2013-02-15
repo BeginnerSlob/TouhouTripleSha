@@ -238,8 +238,8 @@ void MoyuCard::onUse(Room *room, const CardUseStruct &card_use) const{
     RoomThread *thread = room->getThread();
 
     foreach(ServerPlayer *p, room->getAllPlayers())
-		if (thread->trigger(CardUsed, room, p, data))
-			break;
+        if (thread->trigger(CardUsed, room, p, data))
+            break;
 
     thread->trigger(CardFinished, room, player, data);
 
@@ -1281,50 +1281,41 @@ public:
         events << Damaged;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
         if(damage.card == NULL || !damage.card->isKindOf("Slash") || damage.to->isDead())
             return false;
 
-        QList<ServerPlayer *> splayers = room->findPlayersBySkillName(objectName());
-        foreach(ServerPlayer *splayer, splayers){
-            if(!splayer->isNude() && splayer->askForSkillInvoke(objectName(), data)){
-                room->askForDiscard(splayer, "huiyao", 1, 1, false, true);
+        if(!player->isNude() && room->askForCard(player, "..", "@huiyao", QVariant(), objectName()))
+        {
+            JudgeStruct judge;
+            judge.pattern = QRegExp("(.*):(.*):(.*)");
+            judge.good = true;
+            judge.who = damage.to;
+            judge.reason = objectName();
 
-                JudgeStruct judge;
-                judge.pattern = QRegExp("(.*):(.*):(.*)");
-                judge.good = true;
-                judge.who = player;
-                judge.reason = objectName();
+            room->judge(judge);
 
-                room->judge(judge);
-
-                switch(judge.card->getSuit()){
+            switch(judge.card->getSuit()){
                 case Card::Heart:{
                         room->broadcastSkillInvoke(objectName(), 4);
                         RecoverStruct recover;
-                        recover.who = splayer;
-                        room->recover(player, recover);
+                        recover.who = player;
+                        room->recover(damage.to, recover);
 
                         break;
                     }
 
                 case Card::Diamond:{
                         room->broadcastSkillInvoke(objectName(), 3);
-                        player->drawCards(2);
+                        damage.to->drawCards(2);
                         break;
                     }
 
                 case Card::Club:{
                         room->broadcastSkillInvoke(objectName(), 1);
                         if(damage.from && damage.from->isAlive()){
-                            int to_discard = qMin(2, damage.from->getCardCount(true));
-                            if(to_discard != 0)
-                                room->askForDiscard(damage.from, "huiyao", to_discard, to_discard, false, true);
+                            room->askForDiscard(damage.from, objectName(), 2, 2, false, true);
                         }
 
                         break;
@@ -1340,7 +1331,6 @@ public:
 
                 default:
                     break;
-                }
             }
         }
         return false;
@@ -2246,6 +2236,8 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
+        if (triggerEvent == Damaged && damage.to != player)
+            return false;
 
         LogMessage log;
         log.type = triggerEvent == Damage ? "#ZhuohuoDamage" : "#ZhuohuoDamaged";
@@ -2273,11 +2265,11 @@ public:
         if(use.from == player && use.card->isNDTrick()){
             room->broadcastSkillInvoke(objectName());
 
-			LogMessage log;
-			log.type = "#TriggerSkill";
-			log.from = player;
-			log.arg = objectName();
-			room->sendLog(log);
+            LogMessage log;
+            log.type = "#TriggerSkill";
+            log.from = player;
+            log.arg = objectName();
+            room->sendLog(log);
 
             int num = player->getMark("@mailun");
             if(num >= 1 && room->askForChoice(player, objectName(), "discard+losehp") == "discard"){

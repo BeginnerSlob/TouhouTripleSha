@@ -21,6 +21,8 @@ public:
             return false;
         if (triggerEvent == Damage && (damage.chain || damage.transfer))
             return false;
+        if (triggerEvent == Damaged && damage.to != player)
+            return false;
 
         if (!player->askForSkillInvoke(objectName()))
             return false;
@@ -176,22 +178,22 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         ServerPlayer *owner = NULL;
-		if (triggerEvent == DamageCaused)
+        if (triggerEvent == DamageCaused)
         {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.from->getMark("@yaoshu") <= 0 || !damage.to->hasSkill(objectName()) || damage.from == damage.to)
                 return false;
-			else
-				owner = damage.to;
+            else
+                owner = damage.to;
         }
         else if (triggerEvent == Dying && TriggerSkill::triggerable(player))
-		{
-			DyingStruct dying = data.value<DyingStruct>();
+        {
+            DyingStruct dying = data.value<DyingStruct>();
             if (dying.who == player || dying.who->getMark("@yaoshu") <= 0)
                 return false;
-			else
-				owner = player;
-		}
+            else
+                owner = player;
+        }
 
         if(owner && owner->askForSkillInvoke(objectName()))
         {
@@ -707,7 +709,7 @@ public:
                 LogMessage log;
                 log.type = "#ThHuilun";
                 log.from = player;
-				log.to << use.from;
+                log.to << use.from;
                 log.arg = objectName();
                 log.arg2 = use.card->objectName();
                 room->sendLog(log);
