@@ -352,6 +352,7 @@ struct PhaseChangeStruct{
     PhaseChangeStruct();
     Player::Phase from;
     Player::Phase to;
+	ServerPlayer *who;
 };
 
 struct PhaseStruct{

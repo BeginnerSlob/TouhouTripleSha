@@ -577,9 +577,16 @@ bool ServerPlayer::changePhase(Player::Phase from, Player::Phase to){
     PhaseChangeStruct phase_change;
     phase_change.from = from;
     phase_change.to = to;
+    phase_change.who = this;
     QVariant data = QVariant::fromValue(phase_change);
 
-    bool skip = thread->trigger(EventPhaseChanging, room, this, data);
+    bool skip = false;
+	foreach (ServerPlayer *p, room->getAllPlayers())
+		if (thread->trigger(EventPhaseChanging, room, p, data))
+		{
+			skip = true;
+			break;
+		}
     if(skip && to != NotActive){
         setPhase(from);
         return true;
@@ -591,9 +598,12 @@ bool ServerPlayer::changePhase(Player::Phase from, Player::Phase to){
     if(!phases.isEmpty())
         phases.removeFirst();
 
-    thread->trigger(EventPhaseStart, room, this);
+	QVariant trigger_data = QVariant::fromValue((PlayerStar)this);
+	foreach (ServerPlayer *p, room->getAllPlayers())
+		thread->trigger(EventPhaseStart, room, p, trigger_data);
     if(getPhase() != NotActive)
-        thread->trigger(EventPhaseEnd, room, this);
+        foreach (ServerPlayer *p, room->getAllPlayers())
+			thread->trigger(EventPhaseEnd, room, p, trigger_data);
 
     return false;
 }
@@ -627,12 +637,19 @@ void ServerPlayer::play(QList<Player::Phase> set_phases){
         PhaseChangeStruct phase_change;
         phase_change.from = getPhase();
         phase_change.to = phases[i];
+		phase_change.who = this;
 
         RoomThread *thread = room->getThread();
         setPhase(PhaseNone);
         QVariant data = QVariant::fromValue(phase_change);
 
-        bool skip = thread->trigger(EventPhaseChanging, room, this, data);
+        bool skip = false;
+		foreach (ServerPlayer *p, room->getAllPlayers())
+			if (thread->trigger(EventPhaseChanging, room, p, data))
+			{
+				skip = true;
+				break;
+			}
         phase_change = data.value<PhaseChangeStruct>();
         _m_phases_state[i].phase = phases[i] = phase_change.to;
 
@@ -641,10 +658,13 @@ void ServerPlayer::play(QList<Player::Phase> set_phases){
         
         if((skip || _m_phases_state[i].finished) && phases[i] != NotActive)
             continue;
-
-        thread->trigger(EventPhaseStart, room, this);
+		
+		QVariant trigger_data = QVariant::fromValue((PlayerStar)this);
+		foreach (ServerPlayer *p, room->getAllPlayers())
+			thread->trigger(EventPhaseStart, room, p, trigger_data);
         if(getPhase() != NotActive)
-            thread->trigger(EventPhaseEnd, room, this);
+            foreach (ServerPlayer *p, room->getAllPlayers())
+				thread->trigger(EventPhaseEnd, room, p, trigger_data);
     }
 }
 

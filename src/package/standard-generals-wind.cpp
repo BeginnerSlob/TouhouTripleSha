@@ -78,20 +78,22 @@ public:
     }
 };
 
-class Funuan: public PhaseChangeSkill{
+class Funuan: public TriggerSkill{
 public:
-    Funuan():PhaseChangeSkill("funuan"){
+    Funuan():TriggerSkill("funuan"){
+        events << EventPhaseStart;
         view_as_skill = new FunuanViewAsSkill;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && PhaseChangeSkill::triggerable(target)
-                && target->getPhase() == Player::NotActive
-                && target->hasUsed("FunuanCard");
+        return TriggerSkill::triggerable(target)
+			   && target->getPhase() == Player::NotActive
+               && target->hasUsed("FunuanCard");
     }
 
-    virtual bool onPhaseChange(ServerPlayer *target) const{
-        Room *room = target->getRoom();
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *target, QVariant &data) const{
+		if (data.value<PlayerStar>() != target)
+			return false;
         room->setPlayerMark(target, "funuan", 0);
         foreach (ServerPlayer *p, room->getAlivePlayers())
             room->setPlayerMark(p, "funuantarget", 0);
@@ -301,17 +303,17 @@ public:
     }
 };
 
-class Yuxi:public PhaseChangeSkill{
+class Yuxi:public TriggerSkill {
 public:
-    Yuxi():PhaseChangeSkill("yuxi"){
+    Yuxi(): TriggerSkill("yuxi") {
+        events << EventPhaseStart;
         frequency = Frequent;
     }
 
-    virtual bool onPhaseChange(ServerPlayer *player) const{
-        if(player->getPhase() == Player::Start &&
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
+        if(data.value<PlayerStar>() == player && player->getPhase() == Player::Start &&
            player->askForSkillInvoke(objectName()))
         {
-            Room *room = player->getRoom();
             room->broadcastSkillInvoke(objectName());
 
             int n = qMin(5, room->alivePlayerCount());
@@ -844,22 +846,23 @@ public:
     }
 };
 
-class Shengtian: public PhaseChangeSkill {
+class Shengtian: public TriggerSkill {
 public:
-    Shengtian(): PhaseChangeSkill("shengtian") {
+    Shengtian(): TriggerSkill("shengtian") {
+        events << EventPhaseStart;
         frequency = Wake;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
-        return PhaseChangeSkill::triggerable(target)
+        return target && TriggerSkill::triggerable(target)
                && target->getMark("@shengtian") == 0
                && target->getPhase() == Player::Start
                && target->isKongcheng();
     }
 
-    virtual bool onPhaseChange(ServerPlayer *player) const{
-        Room *room = player->getRoom();
-
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
+		if (data.value<PlayerStar>() != player)
+			return false;
         LogMessage log;
         log.type = "#ShengtianWake";
         log.from = player;
@@ -955,6 +958,8 @@ public:
 
     virtual bool trigger(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const{
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+		if (change.who != player)
+			return false;
         switch (change.to) {
         case Player::Play: {
                 bool invoked = false;
@@ -993,21 +998,19 @@ public:
     }
 };
 
-class BaishenGive: public PhaseChangeSkill {
+class BaishenGive: public TriggerSkill {
 public:
-    BaishenGive(): PhaseChangeSkill("#baishen-give") {
-    }
-
-    virtual int getPriority() const{
-        return 1;
+    BaishenGive(): TriggerSkill("#baishen-give") {
+        events << EventPhaseStart;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return target != NULL && target->getPhase() == Player::NotActive;
     }
 
-    virtual bool onPhaseChange(ServerPlayer *player) const{
-        Room *room = player->getRoom();
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
+		if (data.value<PlayerStar>() != player)
+			return false;
         if (!room->getTag("BaishenTarget").isNull()) {
             PlayerStar target = room->getTag("BaishenTarget").value<PlayerStar>();
             room->removeTag("BaishenTarget");
@@ -1018,22 +1021,23 @@ public:
     }
 };
 
-class Hunshou: public PhaseChangeSkill {
+class Hunshou: public TriggerSkill {
 public:
-    Hunshou(): PhaseChangeSkill("hunshou$") {
+    Hunshou(): TriggerSkill("hunshou$") {
+        events << EventPhaseStart;
         frequency = Wake;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->getPhase() == Player::Start
+        return target != NULL && target->isAlive()
                && target->hasLordSkill("hunshou")
-               && target->isAlive()
+               && target->getPhase() == Player::Start
                && target->getMark("@hunshou") == 0;
     }
 
-    virtual bool onPhaseChange(ServerPlayer *player) const{
-        Room *room = player->getRoom();
-
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
+		if (data.value<PlayerStar>() != player)
+			return false;
         bool can_invoke = true;
         foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (player->getHpPoints() > p->getHpPoints()) {
@@ -1138,22 +1142,25 @@ public:
     }
 };
 
-class Zailuan: public PhaseChangeSkill{
+class Zailuan: public TriggerSkill {
 public:
-    Zailuan():PhaseChangeSkill("zailuan"){
-
+    Zailuan():TriggerSkill("zailuan") {
+        events << EventPhaseStart;
     }
 
-    virtual bool onPhaseChange(ServerPlayer *player) const{
-        if(player->getPhase() == Player::Draw && player->isWounded()){
-            Room *room = player->getRoom();
-            if(room->askForSkillInvoke(player, objectName())){
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
+		if (data.value<PlayerStar>() == player && player->getPhase() == Player::Draw
+			&& player->isWounded())
+        {
+            if(player->askForSkillInvoke(objectName()))
+            {
                 int x = player->getLostHp();
 
                 room->broadcastSkillInvoke(objectName(), 1);
                 bool has_heart = false;
 
-                for(int i = 0; i < x; i++){
+                for (int i = 0; i < x; i++)
+                {
                     int card_id = room->drawCard();
                     room->moveCardTo(Sanguosha->getCard(card_id), NULL, NULL, Player::PlaceTable,
                         CardMoveReason(CardMoveReason::S_REASON_TURNOVER, player->objectName(), QString(), objectName(), QString()), true);
@@ -1554,14 +1561,14 @@ public:
     }
 };
 
-class Qiaoxia:public PhaseChangeSkill{
+class Qiaoxia: public TriggerSkill {
 public:
-    Qiaoxia():PhaseChangeSkill("qiaoxia"){
+    Qiaoxia(): TriggerSkill("qiaoxia") {
+        events << EventPhaseStart;
     }
 
-    virtual bool onPhaseChange(ServerPlayer *player) const{
-        Room *room = player->getRoom();
-        if (player->getPhase() != Player::Start || player->isKongcheng())
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
+        if (data.value<PlayerStar>() != player || player->getPhase() != Player::Start || player->isKongcheng())
             return false;
 
         if(player->askForSkillInvoke(objectName())){
@@ -1657,6 +1664,9 @@ public:
                 room->setPlayerMark(player, "canyue", player->getMark("canyue") + 1);
         } else if (event == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+			if (change.who != player)
+				return false;
+
             if (change.from == Player::Play)
                 if (player->getMark("canyue") > 0)
                     room->setPlayerMark(player, "canyue", 0);
@@ -1699,6 +1709,9 @@ public:
                 room->setPlayerMark(damage.from, "jiuming_damage", damage.from->getMark("jiuming_damage") + damage.damage);
         } else if (event == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+			if (change.who != player)
+				return false;
+
             if (change.to == Player::NotActive)
                 if (player->getMark("jiuming_damage") > 0)
                     room->setPlayerMark(player, "jiuming_damage", 0);
@@ -1708,22 +1721,23 @@ public:
     }
 };
 
-class Jiuming: public PhaseChangeSkill {
+class Jiuming: public TriggerSkill {
 public:
-    Jiuming(): PhaseChangeSkill("jiuming") {
+    Jiuming(): TriggerSkill("jiuming") {
+        events << EventPhaseStart;
         frequency = Wake;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
-        return PhaseChangeSkill::triggerable(target)
+        return TriggerSkill::triggerable(target)
                && target->getPhase() == Player::Finish
                && target->getMark("@jiuming") == 0
                && target->getMark("jiuming_damage") >= 3;
     }
 
-    virtual bool onPhaseChange(ServerPlayer *player) const{
-        Room *room = player->getRoom();
-
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
+		if (data.value<PlayerStar>() != player)
+			return false;
         LogMessage log;
         log.type = "#JiumingWake";
         log.from = player;

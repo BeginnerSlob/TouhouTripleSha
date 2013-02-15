@@ -35,103 +35,6 @@ int GameRule::getPriority() const{
     return 0;
 }
 
-void GameRule::onPhaseChange(ServerPlayer *player) const{
-    Room *room = player->getRoom();
-    switch(player->getPhase()){
-    case Player::PhaseNone: {
-        Q_ASSERT(false);
-        }
-    case Player::RoundStart:{
-            break;
-        }
-    case Player::Start: {
-            player->setMark("SlashCount", 0);
-            break;
-        }
-    case Player::Judge: {
-            QList<const Card *> tricks = player->getJudgingArea();
-            while(!tricks.isEmpty() && player->isAlive()){
-                const Card *trick = tricks.takeLast();
-                bool on_effect = room->cardEffect(trick, NULL, player);
-                if(!on_effect)
-                    trick->onNullified(player);
-            }
-            break;
-        }
-    case Player::Draw: {
-            QVariant num = 2;
-            if(room->getTag("FirstRound").toBool()){
-                room->setTag("FirstRound", false);
-                if(room->getMode() == "02_1v1")
-                    num = 1;
-            }
-
-            if (room->getThread()->trigger(DrawNCards, room, player, num))
-                break;
-            int n = num.toInt();
-            if(n > 0)
-                player->drawCards(n, false);
-            break;
-        }
-
-    case Player::Play: {
-            player->clearHistory();
-
-            while(player->isAlive()){
-                CardUseStruct card_use;
-                room->activate(player, card_use);
-                if (card_use.card != NULL) {
-                    room->useCard(card_use);
-                }
-                else break;
-            }
-            break;
-        }
-
-    case Player::Discard:{
-            int discard_num, keep_num;
-            QSet<const Card *> huyin_cards;
-            QList<const Card *> handcards;
-            do
-            {
-                handcards = player->getHandcards();
-                foreach(const Card *card, handcards){
-                    if(player->isHuyin(card))
-                        huyin_cards << card;
-                }
-                keep_num = qMax(player->getMaxCards(), huyin_cards.size());
-                discard_num = player->getHandcardNum() - keep_num;
-                huyin_cards.clear();
-                if (discard_num > 0)
-                    room->askForDiscard(player, "gamerule", discard_num, 1);
-            }while (discard_num > 0);
-            if (player->getHandcardNum() > player->getMaxCards())
-                room->showAllCards(player);
-            break;
-        }
-    case Player::Finish: {
-            break;
-        }
-
-    case Player::NotActive:{
-            if(player->hasFlag("drank")){
-                LogMessage log;
-                log.type = "#UnsetDrankEndOfTurn";
-                log.from = player;
-                room->sendLog(log);
-
-                room->setPlayerFlag(player, "-drank");
-            }
-
-            player->clearFlags();
-            player->clearHistory();
-            room->clearPlayerCardLimitation(player, true);
-
-            return;
-        }
-    }
-}
-
 bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
     if(room->getTag("SkipGameRule").toBool()){
         room->removeTag("SkipGameRule");
@@ -183,7 +86,108 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
             break;
         }
 
-    case EventPhaseStart: onPhaseChange(player); break;
+    case EventPhaseStart: {
+		if (data.value<PlayerStar>() != player)
+			break;
+        switch(player->getPhase()){
+            case Player::PhaseNone: {
+                Q_ASSERT(false);
+                }
+            case Player::RoundStart:{
+                    break;
+                }
+            case Player::Start: {
+                    player->setMark("SlashCount", 0);
+                    break;
+                }
+            case Player::Judge: {
+                    QList<const Card *> tricks = player->getJudgingArea();
+                    while(!tricks.isEmpty() && player->isAlive()){
+                        const Card *trick = tricks.takeLast();
+                        bool on_effect = room->cardEffect(trick, NULL, player);
+                        if(!on_effect)
+                            trick->onNullified(player);
+                    }
+                    break;
+                }
+            case Player::Draw: {
+                    QVariant num = 2;
+                    if(room->getTag("FirstRound").toBool()){
+                        room->setTag("FirstRound", false);
+                        if(room->getMode() == "02_1v1")
+                            num = 1;
+                    }
+            
+                    if (room->getThread()->trigger(DrawNCards, room, player, num))
+                        break;
+                    int n = num.toInt();
+                    if(n > 0)
+                        player->drawCards(n, false);
+                    break;
+                }
+
+            case Player::Play: {
+                    player->clearHistory();
+
+                    while(player->isAlive()){
+                        CardUseStruct card_use;
+                        room->activate(player, card_use);
+                        if (card_use.card != NULL) {
+                            room->useCard(card_use);
+                        }
+                        else break;
+                    }
+                    break;
+                }
+
+            case Player::Discard:{
+                    int discard_num, keep_num;
+                    QSet<const Card *> huyin_cards;
+                    QList<const Card *> handcards;
+                    do
+                    {
+                    handcards = player->getHandcards();
+                    foreach(const Card *card, handcards){
+                        if(player->isHuyin(card))
+                            huyin_cards << card;
+                        }
+                        keep_num = qMax(player->getMaxCards(), huyin_cards.size());
+                        discard_num = player->getHandcardNum() - keep_num;
+                        huyin_cards.clear();
+                        if (discard_num > 0)
+                            room->askForDiscard(player, "gamerule", discard_num, 1);
+                    }while (discard_num > 0);
+                    if (player->getHandcardNum() > player->getMaxCards())
+                        room->showAllCards(player);
+                    break;
+                }
+            case Player::Finish: {
+                    break;
+                }
+
+            case Player::RoundEnd:{
+                    break;
+                }
+            case Player::NotActive:{
+                    if(player->hasFlag("drank")){
+                        LogMessage log;
+                        log.type = "#UnsetDrankEndOfTurn";
+                        log.from = player;
+                        room->sendLog(log);
+
+                        room->setPlayerFlag(player, "-drank");
+                    }
+
+                    player->clearFlags();
+                    player->clearHistory();
+                    room->clearPlayerCardLimitation(player, true);
+
+                    break;
+                }
+            default: break;
+        }
+        break;
+    }
     case CardUsed: {
             if(data.canConvert<CardUseStruct>()){
                 CardUseStruct card_use = data.value<CardUseStruct>();
@@ -1089,7 +1093,7 @@ bool BasaraMode::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *pl
     }
 
     case EventPhaseStart:{
-        if(player->getPhase() == Player::Start)
+        if(data.value<PlayerStar>() == player && player->getPhase() == Player::Start)
             playerShowed(player);
 
         break;

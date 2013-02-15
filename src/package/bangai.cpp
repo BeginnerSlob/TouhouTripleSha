@@ -314,8 +314,8 @@ public:
         return target != NULL && target->isAlive() && target->getMark("@zuzhou") > 0;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        if (player->getPhase() == Player::Judge)
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (player->getPhase() == Player::Judge && data.value<PlayerStar>() == player)
         {
             LogMessage log;
             log.type = "#ThZusha";
@@ -553,24 +553,20 @@ public:
         frequency = Frequent;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL ;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        if (player->getPhase() == Player::Finish && TriggerSkill::triggerable(player) && player->getHandcardNum() < 2)
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (player->getPhase() == Player::Finish && data.value<PlayerStar>() == player && player->getHandcardNum() < 2)
         {
             if (player->askForSkillInvoke(objectName()))
                 player->drawCards(2 - player->getHandcardNum());
         }
         else if (player->getPhase() == Player::Start)
         {
-            ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-            if (!splayer || player == splayer)
+            ServerPlayer *srcplayer = data.value<PlayerStar>();
+            if (srcplayer == player)
                 return false;
 
-            if (splayer->isKongcheng() && splayer->askForSkillInvoke(objectName()))
-                splayer->drawCards(1);
+            if (player->isKongcheng() && player->askForSkillInvoke(objectName()))
+                player->drawCards(1);
         }
 
         return false;
@@ -694,8 +690,12 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == EventPhaseChanging && data.value<PhaseChangeStruct>().to == Player::Play)
-            room->setPlayerMark(player, "thhuilun", 0);
+        if (triggerEvent == EventPhaseChanging && TriggerSkill::triggerable(player))
+		{
+			PhaseChangeStruct change =  data.value<PhaseChangeStruct>();
+			if (change.to == Player::Play)
+				room->setPlayerMark(change.who, "thhuilun", 0);
+		}
         else if (triggerEvent == CardUsed)
         {
             ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
@@ -773,38 +773,33 @@ public:
         events << EventPhaseStart;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const {
-        return target != NULL && target->isAlive() && target->getPhase() == Player::Start
-                                                   && target->isChained();
-    }
-
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-        if (!splayer || !splayer->askForSkillInvoke(objectName()))
+        ServerPlayer *srcplayer = data.value<PlayerStar>();
+        if (!srcplayer->isChained() || srcplayer->getPhase() != Player::Start || !player->askForSkillInvoke(objectName()))
             return false;
 
         QList<ServerPlayer *> victims;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
+        foreach (ServerPlayer *p, room->getOtherPlayers(srcplayer))
             if (!p->isNude())
                 victims << p;
 
         ServerPlayer *victim = NULL;
         if (!victims.isEmpty())
         {
-            victim = room->askForPlayerChosen(splayer, victims, objectName());
+            victim = room->askForPlayerChosen(player, victims, objectName());
             LogMessage log;
             log.type = "#ThQiongfa";
-            log.from = splayer;
+            log.from = player;
             log.to << victim;
             room->sendLog(log);
         }
 
-        if (victim && room->askForChoice(player, objectName(), "discard+cancel") == "discard")
-            room->throwCard(room->askForCardChosen(player, victim, "he", objectName()), victim, player);
+        if (victim && room->askForChoice(srcplayer, objectName(), "discard+cancel") == "discard")
+            room->throwCard(room->askForCardChosen(srcplayer, victim, "he", objectName()), victim, srcplayer);
         else
-            splayer->drawCards(1);
+            player->drawCards(1);
 
-        room->setPlayerProperty(player, "chained", false);
+        room->setPlayerProperty(srcplayer, "chained", false);
 
         return false;
     }
@@ -911,7 +906,8 @@ public:
             ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
             target->drawCards(x);
         }
-        else if (triggerEvent == EventPhaseEnd && player->getPhase() == Player::Draw && player->hasFlag("thweideused"))
+        else if (triggerEvent == EventPhaseEnd && data.value<PlayerStar>() == player
+				 && player->getPhase() == Player::Draw && player->hasFlag("thweideused"))
         {
             room->setPlayerFlag(player, "-thweideused");
             QList<ServerPlayer *> victims;
@@ -1348,8 +1344,8 @@ public:
         events << EventPhaseStart;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        if (player->getPhase() != Player::Discard || player->getHandcardNum() == player->getHpPoints())
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (data.value<PlayerStar>() != player || player->getPhase() != Player::Discard || player->getHandcardNum() == player->getHpPoints())
             return false;
 
         int x = player->getHandcardNum() - player->getHpPoints();
@@ -1491,13 +1487,9 @@ public:
         events << EventPhaseStart;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *target, QVariant &data) const{
-        ServerPlayer *player = room->findPlayerBySkillName(objectName());
-        if(!player || player == target || target->getPhase() != Player::Start || target->isKongcheng() || !player->askForSkillInvoke(objectName()))
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        ServerPlayer *target = data.value<PlayerStar>();
+        if(player == target || target->getPhase() != Player::Start || target->isKongcheng() || !player->askForSkillInvoke(objectName()))
             return false;
 
         const Card *card = room->askForCardShow(target, player, "@thzhanfuchoose:" + player->getGeneralName());

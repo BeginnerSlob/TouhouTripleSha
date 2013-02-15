@@ -151,7 +151,7 @@ bool JudgeStruct::isBad() const
 }
 
 PhaseChangeStruct::PhaseChangeStruct()
-    :from(Player::NotActive), to(Player::NotActive)
+    :from(Player::NotActive), to(Player::NotActive), who(NULL)
 {}
 
 CardUseStruct::CardUseStruct()
@@ -372,8 +372,10 @@ void RoomThread::run(){
                             room->setPlayerFlag(player, "-actioned");
 
                         if(player->getPhase() != Player::NotActive){
-
-                            trigger(EventPhaseEnd, room, player);
+							
+							QVariant trigger_data = QVariant::fromValue((PlayerStar)player);
+							foreach (ServerPlayer *p, room->getAllPlayers())
+								trigger(EventPhaseEnd, room, p, trigger_data);
 
                             player->changePhase(player->getPhase(), Player::NotActive);
                         }

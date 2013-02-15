@@ -59,8 +59,9 @@ public:
         events << EventPhaseStart;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const {
-        if (player->getPhase() == Player::Start && player->askForSkillInvoke(objectName()))
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
+        if (data.value<PlayerStar>() == player && player->getPhase() == Player::Start
+			&& player->askForSkillInvoke(objectName()))
         {
             ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), objectName());
             
@@ -161,7 +162,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
-        if (player->getPhase() == Player::Start)
+        if (data.value<PlayerStar>() == player && player->getPhase() == Player::Start)
             while (player->askForSkillInvoke(objectName()))
             {
                 int card1 = room->drawCard();

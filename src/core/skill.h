@@ -147,16 +147,6 @@ public:
     virtual void onDamaged(ServerPlayer *target, const DamageStruct &damage) const = 0;
 };
 
-class PhaseChangeSkill: public TriggerSkill{
-    Q_OBJECT
-
-public:
-    PhaseChangeSkill(const QString &name);
-
-    virtual bool trigger(TriggerEvent event, Room* room, ServerPlayer *player, QVariant &data) const;
-    virtual bool onPhaseChange(ServerPlayer *target) const =0;
-};
-
 class DrawCardsSkill: public TriggerSkill{
     Q_OBJECT
 
