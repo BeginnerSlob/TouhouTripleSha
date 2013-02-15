@@ -8,15 +8,15 @@
 
 #include <QTime>
 
-class Silue: public PhaseChangeSkill{
+class Silue: public TriggerSkill{
 public:
-    Silue():PhaseChangeSkill("silue"){
+    Silue(): TriggerSkill("silue") {
+        events << EventPhaseStart;
         frequency = Compulsory;
     }
 
-    virtual bool onPhaseChange(ServerPlayer *player) const{
-        if(player->getPhase() != Player::Draw)  return false;
-        Room *room = player->getRoom();
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
+        if(data.value<PlayerStar>() == player && player->getPhase() != Player::Draw)  return false;
         QList<ServerPlayer *> players = room->getOtherPlayers(player);
         bool has_frantic = player->getMark("@frantic")>0;
         room->broadcastSkillInvoke(objectName());
@@ -62,9 +62,10 @@ public:
     }
 };
 
-class Jishi: public PhaseChangeSkill{
+class Jishi: public TriggerSkill {
 public:
-    Jishi():PhaseChangeSkill("jishi"){
+    Jishi(): TriggerSkill("jishi") {
+        events << EventPhaseStart;
         frequency = Compulsory;
     }
 
@@ -72,8 +73,7 @@ public:
         return target != NULL && target->isLord();
     }
 
-    virtual bool onPhaseChange(ServerPlayer *target) const{
-        Room *room = target->getRoom();
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *target, QVariant &) const {
         QList<ServerPlayer *> players = room->getAlivePlayers();
         QList<ServerPlayer *> others = room->getOtherPlayers(target);
         bool has_frantic = target->getMark("@frantic")>0;
