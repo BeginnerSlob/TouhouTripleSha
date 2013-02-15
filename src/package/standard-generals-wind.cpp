@@ -87,13 +87,13 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return TriggerSkill::triggerable(target)
-			   && target->getPhase() == Player::NotActive
+               && target->getPhase() == Player::NotActive
                && target->hasUsed("FunuanCard");
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *target, QVariant &data) const{
-		if (data.value<PlayerStar>() != target)
-			return false;
+        if (data.value<PlayerStar>() != target)
+            return false;
         room->setPlayerMark(target, "funuan", 0);
         foreach (ServerPlayer *p, room->getAlivePlayers())
             room->setPlayerMark(p, "funuantarget", 0);
@@ -861,8 +861,8 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
-		if (data.value<PlayerStar>() != player)
-			return false;
+        if (data.value<PlayerStar>() != player)
+            return false;
         LogMessage log;
         log.type = "#ShengtianWake";
         log.from = player;
@@ -958,8 +958,8 @@ public:
 
     virtual bool trigger(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const{
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-		if (change.who != player)
-			return false;
+        if (change.who != player)
+            return false;
         switch (change.to) {
         case Player::Play: {
                 bool invoked = false;
@@ -1009,8 +1009,8 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
-		if (data.value<PlayerStar>() != player)
-			return false;
+        if (data.value<PlayerStar>() != player)
+            return false;
         if (!room->getTag("BaishenTarget").isNull()) {
             PlayerStar target = room->getTag("BaishenTarget").value<PlayerStar>();
             room->removeTag("BaishenTarget");
@@ -1036,8 +1036,8 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
-		if (data.value<PlayerStar>() != player)
-			return false;
+        if (data.value<PlayerStar>() != player)
+            return false;
         bool can_invoke = true;
         foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (player->getHpPoints() > p->getHpPoints()) {
@@ -1149,8 +1149,8 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
-		if (data.value<PlayerStar>() == player && player->getPhase() == Player::Draw
-			&& player->isWounded())
+        if (data.value<PlayerStar>() == player && player->getPhase() == Player::Draw
+            && player->isWounded())
         {
             if(player->askForSkillInvoke(objectName()))
             {
@@ -1664,8 +1664,8 @@ public:
                 room->setPlayerMark(player, "canyue", player->getMark("canyue") + 1);
         } else if (event == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-			if (change.who != player)
-				return false;
+            if (change.who != player)
+                return false;
 
             if (change.from == Player::Play)
                 if (player->getMark("canyue") > 0)
@@ -1709,8 +1709,8 @@ public:
                 room->setPlayerMark(damage.from, "jiuming_damage", damage.from->getMark("jiuming_damage") + damage.damage);
         } else if (event == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-			if (change.who != player)
-				return false;
+            if (change.who != player)
+                return false;
 
             if (change.to == Player::NotActive)
                 if (player->getMark("jiuming_damage") > 0)
@@ -1736,8 +1736,8 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
-		if (data.value<PlayerStar>() != player)
-			return false;
+        if (data.value<PlayerStar>() != player)
+            return false;
         LogMessage log;
         log.type = "#JiumingWake";
         log.from = player;

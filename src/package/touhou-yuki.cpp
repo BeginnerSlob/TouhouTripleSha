@@ -23,7 +23,7 @@ public:
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         if (triggerEvent == EventPhaseChanging && TriggerSkill::triggerable(player))
         {
-			PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.who->hasFlag("jianmoinvoke"))
                 room->setPlayerFlag(change.who, "-jianmoinvoke");
             room->removePlayerCardLimitation(change.who, "use,response", "Slash@0");
@@ -94,8 +94,8 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
-		if (data.value<PlayerStar>() != player)
-			return false;
+        if (data.value<PlayerStar>() != player)
+            return false;
 
         LogMessage log;
         log.type = "#ThErchong";
@@ -185,8 +185,8 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         if (triggerEvent == EventPhaseStart && data.value<PlayerStar>()
-			&& player->getPhase() == Player::Start)
-		{
+            && player->getPhase() == Player::Start)
+        {
             int n = 0;
             while(player->askForSkillInvoke(objectName())){
                 if(n == 0)
@@ -451,7 +451,7 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         bool invoke = triggerEvent == EventPhaseStart && data.value<PlayerStar>() == player
-			          && player->getHandcardNum() < 2;
+                      && player->getHandcardNum() < 2;
         if (triggerEvent == CardsMoveOneTime)
         {
             CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
@@ -677,8 +677,8 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room *, ServerPlayer *target, QVariant &data) const {
-		if (data.value<PlayerStar>() != target)
-			return false;
+        if (data.value<PlayerStar>() != target)
+            return false;
 
         if(target->getMark("choucecount") >= 3){
             target->setMark("choucecount", 0);
@@ -706,8 +706,8 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-		if (data.value<PlayerStar>() != player)
-			return false;
+        if (data.value<PlayerStar>() != player)
+            return false;
 
         LogMessage log;
         log.type = "#TriggerSkill";
@@ -881,7 +881,7 @@ public:
                 return true;
             }
         }
-		else if (triggerEvent == EventPhaseChanging && data.value<PhaseChangeStruct>().who == player)
+        else if (triggerEvent == EventPhaseChanging && data.value<PhaseChangeStruct>().who == player)
             room->setPlayerMark(player, objectName(), 0);
 
         return false;
@@ -1035,7 +1035,7 @@ public:
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         if (data.value<PlayerStar>() == player && player->getPhase() == Player::Finish
-			&& player->isWounded() && player->askForSkillInvoke(objectName()))
+            && player->isWounded() && player->askForSkillInvoke(objectName()))
             room->askForUseCard(player, "@@thdongmo", "@thdongmo");
 
         return false;
@@ -1264,8 +1264,8 @@ public:
 
     virtual bool trigger(TriggerEvent, Room *, ServerPlayer *player, QVariant &data) const{
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-		if (change.who != player)
-			return false;
+        if (change.who != player)
+            return false;
 
         if (player->isSkipped(change.to))
             return false;
@@ -1293,8 +1293,8 @@ public:
 
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
 
-		if (change.who != player)
-			return false;
+        if (change.who != player)
+            return false;
         
         if (change.from == Player::Play || change.from == Player::Draw)
         {
@@ -1417,14 +1417,14 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-		if (triggerEvent == EventPhaseEnd && TriggerSkill::triggerable(player))
+        if (triggerEvent == EventPhaseEnd && TriggerSkill::triggerable(player))
             room->setPlayerMark(player, objectName(), 0);
         else if (triggerEvent == PreHpReduced)
         {
             DamageStruct damage = data.value<DamageStruct>();
-			ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-			if (!splayer)
-				return false;
+            ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
+            if (!splayer)
+                return false;
 
             if (damage.damage >= 2 && damage.to != splayer && splayer->getMark(objectName()) < 1 && splayer->askForSkillInvoke(objectName()))
             {
@@ -1507,8 +1507,8 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-		if (data.value<PlayerStar>() != player)
-			return false;
+        if (data.value<PlayerStar>() != player)
+            return false;
 
         LogMessage log;
         log.type = "#ThChuanshang";
@@ -1656,14 +1656,14 @@ public:
     }
     
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
-		ServerPlayer *player = NULL;
-		if (triggerEvent != EventPhaseChanging)
-			player = data.value<PlayerStar>();
-		else
-			player = data.value<PhaseChangeStruct>().who;
-		
-		if (player == NULL)
-			return false;
+        ServerPlayer *player = NULL;
+        if (triggerEvent != EventPhaseChanging)
+            player = data.value<PlayerStar>();
+        else
+            player = data.value<PhaseChangeStruct>().who;
+        
+        if (player == NULL)
+            return false;
 
         if (triggerEvent == EventPhaseEnd && player->hasSkill("thfuyuev"))
             room->detachSkillFromPlayer(player, "thfuyuev", true);

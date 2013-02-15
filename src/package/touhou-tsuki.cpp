@@ -148,18 +148,18 @@ public:
     }
     
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
-		ServerPlayer *player = NULL;
-		if (triggerEvent != EventPhaseChanging)
-			player = data.value<PlayerStar>();
-		else
-			player = data.value<PhaseChangeStruct>().who;
-		
-		if (player == NULL)
-			return false;
+        ServerPlayer *player = NULL;
+        if (triggerEvent != EventPhaseChanging)
+            player = data.value<PlayerStar>();
+        else
+            player = data.value<PhaseChangeStruct>().who;
+        
+        if (player == NULL)
+            return false;
 
         if (triggerEvent == EventPhaseEnd && player->hasSkill("thyewangv"))
             room->detachSkillFromPlayer(player, "thyewangv", true);
-		else if (triggerEvent == EventPhaseStart)
+        else if (triggerEvent == EventPhaseStart)
         {
             bool can_invoke = false;
             foreach(ServerPlayer *p, room->getOtherPlayers(player))
@@ -277,7 +277,7 @@ public:
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         if (data.value<PlayerStar>() != player || player->getPhase() != Player::Start
-			|| player->getMark("@lianxie") > 0)
+            || player->getMark("@lianxie") > 0)
             return false;
 
         if (player->getEquip(2) || player->getEquip(3))
@@ -427,14 +427,14 @@ public:
             }
         }
         else if (triggerEvent == EventPhaseStart)
-		{
-			ServerPlayer *srcplayer = data.value<PlayerStar>();
-			if (srcplayer->getPhase() == Player::RoundEnd && srcplayer->getMark("@jiaotu") > 0)
-				if (!srcplayer->hasFlag(objectName()))
-				{
-					srcplayer->loseMark("@jiaotu");
-					room->detachSkillFromPlayer(srcplayer, "wumou");
-				}
+        {
+            ServerPlayer *srcplayer = data.value<PlayerStar>();
+            if (srcplayer->getPhase() == Player::RoundEnd && srcplayer->getMark("@jiaotu") > 0)
+                if (!srcplayer->hasFlag(objectName()))
+                {
+                    srcplayer->loseMark("@jiaotu");
+                    room->detachSkillFromPlayer(srcplayer, "wumou");
+                }
         }
 
         return false;
@@ -691,7 +691,7 @@ public:
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
         if (data.value<PlayerStar>() == player && player->getPhase() == Player::Start
-			&& player->getMark("@shiji") <= 0 && player->askForSkillInvoke(objectName()))
+            && player->getMark("@shiji") <= 0 && player->askForSkillInvoke(objectName()))
         {
             room->broadcastSkillInvoke(objectName());
             player->turnOver();
@@ -934,7 +934,7 @@ public:
             if (death.who != player)
                 return false;
         }
-		else if (data.value<PlayerStar>() != player || player->getPhase() != Player::RoundStart)
+        else if (data.value<PlayerStar>() != player || player->getPhase() != Player::RoundStart)
             return false;
 
         foreach (ServerPlayer *p, room->getOtherPlayers(player))
@@ -1074,55 +1074,55 @@ public:
                 player->removeMark("zhehui");
         }
         else if (triggerEvent == EventPhaseStart)
-		{
-			ServerPlayer *srcplayer = data.value<PlayerStar>();
-			if (srcplayer->getPhase() == Player::NotActive)
-			{
-				if (player->getMark("zhehui") == 0)
-					return false;
+        {
+            ServerPlayer *srcplayer = data.value<PlayerStar>();
+            if (srcplayer->getPhase() == Player::NotActive)
+            {
+                if (player->getMark("zhehui") == 0)
+                    return false;
             
-				player->removeMark("zhehui");
-			}
-			else if (srcplayer->getPhase() == Player::Finish)
-			{
-				if (player->getMark("zhehui") == 0)
-					return false;
+                player->removeMark("zhehui");
+            }
+            else if (srcplayer->getPhase() == Player::Finish)
+            {
+                if (player->getMark("zhehui") == 0)
+                    return false;
 
-				LogMessage log;
-				log.type = "#TriggerSkill";
-				log.from = player;
-				log.arg = objectName();
-				room->sendLog(log);
+                LogMessage log;
+                log.type = "#TriggerSkill";
+                log.from = player;
+                log.arg = objectName();
+                room->sendLog(log);
 
-				player->removeMark("zhehui");
-				QList<ServerPlayer *> targets;
-				foreach (ServerPlayer *p, room->getOtherPlayers(player))
-					if (player->canSlash(p, NULL, false))
-						targets << p;
-				QString choice;
-				if (targets.isEmpty())
-					choice = "discard";
-				else
-					choice = room->askForChoice(player, objectName(), "discard+slash");
+                player->removeMark("zhehui");
+                QList<ServerPlayer *> targets;
+                foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                    if (player->canSlash(p, NULL, false))
+                        targets << p;
+                QString choice;
+                if (targets.isEmpty())
+                    choice = "discard";
+                else
+                    choice = room->askForChoice(player, objectName(), "discard+slash");
 
-				if (choice == "slash")
-				{
-					ServerPlayer *victim = room->askForPlayerChosen(player, targets, objectName());
+                if (choice == "slash")
+                {
+                    ServerPlayer *victim = room->askForPlayerChosen(player, targets, objectName());
 
-					Slash *slash = new Slash(Card::NoSuitNoColor, 0);
-					slash->setSkillName(objectName());
-					CardUseStruct card_use;
-					card_use.from = player;
-					card_use.to << victim;
-					card_use.card = slash;
-					room->useCard(card_use, false);
-				}
-				else
-				{
-					int card_ids = room->askForCardChosen(player, srcplayer, "he", objectName());
-					room->throwCard(card_ids, srcplayer, player);
-				}
-			}
+                    Slash *slash = new Slash(Card::NoSuitNoColor, 0);
+                    slash->setSkillName(objectName());
+                    CardUseStruct card_use;
+                    card_use.from = player;
+                    card_use.to << victim;
+                    card_use.card = slash;
+                    room->useCard(card_use, false);
+                }
+                else
+                {
+                    int card_ids = room->askForCardChosen(player, srcplayer, "he", objectName());
+                    room->throwCard(card_ids, srcplayer, player);
+                }
+            }
         }
 
         return false;
@@ -1368,8 +1368,8 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-		if (data.value<PlayerStar>() != player)
-			return false;
+        if (data.value<PlayerStar>() != player)
+            return false;
 
         if (player->getPhase() == Player::NotActive)
         {
@@ -1435,8 +1435,8 @@ public:
         if (triggerEvent == EventPhaseChanging)
         {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-			if (change.who != player)
-				return false;
+            if (change.who != player)
+                return false;
 
             if (change.to == Player::Play)
                 room->setPlayerMark(player, objectName(), 0);
@@ -1772,7 +1772,7 @@ public:
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
         if (data.value<PlayerStar>() == player && player->getPhase() == Player::Draw
-			&& player->askForSkillInvoke(objectName()))
+            && player->askForSkillInvoke(objectName()))
         {
             QList<int> card_ids = room->getNCards(4, false);
             room->fillAG(card_ids, NULL);
@@ -1895,8 +1895,8 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
-		if (data.value<PlayerStar>() != player)
-			return false;
+        if (data.value<PlayerStar>() != player)
+            return false;
 
         int n = player->getAttackRange();
         room->askForDiscard(player, objectName(), n, n, false, true);

@@ -557,7 +557,7 @@ public:
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
         if (data.value<PlayerStar>() == player)
-			room->askForUseCard(player, "@@liangban", "@liangban");
+            room->askForUseCard(player, "@@liangban", "@liangban");
 
         return false;
     }
@@ -601,8 +601,8 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
-		if (data.value<PlayerStar>() != player)
-			return false;
+        if (data.value<PlayerStar>() != player)
+            return false;
 
         LogMessage log;
         log.type = "#ChizhuWake";
@@ -687,14 +687,14 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
-		ServerPlayer *player = NULL;
-		if (triggerEvent != EventPhaseChanging)
-			player = data.value<PlayerStar>();
-		else
-			player = data.value<PhaseChangeStruct>().who;
-		
-		if (player == NULL && triggerEvent != Pindian)
-			return false;
+        ServerPlayer *player = NULL;
+        if (triggerEvent != EventPhaseChanging)
+            player = data.value<PlayerStar>();
+        else
+            player = data.value<PhaseChangeStruct>().who;
+        
+        if (player == NULL && triggerEvent != Pindian)
+            return false;
 
         if (triggerEvent == EventPhaseEnd && player->hasSkill("biansheng_pindian"))
             room->detachSkillFromPlayer(player, "biansheng_pindian", true);
@@ -1091,16 +1091,16 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-		ServerPlayer *srcplayer = NULL;
-		if (triggerEvent == EventPhaseEnd)
-			srcplayer = data.value<PlayerStar>();
-		else if (triggerEvent == EventPhaseChanging)
-			srcplayer = data.value<PhaseChangeStruct>().who;
-		else
-			srcplayer = player;
+        ServerPlayer *srcplayer = NULL;
+        if (triggerEvent == EventPhaseEnd)
+            srcplayer = data.value<PlayerStar>();
+        else if (triggerEvent == EventPhaseChanging)
+            srcplayer = data.value<PhaseChangeStruct>().who;
+        else
+            srcplayer = player;
 
-		if (srcplayer == NULL || srcplayer != player)
-			return false;
+        if (srcplayer == NULL || srcplayer != player)
+            return false;
 
         if(triggerEvent == EventPhaseChanging){
             player->setMark("eli", 0);
@@ -1189,8 +1189,8 @@ public:
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         ServerPlayer *current = room->getCurrent();
-		if (player == current)
-			return false;
+        if (player == current)
+            return false;
 
         CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
 
@@ -1217,7 +1217,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent , Room *room, ServerPlayer *splayer, QVariant &data) const{
-		ServerPlayer *player = data.value<PlayerStar>();
+        ServerPlayer *player = data.value<PlayerStar>();
         if(player->isDead())
             return false;
 
@@ -1510,12 +1510,12 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *chengpu, QVariant &data) const{
         if (triggerEvent == EventPhaseStart && data.value<PlayerStar>() == chengpu
-			&& chengpu->getPhase() == Player::Finish && !chengpu->isKongcheng()
-			&& chengpu->getPile("xiaozuipile").isEmpty())
-		{
+            && chengpu->getPhase() == Player::Finish && !chengpu->isKongcheng()
+            && chengpu->getPile("xiaozuipile").isEmpty())
+        {
             room->askForUseCard(chengpu, "@@xiaozui", "@xiaozui", -1, Card::MethodNone);
         }
-		else if (triggerEvent == AskForPeaches && !chengpu->getPile("xiaozuipile").isEmpty()) {
+        else if (triggerEvent == AskForPeaches && !chengpu->getPile("xiaozuipile").isEmpty()) {
             DyingStruct dying = data.value<DyingStruct>();
             while (dying.who->getHp() < 1 && !chengpu->getPile("xiaozuipile").isEmpty()
                    && chengpu->askForSkillInvoke(objectName(), data)) {
@@ -2053,7 +2053,7 @@ public:
         } else if (triggerEvent == EventPhaseStart && data.value<PlayerStar>() == player) {
             player->setMark("longxi", 0);
         } else if (triggerEvent == EventPhaseEnd && data.value<PlayerStar>() == player
-				   && player->getMark("longxi") >= 2 && player->askForSkillInvoke(objectName()))
+                   && player->getMark("longxi") >= 2 && player->askForSkillInvoke(objectName()))
             perform(player);
 
         return false;

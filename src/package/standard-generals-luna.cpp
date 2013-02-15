@@ -380,10 +380,10 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *shuangxiong, QVariant &data) const{
         if(triggerEvent == EventPhaseStart){
-			if (data.value<PlayerStar>() != shuangxiong)
-				return false;
+            if (data.value<PlayerStar>() != shuangxiong)
+                return false;
             if(shuangxiong->getPhase() == Player::Draw){
-				room->setPlayerMark(shuangxiong, "shuangniang", 0);
+                room->setPlayerMark(shuangxiong, "shuangniang", 0);
                 if(shuangxiong->askForSkillInvoke(objectName())){
                     room->setPlayerFlag(shuangxiong, "shuangniang");
 
@@ -1231,14 +1231,14 @@ public:
     }
     
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
-		ServerPlayer *player = NULL;
-		if (triggerEvent != EventPhaseChanging)
-			player = data.value<PlayerStar>();
-		else
-			player = data.value<PhaseChangeStruct>().who;
-		
-		if (player == NULL)
-			return false;
+        ServerPlayer *player = NULL;
+        if (triggerEvent != EventPhaseChanging)
+            player = data.value<PlayerStar>();
+        else
+            player = data.value<PhaseChangeStruct>().who;
+        
+        if (player == NULL)
+            return false;
 
         if (triggerEvent == EventPhaseEnd && player->hasSkill("yujiv"))
             room->detachSkillFromPlayer(player, "yujiv", true);
@@ -1590,9 +1590,9 @@ public:
             room->broadcastSkillInvoke("chenyan", x);
 
         }
-		else if (triggerEvent == EventPhaseStart && data.value<PlayerStar>() == player
-				  && player->getPhase() == Player::Discard)
-		{
+        else if (triggerEvent == EventPhaseStart && data.value<PlayerStar>() == player
+                  && player->getPhase() == Player::Discard)
+        {
             int x = getKingdoms(player) + 1;
             int total = 0;
             QSet<const Card *> huyin_cards;
@@ -2121,57 +2121,57 @@ public:
             return false;
         }
         else 
-		{
-			ServerPlayer *srcplayer = data.value<PlayerStar>();
-			if (srcplayer == player && player->getPhase() == Player::Finish
+        {
+            ServerPlayer *srcplayer = data.value<PlayerStar>();
+            if (srcplayer == player && player->getPhase() == Player::Finish
                 && !player->isKongcheng() && player->getPile("kouzhupile").isEmpty())
-				room->askForUseCard(player, "@@kouzhu", "@kouzhu-remove", -1, Card::MethodNone);
-			else if (srcplayer->getPhase() == Player::RoundStart && srcplayer->getMark("@kouzhu") > 0)
-			{
-				ServerPlayer *source = player->tag.value("Kouzhu").value<PlayerStar>();
-				if (source != player)
-					return false;
-				
-				srcplayer->loseMark("@kouzhu");
-				QList<int> kouzhu_list = source->getPile("kouzhupile");
-				if (kouzhu_list.isEmpty())
-					return false;
+                room->askForUseCard(player, "@@kouzhu", "@kouzhu-remove", -1, Card::MethodNone);
+            else if (srcplayer->getPhase() == Player::RoundStart && srcplayer->getMark("@kouzhu") > 0)
+            {
+                ServerPlayer *source = player->tag.value("Kouzhu").value<PlayerStar>();
+                if (source != player)
+                    return false;
+                
+                srcplayer->loseMark("@kouzhu");
+                QList<int> kouzhu_list = source->getPile("kouzhupile");
+                if (kouzhu_list.isEmpty())
+                    return false;
 
-	            int card_id = kouzhu_list.last();
-		        QList<int> ids;
-			    ids << card_id;
-				room->fillAG(ids, NULL);
-	            const Card *cd = Sanguosha->getCard(card_id);
-		        QString pattern;
-			    if (cd->isKindOf("BasicCard"))
-				    pattern = "BasicCard";
-	            else if (cd->isKindOf("TrickCard"))
-		            pattern = "TrickCard";
-			    else if (cd->isKindOf("EquipCard"))
-				    pattern = "EquipCard";
-	            pattern.append("|.|.|hand");
-		        const Card *to_give = NULL;
-			    if (!player->isKongcheng() && source)
-				    to_give = room->askForCard(player, pattern, "@kouzhu-give", QVariant(), Card::MethodNone, source);
-				if (source && to_give)
-				{
-	                room->broadcastSkillInvoke(objectName(), 2);
-		            source->obtainCard(to_give, true);
-			        player->obtainCard(cd, true);
-				}
-				else
-				{
-					room->broadcastSkillInvoke(objectName(), 3);
-					CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
-					room->throwCard(cd, reason, NULL);
-					room->loseHp(player);
-				}
-				
-				kouzhu_list.removeOne(card_id);
-				room->broadcastInvoke("clearAG");
-				player->tag.remove("Kouzhu");
-			}
-		}
+                int card_id = kouzhu_list.last();
+                QList<int> ids;
+                ids << card_id;
+                room->fillAG(ids, NULL);
+                const Card *cd = Sanguosha->getCard(card_id);
+                QString pattern;
+                if (cd->isKindOf("BasicCard"))
+                    pattern = "BasicCard";
+                else if (cd->isKindOf("TrickCard"))
+                    pattern = "TrickCard";
+                else if (cd->isKindOf("EquipCard"))
+                    pattern = "EquipCard";
+                pattern.append("|.|.|hand");
+                const Card *to_give = NULL;
+                if (!player->isKongcheng() && source)
+                    to_give = room->askForCard(player, pattern, "@kouzhu-give", QVariant(), Card::MethodNone, source);
+                if (source && to_give)
+                {
+                    room->broadcastSkillInvoke(objectName(), 2);
+                    source->obtainCard(to_give, true);
+                    player->obtainCard(cd, true);
+                }
+                else
+                {
+                    room->broadcastSkillInvoke(objectName(), 3);
+                    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
+                    room->throwCard(cd, reason, NULL);
+                    room->loseHp(player);
+                }
+                
+                kouzhu_list.removeOne(card_id);
+                room->broadcastInvoke("clearAG");
+                player->tag.remove("Kouzhu");
+            }
+        }
         return false;
     }
 };
@@ -2416,8 +2416,8 @@ public:
         else
         {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-			if (change.who != player)
-				return false;
+            if (change.who != player)
+                return false;
 
             if (change.to == Player::Play && !player->isSkipped(change.to) && player->askForSkillInvoke(objectName()))
             {

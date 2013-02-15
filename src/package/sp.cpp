@@ -61,7 +61,7 @@ public:
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
         if (data.value<PlayerStar>() == player && player->getPhase() == Player::Start
-			&& player->askForSkillInvoke(objectName()))
+            && player->askForSkillInvoke(objectName()))
         {
             ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), objectName());
             

@@ -1109,7 +1109,7 @@ public:
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         if (data.value<PlayerStar>() == player && player->getPhase() == Player::Start
-			&& player->askForSkillInvoke(objectName()))
+            && player->askForSkillInvoke(objectName()))
         {
             player->turnOver();
             QList<ServerPlayer *> targets;
@@ -1284,7 +1284,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *splayer, QVariant &data) const{
-		ServerPlayer *player = data.value<PlayerStar>();
+        ServerPlayer *player = data.value<PlayerStar>();
         if(player->getPhase() != Player::Play)
             return false;
 
@@ -1776,8 +1776,8 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-		if (data.value<PlayerStar>() != player)
-			return false;
+        if (data.value<PlayerStar>() != player)
+            return false;
 
         if (player->getPhase() == Player::RoundStart && !player->tag.value("ThDongxi").toString().isEmpty())
         {
@@ -1856,11 +1856,11 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
         if (triggerEvent == EventPhaseChanging)
-		{
-			PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-			if (change.who != player || change.to != Player::RoundEnd)
-				return false;
-		}
+        {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.who != player || change.to != Player::RoundEnd)
+                return false;
+        }
         if (triggerEvent == Death && data.value<DeathStruct>().who != player)
             return false;
 
@@ -1940,14 +1940,14 @@ public:
     }
     
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
-		ServerPlayer *player = NULL;
-		if (triggerEvent != EventPhaseChanging)
-			player = data.value<PlayerStar>();
-		else
-			player = data.value<PhaseChangeStruct>().who;
-		
-		if (player == NULL)
-			return false;
+        ServerPlayer *player = NULL;
+        if (triggerEvent != EventPhaseChanging)
+            player = data.value<PlayerStar>();
+        else
+            player = data.value<PhaseChangeStruct>().who;
+        
+        if (player == NULL)
+            return false;
 
         if (triggerEvent == EventPhaseEnd && player->hasSkill("thxinhuav"))
             room->detachSkillFromPlayer(player, "thxinhuav", true);
