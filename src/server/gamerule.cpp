@@ -191,8 +191,8 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
     case CardUsed: {
             if(data.canConvert<CardUseStruct>()){
                 CardUseStruct card_use = data.value<CardUseStruct>();
-				if (card_use.from != player)
-					break;
+                if (card_use.from != player)
+                    break;
 
                 const Card *card = card_use.card;
                 RoomThread *thread = room->getThread();
@@ -832,8 +832,8 @@ bool HulaoPassMode::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer 
                     }
     case CardUsed:{
         CardUseStruct use = data.value<CardUseStruct>();
-		if (use.from != player)
-			break;
+        if (use.from != player)
+            break;
         if(use.card->isKindOf("Weapon")
            && (player->isCardLimited(use.card, Card::MethodUse) || player->askForSkillInvoke("weapon_recast", data))){
             CardMoveReason reason(CardMoveReason::S_REASON_RECAST, player->objectName());

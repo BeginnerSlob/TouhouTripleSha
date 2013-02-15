@@ -1702,8 +1702,8 @@ public:
             return false;
         if (triggerEvent == CardUsed) {
             CardUseStruct use = data.value<CardUseStruct>();
-			if (use.from != player || !player->hasFlag("jieyouUsed"))
-				return false;
+            if (use.from != player || !player->hasFlag("jieyouUsed"))
+                return false;
             if (use.card->isKindOf("Slash")) {
                 room->setPlayerFlag(player, "-jieyouUsed");
                 room->setCardFlag(use.card, "jieyou-slash");

@@ -23,22 +23,22 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         const Card *card;
-		ServerPlayer *target;
-		ServerPlayer *current = room->getCurrent();
-		if (triggerEvent == CardResponding)
-		{
-			if (current->isDead() || !current->hasSkill(objectName()) || player == current)
-				return false;
-            card = data.value<CardResponseStruct>().m_card;
-			target = player;
-		}
-		else if (triggerEvent == CardUsed && TriggerSkill::triggerable(player))
+        ServerPlayer *target;
+        ServerPlayer *current = room->getCurrent();
+        if (triggerEvent == CardResponding)
         {
-			CardUseStruct use = data.value<CardUseStruct>();
-			if (player != current || use.from == player || use.card->isKindOf("Nullification"))
-				return false;
+            if (current->isDead() || !current->hasSkill(objectName()) || player == current)
+                return false;
+            card = data.value<CardResponseStruct>().m_card;
+            target = player;
+        }
+        else if (triggerEvent == CardUsed && TriggerSkill::triggerable(player))
+        {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (player != current || use.from == player || use.card->isKindOf("Nullification"))
+                return false;
             card = use.card;
-			target = use.from;
+            target = use.from;
         }
 
         QString pattern = card->objectName();

@@ -300,6 +300,14 @@ struct RecoverStruct{
     const Card *card;
 };
 
+struct RecoveredStruct{
+    RecoveredStruct();
+
+    int recover;
+    ServerPlayer *source, *target;
+    const Card *card;
+};
+
 struct PindianStruct{
     PindianStruct();
     bool isSuccess() const;
@@ -515,6 +523,7 @@ Q_DECLARE_METATYPE(PlayerStar)
 Q_DECLARE_METATYPE(DyingStruct)
 Q_DECLARE_METATYPE(DeathStruct)
 Q_DECLARE_METATYPE(RecoverStruct)
+Q_DECLARE_METATYPE(RecoveredStruct)
 Q_DECLARE_METATYPE(JudgeStar)
 Q_DECLARE_METATYPE(DamageStar)
 Q_DECLARE_METATYPE(PindianStar)

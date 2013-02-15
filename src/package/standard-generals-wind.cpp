@@ -1244,7 +1244,7 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         ServerPlayer *target = damage.to;
         if(damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))
-			&& !player->isKongcheng() && !target->isKongcheng() && target != player && !damage.chain && !damage.transfer){
+            && !player->isKongcheng() && !target->isKongcheng() && target != player && !damage.chain && !damage.transfer){
             if(room->askForSkillInvoke(player, objectName(), data)){
                 room->broadcastSkillInvoke(objectName(), 1);
 

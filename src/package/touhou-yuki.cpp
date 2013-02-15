@@ -131,25 +131,25 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
         const Card *trigger_card;
-		ServerPlayer *trigger_player = NULL;
+        ServerPlayer *trigger_player = NULL;
         if (triggerEvent == CardUsed && TriggerSkill::triggerable(player))
-		{
-			CardUseStruct use = data.value<CardUseStruct>();
-			if (!use.from || use.from->getKingdom() != "wu")
-				return false;
-			trigger_card = use.card;
-			trigger_player = use.from;
-		}
+        {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (!use.from || use.from->getKingdom() != "wu")
+                return false;
+            trigger_card = use.card;
+            trigger_player = use.from;
+        }
         else if (triggerEvent == CardResponded)
-		{
-			CardResponseStruct resp = data.value<CardResponseStruct>();
-			if (player->getKingdom() != "wu" || !resp.m_isUse)
-				return false;
-			trigger_card = resp.m_card;
-			trigger_player = player;
-		}
-		else
-			return false;
+        {
+            CardResponseStruct resp = data.value<CardResponseStruct>();
+            if (player->getKingdom() != "wu" || !resp.m_isUse)
+                return false;
+            trigger_card = resp.m_card;
+            trigger_player = player;
+        }
+        else
+            return false;
 
         if (trigger_card == NULL)
             return false;
@@ -261,7 +261,7 @@ public:
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         CardUseStruct use = data.value<CardUseStruct>();
-		if (use.from == player && use.card->isKindOf("Analeptic"))
+        if (use.from == player && use.card->isKindOf("Analeptic"))
         {
             LogMessage log;
             log.type = "#TriggerSkill";
@@ -615,8 +615,8 @@ public:
             if (triggerEvent == CardUsed)
             {
                 CardUseStruct use = data.value<CardUseStruct>();
-				if (use.from != player)
-					return false;
+                if (use.from != player)
+                    return false;
                 usecard = use.card;
             }
             else if (triggerEvent == CardResponded)
@@ -880,7 +880,7 @@ public:
         if (triggerEvent == CardUsed && player->getMark(objectName()) == 0)
         {
             CardUseStruct use = data.value<CardUseStruct>();
-			if (use.from == player && player->getPhase() == Player::Play && use.m_reason == CardUseStruct::CARD_USE_REASON_PLAY
+            if (use.from == player && player->getPhase() == Player::Play && use.m_reason == CardUseStruct::CARD_USE_REASON_PLAY
                 && use.card->getTypeId() != Card::TypeSkill && player->askForSkillInvoke(objectName()))
             {
                 room->setPlayerMark(player, objectName(), 1);
@@ -1207,6 +1207,8 @@ public:
             }
         } else if(triggerEvent == Damaged) {
             DamageStruct damage = data.value<DamageStruct>();
+            if (damage.to != player)
+                return false;
             ServerPlayer *source = damage.from;
             if (source && source != player) {
                 room->broadcastSkillInvoke(objectName(), qrand() % 2 + 3);
