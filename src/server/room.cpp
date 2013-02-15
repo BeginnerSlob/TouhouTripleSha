@@ -4115,7 +4115,7 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
             }
 
             int card_num = dummy->subcardsLength();
-            if (card_num <= min_num) {
+            if (card_num <= discard_num) { // @todo_Slob: I think min_num is the most useless opition.
                 if (card_num > 0) {
                     CardMoveReason movereason;
                     movereason.m_playerId = player->objectName();

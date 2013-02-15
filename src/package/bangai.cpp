@@ -171,30 +171,34 @@ public:
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->isAlive() && target->getMark("@yaoshu") > 0;
+        return target != NULL && target->isAlive();
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-        if (!splayer)
-            return false;
-        
-        if (triggerEvent == DamageCaused)
+        ServerPlayer *owner = NULL;
+		if (triggerEvent == DamageCaused)
         {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.to != splayer || player == splayer)
+            if (damage.from->getMark("@yaoshu") <= 0 || !damage.to->hasSkill(objectName()) || damage.from == damage.to)
                 return false;
+			else
+				owner = damage.to;
         }
         else if (triggerEvent == Dying && TriggerSkill::triggerable(player))
-            if (data.value<DyingStruct>().who == player)
+		{
+			DyingStruct dying = data.value<DyingStruct>();
+            if (dying.who == player || dying.who->getMark("@yaoshu") <= 0)
                 return false;
+			else
+				owner = player;
+		}
 
-        if(splayer->askForSkillInvoke(objectName()))
+        if(owner && owner->askForSkillInvoke(objectName()))
         {
-            splayer->turnOver();
-            room->moveCardTo(player->wholeHandCards(), splayer, Player::PlaceHand);
+            owner->turnOver();
+            room->moveCardTo(player->wholeHandCards(), owner, Player::PlaceHand);
             player->loseAllMarks("@yaoshu");
-            splayer->gainMark("@yaoshu");
+            owner->gainMark("@yaoshu");
         }
 
         return false;
@@ -222,7 +226,7 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         CardUseStruct use = data.value<CardUseStruct>();
-        if (!use.card->isKindOf("Slash"))
+        if (use.from != player || !use.card->isKindOf("Slash"))
             return false;
 
         if (triggerEvent == CardUsed)
@@ -685,12 +689,8 @@ public:
         events << CardUsed << EventPhaseChanging;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const {
-        return target != NULL;
-    }
-
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == EventPhaseChanging && TriggerSkill::triggerable(player))
+        if (triggerEvent == EventPhaseChanging)
         {
             PhaseChangeStruct change =  data.value<PhaseChangeStruct>();
             if (change.to == Player::Play)
@@ -698,24 +698,23 @@ public:
         }
         else if (triggerEvent == CardUsed)
         {
-            ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-            if (!splayer || player->getPhase() != Player::Play)
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (!use.from || use.from->getPhase() != Player::Play)
                 return false;
 
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("Slash") && room->askForCard(splayer, ".black", "@thhuilun", QVariant(), objectName()))
+            if (use.card->isKindOf("Slash") && room->askForCard(player, ".black", "@thhuilun", QVariant(), objectName()))
             {
                 LogMessage log;
                 log.type = "#ThHuilun";
-                log.from = splayer;
-                log.to << player;
+                log.from = player;
+				log.to << use.from;
                 log.arg = objectName();
                 log.arg2 = use.card->objectName();
                 room->sendLog(log);
 
-                room->setPlayerMark(player, "thhuilun", player->getMark("thhuilun") + 1);
+                room->setPlayerMark(use.from, "thhuilun", use.from->getMark("thhuilun") + 1);
                 if (use.card->isRed())
-                    splayer->drawCards(1);
+                    player->drawCards(1);
             }
         }
 

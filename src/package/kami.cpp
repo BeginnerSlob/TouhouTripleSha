@@ -1010,10 +1010,10 @@ public:
         if (splayer == NULL || splayer == player || splayer->isKongcheng())
             return false;
 
-        if (triggerEvent == CardUsed)
+        if (triggerEvent == CardUsed && TriggerSkill::triggerable(player))
         {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (!use.card->isKindOf("GodSalvation") && !use.card->isKindOf("AmazingGrace"))
+            if (use.from == player || (!use.card->isKindOf("GodSalvation") && !use.card->isKindOf("AmazingGrace")))
                 return false;
         }
         else if (triggerEvent == HpRecovered)

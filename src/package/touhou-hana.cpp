@@ -22,28 +22,31 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-        ServerPlayer *current = room->getCurrent();
-
-        if (current->isDead() || !splayer || player == splayer || splayer != current)
-            return false;
-
         const Card *card;
-        if (triggerEvent == CardResponding)
+		ServerPlayer *target;
+		ServerPlayer *current = room->getCurrent();
+		if (triggerEvent == CardResponding)
+		{
+			if (current->isDead() || !current->hasSkill(objectName()) || player == current)
+				return false;
             card = data.value<CardResponseStruct>().m_card;
-        else if (triggerEvent == CardUsed)
+			target = player;
+		}
+		else if (triggerEvent == CardUsed && TriggerSkill::triggerable(player))
         {
-            card = data.value<CardUseStruct>().card;
-            if (card->isKindOf("Nullification"))
-                return false;
+			CardUseStruct use = data.value<CardUseStruct>();
+			if (player != current || use.from == player || use.card->isKindOf("Nullification"))
+				return false;
+            card = use.card;
+			target = use.from;
         }
 
         QString pattern = card->objectName();
         if (pattern.contains("slash"))
             pattern = "slash";
 
-        if (room->askForCard(splayer, ".|club,heart", "@thhuajiuse", data, objectName())
-            && !room->askForCard(player, pattern, "@thhuaji:::" + pattern, QVariant(), Card::MethodDiscard))
+        if (room->askForCard(current, ".|club,heart", "@thhuajiuse", data, objectName())
+            && !room->askForCard(target, pattern, "@thhuaji:::" + pattern, QVariant(), Card::MethodDiscard))
         {
             return true;
         }

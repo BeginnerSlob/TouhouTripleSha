@@ -1252,7 +1252,7 @@ public:
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         if(triggerEvent == CardUsed){
             CardUseStruct use = data.value<CardUseStruct>();
-            if(use.card->getSkillName() == "jiushi")
+            if(use.from == player && use.card->getSkillName() == "jiushi")
                 player->turnOver();
         }else if(triggerEvent == PreHpReduced){
             player->tag["PredamagedFace"] = player->faceUp();
@@ -1794,7 +1794,7 @@ public: // sishi
 class Jilve: public TriggerSkill {
 public:
     Jilve(): TriggerSkill("jilve") {
-        events << CardUsed << CardResponded // huiquan
+        events << CardUsed // huiquan
                << CardsMoveOneTime // xijing
                << EventPhaseStart; // yuxi
         view_as_skill = new JilveViewAsSkill;
@@ -1805,15 +1805,11 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == CardUsed || triggerEvent == CardResponded)
+        if (triggerEvent == CardUsed)
         {
-            CardStar card = NULL;
-            if (triggerEvent == CardUsed)
-                card = data.value<CardUseStruct>().card;
-            else
-                card = data.value<CardResponseStruct>().m_card;
+            CardUseStruct use = data.value<CardUseStruct>();
 
-            if (card->isNDTrick() && player->askForSkillInvoke("huiquan", data))
+            if (use.from == player && use.card->isNDTrick() && player->askForSkillInvoke("huiquan", data))
             {
                 player->loseMark("@tianjia");
                 player->drawCards(1);

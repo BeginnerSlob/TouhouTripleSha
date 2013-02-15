@@ -15,7 +15,6 @@
 class Huichun: public OneCardViewAsSkill{
 public:
     Huichun():OneCardViewAsSkill("huichun"){
-
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
@@ -192,7 +191,7 @@ public:
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         CardUseStruct use = data.value<CardUseStruct>();
 
-        if(use.card && use.card->getSkillName() == "wudi")
+        if(use.from == player && use.card->getSkillName() == "wudi")
             room->setPlayerFlag(player, "wudiused");
 
         return false;
@@ -238,7 +237,9 @@ void MoyuCard::onUse(Room *room, const CardUseStruct &card_use) const{
     QVariant data = QVariant::fromValue(card_use);
     RoomThread *thread = room->getThread();
 
-    thread->trigger(CardUsed, room, player, data);
+    foreach(ServerPlayer *p, room->getAllPlayers())
+		if (thread->trigger(CardUsed, room, p, data))
+			break;
 
     thread->trigger(CardFinished, room, player, data);
 
@@ -2263,19 +2264,20 @@ class Wumou: public TriggerSkill{
 public:
     Wumou(): TriggerSkill("wumou"){
         frequency = Compulsory;
-        events << CardUsed << CardResponded;
+        events << CardUsed;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        CardStar card = NULL;
-        if(triggerEvent == CardUsed){
-            CardUseStruct use = data.value<CardUseStruct>();
-            card = use.card;
-        }else if(triggerEvent == CardResponded)
-            card = data.value<CardResponseStruct>().m_card;
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        CardUseStruct use = data.value<CardUseStruct>();
 
-        if(card->isNDTrick()){
+        if(use.from == player && use.card->isNDTrick()){
             room->broadcastSkillInvoke(objectName());
+
+			LogMessage log;
+			log.type = "#TriggerSkill";
+			log.from = player;
+			log.arg = objectName();
+			room->sendLog(log);
 
             int num = player->getMark("@mailun");
             if(num >= 1 && room->askForChoice(player, objectName(), "discard+losehp") == "discard"){
