@@ -310,7 +310,8 @@ public:
             return false;
 
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))
+        if (damage.from && damage.from == player
+            && damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))
             && !damage.transfer && !damage.chain
             && room->askForCard(player, "Peach,Analeptic,EquipCard", "@thkuangqi", data, objectName()))
         {

@@ -554,7 +554,7 @@ public:
 
 class WuhuaGivenSkill: public TriggerSkill {
 public:
-	WuhuaGivenSkill(): TriggerSkill("#wuhua") {
+    WuhuaGivenSkill(): TriggerSkill("#wuhua") {
         events << Damage << DamageDone;
         attached_lord_skill = true;
     }

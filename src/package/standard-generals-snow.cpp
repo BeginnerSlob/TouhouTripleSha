@@ -1734,7 +1734,9 @@ public:
             return dying.who->getHp() > 0;
         } else if(triggerEvent == DamageCaused) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.card && damage.card->isKindOf("Slash") && damage.card->hasFlag("jieyou-slash")) {
+            if (damage.from && damage.from == player && damage.card && damage.card->isKindOf("Slash")
+                && damage.card->hasFlag("jieyou-slash"))
+            {
                 LogMessage log2;
                 log2.type = "#JieyouPrevent";
                 log2.from = player;

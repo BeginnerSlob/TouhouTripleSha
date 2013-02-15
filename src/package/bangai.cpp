@@ -172,21 +172,17 @@ public:
         view_as_skill = new ThShoujuanViewAsSkill;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->isAlive();
-    }
-
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         ServerPlayer *owner = NULL;
         if (triggerEvent == DamageCaused)
         {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.from->getMark("@yaoshu") <= 0 || !damage.to->hasSkill(objectName()) || damage.from == damage.to)
+            if (!damage.from || damage.from->getMark("@yaoshu") <= 0 || !damage.to->hasSkill(objectName()) || damage.from == damage.to)
                 return false;
             else
                 owner = damage.to;
         }
-        else if (triggerEvent == Dying && TriggerSkill::triggerable(player))
+        else if (triggerEvent == Dying)
         {
             DyingStruct dying = data.value<DyingStruct>();
             if (dying.who == player || dying.who->getMark("@yaoshu") <= 0)

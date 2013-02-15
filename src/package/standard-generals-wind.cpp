@@ -1353,16 +1353,12 @@ public:
         frequency = Compulsory;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
         if(damage.card && damage.card->getTypeId() == Card::TypeTrick){
-            if((triggerEvent == DamageInflicted && player->hasSkill(objectName()))
-                    || (triggerEvent == DamageCaused && damage.from && damage.from->isAlive() 
-                    && damage.from->hasSkill(objectName()))) {
+            if((triggerEvent == DamageInflicted)
+                    || (triggerEvent == DamageCaused && damage.from && damage.from == player))
+            {
                 LogMessage log;
                 log.type = "#Mitu";
                 log.from = player;
@@ -1446,8 +1442,12 @@ public:
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
 
-        if (player->distanceTo(damage.to) <= 2 && damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))
-            && !damage.chain && !damage.transfer && player->askForSkillInvoke(objectName(), data)){
+        if (damage.from && damage.from == player
+            && player->distanceTo(damage.to) <= 2
+            && damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))
+            && !damage.chain && !damage.transfer
+            && player->askForSkillInvoke(objectName(), data))
+        {
             room->broadcastSkillInvoke(objectName(), 1);
             JudgeStruct judge;
             judge.pattern = QRegExp("(.*):(heart):(.*)");
