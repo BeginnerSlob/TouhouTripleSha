@@ -271,7 +271,7 @@ public:
         judge.pattern = QRegExp("(.*):(spade|club):(.*)");
         judge.good = false;
         judge.reason = objectName();
-        judge.who = player;
+        judge.who = damage.to;
 
         room->judge(judge);
         if(judge.isBad()) {
@@ -291,25 +291,18 @@ public:
         events << FinishJudge;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         JudgeStar judge = data.value<JudgeStar>();
         if(!judge->card->isRed())
             return false;
 
-        if(player->isDead())
-            return false;
-        
-        ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-        if(splayer == NULL || player == splayer || splayer->isKongcheng() || splayer == room->getCurrent())
+        if (judge->who->isDead() || player == judge->who
+            || player->isKongcheng() || player == room->getCurrent())
             return false;
 
-        room->setPlayerFlag(splayer, "ThHongyeUse");
-        room->askForUseSlashTo(splayer, player, "@thhongye");
-        room->setPlayerFlag(splayer, "-ThHongyeUse");
+        room->setPlayerFlag(player, "ThHongyeUse");
+        room->askForUseSlashTo(player, judge->who, "@thhongye");
+        room->setPlayerFlag(player, "-ThHongyeUse");
 
         return false;
     }
@@ -909,17 +902,23 @@ public:
 
 class ThTiandi:public TriggerSkill{
 public:
-    ThTiandi():TriggerSkill("thtiandi"){
+    ThTiandi(): TriggerSkill("thtiandi"){
         frequency = Frequent;
         events << TargetConfirming;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        CardUseStruct use=data.value<CardUseStruct>();
-        if(!use.card->isKindOf("Slash"))
+        ServerPlayer *target = NULL;
+        foreach (ServerPlayer *p, room->getAllPlayers())
+            if (p->getMark("TargetConfirming"))
+            {
+                target = p;
+                break;
+            }
+        if (!target || target != player)
             return false;
-
-        if(player->askForSkillInvoke(objectName()))
+        CardUseStruct use = data.value<CardUseStruct>();
+        if(use.card->isKindOf("Slash") && player->askForSkillInvoke(objectName()))
             player->drawCards(1);
 
         return false;
@@ -1350,16 +1349,11 @@ public:
         events << CardFinished;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         CardUseStruct use = data.value<CardUseStruct>();
-        ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-        if(use.from != splayer && use.to.contains(splayer) && use.card->isKindOf("Slash")
-                && splayer->askForSkillInvoke(objectName()))
-            splayer->addToPile("dasuipile", use.card);
+        if(use.from != player && use.to.contains(player) && use.card->isKindOf("Slash")
+                && player->askForSkillInvoke(objectName()))
+            player->addToPile("dasuipile", use.card);
 
         return false;
     }
@@ -1556,10 +1550,12 @@ public:
 
         RoomThread *thread=room->getThread();
         QVariant new_data = QVariant::fromValue((CardEffectStruct)effect);
-        room->setTag("SkipGameRule", true);
-        bool avoid = thread->trigger(CardEffected, room, effect.to, new_data);
-        if(avoid)
-            return true;
+        foreach (ServerPlayer *p, room->getAllPlayers())
+        {
+            room->setTag("SkipGameRule", true);
+            if (thread->trigger(CardEffected, room, p, new_data))
+                return true;
+        }
 
         bool canceled = room->isCanceled(effect);
         if(!canceled) {
@@ -1658,8 +1654,17 @@ public:
             return false;
 
         Room *room = Sanguosha->currentRoom();
-        ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-        foreach(const Player *p, room->getAllPlayers())
+        ServerPlayer *splayer = NULL;
+        foreach (ServerPlayer *p, room->getAllPlayers())
+            if (p->getMark("filtering") > 0)
+            {
+                splayer = p;
+                break;
+            }
+        if (splayer == NULL)
+            return false;
+
+        foreach(ServerPlayer *p, room->getAllPlayers())
             if (splayer->getHpPoints() > p->getHpPoints())
                 return true;
 
@@ -1686,9 +1691,9 @@ public:
         return target != NULL;
     }
 
-    virtual bool trigger(TriggerEvent , Room* room, ServerPlayer *player, QVariant &data) const{
-        ServerPlayer *p = room->findPlayerBySkillName("thhere");
-        room->filterCards(p, p->getCards("he"), true);
+    virtual bool trigger(TriggerEvent , Room* room, ServerPlayer *, QVariant &data) const{
+        foreach (ServerPlayer *p, room->findPlayersBySkillName("thhere"))
+            room->filterCards(p, p->getCards("he"), true);
         return false;
     }
 };

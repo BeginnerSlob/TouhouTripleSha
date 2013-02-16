@@ -380,7 +380,8 @@ void Room::judge(JudgeStruct &judge_struct){
 
     thread->trigger(FinishRetrial, this, judge_star->who, data);
 
-    thread->trigger(FinishJudge, this, judge_star->who, data);
+    foreach (ServerPlayer *p, getAllPlayers())
+        thread->trigger(FinishJudge, this, p, data);
 }
 
 void Room::sendJudgeResult(const JudgeStar judge){
@@ -1204,7 +1205,8 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
                 card_use.from = player;
                 if (to) card_use.to << to;
                 QVariant data2 = QVariant::fromValue(card_use);
-                thread->trigger(CardFinished, this, player, data2);
+                foreach (ServerPlayer *p, getAllPlayers())
+                    thread->trigger(CardFinished, this, p, data2);
             }
         }
         return cancelled ? NULL : card;
@@ -1446,15 +1448,17 @@ void Room::setPlayerFlag(ServerPlayer *player, const QString &flag){
 void Room::setPlayerProperty(ServerPlayer *player, const char *property_name, const QVariant &value){
     player->setProperty(property_name, value);
     broadcastProperty(player, property_name);
+    QVariant data = QVariant::fromValue((PlayerStar)player);
 
     if(strcmp(property_name, "hp") == 0)
-        thread->trigger(HpChanged, this, player);
+        thread->trigger(HpChanged, this, player, data);
 
     if(strcmp(property_name, "maxhp") == 0)
-        thread->trigger(MaxHpChanged, this, player);
+        thread->trigger(MaxHpChanged, this, player, data);
 
     if (strcmp(property_name, "chained") == 0)
-        thread->trigger(ChainStateChanged, this, player);
+        foreach (ServerPlayer *p, getAllPlayers())
+            thread->trigger(ChainStateChanged, this, p, data);
 }
 
 void Room::setPlayerMark(ServerPlayer *player, const QString &mark, int value){
@@ -1631,11 +1635,10 @@ QList<ServerPlayer *>Room::findPlayersBySkillName(const QString &skill_name, boo
 }
 
 ServerPlayer *Room::findPlayerBySkillName(const QString &skill_name, bool include_dead) const{
-    const QList<ServerPlayer *> &list = include_dead ? m_players :getAllPlayers();
-    foreach(ServerPlayer *player, list){
-        if(player->hasSkill(skill_name))
+    const QList<ServerPlayer *> &list = include_dead ? m_players : getAllPlayers();
+    foreach (ServerPlayer *player, list)
+        if (player->hasSkill(skill_name))
             return player;
-    }
 
     return NULL;
 }
@@ -2818,7 +2821,11 @@ bool Room::cardEffect(const CardEffectStruct &effect){
         if (thread->trigger(CardEffect, this, effect.from, data))
             return false;
     
-    return !thread->trigger(CardEffected, this, effect.to, data);
+    foreach (ServerPlayer *p, getAllPlayers())
+        if (thread->trigger(CardEffected, this, p, data))
+            return false;
+
+    return true;
 }
 
 bool Room::isJinkEffected(ServerPlayer *user, const Card *jink) {
@@ -2873,7 +2880,12 @@ void Room::damage(DamageStruct &damage_data){
             break;
 
         // PreHpReduced
-        prevent = thread->trigger(PreHpReduced, this, damage_data.to, data);
+        foreach (ServerPlayer *p, getAllPlayers())
+            if (thread->trigger(PreHpReduced, this, p, data))
+            {
+                prevent = true;
+                break;
+            }
         if(prevent)
             break;
 
@@ -3865,6 +3877,7 @@ void Room::changePlayerGeneral2(ServerPlayer *player, const QString &new_general
 }
 
 void Room::filterCards(ServerPlayer* player, QList<const Card *> cards, bool refilter){
+    setPlayerMark(player, "filtering", 1);
     if(refilter){
         for (int i = 0; i < cards.size(); i++)
         {
@@ -3946,6 +3959,7 @@ void Room::filterCards(ServerPlayer* player, QList<const Card *> cards, bool ref
     }
 
     delete cardChanged;
+    setPlayerMark(player, "filtering", 0);
 }
 
 void Room::acquireSkill(ServerPlayer *player, const Skill *skill, bool open){

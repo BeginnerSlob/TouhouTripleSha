@@ -96,15 +96,11 @@ public:
         frequency = Compulsory;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
     virtual bool trigger(TriggerEvent event, Room* room, ServerPlayer *player, QVariant &data) const{
         if (event == TargetConfirmed) {
             CardUseStruct use = data.value<CardUseStruct>();
             bool can_invoke = false;
-            if (use.card->isKindOf("Slash") && TriggerSkill::triggerable(use.from) && use.from == player) {
+            if (use.card->isKindOf("Slash") && use.from == player) {
                 can_invoke = true;
                 int count = 1;
                 int mark_n = player->getMark("double_jink" + use.card->toString());
@@ -115,9 +111,9 @@ public:
                 }
             }
             if (use.card->isKindOf("Duel")) {
-                if (TriggerSkill::triggerable(use.from) && use.from == player)
+                if (use.from == player)
                     can_invoke = true;
-                if (TriggerSkill::triggerable(player) && use.to.contains(player))
+                if (use.to.contains(player))
                     can_invoke = true;
             }
             if (!can_invoke) return false;
@@ -133,6 +129,8 @@ public:
                 room->setPlayerMark(player, "WushuangTarget", 1);
         } else if (event == CardFinished) {
             CardUseStruct use = data.value<CardUseStruct>();
+            if (use.from != player)
+                return false;
             if (use.card->isKindOf("Slash")) {
                 if (player->hasSkill(objectName()))
                     room->setPlayerMark(player, "double_jink" + use.card->toString(), 0);
@@ -241,8 +239,8 @@ void MoyuCard::onUse(Room *room, const CardUseStruct &card_use) const{
         if (thread->trigger(CardUsed, room, p, data))
             break;
 
-    thread->trigger(CardFinished, room, player, data);
-
+    foreach(ServerPlayer *p, room->getAllPlayers())
+        thread->trigger(CardFinished, room, p, data);
 }
 
 void MoyuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
@@ -405,7 +403,7 @@ public:
             }
         }else if(triggerEvent == FinishJudge){
             JudgeStar judge = data.value<JudgeStar>();
-            if(judge->reason == "shuangniang"){
+            if(judge->who == shuangxiong && judge->reason == "shuangniang"){
                 shuangxiong->obtainCard(judge->card);
                 return true;
             }
@@ -503,7 +501,7 @@ public:
                     }
                 }
             }
-        } else if(event == CardFinished) {
+        } else if(event == CardFinished && TriggerSkill::triggerable(player)) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("Slash"))
                 room->setPlayerMark(use.from, "double_jink" + use.card->toString(), 0);
@@ -951,6 +949,7 @@ void HuanshenDialog::popup() {
 class HuanshenBegin: public TriggerSkill {
 public:
     HuanshenBegin(): TriggerSkill("#huanshen-begin") {
+        events << EventPhaseStart;
     }
 
     virtual int getPriority() const{
@@ -961,8 +960,8 @@ public:
         return TriggerSkill::triggerable(target) && target->getPhase() == Player::RoundStart;
     }
 
-    virtual bool trigger(TriggerEvent , Room *, ServerPlayer *player, QVariant &) const{
-        if (player->askForSkillInvoke("huanshen"))
+    virtual bool trigger(TriggerEvent , Room *, ServerPlayer *player, QVariant &data) const{
+        if (data.value<PlayerStar>() == player && player->askForSkillInvoke("huanshen"))
             Huanshen::SelectSkill(player);
         return false;
     }
@@ -1724,11 +1723,16 @@ public:
         }
         else if (triggerEvent == PostHpReduced){
             int reduce = 0;
-            if (data.canConvert<DamageStruct>()) {
+            if (data.canConvert<DamageStruct>())
+            {
                 DamageStruct damage = data.value<DamageStruct>();
                 reduce = damage.damage;
-            } else
-                reduce = data.toInt();
+            }
+            else
+            {
+                ServerPlayer *who = data.value<PlayerStar>();
+                reduce = who->getMark("hplostcount");
+            }
             if (hp <= 2 && hp + reduce > 2)
                 invoke = true;
         }
@@ -1975,29 +1979,31 @@ public:
         frequency = Compulsory;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         if (triggerEvent == PostHpReduced)
         {
-            ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-            if (!splayer || player == splayer)
-                return false;
-            int losthp = qMax(splayer->getLostHp(), 1);
-            if (player->getHpPoints() < losthp)
+            ServerPlayer *victim = NULL;
+            if (data.canConvert<DamageStruct>())
+            {
+                DamageStruct damage = data.value<DamageStruct>();
+                victim = damage.to;
+            }
+            else
+                victim = data.value<PlayerStar>();
+
+            int losthp = qMax(player->getLostHp(), 1);
+            if (victim->getHpPoints() < losthp)
             {
                 LogMessage log;
                 log.type = "#TriggerSkill";
-                log.from = splayer;
+                log.from = player;
                 log.arg = objectName();
                 room->sendLog(log);
 
-                splayer->drawCards(1);
+                player->drawCards(1);
             }
         }
-        else if (TriggerSkill::triggerable(player))
+        else
         {
             LogMessage log;
             log.type = "#TriggerSkill";
@@ -2054,9 +2060,9 @@ public:
             room->throwCard(disc, effect.from, effect.to);
             room->setPlayerMark(effect.to, objectName() + effect.slash->toString(),
                                 effect.to->getMark(objectName() + effect.slash->toString()) - 1);
-        } else if (triggerEvent == CardFinished) {
+        } else if (triggerEvent == CardFinished && TriggerSkill::triggerable(player)) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (!use.card->isKindOf("Slash"))
+            if (use.from != player || !use.card->isKindOf("Slash"))
                 return false;
             foreach (ServerPlayer *p, room->getAllPlayers())
                 room->setPlayerMark(p, objectName() + use.card->toString(), 0);
@@ -2418,7 +2424,7 @@ public:
         if (triggerEvent == FinishJudge)
         {
             JudgeStar judge = data.value<JudgeStar>();
-            if (judge->reason == objectName())
+            if (judge->who == player || judge->reason == objectName())
                 player->addToPile("lingcu", judge->card->getEffectiveId());
         }
         else

@@ -346,7 +346,7 @@ public:
         CardStar card = judge->card;
 
         QVariant data_card = QVariant::fromValue(card);
-        if(guojia->askForSkillInvoke(objectName(), data_card)){
+        if(judge->who == guojia || guojia->askForSkillInvoke(objectName(), data_card)){
             guojia->obtainCard(judge->card);
             room->broadcastSkillInvoke(objectName());
             room->getThread()->delay(500);
@@ -426,7 +426,7 @@ public:
 
         }else if(triggerEvent == FinishJudge){
             JudgeStar judge = data.value<JudgeStar>();
-            if(judge->reason == objectName()){
+            if(judge->who == player && judge->reason == objectName()){
                 if(judge->card->isBlack()){
                     player->obtainCard(judge->card);
                     return true;
@@ -1107,7 +1107,7 @@ public:
         JudgeStar judge = data.value<JudgeStar>();
         CardStar card = judge->card;
 
-        if(card->isBlack()){
+        if(judge->who == player && card->isBlack()){
             QList<ServerPlayer *> targets;
             foreach(ServerPlayer *p, room->getOtherPlayers(player)){
                 if(p->hasLordSkill("songwei"))
@@ -1240,7 +1240,9 @@ public:
             if(use.from == player && use.card->getSkillName() == "jiushi")
                 player->turnOver();
         }else if(triggerEvent == PreHpReduced){
-            player->tag["PredamagedFace"] = player->faceUp();
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.to == player)
+                player->tag["PredamagedFace"] = player->faceUp();
         }else if(triggerEvent == DamageComplete){
             bool faceup = player->tag.value("PredamagedFace", true).toBool();
             player->tag.remove("PredamagedFace");
@@ -1291,36 +1293,34 @@ public:
         events << TargetConfirming;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *victim, QVariant &data) const{
-        ServerPlayer *player = room->findPlayerBySkillName(objectName());
-
-        if(player == NULL)
-            return false;
-
-        if(player == victim)
-            return false;
-
-        if(player->getPhase() != Player::NotActive)
-            return false;
-
-        CardUseStruct use = data.value<CardUseStruct>();
-
-        if(use.card && use.card->isKindOf("Slash") && use.to.contains(victim) && player->inMyAttackRange(victim) && player->askForSkillInvoke(objectName())){
-            if(!room->askForCard(player, "Armor", "@piaohu")){
-                room->setPlayerProperty(victim, "chained", true);
-                room->setPlayerProperty(player, "chained", true);
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        ServerPlayer *target = NULL;
+        foreach (ServerPlayer *p, room->getAllPlayers())
+            if (p->getMark("TargetConfirming"))
+            {
+                target = p;
+                break;
             }
+        if (!target || target == player)
+            return false;
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("Slash"))
+        {
+            if (player->inMyAttackRange(target)
+                && player->askForSkillInvoke(objectName()))
+            {
+                if(!room->askForCard(player, "Armor", "@piaohu")){
+                    room->setPlayerProperty(target, "chained", true);
+                    room->setPlayerProperty(player, "chained", true);
+                }
             
-            use.to.insert(use.to.indexOf(victim), player);
-            use.to.removeOne(victim);
+                use.to.insert(use.to.indexOf(target), player);
+                use.to.removeOne(target);
 
-            data = QVariant::fromValue(use);
+                data = QVariant::fromValue(use);
 
-            return true;
+                return true;
+            }
         }
 
         return false;
@@ -1662,11 +1662,8 @@ public:
             else
                 player->tag["Hongce"] = QVariant(QString());
         } else {
-            if (!player->isAlive() || !player->hasSkill(objectName()))
-                return false;
-
             CardEffectStruct effect = data.value<CardEffectStruct>();
-            if (player->tag["Hongce"].isNull() || player->tag["Hongce"].toString() != effect.card->toString())
+            if (effect.to != player || player->tag["Hongce"].isNull() || player->tag["Hongce"].toString() != effect.card->toString())
                 return false;
 
             player->tag["Hongce"] = QVariant(QString());

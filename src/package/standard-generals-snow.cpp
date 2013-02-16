@@ -236,112 +236,43 @@ public:
     }
 };
 
-XuanhuoCard::XuanhuoCard()
-{
-}
-
-
-bool XuanhuoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if(!targets.isEmpty())
-        return false;
-
-    if(to_select->hasFlag("slash_source"))
-        return false;
-
-    CardStar slash = Self->tag["xuanhuo-card"].value<CardStar>();
-    if(!Self->canSlash(to_select, slash))
-        return false;
-
-    int card_id = subcards.first();
-    if(Self->getWeapon() && Self->getWeapon()->getId() == card_id)
-        return Self->distanceTo(to_select) <= 1;
-    else if(Self->getOffensiveHorse() && Self->getOffensiveHorse()->getId() == card_id){
-        int distance = 1;
-        if(Self->getWeapon()){
-            const Weapon *weapon = qobject_cast<const Weapon *>(Self->getWeapon()->getRealCard());
-            distance = weapon->getRange();
-        }
-        return Self->distanceTo(to_select, 1) <= distance;
-    }
-    else
-        return true;
-}
-
-void XuanhuoCard::onEffect(const CardEffectStruct &effect) const{
-    Room *room = effect.to->getRoom();
-    room->setPlayerFlag(effect.to, "xuanhuo_target");
-}
-
-class XuanhuoViewAsSkill: public OneCardViewAsSkill{
-public:
-    XuanhuoViewAsSkill():OneCardViewAsSkill("xuanhuo"){
-
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return false;
-    }
-
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        return pattern == "@@xuanhuo";
-    }
-
-    virtual bool viewFilter(const Card *) const{
-        return true;
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const{
-        XuanhuoCard *xuanhuo_card = new XuanhuoCard;
-        xuanhuo_card->addSubcard(originalCard);
-
-        return xuanhuo_card;
-    }
-};
-
 class Xuanhuo: public TriggerSkill{
 public:
     Xuanhuo():TriggerSkill("xuanhuo"){
-        view_as_skill = new XuanhuoViewAsSkill;
-
         events << TargetConfirming;
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        ServerPlayer *target = NULL;
+        foreach (ServerPlayer *p, room->getAllPlayers())
+            if (p->getMark("TargetConfirming"))
+            {
+                target = p;
+                break;
+            }
+        if (!target || target != player)
+            return false;
         CardUseStruct use = data.value<CardUseStruct>();
 
-        if(use.card && use.card->isKindOf("Slash") && use.to.contains(player) && !player->isNude() && room->alivePlayerCount() > 2){
+        if (use.card->isKindOf("Slash") && !player->isNude() && room->alivePlayerCount() > 2){
             QList<ServerPlayer *> players = room->getOtherPlayers(player);
             players.removeOne(use.from);
 
-            bool can_invoke = false;
-            foreach(ServerPlayer *p, players){
-                if(player->canSlash(p, use.card)){
-                    can_invoke = true;
-                    break;
+            QList<ServerPlayer *> victims;
+            foreach(ServerPlayer *p, players)
+                if (player->inMyAttackRange(p) && !use.from->isProhibited(p, use.card))
+                    victims << p;
+
+            if(!victims.isEmpty())
+                if (room->askForCard(player, "..", "@xuanhuo" + use.from->objectName(), QVariant(), objectName()))
+                {
+                    ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName());
+                    use.to.insert(use.to.indexOf(player), victim);
+                    use.to.removeOne(player);
+
+                    data = QVariant::fromValue(use);
+                    return true;
                 }
-            }
-
-            if(can_invoke){
-                QString prompt = "@xuanhuo:" + use.from->objectName();
-                room->setPlayerFlag(use.from, "slash_source");
-                player->tag["xuanhuo-card"] = QVariant::fromValue((CardStar)use.card);
-                if(room->askForUseCard(player, "@@xuanhuo", prompt)){
-                    player->tag.remove("xuanhuo-card");
-                    foreach(ServerPlayer *p, players){
-                        if(p->hasFlag("xuanhuo_target")){
-                            use.to.insert(use.to.indexOf(player), p);
-                            use.to.removeOne(player);
-
-                            data = QVariant::fromValue(use);
-
-                            room->setPlayerFlag(use.from, "-slash_source");
-                            room->setPlayerFlag(p, "-xuanhuo_target");
-                            return true;
-                        }
-                    }
-                }
-                player->tag.remove("xuanhuo-card");
-            }
         }
 
         return false;
@@ -1434,7 +1365,8 @@ public:
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.card && damage.card->isKindOf("Slash") && damage.card->getSkillName() == objectName())
                 damage.from->tag["LingpaoSlash"] = QVariant::fromValue(damage.card);
-        } else if (TriggerSkill::triggerable(player) && !player->tag.value("LingpaoSlash").isNull()
+        } else if (TriggerSkill::triggerable(player) && data.value<CardUseStruct>().from == player
+                   && !player->tag.value("LingpaoSlash").isNull()
                    && data.value<CardUseStruct>().card == player->tag.value("LingpaoSlash").value<CardStar>()) {
             LogMessage log;
             log.type = "#TriggerSkill";
@@ -1773,7 +1705,7 @@ public:
             return false;
         } else if (triggerEvent == CardFinished && !room->getTag("JieyouTarget").isNull()) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->hasFlag("jieyou-slash")) {
+            if (use.from == player && use.card->hasFlag("jieyou-slash")) {
                 if (!use.card->hasFlag("jieyou_success"))
                     room->setPlayerFlag(player, "jieyou_failed");
                 room->removeTag("JieyouTarget");
@@ -2321,7 +2253,6 @@ void StandardPackage::addSnowGenerals(){
     addMetaObject<ZhihengCard>();
     addMetaObject<KurouCard>();
     addMetaObject<GuidengCard>();
-    addMetaObject<XuanhuoCard>();
     addMetaObject<YuanheCard>();
     addMetaObject<YuluCard>();
     addMetaObject<LiangbanCard>();

@@ -851,7 +851,7 @@ public:
             }
         } else if (triggerEvent == CardFinished) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("Slash"))
+            if (use.from == player && use.card->isKindOf("Slash"))
                 room->setPlayerMark(player, "no_jink" + use.card->toString(), 0);
         }
 
@@ -1436,6 +1436,15 @@ public:
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         if (triggerEvent == TargetConfirming)
         {
+            ServerPlayer *target = NULL;
+            foreach (ServerPlayer *p, room->getAllPlayers())
+                if (p->getMark("TargetConfirming"))
+                {
+                    target = p;
+                    break;
+                }
+            if (!target || target != player)
+                return false;
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isNDTrick() && use.card->isBlack())
             {
@@ -1455,11 +1464,9 @@ public:
         }
         else if (triggerEvent == CardEffected)
         {
-            if (!player->isAlive() || !player->hasSkill(objectName()))
-                return false;
-
             CardEffectStruct effect = data.value<CardEffectStruct>();
-            if (player->tag["ThWuqi"].isNull() || player->tag["ThWuqi"].toString() != effect.card->toString())
+            if (effect.to != player || player->tag["ThWuqi"].isNull()
+                || player->tag["ThWuqi"].toString() != effect.card->toString())
                 return false;
 
             player->tag["ThWuqi"] = QVariant(QString());

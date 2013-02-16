@@ -525,7 +525,8 @@ void Card::onUse(Room *room, const CardUseStruct &use) const{
         if (thread->trigger(CardUsed, room, p, data))
             break;
 
-    thread->trigger(CardFinished, room, player, data);
+    foreach (ServerPlayer *p, room->getAllPlayers())
+        thread->trigger(CardFinished, room, p, data);
 }
 
 void Card::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{

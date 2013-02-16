@@ -172,7 +172,7 @@ public:
             }
         }else if(triggerEvent == CardEffected){
             CardEffectStruct effect = data.value<CardEffectStruct>();
-            if(effect.card->isKindOf("AOE")){
+            if (effect.to == player && effect.card->isKindOf("AOE")){
                 room->setEmotion(player, "armor/vine");
                 LogMessage log;
                 log.from = player;
@@ -370,13 +370,9 @@ void IronChain::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
 }
 
 void IronChain::onEffect(const CardEffectStruct &effect) const{
-    effect.to->setChained(!effect.to->isChained());
-
     Room *room = effect.to->getRoom();
-
-    room->broadcastProperty(effect.to, "chained");
     room->setEmotion(effect.to, "chain");
-    room->getThread()->trigger(ChainStateChanged, room, effect.to);
+    room->setPlayerProperty(effect.to, "chained", !effect.to->isChained());
 }
 
 SupplyShortage::SupplyShortage(Card::Suit suit, int number)

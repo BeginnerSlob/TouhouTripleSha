@@ -816,7 +816,10 @@ public:
         frequency = Frequent;
     }
     
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &) const{
+    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        if (triggerEvent == ChainStateChanged && data.value<PlayerStar>() != player)
+            return false;
+
         if (player->askForSkillInvoke(objectName()))
             player->drawCards(1);
 
