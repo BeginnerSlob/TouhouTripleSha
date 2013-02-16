@@ -1726,11 +1726,15 @@ public:
             if (data.canConvert<DamageStruct>())
             {
                 DamageStruct damage = data.value<DamageStruct>();
+                if (damage.to != player)
+                    return false;
                 reduce = damage.damage;
             }
             else
             {
                 ServerPlayer *who = data.value<PlayerStar>();
+                if (who != player)
+                    return false;
                 reduce = who->getMark("hplostcount");
             }
             if (hp <= 2 && hp + reduce > 2)
