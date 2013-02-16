@@ -8,6 +8,7 @@
 #include "ui_mainwindow.h"
 #include "scenario-overview.h"
 #include "window.h"
+#include "audio.h"
 #include "halldialog.h"
 #include "pixmapanimation.h"
 #include "record-analysis.h"
@@ -86,6 +87,22 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionAbout_Qt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
     StartScene *start_scene = new StartScene;
+
+#ifdef AUDIO_SUPPORT
+
+    if(!Config.EnableBgMusic)
+        return;
+
+    // start playing background music
+    QString bgm = "audio/bgm/main.ogg";
+    if(QFile::exists(bgm))
+    {
+        Audio::stopBGM();
+        Audio::playBGM(bgm);
+        Audio::setBGMVolume(Config.BGMVolume);
+    }
+
+#endif
 
     QList<QAction*> actions;
     actions << ui->actionStart_Game
