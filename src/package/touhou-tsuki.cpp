@@ -43,7 +43,8 @@ public:
                 doSuoming(room, player);
             }
         }
-        else if (triggerEvent == ChainStateChanged && player->isChained() && player->askForSkillInvoke(objectName()))
+        else if (triggerEvent == ChainStateChanged && data.value<PlayerStar>() == player
+                 && player->isChained() && player->askForSkillInvoke(objectName()))
             doSuoming(room, player);
         else if (triggerEvent == TurnedOver && player->askForSkillInvoke(objectName()))
             doSuoming(room, player);
@@ -78,7 +79,7 @@ public:
             }
         }else if(triggerEvent == CardEffected){
             CardEffectStruct effect = data.value<CardEffectStruct>();
-            if(effect.card->isKindOf("Duel")){
+            if(effect.to == player && effect.card->isKindOf("Duel")){
                 LogMessage log;
                 log.from = player;
                 log.type = "#ThChiwu";
@@ -533,15 +534,7 @@ public:
         frequency = Frequent;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const {
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *, QVariant &data) const{
-        ServerPlayer *player = room->findPlayerBySkillName(objectName());
-        if (!player)
-            return false;
-
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &) const{
         if (player->askForSkillInvoke(objectName()))
             player->drawCards(1);
 
@@ -1252,10 +1245,6 @@ public:
         events << CardFinished;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const {
-        return target != NULL;
-    }
-
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         QString cardstr = room->getTag("ThKuangxiangCard").toString();
         if (data.value<CardUseStruct>().card->toString() == cardstr)
@@ -1264,7 +1253,7 @@ public:
                 {
                     p->removeMark("@kuangxiang");
                     if (p->isChained())
-                        room->setPlayerProperty(p, "chained" ,false);
+                        room->setPlayerProperty(p, "chained", false);
                 }
 
         return false;
@@ -1590,12 +1579,8 @@ public:
         events << CardUsed << CardEffected;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == CardUsed && TriggerSkill::triggerable(player))
+        if (triggerEvent == CardUsed)
         {
             CardUseStruct use = data.value<CardUseStruct>();
             if (!player->tag.value("ThGuixu").isNull())
@@ -1629,11 +1614,8 @@ public:
         else if (triggerEvent == CardEffected)
         {
             CardEffectStruct effect = data.value<CardEffectStruct>();
-            ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-            if (!splayer)
-                return false;
-            if (!splayer->tag.value("ThGuixu").isNull()
-                && splayer->tag.value("ThGuixu").toString() == effect.card->toString())
+            if (!player->tag.value("ThGuixu").isNull()
+                && player->tag.value("ThGuixu").toString() == effect.card->toString())
                 return true;
         }
 

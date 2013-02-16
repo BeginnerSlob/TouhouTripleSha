@@ -265,7 +265,7 @@ MasochismSkill::MasochismSkill(const QString &name)
 bool MasochismSkill::trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
     DamageStruct damage = data.value<DamageStruct>();
 
-    if(player->isAlive())
+    if(damage.to == player && player->isAlive())
         onDamaged(player, damage);
 
     return false;

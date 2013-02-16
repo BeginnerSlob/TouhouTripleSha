@@ -229,20 +229,12 @@ class Zhenhong: public TriggerSkill{
 public:
     Zhenhong():TriggerSkill("zhenhong"){
         frequency = Compulsory;
-        events << TargetConfirmed << CardFinished;
+        events << TargetConfirmed;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         CardUseStruct use = data.value<CardUseStruct>();
-
-        if(triggerEvent == CardFinished){
-            foreach(ServerPlayer *p, use.to)
-                p->removeMark("Qinggang_Armor_Nullified");
-
-            return false;
-        }
-
-        if(use.card && use.card->isKindOf("Slash") && use.card->getSuit() == Card::Diamond) {
+        if(use.from == player && use.card->isKindOf("Slash") && use.card->getSuit() == Card::Diamond) {
             LogMessage log;
             log.type = "#TriggerSkill";
             log.from = player;
@@ -499,7 +491,7 @@ public:
             }
         } else if (triggerEvent == CardFinished) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("Slash"))
+            if (use.from == player && use.card->isKindOf("Slash"))
                 room->setPlayerMark(player, "no_jink" + use.card->toString(), 0);
         }
 
@@ -590,7 +582,7 @@ public:
             }
         } else if (triggerEvent == CardFinished) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("Slash"))
+            if (use.from == player && use.card->isKindOf("Slash"))
                 room->setPlayerMark(player, "no_jink" + use.card->toString(), 0);
         }
 
@@ -605,19 +597,16 @@ public:
         events << Damage << PreHpReduced;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
 
-        if(triggerEvent == PreHpReduced && TriggerSkill::triggerable(damage.from)){
-            damage.from->tag["InvokeKuanggu"] = damage.from->distanceTo(damage.to) <= 1;
-        }else if(triggerEvent == Damage && TriggerSkill::triggerable(player)){
+        if(triggerEvent == PreHpReduced){
+            if (damage.from == player)
+                damage.from->tag["InvokeKuanggu"] = damage.from->distanceTo(damage.to) <= 1;
+        }else if(triggerEvent == Damage){
             bool invoke = player->tag.value("InvokeKuanggu", false).toBool();
             player->tag["InvokeKuanggu"] = false;
-            if(damage.to != player && invoke) {
+            if(invoke) {
                 room->broadcastSkillInvoke(objectName());
                 for(int i = 0; i < damage.damage; i++) {
 
@@ -917,8 +906,17 @@ public:
 
     virtual bool trigger(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const{
         if (event == TargetConfirming) {
+            ServerPlayer *target = NULL;
+            foreach (ServerPlayer *p, room->getAllPlayers())
+                if (p->getMark("TargetConfirming"))
+                {
+                    target = p;
+                    break;
+                }
+            if (!target || target != player)
+                return false;
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card && use.card->isKindOf("Slash")) {
+            if (use.card->isKindOf("Slash")) {
                 player->setMark("manbo", 0);
                 room->broadcastSkillInvoke(objectName());
 
@@ -935,10 +933,9 @@ public:
             }
         } else {
             SlashEffectStruct effect = data.value<SlashEffectStruct>();
-            if (player->getMark("manbo") > 0) {
+            if (player->getMark("manbo") > 0)
                 player->setMark("manbo", player->getMark("manbo") - 1);
                 return true;
-            }
         }
 
         return false;
@@ -1078,7 +1075,7 @@ public:
 
     virtual bool trigger(TriggerEvent , Room* room, ServerPlayer *player, QVariant &data) const{
         CardEffectStruct effect = data.value<CardEffectStruct>();
-        if(effect.card->isKindOf("SavageAssault")){
+        if(effect.to == player && effect.card->isKindOf("SavageAssault")){
             LogMessage log;
             log.type = "#SkillNullify";
             log.from = player;
@@ -1107,7 +1104,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if(triggerEvent == TargetConfirmed && player->hasSkill(objectName()) && player->isAlive())
+        if(triggerEvent == TargetConfirmed && TriggerSkill::triggerable(player))
         {
             CardUseStruct use = data.value<CardUseStruct>();
             if(use.card->isKindOf("SavageAssault") && !use.from->hasSkill(objectName())){
@@ -1127,7 +1124,7 @@ public:
                 damage.from = NULL;
             data = QVariant::fromValue(damage);
         }
-        else if(triggerEvent == CardFinished){
+        else if(triggerEvent == CardFinished && TriggerSkill::triggerable(player)){
             CardUseStruct use = data.value<CardUseStruct>();
             if(use.card->isKindOf("SavageAssault"))
                 room->removeTag("HuoshouSource");

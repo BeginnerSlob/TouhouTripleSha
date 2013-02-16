@@ -208,10 +208,29 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
                 if(card_use.from && !card_use.to.empty()){
                     foreach(ServerPlayer *to, card_use.to){
                         target = to;
-                        while(thread->trigger(TargetConfirming, room, target, data)){
+                        bool changed = false;
+                        room->setPlayerMark(to, "TargetComfirming", 1);
+                        foreach (ServerPlayer *p, room->getAllPlayers())
+                            if (thread->trigger(TargetConfirming, room, p, data))
+                            {
+                                changed = true;
+                                break;
+                            }
+                        room->setPlayerMark(to, "TargetComfirming", 0);
+                        while(changed){
                             CardUseStruct new_use = data.value<CardUseStruct>();
                             target = new_use.to.at(targets.indexOf(target));
                             targets = new_use.to;
+                            // trigger again
+                            changed = false;
+                            room->setPlayerMark(target, "TargetComfirming", 1);
+                            foreach (ServerPlayer *p, room->getAllPlayers())
+                                if (thread->trigger(TargetConfirming, room, p, data))
+                                {
+                                    changed = true;
+                                    break;
+                                }
+                            room->setPlayerMark(target, "TargetComfirming", 0);
                         }
                     }
                 }
@@ -229,7 +248,8 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
         }
     case CardFinished: {
             CardUseStruct use = data.value<CardUseStruct>();
-            room->clearCardFlag(use.card);
+            if (use.from == player)
+                room->clearCardFlag(use.card);
 
             break;
     }
@@ -269,8 +289,11 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
             QString str = QString("%1:%2L").arg(player->objectName()).arg(-lose);
             room->broadcastInvoke("hpChange", str);
 
-            QVariant data2 = QVariant::fromValue(lose);
-            room->getThread()->trigger(PostHpReduced, room, player, data2);
+            QVariant data2 = QVariant::fromValue((PlayerStar)player);
+            room->setPlayerMark(player, "hplostcount", lose);
+            foreach (ServerPlayer *p, room->getAllPlayers())
+                room->getThread()->trigger(PostHpReduced, room, p, data2);
+            room->setPlayerMark(player, "hplostcount", 0);
 
             break;
     }
@@ -346,6 +369,9 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
     case PreHpReduced:{
             DamageStruct damage = data.value<DamageStruct>();
 
+            if (damage.to != player)
+                return false;
+
             bool chained = player->isChained();
             if(!chained)
                 break;
@@ -379,7 +405,8 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
             room->sendDamageLog(damage);
 
             room->applyDamage(player, damage);
-            room->getThread()->trigger(PostHpReduced, room, player, data);
+            foreach (ServerPlayer *p, room->getAllPlayers())
+                room->getThread()->trigger(PostHpReduced, room, p, data);
             break;
         }
     case DamageComplete:{
@@ -428,6 +455,8 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
     case CardEffected:{
             if(data.canConvert<CardEffectStruct>()){
                 CardEffectStruct effect = data.value<CardEffectStruct>();
+                if (effect.to != player)
+                    return false;
                 // jiedao hack ==========================
                 if (effect.card->isKindOf("Collateral"))
                 {
@@ -631,6 +660,8 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
 
     case FinishJudge:{
             JudgeStar judge = data.value<JudgeStar>();
+            if (judge->who != player)
+                return false;
             room->getThread()->delay(Config.S_JUDGE_LONG_DELAY);
             if(room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge){
                 CardMoveReason reason(CardMoveReason::S_REASON_JUDGEDONE, judge->who->objectName(), QString(), judge->reason);
@@ -1075,6 +1106,8 @@ bool BasaraMode::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *pl
     case CardEffected:{
         if(player->getPhase() == Player::NotActive){
             CardEffectStruct ces = data.value<CardEffectStruct>();
+            if (ces.to != player)
+                return false;
             if(ces.card)
                 if(ces.card->isKindOf("TrickCard") ||
                         ces.card->isKindOf("Slash"))

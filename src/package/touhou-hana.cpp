@@ -387,23 +387,15 @@ public:
         events << CardEffected;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const {
-        return target != NULL;
-    }
-    
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
-        ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-        if (!splayer || splayer->isNude())
-            return false;
-
         CardEffectStruct effect = data.value<CardEffectStruct>();
-        if (!effect.card->isKindOf("Peach"))
+        if (player->isNude() || !effect.card->isKindOf("Peach"))
             return false;
 
-        if (room->askForCard(splayer, ".|.|.|.|red", "@thxuelan", data, objectName()))
+        if (room->askForCard(player, ".|.|.|.|red", "@thxuelan", data, objectName()))
         {
-            if (player->getMaxHp() <= player->getGeneralMaxHp())
-                room->setPlayerProperty(player, "maxhp", player->getMaxHp() + 1);
+            if (effect.to->getMaxHp() <= effect.to->getGeneralMaxHp())
+                room->setPlayerProperty(effect.to, "maxhp", effect.to->getMaxHp() + 1);
             return true;
         }
 
@@ -513,19 +505,19 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
-        if (triggerEvent == PreHpReduced)
+        if (triggerEvent == PreHpReduced && TriggerSkill::triggerable(player))
         {
-            if (player == NULL || damage.from == NULL || !damage.from->hasSkill(objectName()) || player->isChained()
-                || damage.nature != DamageStruct::Thunder)
+            if (damage.from != player)
+                return false;
+
+            if (damage.to->isChained() || damage.nature != DamageStruct::Thunder)
             {
                 damage.from->tag.remove("ThTingwuTarget");
             }
             else
             {
-                {
-                    ServerPlayer *target = player->getNextAlive();
-                    damage.from->tag["ThTingwuTarget"] = QVariant::fromValue(target);
-                }
+                ServerPlayer *target = damage.to->getNextAlive();
+                damage.from->tag["ThTingwuTarget"] = QVariant::fromValue(target);
             }
 
             return false;
@@ -1935,7 +1927,7 @@ public:
 class ThLiuzhen: public TriggerSkill{
 public:
     ThLiuzhen():TriggerSkill("thliuzhen"){
-        events << TargetConfirmed << PostCardEffected << SlashMissed;
+        events << TargetConfirmed << CardFinished << SlashMissed;
         view_as_skill = new ThLiuzhenViewAsSkill;
     }
 
@@ -1979,10 +1971,10 @@ public:
                     room->loseHp(player);
             }
         }
-        else if (triggerEvent == PostCardEffected)
+        else if (triggerEvent == CardFinished)
         {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.from->hasFlag("liuzhenuse"))
+            if (use.from == player && use.from->hasFlag("liuzhenuse"))
             {
                 room->setPlayerFlag(use.from, "-liuzhenuse");
                 CardUseStruct newuse;

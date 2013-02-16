@@ -709,8 +709,11 @@ void ServerPlayer::skip(Player::Phase phase){
     log.arg = phase_strings.at(index);
     room->sendLog(log);
     
-    QVariant data = QVariant::fromValue(index);
-    room->getThread()->trigger(PhaseSkipped, room, this, data);
+    QVariant data = QVariant::fromValue((PlayerStar)this);
+    room->setPlayerMark(this, "phaseskipmark", index);
+    foreach (ServerPlayer *p, room->getAllPlayers())
+        room->getThread()->trigger(PhaseSkipped, room, p, data);
+    room->setPlayerMark(this, "phaseskipmark", 0);
 }
 
 void ServerPlayer::insertPhase(Player::Phase phase){

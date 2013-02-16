@@ -60,15 +60,14 @@ bool EquipCard::isAvailable(const Player *player) const{
 }
 
 void EquipCard::onUse(Room *room, const CardUseStruct &card_use) const{
-    ServerPlayer *player = card_use.from;
-
     QVariant data = QVariant::fromValue(card_use);
     RoomThread *thread = room->getThread();
     foreach(ServerPlayer *p, room->getAllPlayers())
         if (thread->trigger(CardUsed, room, p, data))
             break;
 
-    thread->trigger(CardFinished, room, player, data);
+    foreach (ServerPlayer *p, room->getAllPlayers())
+        thread->trigger(CardFinished, room, p, data);
 }
 
 void EquipCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
@@ -247,7 +246,8 @@ void DelayedTrick::onUse(Room *room, const CardUseStruct &card_use) const{
         if (thread->trigger(CardUsed, room, p, data))
             break;
 
-    thread->trigger(CardFinished, room, card_use.from, data);
+    foreach (ServerPlayer *p, room->getAllPlayers())
+        thread->trigger(CardFinished, room, p, data);
 }
 
 void DelayedTrick::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{

@@ -104,19 +104,17 @@ public:
         frequency = Compulsory;
     }
     
-    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const    {
+    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.from != player)
+            return false;
         if (triggerEvent == TargetConfirmed)
-        {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (TriggerSkill::triggerable(use.from) && use.from == player)
-                foreach (ServerPlayer *p, use.to.toSet())
-                    p->addMark("Armor_Nullified");
-        }
+            foreach (ServerPlayer *p, use.to.toSet())
+                p->addMark("Armor_Nullified");
         else
-        {
             foreach(ServerPlayer *p,room->getAlivePlayers())
                 p->setMark("Armor_Nullified", 0);
-        }
+
         return false;
     }
 };
@@ -127,15 +125,8 @@ public:
         events << PhaseSkipped;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const {
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
-        ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-        if (!splayer || !player->isWounded())
-            return false;
-
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *splayer, QVariant &data) const {
+        ServerPlayer *player = data.value<PlayerStar>();
         if (room->askForCard(splayer, "..", "@shenshi:" + player->objectName(), data, objectName()))
         {
             LogMessage log;
@@ -194,28 +185,15 @@ public:
     ThChuangshi():TriggerSkill("thchuangshi"){
         events << CardEffected;
     }
-    
-    virtual bool triggerable(const ServerPlayer *target) const {
-        return target != NULL;
-    }
-    
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
-        ServerPlayer *splayer = room->findPlayerBySkillName(objectName());
-        if (!splayer)
-            return false;
 
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
         CardEffectStruct effect = data.value<CardEffectStruct>();
-        if (effect.from == splayer)
-            return false;
         if (!effect.card->isKindOf("Dismantlement")
             && !effect.card->isKindOf("Collateral")
             && !effect.card->isKindOf("Duel"))
             return false;
         
-        if (!splayer->inMyAttackRange(player))
-            return false;
-
-        if (splayer->askForSkillInvoke(objectName()))
+        if (player->inMyAttackRange(effect.to) && player->askForSkillInvoke(objectName()))
         {
             Slash *slash = new Slash(Card::NoSuitNoColor, 0);
             slash->setSkillName(objectName());
@@ -223,7 +201,7 @@ public:
             CardUseStruct newuse;
             newuse.card = slash;
             newuse.from = effect.from;
-            newuse.to << splayer;
+            newuse.to << player;
             room->useCard(newuse, false);
             return true;
         }
