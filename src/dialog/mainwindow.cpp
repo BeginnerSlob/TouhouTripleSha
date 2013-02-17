@@ -90,17 +90,16 @@ MainWindow::MainWindow(QWidget *parent)
 
 #ifdef AUDIO_SUPPORT
 
-    if(!Config.EnableBgMusic)
-        return;
-
-    // start playing background music
-    QString bgm = "audio/bgm/main.ogg";
-    if(QFile::exists(bgm))
-    {
-        Audio::stopBGM();
-        Audio::playBGM(bgm);
-        Audio::setBGMVolume(Config.BGMVolume);
-    }
+    if(Config.EnableBgMusic)
+	{// start playing background music
+		QString bgm = "audio/bgm/main.ogg";
+		if(QFile::exists(bgm))
+		{
+			Audio::stopBGM();
+			Audio::playBGM(bgm);
+			Audio::setBGMVolume(Config.BGMVolume);
+		}
+	}
 
 #endif
 
