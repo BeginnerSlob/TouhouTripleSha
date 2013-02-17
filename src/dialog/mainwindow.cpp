@@ -141,7 +141,7 @@ void MainWindow::restoreFromConfig(){
     According to Qt, everything is overruled by this setting...
     So just turn it off temporarily
     if(Config.AppFont != font)
-        QApplication::setFont(Config.AppFont); */
+        QApplication::setFont(Config.AppFont);*/
     if(Config.UIFont != font)
         QApplication::setFont(Config.UIFont, "QTextEdit");
 

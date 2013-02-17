@@ -1059,7 +1059,7 @@ bool Snatch::targetFilter(const QList<const Player *> &targets, const Player *to
     if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
         rangefix += 1;
 
-    if (getSkillName() == "jixi")
+    if (getSkillName() == "huanwu")
         rangefix += 1;
 
     if (Self->distanceTo(to_select, rangefix) > distance_limit)

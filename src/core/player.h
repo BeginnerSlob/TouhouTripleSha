@@ -98,6 +98,8 @@ public:
     QString getGeneral2Name() const;
     const General *getGeneral2() const;
 
+    QString getFootNoteName() const;
+
     void setState(const QString &state);
     QString getState() const;
 

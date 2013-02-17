@@ -1392,6 +1392,155 @@ public:
     }
 };
 
+MingceCard::MingceCard() {
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+void MingceCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.to->getRoom();
+    QList <ServerPlayer *> targets;
+    if (Slash::IsAvailable(effect.to)) {
+        foreach (ServerPlayer *p, room->getOtherPlayers(effect.to)) {
+            if (effect.to->canSlash(p))
+                targets << p;
+        }
+    }
+
+    ServerPlayer *target;
+    QStringList choicelist;
+    choicelist << "draw";
+    if (!targets.isEmpty() && effect.from->isAlive()) {
+        target = room->askForPlayerChosen(effect.from, targets, "mingce");
+
+        LogMessage log;
+        log.type = "#CollateralSlash";
+        log.from = effect.from;
+        log.to << target;
+        room->sendLog(log);
+
+        choicelist << "use";
+    }
+
+    effect.to->obtainCard(this);
+    QString choice = room->askForChoice(effect.to, "mingce", choicelist.join("+"));
+
+    if (choice == "use") {
+        Slash *slash = new Slash(Card::NoSuitNoColor, 0);
+        slash->setSkillName("mingce");
+        CardUseStruct card_use;
+        card_use.from = effect.to;
+        card_use.to << target;
+        card_use.card = slash;
+        room->useCard(card_use, false);
+    } else if (choice == "draw") {
+        effect.to->drawCards(1);
+    }
+}
+
+class Mingce: public OneCardViewAsSkill {
+public:
+    Mingce(): OneCardViewAsSkill("mingce") {
+        default_choice = "draw";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("MingceCard");
+    }
+
+    virtual bool viewFilter(const Card *to_select) const{
+        return to_select->isKindOf("EquipCard") || to_select->isKindOf("Slash");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        MingceCard *mingceCard = new MingceCard;
+        mingceCard->addSubcard(originalCard);
+
+        return mingceCard;
+    }
+
+    virtual int getEffectIndex(const ServerPlayer *, const Card *card) const{
+        if (card->isKindOf("Slash"))
+            return -2;
+        else
+            return -1;
+    }
+};
+
+class Zhichi: public TriggerSkill {
+public:
+    Zhichi(): TriggerSkill("zhichi") {
+        events << Damaged;
+        frequency = Compulsory;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (player == room->getCurrent())
+            return false;
+
+        if (data.value<DamageStruct>().to == player
+            && room->getCurrent() && room->getCurrent()->isAlive())
+        {
+            if (player->getMark("zhichi") == 0)
+                player->addMark("zhichi");
+
+            LogMessage log;
+            log.type = "#ZhichiDamaged";
+            log.from = player;
+            room->sendLog(log);
+        }
+
+        return false;
+    }
+};
+
+class ZhichiProtect: public TriggerSkill {
+public:
+    ZhichiProtect(): TriggerSkill("#zhichi-protect") {
+        events << CardEffected;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
+        CardEffectStruct effect = data.value<CardEffectStruct>();
+        if ((effect.card->isKindOf("Slash") || effect.card->isNDTrick()) && effect.to->getMark("zhichi") > 0) {
+            room->broadcastSkillInvoke("zhichi", 2);
+            LogMessage log;
+            log.type = "#ZhichiAvoid";
+            log.from = effect.to;
+            log.arg = "zhichi";
+            room->sendLog(log);
+
+            return true;
+        }
+        return false;
+    }
+};
+
+class ZhichiClear: public TriggerSkill {
+public:
+    ZhichiClear(): TriggerSkill("#zhichi-clear") {
+        events << EventPhaseChanging << Death;
+    }
+
+    virtual bool trigger(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (event == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAllPlayers())
+                    if (p->getMark("zhichi")) p->removeMark("zhichi");
+            }
+        } else {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player || player != room->getCurrent())
+                return false;
+            foreach (ServerPlayer *p, room->getAllPlayers())
+                if (p->getMark("zhichi")) p->removeMark("zhichi");
+        }
+
+        return false;
+    }
+};
+
 LvdongCard::LvdongCard(){
     once = true;
     will_throw = false;
@@ -1558,6 +1707,103 @@ public:
             return n + player->getLostHp();
         }else
             return n;
+    }
+};
+
+class Xinshang: public TriggerSkill {
+public:
+    Xinshang(): TriggerSkill("xinshang") {
+        events << Damaged;
+        frequency = Compulsory;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.to == player && damage.card && damage.card->isKindOf("Slash")
+            && damage.card->getSuit() != Card::Club) {
+
+            room->broadcastSkillInvoke(objectName());
+
+            LogMessage log;
+            log.type = "#TriggerSkill";
+            log.from = player;
+            log.arg = objectName();
+            room->sendLog(log);
+
+            room->loseMaxHp(player);
+        }
+        return false;
+    }
+};
+
+class Qilei: public TriggerSkill {
+public:
+    Qilei(): TriggerSkill("qilei") {
+        events << PostMaxHpReduced << Damage << DamageComplete;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const {
+        return target != NULL;
+    }
+
+    void doQilei(Room *room, ServerPlayer *player, QList<ServerPlayer *> targets) const {
+        ServerPlayer *target = room->askForPlayerChosen(player, targets, "qilei");
+        DamageStruct damage;
+        damage.nature = DamageStruct::Thunder;
+        damage.from = player;
+        damage.to = target;
+        room->damage(damage);
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
+        if (triggerEvent == Damage)
+        {
+            if (TriggerSkill::triggerable(player))
+            {
+                DamageStruct damage = data.value<DamageStruct>();
+                if (damage.card && damage.card->isKindOf("ThunderSlash")
+                    && damage.nature == DamageStruct::Thunder)
+                {
+                    damage.from->tag["Qilei"] = true;
+                }
+            }
+
+            return false;
+        }
+
+        if (triggerEvent == DamageComplete)
+        {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card && damage.card->isKindOf("ThunderSlash")
+                && damage.nature == DamageStruct::Thunder
+                && damage.from && damage.from->tag.value("Qilei", false).toBool())
+            {
+                damage.from->tag["Qilei"] = false;
+                QList<ServerPlayer *> targets;
+                foreach (ServerPlayer *p, room->getOtherPlayers(damage.from))
+                    if (damage.from->inMyAttackRange(p))
+                        targets << p;
+
+                if (!targets.isEmpty() && damage.from->askForSkillInvoke(objectName()))
+                    doQilei(room, damage.from, targets);
+            }
+        }
+        else if (triggerEvent == PostMaxHpReduced && TriggerSkill::triggerable(player))
+        {
+            int n = data.toInt();
+            while (n--)
+            {
+                QList<ServerPlayer *> targets;
+                foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                    if (player->inMyAttackRange(p))
+                        targets << p;
+
+                if (!targets.isEmpty() && player->askForSkillInvoke(objectName()))
+                    doQilei(room, player, targets);
+            }
+        }
+
+        return false;
     }
 };
 
@@ -1773,6 +2019,50 @@ public:
             }
         }
         return false;
+    }
+};
+
+JimianCard::JimianCard() {
+    mute = true;
+}
+
+bool JimianCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (Self->aliveCount() > 5)
+        return targets.length() < 3;
+    else
+        return targets.length() < 2;
+}
+
+void JimianCard::onUse(Room *room, const CardUseStruct &card_use) const{
+    CardUseStruct use = card_use;
+    use.from->loseMark("@jimian");
+    use.from->gainMark("@jimianused");
+    room->broadcastSkillInvoke("jimian");
+    SkillCard::onUse(room, use);
+    if (use.to.length() == 1 && use.to.contains(use.from))
+    {
+        RecoverStruct recover;
+        recover.who = use.from;
+        room->recover(use.from, recover);
+    }
+}
+
+void JimianCard::onEffect(const CardEffectStruct &effect) const{
+    effect.to->drawCards(3);
+}
+
+class Jimian: public ZeroCardViewAsSkill {
+public:
+    Jimian(): ZeroCardViewAsSkill("jimian") {
+        frequency = Limited;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->getMark("@jimian") >= 1;
+    }
+
+    virtual const Card *viewAs() const{
+        return new JimianCard;
     }
 };
 
@@ -2474,7 +2764,7 @@ public:
                 {
                     QList<ServerPlayer *> victims;
                     foreach(ServerPlayer *p, room->getAlivePlayers())
-                        if (player->canSlash(p, NULL, false))
+                        if (player->canSlash(p, NULL))
                             victims << p;
 
                     if (victims.isEmpty())
@@ -2553,6 +2843,14 @@ void StandardPackage::addLunaGenerals(){
     luna012->addSkill(new Huiyao);
     luna012->addSkill(new Qihuang);
 
+    General *luna013 = new General(this, "luna013", "qun", 3);
+    luna013->addSkill(new Mingce);
+    luna013->addSkill(new Zhichi);
+    luna013->addSkill(new ZhichiProtect);
+    luna013->addSkill(new ZhichiClear);
+    related_skills.insertMulti("zhichi", "#zhichi-protect");
+    related_skills.insertMulti("zhichi", "#zhichi-clear");
+
     General *luna014 = new General(this, "luna014", "qun");
     luna014->addSkill(new Lvdong);
     luna014->addSkill(new Guozai);
@@ -2561,6 +2859,10 @@ void StandardPackage::addLunaGenerals(){
     luna015->addSkill(new Tianjing);
     luna015->addSkill(new Danbo);
 
+    General *luna016 = new General(this, "luna016", "qun", 6);
+    luna016->addSkill(new Xinshang);
+    luna016->addSkill(new Qilei);
+
     General *luna017 = new General(this, "luna017", "qun");
     luna017->addSkill(new Chenyan);
     luna017->addSkill(new Shengzun);
@@ -2568,6 +2870,12 @@ void StandardPackage::addLunaGenerals(){
     General *luna018 = new General(this, "luna018", "qun");
     luna018->addSkill(new Zhuji);
     luna018->addSkill(new Benyin);
+
+    General *luna019 = new General(this, "luna019", "qun");
+    luna019->addSkill("jibu");
+    luna019->addSkill(new MarkAssignSkill("@jimian", 1));
+    luna019->addSkill(new Jimian);
+    related_skills.insertMulti("jimian", "#@jimian-1");
 
     General *luna020 = new General(this, "luna020", "qun", 3);
     luna020->addSkill(new Wenxin);
@@ -2606,8 +2914,10 @@ void StandardPackage::addLunaGenerals(){
     addMetaObject<LeijiCard>();
     addMetaObject<TianshiCard>();
     addMetaObject<YujiCard>();
+    addMetaObject<MingceCard>();
     addMetaObject<LvdongCard>();
     addMetaObject<LvdongSlashCard>();
+    addMetaObject<JimianCard>();
     addMetaObject<KouzhuCard>();
     addMetaObject<JiaojinCard>();
     addMetaObject<SuikongCard>();

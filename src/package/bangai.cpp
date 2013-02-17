@@ -1496,7 +1496,7 @@ public:
         if(player == target || target->getPhase() != Player::Start || target->isKongcheng() || !player->askForSkillInvoke(objectName()))
             return false;
 
-        const Card *card = room->askForCardShow(target, player, "@thzhanfuchoose:" + player->getGeneralName());
+        const Card *card = room->askForCardShow(target, player, "@thzhanfuchoose:" + player->objectName());
         if(card != NULL) {
             QString choice = room->askForChoice(player, objectName(), "basic+equip+trick");
             

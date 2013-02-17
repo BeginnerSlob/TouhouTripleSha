@@ -1194,6 +1194,117 @@ public:
     }
 };
 
+class Leilan: public TriggerSkill {
+public:
+    Leilan(): TriggerSkill("leilan") {
+        events << CardsMoveOneTime << EventPhaseStart << EventPhaseEnd;
+        frequency = Compulsory;
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (triggerEvent == CardsMoveOneTime)
+        {
+            CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
+            if (move->from == player && move->from_places.contains(Player::PlaceEquip))
+            {
+                LogMessage log;
+                log.type = "#TriggerSkill";
+                log.from = player;
+                log.arg = objectName();
+                room->sendLog(log);
+                player->gainMark("@jilei");
+            }
+        }
+        
+        if (triggerEvent == EventPhaseStart)
+        {
+            if (data.value<PlayerStar>() == player && player->getPhase() == Player::Finish)
+                while (player->getMark("@jilei") > 0)
+                {
+                    LogMessage log;
+                    log.type = "#TriggerSkill";
+                    log.from = player;
+                    log.arg = objectName();
+                    room->sendLog(log);
+
+                    player->loseMark("@jilei");
+                    QStringList choicelist;
+                    QList<ServerPlayer *> targets1;
+                    ThunderSlash *slash = new ThunderSlash(Card::NoSuitNoColor, 0);
+                    slash->setSkillName(objectName());
+                    foreach (ServerPlayer *target, room->getAlivePlayers())
+                        if (player->canSlash(target, slash, false))
+                            targets1 << target;
+
+                    if (!targets1.isEmpty())
+                        choicelist << "slash";
+
+                    QList<ServerPlayer *> targets2;
+                    foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                        if (player->distanceTo(p) <= 1)
+                            targets2 << p;
+
+                    if (!targets2.isEmpty())
+                        choicelist << "damage";
+
+                    choicelist << "draw";
+
+                    QString choice = room->askForChoice(player, objectName(), choicelist.join("+"));
+                    if (choice == "slash")
+                    {
+                        ServerPlayer *target = room->askForPlayerChosen(player, targets1, objectName());
+
+                        CardUseStruct card_use;
+                        card_use.card = slash;
+                        card_use.from = player;
+                        card_use.to << target;
+                        room->useCard(card_use, false);
+                    }
+                    else if (choice == "damage")
+                    {
+                        ServerPlayer *target = room->askForPlayerChosen(player, targets2, objectName());
+
+                        DamageStruct damage;
+                        damage.from = player;
+                        damage.to = target;
+                        damage.nature = DamageStruct::Thunder;
+                        room->damage(damage);
+                    }
+                    else
+                    {
+                        player->drawCards(1);
+                        room->askForDiscard(player, objectName(), 1, 1);
+                    }
+                }
+        }
+        
+        if (player->getPhase() != Player::Discard)
+            return false;
+
+        if (triggerEvent == CardsMoveOneTime)
+        {
+            CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
+            if (move->from == player && move->to_place == Player::DiscardPile
+                && (move->reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
+                player->setMark("leilan", player->getMark("leilan") + move->card_ids.size());
+        }
+        else if (triggerEvent == EventPhaseStart && data.value<PlayerStar>() == player)
+            player->setMark("leilan", 0);
+        else if (triggerEvent == EventPhaseEnd && data.value<PlayerStar>() == player
+                   && player->getMark("leilan") >= 2)
+        {
+            LogMessage log;
+            log.type = "#TriggerSkill";
+            log.from = player;
+            log.arg = objectName();
+            room->sendLog(log);
+            player->gainMark("@jilei");
+        }
+
+        return false;
+    }
+};
+
 class Yuanfa: public TriggerSkill {
 public:
     Yuanfa(): TriggerSkill("yuanfa") {
@@ -1782,6 +1893,72 @@ public:
     }
 };
 
+class Qianbian: public TriggerSkill {
+public:
+    Qianbian(): TriggerSkill("qianbian") {
+        events << CardsMoveOneTime;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *lingtong, QVariant &data) const{
+        CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
+        if (move->from != lingtong)
+            return false;
+
+        if (move->from_places.contains(Player::PlaceEquip)) {
+            bool can_invoke = false;
+            QList<ServerPlayer *> other_players = room->getOtherPlayers(lingtong);
+            foreach (ServerPlayer *player, other_players)
+                if (!player->isNude()) {
+                    can_invoke = true;
+                    break;
+                }
+
+            if (!can_invoke)
+                return false;
+
+            if (lingtong->askForSkillInvoke(objectName())) {
+                room->broadcastSkillInvoke(objectName());
+                QList<ServerPlayer *> targets;
+                foreach (ServerPlayer *target, room->getOtherPlayers(lingtong))
+                    if (!target->isNude())
+                        targets << target;
+
+                ServerPlayer *first = room->askForPlayerChosen(lingtong, targets, objectName());
+                ServerPlayer *second = NULL;
+                int first_id = -1;
+                int second_id = -1;
+                if (first != NULL) {
+                    first_id = room->askForCardChosen(lingtong, first, "he", objectName());
+                    room->throwCard(first_id, first, lingtong);
+                    if (first->isNude())
+                        targets.removeOne(first);
+                }
+                can_invoke = false;
+                QList<ServerPlayer *> other_players = room->getOtherPlayers(lingtong);
+                foreach (ServerPlayer *player, other_players)
+                    if (!player->isNude()) {
+                        can_invoke = true;
+                        break;
+                    }
+
+                if (can_invoke)
+                    second = room->askForPlayerChosen(lingtong, targets, objectName());
+                if (second != NULL) {
+                    second_id = room->askForCardChosen(lingtong, second, "he", objectName());
+                    room->throwCard(second_id, second, lingtong);
+                }
+
+                if (first_id != -1 && Sanguosha->getEngineCard(first_id)->isKindOf("BasicCard"))
+                    lingtong->drawCards(1);
+                if (second_id != -1 && Sanguosha->getEngineCard(second_id)->isKindOf("BasicCard"))
+                    lingtong->drawCards(1);
+            }
+        }
+
+        return false;
+    }
+};
+
 MengjingCard::MengjingCard() {
     target_fixed = true;
 }
@@ -2204,6 +2381,9 @@ void StandardPackage::addSnowGenerals(){
     snow015->addSkill(new Jizhou);
     snow015->addSkill(new JizhouGet);
     related_skills.insertMulti("jizhou", "#jizhou-get");
+    
+    General *snow016 = new General(this, "snow016", "wu");
+    snow016->addSkill(new Leilan);
 
     General *snow017 = new General(this, "snow017", "wu", 3, false);
     snow017->addSkill(new Yuanfa);
@@ -2233,6 +2413,9 @@ void StandardPackage::addSnowGenerals(){
     General *snow022 = new General(this, "snow022", "wu");
     snow022->addSkill(new Skill("xindu"));
     snow022->addSkill(new Fenxun);
+
+    General *snow023 = new General(this, "snow023", "wu");
+    snow023->addSkill(new Qianbian);
 
     General *snow024 = new General(this, "snow024", "wu");
     snow024->addSkill(new Mengjing);

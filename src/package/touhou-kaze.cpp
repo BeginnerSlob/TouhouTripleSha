@@ -567,7 +567,7 @@ bool ThQiaogongCard::targetFilter(const QList<const Player *> &targets, const Pl
 
     Suit suit = Sanguosha->getCard(getEffectiveId())->getSuit();
     foreach (const Card *cd, to_select->getEquips())
-        if (cd->getSuit() == suit)
+        if (!getSubcards().contains(cd->getEffectiveId()) && cd->getSuit() == suit)
             return true;
 
     return false;

@@ -264,6 +264,14 @@ const General *Player::getGeneral2() const{
     return general2;
 }
 
+QString Player::getFootNoteName() const {
+    QString name = getGeneralName();
+    if (Sanguosha->translate("_" + name) != "_" + name)
+        return "_" + name;
+    else
+        return name;
+}
+
 QString Player::getState() const{
     return state;
 }
