@@ -219,7 +219,7 @@ public:
 class ThBanyue: public TriggerSkill{
 public:
     ThBanyue():TriggerSkill("thbanyue"){
-        events << CardUsed << TargetConfirmed;
+        events << PreCardUsed << TargetConfirmed;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
@@ -227,7 +227,7 @@ public:
         if (use.from != player || !use.card->isKindOf("Slash"))
             return false;
 
-        if (triggerEvent == CardUsed)
+        if (triggerEvent == PreCardUsed)
         {
             if (player->askForSkillInvoke(objectName()))
             {
@@ -684,7 +684,7 @@ public:
 class ThHuilun: public TriggerSkill {
 public:
     ThHuilun(): TriggerSkill("thhuilun") {
-        events << CardUsed << EventPhaseChanging;
+        events << PreCardUsed << EventPhaseChanging;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
@@ -694,7 +694,7 @@ public:
             if (change.to == Player::Play)
                 room->setPlayerMark(change.who, "thhuilun", 0);
         }
-        else if (triggerEvent == CardUsed)
+        else if (triggerEvent == PreCardUsed)
         {
             CardUseStruct use = data.value<CardUseStruct>();
             if (!use.from || use.from->getPhase() != Player::Play)

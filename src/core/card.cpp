@@ -522,6 +522,10 @@ void Card::onUse(Room *room, const CardUseStruct &use) const{
     }
 
     foreach(ServerPlayer *p, room->getAllPlayers())
+        if (thread->trigger(PreCardUsed, room, p, data))
+            break;
+    
+    foreach(ServerPlayer *p, room->getAllPlayers())
         if (thread->trigger(CardUsed, room, p, data))
             break;
 

@@ -234,6 +234,10 @@ void MoyuCard::onUse(Room *room, const CardUseStruct &card_use) const{
 
     QVariant data = QVariant::fromValue(card_use);
     RoomThread *thread = room->getThread();
+    
+    foreach(ServerPlayer *p, room->getAllPlayers())
+        if (thread->trigger(PreCardUsed, room, p, data))
+            break;
 
     foreach(ServerPlayer *p, room->getAllPlayers())
         if (thread->trigger(CardUsed, room, p, data))

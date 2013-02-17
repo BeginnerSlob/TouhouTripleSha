@@ -24,10 +24,10 @@ public:
                 room->setPlayerFlag(change.who, "-jianmoinvoke");
             room->removePlayerCardLimitation(change.who, "use,response", "Slash@0");
         }
-        else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Play)
+        else if (triggerEvent == EventPhaseStart)
         {
             ServerPlayer *srcplayer = data.value<PlayerStar>();
-            if (srcplayer == player)
+            if (srcplayer == player || srcplayer->getPhase() != Player::Play)
                 return false;
 
             if (srcplayer->getHandcardNum() >= srcplayer->getMaxHp() && player->askForSkillInvoke(objectName()))
@@ -604,12 +604,8 @@ public:
 class ThChouce: public TriggerSkill {
 public:
     ThChouce(): TriggerSkill("thchouce"){
-        events << CardUsed << CardResponded << EventPhaseStart;
+        events << PreCardUsed << CardResponded << EventPhaseStart;
         view_as_skill = new ThChouceViewAsSkill;
-    }
-
-    virtual int getPriority() const{
-        return 5;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
@@ -621,12 +617,12 @@ public:
                 return false;
             }
         }
-        else if (triggerEvent == CardUsed || triggerEvent == CardResponded)
+        else if (triggerEvent == PreCardUsed || triggerEvent == CardResponded)
         {
             if(player->getPhase() != Player::Play)
                 return false;
             const Card *usecard = NULL;
-            if (triggerEvent == CardUsed)
+            if (triggerEvent == PreCardUsed)
             {
                 CardUseStruct use = data.value<CardUseStruct>();
                 if (use.from != player)
@@ -878,15 +874,11 @@ public:
 class ThHeimu: public TriggerSkill {
 public:
     ThHeimu(): TriggerSkill("thheimu") {
-        events << CardUsed << EventPhaseChanging;
-    }
-
-    virtual int getPriority() const{
-        return 5;
+        events << PreCardUsed << EventPhaseChanging;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == CardUsed && player->getMark(objectName()) == 0)
+        if (triggerEvent == PreCardUsed && player->getMark(objectName()) == 0)
         {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.from == player && player->getPhase() == Player::Play && use.m_reason == CardUseStruct::CARD_USE_REASON_PLAY
@@ -924,8 +916,8 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         DamageStruct damage = data.value<DamageStruct>();
-        if (triggerEvent == DamageCaused && damage.from && damage.from == player
-            && (damage.to == player || damage.nature != DamageStruct::Fire))
+        if (triggerEvent == DamageCaused && (!damage.from || damage.from != player
+                                             || damage.to == player || damage.nature != DamageStruct::Fire))
             return false;
         else if (triggerEvent == DamageInflicted && damage.nature != DamageStruct::Fire)
             return false;
