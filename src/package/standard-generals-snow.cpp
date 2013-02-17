@@ -2356,11 +2356,6 @@ void StandardPackage::addSnowGenerals(){
     General *snow009 = new General(this, "snow009", "wu");
     snow009->addSkill(new Liangban);
 
-    General *snow010 = new General(this, "snow010$", "wu");
-    snow010->addSkill(new Heyi);
-    snow010->addSkill(new Chizhu);
-    snow010->addSkill(new Biansheng);
-
     General *snow011 = new General(this, "snow011", "wu", 3, false);
     snow011->addSkill(new Zhihui);
     snow011->addSkill(new Chiqiu);
@@ -2375,6 +2370,11 @@ void StandardPackage::addSnowGenerals(){
     snow013->addSkill(new SushengRemove);
     snow013->addSkill(new Eli);
     related_skills.insertMulti("susheng", "#susheng-remove");
+
+    General *snow014 = new General(this, "snow014$", "wu");
+    snow014->addSkill(new Heyi);
+    snow014->addSkill(new Chizhu);
+    snow014->addSkill(new Biansheng);
 
     General *snow015 = new General(this, "snow015", "wu", 3);
     snow015->addSkill(new Jiban);

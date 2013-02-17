@@ -2789,9 +2789,11 @@ public:
 };
 
 void StandardPackage::addLunaGenerals(){
-    General *luna001 = new General(this, "luna001", "qun", 3);
-    luna001->addSkill(new Huichun);
-    luna001->addSkill(new Qingnang);
+    General *luna001 = new General(this, "luna001$", "qun", 8);
+    luna001->addSkill(new Fusheng);
+    luna001->addSkill(new Huanbei);
+    luna001->addSkill(new Benghuai);
+    luna001->addSkill(new Wuhua);
 
     General *luna002 = new General(this, "luna002", "qun");
     luna002->addSkill(new Wushuang);
@@ -2807,11 +2809,9 @@ void StandardPackage::addLunaGenerals(){
     General *luna005 = new General(this, "luna005", "qun");
     luna005->addSkill(new Shuangniang);
 
-    General *luna006 = new General(this, "luna006$", "qun", 8);
-    luna006->addSkill(new Fusheng);
-    luna006->addSkill(new Huanbei);
-    luna006->addSkill(new Benghuai);
-    luna006->addSkill(new Wuhua);
+    General *luna006 = new General(this, "luna006", "qun", 3);
+    luna006->addSkill(new Huichun);
+    luna006->addSkill(new Qingnang);
 
     General *luna007 = new General(this, "luna007", "qun", 3);
     luna007->addSkill(new Sishi);
@@ -2834,10 +2834,9 @@ void StandardPackage::addLunaGenerals(){
     related_skills.insertMulti("huanshen", "#huanshen-end");
     related_skills.insertMulti("huanshen", "#huanshen-clear");
 
-    General *luna010 = new General(this, "luna010$", "qun", 3);
-    luna010->addSkill(new Leiji);
-    luna010->addSkill(new Tianshi);
-    luna010->addSkill(new Yuji);
+    General *luna010 = new General(this, "luna010", "qun");
+    luna010->addSkill(new Lvdong);
+    luna010->addSkill(new Guozai);
 
     General *luna012 = new General(this, "luna012", "qun", 3, false);
     luna012->addSkill(new Huiyao);
@@ -2851,9 +2850,10 @@ void StandardPackage::addLunaGenerals(){
     related_skills.insertMulti("zhichi", "#zhichi-protect");
     related_skills.insertMulti("zhichi", "#zhichi-clear");
 
-    General *luna014 = new General(this, "luna014", "qun");
-    luna014->addSkill(new Lvdong);
-    luna014->addSkill(new Guozai);
+    General *luna014 = new General(this, "luna014$", "qun", 3);
+    luna014->addSkill(new Leiji);
+    luna014->addSkill(new Tianshi);
+    luna014->addSkill(new Yuji);
 
     General *luna015 = new General(this, "luna015", "qun");
     luna015->addSkill(new Tianjing);
@@ -2908,15 +2908,15 @@ void StandardPackage::addLunaGenerals(){
     General *luna030 = new General(this, "luna030", "qun", 4, false);
     luna030->addSkill(new Lingcu);
 
-    addMetaObject<QingnangCard>();
     addMetaObject<MoyuCard>();
+    addMetaObject<QingnangCard>();
     addMetaObject<WenleCard>();
+    addMetaObject<LvdongCard>();
+    addMetaObject<LvdongSlashCard>();
+    addMetaObject<MingceCard>();
     addMetaObject<LeijiCard>();
     addMetaObject<TianshiCard>();
     addMetaObject<YujiCard>();
-    addMetaObject<MingceCard>();
-    addMetaObject<LvdongCard>();
-    addMetaObject<LvdongSlashCard>();
     addMetaObject<JimianCard>();
     addMetaObject<KouzhuCard>();
     addMetaObject<JiaojinCard>();

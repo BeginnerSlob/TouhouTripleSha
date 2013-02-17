@@ -1839,18 +1839,18 @@ void StandardPackage::addWindGenerals(){
     wind012->addSkill(new Shengtian);
     wind012->addRelateSkill("mohua");
 
-    General *wind013 = new General(this, "wind013$", "shu", 3);
-    wind013->addSkill(new Manbo);
-    wind013->addSkill(new Baishen);
-    wind013->addSkill(new BaishenGive);
-    related_skills.insertMulti("baishen", "#baishen-give");
-    wind013->addSkill(new Hunshou);
-
-    General *wind014 = new General(this, "wind014", "shu");
-    wind014->addSkill(new SavageAssaultAvoid("huoshou"));
-    wind014->addSkill(new Huoshou);
-    wind014->addSkill(new Zailuan);
+    General *wind013 = new General(this, "wind013", "shu");
+    wind013->addSkill(new SavageAssaultAvoid("huoshou"));
+    wind013->addSkill(new Huoshou);
+    wind013->addSkill(new Zailuan);
     related_skills.insertMulti("huoshou", "#sa_avoid_huoshou");
+
+    General *wind014 = new General(this, "wind014$", "shu", 3);
+    wind014->addSkill(new Manbo);
+    wind014->addSkill(new Baishen);
+    wind014->addSkill(new BaishenGive);
+    related_skills.insertMulti("baishen", "#baishen-give");
+    wind014->addSkill(new Hunshou);
 
     General *wind015 = new General(this, "wind015", "shu", 4, false);
     wind015->addSkill(new SavageAssaultAvoid("jugui"));
