@@ -1772,7 +1772,7 @@ public:
         }
         else if(triggerEvent == CardEffected) {
             CardEffectStruct effect = data.value<CardEffectStruct>();
-            if((effect.card->isNDTrick() || effect.card->isKindOf("Slash")) && !effect.from->isWounded()) {
+            if(effect.to == player && (effect.card->isNDTrick() || effect.card->isKindOf("Slash")) && !effect.from->isWounded()) {
                 room->sendLog(log);
                 return true;
             }

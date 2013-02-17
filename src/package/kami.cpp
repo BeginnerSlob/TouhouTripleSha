@@ -391,10 +391,6 @@ public:
         events << EventPhaseEnd;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const {
-        return target != NULL;
-    }
-
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *splayer, QVariant &data) const {
         ServerPlayer *player = data.value<PlayerStar>();
 
