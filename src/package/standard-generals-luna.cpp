@@ -582,7 +582,7 @@ public:
                     JudgeStruct judge;
                     judge.pattern = QRegExp("(.*):(spade):(.*)");
                     judge.good = true;
-                    judge.reason = objectName();
+                    judge.reason = "wuhua";
                     judge.who = player;
 
                     room->judge(judge);

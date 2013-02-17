@@ -294,7 +294,7 @@ public:
             if(card->isBlack())
                 return false;
 
-            room->throwCard(card, player);
+			room->throwCard(card_id, dying.who);
             RecoverStruct recover;
             recover.who = player;
             room->recover(dying.who, recover);
