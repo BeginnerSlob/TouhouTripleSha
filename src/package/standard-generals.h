@@ -128,6 +128,15 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class HuanwuCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE HuanwuCard();
+
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+};
+
 class XinbanCard: public SkillCard {
     Q_OBJECT
 
@@ -368,6 +377,15 @@ public:
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
 };
 
+class MingceCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE MingceCard();
+
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class LvdongCard: public SkillCard{
     Q_OBJECT
 
@@ -468,6 +486,16 @@ public:
 
 private:
     static bool hasShuGenerals(const Player *player);
+};
+
+class JimianCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE JimianCard();
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
 class KouzhuCard: public SkillCard {

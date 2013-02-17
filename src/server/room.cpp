@@ -2741,6 +2741,8 @@ void Room::loseHp(ServerPlayer *victim, int lose){
 }
 
 void Room::loseMaxHp(ServerPlayer *victim, int lose){
+    QVariant data = lose;
+    thread->trigger(MaxHpLost, this, victim, data);
     int hp = victim->getHp();
     int maxhp = qMax(victim->getMaxHp() - lose, 0);
     victim->setMaxHp(maxhp);

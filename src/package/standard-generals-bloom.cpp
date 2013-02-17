@@ -1141,6 +1141,203 @@ public:
     }
 };
 
+class Yindie: public TriggerSkill {
+public:
+    Yindie(): TriggerSkill("yindie") {
+        events << CardsMoveOneTime << FinishJudge;
+    }
+
+    virtual bool trigger(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (player == room->getCurrent())
+            return false;
+
+        if (event == CardsMoveOneTime) {
+            CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
+            if (move->from == player
+                && (move->from_places.contains(Player::PlaceHand)
+                    || move->from_places.contains(Player::PlaceEquip))
+                && player->askForSkillInvoke("yindie", data)) {
+                room->broadcastSkillInvoke("yindie");
+                JudgeStruct judge;
+                judge.pattern = QRegExp("(.*):(heart):(.*)");
+                judge.good = false;
+                judge.reason = "yindie";
+                judge.who = player;
+                room->judge(judge);
+            }
+        } else if (event == FinishJudge) {
+            JudgeStar judge = data.value<JudgeStar>();
+            if (judge->who == player && judge->reason == "yindie" && judge->isGood())
+                player->addToPile("yindiepile", judge->card->getEffectiveId());
+        }
+
+        return false;
+    }
+};
+
+class YindieDistance: public DistanceSkill {
+public:
+    YindieDistance(): DistanceSkill("#yindie-dist") {
+    }
+
+    virtual int getCorrect(const Player *from, const Player *) const{
+        if (from->hasSkill("yindie"))
+            return -from->getPile("yindiepile").length();
+        else
+            return 0;
+    }
+};
+
+
+class YindieClear: public TriggerSkill {
+public:
+    YindieClear(): TriggerSkill("#yindie-clear") {
+        events << EventLoseSkill;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target && !target->hasSkill("yindie") && target->getPile("yindiepile").length() > 0;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *, ServerPlayer *player, QVariant &) const{
+        player->clearOnePrivatePile("yindie");
+        return false;
+    }
+};
+
+class Guiyue: public TriggerSkill {
+public:
+    Guiyue(): TriggerSkill("guiyue") {
+        events << EventPhaseStart;
+        frequency = Wake;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return TriggerSkill::triggerable(target)
+               && target->getPhase() == Player::Start
+               && target->getMark("@guiyue") == 0
+               && target->getPile("yindiepile").length() >= 3;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (data.value<PlayerStar>() != player)
+            return false;
+
+        LogMessage log;
+        log.type = "#GuiyueWake";
+        log.from = player;
+        log.arg = QString::number(player->getPile("yindiepile").length());
+        log.arg2 = objectName();
+        room->sendLog(log);
+
+        room->broadcastSkillInvoke(objectName());
+
+        player->gainMark("@guiyue");
+        room->loseMaxHp(player);
+        room->acquireSkill(player, "huanwu");
+
+        return false;
+    }
+};
+
+HuanwuCard::HuanwuCard() {
+    target_fixed = true;
+}
+
+void HuanwuCard::onUse(Room *room, const CardUseStruct &card_use) const{
+    ServerPlayer *player = card_use.from;
+
+    QList<int> fields = player->getPile("yindiepile");
+    if (fields.isEmpty())
+        return ;
+
+    int card_id;
+    if (fields.length() == 1)
+        card_id = fields.first();
+    else {
+        room->fillAG(fields, player);
+        card_id = room->askForAG(player, fields, false, "huanwu");
+        player->invoke("clearAG");
+
+        if (card_id == -1)
+            return;
+    }
+
+    const Card *card = Sanguosha->getCard(card_id);
+    Snatch *snatch = new Snatch(card->getSuit(), card->getNumber());
+    snatch->setSkillName("huanwu");
+    snatch->addSubcard(card_id);
+
+    QList<ServerPlayer *> targets;
+    QList<const Player *> empty_list;
+    foreach (ServerPlayer *p, room->getAlivePlayers()) {
+        if (!snatch->targetFilter(empty_list, p, player))
+            continue;
+        if (player->isProhibited(p, snatch))
+            continue;
+
+        targets << p;
+    }
+
+    if (targets.isEmpty())
+        return;
+
+    ServerPlayer *target = room->askForPlayerChosen(player, targets, "huanwu");
+
+    CardUseStruct use;
+    use.card = snatch;
+    use.from = player;
+    use.to << target;
+
+    room->useCard(use);
+}
+
+class Huanwu: public ZeroCardViewAsSkill {
+public:
+    Huanwu(): ZeroCardViewAsSkill("huanwu") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        Snatch *snatch = new Snatch(Card::NoSuitNoColor, 0);
+        snatch->deleteLater();
+        return !player->getPile("yindiepile").isEmpty() && snatch->isAvailable(player);
+    }
+
+    virtual const Card *viewAs() const{
+        return new HuanwuCard;
+    }
+
+    virtual Location getLocation() const{
+        return Right;
+    }
+};
+
+class Jiang: public TriggerSkill {
+public:
+    Jiang(): TriggerSkill("jiang") {
+        events << TargetConfirmed;
+        frequency = Frequent;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *sunce, QVariant &data) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.from == sunce || use.to.contains(sunce)) {
+            if (use.card->isKindOf("Duel") || (use.card->isKindOf("Slash") && use.card->isRed())) {
+                if (sunce->askForSkillInvoke(objectName(), data)) {
+                    int index = 1;
+                    if (!sunce->hasInnateSkill(objectName()) && sunce->hasSkill("mouduan"))
+                        index += 2;
+                    room->broadcastSkillInvoke(objectName(), index + (use.from == sunce ? 0 : 1));
+                    sunce->drawCards(1);
+                }
+            }
+        }
+
+        return false;
+    }
+};
+
+
 class Shihua: public TriggerSkill{
 public:
     Shihua():TriggerSkill("shihua"){
@@ -1593,8 +1790,8 @@ public:
             log.arg = choice;
             room->sendLog(log);
 
-            /*if (damage.from->getMark("@huyin_" + choice) == 0)
-                damage.from->gainMark("@huyin_" + choice);*/
+            if (damage.from->getMark("@huyin_" + choice) == 0)
+                damage.from->gainMark("@huyin_" + choice);
         }
 
         return false;
@@ -1630,9 +1827,9 @@ public:
                 log.from = player;
                 room->sendLog(log);
 
-                //player->loseMark("@huyin_basic");
-                //player->loseMark("@huyin_equip");
-                //player->loseMark("@huyin_trick");
+                player->loseMark("@huyin_basic");
+                player->loseMark("@huyin_equip");
+                player->loseMark("@huyin_trick");
                 room->setPlayerHuyin(player, "clear");
             }
         }
@@ -1982,6 +2179,15 @@ void StandardPackage::addBloomGenerals(){
     bloom014->addSkill(new Bisuo);
     bloom014->addSkill(new Songwei);
 
+    General *bloom015 = new General(this, "bloom015", "wei", 4);
+    bloom015->addSkill(new Yindie);
+    bloom015->addSkill(new YindieDistance);
+    bloom015->addSkill(new YindieClear);
+    bloom015->addSkill(new Guiyue);
+    bloom015->addRelateSkill("huanwu");
+    related_skills.insertMulti("yindie", "#yindie-dist");
+    related_skills.insertMulti("yindie", "#yindie-clear");
+
     General *bloom016 = new General(this, "bloom016", "wei", 3);
     bloom016->addSkill(new Shihua);
     bloom016->addSkill(new Jiushi);
@@ -2028,8 +2234,10 @@ void StandardPackage::addBloomGenerals(){
     addMetaObject<YushenCard>();
     addMetaObject<JiemingCard>();
     addMetaObject<BisuoCard>();
+    addMetaObject<HuanwuCard>();
     addMetaObject<XinbanCard>();
     addMetaObject<JilveCard>();
 
-    skills << new SongweiGivenSkill << new Jilve << new JilveClear << new JilveAvoidTriggeringCardsMove;
+    skills << new SongweiGivenSkill  << new Huanwu 
+           << new Jilve << new JilveClear << new JilveAvoidTriggeringCardsMove;
 }

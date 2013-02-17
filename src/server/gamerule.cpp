@@ -18,7 +18,7 @@ GameRule::GameRule(QObject *)
 
     events << GameStart << TurnStart << EventPhaseStart << CardUsed
            << CardEffected << CardFinished
-           << HpRecover << HpLost << PostHpReduced
+           << HpRecover << HpLost << MaxHpLost << PostHpReduced
            << EventLoseSkill << EventAcquireSkill
            << AskForPeaches << AskForPeachesDone << Death << GameOverJudge
            << SlashEffectStart << SlashHit << SlashEffected << SlashProceed
@@ -294,6 +294,38 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
             foreach (ServerPlayer *p, room->getAllPlayers())
                 room->getThread()->trigger(PostHpReduced, room, p, data2);
             room->setPlayerMark(player, "hplostcount", 0);
+
+            break;
+    }
+
+    case MaxHpLost:{
+            int lose = qMin(data.toInt(), player->getMaxHp());
+
+            int hp = player->getHp();
+            int maxhp = player->getMaxHp() - lose;
+            player->setMaxHp(maxhp);
+
+            bool hp_changed = hp - player->getHp() != 0;
+
+            room->setPlayerProperty(player, "maxhp", maxhp);
+
+            if(hp_changed)
+                room->setPlayerProperty(player, "hp", player->getHp());
+
+            LogMessage log;
+            log.type = hp_changed ? "#LostMaxHpPlus" : "#LoseMaxHp";
+            log.from = player;
+            log.arg = QString::number(lose);
+            log.arg2 = QString::number(player->getHp());
+            room->sendLog(log);
+
+            room->broadcastInvoke("maxhpChange", QString("%1:%2").arg(player->objectName()).arg(-lose));
+
+            QVariant data2 = lose;
+            room->getThread()->trigger(PostMaxHpReduced, room, player, data2);
+
+            if(player->getMaxHp() == 0)
+                room->killPlayer(player);
 
             break;
     }
