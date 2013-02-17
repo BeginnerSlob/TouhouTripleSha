@@ -40,6 +40,8 @@ public:
             card = use.card;
             target = use.from;
         }
+        else
+            return false;
 
         QString pattern = card->objectName();
         if (pattern.contains("slash"))
@@ -294,7 +296,7 @@ public:
             if(card->isBlack())
                 return false;
 
-			room->throwCard(card_id, dying.who);
+            room->throwCard(card_id, dying.who);
             RecoverStruct recover;
             recover.who = player;
             room->recover(dying.who, recover);

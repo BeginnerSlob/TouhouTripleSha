@@ -966,6 +966,7 @@ public:
     ThKunyi():TriggerSkill("thkunyi") {
         events << GameStart;
         view_as_skill = new ThKunyiViewAsSkill;
+        frequency = Limited;
     }
 
     virtual bool trigger(TriggerEvent, Room *, ServerPlayer *player, QVariant &data) const{

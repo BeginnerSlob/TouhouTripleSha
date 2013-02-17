@@ -490,7 +490,8 @@ enum TriggerEvent{
     CardsMoveOneTime,
     CardDrawing,
     CardDrawnDone,
-
+    
+    PreCardUsed,  // can add or remove target
     CardUsed,
     TargetConfirming,
     TargetConfirmed,

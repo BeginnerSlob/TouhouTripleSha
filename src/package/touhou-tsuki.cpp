@@ -1155,13 +1155,13 @@ public:
 class ThKuangxiang: public TriggerSkill {
 public:
     ThKuangxiang(): TriggerSkill("thkuangxiang") {
-        events << CardUsed;
+        events << PreCardUsed;
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *splayer, QVariant &data) const{
         CardUseStruct use = data.value<CardUseStruct>();
         
-        if ((!use.card->isNDTrick() && !use.card->isKindOf("BasicCard")) || use.card->isKindOf("Jink") || use.card->isKindOf("Nullification"))
+        if (!(use.card->isNDTrick() || use.card->isKindOf("BasicCard")) || use.card->isKindOf("Jink") || use.card->isKindOf("Nullification"))
             return false;
 
         if (use.to.isEmpty())
@@ -1656,11 +1656,7 @@ public:
 class ThYongye: public TriggerSkill {
 public:
     ThYongye(): TriggerSkill("thyongye") {
-        events << CardUsed;
-    }
-
-    virtual int getPriority() const {
-        return 5;
+        events << PreCardUsed;
     }
 
     QList<ServerPlayer *> getcantarget(CardUseStruct use, Room *room, ServerPlayer *player) const {
