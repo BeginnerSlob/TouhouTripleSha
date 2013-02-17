@@ -308,7 +308,18 @@ ThWujianCard::ThWujianCard(){
 }
 
 bool ThWujianCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && Self->inMyAttackRange(to_select) && to_select != Self;
+    if (!targets.isEmpty() || to_select == Self)
+        return false;
+
+    if (Self->getWeapon() && subcards.contains(Self->getWeapon()->getId())) {
+        const Weapon *weapon = qobject_cast<const Weapon *>(Self->getWeapon()->getRealCard());
+        return Self->distanceTo(to_select, weapon->getRange() - 1) <= 1;
+    }
+
+    if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
+        return Self->distanceTo(to_select, 1) <= 1;
+
+    return Self->inMyAttackRange(to_select);
 }
 
 void ThWujianCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
