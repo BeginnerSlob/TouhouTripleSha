@@ -346,12 +346,10 @@ public:
         CardStar card = judge->card;
 
         QVariant data_card = QVariant::fromValue(card);
-        if(judge->who == guojia || guojia->askForSkillInvoke(objectName(), data_card)){
+        if(judge->who == guojia && guojia->askForSkillInvoke(objectName(), data_card)){
             guojia->obtainCard(judge->card);
             room->broadcastSkillInvoke(objectName());
             room->getThread()->delay(500);
-
-            return true;
         }
 
         return false;
@@ -429,7 +427,6 @@ public:
             if(judge->who == player && judge->reason == objectName()){
                 if(judge->card->isBlack()){
                     player->obtainCard(judge->card);
-                    return true;
                 }
             }
         }
@@ -677,6 +674,7 @@ public:
         case Player::RoundStart:
         case Player::Start:
         case Player::Finish:
+        case Player::RoundEnd:
         case Player::NotActive: return false;
 
         case Player::Judge: index = 1;break;
@@ -1093,10 +1091,6 @@ public:
     SongweiGivenSkill():TriggerSkill("#songwei"){
         events << FinishJudge;
         attached_lord_skill = true;
-    }
-
-    virtual int getPriority() const{
-        return 2;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
@@ -2117,7 +2111,7 @@ public:
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *target, QVariant &data) const{
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-        if (change.who != target && change.to != Player::NotActive)
+        if (change.who != target || change.to != Player::NotActive)
             return false;
         room->detachSkillFromPlayer(target, "sishi");
         return false;

@@ -232,7 +232,6 @@ public:
             if(judge->who == player && judge->reason == objectName()){
                 if(judge->card->isRed()){
                     player->obtainCard(judge->card);
-                    return true;
                 }
             }
         }
@@ -796,7 +795,7 @@ public:
             if (!invoke)
                 return false;
 
-            if (player->getPhase() == Player::NotActive && player->askForSkillInvoke(objectName()))
+            if (player != room->getCurrent() && player->askForSkillInvoke(objectName()))
             {
                 JudgeStruct judge;
                 judge.pattern = QRegExp("(.*):(.*):(.*)");

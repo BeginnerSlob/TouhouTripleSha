@@ -455,7 +455,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (player->getPhase() != Player::NotActive || player->isKongcheng())
+        if (room->getCurrent() == player || player->isKongcheng())
             return false;
 
         CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();

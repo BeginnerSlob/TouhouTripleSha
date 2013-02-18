@@ -424,7 +424,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const{
-        if(player->getPhase() != Player::NotActive)
+        if(player == room->getCurrent())
             return false;
 
         CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
@@ -1447,12 +1447,12 @@ public:
         events << DamageInflicted;
     }
 
-    virtual bool trigger(TriggerEvent , Room *, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const{
         if (!player->hasSkill("thhouzhi"))
             return false;
 
         DamageStruct damage = data.value<DamageStruct>();
-        if(player->getPhase() != Player::NotActive || !player->askForSkillInvoke(objectName()))
+        if(player == room->getCurrent() || !player->askForSkillInvoke(objectName()))
             return false;
 
         player->gainMark("@jianren", damage.damage);

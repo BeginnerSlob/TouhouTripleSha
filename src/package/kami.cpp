@@ -397,7 +397,9 @@ public:
         if (splayer == player || splayer->isKongcheng())
             return false;
 
-        if (player->getPhase() == Player::Discard && room->askForCard(splayer, ".", "@thqixiang", data, objectName()))
+        if (player->getPhase() == Player::Discard
+            && splayer->inMyAttackRange(player)
+            && room->askForCard(splayer, ".", "@thqixiang", data, objectName()))
         {
             QString choice = "draw";
             if (!player->isKongcheng())
@@ -1091,7 +1093,7 @@ public:
 class ThBingzhang: public TriggerSkill{
 public:
     ThBingzhang(): TriggerSkill("thbingzhang"){
-        events << DamageInflicted << HpLost;
+        events << DamageForseen << HpLost;
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
@@ -1142,12 +1144,15 @@ public:
         log.arg  = "thjiwu";
         for (int i = 0; i < move->card_ids.length(); i++)
             if ((move->from_places[i] == Player::PlaceHand
-                && move->to && move->to != player && (move->to_place == Player::PlaceHand || move->to_place == Player::PlaceEquip))
+                 && move->to && move->to != player
+                 && (move->to_place == Player::PlaceHand
+                     || move->to_place == Player::PlaceEquip))
                 || // 上两行判断第二条件，下两行判断第一条件
-                (move->to == NULL && move->to_place == Player::DiscardPile
-                && (Sanguosha->getCard(move->card_ids[i])->isKindOf("Jink")
-                    || Sanguosha->getCard(move->card_ids[i])->isKindOf("Peach")
-                    || Sanguosha->getCard(move->card_ids[i])->isKindOf("Analeptic"))))
+                (move->to == NULL 
+                 && move->to_place == Player::DiscardPile
+                 && (Sanguosha->getCard(move->card_ids[i])->isKindOf("Jink")
+                     || Sanguosha->getCard(move->card_ids[i])->isKindOf("Peach")
+                     || Sanguosha->getCard(move->card_ids[i])->isKindOf("Analeptic"))))
             {
                 room->sendLog(log);
                 player->drawCards(1);
