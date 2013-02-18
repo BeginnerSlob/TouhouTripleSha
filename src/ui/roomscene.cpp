@@ -1845,25 +1845,35 @@ void RoomScene::keepGetCardLog(const CardsMoveStruct &move)
             log_box->appendLog("#GotNCardFromPile", move.to->objectName(), QStringList(), QString(), move.from_pile_name, QString::number(move.card_ids.length()));
     }
     //DrawNCards
-    if (move.from_place == Player::DrawPile && move.to_place == Player::PlaceHand)
-    {
+    if (move.from_place == Player::DrawPile && move.to_place == Player::PlaceHand) {
         QString to_general = move.to->objectName();
-        if (move.to == Self) {
+        bool hiden = false;
+        foreach (int card_id, move.card_ids)
+            if (card_id == Card::S_UNKNOWN_CARD_ID) {
+                hiden = true;
+                break;
+            }
+        if (!hiden)
             log_box->appendLog("$DrawCards", to_general, QStringList(), Card::IdsToStrings(move.card_ids).join("+"),
                                QString::number(move.card_ids.length()));
-        }
-        else {
+        else
             log_box->appendLog("#DrawNCards", to_general, QStringList(), QString(),
                                QString::number(move.card_ids.length()));
-        }
+
     }
-    if(move.from_place == Player::PlaceTable && move.to_place == Player::PlaceHand)
-    {
+     if (move.from_place == Player::PlaceTable && move.to_place == Player::PlaceHand) {
         QString to_general = move.to->objectName();
-        foreach(int card_id, move.card_ids){
-            if(card_id != -1)
-                log_box->appendLog("$GotCardBack", to_general, QStringList(), QString::number(card_id));
+        QString card_str = QString();
+        foreach (int card_id, move.card_ids) {
+            if (card_id != Card::S_UNKNOWN_CARD_ID) {
+                if (card_str.isEmpty())
+                    card_str = QString::number(card_id);
+                else
+                    card_str += "+" + QString::number(card_id);
+            }
         }
+        if (!card_str.isEmpty())
+            log_box->appendLog("$GotCardBack", to_general, QStringList(), card_str);
     }
     if(move.from_place == Player::DiscardPile && move.to_place == Player::PlaceHand && move.from == NULL)
     {

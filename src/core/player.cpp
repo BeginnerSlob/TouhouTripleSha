@@ -388,8 +388,8 @@ QString Player::getPhaseString() const{
     case Draw: return "draw";
     case Play: return "play";
     case Discard: return "discard";
-    case RoundEnd: return "round_end";
     case Finish: return "finish";
+    case RoundEnd: return "round_end";
     case NotActive:
     default:
         return "not_active";

@@ -309,7 +309,7 @@ void Client::processServerPacket(const char *cmd){
 
 bool Client::processServerRequest(const QSanGeneralPacket& packet)
 {
-    setStatus(Client::NotActive);
+    setStatus(NotActive);
     _m_lastServerSerial = packet.m_globalSerial;
     CommandType command = packet.getCommandType();
     Json::Value msg = packet.getMessageBody();    
@@ -473,7 +473,7 @@ void Client::loseCards(const Json::Value& arg)
 }
 
 void Client::onPlayerChooseGeneral(const QString &item_name){
-    setStatus(Client::NotActive);
+    setStatus(NotActive);
     if(!item_name.isEmpty()){
         replyToServer(S_COMMAND_CHOOSE_GENERAL, toJsonString(item_name));        
         Sanguosha->playSystemAudioEffect("choose-item");
@@ -1164,7 +1164,7 @@ void Client::askForExchange(const Json::Value &exchange_str){
 void Client::gameOver(const Json::Value &arg){
     disconnectFromHost();
     m_isGameOver = true;
-    setStatus(Client::NotActive);
+    setStatus(NotActive);
     QString winner = toQString(arg[0]);
     QStringList roles;
     tryParse(arg[1], roles);

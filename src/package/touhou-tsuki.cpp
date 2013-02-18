@@ -492,7 +492,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
-        if (player->getPhase() != Player::NotActive)
+        if (player == room->getCurrent())
             return false;
         QString pattern = data.toStringList().first();
         if (pattern != "slash" && pattern != "jink")
@@ -1135,7 +1135,7 @@ public:
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
         if (move->from == player && (move->from_places.contains(Player::PlaceHand) || move->from_places.contains(Player::PlaceEquip)))
-            if (player->getPhase() == Player::NotActive && player->askForSkillInvoke(objectName()))
+            if (player != room->getCurrent() && player->askForSkillInvoke(objectName()))
             {
                 ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), objectName());
                 LogMessage log;
@@ -1727,11 +1727,10 @@ public:
             log.arg = objectName();
             log.arg2 = use.card->objectName();
             room->sendLog(log);
-            if (use.to.isEmpty()) 
-                return true;
         }
 
-        qSort(use.to.begin(), use.to.end(), ServerPlayer::CompareByActionOrder);
+        if (!use.to.isEmpty())
+            qSort(use.to.begin(), use.to.end(), ServerPlayer::CompareByActionOrder);
         data = QVariant::fromValue(use);
         
         return false;

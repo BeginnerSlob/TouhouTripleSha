@@ -409,7 +409,6 @@ public:
             JudgeStar judge = data.value<JudgeStar>();
             if(judge->who == shuangxiong && judge->reason == "shuangniang"){
                 shuangxiong->obtainCard(judge->card);
-                return true;
             }
         }
 
@@ -518,15 +517,16 @@ public:
 class Benghuai: public TriggerSkill {
 public:
     Benghuai(): TriggerSkill("benghuai") {
+        events << EventPhaseStart;
         frequency = Compulsory;
     }
 
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         bool trigger_this = false;
 
-        if (player->getPhase() == Player::Finish)
+        if (data.value<PlayerStar>() == player && player->getPhase() == Player::Finish)
             foreach (ServerPlayer *p, room->getOtherPlayers(player))
-                if (player->getHp() > p->getHp())
+                if (player->getHpPoints() > p->getHpPoints())
                 {
                     trigger_this = true;
                     break;
@@ -2722,7 +2722,7 @@ public:
         if (triggerEvent == FinishJudge)
         {
             JudgeStar judge = data.value<JudgeStar>();
-            if (judge->who == player || judge->reason == objectName())
+            if (judge->who == player && judge->reason == objectName())
                 player->addToPile("lingcu", judge->card->getEffectiveId());
         }
         else

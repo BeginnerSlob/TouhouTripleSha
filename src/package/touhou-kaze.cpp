@@ -820,7 +820,7 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         CardResponseStruct resp = data.value<CardResponseStruct>();
-        if(resp.m_src != player || player->getPhase() != Player::NotActive)
+        if(resp.m_src != player)
             return false;
 
         const Card *card = resp.m_card;
