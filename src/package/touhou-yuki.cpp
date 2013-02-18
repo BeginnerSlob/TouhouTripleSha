@@ -1072,6 +1072,78 @@ public:
     }
 };
 
+class ThSaozang: public TriggerSkill {
+public:
+    ThSaozang(): TriggerSkill("thsaozang") {
+        events << CardsMoveOneTime << EventPhaseStart << EventPhaseEnd;
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (player->getPhase() != Player::Discard)
+            return false;
+
+        if (triggerEvent == CardsMoveOneTime)
+        {
+            CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
+            if (move->from == player && move->to_place == Player::DiscardPile
+                && (move->reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
+            {
+                QStringList list = player->tag.value("ThSaozang").toStringList();
+                foreach (int id, move->card_ids)
+                {
+                    const Card *card = Sanguosha->getEngineCard(id);
+                    if (!list.contains(card->getType()))
+                        list << card->getType();
+                }
+                player->tag["ThSaozang"] = QVariant::fromValue(list);
+            }
+        }
+        else if (triggerEvent == EventPhaseStart && data.value<PlayerStar>() == player)
+            player->tag["ThSaozang"] = QVariant::fromValue(QStringList());
+        else if (triggerEvent == EventPhaseEnd && data.value<PlayerStar>() == player)
+        {
+            QStringList list = player->tag.value("ThSaozang").toStringList();
+            int n = list.length();
+            while (n--)
+            {
+                QList<ServerPlayer *> victims;
+                foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                    if (!p->isKongcheng())
+                        victims << p;
+
+                if (!victims.isEmpty() && player->askForSkillInvoke(objectName()))
+                {
+                    ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName());
+                    room->throwCard(room->askForCardChosen(player, victim, "h", objectName()), victim, player);
+                }
+                else
+                    break;
+            }
+        }
+
+        return false;
+    }
+};
+
+class ThXuqu: public TriggerSkill {
+public:
+    ThXuqu(): TriggerSkill("thxuqu") {
+        events << CardsMoveOneTime;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
+        if (move->from == player && move->from_places.contains(Player::PlaceHand))
+            if (player != room->getCurrent() && player->askForSkillInvoke(objectName()))
+            {
+                ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName());
+                target->drawCards(1);
+            }
+
+        return false;
+    }
+};
+
 class ThQiebao:public TriggerSkill{
 public:
     ThQiebao():TriggerSkill("thqiebao"){
@@ -1746,6 +1818,10 @@ void TouhouPackage::addYukiGenerals(){
     General *yuki012 = new General(this, "yuki012", "wu", 3);
     yuki012->addSkill(new ThFusheng);
     yuki012->addSkill(new ThHuanfa);
+
+    General *yuki013 = new General(this, "yuki013", "wu", 3);
+    yuki013->addSkill(new ThSaozang);
+    yuki013->addSkill(new ThXuqu);
 
     General *yuki014 = new General(this, "yuki014", "wu");
     yuki014->addSkill(new ThQiebao);

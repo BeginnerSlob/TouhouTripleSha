@@ -1544,6 +1544,147 @@ public:
     }
 };
 
+ThXianfaCard::ThXianfaCard() {
+}
+
+bool ThXianfaCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty();
+}
+
+void ThXianfaCard::onEffect(const CardEffectStruct &effect) const {
+    Room *room = effect.from->getRoom();
+    if (subcards.empty())
+        room->loseHp(effect.from);
+
+    QString choice = room->askForChoice(effect.from, "thxianfa", "start+judge+draw+discard+finish");
+    LogMessage log;
+    log.type = "#ThXianfaChoose";
+    log.from = effect.from;
+    log.arg = choice;
+    room->sendLog(log);
+
+    room->setTag("ThXianfaTarget", QVariant::fromValue((PlayerStar)effect.to));
+    effect.to->tag["ThXianfa"] = QVariant::fromValue(choice);
+}
+
+class ThXianfaViewAsSkill: public ViewAsSkill{
+public:
+    ThXianfaViewAsSkill():ViewAsSkill("thxianfa"){
+
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("ThXianfaCard");
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        return selected.isEmpty();
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if(cards.isEmpty())
+            return new ThXianfaCard;
+        else if(cards.length() == 1){
+            ThXianfaCard *card = new ThXianfaCard;
+            card->addSubcards(cards);
+
+            return card;
+        }else
+            return NULL;
+    }
+};
+
+class ThXianfa: public TriggerSkill {
+public:
+    ThXianfa(): TriggerSkill("thxianfa") {
+        events << EventPhaseStart;
+        view_as_skill = new ThXianfaViewAsSkill;
+    }
+
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        if (data.value<PlayerStar>() == player && player->getPhase() == Player::NotActive)
+            if (!room->getTag("ThXianfaTarget").isNull())
+            {
+                PlayerStar target = room->getTag("ThXianfaTarget").value<PlayerStar>();
+                room->removeTag("ThXianfaTarget");
+                if (target->isAlive())
+                {
+                    if (target->tag.value("ThXianfa").isNull())
+                        return false;
+                    
+                    QList<Player::Phase> phases;
+                    QString choice = target->tag.value("ThXianfa").toString();
+                    target->tag.remove("ThXianfa");
+
+                    LogMessage log;
+                    log.type = "#ThXianfaDo";
+                    log.from = target;
+                    log.arg = objectName();
+                    log.arg2 = choice;
+                    room->sendLog(log);
+
+                    if(choice == "start")
+                        phases << Player::Start;
+                    else if(choice == "judge")
+                        phases << Player::Judge;
+                    else if(choice == "draw")
+                        phases << Player::Draw;
+                    else if(choice == "discard")
+                        phases << Player::Discard;
+                    else if(choice == "finish")
+                        phases << Player::Finish;
+                    target->play(phases);
+                }
+            }
+        
+
+        return false;
+    }
+};
+
+class ThWendao: public TriggerSkill {
+public:
+    ThWendao(): TriggerSkill("thwendao") {
+        events << EventPhaseStart;
+        frequency = Wake;
+    }
+
+    virtual bool trigger(TriggerEvent , Room *, ServerPlayer *player, QVariant &data) const{
+        if(player->getMark("@wendao") > 0)
+            return false;
+
+        if(data.value<PlayerStar>() != player || player->getPhase() != Player::Start || !player->isKongcheng())
+            return false;
+
+        Room *room = player->getRoom();
+        LogMessage log;
+        log.type = "#ThWendao";
+        log.from = player;
+        log.arg  = objectName();
+        room->sendLog(log);
+        room->broadcastSkillInvoke(objectName());
+        room->getThread()->delay();
+        
+        QString choice = "draw";
+        if (player->isWounded())
+            choice = room->askForChoice(player, objectName(), "recover+draw");
+
+        if (choice == "recover")
+        {
+            RecoverStruct recover;
+            recover.who = player;
+            room->recover(player, recover);
+        }
+        else
+            player->drawCards(2);
+
+        room->loseMaxHp(player);
+        room->acquireSkill(player, "mitu");
+        player->gainMark("@wendao");
+        return false;
+    }
+};
+
 class ThLeishi: public TriggerSkill {
 public:
     ThLeishi(): TriggerSkill("thleishi") {
@@ -2144,6 +2285,10 @@ void TouhouPackage::addHanaGenerals(){
     hana013->addSkill(new ThLiaoyu);
     hana013->addSkill(new ThHouzhi);
 
+    General *hana014 = new General(this, "hana014", "wei", 4, false);
+    hana014->addSkill(new ThXianfa);
+    hana014->addSkill(new ThWendao);
+
     General *hana015 = new General(this, "hana015", "wei", 3);
     hana015->addSkill(new ThLeishi);
     hana015->addSkill(new ThShanling);
@@ -2171,6 +2316,7 @@ void TouhouPackage::addHanaGenerals(){
     addMetaObject<ThDuanzuiCard>();
     addMetaObject<ThZheyinCard>();
     addMetaObject<ThMengyaCard>();
+    addMetaObject<ThXianfaCard>();
     addMetaObject<ThShijieCard>();
     addMetaObject<ThLiuzhenCard>();
     

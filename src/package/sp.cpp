@@ -193,7 +193,8 @@ public:
             && !effect.card->isKindOf("Duel"))
             return false;
         
-        if (player->inMyAttackRange(effect.to) && player->askForSkillInvoke(objectName()))
+        if (effect.from != player && player->inMyAttackRange(effect.to)
+            && player->askForSkillInvoke(objectName()))
         {
             Slash *slash = new Slash(Card::NoSuitNoColor, 0);
             slash->setSkillName(objectName());
