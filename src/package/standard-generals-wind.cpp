@@ -908,7 +908,7 @@ public:
         if (event == TargetConfirming) {
             ServerPlayer *target = NULL;
             foreach (ServerPlayer *p, room->getAllPlayers())
-                if (p->getMark("TargetConfirming"))
+                if (p->getMark("TargetConfirming") > 0)
                 {
                     target = p;
                     break;
@@ -934,8 +934,10 @@ public:
         } else {
             SlashEffectStruct effect = data.value<SlashEffectStruct>();
             if (player->getMark("manbo") > 0)
+            {
                 player->setMark("manbo", player->getMark("manbo") - 1);
                 return true;
+            }
         }
 
         return false;
@@ -1783,6 +1785,168 @@ public:
     }
 };
 
+class Juejing: public MaxCardsSkill {
+public:
+    Juejing(): MaxCardsSkill("juejing") {
+    }
+
+    virtual int getExtra(const Player *target) const{
+        if (target->hasSkill(objectName()))
+            return 2;
+        else
+            return 0;
+    }
+};
+
+class JuejingDrawCardsSkill: public DrawCardsSkill {
+public:
+    JuejingDrawCardsSkill(): DrawCardsSkill("#juejing") {
+        frequency = Compulsory;
+    }
+
+    virtual int getDrawNum(ServerPlayer *player, int n) const{
+        Room *room = player->getRoom();
+        if (player->isWounded()) {
+            LogMessage log;
+            log.type = "#TriggerSkill";
+            log.from = player;
+            log.arg = "juejing";
+            room->sendLog(log);
+            room->broadcastSkillInvoke("juejing");
+        }
+        return n + player->getLostHp();
+    }
+};
+
+class Zhihun: public ViewAsSkill {
+public:
+    Zhihun(): ViewAsSkill("zhihun") {
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const {
+        return pattern == "slash"
+               || pattern == "jink"
+               || pattern.contains("peach")
+               || pattern == "nullification";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const {
+        return player->isWounded() || Slash::IsAvailable(player);
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *card) const {
+        int n = qMax(1, Self->getHp());
+
+        if (selected.length() >= n || card->hasFlag("using"))
+            return false;
+
+        if (n > 1 && !selected.isEmpty()) {
+            Card::Suit suit = selected.first()->getSuit();
+            return card->getSuit() == suit;
+        }
+
+        switch (Sanguosha->currentRoomState()->getCurrentCardUseReason()) {
+        case CardUseStruct::CARD_USE_REASON_PLAY: {
+                if (Self->isWounded() && card->getSuit() == Card::Heart)
+                    return true;
+                else if (Slash::IsAvailable(Self) && card->getSuit() == Card::Spade)
+                    return true;
+                else
+                    return false;
+            }
+        case CardUseStruct::CARD_USE_REASON_RESPONSE: {
+                QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+                if (pattern == "jink")
+                    return card->getSuit() == Card::Club;
+                else if (pattern == "nullification")
+                    return card->getSuit() == Card::Diamond;
+                else if (pattern == "peach" || pattern == "peach+analeptic")
+                    return card->getSuit() == Card::Heart;
+                else if (pattern == "slash")
+                    return card->getSuit() == Card::Spade;
+            }
+        default:
+            break;
+        }
+
+        return false;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const {
+        int n = qMax(1, Self->getHp());
+
+        if (cards.length() != n)
+            return NULL;
+
+        const Card *card = cards.first();
+        Card *new_card = NULL;
+        Card::Suit suit = Card::NoSuitNoColor;
+        if (cards.length() == 1)
+            suit = card->getSuit();
+        else
+            suit = card->isRed() ? Card::NoSuitRed : Card::NoSuitBlack;
+
+        int number = 0;
+        if (cards.length() == 1)
+            number = card->getNumber();
+        else
+        {
+            bool same = true;
+            foreach (const Card *cd, cards)
+                if (cd->getNumber() != card->getNumber())
+                {
+                    same = false;
+                    break;
+                }
+
+            number = same ? card->getNumber() : 0;
+        }
+
+        switch (card->getSuit()) {
+        case Card::Diamond: {
+                new_card = new Nullification(suit, number);
+                break;
+            }
+        case Card::Heart: {
+                new_card = new Peach(suit, number);
+                break;
+            }
+        case Card::Club: {
+                new_card = new Jink(suit, number);
+                break;
+            }
+        case Card::Spade: {
+                new_card = new FireSlash(suit, number);
+                break;
+            }
+        default:
+            break;
+        }
+
+        if (new_card) {
+            new_card->setSkillName(objectName());
+            new_card->addSubcards(cards);
+            return new_card;
+        }
+
+        return NULL;
+    }
+
+    bool isEnabledAtNullification(const ServerPlayer *player) const{
+        int n = qMax(1, player->getHp());
+        int count = 0;
+        foreach (const Card *card, player->getCards("he")) {
+            if (card->objectName() == "nullification")
+                return true;
+
+            if (card->getSuit() == Card::Diamond)
+                count++;
+        }
+
+        return count >= n;
+    }
+};
+
 void StandardPackage::addWindGenerals(){
     General *wind001 = new General(this, "wind001$", "shu");
     wind001->addSkill(new Funuan);
@@ -1891,6 +2055,12 @@ void StandardPackage::addWindGenerals(){
     General *wind024 = new General(this, "wind024", "shu");
     wind024->addSkill(new Xiewang);
     wind024->addSkill("shengzun");
+
+    General *wind030 = new General(this, "wind030", "shu", 2);
+    wind030->addSkill(new Juejing);
+    wind030->addSkill(new JuejingDrawCardsSkill);
+    wind030->addSkill(new Zhihun);
+    related_skills.insertMulti("juejing", "#juejing");
     
     addMetaObject<FunuanCard>();
     addMetaObject<LiqiCard>();

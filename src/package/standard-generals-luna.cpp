@@ -1825,7 +1825,7 @@ public:
             kingdom_set << p->getKingdom();
         }
 
-        return kingdom_set.size();
+        return qMax(kingdom_set.size(), 2);
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{

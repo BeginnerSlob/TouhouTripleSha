@@ -910,7 +910,7 @@ public:
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         ServerPlayer *target = NULL;
         foreach (ServerPlayer *p, room->getAllPlayers())
-            if (p->getMark("TargetConfirming"))
+            if (p->getMark("TargetConfirming") > 0)
             {
                 target = p;
                 break;

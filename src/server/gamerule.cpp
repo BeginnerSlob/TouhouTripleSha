@@ -23,8 +23,7 @@ GameRule::GameRule(QObject *)
            << AskForPeaches << AskForPeachesDone << Death << GameOverJudge
            << SlashEffectStart << SlashHit << SlashEffected << SlashProceed
            << ConfirmDamage << PreHpReduced << DamageDone << DamageComplete
-           << StartJudge << FinishRetrial << FinishJudge
-           << Pindian;
+           << StartJudge << FinishRetrial << FinishJudge;
 }
 
 bool GameRule::triggerable(const ServerPlayer *target) const{
@@ -123,6 +122,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
                     int n = num.toInt();
                     if(n > 0)
                         player->drawCards(n, false);
+                    room->getThread()->trigger(AfterDrawNCards, room, player, QVariant::fromValue(n));
                     break;
                 }
 
@@ -209,28 +209,28 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
                     foreach(ServerPlayer *to, card_use.to){
                         target = to;
                         bool changed = false;
-                        room->setPlayerMark(to, "TargetComfirming", 1);
+                        room->setPlayerMark(to, "TargetConfirming", 1);
                         foreach (ServerPlayer *p, room->getAllPlayers())
                             if (thread->trigger(TargetConfirming, room, p, data))
                             {
                                 changed = true;
                                 break;
                             }
-                        room->setPlayerMark(to, "TargetComfirming", 0);
+                        room->setPlayerMark(to, "TargetConfirming", 0);
                         while(changed){
                             CardUseStruct new_use = data.value<CardUseStruct>();
                             target = new_use.to.at(targets.indexOf(target));
                             targets = new_use.to;
                             // trigger again
                             changed = false;
-                            room->setPlayerMark(target, "TargetComfirming", 1);
+                            room->setPlayerMark(target, "TargetConfirming", 1);
                             foreach (ServerPlayer *p, room->getAllPlayers())
                                 if (thread->trigger(TargetConfirming, room, p, data))
                                 {
                                     changed = true;
                                     break;
                                 }
-                            room->setPlayerMark(target, "TargetComfirming", 0);
+                            room->setPlayerMark(target, "TargetConfirming", 0);
                         }
                     }
                 }
@@ -699,31 +699,6 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
                 CardMoveReason reason(CardMoveReason::S_REASON_JUDGEDONE, judge->who->objectName(), QString(), judge->reason);
                 room->moveCardTo(judge->card, judge->who, NULL, Player::DiscardPile, reason, true);
             }            
-            break;
-        }
-
-    case Pindian:{
-            PindianStar pindian = data.value<PindianStar>();
-            // modify this
-            CardMoveReason reason1(CardMoveReason::S_REASON_PINDIAN, pindian->from->objectName(), pindian->to->objectName(),
-                pindian->reason, QString());
-            room->moveCardTo(pindian->from_card, pindian->from, NULL, Player::DiscardPile, reason1, true);
-
-
-            CardMoveReason reason2(CardMoveReason::S_REASON_PINDIAN, pindian->to->objectName());
-            room->moveCardTo(pindian->to_card, pindian->to, NULL, Player::DiscardPile, reason2, true);
-            LogMessage log;
-
-            log.type = "$PindianResult";
-            log.from = pindian->from;
-            log.card_str = pindian->from_card->getEffectIdString();
-            room->sendLog(log);
-
-            log.type = "$PindianResult";
-            log.from = pindian->to;
-            log.card_str = pindian->to_card->getEffectIdString();
-            room->sendLog(log);
-
             break;
         }
 

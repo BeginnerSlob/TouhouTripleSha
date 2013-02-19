@@ -346,7 +346,7 @@ public:
         {
             ServerPlayer *target = NULL;
             foreach (ServerPlayer *p, room->getAllPlayers())
-                if (p->getMark("TargetConfirming"))
+                if (p->getMark("TargetConfirming") > 0)
                 {
                     target = p;
                     break;
@@ -1457,21 +1457,31 @@ public:
         events << EventPhaseStart << EventPhaseEnd;
     }
     
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *splayer, QVariant &data) const{
-        ServerPlayer *player = data.value<PlayerStar>();
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (data.value<PlayerStar>() != player) return false;
         if (triggerEvent == EventPhaseEnd && player->hasSkill("thkujievs"))
             room->detachSkillFromPlayer(player, "thkujievs", true);
         else if (triggerEvent == EventPhaseStart)
         {
-            if (player->getPhase() == Player::Play && !player->hasSkill("thkujievs") && splayer->isAlive() && player != splayer)
-                room->attachSkillToPlayer(player, "thkujievs");
-            else if (player->getPhase() == Player::NotActive && splayer->isAlive() && splayer->hasFlag("thkujieused"))
+            if (player->getPhase() == Player::Play && !player->hasSkill("thkujievs") && player->isAlive())
+                foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                    if (p->hasSkill("thkujie"))
+                    {
+                        room->attachSkillToPlayer(player, "thkujievs");
+                        break;
+                    }
+            else if (player->getPhase() == Player::NotActive)
             {
-                room->setPlayerFlag(splayer, "-thkujieused");
-                RecoverStruct recover;
-                recover.recover = 2;
-                recover.who = splayer;
-                room->recover(splayer, recover);
+                foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                    if (p->hasFlag("thkujieused"))
+                    {
+                        room->setPlayerFlag(player, "-thkujieused");
+                        RecoverStruct recover;
+                        recover.recover = 2;
+                        recover.who = player;
+                        room->recover(player, recover);
+                        break;
+                    }
             }
         }
 

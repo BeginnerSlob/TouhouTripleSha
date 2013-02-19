@@ -563,7 +563,7 @@ void Client::onPlayerUseCard(const Card *card, const QList<const Player *> &targ
         //else
         //    request(QString("useCard %1->%2").arg(card->toString()).arg(target_names.join("+")));
 
-        if(status == Responding)
+        if((status & ClientStatusBasicMask) == Responding)
             _m_roomState.setCurrentCardUsePattern(QString());
     }
 
