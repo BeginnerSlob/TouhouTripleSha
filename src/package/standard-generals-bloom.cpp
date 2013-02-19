@@ -687,7 +687,7 @@ public:
 
         QString discard_prompt = QString("#mancai-%1").arg(index);
         QString use_prompt = QString("@mancai-%1").arg(index);
-        if(index > 0 && room->askForDiscard(player, objectName(), 1, 1, true, false, discard_prompt)){
+        if(index > 0 && room->askForCard(player, ".", discard_prompt, QVariant(), objectName())) {
             room->broadcastSkillInvoke("mancai", index);
             if(!player->isSkipped(change.to) && (index == 2 || index == 3))
                 room->askForUseCard(player, "@mancai", use_prompt, index);
@@ -1487,7 +1487,7 @@ public:
     virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         ServerPlayer *target = NULL;
         foreach (ServerPlayer *p, room->getAllPlayers())
-            if (p->getMark("TargetConfirming"))
+            if (p->getMark("TargetConfirming") > 0)
             {
                 target = p;
                 break;
@@ -1873,6 +1873,100 @@ public:
     }
 };
 
+YihuoCard::YihuoCard(){
+    will_throw = false;
+    handling_method = MethodNone;
+}
+
+bool YihuoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && (to_select->hasEquip() || !to_select->faceUp())
+           && to_select->hasSkill("yihuo") && Self != to_select;
+}
+
+void YihuoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    ServerPlayer *target = targets.first();
+    room->showCard(source, getEffectiveId(), target);
+    const Card *card = room->askForCard(target, ".Equip", "@YihuoExchange", QVariant(), MethodNone, source);
+    if (card)
+    {
+        source->obtainCard(card);
+        target->obtainCard(this, false);
+        target->drawCards(1);
+    }
+}
+
+class YihuoViewAsSkill:public OneCardViewAsSkill{
+public:
+    YihuoViewAsSkill():OneCardViewAsSkill("yihuovs"){
+        attached_lord_skill = true;
+    }
+
+    virtual bool viewFilter(const Card *to_select) const{
+        return !to_select->isEquipped();
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        YihuoCard *card = new YihuoCard();
+        card->addSubcard(originalCard);
+        return card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("YihuoCard");
+    }
+};
+
+class Yihuo:public TriggerSkill{
+public:
+    Yihuo():TriggerSkill("yihuo"){
+        events << EventPhaseStart << EventPhaseEnd;
+    }
+    
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (data.value<PlayerStar>() != player) return false;
+        if (triggerEvent == EventPhaseEnd && player->hasSkill("yihuovs"))
+            room->detachSkillFromPlayer(player, "yihuovs", true);
+        else if (triggerEvent == EventPhaseStart)
+            if (player->getPhase() == Player::Play && !player->hasSkill("yihuovs") && player->isAlive())
+                foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                    if (p->hasSkill("yihuo"))
+                    {
+                        room->attachSkillToPlayer(player, "yihuovs");
+                        break;
+                    }
+
+        return false;
+    }
+};
+
+class Guixin: public TriggerSkill {
+public:
+    Guixin(): TriggerSkill("guixin") {
+        events << Damaged;
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (room->alivePlayerCount() > 3 && !player->faceUp())
+            return false;
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.to == player && player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (p->isAlive() && !p->isAllNude()) {
+                    CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, player->objectName());
+                    int card_id = room->askForCardChosen(player, p, "hej", objectName());
+                    room->obtainCard(player, Sanguosha->getCard(card_id),
+                                     reason, room->getCardPlace(card_id) != Player::PlaceHand);
+                }
+            }
+
+            player->turnOver();
+        }
+        return false;
+    }
+};
+
 class Renjia: public TriggerSkill {
 public:
     Renjia(): TriggerSkill("renjia") {
@@ -2212,6 +2306,10 @@ void StandardPackage::addBloomGenerals(){
     related_skills.insertMulti("huyin", "#huyin-clear");
     bloom028->addSkill(new Hongce);
 
+    General *bloom029 = new General(this, "bloom029", "wei", 3);
+    bloom029->addSkill(new Yihuo);
+    bloom029->addSkill(new Guixin);
+
     General *bloom030 = new General(this, "bloom030", "wei");
     bloom030->addSkill(new Renjia);
     bloom030->addSkill(new Tiangai);
@@ -2230,8 +2328,9 @@ void StandardPackage::addBloomGenerals(){
     addMetaObject<BisuoCard>();
     addMetaObject<HuanwuCard>();
     addMetaObject<XinbanCard>();
+    addMetaObject<YihuoCard>();
     addMetaObject<JilveCard>();
 
-    skills << new SongweiGivenSkill  << new Huanwu 
+    skills << new SongweiGivenSkill  << new Huanwu << new YihuoViewAsSkill
            << new Jilve << new JilveClear << new JilveAvoidTriggeringCardsMove;
 }

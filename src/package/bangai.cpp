@@ -177,10 +177,10 @@ public:
         if (triggerEvent == DamageCaused)
         {
             DamageStruct damage = data.value<DamageStruct>();
-            if (!damage.from || damage.from->getMark("@yaoshu") <= 0 || !damage.to->hasSkill(objectName()) || damage.from == damage.to)
+            if (!damage.from || damage.from->getMark("@yaoshu") <= 0 || damage.to != player || damage.from == damage.to)
                 return false;
             else
-                owner = damage.to;
+                owner = damage.from;
         }
         else if (triggerEvent == Dying)
         {
@@ -188,15 +188,15 @@ public:
             if (dying.who == player || dying.who->getMark("@yaoshu") <= 0)
                 return false;
             else
-                owner = player;
+                owner = dying.who;
         }
 
-        if(owner && owner->askForSkillInvoke(objectName()))
+        if(player && player->askForSkillInvoke(objectName()))
         {
-            owner->turnOver();
-            room->moveCardTo(player->wholeHandCards(), owner, Player::PlaceHand);
-            player->loseAllMarks("@yaoshu");
-            owner->gainMark("@yaoshu");
+            player->turnOver();
+            room->moveCardTo(owner->wholeHandCards(), player, Player::PlaceHand);
+            owner->loseAllMarks("@yaoshu");
+            player->gainMark("@yaoshu");
         }
 
         return false;
@@ -1438,7 +1438,7 @@ public:
         {
             ServerPlayer *target = NULL;
             foreach (ServerPlayer *p, room->getAllPlayers())
-                if (p->getMark("TargetConfirming"))
+                if (p->getMark("TargetConfirming") > 0)
                 {
                     target = p;
                     break;

@@ -426,32 +426,12 @@ bool ThGugaoCard::targetFilter(const QList<const Player *> &targets, const Playe
 
 void ThGugaoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const {
     ServerPlayer *target = targets[0];
-    bool win = source->pindian(target, "thgugao", this);
-    if (win)
-    {
-        room->setPlayerFlag(source, "thgugao");
-        DamageStruct damage;
-        damage.from = source;
-        damage.to = target;
-        room->damage(damage);
-    }
-    else
-    {
-        if (source->hasFlag("thgugao"))
-            room->setPlayerFlag(source, "-thgugao");
-        if (source->getMark("@qianyu") <= 0)
-        {
-            DamageStruct damage;
-            damage.from = target;
-            damage.to = source;
-            room->damage(damage);
-        }
-    }
+    source->pindian(target, "thgugao", this);
 }
 
-class ThGugao: public OneCardViewAsSkill {
+class ThGugaoViewAsSkill: public OneCardViewAsSkill {
 public:
-    ThGugao(): OneCardViewAsSkill("thgugao") {
+    ThGugaoViewAsSkill(): OneCardViewAsSkill("thgugao") {
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
@@ -469,6 +449,44 @@ public:
     }
 };
 
+class ThGugao: public TriggerSkill {
+public:
+    ThGugao(): TriggerSkill("thgugao") {
+        events << Pindian;
+        view_as_skill = new ThGugaoViewAsSkill;
+    }
+
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        PindianStar pindian = data.value<PindianStar>();
+        if (pindian->reason != objectName())
+            return false;
+
+        if (pindian->isSuccess())
+        {
+            room->setPlayerFlag(pindian->from, "thgugao");
+            DamageStruct damage;
+            damage.from = pindian->from;
+            damage.to = pindian->to;
+            room->damage(damage);
+        }
+        else
+        {
+            if (pindian->from->hasFlag("thgugao"))
+                room->setPlayerFlag(pindian->from, "-thgugao");
+            if (player->getMark("@qianyu") < 1
+                || pindian->from_card->getSuit() == pindian->to_card->getSuit())
+            {
+                DamageStruct damage;
+                damage.from = pindian->to;
+                damage.to = pindian->from;
+                room->damage(damage);
+            }
+        }
+
+        return false;
+    }
+};
+
 class ThQianyu: public TriggerSkill {
 public:
     ThQianyu(): TriggerSkill("thqianyu") {
@@ -481,9 +499,8 @@ public:
         if (player->getHp() != 1)
             return false;
 
-        if (srcplayer->getPhase() == Player::Finish && player->getMark("@qianyu") <= 0)
+        if (srcplayer->getPhase() == Player::NotActive && player->getMark("@qianyu") <= 0)
         {
-            room->setPlayerMark(player, "qianyuextra", 1);
             LogMessage log;
             log.type = "#ThQianyu";
             log.from = player;
@@ -492,12 +509,9 @@ public:
             room->sendLog(log);
 
             player->gainMark("@qianyu");
-            room->loseMaxHp(player, 3);
+            if (player->getMaxHp() > 1)
+                room->loseMaxHp(player, player->getMaxHp() - 1);
             room->acquireSkill(player, "thkuangmo");
-        }
-        else if (srcplayer->getPhase() == Player::NotActive && player->getMark("qianyuextra") > 0)
-        {
-            room->setPlayerMark(player, "qianyuextra", 0);
             player->gainAnExtraTurn(srcplayer);
         }
 

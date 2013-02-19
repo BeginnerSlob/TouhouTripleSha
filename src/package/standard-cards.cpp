@@ -832,15 +832,11 @@ void SingleTargetTrick::use(Room *room, ServerPlayer *source, QList<ServerPlayer
             room->cardEffect(effect);
         }
     }
-    else{
-        effect.to = source;
-        room->cardEffect(effect);
-    }
 
-    if(room->getCardPlace(this->getEffectiveId()) == Player::PlaceTable)
+    if(room->getCardPlace(getEffectiveId()) == Player::PlaceTable)
     {
         CardMoveReason reason(CardMoveReason::S_REASON_USE, source->objectName());
-        reason.m_skillName = this->getSkillName();
+        reason.m_skillName = getSkillName();
         if (targets.size() == 1) reason.m_targetId = targets.first()->objectName();
         room->moveCardTo(this, source, NULL, Player::DiscardPile, reason);
     }
@@ -955,6 +951,13 @@ ExNihilo::ExNihilo(Suit suit, int number)
 
 bool ExNihilo::isAvailable(const Player *player) const{
     return !player->isProhibited(player, this);
+}
+
+void ExNihilo::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    if (targets.isEmpty())
+        targets << source;
+
+    SingleTargetTrick::use(room, source, targets);
 }
 
 void ExNihilo::onEffect(const CardEffectStruct &effect) const{

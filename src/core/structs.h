@@ -81,11 +81,11 @@ class CardMoveReason
 {
 public:
     int m_reason;
-    QString m_playerId; // the cause (not the source) of the movement, such as "lusu" when "dimeng", or "zhanghe" when "qiaobian"
+    QString m_playerId; // the cause (not the source) of the movement, such as "lusu" when "qixi", or "zhanghe" when "qiaobian"
     QString m_targetId; // To keep this structure lightweight, currently this is only used for UI purpose.
                         // It will be set to empty if multiple targets are involved. NEVER use it for trigger condition
                         // judgement!!! It will not accurately reflect the real reason.
-    QString m_skillName; // skill that triggers movement of the cards, such as "longdang", "dimeng"
+    QString m_skillName; // skill that triggers movement of the cards, such as "longdang", "qixi"
     QString m_eventName; // additional arg such as "lebusishu" on top of "S_REASON_JUDGE"
     inline CardMoveReason(){ m_reason = S_REASON_UNKNOWN; }
     inline CardMoveReason(int moveReason, QString playerId)
@@ -431,6 +431,7 @@ enum TriggerEvent{
     EventPhaseChanging,
 
     DrawNCards,
+    AfterDrawNCards,
     
     HpRecover,
     HpRecovered,

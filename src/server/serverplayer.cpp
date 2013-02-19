@@ -550,6 +550,22 @@ bool ServerPlayer::pindian(ServerPlayer *target, const QString &reason, const Ca
     else
         room->setEmotion(this, "no-success");
 
+    CardMoveReason reason1(CardMoveReason::S_REASON_PINDIAN, objectName(), target->objectName(), reason, QString());
+    room->moveCardTo(card1, this, NULL, Player::DiscardPile, reason1, true);
+
+    CardMoveReason reason2(CardMoveReason::S_REASON_PINDIAN, target->objectName());
+    room->moveCardTo(card2, target, NULL, Player::DiscardPile, reason2, true);
+
+    log.type = "$PindianResult";
+    log.from = this;
+    log.card_str = card1->getEffectIdString();
+    room->sendLog(log);
+
+    log.type = "$PindianResult";
+    log.from = target;
+    log.card_str = card2->getEffectIdString();
+    room->sendLog(log);
+
     QVariant data = QVariant::fromValue(pindian_star);
     room->getThread()->trigger(Pindian, room, this, data);
 
