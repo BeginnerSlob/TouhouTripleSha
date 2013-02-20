@@ -614,9 +614,18 @@ bool ServerPlayer::changePhase(Player::Phase from, Player::Phase to){
     if(!phases.isEmpty())
         phases.removeFirst();
 
+    skip = false;
     QVariant trigger_data = QVariant::fromValue((PlayerStar)this);
     foreach (ServerPlayer *p, room->getAllPlayers())
-        thread->trigger(EventPhaseStart, room, p, trigger_data);
+        if (thread->trigger(EventPhaseStart, room, p, trigger_data))
+        {
+            skip = true;
+            break;
+        }
+
+    if (!skip)
+        thread->trigger(DoPhase, room, this);
+
     if(getPhase() != NotActive)
         foreach (ServerPlayer *p, room->getAllPlayers())
             thread->trigger(EventPhaseEnd, room, p, trigger_data);
@@ -675,9 +684,17 @@ void ServerPlayer::play(QList<Player::Phase> set_phases){
         if((skip || _m_phases_state[i].finished) && phases[i] != NotActive)
             continue;
         
+        skip = false;
         QVariant trigger_data = QVariant::fromValue((PlayerStar)this);
         foreach (ServerPlayer *p, room->getAllPlayers())
-            thread->trigger(EventPhaseStart, room, p, trigger_data);
+            if (thread->trigger(EventPhaseStart, room, p, trigger_data))
+            {
+                skip = true;
+                break;
+            }
+
+        if (!skip)
+            thread->trigger(DoPhase, room, this);
         if(getPhase() != NotActive)
             foreach (ServerPlayer *p, room->getAllPlayers())
                 thread->trigger(EventPhaseEnd, room, p, trigger_data);

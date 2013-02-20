@@ -581,6 +581,7 @@ enum TriggerEvent{
     EventPhaseStart,
     EventPhaseEnd,
     EventPhaseChanging,
+    DoPhase, // @todo_Slob: cannot trigger any thing without gamerule!
 
     DrawNCards,
     AfterDrawNCards,
