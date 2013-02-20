@@ -16,7 +16,7 @@ GameRule::GameRule(QObject *)
     // a way to do it.
     //setParent(parent);
 
-    events << GameStart << TurnStart << EventPhaseStart << CardUsed
+    events << GameStart << TurnStart << DoPhase << CardUsed
            << CardEffected << CardFinished
            << HpRecover << HpLost << MaxHpLost << PostHpReduced
            << EventLoseSkill << EventAcquireSkill
@@ -85,9 +85,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
             break;
         }
 
-    case EventPhaseStart: {
-        if (data.value<PlayerStar>() != player)
-            break;
+    case DoPhase: {
         switch(player->getPhase()){
             case Player::PhaseNone: {
                 Q_ASSERT(false);
@@ -168,6 +166,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
             case Player::RoundEnd:{
                     break;
                 }
+
             case Player::NotActive:{
                     if(player->hasFlag("drank")){
                         LogMessage log;
@@ -1137,8 +1136,8 @@ bool BasaraMode::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *pl
         break;
     }
 
-    case EventPhaseStart:{
-        if(data.value<PlayerStar>() == player && player->getPhase() == Player::Start)
+    case DoPhase:{
+        if(player->getPhase() == Player::Start)
             playerShowed(player);
 
         break;
