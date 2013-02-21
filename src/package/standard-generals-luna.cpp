@@ -2437,7 +2437,7 @@ public:
                 room->askForUseCard(player, "@@kouzhu", "@kouzhu-remove", -1, Card::MethodNone);
             else if (srcplayer->getPhase() == Player::RoundStart && srcplayer->getMark("@kouzhu") > 0)
             {
-                ServerPlayer *source = player->tag.value("Kouzhu").value<PlayerStar>();
+                ServerPlayer *source = srcplayer->tag.value("Kouzhu").value<PlayerStar>();
                 if (source != player)
                     return false;
                 
@@ -2676,23 +2676,23 @@ void TianwuCard::use(Room *room, ServerPlayer *player, QList<ServerPlayer *> &) 
     player->loseMark("@mailun", 6);
 
     QList<ServerPlayer *> players = room->getOtherPlayers(player);
-    foreach (ServerPlayer *player, players) {
+    foreach (ServerPlayer *p, players) {
         DamageStruct damage;
         damage.from = player;
-        damage.to = player;
+        damage.to = p;
 
         room->damage(damage);
     }
 
-    foreach (ServerPlayer *player, players) {
-        QList<const Card *> equips = player->getEquips();
-        player->throwAllEquips();
+    foreach (ServerPlayer *p, players) {
+        QList<const Card *> equips = p->getEquips();
+        p->throwAllEquips();
         if (!equips.isEmpty())
             room->getThread()->delay();
     }
 
-    foreach (ServerPlayer *player, players) {
-        room->askForDiscard(player, "tianwu", 4, 4);
+    foreach (ServerPlayer *p, players) {
+        room->askForDiscard(p, "tianwu", 4, 4);
     }
 
     player->turnOver();

@@ -882,7 +882,7 @@ public:
 class ThWeide: public TriggerSkill{
 public:
     ThWeide():TriggerSkill("thweide"){
-        events << DrawNCards << EventPhaseEnd;
+        events << DrawNCards << AfterDrawNCards;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
@@ -903,8 +903,7 @@ public:
             ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
             target->drawCards(x);
         }
-        else if (triggerEvent == EventPhaseEnd && data.value<PlayerStar>() == player
-                 && player->getPhase() == Player::Draw && player->hasFlag("thweideused"))
+        else if (triggerEvent == AfterDrawNCards && player->hasFlag("thweideused"))
         {
             room->setPlayerFlag(player, "-thweideused");
             QList<ServerPlayer *> victims;

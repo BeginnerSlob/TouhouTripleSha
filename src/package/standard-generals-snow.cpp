@@ -1400,7 +1400,7 @@ public:
         
         if (triggerEvent == EventPhaseStart)
         {
-            if (data.value<PlayerStar>() == player && player->getPhase() == Player::Finish)
+            if (data.value<PlayerStar>()->getPhase() == Player::Finish)
                 while (player->getMark("@jilei") > 0)
                 {
                     LogMessage log;
