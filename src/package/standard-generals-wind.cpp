@@ -29,22 +29,24 @@ bool FunuanCard::targetFilter(const QList<const Player *> &targets, const Player
 
 void FunuanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *target = NULL;
-    if(targets.isEmpty()){
-        foreach(ServerPlayer *player, room->getAlivePlayers()){
-            if(player != source){
-                target = player;
-                break;
-            }
+    if(targets.isEmpty())
+        foreach(ServerPlayer *player, room->getOtherPlayers(source))
+		{
+            target = player;
+            break;
         }
-    }else
+    else
         target = targets.first();
 
     CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName());
     reason.m_playerId = target->objectName();
     room->obtainCard(target, this, reason, false);
 
-    target->addMark("funuantarget");
-    source->addMark("funuantarget");
+	if (target->getMark("funuantarget") <= 0)
+	{
+		room->setPlayerMark(target, "funuantarget", 1);
+		room->setPlayerMark(source, "funuantarget", source->getMark("funuantarget") + 1);
+	}
     int old_value = source->getMark("funuan");
     int new_value = old_value + subcards.length();
     room->setPlayerMark(source, "funuan", new_value);
