@@ -120,7 +120,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
                     int n = num.toInt();
                     if(n > 0)
                         player->drawCards(n, false);
-                    room->getThread()->trigger(AfterDrawNCards, room, player, QVariant::fromValue(n));
+                    room->getThread()->trigger(AfterDrawNCards, room, player, num);
                     break;
                 }
 
