@@ -470,25 +470,9 @@ public:
         if(cards.length() != 2)
             return NULL;
 
-        const Card *first = cards[0];
-        const Card *second = cards[1];
-
-        Card::Suit suit = Card::NoSuitNoColor;
-        if(first->isBlack() && second->isBlack())
-            suit = Card::NoSuitBlack;
-        else if(first->isRed() && second->isRed())
-            suit = Card::NoSuitRed;
-
-        int number;
-        if (first->getNumber() == second->getNumber())
-            number = first->getNumber();
-        else
-            number = 0;
-
-        Slash *slash = new Slash(suit, number);
+        Slash *slash = new Slash(Card::SuitToBeDecided, 0);
         slash->setSkillName(objectName());
-        slash->addSubcard(first);
-        slash->addSubcard(second);
+        slash->addSubcards(cards);
 
         return slash;
     }

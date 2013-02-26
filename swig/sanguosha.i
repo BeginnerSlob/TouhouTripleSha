@@ -660,7 +660,7 @@ class Card: public QObject
 
 public:
     // enumeration type
-    enum Suit {Spade, Club, Heart, Diamond, NoSuitBlack, NoSuitRed, NoSuitNoColor};
+    enum Suit {Spade, Club, Heart, Diamond, NoSuitBlack, NoSuitRed, NoSuitNoColor, SuitToBeDecided = -1};
     enum HandlingMethod{MethodNone, MethodUse, MethodResponse, MethodDiscard, MethodRecast, MethodPindian};
     static const Suit AllSuits[4];
     

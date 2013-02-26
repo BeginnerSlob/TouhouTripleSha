@@ -600,10 +600,10 @@ public:
 
         if(player->hasSkill("thmanxiao") && player->askForSkillInvoke(objectName(), data)){
             room->broadcastSkillInvoke(objectName());
-			
-			RecoverStruct recover;
+            
+            RecoverStruct recover;
             recover.recover = 1 - player->getHp();
-			recover.who = player;
+            recover.who = player;
             room->recover(player, recover);
 
             player->gainMark("@yingxiao");

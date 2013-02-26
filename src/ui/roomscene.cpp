@@ -1814,9 +1814,9 @@ void RoomScene::keepGetCardLog(const CardsMoveStruct &move)
 {
     if (move.card_ids.isEmpty()) return;
     if (move.to && (move.to_place == Player::PlaceHand
-		            || move.to_place == Player::PlaceEquip
-					|| move.to_place == Player::PlaceSpecial)
-				&& move.from_place != Player::DrawPile) {
+                    || move.to_place == Player::PlaceEquip
+                    || move.to_place == Player::PlaceSpecial)
+                && move.from_place != Player::DrawPile) {
         foreach (QString flag, move.to->getFlags().split("+"))
             if (flag.endsWith("_InTempMoving") || flag == "AskForCardsChoosing")
                 return;
@@ -1992,7 +1992,7 @@ void RoomScene::addSkillButton(const Skill *skill, bool from_left){
         dialog->setParent(main_window, Qt::Dialog);
         connect(btn, SIGNAL(skill_activated()), dialog, SLOT(popup()));
         connect(btn, SIGNAL(skill_deactivated()), dialog, SLOT(reject()));
-        if(dialog->objectName() == "qice")
+        if(dialog->objectName() == "mice")
             connect(dialog, SIGNAL(onButtonClick()), dashboard, SLOT(selectAll()));
     }
    

@@ -340,7 +340,7 @@ bool IronChain::targetFilter(const QList<const Player *> &targets, const Player 
 bool IronChain::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
     if (Self->isCardLimited(this, Card::MethodUse))
         return targets.length() == 0;
-    if (getSkillName() == "guhuo" || getSkillName() == "qice" || getSkillName() == "thmimeng")
+    if (getSkillName() == "guhuo" || getSkillName() == "mice" || getSkillName() == "thmimeng")
         return targets.length() == 1 || targets.length() == 2;
     else
         return targets.length() <= 2;

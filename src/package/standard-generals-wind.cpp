@@ -31,7 +31,7 @@ void FunuanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &ta
     ServerPlayer *target = NULL;
     if(targets.isEmpty())
         foreach(ServerPlayer *player, room->getOtherPlayers(source))
-		{
+        {
             target = player;
             break;
         }
@@ -42,11 +42,11 @@ void FunuanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &ta
     reason.m_playerId = target->objectName();
     room->obtainCard(target, this, reason, false);
 
-	if (target->getMark("funuantarget") <= 0)
-	{
-		room->setPlayerMark(target, "funuantarget", 1);
-		room->setPlayerMark(source, "funuantarget", source->getMark("funuantarget") + 1);
-	}
+    if (target->getMark("funuantarget") <= 0)
+    {
+        room->setPlayerMark(target, "funuantarget", 1);
+        room->setPlayerMark(source, "funuantarget", source->getMark("funuantarget") + 1);
+    }
     int old_value = source->getMark("funuan");
     int new_value = old_value + subcards.length();
     room->setPlayerMark(source, "funuan", new_value);
@@ -449,6 +449,7 @@ class Yufeng:public TriggerSkill{
 public:
     Yufeng():TriggerSkill("yufeng"){
         events << TargetConfirmed << CardFinished;
+        frequency = Frequent;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
@@ -693,10 +694,10 @@ public:
                 CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, this->objectName());
                 room->throwCard(trick, reason, NULL);
             }
-			
-			RecoverStruct recover;
+            
+            RecoverStruct recover;
             recover.recover = qMin(3, player->getMaxHp()) - player->getHp();
-			recover.who = player;
+            recover.who = player;
             room->recover(player, recover);
 
             player->drawCards(3);
@@ -1352,8 +1353,8 @@ public:
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         if (data.value<PlayerStar>() != player)
-			return false;
-		if (player->getPhase() == Player::Draw && room->askForUseCard(player, "@@xuanhui", "@xuanhui-card"))
+            return false;
+        if (player->getPhase() == Player::Draw && room->askForUseCard(player, "@@xuanhui", "@xuanhui-card"))
             return true;
 
         return false;
@@ -1618,21 +1619,21 @@ public:
             log.arg = objectName();
             room->sendLog(log);
 
-			QList<ServerPlayer *> targets;
-			foreach (ServerPlayer *p, room->getOtherPlayers(player))
-				if (!p->isKongcheng())
-					targets << p;
+            QList<ServerPlayer *> targets;
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                if (!p->isKongcheng())
+                    targets << p;
 
-			if (!targets.isEmpty() && room->askForChoice(player, objectName(), "play+look") == "look")
-			{
+            if (!targets.isEmpty() && room->askForChoice(player, objectName(), "play+look") == "look")
+            {
                 ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
-				room->showAllCards(target, player);
-			}
-			else
-			{
-				player->setPhase(Player::Play);
-				room->broadcastProperty(player, "phase");
-			}
+                room->showAllCards(target, player);
+            }
+            else
+            {
+                player->setPhase(Player::Play);
+                room->broadcastProperty(player, "phase");
+            }
         }
         return false;
     }
@@ -1662,7 +1663,7 @@ public:
             return false;
         if (player->askForSkillInvoke(objectName(), data)) {
             room->broadcastSkillInvoke(objectName());
-			
+            
             player->loseMark("@fansheng");
             player->loseMark("@fanshengused");
 
@@ -2030,8 +2031,8 @@ public:
     }
 
     virtual bool trigger(TriggerEvent , Room *, ServerPlayer *shenzhuge, QVariant &data) const{
-		if (data.value<PlayerStar>() != shenzhuge)
-			return false;
+        if (data.value<PlayerStar>() != shenzhuge)
+            return false;
         Exchange(shenzhuge);
         return false;
     }
@@ -2151,8 +2152,8 @@ public:
 
     virtual bool trigger(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const{
         if (event == EventPhaseStart || event == Death) {
-			if (event == EventPhaseStart && data.value<PlayerStar>() != player)
-				return false;
+            if (event == EventPhaseStart && data.value<PlayerStar>() != player)
+                return false;
             if (event == Death) {
                 DeathStruct death = data.value<DeathStruct>();
                 if (death.who != player)
@@ -2230,7 +2231,7 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.nature != DamageStruct::Thunder) {
             LogMessage log;
-			log.type = "#MiaowuProtect";
+            log.type = "#MiaowuProtect";
             log.from = player;
             log.arg = QString::number(damage.damage);
             if (damage.nature == DamageStruct::Normal)
@@ -2340,43 +2341,22 @@ public:
 
         const Card *card = cards.first();
         Card *new_card = NULL;
-        Card::Suit suit = Card::NoSuitNoColor;
-        if (cards.length() == 1)
-            suit = card->getSuit();
-        else
-            suit = card->isRed() ? Card::NoSuitRed : Card::NoSuitBlack;
-
-        int number = 0;
-        if (cards.length() == 1)
-            number = card->getNumber();
-        else
-        {
-            bool same = true;
-            foreach (const Card *cd, cards)
-                if (cd->getNumber() != card->getNumber())
-                {
-                    same = false;
-                    break;
-                }
-
-            number = same ? card->getNumber() : 0;
-        }
 
         switch (card->getSuit()) {
         case Card::Diamond: {
-                new_card = new Nullification(suit, number);
+                new_card = new Nullification(Card::SuitToBeDecided, 0);
                 break;
             }
         case Card::Heart: {
-                new_card = new Peach(suit, number);
+                new_card = new Peach(Card::SuitToBeDecided, 0);
                 break;
             }
         case Card::Club: {
-                new_card = new Jink(suit, number);
+                new_card = new Jink(Card::SuitToBeDecided, 0);
                 break;
             }
         case Card::Spade: {
-                new_card = new FireSlash(suit, number);
+                new_card = new FireSlash(Card::SuitToBeDecided, 0);
                 break;
             }
         default:
