@@ -209,6 +209,16 @@ public:
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
+class QinghuaCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE QinghuaCard();
+    
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class KurouCard: public SkillCard {
     Q_OBJECT
 
@@ -223,6 +233,7 @@ class GuidengCard: public SkillCard{
 
 public:
     Q_INVOKABLE GuidengCard();
+
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 

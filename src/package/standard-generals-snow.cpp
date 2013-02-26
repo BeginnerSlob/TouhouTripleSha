@@ -103,6 +103,149 @@ public:
     }
 };
 
+class Biju: public TriggerSkill {
+public:
+    Biju(): TriggerSkill("biju") {
+        events << EventPhaseChanging << CardUsed << CardResponded;
+        frequency = Frequent;
+    }
+
+    virtual bool trigger(TriggerEvent event, Room *room, ServerPlayer *lvmeng, QVariant &data) const{
+        if (event == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.who == lvmeng && change.to == Player::Discard) {
+                if (!lvmeng->hasFlag("biju_use_slash") && lvmeng->askForSkillInvoke(objectName())) {
+                    room->broadcastSkillInvoke(objectName());
+                    lvmeng->skip(Player::Discard);
+                }
+            }
+        } else if (lvmeng->getPhase() == Player::Play) {
+            CardStar card = NULL;
+            if (event == CardUsed)
+            {
+                CardUseStruct use = data.value<CardUseStruct>();
+                if (use.from != lvmeng)
+                    return false;
+                card = use.card;
+            }
+            else
+            {
+                CardResponseStruct resp = data.value<CardResponseStruct>();
+                if (resp.m_who != lvmeng)
+                    return false;
+                card = resp.m_card;
+            }
+
+            if (card && card->isKindOf("Slash"))
+                room->setPlayerFlag(lvmeng, "biju_use_slash");
+        }
+
+        return false;
+    }
+};
+
+class Pojian: public TriggerSkill {
+public:
+    Pojian(): TriggerSkill("pojian") {
+        events << EventPhaseStart << CardUsed << CardResponded;
+        frequency = Wake;
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
+        if (player->getMark("@pojian") > 0)
+            return false;
+        if (triggerEvent == CardUsed || triggerEvent == CardResponded)
+        {
+            if (triggerEvent == CardUsed)
+            {
+                CardUseStruct use = data.value<CardUseStruct>();
+                if (use.from != player)
+                    return false;
+                if (use.card->isKindOf("BasicCard") || use.card->isKindOf("TrickCard"))
+                    player->addMark("pojian_count");
+            }
+            else
+            {
+                CardResponseStruct resp = data.value<CardResponseStruct>();
+                if (resp.m_who != player || !resp.m_isUse)
+                    return false;
+                if (resp.m_card->isKindOf("BasicCard") || resp.m_card->isKindOf("TrickCard"))
+                    player->addMark("pojian_count");
+            }
+        }
+        else
+        {
+            if (data.value<PlayerStar>() != player)
+                return false;
+            if (player->getPhase() == Player::RoundStart)
+            {
+                room->setPlayerMark(player, "pojian_count", 0);
+                return false;
+            }
+            else if (player->getPhase() != Player::Finish)
+                return false;
+            if (player->getMark("pojian_count") < 5)
+                return false;
+            int n = player->getMark("pojian_count");
+            LogMessage log;
+            log.type = "#PojianWake";
+            log.from = player;
+            log.arg = QString::number(n);
+            log.arg2 = objectName();
+            room->sendLog(log);
+
+            room->broadcastSkillInvoke(objectName());
+
+            player->gainMark("@pojian");
+
+            room->loseMaxHp(player);
+            RecoverStruct recover;
+            recover.who = player;
+            room->recover(player, recover);
+
+            room->acquireSkill(player, "qinghua");
+        }
+
+        return false;
+    }
+};
+
+QinghuaCard::QinghuaCard() {
+}
+
+bool QinghuaCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const {
+    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
+}
+
+void QinghuaCard::onEffect(const CardEffectStruct &effect) const {
+    Room *room = effect.from->getRoom();
+    const Card *card1 = room->askForCardShow(effect.to, effect.from, "qinghua");
+    room->showCard(effect.to, card1->getEffectiveId());
+    const Card *card2 = room->askForCard(effect.from, ".." + card1->getSuitString().left(1).toUpper(),
+                                         "@QinghuaDiscard:::" + card1->getSuitString(), QVariant(), "qinghua");
+    if (card2)
+    {
+        RecoverStruct recover;
+        recover.who = effect.from;
+        room->recover(effect.from, recover);
+        room->recover(effect.to, recover);
+    }
+}
+
+class Qinghua: public ZeroCardViewAsSkill {
+public:
+    Qinghua(): ZeroCardViewAsSkill("qinghua") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("QinghuaCard");
+    }
+
+    virtual const Card *viewAs() const{
+        return new QinghuaCard;
+    }
+};
+
 KurouCard::KurouCard() {
     target_fixed = true;
 }
@@ -2515,6 +2658,11 @@ void StandardPackage::addSnowGenerals(){
     General *snow002 = new General(this, "snow002", "wu");
     snow002->addSkill(new Kuipo);
 
+    General *snow003 = new General(this, "snow003", "wu");
+    snow003->addSkill(new Biju);
+    snow003->addSkill(new Pojian);
+    snow003->addRelateSkill("qinghua");
+
     General *snow004 = new General(this, "snow004", "wu");
     snow004->addSkill(new Kurou);
     snow004->addSkill(new Zaiqi);
@@ -2624,6 +2772,7 @@ void StandardPackage::addSnowGenerals(){
     related_skills.insertMulti("yeyan", "#@yeyan-1");
 
     addMetaObject<ZhihengCard>();
+    addMetaObject<QinghuaCard>();
     addMetaObject<KurouCard>();
     addMetaObject<GuidengCard>();
     addMetaObject<YuanheCard>();
@@ -2646,5 +2795,5 @@ void StandardPackage::addSnowGenerals(){
     addMetaObject<GreatYeyanCard>();
     addMetaObject<SmallYeyanCard>();
 
-    skills << new BianshengPindian;
+    skills << new Qinghua << new BianshengPindian;
 }
