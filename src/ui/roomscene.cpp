@@ -1813,9 +1813,12 @@ void RoomScene::keepLoseCardLog(const CardsMoveStruct &move)
 void RoomScene::keepGetCardLog(const CardsMoveStruct &move)
 {
     if (move.card_ids.isEmpty()) return;
-    if (move.to && (move.to_place == Player::PlaceHand || move.to_place == Player::PlaceEquip)) {
+    if (move.to && (move.to_place == Player::PlaceHand
+		            || move.to_place == Player::PlaceEquip
+					|| move.to_place == Player::PlaceSpecial)
+				&& move.from_place != Player::DrawPile) {
         foreach (QString flag, move.to->getFlags().split("+"))
-            if (flag.endsWith("_InTempMoving"))
+            if (flag.endsWith("_InTempMoving") || flag == "AskForCardsChoosing")
                 return;
     }
     //private pile
