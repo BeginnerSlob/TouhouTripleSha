@@ -167,6 +167,19 @@ public:
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
+class MiceCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE MiceCard();
+
+    virtual bool targetFixed() const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
+
+    virtual const Card *validate(const CardUseStruct *card_use) const;
+};
+
 class XinbanCard: public SkillCard {
     Q_OBJECT
 
@@ -409,6 +422,64 @@ public slots:
     void popup();
 };
 
+#include <QGroupBox>
+#include <QAbstractButton>
+#include <QButtonGroup>
+#include <QDialog>
+
+class GuhuoDialog: public QDialog {
+    Q_OBJECT
+
+public:
+    static GuhuoDialog *getInstance(const QString &object, bool left = true, bool right = true);
+
+public slots:
+    void popup();
+    void selectCard(QAbstractButton *button);
+
+private:
+    explicit GuhuoDialog(const QString &object, bool left = true, bool right = true);
+
+    QGroupBox *createLeft();
+    QGroupBox *createRight();
+    QAbstractButton *createButton(const Card *card);
+    QButtonGroup *group;
+    QHash<QString, const Card *> map;
+
+    QString object_name;
+
+signals:
+    void onButtonClick();
+};
+
+class LvdongCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE LvdongCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class LvdongSlashCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE LvdongSlashCard();
+
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+};
+
+class MingceCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE MingceCard();
+
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class LeijiCard: public SkillCard{
     Q_OBJECT
 
@@ -436,34 +507,6 @@ public:
 
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-};
-
-class MingceCard: public SkillCard {
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE MingceCard();
-
-    virtual void onEffect(const CardEffectStruct &effect) const;
-};
-
-class LvdongCard: public SkillCard{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE LvdongCard();
-
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual void onEffect(const CardEffectStruct &effect) const;
-};
-
-class LvdongSlashCard: public SkillCard{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE LvdongSlashCard();
-
-    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
 class FunuanCard:public SkillCard{

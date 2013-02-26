@@ -1603,6 +1603,160 @@ public:
     }
 };
 
+MiceCard::MiceCard() {
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+bool MiceCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    CardStar card = Self->tag.value("mice").value<CardStar>();
+    return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card);
+}
+
+bool MiceCard::targetFixed() const{
+    CardStar card = Self->tag.value("mice").value<CardStar>();
+    return card && card->targetFixed();
+}
+
+bool MiceCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    CardStar card = Self->tag.value("mice").value<CardStar>();
+    return card && card->targetsFeasible(targets, Self);
+}
+
+const Card *MiceCard::validate(const CardUseStruct *card_use) const{
+    Card *use_card = Sanguosha->cloneCard(user_string, SuitToBeDecided, -1);
+    use_card->setSkillName("mice");
+    foreach (int id, this->getSubcards())
+        use_card->addSubcard(id);
+    bool available = true;
+    foreach (ServerPlayer *to, card_use->to)
+        if (card_use->from->isProhibited(to, use_card)) {
+            available = false;
+            break;
+        }
+    available = available && use_card->isAvailable(card_use->from);
+    use_card->deleteLater();
+    if (!available) return NULL;
+    return use_card;
+}
+
+class Mice: public ViewAsSkill {
+public:
+    Mice(): ViewAsSkill("mice") {
+    }
+
+    virtual QDialog *getDialog() const{
+        return GuhuoDialog::getInstance("mice", false);
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
+        return !to_select->isEquipped();
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.length() < Self->getHandcardNum())
+            return NULL;
+
+        CardStar c = Self->tag.value("mice").value<CardStar>();
+        if (c) {
+            MiceCard *card = new MiceCard;
+            card->setUserString(c->objectName());
+            card->addSubcards(cards);
+            return card;
+        } else
+            return NULL;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        if (player->isKongcheng())
+            return false;
+        else
+            return !player->hasUsed("MiceCard");
+    }
+};
+
+class Zhiyu: public MasochismSkill {
+public:
+    Zhiyu(): MasochismSkill("zhiyu") {
+    }
+
+    virtual void onDamaged(ServerPlayer *target, const DamageStruct &damage) const{
+        if (target->askForSkillInvoke(objectName(), QVariant::fromValue(damage))) {
+            target->drawCards(1);
+            if (target->isKongcheng())
+                return;
+
+            Room *room = target->getRoom();
+            room->broadcastSkillInvoke(objectName());
+            room->showAllCards(target);
+
+            QList<const Card *> cards = target->getHandcards();
+            Card::Color color = cards.first()->getColor();
+            bool same_color = true;
+            foreach (const Card *card, cards) {
+                if (card->getColor() != color) {
+                    same_color = false;
+                    break;
+                }
+            }
+
+            if (same_color && damage.from && !damage.from->isKongcheng())
+                room->askForDiscard(damage.from, objectName(), 1, 1);
+        }
+    }
+};
+
+class Guanchong: public DrawCardsSkill {
+public:
+    Guanchong(): DrawCardsSkill("guanchong") {
+    }
+
+    virtual int getDrawNum(ServerPlayer *caozhang, int n) const{
+        Room *room = caozhang->getRoom();
+        QString choice = room->askForChoice(caozhang, objectName(), "guan+chong+cancel");
+        if (choice == "cancel")
+            return n;
+
+        LogMessage log;
+        log.from = caozhang;
+        log.arg = objectName();
+        if (choice == "guan") {
+            log.type = "#Guanchong1";
+            room->sendLog(log);
+            room->broadcastSkillInvoke(objectName(), 1);
+            room->setPlayerCardLimitation(caozhang, "use,response", "Slash", true);
+            return n + 1;
+        } else {
+            log.type = "#Guanchong2";
+            room->sendLog(log);
+            room->broadcastSkillInvoke(objectName(), 2);
+            room->setPlayerFlag(caozhang, "guanchong_invoke");
+            return n - 1;
+        }
+    }
+};
+
+class GuanchongTargetMod: public TargetModSkill {
+public:
+    GuanchongTargetMod(): TargetModSkill("#guanchong-target") {
+        frequency = NotFrequent;
+    }
+
+    virtual int getResidueNum(const Player *from, const Card *) const{
+        if (from->hasSkill("guanchong") && from->hasFlag("guanchong_invoke"))
+            return 1;
+        else
+            return 0;
+    }
+
+    virtual int getDistanceLimit(const Player *from, const Card *) const{
+        if (from->hasSkill("guanchong") && from->hasFlag("guanchong_invoke"))
+            return 1000;
+        else
+            return 0;
+    }
+};
+
 class Lundao: public TriggerSkill{
 public:
     Lundao():TriggerSkill("lundao"){
@@ -1886,7 +2040,7 @@ bool YihuoCard::targetFilter(const QList<const Player *> &targets, const Player 
 void YihuoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *target = targets.first();
     room->showCard(source, getEffectiveId(), target);
-    const Card *card = room->askForCard(target, ".Equip", "@YihuoExchange", QVariant(), MethodNone, source);
+    const Card *card = room->askForCard(target, ".Equip", "@YihuoExchange:" + source->objectName(), QVariant(), MethodNone, source);
     if (card)
     {
         source->obtainCard(card);
@@ -1897,7 +2051,7 @@ void YihuoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
 
 class YihuoViewAsSkill:public OneCardViewAsSkill{
 public:
-    YihuoViewAsSkill():OneCardViewAsSkill("yihuovs"){
+    YihuoViewAsSkill():OneCardViewAsSkill("yihuov"){
         attached_lord_skill = true;
     }
 
@@ -1924,14 +2078,14 @@ public:
     
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         if (data.value<PlayerStar>() != player) return false;
-        if (triggerEvent == EventPhaseEnd && player->hasSkill("yihuovs"))
-            room->detachSkillFromPlayer(player, "yihuovs", true);
+        if (triggerEvent == EventPhaseEnd && player->hasSkill("yihuov"))
+            room->detachSkillFromPlayer(player, "yihuov", true);
         else if (triggerEvent == EventPhaseStart)
-            if (player->getPhase() == Player::Play && !player->hasSkill("yihuovs") && player->isAlive())
+            if (player->getPhase() == Player::Play && !player->hasSkill("yihuov") && player->isAlive())
                 foreach (ServerPlayer *p, room->getOtherPlayers(player))
                     if (p->hasSkill("yihuo"))
                     {
-                        room->attachSkillToPlayer(player, "yihuovs");
+                        room->attachSkillToPlayer(player, "yihuov");
                         break;
                     }
 
@@ -2290,6 +2444,15 @@ void StandardPackage::addBloomGenerals(){
     bloom018->addSkill(new Xuwu);
     bloom018->addSkill(new Nvelian);
 
+    General *bloom020 = new General(this, "bloom020", "wei", 3);
+    bloom020->addSkill(new Mice);
+    bloom020->addSkill(new Zhiyu);
+
+    General *bloom021 = new General(this, "bloom021", "wei");
+    bloom021->addSkill(new Guanchong);
+    bloom021->addSkill(new GuanchongTargetMod);
+    related_skills.insertMulti("guanchong", "#guanchong-target");
+
     General *bloom022 = new General(this, "bloom022", "wei", 3, false);
     bloom022->addSkill(new Lundao);
     bloom022->addSkill(new Xuanwu);
@@ -2327,6 +2490,7 @@ void StandardPackage::addBloomGenerals(){
     addMetaObject<JiemingCard>();
     addMetaObject<BisuoCard>();
     addMetaObject<HuanwuCard>();
+    addMetaObject<MiceCard>();
     addMetaObject<XinbanCard>();
     addMetaObject<YihuoCard>();
     addMetaObject<JilveCard>();

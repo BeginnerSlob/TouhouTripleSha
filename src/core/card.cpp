@@ -93,7 +93,24 @@ QString Card::getEffectIdString() const{
 }
 
 int Card::getNumber() const{
-    return m_number;
+    if (isVirtualCard()) {
+        if (subcardsLength() == 0)
+            return 0;
+        else if (subcardsLength() == 1)
+            return Sanguosha->getCard(subcards.first())->getNumber();
+        else {
+            int number = 0;
+            foreach (int id, subcards) {
+                int number2 = Sanguosha->getCard(id)->getNumber();
+                if (number == 0)
+                    number = number2;
+                else if (number != number2)
+                    return 0;
+            }
+            return number;
+        }
+    } else
+        return m_number;
 }
 
 void Card::setNumber(int number){
@@ -114,7 +131,24 @@ QString Card::getNumberString() const{
 }
 
 Card::Suit Card::getSuit() const{
-    return m_suit;
+    if (isVirtualCard()) {
+        if (subcardsLength() == 0)
+            return NoSuitNoColor;
+        else if (subcardsLength() == 1)
+            return Sanguosha->getCard(subcards.first())->getSuit();
+        else {
+            Color color = Colorless;
+            foreach (int id, subcards) {
+                Color color2 = Sanguosha->getCard(id)->getColor();
+                if (color == Colorless)
+                    color = color2;
+                else if (color != color2)
+                    return NoSuitNoColor;
+            }
+            return (color == Red) ? NoSuitRed : NoSuitBlack;
+        }
+    } else
+        return m_suit;
 }
 
 void Card::setSuit(Suit suit){
@@ -393,7 +427,7 @@ const Card *Card::Parse(const QString &str){
         LuaSkillCard *new_card =  LuaSkillCard::Parse(str);
         new_card->deleteLater();
         return new_card;
-    }if(str.contains(QChar('='))){
+    }else if(str.contains(QChar('='))){
         QRegExp pattern("(\\w+):(\\w*)\\[(\\w+):(.+)\\]=(.+)");
         if(!pattern.exactMatch(str))
             return NULL;
@@ -408,19 +442,17 @@ const Card *Card::Parse(const QString &str){
         if(subcard_str != ".")
             subcard_ids = subcard_str.split("+");
 
-        Suit suit = suit_map.value(suit_string, Card::NoSuitNoColor);
-
-        int number = 0;
-        if(number_string == "A")
-            number = 1;
-        else if(number_string == "J")
-            number = 11;
-        else if(number_string == "Q")
-            number = 12;
-        else if(number_string == "K")
-            number = 13;
+        Suit suit = Card::NoSuitNoColor;
+        DummyCard *dummy = new DummyCard;
+        foreach (QString subcard_id, subcard_ids)
+            dummy->addSubcard(subcard_id.toInt());
+        if (suit_string == "to_be_decided")
+            suit = dummy->getSuit();
         else
-            number = number_string.toInt();
+            suit = suit_map.value(suit_string, Card::NoSuitNoColor);
+
+        int number = dummy->getNumber();
+        dummy->deleteLater();
 
         Card *card = Sanguosha->cloneCard(card_name, suit, number);
         if(card == NULL)
