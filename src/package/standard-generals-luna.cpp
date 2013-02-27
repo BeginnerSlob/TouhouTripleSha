@@ -2445,6 +2445,30 @@ public:
     }
 };
 
+class Shunqie: public TriggerSkill {
+public:
+	Shunqie(): TriggerSkill("shunqie") {
+		events << Damage;
+	}
+
+	virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+		DamageStruct damage = data.value<DamageStruct>();
+		if (!damage.card || !(damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel")))
+			return false;
+		if (damage.to->hasEquip() && player->askForSkillInvoke(objectName()))
+		{
+			int card_id = room->askForCardChosen(player, damage.to, "e", objectName());
+			if (card_id != -1)
+				if (room->askForChoice(player, objectName(), "get+throw") == "get")
+					room->obtainCard(player, card_id);
+				else
+					room->throwCard(card_id, damage.to, player);
+		}
+
+		return false;
+	}
+};
+
 class Longya: public TriggerSkill {
 public:
     Longya(): TriggerSkill("longya") {
@@ -3022,6 +3046,9 @@ void StandardPackage::addLunaGenerals(){
     General *luna022 = new General(this, "luna022", "qun", 3);
     luna022->addSkill(new Tianfa);
     luna022->addSkill(new Guyi);
+
+    General *luna023 = new General(this, "luna023", "qun");
+    luna023->addSkill(new Shunqie);
 
     General *luna024 = new General(this, "luna024", "qun");
     luna024->addSkill(new Longya);
