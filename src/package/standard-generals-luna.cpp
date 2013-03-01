@@ -235,16 +235,23 @@ void MoyuCard::onUse(Room *room, const CardUseStruct &card_use) const{
     QVariant data = QVariant::fromValue(card_use);
     RoomThread *thread = room->getThread();
     
+    bool prevent = false;
     foreach(ServerPlayer *p, room->getAllPlayers())
         if (thread->trigger(PreCardUsed, room, p, data))
+        {
+            prevent = true;
             break;
+        }
 
-    foreach(ServerPlayer *p, room->getAllPlayers())
-        if (thread->trigger(CardUsed, room, p, data))
-            break;
+    if (!prevent)
+    {
+        foreach(ServerPlayer *p, room->getAllPlayers())
+            if (thread->trigger(CardUsed, room, p, data))
+                break;
 
-    foreach(ServerPlayer *p, room->getAllPlayers())
-        thread->trigger(CardFinished, room, p, data);
+        foreach(ServerPlayer *p, room->getAllPlayers())
+            thread->trigger(CardFinished, room, p, data);
+    }
 }
 
 void MoyuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
@@ -2418,6 +2425,9 @@ public:
             else
                 victim = data.value<PlayerStar>();
 
+            if (victim == player)
+                return false;
+
             int losthp = qMax(player->getLostHp(), 1);
             if (victim->getHpPoints() < losthp)
             {
@@ -2447,26 +2457,26 @@ public:
 
 class Shunqie: public TriggerSkill {
 public:
-	Shunqie(): TriggerSkill("shunqie") {
-		events << Damage;
-	}
+    Shunqie(): TriggerSkill("shunqie") {
+        events << Damage;
+    }
 
-	virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-		DamageStruct damage = data.value<DamageStruct>();
-		if (!damage.card || !(damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel")))
-			return false;
-		if (damage.to->hasEquip() && player->askForSkillInvoke(objectName()))
-		{
-			int card_id = room->askForCardChosen(player, damage.to, "e", objectName());
-			if (card_id != -1)
-				if (room->askForChoice(player, objectName(), "get+throw") == "get")
-					room->obtainCard(player, card_id);
-				else
-					room->throwCard(card_id, damage.to, player);
-		}
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        if (!damage.card || !(damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel")))
+            return false;
+        if (damage.to->hasEquip() && player->askForSkillInvoke(objectName()))
+        {
+            int card_id = room->askForCardChosen(player, damage.to, "e", objectName());
+            if (card_id != -1)
+                if (room->askForChoice(player, objectName(), "get+throw") == "get")
+                    room->obtainCard(player, card_id);
+                else
+                    room->throwCard(card_id, damage.to, player);
+        }
 
-		return false;
-	}
+        return false;
+    }
 };
 
 class Longya: public TriggerSkill {
