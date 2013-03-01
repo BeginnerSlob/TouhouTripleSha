@@ -13,7 +13,7 @@
 class ThJianmo: public TriggerSkill {
 public:
     ThJianmo(): TriggerSkill("thjianmo") {
-        events << EventPhaseStart << EventPhaseChanging << CardUsed << CardEffected;
+        events << EventPhaseStart << EventPhaseChanging << PreCardUsed << CardEffected;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
@@ -38,7 +38,7 @@ public:
                     log.from = srcplayer;
                     log.arg = "1";
                     room->sendLog(log);
-                    player->drawCards(1);
+                    srcplayer->drawCards(1);
                     room->setPlayerCardLimitation(srcplayer, "use,response", "Slash", false);
                 }
                 else
@@ -51,7 +51,7 @@ public:
                     room->setPlayerFlag(srcplayer,"jianmoinvoke");
                 }
         }
-        else if (triggerEvent == CardUsed)
+        else if (triggerEvent == PreCardUsed)
         {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->hasFlag("jianmoavoid"))

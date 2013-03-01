@@ -553,16 +553,23 @@ void Card::onUse(Room *room, const CardUseStruct &use) const{
         room->moveCardTo(this, player, NULL, Player::DiscardPile, reason, true);
     }
 
+    bool prevent = false;
     foreach(ServerPlayer *p, room->getAllPlayers())
         if (thread->trigger(PreCardUsed, room, p, data))
+        {
+            prevent = true;
             break;
+        }
     
-    foreach(ServerPlayer *p, room->getAllPlayers())
-        if (thread->trigger(CardUsed, room, p, data))
-            break;
+    if (!prevent)
+    {
+        foreach(ServerPlayer *p, room->getAllPlayers())
+            if (thread->trigger(CardUsed, room, p, data))
+                break;
 
-    foreach (ServerPlayer *p, room->getAllPlayers())
-        thread->trigger(CardFinished, room, p, data);
+        foreach (ServerPlayer *p, room->getAllPlayers())
+            thread->trigger(CardFinished, room, p, data);
+    }
 }
 
 void Card::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{

@@ -62,14 +62,21 @@ bool EquipCard::isAvailable(const Player *player) const{
 void EquipCard::onUse(Room *room, const CardUseStruct &card_use) const{
     QVariant data = QVariant::fromValue(card_use);
     RoomThread *thread = room->getThread();
+    bool prevent = false;
     foreach(ServerPlayer *p, room->getAllPlayers())
         if (thread->trigger(PreCardUsed, room, p, data))
+        {
+            prevent = true;
             break;
-    foreach(ServerPlayer *p, room->getAllPlayers())
-        if (thread->trigger(CardUsed, room, p, data))
-            break;
-    foreach (ServerPlayer *p, room->getAllPlayers())
-        thread->trigger(CardFinished, room, p, data);
+        }
+    if (!prevent)
+    {
+        foreach(ServerPlayer *p, room->getAllPlayers())
+            if (thread->trigger(CardUsed, room, p, data))
+                break;
+        foreach (ServerPlayer *p, room->getAllPlayers())
+            thread->trigger(CardFinished, room, p, data);
+    }
 }
 
 void EquipCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
@@ -244,16 +251,23 @@ void DelayedTrick::onUse(Room *room, const CardUseStruct &card_use) const{
     room->sendLog(log);
     QVariant data = QVariant::fromValue(card_use);
     RoomThread *thread = room->getThread();
+    bool prevent = false;
     foreach(ServerPlayer *p, room->getAllPlayers())
         if (thread->trigger(PreCardUsed, room, p, data))
+        {
+            prevent = true;
             break;
+        }
 
-    foreach(ServerPlayer *p, room->getAllPlayers())
-        if (thread->trigger(CardUsed, room, p, data))
-            break;
+    if (!prevent)
+    {
+        foreach(ServerPlayer *p, room->getAllPlayers())
+            if (thread->trigger(CardUsed, room, p, data))
+                break;
 
-    foreach (ServerPlayer *p, room->getAllPlayers())
-        thread->trigger(CardFinished, room, p, data);
+        foreach (ServerPlayer *p, room->getAllPlayers())
+            thread->trigger(CardFinished, room, p, data);
+    }
 }
 
 void DelayedTrick::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
