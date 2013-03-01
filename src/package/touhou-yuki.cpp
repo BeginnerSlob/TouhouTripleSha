@@ -939,6 +939,8 @@ public:
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *splayer, QVariant &data) const {
         ServerPlayer *player = data.value<PlayerStar>();
+        if (player == splayer)
+            return false;
         Player::Phase phase = Player::Phase (player->getMark("phaseskipmark"));
         if (phase == Player::Play || phase == Player::Draw)
         {
