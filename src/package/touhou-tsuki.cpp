@@ -36,7 +36,7 @@ public:
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.to != player)
                 return false;
-            while(damage.damage --)
+            while(-- damage.damage)
             {
                 if (!player->askForSkillInvoke(objectName()))
                     return false;
