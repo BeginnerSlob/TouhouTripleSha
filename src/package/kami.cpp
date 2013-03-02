@@ -1017,6 +1017,150 @@ public:
     }
 };
 
+class ThRangdeng: public TriggerSkill {
+public:
+    ThRangdeng(): TriggerSkill("thrangdeng") {
+        events << EventPhaseStart;
+        frequency = Compulsory;
+    }
+
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
+        if (data.value<PlayerStar>() != player)
+            return false;
+        if (player->getPhase() == Player::Play)
+            for (int i = 0; i < 3; i ++)
+            {
+                if (player->isKongcheng()) break;
+                QStringList numbers;
+                for (int num = 1; num <= 13; num++)
+                    numbers << QString::number(num);
+                foreach (int id, player->getPile("thrangdengpile"))
+                {
+                    QString num = QString::number(Sanguosha->getEngineCard(id)->getNumber());
+                    if (numbers.contains(num))
+                        numbers.removeAll(num);
+                }
+                if (numbers.isEmpty()) break;
+                QString pattern = ".|.|" + numbers.join(",") + "|hand";
+                const Card *card = room->askForCard(player, pattern, "@ThRangdeng", data, Card::MethodNone);
+                if (card == NULL)
+                {
+                    if (i == 0)
+                        room->askForDiscard(player, objectName(), 1, 1);
+                    break;
+                }
+                player->addToPile("thrangdengpile", card, true);
+            }
+
+        return false;
+    }
+};
+
+class ThRangdengSkillChange: public TriggerSkill {
+public:
+    ThRangdengSkillChange(): TriggerSkill("#thrangdeng") {
+        events << CardsMoveOneTime << EventLoseSkill;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const {
+        return target != NULL;
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const {
+        if (triggerEvent == EventLoseSkill) {
+            if (data.toString() == "thrangdeng")
+                player->clearOnePrivatePile("thrangdengpile");
+
+            return false;
+        }
+
+        if (!TriggerSkill::triggerable(player))
+            return false;
+
+        CardsMoveOneTimeStar move = data.value<CardsMoveOneTimeStar>();
+        if ((!move->from || move->from != player || !move->from_places.contains(Player::PlaceSpecial))
+            &&
+            (!move->to || move->to != player || move->to_place != Player::PlaceSpecial))
+            return false;
+
+        QStringList to_acquire_skills;
+        QStringList to_detach_skills;
+        to_detach_skills << "zhuoyue" << "thmengwu" << "chenhong" << "jibu";
+        foreach (int id, player->getPile("thrangdengpile"))
+            switch (Sanguosha->getEngineCard(id)->getSuit()) {
+                case Card::Heart : {
+                    if (!to_acquire_skills.contains("zhuoyue"))
+                        to_acquire_skills << "zhuoyue";
+                    if (to_detach_skills.contains("zhuoyue"))
+                        to_detach_skills.removeOne("zhuoyue");
+                    break;
+                }
+                case Card::Spade : {
+                    if (!to_acquire_skills.contains("thmengwu"))
+                        to_acquire_skills << "thmengwu";
+                    if (to_detach_skills.contains("thmengwu"))
+                        to_detach_skills.removeOne("thmengwu");
+                    break;
+                }
+                case Card::Diamond : {
+                    if (!to_acquire_skills.contains("chenhong"))
+                        to_acquire_skills << "chenhong";
+                    if (to_detach_skills.contains("chenhong"))
+                        to_detach_skills.removeOne("chenhong");
+                    break;
+                }
+                case Card::Club : {
+                    if (!to_acquire_skills.contains("jibu"))
+                        to_acquire_skills << "jibu";
+                    if (to_detach_skills.contains("jibu"))
+                        to_detach_skills.removeOne("jibu");
+                    break;
+                }
+                default : break;
+            }
+
+        QStringList rangdeng_skills = player->tag["ThRangdengSkills"].toStringList();
+        foreach (QString skill, to_acquire_skills)
+            if (!rangdeng_skills.contains(skill)) {
+                room->acquireSkill(player, skill);
+                rangdeng_skills << skill;
+            }
+        
+        foreach (QString skill, to_detach_skills)
+            if (rangdeng_skills.contains(skill)) {
+                room->detachSkillFromPlayer(player, skill);
+                rangdeng_skills.removeOne(skill);
+            }
+
+        player->tag["ThRangdengSkills"] = QVariant::fromValue(rangdeng_skills);
+
+        return false;
+    }
+};
+
+ThBaihunCard::ThBaihunCard() {
+}
+
+void ThBaihunCard::onEffect(const CardEffectStruct &effect) const {
+    Room *room = effect.from->getRoom();
+    effect.from->clearOnePrivatePile("thrangdengpile");
+    room->killPlayer(effect.to);
+}
+
+class ThBaihun: public ZeroCardViewAsSkill {
+public:
+    ThBaihun(): ZeroCardViewAsSkill("thbaihun") {
+    }
+    
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->getPile("thrangdengpile").length() >= 13;
+    }
+
+    virtual const Card *viewAs() const{
+        return new ThBaihunCard;
+    }
+};
+
 class ThWunan: public TriggerSkill{
 public:
     ThWunan(): TriggerSkill("thwunan"){
@@ -1471,6 +1615,12 @@ KamiPackage::KamiPackage()
     kami009->addSkill(new ThChuangxin);
     kami009->addSkill(new ThTianxin);
 
+    General *kami010 = new General(this, "kami010", "god", 3, false);
+    kami010->addSkill(new ThRangdeng);
+    kami010->addSkill(new ThRangdengSkillChange);
+    related_skills.insertMulti("thrangdeng", "#thrangdeng");
+    kami010->addSkill(new ThBaihun);
+
     General *kami012 = new General(this, "kami012", "god");
     kami012->addSkill(new ThWunan);
 
@@ -1501,6 +1651,7 @@ KamiPackage::KamiPackage()
     addMetaObject<ThJinluCard>();
     addMetaObject<ThChuangxinCard>();
     addMetaObject<ThTianxinCard>();
+    addMetaObject<ThBaihunCard>();
 
     skills << new ThJiguangDistanceSkill << new ThJiguangGivenSkill << new ThKuangmo;
 }
