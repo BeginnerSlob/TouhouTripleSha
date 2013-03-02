@@ -561,10 +561,10 @@ public:
             if (player->askForSkillInvoke(objectName()))
                 player->drawCards(2 - player->getHandcardNum());
         }
-        else if (player->getPhase() == Player::Start)
+        else
         {
             ServerPlayer *srcplayer = data.value<PlayerStar>();
-            if (srcplayer == player)
+            if (srcplayer == player || srcplayer->getPhase() != Player::Start)
                 return false;
 
             if (player->isKongcheng() && player->askForSkillInvoke(objectName()))
