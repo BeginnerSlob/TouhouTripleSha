@@ -25,7 +25,7 @@ return {
 ◆你每个回合只能使用一张【酒】。",
 	["#Drank"] = "%from 喝了【酒】，下一张【杀】的伤害 +1 。",
 	["#UnsetDrank"] = "%from 使用的【杀】结算完毕，【酒】的效果消失。",
-	["#UnsetDrankEndOfTurn"] = "%from 的回合结束，【酒】的效果消失。",
+	["#UnsetDrankEndOfTurn"] = "%from 的回合结束，%to 身上【酒】的效果消失。",
 
 	["Fan"] = "八卦炉",
 	[":Fan"] = "装备牌·武器\
