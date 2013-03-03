@@ -16,8 +16,8 @@ GameRule::GameRule(QObject *)
     // a way to do it.
     //setParent(parent);
 
-    events << GameStart << TurnStart << DoPhase << CardUsed
-           << CardEffected << CardFinished
+    events << GameStart << TurnStart << DoPhase << EventPhaseChanging
+           << CardUsed << CardEffected << CardFinished
            << HpRecover << HpLost << MaxHpLost << PostHpReduced
            << EventLoseSkill << EventAcquireSkill
            << AskForPeaches << AskForPeachesDone << Death << GameOverJudge
@@ -168,14 +168,6 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
                 }
 
             case Player::NotActive:{
-                    if(player->hasFlag("drank")){
-                        LogMessage log;
-                        log.type = "#UnsetDrankEndOfTurn";
-                        log.from = player;
-                        room->sendLog(log);
-
-                        room->setPlayerFlag(player, "-drank");
-                    }
 
                     player->clearFlags();
                     player->clearHistory();
@@ -186,6 +178,27 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
             default: break;
         }
         break;
+    }
+    case EventPhaseChanging: {
+            if (data.canConvert<PhaseChangeStruct>()) {
+                PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+                if (change.who != player || change.to != Player::NotActive)
+                    break;
+                
+                LogMessage log;
+                log.type = "#UnsetDrankEndOfTurn";
+                log.from = player;
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    if(p->hasFlag("drank")){
+                        log.to << p;
+
+                        room->setPlayerFlag(player, "-drank");
+                    }
+                if (!log.to.isEmpty())
+                    room->sendLog(log);
+            }
+
+            break;
     }
     case CardUsed: {
             if(data.canConvert<CardUseStruct>()){

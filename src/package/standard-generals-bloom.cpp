@@ -2077,11 +2077,11 @@ public:
     }
     
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (data.value<PlayerStar>() != player) return false;
+        ServerPlayer *srcplayer = data.value<PlayerStar>();
         if (triggerEvent == EventPhaseEnd && player->hasSkill("yihuov"))
             room->detachSkillFromPlayer(player, "yihuov", true);
         else if (triggerEvent == EventPhaseStart)
-            if (player->getPhase() == Player::Play && !player->hasSkill("yihuov") && player->isAlive())
+            if (srcplayer->getPhase() == Player::Play && !player->hasSkill("yihuov"))
                 foreach (ServerPlayer *p, room->getOtherPlayers(player))
                     if (p->hasSkill("yihuo"))
                     {
