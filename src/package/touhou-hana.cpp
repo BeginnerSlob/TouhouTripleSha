@@ -36,7 +36,7 @@ public:
         {
             CardUseStruct use = data.value<CardUseStruct>();
             if (player != current || use.from == player
-				|| use.card->isKindOf("Nullification") || use.card->getTypeId() == Card::TypeSkill)
+                || use.card->isKindOf("Nullification") || use.card->getTypeId() == Card::TypeSkill)
                 return false;
             card = use.card;
             target = use.from;
