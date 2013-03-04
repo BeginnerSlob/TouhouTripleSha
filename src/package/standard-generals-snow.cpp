@@ -275,7 +275,7 @@ public:
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         RecoverStruct recover = data.value<RecoverStruct>();
-        if (player->hasFlag("dying"))
+		if (player->hasFlag("dying") && player->getPhase() == Player::Play)
             while(recover.recover--)
             {
                 if (!player->askForSkillInvoke(objectName()))
