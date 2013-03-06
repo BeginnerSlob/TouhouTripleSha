@@ -1428,7 +1428,7 @@ public:
 class ThWuqi: public TriggerSkill {
 public:
     ThWuqi(): TriggerSkill("thwuqi") {
-        events << TargetConfirming << CardEffected;
+        events << TargetConfirming << PreCardEffected;
         frequency = Compulsory;
     }
 
@@ -1461,7 +1461,7 @@ public:
                     player->tag["ThWuqi"] = use.card->toString();
             }
         }
-        else if (triggerEvent == CardEffected)
+        else if (triggerEvent == PreCardEffected)
         {
             CardEffectStruct effect = data.value<CardEffectStruct>();
             if (effect.to != player || player->tag["ThWuqi"].isNull()
@@ -1471,7 +1471,7 @@ public:
             player->tag["ThWuqi"] = QVariant(QString());
 
             LogMessage log;
-            log.type = "#ThWuqiAvoid";
+            log.type = "#HongceAvoid";
             log.from = player;
             log.arg = effect.card->objectName();
             log.arg2 = objectName();

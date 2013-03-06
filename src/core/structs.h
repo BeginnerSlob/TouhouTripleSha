@@ -498,6 +498,7 @@ enum TriggerEvent{
     TargetConfirming,
     TargetConfirmed,
     CardEffect,
+    PreCardEffected,  // for canceling things such as normal_slash to vine
     CardEffected,
     PostCardEffected,  // For juxiang only now
     CardFinished,

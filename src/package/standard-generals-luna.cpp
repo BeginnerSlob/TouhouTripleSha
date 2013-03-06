@@ -1504,7 +1504,7 @@ public:
 class ZhichiProtect: public TriggerSkill {
 public:
     ZhichiProtect(): TriggerSkill("#zhichi-protect") {
-        events << CardEffected;
+        events << PreCardEffected;
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
@@ -1512,9 +1512,10 @@ public:
         if ((effect.card->isKindOf("Slash") || effect.card->isNDTrick()) && effect.to->getMark("zhichi") > 0) {
             room->broadcastSkillInvoke("zhichi", 2);
             LogMessage log;
-            log.type = "#ZhichiAvoid";
+            log.type = "#HongceAvoid";
             log.from = effect.to;
-            log.arg = "zhichi";
+            log.arg = effect.card->objectName();
+            log.arg2 = "zhichi";
             room->sendLog(log);
 
             return true;
@@ -3059,6 +3060,7 @@ void StandardPackage::addLunaGenerals(){
 
     General *luna023 = new General(this, "luna023", "qun");
     luna023->addSkill(new Shunqie);
+    luna023->addSkill("jibu");
 
     General *luna024 = new General(this, "luna024", "qun");
     luna024->addSkill(new Longya);

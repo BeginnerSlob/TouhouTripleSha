@@ -153,7 +153,7 @@ GudingBlade::GudingBlade(Suit suit, int number):Weapon(suit, number, 2){
 class VineSkill: public ArmorSkill{
 public:
     VineSkill():ArmorSkill("Vine"){
-        events << DamageInflicted << SlashEffected << CardEffected;
+        events << DamageInflicted << SlashEffected << PreCardEffected;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
@@ -170,7 +170,7 @@ public:
 
                 return true;
             }
-        }else if(triggerEvent == CardEffected){
+        }else if(triggerEvent == PreCardEffected){
             CardEffectStruct effect = data.value<CardEffectStruct>();
             if (effect.to == player && effect.card->isKindOf("AOE")){
                 room->setEmotion(player, "armor/vine");

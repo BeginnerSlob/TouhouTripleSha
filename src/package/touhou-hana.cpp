@@ -14,7 +14,7 @@
 class ThHuaji:public TriggerSkill{
 public:
     ThHuaji():TriggerSkill("thhuaji"){
-        events << CardUsed << CardResponding;
+        events << CardUsed << CardResponding << PreCardEffected;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
@@ -22,6 +22,25 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+        if (triggerEvent == PreCardEffected)
+        {
+            if (!TriggerSkill::triggerable(player)) return false;
+            CardEffectStruct effect = data.value<CardEffectStruct>();
+            if (effect.to->tag["ThHuaji"].isNull()
+                || effect.to->tag["ThHuaji"].toString() != effect.card->toString())
+                return false;
+
+            player->tag["ThHuaji"] = QVariant(QString());
+
+            LogMessage log;
+            log.type = "#HongceAvoid";
+            log.from = effect.to;
+            log.arg = effect.card->objectName();
+            log.arg2 = objectName();
+            room->sendLog(log);
+
+            return true;
+        }
         const Card *card;
         ServerPlayer *target;
         ServerPlayer *current = room->getCurrent();
@@ -51,7 +70,14 @@ public:
         if (room->askForCard(current, ".|club,heart", "@thhuajiuse", data, objectName())
             && !room->askForCard(target, pattern, "@thhuaji:::" + pattern, QVariant(), Card::MethodDiscard))
         {
-            return true;
+            if (triggerEvent == CardUsed)
+            {
+                CardUseStruct use = data.value<CardUseStruct>();
+                foreach (ServerPlayer *p, use.to)
+                    p->tag["ThHuaji"] = card->toString();
+            }
+            else
+                return true;
         }
 
         return false;
@@ -398,7 +424,7 @@ public:
 class ThXuelan: public TriggerSkill {
 public:
     ThXuelan(): TriggerSkill("thxuelan") {
-        events << CardEffected;
+        events << PreCardEffected;
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {

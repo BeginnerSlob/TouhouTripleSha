@@ -1080,7 +1080,7 @@ public:
     SavageAssaultAvoid(const QString &avoid_skill)
         :TriggerSkill("#sa_avoid_" + avoid_skill), avoid_skill(avoid_skill)
     {
-        events << CardEffected;
+        events << PreCardEffected;
     }
 
     virtual bool trigger(TriggerEvent , Room* room, ServerPlayer *player, QVariant &data) const{
@@ -2461,6 +2461,10 @@ void StandardPackage::addWindGenerals(){
     wind015->addSkill(new Jugui);
     related_skills.insertMulti("jugui", "#sa_avoid_jugui");
     wind015->addSkill(new Lieren);
+
+    General *wind016 = new General(this, "wind016", "shu", 3);
+    wind016->addSkill(new Xuanhui);
+    wind016->addSkill(new Enyuan);
 
     General *wind017 = new General(this, "wind017", "shu", 3);
     wind017->addSkill(new Xinchao);

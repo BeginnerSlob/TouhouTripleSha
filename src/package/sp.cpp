@@ -183,7 +183,7 @@ public:
 class ThChuangshi:public TriggerSkill{
 public:
     ThChuangshi():TriggerSkill("thchuangshi"){
-        events << CardEffected;
+        events << PreCardEffected;
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {

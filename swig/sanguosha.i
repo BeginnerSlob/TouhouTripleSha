@@ -642,6 +642,7 @@ enum TriggerEvent{
     TargetConfirming,
     TargetConfirmed,
     CardEffect,
+    PreCardEffected,
     CardEffected,
     CardFinished,
     PostCardEffected,
