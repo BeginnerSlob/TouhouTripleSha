@@ -56,43 +56,26 @@ public:
 class ThChiwu: public TriggerSkill {
 public:
     ThChiwu(): TriggerSkill("thchiwu") {
-        events << CardEffected << SlashEffected;
+        events << PreCardEffected;
         frequency = Compulsory;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
         if (!player->isChained())
             return false;
 
-        if(triggerEvent == SlashEffected){
-            SlashEffectStruct effect = data.value<SlashEffectStruct>();
-            if(effect.nature == DamageStruct::Normal){
-                LogMessage log;
-                log.from = player;
-                log.type = "#ThChiwu";
-                log.to << effect.from;
-                log.arg  = objectName();
-                log.arg2 = effect.slash->objectName();
-                room->sendLog(log);
+		CardEffectStruct effect = data.value<CardEffectStruct>();
+		if (!effect.card->isKindOf("Duel")
+			&& (!effect.card->isKindOf("Slash") || effect.card->isKindOf("NatureSlash")))
+			return false;
+        LogMessage log;
+        log.type = "#HongceAvoid";
+        log.from = effect.to;
+        log.arg = effect.card->objectName();
+        log.arg2 = objectName();
+        room->sendLog(log);
 
-                return true;
-            }
-        }else if(triggerEvent == CardEffected){
-            CardEffectStruct effect = data.value<CardEffectStruct>();
-            if(effect.to == player && effect.card->isKindOf("Duel")){
-                LogMessage log;
-                log.from = player;
-                log.type = "#ThChiwu";
-                log.to << effect.from;
-                log.arg = objectName();
-                log.arg2 = effect.card->objectName();
-                room->sendLog(log);
-
-                return true;
-            }
-        }
-
-        return false;
+        return true;
     }
 };
 
@@ -1050,7 +1033,19 @@ public:
         frequency = Compulsory;
     }
 
+    virtual bool triggerable(const ServerPlayer *target) const {
+        return target != NULL;
+    }
+
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        if (triggerEvent == EventLoseSkill)
+        {
+            if (player->getMark("zhehui") > 0 && data.toString() == objectName())
+                player->removeMark("zhehui");
+        }
+        
+        if (!TriggerSkill::triggerable(player)) return false;
+        
         if (triggerEvent == Damaged && data.value<DamageStruct>().to == player)
             player->addMark("zhehui");
         else if (triggerEvent == DamageInflicted)
@@ -1064,11 +1059,6 @@ public:
                 room->sendLog(log);
                 return true;
             }
-        }
-        else if (triggerEvent == EventLoseSkill)
-        {
-            if (player->getMark("zhehui") > 0 && data.toString() == objectName())
-                player->removeMark("zhehui");
         }
         else if (triggerEvent == EventPhaseStart)
         {
@@ -1611,7 +1601,7 @@ public:
                 }
             }
         }
-        else if (triggerEvent == CardEffected)
+        else if (triggerEvent == PreCardEffected)
         {
             CardEffectStruct effect = data.value<CardEffectStruct>();
             if (!player->tag.value("ThGuixu").isNull()

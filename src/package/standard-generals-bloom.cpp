@@ -1989,7 +1989,7 @@ public:
 class Hongce: public TriggerSkill {
 public:
     Hongce(): TriggerSkill("hongce") {
-        events << TargetConfirmed << CardEffected;
+        events << TargetConfirmed << PreCardEffected;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{

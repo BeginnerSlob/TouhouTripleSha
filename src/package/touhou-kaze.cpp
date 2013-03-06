@@ -1754,7 +1754,7 @@ class ThWunian:public TriggerSkill{
 public:
     ThWunian():TriggerSkill("thwunian"){
         frequency = Compulsory;
-        events << Predamage << CardEffected;
+        events << Predamage << PreCardEffected;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
@@ -1771,7 +1771,7 @@ public:
             data = QVariant::fromValue((DamageStruct)damage);
             return false;
         }
-        else if(triggerEvent == CardEffected) {
+        else if(triggerEvent == PreCardEffected) {
             CardEffectStruct effect = data.value<CardEffectStruct>();
             if(effect.to == player && (effect.card->isNDTrick() || effect.card->isKindOf("Slash")) && !effect.from->isWounded()) {
                 room->sendLog(log);

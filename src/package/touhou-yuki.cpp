@@ -13,7 +13,7 @@
 class ThJianmo: public TriggerSkill {
 public:
     ThJianmo(): TriggerSkill("thjianmo") {
-        events << EventPhaseStart << EventPhaseChanging << PreCardUsed << CardEffected;
+        events << EventPhaseStart << EventPhaseChanging << PreCardUsed << PreCardEffected;
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data) const{
@@ -69,7 +69,7 @@ public:
                     use.card->setFlags("jianmoavoid");
             }
         }
-        else if (triggerEvent == CardEffected)
+        else if (triggerEvent == PreCardEffected)
         {
             CardEffectStruct effect = data.value<CardEffectStruct>();
             if (effect.card->hasFlag("jianmoavoid"))
@@ -1149,7 +1149,7 @@ public:
 class ThQiebao:public TriggerSkill{
 public:
     ThQiebao():TriggerSkill("thqiebao"){
-        events << CardUsed << CardEffected << BeforeCardsMoveOneTime;
+        events << CardUsed << PreCardEffected << BeforeCardsMoveOneTime;
     }
 
     bool doQiebao(Room* room, ServerPlayer *player, QList<int> card_ids, bool discard) const {

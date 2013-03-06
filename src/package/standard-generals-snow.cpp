@@ -275,7 +275,7 @@ public:
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         RecoverStruct recover = data.value<RecoverStruct>();
-		if (player->hasFlag("dying") && player->getPhase() == Player::Play)
+        if (player->hasFlag("dying") && player->getPhase() == Player::Play)
             while(recover.recover--)
             {
                 if (!player->askForSkillInvoke(objectName()))
@@ -443,10 +443,6 @@ public:
 };
 
 YuanheCard::YuanheCard(){
-}
-
-bool YuanheCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return to_select != Self;
 }
 
 void YuanheCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
@@ -2401,12 +2397,6 @@ public:
 
         while (!card_ids.isEmpty()) {
             int card_id = room->askForAG(player, card_ids, true, objectName());
-            if (card_id == -1)
-            {
-                foreach (int card_id, card_ids)
-                    room->takeAG(NULL, card_id);
-                break;
-            }
             card_ids.removeOne(card_id);
             // throw the rest cards that matches the same suit
             const Card *card = Sanguosha->getCard(card_id);

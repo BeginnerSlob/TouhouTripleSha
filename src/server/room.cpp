@@ -2802,8 +2802,11 @@ bool Room::cardEffect(const CardEffectStruct &effect){
             return false;
     
     foreach (ServerPlayer *p, getAllPlayers())
-        if (thread->trigger(CardEffected, this, p, data))
+        if (thread->trigger(PreCardEffected, this, p, data))
             return false;
+    
+    foreach (ServerPlayer *p, getAllPlayers())
+        thread->trigger(CardEffected, this, p, data);
 
     return true;
 }
