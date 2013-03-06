@@ -795,7 +795,6 @@ return {
 	["zhichi"] = "智迟",
 	[":zhichi"] = "<b>锁定技</b>，你的回合外，每当你受到一次伤害后，【杀】或非延时类锦囊牌对你无效，直到回合结束。",
 	["#ZhichiDamaged"] = "%from 受到了伤害，本回合内【<font color=\"yellow\"><b>杀</b></font>】或非延时锦囊都将对其无效",
-	["#ZhichiAvoid"] = "%from 的“%arg”被触发，【%arg2】对其无效",
 	["@late"] = "智迟",
 
 	["#luna014"] = "超电磁炮",

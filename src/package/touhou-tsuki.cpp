@@ -64,10 +64,10 @@ public:
         if (!player->isChained())
             return false;
 
-		CardEffectStruct effect = data.value<CardEffectStruct>();
-		if (!effect.card->isKindOf("Duel")
-			&& (!effect.card->isKindOf("Slash") || effect.card->isKindOf("NatureSlash")))
-			return false;
+        CardEffectStruct effect = data.value<CardEffectStruct>();
+        if (!effect.card->isKindOf("Duel")
+            && (!effect.card->isKindOf("Slash") || effect.card->isKindOf("NatureSlash")))
+            return false;
         LogMessage log;
         log.type = "#HongceAvoid";
         log.from = effect.to;
