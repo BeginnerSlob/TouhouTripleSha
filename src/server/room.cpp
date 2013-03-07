@@ -3859,7 +3859,7 @@ void Room::changePlayerGeneral2(ServerPlayer *player, const QString &new_general
     filterCards(player, player->getCards("he"), true);
 }
 
-void Room::filterCards(ServerPlayer* player, QList<const Card *> cards, bool refilter){
+void Room::filterCards(ServerPlayer *player, QList<const Card *> cards, bool refilter){
     setPlayerMark(player, "filtering", 1);
     if(refilter){
         for (int i = 0; i < cards.size(); i++)

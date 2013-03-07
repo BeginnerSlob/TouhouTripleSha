@@ -1645,12 +1645,12 @@ public:
     }
 };
 
-class ThHere:public FilterSkill{
+class ThHere: public FilterSkill {
 public:
-    ThHere():FilterSkill("thhere"){
+    ThHere(): FilterSkill("thhere") {
     }
 
-    virtual bool viewFilter(const Card* to_select) const{
+    virtual bool viewFilter(const Card* to_select) const {
         if (!to_select->isKindOf("Lightning") && !(to_select->isKindOf("Jink") && to_select->getSuit() == Card::Diamond))
             return false;
 
@@ -1665,14 +1665,14 @@ public:
         if (splayer == NULL)
             return false;
 
-        foreach(ServerPlayer *p, room->getAllPlayers())
+        foreach(ServerPlayer *p, room->getOtherPlayers(splayer))
             if (splayer->getHpPoints() > p->getHpPoints())
                 return true;
 
         return false;
     }
     
-    virtual const Card *viewAs(const Card *originalCard) const{
+    virtual const Card *viewAs(const Card *originalCard) const {
         FireSlash *huosha = new FireSlash(originalCard->getSuit(), originalCard->getNumber());
         huosha->setSkillName(objectName());
         WrappedCard *card = Sanguosha->getWrappedCard(originalCard->getId());
@@ -1681,18 +1681,18 @@ public:
     }
 };
 
-class ThHereStateChange:public TriggerSkill{
+class ThHereStateChange: public TriggerSkill {
 public:
-    ThHereStateChange():TriggerSkill("#thhere"){
+    ThHereStateChange(): TriggerSkill("#thhere") {
         frequency = Compulsory;
         events << HpChanged;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
+    virtual bool triggerable(const ServerPlayer *target) const {
         return target != NULL;
     }
 
-    virtual bool trigger(TriggerEvent , Room* room, ServerPlayer *, QVariant &data) const{
+    virtual bool trigger(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const{
         foreach (ServerPlayer *p, room->findPlayersBySkillName("thhere"))
             room->filterCards(p, p->getCards("he"), true);
         return false;
