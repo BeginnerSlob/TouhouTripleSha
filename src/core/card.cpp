@@ -63,11 +63,11 @@ QList<int> Card::StringsToIds(const QStringList &strings){
 }
 
 bool Card::isRed() const{
-    return m_suit == Heart || m_suit == Diamond || m_suit == NoSuitRed;
+    return getColor() == Red;
 }
 
 bool Card::isBlack() const{
-    return m_suit == Spade || m_suit == Club || m_suit == NoSuitBlack;
+    return getColor() == Black;
 }
 
 int Card::getId() const{
@@ -127,7 +127,7 @@ QString Card::Number2String(int number){
 }
 
 QString Card::getNumberString() const{
-    return Number2String(m_number);
+    return Number2String(getSuit());
 }
 
 Card::Suit Card::getSuit() const{
@@ -160,7 +160,7 @@ bool Card::sameColorWith(const Card *other) const{
 }
 
 Card::Color Card::getColor() const{
-    switch(m_suit){
+    switch(getSuit()){
     case Spade:
     case Club:
     case NoSuitBlack:
@@ -179,7 +179,11 @@ bool Card::isEquipped() const{
 }
 
 bool Card::match(const QString &pattern) const{
-    return objectName() == pattern || getType() == pattern || getSubtype() == pattern;
+    QStringList patterns = pattern.split("+");
+    foreach (QString ptn, patterns)
+        if (objectName() == ptn || getType() == ptn || getSubtype() == ptn)
+            return true;
+    return false;
 }
 
 bool Card::CompareByColor(const Card *a, const Card *b){
@@ -233,7 +237,7 @@ QString Card::getLogName() const{
     QString suit_char;
     QString number_string;
 
-    switch (m_suit) {
+    switch (getSuit()) {
     case Spade:
     case Heart:
     case Club:
