@@ -2,6 +2,8 @@
 #include "ui_generaloverview.h"
 #include "engine.h"
 #include "SkinBank.h"
+#include "clientstruct.h"
+#include "client.h"
 
 #include <QMessageBox>
 #include <QRadioButton>
@@ -22,6 +24,15 @@ GeneralOverview::GeneralOverview(QWidget *parent) :
     group_box->setLayout(button_layout);
     ui->scrollArea->setWidget(group_box);
     ui->skillTextEdit->setProperty("description", true);
+    if (ServerInfo.DuringGame && ServerInfo.EnableCheat) {
+        ui->changeGeneralButton->show();
+        ui->changeGeneral2Button->show();
+        connect(ui->changeGeneralButton, SIGNAL(clicked()), this, SLOT(askTransfiguration()));
+        connect(ui->changeGeneral2Button, SIGNAL(clicked()), this, SLOT(askTransfiguration()));
+    } else {
+        ui->changeGeneralButton->hide();
+        ui->changeGeneral2Button->hide();
+    }
 }
 
 void GeneralOverview::fillGenerals(const QList<const General *> &generals){
@@ -204,13 +215,6 @@ void GeneralOverview::on_tableWidget_itemSelectionChanged()
             last_word = Sanguosha->translate(("~") +  origin_generals.at(1));
     }
 
-    if(last_word.startsWith("~") && general->objectName().endsWith("f")){
-        QString origin_general = general->objectName();
-        origin_general.chop(1);
-        if(Sanguosha->getGeneral(origin_general))
-            last_word = Sanguosha->translate(("~") + origin_general);
-    }
-
     if(!last_word.startsWith("~")){
 
         QCommandLinkButton *death_button = new QCommandLinkButton(tr("Death"), last_word);
@@ -221,20 +225,6 @@ void GeneralOverview::on_tableWidget_itemSelectionChanged()
         addCopyAction(death_button);
     }
 
-    if(general_name == "caocao" || general_name == "weiwudi" || general_name == "shencaocao"){
-        QCommandLinkButton *win_button = new QCommandLinkButton(tr("Victory"), tr(
-                "Six dragons lead my chariot, "
-                "I will ride the wind with the greatest speed."
-                "With all of the feudal lords under my command,"
-                "to rule the world with one name!"));
-
-        button_layout->addWidget(win_button);
-        addCopyAction(win_button);
-
-        win_button->setObjectName("audio/system/win-cc.ogg");
-        connect(win_button, SIGNAL(clicked()), this, SLOT(playAudioEffect()));
-    }
-
     QString designer_text = Sanguosha->translate("designer:" + general->objectName());
     if(!designer_text.startsWith("designer:"))
         ui->designerLineEdit->setText(designer_text);
@@ -243,7 +233,7 @@ void GeneralOverview::on_tableWidget_itemSelectionChanged()
 
     QString cv_text = Sanguosha->translate("cv:" + general->objectName());
     if(!cv_text.startsWith("cv:"))
-        ui->cvLineEdit->setText(cv_text);
+        cv_text = Sanguosha->translate("cv:" + general->objectName().split("_").last());
     else
         ui->cvLineEdit->setText(tr("Official"));
 
@@ -255,6 +245,8 @@ void GeneralOverview::on_tableWidget_itemSelectionChanged()
 
     button_layout->addStretch();
     ui->skillTextEdit->append(general->getSkillDescription());
+    ui->changeGeneralButton->setEnabled(Self && Self->getGeneralName() != general->objectName());
+    ui->changeGeneral2Button->setEnabled(Self && Self->getGeneral2Name() != general->objectName());
 }
 
 void GeneralOverview::playAudioEffect()
@@ -267,15 +259,26 @@ void GeneralOverview::playAudioEffect()
     }
 }
 
-#include "clientstruct.h"
-#include "client.h"
-void GeneralOverview::on_tableWidget_itemDoubleClicked(QTableWidgetItem*)
-{
-    if(ServerInfo.FreeChoose && Self){
+void GeneralOverview::askTransfiguration() {
+    QPushButton *button = qobject_cast<QPushButton *>(sender());
+    bool isSecondaryHero = (button && button->objectName() == ui->changeGeneral2Button->objectName());
+    if (ServerInfo.EnableCheat && Self) {
+        if (isSecondaryHero)
+            ui->changeGeneral2Button->setEnabled(false);
+        else
+            ui->changeGeneralButton->setEnabled(false);
+        int row = ui->tableWidget->currentRow();
+        QString general_name = ui->tableWidget->item(row, 0)->data(Qt::UserRole).toString();
+        ClientInstance->requestCheatChangeGeneral(general_name, isSecondaryHero);
+    }
+}
+
+void GeneralOverview::on_tableWidget_itemDoubleClicked(QTableWidgetItem *) {
+    if (ServerInfo.EnableCheat && Self) {
         int row = ui->tableWidget->currentRow();
         QString general_name = ui->tableWidget->item(row, 0)->data(Qt::UserRole).toString();
         if (general_name == "sp999")
             return ;
-        ClientInstance->requestCheatChangeGeneral(general_name);
+        askTransfiguration();
     }
 }

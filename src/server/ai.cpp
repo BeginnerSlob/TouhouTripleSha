@@ -263,7 +263,7 @@ QList<int> TrustAI::askForDiscard(const QString &, int discard_num, int min_num,
     if(optional)
         return to_discard;
     else
-        return self->forceToDiscard(discard_num, include_equip);
+        return self->forceToDiscard(discard_num, include_equip, self->hasFlag("AIDiscardExchanging"));
 }
 
 const Card *TrustAI::askForNullification(const TrickCard *trick, ServerPlayer *, ServerPlayer *to, bool positive){
@@ -272,10 +272,7 @@ const Card *TrustAI::askForNullification(const TrickCard *trick, ServerPlayer *,
 
         foreach(const Card *card, cards){
             if(card->isKindOf("Nullification"))
-            {
-                
                 return card;
-            }
         }
     }
 
@@ -357,7 +354,7 @@ const Card *TrustAI::askForSinglePeach(ServerPlayer *dying) {
     return NULL;
 }
 
-ServerPlayer *TrustAI::askForYumeng(const QList<int> &, int &){
+ServerPlayer *TrustAI::askForYumeng(const QList<int> &, const QString &, int &){
     return NULL;
 }
 

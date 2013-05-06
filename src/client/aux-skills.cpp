@@ -135,9 +135,13 @@ void YumengViewAsSkill::setCards(const QString &card_str)
     ids = Card::StringsToIds(cards);
 }
 
-bool YumengViewAsSkill::viewFilter(const QList<const Card *> &, const Card* card) const
+void YumengViewAsSkill::setMaxNum(int max_num) {
+    this->max_num = max_num;
+}
+
+bool YumengViewAsSkill::viewFilter(const QList<const Card *> &selected, const Card* card) const
 {
-    return ids.contains(card->getId());
+    return ids.contains(card->getId()) && selected.length() < max_num;
 }
 
 const Card *YumengViewAsSkill::viewAs(const QList<const Card *> &cards) const

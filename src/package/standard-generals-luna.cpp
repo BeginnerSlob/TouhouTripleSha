@@ -2293,7 +2293,7 @@ public:
             move3.to = player;
             room->moveCardsAtomic(move3, true);
 
-            while(room->askForYumeng(player, shuhui_card, false, true));
+            while(room->askForYumeng(player, shuhui_card, objectName(), false, true));
 
             CardsMoveStruct move4;
             move4.card_ids = shuhui_card;
