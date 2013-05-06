@@ -32,8 +32,8 @@ time_t ServerInfoStruct::getCommandTimeout(QSanProtocol::CommandType command, QS
 }
 
 bool ServerInfoStruct::parse(const QString &str){
-    QRegExp rx("(.*):(@?\\w+):(\\d+):([+\\w]*):([FSCTBHAM12]*)");
-    if(!rx.exactMatch(str)){
+    QRegExp rx("(.*):(@?\\w+):(\\d+):([+\\w]*):([RCFSNTBHAM1234]*)");
+    if (!rx.exactMatch(str)) {
         // older version, just take the player count
         int count = str.split(":").at(1).toInt();
         GameMode = QString("%1p").arg(count, 2, 10, QChar('0'));
@@ -42,43 +42,54 @@ bool ServerInfoStruct::parse(const QString &str){
     }
 
     QStringList texts = rx.capturedTexts();
+    if (texts.isEmpty()) {
+        DuringGame = false;
+    } else {
+        DuringGame = true;
 
-    QString server_name = texts.at(1);
-    Name = QString::fromUtf8(QByteArray::fromBase64(server_name.toAscii()));
+        QString server_name = texts.at(1);
+        Name = QString::fromUtf8(QByteArray::fromBase64(server_name.toAscii()));
 
-    GameMode = texts.at(2);
-    OperationTimeout = texts.at(3).toInt();
+        GameMode = texts.at(2);
+        OperationTimeout = texts.at(3).toInt();
 
-    QStringList ban_packages = texts.at(4).split("+");
-    QList<const Package *> packages = Sanguosha->findChildren<const Package *>();
-    foreach(const Package *package, packages){
-        if(package->inherits("Scenario"))
-            continue;
+        QStringList ban_packages = texts.at(4).split("+");
+        QList<const Package *> packages = Sanguosha->findChildren<const Package *>();
+        foreach (const Package *package, packages) {
+            if (package->inherits("Scenario"))
+                continue;
 
-        QString package_name = package->objectName();
-        if(ban_packages.contains(package_name))
-            package_name = "!" + package_name;
+            QString package_name = package->objectName();
+            if (ban_packages.contains(package_name))
+                package_name = "!" + package_name;
 
-        Extensions << package_name;
+            Extensions << package_name;
+        }
+
+        QString flags = texts.at(5);
+
+        RandomSeat = flags.contains("R");
+        EnableCheat = flags.contains("C");
+        FreeChoose = EnableCheat && flags.contains("F");
+        Enable2ndGeneral = flags.contains("S");
+        EnableScene = flags.contains("N"); // changjing
+        EnableSame = flags.contains("T");
+        EnableBasara= flags.contains("B");
+        EnableHegemony = flags.contains("H");
+        EnableAI = flags.contains("A");
+        DisableChat = flags.contains("M");
+
+        if(flags.contains("1"))
+            MaxHPScheme = 1;
+        else if(flags.contains("2"))
+            MaxHPScheme = 2;
+        else if(flags.contains("3"))
+            MaxHPScheme = 3;
+        else if(flags.contains("4"))
+            MaxHPScheme = 4;
+        else
+            MaxHPScheme = 0;
     }
-
-    QString flags = texts.at(5);
-
-    FreeChoose = flags.contains("F");
-    Enable2ndGeneral = flags.contains("S");
-    EnableScene = flags.contains("C");
-    EnableSame = flags.contains("T");
-    EnableBasara= flags.contains("B");
-    EnableHegemony = flags.contains("H");
-    EnableAI = flags.contains("A");
-    DisableChat = flags.contains("M");
-
-    if(flags.contains("1"))
-        MaxHPScheme = 1;
-    else if(flags.contains("2"))
-        MaxHPScheme = 2;
-    else
-        MaxHPScheme = 0;
 
     return true;
 }

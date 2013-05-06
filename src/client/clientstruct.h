@@ -18,6 +18,8 @@ struct ServerInfoStruct{
     QString GameMode;
     int OperationTimeout;
     QStringList Extensions;
+    bool RandomSeat;
+    bool EnableCheat;
     bool FreeChoose;
     bool Enable2ndGeneral;
     bool EnableScene;
@@ -27,6 +29,8 @@ struct ServerInfoStruct{
     bool EnableAI;
     bool DisableChat;
     int MaxHPScheme;
+
+    bool DuringGame;
 };
 
 extern ServerInfoStruct ServerInfo;

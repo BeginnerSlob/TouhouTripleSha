@@ -70,10 +70,6 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
                 room->setPlayerFlag(player, "-drank");
             }
 
-            LogMessage log;
-            log.type = "$AppendSeparator";
-            room->sendLog(log);
-
             if (!player->faceUp()) {
                 if (room->getTag("FirstRound").toBool())
                     room->setTag("FirstRound", false);
@@ -938,10 +934,6 @@ bool HulaoPassMode::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer 
 
     case TurnStart:{
             if(player->isLord()){
-                LogMessage log;
-                log.type = "$AppendSeparator";
-                room->sendLog(log);
-
                 if(!player->faceUp())
                     player->turnOver();
                 else
@@ -974,10 +966,6 @@ bool HulaoPassMode::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer 
                     }else
                         player->drawCards(1, false);
                 }else {
-                    LogMessage log;
-                    log.type = "$AppendSeparator";
-                    room->sendLog(log);
-
                     if (!player->faceUp())
                         player->turnOver();
                     else
@@ -1109,8 +1097,8 @@ bool BasaraMode::trigger(TriggerEvent triggerEvent, Room* room, ServerPlayer *pl
                     room->setPlayerProperty(sp, "general2", "anjiang");
                     log.arg2 = room->getTag(sp->objectName()).toStringList().at(1);
                 }
-
-                sp->invoke("log",log.toString());
+				
+                room->doNotify(sp, QSanProtocol::S_COMMAND_LOG_SKILL, log.toJsonValue());
                 sp->tag["roles"] = room->getTag(sp->objectName()).toStringList().join("+");
             }
             return false;

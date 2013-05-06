@@ -14,9 +14,9 @@ config = {
         "Bangai",
         "SP",
     },
-    color_shu = "#D0796C",
-    color_wei = "#547998",
-    color_wu = "#4DB873",
+    color_shu = "#4DB873",
+    color_wei = "#D0796C",
+    color_wu = "#547998",
     color_qun = "#8A807A",
     color_god = "#96943D",
 }

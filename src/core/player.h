@@ -118,6 +118,7 @@ public:
     void setAlive(bool alive);
 
     QString getFlags() const;
+    QStringList getFlagList() const;
     virtual void setFlags(const QString &flag);
     bool hasFlag(const QString &flag) const;
     void clearFlags();
@@ -139,6 +140,7 @@ public:
     virtual void addSkill(const QString &skill_name);
     virtual void loseSkill(const QString &skill_name);
     bool hasSkill(const QString &skill_name, bool include_lose = false) const;
+    bool hasSkills(const QString &skill_name, bool include_lose = false) const;
     bool hasInnateSkill(const QString &skill_name) const;
     bool hasLordSkill(const QString &skill_name, bool include_lose = false) const;
     virtual QString getGameMode() const = 0;

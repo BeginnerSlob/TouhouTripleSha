@@ -129,11 +129,11 @@ void Player::setAlive(bool alive){
 }
 
 QString Player::getFlags() const{
-    QStringList flags_list;
-    foreach(QString flag, flags)
-        flags_list << flag;
+    return QStringList(flags.toList()).join("|");
+}
 
-    return flags_list.join("+");
+QStringList Player::getFlagList() const{
+    return QStringList(flags.toList());
 }
 
 void Player::setFlags(const QString &flag){
@@ -327,6 +327,20 @@ bool Player::isLord() const{
 bool Player::hasSkill(const QString &skill_name, bool include_lose) const{
     return skills.contains(skill_name)
            || acquired_skills.contains(skill_name);
+}
+
+bool Player::hasSkills(const QString &skill_name, bool include_lose) const{
+    foreach (QString skill, skill_name.split("|")) {
+        bool checkpoint = true;
+        foreach (QString sk, skill.split("+")) {
+            if (!hasSkill(sk, include_lose)) {
+                checkpoint = false;
+                break;
+            }
+        }
+        if (checkpoint) return true;
+    }
+    return false;
 }
 
 bool Player::hasInnateSkill(const QString &skill_name) const{
@@ -932,7 +946,7 @@ void Player::clearCardLimitation(bool single_turn) {
     foreach (Card::HandlingMethod method, limit_type) {
         QStringList limit_patterns = card_limitation[method];
         foreach (QString pattern, limit_patterns) {
-            if (!single_turn || (single_turn && pattern.endsWith("@1")))
+            if (!single_turn || pattern.endsWith("@1"))
                 card_limitation[method].removeAll(pattern);
         }
     }

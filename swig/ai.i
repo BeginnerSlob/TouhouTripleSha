@@ -37,7 +37,7 @@ public:
     virtual const Card *askForPindian(ServerPlayer *requestor, const QString &reason) = 0;
     virtual ServerPlayer *askForPlayerChosen(const QList<ServerPlayer *> &targets, const QString &reason) = 0;
     virtual const Card *askForSinglePeach(ServerPlayer *dying) = 0;
-    virtual ServerPlayer *askForYumeng(const QList<int> &cards, int &card_id) = 0;
+    virtual ServerPlayer *askForYumeng(const QList<int> &cards, const QString &reason, int &card_id) = 0;
     virtual void askForYuxi(const QList<int> &cards, QList<int> &up, QList<int> &bottom, bool up_only) = 0;
     virtual void filterEvent(TriggerEvent event, ServerPlayer *player, const QVariant &data);
 };
@@ -61,7 +61,7 @@ public:
     virtual const Card *askForPindian(ServerPlayer *requestor, const QString &reason);
     virtual ServerPlayer *askForPlayerChosen(const QList<ServerPlayer *> &targets, const QString &reason);
     virtual const Card *askForSinglePeach(ServerPlayer *dying) ;
-    virtual ServerPlayer *askForYumeng(const QList<int> &cards, int &card_id);
+    virtual ServerPlayer *askForYumeng(const QList<int> &cards, const QString &reason, int &card_id);
     virtual void askForYuxi(const QList<int> &cards, QList<int> &up, QList<int> &bottom, bool up_only);
 
     virtual bool useCard(const Card *card);
@@ -86,7 +86,7 @@ public:
     virtual const Card *askForPindian(ServerPlayer *requestor, const QString &reason);
     virtual Card::Suit askForSuit(const QString &reason);
 
-    virtual ServerPlayer *askForYumeng(const QList<int> &cards, int &card_id);
+    virtual ServerPlayer *askForYumeng(const QList<int> &cards, const QString &reason, int &card_id);
     virtual void askForYuxi(const QList<int> &cards, QList<int> &up, QList<int> &bottom, bool up_only);
 
     virtual void filterEvent(TriggerEvent event, ServerPlayer *player, const QVariant &data);
@@ -196,9 +196,9 @@ AI *Room::cloneAI(ServerPlayer *player){
     return new TrustAI(player);
 }
 
-ServerPlayer *LuaAI::askForYumeng(const QList<int> &cards, int &card_id){
+ServerPlayer *LuaAI::askForYumeng(const QList<int> &cards, const QString &reason, int &card_id){
     if(callback == 0)
-        return TrustAI::askForYumeng(cards, card_id);
+        return TrustAI::askForYumeng(cards, reason, card_id);
 
     lua_State *L = room->getLuaState();
 

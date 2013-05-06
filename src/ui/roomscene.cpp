@@ -272,7 +272,7 @@ RoomScene::RoomScene(QMainWindow *main_window):
         log_box_widget = addWidget(log_box);
         log_box_widget->setObjectName("log_box_widget");
         log_box_widget->setZValue(-1.0);
-        connect(ClientInstance, SIGNAL(log_received(QString)), log_box, SLOT(appendLog(QString)));
+        connect(ClientInstance, SIGNAL(log_received(QStringList)), log_box, SLOT(appendLog(QStringList)));
     }
 
     {
@@ -2297,17 +2297,14 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         if (vsSkill != NULL)
         {
             CardUseStruct::CardUseReason reason = CardUseStruct::CARD_USE_REASON_UNKNOWN;
-            if ((newStatus & Client::ClientStatusBasicMask) == Client::Responding)
+            if (newStatus == Client::Responding)
                 reason = CardUseStruct::CARD_USE_REASON_RESPONSE;
+            else if (newStatus == Client::RespondingUse)
+                reason = CardUseStruct::CARD_USE_REASON_RESPONSE_USE;
             else if (newStatus == Client::Playing)
                 reason = CardUseStruct::CARD_USE_REASON_PLAY;
             QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
-            if ((newStatus & Client::ClientStatusBasicMask) == Client::Responding
-                && newStatus != Client::RespondingUse // temp way to avoid these two skills in responding
-                && (vsSkill->objectName() == "lingpao" || vsSkill->objectName() == "Fan"))
-                button->setEnabled(false);
-            else
-                button->setEnabled(vsSkill->isAvailable(Self, reason, pattern) && !pattern.endsWith("!"));
+            button->setEnabled(vsSkill->isAvailable(Self, reason, pattern) && !pattern.endsWith("!"));
         } 
         else
         {
@@ -2366,11 +2363,16 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
                 QString skill_name = rx.capturedTexts().at(1);
                 const ViewAsSkill *skill = Sanguosha->getViewAsSkill(skill_name);
                 if (skill){
+                    CardUseStruct::CardUseReason reason = CardUseStruct::CARD_USE_REASON_UNKNOWN;
+                    if (newStatus == Client::Responding)
+                        reason = CardUseStruct::CARD_USE_REASON_RESPONSE;
+                    else if (newStatus == Client::RespondingUse)
+                        reason = CardUseStruct::CARD_USE_REASON_RESPONSE_USE;
                     foreach (QSanSkillButton *button, m_skillButtons){
                         Q_ASSERT(button != NULL);
                         const ViewAsSkill* vsSkill = button->getViewAsSkill();
                         if (vsSkill != NULL && vsSkill->objectName() == skill_name && 
-                            vsSkill->isAvailable(Self, CardUseStruct::CARD_USE_REASON_RESPONSE, pattern))
+                            vsSkill->isAvailable(Self, reason, pattern))
                             button->click();
                             break;
                     }
@@ -3474,10 +3476,10 @@ void RoomScene::onGameStart(){
 
     // updateStatus(ClientInstance->getStatus(), ClientInstance->getStatus());
 
-    /*QList<const ClientPlayer *> players = ClientInstance->getPlayers();
+    QList<const ClientPlayer *> players = ClientInstance->getPlayers();
     foreach(const ClientPlayer *player, players){
         connect(player, SIGNAL(phase_changed()), log_box, SLOT(appendSeparator()));
-    }*/
+    }
 
     connect(Self, SIGNAL(skill_state_changed(QString)), this, SLOT(skillStateChange(QString)));
 
