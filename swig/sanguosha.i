@@ -466,9 +466,10 @@ struct SlashEffectStruct{
 struct CardUseStruct{
     enum CardUseReason
     {
-        CARD_USE_REASON_UNKNOWN,
-        CARD_USE_REASON_PLAY,
-        CARD_USE_REASON_RESPONSE
+        CARD_USE_REASON_UNKNOWN = 0x00,
+        CARD_USE_REASON_PLAY = 0x01,
+        CARD_USE_REASON_RESPONSE = 0x02,
+        CARD_USE_REASON_RESPONSE_USE = 0x12
     } m_reason;
 
     CardUseStruct();
@@ -1109,7 +1110,8 @@ public:
     bool askForUseSlashTo(ServerPlayer *slasher, QList<ServerPlayer *> victims, const QString &prompt, bool distance_limit = true, bool add_history = true, bool disable_extra = false);
     int askForAG(ServerPlayer *player, const QList<int> &card_ids, bool refusable, const char *reason);
     const Card *askForCardShow(ServerPlayer *player, ServerPlayer *requestor, const char *reason);
-    bool askForYumeng(ServerPlayer *player, QList<int> &cards, bool is_preview = true, bool visible = false);
+    bool askForYumeng(ServerPlayer *guojia, QList<int> &cards, const char *skill_name = NULL,
+                    bool is_preview = true, bool visible = false, bool optional = false, int max_num = -1);
     const Card *askForPindian(ServerPlayer *player, ServerPlayer *from, ServerPlayer *to, const char *reason);
     ServerPlayer *askForPlayerChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets, const char *reason);
     QString askForGeneral(ServerPlayer *player, const QStringList &generals, char *default_choice = NULL);      

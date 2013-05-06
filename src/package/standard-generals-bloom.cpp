@@ -386,7 +386,7 @@ public:
             if(yumeng_cards.isEmpty())
                 continue;
 
-            while(room->askForYumeng(player, yumeng_cards));
+            while(room->askForYumeng(player, yumeng_cards, objectName()));
         }
 
     }
@@ -1614,6 +1614,15 @@ bool MiceCard::targetFilter(const QList<const Player *> &targets, const Player *
 }
 
 bool MiceCard::targetFixed() const{
+    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        if (!ClientInstance->hasNoTargetResponding()) {
+            CardStar card = Sanguosha->cloneCard(user_string, NoSuitNoColor, 0);
+            Self->tag["mice"] = QVariant::fromValue(card);
+            return card && card->targetFixed();
+        } else
+            return true;
+    }
+
     CardStar card = Self->tag.value("mice").value<CardStar>();
     return card && card->targetFixed();
 }

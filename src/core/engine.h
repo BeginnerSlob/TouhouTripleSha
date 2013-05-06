@@ -107,6 +107,9 @@ public:
     QObject* currentRoomObject();
     Room* currentRoom();
     RoomState* currentRoomState();
+	
+    QString getCurrentCardUsePattern();
+    CardUseStruct::CardUseReason getCurrentCardUseReason();
 
 private:
     void _loadMiniScenarios();
@@ -138,6 +141,10 @@ private:
 
     lua_State *lua;
 };
+
+static inline QVariant GetConfigFromLuaState(lua_State *L, const char *key) {
+    return GetValueFromLuaState(L, "config", key);
+}
 
 extern Engine *Sanguosha;
 

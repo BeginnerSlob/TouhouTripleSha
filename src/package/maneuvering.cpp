@@ -65,11 +65,7 @@ void Analeptic::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
 
 void Analeptic::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.to->getRoom();
-
-    // do animation
-    QString who = effect.to->objectName();
-    QString animation_str = QString("analeptic:%1:%2").arg(who).arg(who);
-    room->broadcastInvoke("animate", animation_str);
+    room->setEmotion(effect.to, "analeptic");
 
     if(effect.from->hasFlag("dying")){
         // recover hp
@@ -98,7 +94,8 @@ public:
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        return pattern == "slash" && player->getMark("Equips_Nullified_to_Yourself") == 0;
+        return Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE
+               && pattern == "slash" && player->getMark("Equips_Nullified_to_Yourself") == 0;
     }
 
     virtual bool viewFilter(const Card* to_select) const{
