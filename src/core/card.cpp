@@ -127,7 +127,7 @@ QString Card::Number2String(int number){
 }
 
 QString Card::getNumberString() const{
-    return Number2String(getSuit());
+    return Number2String(getNumber());
 }
 
 Card::Suit Card::getSuit() const{
@@ -530,7 +530,8 @@ void Card::onUse(Room *room, const CardUseStruct &use) const{
 
     LogMessage log;
     log.from = player;
-    log.to = card_use.to;
+    if (!card_use.card->targetFixed() || card_use.to.length() > 1 || !card_use.to.contains(card_use.from))
+        log.to = card_use.to;
     log.type = "#UseCard";
     log.card_str = toString();
     room->sendLog(log);
@@ -707,6 +708,10 @@ SkillCard::SkillCard()
 
 void SkillCard::setUserString(const QString &user_string){
     this->user_string = user_string;
+}
+
+QString SkillCard::getUserString() const{
+    return user_string;
 }
 
 QString SkillCard::getType() const{

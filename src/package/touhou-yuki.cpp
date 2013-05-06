@@ -441,7 +441,7 @@ void ThYuanqiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     room->obtainCard(target, card_id);
 
     QString choice = "draw";
-    if (!target->isNude())
+    if (target->getCards("he").length() != 1 || room->getOwner() != target)
         choice = room->askForChoice(target, "thyuanqi", "draw+throw");
 
     if (choice == "draw")

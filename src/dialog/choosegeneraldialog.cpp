@@ -86,7 +86,7 @@ ChooseGeneralDialog::ChooseGeneralDialog(const QStringList &general_names, QWidg
         OptionButton *button = new OptionButton(QString());
         button->setIcon(QIcon(icon));
         button->setIconSize(icon_size);
-        button->setToolTip(general->getSkillDescription());        
+        button->setToolTip(general->getSkillDescription(true));        
         buttons << button;
 
         mapper->setMapping(button, general->objectName());
@@ -127,7 +127,7 @@ ChooseGeneralDialog::ChooseGeneralDialog(const QStringList &general_names, QWidg
             QLabel *label = new QLabel;
             //label->setCaption(tr("Lord's general"));
             label->setPixmap(G_ROOM_SKIN.getGeneralPixmap(lord->objectName(), icon_type));
-            label->setToolTip(lord->getSkillDescription());
+            label->setToolTip(lord->getSkillDescription(true));
             layout->addWidget(label);
         }
 
@@ -144,7 +144,7 @@ ChooseGeneralDialog::ChooseGeneralDialog(const QStringList &general_names, QWidg
             QLabel *label = new QLabel;
             //label->setCaption(tr("Lord's general"));
             label->setPixmap(G_ROOM_SKIN.getGeneralPixmap(lord->objectName(), icon_type));
-            label->setToolTip(lord->getSkillDescription());
+            label->setToolTip(lord->getSkillDescription(true));
             grid_layout->addWidget(label,0,0);
         }
 
@@ -260,7 +260,7 @@ FreeChooseDialog::FreeChooseDialog(QWidget *parent, bool pair_choose)
         if(!generals.isEmpty()){
             QWidget *tab = createTab(generals);
             tab_widget->addTab(tab,
-                               QIcon(QString("image/kingdom/icon/%1.png").arg(kingdom)),
+                               QIcon(G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_KINGDOM_ICON, kingdom)),
                                Sanguosha->translate(kingdom));
         }
     }
@@ -335,7 +335,7 @@ QWidget *FreeChooseDialog::createTab(const QList<const General *> &generals){
         else
             button = new QRadioButton(text);
         button->setObjectName(general_name);
-        button->setToolTip(general->getSkillDescription());
+        button->setToolTip(general->getSkillDescription(true));
         if(general->isLord())
             button->setIcon(lord_icon);
 
