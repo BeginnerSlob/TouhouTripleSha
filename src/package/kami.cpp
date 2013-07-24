@@ -1576,6 +1576,61 @@ public:
     }
 };
 
+class ThLijian: public TriggerSkill {
+public:
+    ThLijian(): TriggerSkill("thlijian") {
+        events << EventPhaseStart;
+    }
+
+    virtual bool trigger(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const {
+        if(data.value<PlayerStar>() != player || player->getPhase() != Player::Start)
+            return false;
+
+        if ((!player->isKongcheng() && player->getMark("@lijian") > 0 && player->askForSkillInvoke(objectName()))
+            || player->getMark("lijian") > 0)
+        {
+            if (player->getMark("lijian") > 0)
+                room->setPlayerMark(player, "lijian", 0);
+            else
+            {
+                player->loseMark("@lijian");
+                player->gainMark("@lijianused");
+                room->setPlayerMark(player, "lijian", 1);
+            }
+
+            if (player->isKongcheng())
+                return false;
+
+            const Card *card = room->askForCardShow(player, player, "@ThLijianShow");
+            if (card->getEffectiveId() == -1)
+                return false;
+            else
+            {
+                room->showCard(player, card->getEffectiveId());
+                QString pattern;
+                if (card->getType() == "basic")
+                    pattern = "BasicCard";
+                else if (card->getType() == "equip")
+                    pattern = "EquipCard";
+                else if (card->getType() == "trick")
+                    pattern = "TrickCard";
+                else
+                    return false;
+                foreach (ServerPlayer *p, room->getAllPlayers())
+                    if (p->isNude() || !room->askForCard(p, pattern, "@ThLijianDiscard"))
+                    {
+                        DamageStruct damage = DamageStruct();
+                        damage.from = player;
+                        damage.to = p;
+                        room->damage(damage);
+                    }
+            }
+        }
+
+        return false;
+    }
+};
+
 KamiPackage::KamiPackage()
     :Package("kami")
 {
@@ -1644,6 +1699,20 @@ KamiPackage::KamiPackage()
     General *kami015 = new General(this, "kami015", "god", 3);
     kami015->addSkill(new ThZhizun);
     kami015->addSkill(new ThFeiying);
+
+    General *kami016 = new General(this, "kami016", "god", 3, false);
+    kami016->addSkill(new ThLijian);
+    kami016->addSkill(new MarkAssignSkill("@lijian", 1));
+/*    kami016->addSkill(new ThSiqiang);
+    kami016->addSkill(new MarkAssignSkill("@siqiang", 1));
+    kami016->addSkill(new ThJiefu);
+    kami016->addSkill(new MarkAssignSkill("@jiefu", 1));
+    kami016->addSkill(new ThHuanxiang);
+    kami016->addSkill(new MarkAssignSkill("@huanxiang", 1));*/
+    related_skills.insertMulti("thlijian", "#@lijian-1");
+/*    related_skills.insertMulti("thsiqiang", "#@siqiang-1");
+    related_skills.insertMulti("thjiefu", "#@jiefu-1");
+    related_skills.insertMulti("thhuanxiang", "#@huanxiang-1");*/
     
     addMetaObject<ThShenfengCard>();
     addMetaObject<ThGugaoCard>();
