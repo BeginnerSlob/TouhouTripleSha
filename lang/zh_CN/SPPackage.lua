@@ -93,6 +93,7 @@ return {
 	["designer:sp999"] = "幻桜落 | Codeby:Slob",
 	["illustrator:sp999"] = "正体不明",
 	["cv:sp999"] = "暂无",
+	--jibu2
 	["thfeiniang"] = "非孃",
 	[":thfeiniang"] = "锁定技，分发武将牌前，须将该武将牌撕碎，然后移出游戏。",
 	

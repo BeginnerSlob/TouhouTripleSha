@@ -407,6 +407,8 @@ return {
 	["@guaitan_trick"]="怪谈(锦囊牌)",
 	["#ThGuaitan"]="%from 选择了 %arg，%to 的下个回合无法使用或打出该类别的牌",
 	["#ThGuaitanTrigger"]="%from 受技能“%arg2”影响，本回合无法使用或打出 %arg",
+	["thxiagong"] = "遐攻",
+	[":thxiagong"] = "若你的装备区没有武器牌，你可以对与你距离2以内的角色使用【杀】。",
 	
 	["#hana013"]="忠实的死体",
 	["hana013"]="宫古芳香",--花 - 空 - 4血
