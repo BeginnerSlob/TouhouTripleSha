@@ -24,6 +24,8 @@ CommonTranslationTable = {
 	["GeneralA"] = "主将",
 	["GeneralB"] = "副将",
 	["surrender:yes"] = "你可以立即认输结束游戏",
+	["TriggerOrder"] = "选择触发顺序",
+	["trigger_none"] = "不发动",
 	["@dummy-slash"] = "请选择你使用【杀】的目标角色",
 	["@dummy-slash2"] = "请选择 %src 使用【杀】的目标角色",
 
@@ -189,6 +191,8 @@ CommonTranslationTable = {
 	["#RemoveFromGame"] = "%arg2 张牌被作为 %arg 牌移出游戏",
 	["$GotCardFromPile"] = "%from 从 %arg 牌中获得 %card",
 	["#GotNCardFromPile"] = "%from 从 %arg 牌中获得 %arg2 张牌",
+	["#BecomeUser"] = "%from 成为了 %card 的使用者",
+	["#BecomeTarget"] = "%from 成为了 %card 的目标",
 	["@askforslash"] = "你可以对你攻击范围内的一名角色使用一张【杀】",
 	["@askforretrial"] = "请发动“%dest”来修改 %src 的 %arg 判定",
 	["$CheatCard"] = "%from 作弊，获得了 %card",
