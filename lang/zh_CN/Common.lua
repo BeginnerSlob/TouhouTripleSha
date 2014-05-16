@@ -15,7 +15,7 @@ CommonTranslationTable = {
 	["limitedskill"] = "限定技，",
 	["wakeskill"] = "觉醒技，",
 	["lordskill"] = "主公技，",
-	["oppphskill"] = "每阶段限一次。",
+	["oppphskill"] = "出牌阶段限一次，",
 
 	["Pairs"] = "双将",
 	["XMode"] = "血战到底",
@@ -117,6 +117,7 @@ CommonTranslationTable = {
 
 	["#Murder"] = "%to【%arg】阵亡，伤害来源为 %from",
 	["#Suicide"] = "%to【%arg】自杀",
+	["#Revive"] = "%from 复活",
 	["#InvokeSkill"] = "%from 发动了“%arg”",
 	["#InvokeOthersSkill"] = "%from 发动了 %to 的“%arg”",
 	["#ChoosePlayerWithSkill"] = "%from 发动了“%arg”，目标是 %to",
