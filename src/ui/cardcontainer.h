@@ -1,16 +1,16 @@
-#ifndef CARDCONTAINER_H
-#define CARDCONTAINER_H
+#ifndef _CARD_CONTAINER_H
+#define _CARD_CONTAINER_H
 
 class CardItem;
 class ClientPlayer;
 
-#include "QSanSelectableItem.h"
+#include "qsan-selectable-item.h"
 #include "carditem.h"
-#include "GenericCardContainerUI.h"
+#include "generic-cardcontainer-ui.h"
 
 #include <QStack>
 
-class CloseButton: public QSanSelectableItem{
+class CloseButton: public QSanSelectableItem {
     Q_OBJECT
 
 public:
@@ -24,60 +24,60 @@ signals:
     void clicked();
 };
 
-
-class CardContainer : public GenericCardContainer
-{
+class CardContainer: public GenericCardContainer {
     Q_OBJECT
 
 public:
     explicit CardContainer();
-    virtual QList<CardItem*> removeCardItems(const QList<int> &card_ids, Player::Place place);    
+    virtual QList<CardItem *> removeCardItems(const QList<int> &card_ids, Player::Place place);
     int getFirstEnabled() const;
     void startChoose();
-    void startLingshi();
-    void addCloseButton(bool dispose = false);
+    void startGongxin(const QList<int> &enabled_ids);
+    void addCloseButton();
     void view(const ClientPlayer *player);
     virtual QRectF boundingRect() const;
-    ClientPlayer* m_currentPlayer;
-    virtual void paint(QPainter *,const QStyleOptionGraphicsItem *,QWidget *);
+    ClientPlayer *m_currentPlayer;
+    virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
     bool retained();
+
 public slots:
-    void fillCards(const QList<int> &card_ids = QList<int>());
+    void fillCards(const QList<int> &card_ids = QList<int>(), const QList<int> &disabled_ids = QList<int>());
     void clear();
     void freezeCards(bool is_disable);
 
 protected:
     QRectF _m_boundingRect;
-    virtual bool _addCardItems(QList<CardItem*> &card_items, const CardsMoveStruct &moveInfo);
+    virtual bool _addCardItems(QList<CardItem *> &card_items, const CardsMoveStruct &moveInfo);
 
 private:
     QList<CardItem *> items;
-    CloseButton* close_button;
+    CloseButton *close_button;
     QPixmap _m_background;
     QStack<QList<CardItem *> > items_stack;
+    QStack<bool> retained_stack;
 
     void _addCardItem(int card_id, const QPointF &pos);
 
 private slots:
     void grabItem();
     void chooseItem();
-    void lingshiItem();
+    void gongxinItem();
 
 signals:
     void item_chosen(int card_id);
-    void item_lingshied(int card_id);
+    void item_gongxined(int card_id);
 };
 
-class YuxiBox: public QSanSelectableItem{
+class GuanxingBox: public QSanSelectableItem {
     Q_OBJECT
 
 public:
-    YuxiBox();
+    GuanxingBox();
     void clear();
     void reply();
 
 public slots:
-    void doYuxi(const QList<int> &card_ids, bool up_only);
+    void doGuanxing(const QList<int> &card_ids, bool up_only);
     void adjust();
 
 private:
@@ -91,4 +91,5 @@ private:
     static const int skip = 102;
 };
 
-#endif // CARDCONTAINER_H
+#endif
+

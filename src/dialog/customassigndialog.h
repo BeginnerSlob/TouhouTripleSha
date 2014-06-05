@@ -1,5 +1,5 @@
-#ifndef CUSTOMASSIGNDIALOG_H
-#define CUSTOMASSIGNDIALOG_H
+#ifndef _CUSTOM_ASSIGN_DIALOG_H
+#define _CUSTOM_ASSIGN_DIALOG_H
 
 #include "engine.h"
 
@@ -15,27 +15,21 @@
 #include <QTextEdit>
 #include <QLineEdit>
 
-class LabelButton : public QLabel {
+class LabelButton: public QLabel {
     Q_OBJECT
+
 public:
-    LabelButton()
-        :QLabel(){}
+    LabelButton(): QLabel() {}
 
-    void mouseDoubleClickEvent(QMouseEvent *)
-    {
-        emit double_clicked();
-    }
+    void mouseDoubleClickEvent(QMouseEvent *) { emit double_clicked(); }
+    void mousePressEvent(QMouseEvent *) { emit clicked(); }
 
-    void mousePressEvent(QMouseEvent *)
-    {
-        emit clicked();
-    }
 signals:
     void double_clicked();
     void clicked();
 };
 
-class CustomAssignDialog: public QDialog{
+class CustomAssignDialog: public QDialog {
     Q_OBJECT
 
 public:
@@ -54,16 +48,19 @@ private:
     QComboBox *role_ComboBox, *num_ComboBox, *marks_ComboBox;
     QCheckBox  *starter_box;
     LabelButton *general_label, *general_label2;
-    QCheckBox *max_hp_prompt,*hp_prompt;
-    QSpinBox *max_hp_spin,*hp_spin;
+    QCheckBox *max_hp_prompt, *hp_prompt;
+    QSpinBox *max_hp_spin, *hp_spin;
     QSpinBox *player_draw, *marks_count;
     QCheckBox *self_select_general, *self_select_general2;
     QPushButton *removeEquipButton, *removeHandButton, *removeJudgeButton, *removePileButton;
     QCheckBox *set_turned, *set_chained;
-    QComboBox *single_turn_box, *before_next_box;
-    QCheckBox *random_roles_box, *ended_by_pile_box;
-    QCheckBox *single_turn, *before_next;
-    QLabel *single_turn_text, *single_turn_text2, *before_next_text, *before_next_text2;
+    QComboBox *ended_by_pile_box, *single_turn_box, *before_next_box;
+    QCheckBox *random_roles_box;
+    QCheckBox *rest_in_DP_box;
+    QCheckBox *ended_by_pile, *single_turn, *before_next;
+    QLabel *ended_by_pile_text, *ended_by_pile_text2,
+           *single_turn_text, *single_turn_text2,
+           *before_next_text, *before_next_text2;
     QPushButton *extra_skill_set;
     QPushButton *move_list_up_button, *move_list_down_button;
     QCheckBox *move_list_check, *move_pile_check;
@@ -89,11 +86,12 @@ private:
     QString general_name, general_name2;
     bool choose_general2;
     QString starter;
-    bool is_single_turn, is_before_next;
+    bool is_ended_by_pile, is_single_turn, is_before_next;
 
     QList<bool> set_options;
 
     QMap<QString, int> kingdom_index;
+
 private slots:
     void updateRole(int index);
     void updateNumber(int num);
@@ -136,11 +134,10 @@ private slots:
     void clearGeneral2();
 
     void exchangeListItem();
-   // void exchangeJudgeItem();
-  //  void exchangePileItem();
 
     void checkSingleTurnBox(bool toggled);
     void checkBeforeNextBox(bool toggled);
+    void checkEndedByPileBox(bool toggled);
 
     void on_list_itemSelectionChanged(QListWidgetItem *current);
 
@@ -160,7 +157,7 @@ signals:
 };
 
 
-class GeneralAssignDialog: public QDialog{
+class GeneralAssignDialog: public QDialog {
     Q_OBJECT
 
 public:
@@ -179,11 +176,12 @@ signals:
     void general_cleared();
 };
 
-class CardAssignDialog : public QDialog {
+class CardAssignDialog: public QDialog {
     Q_OBJECT
-public:
 
+public:
     CardAssignDialog(QWidget *parent = 0, QString card_type = QString(), QString class_name = QString(), QList<int> excluded = QList<int>());
+
 private:
     void addCard(const Card *card);
 
@@ -200,10 +198,11 @@ signals:
     void card_chosen(int card_id);
 };
 
-class SkillAssignDialog : public QDialog{
+class SkillAssignDialog: public QDialog {
     Q_OBJECT
+
 public:
-    SkillAssignDialog(QDialog *parent,QString player_name, QStringList &player_skills);
+    SkillAssignDialog(QDialog *parent, QString player_name, QStringList &player_skills);
 
 private:
     QListWidget *skill_list;
@@ -229,4 +228,5 @@ signals:
     void skill_update(QStringList);
 };
 
-#endif // CUSTOMASSIGNDIALOG_H
+#endif
+

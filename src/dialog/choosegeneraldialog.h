@@ -1,9 +1,9 @@
-#ifndef CHOOSEGENERALDIALOG_H
-#define CHOOSEGENERALDIALOG_H
+#ifndef _CHOOSE_GENERAL_DIALOG_H
+#define _CHOOSE_GENERAL_DIALOG_H
 
 class General;
 
-#include "TimedProgressBar.h"
+#include "timed-progressbar.h"
 
 #include <QDialog>
 #include <QGroupBox>
@@ -11,28 +11,26 @@ class General;
 
 #include <QToolButton>
 
-class OptionButton : public QToolButton
-{
+class OptionButton: public QToolButton {
     Q_OBJECT
+
 public:
     explicit OptionButton(const QString icon_path, const QString &caption = "", QWidget *parent = 0);
-    virtual QSize sizeHint() const { return iconSize(); }
+    //virtual QSize sizeHint() const{ return iconSize(); }
 
 protected:
     virtual void mouseDoubleClickEvent(QMouseEvent *);
 
 signals:
     void double_clicked();
-
 };
 
-class ChooseGeneralDialog : public QDialog
-{
+class ChooseGeneralDialog: public QDialog {
     Q_OBJECT
 
 public:
-    explicit ChooseGeneralDialog(const QStringList &general_names,
-                                 QWidget *parent);
+    explicit ChooseGeneralDialog(const QStringList &general_names, QWidget *parent, bool view_only = false, const QString &title = QString());
+
 public slots:
     void done(int);
 
@@ -46,15 +44,18 @@ private slots:
     void freeChoose();   
 };
 
-class FreeChooseDialog: public QDialog{
+class FreeChooseDialog: public QDialog {
     Q_OBJECT
+    Q_ENUMS(ButtonGroupType)
 
 public:
-    explicit FreeChooseDialog(QWidget *parent, bool pair_choose = false);
+    enum ButtonGroupType { Exclusive, Pair, Multi };
+
+    explicit FreeChooseDialog(QWidget *parent, ButtonGroupType type = Exclusive);
 
 private:
     QButtonGroup *group;
-    bool pair_choose;
+    ButtonGroupType type;
     QWidget *createTab(const QList<const General *> &generals);
 
 private slots:
@@ -66,4 +67,5 @@ signals:
     void pair_chosen(const QString &first, const QString &second);
 };
 
-#endif // CHOOSEGENERALDIALOG_H
+#endif
+

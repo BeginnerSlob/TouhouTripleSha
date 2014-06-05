@@ -9,8 +9,9 @@
 #include <QComboBox>
 #include <QGroupBox>
 
-struct DistanceViewDialogUI{
-    DistanceViewDialogUI(){
+class DistanceViewDialogUI {
+public:
+    DistanceViewDialogUI() {
         from = new QComboBox;
         to = new QComboBox;
 
@@ -27,7 +28,16 @@ struct DistanceViewDialogUI{
         in_attack = new QLineEdit;
 
         QList<const DistanceSkill *> skills = Sanguosha->getDistanceSkills();
-        foreach(const DistanceSkill *skill, skills){
+        foreach (const DistanceSkill *skill, skills) {
+            bool show_skill = false;
+            foreach (const ClientPlayer *p, ClientInstance->getPlayers()) {
+                if (p->hasSkill(skill->objectName())) {
+                    show_skill = true;
+                    break;
+                }
+            }
+            if (!show_skill) continue;
+
             QLineEdit *distance_edit = new QLineEdit;
             distance_edit->setObjectName(skill->objectName());
             distance_edit->setReadOnly(true);
@@ -48,9 +58,11 @@ struct DistanceViewDialogUI{
     QLineEdit *final;
 };
 
-DistanceViewDialog::DistanceViewDialog(QWidget *parent) :
-    QDialog(parent)
+DistanceViewDialog::DistanceViewDialog(QWidget *parent)
+    : QDialog(parent)
 {
+    setWindowTitle(tr("Distance view"));
+
     QFormLayout *layout = new QFormLayout;
 
     ui = new DistanceViewDialogUI;
@@ -79,21 +91,17 @@ DistanceViewDialog::DistanceViewDialog(QWidget *parent) :
     box->setLayout(box_layout);
 
     layout->addRow(tr("In attack range"), ui->in_attack);
-
     layout->addRow(tr("Final"), ui->final);
-
     setLayout(layout);
 
     showDistance();
 }
 
-DistanceViewDialog::~DistanceViewDialog()
-{
+DistanceViewDialog::~DistanceViewDialog() {
     delete ui;
 }
 
-void DistanceViewDialog::showDistance()
-{
+void DistanceViewDialog::showDistance() {
     QString from_name = ui->from->itemData(ui->from->currentIndex()).toString();
     QString to_name = ui->to->itemData(ui->to->currentIndex()).toString();
 
@@ -132,11 +140,14 @@ void DistanceViewDialog::showDistance()
 
         if (correct > 0)
             edit->setText(QString("+%1").arg(correct));
-        else if(correct < 0)
+        else if (correct < 0)
             edit->setText(QString::number(correct));
+        else
+            edit->setText(QString());
     }
 
     ui->in_attack->setText(from->inMyAttackRange(to) ? tr("Yes") : tr("No"));
 
     ui->final->setText(QString::number(from->distanceTo(to)));
 }
+

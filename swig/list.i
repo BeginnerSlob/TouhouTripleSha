@@ -1,5 +1,5 @@
 template <class T>
-class QList{
+class QList {
 public:
     QList();
     ~QList();
@@ -7,14 +7,19 @@ public:
     void append(const T &elem);
     void prepend(const T &elem);
     bool isEmpty() const;
-    bool contains ( const T & value ) const;
+    bool contains(const T &value) const;
     T first() const;
     T last() const;
     void removeAt(int i);
-    bool removeOne ( const T & value );
+    int removeAll(const T &value);
+    bool removeOne(const T &value);
+    QList<T> mid(int pos, int length = -1) const;
+    int indexOf(const T &value, int from = 0);
+    void replace(int i, const T &value);
+    void swap(int i, int j);
 };
 
-%extend QList{
+%extend QList {
     T at(int i) const{
         return $self->value(i);
     }
@@ -24,8 +29,8 @@ public:
 %template(PlayerList)  QList<const Player *>;
 %template(CardList) QList<const Card *>;
 %template(IntList) QList<int>;
+%template(BoolList) QList<bool>;
 %template(SkillList) QList<const Skill *>;
-%template(ItemList) QList<CardItem *>;
 %template(DelayedTrickList) QList<const DelayedTrick *>;
 %template(CardsMoveList) QList<CardsMoveStruct>;
 %template(PlaceList) QList<Player::Place>;

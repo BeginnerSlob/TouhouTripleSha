@@ -1,19 +1,22 @@
-#ifndef WINDOW_H
-#define WINDOW_H
+#ifndef _WINDOW_H
+#define _WINDOW_H
 
 #include <QGraphicsScale>
-
 #include <QGraphicsObject>
+#include "button.h"
 
-class Window : public QGraphicsObject
-{
+class Window: public QGraphicsObject {
     Q_OBJECT
+
 public:
-    explicit Window(const QString &title, const QSizeF &size);
+    explicit Window(const QString &title, const QSizeF &size, const QString &path = QString());
+    ~Window();
+
     void addContent(const QString &content);
-    void addCloseButton(const QString &label);
-    void shift();
+    Button *addCloseButton(const QString &label);
+    void shift(int pos_x = 0, int pos_y = 0);
     void keepWhenDisappear();
+    void setTitle(const QString &title);
 
     virtual QRectF boundingRect() const;
 
@@ -25,11 +28,13 @@ public slots:
     void disappear();
 
 private:
-    QString title;
+    QGraphicsTextItem *titleItem;
     QGraphicsScale *scaleTransform;
     QSizeF size;
     bool keep_when_disappear;
     QImage *outimg;
+    QPixmap *bg;
 };
 
-#endif // WINDOW_H
+#endif
+

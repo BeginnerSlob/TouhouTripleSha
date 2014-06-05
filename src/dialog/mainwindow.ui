@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>600</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuGame">
@@ -29,8 +29,11 @@
     </property>
     <addaction name="actionStart_Game"/>
     <addaction name="actionStart_Server"/>
-    <addaction name="actionPC_Console_Start"/>
     <addaction name="actionReplay"/>
+    <addaction name="separator"/>
+    <addaction name="actionRestart_Game"/>
+    <addaction name="actionReturn_to_Main_Menu"/>
+    <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuOptions">
@@ -43,18 +46,19 @@
     <addaction name="actionScenario_Overview"/>
     <addaction name="actionView_ban_list"/>
     <addaction name="actionBroadcast"/>
-    <addaction name="actionAI_Melee"/>
     <addaction name="actionReplay_file_convert"/>
     <addaction name="actionRecord_analysis"/>
     <addaction name="separator"/>
     <addaction name="actionEnable_Hotkey"/>
-    <addaction name="actionExpand_dashboard"/>
+    <addaction name="actionNever_nullify_my_trick"/>
     <addaction name="actionView_Discarded"/>
     <addaction name="actionView_distance"/>
     <addaction name="actionServerInformation"/>
     <addaction name="actionSurrender"/>
-    <addaction name="actionKick"/>
     <addaction name="actionSaveRecord"/>
+    <addaction name="separator"/>
+    <addaction name="actionPause_Resume"/>
+    <addaction name="actionHide_Show_chat_box"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -62,9 +66,11 @@
     </property>
     <addaction name="actionAbout"/>
     <addaction name="actionAbout_Qt"/>
+    <addaction name="actionAbout_GPLv3"/>
     <addaction name="actionAbout_Lua"/>
     <addaction name="actionAbout_fmod"/>
-    <addaction name="actionAcknowledgement"/>
+    <addaction name="separator"/>
+    <addaction name="actionAcknowledgement_2"/>
     <addaction name="separator"/>
     <addaction name="actionRole_assign_table"/>
    </widget>
@@ -83,25 +89,14 @@
     <property name="title">
      <string>Cheat</string>
     </property>
-    <addaction name="actionGet_card"/>
     <addaction name="actionDamage_maker"/>
     <addaction name="actionDeath_note"/>
     <addaction name="actionRevive_wand"/>
-    <addaction name="actionSend_lowlevel_command"/>
     <addaction name="actionExecute_script_at_server_side"/>
-   </widget>
-   <widget class="QMenu" name="menuDIY">
-    <property name="title">
-     <string>DIY</string>
-    </property>
-    <addaction name="actionCard_editor"/>
-    <addaction name="actionScript_editor"/>
-    <addaction name="actionPackaging"/>
    </widget>
    <addaction name="menuGame"/>
    <addaction name="menuView"/>
    <addaction name="menuOptions"/>
-   <addaction name="menuDIY"/>
    <addaction name="menuCheat"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -202,14 +197,6 @@
     <string>Server information</string>
    </property>
   </action>
-  <action name="actionKick">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>Kick</string>
-   </property>
-  </action>
   <action name="actionReplay">
    <property name="text">
     <string>Replay</string>
@@ -299,14 +286,6 @@
     <string>Expand dashboard</string>
    </property>
   </action>
-  <action name="actionGet_card">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Get card ...</string>
-   </property>
-  </action>
   <action name="actionDeath_note">
    <property name="text">
     <string>Death note ...</string>
@@ -315,35 +294,6 @@
   <action name="actionRevive_wand">
    <property name="text">
     <string>Revive wand ...</string>
-   </property>
-  </action>
-  <action name="actionCard_editor">
-   <property name="text">
-    <string>Card editor ...</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+T</string>
-   </property>
-  </action>
-  <action name="actionPC_Console_Start">
-   <property name="text">
-    <string>PC Console Start</string>
-   </property>
-  </action>
-  <action name="actionPackaging">
-   <property name="text">
-    <string>Package manager ...</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+P</string>
-   </property>
-  </action>
-  <action name="actionAI_Melee">
-   <property name="text">
-    <string>AI Melee</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+M</string>
    </property>
   </action>
   <action name="actionReplay_file_convert">
@@ -379,6 +329,62 @@
   <action name="actionRecord_analysis">
    <property name="text">
     <string>Record analysis</string>
+   </property>
+  </action>
+  <action name="actionAbout_GPLv3">
+   <property name="text">
+    <string>About GPLv3</string>
+   </property>
+  </action>
+  <action name="actionNever_nullify_my_trick">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Never nullify my trick</string>
+   </property>
+  </action>
+  <action name="actionAcknowledgement_2">
+   <property name="text">
+    <string>Acknowledgement</string>
+   </property>
+  </action>
+  <action name="actionPause_Resume">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Pause/Resume</string>
+   </property>
+   <property name="shortcut">
+    <string>F6</string>
+   </property>
+  </action>
+  <action name="actionHide_Show_chat_box">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Hide/Show chat box</string>
+   </property>
+   <property name="shortcut">
+    <string>F8</string>
+   </property>
+  </action>
+  <action name="actionRestart_Game">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Restart Game</string>
+   </property>
+  </action>
+  <action name="actionReturn_to_Main_Menu">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Return to Main Menu</string>
    </property>
   </action>
  </widget>

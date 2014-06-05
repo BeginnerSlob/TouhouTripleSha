@@ -1,5 +1,5 @@
-#ifndef RECORDER_H
-#define RECORDER_H
+#ifndef _RECORDER_H
+#define _RECORDER_H
 
 #include "protocol.h"
 
@@ -11,12 +11,15 @@
 #include <QImage>
 #include <QMap>
 
-class Recorder : public QObject
-{
+class Recorder: public QObject {
     Q_OBJECT
+
 public:
-    explicit Recorder(QObject *parent);
+    explicit Recorder(QObject *parent = NULL);
+
     static QImage TXT2PNG(QByteArray data);
+    static QByteArray PNG2TXT(const QString filename);
+
     bool save(const QString &filename) const;
     void recordLine(const QString &line);
     QList<QString> getRecords() const;
@@ -29,13 +32,11 @@ private:
     QByteArray data;
 };
 
-class Replayer: public QThread
-{
+class Replayer: public QThread {
     Q_OBJECT
 
 public:
     explicit Replayer(QObject *parent, const QString &filename);
-    static QByteArray PNG2TXT(const QString filename);
 
     QString &commandProceed(QString &cmd);
     int getDuration() const;
@@ -43,7 +44,6 @@ public:
 
     QString getPath() const;
 
-    bool m_isOldVersion;
     int m_commandSeriesCounter;
 
 public slots:
@@ -62,7 +62,7 @@ private:
     QMutex mutex;
     QSemaphore play_sem;
 
-    struct Pair{
+    struct Pair {
         int elapsed;
         QString cmd;
     };
@@ -74,4 +74,5 @@ signals:
     void speed_changed(qreal speed);
 };
 
-#endif // RECORDER_H
+#endif
+
