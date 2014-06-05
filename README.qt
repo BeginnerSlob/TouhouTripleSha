@@ -1,3 +1,0 @@
-I don't know how to integrate Google Breakpad with Qt, so just ignore src/breakpad, it won't affect you.
-Always update sanguosha.ts as the same as build/vs2010/sanguosha.ts.
---ibicdlcod

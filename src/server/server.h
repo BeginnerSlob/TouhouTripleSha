@@ -1,5 +1,5 @@
-#ifndef SERVER_H
-#define SERVER_H
+#ifndef _SERVER_H
+#define _SERVER_H
 
 class Room;
 class QGroupBox;
@@ -24,7 +24,7 @@ class QRadioButton;
 
 class Package;
 
-class Select3v3GeneralDialog: public QDialog{
+class Select3v3GeneralDialog: public QDialog {
     Q_OBJECT
 
 public:
@@ -42,7 +42,7 @@ private slots:
     void toggleCheck();
 };
 
-class BanlistDialog: public QDialog{
+class BanlistDialog: public QDialog {
     Q_OBJECT
 
 public:
@@ -50,15 +50,17 @@ public:
 
 private:
     QList<QListWidget *>lists;
-    QListWidget * list;
+    QListWidget *list;
     int item;
     QStringList ban_list;
-    QPushButton* add2nd;
+    QPushButton *add2nd;
+    QMap<QString, QStringList> banned_items;
+    QLineEdit *card_to_ban;
 
 private slots:
     void addGeneral(const QString &name);
     void add2ndGeneral(const QString &name);
-    void addPair(const QString &first, const QString& second);
+    void addPair(const QString &first, const QString &second);
     void doAdd2ndButton();
     void doAddButton();
     void doRemoveButton();
@@ -67,70 +69,94 @@ private slots:
     void switchTo(int item);
 };
 
-class ServerDialog: public QDialog{
+class ServerDialog: public QDialog {
     Q_OBJECT
 
 public:
     ServerDialog(QWidget *parent);
-    void ensureEnableAI();
-    bool config();
+    int config();
 
 private:
     QWidget *createBasicTab();
     QWidget *createPackageTab();
     QWidget *createAdvancedTab();
-    QWidget *createAITab();
+    QWidget *createMiscTab();
     QLayout *createButtonLayout();
 
     QGroupBox *createGameModeBox();
+    QGroupBox *create1v1Box();
     QGroupBox *create3v3Box();
+    QGroupBox *createXModeBox();
 
     QLineEdit *server_name_edit;
     QSpinBox *timeout_spinbox;
     QCheckBox *nolimit_checkbox;
-    QCheckBox *contest_mode_checkbox;
+    QCheckBox *random_seat_checkbox;
+    QCheckBox *enable_cheat_checkbox;
     QCheckBox *free_choose_checkbox;
     QCheckBox *free_assign_checkbox;
     QCheckBox *free_assign_self_checkbox;
+    QLabel *pile_swapping_label;
+    QSpinBox *pile_swapping_spinbox;
     QCheckBox *without_lordskill_checkbox;
+    QCheckBox *sp_convert_checkbox;
     QSpinBox *maxchoice_spinbox;
+    QLabel *lord_maxchoice_label;
     QSpinBox *lord_maxchoice_spinbox;
     QSpinBox *nonlord_maxchoice_spinbox;
     QCheckBox *forbid_same_ip_checkbox;
     QCheckBox *disable_chat_checkbox;
-    //QCheckBox *second_general_checkbox;
-    QCheckBox *scene_checkbox;    //changjing
-    //QCheckBox *same_checkbox;
-    //QCheckBox *basara_checkbox;
-    //QCheckBox *hegemony_checkbox;
-    //QSpinBox *hegemony_maxchoice_spinbox;
-    //QLabel *max_hp_label;
-    //QComboBox *max_hp_scheme_ComboBox;
-    QCheckBox *announce_ip_checkbox;
+    QCheckBox *second_general_checkbox;
+    QCheckBox *same_checkbox;
+    QCheckBox *basara_checkbox;
+    QCheckBox *hegemony_checkbox;
+    QLabel *hegemony_maxchoice_label;
+    QSpinBox *hegemony_maxchoice_spinbox;
+    QLabel *hegemony_maxshown_label;
+    QSpinBox *hegemony_maxshown_spinbox;
+    QLabel *max_hp_label;
+    QComboBox *max_hp_scheme_ComboBox;
+    QLabel *scheme0_subtraction_label;
+    QSpinBox *scheme0_subtraction_spinbox;
+    QCheckBox *prevent_awaken_below3_checkbox;
     QComboBox *scenario_ComboBox;
     QComboBox *mini_scene_ComboBox;
     QPushButton *mini_scene_button;
     QLineEdit *address_edit;
     QLineEdit *port_edit;
+    QSpinBox *game_start_spinbox;
+    QSpinBox *nullification_spinbox;
+    QCheckBox *minimize_dialog_checkbox;
     QCheckBox *ai_enable_checkbox;
-    QCheckBox *role_predictable_checkbox;
-    QCheckBox *ai_chat_checkbox;
     QSpinBox *ai_delay_spinbox;
-    QRadioButton *standard_3v3_radiobutton;
-    QRadioButton *new_3v3_radiobutton;
+    QCheckBox *ai_delay_altered_checkbox;
+    QSpinBox *ai_delay_ad_spinbox;
+    QCheckBox *surrender_at_death_checkbox;
+    QCheckBox *luck_card_checkbox;
+    QRadioButton *official_3v3_radiobutton;
+    QComboBox *official_3v3_ComboBox;
     QComboBox *role_choose_ComboBox;
     QCheckBox *exclude_disaster_checkbox;
+    QComboBox *official_1v1_ComboBox;
+    QCheckBox *kof_using_extension_checkbox;
+    QCheckBox *kof_card_extension_checkbox;
+    QComboBox *role_choose_xmode_ComboBox;
+    QCheckBox *disable_lua_checkbox;
 
     QButtonGroup *extension_group;
     QButtonGroup *mode_group;
 
+    int accept_type; // -1 means console start while 1 means server start
+
 private slots:
-    void onOkButtonClicked();
+    void setMaxHpSchemeBox();
+
+    void onConsoleButtonClicked();
+    void onServerButtonClicked();
     void onDetectButtonClicked();
-    void onHttpDone(bool error);
     void select3v3Generals();
     void edit1v1Banlist();
-    void updateButtonEnablility(QAbstractButton* button);
+    void updateButtonEnablility(QAbstractButton *button);
 
     void doCustomAssign();
     void setMiniCheckBox();
@@ -139,7 +165,7 @@ private slots:
 class Scenario;
 class ServerPlayer;
 
-class Server : public QObject{
+class Server: public QObject {
     Q_OBJECT
 
 public:
@@ -150,15 +176,15 @@ public:
     void daemonize();
     Room *createNewRoom();
     void signupPlayer(ServerPlayer *player);
-    void gamesOver();
 
 private:
     ServerSocket *server;
     Room *current;
     QSet<Room *> rooms;
-    QHash<QString, ServerPlayer*> players;
+    QHash<QString, ServerPlayer *> players;
     QSet<QString> addresses;
     QMultiHash<QString, QString> name2objname;
+    bool created_successfully;
 
 private slots:
     void processNewConnection(ClientSocket *socket);
@@ -170,4 +196,5 @@ signals:
     void server_message(const QString &);
 };
 
-#endif // SERVER_H
+#endif
+

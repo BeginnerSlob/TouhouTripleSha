@@ -1,5 +1,5 @@
-#ifndef AI_H
-#define AI_H
+#ifndef _AI_H
+#define _AI_H
 
 class Room;
 class ServerPlayer;
@@ -11,14 +11,14 @@ struct lua_State;
 typedef int LuaFunction;
 
 #include "card.h"
-#include "roomthread.h"
+#include "structs.h"
 
 #include <QString>
 #include <QObject>
 
-class AI: public QObject{
+class AI: public QObject {
     Q_OBJECT
-    Q_ENUMS(Relation);
+    Q_ENUMS(Relation)
 
 public:
     AI(ServerPlayer *player);
@@ -35,52 +35,52 @@ public:
     QList<ServerPlayer *> getFriends() const;
     
     virtual void activate(CardUseStruct &card_use) = 0;
-    virtual Card::Suit askForSuit(const QString& reason) = 0;
+    virtual Card::Suit askForSuit(const QString &reason) = 0;
     virtual QString askForKingdom() = 0;
     virtual bool askForSkillInvoke(const QString &skill_name, const QVariant &data) = 0;
     virtual QString askForChoice(const QString &skill_name, const QString &choices, const QVariant &data) = 0;
-    virtual QList<int> askForDiscard(const QString &reason, int discard_num, int min_num, bool optional, bool include_equip) = 0;
-    virtual const Card *askForNullification(const TrickCard *trick, ServerPlayer *from, ServerPlayer *to, bool positive) = 0;
-    virtual int askForCardChosen(ServerPlayer *who, const QString &flags, const QString &reason)  = 0;
-    virtual const Card *askForCard(const QString &pattern, const QString &prompt, const QVariant &data)  = 0;
-    virtual QString askForUseCard(const QString &pattern, const QString &prompt, const Card::HandlingMethod method)  = 0;
+    virtual QList<int> askForDiscard(const QString &reason, int discard_num, int min_num, bool optional, bool include_equip, const QString &pattern = ".") = 0;
+    virtual const Card *askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive) = 0;
+    virtual int askForCardChosen(ServerPlayer *who, const QString &flags, const QString &reason, Card::HandlingMethod method) = 0;
+    virtual const Card *askForCard(const QString &pattern, const QString &prompt, const QVariant &data) = 0;
+    virtual QString askForUseCard(const QString &pattern, const QString &prompt, const Card::HandlingMethod method) = 0;
     virtual int askForAG(const QList<int> &card_ids, bool refusable, const QString &reason) = 0;
     virtual const Card *askForCardShow(ServerPlayer *requestor, const QString &reason) = 0;
     virtual const Card *askForPindian(ServerPlayer *requestor, const QString &reason) = 0;
     virtual ServerPlayer *askForPlayerChosen(const QList<ServerPlayer *> &targets, const QString &reason) = 0;
     virtual const Card *askForSinglePeach(ServerPlayer *dying) = 0;
-    virtual ServerPlayer *askForYumeng(const QList<int> &cards, const QString &reason, int &card_id) = 0;
-    virtual void askForYuxi(const QList<int> &cards, QList<int> &up, QList<int> &bottom, bool up_only) = 0;
-    virtual void filterEvent(TriggerEvent event, ServerPlayer *player, const QVariant &data);
+    virtual ServerPlayer *askForYiji(const QList<int> &cards, const QString &reason, int &card_id) = 0;
+    virtual void askForGuanxing(const QList<int> &cards, QList<int> &up, QList<int> &bottom, int guanxing_type) = 0;
+    virtual void filterEvent(TriggerEvent triggerEvent, ServerPlayer *player, const QVariant &data);
 
 protected:
     Room *room;
     ServerPlayer *self;
 };
 
-class TrustAI: public AI{
+class TrustAI: public AI {
     Q_OBJECT
 
 public:
     TrustAI(ServerPlayer *player);
 
-    virtual void activate(CardUseStruct &card_use) ;
-    virtual Card::Suit askForSuit(const QString&) ;
-    virtual QString askForKingdom() ;
-    virtual bool askForSkillInvoke(const QString &skill_name, const QVariant &data) ;
+    virtual void activate(CardUseStruct &card_use);
+    virtual Card::Suit askForSuit(const QString &);
+    virtual QString askForKingdom();
+    virtual bool askForSkillInvoke(const QString &skill_name, const QVariant &data);
     virtual QString askForChoice(const QString &skill_name, const QString &choices, const QVariant &data);
-    virtual QList<int> askForDiscard(const QString &reason, int discard_num, int min_num, bool optional, bool include_equip) ;
-    virtual const Card *askForNullification(const TrickCard *trick, ServerPlayer *from, ServerPlayer *to, bool positive);
-    virtual int askForCardChosen(ServerPlayer *who, const QString &flags, const QString &reason) ;
+    virtual QList<int> askForDiscard(const QString &reason, int discard_num, int min_num, bool optional, bool include_equip, const QString &pattern = ".");
+    virtual const Card *askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive);
+    virtual int askForCardChosen(ServerPlayer *who, const QString &flags, const QString &reason, Card::HandlingMethod method);
     virtual const Card *askForCard(const QString &pattern, const QString &prompt, const QVariant &data);
-    virtual QString askForUseCard(const QString &pattern, const QString &prompt, const Card::HandlingMethod method) ;
+    virtual QString askForUseCard(const QString &pattern, const QString &prompt, const Card::HandlingMethod method);
     virtual int askForAG(const QList<int> &card_ids, bool refusable, const QString &reason);
     virtual const Card *askForCardShow(ServerPlayer *requestor, const QString &reason);
     virtual const Card *askForPindian(ServerPlayer *requestor, const QString &reason);
     virtual ServerPlayer *askForPlayerChosen(const QList<ServerPlayer *> &targets, const QString &reason);
-    virtual const Card *askForSinglePeach(ServerPlayer *dying) ;
-    virtual ServerPlayer *askForYumeng(const QList<int> &cards, const QString &reason, int &card_id);
-    virtual void askForYuxi(const QList<int> &cards, QList<int> &up, QList<int> &bottom, bool up_only);
+    virtual const Card *askForSinglePeach(ServerPlayer *dying);
+    virtual ServerPlayer *askForYiji(const QList<int> &cards, const QString &reason, int &card_id);
+    virtual void askForGuanxing(const QList<int> &cards, QList<int> &up, QList<int> &bottom, int guanxing_type);
 
     virtual bool useCard(const Card *card);
 
@@ -88,7 +88,7 @@ private:
     ResponseSkill *response_skill;
 };
 
-class LuaAI: public TrustAI{
+class LuaAI: public TrustAI {
     Q_OBJECT
 
 public:
@@ -98,10 +98,10 @@ public:
     virtual bool askForSkillInvoke(const QString &skill_name, const QVariant &data);
     virtual void activate(CardUseStruct &card_use);
     virtual QString askForUseCard(const QString &pattern, const QString &prompt, const Card::HandlingMethod method);
-    virtual QList<int> askForDiscard(const QString &reason, int discard_num, int min_num, bool optional, bool include_equip);
-    virtual const Card *askForNullification(const TrickCard *trick, ServerPlayer *from, ServerPlayer *to, bool positive);
+    virtual QList<int> askForDiscard(const QString &reason, int discard_num, int min_num, bool optional, bool include_equip, const QString &pattern = ".");
+    virtual const Card *askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive);
     virtual QString askForChoice(const QString &skill_name, const QString &choices, const QVariant &data);
-    virtual int askForCardChosen(ServerPlayer *who, const QString &flags, const QString &reason);
+    virtual int askForCardChosen(ServerPlayer *who, const QString &flags, const QString &reason, Card::HandlingMethod method);
     virtual const Card *askForCard(const QString &pattern, const QString &prompt, const QVariant &data);
     virtual ServerPlayer *askForPlayerChosen(const QList<ServerPlayer *> &targets, const QString &reason);
     virtual int askForAG(const QList<int> &card_ids, bool refusable, const QString &reason);
@@ -109,10 +109,10 @@ public:
     virtual const Card *askForPindian(ServerPlayer *requestor, const QString &reason);
     virtual Card::Suit askForSuit(const QString &reason);
 
-    virtual ServerPlayer *askForYumeng(const QList<int> &cards, const QString &reason, int &card_id);
-    virtual void askForYuxi(const QList<int> &cards, QList<int> &up, QList<int> &bottom, bool up_only);
+    virtual ServerPlayer *askForYiji(const QList<int> &cards, const QString &reason, int &card_id);
+    virtual void askForGuanxing(const QList<int> &cards, QList<int> &up, QList<int> &bottom, int guanxing_type);
 
-    virtual void filterEvent(TriggerEvent event, ServerPlayer *player, const QVariant &data);
+    virtual void filterEvent(TriggerEvent triggerEvent, ServerPlayer *player, const QVariant &data);
 
     LuaFunction callback;
 
@@ -123,4 +123,5 @@ private:
     bool getTable(lua_State *L, QList<int> &table);
 };
 
-#endif // AI_H
+#endif
+

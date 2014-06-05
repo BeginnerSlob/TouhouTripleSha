@@ -1,23 +1,21 @@
-#ifndef _CARDITEM_H
-#define _CARDITEM_H
+#ifndef _CARD_ITEM_H
+#define _CARD_ITEM_H
 
 #include "card.h"
-#include "QSanSelectableItem.h"
+#include "qsan-selectable-item.h"
 #include "settings.h"
 #include <QAbstractAnimation>
 #include <QMutex>
 #include <QSize>
-#include "SkinBank.h"
+#include "skin-bank.h"
 
 class FilterSkill;
 class General;
 
-class CardItem : public QSanSelectableItem
-{
+class CardItem: public QSanSelectableItem {
     Q_OBJECT
 
 public:
-
     CardItem(const Card *card);
     CardItem(const QString &general_name);
     ~CardItem();
@@ -26,54 +24,48 @@ public:
     virtual void setEnabled(bool enabled);   
 
     const Card *getCard() const;
-    void setCard(const Card* card);
-    inline int getId() const {
-        return m_cardId;
-    }
+    void setCard(const Card *card);
+    inline int getId() const{ return m_cardId; }
 
     // For move card animation
     void setHomePos(QPointF home_pos);
     QPointF homePos() const;    
-    QAbstractAnimation* getGoBackAnimation(bool doFadeEffect, bool smoothTransition = false, 
-                                           int duration = Config.S_MOVE_CARD_ANIMATION_DURAION);
+    QAbstractAnimation *getGoBackAnimation(bool doFadeEffect, bool smoothTransition = false,
+                                           int duration = Config.S_MOVE_CARD_ANIMATION_DURATION);
     void goBack(bool playAnimation, bool doFade = true);
-    inline QAbstractAnimation* getCurrentAnimation(bool doFade) { return m_currentAnimation; }
+    inline QAbstractAnimation *getCurrentAnimation(bool doFade) { return m_currentAnimation; }
     inline void setHomeOpacity(double opacity) { m_opacityAtHome = opacity; }
     inline double getHomeOpacity() { return m_opacityAtHome; }
 
-    void showFrame(const QString &frame);
-    void hideFrame();
     void showAvatar(const General *general);
     void hideAvatar();
     void setAutoBack(bool auto_back);
     void changeGeneral(const QString &general_name);
     void setFootnote(const QString &desc);
 
-    bool isSelected() const { return m_isSelected; }
+    inline bool isSelected() const{ return m_isSelected; }
     inline void setSelected(bool selected) { m_isSelected = selected; }
     bool isEquipped() const;
 
     void setFrozen(bool is_frozen);
-    bool isFrozen() const;
 
     inline void showFootnote() { _m_showFootnote = true; }
     inline void hideFootnote() { _m_showFootnote = false; }
 
     static CardItem *FindItem(const QList<CardItem *> &items, int card_id);
     
-    struct UiHelper
-    {
+    struct UiHelper {
         int tablePileClearTimeStamp;
     } m_uiHelper;
 
-    void clickItem() {emit clicked();}
+    void clickItem() { emit clicked(); }
 
 protected:
     void _initialize();
-    QAbstractAnimation* m_currentAnimation;
+    QAbstractAnimation *m_currentAnimation;
     QImage _m_footnoteImage;
     bool _m_showFootnote;
-    // QGraphicsPixmapItem* _m_footnoteItem;
+    // QGraphicsPixmapItem *_m_footnoteItem;
     QMutex m_animationMutex;
     double m_opacityAtHome;
     bool m_isSelected;
@@ -90,10 +82,12 @@ protected:
     
 private:    
     int m_cardId;
-    QString _m_frameType, _m_avatarName;
+    QString _m_avatarName;
     QPointF home_pos;
     QPointF _m_lastMousePressScenePos;
     bool auto_back, frozen;
+    bool m_isShiny;
+
 signals:
     void toggle_discards();
     void clicked();
@@ -105,4 +99,5 @@ signals:
     void movement_animation_finished();
 };
 
-#endif // CARDITEM_H
+#endif
+

@@ -1,4 +1,4 @@
-class QVariant{
+class QVariant {
 public:
     QVariant();
     QVariant(int);
@@ -11,80 +11,75 @@ public:
 };
 
 %extend QVariant {
-
-    void setValue(int value){
+    void setValue(int value) {
         $self->setValue(QVariant::fromValue(value));
+    }
+
+    void setValue(DamageStruct *damage) {
+        $self->setValue(QVariant::fromValue(*damage));
     }
 
     DamageStruct toDamage() const{
         return $self->value<DamageStruct>();
     }
-    
-    void setValue(DamageStruct *damage){
-        $self->setValue(QVariant::fromValue(*damage));
+
+    void setValue(CardEffectStruct *effect) {
+        $self->setValue(QVariant::fromValue(*effect));
     }
 
     CardEffectStruct toCardEffect() const{
         return $self->value<CardEffectStruct>();
     }
-    
-    void setValue(CardEffectStruct *effect){
+
+    void setValue(SlashEffectStruct *effect) {
         $self->setValue(QVariant::fromValue(*effect));
     }
-    
+
     SlashEffectStruct toSlashEffect() const{
         return $self->value<SlashEffectStruct>();
     }
-    
-    void setValue(SlashEffectStruct *effect){
-        $self->setValue(QVariant::fromValue(*effect));
+
+    void setValue(CardUseStruct *use) {
+        $self->setValue(QVariant::fromValue(*use));
     }
-    
+
     CardUseStruct toCardUse() const{
         return $self->value<CardUseStruct>();
     }
-    
-    void setValue(CardUseStruct *use){
-        $self->setValue(QVariant::fromValue(*use));
+
+    void setValue(const Card *card) {
+        $self->setValue(QVariant::fromValue(card));
     }
-    
+
     const Card *toCard() const{
         return $self->value<CardStar>();
     }
-    
-    void setValue(const Card *card){
-        $self->setValue(QVariant::fromValue(card));
+
+    void setValue(ServerPlayer *player) {
+        $self->setValue(QVariant::fromValue(player));
     }
-    
+
     ServerPlayer *toPlayer() const{
         return $self->value<PlayerStar>();
     }
-    
-    void setValue(ServerPlayer *player){
-        $self->setValue(QVariant::fromValue(player));
+
+    void setValue(DyingStruct *dying) {
+        $self->setValue(QVariant::fromValue(*dying));
     }
-    
+
     DyingStruct toDying() const{
         return $self->value<DyingStruct>();
     }
-    
-    void setValue(DyingStruct *dying){
-        $self->setValue(QVariant::fromValue(*dying));
-    }
-    
-    DeathStruct toDeath() const{
-        return $self->value<DeathStruct>();
-    }
-    
+
     void setValue(DeathStruct *death) {
         $self->setValue(QVariant::fromValue(*death));
     }
 
-    DamageStar toDamageStar() const{
-        return $self->value<DamageStar>();
+    DeathStruct toDeath() const{
+        return $self->value<DeathStruct>();
     }
-    
-    void setValue(RecoverStruct *recover){
+
+    void setValue(RecoverStruct *recover) {
         $self->setValue(QVariant::fromValue(*recover));
     }
 
@@ -92,19 +87,15 @@ public:
         return $self->value<RecoverStruct>();
     }
 
-    void setValue(RecoveredStruct *recovered){
-        $self->setValue(QVariant::fromValue(*recovered));
-    }
-
-    RecoveredStruct toRecovered() const{
-        return $self->value<RecoveredStruct>();
+    void setValue(JudgeStruct *judge) {
+        $self->setValue(QVariant::fromValue(judge));
     }
 
     JudgeStruct *toJudge() const{
         return $self->value<JudgeStar>();
     }
 
-    void setValue(PindianStruct *pindian){
+    void setValue(PindianStruct *pindian) {
         $self->setValue(QVariant::fromValue(pindian));
     }
 
@@ -112,27 +103,44 @@ public:
         return $self->value<PindianStar>();
     }
     
+    void setValue(PhaseChangeStruct *phase) {
+        $self->setValue(QVariant::fromValue(*phase));
+    }
+
     PhaseChangeStruct toPhaseChange() const{
         return $self->value<PhaseChangeStruct>();
     }
-    
-    void setValue(PhaseChangeStruct *phase){
-        $self->setValue(QVariant::fromValue(*phase));
+
+    void setValue(CardsMoveOneTimeStruct *move) {
+        $self->setValue(QVariant::fromValue(*move));
+    }
+
+    CardsMoveOneTimeStruct toMoveOneTime() const{
+        return $self->value<CardsMoveOneTimeStruct>();
     }
     
-    const CardsMoveOneTimeStruct *toMoveOneTime() const{
-        return $self->value<CardsMoveOneTimeStar>();
-    }
-    
-    void setValue(const CardsMoveOneTimeStruct *move){
-        $self->setValue(QVariant::fromValue(move));
+    void setValue(CardResponseStruct *resp) {
+        $self->setValue(QVariant::fromValue(*resp));
     }
 
     CardResponseStruct toCardResponse() const{
         return $self->value<CardResponseStruct>();
     }
-    
-    void setValue(CardResponseStruct *resp){
-        $self->setValue(QVariant::fromValue(*resp));
+
+    void setValue(QList<int> intlist) {
+        QVariantList varlist;
+        for (int i = 0; i < intlist.length(); i++)
+            varlist.append(QVariant::fromValue(intlist.at(i)));
+        $self->setValue(QVariant::fromValue(varlist));
+    }
+
+    QList<int> toIntList() const{
+        QList<int> result;
+        if ($self->canConvert<QVariantList>()) {
+            QVariantList res_var = $self->toList();
+            for (int i = 0; i < res_var.length(); i++)
+                result.append(res_var.at(i).toInt());
+        }
+        return result;
     }
 };

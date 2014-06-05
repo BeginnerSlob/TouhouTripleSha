@@ -1,16 +1,16 @@
-#ifndef AUDIO_H
-#define AUDIO_H
+#ifndef _AUDIO_H
+#define _AUDIO_H
 
 #ifdef AUDIO_SUPPORT
 
 #include <QString>
 
-class Audio{
+class Audio {
 public:
     static void init();
     static void quit();
 
-    static void play(const QString &filename);
+    static void play(const QString &filename, bool superpose = true);
     static void stop();
 
     static void playBGM(const QString &filename);
@@ -22,4 +22,5 @@ public:
 
 #endif
 
-#endif // AUDIO_H
+#endif
+
