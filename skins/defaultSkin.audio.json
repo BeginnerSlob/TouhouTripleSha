@@ -11,6 +11,6 @@
 
 	"playerAudioEffect-equip-default": "audio/equip/%1.ogg",
 
-	"playerAudioEffect-male-default": "audio/card/male/%1.ogg",
+	"playerAudioEffect-male-default": "audio/card/female/%1.ogg",
 	"playerAudioEffect-female-default": "audio/card/female/%1.ogg"
 }
