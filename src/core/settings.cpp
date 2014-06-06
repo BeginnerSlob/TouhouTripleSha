@@ -66,12 +66,15 @@ void Settings::init() {
 
     QStringList banpackagelist = value("BanPackages").toStringList();
     if (banpackagelist.isEmpty()) {
-        banpackagelist << "ling" << "nostalgia"
+        banpackagelist << "standard" << "wind" << "fire" << "thicket" << "mountain"
+                       << "god" << "YJCM" << "YJCM2012" << "YJCM2013" << "YJCM2014"
+                       << "Special3v3" << "Special3v3Ext" << "Special1v1" << "Special1v1Ext"
+                       << "assassins" << "sp-old" << "OL" << "Taiwan_sp" << "miscellaneous"
+                       << "nostalgia" << "BGM" << "BGMDIY" << "ling"
+                       << "hegemony" << "h_formation" << "h_momentum" << "hegemony_sp"
                        << "nostal_standard" << "nostal_general" << "nostal_wind"
                        << "nostal_yjcm" << "nostal_yjcm2012" << "nostal_yjcm2013"
-                       << "Special3v3" << "Special1v1"
-                       << "test" << "GreenHand" << "dragon"
-                       << "sp_cards" << "GreenHandCard"
+                       << "test" << "GreenHand" << "sp_cards" << "GreenHandCard"
                        << "New3v3Card" << "New3v3_2013Card" << "New1v1Card";
     }
     setValue("BanPackages", banpackagelist);
@@ -190,7 +193,16 @@ void Settings::init() {
 
     QStringList forbid_packages = value("ForbidPackages").toStringList();
     if (forbid_packages.isEmpty()) {
-        forbid_packages << "New3v3Card" << "New3v3_2013Card" << "New1v1Card" << "test";
+        forbid_packages << "standard" << "wind" << "fire" << "thicket" << "mountain"
+                        << "god" << "YJCM" << "YJCM2012" << "YJCM2013" << "YJCM2014"
+                        << "Special3v3" << "Special3v3Ext" << "Special1v1" << "Special1v1Ext"
+                        << "assassins" << "sp-old" << "OL" << "Taiwan_sp" << "miscellaneous"
+                        << "nostalgia" << "BGM" << "BGMDIY" << "ling"
+                        << "hegemony" << "h_formation" << "h_momentum" << "hegemony_sp"
+                        << "nostal_standard" << "nostal_general" << "nostal_wind"
+                        << "nostal_yjcm" << "nostal_yjcm2012" << "nostal_yjcm2013"
+                        << "test" << "GreenHand" << "sp_cards" << "GreenHandCard"
+                        << "New3v3Card" << "New3v3_2013Card" << "New1v1Card";
 
         setValue("ForbidPackages", forbid_packages);
     }
