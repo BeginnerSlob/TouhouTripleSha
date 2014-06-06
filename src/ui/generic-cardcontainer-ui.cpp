@@ -194,16 +194,18 @@ void PlayerCardContainer::updateAvatar() {
         QPixmap avatarIcon = _getAvatarIcon(general->objectName());
         _paintPixmap(_m_avatarIcon, _m_layout->m_avatarArea, avatarIcon, _getAvatarParent());
         // this is just avatar general, perhaps game has not started yet.
-        if (m_player->getGeneral() != NULL) {
+        const General *general = m_player->getGeneral();
+        if (general != NULL) {
             QString kingdom = m_player->getKingdom();
+            QString gender = general->getGender() == General::Male ? "1" : "2";
             _paintPixmap(_m_kingdomIcon, _m_layout->m_kingdomIconArea,
                          G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_KINGDOM_ICON, kingdom), _getAvatarParent());
             _paintPixmap(_m_kingdomColorMaskIcon, _m_layout->m_kingdomMaskArea,
                          G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_KINGDOM_COLOR_MASK, kingdom), _getAvatarParent());
             _paintPixmap(_m_handCardBg, _m_layout->m_handCardArea,
-                         _getPixmap(QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM, kingdom), _getAvatarParent());
+                         _getPixmap(QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM, gender), _getAvatarParent());
             _paintPixmap(_m_avatarNameItem, _m_layout->m_avatarNameArea,
-                         _getPixmap(QSanRoomSkin::S_SKIN_KEY_AVATARNAME, m_player->getGeneral()->objectName()), _getAvatarParent());
+                         _getPixmap(QSanRoomSkin::S_SKIN_KEY_AVATARNAME, general->objectName()), _getAvatarParent());
             /*QString name = Sanguosha->translate("&" + general->objectName());
             if (name.startsWith("&"))
                 name = Sanguosha->translate(general->objectName());
