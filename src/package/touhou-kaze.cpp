@@ -1888,6 +1888,8 @@ public:
     }
 };
 
+#include "jsonutils.h"
+
 class ThDongxi: public TriggerSkill {
 public:
     ThDongxi(): TriggerSkill("thdongxi") {
@@ -1895,11 +1897,17 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        if (!TriggerSkill::triggerable(player)) return QStringList();
         if (player->getPhase() == Player::RoundStart && !player->tag.value("ThDongxi").toString().isEmpty()) {
             QString name = player->tag.value("ThDongxi").toString();
             room->detachSkillFromPlayer(player, name, false, true);
-        } else if (player->getPhase() == Player::Start) {
+
+            Json::Value arg(Json::arrayValue);
+            arg[0] = (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
+            arg[1] = QSanProtocol::Utils::toJsonString(player->objectName());
+            arg[2] = QSanProtocol::Utils::toJsonString(player->getGeneral()->objectName());
+            arg[3] = QSanProtocol::Utils::toJsonString(QString());
+            room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
+        } else if (player->getPhase() == Player::Start && TriggerSkill::triggerable(player)) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player))
                 foreach (const Skill *skill, p->getVisibleSkillList()) {
                     if (skill->isLordSkill() || skill->isAttachedLordSkill()
@@ -1940,6 +1948,14 @@ public:
                 if (!choices.isEmpty()) {
                     QString choice = room->askForChoice(player, objectName(), choices.join("+"));
                     player->tag["ThDongxi"] = QVariant::fromValue(choice);
+
+                    Json::Value arg(Json::arrayValue);
+                    arg[0] = (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
+                    arg[1] = QSanProtocol::Utils::toJsonString(player->objectName());
+                    arg[2] = QSanProtocol::Utils::toJsonString(target->getGeneral()->objectName());
+                    arg[3] = QSanProtocol::Utils::toJsonString(choice);
+                    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
+
                     return true;
                 }
             }
