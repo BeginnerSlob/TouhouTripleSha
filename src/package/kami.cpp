@@ -990,11 +990,7 @@ public:
     }
 };
 
-ThJinluCard::ThJinluCard(){
-}
-
-bool ThJinluCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select != Self;
+ThJinluCard::ThJinluCard() {
 }
 
 void ThJinluCard::onEffect(const CardEffectStruct &effect) const{
@@ -1013,11 +1009,11 @@ void ThJinluCard::onEffect(const CardEffectStruct &effect) const{
 class ThJinlu: public OneCardViewAsSkill {
 public:
     ThJinlu(): OneCardViewAsSkill("thjinlu") {
-        filter_pattern = ".!";
+        filter_pattern = ".|.|.|hand!";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->canDiscard(player, "he") && !player->hasUsed("ThJinluCard");
+        return player->canDiscard(player, "h") && !player->hasUsed("ThJinluCard");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
@@ -1620,7 +1616,7 @@ public:
     }
 
     virtual bool triggerable(const ServerPlayer *player) const {
-        if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Start)
+        if (TriggerSkill::triggerable(player) && player->hasSkill("thzhanying") && player->getPhase() == Player::Start)
             foreach (ServerPlayer *p, player->getRoom()->getAllPlayers())
                 if (p != player && !p->isKongcheng())
                     return true;

@@ -981,6 +981,8 @@ void ThGuijuanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
         use = room->askForUseCard(source, QString::number(card->getId()), "@thguijuan");
     if (!use)
         room->loseHp(source);
+    else if (use->isKindOf("Slash") || use->isKindOf("EquipCard"))
+        room->setPlayerFlag(source, "ForbidThGuijuan");
 }
 
 class ThGuijuan: public ZeroCardViewAsSkill {
@@ -990,6 +992,10 @@ public:
 
     virtual const Card *viewAs() const{
         return new ThGuijuanCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasFlag("ForbidThGuijuan");
     }
 };
 
