@@ -622,6 +622,11 @@ void Card::onUse(Room *room, const CardUseStruct &use) const{
             log.to << victim;
             room->sendLog(log);
             room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, card_use.to.first()->objectName(), victim->objectName());
+        } else {
+            LogMessage log;
+            log.type = "#CollateralNoSlash";
+            log.from = card_use.to.first();
+            room->sendLog(log);
         }
     }
 

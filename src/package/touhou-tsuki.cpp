@@ -1331,6 +1331,15 @@ public:
                 if (to->isChained())
                     room->addPlayerMark(to, "kuangxiang");
             use.to << ask_who;
+
+            LogMessage log;
+            log.type = "#ThYongyeAdd";
+            log.from = ask_who;
+            log.to << ask_who;
+            log.arg = objectName();
+            log.card_str = use.card->toString();
+            room->sendLog(log);
+
             if (use.from) {
                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, use.from->objectName(), ask_who->objectName());
                 if (use.card->isKindOf("Collateral") && use.from->isAlive()) {
@@ -1350,6 +1359,12 @@ public:
                         log.to << target;
                         room->sendLog(log);
                         room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, ask_who->objectName(), target->objectName());
+                    } else {
+                        ask_who->tag.remove("collateralVictim");
+                        LogMessage log;
+                        log.type = "#CollateralSlash";
+                        log.from = ask_who;
+                        room->sendLog(log);
                     }
                 }
             }
@@ -1358,6 +1373,15 @@ public:
                 if (p->isChained() && !use.to.contains(p)) {
                     room->addPlayerMark(p, "kuangxiang");
                     use.to << p;
+
+                    LogMessage log;
+                    log.type = "#ThYongyeAdd";
+                    log.from = ask_who;
+                    log.to << p;
+                    log.arg = objectName();
+                    log.card_str = use.card->toString();
+                    room->sendLog(log);
+
                     if (use.from) {
                         room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, use.from->objectName(), p->objectName());
                         if (use.card->isKindOf("Collateral") && use.from->isAlive()) {
@@ -1377,6 +1401,13 @@ public:
                                 log.to << target;
                                 room->sendLog(log);
                                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, p->objectName(), target->objectName());
+                            } else {
+                                p->tag.remove("collateralVictim");
+                                
+                                LogMessage log;
+                                log.type = "#CollateralNoSlash";
+                                log.from = p;
+                                room->sendLog(log);
                             }
                         }
                     }

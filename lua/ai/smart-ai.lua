@@ -9,7 +9,7 @@ math.randomseed(tostring(os.time()):reverse():sub(1, 6))
 -- SmartAI is the base class for all other specialized AI classes
 SmartAI = (require "middleclass").class("SmartAI")
 
-version = "QSanguosha AI 20140501 (V1.41421 Alpha)"
+version = "QSanguosha AI 20140601 (V1.414213 Alpha)"
 --- this function is only function that exposed to the host program
 --- and it clones an AI instance by general name
 -- @param player The ServerPlayer object that want to create the AI object
@@ -2122,6 +2122,7 @@ end
 
 function SmartAI:askForDiscard(reason, discard_num, min_num, optional, include_equip, pattern)
 	min_num = min_num or discard_num
+	pattern = pattern or "."
 	local exchange = self.player:hasFlag("Global_AIDiscardExchanging")
 	local callback = sgs.ai_skill_discard[reason]
 	self:assignKeep(true)
