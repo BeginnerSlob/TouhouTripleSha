@@ -206,7 +206,7 @@ public:
     }
 
     virtual int getExtra(const Player *target) const {
-        if (target->hasSkill(objectName()) && target->getHp() >= 1)
+        if (target->hasSkill(objectName()) && target->getHp() > 1)
             return -1;
         else
             return 0;

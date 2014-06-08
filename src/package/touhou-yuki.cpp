@@ -635,7 +635,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         DamageStruct damage = data.value<DamageStruct>();
-        int n = qAbs(player->getEquips().size() - damage.to->getEquips().size());
+        int n = qMin(3, qAbs(player->getEquips().size() - damage.to->getEquips().size()));
         QStringList choices;
         if (damage.to->getCardCount(true) >= n)
             choices << "discard";
@@ -669,7 +669,7 @@ public:
     }
 };
 
-ThChouceCard::ThChouceCard(){
+ThChouceCard::ThChouceCard() {
     will_throw = false;
 }
 

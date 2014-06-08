@@ -2956,6 +2956,16 @@ bool Room::useCard(const CardUseStruct &use, bool add_history) {
                 wrapped->onUse(this, card_use);
                 return true;
             }
+            if (card->isKindOf("EquipCard") && card->isVirtualCard() && card->subcardsLength() == 1) {
+                Card *equip = Sanguosha->cloneCard(card);
+                Q_ASSERT(equip != NULL);
+                WrappedCard *wrapped = Sanguosha->getWrappedCard(card->getSubcards().first());
+                wrapped->takeOver(equip);
+                broadcastUpdateCard(getPlayers(), wrapped->getId(), wrapped);
+                card_use.card = wrapped;
+                wrapped->onUse(this, card_use);
+                return true;
+            }
             if (card_use.card->isKindOf("Slash") && add_history && slash_count > 0)
                 card_use.from->setFlags("Global_MoreSlashInOneTurn");
             if (!card_use.card->isVirtualCard()) {

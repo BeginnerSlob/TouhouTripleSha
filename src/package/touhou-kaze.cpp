@@ -1898,7 +1898,6 @@ public:
         if (!TriggerSkill::triggerable(player)) return QStringList();
         if (player->getPhase() == Player::RoundStart && !player->tag.value("ThDongxi").toString().isEmpty()) {
             QString name = player->tag.value("ThDongxi").toString();
-            player->tag.remove("ThDongxi");
             room->detachSkillFromPlayer(player, name, false, true);
         } else if (player->getPhase() == Player::Start) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player))
@@ -1907,7 +1906,8 @@ public:
                         || skill->getFrequency() == Skill::Limited
                         || skill->getFrequency() == Skill::Wake)
                         continue;
-
+                    if (skill->objectName() == player->tag.value("ThDongxi").toString())
+                        continue;
                     return QStringList(objectName());
                 }
         }
@@ -1923,6 +1923,8 @@ public:
                 if (skill->isLordSkill() || skill->isAttachedLordSkill()
                     || skill->getFrequency() == Skill::Limited
                     || skill->getFrequency() == Skill::Wake)
+                    continue;
+                if (skill->objectName() == player->tag.value("ThDongxi").toString())
                     continue;
                 if (!player->hasSkill(skill->objectName()))
                     skills << skill->objectName();
@@ -1943,6 +1945,7 @@ public:
             }
         }
 
+        player->tag.remove("ThDongxi");
         return false;
     }
 
