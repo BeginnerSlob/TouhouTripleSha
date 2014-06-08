@@ -259,17 +259,18 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
     else
         room->setEmotion(player, "killer");
 
+    if (use.from->getMark("drank") > 0) {
+        room->setCardFlag(use.card, "drank");
+        const Slash *slash = qobject_cast<const Slash *>(use.card);
+        if (slash)
+            slash->drank = use.from->getMark("drank");
+        room->setPlayerMark(use.from, "drank", 0);
+    }
+
     BasicCard::onUse(room, use);
 }
 
 void Slash::onEffect(const CardEffectStruct &card_effect) const{
-    Room *room = card_effect.from->getRoom();
-    if (card_effect.from->getMark("drank") > 0) {
-        room->setCardFlag(this, "drank");
-        this->drank = card_effect.from->getMark("drank");
-        room->setPlayerMark(card_effect.from, "drank", 0);
-    }
-
     SlashEffectStruct effect;
     effect.from = card_effect.from;
     effect.nature = nature;
@@ -286,7 +287,7 @@ void Slash::onEffect(const CardEffectStruct &card_effect) const{
     else
         effect.from->tag["Jink_" + toString()] = QVariant::fromValue(jink_list);
 
-    room->slashEffect(effect);
+    effect.from->getRoom()->slashEffect(effect);
 }
 
 bool Slash::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
@@ -892,13 +893,14 @@ bool Collateral::targetFilter(const QList<const Player *> &targets,
 }
 
 void Collateral::onUse(Room *room, const CardUseStruct &card_use) const{
-    Q_ASSERT(card_use.to.length() == 2);
-    ServerPlayer *killer = card_use.to.at(0);
-    ServerPlayer *victim = card_use.to.at(1);
-
     CardUseStruct new_use = card_use;
-    new_use.to.removeAt(1);
-    killer->tag["collateralVictim"] = QVariant::fromValue((PlayerStar)victim);
+    if (card_use.to.length() == 2) {
+        ServerPlayer *killer = card_use.to.at(0);
+        ServerPlayer *victim = card_use.to.at(1);
+
+        new_use.to.removeAt(1);
+        killer->tag["collateralVictim"] = QVariant::fromValue((PlayerStar)victim);
+    }
 
     SingleTargetTrick::onUse(room, new_use);
 }

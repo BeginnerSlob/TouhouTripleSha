@@ -191,7 +191,11 @@ public:
             player = dying.who;
         }
         ask_who->turnOver();
-        ask_who->obtainCard(player->wholeHandCards(), false);
+        if (!player->isKongcheng()) {
+            DummyCard *handcards = player->wholeHandCards();
+            ask_who->obtainCard(handcards, false);
+            delete handcards;
+        }
         room->removePlayerMark(player, "@yaoshu");
         ask_who->gainMark("@yaoshu");
         return false;

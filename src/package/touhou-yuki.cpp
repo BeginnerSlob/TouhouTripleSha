@@ -679,7 +679,7 @@ bool ThChouceCard::targetFilter(const QList<const Player *> &targets, const Play
         return false;
     if (card->isKindOf("Collateral"))
         return targets.isEmpty()
-            || (targets.length() == 1 && targets.first()->inMyAttackRange(to_select));
+            || (targets.length() == 1 && targets.first()->canSlash(to_select));
     else
         return targets.isEmpty();
 }
@@ -688,9 +688,18 @@ bool ThChouceCard::targetsFeasible(const QList<const Player *> &targets, const P
     const Card *card = Sanguosha->getCard(getSubcards().first());
     if (!card)
         return false;
-    if (card->isKindOf("Collateral"))
-        return targets.length() == 2;
-    else
+    if (card->isKindOf("Collateral")) {
+        if (targets.length() == 2)
+            return true;
+        else if (targets.length() == 1) {
+            const Player *target = targets.first();
+            foreach (const Player *p, target->getAliveSiblings())
+                if (target->canSlash(p))
+                    return false;
+            return true;
+        } else
+            return false;
+    } else
         return targets.length() == 1;
 }
 
