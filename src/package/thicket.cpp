@@ -775,36 +775,28 @@ public:
         frequency = Compulsory;
     }
 
+    virtual QStringList triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Finish)
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                if (player->getHp() > p->getHp())
+                    return QStringList(objectName());
+        return QStringList();
+    }
+
     virtual bool onPhaseChange(ServerPlayer *dongzhuo) const{
-        bool trigger_this = false;
-        Room *room = dongzhuo->getRoom();
+        LogMessage log;
+        log.from = dongzhuo;
+        log.arg = objectName();
+        log.type = "#TriggerSkill";
+        room->sendLog(log);
+        room->notifySkillInvoked(dongzhuo, objectName());
 
-        if (dongzhuo->getPhase() == Player::Finish) {
-            QList<ServerPlayer *> players = room->getOtherPlayers(dongzhuo);
-            foreach (ServerPlayer *player, players) {
-                if (dongzhuo->getHp() > player->getHp()) {
-                    trigger_this = true;
-                    break;
-                }
-            }
-        }
-
-        if (trigger_this) {
-            LogMessage log;
-            log.from = dongzhuo;
-            log.arg = objectName();
-            log.type = "#TriggerSkill";
-            room->sendLog(log);
-            room->notifySkillInvoked(dongzhuo, objectName());
-
-            QString result = room->askForChoice(dongzhuo, "benghuai", "hp+maxhp");
-            int index = (result == "hp") ? 1 : 2;
-            room->broadcastSkillInvoke(objectName(), index);
-            if (result == "hp")
-                room->loseHp(dongzhuo);
-            else
-                room->loseMaxHp(dongzhuo);
-        }
+        QString result = room->askForChoice(dongzhuo, "benghuai", "hp+maxhp");
+        room->broadcastSkillInvoke(objectName());
+        if (result == "hp")
+            room->loseHp(dongzhuo);
+        else
+            room->loseMaxHp(dongzhuo);
 
         return false;
     }
