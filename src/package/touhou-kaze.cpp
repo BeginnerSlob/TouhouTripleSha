@@ -1897,17 +1897,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        if (player->getPhase() == Player::RoundStart && !player->tag.value("ThDongxi").toString().isEmpty()) {
-            QString name = player->tag.value("ThDongxi").toString();
-            room->detachSkillFromPlayer(player, name, false, true);
-
-            Json::Value arg(Json::arrayValue);
-            arg[0] = (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
-            arg[1] = QSanProtocol::Utils::toJsonString(player->objectName());
-            arg[2] = QSanProtocol::Utils::toJsonString(player->getGeneral()->objectName());
-            arg[3] = QSanProtocol::Utils::toJsonString(QString());
-            room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
-        } else if (player->getPhase() == Player::Start && TriggerSkill::triggerable(player)) {
+        if (player->getPhase() == Player::Start && TriggerSkill::triggerable(player)) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player))
                 foreach (const Skill *skill, p->getVisibleSkillList()) {
                     if (skill->isLordSkill() || skill->isAttachedLordSkill()
@@ -1967,6 +1957,32 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         room->acquireSkill(player, player->tag["ThDongxi"].toString());
+
+        return false;
+    }
+};
+
+class ThDongxiClear: public TriggerSkill {
+public:
+    ThDongxiClear(): TriggerSkill("#thdongxi-clear") {
+        events << EventPhaseStart;
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *player) const {
+        return player->getPhase() == Player::RoundStart && !player->tag.value("ThDongxi").toString().isEmpty();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        QString name = player->tag.value("ThDongxi").toString();
+        room->detachSkillFromPlayer(player, name, false, true);
+
+        Json::Value arg(Json::arrayValue);
+        arg[0] = (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
+        arg[1] = QSanProtocol::Utils::toJsonString(player->objectName());
+        arg[2] = QSanProtocol::Utils::toJsonString(player->getGeneral()->objectName());
+        arg[3] = QSanProtocol::Utils::toJsonString(QString());
+        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
 
         return false;
     }
@@ -2226,6 +2242,8 @@ void TouhouPackage::addKazeGenerals() {
 
     General *kaze018 = new General(this, "kaze018$", "kaze", 3);
     kaze018->addSkill(new ThDongxi);
+    kaze018->addSkill(new ThDongxiClear);
+    related_skills.insertMulti("thdongxi", "#thdongxi-clear");
     kaze018->addSkill(new ThSangzhi);
     kaze018->addSkill(new ThSangzhiInvalidity);
     related_skills.insertMulti("thsangzhi", "#thsangzhi-inv");
