@@ -783,7 +783,9 @@ public:
         return QStringList();
     }
 
-    virtual bool onPhaseChange(ServerPlayer *dongzhuo) const{
+    virtual bool onPhaseChange(ServerPlayer *dongzhuo) const {
+        Room *room = dongzhuo->getRoom();
+
         LogMessage log;
         log.from = dongzhuo;
         log.arg = objectName();

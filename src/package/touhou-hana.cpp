@@ -180,14 +180,14 @@ public:
         frequency = Wake;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        if (TriggerSkill::triggerable(player) && player->getHp() == 1
-            && player->getPhase() == Player::Start && player->getMark("@genxing") <= 0)
-            return QStringList(objectName());
-        return QStringList();
+    virtual bool triggerable(const ServerPlayer *player) const {
+        return TriggerSkill::triggerable(player)
+            && player->getHp() == 1
+            && player->getPhase() == Player::Start
+            && player->getMark("@genxing") <= 0;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         LogMessage log;
         log.type = "#ThGenxing";
         log.from = player;
