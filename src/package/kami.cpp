@@ -552,7 +552,7 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.card && damage.card->isKindOf("Slash"))
             return skill;
-        if (!damage.from->hasSkill("thgugao"))
+        if (!TriggerSkill::triggerable(player) || !player->hasSkill("thgugao"))
             return skill;
         for (int i = 0; i < damage.damage; i++)
             skill << objectName();
