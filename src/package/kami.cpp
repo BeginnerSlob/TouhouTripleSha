@@ -1048,7 +1048,7 @@ public:
         log.from = player;
         log.arg = "thjinlu";
         room->sendLog(log);
-        room->notifySkillInvoked(player, objectName());
+        room->notifySkillInvoked(player, "thjinlu");
         if (player->getPhase() == Player::Play) {
             ServerPlayer *target = NULL;
             foreach (ServerPlayer *other, room->getOtherPlayers(player))

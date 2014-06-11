@@ -1092,6 +1092,7 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
                                                 + ":" + to->objectName() + ":" + (positive ? "true" : "false"));
     thread->trigger(ChoiceMade, this, repliedPlayer, decisionData);
     if (repliedPlayer->hasFlag("thhuaji_cancel")) {
+        setPlayerFlag(repliedPlayer, "-thhuaji_cancel");
         if (card->isVirtualCard())
             delete card;
         return false;
@@ -1336,7 +1337,10 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
                 if (to) card_use.to << to;
                 QVariant data2 = QVariant::fromValue(card_use);
                 thread->trigger(CardFinished, this, player, data2);
-                if (player->hasFlag("thhuaji_cancel")) card = NULL;
+                if (player->hasFlag("thhuaji_cancel")) {
+                    setPlayerFlag(player, "-thhuaji_cancel");
+                    card = NULL;
+                }
             }
         }
         result = card;
