@@ -570,25 +570,34 @@ public:
         global = true;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (player->getPhase() != Player::Play)
-            return false;
+            return QStringList();
         int reason = move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON;
         if (reason == CardMoveReason::S_REASON_USE
             || reason == CardMoveReason::S_REASON_RESPONSE) {
-            int count = 0;
-            for (int i = 0; i < move.card_ids.size(); i++) {
-                if (move.from_pile_names[i] == "thbaochuipile") count++;
-            }
-            if (count > 0) {
-                LogMessage log;
-                log.type = "#WoodenOx";
-                log.from = (ServerPlayer *)move.from;
-                log.arg = QString::number(count);
-                log.arg2 = "thbaochui";
-                room->sendLog(log);
-            }
+            for (int i = 0; i < move.card_ids.size(); i++)
+                if (move.from_pile_names[i] == "thbaochuipile")
+                    return QStringList(objectName());
+        }
+
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        int count = 0;
+        for (int i = 0; i < move.card_ids.size(); i++)
+            if (move.from_pile_names[i] == "thbaochuipile")
+                count++;
+        if (count > 0) {
+            LogMessage log;
+            log.type = "#WoodenOx";
+            log.from = player;
+            log.arg = QString::number(count);
+            log.arg2 = "thbaochui";
+            room->sendLog(log);
         }
         return false;
     }
@@ -638,6 +647,7 @@ public:
         if (reason == CardMoveReason::S_REASON_USE && move.from_places.contains(Player::PlaceSpecial)
                                                    && move.from_pile_names.contains("thbaochuipile")) {
             const Card *card = move.reason.m_extraData.value<CardStar>();
+            if (!card) return QStringList();
             if (!card->isVirtualCard() || (card->subcardsLength() == 1
                                            && card->getSubcards() == move.card_ids
                                            && card->getClassName() == Sanguosha->getCard(move.card_ids.first())->getClassName())) {
@@ -873,6 +883,8 @@ KishinPackage::KishinPackage()
     addMetaObject<ThLuanshenCard>();
     addMetaObject<ThLanzouCard>();
     addMetaObject<ThLianyingCard>();
+
+    skills << new ThBaochuiRecord;
 }
 
 ADD_PACKAGE(Kishin)
