@@ -2167,8 +2167,11 @@ void RoomScene::useSelectedCard() {
     const ViewAsSkill *skill = dashboard->currentSkill();
     if (skill)
         dashboard->stopPending();
-    else
+    else {
         dashboard->retractPileCards("wooden_ox");
+        if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
+            dashboard->retractPileCards("thbaochuipile");
+    }
 }
 
 void RoomScene::onEnabledChange() {

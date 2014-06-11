@@ -127,6 +127,12 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
                         }
                     } else if (!player->getPile(p).isEmpty() && player->getPile(p).contains(id)) {
                         checkpoint = true;
+                    } else if (p == "thbaochuipile" && player->hasFlag("thbaochui") && player->getPhase() == Player::Play) {
+                        foreach (const Player *pl, player->getAliveSiblings())
+                            if (pl->getPile(p).contains(id)) {
+                                checkpoint = true;
+                                break;
+                            }
                     }
                     if (checkpoint)
                         break;

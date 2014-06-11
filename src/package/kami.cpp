@@ -1616,7 +1616,7 @@ public:
     }
 
     virtual bool triggerable(const ServerPlayer *player) const {
-        if (TriggerSkill::triggerable(player) && player->hasSkill("thzhanying") && player->getPhase() == Player::Start)
+        if (TriggerSkill::triggerable(player) && player->hasSkill("thsanling") && player->getPhase() == Player::Start)
             foreach (ServerPlayer *p, player->getRoom()->getAllPlayers())
                 if (p != player && !p->isKongcheng())
                     return true;
