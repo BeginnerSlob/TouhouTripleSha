@@ -229,7 +229,7 @@ void DelayedTrick::onUse(Room *room, const CardUseStruct &card_use) const{
     room->sendLog(log);
 
     CardMoveReason reason(CardMoveReason::S_REASON_USE, use.from->objectName(), use.to.first()->objectName(), this->getSkillName(), QString());
-    room->moveCardTo(this, use.from, use.to.first(), Player::PlaceDelayedTrick, reason, true);
+    room->moveCardTo(this, use.to.first(), Player::PlaceDelayedTrick, reason, true);
 
     thread->trigger(CardUsed, room, use.from, data);
     use = data.value<CardUseStruct>();

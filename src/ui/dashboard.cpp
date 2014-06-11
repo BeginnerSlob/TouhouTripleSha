@@ -508,6 +508,8 @@ void Dashboard::skillButtonDeactivated() {
 
 void Dashboard::selectAll() {
     retractPileCards("wooden_ox");
+    if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
+        retractPileCards("thbaochuipile");
     if (view_as_skill) {
         unselectAll();
         foreach (CardItem *card_item, m_handCards) {
@@ -843,6 +845,8 @@ void Dashboard::disableAllCards() {
 void Dashboard::enableCards() {
     m_mutexEnableCards.lock();
     expandPileCards("wooden_ox");
+    if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
+        expandPileCards("thbaochuipile");
     foreach (CardItem *card_item, m_handCards)
         card_item->setEnabled(card_item->getCard()->isAvailable(Self));
     m_mutexEnableCards.unlock();
@@ -867,10 +871,14 @@ void Dashboard::startPending(const ViewAsSkill *skill) {
         if (resp_skill && (resp_skill->getRequest() == Card::MethodResponse || resp_skill->getRequest() == Card::MethodUse))
             expand = true;
     }
-    if (expand)
+    if (expand) {
         expandPileCards("wooden_ox");
-    else {
+        if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
+            expandPileCards("thbaochuipile");
+    } else {
         retractPileCards("wooden_ox");
+        if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
+            retractPileCards("thbaochuipile");
         if (skill && skill->inherits("ViewAsSkill") && !skill->getExpandPile().isEmpty())
             expandPileCards(skill->getExpandPile());
     }
@@ -896,6 +904,8 @@ void Dashboard::stopPending() {
     view_as_skill = NULL;
     pending_card = NULL;
     retractPileCards("wooden_ox");
+    if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
+        retractPileCards("thbaochuipile");
     emit card_selected(NULL);
 
     foreach (CardItem *item, m_handCards) {
@@ -922,6 +932,9 @@ void Dashboard::expandPileCards(const QString &pile_name) {
     if (_m_pile_expanded.contains(pile_name)) return;
     _m_pile_expanded << pile_name;
     QList<int> pile = Self->getPile(pile_name);
+    if (pile_name == "thbaochuipile")
+        foreach (const Player *p, Self->getAliveSiblings())
+            pile += p->getPile(pile_name);
     if (pile.isEmpty()) return;
     QList<CardItem *> card_items = _createCards(pile);
     foreach (CardItem *card_item, card_items) {
@@ -939,9 +952,12 @@ void Dashboard::retractPileCards(const QString &pile_name) {
     if (!_m_pile_expanded.contains(pile_name)) return;
     _m_pile_expanded.removeOne(pile_name);
     QList<int> pile = Self->getPile(pile_name);
+    if (pile_name == "thbaochuipile")
+        foreach (const Player *p, Self->getAliveSiblings())
+            pile += p->getPile(pile_name);
     if (pile.isEmpty()) return;
     CardItem *card_item;
-    foreach (int card_id, Self->getPile(pile_name)) {
+    foreach (int card_id, pile) {
         card_item = CardItem::FindItem(m_handCards, card_id);
         if (card_item == selected) selected = NULL;
         Q_ASSERT(card_item);

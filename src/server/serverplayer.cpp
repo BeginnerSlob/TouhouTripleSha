@@ -456,6 +456,13 @@ bool ServerPlayer::hasNullification() const{
         if (Sanguosha->getCard(id)->objectName() == "nullification")
             return true;
     }
+    // Coupling of ThBaochui
+    if (hasFlag("thbaochui") && getPhase() == Player::Play) {
+        foreach (ServerPlayer *p, room->getAllPlayers())
+            foreach (int id, p->getPile("thbaochuipile"))
+                if (Sanguosha->getCard(id)->objectName() == "nullification")
+                    return true;
+    }
 
     foreach (const Skill *skill, getVisibleSkillList(true)) {
         if (!hasSkill(skill->objectName())) continue;

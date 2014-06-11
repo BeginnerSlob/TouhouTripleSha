@@ -1685,7 +1685,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("GuoseCard") && !(player->isNude() && player->getPile("wooden_ox").isEmpty());
+        return !player->hasUsed("GuoseCard");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{

@@ -224,7 +224,7 @@ bool ThLanzouCard::targetFilter(const QList<const Player *> &, const Player *, c
 bool ThLanzouCard::targetFilter(const QList<const Player *> &targets, const Player *to_select,
                                   const Player *Self, int &maxVotes) const {
     if (to_select == Self) return false;
-    int n = Self->getEquips().length();
+    int n = qMin(Self->getEquips().length(), 4);
     int i = 0;
     foreach (const Player *player, targets)
         if (player == to_select) i++;
@@ -234,9 +234,9 @@ bool ThLanzouCard::targetFilter(const QList<const Player *> &targets, const Play
 
 bool ThLanzouCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const {
     if (targets.size() == 1)
-        return targets.first()->getCardCount() >= Self->getEquips().length();
+        return targets.first()->getCardCount() >= qMin(Self->getEquips().length(), 4);
     else {
-        if (targets.size() != Self->getEquips().length()) return false;
+        if (targets.size() != qMin(Self->getEquips().length(), 4)) return false;
         QMap<const Player *, int> map;
         foreach (const Player *p, targets)
             map[p]++;
@@ -251,7 +251,7 @@ bool ThLanzouCard::targetsFeasible(const QList<const Player *> &targets, const P
 }
 
 void ThLanzouCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    int total = source->getEquips().length();
+    int total = qMin(Self->getEquips().length(), 4);
     QMap<ServerPlayer *, int> map;
 
     foreach (ServerPlayer *sp, targets)
@@ -498,6 +498,175 @@ public:
     }
 };
 
+class ThBaochui: public TriggerSkill {
+public:
+    ThBaochui(): TriggerSkill("thbaochui") {
+        events << EventPhaseEnd;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player->getPhase() == Player::Draw && !player->isKongcheng())
+            foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
+                if (owner == player) continue;
+                skill_list.insert(owner, QStringList(objectName()));
+            }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+        const Card *card = room->askForCard(player, ".!", "@thbaochui:" + ask_who->objectName(), data, Card::MethodNone);
+        if (!card)
+            card = player->getRandomHandCard();
+        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, player->objectName(),
+                              ask_who->objectName(), objectName(), QString());
+        room->obtainCard(ask_who, card, reason, false);
+        ask_who->addToPile("thbaochuipile", ask_who->handCards());
+        room->setPlayerFlag(player, "thbaochui");
+        return false;
+    }
+};
+
+class ThBaochuiReturn: public TriggerSkill {
+public:
+    ThBaochuiReturn(): TriggerSkill("#thbaochui-return") {
+        events << EventPhaseEnd;
+        frequency = Compulsory;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player->hasFlag("thbaochui") && player->getPhase() == Player::Play)
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (p->getPile("thbaochuipile").isEmpty()) continue;
+                skill_list.insert(p, QStringList(objectName()));
+            }
+        return skill_list;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
+        DummyCard *dummy = new DummyCard(ask_who->getPile("thbaochuipile"));
+        CardMoveReason reason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE, ask_who->objectName(), "thbaochui", QString());
+        room->obtainCard(ask_who, dummy, reason, true);
+        delete dummy;
+        ask_who->drawCards(1);
+        return false;
+    }
+};
+
+class ThBaochuiRecord: public TriggerSkill {
+public:
+    ThBaochuiRecord(): TriggerSkill("thbaochui_record") {
+        events << CardsMoveOneTime;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (player->getPhase() != Player::Play)
+            return false;
+        int reason = move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON;
+        if (reason == CardMoveReason::S_REASON_USE
+            || reason == CardMoveReason::S_REASON_RESPONSE) {
+            int count = 0;
+            for (int i = 0; i < move.card_ids.size(); i++) {
+                if (move.from_pile_names[i] == "thbaochuipile") count++;
+            }
+            if (count > 0) {
+                LogMessage log;
+                log.type = "#WoodenOx";
+                log.from = (ServerPlayer *)move.from;
+                log.arg = QString::number(count);
+                log.arg2 = "thbaochui";
+                room->sendLog(log);
+            }
+        }
+        return false;
+    }
+};
+
+class ThYishi: public TriggerSkill {
+public:
+    ThYishi(): TriggerSkill("thyishi") {
+        events << CardEffected;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        CardEffectStruct effect = data.value<CardEffectStruct>();
+        if (TriggerSkill::triggerable(player) && effect.card->hasFlag("thbaochui+" + player->objectName()))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        LogMessage log;
+        log.type = "#TriggerSkill";
+        log.arg = objectName();
+        log.from = player;
+        room->sendLog(log);
+        room->notifySkillInvoked(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+
+        CardEffectStruct effect = data.value<CardEffectStruct>();
+        effect.nullified = true;
+        data = QVariant::fromValue(effect);
+        return false;
+    }
+};
+
+class ThYishiNullified: public TriggerSkill {
+public:
+    ThYishiNullified(): TriggerSkill("#thyishi") {
+        events << CardsMoveOneTime;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer* &) const {
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        int reason = move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON;
+        if (reason == CardMoveReason::S_REASON_USE && move.from_places.contains(Player::PlaceSpecial)
+                                                   && move.from_pile_names.contains("thbaochuipile")) {
+            const Card *card = move.reason.m_extraData.value<CardStar>();
+            if (!card->isVirtualCard() || (card->subcardsLength() == 1
+                                           && card->getSubcards() == move.card_ids
+                                           && card->getClassName() == Sanguosha->getCard(move.card_ids.first())->getClassName())) {
+                card->setFlags("thbaochui+" + move.from->objectName());
+                move.reason.m_extraData = QVariant::fromValue(card);
+                data = QVariant::fromValue(move);
+            }
+        }
+        return QStringList();
+    }
+};
+
+class ThYishiMaxCardsSkill: public MaxCardsSkill {
+public:
+    ThYishiMaxCardsSkill(): MaxCardsSkill("#thyishi-max_cards") {
+    }
+
+    virtual int getFixed(const Player *target) const{
+        if (target->hasSkill("thyishi")) {
+            int n = 0;
+            foreach (const Player *p, target->getAliveSiblings())
+                if (p->getMaxCards() > n)
+                    n = p->getMaxCards();
+            return n;
+        } else
+            return -1;
+    }
+};
+
 class ThMoju: public TriggerSkill {
 public:
     ThMoju(): TriggerSkill("thmoju") {
@@ -681,6 +850,16 @@ KishinPackage::KishinPackage()
     kishin005->addSkill(new ThNengwu);
     kishin005->addSkill(new ThNengwuClear);
     related_skills.insertMulti("thnengwu", "#thnengwu-clear");
+
+    General *kishin006 = new General(this, "kishin006", "hana", 3);
+    kishin006->addSkill(new ThBaochui);
+    kishin006->addSkill(new ThBaochuiReturn);
+    related_skills.insertMulti("thbaochui", "#thbaochui-return");
+    kishin006->addSkill(new ThYishi);
+    kishin006->addSkill(new ThYishiNullified);
+    kishin006->addSkill(new ThYishiMaxCardsSkill);
+    related_skills.insertMulti("thyishi", "#thyishi");
+    related_skills.insertMulti("thyishi", "#thyishi-max_cards");
 
     General *kishin007 = new General(this, "kishin007", "yuki");
     kishin007->addSkill(new ThMoju);

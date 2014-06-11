@@ -360,6 +360,15 @@ bool IronChain::targetsFeasible(const QList<const Player *> &targets, const Play
             rec = false;
             break;
         }
+        // Coupling of ThBaochui
+        if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play) {
+            foreach (const Player *p, Self->getAliveSiblings())
+                if (p->getPile("thbaochuipile").contains(id)) {
+                    rec = false;
+                    break;
+                }
+            if (!rec) break;
+        }
     }
 
     if (rec && Self->isCardLimited(this, Card::MethodUse))
