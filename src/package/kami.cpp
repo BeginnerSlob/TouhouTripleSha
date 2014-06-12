@@ -1320,11 +1320,9 @@ public:
             }
         } else if (triggerEvent == CardsMoveOneTime && player->isAlive() && player->hasSkill(objectName(), true)) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if ((move.to == player && move.to_place == Player::PlaceSpecial && move.to_pile_name == "thrangdengpile")
-             || (move.from == player && move.from_places.contains(Player::PlaceSpecial) && move.from_pile_names.contains("thrangdengpile"))) {
-                QStringList attach;
-                attach << "-zhuoyue" << "-thmengwu" << "-chenhong" << "-thjibu";
-                foreach (int id, player->getPile("thrangdengpile")) {
+            if (move.to == player && move.to_place == Player::PlaceSpecial && move.to_pile_name == "thrangdengpile") {
+                QStringList skills;
+                foreach (int id, move.card_ids) {
                     QString skill_name = "";
                     switch (Sanguosha->getCard(id)->getSuit()) {
                     case Card::Heart : {
@@ -1344,10 +1342,10 @@ public:
                         break;
                                        }
                     }
-                    if (!skill_name.isEmpty() && attach.contains("-" + skill_name))
-                        attach.replace(attach.indexOf("-" + skill_name), skill_name);
+                    if (!skill_name.isEmpty() && !player->hasSkill(skill_name))
+                        skills << skill_name;
                 }
-                room->handleAcquireDetachSkills(player, attach, true);
+                room->handleAcquireDetachSkills(player, skills);
             }
         }
         return QStringList();
@@ -1395,6 +1393,7 @@ ThBaihunCard::ThBaihunCard() {
 void ThBaihunCard::onEffect(const CardEffectStruct &effect) const {
     Room *room = effect.from->getRoom();
     effect.from->clearOnePrivatePile("thrangdengpile");
+    room->handleAcquireDetachSkills(effect.from, "-zhuoyue|-thmengwu|-chenhong|-thjibu");
     room->killPlayer(effect.to);
 }
 
