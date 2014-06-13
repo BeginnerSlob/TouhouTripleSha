@@ -1393,7 +1393,7 @@ ThBaihunCard::ThBaihunCard() {
 void ThBaihunCard::onEffect(const CardEffectStruct &effect) const {
     Room *room = effect.from->getRoom();
     effect.from->clearOnePrivatePile("thrangdengpile");
-    room->handleAcquireDetachSkills(effect.from, "-zhuoyue|-thmengwu|-chenhong|-thjibu");
+    room->handleAcquireDetachSkills(effect.from, "-zhuoyue|-thmengwu|-chenhong|-thjibu", true);
     room->killPlayer(effect.to);
 }
 
