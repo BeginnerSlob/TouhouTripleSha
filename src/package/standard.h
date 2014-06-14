@@ -130,6 +130,14 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class Drowning: public AOE {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE Drowning(Card::Suit suit = Club, int number = 9);
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class SingleTargetTrick: public TrickCard {
     Q_OBJECT
 

@@ -992,26 +992,6 @@ public:
     }
 };
 
-Drowning::Drowning(Suit suit, int number)
-    : SingleTargetTrick(suit, number)
-{
-    setObjectName("drowning");
-}
-
-bool Drowning::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
-    return targets.length() < total_num && to_select != Self;
-}
-
-void Drowning::onEffect(const CardEffectStruct &effect) const{
-    Room *room = effect.to->getRoom();
-    if (!effect.to->getEquips().isEmpty()
-        && room->askForChoice(effect.to, objectName(), "throw+damage", QVariant::fromValue(effect)) == "throw")
-        effect.to->throwAllEquips();
-    else
-        room->damage(DamageStruct(this, effect.from->isAlive() ? effect.from : NULL, effect.to));
-}
-
 Special1v1Package::Special1v1Package()
     : Package("Special1v1")
 {

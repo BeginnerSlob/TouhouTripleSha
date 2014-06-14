@@ -43,7 +43,7 @@ public:
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
-
+/*
 class Drowning: public SingleTargetTrick {
     Q_OBJECT
 
@@ -53,7 +53,7 @@ public:
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
-
+*/
 class Special1v1Package: public Package {
     Q_OBJECT
 

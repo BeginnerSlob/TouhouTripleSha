@@ -93,7 +93,7 @@ class WoodenOx: public Treasure {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE WoodenOx(Card::Suit suit, int number);
+    Q_INVOKABLE WoodenOx(Card::Suit suit = Diamond, int number = 5);
 
     virtual void onUninstall(ServerPlayer *player) const;
 };
