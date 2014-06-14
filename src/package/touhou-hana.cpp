@@ -451,12 +451,10 @@ public:
     virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
         QMap<ServerPlayer *, QStringList> skill_list;
         CardEffectStruct effect = data.value<CardEffectStruct>();
-        if (!effect.card->isKindOf("Peach") || effect.nullified || player->getMaxHp() > player->getGeneralMaxHp())
-            return skill_list;
-        foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
-            if (!owner->isNude())
-                skill_list.insert(owner, QStringList(objectName()));
-
+        if (effect.card->isKindOf("Peach"))
+            foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
+                if (owner->canDiscard(owner, "he"))
+                    skill_list.insert(owner, QStringList(objectName()));
         return skill_list;
     }
 
@@ -516,11 +514,9 @@ public:
                     int i = 0;
                     foreach (int card_id, move.card_ids) {
                         card = Sanguosha->getCard(card_id);
-                        if (room->getCardOwner(card_id) == player && card->getSuit() == Card::Heart
-                            && (move.from_places[i] == Player::PlaceHand
-                                || move.from_places[i] == Player::PlaceEquip)) {
+                        if (card->getSuit() == Card::Heart && (move.from_places[i] == Player::PlaceHand
+                                                               || move.from_places[i] == Player::PlaceEquip))
                             list << objectName();
-                        }
                         i ++;
                     }
                     return list;
