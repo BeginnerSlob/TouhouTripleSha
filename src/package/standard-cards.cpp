@@ -1034,9 +1034,6 @@ void Duel::onEffect(const CardEffectStruct &effect) const{
     ServerPlayer *second = effect.from;
     Room *room = first->getRoom();
 
-    room->setEmotion(first, "duel");
-    room->setEmotion(second, "duel");
-
     forever {
         if (!first->isAlive())
             break;
