@@ -846,6 +846,22 @@ void ArcheryAttack::onEffect(const CardEffectStruct &effect) const{
     }
 }
 
+Drowning::Drowning(Suit suit, int number)
+    : AOE(suit, number)
+{
+    setObjectName("drowning");
+}
+
+void Drowning::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.to->getRoom();
+    if (effect.from->canDiscard(effect.to, "e")
+        && room->askForChoice(effect.to, objectName(), "throw+damage", QVariant::fromValue(effect)) == "throw") {
+        int card_id = room->askForCardChosen(effect.from, effect.to, "e", objectName(), false, MethodDiscard);
+        room->throwCard(card_id, effect.to, effect.from);
+    } else
+        room->damage(DamageStruct(this, effect.from->isAlive() ? effect.from : NULL, effect.to));
+}
+
 Collateral::Collateral(Card::Suit suit, int number)
     : SingleTargetTrick(suit, number)
 {
@@ -1559,7 +1575,10 @@ LimitationBrokenPackage::LimitationBrokenPackage()
     : Package("limitation_broken", Package::CardPack)
 {
     QList<Card *> cards;
-    cards << new WoodenOx(Card::Diamond, 5);
+    cards << new Jink(Card::Heart, 5)
+          << new WoodenOx()
+          << new Slash(Card::Spade, 9)
+          << new Drowning();
 
     skills << new WoodenOxSkill << new WoodenOxTriggerSkill;
 

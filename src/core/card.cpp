@@ -642,8 +642,10 @@ void Card::onUse(Room *room, const CardUseStruct &use) const{
         if (card_use.to.size() == 1)
             reason.m_targetId = card_use.to.first()->objectName();
         reason.m_extraData = QVariant::fromValue((CardStar)card_use.card);
-        CardsMoveStruct move(used_cards, room->getCardOwner(getEffectiveId()), NULL, Player::PlaceUnknown, Player::PlaceTable, reason);
-        moves.append(move);
+        foreach (int id, used_cards) {
+            CardsMoveStruct move(id, NULL, Player::PlaceTable, reason);
+            moves.append(move);
+        }
         room->moveCardsAtomic(moves, true);
         card_use.card = reason.m_extraData.value<CardStar>();
     } else if (card_use.card->willThrow()) {
