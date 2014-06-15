@@ -1247,15 +1247,14 @@ void ThGelongCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     ServerPlayer *target = targets.first();
     bool success = source->pindian(target, "thgelong");
     if (success) {
-        if (!source->isKongcheng()) {
-            const Card *card = room->askForCard(source, ".", "@thgelonggive:" + source->objectName(), QVariant(), Card::MethodNone);
-            if (card) {
-                CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "thgelong", QString());
-                room->obtainCard(target, card, reason, false);
-            } else
-                room->loseHp(source);
-        }
-        room->loseHp(source);
+        const Card *card = NULL;
+        if (!source->isKongcheng())
+            card = room->askForCard(source, ".", "@thgelonggive:" + source->objectName(), QVariant(), Card::MethodNone);
+        if (card) {
+            CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "thgelong", QString());
+            room->obtainCard(target, card, reason, false);
+        } else
+            room->loseHp(source);
     } else {
         QStringList choices;
         choices << "damage";
