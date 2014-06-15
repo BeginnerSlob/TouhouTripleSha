@@ -329,7 +329,7 @@ public:
 
         room->clearAG(player);
         if (!card_ids.isEmpty())
-            room->askForGuanxing(player, card_ids, Room::GuanxingDownOnly);
+            room->askForGuanxing(player, card_ids, Room::GuanxingUpOnly);
         if (dummy->subcardsLength() > 0) {
             CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, player->objectName(), objectName(), QString());
             room->throwCard(dummy, reason, NULL);
