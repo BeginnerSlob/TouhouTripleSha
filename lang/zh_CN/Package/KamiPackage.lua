@@ -4,7 +4,7 @@ return {
 	["kami"] = "神",
 
 	["#kami001"]="往昔的圣迹",
-	["kami001"]="东风谷早苗",--神 - 空 - 3血
+	["kami001"]="神东风谷早苗",--神 - 空 - 3血
 	["designer:kami001"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami001"]="正体不明",
 	["cv:kami001"]="暂无",
@@ -16,7 +16,7 @@ return {
 	[":thkaihai"]="每当你失去最后的手牌时，可从牌堆底摸一张牌。",
 	
 	["#kami002"]="天道是非",
-	["kami002"]="比那名居天子",--神 - 空 - 4血
+	["kami002"]="神比那名居天子",--神 - 空 - 4血
 	["designer:kami002"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami002"]="正体不明",
 	["cv:kami002"]="暂无",
@@ -40,7 +40,7 @@ return {
 	["#thjiguang-nongwu"] = "极光（浓雾）",
 	
 	["#kami003"]="混沌的巫女",
-	["kami003"]="博丽灵梦",--神 - 空 - 8血
+	["kami003"]="神博丽灵梦",--神 - 空 - 8血
 	["designer:kami003"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami003"]="正体不明",
 	["cv:kami003"]="暂无",
@@ -50,7 +50,7 @@ return {
 	[":thhuanjun"]="锁定技，你的方块【闪】均视为【碎月绮幕】，你手牌中的防具牌均视为【酒】，你获得即将进入你装备区的防具牌。",
 	
 	["#kami004"]="子夜的女皇",
-	["kami004"]="蕾米莉亚•斯卡雷特",--神 - 空 - 4血
+	["kami004"]="神蕾米莉亚•斯卡雷特",--神 - 空 - 4血
 	["designer:kami004"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami004"]="正体不明",
 	["cv:kami004"]="暂无",
@@ -66,7 +66,7 @@ return {
 	["#ThHuangyi"]="%from 的体力上限为 %arg2 ，触发“%arg”觉醒",
 	
 	["#kami005"]="丑三时的幻之舞",
-	["kami005"]="秦心",--神 - 幻 - 3血
+	["kami005"]="神秦心",--神 - 幻 - 3血
 	["designer:kami005"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami005"]="正体不明",
 	["cv:kami005"]="暂无",
@@ -85,7 +85,7 @@ return {
 	["faces"]="面",
 
 	["#kami007"]="华胥之梦",
-	["kami007"]="西行寺幽幽子",--神 - 幻 - 2血
+	["kami007"]="神西行寺幽幽子",--神 - 幻 - 2血
 	["designer:kami007"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami007"]="正体不明",
 	["cv:kami007"]="暂无",
@@ -103,7 +103,7 @@ return {
 	["@yingxiao"]="桜咲",
 	
 	["#kami008"]="夫众生者悉皆杀",
-	["kami008"]="芙兰朵露•斯卡雷特",--神 - 空 - 4血
+	["kami008"]="神芙兰朵露•斯卡雷特",--神 - 空 - 4血
 	["designer:kami008"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami008"]="正体不明",
 	["cv:kami008"]="暂无",
@@ -115,7 +115,7 @@ return {
 	[":thkuangli"]="每当你的人物牌翻面、横置或重置时，你可以摸一张牌。",
 	
 	["#kami009"]="心华之殇",
-	["kami009"]="古明地觉",--神 - 空 - 4血
+	["kami009"]="神古明地觉",--神 - 空 - 4血
 	["designer:kami009"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami009"]="正体不明",
 	["cv:kami009"]="暂无",
@@ -133,7 +133,7 @@ return {
 	["~thtianxin"]="选择1~2张牌→点击确定",
 	
 	["#kami010"]="星煌的祈者",
-	["kami010"]="霍青娥",--神 - 幻 - 3血
+	["kami010"]="神霍青娥",--神 - 幻 - 3血
 	["designer:kami010"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami010"]="正体不明",
 	["cv:kami010"]="暂无",
@@ -145,7 +145,7 @@ return {
 	[":thbaihun"]="出牌阶段，你可以将十三张“灯”置入弃牌堆，然后令一名其他角色立即死亡。",
 	
 	["#kami012"]="竹取飞翔",
-	["kami012"]="蓬莱山辉夜",--神 - 空 - 4血
+	["kami012"]="神蓬莱山辉夜",--神 - 空 - 4血
 	["designer:kami012"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami012"]="正体不明",
 	["cv:kami012"]="暂无",
@@ -154,7 +154,7 @@ return {
 	["@thwunan"]="你可以弃置一张手牌发动“五难”",
 
 	["#kami013"]="鸣蛙不输风雨",
-	["kami013"]="洩矢诹访子",--神 - 幻 - 1血
+	["kami013"]="神洩矢诹访子",--神 - 幻 - 1血
 	["designer:kami013"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami013"]="正体不明",
 	["cv:kami013"]="暂无",
@@ -173,7 +173,7 @@ return {
 	[":thzhanying"]="锁定技，你始终跳过你的摸牌阶段；你的手牌上限+4。",
 	
 	["#kami014"]="诞妄的妖姬",
-	["kami014"]="封兽鵺",--神 - 幻 - 3血
+	["kami014"]="神封兽鵺",--神 - 幻 - 3血
 	["designer:kami014"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami014"]="正体不明",
 	["cv:kami014"]="暂无",
@@ -187,7 +187,7 @@ return {
 	[":thguihuan"]="限定技，若你的身份不是主公，当你杀死一名身份不是主公的其他角色，在其翻开身份牌之前，你可以与该角色交换身份牌。",
 	
 	["#kami015"]="冰魄的女仙",
-	["kami015"]="琪露诺",--神 - 空 - 4血
+	["kami015"]="神琪露诺",--神 - 空 - 4血
 	["designer:kami015"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami015"]="正体不明",
 	["cv:kami015"]="暂无",
@@ -199,7 +199,7 @@ return {
 	[":thfeiying"]="锁定技，当其他角色计算与你的距离时，始终+1。",
 	
 	["#kami016"]="最古妖王的宝库",
-	["kami016"]="因幡帝",--神 - 幻 - 3血
+	["kami016"]="神因幡帝",--神 - 幻 - 3血
 	["designer:kami016"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami016"]="正体不明",
 	["cv:kami016"]="暂无",
