@@ -155,7 +155,6 @@ class ThSangzhiCard: public SkillCard{
 public:
     Q_INVOKABLE ThSangzhiCard();
 
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
