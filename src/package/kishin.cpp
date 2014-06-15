@@ -464,8 +464,13 @@ public:
         else if (ask_who->canDiscard(ask_who, "he"))
             room->askForDiscard(ask_who, objectName(), 1, 1, false, true);
 
-        player->tag["ThNengwuId"] = id;
-        room->setPlayerCardLimitation(player, "use", "^" + QString::number(id), true);
+        QVariantList ids = player->tag["ThNengwuId"].toList();
+        ids << id;
+        player->tag["ThNengwuId"] = QVariant::fromValue(ids);
+        QStringList sources = player->tag["ThNengwuSource"].toStringList();
+        sources << ask_who->objectName();
+        player->tag["ThNengwuSource"] = QVariant::fromValue(sources);
+        room->setPlayerCardLimitation(player, "use", "^" + QString::number(id), false);
 
         return false;
     }
@@ -474,25 +479,48 @@ public:
 class ThNengwuClear: public TriggerSkill {
 public:
     ThNengwuClear(): TriggerSkill("#thnengwu-clear") {
-        events << CardsMoveOneTime;
+        events << EventPhaseChanging << CardsMoveOneTime;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer* &) const{
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (!move.from || !move.from_places.contains(Player::PlaceHand)) return QStringList();
-        ServerPlayer *player = (ServerPlayer *)move.from;
-        bool isInt = false;
-        int id = player->tag["ThNengwuId"].toInt(&isInt);
-        if (!isInt) return QStringList();
-        int reason = move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON;
-        if (reason == CardMoveReason::S_REASON_USE
-            || reason == CardMoveReason::S_REASON_RESPONSE
-            || reason == CardMoveReason::S_REASON_DISCARD) {
-                if (move.card_ids.contains(id) && move.from_places.at(move.card_ids.indexOf(id)) == Player::PlaceHand) {
-                    player->tag.remove("ThNengwuId");
-                    room->removePlayerCardLimitation(player, "use", "^" + QString::number(id) + "$1");
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == CardsMoveOneTime) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (!move.from || !move.from_places.contains(Player::PlaceHand)) return QStringList();
+            QVariantList ids = player->tag["ThNengwuId"].toList();
+            if (ids.isEmpty() || move.from != player) return QStringList();
+            QStringList sources = player->tag["ThNengwuSource"].toStringList();
+            int reason = move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON;
+            if (reason == CardMoveReason::S_REASON_USE
+                || reason == CardMoveReason::S_REASON_RESPONSE
+                || reason == CardMoveReason::S_REASON_DISCARD) {
+                    foreach (int id, move.card_ids) {
+                        int index = move.card_ids.indexOf(id);
+                        if (ids.contains(id) && move.from_places.at(index) == Player::PlaceHand) {
+                            while (ids.contains(id)) {
+                                int i = ids.indexOf(id);
+                                if (i != -1) {
+                                    ids.removeAt(i);
+                                    sources.removeAt(i);
+                                    room->removePlayerCardLimitation(player, "use", "^" + QString::number(id) + "$0");
+                                }
+                            }
+                            player->tag["ThNengwuId"] = QVariant::fromValue(ids);
+                            player->tag["ThNengwuSource"] = QVariant::fromValue(sources);
+                        }
+                    }
+            }
+        } else if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive && !player->tag["ThNengwuId"].toList().isEmpty()) {
+                QVariantList ids = player->tag["ThNengwuId"].toList();
+                player->tag.remove("ThNengwuId");
+                player->tag.remove("ThNengwuSource");
+                while (!ids.isEmpty()) {
+                    int id = ids.takeFirst().toInt();
+                    room->removePlayerCardLimitation(player, "use", "^" + QString::number(id) + "$0");
                 }
+            }
         }
         return QStringList();
     }

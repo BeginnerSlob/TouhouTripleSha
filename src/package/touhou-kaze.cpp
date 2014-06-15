@@ -932,7 +932,7 @@ public:
         QList<int> enabled_ids;
         QList<int> disabled_ids;
         foreach (int id, card_ids)
-            if (Sanguosha->getCard(id)->getTypeId() == Card::TypeTrick)
+            if (Sanguosha->getCard(id)->isNDTrick())
                 enabled_ids << id;
             else
                 disabled_ids << id;
@@ -1896,7 +1896,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        if (player->getPhase() == Player::Start && TriggerSkill::triggerable(player)) {
+        if (player->getPhase() == Player::Start && TriggerSkill::triggerable(player) && player->hasSkill("thsangzhi")) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player))
                 foreach (const Skill *skill, p->getVisibleSkillList()) {
                     if (skill->isLordSkill() || skill->isAttachedLordSkill()
@@ -1990,10 +1990,6 @@ public:
 ThSangzhiCard::ThSangzhiCard() {
 }
 
-bool ThSangzhiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const {
-    return targets.isEmpty() && to_select->getMark("@sangzhi") == 0 && to_select != Self;
-}
-
 void ThSangzhiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const {
     room->setPlayerMark(targets.first(), "@sangzhi", 1);
     source->tag["ThSangzhiUsed"] = true;
@@ -2002,7 +1998,7 @@ void ThSangzhiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
 class ThSangzhiViewAsSkill: public OneCardViewAsSkill {
 public:
     ThSangzhiViewAsSkill(): OneCardViewAsSkill("thsangzhi") {
-        filter_pattern = "EquipCard!";
+        filter_pattern = "Peach,EquipCard!";
     }
 
     virtual const Card *viewAs(const Card *originalCard) const {
@@ -2088,7 +2084,7 @@ class ThXinhuaViewAsSkill: public OneCardViewAsSkill {
 public:
     ThXinhuaViewAsSkill(): OneCardViewAsSkill("thxinhuav") {
         attached_lord_skill = true;
-        filter_pattern = "EquipCard|.|.|hand";
+        filter_pattern = "Weapon";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const {
