@@ -108,7 +108,7 @@ return {
 	["#thweide"] = "威德（后续结算）",
 	
 	["#bangai010"] = "禁书的评者",
-	["bangai010"] = "本居小铃",--花 - 空 - 3血
+	["bangai010"] = "本居小铃",--花 - 幻 - 3血
 	["designer:bangai010"] = "幻桜落 | Codeby:Slob",
 	["illustrator:bangai010"] = "正体不明",
 	["cv:bangai010"] = "暂无",
