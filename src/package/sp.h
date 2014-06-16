@@ -12,4 +12,20 @@ public:
     SPPackage();
 };
 
+class ThLunminCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThLunminCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThShushuCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThShushuCard();
+};
+
 #endif // SPPACKAGE_H
