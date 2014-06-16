@@ -696,9 +696,11 @@ public:
     virtual int getFixed(const Player *target) const{
         if (target->hasSkill("thyishi")) {
             int n = 0;
-            foreach (const Player *p, target->getAliveSiblings())
-                if (p->getMaxCards() > n)
-                    n = p->getMaxCards();
+            foreach (const Player *p, target->getAliveSiblings()) {
+                if (p->hasSkill("thyishi")) continue;
+                if (p->getHandcardNum() > n)
+                    n = p->getHandcardNum();
+            }
             return n;
         } else
             return -1;
