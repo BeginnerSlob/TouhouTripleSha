@@ -2105,7 +2105,7 @@ public:
 class ThWushou: public TriggerSkill {
 public:
     ThWushou(): TriggerSkill("thwushou") {
-        events << DamageInflicted;
+        events << Damaged;
         frequency = Frequent;
     }
 

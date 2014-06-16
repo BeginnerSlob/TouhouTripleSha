@@ -1580,7 +1580,8 @@ public:
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (!TriggerSkill::triggerable(player) || move.from != player)
             return skills;
-        if (player->getPhase() == Player::Discard)
+        ServerPlayer *current = room->getCurrent();
+        if (current == player && player->getPhase() != Player::NotActive)
             return skills;
 
         for (int i = 0; i < move.card_ids.length(); i++)

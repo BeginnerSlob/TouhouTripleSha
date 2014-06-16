@@ -1207,7 +1207,7 @@ BangaiPackage::BangaiPackage()
     bangai009->addSkill(new ThWeideAct);
     related_skills.insertMulti("thweide", "#thweide");
 
-    General *bangai010 = new General(this, "bangai010", "hana", 3);
+    General *bangai010 = new General(this, "bangai010", "hana", 3, false);
     bangai010->addSkill(new ThGuijuan);
     bangai010->addSkill(new ThZhayou);
 
