@@ -690,7 +690,7 @@ public:
 
 class ThYishiMaxCardsSkill: public MaxCardsSkill {
 public:
-    ThYishiMaxCardsSkill(): MaxCardsSkill("#thyishi-max_cards") {
+    ThYishiMaxCardsSkill(): MaxCardsSkill("#thyishi-max-cards") {
     }
 
     virtual int getFixed(const Player *target) const{
@@ -899,7 +899,7 @@ KishinPackage::KishinPackage()
     kishin006->addSkill(new ThYishiNullified);
     kishin006->addSkill(new ThYishiMaxCardsSkill);
     related_skills.insertMulti("thyishi", "#thyishi");
-    related_skills.insertMulti("thyishi", "#thyishi-max_cards");
+    related_skills.insertMulti("thyishi", "#thyishi-max-cards");
 
     General *kishin007 = new General(this, "kishin007", "yuki");
     kishin007->addSkill(new ThMoju);
