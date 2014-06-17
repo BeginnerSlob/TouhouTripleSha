@@ -697,7 +697,6 @@ public:
         if (target->hasSkill("thyishi")) {
             int n = 0;
             foreach (const Player *p, target->getAliveSiblings()) {
-                if (p->hasSkill("thyishi")) continue;
                 if (p->getHandcardNum() > n)
                     n = p->getHandcardNum();
             }
