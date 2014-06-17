@@ -227,6 +227,15 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
         log.from = use.from;
         log.arg = "thhongye";
         room->sendLog(log);
+    } else if (use.from->hasFlag("ThYingshiUse")) {
+        use.from->setFlags("-ThYingshiUse");
+        room->broadcastSkillInvoke("thyingshi");
+
+        LogMessage log;
+        log.type = "#InvokeSkill";
+        log.from = use.from;
+        log.arg = "thyingshi";
+        room->sendLog(log);
     } else if (use.from->hasFlag("MoonspearUse")) {
         use.from->setFlags("-MoonspearUse");
         room->setEmotion(player, "weapon/moonspear");

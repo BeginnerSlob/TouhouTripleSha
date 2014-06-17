@@ -970,6 +970,110 @@ public:
     }
 };
 
+ThYingshiCard::ThYingshiCard() {
+    mute = true;
+    target_fixed = true;
+}
+
+const Card *ThYingshiCard::validate(CardUseStruct &card_use) const {
+    ServerPlayer *player = card_use.from;
+    Room *room = player->getRoom();
+
+    QList<ServerPlayer *> targets;
+    foreach (ServerPlayer *p, room->getAllPlayers())
+        if (player->distanceTo(p) == player->usedTimes("ThYingshiCard") + 1)
+            targets << p;
+    if (targets.isEmpty()) {
+        room->setPlayerFlag(player, "Global_ThYingshiFailed");
+        return NULL;
+    }
+
+    player->setFlags("ThYingshiUse");
+    bool use = room->askForUseSlashTo(player, targets, "@thyingshi:::" + QString::number(player->usedTimes("ThYingshiCard") + 1), false, true);
+    if (!use) {
+        player->setFlags("-ThYingshiUse");
+        room->setPlayerFlag(player, "Global_ThYingshiFailed");
+    } else
+        room->addPlayerHistory(player, "ThYingshiCard");
+    return NULL;
+}
+
+class ThYingshi: public ZeroCardViewAsSkill {
+public:
+    ThYingshi(): ZeroCardViewAsSkill("thyingshi") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const {
+        int n = player->usedTimes("ThYingshiCard");
+        if (n >= 3 || player->hasFlag("Global_ThYingshiFailed"))
+            return false;
+        foreach (const Player *p, player->getAliveSiblings())
+            if (player->distanceTo(p) == n + 1 && player->canSlash(p, false))
+                return true;
+        return false;
+    }
+
+    virtual const Card *viewAs() const {
+        return new ThYingshiCard;
+    }
+};
+
+class ThZanghun: public TriggerSkill {
+public:
+    ThZanghun(): TriggerSkill("thzanghun") {
+        events << Damage;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.card->isKindOf("Slash"))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        player->drawCards(1);
+        room->addPlayerMark(player, "thzanghun");
+        return false;
+    }
+};
+
+class ThZanghunClear: public TriggerSkill {
+public:
+    ThZanghunClear(): TriggerSkill("#thzanghun-clear") {
+        events << EventPhaseChanging;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        if (!player || player->getMark("thzanghun") == 0) return QStringList();
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (change.to != Player::NotActive)
+            return QStringList();
+        room->setPlayerMark(player, "thzanghun", 0);
+        return QStringList();
+    }
+};
+
+class ThZanghunDistance: public DistanceSkill {
+public:
+    ThZanghunDistance(): DistanceSkill("#thzanghun-distance") {
+    }
+
+    virtual int getCorrect(const Player *from, const Player *) const {
+        return from->getMark("thzanghun");
+    }
+};
+
 SPPackage::SPPackage()
     :Package("sp")
 {
@@ -1021,12 +1125,21 @@ SPPackage::SPPackage()
     sp011->addSkill(new ThShushu);
     sp011->addSkill(new ThJiuzhang);
 
+    General *sp012 = new General(this, "sp012", "tsuki");
+    sp012->addSkill(new ThYingshi);
+    sp012->addSkill(new ThZanghun);
+    sp012->addSkill(new ThZanghunClear);
+    sp012->addSkill(new ThZanghunDistance);
+    related_skills.insertMulti("thzanghun", "#thzanghun-clear");
+    related_skills.insertMulti("thzanghun", "#thzanghun-distance");
+
     /*General *sp999 = new General(this, "sp999", "te", 5, true, true);
     sp999->addSkill("jibu");
     sp999->addSkill(new Skill("thfeiniang", Skill::Compulsory));*/
 
     addMetaObject<ThLunminCard>();
     addMetaObject<ThShushuCard>();
+    addMetaObject<ThYingshiCard>();
 }
 
 ADD_PACKAGE(SP)
