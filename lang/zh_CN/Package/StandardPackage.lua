@@ -32,7 +32,7 @@ local t = {
 	["blade-slash"] = "你可以发动【离魂之镰】再对 %src 使用一张【杀】",
 	["#BladeUse"] = "%from 对 %to 发动了【<font color=\"yellow\"><b>离魂之镰</b></font>】效果",
 
-	["spear"] = "巴瓦鲁魔导书",
+	["spear"] = "虹法贤书",
 	[":spear"] = "装备牌·武器<br /><b>攻击范围</b>：３<br /><b>武器技能</b>：你可以将两张手牌当【杀】使用或打出。",
 
 	["axe"] = "左扇",
