@@ -392,10 +392,16 @@ public:
 class ThJiaotu: public TriggerSkill {
 public:
     ThJiaotu(): TriggerSkill("thjiaotu") {
-        events << Damaged << EventPhaseChanging;
+        events << GameStart << Damaged << EventPhaseChanging;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == GameStart) {
+            if (player) return QStringList();
+            const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(Sanguosha->getSkill("wumou"));
+            room->getThread()->addTriggerSkill(trigger_skill);
+            return QStringList();
+        }
         if (triggerEvent == Damaged && TriggerSkill::triggerable(player)) {
             DamageStruct damage = data.value<DamageStruct>();
             if (!damage.from)
