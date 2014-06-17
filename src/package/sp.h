@@ -28,4 +28,13 @@ public:
     Q_INVOKABLE ThShushuCard();
 };
 
+class ThYingshiCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThYingshiCard();
+
+    virtual const Card *validate(CardUseStruct &card_use) const;
+};
+
 #endif // SPPACKAGE_H
