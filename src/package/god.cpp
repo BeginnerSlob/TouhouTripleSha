@@ -524,24 +524,28 @@ public:
         events << CardUsed;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isNDTrick()) {
-            room->broadcastSkillInvoke(objectName());
+        if (TriggerSkill::triggerable(player) && use.card->isNDTrick())
+            return QStringList(objectName());
+        return QStringList();
+    }
 
-            LogMessage log;
-            log.type = "#TriggerSkill";
-            log.from = player;
-            log.arg = objectName();
-            room->sendLog(log);
-            room->notifySkillInvoked(player, objectName());
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->broadcastSkillInvoke(objectName());
 
-            int num = player->getMark("@wrath");
-            if (num >= 1 && room->askForChoice(player, objectName(), "discard+losehp") == "discard") {
-                player->loseMark("@wrath");
-            } else
-                room->loseHp(player);
-        }
+        LogMessage log;
+        log.type = "#TriggerSkill";
+        log.from = player;
+        log.arg = objectName();
+        room->sendLog(log);
+        room->notifySkillInvoked(player, objectName());
+
+        int num = player->getMark("@wrath");
+        if (num >= 1 && room->askForChoice(player, objectName(), "discard+losehp") == "discard") {
+            player->loseMark("@wrath");
+        } else
+            room->loseHp(player);
 
         return false;
     }
