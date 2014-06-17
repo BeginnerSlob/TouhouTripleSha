@@ -1193,18 +1193,18 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
 
     const Card *card = NULL;
 
-    QStringList asked;
-    asked << pattern << prompt;
-    QVariant asked_data = QVariant::fromValue(asked);
-    if ((method == Card::MethodUse || method == Card::MethodResponse) && !isRetrial && !player->hasFlag("continuing"))
-        thread->trigger(CardAsked, this, player, asked_data);
-
     CardUseStruct::CardUseReason reason = CardUseStruct::CARD_USE_REASON_UNKNOWN;
     if (method == Card::MethodResponse)
         reason = CardUseStruct::CARD_USE_REASON_RESPONSE;
     else if (method == Card::MethodUse)
         reason = CardUseStruct::CARD_USE_REASON_RESPONSE_USE;
     _m_roomState.setCurrentCardUseReason(reason);
+
+    QStringList asked;
+    asked << pattern << prompt;
+    QVariant asked_data = QVariant::fromValue(asked);
+    if ((method == Card::MethodUse || method == Card::MethodResponse) && !isRetrial && !player->hasFlag("continuing"))
+        thread->trigger(CardAsked, this, player, asked_data);
 
     if (player->hasFlag("continuing"))
         setPlayerFlag(player, "-continuing");
@@ -1311,16 +1311,32 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
             QVariant data = QVariant::fromValue(resp);
             thread->trigger(PreCardResponded, this, player, data);
             resp = data.value<CardResponseStruct>();
-
-            if (method == Card::MethodUse) {
-                CardMoveReason reason(CardMoveReason::S_REASON_LETUSE, player->objectName(), QString(), card->getSkillName(), QString());
-                reason.m_extraData = QVariant::fromValue((CardStar)card);
-                moveCardTo(card, player, NULL, Player::PlaceTable, reason, true);
-            } else {
-                CardMoveReason reason(CardMoveReason::S_REASON_RESPONSE, player->objectName());
-                reason.m_skillName = card->getSkillName();
-                reason.m_extraData = QVariant::fromValue((CardStar)card);
-                moveCardTo(card, player, NULL, isProvision ? Player::PlaceTable : Player::DiscardPile, reason);
+            
+            QList<int> card_ids;
+            if (card->isVirtualCard())
+                card_ids = card->getSubcards();
+            else
+                card_ids << card->getEffectiveId();
+            if (!card_ids.isEmpty()) {
+                QList<CardsMoveStruct> moves;
+                if (method == Card::MethodUse) {
+                    CardMoveReason reason(CardMoveReason::S_REASON_LETUSE, player->objectName(), QString(), card->getSkillName(), QString());
+                    reason.m_extraData = QVariant::fromValue((CardStar)card);
+                    foreach (int id, card_ids) {
+                        CardsMoveStruct move(id, NULL, Player::PlaceTable, reason);
+                        moves.append(move);
+                    }
+                    moveCardsAtomic(moves, true);
+                } else {
+                    CardMoveReason reason(CardMoveReason::S_REASON_RESPONSE, player->objectName());
+                    reason.m_skillName = card->getSkillName();
+                    reason.m_extraData = QVariant::fromValue((CardStar)card);
+                    foreach (int id, card_ids) {
+                        CardsMoveStruct move(id, NULL, isProvision ? Player::PlaceTable : Player::DiscardPile, reason);
+                        moves.append(move);
+                    }
+                    moveCardsAtomic(moves, true);
+                }
             }
 
             thread->trigger(CardResponded, this, player, data);
@@ -1337,10 +1353,10 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
                 if (to) card_use.to << to;
                 QVariant data2 = QVariant::fromValue(card_use);
                 thread->trigger(CardFinished, this, player, data2);
-                if (player->hasFlag("thhuaji_cancel")) {
-                    setPlayerFlag(player, "-thhuaji_cancel");
-                    card = NULL;
-                }
+            }
+            if (player->hasFlag("thhuaji_cancel")) {
+                setPlayerFlag(player, "-thhuaji_cancel");
+                card = NULL;
             }
         }
         result = card;
