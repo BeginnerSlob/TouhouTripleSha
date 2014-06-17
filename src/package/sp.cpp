@@ -1144,7 +1144,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (!TriggerSkill::triggerable(player)) return QStringList();
         CardUseStruct use = data.value<CardUseStruct>();
-        if ((use.card->isKindOf("BasicCard") || use.card->isNDTrick()) && use.card->getNumber() > 0)
+        if ((use.card->isKindOf("BasicCard") || use.card->isNDTrick()) && !use.card->isKindOf("ExNihilo") && use.card->getNumber() > 0)
             if (player->canDiscard(player, "he")) {
                 QList<int> ids;
                 if (use.card->isVirtualCard())
