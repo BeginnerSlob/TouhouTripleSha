@@ -616,7 +616,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (!TriggerSkill::triggerable(player)) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
-        if (!damage.card->isKindOf("Slash"))
+        if (!damage.card || !damage.card->isKindOf("Slash") || damage.to->isDead())
             return QStringList();
         int n = qAbs(player->getEquips().size() - damage.to->getEquips().size());
         if (n == 0)

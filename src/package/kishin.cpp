@@ -464,6 +464,8 @@ public:
         else if (ask_who->canDiscard(ask_who, "he"))
             room->askForDiscard(ask_who, objectName(), 1, 1, false, true);
 
+        if (player->isDead()) return false;
+
         QVariantList ids = player->tag["ThNengwuId"].toList();
         ids << id;
         player->tag["ThNengwuId"] = QVariant::fromValue(ids);
