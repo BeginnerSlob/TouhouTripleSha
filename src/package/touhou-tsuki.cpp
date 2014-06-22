@@ -303,7 +303,7 @@ public:
         room->sendLog(log);
 
         room->changeMaxHpForAwakenSkill(player);
-        room->acquireSkill(player, "kuanggu");
+        room->acquireSkill(player, "ikkuanggu");
         return false;
     }
 };

@@ -57,9 +57,9 @@ public:
     }
 };
 
-class Huanwei: public TriggerSkill {
+class IkHuanwei: public TriggerSkill {
 public:
-    Huanwei(): TriggerSkill("huanwei$") {
+    IkHuanwei(): TriggerSkill("ikhuanwei$") {
         events << CardAsked;
     }
 
@@ -67,7 +67,7 @@ public:
         if (player && player->isAlive() && player->hasLordSkill(objectName())) {
             QString pattern = data.toStringList().first();
             QString prompt = data.toStringList().at(1);
-            if (pattern != "jink" || prompt.startsWith("@huanwei-jink"))
+            if (pattern != "jink" || prompt.startsWith("@ikhuanwei-jink"))
                 return QStringList();
 
             QList<ServerPlayer *> lieges = room->getLieges("hana", player);
@@ -92,7 +92,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         QVariant tohelp = QVariant::fromValue((PlayerStar)player);
         foreach (ServerPlayer *liege, room->getLieges("hana", player)) {
-            const Card *jink = room->askForCard(liege, "jink", "@huanwei-jink:" + player->objectName(),
+            const Card *jink = room->askForCard(liege, "jink", "@ikhuanwei-jink:" + player->objectName(),
                                                 tohelp, Card::MethodResponse, player, false, QString(), true);
             if (jink) {
                 room->provide(jink);
@@ -1522,7 +1522,7 @@ public:
 
         room->setPlayerMark(lvmeng, "qinxue", 1);
         if (room->changeMaxHpForAwakenSkill(lvmeng) && lvmeng->getMark("qinxue") == 1)
-            room->acquireSkill(lvmeng, "lingshi");
+            room->acquireSkill(lvmeng, "iklingshi");
 
         return false;
     }
@@ -2079,9 +2079,9 @@ public:
     }
 };
 
-class Zhuoyue: public PhaseChangeSkill {
+class IkZhuoyue: public PhaseChangeSkill {
 public:
-    Zhuoyue(): PhaseChangeSkill("zhuoyue") {
+    IkZhuoyue(): PhaseChangeSkill("ikzhuoyue") {
         frequency = Frequent;
     }
 
@@ -2397,7 +2397,7 @@ void StandardPackage::addGenerals() {
     // Wei
     General *caocao = new General(this, "caocao$", "wei"); // WEI 001
     caocao->addSkill(new Jianxiong);
-    caocao->addSkill(new Huanwei);
+    caocao->addSkill(new IkHuanwei);
 
     General *simayi = new General(this, "simayi", "wei", 3); // WEI 002
     simayi->addSkill(new Fankui);
@@ -2521,7 +2521,7 @@ void StandardPackage::addGenerals() {
 
     General *diaochan = new General(this, "diaochan", "qun", 3, false); // QUN 003
     diaochan->addSkill(new Lijian);
-    diaochan->addSkill(new Zhuoyue);
+    diaochan->addSkill(new IkZhuoyue);
 
     General *st_huaxiong = new General(this, "st_huaxiong", "qun", 6); // QUN 019
     st_huaxiong->addSkill(new Yaowu);
@@ -2534,7 +2534,7 @@ void StandardPackage::addGenerals() {
 
     General *st_gongsunzan = new General(this, "st_gongsunzan", "qun"); // QUN 026
     st_gongsunzan->addSkill(new Qiaomeng);
-    st_gongsunzan->addSkill("zhuji");
+    st_gongsunzan->addSkill("ikzhuji");
 
     // for skill cards
     addMetaObject<ZhihengCard>();

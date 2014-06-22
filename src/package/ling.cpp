@@ -65,7 +65,7 @@ LingPackage::LingPackage()
 
     General *neo_zhaoyun = new General(this, "neo_zhaoyun", "shu");
     neo_zhaoyun->addSkill("longdan");
-    neo_zhaoyun->addSkill("zhuji");
+    neo_zhaoyun->addSkill("ikzhuji");
 }
 
 ADD_PACKAGE(Ling)

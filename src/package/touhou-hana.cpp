@@ -133,7 +133,7 @@ public:
         else
             player->drawCards(2);
 
-        room->acquireSkill(player, "huanwei");
+        room->acquireSkill(player, "ikhuanwei");
         return false;
     }
 };
@@ -580,7 +580,7 @@ public:
             ServerPlayer *killer = death.damage ? death.damage->from : NULL;
 
             if (killer)
-                if (killer != player && !killer->hasSkill("benghuai"))
+                if (killer != player && !killer->hasSkill("ikbenghuai"))
                     return QStringList(objectName());
         }
         return QStringList();
@@ -589,8 +589,8 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         DeathStruct death = data.value<DeathStruct>();
         ServerPlayer *killer = death.damage->from;
-        killer->gainMark("@juedu");
-        room->acquireSkill(killer, "benghuai");
+        room->addPlayerMark(killer, "@juedu");
+        room->acquireSkill(killer, "ikbenghuai");
 
         return false;
     }
@@ -1862,7 +1862,7 @@ public:
             player->drawCards(2);
 
         room->changeMaxHpForAwakenSkill(player);
-        room->acquireSkill(player, "mitu");
+        room->acquireSkill(player, "ikmitu");
         return false;
     }
 };

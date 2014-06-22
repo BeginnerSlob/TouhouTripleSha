@@ -2471,7 +2471,7 @@ NostalStandardPackage::NostalStandardPackage()
 {
     General *nos_caocao = new General(this, "nos_caocao$", "wei");
     nos_caocao->addSkill(new NosJianxiong);
-    nos_caocao->addSkill("huanwei");
+    nos_caocao->addSkill("ikhuanwei");
 
     General *nos_simayi = new General(this, "nos_simayi", "wei", 3);
     nos_simayi->addSkill(new NosFankui);
@@ -2543,7 +2543,7 @@ NostalStandardPackage::NostalStandardPackage()
 
     General *nos_diaochan = new General(this, "nos_diaochan", "qun", 3, false);
     nos_diaochan->addSkill(new NosLijian);
-    nos_diaochan->addSkill("zhuoyue");
+    nos_diaochan->addSkill("ikzhuoyue");
 
     addMetaObject<NosTuxiCard>();
     addMetaObject<NosRendeCard>();

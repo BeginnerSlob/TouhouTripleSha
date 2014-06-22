@@ -146,9 +146,9 @@ public:
     }
 };
 
-class Mitu: public TriggerSkill {
+class IkMitu: public TriggerSkill {
 public:
-    Mitu(): TriggerSkill("mitu") {
+    IkMitu(): TriggerSkill("ikmitu") {
         events << DamageCaused << DamageInflicted;
         frequency = Compulsory;
     }
@@ -168,7 +168,7 @@ public:
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
         LogMessage log;
-        log.type = "#Mitu";
+        log.type = "#IkMitu";
         log.from = ask_who;
         log.arg = objectName();
         room->sendLog(log);
@@ -1147,7 +1147,7 @@ YJCMPackage::YJCMPackage()
     xusheng->addSkill(new Pojun);
 
     General *xushu = new General(this, "xushu", "shu", 3); // YJ 009
-    xushu->addSkill(new Mitu);
+    xushu->addSkill(new IkMitu);
     xushu->addSkill(new Jujian);
 
     General *yujin = new General(this, "yujin", "wei"); // YJ 010
