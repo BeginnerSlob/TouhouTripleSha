@@ -413,7 +413,7 @@ QString GeneralOverview::getIllustratorInfo(const QString &general_name) {
     }
 }
 
-void GeneralOverview::addLines(const Skill *skill) {
+void GeneralOverview::addLines(const Skill *skill, const General *general) {
     QString skill_name = Sanguosha->translate(skill->objectName());
     QStringList sources = skill->getSources();
 
@@ -424,13 +424,21 @@ void GeneralOverview::addLines(const Skill *skill) {
         button_layout->addWidget(button);
     } else {
         QRegExp rx(".+/(\\w+\\d?).ogg");
+        QStringList new_sources;
         for (int i = 0; i < sources.length(); i++) {
             QString source = sources[i];
+            if (source.contains(general->objectName()))
+                new_sources << source;
+        }
+        if (new_sources.isEmpty())
+            new_sources = sources;
+        for (int i = 0; i < new_sources.length(); i++) {
+            QString source = new_sources[i];
             if (!rx.exactMatch(source))
                 continue;
 
             QString button_text = skill_name;
-            if (sources.length() != 1)
+            if (new_sources.length() != 1)
                 button_text.append(QString(" (%1)").arg(i + 1));
 
             QCommandLinkButton *button = new QCommandLinkButton(button_text);
@@ -484,7 +492,7 @@ void GeneralOverview::on_tableWidget_itemSelectionChanged() {
     resetButtons();
 
     foreach (const Skill *skill, skills)
-        addLines(skill);
+        addLines(skill, general);
 
     QString last_word = Sanguosha->translate("~" + general->objectName());
     if (last_word.startsWith("~") && general->objectName().contains("_"))

@@ -241,6 +241,8 @@ public:
 
     QList<const Player *> getSiblings() const;
     QList<const Player *> getAliveSiblings() const;
+
+    static bool isNostalGeneral(const Player *p, const char *general_name);
 };
 
 %extend Player {
@@ -832,6 +834,18 @@ public:
 
     bool cardIsAvailable(const Player *player) const{
         return $self->Card::isAvailable(player);
+    }
+
+    void setTag(const char *key, QVariant &value) const{ // set it to 'const' for 'tag' is mutable
+        $self->tag[key] = value;
+    }
+
+    QVariant getTag(const char *key) const{
+        return $self->tag[key];
+    }
+
+    void removeTag(const char *tag_name) const{
+        $self->tag.remove(tag_name);
     }
 };
 

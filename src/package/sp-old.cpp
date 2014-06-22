@@ -426,6 +426,9 @@ public:
             if (hp <= 2 && hp + reduce > 2)
                 index = 2;
         }
+        if (player->getGeneralName() == "gongsunzan"
+            || (player->getGeneralName() != "st_gongsunzan" && player->getGeneral2Name() == "gongsunzan"))
+            index += 2;
 
         if (index > 0)
             room->broadcastSkillInvoke("zhuji", index);
@@ -1861,7 +1864,7 @@ public:
 
         room->broadcastSkillInvoke(objectName());
         room->notifySkillInvoked(zhugedan, objectName());
-        //room->doLightbox("$JuyiAnimate");
+        room->doLightbox("$JuyiAnimate");
 
         LogMessage log;
         log.type = "#JuyiWake";

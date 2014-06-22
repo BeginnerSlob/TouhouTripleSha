@@ -340,7 +340,6 @@ public:
 
 protected:
     DamageStruct::Nature nature;
-    mutable int drank;
     QStringList specific_assignee;
 };
 

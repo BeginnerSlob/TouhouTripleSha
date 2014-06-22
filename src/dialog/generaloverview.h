@@ -76,7 +76,7 @@ private:
     QList<const General *> all_generals;
 
     void resetButtons();
-    void addLines(const Skill *skill);
+    void addLines(const Skill *skill, const General *general = NULL);
     void addCopyAction(QCommandLinkButton *button);
     bool hasSkin(const QString &general_name);
     QString getIllustratorInfo(const QString &general_name);
