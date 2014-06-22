@@ -113,7 +113,7 @@ public:
 
         room->changeMaxHpForAwakenSkill(player);
         room->acquireSkill(player, "thhuanfa");
-        room->acquireSkill(player, "zhuji");
+        room->acquireSkill(player, "ikzhuji");
 
         return false;
     }

@@ -780,7 +780,7 @@ HegemonyPackage::HegemonyPackage()
 
     General *heg_diaochan = new General(this, "heg_diaochan", "qun", 3, false, true); // QUN 003 G
     heg_diaochan->addSkill("lijian");
-    heg_diaochan->addSkill("zhuoyue");
+    heg_diaochan->addSkill("ikzhuoyue");
 
     addMetaObject<DuoshiCard>();
     addMetaObject<FenxunCard>();

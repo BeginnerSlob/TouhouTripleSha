@@ -196,14 +196,14 @@ public:
     }
 };
 
-LingshiCard::LingshiCard() {
+IkLingshiCard::IkLingshiCard() {
 }
 
-bool LingshiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkLingshiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     return targets.isEmpty() && to_select != Self && !to_select->isKongcheng();
 }
 
-void LingshiCard::onEffect(const CardEffectStruct &effect) const{
+void IkLingshiCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
     if (!effect.to->isKongcheng()) {
         QList<int> ids;
@@ -215,31 +215,31 @@ void LingshiCard::onEffect(const CardEffectStruct &effect) const{
         int card_id = room->doGongxin(effect.from, effect.to, ids);
         if (card_id == -1) return;
 
-        QString result = room->askForChoice(effect.from, "lingshi", "discard+put");
-        effect.from->tag.remove("lingshi");
+        QString result = room->askForChoice(effect.from, "iklingshi", "discard+put");
+        effect.from->tag.remove("iklingshi");
         if (result == "discard") {
-            CardMoveReason reason(CardMoveReason::S_REASON_DISMANTLE, effect.from->objectName(), QString(), "lingshi", QString());
+            CardMoveReason reason(CardMoveReason::S_REASON_DISMANTLE, effect.from->objectName(), QString(), "iklingshi", QString());
             room->throwCard(Sanguosha->getCard(card_id), reason, effect.to, effect.from);
         } else {
             effect.from->setFlags("Global_GongxinOperator");
-            CardMoveReason reason(CardMoveReason::S_REASON_PUT, effect.from->objectName(), QString(), "lingshi", QString());
+            CardMoveReason reason(CardMoveReason::S_REASON_PUT, effect.from->objectName(), QString(), "iklingshi", QString());
             room->moveCardTo(Sanguosha->getCard(card_id), effect.to, NULL, Player::DrawPile, reason, true);
             effect.from->setFlags("-Global_GongxinOperator");
         }
     }
 }
 
-class Lingshi: public ZeroCardViewAsSkill {
+class IkLingshi: public ZeroCardViewAsSkill {
 public:
-    Lingshi(): ZeroCardViewAsSkill("lingshi") {
+    IkLingshi(): ZeroCardViewAsSkill("iklingshi") {
     }
 
     virtual const Card *viewAs() const{
-        return new LingshiCard;
+        return new IkLingshiCard;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("LingshiCard");
+        return !player->hasUsed("IkLingshiCard");
     }
 };
 
@@ -1331,7 +1331,7 @@ GodPackage::GodPackage()
 
     General *shenlvmeng = new General(this, "shenlvmeng", "god", 3); // LE 002
     shenlvmeng->addSkill(new Shelie);
-    shenlvmeng->addSkill(new Lingshi);
+    shenlvmeng->addSkill(new IkLingshi);
 
     General *shenzhouyu = new General(this, "shenzhouyu", "god"); // LE 003
     shenzhouyu->addSkill(new Qinyin);
@@ -1377,7 +1377,7 @@ GodPackage::GodPackage()
     shensimayi->addSkill(new LianpoCount);
     related_skills.insertMulti("lianpo", "#lianpo-count");
 
-    addMetaObject<LingshiCard>();
+    addMetaObject<IkLingshiCard>();
     addMetaObject<YeyanCard>();
     addMetaObject<ShenfenCard>();
     addMetaObject<GreatYeyanCard>();

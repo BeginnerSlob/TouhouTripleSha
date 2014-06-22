@@ -1368,7 +1368,7 @@ BGMPackage::BGMPackage(): Package("BGM") {
 
     General *bgm_diaochan = new General(this, "bgm_diaochan", "qun", 3, false); // *SP 002
     bgm_diaochan->addSkill(new Lihun);
-    bgm_diaochan->addSkill("zhuoyue");
+    bgm_diaochan->addSkill("ikzhuoyue");
 
     General *bgm_caoren = new General(this, "bgm_caoren", "wei"); // *SP 003
     bgm_caoren->addSkill(new Kuiwei);
@@ -1800,7 +1800,7 @@ public:
 class HantongAcquire: public TriggerSkill {
 public:
     HantongAcquire(): TriggerSkill("#hantong-acquire") {
-        events << CardAsked //For JiJiang and Huanwei
+        events << CardAsked //For JiJiang and IkHuanwei
                << TargetConfirmed //For JiuYuan
                << EventPhaseStart; //For XueYi
     }
@@ -1857,11 +1857,11 @@ public:
                         room->acquireSkill(liuxie, "jijiang");
                     }
                 } else if (pattern == "jink") {
-                    QVariant data_for_ai = "huanwei";
+                    QVariant data_for_ai = "ikhuanwei";
                     liuxie->tag["HantongOriginData"] = data; // For AI
                     if (room->askForSkillInvoke(liuxie, "hantong_acquire", data_for_ai)) {
                         RemoveEdict(liuxie);
-                        room->acquireSkill(liuxie, "huanwei");
+                        room->acquireSkill(liuxie, "ikhuanwei");
                     }
                 }
                 break;
@@ -1916,7 +1916,7 @@ public:
         foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (!p->tag.value("Hantong_use", false).toBool())
                 continue;
-            room->handleAcquireDetachSkills(p, "-huanwei|-jijiang|-jiuyuan|-xueyi", true);
+            room->handleAcquireDetachSkills(p, "-ikhuanwei|-jijiang|-jiuyuan|-xueyi", true);
             p->tag.remove("Hantong_use");
         }
         return false;
