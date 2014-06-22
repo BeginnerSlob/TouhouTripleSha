@@ -1065,7 +1065,7 @@ Special1v1Package::Special1v1Package()
 
     General *kof_nos_diaochan = new General(this, "kof_nos_diaochan", "qun", 3, false);
     kof_nos_diaochan->addSkill(new Pianyi);
-    kof_nos_diaochan->addSkill("zhuoyue");
+    kof_nos_diaochan->addSkill("ikzhuoyue");
 
     addMetaObject<XiechanCard>();
     addMetaObject<CangjiCard>();

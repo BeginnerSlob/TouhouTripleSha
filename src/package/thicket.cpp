@@ -769,9 +769,9 @@ public:
     }
 };
 
-class Benghuai: public PhaseChangeSkill {
+class IkBenghuai: public PhaseChangeSkill {
 public:
-    Benghuai(): PhaseChangeSkill("benghuai") {
+    IkBenghuai(): PhaseChangeSkill("ikbenghuai") {
         frequency = Compulsory;
     }
 
@@ -793,7 +793,7 @@ public:
         room->sendLog(log);
         room->notifySkillInvoked(dongzhuo, objectName());
 
-        QString result = room->askForChoice(dongzhuo, "benghuai", "hp+maxhp");
+        QString result = room->askForChoice(dongzhuo, "ikbenghuai", "hp+maxhp");
         room->broadcastSkillInvoke(objectName());
         if (result == "hp")
             room->loseHp(dongzhuo);
@@ -894,7 +894,7 @@ ThicketPackage::ThicketPackage()
     General *dongzhuo = new General(this, "dongzhuo$", "qun", 8); // QUN 006
     dongzhuo->addSkill(new Jiuchi);
     dongzhuo->addSkill(new Roulin);
-    dongzhuo->addSkill(new Benghuai);
+    dongzhuo->addSkill(new IkBenghuai);
     dongzhuo->addSkill(new Baonue);
 
     General *jiaxu = new General(this, "jiaxu", "qun", 3); // QUN 007

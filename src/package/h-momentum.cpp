@@ -456,7 +456,7 @@ public:
         if (room->changeMaxHpForAwakenSkill(player, 3)) {
             room->recover(player, RecoverStruct(player, NULL, 3));
             if (player->getMark("baoling") == 1)
-                room->acquireSkill(player, "benghuai");
+                room->acquireSkill(player, "ikbenghuai");
         }
 
         return false;
