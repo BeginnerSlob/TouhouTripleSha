@@ -2403,8 +2403,8 @@ public:
 void StandardPackage::addGenerals() {
     // Wei
     General *bloom001 = new General(this, "bloom001$", "hana");
-    caocao->addSkill(new IkJiaoman);
-    caocao->addSkill(new IkHuanwei);
+    bloom001->addSkill(new IkJiaoman);
+    bloom001->addSkill(new IkHuanwei);
 
     General *simayi = new General(this, "simayi", "wei", 3); // WEI 002
     simayi->addSkill(new Fankui);
