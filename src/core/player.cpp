@@ -581,7 +581,7 @@ bool Player::hasArmorEffect(const QString &armor_name) const{
     }
 
     WrappedCard *am = armor;
-    if (!am && !hasSkill("shengtang") && getMark("thmicaitarget") > 0)
+    if (!am && !hasSkill("ikshengtang") && getMark("thmicaitarget") > 0)
         foreach (const Player *p, getAliveSiblings())
             if (p->getMark("thmicaisource") > 0) {
                 am = p->armor;

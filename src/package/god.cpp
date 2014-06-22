@@ -517,9 +517,9 @@ public:
     }
 };
 
-class Wumou: public TriggerSkill {
+class IkWumou: public TriggerSkill {
 public:
-    Wumou(): TriggerSkill("wumou") {
+    IkWumou(): TriggerSkill("ikwumou") {
         frequency = Compulsory;
         events << CardUsed;
     }
@@ -1357,7 +1357,7 @@ GodPackage::GodPackage()
     General *shenlvbu = new General(this, "shenlvbu", "god", 5); // LE 006
     shenlvbu->addSkill(new Kuangbao);
     shenlvbu->addSkill(new MarkAssignSkill("@wrath", 2));
-    shenlvbu->addSkill(new Wumou);
+    shenlvbu->addSkill(new IkWumou);
     shenlvbu->addSkill(new Wuqian);
     shenlvbu->addSkill(new Shenfen);
     related_skills.insertMulti("kuangbao", "#@wrath-2");

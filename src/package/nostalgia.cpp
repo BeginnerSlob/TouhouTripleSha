@@ -1739,20 +1739,6 @@ public:
     }
 };
 
-class NosQicai: public TargetModSkill {
-public:
-    NosQicai(): TargetModSkill("nosqicai") {
-        pattern = "TrickCard";
-    }
-
-    virtual int getDistanceLimit(const Player *from, const Card *) const{
-        if (from->hasSkill(objectName()))
-            return 1000;
-        else
-            return 0;
-    }
-};
-
 NosKurouCard::NosKurouCard() {
     target_fixed = true;
 }
@@ -2489,7 +2475,7 @@ NostalStandardPackage::NostalStandardPackage()
     related_skills.insertMulti("nosluoyi", "#nosluoyi");
 
     General *nos_guojia = new General(this, "nos_guojia", "wei", 3);
-    nos_guojia->addSkill("tiandu");
+    nos_guojia->addSkill("iktiandu");
     nos_guojia->addSkill(new NosYiji);
 
     General *nos_liubei = new General(this, "nos_liubei$", "shu");
@@ -2511,7 +2497,7 @@ NostalStandardPackage::NostalStandardPackage()
 
     General *nos_huangyueying = new General(this, "nos_huangyueying", "shu", 3, false);
     nos_huangyueying->addSkill(new NosJizhi);
-    nos_huangyueying->addSkill(new NosQicai);
+    nos_huangyueying->addSkill("thjizhi");
 
     General *nos_ganning = new General(this, "nos_ganning", "wu");
     nos_ganning->addSkill("qixi");

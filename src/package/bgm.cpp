@@ -686,7 +686,7 @@ public:
             if (lvmeng->getMark("@wu") > 0)
                 room->handleAcquireDetachSkills(lvmeng, "jiang|qianxun");
             else if (lvmeng->getMark("@wen") > 0)
-                room->handleAcquireDetachSkills(lvmeng, "chenhong|keji");
+                room->handleAcquireDetachSkills(lvmeng, "ikchenhong|keji");
         }
         return false;
     }
@@ -720,7 +720,7 @@ public:
 
                 player->loseMark("@wu");
                 player->gainMark("@wen");
-                room->handleAcquireDetachSkills(player, "-jiang|-qianxun|chenhong|keji", true);
+                room->handleAcquireDetachSkills(player, "-jiang|-qianxun|ikchenhong|keji", true);
             }
         } else if (player->getPhase() == Player::RoundStart && lvmeng && lvmeng->getMark("@wen") > 0
                    && lvmeng->canDiscard(lvmeng, "he") && room->askForCard(lvmeng, "..", "@mouduan", QVariant(), objectName())) {
@@ -728,7 +728,7 @@ public:
                 room->broadcastSkillInvoke(objectName());
                 lvmeng->loseMark("@wen");
                 lvmeng->gainMark("@wu");
-                room->handleAcquireDetachSkills(lvmeng, "-chenhong|-keji|jiang|qianxun", true);
+                room->handleAcquireDetachSkills(lvmeng, "-ikchenhong|-keji|jiang|qianxun", true);
             }
         }
         return false;
@@ -746,7 +746,7 @@ public:
             room->handleAcquireDetachSkills(player, "-jiang|-qianxun", true);
         } else if (player->getMark("@wen") > 0) {
             player->loseMark("@wen");
-            room->handleAcquireDetachSkills(player, "-chenhong|-keji", true);
+            room->handleAcquireDetachSkills(player, "-ikchenhong|-keji", true);
         }
     }
 };
