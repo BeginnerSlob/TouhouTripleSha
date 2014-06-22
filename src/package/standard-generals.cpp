@@ -428,7 +428,7 @@ public:
     }
 
     virtual void onDamaged(ServerPlayer *simayi, const DamageStruct &damage) const{
-        int card_id = room->askForCardChosen(simayi, from, "hej", "ikhuanji");
+        int card_id = simayi->getRoom()->askForCardChosen(simayi, damage.from, "hej", "ikhuanji");
         simayi->obtainCard(Sanguosha->getCard(card_id), false);
     }
 };
