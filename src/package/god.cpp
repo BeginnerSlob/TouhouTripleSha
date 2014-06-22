@@ -1030,7 +1030,7 @@ class Jilve: public TriggerSkill {
 public:
     Jilve(): TriggerSkill("jilve") {
         events << CardUsed // JiZhi
-               << AskForRetrial // GuiCai
+               << AskForRetrial // IkTiansuo
                << Damaged; // FangZhu
         view_as_skill = new JilveViewAsSkill;
     }
@@ -1051,11 +1051,11 @@ public:
                     jizhi->trigger(triggerEvent, room, player, data);
                 }
             } else if (triggerEvent == AskForRetrial) {
-                const TriggerSkill *guicai = Sanguosha->getTriggerSkill("guicai");
-                if (guicai && !player->isKongcheng() && player->askForSkillInvoke("jilve_guicai", data)) {
+                const TriggerSkill *iktiansuo = Sanguosha->getTriggerSkill("iktiansuo");
+                if (iktiansuo && !player->isKongcheng() && player->askForSkillInvoke("jilve_guicai", data)) {
                     room->notifySkillInvoked(player, objectName());
                     player->loseMark("@bear");
-                    guicai->trigger(triggerEvent, room, player, data);
+                    iktiansuo->trigger(triggerEvent, room, player, data);
                 }
             } else if (triggerEvent == Damaged) {
                 const TriggerSkill *fangzhu = Sanguosha->getTriggerSkill("fangzhu");
