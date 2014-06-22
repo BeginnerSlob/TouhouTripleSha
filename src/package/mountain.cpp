@@ -412,7 +412,7 @@ public:
 
         room->setPlayerMark(sunce, "hunzi", 1);
         if (room->changeMaxHpForAwakenSkill(sunce) && sunce->getMark("hunzi") == 1)
-            room->handleAcquireDetachSkills(sunce, "chenhong|yinghun");
+            room->handleAcquireDetachSkills(sunce, "ikchenhong|yinghun");
         return false;
     }
 };

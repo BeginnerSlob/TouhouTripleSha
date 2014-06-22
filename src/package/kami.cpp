@@ -1229,10 +1229,10 @@ ThTianxinCard::ThTianxinCard() {
 void ThTianxinCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const {
     source->setFlags("thtianxinUsed");
     if (subcardsLength() == 1) {
-        QString choice = room->askForChoice(source, "thtianxin", "yuxi+tiandu");
+        QString choice = room->askForChoice(source, "thtianxin", "ikyuxi+iktiandu");
         room->acquireSkill(source, choice);
     } else
-        room->handleAcquireDetachSkills(source, "yuxi|tiandu");
+        room->handleAcquireDetachSkills(source, "ikyuxi|iktiandu");
 };
 
 class ThTianxinViewAsSkill :public ViewAsSkill {
@@ -1269,7 +1269,7 @@ public:
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to == Player::NotActive) {
                 player->setFlags("-thtianxinUsed");
-                room->handleAcquireDetachSkills(player, "-yuxi|-tiandu", true);
+                room->handleAcquireDetachSkills(player, "-ikyuxi|-iktiandu", true);
             }
         }
         return QStringList();
@@ -1294,7 +1294,7 @@ public:
             return QStringList(objectName());
         else if (triggerEvent == EventLoseSkill && data.toString() == objectName()) {
             QStringList detach;
-            detach << "-ikzhuoyue" << "-thmengwu" << "-chenhong" << "-thjibu";
+            detach << "-ikzhuoyue" << "-thmengwu" << "-ikchenhong" << "-thjibu";
             room->handleAcquireDetachSkills(player, detach, true);
         } else if (triggerEvent == EventAcquireSkill && data.toString() == objectName()) {
             if (!player->getPile("thrangdengpile").isEmpty()) {
@@ -1312,7 +1312,7 @@ public:
                         break;
                                        }
                     case Card::Diamond : {
-                        skill_name = "chenhong";
+                        skill_name = "ikchenhong";
                         break;
                                        }
                     case Card::Club : {
@@ -1341,7 +1341,7 @@ public:
                         break;
                                        }
                     case Card::Diamond : {
-                        skill_name = "chenhong";
+                        skill_name = "ikchenhong";
                         break;
                                        }
                     case Card::Club : {
@@ -1400,7 +1400,7 @@ ThBaihunCard::ThBaihunCard() {
 void ThBaihunCard::onEffect(const CardEffectStruct &effect) const {
     Room *room = effect.from->getRoom();
     effect.from->clearOnePrivatePile("thrangdengpile");
-    room->handleAcquireDetachSkills(effect.from, "-ikzhuoyue|-thmengwu|-chenhong|-thjibu", true);
+    room->handleAcquireDetachSkills(effect.from, "-ikzhuoyue|-thmengwu|-ikchenhong|-thjibu", true);
     room->killPlayer(effect.to);
 }
 

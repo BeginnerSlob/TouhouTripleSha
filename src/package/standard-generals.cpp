@@ -186,24 +186,31 @@ public:
     }
 };
 
-class Tiandu: public TriggerSkill {
+class IkTiandu: public TriggerSkill {
 public:
-    Tiandu(): TriggerSkill("tiandu") {
+    IkTiandu(): TriggerSkill("iktiandu") {
         frequency = Frequent;
         events << FinishJudge;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *guojia, QVariant &data) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *guojia, QVariant &data, ServerPlayer* &) const {
         JudgeStar judge = data.value<JudgeStar>();
-        CardStar card = judge->card;
+        if (TriggerSkill::triggerable(guojia) && room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge)
+            return QStringList(objectName());
+        return QStringList();
+    }
 
-        QVariant data_card = QVariant::fromValue(card);
-        if (room->getCardPlace(card->getEffectiveId()) == Player::PlaceJudge
-            && guojia->askForSkillInvoke(objectName(), data_card)) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *guojia, QVariant &data, ServerPlayer *) const {
+        if (guojia->askForSkillInvoke(objectName(), data)) {
             room->broadcastSkillInvoke(objectName());
-            guojia->obtainCard(judge->card);
-            return false;
+            return true;
         }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *guojia, QVariant &data, ServerPlayer *) const {
+        JudgeStar judge = data.value<JudgeStar>();
+        guojia->obtainCard(judge->card);
 
         return false;
     }
@@ -1091,9 +1098,9 @@ public:
     }
 };
 
-class Yuxi: public PhaseChangeSkill {
+class IkYuxi: public PhaseChangeSkill {
 public:
-    Yuxi(): PhaseChangeSkill("yuxi") {
+    IkYuxi(): PhaseChangeSkill("ikyuxi") {
         frequency = Frequent;
     }
 
@@ -1105,7 +1112,7 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         if (player->askForSkillInvoke(objectName())) {
             int index = qrand() % 2 + 1;
-            if (objectName() == "yuxi" && !player->hasInnateSkill(objectName()) && player->hasSkill("zhiji"))
+            if (objectName() == "ikyuxi" && !player->hasInnateSkill(objectName()) && player->hasSkill("zhiji"))
                 index += 2;
             room->broadcastSkillInvoke(objectName(), index);
             return true;
@@ -1115,7 +1122,7 @@ public:
 
     virtual bool onPhaseChange(ServerPlayer *zhuge) const {
         Room *room = zhuge->getRoom();
-        QList<int> guanxing = room->getNCards(getYuxiNum(room));
+        QList<int> guanxing = room->getNCards(getIkYuxiNum(room));
 
         LogMessage log;
         log.type = "$ViewDrawPile";
@@ -1128,7 +1135,7 @@ public:
         return false;
     }
 
-    virtual int getYuxiNum(Room *room) const{
+    virtual int getIkYuxiNum(Room *room) const{
         return qMin(5, room->alivePlayerCount());
     }
 };
@@ -1397,9 +1404,9 @@ public:
     }
 };
 
-class Chenhong: public DrawCardsSkill {
+class IkChenhong: public DrawCardsSkill {
 public:
-    Chenhong(): DrawCardsSkill("chenhong") {
+    IkChenhong(): DrawCardsSkill("ikchenhong") {
         frequency = Compulsory;
     }
 
@@ -1417,13 +1424,13 @@ public:
     }
 };
 
-class ChenhongMaxCards: public MaxCardsSkill {
+class IkChenhongMaxCards: public MaxCardsSkill {
 public:
-    ChenhongMaxCards(): MaxCardsSkill("#chenhong") {
+    IkChenhongMaxCards(): MaxCardsSkill("#ikchenhong") {
     }
 
     virtual int getFixed(const Player *target) const{
-        if (target->hasSkill("chenhong"))
+        if (target->hasSkill("ikchenhong"))
             return target->getMaxHp();
         else
             return -1;
@@ -2418,7 +2425,7 @@ void StandardPackage::addGenerals() {
     related_skills.insertMulti("luoyi", "#luoyi");
 
     General *guojia = new General(this, "guojia", "wei", 3); // WEI 006
-    guojia->addSkill(new Tiandu);
+    guojia->addSkill(new IkTiandu);
     guojia->addSkill(new Yiji);
     guojia->addSkill(new YijiObtain);
     related_skills.insertMulti("yiji", "#yiji");
@@ -2445,7 +2452,7 @@ void StandardPackage::addGenerals() {
     zhangfei->addSkill(new Tishen);
 
     General *zhugeliang = new General(this, "zhugeliang", "shu", 3); // SHU 004
-    zhugeliang->addSkill(new Yuxi);
+    zhugeliang->addSkill(new IkYuxi);
     zhugeliang->addSkill(new Kongcheng);
     zhugeliang->addSkill(new KongchengEffect);
     related_skills.insertMulti("kongcheng", "#kongcheng-effect");
@@ -2493,10 +2500,10 @@ void StandardPackage::addGenerals() {
     related_skills.insertMulti("zhaxiang", "#zhaxiang-target");
 
     General *zhouyu = new General(this, "zhouyu", "wu", 3); // WU 005
-    zhouyu->addSkill(new Chenhong);
-    zhouyu->addSkill(new ChenhongMaxCards);
+    zhouyu->addSkill(new IkChenhong);
+    zhouyu->addSkill(new IkChenhongMaxCards);
     zhouyu->addSkill(new Fanjian);
-    related_skills.insertMulti("chenhong", "#chenhong");
+    related_skills.insertMulti("ikchenhong", "#ikchenhong");
 
     General *daqiao = new General(this, "daqiao", "wu", 3, false); // WU 006
     daqiao->addSkill(new Guose);
@@ -2568,13 +2575,13 @@ public:
     }
 };
 
-class SuperGuanxing: public Yuxi {
+class SuperGuanxing: public IkYuxi {
 public:
-    SuperGuanxing(): Yuxi() {
+    SuperGuanxing(): IkYuxi() {
         setObjectName("super_guanxing");
     }
 
-    virtual int getYuxiNum(Room *room) const{
+    virtual int getIkYuxiNum(Room *room) const{
         return 5;
     }
 };

@@ -398,7 +398,7 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == GameStart) {
             if (player) return QStringList();
-            const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(Sanguosha->getSkill("wumou"));
+            const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(Sanguosha->getSkill("ikwumou"));
             room->getThread()->addTriggerSkill(trigger_skill);
             return QStringList();
         }
@@ -415,7 +415,7 @@ public:
             if (change.to == Player::NotActive)
                 if (!player->hasFlag(objectName())) {
                     room->removePlayerMark(player, "@jiaotu");
-                    room->detachSkillFromPlayer(player, "wumou", false, true);
+                    room->detachSkillFromPlayer(player, "ikwumou", false, true);
                 }
         }
         return QStringList();
@@ -445,7 +445,7 @@ public:
                 room->setPlayerFlag(damage.from, objectName());
             
             room->addPlayerMark(damage.from, "@jiaotu");
-            room->acquireSkill(damage.from, "wumou");
+            room->acquireSkill(damage.from, "ikwumou");
         }
         return false;
     }
@@ -1723,6 +1723,20 @@ public:
     }
 };
 
+class ThJizhi: public TargetModSkill {
+public:
+    ThJizhi(): TargetModSkill("thjizhi") {
+        pattern = "TrickCard";
+    }
+
+    virtual int getDistanceLimit(const Player *from, const Card *) const{
+        if (from->hasSkill(objectName()))
+            return 1000;
+        else
+            return 0;
+    }
+};
+
 class ThShenyou: public TriggerSkill {
 public:
     ThShenyou(): TriggerSkill("thshenyou") {
@@ -2344,6 +2358,7 @@ void TouhouPackage::addTsukiGenerals() {
     tsuki015->addSkill(new ThAnbingMaxCardsSkill);
     related_skills.insertMulti("thanbing", "#thanbing");
     tsuki015->addSkill(new ThHuilve);
+    tsuki015->addSkill(new ThJizhi);
 
     General *tsuki016 = new General(this, "tsuki016", "tsuki");
     tsuki016->addSkill(new ThShenyou);
