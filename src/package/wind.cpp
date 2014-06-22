@@ -413,9 +413,9 @@ public:
     }
 };
 
-class Kuanggu: public TriggerSkill {
+class IkKuanggu: public TriggerSkill {
 public:
-    Kuanggu(): TriggerSkill("kuanggu") {
+    IkKuanggu(): TriggerSkill("ikkuanggu") {
         frequency = Compulsory;
         events << Damage;
     }
@@ -423,8 +423,8 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (!TriggerSkill::triggerable(player)) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
-        bool invoke = player->tag.value("InvokeKuanggu", false).toBool();
-        player->tag["InvokeKuanggu"] = false;
+        bool invoke = player->tag.value("InvokeIkKuanggu", false).toBool();
+        player->tag["InvokeIkKuanggu"] = false;
         if (invoke) {
             QStringList skills;
             for (int i = 0; i < damage.damage; i++)
@@ -456,9 +456,9 @@ public:
     }
 };
 
-class KuangguRecord: public TriggerSkill {
+class IkKuangguRecord: public TriggerSkill {
 public:
-    KuangguRecord(): TriggerSkill("#kuanggu-record") {
+    IkKuangguRecord(): TriggerSkill("#ikkuanggu-record") {
         events << PreDamageDone;
         frequency = Compulsory;
         global = true;
@@ -468,7 +468,7 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         ServerPlayer *weiyan = damage.from;
         if (weiyan)
-            weiyan->tag["InvokeKuanggu"] = (weiyan->distanceTo(damage.to) <= 1 && weiyan != player);
+            weiyan->tag["InvokeIkKuanggu"] = (weiyan->distanceTo(damage.to) <= 1 && weiyan != player);
         return QStringList();
     }
 };
@@ -1198,9 +1198,9 @@ WindPackage::WindPackage()
     huangzhong->addSkill(new Liegong);
 
     General *weiyan = new General(this, "weiyan", "shu"); // SHU 009
-    weiyan->addSkill(new Kuanggu);
-    weiyan->addSkill(new KuangguRecord);
-    related_skills.insertMulti("kuanggu", "#kuanggu-record");
+    weiyan->addSkill(new IkKuanggu);
+    weiyan->addSkill(new IkKuangguRecord);
+    related_skills.insertMulti("ikkuanggu", "#ikkuanggu-record");
 
     General *xiaoqiao = new General(this, "xiaoqiao", "wu", 3, false); // WU 011
     xiaoqiao->addSkill(new Tianxiang);

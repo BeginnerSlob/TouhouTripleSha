@@ -386,9 +386,9 @@ public:
     }
 };
 
-class Zhuji: public DistanceSkill {
+class IkZhuji: public DistanceSkill {
 public:
-    Zhuji(): DistanceSkill("zhuji") {
+    IkZhuji(): DistanceSkill("ikzhuji") {
     }
 
     virtual int getCorrect(const Player *from, const Player *to) const{
@@ -402,9 +402,9 @@ public:
     }
 };
 
-class ZhujiEffect: public TriggerSkill {
+class IkZhujiEffect: public TriggerSkill {
 public:
-    ZhujiEffect(): TriggerSkill("#zhuji-effect") {
+    IkZhujiEffect(): TriggerSkill("#ikzhuji-effect") {
         events << HpChanged;
     }
 
@@ -431,7 +431,7 @@ public:
             index += 2;
 
         if (index > 0)
-            room->broadcastSkillInvoke("zhuji", index);
+            room->broadcastSkillInvoke("ikzhuji", index);
         return false;
     }
 };
@@ -1879,7 +1879,7 @@ public:
         if (diff < 0)
             room->drawCards(zhugedan, -diff, objectName());
         if (zhugedan->getMark("juyi") == 1)
-            room->handleAcquireDetachSkills(zhugedan, "benghuai|weizhong");
+            room->handleAcquireDetachSkills(zhugedan, "ikbenghuai|weizhong");
 
         return false;
     }
@@ -2272,12 +2272,12 @@ SPOldPackage::SPOldPackage()
 
     General *sp_diaochan = new General(this, "sp_diaochan", "qun", 3, false, true); // SP 002
     sp_diaochan->addSkill("noslijian");
-    sp_diaochan->addSkill("zhuoyue");
+    sp_diaochan->addSkill("ikzhuoyue");
 
     General *gongsunzan = new General(this, "gongsunzan", "qun"); // SP 003
-    gongsunzan->addSkill(new Zhuji);
-    gongsunzan->addSkill(new ZhujiEffect);
-    related_skills.insertMulti("zhuji", "#zhuji-effect");
+    gongsunzan->addSkill(new IkZhuji);
+    gongsunzan->addSkill(new IkZhujiEffect);
+    related_skills.insertMulti("ikzhuji", "#ikzhuji-effect");
 
     General *yuanshu = new General(this, "yuanshu", "qun"); // SP 004
     yuanshu->addSkill(new Yongsi);
@@ -2464,7 +2464,7 @@ TaiwanSPPackage::TaiwanSPPackage()
 {
     General *tw_caocao = new General(this, "tw_caocao$", "wei", 4, true, true); // TW SP 019
     tw_caocao->addSkill("nosjianxiong");
-    tw_caocao->addSkill("huanwei");
+    tw_caocao->addSkill("ikhuanwei");
 
     General *tw_simayi = new General(this, "tw_simayi", "wei", 3, true, true);
     tw_simayi->addSkill("nosfankui");
@@ -2550,7 +2550,7 @@ TaiwanSPPackage::TaiwanSPPackage()
 
     General *tw_diaochan = new General(this, "tw_diaochan", "qun", 3, false, true); // TW SP 002
     tw_diaochan->addSkill("noslijian");
-    tw_diaochan->addSkill("zhuoyue");
+    tw_diaochan->addSkill("ikzhuoyue");
 
     General *tw_xiaoqiao = new General(this, "tw_xiaoqiao", "wu", 3, false, true);
     tw_xiaoqiao->addSkill("tianxiang");
