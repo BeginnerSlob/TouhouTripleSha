@@ -593,19 +593,6 @@ public:
     }
 };
 
-class ThJibu: public DistanceSkill {
-public:
-    ThJibu(): DistanceSkill("thjibu") {
-    }
-
-    virtual int getCorrect(const Player *from, const Player *) const {
-        if (from->hasSkill(objectName()))
-            return -1;
-        else
-            return 0;
-    }
-};
-
 class ThDunjia: public TriggerSkill {
 public:
     ThDunjia(): TriggerSkill("thdunjia") {
@@ -2260,7 +2247,7 @@ void TouhouPackage::addYukiGenerals(){
     yuki005->addSkill(new ThMoji);
 
     General *yuki006 = new General(this, "yuki006", "yuki");
-    yuki006->addSkill(new ThJibu);
+    yuki006->addSkill("thjibu");
     yuki006->addSkill(new ThDunjia);
     yuki006->addSkill(new FakeMoveSkill("thdunjia"));
     related_skills.insertMulti("thdunjia", "#thdunjia-fake-move");

@@ -2261,6 +2261,19 @@ public:
     }
 };
 
+class ThJibu: public DistanceSkill {
+public:
+    ThJibu(): DistanceSkill("thjibu") {
+    }
+
+    virtual int getCorrect(const Player *from, const Player *) const {
+        if (from->hasSkill(objectName()))
+            return -1;
+        else
+            return 0;
+    }
+};
+
 class ThLiuzhen: public TriggerSkill{
 public:
     ThLiuzhen(): TriggerSkill("thliuzhen") {
@@ -2517,7 +2530,7 @@ void TouhouPackage::addHanaGenerals() {
     hana017->addSkill(new ThRudao);
     
     General *hana018 = new General(this, "hana018$", "hana");
-    hana018->addSkill("thjibu");
+    hana018->addSkill(new ThJibu);
     hana018->addSkill(new ThLiuzhen);
     hana018->addSkill(new ThTiandao);
     
