@@ -9,17 +9,13 @@
 #include "ai.h"
 #include "settings.h"
 
-class Jianxiong: public MasochismSkill {
+class IkJiaoman: public MasochismSkill {
 public:
-    Jianxiong(): MasochismSkill("jianxiong") {
+    IkJiaoman(): MasochismSkill("ikjiaoman") {
     }
 
-    virtual void onDamaged(ServerPlayer *caocao, const DamageStruct &damage) const{
-        Room *room = caocao->getRoom();
-        QVariant data = QVariant::fromValue(damage);
-        QStringList choices;
-        choices << "draw" << "cancel";
-
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        DamageStruct damage = data.value<DamageStruct>();
         const Card *card = damage.card;
         if (card) {
             QList<int> ids;
@@ -35,25 +31,29 @@ public:
                         break;
                     }
                 }
-                if (all_place_table) choices.append("obtain");
+                if (all_place_table) return QStringList(objectName());
             }
         }
+        return QStringList();
+    }
 
-        QString choice = room->askForChoice(caocao, objectName(), choices.join("+"), data);
-        if (choice != "cancel") {
-            LogMessage log;
-            log.type = "#InvokeSkill";
-            log.from = caocao;
-            log.arg = objectName();
-            room->sendLog(log);
-
-            room->notifySkillInvoked(caocao, objectName());
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        QList<ServerPlayer *> targets = damage.from ? room->getOtherPlayers(damage.from) : room->getAlivePlayers();
+        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@ikjiaoman", true, true);
+        if (target) {
             room->broadcastSkillInvoke(objectName());
-            if (choice == "obtain")
-                caocao->obtainCard(card);
-            else
-                caocao->drawCards(1, objectName());
+            player->tag["IkJiaomanTarget"] = QVariant::fromValue(target);
+            return true;
         }
+        return false;
+    }
+
+    virtual void onDamaged(ServerPlayer *caocao, const DamageStruct &damage) const{
+        ServerPlayer *target = caocao->tag["IkJiaomanTarget"].value<PlayerStar>();
+        caocao->tag.remove("IkJiaomanTarget");
+        if (target)
+            target->obtainCard(damage.card);
     }
 };
 
@@ -2402,8 +2402,8 @@ public:
 
 void StandardPackage::addGenerals() {
     // Wei
-    General *caocao = new General(this, "caocao$", "wei"); // WEI 001
-    caocao->addSkill(new Jianxiong);
+    General *bloom001 = new General(this, "bloom001$", "hana");
+    caocao->addSkill(new IkJiaoman);
     caocao->addSkill(new IkHuanwei);
 
     General *simayi = new General(this, "simayi", "wei", 3); // WEI 002
