@@ -358,43 +358,22 @@ public:
     }
 };
 
-class Fankui: public MasochismSkill {
+class IkTiansuo: public TriggerSkill {
 public:
-    Fankui(): MasochismSkill("fankui") {
-    }
-
-    virtual void onDamaged(ServerPlayer *simayi, const DamageStruct &damage) const{
-        ServerPlayer *from = damage.from;
-        Room *room = simayi->getRoom();
-        for (int i = 0; i < damage.damage; i++) {
-            QVariant data = QVariant::fromValue(from);
-            if (from && !from->isNude() && room->askForSkillInvoke(simayi, "fankui", data)) {
-                room->broadcastSkillInvoke(objectName());
-                int card_id = room->askForCardChosen(simayi, from, "he", "fankui");
-                CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, simayi->objectName());
-                room->obtainCard(simayi, Sanguosha->getCard(card_id),
-                                 reason, room->getCardPlace(card_id) != Player::PlaceHand);
-            } else {
-                break;
-            }
-        }
-    }
-};
-
-class Guicai: public TriggerSkill {
-public:
-    Guicai(): TriggerSkill("guicai") {
+    IkTiansuo(): TriggerSkill("iktiansuo") {
         events << AskForRetrial;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (player->isNude())
-            return false;
+    virtual bool triggerable(const ServerPlayer *player) const{
+        return TriggerSkill::triggerable(player)
+            && !player->isKongcheng();
+    }
 
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         JudgeStar judge = data.value<JudgeStar>();
 
         QStringList prompt_list;
-        prompt_list << "@guicai-card" << judge->who->objectName()
+        prompt_list << "@iktiansuo-card" << judge->who->objectName()
                     << objectName() << judge->reason << QString::number(judge->card->getEffectiveId());
         QString prompt = prompt_list.join(":");
         bool forced = false;
@@ -404,14 +383,53 @@ public:
         if (forced && card == NULL)
             card = player->getRandomHandCard();
         if (card) {
-            if (player->hasInnateSkill("guicai") || !player->hasSkill("jilve"))
+            player->tag["IkTiansuoCard"] = QVariant::fromValue(card);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardStar card = player->tag["IkTiansuoCard"].value<CardStar>();
+        player->tag.remove("IkTiansuoCard");
+        if (card) {
+            if (player->hasInnateSkill("iktiansuo") || !player->hasSkill("jilve"))
                 room->broadcastSkillInvoke(objectName());
             else
                 room->broadcastSkillInvoke("jilve", 1);
-            room->retrial(card, player, judge, objectName());
+            room->retrial(card, player, data.value<JudgeStar>(), objectName());
         }
 
         return false;
+    }
+};
+
+class IkHuanji: public MasochismSkill {
+public:
+    IkHuanji(): MasochismSkill("ikhuanji") {
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        QStringList skill;
+        if (!TriggerSkill::triggerable(player)) return skill;
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.from && !damage.from->isAllNude())
+            for (int i = 0; i < damage.damage; i++)
+                skill << objectName();
+        return skill;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual void onDamaged(ServerPlayer *simayi, const DamageStruct &damage) const{
+        int card_id = room->askForCardChosen(simayi, from, "hej", "ikhuanji");
+        simayi->obtainCard(Sanguosha->getCard(card_id), false);
     }
 };
 
@@ -517,7 +535,7 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhenji, QVariant &data) const{
         if (triggerEvent == EventPhaseStart && zhenji->getPhase() == Player::Start) {
-            bool canRetrial = zhenji->hasSkills("guicai|nosguicai|guidao|huanshi");
+            bool canRetrial = zhenji->hasSkills("iktiansuo|nosguicai|guidao|huanshi");
             while (zhenji->askForSkillInvoke("luoshen")) {
                 room->broadcastSkillInvoke(objectName());
 
@@ -2406,9 +2424,9 @@ void StandardPackage::addGenerals() {
     bloom001->addSkill(new IkJiaoman);
     bloom001->addSkill(new IkHuanwei);
 
-    General *simayi = new General(this, "simayi", "wei", 3); // WEI 002
-    simayi->addSkill(new Fankui);
-    simayi->addSkill(new Guicai);
+    General *bloom002 = new General(this, "bloom002", "hana", 3);
+    bloom002->addSkill(new IkTiansuo);
+    bloom002->addSkill(new IkHuanji);
 
     General *xiahoudun = new General(this, "xiahoudun", "wei"); // WEI 003
     xiahoudun->addSkill(new Ganglie);

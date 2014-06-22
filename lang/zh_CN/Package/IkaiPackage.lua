@@ -344,7 +344,7 @@ return {
 	["bloom002"] = "丹特丽安",--花 - 空 - 3血
 	["iktiansuo"] = "天锁",
 	[":iktiansuo"] = "在一名角色的判定牌生效前，你可以打出一张手牌代替之。",
-	["@iktiansuo-card"] = "你可以发动“%dest”来修改 %src 的 %arg 判定",
+	["@iktiansuo-card"] = CommonTranslationTable["@askforretrial"],
 	["~iktiansuo"] = "选择一张手牌→点击确定",
 	["ikhuanji"] = "幻姬",
 	[":ikhuanji"] = "每当你受到一次伤害后，你可以获得伤害来源区域内的一张牌。",
