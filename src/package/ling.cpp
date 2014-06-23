@@ -56,7 +56,7 @@ LingPackage::LingPackage()
     : Package("ling")
 {
     General *neo_guanyu = new General(this, "neo_guanyu", "shu");
-    neo_guanyu->addSkill("chilian");
+    neo_guanyu->addSkill("ikchilian");
     neo_guanyu->addSkill(new Yishi);
 
     General *neo_zhangfei = new General(this, "neo_zhangfei", "shu");

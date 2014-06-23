@@ -566,7 +566,7 @@ Special3v3Package::Special3v3Package()
     vs_nos_xiahoudun->addSkill(new VsGanglie);
 
     General *vs_nos_guanyu = new General(this, "vs_nos_guanyu", "shu");
-    vs_nos_guanyu->addSkill("chilian");
+    vs_nos_guanyu->addSkill("ikchilian");
     vs_nos_guanyu->addSkill(new Zhongyi);
     vs_nos_guanyu->addSkill(new ZhongyiAction);
     related_skills.insertMulti("zhongyi", "#zhongyi-action");
