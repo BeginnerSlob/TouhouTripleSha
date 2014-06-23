@@ -51,36 +51,6 @@ void IkShenaiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
         room->recover(source, RecoverStruct(source));
 }
 
-YijueCard::YijueCard() {
-}
-
-bool YijueCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
-}
-
-void YijueCard::use(Room *room, ServerPlayer *guanyu, QList<ServerPlayer *> &targets) const{
-    ServerPlayer *target = targets.first();
-    bool success = guanyu->pindian(target, "yijue", NULL);
-    if (success) {
-        target->addMark("yijue");
-        room->setPlayerCardLimitation(target, "use,response", ".|.|.|hand", true);
-        room->addPlayerMark(target, "@skill_invalidity");
-
-        foreach (ServerPlayer *p, room->getAllPlayers())
-            room->filterCards(p, p->getCards("he"), true);
-        Json::Value args;
-        args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
-        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
-    } else {
-        if (!target->isWounded()) return;
-        target->setFlags("YijueTarget");
-        QString choice = room->askForChoice(guanyu, "yijue", "recover+cancel");
-        target->setFlags("-YijueTarget");
-        if (choice == "recover")
-            room->recover(target, RecoverStruct(guanyu));
-    }
-}
-
 JieyinCard::JieyinCard() {
 }
 

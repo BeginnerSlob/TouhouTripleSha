@@ -774,9 +774,9 @@ public:
     }
 };
 
-class Chilian: public OneCardViewAsSkill {
+class IkChilian: public OneCardViewAsSkill {
 public:
-    Chilian(): OneCardViewAsSkill("chilian") {
+    IkChilian(): OneCardViewAsSkill("ikchilian") {
         response_or_use = true;
     }
 
@@ -809,60 +809,46 @@ public:
     }
 };
 
-class YijueViewAsSkill: public ZeroCardViewAsSkill {
+class IkZhenhong: public TriggerSkill {
 public:
-    YijueViewAsSkill(): ZeroCardViewAsSkill("yijue") {
+    IkZhenhong(): TriggerSkill("ikzhenhong") {
+        events << TargetSpecified;
+        frequency = Compulsory;
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("YijueCard") && !player->isKongcheng();
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (TriggerSkill::triggerable(player) && use.card->isKindOf("Slash") && use.card->getSuit() == Card::Diamond)
+            return QStringList(objectName());
+        return QStringList();
     }
 
-    virtual const Card *viewAs() const{
-        return new YijueCard;
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        LogMessage log;
+        log.type = "#TriggerSkill";
+        log.from = player;
+        log.arg = objectName();
+        room->sendLog(log);
+        room->notifySkillInvoked(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+
+        CardUseStruct use = data.value<CardUseStruct>();
+        foreach (ServerPlayer *p, use.to.toSet())
+            p->addQinggangTag(use.card);
+        return false;
     }
 };
 
-class Yijue: public TriggerSkill {
+class IkZhenhongTargetMod: public TargetModSkill {
 public:
-    Yijue(): TriggerSkill("yijue") {
-        events << EventPhaseChanging << Death;
-        view_as_skill = new YijueViewAsSkill;
+    IkZhenhongTargetMod(): TargetModSkill("#ikzhenhong-target") {
     }
 
-    virtual int getPriority(TriggerEvent) const{
-        return 5;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data) const{
-        if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to != Player::NotActive)
-                return false;
-        } else if (triggerEvent == Death) {
-            DeathStruct death = data.value<DeathStruct>();
-            if (death.who != target || target != room->getCurrent())
-                return false;
-        }
-        QList<ServerPlayer *> players = room->getAllPlayers();
-        foreach (ServerPlayer *player, players) {
-            if (player->getMark("yijue") == 0) continue;
-            player->removeMark("yijue");
-            room->removePlayerMark(player, "@skill_invalidity");
-
-            foreach (ServerPlayer *p, room->getAllPlayers())
-                room->filterCards(p, p->getCards("he"), false);
-            Json::Value args;
-            args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
-            room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
-
-            room->removePlayerCardLimitation(player, "use,response", ".|.|.|hand$1");
-        }
-        return false;
+    virtual int getDistanceLimit(const Player *from, const Card *card) const{
+        if (from->hasSkill("ikzhenhong") && card->getSuit() == Card::Heart)
+            return 1000;
+        else
+            return 0;
     }
 };
 
@@ -2502,9 +2488,11 @@ void StandardPackage::addGenerals() {
     wind001->addSkill(new IkShenai);
     wind001->addSkill(new IkXinqi);
 
-    General *guanyu = new General(this, "guanyu", "shu"); // SHU 002
-    guanyu->addSkill(new Chilian);
-    guanyu->addSkill(new Yijue);
+    General *wind002 = new General(this, "wind002", "kaze");
+    wind002->addSkill(new IkChilian);
+    wind002->addSkill(new IkZhenhong);
+    wind002->addSkill(new IkZhenhongTargetMod);
+    related_skills.insertMulti("ikzhenhong", "#ikzhenhong-target");
 
     General *zhangfei = new General(this, "zhangfei", "shu"); // SHU 003
     zhangfei->addSkill(new Paoxiao);
@@ -2605,7 +2593,6 @@ void StandardPackage::addGenerals() {
     // for skill cards
     addMetaObject<ZhihengCard>();
     addMetaObject<IkShenaiCard>();
-    addMetaObject<YijueCard>();
     addMetaObject<IkLianbaoCard>();
     addMetaObject<JieyinCard>();
     addMetaObject<KurouCard>();

@@ -780,7 +780,7 @@ ThLianyingCard::ThLianyingCard() {
 
 void ThLianyingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const {
     source->setFlags("thlianying");
-    room->handleAcquireDetachSkills(source, "chilian|thjibu");
+    room->handleAcquireDetachSkills(source, "ikchilian|thjibu");
 }
 
 class ThLianyingViewAsSkill: public ViewAsSkill {
@@ -816,7 +816,7 @@ public:
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
         if (change.to == Player::NotActive && player->hasFlag(objectName())) {
             player->setFlags("-" + objectName());
-            room->handleAcquireDetachSkills(player, "-chilian|-thjibu", true);
+            room->handleAcquireDetachSkills(player, "-ikchilian|-thjibu", true);
         }
         return QStringList();
     }

@@ -2292,7 +2292,7 @@ SPOldPackage::SPOldPackage()
     sp_pangde->addSkill("mengjin");
 
     General *sp_guanyu = new General(this, "sp_guanyu", "wei", 4); // SP 007
-    sp_guanyu->addSkill("chilian");
+    sp_guanyu->addSkill("ikchilian");
     sp_guanyu->addSkill(new Danji);
 
     General *shenlvbu1 = new General(this, "shenlvbu1", "god", 8, true, true); // SP 008 (2-1)
@@ -2492,7 +2492,7 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_liubei->addSkill("ikxinqi");
 
     General *tw_guanyu = new General(this, "tw_guanyu", "shu", 4, true, true); // TW SP 018
-    tw_guanyu->addSkill("chilian");
+    tw_guanyu->addSkill("ikchilian");
 
     General *tw_zhangfei = new General(this, "tw_zhangfei", "shu", 4, true, true);
     tw_zhangfei->addSkill("paoxiao");

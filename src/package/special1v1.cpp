@@ -1017,7 +1017,7 @@ Special1v1Package::Special1v1Package()
     kof_nos_liubei->addSkill("ikxinqi");
 
     General *kof_nos_guanyu = new General(this, "kof_nos_guanyu", "shu");
-    kof_nos_guanyu->addSkill("chilian");
+    kof_nos_guanyu->addSkill("ikchilian");
     kof_nos_guanyu->addSkill(new Huwei);
 
     General *kof_nos_huangyueying = new General(this, "kof_nos_huangyueying", "shu", 3, false);
