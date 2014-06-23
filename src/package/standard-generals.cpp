@@ -673,131 +673,129 @@ public:
     }
 };
 
-class RendeViewAsSkill: public ViewAsSkill {
+class IkShenaiViewAsSkill: public ViewAsSkill {
 public:
-    RendeViewAsSkill(): ViewAsSkill("rende") {
+    IkShenaiViewAsSkill(): ViewAsSkill("ikshenai") {
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        if (ServerInfo.GameMode == "04_1v3" && selected.length() + Self->getMark("rende") >= 2)
+        if (selected.length() + Self->getMark("ikshenai") >= 3)
            return false;
         else {
             if (to_select->isEquipped()) return false;
-            if (Sanguosha->currentRoomState()->getCurrentCardUsePattern() == "@@rende") {
-                QList<int> rende_list = StringList2IntList(Self->property("rende").toString().split("+"));
-                return rende_list.contains(to_select->getEffectiveId());
+            if (Sanguosha->currentRoomState()->getCurrentCardUsePattern() == "@@ikshenai") {
+                QList<int> ikshenai_list = StringList2IntList(Self->property("ikshenai").toString().split("+"));
+                return ikshenai_list.contains(to_select->getEffectiveId());
             } else
                 return true;
         }
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        if (ServerInfo.GameMode == "04_1v3" && player->getMark("rende") >= 2)
-           return false;
-        return !player->hasUsed("RendeCard") && !player->isKongcheng();
+        return !player->hasUsed("IkShenaiCard") && !player->isKongcheng();
     }
 
     virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
-        return pattern == "@@rende";
+        return pattern == "@@ikshenai";
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
         if (cards.isEmpty())
             return NULL;
 
-        RendeCard *rende_card = new RendeCard;
-        rende_card->addSubcards(cards);
-        return rende_card;
+        IkShenaiCard *ikshenai_card = new IkShenaiCard;
+        ikshenai_card->addSubcards(cards);
+        return ikshenai_card;
     }
 };
 
-class Rende: public TriggerSkill {
+class IkShenai: public TriggerSkill {
 public:
-    Rende(): TriggerSkill("rende") {
+    IkShenai(): TriggerSkill("ikshenai") {
         events << EventPhaseChanging;
-        view_as_skill = new RendeViewAsSkill;
+        view_as_skill = new IkShenaiViewAsSkill;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->getMark("rende") > 0;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-        if (change.to != Player::NotActive)
-            return false;
-        room->setPlayerMark(player, "rende", 0);
-        room->setPlayerProperty(player, "rende", QString());
-        return false;
+        if (!player || player->getMark("ikshenai") == 0 || change.from != Player::Play)
+            return QStringList();
+        room->setPlayerMark(player, "ikshenai", 0);
+        room->setPlayerProperty(player, "ikshenai", QString());
+        return QStringList();
     }
 };
 
-JijiangViewAsSkill::JijiangViewAsSkill(): ZeroCardViewAsSkill("jijiang$") {
+IkXinqiViewAsSkill::IkXinqiViewAsSkill(): ZeroCardViewAsSkill("ikxinqi$") {
 }
 
-bool JijiangViewAsSkill::isEnabledAtPlay(const Player *player) const{
-    return hasShuGenerals(player) && !player->hasFlag("Global_JijiangFailed") && Slash::IsAvailable(player);
+bool IkXinqiViewAsSkill::isEnabledAtPlay(const Player *player) const{
+    return hasKazeGenerals(player) && !player->hasFlag("Global_IkXinqiFailed") && Slash::IsAvailable(player);
 }
 
-bool JijiangViewAsSkill::isEnabledAtResponse(const Player *player, const QString &pattern) const{
-    return hasShuGenerals(player)
-           && (pattern == "slash" || pattern == "@jijiang")
+bool IkXinqiViewAsSkill::isEnabledAtResponse(const Player *player, const QString &pattern) const{
+    return hasKazeGenerals(player)
+           && (pattern == "slash" || pattern == "@ikxinqi")
            && Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE
-           && !player->hasFlag("Global_JijiangFailed");
+           && !player->hasFlag("Global_IkXinqiFailed");
 }
 
-const Card *JijiangViewAsSkill::viewAs() const{
-    return new JijiangCard;
+const Card *IkXinqiViewAsSkill::viewAs() const{
+    return new IkXinqiCard;
 }
 
-bool JijiangViewAsSkill::hasShuGenerals(const Player *player) {
+bool IkXinqiViewAsSkill::hasKazeGenerals(const Player *player) {
     foreach (const Player *p, player->getAliveSiblings())
-        if (p->getKingdom() == "shu")
+        if (p->getKingdom() == "kaze")
             return true;
     return false;
 }
 
-class Jijiang: public TriggerSkill {
+class IkXinqi: public TriggerSkill {
 public:
-    Jijiang(): TriggerSkill("jijiang$") {
+    IkXinqi(): TriggerSkill("ikxinqi$") {
         events << CardAsked;
-        view_as_skill = new JijiangViewAsSkill;
+        view_as_skill = new IkXinqiViewAsSkill;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->hasLordSkill("jijiang");
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        if (player && player->isAlive() && player->hasLordSkill("ikxinqi")) {
+            QString pattern = data.toStringList().first();
+            QString prompt = data.toStringList().at(1);
+            if (pattern != "slash" || prompt.startsWith("@ikxinqi-slash"))
+                return QStringList();
+            QList<ServerPlayer *> lieges = room->getLieges("kaze", player);
+            if (lieges.isEmpty())
+                return QStringList();
+            return QStringList(objectName());
+        }
+        return QStringList();
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *liubei, QVariant &data) const{
-        QString pattern = data.toStringList().first();
-        QString prompt = data.toStringList().at(1);
-        if (pattern != "slash" || prompt.startsWith("@jijiang-slash"))
-            return false;
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *liubei, QVariant &data, ServerPlayer *) const{
+        if (liubei->askForSkillInvoke(objectName(), data)) {
+            room->broadcastSkillInvoke(objectName(), getEffectIndex(liubei, NULL));
+            return true;
+        }
+        return false;
+    }
 
-        QList<ServerPlayer *> lieges = room->getLieges("shu", liubei);
-        if (lieges.isEmpty())
-            return false;
-
-        if (!room->askForSkillInvoke(liubei, objectName(), data))
-            return false;
-
-        room->broadcastSkillInvoke(objectName(), getEffectIndex(liubei, NULL));
-
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *liubei, QVariant &data, ServerPlayer *) const{
+        QList<ServerPlayer *> lieges = room->getLieges("kaze", liubei);
         foreach (ServerPlayer *liege, lieges) {
-            const Card *slash = room->askForCard(liege, "slash", "@jijiang-slash:" + liubei->objectName(),
+            const Card *slash = room->askForCard(liege, "slash", "@ikxinqi-slash:" + liubei->objectName(),
                                                  QVariant(), Card::MethodResponse, liubei, false, QString(), true);
             if (slash) {
                 room->provide(slash);
                 return true;
             }
         }
-
         return false;
     }
 
     virtual int getEffectIndex(const ServerPlayer *player, const Card *) const{
         int r = 1 + qrand() % 2;
-        if (!player->hasInnateSkill("jijiang") && player->hasSkill("ruoyu"))
+        if (!player->hasInnateSkill("ikxinqi") && player->hasSkill("ruoyu"))
             r += 2;
         return r;
     }
@@ -2527,9 +2525,9 @@ void StandardPackage::addGenerals() {
     lidian->addSkill(new Wangxi);
 
     // Shu
-    General *liubei = new General(this, "liubei$", "shu"); // SHU 001
-    liubei->addSkill(new Rende);
-    liubei->addSkill(new Jijiang);
+    General *wind001 = new General(this, "wind001$", "kaze");
+    wind001->addSkill(new IkShenai);
+    wind001->addSkill(new IkXinqi);
 
     General *guanyu = new General(this, "guanyu", "shu"); // SHU 002
     guanyu->addSkill(new Chilian);
@@ -2633,7 +2631,7 @@ void StandardPackage::addGenerals() {
 
     // for skill cards
     addMetaObject<ZhihengCard>();
-    addMetaObject<RendeCard>();
+    addMetaObject<IkShenaiCard>();
     addMetaObject<YijueCard>();
     addMetaObject<IkLianbaoCard>();
     addMetaObject<JieyinCard>();
@@ -2643,7 +2641,7 @@ void StandardPackage::addGenerals() {
     addMetaObject<ChuliCard>();
     addMetaObject<LiuliCard>();
     addMetaObject<LianyingCard>();
-    addMetaObject<JijiangCard>();
+    addMetaObject<IkXinqiCard>();
     addMetaObject<YijiCard>();
     addMetaObject<FenweiCard>();
     addMetaObject<JianyanCard>();

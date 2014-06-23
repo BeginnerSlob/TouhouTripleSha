@@ -2488,8 +2488,8 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_zhenji->addSkill("ikmengyang");
 
     General *tw_liubei = new General(this, "tw_liubei$", "shu", 4, true, true); // TW SP 017
-    tw_liubei->addSkill("rende");
-    tw_liubei->addSkill("jijiang");
+    tw_liubei->addSkill("ikshenai");
+    tw_liubei->addSkill("ikxinqi");
 
     General *tw_guanyu = new General(this, "tw_guanyu", "shu", 4, true, true); // TW SP 018
     tw_guanyu->addSkill("chilian");

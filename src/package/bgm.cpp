@@ -1749,15 +1749,15 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        JijiangViewAsSkill *jijiang = new JijiangViewAsSkill;
-        jijiang->deleteLater();
-        return player->getPile("edict").length() > 0 && jijiang->isEnabledAtPlay(player);
+        IkXinqiViewAsSkill *ikxinqi = new IkXinqiViewAsSkill;
+        ikxinqi->deleteLater();
+        return player->getPile("edict").length() > 0 && ikxinqi->isEnabledAtPlay(player);
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        JijiangViewAsSkill *jijiang = new JijiangViewAsSkill;
-        jijiang->deleteLater();
-        return player->getPile("edict").length() > 0 && jijiang->isEnabledAtResponse(player, pattern);
+        IkXinqiViewAsSkill *ikxinqi = new IkXinqiViewAsSkill;
+        ikxinqi->deleteLater();
+        return player->getPile("edict").length() > 0 && ikxinqi->isEnabledAtResponse(player, pattern);
     }
 };
 
@@ -1800,7 +1800,7 @@ public:
 class HantongAcquire: public TriggerSkill {
 public:
     HantongAcquire(): TriggerSkill("#hantong-acquire") {
-        events << CardAsked //For JiJiang and IkHuanwei
+        events << CardAsked //For IkXinqi and IkHuanwei
                << TargetConfirmed //For JiuYuan
                << EventPhaseStart; //For XueYi
     }
@@ -1849,12 +1849,12 @@ public:
         switch (triggerEvent) {
         case CardAsked: {
                 QString pattern = data.toStringList().first();
-                if (pattern == "slash" && !liuxie->hasFlag("Global_JijiangFailed")) {
-                    QVariant data_for_ai = "jijiang";
+                if (pattern == "slash" && !liuxie->hasFlag("Global_IkXinqiFailed")) {
+                    QVariant data_for_ai = "ikxinqi";
                     liuxie->tag["HantongOriginData"] = data; // For AI
                     if (room->askForSkillInvoke(liuxie, "hantong_acquire", data_for_ai)) {
                         RemoveEdict(liuxie);
-                        room->acquireSkill(liuxie, "jijiang");
+                        room->acquireSkill(liuxie, "ikxinqi");
                     }
                 } else if (pattern == "jink") {
                     QVariant data_for_ai = "ikhuanwei";
@@ -1916,7 +1916,7 @@ public:
         foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (!p->tag.value("Hantong_use", false).toBool())
                 continue;
-            room->handleAcquireDetachSkills(p, "-ikhuanwei|-jijiang|-jiuyuan|-xueyi", true);
+            room->handleAcquireDetachSkills(p, "-ikhuanwei|-ikxinqi|-jiuyuan|-xueyi", true);
             p->tag.remove("Hantong_use");
         }
         return false;
@@ -1930,9 +1930,9 @@ const Card *HantongCard::validate(CardUseStruct &cardUse) const{
 
     HantongAcquire::RemoveEdict(source);
     source->tag["Hantong_use"] = true;
-    room->acquireSkill(source, "jijiang");
-    if (!room->askForUseCard(source, "@jijiang", "@hantong-jijiang")) {
-        room->setPlayerFlag(source, "Global_JijiangFailed");
+    room->acquireSkill(source, "ikxinqi");
+    if (!room->askForUseCard(source, "@ikxinqi", "@hantong-ikxinqi")) {
+        room->setPlayerFlag(source, "Global_IkXinqiFailed");
         return NULL;
     } else
         return this;
