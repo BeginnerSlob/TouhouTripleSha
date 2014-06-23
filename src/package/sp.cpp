@@ -893,6 +893,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         ServerPlayer *current = room->getCurrent();
+        if (!TriggerSkill::triggerable(player)) return QStringList();
         if (!current || current == player || current->getPhase() == Player::NotActive || current->isKongcheng()) return QStringList();
         if (Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_RESPONSE_USE) return QStringList();
         QString pattern = data.toStringList().first();

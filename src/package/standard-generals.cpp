@@ -673,30 +673,20 @@ public:
     }
 };
 
-class IkShenaiViewAsSkill: public ViewAsSkill {
+class IkShenai: public ViewAsSkill {
 public:
-    IkShenaiViewAsSkill(): ViewAsSkill("ikshenai") {
+    IkShenai(): ViewAsSkill("ikshenai") {
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        if (selected.length() + Self->getMark("ikshenai") >= 3)
+        if (selected.length() >= 3)
            return false;
-        else {
-            if (to_select->isEquipped()) return false;
-            if (Sanguosha->currentRoomState()->getCurrentCardUsePattern() == "@@ikshenai") {
-                QList<int> ikshenai_list = StringList2IntList(Self->property("ikshenai").toString().split("+"));
-                return ikshenai_list.contains(to_select->getEffectiveId());
-            } else
-                return true;
-        }
+        else
+            return !to_select->isEquipped();
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
         return !player->hasUsed("IkShenaiCard") && !player->isKongcheng();
-    }
-
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
-        return pattern == "@@ikshenai";
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
@@ -706,23 +696,6 @@ public:
         IkShenaiCard *ikshenai_card = new IkShenaiCard;
         ikshenai_card->addSubcards(cards);
         return ikshenai_card;
-    }
-};
-
-class IkShenai: public TriggerSkill {
-public:
-    IkShenai(): TriggerSkill("ikshenai") {
-        events << EventPhaseChanging;
-        view_as_skill = new IkShenaiViewAsSkill;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-        if (!player || player->getMark("ikshenai") == 0 || change.from != Player::Play)
-            return QStringList();
-        room->setPlayerMark(player, "ikshenai", 0);
-        room->setPlayerProperty(player, "ikshenai", QString());
-        return QStringList();
     }
 };
 

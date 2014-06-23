@@ -24,46 +24,31 @@ IkShenaiCard::IkShenaiCard() {
     handling_method = Card::MethodNone;
 }
 
-bool IkShenaiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if (!targets.isEmpty() || to_select == Self) return false;
-    QStringList target_list = Self->property("ikshenai_targets").toStringList();
-    if (target_list.length() >= 2)
-        return target_list.contains(to_select->objectName());
-    else
-        return true;
-}
-
 void IkShenaiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *target = targets.first();
-    int old_value = source->getMark("ikshenai");
-    QList<int> ikshenai_list;
-    if (old_value > 0)
-        ikshenai_list = StringList2IntList(source->property("ikshenai").toString().split("+"));
-    else
-        ikshenai_list = source->handCards();
-    foreach (int id, this->subcards)
+    int num = 0;
+    QList<int> ikshenai_list = source->handCards();
+    foreach (int id, getSubcards())
         ikshenai_list.removeOne(id);
-    room->setPlayerProperty(source, "ikshenai", IntList2StringList(ikshenai_list).join("+"));
-
-    QStringList target_list = source->property("ikshenai_targets").toStringList();
-    if (!target_list.contains(target->objectName()))
-        target_list << target->objectName();
-    room->setPlayerProperty(source, "ikshenai_targets", QVariant::fromValue(target_list));
 
     CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "ikshenai", QString());
     room->obtainCard(target, this, reason, false);
 
-    int new_value = old_value + subcards.length();
-    room->setPlayerMark(source, "ikshenai", new_value);
+    num += subcardsLength();
 
-    if (old_value < 2 && new_value >= 2)
+    if (!ikshenai_list.isEmpty() && num < 3) {
+        int record = ikshenai_list.length();
+        QList<ServerPlayer *> targets = room->getOtherPlayers(source);
+        targets.removeOne(target);
+        if (!targets.isEmpty())
+            room->askForYiji(source, ikshenai_list, "ikshenai", false, false, true, 3 - num,
+                             targets, reason, "@ikshenai:" + target->objectName(), false);
+        record -= ikshenai_list.length();
+        num += record;
+    }
+
+    if (num >= 2)
         room->recover(source, RecoverStruct(source));
-
-    if (source->getMark("ikshenai") >= 3) return;
-    if (source->isKongcheng() || source->isDead() || ikshenai_list.isEmpty()) return;
-    room->addPlayerHistory(source, "IkShenaiCard", -1);
-    if (!room->askForUseCard(source, "@@ikshenai", "@ikshenai-give", -1, Card::MethodNone))
-        room->addPlayerHistory(source, "IkShenaiCard");
 }
 
 YijueCard::YijueCard() {
