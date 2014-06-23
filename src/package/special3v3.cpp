@@ -572,7 +572,7 @@ Special3v3Package::Special3v3Package()
     related_skills.insertMulti("zhongyi", "#zhongyi-action");
 
     General *vs_nos_zhaoyun = new General(this, "vs_nos_zhaoyun", "shu");
-    vs_nos_zhaoyun->addSkill("longdan");
+    vs_nos_zhaoyun->addSkill("ikhuahuan");
     vs_nos_zhaoyun->addSkill(new Jiuzhu);
 
     General *vs_nos_lvbu = new General(this, "vs_nos_lvbu", "qun");

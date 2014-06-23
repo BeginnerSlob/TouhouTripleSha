@@ -64,7 +64,7 @@ LingPackage::LingPackage()
     neo_zhangfei->addSkill(new Tannang);
 
     General *neo_zhaoyun = new General(this, "neo_zhaoyun", "shu");
-    neo_zhaoyun->addSkill("longdan");
+    neo_zhaoyun->addSkill("ikhuahuan");
     neo_zhaoyun->addSkill("ikzhuji");
 }
 

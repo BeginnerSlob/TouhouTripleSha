@@ -901,9 +901,9 @@ public:
     }
 };
 
-class Longdan: public OneCardViewAsSkill {
+class IkHuahuan: public OneCardViewAsSkill {
 public:
-    Longdan(): OneCardViewAsSkill("longdan") {
+    IkHuahuan(): OneCardViewAsSkill("ikhuahuan") {
         response_or_use = true;
     }
 
@@ -2474,7 +2474,7 @@ void StandardPackage::addGenerals() {
     wind004->addSkill(new IkJingyou);
 
     General *zhaoyun = new General(this, "zhaoyun", "shu"); // SHU 005
-    zhaoyun->addSkill(new Longdan);
+    zhaoyun->addSkill(new IkHuahuan);
     zhaoyun->addSkill(new Yajiao);
 
     General *machao = new General(this, "machao", "shu"); // SHU 006
