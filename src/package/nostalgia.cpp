@@ -331,7 +331,7 @@ public:
                 delete dummy;
 
                 if (diff) {
-                    room->handleAcquireDetachSkills(shuangying, "ikchilian|paoxiao");
+                    room->handleAcquireDetachSkills(shuangying, "ikchilian|iklipao");
                     room->broadcastSkillInvoke(objectName(), qrand() % 2 + 1);
                     shuangying->setFlags(objectName());
                 } else {
@@ -343,7 +343,7 @@ public:
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to == Player::NotActive && shuangying->hasFlag(objectName()))
-                room->handleAcquireDetachSkills(shuangying, "-ikchilian|-paoxiao", true);
+                room->handleAcquireDetachSkills(shuangying, "-ikchilian|-iklipao", true);
         }
 
         return false;
@@ -2486,7 +2486,7 @@ NostalStandardPackage::NostalStandardPackage()
     nos_guanyu->addSkill("ikchilian");
 
     General *nos_zhangfei = new General(this, "nos_zhangfei", "shu");
-    nos_zhangfei->addSkill("paoxiao");
+    nos_zhangfei->addSkill("iklipao");
 
     General *nos_zhaoyun = new General(this, "nos_zhaoyun", "shu");
     nos_zhaoyun->addSkill("longdan");

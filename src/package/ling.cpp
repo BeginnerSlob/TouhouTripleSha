@@ -60,7 +60,7 @@ LingPackage::LingPackage()
     neo_guanyu->addSkill(new Yishi);
 
     General *neo_zhangfei = new General(this, "neo_zhangfei", "shu");
-    neo_zhangfei->addSkill("paoxiao");
+    neo_zhangfei->addSkill("iklipao");
     neo_zhangfei->addSkill(new Tannang);
 
     General *neo_zhaoyun = new General(this, "neo_zhaoyun", "shu");
