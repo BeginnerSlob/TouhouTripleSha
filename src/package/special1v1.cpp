@@ -64,7 +64,7 @@ public:
         if (!target) return false;
 
         int card_id = room->askForCardChosen(zhangliao, target, "h", "koftuxi");
-        room->broadcastSkillInvoke("tuxi");
+        room->broadcastSkillInvoke("iklianbao");
         CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, zhangliao->objectName());
         room->obtainCard(zhangliao, Sanguosha->getCard(card_id), reason, false);
 

@@ -104,88 +104,6 @@ public:
     }
 };
 
-class TuxiViewAsSkill: public ZeroCardViewAsSkill {
-public:
-    TuxiViewAsSkill(): ZeroCardViewAsSkill("tuxi") {
-        response_pattern = "@@tuxi";
-    }
-
-    virtual const Card *viewAs() const{
-        return new TuxiCard;
-    }
-};
-
-class Tuxi: public DrawCardsSkill {
-public:
-    Tuxi(): DrawCardsSkill("tuxi") {
-        view_as_skill = new TuxiViewAsSkill;
-    }
-
-    virtual int getPriority(TriggerEvent) const{
-        return 1;
-    }
-
-    virtual int getDrawNum(ServerPlayer *zhangliao, int n) const{
-        Room *room = zhangliao->getRoom();
-        QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *p, room->getOtherPlayers(zhangliao))
-            if (p->getHandcardNum() >= zhangliao->getHandcardNum())
-                targets << p;
-        int num = qMin(targets.length(), n);
-        foreach (ServerPlayer *p, room->getOtherPlayers(zhangliao))
-            p->setFlags("-TuxiTarget");
-
-        if (num > 0) {
-            room->setPlayerMark(zhangliao, "tuxi", num);
-            int count = 0;
-            if (room->askForUseCard(zhangliao, "@@tuxi", "@tuxi-card:::" + QString::number(num))) {
-                room->broadcastSkillInvoke(objectName());
-                foreach (ServerPlayer *p, room->getOtherPlayers(zhangliao))
-                    if (p->hasFlag("TuxiTarget")) count++;
-            } else {
-                room->setPlayerMark(zhangliao, "tuxi", 0);
-            }
-            return n - count;
-        } else
-            return n;
-    }
-};
-
-class TuxiAct: public TriggerSkill {
-public:
-    TuxiAct(): TriggerSkill("#tuxi") {
-        events << AfterDrawNCards;
-    }
-
-    virtual bool triggerable(const ServerPlayer *player) const{
-        return player != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *zhangliao, QVariant &) const{
-        if (zhangliao->getMark("tuxi") == 0) return false;
-        room->setPlayerMark(zhangliao, "tuxi", 0);
-
-        QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *p, room->getOtherPlayers(zhangliao)) {
-            if (p->hasFlag("TuxiTarget")) {
-                p->setFlags("-TuxiTarget");
-                targets << p;
-            }
-        }
-        foreach (ServerPlayer *p, targets) {
-            if (!zhangliao->isAlive())
-                break;
-            if (p->isAlive() && !p->isKongcheng()) {
-                int card_id = room->askForCardChosen(zhangliao, p, "h", "tuxi");
-
-                CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, zhangliao->objectName());
-                room->obtainCard(zhangliao, Sanguosha->getCard(card_id), reason, false);
-            }
-        }
-        return false;
-    }
-};
-
 class IkTiandu: public TriggerSkill {
 public:
     IkTiandu(): TriggerSkill("iktiandu") {
@@ -470,6 +388,98 @@ public:
             if (player->isDead()) return false;
         }
 
+        return false;
+    }
+};
+
+class IkLianbaoViewAsSkill: public ZeroCardViewAsSkill {
+public:
+    IkLianbaoViewAsSkill(): ZeroCardViewAsSkill("iklianbao") {
+        response_pattern = "@@iklianbao";
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkLianbaoCard;
+    }
+};
+
+class IkLianbao: public DrawCardsSkill {
+public:
+    IkLianbao(): DrawCardsSkill("iklianbao") {
+        view_as_skill = new IkLianbaoViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *zhangliao, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(zhangliao)) return QStringList();
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getOtherPlayers(zhangliao))
+            if (p->getHandcardNum() >= zhangliao->getHandcardNum())
+                targets << p;
+        int num = qMin(targets.length(), data.toInt());
+        foreach (ServerPlayer *p, room->getOtherPlayers(zhangliao))
+            p->setFlags("-IkLianbaoTarget");
+        if (num > 0)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *zhangliao, QVariant &data, ServerPlayer *) const{
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getOtherPlayers(zhangliao))
+            if (p->getHandcardNum() >= zhangliao->getHandcardNum())
+                targets << p;
+        int num = qMin(targets.length(), data.toInt());
+        room->setPlayerMark(zhangliao, "iklianbao", num);
+        if (room->askForUseCard(zhangliao, "@@iklianbao", "@iklianbao-card:::" + QString::number(num))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        } else
+            room->setPlayerMark(zhangliao, "iklianbao", 0);
+        return false;
+    }
+
+    virtual int getDrawNum(ServerPlayer *zhangliao, int n) const{
+        Room *room = zhangliao->getRoom();
+        int count = 0;
+        foreach (ServerPlayer *p, room->getOtherPlayers(zhangliao))
+            if (p->hasFlag("IkLianbaoTarget")) count++;
+        
+        return n - count;
+    }
+};
+
+class IkLianbaoAct: public TriggerSkill {
+public:
+    IkLianbaoAct(): TriggerSkill("#iklianbao") {
+        events << AfterDrawNCards;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *zhangliao, QVariant &, ServerPlayer* &) const{
+        if (zhangliao->getMark("iklianbao") == 0) return QStringList();
+        return QStringList(objectName());
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *zhangliao, QVariant &, ServerPlayer *) const{
+        room->setPlayerMark(zhangliao, "iklianbao", 0);
+
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getOtherPlayers(zhangliao)) {
+            if (p->hasFlag("IkLianbaoTarget")) {
+                p->setFlags("-IkLianbaoTarget");
+                targets << p;
+            }
+        }
+        foreach (ServerPlayer *p, targets) {
+            if (!zhangliao->isAlive())
+                break;
+            if (p->isAlive() && !p->isKongcheng()) {
+                int card_id = room->askForCardChosen(zhangliao, p, "h", "iklianbao");
+
+                CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, zhangliao->objectName());
+                room->obtainCard(zhangliao, Sanguosha->getCard(card_id), reason, false);
+            }
+        }
         return false;
     }
 };
@@ -2475,10 +2485,10 @@ void StandardPackage::addGenerals() {
     related_skills.insertMulti("ikaoli", "#ikaoli");
     bloom003->addSkill(new IkQingjian);
 
-    General *zhangliao = new General(this, "zhangliao", "wei"); // WEI 004
-    zhangliao->addSkill(new Tuxi);
-    zhangliao->addSkill(new TuxiAct);
-    related_skills.insertMulti("tuxi", "#tuxi");
+    General *bloom004 = new General(this, "bloom004", "wei");
+    bloom004->addSkill(new IkLianbao);
+    bloom004->addSkill(new IkLianbaoAct);
+    related_skills.insertMulti("iklianbao", "#iklianbao");
 
     General *xuchu = new General(this, "xuchu", "wei"); // WEI 005
     xuchu->addSkill(new Luoyi);
@@ -2608,7 +2618,7 @@ void StandardPackage::addGenerals() {
     addMetaObject<ZhihengCard>();
     addMetaObject<RendeCard>();
     addMetaObject<YijueCard>();
-    addMetaObject<TuxiCard>();
+    addMetaObject<IkLianbaoCard>();
     addMetaObject<JieyinCard>();
     addMetaObject<KurouCard>();
     addMetaObject<LijianCard>();

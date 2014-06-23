@@ -100,18 +100,18 @@ void JieyinCard::onEffect(const CardEffectStruct &effect) const{
     room->recover(effect.to, recover, true);
 }
 
-TuxiCard::TuxiCard() {
+IkLianbaoCard::IkLianbaoCard() {
 }
 
-bool TuxiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if (targets.length() >= Self->getMark("tuxi") || to_select->getHandcardNum() < Self->getHandcardNum() || to_select == Self)
+bool IkLianbaoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (targets.length() >= Self->getMark("iklianbao") || to_select->getHandcardNum() < Self->getHandcardNum() || to_select == Self)
         return false;
 
     return !to_select->isKongcheng();
 }
 
-void TuxiCard::onEffect(const CardEffectStruct &effect) const{
-    effect.to->setFlags("TuxiTarget");
+void IkLianbaoCard::onEffect(const CardEffectStruct &effect) const{
+    effect.to->setFlags("IkLianbaoTarget");
 }
 
 FanjianCard::FanjianCard() {
