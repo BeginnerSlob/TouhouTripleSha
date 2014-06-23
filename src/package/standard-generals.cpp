@@ -586,76 +586,80 @@ public:
     }
 };
 
-class Luoshen: public TriggerSkill {
+class IkMengyang: public TriggerSkill {
 public:
-    Luoshen(): TriggerSkill("luoshen") {
-        events << EventPhaseStart << FinishJudge;
+    IkMengyang(): TriggerSkill("ikmengyang") {
+        events << EventPhaseStart;
         frequency = Frequent;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhenji, QVariant &data) const{
-        if (triggerEvent == EventPhaseStart && zhenji->getPhase() == Player::Start) {
-            bool canRetrial = zhenji->hasSkills("iktiansuo|nosguicai|guidao|huanshi");
-            while (zhenji->askForSkillInvoke("luoshen")) {
-                room->broadcastSkillInvoke(objectName());
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
+        if (player->getPhase() == Player::Start){
+            if (TriggerSkill::triggerable(player))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
 
-                JudgeStruct judge;
-                judge.pattern = ".|black";
-                judge.good = true;
-                judge.reason = objectName();
-                judge.play_animation = false;
-                judge.who = zhenji;
-                judge.time_consuming = true;
+    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())){
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
 
-                if (canRetrial)
-                    zhenji->setFlags("LuoshenRetrial");
-                try {
-                    room->judge(judge);
-                }
-                catch(TriggerEvent triggerEvent) {
-                    if ((triggerEvent == TurnBroken || triggerEvent == StageChange) && zhenji->hasFlag("LuoshenRetrial"))
-                        zhenji->setFlags("-LuoshenRetrial");
-                    throw triggerEvent;
-                }
+    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        JudgeStruct judge;
+        forever {
+            judge.pattern = ".|black";
+            judge.good = true;
+            judge.reason = objectName();
+            judge.play_animation = false;
+            judge.who = player;
+            judge.time_consuming = true;
 
-                if (judge.isBad())
-                    break;
-            }
-        } else if (triggerEvent == FinishJudge) {
-            JudgeStar judge = data.value<JudgeStar>();
-            if (judge->reason == objectName()) {
-                bool canRetrial = zhenji->hasFlag("LuoshenRetrial");
-                if (judge->card->isBlack()) {
-                    if (room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge) {
-                        if (canRetrial) {
-                            CardMoveReason reason(CardMoveReason::S_REASON_JUDGEDONE, zhenji->objectName(), QString(), judge->reason);
-                            room->moveCardTo(judge->card, zhenji, NULL, Player::PlaceTable, reason, true);
-                            QVariantList luoshen_list = zhenji->tag[objectName()].toList();
-                            luoshen_list << judge->card->getEffectiveId();
-                            zhenji->tag[objectName()] = luoshen_list;
-                        } else {
-                            zhenji->obtainCard(judge->card);
-                        }
-                    }
-                } else {
-                    if (canRetrial) {
-                        DummyCard *dummy = new DummyCard(VariantList2IntList(zhenji->tag[objectName()].toList()));
-                        if (dummy->subcardsLength() > 0)
-                            zhenji->obtainCard(dummy);
-                        zhenji->tag.remove(objectName());
-                        delete dummy;
-                    }
-                }
-            }
+            room->judge(judge);
+            if ((judge.isGood() && !player->askForSkillInvoke(objectName())) || judge.isBad())
+                break;
         }
 
         return false;
     }
 };
 
-class Qingguo: public OneCardViewAsSkill {
+class IkMengyangMove: public TriggerSkill {
 public:
-    Qingguo(): OneCardViewAsSkill("qingguo") {
+    IkMengyangMove(): TriggerSkill("#ikmengyang-move") {
+        events << FinishJudge;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player != NULL) {
+            JudgeStar judge = data.value<JudgeStar>();
+            if (judge->reason == "ikmengyang") {
+                if (judge->isGood()) {
+                    if (room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge) {
+                        return QStringList(objectName());
+                    }
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        JudgeStar judge = data.value<JudgeStar>();
+        room->moveCardTo(judge->card, judge->who, Player::PlaceHand, true);
+
+        return false;
+    }
+};
+
+class IkZhongyan: public OneCardViewAsSkill {
+public:
+    IkZhongyan(): OneCardViewAsSkill("ikzhongyan") {
         filter_pattern = ".|black|.|hand";
         response_pattern = "jink";
         response_or_use = true;
@@ -2512,9 +2516,11 @@ void StandardPackage::addGenerals() {
     guojia->addSkill(new YijiObtain);
     related_skills.insertMulti("yiji", "#yiji");
 
-    General *zhenji = new General(this, "zhenji", "wei", 3, false); // WEI 007
-    zhenji->addSkill(new Qingguo);
-    zhenji->addSkill(new Luoshen);
+    General *bloom007 = new General(this, "bloom007", "hana", 3, false);
+    bloom007->addSkill(new IkMengyang);
+    bloom007->addSkill(new IkMengyangMove);
+    bloom007->addSkill(new IkZhongyan);
+    related_skills.insertMulti("ikmengyang", "#ikmengyang-move");
 
     General *lidian = new General(this, "lidian", "wei", 3); // WEI 017
     lidian->addSkill(new Xunxun);
