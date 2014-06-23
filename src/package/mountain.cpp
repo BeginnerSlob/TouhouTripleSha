@@ -618,7 +618,7 @@ public:
             else
                 room->drawCards(jiangwei, 2, objectName());
             if (jiangwei->getMark("zhiji") == 1)
-                room->acquireSkill(jiangwei, "yuxi");
+                room->acquireSkill(jiangwei, "ikyuxi");
         }
 
         return false;
