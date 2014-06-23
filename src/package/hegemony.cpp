@@ -756,8 +756,8 @@ HegemonyPackage::HegemonyPackage()
     heg_caopi->addSkill("songwei");
 
     General *heg_zhenji = new General(this, "heg_zhenji", "wei", 3, false, true); // WEI 007 G
-    heg_zhenji->addSkill("qingguo");
-    heg_zhenji->addSkill("luoshen");
+    heg_zhenji->addSkill("ikzhongyan");
+    heg_zhenji->addSkill("ikmengyang");
 
     General *heg_zhugeliang = new General(this, "heg_zhugeliang", "shu", 3, true, true); // SHU 004 G
     heg_zhugeliang->addSkill("yuxi");

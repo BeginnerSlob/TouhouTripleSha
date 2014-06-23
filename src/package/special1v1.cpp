@@ -1006,7 +1006,7 @@ Special1v1Package::Special1v1Package()
 
     General *kof_zhenji = new General(this, "kof_zhenji", "wei", 3, false);
     kof_zhenji->addSkill(new KOFQingguo);
-    kof_zhenji->addSkill("luoshen");
+    kof_zhenji->addSkill("ikmengyang");
 
     General *kof_xiahouyuan = new General(this, "kof_xiahouyuan", "wei");
     kof_xiahouyuan->addSkill("shensu");
