@@ -1064,8 +1064,8 @@ public:
         if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to == Player::NotActive)
-                if (player->getMark("dingpin") > 0)
-                    room->setPlayerMark(player, "dingpin", 0);
+                if (player->getMark("thyupan") > 0)
+                    room->setPlayerMark(player, "thyupan", 0);
         } else {
             if (!player->isAlive() || player->getPhase() == Player::NotActive) return QStringList();
             if (triggerEvent == PreCardUsed || triggerEvent == CardResponded) {

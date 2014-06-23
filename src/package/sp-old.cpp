@@ -2502,7 +2502,7 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_zhugeliang->addSkill("ikjingyou");
 
     General *tw_zhaoyun = new General(this, "tw_zhaoyun", "shu", 4, true, true); // TW SP 006
-    tw_zhaoyun->addSkill("longdan");
+    tw_zhaoyun->addSkill("ikhuahuan");
 
     General *tw_machao = new General(this, "tw_machao", "shu", 4, true, true); // TW SP 010
     tw_machao->addSkill("mashu");

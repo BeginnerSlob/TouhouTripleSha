@@ -5,41 +5,45 @@
 #include "engine.h"
 #include "settings.h"
 
-class Chongzhen: public TriggerSkill {
+class IkQizhou: public TriggerSkill {
 public:
-    Chongzhen(): TriggerSkill("chongzhen") {
+    IkQizhou(): TriggerSkill("ikqizhou") {
         events << CardResponded << TargetSpecified;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
         if (triggerEvent == CardResponded) {
             CardResponseStruct resp = data.value<CardResponseStruct>();
-            if (resp.m_card->getSkillName() == "longdan"
-                && resp.m_who != NULL && !resp.m_who->isKongcheng()) {
-                QVariant data = QVariant::fromValue((PlayerStar)resp.m_who);
-                if (player->askForSkillInvoke(objectName(), data)) {
-                    room->broadcastSkillInvoke("chongzhen", 1);
-                    int card_id = room->askForCardChosen(player, resp.m_who, "h", objectName());
-                    CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, player->objectName());
-                    room->obtainCard(player, Sanguosha->getCard(card_id), reason, false);
-                }
-            }
+            if (resp.m_card->isKindOf("Jink") && resp.m_card->isVirtualCard() && resp.m_card->subcardsLength() > 0)
+                return QStringList(objectName());
         } else {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->getSkillName() == "longdan") {
-                foreach (ServerPlayer *p, use.to) {
-                    if (p->isKongcheng()) continue;
-                    QVariant data = QVariant::fromValue((PlayerStar)p);
-                    p->setFlags("ChongzhenTarget");
-                    bool invoke = player->askForSkillInvoke(objectName(), data);
-                    p->setFlags("-ChongzhenTarget");
-                    if (invoke) {
-                        room->broadcastSkillInvoke("chongzhen", 2);
-                        int card_id = room->askForCardChosen(player, p, "h", objectName());
-                        CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, player->objectName());
-                        room->obtainCard(player, Sanguosha->getCard(card_id), reason, false);
-                    }
-                }
+            if (use.card->isKindOf("Slash") && use.card->isVirtualCard() && use.card->subcardsLength() > 0)
+                foreach (ServerPlayer *p, use.to)
+                    if (!p->isKongcheng())
+                        return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (triggerEvent == CardResponded)
+            player->drawCards(1);
+        else {
+            CardUseStruct use = data.value<CardUseStruct>();
+            foreach (ServerPlayer *p, use.to) {
+                if (p->isKongcheng()) continue;
+                int card_id = room->askForCardChosen(player, p, "h", objectName());
+                player->obtainCard(Sanguosha->getCard(card_id), false);
             }
         }
         return false;
@@ -1362,9 +1366,9 @@ public:
 };
 
 BGMPackage::BGMPackage(): Package("BGM") {
-    General *bgm_zhaoyun = new General(this, "bgm_zhaoyun", "qun", 3); // *SP 001
-    bgm_zhaoyun->addSkill("longdan");
-    bgm_zhaoyun->addSkill(new Chongzhen);
+    General *wind005 = new General(this, "wind005", "kaze", 3);
+    wind005->addSkill("ikhuahuan");
+    wind005->addSkill(new IkQizhou);
 
     General *bgm_diaochan = new General(this, "bgm_diaochan", "qun", 3, false); // *SP 002
     bgm_diaochan->addSkill(new Lihun);

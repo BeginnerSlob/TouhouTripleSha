@@ -2489,7 +2489,7 @@ NostalStandardPackage::NostalStandardPackage()
     nos_zhangfei->addSkill("iklipao");
 
     General *nos_zhaoyun = new General(this, "nos_zhaoyun", "shu");
-    nos_zhaoyun->addSkill("longdan");
+    nos_zhaoyun->addSkill("ikhuahuan");
 
     General *nos_machao = new General(this, "nos_machao", "shu");
     nos_machao->addSkill("mashu");
