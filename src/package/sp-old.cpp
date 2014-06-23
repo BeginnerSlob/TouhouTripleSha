@@ -2481,7 +2481,7 @@ TaiwanSPPackage::TaiwanSPPackage()
 
     General *tw_guojia = new General(this, "tw_guojia", "wei", 3, true, true); // TW SP 015
     tw_guojia->addSkill("iktiandu");
-    tw_guojia->addSkill("nosyiji");
+    tw_guojia->addSkill("ikyumeng");
 
     General *tw_zhenji = new General(this, "tw_zhenji", "wei", 3, false, true); // TW SP 007
     tw_zhenji->addSkill("qingguo");

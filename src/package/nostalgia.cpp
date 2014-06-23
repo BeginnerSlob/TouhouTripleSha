@@ -1542,18 +1542,18 @@ public:
     }
 };
 
-NosYiji::NosYiji(): MasochismSkill("nosyiji") {
+IkYumeng::IkYumeng(): MasochismSkill("ikyumeng") {
     frequency = Frequent;
     n = 2;
 }
 
-void NosYiji::onDamaged(ServerPlayer *guojia, const DamageStruct &damage) const{
+void IkYumeng::onDamaged(ServerPlayer *guojia, const DamageStruct &damage) const{
     Room *room = guojia->getRoom();
     int x = damage.damage;
     for (int i = 0; i < x; i++) {
         if (!guojia->isAlive() || !room->askForSkillInvoke(guojia, objectName()))
             return;
-        room->broadcastSkillInvoke("yiji");
+        room->broadcastSkillInvoke("ikyumeng");
 
         QList<ServerPlayer *> _guojia;
         _guojia.append(guojia);
@@ -2474,9 +2474,9 @@ NostalStandardPackage::NostalStandardPackage()
     nos_xuchu->addSkill(new NosLuoyiBuff);
     related_skills.insertMulti("nosluoyi", "#nosluoyi");
 
-    General *nos_guojia = new General(this, "nos_guojia", "wei", 3);
-    nos_guojia->addSkill("iktiandu");
-    nos_guojia->addSkill(new NosYiji);
+    General *bloom006 = new General(this, "bloom006", "hana", 3);
+    bloom006->addSkill("iktiandu");
+    bloom006->addSkill(new IkYumeng);
 
     General *nos_liubei = new General(this, "nos_liubei$", "shu");
     nos_liubei->addSkill(new NosRende);
