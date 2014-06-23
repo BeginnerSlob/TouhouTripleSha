@@ -903,7 +903,7 @@ bool Collateral::targetFilter(const QList<const Player *> &targets,
         const Player *slashFrom = targets[0];
         /* @todo: develop a new mechanism of filtering targets
                     to remove the coupling here and to fix the similar bugs caused by TongJi */
-        if (to_select == Self && to_select->hasSkill("kongcheng") && Self->isLastHandCard(this, true))
+        if (to_select == Self && to_select->hasSkill("ikjingyou") && Self->isLastHandCard(this, true))
             return false;
         return slashFrom->canSlash(to_select);
     } else {
@@ -911,7 +911,7 @@ bool Collateral::targetFilter(const QList<const Player *> &targets,
             return false;
         foreach (const Player *p, to_select->getAliveSiblings()) {
             if (to_select->canSlash(p)
-                && (!(p == Self && p->hasSkill("kongcheng") && Self->isLastHandCard(this, true))))
+                && (!(p == Self && p->hasSkill("ikjingyou") && Self->isLastHandCard(this, true))))
                 return true;
         }
     }

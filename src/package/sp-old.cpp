@@ -2498,8 +2498,8 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_zhangfei->addSkill("iklipao");
 
     General *tw_zhugeliang = new General(this, "tw_zhugeliang", "shu", 3, true, true); // TW SP 012
-    tw_zhugeliang->addSkill("yuxi");
-    tw_zhugeliang->addSkill("kongcheng");
+    tw_zhugeliang->addSkill("ikyuxi");
+    tw_zhugeliang->addSkill("ikjingyou");
 
     General *tw_zhaoyun = new General(this, "tw_zhaoyun", "shu", 4, true, true); // TW SP 006
     tw_zhaoyun->addSkill("longdan");

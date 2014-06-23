@@ -405,7 +405,7 @@ public:
                         QList<ServerPlayer *> victims;
                         foreach (ServerPlayer *p, room->getOtherPlayers(extra)) {
                             if (extra->canSlash(p)
-                                && (!(p == jianyong && p->hasSkill("kongcheng") && p->isLastHandCard(use.card, true)))) {
+                                && (!(p == jianyong && p->hasSkill("ikjingyou") && p->isLastHandCard(use.card, true)))) {
                                 victims << p;
                             }
                         }

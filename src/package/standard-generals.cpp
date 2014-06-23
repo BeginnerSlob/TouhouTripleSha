@@ -1167,30 +1167,13 @@ public:
     }
 };
 
-class Kongcheng: public ProhibitSkill {
+class IkJingyou: public ProhibitSkill {
 public:
-    Kongcheng(): ProhibitSkill("kongcheng") {
+    IkJingyou(): ProhibitSkill("ikjingyou") {
     }
 
     virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const{
         return to->hasSkill(objectName()) && (card->isKindOf("Slash") || card->isKindOf("Duel")) && to->isKongcheng();
-    }
-};
-
-class KongchengEffect: public TriggerSkill {
-public:
-    KongchengEffect() :TriggerSkill("#kongcheng-effect") {
-        events << CardsMoveOneTime;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (player->isKongcheng()) {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.from == player && move.from_places.contains(Player::PlaceHand))
-                room->broadcastSkillInvoke("kongcheng");
-        }
-
-        return false;
     }
 };
 
@@ -2482,15 +2465,13 @@ void StandardPackage::addGenerals() {
     wind002->addSkill(new IkZhenhongTargetMod);
     related_skills.insertMulti("ikzhenhong", "#ikzhenhong-target");
 
-    General *wind003 = new General(this, "wind003", "shu");
+    General *wind003 = new General(this, "wind003", "kaze");
     wind003->addSkill(new IkLipao);
     wind003->addSkill(new IkJiukuang);
 
-    General *zhugeliang = new General(this, "zhugeliang", "shu", 3); // SHU 004
-    zhugeliang->addSkill(new IkYuxi);
-    zhugeliang->addSkill(new Kongcheng);
-    zhugeliang->addSkill(new KongchengEffect);
-    related_skills.insertMulti("kongcheng", "#kongcheng-effect");
+    General *wind004 = new General(this, "wind004", "kaze", 3);
+    wind004->addSkill(new IkYuxi);
+    wind004->addSkill(new IkJingyou);
 
     General *zhaoyun = new General(this, "zhaoyun", "shu"); // SHU 005
     zhaoyun->addSkill(new Longdan);
@@ -2788,7 +2769,7 @@ TestPackage::TestPackage()
 
     General *wuxing_zhuge = new General(this, "wuxing_zhugeliang", "shu", 3, true, true);
     wuxing_zhuge->addSkill(new SuperGuanxing);
-    wuxing_zhuge->addSkill("kongcheng");
+    wuxing_zhuge->addSkill("ikjingyou");
 
     General *gaodayihao = new General(this, "gaodayihao", "god", 1, true, true);
     gaodayihao->addSkill(new GdJuejing);
