@@ -27,8 +27,8 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        if (player->askForSkillInvoke(objectName())) {
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (triggerEvent == CardResponded && player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -42,6 +42,7 @@ public:
             CardUseStruct use = data.value<CardUseStruct>();
             foreach (ServerPlayer *p, use.to) {
                 if (p->isKongcheng()) continue;
+                if (!player->askForSkillInvoke(objectName(), QVariant::fromValue(p))) continue;
                 int card_id = room->askForCardChosen(player, p, "h", objectName());
                 player->obtainCard(Sanguosha->getCard(card_id), false);
             }
