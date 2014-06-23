@@ -1452,7 +1452,7 @@ bool NosTuxiCard::targetFilter(const QList<const Player *> &targets, const Playe
 void NosTuxiCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
     if (effect.from->isAlive() && !effect.to->isKongcheng()) {
-        int card_id = room->askForCardChosen(effect.from, effect.to, "h", "tuxi");
+        int card_id = room->askForCardChosen(effect.from, effect.to, "h", "iklianbao");
         CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, effect.from->objectName());
         room->obtainCard(effect.from, Sanguosha->getCard(card_id), reason, false);
     }
