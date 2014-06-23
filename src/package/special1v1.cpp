@@ -1014,7 +1014,7 @@ Special1v1Package::Special1v1Package()
 
     General *kof_nos_liubei = new General(this, "kof_nos_liubei$", "shu");
     kof_nos_liubei->addSkill(new Renwang);
-    kof_nos_liubei->addSkill("jijiang");
+    kof_nos_liubei->addSkill("ikxinqi");
 
     General *kof_nos_guanyu = new General(this, "kof_nos_guanyu", "shu");
     kof_nos_guanyu->addSkill("chilian");

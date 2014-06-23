@@ -12,11 +12,13 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class RendeCard: public SkillCard {
+class IkShenaiCard: public SkillCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE RendeCard();
+    Q_INVOKABLE IkShenaiCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
@@ -150,28 +152,28 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class JijiangCard: public SkillCard {
+class IkXinqiCard: public SkillCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE JijiangCard();
+    Q_INVOKABLE IkXinqiCard();
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual const Card *validate(CardUseStruct &cardUse) const;
 };
 
-class JijiangViewAsSkill: public ZeroCardViewAsSkill {
+class IkXinqiViewAsSkill: public ZeroCardViewAsSkill {
     Q_OBJECT
 
 public:
-    JijiangViewAsSkill();
+    IkXinqiViewAsSkill();
 
     virtual bool isEnabledAtPlay(const Player *player) const;
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const;
     virtual const Card *viewAs() const;
 
 private:
-    static bool hasShuGenerals(const Player *player);
+    static bool hasKazeGenerals(const Player *player);
 };
 
 #endif

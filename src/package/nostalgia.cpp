@@ -1609,7 +1609,7 @@ NosRendeCard::NosRendeCard() {
 void NosRendeCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *target = targets.first();
 
-    room->broadcastSkillInvoke("rende");
+    room->broadcastSkillInvoke("ikshenai");
     CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "nosrende", QString());
     room->obtainCard(target, this, reason, false);
 
@@ -2480,7 +2480,7 @@ NostalStandardPackage::NostalStandardPackage()
 
     General *nos_liubei = new General(this, "nos_liubei$", "shu");
     nos_liubei->addSkill(new NosRende);
-    nos_liubei->addSkill("jijiang");
+    nos_liubei->addSkill("ikxinqi");
 
     General *nos_guanyu = new General(this, "nos_guanyu", "shu");
     nos_guanyu->addSkill("chilian");

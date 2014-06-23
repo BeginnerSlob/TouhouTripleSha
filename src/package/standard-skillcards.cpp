@@ -19,38 +19,51 @@ void ZhihengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &)
         room->drawCards(source, subcards.length(), "zhiheng");
 }
 
-RendeCard::RendeCard() {
+IkShenaiCard::IkShenaiCard() {
     will_throw = false;
     handling_method = Card::MethodNone;
 }
 
-void RendeCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    ServerPlayer *target = targets.first();
-
-    int old_value = source->getMark("rende");
-    QList<int> rende_list;
-    if (old_value > 0)
-        rende_list = StringList2IntList(source->property("rende").toString().split("+"));
+bool IkShenaiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (!targets.isEmpty() || to_select == Self) return false;
+    QStringList target_list = Self->property("ikshenai_targets").toStringList();
+    if (target_list.length() >= 2)
+        return target_list.contains(to_select->objectName());
     else
-        rende_list = source->handCards();
-    foreach (int id, this->subcards)
-        rende_list.removeOne(id);
-    room->setPlayerProperty(source, "rende", IntList2StringList(rende_list).join("+"));
+        return true;
+}
 
-    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "rende", QString());
+void IkShenaiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    ServerPlayer *target = targets.first();
+    int old_value = source->getMark("ikshenai");
+    QList<int> ikshenai_list;
+    if (old_value > 0)
+        ikshenai_list = StringList2IntList(source->property("ikshenai").toString().split("+"));
+    else
+        ikshenai_list = source->handCards();
+    foreach (int id, this->subcards)
+        ikshenai_list.removeOne(id);
+    room->setPlayerProperty(source, "ikshenai", IntList2StringList(ikshenai_list).join("+"));
+
+    QStringList target_list = source->property("ikshenai_targets").toStringList();
+    if (!target_list.contains(target->objectName()))
+        target_list << target->objectName();
+    room->setPlayerProperty(source, "ikshenai_targets", QVariant::fromValue(target_list));
+
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "ikshenai", QString());
     room->obtainCard(target, this, reason, false);
 
     int new_value = old_value + subcards.length();
-    room->setPlayerMark(source, "rende", new_value);
+    room->setPlayerMark(source, "ikshenai", new_value);
 
     if (old_value < 2 && new_value >= 2)
         room->recover(source, RecoverStruct(source));
 
-    if (room->getMode() == "04_1v3" && source->getMark("rende") >= 2) return;
-    if (source->isKongcheng() || source->isDead() || rende_list.isEmpty()) return;
-    room->addPlayerHistory(source, "RendeCard", -1);
-    if (!room->askForUseCard(source, "@@rende", "@rende-give", -1, Card::MethodNone))
-        room->addPlayerHistory(source, "RendeCard");
+    if (source->getMark("ikshenai") >= 3) return;
+    if (source->isKongcheng() || source->isDead() || ikshenai_list.isEmpty()) return;
+    room->addPlayerHistory(source, "IkShenaiCard", -1);
+    if (!room->askForUseCard(source, "@@ikshenai", "@ikshenai-give", -1, Card::MethodNone))
+        room->addPlayerHistory(source, "IkShenaiCard");
 }
 
 YijueCard::YijueCard() {
@@ -389,22 +402,22 @@ void GuoseCard::onEffect(const CardEffectStruct &effect) const{
     }
 }
 
-JijiangCard::JijiangCard() {
+IkXinqiCard::IkXinqiCard() {
 }
 
-bool JijiangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkXinqiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     Slash *slash = new Slash(NoSuit, 0);
     slash->deleteLater();
     return slash->targetFilter(targets, to_select, Self);
 }
 
-const Card *JijiangCard::validate(CardUseStruct &cardUse) const{
+const Card *IkXinqiCard::validate(CardUseStruct &cardUse) const{
     cardUse.m_isOwnerUse = false;
     ServerPlayer *liubei = cardUse.from;
     QList<ServerPlayer *> targets = cardUse.to;
     Room *room = liubei->getRoom();
     liubei->broadcastSkillInvoke(this);
-    room->notifySkillInvoked(liubei, "jijiang");
+    room->notifySkillInvoked(liubei, "ikxinqi");
 
     LogMessage log;
     log.from = liubei;
@@ -415,25 +428,25 @@ const Card *JijiangCard::validate(CardUseStruct &cardUse) const{
 
     const Card *slash = NULL;
 
-    QList<ServerPlayer *> lieges = room->getLieges("shu", liubei);
+    QList<ServerPlayer *> lieges = room->getLieges("kaze", liubei);
     foreach (ServerPlayer *target, targets)
-        target->setFlags("JijiangTarget");
+        target->setFlags("IkXinqiTarget");
     foreach (ServerPlayer *liege, lieges) {
         try {
-            slash = room->askForCard(liege, "slash", "@jijiang-slash:" + liubei->objectName(),
+            slash = room->askForCard(liege, "slash", "@ikxinqi-slash:" + liubei->objectName(),
                                      QVariant(), Card::MethodResponse, liubei, false, QString(), true);
         }
         catch (TriggerEvent triggerEvent) {
             if (triggerEvent == TurnBroken || triggerEvent == StageChange) {
                 foreach (ServerPlayer *target, targets)
-                    target->setFlags("-JijiangTarget");
+                    target->setFlags("-IkXinqiTarget");
             }
             throw triggerEvent;
         }
 
         if (slash) {
             foreach (ServerPlayer *target, targets)
-                target->setFlags("-JijiangTarget");
+                target->setFlags("-IkXinqiTarget");
 
             foreach (ServerPlayer *target, targets) {
                 if (!liubei->canSlash(target, slash))
@@ -448,8 +461,8 @@ const Card *JijiangCard::validate(CardUseStruct &cardUse) const{
         }
     }
     foreach (ServerPlayer *target, targets)
-        target->setFlags("-JijiangTarget");
-    room->setPlayerFlag(liubei, "Global_JijiangFailed");
+        target->setFlags("-IkXinqiTarget");
+    room->setPlayerFlag(liubei, "Global_IkXinqiFailed");
     return NULL;
 }
 
