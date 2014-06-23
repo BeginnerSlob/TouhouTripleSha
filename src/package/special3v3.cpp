@@ -223,7 +223,7 @@ public:
         ServerPlayer *from = room->askForPlayerChosen(xiahou, targets, objectName(), "vsganglie-invoke", true, true);
         if (!from) return;
 
-        room->broadcastSkillInvoke("ganglie");
+        room->broadcastSkillInvoke("ikaoli");
 
         JudgeStruct judge;
         judge.pattern = ".|heart";
