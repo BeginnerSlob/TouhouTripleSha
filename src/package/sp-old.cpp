@@ -761,7 +761,7 @@ public:
         acquired_skills.clear();
         detached_skills.clear();
         BaobianChange(room, player, 1, "shensu");
-        BaobianChange(room, player, 2, "paoxiao");
+        BaobianChange(room, player, 2, "iklipao");
         BaobianChange(room, player, 3, "tiaoxin");
         if (!acquired_skills.isEmpty() || !detached_skills.isEmpty())
             room->handleAcquireDetachSkills(player, acquired_skills + detached_skills);
@@ -2495,7 +2495,7 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_guanyu->addSkill("ikchilian");
 
     General *tw_zhangfei = new General(this, "tw_zhangfei", "shu", 4, true, true);
-    tw_zhangfei->addSkill("paoxiao");
+    tw_zhangfei->addSkill("iklipao");
 
     General *tw_zhugeliang = new General(this, "tw_zhugeliang", "shu", 3, true, true); // TW SP 012
     tw_zhugeliang->addSkill("yuxi");

@@ -8,6 +8,7 @@
 #include "standard-skillcards.h"
 #include "ai.h"
 #include "settings.h"
+#include "maneuvering.h"
 
 class IkJiaoman: public MasochismSkill {
 public:
@@ -852,19 +853,9 @@ public:
     }
 };
 
-class NonCompulsoryInvalidity: public InvaliditySkill {
+class IkLipao: public TargetModSkill {
 public:
-    NonCompulsoryInvalidity(): InvaliditySkill("#non-compulsory-invalidity") {
-    }
-
-    virtual bool isSkillValid(const Player *player, const Skill *skill) const{
-        return player->getMark("@skill_invalidity") == 0 || skill->getFrequency() == Skill::Compulsory;
-    }
-};
-
-class Paoxiao: public TargetModSkill {
-public:
-    Paoxiao(): TargetModSkill("paoxiao") {
+    IkLipao(): TargetModSkill("iklipao") {
     }
 
     virtual int getResidueNum(const Player *from, const Card *) const{
@@ -875,41 +866,38 @@ public:
     }
 };
 
-class Tishen: public TriggerSkill {
+class IkJiukuang: public OneCardViewAsSkill {
 public:
-    Tishen(): TriggerSkill("tishen") {
-        events << EventPhaseChanging << EventPhaseStart;
-        frequency = Limited;
-        limit_mark = "@substitute";
+    IkJiukuang(): OneCardViewAsSkill("ikjiukuang") {
+        response_or_use = true;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return Analeptic::IsAvailable(player) && player->getPhase() == Player::Play;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive) {
-                room->setPlayerProperty(player, "tishen_hp", QString::number(player->getHp()));
-                room->setPlayerMark(player, "@substitute", player->getMark("@substitute")); // For UI coupling
-            }
-        } else if (triggerEvent == EventPhaseStart && TriggerSkill::triggerable(player)
-                   && player->getMark("@substitute") > 0 && player->getPhase() == Player::Start) {
-            QString hp_str = player->property("tishen_hp").toString();
-            if (hp_str.isEmpty()) return false;
-            int hp = hp_str.toInt();
-            int x = qMin(hp - player->getHp(), player->getMaxHp() - player->getHp());
-            if (x > 0 && room->askForSkillInvoke(player, objectName(), QVariant::fromValue(x))) {
-                room->removePlayerMark(player, "@substitute");
-                room->broadcastSkillInvoke(objectName());
-                room->doLightbox("$TishenAnimate");
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+        return pattern.contains("analeptic") && player->getPhase() == Player::Play;
+    }
 
-                room->recover(player, RecoverStruct(player, NULL, x));
-                player->drawCards(x, objectName());
-            }
+    virtual bool viewFilter(const Card *card) const{
+        if (!(card->isNDTrick() && card->isBlack()) && !card->isKindOf("Weapon"))
+            return false;
+
+        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) {
+            Analeptic *anal = new Analeptic(Card::SuitToBeDecided, -1);
+            anal->addSubcard(card->getEffectiveId());
+            anal->deleteLater();
+            return anal->isAvailable(Self);
         }
-        return false;
+        return true;
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        Analeptic *anal = new Analeptic(originalCard->getSuit(), originalCard->getNumber());
+        anal->addSubcard(originalCard->getId());
+        anal->setSkillName(objectName());
+        return anal;
     }
 };
 
@@ -2494,9 +2482,9 @@ void StandardPackage::addGenerals() {
     wind002->addSkill(new IkZhenhongTargetMod);
     related_skills.insertMulti("ikzhenhong", "#ikzhenhong-target");
 
-    General *zhangfei = new General(this, "zhangfei", "shu"); // SHU 003
-    zhangfei->addSkill(new Paoxiao);
-    zhangfei->addSkill(new Tishen);
+    General *wind003 = new General(this, "wind003", "shu");
+    wind003->addSkill(new IkLipao);
+    wind003->addSkill(new IkJiukuang);
 
     General *zhugeliang = new General(this, "zhugeliang", "shu", 3); // SHU 004
     zhugeliang->addSkill(new IkYuxi);
@@ -2607,7 +2595,7 @@ void StandardPackage::addGenerals() {
     addMetaObject<JianyanCard>();
     addMetaObject<GuoseCard>();
 
-    skills << new Xiaoxi << new NonCompulsoryInvalidity << new Jianyan;
+    skills << new Xiaoxi << new Jianyan;
 }
 
 class SuperZhiheng: public Zhiheng {

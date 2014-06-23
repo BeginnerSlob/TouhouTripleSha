@@ -538,14 +538,14 @@ public:
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.card && damage.card->isKindOf("Slash") && damage.card->getSkillName() == objectName()
                 && player->getPhase() == Player::Play) {
-                room->handleAcquireDetachSkills(player, "ikchilian|paoxiao");
+                room->handleAcquireDetachSkills(player, "ikchilian|iklipao");
                 room->broadcastSkillInvoke(objectName(), 2);
                 player->setFlags(objectName());
             }
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to == Player::NotActive && player->hasFlag(objectName()))
-                room->handleAcquireDetachSkills(player, "-ikchilian|-paoxiao", true);
+                room->handleAcquireDetachSkills(player, "-ikchilian|-iklipao", true);
         }
 
         return false;
