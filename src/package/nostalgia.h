@@ -186,11 +186,11 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
-class NosYiji: public MasochismSkill {
+class IkYumeng: public MasochismSkill {
     Q_OBJECT
 
 public:
-    NosYiji();
+    IkYumeng();
     virtual void onDamaged(ServerPlayer *target, const DamageStruct &damage) const;
 
 protected:

@@ -18,9 +18,9 @@ void ZhanShuangxiongCard::use(Room *room, ServerPlayer *source, QList<ServerPlay
     source->pindian(targets.first(), "zhanshuangxiong");
 }
 
-class GreatYiji: public NosYiji {
+class GreatYiji: public IkYumeng {
 public:
-    GreatYiji(): NosYiji() {
+    GreatYiji(): IkYumeng() {
         setObjectName("greatyiji");
         n = 3;
     }
@@ -297,7 +297,7 @@ void GuanduScenario::onTagSet(Room *room, const QString &) const{
     if (zhanshuangxiong && burnwuchao) {
         ServerPlayer *guojia = room->findPlayer("nos_guojia");
         if (guojia && !guojia->hasSkill("greatyiji")) {
-            room->detachSkillFromPlayer(guojia, "nosyiji");
+            room->detachSkillFromPlayer(guojia, "ikyumeng");
             room->acquireSkill(guojia, "greatyiji");
             room->acquireSkill(guojia, "damagebeforeplay", false);
         }
