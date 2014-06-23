@@ -273,91 +273,6 @@ public:
     }
 };
 
-class Ganglie: public TriggerSkill {
-public:
-    Ganglie(): TriggerSkill("ganglie") {
-        events << Damaged << FinishJudge;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *xiahou, QVariant &data) const{
-        if (triggerEvent == Damaged && TriggerSkill::triggerable(xiahou)) {
-            DamageStruct damage = data.value<DamageStruct>();
-            ServerPlayer *from = damage.from;
-
-            for (int i = 0; i < damage.damage; i++) {
-                if (room->askForSkillInvoke(xiahou, "ganglie", data)) {
-                    room->broadcastSkillInvoke(objectName());
-
-                    JudgeStruct judge;
-                    judge.pattern = ".";
-                    judge.play_animation = false;
-                    judge.reason = objectName();
-                    judge.who = xiahou;
-
-                    room->judge(judge);
-                    if (!from || from->isDead()) continue;
-                    Card::Suit suit = (Card::Suit)(judge.pattern.toInt());
-                    switch (suit) {
-                    case Card::Heart:
-                    case Card::Diamond: {
-                            room->damage(DamageStruct(objectName(), xiahou, from));
-                            break;
-                        }
-                    case Card::Club:
-                    case Card::Spade: {
-                            if (xiahou->canDiscard(from, "he")) {
-                                int id = room->askForCardChosen(xiahou, from, "he", objectName(), false, Card::MethodDiscard);
-                                room->throwCard(id, from, xiahou);
-                            }
-                            break;
-                        }
-                    default:
-                            break;
-                    }
-                } else {
-                    break;
-                }
-            }
-        } else if (triggerEvent == FinishJudge) {
-            JudgeStar judge = data.value<JudgeStar>();
-            if (judge->reason != objectName()) return false;
-            judge->pattern = QString::number(int(judge->card->getSuit()));
-        }
-        return false;
-    }
-};
-
-class Qingjian: public TriggerSkill {
-public:
-    Qingjian(): TriggerSkill("qingjian") {
-        events << CardsMoveOneTime;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (!room->getTag("FirstRound").toBool() && player->getPhase() != Player::Draw
-            && move.to == player && move.to_place == Player::PlaceHand) {
-            QList<int> ids;
-            foreach (int id, move.card_ids) {
-                if (room->getCardOwner(id) == player && room->getCardPlace(id) == Player::PlaceHand)
-                    ids << id;
-            }
-            if (ids.isEmpty())
-                return false;
-            player->tag["QingjianCurrentMoveSkill"] = QVariant(move.reason.m_skillName);
-            while (room->askForYiji(player, ids, objectName(), false, false, true, -1,
-                                    QList<ServerPlayer *>(), CardMoveReason(), "@qingjian-distribute", true)) {
-                if (player->isDead()) return false;
-            }
-        }
-        return false;
-    }
-};
-
 class IkTiansuo: public TriggerSkill {
 public:
     IkTiansuo(): TriggerSkill("iktiansuo") {
@@ -420,7 +335,8 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        if (player->askForSkillInvoke(objectName())) {
+        DamageStruct damage = data.value<DamageStruct>();
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(damage.from))) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -430,6 +346,131 @@ public:
     virtual void onDamaged(ServerPlayer *simayi, const DamageStruct &damage) const{
         int card_id = simayi->getRoom()->askForCardChosen(simayi, damage.from, "hej", "ikhuanji");
         simayi->obtainCard(Sanguosha->getCard(card_id), false);
+    }
+};
+
+class IkAoli: public TriggerSkill {
+public:
+    IkAoli(): TriggerSkill("ikaoli") {
+        events << Damaged;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *xiahou, QVariant &data, ServerPlayer* &) const{
+        QStringList skill;
+        if (!TriggerSkill::triggerable(xiahou)) return skill;
+        DamageStruct damage = data.value<DamageStruct>();
+        for (int i = 0; i < damage.damage; i++)
+            skill << objectName();
+        return skill;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *xiahou, QVariant &data, ServerPlayer *) const{
+        if (xiahou->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *xiahou, QVariant &data, ServerPlayer *) const{
+        JudgeStruct judge;
+        judge.pattern = ".";
+        judge.play_animation = false;
+        judge.reason = objectName();
+        judge.who = xiahou;
+
+        room->judge(judge);
+        DamageStruct damage = data.value<DamageStruct>();
+        
+        if (!damage.from || damage.from->isDead()) return false;
+        Card::Suit suit = (Card::Suit)(judge.pattern.toInt());
+        switch (suit) {
+        case Card::Heart:
+        case Card::Diamond: {
+                room->damage(DamageStruct(objectName(), xiahou, damage.from));
+                break;
+            }
+        case Card::Club:
+        case Card::Spade: {
+                if (xiahou->canDiscard(damage.from, "he")) {
+                    int id = room->askForCardChosen(xiahou, damage.from, "he", objectName(), false, Card::MethodDiscard);
+                    room->throwCard(id, damage.from, xiahou);
+                }
+                break;
+            }
+        default:
+                break;
+        }
+
+        return false;
+    }
+};
+
+class IkAoliRecord: public TriggerSkill {
+public:
+    IkAoliRecord(): TriggerSkill("#ikaoli") {
+        events << FinishJudge;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *xiahou, QVariant &data, ServerPlayer* &) const{
+        JudgeStar judge = data.value<JudgeStar>();
+        if (judge->reason != "ikaoli") return QStringList();
+        judge->pattern = QString::number(int(judge->card->getSuit()));
+        return QStringList();
+    }
+};
+
+class IkQingjian: public TriggerSkill {
+public:
+    IkQingjian(): TriggerSkill("ikqingjian") {
+        events << CardsMoveOneTime;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (!room->getTag("FirstRound").toBool() && player->getPhase() != Player::Draw
+            && move.to == player && move.to_place == Player::PlaceHand) {
+            QList<int> ids;
+            foreach (int id, move.card_ids)
+                if (room->getCardOwner(id) == player && room->getCardPlace(id) == Player::PlaceHand)
+                    return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (!room->getTag("FirstRound").toBool() && player->getPhase() != Player::Draw
+            && move.to == player && move.to_place == Player::PlaceHand) {
+            QList<int> ids;
+            foreach (int id, move.card_ids) {
+                if (room->getCardOwner(id) == player && room->getCardPlace(id) == Player::PlaceHand)
+                    ids << id;
+            }
+            if (room->askForYiji(player, ids, objectName(), false, true, true, -1,
+                                 QList<ServerPlayer *>(), CardMoveReason(), "@ikqingjian-distribute", true))
+                return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        QList<int> ids;
+        foreach (int id, move.card_ids) {
+            if (room->getCardOwner(id) == player && room->getCardPlace(id) == Player::PlaceHand)
+                ids << id;
+        }
+        if (ids.isEmpty())
+            return false;
+        while (room->askForYiji(player, ids, objectName(), false, false, true, -1,
+                                QList<ServerPlayer *>(), CardMoveReason(), "@ikqingjian-distribute", false)) {
+            room->notifySkillInvoked(player, objectName());
+            if (player->isDead()) return false;
+        }
+
+        return false;
     }
 };
 
@@ -2428,9 +2469,11 @@ void StandardPackage::addGenerals() {
     bloom002->addSkill(new IkTiansuo);
     bloom002->addSkill(new IkHuanji);
 
-    General *xiahoudun = new General(this, "xiahoudun", "wei"); // WEI 003
-    xiahoudun->addSkill(new Ganglie);
-    xiahoudun->addSkill(new Qingjian);
+    General *bloom003 = new General(this, "bloom003", "hana");
+    bloom003->addSkill(new IkAoli);
+    bloom003->addSkill(new IkAoliRecord);
+    related_skills.insertMulti("ikaoli", "#ikaoli");
+    bloom003->addSkill(new IkQingjian);
 
     General *zhangliao = new General(this, "zhangliao", "wei"); // WEI 004
     zhangliao->addSkill(new Tuxi);

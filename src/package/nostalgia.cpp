@@ -1421,7 +1421,7 @@ public:
         QVariant data = QVariant::fromValue(damage);
 
         if (room->askForSkillInvoke(xiahou, "nosganglie", data)) {
-            room->broadcastSkillInvoke("ganglie");
+            room->broadcastSkillInvoke("ikaoli");
 
             JudgeStruct judge;
             judge.pattern = ".|heart";
