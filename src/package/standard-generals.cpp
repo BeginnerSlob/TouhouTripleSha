@@ -484,96 +484,105 @@ public:
     }
 };
 
-class LuoyiBuff: public TriggerSkill {
+class IkLuoyi: public TriggerSkill {
 public:
-    LuoyiBuff(): TriggerSkill("#luoyi") {
+    IkLuoyi(): TriggerSkill("ikluoyi") {
+        events << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (TriggerSkill::triggerable(player) && change.to == Player::Draw && !player->isSkipped(Player::Draw))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        player->skip(Player::Draw, true);
+        room->setPlayerMark(player, "ikluoyi", 1);
+
+        QList<int> ids = room->getNCards(3, false);
+        CardsMoveStruct move(ids, player, Player::PlaceTable,
+                             CardMoveReason(CardMoveReason::S_REASON_TURNOVER, player->objectName(), "ikluoyi", QString()));
+        room->moveCardsAtomic(move, true);
+
+        room->getThread()->delay();
+        room->getThread()->delay();
+
+        QList<int> card_to_throw;
+        QList<int> card_to_gotback;
+        for (int i = 0; i < 3; i++) {
+            const Card *card = Sanguosha->getCard(ids[i]);
+            if (card->getTypeId() == Card::TypeBasic || card->isKindOf("Weapon") || card->isKindOf("Duel"))
+                card_to_gotback << ids[i];
+            else
+                card_to_throw << ids[i];
+        }
+        if (!card_to_throw.isEmpty()) {
+            DummyCard *dummy = new DummyCard(card_to_throw);
+            CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, player->objectName(), "ikluoyi", QString());
+            room->throwCard(dummy, reason, NULL);
+            delete dummy;
+        }
+        if (!card_to_gotback.isEmpty()) {
+            DummyCard *dummy = new DummyCard(card_to_gotback);
+            room->obtainCard(player, dummy);
+            delete dummy;
+        }
+        return false;
+    }
+};
+
+class IkLuoyiBuff: public TriggerSkill {
+public:
+    IkLuoyiBuff(): TriggerSkill("#ikluoyi") {
         events << DamageCaused;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->getMark("@luoyi") > 0 && target->isAlive();
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *xuchu, QVariant &data, ServerPlayer* &) const{
+        if (!xuchu || xuchu->getMark("ikluoyi") == 0 || xuchu->isDead()) return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.chain || damage.transfer) return QStringList();
+        const Card *reason = damage.card;
+        if (reason && (reason->isKindOf("Slash") || reason->isKindOf("Duel")))
+            return QStringList(objectName());
+        return QStringList();
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *xuchu, QVariant &data) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *xuchu, QVariant &data, ServerPlayer *) const{
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.chain || damage.transfer) return false;
-        const Card *reason = damage.card;
-        if (reason && (reason->isKindOf("Slash") || reason->isKindOf("Duel"))) {
-            LogMessage log;
-            log.type = "#LuoyiBuff";
-            log.from = xuchu;
-            log.to << damage.to;
-            log.arg = QString::number(damage.damage);
-            log.arg2 = QString::number(++damage.damage);
-            room->sendLog(log);
+        LogMessage log;
+        log.type = "#IkLuoyiBuff";
+        log.from = xuchu;
+        log.to << damage.to;
+        log.arg = QString::number(damage.damage);
+        log.arg2 = QString::number(++damage.damage);
+        room->sendLog(log);
 
-            data = QVariant::fromValue(damage);
-        }
+        data = QVariant::fromValue(damage);
 
         return false;
     }
 };
 
-class Luoyi: public TriggerSkill {
+class IkLuoyiClear: public TriggerSkill {
 public:
-    Luoyi(): TriggerSkill("luoyi") {
-        events << EventPhaseStart << EventPhaseChanging;
+    IkLuoyiClear(): TriggerSkill("#ikluoyi-clear") {
+        events << EventPhaseStart;
     }
 
-    virtual int getPriority(TriggerEvent triggerEvent) const{
-        if (triggerEvent == EventPhaseStart)
-            return 4;
-        else
-            return TriggerSkill::getPriority(triggerEvent);
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == EventPhaseStart) {
-            if (player->getPhase() == Player::RoundStart && player->getMark("@luoyi") > 0)
-                room->setPlayerMark(player, "@luoyi", 0);
-        } else {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (TriggerSkill::triggerable(player) && change.to == Player::Draw && !player->isSkipped(Player::Draw)
-                && room->askForSkillInvoke(player, objectName())) {
-                room->broadcastSkillInvoke(objectName());
-                player->skip(Player::Draw, true);
-                room->setPlayerMark(player, "@luoyi", 1);
-
-                QList<int> ids = room->getNCards(3, false);
-                CardsMoveStruct move(ids, player, Player::PlaceTable,
-                                     CardMoveReason(CardMoveReason::S_REASON_TURNOVER, player->objectName(), "luoyi", QString()));
-                room->moveCardsAtomic(move, true);
-
-                room->getThread()->delay();
-                room->getThread()->delay();
-
-                QList<int> card_to_throw;
-                QList<int> card_to_gotback;
-                for (int i = 0; i < 3; i++) {
-                    const Card *card = Sanguosha->getCard(ids[i]);
-                    if (card->getTypeId() == Card::TypeBasic || card->isKindOf("Weapon") || card->isKindOf("Duel"))
-                        card_to_gotback << ids[i];
-                    else
-                        card_to_throw << ids[i];
-                }
-                if (!card_to_throw.isEmpty()) {
-                    DummyCard *dummy = new DummyCard(card_to_throw);
-                    CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, player->objectName(), "luoyi", QString());
-                    room->throwCard(dummy, reason, NULL);
-                    delete dummy;
-                }
-                if (!card_to_gotback.isEmpty()) {
-                    DummyCard *dummy = new DummyCard(card_to_gotback);
-                    room->obtainCard(player, dummy);
-                    delete dummy;
-                }
-            }
-        }
-        return false;
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player != NULL && player->isAlive() && player->getPhase() == Player::RoundStart && player->getMark("ikluoyi") > 0)
+            room->setPlayerMark(player, "ikluoyi", 0);
+        return QStringList();
     }
 };
 
@@ -2485,15 +2494,17 @@ void StandardPackage::addGenerals() {
     related_skills.insertMulti("ikaoli", "#ikaoli");
     bloom003->addSkill(new IkQingjian);
 
-    General *bloom004 = new General(this, "bloom004", "wei");
+    General *bloom004 = new General(this, "bloom004", "hana");
     bloom004->addSkill(new IkLianbao);
     bloom004->addSkill(new IkLianbaoAct);
     related_skills.insertMulti("iklianbao", "#iklianbao");
 
-    General *xuchu = new General(this, "xuchu", "wei"); // WEI 005
-    xuchu->addSkill(new Luoyi);
-    xuchu->addSkill(new LuoyiBuff);
-    related_skills.insertMulti("luoyi", "#luoyi");
+    General *bloom005 = new General(this, "bloom005", "hana");
+    bloom005->addSkill(new IkLuoyi);
+    bloom005->addSkill(new IkLuoyiBuff);
+    bloom005->addSkill(new IkLuoyiClear);
+    related_skills.insertMulti("ikluoyi", "#ikluoyi");
+    related_skills.insertMulti("ikluoyi", "#ikluoyi-clear");
 
     General *guojia = new General(this, "guojia", "wei", 3); // WEI 006
     guojia->addSkill(new IkTiandu);
