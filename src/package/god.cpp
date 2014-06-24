@@ -985,8 +985,8 @@ void JilveCard::onUse(Room *room, const CardUseStruct &card_use) const{
     ServerPlayer *shensimayi = card_use.from;
 
     QStringList choices;
-    if (!shensimayi->hasFlag("JilveZhiheng") && shensimayi->canDiscard(shensimayi, "he"))
-        choices << "zhiheng";
+    if (!shensimayi->hasFlag("JilveIkZhiheng") && shensimayi->canDiscard(shensimayi, "he"))
+        choices << "ikzhiheng";
     if (!shensimayi->hasFlag("JilveWansha"))
         choices << "wansha";
     choices << "cancel";
@@ -1007,8 +1007,8 @@ void JilveCard::onUse(Room *room, const CardUseStruct &card_use) const{
         room->setPlayerFlag(shensimayi, "JilveWansha");
         room->acquireSkill(shensimayi, "wansha");
     } else {
-        room->setPlayerFlag(shensimayi, "JilveZhiheng");
-        room->askForUseCard(shensimayi, "@zhiheng", "@jilve-zhiheng", -1, Card::MethodDiscard);
+        room->setPlayerFlag(shensimayi, "JilveIkZhiheng");
+        room->askForUseCard(shensimayi, "@ikzhiheng", "@jilve-ikzhiheng", -1, Card::MethodDiscard);
     }
 }
 

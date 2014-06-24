@@ -1346,13 +1346,13 @@ public:
     }
 };
 
-class Zhiheng: public ViewAsSkill {
+class IkZhiheng: public ViewAsSkill {
 public:
-    Zhiheng(): ViewAsSkill("zhiheng") {
+    IkZhiheng(): ViewAsSkill("ikzhiheng") {
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        if (ServerInfo.GameMode == "02_1v1" && ServerInfo.GameRuleMode != "Classical" && selected.length() >= 2) return false;
+        if (selected.length() >= Self->getMaxHp()) return false;
         return !Self->isJilei(to_select);
     }
 
@@ -1360,56 +1360,59 @@ public:
         if (cards.isEmpty())
             return NULL;
 
-        ZhihengCard *zhiheng_card = new ZhihengCard;
-        zhiheng_card->addSubcards(cards);
-        zhiheng_card->setSkillName(objectName());
-        return zhiheng_card;
+        IkZhihengCard *ikzhiheng_card = new IkZhihengCard;
+        ikzhiheng_card->addSubcards(cards);
+        ikzhiheng_card->setSkillName(objectName());
+        return ikzhiheng_card;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->canDiscard(player, "he") && !player->hasUsed("ZhihengCard");
+        return player->canDiscard(player, "he") && !player->hasUsed("IkZhihengCard");
     }
 
     virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
-        return pattern == "@zhiheng";
+        return pattern == "@ikzhiheng";
     }
 };
 
-class Jiuyuan: public TriggerSkill {
+class IkJiyuan: public TriggerSkill {
 public:
-    Jiuyuan(): TriggerSkill("jiuyuan$") {
-        events << TargetConfirmed << PreHpRecover;
+    IkJiyuan(): TriggerSkill("ikjiyuan$") {
+        events << TargetSpecified << PreHpRecover;
         frequency = Compulsory;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->hasLordSkill("jiuyuan");
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *sunquan, QVariant &data) const{
-        if (triggerEvent == TargetConfirmed) {
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == TargetSpecified) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("Peach") && use.from && use.from->getKingdom() == "wu"
-                && sunquan != use.from && sunquan->hasFlag("Global_Dying")) {
-                room->setCardFlag(use.card, "jiuyuan");
+            if (use.card->isKindOf("Peach") && player->getKingdom() == "yuki") {
+                foreach (ServerPlayer *p, use.to)
+                    if (p->hasLordSkill("ikjiyuan"))
+                        room->setCardFlag(use.card, "ikjiyuan");
             }
         } else if (triggerEvent == PreHpRecover) {
             RecoverStruct rec = data.value<RecoverStruct>();
-            if (rec.card && rec.card->hasFlag("jiuyuan")) {
-                room->notifySkillInvoked(sunquan, "jiuyuan");
-                room->broadcastSkillInvoke("jiuyuan", rec.who->isMale() ? 1 : 2);
-
-                LogMessage log;
-                log.type = "#JiuyuanExtraRecover";
-                log.from = sunquan;
-                log.to << rec.who;
-                log.arg = objectName();
-                room->sendLog(log);
-
-                rec.recover++;
-                data = QVariant::fromValue(rec);
-            }
+            if (rec.card && rec.card->hasFlag("ikjiyuan"))
+                return QStringList(objectName());
         }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *sunquan, QVariant &data, ServerPlayer *) const{
+        RecoverStruct rec = data.value<RecoverStruct>();
+
+        room->notifySkillInvoked(sunquan, "ikjiyuan");
+        room->broadcastSkillInvoke("ikjiyuan");
+
+        LogMessage log;
+        log.type = "#IkJiyuanExtraRecover";
+        log.from = sunquan;
+        log.to << rec.who;
+        log.arg = objectName();
+        room->sendLog(log);
+
+        rec.recover++;
+        data = QVariant::fromValue(rec);
 
         return false;
     }
@@ -2497,8 +2500,8 @@ void StandardPackage::addGenerals() {
 
     // Wu
     General *sunquan = new General(this, "sunquan$", "wu"); // WU 001
-    sunquan->addSkill(new Zhiheng);
-    sunquan->addSkill(new Jiuyuan);
+    sunquan->addSkill(new IkZhiheng);
+    sunquan->addSkill(new IkJiyuan);
 
     General *ganning = new General(this, "ganning", "wu"); // WU 002
     ganning->addSkill(new Qixi);
@@ -2561,7 +2564,7 @@ void StandardPackage::addGenerals() {
     st_gongsunzan->addSkill("ikzhuji");
 
     // for skill cards
-    addMetaObject<ZhihengCard>();
+    addMetaObject<IkZhihengCard>();
     addMetaObject<IkShenaiCard>();
     addMetaObject<IkLianbaoCard>();
     addMetaObject<JieyinCard>();
@@ -2580,14 +2583,14 @@ void StandardPackage::addGenerals() {
     skills << new Xiaoxi << new NonCompulsoryInvalidity << new Jianyan;
 }
 
-class SuperZhiheng: public Zhiheng {
+class SuperZhiheng: public IkZhiheng {
 public:
-    SuperZhiheng():Zhiheng() {
+    SuperZhiheng():IkZhiheng() {
         setObjectName("super_zhiheng");
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->canDiscard(player, "he") && player->usedTimes("ZhihengCard") < (player->getLostHp() + 1);
+        return player->canDiscard(player, "he") && player->usedTimes("IkZhihengCard") < (player->getLostHp() + 1);
     }
 };
 
@@ -2766,7 +2769,7 @@ TestPackage::TestPackage()
     // for test only
     General *zhiba_sunquan = new General(this, "zhiba_sunquan$", "wu", 4, true, true);
     zhiba_sunquan->addSkill(new SuperZhiheng);
-    zhiba_sunquan->addSkill("jiuyuan");
+    zhiba_sunquan->addSkill("ikjiyuan");
 
     General *wuxing_zhuge = new General(this, "wuxing_zhugeliang", "shu", 3, true, true);
     wuxing_zhuge->addSkill(new SuperGuanxing);

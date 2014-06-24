@@ -5,18 +5,13 @@
 #include "engine.h"
 #include "client.h"
 
-ZhihengCard::ZhihengCard() {
+IkZhihengCard::IkZhihengCard() {
     target_fixed = true;
-    mute = true;
 }
 
-void ZhihengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    if (source->hasInnateSkill("zhiheng") || !source->hasSkill("jilve"))
-        room->broadcastSkillInvoke("zhiheng");
-    else
-        room->broadcastSkillInvoke("jilve", 4);
+void IkZhihengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
     if (source->isAlive())
-        room->drawCards(source, subcards.length(), "zhiheng");
+        room->drawCards(source, subcards.length(), "ikzhiheng");
 }
 
 IkShenaiCard::IkShenaiCard() {
