@@ -1992,6 +1992,11 @@ ThSangzhiCard::ThSangzhiCard() {
 
 void ThSangzhiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const {
     room->setPlayerMark(targets.first(), "@sangzhi", 1);
+    foreach (ServerPlayer *pl, room->getAllPlayers())
+        room->filterCards(pl, pl->getCards("he"), true);
+    Json::Value args;
+    args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
     source->tag["ThSangzhiUsed"] = true;
 }
 
@@ -2031,8 +2036,15 @@ public:
         }
         player->tag.remove("ThSangzhiUsed");
         foreach (ServerPlayer *p, room->getAllPlayers())
-            if (p->getMark("@sangzhi") > 0)
+            if (p->getMark("@sangzhi") > 0) {
                 room->setPlayerMark(p, "@sangzhi", 0);
+
+                foreach (ServerPlayer *pl, room->getAllPlayers())
+                    room->filterCards(pl, pl->getCards("he"), false);
+                Json::Value args;
+                args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+            }
 
         return QStringList();
     }

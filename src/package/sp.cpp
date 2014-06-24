@@ -564,6 +564,11 @@ public:
         damage.from->tag["ThMengsheng"] = QVariant::fromValue(sources);
         player->tag["ThMengshengRecord"] = true;
         room->setPlayerMark(damage.from, "@mengsheng", 1);
+        foreach (ServerPlayer *pl, room->getAllPlayers())
+            room->filterCards(pl, pl->getCards("he"), true);
+        Json::Value args;
+        args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
         if (player == room->getCurrent() && player->getPhase() != Player::NotActive)
             room->setPlayerFlag(player, "thmengsheng");
 
@@ -592,8 +597,14 @@ public:
             if (p->tag.value("ThMengsheng").toStringList().contains(player->objectName())) {
                 QStringList sources = p->tag.value("ThMengsheng").toStringList();
                 sources.removeAll(player->objectName());
-                if (sources.isEmpty())
+                if (sources.isEmpty()) {
                     room->setPlayerMark(p, "@mengsheng", 0);
+                    foreach (ServerPlayer *pl, room->getAllPlayers())
+                        room->filterCards(pl, pl->getCards("he"), false);
+                    Json::Value args;
+                    args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+                }
                 p->tag["ThMengsheng"] = QVariant::fromValue(sources);
             }
         return QStringList();
