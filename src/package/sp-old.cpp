@@ -1138,23 +1138,23 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         if (triggerEvent == EventLoseSkill && data.toString() == objectName()) {
-            room->handleAcquireDetachSkills(player, "-tianxiang|-liuli", true);
+            room->handleAcquireDetachSkills(player, "-tianxiang|-ikxuanhuo", true);
         } else if (triggerEvent == EventAcquireSkill && data.toString() == objectName()) {
             if (!player->getPile("xingwu").isEmpty()) {
                 room->notifySkillInvoked(player, objectName());
-                room->handleAcquireDetachSkills(player, "tianxiang|liuli");
+                room->handleAcquireDetachSkills(player, "tianxiang|ikxuanhuo");
             }
         } else if (triggerEvent == CardsMoveOneTime && player->isAlive() && player->hasSkill(objectName(), true)) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.to == player && move.to_place == Player::PlaceSpecial && move.to_pile_name == "xingwu") {
                 if (player->getPile("xingwu").length() == 1) {
                     room->notifySkillInvoked(player, objectName());
-                    room->handleAcquireDetachSkills(player, "tianxiang|liuli");
+                    room->handleAcquireDetachSkills(player, "tianxiang|ikxuanhuo");
                 }
             } else if (move.from == player && move.from_places.contains(Player::PlaceSpecial)
                        && move.from_pile_names.contains("xingwu")) {
                 if (player->getPile("xingwu").isEmpty())
-                    room->handleAcquireDetachSkills(player, "-tianxiang|-liuli", true);
+                    room->handleAcquireDetachSkills(player, "-tianxiang|-ikxuanhuo", true);
             }
         }
         return false;
@@ -2531,7 +2531,7 @@ TaiwanSPPackage::TaiwanSPPackage()
 
     General *tw_daqiao = new General(this, "tw_daqiao", "wu", 3, false, true); // TW SP 005
     tw_daqiao->addSkill("nosguose");
-    tw_daqiao->addSkill("liuli");
+    tw_daqiao->addSkill("ikxuanhuo");
 
     General *tw_luxun = new General(this, "tw_luxun", "wu", 3, true, true); // TW SP 016
     tw_luxun->addSkill("nosqianxun");
@@ -2568,7 +2568,7 @@ MiscellaneousPackage::MiscellaneousPackage()
 {
     General *wz_daqiao = new General(this, "wz_daqiao", "wu", 3, false, true); // WZ 001
     wz_daqiao->addSkill("nosguose");
-    wz_daqiao->addSkill("liuli");
+    wz_daqiao->addSkill("ikxuanhuo");
 
     General *wz_xiaoqiao = new General(this, "wz_xiaoqiao", "wu", 3, false, true); // WZ 002
     wz_xiaoqiao->addSkill("tianxiang");
