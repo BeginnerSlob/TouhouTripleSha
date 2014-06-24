@@ -77,26 +77,25 @@ void IkLianbaoCard::onEffect(const CardEffectStruct &effect) const{
     effect.to->setFlags("IkLianbaoTarget");
 }
 
-FanjianCard::FanjianCard() {
+IkGuidengCard::IkGuidengCard() {
     will_throw = false;
     handling_method = Card::MethodNone;
 }
 
-void FanjianCard::onEffect(const CardEffectStruct &effect) const{
+void IkGuidengCard::onEffect(const CardEffectStruct &effect) const{
     ServerPlayer *zhouyu = effect.from;
     ServerPlayer *target = effect.to;
     Room *room = zhouyu->getRoom();
     Card::Suit suit = getSuit();
 
-    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, zhouyu->objectName(), target->objectName(), "fanjian", QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, zhouyu->objectName(), target->objectName(), "ikguideng", QString());
     room->obtainCard(target, this, reason);
 
     if (target->isAlive()) {
         if (target->isNude()) {
             room->loseHp(target);
         } else {
-            target->setMark("FanjianSuit", int(suit)); // For AI
-            if (room->askForSkillInvoke(target, "fanjian_discard", "prompt:::" + Card::Suit2String(suit))) {
+            if (room->askForSkillInvoke(target, "ikguideng_discard", "prompt:::" + Card::Suit2String(suit))) {
                 room->showAllCards(target);
                 DummyCard *dummy = new DummyCard;
                 foreach (const Card *card, target->getCards("he")) {
