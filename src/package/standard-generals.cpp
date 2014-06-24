@@ -1451,18 +1451,18 @@ public:
     }
 };
 
-class Fanjian: public OneCardViewAsSkill {
+class IkGuideng: public OneCardViewAsSkill {
 public:
-    Fanjian(): OneCardViewAsSkill("fanjian") {
+    IkGuideng(): OneCardViewAsSkill("ikguideng") {
         filter_pattern = ".|.|.|hand";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->isKongcheng() && !player->hasUsed("FanjianCard");
+        return !player->isKongcheng() && !player->hasUsed("IkGuidengCard");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
-        FanjianCard *card = new FanjianCard;
+        IkGuidengCard *card = new IkGuidengCard;
         card->addSubcard(originalCard);
         card->setSkillName(objectName());
         return card;
@@ -2570,10 +2570,10 @@ void StandardPackage::addGenerals() {
     related_skills.insertMulti("zhaxiang", "#zhaxiang");
     related_skills.insertMulti("zhaxiang", "#zhaxiang-target");
 
-    General *zhouyu = new General(this, "zhouyu", "wu", 3); // WU 005
-    zhouyu->addSkill(new IkChenhong);
-    zhouyu->addSkill(new IkChenhongMaxCards);
-    zhouyu->addSkill(new Fanjian);
+    General *snow005 = new General(this, "snow005", "yuki", 3);
+    snow005->addSkill(new IkGuideng);
+    snow005->addSkill(new IkChenhong);
+    snow005->addSkill(new IkChenhongMaxCards);
     related_skills.insertMulti("ikchenhong", "#ikchenhong");
 
     General *daqiao = new General(this, "daqiao", "wu", 3, false); // WU 006
@@ -2621,7 +2621,7 @@ void StandardPackage::addGenerals() {
     addMetaObject<JieyinCard>();
     addMetaObject<KurouCard>();
     addMetaObject<LijianCard>();
-    addMetaObject<FanjianCard>();
+    addMetaObject<IkGuidengCard>();
     addMetaObject<ChuliCard>();
     addMetaObject<LiuliCard>();
     addMetaObject<LianyingCard>();
