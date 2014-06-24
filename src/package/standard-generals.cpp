@@ -1761,116 +1761,118 @@ public:
     }
 };
 
-class GuoseViewAsSkill: public OneCardViewAsSkill {
+class IkWanmeiViewAsSkill: public OneCardViewAsSkill {
 public:
-    GuoseViewAsSkill(): OneCardViewAsSkill("guose") {
+    IkWanmeiViewAsSkill(): OneCardViewAsSkill("ikwanmei") {
         filter_pattern = ".|diamond";
         response_or_use = true;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("GuoseCard");
+        return !player->hasUsed("IkWanmeiCard");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
-        GuoseCard *card = new GuoseCard;
+        IkWanmeiCard *card = new IkWanmeiCard;
         card->addSubcard(originalCard);
         card->setSkillName(objectName());
         return card;
     }
 };
 
-class Guose: public TriggerSkill {
+class IkWanmei: public TriggerSkill {
 public:
-    Guose(): TriggerSkill("guose") {
+    IkWanmei(): TriggerSkill("ikwanmei") {
         events << CardFinished;
-        view_as_skill = new GuoseViewAsSkill;
+        view_as_skill = new IkWanmeiViewAsSkill;
     }
 
-    virtual int getPriority(TriggerEvent) const{
-        return 1;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.card->isKindOf("Indulgence") && use.card->getSkillName() == objectName())
-            player->drawCards(1, objectName());
-        return false;
+            return QStringList(objectName());
+        return QStringList();
     }
 
-    virtual int getEffectIndex(const ServerPlayer *player, const Card *card) const{
-        return (card->isKindOf("Indulgence") ? 1 : 2);
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        player->drawCards(1, objectName());
+        return false;
     }
 };
 
-class LiuliViewAsSkill: public OneCardViewAsSkill {
+class IkXuanhuoViewAsSkill: public OneCardViewAsSkill {
 public:
-    LiuliViewAsSkill(): OneCardViewAsSkill("liuli") {
+    IkXuanhuoViewAsSkill(): OneCardViewAsSkill("ikxuanhuo") {
         filter_pattern = ".!";
-        response_pattern = "@@liuli";
+        response_pattern = "@@ikxuanhuo";
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
-        LiuliCard *liuli_card = new LiuliCard;
-        liuli_card->addSubcard(originalCard);
-        return liuli_card;
+        IkXuanhuoCard *ikxuanhuo_card = new IkXuanhuoCard;
+        ikxuanhuo_card->addSubcard(originalCard);
+        return ikxuanhuo_card;
     }
 };
 
-class Liuli: public TriggerSkill {
+class IkXuanhuo: public TriggerSkill {
 public:
-    Liuli(): TriggerSkill("liuli") {
+    IkXuanhuo(): TriggerSkill("ikxuanhuo") {
         events << TargetConfirming;
-        view_as_skill = new LiuliViewAsSkill;
+        view_as_skill = new IkXuanhuoViewAsSkill;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *daqiao, QVariant &data) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *daqiao, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(daqiao)) return QStringList();
         CardUseStruct use = data.value<CardUseStruct>();
 
         if (use.card->isKindOf("Slash") && use.to.contains(daqiao) && daqiao->canDiscard(daqiao, "he")) {
             QList<ServerPlayer *> players = room->getOtherPlayers(daqiao);
             players.removeOne(use.from);
 
-            bool can_invoke = false;
             foreach (ServerPlayer *p, players) {
-                if (use.from->canSlash(p, use.card, false) && daqiao->inMyAttackRange(p)) {
-                    can_invoke = true;
-                    break;
-                }
+                if (use.from->canSlash(p, use.card, false) && daqiao->inMyAttackRange(p))
+                    return QStringList(objectName());
             }
+        }
+        return QStringList();
+    }
 
-            if (can_invoke) {
-                QString prompt = "@liuli:" + use.from->objectName();
-                room->setPlayerFlag(use.from, "LiuliSlashSource");
-                // a temp nasty trick
-                daqiao->tag["liuli-card"] = QVariant::fromValue((CardStar)use.card); // for the server (AI)
-                room->setPlayerProperty(daqiao, "liuli", use.card->toString()); // for the client (UI)
-                if (room->askForUseCard(daqiao, "@@liuli", prompt, -1, Card::MethodDiscard)) {
-                    daqiao->tag.remove("liuli-card");
-                    room->setPlayerProperty(daqiao, "liuli", QString());
-                    room->setPlayerFlag(use.from, "-LiuliSlashSource");
-                    foreach (ServerPlayer *p, players) {
-                        if (p->hasFlag("LiuliTarget")) {
-                            p->setFlags("-LiuliTarget");
-                            if (!use.from->canSlash(p, false))
-                                return false;
-                            use.to.removeOne(daqiao);
-                            use.to.append(p);
-                            room->sortByActionOrder(use.to);
-                            data = QVariant::fromValue(use);
-                            room->getThread()->trigger(TargetConfirming, room, p, data);
-                            return false;
-                        }
-                    }
-                } else {
-                    daqiao->tag.remove("liuli-card");
-                    room->setPlayerProperty(daqiao, "liuli", QString());
-                    room->setPlayerFlag(use.from, "-LiuliSlashSource");
-                }
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *daqiao, QVariant &data, ServerPlayer *) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        QString prompt = "@ikxuanhuo:" + use.from->objectName();
+        room->setPlayerFlag(use.from, "IkXuanhuoSlashSource");
+        // a temp nasty trick
+        daqiao->tag["ikxuanhuo-card"] = QVariant::fromValue((CardStar)use.card); // for the server (AI)
+        room->setPlayerProperty(daqiao, "ikxuanhuo", use.card->toString()); // for the client (UI)
+        if (room->askForUseCard(daqiao, "@@ikxuanhuo", prompt, -1, Card::MethodDiscard))
+            return true;
+        else {
+            daqiao->tag.remove("ikxuanhuo-card");
+            room->setPlayerProperty(daqiao, "ikxuanhuo", QString());
+            room->setPlayerFlag(use.from, "-IkXuanhuoSlashSource");
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *daqiao, QVariant &data, ServerPlayer *) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        QList<ServerPlayer *> players = room->getOtherPlayers(daqiao);
+        players.removeOne(use.from);
+
+        daqiao->tag.remove("ikxuanhuo-card");
+        room->setPlayerProperty(daqiao, "ikxuanhuo", QString());
+        room->setPlayerFlag(use.from, "-IkXuanhuoSlashSource");
+        foreach (ServerPlayer *p, players) {
+            if (p->hasFlag("IkXuanhuoTarget")) {
+                p->setFlags("-IkXuanhuoTarget");
+                if (!use.from->canSlash(p, false))
+                    return false;
+                use.to.removeOne(daqiao);
+                use.to.append(p);
+                room->sortByActionOrder(use.to);
+                data = QVariant::fromValue(use);
+                room->getThread()->trigger(TargetConfirming, room, p, data);
+                return false;
             }
         }
 
@@ -2576,9 +2578,9 @@ void StandardPackage::addGenerals() {
     snow005->addSkill(new IkChenhongMaxCards);
     related_skills.insertMulti("ikchenhong", "#ikchenhong");
 
-    General *daqiao = new General(this, "daqiao", "wu", 3, false); // WU 006
-    daqiao->addSkill(new Guose);
-    daqiao->addSkill(new Liuli);
+    General *snow006 = new General(this, "snow006", "yuki", 3, false);
+    snow006->addSkill(new IkWanmei);
+    snow006->addSkill(new IkXuanhuo);
 
     General *luxun = new General(this, "luxun", "wu", 3); // WU 007
     luxun->addSkill(new Qianxun);
@@ -2623,14 +2625,14 @@ void StandardPackage::addGenerals() {
     addMetaObject<LijianCard>();
     addMetaObject<IkGuidengCard>();
     addMetaObject<ChuliCard>();
-    addMetaObject<LiuliCard>();
+    addMetaObject<IkXuanhuoCard>();
     addMetaObject<LianyingCard>();
     addMetaObject<IkXinqiCard>();
     addMetaObject<YijiCard>();
     addMetaObject<IkGuisiCard>();
     addMetaObject<IkQinghuaCard>();
     addMetaObject<JianyanCard>();
-    addMetaObject<GuoseCard>();
+    addMetaObject<IkWanmeiCard>();
 
     skills << new Xiaoxi << new NonCompulsoryInvalidity << new Jianyan << new IkQinghua;
 }

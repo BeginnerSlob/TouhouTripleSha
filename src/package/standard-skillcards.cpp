@@ -219,25 +219,25 @@ void ChuliCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
         room->drawCards(p, 1, "chuli");
 }
 
-LiuliCard::LiuliCard() {
+IkXuanhuoCard::IkXuanhuoCard() {
 }
 
-bool LiuliCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkXuanhuoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     if (!targets.isEmpty())
         return false;
 
-    if (to_select->hasFlag("LiuliSlashSource") || to_select == Self)
+    if (to_select->hasFlag("IkXuanhuoSlashSource") || to_select == Self)
         return false;
 
     const Player *from = NULL;
     foreach (const Player *p, Self->getAliveSiblings()) {
-        if (p->hasFlag("LiuliSlashSource")) {
+        if (p->hasFlag("IkXuanhuoSlashSource")) {
             from = p;
             break;
         }
     }
 
-    const Card *slash = Card::Parse(Self->property("liuli").toString());
+    const Card *slash = Card::Parse(Self->property("ikxuanhuo").toString());
     if (from && !from->canSlash(to_select, slash, false))
         return false;
 
@@ -253,8 +253,8 @@ bool LiuliCard::targetFilter(const QList<const Player *> &targets, const Player 
     return Self->inMyAttackRange(to_select, range_fix);
 }
 
-void LiuliCard::onEffect(const CardEffectStruct &effect) const{
-    effect.to->setFlags("LiuliTarget");
+void IkXuanhuoCard::onEffect(const CardEffectStruct &effect) const{
+    effect.to->setFlags("IkXuanhuoTarget");
 }
 
 IkGuisiCard::IkGuisiCard() {
@@ -297,17 +297,17 @@ void IkQinghuaCard::onEffect(const CardEffectStruct &effect) const{
     }
 }
 
-GuoseCard::GuoseCard() {
+IkWanmeiCard::IkWanmeiCard() {
     handling_method = Card::MethodNone;
 }
 
-bool GuoseCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkWanmeiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     if (!targets.isEmpty()) return false;
     int id = getEffectiveId();
 
     Indulgence *indulgence = new Indulgence(getSuit(), getNumber());
     indulgence->addSubcard(id);
-    indulgence->setSkillName("guose");
+    indulgence->setSkillName("ikwanmei");
     indulgence->deleteLater();
 
     bool canUse = !Self->isLocked(indulgence);
@@ -329,18 +329,18 @@ bool GuoseCard::targetFilter(const QList<const Player *> &targets, const Player 
     return false;
 }
 
-const Card *GuoseCard::validate(CardUseStruct &cardUse) const{
+const Card *IkWanmeiCard::validate(CardUseStruct &cardUse) const{
     ServerPlayer *to = cardUse.to.first();
     if (!to->containsTrick("indulgence")) {
         Indulgence *indulgence = new Indulgence(getSuit(), getNumber());
         indulgence->addSubcard(getEffectiveId());
-        indulgence->setSkillName("guose");
+        indulgence->setSkillName("ikwanmei");
         return indulgence;
     }
     return this;
 }
 
-void GuoseCard::onUse(Room *room, const CardUseStruct &use) const{
+void IkWanmeiCard::onUse(Room *room, const CardUseStruct &use) const{
     CardUseStruct card_use = use;
 
     QVariant data = QVariant::fromValue(card_use);
@@ -355,7 +355,7 @@ void GuoseCard::onUse(Room *room, const CardUseStruct &use) const{
     log.card_str = card_use.card->toString();
     room->sendLog(log);
 
-    CardMoveReason reason(CardMoveReason::S_REASON_THROW, card_use.from->objectName(), QString(), "guose", QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_THROW, card_use.from->objectName(), QString(), "ikwanmei", QString());
     room->moveCardTo(this, card_use.from, NULL, Player::DiscardPile, reason, true);
 
     thread->trigger(CardUsed, room, card_use.from, data);
@@ -363,11 +363,11 @@ void GuoseCard::onUse(Room *room, const CardUseStruct &use) const{
     thread->trigger(CardFinished, room, card_use.from, data);
 }
 
-void GuoseCard::onEffect(const CardEffectStruct &effect) const{
+void IkWanmeiCard::onEffect(const CardEffectStruct &effect) const{
     foreach (const Card *judge, effect.to->getJudgingArea()) {
         if (judge->isKindOf("Indulgence") && effect.from->canDiscard(effect.to, judge->getEffectiveId())) {
             effect.from->getRoom()->throwCard(judge, NULL, effect.from);
-            effect.from->drawCards(1, "guose");
+            effect.from->drawCards(1, "ikawanmei");
             return;
         }
     }

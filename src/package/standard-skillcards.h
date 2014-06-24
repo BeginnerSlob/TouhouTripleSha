@@ -89,11 +89,11 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class LiuliCard: public SkillCard {
+class IkXuanhuoCard: public SkillCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE LiuliCard();
+    Q_INVOKABLE IkXuanhuoCard();
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
@@ -138,11 +138,11 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class GuoseCard: public SkillCard {
+class IkWanmeiCard: public SkillCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE GuoseCard();
+    Q_INVOKABLE IkWanmeiCard();
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual const Card *validate(CardUseStruct &cardUse) const;
