@@ -2271,7 +2271,7 @@ SPOldPackage::SPOldPackage()
     related_skills.insertMulti("jilei", "#jilei-clear");
 
     General *sp_diaochan = new General(this, "sp_diaochan", "qun", 3, false, true); // SP 002
-    sp_diaochan->addSkill("noslijian");
+    sp_diaochan->addSkill("ikmoyu");
     sp_diaochan->addSkill("ikzhuoyue");
 
     General *gongsunzan = new General(this, "gongsunzan", "qun"); // SP 003
@@ -2548,7 +2548,7 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_lvbu->addSkill("ikwushuang");
 
     General *tw_diaochan = new General(this, "tw_diaochan", "qun", 3, false, true); // TW SP 002
-    tw_diaochan->addSkill("noslijian");
+    tw_diaochan->addSkill("ikmoyu");
     tw_diaochan->addSkill("ikzhuoyue");
 
     General *tw_xiaoqiao = new General(this, "tw_xiaoqiao", "wu", 3, false, true);
