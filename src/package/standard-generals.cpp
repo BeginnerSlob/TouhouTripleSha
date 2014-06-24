@@ -2499,9 +2499,9 @@ void StandardPackage::addGenerals() {
     related_skills.insertMulti("zhuhai", "#zhuhai-record");
 
     // Wu
-    General *sunquan = new General(this, "sunquan$", "wu"); // WU 001
-    sunquan->addSkill(new IkZhiheng);
-    sunquan->addSkill(new IkJiyuan);
+    General *snow001 = new General(this, "snow001$", "yuki");
+    snow001->addSkill(new IkZhiheng);
+    snow001->addSkill(new IkJiyuan);
 
     General *ganning = new General(this, "ganning", "wu"); // WU 002
     ganning->addSkill(new Qixi);
