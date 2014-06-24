@@ -2517,7 +2517,7 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_sunquan->addSkill("ikjiyuan");
 
     General *tw_ganning = new General(this, "tw_ganning", "wu", 4, true, true); // TW SP 009
-    tw_ganning->addSkill("qixi");
+    tw_ganning->addSkill("ikkuipo");
 
     General *tw_lvmeng = new General(this, "tw_lvmeng", "wu", 4, true, true);
     tw_lvmeng->addSkill("keji");
