@@ -85,44 +85,34 @@ public:
     }
 };
 
-DuoshiCard::DuoshiCard() {
-    mute = true;
+IkYuanheCard::IkYuanheCard() {
 }
 
-bool DuoshiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return true;
-}
-
-bool DuoshiCard::targetsFeasible(const QList<const Player *> &, const Player *) const{
-    return true;
-}
-
-void DuoshiCard::onUse(Room *room, const CardUseStruct &card_use) const{
+void IkYuanheCard::onUse(Room *room, const CardUseStruct &card_use) const{
     CardUseStruct use = card_use;
-    if (!use.to.contains(use.from))
-        use.to << use.from;
-    use.from->getRoom()->broadcastSkillInvoke("duoshi", qMin(2, use.to.length()));
+    use.to << use.from;
     SkillCard::onUse(room, use);
 }
 
-void DuoshiCard::onEffect(const CardEffectStruct &effect) const{
-    Room *room = effect.from->getRoom();
-    effect.to->drawCards(2, "duoshi");
-    room->askForDiscard(effect.to, "duoshi", 2, 2, false, true);
+void IkYuanheCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    foreach (ServerPlayer *p, targets)
+        p->drawCards(2, "ikyuanhe");
+    foreach (ServerPlayer *p, targets)
+        room->askForDiscard(p, "ikyuanhe", 2, 2, false, true);
 }
 
-class Duoshi: public OneCardViewAsSkill {
+class IkYuanhe: public OneCardViewAsSkill {
 public:
-    Duoshi(): OneCardViewAsSkill("duoshi") {
+    IkYuanhe(): OneCardViewAsSkill("ikyuanhe") {
         filter_pattern = ".|red|.|hand!";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->usedTimes("DuoshiCard") < 4;
+        return !player->hasUsed("IkYuanheCard");
     }
 
     virtual const Card *viewAs(const Card *originalcard) const{
-        DuoshiCard *await = new DuoshiCard;
+        IkYuanheCard *await = new IkYuanheCard;
         await->addSubcard(originalcard->getId());
         return await;
     }
@@ -715,8 +705,7 @@ HegemonyPackage::HegemonyPackage()
     ganfuren->addSkill(new Shenzhi);
 
     General *heg_luxun = new General(this, "heg_luxun", "wu", 3); // WU 007 G
-    heg_luxun->addSkill("nosqianxun");
-    heg_luxun->addSkill(new Duoshi);
+    heg_luxun->addSkill(new IkYuanhe);
 
     General *dingfeng = new General(this, "dingfeng", "wu"); // WU 016
     dingfeng->addSkill(new Skill("duanbing", Skill::Compulsory));
@@ -782,7 +771,7 @@ HegemonyPackage::HegemonyPackage()
     heg_diaochan->addSkill("lijian");
     heg_diaochan->addSkill("ikzhuoyue");
 
-    addMetaObject<DuoshiCard>();
+    addMetaObject<IkYuanheCard>();
     addMetaObject<FenxunCard>();
     addMetaObject<ShuangrenCard>();
     addMetaObject<XiongyiCard>();

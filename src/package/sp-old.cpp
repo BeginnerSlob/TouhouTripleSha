@@ -2534,8 +2534,7 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_daqiao->addSkill("ikxuanhuo");
 
     General *tw_luxun = new General(this, "tw_luxun", "wu", 3, true, true); // TW SP 016
-    tw_luxun->addSkill("nosqianxun");
-    tw_luxun->addSkill("noslianying");
+    tw_luxun->addSkill("ikwujie");
 
     General *tw_sunshangxiang = new General(this, "tw_sunshangxiang", "wu", 3, false, true); // TW SP 028
     tw_sunshangxiang->addSkill("jieyin");

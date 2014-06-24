@@ -1869,31 +1869,31 @@ public:
     }
 };
 
-class NosQianxun: public ProhibitSkill {
+class IkWujie: public TriggerSkill {
 public:
-    NosQianxun(): ProhibitSkill("nosqianxun") {
-    }
-
-    virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const{
-        return to->hasSkill(objectName()) && (card->isKindOf("Snatch") || card->isKindOf("Indulgence"));
-    }
-};
-
-class NosLianying: public TriggerSkill {
-public:
-    NosLianying(): TriggerSkill("noslianying") {
+    IkWujie(): TriggerSkill("ikwujie") {
         events << CardsMoveOneTime;
         frequency = Frequent;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *luxun, QVariant &data) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *luxun, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(luxun)) return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (move.from == luxun && move.from_places.contains(Player::PlaceHand) && move.is_last_handcard) {
-            if (room->askForSkillInvoke(luxun, objectName(), data)) {
-                room->broadcastSkillInvoke(objectName());
-                luxun->drawCards(1, objectName());
-            }
+        if (move.from == luxun && move.from_places.contains(Player::PlaceHand) && move.is_last_handcard)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *luxun, QVariant &, ServerPlayer *) const{
+        if (luxun->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
         }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *luxun, QVariant &, ServerPlayer *) const{
+        luxun->drawCards(1, objectName());
         return false;
     }
 };
@@ -2556,9 +2556,9 @@ NostalStandardPackage::NostalStandardPackage()
     nos_daqiao->addSkill(new NosGuose);
     nos_daqiao->addSkill("ikxuanhuo");
 
-    General *nos_luxun = new General(this, "nos_luxun", "wu", 3);
-    nos_luxun->addSkill(new NosQianxun);
-    nos_luxun->addSkill(new NosLianying);
+    General *snow007 = new General(this, "snow007", "yuki", 3);
+    snow007->addSkill(new IkWujie);
+    snow007->addSkill("ikyuanhe");
 
     General *nos_huatuo = new General(this, "nos_huatuo", "qun", 3);
     nos_huatuo->addSkill(new Qingnang);
