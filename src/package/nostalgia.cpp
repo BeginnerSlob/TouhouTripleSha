@@ -2509,7 +2509,7 @@ NostalStandardPackage::NostalStandardPackage()
     wind007->addSkill("thjizhi");
 
     General *nos_ganning = new General(this, "nos_ganning", "wu");
-    nos_ganning->addSkill("qixi");
+    nos_ganning->addSkill("ikkuipo");
 
     General *nos_lvmeng = new General(this, "nos_lvmeng", "wu");
     nos_lvmeng->addSkill("keji");

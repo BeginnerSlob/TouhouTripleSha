@@ -1549,9 +1549,9 @@ public:
     }
 };
 
-class Qixi: public OneCardViewAsSkill {
+class IkKuipo: public OneCardViewAsSkill {
 public:
-    Qixi(): OneCardViewAsSkill("qixi") {
+    IkKuipo(): OneCardViewAsSkill("ikkuipo") {
         filter_pattern = ".|black";
         response_or_use = true;
     }
@@ -1562,54 +1562,48 @@ public:
         dismantlement->setSkillName(objectName());
         return dismantlement;
     }
-
-    virtual int getEffectIndex(const ServerPlayer *player, const Card *) const{
-        int index = qrand() % 2 + 1;
-        if (Player::isNostalGeneral(player, "ganning"))
-            index += 2;
-        return index;
-    }
 };
 
-class FenweiViewAsSkill: public ZeroCardViewAsSkill {
+class IkGuisiViewAsSkill: public ZeroCardViewAsSkill {
 public:
-    FenweiViewAsSkill():ZeroCardViewAsSkill("fenwei") {
-        response_pattern = "@@fenwei";
+    IkGuisiViewAsSkill():ZeroCardViewAsSkill("ikguisi") {
+        response_pattern = "@@ikguisi";
     }
 
     virtual const Card *viewAs() const{
-        return new FenweiCard;
+        return new IkGuisiCard;
     }
 };
 
-class Fenwei: public TriggerSkill {
+class IkGuisi: public TriggerSkill {
 public:
-    Fenwei(): TriggerSkill("fenwei") {
+    IkGuisi(): TriggerSkill("ikguisi") {
         events << TargetSpecifying;
-        view_as_skill = new FenweiViewAsSkill;
+        view_as_skill = new IkGuisiViewAsSkill;
         frequency = Limited;
-        limit_mark = "@fenwei";
+        limit_mark = "@guisi";
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
-        ServerPlayer *ganning = room->findPlayerBySkillName(objectName());
-        if (!ganning || ganning->getMark("@fenwei") <= 0) return false;
-
+    virtual QMap<ServerPlayer *,QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
+        QMap<ServerPlayer *,QStringList> skill_list;
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.to.length() <= 1 || !use.card->isNDTrick())
-            return false;
+            return skill_list;
+        foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+            if (p->getMark("@guisi") > 0)
+                skill_list.insert(p, QStringList(objectName()));
+        return skill_list;
+    }
 
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ganning) const{
+        CardUseStruct use = data.value<CardUseStruct>();
         QStringList target_list;
         foreach (ServerPlayer *p, use.to)
             target_list << p->objectName();
-        room->setPlayerProperty(ganning, "fenwei_targets", target_list.join("+"));
-        ganning->tag["fenwei"] = data;
-        room->askForUseCard(ganning, "@@fenwei", "@fenwei-card");
-        data = ganning->tag["fenwei"];
+        room->setPlayerProperty(ganning, "ikguisi_targets", target_list.join("+"));
+        ganning->tag["ikguisi"] = data;
+        room->askForUseCard(ganning, "@@ikguisi", "@ikguisi-card");
+        data = ganning->tag["ikguisi"];
 
         return false;
     }
@@ -2503,9 +2497,9 @@ void StandardPackage::addGenerals() {
     snow001->addSkill(new IkZhiheng);
     snow001->addSkill(new IkJiyuan);
 
-    General *ganning = new General(this, "ganning", "wu"); // WU 002
-    ganning->addSkill(new Qixi);
-    ganning->addSkill(new Fenwei);
+    General *snow002 = new General(this, "snow002", "yuki");
+    snow002->addSkill(new IkKuipo);
+    snow002->addSkill(new IkGuisi);
 
     General *lvmeng = new General(this, "lvmeng", "wu"); // WU 003
     lvmeng->addSkill(new Keji);
@@ -2576,7 +2570,7 @@ void StandardPackage::addGenerals() {
     addMetaObject<LianyingCard>();
     addMetaObject<IkXinqiCard>();
     addMetaObject<YijiCard>();
-    addMetaObject<FenweiCard>();
+    addMetaObject<IkGuisiCard>();
     addMetaObject<JianyanCard>();
     addMetaObject<GuoseCard>();
 

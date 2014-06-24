@@ -258,22 +258,22 @@ void LiuliCard::onEffect(const CardEffectStruct &effect) const{
     effect.to->setFlags("LiuliTarget");
 }
 
-FenweiCard::FenweiCard() {
+IkGuisiCard::IkGuisiCard() {
 }
 
-bool FenweiCard::targetFilter(const QList<const Player *> &, const Player *to_select, const Player *Self) const{
-    QStringList targetslist = Self->property("fenwei_targets").toString().split("+");
+bool IkGuisiCard::targetFilter(const QList<const Player *> &, const Player *to_select, const Player *Self) const{
+    QStringList targetslist = Self->property("ikguisi_targets").toString().split("+");
     return targetslist.contains(to_select->objectName());
 }
 
-void FenweiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    room->removePlayerMark(source, "@fenwei");
-    room->doLightbox("$FenweiAnimate");
+void IkGuisiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    room->removePlayerMark(source, "@guisi");
+    room->addPlayerMark(source, "@guisiused");
 
-    CardUseStruct use = source->tag["fenwei"].value<CardUseStruct>();
+    CardUseStruct use = source->tag["ikguisi"].value<CardUseStruct>();
     foreach (ServerPlayer *p, targets)
         use.nullified_list << p->objectName();
-    source->tag["fenwei"] = QVariant::fromValue(use);
+    source->tag["ikguisi"] = QVariant::fromValue(use);
 }
 
 GuoseCard::GuoseCard() {
