@@ -437,6 +437,24 @@ const Card *IkXinqiCard::validate(CardUseStruct &cardUse) const{
     return NULL;
 }
 
+IkWudiCard::IkWudiCard() {
+    handling_method = MethodUse;
+}
+
+bool IkWudiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    Duel *duel = new Duel(SuitToBeDecided, 0);
+    duel->addSubcards(subcards);
+    duel->deleteLater();
+    return duel->targetFilter(targets, to_select, Self);
+}
+
+const Card *IkWudiCard::validate(CardUseStruct &cardUse) const{
+    Duel *duel = new Duel(SuitToBeDecided, 0);
+    duel->addSubcards(subcards);
+    duel->setSkillName("thwudi");
+    return duel;
+}
+
 YijiCard::YijiCard() {
     mute = true;
 }

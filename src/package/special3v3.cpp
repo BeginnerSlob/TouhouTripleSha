@@ -576,7 +576,7 @@ Special3v3Package::Special3v3Package()
     vs_nos_zhaoyun->addSkill(new Jiuzhu);
 
     General *vs_nos_lvbu = new General(this, "vs_nos_lvbu", "qun");
-    vs_nos_lvbu->addSkill("wushuang");
+    vs_nos_lvbu->addSkill("ikwushuang");
     vs_nos_lvbu->addSkill(new Zhanshen);
 
     addMetaObject<ZhongyiCard>();

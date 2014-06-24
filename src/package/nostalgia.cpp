@@ -2565,7 +2565,7 @@ NostalStandardPackage::NostalStandardPackage()
     nos_huatuo->addSkill("jijiu");
 
     General *nos_lvbu = new General(this, "nos_lvbu", "qun");
-    nos_lvbu->addSkill("wushuang");
+    nos_lvbu->addSkill("ikwushuang");
 
     General *nos_diaochan = new General(this, "nos_diaochan", "qun", 3, false);
     nos_diaochan->addSkill(new NosLijian);
