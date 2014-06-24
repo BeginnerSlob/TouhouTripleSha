@@ -4,11 +4,11 @@
 #include "skill.h"
 #include "card.h"
 
-class ZhihengCard: public SkillCard {
+class IkZhihengCard: public SkillCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE ZhihengCard();
+    Q_INVOKABLE IkZhihengCard();
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 

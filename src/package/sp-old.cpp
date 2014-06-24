@@ -2513,8 +2513,8 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_huangyueying->addSkill("thjizhi");
 
     General *tw_sunquan = new General(this, "tw_sunquan$", "wu", 4, true, true); // TW SP 021
-    tw_sunquan->addSkill("zhiheng");
-    tw_sunquan->addSkill("jiuyuan");
+    tw_sunquan->addSkill("ikzhiheng");
+    tw_sunquan->addSkill("ikjiyuan");
 
     General *tw_ganning = new General(this, "tw_ganning", "wu", 4, true, true); // TW SP 009
     tw_ganning->addSkill("qixi");

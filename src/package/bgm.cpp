@@ -1806,7 +1806,7 @@ class HantongAcquire: public TriggerSkill {
 public:
     HantongAcquire(): TriggerSkill("#hantong-acquire") {
         events << CardAsked //For IkXinqi and IkHuanwei
-               << TargetConfirmed //For JiuYuan
+               << TargetConfirmed //For IkJiyuan
                << EventPhaseStart; //For XueYi
     }
 
@@ -1877,10 +1877,10 @@ public:
                     || liuxie == use.from || !liuxie->hasFlag("Global_Dying"))
                     return false;
 
-                QVariant data_for_ai = "jiuyuan";
+                QVariant data_for_ai = "ikjiyuan";
                 if (room->askForSkillInvoke(liuxie, "hantong_acquire", data_for_ai)) {
                     RemoveEdict(liuxie);
-                    room->acquireSkill(liuxie, "jiuyuan");
+                    room->acquireSkill(liuxie, "ikjiyuan");
                 }
                 break;
             }
@@ -1921,7 +1921,7 @@ public:
         foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (!p->tag.value("Hantong_use", false).toBool())
                 continue;
-            room->handleAcquireDetachSkills(p, "-ikhuanwei|-ikxinqi|-jiuyuan|-xueyi", true);
+            room->handleAcquireDetachSkills(p, "-ikhuanwei|-ikxinqi|-ikjiyuan|-xueyi", true);
             p->tag.remove("Hantong_use");
         }
         return false;
