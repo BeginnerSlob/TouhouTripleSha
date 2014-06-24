@@ -1898,38 +1898,38 @@ public:
     }
 };
 
-QingnangCard::QingnangCard() {
+IkQingnangCard::IkQingnangCard() {
 }
 
-bool QingnangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkQingnangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     return targets.isEmpty() && to_select->isWounded();
 }
 
-bool QingnangCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+bool IkQingnangCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
     return targets.value(0, Self)->isWounded();
 }
 
-void QingnangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+void IkQingnangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *target = targets.value(0, source);
     room->cardEffect(this, source, target);
 }
 
-void QingnangCard::onEffect(const CardEffectStruct &effect) const{
+void IkQingnangCard::onEffect(const CardEffectStruct &effect) const{
     effect.to->getRoom()->recover(effect.to, RecoverStruct(effect.from));
 }
 
-class Qingnang: public OneCardViewAsSkill {
+class IkQingnang: public OneCardViewAsSkill {
 public:
-    Qingnang(): OneCardViewAsSkill("qingnang") {
+    IkQingnang(): OneCardViewAsSkill("ikqingnang") {
         filter_pattern = ".|.|.|hand!";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->canDiscard(player, "h") && !player->hasUsed("QingnangCard");
+        return player->canDiscard(player, "h") && !player->hasUsed("IkQingnangCard");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
-        QingnangCard *qingnang_card = new QingnangCard;
+        IkQingnangCard *qingnang_card = new IkQingnangCard;
         qingnang_card->addSubcard(originalCard->getId());
         return qingnang_card;
     }
@@ -2560,9 +2560,9 @@ NostalStandardPackage::NostalStandardPackage()
     snow007->addSkill(new IkWujie);
     snow007->addSkill("ikyuanhe");
 
-    General *nos_huatuo = new General(this, "nos_huatuo", "qun", 3);
-    nos_huatuo->addSkill(new Qingnang);
-    nos_huatuo->addSkill("jijiu");
+    General *luna006 = new General(this, "luna006", "tsuki", 3);
+    luna006->addSkill("ikhuichun");
+    luna006->addSkill(new IkQingnang);
 
     General *nos_lvbu = new General(this, "nos_lvbu", "qun");
     nos_lvbu->addSkill("ikwushuang");
@@ -2576,7 +2576,7 @@ NostalStandardPackage::NostalStandardPackage()
     addMetaObject<IkKurouCard>();
     addMetaObject<NosFanjianCard>();
     addMetaObject<IkMoyuCard>();
-    addMetaObject<QingnangCard>();
+    addMetaObject<IkQingnangCard>();
 }
 
 NostalWindPackage::NostalWindPackage()

@@ -2541,8 +2541,8 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_sunshangxiang->addSkill("ikcuimeng");
 
     /*General *tw_huatuo = new General(this, "tw_huatuo", 3, true, true);
-    tw_huatuo->addSkill("qingnang");
-    tw_huatuo->addSkill("jijiu");*/
+    tw_huatuo->addSkill("ikqingnang");
+    tw_huatuo->addSkill("ikhuichun");*/
 
     General *tw_lvbu = new General(this, "tw_lvbu", "qun", 4, true, true); // TW SP 008
     tw_lvbu->addSkill("ikwushuang");

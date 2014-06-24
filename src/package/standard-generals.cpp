@@ -2188,9 +2188,9 @@ public:
     }
 };
 
-class Jijiu: public OneCardViewAsSkill {
+class IkHuichun: public OneCardViewAsSkill {
 public:
-    Jijiu(): OneCardViewAsSkill("jijiu") {
+    IkHuichun(): OneCardViewAsSkill("ikhuichun") {
         filter_pattern = ".|red";
         response_or_use = true;
     }
@@ -2591,7 +2591,7 @@ void StandardPackage::addGenerals() {
     // Qun
     General *huatuo = new General(this, "huatuo", "qun", 3); // QUN 001
     huatuo->addSkill(new Chuli);
-    huatuo->addSkill(new Jijiu);
+    huatuo->addSkill(new IkHuichun);
 
     General *luna002 = new General(this, "luna002", "tsuki");
     luna002->addSkill(new IkWushuang);
