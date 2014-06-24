@@ -2512,7 +2512,7 @@ NostalStandardPackage::NostalStandardPackage()
     nos_ganning->addSkill("ikkuipo");
 
     General *nos_lvmeng = new General(this, "nos_lvmeng", "wu");
-    nos_lvmeng->addSkill("keji");
+    nos_lvmeng->addSkill("ikbiju");
 
     General *nos_huanggai = new General(this, "nos_huanggai", "wu");
     nos_huanggai->addSkill(new NosKurou);

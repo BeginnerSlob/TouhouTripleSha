@@ -276,6 +276,27 @@ void IkGuisiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
     source->tag["ikguisi"] = QVariant::fromValue(use);
 }
 
+IkQinghuaCard::IkQinghuaCard() {
+}
+
+bool IkQinghuaCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
+}
+
+void IkQinghuaCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    const Card *card = room->askForCardShow(effect.to, effect.from, "ikqinghua");
+    QString suit = card->getSuitString();
+    if (room->askForCard(effect.from, ".|" + suit, "@ikqinghua-discard:::" + suit)) {
+        room->throwCard(card, effect.to);
+        QList<ServerPlayer *> targets;
+        targets << effect.from << effect.to;
+        room->sortByActionOrder(targets);
+        foreach (ServerPlayer *p, targets)
+            room->recover(p, RecoverStruct(effect.from));
+    }
+}
+
 GuoseCard::GuoseCard() {
     handling_method = Card::MethodNone;
 }

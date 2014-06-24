@@ -1469,86 +1469,6 @@ public:
     }
 };
 
-class Keji: public TriggerSkill {
-public:
-    Keji(): TriggerSkill("keji") {
-        events << PreCardUsed << CardResponded << EventPhaseChanging;
-        frequency = Frequent;
-        //global = true;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *lvmeng, QVariant &data) const{
-        if (triggerEvent == EventPhaseChanging) {
-            bool can_trigger = true;
-            if (lvmeng->hasFlag("KejiSlashInPlayPhase")) {
-                can_trigger = false;
-                lvmeng->setFlags("-KejiSlashInPlayPhase");
-            }
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::Discard && lvmeng->isAlive() && lvmeng->hasSkill(objectName()) ) {
-                if (can_trigger && lvmeng->askForSkillInvoke(objectName())) {
-                    if (lvmeng->getHandcardNum() > lvmeng->getMaxCards()) {
-                        int index = qrand() % 2 + 1;
-                        if (!lvmeng->hasInnateSkill(objectName()) && lvmeng->hasSkill("mouduan"))
-                            index += 4;
-                        else if (Player::isNostalGeneral(lvmeng, "lvmeng"))
-                            index += 2;
-                        room->broadcastSkillInvoke(objectName(), index);
-                    }
-                    lvmeng->skip(Player::Discard);
-                }
-            }
-        } else if (lvmeng->getPhase() == Player::Play) {
-            CardStar card = NULL;
-            if (triggerEvent == PreCardUsed)
-                card = data.value<CardUseStruct>().card;
-            else
-                card = data.value<CardResponseStruct>().m_card;
-            if (card->isKindOf("Slash"))
-                lvmeng->setFlags("KejiSlashInPlayPhase");
-        }
-
-        return false;
-    }
-};
-
-class Qinxue: public PhaseChangeSkill {
-public:
-    Qinxue(): PhaseChangeSkill("qinxue") {
-        frequency = Wake;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && PhaseChangeSkill::triggerable(target)
-               && target->getPhase() == Player::Start
-               && target->getMark("qinxue") == 0;
-    }
-
-    virtual bool onPhaseChange(ServerPlayer *lvmeng) const{
-        Room *room = lvmeng->getRoom();
-        int n = lvmeng->getHandcardNum() - lvmeng->getHp();
-        int wake_lim = (Sanguosha->getPlayerCount(room->getMode()) >= 7) ? 2 : 3;
-        if (n < wake_lim) return false;
-
-        room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(lvmeng, objectName());
-        room->doLightbox("$QinxueAnimate");
-
-        LogMessage log;
-        log.type = "#QinxueWake";
-        log.from = lvmeng;
-        log.arg = QString::number(n);
-        log.arg2 = "qinxue";
-        room->sendLog(log);
-
-        room->setPlayerMark(lvmeng, "qinxue", 1);
-        if (room->changeMaxHpForAwakenSkill(lvmeng) && lvmeng->getMark("qinxue") == 1)
-            room->acquireSkill(lvmeng, "iklingshi");
-
-        return false;
-    }
-};
-
 class IkKuipo: public OneCardViewAsSkill {
 public:
     IkKuipo(): OneCardViewAsSkill("ikkuipo") {
@@ -1606,6 +1526,138 @@ public:
         data = ganning->tag["ikguisi"];
 
         return false;
+    }
+};
+
+class IkBiju: public TriggerSkill {
+public:
+    IkBiju(): TriggerSkill("ikbiju") {
+        events << EventPhaseChanging;
+        frequency = Frequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *lvmeng, QVariant &data, ServerPlayer* &) const{
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (TriggerSkill::triggerable(lvmeng) && change.to == Player::Discard && !lvmeng->hasFlag("IkBijuSlashInPlayPhase"))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *lvmeng, QVariant &, ServerPlayer *) const{
+        if (lvmeng->askForSkillInvoke(objectName())) {
+            if (lvmeng->getHandcardNum() > lvmeng->getMaxCards())
+                room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *lvmeng, QVariant &, ServerPlayer *) const{
+        lvmeng->skip(Player::Discard);
+        return false;
+    }
+};
+
+class IkBijuRecord: public TriggerSkill {
+public:
+    IkBijuRecord(): TriggerSkill("#ikbiju-record") {
+        events << PreCardUsed << CardResponded;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *lvmeng, QVariant &data, ServerPlayer* &) const{
+        if (lvmeng->getPhase() == Player::Play) {
+            CardStar card = NULL;
+            if (triggerEvent == PreCardUsed)
+                card = data.value<CardUseStruct>().card;
+            else
+                card = data.value<CardResponseStruct>().m_card;
+            if (card->isKindOf("Slash"))
+                lvmeng->setFlags("IkBijuSlashInPlayPhase");
+        }
+        return QStringList();
+    }
+};
+
+class IkPojian: public TriggerSkill {
+public:
+    IkPojian(): TriggerSkill("ikpojian") {
+        events << EventPhaseStart;
+        frequency = Wake;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return TriggerSkill::triggerable(target)
+            && target->getPhase() == Player::Finish
+            && target->getMark("ikpojian") >= 5
+            && target->getMark("@pojian") == 0;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->broadcastSkillInvoke(objectName());
+        room->notifySkillInvoked(player, objectName());
+
+        LogMessage log;
+        log.type = "#IkPojianWake";
+        log.from = player;
+        log.arg = player->getMark("ikpojian");
+        log.arg2 = objectName();
+        room->sendLog(log);
+        room->addPlayerMark(player, "@pojian");
+
+        room->recover(player, RecoverStruct(player));
+        room->changeMaxHpForAwakenSkill(player);
+
+        room->acquireSkill(player, "ikqinghua");
+        return false;
+    }
+};
+
+class IkPojianRecord: public TriggerSkill {
+public:
+    IkPojianRecord(): TriggerSkill("#ikpojian-record") {
+        events << PreCardUsed << CardResponded << EventPhaseStart;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *lvmeng, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseStart) {
+            if (lvmeng->getPhase() == Player::RoundStart)
+                lvmeng->setMark("ikpojian", 0);
+        } else {
+            CardStar card = NULL;
+            if (triggerEvent == PreCardUsed)
+                card = data.value<CardUseStruct>().card;
+            else {
+                CardResponseStruct resp = data.value<CardResponseStruct>();
+                if (resp.m_isUse)
+                    card = resp.m_card;
+            }
+            if (card && !card->isKindOf("EquipCard"))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *, ServerPlayer *lvmeng, QVariant &data, ServerPlayer *) const{
+        lvmeng->addMark("ikpojian");
+        return false;
+    }
+};
+
+class IkQinghua: public ZeroCardViewAsSkill {
+public:
+    IkQinghua(): ZeroCardViewAsSkill("ikqinghua") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkQinghuaCard");
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkQinghuaCard;
     }
 };
 
@@ -2501,9 +2553,14 @@ void StandardPackage::addGenerals() {
     snow002->addSkill(new IkKuipo);
     snow002->addSkill(new IkGuisi);
 
-    General *lvmeng = new General(this, "lvmeng", "wu"); // WU 003
-    lvmeng->addSkill(new Keji);
-    lvmeng->addSkill(new Qinxue);
+    General *snow003 = new General(this, "snow003", "yuki");
+    snow003->addSkill(new IkBiju);
+    snow003->addSkill(new IkBijuRecord);
+    snow003->addSkill(new IkPojian);
+    snow003->addSkill(new IkPojianRecord);
+    related_skills.insertMulti("ikbiju", "#ikbiju-record");
+    related_skills.insertMulti("ikpojian", "#ikpojian-record");
+    snow003->addRelateSkill("ikqinghua");
 
     General *huanggai = new General(this, "huanggai", "wu"); // WU 004
     huanggai->addSkill(new Kurou);
@@ -2571,10 +2628,11 @@ void StandardPackage::addGenerals() {
     addMetaObject<IkXinqiCard>();
     addMetaObject<YijiCard>();
     addMetaObject<IkGuisiCard>();
+    addMetaObject<IkQinghuaCard>();
     addMetaObject<JianyanCard>();
     addMetaObject<GuoseCard>();
 
-    skills << new Xiaoxi << new NonCompulsoryInvalidity << new Jianyan;
+    skills << new Xiaoxi << new NonCompulsoryInvalidity << new Jianyan << new IkQinghua;
 }
 
 class SuperZhiheng: public IkZhiheng {
