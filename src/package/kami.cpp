@@ -2048,6 +2048,12 @@ void ThJiefuCard::onEffect(const CardEffectStruct &effect) const {
     room->removePlayerMark(effect.from, "@jiefu");
     room->addPlayerMark(effect.from, "@jiefuused");
     room->setPlayerFlag(effect.to, "thjiefu_null");
+
+    foreach (ServerPlayer *pl, room->getAllPlayers())
+        room->filterCards(pl, pl->getCards("he"), true);
+    Json::Value args;
+    args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 }
 
 class ThJiefuViewAsSkill: public ZeroCardViewAsSkill {
@@ -2085,8 +2091,14 @@ public:
                 return QStringList();
         }
         foreach (ServerPlayer *p, room->getAllPlayers())
-            if (p->hasFlag("thjiefu_null"))
+            if (p->hasFlag("thjiefu_null")) {
                 room->setPlayerFlag(p, "-thjiefu_null");
+                foreach (ServerPlayer *pl, room->getAllPlayers())
+                    room->filterCards(pl, pl->getCards("he"), false);
+                Json::Value args;
+                args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+            }
         return QStringList();
     }
 };

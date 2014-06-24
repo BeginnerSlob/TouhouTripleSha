@@ -1019,101 +1019,102 @@ public:
     }
 };
 
-class Tieji: public TriggerSkill {
+class NonCompulsoryInvalidity: public InvaliditySkill {
 public:
-    Tieji(): TriggerSkill("tieji") {
-        events << TargetSpecified << FinishJudge;
+    NonCompulsoryInvalidity(): InvaliditySkill("#non-compulsory-invalidity") {
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
+    virtual bool isSkillValid(const Player *player, const Skill *skill) const{
+        return player->getMark("@skill_invalidity") == 0 || skill->getFrequency() == Skill::Compulsory;
+    }
+};
+
+class IkYufeng: public TriggerSkill {
+public:
+    IkYufeng(): TriggerSkill("ikyufeng") {
+        events << TargetSpecified;
+    }
+    
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("Slash")) return QStringList(objectName());
+        return QStringList();
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == TargetSpecified && TriggerSkill::triggerable(player)) {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (!use.card->isKindOf("Slash"))
-                return false;
-            QVariantList jink_list = player->tag["Jink_" + use.card->toString()].toList();
-            int index = 0;
-            QList<ServerPlayer *> tos;
-            foreach (ServerPlayer *p, use.to) {
-                if (!player->isAlive()) break;
-                if (player->askForSkillInvoke(objectName(), QVariant::fromValue(p))) {
-                    room->broadcastSkillInvoke(objectName());
-                    if (!tos.contains(p)) {
-                        p->addMark("tieji");
-                        room->addPlayerMark(p, "@skill_invalidity");
-                        tos << p;
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        QVariantList jink_list = player->tag["Jink_" + use.card->toString()].toList();
+        int index = 0;
+        QList<ServerPlayer *> tos;
+        foreach (ServerPlayer *p, use.to) {
+            if (!player->isAlive()) break;
+            if (player->askForSkillInvoke(objectName(), QVariant::fromValue(p))) {
+                room->broadcastSkillInvoke(objectName());
+                if (!tos.contains(p)) {
+                    p->addMark("ikyufeng");
+                    room->addPlayerMark(p, "@skill_invalidity");
+                    tos << p;
 
-                        foreach (ServerPlayer *pl, room->getAllPlayers())
-                            room->filterCards(pl, pl->getCards("he"), true);
-                        Json::Value args;
-                        args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
-                        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
-                    }
-
-                    JudgeStruct judge;
-                    judge.pattern = ".";
-                    judge.good = true;
-                    judge.reason = objectName();
-                    judge.who = player;
-                    judge.play_animation = false;
-
-                    room->judge(judge);
-
-                    if (p->isAlive() && !p->canDiscard(p, "he")
-                        || !room->askForCard(p, ".|" + judge.pattern, "@tieji-discard:::" + judge.pattern, data, Card::MethodDiscard)) {
-                        LogMessage log;
-                        log.type = "#NoJink";
-                        log.from = p;
-                        room->sendLog(log);
-                        jink_list.replace(index, QVariant(0));
-                    }
+                    foreach (ServerPlayer *pl, room->getAllPlayers())
+                        room->filterCards(pl, pl->getCards("he"), true);
+                    Json::Value args;
+                    args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
                 }
-                index++;
+
+                JudgeStruct judge;
+                judge.pattern = ".";
+                judge.good = true;
+                judge.reason = objectName();
+                judge.who = player;
+                judge.play_animation = false;
+
+                room->judge(judge);
+
+                if (p->isAlive() && !p->canDiscard(p, "he")
+                    || !room->askForCard(p, ".|" + judge.pattern, "@ikyufeng-discard:::" + judge.pattern, data, Card::MethodDiscard)) {
+                    LogMessage log;
+                    log.type = "#NoJink";
+                    log.from = p;
+                    room->sendLog(log);
+                    jink_list.replace(index, QVariant(0));
+                }
             }
-            player->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
-            return false;
-        } else if (triggerEvent == FinishJudge) {
-            JudgeStar judge = data.value<JudgeStar>();
-            if (judge->reason == objectName()) {
-                judge->pattern = judge->card->getSuitString();
-            }
+            index++;
         }
+        player->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
         return false;
     }
 };
 
-class TiejiClear: public TriggerSkill {
+class IkYufengClear: public TriggerSkill {
 public:
-    TiejiClear(): TriggerSkill("#tieji-clear") {
-        events << EventPhaseChanging << Death;
+    IkYufengClear(): TriggerSkill("#ikyufeng-clear") {
+        events << EventPhaseChanging << Death << FinishJudge;
+        frequency = Compulsory;
     }
 
-    virtual int getPriority(TriggerEvent) const{
-        return 5;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data) const{
-        if (triggerEvent == EventPhaseChanging) {
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == FinishJudge) {
+            JudgeStar judge = data.value<JudgeStar>();
+            if (judge->reason == "ikyufeng")
+                judge->pattern = judge->card->getSuitString();
+            return QStringList();
+        } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to != Player::NotActive)
-                return false;
+                return QStringList();
         } else if (triggerEvent == Death) {
             DeathStruct death = data.value<DeathStruct>();
             if (death.who != target || target != room->getCurrent())
-                return false;
+                return QStringList();
         }
         QList<ServerPlayer *> players = room->getAllPlayers();
         foreach (ServerPlayer *player, players) {
-            if (player->getMark("tieji") == 0) continue;
-            room->removePlayerMark(player, "@skill_invalidity", player->getMark("tieji"));
-            player->setMark("tieji", 0);
+            if (player->getMark("ikyufeng") == 0) continue;
+            room->removePlayerMark(player, "@skill_invalidity", player->getMark("ikyufeng"));
+            player->setMark("ikyufeng", 0);
 
             foreach (ServerPlayer *p, room->getAllPlayers())
                 room->filterCards(p, p->getCards("he"), false);
@@ -1121,7 +1122,7 @@ public:
             args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
             room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
         }
-        return false;
+        return QStringList();
     }
 };
 
@@ -2477,11 +2478,11 @@ void StandardPackage::addGenerals() {
     zhaoyun->addSkill(new IkHuahuan);
     zhaoyun->addSkill(new Yajiao);
 
-    General *machao = new General(this, "machao", "shu"); // SHU 006
-    machao->addSkill(new Mashu);
-    machao->addSkill(new Tieji);
-    machao->addSkill(new TiejiClear);
-    related_skills.insertMulti("tieji", "#tieji-clear");
+    General *wind006 = new General(this, "wind006", "kaze");
+    wind006->addSkill("thjibu");
+    wind006->addSkill(new IkYufeng);
+    wind006->addSkill(new IkYufengClear);
+    related_skills.insertMulti("ikyufeng", "#ikyufeng-clear");
 
     General *huangyueying = new General(this, "huangyueying", "shu", 3, false); // SHU 007
     huangyueying->addSkill(new Jizhi);
@@ -2576,7 +2577,7 @@ void StandardPackage::addGenerals() {
     addMetaObject<JianyanCard>();
     addMetaObject<GuoseCard>();
 
-    skills << new Xiaoxi << new Jianyan;
+    skills << new Xiaoxi << new NonCompulsoryInvalidity << new Jianyan;
 }
 
 class SuperZhiheng: public Zhiheng {
