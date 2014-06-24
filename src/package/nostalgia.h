@@ -151,11 +151,11 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class NosLijianCard: public LijianCard {
+class IkMoyuCard: public LijianCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE NosLijianCard();
+    Q_INVOKABLE IkMoyuCard();
 };
 
 class QingnangCard: public SkillCard {

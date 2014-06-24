@@ -1935,22 +1935,22 @@ public:
     }
 };
 
-NosLijianCard::NosLijianCard(): LijianCard(false) {
+IkMoyuCard::IkMoyuCard(): LijianCard(false) {
 }
 
-class NosLijian: public OneCardViewAsSkill {
+class IkMoyu: public OneCardViewAsSkill {
 public:
-    NosLijian(): OneCardViewAsSkill("noslijian") {
+    IkMoyu(): OneCardViewAsSkill("ikmoyu") {
         filter_pattern = ".!";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
         return player->getAliveSiblings().length() > 1
-               && player->canDiscard(player, "he") && !player->hasUsed("NosLijianCard");
+               && player->canDiscard(player, "he") && !player->hasUsed("IkMoyuCard");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
-        NosLijianCard *lijian_card = new NosLijianCard;
+        IkMoyuCard *lijian_card = new IkMoyuCard;
         lijian_card->addSubcard(originalCard->getId());
         return lijian_card;
     }
@@ -2567,15 +2567,15 @@ NostalStandardPackage::NostalStandardPackage()
     General *nos_lvbu = new General(this, "nos_lvbu", "qun");
     nos_lvbu->addSkill("ikwushuang");
 
-    General *nos_diaochan = new General(this, "nos_diaochan", "qun", 3, false);
-    nos_diaochan->addSkill(new NosLijian);
-    nos_diaochan->addSkill("ikzhuoyue");
+    General *luna003 = new General(this, "luna003", "tsuki", 3, false);
+    luna003->addSkill(new IkMoyu);
+    luna003->addSkill("ikzhuoyue");
 
     addMetaObject<NosTuxiCard>();
     addMetaObject<NosRendeCard>();
     addMetaObject<IkKurouCard>();
     addMetaObject<NosFanjianCard>();
-    addMetaObject<NosLijianCard>();
+    addMetaObject<IkMoyuCard>();
     addMetaObject<QingnangCard>();
 }
 

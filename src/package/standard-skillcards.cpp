@@ -162,7 +162,7 @@ void LijianCard::onUse(Room *room, const CardUseStruct &card_use) const{
     if (thread->trigger(PreCardUsed, room, card_use.from, data)) return;
     use = data.value<CardUseStruct>();
 
-    room->broadcastSkillInvoke("lijian");
+    room->broadcastSkillInvoke("ikmoyu");
 
     LogMessage log;
     log.from = card_use.from;
