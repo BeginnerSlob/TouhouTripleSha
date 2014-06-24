@@ -2297,11 +2297,11 @@ SPOldPackage::SPOldPackage()
 
     General *shenlvbu1 = new General(this, "shenlvbu1", "god", 8, true, true); // SP 008 (2-1)
     shenlvbu1->addSkill("mashu");
-    shenlvbu1->addSkill("wushuang");
+    shenlvbu1->addSkill("ikwushuang");
 
     General *shenlvbu2 = new General(this, "shenlvbu2", "god", 4, true, true); // SP 008 (2-2)
     shenlvbu2->addSkill("mashu");
-    shenlvbu2->addSkill("wushuang");
+    shenlvbu2->addSkill("ikwushuang");
     shenlvbu2->addSkill(new Xiuluo);
     shenlvbu2->addSkill(new ShenweiKeep);
     shenlvbu2->addSkill(new Shenwei);
@@ -2545,7 +2545,7 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_huatuo->addSkill("jijiu");*/
 
     General *tw_lvbu = new General(this, "tw_lvbu", "qun", 4, true, true); // TW SP 008
-    tw_lvbu->addSkill("wushuang");
+    tw_lvbu->addSkill("ikwushuang");
 
     General *tw_diaochan = new General(this, "tw_diaochan", "qun", 3, false, true); // TW SP 002
     tw_diaochan->addSkill("noslijian");

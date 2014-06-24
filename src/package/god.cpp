@@ -621,7 +621,7 @@ void WuqianCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.to->getRoom();
 
     effect.from->loseMark("@wrath", 2);
-    room->acquireSkill(effect.from, "wushuang");
+    room->acquireSkill(effect.from, "ikwushuang");
     effect.from->setFlags("WuqianSource");
     effect.to->setFlags("WuqianTarget");
     room->addPlayerMark(effect.to, "Armor_Nullified");
@@ -671,7 +671,7 @@ public:
                     room->removePlayerMark(p, "Armor_Nullified");
             }
         }
-        room->detachSkillFromPlayer(player, "wushuang", false, true);
+        room->detachSkillFromPlayer(player, "ikwushuang", false, true);
 
         return false;
     }

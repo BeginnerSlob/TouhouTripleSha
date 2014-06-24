@@ -1047,10 +1047,10 @@ void Duel::onEffect(const CardEffectStruct &effect) const{
     forever {
         if (!first->isAlive())
             break;
-        if (second->tag["Wushuang_" + toString()].toStringList().contains(first->objectName())) {
+        if (second->tag["IkWushuang_" + toString()].toStringList().contains(first->objectName())) {
             const Card *slash = room->askForCard(first,
                                                  "slash",
-                                                 "@wushuang-slash-1:" + second->objectName(),
+                                                 "@ikwushuang-slash-1:" + second->objectName(),
                                                  QVariant::fromValue(effect),
                                                  Card::MethodResponse,
                                                  second);
@@ -1058,7 +1058,7 @@ void Duel::onEffect(const CardEffectStruct &effect) const{
                 break;
 
             slash = room->askForCard(first, "slash",
-                                     "@wushuang-slash-2:" + second->objectName(),
+                                     "@ikwushuang-slash-2:" + second->objectName(),
                                      QVariant::fromValue(effect),
                                      Card::MethodResponse,
                                      second);

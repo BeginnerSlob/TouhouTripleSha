@@ -2010,71 +2010,77 @@ public:
     }
 };
 
-class Wushuang: public TriggerSkill {
+class IkWushuang: public TriggerSkill {
 public:
-    Wushuang(): TriggerSkill("wushuang") {
+    IkWushuang(): TriggerSkill("ikwushuang") {
         events << TargetSpecified << CardFinished;
         frequency = Compulsory;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == TargetSpecified) {
-            int index = qrand() % 2 + 1;
-            if (Player::isNostalGeneral(player, "lvbu")) index += 2;
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("Slash") && TriggerSkill::triggerable(player)) {
-                LogMessage log;
-                log.from = player;
-                log.arg = objectName();
-                log.type = "#TriggerSkill";
-                room->sendLog(log);
-                room->notifySkillInvoked(player, objectName());
-                room->broadcastSkillInvoke(objectName(), index);
-
-                QVariantList jink_list = player->tag["Jink_" + use.card->toString()].toList();
-                for (int i = 0; i < use.to.length(); i++) {
-                    if (jink_list.at(i).toInt() == 1)
-                        jink_list.replace(i, QVariant(2));
-                }
-                player->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
-            } else if (use.card->isKindOf("Duel")) {
-                if (TriggerSkill::triggerable(player)) {
-                    LogMessage log;
-                    log.from = player;
-                    log.arg = objectName();
-                    log.type = "#TriggerSkill";
-                    room->sendLog(log);
-                    room->notifySkillInvoked(player, objectName());
-                    room->broadcastSkillInvoke(objectName(), index);
-
-                    QStringList wushuang_tag;
-                    foreach (ServerPlayer *to, use.to)
-                        wushuang_tag << to->objectName();
-                    player->tag["Wushuang_" + use.card->toString()] = wushuang_tag;
-                }
-                foreach (ServerPlayer *p, use.to.toSet()) {
-                    if (TriggerSkill::triggerable(p)) {
-                        LogMessage log;
-                        log.from = p;
-                        log.arg = objectName();
-                        log.type = "#TriggerSkill";
-                        room->sendLog(log);
-                        room->notifySkillInvoked(p, objectName());
-                        room->broadcastSkillInvoke(objectName(), index);
-
-                        p->tag["Wushuang_" + use.card->toString()] = QStringList(player->objectName());
-                    }
-                }
-            }
-        } else if (triggerEvent == CardFinished) {
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (triggerEvent == CardFinished) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("Duel")) {
                 foreach (ServerPlayer *p, room->getAllPlayers())
-                    p->tag.remove("Wushuang_" + use.card->toString());
+                    p->tag.remove("IkWushuang_" + use.card->toString());
+            }
+        } else if (triggerEvent == TargetSpecified) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash") && TriggerSkill::triggerable(player))
+                skill_list.insert(player, QStringList(objectName()));
+            else if (use.card->isKindOf("Duel")) {
+                if (TriggerSkill::triggerable(player))
+                    skill_list.insert(player, QStringList(objectName()));
+                foreach (ServerPlayer *p, use.to.toSet())
+                    if (TriggerSkill::triggerable(p))
+                        skill_list.insert(p, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("Slash")) {
+            LogMessage log;
+            log.type = "#TriggerSkill";
+            log.from = ask_who;
+            log.arg = objectName();
+            room->sendLog(log);
+            room->notifySkillInvoked(ask_who, objectName());
+            room->broadcastSkillInvoke(objectName());
+
+            QVariantList jink_list = ask_who->tag["Jink_" + use.card->toString()].toList();
+            for (int i = 0; i < use.to.length(); i++) {
+                if (jink_list.at(i).toInt() == 1)
+                    jink_list.replace(i, QVariant(2));
+            }
+            ask_who->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
+        } else if (use.card->isKindOf("Duel")) {
+            if (use.from == ask_who) {
+                LogMessage log;
+                log.type = "#TriggerSkill";
+                log.from = ask_who;
+                log.arg = objectName();
+                room->sendLog(log);
+                room->notifySkillInvoked(ask_who, objectName());
+                room->broadcastSkillInvoke(objectName());
+
+                QStringList ikwushuang_tag;
+                foreach (ServerPlayer *to, use.to)
+                    ikwushuang_tag << to->objectName();
+                ask_who->tag["IkWushuang_" + use.card->toString()] = ikwushuang_tag;
+            } else {
+                LogMessage log;
+                log.type = "#TriggerSkill";
+                log.from = use.from;
+                log.arg = objectName();
+                room->sendLog(log);
+                room->notifySkillInvoked(use.from, objectName());
+                room->broadcastSkillInvoke(objectName());
+
+                ask_who->tag["IkWushuang_" + use.card->toString()] = QStringList(use.from->objectName());
             }
         }
 
@@ -2082,49 +2088,39 @@ public:
     }
 };
 
-class Liyu: public TriggerSkill {
+class IkWudi: public ViewAsSkill {
 public:
-    Liyu(): TriggerSkill("liyu") {
-        events << Damage;
+    IkWudi(): ViewAsSkill("ikwudi") {
+        response_or_use = true;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        DamageStruct damage = data.value<DamageStruct>();
-        if (damage.to->isAlive() && player != damage.to && !damage.to->hasFlag("Global_DebutFlag") && !damage.to->isNude()
-            && damage.card && damage.card->isKindOf("Slash")) {
-            Duel *duel = new Duel(Card::NoSuit, 0);
-            duel->setSkillName("_liyu");
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkWudiCard");
+    }
 
-            QList<ServerPlayer *> targets;
-            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                if (p != damage.to && !player->isProhibited(p, duel))
-                    targets << p;
-            }
-            if (targets.isEmpty()) {
-                delete duel;
-            } else {
-                ServerPlayer *target = room->askForPlayerChosen(damage.to, targets, objectName(), "@liyu:" + player->objectName(), true);
-                if (target) {
-                    room->broadcastSkillInvoke(objectName());
-                    room->notifySkillInvoked(player, objectName());
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        if (selected.isEmpty())
+            return !to_select->isEquipped();
+        else if (selected.length() == 1) {
+            const Card *card = selected.first();
+            return !to_select->isEquipped() && to_select->getSuit() == card->getSuit();
+        } else
+            return false;
+    }
 
-                    LogMessage log;
-                    log.type = "#InvokeOthersSkill";
-                    log.from = damage.to;
-                    log.to << player;
-                    log.arg = objectName();
-                    room->sendLog(log);
-
-                    int id = room->askForCardChosen(player, damage.to, "he", objectName());
-                    room->obtainCard(player, id);
-                    if (player->isAlive() && target->isAlive() && !player->isLocked(duel))
-                        room->useCard(CardUseStruct(duel, player, target));
-                    else
-                        delete duel;
-                }
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.length() == 2) {
+            Duel *duel = new Duel(Card::SuitToBeDecided, 0);
+            duel->addSubcards(cards);
+            duel->setSkillName(objectName());
+            duel->deleteLater();
+            if (duel->isAvailable(Self)) {
+                IkWudiCard *card = new IkWudiCard;
+                card->addSubcards(cards);
+                return card;
             }
         }
-        return false;
+        return NULL;
     }
 };
 
@@ -2597,9 +2593,9 @@ void StandardPackage::addGenerals() {
     huatuo->addSkill(new Chuli);
     huatuo->addSkill(new Jijiu);
 
-    General *lvbu = new General(this, "lvbu", "qun", 5); // QUN 002
-    lvbu->addSkill(new Wushuang);
-    lvbu->addSkill(new Liyu);
+    General *luna002 = new General(this, "luna002", "tsuki");
+    luna002->addSkill(new IkWushuang);
+    luna002->addSkill(new IkWudi);
 
     General *diaochan = new General(this, "diaochan", "qun", 3, false); // QUN 003
     diaochan->addSkill(new Lijian);
@@ -2635,6 +2631,7 @@ void StandardPackage::addGenerals() {
     addMetaObject<IkQinghuaCard>();
     addMetaObject<JianyanCard>();
     addMetaObject<IkWanmeiCard>();
+    addMetaObject<IkWudiCard>();
 
     skills << new Xiaoxi << new NonCompulsoryInvalidity << new Jianyan << new IkQinghua;
 }

@@ -146,18 +146,18 @@ void TaichenFightCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer 
         duel->setSkillName("_taichenfight");
         duel->setCancelable(false);
 
-        QStringList wushuang_tag;
-        wushuang_tag << room->getLord()->objectName();
-        source->tag["Wushuang_" + duel->toString()] = wushuang_tag;
+        QStringList ikwushuang_tag;
+        ikwushuang_tag << room->getLord()->objectName();
+        source->tag["IkWushuang_" + duel->toString()] = ikwushuang_tag;
         try {
             room->useCard(CardUseStruct(duel, source, room->getLord()));
         }
         catch (TriggerEvent triggerEvent) {
             if (triggerEvent == StageChange || triggerEvent == TurnBroken)
-                source->tag.remove("Wushuang_" + duel->toString());
+                source->tag.remove("IkWushuang_" + duel->toString());
             throw triggerEvent;
         }
-        source->tag.remove("Wushuang_" + duel->toString());
+        source->tag.remove("IkWushuang_" + duel->toString());
     }
 }
 
