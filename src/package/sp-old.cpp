@@ -2509,7 +2509,7 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_machao->addSkill("nostieji");
 
     General *tw_huangyueying = new General(this, "tw_huangyueying", "shu", 3, false, true); // TW SP 011
-    tw_huangyueying->addSkill("nosjizhi");
+    tw_huangyueying->addSkill("ikhuiquan");
     tw_huangyueying->addSkill("thjizhi");
 
     General *tw_sunquan = new General(this, "tw_sunquan$", "wu", 4, true, true); // TW SP 021

@@ -1021,7 +1021,7 @@ Special1v1Package::Special1v1Package()
     kof_nos_guanyu->addSkill(new Huwei);
 
     General *kof_nos_huangyueying = new General(this, "kof_nos_huangyueying", "shu", 3, false);
-    kof_nos_huangyueying->addSkill("nosjizhi");
+    kof_nos_huangyueying->addSkill("ikhuiquan");
     kof_nos_huangyueying->addSkill(new Cangji);
     kof_nos_huangyueying->addSkill(new CangjiInstall);
     related_skills.insertMulti("cangji", "#cangji-install");
