@@ -1720,21 +1720,30 @@ public:
     }
 };
 
-class NosJizhi: public TriggerSkill {
+class IkHuiquan: public TriggerSkill {
 public:
-    NosJizhi(): TriggerSkill("nosjizhi") {
+    IkHuiquan(): TriggerSkill("ikhuiquan") {
         frequency = Frequent;
         events << CardUsed;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *yueying, QVariant &data) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *yueying, QVariant &data, ServerPlayer* &) const{
         CardUseStruct use = data.value<CardUseStruct>();
+        if (TriggerSkill::triggerable(yueying) && use.card->isKindOf("TrickCard"))
+            return QStringList(objectName());
+        return QStringList();
+    }
 
-        if (use.card->isNDTrick() && room->askForSkillInvoke(yueying, objectName())) {
-            room->broadcastSkillInvoke("jizhi");
-            yueying->drawCards(1, objectName());
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *yueying, QVariant &, ServerPlayer *) const{
+        if (yueying->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
         }
+        return false;
+    }
 
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *yueying, QVariant &, ServerPlayer *) const{
+        yueying->drawCards(1, objectName());
         return false;
     }
 };
@@ -2495,9 +2504,9 @@ NostalStandardPackage::NostalStandardPackage()
     nos_machao->addSkill("mashu");
     nos_machao->addSkill(new NosTieji);
 
-    General *nos_huangyueying = new General(this, "nos_huangyueying", "shu", 3, false);
-    nos_huangyueying->addSkill(new NosJizhi);
-    nos_huangyueying->addSkill("thjizhi");
+    General *wind007 = new General(this, "wind007", "kaze", 3, false);
+    wind007->addSkill(new IkHuiquan);
+    wind007->addSkill("thjizhi");
 
     General *nos_ganning = new General(this, "nos_ganning", "wu");
     nos_ganning->addSkill("qixi");
