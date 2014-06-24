@@ -205,9 +205,9 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
             rangefix += 1;
     }
     foreach (ServerPlayer *p, use.to) {
-        if (p->hasSkill("tongji") && p->getHandcardNum() > p->getHp() && use.from->inMyAttackRange(p, rangefix)) {
-            room->broadcastSkillInvoke("tongji");
-            room->notifySkillInvoked(p, "tongji");
+        if (p->hasSkill("ikjinlian") && p->getHandcardNum() > p->getHp() && use.from->inMyAttackRange(p, rangefix)) {
+            room->broadcastSkillInvoke("ikjinlian");
+            room->notifySkillInvoked(p, "ikjinlian");
             break;
         }
     }
@@ -902,7 +902,7 @@ bool Collateral::targetFilter(const QList<const Player *> &targets,
         if (targets.length() == 2) return false;
         const Player *slashFrom = targets[0];
         /* @todo: develop a new mechanism of filtering targets
-                    to remove the coupling here and to fix the similar bugs caused by TongJi */
+                    to remove the coupling here and to fix the similar bugs caused by IkJinlian */
         if (to_select == Self && to_select->hasSkill("ikjingyou") && Self->isLastHandCard(this, true))
             return false;
         return slashFrom->canSlash(to_select);

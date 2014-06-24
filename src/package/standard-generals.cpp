@@ -2302,47 +2302,79 @@ public:
     }
 };
 
-class Wangzun: public PhaseChangeSkill {
+class IkGuijiao: public TriggerSkill {
 public:
-    Wangzun(): PhaseChangeSkill("wangzun") {
+    IkGuijiao(): TriggerSkill("ikguijiao") {
+        events << EventPhaseStart;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool onPhaseChange(ServerPlayer *target) const{
-        Room *room = target->getRoom();
-        if (!isNormalGameMode(room->getMode()))
-            return false;
-        if (target->isLord() && target->getPhase() == Player::Start) {
-            ServerPlayer *yuanshu = room->findPlayerBySkillName(objectName());
-            if (yuanshu && room->askForSkillInvoke(yuanshu, objectName())) {
-                room->broadcastSkillInvoke(objectName());
-                yuanshu->drawCards(1, objectName());
-                room->setPlayerFlag(target, "WangzunDecMaxCards");
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player->getPhase() == Player::Start) {
+            if (player->getMark("@ejiao") > 0) {
+                foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
+                    skill_list.insert(owner, QStringList(objectName()));
+            } else {
+                bool can_invoke = true;
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    if (p->getMark("@ejiao") > 0) {
+                        can_invoke = false;
+                        break;
+                    }
+                if (can_invoke && TriggerSkill::triggerable(player))
+                    skill_list.insert(player, QStringList(objectName()));
             }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        if (player->getMark("@ejiao") > 0) {
+            if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+                room->broadcastSkillInvoke(objectName());
+                return true;
+            }
+        } else {
+            ServerPlayer *target = room->askForPlayerChosen(ask_who, room->getOtherPlayers(ask_who), objectName(), "@ikguijiao", true, true);
+            if (target) {
+                ask_who->tag["ThGuijiaoTarget"] = QVariant::fromValue(target);
+                room->broadcastSkillInvoke(objectName());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        if (player->getMark("@ejiao") > 0) {
+            ask_who->drawCards(1, objectName());
+            room->setPlayerFlag(player, "IkGuijiaoDecMaxCards");
+        } else {
+            ServerPlayer *target = ask_who->tag["ThGuijiaoTarget"].value<PlayerStar>();
+            ask_who->tag.remove("ThGuijiaoTarget");
+            if (target)
+                target->gainMark("@ejiao");
         }
         return false;
     }
 };
 
-class WangzunMaxCards: public MaxCardsSkill {
+class IkGuijiaoMaxCards: public MaxCardsSkill {
 public:
-    WangzunMaxCards(): MaxCardsSkill("#wangzun-maxcard") {
+    IkGuijiaoMaxCards(): MaxCardsSkill("#ikguijiao-maxcard") {
     }
 
     virtual int getExtra(const Player *target) const{
-        if (target->hasFlag("WangzunDecMaxCards"))
+        if (target->hasFlag("IkGuijiaoDecMaxCards"))
             return -1;
         else
             return 0;
     }
 };
 
-class Tongji: public ProhibitSkill {
+class IkJinlian: public ProhibitSkill {
 public:
-    Tongji(): ProhibitSkill("tongji") {
+    IkJinlian(): ProhibitSkill("ikjinlian") {
     }
 
     virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &) const{
@@ -2604,11 +2636,11 @@ void StandardPackage::addGenerals() {
     General *st_huaxiong = new General(this, "st_huaxiong", "qun", 6); // QUN 019
     st_huaxiong->addSkill(new Yaowu);
 
-    General *st_yuanshu = new General(this, "st_yuanshu", "qun"); // QUN 021
-    st_yuanshu->addSkill(new Wangzun);
-    st_yuanshu->addSkill(new WangzunMaxCards);
-    st_yuanshu->addSkill(new Tongji);
-    related_skills.insertMulti("wangzun", "#wangzun-maxcard");
+    General *luna034 = new General(this, "luna034", "tsuki");
+    luna034->addSkill(new IkGuijiao);
+    luna034->addSkill(new IkGuijiaoMaxCards);
+    luna034->addSkill(new IkJinlian);
+    related_skills.insertMulti("ikguijiao", "#ikguijiao-maxcard");
 
     General *st_gongsunzan = new General(this, "st_gongsunzan", "qun"); // QUN 026
     st_gongsunzan->addSkill(new Qiaomeng);
