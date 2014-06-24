@@ -1060,7 +1060,7 @@ Special1v1Package::Special1v1Package()
     kof_sunshangxiang->addSkill(new KOFXiaoji);
 
     General *kof_nos_huatuo = new General(this, "kof_nos_huatuo", "qun", 3);
-    kof_nos_huatuo->addSkill("jijiu");
+    kof_nos_huatuo->addSkill("ikhuichun");
     kof_nos_huatuo->addSkill(new Puji);
 
     General *kof_nos_diaochan = new General(this, "kof_nos_diaochan", "qun", 3, false);

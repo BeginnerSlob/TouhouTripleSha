@@ -158,11 +158,11 @@ public:
     Q_INVOKABLE IkMoyuCard();
 };
 
-class QingnangCard: public SkillCard {
+class IkQingnangCard: public SkillCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE QingnangCard();
+    Q_INVOKABLE IkQingnangCard();
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
