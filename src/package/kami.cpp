@@ -629,38 +629,32 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        const Card *card = room->askForCard(player, "..", "@thsuhu", data, Card::MethodNone);
-        if (card) {
+        if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
-            player->tag["ThSuhuCard"] = QVariant::fromValue(card);
             return true;
         }
         return false;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        CardStar card = player->tag["ThSuhuCard"].value<CardStar>();
-        player->tag.remove("ThSuhuCard");
-        if (card) {
-            player->addToPile("faces", card);
-            player->setPhase(Player::Play);
-            room->broadcastProperty(player, "phase");
-            RoomThread *thread = room->getThread();
-            if (!thread->trigger(EventPhaseStart, room, player))
-                thread->trigger(EventPhaseProceeding, room, player);
-            thread->trigger(EventPhaseEnd, room, player);
-            
-            QStringList lists;
-            lists << "BasicCard" << "EquipCard" << "TrickCard";
-            foreach (QString type, lists)
-                if (player->hasFlag("thjingyuan_" + type)) {
-                    room->setPlayerFlag(player, "-thjingyuan_" + type);
-                    room->removePlayerCardLimitation(player, "use", type + "$1");
-                }
+        player->addToPile("faces", room->drawCard());
+        player->setPhase(Player::Play);
+        room->broadcastProperty(player, "phase");
+        RoomThread *thread = room->getThread();
+        if (!thread->trigger(EventPhaseStart, room, player))
+            thread->trigger(EventPhaseProceeding, room, player);
+        thread->trigger(EventPhaseEnd, room, player);
 
-            player->setPhase(Player::Draw);
-            room->broadcastProperty(player, "phase");
-        }
+        QStringList lists;
+        lists << "BasicCard" << "EquipCard" << "TrickCard";
+        foreach (QString type, lists)
+            if (player->hasFlag("thjingyuan_" + type)) {
+                room->setPlayerFlag(player, "-thjingyuan_" + type);
+                room->removePlayerCardLimitation(player, "use", type + "$1");
+            }
+
+        player->setPhase(Player::Draw);
+        room->broadcastProperty(player, "phase");
 
         return true;
     }
