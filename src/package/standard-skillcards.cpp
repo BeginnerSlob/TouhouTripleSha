@@ -451,7 +451,7 @@ bool IkWudiCard::targetFilter(const QList<const Player *> &targets, const Player
 const Card *IkWudiCard::validate(CardUseStruct &cardUse) const{
     Duel *duel = new Duel(SuitToBeDecided, 0);
     duel->addSubcards(subcards);
-    duel->setSkillName("thwudi");
+    duel->setSkillName("ikwudi");
     return duel;
 }
 
