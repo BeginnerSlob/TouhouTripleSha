@@ -213,7 +213,7 @@ public:
         bool forced = false;
         if (player->getMark("JilveEvent") == int(AskForRetrial))
             forced = true;
-        const Card *card = room->askForCard(player, forced ? "..!" : ".." , prompt, data, Card::MethodResponse, judge->who, true);
+        const Card *card = room->askForCard(player, forced ? ".!" : "." , prompt, data, Card::MethodResponse, judge->who, true);
         if (forced && card == NULL)
             card = player->getRandomHandCard();
         if (card) {
@@ -248,8 +248,7 @@ public:
         if (!TriggerSkill::triggerable(player)) return skill;
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.from && !damage.from->isAllNude())
-            for (int i = 0; i < damage.damage; i++)
-                skill << objectName();
+            skill << objectName();
         return skill;
     }
 
