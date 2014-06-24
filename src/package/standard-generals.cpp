@@ -1955,13 +1955,13 @@ public:
     }
 };
 
-class Jieyin: public ViewAsSkill {
+class IkYulu: public ViewAsSkill {
 public:
-    Jieyin(): ViewAsSkill("jieyin") {
+    IkYulu(): ViewAsSkill("ikyulu") {
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getHandcardNum() >= 2 && !player->hasUsed("JieyinCard");
+        return player->getHandcardNum() >= 2 && !player->hasUsed("IkYuluCard");
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
@@ -1975,35 +1975,37 @@ public:
         if (cards.length() != 2)
             return NULL;
 
-        JieyinCard *jieyin_card = new JieyinCard();
-        jieyin_card->addSubcards(cards);
-        return jieyin_card;
+        IkYuluCard *ikyulu_card = new IkYuluCard();
+        ikyulu_card->addSubcards(cards);
+        return ikyulu_card;
     }
 };
 
-class Xiaoji: public TriggerSkill {
+class IkCuimeng: public TriggerSkill {
 public:
-    Xiaoji(): TriggerSkill("xiaoji") {
+    IkCuimeng(): TriggerSkill("ikcuimeng") {
         events << CardsMoveOneTime;
         frequency = Frequent;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *sunshangxiang, QVariant &data) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (move.from == sunshangxiang && move.from_places.contains(Player::PlaceEquip)) {
-            for (int i = 0; i < move.card_ids.size(); i++) {
-                if (!sunshangxiang->isAlive())
-                    return false;
-                if (move.from_places[i] == Player::PlaceEquip) {
-                    if (room->askForSkillInvoke(sunshangxiang, objectName())) {
-                        room->broadcastSkillInvoke(objectName());
-                        sunshangxiang->drawCards(2, objectName());
-                    } else {
-                        break;
-                    }
-                }
-            }
+        if (move.from == player && move.from_places.contains(Player::PlaceEquip))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *sunshangxiang, QVariant &, ServerPlayer *) const{
+        if (sunshangxiang->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
         }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *sunshangxiang, QVariant &, ServerPlayer *) const{
+        sunshangxiang->drawCards(2, objectName());
         return false;
     }
 };
@@ -2586,9 +2588,9 @@ void StandardPackage::addGenerals() {
     luxun->addSkill(new Qianxun);
     luxun->addSkill(new Lianying);
 
-    General *sunshangxiang = new General(this, "sunshangxiang", "wu", 3, false); // WU 008
-    sunshangxiang->addSkill(new Jieyin);
-    sunshangxiang->addSkill(new Xiaoji);
+    General *snow008 = new General(this, "snow008", "yuki", 3, false);
+    snow008->addSkill(new IkYulu);
+    snow008->addSkill(new IkCuimeng);
 
     // Qun
     General *huatuo = new General(this, "huatuo", "qun", 3); // QUN 001
@@ -2620,7 +2622,7 @@ void StandardPackage::addGenerals() {
     addMetaObject<IkZhihengCard>();
     addMetaObject<IkShenaiCard>();
     addMetaObject<IkLianbaoCard>();
-    addMetaObject<JieyinCard>();
+    addMetaObject<IkYuluCard>();
     addMetaObject<KurouCard>();
     addMetaObject<LijianCard>();
     addMetaObject<IkGuidengCard>();

@@ -2284,8 +2284,8 @@ SPOldPackage::SPOldPackage()
     yuanshu->addSkill(new Weidi);
 
     General *sp_sunshangxiang = new General(this, "sp_sunshangxiang", "shu", 3, false, true); // SP 005
-    sp_sunshangxiang->addSkill("jieyin");
-    sp_sunshangxiang->addSkill("xiaoji");
+    sp_sunshangxiang->addSkill("ikyulu");
+    sp_sunshangxiang->addSkill("ikcuimeng");
 
     General *sp_pangde = new General(this, "sp_pangde", "wei", 4, true, true); // SP 006
     sp_pangde->addSkill("mashu");
@@ -2537,8 +2537,8 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_luxun->addSkill("ikwujie");
 
     General *tw_sunshangxiang = new General(this, "tw_sunshangxiang", "wu", 3, false, true); // TW SP 028
-    tw_sunshangxiang->addSkill("jieyin");
-    tw_sunshangxiang->addSkill("xiaoji");
+    tw_sunshangxiang->addSkill("ikyulu");
+    tw_sunshangxiang->addSkill("ikcuimeng");
 
     /*General *tw_huatuo = new General(this, "tw_huatuo", 3, true, true);
     tw_huatuo->addSkill("qingnang");
