@@ -46,17 +46,17 @@ void IkShenaiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
         room->recover(source, RecoverStruct(source));
 }
 
-JieyinCard::JieyinCard() {
+IkYuluCard::IkYuluCard() {
 }
 
-bool JieyinCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkYuluCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     if (!targets.isEmpty())
         return false;
 
     return to_select->isMale() && to_select->isWounded() && to_select != Self;
 }
 
-void JieyinCard::onEffect(const CardEffectStruct &effect) const{
+void IkYuluCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
     RecoverStruct recover(effect.from);
     room->recover(effect.from, recover, true);
