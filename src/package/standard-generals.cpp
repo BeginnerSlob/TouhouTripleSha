@@ -1601,7 +1601,7 @@ public:
         LogMessage log;
         log.type = "#IkPojianWake";
         log.from = player;
-        log.arg = player->getMark("ikpojian");
+        log.arg = QString::number(player->getMark("ikpojian"));
         log.arg2 = objectName();
         room->sendLog(log);
         room->addPlayerMark(player, "@pojian");

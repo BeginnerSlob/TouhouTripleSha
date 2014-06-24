@@ -1748,23 +1748,53 @@ public:
     }
 };
 
-NosKurouCard::NosKurouCard() {
+IkKurouCard::IkKurouCard() {
     target_fixed = true;
 }
 
-void NosKurouCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+void IkKurouCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
     room->loseHp(source);
     if (source->isAlive())
-        room->drawCards(source, 2, "noskurou");
+        room->drawCards(source, 2, "ikkurou");
 }
 
-class NosKurou: public ZeroCardViewAsSkill {
+class IkKurou: public ZeroCardViewAsSkill {
 public:
-    NosKurou(): ZeroCardViewAsSkill("noskurou") {
+    IkKurou(): ZeroCardViewAsSkill("ikkurou") {
     }
 
     virtual const Card *viewAs() const{
-        return new NosKurouCard;
+        return new IkKurouCard;
+    }
+};
+
+class IkZaiqi: public TriggerSkill {
+public:
+    IkZaiqi(): TriggerSkill("ikzaiqi") {
+        events << HpRecover;
+        frequency = Frequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Play || !player->hasFlag("Global_Dying")) return QStringList();
+        QStringList skill;
+        RecoverStruct recover;
+        for (int i = 0; i < recover.recover; i++)
+            skill << objectName();
+        return skill;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        player->drawCards(1, objectName());
+        return true;
     }
 };
 
@@ -2514,8 +2544,9 @@ NostalStandardPackage::NostalStandardPackage()
     General *nos_lvmeng = new General(this, "nos_lvmeng", "wu");
     nos_lvmeng->addSkill("ikbiju");
 
-    General *nos_huanggai = new General(this, "nos_huanggai", "wu");
-    nos_huanggai->addSkill(new NosKurou);
+    General *snow004 = new General(this, "snow004", "yuki");
+    snow004->addSkill(new IkKurou);
+    snow004->addSkill(new IkZaiqi);
 
     General *nos_zhouyu = new General(this, "nos_zhouyu", "wu", 3);
     nos_zhouyu->addSkill(new NosYingzi);
@@ -2542,7 +2573,7 @@ NostalStandardPackage::NostalStandardPackage()
 
     addMetaObject<NosTuxiCard>();
     addMetaObject<NosRendeCard>();
-    addMetaObject<NosKurouCard>();
+    addMetaObject<IkKurouCard>();
     addMetaObject<NosFanjianCard>();
     addMetaObject<NosLijianCard>();
     addMetaObject<QingnangCard>();
