@@ -286,6 +286,7 @@ bool IkQinghuaCard::targetFilter(const QList<const Player *> &targets, const Pla
 void IkQinghuaCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
     const Card *card = room->askForCardShow(effect.to, effect.from, "ikqinghua");
+    room->showCard(effect.to, card->getEffectiveId());
     QString suit = card->getSuitString();
     if (room->askForCard(effect.from, ".|" + suit, "@ikqinghua-discard:::" + suit)) {
         room->throwCard(card, effect.to);

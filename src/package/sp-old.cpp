@@ -2523,7 +2523,7 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_lvmeng->addSkill("ikbiju");
 
     General *tw_huanggai = new General(this, "tw_huanggai", "wu", 4, true, true); // TW SP 014
-    tw_huanggai->addSkill("noskurou");
+    tw_huanggai->addSkill("ikkurou");
 
     General *tw_zhouyu = new General(this, "tw_zhouyu", "wu", 3, true, true);
     tw_zhouyu->addSkill("nosyingzi");
