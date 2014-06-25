@@ -1116,6 +1116,24 @@ private:
 
 ThShushuCard::ThShushuCard() {
     target_fixed = true;
+    will_throw = false;
+    handling_method = MethodNone;
+}
+
+void ThShushuCard::onUse(Room *room, const CardUseStruct &card_use) const {
+    LogMessage log;
+    log.type = "$ThShushu";
+    log.from = card_use.from;
+    log.card_str = IntList2StringList(subcards).join("+");
+    room->sendLog(log);
+
+    CardMoveReason reason(CardMoveReason::S_REASON_OVERRIDE, card_use.from->objectName(), "thshushu", QString());
+    QList<CardsMoveStruct> moves;
+    foreach (int id, subcards) {
+        CardsMoveStruct move(id, NULL, Player::PlaceTable, reason);
+        moves.append(move);
+    }
+    room->moveCardsAtomic(moves, true);
 }
 
 class ThShushuViewAsSkill: public ViewAsSkill {
@@ -1181,14 +1199,27 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         CardUseStruct use = data.value<CardUseStruct>();
         room->setPlayerMark(player, "thshushu", use.card->getNumber());
-        bool invoke = room->askForUseCard(player, "@@thshushu", "@thshushu", -1, Card::MethodDiscard);
+        const Card *card = room->askForUseCard(player, "@@thshushu", "@thshushu", -1, Card::MethodNone);
         room->setPlayerMark(player, "thshushu", 0);
-        return invoke;
+        if (card)
+            player->tag["ThShushuCard"] = QVariant::fromValue(card);
+        return card;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        CardUseStruct use = data.value<CardUseStruct>();
-        room->obtainCard(player, use.card);
+        const Card *card = player->tag["ThShushuCard"].value<CardStar>();
+        player->tag.remove("ThShushuCard");
+        if (card) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            room->obtainCard(player, use.card);
+            Card *new_card = Sanguosha->cloneCard(use.card->objectName());
+            new_card->addSubcards(card->getSubcards());
+            new_card->setSkillName(objectName());
+            if (use.card->isVirtualCard())
+                delete use.card;
+            use.card = new_card;
+            data = QVariant::fromValue(use);
+        }
         return false;
     }
 };
