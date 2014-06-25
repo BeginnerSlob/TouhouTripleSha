@@ -2431,40 +2431,45 @@ public:
     }
 };
 
-class Qiaomeng: public TriggerSkill {
+class IkBenyin: public TriggerSkill {
 public:
-    Qiaomeng(): TriggerSkill("qiaomeng") {
-        events << Damage << BeforeCardsMove;
+    IkBenyin(): TriggerSkill("ikbenyin") {
+        events << Damage;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.to->isAlive() && damage.card && damage.card->isKindOf("Slash") && damage.card->isBlack()
+            && (player->canDiscard(damage.to, "e") || damage.to->getEquip(2) || damage.to->getEquip(3)))
+            return QStringList(objectName());
+        return QStringList();
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == Damage && TriggerSkill::triggerable(player)) {
-            DamageStruct damage = data.value<DamageStruct>();
-            if (damage.to->isAlive() && !damage.to->hasFlag("Global_DebutFlag")
-                && damage.card && damage.card->isKindOf("Slash") && damage.card->isBlack()
-                && player->canDiscard(damage.to, "e") && room->askForSkillInvoke(player, objectName(), data)) {
-                room->broadcastSkillInvoke(objectName());
-                int id = room->askForCardChosen(player, damage.to, "e", objectName(), false, Card::MethodDiscard);
-                CardMoveReason reason(CardMoveReason::S_REASON_DISMANTLE, player->objectName(), damage.to->objectName(),
-                                      objectName(), QString());
-                room->throwCard(Sanguosha->getCard(id), reason, damage.to, player);
-            }
-        } else if (triggerEvent == BeforeCardsMove) {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.reason.m_skillName == objectName() && move.reason.m_playerId == player->objectName()
-                && move.card_ids.length() > 0) {
-                const Card *card = Sanguosha->getCard(move.card_ids.first());
-                if (card->isKindOf("Horse")) {
-                    move.card_ids.clear();
-                    data = QVariant::fromValue(move);
-                    room->obtainCard(player, card);
-                }
-            }
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(damage.to))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
         }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        QList<int> disabled_ids;
+        for (int i = 0; i < 5; i++) {
+            if (i == 3 || i == 4) continue;
+            const Card *card = damage.to->getEquip(i);
+            int id = card->getEffectiveId();
+            if (!player->canDiscard(damage.to, id))
+                disabled_ids << id;
+        }
+        int card_id = room->askForCardChosen(player, damage.to, "e", objectName(), false, Card::MethodNone, disabled_ids);
+        if (card_id == damage.to->getEquip(2)->getEffectiveId() || card_id == damage.to->getEquip(3)->getEffectiveId())
+            room->obtainCard(player, card_id);
+        else
+            room->throwCard(card_id, damage.to, player);
         return false;
     }
 };
@@ -2641,9 +2646,9 @@ void StandardPackage::addGenerals() {
     luna034->addSkill(new IkJinlian);
     related_skills.insertMulti("ikguijiao", "#ikguijiao-maxcard");
 
-    General *st_gongsunzan = new General(this, "st_gongsunzan", "qun"); // QUN 026
-    st_gongsunzan->addSkill(new Qiaomeng);
-    st_gongsunzan->addSkill("ikzhuji");
+    General *luna018 = new General(this, "luna018", "tsuki");
+    luna018->addSkill("ikzhuji");
+    luna018->addSkill(new IkBenyin);
 
     // for skill cards
     addMetaObject<IkZhihengCard>();
