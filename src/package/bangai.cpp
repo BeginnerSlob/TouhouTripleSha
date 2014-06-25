@@ -468,14 +468,14 @@ public:
         events << CardsMoveOneTime;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const {
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (!TriggerSkill::triggerable(player)
             || (room->getCurrent() == player && player->getPhase() != Player::NotActive)
             || player->isKongcheng() || player->hasFlag("thxijing_using"))
             return QStringList();
 
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (move.from != ask_who || move.to_place != Player::DiscardPile)
+        if (move.from != player || move.to_place != Player::DiscardPile)
             return QStringList();
         
         for (int i = 0; i < move.card_ids.length(); i++) {
@@ -491,10 +491,6 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        CardMoveReason reason(CardMoveReason::S_REASON_RECYCLE,
-            player->objectName(),
-            objectName(),
-            QString());
         for (int i = 0; i < move.card_ids.length(); i++) {
             int id = move.card_ids[i];
             if (move.from_places[i] != Player::PlaceJudge && move.from_places[i] != Player::PlaceSpecial
@@ -502,19 +498,25 @@ public:
                 && room->getCardPlace(id) == Player::DiscardPile) {
                 const Card *c = Sanguosha->getEngineCard(id);
                 QString prompt = "@thxijing:" + c->getSuitString()
-                    + ":" + QString::number(c->getNumber())
-                    + ":" + c->objectName();
+                                              + ":" + QString::number(c->getNumber())
+                                              + ":" + c->objectName();
                 QString pattern = ".";
                 if (c->isBlack())
                     pattern = ".black";
                 else if (c->isRed())
                     pattern = ".red";
-                room->setPlayerFlag(player, "thxijing_using");
-                const Card *card = room->askForCard(player, pattern, prompt, QVariant(), objectName());
-                room->setPlayerFlag(player, "-thxijing_using");
+                const Card *card = room->askForCard(player, pattern, prompt, QVariant(), Card::MethodNone);
                 
-                if (card)
-                    room->obtainCard(player, Sanguosha->getCard(id), reason);
+                if (card) {
+                    room->setPlayerFlag(player, "thxijing_using");
+                    CardMoveReason reason(CardMoveReason::S_REASON_PUT,
+                                          player->objectName(),
+                                          objectName(),
+                                          QString());
+                    room->throwCard(card, reason, player);
+                    room->setPlayerFlag(player, "-thxijing_using");
+                    room->obtainCard(player, Sanguosha->getCard(id));
+                }
             }
         }
 
