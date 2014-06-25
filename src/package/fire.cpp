@@ -83,10 +83,10 @@ public:
     }
 };
 
-QiangxiCard::QiangxiCard() {
+IkQiangxiCard::IkQiangxiCard() {
 }
 
-bool QiangxiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkQiangxiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     if (!targets.isEmpty() || to_select == Self)
         return false;
 
@@ -99,22 +99,22 @@ bool QiangxiCard::targetFilter(const QList<const Player *> &targets, const Playe
     return Self->inMyAttackRange(to_select, rangefix);
 }
 
-void QiangxiCard::onEffect(const CardEffectStruct &effect) const{
+void IkQiangxiCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.to->getRoom();
 
     if (subcards.isEmpty())
         room->loseHp(effect.from);
 
-    room->damage(DamageStruct("qiangxi", effect.from, effect.to));
+    room->damage(DamageStruct("ikqiangxi", effect.from, effect.to));
 }
 
-class Qiangxi: public ViewAsSkill {
+class IkQiangxi: public ViewAsSkill {
 public:
-    Qiangxi(): ViewAsSkill("qiangxi") {
+    IkQiangxi(): ViewAsSkill("ikqiangxi") {
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("QiangxiCard");
+        return !player->hasUsed("IkQiangxiCard");
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
@@ -123,9 +123,9 @@ public:
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
         if (cards.isEmpty())
-            return new QiangxiCard;
+            return new IkQiangxiCard;
         else if (cards.length() == 1) {
-            QiangxiCard *card = new QiangxiCard;
+            IkQiangxiCard *card = new IkQiangxiCard;
             card->addSubcards(cards);
 
             return card;
@@ -473,8 +473,8 @@ public:
 FirePackage::FirePackage()
     : Package("fire")
 {
-    General *dianwei = new General(this, "dianwei", "wei"); // WEI 012
-    dianwei->addSkill(new Qiangxi);
+    General *bloom012 = new General(this, "bloom012", "hana");
+    bloom012->addSkill(new IkQiangxi);
 
     General *xunyu = new General(this, "xunyu", "wei", 3); // WEI 013
     xunyu->addSkill(new Quhu);
@@ -506,7 +506,7 @@ FirePackage::FirePackage()
     pangde->addSkill(new Mengjin);
 
     addMetaObject<QuhuCard>();
-    addMetaObject<QiangxiCard>();
+    addMetaObject<IkQiangxiCard>();
     addMetaObject<TianyiCard>();
 }
 

@@ -21,11 +21,11 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class QiangxiCard: public SkillCard {
+class IkQiangxiCard: public SkillCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE QiangxiCard();
+    Q_INVOKABLE IkQiangxiCard();
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
