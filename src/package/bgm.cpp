@@ -157,7 +157,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return (TriggerSkill::triggerable(target) && target->getPhase() == Player::Finish)
-            || (target->getMark("@ikzhaihun") > 0 && target->getPhase() == Player::Draw);
+            || (target->getMark("@zhaihun") > 0 && target->getPhase() == Player::Draw);
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *caoren, QVariant &, ServerPlayer *) const{
