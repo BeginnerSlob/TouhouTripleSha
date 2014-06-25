@@ -141,9 +141,9 @@ public:
     }
 };
 
-class Kuiwei: public TriggerSkill {
+class IkZhaihun: public TriggerSkill {
 public:
-    Kuiwei(): TriggerSkill("kuiwei") {
+    IkZhaihun(): TriggerSkill("ikzhaihun") {
         events << EventPhaseStart;
     }
 
@@ -156,32 +156,33 @@ public:
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
-        return target && target->isAlive()
-               && (target->hasSkill(objectName()) || target->getMark("@kuiwei") > 0);
+        return (TriggerSkill::triggerable(target) && target->getPhase() == Player::Finish)
+            || (target->getMark("@ikzhaihun") > 0 && target->getPhase() == Player::Draw);
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *caoren, QVariant &, ServerPlayer *) const{
+        if (caoren->getPhase() == Player::Finish) {
+            if (caoren->askForSkillInvoke(objectName())) {
+                room->broadcastSkillInvoke(objectName());
+                return true;
+            }
+            return false;
+        } else
+            return true;
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *caoren, QVariant &) const{
         if (caoren->getPhase() == Player::Finish) {
-            if (!caoren->hasSkill(objectName()))
-                return false;
-            if (!caoren->askForSkillInvoke(objectName()))
-                return false;
-
-            room->broadcastSkillInvoke(objectName());
             int n = getWeaponCount(caoren);
             caoren->drawCards(n + 2, objectName());
             caoren->turnOver();
-
-            if (caoren->getMark("@kuiwei") == 0)
-                room->addPlayerMark(caoren, "@kuiwei");
-        } else if (caoren->getPhase() == Player::Draw) {
-            if (caoren->getMark("@kuiwei") == 0)
-                return false;
-            room->removePlayerMark(caoren, "@kuiwei");
+            room->setPlayerMark(caoren, "@zhaihun", 1);
+        } else {
+            room->removePlayerMark(caoren, "@zhaihun");
             int n = getWeaponCount(caoren);
             if (n > 0) {
                 LogMessage log;
-                log.type = "#KuiweiDiscard";
+                log.type = "#IkZhaihunDiscard";
                 log.from = caoren;
                 log.arg = QString::number(n);
                 log.arg2 = objectName();
@@ -194,9 +195,9 @@ public:
     }
 };
 
-class Yanzheng: public OneCardViewAsSkill {
+class IkFojiao: public OneCardViewAsSkill {
 public:
-    Yanzheng(): OneCardViewAsSkill("yanzheng") {
+    IkFojiao(): OneCardViewAsSkill("ikfojiao") {
         filter_pattern = ".|.|.|equipped";
         response_or_use = true;
     }
@@ -1375,9 +1376,9 @@ BGMPackage::BGMPackage(): Package("BGM") {
     bgm_diaochan->addSkill(new Lihun);
     bgm_diaochan->addSkill("ikzhuoyue");
 
-    General *bgm_caoren = new General(this, "bgm_caoren", "wei"); // *SP 003
-    bgm_caoren->addSkill(new Kuiwei);
-    bgm_caoren->addSkill(new Yanzheng);
+    General *bloom011 = new General(this, "bloom011", "hana");
+    bloom011->addSkill(new IkZhaihun);
+    bloom011->addSkill(new IkFojiao);
 
     General *bgm_pangtong = new General(this, "bgm_pangtong", "qun", 3); // *SP 004
     bgm_pangtong->addSkill(new Manjuan);
