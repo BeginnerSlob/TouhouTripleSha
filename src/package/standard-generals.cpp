@@ -2459,10 +2459,12 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         QList<int> disabled_ids;
         for (int i = 0; i < 5; i++) {
-            if (i == 3 || i == 4) continue;
+            if (i == 2 || i == 3) continue;
             const Card *card = damage.to->getEquip(i);
-            int id = card->getEffectiveId();
-            if (!player->canDiscard(damage.to, id))
+            int id = -1;
+            if (card)
+                id = card->getEffectiveId();
+            if (id != -1 && !player->canDiscard(damage.to, id))
                 disabled_ids << id;
         }
         int card_id = room->askForCardChosen(player, damage.to, "e", objectName(), false, Card::MethodNone, disabled_ids);
