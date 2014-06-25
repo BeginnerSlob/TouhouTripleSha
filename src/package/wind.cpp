@@ -272,26 +272,38 @@ public:
         view_as_skill = new IkXunyuViewAsSkill;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *xiahouyuan, QVariant &data) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *xiahouyuan, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(xiahouyuan)) return QStringList();
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
         if (change.to == Player::Judge && !xiahouyuan->isSkipped(Player::Judge)
             && !xiahouyuan->isSkipped(Player::Draw)) {
-            if (Slash::IsAvailable(xiahouyuan) && room->askForUseCard(xiahouyuan, "@@ikxunyu1", "@ikxunyu1", 1)) {
-                xiahouyuan->skip(Player::Judge, true);
-                xiahouyuan->skip(Player::Draw, true);
-            }
+            if (Slash::IsAvailable(xiahouyuan))
+                return QStringList(objectName());
         } else if (Slash::IsAvailable(xiahouyuan) && change.to == Player::Play && !xiahouyuan->isSkipped(Player::Play)) {
-            if (xiahouyuan->canDiscard(xiahouyuan, "he") && room->askForUseCard(xiahouyuan, "@@ikxunyu2", "@ikxunyu2", 2, Card::MethodDiscard))
-                xiahouyuan->skip(Player::Play, true);
+            if (xiahouyuan->canDiscard(xiahouyuan, "he"))
+                return QStringList(objectName());
         }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *xiahouyuan, QVariant &data, ServerPlayer *) const{
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (change.to == Player::Judge) {
+            if (room->askForUseCard(xiahouyuan, "@@ikxunyu1", "@ikxunyu1", 1))
+                return true;
+        } else if (room->askForUseCard(xiahouyuan, "@@ikxunyu2", "@ikxunyu2", 2, Card::MethodDiscard))
+            return true;
         return false;
     }
 
-    virtual int getEffectIndex(const ServerPlayer *player, const Card *) const{
-        int index = qrand() % 2 + 1;
-        if (!player->hasInnateSkill(objectName()) && player->hasSkill("baobian"))
-            index += 2;
-        return index;
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *xiahouyuan, QVariant &data, ServerPlayer *) const{
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (change.to == Player::Judge) {
+            xiahouyuan->skip(Player::Judge, true);
+            xiahouyuan->skip(Player::Draw, true);
+        } else
+            xiahouyuan->skip(Player::Play, true);
+        return false;
     }
 };
 
