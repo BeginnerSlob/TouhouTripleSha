@@ -19,11 +19,11 @@ public:
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
 };
 
-class ShensuCard: public SkillCard {
+class IkXunyuCard: public SkillCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE ShensuCard();
+    Q_INVOKABLE IkXunyuCard();
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;

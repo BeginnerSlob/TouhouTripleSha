@@ -760,7 +760,7 @@ public:
 
         acquired_skills.clear();
         detached_skills.clear();
-        BaobianChange(room, player, 1, "shensu");
+        BaobianChange(room, player, 1, "ikxunyu");
         BaobianChange(room, player, 2, "iklipao");
         BaobianChange(room, player, 3, "tiaoxin");
         if (!acquired_skills.isEmpty() || !detached_skills.isEmpty())
