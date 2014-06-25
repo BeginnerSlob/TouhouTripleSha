@@ -466,6 +466,8 @@ void MainWindow::on_actionAbout_triggered() {
 void MainWindow::setBackgroundBrush(bool centerAsOrigin) {
     if (scene) {
         QPixmap pixmap(Config.BackgroundImage);
+        if (!centerAsOrigin)
+            pixmap = QPixmap("image/system/backdrop/tableBg.jpg");
         QBrush brush(pixmap);
         qreal sx = (qreal)width() / qreal(pixmap.width());
         qreal sy = (qreal)height() / qreal(pixmap.height());
