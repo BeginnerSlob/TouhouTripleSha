@@ -394,16 +394,27 @@ public:
     }
 };
 
-class Liegong: public TriggerSkill {
+class IkLiegong: public TriggerSkill {
 public:
-    Liegong(): TriggerSkill("liegong") {
+    IkLiegong(): TriggerSkill("ikliegong") {
         events << TargetSpecified;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
         CardUseStruct use = data.value<CardUseStruct>();
         if (player != use.from || player->getPhase() != Player::Play || !use.card->isKindOf("Slash"))
-            return false;
+            return QStringList();
+        foreach (ServerPlayer *p, use.to) {
+            int handcardnum = p->getHandcardNum();
+            if (player->getHp() <= handcardnum || player->getAttackRange() >= handcardnum)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardUseStruct use = data.value<CardUseStruct>();
         QVariantList jink_list = player->tag["Jink_" + use.card->toString()].toList();
         int index = 0;
         foreach (ServerPlayer *p, use.to) {
@@ -1206,8 +1217,9 @@ WindPackage::WindPackage()
     caoren->addSkill(new Jushou);
     caoren->addSkill(new Jiewei);
 
-    General *huangzhong = new General(this, "huangzhong", "shu"); // SHU 008
-    huangzhong->addSkill(new Liegong);
+    General *wind008 = new General(this, "wind008", "kaze");
+    wind008->addSkill("thxiagong");
+    wind008->addSkill(new IkLiegong);
 
     General *weiyan = new General(this, "weiyan", "shu"); // SHU 009
     weiyan->addSkill(new IkKuanggu);

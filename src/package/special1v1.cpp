@@ -354,7 +354,7 @@ public:
         foreach (ServerPlayer *p, use.to) {
             int handcardnum = p->getHandcardNum();
             if (player->getHp() <= handcardnum && player->askForSkillInvoke(objectName(), QVariant::fromValue(p))) {
-                room->broadcastSkillInvoke("liegong");
+                room->broadcastSkillInvoke("ikliegong");
 
                 LogMessage log;
                 log.type = "#NoJink";
