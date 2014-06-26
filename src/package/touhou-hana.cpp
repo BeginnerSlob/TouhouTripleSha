@@ -151,12 +151,15 @@ void ThJiewuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
     room->obtainCard(source, card_id, false);
     Slash *slash = new Slash(NoSuit, 0);
     slash->setSkillName("_thjiewu");
-    source->addQinggangTag(slash);
-    CardUseStruct use;
-    use.card = slash;
-    use.from = target;
-    use.to << source;
-    room->useCard(use, false);
+    if (target->canSlash(source, slash, false)) {
+        source->addQinggangTag(slash);
+        CardUseStruct use;
+        use.card = slash;
+        use.from = target;
+        use.to << source;
+        room->useCard(use, false);
+    } else
+        delete slash;
 }
 
 class ThJiewu: public ZeroCardViewAsSkill {
@@ -695,9 +698,10 @@ bool ThXihuaCard::targetFilter(const QList<const Player *> &targets, const Playe
     Slash *slash = new Slash(NoSuit, 0);
     slash->setSkillName("_thxihua");
     slash->deleteLater();
-    if (Self->isProhibited(to_select, duel) && (!Self->canSlash(to_select) || Self->isProhibited(to_select, slash)))
+    if (Self->isProhibited(to_select, duel) && !Self->canSlash(to_select, slash, false))
         return false;
-
+    if (Self->isCardLimited(duel, MethodUse) && Self->isCardLimited(slash, MethodUse))
+        return false;
     return true;
 }
 
@@ -711,7 +715,7 @@ void ThXihuaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
     Duel *duel = new Duel(NoSuit, 0);
     duel->setSkillName("_thxihua");
     duel->deleteLater();
-    if (slash->isAvailable(source) && !source->isProhibited(target, slash))
+    if (slash->isAvailable(source) && source->canSlash(target, slash, false))
         choices << "slash";
 
     if (duel->isAvailable(source) && !source->isProhibited(target, duel))
@@ -1263,7 +1267,8 @@ void ThDuanzuiCard::onEffect(const CardEffectStruct &effect) const {
         use_card->setSkillName("_thduanzui");
         use_card->deleteLater();
         use.card = use_card;
-        room->useCard(use);
+        if (!effect.from->isProhibited(effect.to, use_card))
+            room->useCard(use);
     } else if (card->isKindOf("Jink")) {
         CardUseStruct use;
         use.from = effect.from;
@@ -1272,7 +1277,8 @@ void ThDuanzuiCard::onEffect(const CardEffectStruct &effect) const {
         use_card->setSkillName("_thduanzui");
         use_card->deleteLater();
         use.card = use_card;
-        room->useCard(use, false);
+        if (effect.from->canSlash(effect.to, use_card, false))
+            room->useCard(use, false);
     }
 };
 
@@ -2230,6 +2236,19 @@ public:
     }
 };
 
+class ThJibu: public DistanceSkill {
+public:
+    ThJibu(): DistanceSkill("thjibu") {
+    }
+
+    virtual int getCorrect(const Player *from, const Player *) const {
+        if (from->hasSkill(objectName()))
+            return -1;
+        else
+            return 0;
+    }
+};
+
 ThLiuzhenCard::ThLiuzhenCard() {
     handling_method = MethodNone;
 }
@@ -2261,19 +2280,6 @@ public:
     }
 };
 
-class ThJibu: public DistanceSkill {
-public:
-    ThJibu(): DistanceSkill("thjibu") {
-    }
-
-    virtual int getCorrect(const Player *from, const Player *) const {
-        if (from->hasSkill(objectName()))
-            return -1;
-        else
-            return 0;
-    }
-};
-
 class ThLiuzhen: public TriggerSkill{
 public:
     ThLiuzhen(): TriggerSkill("thliuzhen") {
@@ -2300,8 +2306,8 @@ public:
             if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
             && move.reason.m_reason == CardMoveReason::S_REASON_USE) {
                 if (player->tag["thliuzhen_user"].toBool()) {
-                    CardStar zhancao_card = move.reason.m_extraData.value<CardStar>();
-                    if (zhancao_card && zhancao_card->hasFlag("thliuzhen"))
+                    CardStar liuzhen_card = move.reason.m_extraData.value<CardStar>();
+                    if (liuzhen_card && liuzhen_card->hasFlag("thliuzhen"))
                         return QStringList(objectName());
                 }
             }
@@ -2354,8 +2360,10 @@ public:
                 foreach (ServerPlayer *p, room->getAllPlayers())
                     if (p->hasFlag("liuzhennew")) {
                         room->setPlayerFlag(p, "-liuzhennew");
-                        use.to << p;
+                        if (player->canSlash(p, false))
+                            use.to << p;
                     }
+                if (use.to.isEmpty()) return false;
                 room->sortByActionOrder(use.to);
                 use.from = player;
                 room->useCard(use, false);

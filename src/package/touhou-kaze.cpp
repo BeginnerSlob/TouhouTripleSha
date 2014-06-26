@@ -389,7 +389,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
         room->setPlayerFlag(ask_who, "ThHongyeUse");
-        if (!room->askForUseSlashTo(ask_who, player, "@thhongye:" + player->objectName()))
+        if (!room->askForUseSlashTo(ask_who, player, "@thhongye:" + player->objectName(), false))
             room->setPlayerFlag(ask_who, "-ThHongyeUse");
 
         return false;
@@ -701,7 +701,7 @@ ThBishaCard::ThBishaCard() {
     mute = true;
 }
 
-void ThBishaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+const Card *ThBishaCard::validate(CardUseStruct &card_use) const{
     const Card *card = Sanguosha->getCard(getEffectiveId());
     QString cardname;
     if(card->isRed())
@@ -712,31 +712,8 @@ void ThBishaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
     Card *newcard = Sanguosha->cloneCard(cardname, card->getSuit(), card->getNumber());
     newcard->addSubcard(card);
     newcard->setSkillName("thbisha");
-    CardUseStruct use;
-    use.card = newcard;
-    use.from = source;
-    use.to << source;
-    room->useCard(use, true);
-
-    source->drawCards(1);
-    QList<ServerPlayer *> victims;
-    foreach(ServerPlayer *p, room->getOtherPlayers(source))
-        if(source->canSlash(p, NULL, false))
-            victims << p;
-
-    if(!victims.isEmpty()) {
-        ServerPlayer *victim = room->askForPlayerChosen(source, victims, "thbisha");
-        room->setFixedDistance(source, victim, 1);
-        source->tag["ThBishaTarget"] = QVariant::fromValue(victim);
-        Slash *slash = new Slash(Card::NoSuit, 0);
-        slash->setSkillName("_thbisha");
-        CardUseStruct use;
-        use.card = slash;
-        use.from = source;
-        use.to << victim;
-        victim->addQinggangTag(slash);
-        room->useCard(use, false);
-    }
+    card_use.to << card_use.from;
+    return newcard;
 }
 
 class ThBishaViewAsSkill: public OneCardViewAsSkill {
@@ -747,14 +724,37 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const {
-        return !(player->containsTrick("indulgence") && player->containsTrick("supply_shortage")) && !player->hasUsed("ThBishaCard");
+        if (player->hasUsed("ThBishaCard")) return false;
+        bool can_le = true, can_bing = true;
+        if (!player->containsTrick("indulgence")) {
+            Card *le = Sanguosha->cloneCard("indulgence");
+            le->deleteLater();
+            if (player->isCardLimited(le, Card::MethodUse))
+                can_le = false;
+        } else
+            can_le = false;
+        
+        if (!player->containsTrick("supply_shortage")) {
+            Card *bing = Sanguosha->cloneCard("supply_shortage");
+            bing->deleteLater();
+            if (player->isCardLimited(bing, Card::MethodUse))
+                can_bing = false;
+        } else
+            can_bing = false;
+
+        return can_le || can_bing;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const {
-        if (originalCard->isRed() && Self->containsTrick("indulgence"))
-            return NULL;
-
-        if (originalCard->isBlack() && Self->containsTrick("supply_shortage"))
+        QString cardname;
+        if(originalCard->isRed())
+            cardname = "indulgence";
+        else
+            cardname = "supply_shortage";
+        Card *trick = Sanguosha->cloneCard(cardname);
+        trick->addSubcard(originalCard);
+        trick->deleteLater();
+        if (Self->containsTrick(cardname) || Self->isCardLimited(trick, Card::MethodUse))
             return NULL;
 
         ThBishaCard *card = new ThBishaCard;
@@ -797,6 +797,41 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *) const {
+        return false;
+    }
+};
+
+class ThBishaSlash: public TriggerSkill {
+public:
+    ThBishaSlash(): TriggerSkill("#thbisha") {
+        events << CardFinished;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->getSkillName(false) == "thbisha")
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        player->drawCards(1);
+
+        ServerPlayer *victim = room->askForPlayerChosen(player, room->getOtherPlayers(player), "thbisha");
+        room->setFixedDistance(player, victim, 1);
+        player->tag["ThBishaTarget"] = QVariant::fromValue(victim);
+        Slash *slash = new Slash(Card::NoSuit, 0);
+        slash->setSkillName("_thbisha");
+        if (player->canSlash(victim, slash, false)) {
+            CardUseStruct use;
+            use.card = slash;
+            use.from = player;
+            use.to << victim;
+            victim->addQinggangTag(slash);
+            room->useCard(use, false);
+        } else
+            delete slash;
         return false;
     }
 };
@@ -1858,7 +1893,7 @@ public:
             return QStringList(objectName());
         } else if (triggerEvent == CardEffected) {
             CardEffectStruct effect = data.value<CardEffectStruct>();
-            if (!effect.nullified && (effect.card->isNDTrick() || effect.card->isKindOf("Slash")) && !effect.from->isWounded())
+            if ((effect.card->isNDTrick() || effect.card->isKindOf("Slash")) && !effect.from->isWounded() && effect.from->getMaxHp() != 1)
                 return QStringList(objectName());
         }
 
@@ -1872,6 +1907,7 @@ public:
         log.arg  = objectName();
         room->sendLog(log);
         room->notifySkillInvoked(player, objectName());
+        room->broadcastSkillInvoke(objectName());
 
         if (triggerEvent == Predamage) {
             DamageStruct damage = data.value<DamageStruct>();
@@ -2204,6 +2240,8 @@ void TouhouPackage::addKazeGenerals() {
     
     General *kaze007 = new General(this, "kaze007", "kaze");
     kaze007->addSkill(new ThBisha);
+    kaze007->addSkill(new ThBishaSlash);
+    related_skills.insertMulti("thbisha", "#thbisha");
     
     General *kaze008 = new General(this, "kaze008", "kaze");
     kaze008->addSkill(new ThShenzhou);
