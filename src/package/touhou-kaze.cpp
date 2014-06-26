@@ -1943,6 +1943,7 @@ public:
                         continue;
                     return QStringList(objectName());
                 }
+            player->tag.remove("ThDongxi");
         }
 
         return QStringList();
