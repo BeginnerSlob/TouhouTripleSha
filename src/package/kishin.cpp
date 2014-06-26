@@ -324,7 +324,7 @@ public:
                 player->tag["ThLanzouTarget"] = QVariant::fromValue(target);
                 return true;
             } else
-                target->tag.remove("ThLanzou");
+                player->tag.remove("ThLanzou");
         } else
             room->askForUseCard(player, "@@thlanzou", "@thlanzou", -1, Card::MethodNone);
 

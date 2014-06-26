@@ -757,12 +757,14 @@ return {
 	["#snow013"] = "紫阳之吻",
 	["snow013"] = "散华礼弥",--雪 - 空 - 3血
 	["iksusheng"] = "苏生",
+	["iksusheng"] = "苏生",
 	[":iksusheng"] = "每当你扣减1点体力后，若你体力值为0，你可以从牌堆顶亮出一张牌置于你的武将牌上，称为“芳”，若你全部的“芳”的点数都不相同，你不会进入濒死状态且不会死亡；否则，你须将全部的“芳”置入弃牌堆并进入濒死状态。每当你回复1点体力后，将一张“芳”置入弃牌堆。",
+	["#iksusheng-remove"] = "苏生（移除“芳”）",
 	["iksushengpile"] = "芳",
-	["#IkSushengDuplicate"] = "%from 时运不济啊，“芳”中有 %arg 组重复点数",
+	["#IkSushengDuplicate"] = "%from 发动“<font color=\"yellow\"><b>苏生</b></font>”失败，其“芳”中有 %arg 组重复点数",
 	["#IkSushengDuplicateGroup"] = "第 %arg 组重复点数为 %arg2",
-	["$IkSushengDuplicateItem"] = "“芳”重复牌: %card",
-	["$IkSushengRemove"] = "%from 移除了“芳”：%card", 
+	["$IkSushengDuplicateItem"] = "重复“芳”: %card",
+	["$IkSushengRemove"] = "%from 移除了“芳”：%card",
 	["ikeli"] = "噩戾",
 	[":ikeli"] = "弃牌阶段结束时，若你于此阶段弃置了两张或更多的手牌，可以视为你使用一张【百鬼夜行】。",
 
