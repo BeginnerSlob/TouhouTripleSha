@@ -40,7 +40,7 @@ return {
 	[":thzongni"] = "锁定技，若你的体力值大于1，你的手牌上限-1。",
 	
 	["#kishin004"] = "幻乡琉璃双镜",
-	["kishin004"] = "九十九弁弁&九十九八桥",--月 - 空 - 4血
+	["kishin004"] = "九十九弁弁＆九十九八桥",--月 - 空 - 4血
 	["designer:kishin004"] = "幻桜落 | Codeby:Slob",
 	["illustrator:kishin004"] = "正体不明",
 	["cv:kishin004"] = "暂无",

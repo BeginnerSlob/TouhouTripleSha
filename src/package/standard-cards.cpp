@@ -698,6 +698,14 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         if (room->askForSkillInvoke(player, "eight_diagram")) {
+            if (!player->getArmor() && player->hasSkill("ikshengtang")) {
+                LogMessage log;
+                log.type = "#InvokeSkill";
+                log.from = player;
+                log.arg = "ikshengtang";
+                room->sendLog(log);
+                room->notifySkillInvoked(player, "ikshengtang");
+            }
             return true;
         }
         return false;
