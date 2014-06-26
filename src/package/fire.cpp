@@ -133,9 +133,9 @@ public:
     }
 };
 
-class Luanji: public ViewAsSkill {
+class IkXinghuang: public ViewAsSkill {
 public:
-    Luanji(): ViewAsSkill("luanji") {
+    IkXinghuang(): ViewAsSkill("ikxinghuang") {
         response_or_use = true;
     }
 
@@ -157,25 +157,6 @@ public:
             return aa;
         } else
             return NULL;
-    }
-};
-
-class Xueyi: public MaxCardsSkill {
-public:
-    Xueyi(): MaxCardsSkill("xueyi$") {
-    }
-
-    virtual int getExtra(const Player *target) const{
-        if (target->hasLordSkill(objectName())) {
-            int extra = 0;
-            QList<const Player *> players = target->getAliveSiblings();
-            foreach (const Player *player, players) {
-                if (player->getKingdom() == "qun")
-                    extra += 2;
-            }
-            return extra;
-        } else
-            return 0;
     }
 };
 
@@ -477,9 +458,8 @@ FirePackage::FirePackage()
     snow012->addSkill(new IkJianmieTargetMod);
     related_skills.insertMulti("ikjianmie", "#ikjianmie-target");
 
-    General *yuanshao = new General(this, "yuanshao$", "qun"); // QUN 004
-    yuanshao->addSkill(new Luanji);
-    yuanshao->addSkill(new Xueyi);
+    General *luna004 = new General(this, "luna004", "tsuki");
+    luna004->addSkill(new IkXinghuang);
 
     General *yanliangwenchou = new General(this, "yanliangwenchou", "qun"); // QUN 005
     yanliangwenchou->addSkill(new Shuangxiong);
