@@ -852,6 +852,10 @@ void ThMimengDialog::popup() {
 void ThMimengDialog::selectCard(QAbstractButton *button){
     CardStar card = map.value(button->objectName());
     Self->tag[object_name] = QVariant::fromValue(card);
+    if (button->objectName().contains("slash")) {
+        if (objectName() == "ikguihuo")
+            Self->tag["IkGuihuoSlash"] = button->objectName();
+    }
     emit onButtonClick();
     accept();
 }

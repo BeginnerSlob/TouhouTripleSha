@@ -895,7 +895,7 @@ void Dashboard::startPending(const ViewAsSkill *skill) {
 void Dashboard::stopPending() {
     m_mutexEnableCards.lock();
     if (view_as_skill) {
-        if (view_as_skill->objectName().contains("guhuo")) {
+        if (view_as_skill->objectName() == "ikguihuo") {
             foreach (CardItem *item, m_handCards)
                 item->hideFootnote();
         } else if (!view_as_skill->getExpandPile().isEmpty())
@@ -1037,7 +1037,7 @@ void Dashboard::updatePending() {
             delete pending_card;
             pending_card = NULL;
         }
-        if (view_as_skill->objectName().contains("guhuo")
+        if (view_as_skill->objectName() == "ikguihuo"
             && Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) {
             foreach (CardItem *item, m_handCards) {
                 item->hideFootnote();

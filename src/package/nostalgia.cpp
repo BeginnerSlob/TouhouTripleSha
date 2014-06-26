@@ -2198,13 +2198,15 @@ public:
     }
 };
 
-NosGuhuoCard::NosGuhuoCard() {
+#include "touhou.h"
+
+IkGuihuoCard::IkGuihuoCard() {
     mute = true;
     will_throw = false;
     handling_method = Card::MethodNone;
 }
 
-bool NosGuhuoCard::nosguhuo(ServerPlayer *yuji) const{
+bool IkGuihuoCard::ikguihuo(ServerPlayer *yuji) const{
     Room *room = yuji->getRoom();
     QList<ServerPlayer *> players = room->getOtherPlayers(yuji);
     QSet<ServerPlayer *> questioned;
@@ -2213,12 +2215,12 @@ bool NosGuhuoCard::nosguhuo(ServerPlayer *yuji) const{
     QList<CardsMoveStruct> moves;
     foreach (int card_id, getSubcards())
         used_cards << card_id;
-    room->setTag("NosGuhuoType", user_string);
+    room->setTag("IkGuihuoType", user_string);
 
     foreach (ServerPlayer *player, players) {
         if (player->getHp() <= 0) {
             LogMessage log;
-            log.type = "#GuhuoCannotQuestion";
+            log.type = "#IkGuihuoCannotQuestion";
             log.from = player;
             log.arg = QString::number(player->getHp());
             room->sendLog(log);
@@ -2227,7 +2229,7 @@ bool NosGuhuoCard::nosguhuo(ServerPlayer *yuji) const{
             continue;
         }
 
-        QString choice = room->askForChoice(player, "nosguhuo", "noquestion+question");
+        QString choice = room->askForChoice(player, "ikguihuo", "noquestion+question");
         if (choice == "question") {
             room->setEmotion(player, "question");
             questioned << player;
@@ -2235,7 +2237,7 @@ bool NosGuhuoCard::nosguhuo(ServerPlayer *yuji) const{
             room->setEmotion(player, "no-question");
 
         LogMessage log;
-        log.type = "#GuhuoQuery";
+        log.type = "#IkGuihuoQuery";
         log.from = player;
         log.arg = choice;
 
@@ -2243,7 +2245,7 @@ bool NosGuhuoCard::nosguhuo(ServerPlayer *yuji) const{
     }
 
     LogMessage log;
-    log.type = "$GuhuoResult";
+    log.type = "$IkGuihuoResult";
     log.from = yuji;
     log.card_str = QString::number(subcards.first());
     room->sendLog(log);
@@ -2254,7 +2256,7 @@ bool NosGuhuoCard::nosguhuo(ServerPlayer *yuji) const{
         foreach (ServerPlayer *player, players)
             room->setEmotion(player, ".");
 
-        CardMoveReason reason(CardMoveReason::S_REASON_USE, yuji->objectName(), QString(), "nosguhuo");
+        CardMoveReason reason(CardMoveReason::S_REASON_USE, yuji->objectName(), QString(), "ikguihuo");
         CardsMoveStruct move(used_cards, yuji, NULL, Player::PlaceUnknown, Player::PlaceTable, reason);
         moves.append(move);
         room->moveCardsAtomic(moves, true);
@@ -2262,7 +2264,7 @@ bool NosGuhuoCard::nosguhuo(ServerPlayer *yuji) const{
         const Card *card = Sanguosha->getCard(subcards.first());
         bool real;
         if (user_string == "peach+analeptic")
-            real = card->objectName() == yuji->tag["NosGuhuoSaveSelf"].toString();
+            real = card->objectName() == yuji->tag["IkGuihuoSaveSelf"].toString();
         else if (user_string == "slash")
             real = card->objectName().contains("slash");
         else if (user_string == "normal_slash")
@@ -2272,13 +2274,13 @@ bool NosGuhuoCard::nosguhuo(ServerPlayer *yuji) const{
 
         success = real && card->getSuit() == Card::Heart;
         if (success) {
-            CardMoveReason reason(CardMoveReason::S_REASON_USE, yuji->objectName(), QString(), "nosguhuo");
+            CardMoveReason reason(CardMoveReason::S_REASON_USE, yuji->objectName(), QString(), "ikguihuo");
             CardsMoveStruct move(used_cards, yuji, NULL, Player::PlaceUnknown, Player::PlaceTable, reason);
             moves.append(move);
             room->moveCardsAtomic(moves, true);
         } else {
             room->moveCardTo(this, yuji, NULL, Player::DiscardPile,
-                             CardMoveReason(CardMoveReason::S_REASON_PUT, yuji->objectName(), QString(), "nosguhuo"), true);
+                             CardMoveReason(CardMoveReason::S_REASON_PUT, yuji->objectName(), QString(), "ikguihuo"), true);
         }
         foreach (ServerPlayer *player, players) {
             room->setEmotion(player, ".");
@@ -2286,16 +2288,16 @@ bool NosGuhuoCard::nosguhuo(ServerPlayer *yuji) const{
                 if (real)
                     room->loseHp(player);
                 else
-                    player->drawCards(1, "nosguhuo");
+                    player->drawCards(1, "ikguihuo");
             }
         }
     }
-    yuji->tag.remove("NosGuhuoSaveSelf");
-    yuji->tag.remove("NosGuhuoSlash");
+    yuji->tag.remove("IkGuihuoSaveSelf");
+    yuji->tag.remove("IkGuihuoSlash");
     return success;
 }
 
-bool NosGuhuoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkGuihuoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
         const Card *card = NULL;
         if (!user_string.isEmpty())
@@ -2305,11 +2307,11 @@ bool NosGuhuoCard::targetFilter(const QList<const Player *> &targets, const Play
         return false;
     }
 
-    CardStar card = Self->tag.value("nosguhuo").value<CardStar>();
+    CardStar card = Self->tag.value("ikguihuo").value<CardStar>();
     return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
 }
 
-bool NosGuhuoCard::targetFixed() const{
+bool IkGuihuoCard::targetFixed() const{
     if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
         const Card *card = NULL;
         if (!user_string.isEmpty())
@@ -2319,11 +2321,11 @@ bool NosGuhuoCard::targetFixed() const{
         return true;
     }
 
-    CardStar card = Self->tag.value("nosguhuo").value<CardStar>();
+    CardStar card = Self->tag.value("ikguihuo").value<CardStar>();
     return card && card->targetFixed();
 }
 
-bool NosGuhuoCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+bool IkGuihuoCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
     if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
         const Card *card = NULL;
         if (!user_string.isEmpty())
@@ -2333,49 +2335,49 @@ bool NosGuhuoCard::targetsFeasible(const QList<const Player *> &targets, const P
         return true;
     }
 
-    CardStar card = Self->tag.value("nosguhuo").value<CardStar>();
+    CardStar card = Self->tag.value("ikguihuo").value<CardStar>();
     return card && card->targetsFeasible(targets, Self);
 }
 
-const Card *NosGuhuoCard::validate(CardUseStruct &card_use) const{
+const Card *IkGuihuoCard::validate(CardUseStruct &card_use) const{
     ServerPlayer *yuji = card_use.from;
     Room *room = yuji->getRoom();
 
-    QString to_nosguhuo = user_string;
+    QString to_ikguihuo = user_string;
     if (user_string == "slash"
         && Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
-        QStringList nosguhuo_list;
-        nosguhuo_list << "slash";
+        QStringList ikguihuo_list;
+        ikguihuo_list << "slash";
         if (!Config.BanPackages.contains("maneuvering"))
-            nosguhuo_list << "normal_slash" << "thunder_slash" << "fire_slash";
-        to_nosguhuo = room->askForChoice(yuji, "nosguhuo_slash", nosguhuo_list.join("+"));
-        yuji->tag["NosGuhuoSlash"] = QVariant(to_nosguhuo);
+            ikguihuo_list << "normal_slash" << "thunder_slash" << "fire_slash";
+        to_ikguihuo = room->askForChoice(yuji, "ikguihuo_slash", ikguihuo_list.join("+"));
+        yuji->tag["IkGuihuoSlash"] = QVariant(to_ikguihuo);
     }
-    room->broadcastSkillInvoke("nosguhuo");
+    room->broadcastSkillInvoke("ikguihuo");
 
     LogMessage log;
-    log.type = card_use.to.isEmpty() ? "#GuhuoNoTarget" : "#Guhuo";
+    log.type = card_use.to.isEmpty() ? "#IkGuihuoNoTarget" : "#IkGuihuo";
     log.from = yuji;
     log.to = card_use.to;
-    log.arg = to_nosguhuo;
-    log.arg2 = "nosguhuo";
+    log.arg = to_ikguihuo;
+    log.arg2 = "ikguihuo";
 
     room->sendLog(log);
 
-    if (nosguhuo(card_use.from)) {
+    if (ikguihuo(card_use.from)) {
         const Card *card = Sanguosha->getCard(subcards.first());
         QString user_str;
-        if (to_nosguhuo == "slash") {
+        if (to_ikguihuo == "slash") {
             if (card->isKindOf("Slash"))
                 user_str = card->objectName();
             else
                 user_str = "slash";
-        } else if (to_nosguhuo == "normal_slash")
+        } else if (to_ikguihuo == "normal_slash")
             user_str = "slash";
         else
-            user_str = to_nosguhuo;
+            user_str = to_ikguihuo;
         Card *use_card = Sanguosha->cloneCard(user_str, card->getSuit(), card->getNumber());
-        use_card->setSkillName("nosguhuo");
+        use_card->setSkillName("ikguihuo");
         use_card->addSubcard(subcards.first());
         use_card->deleteLater();
         return use_card;
@@ -2383,50 +2385,50 @@ const Card *NosGuhuoCard::validate(CardUseStruct &card_use) const{
         return NULL;
 }
 
-const Card *NosGuhuoCard::validateInResponse(ServerPlayer *yuji) const{
+const Card *IkGuihuoCard::validateInResponse(ServerPlayer *yuji) const{
     Room *room = yuji->getRoom();
-    room->broadcastSkillInvoke("nosguhuo");
+    room->broadcastSkillInvoke("ikguihuo");
 
-    QString to_nosguhuo;
+    QString to_ikguihuo;
     if (user_string == "peach+analeptic") {
-        QStringList nosguhuo_list;
-        nosguhuo_list << "peach";
+        QStringList ikguihuo_list;
+        ikguihuo_list << "peach";
         if (!Config.BanPackages.contains("maneuvering"))
-            nosguhuo_list << "analeptic";
-        to_nosguhuo = room->askForChoice(yuji, "nosguhuo_saveself", nosguhuo_list.join("+"));
-        yuji->tag["NosGuhuoSaveSelf"] = QVariant(to_nosguhuo);
+            ikguihuo_list << "analeptic";
+        to_ikguihuo = room->askForChoice(yuji, "ikguihuo_saveself", ikguihuo_list.join("+"));
+        yuji->tag["IkGuihuoSaveSelf"] = QVariant(to_ikguihuo);
     } else if (user_string == "slash") {
-        QStringList nosguhuo_list;
-        nosguhuo_list << "slash";
+        QStringList ikguihuo_list;
+        ikguihuo_list << "slash";
         if (!Config.BanPackages.contains("maneuvering"))
-            nosguhuo_list << "normal_slash" << "thunder_slash" << "fire_slash";
-        to_nosguhuo = room->askForChoice(yuji, "nosguhuo_slash", nosguhuo_list.join("+"));
-        yuji->tag["NosGuhuoSlash"] = QVariant(to_nosguhuo);
+            ikguihuo_list << "normal_slash" << "thunder_slash" << "fire_slash";
+        to_ikguihuo = room->askForChoice(yuji, "ikguihuo_slash", ikguihuo_list.join("+"));
+        yuji->tag["IkGuihuoSlash"] = QVariant(to_ikguihuo);
     }
     else
-        to_nosguhuo = user_string;
+        to_ikguihuo = user_string;
 
     LogMessage log;
-    log.type = "#GuhuoNoTarget";
+    log.type = "#IkGuihuoNoTarget";
     log.from = yuji;
-    log.arg = to_nosguhuo;
-    log.arg2 = "nosguhuo";
+    log.arg = to_ikguihuo;
+    log.arg2 = "ikguihuo";
     room->sendLog(log);
 
-    if (nosguhuo(yuji)) {
+    if (ikguihuo(yuji)) {
         const Card *card = Sanguosha->getCard(subcards.first());
         QString user_str;
-        if (to_nosguhuo == "slash") {
+        if (to_ikguihuo == "slash") {
             if (card->isKindOf("Slash"))
                 user_str = card->objectName();
             else
                 user_str = "slash";
-        } else if (to_nosguhuo == "normal_slash")
+        } else if (to_ikguihuo == "normal_slash")
             user_str = "slash";
         else
-            user_str = to_nosguhuo;
+            user_str = to_ikguihuo;
         Card *use_card = Sanguosha->cloneCard(user_str, card->getSuit(), card->getNumber());
-        use_card->setSkillName("nosguhuo");
+        use_card->setSkillName("ikguihuo");
         use_card->addSubcard(subcards.first());
         use_card->deleteLater();
         return use_card;
@@ -2434,9 +2436,9 @@ const Card *NosGuhuoCard::validateInResponse(ServerPlayer *yuji) const{
         return NULL;
 }
 
-class NosGuhuo: public OneCardViewAsSkill {
+class IkGuihuo: public OneCardViewAsSkill {
 public:
-    NosGuhuo(): OneCardViewAsSkill("nosguhuo") {
+    IkGuihuo(): OneCardViewAsSkill("ikguihuo") {
         filter_pattern = ".|.|.|hand";
         response_or_use = true;
     }
@@ -2458,19 +2460,19 @@ public:
     virtual const Card *viewAs(const Card *originalCard) const{
         if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE
             || Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
-            NosGuhuoCard *card = new NosGuhuoCard;
+            IkGuihuoCard *card = new IkGuihuoCard;
             card->setUserString(Sanguosha->currentRoomState()->getCurrentCardUsePattern());
             card->addSubcard(originalCard);
             return card;
         }
 
-        CardStar c = Self->tag.value("nosguhuo").value<CardStar>();
+        CardStar c = Self->tag.value("ikguihuo").value<CardStar>();
         if (c) {
-            NosGuhuoCard *card = new NosGuhuoCard;
+            IkGuihuoCard *card = new IkGuihuoCard;
             if (!c->objectName().contains("slash"))
                 card->setUserString(c->objectName());
             else
-                card->setUserString(Self->tag["NosGuhuoSlash"].toString());
+                card->setUserString(Self->tag["IkGuihuoSlash"].toString());
             card->addSubcard(originalCard);
             return card;
         } else
@@ -2478,11 +2480,11 @@ public:
     }
 
     virtual QDialog *getDialog() const{
-        return GuhuoDialog::getInstance("nosguhuo");
+        return ThMimengDialog::getInstance("ikguihuo");
     }
 
     virtual int getEffectIndex(const ServerPlayer *, const Card *card) const{
-        if (!card->isKindOf("NosGuhuoCard"))
+        if (!card->isKindOf("IkGuihuoCard"))
             return -2;
         else
             return -1;
@@ -2624,10 +2626,10 @@ NostalWindPackage::NostalWindPackage()
     luna014->addSkill("iktianshi");
     luna014->addSkill("ikyuji");
 
-    General *nos_yuji = new General(this, "nos_yuji", "qun", 3);
-    nos_yuji->addSkill(new NosGuhuo);
+    General *luna011 = new General(this, "luna011", "tsuki");
+    luna011->addSkill(new IkGuihuo);
 
-    addMetaObject<NosGuhuoCard>();
+    addMetaObject<IkGuihuoCard>();
 }
 
 NostalYJCMPackage::NostalYJCMPackage()
