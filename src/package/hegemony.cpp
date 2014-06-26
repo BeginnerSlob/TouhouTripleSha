@@ -761,8 +761,8 @@ HegemonyPackage::HegemonyPackage()
     heg_zhouyu->addSkill("nosfanjian");
 
     General *heg_xiaoqiao = new General(this, "heg_xiaoqiao", "wu", 3, false, true); // WU 011 G
-    heg_xiaoqiao->addSkill("tianxiang");
-    heg_xiaoqiao->addSkill("hongyan");
+    heg_xiaoqiao->addSkill("ikzhihui");
+    heg_xiaoqiao->addSkill("ikchiqiu");
 
     General *heg_lvbu = new General(this, "heg_lvbu", "qun", 4, true, true); // QUN 002 G
     heg_lvbu->addSkill("ikwushuang");

@@ -1138,23 +1138,23 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         if (triggerEvent == EventLoseSkill && data.toString() == objectName()) {
-            room->handleAcquireDetachSkills(player, "-tianxiang|-ikxuanhuo", true);
+            room->handleAcquireDetachSkills(player, "-ikzhihui|-ikxuanhuo", true);
         } else if (triggerEvent == EventAcquireSkill && data.toString() == objectName()) {
             if (!player->getPile("xingwu").isEmpty()) {
                 room->notifySkillInvoked(player, objectName());
-                room->handleAcquireDetachSkills(player, "tianxiang|ikxuanhuo");
+                room->handleAcquireDetachSkills(player, "ikzhihui|ikxuanhuo");
             }
         } else if (triggerEvent == CardsMoveOneTime && player->isAlive() && player->hasSkill(objectName(), true)) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.to == player && move.to_place == Player::PlaceSpecial && move.to_pile_name == "xingwu") {
                 if (player->getPile("xingwu").length() == 1) {
                     room->notifySkillInvoked(player, objectName());
-                    room->handleAcquireDetachSkills(player, "tianxiang|ikxuanhuo");
+                    room->handleAcquireDetachSkills(player, "ikzhihui|ikxuanhuo");
                 }
             } else if (move.from == player && move.from_places.contains(Player::PlaceSpecial)
                        && move.from_pile_names.contains("xingwu")) {
                 if (player->getPile("xingwu").isEmpty())
-                    room->handleAcquireDetachSkills(player, "-tianxiang|-ikxuanhuo", true);
+                    room->handleAcquireDetachSkills(player, "-ikzhihui|-ikxuanhuo", true);
             }
         }
         return false;
@@ -2552,8 +2552,8 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_diaochan->addSkill("ikzhuoyue");
 
     General *tw_xiaoqiao = new General(this, "tw_xiaoqiao", "wu", 3, false, true);
-    tw_xiaoqiao->addSkill("tianxiang");
-    tw_xiaoqiao->addSkill("hongyan");
+    tw_xiaoqiao->addSkill("ikzhihui");
+    tw_xiaoqiao->addSkill("ikchiqiu");
 
     General *tw_yuanshu = new General(this, "tw_yuanshu", "qun", 4, true, true); // TW SP 004
     tw_yuanshu->addSkill("yongsi");
@@ -2570,8 +2570,8 @@ MiscellaneousPackage::MiscellaneousPackage()
     wz_daqiao->addSkill("ikxuanhuo");
 
     General *wz_xiaoqiao = new General(this, "wz_xiaoqiao", "wu", 3, false, true); // WZ 002
-    wz_xiaoqiao->addSkill("tianxiang");
-    wz_xiaoqiao->addSkill("hongyan");
+    wz_xiaoqiao->addSkill("ikzhihui");
+    wz_xiaoqiao->addSkill("ikchiqiu");
 
     General *pr_shencaocao = new General(this, "pr_shencaocao", "god", 3, true, true); // PR LE 005
     pr_shencaocao->addSkill("guixin");
@@ -2592,8 +2592,8 @@ HegemonySPPackage::HegemonySPPackage()
     sp_heg_zhouyu->addSkill("nosfanjian");
 
     General *sp_heg_xiaoqiao = new General(this, "sp_heg_xiaoqiao", "wu", 3, false, true); // GSP 002
-    sp_heg_xiaoqiao->addSkill("tianxiang");
-    sp_heg_xiaoqiao->addSkill("hongyan");
+    sp_heg_xiaoqiao->addSkill("ikzhihui");
+    sp_heg_xiaoqiao->addSkill("ikchiqiu");
 }
 
 ADD_PACKAGE(HegemonySP)

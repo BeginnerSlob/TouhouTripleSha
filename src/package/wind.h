@@ -29,11 +29,11 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class TianxiangCard: public SkillCard {
+class IkZhihuiCard: public SkillCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE TianxiangCard();
+    Q_INVOKABLE IkZhihuiCard();
 
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
