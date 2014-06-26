@@ -579,14 +579,81 @@ public:
     }
 };
 
-class Hongyan: public FilterSkill {
+IkZhihuiCard::IkZhihuiCard() {
+}
+
+void IkZhihuiCard::onEffect(const CardEffectStruct &effect) const{
+    DamageStruct damage = effect.from->tag.value("IkZhihuiDamage").value<DamageStruct>();
+    damage.to = effect.to;
+    damage.transfer = true;
+    damage.transfer_reason = "ikzhihui";
+    effect.from->tag["TransferDamage"] = QVariant::fromValue(damage);
+}
+
+class IkZhihuiViewAsSkill: public OneCardViewAsSkill {
 public:
-    Hongyan(): FilterSkill("hongyan") {
+    IkZhihuiViewAsSkill(): OneCardViewAsSkill("ikzhihui") {
+        filter_pattern = ".|heart|.|hand!";
+        response_pattern = "@@ikzhihui";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        IkZhihuiCard *ikzhihuiCard = new IkZhihuiCard;
+        ikzhihuiCard->addSubcard(originalCard);
+        return ikzhihuiCard;
+    }
+};
+
+class IkZhihui: public TriggerSkill {
+public:
+    IkZhihui(): TriggerSkill("ikzhihui") {
+        events << DamageInflicted;
+        view_as_skill = new IkZhihuiViewAsSkill;
+    }
+
+    virtual bool triggerable(const ServerPlayer *xiaoqiao) const{
+        return TriggerSkill::triggerable(xiaoqiao)
+            && xiaoqiao->canDiscard(xiaoqiao, "h");
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *xiaoqiao, QVariant &data, ServerPlayer *) const{
+        xiaoqiao->tag["IkZhihuiDamage"] = data;
+        return room->askForUseCard(xiaoqiao, "@@ikzhihui", "@ikzhihui-card", -1, Card::MethodDiscard);
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *xiaoqiao, QVariant &data, ServerPlayer *) const{
+        return true;
+    }
+};
+
+class IkZhihuiDraw: public TriggerSkill {
+public:
+    IkZhihuiDraw(): TriggerSkill("#ikzhihui") {
+        events << DamageComplete;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        if (player->isAlive() && damage.transfer && damage.transfer_reason == "ikzhihui")
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        player->drawCards(player->getLostHp(), objectName());
+        return false;
+    }
+};
+
+class IkChiqiu: public FilterSkill {
+public:
+    IkChiqiu(): FilterSkill("ikchiqiu") {
     }
 
     static WrappedCard *changeToHeart(int cardId) {
         WrappedCard *new_card = Sanguosha->getWrappedCard(cardId);
-        new_card->setSkillName("hongyan");
+        new_card->setSkillName("ikchiqiu");
         new_card->setSuit(Card::Heart);
         new_card->setModified(true);
         return new_card;
@@ -602,65 +669,6 @@ public:
 
     virtual int getEffectIndex(const ServerPlayer *, const Card *) const{
         return -2;
-    }
-};
-
-TianxiangCard::TianxiangCard() {
-}
-
-void TianxiangCard::onEffect(const CardEffectStruct &effect) const{
-    DamageStruct damage = effect.from->tag.value("TianxiangDamage").value<DamageStruct>();
-    damage.to = effect.to;
-    damage.transfer = true;
-    damage.transfer_reason = "tianxiang";
-    effect.from->tag["TransferDamage"] = QVariant::fromValue(damage);
-}
-
-class TianxiangViewAsSkill: public OneCardViewAsSkill {
-public:
-    TianxiangViewAsSkill(): OneCardViewAsSkill("tianxiang") {
-        filter_pattern = ".|heart|.|hand!";
-        response_pattern = "@@tianxiang";
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const{
-        TianxiangCard *tianxiangCard = new TianxiangCard;
-        tianxiangCard->addSubcard(originalCard);
-        return tianxiangCard;
-    }
-};
-
-class Tianxiang: public TriggerSkill {
-public:
-    Tianxiang(): TriggerSkill("tianxiang") {
-        events << DamageInflicted;
-        view_as_skill = new TianxiangViewAsSkill;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *xiaoqiao, QVariant &data) const{
-        if (xiaoqiao->canDiscard(xiaoqiao, "h")) {
-            xiaoqiao->tag["TianxiangDamage"] = data;
-            return room->askForUseCard(xiaoqiao, "@@tianxiang", "@tianxiang-card", -1, Card::MethodDiscard);
-        }
-        return false;
-    }
-};
-
-class TianxiangDraw: public TriggerSkill {
-public:
-    TianxiangDraw(): TriggerSkill("#tianxiang") {
-        events << DamageComplete;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *, ServerPlayer *player, QVariant &data) const{
-        DamageStruct damage = data.value<DamageStruct>();
-        if (player->isAlive() && damage.transfer && damage.transfer_reason == "tianxiang")
-            player->drawCards(player->getLostHp(), objectName());
-        return false;
     }
 };
 
@@ -1226,11 +1234,11 @@ WindPackage::WindPackage()
     wind009->addSkill(new IkKuangguRecord);
     related_skills.insertMulti("ikkuanggu", "#ikkuanggu-record");
 
-    General *xiaoqiao = new General(this, "xiaoqiao", "wu", 3, false); // WU 011
-    xiaoqiao->addSkill(new Tianxiang);
-    xiaoqiao->addSkill(new TianxiangDraw);
-    xiaoqiao->addSkill(new Hongyan);
-    related_skills.insertMulti("tianxiang", "#tianxiang");
+    General *snow011 = new General(this, "snow011", "yuki", 3, false);
+    snow011->addSkill(new IkZhihui);
+    snow011->addSkill(new IkZhihuiDraw);
+    snow011->addSkill(new IkChiqiu);
+    related_skills.insertMulti("ikzhihui", "#ikzhihui");
 
     General *zhoutai = new General(this, "zhoutai", "wu"); // WU 013
     zhoutai->addSkill(new Buqu);
@@ -1250,7 +1258,7 @@ WindPackage::WindPackage()
     yuji->addRelateSkill("chanyuan");
 
     addMetaObject<IkXunyuCard>();
-    addMetaObject<TianxiangCard>();
+    addMetaObject<IkZhihuiCard>();
     addMetaObject<HuangtianCard>();
     addMetaObject<GuhuoCard>();
 
