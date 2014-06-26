@@ -312,7 +312,7 @@ public:
             if (!card || !card->isKindOf("SavageAssault"))
                 return false;
             if (card->isVirtualCard()) {
-                if (card->getSkillName() != "guhuo" && card->getSkillName() != "nosguhuo")
+                if (card->getSkillName() != "guhuo" && card->getSkillName() != "ikguihuo")
                     return false;
             }
             if (player != move.from) {
@@ -684,7 +684,7 @@ public:
 
     virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const{
         return to->hasSkill(objectName()) && (card->isKindOf("TrickCard") || card->isKindOf("QiceCard"))
-               && card->isBlack() && card->getSkillName() != "nosguhuo"; // Be care!!!!!!
+               && card->isBlack() && card->getSkillName() != "ikguihuo"; // Be care!!!!!!
     }
 };
 

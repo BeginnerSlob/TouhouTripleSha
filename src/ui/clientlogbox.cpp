@@ -122,7 +122,7 @@ void ClientLogBox::appendLog(const QString &type, const QString &from_general, c
                 else
                     log = tr("%from %3 [%1] %4, and the cost is %2").arg(skill_name).arg(subcard_str).arg(meth).arg(suffix);
             } else {
-                if (subcard_list.isEmpty() || card->getSkillName().contains("guhuo"))
+                if (subcard_list.isEmpty() || card->getSkillName() == "ikguihuo")
                     log = tr("%from %4 [%1] %5, %3 [%2]").arg(skill_name).arg(card_name).arg(reason).arg(meth).arg(suffix);
                 else
                     log = tr("%from %5 [%1] %6 %4 %2 as %3").arg(skill_name).arg(subcard_str).arg(card_name).arg(reason).arg(meth).arg(suffix);
@@ -168,8 +168,8 @@ void ClientLogBox::appendLog(const QString &type, const QString &from_general, c
 
     log = QString("<font color='%2'>%1</font>").arg(log).arg(Config.TextEditColor.name());
     QString final_log = append(log);
-    if (type == "#Guhuo" || type == "#GuhuoQuery")
-        RoomSceneInstance->setGuhuoLog(final_log);
+    if (type == "#IkGuihuo" || type == "#IkGuihuoQuery")
+        RoomSceneInstance->setIkGuihuoLog(final_log);
 }
 
 QString ClientLogBox::bold(const QString &str, QColor color) const{

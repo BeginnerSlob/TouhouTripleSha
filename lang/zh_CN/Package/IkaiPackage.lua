@@ -1081,6 +1081,16 @@ return {
 	["luna011"] = "塞蕾丝提雅•罗登贝克",--月 - 空 - 4血
 	["ikguihuo"] = "诡惑",
 	[":ikguihuo"] = "你可以选择任何一种基本牌或非延时类锦囊牌，并正面朝下使用或打出一张手牌。若无人质疑，则该牌按你所述之牌结算。若有人质疑则亮出验明：若为真，质疑者各失去1点体力；若为假，质疑者各摸1张牌。除非被质疑的牌为红桃且为真时，该牌仍然可进行结算，否则无论真假，将该牌置入弃牌堆。",
+	["question"] = "质疑",
+	["noquestion"] = "不质疑",
+	["ikguihuo_saveself"] = "“诡惑”【桃】或【酒】",
+	["ikguihuo_slash"] = "“诡惑”【杀】",
+	["normal_slash"] = "普通杀",
+	["#IkGuihuo"] = "%from 发动了“%arg2”，声明此牌为 【%arg】，指定的目标为 %to",
+	["#IkGuihuoNoTarget"] = "%from 发动了“%arg2”，声明此牌为 【%arg】",
+	["#IkGuihuoCannotQuestion"] = "%from 当前体力值为 %arg，无法质疑",
+	["#IkGuihuoQuery"] = "%from 表示 %arg",
+	["$IkGuihuoResult"] = "%from 的“<font color=\"yellow\"><b>诡惑</b></font>”牌是 %card",
 
 	["#luna012"] = "宝石魔术的血脉",
 	["luna012"] = "远坂凛",--月 - 幻 - 3血
