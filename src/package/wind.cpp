@@ -1221,9 +1221,9 @@ WindPackage::WindPackage()
     wind008->addSkill("thxiagong");
     wind008->addSkill(new IkLiegong);
 
-    General *weiyan = new General(this, "weiyan", "shu"); // SHU 009
-    weiyan->addSkill(new IkKuanggu);
-    weiyan->addSkill(new IkKuangguRecord);
+    General *wind009 = new General(this, "wind009", "kaze");
+    wind009->addSkill(new IkKuanggu);
+    wind009->addSkill(new IkKuangguRecord);
     related_skills.insertMulti("ikkuanggu", "#ikkuanggu-record");
 
     General *xiaoqiao = new General(this, "xiaoqiao", "wu", 3, false); // WU 011
