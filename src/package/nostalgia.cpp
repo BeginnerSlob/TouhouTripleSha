@@ -1962,32 +1962,46 @@ public:
 
 // old wind generals
 
-class NosLeiji: public TriggerSkill {
+class IkLeiji: public TriggerSkill {
 public:
-    NosLeiji(): TriggerSkill("nosleiji") {
+    IkLeiji(): TriggerSkill("ikleiji") {
         events << CardResponded;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *zhangjiao, QVariant &data) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *zhangjiao, QVariant &data, ServerPlayer* &) const{
         CardStar card_star = data.value<CardResponseStruct>().m_card;
-        if (card_star->isKindOf("Jink")) {
-            ServerPlayer *target = room->askForPlayerChosen(zhangjiao, room->getAlivePlayers(), objectName(), "leiji-invoke", true, true);
-            if (target) {
-                room->broadcastSkillInvoke("nosleiji");
+        if (TriggerSkill::triggerable(zhangjiao) && card_star->isKindOf("Jink"))
+            return QStringList(objectName());
+        return QStringList();
+    }
 
-                JudgeStruct judge;
-                judge.pattern = ".|spade";
-                judge.good = false;
-                judge.negative = true;
-                judge.reason = objectName();
-                judge.who = target;
-
-                room->judge(judge);
-
-                if (judge.isBad())
-                    room->damage(DamageStruct(objectName(), zhangjiao, target, 2, DamageStruct::Thunder));
-            }
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *zhangjiao, QVariant &data, ServerPlayer *) const{
+        ServerPlayer *target = room->askForPlayerChosen(zhangjiao, room->getAlivePlayers(), objectName(), "ikleiji-invoke", true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            zhangjiao->tag["IkLeijiTarget"] = QVariant::fromValue(target);
+            return true;
         }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *zhangjiao, QVariant &data, ServerPlayer *) const{
+        ServerPlayer *target = zhangjiao->tag["IkLeijiTarget"].value<PlayerStar>();
+        zhangjiao->tag.remove("IkLeijiTarget");
+        if (target) {
+            JudgeStruct judge;
+            judge.pattern = ".|spade";
+            judge.good = false;
+            judge.negative = true;
+            judge.reason = objectName();
+            judge.who = target;
+
+            room->judge(judge);
+
+            if (judge.isBad())
+                room->damage(DamageStruct(objectName(), zhangjiao, target, 2, DamageStruct::Thunder));
+        }
+
         return false;
     }
 };
@@ -2605,10 +2619,10 @@ NostalWindPackage::NostalWindPackage()
     snow013->addSkill(new IkEliRecord);
     related_skills.insertMulti("ikeli", "#ikeli-record");
 
-    General *nos_zhangjiao = new General(this, "nos_zhangjiao$", "qun", 3);
-    nos_zhangjiao->addSkill(new NosLeiji);
-    nos_zhangjiao->addSkill("guidao");
-    nos_zhangjiao->addSkill("huangtian");
+    General *luna014 = new General(this, "luna014$", "tsuki", 3);
+    luna014->addSkill(new IkLeiji);
+    luna014->addSkill("iktianshi");
+    luna014->addSkill("ikyuji");
 
     General *nos_yuji = new General(this, "nos_yuji", "qun", 3);
     nos_yuji->addSkill(new NosGuhuo);
