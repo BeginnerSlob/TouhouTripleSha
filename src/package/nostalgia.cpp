@@ -2004,23 +2004,78 @@ public:
     }
 };
 
-class NosBuquRemove: public TriggerSkill {
+class IkSusheng: public TriggerSkill {
 public:
-    NosBuquRemove(): TriggerSkill("#nosbuqu-remove") {
+    IkSusheng(): TriggerSkill("iksusheng") {
+        events << HpChanged;
+        frequency = Frequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *zhoutai, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(zhoutai)
+            && !data.isNull() && !data.canConvert<RecoverStruct>() && zhoutai->getHp() < 1)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *zhoutai, QVariant &data, ServerPlayer *) const{
+        if (zhoutai->askForSkillInvoke(objectName(), data)) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *zhoutai, QVariant &data, ServerPlayer *) const{
+        QList<int> iksusheng = zhoutai->getPile("iksushengpile");
+
+        int need = 1 - zhoutai->getHp(); // the buqu cards that should be turned over
+        int n = need - iksusheng.length();
+        if (n > 0) {
+            QList<int> card_ids = room->getNCards(n, false);
+            zhoutai->addToPile("iksushengpile", card_ids);
+        }
+        iksusheng = zhoutai->getPile("iksushengpile");
+        QList<int> duplicate_numbers;
+
+        QSet<int> numbers;
+        foreach (int card_id, iksusheng) {
+            const Card *card = Sanguosha->getCard(card_id);
+            int number = card->getNumber();
+
+            if (numbers.contains(number))
+                duplicate_numbers << number;
+            else
+                numbers << number;
+        }
+
+        if (duplicate_numbers.isEmpty())
+            return true;
+        else
+            zhoutai->clearOnePrivatePile("iksushengpile");
+        
+        return false;
+    }
+};
+
+class IkSushengRemove: public TriggerSkill {
+public:
+    IkSushengRemove(): TriggerSkill("#iksusheng-remove") {
         events << HpRecover;
+        frequency = Compulsory;
     }
 
     static void Remove(ServerPlayer *zhoutai) {
         Room *room = zhoutai->getRoom();
-        QList<int> nosbuqu(zhoutai->getPile("nosbuqu"));
+        QList<int> iksusheng(zhoutai->getPile("iksushengpile"));
 
-        CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "nosbuqu", QString());
+        CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "iksusheng", QString());
         int need = 1 - zhoutai->getHp();
         if (need <= 0) {
             // clear all the buqu cards
-            foreach (int card_id, nosbuqu) {
+            foreach (int card_id, iksusheng) {
                 LogMessage log;
-                log.type = "$NosBuquRemove";
+                log.type = "$IkSushengRemove";
                 log.from = zhoutai;
                 log.card_str = Sanguosha->getCard(card_id)->toString();
                 room->sendLog(log);
@@ -2028,149 +2083,104 @@ public:
                 room->throwCard(Sanguosha->getCard(card_id), reason, NULL);
             }
         } else {
-            int to_remove = nosbuqu.length() - need;
+            int to_remove = iksusheng.length() - need;
             for (int i = 0; i < to_remove; i++) {
-                room->fillAG(nosbuqu);
-                int card_id = room->askForAG(zhoutai, nosbuqu, false, "nosbuqu");
+                room->fillAG(iksusheng);
+                int card_id = room->askForAG(zhoutai, iksusheng, false, "iksusheng");
 
                 LogMessage log;
-                log.type = "$NosBuquRemove";
+                log.type = "$IkSushengRemove";
                 log.from = zhoutai;
                 log.card_str = Sanguosha->getCard(card_id)->toString();
                 room->sendLog(log);
 
-                nosbuqu.removeOne(card_id);
+                iksusheng.removeOne(card_id);
                 room->throwCard(Sanguosha->getCard(card_id), reason, NULL);
                 room->clearAG();
             }
         }
     }
 
-    virtual bool trigger(TriggerEvent, Room *, ServerPlayer *zhoutai, QVariant &) const{
-        if (zhoutai->getPile("nosbuqu").length() > 0)
-            Remove(zhoutai);
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target && target->isAlive() && !target->getPile("iksushengpile").isEmpty();
+    }
 
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *zhoutai, QVariant &, ServerPlayer *) const{
+        Remove(zhoutai);
         return false;
     }
 };
 
-class NosBuqu: public TriggerSkill {
+class IkSushengClear: public DetachEffectSkill {
 public:
-    NosBuqu(): TriggerSkill("nosbuqu") {
-        events << HpChanged << AskForPeachesDone;
-    }
-
-    virtual int getPriority(TriggerEvent triggerEvent) const{
-        if (triggerEvent == HpChanged)
-            return 1;
-        else
-            return TriggerSkill::getPriority(triggerEvent);
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhoutai, QVariant &data) const{
-        if (triggerEvent == HpChanged && !data.isNull() && !data.canConvert<RecoverStruct>() && zhoutai->getHp() < 1) {
-            if (room->askForSkillInvoke(zhoutai, objectName(), data)) {
-                room->setTag("NosBuqu", zhoutai->objectName());
-                room->broadcastSkillInvoke("nosbuqu");
-                const QList<int> &nosbuqu = zhoutai->getPile("nosbuqu");
-
-                int need = 1 - zhoutai->getHp(); // the buqu cards that should be turned over
-                int n = need - nosbuqu.length();
-                if (n > 0) {
-                    QList<int> card_ids = room->getNCards(n, false);
-                    zhoutai->addToPile("nosbuqu", card_ids);
-                }
-                const QList<int> &nosbuqunew = zhoutai->getPile("nosbuqu");
-                QList<int> duplicate_numbers;
-
-                QSet<int> numbers;
-                foreach (int card_id, nosbuqunew) {
-                    const Card *card = Sanguosha->getCard(card_id);
-                    int number = card->getNumber();
-
-                    if (numbers.contains(number))
-                        duplicate_numbers << number;
-                    else
-                        numbers << number;
-                }
-
-                if (duplicate_numbers.isEmpty()) {
-                    room->setTag("NosBuqu", QVariant());
-                    return true;
-                }
-            }
-        } else if (triggerEvent == AskForPeachesDone) {
-            const QList<int> &nosbuqu = zhoutai->getPile("nosbuqu");
-
-            if (zhoutai->getHp() > 0)
-                return false;
-            if (room->getTag("NosBuqu").toString() != zhoutai->objectName())
-                return false;
-            room->setTag("NosBuqu", QVariant());
-
-            QList<int> duplicate_numbers;
-            QSet<int> numbers;
-            foreach (int card_id, nosbuqu) {
-                const Card *card = Sanguosha->getCard(card_id);
-                int number = card->getNumber();
-
-                if (numbers.contains(number) && !duplicate_numbers.contains(number))
-                    duplicate_numbers << number;
-                else
-                    numbers << number;
-            }
-
-            if (duplicate_numbers.isEmpty()) {
-                room->broadcastSkillInvoke("nosbuqu");
-                room->setPlayerFlag(zhoutai, "-Global_Dying");
-                return true;
-            } else {
-                LogMessage log;
-                log.type = "#NosBuquDuplicate";
-                log.from = zhoutai;
-                log.arg = QString::number(duplicate_numbers.length());
-                room->sendLog(log);
-
-                for (int i = 0; i < duplicate_numbers.length(); i++) {
-                    int number = duplicate_numbers.at(i);
-
-                    LogMessage log;
-                    log.type = "#NosBuquDuplicateGroup";
-                    log.from = zhoutai;
-                    log.arg = QString::number(i + 1);
-                    if (number == 10)
-                        log.arg2 = "10";
-                    else {
-                        const char *number_string = "-A23456789-JQK";
-                        log.arg2 = QString(number_string[number]);
-                    }
-                    room->sendLog(log);
-
-                    foreach (int card_id, nosbuqu) {
-                        const Card *card = Sanguosha->getCard(card_id);
-                        if (card->getNumber() == number) {
-                            LogMessage log;
-                            log.type = "$NosBuquDuplicateItem";
-                            log.from = zhoutai;
-                            log.card_str = QString::number(card_id);
-                            room->sendLog(log);
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-};
-
-class NosBuquClear: public DetachEffectSkill {
-public:
-    NosBuquClear(): DetachEffectSkill("nosbuqu") {
+    IkSushengClear(): DetachEffectSkill("iksusheng") {
     }
 
     virtual void onSkillDetached(Room *room, ServerPlayer *player) const{
         if (player->getHp() <= 0)
             room->enterDying(player, NULL);
+    }
+};
+
+class IkEli: public TriggerSkill {
+public:
+    IkEli(): TriggerSkill("ikeli") {
+        events << EventPhaseEnd;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const {
+        QVariantList cards = target->tag["IkEli"].toList();
+        return cards.length() >= 2 && TriggerSkill::triggerable(target)
+            && target->getPhase() == Player::Discard;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        if (player->askForSkillInvoke(objectName(), data)) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        SavageAssault *savage_assault = new SavageAssault(Card::NoSuit, 0);
+        savage_assault->setSkillName("_ikeli");
+        if (!savage_assault->isAvailable(player)) {
+            delete savage_assault;
+            return false;
+        }
+        room->useCard(CardUseStruct(savage_assault, player, QList<ServerPlayer *>()));
+        return false;
+    }
+};
+
+class IkEliRecord: public TriggerSkill {
+public:
+    IkEliRecord(): TriggerSkill("#theli-record") {
+        events << CardsMoveOneTime << EventPhaseChanging;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging)
+            player->tag.remove("IkEli");
+        else if (triggerEvent == CardsMoveOneTime) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from != player)
+                return QStringList();
+
+            if (player->getPhase() == Player::Discard
+                && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
+                QVariantList cards = player->tag["IkEli"].toList();
+                foreach (int id, move.card_ids)
+                    if (!cards.contains(id))
+                        cards << id;
+                player->tag["IkEli"] = cards;
+            }
+        }
+
+        return QStringList();
     }
 };
 
@@ -2585,12 +2595,15 @@ NostalWindPackage::NostalWindPackage()
     General *nos_caoren = new General(this, "nos_caoren", "wei");
     nos_caoren->addSkill(new NosJushou);
 
-    General *nos_zhoutai = new General(this, "nos_zhoutai", "wu");
-    nos_zhoutai->addSkill(new NosBuqu);
-    nos_zhoutai->addSkill(new NosBuquRemove);
-    nos_zhoutai->addSkill(new NosBuquClear);
-    related_skills.insertMulti("nosbuqu", "#nosbuqu-remove");
-    related_skills.insertMulti("nosbuqu", "#nosbuqu-clear");
+    General *snow013 = new General(this, "snow013", "yuki", 3);
+    snow013->addSkill(new IkSusheng);
+    snow013->addSkill(new IkSushengRemove);
+    snow013->addSkill(new IkSushengClear);
+    related_skills.insertMulti("iksusheng", "#iksusheng-remove");
+    related_skills.insertMulti("iksusheng", "#iksusheng-clear");
+    snow013->addSkill(new IkEli);
+    snow013->addSkill(new IkEliRecord);
+    related_skills.insertMulti("ikeli", "#ikeli-record");
 
     General *nos_zhangjiao = new General(this, "nos_zhangjiao$", "qun", 3);
     nos_zhangjiao->addSkill(new NosLeiji);
