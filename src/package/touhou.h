@@ -70,7 +70,7 @@ class ThBishaCard: public SkillCard{
 public:
     Q_INVOKABLE ThBishaCard();
     
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+    virtual const Card *validate(CardUseStruct &card_use) const;
 };
 
 class ThHuosuiCard: public SkillCard{

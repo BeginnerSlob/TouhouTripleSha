@@ -1593,7 +1593,6 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(player)) return QStringList();
         if (triggerEvent == CardUsed) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.to.isEmpty())
@@ -1609,7 +1608,7 @@ public:
             if (invoke && use.card->isKindOf("Peach")) {
                 return QStringList(objectName());
             }
-        } else if (triggerEvent == BeforeCardsMove) {
+        } else if (triggerEvent == BeforeCardsMove && TriggerSkill::triggerable(player)) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (!move.from || !move.to || move.from == move.to)
                 return QStringList();
