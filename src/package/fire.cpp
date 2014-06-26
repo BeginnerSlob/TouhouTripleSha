@@ -6,23 +6,18 @@
 #include "engine.h"
 #include "maneuvering.h"
 
-QuhuCard::QuhuCard() {
-    mute = true;
+IkYushenCard::IkYushenCard() {
 }
 
-bool QuhuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkYushenCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     return targets.isEmpty() && to_select->getHp() > Self->getHp() && !to_select->isKongcheng();
 }
 
-void QuhuCard::use(Room *room, ServerPlayer *xunyu, QList<ServerPlayer *> &targets) const{
+void IkYushenCard::use(Room *room, ServerPlayer *xunyu, QList<ServerPlayer *> &targets) const{
     ServerPlayer *tiger = targets.first();
 
-    room->broadcastSkillInvoke("quhu", 1);
-
-    bool success = xunyu->pindian(tiger, "quhu", NULL);
+    bool success = xunyu->pindian(tiger, "ikyushen", NULL);
     if (success) {
-        room->broadcastSkillInvoke("quhu", 2);
-
         QList<ServerPlayer *> players = room->getOtherPlayers(tiger), wolves;
         foreach (ServerPlayer *player, players) {
             if (tiger->inMyAttackRange(player))
@@ -31,7 +26,7 @@ void QuhuCard::use(Room *room, ServerPlayer *xunyu, QList<ServerPlayer *> &targe
 
         if (wolves.isEmpty()) {
             LogMessage log;
-            log.type = "#QuhuNoWolf";
+            log.type = "#IkYushenNoWolf";
             log.from = xunyu;
             log.to << tiger;
             room->sendLog(log);
@@ -39,47 +34,51 @@ void QuhuCard::use(Room *room, ServerPlayer *xunyu, QList<ServerPlayer *> &targe
             return;
         }
 
-        ServerPlayer *wolf = room->askForPlayerChosen(xunyu, wolves, "quhu", QString("@quhu-damage:%1").arg(tiger->objectName()));
-        room->damage(DamageStruct("quhu", tiger, wolf));
+        ServerPlayer *wolf = room->askForPlayerChosen(xunyu, wolves, "ikyushen", QString("@ikyushen-damage:%1").arg(tiger->objectName()));
+        room->damage(DamageStruct("ikyushen", tiger, wolf));
     } else {
-        room->damage(DamageStruct("quhu", tiger, xunyu));
+        room->damage(DamageStruct("ikyushen", tiger, xunyu));
     }
 }
 
-class Jieming: public MasochismSkill {
+class IkJieming: public MasochismSkill {
 public:
-    Jieming(): MasochismSkill("jieming") {
+    IkJieming(): MasochismSkill("ikjieming") {
     }
 
-    virtual void onDamaged(ServerPlayer *xunyu, const DamageStruct &damage) const{
-        Room *room = xunyu->getRoom();
-        for (int i = 0; i < damage.damage; i++) {
-            ServerPlayer *to = room->askForPlayerChosen(xunyu, room->getAlivePlayers(), objectName(), "jieming-invoke", true, true);
-            if (!to) break;
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        ServerPlayer *to = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "ikjieming-invoke", true, true);
+        if (to) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["IkJiemingTarget"] = QVariant::fromValue(to);
+            return true;
+        }
+        return false;
+    }
 
+    virtual void onDamaged(ServerPlayer *xunyu, const DamageStruct &) const{
+        ServerPlayer *to = xunyu->tag["IkJiemingTarget"].value<PlayerStar>();
+        xunyu->tag.remove("IkJiemingTarget");
+        if (to) {
             int upper = qMin(5, to->getMaxHp());
             int x = upper - to->getHandcardNum();
-            if (x <= 0) continue;
-
-            room->broadcastSkillInvoke(objectName());
+            if (x <= 0) return ;
             to->drawCards(x, objectName());
-            if (!xunyu->isAlive())
-                break;
         }
     }
 };
 
-class Quhu: public ZeroCardViewAsSkill {
+class IkYushen: public ZeroCardViewAsSkill {
 public:
-    Quhu(): ZeroCardViewAsSkill("quhu") {
+    IkYushen(): ZeroCardViewAsSkill("ikyushen") {
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("QuhuCard") && !player->isKongcheng();
+        return !player->hasUsed("IkYushenCard") && !player->isKongcheng();
     }
 
     virtual const Card *viewAs() const{
-        return new QuhuCard;
+        return new IkYushenCard;
     }
 };
 
@@ -476,9 +475,9 @@ FirePackage::FirePackage()
     General *bloom012 = new General(this, "bloom012", "hana");
     bloom012->addSkill(new IkQiangxi);
 
-    General *xunyu = new General(this, "xunyu", "wei", 3); // WEI 013
-    xunyu->addSkill(new Quhu);
-    xunyu->addSkill(new Jieming);
+    General *bloom013 = new General(this, "bloom013", "hana", 3);
+    bloom013->addSkill(new IkYushen);
+    bloom013->addSkill(new IkJieming);
 
     General *pangtong = new General(this, "pangtong", "shu", 3); // SHU 010
     pangtong->addSkill(new Lianhuan);
@@ -505,7 +504,7 @@ FirePackage::FirePackage()
     pangde->addSkill("mashu");
     pangde->addSkill(new Mengjin);
 
-    addMetaObject<QuhuCard>();
+    addMetaObject<IkYushenCard>();
     addMetaObject<IkQiangxiCard>();
     addMetaObject<TianyiCard>();
 }
