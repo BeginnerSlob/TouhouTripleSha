@@ -461,7 +461,7 @@ public:
             bool do_anim = false;
             foreach (ServerPlayer *p, use.to.toSet()) {
                 if (p->getMark("Equips_of_Others_Nullified_to_You") == 0) {
-                    do_anim = (p->getArmor() && p->hasArmorEffect(p->getArmor()->objectName())) || p->hasSkill("bazhen");
+                    do_anim = (p->getArmor() && p->hasArmorEffect(p->getArmor()->objectName())) || p->hasSkill("ikshengtang");
                     p->addQinggangTag(use.card);
                 }
             }
@@ -848,7 +848,7 @@ void ArcheryAttack::onEffect(const CardEffectStruct &effect) const{
                                         QVariant::fromValue(effect),
                                         Card::MethodResponse,
                                         effect.from->isAlive() ? effect.from : NULL);
-    if (jink && jink->getSkillName() != "eight_diagram" && jink->getSkillName() != "bazhen") {
+    if (jink && jink->getSkillName() != "eight_diagram") {
         room->setEmotion(effect.to, "jink");
     } else if (!jink) {
         room->damage(DamageStruct(this, effect.from->isAlive() ? effect.from : NULL, effect.to));
