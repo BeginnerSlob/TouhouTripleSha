@@ -276,10 +276,10 @@ public:
     }
 };
 
-class Lianhuan: public OneCardViewAsSkill {
+class IkFuyao: public OneCardViewAsSkill {
 public:
-    Lianhuan(): OneCardViewAsSkill("lianhuan") {
-        filter_pattern = ".|club|.|hand";
+    IkFuyao(): OneCardViewAsSkill("ikfuyao") {
+        filter_pattern = ".|club";
         response_or_use = true;
     }
 
@@ -291,45 +291,52 @@ public:
     }
 };
 
-class Niepan: public TriggerSkill {
+class IkNiepan: public TriggerSkill {
 public:
-    Niepan(): TriggerSkill("niepan") {
+    IkNiepan(): TriggerSkill("ikniepan") {
         events << AskForPeaches;
         frequency = Limited;
-        limit_mark = "@nirvana";
+        limit_mark = "@niepan";
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return TriggerSkill::triggerable(target) && target->getMark("@nirvana") > 0;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *pangtong, QVariant &data) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *pangtong, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(pangtong) || pangtong->getMark("@niepan") == 0)
+            return QStringList();
         DyingStruct dying_data = data.value<DyingStruct>();
         if (dying_data.who != pangtong)
-            return false;
+            return QStringList();
+        if (pangtong->isDead() || pangtong->getHp() > 0)
+            return QStringList();
+        return QStringList(objectName());
+    }
 
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *pangtong, QVariant &data, ServerPlayer *) const{
         if (pangtong->askForSkillInvoke(objectName(), data)) {
             room->broadcastSkillInvoke(objectName());
-            room->doLightbox("$NiepanAnimate");
-
-            room->removePlayerMark(pangtong, "@nirvana");
-
-            pangtong->throwAllHandCardsAndEquips();
-            QList<const Card *> tricks = pangtong->getJudgingArea();
-            foreach (const Card *trick, tricks) {
-                CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, pangtong->objectName());
-                room->throwCard(trick, reason, NULL);
-            }
-
-            room->recover(pangtong, RecoverStruct(pangtong, NULL, 3 - pangtong->getHp()));
-            pangtong->drawCards(3, objectName());
-
-            if (pangtong->isChained())
-                room->setPlayerProperty(pangtong, "chained", false);
-
-            if (!pangtong->faceUp())
-                pangtong->turnOver();
+            return true;
         }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *pangtong, QVariant &data, ServerPlayer *) const{
+        room->removePlayerMark(pangtong, "@niepan");
+        room->addPlayerMark(pangtong, "@niepanused");
+
+        QList<const Card *> tricks = pangtong->getJudgingArea();
+        foreach (const Card *trick, tricks) {
+            CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, pangtong->objectName());
+            room->throwCard(trick, reason, NULL);
+        }
+
+        if (!pangtong->faceUp())
+            pangtong->turnOver();
+
+        if (pangtong->isChained())
+            room->setPlayerProperty(pangtong, "chained", false);
+
+        pangtong->drawCards(3, objectName());
+
+        room->recover(pangtong, RecoverStruct(pangtong, NULL, 3 - pangtong->getHp()));
 
         return false;
     }
@@ -479,9 +486,9 @@ FirePackage::FirePackage()
     bloom013->addSkill(new IkYushen);
     bloom013->addSkill(new IkJieming);
 
-    General *pangtong = new General(this, "pangtong", "shu", 3); // SHU 010
-    pangtong->addSkill(new Lianhuan);
-    pangtong->addSkill(new Niepan);
+    General *wind010 = new General(this, "wind010", "kaze", 3);
+    wind010->addSkill(new IkFuyao);
+    wind010->addSkill(new IkNiepan);
 
     General *wolong = new General(this, "wolong", "shu", 3); // SHU 011
     wolong->addSkill(new Huoji);
