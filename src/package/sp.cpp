@@ -66,7 +66,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), objectName(), "@thnichang", true, true);
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@thnichang", true, true);
         if (target) {
             room->broadcastSkillInvoke(objectName());
             player->tag["ThNichangTarget"] = QVariant::fromValue(target);
