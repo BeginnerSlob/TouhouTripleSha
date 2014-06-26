@@ -873,6 +873,12 @@ QGroupBox *ThMimengDialog::createLeft() {
             Card *c = Sanguosha->cloneCard(card->objectName());
             c->setParent(this);
             layout->addWidget(createButton(c));
+
+            if (objectName() != "thmimeng" && card->objectName() == "slash" && !ServerInfo.Extensions.contains("!maneuvering")) {
+                Card *c2 = Sanguosha->cloneCard(card->objectName());
+                c2->setParent(this);
+                layout->addWidget(createButton(c2));
+            }
         }
     }
 
@@ -921,14 +927,25 @@ QGroupBox *ThMimengDialog::createRight() {
 }
 
 QAbstractButton *ThMimengDialog::createButton(const Card *card){
-    QCommandLinkButton *button = new QCommandLinkButton(Sanguosha->translate(card->objectName()));
-    button->setObjectName(card->objectName());
-    button->setToolTip(card->getDescription());
+    if (card->objectName() == "slash" && map.contains(card->objectName()) && !map.contains("normal_slash")) {
+        QCommandLinkButton *button = new QCommandLinkButton(Sanguosha->translate("normal_slash"));
+        button->setObjectName("normal_slash");
+        button->setToolTip(card->getDescription());
 
-    map.insert(card->objectName(), card);
-    group->addButton(button);
+        map.insert("normal_slash", card);
+        group->addButton(button);
 
-    return button;
+        return button;
+    } else {
+        QCommandLinkButton *button = new QCommandLinkButton(Sanguosha->translate(card->objectName()));
+        button->setObjectName(card->objectName());
+        button->setToolTip(card->getDescription());
+
+        map.insert(card->objectName(), card);
+        group->addButton(button);
+
+        return button;
+    }
 }
 
 ThMimengCard::ThMimengCard() {
