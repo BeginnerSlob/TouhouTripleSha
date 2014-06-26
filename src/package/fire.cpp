@@ -342,9 +342,9 @@ public:
     }
 };
 
-class Huoji: public OneCardViewAsSkill {
+class IkCangyan: public OneCardViewAsSkill {
 public:
-    Huoji(): OneCardViewAsSkill("huoji") {
+    IkCangyan(): OneCardViewAsSkill("ikcangyan") {
         filter_pattern = ".|red|.|hand";
         response_or_use = true;
     }
@@ -357,48 +357,26 @@ public:
     }
 };
 
-class Bazhen: public TriggerSkill {
+class IkShengtang: public TriggerSkill {
 public:
-    Bazhen(): TriggerSkill("bazhen") {
+    IkShengtang(): TriggerSkill("ikshengtang") {
+        events << GameStart;
         frequency = Compulsory;
-        events << CardAsked;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return TriggerSkill::triggerable(target) && !target->getArmor() && target->hasArmorEffect("eight_diagram");
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *wolong, QVariant &data) const{
-        QString pattern = data.toStringList().first();
-
-        if (pattern != "jink")
-            return false;
-
-        if (wolong->askForSkillInvoke(objectName())) {
-            JudgeStruct judge;
-            judge.pattern = ".|red";
-            judge.good = true;
-            judge.reason = objectName();
-            judge.who = wolong;
-
-            room->judge(judge);
-
-            if (judge.isGood()) {
-                room->setEmotion(wolong, "armor/eight_diagram");
-                Jink *jink = new Jink(Card::NoSuit, 0);
-                jink->setSkillName(objectName());
-                room->provide(jink);
-                return true;
-            }
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        if (triggerEvent == GameStart) {
+            if (player) return QStringList();
+            const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(Sanguosha->getSkill("eight_diagram"));
+            room->getThread()->addTriggerSkill(trigger_skill);
         }
-
-        return false;
+        return QStringList();
     }
 };
 
-class Kanpo: public OneCardViewAsSkill {
+class IkJinzhou: public OneCardViewAsSkill {
 public:
-    Kanpo(): OneCardViewAsSkill("kanpo") {
+    IkJinzhou(): OneCardViewAsSkill("ikjinzhou") {
         filter_pattern = ".|black|.|hand";
         response_pattern = "nullification";
         response_or_use = true;
@@ -490,10 +468,10 @@ FirePackage::FirePackage()
     wind010->addSkill(new IkFuyao);
     wind010->addSkill(new IkNiepan);
 
-    General *wolong = new General(this, "wolong", "shu", 3); // SHU 011
-    wolong->addSkill(new Huoji);
-    wolong->addSkill(new Kanpo);
-    wolong->addSkill(new Bazhen);
+    General *wind011 = new General(this, "wind011", "kaze", 3);
+    wind011->addSkill(new IkShengtang);
+    wind011->addSkill(new IkCangyan);
+    wind011->addSkill(new IkJinzhou);
 
     General *taishici = new General(this, "taishici", "wu"); // WU 012
     taishici->addSkill(new Tianyi);
