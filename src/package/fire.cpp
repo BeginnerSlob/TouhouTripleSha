@@ -397,57 +397,56 @@ public:
     }
 };
 
-TianyiCard::TianyiCard() {
+IkJianmieCard::IkJianmieCard() {
 }
 
-bool TianyiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkJianmieCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
 }
 
-void TianyiCard::use(Room *room, ServerPlayer *taishici, QList<ServerPlayer *> &targets) const{
-    bool success = taishici->pindian(targets.first(), "tianyi", NULL);
+void IkJianmieCard::use(Room *room, ServerPlayer *taishici, QList<ServerPlayer *> &targets) const{
+    bool success = taishici->pindian(targets.first(), "ikjianmie", NULL);
     if (success)
-        room->setPlayerFlag(taishici, "TianyiSuccess");
+        room->setPlayerFlag(taishici, "IkJianmieSuccess");
     else
         room->setPlayerCardLimitation(taishici, "use", "Slash", true);
 }
 
-class Tianyi: public ZeroCardViewAsSkill {
+class IkJianmie: public ZeroCardViewAsSkill {
 public:
-    Tianyi(): ZeroCardViewAsSkill("tianyi") {
+    IkJianmie(): ZeroCardViewAsSkill("ikjianmie") {
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("TianyiCard") && !player->isKongcheng();
+        return !player->hasUsed("IkJianmieCard") && !player->isKongcheng();
     }
 
     virtual const Card *viewAs() const{
-        return new TianyiCard;
+        return new IkJianmieCard;
     }
 };
 
-class TianyiTargetMod: public TargetModSkill {
+class IkJianmieTargetMod: public TargetModSkill {
 public:
-    TianyiTargetMod(): TargetModSkill("#tianyi-target") {
-        frequency = NotFrequent;
+    IkJianmieTargetMod(): TargetModSkill("#ikjianmie-target") {
     }
 
     virtual int getResidueNum(const Player *from, const Card *) const{
-        if (from->hasFlag("TianyiSuccess"))
+        if (from->hasFlag("IkJianmieSuccess"))
             return 1;
         else
             return 0;
     }
 
     virtual int getDistanceLimit(const Player *from, const Card *) const{
-        if (from->hasFlag("TianyiSuccess"))
+        if (from->hasFlag("IkJianmieSuccess"))
             return 1000;
         else
             return 0;
     }
 
     virtual int getExtraTargetNum(const Player *from, const Card *) const{
-        if (from->hasFlag("TianyiSuccess"))
+        if (from->hasFlag("IkJianmieSuccess"))
             return 1;
         else
             return 0;
@@ -473,10 +472,10 @@ FirePackage::FirePackage()
     wind011->addSkill(new IkCangyan);
     wind011->addSkill(new IkJinzhou);
 
-    General *taishici = new General(this, "taishici", "wu"); // WU 012
-    taishici->addSkill(new Tianyi);
-    taishici->addSkill(new TianyiTargetMod);
-    related_skills.insertMulti("tianyi", "#tianyi-target");
+    General *snow012 = new General(this, "snow012", "yuki");
+    snow012->addSkill(new IkJianmie);
+    snow012->addSkill(new IkJianmieTargetMod);
+    related_skills.insertMulti("ikjianmie", "#ikjianmie-target");
 
     General *yuanshao = new General(this, "yuanshao$", "qun"); // QUN 004
     yuanshao->addSkill(new Luanji);
@@ -491,7 +490,7 @@ FirePackage::FirePackage()
 
     addMetaObject<IkYushenCard>();
     addMetaObject<IkQiangxiCard>();
-    addMetaObject<TianyiCard>();
+    addMetaObject<IkJianmieCard>();
 }
 
 ADD_PACKAGE(Fire)
