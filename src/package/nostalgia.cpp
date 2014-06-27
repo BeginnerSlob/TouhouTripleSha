@@ -2557,7 +2557,7 @@ NostalStandardPackage::NostalStandardPackage()
     nos_zhaoyun->addSkill("ikhuahuan");
 
     General *nos_machao = new General(this, "nos_machao", "shu");
-    nos_machao->addSkill("mashu");
+    nos_machao->addSkill("thjibu");
     nos_machao->addSkill(new NosTieji);
 
     General *wind007 = new General(this, "wind007", "kaze", 3, false);
@@ -2669,7 +2669,7 @@ NostalYJCM2012Package::NostalYJCM2012Package()
     related_skills.insertMulti("nosgongqi", "#nosgongqi-target");
 
     General *nos_madai = new General(this, "nos_madai", "shu");
-    nos_madai->addSkill("mashu");
+    nos_madai->addSkill("thjibu");
     nos_madai->addSkill(new NosQianxi);
 
     General *nos_wangyi = new General(this, "nos_wangyi", "wei", 3, false);

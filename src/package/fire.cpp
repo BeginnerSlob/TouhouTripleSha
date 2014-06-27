@@ -237,21 +237,41 @@ public:
     }
 };
 
-class Mengjin: public TriggerSkill {
+class IkMengjin: public TriggerSkill {
 public:
-    Mengjin():TriggerSkill("mengjin") {
-        events << SlashMissed;
+    IkMengjin():TriggerSkill("ikmengjin") {
+        events << SlashMissed << Damage;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *pangde, QVariant &data) const{
-        SlashEffectStruct effect = data.value<SlashEffectStruct>();
-        if (effect.to->isAlive() && pangde->canDiscard(effect.to, "he")) {
-            if (pangde->askForSkillInvoke(objectName(), data)) {
-                room->broadcastSkillInvoke(objectName());
-                int to_throw = room->askForCardChosen(pangde, effect.to, "he", objectName(), false, Card::MethodDiscard);
-                room->throwCard(Sanguosha->getCard(to_throw), effect.to, pangde);
-            }
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        if (triggerEvent == SlashMissed) {
+            SlashEffectStruct effect = data.value<SlashEffectStruct>();
+            if (effect.to->isAlive() && player->canDiscard(effect.to, "he"))
+                return QStringList(objectName());
+        } else if (triggerEvent == Damage) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (!damage.transfer && !damage.chain
+                && damage.card && damage.card->isKindOf("Slash") && damage.card->isRed())
+                return QStringList(objectName());
         }
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *pangde, QVariant &, ServerPlayer *) const{
+        if (pangde->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *pangde, QVariant &data, ServerPlayer *) const{
+        if (triggerEvent == SlashMissed) {
+            SlashEffectStruct effect = data.value<SlashEffectStruct>();
+            int to_throw = room->askForCardChosen(pangde, effect.to, "he", objectName(), false, Card::MethodDiscard);
+            room->throwCard(Sanguosha->getCard(to_throw), effect.to, pangde);
+        } else
+            pangde->drawCards(1);
 
         return false;
     }
@@ -464,9 +484,9 @@ FirePackage::FirePackage()
     General *luna005 = new General(this, "luna005", "tsuki");
     luna005->addSkill(new IkShuangniang);
 
-    General *pangde = new General(this, "pangde", "qun"); // QUN 008
-    pangde->addSkill("mashu");
-    pangde->addSkill(new Mengjin);
+    General *luna008 = new General(this, "luna008", "tsuki");
+    luna008->addSkill("thjibu");
+    luna008->addSkill(new IkMengjin);
 
     addMetaObject<IkYushenCard>();
     addMetaObject<IkQiangxiCard>();
