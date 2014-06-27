@@ -628,89 +628,84 @@ public:
     }
 };
 
-class Wansha: public TriggerSkill {
+class IkSishideng: public TriggerSkill {
 public:
-    Wansha(): TriggerSkill("wansha") {
+    IkSishideng(): TriggerSkill("iksishideng") {
         // just to broadcast audio effects and to send log messages
         // main part in the AskForPeaches trigger of Game Rule
         events << AskForPeaches;
         frequency = Compulsory;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player && player == room->getAllPlayers().first()) {
+            DyingStruct dying = data.value<DyingStruct>();
+            ServerPlayer *jiaxu = room->getCurrent();
+            if (jiaxu && TriggerSkill::triggerable(jiaxu) && jiaxu->getPhase() != Player::NotActive)
+                return QStringList(objectName());
+        }
+        return QStringList();
     }
 
     virtual int getPriority(TriggerEvent) const{
         return 7;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (player == room->getAllPlayers().first()) {
-            DyingStruct dying = data.value<DyingStruct>();
-            ServerPlayer *jiaxu = room->getCurrent();
-            if (!jiaxu || !TriggerSkill::triggerable(jiaxu) || jiaxu->getPhase() == Player::NotActive)
-                return false;
-            if (jiaxu->hasInnateSkill("wansha") || !jiaxu->hasSkill("jilve"))
-                room->broadcastSkillInvoke(objectName());
-            else
-                room->broadcastSkillInvoke("jilve", 3);
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DyingStruct dying = data.value<DyingStruct>();
+        ServerPlayer *jiaxu = room->getCurrent();
+        room->broadcastSkillInvoke(objectName());
+        room->notifySkillInvoked(jiaxu, objectName());
 
-            room->notifySkillInvoked(jiaxu, objectName());
-
-            LogMessage log;
-            log.from = jiaxu;
-            log.arg = objectName();
-            if (jiaxu != dying.who) {
-                log.type = "#WanshaTwo";
-                log.to << dying.who;
-            } else {
-                log.type = "#WanshaOne";
-            }
-            room->sendLog(log);
+        LogMessage log;
+        log.from = jiaxu;
+        log.arg = objectName();
+        if (jiaxu != dying.who) {
+            log.type = "#IkSishidengTwo";
+            log.to << dying.who;
+        } else {
+            log.type = "#IkSishidengOne";
         }
+        room->sendLog(log);
+        
         return false;
     }
 };
 
-class Luanwu: public ZeroCardViewAsSkill {
+class IkWenle: public ZeroCardViewAsSkill {
 public:
-    Luanwu(): ZeroCardViewAsSkill("luanwu") {
+    IkWenle(): ZeroCardViewAsSkill("ikwenle") {
         frequency = Limited;
-        limit_mark = "@chaos";
+        limit_mark = "@wenle";
     }
 
     virtual const Card *viewAs() const{
-        return new LuanwuCard;
+        return new IkWenleCard;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getMark("@chaos") >= 1;
+        return player->getMark("@wenle") >= 1;
     }
 };
 
-LuanwuCard::LuanwuCard() {
-    mute = true;
+IkWenleCard::IkWenleCard() {
     target_fixed = true;
 }
 
-void LuanwuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    room->removePlayerMark(source, "@chaos");
-    room->broadcastSkillInvoke("luanwu");
-    QString lightbox = "$LuanwuAnimate";
-    if (source->getGeneralName() != "jiaxu" && (source->getGeneralName() == "sp_jiaxu" || source->getGeneral2Name() == "sp_jiaxu"))
-        lightbox = lightbox + "SP";
-    room->doLightbox(lightbox, 3000);
+void IkWenleCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    room->removePlayerMark(source, "@wenle");
+    room->addPlayerMark(source, "@wenleused");
 
     QList<ServerPlayer *> players = room->getOtherPlayers(source);
     foreach (ServerPlayer *player, players) {
-        if (player->isAlive())
+        if (player->isAlive()) {
             room->cardEffect(this, source, player);
             room->getThread()->delay();
+        }
     }
 }
 
-void LuanwuCard::onEffect(const CardEffectStruct &effect) const{
+void IkWenleCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.to->getRoom();
 
     QList<ServerPlayer *> players = room->getOtherPlayers(effect.to);
@@ -722,19 +717,19 @@ void LuanwuCard::onEffect(const CardEffectStruct &effect) const{
         nearest = qMin(nearest, distance);
     }
 
-    QList<ServerPlayer *> luanwu_targets;
+    QList<ServerPlayer *> ikwenle_targets;
     for (int i = 0; i < distance_list.length(); i++) {
         if (distance_list[i] == nearest && effect.to->canSlash(players[i], NULL, false))
-            luanwu_targets << players[i];
+            ikwenle_targets << players[i];
     }
 
-    if (luanwu_targets.isEmpty() || !room->askForUseSlashTo(effect.to, luanwu_targets, "@luanwu-slash"))
+    if (ikwenle_targets.isEmpty() || !room->askForUseSlashTo(effect.to, ikwenle_targets, "@ikwenle-slash"))
         room->loseHp(effect.to);
 }
 
-class Weimu: public ProhibitSkill {
+class IkMoyudeng: public ProhibitSkill {
 public:
-    Weimu(): ProhibitSkill("weimu") {
+    IkMoyudeng(): ProhibitSkill("ikmoyudeng") {
     }
 
     virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const{
@@ -975,13 +970,13 @@ ThicketPackage::ThicketPackage()
     luna001->addSkill(new IkWuhuaRecord);
     related_skills.insertMulti("ikwuhua", "#ikwuhua-record");
 
-    General *jiaxu = new General(this, "jiaxu", "qun", 3); // QUN 007
-    jiaxu->addSkill(new Wansha);
-    jiaxu->addSkill(new Luanwu);
-    jiaxu->addSkill(new Weimu);
+    General *luna007 = new General(this, "luna007", "tsuki", 3);
+    luna007->addSkill(new IkSishideng);
+    luna007->addSkill(new IkWenle);
+    luna007->addSkill(new IkMoyudeng);
 
     addMetaObject<IkDimengCard>();
-    addMetaObject<LuanwuCard>();
+    addMetaObject<IkWenleCard>();
     addMetaObject<IkShenenCard>();
 }
 

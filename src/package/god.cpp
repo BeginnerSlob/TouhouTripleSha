@@ -987,8 +987,8 @@ void JilveCard::onUse(Room *room, const CardUseStruct &card_use) const{
     QStringList choices;
     if (!shensimayi->hasFlag("JilveIkZhiheng") && shensimayi->canDiscard(shensimayi, "he"))
         choices << "ikzhiheng";
-    if (!shensimayi->hasFlag("JilveWansha"))
-        choices << "wansha";
+    if (!shensimayi->hasFlag("JilveIkSishideng"))
+        choices << "iksishideng";
     choices << "cancel";
 
     if (choices.length() == 1)
@@ -1003,9 +1003,9 @@ void JilveCard::onUse(Room *room, const CardUseStruct &card_use) const{
     shensimayi->loseMark("@bear");
     room->notifySkillInvoked(shensimayi, "jilve");
 
-    if (choice == "wansha") {
-        room->setPlayerFlag(shensimayi, "JilveWansha");
-        room->acquireSkill(shensimayi, "wansha");
+    if (choice == "iksishideng") {
+        room->setPlayerFlag(shensimayi, "JilveIkSishideng");
+        room->acquireSkill(shensimayi, "iksishideng");
     } else {
         room->setPlayerFlag(shensimayi, "JilveIkZhiheng");
         room->askForUseCard(shensimayi, "@ikzhiheng", "@jilve-ikzhiheng", -1, Card::MethodDiscard);
@@ -1013,7 +1013,7 @@ void JilveCard::onUse(Room *room, const CardUseStruct &card_use) const{
 }
 
 class JilveViewAsSkill: public ZeroCardViewAsSkill {
-public: // wansha & zhiheng
+public: // iksishideng & ikzhiheng
     JilveViewAsSkill(): ZeroCardViewAsSkill("jilve") {
     }
 
@@ -1084,14 +1084,14 @@ public:
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->hasFlag("JilveWansha");
+        return target != NULL && target->hasFlag("JilveIkSishideng");
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *target, QVariant &data) const{
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
         if (change.to != Player::NotActive)
             return false;
-        room->detachSkillFromPlayer(target, "wansha", false, true);
+        room->detachSkillFromPlayer(target, "iksishideng", false, true);
         return false;
     }
 };

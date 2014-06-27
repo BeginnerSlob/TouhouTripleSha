@@ -308,11 +308,11 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
             while (dying.who->getHp() <= 0) {
                 peach = NULL;
 
-                // coupling Wansha here to deal with complicated rule problems
+                // coupling IkSishideng here to deal with complicated rule problems
                 ServerPlayer *current = room->getCurrent();
-                if (current && current->isAlive() && current->getPhase() != Player::NotActive && current->hasSkill("wansha")) {
+                if (current && current->isAlive() && current->getPhase() != Player::NotActive && current->hasSkill("iksishideng")) {
                     if (player != current && player != dying.who) {
-                        player->setFlags("wansha");
+                        player->setFlags("iksishideng");
                         room->addPlayerMark(player, "Global_PreventPeach");
                     }
                 }
@@ -320,8 +320,8 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
                 if (dying.who->isAlive())
                     peach = room->askForSinglePeach(player, dying.who);
 
-                if (player->hasFlag("wansha") && player->getMark("Global_PreventPeach") > 0) {
-                    player->setFlags("-wansha");
+                if (player->hasFlag("iksishideng") && player->getMark("Global_PreventPeach") > 0) {
+                    player->setFlags("-iksishideng");
                     room->removePlayerMark(player, "Global_PreventPeach");
                 }
 
