@@ -546,7 +546,7 @@ HMomentumPackage::HMomentumPackage()
     related_skills.insertMulti("hengjiang", "#hengjiang-maxcard");
 
     General *heg_madai = new General(this, "heg_madai", "shu", 4, true, true); // SHU 019
-    heg_madai->addSkill("mashu");
+    heg_madai->addSkill("thjibu");
     heg_madai->addSkill("qianxi");
 
     General *mifuren = new General(this, "mifuren", "shu", 3, false); // SHU 021

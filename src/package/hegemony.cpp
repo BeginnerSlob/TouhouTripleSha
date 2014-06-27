@@ -712,7 +712,7 @@ HegemonyPackage::HegemonyPackage()
     dingfeng->addSkill(new Fenxun);
 
     General *mateng = new General(this, "mateng", "qun"); // QUN 013
-    mateng->addSkill("mashu");
+    mateng->addSkill("thjibu");
     mateng->addSkill(new Xiongyi);
 
     General *kongrong = new General(this, "kongrong", "qun", 3); // QUN 014

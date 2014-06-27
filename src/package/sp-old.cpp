@@ -466,7 +466,7 @@ public:
 
             room->setPlayerMark(guanyu, "danji", 1);
             if (room->changeMaxHpForAwakenSkill(guanyu) && guanyu->getMark("danji") == 1)
-                room->acquireSkill(guanyu, "mashu");
+                room->acquireSkill(guanyu, "thjibu");
         }
 
         return false;
@@ -2288,19 +2288,19 @@ SPOldPackage::SPOldPackage()
     sp_sunshangxiang->addSkill("ikcuimeng");
 
     General *sp_pangde = new General(this, "sp_pangde", "wei", 4, true, true); // SP 006
-    sp_pangde->addSkill("mashu");
-    sp_pangde->addSkill("mengjin");
+    sp_pangde->addSkill("thjibu");
+    sp_pangde->addSkill("ikmengjin");
 
     General *sp_guanyu = new General(this, "sp_guanyu", "wei", 4); // SP 007
     sp_guanyu->addSkill("ikchilian");
     sp_guanyu->addSkill(new Danji);
 
     General *shenlvbu1 = new General(this, "shenlvbu1", "god", 8, true, true); // SP 008 (2-1)
-    shenlvbu1->addSkill("mashu");
+    shenlvbu1->addSkill("thjibu");
     shenlvbu1->addSkill("ikwushuang");
 
     General *shenlvbu2 = new General(this, "shenlvbu2", "god", 4, true, true); // SP 008 (2-2)
-    shenlvbu2->addSkill("mashu");
+    shenlvbu2->addSkill("thjibu");
     shenlvbu2->addSkill("ikwushuang");
     shenlvbu2->addSkill(new Xiuluo);
     shenlvbu2->addSkill(new ShenweiKeep);
@@ -2313,7 +2313,7 @@ SPOldPackage::SPOldPackage()
     sp_caiwenji->addSkill("duanchang");
 
     General *sp_machao = new General(this, "sp_machao", "qun", 4, true, true); // SP 011
-    sp_machao->addSkill("mashu");
+    sp_machao->addSkill("thjibu");
     sp_machao->addSkill("nostieji");
 
     General *sp_jiaxu = new General(this, "sp_jiaxu", "wei", 3, true, true); // SP 012
@@ -2445,7 +2445,7 @@ OLPackage::OLPackage()
     ol_guanxingzhangbao->addSkill("fuhun");
 
     General *ol_madai = new General(this, "ol_madai", "shu", 4, true, true);
-    ol_madai->addSkill("mashu");
+    ol_madai->addSkill("thjibu");
     ol_madai->addSkill("qianxi");
 
     General *ol_wangyi = new General(this, "ol_wangyi", "wei", 3, false, true);
@@ -2505,7 +2505,7 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_zhaoyun->addSkill("ikhuahuan");
 
     General *tw_machao = new General(this, "tw_machao", "shu", 4, true, true); // TW SP 010
-    tw_machao->addSkill("mashu");
+    tw_machao->addSkill("thjibu");
     tw_machao->addSkill("nostieji");
 
     General *tw_huangyueying = new General(this, "tw_huangyueying", "shu", 3, false, true); // TW SP 011

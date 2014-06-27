@@ -2218,19 +2218,6 @@ public:
     }
 };
 
-class Mashu: public DistanceSkill {
-public:
-    Mashu(): DistanceSkill("mashu") {
-    }
-
-    virtual int getCorrect(const Player *from, const Player *) const{
-        if (from->hasSkill(objectName()))
-            return -1;
-        else
-            return 0;
-    }
-};
-
 class Xunxun: public PhaseChangeSkill {
 public:
     Xunxun(): PhaseChangeSkill("xunxun") {

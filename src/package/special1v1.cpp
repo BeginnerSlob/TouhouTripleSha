@@ -1086,7 +1086,7 @@ Special1v1ExtPackage::Special1v1ExtPackage()
     niujin->addSkill(new Liewei);
 
     General *hansui = new General(this, "hansui", "qun"); // QUN 027
-    hansui->addSkill("mashu");
+    hansui->addSkill("thjibu");
     hansui->addSkill(new Niluan);
     hansui->addSkill(new NiluanRecord);
     related_skills.insertMulti("niluan", "#niluan-record");
