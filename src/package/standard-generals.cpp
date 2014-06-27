@@ -2873,9 +2873,9 @@ TestPackage::TestPackage()
     related_skills.insertMulti("super_jushou", "#@jushou_test-5");
 
     General *nobenghuai_dongzhuo = new General(this, "nobenghuai_dongzhuo$", "qun", 4, true, true);
-    nobenghuai_dongzhuo->addSkill("jiuchi");
-    nobenghuai_dongzhuo->addSkill("roulin");
-    nobenghuai_dongzhuo->addSkill("baonue");
+    nobenghuai_dongzhuo->addSkill("ikfusheng");
+    nobenghuai_dongzhuo->addSkill("ikhuanbei");
+    nobenghuai_dongzhuo->addSkill("ikwuhua");
 
     new General(this, "sujiang", "god", 5, true, true);
     new General(this, "sujiangf", "god", 5, false, true);
