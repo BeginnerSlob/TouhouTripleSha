@@ -2317,9 +2317,9 @@ SPOldPackage::SPOldPackage()
     sp_machao->addSkill("nostieji");
 
     General *sp_jiaxu = new General(this, "sp_jiaxu", "wei", 3, true, true); // SP 012
-    sp_jiaxu->addSkill("wansha");
-    sp_jiaxu->addSkill("luanwu");
-    sp_jiaxu->addSkill("weimu");
+    sp_jiaxu->addSkill("iksishideng");
+    sp_jiaxu->addSkill("ikwenle");
+    sp_jiaxu->addSkill("ikmoyudeng");
 
     General *caohong = new General(this, "caohong", "wei"); // SP 013
     caohong->addSkill(new Yuanhu);

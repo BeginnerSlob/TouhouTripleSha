@@ -1225,10 +1225,10 @@ void RoomScene::updateTargetsEnablity(const Card *card) {
                 isCollateral = (qice_card->getUserString() == "collateral");
             }
         }
-        bool weimuFailure = isCollateral && selected_targets.length() == 1;
+        bool ikmoyudengFailure = isCollateral && selected_targets.length() == 1;
         //=====================================
 
-        bool enabled = (card == NULL) || ((weimuFailure || !Sanguosha->isProhibited(Self, player, card, selected_targets)) && maxVotes > 0);
+        bool enabled = (card == NULL) || ((ikmoyudengFailure || !Sanguosha->isProhibited(Self, player, card, selected_targets)) && maxVotes > 0);
 
         QGraphicsItem *animationTarget = item->getMouseClickReceiver();
         if (enabled)
