@@ -145,7 +145,7 @@ void HeyiCard::onUse(Room *room, const CardUseStruct &card_use) const{
     QVariant data = QVariant::fromValue(use);
     RoomThread *thread = room->getThread();
 
-    if (thread->trigger(PreCardUsed, room, use.from, data)) return;
+    thread->trigger(PreCardUsed, room, use.from, data);
     use = data.value<CardUseStruct>();
     thread->trigger(CardUsed, room, use.from, data);
     use = data.value<CardUseStruct>();

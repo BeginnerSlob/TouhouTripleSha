@@ -753,6 +753,7 @@ public:
                             log.type = "#BecomeUser";
                             log.from = target;
                             log.card_str = use.card->toString();
+                            room->sendLog(log);
 
                             target->setFlags("ZenhuiUser_" + use.card->toString()); // For AI
                             use.from = target;
@@ -918,7 +919,7 @@ void XianzhouDamageCard::onUse(Room *room, const CardUseStruct &card_use) const{
     QVariant data = QVariant::fromValue(use);
     RoomThread *thread = room->getThread();
 
-    if (thread->trigger(PreCardUsed, room, use.from, data)) return;
+    thread->trigger(PreCardUsed, room, use.from, data);
     use = data.value<CardUseStruct>();
     thread->trigger(CardUsed, room, use.from, data);
     use = data.value<CardUseStruct>();

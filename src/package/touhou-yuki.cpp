@@ -811,17 +811,9 @@ public:
                 usecard = resp.m_card;
         }
         if (!usecard) return false;
-        if (usecard->isKindOf("Collateral")) {
-            foreach (ServerPlayer *p, room->getAlivePlayers())
-                if (!player->isProhibited(p, usecard))
-                    foreach(ServerPlayer *target, room->getOtherPlayers(p))
-                        if (p->inMyAttackRange(target))
-                            targets << p;
-        } else {
-            foreach (ServerPlayer *p, room->getAlivePlayers())
-                if (!player->isProhibited(p, usecard))
-                    targets << p;
-        }
+        foreach (ServerPlayer *p, room->getAlivePlayers())
+            if (!player->isProhibited(p, usecard))
+                targets << p;
         room->setPlayerMark(player, "ThChouce", usecard->getNumber());
         ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thchouce", true);
         player->tag["ThChouceCard"] = usecard->toString();
@@ -856,6 +848,14 @@ public:
                     Q_ASSERT(!victims.isEmpty());
                     ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName(), "thchouce-slash:" + killer->objectName());
                     killer->tag["collateralVictim"] = QVariant::fromValue(victim);
+
+                    LogMessage log;
+                    log.type = "#CollateralSlash";
+                    log.from = player;
+                    log.to << victim;
+                    room->sendLog(log);
+
+                    room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, killer->objectName(), victim->objectName());
                 }
             }
             data = QVariant::fromValue(use);
@@ -1105,7 +1105,7 @@ public:
 class ThHeimu: public TriggerSkill {
 public:
     ThHeimu(): TriggerSkill("thheimu") {
-        events << PreCardUsed;
+        events << TargetSpecifying;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
@@ -1146,19 +1146,16 @@ public:
         player->tag.remove("ThHeimuTarget");
         if (target) {
             CardUseStruct use = data.value<CardUseStruct>();
-            CardMoveReason reason(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
-            room->moveCardTo(use.card, NULL, Player::DiscardPile, reason, true);
-            QString key = use.card->getClassName();
-            room->addPlayerHistory(player, key, -1);
-            if (use.to.isEmpty())
-                use.to << use.from;
+            LogMessage log;
+            log.type = "#BecomeUser";
+            log.from = target;
+            log.card_str = use.card->toString();
+            room->sendLog(log);
 
             use.from = target;
             use.m_isOwnerUse = false;
-            room->useCard(use, false);
-            return true;
+            data = QVariant::fromValue(use);
         }
-
         return false;
     }
 };

@@ -610,7 +610,7 @@ void QingchengCard::onUse(Room *room, const CardUseStruct &use) const{
 
     QVariant data = QVariant::fromValue(card_use);
     RoomThread *thread = room->getThread();
-    if (thread->trigger(PreCardUsed, room, player, data)) return;
+    thread->trigger(PreCardUsed, room, player, data);
     card_use = data.value<CardUseStruct>();
 
     CardMoveReason reason(CardMoveReason::S_REASON_THROW, player->objectName(), QString(), card_use.card->getSkillName(), QString());
