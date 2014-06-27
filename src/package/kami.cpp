@@ -1840,7 +1840,7 @@ public:
         //===========================
         QStringList lord_skills;
         lord_skills << "ikxinqi" << "ikhuanwei" << "ikjiyuan" << "ikyuji"
-                    << "thqiyuan" << "iksongwei" << "thchundu" /*<< "ikwuhua"*/;
+                    << "thqiyuan" << "iksongwei" << "thchundu" << "ikwuhua";
 
         foreach (QString lord_skill, lord_skills)
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(lord_skill))

@@ -2214,7 +2214,6 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (player->tag.value("InvokeThYunyin", false).toBool()) {
-            QList<ServerPlayer *> gongzhus;
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (p->hasLordSkill(objectName()))
                     return QStringList(objectName());

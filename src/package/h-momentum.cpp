@@ -568,7 +568,7 @@ HMomentumPackage::HMomentumPackage()
     General *heg_dongzhuo = new General(this, "heg_dongzhuo$", "qun", 4); // QUN 006 G
     heg_dongzhuo->addSkill(new Hengzheng);
     heg_dongzhuo->addSkill(new Baoling);
-    heg_dongzhuo->addSkill("baonue");
+    heg_dongzhuo->addSkill("ikwuhua");
 
     General *zhangren = new General(this, "zhangren", "qun", 4); // QUN 024
     zhangren->addSkill(new Chuanxin);
