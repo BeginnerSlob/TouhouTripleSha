@@ -160,21 +160,21 @@ public:
     }
 };
 
-class ShuangxiongViewAsSkill: public OneCardViewAsSkill {
+class IkShuangniangViewAsSkill: public OneCardViewAsSkill {
 public:
-    ShuangxiongViewAsSkill(): OneCardViewAsSkill("shuangxiong") {
+    IkShuangniangViewAsSkill(): OneCardViewAsSkill("ikshuangniang") {
         response_or_use = true;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getMark("shuangxiong") != 0 && !player->isKongcheng();
+        return player->getMark("ikshuangniang") != 0 && !player->isKongcheng();
     }
 
     virtual bool viewFilter(const Card *card) const{
         if (card->isEquipped())
             return false;
 
-        int value = Self->getMark("shuangxiong");
+        int value = Self->getMark("ikshuangniang");
         if (value == 1)
             return card->isBlack();
         else if (value == 2)
@@ -191,46 +191,46 @@ public:
     }
 };
 
-class Shuangxiong: public TriggerSkill {
+class IkShuangniang: public TriggerSkill {
 public:
-    Shuangxiong(): TriggerSkill("shuangxiong") {
+    IkShuangniang(): TriggerSkill("ikshuangniang") {
         events << EventPhaseStart << FinishJudge << EventPhaseChanging;
-        view_as_skill = new ShuangxiongViewAsSkill;
+        view_as_skill = new IkShuangniangViewAsSkill;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return target != NULL;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *shuangxiong, QVariant &data) const{
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         if (triggerEvent == EventPhaseStart) {
-            if (shuangxiong->getPhase() == Player::Start) {
-                room->setPlayerMark(shuangxiong, "shuangxiong", 0);
-            } else if (shuangxiong->getPhase() == Player::Draw && TriggerSkill::triggerable(shuangxiong)) {
-                if (shuangxiong->askForSkillInvoke(objectName())) {
-                    room->setPlayerFlag(shuangxiong, "shuangxiong");
+            if (player->getPhase() == Player::Start) {
+                room->setPlayerMark(player, "ikshuangniang", 0);
+            } else if (player->getPhase() == Player::Draw && TriggerSkill::triggerable(player)) {
+                if (player->askForSkillInvoke(objectName())) {
+                    room->setPlayerFlag(player, "ikshuangniang");
 
-                    room->broadcastSkillInvoke("shuangxiong", 1);
+                    room->broadcastSkillInvoke("ikshuangniang", 1);
                     JudgeStruct judge;
                     judge.good = true;
                     judge.play_animation = false;
                     judge.reason = objectName();
-                    judge.who = shuangxiong;
+                    judge.who = player;
 
                     room->judge(judge);
-                    room->setPlayerMark(shuangxiong, "shuangxiong", judge.card->isRed() ? 1 : 2);
+                    room->setPlayerMark(player, "ikshuangniang", judge.card->isRed() ? 1 : 2);
 
                     return true;
                 }
             }
         } else if (triggerEvent == FinishJudge) {
             JudgeStar judge = data.value<JudgeStar>();
-            if (judge->reason == "shuangxiong" && room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge)
-                shuangxiong->obtainCard(judge->card);
+            if (judge->reason == "ikshuangniang" && room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge)
+                player->obtainCard(judge->card);
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive && shuangxiong->hasFlag("shuangxiong"))
-                room->setPlayerFlag(shuangxiong, "-shuangxiong");
+            if (change.to == Player::NotActive && player->hasFlag("ikshuangniang"))
+                room->setPlayerFlag(player, "-ikshuangniang");
         }
 
         return false;
@@ -461,8 +461,8 @@ FirePackage::FirePackage()
     General *luna004 = new General(this, "luna004", "tsuki");
     luna004->addSkill(new IkXinghuang);
 
-    General *yanliangwenchou = new General(this, "yanliangwenchou", "qun"); // QUN 005
-    yanliangwenchou->addSkill(new Shuangxiong);
+    General *luna005 = new General(this, "luna005", "tsuki");
+    luna005->addSkill(new IkShuangniang);
 
     General *pangde = new General(this, "pangde", "qun"); // QUN 008
     pangde->addSkill("mashu");
