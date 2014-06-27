@@ -159,7 +159,7 @@ void LijianCard::onUse(Room *room, const CardUseStruct &card_use) const{
     QVariant data = QVariant::fromValue(use);
     RoomThread *thread = room->getThread();
 
-    if (thread->trigger(PreCardUsed, room, card_use.from, data)) return;
+    thread->trigger(PreCardUsed, room, card_use.from, data);
     use = data.value<CardUseStruct>();
 
     room->broadcastSkillInvoke("ikmoyu");
@@ -345,7 +345,7 @@ void IkWanmeiCard::onUse(Room *room, const CardUseStruct &use) const{
 
     QVariant data = QVariant::fromValue(card_use);
     RoomThread *thread = room->getThread();
-    if (thread->trigger(PreCardUsed, room, card_use.from, data)) return;
+    thread->trigger(PreCardUsed, room, card_use.from, data);
     card_use = data.value<CardUseStruct>();
 
     LogMessage log;

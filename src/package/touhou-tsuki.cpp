@@ -1785,7 +1785,7 @@ public:
                 int card_id = room->askForCardChosen(player, target, "hej", objectName());
                 room->obtainCard(player, card_id, false);
                 room->addPlayerMark(player, objectName());
-                room->askForUseSlashTo(player, target, "@thshenyou:" + target->objectName());
+                room->askForUseSlashTo(player, target, "@thshenyou:" + target->objectName(), false);
                 room->removePlayerMark(player, objectName());
                 return true;
             }
@@ -1856,7 +1856,7 @@ void ThTianqueCard::onUse(Room *room, const CardUseStruct &use) const {
     CardUseStruct card_use = use;
     QVariant data = QVariant::fromValue(card_use);
     RoomThread *thread = room->getThread();
-    if (thread->trigger(PreCardUsed, room, card_use.from, data)) return;
+    thread->trigger(PreCardUsed, room, card_use.from, data);
     card_use = data.value<CardUseStruct>();
     QList<int> card_ids = card_use.card->getSubcards();
     LogMessage log;
