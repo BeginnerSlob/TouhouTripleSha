@@ -664,7 +664,7 @@ enum TriggerEvent {
     DamageInflicted,  // the moment for -- ikzhihui..
     PreDamageDone,    // before reducing Hp
     DamageDone,       // it's time to do the damage
-    Damage,           // the moment for -- lieren..
+    Damage,           // the moment for -- iklieren..
     Damaged,          // the moment for -- yiji..
     DamageComplete,   // the moment for trigger iron chain
 
