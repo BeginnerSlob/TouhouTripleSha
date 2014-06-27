@@ -387,44 +387,41 @@ public:
     }
 };
 
-class Yinghun: public PhaseChangeSkill {
+class IkLiangban: public PhaseChangeSkill {
 public:
-    Yinghun(): PhaseChangeSkill("yinghun") {
+    IkLiangban(): PhaseChangeSkill("ikliangban") {
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return PhaseChangeSkill::triggerable(target)
-               && target->getPhase() == Player::Start
-               && target->isWounded();
+               && target->getPhase() == Player::Start;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        ServerPlayer *to = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "ikliangban-invoke", true, true);
+        if (to) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["IkLiangbanTarget"] = QVariant::fromValue(to);
+            return true;
+        }
+        return false;
     }
 
     virtual bool onPhaseChange(ServerPlayer *sunjian) const{
         Room *room = sunjian->getRoom();
-        ServerPlayer *to = room->askForPlayerChosen(sunjian, room->getOtherPlayers(sunjian), objectName(), "yinghun-invoke", true, true);
+        ServerPlayer *to = sunjian->tag["IkLiangbanTarget"].value<PlayerStar>();
+        sunjian->tag.remove("IkLiangbanTarget");
         if (to) {
-            int x = sunjian->getLostHp();
-
-            int index = 1;
-            if (!sunjian->hasInnateSkill("yinghun") && sunjian->hasSkill("hunzi"))
-                index += 2;
-
+            int x = qMax(sunjian->getLostHp(), 1);
             if (x == 1) {
-                room->broadcastSkillInvoke(objectName(), index);
-
                 to->drawCards(1, objectName());
                 room->askForDiscard(to, objectName(), 1, 1, false, true);
             } else {
-                to->setFlags("YinghunTarget");
                 QString choice = room->askForChoice(sunjian, objectName(), "d1tx+dxt1");
-                to->setFlags("-YinghunTarget");
                 if (choice == "d1tx") {
-                    room->broadcastSkillInvoke(objectName(), index + 1);
-
                     to->drawCards(1, objectName());
                     room->askForDiscard(to, objectName(), x, x, false, true);
                 } else {
-                    room->broadcastSkillInvoke(objectName(), index);
-
                     to->drawCards(x, objectName());
                     room->askForDiscard(to, objectName(), 1, 1, false, true);
                 }
@@ -934,8 +931,8 @@ ThicketPackage::ThicketPackage()
     wind015->addSkill(new IkLieren);
     related_skills.insertMulti("ikjugui", "#sa_avoid_ikjugui");
 
-    General *sunjian = new General(this, "sunjian", "wu"); // WU 009
-    sunjian->addSkill(new Yinghun);
+    General *snow009 = new General(this, "snow009", "yuki");
+    snow009->addSkill(new IkLiangban);
 
     General *lusu = new General(this, "lusu", "wu", 3); // WU 014
     lusu->addSkill(new Haoshi);
