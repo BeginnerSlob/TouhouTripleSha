@@ -400,7 +400,7 @@ public:
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         CardEffectStruct effect = data.value<CardEffectStruct>();
         if (effect.card->isKindOf("SavageAssault")) {
-            room->broadcastSkillInvoke(player->isFemale() ? "juxiang" : "huoshou");
+            room->broadcastSkillInvoke(player->isFemale() ? "ikjugui" : "ikhuoshou");
 
             LogMessage log;
             log.type = "#SkillNullify";
@@ -1038,12 +1038,12 @@ Special1v1Package::Special1v1Package()
     General *kof_menghuo = new General(this, "kof_menghuo", "shu");
     kof_menghuo->addSkill(new Manyi);
     kof_menghuo->addSkill(new ManyiAvoid);
-    kof_menghuo->addSkill("zaiqi");
+    kof_menghuo->addSkill("ikzailuan");
     related_skills.insertMulti("manyi", "#manyi-avoid");
 
     General *kof_zhurong = new General(this, "kof_zhurong", "shu", 4, false);
     kof_zhurong->addSkill("manyi");
-    kof_zhurong->addSkill("lieren");
+    kof_zhurong->addSkill("iklieren");
 
     General *kof_nos_lvmeng = new General(this, "kof_nos_lvmeng", "wu");
     kof_nos_lvmeng->addSkill(new Shenju);

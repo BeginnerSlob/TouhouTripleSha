@@ -1839,8 +1839,8 @@ public:
         choices << "modify";
         //===========================
         QStringList lord_skills;
-        lord_skills /*<< "xinqi"*/ << "ikhuanwei" /*<< "jiyuan" << "yuji"*/
-                    << "thqiyuan" /*<< "songwei"*/ << "thchundu" /*<< "wuhua"*/;
+        lord_skills << "ikxinqi" << "ikhuanwei" << "ikjiyuan" << "ikyuji"
+                    << "thqiyuan" << "iksongwei" << "thchundu" /*<< "ikwuhua"*/;
 
         foreach (QString lord_skill, lord_skills)
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(lord_skill))
