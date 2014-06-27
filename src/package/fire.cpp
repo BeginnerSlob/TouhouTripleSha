@@ -255,6 +255,7 @@ public:
                 && damage.card && damage.card->isKindOf("Slash") && damage.card->isRed())
                 return QStringList(objectName());
         }
+        return QStringList();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *pangde, QVariant &, ServerPlayer *) const{

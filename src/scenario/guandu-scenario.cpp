@@ -213,7 +213,7 @@ public:
                         if (to == NULL || to->containsTrick("supply_shortage"))
                             continue;
 
-                        int card_id = room->getCardFromPile("@duanliang");
+                        int card_id = room->getCardFromPile("@ikkujie");
                         if (card_id == -1)
                             break;
 
@@ -226,7 +226,7 @@ public:
                         room->sendLog(log);
 
                         SupplyShortage *shortage = new SupplyShortage(originalCard->getSuit(), originalCard->getNumber());
-                        shortage->setSkillName("duanliang");
+                        shortage->setSkillName("ikkujie");
                         WrappedCard *card = Sanguosha->getWrappedCard(originalCard->getId());
                         card->takeOver(shortage);
                         room->broadcastUpdateCard(room->getPlayers(), card->getId(), card);

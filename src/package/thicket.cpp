@@ -103,10 +103,10 @@ public:
     }
 };
 
-class Duanliang: public OneCardViewAsSkill {
+class IkKujie: public OneCardViewAsSkill {
 public:
-    Duanliang(): OneCardViewAsSkill("duanliang") {
-        filter_pattern = "BasicCard,EquipCard|black";
+    IkKujie(): OneCardViewAsSkill("ikkujie") {
+        filter_pattern = "^TrickCard|black";
         response_or_use = true;
     }
 
@@ -119,15 +119,14 @@ public:
     }
 };
 
-class DuanliangTargetMod: public TargetModSkill {
+class IkKujieTargetMod: public TargetModSkill {
 public:
-    DuanliangTargetMod(): TargetModSkill("#duanliang-target") {
-        frequency = NotFrequent;
+    IkKujieTargetMod(): TargetModSkill("#ikkujie-target") {
         pattern = "SupplyShortage";
     }
 
     virtual int getDistanceLimit(const Player *from, const Card *) const{
-        if (from->hasSkill("duanliang"))
+        if (from->hasSkill("ikkujie"))
             return 1;
         else
             return 0;
@@ -858,10 +857,10 @@ public:
 ThicketPackage::ThicketPackage()
     : Package("thicket")
 {
-    General *xuhuang = new General(this, "xuhuang", "wei"); // WEI 010
-    xuhuang->addSkill(new Duanliang);
-    xuhuang->addSkill(new DuanliangTargetMod);
-    related_skills.insertMulti("duanliang", "#duanliang-target");
+    General *bloom010 = new General(this, "bloom010", "hana");
+    bloom010->addSkill(new IkKujie);
+    bloom010->addSkill(new IkKujieTargetMod);
+    related_skills.insertMulti("ikkujie", "#ikkujie-target");
 
     General *caopi = new General(this, "caopi$", "wei", 3); // WEI 014
     caopi->addSkill(new Xingshang);

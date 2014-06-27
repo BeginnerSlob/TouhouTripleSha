@@ -2657,7 +2657,7 @@ int Room::getCardFromPile(const QString &card_pattern) {
         swapPile();
 
     if (card_pattern.startsWith("@")) {
-        if (card_pattern == "@duanliang") {
+        if (card_pattern == "@ikkujie") {
             foreach (int card_id, *m_drawPile) {
                 const Card *card = Sanguosha->getCard(card_id);
                 if (card->isBlack() && (card->isKindOf("BasicCard") || card->isKindOf("EquipCard")))
