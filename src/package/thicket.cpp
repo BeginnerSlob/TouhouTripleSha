@@ -431,30 +431,30 @@ public:
     }
 };
 
-HaoshiCard::HaoshiCard() {
+IkShenenCard::IkShenenCard() {
     will_throw = false;
     mute = true;
     handling_method = Card::MethodNone;
-    m_skillName = "_haoshi";
+    m_skillName = "_ikshenen";
 }
 
-bool HaoshiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkShenenCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     if (!targets.isEmpty() || to_select == Self)
         return false;
 
-    return to_select->getHandcardNum() == Self->getMark("haoshi");
+    return to_select->getHandcardNum() == Self->getMark("ikshenen");
 }
 
-void HaoshiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+void IkShenenCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(),
-                          targets.first()->objectName(), "haoshi", QString());
+                          targets.first()->objectName(), "ikshenen", QString());
     room->moveCardTo(this, targets.first(), Player::PlaceHand, reason);
 }
 
-class HaoshiViewAsSkill: public ViewAsSkill {
+class IkShenenViewAsSkill: public ViewAsSkill {
 public:
-    HaoshiViewAsSkill(): ViewAsSkill("haoshi") {
-        response_pattern = "@@haoshi!";
+    IkShenenViewAsSkill(): ViewAsSkill("ikshenen") {
+        response_pattern = "@@ikshenen!";
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
@@ -469,77 +469,81 @@ public:
         if (cards.length() != Self->getHandcardNum() / 2)
             return NULL;
 
-        HaoshiCard *card = new HaoshiCard;
+        IkShenenCard *card = new IkShenenCard;
         card->addSubcards(cards);
         return card;
     }
 };
 
-class HaoshiGive: public TriggerSkill {
+class IkShenen: public DrawCardsSkill {
 public:
-    HaoshiGive(): TriggerSkill("#haoshi-give") {
-        events << AfterDrawNCards;
+    IkShenen(): DrawCardsSkill("ikshenen") {
+        view_as_skill = new IkShenenViewAsSkill;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *lusu, QVariant &) const{
-        if (lusu->hasFlag("haoshi")) {
-            lusu->setFlags("-haoshi");
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
 
-            if (lusu->getHandcardNum() <= 5)
-                return false;            
+    virtual int getDrawNum(ServerPlayer *lusu, int n) const{
+        lusu->setFlags("ikshenen");
+        return n + 2;
+    }
+};
 
-            QList<ServerPlayer *> other_players = room->getOtherPlayers(lusu);
-            int least = 1000;
-            foreach (ServerPlayer *player, other_players)
-                least = qMin(player->getHandcardNum(), least);
-            room->setPlayerMark(lusu, "haoshi", least);
-            bool used = room->askForUseCard(lusu, "@@haoshi!", "@haoshi", -1, Card::MethodNone);
+class IkShenenGive: public TriggerSkill {
+public:
+    IkShenenGive(): TriggerSkill("#ikshenen-give") {
+        events << AfterDrawNCards;
+        frequency = Compulsory;
+    }
 
-            if (!used) {
-                // force lusu to give his half cards
-                ServerPlayer *beggar = NULL;
-                foreach (ServerPlayer *player, other_players) {
-                    if (player->getHandcardNum() == least) {
-                        beggar = player;
-                        break;
-                    }
+    virtual bool triggerable(const ServerPlayer *lusu) const{
+        return lusu && lusu->hasFlag("ikshenen") && lusu->getHandcardNum() > 5;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *lusu, QVariant &, ServerPlayer *) const{
+        lusu->setFlags("-ikshenen");
+
+        QList<ServerPlayer *> other_players = room->getOtherPlayers(lusu);
+        int least = 1000;
+        foreach (ServerPlayer *player, other_players)
+            least = qMin(player->getHandcardNum(), least);
+        room->setPlayerMark(lusu, "ikshenen", least);
+        bool used = room->askForUseCard(lusu, "@@ikshenen!", "@ikshenen", -1, Card::MethodNone);
+
+        if (!used) {
+            // force lusu to give his half cards
+            ServerPlayer *beggar = NULL;
+            foreach (ServerPlayer *player, other_players) {
+                if (player->getHandcardNum() == least) {
+                    beggar = player;
+                    break;
                 }
-
-                int n = lusu->getHandcardNum() / 2;
-                QList<int> to_give = lusu->handCards().mid(0, n);
-                HaoshiCard *haoshi_card = new HaoshiCard;
-                haoshi_card->addSubcards(to_give);
-                QList<ServerPlayer *> targets;
-                targets << beggar;
-                haoshi_card->use(room, lusu, targets);
-                delete haoshi_card;
             }
+
+            int n = lusu->getHandcardNum() / 2;
+            QList<int> to_give = lusu->handCards().mid(0, n);
+            IkShenenCard *ikshenen_card = new IkShenenCard;
+            ikshenen_card->addSubcards(to_give);
+            QList<ServerPlayer *> targets;
+            targets << beggar;
+            ikshenen_card->use(room, lusu, targets);
+            delete ikshenen_card;
         }
 
         return false;
     }
 };
 
-class Haoshi: public DrawCardsSkill {
-public:
-    Haoshi(): DrawCardsSkill("#haoshi") {
-    }
-
-    virtual int getDrawNum(ServerPlayer *lusu, int n) const{
-        Room *room = lusu->getRoom();
-        if (room->askForSkillInvoke(lusu, "haoshi")) {
-            room->broadcastSkillInvoke("haoshi");
-            lusu->setFlags("haoshi");
-            return n + 2;
-        } else
-            return n;
-    }
-};
-
-DimengCard::DimengCard() {
+IkDimengCard::IkDimengCard() {
 }
 
-bool DimengCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkDimengCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     if (to_select == Self)
         return false;
 
@@ -553,16 +557,16 @@ bool DimengCard::targetFilter(const QList<const Player *> &targets, const Player
     return false;
 }
 
-bool DimengCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
+bool IkDimengCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
     return targets.length() == 2;
 }
 
 #include "jsonutils.h"
-void DimengCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const{
+void IkDimengCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const{
     ServerPlayer *a = targets.at(0);
     ServerPlayer *b = targets.at(1);
-    a->setFlags("DimengTarget");
-    b->setFlags("DimengTarget");
+    a->setFlags("IkDimengTarget");
+    b->setFlags("IkDimengTarget");
 
     int n1 = a->getHandcardNum();
     int n2 = b->getHandcardNum();
@@ -575,15 +579,15 @@ void DimengCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets)
         }
         QList<CardsMoveStruct> exchangeMove;
         CardsMoveStruct move1(a->handCards(), b, Player::PlaceHand,
-                              CardMoveReason(CardMoveReason::S_REASON_SWAP, a->objectName(), b->objectName(), "dimeng", QString()));
+                              CardMoveReason(CardMoveReason::S_REASON_SWAP, a->objectName(), b->objectName(), "ikdimeng", QString()));
         CardsMoveStruct move2(b->handCards(), a, Player::PlaceHand,
-                              CardMoveReason(CardMoveReason::S_REASON_SWAP, b->objectName(), a->objectName(), "dimeng", QString()));
+                              CardMoveReason(CardMoveReason::S_REASON_SWAP, b->objectName(), a->objectName(), "ikdimeng", QString()));
         exchangeMove.push_back(move1);
         exchangeMove.push_back(move2);
         room->moveCardsAtomic(exchangeMove, false);
 
         LogMessage log;
-        log.type = "#Dimeng";
+        log.type = "#IkDimeng";
         log.from = a;
         log.to << b;
         log.arg = QString::number(n1);
@@ -591,36 +595,36 @@ void DimengCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets)
         room->sendLog(log);
         room->getThread()->delay();
 
-        a->setFlags("-DimengTarget");
-        b->setFlags("-DimengTarget");
+        a->setFlags("-IkDimengTarget");
+        b->setFlags("-IkDimengTarget");
     }
     catch (TriggerEvent triggerEvent) {
         if (triggerEvent == TurnBroken || triggerEvent == StageChange) {
-            a->setFlags("-DimengTarget");
-            b->setFlags("-DimengTarget");
+            a->setFlags("-IkDimengTarget");
+            b->setFlags("-IkDimengTarget");
         }
         throw triggerEvent;
     }
 }
 
-class Dimeng: public ViewAsSkill {
+class IkDimeng: public ViewAsSkill {
 public:
-    Dimeng(): ViewAsSkill("dimeng") {
+    IkDimeng(): ViewAsSkill("ikdimeng") {
     }
 
-    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
-        return !Self->isJilei(to_select);
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        return selected.size() < 3 && !Self->isJilei(to_select);
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        DimengCard *card = new DimengCard;
+        IkDimengCard *card = new IkDimengCard;
         foreach (const Card *c, cards)
             card->addSubcard(c);
         return card;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("DimengCard");
+        return !player->hasUsed("IkDimengCard");
     }
 };
 
@@ -934,13 +938,11 @@ ThicketPackage::ThicketPackage()
     General *snow009 = new General(this, "snow009", "yuki");
     snow009->addSkill(new IkLiangban);
 
-    General *lusu = new General(this, "lusu", "wu", 3); // WU 014
-    lusu->addSkill(new Haoshi);
-    lusu->addSkill(new HaoshiViewAsSkill);
-    lusu->addSkill(new HaoshiGive);
-    lusu->addSkill(new Dimeng);
-    related_skills.insertMulti("haoshi", "#haoshi");
-    related_skills.insertMulti("haoshi", "#haoshi-give");
+    General *snow010 = new General(this, "snow010", "yuki", 3);
+    snow010->addSkill(new IkShenen);
+    snow010->addSkill(new IkShenenGive);
+    snow010->addSkill(new IkDimeng);
+    related_skills.insertMulti("ikshenen", "#ikshenen-give");
 
     General *dongzhuo = new General(this, "dongzhuo$", "qun", 8); // QUN 006
     dongzhuo->addSkill(new Jiuchi);
@@ -953,9 +955,9 @@ ThicketPackage::ThicketPackage()
     jiaxu->addSkill(new Luanwu);
     jiaxu->addSkill(new Weimu);
 
-    addMetaObject<DimengCard>();
+    addMetaObject<IkDimengCard>();
     addMetaObject<LuanwuCard>();
-    addMetaObject<HaoshiCard>();
+    addMetaObject<IkShenenCard>();
 }
 
 ADD_PACKAGE(Thicket)
