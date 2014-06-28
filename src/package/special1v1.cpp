@@ -1033,7 +1033,7 @@ Special1v1Package::Special1v1Package()
     kof_weiyan->addSkill(new KOFKuanggu);
 
     General *kof_jiangwei = new General(this, "kof_jiangwei", "shu");
-    kof_jiangwei->addSkill("tiaoxin");
+    kof_jiangwei->addSkill("iktiaoxin");
 
     General *kof_menghuo = new General(this, "kof_menghuo", "shu");
     kof_menghuo->addSkill(new Manyi);

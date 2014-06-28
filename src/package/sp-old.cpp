@@ -762,7 +762,7 @@ public:
         detached_skills.clear();
         BaobianChange(room, player, 1, "ikxunyu");
         BaobianChange(room, player, 2, "iklipao");
-        BaobianChange(room, player, 3, "tiaoxin");
+        BaobianChange(room, player, 3, "iktiaoxin");
         if (!acquired_skills.isEmpty() || !detached_skills.isEmpty())
             room->handleAcquireDetachSkills(player, acquired_skills + detached_skills);
         return false;

@@ -673,7 +673,7 @@ HFormationPackage::HFormationPackage()
     : Package("h_formation")
 {
     General *heg_dengai = new General(this, "heg_dengai", "wei"); // WEI 015 G
-    heg_dengai->addSkill("tuntian");
+    heg_dengai->addSkill("ikyindie");
     heg_dengai->addSkill(new Ziliang);
 
     General *heg_caohong = new General(this, "heg_caohong", "wei"); // WEI 018
@@ -681,7 +681,7 @@ HFormationPackage::HFormationPackage()
     heg_caohong->addSkill(new Heyi);
 
     General *heg_jiangwei = new General(this, "heg_jiangwei", "shu"); // SHU 012 G
-    heg_jiangwei->addSkill("tiaoxin");
+    heg_jiangwei->addSkill("iktiaoxin");
     heg_jiangwei->addSkill(new Tianfu);
 
     General *jiangwanfeiyi = new General(this, "jiangwanfeiyi", "shu", 3); // SHU 018
