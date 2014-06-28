@@ -12,12 +12,12 @@
 
 #include <QCommandLinkButton>
 
-QiaobianCard::QiaobianCard() {
+IkMancaiCard::IkMancaiCard() {
     mute = true;
 }
 
-bool QiaobianCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-    Player::Phase phase = (Player::Phase)Self->getMark("qiaobianPhase");
+bool IkMancaiCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    Player::Phase phase = (Player::Phase)Self->getMark("ikmancaiPhase");
     if (phase == Player::Draw)
         return targets.length() <= 2 && !targets.isEmpty();
     else if (phase == Player::Play)
@@ -25,8 +25,8 @@ bool QiaobianCard::targetsFeasible(const QList<const Player *> &targets, const P
     return false;
 }
 
-bool QiaobianCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    Player::Phase phase = (Player::Phase)Self->getMark("qiaobianPhase");
+bool IkMancaiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    Player::Phase phase = (Player::Phase)Self->getMark("ikmancaiPhase");
     if (phase == Player::Draw)
         return targets.length() < 2 && to_select != Self && !to_select->isKongcheng();
     else if (phase == Player::Play)
@@ -35,8 +35,8 @@ bool QiaobianCard::targetFilter(const QList<const Player *> &targets, const Play
     return false;
 }
 
-void QiaobianCard::use(Room *room, ServerPlayer *zhanghe, QList<ServerPlayer *> &targets) const{
-    Player::Phase phase = (Player::Phase)zhanghe->getMark("qiaobianPhase");
+void IkMancaiCard::use(Room *room, ServerPlayer *zhanghe, QList<ServerPlayer *> &targets) const{
+    Player::Phase phase = (Player::Phase)zhanghe->getMark("ikmancaiPhase");
     if (phase == Player::Draw) {
         if (targets.isEmpty())
             return;
@@ -53,7 +53,7 @@ void QiaobianCard::use(Room *room, ServerPlayer *zhanghe, QList<ServerPlayer *> 
         if (!from->hasEquip() && from->getJudgingArea().isEmpty())
             return;
 
-        int card_id = room->askForCardChosen(zhanghe, from , "ej", "qiaobian");
+        int card_id = room->askForCardChosen(zhanghe, from , "ej", "ikmancai");
         const Card *card = Sanguosha->getCard(card_id);
         Player::Place place = room->getCardPlace(card_id);
 
@@ -74,41 +74,41 @@ void QiaobianCard::use(Room *room, ServerPlayer *zhanghe, QList<ServerPlayer *> 
             }
         }
 
-        room->setTag("QiaobianTarget", QVariant::fromValue(from));
-        ServerPlayer *to = room->askForPlayerChosen(zhanghe, tos, "qiaobian", "@qiaobian-to:::" + card->objectName());
+        room->setTag("IkMancaiTarget", QVariant::fromValue(from));
+        ServerPlayer *to = room->askForPlayerChosen(zhanghe, tos, "ikmancai", "@ikmancai-to:::" + card->objectName());
         if (to)
             room->moveCardTo(card, from, to, place,
                              CardMoveReason(CardMoveReason::S_REASON_TRANSFER,
-                                            zhanghe->objectName(), "qiaobian", QString()));
-        room->removeTag("QiaobianTarget");
+                                            zhanghe->objectName(), "ikmancai", QString()));
+        room->removeTag("IkMancaiTarget");
     }
 }
 
-void QiaobianCard::onEffect(const CardEffectStruct &effect) const{
+void IkMancaiCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
     if (!effect.to->isKongcheng()) {
-        int card_id = room->askForCardChosen(effect.from, effect.to, "h", "qiaobian");
+        int card_id = room->askForCardChosen(effect.from, effect.to, "h", "ikmancai");
         CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, effect.from->objectName());
         room->obtainCard(effect.from, Sanguosha->getCard(card_id), reason, false);
     }
 }
 
-class QiaobianViewAsSkill: public ZeroCardViewAsSkill {
+class IkMancaiViewAsSkill: public ZeroCardViewAsSkill {
 public:
-    QiaobianViewAsSkill(): ZeroCardViewAsSkill("qiaobian") {
-        response_pattern = "@@qiaobian";
+    IkMancaiViewAsSkill(): ZeroCardViewAsSkill("ikmancai") {
+        response_pattern = "@@ikmancai";
     }
 
     virtual const Card *viewAs() const{
-        return new QiaobianCard;
+        return new IkMancaiCard;
     }
 };
 
-class Qiaobian: public TriggerSkill {
+class IkMancai: public TriggerSkill {
 public:
-    Qiaobian(): TriggerSkill("qiaobian") {
+    IkMancai(): TriggerSkill("ikmancai") {
         events << EventPhaseChanging;
-        view_as_skill = new QiaobianViewAsSkill;
+        view_as_skill = new IkMancaiViewAsSkill;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
@@ -117,7 +117,7 @@ public:
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *zhanghe, QVariant &data) const{
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-        room->setPlayerMark(zhanghe, "qiaobianPhase", (int)change.to);
+        room->setPlayerMark(zhanghe, "ikmancaiPhase", (int)change.to);
         int index = 0;
         switch (change.to) {
         case Player::RoundStart:
@@ -132,13 +132,13 @@ public:
         case Player::PhaseNone: Q_ASSERT(false);
         }
 
-        QString discard_prompt = QString("#qiaobian-%1").arg(index);
-        QString use_prompt = QString("@qiaobian-%1").arg(index);
+        QString discard_prompt = QString("#ikmancai-%1").arg(index);
+        QString use_prompt = QString("@ikmancai-%1").arg(index);
         if (index > 0 && room->askForDiscard(zhanghe, objectName(), 1, 1, true, false, discard_prompt)) {
-            room->broadcastSkillInvoke("qiaobian", index);
+            room->broadcastSkillInvoke("ikmancai", index);
             if (!zhanghe->isAlive()) return false;
             if (!zhanghe->isSkipped(change.to) && (index == 2 || index == 3))
-                room->askForUseCard(zhanghe, "@@qiaobian", use_prompt, index);
+                room->askForUseCard(zhanghe, "@@ikmancai", use_prompt, index);
             zhanghe->skip(change.to, true);
         }
         return false;
@@ -1202,8 +1202,8 @@ public:
 MountainPackage::MountainPackage()
     : Package("mountain")
 {
-    General *zhanghe = new General(this, "zhanghe", "wei"); // WEI 009
-    zhanghe->addSkill(new Qiaobian);
+    General *bloom009 = new General(this, "bloom009", "hana");
+    bloom009->addSkill(new IkMancai);
 
     General *dengai = new General(this, "dengai", "wei", 4); // WEI 015
     dengai->addSkill(new Tuntian);
@@ -1242,7 +1242,7 @@ MountainPackage::MountainPackage()
     caiwenji->addSkill(new Beige);
     caiwenji->addSkill(new Duanchang);
 
-    addMetaObject<QiaobianCard>();
+    addMetaObject<IkMancaiCard>();
     addMetaObject<TiaoxinCard>();
     addMetaObject<ZhijianCard>();
     addMetaObject<ZhibaCard>();
