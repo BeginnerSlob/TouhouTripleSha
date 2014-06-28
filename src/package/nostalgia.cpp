@@ -553,70 +553,69 @@ public:
     }
 };
 
-class NosZhenlie: public TriggerSkill {
+class IkLundao: public TriggerSkill {
 public:
-    NosZhenlie(): TriggerSkill("noszhenlie") {
+    IkLundao(): TriggerSkill("iklundao") {
         events << AskForRetrial;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        JudgeStar judge = data.value<JudgeStar>();
-        if (judge->who != player)
-            return false;
-
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         if (player->askForSkillInvoke(objectName(), data)) {
-            int card_id = room->drawCard();
-            room->broadcastSkillInvoke(objectName(), room->getCurrent() == player ? 2 : 1);
-            room->getThread()->delay();
-            const Card *card = Sanguosha->getCard(card_id);
-
-            room->retrial(card, player, judge, objectName());
+            room->broadcastSkillInvoke(objectName());
+            return true;
         }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        JudgeStar judge = data.value<JudgeStar>();
+        room->retrial(Sanguosha->getCard(room->drawCard()), player, judge, objectName());
         return false;
     }
 };
 
-class NosMiji: public PhaseChangeSkill {
+class IkXuanwu: public PhaseChangeSkill {
 public:
-    NosMiji(): PhaseChangeSkill("nosmiji") {
+    IkXuanwu(): PhaseChangeSkill("ikxuanwu") {
         frequency = Frequent;
     }
 
-    virtual bool onPhaseChange(ServerPlayer *wangyi) const{
-        if (!wangyi->isWounded())
-            return false;
-        if (wangyi->getPhase() == Player::Start || wangyi->getPhase() == Player::Finish) {
-            if (!wangyi->askForSkillInvoke(objectName()))
-                return false;
-            Room *room = wangyi->getRoom();
-            room->broadcastSkillInvoke(objectName(), 1);
-            JudgeStruct judge;
-            judge.pattern = ".|black";
-            judge.good = true;
-            judge.reason = objectName();
-            judge.who = wangyi;
+    virtual bool triggerable(const ServerPlayer *wangyi) const{
+        return PhaseChangeSkill::triggerable(wangyi)
+            && wangyi->getPhase() == Player::Finish;
+    }
 
-            room->judge(judge);
-
-            if (judge.isGood() && wangyi->isAlive()) {
-                QList<int> pile_ids = room->getNCards(wangyi->getLostHp(), false);
-                room->fillAG(pile_ids, wangyi);
-                ServerPlayer *target = room->askForPlayerChosen(wangyi, room->getAllPlayers(), objectName());
-                room->clearAG(wangyi);
-                if (target == wangyi)
-                    room->broadcastSkillInvoke(objectName(), 2);
-                else if (target->getGeneralName().contains("machao"))
-                    room->broadcastSkillInvoke(objectName(), 4);
-                else
-                    room->broadcastSkillInvoke(objectName(), 3);
-
-                DummyCard *dummy = new DummyCard(pile_ids);
-                wangyi->setFlags("Global_GongxinOperator");
-                target->obtainCard(dummy, false);
-                wangyi->setFlags("-Global_GongxinOperator");
-                delete dummy;
-            }
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
         }
+        return false;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *wangyi) const{
+        Room *room = wangyi->getRoom();
+        JudgeStruct judge;
+        judge.pattern = ".|black";
+        judge.good = true;
+        judge.reason = objectName();
+        judge.who = wangyi;
+
+        room->judge(judge);
+
+        if (judge.isGood() && wangyi->isAlive()) {
+            QList<int> pile_ids = room->getNCards(wangyi->getLostHp() + 1, false);
+            room->fillAG(pile_ids, wangyi);
+            ServerPlayer *target = room->askForPlayerChosen(wangyi, room->getAllPlayers(), objectName());
+            room->clearAG(wangyi);
+
+            DummyCard *dummy = new DummyCard(pile_ids);
+            wangyi->setFlags("Global_GongxinOperator");
+            target->obtainCard(dummy, false);
+            wangyi->setFlags("-Global_GongxinOperator");
+            delete dummy;
+        }
+
         return false;
     }
 };
@@ -2672,9 +2671,9 @@ NostalYJCM2012Package::NostalYJCM2012Package()
     nos_madai->addSkill("thjibu");
     nos_madai->addSkill(new NosQianxi);
 
-    General *nos_wangyi = new General(this, "nos_wangyi", "wei", 3, false);
-    nos_wangyi->addSkill(new NosZhenlie);
-    nos_wangyi->addSkill(new NosMiji);
+    General *bloom022 = new General(this, "bloom022", "hana", 3, false);
+    bloom022->addSkill(new IkLundao);
+    bloom022->addSkill(new IkXuanwu);
 
     addMetaObject<NosJiefanCard>();
 }
