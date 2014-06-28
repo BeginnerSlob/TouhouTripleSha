@@ -111,11 +111,26 @@ public:
         view_as_skill = new IkMancaiViewAsSkill;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return TriggerSkill::triggerable(target) && target->canDiscard(target, "h");
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(target) && target->canDiscard(target, "h")) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            switch (change.to) {
+            case Player::RoundStart:
+            case Player::Start:
+            case Player::Finish:
+            case Player::NotActive: return QStringList();
+
+            case Player::Judge:
+            case Player::Draw:
+            case Player::Play:
+            case Player::Discard: return QStringList(objectName());
+            case Player::PhaseNone: Q_ASSERT(false);
+            }
+        }
+        return QStringList();
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *zhanghe, QVariant &data) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *zhanghe, QVariant &data, ServerPlayer *) const{
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
         room->setPlayerMark(zhanghe, "ikmancaiPhase", (int)change.to);
         int index = 0;
@@ -133,14 +148,35 @@ public:
         }
 
         QString discard_prompt = QString("#ikmancai-%1").arg(index);
-        QString use_prompt = QString("@ikmancai-%1").arg(index);
         if (index > 0 && room->askForDiscard(zhanghe, objectName(), 1, 1, true, false, discard_prompt)) {
             room->broadcastSkillInvoke("ikmancai", index);
-            if (!zhanghe->isAlive()) return false;
-            if (!zhanghe->isSkipped(change.to) && (index == 2 || index == 3))
-                room->askForUseCard(zhanghe, "@@ikmancai", use_prompt, index);
-            zhanghe->skip(change.to, true);
+            return true;
         }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *zhanghe, QVariant &data, ServerPlayer *) const{
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        room->setPlayerMark(zhanghe, "ikmancaiPhase", (int)change.to);
+        int index = 0;
+        switch (change.to) {
+        case Player::RoundStart:
+        case Player::Start:
+        case Player::Finish:
+        case Player::NotActive: return false;
+
+        case Player::Judge: index = 1 ;break;
+        case Player::Draw: index = 2; break;
+        case Player::Play: index = 3; break;
+        case Player::Discard: index = 4; break;
+        case Player::PhaseNone: Q_ASSERT(false);
+        }
+
+        QString use_prompt = QString("@ikmancai-%1").arg(index);
+        if (!zhanghe->isAlive()) return false;
+        if (!zhanghe->isSkipped(change.to) && (index == 2 || index == 3))
+            room->askForUseCard(zhanghe, "@@ikmancai", use_prompt, index);
+        zhanghe->skip(change.to, true);
         return false;
     }
 };
@@ -254,65 +290,96 @@ public:
     }
 };
 
-class Tuntian: public TriggerSkill {
+class IkYindie: public TriggerSkill {
 public:
-    Tuntian(): TriggerSkill("tuntian") {
+    IkYindie(): TriggerSkill("ikyindie") {
         events << CardsMoveOneTime << FinishJudge;
         frequency = Frequent;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return TriggerSkill::triggerable(target) && target->getPhase() == Player::NotActive;
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player) || (room->getCurrent() == player && player->getPhase() != Player::NotActive))
+            return QStringList();
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.from == player && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip))
+            && !(move.to == player && (move.to_place == Player::PlaceHand || move.to_place == Player::PlaceEquip)))
+            return QStringList(objectName());
+        return QStringList();
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == CardsMoveOneTime) {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.from == player && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip))
-                && !(move.to == player && (move.to_place == Player::PlaceHand || move.to_place == Player::PlaceEquip))
-                && player->askForSkillInvoke("tuntian", data)) {
-                room->broadcastSkillInvoke("tuntian");
-                JudgeStruct judge;
-                judge.pattern = ".|heart";
-                judge.good = false;
-                judge.reason = "tuntian";
-                judge.who = player;
-                room->judge(judge);
-            }
-        } else if (triggerEvent == FinishJudge) {
-            JudgeStar judge = data.value<JudgeStar>();
-            if (judge->reason == "tuntian" && judge->isGood() && room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge)
-                player->addToPile("field", judge->card->getEffectiveId());
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName(), data)) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
         }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        JudgeStruct judge;
+        judge.pattern = ".|heart";
+        judge.good = false;
+        judge.reason = objectName();
+        judge.who = player;
+        room->judge(judge);
 
         return false;
     }
 };
 
-class TuntianDistance: public DistanceSkill {
+class IkYindieMove: public TriggerSkill {
 public:
-    TuntianDistance(): DistanceSkill("#tuntian-dist") {
+    IkYindieMove(): TriggerSkill("#ikyindie-move") {
+        events << FinishJudge;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player != NULL) {
+            JudgeStar judge = data.value<JudgeStar>();
+            if (judge->reason == "ikyindie") {
+                if (judge->isGood()) {
+                    if (room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge) {
+                        return QStringList(objectName());
+                    }
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        JudgeStar judge = data.value<JudgeStar>();
+        player->addToPile("ikyindiepile", judge->card->getEffectiveId());
+
+        return false;
+    }
+};
+
+class IkYindieDistance: public DistanceSkill {
+public:
+    IkYindieDistance(): DistanceSkill("#ikyindie-dist") {
     }
 
     virtual int getCorrect(const Player *from, const Player *) const{
-        if (from->hasSkill("tuntian"))
-            return -from->getPile("field").length();
+        if (from->hasSkill("ikyindie"))
+            return -from->getPile("ikyindiepile").length();
         else
             return 0;
     }
 };
 
-class Zaoxian: public PhaseChangeSkill {
+class IkGuiyue: public PhaseChangeSkill {
 public:
-    Zaoxian(): PhaseChangeSkill("zaoxian") {
+    IkGuiyue(): PhaseChangeSkill("ikguiyue") {
         frequency = Wake;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return PhaseChangeSkill::triggerable(target)
                && target->getPhase() == Player::Start
-               && target->getMark("zaoxian") == 0
-               && target->getPile("field").length() >= 3;
+               && target->getMark("@guiyue") == 0
+               && target->getPile("ikyindiepile").length() >= 3;
     }
 
     virtual bool onPhaseChange(ServerPlayer *dengai) const{
@@ -320,35 +387,34 @@ public:
         room->notifySkillInvoked(dengai, objectName());
 
         LogMessage log;
-        log.type = "#ZaoxianWake";
+        log.type = "#IkGuiyueWake";
         log.from = dengai;
-        log.arg = QString::number(dengai->getPile("field").length());
+        log.arg = QString::number(dengai->getPile("ikyindiepile").length());
         log.arg2 = objectName();
         room->sendLog(log);
 
         room->broadcastSkillInvoke(objectName());
-        room->doLightbox("$ZaoxianAnimate", 4000);
 
-        room->setPlayerMark(dengai, "zaoxian", 1);
-        if (room->changeMaxHpForAwakenSkill(dengai) && dengai->getMark("zaoxian") == 1)
-            room->acquireSkill(dengai, "jixi");
+        room->setPlayerMark(dengai, "@guiyue", 1);
+        if (room->changeMaxHpForAwakenSkill(dengai))
+            room->acquireSkill(dengai, "ikhuanwu");
 
         return false;
     }
 };
 
-class Jixi: public OneCardViewAsSkill {
+class IkHuanwu: public OneCardViewAsSkill {
 public:
-    Jixi(): OneCardViewAsSkill("jixi") {
-        expand_pile = "field";
+    IkHuanwu(): OneCardViewAsSkill("ikhuanwu") {
+        expand_pile = "ikyindiepile";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->getPile("field").isEmpty();
+        return !player->getPile("ikyindiepile").isEmpty();
     }
 
     virtual bool viewFilter(const Card *to_select) const{
-        return Self->getPile("field").contains(to_select->getEffectiveId());
+        return Self->getPile("ikyindiepile").contains(to_select->getEffectiveId());
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
@@ -1205,12 +1271,14 @@ MountainPackage::MountainPackage()
     General *bloom009 = new General(this, "bloom009", "hana");
     bloom009->addSkill(new IkMancai);
 
-    General *dengai = new General(this, "dengai", "wei", 4); // WEI 015
-    dengai->addSkill(new Tuntian);
-    dengai->addSkill(new TuntianDistance);
-    dengai->addSkill(new Zaoxian);
-    dengai->addRelateSkill("jixi");
-    related_skills.insertMulti("tuntian", "#tuntian-dist");
+    General *bloom015 = new General(this, "bloom015", "hana");
+    bloom015->addSkill(new IkYindie);
+    bloom015->addSkill(new IkYindieMove);
+    bloom015->addSkill(new IkYindieDistance);
+    bloom015->addSkill(new IkGuiyue);
+    bloom015->addRelateSkill("ikhuanwu");
+    related_skills.insertMulti("ikyindie", "#ikyindie-move");
+    related_skills.insertMulti("ikyindie", "#ikyindie-dist");
 
     General *jiangwei = new General(this, "jiangwei", "shu"); // SHU 012
     jiangwei->addSkill(new Tiaoxin);
@@ -1248,7 +1316,7 @@ MountainPackage::MountainPackage()
     addMetaObject<ZhibaCard>();
     addMetaObject<FangquanCard>();
 
-    skills << new ZhibaPindian << new Jixi;
+    skills << new ZhibaPindian << new IkHuanwu;
 }
 
 ADD_PACKAGE(Mountain)
