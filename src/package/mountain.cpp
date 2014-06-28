@@ -614,52 +614,45 @@ public:
     }
 };
 
-TiaoxinCard::TiaoxinCard() {
+IkTiaoxinCard::IkTiaoxinCard() {
 }
 
-bool TiaoxinCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkTiaoxinCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     return targets.isEmpty() && to_select->inMyAttackRange(Self);
 }
 
-void TiaoxinCard::onEffect(const CardEffectStruct &effect) const{
+void IkTiaoxinCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
     bool use_slash = false;
     if (effect.to->canSlash(effect.from, NULL, false))
-        use_slash = room->askForUseSlashTo(effect.to, effect.from, "@tiaoxin-slash:" + effect.from->objectName());
+        use_slash = room->askForUseSlashTo(effect.to, effect.from, "@iktiaoxin-slash:" + effect.from->objectName());
     if (!use_slash && effect.from->canDiscard(effect.to, "he"))
-        room->throwCard(room->askForCardChosen(effect.from, effect.to, "he", "tiaoxin", false, Card::MethodDiscard), effect.to, effect.from);
+        room->throwCard(room->askForCardChosen(effect.from, effect.to, "he", "iktiaoxin", false, Card::MethodDiscard), effect.to, effect.from);
 }
 
-class Tiaoxin: public ZeroCardViewAsSkill {
+class IkTiaoxin: public ZeroCardViewAsSkill {
 public:
-    Tiaoxin(): ZeroCardViewAsSkill("tiaoxin") {
+    IkTiaoxin(): ZeroCardViewAsSkill("iktiaoxin") {
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("TiaoxinCard");
+        return !player->hasUsed("IkTiaoxinCard");
     }
 
     virtual const Card *viewAs() const{
-        return new TiaoxinCard;
-    }
-
-    virtual int getEffectIndex(const ServerPlayer *player, const Card *) const{
-        int index = qrand() % 2 + 1;
-        if (!player->hasInnateSkill(objectName()) && player->hasSkill("baobian"))
-            index += 2;
-        return index;
+        return new IkTiaoxinCard;
     }
 };
 
-class Zhiji: public PhaseChangeSkill {
+class IkShengtian: public PhaseChangeSkill {
 public:
-    Zhiji(): PhaseChangeSkill("zhiji") {
+    IkShengtian(): PhaseChangeSkill("ikshengtian") {
         frequency = Wake;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return PhaseChangeSkill::triggerable(target)
-               && target->getMark("zhiji") == 0
+               && target->getMark("@shengtian") == 0
                && target->getPhase() == Player::Start
                && target->isKongcheng();
     }
@@ -669,25 +662,49 @@ public:
         room->notifySkillInvoked(jiangwei, objectName());
 
         LogMessage log;
-        log.type = "#ZhijiWake";
+        log.type = "#IkShengtianWake";
         log.from = jiangwei;
         log.arg = objectName();
         room->sendLog(log);
 
         room->broadcastSkillInvoke(objectName());
-        room->doLightbox("$ZhijiAnimate", 4000);
 
-        room->setPlayerMark(jiangwei, "zhiji", 1);
+        room->setPlayerMark(jiangwei, "@shengtian", 1);
         if (room->changeMaxHpForAwakenSkill(jiangwei)) {
             if (jiangwei->isWounded() && room->askForChoice(jiangwei, objectName(), "recover+draw") == "recover")
                 room->recover(jiangwei, RecoverStruct(jiangwei));
             else
                 room->drawCards(jiangwei, 2, objectName());
-            if (jiangwei->getMark("zhiji") == 1)
-                room->acquireSkill(jiangwei, "ikyuxi");
+            room->handleAcquireDetachSkills(jiangwei, "ikxuanwu|ikmohua");
         }
 
         return false;
+    }
+};
+
+class IkMohua: public FilterSkill {
+public:
+    IkMohua(): FilterSkill("ikmohua") {
+    }
+
+    static WrappedCard *changeToClub(int cardId) {
+        WrappedCard *new_card = Sanguosha->getWrappedCard(cardId);
+        new_card->setSkillName("ikmohua");
+        new_card->setSuit(Card::Club);
+        new_card->setModified(true);
+        return new_card;
+    }
+
+    virtual bool viewFilter(const Card *to_select) const{
+        return to_select->getSuit() == Card::Diamond;
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        return changeToClub(originalCard->getEffectiveId());
+    }
+
+    virtual int getEffectIndex(const ServerPlayer *, const Card *) const{
+        return -2;
     }
 };
 
@@ -1280,9 +1297,11 @@ MountainPackage::MountainPackage()
     related_skills.insertMulti("ikyindie", "#ikyindie-move");
     related_skills.insertMulti("ikyindie", "#ikyindie-dist");
 
-    General *jiangwei = new General(this, "jiangwei", "shu"); // SHU 012
-    jiangwei->addSkill(new Tiaoxin);
-    jiangwei->addSkill(new Zhiji);
+    General *wind012 = new General(this, "wind012", "kaze");
+    wind012->addSkill(new IkTiaoxin);
+    wind012->addSkill(new IkShengtian);
+    wind012->addRelateSkill("ikxuanwu");
+    wind012->addRelateSkill("ikmohua");
 
     General *liushan = new General(this, "liushan$", "shu", 3); // SHU 013
     liushan->addSkill(new Xiangle);
@@ -1311,12 +1330,12 @@ MountainPackage::MountainPackage()
     caiwenji->addSkill(new Duanchang);
 
     addMetaObject<IkMancaiCard>();
-    addMetaObject<TiaoxinCard>();
+    addMetaObject<IkTiaoxinCard>();
     addMetaObject<ZhijianCard>();
     addMetaObject<ZhibaCard>();
     addMetaObject<FangquanCard>();
 
-    skills << new ZhibaPindian << new IkHuanwu;
+    skills << new ZhibaPindian << new IkHuanwu << new IkMohua;
 }
 
 ADD_PACKAGE(Mountain)

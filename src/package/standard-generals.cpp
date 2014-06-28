@@ -1138,10 +1138,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         if (player->askForSkillInvoke(objectName())) {
-            int index = qrand() % 2 + 1;
-            if (objectName() == "ikyuxi" && !player->hasInnateSkill(objectName()) && player->hasSkill("zhiji"))
-                index += 2;
-            room->broadcastSkillInvoke(objectName(), index);
+            room->broadcastSkillInvoke(objectName());
             return true;
         }
         return false;
