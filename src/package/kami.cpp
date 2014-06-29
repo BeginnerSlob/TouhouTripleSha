@@ -1439,7 +1439,7 @@ public:
                         skill_list.insert(owner, QStringList(objectName()));
         } else if (triggerEvent == CardResponded) {
             CardResponseStruct resp = data.value<CardResponseStruct>();
-            if (resp.m_isUse && resp.m_card->isKindOf("Jink") && resp.m_card->getSkillName() == "eight_diagram")
+            if (resp.m_card->isKindOf("Jink") && resp.m_card->getSkillName() == "eight_diagram")
                 foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
                     if (owner != player && owner->canDiscard(owner, "h"))
                         skill_list.insert(owner, QStringList(objectName()));
