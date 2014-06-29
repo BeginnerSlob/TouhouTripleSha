@@ -587,9 +587,10 @@ bool TreasureSkill::triggerable(const ServerPlayer *target) const{
 MarkAssignSkill::MarkAssignSkill(const QString &mark, int n)
     : GameStartSkill(QString("#%1-%2").arg(mark).arg(n)), mark_name(mark), n(n)
 {
+    frequency = Compulsory;
 }
 
 void MarkAssignSkill::onGameStart(ServerPlayer *player) const{
-    player->getRoom()->setPlayerMark(player, mark_name, player->getMark(mark_name) + n);
+    player->getRoom()->addPlayerMark(player, mark_name, n);
 }
 
