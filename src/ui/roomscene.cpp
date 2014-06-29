@@ -440,7 +440,7 @@ void RoomScene::handleGameEvent(const Json::Value &arg) {
 
             // stop huashen animation
             PlayerCardContainer *container = (PlayerCardContainer *)_getGenericCardContainer(Player::PlaceHand, player);
-            if (!player->hasSkill("huashen"))
+            if (!player->hasSkill("ikhuanshen"))
                 container->stopHuaShen();
             container->updateAvatarTooltip();
             break;
@@ -524,7 +524,7 @@ void RoomScene::handleGameEvent(const Json::Value &arg) {
             if (oldHero) {
                 foreach (const Skill *skill, oldHero->getVisibleSkills())
                     detachSkill(skill->objectName());
-                if (oldHero->hasSkill("huashen")) {
+                if (oldHero->hasSkill("ikhuanshen")) {
                     PlayerCardContainer *container = (PlayerCardContainer *)_getGenericCardContainer(Player::PlaceHand, player);
                     container->stopHuaShen();
                 }
@@ -1298,10 +1298,10 @@ void RoomScene::keyReleaseEvent(QKeyEvent *event) {
             break;
         }
     case Qt::Key_F12: {
-            if (Self->hasSkill("huashen")) {
-                const Skill *huashen_skill = Sanguosha->getSkill("huashen");
+            if (Self->hasSkill("ikhuanshen")) {
+                const Skill *huashen_skill = Sanguosha->getSkill("ikhuanshen");
                 if (huashen_skill) {
-                    HuashenDialog *dialog = qobject_cast<HuashenDialog *>(huashen_skill->getDialog());
+                    IkHuanshenDialog *dialog = qobject_cast<IkHuanshenDialog *>(huashen_skill->getDialog());
                     if (dialog) dialog->popup();
                 }
             }
@@ -3772,7 +3772,7 @@ void RoomScene::doHuashen(const QString &, const QStringList &args) {
 
     QVariantList huashen_list;
     if (owner)
-        huashen_list = Self->tag["Huashens"].toList();
+        huashen_list = Self->tag["IkHuanshens"].toList();
     QList<CardItem *> generals;
 
     foreach (QString arg, hargs) {
@@ -3786,13 +3786,13 @@ void RoomScene::doHuashen(const QString &, const QStringList &args) {
     move.to = player;
     move.from_place = Player::DrawPile;
     move.to_place = Player::PlaceSpecial;
-    move.to_pile_name = "huashen";
+    move.to_pile_name = "huanshen";
 
     GenericCardContainer *container = _getGenericCardContainer(Player::PlaceHand, player);
     container->addCardItems(generals, move);
 
     if (owner)
-        Self->tag["Huashens"] = huashen_list;
+        Self->tag["IkHuanshens"] = huashen_list;
 }
 
 void RoomScene::showIndicator(const QString &from, const QString &to) {

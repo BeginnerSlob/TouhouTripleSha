@@ -2821,12 +2821,12 @@ bool Room::speakCommand(ServerPlayer *player, const Json::Value &arg) {
                     }
                 }
             }
-        } else if (sentence == ".ShowHuashen") {
+        } else if (sentence == ".ShowIkHuanshen") {
             _NO_BROADCAST_SPEAKING
-            QList<ServerPlayer *> zuocis = findPlayersBySkillName("huashen");
+            QList<ServerPlayer *> zuocis = findPlayersBySkillName("ikhuanshen");
             QStringList huashen_name;
             foreach (ServerPlayer *zuoci, zuocis) {
-                QVariantList huashens = zuoci->tag["Huashens"].toList();
+                QVariantList huashens = zuoci->tag["IkHuanshens"].toList();
                 huashen_name.clear();
                 foreach (QVariant name, huashens)
                     huashen_name << QString("<b>%1</b>").arg(Sanguosha->translate(name.toString()));

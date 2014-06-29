@@ -1056,18 +1056,18 @@ public:
     }
 };
 
-class Huashen: public GameStartSkill {
+class IkHuanshen: public PhaseChangeSkill {
 public:
-    Huashen(): GameStartSkill("huashen") {
+    IkHuanshen(): PhaseChangeSkill("ikhuanshen") {
     }
-
+    
     static void playAudioEffect(ServerPlayer *zuoci, const QString &skill_name) {
         zuoci->getRoom()->broadcastSkillInvoke(skill_name, zuoci->isMale(), -1);
     }
 
     static void AcquireGenerals(ServerPlayer *zuoci, int n) {
         Room *room = zuoci->getRoom();
-        QVariantList huashens = zuoci->tag["Huashens"].toList();
+        QVariantList huashens = zuoci->tag["IkHuanshens"].toList();
         QStringList list = GetAvailableGenerals(zuoci);
         qShuffle(list);
         if (list.isEmpty()) return;
@@ -1084,7 +1084,7 @@ public:
                 }
             }
         }
-        zuoci->tag["Huashens"] = huashens;
+        zuoci->tag["IkHuanshens"] = huashens;
 
         QStringList hidden;
         for (int i = 0; i < n; i++) hidden << "unknown";
@@ -1096,19 +1096,19 @@ public:
         }
 
         LogMessage log;
-        log.type = "#GetHuashen";
+        log.type = "#GetIkHuanshen";
         log.from = zuoci;
         log.arg = QString::number(n);
         log.arg2 = QString::number(huashens.length());
         room->sendLog(log);
 
         LogMessage log2;
-        log2.type = "#GetHuashenDetail";
+        log2.type = "#GetIkHuanshenDetail";
         log2.from = zuoci;
         log2.arg = acquired.join("\\, \\");
         room->sendLog(log2, zuoci);
 
-        room->setPlayerMark(zuoci, "@huashen", huashens.length());
+        room->setPlayerMark(zuoci, "@huanshen", huashens.length());
     }
 
     static QStringList GetAvailableGenerals(ServerPlayer *zuoci) {
@@ -1127,7 +1127,7 @@ public:
                 all.subtract(p->tag["1v1Arrange"].toStringList().toSet());
         }
         QSet<QString> huashen_set, room_set;
-        QVariantList huashens = zuoci->tag["Huashens"].toList();
+        QVariantList huashens = zuoci->tag["IkHuanshens"].toList();
         foreach (QVariant huashen, huashens)
             huashen_set << huashen.toString();
         foreach (ServerPlayer *player, room->getAlivePlayers()) {
@@ -1157,14 +1157,14 @@ public:
 
     static void SelectSkill(ServerPlayer *zuoci) {
         Room *room = zuoci->getRoom();
-        playAudioEffect(zuoci, "huashen");
+        playAudioEffect(zuoci, "ikhuanshen");
         QStringList ac_dt_list;
 
-        QString huashen_skill = zuoci->tag["HuashenSkill"].toString();
+        QString huashen_skill = zuoci->tag["IkHuanshenSkill"].toString();
         if (!huashen_skill.isEmpty())
             ac_dt_list.append("-" + huashen_skill);
 
-        QVariantList huashens = zuoci->tag["Huashens"].toList();
+        QVariantList huashens = zuoci->tag["IkHuanshens"].toList();
         if (huashens.isEmpty()) return;
 
         QStringList huashen_generals;
@@ -1192,7 +1192,7 @@ public:
                 }
             }
             if (skill_names.isEmpty()) return;
-            skill_name = ai->askForChoice("huashen", skill_names.join("+"), QVariant());
+            skill_name = ai->askForChoice("ikhuanshen", skill_names.join("+"), QVariant());
             general = hash[skill_name];
             Q_ASSERT(general != NULL);
         } else {
@@ -1209,13 +1209,13 @@ public:
             }
 
             if (!skill_names.isEmpty())
-                skill_name = room->askForChoice(zuoci, "huashen", skill_names.join("+"));
+                skill_name = room->askForChoice(zuoci, "ikhuanshen", skill_names.join("+"));
         }
         //Q_ASSERT(!skill_name.isNull() && !skill_name.isEmpty());
 
         QString kingdom = general->getKingdom();
         if (zuoci->getKingdom() != kingdom) {
-            if (kingdom == "god")
+            if (kingdom == "kami")
                 kingdom = room->askForKingdom(zuoci);
             room->setPlayerProperty(zuoci, "kingdom", kingdom);
         }
@@ -1230,34 +1230,55 @@ public:
         arg[3] = QSanProtocol::Utils::toJsonString(skill_name);
         room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
 
-        zuoci->tag["HuashenSkill"] = skill_name;
+        zuoci->tag["IkHuanshenSkill"] = skill_name;
         if (!skill_name.isEmpty())
             ac_dt_list.append(skill_name);
         room->handleAcquireDetachSkills(zuoci, ac_dt_list, true);
     }
 
-    virtual void onGameStart(ServerPlayer *zuoci) const{
-        zuoci->getRoom()->notifySkillInvoked(zuoci, "huashen");
-        AcquireGenerals(zuoci, 2);
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+               && (target->getPhase() == Player::RoundStart || target->getPhase() == Player::NotActive);
+    }
+
+    virtual bool cost(TriggerEvent, Room *, ServerPlayer *zuoci, QVariant &, ServerPlayer *) const{
+        return zuoci->askForSkillInvoke(objectName());
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *zuoci) const{
         SelectSkill(zuoci);
+        return false;
     }
 
     virtual QDialog *getDialog() const{
-        static HuashenDialog *dialog;
+        static IkHuanshenDialog *dialog;
 
         if (dialog == NULL)
-            dialog = new HuashenDialog;
+            dialog = new IkHuanshenDialog;
 
         return dialog;
     }
 };
 
-HuashenDialog::HuashenDialog() {
-    setWindowTitle(Sanguosha->translate("huashen"));
+class IkHuanshenStart: public GameStartSkill {
+public:
+    IkHuanshenStart(): GameStartSkill("#ikhuanshen-start") {
+        frequency = Compulsory;
+    }
+
+    virtual void onGameStart(ServerPlayer *zuoci) const{
+        zuoci->getRoom()->notifySkillInvoked(zuoci, "ikhuanshen");
+        IkHuanshen::AcquireGenerals(zuoci, 2);
+        IkHuanshen::SelectSkill(zuoci);
+    }
+};
+
+IkHuanshenDialog::IkHuanshenDialog() {
+    setWindowTitle(Sanguosha->translate("ikhuanshen"));
 }
 
-void HuashenDialog::popup() {
-    QVariantList huashen_list = Self->tag["Huashens"].toList();
+void IkHuanshenDialog::popup() {
+    QVariantList huashen_list = Self->tag["IkHuanshens"].toList();
     QList<const General *> huashens;
     foreach (QVariant huashen, huashen_list)
         huashens << Sanguosha->getGeneral(huashen.toString());
@@ -1266,30 +1287,9 @@ void HuashenDialog::popup() {
     show();
 }
 
-class HuashenSelect: public PhaseChangeSkill {
+class IkHuanshenClear: public DetachEffectSkill {
 public:
-    HuashenSelect(): PhaseChangeSkill("#huashen-select") {
-    }
-
-    virtual int getPriority(TriggerEvent) const{
-        return 4;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return PhaseChangeSkill::triggerable(target)
-               && (target->getPhase() == Player::RoundStart || target->getPhase() == Player::NotActive);
-    }
-
-    virtual bool onPhaseChange(ServerPlayer *zuoci) const{
-        if (zuoci->askForSkillInvoke("huashen"))
-            Huashen::SelectSkill(zuoci);
-        return false;
-    }
-};
-
-class HuashenClear: public DetachEffectSkill {
-public:
-    HuashenClear(): DetachEffectSkill("huashen") {
+    IkHuanshenClear(): DetachEffectSkill("ikhuanshen") {
     }
 
     virtual void onSkillDetached(Room *room, ServerPlayer *player) const{
@@ -1297,24 +1297,24 @@ public:
             room->setPlayerProperty(player, "kingdom", player->getGeneral()->getKingdom());
         if (player->getGender() != player->getGeneral()->getGender())
             player->setGender(player->getGeneral()->getGender());
-        QString huashen_skill = player->tag["HuashenSkill"].toString();
+        QString huashen_skill = player->tag["IkHuanshenSkill"].toString();
         if (!huashen_skill.isEmpty())
             room->detachSkillFromPlayer(player, huashen_skill, false, true);
-        player->tag.remove("Huashens");
-        room->setPlayerMark(player, "@huashen", 0);
+        player->tag.remove("IkHuanshens");
+        room->setPlayerMark(player, "@huanshen", 0);
     }
 };
 
-class Xinsheng: public MasochismSkill {
+class IkLingqi: public MasochismSkill {
 public:
-    Xinsheng(): MasochismSkill("xinsheng") {
+    IkLingqi(): MasochismSkill("iklingqi") {
         frequency = Frequent;
     }
 
     virtual void onDamaged(ServerPlayer *zuoci, const DamageStruct &damage) const{
         if (zuoci->askForSkillInvoke(objectName())) {
-            Huashen::playAudioEffect(zuoci, objectName());
-            Huashen::AcquireGenerals(zuoci, damage.damage);
+            IkHuanshen::playAudioEffect(zuoci, objectName());
+            IkHuanshen::AcquireGenerals(zuoci, damage.damage);
         }
     }
 };
@@ -1356,13 +1356,13 @@ MountainPackage::MountainPackage()
     snow015->addSkill(new IkJizhouRecord);
     related_skills.insertMulti("ikjizhou", "#ikjizhou-record");
 
-    General *zuoci = new General(this, "zuoci", "qun", 3); // QUN 009
-    zuoci->addSkill(new Huashen);
-    zuoci->addSkill(new HuashenSelect);
-    zuoci->addSkill(new HuashenClear);
-    zuoci->addSkill(new Xinsheng);
-    related_skills.insertMulti("huashen", "#huashen-select");
-    related_skills.insertMulti("huashen", "#huashen-clear");
+    General *luna009 = new General(this, "luna009", "tsuki", 3);
+    luna009->addSkill(new IkHuanshen);
+    luna009->addSkill(new IkHuanshenStart);
+    luna009->addSkill(new IkHuanshenClear);
+    luna009->addSkill(new IkLingqi);
+    related_skills.insertMulti("ikhuanshen", "#ikhuanshen-start");
+    related_skills.insertMulti("ikhuanshen", "#ikhuanshen-clear");
 
     General *caiwenji = new General(this, "caiwenji", "qun", 3, false); // QUN 012
     caiwenji->addSkill(new Beige);

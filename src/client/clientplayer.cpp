@@ -178,7 +178,7 @@ void ClientPlayer::setMark(const QString &mark, int value) {
 
     static QStringList marklist;
     if (marklist.isEmpty())
-        marklist << "@huashen" << "@yongsi_test" << "@jushou_test"
+        marklist << "@huanshen" << "@yongsi_test" << "@jushou_test"
                  << "@max_cards_test" << "@defensive_distance_test" << "@offensive_distance_test";
     QStringList keys = marks.keys();
     foreach (QString key, marklist) {
