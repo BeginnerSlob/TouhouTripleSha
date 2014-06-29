@@ -2509,7 +2509,7 @@ NostalGeneralPackage::NostalGeneralPackage()
 
     General *nos_shencaocao = new General(this, "nos_shencaocao", "god", 3);
     nos_shencaocao->addSkill(new NosGuixin);
-    nos_shencaocao->addSkill("feiying");
+    nos_shencaocao->addSkill("thfeiying");
 
     addMetaObject<NosYexinCard>();
 
