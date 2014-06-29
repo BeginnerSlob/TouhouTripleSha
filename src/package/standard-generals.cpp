@@ -2804,9 +2804,9 @@ public:
     }
 };
 
-class GdLonghun: public Longhun {
+class GdLonghun: public IkZhihun {
 public:
-    GdLonghun(): Longhun() {
+    GdLonghun(): IkZhihun() {
         setObjectName("gdlonghun");
     }
 
