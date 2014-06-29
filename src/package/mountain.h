@@ -57,11 +57,11 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class HuashenDialog: public GeneralOverview {
+class IkHuanshenDialog: public GeneralOverview {
     Q_OBJECT
 
 public:
-    HuashenDialog();
+    IkHuanshenDialog();
 
 public slots:
     void popup();
