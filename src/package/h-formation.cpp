@@ -68,7 +68,7 @@ void HuyuanCard::onEffect(const CardEffectStruct &effect) const{
     const Card *card = Sanguosha->getCard(subcards.first());
 
     LogMessage log;
-    log.type = "$ZhijianEquip";
+    log.type = "$IkJibanEquip";
     log.from = effect.to;
     log.card_str = QString::number(card->getEffectiveId());
     room->sendLog(log);
