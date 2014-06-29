@@ -1181,7 +1181,7 @@ void ServerPlayer::exchangeFreelyFromPrivatePile(const QString &skill_name, cons
     }
 
     LogMessage log;
-    log.type = "#QixingExchange";
+    log.type = "#IkQiyaoExchange";
     log.from = this;
     log.arg = QString::number(n);
     log.arg2 = skill_name;

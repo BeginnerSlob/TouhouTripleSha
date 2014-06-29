@@ -281,6 +281,7 @@ public:
             room->sendLog(log);
             CardMoveReason reason(CardMoveReason::S_REASON_THROW, player->objectName());
             room->moveCardTo(dummy, NULL, Player::DiscardPile, reason, true);
+            delete dummy;
             room->notifySkillInvoked(player, objectName());
             room->broadcastSkillInvoke(objectName());
             return true;
