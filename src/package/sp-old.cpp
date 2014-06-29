@@ -2351,10 +2351,10 @@ SPOldPackage::SPOldPackage()
     erqiao->addSkill(new Luoyan);
 
     General *sp_shenlvbu = new General(this, "sp_shenlvbu", "god", 5, true, true); // SP 022
-    sp_shenlvbu->addSkill("kuangbao");
+    sp_shenlvbu->addSkill("ikzhuohuo");
     sp_shenlvbu->addSkill("ikwumou");
-    sp_shenlvbu->addSkill("wuqian");
-    sp_shenlvbu->addSkill("shenfen");
+    sp_shenlvbu->addSkill("iksuikong");
+    sp_shenlvbu->addSkill("iktianwu");
 
     General *xiahoushi = new General(this, "xiahoushi", "shu", 3, false); // SP 023
     xiahoushi->addSkill(new Yanyu);

@@ -478,7 +478,7 @@ void IkYihuoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
         room->notifySkillInvoked(target, "ikyihuo");
 
         room->showCard(source, getEffectiveId(), target);
-        const Card *card = room->askForCard(target, "EquipCard", "@ikyihuo-equip" + source->objectName(), QVariant(), MethodNone);
+        const Card *card = room->askForCard(target, "EquipCard", "@ikyihuo-equip:" + source->objectName(), QVariant(), MethodNone);
         if (card) {
             CardMoveReason reason(CardMoveReason::S_REASON_GIVE, target->objectName(), source->objectName(), "ikyihuo", QString());
             room->obtainCard(source, card, reason);
@@ -605,25 +605,25 @@ public:
     }
 };
 
-class Kuangbao: public TriggerSkill {
+class IkZhuohuo: public TriggerSkill {
 public:
-    Kuangbao(): TriggerSkill("kuangbao") {
+    IkZhuohuo(): TriggerSkill("ikzhuohuo") {
         events << Damage << Damaged;
         frequency = Compulsory;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         DamageStruct damage = data.value<DamageStruct>();
 
         LogMessage log;
-        log.type = triggerEvent == Damage ? "#KuangbaoDamage" : "#KuangbaoDamaged";
+        log.type = triggerEvent == Damage ? "#IkZhuohuoDamage" : "#IkZhuohuoDamaged";
         log.from = player;
         log.arg = QString::number(damage.damage);
         log.arg2 = objectName();
         room->sendLog(log);
         room->notifySkillInvoked(player, objectName());
 
-        room->addPlayerMark(player, "@wrath", damage.damage);
+        room->addPlayerMark(player, "@mailun", damage.damage);
         room->broadcastSkillInvoke(objectName(), triggerEvent == Damage ? 1 : 2);
         return false;
     }
@@ -653,9 +653,9 @@ public:
         room->sendLog(log);
         room->notifySkillInvoked(player, objectName());
 
-        int num = player->getMark("@wrath");
+        int num = player->getMark("@mailun");
         if (num >= 1 && room->askForChoice(player, objectName(), "discard+losehp") == "discard") {
-            player->loseMark("@wrath");
+            player->loseMark("@mailun");
         } else
             room->loseHp(player);
 
@@ -663,131 +663,111 @@ public:
     }
 };
 
-class Shenfen: public ZeroCardViewAsSkill {
-public:
-    Shenfen(): ZeroCardViewAsSkill("shenfen") {
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getMark("@wrath") >= 6 && !player->hasUsed("ShenfenCard");
-    }
-
-    virtual const Card *viewAs() const{
-        return new ShenfenCard;
-    }
-};
-
-ShenfenCard::ShenfenCard() {
-    target_fixed = true;
-    mute = true;
+IkSuikongCard::IkSuikongCard() {
 }
 
-void ShenfenCard::use(Room *room, ServerPlayer *shenlvbu, QList<ServerPlayer *> &) const{
-    shenlvbu->setFlags("ShenfenUsing");
-    room->broadcastSkillInvoke("shenfen");
-    QString lightbox = "$ShenfenAnimate";
-    if (shenlvbu->getGeneralName() != "shenlvbu" && (shenlvbu->getGeneralName() == "sp_shenlvbu" || shenlvbu->getGeneral2Name() == "sp_shenlvbu"))
-        lightbox = lightbox + "SP";
-    room->doLightbox(lightbox, 5000);
-    shenlvbu->loseMark("@wrath", 6);
-
-    try {
-        QList<ServerPlayer *> players = room->getOtherPlayers(shenlvbu);
-        foreach (ServerPlayer *player, players) {
-            room->damage(DamageStruct("shenfen", shenlvbu, player));
-            room->getThread()->delay();
-        }
-
-        foreach (ServerPlayer *player, players) {
-            QList<const Card *> equips = player->getEquips();
-            player->throwAllEquips();
-            if (!equips.isEmpty())
-                room->getThread()->delay();
-        }
-
-        foreach (ServerPlayer *player, players) {
-            bool delay = !player->isKongcheng();
-            room->askForDiscard(player, "shenfen", 4, 4);
-            if (delay)
-                room->getThread()->delay();
-        }
-
-        shenlvbu->turnOver();
-        shenlvbu->setFlags("-ShenfenUsing");
-    }
-    catch (TriggerEvent triggerEvent) {
-        if (triggerEvent == TurnBroken || triggerEvent == StageChange)
-            shenlvbu->setFlags("-ShenfenUsing");
-        throw triggerEvent;
-    }
-}
-
-WuqianCard::WuqianCard() {
-}
-
-bool WuqianCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select != Self; 
-}
-
-void WuqianCard::onEffect(const CardEffectStruct &effect) const{
+void IkSuikongCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.to->getRoom();
 
-    effect.from->loseMark("@wrath", 2);
+    effect.from->loseMark("@mailun", 2);
     room->acquireSkill(effect.from, "ikwushuang");
-    effect.from->setFlags("WuqianSource");
-    effect.to->setFlags("WuqianTarget");
+    effect.from->setFlags("IkSuikongSource");
+    effect.to->setFlags("IkSuikongTarget");
     room->addPlayerMark(effect.to, "Armor_Nullified");
 }
 
-class WuqianViewAsSkill: public ZeroCardViewAsSkill {
+class IkSuikongViewAsSkill: public ZeroCardViewAsSkill {
 public:
-    WuqianViewAsSkill(): ZeroCardViewAsSkill("wuqian") {
+    IkSuikongViewAsSkill(): ZeroCardViewAsSkill("iksuikong") {
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getMark("@wrath") >= 2;
+        return player->getMark("@mailun") >= 2;
     }
 
     virtual const Card *viewAs() const{
-        return new WuqianCard;
+        return new IkSuikongCard;
     }
 };
 
-class Wuqian: public TriggerSkill {
+class IkSuikong: public TriggerSkill {
 public:
-    Wuqian(): TriggerSkill("wuqian") {
+    IkSuikong(): TriggerSkill("iksuikong") {
         events << EventPhaseChanging << Death;
-        view_as_skill = new WuqianViewAsSkill;
+        view_as_skill = new IkSuikongViewAsSkill;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->hasFlag("WuqianSource");
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!player->hasFlag("IkSukongSource")) return QStringList();
         if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to != Player::NotActive)
-                return false;
+                return QStringList();
         }
         if (triggerEvent == Death) {
             DeathStruct death = data.value<DeathStruct>();
             if (death.who != player)
-                return false;
+                return QStringList();
         }
 
         foreach (ServerPlayer *p , room->getAllPlayers()) {
-            if (p->hasFlag("WuqianTarget")) {
-                p->setFlags("-WuqianTarget");
+            if (p->hasFlag("IkSukongTarget")) {
+                p->setFlags("-IkSukongTarget");
                 if (p->getMark("Armor_Nullified") > 0)
                     room->removePlayerMark(p, "Armor_Nullified");
             }
         }
         room->detachSkillFromPlayer(player, "ikwushuang", false, true);
 
-        return false;
+        return QStringList();
     }
 };
+
+class IkTianwu: public ZeroCardViewAsSkill {
+public:
+    IkTianwu(): ZeroCardViewAsSkill("iktianwu") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->getMark("@mailun") >= 6 && !player->hasUsed("IkTianwuCard");
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkTianwuCard;
+    }
+};
+
+IkTianwuCard::IkTianwuCard() {
+    target_fixed = true;
+    mute = true;
+}
+
+void IkTianwuCard::use(Room *room, ServerPlayer *shenlvbu, QList<ServerPlayer *> &) const{
+    room->broadcastSkillInvoke("iktianwu");
+    shenlvbu->loseMark("@mailun", 6);
+
+    QList<ServerPlayer *> players = room->getOtherPlayers(shenlvbu);
+    foreach (ServerPlayer *player, players) {
+        room->damage(DamageStruct("iktianwu", shenlvbu, player));
+        room->getThread()->delay();
+    }
+
+    foreach (ServerPlayer *player, players) {
+        QList<const Card *> equips = player->getEquips();
+        player->throwAllEquips();
+        if (!equips.isEmpty())
+            room->getThread()->delay();
+    }
+
+    foreach (ServerPlayer *player, players) {
+        bool delay = !player->isKongcheng();
+        room->askForDiscard(player, "iktianwu", 4, 4);
+        if (delay)
+            room->getThread()->delay();
+    }
+
+    shenlvbu->turnOver();
+}
 
 class IkQiyao: public TriggerSkill {
 public:
@@ -1521,13 +1501,13 @@ GodPackage::GodPackage()
     bloom029->addSkill(new IkYihuo);
     bloom029->addSkill(new IkGuixin);
 
-    General *shenlvbu = new General(this, "shenlvbu", "god", 5); // LE 006
-    shenlvbu->addSkill(new Kuangbao);
-    shenlvbu->addSkill(new MarkAssignSkill("@wrath", 2));
-    shenlvbu->addSkill(new IkWumou);
-    shenlvbu->addSkill(new Wuqian);
-    shenlvbu->addSkill(new Shenfen);
-    related_skills.insertMulti("kuangbao", "#@wrath-2");
+    General *luna029 = new General(this, "luna029", "tsuki", 5);
+    luna029->addSkill(new IkZhuohuo);
+    luna029->addSkill(new MarkAssignSkill("@mailun", 2));
+    luna029->addSkill(new IkWumou);
+    luna029->addSkill(new IkSuikong);
+    luna029->addSkill(new IkTianwu);
+    related_skills.insertMulti("ikzhuohuo", "#@mailun-2");
 
     General *shenzhaoyun = new General(this, "shenzhaoyun", "god", 2); // LE 007
     shenzhaoyun->addSkill(new JuejingKeep);
@@ -1546,12 +1526,13 @@ GodPackage::GodPackage()
 
     addMetaObject<IkLingshiCard>();
     addMetaObject<IkYeyanCard>();
-    addMetaObject<ShenfenCard>();
+    addMetaObject<IkTianwuCard>();
     addMetaObject<GreatIkYeyanCard>();
     addMetaObject<SmallIkYeyanCard>();
     addMetaObject<IkLiefengCard>();
     addMetaObject<IkMiaowuCard>();
-    addMetaObject<WuqianCard>();
+    addMetaObject<IkYihuoCard>();
+    addMetaObject<IkSuikongCard>();
     addMetaObject<JilveCard>();
 
     skills << new Jilve << new JilveClear << new IkYihuoViewAsSkill;
