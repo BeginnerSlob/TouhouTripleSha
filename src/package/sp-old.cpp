@@ -2309,8 +2309,8 @@ SPOldPackage::SPOldPackage()
     related_skills.insertMulti("shenwei", "#shenwei-draw");
 
     General *sp_caiwenji = new General(this, "sp_caiwenji", "wei", 3, false, true); // SP 009
-    sp_caiwenji->addSkill("beige");
-    sp_caiwenji->addSkill("duanchang");
+    sp_caiwenji->addSkill("ikhuiyao");
+    sp_caiwenji->addSkill("ikqihuang");
 
     General *sp_machao = new General(this, "sp_machao", "qun", 4, true, true); // SP 011
     sp_machao->addSkill("thjibu");

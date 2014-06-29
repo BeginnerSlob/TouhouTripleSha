@@ -414,7 +414,7 @@ void PlayerCardContainer::updateDrankState() {
         _m_avatarArea->setBrush(Qt::NoBrush);
 }
 
-void PlayerCardContainer::updateDuanchang() {
+void PlayerCardContainer::updateIkQihuang() {
     return;
 }
 
@@ -519,7 +519,7 @@ void PlayerCardContainer::setPlayer(ClientPlayer *player) {
         connect(player, SIGNAL(phase_changed()), this, SLOT(updatePhase()));
         connect(player, SIGNAL(drank_changed()), this, SLOT(updateDrankState()));
         connect(player, SIGNAL(action_taken()), this, SLOT(refresh()));
-        connect(player, SIGNAL(duanchang_invoked()), this, SLOT(updateDuanchang()));
+        connect(player, SIGNAL(ikqihuang_invoked()), this, SLOT(updateIkQihuang()));
         connect(player, SIGNAL(pile_changed(QString)), this, SLOT(updatePile(QString)));
         connect(player, SIGNAL(role_changed(QString)), _m_roleComboBox, SLOT(fix(QString)));
         connect(player, SIGNAL(hp_changed()), this, SLOT(updateHp()));

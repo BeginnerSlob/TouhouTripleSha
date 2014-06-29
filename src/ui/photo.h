@@ -46,7 +46,7 @@ public slots:
     void updatePhase();
     void hideEmotion();
     void hideSkillName();
-    virtual void updateDuanchang();
+    virtual void updateIkQihuang();
     virtual void refresh(bool killed = false);
 
 protected:
@@ -73,7 +73,7 @@ protected:
     QGraphicsPixmapItem *_m_skillNameItem;
     QGraphicsPixmapItem *_m_focusFrame;
     QGraphicsPixmapItem *_m_onlineStatusItem;
-    QGraphicsRectItem *_m_duanchangMask;
+    QGraphicsRectItem *_m_ikqihuangMask;
 };
 
 #endif

@@ -179,7 +179,7 @@ public:
         AnchoredRect m_deathIconRegion;
         QRect m_votesIconRegion;
         QColor m_drankMaskColor;
-        QColor m_duanchangMaskColor;
+        QColor m_ikqihuangMaskColor;
         QColor m_deathEffectColor;
 
         QRect m_extraSkillArea;
