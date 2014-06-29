@@ -1026,7 +1026,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
         ask_who->drawCards(1);
-        if (!room->askForUseSlashTo(player, ask_who, "@thzhayou:" + ask_who->objectName()))
+        if (!room->askForUseSlashTo(player, ask_who, "@thzhayou:" + ask_who->objectName(), false))
             room->damage(DamageStruct(objectName(), ask_who, player));
         return false;
     }
@@ -1069,9 +1069,9 @@ void ThWangdaoCard::onEffect(const CardEffectStruct &effect) const {
     room->showCard(effect.from, getEffectiveId());
     const Card *slash = NULL;
     if (effect.to->canSlash(effect.from)) {
-        room->setPlayerCardLimitation(effect.to, "use", "Slash|red", false);
-        slash = room->askForUseSlashTo(effect.to, effect.from, "@thwangdao:" + effect.from->objectName());
-        room->removePlayerCardLimitation(effect.to, "use", "Slash|red$0");
+        room->setPlayerCardLimitation(effect.to, "use", "Slash|^black", false);
+        slash = room->askForUseSlashTo(effect.to, effect.from, "@thwangdao:" + effect.from->objectName(), false);
+        room->removePlayerCardLimitation(effect.to, "use", "Slash|^black$0");
     }
     if (!slash) {
         effect.to->obtainCard(this);

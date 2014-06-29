@@ -248,7 +248,10 @@ public:
         CardEffectStruct effect = data.value<CardEffectStruct>();
         Slash *slash = new Slash(Card::NoSuit, 0);
         slash->setSkillName("_" + objectName());
-        room->useCard(CardUseStruct(slash, effect.from, ask_who));
+        if (effect.from->canSlash(ask_who, slash, false))
+            room->useCard(CardUseStruct(slash, effect.from, ask_who));
+        else
+            delete slash;
         return true;
     }
 };
