@@ -2574,8 +2574,8 @@ MiscellaneousPackage::MiscellaneousPackage()
     wz_xiaoqiao->addSkill("ikchiqiu");
 
     General *pr_shencaocao = new General(this, "pr_shencaocao", "god", 3, true, true); // PR LE 005
-    pr_shencaocao->addSkill("guixin");
-    pr_shencaocao->addSkill("feiying");
+    pr_shencaocao->addSkill("ikguixin");
+    pr_shencaocao->addSkill("thfeiying");
 
     General *pr_nos_simayi = new General(this, "pr_nos_simayi", "wei", 3, true, true); // PR WEI 002
     pr_nos_simayi->addSkill("nosfankui");

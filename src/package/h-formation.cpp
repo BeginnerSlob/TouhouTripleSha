@@ -188,7 +188,7 @@ void HeyiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targ
         if (!p->isAlive()) continue;
         list.append(p->objectName());
         source->tag["heyi"] = QVariant::fromValue(list);
-        room->acquireSkill(p, "feiying");
+        room->acquireSkill(p, "thfeiying");
     }
 }
 
@@ -231,7 +231,7 @@ public:
             player->tag.remove(objectName());
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (list.contains(p->objectName()))
-                    room->detachSkillFromPlayer(p, "feiying", false, true);
+                    room->detachSkillFromPlayer(p, "thfeiying", false, true);
             }
         }
         if (TriggerSkill::triggerable(player) && triggerEvent == EventPhaseChanging)

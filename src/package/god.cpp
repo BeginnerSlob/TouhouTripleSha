@@ -458,63 +458,150 @@ public:
     }
 };
 
-class Guixin: public MasochismSkill {
+IkYihuoCard::IkYihuoCard() {
+    m_skillName = "ikyihuov";
+    mute = true;
+}
+
+bool IkYihuoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && to_select->hasSkill("ikyihuo")
+           && (to_select->hasEquip() || !to_select->faceUp())
+           && !to_select->hasFlag("IkYihuoInvoked");
+}
+
+void IkYihuoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const {
+    ServerPlayer *target = targets.first();
+    if (target->hasSkill("ikyihuo")) {
+        room->setPlayerFlag(target, "IkYihuoInvoked");
+
+        room->broadcastSkillInvoke("ikyihuo");
+        room->notifySkillInvoked(target, "ikyihuo");
+
+        room->showCard(source, getEffectiveId(), target);
+        const Card *card = room->askForCard(target, "EquipCard", "@ikyihuo-equip" + source->objectName(), QVariant(), MethodNone);
+        if (card) {
+            CardMoveReason reason(CardMoveReason::S_REASON_GIVE, target->objectName(), source->objectName(), "ikyihuo", QString());
+            room->obtainCard(source, card, reason);
+            target->obtainCard(this);
+            target->drawCards(1);
+        }
+
+        QList<ServerPlayer *> targets;
+        QList<ServerPlayer *> players = room->getOtherPlayers(source);
+        foreach (ServerPlayer *p, players) {
+            if (p->hasSkill("ikyihuo") && !p->hasFlag("IkYihuoInvoked"))
+                targets << p;
+        }
+        if (targets.isEmpty())
+            room->setPlayerFlag(source, "ForbidIkYihuo");
+    }
+}
+
+class IkYihuoViewAsSkill: public OneCardViewAsSkill{
 public:
-    Guixin(): MasochismSkill("guixin") {
+    IkYihuoViewAsSkill(): OneCardViewAsSkill("ikyihuov") {
+        attached_lord_skill = true;
+        filter_pattern = ".|.|.|hand";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        IkYihuoCard *card = new IkYihuoCard();
+        card->addSubcard(originalCard);
+        return card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasFlag("ForbidIkYihuo");
+    }
+};
+
+class IkYihuo: public TriggerSkill {
+public:
+    IkYihuo(): TriggerSkill("ikyihuo") {
+        events << GameStart << EventAcquireSkill << EventLoseSkill << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        if ((triggerEvent == GameStart)
+            || (triggerEvent == EventAcquireSkill && data.toString() == "ikyihuo")) {
+            QList<ServerPlayer *> lords;
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (p->hasSkill(objectName()))
+                    lords << p;
+            }
+            if (lords.isEmpty()) return QStringList();
+
+            QList<ServerPlayer *> players;
+            if (lords.length() > 1)
+                players = room->getAlivePlayers();
+            else
+                players = room->getOtherPlayers(lords.first());
+            foreach (ServerPlayer *p, players) {
+                if (!p->hasSkill("ikyihuov"))
+                    room->attachSkillToPlayer(p, "ikyihuov");
+            }
+        } else if (triggerEvent == EventLoseSkill && data.toString() == "ikyihuo") {
+            QList<ServerPlayer *> lords;
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (p->hasSkill(objectName()))
+                    lords << p;
+            }
+            if (lords.length() > 2) return QStringList();
+
+            QList<ServerPlayer *> players;
+            if (lords.isEmpty())
+                players = room->getAlivePlayers();
+            else
+                players << lords.first();
+            foreach (ServerPlayer *p, players) {
+                if (p->hasSkill("ikyihuov"))
+                    room->detachSkillFromPlayer(p, "ikyihuov", true);
+            }
+        } else if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct phase_change = data.value<PhaseChangeStruct>();
+            if (phase_change.from != Player::Play)
+                  return QStringList();
+            if (player->hasFlag("ForbidIkYihuo"))
+                room->setPlayerFlag(player, "-ForbidIkYihuo");
+            QList<ServerPlayer *> players = room->getOtherPlayers(player);
+            foreach (ServerPlayer *p, players) {
+                if (p->hasFlag("IkYihuoInvoked"))
+                    room->setPlayerFlag(p, "-IkYihuoInvoked");
+            }
+        }
+        return QStringList();
+    }
+};
+
+class IkGuixin: public MasochismSkill {
+public:
+    IkGuixin(): MasochismSkill("ikguixin") {
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const {
+        return MasochismSkill::triggerable(target)
+            && (target->aliveCount() < 4 || target->faceUp());
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
     }
 
     virtual void onDamaged(ServerPlayer *shencc, const DamageStruct &damage) const{
         Room *room = shencc->getRoom();
-        int n = shencc->getMark("GuixinTimes"); // mark for AI
-        shencc->setMark("GuixinTimes", 0);
-        QVariant data = QVariant::fromValue(damage);
-        QList<ServerPlayer *> players = room->getOtherPlayers(shencc);
-        try {
-            for (int i = 0; i < damage.damage; i++) {
-                shencc->addMark("GuixinTimes");
-                if (shencc->askForSkillInvoke(objectName(), data)) {
-                    room->broadcastSkillInvoke(objectName());
-
-                    shencc->setFlags("GuixinUsing");
-                    if (players.length() >= 4 && (shencc->getGeneralName() == "shencaocao" || shencc->getGeneral2Name() == "shencaocao"))
-                        room->doLightbox("$GuixinAnimate");
-
-                    foreach (ServerPlayer *player, players) {
-                        if (player->isAlive() && !player->isAllNude()) {
-                            CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, shencc->objectName());
-                            int card_id = room->askForCardChosen(shencc, player, "hej", objectName());
-                            room->obtainCard(shencc, Sanguosha->getCard(card_id),
-                                             reason, room->getCardPlace(card_id) != Player::PlaceHand);
-                        }
-                    }
-
-                    shencc->turnOver();
-                    shencc->setFlags("-GuixinUsing");
-                } else
-                    break;
+        foreach (ServerPlayer *player, room->getOtherPlayers(shencc)) {
+            if (player->isAlive() && !player->isAllNude()) {
+                CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, shencc->objectName());
+                int card_id = room->askForCardChosen(shencc, player, "hej", objectName());
+                room->obtainCard(shencc, Sanguosha->getCard(card_id), reason, false);
             }
-            shencc->setMark("GuixinTimes", n);
         }
-        catch (TriggerEvent triggerEvent) {
-            if (triggerEvent == TurnBroken || triggerEvent == StageChange) {
-                shencc->setFlags("-GuixinUsing");
-                shencc->setMark("GuixinTimes", n);
-            }
-            throw triggerEvent;
-        }
-    }
-};
 
-class Feiying: public DistanceSkill {
-public:
-    Feiying(): DistanceSkill("feiying") {
-    }
-
-    virtual int getCorrect(const Player *, const Player *to) const{
-        if (to->hasSkill(objectName()))
-            return +1;
-        else
-            return 0;
+        shencc->turnOver();
     }
 };
 
@@ -1430,9 +1517,9 @@ GodPackage::GodPackage()
     related_skills.insertMulti("ikmiaowu", "#ikmiaowu");
     related_skills.insertMulti("ikmiaowu", "#ikmiaowu-clear");
 
-    General *shencaocao = new General(this, "shencaocao", "god", 3); // LE 005
-    shencaocao->addSkill(new Guixin);
-    shencaocao->addSkill(new Feiying);
+    General *bloom029 = new General(this, "bloom029", "hana", 3);
+    bloom029->addSkill(new IkYihuo);
+    bloom029->addSkill(new IkGuixin);
 
     General *shenlvbu = new General(this, "shenlvbu", "god", 5); // LE 006
     shenlvbu->addSkill(new Kuangbao);
@@ -1467,7 +1554,7 @@ GodPackage::GodPackage()
     addMetaObject<WuqianCard>();
     addMetaObject<JilveCard>();
 
-    skills << new Jilve << new JilveClear;
+    skills << new Jilve << new JilveClear << new IkYihuoViewAsSkill;
 }
 
 ADD_PACKAGE(God)
