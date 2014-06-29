@@ -139,28 +139,33 @@ static bool CompareBySuit(int card1, int card2) {
     return a < b;
 }
 
-class Shelie: public PhaseChangeSkill {
+class IkLvejue: public PhaseChangeSkill {
 public:
-    Shelie(): PhaseChangeSkill("shelie") {
+    IkLvejue(): PhaseChangeSkill("iklvejue") {
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+            && target->getPhase() == Player::Draw;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
     }
 
     virtual bool onPhaseChange(ServerPlayer *shenlvmeng) const{
-        if (shenlvmeng->getPhase() != Player::Draw)
-            return false;
-
         Room *room = shenlvmeng->getRoom();
-        if (!shenlvmeng->askForSkillInvoke(objectName()))
-            return false;
-
-        room->broadcastSkillInvoke(objectName());
-
         QList<int> card_ids = room->getNCards(5);
         qSort(card_ids.begin(), card_ids.end(), CompareBySuit);
         room->fillAG(card_ids);
 
         QList<int> to_get, to_throw;
         while (!card_ids.isEmpty()) {
-            int card_id = room->askForAG(shenlvmeng, card_ids, false, "shelie");
+            int card_id = room->askForAG(shenlvmeng, card_ids, false, "iklvejue");
             card_ids.removeOne(card_id);
             to_get << card_id;
             // throw the rest cards that matches the same suit
@@ -1329,9 +1334,9 @@ GodPackage::GodPackage()
     related_skills.insertMulti("wushen", "#wushen-target");
     related_skills.insertMulti("wuhun", "#wuhun");
 
-    General *shenlvmeng = new General(this, "shenlvmeng", "god", 3); // LE 002
-    shenlvmeng->addSkill(new Shelie);
-    shenlvmeng->addSkill(new IkLingshi);
+    General *snow029 = new General(this, "snow029", "yuki", 3);
+    snow029->addSkill(new IkLvejue);
+    snow029->addSkill(new IkLingshi);
 
     General *shenzhouyu = new General(this, "shenzhouyu", "god"); // LE 003
     shenzhouyu->addSkill(new Qinyin);
