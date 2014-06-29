@@ -96,7 +96,6 @@ return {
 	["ikshengtian:draw"] = "摸两张牌",
 	["ikshengtian:recover"] = "回复1点体力",
 	["#IkShengtianWake"] = "%from 没有手牌，触发“%arg”觉醒",
-	["@ikshengtian"] = "圣天",
 	["ikmohua"] = "墨华",
 	[":ikmohua"] = "锁定技，你的方块牌均视为梅花牌。",
 
@@ -114,14 +113,16 @@ return {
 	["wind014"] = "艾露由西娅•德•露特•伊玛",--风 - 空 - 3血
 	["ikmanbo"] = "曼帛",
 	[":ikmanbo"] = "锁定技，当其他角色使用【杀】指定你为目标时，需额外弃置一张基本牌，否则该【杀】对你无效。",
+	["@ikmanbo-discard"] = "你须再弃置一张基本牌使此【杀】生效",
 	["ikbaishen"] = "拜神",
 	[":ikbaishen"] = "你可以跳过你的出牌阶段，然后在回合结束时可以弃置一张手牌令一名没有拥有技能“拜神”的其他角色进行一个额外的回合。",
+	["@ikbaishen-give"] = "你可以弃置一张手牌令一名其他角色进行一个额外的回合",
+	["~ikbaishen"] = "选择一张手牌→选择一名其他角色→点击确定",
+	["#IkBaishen"] = "%to 将进行一个额外的回合",
 	["ikhunshou"] = "魂狩",
 	[":ikhunshou"] = "主公技，觉醒技，准备阶段开始时，若你的体力值是全场最少的（或之一），你须增加1点体力上限，回复1点体力，并获得技能“心契”。",
 	["#IkManbo"] = "%from 受到“%arg”的影响，需弃置一张基本牌才能令此【杀】对 %to 生效。",
-	["#IkBaishen"] = "%from 发动“<font color=yellow>拜神</font>”，令 %to 进行一个额外的回合。",
-	["#IkHunshouWake"] = "%from 的体力值(%arg)为全场最少，触发“%arg2”",
-	["@ikmanbo-discard"] = "你需弃置一张基本牌才能令此【杀】生效",
+	["#IkHunshouWake"] = "%from 的体力值 %arg 为场上最少，触发“%arg2”觉醒",
 
 	["#wind015"] = "绯色菖蒲",
 	["wind015"] = "星伽白雪",--风 - 幻 - 4血
@@ -775,16 +776,15 @@ return {
 	[":ikheyi"] = "每当你使用（指定目标后）或被使用（成为目标后）一张【碎月绮幕】或红色的【杀】时，你可以摸一张牌。",
 	["ikchizhu"] = "赤主",
 	[":ikchizhu"] = "觉醒技，准备阶段开始时，若你的体力值不大于2，你须减少1点体力上限，并获得技能“沉红”和“良坂”。",
-	["@ikchizhu"] = "赤主",
+	["#IkChizhuWake"] = "%from 的体力值为 %arg2，触发“%arg”觉醒",
 	["ikbiansheng"] = "遍生",
 	[":ikbiansheng"] = "主公技，其他雪势力角色的出牌阶段限一次，可以与你拼点，若该角色没赢，你可以获得双方拼点的牌；“赤主”发动后，你可以拒绝此拼点。",
-	["ikbiansheng_pindian"] = "遍生",
+	["ikbiansheng:pindian"] = "你可以获得双方的拼点牌",
+	["ikbiansheng_pindian"] = "遍生拼点",
 	[":ikbiansheng_pindian"] = "出牌阶段限一次，你可以与主公拼点，若你没赢，主公可获得双方拼点的牌；“赤主”发动后，主公可以拒绝此拼点。",
-	["#IkChizhuWake"] = "%from 的体力不大于 2，触发“%arg”",
 	["ikbiansheng_pindian:accept"] = "接受",
 	["ikbiansheng_pindian:reject"] = "拒绝",
-	["ikbiansheng:yes"] = "获得拼点牌",
-	["ikbiansheng:no"] = "不获得",
+	["#IkBianshengReject"] = "%from 拒绝 %to 发动“%arg”",
 
 	["#snow015"] = "多舛的双子",
 	["snow015"] = "琥珀＆翡翠",--雪 - 空 - 3血

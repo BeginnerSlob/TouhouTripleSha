@@ -687,10 +687,10 @@ public:
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *lvmeng, QVariant &data) const{
         if (triggerEvent == GameStart) {
             lvmeng->gainMark("@wu");
-            room->handleAcquireDetachSkills(lvmeng, "jiang|qianxun");
+            room->handleAcquireDetachSkills(lvmeng, "ikheyi|qianxun");
         } else if (data.toString() == "mouduan") {
             if (lvmeng->getMark("@wu") > 0)
-                room->handleAcquireDetachSkills(lvmeng, "jiang|qianxun");
+                room->handleAcquireDetachSkills(lvmeng, "ikheyi|qianxun");
             else if (lvmeng->getMark("@wen") > 0)
                 room->handleAcquireDetachSkills(lvmeng, "ikchenhong|ikbiju");
         }
@@ -726,7 +726,7 @@ public:
 
                 player->loseMark("@wu");
                 player->gainMark("@wen");
-                room->handleAcquireDetachSkills(player, "-jiang|-qianxun|ikchenhong|ikbiju", true);
+                room->handleAcquireDetachSkills(player, "-ikheyi|-qianxun|ikchenhong|ikbiju", true);
             }
         } else if (player->getPhase() == Player::RoundStart && lvmeng && lvmeng->getMark("@wen") > 0
                    && lvmeng->canDiscard(lvmeng, "he") && room->askForCard(lvmeng, "..", "@mouduan", QVariant(), objectName())) {
@@ -734,7 +734,7 @@ public:
                 room->broadcastSkillInvoke(objectName());
                 lvmeng->loseMark("@wen");
                 lvmeng->gainMark("@wu");
-                room->handleAcquireDetachSkills(lvmeng, "-ikchenhong|-ikbiju|jiang|qianxun", true);
+                room->handleAcquireDetachSkills(lvmeng, "-ikchenhong|-ikbiju|ikheyi|qianxun", true);
             }
         }
         return false;
@@ -749,7 +749,7 @@ public:
     virtual void onSkillDetached(Room *room, ServerPlayer *player) const{
         if (player->getMark("@wu") > 0) {
             player->loseMark("@wu");
-            room->handleAcquireDetachSkills(player, "-jiang|-qianxun", true);
+            room->handleAcquireDetachSkills(player, "-ikheyi|-qianxun", true);
         } else if (player->getMark("@wen") > 0) {
             player->loseMark("@wen");
             room->handleAcquireDetachSkills(player, "-ikchenhong|-ikbiju", true);

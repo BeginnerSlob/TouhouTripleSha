@@ -37,21 +37,21 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class ZhibaCard: public SkillCard {
+class IkBianshengCard: public SkillCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE ZhibaCard();
+    Q_INVOKABLE IkBianshengCard();
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class FangquanCard: public SkillCard {
+class IkBaishenCard: public SkillCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE FangquanCard();
+    Q_INVOKABLE IkBaishenCard();
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
