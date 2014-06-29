@@ -23,18 +23,18 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class YeyanCard: public SkillCard {
+class IkYeyanCard: public SkillCard {
     Q_OBJECT
 
 public:
     void damage(ServerPlayer *shenzhouyu, ServerPlayer *target, int point) const;
 };
 
-class GreatYeyanCard: public YeyanCard {
+class GreatIkYeyanCard: public IkYeyanCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE GreatYeyanCard();
+    Q_INVOKABLE GreatIkYeyanCard();
 
     virtual bool targetFilter(const QList<const Player *> &targets,
                               const Player *to_select, const Player *Self) const;
@@ -44,11 +44,11 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class SmallYeyanCard: public YeyanCard {
+class SmallIkYeyanCard: public IkYeyanCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE SmallYeyanCard();
+    Q_INVOKABLE SmallIkYeyanCard();
     virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;

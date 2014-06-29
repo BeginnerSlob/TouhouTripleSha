@@ -440,7 +440,7 @@ struct DamageStruct {
 
     enum Nature {
         Normal, // normal slash, duel and most damage caused by skill
-        Fire,  // fire slash, fire attack and few damage skill (Yeyan, etc)
+        Fire,  // fire slash, fire attack and few damage skill (IkYeyan, etc)
         Thunder // lightning, thunder slash, and few damage skill (Leiji, etc)
     };
 
