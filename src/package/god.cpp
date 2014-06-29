@@ -142,6 +142,7 @@ static bool CompareBySuit(int card1, int card2) {
 class IkLvejue: public PhaseChangeSkill {
 public:
     IkLvejue(): PhaseChangeSkill("iklvejue") {
+        frequency = Frequent;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
@@ -248,21 +249,21 @@ public:
     }
 };
 
-void YeyanCard::damage(ServerPlayer *shenzhouyu, ServerPlayer *target, int point) const{
-    shenzhouyu->getRoom()->damage(DamageStruct("yeyan", shenzhouyu, target, point, DamageStruct::Fire));
+void IkYeyanCard::damage(ServerPlayer *shenzhouyu, ServerPlayer *target, int point) const{
+    shenzhouyu->getRoom()->damage(DamageStruct("ikyeyan", shenzhouyu, target, point, DamageStruct::Fire));
 }
 
-GreatYeyanCard::GreatYeyanCard() {
+GreatIkYeyanCard::GreatIkYeyanCard() {
     mute = true;
-    m_skillName = "yeyan";
+    m_skillName = "ikyeyan";
 }
 
-bool GreatYeyanCard::targetFilter(const QList<const Player *> &, const Player *, const Player *) const{
+bool GreatIkYeyanCard::targetFilter(const QList<const Player *> &, const Player *, const Player *) const{
     Q_ASSERT(false);
     return false;
 }
 
-bool GreatYeyanCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
+bool GreatIkYeyanCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
     if (subcards.length() != 4) return false;
     QList<Card::Suit> allsuits;
     foreach (int cardId, subcards) {
@@ -280,7 +281,7 @@ bool GreatYeyanCard::targetsFeasible(const QList<const Player *> &targets, const
     return false;
 }
 
-bool GreatYeyanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select,
+bool GreatIkYeyanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select,
                                   const Player *, int &maxVotes) const{
     int i = 0;
     foreach (const Player *player, targets)
@@ -289,7 +290,7 @@ bool GreatYeyanCard::targetFilter(const QList<const Player *> &targets, const Pl
     return maxVotes > 0;
 }
 
-void GreatYeyanCard::use(Room *room, ServerPlayer *shenzhouyu, QList<ServerPlayer *> &targets) const{
+void GreatIkYeyanCard::use(Room *room, ServerPlayer *shenzhouyu, QList<ServerPlayer *> &targets) const{
     int criticaltarget = 0;
     int totalvictim = 0;
     QMap<ServerPlayer *, int> map;
@@ -305,11 +306,10 @@ void GreatYeyanCard::use(Room *room, ServerPlayer *shenzhouyu, QList<ServerPlaye
         totalvictim++;
     }
     if (criticaltarget > 0) {
-        room->removePlayerMark(shenzhouyu, "@flame");
+        room->removePlayerMark(shenzhouyu, "@yeyan");
         room->loseHp(shenzhouyu, 3);
 
-        room->broadcastSkillInvoke("yeyan", (totalvictim > 1) ? 2 : 1);
-        room->doLightbox("$YeyanAnimate");
+        room->broadcastSkillInvoke("ikyeyan", (totalvictim > 1) ? 2 : 1);
 
         QList<ServerPlayer *> targets = map.keys();
         room->sortByActionOrder(targets);
@@ -318,39 +318,39 @@ void GreatYeyanCard::use(Room *room, ServerPlayer *shenzhouyu, QList<ServerPlaye
     }
 }
 
-SmallYeyanCard::SmallYeyanCard() {
+SmallIkYeyanCard::SmallIkYeyanCard() {
     mute = true;
-    m_skillName = "yeyan";
+    m_skillName = "ikyeyan";
 }
 
-bool SmallYeyanCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
+bool SmallIkYeyanCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
     return !targets.isEmpty();
 }
 
-bool SmallYeyanCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const{
+bool SmallIkYeyanCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const{
     return targets.length() < 3;
 }
 
-void SmallYeyanCard::use(Room *room, ServerPlayer *shenzhouyu, QList<ServerPlayer *> &targets) const{
-    room->broadcastSkillInvoke("yeyan", 3);
-    room->doLightbox("$YeyanAnimate");
-    room->removePlayerMark(shenzhouyu, "@flame");
+void SmallIkYeyanCard::use(Room *room, ServerPlayer *shenzhouyu, QList<ServerPlayer *> &targets) const{
+    room->broadcastSkillInvoke("ikyeyan", 3);
+    room->removePlayerMark(shenzhouyu, "@yeyan");
+    room->addPlayerMark(shenzhouyu, "@yeyanused");
     Card::use(room, shenzhouyu, targets);
 }
 
-void SmallYeyanCard::onEffect(const CardEffectStruct &effect) const{
+void SmallIkYeyanCard::onEffect(const CardEffectStruct &effect) const{
     damage(effect.from, effect.to, 1);
 }
 
-class Yeyan: public ViewAsSkill {
+class IkYeyan: public ViewAsSkill {
 public:
-    Yeyan(): ViewAsSkill("yeyan") {
+    IkYeyan(): ViewAsSkill("ikyeyan") {
         frequency = Limited;
-        limit_mark = "@flame";
+        limit_mark = "@yeyan";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getMark("@flame") >= 1;
+        return player->getMark("@yeyan") >= 1;
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
@@ -373,67 +373,87 @@ public:
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
         if (cards.length()  == 0) 
-            return new SmallYeyanCard;
+            return new SmallIkYeyanCard;
         if (cards.length() != 4)
             return NULL;
 
-        GreatYeyanCard *card = new GreatYeyanCard;
+        GreatIkYeyanCard *card = new GreatIkYeyanCard;
         card->addSubcards(cards);
 
         return card;
     }
 };
 
-class Qinyin: public TriggerSkill {
+class IkLongxi: public TriggerSkill {
 public:
-    Qinyin(): TriggerSkill("qinyin") {
-        events << CardsMoveOneTime << EventPhaseEnd << EventPhaseChanging;
+    IkLongxi(): TriggerSkill("iklongxi") {
+        events << EventPhaseEnd;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
+        return TriggerSkill::triggerable(target)
+            && target->getPhase() == Player::Discard
+            && target->getMark("iklongxi") >= 2;
     }
 
     void perform(ServerPlayer *shenzhouyu) const{
         Room *room = shenzhouyu->getRoom();
         QStringList choices;
-        choices << "down" << "cancel";
         QList<ServerPlayer *> all_players = room->getAllPlayers();
         foreach (ServerPlayer *player, all_players) {
             if (player->isWounded()) {
-                choices.prepend("up");
+                choices << "up";
                 break;
             }
         }
+        choices << "down";
         QString result = room->askForChoice(shenzhouyu, objectName(), choices.join("+"));
-        if (result == "cancel")
-            return;
-        else
-            room->notifySkillInvoked(shenzhouyu, "qinyin");
         if (result == "up") {
-            room->broadcastSkillInvoke(objectName(), 2);
             foreach (ServerPlayer *player, all_players)
                 room->recover(player, RecoverStruct(shenzhouyu));
         } else if (result == "down") {
-            room->broadcastSkillInvoke(objectName(), 1);
             foreach (ServerPlayer *player, all_players)
                 room->loseHp(player);
         }
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *, ServerPlayer *shenzhouyu, QVariant &data) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        perform(player);
+        return false;
+    }
+};
+
+class IkLongxiRecord: public TriggerSkill {
+public:
+    IkLongxiRecord(): TriggerSkill("#iklongxi-record") {
+        events << CardsMoveOneTime << EventPhaseChanging;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *shenzhouyu, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == CardsMoveOneTime) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (shenzhouyu->getPhase() == Player::Discard && move.from == shenzhouyu
-                && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
-                shenzhouyu->addMark("qinyin", move.card_ids.size());
-            }
-        } else if (triggerEvent == EventPhaseEnd && TriggerSkill::triggerable(shenzhouyu)
-                   && shenzhouyu->getPhase() == Player::Discard && shenzhouyu->getMark("qinyin") >= 2) {
-            perform(shenzhouyu);
+                && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
+                return QStringList(objectName());
         } else if (triggerEvent == EventPhaseChanging) {
-            shenzhouyu->setMark("qinyin", 0);
+            shenzhouyu->setMark("iklongxi", 0);
         }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *shenzhouyu, QVariant &data, ServerPlayer *) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        shenzhouyu->addMark("iklongxi", move.card_ids.size());
         return false;
     }
 };
@@ -1338,9 +1358,11 @@ GodPackage::GodPackage()
     snow029->addSkill(new IkLvejue);
     snow029->addSkill(new IkLingshi);
 
-    General *shenzhouyu = new General(this, "shenzhouyu", "god"); // LE 003
-    shenzhouyu->addSkill(new Qinyin);
-    shenzhouyu->addSkill(new Yeyan);
+    General *snow030 = new General(this, "snow030", "yuki");
+    snow030->addSkill(new IkLongxi);
+    snow030->addSkill(new IkLongxiRecord);
+    related_skills.insertMulti("iklongxi", "#iklongxi-record");
+    snow030->addSkill(new IkYeyan);
 
     General *shenzhugeliang = new General(this, "shenzhugeliang", "god", 3); // LE 004
     shenzhugeliang->addSkill(new Qixing);
@@ -1383,10 +1405,10 @@ GodPackage::GodPackage()
     related_skills.insertMulti("lianpo", "#lianpo-count");
 
     addMetaObject<IkLingshiCard>();
-    addMetaObject<YeyanCard>();
+    addMetaObject<IkYeyanCard>();
     addMetaObject<ShenfenCard>();
-    addMetaObject<GreatYeyanCard>();
-    addMetaObject<SmallYeyanCard>();
+    addMetaObject<GreatIkYeyanCard>();
+    addMetaObject<SmallIkYeyanCard>();
     addMetaObject<KuangfengCard>();
     addMetaObject<DawuCard>();
     addMetaObject<WuqianCard>();
