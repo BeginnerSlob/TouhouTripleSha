@@ -421,7 +421,7 @@ public:
     //subcategory of transfer
     static const int S_REASON_SWAP = 0x19;              // exchange card for two players
     static const int S_REASON_OVERRIDE = 0x29;          // exchange cards from cards in game
-    static const int S_REASON_EXCHANGE_FROM_PILE = 0x39;// exchange cards from cards moved out of game (for qixing only)
+    static const int S_REASON_EXCHANGE_FROM_PILE = 0x39;// exchange cards from cards moved out of game (for ikqiyao only)
 
     //subcategory of put
     static const int S_REASON_NATURAL_ENTER = 0x1A;     //  a card with no-owner move into discardpile
@@ -659,7 +659,7 @@ enum TriggerEvent {
 
     ConfirmDamage,    // confirm the damage's count and damage's nature
     Predamage,        // trigger the certain skill -- jueqing
-    DamageForseen,    // the first event in a damage -- kuangfeng dawu
+    DamageForseen,    // the first event in a damage -- ikliefeng dawu
     DamageCaused,     // the moment for -- qianxi..
     DamageInflicted,  // the moment for -- ikzhihui..
     PreDamageDone,    // before reducing Hp
