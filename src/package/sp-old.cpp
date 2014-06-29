@@ -2354,7 +2354,7 @@ SPOldPackage::SPOldPackage()
     sp_shenlvbu->addSkill("ikzhuohuo");
     sp_shenlvbu->addSkill("ikwumou");
     sp_shenlvbu->addSkill("iksuikong");
-    sp_shenlvbu->addSkill("iktianwu");
+    sp_shenlvbu->addSkill("iktianwubaka");
 
     General *xiahoushi = new General(this, "xiahoushi", "shu", 3, false); // SP 023
     xiahoushi->addSkill(new Yanyu);

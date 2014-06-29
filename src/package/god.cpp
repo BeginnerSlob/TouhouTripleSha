@@ -723,32 +723,32 @@ public:
     }
 };
 
-class IkTianwu: public ZeroCardViewAsSkill {
+class IkTianwubaka: public ZeroCardViewAsSkill {
 public:
-    IkTianwu(): ZeroCardViewAsSkill("iktianwu") {
+    IkTianwubaka(): ZeroCardViewAsSkill("iktianwubaka") {
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getMark("@mailun") >= 6 && !player->hasUsed("IkTianwuCard");
+        return player->getMark("@mailun") >= 6 && !player->hasUsed("IkTianwubakaCard");
     }
 
     virtual const Card *viewAs() const{
-        return new IkTianwuCard;
+        return new IkTianwubakaCard;
     }
 };
 
-IkTianwuCard::IkTianwuCard() {
+IkTianwubakaCard::IkTianwubakaCard() {
     target_fixed = true;
     mute = true;
 }
 
-void IkTianwuCard::use(Room *room, ServerPlayer *shenlvbu, QList<ServerPlayer *> &) const{
-    room->broadcastSkillInvoke("iktianwu");
+void IkTianwubakaCard::use(Room *room, ServerPlayer *shenlvbu, QList<ServerPlayer *> &) const{
+    room->broadcastSkillInvoke("iktianwubaka");
     shenlvbu->loseMark("@mailun", 6);
 
     QList<ServerPlayer *> players = room->getOtherPlayers(shenlvbu);
     foreach (ServerPlayer *player, players) {
-        room->damage(DamageStruct("iktianwu", shenlvbu, player));
+        room->damage(DamageStruct("iktianwubaka", shenlvbu, player));
         room->getThread()->delay();
     }
 
@@ -761,7 +761,7 @@ void IkTianwuCard::use(Room *room, ServerPlayer *shenlvbu, QList<ServerPlayer *>
 
     foreach (ServerPlayer *player, players) {
         bool delay = !player->isKongcheng();
-        room->askForDiscard(player, "iktianwu", 4, 4);
+        room->askForDiscard(player, "iktianwubaka", 4, 4);
         if (delay)
             room->getThread()->delay();
     }
@@ -1506,7 +1506,7 @@ GodPackage::GodPackage()
     luna029->addSkill(new MarkAssignSkill("@mailun", 2));
     luna029->addSkill(new IkWumou);
     luna029->addSkill(new IkSuikong);
-    luna029->addSkill(new IkTianwu);
+    luna029->addSkill(new IkTianwubaka);
     related_skills.insertMulti("ikzhuohuo", "#@mailun-2");
 
     General *shenzhaoyun = new General(this, "shenzhaoyun", "god", 2); // LE 007
@@ -1526,7 +1526,7 @@ GodPackage::GodPackage()
 
     addMetaObject<IkLingshiCard>();
     addMetaObject<IkYeyanCard>();
-    addMetaObject<IkTianwuCard>();
+    addMetaObject<IkTianwubakaCard>();
     addMetaObject<GreatIkYeyanCard>();
     addMetaObject<SmallIkYeyanCard>();
     addMetaObject<IkLiefengCard>();
