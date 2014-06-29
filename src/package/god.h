@@ -112,11 +112,11 @@ public:
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
-class Longhun: public ViewAsSkill {
+class IkZhihun: public ViewAsSkill {
     Q_OBJECT
 
 public:
-    Longhun();
+    IkZhihun();
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const;
     virtual bool isEnabledAtPlay(const Player *player) const;
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *card) const;

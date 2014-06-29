@@ -1310,32 +1310,35 @@ public:
     }
 };
 
-class Juejing: public DrawCardsSkill {
+class IkJuejing: public DrawCardsSkill {
 public:
-    Juejing(): DrawCardsSkill("#juejing-draw") {
+    IkJuejing(): DrawCardsSkill("#ikjuejing-draw") {
         frequency = Compulsory;
     }
 
-    virtual int getDrawNum(ServerPlayer *player, int n) const{
-        if (player->isWounded()) {
-            Room *room = player->getRoom();
-            room->notifySkillInvoked(player, "juejing");
-            room->broadcastSkillInvoke("juejing");
+    virtual bool triggerable(const ServerPlayer *player) const {
+        return DrawCardsSkill::triggerable(player)
+            && player->isWounded();
+    }
 
-            LogMessage log;
-            log.type = "#YongsiGood";
-            log.from = player;
-            log.arg = QString::number(player->getLostHp());
-            log.arg2 = "juejing";
-            room->sendLog(log);
-        }
+    virtual int getDrawNum(ServerPlayer *player, int n) const{
+        Room *room = player->getRoom();
+        room->notifySkillInvoked(player, "ikjuejing");
+        room->broadcastSkillInvoke("ikjuejing");
+
+        LogMessage log;
+        log.type = "#YongsiGood";
+        log.from = player;
+        log.arg = QString::number(player->getLostHp());
+        log.arg2 = "ikjuejing";
+        room->sendLog(log);
         return n + player->getLostHp();
     }
 };
 
-class JuejingKeep: public MaxCardsSkill {
+class IkJuejingKeep: public MaxCardsSkill {
 public:
-    JuejingKeep(): MaxCardsSkill("juejing") {
+    IkJuejingKeep(): MaxCardsSkill("ikjuejing") {
     }
 
     virtual int getExtra(const Player *target) const{
@@ -1346,22 +1349,22 @@ public:
     }
 };
 
-Longhun::Longhun(): ViewAsSkill("longhun") {
+IkZhihun::IkZhihun(): ViewAsSkill("ikzhihun") {
     response_or_use = true;
 }
 
-bool Longhun::isEnabledAtResponse(const Player *player, const QString &pattern) const{
+bool IkZhihun::isEnabledAtResponse(const Player *player, const QString &pattern) const{
     return pattern == "slash"
            || pattern == "jink"
            || (pattern.contains("peach") && player->getMark("Global_PreventPeach") == 0)
            || pattern == "nullification";
 }
 
-bool Longhun::isEnabledAtPlay(const Player *player) const{
+bool IkZhihun::isEnabledAtPlay(const Player *player) const{
     return player->isWounded() || Slash::IsAvailable(player);
 }
 
-bool Longhun::viewFilter(const QList<const Card *> &selected, const Card *card) const{
+bool IkZhihun::viewFilter(const QList<const Card *> &selected, const Card *card) const{
     int n = qMax(1, Self->getHp());
 
     if (selected.length() >= n || card->hasFlag("using"))
@@ -1376,7 +1379,7 @@ bool Longhun::viewFilter(const QList<const Card *> &selected, const Card *card) 
     case CardUseStruct::CARD_USE_REASON_PLAY: {
             if (Self->isWounded() && card->getSuit() == Card::Heart)
                 return true;
-            else if (card->getSuit() == Card::Diamond) {
+            else if (card->getSuit() == Card::Spade) {
                 FireSlash *slash = new FireSlash(Card::SuitToBeDecided, -1);
                 slash->addSubcards(selected);
                 slash->addSubcard(card->getEffectiveId());
@@ -1391,11 +1394,11 @@ bool Longhun::viewFilter(const QList<const Card *> &selected, const Card *card) 
             if (pattern == "jink")
                 return card->getSuit() == Card::Club;
             else if (pattern == "nullification")
-                return card->getSuit() == Card::Spade;
+                return card->getSuit() == Card::Diamond;
             else if (pattern == "peach" || pattern == "peach+analeptic")
                 return card->getSuit() == Card::Heart;
             else if (pattern == "slash")
-                return card->getSuit() == Card::Diamond;
+                return card->getSuit() == Card::Spade;
         }
     default:
         break;
@@ -1404,7 +1407,7 @@ bool Longhun::viewFilter(const QList<const Card *> &selected, const Card *card) 
     return false;
 }
 
-const Card *Longhun::viewAs(const QList<const Card *> &cards) const{
+const Card *IkZhihun::viewAs(const QList<const Card *> &cards) const{
     int n = getEffHp(Self);
 
     if (cards.length() != n)
@@ -1414,7 +1417,7 @@ const Card *Longhun::viewAs(const QList<const Card *> &cards) const{
     Card *new_card = NULL;
 
     switch (card->getSuit()) {
-    case Card::Spade: {
+    case Card::Diamond: {
             new_card = new Nullification(Card::SuitToBeDecided, 0);
             break;
         }
@@ -1426,7 +1429,7 @@ const Card *Longhun::viewAs(const QList<const Card *> &cards) const{
             new_card = new Jink(Card::SuitToBeDecided, 0);
             break;
         }
-    case Card::Diamond: {
+    case Card::Spade: {
             new_card = new FireSlash(Card::SuitToBeDecided, 0);
             break;
         }
@@ -1442,20 +1445,20 @@ const Card *Longhun::viewAs(const QList<const Card *> &cards) const{
     return new_card;
 }
 
-int Longhun::getEffectIndex(const ServerPlayer *player, const Card *card) const{
+int IkZhihun::getEffectIndex(const ServerPlayer *player, const Card *card) const{
     return static_cast<int>(player->getRoom()->getCard(card->getSubcards().first())->getSuit()) + 1;
 }
 
-bool Longhun::isEnabledAtNullification(const ServerPlayer *player) const{
+bool IkZhihun::isEnabledAtNullification(const ServerPlayer *player) const{
     int n = getEffHp(player), count = 0;
     foreach (const Card *card, player->getHandcards() + player->getEquips()) {
-        if (card->getSuit() == Card::Spade) count++;
+        if (card->getSuit() == Card::Diamond) count++;
         if (count >= n) return true;
     }
     return false;
 }
 
-int Longhun::getEffHp(const Player *zhaoyun) const{
+int IkZhihun::getEffHp(const Player *zhaoyun) const{
     return qMax(1, zhaoyun->getHp());
 }
 
@@ -1509,11 +1512,11 @@ GodPackage::GodPackage()
     luna029->addSkill(new IkTianwubaka);
     related_skills.insertMulti("ikzhuohuo", "#@mailun-2");
 
-    General *shenzhaoyun = new General(this, "shenzhaoyun", "god", 2); // LE 007
-    shenzhaoyun->addSkill(new JuejingKeep);
-    shenzhaoyun->addSkill(new Juejing);
-    shenzhaoyun->addSkill(new Longhun);
-    related_skills.insertMulti("juejing", "#juejing-draw");
+    General *wind030 = new General(this, "wind030", "kaze", 2);
+    wind030->addSkill(new IkJuejingKeep);
+    wind030->addSkill(new IkJuejing);
+    wind030->addSkill(new IkZhihun);
+    related_skills.insertMulti("ikjuejing", "#ikjuejing-draw");
 
     General *shensimayi = new General(this, "shensimayi", "god", 4); // LE 008
     shensimayi->addSkill(new Renjie);
