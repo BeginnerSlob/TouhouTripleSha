@@ -1101,8 +1101,8 @@ return {
 	["@ikhuiyao"] = "你可以弃置一张牌发动“辉耀”",
 	["ikqihuang"] = "淒煌",
 	[":ikqihuang"] = "锁定技，杀死你的角色失去当前的所有人物技能。",
-	["#IkQihuangLoseSkills"] = "%from 触发“%arg”，杀死%from的角色 %to 将失去其所有人物技能",
-	["@ikqihuang"] = "淒煌",
+	["#IkQihuangLoseSkills"] = "%from 的“%arg”被触发， %to 失去所有武将技能",
+	["@qihuang"] = "淒煌",
 
 	["#luna013"] = "摇摆的命运",
 	["luna013"] = "牧濑红莉栖",--月 - 空 - 3血

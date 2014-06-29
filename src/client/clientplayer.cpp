@@ -210,7 +210,7 @@ void ClientPlayer::setMark(const QString &mark, int value) {
 
     mark_doc->setHtml(text);
 
-    if (mark == "@duanchang")
-        emit duanchang_invoked();
+    if (mark == "@qihuang")
+        emit ikqihuang_invoked();
 }
 

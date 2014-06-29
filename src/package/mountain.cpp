@@ -181,77 +181,83 @@ public:
     }
 };
 
-class Beige: public TriggerSkill {
+class IkHuiyao: public TriggerSkill {
 public:
-    Beige(): TriggerSkill("beige") {
+    IkHuiyao(): TriggerSkill("ikhuiyao") {
         events << Damaged << FinishJudge;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
         if (triggerEvent == Damaged) {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.card == NULL || !damage.card->isKindOf("Slash") || damage.to->isDead())
-                return false;
+                return skill_list;
 
-            foreach (ServerPlayer *caiwenji, room->getAllPlayers()) {
-                if (!TriggerSkill::triggerable(caiwenji)) continue;
-                if (caiwenji->canDiscard(caiwenji, "he") && room->askForCard(caiwenji, "..", "@beige", data, objectName())) {
-                    JudgeStruct judge;
-                    judge.good = true;
-                    judge.play_animation = false;
-                    judge.who = player;
-                    judge.reason = objectName();
-
-                    room->judge(judge);
-
-                    Card::Suit suit = (Card::Suit)(judge.pattern.toInt());
-                    switch (suit) {
-                    case Card::Heart: {
-                            room->broadcastSkillInvoke(objectName(), 4);
-                            room->recover(player, RecoverStruct(caiwenji));
-
-                            break;
-                        }
-                    case Card::Diamond: {
-                            room->broadcastSkillInvoke(objectName(), 3);
-                            player->drawCards(2, objectName());
-                            break;
-                        }
-                    case Card::Club: {
-                            room->broadcastSkillInvoke(objectName(), 1);
-                            if (damage.from && damage.from->isAlive())
-                                room->askForDiscard(damage.from, "beige", 2, 2, false, true);
-
-                            break;
-                        }
-                    case Card::Spade: {
-                            room->broadcastSkillInvoke(objectName(), 2);
-                            if (damage.from && damage.from->isAlive())
-                                damage.from->turnOver();
-
-                            break;
-                        }
-                    default:
-                            break;
-                    }
-                }
+            foreach (ServerPlayer *caiwenji, room->findPlayersBySkillName(objectName())) {
+                if (caiwenji->canDiscard(caiwenji, "he"))
+                    skill_list.insert(caiwenji, QStringList(objectName()));
             }
-        } else {
+        } else if (triggerEvent == FinishJudge) {
             JudgeStar judge = data.value<JudgeStar>();
-            if (judge->reason != objectName()) return false;
+            if (judge->reason != objectName()) return skill_list;
             judge->pattern = QString::number(int(judge->card->getSuit()));
         }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *caiwenji) const{
+        if (room->askForCard(caiwenji, "..", "@ikhuiyao", data, objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *caiwenji) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        JudgeStruct judge;
+        judge.good = true;
+        judge.play_animation = false;
+        judge.who = player;
+        judge.reason = objectName();
+
+        room->judge(judge);
+
+        Card::Suit suit = (Card::Suit)(judge.pattern.toInt());
+        switch (suit) {
+        case Card::Heart: {
+                room->recover(player, RecoverStruct(caiwenji));
+
+                break;
+            }
+        case Card::Diamond: {
+                player->drawCards(2, objectName());
+                break;
+            }
+        case Card::Club: {
+                if (damage.from && damage.from->isAlive())
+                    room->askForDiscard(damage.from, "ikhuiyao", 2, 2, false, true);
+
+                break;
+            }
+        case Card::Spade: {
+                if (damage.from && damage.from->isAlive())
+                    damage.from->turnOver();
+
+                break;
+            }
+        default:
+                break;
+        }
+
         return false;
     }
 };
 
-class Duanchang: public TriggerSkill {
+class IkQihuang: public TriggerSkill {
 public:
-    Duanchang(): TriggerSkill("duanchang") {
+    IkQihuang(): TriggerSkill("ikqihuang") {
         events << Death;
         frequency = Compulsory;
     }
@@ -267,7 +273,7 @@ public:
 
         if (death.damage && death.damage->from) {
             LogMessage log;
-            log.type = "#DuanchangLoseSkills";
+            log.type = "#IkQihuangLoseSkills";
             log.from = player;
             log.to << death.damage->from;
             log.arg = objectName();
@@ -283,7 +289,7 @@ public:
             }
             room->handleAcquireDetachSkills(death.damage->from, detachList);
             if (death.damage->from->isAlive())
-                death.damage->from->gainMark("@duanchang");
+                death.damage->from->gainMark("@qihuang");
         }
 
         return false;
@@ -1364,9 +1370,9 @@ MountainPackage::MountainPackage()
     related_skills.insertMulti("ikhuanshen", "#ikhuanshen-start");
     related_skills.insertMulti("ikhuanshen", "#ikhuanshen-clear");
 
-    General *caiwenji = new General(this, "caiwenji", "qun", 3, false); // QUN 012
-    caiwenji->addSkill(new Beige);
-    caiwenji->addSkill(new Duanchang);
+    General *luna012 = new General(this, "luna012", "tsuki", 3, false);
+    luna012->addSkill(new IkHuiyao);
+    luna012->addSkill(new IkQihuang);
 
     addMetaObject<IkMancaiCard>();
     addMetaObject<IkTiaoxinCard>();

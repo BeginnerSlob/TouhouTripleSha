@@ -49,13 +49,13 @@ Photo::Photo(): PlayerCardContainer() {
         
     emotion_item = new Sprite(_m_groupMain);
 
-    _m_duanchangMask = new QGraphicsRectItem(_m_groupMain);
-    _m_duanchangMask->setRect(boundingRect());
-    _m_duanchangMask->setZValue(32767.0);
-    _m_duanchangMask->setOpacity(0.4);
-    _m_duanchangMask->hide();
-    QBrush duanchang_brush(G_PHOTO_LAYOUT.m_duanchangMaskColor);
-    _m_duanchangMask->setBrush(duanchang_brush);
+    _m_ikqihuangMask = new QGraphicsRectItem(_m_groupMain);
+    _m_ikqihuangMask->setRect(boundingRect());
+    _m_ikqihuangMask->setZValue(32767.0);
+    _m_ikqihuangMask->setOpacity(0.4);
+    _m_ikqihuangMask->hide();
+    QBrush ikqihuang_brush(G_PHOTO_LAYOUT.m_ikqihuangMaskColor);
+    _m_ikqihuangMask->setBrush(ikqihuang_brush);
 
     _createControls();
 }
@@ -176,9 +176,9 @@ void Photo::hideEmotion() {
     disappear->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
-void Photo::updateDuanchang() {
+void Photo::updateIkQihuang() {
     if (!m_player) return;
-    _m_duanchangMask->setVisible(m_player->getMark("@duanchang") > 0);
+    _m_ikqihuangMask->setVisible(m_player->getMark("@qihuang") > 0);
 }
 
 const ClientPlayer *Photo::getPlayer() const{
