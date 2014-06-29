@@ -334,7 +334,7 @@ public:
                     from->drawCards(1, objectName());
                 } else {
                     LogMessage log;
-                    log.type = "#ZhibaReject";
+                    log.type = "#IkBianshengReject";
                     log.from = (ServerPlayer *)move.from;
                     log.to << player;
                     log.arg = objectName();
@@ -587,7 +587,7 @@ public:
                     data = QVariant::fromValue(use);
                 } else {
                     LogMessage log;
-                    log.type = "#ZhibaReject";
+                    log.type = "#IkBianshengReject";
                     log.from = player;
                     log.to << yuji;
                     log.arg = objectName();

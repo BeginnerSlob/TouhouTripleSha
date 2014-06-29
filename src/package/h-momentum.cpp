@@ -557,9 +557,9 @@ HMomentumPackage::HMomentumPackage()
     mifuren->addRelateSkill("yongjue");
 
     General *heg_sunce = new General(this, "heg_sunce$", "wu", 4); // WU 010 G
-    heg_sunce->addSkill("jiang");
+    heg_sunce->addSkill("ikheyi");
     heg_sunce->addSkill(new Yingyang);
-    heg_sunce->addSkill("zhiba");
+    heg_sunce->addSkill("ikbiansheng");
 
     General *chenwudongxi = new General(this, "chenwudongxi", "wu", 4); // WU 023
     chenwudongxi->addSkill(new Duanxie);
