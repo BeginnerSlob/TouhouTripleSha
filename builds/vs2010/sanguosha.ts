@@ -1683,7 +1683,7 @@
         <location filename="../../src/dialog/mainwindow.ui" line="14"/>
         <location filename="../../src/dialog/mainwindow.cpp" line="153"/>
         <source>Sanguosha</source>
-        <translation>太阳神三国杀</translation>
+        <translation>东方绮符剧</translation>
     </message>
     <message>
         <location filename="../../src/dialog/mainwindow.ui" line="28"/>
@@ -2785,7 +2785,7 @@
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="281"/>
         <source>QSanguosha</source>
-        <translation>太阳神三国杀</translation>
+        <translation>谜之声</translation>
     </message>
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="328"/>
