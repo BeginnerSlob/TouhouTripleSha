@@ -210,12 +210,7 @@ public:
         prompt_list << "@iktiansuo-card" << judge->who->objectName()
                     << objectName() << judge->reason << QString::number(judge->card->getEffectiveId());
         QString prompt = prompt_list.join(":");
-        bool forced = false;
-        if (player->getMark("JilveEvent") == int(AskForRetrial))
-            forced = true;
-        const Card *card = room->askForCard(player, forced ? ".!" : "." , prompt, data, Card::MethodResponse, judge->who, true);
-        if (forced && card == NULL)
-            card = player->getRandomHandCard();
+        const Card *card = room->askForCard(player, "." , prompt, data, Card::MethodResponse, judge->who, true);
         if (card) {
             player->tag["IkTiansuoCard"] = QVariant::fromValue(card);
             return true;
@@ -1185,11 +1180,8 @@ public:
         CardUseStruct use = data.value<CardUseStruct>();
 
         if (use.card->getTypeId() == Card::TypeTrick
-            && (yueying->getMark("JilveEvent") > 0 || room->askForSkillInvoke(yueying, objectName()))) {
-            if (yueying->getMark("JilveEvent") > 0)
-                room->broadcastSkillInvoke("jilve", 5);
-            else
-                room->broadcastSkillInvoke(objectName());
+            && room->askForSkillInvoke(yueying, objectName())) {
+            room->broadcastSkillInvoke(objectName());
 
             QList<int> ids = room->getNCards(1, false);
             CardsMoveStruct move(ids, yueying, Player::PlaceTable,
@@ -1364,10 +1356,6 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const{
         return player->canDiscard(player, "he") && !player->hasUsed("IkZhihengCard");
-    }
-
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
-        return pattern == "@ikzhiheng";
     }
 };
 
