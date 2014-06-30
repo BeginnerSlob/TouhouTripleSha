@@ -614,7 +614,7 @@ void Card::onUse(Room *room, const CardUseStruct &use) const{
     room->sendLog(log);
 
     if (card_use.card->isKindOf("Collateral")) { // put it here for I don't wanna repeat these codes in Card::onUse
-        ServerPlayer *victim = card_use.to.first()->tag["collateralVictim"].value<PlayerStar>();
+        ServerPlayer *victim = card_use.to.first()->tag["collateralVictim"].value<ServerPlayer *>();
         if (victim) {
             LogMessage log;
             log.type = "#CollateralSlash";
@@ -641,13 +641,13 @@ void Card::onUse(Room *room, const CardUseStruct &use) const{
         CardMoveReason reason(CardMoveReason::S_REASON_USE, card_use.from->objectName(), QString(), card_use.card->getSkillName(), QString());
         if (card_use.to.size() == 1)
             reason.m_targetId = card_use.to.first()->objectName();
-        reason.m_extraData = QVariant::fromValue((CardStar)card_use.card);
+        reason.m_extraData = QVariant::fromValue(card_use.card);
         foreach (int id, used_cards) {
             CardsMoveStruct move(id, NULL, Player::PlaceTable, reason);
             moves.append(move);
         }
         room->moveCardsAtomic(moves, true);
-        card_use.card = reason.m_extraData.value<CardStar>();
+        card_use.card = reason.m_extraData.value<const Card *>();
     } else if (card_use.card->willThrow()) {
         CardMoveReason reason(CardMoveReason::S_REASON_THROW, card_use.from->objectName(), QString(), card_use.card->getSkillName(), QString());
         room->moveCardTo(this, card_use.from, NULL, Player::DiscardPile, reason, true);
@@ -760,6 +760,14 @@ bool Card::hasFlag(const QString &flag) const{
 
 void Card::clearFlags() const{
     flags.clear();
+}
+
+void Card::setTag(const QString &key, const QVariant &data) const{
+    tag[key] = data;
+}
+
+void Card::removeTag(const QString &key) const{
+    tag.remove(key);
 }
 
 // ---------   Skill card     ------------------

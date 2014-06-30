@@ -64,7 +64,7 @@ public:
     }
 
     virtual void onDamaged(ServerPlayer *caopi, const DamageStruct &) const{
-        ServerPlayer *to = caopi->tag["ThBisuoTarget"].value<PlayerStar>();
+        ServerPlayer *to = caopi->tag["ThBisuoTarget"].value<ServerPlayer *>();
         caopi->tag.remove("ThBisuoTarget");
         if (to) {
             if (caopi->isWounded())
@@ -83,7 +83,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (player->getKingdom() != "hana")
             return QStringList();
-        JudgeStar judge = data.value<JudgeStar>();
+        JudgeStruct *judge = data.value<JudgeStruct *>();
 
         if (judge->card->isBlack()) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
@@ -354,7 +354,7 @@ public:
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (move.card_ids.length() == 1 && move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
             && move.reason.m_reason == CardMoveReason::S_REASON_USE) {
-            CardStar card = move.reason.m_extraData.value<CardStar>();
+            const Card *card = move.reason.m_extraData.value<const Card *>();
             if (!card || !card->isKindOf("SavageAssault"))
                 return QStringList();
             if (card->isVirtualCard()) {
@@ -369,7 +369,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        CardStar card = move.reason.m_extraData.value<CardStar>();
+        const Card *card = move.reason.m_extraData.value<const Card *>();
 
         room->notifySkillInvoked(player, objectName());
         room->broadcastSkillInvoke(objectName());
@@ -409,7 +409,7 @@ public:
 
     virtual bool onPhaseChange(ServerPlayer *sunjian) const{
         Room *room = sunjian->getRoom();
-        ServerPlayer *to = sunjian->tag["IkLiangbanTarget"].value<PlayerStar>();
+        ServerPlayer *to = sunjian->tag["IkLiangbanTarget"].value<ServerPlayer *>();
         sunjian->tag.remove("IkLiangbanTarget");
         if (to) {
             int x = qMax(sunjian->getLostHp(), 1);

@@ -273,7 +273,7 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
 
     if (use.from->getMark("drank") > 0) {
         room->setCardFlag(use.card, "drank");
-        use.card->tag["drank"] = use.from->getMark("drank");
+        use.card->setTag("drank", use.from->getMark("drank"));
         room->setPlayerMark(use.from, "drank", 0);
     }
 
@@ -550,7 +550,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        CardStar card = NULL;
+        const Card *card = NULL;
         if (triggerEvent == PreCardUsed)
             card = data.value<CardUseStruct>().card;
         else
@@ -933,7 +933,7 @@ void Collateral::onUse(Room *room, const CardUseStruct &card_use) const{
         ServerPlayer *victim = card_use.to.at(1);
 
         new_use.to.removeAt(1);
-        killer->tag["collateralVictim"] = QVariant::fromValue((PlayerStar)victim);
+        killer->tag["collateralVictim"] = QVariant::fromValue(victim);
     }
 
     SingleTargetTrick::onUse(room, new_use);
@@ -950,7 +950,7 @@ void Collateral::onEffect(const CardEffectStruct &effect) const{
     ServerPlayer *source = effect.from;
     Room *room = source->getRoom();
     ServerPlayer *killer = effect.to;
-    ServerPlayer *victim = effect.to->tag["collateralVictim"].value<PlayerStar>();
+    ServerPlayer *victim = effect.to->tag["collateralVictim"].value<ServerPlayer *>();
     effect.to->tag.remove("collateralVictim");
     CardMoveReason reason(CardMoveReason::S_REASON_GIVE, killer->objectName(), source->objectName(), objectName(), QString());
     if (!victim || victim->isDead()) {

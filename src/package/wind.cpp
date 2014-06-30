@@ -32,7 +32,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        JudgeStar judge = data.value<JudgeStar>();
+        JudgeStruct *judge = data.value<JudgeStruct *>();
 
         QStringList prompt_list;
         prompt_list << "@iktianshi-card" << judge->who->objectName()
@@ -48,10 +48,10 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        const Card *card = player->tag["IkTianshiCard"].value<CardStar>();
+        const Card *card = player->tag["IkTianshiCard"].value<const Card *>();
         player->tag.remove("IkTianshiCard");
         if (card) {
-            JudgeStar judge = data.value<JudgeStar>();
+            JudgeStruct *judge = data.value<JudgeStruct *>();
             room->retrial(card, player, judge, objectName(), true);
         }
         return false;
@@ -70,7 +70,7 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhangjiao, QVariant &data) const{
         if (triggerEvent == CardResponded && TriggerSkill::triggerable(zhangjiao)) {
-            CardStar card_star = data.value<CardResponseStruct>().m_card;
+            const Card *card_star = data.value<CardResponseStruct>().m_card;
             if (card_star->isKindOf("Jink")) {
                 ServerPlayer *target = room->askForPlayerChosen(zhangjiao, room->getAlivePlayers(), objectName(), "leiji-invoke", true, true);
                 if (target) {
@@ -717,7 +717,7 @@ void GuhuoDialog::popup() {
 }
 
 void GuhuoDialog::selectCard(QAbstractButton *button) {
-    CardStar card = map.value(button->objectName());
+    const Card *card = map.value(button->objectName());
     Self->tag[object_name] = QVariant::fromValue(card);
     if (button->objectName().contains("slash")) {
         if (objectName() == "guhuo")
@@ -920,7 +920,7 @@ bool GuhuoCard::targetFilter(const QList<const Player *> &targets, const Player 
         return false;
     }
 
-    CardStar card = Self->tag.value("guhuo").value<CardStar>();
+    const Card *card = Self->tag.value("guhuo").value<const Card *>();
     return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
 }
 
@@ -934,7 +934,7 @@ bool GuhuoCard::targetFixed() const{
         return true;
     }
 
-    CardStar card = Self->tag.value("guhuo").value<CardStar>();
+    const Card *card = Self->tag.value("guhuo").value<const Card *>();
     return card && card->targetFixed();
 }
 
@@ -948,7 +948,7 @@ bool GuhuoCard::targetsFeasible(const QList<const Player *> &targets, const Play
         return true;
     }
 
-    CardStar card = Self->tag.value("guhuo").value<CardStar>();
+    const Card *card = Self->tag.value("guhuo").value<const Card *>();
     return card && card->targetsFeasible(targets, Self);
 }
 
@@ -1118,7 +1118,7 @@ public:
             return card;
         }
 
-        CardStar c = Self->tag.value("guhuo").value<CardStar>();
+        const Card *c = Self->tag.value("guhuo").value<const Card *>();
         if (c) {
             GuhuoCard *card = new GuhuoCard;
             if (!c->objectName().contains("slash"))

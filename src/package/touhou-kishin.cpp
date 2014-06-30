@@ -77,7 +77,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        ServerPlayer *target = player->tag["ThFeimanTarget"].value<PlayerStar>();
+        ServerPlayer *target = player->tag["ThFeimanTarget"].value<ServerPlayer *>();
         player->tag.remove("ThFeimanTarget");
         if (target) {
             room->damage(DamageStruct(objectName(), player, target));
@@ -332,7 +332,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        ServerPlayer *target = player->tag["ThLanzouTarget"].value<PlayerStar>();
+        ServerPlayer *target = player->tag["ThLanzouTarget"].value<ServerPlayer *>();
         player->tag.remove("ThLanzouTarget");
         if (target) {
             QVariantList cards = player->tag["ThLanzou"].toList();
@@ -676,7 +676,7 @@ public:
         int reason = move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON;
         if (reason == CardMoveReason::S_REASON_USE && move.from_places.contains(Player::PlaceSpecial)
                                                    && move.from_pile_names.contains("thbaochuipile")) {
-            const Card *card = move.reason.m_extraData.value<CardStar>();
+            const Card *card = move.reason.m_extraData.value<const Card *>();
             if (!card) return QStringList();
             if (!card->isVirtualCard() || (card->subcardsLength() == 1
                                            && card->getSubcards() == move.card_ids

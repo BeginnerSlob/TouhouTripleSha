@@ -484,14 +484,14 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        PindianStar pindian = data.value<PindianStar>();
+        PindianStruct *pindian = data.value<PindianStruct *>();
         if (pindian->reason != objectName())
             return QStringList();
         return QStringList(objectName());
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        PindianStar pindian = data.value<PindianStar>();
+        PindianStruct *pindian = data.value<PindianStruct *>();
         if (pindian->isSuccess()) {
             if (player->getMark("@huangyi") > 0)
                 room->addPlayerHistory(player, "ThGugaoCard", -1);
@@ -810,7 +810,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Play) return QStringList();
-        CardStar card = NULL;
+        const Card *card = NULL;
         if (triggerEvent == PreCardUsed)
             card = data.value<CardUseStruct>().card;
         else {
@@ -832,7 +832,7 @@ public:
         room->broadcastSkillInvoke(objectName());
         room->notifySkillInvoked(player, objectName());
 
-        CardStar card = NULL;
+        const Card *card = NULL;
         if (triggerEvent == PreCardUsed)
             card = data.value<CardUseStruct>().card;
         else {
@@ -2007,7 +2007,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (player->tag["ThSiqiangTarget"].value<PlayerStar>() == NULL)
+        if (player->tag["ThSiqiangTarget"].value<ServerPlayer *>() == NULL)
             return QStringList();
         if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
@@ -2019,7 +2019,7 @@ public:
             if (death.who != player)
                 return QStringList();
         }
-        ServerPlayer *target = player->tag["ThSiqiangTarget"].value<PlayerStar>();
+        ServerPlayer *target = player->tag["ThSiqiangTarget"].value<ServerPlayer *>();
         player->tag.remove("ThSiqiangTarget");
         if (target)
             room->removePlayerCardLimitation(target, "use,response", "Slash,Jink,Nullification$0");

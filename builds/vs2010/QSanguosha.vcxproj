@@ -455,7 +455,9 @@
     <ClCompile Include="Release\moc_maneuvering.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Release\moc_miniscenarios.cpp" />
+    <ClCompile Include="Release\moc_miniscenarios.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Release\moc_mountain.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -483,7 +485,9 @@
     <ClCompile Include="Release\moc_record-analysis.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Release\moc_recorder.cpp" />
+    <ClCompile Include="Release\moc_recorder.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Release\moc_roleassigndialog.cpp" />
     <ClCompile Include="Release\moc_rolecombobox.cpp" />
     <ClCompile Include="Release\moc_room.cpp">
