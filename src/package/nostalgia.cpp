@@ -2197,7 +2197,7 @@ public:
     }
 };
 
-#include "touhou.h"
+#include "touhou-hana.h"
 
 IkGuihuoCard::IkGuihuoCard() {
     mute = true;

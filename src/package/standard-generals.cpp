@@ -2706,7 +2706,7 @@ public:
     }
 };
 
-#include "sp-old.h"
+#include "sp.h"
 class SuperYongsi: public Yongsi {
 public:
     SuperYongsi(): Yongsi() {

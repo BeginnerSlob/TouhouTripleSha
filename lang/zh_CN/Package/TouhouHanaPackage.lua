@@ -1,6 +1,8 @@
 -- translation for TouhouHanaPackage
 
 return {
+	["touhou-hana"] = "东方的花火",
+
 	["#hana001"]="四时的花之主",
 	["hana001"]="风见幽香",--花 - 空 - 4血
 	["designer:hana001"]="幻桜落 | Codeby:Slob",

@@ -1,4 +1,4 @@
-#include "touhou.h"
+#include "touhou-hana.h"
 
 #include "general.h"
 #include "skill.h"
@@ -2473,7 +2473,9 @@ public:
     }
 };
 
-void TouhouPackage::addHanaGenerals() {
+TouhouHanaPackage::TouhouHanaPackage()
+    :Package("touhou-hana")
+{
     General *hana001 = new General(this, "hana001$", "hana");
     hana001->addSkill(new ThHuaji);
     hana001->addSkill(new ThFeizhan);
@@ -2579,3 +2581,5 @@ void TouhouPackage::addHanaGenerals() {
 
     skills << new ThMopao << new ThQuanshanGive << new ThTiandaoViewAsSkill;
 }
+
+ADD_PACKAGE(TouhouHana)

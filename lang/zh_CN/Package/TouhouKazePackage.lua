@@ -1,7 +1,7 @@
 -- translation for TouhouKazePackage
 
 return {
-	["touhou"] = "东方",
+	["touhou-kaze"] = "东方的风语",
 	
 	["#kaze001"]="信仰之风",
 	["kaze001"]="东风谷早苗",--风 - 空 - 3血

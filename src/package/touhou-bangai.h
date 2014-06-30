@@ -1,14 +1,14 @@
-#ifndef BANGAI_H
-#define BANGAI_H
+#ifndef TOUHOUBANGAI_H
+#define TOUHOUBANGAI_H
 
 #include "package.h"
 #include "card.h"
 
-class BangaiPackage : public Package{
+class TouhouBangaiPackage : public Package{
     Q_OBJECT
 
 public:
-    BangaiPackage();
+    TouhouBangaiPackage();
 };
 
 class ThShoujuanCard: public SkillCard{
@@ -90,4 +90,4 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-#endif // BANGAI_H
+#endif // TOUHOUBANGAI_H

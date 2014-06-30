@@ -2163,8 +2163,8 @@ public:
     }
 };
 
-KamiPackage::KamiPackage()
-    :Package("kami")
+TouhouKamiPackage::TouhouKamiPackage()
+    :Package("touhou-kami")
 {
     General *kami001 = new General(this, "kami001", "kami", 3);
     kami001->addSkill(new ThKexing);
@@ -2268,4 +2268,4 @@ KamiPackage::KamiPackage()
     skills << new ThJiguangTantian << new ThKuangmo;
 }
 
-ADD_PACKAGE(Kami)
+ADD_PACKAGE(TouhouKami)

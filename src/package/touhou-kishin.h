@@ -1,14 +1,14 @@
-#ifndef KISHIN_H
-#define KISHIN_H
+#ifndef TOUHOUKISHIN_H
+#define TOUHOUKISHIN_H
 
 #include "package.h"
 #include "card.h"
 
-class KishinPackage : public Package{
+class TouhouKishinPackage : public Package{
     Q_OBJECT
 
 public:
-    KishinPackage();
+    TouhouKishinPackage();
 };
 
 class ThLuanshenCard: public SkillCard{
@@ -45,4 +45,4 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-#endif // KISHIN_H
+#endif // TOUHOUKISHIN_H

@@ -1,4 +1,4 @@
-#include "touhou.h"
+#include "touhou-yuki.h"
 
 #include "general.h"
 #include "skill.h"
@@ -2219,7 +2219,9 @@ public:
     }
 };
 
-void TouhouPackage::addYukiGenerals(){
+TouhouYukiPackage::TouhouYukiPackage()
+    :Package("touhou-yuki")
+{
     General *yuki001 = new General(this, "yuki001$", "yuki");
     yuki001->addSkill(new ThJianmo);
     yuki001->addSkill(new ThErchong);
@@ -2321,3 +2323,4 @@ void TouhouPackage::addYukiGenerals(){
     skills << new ThKujieViewAsSkill << new ThFuyueViewAsSkill;
 }
 
+ADD_PACKAGE(TouhouYuki)

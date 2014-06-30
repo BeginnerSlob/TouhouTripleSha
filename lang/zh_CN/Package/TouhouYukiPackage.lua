@@ -1,6 +1,8 @@
 -- translation for TouhouYukiPackage
 
 return {
+	["touhou-yuki"] = "东方的雪园",
+
 	["#yuki001"]="乐园的巫女",
 	["yuki001"]="博丽灵梦",--雪 - 空 - 4血
 	["designer:yuki001"]="幻桜落 | Codeby:Slob",

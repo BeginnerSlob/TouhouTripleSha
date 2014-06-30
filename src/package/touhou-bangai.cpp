@@ -1,4 +1,4 @@
-#include "bangai.h"
+#include "touhou-bangai.h"
 #include "general.h"
 #include "skill.h"
 #include "standard.h"
@@ -1138,9 +1138,9 @@ void ThSixiangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
     }
 }
 
-class ThSixiang:public ViewAsSkill {
+class ThSixiang: public ViewAsSkill {
 public:
-    ThSixiang():ViewAsSkill("thsixiang") {
+    ThSixiang(): ViewAsSkill("thsixiang") {
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const {
@@ -1163,8 +1163,8 @@ public:
     }
 };
 
-BangaiPackage::BangaiPackage()
-    :Package("bangai")
+TouhouBangaiPackage::TouhouBangaiPackage()
+    :Package("touhou-bangai")
 {
     General *bangai001 = new General(this, "bangai001", "kaze");
     bangai001->addSkill(new ThBianfang);
@@ -1230,4 +1230,4 @@ BangaiPackage::BangaiPackage()
     addMetaObject<ThSixiangCard>();
 }
 
-ADD_PACKAGE(Bangai)
+ADD_PACKAGE(TouhouBangai)

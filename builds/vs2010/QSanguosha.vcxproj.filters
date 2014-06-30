@@ -582,12 +582,6 @@
     <ClCompile Include="Release\moc_yjcm2014.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\package\touhou.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_touhou.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\package\touhou-hana.cpp">
       <Filter>package</Filter>
     </ClCompile>
@@ -598,9 +592,6 @@
       <Filter>package</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\package\touhou-yuki.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\package\bangai.cpp">
       <Filter>package</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\room-state.cpp">
@@ -628,12 +619,6 @@
       <Filter>ui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\package\kami.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\package\sp-old.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\package\sp.cpp">
       <Filter>package</Filter>
     </ClCompile>
     <ClCompile Include="Debug\moc_assassins.cpp">
@@ -669,9 +654,6 @@
     <ClCompile Include="Debug\moc_special3v3.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="Debug\moc_touhou.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
     <ClCompile Include="Debug\moc_yjcm.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
@@ -679,9 +661,6 @@
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="Debug\moc_yjcm2013.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug\moc_bangai.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="Debug\moc_wrapped-card.cpp">
@@ -696,20 +675,11 @@
     <ClCompile Include="Debug\moc_qsan-selectable-item.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="Debug\moc_sp-old.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug\moc_sp.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
     <ClCompile Include="Debug\moc_table-pile.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="Debug\moc_timed-progressbar.cpp">
       <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_bangai.cpp">
-      <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="Release\moc_wrapped-card.cpp">
       <Filter>Generated Files\Release</Filter>
@@ -723,25 +693,70 @@
     <ClCompile Include="Release\moc_qsan-selectable-item.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="Release\moc_sp-old.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_sp.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="Release\moc_table-pile.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="Release\moc_timed-progressbar.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\package\kishin.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug\moc_kishin.cpp">
+    <ClCompile Include="Debug\moc_touhou-yuki.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="Release\moc_kishin.cpp">
+    <ClCompile Include="Release\moc_touhou-yuki.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_touhou-tsuki.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_touhou-tsuki.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_touhou-kaze.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_touhou-kaze.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_touhou-hana.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_touhou-hana.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\package\touhou-kishin.cpp">
+      <Filter>package</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_touhou-kishin.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_touhou-kishin.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\package\touhou-sp.cpp">
+      <Filter>package</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_touhou-sp.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_touhou-sp.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_sp.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_sp.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\package\sp.cpp">
+      <Filter>package</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\package\touhou-bangai.cpp">
+      <Filter>package</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_touhou-bangai.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_touhou-bangai.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
   </ItemGroup>
@@ -992,12 +1007,6 @@
     <CustomBuild Include="..\..\src\package\yjcm2014.h">
       <Filter>package</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\src\package\touhou.h">
-      <Filter>package</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\src\package\bangai.h">
-      <Filter>package</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\src\core\room-state.h">
       <Filter>core</Filter>
     </CustomBuild>
@@ -1019,13 +1028,28 @@
     <CustomBuild Include="..\..\src\package\kami.h">
       <Filter>package</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\src\package\sp-old.h">
+    <CustomBuild Include="..\..\src\package\touhou-yuki.h">
+      <Filter>package</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\package\touhou-tsuki.h">
+      <Filter>package</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\package\touhou-kaze.h">
+      <Filter>package</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\package\touhou-hana.h">
+      <Filter>package</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\package\touhou-kishin.h">
+      <Filter>package</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\package\touhou-sp.h">
       <Filter>package</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\sp.h">
       <Filter>package</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\src\package\kishin.h">
+    <CustomBuild Include="..\..\src\package\touhou-bangai.h">
       <Filter>package</Filter>
     </CustomBuild>
   </ItemGroup>
