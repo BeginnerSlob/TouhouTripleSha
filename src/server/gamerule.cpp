@@ -177,7 +177,8 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
                     if (p->getMark("drank") > 0) {
                         LogMessage log;
                         log.type = "#UnsetDrankEndOfTurn";
-                        log.from = p;
+                        log.from = player;
+                        log.to << p;
                         room->sendLog(log);
 
                         room->setPlayerMark(p, "drank", 0);
@@ -591,7 +592,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
     case StartJudge: {
             int card_id = room->drawCard();
 
-            JudgeStar judge = data.value<JudgeStar>();
+            JudgeStruct *judge = data.value<JudgeStruct *>();
             judge->card = Sanguosha->getCard(card_id);
 
             LogMessage log;
@@ -608,7 +609,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
             break;
         }
     case FinishRetrial: {
-            JudgeStar judge = data.value<JudgeStar>();
+            JudgeStruct *judge = data.value<JudgeStruct *>();
 
             LogMessage log;
             log.type = "$JudgeResult";
@@ -627,13 +628,13 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
             break;
         }
     case FinishJudge: {
-            JudgeStar judge = data.value<JudgeStar>();
+            JudgeStruct *judge = data.value<JudgeStruct *>();
 
             if (room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge) {
                 CardMoveReason reason(CardMoveReason::S_REASON_JUDGEDONE, judge->who->objectName(),
                                       judge->reason, QString());
                 if (judge->retrial_by_response)
-                    reason.m_extraData = QVariant::fromValue((PlayerStar)judge->retrial_by_response);
+                    reason.m_extraData = QVariant::fromValue(judge->retrial_by_response);
                 room->moveCardTo(judge->card, judge->who, NULL, Player::DiscardPile, reason, true);
             }
 
@@ -717,7 +718,7 @@ void GameRule::changeGeneralXMode(ServerPlayer *player) const{
     Config.AIDelay = Config.OriginAIDelay;
 
     Room *room = player->getRoom();
-    PlayerStar leader = player->tag["XModeLeader"].value<PlayerStar>();
+    ServerPlayer *leader = player->tag["XModeLeader"].value<ServerPlayer *>();
     Q_ASSERT(leader);
     QStringList backup = leader->tag["XModeBackup"].toStringList();
     QString general = room->askForGeneral(leader, backup);
@@ -791,7 +792,7 @@ QString GameRule::getWinner(ServerPlayer *victim) const{
         }
     } else if (room->getMode() == "06_XMode") {
         QString role = victim->getRole();
-        PlayerStar leader = victim->tag["XModeLeader"].value<PlayerStar>();
+        ServerPlayer *leader = victim->tag["XModeLeader"].value<ServerPlayer *>();
         if (leader->tag["XModeBackup"].toStringList().isEmpty()) {
             if (role.startsWith('r'))
                 winner = "lord+loyalist";

@@ -49,7 +49,7 @@ void IkMancaiCard::use(Room *room, ServerPlayer *zhanghe, QList<ServerPlayer *> 
         if (targets.isEmpty())
             return;
 
-        PlayerStar from = targets.first();
+        ServerPlayer *from = targets.first();
         if (!from->hasEquip() && from->getJudgingArea().isEmpty())
             return;
 
@@ -199,7 +199,7 @@ public:
                     skill_list.insert(caiwenji, QStringList(objectName()));
             }
         } else if (triggerEvent == FinishJudge) {
-            JudgeStar judge = data.value<JudgeStar>();
+            JudgeStruct *judge = data.value<JudgeStruct *>();
             if (judge->reason != objectName()) return skill_list;
             judge->pattern = QString::number(int(judge->card->getSuit()));
         }
@@ -342,7 +342,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (player != NULL) {
-            JudgeStar judge = data.value<JudgeStar>();
+            JudgeStruct *judge = data.value<JudgeStruct *>();
             if (judge->reason == "ikyindie") {
                 if (judge->isGood()) {
                     if (room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge) {
@@ -355,7 +355,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        JudgeStar judge = data.value<JudgeStar>();
+        JudgeStruct *judge = data.value<JudgeStruct *>();
         player->addToPile("ikyindiepile", judge->card->getEffectiveId());
 
         return false;
@@ -589,7 +589,7 @@ public:
                     room->detachSkillFromPlayer(p, "ikbiansheng_pindian", true);
             }
         } else if (triggerEvent == Pindian) {
-            PindianStar pindian = data.value<PindianStar>();
+            PindianStruct *pindian = data.value<PindianStruct *>();
             if (pindian->reason != "ikbiansheng_pindian" || !pindian->to->hasLordSkill(objectName()))
                 return QStringList();
             if (!pindian->isSuccess()) {
@@ -617,7 +617,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
-        PindianStar pindian = data.value<PindianStar>();
+        PindianStruct *pindian = data.value<PindianStruct *>();
         if (room->getCardPlace(pindian->from_card->getEffectiveId()) == Player::PlaceTable)
             ask_who->obtainCard(pindian->from_card);
         if (room->getCardPlace(pindian->to_card->getEffectiveId()) == Player::PlaceTable)
@@ -931,7 +931,7 @@ void IkBaishenCard::onEffect(const CardEffectStruct &effect) const{
     log.to << player;
     room->sendLog(log);
 
-    room->setTag("IkBaishenTarget", QVariant::fromValue((PlayerStar)player));
+    room->setTag("IkBaishenTarget", QVariant::fromValue(player));
 }
 
 class IkBaishenViewAsSkill: public OneCardViewAsSkill {
@@ -978,7 +978,7 @@ public:
         } else if (triggerEvent == EventPhaseStart && liushan->getPhase() == Player::NotActive) {
             Room *room = liushan->getRoom();
             if (!room->getTag("IkBaishenTarget").isNull()) {
-                PlayerStar target = room->getTag("IkBaishenTarget").value<PlayerStar>();
+                ServerPlayer *target = room->getTag("IkBaishenTarget").value<ServerPlayer *>();
                 if (target->isAlive())
                     return QStringList(objectName());
             }
@@ -1010,7 +1010,7 @@ public:
             liushan->setFlags(objectName());
             liushan->skip(Player::Play, true);
         } else if (triggerEvent == EventPhaseStart) {
-            PlayerStar target = room->getTag("IkBaishenTarget").value<PlayerStar>();
+            ServerPlayer *target = room->getTag("IkBaishenTarget").value<ServerPlayer *>();
             room->removeTag("IkBaishenTarget");
             target->gainAnExtraTurn();
         }

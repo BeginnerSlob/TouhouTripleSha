@@ -115,7 +115,7 @@ public:
         if (triggerEvent == DrawNCards)
             data = data.toInt() + 1;
         else if (triggerEvent == Death) {
-            ServerPlayer *target = player->tag["ThChuandaoTarget"].value<PlayerStar>();
+            ServerPlayer *target = player->tag["ThChuandaoTarget"].value<ServerPlayer *>();
             player->tag.remove("ThChuandaoTarget");
             if (target) {
                 if (target->getMark("@yaoshu") < 1)
@@ -700,7 +700,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (player != NULL) {
-            JudgeStar judge = data.value<JudgeStar>();
+            JudgeStruct *judge = data.value<JudgeStruct *>();
             if (judge->reason == "thlingzhan") {
                 if (judge->isGood()) {
                     if (room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge) {
@@ -713,7 +713,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        JudgeStar judge = data.value<JudgeStar>();
+        JudgeStruct *judge = data.value<JudgeStruct *>();
         player->addToPile("lingzhanpile", judge->card);
 
         return false;
@@ -753,7 +753,7 @@ public:
     virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         int x = player->getHandcardNum() - qMax(player->getHp(), 0);
         if (x > 0) {
-            ServerPlayer *target = player->tag["ThXiangruiTarget"].value<PlayerStar>();
+            ServerPlayer *target = player->tag["ThXiangruiTarget"].value<ServerPlayer *>();
             player->tag.remove("ThXiangruiTarget");
             if (target)
                 target->drawCards(x);
@@ -941,7 +941,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        ServerPlayer *target = player->tag["ThWeideTarget"].value<PlayerStar>();
+        ServerPlayer *target = player->tag["ThWeideTarget"].value<ServerPlayer *>();
         player->tag.remove("ThWeideTarget");
         if (target) {
             target->drawCards(qMin(player->getLostHp(), 2));

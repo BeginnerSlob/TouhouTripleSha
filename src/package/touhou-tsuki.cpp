@@ -45,7 +45,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        ServerPlayer *target = player->tag["ThSuomingTarget"].value<PlayerStar>();
+        ServerPlayer *target = player->tag["ThSuomingTarget"].value<ServerPlayer *>();
         player->tag.remove("ThSuomingTarget");
         if (target) {
             target->setChained(!target->isChained());
@@ -359,7 +359,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        JudgeStar judge = data.value<JudgeStar>();
+        JudgeStruct *judge = data.value<JudgeStruct *>();
         QStringList prompt_list;
         prompt_list << "@thkaiyun" << judge->who->objectName()
                     << objectName() << judge->reason << QString::number(judge->card->getEffectiveId());
@@ -376,7 +376,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        JudgeStar judge = data.value<JudgeStar>();
+        JudgeStruct *judge = data.value<JudgeStruct *>();
         QList<int> card_ids = room->getNCards(2, false);
         room->fillAG(card_ids, player);
         int card_id = room->askForAG(player, card_ids, false, objectName());
@@ -487,7 +487,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        ServerPlayer *target = player->tag["ThShouyeTarget"].value<PlayerStar>();
+        ServerPlayer *target = player->tag["ThShouyeTarget"].value<ServerPlayer *>();
         player->tag.remove("ThShouyeTarget");
         if (target) {
             data = data.toInt() - 1;
@@ -1276,7 +1276,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        ServerPlayer *target = player->tag["ThChenjiTarget"].value<PlayerStar>();
+        ServerPlayer *target = player->tag["ThChenjiTarget"].value<ServerPlayer *>();
         player->tag.remove("ThChenjiTarget");
         if (target) {
             target->setChained(!target->isChained());
@@ -1357,7 +1357,7 @@ public:
                         ServerPlayer *target = room->askForPlayerChosen(use.from, targets, objectName(), "@dummy-slash2:" + ask_who->objectName());
                         if (!target)
                             target = targets.at(qrand() % targets.length());
-                        ask_who->tag["collateralVictim"] = QVariant::fromValue((PlayerStar)target);
+                        ask_who->tag["collateralVictim"] = QVariant::fromValue(target);
 
                         LogMessage log;
                         log.type = "#CollateralSlash";
@@ -1399,7 +1399,7 @@ public:
                                 ServerPlayer *target = room->askForPlayerChosen(use.from, targets, objectName(), "@dummy-slash2:" + p->objectName());
                                 if (!target)
                                     target = targets.at(qrand() % targets.length());
-                                p->tag["collateralVictim"] = QVariant::fromValue((PlayerStar)target);
+                                p->tag["collateralVictim"] = QVariant::fromValue(target);
 
                                 LogMessage log;
                                 log.type = "#CollateralSlash";
@@ -1597,7 +1597,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        ServerPlayer *target = player->tag["ThXingluTarget"].value<PlayerStar>();
+        ServerPlayer *target = player->tag["ThXingluTarget"].value<ServerPlayer *>();
         player->tag.remove("ThXingluTarget");
         if (target) {
             bool win = player->pindian(target, objectName());
@@ -1779,7 +1779,7 @@ public:
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         if (triggerEvent == EventPhaseStart) {
-            ServerPlayer *target = player->tag["ThShenyouTarget"].value<PlayerStar>();
+            ServerPlayer *target = player->tag["ThShenyouTarget"].value<ServerPlayer *>();
             player->tag.remove("ThShenyouTarget");
             if (target) {
                 int card_id = room->askForCardChosen(player, target, "hej", objectName());
@@ -2011,7 +2011,7 @@ public:
                         }
                     }
                     Q_ASSERT(!victims.isEmpty());
-                    extra->tag["collateralVictim"] = QVariant::fromValue((PlayerStar)(victims.at(qrand() % victims.length() - 1)));
+                    extra->tag["collateralVictim"] = QVariant::fromValue(victims.at(qrand() % victims.length()));
                 }
             }
             use.to.append(extra);
@@ -2027,7 +2027,7 @@ public:
             room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), extra->objectName());
 
             if (use.card->isKindOf("Collateral")) {
-                ServerPlayer *victim = extra->tag["collateralVictim"].value<PlayerStar>();
+                ServerPlayer *victim = extra->tag["collateralVictim"].value<ServerPlayer *>();
                 if (victim) {
                     LogMessage log;
                     log.type = "#CollateralSlash";

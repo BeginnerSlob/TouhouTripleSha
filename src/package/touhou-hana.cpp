@@ -241,7 +241,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        ServerPlayer *target = player->tag["ThMopaoTarget"].value<PlayerStar>();
+        ServerPlayer *target = player->tag["ThMopaoTarget"].value<ServerPlayer *>();
         player->tag.remove("ThMopaoTarget");
         if (target) {
             target->drawCards(1);
@@ -527,7 +527,7 @@ public:
                 }
             }
         } else {
-            CardStar card = NULL;
+            const Card *card = NULL;
             if (triggerEvent == CardUsed) {
                 CardUseStruct use = data.value<CardUseStruct>();
                 card = use.card;
@@ -615,7 +615,7 @@ public:
             else if (yijiu)
                 yijiu->tag.remove("ThTingwuTarget");
         } else if (triggerEvent == DamageComplete && TriggerSkill::triggerable(damage.from)) {
-            ServerPlayer *target = damage.from->tag["ThTingwuTarget"].value<PlayerStar>();
+            ServerPlayer *target = damage.from->tag["ThTingwuTarget"].value<ServerPlayer *>();
             if (target && target->isAlive()) {
                 ask_who = damage.from;
                 return QStringList(objectName());
@@ -626,7 +626,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
-        ServerPlayer *target = ask_who->tag["ThTingwuTarget"].value<PlayerStar>();
+        ServerPlayer *target = ask_who->tag["ThTingwuTarget"].value<ServerPlayer *>();
         if (target && ask_who->askForSkillInvoke(objectName(), ask_who->tag["ThTingwuTarget"])) {
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -636,7 +636,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
-        ServerPlayer *target = ask_who->tag["ThTingwuTarget"].value<PlayerStar>();
+        ServerPlayer *target = ask_who->tag["ThTingwuTarget"].value<ServerPlayer *>();
         ask_who->tag.remove("ThTingwuTarget");
         if (target) {
             JudgeStruct judge;
@@ -851,7 +851,7 @@ void ThMimengDialog::popup() {
 }
 
 void ThMimengDialog::selectCard(QAbstractButton *button){
-    CardStar card = map.value(button->objectName());
+    const Card *card = map.value(button->objectName());
     Self->tag[object_name] = QVariant::fromValue(card);
     if (button->objectName().contains("slash")) {
         if (objectName() == "ikguihuo")
@@ -966,7 +966,7 @@ bool ThMimengCard::targetFilter(const QList<const Player *> &targets, const Play
         return false;
     }
 
-    CardStar card = Self->tag.value("thmimeng").value<CardStar>();
+    const Card *card = Self->tag.value("thmimeng").value<const Card *>();
     const Card *oc = Sanguosha->getCard(subcards.first());
     Card *new_card = Sanguosha->cloneCard(card->objectName(), oc->getSuit(), oc->getNumber());
     new_card->addSubcard(oc);
@@ -986,7 +986,7 @@ bool ThMimengCard::targetFixed() const {
         return true;
     }
 
-    CardStar card = Self->tag.value("thmimeng").value<CardStar>();
+    const Card *card = Self->tag.value("thmimeng").value<const Card *>();
     const Card *oc = Sanguosha->getCard(subcards.first());
     Card *new_card = Sanguosha->cloneCard(card->objectName(), oc->getSuit(), oc->getNumber());
     new_card->addSubcard(oc);
@@ -1006,7 +1006,7 @@ bool ThMimengCard::targetsFeasible(const QList<const Player *> &targets, const P
         return true;
     }
 
-    CardStar card = Self->tag.value("thmimeng").value<CardStar>();
+    const Card *card = Self->tag.value("thmimeng").value<const Card *>();
     const Card *oc = Sanguosha->getCard(subcards.first());
     Card *new_card = Sanguosha->cloneCard(card->objectName(), oc->getSuit(), oc->getNumber());
     new_card->addSubcard(oc);
@@ -1094,7 +1094,7 @@ public:
             return card;
         }
 
-        CardStar c = Self->tag.value("thmimeng").value<CardStar>();
+        const Card *c = Self->tag.value("thmimeng").value<const Card *>();
         if (c) {
             ThMimengCard *card = new ThMimengCard;
             card->setUserString(c->objectName());
@@ -1913,7 +1913,7 @@ public:
             DamageStruct damage = data.value<DamageStruct>();
             if (!damage.from || damage.from->isDead())
                 return QStringList();
-            ServerPlayer *target = damage.from->tag["ThLeishiTarget"].value<PlayerStar>();
+            ServerPlayer *target = damage.from->tag["ThLeishiTarget"].value<ServerPlayer *>();
             if (!target || target->isDead())
                 return QStringList();
             ask_who = damage.from;
@@ -1949,7 +1949,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
-        ServerPlayer *target = ask_who->tag["ThLeishiTarget"].value<PlayerStar>();
+        ServerPlayer *target = ask_who->tag["ThLeishiTarget"].value<ServerPlayer *>();
         ask_who->tag.remove("ThLeishiTarget");
         if (target)
             room->damage(DamageStruct(objectName(), ask_who, target, 1, DamageStruct::Thunder));
@@ -1998,7 +1998,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        ServerPlayer *target = player->tag["ThShanlingTarget"].value<PlayerStar>();
+        ServerPlayer *target = player->tag["ThShanlingTarget"].value<ServerPlayer *>();
         player->tag.remove("ThShanlingTarget");
         if (target)
             room->damage(DamageStruct(objectName(), player, target, 1, DamageStruct::Thunder));
@@ -2190,7 +2190,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
-        const Card *card = ask_who->tag["ThZhaoyuCard"].value<CardStar>();
+        const Card *card = ask_who->tag["ThZhaoyuCard"].value<const Card *>();
         ask_who->tag.remove("ThZhaoyuCard");
         if (card) {
             CardMoveReason reason(CardMoveReason::S_REASON_PUT, ask_who->objectName(), "thzhaoyu", QString());
@@ -2328,7 +2328,7 @@ public:
             if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
             && move.reason.m_reason == CardMoveReason::S_REASON_USE) {
                 if (player->tag["thliuzhen_user"].toBool()) {
-                    CardStar liuzhen_card = move.reason.m_extraData.value<CardStar>();
+                    const Card *liuzhen_card = move.reason.m_extraData.value<const Card *>();
                     if (liuzhen_card && liuzhen_card->hasFlag("thliuzhen"))
                         return QStringList(objectName());
                 }
@@ -2373,7 +2373,7 @@ public:
                 room->loseHp(player);
         } else if (triggerEvent == BeforeCardsMove) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            const Card *card = move.reason.m_extraData.value<CardStar>();
+            const Card *card = move.reason.m_extraData.value<const Card *>();
             if (card) {
                 card->setFlags("-thliuzhen");
                 CardUseStruct use;

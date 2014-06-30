@@ -586,8 +586,6 @@ struct JudgeStruct {
     ServerPlayer *retrial_by_response; // record whether the current judge card is provided by a response retrial
 };
 
-typedef JudgeStruct *JudgeStar;
-
 struct PindianStruct {
     PindianStruct();
 
@@ -600,8 +598,6 @@ struct PindianStruct {
     QString reason;
     bool success;
 };
-
-typedef PindianStruct *PindianStar;
 
 struct PhaseChangeStruct {
     PhaseChangeStruct();
@@ -791,6 +787,9 @@ public:
     bool hasFlag(const char *flag) const;
     void clearFlags() const;
 
+    void setTag(const char *key, const QVariant &data) const;
+    void removeTag(const char *key) const;
+
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
@@ -836,16 +835,8 @@ public:
         return $self->Card::isAvailable(player);
     }
 
-    void setTag(const char *key, QVariant &value) const{ // set it to 'const' for 'tag' is mutable
-        $self->tag[key] = value;
-    }
-
     QVariant getTag(const char *key) const{
         return $self->tag[key];
-    }
-
-    void removeTag(const char *tag_name) const{
-        $self->tag.remove(tag_name);
     }
 };
 
@@ -1084,7 +1075,7 @@ public:
     bool cardEffect(const CardEffectStruct &effect);
     bool isJinkEffected(ServerPlayer *user, const Card *jink);
     void judge(JudgeStruct &judge_struct);
-    void sendJudgeResult(const JudgeStar judge);
+    void sendJudgeResult(const JudgeStruct *judge);
     QList<int> getNCards(int n, bool update_pile_number = true);
     ServerPlayer *getLord() const;
     void askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, GuanxingType guanxing_type = GuanxingBothSides);
@@ -1100,7 +1091,7 @@ public:
     void sendLog(const LogMessage &log, ServerPlayer *player);
     void showCard(ServerPlayer *player, int card_id, ServerPlayer *only_viewer = NULL);
     void showAllCards(ServerPlayer *player, ServerPlayer *to = NULL);
-    void retrial(const Card *card, ServerPlayer *player, JudgeStar judge, const char *skill_name, bool exchange = false);
+    void retrial(const Card *card, ServerPlayer *player, JudgeStruct *judge, const char *skill_name, bool exchange = false);
     void notifySkillInvoked(ServerPlayer *player, const char *skill_name);
     void broadcastSkillInvoke(const char *skillName);
     void broadcastSkillInvoke(const char *skillName, const char *category);

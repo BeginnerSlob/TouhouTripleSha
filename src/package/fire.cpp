@@ -57,7 +57,7 @@ public:
     }
 
     virtual void onDamaged(ServerPlayer *xunyu, const DamageStruct &) const{
-        ServerPlayer *to = xunyu->tag["IkJiemingTarget"].value<PlayerStar>();
+        ServerPlayer *to = xunyu->tag["IkJiemingTarget"].value<ServerPlayer *>();
         xunyu->tag.remove("IkJiemingTarget");
         if (to) {
             int upper = qMin(5, to->getMaxHp());
@@ -224,7 +224,7 @@ public:
                 }
             }
         } else if (triggerEvent == FinishJudge) {
-            JudgeStar judge = data.value<JudgeStar>();
+            JudgeStruct *judge = data.value<JudgeStruct *>();
             if (judge->reason == "ikshuangniang" && room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge)
                 player->obtainCard(judge->card);
         } else if (triggerEvent == EventPhaseChanging) {
