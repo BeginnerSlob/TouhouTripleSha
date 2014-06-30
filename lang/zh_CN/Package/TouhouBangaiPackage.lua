@@ -1,7 +1,7 @@
 -- translation for Bangai Package
 
 return {
-	["bangai"] = "番外",
+	["touhou-bangai"] = "东方的白章",
 	
 	["#bangai001"] = "大空之弦",
 	["bangai001"] = "宇佐见莲子",--风 - 空 - 4血

@@ -1,4 +1,4 @@
-#include "touhou.h"
+#include "touhou-tsuki.h"
 
 #include "general.h"
 #include "skill.h"
@@ -2285,7 +2285,9 @@ public:
     }
 };
 
-void TouhouPackage::addTsukiGenerals() {
+TouhouTsukiPackage::TouhouTsukiPackage()
+    :Package("touhou-tsuki")
+{
     General *tsuki001 = new General(this, "tsuki001$", "tsuki");
     tsuki001->addSkill(new ThSuoming);
     tsuki001->addSkill(new ThChiwu);
@@ -2389,3 +2391,5 @@ void TouhouPackage::addTsukiGenerals() {
 
     skills << new ThYewangViewAsSkill;
 }
+
+ADD_PACKAGE(TouhouTsuki)

@@ -1,7 +1,7 @@
 -- translation for Kami Package
 
 return {
-	["kami"] = "神",
+	["touhou-kami"] = "东方的神祝",
 
 	["#kami001"]="往昔的圣迹",
 	["kami001"]="神东风谷早苗",--神 - 空 - 3血

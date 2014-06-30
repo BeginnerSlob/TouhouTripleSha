@@ -1,0 +1,167 @@
+#ifndef TOUHOUKAZE_H
+#define TOUHOUKAZE_H
+
+#include "package.h"
+#include "card.h"
+#include "skill.h"
+
+class TouhouKazePackage: public Package {
+    Q_OBJECT
+
+public:
+    TouhouKazePackage();
+};
+
+class ThJiyiCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThJiyiCard();
+    
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThNianxieCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThNianxieCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThEnanCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThEnanCard();
+    
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThMicaiCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThMicaiCard();
+    
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class ThQiaogongCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThQiaogongCard();
+    
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class ThBishaCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThBishaCard();
+    
+    virtual const Card *validate(CardUseStruct &card_use) const;
+};
+
+class ThHuosuiCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThHuosuiCard();
+    
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThKunyiCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThKunyiCard();
+    
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThCannueCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThCannueCard();
+
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class ThGelongCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThGelongCard();
+    
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThDasuiCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThDasuiCard();
+    
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThYanlunCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThYanlunCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThYanxingCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThYanxingCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThMaihuoCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThMaihuoCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThSangzhiCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThSangzhiCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThXinhuaCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThXinhuaCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+#endif

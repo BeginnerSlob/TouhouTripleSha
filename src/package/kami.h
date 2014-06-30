@@ -1,14 +1,14 @@
-#ifndef KAMI_H
-#define KAMI_H
+#ifndef TOUHOUKAMI_H
+#define TOUHOUKAMI_H
 
 #include "package.h"
 #include "card.h"
 
-class KamiPackage : public Package{
+class TouhouKamiPackage : public Package{
     Q_OBJECT
 
 public:
-    KamiPackage();
+    TouhouKamiPackage();
 };
 
 class ThShenfengCard: public SkillCard{
@@ -111,4 +111,4 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-#endif // KAMI_H
+#endif // TOUHOUKAMI_H

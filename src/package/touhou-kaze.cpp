@@ -1,4 +1,4 @@
-#include "touhou.h"
+#include "touhou-kaze.h"
 
 #include "general.h"
 #include "skill.h"
@@ -2208,7 +2208,9 @@ public:
     }
 };
 
-void TouhouPackage::addKazeGenerals() {
+TouhouKazePackage::TouhouKazePackage()
+    :Package("touhou-kaze")
+{
     General *kaze001 = new General(this, "kaze001$", "kaze", 3);
     kaze001->addSkill(new ThQiji);
     kaze001->addSkill(new ThQijiRecord);
@@ -2314,3 +2316,5 @@ void TouhouPackage::addKazeGenerals() {
 
     skills << new ThMicaiGivenSkill << new ThXinhuaViewAsSkill;
 }
+
+ADD_PACKAGE(TouhouKaze)

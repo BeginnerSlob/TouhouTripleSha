@@ -1,22 +1,149 @@
-#ifndef SPPACKAGE_H
-#define SPPACKAGE_H
+#ifndef _SP_H
+#define _SP_H
 
 #include "package.h"
 #include "card.h"
 #include "standard.h"
 
-class SPPackage: public Package{
+#include <QGroupBox>
+#include <QAbstractButton>
+#include <QButtonGroup>
+#include <QDialog>
+#include <QVBoxLayout>
+
+class SPPackage: public Package {
     Q_OBJECT
 
 public:
     SPPackage();
 };
 
-class ThChiyingCard: public SkillCard {
+class OLPackage: public Package {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE ThChiyingCard();
+    OLPackage();
+};
+
+class TaiwanSPPackage: public Package {
+    Q_OBJECT
+
+public:
+    TaiwanSPPackage();
+};
+
+class MiscellaneousPackage: public Package {
+    Q_OBJECT
+
+public:
+    MiscellaneousPackage();
+};
+
+class Yongsi: public TriggerSkill {
+    Q_OBJECT
+
+public:
+    Yongsi();
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *yuanshu, QVariant &data) const;
+
+protected:
+    virtual int getKingdoms(ServerPlayer *yuanshu) const;
+};
+
+class WeidiDialog: public QDialog {
+    Q_OBJECT
+
+public:
+    static WeidiDialog *getInstance();
+
+public slots:
+    void popup();
+    void selectSkill(QAbstractButton *button);
+
+private:
+    explicit WeidiDialog();
+
+    QAbstractButton *createSkillButton(const QString &skill_name);
+    QButtonGroup *group;
+    QVBoxLayout *button_layout;
+
+signals:
+    void onButtonClick();
+};
+
+class YuanhuCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE YuanhuCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class XuejiCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE XuejiCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class BifaCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE BifaCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class SongciCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE SongciCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class QiangwuCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE QiangwuCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class YinbingCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE YinbingCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class XiemuCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE XiemuCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class AocaiCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE AocaiCard();
 
     virtual bool targetFixed() const;
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
@@ -26,40 +153,56 @@ public:
     virtual const Card *validate(CardUseStruct &cardUse) const;
 };
 
-class ThXuezhongCard: public SkillCard{
+class DuwuCard: public SkillCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE ThXuezhongCard();
+    Q_INVOKABLE DuwuCard();
 
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class QingyiCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE QingyiCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThLunminCard: public SkillCard{
+class ZhoufuCard: public SkillCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE ThLunminCard();
+    Q_INVOKABLE ZhoufuCard();
 
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThShushuCard: public SkillCard{
+class SPCardPackage: public Package {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE ThShushuCard();
-    
-    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+    SPCardPackage();
 };
 
-class ThYingshiCard: public SkillCard{
+class SPMoonSpear: public Weapon {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE ThYingshiCard();
-
-    virtual const Card *validate(CardUseStruct &card_use) const;
+    Q_INVOKABLE SPMoonSpear(Card::Suit suit = Diamond, int number = 12);
 };
 
-#endif // SPPACKAGE_H
+class HegemonySPPackage: public Package {
+    Q_OBJECT
+
+public:
+    HegemonySPPackage();
+};
+
+#endif
+

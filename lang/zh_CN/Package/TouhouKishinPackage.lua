@@ -1,7 +1,7 @@
 -- translation for Kishin Package
 
 return {
-	["kishin"] = "辉针包",
+	["touhou-kishin"] = "东方的日辉",
 	
 	["#kishin001"] = "逆袭的天邪鬼",
 	["kishin001"] = "鬼人正邪",--风 - 空 - 4血

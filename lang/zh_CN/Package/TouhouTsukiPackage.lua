@@ -1,6 +1,8 @@
 -- translation for TouhouTsukiPackage
 
 return {
+	["touhou-tsuki"] = "东方的月夜",
+
 	["#tsuki001"]="永远的赤色幼月",
 	["tsuki001"]="蕾米莉亚•斯卡雷特",--月 - 空 - 4血
 	["designer:tsuki001"]="幻桜落 | Codeby:Slob",

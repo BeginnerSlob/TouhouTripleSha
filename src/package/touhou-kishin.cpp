@@ -1,4 +1,4 @@
-#include "kishin.h"
+#include "touhou-kishin.h"
 
 #include "general.h"
 #include "skill.h"
@@ -864,8 +864,8 @@ public:
     }
 };
 
-KishinPackage::KishinPackage()
-    :Package("kishin")
+TouhouKishinPackage::TouhouKishinPackage()
+    :Package("touhou-kishin")
 {
     General *kishin001 = new General(this, "kishin001", "kaze");
     kishin001->addSkill(new ThLuanshen);
@@ -918,4 +918,4 @@ KishinPackage::KishinPackage()
     skills << new ThBaochuiRecord;
 }
 
-ADD_PACKAGE(Kishin)
+ADD_PACKAGE(TouhouKishin)
