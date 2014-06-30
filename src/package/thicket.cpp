@@ -54,7 +54,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *caopi, QVariant &data, ServerPlayer *) const{
         ServerPlayer *to = room->askForPlayerChosen(caopi, room->getOtherPlayers(caopi), objectName(),
-                                                    "ikbisuo-invoke", caopi->getMark("JilveEvent") != int(Damaged), true);
+                                                    "ikbisuo-invoke", true, true);
         if (to) {
             room->broadcastSkillInvoke(objectName());
             caopi->tag["ThBisuoTarget"] = QVariant::fromValue(to);
