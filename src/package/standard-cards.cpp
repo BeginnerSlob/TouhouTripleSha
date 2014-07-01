@@ -461,7 +461,7 @@ public:
             bool do_anim = false;
             foreach (ServerPlayer *p, use.to.toSet()) {
                 if (p->getMark("Equips_of_Others_Nullified_to_You") == 0) {
-                    do_anim = (p->getArmor() && p->hasArmorEffect(p->getArmor()->objectName())) || p->hasSkill("ikshengtang");
+                    do_anim = (p->getArmor() && p->hasArmorEffect(p->getArmor()->objectName())) || p->hasSkill("ikjingnie");
                     p->addQinggangTag(use.card);
                 }
             }
@@ -698,13 +698,13 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         if (room->askForSkillInvoke(player, "eight_diagram")) {
-            if (!player->getArmor() && player->hasSkill("ikshengtang")) {
+            if (!player->getArmor() && player->hasSkill("ikjingnie")) {
                 LogMessage log;
                 log.type = "#InvokeSkill";
                 log.from = player;
-                log.arg = "ikshengtang";
+                log.arg = "eight_diagram";
                 room->sendLog(log);
-                room->notifySkillInvoked(player, "ikshengtang");
+                room->notifySkillInvoked(player, "ikjingnie");
             }
             return true;
         }

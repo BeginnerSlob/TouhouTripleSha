@@ -574,14 +574,14 @@ bool Player::hasArmorEffect(const QString &armor_name) const{
     }
 
     if (armor == NULL && alive) {
-        if (armor_name == "eight_diagram" && hasSkill("ikshengtang"))
+        if (armor_name == "eight_diagram" && hasSkill("ikjingnie"))
             return true;
         if (armor_name == "vine" && hasSkill("bossmanjia"))
             return true;
     }
 
     WrappedCard *am = armor;
-    if (!am && !hasSkill("ikshengtang") && getMark("thmicaitarget") > 0)
+    if (!am && !hasSkill("ikjingnie") && getMark("thmicaitarget") > 0)
         foreach (const Player *p, getAliveSiblings())
             if (p->getMark("thmicaisource") > 0) {
                 am = p->armor;

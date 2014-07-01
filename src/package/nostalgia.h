@@ -134,40 +134,11 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class IkKurouCard: public SkillCard {
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE IkKurouCard();
-
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-};
-
 class NosFanjianCard: public SkillCard {
     Q_OBJECT
 
 public:
     Q_INVOKABLE NosFanjianCard();
-    virtual void onEffect(const CardEffectStruct &effect) const;
-};
-
-class IkMoyuCard: public LijianCard {
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE IkMoyuCard();
-};
-
-class IkQingnangCard: public SkillCard {
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE IkQingnangCard();
-
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
-
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
@@ -184,17 +155,6 @@ public:
 
     virtual const Card *validate(CardUseStruct &card_use) const;
     virtual const Card *validateInResponse(ServerPlayer *user) const;
-};
-
-class IkYumeng: public MasochismSkill {
-    Q_OBJECT
-
-public:
-    IkYumeng();
-    virtual void onDamaged(ServerPlayer *target, const DamageStruct &damage) const;
-
-protected:
-    int n;
 };
 
 #endif
