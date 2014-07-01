@@ -85,39 +85,6 @@ public:
     }
 };
 
-IkYuanheCard::IkYuanheCard() {
-}
-
-void IkYuanheCard::onUse(Room *room, const CardUseStruct &card_use) const{
-    CardUseStruct use = card_use;
-    use.to << use.from;
-    SkillCard::onUse(room, use);
-}
-
-void IkYuanheCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    foreach (ServerPlayer *p, targets)
-        p->drawCards(2, "ikyuanhe");
-    foreach (ServerPlayer *p, targets)
-        room->askForDiscard(p, "ikyuanhe", 2, 2, false, true);
-}
-
-class IkYuanhe: public OneCardViewAsSkill {
-public:
-    IkYuanhe(): OneCardViewAsSkill("ikyuanhe") {
-        filter_pattern = ".|red|.|hand!";
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("IkYuanheCard");
-    }
-
-    virtual const Card *viewAs(const Card *originalcard) const{
-        IkYuanheCard *await = new IkYuanheCard;
-        await->addSubcard(originalcard->getId());
-        return await;
-    }
-};
-
 FenxunCard::FenxunCard() {
 }
 
@@ -705,7 +672,7 @@ HegemonyPackage::HegemonyPackage()
     ganfuren->addSkill(new Shenzhi);
 
     General *heg_luxun = new General(this, "heg_luxun", "wu", 3); // WU 007 G
-    heg_luxun->addSkill(new IkYuanhe);
+    heg_luxun->addSkill("ikyuanhe");
 
     General *dingfeng = new General(this, "dingfeng", "wu"); // WU 016
     dingfeng->addSkill(new Skill("duanbing", Skill::Compulsory));
@@ -771,7 +738,6 @@ HegemonyPackage::HegemonyPackage()
     heg_diaochan->addSkill("lijian");
     heg_diaochan->addSkill("ikzhuoyue");
 
-    addMetaObject<IkYuanheCard>();
     addMetaObject<FenxunCard>();
     addMetaObject<ShuangrenCard>();
     addMetaObject<XiongyiCard>();

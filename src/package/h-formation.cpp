@@ -270,7 +270,7 @@ public:
                         room->sendLog(log);
                     }
                     jiangwei->addMark(objectName());
-                    room->acquireSkill(jiangwei, "ikjinzhou");
+                    room->acquireSkill(jiangwei, "ikxuanying");
                 }
             }
         } else if (triggerEvent == EventPhaseChanging) {
@@ -279,7 +279,7 @@ public:
             foreach (ServerPlayer *p, room->getAllPlayers()) {
                 if (p->getMark(objectName()) > 0) {
                     p->setMark(objectName(), 0);
-                    room->detachSkillFromPlayer(p, "ikjinzhou", false, true);
+                    room->detachSkillFromPlayer(p, "ikxuanying", false, true);
                 }
             }
         }

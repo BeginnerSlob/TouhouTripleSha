@@ -344,9 +344,9 @@ public:
     }
 };
 
-class IkCangyan: public OneCardViewAsSkill {
+class IkJianyan: public OneCardViewAsSkill {
 public:
-    IkCangyan(): OneCardViewAsSkill("ikcangyan") {
+    IkJianyan(): OneCardViewAsSkill("ikjianyan") {
         filter_pattern = ".|red|.|hand";
         response_or_use = true;
     }
@@ -359,9 +359,9 @@ public:
     }
 };
 
-class IkShengtang: public TriggerSkill {
+class IkJingnie: public TriggerSkill {
 public:
-    IkShengtang(): TriggerSkill("ikshengtang") {
+    IkJingnie(): TriggerSkill("ikjingnie") {
         events << GameStart;
         frequency = Compulsory;
     }
@@ -376,9 +376,9 @@ public:
     }
 };
 
-class IkJinzhou: public OneCardViewAsSkill {
+class IkXuanying: public OneCardViewAsSkill {
 public:
-    IkJinzhou(): OneCardViewAsSkill("ikjinzhou") {
+    IkXuanying(): OneCardViewAsSkill("ikxuanying") {
         filter_pattern = ".|black|.|hand";
         response_pattern = "nullification";
         response_or_use = true;
@@ -470,9 +470,9 @@ FirePackage::FirePackage()
     wind010->addSkill(new IkNiepan);
 
     General *wind011 = new General(this, "wind011", "kaze", 3);
-    wind011->addSkill(new IkShengtang);
-    wind011->addSkill(new IkCangyan);
-    wind011->addSkill(new IkJinzhou);
+    wind011->addSkill(new IkJingnie);
+    wind011->addSkill(new IkJianyan);
+    wind011->addSkill(new IkXuanying);
 
     General *snow012 = new General(this, "snow012", "yuki");
     snow012->addSkill(new IkJianmie);
