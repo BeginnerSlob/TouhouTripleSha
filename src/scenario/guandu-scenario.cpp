@@ -5,6 +5,7 @@
 #include "clientplayer.h"
 #include "client.h"
 #include "engine.h"
+#include "ikai-tsuchi.h"
 
 ZhanShuangxiongCard::ZhanShuangxiongCard() {
 }

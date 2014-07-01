@@ -1541,64 +1541,6 @@ public:
     }
 };
 
-IkYumeng::IkYumeng(): MasochismSkill("ikyumeng") {
-    frequency = Frequent;
-    n = 2;
-}
-
-void IkYumeng::onDamaged(ServerPlayer *guojia, const DamageStruct &damage) const{
-    Room *room = guojia->getRoom();
-    int x = damage.damage;
-    for (int i = 0; i < x; i++) {
-        if (!guojia->isAlive() || !room->askForSkillInvoke(guojia, objectName()))
-            return;
-        room->broadcastSkillInvoke("ikyumeng");
-
-        QList<ServerPlayer *> _guojia;
-        _guojia.append(guojia);
-        QList<int> yiji_cards = room->getNCards(n, false);
-
-        CardsMoveStruct move(yiji_cards, NULL, guojia, Player::PlaceTable, Player::PlaceHand,
-                             CardMoveReason(CardMoveReason::S_REASON_PREVIEW, guojia->objectName(), objectName(), QString()));
-        QList<CardsMoveStruct> moves;
-        moves.append(move);
-        room->notifyMoveCards(true, moves, false, _guojia);
-        room->notifyMoveCards(false, moves, false, _guojia);
-
-        QList<int> origin_yiji = yiji_cards;
-        while (room->askForYiji(guojia, yiji_cards, objectName(), true, false, true, -1, room->getAlivePlayers())) {
-            CardsMoveStruct move(QList<int>(), guojia, NULL, Player::PlaceHand, Player::PlaceTable,
-                                 CardMoveReason(CardMoveReason::S_REASON_PREVIEW, guojia->objectName(), objectName(), QString()));
-            foreach (int id, origin_yiji) {
-                if (room->getCardPlace(id) != Player::DrawPile) {
-                    move.card_ids << id;
-                    yiji_cards.removeOne(id);
-                }
-            }
-            origin_yiji = yiji_cards;
-            QList<CardsMoveStruct> moves;
-            moves.append(move);
-            room->notifyMoveCards(true, moves, false, _guojia);
-            room->notifyMoveCards(false, moves, false, _guojia);
-            if (!guojia->isAlive())
-                return;
-        }
-
-        if (!yiji_cards.isEmpty()) {
-            CardsMoveStruct move(yiji_cards, guojia, NULL, Player::PlaceHand, Player::PlaceTable,
-                                 CardMoveReason(CardMoveReason::S_REASON_PREVIEW, guojia->objectName(), objectName(), QString()));
-            QList<CardsMoveStruct> moves;
-            moves.append(move);
-            room->notifyMoveCards(true, moves, false, _guojia);
-            room->notifyMoveCards(false, moves, false, _guojia);
-
-            DummyCard *dummy = new DummyCard(yiji_cards);
-            guojia->obtainCard(dummy, false);
-            delete dummy;
-        }
-    }
-}
-
 NosRendeCard::NosRendeCard() {
     mute = true;
     will_throw = false;
@@ -1719,84 +1661,6 @@ public:
     }
 };
 
-class IkHuiquan: public TriggerSkill {
-public:
-    IkHuiquan(): TriggerSkill("ikhuiquan") {
-        frequency = Frequent;
-        events << CardUsed;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *yueying, QVariant &data, ServerPlayer* &) const{
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (TriggerSkill::triggerable(yueying) && use.card->isKindOf("TrickCard"))
-            return QStringList(objectName());
-        return QStringList();
-    }
-
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *yueying, QVariant &, ServerPlayer *) const{
-        if (yueying->askForSkillInvoke(objectName())) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *yueying, QVariant &, ServerPlayer *) const{
-        yueying->drawCards(1, objectName());
-        return false;
-    }
-};
-
-IkKurouCard::IkKurouCard() {
-    target_fixed = true;
-}
-
-void IkKurouCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    room->loseHp(source);
-    if (source->isAlive())
-        room->drawCards(source, 2, "ikkurou");
-}
-
-class IkKurou: public ZeroCardViewAsSkill {
-public:
-    IkKurou(): ZeroCardViewAsSkill("ikkurou") {
-    }
-
-    virtual const Card *viewAs() const{
-        return new IkKurouCard;
-    }
-};
-
-class IkZaiqi: public TriggerSkill {
-public:
-    IkZaiqi(): TriggerSkill("ikzaiqi") {
-        events << HpRecover;
-        frequency = Frequent;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Play || !player->hasFlag("Global_Dying")) return QStringList();
-        QStringList skill;
-        RecoverStruct recover;
-        for (int i = 0; i < recover.recover; i++)
-            skill << objectName();
-        return skill;
-    }
-
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        if (player->askForSkillInvoke(objectName())) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        player->drawCards(1, objectName());
-        return true;
-    }
-};
-
 class NosYingzi: public DrawCardsSkill {
 public:
     NosYingzi(): DrawCardsSkill("nosyingzi") {
@@ -1865,97 +1729,6 @@ public:
         indulgence->addSubcard(originalCard->getId());
         indulgence->setSkillName(objectName());
         return indulgence;
-    }
-};
-
-class IkWujie: public TriggerSkill {
-public:
-    IkWujie(): TriggerSkill("ikwujie") {
-        events << CardsMoveOneTime;
-        frequency = Frequent;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *luxun, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(luxun)) return QStringList();
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (move.from == luxun && move.from_places.contains(Player::PlaceHand) && move.is_last_handcard)
-            return QStringList(objectName());
-        return QStringList();
-    }
-
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *luxun, QVariant &, ServerPlayer *) const{
-        if (luxun->askForSkillInvoke(objectName())) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *luxun, QVariant &, ServerPlayer *) const{
-        luxun->drawCards(1, objectName());
-        return false;
-    }
-};
-
-IkQingnangCard::IkQingnangCard() {
-}
-
-bool IkQingnangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select->isWounded();
-}
-
-bool IkQingnangCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-    return targets.value(0, Self)->isWounded();
-}
-
-void IkQingnangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    ServerPlayer *target = targets.value(0, source);
-    room->cardEffect(this, source, target);
-}
-
-void IkQingnangCard::onEffect(const CardEffectStruct &effect) const{
-    effect.to->getRoom()->recover(effect.to, RecoverStruct(effect.from));
-}
-
-class IkQingnang: public OneCardViewAsSkill {
-public:
-    IkQingnang(): OneCardViewAsSkill("ikqingnang") {
-        filter_pattern = ".|.|.|hand!";
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->canDiscard(player, "h") && !player->hasUsed("IkQingnangCard");
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const{
-        IkQingnangCard *qingnang_card = new IkQingnangCard;
-        qingnang_card->addSubcard(originalCard->getId());
-        return qingnang_card;
-    }
-};
-
-IkMoyuCard::IkMoyuCard(): LijianCard(false) {
-}
-
-class IkMoyu: public OneCardViewAsSkill {
-public:
-    IkMoyu(): OneCardViewAsSkill("ikmoyu") {
-        filter_pattern = ".!";
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getAliveSiblings().length() > 1
-               && player->canDiscard(player, "he") && !player->hasUsed("IkMoyuCard");
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const{
-        IkMoyuCard *lijian_card = new IkMoyuCard;
-        lijian_card->addSubcard(originalCard->getId());
-        return lijian_card;
-    }
-
-    virtual int getEffectIndex(const ServerPlayer *, const Card *card) const{
-        return card->isKindOf("Duel") ? 0 : -1;
     }
 };
 
@@ -2538,10 +2311,6 @@ NostalStandardPackage::NostalStandardPackage()
     nos_xuchu->addSkill(new NosLuoyiBuff);
     related_skills.insertMulti("nosluoyi", "#nosluoyi");
 
-    General *bloom006 = new General(this, "bloom006", "hana", 3);
-    bloom006->addSkill("iktiandu");
-    bloom006->addSkill(new IkYumeng);
-
     General *nos_liubei = new General(this, "nos_liubei$", "shu");
     nos_liubei->addSkill(new NosRende);
     nos_liubei->addSkill("ikxinqi");
@@ -2559,19 +2328,11 @@ NostalStandardPackage::NostalStandardPackage()
     nos_machao->addSkill("thjibu");
     nos_machao->addSkill(new NosTieji);
 
-    General *wind007 = new General(this, "wind007", "kaze", 3, false);
-    wind007->addSkill(new IkHuiquan);
-    wind007->addSkill("thjizhi");
-
     General *nos_ganning = new General(this, "nos_ganning", "wu");
     nos_ganning->addSkill("ikkuipo");
 
     General *nos_lvmeng = new General(this, "nos_lvmeng", "wu");
     nos_lvmeng->addSkill("ikbiju");
-
-    General *snow004 = new General(this, "snow004", "yuki");
-    snow004->addSkill(new IkKurou);
-    snow004->addSkill(new IkZaiqi);
 
     General *nos_zhouyu = new General(this, "nos_zhouyu", "wu", 3);
     nos_zhouyu->addSkill(new NosYingzi);
@@ -2581,27 +2342,12 @@ NostalStandardPackage::NostalStandardPackage()
     nos_daqiao->addSkill(new NosGuose);
     nos_daqiao->addSkill("ikxuanhuo");
 
-    General *snow007 = new General(this, "snow007", "yuki", 3);
-    snow007->addSkill(new IkWujie);
-    snow007->addSkill("ikyuanhe");
-
-    General *luna006 = new General(this, "luna006", "tsuki", 3);
-    luna006->addSkill("ikhuichun");
-    luna006->addSkill(new IkQingnang);
-
     General *nos_lvbu = new General(this, "nos_lvbu", "qun");
     nos_lvbu->addSkill("ikwushuang");
 
-    General *luna003 = new General(this, "luna003", "tsuki", 3, false);
-    luna003->addSkill(new IkMoyu);
-    luna003->addSkill("ikzhuoyue");
-
     addMetaObject<NosTuxiCard>();
     addMetaObject<NosRendeCard>();
-    addMetaObject<IkKurouCard>();
     addMetaObject<NosFanjianCard>();
-    addMetaObject<IkMoyuCard>();
-    addMetaObject<IkQingnangCard>();
 }
 
 NostalWindPackage::NostalWindPackage()
