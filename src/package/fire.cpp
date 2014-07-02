@@ -6,133 +6,6 @@
 #include "engine.h"
 #include "maneuvering.h"
 
-IkYushenCard::IkYushenCard() {
-}
-
-bool IkYushenCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select->getHp() > Self->getHp() && !to_select->isKongcheng();
-}
-
-void IkYushenCard::use(Room *room, ServerPlayer *xunyu, QList<ServerPlayer *> &targets) const{
-    ServerPlayer *tiger = targets.first();
-
-    bool success = xunyu->pindian(tiger, "ikyushen", NULL);
-    if (success) {
-        QList<ServerPlayer *> players = room->getOtherPlayers(tiger), wolves;
-        foreach (ServerPlayer *player, players) {
-            if (tiger->inMyAttackRange(player))
-                wolves << player;
-        }
-
-        if (wolves.isEmpty()) {
-            LogMessage log;
-            log.type = "#IkYushenNoWolf";
-            log.from = xunyu;
-            log.to << tiger;
-            room->sendLog(log);
-
-            return;
-        }
-
-        ServerPlayer *wolf = room->askForPlayerChosen(xunyu, wolves, "ikyushen", QString("@ikyushen-damage:%1").arg(tiger->objectName()));
-        room->damage(DamageStruct("ikyushen", tiger, wolf));
-    } else {
-        room->damage(DamageStruct("ikyushen", tiger, xunyu));
-    }
-}
-
-class IkJieming: public MasochismSkill {
-public:
-    IkJieming(): MasochismSkill("ikjieming") {
-    }
-
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        ServerPlayer *to = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "ikjieming-invoke", true, true);
-        if (to) {
-            room->broadcastSkillInvoke(objectName());
-            player->tag["IkJiemingTarget"] = QVariant::fromValue(to);
-            return true;
-        }
-        return false;
-    }
-
-    virtual void onDamaged(ServerPlayer *xunyu, const DamageStruct &) const{
-        ServerPlayer *to = xunyu->tag["IkJiemingTarget"].value<ServerPlayer *>();
-        xunyu->tag.remove("IkJiemingTarget");
-        if (to) {
-            int upper = qMin(5, to->getMaxHp());
-            int x = upper - to->getHandcardNum();
-            if (x <= 0) return ;
-            to->drawCards(x, objectName());
-        }
-    }
-};
-
-class IkYushen: public ZeroCardViewAsSkill {
-public:
-    IkYushen(): ZeroCardViewAsSkill("ikyushen") {
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("IkYushenCard") && !player->isKongcheng();
-    }
-
-    virtual const Card *viewAs() const{
-        return new IkYushenCard;
-    }
-};
-
-IkQiangxiCard::IkQiangxiCard() {
-}
-
-bool IkQiangxiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if (!targets.isEmpty() || to_select == Self)
-        return false;
-
-    int rangefix = 0;
-    if (!subcards.isEmpty() && Self->getWeapon() && Self->getWeapon()->getId() == subcards.first()) {
-        const Weapon *card = qobject_cast<const Weapon *>(Self->getWeapon()->getRealCard());
-        rangefix += card->getRange() - Self->getAttackRange(false);;
-    }
-
-    return Self->inMyAttackRange(to_select, rangefix);
-}
-
-void IkQiangxiCard::onEffect(const CardEffectStruct &effect) const{
-    Room *room = effect.to->getRoom();
-
-    if (subcards.isEmpty())
-        room->loseHp(effect.from);
-
-    room->damage(DamageStruct("ikqiangxi", effect.from, effect.to));
-}
-
-class IkQiangxi: public ViewAsSkill {
-public:
-    IkQiangxi(): ViewAsSkill("ikqiangxi") {
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("IkQiangxiCard");
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        return selected.isEmpty() && to_select->isKindOf("Weapon") && !Self->isJilei(to_select);
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if (cards.isEmpty())
-            return new IkQiangxiCard;
-        else if (cards.length() == 1) {
-            IkQiangxiCard *card = new IkQiangxiCard;
-            card->addSubcards(cards);
-
-            return card;
-        } else
-            return NULL;
-    }
-};
-
 class IkXinghuang: public ViewAsSkill {
 public:
     IkXinghuang(): ViewAsSkill("ikxinghuang") {
@@ -278,77 +151,9 @@ public:
     }
 };
 
-IkJianmieCard::IkJianmieCard() {
-}
-
-bool IkJianmieCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
-}
-
-void IkJianmieCard::use(Room *room, ServerPlayer *taishici, QList<ServerPlayer *> &targets) const{
-    bool success = taishici->pindian(targets.first(), "ikjianmie", NULL);
-    if (success)
-        room->setPlayerFlag(taishici, "IkJianmieSuccess");
-    else
-        room->setPlayerCardLimitation(taishici, "use", "Slash", true);
-}
-
-class IkJianmie: public ZeroCardViewAsSkill {
-public:
-    IkJianmie(): ZeroCardViewAsSkill("ikjianmie") {
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("IkJianmieCard") && !player->isKongcheng();
-    }
-
-    virtual const Card *viewAs() const{
-        return new IkJianmieCard;
-    }
-};
-
-class IkJianmieTargetMod: public TargetModSkill {
-public:
-    IkJianmieTargetMod(): TargetModSkill("#ikjianmie-target") {
-    }
-
-    virtual int getResidueNum(const Player *from, const Card *) const{
-        if (from->hasFlag("IkJianmieSuccess"))
-            return 1;
-        else
-            return 0;
-    }
-
-    virtual int getDistanceLimit(const Player *from, const Card *) const{
-        if (from->hasFlag("IkJianmieSuccess"))
-            return 1000;
-        else
-            return 0;
-    }
-
-    virtual int getExtraTargetNum(const Player *from, const Card *) const{
-        if (from->hasFlag("IkJianmieSuccess"))
-            return 1;
-        else
-            return 0;
-    }
-};
-
 FirePackage::FirePackage()
     : Package("fire")
 {
-    General *bloom012 = new General(this, "bloom012", "hana");
-    bloom012->addSkill(new IkQiangxi);
-
-    General *bloom013 = new General(this, "bloom013", "hana", 3);
-    bloom013->addSkill(new IkYushen);
-    bloom013->addSkill(new IkJieming);
-
-    General *snow012 = new General(this, "snow012", "yuki");
-    snow012->addSkill(new IkJianmie);
-    snow012->addSkill(new IkJianmieTargetMod);
-    related_skills.insertMulti("ikjianmie", "#ikjianmie-target");
-
     General *luna004 = new General(this, "luna004", "tsuki");
     luna004->addSkill(new IkXinghuang);
 
@@ -359,9 +164,6 @@ FirePackage::FirePackage()
     luna008->addSkill("thjibu");
     luna008->addSkill(new IkMengjin);
 
-    addMetaObject<IkYushenCard>();
-    addMetaObject<IkQiangxiCard>();
-    addMetaObject<IkJianmieCard>();
 }
 
 ADD_PACKAGE(Fire)

@@ -209,107 +209,6 @@ public:
     }
 };
 
-IkXunyuCard::IkXunyuCard() {
-    mute = true;
-}
-
-bool IkXunyuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    Slash *slash = new Slash(NoSuit, 0);
-    slash->setSkillName("ikxunyu");
-    slash->deleteLater();
-    return slash->targetFilter(targets, to_select, Self);
-}
-
-void IkXunyuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    foreach (ServerPlayer *target, targets) {
-        if (!source->canSlash(target, NULL, false))
-            targets.removeOne(target);
-    }
-
-    if (targets.length() > 0) {
-        Slash *slash = new Slash(Card::NoSuit, 0);
-        slash->setSkillName("_ikxunyu");
-        room->useCard(CardUseStruct(slash, source, targets));
-    }
-}
-
-class IkXunyuViewAsSkill: public ViewAsSkill {
-public:
-    IkXunyuViewAsSkill(): ViewAsSkill("ikxunyu") {
-    }
-
-    virtual bool isEnabledAtPlay(const Player *) const{
-        return false;
-    }
-
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
-        return pattern.startsWith("@@ikxunyu");
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        if (Sanguosha->currentRoomState()->getCurrentCardUsePattern().endsWith("1"))
-            return false;
-        else
-            return selected.isEmpty() && !to_select->isKindOf("TrickCard") && !Self->isJilei(to_select);
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if (Sanguosha->currentRoomState()->getCurrentCardUsePattern().endsWith("1")) {
-            return cards.isEmpty() ? new IkXunyuCard : NULL;
-        } else {
-            if (cards.length() != 1)
-                return NULL;
-
-            IkXunyuCard *card = new IkXunyuCard;
-            card->addSubcards(cards);
-
-            return card;
-        }
-    }
-};
-
-class IkXunyu: public TriggerSkill {
-public:
-    IkXunyu(): TriggerSkill("ikxunyu") {
-        events << EventPhaseChanging;
-        view_as_skill = new IkXunyuViewAsSkill;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *xiahouyuan, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(xiahouyuan)) return QStringList();
-        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-        if (change.to == Player::Judge && !xiahouyuan->isSkipped(Player::Judge)
-            && !xiahouyuan->isSkipped(Player::Draw)) {
-            if (Slash::IsAvailable(xiahouyuan))
-                return QStringList(objectName());
-        } else if (Slash::IsAvailable(xiahouyuan) && change.to == Player::Play && !xiahouyuan->isSkipped(Player::Play)) {
-            if (xiahouyuan->canDiscard(xiahouyuan, "he"))
-                return QStringList(objectName());
-        }
-        return QStringList();
-    }
-
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *xiahouyuan, QVariant &data, ServerPlayer *) const{
-        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-        if (change.to == Player::Judge) {
-            if (room->askForUseCard(xiahouyuan, "@@ikxunyu1", "@ikxunyu1", 1))
-                return true;
-        } else if (room->askForUseCard(xiahouyuan, "@@ikxunyu2", "@ikxunyu2", 2, Card::MethodDiscard))
-            return true;
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *xiahouyuan, QVariant &data, ServerPlayer *) const{
-        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-        if (change.to == Player::Judge) {
-            xiahouyuan->skip(Player::Judge, true);
-            xiahouyuan->skip(Player::Draw, true);
-        } else
-            xiahouyuan->skip(Player::Play, true);
-        return false;
-    }
-};
-
 Jushou::Jushou(): PhaseChangeSkill("jushou") {
 }
 
@@ -477,99 +376,6 @@ public:
             }
         }
         return false;
-    }
-};
-
-IkZhihuiCard::IkZhihuiCard() {
-}
-
-void IkZhihuiCard::onEffect(const CardEffectStruct &effect) const{
-    DamageStruct damage = effect.from->tag.value("IkZhihuiDamage").value<DamageStruct>();
-    damage.to = effect.to;
-    damage.transfer = true;
-    damage.transfer_reason = "ikzhihui";
-    effect.from->tag["TransferDamage"] = QVariant::fromValue(damage);
-}
-
-class IkZhihuiViewAsSkill: public OneCardViewAsSkill {
-public:
-    IkZhihuiViewAsSkill(): OneCardViewAsSkill("ikzhihui") {
-        filter_pattern = ".|heart|.|hand!";
-        response_pattern = "@@ikzhihui";
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const{
-        IkZhihuiCard *ikzhihuiCard = new IkZhihuiCard;
-        ikzhihuiCard->addSubcard(originalCard);
-        return ikzhihuiCard;
-    }
-};
-
-class IkZhihui: public TriggerSkill {
-public:
-    IkZhihui(): TriggerSkill("ikzhihui") {
-        events << DamageInflicted;
-        view_as_skill = new IkZhihuiViewAsSkill;
-    }
-
-    virtual bool triggerable(const ServerPlayer *xiaoqiao) const{
-        return TriggerSkill::triggerable(xiaoqiao)
-            && xiaoqiao->canDiscard(xiaoqiao, "h");
-    }
-
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *xiaoqiao, QVariant &data, ServerPlayer *) const{
-        xiaoqiao->tag["IkZhihuiDamage"] = data;
-        return room->askForUseCard(xiaoqiao, "@@ikzhihui", "@ikzhihui-card", -1, Card::MethodDiscard);
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *xiaoqiao, QVariant &data, ServerPlayer *) const{
-        return true;
-    }
-};
-
-class IkZhihuiDraw: public TriggerSkill {
-public:
-    IkZhihuiDraw(): TriggerSkill("#ikzhihui") {
-        events << DamageComplete;
-        frequency = Compulsory;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        DamageStruct damage = data.value<DamageStruct>();
-        if (player->isAlive() && damage.transfer && damage.transfer_reason == "ikzhihui")
-            return QStringList(objectName());
-        return QStringList();
-    }
-
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        player->drawCards(player->getLostHp(), objectName());
-        return false;
-    }
-};
-
-class IkChiqiu: public FilterSkill {
-public:
-    IkChiqiu(): FilterSkill("ikchiqiu") {
-    }
-
-    static WrappedCard *changeToHeart(int cardId) {
-        WrappedCard *new_card = Sanguosha->getWrappedCard(cardId);
-        new_card->setSkillName("ikchiqiu");
-        new_card->setSuit(Card::Heart);
-        new_card->setModified(true);
-        return new_card;
-    }
-
-    virtual bool viewFilter(const Card *to_select) const{
-        return to_select->getSuit() == Card::Spade;
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const{
-        return changeToHeart(originalCard->getEffectiveId());
-    }
-
-    virtual int getEffectIndex(const ServerPlayer *, const Card *) const{
-        return -2;
     }
 };
 
@@ -1117,20 +923,9 @@ public:
 WindPackage::WindPackage()
     :Package("wind")
 {
-    General *bloom008 = new General(this, "bloom008", "hana");
-    bloom008->addSkill(new IkXunyu);
-    bloom008->addSkill(new SlashNoDistanceLimitSkill("ikxunyu"));
-    related_skills.insertMulti("ikxunyu", "#ikxunyu-slash-ndl");
-
     General *caoren = new General(this, "caoren", "wei"); // WEI 011
     caoren->addSkill(new Jushou);
     caoren->addSkill(new Jiewei);
-
-    General *snow011 = new General(this, "snow011", "yuki", 3, false);
-    snow011->addSkill(new IkZhihui);
-    snow011->addSkill(new IkZhihuiDraw);
-    snow011->addSkill(new IkChiqiu);
-    related_skills.insertMulti("ikzhihui", "#ikzhihui");
 
     General *zhoutai = new General(this, "zhoutai", "wu"); // WU 013
     zhoutai->addSkill(new Buqu);
@@ -1149,8 +944,6 @@ WindPackage::WindPackage()
     related_skills.insertMulti("guhuo", "#guhuo-clear");
     yuji->addRelateSkill("chanyuan");
 
-    addMetaObject<IkXunyuCard>();
-    addMetaObject<IkZhihuiCard>();
     addMetaObject<IkYujiCard>();
     addMetaObject<GuhuoCard>();
 
