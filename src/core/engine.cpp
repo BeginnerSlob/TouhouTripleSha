@@ -1024,7 +1024,9 @@ void Engine::playAudioEffect(const QString &filename, bool superpose) const{
 #ifdef AUDIO_SUPPORT
     if (!Config.EnableEffects)
         return;
-    if (filename.isNull())
+    if (filename.isEmpty())
+        return;
+    if (!QFile::exists(filename))
         return;
 
     Audio::play(filename, superpose);

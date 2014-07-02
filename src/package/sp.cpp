@@ -2391,7 +2391,7 @@ OLPackage::OLPackage()
     ol_fazheng->addSkill("xuanhuo");
 
     General *ol_xushu = new General(this, "ol_xushu", "shu", 3, true, true);
-    ol_xushu->addSkill("mitu");
+    ol_xushu->addSkill("ikmitu");
     ol_xushu->addSkill("jujian");
 
     General *ol_guanxingzhangbao = new General(this, "ol_guanxingzhangbao", "shu", 4, true, true);

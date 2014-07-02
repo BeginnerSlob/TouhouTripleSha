@@ -2,11 +2,14 @@
 #include "ui_configdialog.h"
 #include "settings.h"
 #include "roomscene.h"
+#include "audio.h"
 
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QFontDialog>
 #include <QColorDialog>
+
+QString ConfigDialog::m_defaultMusicPath = "audio/system/background.ogg";
 
 ConfigDialog::ConfigDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::ConfigDialog)
@@ -18,7 +21,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
     if (!bg_path.startsWith(":"))
         ui->bgPathLineEdit->setText(bg_path);
 
-    ui->bgMusicPathLineEdit->setText(Config.value("BackgroundMusic", "audio/system/background.ogg").toString());
+    ui->bgMusicPathLineEdit->setText(Config.value("BackgroundMusic", m_defaultMusicPath).toString());
 
     ui->enableEffectCheckBox->setChecked(Config.EnableEffects);
 
@@ -99,9 +102,15 @@ void ConfigDialog::on_resetBgButton_clicked() {
 
 void ConfigDialog::saveConfig() {
     float volume = ui->bgmVolumeSlider->value() / 100.0;
+
+    Audio::setBackgroundMusicVolume(volume);
+
     Config.BGMVolume = volume;
     Config.setValue("BGMVolume", volume);
     volume = ui->effectVolumeSlider->value() / 100.0;
+
+    Audio::setEffectVolume(volume);
+
     Config.EffectVolume = volume;
     Config.setValue("EffectVolume", volume);
 
@@ -114,8 +123,31 @@ void ConfigDialog::saveConfig() {
     Config.setValue("EnableLastWord", enabled);
 
     enabled = ui->enableBgMusicCheckBox->isChecked();
+
+    if (!enabled)
+        Audio::stopBackgroundMusic();
+
     Config.EnableBgMusic = enabled;
     Config.setValue("EnableBgMusic", enabled);
+
+    QString newMusicPath = ui->bgMusicPathLineEdit->text();
+    QString currentMusicPath = Config.value("BackgroundMusic", m_defaultMusicPath).toString();
+    if (newMusicPath != currentMusicPath) {
+        Config.setValue("BackgroundMusic", newMusicPath);
+        Audio::resetCustomBackgroundMusicFileName();
+
+        if (Config.EnableBgMusic && Audio::isBackgroundMusicPlaying()
+            && RoomSceneInstance != NULL && RoomSceneInstance->isGameStarted()) {
+            Audio::stopBackgroundMusic();
+            Audio::playBackgroundMusic(newMusicPath, true);
+        }
+    }
+    else {
+        if (Config.EnableBgMusic && NULL != RoomSceneInstance
+            && RoomSceneInstance->isGameStarted() && !Audio::isBackgroundMusicPlaying()) {
+            Audio::playBackgroundMusic(currentMusicPath, true);
+        }
+    }
 
     Config.setValue("UseFullSkin", ui->fullSkinCheckBox->isChecked());
     Config.setValue("NoIndicator", ui->noIndicatorCheckBox->isChecked());
@@ -138,23 +170,27 @@ void ConfigDialog::saveConfig() {
 }
 
 void ConfigDialog::on_browseBgMusicButton_clicked() {
-    QString filename = QFileDialog::getOpenFileName(this,
-                                                    tr("Select a background music"),
-                                                    "audio/system",
-                                                    tr("Audio files (*.wav *.mp3 *.ogg)"));
+    QStringList fileNames = QFileDialog::getOpenFileNames(this,
+        tr("Select a background music"),
+        "audio/system",
+        tr("Audio files (*.wav *.mp3 *.ogg)"));
+    QString app_path = QApplication::applicationDirPath();
+    app_path.replace("\\", "/");
+    int app_path_len = app_path.length();
+    foreach (const QString &name, fileNames) {
+        const_cast<QString &>(name).replace("\\", "/");
+        if (name.startsWith(app_path)) {
+            const_cast<QString &>(name) = name.right(name.length() - app_path_len - 1);
+        }
+    }
+    QString filename = fileNames.join(";");
     if (!filename.isEmpty()) {
-        QString app_path = QApplication::applicationDirPath();
-        if (filename.startsWith(app_path))
-            filename = filename.right(filename.length() - app_path.length() - 1);
         ui->bgMusicPathLineEdit->setText(filename);
-        Config.setValue("BackgroundMusic", filename);
     }
 }
 
 void ConfigDialog::on_resetBgMusicButton_clicked() {
-    QString default_music = "audio/system/background.ogg";
-    Config.setValue("BackgroundMusic", default_music);
-    ui->bgMusicPathLineEdit->setText(default_music);
+    ui->bgMusicPathLineEdit->setText(m_defaultMusicPath);
 }
 
 void ConfigDialog::on_changeAppFontButton_clicked() {

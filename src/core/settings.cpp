@@ -193,15 +193,7 @@ void Settings::init() {
 
     QStringList forbid_packages = value("ForbidPackages").toStringList();
     if (forbid_packages.isEmpty()) {
-        forbid_packages << "standard" << "wind" << "fire" << "thicket" << "mountain"
-                        << "god" << "YJCM" << "YJCM2012" << "YJCM2013" << "YJCM2014"
-                        << "Special3v3" << "Special3v3Ext" << "Special1v1" << "Special1v1Ext"
-                        << "assassins" << "sp-old" << "OL" << "Taiwan_sp" << "miscellaneous"
-                        << "nostalgia" << "BGM" << "BGMDIY" << "ling"
-                        << "hegemony" << "h_formation" << "h_momentum" << "hegemony_sp"
-                        << "nostal_standard" << "nostal_general" << "nostal_wind"
-                        << "nostal_yjcm" << "nostal_yjcm2012" << "nostal_yjcm2013"
-                        << "test" << "GreenHand" << "sp_cards" << "GreenHandCard"
+        forbid_packages << "nostalgia" << "sp_cards" << "GreenHandCard"
                         << "New3v3Card" << "New3v3_2013Card" << "New1v1Card";
 
         setValue("ForbidPackages", forbid_packages);

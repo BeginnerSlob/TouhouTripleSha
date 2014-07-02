@@ -10,6 +10,7 @@
 #include "window.h"
 #include "pixmapanimation.h"
 #include "record-analysis.h"
+#include "audio.h"
 
 #include <qmath.h>
 #include <QGraphicsView>
@@ -80,6 +81,20 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionAcknowledgement_2, SIGNAL(triggered()), this, SLOT(on_actionAcknowledgement_triggered()));
 
     StartScene *start_scene = new StartScene;
+
+#ifdef AUDIO_SUPPORT
+
+    if(Config.EnableBgMusic) {
+        // start playing background music
+        QString bgm = "audio/bgm/main.ogg";
+        if (QFile::exists(bgm)) {
+            Audio::stopBackgroundMusic();
+            Audio::playBackgroundMusic(bgm);
+            Audio::setBackgroundMusicVolume(Config.BGMVolume);
+        }
+    }
+
+#endif
 
     QList<QAction *> actions;
     actions << ui->actionStart_Game
