@@ -2245,6 +2245,7 @@ TouhouKamiPackage::TouhouKamiPackage()
     General *kami016 = new General(this, "kami016", "kami", 3, false);
     kami016->addSkill(new ThLijian);
     kami016->addSkill(new ThLijianNext);
+    related_skills.insertMulti("thlijian", "#thlijian");
     kami016->addSkill(new ThSiqiang);
     kami016->addSkill(new ThJiefu);
     kami016->addSkill(new ThJiefuInvalidity);

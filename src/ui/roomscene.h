@@ -131,6 +131,8 @@ public:
     inline bool isCancelButtonEnabled() const{ return cancel_button != NULL && cancel_button->isEnabled(); }
     inline void setIkGuihuoLog(const QString &log) { ikguihuo_log = log; }
 
+    bool isGameStarted() const { return game_started; }
+
     bool m_skillButtonSank;
 
 public slots:
