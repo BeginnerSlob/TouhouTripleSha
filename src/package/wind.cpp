@@ -209,107 +209,6 @@ public:
     }
 };
 
-IkXunyuCard::IkXunyuCard() {
-    mute = true;
-}
-
-bool IkXunyuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    Slash *slash = new Slash(NoSuit, 0);
-    slash->setSkillName("ikxunyu");
-    slash->deleteLater();
-    return slash->targetFilter(targets, to_select, Self);
-}
-
-void IkXunyuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    foreach (ServerPlayer *target, targets) {
-        if (!source->canSlash(target, NULL, false))
-            targets.removeOne(target);
-    }
-
-    if (targets.length() > 0) {
-        Slash *slash = new Slash(Card::NoSuit, 0);
-        slash->setSkillName("_ikxunyu");
-        room->useCard(CardUseStruct(slash, source, targets));
-    }
-}
-
-class IkXunyuViewAsSkill: public ViewAsSkill {
-public:
-    IkXunyuViewAsSkill(): ViewAsSkill("ikxunyu") {
-    }
-
-    virtual bool isEnabledAtPlay(const Player *) const{
-        return false;
-    }
-
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
-        return pattern.startsWith("@@ikxunyu");
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        if (Sanguosha->currentRoomState()->getCurrentCardUsePattern().endsWith("1"))
-            return false;
-        else
-            return selected.isEmpty() && !to_select->isKindOf("TrickCard") && !Self->isJilei(to_select);
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if (Sanguosha->currentRoomState()->getCurrentCardUsePattern().endsWith("1")) {
-            return cards.isEmpty() ? new IkXunyuCard : NULL;
-        } else {
-            if (cards.length() != 1)
-                return NULL;
-
-            IkXunyuCard *card = new IkXunyuCard;
-            card->addSubcards(cards);
-
-            return card;
-        }
-    }
-};
-
-class IkXunyu: public TriggerSkill {
-public:
-    IkXunyu(): TriggerSkill("ikxunyu") {
-        events << EventPhaseChanging;
-        view_as_skill = new IkXunyuViewAsSkill;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *xiahouyuan, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(xiahouyuan)) return QStringList();
-        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-        if (change.to == Player::Judge && !xiahouyuan->isSkipped(Player::Judge)
-            && !xiahouyuan->isSkipped(Player::Draw)) {
-            if (Slash::IsAvailable(xiahouyuan))
-                return QStringList(objectName());
-        } else if (Slash::IsAvailable(xiahouyuan) && change.to == Player::Play && !xiahouyuan->isSkipped(Player::Play)) {
-            if (xiahouyuan->canDiscard(xiahouyuan, "he"))
-                return QStringList(objectName());
-        }
-        return QStringList();
-    }
-
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *xiahouyuan, QVariant &data, ServerPlayer *) const{
-        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-        if (change.to == Player::Judge) {
-            if (room->askForUseCard(xiahouyuan, "@@ikxunyu1", "@ikxunyu1", 1))
-                return true;
-        } else if (room->askForUseCard(xiahouyuan, "@@ikxunyu2", "@ikxunyu2", 2, Card::MethodDiscard))
-            return true;
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *xiahouyuan, QVariant &data, ServerPlayer *) const{
-        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-        if (change.to == Player::Judge) {
-            xiahouyuan->skip(Player::Judge, true);
-            xiahouyuan->skip(Player::Draw, true);
-        } else
-            xiahouyuan->skip(Player::Play, true);
-        return false;
-    }
-};
-
 Jushou::Jushou(): PhaseChangeSkill("jushou") {
 }
 
@@ -1117,11 +1016,6 @@ public:
 WindPackage::WindPackage()
     :Package("wind")
 {
-    General *bloom008 = new General(this, "bloom008", "hana");
-    bloom008->addSkill(new IkXunyu);
-    bloom008->addSkill(new SlashNoDistanceLimitSkill("ikxunyu"));
-    related_skills.insertMulti("ikxunyu", "#ikxunyu-slash-ndl");
-
     General *caoren = new General(this, "caoren", "wei"); // WEI 011
     caoren->addSkill(new Jushou);
     caoren->addSkill(new Jiewei);
@@ -1149,7 +1043,6 @@ WindPackage::WindPackage()
     related_skills.insertMulti("guhuo", "#guhuo-clear");
     yuji->addRelateSkill("chanyuan");
 
-    addMetaObject<IkXunyuCard>();
     addMetaObject<IkZhihuiCard>();
     addMetaObject<IkYujiCard>();
     addMetaObject<GuhuoCard>();
