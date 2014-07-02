@@ -37,54 +37,6 @@ public:
     }
 };
 
-class Shushen: public TriggerSkill {
-public:
-    Shushen(): TriggerSkill("shushen") {
-        events << HpRecover;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        RecoverStruct recover_struct = data.value<RecoverStruct>();
-        int recover = recover_struct.recover;
-        for (int i = 0; i < recover; i++) {
-            ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "shushen-invoke", true, true);
-            if (target) {
-                room->broadcastSkillInvoke(objectName(), target->getGeneralName().contains("liubei") ? 2 : 1);
-                target->drawCards(1, objectName());
-            } else {
-                break;
-            }
-        }
-        return false;
-    }
-};
-
-class Shenzhi: public PhaseChangeSkill {
-public:
-    Shenzhi(): PhaseChangeSkill("shenzhi") {
-    }
-
-    virtual bool onPhaseChange(ServerPlayer *ganfuren) const{
-        Room *room = ganfuren->getRoom();
-        if (ganfuren->getPhase() != Player::Start || ganfuren->isKongcheng())
-            return false;
-        if (room->askForSkillInvoke(ganfuren, objectName())) {
-            // As the cost, if one of her handcards cannot be throwed, the skill is unable to invoke
-            foreach (const Card *card, ganfuren->getHandcards()) {
-                if (ganfuren->isJilei(card))
-                    return false;
-            }
-            //==================================
-            int handcard_num = ganfuren->getHandcardNum();
-            room->broadcastSkillInvoke(objectName());
-            ganfuren->throwAllHandCards();
-            if (handcard_num >= ganfuren->getHp())
-                room->recover(ganfuren, RecoverStruct(ganfuren));
-        }
-        return false;
-    }
-};
-
 FenxunCard::FenxunCard() {
 }
 
@@ -666,10 +618,6 @@ HegemonyPackage::HegemonyPackage()
 {
     General *yuejin = new General(this, "yuejin", "wei"); // WEI 016
     yuejin->addSkill(new Xiaoguo);
-
-    General *ganfuren = new General(this, "ganfuren", "shu", 3, false); // SHU 016
-    ganfuren->addSkill(new Shushen);
-    ganfuren->addSkill(new Shenzhi);
 
     General *heg_luxun = new General(this, "heg_luxun", "wu", 3); // WU 007 G
     heg_luxun->addSkill("ikyuanhe");

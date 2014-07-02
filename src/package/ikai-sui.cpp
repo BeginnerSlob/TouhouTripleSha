@@ -101,12 +101,85 @@ public:
     }
 };
 
+class IkShushen: public TriggerSkill {
+public:
+    IkShushen(): TriggerSkill("ikshushen") {
+        events << HpRecover;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        QStringList skill;
+        if (!TriggerSkill::triggerable(player)) return skill;
+        RecoverStruct recover = data.value<RecoverStruct>();
+        for (int i = 0; i < recover.recover; i++)
+            skill << objectName();
+        return skill;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "@ikshushen", true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["IkShushenTarget"] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        ServerPlayer *target = player->tag["IkShushenTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkShushenTarget");
+        if (target) {
+            target->drawCards(1, objectName());
+            target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName());
+            target->drawCards(1, objectName());
+        }
+        return false;
+    }
+};
+
+class IkQiaoxia: public PhaseChangeSkill {
+public:
+    IkQiaoxia(): PhaseChangeSkill("ikqiaoxia") {
+    }
+
+    virtual bool triggerable(const ServerPlayer *ganfuren) const{
+        foreach (const Card *card, ganfuren->getHandcards())
+            if (ganfuren->isJilei(card))
+                return false;
+        return PhaseChangeSkill::triggerable(ganfuren)
+            && ganfuren->getPhase() == Player::Start
+            && !ganfuren->isKongcheng();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *ganfuren) const{
+        Room *room = ganfuren->getRoom();
+        int handcard_num = ganfuren->getHandcardNum();
+        ganfuren->throwAllHandCards();
+        if (handcard_num >= ganfuren->getHp())
+            room->recover(ganfuren, RecoverStruct(ganfuren));
+        return false;
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
     General *wind005 = new General(this, "wind005", "kaze", 3);
     wind005->addSkill(new IkHuahuan);
     wind005->addSkill(new IkQizhou);
+
+    General *wind022 = new General(this, "wind022", "kaze", 3, false);
+    wind022->addSkill(new IkShushen);
+    wind022->addSkill(new IkQiaoxia);
 }
 
 ADD_PACKAGE(IkaiSui)
