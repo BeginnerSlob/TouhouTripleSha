@@ -2290,6 +2290,126 @@ public:
     }
 };
 
+IkZiqiangCard::IkZiqiangCard() {
+    target_fixed = true;
+}
+
+void IkZiqiangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    room->loseHp(source);
+}
+
+class IkZiqiang: public OneCardViewAsSkill {
+public:
+    IkZiqiang(): OneCardViewAsSkill("ikziqiang") {
+        filter_pattern = ".!";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkZiqiangCard");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        IkZiqiangCard *card = new IkZiqiangCard;
+        card->addSubcard(originalCard);
+        card->setSkillName(objectName());
+        return card;
+    }
+};
+
+class IkLingshili: public TriggerSkill {
+public:
+    IkLingshili(): TriggerSkill("iklingshili") {
+        events << HpLost << EventPhaseChanging;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        QStringList skill;
+        if (triggerEvent == HpLost && TriggerSkill::triggerable(player)) {
+            int lose = data.toInt();
+            for (int i = 0; i < lose; i++)
+                skill << objectName();
+        } else if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive)
+                room->setPlayerMark(player, objectName(), 0);
+        }
+        return skill;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->notifySkillInvoked(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+        LogMessage log;
+        log.type = "#TriggerSkill";
+        log.from = player;
+        log.arg = objectName();
+        room->sendLog(log);
+
+        player->drawCards(3, objectName());
+        room->addPlayerMark(player, objectName());
+
+        return false;
+    }
+};
+
+class IkLingshiliRedSlash: public TriggerSkill {
+public:
+    IkLingshiliRedSlash(): TriggerSkill("#iklingshili") {
+        events << TargetSpecified;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player && player->isAlive() && player->getMark("iklingshili") > 0) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (!use.card->isKindOf("Slash") || !use.card->isRed())
+                return QStringList();
+            return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->notifySkillInvoked(player, objectName());
+        LogMessage log;
+        log.type = "#TriggerSkill";
+        log.from = player;
+        log.arg = "iklingshili";
+        room->sendLog(log);
+
+        CardUseStruct use = data.value<CardUseStruct>();
+        QVariantList jink_list = player->tag["Jink_" + use.card->toString()].toList();
+        int index = 0;
+        foreach (ServerPlayer *p, use.to) {
+            LogMessage log;
+            log.type = "#NoJink";
+            log.from = p;
+            room->sendLog(log);
+            jink_list.replace(index, QVariant(0));
+            index++;
+        }
+        player->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
+        return false;
+    }
+};
+
+class IkLingshiliTargetMod: public TargetModSkill {
+public:
+    IkLingshiliTargetMod(): TargetModSkill("#iklingshili-target") {
+    }
+
+    virtual int getResidueNum(const Player *from, const Card *) const{
+        return from->getMark("iklingshili");
+    }
+
+    virtual int getDistanceLimit(const Player *from, const Card *card) const{
+        if (card->isRed() && from->getMark("iklingshili") > 0)
+            return 1000;
+        else
+            return 0;
+    }
+};
+
 IkaiTsuchiPackage::IkaiTsuchiPackage()
     :Package("ikai-tsuchi")
 {
@@ -2394,6 +2514,14 @@ IkaiTsuchiPackage::IkaiTsuchiPackage()
     snow008->addSkill(new IkYulu);
     snow008->addSkill(new IkCuimeng);
 
+    General *snow042 = new General(this, "snow042", "yuki");
+    snow042->addSkill(new IkZiqiang);
+    snow042->addSkill(new IkLingshili);
+    snow042->addSkill(new IkLingshiliRedSlash);
+    snow042->addSkill(new IkLingshiliTargetMod);
+    related_skills.insertMulti("iklingshili", "#iklingshili");
+    related_skills.insertMulti("iklingshili", "#iklingshili-target");
+
     General *luna002 = new General(this, "luna002", "tsuki");
     luna002->addSkill(new IkWushuang);
     luna002->addSkill(new IkWudi);
@@ -2418,6 +2546,7 @@ IkaiTsuchiPackage::IkaiTsuchiPackage()
     addMetaObject<IkXuanhuoCard>();
     addMetaObject<IkYuanheCard>();
     addMetaObject<IkYuluCard>();
+    addMetaObject<IkZiqiangCard>();
     addMetaObject<IkWudiCard>();
     addMetaObject<IkMoyuCard>();
     addMetaObject<IkQingnangCard>();

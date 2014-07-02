@@ -4,15 +4,6 @@
 #include "skill.h"
 #include "card.h"
 
-class KurouCard: public SkillCard {
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE KurouCard();
-
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-};
-
 class LianyingCard: public SkillCard {
     Q_OBJECT
 

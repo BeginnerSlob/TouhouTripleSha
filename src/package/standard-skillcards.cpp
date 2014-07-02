@@ -5,14 +5,6 @@
 #include "engine.h"
 #include "client.h"
 
-KurouCard::KurouCard() {
-    target_fixed = true;
-}
-
-void KurouCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    room->loseHp(source);
-}
-
 LianyingCard::LianyingCard() {
 }
 
