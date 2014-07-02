@@ -159,9 +159,6 @@
     <ClCompile Include="..\..\src\package\standard.cpp">
       <Filter>package</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\package\thicket.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\package\wind.cpp">
       <Filter>package</Filter>
     </ClCompile>
@@ -489,9 +486,6 @@
     <ClCompile Include="Release\moc_startscene.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="Release\moc_thicket.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="Release\moc_wind.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
@@ -508,18 +502,6 @@
       <Filter>package</Filter>
     </ClCompile>
     <ClCompile Include="Release\moc_bgm.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\package\fire.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_fire.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\package\mountain.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_mountain.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\package\special3v3.cpp">
@@ -630,9 +612,6 @@
     <ClCompile Include="Debug\moc_bgm.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="Debug\moc_fire.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
     <ClCompile Include="Debug\moc_h-formation.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
@@ -640,9 +619,6 @@
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="Debug\moc_ling.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug\moc_mountain.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="Debug\moc_roomthreadxmode.cpp">
@@ -881,9 +857,6 @@
     <CustomBuild Include="..\..\src\package\wind.h">
       <Filter>package</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\src\package\thicket.h">
-      <Filter>package</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\src\package\maneuvering.h">
       <Filter>package</Filter>
     </CustomBuild>
@@ -987,12 +960,6 @@
       <Filter>package</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\bgm.h">
-      <Filter>package</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\src\package\fire.h">
-      <Filter>package</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\src\package\mountain.h">
       <Filter>package</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\special1v1.h">

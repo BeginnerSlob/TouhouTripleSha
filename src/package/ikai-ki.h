@@ -231,4 +231,68 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class IkWenleCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkWenleCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+#include "generaloverview.h"
+class IkHuanshenDialog: public GeneralOverview {
+    Q_OBJECT
+
+public:
+    IkHuanshenDialog();
+
+public slots:
+    void popup();
+};
+
+class IkGuihuoCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkGuihuoCard();
+    bool ikguihuo(ServerPlayer *yuji) const;
+
+    virtual bool targetFixed() const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
+
+    virtual const Card *validate(CardUseStruct &card_use) const;
+    virtual const Card *validateInResponse(ServerPlayer *user) const;
+};
+
+class IkYujiCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkYujiCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+};
+
+class IkSuikongCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkSuikongCard();
+
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class IkTianwubakaCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkTianwubakaCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 #endif // IKAIKI_H
