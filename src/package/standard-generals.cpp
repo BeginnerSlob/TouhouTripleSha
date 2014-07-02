@@ -833,7 +833,7 @@ public:
     }
 };
 
-#include "ikai-hi.h"
+#include "ikai-ki.h"
 #include "maneuvering.h"
 class GdJuejing: public TriggerSkill {
 public:

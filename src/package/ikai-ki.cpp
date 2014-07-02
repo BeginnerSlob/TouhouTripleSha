@@ -1,4 +1,4 @@
-#include "ikai-hi.h"
+#include "ikai-ki.h"
 
 #include "general.h"
 #include "skill.h"
@@ -1165,8 +1165,8 @@ int IkZhihun::getEffHp(const Player *zhaoyun) const{
     return qMax(1, zhaoyun->getHp());
 }
 
-IkaiHiPackage::IkaiHiPackage()
-    :Package("ikai-hi")
+IkaiKiPackage::IkaiKiPackage()
+    :Package("ikai-ki")
 {
     General *wind008 = new General(this, "wind008", "kaze");
     wind008->addSkill("thxiagong");
@@ -1238,4 +1238,4 @@ IkaiHiPackage::IkaiHiPackage()
     skills << new IkMohua;
 }
 
-ADD_PACKAGE(IkaiHi)
+ADD_PACKAGE(IkaiKi)

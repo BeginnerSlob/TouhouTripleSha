@@ -1,15 +1,15 @@
-#ifndef IKAIHI_H
-#define IKAIHI_H
+#ifndef IKAIKI_H
+#define IKAIKI_H
 
 #include "package.h"
 #include "card.h"
 #include "skill.h"
 
-class IkaiHiPackage : public Package{
+class IkaiKiPackage : public Package{
     Q_OBJECT
 
 public:
-    IkaiHiPackage();
+    IkaiKiPackage();
 };
 
 class IkTiaoxinCard: public SkillCard {
@@ -68,4 +68,4 @@ protected:
     virtual int getEffHp(const Player *zhaoyun) const;
 };
 
-#endif // IKAIHI_H
+#endif // IKAIKI_H
