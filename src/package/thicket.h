@@ -11,27 +11,6 @@ public:
     ThicketPackage();
 };
 
-class IkShenenCard: public SkillCard {
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE IkShenenCard();
-
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-};
-
-class IkDimengCard: public SkillCard {
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE IkDimengCard();
-
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-};
-
 class IkWenleCard: public SkillCard {
     Q_OBJECT
 
