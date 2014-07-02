@@ -73,26 +73,6 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkLiefengCard: public SkillCard {
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE IkLiefengCard();
-
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual void onEffect(const CardEffectStruct &effect) const;
-};
-
-class IkMiaowuCard: public SkillCard {
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE IkMiaowuCard();
-
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-};
-
 class IkYihuoCard: public SkillCard{
     Q_OBJECT
 
@@ -110,22 +90,6 @@ public:
     Q_INVOKABLE IkJilveCard();
 
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
-};
-
-class IkZhihun: public ViewAsSkill {
-    Q_OBJECT
-
-public:
-    IkZhihun();
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const;
-    virtual bool isEnabledAtPlay(const Player *player) const;
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *card) const;
-    virtual const Card *viewAs(const QList<const Card *> &cards) const;
-    virtual int getEffectIndex(const ServerPlayer *player, const Card *card) const;
-    virtual bool isEnabledAtNullification(const ServerPlayer *player) const;
-
-protected:
-    virtual int getEffHp(const Player *zhaoyun) const;
 };
 
 #endif

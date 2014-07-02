@@ -397,108 +397,6 @@ public:
     }
 };
 
-class IkLiegong: public TriggerSkill {
-public:
-    IkLiegong(): TriggerSkill("ikliegong") {
-        events << TargetSpecified;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(player)) return QStringList();
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (player != use.from || player->getPhase() != Player::Play || !use.card->isKindOf("Slash"))
-            return QStringList();
-        foreach (ServerPlayer *p, use.to) {
-            int handcardnum = p->getHandcardNum();
-            if (player->getHp() <= handcardnum || player->getAttackRange() >= handcardnum)
-                return QStringList(objectName());
-        }
-        return QStringList();
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        CardUseStruct use = data.value<CardUseStruct>();
-        QVariantList jink_list = player->tag["Jink_" + use.card->toString()].toList();
-        int index = 0;
-        foreach (ServerPlayer *p, use.to) {
-            int handcardnum = p->getHandcardNum();
-            if ((player->getHp() <= handcardnum || player->getAttackRange() >= handcardnum)
-                && player->askForSkillInvoke(objectName(), QVariant::fromValue(p))) {
-                room->broadcastSkillInvoke(objectName());
-
-                LogMessage log;
-                log.type = "#NoJink";
-                log.from = p;
-                room->sendLog(log);
-                jink_list.replace(index, QVariant(0));
-            }
-            index++;
-        }
-        player->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
-        return false;
-    }
-};
-
-class IkKuanggu: public TriggerSkill {
-public:
-    IkKuanggu(): TriggerSkill("ikkuanggu") {
-        frequency = Compulsory;
-        events << Damage;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        if (!TriggerSkill::triggerable(player)) return QStringList();
-        DamageStruct damage = data.value<DamageStruct>();
-        bool invoke = player->tag.value("InvokeIkKuanggu", false).toBool();
-        player->tag["InvokeIkKuanggu"] = false;
-        if (invoke) {
-            QStringList skills;
-            for (int i = 0; i < damage.damage; i++)
-                skills << objectName();
-            return skills;
-        }
-        return QStringList();
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
-
-        QStringList choices;
-        if (player->isWounded())
-            choices << "recover";
-        choices << "draw";
-        QString choice = room->askForChoice(player, objectName(), choices.join("+"));
-        if (choice == "recover")
-            room->recover(player, RecoverStruct(player));
-        else
-            player->drawCards(2);
-        return false;
-    }
-};
-
-class IkKuangguRecord: public TriggerSkill {
-public:
-    IkKuangguRecord(): TriggerSkill("#ikkuanggu-record") {
-        events << PreDamageDone;
-        frequency = Compulsory;
-        global = true;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        DamageStruct damage = data.value<DamageStruct>();
-        ServerPlayer *weiyan = damage.from;
-        if (weiyan)
-            weiyan->tag["InvokeIkKuanggu"] = (weiyan->distanceTo(damage.to) <= 1 && weiyan != player);
-        return QStringList();
-    }
-};
-
 class Buqu: public TriggerSkill {
 public:
     Buqu(): TriggerSkill("buqu") {
@@ -1227,15 +1125,6 @@ WindPackage::WindPackage()
     General *caoren = new General(this, "caoren", "wei"); // WEI 011
     caoren->addSkill(new Jushou);
     caoren->addSkill(new Jiewei);
-
-    General *wind008 = new General(this, "wind008", "kaze");
-    wind008->addSkill("thxiagong");
-    wind008->addSkill(new IkLiegong);
-
-    General *wind009 = new General(this, "wind009", "kaze");
-    wind009->addSkill(new IkKuanggu);
-    wind009->addSkill(new IkKuangguRecord);
-    related_skills.insertMulti("ikkuanggu", "#ikkuanggu-record");
 
     General *snow011 = new General(this, "snow011", "yuki", 3, false);
     snow011->addSkill(new IkZhihui);
