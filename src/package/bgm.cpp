@@ -5,52 +5,6 @@
 #include "engine.h"
 #include "settings.h"
 
-class IkQizhou: public TriggerSkill {
-public:
-    IkQizhou(): TriggerSkill("ikqizhou") {
-        events << CardResponded << TargetSpecified;
-    }
-
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(player)) return QStringList();
-        if (triggerEvent == CardResponded) {
-            CardResponseStruct resp = data.value<CardResponseStruct>();
-            if (resp.m_card->isKindOf("Jink") && resp.m_card->isVirtualCard() && resp.m_card->subcardsLength() > 0)
-                return QStringList(objectName());
-        } else {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("Slash") && use.card->isVirtualCard() && use.card->subcardsLength() > 0)
-                foreach (ServerPlayer *p, use.to)
-                    if (!p->isKongcheng())
-                        return QStringList(objectName());
-        }
-        return QStringList();
-    }
-
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        if (triggerEvent == CardResponded && player->askForSkillInvoke(objectName())) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        if (triggerEvent == CardResponded)
-            player->drawCards(1);
-        else {
-            CardUseStruct use = data.value<CardUseStruct>();
-            foreach (ServerPlayer *p, use.to) {
-                if (p->isKongcheng()) continue;
-                if (!player->askForSkillInvoke(objectName(), QVariant::fromValue(p))) continue;
-                int card_id = room->askForCardChosen(player, p, "h", objectName());
-                player->obtainCard(Sanguosha->getCard(card_id), false);
-            }
-        }
-        return false;
-    }
-};
-
 LihunCard::LihunCard() {
     mute = true;
 }
@@ -1287,9 +1241,6 @@ public:
 };
 
 BGMPackage::BGMPackage(): Package("BGM") {
-    General *wind005 = new General(this, "wind005", "kaze", 3);
-    wind005->addSkill("ikhuahuan");
-    wind005->addSkill(new IkQizhou);
 
     General *bgm_diaochan = new General(this, "bgm_diaochan", "qun", 3, false); // *SP 002
     bgm_diaochan->addSkill(new Lihun);
