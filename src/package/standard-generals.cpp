@@ -67,63 +67,6 @@ public:
     }
 };
 
-class IkHuahuan: public OneCardViewAsSkill {
-public:
-    IkHuahuan(): OneCardViewAsSkill("ikhuahuan") {
-        response_or_use = true;
-    }
-
-    virtual bool viewFilter(const Card *to_select) const{
-        const Card *card = to_select;
-
-        switch (Sanguosha->currentRoomState()->getCurrentCardUseReason()) {
-        case CardUseStruct::CARD_USE_REASON_PLAY: {
-                return card->isKindOf("Jink");
-            }
-        case CardUseStruct::CARD_USE_REASON_RESPONSE:
-        case CardUseStruct::CARD_USE_REASON_RESPONSE_USE: {
-                QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
-                if (pattern == "slash")
-                    return card->isKindOf("Jink");
-                else if (pattern == "jink")
-                    return card->isKindOf("Slash");
-            }
-        default:
-            return false;
-        }
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return Slash::IsAvailable(player);
-    }
-
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
-        return pattern == "jink" || pattern == "slash";
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const{
-        if (originalCard->isKindOf("Slash")) {
-            Jink *jink = new Jink(originalCard->getSuit(), originalCard->getNumber());
-            jink->addSubcard(originalCard);
-            jink->setSkillName(objectName());
-            return jink;
-        } else if (originalCard->isKindOf("Jink")) {
-            Slash *slash = new Slash(originalCard->getSuit(), originalCard->getNumber());
-            slash->addSubcard(originalCard);
-            slash->setSkillName(objectName());
-            return slash;
-        } else
-            return NULL;
-    }
-
-    virtual int getEffectIndex(const ServerPlayer *player, const Card *) const{
-        int index = qrand() % 2 + 1;
-        if (Player::isNostalGeneral(player, "zhaoyun"))
-            index += 2;
-        return index;
-    }
-};
-
 class Yajiao: public TriggerSkill {
 public:
     Yajiao(): TriggerSkill("yajiao") {
@@ -578,7 +521,7 @@ void StandardPackage::addGenerals() {
 
     // Shu
     General *zhaoyun = new General(this, "zhaoyun", "shu"); // SHU 005
-    zhaoyun->addSkill(new IkHuahuan);
+    zhaoyun->addSkill("ikhuahuan");
     zhaoyun->addSkill(new Yajiao);
 
     General *huangyueying = new General(this, "huangyueying", "shu", 3, false); // SHU 007

@@ -47,7 +47,7 @@ config = {
 		"TouhouKami",
 		"IkaiTsuchi",
 		"IkaiKi",
-		--"IkaiSui",
+		"IkaiSui",
 		--"IkaiKin",
 		--"IkaiHi",
 		"Standard",
