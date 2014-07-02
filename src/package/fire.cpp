@@ -151,71 +151,9 @@ public:
     }
 };
 
-IkJianmieCard::IkJianmieCard() {
-}
-
-bool IkJianmieCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
-}
-
-void IkJianmieCard::use(Room *room, ServerPlayer *taishici, QList<ServerPlayer *> &targets) const{
-    bool success = taishici->pindian(targets.first(), "ikjianmie", NULL);
-    if (success)
-        room->setPlayerFlag(taishici, "IkJianmieSuccess");
-    else
-        room->setPlayerCardLimitation(taishici, "use", "Slash", true);
-}
-
-class IkJianmie: public ZeroCardViewAsSkill {
-public:
-    IkJianmie(): ZeroCardViewAsSkill("ikjianmie") {
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("IkJianmieCard") && !player->isKongcheng();
-    }
-
-    virtual const Card *viewAs() const{
-        return new IkJianmieCard;
-    }
-};
-
-class IkJianmieTargetMod: public TargetModSkill {
-public:
-    IkJianmieTargetMod(): TargetModSkill("#ikjianmie-target") {
-    }
-
-    virtual int getResidueNum(const Player *from, const Card *) const{
-        if (from->hasFlag("IkJianmieSuccess"))
-            return 1;
-        else
-            return 0;
-    }
-
-    virtual int getDistanceLimit(const Player *from, const Card *) const{
-        if (from->hasFlag("IkJianmieSuccess"))
-            return 1000;
-        else
-            return 0;
-    }
-
-    virtual int getExtraTargetNum(const Player *from, const Card *) const{
-        if (from->hasFlag("IkJianmieSuccess"))
-            return 1;
-        else
-            return 0;
-    }
-};
-
 FirePackage::FirePackage()
     : Package("fire")
 {
-
-    General *snow012 = new General(this, "snow012", "yuki");
-    snow012->addSkill(new IkJianmie);
-    snow012->addSkill(new IkJianmieTargetMod);
-    related_skills.insertMulti("ikjianmie", "#ikjianmie-target");
-
     General *luna004 = new General(this, "luna004", "tsuki");
     luna004->addSkill(new IkXinghuang);
 
@@ -226,7 +164,6 @@ FirePackage::FirePackage()
     luna008->addSkill("thjibu");
     luna008->addSkill(new IkMengjin);
 
-    addMetaObject<IkJianmieCard>();
 }
 
 ADD_PACKAGE(Fire)
