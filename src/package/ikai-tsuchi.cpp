@@ -2410,6 +2410,202 @@ public:
     }
 };
 
+class IkZhuji: public DistanceSkill {
+public:
+    IkZhuji(): DistanceSkill("ikzhuji") {
+    }
+
+    virtual int getCorrect(const Player *from, const Player *to) const{
+        int correct = 0;
+        if (from->hasSkill(objectName()) && from->getHp() > 2)
+            correct--;
+        if (to->hasSkill(objectName()) && to->getHp() <= 2)
+            correct++;
+
+        return correct;
+    }
+};
+
+class IkZhujiEffect: public TriggerSkill {
+public:
+    IkZhujiEffect(): TriggerSkill("#ikzhuji-effect") {
+        events << HpChanged;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        int hp = player->getHp();
+        int index = 0;
+        int reduce = 0;
+        if (data.canConvert<RecoverStruct>()) {
+            int rec = data.value<RecoverStruct>().recover;
+            if (hp > 2 && hp - rec < 2)
+                index = 1;
+        } else {
+            if (data.canConvert<DamageStruct>()) {
+                DamageStruct damage = data.value<DamageStruct>();
+                reduce = damage.damage;
+            } else if (!data.isNull()) {
+                reduce = data.toInt();
+            }
+            if (hp <= 2 && hp + reduce > 2)
+                index = 2;
+        }
+        if (player->getGeneralName() == "gongsunzan"
+            || (player->getGeneralName() != "st_gongsunzan" && player->getGeneral2Name() == "gongsunzan"))
+            index += 2;
+
+        if (index > 0)
+            room->broadcastSkillInvoke("ikzhuji", index);
+        return false;
+    }
+};
+
+class IkBenyin: public TriggerSkill {
+public:
+    IkBenyin(): TriggerSkill("ikbenyin") {
+        events << Damage;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.to->isAlive() && damage.card && damage.card->isKindOf("Slash") && damage.card->isBlack()
+            && (player->canDiscard(damage.to, "e") || damage.to->getEquip(2) || damage.to->getEquip(3)))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(damage.to))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        QList<int> disabled_ids;
+        for (int i = 0; i < 5; i++) {
+            if (i == 2 || i == 3) continue;
+            const Card *card = damage.to->getEquip(i);
+            int id = -1;
+            if (card)
+                id = card->getEffectiveId();
+            if (id != -1 && !player->canDiscard(damage.to, id))
+                disabled_ids << id;
+        }
+        int card_id = room->askForCardChosen(player, damage.to, "e", objectName(), false, Card::MethodNone, disabled_ids);
+        if (card_id == damage.to->getEquip(2)->getEffectiveId() || card_id == damage.to->getEquip(3)->getEffectiveId())
+            room->obtainCard(player, card_id);
+        else
+            room->throwCard(card_id, damage.to, player);
+        return false;
+    }
+};
+
+class IkGuijiao: public TriggerSkill {
+public:
+    IkGuijiao(): TriggerSkill("ikguijiao") {
+        events << EventPhaseStart;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player->getPhase() == Player::Start) {
+            if (player->getMark("@ejiao") > 0) {
+                foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
+                    skill_list.insert(owner, QStringList(objectName()));
+            } else {
+                bool can_invoke = true;
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    if (p->getMark("@ejiao") > 0) {
+                        can_invoke = false;
+                        break;
+                    }
+                if (can_invoke && TriggerSkill::triggerable(player))
+                    skill_list.insert(player, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        if (player->getMark("@ejiao") > 0) {
+            if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+                room->broadcastSkillInvoke(objectName());
+                return true;
+            }
+        } else {
+            ServerPlayer *target = room->askForPlayerChosen(ask_who, room->getOtherPlayers(ask_who), objectName(), "@ikguijiao", true, true);
+            if (target) {
+                ask_who->tag["ThGuijiaoTarget"] = QVariant::fromValue(target);
+                room->broadcastSkillInvoke(objectName());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        if (player->getMark("@ejiao") > 0) {
+            ask_who->drawCards(1, objectName());
+            room->setPlayerFlag(player, "IkGuijiaoDecMaxCards");
+        } else {
+            ServerPlayer *target = ask_who->tag["ThGuijiaoTarget"].value<ServerPlayer *>();
+            ask_who->tag.remove("ThGuijiaoTarget");
+            if (target)
+                target->gainMark("@ejiao");
+        }
+        return false;
+    }
+};
+
+class IkGuijiaoMaxCards: public MaxCardsSkill {
+public:
+    IkGuijiaoMaxCards(): MaxCardsSkill("#ikguijiao-maxcard") {
+    }
+
+    virtual int getExtra(const Player *target) const{
+        if (target->hasFlag("IkGuijiaoDecMaxCards"))
+            return -1;
+        else
+            return 0;
+    }
+};
+
+class IkJinlian: public ProhibitSkill {
+public:
+    IkJinlian(): ProhibitSkill("ikjinlian") {
+    }
+
+    virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &) const{
+        if (card->isKindOf("Slash")) {
+            // get rangefix
+            int rangefix = 0;
+            if (card->isVirtualCard()) {
+                QList<int> subcards = card->getSubcards();
+                if (from->getWeapon() && subcards.contains(from->getWeapon()->getId())) {
+                    const Weapon *weapon = qobject_cast<const Weapon *>(from->getWeapon()->getRealCard());
+                    rangefix += weapon->getRange() - from->getAttackRange(false);
+                }
+
+                if (from->getOffensiveHorse() && subcards.contains(from->getOffensiveHorse()->getId()))
+                    rangefix += 1;
+            }
+            // find yuanshu
+            foreach (const Player *p, from->getAliveSiblings()) {
+                if (p->hasSkill(objectName()) && p != to && p->getHandcardNum() > p->getHp()
+                    && from->inMyAttackRange(p, rangefix)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+};
+
 IkaiTsuchiPackage::IkaiTsuchiPackage()
     :Package("ikai-tsuchi")
 {
@@ -2533,6 +2729,18 @@ IkaiTsuchiPackage::IkaiTsuchiPackage()
     General *luna006 = new General(this, "luna006", "tsuki", 3);
     luna006->addSkill(new IkHuichun);
     luna006->addSkill(new IkQingnang);
+
+    General *luna018 = new General(this, "luna018", "tsuki");
+    luna018->addSkill(new IkZhuji);
+    luna018->addSkill(new IkZhujiEffect);
+    related_skills.insertMulti("ikzhuji", "#ikzhuji-effect");
+    luna018->addSkill(new IkBenyin);
+
+    General *luna034 = new General(this, "luna034", "tsuki");
+    luna034->addSkill(new IkGuijiao);
+    luna034->addSkill(new IkGuijiaoMaxCards);
+    related_skills.insertMulti("ikguijiao", "#ikguijiao-maxcard");
+    luna034->addSkill(new IkJinlian);
 
     addMetaObject<IkShenaiCard>();
     addMetaObject<IkXinqiCard>();
