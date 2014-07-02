@@ -350,106 +350,6 @@ public:
     }
 };
 
-class Kurou: public OneCardViewAsSkill {
-public:
-    Kurou(): OneCardViewAsSkill("kurou") {
-        filter_pattern = ".!";
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("KurouCard");
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const{
-        KurouCard *card = new KurouCard;
-        card->addSubcard(originalCard);
-        card->setSkillName(objectName());
-        return card;
-    }
-};
-
-class Zhaxiang: public TriggerSkill {
-public:
-    Zhaxiang(): TriggerSkill("zhaxiang") {
-        events << HpLost << EventPhaseChanging;
-        frequency = Compulsory;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == HpLost && TriggerSkill::triggerable(player)) {
-            int lose = data.toInt();
-
-            room->notifySkillInvoked(player, objectName());
-            room->broadcastSkillInvoke(objectName());
-            LogMessage log;
-            log.type = "#TriggerSkill";
-            log.from = player;
-            log.arg = objectName();
-            room->sendLog(log);
-
-            for (int i = 0; i < lose; i++) {
-                player->drawCards(3, objectName());
-                room->addPlayerMark(player, objectName());
-            }
-        } else if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive)
-                room->setPlayerMark(player, objectName(), 0);
-        }
-        return false;
-    }
-};
-
-class ZhaxiangRedSlash: public TriggerSkill {
-public:
-    ZhaxiangRedSlash(): TriggerSkill("#zhaxiang") {
-        events << TargetSpecified;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target && target->isAlive() && target->getMark("zhaxiang") > 0;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (!use.card->isKindOf("Slash") || !use.card->isRed())
-            return false;
-        QVariantList jink_list = player->tag["Jink_" + use.card->toString()].toList();
-        int index = 0;
-        foreach (ServerPlayer *p, use.to) {
-            LogMessage log;
-            log.type = "#NoJink";
-            log.from = p;
-            room->sendLog(log);
-            jink_list.replace(index, QVariant(0));
-            index++;
-        }
-        player->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
-        return false;
-    }
-};
-
-class ZhaxiangTargetMod: public TargetModSkill {
-public:
-    ZhaxiangTargetMod(): TargetModSkill("#zhaxiang-target") {
-    }
-
-    virtual int getResidueNum(const Player *from, const Card *) const{
-        return from->getMark("zhaxiang");
-    }
-
-    virtual int getDistanceLimit(const Player *from, const Card *card) const{
-        if (card->isRed() && from->getMark("zhaxiang") > 0)
-            return 1000;
-        else
-            return 0;
-    }
-};
-
 class Qianxun: public TriggerSkill {
 public:
     Qianxun(): TriggerSkill("qianxun") {
@@ -840,14 +740,6 @@ void StandardPackage::addGenerals() {
 
     // Wu
 
-    General *huanggai = new General(this, "huanggai", "wu"); // WU 004
-    huanggai->addSkill(new Kurou);
-    huanggai->addSkill(new Zhaxiang);
-    huanggai->addSkill(new ZhaxiangRedSlash);
-    huanggai->addSkill(new ZhaxiangTargetMod);
-    related_skills.insertMulti("zhaxiang", "#zhaxiang");
-    related_skills.insertMulti("zhaxiang", "#zhaxiang-target");
-
     General *luxun = new General(this, "luxun", "wu", 3); // WU 007
     luxun->addSkill(new Qianxun);
     luxun->addSkill(new Lianying);
@@ -871,7 +763,6 @@ void StandardPackage::addGenerals() {
     luna018->addSkill(new IkBenyin);
 
     // for skill cards
-    addMetaObject<KurouCard>();
     addMetaObject<ChuliCard>();
     addMetaObject<LianyingCard>();
     addMetaObject<YijiCard>();
