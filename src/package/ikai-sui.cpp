@@ -881,6 +881,198 @@ public:
     }
 };
 
+IkMoqiCard::IkMoqiCard() {
+    target_fixed = true;
+}
+
+void IkMoqiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    room->removePlayerMark(source, "@moqi");
+    room->addPlayerMark(source, "@moqiused");
+    source->drawCards(2, "ikmoqi");
+}
+
+class IkMoqiViewAsSkill: public ZeroCardViewAsSkill {
+public:
+    IkMoqiViewAsSkill(): ZeroCardViewAsSkill("ikmoqi") {
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkMoqiCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->getMark("@moqi") >= 1;
+    }
+};
+
+class IkMoqi: public PhaseChangeSkill {
+public:
+    IkMoqi(): PhaseChangeSkill("ikmoqi") {
+        frequency = Limited;
+        limit_mark = "@moqi";
+        view_as_skill = new IkMoqiViewAsSkill;
+    }
+
+    virtual bool triggerable(const ServerPlayer *player) const{
+        return PhaseChangeSkill::triggerable(player)
+            && player->getMark("@moqi") >= 1
+            && player->getPhase() == Player::Start;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        room->removePlayerMark(player, "@moqi");
+        room->addPlayerMark(player, "@moqiused");
+        room->addPlayerMark(player, "ikmoqi");
+        player->drawCards(2, objectName());
+        
+        return false;
+    }
+};
+
+class IkMoqiFinish: public PhaseChangeSkill {
+public:
+    IkMoqiFinish(): PhaseChangeSkill("#ikmoqi") {
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *player) const{
+        return PhaseChangeSkill::triggerable(player)
+            && player->getMark("ikmoqi") >= 1
+            && player->getPhase() == Player::Finish;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        room->removePlayerMark(player, "ikmoqi");
+        player->drawCards(2, "ikmoqi");
+        
+        return false;
+    }
+};
+
+IkTianbeiCard::IkTianbeiCard() {
+}
+
+bool IkTianbeiCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const{
+    return targets.isEmpty();
+}
+
+void IkTianbeiCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    room->handleAcquireDetachSkills(effect.from, "-ikmoqi|-iktianbei");
+    if (effect.from->isWounded())
+        room->recover(effect.from, RecoverStruct(effect.from));
+    room->acquireSkill(effect.to, "ikanshen");
+    if (effect.to != effect.from)
+        effect.to->drawCards(2, "iktianbei");
+}
+
+class IkTianbei: public ZeroCardViewAsSkill {
+public:
+    IkTianbei(): ZeroCardViewAsSkill("iktianbei") {
+        frequency = Limited;
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkTianbeiCard;
+    }
+};
+
+class IkAnshen: public TriggerSkill {
+public:
+    IkAnshen(): TriggerSkill("ikanshen") {
+        events << BeforeCardsMove;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
+            && move.reason.m_reason == CardMoveReason::S_REASON_USE) {
+            const Card *anshen_card = move.reason.m_extraData.value<const Card *>();
+            if (!anshen_card || !anshen_card->isKindOf("Slash") || !anshen_card->hasFlag("ikanshen"))
+                return QStringList();
+            return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        ServerPlayer *anshen_user = room->getTag("ikanshen_user").value<ServerPlayer *>();
+        if (anshen_user) {
+            if (player->askForSkillInvoke(objectName(), QVariant::fromValue(anshen_user))) {
+                room->broadcastSkillInvoke(objectName());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        ServerPlayer *anshen_user = room->getTag("ikanshen_user").value<ServerPlayer *>();
+        room->removeTag("ikanshen_user");
+        if (anshen_user) {
+            const Card *anshen_card = move.reason.m_extraData.value<const Card *>();
+            anshen_user->obtainCard(anshen_card);
+            move.removeCardIds(move.card_ids);
+            data = QVariant::fromValue(move);
+        }
+        return false;
+    }
+};
+
+class IkAnshenRecord: public TriggerSkill {
+public:
+    IkAnshenRecord(): TriggerSkill("#ikanshen-record") {
+        events << PreCardUsed << CardResponded << EventPhaseChanging;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if ((triggerEvent == PreCardUsed || triggerEvent == CardResponded) && player->getPhase() == Player::Play) {
+            const Card *card = NULL;
+            if (triggerEvent == PreCardUsed)
+                card = data.value<CardUseStruct>().card;
+            else {
+                CardResponseStruct response = data.value<CardResponseStruct>();
+                if (response.m_isUse)
+                   card = response.m_card;
+            }
+            if (card && card->getHandlingMethod() == Card::MethodUse
+                && player->getPhase() == Player::Play && player->getMark("ikanshen") == 0) {
+                player->addMark("ikanshen");
+                if (card->isKindOf("Slash")) {
+                    QList<int> ids;
+                    if (!card->isVirtualCard())
+                        ids << card->getEffectiveId();
+                    else if (card->subcardsLength() > 0)
+                        ids = card->getSubcards();
+                    if (!ids.isEmpty()) {
+                        room->setCardFlag(card, "ikanshen");
+                        room->setTag("ikanshen_user", QVariant::fromValue(player));
+                    }
+                }
+            }
+        } else if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::Play)
+                player->setMark("ikanshen", 0);
+        }
+
+        return QStringList();
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -922,8 +1114,20 @@ IkaiSuiPackage::IkaiSuiPackage()
     wind043->addSkill(new IkXinhui);
     wind043->addSkill(new IkYongji);
 
+    General *mifuren = new General(this, "mifuren", "shu", 3, false); // SHU 021
+    mifuren->addSkill(new IkMoqi);
+    mifuren->addSkill(new IkMoqiFinish);
+    related_skills.insertMulti("ikmoqi", "#ikmoqi");
+    mifuren->addSkill(new IkTianbei);
+    mifuren->addRelateSkill("ikanshen");
+
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
+    addMetaObject<IkMoqiCard>();
+    addMetaObject<IkTianbeiCard>();
+
+    skills << new IkAnshen << new IkAnshenRecord;
+    related_skills.insertMulti("ikanshen", "#ikanshen-record");
 }
 
 ADD_PACKAGE(IkaiSui)
