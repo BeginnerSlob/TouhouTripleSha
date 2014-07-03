@@ -6,37 +6,6 @@
 #include "room.h"
 #include "standard-skillcards.h"
 
-class Xiaoguo: public TriggerSkill {
-public:
-    Xiaoguo(): TriggerSkill("xiaoguo") {
-        events << EventPhaseStart;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        if (player->getPhase() != Player::Finish)
-            return false;
-        ServerPlayer *yuejin = room->findPlayerBySkillName(objectName());
-        if (!yuejin || yuejin == player)
-            return false;
-        if (yuejin->canDiscard(yuejin, "h") && room->askForCard(yuejin, ".Basic", "@xiaoguo", QVariant(), objectName())) {
-            room->broadcastSkillInvoke(objectName(), 1);
-            if (!room->askForCard(player, ".Equip", "@xiaoguo-discard", QVariant())) {
-                room->broadcastSkillInvoke(objectName(), 2);
-                room->damage(DamageStruct("xiaoguo", yuejin, player));
-            } else {
-                room->broadcastSkillInvoke(objectName(), 3);
-                if (yuejin->isAlive())
-                    yuejin->drawCards(1, objectName());
-            }
-        }
-        return false;
-    }
-};
-
 FenxunCard::FenxunCard() {
 }
 
@@ -616,8 +585,6 @@ public:
 HegemonyPackage::HegemonyPackage()
     : Package("hegemony")
 {
-    General *yuejin = new General(this, "yuejin", "wei"); // WEI 016
-    yuejin->addSkill(new Xiaoguo);
 
     General *heg_luxun = new General(this, "heg_luxun", "wu", 3); // WU 007 G
     heg_luxun->addSkill("ikyuanhe");

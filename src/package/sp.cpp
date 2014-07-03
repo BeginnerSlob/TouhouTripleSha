@@ -1529,7 +1529,7 @@ SPPackage::SPPackage()
     sp_shenlvbu->addSkill("iktianwubaka");
 
     General *sp_yuejin = new General(this, "sp_yuejin", "wei", 4, true, true); // SP 024
-    sp_yuejin->addSkill("xiaoguo");
+    sp_yuejin->addSkill("ikxiaorui");
 
     General *zhangbao = new General(this, "zhangbao", "qun", 3); // SP 025
     zhangbao->addSkill(new Zhoufu);

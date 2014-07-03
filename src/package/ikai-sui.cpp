@@ -1077,6 +1077,7 @@ class IkJingmu: public TriggerSkill {
 public:
     IkJingmu(): TriggerSkill("ikjingmu") {
         events << BeforeCardsMove;
+        frequency = Frequent;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
@@ -1184,6 +1185,39 @@ public:
     }
 };
 
+class IkXiaorui: public TriggerSkill {
+public:
+    IkXiaorui(): TriggerSkill("ikxiaorui") {
+        events << EventPhaseStart;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const {
+        QMap<ServerPlayer *, QStringList> skill;
+        if (player->getPhase() != Player::Finish)
+            return skill;
+        foreach (ServerPlayer *yuejin, room->findPlayersBySkillName(objectName())) {
+            if (yuejin == player) continue;
+            if (yuejin->canDiscard(yuejin, "h"))
+                skill.insert(yuejin, QStringList(objectName()));
+        }
+        return skill;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *yuejin) const{
+        if (room->askForCard(yuejin, ".Basic", "@ikxiaorui", QVariant(), objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *yuejin) const{
+        if (!room->askForCard(player, "^BasicCard", "@ikxiaorui-discard"))
+            room->damage(DamageStruct(objectName(), yuejin, player));
+        return false;
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -1235,6 +1269,9 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *wind046 = new General(this, "wind046", "kaze", 3);
     wind046->addSkill(new IkJingmu);
     wind046->addSkill(new IkDuanmeng);
+
+    General *bloom023 = new General(this, "bloom023", "hana");
+    bloom023->addSkill(new IkXiaorui);
 
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
