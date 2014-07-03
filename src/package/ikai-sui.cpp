@@ -4,6 +4,7 @@
 #include "skill.h"
 #include "engine.h"
 #include "standard.h"
+#include "client.h"
 
 class IkHuahuan: public OneCardViewAsSkill {
 public:
@@ -352,6 +353,222 @@ public:
     }
 };
 
+class IkXiewang: public TriggerSkill {
+public:
+    IkXiewang(): TriggerSkill("ikxiewang") {
+        events << GameStart << HpChanged << MaxHpChanged << EventAcquireSkill << EventLoseSkill;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventLoseSkill) {
+            if (data.toString() == objectName()) {
+                QStringList xiewang_skills = player->tag["IkXiewangSkills"].toStringList();
+                QStringList detachList;
+                foreach (QString skill_name, xiewang_skills)
+                    detachList.append("-" + skill_name);
+                room->handleAcquireDetachSkills(player, detachList);
+                player->tag["IkXiewangSkills"] = QVariant();
+            }
+            return QStringList();
+        } else if (triggerEvent == EventAcquireSkill) {
+            if (data.toString() != objectName()) return QStringList();
+        }
+
+        if (!player->isAlive() || !player->hasSkill(objectName(), true)) return QStringList();
+
+        acquired_skills.clear();
+        detached_skills.clear();
+        IkXiewangChange(room, player, 1, "thshenyou");
+        IkXiewangChange(room, player, 2, "thkuangqi");
+        IkXiewangChange(room, player, 3, "iktiaoxin");
+        if (!acquired_skills.isEmpty() || !detached_skills.isEmpty())
+            room->handleAcquireDetachSkills(player, acquired_skills + detached_skills);
+        return QStringList(objectName());
+    }
+
+private:
+    void IkXiewangChange(Room *room, ServerPlayer *player, int hp, const QString &skill_name) const{
+        QStringList xiewang_skills = player->tag["IkXiewangSkills"].toStringList();
+        if (player->getHp() <= hp) {
+            if (!xiewang_skills.contains(skill_name)) {
+                room->notifySkillInvoked(player, "ikxiewang");
+                if (player->getHp() == hp)
+                    room->broadcastSkillInvoke("ikxiewang", 4 - hp);
+                acquired_skills.append(skill_name);
+                xiewang_skills << skill_name;
+            }
+        } else {
+            if (xiewang_skills.contains(skill_name)) {
+                detached_skills.append("-" + skill_name);
+                xiewang_skills.removeOne(skill_name);
+            }
+        }
+        player->tag["IkXiewangSkills"] = QVariant::fromValue(xiewang_skills);
+    }
+
+    mutable QStringList acquired_skills, detached_skills;
+};
+
+class IkShengzunViewAsSkill: public ViewAsSkill {
+public:
+    IkShengzunViewAsSkill(): ViewAsSkill("ikshengzun") {
+    }
+
+    static QList<const ViewAsSkill *> getLordViewAsSkills(const Player *player) {
+        const Player *lord = NULL;
+        foreach (const Player *p, player->getAliveSiblings()) {
+            if (p->isLord()) {
+                lord = p;
+                break;
+            }
+        }
+        if (!lord) return QList<const ViewAsSkill *>();
+
+        QList<const ViewAsSkill *> vs_skills;
+        foreach (const Skill *skill, lord->getVisibleSkillList()) {
+            if (skill->isLordSkill() && player->hasLordSkill(skill->objectName())) {
+                const ViewAsSkill *vs = ViewAsSkill::parseViewAsSkill(skill);
+                if (vs)
+                    vs_skills << vs;
+            }
+        }
+        return vs_skills;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        QList<const ViewAsSkill *> vs_skills = getLordViewAsSkills(player);
+        foreach (const ViewAsSkill *skill, vs_skills) {
+            if (skill->isEnabledAtPlay(player))
+                return true;
+        }
+        return false;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+        QList<const ViewAsSkill *> vs_skills = getLordViewAsSkills(player);
+        foreach (const ViewAsSkill *skill, vs_skills) {
+            if (skill->isEnabledAtResponse(player, pattern))
+                return true;
+        }
+        return false;
+    }
+
+    virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
+        QList<const ViewAsSkill *> vs_skills = getLordViewAsSkills(player);
+        foreach (const ViewAsSkill *skill, vs_skills) {
+            if (skill->isEnabledAtNullification(player))
+                return true;
+        }
+        return false;
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        QString skill_name = Self->tag["ikshengzun"].toString();
+        if (skill_name.isEmpty()) return false;
+        const ViewAsSkill *vs_skill = Sanguosha->getViewAsSkill(skill_name);
+        if (vs_skill) return vs_skill->viewFilter(selected, to_select);
+        return false;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        QString skill_name = Self->tag["ikshengzun"].toString();
+        if (skill_name.isEmpty()) return NULL;
+        const ViewAsSkill *vs_skill = Sanguosha->getViewAsSkill(skill_name);
+        if (vs_skill) return vs_skill->viewAs(cards);
+        return NULL;
+    }
+};
+
+#include <QHBoxLayout>
+#include <QCommandLinkButton>
+
+IkShengzunDialog *IkShengzunDialog::getInstance() {
+    static IkShengzunDialog *instance;
+    if (instance == NULL)
+        instance = new IkShengzunDialog();
+
+    return instance;
+}
+
+IkShengzunDialog::IkShengzunDialog() {
+    setObjectName("ikshengzun");
+    setWindowTitle(Sanguosha->translate("ikshengzun"));
+    group = new QButtonGroup(this);
+
+    button_layout = new QVBoxLayout;
+    setLayout(button_layout);
+    connect(group, SIGNAL(buttonClicked(QAbstractButton *)), this, SLOT(selectSkill(QAbstractButton *)));
+}
+
+void IkShengzunDialog::popup() {
+    Self->tag.remove(objectName());
+    foreach (QAbstractButton *button, group->buttons()) {
+        button_layout->removeWidget(button);
+        group->removeButton(button);
+        delete button;
+    }
+
+    QList<const ViewAsSkill *> vs_skills = IkShengzunViewAsSkill::getLordViewAsSkills(Self);
+    int count = 0;
+    QString name;
+    foreach (const ViewAsSkill *skill, vs_skills) {
+        QAbstractButton *button = createSkillButton(skill->objectName());
+        button->setEnabled(skill->isAvailable(Self, Sanguosha->currentRoomState()->getCurrentCardUseReason(),
+                                              Sanguosha->currentRoomState()->getCurrentCardUsePattern()));
+        if (button->isEnabled()) {
+            count++;
+            name = skill->objectName();
+        }
+        button_layout->addWidget(button);
+    }
+
+    if (count == 0) {
+        emit onButtonClick();
+        return;
+    } else if (count == 1) {
+        Self->tag[objectName()] = name;
+        emit onButtonClick();
+        return;
+    }
+
+    exec();
+}
+
+void IkShengzunDialog::selectSkill(QAbstractButton *button) {
+    Self->tag[objectName()] = button->objectName();
+    emit onButtonClick();
+    accept();
+}
+
+QAbstractButton *IkShengzunDialog::createSkillButton(const QString &skill_name) {
+    const Skill *skill = Sanguosha->getSkill(skill_name);
+    if (!skill) return NULL;
+
+    QCommandLinkButton *button = new QCommandLinkButton(Sanguosha->translate(skill_name));
+    button->setObjectName(skill_name);
+    button->setToolTip(skill->getDescription());
+
+    group->addButton(button);
+    return button;
+}
+
+class IkShengzun: public GameStartSkill {
+public:
+    IkShengzun(): GameStartSkill("ikshengzun") {
+        frequency = Compulsory;
+        view_as_skill = new IkShengzunViewAsSkill;
+    }
+
+    virtual void onGameStart(ServerPlayer *) const{
+        return;
+    }
+
+    virtual QDialog *getDialog() const{
+        return IkShengzunDialog::getInstance();
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -375,6 +592,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     wind023->addSkill(new IkJiuming);
     wind023->addSkill(new IkJiumingCount);
     related_skills.insertMulti("ikjiuming", "#ikjiuming-count");
+
+    General *wind024 = new General(this, "wind024", "kaze");
+    wind024->addSkill(new IkXiewang);
+    wind024->addSkill(new IkShengzun);
 
     addMetaObject<IkXielunCard>();
 }

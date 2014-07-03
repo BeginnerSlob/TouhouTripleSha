@@ -732,7 +732,7 @@ TestPackage::TestPackage()
     super_yuanshu->addSkill(new SuperYongsi);
     super_yuanshu->addSkill(new MarkAssignSkill("@yongsi_test", 4));
     related_skills.insertMulti("super_yongsi", "#@yongsi_test-4");
-    super_yuanshu->addSkill("weidi");
+    super_yuanshu->addSkill("ikshengzun");
 
     General *super_caoren = new General(this, "super_caoren", "wei", 4, true, true);
     super_caoren->addSkill(new SuperJushou);
