@@ -1114,12 +1114,12 @@ IkaiSuiPackage::IkaiSuiPackage()
     wind043->addSkill(new IkXinhui);
     wind043->addSkill(new IkYongji);
 
-    General *mifuren = new General(this, "mifuren", "shu", 3, false); // SHU 021
-    mifuren->addSkill(new IkMoqi);
-    mifuren->addSkill(new IkMoqiFinish);
+    General *wind044 = new General(this, "wind044", "kaze", 3, false);
+    wind044->addSkill(new IkMoqi);
+    wind044->addSkill(new IkMoqiFinish);
     related_skills.insertMulti("ikmoqi", "#ikmoqi");
-    mifuren->addSkill(new IkTianbei);
-    mifuren->addRelateSkill("ikanshen");
+    wind044->addSkill(new IkTianbei);
+    wind044->addRelateSkill("ikanshen");
 
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
