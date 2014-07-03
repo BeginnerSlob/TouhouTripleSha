@@ -361,6 +361,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player == NULL) return QStringList();
         if (triggerEvent == EventLoseSkill) {
             if (data.toString() == objectName()) {
                 QStringList xiewang_skills = player->tag["IkXiewangSkills"].toStringList();
@@ -384,7 +385,7 @@ public:
         IkXiewangChange(room, player, 3, "iktiaoxin");
         if (!acquired_skills.isEmpty() || !detached_skills.isEmpty())
             room->handleAcquireDetachSkills(player, acquired_skills + detached_skills);
-        return QStringList(objectName());
+        return QStringList();
     }
 
 private:
@@ -553,19 +554,142 @@ QAbstractButton *IkShengzunDialog::createSkillButton(const QString &skill_name) 
     return button;
 }
 
-class IkShengzun: public GameStartSkill {
+class IkShengzun: public TriggerSkill {
 public:
-    IkShengzun(): GameStartSkill("ikshengzun") {
+    IkShengzun(): TriggerSkill("ikshengzun") {
         frequency = Compulsory;
         view_as_skill = new IkShengzunViewAsSkill;
     }
 
-    virtual void onGameStart(ServerPlayer *) const{
-        return;
-    }
-
     virtual QDialog *getDialog() const{
         return IkShengzunDialog::getInstance();
+    }
+};
+
+class IkYanyu: public TriggerSkill {
+public:
+    IkYanyu(): TriggerSkill("ikyanyu") {
+        events << EventPhaseStart << BeforeCardsMove << EventPhaseChanging;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (triggerEvent == EventPhaseStart) {
+            if (player->getPhase() == Player::Play) {
+                foreach (ServerPlayer *xiahou, room->findPlayersBySkillName(objectName())) {
+                    if (!xiahou->canDiscard(xiahou, "he")) continue;
+                    skill_list.insert(xiahou, QStringList(objectName()));
+                }
+            }
+        } else if (triggerEvent == BeforeCardsMove) {
+            ServerPlayer *current = room->getCurrent();
+            if (!current || current->getPhase() != Player::Play) return skill_list;
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.to_place == Player::DiscardPile) {
+                foreach (ServerPlayer *xiahou, room->findPlayersBySkillName(objectName())) {
+                    QList<int> ids, disabled;
+                    QList<int> all_ids = move.card_ids;
+                    foreach (int id, move.card_ids) {
+                        const Card *card = Sanguosha->getCard(id);
+                        if (card->isKindOf("TrickCard") || card->isKindOf("Peach")) continue;
+                        if (xiahou->getMark("IkYanyuDiscard" + QString::number(card->getTypeId())) > 0) {
+                            skill_list.insert(xiahou, QStringList(objectName()));
+                            break;
+                        }
+                    }
+                }
+            }
+        } else if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    p->setMark("IkYanyuDiscard1", 0);
+                    p->setMark("IkYanyuDiscard2", 0);
+                    p->setMark("IkYanyuDiscard3", 0);
+                }
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *xiahou) const{
+        if (triggerEvent == EventPhaseStart) {
+            const Card *card = room->askForCard(xiahou, "..", "@ikyanyu-discard", QVariant(), objectName());
+            if (card) {
+                room->broadcastSkillInvoke(objectName());
+                xiahou->addMark("IkYanyuDiscard" + QString::number(card->getTypeId()), 3);
+            }
+        } else if (triggerEvent == BeforeCardsMove)
+            return true;
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *player) const{
+        ServerPlayer *current = room->getCurrent();
+        if (!current || current->getPhase() != Player::Play) return false;
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+
+        QList<int> ids, disabled;
+        QList<int> all_ids = move.card_ids;
+        foreach (int id, move.card_ids) {
+            const Card *card = Sanguosha->getCard(id);
+            if (card->isKindOf("TrickCard") || card->isKindOf("Peach")) {
+                disabled << id;
+                continue;
+            }
+            if (player->getMark("IkYanyuDiscard" + QString::number(card->getTypeId())) > 0)
+                ids << id;
+            else
+                disabled << id;
+        }
+        if (ids.isEmpty()) return false;
+        while (!ids.isEmpty()) {
+            room->fillAG(all_ids, player, disabled);
+            bool only = (all_ids.length() == 1);
+            int card_id = -1;
+            if (only)
+                card_id = ids.first();
+            else
+                card_id = room->askForAG(player, ids, true, objectName());
+            room->clearAG(player);
+            if (card_id == -1) break;
+            const Card *card = Sanguosha->getCard(card_id);
+            ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(),
+                                                            QString("@ikyanyu-give:::%1:%2\\%3").arg(card->objectName())
+                                                                                              .arg(card->getSuitString() + "_char")
+                                                                                              .arg(card->getNumberString()),
+                                                            only, true);
+            if (target) {
+                player->removeMark("YanyuDiscard" + QString::number(card->getTypeId()));
+                Player::Place place = move.from_places.at(move.card_ids.indexOf(card_id));
+                QList<int> _card_id;
+                _card_id << card_id;
+                move.removeCardIds(_card_id);
+                data = QVariant::fromValue(move);
+                ids.removeOne(card_id);
+                disabled << card_id;
+                foreach (int id, ids) {
+                    const Card *card = Sanguosha->getCard(id);
+                    if (player->getMark("IkYanyuDiscard" + QString::number(card->getTypeId())) == 0) {
+                        ids.removeOne(id);
+                        disabled << id;
+                    }
+                }
+                if (move.from && move.from->objectName() == target->objectName() && place != Player::PlaceTable) {
+                    // just indicate which card she chose...
+                    LogMessage log;
+                    log.type = "$MoveCard";
+                    log.from = target;
+                    log.to << target;
+                    log.card_str = QString::number(card_id);
+                    room->sendLog(log);
+                }
+                target->obtainCard(card);
+            } else
+                break;
+        }
+
+        return false;
     }
 };
 
@@ -596,6 +720,9 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *wind024 = new General(this, "wind024", "kaze");
     wind024->addSkill(new IkXiewang);
     wind024->addSkill(new IkShengzun);
+
+    General *wind040 = new General(this, "wind040", "kaze", 3, false);
+    wind040->addSkill(new IkYanyu);
 
     addMetaObject<IkXielunCard>();
 }
