@@ -93,14 +93,13 @@ return {
 	["bloom028"] = "金丝雀",--花 - 空 - 3血
 	["ikhuyin"] = "弧音",
 	[":ikhuyin"] = "每当你受到一次伤害后，选择一种牌的类别，令伤害来源不能使用、打出或弃置该类别的手牌，直到回合结束。",
-	["@ikhuyin_basic"] = "弧音(基本牌)",
-	["@ikhuyin_equip"] = "弧音(装备牌)",
-	["@ikhuyin_trick"] = "弧音(锦囊牌)",
-	["#IkHuyin"] = "%from 对 %to 发动“<font color=\"yellow\">弧音</font>”，限制了 %arg",
-	["#IkHuyinClear"] = "%from 的“<font color=\"yellow\">弧音</font>”效果消失",
+	["@huyin_basic"] = "弧音（基本牌）",
+	["@huyin_equip"] = "弧音（装备牌）",
+	["@huyin_trick"] = "弧音（锦囊牌）",
+	["#IkHuyin"] = "由于“<font color=\"yellow\"><b>弧音</b></font>”效果，%from 本回合不能使用、打出或弃置 %arg",
+	["#IkHuyinClear"] = "%from 的“<font color=\"yellow\"><b>弧音</b></font>”效果消失",
 	["ikhongce"] = "鸿策",
 	[":ikhongce"] = "当锦囊牌指定你为目标后，你可以摸一张牌，若如此做，且此锦囊牌指定了包括你在内的多名角色为目标，此锦囊牌对你无效。",
-	["#IkHongceAvoid"] = "“%arg2”效果被触发，【%arg】 对 %from 无效",
 
 	["#bloom033"] = "日曜的墓守者",
 	["bloom033"] = "艾•亚丝汀",--花 - 空 - 4血

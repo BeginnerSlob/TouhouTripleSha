@@ -1303,6 +1303,128 @@ public:
     }
 };
 
+class IkHuyin: public TriggerSkill {
+public:
+    IkHuyin(): TriggerSkill("ikhuyin") {
+        events << Damaged;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *yangxiu, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(yangxiu)) return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        ServerPlayer *current = room->getCurrent();
+        if (!current || current->getPhase() == Player::NotActive || current->isDead() || !damage.from)
+            return QStringList();
+        return QStringList(objectName());
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *yangxiu, QVariant &data, ServerPlayer *) const{
+        if (yangxiu->askForSkillInvoke(objectName(), data)) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *yangxiu, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        QString choice = room->askForChoice(yangxiu, objectName(), "BasicCard+EquipCard+TrickCard");
+
+        LogMessage log;
+        log.type = "#IkHuyin";
+        log.from = damage.from;
+        log.arg = choice;
+        room->sendLog(log);
+
+        QStringList huyin_list = damage.from->tag[objectName()].toStringList();
+        if (huyin_list.contains(choice)) return false;
+        huyin_list.append(choice);
+        damage.from->tag[objectName()] = QVariant::fromValue(huyin_list);
+        QString _type = choice + "|.|.|hand"; // Handcards only
+        room->setPlayerCardLimitation(damage.from, "use,response,discard", _type, true);
+
+        QString type_name = choice.replace("Card", "").toLower();
+        if (damage.from->getMark("@huyin_" + type_name) == 0)
+            room->addPlayerMark(damage.from, "@huyin_" + type_name);
+
+        return false;
+    }
+};
+
+class IkHuyinClear: public TriggerSkill {
+public:
+    IkHuyinClear(): TriggerSkill("#ikhuyin-clear") {
+        events << EventPhaseChanging << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to != Player::NotActive)
+                return QStringList();
+        } else if (triggerEvent == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != target || target != room->getCurrent())
+                return QStringList();
+        }
+        QList<ServerPlayer *> players = room->getAllPlayers();
+        foreach (ServerPlayer *player, players) {
+            QStringList huyin_list = player->tag["ikhuyin"].toStringList();
+            if (!huyin_list.isEmpty()) {
+                LogMessage log;
+                log.type = "#IkHuyinClear";
+                log.from = player;
+                room->sendLog(log);
+
+                foreach (QString huyin_type, huyin_list) {
+                    room->removePlayerCardLimitation(player, "use,response,discard", huyin_type + "|.|.|hand$1");
+                    QString type_name = huyin_type.replace("Card", "").toLower();
+                    room->setPlayerMark(player, "@huyin_" + type_name, 0);
+                }
+                player->tag.remove("ikhuyin");
+            }
+        }
+
+        return QStringList();
+    }
+};
+
+class IkHongce: public TriggerSkill {
+public:
+    IkHongce(): TriggerSkill("ikhongce") {
+        events << TargetSpecified;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill;
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("TrickCard")) {
+            foreach (ServerPlayer *yangxiu, room->findPlayersBySkillName(objectName()))
+                if (use.to.contains(yangxiu))
+                    skill.insert(yangxiu, QStringList(objectName()));
+        }
+        return skill;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *yangxiu) const{
+        if (yangxiu->askForSkillInvoke(objectName(), data)) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *player) const{
+        player->drawCards(1, objectName());
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.to.length() > 1) {
+            use.nullified_list << player->objectName();
+            data = QVariant::fromValue(use);
+        }
+        return false;
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -1360,6 +1482,12 @@ IkaiSuiPackage::IkaiSuiPackage()
 
     General *bloom024 = new General(this, "bloom024", "hana");
     bloom024->addSkill(new IkXinban);
+
+    General *bloom028 = new General(this, "bloom028", "hana", 3);
+    bloom028->addSkill(new IkHuyin);
+    bloom028->addSkill(new IkHuyinClear);
+    bloom028->addSkill(new IkHongce);
+    related_skills.insertMulti("ikhuyin", "#ikhuyin-clear");
 
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
