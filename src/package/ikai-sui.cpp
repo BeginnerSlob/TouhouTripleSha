@@ -693,6 +693,123 @@ public:
     }
 };
 
+class IkWuyue: public TriggerSkill {
+public:
+    IkWuyue(): TriggerSkill("ikwuyue") {
+        events << CardsMoveOneTime;
+        frequency = Frequent;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (player->getPhase() == Player::NotActive && move.from && move.from->isAlive()
+            && move.from->objectName() != player->objectName()
+            && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip))
+            && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
+            foreach (int id, move.card_ids) {
+                if (Sanguosha->getCard(id)->getTypeId() == Card::TypeBasic) {
+                    if (room->askForSkillInvoke(player, objectName(), data)) {
+                        room->broadcastSkillInvoke(objectName());
+                        player->drawCards(1, "ikwuyue");
+                    }
+                    break;
+                }
+            }
+        }
+        return false;
+    }
+};
+
+IkJuechongCard::IkJuechongCard() {
+    target_fixed = true;
+}
+
+void IkJuechongCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    JudgeStruct judge;
+    judge.pattern = ".";
+    judge.who = source;
+    judge.reason = "ikjuechong";
+    judge.play_animation = false;
+    room->judge(judge);
+
+    bool ok = false;
+    int num = judge.pattern.toInt(&ok);
+    if (ok)
+        room->setPlayerMark(source, "ikjuechong", num);
+}
+
+class IkJuechongViewAsSkill: public ZeroCardViewAsSkill {
+public:
+    IkJuechongViewAsSkill(): ZeroCardViewAsSkill("ikjuechong") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkJuechongCard");
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkJuechongCard;
+    }
+};
+
+class IkJuechong: public TriggerSkill {
+public:
+    IkJuechong(): TriggerSkill("ikjuechong") {
+        events << EventPhaseChanging << PreCardUsed << FinishJudge;
+        view_as_skill = new IkJuechongViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive)
+                room->setPlayerMark(player, "ikjuechong", 0);
+        } else if (triggerEvent == FinishJudge) {
+            JudgeStruct *judge = data.value<JudgeStruct *>();
+            if (judge->reason == objectName())
+                judge->pattern = QString::number(judge->card->getNumber());
+        } else if (triggerEvent == PreCardUsed) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash") && player->getMark("ikjuechong") > 0
+                && use.card->getNumber() > player->getMark("ikjuechong")) {
+                if (use.m_addHistory)
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        room->addPlayerHistory(player, use.card->getClassName(), -1);
+        use.m_addHistory = false;
+        data = QVariant::fromValue(use);
+        
+        return false;
+    }
+};
+
+class IkJuechongTargetMod: public TargetModSkill {
+public:
+    IkJuechongTargetMod(): TargetModSkill("#ikjuechong-target") {
+    }
+
+    virtual int getDistanceLimit(const Player *from, const Card *card) const{
+        if (card->getNumber() < from->getMark("ikjuechong"))
+            return 1000;
+        else
+            return 0;
+    }
+
+    virtual int getResidueNum(const Player *from, const Card *card) const{
+        if (from->getMark("ikjuechong") > 0
+            && (card->getNumber() > from->getMark("ikjuechong") || card->hasFlag("Global_SlashAvailabilityChecker")))
+            return 1000;
+        else
+            return 0;
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -724,7 +841,14 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *wind040 = new General(this, "wind040", "kaze", 3, false);
     wind040->addSkill(new IkYanyu);
 
+    General *wind041 = new General(this, "wind041", "kaze", 3, false);
+    wind041->addSkill(new IkWuyue);
+    wind041->addSkill(new IkJuechong);
+    wind041->addSkill(new IkJuechongTargetMod);
+    related_skills.insertMulti("ikjuechong", "#ikjuechong-target");
+
     addMetaObject<IkXielunCard>();
+    addMetaObject<IkJuechongCard>();
 }
 
 ADD_PACKAGE(IkaiSui)
