@@ -1215,9 +1215,11 @@ public:
         if (triggerEvent == TargetSpecified) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("Peach") && player->getKingdom() == "yuki") {
-                foreach (ServerPlayer *p, use.to)
+                foreach (ServerPlayer *p, use.to) {
+                    if (player == p) continue;
                     if (p->hasLordSkill("ikjiyuan"))
                         room->setCardFlag(use.card, "ikjiyuan");
+                }
             }
         } else if (triggerEvent == PreHpRecover) {
             RecoverStruct rec = data.value<RecoverStruct>();

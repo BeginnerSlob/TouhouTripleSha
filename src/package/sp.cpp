@@ -519,167 +519,6 @@ public:
     }
 };
 
-XuejiCard::XuejiCard() {
-}
-
-bool XuejiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if (targets.length() >= Self->getLostHp())
-        return false;
-
-    if (to_select == Self)
-        return false;
-
-    int range_fix = 0;
-    if (Self->getWeapon() && Self->getWeapon()->getEffectiveId() == getEffectiveId()) {
-        const Weapon *weapon = qobject_cast<const Weapon *>(Self->getWeapon()->getRealCard());
-        range_fix += weapon->getRange() - Self->getAttackRange(false);
-    } else if (Self->getOffensiveHorse() && Self->getOffensiveHorse()->getEffectiveId() == getEffectiveId())
-        range_fix += 1;
-
-    return Self->inMyAttackRange(to_select, range_fix);
-}
-
-void XuejiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    DamageStruct damage;
-    damage.from = source;
-    damage.reason = "xueji";
-
-    foreach (ServerPlayer *p, targets) {
-        damage.to = p;
-        room->damage(damage);
-    }
-    foreach (ServerPlayer *p, targets) {
-        if (p->isAlive())
-            p->drawCards(1, "xueji");
-    }
-}
-
-class Xueji: public OneCardViewAsSkill {
-public:
-    Xueji(): OneCardViewAsSkill("xueji") {
-        filter_pattern = ".|red!";
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getLostHp() > 0 && player->canDiscard(player, "he") && !player->hasUsed("XuejiCard");
-    }
-
-    virtual const Card *viewAs(const Card *originalcard) const{
-        XuejiCard *first = new XuejiCard;
-        first->addSubcard(originalcard->getId());
-        first->setSkillName(objectName());
-        return first;
-    }
-};
-
-class Huxiao: public TargetModSkill {
-public:
-    Huxiao(): TargetModSkill("huxiao") {
-    }
-
-    virtual int getResidueNum(const Player *from, const Card *) const{
-        if (from->hasSkill(objectName()))
-            return from->getMark(objectName());
-        else
-            return 0;
-    }
-};
-
-class HuxiaoCount: public TriggerSkill {
-public:
-    HuxiaoCount(): TriggerSkill("#huxiao-count") {
-        events << SlashMissed << EventPhaseChanging;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == SlashMissed) {
-            if (player->getPhase() == Player::Play)
-                room->addPlayerMark(player, "huxiao");
-        } else if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.from == Player::Play)
-                if (player->getMark("huxiao") > 0)
-                    room->setPlayerMark(player, "huxiao", 0);
-        }
-
-        return false;
-    }
-};
-
-class HuxiaoClear: public DetachEffectSkill {
-public:
-    HuxiaoClear(): DetachEffectSkill("huxiao") {
-    }
-
-    virtual void onSkillDetached(Room *room, ServerPlayer *player) const{
-        room->setPlayerMark(player, "huxiao", 0);
-    }
-};
-
-class WujiCount: public TriggerSkill {
-public:
-    WujiCount(): TriggerSkill("#wuji-count") {
-        events << PreDamageDone << EventPhaseChanging;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == PreDamageDone) {
-            DamageStruct damage = data.value<DamageStruct>();
-            if (damage.from && damage.from->isAlive() && damage.from == room->getCurrent() && damage.from->getMark("wuji") == 0)
-                room->addPlayerMark(damage.from, "wuji_damage", damage.damage);
-        } else if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive)
-                if (player->getMark("wuji_damage") > 0)
-                    room->setPlayerMark(player, "wuji_damage", 0);
-        }
-
-        return false;
-    }
-};
-
-class Wuji: public PhaseChangeSkill {
-public:
-    Wuji(): PhaseChangeSkill("wuji") {
-        frequency = Wake;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return PhaseChangeSkill::triggerable(target)
-               && target->getPhase() == Player::Finish
-               && target->getMark("wuji") == 0
-               && target->getMark("wuji_damage") >= 3;
-    }
-
-    virtual bool onPhaseChange(ServerPlayer *player) const{
-        Room *room = player->getRoom();
-        room->notifySkillInvoked(player, objectName());
-
-        LogMessage log;
-        log.type = "#WujiWake";
-        log.from = player;
-        log.arg = QString::number(player->getMark("wuji_damage"));
-        log.arg2 = objectName();
-        room->sendLog(log);
-
-        room->broadcastSkillInvoke(objectName());
-        room->doLightbox("$WujiAnimate", 4000);
-
-        room->setPlayerMark(player, "wuji", 1);
-        if (room->changeMaxHpForAwakenSkill(player, 1)) {
-            room->recover(player, RecoverStruct(player));
-            if (player->getMark("wuji") == 1)
-                room->detachSkillFromPlayer(player, "huxiao");
-        }
-
-        return false;
-    }
-};
-
 class Baobian: public TriggerSkill {
 public:
     Baobian(): TriggerSkill("baobian") {
@@ -2273,17 +2112,6 @@ SPPackage::SPPackage()
     General *caohong = new General(this, "caohong", "wei"); // SP 013
     caohong->addSkill(new Yuanhu);
 
-    General *guanyinping = new General(this, "guanyinping", "shu", 3, false); // SP 014
-    guanyinping->addSkill(new Xueji);
-    guanyinping->addSkill(new Huxiao);
-    guanyinping->addSkill(new HuxiaoCount);
-    guanyinping->addSkill(new HuxiaoClear);
-    guanyinping->addSkill(new Wuji);
-    guanyinping->addSkill(new WujiCount);
-    related_skills.insertMulti("wuji", "#wuji-count");
-    related_skills.insertMulti("huxiao", "#huxiao-count");
-    related_skills.insertMulti("huxiao", "#huxiao-clear");
-
     General *sp_zhenji = new General(this, "sp_zhenji", "wei", 3, false, true); // SP 015
     sp_zhenji->addSkill("ikzhongyan");
     sp_zhenji->addSkill("ikmengyang");
@@ -2357,7 +2185,6 @@ SPPackage::SPPackage()
     maliang->addSkill(new Naman);
 
     addMetaObject<YuanhuCard>();
-    addMetaObject<XuejiCard>();
     addMetaObject<BifaCard>();
     addMetaObject<SongciCard>();
     addMetaObject<ZhoufuCard>();
