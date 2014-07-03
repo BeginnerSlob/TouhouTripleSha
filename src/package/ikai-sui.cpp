@@ -945,7 +945,7 @@ public:
     }
 
     virtual bool triggerable(const ServerPlayer *player) const{
-        return PhaseChangeSkill::triggerable(player)
+        return player && player->isAlive()
             && player->getMark("ikmoqi") >= 1
             && player->getPhase() == Player::Finish;
     }
