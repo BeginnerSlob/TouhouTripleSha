@@ -1218,6 +1218,91 @@ public:
     }
 };
 
+IkXinbanCard::IkXinbanCard() {
+    mute = true;
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+bool IkXinbanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (!targets.isEmpty())
+        return false;
+
+    const Card *card = Sanguosha->getCard(subcards.first());
+    const EquipCard *equip = qobject_cast<const EquipCard *>(card->getRealCard());
+    int equip_index = static_cast<int>(equip->location());
+    return to_select->getEquip(equip_index) == NULL;
+}
+
+void IkXinbanCard::onUse(Room *room, const CardUseStruct &card_use) const{
+    int index = -1;
+    if (card_use.to.first() == card_use.from)
+        index = 5;
+    else if (card_use.to.first()->getGeneralName().contains("caocao"))
+        index = 4;
+    else {
+        const Card *card = Sanguosha->getCard(card_use.card->getSubcards().first());
+        if (card->isKindOf("Weapon"))
+            index = 1;
+        else if (card->isKindOf("Armor"))
+            index = 2;
+        else if (card->isKindOf("Horse"))
+            index = 3;
+    }
+    room->broadcastSkillInvoke("ikxinban", index);
+    SkillCard::onUse(room, card_use);
+}
+
+void IkXinbanCard::onEffect(const CardEffectStruct &effect) const{
+    ServerPlayer *caohong = effect.from;
+    Room *room = caohong->getRoom();
+    room->moveCardTo(this, caohong, effect.to, Player::PlaceEquip,
+                     CardMoveReason(CardMoveReason::S_REASON_PUT, caohong->objectName(), "ikxinban", QString()));
+
+    const Card *card = Sanguosha->getCard(subcards.first());
+
+    LogMessage log;
+    log.type = "$IkJibanEquip";
+    log.from = effect.to;
+    log.card_str = QString::number(card->getEffectiveId());
+    room->sendLog(log);
+
+    if (card->isKindOf("Weapon")) {
+      QList<ServerPlayer *> targets;
+      foreach (ServerPlayer *p, room->getAllPlayers()) {
+          if ((effect.to == p || effect.to->inMyAttackRange(p)) && caohong->canDiscard(p, "hej"))
+              targets << p;
+      }
+      if (!targets.isEmpty()) {
+          ServerPlayer *to_dismantle = room->askForPlayerChosen(caohong, targets, "ikxinban", "@ikxinban-discard:" + effect.to->objectName());
+          int card_id = room->askForCardChosen(caohong, to_dismantle, "hej", "ikxinban", false, Card::MethodDiscard);
+          room->throwCard(Sanguosha->getCard(card_id), to_dismantle, caohong);
+      }
+    } else if (card->isKindOf("Armor")) {
+        effect.to->drawCards(2, "ikxinban");
+    } else if (card->isKindOf("Horse")) {
+        room->recover(effect.to, RecoverStruct(effect.from));
+    }
+}
+
+class IkXinban: public OneCardViewAsSkill {
+public:
+    IkXinban(): OneCardViewAsSkill("ikxinban") {
+        filter_pattern = "EquipCard";
+    }
+
+    virtual const Card *viewAs(const Card *originalcard) const{
+        IkXinbanCard *first = new IkXinbanCard;
+        first->addSubcard(originalcard->getId());
+        first->setSkillName(objectName());
+        return first;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkXinbanCard") && !player->isNude();
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -1273,11 +1358,15 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *bloom023 = new General(this, "bloom023", "hana");
     bloom023->addSkill(new IkXiaorui);
 
+    General *bloom024 = new General(this, "bloom024", "hana");
+    bloom024->addSkill(new IkXinban);
+
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
     addMetaObject<IkMoqiCard>();
     addMetaObject<IkTianbeiCard>();
     addMetaObject<IkDuanmengCard>();
+    addMetaObject<IkXinbanCard>();
 
     skills << new IkAnshen << new IkAnshenRecord;
     related_skills.insertMulti("ikanshen", "#ikanshen-record");
