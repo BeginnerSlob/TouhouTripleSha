@@ -287,65 +287,6 @@ public:
     }
 };
 
-class Shengxi: public TriggerSkill {
-public:
-    Shengxi(): TriggerSkill("shengxi") {
-        events << PreDamageDone << EventPhaseEnd;
-        frequency = Frequent;
-        //global = true;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == EventPhaseEnd) {
-            bool can_trigger = true;
-            if (player->hasFlag("ShengxiDamageInPlayPhase")) {
-                can_trigger = false;
-                player->setFlags("-ShengxiDamageInPlayPhase");
-            }
-            if (player->isAlive() && player->hasSkill(objectName()) && player->getPhase() == Player::Play
-                && can_trigger && player->askForSkillInvoke(objectName())) {
-                room->broadcastSkillInvoke(objectName());
-                player->drawCards(2, objectName());
-            }
-        } else if (triggerEvent == PreDamageDone) {
-            DamageStruct damage = data.value<DamageStruct>();
-            if (damage.from && damage.from->getPhase() == Player::Play && !damage.from->hasFlag("ShengxiDamageInPlayPhase"))
-                damage.from->setFlags("ShengxiDamageInPlayPhase");
-        }
-        return false;
-    }
-};
-
-class Shoucheng: public TriggerSkill {
-public:
-    Shoucheng(): TriggerSkill("shoucheng") {
-        events << CardsMoveOneTime;
-        frequency = Frequent;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (move.from && move.from->isAlive() && move.from->getPhase() == Player::NotActive
-            && move.from_places.contains(Player::PlaceHand) && move.is_last_handcard) {
-            if (room->askForSkillInvoke(player, objectName(), data)) {
-                if (move.from == player || room->askForChoice(player, objectName(), "accept+reject") == "accept") {
-                    room->broadcastSkillInvoke(objectName());
-                    ServerPlayer *from = (ServerPlayer *)move.from;
-                    from->drawCards(1, objectName());
-                } else {
-                    LogMessage log;
-                    log.type = "#IkBianshengReject";
-                    log.from = (ServerPlayer *)move.from;
-                    log.to << player;
-                    log.arg = objectName();
-                    room->sendLog(log);
-                }
-            }
-        }
-        return false;
-    }
-};
-
 ShangyiCard::ShangyiCard() {
 }
 
@@ -690,10 +631,6 @@ HFormationPackage::HFormationPackage()
     General *heg_jiangwei = new General(this, "heg_jiangwei", "shu"); // SHU 012 G
     heg_jiangwei->addSkill("iktiaoxin");
     heg_jiangwei->addSkill(new Tianfu);
-
-    General *jiangwanfeiyi = new General(this, "jiangwanfeiyi", "shu", 3); // SHU 018
-    jiangwanfeiyi->addSkill(new Shengxi);
-    jiangwanfeiyi->addSkill(new Shoucheng);
 
     General *jiangqin = new General(this, "jiangqin", "wu"); // WU 017
     jiangqin->addSkill(new Shangyi);
