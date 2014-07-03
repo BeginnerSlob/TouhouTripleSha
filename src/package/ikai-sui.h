@@ -48,4 +48,13 @@ signals:
     void onButtonClick();
 };
 
+class IkJuechongCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkJuechongCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 #endif // IKAISUI_H
