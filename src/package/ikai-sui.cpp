@@ -1425,6 +1425,85 @@ public:
     }
 };
 
+IkShenyuCard::IkShenyuCard() {
+}
+
+bool IkShenyuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    int total = Self->getAliveSiblings().length() + 1;
+    return targets.length() < total / 2 - 1 && to_select != Self;
+}
+
+void IkShenyuCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    room->setPlayerProperty(effect.to, "ikshenyu_from", QVariant::fromValue(effect.from->objectName()));
+    effect.to->gainMark("@yushou");
+}
+
+class IkShenyuViewAsSkill: public ZeroCardViewAsSkill {
+public:
+    IkShenyuViewAsSkill(): ZeroCardViewAsSkill("ikshenyu") {
+        response_pattern = "@@ikshenyu";
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkShenyuCard;
+    }
+};
+
+class IkShenyu: public TriggerSkill {
+public:
+    IkShenyu(): TriggerSkill("ikshenyu") {
+        events << EventPhaseChanging << Death;
+        view_as_skill = new IkShenyuViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player || !player->hasSkill(objectName(), true))
+                return QStringList();
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (p->tag["ikshenyu_from"].toString() == player->objectName()) {
+                    room->setPlayerProperty(p, "ikshenyu_from", QVariant());
+                    room->setPlayerMark(p, "@yushou", 0);
+                }
+            }
+        } else if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to != Player::NotActive)
+                return QStringList();
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (p->tag["ikshenyu_from"].toString() == player->objectName()) {
+                    room->setPlayerProperty(p, "ikshenyu_from", QVariant());
+                    room->setPlayerMark(p, "@yushou", 0);
+                }
+            }
+            if (!TriggerSkill::triggerable(player) || player->aliveCount() <= 3)
+                return QStringList();
+            return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        room->askForUseCard(player, "@@ikshenyu", "@ikshenyu");
+        return false;
+    }
+};
+
+class IkShenyuDistance: public DistanceSkill {
+public:
+    IkShenyuDistance(): DistanceSkill("#ikshenyu") {
+    }
+
+    virtual int getCorrect(const Player *from, const Player *to) const{
+        if (to->getMark("@yushou") > 0 && from->getMark("@yushou") == 0
+            && from->objectName() != to->property("ikshenyu_from").toString())
+            return 1;
+        return 0;
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -1489,12 +1568,18 @@ IkaiSuiPackage::IkaiSuiPackage()
     bloom028->addSkill(new IkHongce);
     related_skills.insertMulti("ikhuyin", "#ikhuyin-clear");
 
+    General *bloom033 = new General(this, "bloom033", "hana");
+    bloom033->addSkill(new IkShenyu);
+    bloom033->addSkill(new IkShenyuDistance);
+    related_skills.insert("ikshenyu", "#ikshenyu");
+
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
     addMetaObject<IkMoqiCard>();
     addMetaObject<IkTianbeiCard>();
     addMetaObject<IkDuanmengCard>();
     addMetaObject<IkXinbanCard>();
+    addMetaObject<IkShenyuCard>();
 
     skills << new IkAnshen << new IkAnshenRecord;
     related_skills.insertMulti("ikanshen", "#ikanshen-record");

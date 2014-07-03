@@ -424,96 +424,6 @@ public:
     }
 };
 
-class ZhenweiDistance: public DistanceSkill {
-public:
-    ZhenweiDistance(): DistanceSkill("#zhenwei") {
-    }
-
-    virtual int getCorrect(const Player *from, const Player *to) const{
-        if (ServerInfo.GameMode.startsWith("06_") || ServerInfo.GameMode.startsWith("04_")) {
-            int dist = 0;
-            if (from->getRole().at(0) != to->getRole().at(0)) {
-                foreach (const Player *p, to->getAliveSiblings()) {
-                    if (p->hasSkill("zhenwei") && p->getRole().at(0) == to->getRole().at(0))
-                        dist++;
-                }
-            }
-            return dist;
-        } else if (to->getMark("@defense") > 0 && from->getMark("@defense") == 0
-                   && from->objectName() != to->property("zhenwei_from").toString()) {
-            return 1;
-        }
-        return 0;
-    }
-};
-
-ZhenweiCard::ZhenweiCard() {
-}
-
-bool ZhenweiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    int total = Self->getSiblings().length() + 1;
-    return targets.length() < total / 2 - 1 && to_select != Self;
-}
-
-void ZhenweiCard::onEffect(const CardEffectStruct &effect) const{
-    Room *room = effect.from->getRoom();
-    room->setPlayerProperty(effect.to, "zhenwei_from", QVariant::fromValue(effect.from->objectName()));
-    room->addPlayerMark(effect.to, "@defense");
-}
-
-class ZhenweiViewAsSkill: public ZeroCardViewAsSkill {
-public:
-    ZhenweiViewAsSkill(): ZeroCardViewAsSkill("zhenwei") {
-        response_pattern = "@@zhenwei";
-    }
-
-    virtual const Card *viewAs() const{
-        return new ZhenweiCard;
-    }
-};
-
-class Zhenwei: public TriggerSkill {
-public:
-    Zhenwei(): TriggerSkill("zhenwei") {
-        events << EventPhaseChanging << Death;
-        view_as_skill = new ZhenweiViewAsSkill;
-        frequency = Compulsory;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        QString mode = target->getRoom()->getMode();
-        return !mode.startsWith("06_") && !mode.startsWith("04_");
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == Death) {
-            DeathStruct death = data.value<DeathStruct>();
-            if (death.who != player || !player->hasSkill(objectName(), true))
-                return false;
-            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                if (p->tag["zhenwei_from"].toString() == player->objectName()) {
-                    room->setPlayerProperty(p, "zhenwei_from", QVariant());
-                    room->setPlayerMark(p, "@defense", 0);
-                }
-            }
-        } else if (triggerEvent == EventPhaseChanging) {
-            if (!TriggerSkill::triggerable(player) || Sanguosha->getPlayerCount(room->getMode()) <= 3)
-                return false;
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to != Player::NotActive)
-                return false;
-            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                if (p->tag["zhenwei_from"].toString() == player->objectName()) {
-                    room->setPlayerProperty(p, "zhenwei_from", QVariant());
-                    room->setPlayerMark(p, "@defense", 0);
-                }
-            }
-            room->askForUseCard(player, "@@zhenwei", "@zhenwei");
-        }
-        return false;
-    }
-};
-
 VSCrossbow::VSCrossbow(Suit suit, int number)
     : Crossbow(suit, number)
 {
@@ -588,10 +498,6 @@ ADD_PACKAGE(Special3v3)
 Special3v3ExtPackage::Special3v3ExtPackage()
     : Package("Special3v3Ext")
 {
-    General *wenpin = new General(this, "wenpin", "wei"); // WEI 019
-    wenpin->addSkill(new Zhenwei);
-    wenpin->addSkill(new ZhenweiDistance);
-    related_skills.insert("zhenwei", "#zhenwei");
 
     General *zhugejin = new General(this, "zhugejin", "wu", 3); // WU 018
     zhugejin->addSkill(new Hongyuan);
@@ -600,7 +506,6 @@ Special3v3ExtPackage::Special3v3ExtPackage()
     zhugejin->addSkill(new Mingzhe);
     related_skills.insertMulti("hongyuan", "#hongyuan");
 
-    addMetaObject<ZhenweiCard>();
     addMetaObject<HongyuanCard>();
 }
 
