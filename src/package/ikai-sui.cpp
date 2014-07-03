@@ -1073,6 +1073,117 @@ public:
     }
 };
 
+class IkJingmu: public TriggerSkill {
+public:
+    IkJingmu(): TriggerSkill("ikjingmu") {
+        events << BeforeCardsMove;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.card_ids.isEmpty() || move.to_place != Player::DiscardPile) return QStringList();
+        const Card *to_obtain = NULL;
+        if ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_RESPONSE) {
+            if (player == move.from)
+                return QStringList();
+            to_obtain = move.reason.m_extraData.value<const Card *>();
+            if (!to_obtain || !to_obtain->isKindOf("Slash"))
+                return QStringList();
+        }
+        if (to_obtain)
+            return QStringList(objectName());
+        return QStringList();
+    }
+    
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        const Card *to_obtain = move.reason.m_extraData.value<const Card *>();
+        room->obtainCard(player, to_obtain);
+        move.removeCardIds(move.card_ids);
+        data = QVariant::fromValue(move);
+
+        return false;
+    }
+};
+
+IkDuanmengCard::IkDuanmengCard() {
+    target_fixed = true;
+}
+
+void IkDuanmengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    QString kingdom = room->askForKingdom(source);
+    room->setPlayerMark(source, "ikduanmeng_" + kingdom, 1);
+}
+
+class IkDuanmengViewAsSkill: public OneCardViewAsSkill {
+public:
+    IkDuanmengViewAsSkill(): OneCardViewAsSkill("ikduanmeng") {
+        filter_pattern = "Slash";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->canDiscard(player, "he") && !player->hasUsed("IkDuanmengCard");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        IkDuanmengCard *card = new IkDuanmengCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+};
+
+class IkDuanmeng: public TriggerSkill {
+public:
+    IkDuanmeng(): TriggerSkill("ikduanmeng") {
+        events << TargetSpecified << EventPhaseStart;
+        view_as_skill = new IkDuanmengViewAsSkill;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (triggerEvent == TargetSpecified) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->getTypeId() != Card::TypeSkill && use.card->isBlack())
+                foreach (ServerPlayer *to, use.to) {
+                    if (to == use.from) continue;
+                    if (to->getMark("ikduanmeng_" + use.from->getKingdom()) > 0)
+                        skill_list.insert(to, QStringList(objectName()));
+                }
+        } else {
+            if (player->getPhase() == Player::RoundStart) {
+                foreach (QString kingdom, Sanguosha->getKingdoms()) {
+                    QString markname = "ikduanmeng_" + kingdom;
+                    if (player->getMark(markname) > 0)
+                        room->setPlayerMark(player, markname, 0);
+                }
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *player) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+    
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *player) const{
+        player->drawCards(2, objectName());
+        return false;
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -1121,10 +1232,15 @@ IkaiSuiPackage::IkaiSuiPackage()
     wind044->addSkill(new IkTianbei);
     wind044->addRelateSkill("ikanshen");
 
+    General *wind046 = new General(this, "wind046", "kaze", 3);
+    wind046->addSkill(new IkJingmu);
+    wind046->addSkill(new IkDuanmeng);
+
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
     addMetaObject<IkMoqiCard>();
     addMetaObject<IkTianbeiCard>();
+    addMetaObject<IkDuanmengCard>();
 
     skills << new IkAnshen << new IkAnshenRecord;
     related_skills.insertMulti("ikanshen", "#ikanshen-record");

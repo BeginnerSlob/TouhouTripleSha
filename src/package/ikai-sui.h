@@ -76,4 +76,13 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class IkDuanmengCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkDuanmengCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 #endif // IKAISUI_H
