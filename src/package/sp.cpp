@@ -1190,101 +1190,6 @@ public:
     }
 };
 
-XiemuCard::XiemuCard() {
-    target_fixed = true;
-}
-
-void XiemuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    QString kingdom = room->askForKingdom(source);
-    room->setPlayerMark(source, "@xiemu_" + kingdom, 1);
-}
-
-class XiemuViewAsSkill: public OneCardViewAsSkill {
-public:
-    XiemuViewAsSkill(): OneCardViewAsSkill("xiemu") {
-        filter_pattern = "Slash";
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->canDiscard(player, "he") && !player->hasUsed("XiemuCard");
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const{
-        XiemuCard *card = new XiemuCard;
-        card->addSubcard(originalCard);
-        return card;
-    }
-};
-
-class Xiemu: public TriggerSkill {
-public:
-    Xiemu(): TriggerSkill("xiemu") {
-        events << TargetConfirmed << EventPhaseStart;
-        view_as_skill = new XiemuViewAsSkill;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == TargetConfirmed) {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (use.from && player != use.from && use.card->getTypeId() != Card::TypeSkill
-                && use.card->isBlack() && use.to.contains(player)
-                && player->getMark("@xiemu_" + use.from->getKingdom()) > 0) {
-                LogMessage log;
-                log.type = "#InvokeSkill";
-                log.from = player;
-                log.arg = objectName();
-                room->sendLog(log);
-
-                room->notifySkillInvoked(player, objectName());
-                player->drawCards(2, objectName());
-            }
-        } else {
-            if (player->getPhase() == Player::RoundStart) {
-                foreach (QString kingdom, Sanguosha->getKingdoms()) {
-                    QString markname = "@xiemu_" + kingdom;
-                    if (player->getMark(markname) > 0)
-                        room->setPlayerMark(player, markname, 0);
-                }
-            }
-        }
-        return false;
-    }
-};
-
-class Naman: public TriggerSkill {
-public:
-    Naman(): TriggerSkill("naman") {
-        events << BeforeCardsMove;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (move.to_place != Player::DiscardPile) return false;
-        const Card *to_obtain = NULL;
-        if ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_RESPONSE) {
-            if (move.from && player->objectName() == move.from->objectName())
-                return false;
-            to_obtain = move.reason.m_extraData.value<const Card *>();
-            if (!to_obtain || !to_obtain->isKindOf("Slash"))
-                return false;
-        } else {
-            return false;
-        }
-        if (to_obtain && room->askForSkillInvoke(player, objectName(), data)) {
-            room->broadcastSkillInvoke(objectName());
-            room->obtainCard(player, to_obtain);
-            move.removeCardIds(move.card_ids);
-            data = QVariant::fromValue(move);
-        }
-
-        return false;
-    }
-};
-
 AocaiCard::AocaiCard() {
 }
 
@@ -1658,16 +1563,11 @@ SPPackage::SPPackage()
     sp_hetaihou->addSkill("zhendu");
     sp_hetaihou->addSkill("qiluan");
 
-    General *maliang = new General(this, "maliang", "shu", 3); // SP 035
-    maliang->addSkill(new Xiemu);
-    maliang->addSkill(new Naman);
-
     addMetaObject<YuanhuCard>();
     addMetaObject<BifaCard>();
     addMetaObject<SongciCard>();
     addMetaObject<ZhoufuCard>();
     addMetaObject<YinbingCard>();
-    addMetaObject<XiemuCard>();
 
     skills << new Weizhong;
 }
