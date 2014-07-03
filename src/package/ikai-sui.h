@@ -21,4 +21,31 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+#include <QGroupBox>
+#include <QAbstractButton>
+#include <QButtonGroup>
+#include <QDialog>
+#include <QVBoxLayout>
+
+class IkShengzunDialog: public QDialog {
+    Q_OBJECT
+
+public:
+    static IkShengzunDialog *getInstance();
+
+public slots:
+    void popup();
+    void selectSkill(QAbstractButton *button);
+
+private:
+    explicit IkShengzunDialog();
+
+    QAbstractButton *createSkillButton(const QString &skill_name);
+    QButtonGroup *group;
+    QVBoxLayout *button_layout;
+
+signals:
+    void onButtonClick();
+};
+
 #endif // IKAISUI_H

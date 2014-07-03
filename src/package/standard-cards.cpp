@@ -175,9 +175,7 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
             player->setFlags("-Global_MoreSlashInOneTurn");
             int index = qrand() % 2 + 1;
             if (name == "iklipao") {
-                if (!player->hasInnateSkill("iklipao") && player->hasSkill("baobian"))
-                    index += 4;
-                else if (Player::isNostalGeneral(player, "zhangfei"))
+                if (Player::isNostalGeneral(player, "zhangfei"))
                     index += 2;
             } else if (name == "ikcanyue") {
                 foreach (ServerPlayer *p, use.to)
