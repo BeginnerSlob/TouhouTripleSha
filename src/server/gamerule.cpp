@@ -559,7 +559,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
                 return false;
 
             ServerPlayer *killer = death.damage ? death.damage->from : NULL;
-            if (killer)
+            if (killer && !killer->hasSkill("ikkuangzhan"))
                 rewardAndPunish(killer, player);
 
             if (room->getMode() == "02_1v1") {

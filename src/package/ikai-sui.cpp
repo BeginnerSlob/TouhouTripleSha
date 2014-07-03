@@ -1504,6 +1504,64 @@ public:
     }
 };
 
+class IkKuangzhan: public TriggerSkill {
+public:
+    IkKuangzhan(): TriggerSkill("ikkuangzhan") {
+        events << Death;
+        frequency = Compulsory;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        LogMessage log;
+        log.type = "#TriggerSkill";
+        log.from = player;
+        log.arg = objectName();
+        room->sendLog(log);
+        room->broadcastSkillInvoke(objectName());
+        room->notifySkillInvoked(player, objectName());
+        player->drawCards(3, objectName());
+        return false;
+    }
+};
+
+class IkShenji: public PhaseChangeSkill {
+public:
+    IkShenji(): PhaseChangeSkill("ikshenji") {
+        frequency = Limited;
+        limit_mark = "@shenji";
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+            && target->getPhase() == Player::Start
+            && target->getMark("@shenji") > 0;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        room->removePlayerMark(player, "@shenji");
+        room->addPlayerMark(player, "@shenjiused");
+
+        player->drawCards(3, objectName());
+        
+        QList<const Card *> tricks = player->getJudgingArea();
+        foreach (const Card *trick, tricks) {
+            CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, player->objectName());
+            room->throwCard(trick, reason, NULL);
+        }
+
+        return false;
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -1572,6 +1630,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     bloom033->addSkill(new IkShenyu);
     bloom033->addSkill(new IkShenyuDistance);
     related_skills.insert("ikshenyu", "#ikshenyu");
+
+    General *bloom040 = new General(this, "bloom040", "hana");
+    bloom040->addSkill(new IkKuangzhan);
+    bloom040->addSkill(new IkShenji);
 
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
