@@ -12,79 +12,6 @@
 #include "settings.h"
 #include "jsonutils.h"
 
-class Hengjiang: public MasochismSkill {
-public:
-    Hengjiang(): MasochismSkill("hengjiang") {
-    }
-
-    virtual void onDamaged(ServerPlayer *target, const DamageStruct &damage) const{
-        Room *room = target->getRoom();
-        for (int i = 1; i <= damage.damage; i++) {
-            ServerPlayer *current = room->getCurrent();
-            if (!current || current->isDead() || current->getPhase() == Player::NotActive)
-                break;
-            if (room->askForSkillInvoke(target, objectName(), QVariant::fromValue(current))) {
-                room->broadcastSkillInvoke(objectName());
-                room->addPlayerMark(current, "@hengjiang");
-            }
-        }
-    }
-};
-
-class HengjiangDraw: public TriggerSkill {
-public:
-    HengjiangDraw(): TriggerSkill("#hengjiang-draw") {
-        events << TurnStart << CardsMoveOneTime << EventPhaseChanging;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == TurnStart) {
-            room->setPlayerMark(player, "@hengjiang", 0);
-        } else if (triggerEvent == CardsMoveOneTime) {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.from && player == move.from && player->getPhase() == Player::Discard
-                && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
-                player->setFlags("HengjiangDiscarded");
-        } else if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to != Player::NotActive) return false;
-            ServerPlayer *zangba = room->findPlayerBySkillName("hengjiang");
-            if (!zangba) return false;
-            if (player->getMark("@hengjiang") > 0) {
-                bool invoke = false;
-                if (!player->hasFlag("HengjiangDiscarded")) {
-                    LogMessage log;
-                    log.type = "#HengjiangDraw";
-                    log.from = player;
-                    log.to << zangba;
-                    log.arg = "hengjiang";
-                    room->sendLog(log);
-
-                    invoke = true;
-                }
-                player->setFlags("-HengjiangDiscarded");
-                room->setPlayerMark(player, "@hengjiang", 0);
-                if (invoke) zangba->drawCards(1, objectName());
-            }
-        }
-        return false;
-    }
-};
-
-class HengjiangMaxCards: public MaxCardsSkill {
-public:
-    HengjiangMaxCards(): MaxCardsSkill("#hengjiang-maxcard") {
-    }
-
-    virtual int getExtra(const Player *target) const{
-        return -target->getMark("@hengjiang");
-    }
-};
-
 DuanxieCard::DuanxieCard() {
 }
 
@@ -375,12 +302,6 @@ public:
 HMomentumPackage::HMomentumPackage()
     : Package("h_momentum")
 {
-    General *zangba = new General(this, "zangba", "wei", 4); // WEI 023
-    zangba->addSkill(new Hengjiang);
-    zangba->addSkill(new HengjiangDraw);
-    zangba->addSkill(new HengjiangMaxCards);
-    related_skills.insertMulti("hengjiang", "#hengjiang-draw");
-    related_skills.insertMulti("hengjiang", "#hengjiang-maxcard");
 
     General *heg_madai = new General(this, "heg_madai", "shu", 4, true, true); // SHU 019
     heg_madai->addSkill("thjibu");
