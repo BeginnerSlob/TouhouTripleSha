@@ -1945,6 +1945,107 @@ public:
     }
 };
 
+class IkQiwu: public TriggerSkill {
+public:
+    IkQiwu(): TriggerSkill("ikqiwu") {
+        events << EventPhaseStart << CardsMoveOneTime;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        if (triggerEvent == EventPhaseStart) {
+            if (player->getPhase() == Player::Discard) {
+                if (player->isKongcheng())
+                    return QStringList();
+                return QStringList(objectName());
+            }
+        } else if (triggerEvent == CardsMoveOneTime) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.to == player && move.to_place == Player::PlaceSpecial && player->getPile("ikqiwupile").length() >= 3) {
+                player->clearOnePrivatePile("ikqiwupile");
+                QList<ServerPlayer *> males;
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    if (p->isMale())
+                        males << p;
+                }
+                if (males.isEmpty()) return QStringList();
+
+                ServerPlayer *target = room->askForPlayerChosen(player, males, objectName(), "@ikqiwu-choose");
+                room->damage(DamageStruct(objectName(), player, target, 2));
+
+                if (!player->isAlive()) return QStringList();
+                QList<const Card *> equips = target->getEquips();
+                if (!equips.isEmpty()) {
+                    DummyCard *dummy = new DummyCard;
+                    dummy->addSubcards(equips);
+                    if (dummy->subcardsLength() > 0)
+                        room->throwCard(dummy, target, player);
+                    delete dummy;
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        const Card *card = room->askForCard(player, ".|.|.|hand", "@ikqiwu", QVariant(), Card::MethodNone);
+        if (card) {
+            room->notifySkillInvoked(player, objectName());
+            room->broadcastSkillInvoke(objectName());
+
+            LogMessage log;
+            log.type = "#InvokeSkill";
+            log.from = player;
+            log.arg = objectName();
+            room->sendLog(log);
+
+            player->tag["IkQiwuCard"] = QVariant::fromValue(card);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        const Card *card = player->tag["IkQiwuCard"].value<const Card *>();
+        player->tag.remove("IkQiwuCard");
+        if (card)
+            player->addToPile("ikqiwupile", card);
+        return false;
+    }
+};
+
+class IkShendao: public TriggerSkill {
+public:
+    IkShendao(): TriggerSkill("ikshendao") {
+        events << CardsMoveOneTime << EventAcquireSkill << EventLoseSkill;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventLoseSkill && data.toString() == objectName()) {
+            room->handleAcquireDetachSkills(player, "-ikzhihui|-ikxuanhuo", true);
+        } else if (triggerEvent == EventAcquireSkill && data.toString() == objectName()) {
+            if (!player->getPile("ikqiwupile").isEmpty()) {
+                room->notifySkillInvoked(player, objectName());
+                room->handleAcquireDetachSkills(player, "ikzhihui|ikxuanhuo");
+            }
+        } else if (triggerEvent == CardsMoveOneTime && player->isAlive() && player->hasSkill(objectName(), true)) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.to == player && move.to_place == Player::PlaceSpecial && move.to_pile_name == "ikqiwupile") {
+                if (player->getPile("ikqiwupile").length() == 1) {
+                    room->notifySkillInvoked(player, objectName());
+                    room->handleAcquireDetachSkills(player, "ikzhihui|ikxuanhuo");
+                }
+            } else if (move.from == player && move.from_places.contains(Player::PlaceSpecial)
+                       && move.from_pile_names.contains("ikqiwupile")) {
+                if (player->getPile("ikqiwupile").isEmpty())
+                    room->handleAcquireDetachSkills(player, "-ikzhihui|-ikxuanhuo", true);
+            }
+        }
+        return QStringList();
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -2042,6 +2143,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *snow025 = new General(this, "snow025", "yuki", 3);
     snow025->addSkill(new IkHongrou);
     snow025->addSkill(new IkHuaxiao);
+
+    General *snow032 = new General(this, "snow032", "yuki", 3, false);
+    snow032->addSkill(new IkQiwu);
+    snow032->addSkill(new IkShendao);
 
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
