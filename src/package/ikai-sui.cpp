@@ -2660,6 +2660,49 @@ public:
     }
 };
 
+class IkShunqie: public TriggerSkill {
+public:
+    IkShunqie(): TriggerSkill("ikshunqie") {
+        events << Damage;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *panfeng, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(panfeng)) return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        ServerPlayer *target = damage.to;
+        if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel")) && target->hasEquip())
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *panfeng, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        ServerPlayer *target = damage.to;
+        int card_id = room->askForCardChosen(panfeng, target, "e", objectName());
+        QStringList choicelist;
+        choicelist << "obtain";
+        if (panfeng->canDiscard(target, card_id))
+            choicelist << "throw";
+
+        QString choice = room->askForChoice(panfeng, objectName(), choicelist.join("+"));
+        if (choice == "throw") {
+            room->throwCard(card_id, target, panfeng);
+        } else {
+            room->obtainCard(panfeng, card_id);
+        }
+
+        return false;
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -2786,6 +2829,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *luna022 = new General(this, "luna022", "tsuki", 3);
     luna022->addSkill(new IkTianfa);
     luna022->addSkill(new IkGuyi);
+
+    General *luna023 = new General(this, "luna023", "tsuki");
+    luna023->addSkill("thjibu");
+    luna023->addSkill(new IkShunqie);
 
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();

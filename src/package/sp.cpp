@@ -735,7 +735,7 @@ SPPackage::SPPackage()
     sp_zhugejin->addSkill("ikhuaxiao");
 
     General *sp_panfeng = new General(this, "sp_panfeng", "qun", 4, true, true); // SP 029
-    sp_panfeng->addSkill("kuangfu");
+    sp_panfeng->addSkill("ikshunqie");
 
     General *zumao = new General(this, "zumao", "wu"); // SP 030
     zumao->addSkill(new Yinbing);
