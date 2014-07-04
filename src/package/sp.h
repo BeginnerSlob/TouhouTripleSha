@@ -39,17 +39,6 @@ public:
     MiscellaneousPackage();
 };
 
-class Yongsi: public TriggerSkill {
-    Q_OBJECT
-
-public:
-    Yongsi();
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *yuanshu, QVariant &data) const;
-
-protected:
-    virtual int getKingdoms(ServerPlayer *yuanshu) const;
-};
-
 class BifaCard: public SkillCard {
     Q_OBJECT
 

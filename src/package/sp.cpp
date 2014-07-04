@@ -50,51 +50,6 @@ SPMoonSpear::SPMoonSpear(Suit suit, int number)
     setObjectName("sp_moonspear");
 }
 
-Yongsi::Yongsi(): TriggerSkill("yongsi") {
-    events << DrawNCards << EventPhaseStart;
-    frequency = Compulsory;
-}
-
-int Yongsi::getKingdoms(ServerPlayer *yuanshu) const{
-    QSet<QString> kingdom_set;
-    Room *room = yuanshu->getRoom();
-    foreach (ServerPlayer *p, room->getAlivePlayers())
-        kingdom_set << p->getKingdom();
-
-    return kingdom_set.size();
-}
-
-bool Yongsi::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *yuanshu, QVariant &data) const{
-    if (triggerEvent == DrawNCards) {
-        int x = getKingdoms(yuanshu);
-        data = data.toInt() + x;
-
-        Room *room = yuanshu->getRoom();
-        LogMessage log;
-        log.type = "#YongsiGood";
-        log.from = yuanshu;
-        log.arg = QString::number(x);
-        log.arg2 = objectName();
-        room->sendLog(log);
-        room->notifySkillInvoked(yuanshu, objectName());
-
-        room->broadcastSkillInvoke("yongsi", x % 2 + 1);
-    } else if (triggerEvent == EventPhaseStart && yuanshu->getPhase() == Player::Discard) {
-        int x = getKingdoms(yuanshu);
-        LogMessage log;
-        log.type = yuanshu->getCardCount() > x ? "#YongsiBad" : "#YongsiWorst";
-        log.from = yuanshu;
-        log.arg = QString::number(log.type == "#YongsiBad" ? x : yuanshu->getCardCount());
-        log.arg2 = objectName();
-        room->sendLog(log);
-        room->notifySkillInvoked(yuanshu, objectName());
-        if (x > 0)
-            room->askForDiscard(yuanshu, "yongsi", x, x, false, true);
-    }
-
-    return false;
-}
-
 class Danji: public PhaseChangeSkill {
 public:
     Danji(): PhaseChangeSkill("danji") { // What a silly skill!
@@ -716,10 +671,6 @@ SPPackage::SPPackage()
     General *gongsunzan = new General(this, "gongsunzan", "qun"); // SP 003
     gongsunzan->addSkill("ikzhuji");
 
-    General *yuanshu = new General(this, "yuanshu", "qun"); // SP 004
-    yuanshu->addSkill(new Yongsi);
-    yuanshu->addSkill("ikshengzun");
-
     General *sp_sunshangxiang = new General(this, "sp_sunshangxiang", "shu", 3, false, true); // SP 005
     sp_sunshangxiang->addSkill("ikyulu");
     sp_sunshangxiang->addSkill("ikcuimeng");
@@ -940,7 +891,7 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_xiaoqiao->addSkill("ikchiqiu");
 
     General *tw_yuanshu = new General(this, "tw_yuanshu", "qun", 4, true, true); // TW SP 004
-    tw_yuanshu->addSkill("yongsi");
+    tw_yuanshu->addSkill("ikchenyan");
     tw_yuanshu->addSkill("ikshengzun");
 }
 
