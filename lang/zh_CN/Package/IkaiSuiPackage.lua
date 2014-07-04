@@ -216,7 +216,7 @@ return {
 	--thjibu
 	["ikshunqie"] = "瞬切",
 	[":ikshunqie"] = "每当你使用【杀】或【碎月绮幕】造成一次伤害后，你可以获得或弃置受到该伤害的角色的装备区里的一张牌。",
-	["ikshunqie:get"] = "获得此牌",
+	["ikshunqie:obtain"] = "获得此牌",
 	["ikshunqie:throw"] = "弃置此牌",
 
 	["#luna024"] = "迅舞的人神兵",
