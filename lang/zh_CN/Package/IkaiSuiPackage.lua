@@ -174,18 +174,16 @@ return {
 	["luna017"] = "优里克伍德•赫尔塞伊斯",--月 - 空 - 4血
 	["ikchenyan"] = "谶言",
 	[":ikchenyan"] = "锁定技，摸牌阶段摸牌时，你额外摸X张牌；弃牌阶段开始时，你须弃置X+1张牌（X为场上的势力数且至少为2）。",
-	--ikshengzun
 	["#IkChenyanGood"] = "%from 的“%arg2”被触发，额外摸了 %arg 张牌",
 	["#IkChenyanBad"] = "%from 的“%arg2”被触发，须弃置 %arg 张牌",
 	["#IkChenyanWorst"] = "%from 的“%arg2”被触发，弃置了所有牌（共 %arg 张）",
+	--ikshengzun
 
 	["#luna019"] = "超弩级巡洋战舰",
 	["luna019"] = "金刚",--月 - 空 - 4血
 	--thxiagong
 	["ikzhange"] = "战歌",
 	[":ikzhange"] = "限定技，出牌阶段，若存活角色的数量大于五，你可以令至多三名角色各摸三张牌；否则你可以令至多两名角色各摸三张牌；若只有你摸牌，你回复1点体力。",
-	["@ikzhange"] = "战歌(未发动)",
-	["@ikzhangeused"] = "战歌(已发动)",
 
 	["#luna020"] = "风的私语",
 	["luna020"] = "汐宫栞",--月 - 空 - 3血

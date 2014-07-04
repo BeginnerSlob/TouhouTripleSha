@@ -163,4 +163,14 @@ protected:
     virtual int getKingdoms(ServerPlayer *yuanshu) const;
 };
 
+class IkZhangeCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkZhangeCard();
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 #endif // IKAISUI_H
