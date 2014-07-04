@@ -1153,9 +1153,8 @@ SPPackage::SPPackage()
     zhangbao->addSkill(new Yingbing);
 
     General *sp_zhugejin = new General(this, "sp_zhugejin", "wu", 3, true, true); // SP 027
-    sp_zhugejin->addSkill("hongyuan");
-    sp_zhugejin->addSkill("huanshi");
-    sp_zhugejin->addSkill("mingzhe");
+    sp_zhugejin->addSkill("ikhongrou");
+    sp_zhugejin->addSkill("ikhuaxiao");
 
     General *sp_panfeng = new General(this, "sp_panfeng", "qun", 4, true, true); // SP 029
     sp_panfeng->addSkill("kuangfu");

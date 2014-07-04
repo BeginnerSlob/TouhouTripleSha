@@ -1856,6 +1856,95 @@ public:
     }
 };
 
+IkHongrouCard::IkHongrouCard() {
+}
+
+bool IkHongrouCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return to_select != Self && targets.length() < 2;
+}
+
+void IkHongrouCard::onEffect(const CardEffectStruct &effect) const{
+   effect.to->drawCards(1, "ikhongrou");
+}
+
+class IkHongrou: public OneCardViewAsSkill {
+public:
+    IkHongrou(): OneCardViewAsSkill("ikhongrou") {
+        filter_pattern = ".!";
+    }
+
+    virtual const Card *viewAs(const Card *originalcard) const{
+        IkHongrouCard *first = new IkHongrouCard;
+        first->addSubcard(originalcard->getId());
+        return first;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->canDiscard(player, "he") && !player->hasUsed("IkHongrouCard");
+    }
+};
+
+class IkHuaxiao: public TriggerSkill {
+public:
+    IkHuaxiao(): TriggerSkill("ikhuaxiao") {
+        events << CardsMoveOneTime << CardUsed << CardResponded;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        QStringList skill;
+        if (!TriggerSkill::triggerable(player)) return skill;
+        if (player->getPhase() != Player::NotActive) return skill;
+        if (triggerEvent == CardsMoveOneTime) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from != player) return skill;
+            CardMoveReason reason = move.reason;
+            if ((reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
+                const Card *card;
+                int i = 0;
+                foreach (int card_id, move.card_ids) {
+                    card = Sanguosha->getCard(card_id);
+                    if (room->getCardOwner(card_id) == player && card->isRed()
+                        && (move.from_places[i] == Player::PlaceHand
+                            || move.from_places[i] == Player::PlaceEquip)) {
+                        skill << objectName();
+                    }
+                    i++;
+                }
+            }
+        } else {
+            const Card *card = NULL;
+            if (triggerEvent == CardUsed) {
+                CardUseStruct use = data.value<CardUseStruct>();
+                card = use.card;
+            } else if (triggerEvent == CardResponded) {
+                CardResponseStruct resp = data.value<CardResponseStruct>();
+                card = resp.m_card;
+            }
+            if (card && card->isRed())
+                skill << objectName();
+        }
+        return skill;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), objectName(), "@ikhuaxiao", true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["IkHuaxiaoTarget"] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        ServerPlayer *target = player->tag["IkHuaxiaoTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkHuaxiaoTarget");
+        if (target)
+            target->drawCards(1, objectName());
+        return false;
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -1950,6 +2039,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     snow022->addSkill(new IkFenxunDistance);
     related_skills.insertMulti("ikfenxun", "#ikfenxun");
 
+    General *snow025 = new General(this, "snow025", "yuki", 3);
+    snow025->addSkill(new IkHongrou);
+    snow025->addSkill(new IkHuaxiao);
+
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
     addMetaObject<IkMoqiCard>();
@@ -1958,6 +2051,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkXinbanCard>();
     addMetaObject<IkShenyuCard>();
     addMetaObject<IkFenxunCard>();
+    addMetaObject<IkHongrouCard>();
 
     skills << new IkAnshen << new IkAnshenRecord;
     related_skills.insertMulti("ikanshen", "#ikanshen-record");
