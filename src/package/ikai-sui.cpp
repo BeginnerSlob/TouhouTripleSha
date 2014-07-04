@@ -2561,6 +2561,105 @@ public:
     }
 };
 
+class IkTianfa: public TriggerSkill {
+public:
+    IkTianfa(): TriggerSkill("iktianfa") {
+        events << CardsMoveOneTime;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *tianfeng, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(tianfeng)) return QStringList();
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (((move.from == tianfeng && move.from_places.contains(Player::PlaceHand))
+            || (move.to == tianfeng && move.to_place == Player::PlaceHand))
+            && tianfeng->getHandcardNum() < qMax(tianfeng->getLostHp(), 1)) {
+            foreach (ServerPlayer *p, room->getOtherPlayers(tianfeng)) {
+                if (tianfeng->canDiscard(p, "he"))
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *tianfeng, QVariant &, ServerPlayer *) const{
+        QList<ServerPlayer *> other_players = room->getOtherPlayers(tianfeng);
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, other_players) {
+            if (tianfeng->canDiscard(p, "he"))
+                targets << p;
+        }
+        ServerPlayer *to = room->askForPlayerChosen(tianfeng, targets, objectName(), "iktianfa-invoke", true, true);
+        if (to) {
+            room->broadcastSkillInvoke(objectName());
+            tianfeng->tag["IkTianfaTarget"] = QVariant::fromValue(to);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *tianfeng, QVariant &, ServerPlayer *) const{
+        ServerPlayer *to = tianfeng->tag["IkTianfaTarget"].value<ServerPlayer *>();
+        tianfeng->tag.remove("IkTianfaTarget");
+        if (to) {
+            int card_id = room->askForCardChosen(tianfeng, to, "he", objectName(), false, Card::MethodDiscard);
+            room->throwCard(card_id, to, tianfeng);
+        }
+        return false;
+    }
+};
+
+class IkGuyi: public TriggerSkill {
+public:
+    IkGuyi(): TriggerSkill("ikguyi") {
+        events << HpChanged << Death;
+        frequency = Compulsory;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (triggerEvent == HpChanged) {
+            if (!data.isNull() && !data.canConvert<RecoverStruct>()) {
+                int n = 0;
+                bool ok = false;
+                if (data.toInt(&ok) && ok)
+                    n = data.toInt();
+                else if (data.canConvert<DamageStruct>())
+                    n = data.value<DamageStruct>().damage;
+                if (n == 0) return skill_list;
+                foreach (ServerPlayer *tianfeng, room->findPlayersBySkillName(objectName())) {
+                    if (tianfeng == player) continue;
+                    int x = qMax(tianfeng->getLostHp(), 1);
+                    if (player->getHp() < x) {
+                        QStringList skill;
+                        for (int i = 0; i < qMin(n, x - player->getHp()); i++)
+                            skill << objectName();
+                        skill_list.insert(tianfeng, skill);
+                    }
+                }
+            }
+        } else if (triggerEvent == Death && TriggerSkill::triggerable(player)) {
+            skill_list.insert(player, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
+        LogMessage log;
+        log.type = "#TriggerSkill";
+        log.from = ask_who;
+        log.arg = objectName();
+        room->sendLog(log);
+        room->broadcastSkillInvoke(objectName());
+        room->notifySkillInvoked(ask_who, objectName());
+        if (triggerEvent == HpChanged) {
+            ask_who->drawCards(1, objectName());
+        } else {
+            room->loseHp(ask_who);
+        }
+        return false;
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -2683,6 +2782,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     luna021->addSkill(new IkShuangren);
     luna021->addSkill(new SlashNoDistanceLimitSkill("ikshuangren"));
     related_skills.insertMulti("ikshuangren", "#ikshuangren-slash-ndl");
+
+    General *luna022 = new General(this, "luna022", "tsuki", 3);
+    luna022->addSkill(new IkTianfa);
+    luna022->addSkill(new IkGuyi);
 
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();

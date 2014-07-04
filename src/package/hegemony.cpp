@@ -6,83 +6,6 @@
 #include "room.h"
 #include "standard-skillcards.h"
 
-class Sijian: public TriggerSkill {
-public:
-    Sijian(): TriggerSkill("sijian") {
-        events << CardsMoveOneTime;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *tianfeng, QVariant &data) const{
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (move.from == tianfeng && move.from_places.contains(Player::PlaceHand) && move.is_last_handcard) {
-            QList<ServerPlayer *> other_players = room->getOtherPlayers(tianfeng);
-            QList<ServerPlayer *> targets;
-            foreach (ServerPlayer *p, other_players) {
-                if (tianfeng->canDiscard(p, "he"))
-                    targets << p;
-            }
-            if (targets.isEmpty()) return false;
-            ServerPlayer *to = room->askForPlayerChosen(tianfeng, targets, objectName(), "sijian-invoke", true, true);
-            if (to) {
-                room->broadcastSkillInvoke(objectName(), to->isLord() ? 2 : 1);
-                int card_id = room->askForCardChosen(tianfeng, to, "he", objectName(), false, Card::MethodDiscard);
-                room->throwCard(card_id, to, tianfeng);
-            }
-        }
-        return false;
-    }
-};
-
-class Suishi: public TriggerSkill {
-public:
-    Suishi(): TriggerSkill("suishi") {
-        events << Dying << Death;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        ServerPlayer *target = NULL;
-        if (triggerEvent == Dying) {
-            DyingStruct dying = data.value<DyingStruct>();
-            if (dying.damage && dying.damage->from)
-                target = dying.damage->from;
-            if (dying.who != player && target
-                && room->askForSkillInvoke(target, objectName(), QString("draw:%1").arg(player->objectName()))) {
-                room->broadcastSkillInvoke(objectName(), 1);
-                if (target != player) {
-                    room->notifySkillInvoked(player, objectName());
-                    LogMessage log;
-                    log.type = "#InvokeOthersSkill";
-                    log.from = target;
-                    log.to << player;
-                    log.arg = objectName();
-                    room->sendLog(log);
-                }
-
-                player->drawCards(1, objectName());
-            }
-        } else if (triggerEvent == Death) {
-            DeathStruct death = data.value<DeathStruct>();
-            if (death.damage && death.damage->from)
-                target = death.damage->from;
-            if (target && room->askForSkillInvoke(target, objectName(), QString("losehp:%1").arg(player->objectName()))) {
-                room->broadcastSkillInvoke(objectName(), 2);
-                if (target != player) {
-                    room->notifySkillInvoked(player, objectName());
-                    LogMessage log;
-                    log.type = "#InvokeOthersSkill";
-                    log.from = target;
-                    log.to << player;
-                    log.arg = objectName();
-                    room->sendLog(log);
-                }
-
-                room->loseHp(player);
-            }
-        }
-        return false;
-    }
-};
-
 class Kuangfu: public TriggerSkill {
 public:
     Kuangfu(): TriggerSkill("kuangfu") {
@@ -332,10 +255,6 @@ HegemonyPackage::HegemonyPackage()
 
     General *heg_luxun = new General(this, "heg_luxun", "wu", 3); // WU 007 G
     heg_luxun->addSkill("ikyuanhe");
-
-    General *tianfeng = new General(this, "tianfeng", "qun", 3); // QUN 016
-    tianfeng->addSkill(new Sijian);
-    tianfeng->addSkill(new Suishi);
 
     General *panfeng = new General(this, "panfeng", "qun"); // QUN 017
     panfeng->addSkill(new Kuangfu);
