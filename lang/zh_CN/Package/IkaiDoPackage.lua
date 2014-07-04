@@ -1,7 +1,7 @@
 -- translation for IkaiTsuchiPackage
 
 return {
-	["ikai-tsuchi"] = "异世界的土产",
+	["ikai-do"] = "异世界的土产",
 
 --wind
 	["#wind001"] = "终焉之理",

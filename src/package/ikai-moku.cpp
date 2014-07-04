@@ -1,4 +1,4 @@
-#include "ikai-ki.h"
+#include "ikai-moku.h"
 
 #include "general.h"
 #include "skill.h"
@@ -5056,8 +5056,8 @@ void IkTianwubakaCard::use(Room *room, ServerPlayer *shenlvbu, QList<ServerPlaye
     shenlvbu->turnOver();
 }
 
-IkaiKiPackage::IkaiKiPackage()
-    :Package("ikai-ki")
+IkaiMokuPackage::IkaiMokuPackage()
+    :Package("ikai-moku")
 {
     General *wind008 = new General(this, "wind008", "kaze");
     wind008->addSkill("thxiagong");
@@ -5302,4 +5302,4 @@ IkaiKiPackage::IkaiKiPackage()
            << new IkYujiViewAsSkill;
 }
 
-ADD_PACKAGE(IkaiKi)
+ADD_PACKAGE(IkaiMoku)

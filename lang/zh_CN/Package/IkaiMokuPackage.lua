@@ -1,7 +1,7 @@
 -- translation for IkaiKiPackage
 
 return {
-	["ikai-ki"] = "异世界的木阴",
+	["ikai-moku"] = "异世界的木阴",
 	
 --wind
 	["#wind008"] = "风华绝代的圣者",

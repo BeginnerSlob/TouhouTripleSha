@@ -16,7 +16,7 @@
 #include "skin-bank.h"
 #include "wind.h"
 #include "record-analysis.h"
-#include "ikai-ki.h"
+#include "ikai-moku.h"
 #include "jsonutils.h"
 
 #include <QPropertyAnimation>

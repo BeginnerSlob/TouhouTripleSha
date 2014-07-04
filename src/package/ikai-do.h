@@ -1,15 +1,15 @@
-#ifndef IKAITSUCHI_H
-#define IKAITSUCHI_H
+#ifndef IKAIDO_H
+#define IKAIDO_H
 
 #include "package.h"
 #include "card.h"
 #include "skill.h"
 
-class IkaiTsuchiPackage : public Package{
+class IkaiDoPackage : public Package{
     Q_OBJECT
 
 public:
-    IkaiTsuchiPackage();
+    IkaiDoPackage();
 };
 
 class IkShenaiCard: public SkillCard {
@@ -194,4 +194,4 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-#endif // IKAITSUCHI_H
+#endif // IKAIDO_H
