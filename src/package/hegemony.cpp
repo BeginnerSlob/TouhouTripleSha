@@ -83,82 +83,6 @@ public:
     }
 };
 
-ShuangrenCard::ShuangrenCard() {
-}
-
-bool ShuangrenCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
-}
-
-void ShuangrenCard::onEffect(const CardEffectStruct &effect) const{
-    Room *room = effect.from->getRoom();
-    bool success = effect.from->pindian(effect.to, "shuangren", NULL);
-    if (success) {
-        QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *target, room->getAlivePlayers()) {
-            if (effect.from->canSlash(target, NULL, false))
-                targets << target;
-        }
-        if (targets.isEmpty())
-            return;
-
-        ServerPlayer *target = room->askForPlayerChosen(effect.from, targets, "shuangren", "@dummy-slash");
-
-        Slash *slash = new Slash(Card::NoSuit, 0);
-        slash->setSkillName("_shuangren");
-        room->useCard(CardUseStruct(slash, effect.from, target));
-    } else {
-        room->broadcastSkillInvoke("shuangren", 3);
-        room->setPlayerFlag(effect.from, "ShuangrenSkipPlay");
-    }
-}
-
-class ShuangrenViewAsSkill: public ZeroCardViewAsSkill {
-public:
-    ShuangrenViewAsSkill(): ZeroCardViewAsSkill("shuangren") {
-        response_pattern = "@@shuangren";
-    }
-
-    virtual const Card *viewAs() const{
-        return new ShuangrenCard;
-    }
-};
-
-class Shuangren: public PhaseChangeSkill {
-public:
-    Shuangren(): PhaseChangeSkill("shuangren") {
-        view_as_skill = new ShuangrenViewAsSkill;
-    }
-
-    virtual bool onPhaseChange(ServerPlayer *jiling) const{
-        if (jiling->getPhase() == Player::Play && !jiling->isKongcheng()) {
-            Room *room = jiling->getRoom();
-            bool can_invoke = false;
-            QList<ServerPlayer *> other_players = room->getOtherPlayers(jiling);
-            foreach (ServerPlayer *player, other_players) {
-                if (!player->isKongcheng()) {
-                    can_invoke = true;
-                    break;
-                }
-            }
-
-            if (can_invoke)
-                room->askForUseCard(jiling, "@@shuangren", "@shuangren-card");
-            if (jiling->hasFlag("ShuangrenSkipPlay"))
-                return true;
-        }
-
-        return false;
-    }
-
-    virtual int getEffectIndex(const ServerPlayer *, const Card *card) const{
-        if (card->isKindOf("Slash"))
-            return 2;
-        else
-            return 1;
-    }
-};
-
 class Kuangfu: public TriggerSkill {
 public:
     Kuangfu(): TriggerSkill("kuangfu") {
@@ -409,11 +333,6 @@ HegemonyPackage::HegemonyPackage()
     General *heg_luxun = new General(this, "heg_luxun", "wu", 3); // WU 007 G
     heg_luxun->addSkill("ikyuanhe");
 
-    General *jiling = new General(this, "jiling", "qun", 4); // QUN 015
-    jiling->addSkill(new Shuangren);
-    jiling->addSkill(new SlashNoDistanceLimitSkill("shuangren"));
-    related_skills.insertMulti("shuangren", "#shuangren-slash-ndl");
-
     General *tianfeng = new General(this, "tianfeng", "qun", 3); // QUN 016
     tianfeng->addSkill(new Sijian);
     tianfeng->addSkill(new Suishi);
@@ -461,7 +380,6 @@ HegemonyPackage::HegemonyPackage()
     heg_diaochan->addSkill("ikmoyu");
     heg_diaochan->addSkill("ikzhuoyue");
 
-    addMetaObject<ShuangrenCard>();
     addMetaObject<QingchengCard>();
 }
 
