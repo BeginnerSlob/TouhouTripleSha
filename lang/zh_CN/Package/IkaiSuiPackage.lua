@@ -175,9 +175,9 @@ return {
 	["ikchenyan"] = "谶言",
 	[":ikchenyan"] = "锁定技，摸牌阶段摸牌时，你额外摸X张牌；弃牌阶段开始时，你须弃置X+1张牌（X为场上的势力数且至少为2）。",
 	--ikshengzun
-	["#IkChenyanGood"] = "%from 触发“%arg2”，额外摸了 %arg 张牌",
-	["#IkChenyanBad"] = "%from 触发“%arg2”，须弃置 %arg 张牌",
-	["#IkChenyanWorst"] = "%from 的锁定技“%arg2”被触发，弃置了所有的装备和手牌（共 %arg 张）",
+	["#IkChenyanGood"] = "%from 的“%arg2”被触发，额外摸了 %arg 张牌",
+	["#IkChenyanBad"] = "%from 的“%arg2”被触发，须弃置 %arg 张牌",
+	["#IkChenyanWorst"] = "%from 的“%arg2”被触发，弃置了所有牌（共 %arg 张）",
 
 	["#luna019"] = "超弩级巡洋战舰",
 	["luna019"] = "金刚",--月 - 空 - 4血

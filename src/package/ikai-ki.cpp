@@ -1032,7 +1032,7 @@ public:
         room->broadcastSkillInvoke("ikjuejing");
 
         LogMessage log;
-        log.type = "#YongsiGood";
+        log.type = "#IkChenyanGood";
         log.from = player;
         log.arg = QString::number(player->getLostHp());
         log.arg2 = "ikjuejing";

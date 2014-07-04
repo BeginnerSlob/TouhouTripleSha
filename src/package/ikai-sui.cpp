@@ -1,7 +1,6 @@
 #include "ikai-sui.h"
 
 #include "general.h"
-#include "skill.h"
 #include "engine.h"
 #include "standard.h"
 #include "client.h"
@@ -2307,6 +2306,57 @@ public:
         return QStringList();
     }
 };
+IkChenyan::IkChenyan(): TriggerSkill("ikchenyan") {
+    events << DrawNCards << EventPhaseStart;
+    frequency = Compulsory;
+}
+
+int IkChenyan::getKingdoms(ServerPlayer *yuanshu) const{
+    QSet<QString> kingdom_set;
+    Room *room = yuanshu->getRoom();
+    foreach (ServerPlayer *p, room->getAlivePlayers())
+        kingdom_set << p->getKingdom();
+
+    return qMax(kingdom_set.size(), 2);
+}
+
+QStringList IkChenyan::triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *yuanshu, QVariant &data, ServerPlayer* &) const{
+    if (triggerEvent == DrawNCards)
+        return QStringList(objectName());
+    else if (triggerEvent == EventPhaseStart && yuanshu->getPhase() == Player::Discard && !yuanshu->isNude())
+        return QStringList(objectName());
+    return QStringList();
+}
+
+bool IkChenyan::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *yuanshu, QVariant &data, ServerPlayer *) const{
+    if (triggerEvent == DrawNCards) {
+        int x = getKingdoms(yuanshu);
+        data = data.toInt() + x;
+
+        Room *room = yuanshu->getRoom();
+        LogMessage log;
+        log.type = "#IkChenyanGood";
+        log.from = yuanshu;
+        log.arg = QString::number(x);
+        log.arg2 = objectName();
+        room->sendLog(log);
+        room->notifySkillInvoked(yuanshu, objectName());
+        room->broadcastSkillInvoke(objectName());
+    } else if (triggerEvent == EventPhaseStart) {
+        int x = getKingdoms(yuanshu) + 1;
+        LogMessage log;
+        log.type = yuanshu->getCardCount() > x ? "#IkChenyanBad" : "#IkChenyanWorst";
+        log.from = yuanshu;
+        log.arg = QString::number(log.type == "#IkChenyanBad" ? x : yuanshu->getCardCount());
+        log.arg2 = objectName();
+        room->sendLog(log);
+        room->notifySkillInvoked(yuanshu, objectName());
+        room->broadcastSkillInvoke(objectName());
+        room->askForDiscard(yuanshu, "ikchenyan", x, x, false, true);
+    }
+
+    return false;
+}
 
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
@@ -2413,6 +2463,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *snow033 = new General(this, "snow033", "yuki", 3);
     snow033->addSkill(new IkTianyan);
     snow033->addSkill(new IkCangwu);
+
+    General *luna017 = new General(this, "luna017", "tsuki");
+    luna017->addSkill(new IkChenyan);
+    luna017->addSkill("ikshengzun");
 
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();

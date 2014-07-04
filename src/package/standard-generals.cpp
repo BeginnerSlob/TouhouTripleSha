@@ -596,10 +596,10 @@ public:
     }
 };
 
-#include "sp.h"
-class SuperYongsi: public Yongsi {
+#include "ikai-sui.h"
+class SuperYongsi: public IkChenyan {
 public:
-    SuperYongsi(): Yongsi() {
+    SuperYongsi(): IkChenyan() {
         setObjectName("super_yongsi");
     }
 
