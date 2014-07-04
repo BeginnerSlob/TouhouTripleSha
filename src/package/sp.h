@@ -79,30 +79,6 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class AocaiCard: public SkillCard {
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE AocaiCard();
-
-    virtual bool targetFixed() const;
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
-
-    virtual const Card *validateInResponse(ServerPlayer *user) const;
-    virtual const Card *validate(CardUseStruct &cardUse) const;
-};
-
-class DuwuCard: public SkillCard {
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE DuwuCard();
-
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual void onEffect(const CardEffectStruct &effect) const;
-};
-
 class QingyiCard: public SkillCard {
     Q_OBJECT
 

@@ -2046,6 +2046,268 @@ public:
     }
 };
 
+class IkTianyanViewAsSkill: public ZeroCardViewAsSkill {
+public:
+    IkTianyanViewAsSkill(): ZeroCardViewAsSkill("iktianan") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *) const{
+        return false;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+        if (player->getPhase() != Player::NotActive || player->hasFlag("Global_IkTianyanFailed")) return false;
+        if (pattern == "slash")
+            return Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE;
+        else if (pattern == "peach")
+            return player->getMark("Global_PreventPeach") == 0;
+        else if (pattern.contains("analeptic"))
+            return true;
+        return false;
+    }
+
+    virtual const Card *viewAs() const{
+        IkTianyanCard *tianyan_card = new IkTianyanCard;
+        QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+        if (pattern == "peach+analeptic" && Self->getMark("Global_PreventPeach") > 0)
+            pattern = "analeptic";
+        tianyan_card->setUserString(pattern);
+        return tianyan_card;
+    }
+};
+
+#include "jsonutils.h"
+class IkTianyan: public TriggerSkill {
+public:
+    IkTianyan(): TriggerSkill("iktianyan") {
+        events << CardAsked;
+        view_as_skill = new IkTianyanViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        QString pattern = data.toStringList().first();
+        if (player->getPhase() == Player::NotActive
+            && (pattern == "slash" || pattern == "jink"))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        QString pattern = data.toStringList().first();
+        QList<int> ids = room->getNCards(2, false);
+        QList<int> enabled, disabled;
+        foreach (int id, ids) {
+            if (Sanguosha->getCard(id)->objectName().contains(pattern))
+                enabled << id;
+            else
+                disabled << id;
+        }
+        int id = IkTianyan::view(room, player, ids, enabled, disabled);
+        if (id != -1) {
+            const Card *card = Sanguosha->getCard(id);
+            room->provide(card);
+            return true;
+        }
+
+        return false;
+    }
+
+    static int view(Room *room, ServerPlayer *player, QList<int> &ids, QList<int> &enabled, QList<int> &disabled) {
+        int result = -1, index = -1;
+        LogMessage log;
+        log.type = "$ViewDrawPile";
+        log.from = player;
+        log.card_str = IntList2StringList(ids).join("+");
+        room->sendLog(log, player);
+
+        room->broadcastSkillInvoke("iktianyan");
+        room->notifySkillInvoked(player, "iktianyan");
+        if (enabled.isEmpty()) {
+            Json::Value arg(Json::arrayValue);
+            arg[0] = QSanProtocol::Utils::toJsonString(".");
+            arg[1] = false;
+            arg[2] = QSanProtocol::Utils::toJsonArray(ids);
+            room->doNotify(player, QSanProtocol::S_COMMAND_SHOW_ALL_CARDS, arg);
+        } else {
+            room->fillAG(ids, player, disabled);
+            int id = room->askForAG(player, enabled, true, "iktianyan");
+            if (id != -1) {
+                index = ids.indexOf(id);
+                ids.removeOne(id);
+                result = id;
+            }
+            room->clearAG(player);
+        }
+
+        QList<int> &drawPile = room->getDrawPile();
+        for (int i = ids.length() - 1; i >= 0; i--)
+            drawPile.prepend(ids.at(i));
+        room->doBroadcastNotify(QSanProtocol::S_COMMAND_UPDATE_PILE, Json::Value(drawPile.length()));
+        if (result == -1)
+            room->setPlayerFlag(player, "Global_IkTianyanFailed");
+        else {
+            LogMessage log;
+            log.type = "#IkTianyanUse";
+            log.from = player;
+            log.arg = "iktianyan";
+            log.arg2 = QString("CAPITAL(%1)").arg(index + 1);
+            room->sendLog(log);
+        }
+        return result;
+    }
+};
+
+IkTianyanCard::IkTianyanCard() {
+}
+
+bool IkTianyanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    const Card *card = NULL;
+    if (!user_string.isEmpty())
+        card = Sanguosha->cloneCard(user_string.split("+").first());
+    return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
+}
+
+bool IkTianyanCard::targetFixed() const{
+    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE)
+        return true;
+
+    const Card *card = NULL;
+    if (!user_string.isEmpty())
+        card = Sanguosha->cloneCard(user_string.split("+").first());
+    return card && card->targetFixed();
+}
+
+bool IkTianyanCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    const Card *card = NULL;
+    if (!user_string.isEmpty())
+        card = Sanguosha->cloneCard(user_string.split("+").first());
+    return card && card->targetsFeasible(targets, Self);
+}
+
+const Card *IkTianyanCard::validateInResponse(ServerPlayer *user) const{
+    Room *room = user->getRoom();
+    QList<int> ids = room->getNCards(2, false);
+    QStringList names = user_string.split("+");
+    if (names.contains("slash")) names << "fire_slash" << "thunder_slash";
+
+    QList<int> enabled, disabled;
+    foreach (int id, ids) {
+        if (names.contains(Sanguosha->getCard(id)->objectName()))
+            enabled << id;
+        else
+            disabled << id;
+    }
+
+    LogMessage log;
+    log.type = "#InvokeSkill";
+    log.from = user;
+    log.arg = "iktianyan";
+    room->sendLog(log);
+
+    int id = IkTianyan::view(room, user, ids, enabled, disabled);
+    return Sanguosha->getCard(id);
+}
+
+const Card *IkTianyanCard::validate(CardUseStruct &cardUse) const{
+    cardUse.m_isOwnerUse = false;
+    ServerPlayer *user = cardUse.from;
+    Room *room = user->getRoom();
+    QList<int> ids = room->getNCards(2, false);
+    QStringList names = user_string.split("+");
+    if (names.contains("slash")) names << "fire_slash" << "thunder_slash";
+
+    QList<int> enabled, disabled;
+    foreach (int id, ids) {
+        if (names.contains(Sanguosha->getCard(id)->objectName()))
+            enabled << id;
+        else
+            disabled << id;
+    }
+
+    LogMessage log;
+    log.type = "#InvokeSkill";
+    log.from = user;
+    log.arg = "iktianyan";
+    room->sendLog(log);
+
+    int id = IkTianyan::view(room, user, ids, enabled, disabled);
+    return Sanguosha->getCard(id);
+}
+
+IkCangwuCard::IkCangwuCard() {
+}
+
+bool IkCangwuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (!targets.isEmpty() || qMax(0, to_select->getHp()) != subcardsLength())
+        return false;
+
+    if (Self->getWeapon() && subcards.contains(Self->getWeapon()->getId())) {
+        const Weapon *weapon = qobject_cast<const Weapon *>(Self->getWeapon()->getRealCard());
+        int distance_fix = weapon->getRange() - Self->getAttackRange(false);
+        if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
+            distance_fix += 1;
+        return Self->inMyAttackRange(to_select, distance_fix);
+    } else if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId())) {
+        return Self->inMyAttackRange(to_select, 1);
+    } else
+        return Self->inMyAttackRange(to_select);
+}
+
+void IkCangwuCard::onEffect(const CardEffectStruct &effect) const{
+    effect.from->getRoom()->damage(DamageStruct("ikcangwu", effect.from, effect.to));
+    if (effect.from->hasFlag("IkCangwuEnterDying"))
+        effect.from->getRoom()->loseHp(effect.from, 1);
+}
+
+class IkCangwuViewAsSkill: public ViewAsSkill {
+public:
+    IkCangwuViewAsSkill(): ViewAsSkill("ikcangwu") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->canDiscard(player, "he") && !player->hasFlag("IkCangwuEnterDying");
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
+        return !Self->isJilei(to_select);
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        IkCangwuCard *ikcangwu = new IkCangwuCard;
+        if (!cards.isEmpty())
+            ikcangwu->addSubcards(cards);
+        return ikcangwu;
+    }
+};
+
+class IkCangwu: public TriggerSkill {
+public:
+    IkCangwu(): TriggerSkill("ikcangwu") {
+        events << QuitDying;
+        view_as_skill = new IkCangwuViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer* &) const{
+        DyingStruct dying = data.value<DyingStruct>();
+        if (dying.damage && dying.damage->getReason() == "ikcangwu" && !dying.damage->chain && !dying.damage->transfer) {
+            ServerPlayer *from = dying.damage->from;
+            if (from && from->isAlive()) {
+                room->setPlayerFlag(from, "IkCangwuEnterDying");
+            }
+        }
+        return QStringList();
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -2148,6 +2410,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     snow032->addSkill(new IkQiwu);
     snow032->addSkill(new IkShendao);
 
+    General *snow033 = new General(this, "snow033", "yuki", 3);
+    snow033->addSkill(new IkTianyan);
+    snow033->addSkill(new IkCangwu);
+
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
     addMetaObject<IkMoqiCard>();
@@ -2157,6 +2423,8 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkShenyuCard>();
     addMetaObject<IkFenxunCard>();
     addMetaObject<IkHongrouCard>();
+    addMetaObject<IkTianyanCard>();
+    addMetaObject<IkCangwuCard>();
 
     skills << new IkAnshen << new IkAnshenRecord;
     related_skills.insertMulti("ikanshen", "#ikanshen-record");
