@@ -385,124 +385,6 @@ public:
     }
 };
 
-class Xingwu: public TriggerSkill {
-public:
-    Xingwu(): TriggerSkill("xingwu") {
-        events << PreCardUsed << CardResponded << EventPhaseStart << CardsMoveOneTime;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == PreCardUsed || triggerEvent == CardResponded) {
-            const Card *card = NULL;
-            if (triggerEvent == PreCardUsed)
-                card = data.value<CardUseStruct>().card;
-            else {
-                CardResponseStruct response = data.value<CardResponseStruct>();
-                if (response.m_isUse)
-                   card = response.m_card;
-            }
-            if (card && card->getTypeId() != Card::TypeSkill && card->getHandlingMethod() == Card::MethodUse) {
-                int n = player->getMark(objectName());
-                if (card->isBlack())
-                    n |= 1;
-                else if (card->isRed())
-                    n |= 2;
-                player->setMark(objectName(), n);
-            }
-        } else if (triggerEvent == EventPhaseStart) {
-            if (player->getPhase() == Player::Discard) {
-                int n = player->getMark(objectName());
-                bool red_avail = ((n & 2) == 0), black_avail = ((n & 1) == 0);
-                if (player->isKongcheng() || (!red_avail && !black_avail))
-                    return false;
-                QString pattern = ".|.|.|hand";
-                if (red_avail != black_avail)
-                    pattern = QString(".|%1|.|hand").arg(red_avail ? "red" : "black");
-                const Card *card = room->askForCard(player, pattern, "@xingwu", QVariant(), Card::MethodNone);
-                if (card) {
-                    room->notifySkillInvoked(player, objectName());
-                    room->broadcastSkillInvoke(objectName(), 1);
-
-                    LogMessage log;
-                    log.type = "#InvokeSkill";
-                    log.from = player;
-                    log.arg = objectName();
-                    room->sendLog(log);
-
-                    player->addToPile(objectName(), card);
-                }
-            } else if (player->getPhase() == Player::RoundStart) {
-                player->setMark(objectName(), 0);
-            }
-        } else if (triggerEvent == CardsMoveOneTime) {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.to == player && move.to_place == Player::PlaceSpecial && player->getPile(objectName()).length() >= 3) {
-                player->clearOnePrivatePile(objectName());
-                QList<ServerPlayer *> males;
-                foreach (ServerPlayer *p, room->getAlivePlayers()) {
-                    if (p->isMale())
-                        males << p;
-                }
-                if (males.isEmpty()) return false;
-
-                ServerPlayer *target = room->askForPlayerChosen(player, males, objectName(), "@xingwu-choose");
-                room->broadcastSkillInvoke(objectName(), 2);
-                room->damage(DamageStruct(objectName(), player, target, 2));
-
-                if (!player->isAlive()) return false;
-                QList<const Card *> equips = target->getEquips();
-                if (!equips.isEmpty()) {
-                    DummyCard *dummy = new DummyCard;
-                    foreach (const Card *equip, equips) {
-                        if (player->canDiscard(target, equip->getEffectiveId()))
-                            dummy->addSubcard(equip);
-                    }
-                    if (dummy->subcardsLength() > 0)
-                        room->throwCard(dummy, target, player);
-                    delete dummy;
-                }
-            }
-        }
-        return false;
-    }
-};
-
-class Luoyan: public TriggerSkill {
-public:
-    Luoyan(): TriggerSkill("luoyan") {
-        events << CardsMoveOneTime << EventAcquireSkill << EventLoseSkill;
-        frequency = Compulsory;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == EventLoseSkill && data.toString() == objectName()) {
-            room->handleAcquireDetachSkills(player, "-ikzhihui|-ikxuanhuo", true);
-        } else if (triggerEvent == EventAcquireSkill && data.toString() == objectName()) {
-            if (!player->getPile("xingwu").isEmpty()) {
-                room->notifySkillInvoked(player, objectName());
-                room->handleAcquireDetachSkills(player, "ikzhihui|ikxuanhuo");
-            }
-        } else if (triggerEvent == CardsMoveOneTime && player->isAlive() && player->hasSkill(objectName(), true)) {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.to == player && move.to_place == Player::PlaceSpecial && move.to_pile_name == "xingwu") {
-                if (player->getPile("xingwu").length() == 1) {
-                    room->notifySkillInvoked(player, objectName());
-                    room->handleAcquireDetachSkills(player, "ikzhihui|ikxuanhuo");
-                }
-            } else if (move.from == player && move.from_places.contains(Player::PlaceSpecial)
-                       && move.from_pile_names.contains("xingwu")) {
-                if (player->getPile("xingwu").isEmpty())
-                    room->handleAcquireDetachSkills(player, "-ikzhihui|-ikxuanhuo", true);
-            }
-        }
-        return false;
-    }
-};
-
 ZhoufuCard::ZhoufuCard() {
     mute = true;
     will_throw = false;
@@ -1134,10 +1016,6 @@ SPPackage::SPPackage()
     General *chenlin = new General(this, "chenlin", "wei", 3); // SP 020
     chenlin->addSkill(new Bifa);
     chenlin->addSkill(new Songci);
-
-    General *erqiao = new General(this, "erqiao", "wu", 3, false); // SP 021
-    erqiao->addSkill(new Xingwu);
-    erqiao->addSkill(new Luoyan);
 
     General *sp_shenlvbu = new General(this, "sp_shenlvbu", "god", 5, true, true); // SP 022
     sp_shenlvbu->addSkill("ikzhuohuo");
