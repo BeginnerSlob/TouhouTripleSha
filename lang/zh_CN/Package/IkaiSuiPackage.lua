@@ -191,9 +191,10 @@ return {
 	[":ikzhizhai"] = "锁定技，每当你受到伤害时，伤害来源须展示全部的手牌，否则此伤害-1。",
 	["ikzhizhai:show"] = "展示全部的手牌",
 	["ikzhizhai:reduce"] = "此伤害-1",
-	["#ikzhizhaiDecrease"] = "%from 保留了手中的节操，对 %to 造成的伤害从 %arg 减至 %arg2 。",
+	["#IkZhizhai"] = "%from 的“<font color=\"yellow\"><b>纸砦</b></font>”被触发，伤害从 %arg 点减少至 %arg2 点",
 	["iklihui"] = "礼惠",
 	[":iklihui"] = "当你的牌因弃置而置入弃牌堆时，你可以将其交给一名其他角色。",
+	["@iklihui-distribute"] = "你可以发动“礼惠”将 %arg 张牌任意分配给其他角色",
 
 	["#luna021"] = "绯闪",
 	["luna021"] = "亚里亚•福尔摩斯•神崎",--月 - 空 - 4血

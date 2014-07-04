@@ -2388,6 +2388,115 @@ public:
     }
 };
 
+class IkZhizhai: public TriggerSkill {
+public:
+    IkZhizhai(): TriggerSkill("ikzhizhai") {
+        events << DamageInflicted;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.from)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->notifySkillInvoked(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+
+        DamageStruct damage = data.value<DamageStruct>();
+        QStringList choices;
+        if (!damage.from->isKongcheng())
+            choices << "show";
+        choices << "reduce";
+        if (room->askForChoice(damage.from, objectName(), choices.join("+")) == "show") {
+            LogMessage log;
+            log.type = "#TriggerSkill";
+            log.from = player;
+            log.arg = objectName();
+            room->sendLog(log);
+            room->showAllCards(damage.from);
+        } else {
+            LogMessage log;
+            log.type = "#IkZhizhai";
+            log.from = player;
+            log.arg = QString::number(damage.damage);
+            log.arg2 = QString::number(--damage.damage);
+            room->sendLog(log);
+
+            if (damage.damage < 1)
+                return true;
+            data = QVariant::fromValue(damage);
+        }
+
+        return false;
+    }
+};
+
+class IkLihui: public TriggerSkill {
+public:
+    IkLihui(): TriggerSkill("iklihui") {
+        events << BeforeCardsMove;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *kongrong, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(kongrong)) return QStringList();
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.from != kongrong)
+            return QStringList();
+        if (move.to_place == Player::DiscardPile
+            && ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)) {
+
+            int i = 0;
+            QList<int> lihui_card;
+            foreach (int card_id, move.card_ids) {
+                if (room->getCardOwner(card_id) == move.from
+                    && (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip)) {
+                        return QStringList(objectName());
+                }
+                i++;
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *kongrong, QVariant &data, ServerPlayer *) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+
+        int i = 0;
+        QList<int> lihui_card;
+        foreach (int card_id, move.card_ids) {
+            if (room->getCardOwner(card_id) == move.from
+                && (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip)) {
+                    lihui_card << card_id;
+            }
+            i++;
+        }
+
+        if (lihui_card.isEmpty())
+            return false;
+        
+        QList<int> original_lihui = lihui_card;
+        while (room->askForYiji(kongrong, lihui_card, objectName(), false, true, true, -1,
+                                QList<ServerPlayer *>(), move.reason, "@iklihui-distribute", true)) {
+            if (kongrong->isDead()) break;
+        }
+        
+        QList<int> ids;
+        foreach (int card_id, original_lihui) {
+            if (!lihui_card.contains(card_id))
+                ids << card_id;
+        }
+        move.removeCardIds(ids);
+        data = QVariant::fromValue(move);
+        
+        return false;
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -2501,6 +2610,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *luna019 = new General(this, "luna019", "tsuki");
     luna019->addSkill("thxiagong");
     luna019->addSkill(new IkZhange);
+
+    General *luna020 = new General(this, "luna020", "tsuki", 3);
+    luna020->addSkill(new IkZhizhai);
+    luna020->addSkill(new IkLihui);
 
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
