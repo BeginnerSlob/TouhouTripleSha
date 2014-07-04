@@ -2321,6 +2321,7 @@ int IkChenyan::getKingdoms(ServerPlayer *yuanshu) const{
 }
 
 QStringList IkChenyan::triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *yuanshu, QVariant &data, ServerPlayer* &) const{
+    if (!TriggerSkill::triggerable(yuanshu)) return QStringList();
     if (triggerEvent == DrawNCards)
         return QStringList(objectName());
     else if (triggerEvent == EventPhaseStart && yuanshu->getPhase() == Player::Discard && !yuanshu->isNude())
