@@ -2497,6 +2497,70 @@ public:
     }
 };
 
+IkShuangrenCard::IkShuangrenCard() {
+}
+
+bool IkShuangrenCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
+}
+
+void IkShuangrenCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    bool success = effect.from->pindian(effect.to, "ikshuangren", NULL);
+    if (success) {
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *target, room->getAlivePlayers()) {
+            if (effect.from->canSlash(target, NULL, false))
+                targets << target;
+        }
+        if (targets.isEmpty())
+            return;
+
+        ServerPlayer *target = room->askForPlayerChosen(effect.from, targets, "ikshuangren", "@dummy-slash");
+
+        Slash *slash = new Slash(Card::NoSuit, 0);
+        slash->setSkillName("_ikshuangren");
+        room->useCard(CardUseStruct(slash, effect.from, target));
+    } else {
+        room->setPlayerFlag(effect.from, "IkShuangrenSkipPlay");
+    }
+}
+
+class IkShuangrenViewAsSkill: public ZeroCardViewAsSkill {
+public:
+    IkShuangrenViewAsSkill(): ZeroCardViewAsSkill("ikshuangren") {
+        response_pattern = "@@ikshuangren";
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkShuangrenCard;
+    }
+};
+
+class IkShuangren: public PhaseChangeSkill {
+public:
+    IkShuangren(): PhaseChangeSkill("ikshuangren") {
+        view_as_skill = new IkShuangrenViewAsSkill;
+    }
+
+    virtual bool triggerable(const ServerPlayer *jiling) const{
+        foreach (ServerPlayer *player, jiling->getRoom()->getAllPlayers()) {
+            if (player == jiling) continue;
+            if (!player->isKongcheng())
+                return jiling->getPhase() == Player::Play && !jiling->isKongcheng();
+        }
+        return false;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *jiling, QVariant &, ServerPlayer *) const{
+        return room->askForUseCard(jiling, "@@ikshuangren", "@ikshuangren-card");
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *jiling) const{
+        return jiling->hasFlag("IkShuangrenSkipPlay");
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -2615,6 +2679,11 @@ IkaiSuiPackage::IkaiSuiPackage()
     luna020->addSkill(new IkZhizhai);
     luna020->addSkill(new IkLihui);
 
+    General *luna021 = new General(this, "luna021", "tsuki");
+    luna021->addSkill(new IkShuangren);
+    luna021->addSkill(new SlashNoDistanceLimitSkill("ikshuangren"));
+    related_skills.insertMulti("ikshuangren", "#ikshuangren-slash-ndl");
+
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
     addMetaObject<IkMoqiCard>();
@@ -2627,6 +2696,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkTianyanCard>();
     addMetaObject<IkCangwuCard>();
     addMetaObject<IkZhangeCard>();
+    addMetaObject<IkShuangrenCard>();
 
     skills << new IkAnshen << new IkAnshenRecord;
     related_skills.insertMulti("ikanshen", "#ikanshen-record");
