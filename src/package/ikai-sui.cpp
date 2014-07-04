@@ -2359,6 +2359,46 @@ bool IkChenyan::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *yuan
     return false;
 }
 
+IkZhangeCard::IkZhangeCard() {
+}
+
+bool IkZhangeCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (Self->aliveCount() > 5)
+        return targets.length() < 3;
+    else
+        return targets.length() < 2;
+}
+
+void IkZhangeCard::onUse(Room *room, const CardUseStruct &card_use) const{
+    CardUseStruct use = card_use;
+    room->removePlayerMark(use.from, "@zhange");
+    room->addPlayerMark(use.from, "@zhangeused");
+    SkillCard::onUse(room, use);
+}
+
+void IkZhangeCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    foreach (ServerPlayer *p, targets)
+        p->drawCards(3, "ikzhange");
+    if (targets.length() == 1 && targets.contains(source) && source->isWounded())
+        room->recover(source, RecoverStruct(source));
+}
+
+class IkZhange: public ZeroCardViewAsSkill {
+public:
+    IkZhange(): ZeroCardViewAsSkill("ikzhange") {
+        frequency = Limited;
+        limit_mark = "@zhange";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->getMark("@zhange") >= 1;
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkZhangeCard;
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -2469,6 +2509,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     luna017->addSkill(new IkChenyan);
     luna017->addSkill("ikshengzun");
 
+    General *luna019 = new General(this, "luna019", "tsuki");
+    luna019->addSkill("thxiagong");
+    luna019->addSkill(new IkZhange);
+
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
     addMetaObject<IkMoqiCard>();
@@ -2480,6 +2524,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkHongrouCard>();
     addMetaObject<IkTianyanCard>();
     addMetaObject<IkCangwuCard>();
+    addMetaObject<IkZhangeCard>();
 
     skills << new IkAnshen << new IkAnshenRecord;
     related_skills.insertMulti("ikanshen", "#ikanshen-record");
