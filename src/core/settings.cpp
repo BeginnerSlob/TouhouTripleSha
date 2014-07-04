@@ -68,7 +68,7 @@ void Settings::init() {
     if (banpackagelist.isEmpty()) {
         banpackagelist << "standard" << "wind" << "fire" << "thicket" << "mountain"
                        << "god" << "YJCM" << "YJCM2012" << "YJCM2013" << "YJCM2014"
-                       << "Special3v3" << "Special3v3Ext" << "Special1v1" << "Special1v1Ext"
+                       << "Special3v3" << "Special1v1" << "Special1v1Ext"
                        << "assassins" << "sp-old" << "OL" << "Taiwan_sp" << "miscellaneous"
                        << "nostalgia" << "BGM" << "BGMDIY" << "ling"
                        << "hegemony" << "h_formation" << "h_momentum" << "hegemony_sp"
