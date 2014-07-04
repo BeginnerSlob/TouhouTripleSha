@@ -609,53 +609,6 @@ public:
     }
 };
 
-class Kangkai: public TriggerSkill {
-public:
-    Kangkai(): TriggerSkill("kangkai") {
-        events << TargetConfirmed;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("Slash")) {
-            foreach (ServerPlayer *to, use.to) {
-                if (!player->isAlive()) break;
-                if (player->distanceTo(to) <= 1 && TriggerSkill::triggerable(player)) {
-                    player->tag["KangkaiSlash"] = data;
-                    bool will_use = room->askForSkillInvoke(player, objectName(), QVariant::fromValue(to));
-                    player->tag.remove("KangkaiSlash");
-                    if (!will_use) continue;
-
-                    player->drawCards(1, "kangkai");
-                    if (!player->isNude() && player != to) {
-                        const Card *card = NULL;
-                        if (player->getCardCount() > 1) {
-                            card = room->askForCard(player, "..!", "@kangkai-give:" + to->objectName(), data, Card::MethodNone);
-                            if (!card)
-                                card = player->getCards("he").at(qrand() % player->getCardCount());
-                        } else {
-                            Q_ASSERT(player->getCardCount() == 1);
-                            card = player->getCards("he").first();
-                        }
-                        to->obtainCard(card);
-                        if (card->getTypeId() == Card::TypeEquip && room->getCardOwner(card->getEffectiveId()) == to
-                            && !to->isLocked(card)) {
-                            to->tag["KangkaiSlash"] = data;
-                            to->tag["KangkaiGivenCard"] = QVariant::fromValue(card);
-                            bool will_use = room->askForSkillInvoke(to, "kangkai_use", "use");
-                            to->tag.remove("KangkaiSlash");
-                            to->tag.remove("KangkaiGivenCard");
-                            if (will_use)
-                                room->useCard(CardUseStruct(card, to, to));
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-};
-
 #include "jsonutils.h"
 class AocaiViewAsSkill: public ZeroCardViewAsSkill {
 public:
@@ -858,107 +811,6 @@ public:
             if (target->isAlive())
                 room->drawCards(target, len, objectName());
         }
-        return false;
-    }
-};
-
-class Gongao: public TriggerSkill {
-public:
-    Gongao(): TriggerSkill("gongao") {
-        events << Death;
-        frequency = Compulsory;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.arg = objectName();
-        log.from = player;
-        room->sendLog(log);
-
-        room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
-
-        LogMessage log2;
-        log2.type = "#GainMaxHp";
-        log2.from = player;
-        log2.arg = "1";
-        room->sendLog(log2);
-
-        room->setPlayerProperty(player, "maxhp", player->getMaxHp() + 1);
-
-        if (player->isWounded()) {
-            room->recover(player, RecoverStruct(player));
-        } else {
-            LogMessage log3;
-            log3.type = "#GetHp";
-            log3.from = player;
-            log3.arg = QString::number(player->getHp());
-            log3.arg2 = QString::number(player->getMaxHp());
-            room->sendLog(log3);
-        }
-        return false;
-    }
-};
-
-class Juyi: public PhaseChangeSkill {
-public:
-    Juyi(): PhaseChangeSkill("juyi") {
-        frequency = Wake;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && PhaseChangeSkill::triggerable(target)
-               && target->getPhase() == Player::Start
-               && target->getMark("juyi") == 0
-               && target->isWounded()
-               && target->getMaxHp() > target->aliveCount();
-    }
-
-    virtual bool onPhaseChange(ServerPlayer *zhugedan) const{
-        Room *room = zhugedan->getRoom();
-
-        room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(zhugedan, objectName());
-        room->doLightbox("$JuyiAnimate");
-
-        LogMessage log;
-        log.type = "#JuyiWake";
-        log.from = zhugedan;
-        log.arg = QString::number(zhugedan->getMaxHp());
-        log.arg2 = QString::number(zhugedan->aliveCount());
-        room->sendLog(log);
-
-        room->setPlayerMark(zhugedan, "juyi", 1);
-        room->addPlayerMark(zhugedan, "@waked");
-        int diff = zhugedan->getHandcardNum() - zhugedan->getMaxHp();
-        if (diff < 0)
-            room->drawCards(zhugedan, -diff, objectName());
-        if (zhugedan->getMark("juyi") == 1)
-            room->handleAcquireDetachSkills(zhugedan, "ikbenghuai|weizhong");
-
-        return false;
-    }
-};
-
-class Weizhong: public TriggerSkill {
-public:
-    Weizhong(): TriggerSkill("weizhong") {
-        events << MaxHpChanged;
-        frequency = Compulsory;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.arg = objectName();
-        log.from = player;
-        room->sendLog(log);
-
-        room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
-
-        player->drawCards(1, objectName());
         return false;
     }
 };
@@ -1300,9 +1152,6 @@ SPPackage::SPPackage()
     zhangbao->addSkill(new Zhoufu);
     zhangbao->addSkill(new Yingbing);
 
-    General *caoang = new General(this, "caoang", "wei"); // SP 026
-    caoang->addSkill(new Kangkai);
-
     General *sp_zhugejin = new General(this, "sp_zhugejin", "wu", 3, true, true); // SP 027
     sp_zhugejin->addSkill("hongyuan");
     sp_zhugejin->addSkill("huanshi");
@@ -1316,13 +1165,8 @@ SPPackage::SPPackage()
     zumao->addSkill(new Juedi);
 
     General *sp_dingfeng = new General(this, "sp_dingfeng", "wu", 4, true, true); // SP 031
-    sp_dingfeng->addSkill("duanbing");
-    sp_dingfeng->addSkill("fenxun");
-
-    General *zhugedan = new General(this, "zhugedan", "wei", 4); // SP 032
-    zhugedan->addSkill(new Gongao);
-    zhugedan->addSkill(new Juyi);
-    zhugedan->addRelateSkill("weizhong");
+    sp_dingfeng->addSkill("ikxindu");
+    sp_dingfeng->addSkill("ikfenxun");
 
     General *sp_hetaihou = new General(this, "sp_hetaihou", "qun", 3, false, true); // SP 033
     sp_hetaihou->addSkill("zhendu");
@@ -1332,8 +1176,6 @@ SPPackage::SPPackage()
     addMetaObject<SongciCard>();
     addMetaObject<ZhoufuCard>();
     addMetaObject<YinbingCard>();
-
-    skills << new Weizhong;
 }
 
 ADD_PACKAGE(SP)

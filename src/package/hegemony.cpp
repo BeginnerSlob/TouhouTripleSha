@@ -6,68 +6,6 @@
 #include "room.h"
 #include "standard-skillcards.h"
 
-FenxunCard::FenxunCard() {
-}
-
-bool FenxunCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select != Self;
-}
-
-void FenxunCard::onEffect(const CardEffectStruct &effect) const{
-    Room *room = effect.from->getRoom();
-    effect.from->tag["FenxunTarget"] = QVariant::fromValue(effect.to);
-    room->setFixedDistance(effect.from, effect.to, 1);
-}
-
-class FenxunViewAsSkill: public OneCardViewAsSkill {
-public:
-    FenxunViewAsSkill(): OneCardViewAsSkill("fenxun") {
-        filter_pattern = ".!";
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->canDiscard(player, "he") && !player->hasUsed("FenxunCard");
-    }
-
-    virtual const Card *viewAs(const Card *originalcard) const{
-        FenxunCard *first = new FenxunCard;
-        first->addSubcard(originalcard->getId());
-        first->setSkillName(objectName());
-        return first;
-    }
-};
-
-class Fenxun: public TriggerSkill {
-public:
-    Fenxun(): TriggerSkill("fenxun") {
-        events << EventPhaseChanging << Death;
-        view_as_skill = new FenxunViewAsSkill;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->tag["FenxunTarget"].value<ServerPlayer *>() != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *dingfeng, QVariant &data) const{
-        if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to != Player::NotActive)
-                return false;
-        } else if (triggerEvent == Death) {
-            DeathStruct death = data.value<DeathStruct>();
-            if (death.who != dingfeng)
-                return false;
-        }
-        ServerPlayer *target = dingfeng->tag["FenxunTarget"].value<ServerPlayer *>();
-
-        if (target) {
-            room->setFixedDistance(dingfeng, target, -1);
-            dingfeng->tag.remove("FenxunTarget");
-        }
-        return false;
-    }
-};
-
 class Mingshi: public TriggerSkill {
 public:
     Mingshi(): TriggerSkill("mingshi") {
@@ -589,10 +527,6 @@ HegemonyPackage::HegemonyPackage()
     General *heg_luxun = new General(this, "heg_luxun", "wu", 3); // WU 007 G
     heg_luxun->addSkill("ikyuanhe");
 
-    General *dingfeng = new General(this, "dingfeng", "wu"); // WU 016
-    dingfeng->addSkill(new Skill("duanbing", Skill::Compulsory));
-    dingfeng->addSkill(new Fenxun);
-
     General *mateng = new General(this, "mateng", "qun"); // QUN 013
     mateng->addSkill("thjibu");
     mateng->addSkill(new Xiongyi);
@@ -653,7 +587,6 @@ HegemonyPackage::HegemonyPackage()
     heg_diaochan->addSkill("ikmoyu");
     heg_diaochan->addSkill("ikzhuoyue");
 
-    addMetaObject<FenxunCard>();
     addMetaObject<ShuangrenCard>();
     addMetaObject<XiongyiCard>();
     addMetaObject<QingchengCard>();
