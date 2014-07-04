@@ -6,79 +6,6 @@
 #include "room.h"
 #include "standard-skillcards.h"
 
-class Mingshi: public TriggerSkill {
-public:
-    Mingshi(): TriggerSkill("mingshi") {
-        events << DamageInflicted;
-        frequency = Compulsory;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        DamageStruct damage = data.value<DamageStruct>();
-        if (damage.from) {
-            if (damage.from->getEquips().length() <= qMin(2, player->getEquips().length())) {
-                room->notifySkillInvoked(player, objectName());
-                room->broadcastSkillInvoke(objectName());
-
-                LogMessage log;
-                log.type = "#Mingshi";
-                log.from = player;
-                log.arg = QString::number(damage.damage);
-                log.arg2 = QString::number(--damage.damage);
-                room->sendLog(log);
-
-                if (damage.damage < 1)
-                    return true;
-                data = QVariant::fromValue(damage);
-            }
-        }
-        return false;
-    }
-};
-
-class Lirang: public TriggerSkill {
-public:
-    Lirang(): TriggerSkill("lirang") {
-        events << BeforeCardsMove;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *kongrong, QVariant &data) const{
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (move.from != kongrong)
-            return false;
-        if (move.to_place == Player::DiscardPile
-            && ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)) {
-
-            int i = 0;
-            QList<int> lirang_card;
-            foreach (int card_id, move.card_ids) {
-                if (room->getCardOwner(card_id) == move.from
-                    && (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip)) {
-                        lirang_card << card_id;
-                }
-                i++;
-            }
-            if (lirang_card.isEmpty())
-                return false;
-
-            QList<int> original_lirang = lirang_card;
-            while (room->askForYiji(kongrong, lirang_card, objectName(), false, true, true, -1,
-                                    QList<ServerPlayer *>(), move.reason, "@lirang-distribute", true)) {
-                if (kongrong->isDead()) break;
-            }
-
-            QList<int> ids;
-            foreach (int card_id, original_lirang) {
-                if (!lirang_card.contains(card_id))
-                    ids << card_id;
-            }
-            move.removeCardIds(ids);
-            data = QVariant::fromValue(move);
-        }
-        return false;
-    }
-};
-
 class Sijian: public TriggerSkill {
 public:
     Sijian(): TriggerSkill("sijian") {
@@ -481,10 +408,6 @@ HegemonyPackage::HegemonyPackage()
 
     General *heg_luxun = new General(this, "heg_luxun", "wu", 3); // WU 007 G
     heg_luxun->addSkill("ikyuanhe");
-
-    General *kongrong = new General(this, "kongrong", "qun", 3); // QUN 014
-    kongrong->addSkill(new Mingshi);
-    kongrong->addSkill(new Lirang);
 
     General *jiling = new General(this, "jiling", "qun", 4); // QUN 015
     jiling->addSkill(new Shuangren);
