@@ -927,6 +927,22 @@ QString Player::getSkillDescription() const{
     }
 
     if (description.isEmpty()) description = tr("No skills");
+
+    if (general) {
+        QString name_origin = Sanguosha->translate(general->objectName());
+        QString color_str = "#000000";
+        if (isMale()) {
+            color_str = "#F08947";
+            name_origin.append(QString(" - %1").arg(Sanguosha->translate("male")));
+        } else if (isFemale()) {
+            color_str = "#87519C";
+            name_origin.append(QString(" - %1").arg(Sanguosha->translate("female")));
+        }
+        QString name = QString("<font color=%1><b>%2</b></font>").arg(color_str).arg(name_origin);
+        name.append("<br/> <br/>");
+        description.prepend(name);
+    }
+
     return description;
 }
 
