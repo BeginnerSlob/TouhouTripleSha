@@ -1,15 +1,15 @@
-#ifndef IKAIKI_H
-#define IKAIKI_H
+#ifndef IKAIMOKU_H
+#define IKAIMOKU_H
 
 #include "package.h"
 #include "card.h"
 #include "skill.h"
 
-class IkaiKiPackage : public Package{
+class IkaiMokuPackage : public Package{
     Q_OBJECT
 
 public:
-    IkaiKiPackage();
+    IkaiMokuPackage();
 };
 
 class IkTiaoxinCard: public SkillCard {
@@ -295,4 +295,4 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-#endif // IKAIKI_H
+#endif // IKAIMOKU_H

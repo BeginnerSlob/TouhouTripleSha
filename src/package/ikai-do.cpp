@@ -1,4 +1,4 @@
-#include "ikai-tsuchi.h"
+#include "ikai-do.h"
 
 #include "general.h"
 #include "skill.h"
@@ -2608,8 +2608,8 @@ public:
     }
 };
 
-IkaiTsuchiPackage::IkaiTsuchiPackage()
-    :Package("ikai-tsuchi")
+IkaiDoPackage::IkaiDoPackage()
+    :Package("ikai-do")
 {
     General *wind001 = new General(this, "wind001$", "kaze");
     wind001->addSkill(new IkShenai);
@@ -2790,4 +2790,4 @@ IkaiTsuchiPackage::IkaiTsuchiPackage()
     patterns["peach+analeptic"] = new ExpPattern("Peach,Analeptic");
 }
 
-ADD_PACKAGE(IkaiTsuchi)
+ADD_PACKAGE(IkaiDo)

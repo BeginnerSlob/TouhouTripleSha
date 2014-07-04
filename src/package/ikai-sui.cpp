@@ -1886,41 +1886,30 @@ public:
 class IkHuaxiao: public TriggerSkill {
 public:
     IkHuaxiao(): TriggerSkill("ikhuaxiao") {
-        events << CardsMoveOneTime << CardUsed << CardResponded;
+        events << CardsMoveOneTime;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         QStringList skill;
         if (!TriggerSkill::triggerable(player)) return skill;
         if (player->getPhase() != Player::NotActive) return skill;
-        if (triggerEvent == CardsMoveOneTime) {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.from != player) return skill;
-            CardMoveReason reason = move.reason;
-            if ((reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
-                const Card *card;
-                int i = 0;
-                foreach (int card_id, move.card_ids) {
-                    card = Sanguosha->getCard(card_id);
-                    if (room->getCardOwner(card_id) == player && card->isRed()
-                        && (move.from_places[i] == Player::PlaceHand
-                            || move.from_places[i] == Player::PlaceEquip)) {
-                        skill << objectName();
-                    }
-                    i++;
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.from != player) return skill;
+        CardMoveReason reason = move.reason;
+        if ((reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD
+            || (reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_USE
+            || (reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_RESPONSE) {
+            const Card *card;
+            int i = 0;
+            foreach (int card_id, move.card_ids) {
+                card = Sanguosha->getCard(card_id);
+                if (room->getCardOwner(card_id) == player && card->isRed()
+                    && (move.from_places[i] == Player::PlaceHand
+                        || move.from_places[i] == Player::PlaceEquip)) {
+                    skill << objectName();
                 }
+                i++;
             }
-        } else {
-            const Card *card = NULL;
-            if (triggerEvent == CardUsed) {
-                CardUseStruct use = data.value<CardUseStruct>();
-                card = use.card;
-            } else if (triggerEvent == CardResponded) {
-                CardResponseStruct resp = data.value<CardResponseStruct>();
-                card = resp.m_card;
-            }
-            if (card && card->isRed())
-                skill << objectName();
         }
         return skill;
     }

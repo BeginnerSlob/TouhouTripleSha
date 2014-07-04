@@ -1,6 +1,6 @@
 #include "bgm.h"
 #include "skill.h"
-#include "ikai-tsuchi.h"
+#include "ikai-do.h"
 #include "clientplayer.h"
 #include "engine.h"
 #include "settings.h"

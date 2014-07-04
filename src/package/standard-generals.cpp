@@ -620,7 +620,7 @@ public:
     }
 };
 
-#include "ikai-ki.h"
+#include "ikai-moku.h"
 #include "maneuvering.h"
 class GdJuejing: public TriggerSkill {
 public:
