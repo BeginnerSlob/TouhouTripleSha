@@ -146,102 +146,6 @@ public:
     }
 };
 
-class IkMitu: public TriggerSkill {
-public:
-    IkMitu(): TriggerSkill("ikmitu") {
-        events << DamageCaused << DamageInflicted;
-        frequency = Compulsory;
-    }
-
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
-        DamageStruct damage = data.value<DamageStruct>();
-        if (damage.card && damage.card->getTypeId() == Card::TypeTrick) {
-            if (triggerEvent == DamageInflicted && TriggerSkill::triggerable(player)) {
-                return QStringList(objectName());
-            } else if (triggerEvent == DamageCaused && damage.from && TriggerSkill::triggerable(damage.from)) {
-                ask_who = damage.from;
-                return QStringList(objectName());
-            }
-        }
-        return QStringList();
-    }
-
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
-        LogMessage log;
-        log.type = "#IkMitu";
-        log.from = ask_who;
-        log.arg = objectName();
-        room->sendLog(log);
-        room->notifySkillInvoked(ask_who, objectName());
-        room->broadcastSkillInvoke(objectName());
-
-        return true;
-    }
-};
-
-JujianCard::JujianCard() {
-    mute = true;
-}
-
-bool JujianCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select != Self;
-}
-
-void JujianCard::onEffect(const CardEffectStruct &effect) const{
-    Room *room = effect.from->getRoom();
-    if (effect.to->getGeneralName().contains("zhugeliang") || effect.to->getGeneralName() == "wolong")
-        room->broadcastSkillInvoke("jujian", 2);
-    else
-        room->broadcastSkillInvoke("jujian", 1);
-
-    QStringList choicelist;
-    choicelist << "draw";
-    if (effect.to->isWounded())
-        choicelist << "recover";
-    if (!effect.to->faceUp() || effect.to->isChained())
-        choicelist << "reset";
-    QString choice = room->askForChoice(effect.to, "jujian", choicelist.join("+"));
-
-    if (choice == "draw")
-        effect.to->drawCards(2, "jujian");
-    else if (choice == "recover")
-        room->recover(effect.to, RecoverStruct(effect.from));
-    else if (choice == "reset") {
-        if (effect.to->isChained())
-            room->setPlayerProperty(effect.to, "chained", false);
-        if (!effect.to->faceUp())
-            effect.to->turnOver();
-    }
-}
-
-class JujianViewAsSkill: public OneCardViewAsSkill {
-public:
-    JujianViewAsSkill(): OneCardViewAsSkill("jujian") {
-        filter_pattern = "^BasicCard!";
-        response_pattern = "@@jujian";
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const{
-        JujianCard *jujianCard = new JujianCard;
-        jujianCard->addSubcard(originalCard);
-        return jujianCard;
-    }
-};
-
-class Jujian: public PhaseChangeSkill {
-public:
-    Jujian(): PhaseChangeSkill("jujian") {
-        view_as_skill = new JujianViewAsSkill;
-    }
-
-    virtual bool onPhaseChange(ServerPlayer *xushu) const{
-        Room *room = xushu->getRoom();
-        if (xushu->getPhase() == Player::Finish && xushu->canDiscard(xushu, "he"))
-            room->askForUseCard(xushu, "@@jujian", "@jujian-card", -1, Card::MethodDiscard);
-        return false;
-    }
-};
-
 class Xuanfeng: public TriggerSkill {
 public:
     Xuanfeng(): TriggerSkill("xuanfeng") {
@@ -920,10 +824,6 @@ YJCMPackage::YJCMPackage()
     General *xusheng = new General(this, "xusheng", "wu"); // YJ 008
     xusheng->addSkill(new Pojun);
 
-    General *xushu = new General(this, "xushu", "shu", 3); // YJ 009
-    xushu->addSkill(new IkMitu);
-    xushu->addSkill(new Jujian);
-
     General *yujin = new General(this, "yujin", "wei"); // YJ 010
     yujin->addSkill(new Yizhong);
 
@@ -941,7 +841,6 @@ YJCMPackage::YJCMPackage()
     addMetaObject<MingceCard>();
     addMetaObject<GanluCard>();
     addMetaObject<XianzhenCard>();
-    addMetaObject<JujianCard>();
     addMetaObject<PaiyiCard>();
 
     skills << new Paiyi;

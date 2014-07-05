@@ -314,6 +314,86 @@ public:
     }
 };
 
+class IkMitu: public TriggerSkill {
+public:
+    IkMitu(): TriggerSkill("ikmitu") {
+        events << DamageCaused << DamageInflicted;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.card && damage.card->getTypeId() == Card::TypeTrick) {
+            if (triggerEvent == DamageInflicted && TriggerSkill::triggerable(player)) {
+                return QStringList(objectName());
+            } else if (triggerEvent == DamageCaused && damage.from && TriggerSkill::triggerable(damage.from)) {
+                ask_who = damage.from;
+                return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+        LogMessage log;
+        log.type = triggerEvent == DamageCaused ? "#IkMituGood" : "#IkMituBad";
+        log.from = ask_who;
+        log.arg = objectName();
+        room->sendLog(log);
+        room->notifySkillInvoked(ask_who, objectName());
+        room->broadcastSkillInvoke(objectName());
+
+        return true;
+    }
+};
+
+IkSishiCard::IkSishiCard() {
+}
+
+bool IkSishiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty();
+}
+
+void IkSishiCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+
+    QStringList choicelist;
+    choicelist << "draw";
+    if (effect.to->isWounded())
+        choicelist << "recover";
+    if (!effect.to->faceUp() || effect.to->isChained())
+        choicelist << "reset";
+    QString choice = room->askForChoice(effect.to, "iksishi", choicelist.join("+"));
+
+    if (choice == "draw")
+        effect.to->drawCards(2, "iksishi");
+    else if (choice == "recover")
+        room->recover(effect.to, RecoverStruct(effect.from));
+    else if (choice == "reset") {
+        if (effect.to->isChained())
+            room->setPlayerProperty(effect.to, "chained", false);
+        if (!effect.to->faceUp())
+            effect.to->turnOver();
+    }
+}
+
+class IkSishi: public OneCardViewAsSkill {
+public:
+    IkSishi(): OneCardViewAsSkill("iksishi") {
+        filter_pattern = "^BasicCard!";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkSishiCard") && player->canDiscard(player, "he");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        IkSishiCard *sishiCard = new IkSishiCard;
+        sishiCard->addSubcard(originalCard);
+        return sishiCard;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -327,11 +407,16 @@ IkaiKinPackage::IkaiKinPackage()
     wind017->addSkill(new IkXinchao);
     wind017->addSkill(new IkShangshi);
 
+    General *wind018 = new General(this, "wind018", "kaze", 3);
+    wind018->addSkill(new IkMitu);
+    wind018->addSkill(new IkSishi);
+
     General *bloom022 = new General(this, "bloom022", "hana", 3, false);
     bloom022->addSkill(new IkLundao);
     bloom022->addSkill(new IkXuanwu);
 
     addMetaObject<IkXinchaoCard>();
+    addMetaObject<IkSishiCard>();
 }
 
 ADD_PACKAGE(IkaiKin)
