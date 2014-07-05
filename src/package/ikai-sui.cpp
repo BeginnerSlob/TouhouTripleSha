@@ -3086,6 +3086,130 @@ public:
     }
 };
 
+IkSheqieCard::IkSheqieCard() {
+}
+
+bool IkSheqieCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && !to_select->isKongcheng() && Self->inMyAttackRange(to_select);
+}
+
+void IkSheqieCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    ServerPlayer *hejin = effect.from, *target = effect.to;
+    if (target->isKongcheng()) return;
+
+    const Card *card = NULL;
+    if (target->getHandcardNum() > 1) {
+        card = room->askForCard(target, ".!", "@iksheqie-give:" + hejin->objectName(), QVariant(), Card::MethodNone);
+        if (!card)
+            card = target->getHandcards().at(qrand() % target->getHandcardNum());
+    } else {
+        card = target->getHandcards().first();
+    }
+    Q_ASSERT(card != NULL);
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, target->objectName(), hejin->objectName(), "iksheqie", QString());
+    room->obtainCard(hejin, card, reason, false);
+    if (!hejin->isAlive() || !target->isAlive()) return;
+    if (hejin->getHandcardNum() > target->getHandcardNum()) {
+        QStringList choicelist;
+        Slash *slash = new Slash(Card::NoSuit, 0);
+        slash->setSkillName("_iksheqie");
+        Duel *duel = new Duel(Card::NoSuit, 0);
+        duel->setSkillName("_iksheqie");
+        if (!target->isLocked(slash) && target->canSlash(hejin, slash, false))
+            choicelist.append("slash");
+        if (!target->isLocked(duel) && !target->isProhibited(hejin, duel))
+            choicelist.append("duel");
+        if (choicelist.isEmpty()) {
+            delete slash;
+            delete duel;
+            return;
+        }
+        QString choice = room->askForChoice(target, "iksheqie", choicelist.join("+"));
+        CardUseStruct use;
+        use.from = target;
+        use.to << hejin;
+        if (choice == "slash") {
+            delete duel;
+            use.card = slash;
+        } else {
+            delete slash;
+            use.card = duel;
+        }
+        room->useCard(use);
+    }
+}
+
+class IkSheqie: public ZeroCardViewAsSkill {
+public:
+    IkSheqie(): ZeroCardViewAsSkill("iksheqie") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkSheqieCard");
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkSheqieCard;
+    }
+
+    virtual int getEffectIndex(const ServerPlayer *, const Card *card) const{
+        if (card->isKindOf("IkSheqieCard"))
+            return -1;
+        else
+            return -2;
+    }
+};
+
+class IkYanzhou: public TriggerSkill {
+public:
+    IkYanzhou(): TriggerSkill("ikyanzhou") {
+        events << BeforeGameOverJudge;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player && !player->isAlive() && player->hasSkill(objectName()) && !player->isNude()) {
+            QList<ServerPlayer *> targets;
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (player->canDiscard(p, "he"))
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getOtherPlayers(player))
+            if (player->canDiscard(p, "he"))
+                targets << p;
+        ServerPlayer *killer = room->askForPlayerChosen(player, targets, objectName(), "ikyanzhou-invoke", true, true);
+        if (killer) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["IkYanzhouTarget"] = QVariant::fromValue(killer);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        int n = player->getCardCount();
+        ServerPlayer *target = player->tag["IkYanzhouTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkYanzhouTarget");
+        if (target) {
+            for (int i = 0; i < n; i++) {
+                if (player->canDiscard(target, "he")) {
+                    int card_id = room->askForCardChosen(player, target, "he", objectName(), false, Card::MethodDiscard);
+                    room->throwCard(Sanguosha->getCard(card_id), target, player);
+                } else {
+                    break;
+                }
+            }
+        }
+        return false;
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -3236,6 +3360,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     related_skills.insertMulti("ikkouzhu", "#ikkouzhu-clear");
     luna026->addSkill(new IkJiaojin);
 
+    General *luna035 = new General(this, "luna035", "tsuki");
+    luna035->addSkill(new IkSheqie);
+    luna035->addSkill(new IkYanzhou);
+
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
     addMetaObject<IkMoqiCard>();
@@ -3252,6 +3380,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkXincaoCard>();
     addMetaObject<IkKouzhuCard>();
     addMetaObject<IkJiaojinCard>();
+    addMetaObject<IkSheqieCard>();
 
     skills << new IkAnshen << new IkAnshenRecord;
     related_skills.insertMulti("ikanshen", "#ikanshen-record");
