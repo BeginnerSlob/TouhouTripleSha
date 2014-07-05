@@ -2703,6 +2703,77 @@ public:
     }
 };
 
+class IkLongya: public TriggerSkill {
+public:
+    IkLongya(): TriggerSkill("iklongya") {
+        events << TargetSpecified << CardFinished;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == TargetSpecified && TriggerSkill::triggerable(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (!use.card->isKindOf("Slash"))
+                return QStringList();
+            return QStringList(objectName());
+        } else if (triggerEvent == CardFinished) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (!use.card->isKindOf("Slash"))
+                return QStringList();
+            foreach (ServerPlayer *p, room->getAllPlayers())
+                room->setPlayerMark(p, objectName() + use.card->toString(), 0);
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        foreach (ServerPlayer *p, use.to) {
+            if (player->askForSkillInvoke(objectName(), QVariant::fromValue(p))) {
+                QString choice;
+                if (!player->canDiscard(p, "he"))
+                    choice = "draw";
+                else
+                    choice = room->askForChoice(player, objectName(), "draw+discard", QVariant::fromValue(p));
+                room->broadcastSkillInvoke(objectName());
+                if (choice == "draw") {
+                    player->drawCards(1, objectName());
+                } else {
+                    int disc = room->askForCardChosen(player, p, "he", objectName(), false, Card::MethodDiscard);
+                    room->throwCard(disc, p, player);
+                }
+                room->addPlayerMark(p, objectName() + use.card->toString());
+            }
+        }
+
+        return false;
+    }
+};
+
+class IkLongyaMiss: public TriggerSkill {
+public:
+    IkLongyaMiss(): TriggerSkill("#iklongya-miss") {
+        events << SlashMissed;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        SlashEffectStruct effect = data.value<SlashEffectStruct>();
+        if (effect.to->isDead() || effect.to->getMark("iklongya" + effect.slash->toString()) <= 0)
+            return QStringList();
+        if (!effect.from->isAlive() || !effect.to->isAlive() || !effect.to->canDiscard(effect.from, "he"))
+            return QStringList();
+        return QStringList(objectName());
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        SlashEffectStruct effect = data.value<SlashEffectStruct>();
+        int disc = room->askForCardChosen(effect.to, effect.from, "he", "iklongya", false, Card::MethodDiscard);
+        room->throwCard(disc, effect.from, effect.to);
+        room->removePlayerMark(effect.to, "iklongya" + effect.slash->toString());
+        return false;
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -2833,6 +2904,11 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *luna023 = new General(this, "luna023", "tsuki");
     luna023->addSkill("thjibu");
     luna023->addSkill(new IkShunqie);
+
+    General *luna024 = new General(this, "luna024", "tsuki");
+    luna024->addSkill(new IkLongya);
+    luna024->addSkill(new IkLongyaMiss);
+    related_skills.insertMulti("iklongya", "#iklongya-miss");
 
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
