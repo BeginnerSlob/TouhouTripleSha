@@ -609,8 +609,8 @@ OLPackage::OLPackage()
     related_skills.insertMulti("qingyi", "#qingyi-slash-ndl");
 
     General *ol_fazheng = new General(this, "ol_fazheng", "shu", 3, true, true);
-    ol_fazheng->addSkill("enyuan");
-    ol_fazheng->addSkill("xuanhuo");
+    ol_fazheng->addSkill("ikenyuan");
+    ol_fazheng->addSkill("ikhuowen");
 
     General *ol_xushu = new General(this, "ol_xushu", "shu", 3, true, true);
     ol_xushu->addSkill("ikmitu");

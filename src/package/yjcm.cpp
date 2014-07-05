@@ -242,116 +242,6 @@ public:
     }
 };
 
-class Enyuan: public TriggerSkill {
-public:
-    Enyuan(): TriggerSkill("enyuan") {
-        events << CardsMoveOneTime << Damaged;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == CardsMoveOneTime) {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.to == player && move.from && move.from->isAlive() && move.from != move.to
-                && move.card_ids.size() >= 2
-                && move.reason.m_reason != CardMoveReason::S_REASON_PREVIEWGIVE) {
-                move.from->setFlags("EnyuanDrawTarget");
-                bool invoke = room->askForSkillInvoke(player, objectName(), data);
-                move.from->setFlags("-EnyuanDrawTarget");
-                if (invoke) {
-                    room->drawCards((ServerPlayer *)move.from, 1, objectName());
-                    room->broadcastSkillInvoke(objectName(), 1);
-                }
-            }
-        } else if (triggerEvent == Damaged) {
-            DamageStruct damage = data.value<DamageStruct>();
-            ServerPlayer *source = damage.from;
-            if (!source || source == player) return false;
-            int x = damage.damage;
-            for (int i = 0; i < x; i++) {
-                if (source->isAlive() && player->isAlive() && room->askForSkillInvoke(player, objectName(), data)) {
-                    room->broadcastSkillInvoke(objectName(), 2);
-                    const Card *card = NULL;
-                    if (!source->isKongcheng())
-                        card = room->askForExchange(source, objectName(), 1, 1, false, "EnyuanGive::" + player->objectName(), true);
-                    if (card) {
-                        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(),
-                                              player->objectName(), objectName(), QString());
-                        reason.m_playerId = player->objectName();
-                        room->moveCardTo(card, source, player, Player::PlaceHand, reason);
-                        delete card;
-                    } else {
-                        room->loseHp(source);
-                    }
-                } else {
-                    break;
-                }
-            }
-        }
-        return false;
-    }
-};
-
-class Xuanhuo: public PhaseChangeSkill {
-public:
-    Xuanhuo(): PhaseChangeSkill("xuanhuo") {
-    }
-
-    virtual bool onPhaseChange(ServerPlayer *fazheng) const{
-        Room *room = fazheng->getRoom();
-        if (fazheng->getPhase() == Player::Draw) {
-            ServerPlayer *to = room->askForPlayerChosen(fazheng, room->getOtherPlayers(fazheng), objectName(), "xuanhuo-invoke", true, true);
-            if (to) {
-                room->broadcastSkillInvoke(objectName(), 1);
-                room->drawCards(to, 2, objectName());
-                if (!fazheng->isAlive() || !to->isAlive())
-                    return true;
-
-                QList<ServerPlayer *> targets;
-                foreach (ServerPlayer *vic, room->getOtherPlayers(to)) {
-                    if (to->canSlash(vic))
-                        targets << vic;
-                }
-                ServerPlayer *victim = NULL;
-                if (!targets.isEmpty()) {
-                    victim = room->askForPlayerChosen(fazheng, targets, "xuanhuo_slash", "@dummy-slash2:" + to->objectName());
-
-                    LogMessage log;
-                    log.type = "#CollateralSlash";
-                    log.from = fazheng;
-                    log.to << victim;
-                    room->sendLog(log);
-                }
-
-                if (victim == NULL || !room->askForUseSlashTo(to, victim, QString("xuanhuo-slash:%1:%2").arg(fazheng->objectName()).arg(victim->objectName()))) {
-                    if (to->isNude())
-                        return true;
-                    room->broadcastSkillInvoke(objectName(), 2);
-                    room->setPlayerFlag(to, "xuanhuo_InTempMoving");
-                    int first_id = room->askForCardChosen(fazheng, to, "he", "xuanhuo");
-                    Player::Place original_place = room->getCardPlace(first_id);
-                    DummyCard *dummy = new DummyCard;
-                    dummy->addSubcard(first_id);
-                    to->addToPile("#xuanhuo", dummy, false);
-                    if (!to->isNude()) {
-                        int second_id = room->askForCardChosen(fazheng, to, "he", "xuanhuo");
-                        dummy->addSubcard(second_id);
-                    }
-
-                    //move the first card back temporarily
-                    room->moveCardTo(Sanguosha->getCard(first_id), to, original_place, false);
-                    room->setPlayerFlag(to, "-xuanhuo_InTempMoving");
-                    room->moveCardTo(dummy, fazheng, Player::PlaceHand, false);
-                    delete dummy;
-                }
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-};
-
 class Huilei: public TriggerSkill {
 public:
     Huilei():TriggerSkill("huilei") {
@@ -1121,12 +1011,6 @@ YJCMPackage::YJCMPackage()
     chengong->addSkill(new Mingce);
     related_skills.insertMulti("zhichi", "#zhichi-protect");
     related_skills.insertMulti("zhichi", "#zhichi-clear");
-
-    General *fazheng = new General(this, "fazheng", "shu", 3); // YJ 003
-    fazheng->addSkill(new Enyuan);
-    fazheng->addSkill(new Xuanhuo);
-    fazheng->addSkill(new FakeMoveSkill("xuanhuo"));
-    related_skills.insertMulti("xuanhuo", "#xuanhuo-fake-move");
 
     General *gaoshun = new General(this, "gaoshun", "qun"); // YJ 004
     gaoshun->addSkill(new Xianzhen);
