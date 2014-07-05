@@ -2774,6 +2774,136 @@ public:
     }
 };
 
+class IkHengmou: public TriggerSkill {
+public:
+    IkHengmou(): TriggerSkill("ikhengmou") {
+        events << TargetConfirming;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("Slash"))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        room->askForDiscard(player, objectName(), 2, 2, false, true);
+        player->drawCards(2, objectName());
+
+        int max = -1000;
+        foreach (ServerPlayer *p, room->getAllPlayers())
+            if (p->getHp() > max)
+                max = p->getHp();
+        if (player->getHp() == max)
+            return false;
+
+        QList<ServerPlayer *> maxs;
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
+            if (p->getHp() == max)
+                maxs << p;
+            if (maxs.size() > 1)
+                return false;
+        }
+        ServerPlayer *mosthp = maxs.first();
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(mosthp))) {
+            room->askForDiscard(mosthp, objectName(), 2, 2, false, true);
+            mosthp->drawCards(2, objectName());
+        }
+
+        return false;
+    }
+};
+
+IkXincaoCard::IkXincaoCard() {
+}
+
+void IkXincaoCard::onEffect(const CardEffectStruct &effect) const{
+    DummyCard *handcards = effect.from->wholeHandCards();
+    effect.to->obtainCard(handcards, false);
+    delete handcards;
+    if (effect.to->isKongcheng()) return;
+
+    Room *room = effect.from->getRoom();
+
+    QList<ServerPlayer *> targets;
+    foreach (ServerPlayer *p, room->getOtherPlayers(effect.to))
+        if (!p->isKongcheng())
+            targets << p;
+
+    if (!targets.isEmpty()) {
+        ServerPlayer *target = room->askForPlayerChosen(effect.from, targets, "ikxincao", "@ikxincao-pindian:" + effect.to->objectName());
+        effect.to->pindian(target, "ikxincao", NULL);
+    }
+}
+
+class IkXincaoViewAsSkill: public ZeroCardViewAsSkill {
+public:
+    IkXincaoViewAsSkill(): ZeroCardViewAsSkill("ikxincao") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->isKongcheng() && !player->hasUsed("IkXincaoCard");
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkXincaoCard;
+    }
+};
+
+class IkXincao: public TriggerSkill {
+public:
+    IkXincao(): TriggerSkill("ikxincao") {
+        events << Pindian;
+        view_as_skill = new IkXincaoViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer* &) const{
+        PindianStruct *pindian = data.value<PindianStruct *>();
+        if (pindian->reason != objectName() || pindian->from_number == pindian->to_number)
+            return QStringList();
+
+        ServerPlayer *winner = pindian->isSuccess() ? pindian->from : pindian->to;
+        ServerPlayer *loser = pindian->isSuccess() ? pindian->to : pindian->from;
+        if (winner->canSlash(loser, NULL, false))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        PindianStruct *pindian = data.value<PindianStruct *>();
+        ServerPlayer *winner = pindian->isSuccess() ? pindian->from : pindian->to;
+        ServerPlayer *loser = pindian->isSuccess() ? pindian->to : pindian->from;
+        Slash *slash = new Slash(Card::NoSuit, 0);
+        slash->setSkillName("_ikxincao");
+        room->useCard(CardUseStruct(slash, winner, loser));
+
+        return false;
+    }
+};
+
+class IkXincaoSlashNoDistanceLimit: public TargetModSkill {
+public:
+    IkXincaoSlashNoDistanceLimit(): TargetModSkill("#ikxincao-slash-ndl") {
+    }
+
+    virtual int getDistanceLimit(const Player *, const Card *card) const{
+        if (card->isKindOf("Slash") && card->getSkillName() == "ikxincao")
+            return 1000;
+        else
+            return 0;
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -2910,6 +3040,12 @@ IkaiSuiPackage::IkaiSuiPackage()
     luna024->addSkill(new IkLongyaMiss);
     related_skills.insertMulti("iklongya", "#iklongya-miss");
 
+    General *luna025 = new General(this, "luna025", "tsuki", 3);
+    luna025->addSkill(new IkHengmou);
+    luna025->addSkill(new IkXincao);
+    luna025->addSkill(new IkXincaoSlashNoDistanceLimit);
+    related_skills.insertMulti("ikxincao", "#ikxincao-slash-ndl");
+
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
     addMetaObject<IkMoqiCard>();
@@ -2923,6 +3059,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkCangwuCard>();
     addMetaObject<IkZhangeCard>();
     addMetaObject<IkShuangrenCard>();
+    addMetaObject<IkXincaoCard>();
 
     skills << new IkAnshen << new IkAnshenRecord;
     related_skills.insertMulti("ikanshen", "#ikanshen-record");

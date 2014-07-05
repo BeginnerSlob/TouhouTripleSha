@@ -182,4 +182,13 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class IkXincaoCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkXincaoCard();
+
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 #endif // IKAISUI_H
