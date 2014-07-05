@@ -49,7 +49,7 @@ public:
                 room->sendLog(log);
             }
         
-            if (victim == NULL || !room->askForUseSlashTo(to, victim, QString("ikhuowen-slash::%1").arg(victim->objectName()))) {
+            if (victim == NULL || !room->askForUseSlashTo(to, victim, "ikhuowen-slash::" + victim->objectName())) {
                 if (to->isNude())
                     return true;
                 room->setPlayerFlag(to, "ikhuowen_InTempMoving");
@@ -209,6 +209,111 @@ public:
     }
 };
 
+IkXinchaoCard::IkXinchaoCard() {
+    target_fixed = true;
+}
+
+void IkXinchaoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    QList<int> cards = room->getNCards(3), left;
+
+    LogMessage log;
+    log.type = "$ViewDrawPile";
+    log.from = source;
+    log.card_str = IntList2StringList(cards).join("+");
+    room->sendLog(log, source);
+
+    left = cards;
+
+    QList<int> hearts, non_hearts;
+    foreach (int card_id, cards) {
+        const Card *card = Sanguosha->getCard(card_id);
+        if (card->getSuit() == Card::Heart)
+            hearts << card_id;
+        else
+            non_hearts << card_id;
+    }
+
+    if (!hearts.isEmpty()) {
+        DummyCard *dummy = new DummyCard;
+        do {
+            room->fillAG(left, source, non_hearts);
+            int card_id = room->askForAG(source, hearts, true, "ikxinchao");
+            if (card_id == -1) {
+                room->clearAG(source);
+                break;
+            }
+
+            hearts.removeOne(card_id);
+            left.removeOne(card_id);
+
+            dummy->addSubcard(card_id);
+            room->clearAG(source);
+        } while (!hearts.isEmpty());
+
+        if (dummy->subcardsLength() > 0) {
+            room->doBroadcastNotify(QSanProtocol::S_COMMAND_UPDATE_PILE, Json::Value(room->getDrawPile().length() + dummy->subcardsLength()));
+            source->obtainCard(dummy);
+            foreach (int id, dummy->getSubcards())
+                room->showCard(source, id);
+        }
+        delete dummy;
+    }
+
+    if (!left.isEmpty())
+        room->askForGuanxing(source, left, Room::GuanxingUpOnly);
+ }
+
+class IkXinchao: public ZeroCardViewAsSkill {
+public:
+    IkXinchao(): ZeroCardViewAsSkill("ikxinchao") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkXinchaoCard") && player->getHandcardNum() > player->getHp();
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkXinchaoCard;
+    }
+};
+
+class IkShangshi: public TriggerSkill {
+public:
+    IkShangshi():TriggerSkill("ikshangshi") {
+        events << Death;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player != NULL && player->hasSkill(objectName())) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player)
+                return QStringList();
+            ServerPlayer *killer = death.damage ? death.damage->from : NULL;
+            if (killer && killer->isAlive() && killer != player && killer->canDiscard(killer, "he"))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DeathStruct death = data.value<DeathStruct>();
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(death.damage->from))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DeathStruct death = data.value<DeathStruct>();
+        ServerPlayer *killer = death.damage->from;
+        killer->throwAllHandCardsAndEquips();
+
+        return false;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -218,9 +323,15 @@ IkaiKinPackage::IkaiKinPackage()
     related_skills.insertMulti("ikhuowen", "#ikhuowen-fake-move");
     wind016->addSkill(new IkEnyuan);
 
+    General *wind017 = new General(this, "wind017", "kaze", 3);
+    wind017->addSkill(new IkXinchao);
+    wind017->addSkill(new IkShangshi);
+
     General *bloom022 = new General(this, "bloom022", "hana", 3, false);
     bloom022->addSkill(new IkLundao);
     bloom022->addSkill(new IkXuanwu);
+
+    addMetaObject<IkXinchaoCard>();
 }
 
 ADD_PACKAGE(IkaiKin)

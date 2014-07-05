@@ -242,44 +242,6 @@ public:
     }
 };
 
-class Huilei: public TriggerSkill {
-public:
-    Huilei():TriggerSkill("huilei") {
-        events << Death;
-        frequency = Compulsory;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->hasSkill(objectName());
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        DeathStruct death = data.value<DeathStruct>();
-        if (death.who != player)
-            return false;
-        ServerPlayer *killer = death.damage ? death.damage->from : NULL;
-        if (killer && killer != player) {
-            LogMessage log;
-            log.type = "#HuileiThrow";
-            log.from = player;
-            log.to << killer;
-            log.arg = objectName();
-            room->sendLog(log);
-            room->notifySkillInvoked(player, objectName());
-
-            QString killer_name = killer->getGeneralName();
-            if (killer_name.contains("zhugeliang") || killer_name == "wolong")
-                room->broadcastSkillInvoke(objectName(), 1);
-            else
-                room->broadcastSkillInvoke(objectName(), 2);
-
-            killer->throwAllHandCardsAndEquips();
-        }
-
-        return false;
-    }
-};
-
 class Xuanfeng: public TriggerSkill {
 public:
     Xuanfeng(): TriggerSkill("xuanfeng") {
@@ -729,74 +691,6 @@ public:
     }
 };
 
-XinzhanCard::XinzhanCard() {
-    target_fixed = true;
-}
-
-void XinzhanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    QList<int> cards = room->getNCards(3), left;
-
-    LogMessage log;
-    log.type = "$ViewDrawPile";
-    log.from = source;
-    log.card_str = IntList2StringList(cards).join("+");
-    room->sendLog(log, source);
-
-    left = cards;
-
-    QList<int> hearts, non_hearts;
-    foreach (int card_id, cards) {
-        const Card *card = Sanguosha->getCard(card_id);
-        if (card->getSuit() == Card::Heart)
-            hearts << card_id;
-        else
-            non_hearts << card_id;
-    }
-
-    if (!hearts.isEmpty()) {
-        DummyCard *dummy = new DummyCard;
-        do {
-            room->fillAG(left, source, non_hearts);
-            int card_id = room->askForAG(source, hearts, true, "xinzhan");
-            if (card_id == -1) {
-                room->clearAG(source);
-                break;
-            }
-
-            hearts.removeOne(card_id);
-            left.removeOne(card_id);
-
-            dummy->addSubcard(card_id);
-            room->clearAG(source);
-        } while (!hearts.isEmpty());
-
-        if (dummy->subcardsLength() > 0) {
-            room->doBroadcastNotify(QSanProtocol::S_COMMAND_UPDATE_PILE, Json::Value(room->getDrawPile().length() + dummy->subcardsLength()));
-            source->obtainCard(dummy);
-            foreach (int id, dummy->getSubcards())
-                room->showCard(source, id);
-        }
-        delete dummy;
-    }
-
-    if (!left.isEmpty())
-        room->askForGuanxing(source, left, Room::GuanxingUpOnly);
- }
-
-class Xinzhan: public ZeroCardViewAsSkill {
-public:
-    Xinzhan(): ZeroCardViewAsSkill("xinzhan") {
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("XinzhanCard") && player->getHandcardNum() > player->getMaxHp();
-    }
-
-    virtual const Card *viewAs() const{
-        return new XinzhanCard;
-    }
-};
-
 class Quanji: public MasochismSkill {
 public:
     Quanji(): MasochismSkill("#quanji") {
@@ -1019,10 +913,6 @@ YJCMPackage::YJCMPackage()
     General *lingtong = new General(this, "lingtong", "wu"); // YJ 005
     lingtong->addSkill(new Xuanfeng);
 
-    General *masu = new General(this, "masu", "shu", 3); // YJ 006
-    masu->addSkill(new Xinzhan);
-    masu->addSkill(new Huilei);
-
     General *wuguotai = new General(this, "wuguotai", "wu", 3, false); // YJ 007
     wuguotai->addSkill(new Ganlu);
     wuguotai->addSkill(new Buyi);
@@ -1051,7 +941,6 @@ YJCMPackage::YJCMPackage()
     addMetaObject<MingceCard>();
     addMetaObject<GanluCard>();
     addMetaObject<XianzhenCard>();
-    addMetaObject<XinzhanCard>();
     addMetaObject<JujianCard>();
     addMetaObject<PaiyiCard>();
 
