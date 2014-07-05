@@ -2904,6 +2904,188 @@ public:
     }
 };
 
+IkKouzhuCard::IkKouzhuCard() {
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+void IkKouzhuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    ServerPlayer *target = targets.first();
+    QStringList list = target->tag["IkKouzhuSource"].toStringList();
+    list << source->objectName();
+    target->tag["IkKouzhuSource"] = QVariant::fromValue(list);
+    source->addToPile("ikkouzhupile", this, false);
+    room->addPlayerMark(target, "@kouzhu");
+}
+
+class IkKouzhuViewAsSkill: public OneCardViewAsSkill {
+public:
+    IkKouzhuViewAsSkill(): OneCardViewAsSkill("ikkouzhu") {
+        filter_pattern = ".|.|.|hand";
+        response_pattern = "@@ikkouzhu";
+    }
+
+    virtual const Card *viewAs(const Card *originalcard) const{
+        Card *card = new IkKouzhuCard;
+        card->addSubcard(originalcard);
+        return card;
+    }
+};
+
+class IkKouzhu: public TriggerSkill {
+public:
+    IkKouzhu(): TriggerSkill("ikkouzhu") {
+        events << EventPhaseStart;
+        view_as_skill = new IkKouzhuViewAsSkill;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return TriggerSkill::triggerable(target)
+            && target->getPhase() == Player::Finish
+            && !target->isKongcheng()
+            && target->getPile("ikkouzhupile").isEmpty();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        room->askForUseCard(player, "@@ikkouzhu", "@ikkouzhu-remove", -1, Card::MethodNone);
+        return false;
+    }
+};
+
+class IkKouzhuTrigger: public TriggerSkill {
+public:
+    IkKouzhuTrigger(): TriggerSkill("#ikkouzhu") {
+        events << EventPhaseStart;
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *player) const{
+        return player->getPhase() == Player::RoundStart
+            && !player->tag["IkKouzhuSource"].isNull();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        QStringList objnames = player->tag["IkKouzhuSource"].toStringList();
+        player->tag.remove("IkKouzhuSource");
+        QList<ServerPlayer *> chenlins;
+        foreach (QString objname, objnames) {
+            ServerPlayer *chenlin = room->findPlayer(objname);
+            if (chenlin)
+                chenlins << chenlin;
+        }
+        room->sortByActionOrder(chenlins);
+        foreach (ServerPlayer *chenlin, chenlins) {
+            int card_id = chenlin->getPile("ikkouzhupile").first();
+            room->showCard(chenlin, card_id);
+            const Card *cd = Sanguosha->getCard(card_id);
+            QString pattern;
+            if (cd->isKindOf("BasicCard"))
+                pattern = "BasicCard";
+            else if (cd->isKindOf("TrickCard"))
+                pattern = "TrickCard";
+            else if (cd->isKindOf("EquipCard"))
+                pattern = "EquipCard";
+            pattern.append("|.|.|hand");
+            const Card *to_give = NULL;
+            if (!player->isKongcheng() && chenlin && chenlin->isAlive())
+                to_give = room->askForCard(player, pattern, "@ikkouzhu-give", QVariant(), Card::MethodNone, chenlin);
+            if (chenlin && to_give) {
+                CardMoveReason reasonG(CardMoveReason::S_REASON_GIVE, player->objectName(), chenlin->objectName(), "ikkouzhu", QString());
+                room->obtainCard(chenlin, to_give, reasonG, false);
+                CardMoveReason reason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE, player->objectName(), "ikkouzhu", QString());
+                room->obtainCard(player, cd, reason, false);
+            } else {
+                CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
+                room->throwCard(cd, reason, NULL);
+                room->loseHp(player);
+            }
+            room->removePlayerMark(player, "@kouzhu");
+        }
+        return false;
+    }
+};
+
+class IkKouzhuClear: public TriggerSkill {
+public:
+    IkKouzhuClear(): TriggerSkill("#ikkouzhu-clear") {
+        events << Death;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!player->tag["IkKouzhuSource"].isNull()) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who == player) {
+                QStringList objnames = player->tag["IkKouzhuSource"].toStringList();
+                foreach (QString objname, objnames) {
+                    ServerPlayer *chenlin = room->findPlayer(objname);
+                    if (chenlin)
+                        chenlin->clearOnePrivatePile("ikkouzhupile");
+                }
+            }
+        }
+    }
+};
+
+IkJiaojinCard::IkJiaojinCard() {
+    mute = true;
+}
+
+bool IkJiaojinCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && to_select->getMark("ikjiaojin" + Self->objectName()) == 0 && to_select->getHandcardNum() != to_select->getHp();
+}
+
+void IkJiaojinCard::onEffect(const CardEffectStruct &effect) const{
+    int handcard_num = effect.to->getHandcardNum();
+    int hp = effect.to->getHp();
+    effect.to->gainMark("@jiaojin");
+    Room *room = effect.from->getRoom();
+    room->addPlayerMark(effect.to, "ikjiaojin" + effect.from->objectName());
+    if (handcard_num > hp) {
+        room->askForDiscard(effect.to, "ikjiaojin", 2, 2, false, true);
+    } else if (handcard_num < hp) {
+        effect.to->drawCards(2, "ikjiaojin");
+    }
+}
+
+class IkJiaojinViewAsSkill: public ZeroCardViewAsSkill {
+public:
+    IkJiaojinViewAsSkill(): ZeroCardViewAsSkill("ikjiaojin") {
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkJiaojinCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        if (player->getMark("ikjiaojin" + player->objectName()) == 0 && player->getHandcardNum() != player->getHp()) return true;
+        foreach (const Player *sib, player->getAliveSiblings())
+            if (sib->getMark("ikjiaojin" + player->objectName()) == 0 && sib->getHandcardNum() != sib->getHp())
+                return true;
+        return false;
+    }
+};
+
+class IkJiaojin: public TriggerSkill {
+public:
+    IkJiaojin(): TriggerSkill("ikjiaojin") {
+        events << Death;
+        view_as_skill = new IkJiaojinViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who != player) return QStringList();
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
+            if (p->getMark("ikjiaojin" + player->objectName()) > 0) {
+                room->setPlayerMark(p, "ikjiaojin" + player->objectName(), 0);
+                room->removePlayerMark(p, "@jiaojin");
+            }
+        }
+        return QStringList();
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -3046,6 +3228,14 @@ IkaiSuiPackage::IkaiSuiPackage()
     luna025->addSkill(new IkXincaoSlashNoDistanceLimit);
     related_skills.insertMulti("ikxincao", "#ikxincao-slash-ndl");
 
+    General *luna026 = new General(this, "luna026", "tsuki", 3);
+    luna026->addSkill(new IkKouzhu);
+    luna026->addSkill(new IkKouzhuTrigger);
+    luna026->addSkill(new IkKouzhuClear);
+    related_skills.insertMulti("ikkouzhu", "#ikkouzhu");
+    related_skills.insertMulti("ikkouzhu", "#ikkouzhu-clear");
+    luna026->addSkill(new IkJiaojin);
+
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
     addMetaObject<IkMoqiCard>();
@@ -3060,6 +3250,8 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkZhangeCard>();
     addMetaObject<IkShuangrenCard>();
     addMetaObject<IkXincaoCard>();
+    addMetaObject<IkKouzhuCard>();
+    addMetaObject<IkJiaojinCard>();
 
     skills << new IkAnshen << new IkAnshenRecord;
     related_skills.insertMulti("ikanshen", "#ikanshen-record");

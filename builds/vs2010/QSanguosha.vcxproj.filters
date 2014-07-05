@@ -492,12 +492,6 @@
     <ClCompile Include="Release\moc_window.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="Release\moc_assassins.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\package\assassins.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\package\bgm.cpp">
       <Filter>package</Filter>
     </ClCompile>
@@ -602,9 +596,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\package\kami.cpp">
       <Filter>package</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug\moc_assassins.cpp">
-      <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="Debug\moc_yjcm2014.cpp">
       <Filter>Generated Files\Debug</Filter>
@@ -973,9 +964,6 @@
     </CustomBuild>
     <CustomBuild Include="..\..\src\core\record-analysis.h">
       <Filter>core</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\src\package\assassins.h">
-      <Filter>package</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\bgm.h">
       <Filter>package</Filter>
