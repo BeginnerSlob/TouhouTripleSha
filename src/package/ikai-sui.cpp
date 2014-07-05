@@ -4,6 +4,7 @@
 #include "engine.h"
 #include "standard.h"
 #include "client.h"
+#include "maneuvering.h"
 
 class IkHuahuan: public OneCardViewAsSkill {
 public:
@@ -3210,6 +3211,132 @@ public:
     }
 };
 
+class IkZhoudu: public TriggerSkill {
+public:
+    IkZhoudu(): TriggerSkill("ikzhoudu") {
+        events << EventPhaseStart;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player->getPhase() != Player::Play)
+            return skill_list;
+        foreach (ServerPlayer *hetaihou, room->findPlayersBySkillName(objectName())) {
+            if (!hetaihou->isAlive() || !hetaihou->canDiscard(hetaihou, "h") || hetaihou == player)
+                continue;
+            skill_list.insert(hetaihou, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *hetaihou) const{
+        return room->askForCard(hetaihou, ".", "@ikzhoudu-discard", QVariant(), objectName());
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *hetaihou) const{
+        Analeptic *analeptic = new Analeptic(Card::NoSuit, 0);
+        analeptic->setSkillName("_ikzhoudu");
+        room->useCard(CardUseStruct(analeptic, player, QList<ServerPlayer *>()), true);
+        if (player->isAlive())
+            room->damage(DamageStruct(objectName(), hetaihou, player));
+
+        return false;
+    }
+};
+
+class IkKuangdi: public TriggerSkill {
+public:
+    IkKuangdi(): TriggerSkill("ikkuangdi") {
+        events << Death << EventPhaseStart;
+        frequency = Frequent;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (triggerEvent == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player)
+                return skill_list;
+            ServerPlayer *killer = death.damage ? death.damage->from : NULL;
+            ServerPlayer *current = room->getCurrent();
+
+            if (killer && current && (current->isAlive() || death.who == current)
+                && current->getPhase() != Player::NotActive)
+                killer->setMark(objectName(), 1);
+        } else {
+            if (player->getPhase() == Player::RoundStart) {
+                foreach (ServerPlayer *p, room->getAllPlayers())
+                    p->setMark(objectName(), 0);
+            } else if (player->getPhase() == Player::NotActive) {
+                foreach (ServerPlayer *hetaihou, room->findPlayersBySkillName(objectName()))
+                    if (hetaihou->getMark(objectName()) > 0)
+                        skill_list.insert(hetaihou, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const{
+        player->drawCards(3, objectName());
+        return false;
+    }
+};
+
+class IkBengying: public TriggerSkill {
+public:
+    IkBengying(): TriggerSkill("ikbengying") {
+        events << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player && !player->isAlive() && player->hasSkill(objectName()) && !player->isNude()) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who == player) {
+                DamageStruct *damage = death.damage;
+                if (damage && damage->from && damage->from->isAlive())
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DeathStruct death = data.value<DeathStruct>();
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(death.damage->from))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        int n = player->getCardCount();
+        DeathStruct death = data.value<DeathStruct>();
+        ServerPlayer *target = death.damage->from;
+        for (int i = 0; i < n; i++) {
+            if (target->isDead()) break;
+            JudgeStruct judge;
+            judge.pattern = ".|spade|2~9";
+            judge.good = false;
+            judge.reason = objectName();
+            judge.who = target;
+            judge.negative = true;
+            room->judge(judge);
+            if (judge.isBad())
+                room->damage(DamageStruct(objectName(), NULL, target, 3, DamageStruct::Fire));
+        }
+        return false;
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -3363,6 +3490,11 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *luna035 = new General(this, "luna035", "tsuki");
     luna035->addSkill(new IkSheqie);
     luna035->addSkill(new IkYanzhou);
+
+    General *luna043 = new General(this, "luna043", "tsuki", 3, false);
+    luna043->addSkill(new IkZhoudu);
+    luna043->addSkill(new IkKuangdi);
+    luna043->addSkill(new IkBengying);
 
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();

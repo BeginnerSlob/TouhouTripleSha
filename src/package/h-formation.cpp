@@ -540,83 +540,6 @@ public:
     }
 };
 
-class Zhendu: public TriggerSkill {
-public:
-    Zhendu(): TriggerSkill("zhendu") {
-        events << EventPhaseStart;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        if (player->getPhase() != Player::Play)
-            return false;
-        QList<ServerPlayer *> hetaihous = room->findPlayersBySkillName(objectName());
-        foreach (ServerPlayer *hetaihou, hetaihous) {
-            if (!hetaihou->isAlive() || !hetaihou->canDiscard(hetaihou, "h") || hetaihou->getPhase() == Player::Play)
-                continue;
-            if (room->askForCard(hetaihou, ".", "@zhendu-discard", QVariant(), objectName())) {
-                Analeptic *analeptic = new Analeptic(Card::NoSuit, 0);
-                analeptic->setSkillName("_zhendu");
-                room->useCard(CardUseStruct(analeptic, player, QList<ServerPlayer *>()), true);
-                if (player->isAlive())
-                    room->damage(DamageStruct(objectName(), hetaihou, player));
-            }
-        }
-        return false;
-    }
-};
-
-class Qiluan: public TriggerSkill {
-public:
-    Qiluan(): TriggerSkill("qiluan") {
-        events << Death << EventPhaseChanging;
-        frequency = Frequent;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == Death) {
-            DeathStruct death = data.value<DeathStruct>();
-            if (death.who != player)
-                return false;
-            ServerPlayer *killer = death.damage ? death.damage->from : NULL;
-            ServerPlayer *current = room->getCurrent();
-
-            if (killer && current && (current->isAlive() || death.who == current)
-                && current->getPhase() != Player::NotActive)
-                killer->addMark(objectName());
-        } else {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive) {
-                QList<ServerPlayer *> hetaihous;
-                QList<int> mark_count;
-                foreach (ServerPlayer *p, room->getAllPlayers()) {
-                    if (p->getMark(objectName()) > 0 && TriggerSkill::triggerable(p)) {
-                        hetaihous << p;
-                        mark_count << p->getMark(objectName());
-                    }
-                    p->setMark(objectName(), 0);
-                }
-
-                for (int i = 0; i < hetaihous.length(); i++) {
-                    ServerPlayer *p = hetaihous.at(i);
-                    for (int j = 0; j < mark_count.at(i); j++) {
-                        if (p->isDead() || !room->askForSkillInvoke(p, objectName())) break;
-                        p->drawCards(3, objectName());
-                    }
-                }
-            }
-        }
-        return false;
-    }
-};
-
 HFormationPackage::HFormationPackage()
     : Package("h_formation")
 {
@@ -641,10 +564,6 @@ HFormationPackage::HFormationPackage()
 
     General *heg_yuji = new General(this, "heg_yuji", "qun", 3); // QUN 011 G
     heg_yuji->addSkill(new Qianhuan);
-
-    General *hetaihou = new General(this, "hetaihou", "qun", 3, false); // QUN 020
-    hetaihou->addSkill(new Zhendu);
-    hetaihou->addSkill(new Qiluan);
 
     addMetaObject<HuyuanCard>();
     addMetaObject<HeyiCard>();
