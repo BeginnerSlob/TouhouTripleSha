@@ -11,4 +11,13 @@ public:
     IkaiKinPackage();
 };
 
+class IkXinchaoCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkXinchaoCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 #endif // IKAIKIN_H
