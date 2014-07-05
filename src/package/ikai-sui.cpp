@@ -3009,7 +3009,6 @@ class IkKouzhuClear: public TriggerSkill {
 public:
     IkKouzhuClear(): TriggerSkill("#ikkouzhu-clear") {
         events << Death;
-        frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
@@ -3024,6 +3023,7 @@ public:
                 }
             }
         }
+        return QStringList();
     }
 };
 
