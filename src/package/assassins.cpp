@@ -4,63 +4,6 @@
 #include "clientplayer.h"
 #include "engine.h"
 
-class Moukui: public TriggerSkill {
-public:
-    Moukui(): TriggerSkill("moukui") {
-        events << TargetSpecified << SlashMissed << CardFinished;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == TargetSpecified && TriggerSkill::triggerable(player)) {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (!use.card->isKindOf("Slash"))
-                return false;
-            foreach (ServerPlayer *p, use.to) {
-                if (player->askForSkillInvoke(objectName(), QVariant::fromValue(p))) {
-                    QString choice;
-                    if (!player->canDiscard(p, "he"))
-                        choice = "draw";
-                    else
-                        choice = room->askForChoice(player, objectName(), "draw+discard", QVariant::fromValue(p));
-                    if (choice == "draw") {
-                        room->broadcastSkillInvoke(objectName(), 1);
-                        player->drawCards(1, objectName());
-                    } else {
-                        room->broadcastSkillInvoke(objectName(), 2);
-                        room->setTag("MoukuiDiscard", data);
-                        int disc = room->askForCardChosen(player, p, "he", objectName(), false, Card::MethodDiscard);
-                        room->removeTag("MoukuiDiscard");
-                        room->throwCard(disc, p, player);
-                    }
-                    room->addPlayerMark(p, objectName() + use.card->toString());
-                }
-            }
-        } else if (triggerEvent == SlashMissed) {
-            SlashEffectStruct effect = data.value<SlashEffectStruct>();
-            if (effect.to->isDead() || effect.to->getMark(objectName() + effect.slash->toString()) <= 0)
-                return false;
-            if (!effect.from->isAlive() || !effect.to->isAlive() || !effect.to->canDiscard(effect.from, "he"))
-                return false;
-            int disc = room->askForCardChosen(effect.to, effect.from, "he", objectName(), false, Card::MethodDiscard);
-            room->broadcastSkillInvoke(objectName(), 3);
-            room->throwCard(disc, effect.from, effect.to);
-            room->removePlayerMark(effect.to, objectName() + effect.slash->toString());
-        } else if (triggerEvent == CardFinished) {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (!use.card->isKindOf("Slash"))
-                return false;
-            foreach (ServerPlayer *p, room->getAllPlayers())
-                room->setPlayerMark(p, objectName() + use.card->toString(), 0);
-        }
-
-        return false;
-    }
-};
-
 class Tianming: public TriggerSkill {
 public:
     Tianming(): TriggerSkill("tianming") {
@@ -282,8 +225,6 @@ public:
 };
 
 AssassinsPackage::AssassinsPackage(): Package("assassins") {
-    General *fuwan = new General(this, "fuwan", "qun", 4); //SP 018
-    fuwan->addSkill(new Moukui);
 
     General *liuxie = new General(this, "liuxie", "qun", 3); // SP 016
     liuxie->addSkill(new Tianming);
