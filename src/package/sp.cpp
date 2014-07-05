@@ -87,162 +87,6 @@ public:
     }
 };
 
-BifaCard::BifaCard() {
-    mute = true;
-    will_throw = false;
-    handling_method = Card::MethodNone;
-}
-
-bool BifaCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select->getPile("bifa").isEmpty() && to_select != Self;
-}
-
-void BifaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    ServerPlayer *target = targets.first();
-    target->tag["BifaSource" + QString::number(getEffectiveId())] = QVariant::fromValue(source);
-    room->broadcastSkillInvoke("bifa", 1);
-    target->addToPile("bifa", this, false);
-}
-
-class BifaViewAsSkill: public OneCardViewAsSkill {
-public:
-    BifaViewAsSkill(): OneCardViewAsSkill("bifa") {
-        filter_pattern = ".|.|.|hand";
-        response_pattern = "@@bifa";
-    }
-
-    virtual const Card *viewAs(const Card *originalcard) const{
-        Card *card = new BifaCard;
-        card->addSubcard(originalcard);
-        return card;
-    }
-};
-
-class Bifa: public TriggerSkill {
-public:
-    Bifa(): TriggerSkill("bifa") {
-        events << EventPhaseStart;
-        view_as_skill = new BifaViewAsSkill;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Finish && !player->isKongcheng()) {
-            room->askForUseCard(player, "@@bifa", "@bifa-remove", -1, Card::MethodNone);
-        } else if (player->getPhase() == Player::RoundStart && player->getPile("bifa").length() > 0) {
-            int card_id = player->getPile("bifa").first();
-            ServerPlayer *chenlin = player->tag["BifaSource" + QString::number(card_id)].value<ServerPlayer *>();
-            QList<int> ids;
-            ids << card_id;
-
-            LogMessage log;
-            log.type = "$BifaView";
-            log.from = player;
-            log.card_str = QString::number(card_id);
-            log.arg = "bifa";
-            room->sendLog(log, player);
-
-            room->fillAG(ids, player);
-            const Card *cd = Sanguosha->getCard(card_id);
-            QString pattern;
-            if (cd->isKindOf("BasicCard"))
-                pattern = "BasicCard";
-            else if (cd->isKindOf("TrickCard"))
-                pattern = "TrickCard";
-            else if (cd->isKindOf("EquipCard"))
-                pattern = "EquipCard";
-            QVariant data_for_ai = QVariant::fromValue(pattern);
-            pattern.append("|.|.|hand");
-            const Card *to_give = NULL;
-            if (!player->isKongcheng() && chenlin && chenlin->isAlive())
-                to_give = room->askForCard(player, pattern, "@bifa-give", data_for_ai, Card::MethodNone, chenlin);
-            if (chenlin && to_give) {
-                room->broadcastSkillInvoke(objectName(), 2);
-                CardMoveReason reasonG(CardMoveReason::S_REASON_GIVE, player->objectName(), chenlin->objectName(), "bifa", QString());
-                room->obtainCard(chenlin, to_give, reasonG, false);
-                CardMoveReason reason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE, player->objectName(), "bifa", QString());
-                room->obtainCard(player, cd, reason, false);
-            } else {
-                room->broadcastSkillInvoke(objectName(), 3);
-                CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
-                room->throwCard(cd, reason, NULL);
-                room->loseHp(player);
-            }
-            room->clearAG(player);
-            player->tag.remove("BifaSource" + QString::number(card_id));
-        }
-        return false;
-    }
-};
-
-SongciCard::SongciCard() {
-    mute = true;
-}
-
-bool SongciCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select->getMark("songci" + Self->objectName()) == 0 && to_select->getHandcardNum() != to_select->getHp();
-}
-
-void SongciCard::onEffect(const CardEffectStruct &effect) const{
-    int handcard_num = effect.to->getHandcardNum();
-    int hp = effect.to->getHp();
-    effect.to->gainMark("@songci");
-    Room *room = effect.from->getRoom();
-    room->addPlayerMark(effect.to, "songci" + effect.from->objectName());
-    if (handcard_num > hp) {
-        room->broadcastSkillInvoke("songci", 2);
-        room->askForDiscard(effect.to, "songci", 2, 2, false, true);
-    } else if (handcard_num < hp) {
-        room->broadcastSkillInvoke("songci", 1);
-        effect.to->drawCards(2, "songci");
-    }
-}
-
-class SongciViewAsSkill: public ZeroCardViewAsSkill {
-public:
-    SongciViewAsSkill(): ZeroCardViewAsSkill("songci") {
-    }
-
-    virtual const Card *viewAs() const{
-        return new SongciCard;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        if (player->getMark("songci" + player->objectName()) == 0 && player->getHandcardNum() != player->getHp()) return true;
-        foreach (const Player *sib, player->getAliveSiblings())
-            if (sib->getMark("songci" + player->objectName()) == 0 && sib->getHandcardNum() != sib->getHp())
-                return true;
-        return false;
-    }
-};
-
-class Songci: public TriggerSkill {
-public:
-    Songci(): TriggerSkill("songci") {
-        events << Death;
-        view_as_skill = new SongciViewAsSkill;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target && target->hasSkill(objectName());
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        DeathStruct death = data.value<DeathStruct>();
-        if (death.who != player) return false;
-        foreach (ServerPlayer *p, room->getAllPlayers()) {
-            if (p->getMark("@songci") > 0)
-                room->setPlayerMark(p, "@songci", 0);
-            if (p->getMark("songci" + player->objectName()) > 0)
-                room->setPlayerMark(p, "songci" + player->objectName(), 0);
-        }
-        return false;
-    }
-};
-
 class Xiuluo: public PhaseChangeSkill {
 public:
     Xiuluo(): PhaseChangeSkill("xiuluo") {
@@ -713,10 +557,6 @@ SPPackage::SPPackage()
     sp_zhenji->addSkill("ikzhongyan");
     sp_zhenji->addSkill("ikmengyang");
 
-    General *chenlin = new General(this, "chenlin", "wei", 3); // SP 020
-    chenlin->addSkill(new Bifa);
-    chenlin->addSkill(new Songci);
-
     General *sp_shenlvbu = new General(this, "sp_shenlvbu", "god", 5, true, true); // SP 022
     sp_shenlvbu->addSkill("ikzhuohuo");
     sp_shenlvbu->addSkill("ikwumou");
@@ -749,8 +589,6 @@ SPPackage::SPPackage()
     sp_hetaihou->addSkill("zhendu");
     sp_hetaihou->addSkill("qiluan");
 
-    addMetaObject<BifaCard>();
-    addMetaObject<SongciCard>();
     addMetaObject<ZhoufuCard>();
     addMetaObject<YinbingCard>();
 }
