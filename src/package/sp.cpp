@@ -586,8 +586,8 @@ SPPackage::SPPackage()
     sp_dingfeng->addSkill("ikfenxun");
 
     General *sp_hetaihou = new General(this, "sp_hetaihou", "qun", 3, false, true); // SP 033
-    sp_hetaihou->addSkill("zhendu");
-    sp_hetaihou->addSkill("qiluan");
+    sp_hetaihou->addSkill("ikzhoudu");
+    sp_hetaihou->addSkill("ikkuangdi");
 
     addMetaObject<ZhoufuCard>();
     addMetaObject<YinbingCard>();

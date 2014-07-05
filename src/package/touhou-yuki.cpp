@@ -1063,7 +1063,6 @@ class ThLingya: public TriggerSkill {
 public:
     ThLingya(): TriggerSkill("thlingya") {
         events << CardFinished;
-        frequency = Frequent;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
