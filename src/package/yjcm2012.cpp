@@ -426,69 +426,6 @@ public:
     }
 };
 
-class FuhunViewAsSkill: public ViewAsSkill {
-public:
-    FuhunViewAsSkill(): ViewAsSkill("fuhun") {
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getHandcardNum() >= 2 && Slash::IsAvailable(player);
-    }
-
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        return player->getHandcardNum() >= 2 && pattern == "slash";
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        return selected.length() < 2 && !to_select->isEquipped();
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if (cards.length() != 2)
-            return NULL;
-
-        Slash *slash = new Slash(Card::SuitToBeDecided, 0);
-        slash->setSkillName(objectName());
-        slash->addSubcards(cards);
-
-        return slash;
-    }
-};
-
-class Fuhun: public TriggerSkill {
-public:
-    Fuhun(): TriggerSkill("fuhun") {
-        events << Damage << EventPhaseChanging;
-        view_as_skill = new FuhunViewAsSkill;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == Damage && TriggerSkill::triggerable(player)) {
-            DamageStruct damage = data.value<DamageStruct>();
-            if (damage.card && damage.card->isKindOf("Slash") && damage.card->getSkillName() == objectName()
-                && player->getPhase() == Player::Play) {
-                room->handleAcquireDetachSkills(player, "ikchilian|iklipao");
-                room->broadcastSkillInvoke(objectName(), 2);
-                player->setFlags(objectName());
-            }
-        } else if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive && player->hasFlag(objectName()))
-                room->handleAcquireDetachSkills(player, "-ikchilian|-iklipao", true);
-        }
-
-        return false;
-    }
-
-    virtual int getEffectIndex(const ServerPlayer *, const Card *) const{
-        return 1;
-    }
-};
-
 GongqiCard::GongqiCard() {
     mute = true;
     target_fixed = true;
@@ -869,9 +806,6 @@ YJCM2012Package::YJCM2012Package()
     chengpu->addSkill(new LihuoTargetMod);
     chengpu->addSkill(new Chunlao);
     related_skills.insertMulti("lihuo", "#lihuo-target");
-
-    General *guanxingzhangbao = new General(this, "guanxingzhangbao", "shu"); // YJ 104
-    guanxingzhangbao->addSkill(new Fuhun);
 
     General *handang = new General(this, "handang", "wu"); // YJ 105
     handang->addSkill(new Gongqi);
