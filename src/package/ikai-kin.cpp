@@ -616,6 +616,285 @@ public:
     }
 };
 
+ExtraCollateralCard::ExtraCollateralCard() {
+}
+
+bool ExtraCollateralCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    const Card *coll = Card::Parse(Self->property("extra_collateral").toString());
+    if (!coll) return false;
+    QStringList tos = Self->property("extra_collateral_current_targets").toString().split("+");
+
+    if (targets.isEmpty())
+        return !tos.contains(to_select->objectName())
+               && !Self->isProhibited(to_select, coll) && coll->targetFilter(targets, to_select, Self);
+    else
+        return coll->targetFilter(targets, to_select, Self);
+}
+
+void ExtraCollateralCard::onUse(Room *, const CardUseStruct &card_use) const{
+    Q_ASSERT(card_use.to.length() == 2);
+    ServerPlayer *killer = card_use.to.first();
+    ServerPlayer *victim = card_use.to.last();
+
+    killer->setFlags("ExtraCollateralTarget");
+    killer->tag["collateralVictim"] = QVariant::fromValue(victim);
+}
+
+IkQizhiCard::IkQizhiCard() {
+}
+
+bool IkQizhiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
+}
+
+void IkQizhiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    bool success = source->pindian(targets.first(), "ikqizhi", NULL);
+    if (success)
+        source->setFlags("IkQizhiSuccess");
+    else
+        room->setPlayerCardLimitation(source, "use", "TrickCard", true);
+}
+
+class IkQizhiViewAsSkill: public ZeroCardViewAsSkill {
+public:
+    IkQizhiViewAsSkill(): ZeroCardViewAsSkill("ikqizhi") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *) const{
+        return false;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
+        return pattern.startsWith("@@ikqizhi");
+    }
+
+    virtual const Card *viewAs() const{
+        QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+        if (pattern.endsWith("!"))
+            return new ExtraCollateralCard;
+        else
+            return new IkQizhiCard;
+    }
+};
+
+class IkQizhi: public PhaseChangeSkill {
+public:
+    IkQizhi(): PhaseChangeSkill("ikqizhi") {
+        view_as_skill = new IkQizhiViewAsSkill;
+    }
+
+    virtual bool triggerable(const ServerPlayer *jianyong) const {
+        foreach (ServerPlayer *p, jianyong->getRoom()->getAllPlayers()) {
+            if (p == jianyong) continue;
+            if (!p->isKongcheng())
+                return jianyong->getPhase() == Player::Play && !jianyong->isKongcheng();
+        }
+        return false;
+    }
+    
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *jianyong, QVariant &, ServerPlayer *) const{
+        return room->askForUseCard(jianyong, "@@ikqizhi", "@ikqizhi-card", 1);
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *) const{
+        return false;
+    }
+};
+
+class IkQizhiUse: public TriggerSkill {
+public:
+    IkQizhiUse(): TriggerSkill("#ikqizhi-use") {
+        events << PreCardUsed;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *jianyong, QVariant &data, ServerPlayer *) const{
+        if (!TriggerSkill::triggerable(jianyong)) return QStringList();
+        if (!jianyong->hasFlag("IkQizhiSuccess")) return QStringList();
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isNDTrick() || use.card->isKindOf("BasicCard"))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *jianyong, QVariant &data, ServerPlayer *) const{
+        jianyong->setFlags("-IkQizhiSuccess");
+        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY)
+            return false;
+
+        CardUseStruct use = data.value<CardUseStruct>();
+        QList<ServerPlayer *> available_targets;
+        if (!use.card->isKindOf("AOE") && !use.card->isKindOf("GlobalEffect")) {
+            room->setPlayerFlag(jianyong, "IkQizhiExtraTarget");
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (use.to.contains(p) || room->isProhibited(jianyong, p, use.card)) continue;
+                if (use.card->targetFixed()) {
+                    if (!use.card->isKindOf("Peach") || p->isWounded())
+                        available_targets << p;
+                } else {
+                    if (use.card->targetFilter(QList<const Player *>(), p, jianyong))
+                        available_targets << p;
+                }
+            }
+            room->setPlayerFlag(jianyong, "-IkQizhiExtraTarget");
+        }
+        QStringList choices;
+        choices << "cancel";
+        if (use.to.length() > 1) choices.prepend("remove");
+        if (!available_targets.isEmpty()) choices.prepend("add");
+        if (choices.length() == 1) return false;
+
+        QString choice = room->askForChoice(jianyong, "ikqizhi", choices.join("+"), data);
+        if (choice == "cancel")
+            return false;
+        else if (choice == "add") {
+            ServerPlayer *extra = NULL;
+            if (!use.card->isKindOf("Collateral"))
+                extra = room->askForPlayerChosen(jianyong, available_targets, "ikqizhi", "@thyongye-add:::" + use.card->objectName());
+            else {
+                QStringList tos;
+                foreach (ServerPlayer *t, use.to)
+                    tos.append(t->objectName());
+                room->setPlayerProperty(jianyong, "extra_collateral", use.card->toString());
+                room->setPlayerProperty(jianyong, "extra_collateral_current_targets", tos.join("+"));
+                room->askForUseCard(jianyong, "@@ikqizhi!", "@thyongye-add:::collateral");
+                room->setPlayerProperty(jianyong, "extra_collateral", QString());
+                room->setPlayerProperty(jianyong, "extra_collateral_current_targets", QString("+"));
+                foreach (ServerPlayer *p, room->getOtherPlayers(jianyong)) {
+                    if (p->hasFlag("ExtraCollateralTarget")) {
+                        p->setFlags("-ExtraCollateralTarget");
+                        extra = p;
+                        break;
+                    }
+                }
+                if (extra == NULL) {
+                    extra = available_targets.at(qrand() % available_targets.length() - 1);
+                    QList<ServerPlayer *> victims;
+                    foreach (ServerPlayer *p, room->getOtherPlayers(extra)) {
+                        if (extra->canSlash(p)
+                            && (!(p == jianyong && p->hasSkill("ikjingyou") && p->isLastHandCard(use.card, true)))) {
+                            victims << p;
+                        }
+                    }
+                    Q_ASSERT(!victims.isEmpty());
+                    extra->tag["collateralVictim"] = QVariant::fromValue(victims.at(qrand() % victims.length()));
+                }
+            }
+            use.to.append(extra);
+            room->sortByActionOrder(use.to);
+
+            LogMessage log;
+            log.type = "#ThYongyeAdd";
+            log.from = jianyong;
+            log.to << extra;
+            log.card_str = use.card->toString();
+            log.arg = "ikqizhi";
+            room->sendLog(log);
+            room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, jianyong->objectName(), extra->objectName());
+
+            if (use.card->isKindOf("Collateral")) {
+                ServerPlayer *victim = extra->tag["collateralVictim"].value<ServerPlayer *>();
+                if (victim) {
+                    LogMessage log;
+                    log.type = "#CollateralSlash";
+                    log.from = jianyong;
+                    log.to << victim;
+                    room->sendLog(log);
+                    room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, extra->objectName(), victim->objectName());
+                }
+            }
+        } else {
+            ServerPlayer *removed = room->askForPlayerChosen(jianyong, use.to, "ikqizhi", "@thyongye-remove:::" + use.card->objectName());
+            use.to.removeOne(removed);
+
+            LogMessage log;
+            log.type = "#ThYongyeRemove";
+            log.from = jianyong;
+            log.to << removed;
+            log.card_str = use.card->toString();
+            log.arg = "ikqizhi";
+            room->sendLog(log);
+        }
+
+        data = QVariant::fromValue(use);
+
+        return false;
+    }
+};
+
+class IkQizhiTargetMod: public TargetModSkill {
+public:
+    IkQizhiTargetMod(): TargetModSkill("#ikqizhi-target") {
+        frequency = NotFrequent;
+        pattern = "Slash,TrickCard+^DelayedTrick";
+    }
+
+    virtual int getDistanceLimit(const Player *from, const Card *) const{
+        if (from->hasFlag("IkQizhiExtraTarget"))
+            return 1000;
+        else
+            return 0;
+    }
+};
+
+class IkZongshi: public TriggerSkill {
+public:
+    IkZongshi(): TriggerSkill("ikzongshi") {
+        events << Pindian;
+        frequency = Frequent;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        const Card *to_obtain = NULL;
+        PindianStruct *pindian = data.value<PindianStruct *>();
+        if (TriggerSkill::triggerable(pindian->from)) {
+            if (pindian->from_number > pindian->to_number)
+                to_obtain = pindian->to_card;
+            else
+                to_obtain = pindian->from_card;
+            if (room->getCardPlace(to_obtain->getEffectiveId()) == Player::PlaceTable)
+                skill_list.insert(pindian->from, QStringList(objectName()));
+        }
+        if (TriggerSkill::triggerable(pindian->to)) {
+            if (pindian->from_number < pindian->to_number)
+                to_obtain = pindian->from_card;
+            else
+                to_obtain = pindian->to_card;
+            if (room->getCardPlace(to_obtain->getEffectiveId()) == Player::PlaceTable)
+                skill_list.insert(pindian->to, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+        if (ask_who->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+        PindianStruct *pindian = data.value<PindianStruct *>();
+        const Card *to_obtain = NULL;
+        if (ask_who == pindian->from) {
+            if (pindian->from_number > pindian->to_number)
+                to_obtain = pindian->to_card;
+            else
+                to_obtain = pindian->from_card;
+        } else if (ask_who == pindian->to) {
+            if (pindian->from_number < pindian->to_number)
+                to_obtain = pindian->from_card;
+            else
+                to_obtain = pindian->to_card;
+        }
+        ask_who->obtainCard(to_obtain);
+
+        return false;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -646,12 +925,22 @@ IkaiKinPackage::IkaiKinPackage()
     wind021->addSkill(new IkLiyaoTargetMod);
     related_skills.insertMulti("ikliyao", "#ikliyao-target");
 
+    General *wind027 = new General(this, "wind027", "kaze", 3);
+    wind027->addSkill(new IkQizhi);
+    wind027->addSkill(new IkQizhiUse);
+    wind027->addSkill(new IkQizhiTargetMod);
+    related_skills.insertMulti("ikqizhi", "#ikqizhi-use");
+    related_skills.insertMulti("ikqizhi", "#ikqizhi-target");
+    wind027->addSkill(new IkZongshi);
+
     General *bloom022 = new General(this, "bloom022", "hana", 3, false);
     bloom022->addSkill(new IkLundao);
     bloom022->addSkill(new IkXuanwu);
 
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
+    addMetaObject<ExtraCollateralCard>();
+    addMetaObject<IkQizhiCard>();
 }
 
 ADD_PACKAGE(IkaiKin)

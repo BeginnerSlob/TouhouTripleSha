@@ -1920,8 +1920,7 @@ public:
     }
 };
 
-#include "yjcm2013.h"
-
+#include "ikai-kin.h"
 class ThYongyeViewAsSkill: public ZeroCardViewAsSkill {
 public:
     ThYongyeViewAsSkill(): ZeroCardViewAsSkill("thyongye") {

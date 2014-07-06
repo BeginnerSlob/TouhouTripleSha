@@ -6,6 +6,7 @@
 #include "nostalgia.h"
 #include "yjcm.h"
 #include "yjcm2013.h"
+#include "ikai-kin.h"
 #include "settings.h"
 
 class MoonSpearSkill: public WeaponSkill {
@@ -655,7 +656,7 @@ public:
                         targets << p;
                 }
                 if (targets.isEmpty()) return false;
-                extra = room->askForPlayerChosen(player, targets, objectName(), "@qiaoshui-add:::" + use.card->objectName(), true);
+                extra = room->askForPlayerChosen(player, targets, objectName(), "@thyongye-add:::" + use.card->objectName(), true);
             } else if (use.card->isKindOf("Collateral")) {
                 foreach (ServerPlayer *p, room->getAlivePlayers()) {
                     if (use.to.contains(p) || room->isProhibited(player, p, use.card)) continue;
@@ -669,7 +670,7 @@ public:
                     tos.append(t->objectName());
                 room->setPlayerProperty(player, "extra_collateral", use.card->toString());
                 room->setPlayerProperty(player, "extra_collateral_current_targets", tos.join("+"));
-                bool used = room->askForUseCard(player, "@@nosmieji", "@qiaoshui-add:::collateral");
+                bool used = room->askForUseCard(player, "@@nosmieji", "@thyongye-add:::collateral");
                 room->setPlayerProperty(player, "extra_collateral", QString());
                 room->setPlayerProperty(player, "extra_collateral_current_targets", QString());
                 if (!used) return false;
@@ -688,7 +689,7 @@ public:
             data = QVariant::fromValue(use);
 
             LogMessage log;
-            log.type = "#QiaoshuiAdd";
+            log.type = "#ThYongyeAdd";
             log.from = player;
             log.to << extra;
             log.arg = use.card->objectName();
