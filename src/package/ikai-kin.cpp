@@ -3,6 +3,8 @@
 #include "general.h"
 #include "skill.h"
 #include "engine.h"
+#include "standard.h"
+#include "client.h"
 
 class IkHuowen: public PhaseChangeSkill {
 public:
@@ -526,6 +528,94 @@ public:
     }
 };
 
+class IkLiyaoViewAsSkill: public OneCardViewAsSkill {
+public:
+    IkLiyaoViewAsSkill(): OneCardViewAsSkill("ikliyao") {
+        response_or_use = true;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return Slash::IsAvailable(player) && player->getPhase() == Player::Play;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+        return pattern == "slash" && player->getPhase() == Player::Play;
+    }
+
+    virtual bool viewFilter(const Card *card) const{
+        if (card->getSuit() != Card::Diamond)
+            return false;
+
+        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) {
+            Slash *slash = new Slash(Card::SuitToBeDecided, -1);
+            slash->addSubcard(card->getEffectiveId());
+            slash->deleteLater();
+            return slash->isAvailable(Self);
+        }
+        return true;
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        Card *slash = new Slash(originalCard->getSuit(), originalCard->getNumber());
+        slash->addSubcard(originalCard->getId());
+        slash->setSkillName(objectName());
+        return slash;
+    }
+};
+
+class IkLiyao: public TriggerSkill {
+public:
+    IkLiyao(): TriggerSkill("ikliyao") {
+        events << PreCardUsed;
+        view_as_skill = new IkLiyaoViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("Slash")) {
+            if (player->hasFlag("ikliyao_black"))
+                room->setPlayerFlag(player, "-ikliyao_black");
+            else if (player->hasFlag("ikliyao_red"))
+                room->setPlayerFlag(player, "-ikliyao_red");
+            else if (player->hasFlag("ikliyao_nocolor"))
+                room->setPlayerFlag(player, "-ikliyao_nocolor");
+            if (use.card->isRed())
+                room->setPlayerFlag(player, "ikliyao_red");
+            else if (use.card->isBlack())
+                room->setPlayerFlag(player, "ikliyao_black");
+            else
+                room->setPlayerFlag(player, "ikliyao_nocolor");
+        }
+        return QStringList();
+    }
+};
+
+class IkLiyaoTargetMod: public TargetModSkill {
+public:
+    IkLiyaoTargetMod(): TargetModSkill("#ikliyao-target") {
+    }
+
+    virtual int getResidueNum(const Player *from, const Card *card) const{
+        if (from->hasSkill("ikliyao")) {
+            if (card->hasFlag("Global_SlashAvailabilityChecker"))
+                return 1000;
+            if (from->hasFlag("ikliyao_black") && !card->isBlack())
+                return 1000;
+            else if (from->hasFlag("ikliyao_red") && !card->isRed())
+                return 1000;
+            else if (from->hasFlag("ikliyao_nocolor")) {
+                if (card->isRed())
+                    return 1000;
+                if (card->isBlack())
+                    return 1000;
+                return 0;
+            }
+        }
+        return 0;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -550,6 +640,11 @@ IkaiKinPackage::IkaiKinPackage()
     General *wind020 = new General(this, "wind020", "kaze");
     wind020->addSkill(new IkMeiying);
     wind020->addSkill(new IkFansheng);
+
+    General *wind021 = new General(this, "wind021", "kaze");
+    wind021->addSkill(new IkLiyao);
+    wind021->addSkill(new IkLiyaoTargetMod);
+    related_skills.insertMulti("ikliyao", "#ikliyao-target");
 
     General *bloom022 = new General(this, "bloom022", "hana", 3, false);
     bloom022->addSkill(new IkLundao);
