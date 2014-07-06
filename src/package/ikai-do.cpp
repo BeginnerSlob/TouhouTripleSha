@@ -1318,6 +1318,103 @@ public:
     }
 };
 
+class IkXunxun: public PhaseChangeSkill {
+public:
+    IkXunxun(): PhaseChangeSkill("ikxunxun") {
+        frequency = Frequent;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+            && target->getPhase() == Player::Draw;
+    }
+
+    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())){
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *lidian) const{
+        Room *room = lidian->getRoom();
+
+        QList<ServerPlayer *> p_list;
+        p_list << lidian;
+        QList<int> card_ids = room->getNCards(4);
+        QList<int> obtained;
+        room->fillAG(card_ids, lidian);
+        int id1 = room->askForAG(lidian, card_ids, false, objectName());
+        card_ids.removeOne(id1);
+        obtained << id1;
+        room->takeAG(lidian, id1, false, p_list);
+        int id2 = room->askForAG(lidian, card_ids, false, objectName());
+        card_ids.removeOne(id2);
+        obtained << id2;
+        room->clearAG(lidian);
+
+        room->askForGuanxing(lidian, card_ids, Room::GuanxingDownOnly);
+        DummyCard *dummy = new DummyCard(obtained);
+        lidian->obtainCard(dummy, false);
+        delete dummy;
+
+        return true;
+    }
+};
+
+class IkWangxi: public TriggerSkill {
+public:
+    IkWangxi(): TriggerSkill("ikwangxi") {
+        events << Damage << Damaged;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        ServerPlayer *target = NULL;
+        if (triggerEvent == Damage && !damage.to->hasFlag("Global_DebutFlag"))
+            target = damage.to;
+        else if (triggerEvent == Damaged)
+            target = damage.from;
+        if (!target || target == player || target->isDead()) return QStringList();
+        QStringList skill;
+        for (int i = 1; 1 <= damage.damage; i++)
+            skill << objectName();
+        return skill;
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        ServerPlayer *target = NULL;
+        if (triggerEvent == Damage)
+            target = damage.to;
+        else if (triggerEvent == Damaged)
+            target = damage.from;
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(target))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        ServerPlayer *target = NULL;
+        if (triggerEvent == Damage)
+            target = damage.to;
+        else if (triggerEvent == Damaged)
+            target = damage.from;
+        QList<ServerPlayer *> players;
+        players << player << target;
+        room->sortByActionOrder(players);
+
+        room->drawCards(players, 1, objectName());
+
+        return false;
+    }
+};
+
 IkZhihengCard::IkZhihengCard() {
     target_fixed = true;
 }
@@ -2827,6 +2924,10 @@ IkaiDoPackage::IkaiDoPackage()
     bloom007->addSkill(new IkMengyangMove);
     related_skills.insertMulti("ikmengyang", "#ikmengyang-move");
     bloom007->addSkill(new IkZhongyan);
+
+    General *bloom042 = new General(this, "bloom042", "hana", 3);
+    bloom042->addSkill(new IkXunxun);
+    bloom042->addSkill(new IkWangxi);
 
     General *snow001 = new General(this, "snow001$", "yuki");
     snow001->addSkill(new IkZhiheng);
