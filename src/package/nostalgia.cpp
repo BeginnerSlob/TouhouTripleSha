@@ -523,36 +523,6 @@ public:
     }
 };
 
-class NosQianxi: public TriggerSkill {
-public:
-    NosQianxi(): TriggerSkill("nosqianxi") {
-        events << DamageCaused;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        DamageStruct damage = data.value<DamageStruct>();
-
-        if (player->distanceTo(damage.to) == 1 && damage.card && damage.card->isKindOf("Slash")
-            && damage.by_user && !damage.chain && !damage.transfer && player->askForSkillInvoke(objectName(), data)) {
-            room->broadcastSkillInvoke(objectName(), 1);
-            JudgeStruct judge;
-            judge.pattern = ".|heart";
-            judge.good = false;
-            judge.who = player;
-            judge.reason = objectName();
-
-            room->judge(judge);
-            if (judge.isGood()) {
-                room->broadcastSkillInvoke(objectName(), 2);
-                room->loseMaxHp(damage.to);
-                return true;
-            } else
-                room->broadcastSkillInvoke(objectName(), 3);
-        }
-        return false;
-    }
-};
-
 class NosChengxiang: public Chengxiang {
 public:
     NosChengxiang(): Chengxiang() {
@@ -1805,10 +1775,6 @@ NostalYJCM2012Package::NostalYJCM2012Package()
     nos_handang->addSkill(new NosGongqiTargetMod);
     nos_handang->addSkill(new NosJiefan);
     related_skills.insertMulti("nosgongqi", "#nosgongqi-target");
-
-    General *nos_madai = new General(this, "nos_madai", "shu");
-    nos_madai->addSkill("thjibu");
-    nos_madai->addSkill(new NosQianxi);
 
     addMetaObject<NosJiefanCard>();
 }

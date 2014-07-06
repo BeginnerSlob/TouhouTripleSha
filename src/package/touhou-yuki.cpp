@@ -1222,10 +1222,17 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+        Player::Phase origin_phase = ask_who->getPhase();
         Player::Phase phase = (Player::Phase)data.toInt();
-        QList<Player::Phase> phases;
-        phases << phase;
-        ask_who->play(phases);
+        ask_who->setPhase(phase);
+        room->broadcastProperty(ask_who, "phase");
+        RoomThread *thread = room->getThread();
+        if (!thread->trigger(EventPhaseStart, room, ask_who))
+            thread->trigger(EventPhaseProceeding, room, ask_who);
+        thread->trigger(EventPhaseEnd, room, ask_who);
+
+        ask_who->setPhase(origin_phase);
+        room->broadcastProperty(ask_who, "phase");
 
         return false;
     }

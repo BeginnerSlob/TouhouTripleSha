@@ -394,6 +394,48 @@ public:
     }
 };
 
+class IkWanhun: public TriggerSkill {
+public:
+    IkWanhun(): TriggerSkill("ikwanhun") {
+        events << DamageCaused;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        if (player->distanceTo(damage.to) <= 2 && damage.by_user && !damage.chain && !damage.transfer
+            && damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel")))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+
+        JudgeStruct judge;
+        judge.pattern = ".|heart";
+        judge.good = false;
+        judge.who = player;
+        judge.reason = objectName();
+
+        room->judge(judge);
+        if (judge.isGood()) {
+            room->loseMaxHp(damage.to);
+            return true;
+        }
+        
+        return false;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -410,6 +452,10 @@ IkaiKinPackage::IkaiKinPackage()
     General *wind018 = new General(this, "wind018", "kaze", 3);
     wind018->addSkill(new IkMitu);
     wind018->addSkill(new IkSishi);
+
+    General *wind019 = new General(this, "wind019", "kaze");
+    wind019->addSkill("thxiagong");
+    wind019->addSkill(new IkWanhun);
 
     General *bloom022 = new General(this, "bloom022", "hana", 3, false);
     bloom022->addSkill(new IkLundao);

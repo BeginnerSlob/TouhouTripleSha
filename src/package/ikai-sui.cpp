@@ -252,9 +252,6 @@ public:
             if (change.from == Player::Play) {
                 if (player->getMark("ikcanyue") > 0)
                     room->setPlayerMark(player, "ikcanyue", 0);
-                foreach (ServerPlayer *p, room->getAllPlayers())
-                    if (p->hasFlag("ikcanyue_disabled"))
-                        room->setPlayerFlag(p, "-ikcanyue_disabled");
             }
         }
 
@@ -264,16 +261,6 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         room->addPlayerMark(player, "ikcanyue");
         return false;
-    }
-};
-
-class IkCanyueProhibit: public ProhibitSkill {
-public:
-    IkCanyueProhibit(): ProhibitSkill("#ikcanyue-prohibit") {
-    }
-
-    virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const{
-        return to->hasFlag("ikcanyue_disabled") && card->isKindOf("Slash");
     }
 };
 
@@ -2548,7 +2535,7 @@ public:
         foreach (ServerPlayer *player, jiling->getRoom()->getAllPlayers()) {
             if (player == jiling) continue;
             if (!player->isKongcheng())
-                return jiling->getPhase() == Player::Play && !jiling->isKongcheng();
+                return PhaseChangeSkill::triggerable(jiling) && jiling->getPhase() == Player::Play && !jiling->isKongcheng();
         }
         return false;
     }
@@ -3352,10 +3339,8 @@ IkaiSuiPackage::IkaiSuiPackage()
     wind023->addSkill(new IkXielun);
     wind023->addSkill(new IkCanyue);
     wind023->addSkill(new IkCanyueCount);
-    wind023->addSkill(new IkCanyueProhibit);
     wind023->addSkill(new IkCanyueClear);
     related_skills.insertMulti("ikcanyue", "#ikcanyue-count");
-    related_skills.insertMulti("ikcanyue", "#ikcanyue-prohibit");
     related_skills.insertMulti("ikcanyue", "#ikcanyue-clear");
     wind023->addSkill(new IkJiuming);
     wind023->addSkill(new IkJiumingCount);
