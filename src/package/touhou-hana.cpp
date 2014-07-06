@@ -1822,7 +1822,7 @@ public:
                 break;
             }
         if (target && target->isAlive()) {
-            QList<Player::Phase> phases;
+            Player::Phase phase = Player::PhaseNone;
             QString choice = target->tag.value("ThXianfa").toString();
             target->tag.remove("ThXianfa");
 
@@ -1834,16 +1834,27 @@ public:
             room->sendLog(log);
 
             if(choice == "start")
-                phases << Player::Start;
+                phase = Player::Start;
             else if(choice == "judge")
-                phases << Player::Judge;
+                phase = Player::Judge;
             else if(choice == "draw")
-                phases << Player::Draw;
+                phase = Player::Draw;
             else if(choice == "discard")
-                phases << Player::Discard;
+                phase = Player::Discard;
             else if(choice == "finish")
-                phases << Player::Finish;
-            target->play(phases);
+                phase = Player::Finish;
+            if (phase != Player::PhaseNone) {
+                Player::Phase origin_phase = target->getPhase();
+                target->setPhase(phase);
+                room->broadcastProperty(target, "phase");
+                RoomThread *thread = room->getThread();
+                if (!thread->trigger(EventPhaseStart, room, target))
+                    thread->trigger(EventPhaseProceeding, room, target);
+                thread->trigger(EventPhaseEnd, room, target);
+
+                target->setPhase(origin_phase);
+                room->broadcastProperty(target, "phase");
+            }
         }
 
         return false;

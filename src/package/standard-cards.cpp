@@ -177,9 +177,6 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
             if (name == "iklipao") {
                 if (Player::isNostalGeneral(player, "zhangfei"))
                     index += 2;
-            } else if (name == "ikcanyue") {
-                foreach (ServerPlayer *p, use.to)
-                    room->setPlayerFlag(p, "ikcanyue_disabled");
             }
             room->broadcastSkillInvoke(name, index);
             room->notifySkillInvoked(player, name);

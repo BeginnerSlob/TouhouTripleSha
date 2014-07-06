@@ -467,9 +467,16 @@ public:
                 foreach(ServerPlayer *p, room->getOtherPlayers(player)) {
                     if (p->getMark("shouyetarget") > 0) {
                         room->setPlayerMark(p, "shouyetarget", 0);
-                        QList<Player::Phase> phases;
-                        phases << Player::Draw;
-                        p->play(phases);
+                        Player::Phase origin_phase = p->getPhase();
+                        p->setPhase(Player::Draw);
+                        room->broadcastProperty(p, "phase");
+                        RoomThread *thread = room->getThread();
+                        if (!thread->trigger(EventPhaseStart, room, p))
+                            thread->trigger(EventPhaseProceeding, room, p);
+                        thread->trigger(EventPhaseEnd, room, p);
+
+                        p->setPhase(origin_phase);
+                        room->broadcastProperty(p, "phase");
                     }
                 }
         }
