@@ -1,5 +1,4 @@
 #include "yjcm2013.h"
-#include "settings.h"
 #include "skill.h"
 #include "standard.h"
 #include "client.h"
@@ -249,205 +248,6 @@ public:
                     guanping->drawCards(1, objectName());
             }
         }
-        return false;
-    }
-};
-
-XiansiCard::XiansiCard() {
-}
-
-bool XiansiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
-    return targets.length() < 2 && !to_select->isNude();
-}
-
-void XiansiCard::onEffect(const CardEffectStruct &effect) const{
-    if (effect.to->isNude()) return;
-    int id = effect.from->getRoom()->askForCardChosen(effect.from, effect.to, "he", "xiansi");
-    effect.from->addToPile("counter", id);
-}
-
-class XiansiViewAsSkill: public ZeroCardViewAsSkill {
-public:
-    XiansiViewAsSkill(): ZeroCardViewAsSkill("xiansi") {
-        response_pattern = "@@xiansi";
-    }
-
-    virtual const Card *viewAs() const{
-        return new XiansiCard;
-    }
-};
-
-class Xiansi: public TriggerSkill {
-public:
-    Xiansi(): TriggerSkill("xiansi") {
-        events << EventPhaseStart;
-        view_as_skill = new XiansiViewAsSkill;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        if (player->getPhase() == Player::Start)
-            room->askForUseCard(player, "@@xiansi", "@xiansi-card");
-        return false;
-    }
-
-    virtual int getEffectIndex(const ServerPlayer *, const Card *card) const{
-        int index = qrand() % 2 + 1;
-        if (card->isKindOf("Slash"))
-            index += 2;
-        return index;
-    }
-};
-
-class XiansiAttach: public TriggerSkill {
-public:
-    XiansiAttach(): TriggerSkill("#xiansi-attach") {
-        events << GameStart << EventAcquireSkill << EventLoseSkill << Debut;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if ((triggerEvent == GameStart && TriggerSkill::triggerable(player))
-             || (triggerEvent == EventAcquireSkill && data.toString() == "xiansi")) {
-            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                if (!p->hasSkill("xiansi_slash"))
-                    room->attachSkillToPlayer(p, "xiansi_slash");
-            }
-        } else if (triggerEvent == EventLoseSkill && data.toString() == "xiansi") {
-            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                if (p->hasSkill("xiansi_slash"))
-                    room->detachSkillFromPlayer(p, "xiansi_slash", true);
-            }
-        } else if (triggerEvent == Debut) {
-            QList<ServerPlayer *> liufengs = room->findPlayersBySkillName("xiansi");
-            foreach (ServerPlayer *liufeng, liufengs) {
-                if (player != liufeng && !player->hasSkill("xiansi_attach")) {
-                    room->attachSkillToPlayer(player, "xiansi_attach");
-                    break;
-                }
-            }
-        }
-        return false;
-    }
-};
-
-XiansiSlashCard::XiansiSlashCard() {
-    m_skillName = "xiansi_slash";
-}
-
-bool XiansiSlashCard::targetsFeasible(const QList<const Player *> &, const Player *) const{
-    return true;
-}
-
-bool XiansiSlashCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    Slash *slash = new Slash(Card::SuitToBeDecided, -1);
-    if (targets.isEmpty()) {
-        bool filter = to_select->hasSkill("xiansi") && to_select->getPile("counter").length() >= 2
-                      && slash->targetFilter(QList<const Player *>(), to_select, Self);
-        delete slash;
-        return filter;
-    } else {
-        slash->addSpecificAssignee(targets.first());
-        bool filter = slash->targetFilter(targets, to_select, Self);
-        delete slash;
-        return filter;
-    }
-    return false;
-}
-
-const Card *XiansiSlashCard::validate(CardUseStruct &cardUse) const{
-    Room *room = cardUse.from->getRoom();
-    if (cardUse.to.isEmpty()) {
-        QList<ServerPlayer *> liufengs = room->findPlayersBySkillName("xiansi");
-        foreach (ServerPlayer *liufeng, liufengs) {
-            if (liufeng->getPile("counter").length() < 2) continue;
-            if (cardUse.from->canSlash(liufeng)) {
-                cardUse.to << liufeng;
-                break;
-            }
-        }
-        if (cardUse.to.isEmpty())
-            return NULL;
-    }
-    ServerPlayer *liufeng = cardUse.to.first();
-    if (liufeng->getPile("counter").length() < 2) return NULL;
-    ServerPlayer *source = cardUse.from;
-
-    DummyCard *dummy = new DummyCard;
-    if (liufeng->getPile("counter").length() == 2) {
-        dummy->addSubcard(liufeng->getPile("counter").first());
-        dummy->addSubcard(liufeng->getPile("counter").last());
-    } else {
-        int ai_delay = Config.AIDelay;
-        Config.AIDelay = 0;
-
-        QList<int> ids = liufeng->getPile("counter");
-        for (int i = 0; i < 2; i++) {
-            room->fillAG(ids, source);
-            int id = room->askForAG(source, ids, false, "xiansi");
-            dummy->addSubcard(id);
-            ids.removeOne(id);
-            room->clearAG(source);
-        }
-
-        Config.AIDelay = ai_delay;
-
-    }
-
-    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "xiansi", QString());
-    room->throwCard(dummy, reason, NULL);
-    delete dummy;
-
-    Slash *slash = new Slash(Card::SuitToBeDecided, -1);
-    slash->setSkillName("_xiansi");
-
-    QList<ServerPlayer *> targets = cardUse.to;
-    foreach (ServerPlayer *target, targets) {
-        if (!source->canSlash(target, slash))
-            cardUse.to.removeOne(target);
-    }
-    if (cardUse.to.length() > 0)
-        return slash;
-    else {
-        delete slash;
-        return NULL;
-    }
-}
-
-class XiansiSlashViewAsSkill: public ZeroCardViewAsSkill {
-public:
-    XiansiSlashViewAsSkill(): ZeroCardViewAsSkill("xiansi_slash") {
-        attached_lord_skill = true;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return Slash::IsAvailable(player) && canSlashLiufeng(player);
-    }
-
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        return pattern == "slash"
-               && Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE
-               && canSlashLiufeng(player);
-    }
-
-    virtual const Card *viewAs() const{
-        return new XiansiSlashCard;
-    }
-
-private:
-    static bool canSlashLiufeng(const Player *player) {
-        Slash *slash = new Slash(Card::SuitToBeDecided, -1);
-        foreach (const Player *p, player->getAliveSiblings()) {
-            if (p->hasSkill("xiansi") && p->getPile("counter").length() > 1) {
-                if (slash->targetFilter(QList<const Player *>(), p, player)) {
-                    delete slash;
-                    return true;
-                }
-            }
-        }
-        delete slash;
         return false;
     }
 };
@@ -1011,11 +811,6 @@ YJCM2013Package::YJCM2013Package()
     liru->addSkill(new FenchengMark);
     related_skills.insertMulti("fencheng", "#fencheng");
 
-    General *liufeng = new General(this, "liufeng", "shu"); // YJ 207
-    liufeng->addSkill(new Xiansi);
-    liufeng->addSkill(new XiansiAttach);
-    related_skills.insertMulti("xiansi", "#xiansi-attach");
-
     General *manchong = new General(this, "manchong", "wei", 3); // YJ 208
     manchong->addSkill(new Junxing);
     manchong->addSkill(new Yuce);
@@ -1032,14 +827,10 @@ YJCM2013Package::YJCM2013Package()
     zhuran->addSkill(new Danshou);
 
     addMetaObject<JunxingCard>();
-    addMetaObject<XiansiCard>();
-    addMetaObject<XiansiSlashCard>();
     addMetaObject<ZongxuanCard>();
     addMetaObject<MiejiCard>();
     addMetaObject<FenchengCard>();
     addMetaObject<DanshouCard>();
-
-    skills << new XiansiSlashViewAsSkill;
 }
 
 ADD_PACKAGE(YJCM2013)
