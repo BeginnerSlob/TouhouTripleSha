@@ -355,73 +355,6 @@ public:
     }
 };
 
-class Dangxian: public TriggerSkill {
-public:
-    Dangxian(): TriggerSkill("dangxian") {
-        frequency = Compulsory;
-        events << EventPhaseStart;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *liaohua, QVariant &) const{
-        if (liaohua->getPhase() == Player::RoundStart) {
-            room->broadcastSkillInvoke(objectName());
-            LogMessage log;
-            log.type = "#TriggerSkill";
-            log.from = liaohua;
-            log.arg = objectName();
-            room->sendLog(log);
-            room->notifySkillInvoked(liaohua, objectName());
-
-            liaohua->setPhase(Player::Play);
-            room->broadcastProperty(liaohua, "phase");
-            RoomThread *thread = room->getThread();
-            if (!thread->trigger(EventPhaseStart, room, liaohua))
-                thread->trigger(EventPhaseProceeding, room, liaohua);
-            thread->trigger(EventPhaseEnd, room, liaohua);
-
-            liaohua->setPhase(Player::RoundStart);
-            room->broadcastProperty(liaohua, "phase");
-        }
-        return false;
-    }
-};
-
-class Fuli: public TriggerSkill {
-public:
-    Fuli(): TriggerSkill("fuli") {
-        events << AskForPeaches;
-        frequency = Limited;
-        limit_mark = "@laoji";
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return TriggerSkill::triggerable(target) && target->getMark("@laoji") > 0;
-    }
-
-    int getKingdoms(Room *room) const{
-        QSet<QString> kingdom_set;
-        foreach (ServerPlayer *p, room->getAlivePlayers())
-            kingdom_set << p->getKingdom();
-        return kingdom_set.size();
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *liaohua, QVariant &data) const{
-        DyingStruct dying_data = data.value<DyingStruct>();
-        if (dying_data.who != liaohua)
-            return false;
-        if (liaohua->askForSkillInvoke(objectName(), data)) {
-            room->broadcastSkillInvoke(objectName());
-            room->doLightbox("$FuliAnimate", 3000);
-
-            room->removePlayerMark(liaohua, "@laoji");
-            room->recover(liaohua, RecoverStruct(liaohua, NULL, getKingdoms(room) - liaohua->getHp()));
-
-            liaohua->turnOver();
-        }
-        return false;
-    }
-};
-
 class Zishou: public DrawCardsSkill {
 public:
     Zishou(): DrawCardsSkill("zishou") {
@@ -946,10 +879,6 @@ YJCM2012Package::YJCM2012Package()
 
     General *huaxiong = new General(this, "huaxiong", "qun", 6); // YJ 106
     huaxiong->addSkill(new Shiyong);
-
-    General *liaohua = new General(this, "liaohua", "shu"); // YJ 107
-    liaohua->addSkill(new Dangxian);
-    liaohua->addSkill(new Fuli);
 
     General *liubiao = new General(this, "liubiao", "qun", 4); // YJ 108
     liubiao->addSkill(new Zishou);
