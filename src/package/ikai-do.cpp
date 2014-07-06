@@ -507,6 +507,154 @@ public:
     }
 };
 
+class IkBaoou: public TriggerSkill {
+public:
+    IkBaoou(): TriggerSkill("ikbaoou") {
+        events << EventPhaseStart << ChoiceMade;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player == NULL) return skill_list;
+        if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Finish) {
+            if (player->hasFlag("IkBaoouDamage"))
+                foreach (ServerPlayer *xushu, room->findPlayersBySkillName(objectName()))
+                    if (xushu != player && xushu->canSlash(player, false))
+                        skill_list.insert(xushu, QStringList(objectName()));
+        } else if (triggerEvent == ChoiceMade && player->hasFlag("IkBaoouSlash") && data.canConvert<CardUseStruct>()) {
+            room->broadcastSkillInvoke(objectName());
+            room->notifySkillInvoked(player, objectName());
+
+            LogMessage log;
+            log.type = "#InvokeSkill";
+            log.from = player;
+            log.arg = objectName();
+            room->sendLog(log);
+
+            player->setFlags("-IkBaoouSlash");
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *xushu) const{
+        xushu->setFlags("IkBaoouSlash");
+        QString prompt = QString("@ikbaoou-slash:%1:%2").arg(xushu->objectName()).arg(player->objectName());
+        if (!room->askForUseSlashTo(xushu, player, prompt, false))
+            xushu->setFlags("-IkBaoouSlash");
+        return false;
+    }
+};
+
+class IkBaoouRecord: public TriggerSkill {
+public:
+    IkBaoouRecord(): TriggerSkill("#ikbaoou-record") {
+        events << PreDamageDone;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer* &) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.from && damage.from->getPhase() != Player::NotActive && !damage.from->hasFlag("IkBaoouDamage"))
+            damage.from->setFlags("IkBaoouDamage");
+        return QStringList();
+    }
+};
+
+class IkYehua: public TriggerSkill {
+public:
+    IkYehua(): TriggerSkill("ikyehua") {
+        events << Damage;
+        frequency = Wake;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return TriggerSkill::triggerable(target)
+               && target->getMark("@yehua") == 0
+               && target->isWounded();
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+        room->broadcastSkillInvoke(objectName());
+        room->notifySkillInvoked(player, objectName());
+
+        LogMessage log;
+        log.type = "#IkYehuaWake";
+        log.from = player;
+        log.arg = objectName();
+        room->sendLog(log);
+
+        room->setPlayerMark(player, "@yehua", 1);
+        if (room->changeMaxHpForAwakenSkill(player))
+            room->acquireSkill(player, "ikxingyu");
+
+        return false;
+    }
+};
+
+IkXingyuCard::IkXingyuCard() {
+    target_fixed = true;
+}
+
+void IkXingyuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    QStringList choice_list, pattern_list;
+    choice_list << "basic" << "trick" << "equip" << "red" << "black";
+    pattern_list << "BasicCard" << "TrickCard" << "EquipCard" << ".|red" << ".|black";
+
+    QString choice = room->askForChoice(source, "ikxingyu", choice_list.join("+"));
+    QString pattern = pattern_list.at(choice_list.indexOf(choice));
+
+    LogMessage log;
+    log.type = "#IkXingyuChoice";
+    log.from = source;
+    log.arg = choice;
+    room->sendLog(log);
+
+    QList<int> cardIds;
+    while (true) {
+        int id = room->drawCard();
+        cardIds << id;
+        CardsMoveStruct move(id, NULL, Player::PlaceTable,
+                             CardMoveReason(CardMoveReason::S_REASON_TURNOVER, source->objectName(), "ikxingyu", QString()));
+        room->moveCardsAtomic(move, true);
+        room->getThread()->delay();
+
+        const Card *card = Sanguosha->getCard(id);
+        if (Sanguosha->matchExpPattern(pattern, NULL, card)) {
+            QList<int> ids;
+            ids << id;
+            cardIds.removeOne(id);
+            room->fillAG(ids, source);
+            ServerPlayer *target = room->askForPlayerChosen(source, room->getAlivePlayers(), "ikxingyu",
+                                                            QString("@ikxingyu-give:::%1:%2\\%3").arg(card->objectName())
+                                                                                                .arg(card->getSuitString() + "_char")
+                                                                                                .arg(card->getNumberString()));
+            room->clearAG(source);
+            room->obtainCard(target, card);
+            break;
+        }
+    }
+    if (!cardIds.isEmpty()) {
+        DummyCard *dummy = new DummyCard(cardIds);
+        CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, source->objectName(), "ikxingyu", QString());
+        room->throwCard(dummy, reason, NULL);
+        delete dummy;
+    }
+}
+
+class IkXingyu: public ZeroCardViewAsSkill {
+public:
+    IkXingyu(): ZeroCardViewAsSkill("ikxingyu") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkXingyuCard");
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkXingyuCard;
+    }
+};
+
 class IkJiaoman: public MasochismSkill {
 public:
     IkJiaoman(): MasochismSkill("ikjiaoman") {
@@ -2639,6 +2787,13 @@ IkaiDoPackage::IkaiDoPackage()
     wind007->addSkill(new IkHuiquan);
     wind007->addSkill("thjizhi");
 
+    General *wind042 = new General(this, "wind042", "kaze");
+    wind042->addSkill(new IkBaoou);
+    wind042->addSkill(new IkBaoouRecord);
+    wind042->addSkill(new IkYehua);
+    wind042->addRelateSkill("ikxingyu");
+    related_skills.insertMulti("ikbaoou", "#ikbaoou-record");
+
     General *bloom001 = new General(this, "bloom001$", "hana");
     bloom001->addSkill(new IkJiaoman);
     bloom001->addSkill(new IkHuanwei);
@@ -2746,6 +2901,7 @@ IkaiDoPackage::IkaiDoPackage()
 
     addMetaObject<IkShenaiCard>();
     addMetaObject<IkXinqiCard>();
+    addMetaObject<IkXingyuCard>();
     addMetaObject<IkLianbaoCard>();
     addMetaObject<IkZhihengCard>();
     addMetaObject<IkGuisiCard>();
@@ -2761,7 +2917,7 @@ IkaiDoPackage::IkaiDoPackage()
     addMetaObject<IkMoyuCard>();
     addMetaObject<IkQingnangCard>();
 
-    skills << new NonCompulsoryInvalidity << new IkQinghua;
+    skills << new NonCompulsoryInvalidity << new IkXingyu << new IkQinghua;
 
     patterns["."] = new ExpPattern(".|.|.|hand");
     patterns[".S"] = new ExpPattern(".|spade|.|hand");
