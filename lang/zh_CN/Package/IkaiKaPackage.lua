@@ -1,7 +1,7 @@
 -- translation for IkaiHiPackage
 
 return {
-	["ikai-hi"] = "异世界的火种",
+	["ikai-ka"] = "异世界的火种",
 	
 --wind
 	["#wind025"] = "计测万端",
