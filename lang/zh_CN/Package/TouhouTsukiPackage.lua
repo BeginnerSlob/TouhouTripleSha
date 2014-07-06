@@ -231,7 +231,7 @@ return {
 	["thyongye:remove"] = "减少一名目标",
 	["@thyongye-add"] = "请选择【%arg】的额外目标",
 	["@thyongye-remove"] = "请选择【%arg】减少的目标",
-	["~thyongye"] = "选择【借刀杀人】的目标角色→选择【杀】的目标角色→点击确定",
+	["~thyongye"] = "选择【断灵御剑】的目标角色→选择【杀】的目标角色→点击确定",
 	["@thyongye"]="你可以弃置一张黑色牌发动“永夜”",
 	["#ThYongyeAdd"] = "%from 发动了“%arg”为 %card 增加了额外目标 %to",
 	["#ThYongyeRemove"] = "%from 发动了“%arg”为 %card 减少了目标 %to",
