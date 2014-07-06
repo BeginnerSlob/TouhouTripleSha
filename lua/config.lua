@@ -49,7 +49,7 @@ config = {
 		"IkaiMoku",
 		"IkaiSui",
 		"IkaiKin",
-		--"IkaiHi",
+		--"IkaiKa",
 	},
 
 	hulao_generals = {
