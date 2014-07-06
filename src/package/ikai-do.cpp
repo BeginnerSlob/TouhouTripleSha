@@ -1379,7 +1379,7 @@ public:
             target = damage.from;
         if (!target || target == player || target->isDead()) return QStringList();
         QStringList skill;
-        for (int i = 1; 1 <= damage.damage; i++)
+        for (int i = 1; i <= damage.damage; i++)
             skill << objectName();
         return skill;
     }
