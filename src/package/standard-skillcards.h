@@ -33,13 +33,4 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class JianyanCard: public SkillCard {
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE JianyanCard();
-
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-};
-
 #endif

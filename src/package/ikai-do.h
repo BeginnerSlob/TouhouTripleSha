@@ -44,6 +44,15 @@ private:
     static bool hasKazeGenerals(const Player *player);
 };
 
+class IkXingyuCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkXingyuCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 class IkLianbaoCard: public SkillCard {
     Q_OBJECT
 
