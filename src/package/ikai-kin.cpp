@@ -708,7 +708,7 @@ public:
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *jianyong, QVariant &data, ServerPlayer *) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *jianyong, QVariant &data, ServerPlayer* &) const{
         if (!TriggerSkill::triggerable(jianyong)) return QStringList();
         if (!jianyong->hasFlag("IkQizhiSuccess")) return QStringList();
         CardUseStruct use = data.value<CardUseStruct>();
