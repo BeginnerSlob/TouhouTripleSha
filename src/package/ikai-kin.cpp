@@ -436,6 +436,96 @@ public:
     }
 };
 
+class IkMeiying: public TriggerSkill {
+public:
+    IkMeiying(): TriggerSkill("ikmeiying") {
+        events << EventPhaseStart;
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return TriggerSkill::triggerable(target)
+            && target->getPhase() == Player::RoundStart;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *liaohua, QVariant &) const{
+        room->broadcastSkillInvoke(objectName());
+        LogMessage log;
+        log.type = "#TriggerSkill";
+        log.from = liaohua;
+        log.arg = objectName();
+        room->sendLog(log);
+        room->notifySkillInvoked(liaohua, objectName());
+
+        ServerPlayer *target = NULL;
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getOtherPlayers(liaohua))
+            if (!p->isKongcheng())
+                targets << p;
+        if (!targets.isEmpty())
+            target = room->askForPlayerChosen(liaohua, targets, objectName(), "@ikmeiying", true, true);
+        if (target)
+            room->showAllCards(target, liaohua);
+        else {
+            liaohua->setPhase(Player::Play);
+            room->broadcastProperty(liaohua, "phase");
+            RoomThread *thread = room->getThread();
+            if (!thread->trigger(EventPhaseStart, room, liaohua))
+                thread->trigger(EventPhaseProceeding, room, liaohua);
+            thread->trigger(EventPhaseEnd, room, liaohua);
+
+            liaohua->setPhase(Player::RoundStart);
+            room->broadcastProperty(liaohua, "phase");
+        }
+
+        return false;
+    }
+};
+
+class IkFansheng: public TriggerSkill {
+public:
+    IkFansheng(): TriggerSkill("ikfansheng") {
+        events << AskForPeaches;
+        frequency = Limited;
+        limit_mark = "@fansheng";
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(target)) return QStringList();
+        if (target->getHp() > 0 || target->getMark("@fansheng") <= 0) return QStringList();
+        DyingStruct dying_data = data.value<DyingStruct>();
+        if (dying_data.who != target)
+            return QStringList();
+        return QStringList(objectName());
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    int getKingdoms(Room *room) const{
+        QSet<QString> kingdom_set;
+        foreach (ServerPlayer *p, room->getAlivePlayers())
+            kingdom_set << p->getKingdom();
+        return kingdom_set.size();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *liaohua, QVariant &data, ServerPlayer *) const{
+        DyingStruct dying_data = data.value<DyingStruct>();
+        room->removePlayerMark(liaohua, "@fansheng");
+        room->addPlayerMark(liaohua, "@fanshengused");
+        liaohua->drawCards(2);
+        room->recover(liaohua, RecoverStruct(liaohua, NULL, getKingdoms(room) - liaohua->getHp()));
+        liaohua->turnOver();
+        
+        return false;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -456,6 +546,10 @@ IkaiKinPackage::IkaiKinPackage()
     General *wind019 = new General(this, "wind019", "kaze");
     wind019->addSkill("thxiagong");
     wind019->addSkill(new IkWanhun);
+
+    General *wind020 = new General(this, "wind020", "kaze");
+    wind020->addSkill(new IkMeiying);
+    wind020->addSkill(new IkFansheng);
 
     General *bloom022 = new General(this, "bloom022", "hana", 3, false);
     bloom022->addSkill(new IkLundao);
