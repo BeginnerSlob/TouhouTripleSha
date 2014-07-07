@@ -1398,6 +1398,7 @@ public:
                 delete to_give;
             }
         }
+        return false;
     }
 };
 
