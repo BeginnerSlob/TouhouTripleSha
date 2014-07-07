@@ -301,54 +301,6 @@ public:
     }
 };
 
-class NosGongqi: public OneCardViewAsSkill {
-public:
-    NosGongqi(): OneCardViewAsSkill("nosgongqi") {
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return Slash::IsAvailable(player);
-    }
-
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
-        return pattern == "slash";
-    }
-
-    virtual bool viewFilter(const Card *to_select) const{
-        if (to_select->getTypeId() != Card::TypeEquip)
-            return false;
-
-        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) {
-            Slash *slash = new Slash(Card::SuitToBeDecided, -1);
-            slash->addSubcard(to_select->getEffectiveId());
-            slash->deleteLater();
-            return slash->isAvailable(Self);
-        }
-        return true;
-    }
-
-    const Card *viewAs(const Card *originalCard) const{
-        Slash *slash = new Slash(originalCard->getSuit(), originalCard->getNumber());
-        slash->addSubcard(originalCard);
-        slash->setSkillName(objectName());
-        return slash;
-    }
-};
-
-class NosGongqiTargetMod: public TargetModSkill {
-public:
-    NosGongqiTargetMod(): TargetModSkill("#nosgongqi-target") {
-        frequency = NotFrequent;
-    }
-
-    virtual int getDistanceLimit(const Player *, const Card *card) const{
-        if (card->getSkillName() == "nosgongqi")
-            return 1000;
-        else
-            return 0;
-    }
-};
-
 NosJiefanCard::NosJiefanCard() {
     target_fixed = true;
     mute = true;
@@ -1720,10 +1672,8 @@ NostalYJCM2012Package::NostalYJCM2012Package()
 {
 
     General *nos_handang = new General(this, "nos_handang", "wu");
-    nos_handang->addSkill(new NosGongqi);
-    nos_handang->addSkill(new NosGongqiTargetMod);
+    nos_handang->addSkill("ikxuanren");
     nos_handang->addSkill(new NosJiefan);
-    related_skills.insertMulti("nosgongqi", "#nosgongqi-target");
 
     addMetaObject<NosJiefanCard>();
 }

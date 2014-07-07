@@ -556,49 +556,6 @@ public:
     }
 };
 
-class Zhongyong: public TriggerSkill {
-public:
-    Zhongyong(): TriggerSkill("zhongyong") {
-        events << SlashMissed;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        SlashEffectStruct effect = data.value<SlashEffectStruct>();
-
-        const Card *jink = effect.jink;
-        if (!jink) return false;
-        QList<int> ids;
-        if (!jink->isVirtualCard()) {
-            if (room->getCardPlace(jink->getEffectiveId()) == Player::DiscardPile)
-                ids << jink->getEffectiveId();
-        } else {
-            foreach (int id, jink->getSubcards()) {
-                if (room->getCardPlace(id) == Player::DiscardPile)
-                    ids << id;
-            }
-        }
-        if (ids.isEmpty()) return false;
-
-        room->fillAG(ids, player);
-        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(effect.to), objectName(),
-                                                        "zhongyong-invoke:" + effect.to->objectName(), true, true);
-        room->clearAG(player);
-        if (!target) return false;
-        room->broadcastSkillInvoke(objectName());
-        DummyCard *dummy = new DummyCard(ids);
-        room->obtainCard(target, dummy);
-        delete dummy;
-
-        if (player->isAlive() && effect.to->isAlive() && target != player) {
-            if (!player->canSlash(effect.to, NULL, false))
-                return false;
-            if (room->askForUseSlashTo(player, effect.to, QString("zhongyong-slash:%1").arg(effect.to->objectName()), false, true))
-                return true;
-        }
-        return false;
-    }
-};
-
 ShenxingCard::ShenxingCard() {
     target_fixed = true;
 }
@@ -1144,9 +1101,6 @@ YJCM2014Package::YJCM2014Package()
     General *zhangsong = new General(this, "zhangsong", "shu", 3); // YJ 309
     zhangsong->addSkill(new Qiangzhi);
     zhangsong->addSkill(new Xiantu);
-
-    General *zhoucang = new General(this, "zhoucang", "shu"); // YJ 310
-    zhoucang->addSkill(new Zhongyong);
 
     General *zhuhuan = new General(this, "zhuhuan", "wu"); // YJ 311
     zhuhuan->addSkill(new Youdi);
