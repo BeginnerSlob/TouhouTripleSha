@@ -480,19 +480,27 @@ void MainWindow::on_actionAbout_triggered() {
 
 void MainWindow::setBackgroundBrush(bool centerAsOrigin) {
     if (scene) {
-        QPixmap pixmap(Config.BackgroundImage);
-        if (!centerAsOrigin)
-            pixmap = QPixmap("image/system/backdrop/tableBg.jpg");
-        QBrush brush(pixmap);
-        qreal sx = (qreal)width() / qreal(pixmap.width());
-        qreal sy = (qreal)height() / qreal(pixmap.height());
+        if (centerAsOrigin) {
+            QPixmap pixmap(Config.BackgroundImage);
+            QBrush brush(pixmap);
+            qreal sx = (qreal)width() / qreal(pixmap.width());
+            qreal sy = (qreal)height() / qreal(pixmap.height());
 
-        QTransform transform;
-        if (centerAsOrigin)
+            QTransform transform;
             transform.translate(-(qreal)width() / 2, -(qreal)height() / 2);
-        transform.scale(sx, sy);
-        brush.setTransform(transform);
-        scene->setBackgroundBrush(brush);
+            transform.scale(sx, sy);
+            brush.setTransform(transform);
+            scene->setBackgroundBrush(brush);
+        } else {
+            QPixmap pixmap("image/system/backdrop/tableBg.jpg");
+            QBrush brush(pixmap);
+            qreal sx = (qreal)(width() - 217) / qreal(pixmap.width());
+            qreal sy = (qreal)(height() - 170) / qreal(pixmap.height());
+            QTransform transform;
+            transform.scale(sx, sy);
+            brush.setTransform(transform);
+            scene->setBackgroundBrush(brush);
+        }
     }
 }
 
