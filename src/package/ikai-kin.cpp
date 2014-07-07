@@ -1130,6 +1130,134 @@ public:
     }
 };
 
+class IkXuanren: public OneCardViewAsSkill {
+public:
+    IkXuanren(): OneCardViewAsSkill("ikxuanren") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return Slash::IsAvailable(player);
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
+        return pattern == "slash";
+    }
+
+    virtual bool viewFilter(const Card *to_select) const{
+        if (to_select->getTypeId() != Card::TypeEquip)
+            return false;
+
+        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) {
+            Slash *slash = new Slash(Card::SuitToBeDecided, -1);
+            slash->addSubcard(to_select->getEffectiveId());
+            slash->deleteLater();
+            return slash->isAvailable(Self);
+        }
+        return true;
+    }
+
+    const Card *viewAs(const Card *originalCard) const{
+        Slash *slash = new Slash(originalCard->getSuit(), originalCard->getNumber());
+        slash->addSubcard(originalCard);
+        slash->setSkillName(objectName());
+        return slash;
+    }
+};
+
+class IkXuanrenTargetMod: public TargetModSkill {
+public:
+    IkXuanrenTargetMod(): TargetModSkill("#ikxuanren-target") {
+    }
+
+    virtual int getDistanceLimit(const Player *, const Card *card) const{
+        if (card->getSkillName() == "ikxuanren")
+            return 1000;
+        else
+            return 0;
+    }
+};
+
+class IkLanjian: public TriggerSkill {
+public:
+    IkLanjian(): TriggerSkill("iklanjian") {
+        events << SlashMissed;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        SlashEffectStruct effect = data.value<SlashEffectStruct>();
+
+        const Card *jink = effect.jink;
+        if (!jink) return QStringList();
+        QList<int> ids;
+        if (!jink->isVirtualCard()) {
+            if (room->getCardPlace(jink->getEffectiveId()) == Player::DiscardPile)
+                ids << jink->getEffectiveId();
+        } else {
+            foreach (int id, jink->getSubcards()) {
+                if (room->getCardPlace(id) == Player::DiscardPile)
+                    ids << id;
+            }
+        }
+        if (ids.isEmpty()) return QStringList();
+        return QStringList(objectName());
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        SlashEffectStruct effect = data.value<SlashEffectStruct>();
+
+        const Card *jink = effect.jink;
+        QList<int> ids;
+        if (!jink->isVirtualCard()) {
+            if (room->getCardPlace(jink->getEffectiveId()) == Player::DiscardPile)
+                ids << jink->getEffectiveId();
+        } else {
+            foreach (int id, jink->getSubcards()) {
+                if (room->getCardPlace(id) == Player::DiscardPile)
+                    ids << id;
+            }
+        }
+        room->fillAG(ids, player);
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(effect.to), objectName(),
+                                                        "iklanjian-invoke:" + effect.to->objectName(), true, true);
+        room->clearAG(player);
+        if (!target) return false;
+        room->broadcastSkillInvoke(objectName());
+        player->tag["IkLanjianTarget"] = QVariant::fromValue(target);
+        return true;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        ServerPlayer *target = player->tag["IkLanjianTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkLanjianTarget");
+        if (!target) return false;
+        SlashEffectStruct effect = data.value<SlashEffectStruct>();
+
+        const Card *jink = effect.jink;
+        QList<int> ids;
+        if (!jink->isVirtualCard()) {
+            if (room->getCardPlace(jink->getEffectiveId()) == Player::DiscardPile)
+                ids << jink->getEffectiveId();
+        } else {
+            foreach (int id, jink->getSubcards()) {
+                if (room->getCardPlace(id) == Player::DiscardPile)
+                    ids << id;
+            }
+        }
+        DummyCard *dummy = new DummyCard(ids);
+        room->obtainCard(target, dummy);
+        delete dummy;
+
+        if (player->isAlive() && effect.to->isAlive() && target != player) {
+            if (!player->canSlash(effect.to, NULL, false))
+                return false;
+            if (room->askForUseSlashTo(player, effect.to, QString("iklanjian-slash:%1").arg(effect.to->objectName()), false, true))
+                return true;
+        }
+        return false;
+    }
+};
+
 class IkLundao: public TriggerSkill {
 public:
     IkLundao(): TriggerSkill("iklundao") {
@@ -1344,6 +1472,12 @@ IkaiKinPackage::IkaiKinPackage()
 
     General *wind032 = new General(this, "wind032", "kaze");
     wind032->addSkill(new IkLichi);
+
+    General *wind037 = new General(this, "wind037", "kaze");
+    wind037->addSkill(new IkXuanren);
+    wind037->addSkill(new IkXuanrenTargetMod);
+    related_skills.insertMulti("ikxuanren", "#ikxuanren-target");
+    wind037->addSkill(new IkLanjian);
 
     General *bloom022 = new General(this, "bloom022", "hana", 3, false);
     bloom022->addSkill(new IkLundao);
