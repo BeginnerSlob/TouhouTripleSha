@@ -301,56 +301,6 @@ public:
     }
 };
 
-class NosFuhun: public TriggerSkill {
-public:
-    NosFuhun(): TriggerSkill("nosfuhun") {
-        events << EventPhaseStart << EventPhaseChanging;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *shuangying, QVariant &data) const{
-        if (triggerEvent == EventPhaseStart && shuangying->getPhase() ==  Player::Draw && TriggerSkill::triggerable(shuangying)) {
-            if (shuangying->askForSkillInvoke(objectName())) {
-                int card1 = room->drawCard();
-                int card2 = room->drawCard();
-                QList<int> ids;
-                ids << card1 << card2;
-                bool diff = (Sanguosha->getCard(card1)->getColor() != Sanguosha->getCard(card2)->getColor());
-
-                CardsMoveStruct move;
-                move.card_ids = ids;
-                move.reason = CardMoveReason(CardMoveReason::S_REASON_TURNOVER, shuangying->objectName(), "fuhun", QString());
-                move.to_place = Player::PlaceTable;
-                room->moveCardsAtomic(move, true);
-                room->getThread()->delay();
-
-                DummyCard *dummy = new DummyCard(move.card_ids);
-                room->obtainCard(shuangying, dummy);
-                delete dummy;
-
-                if (diff) {
-                    room->handleAcquireDetachSkills(shuangying, "ikchilian|iklipao");
-                    room->broadcastSkillInvoke(objectName(), qrand() % 2 + 1);
-                    shuangying->setFlags(objectName());
-                } else {
-                    room->broadcastSkillInvoke(objectName(), 3);
-                }
-
-                return true;
-            }
-        } else if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive && shuangying->hasFlag(objectName()))
-                room->handleAcquireDetachSkills(shuangying, "-ikchilian|-iklipao", true);
-        }
-
-        return false;
-    }
-};
-
 class NosGongqi: public OneCardViewAsSkill {
 public:
     NosGongqi(): OneCardViewAsSkill("nosgongqi") {
@@ -1768,8 +1718,6 @@ NostalYJCMPackage::NostalYJCMPackage()
 NostalYJCM2012Package::NostalYJCM2012Package()
     : Package("nostal_yjcm2012")
 {
-    General *nos_guanxingzhangbao = new General(this, "nos_guanxingzhangbao", "shu");
-    nos_guanxingzhangbao->addSkill(new NosFuhun);
 
     General *nos_handang = new General(this, "nos_handang", "wu");
     nos_handang->addSkill(new NosGongqi);
