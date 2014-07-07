@@ -1068,6 +1068,68 @@ public:
     }
 };
 
+class IkLichiViewAsSkill: public ViewAsSkill {
+public:
+    IkLichiViewAsSkill(): ViewAsSkill("iklichi") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return Slash::IsAvailable(player);
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_RESPONSE_USE) return false;
+        return pattern == "slash";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        return selected.length() < 2 && !to_select->isEquipped();
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.length() != 2)
+            return NULL;
+
+        Slash *slash = new Slash(Card::SuitToBeDecided, 0);
+        slash->setSkillName(objectName());
+        slash->addSubcards(cards);
+
+        return slash;
+    }
+};
+
+class IkLichi: public TriggerSkill {
+public:
+    IkLichi(): TriggerSkill("iklichi") {
+        events << DamageComplete << EventPhaseChanging;
+        view_as_skill = new IkLichiViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == DamageComplete) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (!TriggerSkill::triggerable(damage.from)) return QStringList();
+            if (damage.card && damage.card->isKindOf("Slash") && damage.card->getSkillName() == objectName()
+                && damage.from->getPhase() == Player::Play) {
+                QStringList skill;
+                if (!damage.from->hasSkill("ikchilian"))
+                    skill << "ikchilian";
+                if (!damage.from->hasSkill("iklipao"))
+                    skill << "iklipao";
+                if (!skill.isEmpty())
+                    room->handleAcquireDetachSkills(damage.from, skill);
+                damage.from->setFlags(objectName());
+            }
+        } else if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive && player->hasFlag(objectName()))
+                room->handleAcquireDetachSkills(player, "-ikchilian|-ikchilian", true);
+        }
+
+        return QStringList();
+    }
+};
+
 class IkLundao: public TriggerSkill {
 public:
     IkLundao(): TriggerSkill("iklundao") {
@@ -1279,6 +1341,9 @@ IkaiKinPackage::IkaiKinPackage()
     wind031->addSkill(new IkQiansha);
     wind031->addSkill(new IkQianshaClear);
     related_skills.insertMulti("ikqiansha", "#ikqiansha-clear");
+
+    General *wind032 = new General(this, "wind032", "kaze");
+    wind032->addSkill(new IkLichi);
 
     General *bloom022 = new General(this, "bloom022", "hana", 3, false);
     bloom022->addSkill(new IkLundao);

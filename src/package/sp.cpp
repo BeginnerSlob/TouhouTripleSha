@@ -617,7 +617,7 @@ OLPackage::OLPackage()
     ol_xushu->addSkill("jujian");
 
     General *ol_guanxingzhangbao = new General(this, "ol_guanxingzhangbao", "shu", 4, true, true);
-    ol_guanxingzhangbao->addSkill("fuhun");
+    ol_guanxingzhangbao->addSkill("iklichi");
 
     General *ol_madai = new General(this, "ol_madai", "shu", 4, true, true);
     ol_madai->addSkill("thjibu");
