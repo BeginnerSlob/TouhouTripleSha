@@ -365,82 +365,6 @@ public:
     }
 };
 
-class Benxi: public TriggerSkill {
-public:
-    Benxi(): TriggerSkill("benxi") {
-        events << EventPhaseChanging << CardFinished << EventAcquireSkill << EventLoseSkill;
-        frequency = Compulsory;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive) {
-                room->setPlayerMark(player, "@benxi", 0);
-                room->setPlayerMark(player, "benxi", 0);
-            }
-        } else if (triggerEvent == CardFinished) {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->getTypeId() != Card::TypeSkill
-                && player->isAlive() && player->getPhase() != Player::NotActive) {
-                room->addPlayerMark(player, "benxi");
-                if (TriggerSkill::triggerable(player))
-                    room->setPlayerMark(player, "@benxi", player->getMark("benxi"));
-            }
-        } else if (triggerEvent == EventAcquireSkill || triggerEvent == EventLoseSkill) {
-            QString name = data.toString();
-            if (name != objectName()) return false;
-            int num = (triggerEvent == EventAcquireSkill) ? player->getMark("benxi") : 0;
-            room->setPlayerMark(player, "@benxi", num);
-        }
-        return false;
-    }
-};
-
-// the part of Armor ignorance is coupled in Player::hasArmorEffect
-
-class BenxiTargetMod: public TargetModSkill {
-public:
-    BenxiTargetMod(): TargetModSkill("#benxi-target") {
-    }
-
-    virtual int getExtraTargetNum(const Player *from, const Card *card) const{
-        if (from->hasSkill("benxi") && isAllAdjacent(from, card))
-            return 1;
-        else
-            return 0;
-    }
-
-private:
-    bool isAllAdjacent(const Player *from, const Card *card) const{
-        int rangefix = 0;
-        if (card->isVirtualCard() && from->getOffensiveHorse()
-            && card->getSubcards().contains(from->getOffensiveHorse()->getEffectiveId()))
-            rangefix = 1;
-        foreach (const Player *p, from->getAliveSiblings()) {
-            if (from->distanceTo(p, rangefix) != 1)
-                return false;
-        }
-        return true;
-    }
-};
-
-class BenxiDistance: public DistanceSkill {
-public:
-    BenxiDistance(): DistanceSkill("#benxi-dist") {
-    }
-
-    virtual int getCorrect(const Player *from, const Player *) const{
-        if (from->hasSkill("benxi") && from->getPhase() != Player::NotActive)
-            return -from->getMark("benxi");
-        return 0;
-    }
-};
-
 ShenxingCard::ShenxingCard() {
     target_fixed = true;
 }
@@ -975,13 +899,6 @@ YJCM2014Package::YJCM2014Package()
     General *sunluban = new General(this, "sunluban", "wu", 3, false); // YJ 307
     sunluban->addSkill(new Zenhui);
     sunluban->addSkill(new Jiaojin);
-
-    General *wuyi = new General(this, "wuyi", "shu"); // YJ 308
-    wuyi->addSkill(new Benxi);
-    wuyi->addSkill(new BenxiTargetMod);
-    wuyi->addSkill(new BenxiDistance);
-    related_skills.insertMulti("benxi", "#benxi-target");
-    related_skills.insertMulti("benxi", "#benxi-dist");
 
     General *zhuhuan = new General(this, "zhuhuan", "wu"); // YJ 311
     zhuhuan->addSkill(new Youdi);

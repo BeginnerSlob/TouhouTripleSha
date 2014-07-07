@@ -562,7 +562,7 @@ bool Player::hasArmorEffect(const QString &armor_name) const{
             break;
         }
     }
-    if (current && current->hasSkill("benxi")) {
+    if (current && current->hasSkill("ikshensha")) {
         bool alladj = true;
         foreach (const Player *p, current->getAliveSiblings()) {
             if (current->distanceTo(p) != 1) {
