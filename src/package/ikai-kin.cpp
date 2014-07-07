@@ -1029,6 +1029,45 @@ public:
     }
 };
 
+class IkYaolun: public TriggerSkill {
+public:
+    IkYaolun(): TriggerSkill("ikyaolun") {
+        events << CardUsed;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player->getPhase() == Player::Play) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash"))
+                foreach (ServerPlayer *guanping, room->findPlayersBySkillName(objectName()))
+                    if (guanping->canDiscard(guanping, "he"))
+                        skill_list.insert(guanping, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *guanping) const{
+        if (room->askForCard(guanping, "..", "@ikyaolun", data, objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *guanping) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.m_addHistory) {
+            room->addPlayerHistory(player, use.card->getClassName(), -1);
+            use.m_addHistory = false;
+            data = QVariant::fromValue(use);
+        }
+        if (use.card->isRed())
+            guanping->drawCards(1, objectName());
+        return false;
+    }
+};
+
 class IkLundao: public TriggerSkill {
 public:
     IkLundao(): TriggerSkill("iklundao") {
@@ -1138,6 +1177,9 @@ IkaiKinPackage::IkaiKinPackage()
     related_skills.insertMulti("ikqizhi", "#ikqizhi-use");
     related_skills.insertMulti("ikqizhi", "#ikqizhi-target");
     wind027->addSkill(new IkZongshi);
+
+    General *wind028 = new General(this, "wind028", "kaze");
+    wind028->addSkill(new IkYaolun);
 
     General *bloom022 = new General(this, "bloom022", "hana", 3, false);
     bloom022->addSkill(new IkLundao);
