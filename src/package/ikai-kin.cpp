@@ -1123,7 +1123,7 @@ public:
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to == Player::NotActive && player->hasFlag(objectName()))
-                room->handleAcquireDetachSkills(player, "-ikchilian|-ikchilian", true);
+                room->handleAcquireDetachSkills(player, "-ikchilian|-iklipao", true);
         }
 
         return QStringList();
