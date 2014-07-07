@@ -578,9 +578,11 @@ public:
             case Player::Play: {
                 if (liushan->askForSkillInvoke(objectName()))
                     return true;
+                break;
                 }
             case Player::NotActive: {
                 room->askForUseCard(liushan, "@@ikbaishen", "@ikbaishen-give", -1, Card::MethodDiscard);
+                break;
                 }
             default:
                     break;
