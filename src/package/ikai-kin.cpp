@@ -1344,7 +1344,8 @@ public:
         QMap<ServerPlayer *, QStringList> skill_list;
         if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Play) {
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
-                skill_list.insert(p, QStringList(objectName()));
+                if (p != player)
+                    skill_list.insert(p, QStringList(objectName()));
         } else if (triggerEvent == Death) {
             DeathStruct death = data.value<DeathStruct>();
             if (death.damage && death.damage->from && death.damage->from->getPhase() == Player::Play)
@@ -1369,7 +1370,7 @@ public:
                 log.arg = objectName();
                 room->sendLog(log);
 
-                if (!room->askForDiscard(zs, objectName(), 2, 2, true, false, "ikfengxin-discard"))
+                if (zs->getCardCount(false) < 2 || !room->askForDiscard(zs, objectName(), 2, 2, true, false, "ikfengxin-discard"))
                     room->loseHp(zs);
             }
         }
@@ -1562,6 +1563,82 @@ public:
     }
 };
 
+class IkShensha: public TriggerSkill {
+public:
+    IkShensha(): TriggerSkill("ikshensha") {
+        events << EventPhaseChanging << CardFinished << EventAcquireSkill << EventLoseSkill;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive) {
+                room->setPlayerMark(player, "@shensha", 0);
+                room->setPlayerMark(player, "ikshensha", 0);
+            }
+        } else if (triggerEvent == CardFinished) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->getTypeId() != Card::TypeSkill
+                && player->isAlive() && player->getPhase() != Player::NotActive)
+                return QStringList(objectName());
+        } else if (triggerEvent == EventAcquireSkill || triggerEvent == EventLoseSkill) {
+            QString name = data.toString();
+            if (name != objectName()) return QStringList();
+            int num = (triggerEvent == EventAcquireSkill) ? player->getMark("ikshensha") : 0;
+            room->setPlayerMark(player, "@shensha", num);
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        room->addPlayerMark(player, "ikshensha");
+        if (TriggerSkill::triggerable(player))
+            room->setPlayerMark(player, "@shensha", player->getMark("ikshensha"));
+        return false;
+    }
+};
+
+// the part of Armor ignorance is coupled in Player::hasArmorEffect
+
+class IkShenshaTargetMod: public TargetModSkill {
+public:
+    IkShenshaTargetMod(): TargetModSkill("#ikshensha-target") {
+    }
+
+    virtual int getExtraTargetNum(const Player *from, const Card *card) const{
+        if (from->hasSkill("ikshensha") && isAllAdjacent(from, card))
+            return 1;
+        else
+            return 0;
+    }
+
+private:
+    bool isAllAdjacent(const Player *from, const Card *card) const{
+        int rangefix = 0;
+        if (card->isVirtualCard() && from->getOffensiveHorse()
+            && card->getSubcards().contains(from->getOffensiveHorse()->getEffectiveId()))
+            rangefix = 1;
+        foreach (const Player *p, from->getAliveSiblings()) {
+            if (from->distanceTo(p, rangefix) != 1)
+                return false;
+        }
+        return true;
+    }
+};
+
+class IkShenshaDistance: public DistanceSkill {
+public:
+    IkShenshaDistance(): DistanceSkill("#ikshensha-dist") {
+    }
+
+    virtual int getCorrect(const Player *from, const Player *) const{
+        if (from->hasSkill("ikshensha") && from->getPhase() != Player::NotActive)
+            return -from->getMark("ikshensha");
+        return 0;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -1626,6 +1703,13 @@ IkaiKinPackage::IkaiKinPackage()
     General *wind038 = new General(this, "wind038", "kaze", 3);
     wind038->addSkill(new IkQiangshi);
     wind038->addSkill(new IkFengxin);
+
+    General *wind039 = new General(this, "wind039", "kaze");
+    wind039->addSkill(new IkShensha);
+    wind039->addSkill(new IkShenshaTargetMod);
+    wind039->addSkill(new IkShenshaDistance);
+    related_skills.insertMulti("ikshensha", "#ikshensha-target");
+    related_skills.insertMulti("ikshensha", "#ikshensha-dist");
 
     General *bloom022 = new General(this, "bloom022", "hana", 3, false);
     bloom022->addSkill(new IkLundao);
