@@ -1707,6 +1707,7 @@ void IkTianyuCard::onUse(Room *room, const CardUseStruct &card_use) const{
 }
 
 void IkTianyuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    source->setFlags("iktianyu");
     source->tag["IkTianyuSource"] = true;
     QList<ServerPlayer *> players = room->getAllPlayers();
     int index1 = players.indexOf(targets.first()), index2 = players.indexOf(targets.last());
@@ -1778,7 +1779,7 @@ public:
             if (change.to != Player::NotActive)
                 return QStringList();
         }
-        if (player->tag["IkTianyuSource"].toBool()) {
+        if (!player->hasFlag("iktianyu") && player->tag["IkTianyuSource"].toBool()) {
             player->tag["IkTianyuSource"] = false;
             QStringList list = player->tag[objectName()].toStringList();
             player->tag.remove(objectName());
