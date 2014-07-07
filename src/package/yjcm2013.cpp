@@ -222,36 +222,6 @@ public:
     }
 };
 
-class Longyin: public TriggerSkill {
-public:
-    Longyin(): TriggerSkill("longyin") {
-        events << CardUsed;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target->getPhase() == Player::Play;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("Slash")) {
-            ServerPlayer *guanping = room->findPlayerBySkillName(objectName());
-            if (guanping && guanping->canDiscard(guanping, "he")
-                && room->askForCard(guanping, "..", "@longyin", data, objectName())) {
-                room->broadcastSkillInvoke(objectName(), use.card->isRed() ? 2 : 1);
-                if (use.m_addHistory) {
-                    room->addPlayerHistory(player, use.card->getClassName(), -1);
-                    use.m_addHistory = false;
-                    data = QVariant::fromValue(use);
-                }
-                if (use.card->isRed())
-                    guanping->drawCards(1, objectName());
-            }
-        }
-        return false;
-    }
-};
-
 class Duodao: public MasochismSkill {
 public:
     Duodao(): MasochismSkill("duodao") {
@@ -800,9 +770,6 @@ YJCM2013Package::YJCM2013Package()
     guohuai->addSkill(new Jingce);
     guohuai->addSkill(new JingceRecord);
     related_skills.insertMulti("jingce", "#jingce-record");
-
-    General *guanping = new General(this, "guanping", "shu", 4); // YJ 204
-    guanping->addSkill(new Longyin);
 
     General *liru = new General(this, "liru", "qun", 3); // YJ 206
     liru->addSkill(new Juece);
