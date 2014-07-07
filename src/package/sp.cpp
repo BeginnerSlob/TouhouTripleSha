@@ -621,7 +621,7 @@ OLPackage::OLPackage()
 
     General *ol_madai = new General(this, "ol_madai", "shu", 4, true, true);
     ol_madai->addSkill("thjibu");
-    ol_madai->addSkill("qianxi");
+    ol_madai->addSkill("ikqiansha");
 
     General *ol_wangyi = new General(this, "ol_wangyi", "wei", 3, false, true);
     ol_wangyi->addSkill("zhenlie");

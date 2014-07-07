@@ -1135,6 +1135,99 @@ public:
     }
 };
 
+class IkQiansha: public TriggerSkill {
+public:
+    IkQiansha(): TriggerSkill("ikqiansha") {
+        events << EventPhaseStart << FinishJudge;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseStart && TriggerSkill::triggerable(target)
+            && target->getPhase() == Player::Start)
+            return QStringList(objectName());
+        else if (triggerEvent == FinishJudge) {
+            JudgeStruct *judge = data.value<JudgeStruct *>();
+            if (judge->reason != objectName() || !target->isAlive()) return QStringList();
+
+            QString color = judge->card->isRed() ? "red" : "black";
+            target->tag[objectName()] = QVariant::fromValue(color);
+            judge->pattern = color;
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *) const{
+        JudgeStruct judge;
+        judge.reason = objectName();
+        judge.play_animation = false;
+        judge.who = target;
+
+        room->judge(judge);
+        if (!target->isAlive()) return false;
+        QString color = judge.pattern;
+        QList<ServerPlayer *> to_choose;
+        foreach (ServerPlayer *p, room->getOtherPlayers(target)) {
+            if (target->distanceTo(p) == 1)
+                to_choose << p;
+        }
+        if (to_choose.isEmpty())
+            return false;
+
+        ServerPlayer *victim = room->askForPlayerChosen(target, to_choose, objectName());
+        QString pattern = QString(".|%1|.|hand$0").arg(color);
+
+        room->setPlayerFlag(victim, "IkQianshaTarget");
+        room->addPlayerMark(victim, QString("@qiansha_%1").arg(color));
+        room->setPlayerCardLimitation(victim, "use,response", pattern, false);
+
+        LogMessage log;
+        log.type = "#IkQiansha";
+        log.from = victim;
+        log.arg = QString("no_suit_%1").arg(color);
+        room->sendLog(log);
+
+        return false;
+    }
+};
+
+class IkQianshaClear: public TriggerSkill {
+public:
+    IkQianshaClear(): TriggerSkill("#ikqiansha-clear") {
+        events << EventPhaseChanging << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!player->tag["ikqiansha"].toString().isNull()) {
+            if (triggerEvent == EventPhaseChanging) {
+                PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+                if (change.to != Player::NotActive)
+                    return QStringList();
+            } else if (triggerEvent == Death) {
+                DeathStruct death = data.value<DeathStruct>();
+                if (death.who != player)
+                    return QStringList();
+            }
+
+            QString color = player->tag["ikqiansha"].toString();
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (p->hasFlag("IkQianshaTarget")) {
+                    room->removePlayerCardLimitation(p, "use,response", QString(".|%1|.|hand$0").arg(color));
+                    room->setPlayerMark(p, QString("@qiansha_%1").arg(color), 0);
+                }
+            }
+        }
+        return QStringList();
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -1180,6 +1273,12 @@ IkaiKinPackage::IkaiKinPackage()
 
     General *wind028 = new General(this, "wind028", "kaze");
     wind028->addSkill(new IkYaolun);
+
+    General *wind031 = new General(this, "wind031", "kaze");
+    wind031->addSkill("thjibu");
+    wind031->addSkill(new IkQiansha);
+    wind031->addSkill(new IkQianshaClear);
+    related_skills.insertMulti("ikqiansha", "#ikqiansha-clear");
 
     General *bloom022 = new General(this, "bloom022", "hana", 3, false);
     bloom022->addSkill(new IkLundao);

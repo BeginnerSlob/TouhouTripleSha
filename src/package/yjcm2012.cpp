@@ -265,96 +265,6 @@ public:
     }
 };
 
-class Qianxi: public TriggerSkill {
-public:
-    Qianxi(): TriggerSkill("qianxi") {
-        events << EventPhaseStart << FinishJudge;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data) const{
-        if (triggerEvent == EventPhaseStart && TriggerSkill::triggerable(target)
-            && target->getPhase() == Player::Start) {
-            if (room->askForSkillInvoke(target, objectName())) {
-                room->broadcastSkillInvoke(objectName());
-
-                JudgeStruct judge;
-                judge.reason = objectName();
-                judge.play_animation = false;
-                judge.who = target;
-
-                room->judge(judge);
-                if (!target->isAlive()) return false;
-                QString color = judge.pattern;
-                QList<ServerPlayer *> to_choose;
-                foreach (ServerPlayer *p, room->getOtherPlayers(target)) {
-                    if (target->distanceTo(p) == 1)
-                        to_choose << p;
-                }
-                if (to_choose.isEmpty())
-                    return false;
-
-                ServerPlayer *victim = room->askForPlayerChosen(target, to_choose, objectName());
-                QString pattern = QString(".|%1|.|hand$0").arg(color);
-
-                room->broadcastSkillInvoke(objectName());
-                room->setPlayerFlag(victim, "QianxiTarget");
-                room->addPlayerMark(victim, QString("@qianxi_%1").arg(color));
-                room->setPlayerCardLimitation(victim, "use,response", pattern, false);
-
-                LogMessage log;
-                log.type = "#Qianxi";
-                log.from = victim;
-                log.arg = QString("no_suit_%1").arg(color);
-                room->sendLog(log);
-            }
-        } else if (triggerEvent == FinishJudge) {
-            JudgeStruct *judge = data.value<JudgeStruct *>();
-            if (judge->reason != objectName() || !target->isAlive()) return false;
-
-            QString color = judge->card->isRed() ? "red" : "black";
-            target->tag[objectName()] = QVariant::fromValue(color);
-            judge->pattern = color;
-        }
-        return false;
-    }
-};
-
-class QianxiClear: public TriggerSkill {
-public:
-    QianxiClear(): TriggerSkill("#qianxi-clear") {
-        events << EventPhaseChanging << Death;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return !target->tag["qianxi"].toString().isNull();
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to != Player::NotActive)
-                return false;
-        } else if (triggerEvent == Death) {
-            DeathStruct death = data.value<DeathStruct>();
-            if (death.who != player)
-                return false;
-        }
-
-        QString color = player->tag["qianxi"].toString();
-        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-            if (p->hasFlag("QianxiTarget")) {
-                room->removePlayerCardLimitation(p, "use,response", QString(".|%1|.|hand$0").arg(color));
-                room->setPlayerMark(p, QString("@qianxi_%1").arg(color), 0);
-            }
-        }
-        return false;
-    }
-};
-
 class Zishou: public DrawCardsSkill {
 public:
     Zishou(): DrawCardsSkill("zishou") {
@@ -817,12 +727,6 @@ YJCM2012Package::YJCM2012Package()
     General *liubiao = new General(this, "liubiao", "qun", 4); // YJ 108
     liubiao->addSkill(new Zishou);
     liubiao->addSkill(new Zongshi);
-
-    General *madai = new General(this, "madai", "shu"); // YJ 109
-    madai->addSkill("thjibu");
-    madai->addSkill(new Qianxi);
-    madai->addSkill(new QianxiClear);
-    related_skills.insertMulti("qianxi", "#qianxi-clear");
 
     General *wangyi = new General(this, "wangyi", "wei", 3, false); // YJ 110
     wangyi->addSkill(new Zhenlie);
