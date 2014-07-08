@@ -2329,6 +2329,64 @@ public:
     }
 };
 
+class IkJingce: public TriggerSkill {
+public:
+    IkJingce(): TriggerSkill("ikjingce") {
+        events << EventPhaseEnd;
+        frequency = Frequent;
+    }
+
+    virtual bool triggerable(const ServerPlayer *player) const{
+        return TriggerSkill::triggerable(player)
+            && player->getPhase() == Player::Play
+            && player->getMark(objectName()) >= player->getHp();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (room->askForSkillInvoke(player, objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        player->drawCards(2, objectName());
+        return false;
+    }
+};
+
+class IkJingceRecord: public TriggerSkill {
+public:
+    IkJingceRecord(): TriggerSkill("#ikjingce-record") {
+        events << PreCardUsed << CardResponded << EventPhaseStart;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if ((triggerEvent == PreCardUsed || triggerEvent == CardResponded) && player->getPhase() <= Player::Play) {
+            const Card *card = NULL;
+            if (triggerEvent == PreCardUsed)
+                card = data.value<CardUseStruct>().card;
+            else {
+                CardResponseStruct response = data.value<CardResponseStruct>();
+                if (response.m_isUse)
+                   card = response.m_card;
+            }
+            if (card && card->getTypeId() != Card::TypeSkill)
+                return QStringList(objectName());
+        } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::RoundStart) {
+            player->setMark("ikjingce", 0);
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        player->addMark("ikjingce");
+        return false;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -2436,6 +2494,11 @@ IkaiKinPackage::IkaiKinPackage()
     General *bloom025 = new General(this, "bloom025", "hana", 3);
     bloom025->addSkill(new IkXingshi);
     bloom025->addSkill(new IkShouyan);
+
+    General *bloom026 = new General(this, "bloom026", "hana");
+    bloom026->addSkill(new IkJingce);
+    bloom026->addSkill(new IkJingceRecord);
+    related_skills.insertMulti("ikjingce", "#ikjingce-record");
 
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
