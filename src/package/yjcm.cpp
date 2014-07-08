@@ -457,141 +457,6 @@ public:
     }
 };
 
-class Quanji: public MasochismSkill {
-public:
-    Quanji(): MasochismSkill("#quanji") {
-        frequency = Frequent;
-    }
-
-    virtual void onDamaged(ServerPlayer *zhonghui, const DamageStruct &damage) const{
-        Room *room = zhonghui->getRoom();
-
-        int x = damage.damage;
-        for (int i = 0; i < x; i++) {
-            if (zhonghui->askForSkillInvoke("quanji")) {
-                room->broadcastSkillInvoke("quanji");
-                room->drawCards(zhonghui, 1, objectName());
-                if (!zhonghui->isKongcheng()) {
-                    int card_id;
-                    if (zhonghui->getHandcardNum() == 1) {
-                        room->getThread()->delay();
-                        card_id = zhonghui->handCards().first();
-                    } else {
-                        const Card *card = room->askForExchange(zhonghui, "quanji", 1, 1, false, "QuanjiPush");
-                        card_id = card->getEffectiveId();
-                        delete card;
-                    }
-                    zhonghui->addToPile("power", card_id);
-                }
-            }
-        }
-
-    }
-};
-
-class QuanjiKeep: public MaxCardsSkill {
-public:
-    QuanjiKeep(): MaxCardsSkill("quanji") {
-        frequency = Frequent;
-    }
-
-    virtual int getExtra(const Player *target) const{
-        if (target->hasSkill(objectName()))
-            return target->getPile("power").length();
-        else
-            return 0;
-    }
-};
-
-class Zili: public PhaseChangeSkill {
-public:
-    Zili(): PhaseChangeSkill("zili") {
-        frequency = Wake;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return PhaseChangeSkill::triggerable(target)
-               && target->getPhase() == Player::Start
-               && target->getMark("zili") == 0
-               && target->getPile("power").length() >= 3;
-    }
-
-    virtual bool onPhaseChange(ServerPlayer *zhonghui) const{
-        Room *room = zhonghui->getRoom();
-        room->notifySkillInvoked(zhonghui, objectName());
-
-        LogMessage log;
-        log.type = "#ZiliWake";
-        log.from = zhonghui;
-        log.arg = QString::number(zhonghui->getPile("power").length());
-        log.arg2 = objectName();
-        room->sendLog(log);
-
-        room->broadcastSkillInvoke(objectName());
-        room->doLightbox("$ZiliAnimate", 4000);
-
-        room->setPlayerMark(zhonghui, "zili", 1);
-        if (room->changeMaxHpForAwakenSkill(zhonghui)) {
-            if (zhonghui->isWounded() && room->askForChoice(zhonghui, objectName(), "recover+draw") == "recover")
-                room->recover(zhonghui, RecoverStruct(zhonghui));
-            else
-                room->drawCards(zhonghui, 2, objectName());
-            if (zhonghui->getMark("zili") == 1)
-                room->acquireSkill(zhonghui, "paiyi");
-        }
-
-        return false;
-    }
-};
-
-PaiyiCard::PaiyiCard() {
-    mute = true;
-}
-
-bool PaiyiCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const{
-    return targets.isEmpty();
-}
-
-void PaiyiCard::onEffect(const CardEffectStruct &effect) const{
-    ServerPlayer *zhonghui = effect.from;
-    ServerPlayer *target = effect.to;
-    Room *room = zhonghui->getRoom();
-    QList<int> powers = zhonghui->getPile("power");
-    if (powers.isEmpty()) return;
-
-    room->broadcastSkillInvoke("paiyi", target == zhonghui ? 1 : 2);
-
-    int card_id;
-    if (powers.length() == 1)
-        card_id = powers.first();
-    else {
-        room->fillAG(powers, zhonghui);
-        card_id = room->askForAG(zhonghui, powers, false, "paiyi");
-        room->clearAG(zhonghui);
-    }
-
-    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(),
-                          target->objectName(), "paiyi", QString());
-    room->throwCard(Sanguosha->getCard(card_id), reason, NULL);
-    room->drawCards(target, 2, "paiyi");
-    if (target->getHandcardNum() > zhonghui->getHandcardNum())
-        room->damage(DamageStruct("paiyi", zhonghui, target));
-}
-
-class Paiyi: public ZeroCardViewAsSkill {
-public:
-    Paiyi(): ZeroCardViewAsSkill("paiyi") {
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->getPile("power").isEmpty() && !player->hasUsed("PaiyiCard");
-    }
-
-    virtual const Card *viewAs() const{
-        return new PaiyiCard;
-    }
-};
-
 YJCMPackage::YJCMPackage()
     : Package("YJCM")
 {
@@ -618,19 +483,9 @@ YJCMPackage::YJCMPackage()
     General *xusheng = new General(this, "xusheng", "wu"); // YJ 008
     xusheng->addSkill(new Pojun);
 
-    General *zhonghui = new General(this, "zhonghui", "wei"); // YJ 012
-    zhonghui->addSkill(new QuanjiKeep);
-    zhonghui->addSkill(new Quanji);
-    zhonghui->addSkill(new Zili);
-    zhonghui->addRelateSkill("paiyi");
-    related_skills.insertMulti("quanji", "#quanji");
-
     addMetaObject<MingceCard>();
     addMetaObject<GanluCard>();
     addMetaObject<XianzhenCard>();
-    addMetaObject<PaiyiCard>();
-
-    skills << new Paiyi;
 }
 
 ADD_PACKAGE(YJCM)

@@ -94,4 +94,14 @@ protected:
     virtual int getMaxLostHp(ServerPlayer *zhangchunhua) const;
 };
 
+class IkZhuyiCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkZhuyiCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 #endif // IKAIKIN_H

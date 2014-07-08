@@ -1866,6 +1866,149 @@ bool IkNvelian::effect(TriggerEvent, Room *, ServerPlayer *zhangchunhua, QVarian
     return false;
 }
 
+class IkBengshang: public MasochismSkill {
+public:
+    IkBengshang(): MasochismSkill("ikbengshang") {
+        frequency = Frequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+
+        QStringList skill;
+        for (int i = 0; i < damage.damage; i++)
+            skill << objectName();
+        return skill;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual void onDamaged(ServerPlayer *zhonghui, const DamageStruct &damage) const{
+        Room *room = zhonghui->getRoom();
+        room->drawCards(zhonghui, 1, objectName());
+        if (!zhonghui->isKongcheng()) {
+            int card_id;
+            if (zhonghui->getHandcardNum() == 1) {
+                room->getThread()->delay();
+                card_id = zhonghui->handCards().first();
+            } else {
+                const Card *card = room->askForExchange(zhonghui, "ikbengshang", 1, 1, false, "IkBengshangPush");
+                card_id = card->getEffectiveId();
+                delete card;
+            }
+            zhonghui->addToPile("ikbengshangpile", card_id);
+        }
+    }
+};
+
+class IkBengshangKeep: public MaxCardsSkill {
+public:
+    IkBengshangKeep(): MaxCardsSkill("#ikbengshang") {
+    }
+
+    virtual int getExtra(const Player *target) const{
+        if (target->hasSkill("ikbengshang"))
+            return target->getPile("ikbengshangpile").length();
+        else
+            return 0;
+    }
+};
+
+class IkAnhun: public PhaseChangeSkill {
+public:
+    IkAnhun(): PhaseChangeSkill("ikanhun") {
+        frequency = Wake;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+               && target->getPhase() == Player::Start
+               && target->getMark("@anhun") == 0
+               && target->getPile("ikbengshangpile").length() >= 3;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *zhonghui) const{
+        Room *room = zhonghui->getRoom();
+        room->notifySkillInvoked(zhonghui, objectName());
+
+        LogMessage log;
+        log.type = "#IkAnhunWake";
+        log.from = zhonghui;
+        log.arg = QString::number(zhonghui->getPile("ikbengshangpile").length());
+        log.arg2 = objectName();
+        room->sendLog(log);
+
+        room->broadcastSkillInvoke(objectName());
+
+        room->setPlayerMark(zhonghui, "@anhun", 1);
+        if (room->changeMaxHpForAwakenSkill(zhonghui)) {
+            if (zhonghui->isWounded() && room->askForChoice(zhonghui, objectName(), "recover+draw") == "recover")
+                room->recover(zhonghui, RecoverStruct(zhonghui));
+            else
+                room->drawCards(zhonghui, 2, objectName());
+            room->acquireSkill(zhonghui, "ikzhuyi");
+        }
+
+        return false;
+    }
+};
+
+IkZhuyiCard::IkZhuyiCard() {
+}
+
+bool IkZhuyiCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const{
+    return targets.isEmpty();
+}
+
+void IkZhuyiCard::onEffect(const CardEffectStruct &effect) const{
+    ServerPlayer *zhonghui = effect.from;
+    ServerPlayer *target = effect.to;
+    Room *room = zhonghui->getRoom();
+    /*QList<int> powers = zhonghui->getPile("ikbengshangpile");
+    if (powers.isEmpty()) return;
+
+    int card_id;
+    if (powers.length() == 1)
+        card_id = powers.first();
+    else {
+        room->fillAG(powers, zhonghui);
+        card_id = room->askForAG(zhonghui, powers, false, "ikzhuyi");
+        room->clearAG(zhonghui);
+    }
+
+    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(),
+                          target->objectName(), "ikzhuyi", QString());
+    room->throwCard(Sanguosha->getCard(card_id), reason, NULL);*/
+    room->drawCards(target, 2, "ikzhuyi");
+    if (target->getHandcardNum() > zhonghui->getHandcardNum())
+        room->damage(DamageStruct("ikzhuyi", zhonghui, target));
+}
+
+class IkZhuyi: public OneCardViewAsSkill {
+public:
+    IkZhuyi(): OneCardViewAsSkill("ikzhuyi") {
+        filter_pattern = ".|.|.|ikbengshangpile";
+        expand_pile = "ikbengshangpile";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->getPile("ikbengshangpile").isEmpty() && !player->hasUsed("IkZhuyiCard");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        IkZhuyiCard *card = new IkZhuyiCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+};
+
 class IkLundao: public TriggerSkill {
 public:
     IkLundao(): TriggerSkill("iklundao") {
@@ -2017,6 +2160,13 @@ IkaiKinPackage::IkaiKinPackage()
     bloom018->addSkill(new IkXuwu);
     bloom018->addSkill(new IkNvelian);
 
+    General *bloom019 = new General(this, "bloom019", "hana");
+    bloom019->addSkill(new IkBengshang);
+    bloom019->addSkill(new IkBengshangKeep);
+    bloom019->addSkill(new IkAnhun);
+    bloom019->addRelateSkill("ikzhuyi");
+    related_skills.insertMulti("ikbengshang", "#ikbengshang");
+
     General *bloom022 = new General(this, "bloom022", "hana", 3, false);
     bloom022->addSkill(new IkLundao);
     bloom022->addSkill(new IkXuanwu);
@@ -2028,8 +2178,9 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkXianyuSlashCard>();
     addMetaObject<IkQizhiCard>();
     addMetaObject<IkJiushiCard>();
+    addMetaObject<IkZhuyiCard>();
 
-    skills << new IkXianyuSlashViewAsSkill;
+    skills << new IkXianyuSlashViewAsSkill << new IkZhuyi;
 }
 
 ADD_PACKAGE(IkaiKin)
