@@ -6,50 +6,6 @@
 #include "engine.h"
 #include "maneuvering.h"
 
-class Jingce: public TriggerSkill {
-public:
-    Jingce(): TriggerSkill("jingce") {
-        events << EventPhaseEnd;
-        frequency = Frequent;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        if (player->getPhase() == Player::Play && player->getMark(objectName()) >= player->getHp()) {
-            if (room->askForSkillInvoke(player, objectName())) {
-                room->broadcastSkillInvoke(objectName());
-                player->drawCards(2, objectName());
-            }
-        }
-        return false;
-    }
-};
-
-class JingceRecord: public TriggerSkill {
-public:
-    JingceRecord(): TriggerSkill("#jingce-record") {
-        events << PreCardUsed << CardResponded << EventPhaseStart;
-        //global = true;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if ((triggerEvent == PreCardUsed || triggerEvent == CardResponded) && player->getPhase() <= Player::Play) {
-            const Card *card = NULL;
-            if (triggerEvent == PreCardUsed)
-                card = data.value<CardUseStruct>().card;
-            else {
-                CardResponseStruct response = data.value<CardResponseStruct>();
-                if (response.m_isUse)
-                   card = response.m_card;
-            }
-            if (card && card->getTypeId() != Card::TypeSkill)
-                player->addMark("jingce");
-        } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::RoundStart) {
-            player->setMark("jingce", 0);
-        }
-        return false;
-    }
-};
-
 JunxingCard::JunxingCard() {
 }
 
@@ -675,11 +631,6 @@ YJCM2013Package::YJCM2013Package()
     fuhuanghou->addSkill(new Qiuyuan);
     related_skills.insertMulti("zhuikong", "#zhuikong");
     related_skills.insertMulti("zhuikong", "#zhuikong-clear");
-
-    General *guohuai = new General(this, "guohuai", "wei"); // YJ 203
-    guohuai->addSkill(new Jingce);
-    guohuai->addSkill(new JingceRecord);
-    related_skills.insertMulti("jingce", "#jingce-record");
 
     General *liru = new General(this, "liru", "qun", 3); // YJ 206
     liru->addSkill(new Juece);
