@@ -592,69 +592,6 @@ public:
     }
 };
 
-class Jueqing: public TriggerSkill {
-public:
-    Jueqing(): TriggerSkill("jueqing") {
-        frequency = Compulsory;
-        events << Predamage;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &data) const{
-        DamageStruct damage = data.value<DamageStruct>();
-        if (damage.from == zhangchunhua) {
-            LogMessage log;
-            log.type = "#TriggerSkill";
-            log.from = zhangchunhua;
-            log.arg = objectName();
-            room->sendLog(log);
-            room->notifySkillInvoked(zhangchunhua, objectName());
-            room->broadcastSkillInvoke(objectName());
-            room->loseHp(damage.to, damage.damage);
-
-            return true;
-        }
-        return false;
-    }
-};
-
-Shangshi::Shangshi(): TriggerSkill("shangshi") {
-    events << HpChanged << MaxHpChanged << CardsMoveOneTime;
-    frequency = Frequent;
-}
-
-int Shangshi::getMaxLostHp(ServerPlayer *zhangchunhua) const{
-    int losthp = zhangchunhua->getLostHp();
-    if (losthp > 2)
-        losthp = 2;
-    return qMin(losthp, zhangchunhua->getMaxHp());
-}
-
-bool Shangshi::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &data) const{
-    int losthp = getMaxLostHp(zhangchunhua);
-    if (triggerEvent == CardsMoveOneTime) {
-        bool can_invoke = false;
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (move.from == zhangchunhua && move.from_places.contains(Player::PlaceHand))
-            can_invoke = true;
-        if (move.to == zhangchunhua && move.to_place == Player::PlaceHand)
-            can_invoke = true;
-        if (!can_invoke)
-            return false;
-    } else if (triggerEvent == HpChanged || triggerEvent == MaxHpChanged) {
-        if (zhangchunhua->getPhase() == Player::Discard) {
-            zhangchunhua->addMark("shangshi");
-            return false;
-        }
-    }
-
-    if (zhangchunhua->getHandcardNum() < losthp && zhangchunhua->askForSkillInvoke(objectName())) {
-        room->broadcastSkillInvoke("shangshi");
-        zhangchunhua->drawCards(losthp - zhangchunhua->getHandcardNum(), objectName());
-    }
-
-    return false;
-}
-
 YJCMPackage::YJCMPackage()
     : Package("YJCM")
 {
@@ -680,10 +617,6 @@ YJCMPackage::YJCMPackage()
 
     General *xusheng = new General(this, "xusheng", "wu"); // YJ 008
     xusheng->addSkill(new Pojun);
-
-    General *zhangchunhua = new General(this, "zhangchunhua", "wei", 3, false); // YJ 011
-    zhangchunhua->addSkill(new Jueqing);
-    zhangchunhua->addSkill(new Shangshi);
 
     General *zhonghui = new General(this, "zhonghui", "wei"); // YJ 012
     zhonghui->addSkill(new QuanjiKeep);

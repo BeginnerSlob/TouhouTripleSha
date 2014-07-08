@@ -3,6 +3,7 @@
 
 #include "package.h"
 #include "card.h"
+#include "skill.h"
 
 class IkaiKinPackage : public Package{
     Q_OBJECT
@@ -78,6 +79,19 @@ public:
 
     virtual const Card *validate(CardUseStruct &card_use) const;
     virtual const Card *validateInResponse(ServerPlayer *user) const;
+};
+
+class IkNvelian: public TriggerSkill {
+    Q_OBJECT
+
+public:
+    IkNvelian();
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &data, ServerPlayer* &) const;
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &, ServerPlayer *) const;
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *zhangchunhua, QVariant &, ServerPlayer *) const;
+
+protected:
+    virtual int getMaxLostHp(ServerPlayer *zhangchunhua) const;
 };
 
 #endif // IKAIKIN_H
