@@ -3967,7 +3967,7 @@ public:
     }
 
     virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const{
-        return to->hasSkill(objectName()) && (card->isKindOf("TrickCard") || card->isKindOf("QiceCard"))
+        return to->hasSkill(objectName()) && (card->isKindOf("TrickCard") || card->isKindOf("IkMiceCard"))
                && card->isBlack() && card->getSkillName() != "ikguihuo"; // Be care!!!!!!
     }
 };

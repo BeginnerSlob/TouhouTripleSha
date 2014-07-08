@@ -101,118 +101,6 @@ public:
     }
 };
 
-QiceCard::QiceCard() {
-    will_throw = false;
-    handling_method = Card::MethodNone;
-}
-
-bool QiceCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    const Card *card = Self->tag.value("qice").value<const Card *>();
-    Card *mutable_card = const_cast<Card *>(card);
-    if (mutable_card)
-        mutable_card->addSubcards(this->subcards);
-    return mutable_card && mutable_card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, mutable_card, targets);
-}
-
-bool QiceCard::targetFixed() const{
-    const Card *card = Self->tag.value("qice").value<const Card *>();
-    Card *mutable_card = const_cast<Card *>(card);
-    if (mutable_card)
-        mutable_card->addSubcards(this->subcards);
-    return mutable_card && mutable_card->targetFixed();
-}
-
-bool QiceCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-    const Card *card = Self->tag.value("qice").value<const Card *>();
-    Card *mutable_card = const_cast<Card *>(card);
-    if (mutable_card)
-        mutable_card->addSubcards(this->subcards);
-    return mutable_card && mutable_card->targetsFeasible(targets, Self);
-}
-
-const Card *QiceCard::validate(CardUseStruct &card_use) const{
-    Card *use_card = Sanguosha->cloneCard(user_string);
-    use_card->setSkillName("qice");
-    use_card->addSubcards(this->subcards);
-    bool available = true;
-    foreach (ServerPlayer *to, card_use.to)
-        if (card_use.from->isProhibited(to, use_card)) {
-            available = false;
-            break;
-        }
-    available = available && use_card->isAvailable(card_use.from);
-    use_card->deleteLater();
-    if (!available) return NULL;
-    return use_card;
-}
-
-class Qice: public ViewAsSkill {
-public:
-    Qice(): ViewAsSkill("qice") {
-    }
-
-    virtual QDialog *getDialog() const{
-        return GuhuoDialog::getInstance("qice", false);
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
-        return !to_select->isEquipped();
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if (cards.length() < Self->getHandcardNum())
-            return NULL;
-
-        const Card *c = Self->tag.value("qice").value<const Card *>();
-        if (c) {
-            QiceCard *card = new QiceCard;
-            card->setUserString(c->objectName());
-            card->addSubcards(cards);
-            return card;
-        } else
-            return NULL;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        if (player->isKongcheng())
-            return false;
-        else
-            return !player->hasUsed("QiceCard");
-    }
-};
-
-class Zhiyu: public MasochismSkill {
-public:
-    Zhiyu(): MasochismSkill("zhiyu") {
-    }
-
-    virtual void onDamaged(ServerPlayer *target, const DamageStruct &damage) const{
-        if (target->askForSkillInvoke(objectName(), QVariant::fromValue(damage))) {
-            target->drawCards(1, objectName());
-
-            Room *room = target->getRoom();
-            room->broadcastSkillInvoke(objectName());
-
-            if (target->isKongcheng())
-                return;
-            room->showAllCards(target);
-
-            QList<const Card *> cards = target->getHandcards();
-            Card::Color color = cards.first()->getColor();
-            bool same_color = true;
-            foreach (const Card *card, cards) {
-                if (card->getColor() != color) {
-                    same_color = false;
-                    break;
-                }
-            }
-
-            if (same_color && damage.from && damage.from->canDiscard(damage.from, "h"))
-                room->askForDiscard(damage.from, objectName(), 1, 1);
-        }
-    }
-};
-
 class Jiangchi: public DrawCardsSkill {
 public:
     Jiangchi(): DrawCardsSkill("jiangchi") {
@@ -732,11 +620,6 @@ YJCM2012Package::YJCM2012Package()
     wangyi->addSkill(new Zhenlie);
     wangyi->addSkill(new Miji);
 
-    General *xunyou = new General(this, "xunyou", "wei", 3); // YJ 111
-    xunyou->addSkill(new Qice);
-    xunyou->addSkill(new Zhiyu);
-
-    addMetaObject<QiceCard>();
     addMetaObject<ChunlaoCard>();
     addMetaObject<ChunlaoWineCard>();
     addMetaObject<GongqiCard>();

@@ -553,7 +553,7 @@ ThMicaiCard::ThMicaiCard() {
 void ThMicaiCard::onEffect(const CardEffectStruct &effect) const {
     Room *room = effect.from->getRoom();
     room->setPlayerMark(effect.from, "thmicaisource", 1);
-    room->setPlayerMark(effect.to, "thmicaitarget", 1);
+    room->setPlayerMark(effect.to, "@micai", 1);
     room->attachSkillToPlayer(effect.to, "thmicaiv");
 }
 
@@ -597,8 +597,8 @@ public:
         }
 
         foreach (ServerPlayer *p, room->getAllPlayers()) {
-            if (p->getMark("thmicaitarget") > 0) {
-                room->setPlayerMark(p, "thmicaitarget", 0);
+            if (p->getMark("@micai") > 0) {
+                room->setPlayerMark(p, "@micai", 0);
                 room->detachSkillFromPlayer(p, "thmicaiv", true);
             }
         }

@@ -161,7 +161,7 @@ int Player::getAttackRange(bool include_weapon) const{
     int weapon_range = 0;
     if (include_weapon) {
         WrappedCard *wp = weapon;
-        if (!wp && !hasSkill("thsilian") && getMark("thmicaitarget") > 0)
+        if (!wp && !hasSkill("thsilian") && getMark("@micai") > 0)
             foreach (const Player *p, getAliveSiblings())
                 if (p->getMark("thmicaisource") > 0) {
                     wp = p->weapon;
@@ -538,7 +538,7 @@ bool Player::hasWeapon(const QString &weapon_name) const {
     }
 
     WrappedCard *wp = weapon;
-    if (!wp && !hasSkill("thsilian") && getMark("thmicaitarget") > 0)
+    if (!wp && !hasSkill("thsilian") && getMark("@micai") > 0)
         foreach (const Player *p, getAliveSiblings())
             if (p->getMark("thmicaisource") > 0) {
                 wp = p->weapon;
@@ -581,7 +581,7 @@ bool Player::hasArmorEffect(const QString &armor_name) const{
     }
 
     WrappedCard *am = armor;
-    if (!am && !hasSkill("ikjingnie") && getMark("thmicaitarget") > 0)
+    if (!am && !hasSkill("ikjingnie") && getMark("@micai") > 0)
         foreach (const Player *p, getAliveSiblings())
             if (p->getMark("thmicaisource") > 0) {
                 am = p->armor;
