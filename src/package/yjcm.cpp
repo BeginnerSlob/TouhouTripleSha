@@ -8,36 +8,6 @@
 #include "ai.h"
 #include "general.h"
 
-class Yizhong: public TriggerSkill {
-public:
-    Yizhong(): TriggerSkill("yizhong") {
-        events << SlashEffected;
-        frequency = Compulsory;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && TriggerSkill::triggerable(target) && target->getArmor() == NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        SlashEffectStruct effect = data.value<SlashEffectStruct>();
-        if (effect.slash->isBlack()) {
-            room->broadcastSkillInvoke(objectName());
-            room->notifySkillInvoked(player, objectName());
-
-            LogMessage log;
-            log.type = "#SkillNullify";
-            log.from = player;
-            log.arg = objectName();
-            log.arg2 = effect.slash->objectName();
-            room->sendLog(log);
-
-            return true;
-        }
-        return false;
-    }
-};
-
 class Xuanfeng: public TriggerSkill {
 public:
     Xuanfeng(): TriggerSkill("xuanfeng") {
@@ -710,9 +680,6 @@ YJCMPackage::YJCMPackage()
 
     General *xusheng = new General(this, "xusheng", "wu"); // YJ 008
     xusheng->addSkill(new Pojun);
-
-    General *yujin = new General(this, "yujin", "wei"); // YJ 010
-    yujin->addSkill(new Yizhong);
 
     General *zhangchunhua = new General(this, "zhangchunhua", "wei", 3, false); // YJ 011
     zhangchunhua->addSkill(new Jueqing);
