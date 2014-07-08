@@ -12,17 +12,6 @@ public:
     YJCMPackage();
 };
 
-class Shangshi: public TriggerSkill {
-    Q_OBJECT
-
-public:
-    Shangshi();
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &data) const;
-
-protected:
-    virtual int getMaxLostHp(ServerPlayer *zhangchunhua) const;
-};
-
 class MingceCard: public SkillCard {
     Q_OBJECT
 

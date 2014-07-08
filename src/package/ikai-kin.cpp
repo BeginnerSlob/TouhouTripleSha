@@ -1,7 +1,6 @@
 #include "ikai-kin.h"
 
 #include "general.h"
-#include "skill.h"
 #include "engine.h"
 #include "standard.h"
 #include "client.h"
@@ -1765,8 +1764,9 @@ public:
 
         if (use.card->isKindOf("Slash") && use.to.contains(player))
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
-                if (owner == player || owner == use.from) continue;
-                skill_list.insert(owner, QStringList(objectName()));
+                if (owner == player || owner == use.from || (owner == room->getCurrent() && owner->getPhase() != Player::NotActive)) continue;
+                if (use.from->canSlash(owner, use.card, false) && owner->inMyAttackRange(player))
+                    skill_list.insert(owner, QStringList(objectName()));
             }
         return skill_list;
     }
@@ -1780,7 +1780,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
-        if (!room->askForCard(ask_who, "Armor", "@ikpiaohu", data, objectName())) {
+        if (!room->askForCard(ask_who, "Armor", "@ikpiaohu:" + player->objectName(), data, objectName())) {
             QList<ServerPlayer *> p_list;
             p_list << player << ask_who;
             room->sortByActionOrder(p_list);
@@ -1800,6 +1800,71 @@ public:
         return false;
     }
 };
+
+class IkXuwu: public TriggerSkill {
+public:
+    IkXuwu(): TriggerSkill("ikxuwu") {
+        frequency = Compulsory;
+        events << Predamage;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        LogMessage log;
+        log.type = "#TriggerSkill";
+        log.from = zhangchunhua;
+        log.arg = objectName();
+        room->sendLog(log);
+        room->notifySkillInvoked(zhangchunhua, objectName());
+        room->broadcastSkillInvoke(objectName());
+        room->loseHp(damage.to, damage.damage);
+
+        return true;
+    }
+};
+
+IkNvelian::IkNvelian(): TriggerSkill("iknvelian") {
+    events << HpChanged << MaxHpChanged << CardsMoveOneTime;
+    frequency = Frequent;
+}
+
+int IkNvelian::getMaxLostHp(ServerPlayer *zhangchunhua) const{
+    return qMin(2, zhangchunhua->getLostHp())
+}
+
+QStringList IkNvelian::triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &data, ServerPlayer* &) const{
+    if (!TriggerSkill::triggerable(zhangchunhua)) return QStringList();
+    int losthp = getMaxLostHp(zhangchunhua);
+    if (triggerEvent == CardsMoveOneTime) {
+        bool can_invoke = false;
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.from == zhangchunhua && move.from_places.contains(Player::PlaceHand))
+            can_invoke = true;
+        if (move.to == zhangchunhua && move.to_place == Player::PlaceHand)
+            can_invoke = true;
+        if (!can_invoke)
+            return QStringList();
+    }
+
+    if (zhangchunhua->getHandcardNum() < losthp)
+        return QStringList(objectName());
+    return QStringList();
+}
+
+bool IkNvelian::cost(TriggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &, ServerPlayer *) const{
+    if (zhangchunhua->askForSkillInvoke(objectName())) {
+        room->broadcastSkillInvoke(objectName());
+        return true;
+    }
+    return false;
+}
+
+bool IkNvelian::effect(TriggerEvent, Room *, ServerPlayer *zhangchunhua, QVariant &, ServerPlayer *) const{
+    int losthp = getMaxLostHp(zhangchunhua);
+    zhangchunhua->drawCards(losthp - zhangchunhua->getHandcardNum(), objectName());
+
+    return false;
+}
 
 class IkLundao: public TriggerSkill {
 public:
@@ -1947,6 +2012,10 @@ IkaiKinPackage::IkaiKinPackage()
     General *bloom017 = new General(this, "bloom017", "hana");
     bloom017->addSkill(new IkZhuyan);
     bloom017->addSkill(new IkPiaohu);
+
+    General *bloom018 = new General(this, "bloom018", "hana", 3, false);
+    bloom018->addSkill(new IkXuwu);
+    bloom018->addSkill(new IkNvelian);
 
     General *bloom022 = new General(this, "bloom022", "hana", 3, false);
     bloom022->addSkill(new IkLundao);

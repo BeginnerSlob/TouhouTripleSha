@@ -654,7 +654,7 @@ enum TriggerEvent {
     ChainStateChanged,
 
     ConfirmDamage,    // confirm the damage's count and damage's nature
-    Predamage,        // trigger the certain skill -- jueqing
+    Predamage,        // trigger the certain skill -- ikxuwu
     DamageForseen,    // the first event in a damage -- ikliefeng dawu
     DamageCaused,     // the moment for -- ikqiansha..
     DamageInflicted,  // the moment for -- ikzhihui..

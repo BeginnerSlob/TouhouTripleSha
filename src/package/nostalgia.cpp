@@ -290,14 +290,14 @@ public:
     }
 };
 
-class NosShangshi: public Shangshi {
+class NosShangshi: public IkNvelian {
 public:
-    NosShangshi(): Shangshi() {
+    NosShangshi(): IkNvelian() {
         setObjectName("nosshangshi");
     }
 
     virtual int getMaxLostHp(ServerPlayer *zhangchunhua) const{
-        return qMin(zhangchunhua->getLostHp(), zhangchunhua->getMaxHp());
+        return zhangchunhua->getLostHp();
     }
 };
 
@@ -1660,7 +1660,7 @@ NostalYJCMPackage::NostalYJCMPackage()
     nos_xushu->addSkill(new NosJujian);
 
     General *nos_zhangchunhua = new General(this, "nos_zhangchunhua", "wei", 3, false);
-    nos_zhangchunhua->addSkill("jueqing");
+    nos_zhangchunhua->addSkill("ikxuwu");
     nos_zhangchunhua->addSkill(new NosShangshi);
 
     addMetaObject<NosXuanhuoCard>();
