@@ -1829,7 +1829,7 @@ IkNvelian::IkNvelian(): TriggerSkill("iknvelian") {
 }
 
 int IkNvelian::getMaxLostHp(ServerPlayer *zhangchunhua) const{
-    return qMin(2, zhangchunhua->getLostHp())
+    return qMin(2, zhangchunhua->getLostHp());
 }
 
 QStringList IkNvelian::triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &data, ServerPlayer* &) const{
