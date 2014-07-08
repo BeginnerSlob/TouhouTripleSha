@@ -6,91 +6,6 @@
 #include "engine.h"
 #include "maneuvering.h"
 
-JunxingCard::JunxingCard() {
-}
-
-void JunxingCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const{
-    ServerPlayer *target = targets.first();
-    if (!target->isAlive()) return;
-
-    QString type_name[4] = { QString(), "BasicCard", "TrickCard", "EquipCard" };
-    QStringList types;
-    types << "BasicCard" << "TrickCard" << "EquipCard";
-    foreach (int id, subcards) {
-        const Card *c = Sanguosha->getCard(id);
-        types.removeOne(type_name[c->getTypeId()]);
-        if (types.isEmpty()) break;
-    }
-    if (!target->canDiscard(target, "h") || types.isEmpty()
-        || !room->askForCard(target, types.join(",") + "|.|.|hand", "@junxing-discard")) {
-        target->turnOver();
-        target->drawCards(subcards.length(), "junxing");
-    }
-}
-
-class Junxing: public ViewAsSkill {
-public:
-    Junxing(): ViewAsSkill("junxing") {
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
-        return !to_select->isEquipped() && !Self->isJilei(to_select);
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if (cards.isEmpty())
-            return NULL;
-
-        JunxingCard *card = new JunxingCard;
-        card->addSubcards(cards);
-        card->setSkillName(objectName());
-        return card;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->canDiscard(player, "h") && !player->hasUsed("JunxingCard");
-    }
-};
-
-class Yuce: public MasochismSkill {
-public:
-    Yuce(): MasochismSkill("yuce") {
-    }
-
-    virtual void onDamaged(ServerPlayer *target, const DamageStruct &damage) const{
-        if (target->isKongcheng()) return;
-
-        Room *room = target->getRoom();
-        QVariant data = QVariant::fromValue(damage);
-        const Card *card = room->askForCard(target, ".", "@yuce-show", data, Card::MethodNone);
-        if (card) {
-            room->broadcastSkillInvoke(objectName());
-            room->notifySkillInvoked(target, objectName());
-            LogMessage log;
-            log.from = target;
-            log.type = "#InvokeSkill";
-            log.arg = objectName();
-            room->sendLog(log);
-
-            room->showCard(target, card->getEffectiveId());
-            if (!damage.from || damage.from->isDead()) return;
-
-            QString type_name[4] = { QString(), "BasicCard", "TrickCard", "EquipCard" };
-            QStringList types;
-            types << "BasicCard" << "TrickCard" << "EquipCard";
-            types.removeOne(type_name[card->getTypeId()]);
-            if (!damage.from->canDiscard(damage.from, "h")
-                || !room->askForCard(damage.from, types.join(",") + "|.|.|hand",
-                                     QString("@yuce-discard:%1::%2:%3")
-                                             .arg(target->objectName())
-                                             .arg(types.first()).arg(types.last()),
-                                     data)) {
-                room->recover(target, RecoverStruct(target));
-            }
-        }
-    }
-};
-
 class Duodao: public MasochismSkill {
 public:
     Duodao(): MasochismSkill("duodao") {
@@ -639,10 +554,6 @@ YJCM2013Package::YJCM2013Package()
     liru->addSkill(new FenchengMark);
     related_skills.insertMulti("fencheng", "#fencheng");
 
-    General *manchong = new General(this, "manchong", "wei", 3); // YJ 208
-    manchong->addSkill(new Junxing);
-    manchong->addSkill(new Yuce);
-
     General *panzhangmazhong = new General(this, "panzhangmazhong", "wu"); // YJ 209
     panzhangmazhong->addSkill(new Duodao);
     panzhangmazhong->addSkill(new Anjian);
@@ -654,7 +565,6 @@ YJCM2013Package::YJCM2013Package()
     General *zhuran = new General(this, "zhuran", "wu"); // YJ 211
     zhuran->addSkill(new Danshou);
 
-    addMetaObject<JunxingCard>();
     addMetaObject<ZongxuanCard>();
     addMetaObject<MiejiCard>();
     addMetaObject<FenchengCard>();

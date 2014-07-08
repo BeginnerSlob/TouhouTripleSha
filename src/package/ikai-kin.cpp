@@ -1766,21 +1766,19 @@ public:
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
                 if (owner == player || owner == use.from || (owner == room->getCurrent() && owner->getPhase() != Player::NotActive)) continue;
                 if (use.from->canSlash(owner, use.card, false) && owner->inMyAttackRange(player))
-                    skill_list.insert(owner, QStringList(objectName()));
+                    if (owner->canDiscard(owner, "he") || (!owner->isChained() && !player->isChained()))
+                        skill_list.insert(owner, QStringList(objectName()));
             }
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
-        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        if (ask_who->canDiscard(ask_who, "he") && room->askForCard(ask_who, "Armor", "@ikpiaohu:" + player->objectName(), data, objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
-        if (!room->askForCard(ask_who, "Armor", "@ikpiaohu:" + player->objectName(), data, objectName())) {
+        } else if (!player->isChained() && !ask_who->isChained() && ask_who->askForSkillInvoke(objectName(), "chain:" + player->objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            
             QList<ServerPlayer *> p_list;
             p_list << player << ask_who;
             room->sortByActionOrder(p_list);
@@ -1791,7 +1789,12 @@ public:
                     room->setEmotion(p, "chain");
                     room->getThread()->trigger(ChainStateChanged, room, p);
                 }
+            return true;
         }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
         CardUseStruct use = data.value<CardUseStruct>();
         use.to.removeOne(player);
         use.to.append(ask_who);
@@ -2387,6 +2390,103 @@ public:
     }
 };
 
+IkBingyanCard::IkBingyanCard() {
+}
+
+void IkBingyanCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const{
+    ServerPlayer *target = targets.first();
+    if (!target->isAlive()) return;
+
+    QString type_name[4] = { QString(), "BasicCard", "TrickCard", "EquipCard" };
+    QStringList types;
+    types << "BasicCard" << "TrickCard" << "EquipCard";
+    foreach (int id, subcards) {
+        const Card *c = Sanguosha->getCard(id);
+        types.removeOne(type_name[c->getTypeId()]);
+        if (types.isEmpty()) break;
+    }
+    if (!target->canDiscard(target, "h") || types.isEmpty()
+        || !room->askForCard(target, types.join(",") + "|.|.|hand", "@ikbingyan-discard")) {
+        target->turnOver();
+        target->drawCards(subcards.length(), "ikbingyan");
+    }
+}
+
+class IkBingyan: public ViewAsSkill {
+public:
+    IkBingyan(): ViewAsSkill("ikbingyan") {
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
+        return !to_select->isEquipped() && !Self->isJilei(to_select);
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.isEmpty())
+            return NULL;
+
+        IkBingyanCard *card = new IkBingyanCard;
+        card->addSubcards(cards);
+        card->setSkillName(objectName());
+        return card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->canDiscard(player, "h") && !player->hasUsed("IkBingyanCard");
+    }
+};
+
+class IkXuelian: public MasochismSkill {
+public:
+    IkXuelian(): MasochismSkill("ikxuelian") {
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return MasochismSkill::triggerable(target)
+            && !target->isKongcheng();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        const Card *card = room->askForCard(player, ".", "@ikxuelian-show", data, Card::MethodNone);
+        if (card) {
+            room->broadcastSkillInvoke(objectName());
+            room->notifySkillInvoked(player, objectName());
+            LogMessage log;
+            log.from = player;
+            log.type = "#InvokeSkill";
+            log.arg = objectName();
+            room->sendLog(log);
+
+            player->tag["IkXuelianCard"] = QVariant::fromValue(card);
+            return true;
+        }
+        return false;
+    }
+
+    virtual void onDamaged(ServerPlayer *target, const DamageStruct &damage) const{
+        Room *room = target->getRoom();
+        const Card *card = target->tag["IkXuelianCard"].value<const Card *>();
+        target->tag.remove("IkXuelianCard");
+        if (card) {
+            room->showCard(target, card->getEffectiveId());
+            if (!damage.from || damage.from->isDead()) return;
+
+            QString type_name[4] = { QString(), "BasicCard", "TrickCard", "EquipCard" };
+            QStringList types;
+            types << "BasicCard" << "TrickCard" << "EquipCard";
+            types.removeOne(type_name[card->getTypeId()]);
+            if (!damage.from->canDiscard(damage.from, "h")
+                || !room->askForCard(damage.from, types.join(",") + "|.|.|hand",
+                                     QString("@ikxuelian-discard:%1::%2:%3")
+                                             .arg(target->objectName())
+                                             .arg(types.first()).arg(types.last()),
+                                     QVariant())) {
+                room->recover(target, RecoverStruct(target));
+            }
+        }
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -2500,6 +2600,10 @@ IkaiKinPackage::IkaiKinPackage()
     bloom026->addSkill(new IkJingceRecord);
     related_skills.insertMulti("ikjingce", "#ikjingce-record");
 
+    General *bloom027 = new General(this, "bloom027", "hana", 3);
+    bloom027->addSkill(new IkBingyan);
+    bloom027->addSkill(new IkXuelian);
+
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
     addMetaObject<ExtraCollateralCard>();
@@ -2509,6 +2613,7 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkJiushiCard>();
     addMetaObject<IkZhuyiCard>();
     addMetaObject<IkMiceCard>();
+    addMetaObject<IkBingyanCard>();
 
     skills << new IkXianyuSlashViewAsSkill << new IkZhuyi;
 }
