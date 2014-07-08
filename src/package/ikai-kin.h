@@ -70,4 +70,14 @@ public:
     virtual const Card *validate(CardUseStruct &cardUse) const;
 };
 
+class IkJiushiCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkJiushiCard();
+
+    virtual const Card *validate(CardUseStruct &card_use) const;
+    virtual const Card *validateInResponse(ServerPlayer *user) const;
+};
+
 #endif // IKAIKIN_H

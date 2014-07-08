@@ -38,114 +38,6 @@ public:
     }
 };
 
-class Luoying: public TriggerSkill {
-public:
-    Luoying(): TriggerSkill("luoying") {
-        events << BeforeCardsMove;
-        frequency = Frequent;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *caozhi, QVariant &data) const{
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (move.from == caozhi || move.from == NULL)
-            return false;
-        if (move.to_place == Player::DiscardPile
-            && ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD
-                ||move.reason.m_reason == CardMoveReason::S_REASON_JUDGEDONE)) {
-            QList<int> card_ids;
-            int i = 0;
-            foreach (int card_id, move.card_ids) {
-                if (Sanguosha->getCard(card_id)->getSuit() == Card::Club
-                    && ((move.reason.m_reason == CardMoveReason::S_REASON_JUDGEDONE
-                         && move.from_places[i] == Player::PlaceJudge
-                         && move.to_place == Player::DiscardPile)
-                        || (move.reason.m_reason != CardMoveReason::S_REASON_JUDGEDONE
-                            && room->getCardOwner(card_id) == move.from
-                            && (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip))))
-                    card_ids << card_id;
-                i++;
-            }
-            if (card_ids.isEmpty())
-                return false;
-            else if (caozhi->askForSkillInvoke(objectName(), data)) {
-                int ai_delay = Config.AIDelay;
-                Config.AIDelay = 0;
-                while (card_ids.length() > 1) {
-                    room->fillAG(card_ids, caozhi);
-                    int id = room->askForAG(caozhi, card_ids, true, objectName());
-                    if (id == -1) {
-                        room->clearAG(caozhi);
-                        break;
-                    }
-                    card_ids.removeOne(id);
-                    room->clearAG(caozhi);
-                }
-                Config.AIDelay = ai_delay;
-
-                if (!card_ids.isEmpty()) {
-                    room->broadcastSkillInvoke("luoying");
-                    move.removeCardIds(card_ids);
-                    data = QVariant::fromValue(move);
-                    DummyCard *dummy = new DummyCard(card_ids);
-                    room->moveCardTo(dummy, caozhi, Player::PlaceHand, move.reason, true);
-                    delete dummy;
-                }
-            }
-        }
-        return false;
-    }
-};
-
-class Jiushi: public ZeroCardViewAsSkill {
-public:
-    Jiushi(): ZeroCardViewAsSkill("jiushi") {
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return Analeptic::IsAvailable(player) && player->faceUp();
-    }
-
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        return pattern.contains("analeptic") && player->faceUp();
-    }
-
-    virtual const Card *viewAs() const{
-        Analeptic *analeptic = new Analeptic(Card::NoSuit, 0);
-        analeptic->setSkillName(objectName());
-        return analeptic;
-    }
-
-    virtual int getEffectIndex(const ServerPlayer *, const Card *) const{
-        return 1;
-    }
-};
-
-class JiushiFlip: public TriggerSkill {
-public:
-    JiushiFlip(): TriggerSkill("#jiushi-flip") {
-        events << PreCardUsed << PreDamageDone << DamageComplete;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == PreCardUsed) {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->getSkillName() == "jiushi")
-                player->turnOver();
-        } else if (triggerEvent == PreDamageDone) {
-            player->tag["PredamagedFace"] = !player->faceUp();
-        } else if (triggerEvent == DamageComplete) {
-            bool facedown = player->tag.value("PredamagedFace").toBool();
-            player->tag.remove("PredamagedFace");
-            if (facedown && !player->faceUp() && player->askForSkillInvoke("jiushi", data)) {
-                room->broadcastSkillInvoke("jiushi", 2);
-                player->turnOver();
-            }
-        }
-
-        return false;
-    }
-};
-
 class Xuanfeng: public TriggerSkill {
 public:
     Xuanfeng(): TriggerSkill("xuanfeng") {
@@ -796,11 +688,6 @@ bool Shangshi::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhan
 YJCMPackage::YJCMPackage()
     : Package("YJCM")
 {
-    General *caozhi = new General(this, "caozhi", "wei", 3); // YJ 001
-    caozhi->addSkill(new Luoying);
-    caozhi->addSkill(new Jiushi);
-    caozhi->addSkill(new JiushiFlip);
-    related_skills.insertMulti("jiushi", "#jiushi-flip");
 
     General *chengong = new General(this, "chengong", "qun", 3); // YJ 002
     chengong->addSkill(new Zhichi);
