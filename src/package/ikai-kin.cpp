@@ -1971,21 +1971,6 @@ void IkZhuyiCard::onEffect(const CardEffectStruct &effect) const{
     ServerPlayer *zhonghui = effect.from;
     ServerPlayer *target = effect.to;
     Room *room = zhonghui->getRoom();
-    /*QList<int> powers = zhonghui->getPile("ikbengshangpile");
-    if (powers.isEmpty()) return;
-
-    int card_id;
-    if (powers.length() == 1)
-        card_id = powers.first();
-    else {
-        room->fillAG(powers, zhonghui);
-        card_id = room->askForAG(zhonghui, powers, false, "ikzhuyi");
-        room->clearAG(zhonghui);
-    }
-
-    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(),
-                          target->objectName(), "ikzhuyi", QString());
-    room->throwCard(Sanguosha->getCard(card_id), reason, NULL);*/
     room->drawCards(target, 2, "ikzhuyi");
     if (target->getHandcardNum() > zhonghui->getHandcardNum())
         room->damage(DamageStruct("ikzhuyi", zhonghui, target));
@@ -2006,6 +1991,124 @@ public:
         IkZhuyiCard *card = new IkZhuyiCard;
         card->addSubcard(originalCard);
         return card;
+    }
+};
+
+IkMiceCard::IkMiceCard() {
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+bool IkMiceCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    const Card *card = Self->tag.value("ikmice").value<const Card *>();
+    Card *mutable_card = const_cast<Card *>(card);
+    if (mutable_card)
+        mutable_card->addSubcards(this->subcards);
+    return mutable_card && mutable_card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, mutable_card, targets);
+}
+
+bool IkMiceCard::targetFixed() const{
+    const Card *card = Self->tag.value("ikmice").value<const Card *>();
+    Card *mutable_card = const_cast<Card *>(card);
+    if (mutable_card)
+        mutable_card->addSubcards(this->subcards);
+    return mutable_card && mutable_card->targetFixed();
+}
+
+bool IkMiceCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    const Card *card = Self->tag.value("ikmice").value<const Card *>();
+    Card *mutable_card = const_cast<Card *>(card);
+    if (mutable_card)
+        mutable_card->addSubcards(this->subcards);
+    return mutable_card && mutable_card->targetsFeasible(targets, Self);
+}
+
+const Card *IkMiceCard::validate(CardUseStruct &card_use) const{
+    Card *use_card = Sanguosha->cloneCard(user_string);
+    use_card->setSkillName("ikmice");
+    use_card->addSubcards(this->subcards);
+    bool available = true;
+    foreach (ServerPlayer *to, card_use.to)
+        if (card_use.from->isProhibited(to, use_card)) {
+            available = false;
+            break;
+        }
+    available = available && use_card->isAvailable(card_use.from);
+    use_card->deleteLater();
+    if (!available) return NULL;
+    return use_card;
+}
+
+#include "touhou-hana.h"
+class IkMice: public ViewAsSkill {
+public:
+    IkMice(): ViewAsSkill("ikmice") {
+    }
+
+    virtual QDialog *getDialog() const{
+        return ThMimengDialog::getInstance("ikmice", false);
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
+        return !to_select->isEquipped();
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.length() < Self->getHandcardNum())
+            return NULL;
+
+        const Card *c = Self->tag.value("ikmice").value<const Card *>();
+        if (c) {
+            IkMiceCard *card = new IkMiceCard;
+            card->setUserString(c->objectName());
+            card->addSubcards(cards);
+            return card;
+        } else
+            return NULL;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        if (player->isKongcheng())
+            return false;
+        else
+            return !player->hasUsed("IkMiceCard");
+    }
+};
+
+class IkZhiyu: public MasochismSkill {
+public:
+    IkZhiyu(): MasochismSkill("ikzhiyu") {
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual void onDamaged(ServerPlayer *target, const DamageStruct &damage) const{
+        target->drawCards(1, objectName());
+
+        Room *room = target->getRoom();
+
+        if (target->isKongcheng())
+            return;
+        room->showAllCards(target);
+
+        QList<const Card *> cards = target->getHandcards();
+        Card::Color color = cards.first()->getColor();
+        bool same_color = true;
+        foreach (const Card *card, cards) {
+            if (card->getColor() != color) {
+                same_color = false;
+                break;
+            }
+        }
+
+        if (same_color && damage.from && damage.from->canDiscard(damage.from, "h"))
+            room->askForDiscard(damage.from, objectName(), 1, 1);
     }
 };
 
@@ -2167,6 +2270,10 @@ IkaiKinPackage::IkaiKinPackage()
     bloom019->addRelateSkill("ikzhuyi");
     related_skills.insertMulti("ikbengshang", "#ikbengshang");
 
+    General *bloom020 = new General(this, "bloom020", "hana", 3);
+    bloom020->addSkill(new IkMice);
+    bloom020->addSkill(new IkZhiyu);
+
     General *bloom022 = new General(this, "bloom022", "hana", 3, false);
     bloom022->addSkill(new IkLundao);
     bloom022->addSkill(new IkXuanwu);
@@ -2179,6 +2286,7 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkQizhiCard>();
     addMetaObject<IkJiushiCard>();
     addMetaObject<IkZhuyiCard>();
+    addMetaObject<IkMiceCard>();
 
     skills << new IkXianyuSlashViewAsSkill << new IkZhuyi;
 }

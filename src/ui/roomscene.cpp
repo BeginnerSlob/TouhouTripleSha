@@ -1198,7 +1198,7 @@ void RoomScene::enableTargets(const Card *card) {
     ok_button->setEnabled(card->targetsFeasible(selected_targets, Self));
 }
 
-#include "yjcm2012.h"
+#include "ikai-kin.h"
 void RoomScene::updateTargetsEnablity(const Card *card) {
     QMapIterator<PlayerCardContainer *, const ClientPlayer *> itor(item2player);
     while (itor.hasNext()) {
@@ -1220,9 +1220,9 @@ void RoomScene::updateTargetsEnablity(const Card *card) {
         if (card) {
             if (card->isKindOf("Collateral"))
                 isCollateral = true;
-            else if (card->isKindOf("QiceCard")) {
-                const QiceCard *qice_card = qobject_cast<const QiceCard *>(card);
-                isCollateral = (qice_card->getUserString() == "collateral");
+            else if (card->isKindOf("IkMiceCard")) {
+                const IkMiceCard *ikmice_card = qobject_cast<const IkMiceCard *>(card);
+                isCollateral = (ikmice_card->getUserString() == "collateral");
             }
         }
         bool ikmoyudengFailure = isCollateral && selected_targets.length() == 1;
@@ -2035,7 +2035,7 @@ void RoomScene::addSkillButton(const Skill *skill) {
         connect(btn, SIGNAL(skill_deactivated()), dialog, SLOT(reject()));
         disconnect(btn, SIGNAL(skill_activated()), this, SLOT(onSkillActivated()));
         connect(dialog, SIGNAL(onButtonClick()), this, SLOT(onSkillActivated()));
-        if (dialog->objectName() == "qice" || dialog->objectName() == "thmimeng")
+        if (dialog->objectName() == "ikmice" || dialog->objectName() == "thmimeng")
             connect(dialog, SIGNAL(onButtonClick()), dashboard, SLOT(selectAll()));
     }
 
