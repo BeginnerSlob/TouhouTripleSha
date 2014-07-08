@@ -6,101 +6,6 @@
 #include "engine.h"
 #include "maneuvering.h"
 
-class Zhenlie: public TriggerSkill {
-public:
-    Zhenlie(): TriggerSkill("zhenlie") {
-        events << TargetConfirmed;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == TargetConfirmed && TriggerSkill::triggerable(player)) {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (use.to.contains(player) && use.from != player) {
-                if (use.card->isKindOf("Slash") || use.card->isNDTrick()) {
-                    if (room->askForSkillInvoke(player, objectName(), data)) {
-                        room->broadcastSkillInvoke(objectName());
-                        player->setFlags("-ZhenlieTarget");
-                        player->setFlags("ZhenlieTarget");
-                        room->loseHp(player);
-                        if (player->isAlive() && player->hasFlag("ZhenlieTarget")) {
-                            player->setFlags("-ZhenlieTarget");
-                            use.nullified_list << player->objectName();
-                            data = QVariant::fromValue(use);
-                            if (player->canDiscard(use.from, "he")) {
-                                int id = room->askForCardChosen(player, use.from, "he", objectName(), false, Card::MethodDiscard);
-                                room->throwCard(id, use.from, player);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-};
-
-class Miji: public TriggerSkill {
-public:
-    Miji(): TriggerSkill("miji") {
-        events << EventPhaseStart << ChoiceMade;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data) const{
-        if (TriggerSkill::triggerable(target) && triggerEvent == EventPhaseStart
-            && target->getPhase() == Player::Finish && target->isWounded() && target->askForSkillInvoke(objectName())) {
-            room->broadcastSkillInvoke(objectName(), 1);
-            QStringList draw_num;
-            for (int i = 1; i <= target->getLostHp(); draw_num << QString::number(i++)) {}
-            int num = room->askForChoice(target, "miji_draw", draw_num.join("+")).toInt();
-            target->drawCards(num, objectName());
-            target->setMark(objectName(), 0);
-            if (!target->isKongcheng()) {
-                forever {
-                    int n = target->getMark(objectName());
-                    if (n < num && !target->isKongcheng()) {
-                        QList<int> handcards = target->handCards();
-                        if (!room->askForYiji(target, handcards, objectName(), false, false, false, num - n))
-                            break;
-                    } else {
-                        break;
-                    }
-                }
-                // give the rest cards randomly
-                if (target->getMark(objectName()) < num && !target->isKongcheng()) {
-                    int rest_num = num - target->getMark(objectName());
-                    forever {
-                        QList<int> handcard_list = target->handCards();
-                        qShuffle(handcard_list);
-                        int give = qrand() % rest_num + 1;
-                        rest_num -= give;
-                        QList<int> to_give = handcard_list.length() < give ? handcard_list : handcard_list.mid(0, give);
-                        ServerPlayer *receiver = room->getOtherPlayers(target).at(qrand() % (target->aliveCount() - 1));
-                        DummyCard *dummy = new DummyCard(to_give);
-                        room->obtainCard(receiver, dummy, false);
-                        delete dummy;
-                        if (rest_num == 0 || target->isKongcheng())
-                            break;
-                    }
-                }
-                room->broadcastSkillInvoke(objectName(), qrand() % 2 + 2);
-            }
-        } else if (triggerEvent == ChoiceMade) {
-            QString str = data.toString();
-            if (str.startsWith("Yiji:" + objectName()))
-                target->addMark(objectName(), str.split(":").last().split("+").length());
-        }
-        return false;
-    }
-};
-
 class Zishou: public DrawCardsSkill {
 public:
     Zishou(): DrawCardsSkill("zishou") {
@@ -558,10 +463,6 @@ YJCM2012Package::YJCM2012Package()
     General *liubiao = new General(this, "liubiao", "qun", 4); // YJ 108
     liubiao->addSkill(new Zishou);
     liubiao->addSkill(new Zongshi);
-
-    General *wangyi = new General(this, "wangyi", "wei", 3, false); // YJ 110
-    wangyi->addSkill(new Zhenlie);
-    wangyi->addSkill(new Miji);
 
     addMetaObject<ChunlaoCard>();
     addMetaObject<ChunlaoWineCard>();

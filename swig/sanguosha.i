@@ -410,12 +410,12 @@ public:
     static const int S_REASON_GOTBACK = 0x37;           // from placetable to hand
     static const int S_REASON_RECYCLE = 0x47;           // from discardpile to hand
     static const int S_REASON_ROB = 0x57;               // got a definite card from other's hand
-    static const int S_REASON_PREVIEWGIVE = 0x67;       // give cards after previewing, i.e. Yiji & Miji
+    static const int S_REASON_PREVIEWGIVE = 0x67;       // give cards after previewing, i.e. Yiji & Nosmiji
 
     //subcategory of show
     static const int S_REASON_TURNOVER = 0x18;          // show n cards  from drawpile
     static const int S_REASON_JUDGE = 0x28;             // show a card  from drawpile for judge
-    static const int S_REASON_PREVIEW = 0x38;           // Not done yet, plan for view some cards for self only(guanxing yiji miji)
+    static const int S_REASON_PREVIEW = 0x38;           // Not done yet, plan for view some cards for self only(guanxing yiji nosmiji)
     static const int S_REASON_DEMONSTRATE = 0x48;       // show a card which copy one to move to table
 
     //subcategory of transfer

@@ -2487,6 +2487,116 @@ public:
     }
 };
 
+class IkQingguo: public TriggerSkill {
+public:
+    IkQingguo(): TriggerSkill("ikqingguo") {
+        events << EventPhaseStart << ChoiceMade;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer *) const{
+        if (TriggerSkill::triggerable(target) && triggerEvent == EventPhaseStart
+            && target->getPhase() == Player::Finish && target->isWounded())
+            return QStringList(objectName());
+        else if (triggerEvent == ChoiceMade) {
+            QString str = data.toString();
+            if (str.startsWith("Yiji:" + objectName()) && target->hasFlag("IkQingguoUse")) {
+                target->setFlags("-IkQingguoUse");
+                target->addMark(objectName(), str.split(":").last().split("+").length());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (room->askForSkillInvoke(player, objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *) const{
+        QStringList draw_num;
+        for (int i = 1; i <= target->getLostHp(); draw_num << QString::number(i++)) {}
+        int num = room->askForChoice(target, "ikqingguo_draw", draw_num.join("+")).toInt();
+        target->drawCards(num, objectName());
+        target->setMark(objectName(), 0);
+        if (!target->isKongcheng()) {
+            forever {
+                int n = target->getMark(objectName());
+                if (n < num && !target->isKongcheng()) {
+                    QList<int> handcards = target->handCards();
+                    target->setFlags("IkQingguoUse");
+                    if (!room->askForYiji(target, handcards, objectName(), false, false, false, num - n)) {
+                        target->setFlags("-IkQingguoUse");
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+            // give the rest cards randomly
+            if (target->getMark(objectName()) < num && !target->isKongcheng()) {
+                int rest_num = num - target->getMark(objectName());
+                forever {
+                    QList<int> handcard_list = target->handCards();
+                    qShuffle(handcard_list);
+                    int give = qrand() % rest_num + 1;
+                    rest_num -= give;
+                    QList<int> to_give = handcard_list.length() < give ? handcard_list : handcard_list.mid(0, give);
+                    ServerPlayer *receiver = room->getOtherPlayers(target).at(qrand() % (target->aliveCount() - 1));
+                    DummyCard *dummy = new DummyCard(to_give);
+                    room->obtainCard(receiver, dummy, false);
+                    delete dummy;
+                    if (rest_num == 0 || target->isKongcheng())
+                        break;
+                }
+            }
+        }
+        return false;
+    }
+};
+
+class IkJingshi: public TriggerSkill {
+public:
+    IkJingshi(): TriggerSkill("ikjingshi") {
+        events << TargetConfirmed;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.to.contains(player) && use.from != player) {
+                if (use.card->isKindOf("Slash") || use.card->isNDTrick())
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (room->askForSkillInvoke(player, objectName(), data)) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->loseHp(player);
+        CardUseStruct use = data.value<CardUseStruct>();
+        use.nullified_list << player->objectName();
+        data = QVariant::fromValue(use);
+        if (player->isAlive()) {
+            if (player->canDiscard(use.from, "he")) {
+                int id = room->askForCardChosen(player, use.from, "he", objectName(), false, Card::MethodDiscard);
+                room->throwCard(id, use.from, player);
+            }
+        }
+        return false;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -2603,6 +2713,10 @@ IkaiKinPackage::IkaiKinPackage()
     General *bloom027 = new General(this, "bloom027", "hana", 3);
     bloom027->addSkill(new IkBingyan);
     bloom027->addSkill(new IkXuelian);
+
+    General *bloom031 = new General(this, "bloom031", "hana", 3, false);
+    bloom031->addSkill(new IkQingguo);
+    bloom031->addSkill(new IkJingshi);
 
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();

@@ -624,8 +624,8 @@ OLPackage::OLPackage()
     ol_madai->addSkill("ikqiansha");
 
     General *ol_wangyi = new General(this, "ol_wangyi", "wei", 3, false, true);
-    ol_wangyi->addSkill("zhenlie");
-    ol_wangyi->addSkill("miji");
+    ol_wangyi->addSkill("ikjingshi");
+    ol_wangyi->addSkill("ikqingguo");
 
     addMetaObject<QingyiCard>();
 }

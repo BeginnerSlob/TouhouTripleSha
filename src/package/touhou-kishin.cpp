@@ -81,6 +81,7 @@ public:
         player->tag.remove("ThFeimanTarget");
         if (target) {
             room->damage(DamageStruct(objectName(), player, target));
+            if (target->isDead()) return false;
             QList<ServerPlayer *> victims;
             foreach (ServerPlayer *p, room->getOtherPlayers(target))
                 if (target->inMyAttackRange(p))
