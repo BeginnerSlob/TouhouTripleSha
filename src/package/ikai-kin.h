@@ -117,4 +117,16 @@ public:
     virtual const Card *validate(CardUseStruct &card_use) const;
 };
 
+class IkXingshi: public MasochismSkill {
+    Q_OBJECT
+
+public:
+    IkXingshi();
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const;
+    virtual void onDamaged(ServerPlayer *target, const DamageStruct &damage) const;
+
+protected:
+    int total_point;
+};
+
 #endif // IKAIKIN_H
