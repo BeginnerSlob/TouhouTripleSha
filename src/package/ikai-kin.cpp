@@ -2235,6 +2235,100 @@ public:
     }
 };
 
+IkXingshi::IkXingshi(): MasochismSkill("ikxingshi") {
+    frequency = Frequent;
+    total_point = 13;
+}
+
+bool IkXingshi::cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    if (player->askForSkillInvoke(objectName())) {
+        room->broadcastSkillInvoke(objectName());
+        return true;
+    }
+    return false;
+}
+
+void IkXingshi::onDamaged(ServerPlayer *target, const DamageStruct &damage) const{
+    Room *room = target->getRoom();
+
+    QList<int> card_ids = room->getNCards(4);
+    room->fillAG(card_ids);
+
+    QList<int> to_get, to_throw;
+    while (true) {
+        int sum = 0;
+        foreach (int id, to_get)
+            sum += Sanguosha->getCard(id)->getNumber();
+        foreach (int id, card_ids) {
+            if (sum + Sanguosha->getCard(id)->getNumber() > total_point) {
+                room->takeAG(NULL, id, false);
+                card_ids.removeOne(id);
+                to_throw << id;
+            }
+        }
+        if (card_ids.isEmpty()) break;
+
+        int card_id = room->askForAG(target, card_ids, card_ids.length() < 4, objectName());
+        if (card_id == -1) break;
+        card_ids.removeOne(card_id);
+        to_get << card_id;
+        room->takeAG(target, card_id, false);
+        if (card_ids.isEmpty()) break;
+    }
+    DummyCard *dummy = new DummyCard;
+    if (!to_get.isEmpty()) {
+        dummy->addSubcards(to_get);
+        target->obtainCard(dummy);
+    }
+    dummy->clearSubcards();
+    if (!to_throw.isEmpty() || !card_ids.isEmpty()) {
+        dummy->addSubcards(to_throw + card_ids);
+        CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, target->objectName(), objectName(), QString());
+        room->throwCard(dummy, reason, NULL);
+    }
+    delete dummy;
+
+    room->clearAG();
+}
+
+class IkShouyan: public TriggerSkill {
+public:
+    IkShouyan(): TriggerSkill("ikshouyan") {
+        events << DamageInflicted;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        DamageStruct damage = data.value<DamageStruct>();
+        if (player->getHp() == 1) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p == player) continue;
+                if (p->canDiscard(p, "he"))
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *p) const{
+        if (room->askForCard(p, ".Equip", "@ikshouyan-card:" + player->objectName(), data, objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *p) const{
+        p->turnOver();
+        LogMessage log;
+        log.type = "#IkShouyan";
+        log.from = player;
+        log.arg = objectName();
+        room->sendLog(log);
+        return true;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -2338,6 +2432,10 @@ IkaiKinPackage::IkaiKinPackage()
     General *bloom022 = new General(this, "bloom022", "hana", 3, false);
     bloom022->addSkill(new IkLundao);
     bloom022->addSkill(new IkXuanwu);
+
+    General *bloom025 = new General(this, "bloom025", "hana", 3);
+    bloom025->addSkill(new IkXingshi);
+    bloom025->addSkill(new IkShouyan);
 
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();

@@ -58,16 +58,4 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-#include "skill.h"
-class Chengxiang: public MasochismSkill {
-    Q_OBJECT
-
-public:
-    Chengxiang();
-    virtual void onDamaged(ServerPlayer *target, const DamageStruct &damage) const;
-
-protected:
-    int total_point;
-};
-
 #endif

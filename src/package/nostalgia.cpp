@@ -426,9 +426,9 @@ public:
     }
 };
 
-class NosChengxiang: public Chengxiang {
+class NosChengxiang: public IkXingshi {
 public:
-    NosChengxiang(): Chengxiang() {
+    NosChengxiang(): IkXingshi() {
         setObjectName("noschengxiang");
         total_point = 12;
     }
