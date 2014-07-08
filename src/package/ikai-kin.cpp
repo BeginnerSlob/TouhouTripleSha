@@ -1721,6 +1721,86 @@ public:
     }
 };
 
+class IkZhuyan: public TriggerSkill {
+public:
+    IkZhuyan(): TriggerSkill("ikzhuyan") {
+        events << SlashEffected;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player) && player->getArmor() == NULL) {
+            SlashEffectStruct effect = data.value<SlashEffectStruct>();
+            if (effect.slash->isBlack() && effect.nature == DamageStruct::Normal)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->broadcastSkillInvoke(objectName());
+        room->notifySkillInvoked(player, objectName());
+
+        SlashEffectStruct effect = data.value<SlashEffectStruct>();
+        LogMessage log;
+        log.type = "#SkillNullify";
+        log.from = player;
+        log.arg = objectName();
+        log.arg2 = effect.slash->objectName();
+        room->sendLog(log);
+
+        return true;
+    }
+};
+
+class IkPiaohu: public TriggerSkill {
+public:
+    IkPiaohu(): TriggerSkill("ikpiaohu") {
+        events << TargetConfirming;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        CardUseStruct use = data.value<CardUseStruct>();
+
+        if (use.card->isKindOf("Slash") && use.to.contains(player))
+            foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
+                if (owner == player || owner == use.from) continue;
+                skill_list.insert(owner, QStringList(objectName()));
+            }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        if (!room->askForCard(ask_who, "Armor", "@ikpiaohu", data, objectName())) {
+            QList<ServerPlayer *> p_list;
+            p_list << player << ask_who;
+            room->sortByActionOrder(p_list);
+            foreach (ServerPlayer *p, p_list)
+                if (!p->isChained()) {
+                    p->setChained(true);
+                    room->broadcastProperty(p, "chained");
+                    room->setEmotion(p, "chain");
+                    room->getThread()->trigger(ChainStateChanged, room, p);
+                }
+        }
+        CardUseStruct use = data.value<CardUseStruct>();
+        use.to.removeOne(player);
+        use.to.append(ask_who);
+        room->sortByActionOrder(use.to);
+        data = QVariant::fromValue(use);
+        return false;
+    }
+};
+
 class IkLundao: public TriggerSkill {
 public:
     IkLundao(): TriggerSkill("iklundao") {
@@ -1863,6 +1943,10 @@ IkaiKinPackage::IkaiKinPackage()
     General *bloom016 = new General(this, "bloom016", "hana", 3);
     bloom016->addSkill(new IkShihua);
     bloom016->addSkill(new IkJiushi);
+
+    General *bloom017 = new General(this, "bloom017", "hana");
+    bloom017->addSkill(new IkZhuyan);
+    bloom017->addSkill(new IkPiaohu);
 
     General *bloom022 = new General(this, "bloom022", "hana", 3, false);
     bloom022->addSkill(new IkLundao);
