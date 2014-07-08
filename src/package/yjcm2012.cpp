@@ -101,58 +101,6 @@ public:
     }
 };
 
-class Jiangchi: public DrawCardsSkill {
-public:
-    Jiangchi(): DrawCardsSkill("jiangchi") {
-    }
-
-    virtual int getDrawNum(ServerPlayer *caozhang, int n) const{
-        Room *room = caozhang->getRoom();
-        QString choice = room->askForChoice(caozhang, objectName(), "jiang+chi+cancel");
-        if (choice == "cancel")
-            return n;
-
-        room->notifySkillInvoked(caozhang, objectName());
-        LogMessage log;
-        log.from = caozhang;
-        log.arg = objectName();
-        if (choice == "jiang") {
-            log.type = "#Jiangchi1";
-            room->sendLog(log);
-            room->broadcastSkillInvoke(objectName(), 1);
-            room->setPlayerCardLimitation(caozhang, "use,response", "Slash", true);
-            return n + 1;
-        } else {
-            log.type = "#Jiangchi2";
-            room->sendLog(log);
-            room->broadcastSkillInvoke(objectName(), 2);
-            room->setPlayerFlag(caozhang, "JiangchiInvoke");
-            return n - 1;
-        }
-    }
-};
-
-class JiangchiTargetMod: public TargetModSkill {
-public:
-    JiangchiTargetMod(): TargetModSkill("#jiangchi-target") {
-        frequency = NotFrequent;
-    }
-
-    virtual int getResidueNum(const Player *from, const Card *) const{
-        if (from->hasFlag("JiangchiInvoke"))
-            return 1;
-        else
-            return 0;
-    }
-
-    virtual int getDistanceLimit(const Player *from, const Card *) const{
-        if (from->hasFlag("JiangchiInvoke"))
-            return 1000;
-        else
-            return 0;
-    }
-};
-
 class Zishou: public DrawCardsSkill {
 public:
     Zishou(): DrawCardsSkill("zishou") {
@@ -593,11 +541,6 @@ YJCM2012Package::YJCM2012Package()
     General *bulianshi = new General(this, "bulianshi", "wu", 3, false); // YJ 101
     bulianshi->addSkill(new Anxu);
     bulianshi->addSkill(new Zhuiyi);
-
-    General *caozhang = new General(this, "caozhang", "wei"); // YJ 102
-    caozhang->addSkill(new Jiangchi);
-    caozhang->addSkill(new JiangchiTargetMod);
-    related_skills.insertMulti("jiangchi", "#jiangchi-target");
 
     General *chengpu = new General(this, "chengpu", "wu"); // YJ 103
     chengpu->addSkill(new Lihuo);

@@ -2112,6 +2112,62 @@ public:
     }
 };
 
+class IkGuanchong: public DrawCardsSkill {
+public:
+    IkGuanchong(): DrawCardsSkill("ikguanchong") {
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual int getDrawNum(ServerPlayer *caozhang, int n) const{
+        Room *room = caozhang->getRoom();
+        QString choice = room->askForChoice(caozhang, objectName(), "guan+chong");
+        LogMessage log;
+        log.from = caozhang;
+        log.arg = objectName();
+        if (choice == "guan") {
+            log.type = "#IkGuanchong1";
+            room->sendLog(log);
+            room->broadcastSkillInvoke(objectName(), 1);
+            room->setPlayerCardLimitation(caozhang, "use,response", "Slash", true);
+            return n + 1;
+        } else {
+            log.type = "#IkGuanchong2";
+            room->sendLog(log);
+            room->broadcastSkillInvoke(objectName(), 2);
+            room->setPlayerFlag(caozhang, "IkGuanchongInvoke");
+            return n - 1;
+        }
+    }
+};
+
+class IkGuanchongTargetMod: public TargetModSkill {
+public:
+    IkGuanchongTargetMod(): TargetModSkill("#ikguanchong-target") {
+        frequency = NotFrequent;
+    }
+
+    virtual int getResidueNum(const Player *from, const Card *) const{
+        if (from->hasFlag("IkGuanchongInvoke"))
+            return 1;
+        else
+            return 0;
+    }
+
+    virtual int getDistanceLimit(const Player *from, const Card *) const{
+        if (from->hasFlag("IkGuanchongInvoke"))
+            return 1000;
+        else
+            return 0;
+    }
+};
+
 class IkLundao: public TriggerSkill {
 public:
     IkLundao(): TriggerSkill("iklundao") {
@@ -2273,6 +2329,11 @@ IkaiKinPackage::IkaiKinPackage()
     General *bloom020 = new General(this, "bloom020", "hana", 3);
     bloom020->addSkill(new IkMice);
     bloom020->addSkill(new IkZhiyu);
+
+    General *bloom021 = new General(this, "bloom021", "hana");
+    bloom021->addSkill(new IkGuanchong);
+    bloom021->addSkill(new IkGuanchongTargetMod);
+    related_skills.insertMulti("ikguanchong", "#ikguanchong-target");
 
     General *bloom022 = new General(this, "bloom022", "hana", 3, false);
     bloom022->addSkill(new IkLundao);
