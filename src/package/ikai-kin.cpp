@@ -2639,7 +2639,7 @@ public:
             CardsMoveStruct move(ids, ask_who, Player::PlaceTable,
                                  CardMoveReason(CardMoveReason::S_REASON_TURNOVER, ask_who->objectName(), objectName(), QString()));
             room->moveCardsAtomic(move, true);
-            p->addToPile(objectName(), ids);
+            ask_who->addToPile(objectName(), ids);
         } else {
             room->fillAG(ask_who->getPile(objectName()), ask_who);
             int id = room->askForAG(ask_who, ask_who->getPile(objectName()), false, objectName());
