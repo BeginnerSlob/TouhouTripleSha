@@ -2946,6 +2946,112 @@ public:
     }
 };
 
+class IkYuanfa: public TriggerSkill {
+public:
+    IkYuanfa(): TriggerSkill("ikyuanfa") {
+        events << Dying;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        DyingStruct dying = data.value<DyingStruct>();
+        if (dying.who->isKongcheng() || dying.who->getHp() > 0 || dying.who->isDead()) return QStringList();
+        return QStringList(objectName());
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *wuguotai, QVariant &data, ServerPlayer *) const{
+        DyingStruct dying = data.value<DyingStruct>();
+        ServerPlayer *player = dying.who;
+        const Card *card = NULL;
+        if (player == wuguotai)
+            card = room->askForCardShow(player, wuguotai, objectName());
+        else {
+            int card_id = room->askForCardChosen(wuguotai, player, "h", "ikyuanfa");
+            card = Sanguosha->getCard(card_id);
+        }
+
+        room->showCard(player, card->getEffectiveId());
+
+        if (card->getTypeId() != Card::TypeBasic) {
+            if (!player->isJilei(card))
+                room->throwCard(card, player);
+            room->recover(player, RecoverStruct(wuguotai));
+        }
+        return false;
+    }
+};
+
+IkGuanjuCard::IkGuanjuCard() {
+}
+
+void IkGuanjuCard::swapEquip(ServerPlayer *first, ServerPlayer *second) const{
+    Room *room = first->getRoom();
+
+    QList<int> equips1, equips2;
+    foreach (const Card *equip, first->getEquips())
+        equips1.append(equip->getId());
+    foreach (const Card *equip, second->getEquips())
+        equips2.append(equip->getId());
+
+    QList<CardsMoveStruct> exchangeMove;
+    CardsMoveStruct move1(equips1, second, Player::PlaceEquip,
+                          CardMoveReason(CardMoveReason::S_REASON_SWAP, first->objectName(), second->objectName(), "ikguanju", QString()));
+    CardsMoveStruct move2(equips2, first, Player::PlaceEquip,
+                          CardMoveReason(CardMoveReason::S_REASON_SWAP, second->objectName(), first->objectName(), "ikguanju", QString()));
+    exchangeMove.push_back(move2);
+    exchangeMove.push_back(move1);
+    room->moveCardsAtomic(exchangeMove, false);
+}
+
+bool IkGuanjuCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    return targets.length() == 2;
+}
+
+bool IkGuanjuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    switch (targets.length()) {
+    case 0: return true;
+    case 1: {
+            int n1 = targets.first()->getEquips().length();
+            int n2 = to_select->getEquips().length();
+            return qAbs(n1 - n2) <= Self->getLostHp();
+        }
+    default:
+        return false;
+    }
+}
+
+void IkGuanjuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    LogMessage log;
+    log.type = "#IkGuanjuSwap";
+    log.from = source;
+    log.to = targets;
+    room->sendLog(log);
+
+    swapEquip(targets.first(), targets[1]);
+}
+
+class IkGuanju: public ZeroCardViewAsSkill {
+public:
+    IkGuanju(): ZeroCardViewAsSkill("ikguanju") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkGuanjuCard");
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkGuanjuCard;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -3087,6 +3193,10 @@ IkaiKinPackage::IkaiKinPackage()
     snow016->addSkill(new SlashNoDistanceLimitSkill("ikleilan"));
     related_skills.insertMulti("ikleilan", "#ikleilan-slash-ndl");
 
+    General *snow017 = new General(this, "snow017", "yuki", 3, false);
+    snow017->addSkill(new IkYuanfa);
+    snow017->addSkill(new IkGuanju);
+
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
     addMetaObject<ExtraCollateralCard>();
@@ -3097,6 +3207,7 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkZhuyiCard>();
     addMetaObject<IkMiceCard>();
     addMetaObject<IkBingyanCard>();
+    addMetaObject<IkGuanjuCard>();
 
     skills << new IkXianyuSlashViewAsSkill << new IkZhuyi;
 }
