@@ -361,102 +361,6 @@ public:
     }
 };
 
-GanluCard::GanluCard() {
-}
-
-void GanluCard::swapEquip(ServerPlayer *first, ServerPlayer *second) const{
-    Room *room = first->getRoom();
-
-    QList<int> equips1, equips2;
-    foreach (const Card *equip, first->getEquips())
-        equips1.append(equip->getId());
-    foreach (const Card *equip, second->getEquips())
-        equips2.append(equip->getId());
-
-    QList<CardsMoveStruct> exchangeMove;
-    CardsMoveStruct move1(equips1, second, Player::PlaceEquip,
-                          CardMoveReason(CardMoveReason::S_REASON_SWAP, first->objectName(), second->objectName(), "ganlu", QString()));
-    CardsMoveStruct move2(equips2, first, Player::PlaceEquip,
-                          CardMoveReason(CardMoveReason::S_REASON_SWAP, second->objectName(), first->objectName(), "ganlu", QString()));
-    exchangeMove.push_back(move2);
-    exchangeMove.push_back(move1);
-    room->moveCardsAtomic(exchangeMove, false);
-}
-
-bool GanluCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-    return targets.length() == 2;
-}
-
-bool GanluCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    switch (targets.length()) {
-    case 0: return true;
-    case 1: {
-            int n1 = targets.first()->getEquips().length();
-            int n2 = to_select->getEquips().length();
-            return qAbs(n1 - n2) <= Self->getLostHp();
-        }
-    default:
-        return false;
-    }
-}
-
-void GanluCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    LogMessage log;
-    log.type = "#GanluSwap";
-    log.from = source;
-    log.to = targets;
-    room->sendLog(log);
-
-    swapEquip(targets.first(), targets[1]);
-}
-
-class Ganlu: public ZeroCardViewAsSkill {
-public:
-    Ganlu(): ZeroCardViewAsSkill("ganlu") {
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("GanluCard");
-    }
-
-    virtual const Card *viewAs() const{
-        return new GanluCard;
-    }
-};
-
-class Buyi: public TriggerSkill {
-public:
-    Buyi(): TriggerSkill("buyi") {
-        events << Dying;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *wuguotai, QVariant &data) const{
-        DyingStruct dying = data.value<DyingStruct>();
-        ServerPlayer *player = dying.who;
-        if (player->isKongcheng()) return false;
-        if (player->getHp() < 1 && wuguotai->askForSkillInvoke(objectName(), data)) {
-            const Card *card = NULL;
-            if (player == wuguotai)
-                card = room->askForCardShow(player, wuguotai, objectName());
-            else {
-                int card_id = room->askForCardChosen(wuguotai, player, "h", "buyi");
-                card = Sanguosha->getCard(card_id);
-            }
-
-            room->showCard(player, card->getEffectiveId());
-
-            if (card->getTypeId() != Card::TypeBasic) {
-                if (!player->isJilei(card))
-                    room->throwCard(card, player);
-
-                room->broadcastSkillInvoke(objectName());
-                room->recover(player, RecoverStruct(wuguotai));
-            }
-        }
-        return false;
-    }
-};
-
 YJCMPackage::YJCMPackage()
     : Package("YJCM")
 {
@@ -476,15 +380,10 @@ YJCMPackage::YJCMPackage()
     General *lingtong = new General(this, "lingtong", "wu"); // YJ 005
     lingtong->addSkill(new Xuanfeng);
 
-    General *wuguotai = new General(this, "wuguotai", "wu", 3, false); // YJ 007
-    wuguotai->addSkill(new Ganlu);
-    wuguotai->addSkill(new Buyi);
-
     General *xusheng = new General(this, "xusheng", "wu"); // YJ 008
     xusheng->addSkill(new Pojun);
 
     addMetaObject<MingceCard>();
-    addMetaObject<GanluCard>();
     addMetaObject<XianzhenCard>();
 }
 
