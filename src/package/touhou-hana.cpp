@@ -224,6 +224,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        if (!TriggerSkill::triggerable(player)) return QStringList();
         CardResponseStruct resp = data.value<CardResponseStruct>();
         if (resp.m_card->isKindOf("Jink"))
             return QStringList(objectName());
