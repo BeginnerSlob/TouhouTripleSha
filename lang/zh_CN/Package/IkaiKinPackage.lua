@@ -235,6 +235,7 @@ return {
 	["ikleilan:slash"] = "视为对一名其他角色使用一张具雷电伤害的【杀】",
 	["ikleilan:damage"] = "对距离为1的一名角色造成1点雷电伤害",
 	["ikleilan:draw"] = "摸一张牌，然后弃置一张手牌",
+	["@ikleilan-damage"] = "请选择距离1的一名角色",
 	["@jilei"] = "疾雷",
 
 	["#snow017"] = "返魂的魔女",
