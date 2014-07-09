@@ -2597,6 +2597,70 @@ public:
     }
 };
 
+class IkMuhe: public TriggerSkill {
+public:
+    IkMuhe(): TriggerSkill("ikmuhe") {
+        events << CardResponded << EventPhaseStart << EventPhaseChanging;
+        frequency = Frequent;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (triggerEvent == EventPhaseChanging) {
+            room->setPlayerMark(player, objectName(), 0);
+        } else if (triggerEvent == CardResponded) {
+            CardResponseStruct resp = data.value<CardResponseStruct>();
+            if (resp.m_isUse && resp.m_card->isKindOf("Jink"))
+                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                    if (p == player || (room->getCurrent() == p && p->getPhase() != Player::NotActive))
+                        skill_list.insert(p, QStringList(objectName()));
+            }
+        } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Play) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p == player) continue;
+                if (p->getPile(objectName()).length() > 0)
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        if (ask_who->askForSkillInvoke(objectName(), triggerEvent == CardResponded ? QVariant() : "remove")) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        if (triggerEvent == CardResponded) {
+            QList<int> ids = room->getNCards(1, false);
+            CardsMoveStruct move(ids, ask_who, Player::PlaceTable,
+                                 CardMoveReason(CardMoveReason::S_REASON_TURNOVER, ask_who->objectName(), objectName(), QString()));
+            room->moveCardsAtomic(move, true);
+            p->addToPile(objectName(), ids);
+        } else {
+            room->fillAG(ask_who->getPile(objectName()), ask_who);
+            int id = room->askForAG(ask_who, ask_who->getPile(objectName()), false, objectName());
+            room->clearAG(ask_who);
+            room->throwCard(id, NULL);
+            room->addPlayerMark(player, objectName());
+        }
+        return false;
+    }
+};
+
+class IkMuheTargetMod: public TargetModSkill {
+public:
+    IkMuheTargetMod(): TargetModSkill("#ikmuhe-target") {
+    }
+
+    virtual int getResidueNum(const Player *from, const Card *card) const{
+        return card->isKindOf("Slash") ? -from->getMark("ikmuhe") : 0;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -2717,6 +2781,11 @@ IkaiKinPackage::IkaiKinPackage()
     General *bloom031 = new General(this, "bloom031", "hana", 3, false);
     bloom031->addSkill(new IkQingguo);
     bloom031->addSkill(new IkJingshi);
+
+    General *bloom037 = new General(this, "bloom037", "hana");
+    bloom037->addSkill(new IkMuhe);
+    bloom037->addSkill(new IkMuheTargetMod);
+    related_skills.insertMulti("ikmuhe", "#ikmuhe-target");
 
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
