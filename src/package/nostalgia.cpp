@@ -291,29 +291,6 @@ public:
     }
 };
 
-class NosDanshou: public TriggerSkill {
-public:
-    NosDanshou(): TriggerSkill("nosdanshou") {
-        events << Damage;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (room->askForSkillInvoke(player, objectName(), data)) {
-            player->drawCards(1, objectName());
-            ServerPlayer *current = room->getCurrent();
-            if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
-                room->broadcastSkillInvoke("danshou");
-                LogMessage log;
-                log.type = "#SkipAllPhase";
-                log.from = current;
-                room->sendLog(log);
-            }
-            throw TurnBroken;
-        }
-        return false;
-    }
-};
-
 class NosJuece: public TriggerSkill {
 public:
     NosJuece(): TriggerSkill("nosjuece") {
@@ -1503,9 +1480,6 @@ NostalYJCM2013Package::NostalYJCM2013Package()
     nos_liru->addSkill(new NosFencheng);
     related_skills.insertMulti("nosmieji", "#nosmieji");
     related_skills.insertMulti("nosmieji", "#nosmieji-effect");
-
-    General *nos_zhuran = new General(this, "nos_zhuran", "wu");
-    nos_zhuran->addSkill(new NosDanshou);
 
     addMetaObject<NosRenxinCard>();
     addMetaObject<NosFenchengCard>();
