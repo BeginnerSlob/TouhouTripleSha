@@ -6,55 +6,6 @@
 #include "engine.h"
 #include "maneuvering.h"
 
-class Duodao: public MasochismSkill {
-public:
-    Duodao(): MasochismSkill("duodao") {
-    }
-
-    virtual void onDamaged(ServerPlayer *target, const DamageStruct &damage) const{
-        if (!damage.card || !damage.card->isKindOf("Slash") || !target->canDiscard(target, "he"))
-            return;
-        QVariant data = QVariant::fromValue(damage);
-        Room *room = target->getRoom();
-        if (room->askForCard(target, "..", "@duodao-get", data, objectName())) {
-            if (damage.from && damage.from->getWeapon()) {
-                room->broadcastSkillInvoke(objectName());
-                target->obtainCard(damage.from->getWeapon());
-            }
-        }
-    }
-};
-
-class Anjian: public TriggerSkill {
-public:
-    Anjian(): TriggerSkill("anjian") {
-        events << DamageCaused;
-        frequency = Compulsory;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
-        DamageStruct damage = data.value<DamageStruct>();
-        if (damage.chain || damage.transfer || !damage.by_user) return false;
-        if (damage.from && !damage.to->inMyAttackRange(damage.from)
-            && damage.card && damage.card->isKindOf("Slash")) {
-            room->broadcastSkillInvoke(objectName());
-            room->notifySkillInvoked(damage.from, objectName());
-
-            LogMessage log;
-            log.type = "#AnjianBuff";
-            log.from = damage.from;
-            log.to << damage.to;
-            log.arg = QString::number(damage.damage);
-            log.arg2 = QString::number(++damage.damage);
-            room->sendLog(log);
-
-            data = QVariant::fromValue(damage);
-        }
-
-        return false;
-    }
-};
-
 ZongxuanCard::ZongxuanCard() {
     will_throw = false;
     handling_method = Card::MethodNone;
@@ -553,10 +504,6 @@ YJCM2013Package::YJCM2013Package()
     liru->addSkill(new Fencheng);
     liru->addSkill(new FenchengMark);
     related_skills.insertMulti("fencheng", "#fencheng");
-
-    General *panzhangmazhong = new General(this, "panzhangmazhong", "wu"); // YJ 209
-    panzhangmazhong->addSkill(new Duodao);
-    panzhangmazhong->addSkill(new Anjian);
 
     General *yufan = new General(this, "yufan", "wu", 3); // YJ 210
     yufan->addSkill(new Zongxuan);

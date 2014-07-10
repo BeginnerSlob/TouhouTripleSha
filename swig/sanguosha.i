@@ -959,7 +959,7 @@ extern Engine *Sanguosha;
 
 class Skill: public QObject {
 public:
-    enum Frequency { Frequent, NotFrequent, Compulsory, Limited, Wake };
+    enum Frequency { Frequent, NotFrequent, Compulsory, NotCompulsory, Limited, Wake };
 
     explicit Skill(const char *name, Frequency frequent = NotFrequent);
     bool isLordSkill() const;
