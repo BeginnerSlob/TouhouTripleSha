@@ -11,15 +11,6 @@ public:
     YJCM2013Package();
 };
 
-class ZongxuanCard: public SkillCard {
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE ZongxuanCard();
-
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-};
-
 class MiejiCard: public SkillCard {
     Q_OBJECT
 
