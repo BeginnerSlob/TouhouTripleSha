@@ -4084,6 +4084,76 @@ public:
     }
 };
 
+IkYoudanCard::IkYoudanCard() {
+}
+
+bool IkYoudanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (!targets.isEmpty())
+        return false;
+
+    if (Self->getWeapon() && subcards.contains(Self->getWeapon()->getId())) {
+        const Weapon *weapon = qobject_cast<const Weapon *>(Self->getWeapon()->getRealCard());
+        int distance_fix = weapon->getRange() - Self->getAttackRange(false);
+        if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
+            distance_fix += 1;
+        return Self->inMyAttackRange(to_select, distance_fix);
+    } else if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId())) {
+        return Self->inMyAttackRange(to_select, 1);
+    } else
+        return Self->inMyAttackRange(to_select);
+}
+
+void IkYoudanCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    int len = subcardsLength();
+    switch (len) {
+    case 0:
+            Q_ASSERT(false);
+            break;
+    case 1:
+            if (effect.from->canDiscard(effect.to, "he")) {
+                int id = room->askForCardChosen(effect.from, effect.to, "he", "ikyoudan", false, Card::MethodDiscard);
+                room->throwCard(id, effect.to, effect.from);
+            }
+            break;
+    case 2:
+            if (!effect.to->isNude()) {
+                const Card *card = room->askForCard(effect.to, "..!", "@ikyoudan-give" + effect.from->objectName(), QVariant(), MethodNone);
+                if (!card) {
+                    QList<const Card *> cards = effect.to->getCards("he");
+                    card = cards.at(qrand() % cards.length());
+                }
+                CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.to->objectName(), effect.from->objectName(), "ikyoudan", QString());
+                room->obtainCard(effect.from, card, reason, false);
+            }
+            break;
+    case 3:
+            room->damage(DamageStruct("ikyoudan", effect.from, effect.to));
+            break;
+    default:
+            room->drawCards(effect.from, 2, "ikyoudan");
+            room->drawCards(effect.to, 2, "ikyoudan");
+            break;
+    }
+}
+
+class IkYoudan: public ViewAsSkill {
+public:
+    IkYoudan(): ViewAsSkill("ikyoudan") {
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        return !Self->isJilei(to_select) && selected.length() <= Self->usedTimes("IkYoudanCard");
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.length() != Self->usedTimes("IkYoudanCard") + 1) return NULL;
+        IkYoudanCard *youdan = new IkYoudanCard;
+        youdan->addSubcards(cards);
+        return youdan;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -4276,6 +4346,9 @@ IkaiKinPackage::IkaiKinPackage()
     snow039->addSkill(new IkShenxing);
     snow039->addSkill(new IkXiangzhao);
 
+    General *snow041 = new General(this, "snow041", "yuki");
+    snow041->addSkill(new IkYoudan);
+
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
     addMetaObject<ExtraCollateralCard>();
@@ -4295,6 +4368,7 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkZongxuanCard>();
     addMetaObject<IkShenxingCard>();
     addMetaObject<IkXiangzhaoCard>();
+    addMetaObject<IkYoudanCard>();
 
     skills << new IkXianyuSlashViewAsSkill << new IkZhuyi;
 }
