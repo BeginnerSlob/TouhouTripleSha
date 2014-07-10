@@ -149,4 +149,22 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class IkXiaozuiCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkXiaozuiCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class IkXiaozuiPeachCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkXiaozuiPeachCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 #endif // IKAIKIN_H

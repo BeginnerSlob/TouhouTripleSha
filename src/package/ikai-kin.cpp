@@ -3087,6 +3087,183 @@ public:
     }
 };
 
+class IkLingpao: public OneCardViewAsSkill {
+public:
+    IkLingpao(): OneCardViewAsSkill("iklingpao") {
+        filter_pattern = "%slash";
+        response_or_use = true;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return Slash::IsAvailable(player);
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
+        return Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE
+               && pattern == "slash";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        Card *acard = new FireSlash(originalCard->getSuit(), originalCard->getNumber());
+        acard->addSubcard(originalCard->getId());
+        acard->setSkillName(objectName());
+        return acard;
+    }
+};
+
+class IkLingpaoTrigger: public TriggerSkill {
+public:
+    IkLingpaoTrigger(): TriggerSkill("#iklingpao") {
+        events << PreDamageDone << CardFinished;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == PreDamageDone) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card && damage.card->isKindOf("Slash") && damage.card->getSkillName() == objectName()) {
+                QVariantList slash_list = damage.from->tag["InvokeIkLingpao"].toList();
+                slash_list << QVariant::fromValue(damage.card);
+                damage.from->tag["InvokeIkLingpao"] = QVariant::fromValue(slash_list);
+            }
+        } else if (!player->hasFlag("Global_ProcessBroken")) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (!use.card->isKindOf("Slash"))
+                return QStringList();
+
+            QVariantList slash_list = use.from->tag["InvokeIkLingpao"].toList();
+            foreach (QVariant card, slash_list)
+                if (card.value<const Card *>() == use.card)
+                    return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        QVariantList slash_list = player->tag["InvokeIkLingpao"].toList();
+        foreach (QVariant card, slash_list) {
+            if (card.value<const Card *>() == use.card) {
+                slash_list.removeOne(card);
+                player->tag["InvokeIkLingpao"] = QVariant::fromValue(slash_list);
+                break;
+            }
+        }
+
+        LogMessage log;
+        log.type = "#TriggerSkill";
+        log.from = player;
+        log.arg = objectName();
+        room->sendLog(log);
+
+        room->loseHp(player, 1);
+        return false;
+    }
+};
+
+class IkLingpaoTargetMod: public TargetModSkill {
+public:
+    IkLingpaoTargetMod(): TargetModSkill("#iklingpao-target") {
+        pattern = "FireSlash";
+    }
+
+    virtual int getExtraTargetNum(const Player *from, const Card *card) const{
+        if (from->hasSkill("iklingpao"))
+            return 1;
+        else
+            return 0;
+    }
+};
+
+IkXiaozuiCard::IkXiaozuiCard() {
+    will_throw = false;
+    target_fixed = true;
+    handling_method = Card::MethodNone;
+}
+
+void IkXiaozuiCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    source->addToPile("ikxiaozuipile", this);
+}
+
+IkXiaozuiPeachCard::IkXiaozuiPeachCard() {
+    m_skillName = "ikxiaozui";
+    mute = true;
+    target_fixed = true;
+    will_throw = false;
+}
+
+void IkXiaozuiPeachCard::use(Room *room, ServerPlayer *chengpu, QList<ServerPlayer *> &) const{
+    ServerPlayer *who = room->getCurrentDyingPlayer();
+    if (!who) return;
+
+    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "ikxiaozui", QString());
+    room->throwCard(this, reason, NULL);
+    Peach *peach = new Peach(Card::NoSuit, 0);
+    peach->setSkillName("_ikxiaozui");
+    room->useCard(CardUseStruct(peach, who, who, false));
+}
+
+class IkXiaozuiViewAsSkill: public ViewAsSkill {
+public:
+    IkXiaozuiViewAsSkill(): ViewAsSkill("ikxiaozui") {
+        expand_pile = "ikxiaozuipile";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *) const{
+        return false;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+        return pattern == "@@ikxiaozui"
+               || (pattern.contains("peach") && !player->getPile("ikxiaozuipile").isEmpty());
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &cards, const Card *to_select) const{
+        QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+        if (pattern == "@@ikxiaozui")
+            return to_select->isKindOf("Slash");
+        else
+            return cards.isEmpty() && Self->getPile("ikxiaozuipile").contains(to_select->getEffectiveId());
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+        if (pattern == "@@ikxiaozui") {
+            if (cards.length() == 0) return NULL;
+
+            Card *acard = new IkXiaozuiCard;
+            acard->addSubcards(cards);
+            acard->setSkillName(objectName());
+            return acard;
+        } else {
+            if (cards.length() != 1) return NULL;
+
+            Card *acard = new IkXiaozuiPeachCard;
+            acard->addSubcards(cards);
+            return acard;
+        }
+    }
+};
+
+class IkXiaozui: public TriggerSkill {
+public:
+    IkXiaozui(): TriggerSkill("ikxiaozui") {
+        events << EventPhaseStart;
+        view_as_skill = new IkXiaozuiViewAsSkill;
+    }
+
+    virtual bool triggerable(const ServerPlayer *player) const{
+        return TriggerSkill::triggerable(player)
+            && player->getPhase() == Player::Finish
+            && !player->isKongcheng()
+            && player->getPile("ikxiaozuipile").isEmpty();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *chengpu, QVariant &data, ServerPlayer *) const{
+        room->askForUseCard(chengpu, "@@ikxiaozui", "@ikxiaozui", -1, Card::MethodNone);
+        return false;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -3235,6 +3412,14 @@ IkaiKinPackage::IkaiKinPackage()
     General *snow018 = new General(this, "snow018", "yuki");
     snow018->addSkill(new IkZhongqu);
 
+    General *snow019 = new General(this, "snow019", "yuki");
+    snow019->addSkill(new IkLingpao);
+    snow019->addSkill(new IkLingpaoTrigger);
+    snow019->addSkill(new IkLingpaoTargetMod);
+    related_skills.insertMulti("iklingpao", "#iklingpao");
+    related_skills.insertMulti("iklingpao", "#iklingpao-target");
+    snow019->addSkill(new IkXiaozui);
+
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
     addMetaObject<ExtraCollateralCard>();
@@ -3246,6 +3431,8 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkMiceCard>();
     addMetaObject<IkBingyanCard>();
     addMetaObject<IkGuanjuCard>();
+    addMetaObject<IkXiaozuiCard>();
+    addMetaObject<IkXiaozuiPeachCard>();
 
     skills << new IkXianyuSlashViewAsSkill << new IkZhuyi;
 }
