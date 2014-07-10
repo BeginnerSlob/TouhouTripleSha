@@ -77,26 +77,6 @@ public:
     }
 };
 
-class Pojun: public TriggerSkill {
-public:
-    Pojun(): TriggerSkill("pojun") {
-        events << Damage;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        DamageStruct damage = data.value<DamageStruct>();
-        if (damage.card && damage.card->isKindOf("Slash") && !damage.chain && !damage.transfer
-            && damage.to->isAlive() && !damage.to->hasFlag("Global_DebutFlag")
-            && room->askForSkillInvoke(player, objectName(), data)) {
-            int x = qMin(5, damage.to->getHp());
-            room->broadcastSkillInvoke(objectName(), (x >= 3 || !damage.to->faceUp()) ? 2 : 1);
-            damage.to->drawCards(x, objectName());
-            damage.to->turnOver();
-        }
-        return false;
-    }
-};
-
 XianzhenCard::XianzhenCard() {
 }
 
@@ -379,9 +359,6 @@ YJCMPackage::YJCMPackage()
 
     General *lingtong = new General(this, "lingtong", "wu"); // YJ 005
     lingtong->addSkill(new Xuanfeng);
-
-    General *xusheng = new General(this, "xusheng", "wu"); // YJ 008
-    xusheng->addSkill(new Pojun);
 
     addMetaObject<MingceCard>();
     addMetaObject<XianzhenCard>();
