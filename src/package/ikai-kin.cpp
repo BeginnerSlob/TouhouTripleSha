@@ -4201,7 +4201,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *gaoshun, QVariant &data, ServerPlayer* &) const{
-        if (!gaoshun || !target->tag["IkLvdongTarget"].value<ServerPlayer *>()) return QStringList();
+        if (!gaoshun || !gaoshun->tag["IkLvdongTarget"].value<ServerPlayer *>()) return QStringList();
         if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to != Player::NotActive)
@@ -4247,6 +4247,164 @@ public:
         WrappedCard *card = Sanguosha->getWrappedCard(originalCard->getId());
         card->takeOver(slash);
         return card;
+    }
+};
+
+IkMingceCard::IkMingceCard() {
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+void IkMingceCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.to->getRoom();
+    QList<ServerPlayer *> targets;
+    if (Slash::IsAvailable(effect.to)) {
+        foreach (ServerPlayer *p, room->getOtherPlayers(effect.to)) {
+            if (effect.to->canSlash(p))
+                targets << p;
+        }
+    }
+
+    ServerPlayer *target = NULL;
+    QStringList choicelist;
+    choicelist << "draw";
+    if (!targets.isEmpty() && effect.from->isAlive()) {
+        target = room->askForPlayerChosen(effect.from, targets, "ikmingce", "@dummy-slash2:" + effect.to->objectName());
+        target->setFlags("IkMingceTarget"); // For AI
+
+        LogMessage log;
+        log.type = "#CollateralSlash";
+        log.from = effect.from;
+        log.to << target;
+        room->sendLog(log);
+
+        choicelist << "use";
+    }
+
+    try {
+        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "ikmingce", QString());
+        room->obtainCard(effect.to, this, reason);
+    }
+    catch (TriggerEvent triggerEvent) {
+        if (triggerEvent == TurnBroken || triggerEvent == StageChange)
+            if (target && target->hasFlag("IkMingceTarget")) target->setFlags("-IkMingceTarget");
+        throw triggerEvent;
+    }
+
+    QString choice = room->askForChoice(effect.to, "ikmingce", choicelist.join("+"));
+    if (target && target->hasFlag("IkMingceTarget")) target->setFlags("-IkMingceTarget");
+
+    if (choice == "use") {
+        if (effect.to->canSlash(target, NULL, false)) {
+            Slash *slash = new Slash(Card::NoSuit, 0);
+            slash->setSkillName("_ikmingce");
+            room->useCard(CardUseStruct(slash, effect.to, target));
+        }
+    } else if (choice == "draw") {
+        effect.to->drawCards(1, "ikmingce");
+    }
+}
+
+class IkMingce: public OneCardViewAsSkill {
+public:
+    IkMingce(): OneCardViewAsSkill("ikmingce") {
+        filter_pattern = "EquipCard,Slash";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkMingceCard");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        IkMingceCard *mingceCard = new IkMingceCard;
+        mingceCard->addSubcard(originalCard);
+
+        return mingceCard;
+    }
+};
+
+class IkZhichi: public TriggerSkill {
+public:
+    IkZhichi(): TriggerSkill("ikzhichi") {
+        events << Damaged;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        if (player->getPhase() != Player::NotActive)
+            return QStringList();
+        ServerPlayer *current = room->getCurrent();
+        if (current && current->isAlive() && current->getPhase() != Player::NotActive)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        room->broadcastSkillInvoke(objectName());
+        room->notifySkillInvoked(player, objectName());
+        if (player->getMark("zhichi_late") == 0)
+            room->addPlayerMark(player, "zhichi_late");
+
+        LogMessage log;
+        log.type = "#IkZhichiDamaged";
+        log.from = player;
+        room->sendLog(log);
+
+        return false;
+    }
+};
+
+class IkZhichiProtect: public TriggerSkill {
+public:
+    IkZhichiProtect(): TriggerSkill("#ikzhichi-protect") {
+        events << CardEffected;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        CardEffectStruct effect = data.value<CardEffectStruct>();
+        if ((effect.card->isKindOf("Slash") || effect.card->isNDTrick()) && player->getMark("zhichi_late") > 0)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->broadcastSkillInvoke("ikzhichi");
+        room->notifySkillInvoked(player, "ikzhichi");
+        LogMessage log;
+        log.type = "#IkZhichiAvoid";
+        log.from = player;
+        log.arg = "ikzhichi";
+        room->sendLog(log);
+
+        return true;
+    }
+};
+
+class IkZhichiClear: public TriggerSkill {
+public:
+    IkZhichiClear(): TriggerSkill("#ikzhichi-clear") {
+        events << EventPhaseChanging << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to != Player::NotActive)
+                return QStringList();
+        } else {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player || player != room->getCurrent())
+                return QStringList();
+        }
+
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
+            if (p->getMark("zhichi_late") > 0)
+                room->setPlayerMark(p, "zhichi_late", 0);
+        }
+
+        return QStringList();
     }
 };
 
@@ -4449,6 +4607,14 @@ IkaiKinPackage::IkaiKinPackage()
     luna010->addSkill(new IkLvdong);
     luna010->addSkill(new IkGuozai);
 
+    General *luna013 = new General(this, "luna013", "tsuki", 3);
+    luna013->addSkill(new IkMingce);
+    luna013->addSkill(new IkZhichi);
+    luna013->addSkill(new IkZhichiProtect);
+    luna013->addSkill(new IkZhichiClear);
+    related_skills.insertMulti("ikzhichi", "#ikzhichi-protect");
+    related_skills.insertMulti("ikzhichi", "#ikzhichi-clear");
+
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
     addMetaObject<ExtraCollateralCard>();
@@ -4470,6 +4636,7 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkXiangzhaoCard>();
     addMetaObject<IkYoudanCard>();
     addMetaObject<IkLvdongCard>();
+    addMetaObject<IkMingceCard>();
 
     skills << new IkXianyuSlashViewAsSkill << new IkZhuyi;
 }

@@ -371,8 +371,9 @@ return {
 	["ikmingce:draw"] = "摸一张牌",
 	["ikzhichi"] = "智迟",
 	[":ikzhichi"] = "锁定技，你的回合外，每当你受到一次伤害后，【杀】或非延时类锦囊牌对你无效，直到回合结束。",
-	["#IkZhichiDamaged"] = "%from 受到了伤害，本回合内【<font color=\"yellow\">杀</font>】或非延时锦囊都将对其无效",
-	["@late"] = "智迟",
+	["#ikzhichi-protect"] = "智迟（无效）",
+	["#IkZhichiDamaged"] = "%from 受到了伤害，本回合内【<font color=\"yellow\"><b>杀</b></font>】和非延时锦囊都将对其无效",
+	["#IkZhichiAvoid"] = "%from 的“%arg”被触发，【<font color=\"yellow\"><b>杀</b></font>】和非延时锦囊对其无效",
 
 	["#luna015"] = "原野日和之春",
 	["luna015"] = "小牧爱佳",--月 - 空 - 4血
