@@ -3355,6 +3355,96 @@ public:
     }
 };
 
+class IkJieyou: public TriggerSkill {
+public:
+    IkJieyou(): TriggerSkill("ikjieyou") {
+        events << Dying;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *handang, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(handang)) return QStringList();
+        ServerPlayer *current = room->getCurrent();
+        if (!current || current->isDead() || current->getPhase() == Player::NotActive) return QStringList();
+        DyingStruct dying = data.value<DyingStruct>();
+        if (dying.who->isDead() || dying.who->getHp() > 0)
+            return QStringList();
+        return QStringList(objectName());
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *handang, QVariant &data, ServerPlayer *) const{
+        DyingStruct dying = data.value<DyingStruct>();
+        handang->setFlags("IkJieyouUsed");
+        room->setTag("IkJieyouTarget", QVariant::fromValue(dying.who));
+        bool use_slash = room->askForUseSlashTo(handang, room->getCurrent(), "ikjieyou-slash", false);
+        if (!use_slash) {
+            handang->setFlags("-IkJieyouUsed");
+            room->removeTag("IkJieyouTarget");
+        }
+        return use_slash;
+    }
+};
+
+class IkJieyouTrigger: public TriggerSkill {
+public:
+    IkJieyouTrigger(): TriggerSkill("#ikjieyou") {
+        events << DamageCaused << CardFinished << PreCardUsed;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *handang, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == PreCardUsed) {
+            if (!handang->hasFlag("IkJieyouUsed"))
+                return QStringList();
+
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash")) {
+                handang->setFlags("-IkJieyouUsed");
+                room->setCardFlag(use.card, "ikjieyou-slash");
+            }
+        } else if (triggerEvent == DamageCaused) {
+            ServerPlayer *current = room->getCurrent();
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card && damage.card->isKindOf("Slash") && damage.card->hasFlag("ikjieyou-slash"))
+                return QStringList(objectName());
+        } else if (triggerEvent == CardFinished && !room->getTag("IkJieyouTarget").isNull()) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash") && use.card->hasFlag("ikjieyou-slash")) {
+                room->removeTag("IkJieyouTarget");
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *handang, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        LogMessage log2;
+        log2.type = "#IkJieyouPrevent";
+        log2.from = handang;
+        log2.to << damage.to;
+        room->sendLog(log2);
+
+        ServerPlayer *target = room->getTag("IkJieyouTarget").value<ServerPlayer *>();
+        if (!target) return true;
+        if (target->getHp() > 0) {
+            LogMessage log;
+            log.type = "#IkJieyouNull1";
+            log.from = target;
+            room->sendLog(log);
+        } else if (target->isDead()) {
+            LogMessage log;
+            log.type = "#IkJieyouNull2";
+            log.from = target;
+            log.to << handang;
+            room->sendLog(log);
+        } else {
+            Peach *peach = new Peach(Card::NoSuit, 0);
+            peach->setSkillName("_ikjieyou");
+            room->useCard(CardUseStruct(peach, handang, target));
+        }
+        return true;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -3514,6 +3604,10 @@ IkaiKinPackage::IkaiKinPackage()
     General *snow020 = new General(this, "snow020", "yuki", 3, false);
     snow020->addSkill(new IkAnxu);
     snow020->addSkill(new IkZhuiyi);
+
+    General *snow021 = new General(this, "snow021", "wu");
+    snow021->addSkill("ikxuanren");
+    snow021->addSkill(new IkJieyou);
 
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();

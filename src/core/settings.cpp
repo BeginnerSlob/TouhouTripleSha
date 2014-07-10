@@ -73,7 +73,7 @@ void Settings::init() {
                        << "nostalgia" << "BGM" << "BGMDIY" << "ling"
                        << "hegemony" << "h_formation" << "h_momentum" << "hegemony_sp"
                        << "nostal_standard" << "nostal_general" << "nostal_wind"
-                       << "nostal_yjcm" << "nostal_yjcm2012" << "nostal_yjcm2013"
+                       << "nostal_yjcm" << "nostal_yjcm2013"
                        << "test" << "GreenHand" << "sp_cards" << "GreenHandCard"
                        << "New3v3Card" << "New3v3_2013Card" << "New1v1Card";
     }

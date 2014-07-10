@@ -246,131 +246,6 @@ public:
     }
 };
 
-NosJiefanCard::NosJiefanCard() {
-    target_fixed = true;
-    mute = true;
-}
-
-void NosJiefanCard::use(Room *room, ServerPlayer *handang, QList<ServerPlayer *> &) const{
-    ServerPlayer *current = room->getCurrent();
-    if (!current || current->isDead() || current->getPhase() == Player::NotActive) return;
-    ServerPlayer *who = room->getCurrentDyingPlayer();
-    if (!who) return;
-
-    handang->setFlags("NosJiefanUsed");
-    room->setTag("NosJiefanTarget", QVariant::fromValue(who));
-    bool use_slash = room->askForUseSlashTo(handang, current, "nosjiefan-slash:" + current->objectName(), false);
-    if (!use_slash) {
-        handang->setFlags("-NosJiefanUsed");
-        room->removeTag("NosJiefanTarget");
-        room->setPlayerFlag(handang, "Global_NosJiefanFailed");
-    }
-}
-
-class NosJiefanViewAsSkill: public ZeroCardViewAsSkill {
-public:
-    NosJiefanViewAsSkill(): ZeroCardViewAsSkill("nosjiefan") {
-    }
-
-    virtual bool isEnabledAtPlay(const Player *) const{
-        return false;
-    }
-
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        if (!pattern.contains("peach")) return false;
-        if (player->hasFlag("Global_NosJiefanFailed")) return false;
-        foreach (const Player *p, player->getAliveSiblings()) {
-            if (p->getPhase() != Player::NotActive)
-                return true;
-        }
-        return false;
-    }
-
-    virtual const Card *viewAs() const{
-        return new NosJiefanCard;
-    }
-};
-
-class NosJiefan: public TriggerSkill {
-public:
-    NosJiefan(): TriggerSkill("nosjiefan") {
-        events << DamageCaused << CardFinished << PreCardUsed;
-        view_as_skill = new NosJiefanViewAsSkill;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *handang, QVariant &data) const{
-        if (triggerEvent == PreCardUsed) {
-            if (!handang->hasFlag("NosJiefanUsed"))
-                return false;
-
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("Slash")) {
-                handang->setFlags("-NosJiefanUsed");
-                room->setCardFlag(use.card, "nosjiefan-slash");
-            }
-        } else if (triggerEvent == DamageCaused) {
-            ServerPlayer *current = room->getCurrent();
-            DamageStruct damage = data.value<DamageStruct>();
-            if (damage.card && damage.card->isKindOf("Slash") && damage.card->hasFlag("nosjiefan-slash")) {
-                LogMessage log2;
-                log2.type = "#NosJiefanPrevent";
-                log2.from = handang;
-                log2.to << damage.to;
-                room->sendLog(log2);
-
-                ServerPlayer *target = room->getTag("NosJiefanTarget").value<ServerPlayer *>();
-                if (target && target->getHp() > 0) {
-                    LogMessage log;
-                    log.type = "#NosJiefanNull1";
-                    log.from = target;
-                    room->sendLog(log);
-                } else if (target && target->isDead()) {
-                    LogMessage log;
-                    log.type = "#NosJiefanNull2";
-                    log.from = target;
-                    log.to << handang;
-                    room->sendLog(log);
-                } else if (handang->hasFlag("Global_PreventPeach")) {
-                    LogMessage log;
-                    log.type = "#NosJiefanNull3";
-                    log.from = current;
-                    room->sendLog(log);
-                } else {
-                    Peach *peach = new Peach(Card::NoSuit, 0);
-                    peach->setSkillName("_nosjiefan");
-
-                    room->setCardFlag(damage.card, "nosjiefan_success");
-                    if ((target->getGeneralName().contains("sunquan")
-                         || target->getGeneralName().contains("sunce")
-                         || target->getGeneralName().contains("sunjian"))
-                        && target->isLord())
-                        handang->setFlags("NosJiefanToLord");
-                    room->useCard(CardUseStruct(peach, handang, target));
-                    handang->setFlags("-NosJiefanToLord");
-                }
-                return true;
-            }
-            return false;
-        } else if (triggerEvent == CardFinished && !room->getTag("NosJiefanTarget").isNull()) {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("Slash") && use.card->hasFlag("nosjiefan-slash")) {
-                if (!use.card->hasFlag("nosjiefan_success"))
-                    room->setPlayerFlag(handang, "Global_NosJiefanFailed");
-                room->removeTag("NosJiefanTarget");
-            }
-        }
-
-        return false;
-    }
-
-    virtual int getEffectIndex(const ServerPlayer *player, const Card *) const{
-        if (player->hasFlag("NosJiefanToLord"))
-            return 2;
-        else
-            return 1;
-    }
-};
-
 class NosChengxiang: public IkXingshi {
 public:
     NosChengxiang(): IkXingshi() {
@@ -1607,17 +1482,6 @@ NostalYJCMPackage::NostalYJCMPackage()
     addMetaObject<NosJujianCard>();
 }
 
-NostalYJCM2012Package::NostalYJCM2012Package()
-    : Package("nostal_yjcm2012")
-{
-
-    General *nos_handang = new General(this, "nos_handang", "wu");
-    nos_handang->addSkill("ikxuanren");
-    nos_handang->addSkill(new NosJiefan);
-
-    addMetaObject<NosJiefanCard>();
-}
-
 NostalYJCM2013Package::NostalYJCM2013Package()
     : Package("nostal_yjcm2013")
 {
@@ -1652,5 +1516,4 @@ ADD_PACKAGE(NostalGeneral)
 ADD_PACKAGE(NostalWind)
 ADD_PACKAGE(NostalStandard)
 ADD_PACKAGE(NostalYJCM)
-ADD_PACKAGE(NostalYJCM2012)
 ADD_PACKAGE(NostalYJCM2013)
