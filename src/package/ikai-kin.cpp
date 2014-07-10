@@ -3445,6 +3445,112 @@ public:
     }
 };
 
+class IkQianbian: public TriggerSkill {
+public:
+    IkQianbian(): TriggerSkill("ikqianbian") {
+        events << CardsMoveOneTime;
+    }
+
+    void perform(Room *room, ServerPlayer *lingtong) const{
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *target, room->getOtherPlayers(lingtong)) {
+            if (lingtong->canDiscard(target, "he"))
+                targets << target;
+        }
+        if (targets.isEmpty())
+            return;
+
+        if (lingtong->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+
+            ServerPlayer *first = room->askForPlayerChosen(lingtong, targets, "ikqianbian");
+            ServerPlayer *second = NULL;
+            int first_id = -1;
+            int second_id = -1;
+            if (first != NULL) {
+                first_id = room->askForCardChosen(lingtong, first, "he", "ikqianbian", false, Card::MethodDiscard);
+                room->throwCard(first_id, first, lingtong);
+            }
+            if (!lingtong->isAlive())
+                return;
+            targets.clear();
+            foreach (ServerPlayer *target, room->getOtherPlayers(lingtong)) {
+                if (lingtong->canDiscard(target, "he"))
+                    targets << target;
+            }
+            if (!targets.isEmpty())
+                second = room->askForPlayerChosen(lingtong, targets, "ikqianbian");
+            if (second != NULL) {
+                second_id = room->askForCardChosen(lingtong, second, "he", "ikqianbian", false, Card::MethodDiscard);
+                room->throwCard(second_id, second, lingtong);
+            }
+        }
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *lingtong, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(lingtong)) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from != lingtong)
+                return QStringList();
+            if (move.from_places.contains(Player::PlaceEquip))
+                foreach (ServerPlayer *p, room->getOtherPlayers(lingtong))
+                    if (lingtong->canDiscard(p, "he"))
+                        return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *lingtong, QVariant &data, ServerPlayer *) const{
+        if (lingtong->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *lingtong, QVariant &data, ServerPlayer *) const{
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *target, room->getOtherPlayers(lingtong)) {
+            if (lingtong->canDiscard(target, "he"))
+                targets << target;
+        }
+
+        ServerPlayer *first = room->askForPlayerChosen(lingtong, targets, "ikqianbian");
+        ServerPlayer *second = NULL;
+        const Card *card1 = NULL, *card2 = NULL;
+        int first_id = -1;
+        int second_id = -1;
+        if (first != NULL) {
+            first_id = room->askForCardChosen(lingtong, first, "he", "ikqianbian", false, Card::MethodDiscard);
+            card1 = Sanguosha->getCard(first_id);
+            room->throwCard(first_id, first, lingtong);
+        }
+        if (!lingtong->isAlive())
+            return false;
+        targets.clear();
+        foreach (ServerPlayer *target, room->getOtherPlayers(lingtong)) {
+            if (lingtong->canDiscard(target, "he"))
+                targets << target;
+        }
+        if (!targets.isEmpty())
+            second = room->askForPlayerChosen(lingtong, targets, "ikqianbian");
+        if (second != NULL) {
+            second_id = room->askForCardChosen(lingtong, second, "he", "ikqianbian", false, Card::MethodDiscard);
+            card2 = Sanguosha->getCard(second_id);
+            room->throwCard(second_id, second, lingtong);
+        }
+        
+        int n = 0;
+        if (card1 && card1->isKindOf("BasicCard"))
+            n++;
+        if (card2 && card2->isKindOf("BasicCard"))
+            n++;
+        lingtong->drawCards(n, objectName());
+
+        return false;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -3610,6 +3716,9 @@ IkaiKinPackage::IkaiKinPackage()
     snow021->addSkill(new IkJieyou);
     snow021->addSkill(new IkJieyouTrigger);
     related_skills.insertMulti("ikjieyou", "#ikjieyou");
+
+    General *snow023 = new General(this, "snow023", "yuki");
+    snow023->addSkill(new IkQianbian);
 
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();

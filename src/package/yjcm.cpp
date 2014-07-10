@@ -8,75 +8,6 @@
 #include "ai.h"
 #include "general.h"
 
-class Xuanfeng: public TriggerSkill {
-public:
-    Xuanfeng(): TriggerSkill("xuanfeng") {
-        events << CardsMoveOneTime << EventPhaseEnd << EventPhaseChanging;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    void perform(Room *room, ServerPlayer *lingtong) const{
-        QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *target, room->getOtherPlayers(lingtong)) {
-            if (lingtong->canDiscard(target, "he"))
-                targets << target;
-        }
-        if (targets.isEmpty())
-            return;
-
-        if (lingtong->askForSkillInvoke(objectName())) {
-            room->broadcastSkillInvoke(objectName());
-
-            ServerPlayer *first = room->askForPlayerChosen(lingtong, targets, "xuanfeng");
-            ServerPlayer *second = NULL;
-            int first_id = -1;
-            int second_id = -1;
-            if (first != NULL) {
-                first_id = room->askForCardChosen(lingtong, first, "he", "xuanfeng", false, Card::MethodDiscard);
-                room->throwCard(first_id, first, lingtong);
-            }
-            if (!lingtong->isAlive())
-                return;
-            targets.clear();
-            foreach (ServerPlayer *target, room->getOtherPlayers(lingtong)) {
-                if (lingtong->canDiscard(target, "he"))
-                    targets << target;
-            }
-            if (!targets.isEmpty())
-                second = room->askForPlayerChosen(lingtong, targets, "xuanfeng");
-            if (second != NULL) {
-                second_id = room->askForCardChosen(lingtong, second, "he", "xuanfeng", false, Card::MethodDiscard);
-                room->throwCard(second_id, second, lingtong);
-            }
-        }
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *lingtong, QVariant &data) const{
-        if (triggerEvent == EventPhaseChanging) {
-            lingtong->setMark("xuanfeng", 0);
-        } else if (triggerEvent == CardsMoveOneTime) {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.from != lingtong)
-                return false;
-
-            if (lingtong->getPhase() == Player::Discard
-                && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
-                lingtong->addMark("xuanfeng", move.card_ids.length());
-
-            if (move.from_places.contains(Player::PlaceEquip) && TriggerSkill::triggerable(lingtong))
-                perform(room, lingtong);
-        } else if (triggerEvent == EventPhaseEnd && TriggerSkill::triggerable(lingtong)
-                   && lingtong->getPhase() == Player::Discard && lingtong->getMark("xuanfeng") >= 2) {
-            perform(room, lingtong);
-        }
-
-        return false;
-    }
-};
-
 XianzhenCard::XianzhenCard() {
 }
 
@@ -356,9 +287,6 @@ YJCMPackage::YJCMPackage()
     General *gaoshun = new General(this, "gaoshun", "qun"); // YJ 004
     gaoshun->addSkill(new Xianzhen);
     gaoshun->addSkill(new Jinjiu);
-
-    General *lingtong = new General(this, "lingtong", "wu"); // YJ 005
-    lingtong->addSkill(new Xuanfeng);
 
     addMetaObject<MingceCard>();
     addMetaObject<XianzhenCard>();
