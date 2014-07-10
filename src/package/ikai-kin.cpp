@@ -3666,6 +3666,156 @@ public:
     }
 };
 
+IkZongxuanCard::IkZongxuanCard() {
+    will_throw = false;
+    handling_method = Card::MethodNone;
+    target_fixed = true;
+}
+
+void IkZongxuanCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    QVariantList subcardsList;
+    foreach (int id, subcards)
+        subcardsList << id;
+    source->tag["ikzongxuan"] = QVariant::fromValue(subcardsList);
+}
+
+class IkZongxuanViewAsSkill: public ViewAsSkill {
+public:
+    IkZongxuanViewAsSkill(): ViewAsSkill("ikzongxuan") {
+        response_pattern = "@@ikzongxuan";
+    }
+
+    bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
+        QStringList ikzongxuan = Self->property("ikzongxuan").toString().split("+");
+        foreach (QString id, ikzongxuan) {
+            bool ok;
+            if (id.toInt(&ok) == to_select->getEffectiveId() && ok)
+                return true;
+        }
+        return false;
+    }
+
+    const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.isEmpty()) return NULL;
+
+        IkZongxuanCard *card = new IkZongxuanCard;
+        card->addSubcards(cards);
+        return card;
+    }
+};
+
+class IkZongxuan: public TriggerSkill {
+public:
+    IkZongxuan(): TriggerSkill("ikzongxuan") {
+        events << BeforeCardsMove;
+        view_as_skill = new IkZongxuanViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.from != player)
+            return QStringList();
+        if (move.to_place == Player::DiscardPile
+            && ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)) {
+
+            int i = 0;
+            QList<int> ikzongxuan_card;
+            foreach (int card_id, move.card_ids) {
+                if (room->getCardOwner(card_id) == move.from
+                    && (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip)) {
+                        return QStringList(objectName());
+                }
+                i++;
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        int i = 0;
+        QList<int> ikzongxuan_card;
+        foreach (int card_id, move.card_ids) {
+            if (room->getCardOwner(card_id) == move.from
+                && (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip)) {
+                    ikzongxuan_card << card_id;
+            }
+            i++;
+        }
+
+        room->setPlayerProperty(player, "ikzongxuan", IntList2StringList(ikzongxuan_card).join("+"));
+        do {
+            if (!room->askForUseCard(player, "@@ikzongxuan", "@ikzongxuan-put")) break;
+
+            QList<int> subcards;
+            QVariantList subcards_variant = player->tag["ikzongxuan"].toList();
+            if (!subcards_variant.isEmpty()) {
+                subcards = VariantList2IntList(subcards_variant);
+                QStringList ikzongxuan = player->property("ikzongxuan").toString().split("+");
+                foreach (int id, subcards) {
+                    ikzongxuan_card.removeOne(id);
+                    ikzongxuan.removeOne(QString::number(id));
+                    room->setPlayerProperty(player, "ikzongxuan", ikzongxuan.join("+"));
+                    QList<int> _id;
+                    _id << id;
+                    move.removeCardIds(_id);
+                    data = QVariant::fromValue(move);
+                    room->setPlayerProperty(player, "ikzongxuan_move", QString::number(id)); // For UI to translate the move reason
+                    room->moveCardTo(Sanguosha->getCard(id), player, NULL, Player::DrawPile, move.reason, true);
+                    if (!player->isAlive())
+                        break;
+                }
+            }
+            player->tag.remove("ikzongxuan");
+        } while (!ikzongxuan_card.isEmpty());
+
+        return false;
+    }
+};
+
+class IkZhice: public PhaseChangeSkill {
+public:
+    IkZhice(): PhaseChangeSkill("ikzhice") {
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+            && target->getPhase() == Player::Finish;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        ServerPlayer *to = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "ikzhice-invoke", true, true);
+        if (to) {
+            player->tag["IkZhiceTarget"] = QVariant::fromValue(to);
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *target) const{
+        Room *room = target->getRoom();
+        ServerPlayer *to = target->tag["IkZhiceTarget"].value<ServerPlayer *>();
+        target->tag.remove("IkZhiceTarget");
+        if (to) {
+            QList<int> ids = room->getNCards(1, false);
+            const Card *card = Sanguosha->getCard(ids.first());
+            room->obtainCard(to, card, false);
+            if (!to->isAlive())
+                return false;
+            room->showCard(to, ids.first());
+
+            if (card->isKindOf("EquipCard")) {
+                room->recover(to, RecoverStruct(target));
+                if (to->isAlive() && !to->isCardLimited(card, Card::MethodUse))
+                    room->useCard(CardUseStruct(card, to, to));
+            }
+        }
+        return false;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -3843,6 +3993,10 @@ IkaiKinPackage::IkaiKinPackage()
     snow026->addSkill(new IkDuoren);
     snow026->addSkill(new IkAnju);
 
+    General *snow027 = new General(this, "snow027", "yuki", 3);
+    snow027->addSkill(new IkZongxuan);
+    snow027->addSkill(new IkZhice);
+
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
     addMetaObject<ExtraCollateralCard>();
@@ -3859,6 +4013,7 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkAnxuCard>();
     addMetaObject<IkMengjingCard>();
     addMetaObject<IkZhizhanCard>();
+    addMetaObject<IkZongxuanCard>();
 
     skills << new IkXianyuSlashViewAsSkill << new IkZhuyi;
 }
