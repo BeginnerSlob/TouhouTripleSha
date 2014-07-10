@@ -3365,6 +3365,7 @@ public:
         if (!TriggerSkill::triggerable(handang)) return QStringList();
         ServerPlayer *current = room->getCurrent();
         if (!current || current->isDead() || current->getPhase() == Player::NotActive) return QStringList();
+        if (current == handang || !handang->canSlash(current, false)) return QStringList();
         DyingStruct dying = data.value<DyingStruct>();
         if (dying.who->isDead() || dying.who->getHp() > 0)
             return QStringList();
@@ -3402,7 +3403,6 @@ public:
                 room->setCardFlag(use.card, "ikjieyou-slash");
             }
         } else if (triggerEvent == DamageCaused) {
-            ServerPlayer *current = room->getCurrent();
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.card && damage.card->isKindOf("Slash") && damage.card->hasFlag("ikjieyou-slash"))
                 return QStringList(objectName());
@@ -3415,7 +3415,7 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *handang, QVariant &data, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *handang, QVariant &data, ServerPlayer *) const{
         DamageStruct damage = data.value<DamageStruct>();
         LogMessage log2;
         log2.type = "#IkJieyouPrevent";
@@ -3605,9 +3605,11 @@ IkaiKinPackage::IkaiKinPackage()
     snow020->addSkill(new IkAnxu);
     snow020->addSkill(new IkZhuiyi);
 
-    General *snow021 = new General(this, "snow021", "wu");
+    General *snow021 = new General(this, "snow021", "yuki");
     snow021->addSkill("ikxuanren");
     snow021->addSkill(new IkJieyou);
+    snow021->addSkill(new IkJieyouTrigger);
+    related_skills.insertMulti("ikjieyou", "#ikjieyou");
 
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
