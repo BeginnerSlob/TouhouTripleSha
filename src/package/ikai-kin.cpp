@@ -3845,6 +3845,149 @@ public:
     }
 };
 
+class IkJiaoshi: public TriggerSkill {
+public:
+    IkJiaoshi(): TriggerSkill("ikjiaoshi") {
+        events << TargetSpecifying;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Play || player->hasFlag(objectName()))
+            return QStringList();
+
+        if (use.to.length() == 1 && !use.card->targetFixed()
+            && (use.card->isKindOf("Slash") || (use.card->isNDTrick() && use.card->isBlack()))) {
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (p != player && p != use.to.first()
+                    && !room->isProhibited(player, p, use.card)
+                    && use.card->targetFilter(QList<const Player *>(), p, player))
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            if (p != player && p != use.to.first()
+                && !room->isProhibited(player, p, use.card)
+                && use.card->targetFilter(QList<const Player *>(), p, player))
+                targets << p;
+        }
+        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(),
+                                                        "ikjiaoshi-invoke:" + use.to.first()->objectName(), true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            player->setFlags(objectName());
+            player->tag["IkJiaoshiTarget"] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        ServerPlayer *target = player->tag["IkJiaoshiTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkJiaoshiTarget");
+        if (target) {
+            // Collateral
+            ServerPlayer *collateral_victim = NULL;
+            if (use.card->isKindOf("Collateral")) {
+                QList<ServerPlayer *> victims;
+                foreach (ServerPlayer *p, room->getOtherPlayers(target)) {
+                    if (target->canSlash(p))
+                        victims << p;
+                }
+                Q_ASSERT(!victims.isEmpty());
+                collateral_victim = room->askForPlayerChosen(player, victims, "ikjiaoshi_collateral", "@ikjiaoshi-collateral:" + target->objectName());
+                target->tag["collateralVictim"] = QVariant::fromValue(collateral_victim);
+
+                LogMessage log;
+                log.type = "#CollateralSlash";
+                log.from = player;
+                log.to << collateral_victim;
+                room->sendLog(log);
+            }
+
+            bool extra_target = true;
+            if (!target->isNude()) {
+                const Card *card = room->askForCard(target, "..", "@ikjiaoshi-give:" + player->objectName(), data, Card::MethodNone);
+                if (card) {
+                    extra_target = false;
+                    player->obtainCard(card);
+
+                    if (target->isAlive()) {
+                        LogMessage log;
+                        log.type = "#BecomeUser";
+                        log.from = target;
+                        log.card_str = use.card->toString();
+                        room->sendLog(log);
+
+                        use.from = target;
+                        data = QVariant::fromValue(use);
+                    }
+                }
+            }
+            if (extra_target) {
+                LogMessage log;
+                log.type = "#BecomeTarget";
+                log.from = target;
+                log.card_str = use.card->toString();
+                room->sendLog(log);
+
+                room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), target->objectName());
+                if (use.card->isKindOf("Collateral") && collateral_victim)
+                    room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, target->objectName(), collateral_victim->objectName());
+
+                use.to.append(target);
+                room->sortByActionOrder(use.to);
+                data = QVariant::fromValue(use);
+            }
+        }
+        return false;
+    }
+};
+
+class IkLinghuang: public TriggerSkill {
+public:
+    IkLinghuang(): TriggerSkill("iklinghuang") {
+        events << DamageInflicted;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.from && damage.from->isMale() && player->canDiscard(player, "he"))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (room->askForCard(player, ".Equip", "@iklinghuang", data, objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        LogMessage log;
+        log.type = "#IkLinghuang";
+        log.from = player;
+        log.arg = QString::number(damage.damage);
+        log.arg2 = QString::number(--damage.damage);
+        room->sendLog(log);
+
+        if (damage.damage < 1)
+            return true;
+        data = QVariant::fromValue(damage);
+        return false;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -4028,6 +4171,10 @@ IkaiKinPackage::IkaiKinPackage()
 
     General *snow028 = new General(this, "snow028", "yuki");
     snow028->addSkill(new IkYinzhai);
+
+    General *snow037 = new General(this, "snow037", "yuki", 3, false);
+    snow037->addSkill(new IkJiaoshi);
+    snow037->addSkill(new IkLinghuang);
 
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
