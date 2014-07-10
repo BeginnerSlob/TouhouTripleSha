@@ -8,105 +8,6 @@
 #include "ai.h"
 #include "general.h"
 
-XianzhenCard::XianzhenCard() {
-}
-
-bool XianzhenCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select != Self && !to_select->isKongcheng();
-}
-
-void XianzhenCard::onEffect(const CardEffectStruct &effect) const{
-    Room *room = effect.from->getRoom();
-    if (effect.from->pindian(effect.to, "xianzhen", NULL)) {
-        ServerPlayer *target = effect.to;
-        effect.from->tag["XianzhenTarget"] = QVariant::fromValue(target);
-        room->setPlayerFlag(effect.from, "XianzhenSuccess");
-
-        QStringList assignee_list = effect.from->property("extra_slash_specific_assignee").toString().split("+");
-        assignee_list << target->objectName();
-        room->setPlayerProperty(effect.from, "extra_slash_specific_assignee", assignee_list.join("+"));
-
-        room->setFixedDistance(effect.from, effect.to, 1);
-        room->addPlayerMark(effect.to, "Armor_Nullified");
-    } else {
-        room->setPlayerCardLimitation(effect.from, "use", "Slash", true);
-    }
-}
-
-class XianzhenViewAsSkill: public ZeroCardViewAsSkill {
-public:
-    XianzhenViewAsSkill(): ZeroCardViewAsSkill("xianzhen") {
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("XianzhenCard") && !player->isKongcheng();
-    }
-
-    virtual const Card *viewAs() const{
-        return new XianzhenCard;
-    }
-};
-
-class Xianzhen: public TriggerSkill {
-public:
-    Xianzhen(): TriggerSkill("xianzhen") {
-        events << EventPhaseChanging << Death;
-        view_as_skill = new XianzhenViewAsSkill;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->tag["XianzhenTarget"].value<ServerPlayer *>() != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *gaoshun, QVariant &data) const{
-        if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to != Player::NotActive)
-                return false;
-        }
-        ServerPlayer *target = gaoshun->tag["XianzhenTarget"].value<ServerPlayer *>();
-        if (triggerEvent == Death) {
-            DeathStruct death = data.value<DeathStruct>();
-            if (death.who != gaoshun) {
-                if (death.who == target) {
-                    room->setFixedDistance(gaoshun, target, -1);
-                    gaoshun->tag.remove("XianzhenTarget");
-                    room->setPlayerFlag(gaoshun, "-XianzhenSuccess");
-                }
-                return false;
-            }
-        }
-        if (target) {
-            QStringList assignee_list = gaoshun->property("extra_slash_specific_assignee").toString().split("+");
-            assignee_list.removeOne(target->objectName());
-            room->setPlayerProperty(gaoshun, "extra_slash_specific_assignee", assignee_list.join("+"));
-
-            room->setFixedDistance(gaoshun, target, -1);
-            gaoshun->tag.remove("XianzhenTarget");
-            room->removePlayerMark(target, "Armor_Nullified");
-        }
-        return false;
-    }
-};
-
-class Jinjiu: public FilterSkill {
-public:
-    Jinjiu(): FilterSkill("jinjiu") {
-    }
-
-    virtual bool viewFilter(const Card *to_select) const{
-        return to_select->objectName() == "analeptic";
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const{
-        Slash *slash = new Slash(originalCard->getSuit(), originalCard->getNumber());
-        slash->setSkillName(objectName());
-        WrappedCard *card = Sanguosha->getWrappedCard(originalCard->getId());
-        card->takeOver(slash);
-        return card;
-    }
-};
-
 MingceCard::MingceCard() {
     will_throw = false;
     handling_method = Card::MethodNone;
@@ -284,12 +185,7 @@ YJCMPackage::YJCMPackage()
     related_skills.insertMulti("zhichi", "#zhichi-protect");
     related_skills.insertMulti("zhichi", "#zhichi-clear");
 
-    General *gaoshun = new General(this, "gaoshun", "qun"); // YJ 004
-    gaoshun->addSkill(new Xianzhen);
-    gaoshun->addSkill(new Jinjiu);
-
     addMetaObject<MingceCard>();
-    addMetaObject<XianzhenCard>();
 }
 
 ADD_PACKAGE(YJCM)
