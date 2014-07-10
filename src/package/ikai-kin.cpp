@@ -3115,12 +3115,13 @@ class IkLingpaoTrigger: public TriggerSkill {
 public:
     IkLingpaoTrigger(): TriggerSkill("#iklingpao") {
         events << PreDamageDone << CardFinished;
+        frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == PreDamageDone) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.card && damage.card->isKindOf("Slash") && damage.card->getSkillName() == objectName()) {
+            if (damage.card && damage.card->isKindOf("Slash") && damage.card->getSkillName() == "iklingpao") {
                 QVariantList slash_list = damage.from->tag["InvokeIkLingpao"].toList();
                 slash_list << QVariant::fromValue(damage.card);
                 damage.from->tag["InvokeIkLingpao"] = QVariant::fromValue(slash_list);
@@ -3152,7 +3153,7 @@ public:
         LogMessage log;
         log.type = "#TriggerSkill";
         log.from = player;
-        log.arg = objectName();
+        log.arg = "iklingpao";
         room->sendLog(log);
 
         room->loseHp(player, 1);
@@ -3260,6 +3261,96 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *chengpu, QVariant &data, ServerPlayer *) const{
         room->askForUseCard(chengpu, "@@ikxiaozui", "@ikxiaozui", -1, Card::MethodNone);
+        return false;
+    }
+};
+
+IkAnxuCard::IkAnxuCard() {
+}
+
+bool IkAnxuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (to_select == Self)
+        return false;
+    if (targets.isEmpty())
+        return true;
+    else if (targets.length() == 1)
+        return to_select->getHandcardNum() != targets.first()->getHandcardNum();
+    else
+        return false;
+}
+
+bool IkAnxuCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    return targets.length() == 2;
+}
+
+void IkAnxuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    QList<ServerPlayer *> selecteds = targets;
+    ServerPlayer *from = selecteds.first()->getHandcardNum() < selecteds.last()->getHandcardNum() ? selecteds.takeFirst() : selecteds.takeLast();
+    ServerPlayer *to = selecteds.takeFirst();
+    int id = room->askForCardChosen(from, to, "h", "ikanxu");
+    const Card *cd = Sanguosha->getCard(id);
+    from->obtainCard(cd);
+    room->showCard(from, id);
+    if (cd->getSuit() != Card::Spade)
+        source->drawCards(1, "ikanxu");
+}
+
+class IkAnxu: public ZeroCardViewAsSkill {
+public:
+    IkAnxu(): ZeroCardViewAsSkill("ikanxu") {
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkAnxuCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkAnxuCard");
+    }
+};
+
+class IkZhuiyi: public TriggerSkill {
+public:
+    IkZhuiyi(): TriggerSkill("ikzhuiyi") {
+        events << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!player->hasSkill(objectName())) return QStringList();
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who != player)
+            return QStringList();
+        QList<ServerPlayer *> targets = (death.damage && death.damage->from) ? room->getOtherPlayers(death.damage->from) :
+                                                                               room->getAlivePlayers();
+
+        if (targets.isEmpty())
+            return QStringList();
+        return QStringList(objectName());
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DeathStruct death = data.value<DeathStruct>();
+        QList<ServerPlayer *> targets = (death.damage && death.damage->from) ? room->getOtherPlayers(death.damage->from) :
+                                                                               room->getAlivePlayers();
+        QString prompt = "ikzhuiyi-invoke";
+        if (death.damage && death.damage->from && death.damage->from != player)
+            prompt = QString("%1x:%2").arg(prompt).arg(death.damage->from->objectName());
+        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), prompt, true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["IkZhuiyiTarget"] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        ServerPlayer *target = player->tag["IkZhuiyiTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkZhuiyiTarget");
+        if (target) {
+            target->drawCards(3, objectName());
+            room->recover(target, RecoverStruct(player), true);
+        }
         return false;
     }
 };
@@ -3420,6 +3511,10 @@ IkaiKinPackage::IkaiKinPackage()
     related_skills.insertMulti("iklingpao", "#iklingpao-target");
     snow019->addSkill(new IkXiaozui);
 
+    General *snow020 = new General(this, "snow020", "yuki", 3, false);
+    snow020->addSkill(new IkAnxu);
+    snow020->addSkill(new IkZhuiyi);
+
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
     addMetaObject<ExtraCollateralCard>();
@@ -3433,6 +3528,7 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkGuanjuCard>();
     addMetaObject<IkXiaozuiCard>();
     addMetaObject<IkXiaozuiPeachCard>();
+    addMetaObject<IkAnxuCard>();
 
     skills << new IkXianyuSlashViewAsSkill << new IkZhuyi;
 }

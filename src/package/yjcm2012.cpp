@@ -165,98 +165,9 @@ public:
     }
 };
 
-AnxuCard::AnxuCard() {
-    mute = true;
-}
-
-bool AnxuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if (to_select == Self)
-        return false;
-    if (targets.isEmpty())
-        return true;
-    else if (targets.length() == 1)
-        return to_select->getHandcardNum() != targets.first()->getHandcardNum();
-    else
-        return false;
-}
-
-bool AnxuCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-    return targets.length() == 2;
-}
-
-void AnxuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    QList<ServerPlayer *> selecteds = targets;
-    ServerPlayer *from = selecteds.first()->getHandcardNum() < selecteds.last()->getHandcardNum() ? selecteds.takeFirst() : selecteds.takeLast();
-    ServerPlayer *to = selecteds.takeFirst();
-    if (from->getGeneralName().contains("sunquan"))
-        room->broadcastSkillInvoke("anxu", 2);
-    else
-        room->broadcastSkillInvoke("anxu", 1);
-    int id = room->askForCardChosen(from, to, "h", "anxu");
-    const Card *cd = Sanguosha->getCard(id);
-    from->obtainCard(cd);
-    room->showCard(from, id);
-    if (cd->getSuit() != Card::Spade)
-        source->drawCards(1, "anxu");
-}
-
-class Anxu: public ZeroCardViewAsSkill {
-public:
-    Anxu(): ZeroCardViewAsSkill("anxu") {
-    }
-
-    virtual const Card *viewAs() const{
-        return new AnxuCard;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("AnxuCard");
-    }
-};
-
-class Zhuiyi: public TriggerSkill {
-public:
-    Zhuiyi(): TriggerSkill("zhuiyi") {
-        events << Death;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->hasSkill(objectName());
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        DeathStruct death = data.value<DeathStruct>();
-        if (death.who != player)
-            return false;
-        QList<ServerPlayer *> targets = (death.damage && death.damage->from) ? room->getOtherPlayers(death.damage->from) :
-                                                                               room->getAlivePlayers();
-
-        if (targets.isEmpty())
-            return false;
-
-        QString prompt = "zhuiyi-invoke";
-        if (death.damage && death.damage->from && death.damage->from != player)
-            prompt = QString("%1x:%2").arg(prompt).arg(death.damage->from->objectName());
-        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), prompt, true, true);
-        if (!target) return false;
-
-        if (target->getGeneralName().contains("sunquan"))
-            room->broadcastSkillInvoke(objectName(), 2);
-        else
-            room->broadcastSkillInvoke(objectName(), 1);
-
-        target->drawCards(3, objectName());
-        room->recover(target, RecoverStruct(player), true);
-        return false;
-    }
-};
-
 YJCM2012Package::YJCM2012Package()
     : Package("YJCM2012")
 {
-    General *bulianshi = new General(this, "bulianshi", "wu", 3, false); // YJ 101
-    bulianshi->addSkill(new Anxu);
-    bulianshi->addSkill(new Zhuiyi);
 
     General *handang = new General(this, "handang", "wu"); // YJ 105
     handang->addSkill(new Gongqi);
@@ -271,7 +182,6 @@ YJCM2012Package::YJCM2012Package()
 
     addMetaObject<GongqiCard>();
     addMetaObject<JiefanCard>();
-    addMetaObject<AnxuCard>();
 }
 
 ADD_PACKAGE(YJCM2012)
