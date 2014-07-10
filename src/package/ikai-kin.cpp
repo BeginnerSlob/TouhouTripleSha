@@ -4154,6 +4154,102 @@ public:
     }
 };
 
+IkLvdongCard::IkLvdongCard() {
+}
+
+bool IkLvdongCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && to_select != Self && !to_select->isKongcheng();
+}
+
+void IkLvdongCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    if (effect.from->pindian(effect.to, "iklvdong", NULL)) {
+        ServerPlayer *target = effect.to;
+        effect.from->tag["IkLvdongTarget"] = QVariant::fromValue(target);
+        room->setPlayerFlag(effect.from, "IkLvdongSuccess");
+
+        QStringList assignee_list = effect.from->property("extra_slash_specific_assignee").toString().split("+");
+        assignee_list << target->objectName();
+        room->setPlayerProperty(effect.from, "extra_slash_specific_assignee", assignee_list.join("+"));
+
+        room->setFixedDistance(effect.from, effect.to, 1);
+        room->addPlayerMark(effect.to, "Armor_Nullified");
+    } else {
+        room->setPlayerCardLimitation(effect.from, "use", "Slash", true);
+    }
+}
+
+class IkLvdongViewAsSkill: public ZeroCardViewAsSkill {
+public:
+    IkLvdongViewAsSkill(): ZeroCardViewAsSkill("iklvdong") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkLvdongCard") && !player->isKongcheng();
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkLvdongCard;
+    }
+};
+
+class IkLvdong: public TriggerSkill {
+public:
+    IkLvdong(): TriggerSkill("iklvdong") {
+        events << EventPhaseChanging << Death;
+        view_as_skill = new IkLvdongViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *gaoshun, QVariant &data, ServerPlayer* &) const{
+        if (!gaoshun || !target->tag["IkLvdongTarget"].value<ServerPlayer *>()) return QStringList();
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to != Player::NotActive)
+                return QStringList();
+        }
+        ServerPlayer *target = gaoshun->tag["IkLvdongTarget"].value<ServerPlayer *>();
+        if (triggerEvent == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != gaoshun) {
+                if (death.who == target) {
+                    room->setFixedDistance(gaoshun, target, -1);
+                    gaoshun->tag.remove("IkLvdongTarget");
+                    room->setPlayerFlag(gaoshun, "-IkLvdongSuccess");
+                }
+                return QStringList();
+            }
+        }
+        if (target) {
+            QStringList assignee_list = gaoshun->property("extra_slash_specific_assignee").toString().split("+");
+            assignee_list.removeOne(target->objectName());
+            room->setPlayerProperty(gaoshun, "extra_slash_specific_assignee", assignee_list.join("+"));
+
+            room->setFixedDistance(gaoshun, target, -1);
+            gaoshun->tag.remove("IkLvdongTarget");
+            room->removePlayerMark(target, "Armor_Nullified");
+        }
+        return QStringList();
+    }
+};
+
+class IkGuozai: public FilterSkill {
+public:
+    IkGuozai(): FilterSkill("ikguozai") {
+    }
+
+    virtual bool viewFilter(const Card *to_select) const{
+        return to_select->objectName() == "analeptic";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        Slash *slash = new Slash(originalCard->getSuit(), originalCard->getNumber());
+        slash->setSkillName(objectName());
+        WrappedCard *card = Sanguosha->getWrappedCard(originalCard->getId());
+        card->takeOver(slash);
+        return card;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -4349,6 +4445,10 @@ IkaiKinPackage::IkaiKinPackage()
     General *snow041 = new General(this, "snow041", "yuki");
     snow041->addSkill(new IkYoudan);
 
+    General *luna010 = new General(this, "luna010", "tsuki");
+    luna010->addSkill(new IkLvdong);
+    luna010->addSkill(new IkGuozai);
+
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
     addMetaObject<ExtraCollateralCard>();
@@ -4369,6 +4469,7 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkShenxingCard>();
     addMetaObject<IkXiangzhaoCard>();
     addMetaObject<IkYoudanCard>();
+    addMetaObject<IkLvdongCard>();
 
     skills << new IkXianyuSlashViewAsSkill << new IkZhuyi;
 }
