@@ -3889,6 +3889,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardUseStruct use = data.value<CardUseStruct>();
         ServerPlayer *target = player->tag["IkJiaoshiTarget"].value<ServerPlayer *>();
         player->tag.remove("IkJiaoshiTarget");
         if (target) {
@@ -3984,6 +3985,101 @@ public:
         if (damage.damage < 1)
             return true;
         data = QVariant::fromValue(damage);
+        return false;
+    }
+};
+
+IkShenxingCard::IkShenxingCard() {
+    target_fixed = true;
+}
+
+void IkShenxingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    if (source->isAlive())
+        room->drawCards(source, 1, "ikshenxing");
+}
+
+class IkShenxing: public ViewAsSkill {
+public:
+    IkShenxing(): ViewAsSkill("ikshenxing") {
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        return selected.length() < 2 && !Self->isJilei(to_select);
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.length() != 2)
+            return NULL;
+
+        IkShenxingCard *card = new IkShenxingCard;
+        card->addSubcards(cards);
+        return card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->getCardCount(true) >= 2 && player->canDiscard(player, "he");
+    }
+};
+
+IkXiangzhaoCard::IkXiangzhaoCard() {
+}
+
+bool IkXiangzhaoCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    Card::Color color = Card::Colorless;
+    foreach (const Card *c, Self->getHandcards()) {
+        if (color == Card::Colorless)
+            color = c->getColor();
+        else if (c->getColor() != color)
+            return targets.isEmpty();
+    }
+    return targets.length() <= Self->getHandcardNum();
+}
+
+bool IkXiangzhaoCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *Self) const{
+    Card::Color color = Card::Colorless;
+    foreach (const Card *c, Self->getHandcards()) {
+        if (color == Card::Colorless)
+            color = c->getColor();
+        else if (c->getColor() != color)
+            return false;
+    }
+    return targets.length() < Self->getHandcardNum();
+}
+
+void IkXiangzhaoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    room->showAllCards(source);
+    foreach (ServerPlayer *p, targets)
+        room->drawCards(p, 1, "ikxiangzhao");
+}
+
+class IkXiangzhaoViewAsSkill: public ZeroCardViewAsSkill {
+public:
+    IkXiangzhaoViewAsSkill(): ZeroCardViewAsSkill("ikxiangzhao") {
+        response_pattern = "@@ikxiangzhao";
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkXiangzhaoCard;
+    }
+};
+
+class IkXiangzhao: public PhaseChangeSkill {
+public:
+    IkXiangzhao(): PhaseChangeSkill("ikxiangzhao") {
+        view_as_skill = new IkXiangzhaoViewAsSkill;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+            && target->getPhase() == Player::Finish
+            && !target->isKongcheng();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        return room->askForUseCard(player, "@@ikxiangzhao", "@ikxiangzhao-card");
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *target) const{
         return false;
     }
 };
@@ -4176,6 +4272,10 @@ IkaiKinPackage::IkaiKinPackage()
     snow037->addSkill(new IkJiaoshi);
     snow037->addSkill(new IkLinghuang);
 
+    General *snow039 = new General (this, "snow039", "yuki", 3);
+    snow039->addSkill(new IkShenxing);
+    snow039->addSkill(new IkXiangzhao);
+
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
     addMetaObject<ExtraCollateralCard>();
@@ -4193,6 +4293,8 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkMengjingCard>();
     addMetaObject<IkZhizhanCard>();
     addMetaObject<IkZongxuanCard>();
+    addMetaObject<IkShenxingCard>();
+    addMetaObject<IkXiangzhaoCard>();
 
     skills << new IkXianyuSlashViewAsSkill << new IkZhuyi;
 }
