@@ -3816,6 +3816,35 @@ public:
     }
 };
 
+class IkYinzhai: public TriggerSkill {
+public:
+    IkYinzhai(): TriggerSkill("ikyinzhai") {
+        events << Damage;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName(), data)) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        player->drawCards(1, objectName());
+        ServerPlayer *current = room->getCurrent();
+        if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
+            LogMessage log;
+            log.type = "#SkipAllPhase";
+            log.from = current;
+            room->sendLog(log);
+        }
+        throw TurnBroken;
+
+        return false;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -3996,6 +4025,9 @@ IkaiKinPackage::IkaiKinPackage()
     General *snow027 = new General(this, "snow027", "yuki", 3);
     snow027->addSkill(new IkZongxuan);
     snow027->addSkill(new IkZhice);
+
+    General *snow028 = new General(this, "snow028", "yuki");
+    snow028->addSkill(new IkYinzhai);
 
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
