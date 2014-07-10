@@ -1595,11 +1595,12 @@ public:
         return true;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
         if (triggerEvent == CardUsed) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.to.isEmpty())
-                return QStringList();
+                return skill_list;
 
             bool invoke = false;
             foreach (ServerPlayer *to, use.to) {
@@ -1609,25 +1610,27 @@ public:
             }
 
             if (invoke && use.card->isKindOf("Peach")) {
-                return QStringList(objectName());
+                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+                    skill_list.insert(p, QStringList(objectName()));
             }
         } else if (triggerEvent == BeforeCardsMove && TriggerSkill::triggerable(player)) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (!move.from || !move.to || move.from == move.to)
-                return QStringList();
+                return skill_list;
 
             if (move.to_place == Player::PlaceHand) {
                 QList<int> qiebaolist;
                 for (int i = 0; i < move.card_ids.size(); i++){
-                    if (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip)
-                        return QStringList(objectName());
+                    if (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip) {
+                        skill_list.insert(player, QStringList(objectName()));
+                    }
                 }
             }
         }
-        return QStringList();
+        return skill_list;
     }
 
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
         if (triggerEvent == CardUsed) {
             CardUseStruct use = data.value<CardUseStruct>();
             QList<int> card_ids;
@@ -1635,7 +1638,7 @@ public:
                 card_ids << use.card->getEffectiveId();
             else
                 card_ids = use.card->getSubcards();
-            if (doQiebao(room, player, card_ids, false)) {
+            if (doQiebao(room, ask_who, card_ids, false)) {
                 foreach (ServerPlayer *p, use.to)
                     if (p != use.from)
                         use.nullified_list << p->objectName();
@@ -1649,7 +1652,7 @@ public:
                 if (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip)
                     qiebaolist << card_id;
             }
-            if (!qiebaolist.isEmpty() && doQiebao(room, player, qiebaolist, true)) {
+            if (!qiebaolist.isEmpty() && doQiebao(room, ask_who, qiebaolist, true)) {
                 move.removeCardIds(qiebaolist);
                 data = QVariant::fromValue(move);
             }
