@@ -504,12 +504,6 @@
     <ClCompile Include="Release\moc_special3v3.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\package\yjcm.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_yjcm.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\package\yjcm2012.cpp">
       <Filter>package</Filter>
     </ClCompile>
@@ -619,9 +613,6 @@
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="Debug\moc_special3v3.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug\moc_yjcm.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="Debug\moc_yjcm2012.cpp">
@@ -972,9 +963,6 @@
       <Filter>package</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\special3v3.h">
-      <Filter>package</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\src\package\yjcm.h">
       <Filter>package</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\yjcm2012.h">

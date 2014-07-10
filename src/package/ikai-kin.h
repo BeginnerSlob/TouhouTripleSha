@@ -245,4 +245,13 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class IkMingceCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkMingceCard();
+
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 #endif // IKAIKIN_H
