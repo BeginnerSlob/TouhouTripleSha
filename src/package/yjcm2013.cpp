@@ -6,98 +6,6 @@
 #include "engine.h"
 #include "maneuvering.h"
 
-DanshouCard::DanshouCard() {
-}
-
-bool DanshouCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if (!targets.isEmpty())
-        return false;
-
-    if (Self->getWeapon() && subcards.contains(Self->getWeapon()->getId())) {
-        const Weapon *weapon = qobject_cast<const Weapon *>(Self->getWeapon()->getRealCard());
-        int distance_fix = weapon->getRange() - Self->getAttackRange(false);
-        if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
-            distance_fix += 1;
-        return Self->inMyAttackRange(to_select, distance_fix);
-    } else if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId())) {
-        return Self->inMyAttackRange(to_select, 1);
-    } else
-        return Self->inMyAttackRange(to_select);
-}
-
-void DanshouCard::onEffect(const CardEffectStruct &effect) const{
-    Room *room = effect.from->getRoom();
-    int len = subcardsLength();
-    switch (len) {
-    case 0:
-            Q_ASSERT(false);
-            break;
-    case 1:
-            if (effect.from->canDiscard(effect.to, "he")) {
-                int id = room->askForCardChosen(effect.from, effect.to, "he", "danshou", false, Card::MethodDiscard);
-                room->throwCard(id, effect.to, effect.from);
-            }
-            break;
-    case 2:
-            if (!effect.to->isNude()) {
-                int id = room->askForCardChosen(effect.from, effect.to, "he", "danshou");
-                room->obtainCard(effect.from, id, false);
-            }
-            break;
-    case 3:
-            room->damage(DamageStruct("danshou", effect.from, effect.to));
-            break;
-    default:
-            room->drawCards(effect.from, 2, "danshou");
-            room->drawCards(effect.to, 2, "danshou");
-            break;
-    }
-}
-
-class DanshouViewAsSkill: public ViewAsSkill {
-public:
-    DanshouViewAsSkill(): ViewAsSkill("danshou") {
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        return !Self->isJilei(to_select) && selected.length() <= Self->getMark("danshou");
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if (cards.length() != Self->getMark("danshou") + 1) return NULL;
-        DanshouCard *danshou = new DanshouCard;
-        danshou->addSubcards(cards);
-        return danshou;
-    }
-};
-
-class Danshou: public TriggerSkill {
-public:
-    Danshou(): TriggerSkill("danshou") {
-        events << EventPhaseStart << PreCardUsed;
-        view_as_skill = new DanshouViewAsSkill;
-    }
-
-    virtual int getPriority(TriggerEvent) const{
-        return 6;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Play) {
-            room->setPlayerMark(player, "danshou", 0);
-        } else if (triggerEvent == PreCardUsed) {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("DanshouCard"))
-                room->addPlayerMark(use.from, "danshou");
-        }
-        return false;
-    }
-};
-
 class Juece: public PhaseChangeSkill {
 public:
     Juece(): PhaseChangeSkill("juece") {
@@ -381,12 +289,8 @@ YJCM2013Package::YJCM2013Package()
     liru->addSkill(new FenchengMark);
     related_skills.insertMulti("fencheng", "#fencheng");
 
-    General *zhuran = new General(this, "zhuran", "wu"); // YJ 211
-    zhuran->addSkill(new Danshou);
-
     addMetaObject<MiejiCard>();
     addMetaObject<FenchengCard>();
-    addMetaObject<DanshouCard>();
 }
 
 ADD_PACKAGE(YJCM2013)

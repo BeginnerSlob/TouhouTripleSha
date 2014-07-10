@@ -708,7 +708,7 @@ enum TriggerEvent {
     ActionedReset, // For 3v3 only
     Debut, // For 1v1 only
 
-    TurnBroken, // For the skill 'DanShou'. Do not use it to trigger events
+    TurnBroken, // For the skill 'IkYinzhai'. Do not use it to trigger events
 
     NumOfEvents
 };
