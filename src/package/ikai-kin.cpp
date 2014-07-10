@@ -3451,42 +3451,6 @@ public:
         events << CardsMoveOneTime;
     }
 
-    void perform(Room *room, ServerPlayer *lingtong) const{
-        QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *target, room->getOtherPlayers(lingtong)) {
-            if (lingtong->canDiscard(target, "he"))
-                targets << target;
-        }
-        if (targets.isEmpty())
-            return;
-
-        if (lingtong->askForSkillInvoke(objectName())) {
-            room->broadcastSkillInvoke(objectName());
-
-            ServerPlayer *first = room->askForPlayerChosen(lingtong, targets, "ikqianbian");
-            ServerPlayer *second = NULL;
-            int first_id = -1;
-            int second_id = -1;
-            if (first != NULL) {
-                first_id = room->askForCardChosen(lingtong, first, "he", "ikqianbian", false, Card::MethodDiscard);
-                room->throwCard(first_id, first, lingtong);
-            }
-            if (!lingtong->isAlive())
-                return;
-            targets.clear();
-            foreach (ServerPlayer *target, room->getOtherPlayers(lingtong)) {
-                if (lingtong->canDiscard(target, "he"))
-                    targets << target;
-            }
-            if (!targets.isEmpty())
-                second = room->askForPlayerChosen(lingtong, targets, "ikqianbian");
-            if (second != NULL) {
-                second_id = room->askForCardChosen(lingtong, second, "he", "ikqianbian", false, Card::MethodDiscard);
-                room->throwCard(second_id, second, lingtong);
-            }
-        }
-    }
-
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *lingtong, QVariant &data, ServerPlayer* &) const{
         if (TriggerSkill::triggerable(lingtong)) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
@@ -3548,6 +3512,87 @@ public:
         lingtong->drawCards(n, objectName());
 
         return false;
+    }
+};
+
+IkMengjingCard::IkMengjingCard() {
+    target_fixed = true;
+}
+
+void IkMengjingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    room->setPlayerFlag(source, "InfinityAttackRange");
+    const Card *cd = Sanguosha->getCard(subcards.first());
+    if (cd->isKindOf("EquipCard")) {
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getOtherPlayers(source))
+            if (source->canDiscard(p, "he")) targets << p;
+        if (!targets.isEmpty()) {
+            ServerPlayer *to_discard = room->askForPlayerChosen(source, targets, "ikmengjing", "@ikmengjing-discard", true);
+            if (to_discard)
+                room->throwCard(room->askForCardChosen(source, to_discard, "he", "ikmengjing", false, Card::MethodDiscard), to_discard, source);
+        }
+    }
+}
+
+class IkMengjing: public OneCardViewAsSkill {
+public:
+    IkMengjing(): OneCardViewAsSkill("ikmengjing") {
+        filter_pattern = ".!";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkMengjingCard");
+    }
+
+    virtual const Card *viewAs(const Card *originalcard) const{
+        IkMengjingCard *card = new IkMengjingCard;
+        card->addSubcard(originalcard->getId());
+        card->setSkillName(objectName());
+        return card;
+    }
+};
+
+IkZhizhanCard::IkZhizhanCard() {
+}
+
+bool IkZhizhanCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const{
+    return targets.isEmpty();
+}
+
+void IkZhizhanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    room->removePlayerMark(source, "@zhizhan");
+    room->addPlayerMark(source, "@zhizhanused");
+    ServerPlayer *target = targets.first();
+    source->tag["IkZhizhanTarget"] = QVariant::fromValue(target);
+    foreach (ServerPlayer *player, room->getAllPlayers()) {
+        if (player->isAlive() && player->inMyAttackRange(target))
+            room->cardEffect(this, source, player);
+    }
+    source->tag.remove("IkZhizhanTarget");
+}
+
+void IkZhizhanCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.to->getRoom();
+
+    ServerPlayer *target = effect.from->tag["IkZhizhanTarget"].value<ServerPlayer *>();
+    QVariant data = effect.from->tag["IkZhizhanTarget"];
+    if (target && !room->askForCard(effect.to, ".Weapon", "@ikzhizhan-discard::" + target->objectName(), data))
+        target->drawCards(1, "ikzhizhan");
+}
+
+class IkZhizhan: public ZeroCardViewAsSkill {
+public:
+    IkZhizhan(): ZeroCardViewAsSkill("ikzhizhan") {
+        frequency = Limited;
+        limit_mark = "@zhizhan";
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkZhizhanCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->getMark("@zhizhan") >= 1;
     }
 };
 
@@ -3720,6 +3765,10 @@ IkaiKinPackage::IkaiKinPackage()
     General *snow023 = new General(this, "snow023", "yuki");
     snow023->addSkill(new IkQianbian);
 
+    General *snow024 = new General(this, "snow024", "yuki");
+    snow024->addSkill(new IkMengjing);
+    snow024->addSkill(new IkZhizhan);
+
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
     addMetaObject<ExtraCollateralCard>();
@@ -3734,6 +3783,8 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkXiaozuiCard>();
     addMetaObject<IkXiaozuiPeachCard>();
     addMetaObject<IkAnxuCard>();
+    addMetaObject<IkMengjingCard>();
+    addMetaObject<IkZhizhanCard>();
 
     skills << new IkXianyuSlashViewAsSkill << new IkZhuyi;
 }
