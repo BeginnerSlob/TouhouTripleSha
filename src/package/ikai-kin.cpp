@@ -3612,10 +3612,11 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        return room->askForCard(player, "..", "@ikduoren-get", data, objectName()));
+        return room->askForCard(player, "..", "@ikduoren-get", data, objectName());
     }
 
     virtual void onDamaged(ServerPlayer *target, const DamageStruct &damage) const{
+        Room *room = target->getRoom();
         if (damage.from && damage.from->getWeapon()) {
             room->broadcastSkillInvoke(objectName());
             target->obtainCard(damage.from->getWeapon());
