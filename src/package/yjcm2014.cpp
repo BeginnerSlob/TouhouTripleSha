@@ -138,93 +138,6 @@ public:
     }
 };
 
-ShenxingCard::ShenxingCard() {
-    target_fixed = true;
-}
-
-void ShenxingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    if (source->isAlive())
-        room->drawCards(source, 1, "shenxing");
-}
-
-class Shenxing: public ViewAsSkill {
-public:
-    Shenxing(): ViewAsSkill("shenxing") {
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        return selected.length() < 2 && !Self->isJilei(to_select);
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if (cards.length() != 2)
-            return NULL;
-
-        ShenxingCard *card = new ShenxingCard;
-        card->addSubcards(cards);
-        return card;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getCardCount(true) >= 2 && player->canDiscard(player, "he");
-    }
-};
-
-BingyiCard::BingyiCard() {
-}
-
-bool BingyiCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-    Card::Color color = Card::Colorless;
-    foreach (const Card *c, Self->getHandcards()) {
-        if (color == Card::Colorless)
-            color = c->getColor();
-        else if (c->getColor() != color)
-            return targets.isEmpty();
-    }
-    return targets.length() <= Self->getHandcardNum();
-}
-
-bool BingyiCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *Self) const{
-    Card::Color color = Card::Colorless;
-    foreach (const Card *c, Self->getHandcards()) {
-        if (color == Card::Colorless)
-            color = c->getColor();
-        else if (c->getColor() != color)
-            return false;
-    }
-    return targets.length() < Self->getHandcardNum();
-}
-
-void BingyiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    room->showAllCards(source);
-    foreach (ServerPlayer *p, targets)
-        room->drawCards(p, 1, "bingyi");
-}
-
-class BingyiViewAsSkill: public ZeroCardViewAsSkill {
-public:
-    BingyiViewAsSkill(): ZeroCardViewAsSkill("bingyi") {
-        response_pattern = "@@bingyi";
-    }
-
-    virtual const Card *viewAs() const{
-        return new BingyiCard;
-    }
-};
-
-class Bingyi: public PhaseChangeSkill {
-public:
-    Bingyi(): PhaseChangeSkill("bingyi") {
-        view_as_skill = new BingyiViewAsSkill;
-    }
-
-    virtual bool onPhaseChange(ServerPlayer *target) const{
-        if (target->getPhase() != Player::Finish || target->isKongcheng()) return false;
-        target->getRoom()->askForUseCard(target, "@@bingyi", "@bingyi-card");
-        return false;
-    }
-};
-
 class Youdi: public PhaseChangeSkill {
 public:
     Youdi(): PhaseChangeSkill("youdi") {
@@ -520,10 +433,6 @@ YJCM2014Package::YJCM2014Package()
     chenqun->addSkill(new Dingpin);
     chenqun->addSkill(new Faen);
 
-    General *guyong = new General (this, "guyong", "wu", 3); // YJ 304
-    guyong->addSkill(new Shenxing);
-    guyong->addSkill(new Bingyi);
-
     General *jvshou = new General(this, "jvshou", "qun", 3); // YJ 306
     jvshou->addSkill(new Jianying);
     jvshou->addSkill(new Shibei);
@@ -534,8 +443,6 @@ YJCM2014Package::YJCM2014Package()
     zhuhuan->addSkill(new Youdi);
 
     addMetaObject<DingpinCard>();
-    addMetaObject<ShenxingCard>();
-    addMetaObject<BingyiCard>();
     addMetaObject<XianzhouCard>();
     addMetaObject<XianzhouDamageCard>();
 }
