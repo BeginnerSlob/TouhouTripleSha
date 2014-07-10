@@ -3596,6 +3596,75 @@ public:
     }
 };
 
+class IkDuoren: public MasochismSkill {
+public:
+    IkDuoren(): MasochismSkill("ikduoren") {
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player)) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (!damage.card || !damage.card->isKindOf("Slash") || !player->canDiscard(player, "he"))
+                return QStringList();
+            return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        return room->askForCard(player, "..", "@ikduoren-get", data, objectName()));
+    }
+
+    virtual void onDamaged(ServerPlayer *target, const DamageStruct &damage) const{
+        if (damage.from && damage.from->getWeapon()) {
+            room->broadcastSkillInvoke(objectName());
+            target->obtainCard(damage.from->getWeapon());
+        }
+    }
+};
+
+class IkAnju: public TriggerSkill {
+public:
+    IkAnju(): TriggerSkill("ikanju") {
+        events << DamageCaused;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player)) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.chain || damage.transfer || !damage.by_user) return QStringList();
+            if (!damage.to->inMyAttackRange(player)
+                && damage.card && damage.card->isKindOf("Slash"))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(damage.to))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        LogMessage log;
+        log.type = "#IkAnjuBuff";
+        log.from = damage.from;
+        log.to << damage.to;
+        log.arg = QString::number(damage.damage);
+        log.arg2 = QString::number(++damage.damage);
+        room->sendLog(log);
+
+        data = QVariant::fromValue(damage);
+
+        return false;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -3768,6 +3837,10 @@ IkaiKinPackage::IkaiKinPackage()
     General *snow024 = new General(this, "snow024", "yuki");
     snow024->addSkill(new IkMengjing);
     snow024->addSkill(new IkZhizhan);
+
+    General *snow026 = new General(this, "snow026", "yuki");
+    snow026->addSkill(new IkDuoren);
+    snow026->addSkill(new IkAnju);
 
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();

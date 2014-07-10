@@ -19,6 +19,7 @@ public:
         Frequent,
         NotFrequent,
         Compulsory,
+        NotCompulsory,
         Limited,
         Wake
     };

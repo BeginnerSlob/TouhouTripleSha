@@ -686,8 +686,9 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         if (who_skills.isEmpty()) break;
                         bool has_compulsory = false;
                         foreach (const TriggerSkill *skill, who_skills)
-                            if (skill->getFrequency() == Skill::Compulsory ||
-                                skill->getFrequency() == Skill::Wake) {
+                            if (skill->getFrequency() == Skill::Compulsory
+                                || skill->getFrequency() == Skill::NotCompulsory
+                                || skill->getFrequency() == Skill::Wake) {
                                 has_compulsory = true;
                                 break;
                             }
@@ -768,8 +769,9 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         if (has_compulsory){
                             has_compulsory = false;
                             foreach (const TriggerSkill *s, trigger_who[p]){
-                                if (s->getFrequency() == Skill::Compulsory ||
-                                    s->getFrequency() == Skill::Wake) {
+                                if (s->getFrequency() == Skill::Compulsory
+                                    || s->getFrequency() == Skill::NotCompulsory
+                                    || s->getFrequency() == Skill::Wake) {
                                     has_compulsory = true;
                                     break;
                                 }
