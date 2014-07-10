@@ -100,11 +100,11 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
         }
         if (!has_changed || subcardsLength() == 0) {
             QVariant data = QVariant::fromValue(use);
-            if (player->hasSkill("lihuo")) {
+            if (player->hasSkill("iklingpao")) {
                 FireSlash *fire_slash = new FireSlash(getSuit(), getNumber());
                 if (!isVirtualCard() || subcardsLength() > 0)
                     fire_slash->addSubcard(this);
-                fire_slash->setSkillName("lihuo");
+                fire_slash->setSkillName("iklingpao");
                 bool can_use = true;
                 foreach (ServerPlayer *p, use.to) {
                     if (!player->canSlash(p, fire_slash, false)) {
@@ -112,7 +112,7 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
                         break;
                     }
                 }
-                if (can_use && room->askForSkillInvoke(player, "lihuo", data))
+                if (can_use && room->askForSkillInvoke(player, "iklingpao", data))
                     use.card = fire_slash;
                 else
                     delete fire_slash;
@@ -185,9 +185,9 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
     if (use.to.size() > 1 && player->hasSkill("shenji")) {
         room->broadcastSkillInvoke("shenji");
         room->notifySkillInvoked(player, "shenji");
-    } else if (use.to.size() > 1 && player->hasSkill("lihuo") && use.card->isKindOf("FireSlash") && use.card->getSkillName() != "lihuo") {
-        room->broadcastSkillInvoke("lihuo", 1);
-        room->notifySkillInvoked(player, "lihuo");
+    } else if (use.to.size() > 1 && player->hasSkill("iklingpao") && use.card->isKindOf("FireSlash") && use.card->getSkillName() != "iklingpao") {
+        room->broadcastSkillInvoke("iklingpao");
+        room->notifySkillInvoked(player, "iklingpao");
     } else if (use.to.size() > 1 && player->hasSkill("ikxindu")) {
         room->broadcastSkillInvoke("ikxindu");
         room->notifySkillInvoked(player, "ikxindu");
