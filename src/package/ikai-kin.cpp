@@ -3052,6 +3052,41 @@ public:
     }
 };
 
+class IkZhongqu: public TriggerSkill {
+public:
+    IkZhongqu(): TriggerSkill("ikzhongqu") {
+        events << Damage;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player)) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card && damage.card->isKindOf("Slash") && damage.to->isAlive())
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(damage.to))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        int x = qMin(5, damage.to->getHp());
+        if (x > 0)
+            damage.to->drawCards(x, objectName());
+        damage.to->turnOver();
+        
+        return false;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -3196,6 +3231,9 @@ IkaiKinPackage::IkaiKinPackage()
     General *snow017 = new General(this, "snow017", "yuki", 3, false);
     snow017->addSkill(new IkYuanfa);
     snow017->addSkill(new IkGuanju);
+
+    General *snow018 = new General(this, "snow018", "yuki");
+    snow018->addSkill(new IkZhongqu);
 
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
