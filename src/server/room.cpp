@@ -3084,7 +3084,7 @@ void Room::loseMaxHp(ServerPlayer *victim, int lose) {
     if (victim->getMaxHp() == 0)
         killPlayer(victim);
     else
-        thread->trigger(MaxHpChanged, this, victim);
+        thread->trigger(MaxHpChanged, this, victim, QVariant(-lose));
 }
 
 bool Room::changeMaxHpForAwakenSkill(ServerPlayer *player, int magnitude) {

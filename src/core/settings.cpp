@@ -67,7 +67,7 @@ void Settings::init() {
     QStringList banpackagelist = value("BanPackages").toStringList();
     if (banpackagelist.isEmpty()) {
         banpackagelist << "standard" << "wind" << "fire" << "thicket" << "mountain"
-                       << "god" << "YJCM2012" << "YJCM2013" << "YJCM2014"
+                       << "god" << "YJCM2013" << "YJCM2014"
                        << "Special3v3" << "Special1v1" << "Special1v1Ext"
                        << "assassins" << "sp-old" << "OL" << "Taiwan_sp" << "miscellaneous"
                        << "nostalgia" << "BGM" << "BGMDIY" << "ling"
