@@ -5093,6 +5093,151 @@ public:
     }
 };
 
+class IkHuowu: public PhaseChangeSkill {
+public:
+    IkHuowu(): PhaseChangeSkill("ikhuowu") {
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) {
+        foreach (ServerPlayer *p, target->getRoom()->getAlivePlayers()) {
+            if (p->isKongcheng())
+                return PhaseChangeSkill::triggerable(target)
+                    && target->getPhase() == Player::Finish;
+        }
+        return false;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
+            if (p->isKongcheng())
+                targets << p;
+        }
+        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@ikhuowu", true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["IkHuowuTarget"] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *target) const{
+        Room *room = target->getRoom();
+        ServerPlayer *to_damage = target->tag["IkHuowuTarget"].value<ServerPlayer *>();
+        target->tag.remove("IkHuowuTarget");
+        if (to_damage)
+            room->damage(DamageStruct(objectName(), target, to_damage));
+        return false;
+    }
+};
+
+IkTianxieCard::IkTianxieCard() {
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+bool IkTianxieCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && to_select != Self && !to_select->isKongcheng();
+}
+
+void IkTianxieCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    CardMoveReason reason(CardMoveReason::S_REASON_PUT, effect.from->objectName(), QString(), "iktianxie", QString());
+    room->moveCardTo(this, effect.from, NULL, Player::DrawPile, reason, true);
+
+    int trick_num = 0, nontrick_num = 0;
+    foreach (const Card *c, effect.to->getCards("he")) {
+        if (effect.to->canDiscard(effect.to, c->getId())) {
+            if (c->isKindOf("TrickCard"))
+                trick_num++;
+            else
+                nontrick_num++;
+        }
+    }
+    bool discarded = room->askForDiscard(effect.to, "iktianxie", 1, qMin(1, trick_num), nontrick_num > 1, true, "@iktianxie-trick", "TrickCard");
+    if (trick_num == 0 || !discarded)
+        room->askForDiscard(effect.to, "iktianxie", 2, 2, false, true, "@iktianxie-nontrick", "^TrickCard");
+}
+
+class IkTianxie: public OneCardViewAsSkill {
+public:
+    IkTianxie(): OneCardViewAsSkill("iktianxie") {
+        filter_pattern = "TrickCard|black";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkTianxieCard");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        IkTianxieCard *card = new IkTianxieCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+};
+
+IkBengyanCard::IkBengyanCard() {
+    target_fixed = true;
+}
+
+void IkBengyanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    room->removePlayerMark(source, "@bengyan");
+    room->addPlayerMark(source, "@bengyanused");
+    room->broadcastSkillInvoke("ikbengyan");
+    room->setTag("IkBengyanDiscard", 0);
+
+    QList<ServerPlayer *> players = room->getOtherPlayers(source);
+    foreach (ServerPlayer *player, players) {
+        if (player->isAlive()) {
+            room->cardEffect(this, source, player);
+            room->getThread()->delay();
+        }
+    }
+}
+
+void IkBengyanCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.to->getRoom();
+
+    int length = room->getTag("IkBengyanDiscard").toInt() + 1;
+    if (!effect.to->canDiscard(effect.to, "he") || effect.to->getCardCount(true) < length
+        || !room->askForDiscard(effect.to, "ikbengyan", 1000, length, true, true, "@ikbengyan:::" + QString::number(length))) {
+        room->setTag("IkBengyanDiscard", 0);
+        room->damage(DamageStruct("ikbengyan", effect.from, effect.to, 2, DamageStruct::Fire));
+    }
+}
+
+class IkBengyan: public ZeroCardViewAsSkill {
+public:
+    IkBengyan(): ZeroCardViewAsSkill("ikbengyan") {
+        frequency = Limited;
+        limit_mark = "@bengyan";
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkBengyanCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->getMark("@bengyan") >= 1;
+    }
+};
+
+class IkBengyanMark: public TriggerSkill {
+public:
+    IkBengyanMark(): TriggerSkill("#ikbengyan") {
+        events << ChoiceMade;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer* &) const{
+        QStringList data_str = data.toString().split(":");
+        if (data_str.length() != 3 || data_str.first() != "cardDiscard" || data_str.at(1) != "ikbengyan")
+            return QStringList();
+        room->setTag("IkBengyanDiscard", data_str.last().split("+").length());
+        return QStringList();
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -5331,6 +5476,13 @@ IkaiKinPackage::IkaiKinPackage()
     luna038->addSkill(new IkGuijingRecord);
     related_skills.insertMulti("ikguijing", "#ikguijing-record");
 
+    General *luna041 = new General(this, "luna041", "tsuki", 3);
+    luna041->addSkill(new IkHuowu);
+    luna041->addSkill(new IkTianxie);
+    luna041->addSkill(new IkBengyan);
+    luna041->addSkill(new IkBengyanMark);
+    related_skills.insertMulti("ikbengyan", "#ikbengyan");
+
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
     addMetaObject<ExtraCollateralCard>();
@@ -5355,6 +5507,8 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkLvdongCard>();
     addMetaObject<IkMingceCard>();
     addMetaObject<IkFenshiCard>();
+    addMetaObject<IkTianxieCard>();
+    addMetaObject<IkBengyanCard>();
 
     skills << new IkXianyuSlashViewAsSkill << new IkZhuyi;
 }
