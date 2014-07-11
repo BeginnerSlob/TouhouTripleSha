@@ -4447,6 +4447,94 @@ public:
     }
 };
 
+class IkXinshang: public TriggerSkill {
+public:
+    IkXinshang(): TriggerSkill("ikxinshang") {
+        events << Damaged;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.card && damage.card->isKindOf("Slash")
+            && damage.card->getSuit() != Card::Club)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        room->broadcastSkillInvoke(objectName());
+
+        LogMessage log;
+        log.type = "#TriggerSkill";
+        log.from = player;
+        log.arg = objectName();
+        room->sendLog(log);
+        room->notifySkillInvoked(player, objectName());
+
+        room->loseMaxHp(player);
+
+        return false;
+    }
+};
+
+class IkQilei: public TriggerSkill {
+public:
+    IkQilei(): TriggerSkill("ikqilei") {
+        events << MaxHpChanged << DamageComplete << PreDamageDone;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
+        QStringList skill;
+        if (triggerEvent == MaxHpChanged && TriggerSkill::triggerable(player)) {
+            bool ok = false;
+            if (data.toInt(&ok) && ok) {
+                int n = data.toInt();
+                for (int i = 0; i > n; i--)
+                    skill << objectName();
+            }
+        } else if (triggerEvent == PreDamageDone) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.from)
+                damage.from->tag["IkQileiRecord"] = damage.card && damage.card->isKindOf("ThunderSlash") && damage.nature == DamageStruct::Thunder;
+        } else if (triggerEvent == DamageComplete) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (TriggerSkill::triggerable(damage.from) && damage.from->tag["IkQileiRecord"].toBool()) {
+                ask_who = damage.from;
+                skill << objectName();
+            }
+        }
+        foreach (ServerPlayer *p, room->getOtherPlayers(ask_who)) {
+            if (ask_who->inMyAttackRange(p))
+                return skill;
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getOtherPlayers(ask_who))
+            if (ask_who->inMyAttackRange(p))
+                targets << p;
+        ServerPlayer *target = room->askForPlayerChosen(ask_who, targets, objectName(), "@ikqilei", true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            ask_who->tag["IkQileiTarget"] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
+        ServerPlayer *target = ask_who->tag["IkQileiTarget"].value<ServerPlayer *>();
+        ask_who->tag.remove("IkQileiTarget");
+        if (target)
+            room->damage(DamageStruct(objectName(), ask_who, target, 1, DamageStruct::Thunder));
+        return false;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -4657,6 +4745,10 @@ IkaiKinPackage::IkaiKinPackage()
     General *luna015 = new General(this, "luna015", "tsuki");
     luna015->addSkill(new IkTianjing);
     luna015->addSkill(new IkDanbo);
+
+    General *luna016 = new General(this, "luna016", "tsuki", 6);
+    luna016->addSkill(new IkXinshang);
+    luna016->addSkill(new IkQilei);
 
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
