@@ -254,4 +254,14 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class IkFenshiCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkFenshiCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 #endif // IKAIKIN_H
