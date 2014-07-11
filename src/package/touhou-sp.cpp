@@ -89,22 +89,6 @@ public:
     }
 };
 
-class ThQimen: public DistanceSkill {
-public:
-    ThQimen(): DistanceSkill("thqimen"){
-    }
-
-    virtual int getCorrect(const Player *from, const Player *to) const {
-        if ((from->hasSkill(objectName()) && to->isChained())
-            || (to->hasSkill(objectName()) && from->isChained())) {
-            int x = qAbs(from->getSeat() - to->getSeat());
-            int y = from->aliveCount() - x;
-            return 1 - qMin(x, y);
-        } else
-            return 0;
-    }
-};
-
 class ThGuanjia: public TriggerSkill {
 public:
     ThGuanjia(): TriggerSkill("thguanjia") {
@@ -1361,7 +1345,7 @@ TouhouSPPackage::TouhouSPPackage()
 
     General *sp002 = new General(this, "sp002", "hana", 4, false);
     sp002->addSkill(new ThNichang);
-    sp002->addSkill(new ThQimen);
+    sp002->addSkill(new Skill("thqimen", Compulsory));
     sp002->addSkill(new ThGuanjia);
 
     General *sp003 = new General(this, "sp003", "yuki", 3);

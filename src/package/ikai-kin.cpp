@@ -4886,6 +4886,108 @@ public:
     }
 };
 
+class IkDuopo: public TriggerSkill {
+public:
+    IkDuopo(): TriggerSkill("ikduopo") {
+        events << EventPhaseStart;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player->getPhase() != Player::RoundStart || player->isKongcheng())
+            return skill_list;
+        foreach (ServerPlayer *fuhuanghou, room->findPlayersBySkillName(objectName())) {
+            if (player != fuhuanghou && fuhuanghou->isWounded() && !fuhuanghou->isKongcheng()) {
+                skill_list.insert(fuhuanghou, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *fuhuanghou) const{
+        if (fuhuanghou->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *fuhuanghou) const{
+        if (fuhuanghou->pindian(player, objectName(), NULL)) {
+            player->skip(Player::Play);
+        } else
+            room->setPlayerFlag(player, "ikduopo_" + fuhuanghou->objectName());
+        return false;
+    }
+};
+
+class IkMeihun: public TriggerSkill {
+public:
+    IkMeihun(): TriggerSkill("ikmeihun") {
+        events << TargetConfirming;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("Slash") && use.to.contains(player)) {
+            QList<ServerPlayer *> targets;
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (p != use.from)
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (p != use.from)
+                targets << p;
+        }
+        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "ikmeihun-invoke", true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["IkMeihunTarget"] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        ServerPlayer *target = player->tag["IkMeihunTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkMeihunTarget");
+        if (target) {
+            const Card *card = NULL;
+            if (!target->isKongcheng())
+                card = room->askForCard(target, "Jink", "@ikmeihun-give:" + player->objectName(), data, Card::MethodNone);
+            CardMoveReason reason(CardMoveReason::S_REASON_GIVE, target->objectName(), player->objectName(), objectName(), QString());
+            if (!card) {
+                if (use.from->canSlash(target, use.card, false)) {
+                    LogMessage log;
+                    log.type = "#BecomeTarget";
+                    log.from = target;
+                    log.card_str = use.card->toString();
+                    room->sendLog(log);
+
+                    room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), target->objectName());
+
+                    use.to.append(target);
+                    room->sortByActionOrder(use.to);
+                    data = QVariant::fromValue(use);
+                    room->getThread()->trigger(TargetConfirming, room, target, data);
+                }
+            } else {
+                room->obtainCard(player, card, reason);
+            }
+        }
+        return false;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -5113,6 +5215,10 @@ IkaiKinPackage::IkaiKinPackage()
     related_skills.insertMulti("ikshangye", "#ikshangye");
     //related_skills.insertMulti("ikshangye", "#ikshangye-effect");
     luna027->addSkill(new IkFenshi);
+
+    General *luna028 = new General(this, "luna028", "tsuki", 3, false);
+    luna028->addSkill(new IkDuopo);
+    luna028->addSkill(new IkMeihun);
 
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
