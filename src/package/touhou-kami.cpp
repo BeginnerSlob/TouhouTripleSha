@@ -1,4 +1,4 @@
-#include "kami.h"
+#include "touhou-kami.h"
 
 #include "general.h"
 #include "skill.h"
