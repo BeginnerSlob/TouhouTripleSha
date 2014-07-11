@@ -2660,6 +2660,140 @@ public:
     }
 };
 
+IkDingpinCard::IkDingpinCard() {
+}
+
+bool IkDingpinCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
+    return targets.isEmpty() && to_select->isWounded() && !to_select->hasFlag("ikdingpin");
+}
+
+void IkDingpinCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+
+    JudgeStruct judge;
+    judge.who = effect.to;
+    judge.good = true;
+    judge.pattern = ".|black";
+    judge.reason = "ikdingpin";
+
+    room->judge(judge);
+
+    if (judge.isGood()) {
+        room->setPlayerFlag(effect.to, "ikdingpin");
+        effect.to->drawCards(effect.to->getLostHp(), "ikdingpin");
+    } else {
+        effect.from->turnOver();
+    }
+}
+
+class IkDingpinViewAsSkill: public OneCardViewAsSkill {
+public:
+    IkDingpinViewAsSkill(): OneCardViewAsSkill("ikdingpin") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        if (!player->canDiscard(player, "h") || player->getMark("ikdingpin") == 0xE) return false;
+        if (!player->hasFlag("ikdingpin") && player->isWounded()) return true;
+        foreach (const Player *p, player->getAliveSiblings()) {
+            if (!p->hasFlag("ikdingpin") && p->isWounded()) return true;
+        }
+        return false;
+    }
+
+    virtual bool viewFilter(const Card *to_select) const{
+        return !to_select->isEquipped() && (Self->getMark("ikdingpin") & (1 << int(to_select->getTypeId()))) == 0;
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        IkDingpinCard *card = new IkDingpinCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+};
+
+class IkDingpin: public TriggerSkill {
+public:
+    IkDingpin(): TriggerSkill("ikdingpin") {
+        events << EventPhaseChanging << PreCardUsed << CardResponded << BeforeCardsMove;
+        view_as_skill = new IkDingpinViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.from == Player::Play) {
+                foreach (ServerPlayer *p, room->getAllPlayers()) {
+                    if (p->hasFlag("ikdingpin"))
+                        room->setPlayerFlag(p, "-ikdingpin");
+                }
+                if (player->getMark("ikdingpin") > 0)
+                    room->setPlayerMark(player, "ikdingpin", 0);
+            }
+        } else {
+            if (!player->isAlive() || player->getPhase() == Player::NotActive) return QStringList();
+            if (triggerEvent == PreCardUsed || triggerEvent == CardResponded) {
+                const Card *card = NULL;
+                if (triggerEvent == PreCardUsed) {
+                    card = data.value<CardUseStruct>().card;
+                } else {
+                    CardResponseStruct resp = data.value<CardResponseStruct>();
+                    if (resp.m_isUse)
+                        card = resp.m_card;
+                }
+                if (!card || card->getTypeId() == Card::TypeSkill) return QStringList();
+                recordIkDingpinCardType(room, player, card);
+            } else if (triggerEvent == BeforeCardsMove) {
+                CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+                if (player != move.from
+                    || ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) != CardMoveReason::S_REASON_DISCARD))
+                    return QStringList();
+                foreach (int id, move.card_ids) {
+                    const Card *c = Sanguosha->getCard(id);
+                    recordIkDingpinCardType(room, player, c);
+                }
+            }
+        }
+        return QStringList();
+    }
+
+private:
+    void recordIkDingpinCardType(Room *room, ServerPlayer *player, const Card *card) const{
+        if (player->getMark("ikdingpin") == 0xE) return;
+        int typeID = (1 << int(card->getTypeId()));
+        int mark = player->getMark("ikdingpin");
+        if ((mark & typeID) == 0)
+            room->setPlayerMark(player, "ikdingpin", mark | typeID);
+    }
+};
+
+class IkMoyi: public TriggerSkill {
+public:
+    IkMoyi(): TriggerSkill("ikmoyi") {
+        events << TurnedOver << ChainStateChanged;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (triggerEvent == ChainStateChanged && !player->isChained()) return skill_list;
+        foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
+            skill_list.insert(owner, QStringList(objectName()));
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        player->drawCards(1, objectName());
+        return false;
+    }
+};
+
 class IkHuaanViewAsSkill: public OneCardViewAsSkill {
 public:
     IkHuaanViewAsSkill(): OneCardViewAsSkill("ikhuaan") {
@@ -4878,6 +5012,10 @@ IkaiKinPackage::IkaiKinPackage()
     bloom037->addSkill(new IkMuheTargetMod);
     related_skills.insertMulti("ikmuhe", "#ikmuhe-target");
 
+    General *bloom038 = new General(this, "bloom038", "hana", 3);
+    bloom038->addSkill(new IkDingpin);
+    bloom038->addSkill(new IkMoyi);
+
     General *bloom039 = new General(this, "bloom039", "hana");
     bloom039->addSkill(new IkHuaan);
     bloom039->addSkill(new IkHuaanUse);
@@ -4986,6 +5124,7 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkZhuyiCard>();
     addMetaObject<IkMiceCard>();
     addMetaObject<IkBingyanCard>();
+    addMetaObject<IkDingpinCard>();
     addMetaObject<IkGuanjuCard>();
     addMetaObject<IkXiaozuiCard>();
     addMetaObject<IkXiaozuiPeachCard>();
