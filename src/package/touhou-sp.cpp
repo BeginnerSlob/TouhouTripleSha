@@ -1345,7 +1345,7 @@ TouhouSPPackage::TouhouSPPackage()
 
     General *sp002 = new General(this, "sp002", "hana", 4, false);
     sp002->addSkill(new ThNichang);
-    sp002->addSkill(new Skill("thqimen", Compulsory));
+    sp002->addSkill(new Skill("thqimen", Skill::Compulsory));
     sp002->addSkill(new ThGuanjia);
 
     General *sp003 = new General(this, "sp003", "yuki", 3);
