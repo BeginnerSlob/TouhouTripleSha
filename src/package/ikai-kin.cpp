@@ -3830,7 +3830,7 @@ public:
         return false;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         player->drawCards(1, objectName());
         ServerPlayer *current = room->getCurrent();
         if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
@@ -4408,6 +4408,45 @@ public:
     }
 };
 
+class IkTianjing: public MaxCardsSkill {
+public:
+    IkTianjing(): MaxCardsSkill("iktianjing") {
+    }
+
+    virtual int getExtra(const Player *target) const{
+        if (target->hasSkill(objectName()) && target->isWounded())
+            return 4;
+        else
+            return 0;
+    }
+};
+
+class IkDanbo: public DrawCardsSkill {
+public:
+    IkDanbo(): DrawCardsSkill("ikdanbo") {
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return DrawCardsSkill::triggerable(target)
+            && target->isWounded();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual int getDrawNum(ServerPlayer *liubiao, int n) const{
+        int losthp = liubiao->getLostHp();
+        liubiao->clearHistory();
+        liubiao->skip(Player::Play);
+        return n + losthp;
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     :Package("ikai-kin")
 {
@@ -4614,6 +4653,10 @@ IkaiKinPackage::IkaiKinPackage()
     luna013->addSkill(new IkZhichiClear);
     related_skills.insertMulti("ikzhichi", "#ikzhichi-protect");
     related_skills.insertMulti("ikzhichi", "#ikzhichi-clear");
+
+    General *luna015 = new General(this, "luna015", "tsuki");
+    luna015->addSkill(new IkTianjing);
+    luna015->addSkill(new IkDanbo);
 
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
