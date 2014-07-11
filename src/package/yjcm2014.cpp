@@ -199,96 +199,6 @@ public:
     }
 };
 
-class Jianying: public TriggerSkill {
-public:
-    Jianying(): TriggerSkill("jianying") {
-        events << CardUsed << CardResponded << EventPhaseChanging;
-        frequency = Frequent;
-        //global = true;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if ((triggerEvent == CardUsed || triggerEvent == CardResponded) && player->getPhase() == Player::Play) {
-            const Card *card = NULL;
-            if (triggerEvent == CardUsed)
-                card = data.value<CardUseStruct>().card;
-            else if (triggerEvent == CardResponded) {
-                CardResponseStruct resp = data.value<CardResponseStruct>();
-                if (resp.m_isUse)
-                    card = resp.m_card;
-            }
-            if (!card || card->getTypeId() == Card::TypeSkill) return false;
-            int suit = player->getMark("JianyingSuit"), number = player->getMark("JianyingNumber");
-            player->setMark("JianyingSuit", int(card->getSuit()) > 3 ? 0 : (int(card->getSuit()) + 1));
-            player->setMark("JianyingNumber", card->getNumber());
-            if (TriggerSkill::triggerable(player)
-                && ((suit > 0 && int(card->getSuit()) + 1 == suit)
-                    || (number > 0 && card->getNumber() == number))
-                && room->askForSkillInvoke(player, objectName(), data)) {
-                room->broadcastSkillInvoke(objectName());
-                room->drawCards(player, 1, objectName());
-            }
-        } else if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.from == Player::Play) {
-                player->setMark("JianyingSuit", 0);
-                player->setMark("JianyingNumber", 0);
-            }
-        }
-        return false;
-    }
-};
-
-class Shibei: public MasochismSkill {
-public:
-    Shibei(): MasochismSkill("shibei") {
-        frequency = Compulsory;
-    }
-
-    virtual void onDamaged(ServerPlayer *player, const DamageStruct &) const{
-        Room *room = player->getRoom();  
-        if (player->getMark("shibei") > 0) {
-            LogMessage log;
-            log.type = "#TriggerSkill";
-            log.from = player;
-            log.arg = objectName();
-            room->sendLog(log);
-            room->notifySkillInvoked(player, objectName());
-            room->broadcastSkillInvoke(objectName());
-
-            if (player->getMark("shibei") == 1)
-                room->recover(player, RecoverStruct(player));
-            else
-                room->loseHp(player);
-        }
-    }
-};
-
-class ShibeiRecord: public TriggerSkill {
-public:
-    ShibeiRecord(): TriggerSkill("#shibei-record") {
-        events << PreDamageDone << EventPhaseChanging;
-        frequency = Compulsory;
-        //global = true;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive) {
-                foreach (ServerPlayer *p, room->getAlivePlayers())
-                    p->setMark("shibei", 0);
-            }
-        } else if (triggerEvent == PreDamageDone) {
-            ServerPlayer *current = room->getCurrent();
-            if (!current || current->isDead() || current->getPhase() == Player::NotActive)
-                return false;
-            player->addMark("shibei");
-        }
-        return false;
-    }
-};
-
 YJCM2014Package::YJCM2014Package()
     : Package("YJCM2014")
 {
@@ -297,12 +207,6 @@ YJCM2014Package::YJCM2014Package()
     caifuren->addSkill(new QietingRecord);
     caifuren->addSkill(new Xianzhou);
     related_skills.insertMulti("qieting", "#qieting-record");
-
-    General *jvshou = new General(this, "jvshou", "qun", 3); // YJ 306
-    jvshou->addSkill(new Jianying);
-    jvshou->addSkill(new Shibei);
-    jvshou->addSkill(new ShibeiRecord);
-    related_skills.insertMulti("shibei", "#shibei-record");
 
     General *zhuhuan = new General(this, "zhuhuan", "wu"); // YJ 311
     zhuhuan->addSkill(new Youdi);
