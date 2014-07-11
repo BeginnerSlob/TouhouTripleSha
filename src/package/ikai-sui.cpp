@@ -224,7 +224,7 @@ public:
 class IkCanyue: public TargetModSkill {
 public:
     IkCanyue(): TargetModSkill("ikcanyue") {
-        frequency = NotFrequent;
+        frequency = NotCompulsory;
     }
 
     virtual int getResidueNum(const Player *from, const Card *) const{
@@ -2030,14 +2030,19 @@ public:
     }
 };
 
-class IkFenxunDistance: public DistanceSkill {
+class OthersNullifiedDistance: public DistanceSkill {
 public:
-    IkFenxunDistance(): DistanceSkill("#ikfenxun"){
+    OthersNullifiedDistance(): DistanceSkill("others-nullified-distance"){
     }
 
     virtual int getCorrect(const Player *from, const Player *to) const {
         int n = 0;
-        if (from->hasSkill("ikfenxun") && to->hasFlag("ikfenxun_target")) {
+        bool invoke = false;
+        if (from->hasSkill("ikfenxun") && to->hasFlag("ikfenxun_target"))
+            invoke = true;
+        if (from->hasSkill("ikyinsha") && to->getKingdom() == from->getKingdom())
+            invoke = true;
+        if 
             int x = qAbs(from->getSeat() - to->getSeat());
             int y = from->aliveCount() - x;
             n = 1 - qMin(x, y);
@@ -3620,7 +3625,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     bloom046->addSkill("ikbenghuai");
 
     General *snow022 = new General(this, "snow022", "yuki");
-    snow022->addSkill(new Skill("ikxindu", Skill::Compulsory));
+    snow022->addSkill(new Skill("ikxindu", Skill::NotCompulsory));
     snow022->addSkill(new IkFenxun);
     snow022->addSkill(new IkFenxunDistance);
     related_skills.insertMulti("ikfenxun", "#ikfenxun");

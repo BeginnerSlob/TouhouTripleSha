@@ -620,6 +620,7 @@ Axe::Axe(Suit suit, int number)
 class HalberdSkill: public TargetModSkill {
 public:
     HalberdSkill(): TargetModSkill("halberd") {
+        frequency = NotCompulsory;
     }
 
     virtual int getExtraTargetNum(const Player *from, const Card *card) const{

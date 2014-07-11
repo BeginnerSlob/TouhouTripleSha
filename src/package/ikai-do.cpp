@@ -278,6 +278,7 @@ public:
 class IkLipao: public TargetModSkill {
 public:
     IkLipao(): TargetModSkill("iklipao") {
+        frequency = NotCompulsory;
     }
 
     virtual int getResidueNum(const Player *from, const Card *) const{
