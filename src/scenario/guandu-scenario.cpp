@@ -101,7 +101,7 @@ bool SmallTuxiCard::targetFilter(const QList<const Player *> &targets, const Pla
 }
 
 void SmallTuxiCard::onEffect(const CardEffectStruct &effect) const{
-    effect.from->getRoom()->broadcastSkillInvoke("iklianbao");
+    effect.from->getRoom()->broadcastSkillInvoke("ikchibao");
     NosTuxiCard::onEffect(effect);
 }
 

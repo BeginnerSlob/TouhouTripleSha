@@ -1826,16 +1826,16 @@ public:
     }
 };
 
-IkNvelian::IkNvelian(): TriggerSkill("iknvelian") {
+IkJiaolian::IkJiaolian(): TriggerSkill("ikjiaolian") {
     events << HpChanged << MaxHpChanged << CardsMoveOneTime;
     frequency = Frequent;
 }
 
-int IkNvelian::getMaxLostHp(ServerPlayer *zhangchunhua) const{
+int IkJiaolian::getMaxLostHp(ServerPlayer *zhangchunhua) const{
     return qMin(2, zhangchunhua->getLostHp());
 }
 
-QStringList IkNvelian::triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &data, ServerPlayer* &) const{
+QStringList IkJiaolian::triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &data, ServerPlayer* &) const{
     if (!TriggerSkill::triggerable(zhangchunhua)) return QStringList();
     int losthp = getMaxLostHp(zhangchunhua);
     if (triggerEvent == CardsMoveOneTime) {
@@ -1854,7 +1854,7 @@ QStringList IkNvelian::triggerable(TriggerEvent triggerEvent, Room *room, Server
     return QStringList();
 }
 
-bool IkNvelian::cost(TriggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &, ServerPlayer *) const{
+bool IkJiaolian::cost(TriggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &, ServerPlayer *) const{
     if (zhangchunhua->askForSkillInvoke(objectName())) {
         room->broadcastSkillInvoke(objectName());
         return true;
@@ -1862,7 +1862,7 @@ bool IkNvelian::cost(TriggerEvent, Room *room, ServerPlayer *zhangchunhua, QVari
     return false;
 }
 
-bool IkNvelian::effect(TriggerEvent, Room *, ServerPlayer *zhangchunhua, QVariant &, ServerPlayer *) const{
+bool IkJiaolian::effect(TriggerEvent, Room *, ServerPlayer *zhangchunhua, QVariant &, ServerPlayer *) const{
     int losthp = getMaxLostHp(zhangchunhua);
     zhangchunhua->drawCards(losthp - zhangchunhua->getHandcardNum(), objectName());
 
@@ -4834,7 +4834,7 @@ IkaiKinPackage::IkaiKinPackage()
 
     General *bloom018 = new General(this, "bloom018", "hana", 3, false);
     bloom018->addSkill(new IkXuwu);
-    bloom018->addSkill(new IkNvelian);
+    bloom018->addSkill(new IkJiaolian);
 
     General *bloom019 = new General(this, "bloom019", "hana");
     bloom019->addSkill(new IkBengshang);

@@ -935,35 +935,35 @@ public:
     }
 };
 
-IkLianbaoCard::IkLianbaoCard() {
+IkChibaoCard::IkChibaoCard() {
 }
 
-bool IkLianbaoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if (targets.length() >= Self->getMark("iklianbao") || to_select->getHandcardNum() < Self->getHandcardNum() || to_select == Self)
+bool IkChibaoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (targets.length() >= Self->getMark("ikchibao") || to_select->getHandcardNum() < Self->getHandcardNum() || to_select == Self)
         return false;
 
     return !to_select->isKongcheng();
 }
 
-void IkLianbaoCard::onEffect(const CardEffectStruct &effect) const{
-    effect.to->setFlags("IkLianbaoTarget");
+void IkChibaoCard::onEffect(const CardEffectStruct &effect) const{
+    effect.to->setFlags("IkChibaoTarget");
 }
 
-class IkLianbaoViewAsSkill: public ZeroCardViewAsSkill {
+class IkChibaoViewAsSkill: public ZeroCardViewAsSkill {
 public:
-    IkLianbaoViewAsSkill(): ZeroCardViewAsSkill("iklianbao") {
-        response_pattern = "@@iklianbao";
+    IkChibaoViewAsSkill(): ZeroCardViewAsSkill("ikchibao") {
+        response_pattern = "@@ikchibao";
     }
 
     virtual const Card *viewAs() const{
-        return new IkLianbaoCard;
+        return new IkChibaoCard;
     }
 };
 
-class IkLianbao: public DrawCardsSkill {
+class IkChibao: public DrawCardsSkill {
 public:
-    IkLianbao(): DrawCardsSkill("iklianbao") {
-        view_as_skill = new IkLianbaoViewAsSkill;
+    IkChibao(): DrawCardsSkill("ikchibao") {
+        view_as_skill = new IkChibaoViewAsSkill;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *zhangliao, QVariant &data, ServerPlayer* &) const{
@@ -974,7 +974,7 @@ public:
                 targets << p;
         int num = qMin(targets.length(), data.toInt());
         foreach (ServerPlayer *p, room->getOtherPlayers(zhangliao))
-            p->setFlags("-IkLianbaoTarget");
+            p->setFlags("-IkChibaoTarget");
         if (num > 0)
             return QStringList(objectName());
         return QStringList();
@@ -986,12 +986,12 @@ public:
             if (p->getHandcardNum() >= zhangliao->getHandcardNum())
                 targets << p;
         int num = qMin(targets.length(), data.toInt());
-        room->setPlayerMark(zhangliao, "iklianbao", num);
-        if (room->askForUseCard(zhangliao, "@@iklianbao", "@iklianbao-card:::" + QString::number(num))) {
+        room->setPlayerMark(zhangliao, "ikchibao", num);
+        if (room->askForUseCard(zhangliao, "@@ikchibao", "@ikchibao-card:::" + QString::number(num))) {
             room->broadcastSkillInvoke(objectName());
             return true;
         } else
-            room->setPlayerMark(zhangliao, "iklianbao", 0);
+            room->setPlayerMark(zhangliao, "ikchibao", 0);
         return false;
     }
 
@@ -999,31 +999,31 @@ public:
         Room *room = zhangliao->getRoom();
         int count = 0;
         foreach (ServerPlayer *p, room->getOtherPlayers(zhangliao))
-            if (p->hasFlag("IkLianbaoTarget")) count++;
+            if (p->hasFlag("IkChibaoTarget")) count++;
         
         return n - count;
     }
 };
 
-class IkLianbaoAct: public TriggerSkill {
+class IkChibaoAct: public TriggerSkill {
 public:
-    IkLianbaoAct(): TriggerSkill("#iklianbao") {
+    IkChibaoAct(): TriggerSkill("#ikchibao") {
         events << AfterDrawNCards;
         frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *zhangliao, QVariant &, ServerPlayer* &) const{
-        if (zhangliao->getMark("iklianbao") == 0) return QStringList();
+        if (zhangliao->getMark("ikchibao") == 0) return QStringList();
         return QStringList(objectName());
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *zhangliao, QVariant &, ServerPlayer *) const{
-        room->setPlayerMark(zhangliao, "iklianbao", 0);
+        room->setPlayerMark(zhangliao, "ikchibao", 0);
 
         QList<ServerPlayer *> targets;
         foreach (ServerPlayer *p, room->getOtherPlayers(zhangliao)) {
-            if (p->hasFlag("IkLianbaoTarget")) {
-                p->setFlags("-IkLianbaoTarget");
+            if (p->hasFlag("IkChibaoTarget")) {
+                p->setFlags("-IkChibaoTarget");
                 targets << p;
             }
         }
@@ -1031,7 +1031,7 @@ public:
             if (!zhangliao->isAlive())
                 break;
             if (p->isAlive() && !p->isKongcheng()) {
-                int card_id = room->askForCardChosen(zhangliao, p, "h", "iklianbao");
+                int card_id = room->askForCardChosen(zhangliao, p, "h", "ikchibao");
 
                 CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, zhangliao->objectName());
                 room->obtainCard(zhangliao, Sanguosha->getCard(card_id), reason, false);
@@ -2904,9 +2904,9 @@ IkaiDoPackage::IkaiDoPackage()
     bloom003->addSkill(new IkQingjian);
 
     General *bloom004 = new General(this, "bloom004", "hana");
-    bloom004->addSkill(new IkLianbao);
-    bloom004->addSkill(new IkLianbaoAct);
-    related_skills.insertMulti("iklianbao", "#iklianbao");
+    bloom004->addSkill(new IkChibao);
+    bloom004->addSkill(new IkChibaoAct);
+    related_skills.insertMulti("ikchibao", "#ikchubao");
 
     General *bloom005 = new General(this, "bloom005", "hana");
     bloom005->addSkill(new IkLuoyi);
@@ -3003,7 +3003,7 @@ IkaiDoPackage::IkaiDoPackage()
     addMetaObject<IkShenaiCard>();
     addMetaObject<IkXinqiCard>();
     addMetaObject<IkXingyuCard>();
-    addMetaObject<IkLianbaoCard>();
+    addMetaObject<IkChibaoCard>();
     addMetaObject<IkZhihengCard>();
     addMetaObject<IkGuisiCard>();
     addMetaObject<IkQinghuaCard>();
