@@ -2037,17 +2037,26 @@ public:
 
     virtual int getCorrect(const Player *from, const Player *to) const {
         int n = 0;
-        bool invoke = false;
+        bool invoke = false, person_only = false;
         if (from->hasSkill("ikfenxun") && to->hasFlag("ikfenxun_target"))
             invoke = true;
         if (from->hasSkill("ikyinsha") && to->getKingdom() == from->getKingdom())
             invoke = true;
-        if 
+        if (from->hasFlag("ikduopo_" + to->objectName()))
+            invoke = true;
+        if ((from->hasSkill(objectName()) && to->isChained())
+            || (to->hasSkill(objectName()) && from->isChained())) {
+            invoke = true;
+            person_only = true;
+        }
+        if (invoke) {
             int x = qAbs(from->getSeat() - to->getSeat());
             int y = from->aliveCount() - x;
             n = 1 - qMin(x, y);
-            if (from->getOffensiveHorse()) n++;
-            if (to->getDefensiveHorse()) n--;
+            if (!person_only) {
+                if (from->getOffensiveHorse()) n++;
+                if (to->getDefensiveHorse()) n--;
+            }
         }
         return n;
     }
@@ -3627,8 +3636,6 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *snow022 = new General(this, "snow022", "yuki");
     snow022->addSkill(new Skill("ikxindu", Skill::NotCompulsory));
     snow022->addSkill(new IkFenxun);
-    snow022->addSkill(new IkFenxunDistance);
-    related_skills.insertMulti("ikfenxun", "#ikfenxun");
 
     General *snow025 = new General(this, "snow025", "yuki", 3);
     snow025->addSkill(new IkHongrou);
@@ -3715,7 +3722,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkJiaojinCard>();
     addMetaObject<IkSheqieCard>();
 
-    skills << new IkAnshen << new IkAnshenRecord;
+    skills << new IkAnshen << new IkAnshenRecord << new OthersNullifiedDistance;
     related_skills.insertMulti("ikanshen", "#ikanshen-record");
 }
 

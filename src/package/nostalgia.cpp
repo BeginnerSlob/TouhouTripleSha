@@ -290,124 +290,6 @@ public:
     }
 };
 
-class NosZhuikong: public TriggerSkill {
-public:
-    NosZhuikong(): TriggerSkill("noszhuikong") {
-        events << EventPhaseStart;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        if (player->getPhase() != Player::RoundStart || player->isKongcheng())
-            return false;
-
-        bool skip = false;
-        foreach (ServerPlayer *fuhuanghou, room->getAllPlayers()) {
-            if (TriggerSkill::triggerable(fuhuanghou)
-                && player != fuhuanghou && fuhuanghou->isWounded() && !fuhuanghou->isKongcheng()
-                && room->askForSkillInvoke(fuhuanghou, objectName())) {
-                room->broadcastSkillInvoke("zhuikong");
-                if (fuhuanghou->pindian(player, objectName(), NULL)) {
-                    if (!skip) {
-                        player->skip(Player::Play);
-                        skip = true;
-                    }
-                } else {
-                    room->setFixedDistance(player, fuhuanghou, 1);
-                    QVariantList zhuikonglist = player->tag[objectName()].toList();
-                    zhuikonglist.append(QVariant::fromValue(fuhuanghou));
-                    player->tag[objectName()] = QVariant::fromValue(zhuikonglist);
-                }
-            }
-        }
-        return false;
-    }
-};
-
-class NosZhuikongClear: public TriggerSkill {
-public:
-    NosZhuikongClear(): TriggerSkill("#noszhuikong-clear") {
-        events << EventPhaseChanging;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-        if (change.to != Player::NotActive)
-            return false;
-
-        QVariantList zhuikonglist = player->tag["noszhuikong"].toList();
-        if (zhuikonglist.isEmpty()) return false;
-        foreach (QVariant p, zhuikonglist) {
-            ServerPlayer *fuhuanghou = p.value<ServerPlayer *>();
-            room->setFixedDistance(player, fuhuanghou, -1);
-        }
-        player->tag.remove("noszhuikong");
-        return false;
-    }
-};
-
-class NosQiuyuan: public TriggerSkill {
-public:
-    NosQiuyuan(): TriggerSkill("nosqiuyuan") {
-        events << TargetConfirming;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("Slash")) {
-            QList<ServerPlayer *> targets;
-            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                if (!p->isKongcheng() && p != use.from)
-                    targets << p;
-            }
-            if (targets.isEmpty()) return false;
-            ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "nosqiuyuan-invoke", true, true);
-            if (target) {
-                if (target->getGeneralName().contains("fuwan") || target->getGeneral2Name().contains("fuwan"))
-                    room->broadcastSkillInvoke("qiuyuan", 2);
-                else
-                    room->broadcastSkillInvoke("qiuyuan", 1);
-                const Card *card = NULL;
-                if (target->getHandcardNum() > 1) {
-                    card = room->askForCard(target, ".!", "@nosqiuyuan-give:" + player->objectName(), data, Card::MethodNone);
-                    if (!card)
-                        card = target->getHandcards().at(qrand() % target->getHandcardNum());
-                } else {
-                    Q_ASSERT(target->getHandcardNum() == 1);
-                    card = target->getHandcards().first();
-                }
-                CardMoveReason reason(CardMoveReason::S_REASON_GIVE, target->objectName(), player->objectName(), "nosqiuyuan", QString());
-                room->obtainCard(player, card, reason);
-                room->showCard(player, card->getEffectiveId());
-                if (!card->isKindOf("Jink")) {
-                    if (use.from->canSlash(target, use.card, false)) {
-                        LogMessage log;
-                        log.type = "#BecomeTarget";
-                        log.from = target;
-                        log.card_str = use.card->toString();
-                        room->sendLog(log);
-
-                        room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), target->objectName());
-
-                        use.to.append(target);
-                        room->sortByActionOrder(use.to);
-                        data = QVariant::fromValue(use);
-                        room->getThread()->trigger(TargetConfirming, room, target, data);
-                    }
-                }
-            }
-        }
-        return false;
-    }
-};
-
 class NosZhenggong: public MasochismSkill {
 public:
     NosZhenggong(): MasochismSkill("noszhenggong") {
@@ -1273,12 +1155,6 @@ NostalYJCM2013Package::NostalYJCM2013Package()
     General *nos_caochong = new General(this, "nos_caochong", "wei", 3);
     nos_caochong->addSkill(new NosChengxiang);
     nos_caochong->addSkill(new NosRenxin);
-
-    General *nos_fuhuanghou = new General(this, "nos_fuhuanghou", "qun", 3, false);
-    nos_fuhuanghou->addSkill(new NosZhuikong);
-    nos_fuhuanghou->addSkill(new NosZhuikongClear);
-    nos_fuhuanghou->addSkill(new NosQiuyuan);
-    related_skills.insertMulti("noszhuikong", "#noszhuikong-clear");
 
     addMetaObject<NosRenxinCard>();
 }
