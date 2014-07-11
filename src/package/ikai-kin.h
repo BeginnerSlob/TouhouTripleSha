@@ -81,11 +81,11 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
-class IkNvelian: public TriggerSkill {
+class IkJiaolian: public TriggerSkill {
     Q_OBJECT
 
 public:
-    IkNvelian();
+    IkJiaolian();
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &data, ServerPlayer* &) const;
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &, ServerPlayer *) const;
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *zhangchunhua, QVariant &, ServerPlayer *) const;
