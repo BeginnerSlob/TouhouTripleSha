@@ -4,7 +4,6 @@
 #include "client.h"
 #include "engine.h"
 #include "nostalgia.h"
-#include "yjcm2013.h"
 #include "ikai-kin.h"
 #include "settings.h"
 

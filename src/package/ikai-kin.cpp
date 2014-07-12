@@ -5098,7 +5098,7 @@ public:
     IkHuowu(): PhaseChangeSkill("ikhuowu") {
     }
 
-    virtual bool triggerable(const ServerPlayer *target) {
+    virtual bool triggerable(const ServerPlayer *target) const{
         foreach (ServerPlayer *p, target->getRoom()->getAlivePlayers()) {
             if (p->isKongcheng())
                 return PhaseChangeSkill::triggerable(target)
@@ -5127,7 +5127,7 @@ public:
         ServerPlayer *to_damage = target->tag["IkHuowuTarget"].value<ServerPlayer *>();
         target->tag.remove("IkHuowuTarget");
         if (to_damage)
-            room->damage(DamageStruct(objectName(), target, to_damage));
+            room->damage(DamageStruct(objectName(), target, to_damage, 1, DamageStruct::Fire));
         return false;
     }
 };
