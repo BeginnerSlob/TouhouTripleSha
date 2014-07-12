@@ -352,6 +352,85 @@ public:
     }
 };
 
+class IkHudie: public TriggerSkill {
+public:
+    IkHudie(): TriggerSkill("ikhudie") {
+        events << DamageInflicted;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        DamageStruct damage = data.value<DamageStruct>();
+        if (TriggerSkill::triggerable(player) && damage.from && damage.from->getKingdom() != player->getKingdom())
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        DamageStruct damage = data.value<DamageStruct>();
+	    LogMessage log;
+        log.type = "#ChangeKingdom";
+        log.from = player;
+        log.to << player;
+        log.arg = player->getKingdom();
+        log.arg2 = damage.from->getKingdom();
+        room->sendLog(log);
+        room->setPlayerProperty(player, "kingdom", damage.from->getKingdom());
+        return false;
+    }
+};
+
+class IkHualan: public TriggerSkill {
+public:
+    IkHualan(): TriggerSkill("ikhualan") {
+        events << Damage;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        DamageStruct damage = data.value<DamageStruct>();
+        if (TriggerSkill::triggerable(player) && damage.to && damage.to->isAlive() && damage.to->getKingdom() != player->getKingdom())
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        DamageStruct damage = data.value<DamageStruct>();
+        QStringList choices;
+        choices << "draw";
+        if (damage.to && damage.to->isAlive() && player->getKingdom() != "kaze")
+            choices << "change";
+        QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+        if (choice == "change") {
+	        LogMessage log;
+            log.type = "#ChangeKingdom";
+            log.from = player;
+            log.to << player;
+            log.arg = player->getKingdom();
+            log.arg2 = "kaze";
+            room->sendLog(log);
+            room->setPlayerProperty(player, "kingdom", "kaze");
+        } else {
+            player->drawCards(1);
+        }
+        return false;
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -372,6 +451,11 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *wind036 = new General(this, "wind036", "kaze");
     wind036->addSkill(new IkHunkao);
+
+    General *wind045 = new General(this, "wind045", "kaze");
+    wind045->addSkill(new IkHudie);
+    wind045->addSkill(new Skill("ikyinsha", Skill::Compulsory));
+    wind045->addSkill(new IkHualan);
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
