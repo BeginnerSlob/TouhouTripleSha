@@ -117,6 +117,75 @@ public:
     }
 };
 
+class IkJiqiao: public TriggerSkill {
+public:
+    IkJiqiao(): TriggerSkill("ikjiqiao") {
+        events << EventPhaseEnd;
+    }
+
+    virtual bool triggerable(const ServerPlayer *player) const {
+        return TriggerSkill::triggerable(player)
+            && player->getPhase() == Player::Draw
+            && player->getHandcardNum() < player->getMaxHp();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        const Card *card = room->askForCard(player, "..", "@ikjiqiao", QVariant(), objectName());
+        if (card) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["IkJiqiaoCard"] = QVariant::fromValue(card);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        const Card *card = player->tag["IkJiqiaoCard"].value<const Card *>();
+        player->tag.remove("IkJiqiaoCard");
+        if (card) {
+            switch (card->getTypeId()) {
+            case Card::TypeBasic: {
+                    if (Slash::IsAvailable(player)) {
+                        QList<ServerPlayer *> targets;
+                        foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                            if (player->canSlash(p, false))
+                                targets << p;
+
+                        if (targets.isEmpty())
+                            return false;
+
+                        ServerPlayer *victim = room->askForPlayerChosen(player, targets, objectName(), "@ikjiqiao-basic");
+                        Slash *slash = new Slash(Card::NoSuit, 0);
+                        slash->setSkillName("_ikjiqiao");
+                        room->useCard(CardUseStruct(slash, player, victim));
+                    }
+                    break;
+                }
+            case Card::TypeEquip: {
+                    ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@ikjiqiao-equip");
+                    target->drawCards(2, objectName());
+                    break;
+                }
+            case Card::TypeTrick: {
+                    QList<ServerPlayer *> targets;
+                    foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                        if (p->isWounded())
+                            targets << p;
+
+                    if (targets.isEmpty())
+                        return false;
+                    ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@ikjiqiao-trick");
+                    room->recover(target, RecoverStruct(player));
+                    break;
+                }
+            default:
+                    break;
+            }
+        }
+        return false;
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -126,6 +195,9 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *wind033 = new General(this, "wind033", "kaze");
     wind033->addSkill(new IkJilun);
+
+    General *wind034 = new General(this, "wind034", "kaze");
+    wind034->addSkill(new IkJiqiao);
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
