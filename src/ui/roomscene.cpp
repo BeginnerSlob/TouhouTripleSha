@@ -1814,8 +1814,8 @@ QString RoomScene::_translateMovement(const CardsMoveStruct &move) {
     if (reason.m_reason == CardMoveReason::S_REASON_UNKNOWN) return QString();
     // ============================================
     if (move.from && move.card_ids.length() == 1 && move.to_place == Player::DrawPile
-        && move.from->property("zongxuan_move").toString() == QString::number(move.card_ids.first()))
-        reason = CardMoveReason(CardMoveReason::S_REASON_PUT, move.from_player_name, QString(), "zongxuan", QString());
+        && move.from->property("ikzongxuan_move").toString() == QString::number(move.card_ids.first()))
+        reason = CardMoveReason(CardMoveReason::S_REASON_PUT, move.from_player_name, QString(), "ikzongxuan", QString());
     // ============================================
     Photo *srcPhoto = name2photo[reason.m_playerId];
     Photo *dstPhoto = name2photo[reason.m_targetId];
