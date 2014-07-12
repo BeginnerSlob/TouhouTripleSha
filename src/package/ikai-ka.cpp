@@ -186,6 +186,44 @@ public:
     }
 };
 
+class IkKangjin: public OneCardViewAsSkill {
+public:
+    IkKangjin(): OneCardViewAsSkill("ikkangjin") {
+        filter_pattern = ".|.|.|hand";
+        response_or_use = true;
+    }
+
+    virtual const Card *viewAs(const Card *originalcard) const{
+        Duel *duel = new Duel(originalcard->getSuit(), originalcard->getNumber());
+        duel->addSubcard(originalcard);
+        duel->setSkillName(objectName());
+        return duel;
+    }
+};
+
+class IkKangjinTrigger: public TriggerSkill {
+public:
+    IkKangjinTrigger(): TriggerSkill("#ikkangjin") {
+        events << Damage;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.card && damage.card->isKindOf("Duel") && damage.card->getSkillName() == "ikkangjin"
+            && damage.to && damage.to->isAlive()) {
+            ask_who = damage.by_user ? player : damage.to;
+            return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        damage.to->drawCards(damage.to->getLostHp());
+        return false;
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -198,6 +236,11 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *wind034 = new General(this, "wind034", "kaze");
     wind034->addSkill(new IkJiqiao);
+
+    General *wind035 = new General(this, "wind035", "kaze");
+    wind035->addSkill(new IkKangjin);
+    wind035->addSkill(new IkKangjinTrigger);
+    related_skills.insertMulti("ikkangjin", "#ikkangjin");
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
