@@ -133,6 +133,8 @@ public:
 
     bool isGameStarted() const { return game_started; }
 
+    inline Dashboard *getDashboard() { return dashboard; }
+
     bool m_skillButtonSank;
 
 public slots:
