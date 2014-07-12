@@ -108,6 +108,7 @@ public slots:
     void skillButtonActivated();
     void skillButtonDeactivated();
     void selectAll();
+    void selectCards(const QString &pattern);
     void controlNullificationButton(bool show);
 
 protected:

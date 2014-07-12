@@ -1134,22 +1134,22 @@
         <translation>托管中 ...</translation>
     </message>
     <message>
-        <location filename="../../src/ui/dashboard.cpp" line="772"/>
+        <location filename="../../src/ui/dashboard.cpp" line="779"/>
         <source>Sort handcards</source>
         <translation>整理手牌</translation>
     </message>
     <message>
-        <location filename="../../src/ui/dashboard.cpp" line="774"/>
+        <location filename="../../src/ui/dashboard.cpp" line="781"/>
         <source>Sort by type</source>
         <translation>按类型排序</translation>
     </message>
     <message>
-        <location filename="../../src/ui/dashboard.cpp" line="777"/>
+        <location filename="../../src/ui/dashboard.cpp" line="784"/>
         <source>Sort by suit</source>
         <translation>按花色排序</translation>
     </message>
     <message>
-        <location filename="../../src/ui/dashboard.cpp" line="780"/>
+        <location filename="../../src/ui/dashboard.cpp" line="787"/>
         <source>Sort by number</source>
         <translation>按点数排序</translation>
     </message>
@@ -3231,6 +3231,14 @@ P = 你自己, R = 你所在的房间</translation>
         <location filename="../../src/server/server.cpp" line="992"/>
         <source>Check/Uncheck all</source>
         <translation>全部勾选或取消勾选</translation>
+    </message>
+</context>
+<context>
+    <name>SelectSuitDialog</name>
+    <message>
+        <location filename="../../src/package/ikai-ka.cpp" line="238"/>
+        <source>Please choose a suit</source>
+        <translation type="unfinished">请选择一种花色</translation>
     </message>
 </context>
 <context>

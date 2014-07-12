@@ -224,6 +224,134 @@ public:
     }
 };
 
+#include "roomscene.h"
+SelectSuitDialog *SelectSuitDialog::getInstance() {
+    static SelectSuitDialog *instance;
+    if (instance == NULL)
+        instance = new SelectSuitDialog();
+
+    return instance;
+}
+
+SelectSuitDialog::SelectSuitDialog() {
+    setObjectName("ikhunkao");
+    setWindowTitle(tr("Please choose a suit"));
+    group = new QButtonGroup(this);
+
+    button_layout = new QVBoxLayout;
+    setLayout(button_layout);
+    connect(group, SIGNAL(buttonClicked(QAbstractButton *)), this, SLOT(selectSuit(QAbstractButton *)));
+}
+
+void SelectSuitDialog::popup() {
+    foreach (QAbstractButton *button, group->buttons()) {
+        button_layout->removeWidget(button);
+        group->removeButton(button);
+        delete button;
+    }
+    QSet<QString> suits;
+    foreach (const Card *card, Self->getHandcards())
+        suits << card->getSuitString();
+    QStringList all_suit;
+    all_suit << "spade" << "heart" << "club" << "diamond";
+    int count = 0;
+    QString choice;
+    foreach (QString suit, all_suit) {
+        QCommandLinkButton *button = new QCommandLinkButton;
+        button->setIcon(QIcon(QString("image/system/suit/%1.png").arg(suit)));
+        button->setText(Sanguosha->translate(suit));
+        button->setObjectName(suit);
+        group->addButton(button);
+
+        button->setEnabled(suits.contains(suit));
+
+        if (button->isEnabled()) {
+            count++;
+            choice = suit;
+        }
+        button_layout->addWidget(button);
+    }
+
+    exec();
+}
+
+void SelectSuitDialog::selectSuit(QAbstractButton *button) {
+    emit onButtonClick();
+    RoomSceneInstance->getDashboard()->selectCards(".|" + button->objectName());
+    accept();
+}
+
+IkHunkaoCard::IkHunkaoCard() {
+}
+
+bool IkHunkaoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.length() < subcardsLength() && to_select != Self;
+}
+
+bool IkHunkaoCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
+    return targets.length() == subcardsLength();
+}
+
+void IkHunkaoCard::onUse(Room *room, const CardUseStruct &use) const{
+    room->showAllCards(use.from);
+    SkillCard::onUse(room, use);
+}
+
+void IkHunkaoCard::onEffect(const CardEffectStruct &effect) const{
+    QString suit = Sanguosha->getCard(subcards.first())->getSuitString();
+    QString pattern = ".|" + suit;
+    const Card *card = NULL;
+    Room *room = effect.from->getRoom();
+    if (!effect.to->isNude())
+        card = room->askForCard(effect.to, pattern, QString("@ikhunkao-give:%1::%2").arg(effect.from->objectName()).arg(suit),
+                                QVariant(), MethodNone);
+    if (card) {
+        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.to->objectName(), effect.from->objectName(), "ikhunkao", QString());
+        room->obtainCard(effect.from, card, reason);
+    } else {
+        Slash *slash = new Slash(NoSuit, 0);
+        slash->setSkillName("_ikhunkao");
+        if (!effect.from->isCardLimited(slash, MethodUse) && effect.from->canSlash(effect.to, slash, false))
+            room->useCard(CardUseStruct(slash, effect.from, effect.to), false);
+        else
+            delete slash;
+    }
+}
+
+class IkHunkao: public ViewAsSkill {
+public:
+    IkHunkao(): ViewAsSkill("ikhunkao") {
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        if (to_select->isEquipped() || Self->isJilei(to_select))
+            return false;
+        return selected.isEmpty() || to_select->getSuit() == selected.first()->getSuit();
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.isEmpty()) return NULL;
+        int n = 0;
+        foreach (const Card *card, Self->getHandcards())
+            if (card->getSuit() == cards.first()->getSuit())
+                n++;
+        if (cards.length() != n)
+            return NULL;
+
+        IkHunkaoCard *card = new IkHunkaoCard;
+        card->addSubcards(cards);
+        return card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->canDiscard(player, "h");
+    }
+
+    virtual QDialog *getDialog() const {
+        return SelectSuitDialog::getInstance();
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -242,8 +370,12 @@ IkaiKaPackage::IkaiKaPackage()
     wind035->addSkill(new IkKangjinTrigger);
     related_skills.insertMulti("ikkangjin", "#ikkangjin");
 
+    General *wind036 = new General(this, "wind036", "kaze");
+    wind036->addSkill(new IkHunkao);
+
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
+    addMetaObject<IkHunkaoCard>();
 }
 
 ADD_PACKAGE(IkaiKa)

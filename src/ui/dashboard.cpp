@@ -507,12 +507,19 @@ void Dashboard::skillButtonDeactivated() {
 }
 
 void Dashboard::selectAll() {
-    retractPileCards("wooden_ox");
-    if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
-        retractPileCards("thbaochuipile");
+    selectCards(".");
+}
+
+void Dashboard::selectCards(const QString &pattern) {
+    if (pattern == ".") {
+        retractPileCards("wooden_ox");
+        if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
+            retractPileCards("thbaochuipile");
+    }
     if (view_as_skill) {
         unselectAll();
         foreach (CardItem *card_item, m_handCards) {
+            if (!Sanguosha->matchExpPattern(pattern, m_player, card_item->getCard())) continue;
             selectCard(card_item, true);
             pendings << card_item;
         }
