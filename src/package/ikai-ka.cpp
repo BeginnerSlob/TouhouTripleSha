@@ -3,6 +3,7 @@
 #include "general.h"
 #include "skill.h"
 #include "engine.h"
+#include "standard.h"
 
 IkZhijuCard::IkZhijuCard() {
     target_fixed = true;
@@ -78,6 +79,44 @@ public:
     }
 };
 
+IkJilunCard::IkJilunCard() {
+}
+
+bool IkJilunCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && to_select->hasEquip() && to_select != Self;
+}
+
+void IkJilunCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    if (effect.to->hasEquip()) {
+        int card_id = room->askForCardChosen(effect.from, effect.to, "e", "ikjilun");
+        room->obtainCard(effect.to, card_id);
+    }
+    Slash *slash = new Slash(NoSuit, 0);
+    slash->setSkillName("_ikjilun");
+    if (effect.from->canSlash(effect.to, slash, false) && !effect.from->isCardLimited(slash, Card::MethodUse))
+        room->useCard(CardUseStruct(slash, effect.from, effect.to), false);
+    else
+        delete slash;
+}
+
+class IkJilun: public OneCardViewAsSkill {
+public:
+    IkJilun(): OneCardViewAsSkill("ikjilun") {
+        filter_pattern = ".|.|.|hand!";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        IkJilunCard *card = new IkJilunCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkJilunCard") && player->canDiscard(player, "h");
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -85,7 +124,11 @@ IkaiKaPackage::IkaiKaPackage()
     wind025->addSkill(new IkZhiju);
     wind025->addSkill(new IkYingqi);
 
+    General *wind033 = new General(this, "wind033", "kaze");
+    wind033->addSkill(new IkJilun);
+
     addMetaObject<IkZhijuCard>();
+    addMetaObject<IkJilunCard>();
 }
 
 ADD_PACKAGE(IkaiKa)
