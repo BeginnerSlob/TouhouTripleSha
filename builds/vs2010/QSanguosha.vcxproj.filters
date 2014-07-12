@@ -510,12 +510,6 @@
     <ClCompile Include="Release\moc_roomthreadxmode.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\package\yjcm2013.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_yjcm2013.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\package\special1v1.cpp">
       <Filter>package</Filter>
     </ClCompile>
@@ -604,9 +598,6 @@
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="Debug\moc_special3v3.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug\moc_yjcm2013.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="Debug\moc_wrapped-card.cpp">
@@ -958,9 +949,6 @@
     </CustomBuild>
     <CustomBuild Include="..\..\src\server\roomthreadxmode.h">
       <Filter>server</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\src\package\yjcm2013.h">
-      <Filter>package</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\h-formation.h">
       <Filter>package</Filter>
