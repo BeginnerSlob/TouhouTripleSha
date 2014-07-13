@@ -1256,14 +1256,18 @@ const Card *ThYingshiCard::validate(CardUseStruct &card_use) const {
     if (!use) {
         player->setFlags("-ThYingshiUse");
         room->setPlayerFlag(player, "Global_ThYingshiFailed");
-    } else
+    } else {
+        if (n != 1)
+            room->setPlayerMark(player, "@yingshi" + QString::number(n - 1), 0);
         room->addPlayerHistory(player, "ThYingshiCard");
+        room->setPlayerMark(player, "@yingshi" + QString::number(n), 1);
+    }
     return NULL;
 }
 
-class ThYingshi: public ZeroCardViewAsSkill {
+class ThYingshiViewAsSkill: public ZeroCardViewAsSkill {
 public:
-    ThYingshi(): ZeroCardViewAsSkill("thyingshi") {
+    ThYingshiViewAsSkill(): ZeroCardViewAsSkill("thyingshi") {
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const {
@@ -1278,6 +1282,24 @@ public:
 
     virtual const Card *viewAs() const {
         return new ThYingshiCard;
+    }
+};
+
+class ThYingshi: public TriggerSkill {
+public:
+    ThYingshi(): TriggerSkill("thyingshi") {
+        events << EventPhaseChanging;
+        view_as_skill = new ThYingshiViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (change.to != Player::NotActive)
+            return QStringList();
+        room->setPlayerMark(player, "@yingshi1", 0);
+        room->setPlayerMark(player, "@yingshi2", 0);
+        room->setPlayerMark(player, "@yingshi3", 0);
+        return QStringList();
     }
 };
 

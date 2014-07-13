@@ -955,9 +955,12 @@ bool IkTianbeiCard::targetFilter(const QList<const Player *> &targets, const Pla
 
 void IkTianbeiCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
+    room->removePlayerMark(effect.from, "@tianbei");
+    room->addPlayerMark(effect.from, "@tianbeiused");
     room->handleAcquireDetachSkills(effect.from, "-ikmoqi|-iktianbei");
     if (effect.from->isWounded())
         room->recover(effect.from, RecoverStruct(effect.from));
+    room->addPlayerMark(effect.to, "@anshen");
     room->acquireSkill(effect.to, "ikanshen");
     if (effect.to != effect.from)
         effect.to->drawCards(2, "iktianbei");
@@ -967,10 +970,15 @@ class IkTianbei: public ZeroCardViewAsSkill {
 public:
     IkTianbei(): ZeroCardViewAsSkill("iktianbei") {
         frequency = Limited;
+        limit_mark = "@tianbei";
     }
 
     virtual const Card *viewAs() const{
         return new IkTianbeiCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->getMark("@tianbei") >= 1;
     }
 };
 
