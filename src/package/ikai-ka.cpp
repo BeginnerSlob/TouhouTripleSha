@@ -456,6 +456,40 @@ public:
     }
 };
 
+class IkFengxing: public TriggerSkill {
+public:
+    IkFengxing(): TriggerSkill("ikfengxing") {
+        events << EventPhaseStart;
+    }
+
+    virtual bool triggerable(const ServerPlayer *player) const{
+        return TriggerSkill::triggerable(player)
+            && player->getPhase() == Player::Start;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        forever {
+            room->showAllCards(player);
+            foreach (const Card *card, player->getHandcards())
+                if (card->isKindOf("Slash"))
+                    break;
+            player->drawCards(1, objectName());
+            if (!player->askForSkillInvoke(objectName()))
+                break;
+        }
+
+        return false;
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -483,7 +517,7 @@ IkaiKaPackage::IkaiKaPackage()
     wind045->addSkill(new IkHualan);
 
     General *bloom032 = new General(this, "bloom032", "hana");
-    //bloom032->addSkill(new IkShenhei);
+    bloom032->addSkill(new IkFengxing);
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
