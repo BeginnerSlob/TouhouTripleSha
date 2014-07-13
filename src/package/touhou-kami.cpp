@@ -1823,7 +1823,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *player) const {
         return TriggerSkill::triggerable(player)
-            && player->getPhase() == Player::Finish;
+            && (player->getPhase() == Player::Finish || player->getPhase() == Player::Start);
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {

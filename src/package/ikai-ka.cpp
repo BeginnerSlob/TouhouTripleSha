@@ -4,6 +4,7 @@
 #include "skill.h"
 #include "engine.h"
 #include "standard.h"
+#include "client.h"
 
 IkZhijuCard::IkZhijuCard() {
     target_fixed = true;
@@ -186,6 +187,30 @@ public:
     }
 };
 
+IkKangjinCard::IkKangjinCard() {
+    will_throw = false;
+    handling_method = MethodNone;
+}
+
+void IkKangjinCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    const Card *card = Sanguosha->getCard(getEffectiveId());
+    if (effect.from->hasFlag("ikkangjin_red"))
+        room->setPlayerFlag(effect.from, "-ikkangjin_red");
+    if (effect.from->hasFlag("ikkangjin_black"))
+        room->setPlayerFlag(effect.from, "-ikkangjin_black");
+    if (card->isRed()) room->setPlayerFlag(effect.from, "ikkangjin_red");
+    if (card->isBlack()) room->setPlayerFlag(effect.from, "ikkangjin_black");
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "ikkangjin", QString());
+    room->obtainCard(effect.to, this, reason);
+    Duel *duel = new Duel(NoSuit, 0);
+    duel->setSkillName("_ikkangjin");
+    if (!effect.from->isProhibited(effect.to, duel) && !effect.from->isCardLimited(duel, Card::MethodUse))
+        room->useCard(CardUseStruct(duel, effect.from, effect.to));
+    else
+        delete duel;
+}
+
 class IkKangjin: public OneCardViewAsSkill {
 public:
     IkKangjin(): OneCardViewAsSkill("ikkangjin") {
@@ -193,33 +218,37 @@ public:
         response_or_use = true;
     }
 
+    virtual bool viewFilter(const Card *to_select) const{
+        if (to_select->isEquipped()) return false;
+        if (Self->hasFlag("ikkangjin_red") && to_select->isRed()) return false;
+        if (Self->hasFlag("ikkangjin_black") && to_select->isBlack()) return false;
+        return true;
+    }
+
     virtual const Card *viewAs(const Card *originalcard) const{
-        Duel *duel = new Duel(originalcard->getSuit(), originalcard->getNumber());
-        duel->addSubcard(originalcard);
-        duel->setSkillName(objectName());
-        return duel;
+        IkKangjinCard *card = new IkKangjinCard;
+        card->addSubcard(originalcard);
+        return card;
     }
 };
 
 class IkKangjinTrigger: public TriggerSkill {
 public:
     IkKangjinTrigger(): TriggerSkill("#ikkangjin") {
-        events << Damage;
+        events << Damaged;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.card && damage.card->isKindOf("Duel") && damage.card->getSkillName() == "ikkangjin"
-            && damage.to && damage.to->isAlive()) {
-            ask_who = damage.by_user ? player : damage.to;
+        if (damage.card && damage.card->isKindOf("Duel") && damage.card->getSkillName() == "ikkangjin") {
+            ask_who = damage.by_user ? damage.from : player;
             return QStringList(objectName());
         }
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const{
-        DamageStruct damage = data.value<DamageStruct>();
-        damage.to->drawCards(damage.to->getLostHp());
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        player->drawCards(player->getLostHp(), objectName());
         return false;
     }
 };
@@ -288,10 +317,6 @@ bool IkHunkaoCard::targetFilter(const QList<const Player *> &targets, const Play
     return targets.length() < subcardsLength() && to_select != Self;
 }
 
-bool IkHunkaoCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
-    return targets.length() == subcardsLength();
-}
-
 void IkHunkaoCard::onUse(Room *room, const CardUseStruct &use) const{
     room->showAllCards(use.from);
     SkillCard::onUse(room, use);
@@ -344,7 +369,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->canDiscard(player, "h");
+        return player->canDiscard(player, "h") && player->usedTimes("IkHunkaoCard") < 2;
     }
 
     virtual QDialog *getDialog() const {
@@ -462,6 +487,7 @@ IkaiKaPackage::IkaiKaPackage()
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
+    addMetaObject<IkKangjinCard>();
     addMetaObject<IkHunkaoCard>();
 }
 
