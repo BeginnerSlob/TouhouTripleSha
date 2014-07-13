@@ -29,6 +29,14 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class IkKangjinCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkKangjinCard();
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 #include <QDialog>
 #include <QVBoxLayout>
 #include <QCommandLinkButton>
@@ -42,7 +50,6 @@ public:
 public slots:
     void popup();
     void selectSuit(QAbstractButton *button);
-    //void onPlayerChooseSuit();
 
 private:
     explicit SelectSuitDialog();
@@ -61,7 +68,6 @@ public:
     Q_INVOKABLE IkHunkaoCard();
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
     virtual void onUse(Room *room, const CardUseStruct &use) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
