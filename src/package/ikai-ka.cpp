@@ -457,6 +457,9 @@ IkaiKaPackage::IkaiKaPackage()
     wind045->addSkill(new Skill("ikyinsha", Skill::Compulsory));
     wind045->addSkill(new IkHualan);
 
+    General *bloom032 = new General(this, "bloom032", "hana");
+    //bloom032->addSkill(new IkShenhei);
+
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
     addMetaObject<IkHunkaoCard>();

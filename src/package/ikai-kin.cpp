@@ -1507,7 +1507,7 @@ public:
         if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to == Player::NotActive) {
-                room->setPlayerMark(player, "@shensha", 0);
+                room->setPlayerMark(player, "@shensha" + QString::number(qMin(6, player->getMark("ikshensha"))), 0);
                 room->setPlayerMark(player, "ikshensha", 0);
             }
         } else if (triggerEvent == CardFinished) {
@@ -1518,16 +1518,21 @@ public:
         } else if (triggerEvent == EventAcquireSkill || triggerEvent == EventLoseSkill) {
             QString name = data.toString();
             if (name != objectName()) return QStringList();
-            int num = (triggerEvent == EventAcquireSkill) ? player->getMark("ikshensha") : 0;
-            room->setPlayerMark(player, "@shensha", num);
+            int mark_num = player->getMark("ikshensha");
+            int num = triggerEvent == EventAcquireSkill ? (mark_num >= 6 ? mark_num : 1) : 0;
+            room->setPlayerMark(player, "@shensha" + QString::number(qMin(6, mark_num)), num);
         }
         return QStringList();
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         room->addPlayerMark(player, "ikshensha");
-        if (TriggerSkill::triggerable(player))
-            room->setPlayerMark(player, "@shensha", player->getMark("ikshensha"));
+        if (TriggerSkill::triggerable(player)) {
+            int num = player->getMark("ikshensha");
+            if (num <= 6)
+                room->setPlayerMark(player, "@shensha" + QString::number(num - 1), 0);
+            room->setPlayerMark(player, "@shensha" + QString::number(qMin(6, num)), num >= 6 ? num : 1);
+        }
         return false;
     }
 };
