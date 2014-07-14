@@ -623,6 +623,90 @@ public:
     }
 };
 
+IkDengpoCard::IkDengpoCard() {
+}
+
+bool IkDengpoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && to_select->getCardCount() >= subcardsLength() && to_select != Self;
+}
+
+void IkDengpoCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    int x = subcardsLength();
+    room->askForDiscard(effect.to, objectName(), x, x, false, true);
+    effect.from->setFlags("ikdengpo");
+    effect.to->setMark("ikdengpo", x);
+    QString dis = getUserString();
+    if (dis == "null") {
+        effect.from->tag["IkDengpoTarget"] = QVariant::fromValue(effect.to);
+        room->setFixedDistance(effect.from, effect.to, 1);
+    }
+}
+
+class IkDengpoViewAsSkill: public ViewAsSkill {
+public:
+    IkDengpoViewAsSkill(): ViewAsSkill("ikdengpo") {
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        if (Self->isJilei(to_select))
+            return false;
+        return selected.length() < 4;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.isEmpty()) return NULL;
+        bool distance = Self->hasEquip();
+        foreach (const Card *cd, Self->getEquips())
+            if (!cards.contains(cd)) {
+                distance = false;
+                break;
+            }
+        IkDengpoCard *card = new IkDengpoCard;
+        card->addSubcards(cards);
+        card->setUserString(distance ? "null" : QString());
+        return card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->canDiscard(player, "he") && !player->hasUsed("IkDengpoCard");
+    }
+};
+
+class IkDengpo: public TriggerSkill {
+public:
+    IkDengpo(): TriggerSkill("ikdengpo") {
+        events << EventPhaseEnd << EventPhaseChanging;
+        view_as_skill = new IkDengpoViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseEnd && player->getPhase() == Player::Play && player->hasFlag(objectName())) {
+            player->setFlags("-" + objectName());
+            QList<ServerPlayer *> targets;
+            targets << player;
+            int x = 0;
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                if (p->getMark(objectName()) > 0) {
+                    targets << p;
+                    x = p->getMark(objectName());
+                    p->setMark(objectName(), 0);
+                    break;
+                }
+            room->drawCards(targets, x, objectName());
+        } else if (triggerEvent == EventPhaseChanging && !player->tag["IkDengpoTarget"].isNull()) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive) {
+                ServerPlayer *target = player->tag["IkDengpoTarget"].value<ServerPlayer *>();
+                player->tag.remove("IkDengpoTarget");
+                if (target)
+                    room->setFixedDistance(player, target, -1);
+            }
+        }
+        return QStringList();
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -660,10 +744,17 @@ IkaiKaPackage::IkaiKaPackage()
     bloom035->addSkill(new IkDuduanMaxCards);
     related_skills.insertMulti("ikduduan", "#ikduduan");
 
+    General *bloom036 = new General(this, "bloom036", "hana");
+    //bloom036->addSkill(new IkPaomu);
+
+    General *bloom045 = new General(this, "bloom045", "hana");
+    bloom045->addSkill(new IkDengpo);
+
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
     addMetaObject<IkKangjinCard>();
     addMetaObject<IkHunkaoCard>();
+    addMetaObject<IkDengpoCard>();
 }
 
 ADD_PACKAGE(IkaiKa)
