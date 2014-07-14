@@ -623,6 +623,106 @@ public:
     }
 };
 
+IkPaomuCard::IkPaomuCard() {
+}
+
+void IkPaomuCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    room->removePlayerMark(effect.from, "@paomu");
+    room->addPlayerMark(effect.from, "@paomuused");
+    effect.to->gainMark("@liebiao");
+    room->setFixedDistance(effect.from, effect.to, 1);
+}
+
+class IkPaomuViewAsSkill: public ZeroCardViewAsSkill {
+public:
+    IkPaomuViewAsSkill(): ZeroCardViewAsSkill("ikpaomu") {
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkPaomuCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->getMark("@paomu") > 0;
+    }
+};
+
+class IkPaomu: public TriggerSkill {
+public:
+    IkPaomu(): TriggerSkill("ikpaomu") {
+        events << CardFinished << Death;
+        view_as_skill = new IkPaomuViewAsSkill;
+        frequency = Limited;
+        limit_mark = "@paomu";
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
+        if (triggerEvent == CardFinished && TriggerSkill::triggerable(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (!use.card || !use.card->isBlack() || !use.card->isKindOf("Slash"))
+                return QStringList();
+            foreach (ServerPlayer *to, use.to)
+                if (to->getMark("@liebiao") > 0)
+                    return QStringList(objectName());
+        } else if (triggerEvent == Death && player->getMark("@liebiao") > 0) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who == player) {
+                ServerPlayer *owner = room->findPlayerBySkillName(objectName());
+                if (owner) {
+                    ask_who = owner;
+                    return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *player) const{
+        if (triggerEvent == CardFinished) {
+            if (player->askForSkillInvoke(objectName())) {
+                room->broadcastSkillInvoke(objectName());
+                return true;
+            }
+        } else if (triggerEvent == Death) {
+            ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@ikpaomu", true, true);
+            if (target) {
+                room->broadcastSkillInvoke(objectName());
+                player->tag["IkPaomuTarget"] = QVariant::fromValue(target);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *player) const{
+        if (triggerEvent == CardFinished) {
+            ServerPlayer *victim = NULL;
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (p->getMark("@liebiao") > 0) {
+                    victim = p;
+                    break;
+                }
+            }
+            if (victim) {
+                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                    if (!p->inMyAttackRange(victim)) continue;
+                    if (!room->askForUseSlashTo(p, victim, QString("@ikpaomu-slash:%1:%2").arg(player->objectName()).arg(victim->objectName())))
+                        player->drawCards(1, objectName());
+                }
+            }
+        } else if (triggerEvent == Death) {
+            ServerPlayer *target = player->tag["IkPaomuTarget"].value<ServerPlayer *>();
+            player->tag.remove("IkPaomuTarget");
+            if (target) {
+                target->gainMark("@liebiao");
+                room->setFixedDistance(player, target, 1);
+            }
+        }
+        return false;
+    }
+};
+
 IkDengpoCard::IkDengpoCard() {
 }
 
@@ -745,7 +845,7 @@ IkaiKaPackage::IkaiKaPackage()
     related_skills.insertMulti("ikduduan", "#ikduduan");
 
     General *bloom036 = new General(this, "bloom036", "hana");
-    //bloom036->addSkill(new IkPaomu);
+    bloom036->addSkill(new IkPaomu);
 
     General *bloom045 = new General(this, "bloom045", "hana");
     bloom045->addSkill(new IkDengpo);
@@ -754,6 +854,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkJilunCard>();
     addMetaObject<IkKangjinCard>();
     addMetaObject<IkHunkaoCard>();
+    addMetaObject<IkPaomuCard>();
     addMetaObject<IkDengpoCard>();
 }
 
