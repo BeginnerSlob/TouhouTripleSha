@@ -490,6 +490,139 @@ public:
     }
 };
 
+class IkQizhong: public TriggerSkill {
+public:
+    IkQizhong(): TriggerSkill("ikqizhong") {
+        events << CardUsed << EventPhaseChanging << CardFinished;
+        frequency = Frequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging)
+            player->setMark(objectName(), 0);
+        else if (triggerEvent == CardFinished) {
+            const Card *card = data.value<CardUseStruct>().card;
+            player->setMark(objectName(), card->getColor() + 1);
+        } else if (triggerEvent == CardUsed && player->getPhase() == Player::Play && TriggerSkill::triggerable(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            int num = player->getMark(objectName());
+            int color = -1;
+            if (num == 0)
+                return QStringList();
+            else if (num == 1)
+                color = Card::Red;
+            else if (num == 2)
+                color = Card::Black;
+            else if (num == 3)
+                color = Card::Colorless;
+            if (use.card->getColor() != color)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        QList<int> ids = room->getNCards(1, false);
+        CardsMoveStruct move(ids, player, Player::PlaceTable,
+                             CardMoveReason(CardMoveReason::S_REASON_TURNOVER, player->objectName(), objectName(), QString()));
+        room->moveCardsAtomic(move, true);
+
+        int id = ids.first();
+        const Card *card = Sanguosha->getCard(id);
+        if (card->getColor() != use.card->getColor()) {
+            CardMoveReason reason(CardMoveReason::S_REASON_DRAW, player->objectName(), objectName(), QString());
+            room->obtainCard(player, card, reason);
+        } else {
+            const Card *card_ex = NULL;
+            if (!player->isNude())
+                card_ex = room->askForCard(player, "^" + QString::number(use.card->getEffectiveId()),
+                                           "@ikqizhong-exchange:::" + card->objectName(),
+                                           QVariant::fromValue(card), Card::MethodNone);
+            if (card_ex) {
+                CardMoveReason reason1(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
+                CardMoveReason reason2(CardMoveReason::S_REASON_DRAW, player->objectName(), objectName(), QString());
+                CardsMoveStruct move1(card_ex->getEffectiveId(), player, NULL, Player::PlaceUnknown, Player::DrawPile, reason1);
+                CardsMoveStruct move2(ids, player, player, Player::PlaceUnknown, Player::PlaceHand, reason2);
+
+                QList<CardsMoveStruct> moves;
+                moves.append(move1);
+                moves.append(move2);
+                room->moveCardsAtomic(moves, false);
+            } else {
+                CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, player->objectName(), objectName(), QString());
+                room->throwCard(card, reason, NULL);
+            }
+        }
+
+        return false;
+    }
+};
+
+class IkDuduan: public TriggerSkill {
+public:
+    IkDuduan(): TriggerSkill("ikduduan") {
+        events << EventPhaseStart << PreDamageDone;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == PreDamageDone) {
+            DamageStruct damage = data.value<DamageStruct>();
+            ServerPlayer *from = damage.from;
+            if (from && from->getPhase() == Player::Play && from->hasFlag(objectName()))
+                from->setFlags("-" + objectName());
+        } else if (triggerEvent == EventPhaseStart && TriggerSkill::triggerable(player) && player->getPhase() == Player::Start)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        ServerPlayer *target = NULL;
+        QList<ServerPlayer *> targets;
+        targets << player;
+        foreach (ServerPlayer *p, room->getOtherPlayers(player))
+            if (player->inMyAttackRange(p))
+                targets << p;
+        target = room->askForPlayerChosen(player, targets, objectName(), "@ikduduan", true);
+        if (target) {
+            int card_id = room->askForCardChosen(player, target, "he", objectName(), false, Card::MethodDiscard);
+            room->throwCard(card_id, target, player == target ? NULL : player);
+        } else
+            player->drawCards(1, objectName());
+        player->setFlags(objectName());
+        return false;
+    }
+};
+
+class IkDuduanMaxCards: public MaxCardsSkill {
+public:
+    IkDuduanMaxCards(): MaxCardsSkill("#ikduduan") {
+    }
+
+    virtual int getExtra(const Player *target) const{
+        if (target->hasFlag("ikduduan"))
+            return -2;
+        else
+            return 0;
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -518,6 +651,14 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *bloom032 = new General(this, "bloom032", "hana");
     bloom032->addSkill(new IkFengxing);
+
+    General *bloom034 = new General(this, "bloom034", "hana");
+    bloom034->addSkill(new IkQizhong);
+
+    General *bloom035 = new General(this, "bloom035", "hana");
+    bloom035->addSkill(new IkDuduan);
+    bloom035->addSkill(new IkDuduanMaxCards);
+    related_skills.insertMulti("ikduduan", "#ikduduan");
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();

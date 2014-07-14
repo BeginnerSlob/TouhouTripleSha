@@ -719,9 +719,10 @@ void ServerPlayer::play(QList<Player::Phase> set_phases) {
         if (phases[i] != NotActive && (skip || _m_phases_state[i].skipped != 0)) {
             QVariant isCost = QVariant::fromValue(_m_phases_state[i].skipped < 0);
             bool cancel_skip = thread->trigger(EventPhaseSkipping, room, this, isCost);
-            if (!cancel_skip) 
+            if (!cancel_skip) {
                 thread->trigger(EventPhaseSkipped, room, this, QVariant::fromValue((int)phases[i]));
                 continue;
+            }
         }
 
         if (!thread->trigger(EventPhaseStart, room, this)) {
