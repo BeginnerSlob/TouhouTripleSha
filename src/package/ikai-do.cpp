@@ -2158,30 +2158,30 @@ public:
     }
 };
 
-IkYuluCard::IkYuluCard() {
+IkCuiluCard::IkCuiluCard() {
 }
 
-bool IkYuluCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkCuiluCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     if (!targets.isEmpty())
         return false;
 
     return to_select->isMale() && to_select->isWounded() && to_select != Self;
 }
 
-void IkYuluCard::onEffect(const CardEffectStruct &effect) const{
+void IkCuiluCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
     RecoverStruct recover(effect.from);
     room->recover(effect.from, recover, true);
     room->recover(effect.to, recover, true);
 }
 
-class IkYulu: public ViewAsSkill {
+class IkCuilu: public ViewAsSkill {
 public:
-    IkYulu(): ViewAsSkill("ikyulu") {
+    IkCuilu(): ViewAsSkill("ikcuilu") {
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getHandcardNum() >= 2 && !player->hasUsed("IkYuluCard");
+        return player->getHandcardNum() >= 2 && !player->hasUsed("IkCuiluCard");
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
@@ -2195,15 +2195,15 @@ public:
         if (cards.length() != 2)
             return NULL;
 
-        IkYuluCard *ikyulu_card = new IkYuluCard();
-        ikyulu_card->addSubcards(cards);
-        return ikyulu_card;
+        IkCuiluCard *cuilu_card = new IkCuiluCard();
+        cuilu_card->addSubcards(cards);
+        return cuilu_card;
     }
 };
 
-class IkCuimeng: public TriggerSkill {
+class IkCangmeng: public TriggerSkill {
 public:
-    IkCuimeng(): TriggerSkill("ikcuimeng") {
+    IkCangmeng(): TriggerSkill("ikcangmeng") {
         events << CardsMoveOneTime;
         frequency = Frequent;
     }
@@ -2966,8 +2966,8 @@ IkaiDoPackage::IkaiDoPackage()
     snow007->addSkill(new IkYuanhe);
 
     General *snow008 = new General(this, "snow008", "yuki", 3, false);
-    snow008->addSkill(new IkYulu);
-    snow008->addSkill(new IkCuimeng);
+    snow008->addSkill(new IkCuilu);
+    snow008->addSkill(new IkCangmeng);
 
     General *snow042 = new General(this, "snow042", "yuki");
     snow042->addSkill(new IkZiqiang);
@@ -3013,7 +3013,7 @@ IkaiDoPackage::IkaiDoPackage()
     addMetaObject<IkWanmeiCard>();
     addMetaObject<IkXuanhuoCard>();
     addMetaObject<IkYuanheCard>();
-    addMetaObject<IkYuluCard>();
+    addMetaObject<IkCuiluCard>();
     addMetaObject<IkZiqiangCard>();
     addMetaObject<IkWudiCard>();
     addMetaObject<IkMoyuCard>();

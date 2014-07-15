@@ -544,7 +544,7 @@ public:
         } else {
             const Card *card_ex = NULL;
             if (!player->isNude())
-                card_ex = room->askForCard(player, "^" + QString::number(use.card->getEffectiveId()),
+                card_ex = room->askForCard(player, QString("^%1|.|.|hand").arg(use.card->getEffectiveId()),
                                            "@ikqizhong-exchange:::" + card->objectName(),
                                            QVariant::fromValue(card), Card::MethodNone);
             if (card_ex) {
@@ -631,7 +631,6 @@ void IkPaomuCard::onEffect(const CardEffectStruct &effect) const{
     room->removePlayerMark(effect.from, "@paomu");
     room->addPlayerMark(effect.from, "@paomuused");
     effect.to->gainMark("@liebiao");
-    room->setFixedDistance(effect.from, effect.to, 1);
 }
 
 class IkPaomuViewAsSkill: public ZeroCardViewAsSkill {
@@ -685,7 +684,7 @@ public:
                 return true;
             }
         } else if (triggerEvent == Death) {
-            ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@ikpaomu", true, true);
+            ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@ikpaomu", false, true);
             if (target) {
                 room->broadcastSkillInvoke(objectName());
                 player->tag["IkPaomuTarget"] = QVariant::fromValue(target);
@@ -714,10 +713,8 @@ public:
         } else if (triggerEvent == Death) {
             ServerPlayer *target = player->tag["IkPaomuTarget"].value<ServerPlayer *>();
             player->tag.remove("IkPaomuTarget");
-            if (target) {
+            if (target)
                 target->gainMark("@liebiao");
-                room->setFixedDistance(player, target, 1);
-            }
         }
         return false;
     }
