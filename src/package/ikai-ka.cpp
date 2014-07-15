@@ -1086,6 +1086,63 @@ public:
     }
 };
 
+class IkTaoxiao: public OneCardViewAsSkill {
+public:
+    IkTaoxiao(): OneCardViewAsSkill("iktaoxiao") {
+        response_or_use = true;
+        filter_pattern = "Peach";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        GodSalvation *card = new GodSalvation(originalCard->getSuit(), originalCard->getNumber());
+        card->addSubcard(originalCard);
+        card->setSkillName(objectName());
+        return card;
+    }
+};
+
+class IkYushenyu: public TriggerSkill {
+public:
+    IkYushenyu(): TriggerSkill("ikyushenyu") {
+        events << HpRecover;
+        frequency = Frequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
+        ServerPlayer *current = room->getCurrent();
+        QStringList skill;
+        if (current && current->getPhase() != Player::NotActive && TriggerSkill::triggerable(player)) {
+            ask_who = current;
+            RecoverStruct recover = data.value<RecoverStruct>();
+            for (int i = 0; i < recover.recover; i++)
+                skill << objectName();
+        }
+        return skill;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        QStringList choices;
+        choices << "draw";
+        if (ask_who->canDiscard(player, "he"))
+            choices << "discard";
+        QString choice = room->askForChoice(ask_who, objectName(), choices.join("+"));
+        if (choice == "discard") {
+            int card_id = room->askForCardChosen(ask_who, player, "he", objectName(), false, Card::MethodDiscard);
+            room->throwCard(card_id, player, ask_who == player ? NULL : ask_who);
+        } else
+            ask_who->drawCards(1, objectName());
+        return false;
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -1135,6 +1192,10 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *snow034 = new General(this, "snow034", "yuki");
     snow034->addSkill(new IkShidao);
+
+    General *snow035 = new General(this, "snow035", "yuki");
+    snow035->addSkill(new IkTaoxiao);
+    snow035->addSkill(new IkYushenyu);
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
