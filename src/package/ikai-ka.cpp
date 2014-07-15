@@ -807,6 +807,100 @@ public:
     }
 };
 
+class IkLingyun: public TriggerSkill {
+public:
+    IkLingyun(): TriggerSkill("iklingyun") {
+        events << BeforeCardsMove;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.from != player)
+            return QStringList();
+        if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
+            && ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_USE)) {
+            const Card *card = move.reason.m_extraData.value<const Card *>();
+            if (card->isKindOf("BasicCard"))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        QList<int> card_ids = move.card_ids, disabled_ids;
+        while (!card_ids.isEmpty()) {
+            room->fillAG(card_ids, NULL, disabled_ids);
+            int id = room->askForAG(player, card_ids, false, objectName());
+            room->clearAG(NULL);
+            card_ids.removeOne(id);
+            disabled_ids << id;
+            room->moveCardsAtomic(CardsMoveStruct(id,
+                                                  NULL,
+                                                  Player::DrawPile,
+                                                  CardMoveReason(CardMoveReason::S_REASON_PUT,
+                                                                 player->objectName(),
+                                                                 objectName(),
+                                                                 QString())),
+                                  true);
+        }
+        move.removeCardIds(move.card_ids);
+        data = QVariant::fromValue(move);
+        return false;
+    }
+};
+
+class IkMiyao: public TriggerSkill {
+public:
+    IkMiyao(): TriggerSkill("ikmiyao") {
+        events << EventPhaseChanging;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (change.to != Player::NotActive) return skill_list;
+        foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
+            if (owner == player) continue;
+            if (owner->getHandcardNum() != player->getHandcardNum())
+                skill_list.insert(owner, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        int x = player->getHandcardNum() - ask_who->getHandcardNum();
+        if (x > 0) {
+            ask_who->drawCards(x, objectName());
+            if (x >= 2)
+                room->loseHp(ask_who);
+        } else if (x < 0) {
+            x = -x;
+            room->askForDiscard(ask_who, objectName(), x, x);
+            if (x >= 2 && ask_who->isWounded())
+                room->recover(ask_who, RecoverStruct(ask_who));
+        }
+        return false;
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -849,6 +943,10 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *bloom045 = new General(this, "bloom045", "hana");
     bloom045->addSkill(new IkDengpo);
+
+    General *snow031 = new General(this, "snow031", "yuki", 3);
+    snow031->addSkill(new IkLingyun);
+    snow031->addSkill(new IkMiyao);
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
