@@ -876,7 +876,7 @@ QGroupBox *ThMimengDialog::createLeft() {
             c->setParent(this);
             layout->addWidget(createButton(c));
 
-            if (objectName() != "thmimeng" && card->objectName() == "slash" && !ServerInfo.Extensions.contains("!maneuvering")) {
+            if (objectName() == "ikguihuo" && card->objectName() == "slash" && !ServerInfo.Extensions.contains("!maneuvering")) {
                 Card *c2 = Sanguosha->cloneCard(card->objectName());
                 c2->setParent(this);
                 layout->addWidget(createButton(c2));
