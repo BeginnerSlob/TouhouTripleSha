@@ -16,7 +16,9 @@ class IkZhijuCard: public SkillCard {
 
 public:
     Q_INVOKABLE IkZhijuCard();
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
 class IkJilunCard: public SkillCard {

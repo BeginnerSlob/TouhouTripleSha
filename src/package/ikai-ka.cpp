@@ -7,58 +7,63 @@
 #include "client.h"
 
 IkZhijuCard::IkZhijuCard() {
-    target_fixed = true;
-    will_throw = false;
-    handling_method = MethodNone;
 }
 
-void IkZhijuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    CardMoveReason reason(CardMoveReason::S_REASON_PUT, source->objectName(), QString(), "ikzhiju", QString());
-    room->moveCardsAtomic(CardsMoveStruct(subcards, NULL, Player::DrawPile, reason), false);
-    if (source->isAlive()) {
-        QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *p, room->getAlivePlayers())
-            if (source->canDiscard(p, "ej"))
-                targets << p;
-        if (targets.isEmpty()) return;
-        ServerPlayer *target = room->askForPlayerChosen(source, targets, "ikzhiju", "@ikzhiju");
-        int card_id = room->askForCardChosen(source, target, "ej", "ikzhiju", false, MethodDiscard);
-        room->throwCard(card_id, room->getCardPlace(card_id) == Player::PlaceDelayedTrick ? NULL : target, source);
-    }
+bool IkZhijuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && Self->canDiscard(to_select, "ej");
 }
 
-class IkZhiju: public ViewAsSkill {
+void IkZhijuCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    int card_id = room->askForCardChosen(effect.from, effect.to, "ej", "ikzhiju", false, MethodDiscard);
+    room->throwCard(card_id, room->getCardPlace(card_id) == Player::PlaceDelayedTrick ? NULL : effect.to, effect.from);
+    effect.from->setFlags("ikzhiju");
+}
+
+class IkZhijuViewAsSkill: public ZeroCardViewAsSkill {
 public:
-    IkZhiju(): ViewAsSkill("ikzhiju") {
+    IkZhijuViewAsSkill(): ZeroCardViewAsSkill("ikzhiju") {
     }
 
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        return selected.length() < 2 && !to_select->isEquipped();
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if (cards.length() != 2)
-            return NULL;
-
-        IkZhijuCard *card = new IkZhijuCard;
-        card->addSubcards(cards);
-        return card;
+    virtual const Card *viewAs() const{
+        return new IkZhijuCard;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getHandcardNum() >= 2;
+        return !player->hasUsed("IkZhijuCard");
+    }
+};
+
+class IkZhiju: public TriggerSkill {
+public:
+    IkZhiju(): TriggerSkill("ikzhiju") {
+        events << EventPhaseStart;
+        view_as_skill = new IkZhijuViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        if (player->getPhase() == Player::Discard && player->hasFlag(objectName())) {
+            player->setFlags("-" + objectName());
+            if (player->isKongcheng()) return QStringList();
+            const Card *card = room->askForExchange(player, objectName(), 2, 2, false, "@ikzhiju", false);
+            if (card) {
+                CardMoveReason reason(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
+                room->moveCardTo(card, NULL, Player::DrawPile, reason, false);
+            }
+        }
+        return QStringList();
     }
 };
 
 class IkYingqi: public TriggerSkill {
 public:
     IkYingqi(): TriggerSkill("ikyingqi") {
-        events << EventPhaseStart;
+        events << EventPhaseEnd;
     }
 
     virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
         QMap<ServerPlayer *, QStringList> skill_list;
-        if (player->getPhase() == Player::Discard && player->getHandcardNum() >= player->getHp()) {
+        if (player->getPhase() == Player::Play && player->getHandcardNum() <= player->getHp()) {
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
                 skill_list.insert(owner, QStringList(objectName()));
             }
