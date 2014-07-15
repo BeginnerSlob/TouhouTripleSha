@@ -101,6 +101,8 @@ QString Card::getNumberString() const{
 }
 
 Card::Suit Card::getSuit() const{
+    if (m_skillName == "ikshidao")
+        return NoSuit;
     if (m_suit != NoSuit && m_suit != SuitToBeDecided)
         return m_suit;
     if (isVirtualCard()) {

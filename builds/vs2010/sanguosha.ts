@@ -65,27 +65,27 @@
 <context>
     <name>Card</name>
     <message>
-        <location filename="../../src/core/card.cpp" line="275"/>
+        <location filename="../../src/core/card.cpp" line="277"/>
         <source>NoSuitRed</source>
         <translation>红色</translation>
     </message>
     <message>
-        <location filename="../../src/core/card.cpp" line="279"/>
+        <location filename="../../src/core/card.cpp" line="281"/>
         <source>NoSuitBlack</source>
         <translation>黑色</translation>
     </message>
     <message>
-        <location filename="../../src/core/card.cpp" line="283"/>
+        <location filename="../../src/core/card.cpp" line="285"/>
         <source>NoSuit</source>
         <translation>无色</translation>
     </message>
     <message>
-        <location filename="../../src/core/card.cpp" line="346"/>
+        <location filename="../../src/core/card.cpp" line="348"/>
         <source>&lt;b&gt;[%1]&lt;/b&gt; %2</source>
         <translation>&lt;b&gt;【%1】&lt;/b&gt; %2</translation>
     </message>
     <message>
-        <location filename="../../src/core/card.cpp" line="692"/>
+        <location filename="../../src/core/card.cpp" line="694"/>
         <source>Subcard must not be virtual card!</source>
         <translation>子卡不能是虚拟卡牌 !</translation>
     </message>
