@@ -2052,8 +2052,10 @@ public:
             invoke = true;
         if (from->hasFlag("ikduopo_" + to->objectName()))
             invoke = true;
-        if ((from->hasSkill(objectName()) && to->isChained())
-            || (to->hasSkill(objectName()) && from->isChained())) {
+        if (from->hasSkill("ikpaomu") && to->getMark("@liebiao") > 0)
+            invoke = true;
+        if ((from->hasSkill("thqimen") && to->isChained())
+            || (to->hasSkill("thqimen") && from->isChained())) {
             invoke = true;
             person_only = true;
         }

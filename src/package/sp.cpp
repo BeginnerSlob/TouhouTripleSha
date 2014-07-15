@@ -516,8 +516,8 @@ SPPackage::SPPackage()
     gongsunzan->addSkill("ikzhuji");
 
     General *sp_sunshangxiang = new General(this, "sp_sunshangxiang", "shu", 3, false, true); // SP 005
-    sp_sunshangxiang->addSkill("ikyulu");
-    sp_sunshangxiang->addSkill("ikcuimeng");
+    sp_sunshangxiang->addSkill("ikcuilu");
+    sp_sunshangxiang->addSkill("ikcangmeng");
 
     General *sp_pangde = new General(this, "sp_pangde", "wei", 4, true, true); // SP 006
     sp_pangde->addSkill("thjibu");
@@ -710,8 +710,8 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_luxun->addSkill("ikwujie");
 
     General *tw_sunshangxiang = new General(this, "tw_sunshangxiang", "wu", 3, false, true); // TW SP 028
-    tw_sunshangxiang->addSkill("ikyulu");
-    tw_sunshangxiang->addSkill("ikcuimeng");
+    tw_sunshangxiang->addSkill("ikcuilu");
+    tw_sunshangxiang->addSkill("ikcangmeng");
 
     /*General *tw_huatuo = new General(this, "tw_huatuo", 3, true, true);
     tw_huatuo->addSkill("ikqingnang");
