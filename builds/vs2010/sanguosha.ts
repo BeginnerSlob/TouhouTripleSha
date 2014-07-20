@@ -207,10 +207,6 @@
 <context>
     <name>Client</name>
     <message>
-        <source>No such invokable method named &quot;%1&quot;</source>
-        <translation type="obsolete">没有名为 &quot;%1&quot; 的可动态调用方法</translation>
-    </message>
-    <message>
         <location filename="../../src/client/client.cpp" line="565"/>
         <source>Your role is %1</source>
         <translation>你的身份是 %1</translation>
@@ -266,10 +262,6 @@
         <location filename="../../src/client/client.cpp" line="848"/>
         <source>%1 initiated a vote for disadvataged side to claim capitulation. Click &quot;OK&quot; to surrender or &quot;Cancel&quot; to resist.</source>
         <translation>%1 要求所有人表决是否投降。 点【确定】表示你要投降，点【取消】拒绝向其他玩家投降。</translation>
-    </message>
-    <message>
-        <source>&lt;br/&gt; &lt;b&gt;Noitce&lt;/b&gt;: if all people on your side decides to surrender. You&apos;ll lose this game.</source>
-        <translation type="obsolete">&lt;br/&gt; &lt;b&gt;警告&lt;/b&gt;: 如果你所在阵营里包括你在内的所有玩家表示投降，游戏将以你失败为结果立即结束。</translation>
     </message>
     <message>
         <location filename="../../src/client/client.cpp" line="861"/>
@@ -2695,10 +2687,6 @@
         <translation>&lt;font color=#000000&gt;玩家 %1 离开了游戏&lt;/font&gt;</translation>
     </message>
     <message>
-        <source>%1: %2 is not invokable</source>
-        <translation type="obsolete">%1: 不可调用的方法名 %2</translation>
-    </message>
-    <message>
         <location filename="../../src/server/room.cpp" line="2282"/>
         <source>Hello, I&apos;m a robot</source>
         <translation>大家好，我是一个机器人</translation>
@@ -2763,14 +2751,6 @@
         <location filename="../../src/ui/roomscene.cpp" line="2891"/>
         <source>Pure text replay file (*.txt);; Image replay file (*.png)</source>
         <translation>纯文本重放文件 (*.txt);;图像重放文件 (*.png)</translation>
-    </message>
-    <message>
-        <source>Add a robot</source>
-        <translation type="obsolete">添加一个电脑</translation>
-    </message>
-    <message>
-        <source>Fill robots</source>
-        <translation type="obsolete">补全电脑</translation>
     </message>
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="2123"/>

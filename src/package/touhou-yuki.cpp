@@ -901,13 +901,13 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer *) const {
-        room->setPlayerMark(target, "choucecount", 0);
         LogMessage log;
         log.type = "#TriggerSkill";
         log.from = target;
         log.arg = objectName();
         room->sendLog(log);
-        target->gainMark("@tianji");
+        room->acquireSkill(target, "thhuanzang");
+        target->addMark("extra_turn");
         return false;
     }
 };
@@ -922,7 +922,7 @@ public:
     virtual bool triggerable(const ServerPlayer *target) const {
         return TriggerSkill::triggerable(target)
                && target->getPhase() == Player::NotActive
-               && target->getMark("@tianji") > 0;
+               && target->getMark("extra_turn") > 0;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer *) const {
@@ -931,22 +931,38 @@ public:
         log.from = target;
         log.arg = "thzhanshi";
         room->sendLog(log);
+        target->removeMark("extra_turn");
+        target->setFlags("thhuanzang_remove");
         target->gainAnExtraTurn();
         return false;
+    }
+};
+
+class ThZhanshiClear: public TriggerSkill {
+public:
+    ThZhanshiClear(): TriggerSkill("#thzhanshi-clear") {
+        events << EventPhaseChanging;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer* &) const {
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (change.to == Player::NotActive && target->hasFlag("thhuanzang_remove") && target->hasSkill("thhuanzang"))
+            room->detachSkillFromPlayer(target, "thhuanzang", false, true);
+        return QStringList();
     }
 };
 
 class ThHuanzang: public TriggerSkill{
 public:
     ThHuanzang(): TriggerSkill("thhuanzang"){
-        events << EventPhaseStart;
+        events << EventPhaseEnd;
         frequency = Compulsory;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return TriggerSkill::triggerable(target)
-            && target->getPhase() == Player::Judge
-            && target->getMark("@tianji") > 0;
+            && target->getPhase() == Player::Play;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
@@ -955,8 +971,6 @@ public:
         log.from = player;
         log.arg = objectName();
         room->sendLog(log);
-        
-        player->loseMark("@tianji");
 
         JudgeStruct judge;
         judge.pattern = ".|spade";
@@ -2263,8 +2277,10 @@ TouhouYukiPackage::TouhouYukiPackage()
     yuki007->addSkill(new ThChouce);
     yuki007->addSkill(new ThZhanshi);
     yuki007->addSkill(new ThZhanshiDo);
+    yuki007->addSkill(new ThZhanshiClear);
     related_skills.insertMulti("thzhanshi", "#thzhanshi");
-    yuki007->addSkill(new ThHuanzang);
+    related_skills.insertMulti("thzhanshi", "#thzhanshi-clear");
+    yuki007->addRelateSkill("thhuanzang");
 
     General *yuki008 = new General(this, "yuki008", "yuki", 3);
     yuki008->addSkill(new ThZiyun);
@@ -2329,7 +2345,7 @@ TouhouYukiPackage::TouhouYukiPackage()
     addMetaObject<ThLingdieCard>();
     addMetaObject<ThFuyueCard>();
 
-    skills << new ThKujieViewAsSkill << new ThFuyueViewAsSkill;
+    skills << new ThHuanzang << new ThKujieViewAsSkill << new ThFuyueViewAsSkill;
 }
 
 ADD_PACKAGE(TouhouYuki)
