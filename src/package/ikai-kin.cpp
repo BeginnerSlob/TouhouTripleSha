@@ -3047,6 +3047,13 @@ public:
                 ask_who->loseMark("@jilei");
 
                 QStringList choicelist;
+                QList<ServerPlayer *> targets2;
+                foreach (ServerPlayer *p, room->getOtherPlayers(ask_who)) {
+                    if (ask_who->distanceTo(p) == 1)
+                        targets2 << p;
+                }
+                if (!targets2.isEmpty())
+                    choicelist << "damage";
                 QList<ServerPlayer *> targets1;
                 foreach (ServerPlayer *target, room->getAlivePlayers()) {
                     if (ask_who->canSlash(target, NULL, false))
@@ -3056,13 +3063,6 @@ public:
                 if (!targets1.isEmpty() && !ask_who->isCardLimited(slashx, Card::MethodUse))
                     choicelist << "slash";
                 slashx->deleteLater();
-                QList<ServerPlayer *> targets2;
-                foreach (ServerPlayer *p, room->getOtherPlayers(ask_who)) {
-                    if (ask_who->distanceTo(p) == 1)
-                        targets2 << p;
-                }
-                if (!targets2.isEmpty())
-                    choicelist << "damage";
                 choicelist << "draw";
 
                 QString choice = room->askForChoice(ask_who, objectName(), choicelist.join("+"));

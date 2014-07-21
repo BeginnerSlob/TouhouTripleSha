@@ -1088,9 +1088,9 @@ public:
     }
 };
 
-class IkTaoxiao: public OneCardViewAsSkill {
+class IkShenshu: public OneCardViewAsSkill {
 public:
-    IkTaoxiao(): OneCardViewAsSkill("iktaoxiao") {
+    IkShenshu(): OneCardViewAsSkill("ikshenshu") {
         response_or_use = true;
         filter_pattern = "Peach";
     }
@@ -1103,9 +1103,9 @@ public:
     }
 };
 
-class IkYushenyu: public TriggerSkill {
+class IkQiyi: public TriggerSkill {
 public:
-    IkYushenyu(): TriggerSkill("ikyushenyu") {
+    IkQiyi(): TriggerSkill("ikqiyi") {
         events << HpRecover;
         frequency = Frequent;
     }
@@ -1196,8 +1196,8 @@ IkaiKaPackage::IkaiKaPackage()
     snow034->addSkill(new IkShidao);
 
     General *snow035 = new General(this, "snow035", "yuki");
-    snow035->addSkill(new IkTaoxiao);
-    snow035->addSkill(new IkYushenyu);
+    snow035->addSkill(new IkShenshu);
+    snow035->addSkill(new IkQiyi);
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
