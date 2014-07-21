@@ -2581,7 +2581,7 @@ public:
         LogMessage log;
         log.type = "#TriggerSkill";
         log.from = player;
-        log.arg = objectName();
+        log.arg = "iklingzhou";
         room->sendLog(log);
 
         QList<int> ids = player->getPile("iklingzhoupile");
@@ -3786,6 +3786,8 @@ IkaiSuiPackage::IkaiSuiPackage()
 
     General *snow040 = new General(this, "snow040", "yuki");
     snow040->addSkill(new IkLingzhou);
+    snow040->addSkill(new IkLingzhouClear);
+    related_skills.insertMulti("iklingzhou", "#iklingzhou");
     snow040->addSkill(new IkMoqizhou);
 
     General *luna017 = new General(this, "luna017", "tsuki");
