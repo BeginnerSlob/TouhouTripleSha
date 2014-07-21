@@ -901,12 +901,6 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer *) const {
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = target;
-        log.arg = objectName();
-        room->sendLog(log);
-        room->acquireSkill(target, "thhuanzang");
         target->addMark("extra_turn");
         return false;
     }
@@ -941,14 +935,18 @@ public:
 class ThZhanshiClear: public TriggerSkill {
 public:
     ThZhanshiClear(): TriggerSkill("#thzhanshi-clear") {
-        events << EventPhaseChanging;
-        frequency = Compulsory;
+        events << EventPhaseChanging << EventPhaseStart;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer* &) const {
-        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-        if (change.to == Player::NotActive && target->hasFlag("thhuanzang_remove") && target->hasSkill("thhuanzang"))
-            room->detachSkillFromPlayer(target, "thhuanzang", false, true);
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer* &) const {
+        if (triggerEvent == EventPhaseStart && target->getPhase() == Player::RoundStart && target->hasFlag("thhuanzang_remove")
+            && !target->hasSkill("thhuanzang")) {
+            room->acquireSkill(target, "thhuanzang");
+        } else if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive && target->hasFlag("thhuanzang_remove") && target->hasSkill("thhuanzang"))
+                room->detachSkillFromPlayer(target, "thhuanzang", false, true);
+        }
         return QStringList();
     }
 };
