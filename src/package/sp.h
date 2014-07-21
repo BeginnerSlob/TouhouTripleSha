@@ -39,15 +39,6 @@ public:
     MiscellaneousPackage();
 };
 
-class YinbingCard: public SkillCard {
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE YinbingCard();
-
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-};
-
 class QingyiCard: public SkillCard {
     Q_OBJECT
 

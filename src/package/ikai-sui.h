@@ -173,6 +173,15 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class IkLingzhouCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkLingzhouCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 class IkChenyan: public TriggerSkill {
     Q_OBJECT
 

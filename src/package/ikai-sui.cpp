@@ -2512,6 +2512,131 @@ public:
         return QStringList();
     }
 };
+
+IkLingzhouCard::IkLingzhouCard() {
+    will_throw = false;
+    target_fixed = true;
+    handling_method = Card::MethodNone;
+}
+
+void IkLingzhouCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    source->addToPile("iklingzhoupile", this);
+}
+
+class IkLingzhouViewAsSkill: public ViewAsSkill {
+public:
+    IkLingzhouViewAsSkill(): ViewAsSkill("iklingzhou") {
+        response_pattern = "@@iklingzhou";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
+        return true;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.length() == 0) return NULL;
+
+        Card *acard = new IkLingzhouCard;
+        acard->addSubcards(cards);
+        acard->setSkillName(objectName());
+        return acard;
+    }
+};
+
+class IkLingzhou: public TriggerSkill {
+public:
+    IkLingzhou(): TriggerSkill("iklingzhou") {
+        events << EventPhaseStart;
+        view_as_skill = new IkLingzhouViewAsSkill;
+    }
+
+    virtual bool triggerable(const ServerPlayer *player) const{
+        return TriggerSkill::triggerable(player)
+            && player->getPhase() == Player::Finish
+            && !player->isNude();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        return room->askForUseCard(player, "@@iklingzhou", "@iklingzhou", -1, Card::MethodNone);
+    }
+};
+
+class IkLingzhouClear: public TriggerSkill {
+public:
+    IkLingzhouClear(): TriggerSkill("#iklingzhou") {
+        events << Damaged;
+        frequency = NotCompulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player) || player->getPile("iklingzhoupile").isEmpty()) return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel")))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->notifySkillInvoked(player, objectName());
+        LogMessage log;
+        log.type = "#TriggerSkill";
+        log.from = player;
+        log.arg = objectName();
+        room->sendLog(log);
+
+        QList<int> ids = player->getPile("iklingzhoupile");
+        room->fillAG(ids, player);
+        int id = room->askForAG(player, ids, false, objectName());
+        room->clearAG(player);
+        room->obtainCard(player, id);
+
+        return false;
+    }
+};
+
+class IkMoqizhou: public PhaseChangeSkill {
+public:
+    IkMoqizhou(): PhaseChangeSkill("ikmoqizhou") {
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target) && target->getPhase() == Player::Start
+               && !target->getPile("iklingzhoupile").isEmpty();
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *target) const{
+        Room *room = target->getRoom();
+        QList<ServerPlayer *> playerlist;
+        foreach (ServerPlayer *p, room->getOtherPlayers(target)) {
+            if (p->getHp() <= target->getHp())
+                playerlist << p;
+        }
+        ServerPlayer *to_give = NULL;
+        if (!playerlist.isEmpty())
+            to_give = room->askForPlayerChosen(target, playerlist, objectName(), "@ikmoqizhou", true);
+        if (to_give) {
+            DummyCard *dummy = new DummyCard(target->getPile("iklingzhoupile"));
+            room->obtainCard(to_give, dummy);
+            delete dummy;
+            room->recover(to_give, RecoverStruct(target));
+        } else {
+            int len = target->getPile("iklingzhoupile").length();
+            target->clearOnePrivatePile("iklingzhoupile");
+            if (target->isAlive())
+                room->drawCards(target, len, objectName());
+        }
+        return false;
+    }
+};
+
 IkChenyan::IkChenyan(): TriggerSkill("ikchenyan") {
     events << DrawNCards << EventPhaseStart;
     frequency = Compulsory;
@@ -3659,6 +3784,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     snow033->addSkill(new IkTianyan);
     snow033->addSkill(new IkCangwu);
 
+    General *snow040 = new General(this, "snow040", "yuki");
+    snow040->addSkill(new IkLingzhou);
+    snow040->addSkill(new IkMoqizhou);
+
     General *luna017 = new General(this, "luna017", "tsuki");
     luna017->addSkill(new IkChenyan);
     luna017->addSkill("ikshengzun");
@@ -3725,6 +3854,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkHongrouCard>();
     addMetaObject<IkTianyanCard>();
     addMetaObject<IkCangwuCard>();
+    addMetaObject<IkLingzhouCard>();
     addMetaObject<IkZhangeCard>();
     addMetaObject<IkShuangrenCard>();
     addMetaObject<IkXincaoCard>();

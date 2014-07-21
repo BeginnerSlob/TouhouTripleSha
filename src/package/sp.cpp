@@ -290,106 +290,6 @@ public:
     }
 };
 
-YinbingCard::YinbingCard() {
-    will_throw = false;
-    target_fixed = true;
-    handling_method = Card::MethodNone;
-}
-
-void YinbingCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    source->addToPile("yinbing", this);
-}
-
-class YinbingViewAsSkill: public ViewAsSkill {
-public:
-    YinbingViewAsSkill(): ViewAsSkill("yinbing") {
-        response_pattern = "@@yinbing";
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
-        return to_select->getTypeId() != Card::TypeBasic;
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if (cards.length() == 0) return NULL;
-
-        Card *acard = new YinbingCard;
-        acard->addSubcards(cards);
-        acard->setSkillName(objectName());
-        return acard;
-    }
-};
-
-class Yinbing: public TriggerSkill {
-public:
-    Yinbing(): TriggerSkill("yinbing") {
-        events << EventPhaseStart << Damaged;
-        view_as_skill = new YinbingViewAsSkill;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Finish && !player->isNude()) {
-            room->askForUseCard(player, "@@yinbing", "@yinbing", -1, Card::MethodNone);
-        } else if (triggerEvent == Damaged && !player->getPile("yinbing").isEmpty()) {
-            DamageStruct damage = data.value<DamageStruct>();
-            if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))) {
-                room->notifySkillInvoked(player, objectName());
-                LogMessage log;
-                log.type = "#TriggerSkill";
-                log.from = player;
-                log.arg = objectName();
-                room->sendLog(log);
-
-                QList<int> ids = player->getPile("yinbing");
-                room->fillAG(ids, player);
-                int id = room->askForAG(player, ids, false, objectName());
-                room->clearAG(player);
-                room->throwCard(id, NULL);
-            }
-        }
-
-        return false;
-    }
-};
-
-class Juedi: public PhaseChangeSkill {
-public:
-    Juedi(): PhaseChangeSkill("juedi") {
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return PhaseChangeSkill::triggerable(target) && target->getPhase() == Player::Start
-               && !target->getPile("yinbing").isEmpty();
-    }
-
-    virtual bool onPhaseChange(ServerPlayer *target) const{
-        Room *room = target->getRoom();
-        if (!room->askForSkillInvoke(target, objectName())) return false;
-        room->broadcastSkillInvoke(objectName());
-
-        QList<ServerPlayer *> playerlist;
-        foreach (ServerPlayer *p, room->getOtherPlayers(target)) {
-            if (p->getHp() <= target->getHp())
-                playerlist << p;
-        }
-        ServerPlayer *to_give = NULL;
-        if (!playerlist.isEmpty())
-            to_give = room->askForPlayerChosen(target, playerlist, objectName(), "@juedi", true);
-        if (to_give) {
-            room->recover(to_give, RecoverStruct(target));
-            DummyCard *dummy = new DummyCard(target->getPile("yinbing"));
-            room->obtainCard(to_give, dummy);
-            delete dummy;
-        } else {
-            int len = target->getPile("yinbing").length();
-            target->clearOnePrivatePile("yinbing");
-            if (target->isAlive())
-                room->drawCards(target, len, objectName());
-        }
-        return false;
-    }
-};
-
 class Dujin: public DrawCardsSkill {
 public:
     Dujin(): DrawCardsSkill("dujin") {
@@ -577,10 +477,6 @@ SPPackage::SPPackage()
     General *sp_panfeng = new General(this, "sp_panfeng", "qun", 4, true, true); // SP 029
     sp_panfeng->addSkill("ikshunqie");
 
-    General *zumao = new General(this, "zumao", "wu"); // SP 030
-    zumao->addSkill(new Yinbing);
-    zumao->addSkill(new Juedi);
-
     General *sp_dingfeng = new General(this, "sp_dingfeng", "wu", 4, true, true); // SP 031
     sp_dingfeng->addSkill("ikxindu");
     sp_dingfeng->addSkill("ikfenxun");
@@ -590,7 +486,6 @@ SPPackage::SPPackage()
     sp_hetaihou->addSkill("ikkuangdi");
 
     addMetaObject<ZhoufuCard>();
-    addMetaObject<YinbingCard>();
 }
 
 ADD_PACKAGE(SP)
