@@ -2637,6 +2637,105 @@ public:
     }
 };
 
+IkLingtongCard::IkLingtongCard() {
+}
+
+void IkLingtongCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    ServerPlayer *player = effect.to;
+    room->showAllCards(effect.from, player);
+    QStringList choicelist;
+    if (!effect.to->isKongcheng())
+        choicelist.append("handcards");
+    if (!player->isLord())
+        choicelist.append("role");
+    if (choicelist.isEmpty()) return;
+    QString choice = room->askForChoice(effect.from, "iklingtong", choicelist.join("+"), QVariant::fromValue(player));
+
+    LogMessage log;
+    log.type = "$IkLingtongView";
+    log.from = effect.from;
+    log.to << effect.to;
+    log.arg = "iklingtong:" + choice;
+    room->sendLog(log, room->getOtherPlayers(effect.from));
+
+    if (choice == "handcards") {
+        QList<int> ids;
+        foreach (const Card *card, player->getHandcards()) {
+            if (card->isBlack())
+                ids << card->getEffectiveId();
+        }
+
+        int card_id = room->doGongxin(effect.from, player, ids, "iklingtong");
+        if (card_id == -1) return;
+        effect.from->tag.remove("iklingtong");
+        CardMoveReason reason(CardMoveReason::S_REASON_DISMANTLE, effect.from->objectName(), QString(), "iklingtong", QString());
+        room->throwCard(Sanguosha->getCard(card_id), reason, effect.to, effect.from);
+    } else if (choice == "role") {
+        Json::Value arg(Json::arrayValue);
+        arg[0] = QSanProtocol::Utils::toJsonString(player->objectName());
+        arg[1] = QSanProtocol::Utils::toJsonString(player->getRole());
+        room->doNotify(effect.from, QSanProtocol::S_COMMAND_SET_EMOTION, arg);
+
+        LogMessage log;
+        log.type = "$ViewRole";
+        log.from = effect.from;
+        log.to << player;
+        log.arg = player->getRole();
+        room->sendLog(log, effect.from);
+    }
+}
+
+class IkLingtong: public ZeroCardViewAsSkill {
+public:
+    IkLingtong(): ZeroCardViewAsSkill("iklingtong") {
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkLingtongCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->isKongcheng() && !player->hasUsed("IkLingtongCard");
+    }
+};
+
+class IkXuexia: public TriggerSkill {
+public:
+    IkXuexia(): TriggerSkill("ikxuexia") {
+        events << TargetConfirmed;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("Slash") && use.from->isAlive())
+            for (int i = 0; i < use.to.length(); i++) {
+                ServerPlayer *to = use.to.at(i);
+                if (to->isAlive() && to->isAdjacentTo(player) && to->isAdjacentTo(use.from))
+                    return QStringList(objectName());
+            }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        QVariantList jink_list = use.from->tag["Jink_" + use.card->toString()].toList();
+        for (int i = 0; i < use.to.length(); i++) {
+            ServerPlayer *to = use.to.at(i);
+            if (to->isAlive() && to->isAdjacentTo(player) && to->isAdjacentTo(use.from)
+                && room->askForSkillInvoke(player, objectName(), QVariant::fromValue(to))) {
+                room->broadcastSkillInvoke(objectName());
+                if (jink_list.at(i).toInt() == 1)
+                    jink_list.replace(i, QVariant(2));
+            }
+        }
+        use.from->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
+
+        return false;
+    }
+};
+
 IkChenyan::IkChenyan(): TriggerSkill("ikchenyan") {
     events << DrawNCards << EventPhaseStart;
     frequency = Compulsory;
@@ -3790,6 +3889,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     related_skills.insertMulti("iklingzhou", "#iklingzhou");
     snow040->addSkill(new IkMoqizhou);
 
+    General *snow043 = new General(this, "snow043", "yuki");
+    snow043->addSkill(new IkLingtong);
+    snow043->addSkill(new IkXuexia);
+
     General *luna017 = new General(this, "luna017", "tsuki");
     luna017->addSkill(new IkChenyan);
     luna017->addSkill("ikshengzun");
@@ -3857,6 +3960,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkTianyanCard>();
     addMetaObject<IkCangwuCard>();
     addMetaObject<IkLingzhouCard>();
+    addMetaObject<IkLingtongCard>();
     addMetaObject<IkZhangeCard>();
     addMetaObject<IkShuangrenCard>();
     addMetaObject<IkXincaoCard>();

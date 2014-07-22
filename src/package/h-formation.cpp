@@ -91,147 +91,6 @@ public:
     }
 };
 
-ShangyiCard::ShangyiCard() {
-}
-
-bool ShangyiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select != Self;
-}
-
-void ShangyiCard::onEffect(const CardEffectStruct &effect) const{
-    Room *room = effect.from->getRoom();
-    ServerPlayer *player = effect.to;
-    if (!effect.from->isKongcheng())
-        room->showAllCards(effect.from, player);
-    QStringList choicelist;
-    if (!effect.to->isKongcheng())
-        choicelist.append("handcards");
-    if (room->getMode() == "04_1v3" || room->getMode() == "06_3v3") {
-        ;
-    } else if (room->getMode() == "06_XMode") {
-        QStringList backup = player->tag["XModeBackup"].toStringList();
-        if (backup.length() > 0)
-            choicelist.append("remainedgenerals");
-    } else if (room->getMode() == "02_1v1") {
-        QStringList list = player->tag["1v1Arrange"].toStringList();
-        if (list.length() > 0)
-            choicelist.append("remainedgenerals");
-    } else if (Config.EnableBasara) {
-        QString hidden_generals = player->property("basara_generals").toString();
-        if (!hidden_generals.isEmpty())
-            choicelist.append("generals");
-    } else if (!player->isLord()) {
-        choicelist.append("role");
-    }
-    if (choicelist.isEmpty()) return;
-    QString choice = room->askForChoice(effect.from, "shangyi", choicelist.join("+"), QVariant::fromValue(player));
-
-    LogMessage log;
-    log.type = "$ShangyiView";
-    log.from = effect.from;
-    log.to << effect.to;
-    log.arg = "shangyi:" + choice;
-    room->sendLog(log, room->getOtherPlayers(effect.from));
-
-    if (choice == "handcards") {
-        QList<int> ids;
-        foreach (const Card *card, player->getHandcards()) {
-            if (card->isBlack())
-                ids << card->getEffectiveId();
-        }
-
-        int card_id = room->doGongxin(effect.from, player, ids, "shangyi");
-        if (card_id == -1) return;
-        effect.from->tag.remove("shangyi");
-        CardMoveReason reason(CardMoveReason::S_REASON_DISMANTLE, effect.from->objectName(), QString(), "shangyi", QString());
-        room->throwCard(Sanguosha->getCard(card_id), reason, effect.to, effect.from);
-    } else if (choice == "remainedgenerals") {
-        QStringList list;
-        if (room->getMode() == "02_1v1")
-            list = player->tag["1v1Arrange"].toStringList();
-        else if (room->getMode() == "06_XMode")
-            list = player->tag["XModeBackup"].toStringList();
-        foreach (QString name, list) {
-            LogMessage log;
-            log.type = "$ShangyiViewRemained";
-            log.from = effect.from;
-            log.to << player;
-            log.arg = name;
-            room->sendLog(log, effect.from);
-        }
-        Json::Value arr(Json::arrayValue);
-        arr[0] = QSanProtocol::Utils::toJsonString("shangyi");
-        arr[1] = QSanProtocol::Utils::toJsonArray(list);
-        room->doNotify(effect.from, QSanProtocol::S_COMMAND_VIEW_GENERALS, arr);
-    } else if (choice == "generals") {
-        QStringList list = player->property("basara_generals").toString().split("+");
-        foreach (QString name, list) {
-            LogMessage log;
-            log.type = "$ShangyiViewUnknown";
-            log.from = effect.from;
-            log.to << player;
-            log.arg = name;
-            room->sendLog(log, effect.from);
-        }
-        Json::Value arg(Json::arrayValue);
-        arg[0] = QSanProtocol::Utils::toJsonString("shangyi");
-        arg[1] = QSanProtocol::Utils::toJsonArray(list);
-        room->doNotify(effect.from, QSanProtocol::S_COMMAND_VIEW_GENERALS, arg);
-    } else if (choice == "role") {
-        Json::Value arg(Json::arrayValue);
-        arg[0] = QSanProtocol::Utils::toJsonString(player->objectName());
-        arg[1] = QSanProtocol::Utils::toJsonString(player->getRole());
-        room->doNotify(effect.from, QSanProtocol::S_COMMAND_SET_EMOTION, arg);
-
-        LogMessage log;
-        log.type = "$ViewRole";
-        log.from = effect.from;
-        log.to << player;
-        log.arg = player->getRole();
-        room->sendLog(log, effect.from);
-    }
-}
-
-class Shangyi: public ZeroCardViewAsSkill {
-public:
-    Shangyi(): ZeroCardViewAsSkill("shangyi") {
-    }
-
-    virtual const Card *viewAs() const{
-        return new ShangyiCard;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("ShangyiCard");
-    }
-};
-
-class Niaoxiang: public TriggerSkill {
-public:
-    Niaoxiang(): TriggerSkill("niaoxiang") {
-        events << TargetConfirmed;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("Slash") && use.from->isAlive()) {
-            QVariantList jink_list = use.from->tag["Jink_" + use.card->toString()].toList();
-            for (int i = 0; i < use.to.length(); i++) {
-                ServerPlayer *to = use.to.at(i);
-                if (to->isAlive() && to->isAdjacentTo(player) && to->isAdjacentTo(use.from)
-                    && room->askForSkillInvoke(player, objectName(), QVariant::fromValue(to))) {
-                    room->broadcastSkillInvoke(objectName());
-                    if (jink_list.at(i).toInt() == 1)
-                        jink_list.replace(i, QVariant(2));
-                }
-            }
-            use.from->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
-        }
-
-        return false;
-    }
-};
-
 class Yicheng: public TriggerSkill {
 public:
     Yicheng(): TriggerSkill("yicheng") {
@@ -355,17 +214,11 @@ HFormationPackage::HFormationPackage()
     heg_jiangwei->addSkill("iktiaoxin");
     heg_jiangwei->addSkill(new Tianfu);
 
-    General *jiangqin = new General(this, "jiangqin", "wu"); // WU 017
-    jiangqin->addSkill(new Shangyi);
-    jiangqin->addSkill(new Niaoxiang);
-
     General *heg_xusheng = new General(this, "heg_xusheng", "wu"); // WU 020
     heg_xusheng->addSkill(new Yicheng);
 
     General *heg_yuji = new General(this, "heg_yuji", "qun", 3); // QUN 011 G
     heg_yuji->addSkill(new Qianhuan);
-
-    addMetaObject<ShangyiCard>();
 }
 
 ADD_PACKAGE(HFormation)
