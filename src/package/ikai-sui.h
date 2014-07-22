@@ -182,6 +182,14 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class IkLingtongCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkLingtongCard();
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class IkChenyan: public TriggerSkill {
     Q_OBJECT
 
