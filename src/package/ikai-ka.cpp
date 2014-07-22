@@ -1147,7 +1147,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
         ServerPlayer *current = room->getCurrent();
         QStringList skill;
-        if (current && current->getPhase() != Player::NotActive && TriggerSkill::triggerable(player)) {
+        if (TriggerSkill::triggerable(current) && current->getPhase() != Player::NotActive) {
             ask_who = current;
             RecoverStruct recover = data.value<RecoverStruct>();
             for (int i = 0; i < recover.recover; i++)
