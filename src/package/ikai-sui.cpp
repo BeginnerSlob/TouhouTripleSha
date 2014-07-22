@@ -3889,7 +3889,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     related_skills.insertMulti("iklingzhou", "#iklingzhou");
     snow040->addSkill(new IkMoqizhou);
 
-    General *snow043 = new General(this, "snow043", "yuki");
+    General *snow043 = new General(this, "snow043", "yuki", 3);
     snow043->addSkill(new IkLingtong);
     snow043->addSkill(new IkXuexia);
 
