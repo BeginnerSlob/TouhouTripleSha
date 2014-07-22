@@ -2736,6 +2736,85 @@ public:
     }
 };
 
+IkLunkeCard::IkLunkeCard() {
+}
+
+bool IkLunkeCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && !to_select->isChained() && to_select != Self;
+}
+
+void IkLunkeCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    if (!effect.to->isChained()) {
+        effect.to->setChained(true);
+        room->broadcastProperty(effect.to, "chained");
+        room->setEmotion(effect.to, "chain");
+        room->getThread()->trigger(ChainStateChanged, room, effect.to);
+    }
+    if (!effect.from->isChained()) {
+        effect.from->setChained(true);
+        room->broadcastProperty(effect.from, "chained");
+        room->setEmotion(effect.from, "chain");
+        room->getThread()->trigger(ChainStateChanged, room, effect.from);
+    }
+}
+
+class IkLunke: public ZeroCardViewAsSkill {
+public:
+    IkLunke(): ZeroCardViewAsSkill("iklunke") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        if (player->hasUsed("IkLunkeCard"))
+            return false;
+        foreach (const Player *p, player->getAliveSiblings())
+            if (!p->isChained())
+                return true;
+        return false;
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkLunkeCard;
+    }
+};
+
+class IkCangmie: public PhaseChangeSkill {
+public:
+    IkCangmie(): PhaseChangeSkill("ikcangmie") {
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+            && target->getPhase() == Player::Finish
+            && target->isChained();
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *target) const{
+        Room *room = target->getRoom();
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
+            if (!target->isAlive())
+                break;
+            if (!p->isAlive() || !target->canDiscard(p, "he"))
+                continue;
+            if (p == target) {
+                room->askForDiscard(target, objectName(), 1, 1, false, true);
+            } else {
+                int id = room->askForCardChosen(target, p, "he", objectName(), false, Card::MethodDiscard);
+                room->throwCard(id, p, target);
+            }
+        }
+        return false;
+    }
+};
+
 IkChenyan::IkChenyan(): TriggerSkill("ikchenyan") {
     events << DrawNCards << EventPhaseStart;
     frequency = Compulsory;
@@ -3893,6 +3972,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     snow043->addSkill(new IkLingtong);
     snow043->addSkill(new IkXuexia);
 
+    General *snow044 = new General(this, "snow044", "yuki");
+    snow044->addSkill(new IkLunke);
+    snow044->addSkill(new IkCangmie);
+
     General *luna017 = new General(this, "luna017", "tsuki");
     luna017->addSkill(new IkChenyan);
     luna017->addSkill("ikshengzun");
@@ -3961,6 +4044,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkCangwuCard>();
     addMetaObject<IkLingzhouCard>();
     addMetaObject<IkLingtongCard>();
+    addMetaObject<IkLunkeCard>();
     addMetaObject<IkZhangeCard>();
     addMetaObject<IkShuangrenCard>();
     addMetaObject<IkXincaoCard>();
