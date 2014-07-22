@@ -12,74 +12,6 @@
 #include "settings.h"
 #include "jsonutils.h"
 
-DuanxieCard::DuanxieCard() {
-}
-
-bool DuanxieCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && !to_select->isChained() && to_select != Self;
-}
-
-void DuanxieCard::onEffect(const CardEffectStruct &effect) const{
-    Room *room = effect.from->getRoom();
-    if (!effect.to->isChained()) {
-        effect.to->setChained(true);
-        room->broadcastProperty(effect.to, "chained");
-        room->setEmotion(effect.to, "chain");
-        room->getThread()->trigger(ChainStateChanged, room, effect.to);
-    }
-    if (!effect.from->isChained()) {
-        effect.from->setChained(true);
-        room->broadcastProperty(effect.from, "chained");
-        room->setEmotion(effect.from, "chain");
-        room->getThread()->trigger(ChainStateChanged, room, effect.from);
-    }
-}
-
-class Duanxie: public ZeroCardViewAsSkill {
-public:
-    Duanxie(): ZeroCardViewAsSkill("duanxie") {
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        if (player->hasUsed("DuanxieCard")) return false;
-        foreach (const Player *p, player->getAliveSiblings()) {
-            if (!p->isChained()) return true;
-        }
-        return false;
-    }
-
-    virtual const Card *viewAs() const{
-        return new DuanxieCard;
-    }
-};
-
-class Fenming: public PhaseChangeSkill {
-public:
-    Fenming(): PhaseChangeSkill("fenming") {
-    }
-
-    virtual bool onPhaseChange(ServerPlayer *target) const{
-        Room *room = target->getRoom();
-        if (target->getPhase() == Player::Finish && target->isChained()
-            && room->askForSkillInvoke(target, objectName())) {
-            foreach (ServerPlayer *p, room->getAllPlayers()) {
-                if (!target->isAlive())
-                    break;
-                if (!p->isAlive() || !target->canDiscard(p, "he"))
-                    continue;
-                if (p == target) {
-                    if (!target->isNude())
-                        room->askForDiscard(target, objectName(), 1, 1, false, true);
-                } else {
-                    int id = room->askForCardChosen(target, p, "he", objectName(), false, Card::MethodDiscard);
-                    room->throwCard(id, p, target);
-                }
-            }
-        }
-        return false;
-    }
-};
-
 class Yingyang: public TriggerSkill {
 public:
     Yingyang(): TriggerSkill("yingyang") {
@@ -312,10 +244,6 @@ HMomentumPackage::HMomentumPackage()
     heg_sunce->addSkill(new Yingyang);
     heg_sunce->addSkill("ikbiansheng");
 
-    General *chenwudongxi = new General(this, "chenwudongxi", "wu", 4); // WU 023
-    chenwudongxi->addSkill(new Duanxie);
-    chenwudongxi->addSkill(new Fenming);
-
     General *heg_dongzhuo = new General(this, "heg_dongzhuo$", "qun", 4); // QUN 006 G
     heg_dongzhuo->addSkill(new Hengzheng);
     heg_dongzhuo->addSkill(new Baoling);
@@ -324,8 +252,6 @@ HMomentumPackage::HMomentumPackage()
     General *zhangren = new General(this, "zhangren", "qun", 4); // QUN 024
     zhangren->addSkill(new Chuanxin);
     zhangren->addSkill(new Fengshi);
-
-    addMetaObject<DuanxieCard>();
 }
 
 ADD_PACKAGE(HMomentum)
