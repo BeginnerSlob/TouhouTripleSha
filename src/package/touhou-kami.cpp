@@ -1412,6 +1412,312 @@ public:
     }
 };
 
+class ThXujing: public TriggerSkill {
+public:
+    ThXujing(): TriggerSkill("thxujing") {
+        events << TargetConfirmed;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        if (room->getCurrent() == player && player->getPhase() != Player::NotActive)
+            return QStringList();
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (!use.to.contains(player))
+            return QStringList();
+        if (use.card->isNDTrick() && use.card->isBlack())
+            return QStringList(objectName());
+        if ((use.card->isKindOf("Peach") || use.card->isKindOf("Analeptic")) && use.from == player)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        QStringList choices;
+        foreach (const Skill *skill, player->getVisibleSkillList()) {
+            if (skill->isAttachedLordSkill())
+                continue;
+            choices << skill->objectName();
+        }
+        if (choices.isEmpty())
+            return false;
+        QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+        room->detachSkillFromPlayer(player, choice);
+        player->drawCards(1, objectName());
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.from && use.from->isAlive()) {
+            QStringList skills;
+            if (use.card->isNDTrick()) {
+                if (!use.from->hasSkill("thhuanzang"))
+                    skills << "thhuanzang";
+                if (!use.from->hasSkill("thanyue"))
+                    skills << "thanyue";
+            } else {
+                if (!use.from->hasSkill("thmengwu"))
+                    skills << "thmengwu";
+                if (!use.from->hasSkill("thxijing"))
+                    skills << "thxijing";
+            }
+            if (!skills.isEmpty()) {
+                room->handleAcquireDetachSkills(use.from, skills);
+                QStringList list = use.from->property(QString("thxujing_skills_%1").arg(player->objectName()).toLatin1().data()).toStringList();
+                list += skills;
+                room->setPlayerProperty(use.from, QString("thxujing_skills_%1").arg(player->objectName()).toLatin1().data(), QVariant::fromValue(list));
+                player->tag["ThXujing"] = true;
+            }
+        }
+        return false;
+    }
+};
+
+class ThXujingClear: public TriggerSkill {
+public:
+    ThXujingClear(): TriggerSkill("#thxujing-clear") {
+        events << EventPhaseChanging << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        if (!player || !player->tag["ThXujing"].toBool()) return QStringList();
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to != Player::NotActive)
+                return QStringList();
+        }
+        if (triggerEvent == Death && data.value<DeathStruct>().who != player)
+            return QStringList();
+        player->tag["ThXujing"] = false;
+        foreach (ServerPlayer *p, room->getAllPlayers())
+            if (!p->property(QString("thxujing_skills_%1").arg(player->objectName()).toLatin1().data()).toStringList().isEmpty()) {
+                QSet<QString> skills = p->property(QString("thxujing_skills_%1").arg(player->objectName()).toLatin1().data()).toStringList().toSet();
+                room->setPlayerProperty(p, QString("thxujing_skills_%1").arg(player->objectName()).toLatin1().data(), QVariant());
+                QStringList new_list;
+                foreach (QString name, skills)
+                    new_list << "-" + name;
+                room->handleAcquireDetachSkills(p, new_list, true);
+            }
+        return QStringList();
+    }
+};
+
+ThLingyunDialog *ThLingyunDialog::getInstance() {
+    static ThLingyunDialog *instance;
+    if (instance == NULL)
+        instance = new ThLingyunDialog();
+
+    return instance;
+}
+
+ThLingyunDialog::ThLingyunDialog() {
+    setObjectName("thlingyun");
+    setWindowTitle(Sanguosha->translate("thlingyun"));
+    group = new QButtonGroup(this);
+
+    button_layout = new QVBoxLayout;
+    setLayout(button_layout);
+    connect(group, SIGNAL(buttonClicked(QAbstractButton *)), this, SLOT(selectCard(QAbstractButton *)));
+}
+
+void ThLingyunDialog::popup() {
+    foreach (QAbstractButton *button, group->buttons()) {
+        button_layout->removeWidget(button);
+        group->removeButton(button);
+        delete button;
+    }
+    QHash<QString, QString> skill_map;
+    skill_map.insert("ex_nihilo", "ikbenghuai");
+    skill_map.insert("duel", "thsanling");
+    skill_map.insert("snatch", "ikxinshang");
+    skill_map.insert("iron_chain", "ikjinlian");
+
+    foreach (QString card, skill_map.keys()) {
+        QCommandLinkButton *button = new QCommandLinkButton;
+        button->setText(Sanguosha->translate(card));
+        button->setObjectName(card);
+        group->addButton(button);
+
+        bool can = true;
+        if (Self->hasSkill(skill_map[card]))
+            can = false;
+        if (can) {
+            const Card *c = Sanguosha->cloneCard(card);
+            if (Self->isCardLimited(c, Card::MethodUse) || !c->isAvailable(Self))
+                can = false;
+            delete c;
+        }
+        button->setEnabled(can);
+        button_layout->addWidget(button);
+        
+        if (!map.contains(card)) {
+            Card *c = Sanguosha->cloneCard(card, Card::NoSuit, 0);
+            c->setParent(this);
+            map.insert(card, c);
+        }
+    }
+
+    exec();
+}
+
+void ThLingyunDialog::selectCard(QAbstractButton *button) {
+    const Card *card = map.value(button->objectName());
+    Self->tag["thlingyun"] = QVariant::fromValue(card);
+    emit onButtonClick();
+    accept();
+}
+
+ThLingyunCard::ThLingyunCard() {
+    handling_method = Card::MethodNone;
+}
+
+bool ThLingyunCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (!Self->tag.value("thlingyun").value<const Card *>()) return false;
+    QString card_name = Self->tag.value("thlingyun").value<const Card *>()->objectName();
+    Card *card = Sanguosha->cloneCard(card_name, NoSuit, 0);
+    card->setSkillName("thlingyun");
+    return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
+}
+
+bool ThLingyunCard::targetFixed() const{
+    if (!Self->tag.value("thlingyun").value<const Card *>()) return false;
+    QString card_name = Self->tag.value("thlingyun").value<const Card *>()->objectName();
+    Card *card = Sanguosha->cloneCard(card_name, NoSuit, 0);
+    card->setSkillName("thlingyun");
+    return card && card->targetFixed();
+}
+
+bool ThLingyunCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    if (!Self->tag.value("thlingyun").value<const Card *>()) return false;
+    QString card_name = Self->tag.value("thlingyun").value<const Card *>()->objectName();
+    Card *card = Sanguosha->cloneCard(card_name, NoSuit, 0);
+    card->setSkillName("thlingyun");
+    return card && card->targetsFeasible(targets, Self);
+}
+
+const Card *ThLingyunCard::validate(CardUseStruct &card_use) const{
+    Card *use_card = Sanguosha->cloneCard(user_string, NoSuit, 0);
+    use_card->setSkillName("_thlingyun");
+    bool available = true;
+    foreach (ServerPlayer *to, card_use.to)
+        if (card_use.from->isProhibited(to, use_card)) {
+            available = false;
+            break;
+        }
+    available = available && use_card->isAvailable(card_use.from);
+    use_card->deleteLater();
+    if (!available) return NULL;
+
+    Room *room = card_use.from->getRoom();
+
+    LogMessage log;
+    log.from = card_use.from;
+    log.type = "#UseCard";
+    log.card_str = card_use.card->toString();
+    room->sendLog(log);
+
+    CardMoveReason reason(CardMoveReason::S_REASON_THROW, card_use.from->objectName(), QString(), "thlingyun", QString());
+    room->moveCardTo(this, card_use.from, NULL, Player::DiscardPile, reason, true);
+
+    QMap<QString, QString> map;
+    map.insert("ex_nihilo", "ikbenghuai");
+    map.insert("duel", "thsanling");
+    map.insert("snatch", "ikxinshang");
+    map.insert("iron_chain", "ikjinlian");
+    if (!card_use.from->hasSkill(map[user_string]))
+        room->acquireSkill(card_use.from, map[user_string]);
+    return use_card;
+}
+
+class ThLingyun: public OneCardViewAsSkill {
+public:
+    ThLingyun(): OneCardViewAsSkill("thlingyun") {
+        filter_pattern = ".!";
+    }
+
+    virtual QDialog *getDialog() const{
+        return ThLingyunDialog::getInstance();
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        const Card *c = Self->tag.value("thlingyun").value<const Card *>();
+        if (c) {
+            ThLingyunCard *card = new ThLingyunCard;
+            card->setUserString(c->objectName());
+            card->addSubcard(originalCard);
+            return card;
+        } else
+            return NULL;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        QMap<QString, QString> map;
+        map.insert("ex_nihilo", "ikbenghuai");
+        map.insert("duel", "thsanling");
+        map.insert("snatch", "ikxinshang");
+        map.insert("iron_chain", "ikjinlian");
+        bool can = false;
+        foreach (QString card_name, map.keys()) {
+            Card *card = Sanguosha->cloneCard(card_name, Card::NoSuit, 0);
+            card->setSkillName(objectName());
+            if (!Self->isCardLimited(card, Card::MethodUse) && card->isAvailable(Self) && !Self->hasSkill(map[card_name]))
+                can = true;
+            delete card;
+            if (can)
+                break;
+        }
+        return can;
+    }
+};
+
+class ThZhaoai: public TriggerSkill {
+public:
+    ThZhaoai(): TriggerSkill("thzhaoai") {
+        events << Death;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player && !player->isAlive() && player->hasSkill(objectName())) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who == player)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        LogMessage log;
+        log.type = "#TriggerSkill";
+        log.from = player;
+        log.arg = objectName();
+        room->sendLog(log);
+        room->broadcastSkillInvoke(objectName());
+        room->notifySkillInvoked(player, objectName());
+
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName());
+        QStringList skill;
+        skill << "thshenbao" << "thyuhuo";
+        room->handleAcquireDetachSkills(target, skill);
+
+        int n = 0;
+        foreach (const Skill *skill, player->getVisibleSkillList()) {
+            if (skill->isAttachedLordSkill())
+                continue;
+            n++;
+        }
+        if (n > 0)
+            target->drawCards(n, objectName());
+        return false;
+    }
+};
+
 class ThWunan: public TriggerSkill {
 public:
     ThWunan(): TriggerSkill("thwunan") {
@@ -1427,7 +1733,7 @@ public:
                 foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
                     if (owner != player && owner->canDiscard(owner, "h"))
                         skill_list.insert(owner, QStringList(objectName()));
-        } else if (triggerEvent == HpRecover && player->hasFlag("Global_Dying")) {
+        } else if (triggerEvent == HpRecover && player->hasFlag("Global_Dying") && player->getHp() >= 1) {
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
                 if (owner != player && owner->canDiscard(owner, "h"))
                     skill_list.insert(owner, QStringList(objectName()));
@@ -2222,6 +2528,13 @@ TouhouKamiPackage::TouhouKamiPackage()
     kami010->addSkill(new ThRangdeng);
     kami010->addSkill(new ThBaihun);
 
+    General *kami011 = new General(this, "kami011", "kami");
+    kami011->addSkill(new ThXujing);
+    kami011->addSkill(new ThXujingClear);
+    related_skills.insertMulti("thxujing", "#thxujing-clear");
+    kami011->addSkill(new ThLingyun);
+    kami011->addSkill(new ThZhaoai);
+
     General *kami012 = new General(this, "kami012", "kami");
     kami012->addSkill(new ThWunan);
 
@@ -2262,6 +2575,7 @@ TouhouKamiPackage::TouhouKamiPackage()
     addMetaObject<ThChuangxinCard>();
     addMetaObject<ThTianxinCard>();
     addMetaObject<ThBaihunCard>();
+    addMetaObject<ThLingyunCard>();
     addMetaObject<ThBingzhangCard>();
     addMetaObject<ThSiqiangCard>();
     addMetaObject<ThJiefuCard>();

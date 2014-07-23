@@ -86,6 +86,45 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QCommandLinkButton>
+#include <QButtonGroup>
+class ThLingyunDialog: public QDialog {
+    Q_OBJECT
+
+public:
+    static ThLingyunDialog *getInstance();
+
+public slots:
+    void popup();
+    void selectCard(QAbstractButton *button);
+
+private:
+    explicit ThLingyunDialog();
+
+    QButtonGroup *group;
+    QVBoxLayout *button_layout;
+
+    QHash<QString, const Card *> map;
+
+signals:
+    void onButtonClick();
+};
+
+class ThLingyunCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThLingyunCard();
+
+    virtual bool targetFixed() const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
+
+    virtual const Card *validate(CardUseStruct &card_use) const;
+};
+
 class ThBingzhangCard: public SkillCard{
     Q_OBJECT
 
