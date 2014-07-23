@@ -330,8 +330,6 @@ void SelectSuitDialog::popup() {
         suits << card->getSuitString();
     QStringList all_suit;
     all_suit << "spade" << "heart" << "club" << "diamond";
-    int count = 0;
-    QString choice;
     foreach (QString suit, all_suit) {
         QCommandLinkButton *button = new QCommandLinkButton;
         button->setIcon(QIcon(QString("image/system/suit/%1.png").arg(suit)));
@@ -340,11 +338,6 @@ void SelectSuitDialog::popup() {
         group->addButton(button);
 
         button->setEnabled(suits.contains(suit));
-
-        if (button->isEnabled()) {
-            count++;
-            choice = suit;
-        }
         button_layout->addWidget(button);
     }
 
