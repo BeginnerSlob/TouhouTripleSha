@@ -2492,13 +2492,6 @@ public:
         peach->setSkillName(objectName());
         return peach;
     }
-
-    virtual int getEffectIndex(const ServerPlayer *player, const Card *) const{
-        int index = qrand() % 2 + 1;
-        if (Player::isNostalGeneral(player, "huatuo"))
-            index += 2;
-        return index;
-    }
 };
 
 IkQingnangCard::IkQingnangCard() {
@@ -2854,6 +2847,50 @@ public:
     }
 };
 
+IkYaogeCard::IkYaogeCard() {
+}
+
+bool IkYaogeCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (to_select == Self) return false;
+    QSet<QString> kingdoms;
+    foreach (const Player *p, targets)
+        kingdoms << p->getKingdom();
+    return Self->canDiscard(to_select, "he") && !kingdoms.contains(to_select->getKingdom());
+}
+
+void IkYaogeCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    QList<ServerPlayer *> draw_card;
+    if (Sanguosha->getCard(getEffectiveId())->getSuit() == Card::Spade)
+        draw_card << source;
+    foreach (ServerPlayer *target, targets) {
+        if (!source->canDiscard(target, "he")) continue;
+        int id = room->askForCardChosen(source, target, "he", "ikyaoge", false, Card::MethodDiscard);
+        if (Sanguosha->getCard(id)->getSuit() == Card::Spade)
+            draw_card << target;
+        room->throwCard(id, target, source);
+    }
+
+    foreach (ServerPlayer *p, draw_card)
+        room->drawCards(p, 1, "ikyaoge");
+}
+
+class IkYaoge: public OneCardViewAsSkill {
+public:
+    IkYaoge(): OneCardViewAsSkill("ikyaoge") {
+        filter_pattern = ".!";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->canDiscard(player, "he") && !player->hasUsed("IkYaogeCard");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        IkYaogeCard *yaoge_card = new IkYaogeCard;
+        yaoge_card->addSubcard(originalCard);
+        return yaoge_card;
+    }
+};
+
 IkaiDoPackage::IkaiDoPackage()
     :Package("ikai-do")
 {
@@ -3001,6 +3038,10 @@ IkaiDoPackage::IkaiDoPackage()
     related_skills.insertMulti("ikguijiao", "#ikguijiao-maxcard");
     luna034->addSkill(new IkJinlian);
 
+    General *luna042 = new General(this, "luna042", "tsuki", 3);
+    luna042->addSkill("ikhuichun");
+    luna042->addSkill(new IkYaoge);
+
     addMetaObject<IkShenaiCard>();
     addMetaObject<IkXinqiCard>();
     addMetaObject<IkXingyuCard>();
@@ -3018,6 +3059,7 @@ IkaiDoPackage::IkaiDoPackage()
     addMetaObject<IkWudiCard>();
     addMetaObject<IkMoyuCard>();
     addMetaObject<IkQingnangCard>();
+    addMetaObject<IkYaogeCard>();
 
     skills << new NonCompulsoryInvalidity << new IkXingyu << new IkQinghua;
 

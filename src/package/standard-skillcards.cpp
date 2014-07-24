@@ -16,34 +16,6 @@ void LianyingCard::onEffect(const CardEffectStruct &effect) const{
     effect.to->drawCards(1, "lianying");
 }
 
-
-ChuliCard::ChuliCard() {
-}
-
-bool ChuliCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if (to_select == Self) return false;
-    QSet<QString> kingdoms;
-    foreach (const Player *p, targets)
-        kingdoms << p->getKingdom();
-    return Self->canDiscard(to_select, "he") && !kingdoms.contains(to_select->getKingdom());
-}
-
-void ChuliCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    QList<ServerPlayer *> draw_card;
-    if (Sanguosha->getCard(getEffectiveId())->getSuit() == Card::Spade)
-        draw_card << source;
-    foreach (ServerPlayer *target, targets) {
-        if (!source->canDiscard(target, "he")) continue;
-        int id = room->askForCardChosen(source, target, "he", "chuli", false, Card::MethodDiscard);
-        room->throwCard(id, target, source);
-        if (Sanguosha->getCard(id)->getSuit() == Card::Spade)
-            draw_card << target;
-    }
-
-    foreach (ServerPlayer *p, draw_card)
-        room->drawCards(p, 1, "chuli");
-}
-
 YijiCard::YijiCard() {
     mute = true;
 }

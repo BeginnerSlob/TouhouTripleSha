@@ -267,23 +267,6 @@ public:
     }
 };
 
-class Chuli: public OneCardViewAsSkill {
-public:
-    Chuli(): OneCardViewAsSkill("chuli") {
-        filter_pattern = ".!";
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->canDiscard(player, "he") && !player->hasUsed("ChuliCard");
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const{
-        ChuliCard *chuli_card = new ChuliCard;
-        chuli_card->addSubcard(originalCard->getId());
-        return chuli_card;
-    }
-};
-
 class Yaowu: public TriggerSkill {
 public:
     Yaowu(): TriggerSkill("yaowu") {
@@ -360,15 +343,10 @@ void StandardPackage::addGenerals() {
     luxun->addSkill(new Lianying);
 
     // Qun
-    General *huatuo = new General(this, "huatuo", "qun", 3); // QUN 001
-    huatuo->addSkill(new Chuli);
-    huatuo->addSkill("ikhuichun");
-
     General *st_huaxiong = new General(this, "st_huaxiong", "qun", 6); // QUN 019
     st_huaxiong->addSkill(new Yaowu);
 
     // for skill cards
-    addMetaObject<ChuliCard>();
     addMetaObject<LianyingCard>();
     addMetaObject<YijiCard>();
 
