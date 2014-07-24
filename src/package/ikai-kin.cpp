@@ -5151,7 +5151,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (triggerEvent == PreCardUsed && player->isAlive() && player->getPhase() != Player::NotActive
+        if (triggerEvent == CardFinished && player->isAlive() && player->getPhase() != Player::NotActive
             && player->getMark("ikmenghuan") == 0) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->getTypeId() != Card::TypeSkill) {

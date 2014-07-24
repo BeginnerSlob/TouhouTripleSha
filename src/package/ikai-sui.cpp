@@ -3730,6 +3730,81 @@ public:
     }
 };
 
+class IkNicuViewAsSkill: public OneCardViewAsSkill {
+public:
+    IkNicuViewAsSkill(): OneCardViewAsSkill("iknicu") {
+        filter_pattern = ".|black";
+        response_or_use = true;
+        response_pattern = "@@iknicu";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        Slash *slash = new Slash(Card::SuitToBeDecided, -1);
+        slash->addSubcard(originalCard);
+        slash->setSkillName("iknicu");
+        return slash;
+    }
+};
+
+class IkNicu: public TriggerSkill {
+public:
+    IkNicu(): TriggerSkill("iknicu") {
+        events << EventPhaseStart;
+        view_as_skill = new IkNicuViewAsSkill;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player->getPhase() == Player::Finish)
+            foreach (ServerPlayer *hansui, room->findPlayersBySkillName(objectName()))
+                if (hansui->inMyAttackRange(player) && hansui->canSlash(player, false) && 
+                    && (player->getHp() > hansui->getHp() || hansui->hasFlag("IkNicuSlashTarget")))
+                    skill_list.insert(hansui, QStringList(objectName()));
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *hansui) const{
+        room->setPlayerFlag(hansui, "slashTargetFix");
+        room->setPlayerFlag(hansui, "slashNoDistanceLimit");
+        room->setPlayerFlag(hansui, "slashTargetFixToOne");
+        room->setPlayerFlag(player, "SlashAssignee");
+        
+        bool slash = room->askForUseCard(hansui, "@@iknicu", "@iknicu-slash:" + player->objectName());
+        if (!slash) {
+            room->setPlayerFlag(hansui, "-slashTargetFix");
+            room->setPlayerFlag(hansui, "-slashNoDistanceLimit");
+            room->setPlayerFlag(hansui, "-slashTargetFixToOne");
+            room->setPlayerFlag(player, "-SlashAssignee");
+        }
+
+        return slash;
+    }
+};
+
+class IkNicuRecord: public TriggerSkill {
+public:
+    IkNicuRecord(): TriggerSkill("#iknicu-record") {
+        events << TargetSpecified << EventPhaseStart;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == TargetSpecified && player->getPhase() == Player::Play) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash")) {
+                foreach (ServerPlayer *to, use.to) {
+                    if (!to->hasFlag("IkNicuSlashTarget"))
+                        to->setFlags("IkNicuSlashTarget");
+                }
+            }
+        } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::RoundStart) {
+            foreach (ServerPlayer *p, room->getAlivePlayers())
+                if (p->hasFlag("IkNicuSlashTarget"))
+                    p->setFlags("-IkNicuSlashTarget");
+        }
+        return QStringList();
+    }
+};
+
 class IkZhoudu: public TriggerSkill {
 public:
     IkZhoudu(): TriggerSkill("ikzhoudu") {
@@ -3788,8 +3863,12 @@ public:
                     p->setMark(objectName(), 0);
             } else if (player->getPhase() == Player::NotActive) {
                 foreach (ServerPlayer *hetaihou, room->findPlayersBySkillName(objectName()))
-                    if (hetaihou->getMark(objectName()) > 0)
-                        skill_list.insert(hetaihou, QStringList(objectName()));
+                    if (hetaihou->getMark(objectName()) > 0) {
+                        QStringList list;
+                        for (int i = 0; i < hetaihou->getMark(objectName()); i++)
+                            list << objectName();
+                        skill_list.insert(hetaihou, list);
+                    }
             }
         }
         return skill_list;
@@ -3989,6 +4068,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     luna020->addSkill(new IkLihui);
 
     General *luna021 = new General(this, "luna021", "tsuki");
+    luna021->addSkill("thjibu");
     luna021->addSkill(new IkShuangren);
     luna021->addSkill(new SlashNoDistanceLimitSkill("ikshuangren"));
     related_skills.insertMulti("ikshuangren", "#ikshuangren-slash-ndl");
@@ -4023,6 +4103,12 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *luna035 = new General(this, "luna035", "tsuki");
     luna035->addSkill(new IkSheqie);
     luna035->addSkill(new IkYanzhou);
+
+    General *luna040 = new General(this, "luna040", "tsuki");
+    luna040->addSkill("thjibu");
+    luna040->addSkill(new IkNicu);
+    luna040->addSkill(new IkNicuRecord);
+    related_skills.insertMulti("iknicu", "#iknicu-record");
 
     General *luna043 = new General(this, "luna043", "tsuki", 3, false);
     luna043->addSkill(new IkZhoudu);
