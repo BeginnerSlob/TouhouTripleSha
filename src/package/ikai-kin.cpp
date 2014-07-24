@@ -5098,6 +5098,169 @@ public:
     }
 };
 
+class IkMenghuan: public TriggerSkill {
+public:
+    IkMenghuan(): TriggerSkill("ikmenghuan") {
+        events << EventPhaseChanging;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (change.to != Player::NotActive || player->getMark("ikmenghuan") > 0) return skill_list;
+        foreach (ServerPlayer *caifuren, room->findPlayersBySkillName(objectName())) {
+            if (caifuren == player) continue;
+            skill_list.insert(caifuren, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *caifuren) const{
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        QStringList choices;
+        for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
+            if (player->getEquip(i) && !caifuren->getEquip(i))
+                choices << QString::number(i);
+        }
+        choices << "draw";
+        QString choice = room->askForChoice(caifuren, objectName(), choices.join("+"), QVariant::fromValue(player));
+        if (choice == "draw") {
+            caifuren->drawCards(1, objectName());
+        } else {
+            int index = choice.toInt();
+            const Card *card = player->getEquip(index);
+            room->moveCardTo(card, caifuren, Player::PlaceEquip);
+        }
+
+        return false;
+    }
+};
+
+class IkMenghuanRecord: public TriggerSkill {
+public:
+    IkMenghuanRecord(): TriggerSkill("#ikmenghuan-record") {
+        events << CardFinished << TurnStart;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == PreCardUsed && player->isAlive() && player->getPhase() != Player::NotActive
+            && player->getMark("ikmenghuan") == 0) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->getTypeId() != Card::TypeSkill) {
+                foreach (ServerPlayer *p, use.to) {
+                    if (p != player) {
+                        player->addMark("ikmenghuan");
+                        return QStringList();
+                    }
+                }
+            }
+        } else if (triggerEvent == TurnStart) {
+            player->setMark("ikmenghuan", 0);
+        }
+        return QStringList();
+    }
+};
+
+IkXianlingDamageCard::IkXianlingDamageCard() {
+    mute = true;
+}
+
+void IkXianlingDamageCard::onUse(Room *room, const CardUseStruct &card_use) const{
+    CardUseStruct use = card_use;
+    QVariant data = QVariant::fromValue(use);
+    RoomThread *thread = room->getThread();
+
+    thread->trigger(PreCardUsed, room, use.from, data);
+    use = data.value<CardUseStruct>();
+    thread->trigger(CardUsed, room, use.from, data);
+    use = data.value<CardUseStruct>();
+    thread->trigger(CardFinished, room, use.from, data);
+}
+
+bool IkXianlingDamageCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    return targets.length() == Self->getMark("ikxianling");
+}
+
+bool IkXianlingDamageCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.length() < Self->getMark("ikxianling") && Self->inMyAttackRange(to_select);
+}
+
+void IkXianlingDamageCard::onEffect(const CardEffectStruct &effect) const{
+    effect.from->getRoom()->damage(DamageStruct("ikxianling", effect.from, effect.to));
+}
+
+IkXianlingCard::IkXianlingCard() {
+}
+
+bool IkXianlingCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && to_select != Self;
+}
+
+void IkXianlingCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    room->removePlayerMark(effect.from, "@xianling");
+    room->addPlayerMark(effect.from, "@xianlingused");
+
+    int len = 0;
+    DummyCard *dummy = new DummyCard;
+    foreach (const Card *c, effect.from->getEquips()) {
+        dummy->addSubcard(c);
+        len++;
+    }
+    room->setPlayerMark(effect.to, "ikxianling", len);
+    effect.to->obtainCard(dummy);
+    delete dummy;
+
+    bool rec = true;
+    int count = 0;
+    foreach (ServerPlayer *p, room->getOtherPlayers(effect.to)) {
+        if (effect.to->inMyAttackRange(p)) {
+            count++;
+            if (count >= len) {
+                rec = false;
+                break;
+            }
+        }
+    }
+
+    if ((rec || !room->askForUseCard(effect.to, "@ikxianling", "@ikxianling-damage:::" + QString::number(len)))
+        && effect.from->isWounded())
+        room->recover(effect.from, RecoverStruct(effect.to, NULL, len));
+}
+
+class IkXianling: public ZeroCardViewAsSkill {
+public:
+    IkXianling(): ZeroCardViewAsSkill("ikxianling") {
+        frequency = Skill::Limited;
+        limit_mark = "@xianling";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->getMark("@xianling") > 0 && player->getEquips().length() > 0;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
+        return pattern == "@ikxianling";
+    }
+
+    virtual const Card *viewAs() const{
+        QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+        if (pattern == "@ikxianling") {
+            return new IkXianlingDamageCard;
+        } else {
+            return new IkXianlingCard;
+        }
+    }
+};
+
 class IkHuowu: public PhaseChangeSkill {
 public:
     IkHuowu(): PhaseChangeSkill("ikhuowu") {
@@ -5481,6 +5644,12 @@ IkaiKinPackage::IkaiKinPackage()
     luna038->addSkill(new IkGuijingRecord);
     related_skills.insertMulti("ikguijing", "#ikguijing-record");
 
+    General *luna039 = new General(this, "luna039", "tsuki", 3, false);
+    luna039->addSkill(new IkMenghuan);
+    luna039->addSkill(new IkMenghuanRecord);
+    related_skills.insertMulti("ikmenghuan", "#ikmenghuan-record");
+    luna039->addSkill(new IkXianling);
+
     General *luna041 = new General(this, "luna041", "tsuki", 3);
     luna041->addSkill(new IkHuowu);
     luna041->addSkill(new IkTianxie);
@@ -5512,6 +5681,8 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkLvdongCard>();
     addMetaObject<IkMingceCard>();
     addMetaObject<IkFenshiCard>();
+    addMetaObject<IkXianlingCard>();
+    addMetaObject<IkXianlingDamageCard>();
     addMetaObject<IkTianxieCard>();
     addMetaObject<IkBengyanCard>();
 
