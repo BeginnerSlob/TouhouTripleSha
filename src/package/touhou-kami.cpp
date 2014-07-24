@@ -2496,6 +2496,7 @@ TouhouKamiPackage::TouhouKamiPackage()
     General *kami003 = new General(this, "kami003", "kami", 8);
     kami003->addSkill(new ThWudao);
     kami003->addSkill(new ThHuanjun);
+    kami003->addSkill("thyanmeng");
 
     General *kami004 = new General(this, "kami004", "kami");
     kami004->addSkill(new ThGugao);
