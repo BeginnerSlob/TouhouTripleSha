@@ -1195,6 +1195,7 @@ TouhouBangaiPackage::TouhouBangaiPackage()
     bangai006->addSkill(new ThLingzhan);
     bangai006->addSkill(new ThLingzhanPut);
     related_skills.insertMulti("thlingzhan", "#thlingzhan");
+    bangai006->addSkill(new Skill("thyanmeng", Skill::Compulsory));
 
     General *bangai007 = new General(this, "bangai007", "yuki");
     bangai007->addSkill(new ThXiangrui);
