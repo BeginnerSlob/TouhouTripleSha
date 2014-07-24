@@ -213,7 +213,6 @@ void Room::enterDying(ServerPlayer *player, DamageStruct *reason) {
             LogMessage log;
             log.type = "#AskForPeaches";
             log.from = player;
-            log.to = getAllPlayers();
             log.arg = QString::number(1 - player->getHp());
             sendLog(log);
 
