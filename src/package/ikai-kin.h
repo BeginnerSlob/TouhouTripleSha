@@ -274,6 +274,28 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class IkXianlingCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkXianlingCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class IkXianlingDamageCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkXianlingDamageCard();
+
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class IkTianxieCard: public SkillCard {
     Q_OBJECT
 
