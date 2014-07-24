@@ -77,7 +77,7 @@ return {
 	[":thyishi"] = "锁定技，你人物牌上的牌对你无效。你的手牌上限为X（X为所有其他角色的手牌数的最大值）。",
 	
 	["#kishin007"] = "幻梦的演奏家",
-	["kishin007"] = "崛川雷鼓",--雪 - 空 - 4血
+	["kishin007"] = "堀川雷鼓",--雪 - 空 - 4血
 	["designer:kishin007"] = "幻桜落 | Codeby:Slob",
 	["illustrator:kishin007"] = "正体不明",
 	["cv:kishin007"] = "暂无",
