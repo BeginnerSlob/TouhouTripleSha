@@ -313,7 +313,7 @@ bool Player::hasSkill(const QString &skill_name, bool include_lose) const{
     if (!include_lose) {
         if (!hasEquipSkill(skill_name)) {
             const Skill *skill = Sanguosha->getSkill(skill_name);
-            if (skill && !Sanguosha->correctSkillValidity(this, skill))
+            if (skill && skill_name != "thyanmeng" && !Sanguosha->correctSkillValidity(this, skill))
                 return false;
         }
     }
@@ -929,7 +929,8 @@ QString Player::getSkillDescription() const{
     if (description.isEmpty()) description = tr("No skills");
 
     if (general) {
-        QString name_origin = Sanguosha->translate(general->objectName());
+        QString name_origin = Sanguosha->translate("#" + general->objectName());
+        name_origin.append(QString(" - %1").arg(Sanguosha->translate(general->objectName())));
         QString color_str = "#000000";
         if (isMale()) {
             color_str = "#F08947";

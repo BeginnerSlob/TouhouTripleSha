@@ -803,10 +803,10 @@ const Card *ThChiyingCard::validate(CardUseStruct &cardUse) const{
 
     const Card *card = Sanguosha->getCard(card_id);
     if (names.contains(card->objectName()))
-        if (user->askForSkillInvoke("thchiying", "use"))
+        if (user->askForSkillInvoke("thchiying_use", "use"))
             return card;
     if (card->getSuit() == Club)
-        if (user->askForSkillInvoke("thchiying", "change")) {
+        if (user->askForSkillInvoke("thchiying_use", "change")) {
             QString name = room->askForChoice(user, "thchiying", names.join("+"));
             Card *c = Sanguosha->cloneCard(name);
             c->addSubcard(card);
@@ -838,10 +838,10 @@ const Card *ThChiyingCard::validateInResponse(ServerPlayer *user) const{
 
     const Card *card = Sanguosha->getCard(card_id);
     if (names.contains(card->objectName()))
-        if (user->askForSkillInvoke("thchiying", "use"))
+        if (user->askForSkillInvoke("thchiying_use", "use"))
             return card;
     if (card->getSuit() == Club)
-        if (user->askForSkillInvoke("thchiying", "change")) {
+        if (user->askForSkillInvoke("thchiying_use", "change")) {
             QString name = room->askForChoice(user, "thchiying", names.join("+"));
             Card *c = Sanguosha->cloneCard(name);
             c->addSubcard(card);
@@ -915,12 +915,12 @@ public:
 
         const Card *card = Sanguosha->getCard(card_id);
         if (card->objectName() == "jink")
-            if (player->askForSkillInvoke(objectName(), "use")) {
+            if (player->askForSkillInvoke("thchiying_use", "use")) {
                 room->provide(card);
                 return true;
             }
         if (card->getSuit() == Card::Club)
-            if (player->askForSkillInvoke("thchiying", "change")) {
+            if (player->askForSkillInvoke("thchiying_use", "change")) {
                 Card *c = Sanguosha->cloneCard("jink");
                 c->addSubcard(card);
                 c->setSkillName("thchiying");
