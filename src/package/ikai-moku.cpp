@@ -5012,32 +5012,30 @@ public:
     }
 };
 
-class IkTianwubaka: public ZeroCardViewAsSkill {
+class IkTianwu: public ZeroCardViewAsSkill {
 public:
-    IkTianwubaka(): ZeroCardViewAsSkill("iktianwubaka") {
+    IkTianwu(): ZeroCardViewAsSkill("iktianwu") {
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getMark("@mailun") >= 6 && !player->hasUsed("IkTianwubakaCard");
+        return player->getMark("@mailun") >= 6 && !player->hasUsed("IkTianwuCard");
     }
 
     virtual const Card *viewAs() const{
-        return new IkTianwubakaCard;
+        return new IkTianwuCard;
     }
 };
 
-IkTianwubakaCard::IkTianwubakaCard() {
+IkTianwuCard::IkTianwuCard() {
     target_fixed = true;
-    mute = true;
 }
 
-void IkTianwubakaCard::use(Room *room, ServerPlayer *shenlvbu, QList<ServerPlayer *> &) const{
-    room->broadcastSkillInvoke("iktianwubaka");
+void IkTianwuCard::use(Room *room, ServerPlayer *shenlvbu, QList<ServerPlayer *> &) const{
     shenlvbu->loseMark("@mailun", 6);
 
     QList<ServerPlayer *> players = room->getOtherPlayers(shenlvbu);
     foreach (ServerPlayer *player, players) {
-        room->damage(DamageStruct("iktianwubaka", shenlvbu, player));
+        room->damage(DamageStruct("iktianwu", shenlvbu, player));
         room->getThread()->delay();
     }
 
@@ -5050,7 +5048,7 @@ void IkTianwubakaCard::use(Room *room, ServerPlayer *shenlvbu, QList<ServerPlaye
 
     foreach (ServerPlayer *player, players) {
         bool delay = !player->isKongcheng();
-        room->askForDiscard(player, "iktianwubaka", 4, 4);
+        room->askForDiscard(player, "iktianwu", 4, 4);
         if (delay)
             room->getThread()->delay();
     }
@@ -5270,7 +5268,7 @@ IkaiMokuPackage::IkaiMokuPackage()
     luna029->addSkill(new MarkAssignSkill("@mailun", 2));
     luna029->addSkill(new IkWumou);
     luna029->addSkill(new IkSuikong);
-    luna029->addSkill(new IkTianwubaka);
+    luna029->addSkill(new IkTianwu);
     related_skills.insertMulti("ikzhuohuo", "#@mailun-2");
 
     addMetaObject<IkTiaoxinCard>();
@@ -5297,7 +5295,7 @@ IkaiMokuPackage::IkaiMokuPackage()
     addMetaObject<IkGuihuoCard>();
     addMetaObject<IkYujiCard>();
     addMetaObject<IkSuikongCard>();
-    addMetaObject<IkTianwubakaCard>();
+    addMetaObject<IkTianwuCard>();
 
     skills << new IkMohua << new IkHuanwu << new IkYihuoViewAsSkill
            << new IkJilve << new IkJilveClear << new IkBianshengPindian

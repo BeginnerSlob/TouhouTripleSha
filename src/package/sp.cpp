@@ -461,7 +461,7 @@ SPPackage::SPPackage()
     sp_shenlvbu->addSkill("ikzhuohuo");
     sp_shenlvbu->addSkill("ikwumou");
     sp_shenlvbu->addSkill("iksuikong");
-    sp_shenlvbu->addSkill("iktianwubaka");
+    sp_shenlvbu->addSkill("iktianwu");
 
     General *sp_yuejin = new General(this, "sp_yuejin", "wei", 4, true, true); // SP 024
     sp_yuejin->addSkill("ikxiaorui");
