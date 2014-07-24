@@ -4128,6 +4128,52 @@ public:
     }
 };
 
+class IkGuaidao: public PhaseChangeSkill {
+public:
+    IkGuaidao(): PhaseChangeSkill("ikguaidao") {
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        foreach (ServerPlayer *p, target->getRoom()->getAllPlayers()) {
+            if (p == target)
+                continue;
+            if (p->canDiscard(target, "he"))
+                return PhaseChangeSkill::triggerable(target)
+                       && target->getPhase() == Player::Finish;
+        }
+        return false;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer *) const{
+        QList<ServerPlayer *> players;
+        foreach (ServerPlayer *p, room->getOtherPlayers(target))
+            if (p->canDiscard(target, "he"))
+                players << p;
+        ServerPlayer *player = room->askForPlayerChosen(target, players, objectName(), "ikguaidao-invoke", true, true);
+        if (player) {
+            room->broadcastSkillInvoke(objectName());
+            target->tag["IkGuaidaoTarget"] = QVariant::fromValue(player);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *target) const{
+        ServerPlayer *player = target->tag["IkGuaidaoTarget"].value<ServerPlayer *>();
+        target->tag.remove("IkGuaidaoTarget");
+        if (player) {
+            Room *room = target->getRoom();
+            int id = room->askForCardChosen(player, target, "he", objectName(), false, Card::MethodDiscard);
+            room->throwCard(id, target, player);
+            if (!Sanguosha->getCard(id)->isKindOf("Slash") && player->isAlive() && !player->isNude()) {
+                int id2 = room->askForCardChosen(target, player, "he", "ikguaidao_obtain");
+                room->obtainCard(target, id2);
+            }
+        }
+        return false;
+    }
+};
+
 IkShenxingCard::IkShenxingCard() {
     target_fixed = true;
 }
@@ -5597,6 +5643,9 @@ IkaiKinPackage::IkaiKinPackage()
     General *snow037 = new General(this, "snow037", "yuki", 3, false);
     snow037->addSkill(new IkJiaoshi);
     snow037->addSkill(new IkLinghuang);
+
+    General *snow038 = new General(this, "snow038", "yuki");
+    snow038->addSkill(new IkGuaidao);
 
     General *snow039 = new General (this, "snow039", "yuki", 3);
     snow039->addSkill(new IkShenxing);
