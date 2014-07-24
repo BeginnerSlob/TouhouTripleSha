@@ -3757,7 +3757,7 @@ public:
         QMap<ServerPlayer *, QStringList> skill_list;
         if (player->getPhase() == Player::Finish)
             foreach (ServerPlayer *hansui, room->findPlayersBySkillName(objectName()))
-                if (hansui->inMyAttackRange(player) && hansui->canSlash(player, false) && 
+                if (hansui->inMyAttackRange(player) && hansui->canSlash(player, false)
                     && (player->getHp() > hansui->getHp() || hansui->hasFlag("IkNicuSlashTarget")))
                     skill_list.insert(hansui, QStringList(objectName()));
         return skill_list;
@@ -3931,6 +3931,108 @@ public:
             if (judge.isBad())
                 room->damage(DamageStruct(objectName(), NULL, target, 3, DamageStruct::Fire));
         }
+        return false;
+    }
+};
+
+class IkMingzhen: public TriggerSkill {
+public:
+    IkMingzhen(): TriggerSkill("ikmingzhen") {
+        events << DamageCaused;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))
+            && !damage.chain && !damage.transfer && damage.by_user)
+            foreach (const Skill *skill, damage.to->getVisibleSkillList())
+                if (!skill->isAttachedLordSkill())
+                    return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(damage.to))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        QStringList choices;
+        QStringList skills_list;
+        if (damage.to->getMark("ikmingzhen_" + player->objectName()) == 0) {
+            foreach (const Skill *skill, damage.to->getVisibleSkillList()) {
+                if (!skill->isAttachedLordSkill())
+                    skills_list << skill->objectName();
+            }
+            if (skills_list.length() > 1)
+                choices << "detach";
+        }
+        if (!damage.to->getEquips().isEmpty())
+            choices << "throw";
+
+        if (!choices.isEmpty()) {
+            QString choice = room->askForChoice(damage.to, objectName(), choices.join("+"), data);
+            if (choice == "throw") {
+                damage.to->throwAllEquips();
+                if (damage.to->isAlive())
+                    room->loseHp(damage.to);
+            } else {
+                room->addPlayerMark(damage.to, "ikmingzhen_" + player->objectName());
+                room->addPlayerMark(damage.to, "@mingzhen");
+                QString lost_skill = room->askForChoice(damage.to, "ikmingzhen_lose", skills_list.join("+"), data);
+                room->detachSkillFromPlayer(damage.to, lost_skill);
+            }
+        }
+
+        return true;
+    }
+};
+
+class IkYishi: public TriggerSkill {
+public:
+    IkYishi(): TriggerSkill("ikyishi") {
+        events << TargetConfirmed;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("Slash") && use.from->isAlive()) {
+            for (int i = 0; i < use.to.length(); i++) {
+                ServerPlayer *to = use.to.at(i);
+                if (to->isAlive() && to->isAdjacentTo(player) && to->isAdjacentTo(use.from)
+                    && !to->getEquips().isEmpty()) {
+                    return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        for (int i = 0; i < use.to.length(); i++) {
+            ServerPlayer *to = use.to.at(i);
+            if (to->isAlive() && to->isAdjacentTo(player) && to->isAdjacentTo(use.from)
+                && !to->getEquips().isEmpty()) {
+                bool invoke = room->askForSkillInvoke(player, objectName(), QVariant::fromValue(to));
+                if (!invoke) continue;
+                room->broadcastSkillInvoke(objectName());
+                int id = -1;
+                if (to->getEquips().length() == 1)
+                    id = to->getEquips().first()->getEffectiveId();
+                else
+                    id = room->askForCardChosen(to, to, "e", objectName(), false, Card::MethodDiscard);
+                room->throwCard(id, to);
+            }
+        }
+
         return false;
     }
 };
@@ -4114,6 +4216,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     luna043->addSkill(new IkZhoudu);
     luna043->addSkill(new IkKuangdi);
     luna043->addSkill(new IkBengying);
+
+    General *luna044 = new General(this, "luna044", "tsuki");
+    luna044->addSkill(new IkMingzhen);
+    luna044->addSkill(new IkYishi);
 
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();

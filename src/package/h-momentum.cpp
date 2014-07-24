@@ -159,78 +159,6 @@ public:
     }
 };
 
-class Chuanxin: public TriggerSkill {
-public:
-    Chuanxin(): TriggerSkill("chuanxin") {
-        events << DamageCaused;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        DamageStruct damage = data.value<DamageStruct>();
-        if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))
-            && !damage.chain && !damage.transfer && damage.by_user
-            && room->askForSkillInvoke(player, objectName(), data)) {
-            room->broadcastSkillInvoke(objectName());
-            QStringList choices;
-            if (!damage.to->getEquips().isEmpty()) choices << "throw";
-            QStringList skills_list;
-            if (damage.to->getMark("chuanxin_" + player->objectName()) == 0) {
-                foreach (const Skill *skill, damage.to->getVisibleSkillList()) {
-                    if (!skill->isAttachedLordSkill())
-                        skills_list << skill->objectName();
-                }
-                if (skills_list.length() > 1) choices << "detach";
-            }
-            if (choices.isEmpty()) return true;
-            QString choice = room->askForChoice(damage.to, objectName(), choices.join("+"), data);
-            if (choice == "throw") {
-                damage.to->throwAllEquips();
-                if (damage.to->isAlive())
-                    room->loseHp(damage.to);
-            } else {
-                room->addPlayerMark(damage.to, "chuanxin_" + player->objectName());
-                room->addPlayerMark(damage.to, "@chuanxin");
-                QString lost_skill = room->askForChoice(damage.to, "chuanxin_lose", skills_list.join("+"), data);
-                room->detachSkillFromPlayer(damage.to, lost_skill);
-            }
-            return true;
-        }
-        return false;
-    }
-};
-
-class Fengshi: public TriggerSkill {
-public:
-    Fengshi(): TriggerSkill("fengshi") {
-        events << TargetConfirmed;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("Slash") && use.from->isAlive()) {
-            for (int i = 0; i < use.to.length(); i++) {
-                ServerPlayer *to = use.to.at(i);
-                if (to->isAlive() && to->isAdjacentTo(player) && to->isAdjacentTo(use.from)
-                    && !to->getEquips().isEmpty()) {
-                    to->setFlags("FengshiTarget"); // For AI
-                    bool invoke = room->askForSkillInvoke(player, objectName(), QVariant::fromValue(to));
-                    to->setFlags("-FengshiTarget");
-                    if (!invoke) continue;
-                    room->broadcastSkillInvoke(objectName());
-                    int id = -1;
-                    if (to->getEquips().length() == 1)
-                        id = to->getEquips().first()->getEffectiveId();
-                    else
-                        id = room->askForCardChosen(to, to, "e", objectName(), false, Card::MethodDiscard);
-                    room->throwCard(id, to);
-                }
-            }
-        }
-
-        return false;
-    }
-};
-
 HMomentumPackage::HMomentumPackage()
     : Package("h_momentum")
 {
@@ -248,10 +176,6 @@ HMomentumPackage::HMomentumPackage()
     heg_dongzhuo->addSkill(new Hengzheng);
     heg_dongzhuo->addSkill(new Baoling);
     heg_dongzhuo->addSkill("ikwuhua");
-
-    General *zhangren = new General(this, "zhangren", "qun", 4); // QUN 024
-    zhangren->addSkill(new Chuanxin);
-    zhangren->addSkill(new Fengshi);
 }
 
 ADD_PACKAGE(HMomentum)
