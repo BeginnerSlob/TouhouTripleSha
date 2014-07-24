@@ -1461,19 +1461,21 @@ public:
                     skills << "thhuanzang";
                 if (!use.from->hasSkill("thanyue"))
                     skills << "thanyue";
+                room->setPlayerMark(use.from, "@xujing_bad", 1);
             } else {
                 if (!use.from->hasSkill("thmengwu"))
                     skills << "thmengwu";
                 if (!use.from->hasSkill("thxijing"))
                     skills << "thxijing";
+                room->setPlayerMark(use.from, "@xujing_good", 1);
             }
             if (!skills.isEmpty()) {
                 room->handleAcquireDetachSkills(use.from, skills);
                 QStringList list = use.from->property(QString("thxujing_skills_%1").arg(player->objectName()).toLatin1().data()).toStringList();
                 list += skills;
                 room->setPlayerProperty(use.from, QString("thxujing_skills_%1").arg(player->objectName()).toLatin1().data(), QVariant::fromValue(list));
-                player->tag["ThXujing"] = true;
             }
+            player->tag["ThXujing"] = true;
         }
         return false;
     }
@@ -1495,7 +1497,7 @@ public:
         if (triggerEvent == Death && data.value<DeathStruct>().who != player)
             return QStringList();
         player->tag["ThXujing"] = false;
-        foreach (ServerPlayer *p, room->getAllPlayers())
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (!p->property(QString("thxujing_skills_%1").arg(player->objectName()).toLatin1().data()).toStringList().isEmpty()) {
                 QSet<QString> skills = p->property(QString("thxujing_skills_%1").arg(player->objectName()).toLatin1().data()).toStringList().toSet();
                 room->setPlayerProperty(p, QString("thxujing_skills_%1").arg(player->objectName()).toLatin1().data(), QVariant());
@@ -1504,6 +1506,9 @@ public:
                     new_list << "-" + name;
                 room->handleAcquireDetachSkills(p, new_list, true);
             }
+            room->setPlayerMark(p, "@xujing_bad", 0);
+            room->setPlayerMark(p, "@xujing_good", 0);
+        }
         return QStringList();
     }
 };
