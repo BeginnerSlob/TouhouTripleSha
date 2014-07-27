@@ -82,6 +82,8 @@ public:
         if (triggerEvent == CardResponded && player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
+        } else if (triggerEvent == TargetSpecified) {
+            return true;
         }
         return false;
     }
@@ -645,7 +647,7 @@ public:
                                                                                               .arg(card->getNumberString()),
                                                             only, true);
             if (target) {
-                player->removeMark("YanyuDiscard" + QString::number(card->getTypeId()));
+                player->removeMark("IkYanyuDiscard" + QString::number(card->getTypeId()));
                 Player::Place place = move.from_places.at(move.card_ids.indexOf(card_id));
                 QList<int> _card_id;
                 _card_id << card_id;
@@ -3945,10 +3947,14 @@ public:
         if (!TriggerSkill::triggerable(player)) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))
-            && !damage.chain && !damage.transfer && damage.by_user)
-            foreach (const Skill *skill, damage.to->getVisibleSkillList())
-                if (!skill->isAttachedLordSkill())
-                    return QStringList(objectName());
+            && !damage.chain && !damage.transfer && damage.by_user) {
+            if (damage.to->getMark("ikmingzhen_" + player->objectName()) == 0)
+                foreach (const Skill *skill, damage.to->getVisibleSkillList())
+                    if (!skill->isAttachedLordSkill())
+                        return QStringList(objectName());
+            if (damage.to->canDiscard(damage.to, "e"))
+                return QStringList(objectName());
+        }
         return QStringList();
     }
 
