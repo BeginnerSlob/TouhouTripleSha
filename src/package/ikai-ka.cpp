@@ -52,11 +52,20 @@ public:
         if (player->getPhase() == Player::Discard && player->hasFlag(objectName())) {
             player->setFlags("-" + objectName());
             if (player->isKongcheng()) return QStringList();
-            const Card *card = room->askForExchange(player, objectName(), 2, 2, false, "@ikzhiju", false);
-            if (card) {
-                CardMoveReason reason(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
-                room->moveCardTo(card, NULL, Player::DrawPile, reason, false);
+            const Card *card = room->askForExchange(player, objectName(), 2, 2, false, "@ikzhiju", true);
+            if (!card) {
+                QList<const Card *> cards = player->getHandcards();
+                DummyCard *card = new DummyCard;
+                if (cards.length() > 2) {
+                    qShuffle(cards);
+                    card->addSubcards(cards.mid(0, 2));
+                } else {
+                    card->addSubcards(cards);
+                }
             }
+            CardMoveReason reason(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
+            room->moveCardTo(card, NULL, Player::DrawPile, reason, false);
+            delete card;
         }
         return QStringList();
     }

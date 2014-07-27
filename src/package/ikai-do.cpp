@@ -662,6 +662,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!MasochismSkill::triggerable(player)) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
         const Card *card = damage.card;
         if (card) {
