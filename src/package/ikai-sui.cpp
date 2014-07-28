@@ -1460,7 +1460,7 @@ public:
             if (death.who != player || !player->hasSkill(objectName(), true))
                 return QStringList();
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                if (p->tag["ikshenyu_from"].toString() == player->objectName()) {
+                if (p->property("ikshenyu_from").toString() == player->objectName()) {
                     room->setPlayerProperty(p, "ikshenyu_from", QVariant());
                     room->setPlayerMark(p, "@yushou", 0);
                 }
@@ -1470,7 +1470,7 @@ public:
             if (change.to != Player::NotActive)
                 return QStringList();
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                if (p->tag["ikshenyu_from"].toString() == player->objectName()) {
+                if (p->property("ikshenyu_from").toString() == player->objectName()) {
                     room->setPlayerProperty(p, "ikshenyu_from", QVariant());
                     room->setPlayerMark(p, "@yushou", 0);
                 }

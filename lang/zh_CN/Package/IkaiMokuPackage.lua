@@ -189,7 +189,7 @@ return {
 	["bloom029"] = "蔻蔻•海克梅迪亚",--花 - 空 - 3血
 	["ikyihuo"] = "易货",
 	[":ikyihuo"] = "其他角色的出牌阶段，若你的装备区有装备牌或人物牌背面朝上，该角色可以选择一张手牌并令你观看之，你可以交给其一张装备牌，然后获得此牌并摸一张牌。",
-	["ikyihuov"] = "易货换牌",
+	["ikyihuov"] = "易货",
 	[":ikyihuov"] = "出牌阶段，若蔻蔻的装备区有装备牌或人物牌背面朝上，你可以选择一张手牌并令蔻蔻观看之，蔻蔻可以交给你一张装备牌，然后蔻蔻获得之并摸一张牌。",
 	["@ikyihuo-equip"] = "你可以交给 %src 一张装备牌，然后获得该牌并摸一张牌",
 	["ikguixin"] = "归心",
@@ -265,7 +265,7 @@ return {
 	["ikbiansheng"] = "遍生",
 	[":ikbiansheng"] = "主公技，其他雪势力角色的出牌阶段限一次，可以与你拼点，若该角色没赢，你可以获得双方拼点的牌；“赤主”发动后，你可以拒绝此拼点。",
 	["ikbiansheng:pindian"] = "你可以获得双方的拼点牌",
-	["ikbiansheng_pindian"] = "遍生拼点",
+	["ikbiansheng_pindian"] = "遍生",
 	[":ikbiansheng_pindian"] = "出牌阶段限一次，你可以与主公拼点，若你没赢，主公可获得双方拼点的牌；“赤主”发动后，主公可以拒绝此拼点。",
 	["ikbiansheng_pindian:accept"] = "接受",
 	["ikbiansheng_pindian:reject"] = "拒绝",
