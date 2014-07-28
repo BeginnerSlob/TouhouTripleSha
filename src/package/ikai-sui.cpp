@@ -1469,12 +1469,12 @@ public:
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to != Player::NotActive)
                 return QStringList();
-            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                if (p->property("ikshenyu_from").toString() == player->objectName()) {
-                    room->setPlayerProperty(p, "ikshenyu_from", QVariant());
-                    room->setPlayerMark(p, "@yushou", 0);
-                }
-            }
+            if (!player->hasFlag("ikshenyu"))
+                foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                    if (p->property("ikshenyu_from").toString() == player->objectName()) {
+                        room->setPlayerProperty(p, "ikshenyu_from", QVariant());
+                        room->setPlayerMark(p, "@yushou", 0);
+                    }
             if (!TriggerSkill::triggerable(player) || player->aliveCount() <= 3)
                 return QStringList();
             return QStringList(objectName());
@@ -1483,7 +1483,8 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        room->askForUseCard(player, "@@ikshenyu", "@ikshenyu");
+        if (room->askForUseCard(player, "@@ikshenyu", "@ikshenyu"))
+            player->setFlags("ikshenyu");
         return false;
     }
 };
