@@ -51,7 +51,7 @@ return {
 	--thyanmeng
 	
 	["#kami004"]="子夜的女皇",
-	["kami004"]="神蕾米莉亚•斯卡雷特",--神 - 空 - 4血
+	["kami004"]="神蕾米莉娅•斯卡雷特",--神 - 空 - 4血
 	["designer:kami004"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami004"]="正体不明",
 	["cv:kami004"]="暂无",
