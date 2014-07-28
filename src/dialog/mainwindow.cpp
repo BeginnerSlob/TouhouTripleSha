@@ -128,6 +128,9 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::restoreFromConfig() {
     resize(Config.value("WindowSize", QSize(1366, 706)).toSize());
     move(Config.value("WindowPosition", QPoint(-8, -8)).toPoint());
+    Qt::WindowStates window_state = (Qt::WindowStates)(Config.value("WindowState", 0).toInt());
+    if (window_state != Qt::WindowMinimized)
+        setWindowState(window_state);
 
     QFont font;
     if (Config.UIFont != font)
@@ -141,6 +144,7 @@ void MainWindow::restoreFromConfig() {
 void MainWindow::closeEvent(QCloseEvent *event) {
     Config.setValue("WindowSize", size());
     Config.setValue("WindowPosition", pos());
+    Config.setValue("WindowState", (int)windowState());
 }
 
 MainWindow::~MainWindow() {
@@ -156,8 +160,7 @@ void MainWindow::gotoScene(QGraphicsScene *scene) {
         this->scene->deleteLater();
     this->scene = scene;
     view->setScene(scene);
-    /* @todo: Need a better way to replace the magic number '4' */
-    QResizeEvent e(QSize(view->size().width() - 4, view->size().height() - 4), view->size());
+    QResizeEvent e(QSize(view->size().width() - 4, view->size().height() - 4), view->size()); // WARNING: Magic Number
     view->resizeEvent(&e);
     changeBackground();
 }

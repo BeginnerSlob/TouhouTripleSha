@@ -2573,7 +2573,7 @@ public:
                 skill << objectName();
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive)
+            if (change.to == Player::NotActive || change.to == Player::RoundStart)
                 room->setPlayerMark(player, objectName(), 0);
         }
         return skill;
@@ -2589,7 +2589,8 @@ public:
         room->sendLog(log);
 
         player->drawCards(3, objectName());
-        room->addPlayerMark(player, objectName());
+        if (player->getPhase() == Player::Play)
+            room->addPlayerMark(player, objectName());
 
         return false;
     }

@@ -9,7 +9,7 @@ math.randomseed(tostring(os.time()):reverse():sub(1, 6))
 -- SmartAI is the base class for all other specialized AI classes
 SmartAI = (require "middleclass").class("SmartAI")
 
-version = "QSanguosha AI 20140601 (V1.414213 Alpha)"
+version = "QSanguosha AI 20140701 (V1.4142135 Alpha)"
 --- this function is only function that exposed to the host program
 --- and it clones an AI instance by general name
 -- @param player The ServerPlayer object that want to create the AI object
@@ -950,7 +950,7 @@ function sgs.isRolePredictable(classical)
 	local mode = string.lower(global_room:getMode())
 	local isMini = (mode:find("mini") or mode:find("custom_scenario"))
 	if (not mode:find("0") and not isMini) or mode:find("02p") or mode:find("02_1v1") or mode:find("04_1v3") or mode:find("04_boss")
-		or mode == "06_3v3" or mode == "06_xmode" or (not classical and isMini) then return true end
+		or mode == "06_3v3" or mode == "06_xmode" or mode == "08_defense" or (not classical and isMini) then return true end
 	return false
 end
 
@@ -5554,13 +5554,6 @@ dofile "lua/ai/basara-ai.lua"
 dofile "lua/ai/boss-ai.lua"
 dofile "lua/ai/hulaoguan-ai.lua"
 dofile "lua/ai/conversion-ai.lua"
-dofile "lua/ai/wind-ai.lua"
-dofile "lua/ai/fire-ai.lua"
-dofile "lua/ai/thicket-ai.lua"
-dofile "lua/ai/mountain-ai.lua"
-dofile "lua/ai/god-ai.lua"
-dofile "lua/ai/yjcm2013-ai.lua"
-dofile "lua/ai/bgm-ai.lua"
 
 local loaded = "standard|standard_cards|maneuvering"
 
