@@ -69,7 +69,7 @@ return {
 	["#ikqizhi-use"] = "奇志",
 	["ikqizhi:add"] = "增加一名目标",
 	["ikqizhi:remove"] = "减少一名目标",
-	["@ikqizhi-card"] = "你可以发动“巧说”",
+	["@ikqizhi-card"] = "你可以发动“奇志”",
 	["~ikqizhi1"] = "选择一名其他角色→点击确定",
 	["~ikqizhi"] = "选择【断灵御剑】的目标角色→选择【杀】的目标角色→点击确定",
 	["ikzongshi"] = "纵适",

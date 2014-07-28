@@ -821,7 +821,9 @@ public:
         foreach (ServerPlayer *p, jianyong->getRoom()->getAllPlayers()) {
             if (p == jianyong) continue;
             if (!p->isKongcheng())
-                return jianyong->getPhase() == Player::Play && !jianyong->isKongcheng();
+                return PhaseChangeSkill::triggerable(jianyong)
+                    && jianyong->getPhase() == Player::Play
+                    && !jianyong->isKongcheng();
         }
         return false;
     }
