@@ -891,6 +891,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (!room->getTag("FirstRound").toBool() && player->getPhase() != Player::Draw
             && move.to == player && move.to_place == Player::PlaceHand) {
