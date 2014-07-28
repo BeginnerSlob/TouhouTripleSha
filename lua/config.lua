@@ -2,7 +2,7 @@
 -- and it is a little different from config.ini
 
 config = {
-	version = "20140601",
+	version = "20140701",
 	version_name = "V2",
 	mod_name = "Para",
 	big_font = 56,
@@ -193,6 +193,7 @@ config = {
 		"dingfeng->sp_dingfeng",
 		"fazheng->ol_fazheng",
 		"guanxingzhangbao->ol_guanxingzhangbao",
+		"hetaihou->sp_hetaihou",
 		"jiaxu->sp_jiaxu",
 		"liubei->tw_liubei",
 		"madai->heg_madai|ol_madai",
@@ -303,5 +304,15 @@ config = {
 		"kuanggu:85",
 		"yongsi:90",
 		"zhiheng:90",
+	},
+
+	jiange_defense_machine = {
+		wei = "caocao+caopi",
+		shu = "bgm_liubei+liushan",
+	},
+
+	jiange_defense_soul = {
+		wei = "zhanghe+xiahouyuan+simayi+caozhen",
+		shu = "zhugeliang+huangyueying+liubei+pangtong",
 	}
 }

@@ -4305,13 +4305,12 @@ void IkYoudanCard::onEffect(const CardEffectStruct &effect) const{
             break;
     case 2:
             if (!effect.to->isNude()) {
-                const Card *card = room->askForCard(effect.to, "..!", "@ikyoudan-give" + effect.from->objectName(), QVariant(), MethodNone);
-                if (!card) {
-                    QList<const Card *> cards = effect.to->getCards("he");
-                    card = cards.at(qrand() % cards.length());
+                const Card *card = room->askForExchange(effect.to, "ikyoudan", 1, 1, true, "@ikyoudan-give::" + effect.from->objectName());
+                if (card) {
+                    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.to->objectName(), effect.from->objectName(), "ikyoudan", QString());
+                    room->obtainCard(effect.from, card, reason, false);
+                    delete card;
                 }
-                CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.to->objectName(), effect.from->objectName(), "ikyoudan", QString());
-                room->obtainCard(effect.from, card, reason, false);
             }
             break;
     case 3:

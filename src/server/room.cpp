@@ -2438,7 +2438,7 @@ void Room::chooseGenerals(QList<ServerPlayer *> players) {
         }
     }
     QList<ServerPlayer *> to_assign = players;
-    if (!Config.EnableHegemony) to_assign.removeOne(the_lord);
+    if (the_lord && !Config.EnableHegemony) to_assign.removeOne(the_lord);
 
     assignGeneralsForPlayers(to_assign);
     foreach (ServerPlayer *player, to_assign)
@@ -2593,8 +2593,8 @@ void Room::assignRoles() {
         QString role = roles.at(i);
 
         player->setRole(role);
-        if (role == "lord" && !ServerInfo.EnableHegemony)
-            broadcastProperty(player, "role", "lord");
+        if ((role == "lord" && !ServerInfo.EnableHegemony) || mode == "04_1v3")
+            broadcastProperty(player, "role", player->getRole());
         else
             notifyProperty(player, player, "role");
     }
@@ -3280,19 +3280,12 @@ bool Room::hasWelfare(const ServerPlayer *player) const{
 }
 
 ServerPlayer *Room::getFront(ServerPlayer *a, ServerPlayer *b) const{
-    ServerPlayer *starter = current;
-    if (starter == NULL)
-        starter = m_players.first();
-    bool loop = false;
-    for (ServerPlayer *p = starter; p != starter || !loop; p = p->getNext()) {
-        loop = true;
-        if (p == a)
-            return a;
-        else if (p == b)
-            return b;
-    }
-
-    return a;
+    QList<ServerPlayer *> players = getAllPlayers(true);
+    int index_a = players.indexOf(a), index_b = players.indexOf(b);
+    if (index_a < index_b)
+        return a;
+    else
+        return b;
 }
 
 void Room::reconnect(ServerPlayer *player, ClientSocket *socket) {
@@ -4901,10 +4894,12 @@ ServerPlayer *Room::askForPlayerChosen(ServerPlayer *player, const QList<ServerP
 
 void Room::_setupChooseGeneralRequestArgs(ServerPlayer *player) {
     Json::Value options = toJsonArray(player->getSelected());
-    if (!Config.EnableBasara)
-        options.append(toJsonString(QString("%1(lord)").arg(getLord()->getGeneralName())));
-    else
+    if (!Config.EnableBasara) {
+        if (getLord())
+            options.append(toJsonString(QString("%1(lord)").arg(getLord()->getGeneralName())));
+    } else {
         options.append("anjiang(lord)");
+    }
     player->m_commandArgs = options;
 }
 
@@ -5043,7 +5038,7 @@ void Room::fillAG(const QList<int> &card_ids, ServerPlayer *who, const QList<int
 }
 
 void Room::takeAG(ServerPlayer *player, int card_id, bool move_cards, QList<ServerPlayer *> to_notify) {
-    if (to_notify.isEmpty()) to_notify = getAllPlayers();
+    if (to_notify.isEmpty()) to_notify = getAllPlayers(true);
 
     Json::Value arg(Json::arrayValue);
     arg[0] = player ? toJsonString(player->objectName()) : Json::Value::null;
