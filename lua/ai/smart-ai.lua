@@ -5562,6 +5562,13 @@ dofile "lua/ai/boss-ai.lua"
 dofile "lua/ai/hulaoguan-ai.lua"
 dofile "lua/ai/jiange_defense-ai.lua"
 dofile "lua/ai/conversion-ai.lua"
+dofile "lua/ai/wind-ai.lua"
+dofile "lua/ai/fire-ai.lua"
+dofile "lua/ai/thicket-ai.lua"
+dofile "lua/ai/mountain-ai.lua"
+dofile "lua/ai/god-ai.lua"
+dofile "lua/ai/yjcm2013-ai.lua"
+dofile "lua/ai/bgm-ai.lua"
 
 local loaded = "standard|standard_cards|maneuvering"
 
