@@ -315,10 +315,11 @@ void FireAttack::onEffect(const CardEffectStruct &effect) const{
     QString suit_str = card->getSuitString();
     QString pattern = QString(".%1").arg(suit_str.at(0).toUpper());
     QString prompt = QString("@fire-attack:%1::%2").arg(effect.to->objectName()).arg(suit_str);
-    if (effect.from->hasFlag("thyanlun_success")) {
+    if (effect.from->hasSkill("thyanlun")) {
         QString color_str = card->isRed() ? "red" : "black";
         pattern = QString(".%1").arg(color_str);
         prompt = QString("@fire-attackex:%1::%2").arg(effect.to->objectName()).arg(color_str);
+        room->notifySkillInvoked(effect.from, "thyanlun");
     }
     if (effect.from->isAlive()) {
         const Card *card_to_throw = room->askForCard(effect.from, pattern, prompt);
