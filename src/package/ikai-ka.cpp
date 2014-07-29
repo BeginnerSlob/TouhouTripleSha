@@ -449,7 +449,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         DamageStruct damage = data.value<DamageStruct>();
-	    LogMessage log;
+        LogMessage log;
         log.type = "#ChangeKingdom";
         log.from = player;
         log.to << player;
@@ -490,7 +490,7 @@ public:
             choices << "change";
         QString choice = room->askForChoice(player, objectName(), choices.join("+"));
         if (choice == "change") {
-	        LogMessage log;
+            LogMessage log;
             log.type = "#ChangeKingdom";
             log.from = player;
             log.to << player;

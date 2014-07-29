@@ -306,13 +306,18 @@ config = {
 		"zhiheng:90",
 	},
 
+	jiange_defense_kingdoms = {
+		loyalist = "shu",
+		rebel = "wei",
+	},
+
 	jiange_defense_machine = {
-		wei = "caocao+caopi",
-		shu = "bgm_liubei+liushan",
+		wei = "jg_machine_tuntianqiongqi",
+		shu = "jg_machine_yunpingqinglong",
 	},
 
 	jiange_defense_soul = {
-		wei = "zhanghe+xiahouyuan+simayi+caozhen",
-		shu = "zhugeliang+huangyueying+liubei+pangtong",
+		wei = "jg_soul_caozhen",
+		shu = "jg_soul_liubei",
 	}
 }
