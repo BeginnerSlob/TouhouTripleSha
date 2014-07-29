@@ -176,7 +176,7 @@ int Player::getAttackRange(bool include_weapon) const{
         }
     }
     int extra_range = 0;
-    if (hasSkill("thhuanlong") && hasFlag("thhuanlong1"))
+    if (hasFlag("thhuanlong1"))
         extra_range += 1;
     return qMax(original_range, weapon_range) + extra_range;
 }

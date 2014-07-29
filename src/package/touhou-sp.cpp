@@ -672,7 +672,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const {
-        return player->hasFlag("thhuanlong3") && Slash::IsAvailable(player);
+        return player->hasFlag("thhuanlong") && Slash::IsAvailable(player);
     }
 };
 
@@ -683,9 +683,15 @@ public:
         view_as_skill = new ThHuanlongViewAsSkill;
     }
 
-    virtual bool triggerable(const ServerPlayer *player) const {
-        return TriggerSkill::triggerable(player)
-            && player->getPhase() == Player::Play;
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        if (triggerEvent == EventPhaseStart && TriggerSkill::triggerable(player) && player->getPhase() == Player::Play)
+            return QStringList(objectName());
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive && player->hasFlag("thhuanlong"))
+                room->setPlayerFlag(player, "-thhuanlong");
+        }
+        return QStringList();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
@@ -703,7 +709,7 @@ public:
                 choices << "thhuanlong1";
             if (!player->hasFlag("thhuanlong2"))
                 choices << "thhuanlong2";
-            if (!player->hasFlag("thhuanlong3"))
+            if (!player->hasFlag("thhuanlong"))
                 choices << "thhuanlong3";
             if (choices.isEmpty()) break;
             if (choices.length() < 3)
@@ -716,6 +722,8 @@ public:
             log.arg = "thhuanlong";
             log.arg2 = choice.right(1);
             room->sendLog(log);
+            if (choice == "thhuanlong3")
+                choice = "thhuanlong";
             room->setPlayerFlag(player, choice);
         }
         return false;
@@ -728,7 +736,7 @@ public:
     }
 
     virtual int getResidueNum(const Player *from, const Card *) const{
-        if (from->hasSkill("thhuanlong") && from->hasFlag("thhuanlong2"))
+        if (from->hasFlag("thhuanlong2"))
             return 1;
         else
             return 0;
@@ -746,7 +754,7 @@ public:
             delta += 1;
         if (target->hasFlag("thhuanlong2"))
             delta += 1;
-        if (target->hasFlag("thhuanlong3"))
+        if (target->hasFlag("thhuanlong"))
             delta += 1;
         return -delta;
     }
