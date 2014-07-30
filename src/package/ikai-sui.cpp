@@ -778,7 +778,7 @@ public:
         room->addPlayerHistory(player, use.card->getClassName(), -1);
         use.m_addHistory = false;
         data = QVariant::fromValue(use);
-        
+
         return false;
     }
 };
@@ -922,7 +922,7 @@ public:
         room->addPlayerMark(player, "@moqiused");
         room->addPlayerMark(player, "ikmoqi");
         player->drawCards(2, objectName());
-        
+
         return false;
     }
 };
@@ -943,7 +943,7 @@ public:
         Room *room = player->getRoom();
         room->removePlayerMark(player, "ikmoqi");
         player->drawCards(2, "ikmoqi");
-        
+
         return false;
     }
 };
@@ -1093,7 +1093,7 @@ public:
             return QStringList(objectName());
         return QStringList();
     }
-    
+
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
@@ -1175,7 +1175,7 @@ public:
         }
         return false;
     }
-    
+
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *player) const{
         player->drawCards(2, objectName());
         return false;
@@ -1510,13 +1510,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
         room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
         player->drawCards(3, objectName());
         return false;
     }
@@ -1549,7 +1544,7 @@ public:
         room->addPlayerMark(player, "@shenjiused");
 
         player->drawCards(3, objectName());
-        
+
         QList<const Card *> tricks = player->getJudgingArea();
         foreach (const Card *trick, tricks) {
             CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, player->objectName());
@@ -1604,7 +1599,7 @@ public:
                 player->drawCards(1, objectName());
             }
         }
-        
+
         return false;
     }
 };
@@ -1918,15 +1913,9 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.arg = objectName();
-        log.from = player;
-        room->sendLog(log);
-
         room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
-        
+        room->sendCompulsoryTriggerLog(player, objectName());
+
         room->setPlayerProperty(player, "maxhp", player->getMaxHp() + 1);
 
         LogMessage log2;
@@ -1957,14 +1946,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.arg = objectName();
-        log.from = player;
-        room->sendLog(log);
-
         room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
 
         QList<ServerPlayer *> targets;
         foreach (ServerPlayer *p, room->getOtherPlayers(player))
@@ -2580,12 +2563,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        room->notifySkillInvoked(player, objectName());
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = "iklingzhou";
-        room->sendLog(log);
+        room->sendCompulsoryTriggerLog(player, "iklingzhou");
 
         QList<int> ids = player->getPile("iklingzhoupile");
         room->fillAG(ids, player);
@@ -2936,11 +2914,7 @@ public:
             choices << "show";
         choices << "reduce";
         if (room->askForChoice(damage.from, objectName(), choices.join("+")) == "show") {
-            LogMessage log;
-            log.type = "#TriggerSkill";
-            log.from = player;
-            log.arg = objectName();
-            room->sendLog(log);
+            room->sendCompulsoryTriggerLog(player, objectName(), false);
             room->showAllCards(damage.from);
         } else {
             LogMessage log;
@@ -3001,13 +2975,13 @@ public:
 
         if (lihui_card.isEmpty())
             return false;
-        
+
         QList<int> original_lihui = lihui_card;
         while (room->askForYiji(kongrong, lihui_card, objectName(), false, true, true, -1,
                                 QList<ServerPlayer *>(), move.reason, "@iklihui-distribute", true)) {
             if (kongrong->isDead()) break;
         }
-        
+
         QList<int> ids;
         foreach (int card_id, original_lihui) {
             if (!lihui_card.contains(card_id))
@@ -3015,7 +2989,7 @@ public:
         }
         move.removeCardIds(ids);
         data = QVariant::fromValue(move);
-        
+
         return false;
     }
 };
@@ -3167,13 +3141,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = ask_who;
-        log.arg = objectName();
-        room->sendLog(log);
         room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(ask_who, objectName());
+        room->sendCompulsoryTriggerLog(ask_who, objectName());
         if (triggerEvent == HpChanged) {
             ask_who->drawCards(1, objectName());
         } else {
@@ -3771,7 +3740,7 @@ public:
         room->setPlayerFlag(hansui, "slashNoDistanceLimit");
         room->setPlayerFlag(hansui, "slashTargetFixToOne");
         room->setPlayerFlag(player, "SlashAssignee");
-        
+
         bool slash = room->askForUseCard(hansui, "@@iknicu", "@iknicu-slash:" + player->objectName());
         if (!slash) {
             room->setPlayerFlag(hansui, "-slashTargetFix");

@@ -398,7 +398,7 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.from && damage.from->askForSkillInvoke(objectName(), "decrease")) {
             damage.from->drawCards(1);
-            
+
             LogMessage log;
             log.type = "#ThZuibu";
             log.from = player;

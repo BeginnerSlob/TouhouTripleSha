@@ -65,7 +65,7 @@ public:
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const;
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const;
     static const ViewAsSkill *parseViewAsSkill(const Skill *skill);
-    
+
     inline bool isResponseOrUse() const{ return response_or_use; }
     inline QString getExpandPile() const{ return expand_pile; }
 
@@ -119,7 +119,7 @@ public:
 
     virtual int getPriority(TriggerEvent triggerEvent) const;
     virtual bool triggerable(const ServerPlayer *target) const;
-    
+
     virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const;
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
@@ -317,7 +317,7 @@ class WeaponSkill: public TriggerSkill {
 
 public:
     WeaponSkill(const QString &name);
-    
+
     virtual int getPriority(TriggerEvent triggerEvent) const;
     virtual bool triggerable(const ServerPlayer *target) const;
 };
@@ -327,7 +327,7 @@ class ArmorSkill: public TriggerSkill {
 
 public:
     ArmorSkill(const QString &name);
-    
+
     virtual int getPriority(TriggerEvent triggerEvent) const;
     virtual bool triggerable(const ServerPlayer *target) const;
 };
@@ -337,7 +337,7 @@ class TreasureSkill: public TriggerSkill {
 
 public:
     TreasureSkill(const QString &name);
-    
+
     virtual int getPriority(TriggerEvent triggerEvent) const;
     virtual bool triggerable(const ServerPlayer *target) const;
 };

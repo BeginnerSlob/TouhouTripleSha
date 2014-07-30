@@ -27,7 +27,7 @@ class ThJinguoCard: public SkillCard{
 
 public:
     Q_INVOKABLE ThJinguoCard();
-    
+
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
@@ -48,7 +48,7 @@ class ThLianhuaCard: public SkillCard{
 
 public:
     Q_INVOKABLE ThLianhuaCard();
-    
+
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
@@ -57,7 +57,7 @@ class ThShennaoCard: public SkillCard{
 
 public:
     Q_INVOKABLE ThShennaoCard();
-    
+
     virtual const Card *validate(CardUseStruct &cardUse) const;
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
@@ -67,7 +67,7 @@ class ThHeiguanCard: public SkillCard{
 
 public:
     Q_INVOKABLE ThHeiguanCard();
-    
+
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
@@ -77,16 +77,16 @@ class ThKanyaoCard: public SkillCard{
 
 public:
     Q_INVOKABLE ThKanyaoCard();
-    
+
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
 class ThExiCard: public SkillCard{
     Q_OBJECT
-        
+
 public:
     Q_INVOKABLE ThExiCard();
-    
+
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
@@ -106,7 +106,7 @@ class ThShenbaoCard: public SkillCard {
 
 public:
     Q_INVOKABLE ThShenbaoCard();
-    
+
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };

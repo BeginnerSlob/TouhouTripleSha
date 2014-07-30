@@ -378,7 +378,7 @@ bool ThWujianCard::targetFilter(const QList<const Player *> &targets, const Play
         const Weapon *card = qobject_cast<const Weapon *>(Self->getWeapon()->getRealCard());
         rangefix += card->getRange() - Self->getAttackRange(false);
     }
-    
+
     if (Self->getOffensiveHorse() && Self->getOffensiveHorse()->getId() == subcards.first())
         rangefix += 1;
 
@@ -1223,7 +1223,7 @@ class ThQuanshan: public ZeroCardViewAsSkill {
 public:
     ThQuanshan(): ZeroCardViewAsSkill("thquanshan") {
     }
-    
+
     virtual bool isEnabledAtPlay(const Player *player) const{
         return !player->hasUsed("ThQuanshanCard") && player->aliveCount() > 2;
     }
@@ -1255,7 +1255,7 @@ public:
         judge.reason = objectName();
         judge.who = player;
         room->judge(judge);
-        
+
         if (judge.isGood()) {
             LogMessage log;
             log.type = "#thxiangang";
@@ -1264,7 +1264,7 @@ public:
             room->sendLog(log);
             return true;
         }
-        
+
         return false;
     }
 };
@@ -1702,7 +1702,7 @@ public:
                 }
             } else
                 chosen << "spade" << "heart" << "club" << "diamond";
-            
+
             JudgeStruct judge;
             judge.pattern = ".|" + chosen.join(",");
             judge.good = true;
@@ -1735,15 +1735,10 @@ public:
 
         return QStringList(objectName());
     }
-    
+
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg  = objectName();
-        room->sendLog(log);
+        room->sendCompulsoryTriggerLog(player, objectName());
         int n = player->getMark("@jianren");
         player->loseAllMarks("@jianren");
         room->loseHp(player, n);
@@ -1886,12 +1881,12 @@ public:
         room->sendLog(log);
         room->broadcastSkillInvoke(objectName());
         room->getThread()->delay();
-        
+
         QStringList choices;
         if (player->isWounded())
             choices << "recover";
         choices << "draw";
-            
+
         QString choice = room->askForChoice(player, objectName(), choices.join("+"));
 
         if (choice == "recover") {
@@ -2023,7 +2018,7 @@ public:
     ThShijieViewAsSkill(): OneCardViewAsSkill("thshijie") {
         expand_pile = "shijiepile";
     }
-    
+
     virtual bool isEnabledAtPlay(const Player *player) const{
         return false;
     }
@@ -2108,7 +2103,7 @@ public:
         QMap<ServerPlayer *, QStringList> skill_list;
         if (player->getPhase() != Player::RoundStart)
             return skill_list;
-        
+
         QList<Player::Phase> phases = player->getPhases();
         QList<Player::Phase> invoke_phases;
 
@@ -2227,12 +2222,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg  = objectName();
-        room->sendLog(log);
+        room->sendCompulsoryTriggerLog(player, objectName());
         room->askForDiscard(player, objectName(), 1, 1, false, false);
         return false;
     }
@@ -2300,7 +2290,7 @@ class ThLiuzhenViewAsSkill: public ZeroCardViewAsSkill {
 public:
     ThLiuzhenViewAsSkill(): ZeroCardViewAsSkill("thliuzhen") {
     }
-    
+
     virtual bool isEnabledAtPlay(const Player *player) const {
         return false;
     }
@@ -2567,17 +2557,17 @@ TouhouHanaPackage::TouhouHanaPackage()
     General *hana016 = new General(this, "hana016", "hana", 3);
     hana016->addSkill(new ThShijie);
     hana016->addSkill(new ThShengzhi);
-    
+
     General *hana017 = new General(this, "hana017", "hana", 7);
     hana017->addSkill(new ThZhaoyu);
     hana017->addSkill(new ThWuwu);
     hana017->addSkill(new ThRudao);
-    
+
     General *hana018 = new General(this, "hana018$", "hana");
     hana018->addSkill(new ThJibu);
     hana018->addSkill(new ThLiuzhen);
     hana018->addSkill(new ThTiandao);
-    
+
     addMetaObject<ThJiewuCard>();
     addMetaObject<ThWujianCard>();
     addMetaObject<ThXihuaCard>();

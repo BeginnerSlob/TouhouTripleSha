@@ -167,7 +167,7 @@ public:
         player->addMark("thguaiqi", damage.damage);
         if (player->getMark("thguaiqi") > 1)
             damage.from->setFlags("thguaiqi_invoke");
-        
+
         return false;
     }
 };
@@ -400,14 +400,9 @@ public:
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = ask_who;
-        log.arg = objectName();
-        room->sendLog(log);
-        room->notifySkillInvoked(ask_who, objectName());
+        room->sendCompulsoryTriggerLog(ask_who, objectName());
         room->broadcastSkillInvoke(objectName());
-        
+
         ask_who->drawCards(1);
         if (player->isKongcheng()) return false;
         if (room->askForChoice(player, objectName(), "show+cancel") == "show")
@@ -649,12 +644,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.arg = objectName();
-        log.from = player;
-        room->sendLog(log);
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
         room->broadcastSkillInvoke(objectName());
 
         CardEffectStruct effect = data.value<CardEffectStruct>();
@@ -728,12 +718,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
         room->broadcastSkillInvoke(objectName());
 
         if (triggerEvent == DrawNCards) {

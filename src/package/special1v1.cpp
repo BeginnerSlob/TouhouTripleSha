@@ -517,11 +517,7 @@ public:
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
         ServerPlayer *opponent = room->getOtherPlayers(player).first();
         if (opponent->getPhase() != Player::NotActive) {
-            LogMessage log;
-            log.type = "#TriggerSkill";
-            log.from = player;
-            log.arg = objectName();
-            room->sendLog(log);
+            room->sendCompulsoryTriggerLog(player, objectName());
 
             LogMessage log2;
             log2.type = "#TurnBroken";

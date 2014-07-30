@@ -312,12 +312,12 @@ config = {
 	},
 
 	jiange_defense_machine = {
-		wei = "jg_machine_tuntianqiongqi",
-		shu = "jg_machine_yunpingqinglong",
+		wei = "jg_machine_tuntianchiwen+jg_machine_shihuosuanni+jg_machine_fudibian",
+		shu = "jg_machine_yunpingqinglong+jg_machine_jileibaihu",
 	},
 
 	jiange_defense_soul = {
-		wei = "jg_soul_caozhen",
-		shu = "jg_soul_liubei",
+		wei = "jg_soul_caozhen+jg_soul_simayi",
+		shu = "jg_soul_liubei+jg_soul_zhugeliang",
 	}
 }

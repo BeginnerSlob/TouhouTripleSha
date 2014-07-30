@@ -46,7 +46,7 @@ public:
             choices.removeOne(choice);
             chosen << choice;
         }
-        
+
         JudgeStruct judge;
         judge.pattern = ".|" + chosen.join(",");
         judge.good = true;
@@ -59,7 +59,7 @@ public:
             foreach(ServerPlayer *p, room->getOtherPlayers(player))
                 if (player->canDiscard(p, "he"))
                     targets << p;
-            
+
             ServerPlayer *target = NULL;
             if (!targets.isEmpty())
                 target = room->askForPlayerChosen(player, targets, objectName(), "@thbianfang", true);
@@ -110,7 +110,7 @@ public:
         }
         return false;
     }
-    
+
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         if (triggerEvent == DrawNCards)
             data = data.toInt() + 1;
@@ -210,11 +210,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
+        room->sendCompulsoryTriggerLog(player, objectName());
         player->gainMark("@yaoshu");
         return false;
     }
@@ -261,7 +257,7 @@ public:
                 return false;
             ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
             use.to << target;
-            
+
             LogMessage log;
             log.type = "#ThBanyue";
             log.from = player;
@@ -269,7 +265,7 @@ public:
             log.arg = objectName();
             log.arg2 = use.card->objectName();
             room->sendLog(log);
-            
+
             room->sortByActionOrder(use.to);
             data = QVariant::fromValue(use);
         }
@@ -448,15 +444,9 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, objectName());
         DamageStruct damage = data.value<DamageStruct>();
-
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
         damage.damage = 1;
-
         data = QVariant::fromValue(damage);
         return false;
     }
@@ -477,7 +467,7 @@ public:
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (move.from != player || move.to_place != Player::DiscardPile)
             return QStringList();
-        
+
         for (int i = 0; i < move.card_ids.length(); i++) {
             int id = move.card_ids[i];
             if (move.from_places[i] != Player::PlaceJudge && move.from_places[i] != Player::PlaceSpecial
@@ -506,7 +496,7 @@ public:
                 else if (c->isRed())
                     pattern = ".red";
                 const Card *card = room->askForCard(player, pattern, prompt, QVariant(), Card::MethodNone);
-                
+
                 if (card) {
                     room->setPlayerFlag(player, "thxijing_using");
                     CardMoveReason reason(CardMoveReason::S_REASON_PUT,
@@ -608,13 +598,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
         room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
 
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         DummyCard *dummy = new DummyCard;
@@ -772,7 +757,7 @@ void ThXingxieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
     source->throwAllHandCards();
     room->removePlayerMark(source, "@xingxie");
     room->addPlayerMark(source, "@xingxieused");
-    
+
     DummyCard *dummy = new DummyCard;
     foreach(ServerPlayer *p, room->getOtherPlayers(source)) {
         dummy->addSubcards(p->getEquips());
@@ -1098,7 +1083,7 @@ ThSixiangCard::ThSixiangCard(){
 bool ThSixiangCard::targetFixed() const {
     return Sanguosha->getCard(getEffectiveId())->getSuit() == Card::Spade;
 }
-    
+
 bool ThSixiangCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
     if(Sanguosha->getCard(getEffectiveId())->getSuit() != Card::Spade)
         return targets.size() == 1;
@@ -1220,7 +1205,7 @@ TouhouBangaiPackage::TouhouBangaiPackage()
 
     General *bangai012 = new General(this, "bangai012", "tsuki");
     bangai012->addSkill(new ThSixiang);
-    
+
     addMetaObject<ThShoujuanCard>();
     addMetaObject<ThZushaCard>();
     addMetaObject<ThYaomeiCard>();

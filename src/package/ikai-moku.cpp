@@ -80,12 +80,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
+        room->sendCompulsoryTriggerLog(player, objectName());
 
         QStringList choices;
         if (player->isWounded())
@@ -386,13 +381,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
         CardUseStruct use = data.value<CardUseStruct>();
 
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = ask_who;
-        log.arg = objectName();
-        room->sendLog(log);
-
-        room->notifySkillInvoked(ask_who, objectName());
+        room->sendCompulsoryTriggerLog(ask_who, objectName());
         room->broadcastSkillInvoke(objectName());
 
         use.card->setFlags("IkHuoshouDamage_" + ask_who->objectName());
@@ -482,13 +471,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *liushan, QVariant &data, ServerPlayer *) const{
         CardUseStruct use = data.value<CardUseStruct>();
         room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(liushan, objectName());
-
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = liushan;
-        log.arg = objectName();
-        room->sendLog(log);
+        room->sendCompulsoryTriggerLog(liushan, objectName());
 
         if (!room->askForCard(use.from, ".Basic", "@ikmanbo-discard")) {
             use.nullified_list << liushan->objectName();
@@ -678,13 +661,8 @@ public:
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         const Card *card = move.reason.m_extraData.value<const Card *>();
 
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
         room->broadcastSkillInvoke(objectName());
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
 
         player->obtainCard(card);
         move.removeCardIds(move.card_ids);
@@ -787,13 +765,7 @@ public:
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *shenzhuge, QVariant &data, ServerPlayer *) const{
         if (triggerEvent == DrawInitialCards) {
-            LogMessage log;
-            log.type = "#TriggerSkill";
-            log.from = shenzhuge;
-            log.arg = "ikqiyao";
-            room->sendLog(log);
-            room->notifySkillInvoked(shenzhuge, "ikqiyao");
-
+            room->sendCompulsoryTriggerLog(shenzhuge, "ikqiyao");
             data = data.toInt() + 7;
         } else if (triggerEvent == AfterDrawInitialCards) {
             room->broadcastSkillInvoke("ikqiyao");
@@ -1769,7 +1741,7 @@ public:
             if (p->hasLordSkill(objectName()))
                 caopis << p;
         }
-        
+
         while (!caopis.isEmpty()) {
             ServerPlayer *caopi = room->askForPlayerChosen(player, caopis, objectName(), "@iksongwei-to", true);
             if (caopi) {
@@ -2097,12 +2069,7 @@ public:
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
+        room->sendCompulsoryTriggerLog(player, objectName());
 
         int n = 0;
         if (triggerEvent == CardsMoveOneTime) {
@@ -2142,7 +2109,7 @@ public:
         log.from = shensimayi;
         log.arg = QString::number(shensimayi->getMark("@tianjia"));
         room->sendLog(log);
-        
+
         room->setPlayerMark(shensimayi, "@tiangai", 1);
         if (room->changeMaxHpForAwakenSkill(shensimayi))
             room->acquireSkill(shensimayi, "ikjilve");
@@ -2204,7 +2171,7 @@ public:
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.from != player || move.to_place != Player::DiscardPile)
                 return QStringList();
-            
+
             for (int i = 0; i < move.card_ids.length(); i++) {
                 int id = move.card_ids[i];
                 if (move.from_places[i] != Player::PlaceJudge && move.from_places[i] != Player::PlaceSpecial
@@ -2259,7 +2226,7 @@ public:
                     else if (c->isRed())
                         pattern = ".red";
                     const Card *card = room->askForCard(player, pattern, prompt, QVariant(), Card::MethodNone);
-                    
+
                     if (card) {
                         LogMessage log;
                         log.type = "#InvokeSkill";
@@ -2753,7 +2720,7 @@ public:
             return true;
         else
             zhoutai->clearOnePrivatePile("iksushengpile");
-        
+
         return false;
     }
 };
@@ -2908,7 +2875,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *sunce, QVariant &, ServerPlayer *) const{ 
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *sunce, QVariant &, ServerPlayer *) const{
         sunce->drawCards(1, objectName());
         return false;
     }
@@ -3455,7 +3422,7 @@ bool GreatIkYeyanCard::targetsFeasible(const QList<const Player *> &targets, con
         if (allsuits.contains(card->getSuit())) return false;
         allsuits.append(card->getSuit());
     }
-    
+
     //We can only assign 2 damage to one player
     //If we select only one target only once, we assign 3 damage to the target
     if (targets.toSet().size() == 1)
@@ -3556,7 +3523,7 @@ public:
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if (cards.length()  == 0) 
+        if (cards.length()  == 0)
             return new SmallIkYeyanCard;
         if (cards.length() != 4)
             return NULL;
@@ -3615,12 +3582,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        LogMessage log;
-        log.from = player;
-        log.arg = objectName();
-        log.type = "#TriggerSkill";
-        room->sendLog(log);
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
         room->broadcastSkillInvoke(objectName());
 
         CardUseStruct use = data.value<CardUseStruct>();
@@ -3666,13 +3628,7 @@ public:
 
     virtual bool onPhaseChange(ServerPlayer *dongzhuo) const {
         Room *room = dongzhuo->getRoom();
-
-        LogMessage log;
-        log.from = dongzhuo;
-        log.arg = objectName();
-        log.type = "#TriggerSkill";
-        room->sendLog(log);
-        room->notifySkillInvoked(dongzhuo, objectName());
+        room->sendCompulsoryTriggerLog(dongzhuo, objectName());
 
         QString result = room->askForChoice(dongzhuo, "ikbenghuai", "hp+maxhp");
         room->broadcastSkillInvoke(objectName());
@@ -3901,7 +3857,7 @@ public:
             log.type = "#IkSishidengOne";
         }
         room->sendLog(log);
-        
+
         return false;
     }
 };
@@ -4017,7 +3973,7 @@ class IkHuanshen: public PhaseChangeSkill {
 public:
     IkHuanshen(): PhaseChangeSkill("ikhuanshen") {
     }
-    
+
     static void playAudioEffect(ServerPlayer *zuoci, const QString &skill_name) {
         zuoci->getRoom()->broadcastSkillInvoke(skill_name, zuoci->isMale(), -1);
     }
@@ -4934,13 +4890,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         room->broadcastSkillInvoke(objectName());
-
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
 
         int num = player->getMark("@mailun");
         if (num >= 1 && room->askForChoice(player, objectName(), "discard+losehp") == "discard") {

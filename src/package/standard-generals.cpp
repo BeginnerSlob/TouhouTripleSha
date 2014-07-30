@@ -279,13 +279,7 @@ public:
         if (damage.card && damage.card->isKindOf("Slash") && damage.card->isRed()
             && damage.from && damage.from->isAlive()) {
             room->broadcastSkillInvoke(objectName());
-            room->notifySkillInvoked(damage.to, objectName());
-
-            LogMessage log;
-            log.type = "#TriggerSkill";
-            log.from = damage.to;
-            log.arg = objectName();
-            room->sendLog(log);
+            room->sendCompulsoryTriggerLog(damage.to, objectName());
 
             if (damage.from->isWounded() && room->askForChoice(damage.from, objectName(), "recover+draw", data) == "recover")
                 room->recover(damage.from, RecoverStruct(damage.to));
@@ -436,20 +430,10 @@ public:
             return false;
         int diff = abs(gaodayihao->getHandcardNum() - 4);
         if (gaodayihao->getHandcardNum() < 4) {
-            LogMessage log;
-            log.type = "#TriggerSkill";
-            log.from = gaodayihao;
-            log.arg = objectName();
-            room->sendLog(log);
-            room->notifySkillInvoked(gaodayihao, objectName());
+            room->sendCompulsoryTriggerLog(gaodayihao, objectName());
             gaodayihao->drawCards(diff, objectName());
         } else if (gaodayihao->getHandcardNum() > 4) {
-            LogMessage log;
-            log.type = "#TriggerSkill";
-            log.from = gaodayihao;
-            log.arg = objectName();
-            room->sendLog(log);
-            room->notifySkillInvoked(gaodayihao, objectName());
+            room->sendCompulsoryTriggerLog(gaodayihao, objectName());
             room->askForDiscard(gaodayihao, objectName(), diff, diff);
         }
 

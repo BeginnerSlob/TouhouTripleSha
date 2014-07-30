@@ -141,8 +141,6 @@ QList<ServerPlayer *> Room::getAllPlayers(bool include_dead) const{
         return count_players;
 
     ServerPlayer *starter = current;
-    if (current->getPhase() == Player::NotActive)
-        starter = current->getNextAlive();
     int index = count_players.indexOf(starter);
     if (index == -1)
         return count_players;
@@ -156,6 +154,11 @@ QList<ServerPlayer *> Room::getAllPlayers(bool include_dead) const{
     for (int i = 0; i < index; i++) {
         if (include_dead || count_players[i]->isAlive())
             all_players << count_players[i];
+    }
+
+    if (current->getPhase() == Player::NotActive && all_players.contains(current)) {
+        all_players.removeOne(current);
+        all_players.append(current);
     }
 
     return all_players;
@@ -955,7 +958,7 @@ QString Room::askForChoice(ServerPlayer *player, const QString &skill_name, cons
 
     if (!validChoices.contains(answer))
         answer = validChoices.at(qrand() % validChoices.length());
-    
+
     if (skill_name != "TriggerOrder") {
         QVariant decisionData = QVariant::fromValue("skillChoice:" + skill_name + ":" + answer);
         thread->trigger(ChoiceMade, this, player, decisionData);
@@ -1310,7 +1313,7 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
             QVariant data = QVariant::fromValue(resp);
             thread->trigger(PreCardResponded, this, player, data);
             resp = data.value<CardResponseStruct>();
-            
+
             QList<int> card_ids;
             if (card->isVirtualCard())
                 card_ids = card->getSubcards();
@@ -5130,6 +5133,16 @@ void Room::sendLog(const LogMessage &log, ServerPlayer *player) {
     if (log.type.isEmpty())
         return;
     doNotify(player, QSanProtocol::S_COMMAND_LOG_SKILL, log.toJsonValue());
+}
+
+void Room::sendCompulsoryTriggerLog(ServerPlayer *player, const QString &skill_name, bool notify_skill) {
+    LogMessage log;
+    log.type = "#TriggerSkill";
+    log.arg = skill_name;
+    log.from = player;
+    sendLog(log);
+    if (notify_skill)
+        notifySkillInvoked(player, skill_name);
 }
 
 void Room::showCard(ServerPlayer *player, int card_id, ServerPlayer *only_viewer) {

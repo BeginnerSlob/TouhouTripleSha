@@ -35,7 +35,7 @@ public:
             room->drawCards(to, 2, objectName());
             if (!fazheng->isAlive() || !to->isAlive())
                 return true;
-        
+
             QList<ServerPlayer *> targets;
             foreach (ServerPlayer *vic, room->getOtherPlayers(to)) {
                 if (to->canSlash(vic))
@@ -44,14 +44,14 @@ public:
             ServerPlayer *victim = NULL;
             if (!targets.isEmpty()) {
                 victim = room->askForPlayerChosen(fazheng, targets, "ikhuowen_slash", "@dummy-slash2:" + to->objectName());
-        
+
                 LogMessage log;
                 log.type = "#CollateralSlash";
                 log.from = fazheng;
                 log.to << victim;
                 room->sendLog(log);
             }
-        
+
             if (victim == NULL || !room->askForUseSlashTo(to, victim, "ikhuowen-slash::" + victim->objectName())) {
                 if (to->isNude())
                     return true;
@@ -367,7 +367,7 @@ public:
             room->loseMaxHp(damage.to);
             return true;
         }
-        
+
         return false;
     }
 };
@@ -386,12 +386,7 @@ public:
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *liaohua, QVariant &) const{
         room->broadcastSkillInvoke(objectName());
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = liaohua;
-        log.arg = objectName();
-        room->sendLog(log);
-        room->notifySkillInvoked(liaohua, objectName());
+        room->sendCompulsoryTriggerLog(liaohua, objectName());
 
         ServerPlayer *target = NULL;
         QList<ServerPlayer *> targets;
@@ -457,7 +452,7 @@ public:
         liaohua->drawCards(2);
         room->recover(liaohua, RecoverStruct(liaohua, NULL, getKingdoms(room) - liaohua->getHp()));
         liaohua->turnOver();
-        
+
         return false;
     }
 };
@@ -827,7 +822,7 @@ public:
         }
         return false;
     }
-    
+
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *jianyong, QVariant &, ServerPlayer *) const{
         return room->askForUseCard(jianyong, "@@ikqizhi", "@ikqizhi-card", 1);
     }
@@ -1785,7 +1780,7 @@ public:
             return true;
         } else if (!player->isChained() && !ask_who->isChained() && ask_who->askForSkillInvoke(objectName(), "chain:" + player->objectName())) {
             room->broadcastSkillInvoke(objectName());
-            
+
             QList<ServerPlayer *> p_list;
             p_list << player << ask_who;
             room->sortByActionOrder(p_list);
@@ -1820,12 +1815,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &data, ServerPlayer *) const{
         DamageStruct damage = data.value<DamageStruct>();
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = zhangchunhua;
-        log.arg = objectName();
-        room->sendLog(log);
-        room->notifySkillInvoked(zhangchunhua, objectName());
+        room->sendCompulsoryTriggerLog(zhangchunhua, objectName());
         room->broadcastSkillInvoke(objectName());
         room->loseHp(damage.to, damage.damage);
 
@@ -3018,32 +3008,15 @@ public:
                 && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
                 ask_who->addMark(objectName(), move.card_ids.length());
             if (move.from_places.contains(Player::PlaceEquip)) {
-                LogMessage log;
-                log.type = "#TriggerSkill";
-                log.from = ask_who;
-                log.arg = objectName();
-                room->sendLog(log);
-                room->notifySkillInvoked(ask_who, objectName());
-
+                room->sendCompulsoryTriggerLog(ask_who, objectName());
                 ask_who->gainMark("@jilei");
             }
         } else if (triggerEvent == EventPhaseEnd) {
-            LogMessage log;
-            log.type = "#TriggerSkill";
-            log.from = ask_who;
-            log.arg = objectName();
-            room->sendLog(log);
-            room->notifySkillInvoked(ask_who, objectName());
-
+            room->sendCompulsoryTriggerLog(ask_who, objectName());
             ask_who->gainMark("@jilei");
         } else if (triggerEvent == EventPhaseStart) {
             do {
-                LogMessage log;
-                log.type = "#TriggerSkill";
-                log.from = ask_who;
-                log.arg = objectName();
-                room->sendLog(log);
-                room->notifySkillInvoked(ask_who, objectName());
+                room->sendCompulsoryTriggerLog(ask_who, objectName());
                 room->broadcastSkillInvoke(objectName());
 
                 ask_who->loseMark("@jilei");
@@ -3223,7 +3196,7 @@ public:
         if (x > 0)
             damage.to->drawCards(x, objectName());
         damage.to->turnOver();
-        
+
         return false;
     }
 };
@@ -3291,11 +3264,7 @@ public:
             }
         }
 
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = "iklingpao";
-        room->sendLog(log);
+        room->sendCompulsoryTriggerLog(player, "iklingpao");
 
         room->loseHp(player, 1);
         return false;
@@ -3644,7 +3613,7 @@ public:
             card2 = Sanguosha->getCard(second_id);
             room->throwCard(second_id, second, lingtong);
         }
-        
+
         int n = 0;
         if (card1 && card1->isKindOf("BasicCard"))
             n++;
@@ -4651,13 +4620,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         room->broadcastSkillInvoke(objectName());
-
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
 
         room->loseMaxHp(player);
 
@@ -5100,12 +5063,7 @@ public:
 
     virtual void onDamaged(ServerPlayer *player, const DamageStruct &) const{
         Room *room = player->getRoom();
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
         room->broadcastSkillInvoke(objectName());
 
         if (player->getMark("ikguijing") == 1)

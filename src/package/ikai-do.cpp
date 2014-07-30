@@ -247,12 +247,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
         room->broadcastSkillInvoke(objectName());
 
         CardUseStruct use = data.value<CardUseStruct>();
@@ -378,7 +373,7 @@ public:
     IkYufeng(): TriggerSkill("ikyufeng") {
         events << TargetSpecified;
     }
-    
+
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (!TriggerSkill::triggerable(player)) return QStringList();
         CardUseStruct use = data.value<CardUseStruct>();
@@ -859,7 +854,7 @@ public:
 
         room->judge(judge);
         DamageStruct damage = data.value<DamageStruct>();
-        
+
         if (!damage.from || damage.from->isDead()) return false;
         Card::Suit suit = (Card::Suit)(judge.pattern.toInt());
         switch (suit) {
@@ -1003,7 +998,7 @@ public:
         int count = 0;
         foreach (ServerPlayer *p, room->getOtherPlayers(zhangliao))
             if (p->hasFlag("IkChibaoTarget")) count++;
-        
+
         return n - count;
     }
 };
@@ -1841,12 +1836,7 @@ public:
     virtual int getDrawNum(ServerPlayer *zhouyu, int n) const{
         Room *room = zhouyu->getRoom();
         room->broadcastSkillInvoke(objectName());
-
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = zhouyu;
-        log.arg = objectName();
-        room->sendLog(log);
+        room->sendCompulsoryTriggerLog(zhouyu, objectName());
 
         return n + 1;
     }
@@ -2265,12 +2255,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.card->isKindOf("Slash")) {
-            LogMessage log;
-            log.type = "#TriggerSkill";
-            log.from = ask_who;
-            log.arg = objectName();
-            room->sendLog(log);
-            room->notifySkillInvoked(ask_who, objectName());
+            room->sendCompulsoryTriggerLog(ask_who, objectName());
             room->broadcastSkillInvoke(objectName());
 
             QVariantList jink_list = ask_who->tag["Jink_" + use.card->toString()].toList();
@@ -2281,12 +2266,7 @@ public:
             ask_who->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
         } else if (use.card->isKindOf("Duel")) {
             if (use.from == ask_who) {
-                LogMessage log;
-                log.type = "#TriggerSkill";
-                log.from = ask_who;
-                log.arg = objectName();
-                room->sendLog(log);
-                room->notifySkillInvoked(ask_who, objectName());
+                room->sendCompulsoryTriggerLog(ask_who, objectName());
                 room->broadcastSkillInvoke(objectName());
 
                 QStringList ikwushuang_tag;
@@ -2294,12 +2274,7 @@ public:
                     ikwushuang_tag << to->objectName();
                 ask_who->tag["IkWushuang_" + use.card->toString()] = ikwushuang_tag;
             } else {
-                LogMessage log;
-                log.type = "#TriggerSkill";
-                log.from = use.from;
-                log.arg = objectName();
-                room->sendLog(log);
-                room->notifySkillInvoked(use.from, objectName());
+                room->sendCompulsoryTriggerLog(use.from, objectName());
                 room->broadcastSkillInvoke(objectName());
 
                 ask_who->tag["IkWushuang_" + use.card->toString()] = QStringList(use.from->objectName());
@@ -2581,13 +2556,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
         room->broadcastSkillInvoke(objectName());
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
 
         player->drawCards(3, objectName());
         if (player->getPhase() == Player::Play)
@@ -2614,12 +2584,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        room->notifySkillInvoked(player, objectName());
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = "iklingshili";
-        room->sendLog(log);
+        room->sendCompulsoryTriggerLog(player, "iklingshili");
 
         CardUseStruct use = data.value<CardUseStruct>();
         QVariantList jink_list = player->tag["Jink_" + use.card->toString()].toList();

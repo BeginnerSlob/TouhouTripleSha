@@ -49,7 +49,7 @@ class ThShushuCard: public SkillCard{
 
 public:
     Q_INVOKABLE ThShushuCard();
-    
+
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 

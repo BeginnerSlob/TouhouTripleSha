@@ -2767,7 +2767,7 @@ void RoomScene::changeHp(const QString &who, int delta, DamageStruct::Nature nat
 void RoomScene::changeMaxHp(const QString &who, int delta) {
     if (delta < 0)
         Sanguosha->playSystemAudioEffect("maxhplost");
-    
+
     ClientPlayer *player = ClientInstance->getPlayer(who);
     QString hp =  QString::number(player->getHp());
     QString maxhp = QString::number(player->getMaxHp());
