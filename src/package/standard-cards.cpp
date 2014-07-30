@@ -1370,7 +1370,7 @@ public:
         frequency = Compulsory;
         global = true;
     }
-    
+
     virtual bool triggerable(const ServerPlayer *target) const{
         return target != NULL && target->isAlive();
     }

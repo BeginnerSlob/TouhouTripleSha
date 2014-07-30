@@ -109,7 +109,7 @@ public:
             return card;
         }
     }
-    
+
     virtual bool isEnabledAtPlay(const Player *player) const{
         return !player->hasUsed("ThShenfengCard");
     }
@@ -119,7 +119,7 @@ class ThKaihai: public TriggerSkill {
 public:
     ThKaihai(): TriggerSkill("thkaihai") {
         events << CardsMoveOneTime;
-        frequency = Frequent;        
+        frequency = Frequent;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
@@ -354,13 +354,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
         room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
         if (triggerEvent == GameStart)
             room->loseHp(player, 4);
         else {
@@ -426,13 +421,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
         room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
 
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         DummyCard *dummy = new DummyCard;
@@ -560,13 +550,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
         room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
 
         room->setPlayerProperty(player, "maxhp", player->getMaxHp() + 1);
 
@@ -595,7 +580,7 @@ public:
                && target->getMaxHp() > target->getGeneralMaxHp()
                && target->getMark("@huangyi") <= 0;
     }
-    
+
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         LogMessage log;
         log.type = "#ThHuangyi";
@@ -677,13 +662,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
         room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
 
         room->recover(player, RecoverStruct(player));
         player->drawCards(2);
@@ -743,13 +723,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
         room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
 
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (move.to_place == Player::PlaceHand) {
@@ -792,7 +767,7 @@ class ThYouliMaxCardsSkill: public MaxCardsSkill {
 public:
     ThYouliMaxCardsSkill(): MaxCardsSkill("#thyouli") {
     }
-    
+
     virtual int getFixed(const Player *target) const {
         if (target->hasSkill("thyouli"))
             return 4;
@@ -824,13 +799,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
         room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
 
         const Card *card = NULL;
         if (triggerEvent == PreCardUsed)
@@ -873,11 +843,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         player->gainMark("@yingxiao");
         if (player->getMark("@yingxiao") >= 4 && player->hasSkill("thmanxiao")) {
-            LogMessage log;
-            log.type = "#TriggerSkill";
-            log.from = player;
-            log.arg = "thmanxiao";
-            room->sendLog(log);
+            room->sendCompulsoryTriggerLog(player, "thmanxiao");
             room->killPlayer(player, NULL);
             return false;
         }
@@ -895,7 +861,7 @@ public:
     ThYoushang(): TriggerSkill("thyoushang") {
         events << DamageCaused;
     }
-    
+
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (!TriggerSkill::triggerable(player) || !player->hasSkill("thmanxiao")) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
@@ -917,11 +883,7 @@ public:
         room->loseMaxHp(damage.to);
         player->gainMark("@yingxiao");
         if (player->getMark("@yingxiao") >= 4 && player->hasSkill("thmanxiao")) {
-            LogMessage log;
-            log.type = "#TriggerSkill";
-            log.from = player;
-            log.arg = "thmanxiao";
-            room->sendLog(log);
+            room->sendCompulsoryTriggerLog(player, "thmanxiao");
             room->killPlayer(player, NULL);
         }
         return true;
@@ -1044,12 +1006,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = "thjinlu";
-        room->sendLog(log);
-        room->notifySkillInvoked(player, "thjinlu");
+        room->sendCompulsoryTriggerLog(player, "thjinlu");
         if (player->getPhase() == Player::Play) {
             ServerPlayer *target = NULL;
             foreach (ServerPlayer *other, room->getOtherPlayers(player))
@@ -1181,7 +1138,7 @@ public:
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if (cards.length() == 0) 
+        if (cards.length() == 0)
             return NULL;
         ThChuangxinCard *card = new ThChuangxinCard;
         card->addSubcards(cards);
@@ -1240,7 +1197,7 @@ public:
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if (cards.length() == 0) 
+        if (cards.length() == 0)
             return NULL;
         ThTianxinCard *card = new ThTianxinCard;
         card->addSubcards(cards);
@@ -1353,13 +1310,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
         room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
 
         for (int i = 0; i < 3; i ++) {
             if (player->isKongcheng()) break;
@@ -1402,7 +1354,7 @@ class ThBaihun: public ZeroCardViewAsSkill {
 public:
     ThBaihun(): ZeroCardViewAsSkill("thbaihun") {
     }
-    
+
     virtual bool isEnabledAtPlay(const Player *player) const{
         return player->getPile("thrangdengpile").length() >= 13;
     }
@@ -1560,7 +1512,7 @@ void ThLingyunDialog::popup() {
         }
         button->setEnabled(can);
         button_layout->addWidget(button);
-        
+
         if (!map.contains(card)) {
             Card *c = Sanguosha->cloneCard(card, Card::NoSuit, 0);
             c->setParent(this);
@@ -1698,13 +1650,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
         room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
 
         ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName());
         QStringList skill;
@@ -1804,13 +1751,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *player) const {
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg  = objectName();
-        room->sendLog(log);
         room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
 
         room->killPlayer(player, NULL);
         return false;
@@ -1909,14 +1851,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg  = objectName();
-        room->sendLog(log);
-
+        room->sendCompulsoryTriggerLog(player, objectName());
         player->drawCards(1);
-
         return false;
     }
 };
@@ -1943,7 +1879,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const { 
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         QList<int> card_ids;
         foreach (ServerPlayer *p, room->getOtherPlayers(player))
             if (!p->isKongcheng()) {
@@ -2001,11 +1937,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg  = objectName();
-        room->sendLog(log);
+        room->sendCompulsoryTriggerLog(player, objectName());
         player->skip(Player::Draw);
         return true;
     }
@@ -2271,13 +2203,8 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        LogMessage log;
-        log.type = "#TriggerSkill";
-        log.from = player;
-        log.arg = "thlijian";
-        room->sendLog(log);
         room->broadcastSkillInvoke("thlijian");
-        room->notifySkillInvoked(player, "thlijian");
+        room->sendCompulsoryTriggerLog(player, "thlijian");
         room->removePlayerMark(player, "thlijian");
         return true;
     }
@@ -2439,13 +2366,8 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         if (player->getMark(objectName()) > 0) {
-            LogMessage log;
-            log.type = "#TriggerSkill";
-            log.from = player;
-            log.arg = objectName();
-            room->sendLog(log);
             room->broadcastSkillInvoke(objectName());
-            room->notifySkillInvoked(player, objectName());
+            room->sendCompulsoryTriggerLog(player, objectName());
         } else if (player->askForSkillInvoke(objectName())) {
             room->removePlayerMark(player, "@huanxiang");
             room->addPlayerMark(player, "@huanxiangused");
@@ -2553,7 +2475,7 @@ TouhouKamiPackage::TouhouKamiPackage()
     kami013->addSkill(new ThZhanyingMaxCardsSkill);
     related_skills.insertMulti("thzhanying", "#thzhanying");
 
-    General *kami014 = new General(this, "kami014", "kami", 3, false);    
+    General *kami014 = new General(this, "kami014", "kami", 3, false);
     kami014->addSkill(new ThLuli);
     kami014->addSkill(new ThGuihuan);
 
@@ -2572,7 +2494,7 @@ TouhouKamiPackage::TouhouKamiPackage()
     kami016->addSkill(new ThHuanxiang);
     kami016->addSkill(new ThHuanxiangProhibit);
     related_skills.insertMulti("thhuanxiang", "#thhuanxiang-prohibit");
-    
+
     addMetaObject<ThShenfengCard>();
     addMetaObject<ThGugaoCard>();
     addMetaObject<ThLeshiCard>();

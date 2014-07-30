@@ -100,7 +100,7 @@ public:
 public slots:
     void setTime(int secs);
     void setSpeed(qreal speed);
-    
+
 protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     static const int S_BUTTON_GAP = 3;
@@ -184,8 +184,8 @@ public slots:
     void addRobot();
     void doAddRobotAction();
     void fillRobots();
-    
-protected:    
+
+protected:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
@@ -229,10 +229,10 @@ private:
     QGraphicsSimpleTextItem *pausing_text;
 
     QString ikguihuo_log;
-    
+
     QList<QGraphicsPixmapItem *> role_items;
     CardContainer *card_container;
-    
+
     QList<QSanSkillButton *> m_skillButtons;
 
     ResponseSkill *response_skill;
@@ -311,7 +311,7 @@ private:
     // animation related functions
     typedef void (RoomScene::*AnimationFunc)(const QString &, const QStringList &);
     QGraphicsObject *getAnimationObject(const QString &name) const;
-        
+
     void doMovingAnimation(const QString &name, const QStringList &args);
     void doAppearingAnimation(const QString &name, const QStringList &args);
     void doLightboxAnimation(const QString &name, const QStringList &args);

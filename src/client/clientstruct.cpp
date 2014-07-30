@@ -35,10 +35,10 @@ bool ServerInfoStruct::parse(const QStringList &str) {
         DuringGame = false;
     } else {
         DuringGame = true;
-        
+
         QString server_name = str.at(0);
         Name = QString::fromUtf8(QByteArray::fromBase64(server_name.toAscii()));
-        
+
         GameMode = str.at(1);
         if (GameMode.startsWith("02_1v1") || GameMode.startsWith("06_3v3")) {
             GameRuleMode = GameMode.mid(6);
@@ -59,7 +59,7 @@ bool ServerInfoStruct::parse(const QStringList &str) {
 
             Extensions << package_name;
         }
-        
+
         QString flags = str.at(5);
 
         RandomSeat = flags.contains("R");
