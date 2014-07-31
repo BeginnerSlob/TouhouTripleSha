@@ -450,7 +450,7 @@ public:
         return 1;
     }
 
-    virtual int getDrawNum(ServerPlayer *gaodayihao, int n) const{
+    virtual int getDrawNum(ServerPlayer *gaodayihao, int) const{
         LogMessage log;
         log.type = "#GdJuejing";
         log.from = gaodayihao;
