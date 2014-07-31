@@ -203,7 +203,7 @@ void SentbackEffect::draw(QPainter *painter) {
     return;
 }
 
-FadeEffect::FadeEffect(bool stay, QObject *parent) {
+FadeEffect::FadeEffect(bool stay, QObject *) {
     this->setObjectName("fader");
     index = 0;
     this->stay = stay;
