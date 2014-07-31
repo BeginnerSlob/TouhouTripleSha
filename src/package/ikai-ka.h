@@ -117,4 +117,20 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class IkDianyanCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkDianyanCard();
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class IkDianyanPutCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkDianyanPutCard();
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 #endif // IKAIKA_H
