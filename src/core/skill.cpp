@@ -297,7 +297,7 @@ bool TriggerSkill::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *p
     return trigger(triggerEvent, room, player, data);
 }
 
-bool TriggerSkill::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+bool TriggerSkill::trigger(TriggerEvent, Room *, ServerPlayer *, QVariant &) const{
     return false;
 }
 
@@ -497,7 +497,7 @@ int FakeMoveSkill::getPriority(TriggerEvent) const{
     return 10;
 }
 
-QStringList FakeMoveSkill::triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+QStringList FakeMoveSkill::triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer* &) const {
     QString flag = QString("%1_InTempMoving").arg(name);
 
     foreach (ServerPlayer *p, room->getAllPlayers())
