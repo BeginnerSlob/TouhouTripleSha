@@ -1181,6 +1181,69 @@ public:
     }
 };
 
+IkLinghuiCard::IkLinghuiCard() {
+}
+
+bool IkLinghuiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (Self->getMark("iklinghui") > 0)
+        return targets.length() < subcardsLength();
+    return targets.isEmpty() && to_select != Self;
+}
+
+bool IkLinghuiCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    if (Self->getMark("iklinghui") > 0)
+        return targets.length() == subcardsLength();
+    return targets.length() == 1;
+}
+
+void IkLinghuiCard::onEffect(const CardEffectStruct &effect) const{
+    if (effect.from->getMark("iklinghui") > 0) {
+        effect.to->drawCards(2, "iklinghui");
+    } else {
+        effect.to->drawCards(1, "iklinghui");
+        if (!effect.to->isKongcheng()) {
+            Room *room = effect.from->getRoom();
+            const Card *card = room->askForCardShow(effect.to, effect.from, "iklinghui");
+            room->showCard(effect.to, card->getEffectiveId());
+            room->setPlayerMark(effect.from, "iklinghui", card->getColor() + 1);
+            room->askForUseCard(effect.from, "@@iklinghui", "@iklinghui", -1, Card::MethodDiscard, false);
+            room->setPlayerMark(effect.from, "iklinghui", 0);
+        }
+    }
+}
+
+class IkLinghui: public ViewAsSkill {
+public:
+    IkLinghui(): ViewAsSkill("iklinghui") {
+        response_pattern = "@@iklinghui";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
+        if (Self->getMark(objectName()) > 0) {
+            Card::Color color = (Card::Color)(Self->getMark(objectName()) - 1);
+            return !Self->isJilei(to_select) && to_select->getColor() == color && !to_select->isEquipped();
+        }
+        return false;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (Self->getMark(objectName()) > 0) {
+            if (cards.isEmpty())
+                return NULL;
+            IkLinghuiCard *card = new IkLinghuiCard;
+            card->addSubcards(cards);
+            return card;
+        }
+        if (!cards.isEmpty())
+            return NULL;
+        return new IkLinghuiCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkLinghuiCard");
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -1237,6 +1300,10 @@ IkaiKaPackage::IkaiKaPackage()
     snow035->addSkill(new IkShenshu);
     snow035->addSkill(new IkQiyi);
 
+    General *snow036 = new General(this, "snow036", "yuki", 3);
+    snow036->addSkill("ikmitu");
+    snow036->addSkill(new IkLinghui);
+
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
     addMetaObject<IkKangjinCard>();
@@ -1244,6 +1311,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkPaomuCard>();
     addMetaObject<IkDengpoCard>();
     addMetaObject<IkShidaoCard>();
+    addMetaObject<IkLinghuiCard>();
 }
 
 ADD_PACKAGE(IkaiKa)
