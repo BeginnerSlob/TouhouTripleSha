@@ -60,7 +60,7 @@ return {
 	["ikxianyupile"] = "瑕",
 	["@ikxianyu-card"] = "你可以发动“陷瑜”",
 	["~ikxianyu"] = "选择 1-2 名角色→点击确定",
-	["ikxianyu_slash"] = "陷瑜(杀)",
+	["ikxianyu_slash"] = "陷瑜",
 
 	["#wind027"] = "追奇的千金",
 	["wind027"] = "千反田爱瑠",--风 - 空 - 3血
