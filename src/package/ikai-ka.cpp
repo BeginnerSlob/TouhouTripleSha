@@ -1418,6 +1418,68 @@ public:
     }
 };
 
+class IkLingcu: public TriggerSkill {
+public:
+    IkLingcu(): TriggerSkill("iklingcu") {
+        events << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (change.to == Player::Play && !player->isSkipped(Player::Play))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        player->skip(Player::Play, true);
+        player->turnOver();
+
+        QList<Card::Suit> suits;
+        forever {
+            JudgeStruct judge;
+            judge.play_animation = false;
+            judge.who = player;
+            judge.reason = objectName();
+            room->judge(judge);
+
+            player->addToPile(objectName(), judge.card);
+            Card::Suit suit = judge.card->getSuit();
+            if (suits.contains(suit)) {
+                suits << suit;
+                break;
+            }
+            suits << suit;
+        }
+
+        int n = suits.length();
+        for (int i = 0; i < n; i++) {
+            QList<ServerPlayer *> targets;
+            foreach (ServerPlayer *target, room->getOtherPlayers(player))
+                if (player->canSlash(target))
+                    targets << target;
+            if (targets.isEmpty())
+                break;
+            ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@dummy-slash");
+            Slash *slash = new Slash(Card::NoSuit, 0);
+            slash->setSkillName("_iklingcu");
+            room->useCard(CardUseStruct(slash, player, target));
+        }
+        player->clearOnePrivatePile(objectName());
+        return false;
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -1485,6 +1547,9 @@ IkaiKaPackage::IkaiKaPackage()
     snow045->addSkill(new IkDianyan);
     snow045->addSkill(new IkDianyanTrigger);
     related_skills.insertMulti("ikdianyan", "#ikdianyan");
+
+    General *luna030 = new General(this, "luna030", "tsuki");
+    luna030->addSkill(new IkLingcu);
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
