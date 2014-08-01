@@ -133,4 +133,14 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class IkQisiCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkQisiCard();
+
+    virtual const Card *validate(CardUseStruct &cardUse) const;
+    virtual const Card *validateInResponse(ServerPlayer *user) const;
+};
+
 #endif // IKAIKA_H
