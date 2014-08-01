@@ -1480,6 +1480,92 @@ public:
     }
 };
 
+IkQisiCard::IkQisiCard(){
+    target_fixed = true;
+    will_throw = false;
+}
+
+const Card *IkQisiCard::validate(CardUseStruct &cardUse) const{
+    cardUse.from->drawCards(1, "ikqisi");
+
+    Nullification *use_card = new Nullification(NoSuit, 0);
+    use_card->setSkillName("ikqisi");
+    return use_card;
+}
+
+const Card *IkQisiCard::validateInResponse(ServerPlayer *user) const{
+    user->drawCards(1, "ikqisi");
+    Nullification *use_card = new Nullification(NoSuit, 0);
+    use_card->setSkillName("ikqisi");
+    return use_card;
+}
+
+class IkQisiViewAsSkill: public ZeroCardViewAsSkill {
+public:
+    IkQisiViewAsSkill(): ZeroCardViewAsSkill("ikqisi") {
+        response_pattern = "nullification";
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkQisiCard;
+    }
+
+    virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
+        if (player->property("ikqisi").isNull() || !player->property("ikqisi").canConvert<CardEffectStruct>())
+            return false;
+        CardEffectStruct effect = player->property("ikqisi").value<CardEffectStruct>();
+        if (!effect.from || effect.from == player)
+            return false;
+        if (effect.from->getHandcardNum() >= player->getHandcardNum())
+            return player->getHandcardNum() % 2;
+        return false;
+    }
+};
+
+class IkQisi: public TriggerSkill {
+public:
+    IkQisi(): TriggerSkill("ikqisi") {
+        events << TrickCardCanceling;
+        view_as_skill = new IkQisiViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        room->setPlayerProperty(player, "ikqisi", data);
+        return QStringList();
+    }
+};
+
+class IkMiaoxiang: public TriggerSkill {
+public:
+    IkMiaoxiang(): TriggerSkill("ikmiaoxiang") {
+        events << Damaged;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        DamageStruct damage = data.value<DamageStruct>();
+        foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
+            if (owner == player) continue;
+            if (owner->getHandcardNum() <= owner->getHandcardNum() && owner->getHandcardNum() % 2 == 0)
+                skill_list.insert(owner, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *owner) const{
+        if (room->askForCard(owner, "^BasicCard", "@ikmiaoxiang", data, objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *owner) const{
+        room->recover(player, RecoverStruct(owner));
+        return false;
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -1522,7 +1608,7 @@ IkaiKaPackage::IkaiKaPackage()
     General *bloom036 = new General(this, "bloom036", "hana");
     bloom036->addSkill(new IkPaomu);
 
-    General *bloom045 = new General(this, "bloom045", "hana");
+    General *bloom045 = new General(this, "bloom045", "hana", 4, false);
     bloom045->addSkill(new IkDengpo);
 
     General *snow031 = new General(this, "snow031", "yuki", 3);
@@ -1551,6 +1637,10 @@ IkaiKaPackage::IkaiKaPackage()
     General *luna030 = new General(this, "luna030", "tsuki");
     luna030->addSkill(new IkLingcu);
 
+    General *luna031 = new General(this, "luna031", "tsuki", 3);
+    luna031->addSkill(new IkQisi);
+    luna031->addSkill(new IkMiaoxiang);
+
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
     addMetaObject<IkKangjinCard>();
@@ -1561,6 +1651,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkLinghuiCard>();
     addMetaObject<IkDianyanCard>();
     addMetaObject<IkDianyanPutCard>();
+    addMetaObject<IkQisiCard>();
 
     skills << new IkDianyanPut;
 }

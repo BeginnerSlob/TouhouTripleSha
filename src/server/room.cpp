@@ -1030,8 +1030,8 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
     trickEffect.to = to;
     QVariant data = QVariant::fromValue(trickEffect);
     foreach (ServerPlayer *player, m_alivePlayers) {
-        if (player->hasNullification()) {
-            if (!thread->trigger(TrickCardCanceling, this, player, data)) {
+        if (!thread->trigger(TrickCardCanceling, this, player, data)) {
+            if (player->hasNullification()) {
                 if (player->isOnline()) {
                     player->m_commandArgs = arg;
                     validHumanPlayers << player;
