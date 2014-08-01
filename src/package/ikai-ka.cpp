@@ -1566,6 +1566,96 @@ public:
     }
 };
 
+class IkJichang: public TriggerSkill {
+public:
+    IkJichang(): TriggerSkill("ikjichang") {
+        events << EventPhaseStart;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return TriggerSkill::triggerable(target)
+            && target->getPhase() == Player::Start;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        int n = 4;
+        if (!player->isKongcheng()) {
+            room->showAllCards(player);
+            QSet<Card::Suit> suits;
+            foreach (const Card *c, player->getHandcards())
+                suits << c->getSuit();
+            n -= suits.size();
+        }
+        if (n == 0)
+            return false;
+        player->drawCards(n, objectName());
+        if (n >= 2) {
+            player->skip(Player::Judge);
+            player->skip(Player::Draw);
+        }
+        return false;
+    }
+};
+
+IkManwuCard::IkManwuCard() {
+}
+
+bool IkManwuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
+}
+
+void IkManwuCard::onEffect(const CardEffectStruct &effect) const{
+    effect.from->pindian(effect.to, "ikmanwu");
+}
+
+class IkManwuViewAsSkill: public ZeroCardViewAsSkill {
+public:
+    IkManwuViewAsSkill(): ZeroCardViewAsSkill("ikmanwu") {
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkManwuCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkManwuCard") && !player->isKongcheng();
+    }
+};
+
+class IkManwu: public TriggerSkill {
+public:
+    IkManwu(): TriggerSkill("ikmanwu") {
+        events << Pindian;
+        view_as_skill = new IkManwuViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer* &) const{
+        PindianStruct *pindian = data.value<PindianStruct *>();
+        if (pindian->reason != objectName() || pindian->from_number == pindian->to_number)
+            return QStringList();
+
+        ServerPlayer *winner = pindian->isSuccess() ? pindian->from : pindian->to;
+        if (winner->getHandcardNum() < winner->getHp())
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const{
+        PindianStruct *pindian = data.value<PindianStruct *>();
+        ServerPlayer *winner = pindian->isSuccess() ? pindian->from : pindian->to;
+        winner->drawCards(winner->getHp() - winner->getHandcardNum(), objectName());
+        return false;
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -1641,6 +1731,10 @@ IkaiKaPackage::IkaiKaPackage()
     luna031->addSkill(new IkQisi);
     luna031->addSkill(new IkMiaoxiang);
 
+    General *luna032 = new General(this, "luna032", "tsuki", 3);
+    luna032->addSkill(new IkJichang);
+    luna032->addSkill(new IkManwu);
+
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
     addMetaObject<IkKangjinCard>();
@@ -1652,6 +1746,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkDianyanCard>();
     addMetaObject<IkDianyanPutCard>();
     addMetaObject<IkQisiCard>();
+    addMetaObject<IkManwuCard>();
 
     skills << new IkDianyanPut;
 }

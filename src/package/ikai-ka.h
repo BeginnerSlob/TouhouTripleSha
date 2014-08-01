@@ -143,4 +143,14 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
+class IkManwuCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkManwuCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 #endif // IKAIKA_H
