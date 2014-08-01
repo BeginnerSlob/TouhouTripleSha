@@ -936,16 +936,20 @@ public:
                 enabled_ids << id;
             else
                 disabled_ids << id;
-        room->fillAG(card_ids, player, disabled_ids);
-        int card_id = -1;
-        if (!enabled_ids.isEmpty())
-            card_id = room->askForAG(player, enabled_ids, true, objectName());
-        room->clearAG(player);
-        if (card_id == -1)
-            return false;
+        if (enabled_ids.isEmpty())
+            room->showAllCards(target, player);
+        else {
+            room->fillAG(card_ids, player, disabled_ids);
+            int card_id = -1;
+            if (!enabled_ids.isEmpty())
+                card_id = room->askForAG(player, enabled_ids, true, objectName());
+            room->clearAG(player);
+            if (card_id == -1)
+                return false;
 
-        ServerPlayer *target2 = room->askForPlayerChosen(player, room->getOtherPlayers(target), objectName());
-        room->obtainCard(target2, card_id);
+            ServerPlayer *target2 = room->askForPlayerChosen(player, room->getOtherPlayers(target), objectName());
+            room->obtainCard(target2, card_id);
+        }
 
         return false;
     }
