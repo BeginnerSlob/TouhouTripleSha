@@ -1418,6 +1418,71 @@ public:
     }
 };
 
+class IkLianxiao: public TriggerSkill {
+public:
+    IkLianxiao(): TriggerSkill("iklianxiao") {
+        events << EventPhaseEnd;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player->getPhase() != Player::Play) return skill_list;
+        foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
+            if (owner->getMark(objectName()) == 0)
+                skill_list.insert(owner, QStringList(objectName()));
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        QString choice = room->askForChoice(ask_who, objectName(), "draw+max");
+        if (choice == "draw")
+            player->drawCards(1, objectName());
+        else
+            room->addPlayerMark(player, "iklianxiao_max");
+        return false;
+    }
+};
+
+class IkLianxiaoRecord: public TriggerSkill {
+public:
+    IkLianxiaoRecord(): TriggerSkill("#iklianxiao-record") {
+        events << CardFinished << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == CardFinished && player->isAlive() && player->getPhase() == Player::Play) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->getTypeId() != Card::TypeSkill)
+                foreach (ServerPlayer *p, use.to)
+                    p->setMark("iklianxiao", 1);
+        } else if (triggerEvent == EventPhaseChanging) {
+            foreach (ServerPlayer *p, room->getAlivePlayers())
+                p->setMark("iklianxiao", 0);
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive)
+                room->setPlayerMark(player, "iklianxiao_max", 0);
+        }
+        return QStringList();
+    }
+};
+
+class IkLianxiaoMaxCards: public MaxCardsSkill {
+public:
+    IkLianxiaoMaxCards(): MaxCardsSkill("#iklianxiao-max") {
+    }
+
+    virtual int getExtra(const Player *target) const{
+        return -target->getMark("iklianxiao_max");
+    }
+};
+
 class IkLingcu: public TriggerSkill {
 public:
     IkLingcu(): TriggerSkill("iklingcu") {
@@ -1749,6 +1814,13 @@ IkaiKaPackage::IkaiKaPackage()
     snow045->addSkill(new IkDianyan);
     snow045->addSkill(new IkDianyanTrigger);
     related_skills.insertMulti("ikdianyan", "#ikdianyan");
+
+    General *snow046 = new General(this, "snow046", "yuki");
+    snow046->addSkill(new IkLianxiao);
+    snow046->addSkill(new IkLianxiaoRecord);
+    snow046->addSkill(new IkLianxiaoMaxCards);
+    related_skills.insertMulti("iklianxiao", "#iklianxiao-record");
+    related_skills.insertMulti("iklianxiao", "#iklianxiao-max");
 
     General *luna030 = new General(this, "luna030", "tsuki");
     luna030->addSkill(new IkLingcu);
