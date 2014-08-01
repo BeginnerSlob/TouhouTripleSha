@@ -270,7 +270,6 @@ void IkKangjinCard::onEffect(const CardEffectStruct &effect) const{
 class IkKangjin: public OneCardViewAsSkill {
 public:
     IkKangjin(): OneCardViewAsSkill("ikkangjin") {
-        filter_pattern = ".|.|.|hand";
         response_or_use = true;
     }
 
@@ -1271,6 +1270,10 @@ public:
         QList<int> card_ids = room->getNCards(3, false);
         CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, owner->objectName());
         CardsMoveStruct move(card_ids, NULL, Player::DiscardPile, reason);
+        LogMessage log;
+        log.type = "$EnterDiscardPile";
+        log.card_str = IntList2StringList(card_ids).join("+");
+        room->sendLog(log);
         room->moveCardsAtomic(move, true);
         bool heart = false;
         foreach (int id, card_ids)
@@ -1747,6 +1750,111 @@ public:
     }
 };
 
+IkXianlvCard::IkXianlvCard() {
+    will_throw = false;
+    handling_method = MethodNone;
+}
+
+bool IkXianlvCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
+    return targets.isEmpty() && to_select->getPhase() == Player::Draw;
+}
+
+void IkXianlvCard::onEffect(const CardEffectStruct &effect) const{
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "ikxianlv", QString());
+    Room *room = effect.from->getRoom();
+    if (effect.to == effect.from) {
+        LogMessage log;
+        log.type = "$MoveCard";
+        log.from = effect.from;
+        log.to << effect.to;
+        log.card_str = IntList2StringList(subcards).join("+");
+        room->sendLog(log);
+    }
+    room->obtainCard(effect.to, this, reason);
+    room->addPlayerMark(effect.to, "ikxianlv");
+}
+
+class IkXianlvViewAsSkill: public ViewAsSkill {
+public:
+    IkXianlvViewAsSkill(): ViewAsSkill("ikxianlv") {
+        expand_pile = "music";
+        response_pattern = "@@ikxianlv";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
+        return Self->getPile("music").contains(to_select->getEffectiveId());
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.isEmpty())
+            return NULL;
+        IkXianlvCard *card = new IkXianlvCard;
+        card->addSubcards(cards);
+        return card;
+    }
+};
+
+class IkXianlv: public TriggerSkill {
+public:
+    IkXianlv(): TriggerSkill("ikxianlv") {
+        events << DrawNCards << EventPhaseChanging << EventPhaseStart << FinishJudge;
+        view_as_skill = new IkXianlvViewAsSkill;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (triggerEvent == DrawNCards) {
+            if (player->getMark(objectName()) > 0) {
+                data = data.toInt() - player->getMark(objectName());
+                room->setPlayerMark(player, objectName(), 0);
+            }
+        } else if (triggerEvent == EventPhaseChanging) {
+            room->setPlayerMark(player, objectName(), 0);
+        } else if (triggerEvent == FinishJudge) {
+            JudgeStruct *judge = data.value<JudgeStruct *>();
+            if (judge->reason == objectName())
+                judge->pattern = QString::number(int(judge->card->getSuit()));
+        } else if (player->getPhase() == Player::Draw) {
+            foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
+                if (!owner->getPile("music").isEmpty())
+                    skill_list.insert(owner, QStringList(objectName()));
+        } else if (TriggerSkill::triggerable(player) && (player->getPhase() == Player::Start || player->getPhase() == Player::Finish)) {
+            skill_list.insert(player, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *owner) const{
+        if (player->getPhase() == Player::Draw)
+            room->askForUseCard(owner, "@@ikxianlv", "@ikxianlv", -1, Card::MethodNone);
+        else if (owner->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const{
+        JudgeStruct judge;
+        judge.good = true;
+        judge.play_animation = false;
+        judge.who = player;
+        judge.reason = objectName();
+        room->judge(judge);
+
+        Card::Suit suit = (Card::Suit)(judge.pattern.toInt());
+        bool has = false;
+        foreach (int id, player->getPile("music"))
+            if (Sanguosha->getCard(id)->getSuit() == suit) {
+                has = true;
+                break;
+            }
+        if (!has)
+            player->addToPile("music", judge.card);
+        return false;
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -1833,6 +1941,9 @@ IkaiKaPackage::IkaiKaPackage()
     luna032->addSkill(new IkJichang);
     luna032->addSkill(new IkManwu);
 
+    General *luna033 = new General(this, "luna033", "tsuki", 3);
+    luna033->addSkill(new IkXianlv);
+
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
     addMetaObject<IkKangjinCard>();
@@ -1845,6 +1956,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkDianyanPutCard>();
     addMetaObject<IkQisiCard>();
     addMetaObject<IkManwuCard>();
+    addMetaObject<IkXianlvCard>();
 
     skills << new IkDianyanPut;
 }
