@@ -1509,29 +1509,36 @@ public:
         return new IkQisiCard;
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const{
+    virtual bool isEnabledAtPlay(const Player *) const{
         return false;
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
         if (pattern != "nullification") return false;
-        if (player->property("ikqisi").isNull() || !player->property("ikqisi").canConvert<CardEffectStruct>())
+        if (player->property("ikqisi").isNull())
             return false;
-        CardEffectStruct effect = player->property("ikqisi").value<CardEffectStruct>();
-        if (!effect.from || effect.from == player)
+        QString obj_name = player->property("ikqisi").toString();
+        if (obj_name.isEmpty() || player->objectName() == obj_name)
             return false;
-        if (effect.from->getHandcardNum() >= player->getHandcardNum())
+        const Player *from = NULL;
+        foreach (const Player *p, player->getAliveSiblings())
+            if (p->objectName() == obj_name) {
+                from = p;
+                break;
+            }
+        if (from && from->getHandcardNum() >= player->getHandcardNum())
             return player->getHandcardNum() % 2;
         return false;
     }
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
-        if (player->property("ikqisi").isNull() || !player->property("ikqisi").canConvert<CardEffectStruct>())
+        if (player->property("ikqisi").isNull())
             return false;
-        CardEffectStruct effect = player->property("ikqisi").value<CardEffectStruct>();
-        if (!effect.from || effect.from == player)
+        QString obj_name = player->property("ikqisi").toString();
+        if (obj_name.isEmpty() || player->objectName() == obj_name)
             return false;
-        if (effect.from->getHandcardNum() >= player->getHandcardNum())
+        ServerPlayer *from = player->getRoom()->findPlayer(obj_name);
+        if (from && from->getHandcardNum() >= player->getHandcardNum())
             return player->getHandcardNum() % 2;
         return false;
     }
@@ -1545,7 +1552,11 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        room->setPlayerProperty(player, "ikqisi", data);
+        CardEffectStruct effect = data.value<CardEffectStruct>();
+        if (!effect.from)
+            room->setPlayerProperty(player, "ikqisi", QString());
+        else
+            room->setPlayerProperty(player, "ikqisi", effect.from->objectName());
         return QStringList();
     }
 };
