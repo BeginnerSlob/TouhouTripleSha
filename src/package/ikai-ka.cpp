@@ -1503,11 +1503,26 @@ const Card *IkQisiCard::validateInResponse(ServerPlayer *user) const{
 class IkQisiViewAsSkill: public ZeroCardViewAsSkill {
 public:
     IkQisiViewAsSkill(): ZeroCardViewAsSkill("ikqisi") {
-        response_pattern = "nullification";
     }
 
     virtual const Card *viewAs() const{
         return new IkQisiCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return false;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+        if (pattern != "nullification") return false;
+        if (player->property("ikqisi").isNull() || !player->property("ikqisi").canConvert<CardEffectStruct>())
+            return false;
+        CardEffectStruct effect = player->property("ikqisi").value<CardEffectStruct>();
+        if (!effect.from || effect.from == player)
+            return false;
+        if (effect.from->getHandcardNum() >= player->getHandcardNum())
+            return player->getHandcardNum() % 2;
+        return false;
     }
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
