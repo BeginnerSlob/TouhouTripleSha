@@ -1771,6 +1771,7 @@ void IkXianlvCard::onEffect(const CardEffectStruct &effect) const{
         room->sendLog(log);
     }
     room->obtainCard(effect.to, this, reason);
+    effect.from->drawCards(1, "ikxianlv");
     room->addPlayerMark(effect.to, "ikxianlv");
 }
 
