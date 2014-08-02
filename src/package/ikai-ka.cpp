@@ -2242,6 +2242,117 @@ public:
     }
 };
 
+class IkHaidao: public TriggerSkill {
+public:
+    IkHaidao(): TriggerSkill("ikhaidao") {
+        events << BeforeCardsMove;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.from != player)
+            return QStringList();
+        if ((move.to && move.to != player && move.to_place == Player::PlaceHand)
+            || ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD
+                && move.reason.m_playerId != player->objectName()))
+            foreach (Player::Place place, move.from_places)
+                if (place == Player::PlaceHand || place == Player::PlaceEquip)
+                    return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        QList<int> ids;
+        int i = 0;
+        foreach (int id, move.card_ids) {
+            if (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip)
+                ids << id;
+            i++;
+        }
+        QList<int> pile_ids = room->getNCards(ids.length(), false);
+        room->moveCardsAtomic(CardsMoveStruct(pile_ids, NULL, move.to, Player::DrawPile, move.to_place, move.reason), false);
+        move.removeCardIds(ids);
+        data = QVariant::fromValue(move);
+        return false;
+    }
+};
+
+class IkYaopu: public TriggerSkill {
+public:
+    IkYaopu(): TriggerSkill("ikyaopu") {
+        events << BeforeCardsMove;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.from == player && move.to_place == Player::DiscardPile
+            && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_USE) {
+            const Card *yaopu_card = move.reason.m_extraData.value<const Card *>();
+            if (!yaopu_card || !yaopu_card->hasFlag("ikyaopu"))
+                return QStringList();
+            return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName());
+        const Card *card = move.reason.m_extraData.value<const Card *>();
+        target->obtainCard(card);
+        move.removeCardIds(move.card_ids);
+        data = QVariant::fromValue(move);
+        return false;
+    }
+};
+
+class IkYaopuRecord: public TriggerSkill {
+public:
+    IkYaopuRecord(): TriggerSkill("#ikyaopu-record") {
+        events << PreCardUsed << CardResponded;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        const Card *card = NULL;
+        if (triggerEvent == PreCardUsed)
+            card = data.value<CardUseStruct>().card;
+        else {
+            CardResponseStruct response = data.value<CardResponseStruct>();
+            if (response.m_isUse)
+               card = response.m_card;
+        }
+        if (card && card->getHandlingMethod() == Card::MethodUse) {
+            ServerPlayer *current = room->getCurrent();
+            if (current && current->getPhase() != Player::NotActive && !current->hasFlag("ikyaopu")) {
+                current->setFlags("ikyaopu");
+                QList<int> ids;
+                if (!card->isVirtualCard())
+                    ids << card->getEffectiveId();
+                else if (card->subcardsLength() > 0)
+                    ids = card->getSubcards();
+                if (!ids.isEmpty())
+                    room->setCardFlag(card, "ikyaopu");
+            }
+        }
+
+        return QStringList();
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -2345,6 +2456,12 @@ IkaiKaPackage::IkaiKaPackage()
     General *luna045 = new General(this, "luna045", "tsuki");
     luna045->addSkill(new IkXieke);
     luna045->addSkill(new IkYunmai);
+
+    General *luna046 = new General(this, "luna046", "tsuki", 3);
+    luna046->addSkill(new IkHaidao);
+    luna046->addSkill(new IkYaopu);
+    luna046->addSkill(new IkYaopuRecord);
+    related_skills.insertMulti("ikyaopu", "#ikyaopu-record");
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
