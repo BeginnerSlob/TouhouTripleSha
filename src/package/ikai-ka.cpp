@@ -2196,6 +2196,52 @@ public:
     }
 };
 
+class IkYunmai: public TriggerSkill {
+public:
+    IkYunmai(): TriggerSkill("ikyunmai") {
+        events << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player) && data.value<PhaseChangeStruct>().to == Player::NotActive)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        int half = (room->alivePlayerCount() + 1) / 2;
+        QList<ServerPlayer *> chained, not_chained, targets;
+        foreach (ServerPlayer *p, room->getAlivePlayers())
+            if (p->isChained())
+                chained << p;
+            else
+                not_chained << p;
+        if (chained.length() >= half)
+            targets += chained;
+        if (not_chained.length() >= half)
+            targets += not_chained;
+        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@ikyunmai", true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["IkYunmaiTarget"] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        ServerPlayer *target = player->tag["IkYunmaiTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkYunmaiTarget");
+        if (target) {
+            target->setChained(!target->isChained());
+            room->setEmotion(target, "chain");
+            room->broadcastProperty(target, "chained");
+            room->getThread()->trigger(ChainStateChanged, room, target);
+        }
+        return false;
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -2298,7 +2344,7 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *luna045 = new General(this, "luna045", "tsuki");
     luna045->addSkill(new IkXieke);
-    //luna045->addSkill(new IkYunmai);
+    luna045->addSkill(new IkYunmai);
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
