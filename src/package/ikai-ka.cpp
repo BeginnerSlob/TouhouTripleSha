@@ -2052,6 +2052,150 @@ public:
     }
 };
 
+IkXiekeCard::IkXiekeCard() {
+}
+
+bool IkXiekeCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = NULL;
+        if (!user_string.isEmpty())
+            card = Sanguosha->cloneCard(user_string.split("+").first());
+        return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
+    } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+        return false;
+    }
+
+    const Card *card = Self->tag.value("ikxieke").value<const Card *>();
+    return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
+}
+
+bool IkXiekeCard::targetFixed() const{
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        const Card *card = NULL;
+        if (!user_string.isEmpty())
+            card = Sanguosha->cloneCard(user_string.split("+").first());
+        return card && card->targetFixed();
+    } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+        return true;
+    }
+
+    const Card *card = Self->tag.value("ikxieke").value<const Card *>();
+    return card && card->targetFixed();
+}
+
+bool IkXiekeCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = NULL;
+        if (!user_string.isEmpty())
+            card = Sanguosha->cloneCard(user_string.split("+").first());
+        return card && card->targetsFeasible(targets, Self);
+    } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+        return true;
+    }
+
+    const Card *card = Self->tag.value("ikxieke").value<const Card *>();
+    return card && card->targetsFeasible(targets, Self);
+}
+
+const Card *IkXiekeCard::validate(CardUseStruct &card_use) const{
+    ServerPlayer *wenyang = card_use.from;
+    Room *room = wenyang->getRoom();
+
+    QString to_ikshidao = user_string;
+    if (user_string == "slash"
+        && Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+            QStringList ikshidao_list;
+            ikshidao_list << "slash";
+            if (!Config.BanPackages.contains("maneuvering"))
+                ikshidao_list << "thunder_slash" << "fire_slash";
+            to_ikshidao = room->askForChoice(wenyang, "ikxieke_slash", ikshidao_list.join("+"));
+    }
+
+    wenyang->setChained(true);
+    room->setEmotion(wenyang, "chain");
+    room->broadcastProperty(wenyang, "chained");
+    room->getThread()->trigger(ChainStateChanged, room, wenyang);
+
+    Card *use_card = Sanguosha->cloneCard(to_ikshidao);
+    use_card->setSkillName("ikxieke");
+    return use_card;
+}
+
+const Card *IkXiekeCard::validateInResponse(ServerPlayer *wenyang) const{
+    Room *room = wenyang->getRoom();
+
+    QString to_ikshidao;
+    if (user_string == "peach+analeptic") {
+        QStringList ikshidao_list;
+        ikshidao_list << "peach";
+        if (!Config.BanPackages.contains("maneuvering"))
+            ikshidao_list << "analeptic";
+        to_ikshidao = room->askForChoice(wenyang, "ikxieke_saveself", ikshidao_list.join("+"));
+    } else if (user_string == "slash") {
+        QStringList ikshidao_list;
+        ikshidao_list << "slash";
+        if (!Config.BanPackages.contains("maneuvering"))
+            ikshidao_list << "thunder_slash" << "fire_slash";
+        to_ikshidao = room->askForChoice(wenyang, "ikxieke_slash", ikshidao_list.join("+"));
+    } else
+        to_ikshidao = user_string;
+
+    wenyang->setChained(true);
+    room->setEmotion(wenyang, "chain");
+    room->broadcastProperty(wenyang, "chained");
+    room->getThread()->trigger(ChainStateChanged, room, wenyang);
+
+    Card *use_card = Sanguosha->cloneCard(to_ikshidao);
+    use_card->setSkillName("ikxieke");
+    return use_card;
+}
+
+class IkXieke: public ZeroCardViewAsSkill {
+public:
+    IkXieke(): ZeroCardViewAsSkill("ikxieke") {
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+        if (player->getPhase() != Player::Play || player->isChained()) return false;
+        if (pattern == "peach")
+            return player->getMark("Global_PreventPeach") == 0;
+        else if (pattern.contains("analeptic") || pattern == "slash" || pattern == "jink" || pattern == "nullification")
+            return true;
+        return false;
+    }
+
+    virtual QDialog *getDialog() const{
+        return ThMimengDialog::getInstance("ikxieke", true, false);
+    }
+
+    virtual const Card *viewAs() const{
+        if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+            IkXiekeCard *tianyan_card = new IkXiekeCard;
+            QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+            if (pattern == "peach+analeptic" && Self->getMark("Global_PreventPeach") > 0)
+                pattern = "analeptic";
+            tianyan_card->setUserString(pattern);
+            return tianyan_card;
+        }
+
+        const Card *c = Self->tag["ikxieke"].value<const Card *>();
+        if (c) {
+            IkXiekeCard *card = new IkXiekeCard;
+            card->setUserString(c->objectName());
+            return card;
+        } else
+            return NULL;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->isChained();
+    }
+
+    virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
+        return !player->isChained() && player->getPhase() == Player::Play;
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -2152,6 +2296,10 @@ IkaiKaPackage::IkaiKaPackage()
     luna037->addSkill(new IkMoshan);
     luna037->addSkill("thyanmeng");
 
+    General *luna045 = new General(this, "luna045", "tsuki");
+    luna045->addSkill(new IkXieke);
+    //luna045->addSkill(new IkYunmai);
+
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
     addMetaObject<IkKangjinCard>();
@@ -2167,6 +2315,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkXianlvCard>();
     addMetaObject<IkLianwuCard>();
     addMetaObject<IkLianwuDrawCard>();
+    addMetaObject<IkXiekeCard>();
 
     skills << new IkDianyanPut;
 }
