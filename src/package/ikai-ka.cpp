@@ -4,6 +4,7 @@
 #include "skill.h"
 #include "engine.h"
 #include "standard.h"
+#include "standard-equips.h"
 #include "client.h"
 
 IkZhijuCard::IkZhijuCard() {
@@ -1976,6 +1977,81 @@ public:
     }
 };
 
+class IkMoshanFilter: public FilterSkill {
+public:
+    IkMoshanFilter(): FilterSkill("ikmoshan") {
+    }
+
+    virtual bool viewFilter(const Card *to_select) const{
+        return to_select->isKindOf("Jink");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        EightDiagram *ed = new EightDiagram(originalCard->getSuit(), originalCard->getNumber());
+        ed->setSkillName(objectName());
+        WrappedCard *card = Sanguosha->getWrappedCard(originalCard->getId());
+        card->takeOver(ed);
+        return card;
+    }
+};
+
+class IkMoshan: public TriggerSkill {
+public:
+    IkMoshan(): TriggerSkill("ikmoshan") {
+        events << BeforeCardsMove << EventLoseSkill;
+        view_as_skill = new IkMoshanFilter;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == BeforeCardsMove && TriggerSkill::triggerable(player) && !player->hasFlag("ikmoshan")) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from != player)
+                return QStringList();
+            int i = 0;
+            foreach (int card_id, move.card_ids) {
+                if (room->getCardOwner(card_id) == move.from
+                    && move.from_places[i] == Player::PlaceEquip
+                    && room->getCard(card_id)->isKindOf("EightDiagram")) {
+                    return QStringList(objectName());
+                }
+                i++;
+            }
+        } else if (triggerEvent == EventLoseSkill && data.toString() == objectName()) {
+            if (player->getArmor())
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+        if (triggerEvent == BeforeCardsMove) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            QList<int> ids;
+            ids << player->getArmor()->getEffectiveId();
+            move.removeCardIds(ids);
+            data = QVariant::fromValue(move);
+        }
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@ikmoshan");
+        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, player->objectName(), target->objectName(), objectName(), QString());
+        player->setFlags("ikmoshan");
+        room->obtainCard(target, player->getArmor(), reason);
+        player->setFlags("-ikmoshan");
+        QList<ServerPlayer *> victims;
+        foreach (ServerPlayer *p, room->getOtherPlayers(player))
+            if (player->canDiscard(p, "he"))
+                victims << p;
+        if (!victims.isEmpty()) {
+            ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName());
+            int id = room->askForCardChosen(player, victim, "he", objectName(), false, Card::MethodDiscard);
+            room->throwCard(id, victim, player);
+        }
+        return false;
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -2071,6 +2147,10 @@ IkaiKaPackage::IkaiKaPackage()
     luna036->addSkill(new IkLianwuTargetMod);
     related_skills.insertMulti("iklianwu", "#iklianwu-dist");
     related_skills.insertMulti("iklianwu", "#iklianwu-tar");
+
+    General *luna037 = new General(this, "luna037", "tsuki");
+    luna037->addSkill(new IkMoshan);
+    luna037->addSkill("thyanmeng");
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();

@@ -2948,7 +2948,6 @@ public:
             && ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)) {
 
             int i = 0;
-            QList<int> lihui_card;
             foreach (int card_id, move.card_ids) {
                 if (room->getCardOwner(card_id) == move.from
                     && (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip)) {

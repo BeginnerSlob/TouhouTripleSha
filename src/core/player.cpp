@@ -440,7 +440,7 @@ void Player::setEquip(WrappedCard *equip) {
 }
 
 void Player::removeEquip(WrappedCard *equip) {
-    const EquipCard *card = qobject_cast<const EquipCard *>(Sanguosha->getEngineCard(equip->getId()));
+    const EquipCard *card = qobject_cast<const EquipCard *>(equip->getRealCard());
     Q_ASSERT(card != NULL);
     switch(card->location()) {
     case EquipCard::WeaponLocation: weapon = NULL; break;
