@@ -163,4 +163,25 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class IkLianwuCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkLianwuCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onUse(Room *room, const CardUseStruct &use) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class IkLianwuDrawCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkLianwuDrawCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 #endif // IKAIKA_H
