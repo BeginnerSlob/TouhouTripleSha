@@ -1856,6 +1856,126 @@ public:
     }
 };
 
+IkLianwuCard::IkLianwuCard() {
+}
+
+bool IkLianwuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && Self->canDiscard(to_select, "he") && to_select != Self;
+}
+
+void IkLianwuCard::onUse(Room *room, const CardUseStruct &use) const{
+    if (subcards.isEmpty())
+        room->loseHp(use.from);
+    SkillCard::onUse(room, use);
+}
+
+void IkLianwuCard::onEffect(const CardEffectStruct &effect) const{
+    if (!effect.from->isAlive())
+        return;
+    Room *room = effect.from->getRoom();
+    int id = room->askForCardChosen(effect.from, effect.to, "he", "iklianwu", false, MethodDiscard);
+    CardType type = Sanguosha->getCard(id)->getTypeId();
+    room->throwCard(id, effect.to, effect.from);
+    switch (type) {
+    case TypeTrick :
+        room->askForUseCard(effect.from, "@@iklianwu1", "@iklianwu1", 1);
+        break;
+    case TypeBasic:
+        room->setPlayerFlag(effect.from, "iklianwu2");
+        break;
+    case TypeEquip:
+        room->setPlayerFlag(effect.from, "iklianwu3");
+        break;
+    }
+}
+
+IkLianwuDrawCard::IkLianwuDrawCard() {
+    m_skillName = "iklianwu";
+}
+
+bool IkLianwuDrawCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *Self) const{
+    return targets.isEmpty() || targets.length() < Self->getLostHp();
+}
+
+void IkLianwuDrawCard::onEffect(const CardEffectStruct &effect) const{
+    effect.to->drawCards(1, "iklianwu");
+}
+
+class IkLianwuViewAsSkill: public ViewAsSkill {
+public:
+    IkLianwuViewAsSkill(): ViewAsSkill("iklianwu") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *) const{
+        return false;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
+        return pattern.startsWith("@@iklianwu");
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        if (Sanguosha->currentRoomState()->getCurrentCardUsePattern().endsWith("1"))
+            return false;
+        else
+            return selected.isEmpty() && to_select->isKindOf("EquipCard") && !Self->isJilei(to_select);
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (Sanguosha->currentRoomState()->getCurrentCardUsePattern().endsWith("1")) {
+            return cards.isEmpty() ? new IkLianwuDrawCard : NULL;
+        } else {
+            IkLianwuCard *card = new IkLianwuCard;
+            card->addSubcards(cards);
+            return card;
+        }
+    }
+};
+
+class IkLianwu: public TriggerSkill {
+public:
+    IkLianwu(): TriggerSkill("iklianwu") {
+        events << EventPhaseStart;
+        view_as_skill = new IkLianwuViewAsSkill;
+    }
+
+    virtual bool triggerable(const ServerPlayer *player) const{
+        return TriggerSkill::triggerable(player)
+            && player->getPhase() == Player::Start;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        room->askForUseCard(player, "@@iklianwu0", "@iklianwu0", 0, Card::MethodDiscard);
+        return false;
+    }
+};
+
+class IkLianwuDistance: public DistanceSkill {
+public:
+    IkLianwuDistance(): DistanceSkill("#iklianwu-dist") {
+    }
+
+    virtual int getCorrect(const Player *from, const Player *) const{
+        if (from->hasFlag("iklianwu2"))
+            return -qMax(1, from->getLostHp());
+        else
+            return 0;
+    }
+};
+
+class IkLianwuTargetMod: public TargetModSkill {
+public:
+    IkLianwuTargetMod(): TargetModSkill("#iklianwu-tar") {
+    }
+
+    virtual int getResidueNum(const Player *from, const Card *) const{
+        if (from->hasFlag("iklianwu3"))
+            return qMax(1, from->getLostHp());
+        else
+            return 0;
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -1942,8 +2062,15 @@ IkaiKaPackage::IkaiKaPackage()
     luna032->addSkill(new IkJichang);
     luna032->addSkill(new IkManwu);
 
-    General *luna033 = new General(this, "luna033", "tsuki", 3);
+    General *luna033 = new General(this, "luna033", "tsuki");
     luna033->addSkill(new IkXianlv);
+
+    General *luna036 = new General(this, "luna036", "tsuki");
+    luna036->addSkill(new IkLianwu);
+    luna036->addSkill(new IkLianwuDistance);
+    luna036->addSkill(new IkLianwuTargetMod);
+    related_skills.insertMulti("iklianwu", "#iklianwu-dist");
+    related_skills.insertMulti("iklianwu", "#iklianwu-tar");
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
@@ -1958,6 +2085,8 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkQisiCard>();
     addMetaObject<IkManwuCard>();
     addMetaObject<IkXianlvCard>();
+    addMetaObject<IkLianwuCard>();
+    addMetaObject<IkLianwuDrawCard>();
 
     skills << new IkDianyanPut;
 }
