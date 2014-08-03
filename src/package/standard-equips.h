@@ -89,6 +89,13 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class MoonSpear: public Weapon {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE MoonSpear(Card::Suit suit = Heart, int number = 5);
+};
+
 class WoodenOx: public Treasure {
     Q_OBJECT
 

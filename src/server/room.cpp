@@ -1341,7 +1341,10 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
                 }
             }
 
+            if (!isHandcard)
+                player->setFlags("Global_MoonSpearDisabled");
             thread->trigger(CardResponded, this, player, data);
+            player->setFlags("-Global_MoonSpearDisabled");
             if (method == Card::MethodUse) {
                 if (getCardPlace(card->getEffectiveId()) == Player::PlaceTable) {
                     CardMoveReason reason(CardMoveReason::S_REASON_LETUSE, player->objectName(),
@@ -5297,8 +5300,11 @@ void Room::retrial(const Card *card, ServerPlayer *player, JudgeStruct *judge, c
     moveCardsAtomic(moves, true);
     judge->updateResult();
 
-    if (triggerResponded)
+    if (triggerResponded) {
+        player->setFlags("Global_MoonSpearDisabled");
         thread->trigger(CardResponded, this, player, data);
+        player->setFlags("-Global_MoonSpearDisabled");
+    }
 }
 
 bool Room::askForYiji(ServerPlayer *guojia, QList<int> &cards, const QString &skill_name,

@@ -544,10 +544,10 @@ class SpearEmotion: public TriggerSkill {
 public:
     SpearEmotion(): TriggerSkill("#spear-emotion") {
         events << PreCardUsed << CardResponded;
-        //global = true;
+        global = true;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         const Card *card = NULL;
         if (triggerEvent == PreCardUsed)
             card = data.value<CardUseStruct>().card;
@@ -555,7 +555,7 @@ public:
             card = data.value<CardResponseStruct>().m_card;
         if (card->isKindOf("Slash") && card->getSkillName() == "spear")
             room->setEmotion(player, "weapon/spear");
-        return false;
+        return QStringList();
     }
 };
 
@@ -1345,6 +1345,64 @@ void WoodenOxCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     }
 }
 
+class MoonSpearSkill: public WeaponSkill {
+public:
+    MoonSpearSkill(): WeaponSkill("moon_spear") {
+        events << CardUsed << CardResponded;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!WeaponSkill::triggerable(player) || player->getPhase() != Player::NotActive || player->hasFlag("Global_MoonSpearDisabled"))
+            return QStringList();
+
+        const Card *card = NULL;
+        if (triggerEvent == CardUsed) {
+            CardUseStruct card_use = data.value<CardUseStruct>();
+            card = card_use.card;
+        } else if (triggerEvent == CardResponded) {
+            card = data.value<CardResponseStruct>().m_card;
+        }
+
+        if (card == NULL || !card->isBlack()
+            || (card->getHandlingMethod() != Card::MethodUse && card->getHandlingMethod() != Card::MethodResponse))
+            return QStringList();
+        foreach (ServerPlayer *tmp, room->getOtherPlayers(player))
+            if (player->inMyAttackRange(tmp))
+                return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *tmp, room->getOtherPlayers(player)) {
+            if (player->inMyAttackRange(tmp))
+                targets << tmp;
+        }
+        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@moon_spear", true, true);
+        if (target) {
+            room->setEmotion(player, "weapon/moonspear");
+            player->tag["MoonSpearTarget"] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        ServerPlayer *target = player->tag["MoonSpearTarget"].value<ServerPlayer *>();
+        player->tag.remove("MoonSpearTarget");
+        if (!target) return false;
+        if (!room->askForCard(target, "jink", "@moon-spear-jink", QVariant(), Card::MethodResponse, player))
+            room->damage(DamageStruct(objectName(), player, target));
+        return false;
+    }
+};
+
+MoonSpear::MoonSpear(Suit suit, int number)
+    : Weapon(suit, number, 3)
+{
+    setObjectName("moon_spear");
+}
+
 class WoodenOxSkill: public OneCardViewAsSkill {
 public:
     WoodenOxSkill(): OneCardViewAsSkill("wooden_ox") {
@@ -1580,7 +1638,7 @@ StandardExCardPackage::StandardExCardPackage()
           << new RenwangShield(Card::Club, 2)
           //<< new LureTiger(Card::Diamond, 2)
           //<< new KnownBoth(Card::Spade, 5)
-          //<< new MoonSpear(Card::Heart, 5)
+          << new MoonSpear()
           //<< new Breastplate(Card::Club, 5)
           << new WoodenOx()
           << new Slash(Card::Spade, 7)
@@ -1596,7 +1654,8 @@ StandardExCardPackage::StandardExCardPackage()
           //<< new KnownBoth(Card::Club, 12)
           << new Nullification(Card::Diamond, 12);
 
-    skills << new RenwangShieldSkill << new IceSwordSkill << new WoodenOxSkill << new WoodenOxTriggerSkill;
+    skills << new RenwangShieldSkill << new IceSwordSkill << new MoonSpearSkill
+           << new WoodenOxSkill << new WoodenOxTriggerSkill;
 
     foreach (Card *card, cards)
         card->setParent(this);
