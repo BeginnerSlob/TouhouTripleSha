@@ -1119,6 +1119,7 @@ void ThShushuCard::onUse(Room *room, const CardUseStruct &card_use) const {
     LogMessage log;
     log.type = "$ThShushu";
     log.from = card_use.from;
+    log.arg = "thshushu";
     log.card_str = IntList2StringList(subcards).join("+");
     room->sendLog(log);
 
@@ -1207,11 +1208,10 @@ public:
         if (card) {
             CardUseStruct use = data.value<CardUseStruct>();
             room->obtainCard(player, use.card);
-            Card *new_card = Sanguosha->cloneCard(use.card->objectName());
+            Card *new_card = Sanguosha->cloneCard(use.card->getClassName());
             new_card->addSubcards(card->getSubcards());
             new_card->setSkillName(objectName());
-            if (use.card->isVirtualCard())
-                delete use.card;
+            new_card->deleteLater();
             use.card = new_card;
             data = QVariant::fromValue(use);
         }

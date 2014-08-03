@@ -25,9 +25,6 @@
     <Filter Include="core">
       <UniqueIdentifier>{e7089e6a-3089-4d67-a347-02cd2f214e05}</UniqueIdentifier>
     </Filter>
-    <Filter Include="dialog">
-      <UniqueIdentifier>{be9e2452-57ca-46f7-b067-be44fd16c604}</UniqueIdentifier>
-    </Filter>
     <Filter Include="package">
       <UniqueIdentifier>{12921f3f-26ad-402c-a6a2-9865e25d3ec8}</UniqueIdentifier>
     </Filter>
@@ -60,6 +57,9 @@
       <UniqueIdentifier>{fc94a692-11ec-41c8-b400-7d01f3ddd26b}</UniqueIdentifier>
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="dialog">
+      <UniqueIdentifier>{be9e2452-57ca-46f7-b067-be44fd16c604}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
