@@ -9,8 +9,6 @@
 #include <QFontDialog>
 #include <QColorDialog>
 
-QString ConfigDialog::m_defaultMusicPath = "audio/system/background.ogg";
-
 ConfigDialog::ConfigDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::ConfigDialog)
 {
@@ -21,7 +19,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
     if (!bg_path.startsWith(":"))
         ui->bgPathLineEdit->setText(bg_path);
 
-    ui->bgMusicPathLineEdit->setText(Config.value("BackgroundMusic", m_defaultMusicPath).toString());
+    ui->bgMusicPathLineEdit->setText(Config.value("BackgroundMusic", Config.m_defaultMusicPath).toString());
 
     ui->enableEffectCheckBox->setChecked(Config.EnableEffects);
 
@@ -131,7 +129,7 @@ void ConfigDialog::saveConfig() {
     Config.setValue("EnableBgMusic", enabled);
 
     QString newMusicPath = ui->bgMusicPathLineEdit->text();
-    QString currentMusicPath = Config.value("BackgroundMusic", m_defaultMusicPath).toString();
+    QString currentMusicPath = Config.value("BackgroundMusic", Config.m_defaultMusicPath).toString();
     if (newMusicPath != currentMusicPath) {
         Config.setValue("BackgroundMusic", newMusicPath);
         Audio::resetCustomBackgroundMusicFileName();
@@ -190,7 +188,7 @@ void ConfigDialog::on_browseBgMusicButton_clicked() {
 }
 
 void ConfigDialog::on_resetBgMusicButton_clicked() {
-    ui->bgMusicPathLineEdit->setText(m_defaultMusicPath);
+    ui->bgMusicPathLineEdit->setText(Config.m_defaultMusicPath);
 }
 
 void ConfigDialog::on_changeAppFontButton_clicked() {

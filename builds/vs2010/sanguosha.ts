@@ -623,22 +623,22 @@
         <translation>双击牌或头像使用牌</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="76"/>
+        <location filename="../../src/dialog/configdialog.cpp" line="74"/>
         <source>Select a background image</source>
         <translation>请选择一张背景图片</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="78"/>
+        <location filename="../../src/dialog/configdialog.cpp" line="76"/>
         <source>Images (*.png *.bmp *.jpg)</source>
         <translation>图片 (*.png *.bmp *.jpg)</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="174"/>
+        <location filename="../../src/dialog/configdialog.cpp" line="172"/>
         <source>Select a background music</source>
         <translation>请选择背景音乐文件</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="176"/>
+        <location filename="../../src/dialog/configdialog.cpp" line="174"/>
         <source>Audio files (*.wav *.mp3 *.ogg)</source>
         <translation>音频 (*.wav *.mp3 *.ogg)</translation>
     </message>
@@ -3824,22 +3824,22 @@ P = 你自己, R = 你所在的房间</translation>
 <context>
     <name>Settings</name>
     <message>
-        <location filename="../../src/core/settings.cpp" line="48"/>
+        <location filename="../../src/core/settings.cpp" line="50"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../../src/core/settings.cpp" line="48"/>
+        <location filename="../../src/core/settings.cpp" line="50"/>
         <source>Font file %1 could not be loaded!</source>
         <translation>不能载入字体文件 %1 !</translation>
     </message>
     <message>
-        <location filename="../../src/core/settings.cpp" line="113"/>
+        <location filename="../../src/core/settings.cpp" line="115"/>
         <source>Sanguosha-fans</source>
         <translation>三国杀fans</translation>
     </message>
     <message>
-        <location filename="../../src/core/settings.cpp" line="114"/>
+        <location filename="../../src/core/settings.cpp" line="116"/>
         <source>%1&apos;s server</source>
         <translation>%1的服务器</translation>
     </message>
