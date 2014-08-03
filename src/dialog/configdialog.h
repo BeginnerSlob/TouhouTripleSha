@@ -18,8 +18,6 @@ private:
     Ui::ConfigDialog *ui;
     void showFont(QLineEdit *lineedit, const QFont &font);
 
-    static QString m_defaultMusicPath;
-
 private slots:
     void on_setTextEditColorButton_clicked();
     void on_setTextEditFontButton_clicked();
