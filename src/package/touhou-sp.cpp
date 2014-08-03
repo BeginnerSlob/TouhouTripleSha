@@ -679,11 +679,11 @@ public:
 class ThHuanlong: public TriggerSkill {
 public:
     ThHuanlong(): TriggerSkill("thhuanlong") {
-        events << EventPhaseStart;
+        events << EventPhaseStart << EventPhaseChanging;
         view_as_skill = new ThHuanlongViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (triggerEvent == EventPhaseStart && TriggerSkill::triggerable(player) && player->getPhase() == Player::Play)
             return QStringList(objectName());
         if (triggerEvent == EventPhaseChanging) {
