@@ -1576,26 +1576,27 @@ StandardExCardPackage::StandardExCardPackage()
 {
     QList<Card *> cards;
     cards << new IceSword(Card::Spade, 2)
+          //<< new BurningCamps(Card::Heart, 2)
           << new RenwangShield(Card::Club, 2)
+          //<< new LureTiger(Card::Diamond, 2)
+          //<< new KnownBoth(Card::Spade, 5)
+          //<< new MoonSpear(Card::Heart, 5)
+          //<< new Breastplate(Card::Club, 5)
+          << new WoodenOx()
+          << new Slash(Card::Spade, 7)
+          << new Jink(Card::Heart, 7)
+          //<< new LureTiger(Card::Club, 7)
+          << new Slash(Card::Diamond, 7)
+          << new Slash(Card::Spade, 9)
+          //<< new LureTiger(Card::Heart, 9)
+          << new Drowning()
+          << new Jink(Card::Diamond, 9)
+          //<< new BurningCamps(Card::Spade, 12)
           << new Lightning(Card::Heart, 12)
+          //<< new KnownBoth(Card::Club, 12)
           << new Nullification(Card::Diamond, 12);
 
-    skills << new RenwangShieldSkill << new IceSwordSkill;
-
-    foreach (Card *card, cards)
-        card->setParent(this);
-}
-
-LimitationBrokenPackage::LimitationBrokenPackage()
-    : Package("limitation_broken", Package::CardPack)
-{
-    QList<Card *> cards;
-    cards << new Jink(Card::Heart, 5)
-          << new WoodenOx()
-          << new Slash(Card::Spade, 9)
-          << new Drowning();
-
-    skills << new WoodenOxSkill << new WoodenOxTriggerSkill;
+    skills << new RenwangShieldSkill << new IceSwordSkill << new WoodenOxSkill << new WoodenOxTriggerSkill;
 
     foreach (Card *card, cards)
         card->setParent(this);
@@ -1605,5 +1606,4 @@ LimitationBrokenPackage::LimitationBrokenPackage()
 
 ADD_PACKAGE(StandardCard)
 ADD_PACKAGE(StandardExCard)
-ADD_PACKAGE(LimitationBroken)
 
