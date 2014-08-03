@@ -1107,7 +1107,7 @@ public:
 class ThSibao: public OneCardViewAsSkill {
 public:
     ThSibao(): OneCardViewAsSkill("thsibao") {
-        filter_pattern = "Analeptic";
+        filter_pattern = "EquipCard";
         response_pattern = "peach+analeptic";
         response_or_use = true;
     }
