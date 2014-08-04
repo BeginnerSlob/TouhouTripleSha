@@ -5,6 +5,7 @@ return {
 
 	["#tsuki001"]="永远的赤色幼月",
 	["tsuki001"]="蕾米莉娅•斯卡雷特",--月 - 空 - 4血
+	["&tsuki001"]="蕾米莉娅",
 	["designer:tsuki001"]="幻桜落 | Codeby:Slob",
 	["illustrator:tsuki001"]="正体不明",
 	["cv:tsuki001"]="暂无",
@@ -20,6 +21,7 @@ return {
 	
 	["#tsuki002"]="恶魔之妹",
 	["tsuki002"]="芙兰朵露•斯卡雷特",--月 - 空 - 4血
+	["&tsuki002"]="芙兰朵露",
 	["designer:tsuki002"]="幻桜落 | Codeby:Slob",
 	["illustrator:tsuki002"]="正体不明",
 	["cv:tsuki002"]="暂无",
@@ -33,6 +35,7 @@ return {
 	
 	["#tsuki003"]="晴岚的赤瞳",
 	["tsuki003"]="铃仙•优昙华院•稻叶",--月 - 空 - 4血
+	["&tsuki003"]="铃仙",
 	["designer:tsuki003"]="幻桜落 | Codeby:Slob",
 	["illustrator:tsuki003"]="正体不明",
 	["cv:tsuki003"]="暂无",
@@ -43,6 +46,7 @@ return {
 	
 	["#tsuki004"]="幸运的白兔",
 	["tsuki004"]="因幡帝",--月 - 幻 - 3血
+	["&tsuki004"]="帝",
 	["designer:tsuki004"]="幻桜落 | Codeby:Slob",
 	["illustrator:tsuki004"]="すばち",
 	["cv:tsuki004"]="蓦言",
@@ -62,6 +66,7 @@ return {
 	
 	["#tsuki005"]="知识与历史的半兽",
 	["tsuki005"]="上白泽慧音",--月 - 空 - 3血
+	["&tsuki005"]="上白泽",
 	["designer:tsuki005"]="幻桜落 | Codeby:Slob",
 	["illustrator:tsuki005"]="正体不明",
 	["cv:tsuki005"]="暂无",
@@ -73,6 +78,7 @@ return {
 	
 	["#tsuki006"]="不死之烟",
 	["tsuki006"]="藤原妹红",--月 - 空 - 3血
+	["&tsuki006"]="藤原",
 	["designer:tsuki006"]="幻桜落 | Codeby:Slob",
 	["illustrator:tsuki006"]="正体不明",
 	["cv:tsuki006"]="暂无",
@@ -102,6 +108,7 @@ return {
 	
 	["#tsuki008"]="完美潇洒的从者",
 	["tsuki008"]="十六夜咲夜",--月 - 空 - 3血
+	["&tsuki008"]="十六夜",
 	["designer:tsuki008"]="scorpio | Codeby:Slob",
 	["illustrator:tsuki008"]="雨神",
 	["cv:tsuki008"]="向晚",
@@ -122,6 +129,7 @@ return {
 	
 	["#tsuki009"]="宙古的大贤者",
 	["tsuki009"]="八意永琳",--月 - 空 - 3血
+	["&tsuki009"]="八意",
 	["designer:tsuki009"]="狐耳魔师 | Codeby:Slob",
 	["illustrator:tsuki009"]="結之",
 	["cv:tsuki009"]="暂无",
@@ -142,6 +150,7 @@ return {
 	
 	["#tsuki011"]="惑心的夜雀",
 	["tsuki011"]="米斯蒂娅•萝蕾莱",--月 - 空 - 3血
+	["&tsuki011"]="米斯蒂娅",
 	["designer:tsuki011"]="殇の腥 | Codeby:Slob",
 	["illustrator:tsuki011"]="水佾",
 	["cv:tsuki011"]="暂无",
@@ -152,6 +161,7 @@ return {
 	
 	["#tsuki012"]="耀目的日光",
 	["tsuki012"]="桑妮•米尔克",--月 - 空 - 4血
+	["&tsuki012"]="桑妮",
 	["designer:tsuki012"]="幻桜落 | Codeby:Slob",
 	["illustrator:tsuki012"]="正体不明",
 	["cv:tsuki012"]="暂无",
@@ -162,6 +172,7 @@ return {
 	
 	["#tsuki013"]="静谧的月光",
 	["tsuki013"]="露娜•琪尔德",--月 - 空 - 3血
+	["&tsuki013"]="露娜",
 	["designer:tsuki013"]="幻桜落 | Codeby:Slob",
 	["illustrator:tsuki013"]="正体不明",
 	["cv:tsuki013"]="暂无",
@@ -174,6 +185,7 @@ return {
 	
 	["#tsuki014"]="灿烂的星光",
 	["tsuki014"]="斯塔•莎菲雅",--月 - 空 - 3血
+	["&tsuki014"]="斯塔",
 	["designer:tsuki014"]="jachsu&幻桜落 | Codeby:Slob",
 	["illustrator:tsuki014"]="kinakomoti",
 	["cv:tsuki014"]="暂无",
@@ -189,6 +201,7 @@ return {
 	
 	["#tsuki015"]="不动的大图书馆",
 	["tsuki015"]="帕秋莉•诺蕾姬",--月 - 幻 - 3血
+	["&tsuki015"]="帕秋莉",
 	["designer:tsuki015"]="幻桜落 | Codeby:Slob",
 	["illustrator:tsuki015"]="正体不明",
 	["cv:tsuki015"]="暂无",
@@ -201,6 +214,7 @@ return {
 	
 	["#tsuki016"]="神灵依凭的月姬",
 	["tsuki016"]="绵月依姬",--月 - 空 - 4血
+	["&tsuki016"]="依姬",
 	["designer:tsuki016"]="幻桜落 | Codeby:Slob",
 	["illustrator:tsuki016"]="正体不明",
 	["cv:tsuki016"]="暂无",
@@ -212,6 +226,7 @@ return {
 	
 	["#tsuki017"]="海与山的境界",
 	["tsuki017"]="绵月丰姬",--月 - 空 - 4血
+	["&tsuki017"]="丰姬",
 	["designer:tsuki017"]="幻桜落 | Codeby:Slob",
 	["illustrator:tsuki017"]="正体不明",
 	["cv:tsuki017"]="暂无",
@@ -224,6 +239,7 @@ return {
 	
 	["#tsuki018"]="永远与须臾的罪人",
 	["tsuki018"]="蓬莱山辉夜",--月 - 空 - 3血
+	["&tsuki018"]="蓬莱山",
 	["designer:tsuki018"]="幻桜落 | Codeby:Slob",
 	["illustrator:tsuki018"]="Emiaエミア",
 	["cv:tsuki018"]="暂无",
