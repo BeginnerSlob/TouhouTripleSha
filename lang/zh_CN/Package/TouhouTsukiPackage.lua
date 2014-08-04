@@ -46,7 +46,7 @@ return {
 	
 	["#tsuki004"]="幸运的白兔",
 	["tsuki004"]="因幡帝",--月 - 幻 - 3血
-	["&tsuki004"]="帝",
+	["&tsuki004"]="因幡",
 	["designer:tsuki004"]="幻桜落 | Codeby:Slob",
 	["illustrator:tsuki004"]="すばち",
 	["cv:tsuki004"]="蓦言",
