@@ -5,6 +5,7 @@ return {
 	
 	["#bangai001"] = "大空之弦",
 	["bangai001"] = "宇佐见莲子",--风 - 空 - 4血
+	["&bangai001"] = "宇佐见",
 	["designer:bangai001"] = "幻桜落 | Codeby:Slob",
 	["illustrator:bangai001"] = "安威拓郎",
 	["cv:bangai001"] = "暂无",
@@ -51,6 +52,7 @@ return {
 	
 	["#bangai005"] = "朝霭的幻世",
 	["bangai005"] = "玛艾露贝莉•赫恩",--风 - 空 - 3血
+	["&bangai005"] = "玛艾露贝莉",
 	["designer:bangai005"] = "幻桜落 | Codeby:Slob",
 	["illustrator:bangai005"] = "正体不明",
 	["cv:bangai005"] = "暂无",
@@ -76,6 +78,7 @@ return {
 	
 	["#bangai007"] = "辟邪的圣兽",
 	["bangai007"] = "冴月麟",--雪 - 空 - 4血
+	["&bangai007"] = "冴月",
 	["designer:bangai007"] = "幻桜落 | Codeby:Slob",
 	["illustrator:bangai007"] = "正体不明",
 	["cv:bangai007"] = "暂无",
@@ -101,6 +104,7 @@ return {
 	
 	["#bangai009"] = "至高的龙神",
 	["bangai009"] = "濑织津姬",--风 - 空 - 4血
+	["&bangai009"] = "濑织",
 	["designer:bangai009"] = "幻桜落 | Codeby:Slob",
 	["illustrator:bangai009"] = "正体不明",
 	["cv:bangai009"] = "暂无",
@@ -111,6 +115,7 @@ return {
 	
 	["#bangai010"] = "禁书的评者",
 	["bangai010"] = "本居小铃",--花 - 幻 - 3血
+	["&bangai010"] = "本居",
 	["designer:bangai010"] = "幻桜落 | Codeby:Slob",
 	["illustrator:bangai010"] = "正体不明",
 	["cv:bangai010"] = "暂无",
