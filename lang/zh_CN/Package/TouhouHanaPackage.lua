@@ -135,7 +135,6 @@ return {
 	
 	["#hana009"]="地狱的裁判长",
 	["hana009"]="四季映姬",--花 - 空 - 4血
-	["&hana009"]="四季",
 	["designer:hana009"]="幻桜落 | Codeby:Slob",
 	["illustrator:hana009"]="正体不明",
 	["cv:hana009"]="暂无",
