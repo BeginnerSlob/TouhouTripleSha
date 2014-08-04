@@ -90,6 +90,7 @@ ChooseGeneralDialog::ChooseGeneralDialog(const QStringList &general_names, QWidg
         } else {
             button->setIcon(QIcon(G_ROOM_SKIN.getGeneralPixmap(general->objectName(), icon_type)));
             button->setIconSize(icon_size);
+            button->setMaximumWidth(icon_size.width());
         }
         button->setToolTip(general->getSkillDescription(true));
         buttons << button;

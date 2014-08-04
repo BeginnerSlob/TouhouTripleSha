@@ -72,7 +72,7 @@ QWidget *GeneralSearch::createInfoTab() {
     layout->addLayout(maxhp_hlay);
 
     QGroupBox *gender_group = new QGroupBox(tr("Gender"));
-    gender_group->setToolTip(tr("Select genders. Every gender meets the condition if none is selected."));
+    gender_group->setToolTip(tr("Select genders. Every gender meets the condition if none is selected"));
     gender_buttons = new QButtonGroup;
     gender_buttons->setExclusive(false);
 
