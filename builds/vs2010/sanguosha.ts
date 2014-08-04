@@ -158,12 +158,12 @@
     <message>
         <location filename="../../src/dialog/cardoverview.ui" line="127"/>
         <source>Play (male)</source>
-        <translation>男性配音</translation>
+        <translation>空属性配音</translation>
     </message>
     <message>
         <location filename="../../src/dialog/cardoverview.ui" line="140"/>
         <source>Play (female)</source>
-        <translation>女性配音</translation>
+        <translation>幻属性配音</translation>
     </message>
     <message>
         <location filename="../../src/dialog/cardoverview.cpp" line="110"/>
@@ -189,17 +189,17 @@
         <translation>选择武将</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="184"/>
+        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="185"/>
         <source>Your role is %1</source>
         <translation>你的身份是 %1</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="185"/>
+        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="186"/>
         <source>The lord has chosen %1. Your seat is %2. %3</source>
         <translation>主公选择了 %1，你处于 %2号位，%3</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="211"/>
+        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="212"/>
         <source>Free choose ...</source>
         <translation>自由选将 ...</translation>
     </message>
@@ -1348,17 +1348,17 @@
 <context>
     <name>FreeChooseDialog</name>
     <message>
-        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="248"/>
+        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="249"/>
         <source>Free choose generals</source>
         <translation>自由选择武将</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="277"/>
+        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="278"/>
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="280"/>
+        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="281"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -1600,27 +1600,22 @@
     <message>
         <location filename="../../src/dialog/generaloverview.cpp" line="74"/>
         <source>Gender</source>
-        <translation>性别</translation>
-    </message>
-    <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="75"/>
-        <source>Select genders. Every gender meets the condition if none is selected.</source>
-        <translation>选择武将性别，若未选择任何性别则所有性别均符合条件</translation>
+        <translation>特殊属性</translation>
     </message>
     <message>
         <location filename="../../src/dialog/generaloverview.cpp" line="81"/>
         <source>Male</source>
-        <translation>男性</translation>
+        <translation>空属性</translation>
     </message>
     <message>
         <location filename="../../src/dialog/generaloverview.cpp" line="86"/>
         <source>Female</source>
-        <translation>女性</translation>
+        <translation>幻属性</translation>
     </message>
     <message>
         <location filename="../../src/dialog/generaloverview.cpp" line="91"/>
         <source>NoGender</source>
-        <translation>无性别</translation>
+        <translation>特属性</translation>
     </message>
     <message>
         <location filename="../../src/dialog/generaloverview.cpp" line="109"/>
@@ -1637,6 +1632,11 @@
         <location filename="../../src/dialog/generaloverview.cpp" line="59"/>
         <source>Set lowerlimit and upperlimit of max HP. 0 ~ 0 meets all conditions.</source>
         <translation>设置武将体力上限范围，若最小值与最大值均为0则所有武将符合条件（若最大值小于最小值，则按最小值计算）</translation>
+    </message>
+    <message>
+        <location filename="../../src/dialog/generaloverview.cpp" line="75"/>
+        <source>Select genders. Every gender meets the condition if none is selected</source>
+        <translation>选择武将特殊属性，若未选择任何属性则所有属性均符合条件</translation>
     </message>
     <message>
         <location filename="../../src/dialog/generaloverview.cpp" line="136"/>
