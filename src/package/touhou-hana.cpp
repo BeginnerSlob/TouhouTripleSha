@@ -1432,7 +1432,7 @@ public:
     }
 
     virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const{
-        if (!to->getPile("thzheyinpile").isEmpty()
+        if (to->hasSkill("thzheyin") && !to->getPile("thzheyinpile").isEmpty()
             && card->getSuit() == Sanguosha->getCard(to->getPile("thzheyinpile").first())->getSuit()) {
             return true;
         }
