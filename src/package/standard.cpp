@@ -123,23 +123,29 @@ QString GlobalEffect::getSubtype() const{
 
 void GlobalEffect::onUse(Room *room, const CardUseStruct &card_use) const{
     ServerPlayer *source = card_use.from;
-    QList<ServerPlayer *> targets, all_players = card_use.to.isEmpty() ? room->getAllPlayers() : card_use.to;
-    foreach (ServerPlayer *player, all_players) {
-        const ProhibitSkill *skill = room->isProhibited(source, player, this);
-        if (skill) {
-            if (skill->isVisible()) {
-                LogMessage log;
-                log.type = "#SkillAvoid";
-                log.from = player;
-                log.arg = skill->objectName();
-                log.arg2 = objectName();
-                room->sendLog(log);
+    QList<ServerPlayer *> targets;
+    if (card_use.to.isEmpty()) {
+        QList<ServerPlayer *> all_players = room->getAllPlayers();
+        foreach (ServerPlayer *player, all_players) {
+            const Skill *skill = room->isProhibited(source, player, this);
+            if (skill) {
+                if (!skill->isVisible())
+                    skill = Sanguosha->getMainSkill(skill->objectName());
+                if (skill->isVisible()) {
+                    LogMessage log;
+                    log.type = "#SkillAvoid";
+                    log.from = player;
+                    log.arg = skill->objectName();
+                    log.arg2 = objectName();
+                    room->sendLog(log);
 
-                room->broadcastSkillInvoke(skill->objectName());
-            }
-        } else
-            targets << player;
-    }
+                    room->broadcastSkillInvoke(skill->objectName());
+                }
+            } else
+                targets << player;
+        }
+    } else
+        targets = card_use.to;
 
     CardUseStruct use = card_use;
     use.to = targets;
@@ -181,23 +187,29 @@ bool AOE::isAvailable(const Player *player) const{
 
 void AOE::onUse(Room *room, const CardUseStruct &card_use) const{
     ServerPlayer *source = card_use.from;
-    QList<ServerPlayer *> targets, other_players = card_use.to.isEmpty() ? room->getOtherPlayers(source) : card_use.to;
-    foreach (ServerPlayer *player, other_players) {
-        const ProhibitSkill *skill = room->isProhibited(source, player, this);
-        if (skill) {
-            if (skill->isVisible()) {
-                LogMessage log;
-                log.type = "#SkillAvoid";
-                log.from = player;
-                log.arg = skill->objectName();
-                log.arg2 = objectName();
-                room->sendLog(log);
+    QList<ServerPlayer *> targets;
+    if (card_use.to.isEmpty()) {
+        QList<ServerPlayer *> other_players = room->getOtherPlayers(source);
+        foreach (ServerPlayer *player, other_players) {
+            const Skill *skill = room->isProhibited(source, player, this);
+            if (skill) {
+                if (!skill->isVisible())
+                    skill = Sanguosha->getMainSkill(skill->objectName());
+                if (skill->isVisible()) {
+                    LogMessage log;
+                    log.type = "#SkillAvoid";
+                    log.from = player;
+                    log.arg = skill->objectName();
+                    log.arg2 = objectName();
+                    room->sendLog(log);
 
-                room->broadcastSkillInvoke(skill->objectName());
-            }
-        } else
-            targets << player;
-    }
+                    room->broadcastSkillInvoke(skill->objectName());
+                }
+            } else
+                targets << player;
+        }
+    } else
+        targets = card_use.to;
 
     CardUseStruct use = card_use;
     use.to = targets;
