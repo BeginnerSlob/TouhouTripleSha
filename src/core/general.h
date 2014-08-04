@@ -54,6 +54,8 @@ public:
     QString getPackage() const;
     QString getSkillDescription(bool include_name = false) const;
 
+    QString getTranslatedName() const;
+
     inline QSet<QString> getExtraSkillSet() const{ return extra_set; }
 
 public slots:

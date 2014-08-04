@@ -206,12 +206,6 @@ void PlayerCardContainer::updateAvatar() {
                          _getPixmap(QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM, gender), _getAvatarParent());
             _paintPixmap(_m_avatarNameItem, _m_layout->m_avatarNameArea,
                          _getPixmap(QSanRoomSkin::S_SKIN_KEY_AVATARNAME, general->objectName()), _getAvatarParent());
-            /*QString name = Sanguosha->translate("&" + general->objectName());
-            if (name.startsWith("&"))
-                name = Sanguosha->translate(general->objectName());
-            _m_layout->m_avatarNameFont.paintText(_m_avatarNameItem,
-                                                  _m_layout->m_avatarNameArea,
-                                                  Qt::AlignLeft | Qt::AlignJustify, name);*/
         } else {
             _paintPixmap(_m_handCardBg, _m_layout->m_handCardArea,
                          _getPixmap(QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM, QString(QSanRoomSkin::S_SKIN_KEY_DEFAULT_SECOND)),
@@ -253,9 +247,7 @@ void PlayerCardContainer::updateSmallAvatar() {
                      QString(QSanRoomSkin::S_SKIN_KEY_GENERAL_CIRCLE_IMAGE).arg(_m_layout->m_circleImageSize),
                      _getAvatarParent());
         _m_smallAvatarArea->setToolTip(m_player->getSkillDescription());
-        QString name = Sanguosha->translate("&" + general->objectName());
-        if (name.startsWith("&"))
-            name = Sanguosha->translate(general->objectName());
+        QString name = general->getTranslatedName();
         _m_layout->m_smallAvatarNameFont.paintText(_m_smallAvatarNameItem,
                                                    _m_layout->m_smallAvatarNameArea,
                                                    Qt::AlignLeft | Qt::AlignJustify, name);

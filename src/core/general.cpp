@@ -162,6 +162,14 @@ QString General::getSkillDescription(bool include_name) const{
     return description;
 }
 
+QString General::getTranslatedName() const{
+    QString name = "&" + objectName();
+    QString translated = Sanguosha->translate(name);
+    if (translated == name)
+        translated = Sanguosha->translate(objectName());
+    return translated;
+}
+
 void General::lastWord() const{
     QString filename = QString("audio/death/%1.ogg").arg(objectName());
     bool fileExists = QFile::exists(filename);
