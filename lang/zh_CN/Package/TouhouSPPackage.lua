@@ -5,6 +5,7 @@ return {
 	
 	["#sp001"] = "风月无边",
 	["sp001"] = "SP东风谷早苗",--风 - 空 - 4血
+	["&sp001"] = "SP东风谷",
 	["designer:sp001"] = "幻桜落 | Codeby:Slob",
 	["illustrator:sp001"] = "正体不明",
 	["cv:sp001"] = "暂无",
@@ -26,6 +27,7 @@ return {
 	
 	["#sp003"] = "酒吞的巫女",
 	["sp003"] = "SP伊吹萃香",--雪 - 空 - 3血
+	["&sp003"] = "SP伊吹",
 	["designer:sp003"] = "幻桜落 | Codeby:Slob",
 	["illustrator:sp003"] = "正体不明",
 	["cv:sp003"] = "暂无",
@@ -38,6 +40,7 @@ return {
 	
 	["#sp004"] = "日出国之贤兽",
 	["sp004"] = "SP上白泽慧音",--月 - 空 - 3血
+	["&sp004"] = "SP上白泽",
 	["designer:sp004"] = "幻桜落 | Codeby:Slob",
 	["illustrator:sp004"] = "正体不明",
 	["cv:sp004"] = "暂无",
@@ -49,6 +52,7 @@ return {
 	
 	["#sp005"]="濡衣的子猫",
 	["sp005"]="SP火焰猫燐",--风 - 空 - 3血
+	["&sp005"] = "SP火焰猫",
 	["designer:sp005"]="幻桜落 | Codeby:Slob",
 	["illustrator:sp005"]="正体不明",
 	["cv:sp005"]="暂无",
@@ -62,6 +66,7 @@ return {
 	
 	["#sp006"]="恋之白魔导士",
 	["sp006"]="SP雾雨魔理沙",--花 - 空 - 4血
+	["&sp006"] = "SP雾雨",
 	["designer:sp006"]="幻桜落 | Codeby:Slob",
 	["illustrator:sp006"]="正体不明",
 	["cv:sp006"]="暂无",
@@ -74,6 +79,7 @@ return {
 	
 	["#sp007"]="七色莲华之蝶",
 	["sp007"]="SP博丽灵梦",--雪 - 空 - 3血
+	["&sp007"] = "SP博丽",
 	["designer:sp007"]="幻桜落 | Codeby:Slob",
 	["illustrator:sp007"]="正体不明",
 	["cv:sp007"]="暂无",
@@ -88,6 +94,7 @@ return {
 	
 	["#sp008"]="霓岚暗月殇",
 	["sp008"]="SP铃仙•优昙华院•稻叶",--月 - 空 - 4血
+	["&sp008"] = "SP铃仙",
 	["designer:sp008"]="幻桜落 | Codeby:Slob",
 	["illustrator:sp008"]="正体不明",
 	["cv:sp008"]="暂无",
@@ -100,6 +107,7 @@ return {
 	
 	["#sp009"]="赤蛙的祟塗姬",
 	["sp009"]="SP洩矢诹访子",--风 - 空 - 3血
+	["&sp009"] = "SP洩矢",
 	["designer:sp009"]="幻桜落 | Codeby:Slob",
 	["illustrator:sp009"]="正体不明",
 	["cv:sp009"]="暂无",
@@ -112,6 +120,7 @@ return {
 	
 	["#sp010"]="豪族的女仆",
 	["sp010"]="SP物部布都",--花 - 空 - 3血
+	["&sp010"] = "SP物部",
 	["designer:sp010"]="幻桜落 | Codeby:Slob",
 	["illustrator:sp010"]="正体不明",
 	["cv:sp010"]="暂无",
