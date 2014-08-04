@@ -5,6 +5,7 @@ return {
 
 	["#kami001"]="往昔的圣迹",
 	["kami001"]="神东风谷早苗",--神 - 空 - 3血
+	["&kami001"]="神东风谷",
 	["designer:kami001"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami001"]="正体不明",
 	["cv:kami001"]="暂无",
@@ -17,6 +18,7 @@ return {
 	
 	["#kami002"]="天道是非",
 	["kami002"]="神比那名居天子",--神 - 空 - 4血
+	["&kami002"]="神比那名居",
 	["designer:kami002"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami002"]="正体不明",
 	["cv:kami002"]="暂无",
@@ -41,6 +43,7 @@ return {
 	
 	["#kami003"]="混沌的巫女",
 	["kami003"]="神博丽灵梦",--神 - 空 - 8血
+	["&kami003"]="神博丽",
 	["designer:kami003"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami003"]="正体不明",
 	["cv:kami003"]="暂无",
@@ -52,6 +55,7 @@ return {
 	
 	["#kami004"]="子夜的女皇",
 	["kami004"]="神蕾米莉娅•斯卡雷特",--神 - 空 - 4血
+	["&kami004"]="神蕾米莉娅",
 	["designer:kami004"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami004"]="正体不明",
 	["cv:kami004"]="暂无",
@@ -87,6 +91,7 @@ return {
 
 	["#kami007"]="华胥之梦",
 	["kami007"]="神西行寺幽幽子",--神 - 幻 - 2血
+	["&kami007"]="神西行寺",
 	["designer:kami007"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami007"]="正体不明",
 	["cv:kami007"]="暂无",
@@ -105,6 +110,7 @@ return {
 	
 	["#kami008"]="夫众生者悉皆杀",
 	["kami008"]="神芙兰朵露•斯卡雷特",--神 - 空 - 4血
+	["&kami008"]="神芙兰朵露",
 	["designer:kami008"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami008"]="正体不明",
 	["cv:kami008"]="暂无",
@@ -117,6 +123,7 @@ return {
 	
 	["#kami009"]="心华之殇",
 	["kami009"]="神古明地觉",--神 - 空 - 4血
+	["&kami009"]="神觉",
 	["designer:kami009"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami009"]="正体不明",
 	["cv:kami009"]="暂无",
@@ -147,6 +154,7 @@ return {
 	
 	["#kami011"]="创刻的幻界",
 	["kami011"]="神八云紫",--神 - 空 - 4血
+	["&kami011"]="神紫",
 	["designer:kami011"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami011"]="正体不明",
 	["cv:kami011"]="暂无",
@@ -159,6 +167,7 @@ return {
 	
 	["#kami012"]="竹取飞翔",
 	["kami012"]="神蓬莱山辉夜",--神 - 空 - 4血
+	["&kami012"]="神蓬莱山",
 	["designer:kami012"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami012"]="正体不明",
 	["cv:kami012"]="暂无",
@@ -168,6 +177,7 @@ return {
 
 	["#kami013"]="鸣蛙不输风雨",
 	["kami013"]="神洩矢诹访子",--神 - 幻 - 1血
+	["&kami013"]="神洩矢",
 	["designer:kami013"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami013"]="正体不明",
 	["cv:kami013"]="暂无",
@@ -187,6 +197,7 @@ return {
 	
 	["#kami014"]="诞妄的妖姬",
 	["kami014"]="神封兽鵺",--神 - 幻 - 3血
+	["&kami014"]="神封兽",
 	["designer:kami014"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami014"]="正体不明",
 	["cv:kami014"]="暂无",
@@ -213,6 +224,7 @@ return {
 	
 	["#kami016"]="最古妖王的宝库",
 	["kami016"]="神因幡帝",--神 - 幻 - 3血
+	["&kami016"]="神因幡",
 	["designer:kami016"]="幻桜落 | Codeby:Slob",
 	["illustrator:kami016"]="正体不明",
 	["cv:kami016"]="暂无",
