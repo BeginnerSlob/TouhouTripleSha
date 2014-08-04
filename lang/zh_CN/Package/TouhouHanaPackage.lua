@@ -5,6 +5,7 @@ return {
 
 	["#hana001"]="四时的花之主",
 	["hana001"]="风见幽香",--花 - 空 - 4血
+	["&hana001"]="风见",
 	["designer:hana001"]="幻桜落 | Codeby:Slob",
 	["illustrator:hana001"]="正体不明",
 	["cv:hana001"]="暂无",
@@ -20,6 +21,7 @@ return {
 	
 	["#hana002"]="普通的魔法使",
 	["hana002"]="雾雨魔理沙",--花 - 空 - 4血
+	["&hana002"]="雾雨",
 	["designer:hana002"]="幻桜落 | Codeby:Slob",
 	["illustrator:hana002"]="正体不明",
 	["cv:hana002"]="暂无",
@@ -37,6 +39,7 @@ return {
 	
 	["#hana003"]="三途川的引路人",
 	["hana003"]="小野塚小町",--花  - 幻 - 3血
+	["&hana003"]="小野塚",
 	["designer:hana003"]="幻桜落 | Codeby:Slob",
 	["illustrator:hana003"]="ideolo",
 	["cv:hana003"]="飞鸟",
@@ -60,6 +63,7 @@ return {
 	
 	["#hana004"]="小小甘蜜毒药",
 	["hana004"]="梅蒂欣•梅兰可莉",--花 - 空 - 3血
+	["&hana004"]="梅蒂欣",
 	["designer:hana004"]="幻桜落 | Codeby:Slob",
 	["illustrator:hana004"]="正体不明",
 	["cv:hana004"]="暂无",
@@ -74,6 +78,7 @@ return {
 	
 	["#hana005"]="暗海的绯之衣",
 	["hana005"]="永江衣玖",--花 - 空 - 4血
+	["&hana005"]="永江",
 	["designer:hana005"]="幻桜落 | Codeby:Slob",
 	["illustrator:hana005"]="正体不明",
 	["cv:hana005"]="暂无",
@@ -84,6 +89,7 @@ return {
 	
 	["#hana006"]="佐渡的狸妖",
 	["hana006"]="二岩猯藏",--花 - 空 - 4血
+	["&hana006"]="二岩",
 	["designer:hana006"]="昂翼天使 | Codeby:Slob",
 	["illustrator:hana006"]="八重樫 南",
 	["cv:hana006"]="暂无",
@@ -95,6 +101,7 @@ return {
 	
 	["#hana007"]="平安京的妖云",
 	["hana007"]="封兽鵺",--花 - 幻 - 3血
+	["&hana007"]="封兽",
 	["designer:hana007"]="星野梦美&幻桜落 | Codeby:Ellis",
 	["illustrator:hana007"]="伍長",
 	["cv:hana007"]="子覃",
@@ -113,6 +120,7 @@ return {
 	
 	["#hana008"]="独臂有角的仙人",
 	["hana008"]="茨木华扇",--花 - 空 - 3血
+	["&hana008"]="茨木",
 	["designer:hana008"]="jachsu | Codeby:Slob",
 	["illustrator:hana008"]="米白",
 	["cv:hana008"]="暂无",
@@ -127,6 +135,7 @@ return {
 	
 	["#hana009"]="地狱的裁判长",
 	["hana009"]="四季映姬",--花 - 空 - 4血
+	["&hana009"]="四季",
 	["designer:hana009"]="幻桜落 | Codeby:Slob",
 	["illustrator:hana009"]="正体不明",
 	["cv:hana009"]="暂无",
@@ -135,6 +144,7 @@ return {
 	
 	["#hana010"]="地上的彗星",
 	["hana010"]="莉格露•奈特巴格",--花 - 空 - 4血
+	["&hana010"]="莉格露",
 	["designer:hana010"]="幻桜落 | Codeby:Slob",
 	["illustrator:hana010"]="正体不明",
 	["cv:hana010"]="暂无",
@@ -148,6 +158,7 @@ return {
 	
 	["#hana011"]="春告的妖精",
 	["hana011"]="莉莉•白",--花 - 空 - 3血
+	["&hana011"]="莉莉",
 	["designer:hana011"]="妒天のPAD | Codeby:Slob",
 	["illustrator:hana011"]="sola7764",
 	["cv:hana011"]="暂无",
@@ -160,6 +171,7 @@ return {
 	
 	["#hana012"]="欢愉的遗忘之伞",
 	["hana012"]="多多良小伞",--花 - 空 - 4血
+	["&hana012"]="多多良",
 	["designer:hana012"]="幻桜落 | Codeby:Slob",
 	["illustrator:hana012"]="正体不明",
 	["cv:hana012"]="暂无",
@@ -175,6 +187,7 @@ return {
 	
 	["#hana013"]="忠实的死体",
 	["hana013"]="宫古芳香",--花 - 空 - 4血
+	["&hana013"]="宫古",
 	["designer:hana013"]="幻桜落 | Codeby:Slob",
 	["illustrator:hana013"]="KS",
 	["cv:hana013"]="暂无",
@@ -203,6 +216,7 @@ return {
 	
 	["#hana015"]="神明末裔的亡灵",
 	["hana015"]="苏我屠自古",--花 - 空 - 3血
+	["&hana015"]="苏我",
 	["designer:hana015"]="幻桜落 | Codeby:Slob",
 	["illustrator:hana015"]="正体不明",
 	["cv:hana015"]="暂无",
@@ -215,6 +229,7 @@ return {
 	
 	["#hana016"]="阴阳圣童女",
 	["hana016"]="物部布都",--花 - 空 - 3血
+	["&hana016"]="物部",
 	["designer:hana016"]="幻桜落 | Codeby:Slob",
 	["illustrator:hana016"]="ファルまろ",
 	["cv:hana016"]="暂无",
@@ -228,6 +243,7 @@ return {
 	
 	["#hana017"]="圣德道士",
 	["hana017"]="丰聪耳神子",--花 - 空 - 7血
+	["&hana017"]="丰聪耳",
 	["designer:hana017"]="幻桜落 | Codeby:Slob",
 	["illustrator:hana017"]="いちやん",
 	["cv:hana017"]="凉子",
@@ -249,6 +265,7 @@ return {
 	
 	["#hana018"]="非想非非想之女",
 	["hana018"]="比那名居天子",--花 - 空 - 4血
+	["&hana018"]="比那名居",
 	["designer:hana018"]="晓ャ绝对 | Codeby:Slob",
 	["illustrator:hana018"]="田中にゃん",
 	["cv:hana018"]="暂无",

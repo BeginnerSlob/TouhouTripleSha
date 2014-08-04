@@ -5,6 +5,7 @@ return {
 	
 	["#kaze001"]="信仰之风",
 	["kaze001"]="东风谷早苗",--风 - 空 - 3血
+	["&kaze001"]="东风谷",
 	["designer:kaze001"]="幻桜落 | Codeby:Slob",
 	["illustrator:kaze001"]="正体不明",
 	["cv:kaze001"]="暂无",
@@ -20,6 +21,7 @@ return {
 	
 	["#kaze002"]="幻想风靡",
 	["kaze002"]="射命丸文",--风 - 空 - 4血
+	["&kaze002"]="射命丸",
 	["designer:kaze002"]="幻桜落 | Codeby:Slob",
 	["illustrator:kaze002"]="水佾",
 	["cv:kaze002"]="飞鸟",
@@ -32,6 +34,7 @@ return {
 	
 	["#kaze003"]="天之八衢",
 	["kaze003"]="姬海棠羽立",--风 - 空 - 3血
+	["&kaze003"]="姬海棠",
 	["designer:kaze003"]="神·冥狐 | Codeby:Slob",
 	["illustrator:kaze003"]="nyanya",
 	["cv:kaze003"]="暂无",
@@ -43,6 +46,7 @@ return {
 	
 	["#kaze004"]="下位哨戒天狗",
 	["kaze004"]="犬走椛",--风 - 空 - 4血
+	["&kaze004"]="犬走",
 	["designer:kaze004"]="幻桜落 | Codeby:Slob",
 	["illustrator:kaze004"]="明星かがよ",
 	["cv:kaze004"]="凉子",
@@ -59,6 +63,7 @@ return {
 	
 	["#kaze005"]="运命之暗",
 	["kaze005"]="键山雏",--风 - 幻 - 3血
+	["&kaze005"]="键山",
 	["designer:kaze005"]="零度雨 | Codeby:Slob",
 	["illustrator:kaze005"]="DomotoLain",
 	["cv:kaze005"]="暂无",
@@ -74,6 +79,7 @@ return {
 	
 	["#kaze006"]="超妖怪弹头",
 	["kaze006"]="河城荷取",--风 - 空 - 4血
+	["&kaze006"]="河城",
 	["designer:kaze006"]="幻桜落 | Codeby:Slob",
 	["illustrator:kaze006"]="正体不明",
 	["cv:kaze006"]="暂无",
@@ -86,6 +92,7 @@ return {
 	
 	["#kaze007"]="大江山岚",
 	["kaze007"]="星熊勇仪",--风 - 空 - 4血
+	["&kaze007"]="星熊",
 	["designer:kaze007"]="幻桜落 | Codeby:Slob",
 	["illustrator:kaze007"]="けん",
 	["cv:kaze007"]="向晚",
@@ -98,6 +105,7 @@ return {
 	
 	["#kaze008"]="山与湖的化身",
 	["kaze008"]="八坂神奈子",--风 - 空 - 4血
+	["&kaze008"]="八坂",
 	["designer:kaze008"]="妒天のPAD | Codeby:Slob",
 	["illustrator:kaze008"]="Gekka",
 	["cv:kaze008"]="暂无",
@@ -110,6 +118,7 @@ return {
 	
 	["#kaze009"]="土著神的顶点",
 	["kaze009"]="洩矢诹访子",--风 - 幻 - 3血
+	["&kaze009"]="洩矢",
 	["designer:kaze009"]="幻桜落 | Codeby:Slob",
 	["illustrator:kaze009"]="An2A",
 	["cv:kaze009"]="暂无",
@@ -137,6 +146,7 @@ return {
 	
 	["#kaze011"]="暗之窟的明之网",
 	["kaze011"]="黑谷山女",--风 - 空 - 4血
+	["&kaze011"]="黑谷",
 	["designer:kaze011"]="幻桜落 | Codeby:Slob",
 	["illustrator:kaze011"]="ふーかでぃあ",
 	["cv:kaze011"]="暂无",
@@ -149,6 +159,7 @@ return {
 	
 	["#kaze012"]="绿眼的嫉妒",
 	["kaze012"]="水桥帕露西",--风 - 空 - 4血
+	["&kaze012"]="水桥",
 	["designer:kaze012"]="幻桜落 | Codeby:Slob",
 	["illustrator:kaze012"]="ラムディア",
 	["cv:kaze012"]="暂无",
@@ -163,6 +174,7 @@ return {
 	
 	["#kaze013"]="丰饶与收获的象征",
 	["kaze013"]="秋穰子",--风 - 空 - 3血
+	["&kaze013"]="穰子",
 	["designer:kaze013"]="幻桜落 | Codeby:Slob",
 	["illustrator:kaze013"]="正体不明",
 	["cv:kaze013"]="暂无",
@@ -176,6 +188,7 @@ return {
 	
 	["#kaze014"]="寂寥与终焉的象征",
 	["kaze014"]="秋静叶",--风 - 空 - 3血
+	["&kaze014"]="静叶",
 	["designer:kaze014"]="幻桜落 | Codeby:Slob",
 	["illustrator:kaze014"]="正体不明",
 	["cv:kaze014"]="暂无",
@@ -187,6 +200,7 @@ return {
 	
 	["#kaze015"]="华狱的轮祸",
 	["kaze015"]="火焰猫燐",--风 - 空 - 4血
+	["&kaze015"]="火焰猫",
 	["designer:kaze015"]="幻桜落 | Codeby:Ellis&Slob",
 	["illustrator:kaze015"]="七乃瀨",
 	["cv:kaze015"]="蓦言",
@@ -202,6 +216,7 @@ return {
 	
 	["#kaze016"]="热恼的神之火",
 	["kaze016"]="灵乌路空",--风 - 空 - 5血
+	["&kaze016"]="灵乌路",
 	["designer:kaze016"]="幻桜落 | Codeby:Slob",
 	["illustrator:kaze016"]="正体不明",
 	["cv:kaze016"]="暂无",
@@ -216,6 +231,7 @@ return {
 	
 	["#kaze017"]="紧闭的恋之扉",
 	["kaze017"]="古明地恋",--风 - 幻 - 3血
+	["&kaze017"]="恋",
 	["designer:kaze017"]="冬天吃雪糕 | Codeby:Slob",
 	["illustrator:kaze017"]="bon",
 	["cv:kaze017"]="暂无",
@@ -226,6 +242,7 @@ return {
 	
 	["#kaze018"]="第三只眼",
 	["kaze018"]="古明地觉",--风 - 空 - 3血
+	["&kaze018"]="觉",
 	["designer:kaze018"]="幻桜落 | Codeby:Slob",
 	["illustrator:kaze018"]="正体不明",
 	["cv:kaze018"]="暂无",
