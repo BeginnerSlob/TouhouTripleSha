@@ -1225,7 +1225,7 @@ void RoomScene::updateTargetsEnablity(const Card *card) {
                 isCollateral = (ikmice_card->getUserString() == "collateral");
             }
         }
-        bool prohibitFailure = card->isKindOf("ThChouceCard") || (isCollateral && selected_targets.length() == 1);
+        bool prohibitFailure = (card && card->isKindOf("ThChouceCard")) || (isCollateral && selected_targets.length() == 1);
         //=====================================
 
         bool enabled = (card == NULL) || ((prohibitFailure || !Sanguosha->isProhibited(Self, player, card, selected_targets)) && maxVotes > 0);
