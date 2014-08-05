@@ -1318,30 +1318,84 @@ public:
     }
 };
 
-WoodenOxCard::WoodenOxCard() {
-    target_fixed = true;
-    will_throw = false;
-    handling_method = Card::MethodNone;
-    m_skillName = "wooden_ox";
+KnownBoth::KnownBoth(Card::Suit suit, int number)
+    : SingleTargetTrick(suit, number)
+{
+    setObjectName("known_both");
+    can_recast = true;
 }
 
-void WoodenOxCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    source->addToPile("wooden_ox", subcards, false);
+bool KnownBoth::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (Self->isCardLimited(this, Card::MethodUse))
+        return false;
 
-    QList<ServerPlayer *> targets;
-    foreach (ServerPlayer *p, room->getOtherPlayers(source)) {
-        if (!p->getTreasure())
-            targets << p;
-    }
-    if (targets.isEmpty())
-        return;
-    ServerPlayer *target = room->askForPlayerChosen(source, targets, "wooden_ox", "@wooden_ox-move", true);
-    if (target) {
-        const Card *treasure = source->getTreasure();
-        if (treasure)
-            room->moveCardTo(treasure, source, target, Player::PlaceEquip,
-                             CardMoveReason(CardMoveReason::S_REASON_TRANSFER,
-                                            source->objectName(), "wooden_ox", QString()));
+    int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
+    if (targets.length() >= total_num || to_select == Self)
+        return false;
+
+    return !to_select->isKongcheng();
+}
+
+bool KnownBoth::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    if (Self->isCardLimited(this, Card::MethodUse))
+        return targets.length() == 0;
+
+    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
+        return targets.length() != 0;
+
+    int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
+    return targets.length() <= total_num;
+}
+
+void KnownBoth::onUse(Room *room, const CardUseStruct &card_use) const{
+    if (card_use.to.isEmpty()) {
+        CardMoveReason reason(CardMoveReason::S_REASON_RECAST, card_use.from->objectName());
+        reason.m_skillName = getSkillName();
+        room->moveCardTo(this, card_use.from, NULL, Player::DiscardPile, reason);
+        card_use.from->broadcastSkillInvoke("@recast");
+
+        LogMessage log;
+        log.type = "#Card_Recast";
+        log.from = card_use.from;
+        log.card_str = card_use.card->toString();
+        room->sendLog(log);
+
+        card_use.from->drawCards(1);
+    } else
+        SingleTargetTrick::onUse(room, card_use);
+}
+
+void KnownBoth::onEffect(const CardEffectStruct &effect) const {
+    Room *room = effect.to->getRoom();
+    QStringList choicelist;
+    if (!effect.to->isKongcheng())
+        choicelist.append("handcards");
+    if (!effect.to->isLord())
+        choicelist.append("role");
+    if (choicelist.isEmpty()) return;
+    QString choice = room->askForChoice(effect.from, objectName(), choicelist.join("+"), QVariant::fromValue(player));
+
+    LogMessage log;
+    log.type = "$IkLingtongView";
+    log.from = effect.from;
+    log.to << effect.to;
+    log.arg = "iklingtong:" + choice;
+    room->sendLog(log, room->getOtherPlayers(effect.from));
+
+    if (choice == "handcards") {
+        room->showAllCards(effect.to, effect.from);
+    } else if (choice == "role") {
+        Json::Value arg(Json::arrayValue);
+        arg[0] = QSanProtocol::Utils::toJsonString(player->objectName());
+        arg[1] = QSanProtocol::Utils::toJsonString(player->getRole());
+        room->doNotify(effect.from, QSanProtocol::S_COMMAND_SET_EMOTION, arg);
+
+        LogMessage log;
+        log.type = "$ViewRole";
+        log.from = effect.from;
+        log.to << player;
+        log.arg = player->getRole();
+        room->sendLog(log, effect.from);
     }
 }
 
@@ -1401,6 +1455,33 @@ MoonSpear::MoonSpear(Suit suit, int number)
     : Weapon(suit, number, 3)
 {
     setObjectName("moon_spear");
+}
+
+WoodenOxCard::WoodenOxCard() {
+    target_fixed = true;
+    will_throw = false;
+    handling_method = Card::MethodNone;
+    m_skillName = "wooden_ox";
+}
+
+void WoodenOxCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    source->addToPile("wooden_ox", subcards, false);
+
+    QList<ServerPlayer *> targets;
+    foreach (ServerPlayer *p, room->getOtherPlayers(source)) {
+        if (!p->getTreasure())
+            targets << p;
+    }
+    if (targets.isEmpty())
+        return;
+    ServerPlayer *target = room->askForPlayerChosen(source, targets, "wooden_ox", "@wooden_ox-move", true);
+    if (target) {
+        const Card *treasure = source->getTreasure();
+        if (treasure)
+            room->moveCardTo(treasure, source, target, Player::PlaceEquip,
+                             CardMoveReason(CardMoveReason::S_REASON_TRANSFER,
+                                            source->objectName(), "wooden_ox", QString()));
+    }
 }
 
 class WoodenOxSkill: public OneCardViewAsSkill {
@@ -1637,7 +1718,7 @@ StandardExCardPackage::StandardExCardPackage()
           //<< new BurningCamps(Card::Heart, 2)
           << new RenwangShield(Card::Club, 2)
           //<< new LureTiger(Card::Diamond, 2)
-          //<< new KnownBoth(Card::Spade, 5)
+          << new KnownBoth(Card::Spade, 5)
           << new MoonSpear()
           //<< new Breastplate(Card::Club, 5)
           << new WoodenOx()
@@ -1651,7 +1732,7 @@ StandardExCardPackage::StandardExCardPackage()
           << new Jink(Card::Diamond, 9)
           //<< new BurningCamps(Card::Spade, 12)
           << new Lightning(Card::Heart, 12)
-          //<< new KnownBoth(Card::Club, 12)
+          << new KnownBoth(Card::Club, 12)
           << new Nullification(Card::Diamond, 12);
 
     skills << new RenwangShieldSkill << new IceSwordSkill << new MoonSpearSkill
