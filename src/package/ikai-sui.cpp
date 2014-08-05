@@ -2628,7 +2628,7 @@ void IkLingtongCard::onEffect(const CardEffectStruct &effect) const{
     ServerPlayer *player = effect.to;
     room->showAllCards(effect.from, player);
     QStringList choicelist;
-    if (!effect.to->isKongcheng())
+    if (!player->isKongcheng())
         choicelist.append("handcards");
     if (!player->isLord())
         choicelist.append("role");
