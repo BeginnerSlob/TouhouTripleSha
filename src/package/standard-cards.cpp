@@ -1365,6 +1365,7 @@ void KnownBoth::onUse(Room *room, const CardUseStruct &card_use) const{
         SingleTargetTrick::onUse(room, card_use);
 }
 
+#include "jsonutils.h"
 void KnownBoth::onEffect(const CardEffectStruct &effect) const {
     Room *room = effect.to->getRoom();
     QStringList choicelist;
@@ -1373,7 +1374,7 @@ void KnownBoth::onEffect(const CardEffectStruct &effect) const {
     if (!effect.to->isLord())
         choicelist.append("role");
     if (choicelist.isEmpty()) return;
-    QString choice = room->askForChoice(effect.from, objectName(), choicelist.join("+"), QVariant::fromValue(player));
+    QString choice = room->askForChoice(effect.from, objectName(), choicelist.join("+"), QVariant::fromValue(effect.to));
 
     LogMessage log;
     log.type = "$IkLingtongView";
@@ -1386,15 +1387,15 @@ void KnownBoth::onEffect(const CardEffectStruct &effect) const {
         room->showAllCards(effect.to, effect.from);
     } else if (choice == "role") {
         Json::Value arg(Json::arrayValue);
-        arg[0] = QSanProtocol::Utils::toJsonString(player->objectName());
-        arg[1] = QSanProtocol::Utils::toJsonString(player->getRole());
+        arg[0] = QSanProtocol::Utils::toJsonString(effect.to->objectName());
+        arg[1] = QSanProtocol::Utils::toJsonString(effect.to->getRole());
         room->doNotify(effect.from, QSanProtocol::S_COMMAND_SET_EMOTION, arg);
 
         LogMessage log;
         log.type = "$ViewRole";
         log.from = effect.from;
-        log.to << player;
-        log.arg = player->getRole();
+        log.to << effect.to;
+        log.arg = effect.to->getRole();
         room->sendLog(log, effect.from);
     }
 }
