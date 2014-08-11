@@ -77,6 +77,7 @@ public:
     float EffectVolume;
 
     QString BackgroundImage;
+    int BubbleChatBoxKeepTime;
 
     // consts
     static const int S_SURRENDER_REQUEST_MIN_INTERVAL;

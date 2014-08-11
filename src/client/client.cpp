@@ -1630,7 +1630,9 @@ void Client::speak(const Json::Value &speak_data) {
 
     QByteArray data = QByteArray::fromBase64(base64.toAscii());
     QString text = QString::fromUtf8(data);
-    emit text_spoken(text);
+    static const QString prefix("<img width=14 height=14 src='image/system/chatface/");
+    static const QString suffix(".png'></img>");
+    text = text.replace("<#", prefix).replace("#>", suffix);
 
     if (who == ".") {
         QString line = tr("<font color='red'>System: %1</font>").arg(text);
@@ -1638,6 +1640,7 @@ void Client::speak(const Json::Value &speak_data) {
         return;
     }
 
+    emit player_speak(who, QString("<p style=\"margin:3px 2px;\">%1</p>").arg(text));
     const ClientPlayer *from = getPlayer(who);
 
     QString title;

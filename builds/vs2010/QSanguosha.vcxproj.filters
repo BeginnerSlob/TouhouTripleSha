@@ -735,6 +735,15 @@
     <ClCompile Include="Release\moc_ikai-ka.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ui\bubblechatbox.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_bubblechatbox.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_bubblechatbox.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\src\server\ai.h">
@@ -1018,6 +1027,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\ikai-ka.h">
       <Filter>package</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\ui\bubblechatbox.h">
+      <Filter>ui</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
