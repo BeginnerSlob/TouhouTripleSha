@@ -380,12 +380,12 @@
         <translation>请选择一名角色</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1636"/>
+        <location filename="../../src/client/client.cpp" line="1638"/>
         <source>&lt;font color=&apos;red&apos;&gt;System: %1&lt;/font&gt;</source>
         <translation>&lt;font color=&apos;red&apos;&gt;系统: %1&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/client/client.cpp" line="1652"/>
+        <location filename="../../src/client/client.cpp" line="1655"/>
         <source>&lt;font color=&apos;%1&apos;&gt;[%2] said: %3 &lt;/font&gt;</source>
         <translation>&lt;font color=&apos;%1&apos;&gt;[%2] 说: %3 &lt;/font&gt;</translation>
     </message>
@@ -623,22 +623,32 @@
         <translation>双击牌或头像使用牌</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="74"/>
+        <location filename="../../src/dialog/configdialog.ui" line="546"/>
+        <source>Bubble Chat Box Keep Time</source>
+        <translation>泡泡聊天框闪现时间</translation>
+    </message>
+    <message>
+        <location filename="../../src/dialog/configdialog.cpp" line="46"/>
+        <source> millisecond</source>
+        <translation> 毫秒</translation>
+    </message>
+    <message>
+        <location filename="../../src/dialog/configdialog.cpp" line="76"/>
         <source>Select a background image</source>
         <translation>请选择一张背景图片</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="76"/>
+        <location filename="../../src/dialog/configdialog.cpp" line="78"/>
         <source>Images (*.png *.bmp *.jpg)</source>
         <translation>图片 (*.png *.bmp *.jpg)</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="172"/>
+        <location filename="../../src/dialog/configdialog.cpp" line="177"/>
         <source>Select a background music</source>
         <translation>请选择背景音乐文件</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="174"/>
+        <location filename="../../src/dialog/configdialog.cpp" line="179"/>
         <source>Audio files (*.wav *.mp3 *.ogg)</source>
         <translation>音频 (*.wav *.mp3 *.ogg)</translation>
     </message>
@@ -1053,67 +1063,67 @@
 <context>
     <name>DamageMakerDialog</name>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2968"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2978"/>
         <source>Damage maker</source>
         <translation>伤害制造器</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2977"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2987"/>
         <source>Normal</source>
         <translation>普通</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2978"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2988"/>
         <source>Thunder</source>
         <translation>雷电</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2979"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2989"/>
         <source>Fire</source>
         <translation>火焰</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2980"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2990"/>
         <source>Recover HP</source>
         <translation>体力回复</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2981"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2991"/>
         <source>Lose HP</source>
         <translation>流失体力</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2982"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2992"/>
         <source>Lose Max HP</source>
         <translation>流失体力上限</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2983"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2993"/>
         <source>Reset Max HP</source>
         <translation>重置体力上限</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2989"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2999"/>
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2997"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3007"/>
         <source>Damage source</source>
         <translation>伤害来源</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2998"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3008"/>
         <source>Damage target</source>
         <translation>伤害目标</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2999"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3009"/>
         <source>Damage nature</source>
         <translation>伤害属性</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3000"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3010"/>
         <source>Damage point</source>
         <translation>伤害点数</translation>
     </message>
@@ -1149,22 +1159,22 @@
 <context>
     <name>DeathNoteDialog</name>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2936"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2946"/>
         <source>Death note</source>
         <translation>死亡笔记</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2944"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2954"/>
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2948"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2958"/>
         <source>Killer</source>
         <translation>凶手</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2949"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2959"/>
         <source>Victim</source>
         <translation>遇害者</translation>
     </message>
@@ -2732,436 +2742,436 @@
 <context>
     <name>RoomScene</name>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="258"/>
+        <location filename="../../src/ui/roomscene.cpp" line="261"/>
         <source>Please enter text to chat ... </source>
         <translation>聊天请在此输入 ...</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2122"/>
-        <location filename="../../src/ui/roomscene.cpp" line="2131"/>
-        <location filename="../../src/ui/roomscene.cpp" line="3037"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2132"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2141"/>
         <location filename="../../src/ui/roomscene.cpp" line="3047"/>
         <location filename="../../src/ui/roomscene.cpp" line="3057"/>
-        <location filename="../../src/ui/roomscene.cpp" line="3072"/>
-        <location filename="../../src/ui/roomscene.cpp" line="3854"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3067"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3082"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3864"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2891"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2901"/>
         <source>Pure text replay file (*.txt);; Image replay file (*.png)</source>
         <translation>纯文本重放文件 (*.txt);;图像重放文件 (*.png)</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2123"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2133"/>
         <source>The OK button should be disabled when client is not active!</source>
         <translation>确定按钮在客户端非活动状态下应被禁用!</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="131"/>
+        <location filename="../../src/ui/roomscene.cpp" line="132"/>
         <source>Change general ...</source>
         <translation>修改武将 ...</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="281"/>
+        <location filename="../../src/ui/roomscene.cpp" line="284"/>
         <source>QSanguosha</source>
         <translation>谜之声</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="328"/>
-        <location filename="../../src/ui/roomscene.cpp" line="4363"/>
+        <location filename="../../src/ui/roomscene.cpp" line="331"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4389"/>
         <source>Add robots</source>
         <translation>添加电脑</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="333"/>
+        <location filename="../../src/ui/roomscene.cpp" line="336"/>
         <source>Start new game</source>
         <translation>开始游戏</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="335"/>
+        <location filename="../../src/ui/roomscene.cpp" line="338"/>
         <source>Fill robots and start a new game</source>
         <translation>补全电脑并开始新游戏</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="355"/>
+        <location filename="../../src/ui/roomscene.cpp" line="358"/>
         <source>Paused ...</source>
         <translation>已暂停 ...</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="371"/>
-        <location filename="../../src/ui/roomscene.cpp" line="4223"/>
+        <location filename="../../src/ui/roomscene.cpp" line="374"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4233"/>
         <source>pindian</source>
         <translation>拼点</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1399"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1409"/>
         <source>Miscellaneous</source>
         <translation>工具菜单</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1401"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1411"/>
         <source>Private Piles</source>
         <translation>移出游戏牌堆</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1431"/>
-        <location filename="../../src/ui/roomscene.cpp" line="3457"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1441"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3467"/>
         <source>Known cards</source>
         <translation>查看已知牌</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1441"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1451"/>
         <source>View in new dialog</source>
         <translation>在新窗口查看</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1455"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1465"/>
         <source>View distance</source>
         <translation>查看距离</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1457"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1467"/>
         <source>View Discard pile</source>
         <translation>查看弃牌堆</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1504"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1514"/>
         <source>Please choose a suit</source>
         <translation>请选择一种花色</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1534"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1544"/>
         <source>Please choose a kingdom</source>
         <translation>请选择一个势力</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1555"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1565"/>
         <source>Please choose:</source>
         <translation>请选择:</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1603"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1613"/>
         <source>The order who first choose general</source>
         <translation>选择武将的顺序</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1605"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1615"/>
         <source>The order who first in turn</source>
         <translation>先手顺序</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1607"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1617"/>
         <source>Please select the order</source>
         <translation>请选择对应的阵营</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1608"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1618"/>
         <source>Warm</source>
         <translation>暖色</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1610"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1620"/>
         <source>Cool</source>
         <translation>冷色</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1635"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1645"/>
         <source>Please select a role</source>
         <translation>请选择一个身份</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1642"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1652"/>
         <source>Warm leader</source>
         <translation>暖色主帅</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1643"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1653"/>
         <source>Warm guard</source>
         <translation>暖色前锋</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1644"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1654"/>
         <source>Cool leader</source>
         <translation>冷色主帅</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1645"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1655"/>
         <source>Cool guard</source>
         <translation>冷色前锋</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1647"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1657"/>
         <source>Leader of Team 1</source>
         <translation>第一队主帅</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1648"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1658"/>
         <source>Guard of Team 1</source>
         <translation>第一队前锋</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1649"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1659"/>
         <source>Leader of Team 2</source>
         <translation>第二队主帅</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1650"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1660"/>
         <source>Guard of Team 2</source>
         <translation>第二队前锋</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1663"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1673"/>
         <source>Abstain</source>
         <translation>弃权</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1677"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1687"/>
         <source>Please select the direction</source>
         <translation>请选择方向</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1681"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1691"/>
         <source>CW</source>
         <translation>顺时针</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1684"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1694"/>
         <source>CCW</source>
         <translation>逆时针</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1708"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1718"/>
         <source>Discarded pile</source>
         <translation>弃牌堆</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2132"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2142"/>
         <source>The OK button should be disabled when client is in executing dialog</source>
         <translation>确定按钮在客户端在执行对话框状态下是应被禁用</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2780"/>
-        <location filename="../../src/ui/roomscene.cpp" line="2803"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2790"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2813"/>
         <source>&lt;font color=&apos;%1&apos;&gt;---------- Game Finish ----------&lt;/font&gt;</source>
         <translation>&lt;font color=&apos;%1&apos;&gt;────────游戏结束────────&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2787"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2797"/>
         <source>Standoff</source>
         <translation>平局</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2820"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2830"/>
         <source>Victory</source>
         <translation>胜利</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2820"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2830"/>
         <source>Failure</source>
         <translation>败北</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2822"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2832"/>
         <source>Winner(s)</source>
         <translation>胜利者</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2823"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2833"/>
         <source>Loser(s)</source>
         <translation>失败者</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2865"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2875"/>
         <source>Next Stage</source>
         <translation>下一场景</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="4366"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4392"/>
         <source>%1 robots</source>
         <translation>%1 名电脑</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="339"/>
-        <location filename="../../src/ui/roomscene.cpp" line="2866"/>
+        <location filename="../../src/ui/roomscene.cpp" line="342"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2876"/>
         <source>Return to main menu</source>
         <translation>返回主菜单</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="1633"/>
+        <location filename="../../src/ui/roomscene.cpp" line="1643"/>
         <source>Select role</source>
         <translation>选择身份</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2871"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2881"/>
         <source>Save record</source>
         <translation>保存记录</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2889"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2899"/>
         <source>Save replay record</source>
         <translation>保存重放记录</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3014"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3024"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3037"/>
         <location filename="../../src/ui/roomscene.cpp" line="3047"/>
         <location filename="../../src/ui/roomscene.cpp" line="3057"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3067"/>
         <source>This function is only allowed at your play phase!</source>
         <translation>此功能只能在自己的出牌阶段使用!</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3072"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3082"/>
         <source>No victims now!</source>
         <translation>暂时没有阵亡者!</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3077"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3087"/>
         <source>Reviving wand</source>
         <translation>复活魔杖</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3078"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3088"/>
         <source>Please select a player to revive</source>
         <translation>请选择要复活的角色</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3107"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3117"/>
         <source>General</source>
         <translation>武将</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3107"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3117"/>
         <source>Name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3107"/>
-        <location filename="../../src/ui/roomscene.cpp" line="3134"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3117"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3144"/>
         <source>Alive</source>
         <translation>存活</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3109"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3119"/>
         <source>Nationality</source>
         <translation>国籍</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3111"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3121"/>
         <source>Role</source>
         <translation>身份</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3113"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3123"/>
         <source>TurnCount</source>
         <translation>回合</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3114"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3124"/>
         <source>Recover</source>
         <translation>回血</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3114"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3124"/>
         <source>Damage</source>
         <translation>伤害</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3114"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3124"/>
         <source>Damaged</source>
         <translation>受伤</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3114"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3124"/>
         <source>Kill</source>
         <translation>击杀</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3114"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3124"/>
         <source>Designation</source>
         <translation>称号</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3115"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3125"/>
         <source>Handcards</source>
         <translation>手牌</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3201"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3211"/>
         <source>Spade</source>
         <translation>♠</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3202"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3212"/>
         <source>Heart</source>
         <translation>♥</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3203"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3213"/>
         <source>Club</source>
         <translation>♣</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3204"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3214"/>
         <source>Diamond</source>
         <translation>♦</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3320"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3330"/>
         <source>Select skill</source>
         <translation>选择技能</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3355"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3365"/>
         <source>This room does not allow chatting!</source>
         <translation>本房间禁止聊天！</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3400"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3410"/>
         <source>&lt;font color=&apos;%1&apos;&gt;[%2] said: %3 &lt;/font&gt;</source>
         <translation>&lt;font color=&apos;%1&apos;&gt;[%2] 说: %3 &lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3527"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3537"/>
         <source>&lt;font color=&apos;%1&apos;&gt;---------- Game Start ----------&lt;/font&gt;</source>
         <translation>&lt;font color=&apos;%1&apos;&gt;────────游戏开始────────&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3841"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3851"/>
         <source>Server information</source>
         <translation>服务器信息</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3854"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3864"/>
         <source>You can only initiate a surrender poll at your play phase!</source>
         <translation>只有在你的出牌阶段才能请求投降！</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3859"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3869"/>
         <source>Surrender</source>
         <translation>投降</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3859"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3869"/>
         <source>Are you sure to surrender ?</source>
         <translation>你真的要投降吗？</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="4141"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4151"/>
         <source>Complete</source>
         <translation>完成</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2865"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2875"/>
         <source>Restart Game</source>
         <translation>重新开始</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3136"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3146"/>
         <source>Dead</source>
         <translation>阵亡</translation>
     </message>
@@ -3177,12 +3187,12 @@
 <context>
     <name>ScriptExecutor</name>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2899"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2909"/>
         <source>Script execution</source>
         <translation>脚本执行</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2901"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2911"/>
         <source>Please input the script that should be executed at server side:
  P = you, R = your room</source>
         <oldsource>Please input the script that should be executed at server side:</oldsource>
@@ -3190,7 +3200,7 @@
 P = 你自己, R = 你所在的房间</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="2910"/>
+        <location filename="../../src/ui/roomscene.cpp" line="2920"/>
         <source>OK</source>
         <translation>确定</translation>
     </message>

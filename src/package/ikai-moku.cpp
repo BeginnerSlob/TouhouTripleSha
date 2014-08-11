@@ -209,10 +209,13 @@ public:
     }
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
-        foreach (const Card *card, player->getHandcards()) {
-            if (card->isBlack()) return true;
+        if (player->hasFlag("thbaochui") && player->getPhase() == Player::Play) {
+            foreach (const Player *p, player->getAliveSiblings())
+                foreach (int id, p->getPile("thbaochuipile"))
+                    if (Sanguosha->getCard(id)->isBlack())
+                        return true;
         }
-        return false;
+        return !player->isKongcheng() && !player->getPile("wooden_ox").isEmpty();
     }
 };
 
