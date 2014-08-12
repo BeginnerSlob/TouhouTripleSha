@@ -1905,11 +1905,10 @@ public:
                         || skill->getFrequency() == Skill::Limited
                         || skill->getFrequency() == Skill::Wake)
                         continue;
-                    if (skill->objectName() == player->tag.value("ThDongxi").toString())
+                    if (skill->objectName() == player->tag.value("ThDongxiLast").toString())
                         continue;
                     return QStringList(objectName());
                 }
-            player->tag.remove("ThDongxi");
         }
 
         return QStringList();
@@ -1924,7 +1923,7 @@ public:
                     || skill->getFrequency() == Skill::Limited
                     || skill->getFrequency() == Skill::Wake)
                     continue;
-                if (skill->objectName() == player->tag.value("ThDongxi").toString())
+                if (skill->objectName() == player->tag.value("ThDongxiLast").toString())
                     continue;
                 if (!player->hasSkill(skill->objectName()))
                     skills << skill->objectName();
@@ -1970,22 +1969,25 @@ public:
         frequency = Compulsory;
     }
 
-    virtual bool triggerable(const ServerPlayer *player) const {
-        return player->getPhase() == Player::RoundStart && !player->tag.value("ThDongxi").toString().isEmpty();
-    }
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
+        if (player->getPhase() == Player::NotActive && !player->tag.value("ThDongxiLast").toString().isEmpty()) {
+            player->tag.remove("ThDongxiLast");
+        } else if (player->getPhase() == Player::RoundStart && !player->tag.value("ThDongxi").toString().isEmpty()) {
+            QString name = player->tag.value("ThDongxi").toString();
+            player->tag.remove("ThDongxi");
+            room->detachSkillFromPlayer(player, name, false, true);
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        QString name = player->tag.value("ThDongxi").toString();
-        room->detachSkillFromPlayer(player, name, false, true);
+            Json::Value arg(Json::arrayValue);
+            arg[0] = (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
+            arg[1] = QSanProtocol::Utils::toJsonString(player->objectName());
+            arg[2] = QSanProtocol::Utils::toJsonString(player->getGeneral()->objectName());
+            arg[3] = QSanProtocol::Utils::toJsonString(QString());
+            room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
 
-        Json::Value arg(Json::arrayValue);
-        arg[0] = (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
-        arg[1] = QSanProtocol::Utils::toJsonString(player->objectName());
-        arg[2] = QSanProtocol::Utils::toJsonString(player->getGeneral()->objectName());
-        arg[3] = QSanProtocol::Utils::toJsonString(QString());
-        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
+            player->tag["ThDongxiLast"] = name;
+        }
 
-        return false;
+        return QStringList();
     }
 };
 
