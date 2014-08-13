@@ -645,7 +645,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
             foreach (const TriggerSkill *skill, skills) {
                 if (!triggered.contains(skill)) {
                     if (skill->objectName() == "game_rule") {
-                        while (room->isPaused()) {}
+                        room->tryPause();
                         if (will_trigger.isEmpty()
                                 || skill->getDynamicPriority() == will_trigger.last()->getDynamicPriority()) {
                             will_trigger.append(skill);
@@ -654,7 +654,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                             break;
                         triggered.prepend(skill);
                     } else {
-                        while (room->isPaused()) {}
+                        room->tryPause();
                         if (will_trigger.isEmpty()
                                 || skill->getDynamicPriority() == will_trigger.last()->getDynamicPriority()) {
                             QMap<ServerPlayer *, QStringList> triggerSkillList = skill->triggerable(triggerEvent, room, target, data);
@@ -815,44 +815,8 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
         throw throwed_event;
     }
 
-    while (room->isPaused()) {}
+    room->tryPause();
     return broken;
-
-/*        for (int i = 0; i < skills.size(); i++) {
-            const TriggerSkill *skill = skills[i];
-            if (!triggered.contains(skill)) {
-                triggered.append(skill);
-                if (skill->triggerable(target)) {
-                    while (room->isPaused()) {}
-                    broken = skill->trigger(triggerEvent, room, target, data);
-                    if (broken) break;
-                    i = 0;
-                }
-            }
-        }
-
-        if (target) {
-            foreach (AI *ai, room->ais)
-                ai->filterEvent(triggerEvent, target, data);
-        }
-
-        // pop event stack
-        event_stack.pop_back();
-    }
-    catch (TriggerEvent throwed_event) {
-        if (target) {
-            foreach (AI *ai, room->ais)
-                ai->filterEvent(triggerEvent, target, data);
-        }
-
-        // pop event stack
-        event_stack.pop_back();
-
-        throw throwed_event;
-    }
-
-    while (room->isPaused()) {}
-    return broken;*/
 }
 
 const QList<EventTriplet> *RoomThread::getEventStack() const{
