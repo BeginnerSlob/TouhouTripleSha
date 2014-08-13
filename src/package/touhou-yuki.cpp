@@ -1532,9 +1532,9 @@ public:
     }
 };
 
-class ThQiebao:public TriggerSkill{
+class ThQiebao: public TriggerSkill{
 public:
-    ThQiebao():TriggerSkill("thqiebao"){
+    ThQiebao(): TriggerSkill("thqiebao") {
         events << CardUsed << BeforeCardsMove;
     }
 
