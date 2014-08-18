@@ -1337,14 +1337,35 @@ bool KnownBoth::targetFilter(const QList<const Player *> &targets, const Player 
 }
 
 bool KnownBoth::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-    if (Self->isCardLimited(this, Card::MethodUse))
+    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY);
+    QList<int> sub;
+    if (isVirtualCard())
+        sub = subcards;
+    else
+        sub << getEffectiveId();
+    foreach (int id, sub) {
+        if (Self->getPile("wooden_ox").contains(id)) {
+            rec = false;
+            break;
+        }
+        // Coupling of ThBaochui
+        if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play) {
+            foreach (const Player *p, Self->getAliveSiblings())
+                if (p->getPile("thbaochuipile").contains(id)) {
+                    rec = false;
+                    break;
+                }
+            if (!rec) break;
+        }
+    }
+
+    if (rec && Self->isCardLimited(this, Card::MethodUse))
         return targets.length() == 0;
-
-    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
-        return targets.length() != 0;
-
     int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
-    return targets.length() <= total_num;
+    if (!rec || getSkillName() == "ikguihuo" || getSkillName() == "ikmice" || getSkillName() == "thmimeng")
+        return targets.length() > 0 && targets.length() <= total_num;
+    else
+        return targets.length() <= total_num;
 }
 
 void KnownBoth::onUse(Room *room, const CardUseStruct &card_use) const{
@@ -1355,12 +1376,12 @@ void KnownBoth::onUse(Room *room, const CardUseStruct &card_use) const{
         card_use.from->broadcastSkillInvoke("@recast");
 
         LogMessage log;
-        log.type = "#Card_Recast";
+        log.type = "#UseCard_Recast";
         log.from = card_use.from;
         log.card_str = card_use.card->toString();
         room->sendLog(log);
 
-        card_use.from->drawCards(1);
+        card_use.from->drawCards(1, "known_both");
     } else
         SingleTargetTrick::onUse(room, card_use);
 }
