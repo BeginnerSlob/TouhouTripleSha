@@ -2570,6 +2570,116 @@ public:
     }
 };
 
+class IkYuanji: public TriggerSkill {
+public:
+    IkYuanji(): TriggerSkill("ikyuanji") {
+        events << GameStart << DrawNCards << PreCardUsed << Death;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == Death) {
+            if (!player || player->isAlive() || !player->hasSkill(objectName(), true))
+                return QStringList();
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player)
+                return QStringList();
+            return QStringList(objectName());
+        }
+        if (triggerEvent == GameStart && TriggerSkill::triggerable(player))
+            return QStringList(objectName());
+        else if (triggerEvent == DrawNCards && player->getMark("@shuling") > 0)
+            return QStringList(objectName());
+        else if (triggerEvent == PreCardUsed && player->getMark("@shuling") > 0
+                 && player->getPhase() == Player::Play && !player->hasFlag("shuling_slash")) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash"))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (triggerEvent == Death) {
+            room->sendCompulsoryTriggerLog(player, objectName());
+            foreach (ServerPlayer *p, room->getAllPlayers()) {
+                if (p->getMark("@shuling") > 0)
+                    p->loseAllMarks("@shuling");
+            }
+            if (player->getMark("@shuling") > 0)
+                player->loseAllMarks("@shuling");
+        } else if (triggerEvent == GameStart) {
+            room->sendCompulsoryTriggerLog(player, objectName());
+            player->gainMark("@shuling");
+        } else if (triggerEvent == DrawNCards) {
+            ServerPlayer *target = room->findPlayerBySkillName(objectName());
+            if (target)
+                room->sendCompulsoryTriggerLog(target, objectName(), false);
+            room->notifySkillInvoked(player, objectName());
+            data = data.toInt() + 1;
+        } else if (triggerEvent == PreCardUsed) {
+            ServerPlayer *target = room->findPlayerBySkillName(objectName());
+            if (target)
+                room->sendCompulsoryTriggerLog(target, objectName(), false);
+            room->notifySkillInvoked(player, objectName());
+            CardUseStruct use = data.value<CardUseStruct>();
+            room->addPlayerHistory(player, use.card->getClassName(), -1);
+        }
+        return false;
+    }
+};
+
+class IkShuluo: public TriggerSkill {
+public:
+    IkShuluo(): TriggerSkill("ikshuluo") {
+        events << Damage;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player->isDead() || player->getCardCount() < 2)
+            return QStringList();
+        ServerPlayer *p = room->findPlayerBySkillName(objectName());
+        if (!p)
+            return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        if (player == damage.to || damage.to->getMark("@shuling") == 0)
+            return QStringList();
+        return QStringList(objectName());
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->hasSkill(objectName())) {
+            if (player->askForSkillInvoke(objectName())) {
+                room->broadcastSkillInvoke(objectName());
+                return true;
+            }
+        } else {
+            const Card *dummy = room->askForExchange(player, objectName(), 2, 2, true, "@ikshuluo", true);
+            if (dummy && dummy->subcardsLength() > 0) {
+                LogMessage log;
+                log.type = "$DiscardCardWithSkill";
+                log.from = player;
+                log.card_str = IntList2StringList(dummy->getSubcards()).join("+");
+                log.arg = objectName();
+                room->sendLog(log);
+                CardMoveReason reason(CardMoveReason::S_REASON_THROW, player->objectName());
+                room->moveCardTo(dummy, NULL, Player::DiscardPile, reason, true);
+                delete dummy;
+                room->broadcastSkillInvoke(objectName());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        room->setPlayerMark(damage.to, "@shuling", 0);
+        player->gainMark("@shuling");
+        return false;
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -2687,6 +2797,10 @@ IkaiKaPackage::IkaiKaPackage()
     luna046->addSkill(new IkYaopu);
     luna046->addSkill(new IkYaopuRecord);
     related_skills.insertMulti("ikyaopu", "#ikyaopu-record");
+
+    General *luna047 = new General(this, "luna047", "tsuki");
+    luna047->addSkill(new IkYuanji);
+    luna047->addSkill(new IkShuluo);
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
