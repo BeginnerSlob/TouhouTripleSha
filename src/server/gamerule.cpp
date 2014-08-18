@@ -29,7 +29,7 @@ GameRule::GameRule(QObject *)
            << ChoiceMade;
 }
 
-QStringList GameRule::triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer * &ask_who) const{
+QStringList GameRule::triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer* &ask_who) const{
     ask_who = NULL;
     return QStringList(objectName());
 }

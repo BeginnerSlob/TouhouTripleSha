@@ -279,12 +279,16 @@ QMap<ServerPlayer *, QStringList> TriggerSkill::triggerable(TriggerEvent trigger
     return skill_lists;
 }
 
+bool TriggerSkill::triggerable(const ServerPlayer *target, Room *) const{
+    return triggerable(target);
+}
+
 bool TriggerSkill::triggerable(const ServerPlayer *target) const{
     return target != NULL && (global || (target->isAlive() && target->hasSkill(objectName())));
 }
 
-QStringList TriggerSkill::triggerable(TriggerEvent , Room *, ServerPlayer *target, QVariant &, ServerPlayer* &) const{
-    if (triggerable(target))
+QStringList TriggerSkill::triggerable(TriggerEvent , Room *room, ServerPlayer *target, QVariant &, ServerPlayer* &) const{
+    if (triggerable(target, room))
         return QStringList(objectName());
     return QStringList();
 }
