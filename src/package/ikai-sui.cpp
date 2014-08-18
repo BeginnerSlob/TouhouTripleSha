@@ -2798,6 +2798,140 @@ public:
     }
 };
 
+class IkLinbu: public TriggerSkill {
+public:
+    IkLinbu(): TriggerSkill("iklinbu") {
+        events << EventPhaseStart << EventPhaseChanging;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive && player->hasFlag("iklinbu_target") && player->hasSkill("#iklinbu")) {
+                room->detachSkillFromPlayer(player, "#iklinbu", false, true);
+                room->getThread()->trigger(EventLoseSkill, room, player, QVariant("#iklinbu"));
+            }
+            return skill_list;
+        }
+        if (player->getPhase() == Player::Play) {
+            foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
+                if (owner == player) continue;
+                if (!player->inMyAttackRange(owner))
+                    skill_list.insert(owner, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *owner) const{
+        if (owner->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *owner) const{
+        room->acquireSkill(player, "#iklinbu", false);
+        room->getThread()->trigger(EventAcquireSkill, room, player, QVariant("#iklinbu"));
+        room->setPlayerFlag(player, "iklinbu_target");
+        room->setPlayerFlag(player, "iklinbu_" + owner->objectName());
+        room->setPlayerCardLimitation(player, "use", "TrickCard", true);
+        return false;
+    }
+};
+
+class IkLinbuFilter: public FilterSkill {
+public:
+    IkLinbuFilter(): FilterSkill("#iklinbu") {
+    }
+
+    virtual bool viewFilter(const Card *to_select) const{
+        return to_select->isKindOf("TrickCard");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        Slash *slash = new Slash(originalCard->getSuit(), originalCard->getNumber());
+        slash->setSkillName("_iklinbu");
+        WrappedCard *card = Sanguosha->getWrappedCard(originalCard->getId());
+        card->takeOver(slash);
+        return card;
+    }
+};
+
+class IkMumu: public TriggerSkill {
+public:
+    IkMumu(): TriggerSkill("ikmumu") {
+        events << PreDamageDone << EventPhaseStart;
+        frequency = Frequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseStart) {
+            if (player->hasFlag("IkMumuDamageInPlayPhase"))
+                return QStringList();
+            if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Finish) {
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    if (p->getWeapon() && player->canDiscard(p, p->getWeapon()->getEffectiveId()))
+                        return QStringList(objectName());
+                    if (p->getArmor())
+                        return QStringList(objectName());
+                }
+            }
+        } else if (triggerEvent == PreDamageDone) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.from && damage.from->getPhase() == Player::Play && !damage.from->hasFlag("IkMumuDamageInPlayPhase"))
+                damage.from->setFlags("IkMumuDamageInPlayPhase");
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        QList<ServerPlayer *> victims;
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            if (p->getWeapon() && player->canDiscard(p, p->getWeapon()->getEffectiveId())) {
+                victims << p;
+                continue;
+            }
+            if (p->getArmor())
+                victims << p;
+        }
+        ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName(), "@ikmumu", true, true);
+        if (victim) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["IkMumuTarget"] = QVariant::fromValue(victim);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        ServerPlayer *victim = player->tag["IkMumuTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkMumuTarget");
+        if (victim) {
+            QStringList choices;
+            if (victim->getWeapon() && player->canDiscard(victim, victim->getWeapon()->getEffectiveId()))
+                choices << "weapon";
+            if (victim->getArmor())
+                choices << "armor";
+            QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+            if (choice == "weapon") {
+                room->throwCard(victim->getWeapon(), victim, player);
+                player->drawCards(1, objectName());
+            } else if (choice == "armor") {
+                int id = victim->getArmor()->getEffectiveId();
+                player->obtainCard(victim->getArmor());
+                if (room->getCardOwner(id) == player && room->getCardPlace(id) == Player::PlaceHand) {
+                    if (Sanguosha->getCard(id)->isKindOf("Armor"))
+                        room->useCard(CardUseStruct(Sanguosha->getCard(id), player, QList<ServerPlayer *>()));
+                }
+            }
+        }
+        return false;
+    }
+};
+
 IkChenyan::IkChenyan(): TriggerSkill("ikchenyan") {
     events << DrawNCards << EventPhaseStart;
     frequency = Compulsory;
@@ -4134,6 +4268,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     snow044->addSkill(new IkLunke);
     snow044->addSkill(new IkCangmie);
 
+    General *snow047 = new General(this, "snow047", "yuki", 3, false);
+    snow047->addSkill(new IkLinbu);
+    snow047->addSkill(new IkMumu);
+
     General *luna017 = new General(this, "luna017", "tsuki");
     luna017->addSkill(new IkChenyan);
     luna017->addSkill("ikshengzun");
@@ -4221,7 +4359,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkJiaojinCard>();
     addMetaObject<IkSheqieCard>();
 
-    skills << new IkAnshen << new IkAnshenRecord << new OthersNullifiedDistance;
+    skills << new IkAnshen << new IkAnshenRecord << new OthersNullifiedDistance << new IkLinbuFilter;
     related_skills.insertMulti("ikanshen", "#ikanshen-record");
 }
 

@@ -182,7 +182,11 @@ int Player::getAttackRange(bool include_weapon) const{
 }
 
 bool Player::inMyAttackRange(const Player *other, int distance_fix) const{
-    return this != other && distanceTo(other, distance_fix) <= getAttackRange();
+    if (this == other)
+        return false;
+    if (hasFlag("iklinbu_" + other->objectName()))
+        return true;
+    return distanceTo(other, distance_fix) <= getAttackRange();
 }
 
 void Player::setFixedDistance(const Player *player, int distance) {
@@ -761,8 +765,10 @@ bool Player::canSlash(const Player *other, const Card *slash, bool distance_limi
     if (isProhibited(other, THIS_SLASH, others))
         return false;
 
+    rangefix -= Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, this, THIS_SLASH);
+
     if (distance_limit)
-        return distanceTo(other, rangefix) <= getAttackRange() + Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, this, THIS_SLASH);
+        return inMyAttackRange(other, rangefix);
     else
         return true;
 #undef THIS_SLASH
