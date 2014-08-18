@@ -902,7 +902,8 @@ QGroupBox *ThMimengDialog::createRight() {
 
     QStringList ban_list;
     if (object_name == "thmimeng")
-        ban_list << "ExNihilo" << "AmazingGrace" << "Snatch" << "GodSalvation" << "ArcheryAttack" << "Drowning";
+        ban_list << "ExNihilo" << "AmazingGrace" << "Snatch" << "GodSalvation" << "ArcheryAttack"
+                 << "Drowning" << "BurningCamps" << "LureTiger";
     QList<const Card *> cards = Sanguosha->findChildren<const Card *>();
     foreach(const Card *card, cards){
         if (card->isNDTrick() && !map.contains(card->objectName()) && !ban_list.contains(card->getClassName())
