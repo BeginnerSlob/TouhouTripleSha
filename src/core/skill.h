@@ -118,6 +118,7 @@ public:
     QList<TriggerEvent> getTriggerEvents() const;
 
     virtual int getPriority(TriggerEvent triggerEvent) const;
+    virtual bool triggerable(const ServerPlayer *target, Room *room) const;
     virtual bool triggerable(const ServerPlayer *target) const;
 
     virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
