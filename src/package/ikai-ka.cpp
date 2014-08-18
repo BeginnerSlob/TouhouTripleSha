@@ -1596,6 +1596,114 @@ public:
     }
 };
 
+class IkQiyue: public TriggerSkill {
+public:
+    IkQiyue(): TriggerSkill("ikqiyue") {
+        events << EventPhaseStart;
+    }
+
+    virtual bool triggerable(const ServerPlayer *player) const {
+        return TriggerSkill::triggerable(player)
+            && player->getPhase() == Player::Play
+            && player->canDiscard(player, "h");
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (room->askForCard(player, "BasicCard", "@ikqiyue", data, objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        player->drawCards(2, objectName());
+        room->setPlayerCardLimitation(player, "use", "Slash", true);
+        return false;
+    }
+};
+
+class IkSaoxiaoViewAsSkill: public ZeroCardViewAsSkill {
+public:
+    IkSaoxiaoViewAsSkill(): ZeroCardViewAsSkill("iksaoxiao") {
+        response_pattern = "@@iksaoxiao!";
+    }
+
+    virtual const Card *viewAs() const{
+        if (Self->property("iksaoxiao").isNull())
+            return NULL;
+        const Card *card = Card::Parse(Self->property("iksaoxiao").toString());
+        Card *use_card = Sanguosha->cloneCard(card);
+        use_card->setSkillName("_iksaoxiao");
+        return use_card;
+    }
+};
+
+class IkSaoxiao: public TriggerSkill {
+public:
+    IkSaoxiao(): TriggerSkill("iksaoxiao") {
+        events << DamageComplete;
+        view_as_skill = new IkSaoxiaoViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player) || player->isKongcheng())
+            return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        if (!damage.from || damage.from->isDead())
+            return QStringList();
+        return QStringList(objectName());
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        const Card *hand = room->askForCard(player, ".", "@iksaoxiao", data, Card::MethodNone);
+        QString choice = room->askForChoice(damage.from, objectName(), "red+black");
+        LogMessage log;
+        log.type = "#IkSaoxiaoChoice";
+        log.from = damage.from;
+        log.arg = choice;
+        room->sendLog(log);
+        room->showCard(player, hand->getEffectiveId());
+        if ((choice == "red" && !hand->isRed()) || (choice == "black" && !hand->isBlack())) {
+            QList<ServerPlayer *> targets;
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (hand->isAvailable(p)) {
+                    if (hand->targetFixed())
+                        targets << p;
+                    else {
+                        bool can_use = false;
+                        foreach (ServerPlayer *p2, room->getAlivePlayers())
+                            if (hand->targetFilter(QList<const Player *>(), p2, p)) {
+                                can_use = true;
+                                break;
+                            }
+                        if (can_use)
+                            targets << p;
+                    }
+                }
+            }
+            if (!targets.isEmpty()) {
+                ServerPlayer *user = room->askForPlayerChosen(player, targets, objectName(), "@iksaoxiao-choose", true);
+                if (user) {
+                    room->setPlayerProperty(user, "iksaoxiao", hand->toString());
+                    room->askForUseCard(user, "@@iksaoxiao!", "@iksaoxiao-use");
+                    room->setPlayerProperty(user, "iksaoxiao", QVariant());
+                }
+            }
+        }
+        return false;
+    }
+};
+
 class IkLingcu: public TriggerSkill {
 public:
     IkLingcu(): TriggerSkill("iklingcu") {
@@ -2540,6 +2648,10 @@ IkaiKaPackage::IkaiKaPackage()
     snow046->addSkill(new IkLianxiaoMaxCards);
     related_skills.insertMulti("iklianxiao", "#iklianxiao-record");
     related_skills.insertMulti("iklianxiao", "#iklianxiao-max");
+
+    General *snow048 = new General(this, "snow048", "yuki");
+    snow048->addSkill(new IkQiyue);
+    snow048->addSkill(new IkSaoxiao);
 
     General *luna030 = new General(this, "luna030", "tsuki");
     luna030->addSkill(new IkLingcu);
