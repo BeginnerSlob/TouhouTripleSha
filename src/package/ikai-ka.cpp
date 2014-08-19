@@ -1665,7 +1665,9 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         DamageStruct damage = data.value<DamageStruct>();
-        const Card *hand = room->askForCard(player, ".", "@iksaoxiao", data, Card::MethodNone);
+        const Card *hand = room->askForCard(player, ".!", "@iksaoxiao", data, Card::MethodNone);
+        if (!hand)
+            hand = player->getRandomHandCard();
         QString choice = room->askForChoice(damage.from, objectName(), "red+black");
         LogMessage log;
         log.type = "#IkSaoxiaoChoice";
@@ -2624,6 +2626,7 @@ public:
             room->notifySkillInvoked(player, objectName());
             CardUseStruct use = data.value<CardUseStruct>();
             room->addPlayerHistory(player, use.card->getClassName(), -1);
+            player->setFlags("shuling_slash");
         }
         return false;
     }
