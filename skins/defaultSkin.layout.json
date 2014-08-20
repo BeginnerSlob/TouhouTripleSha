@@ -100,7 +100,7 @@
     "magatamasBgVisible": true,
     "magatamasAnchor": ["bottomRight", [163, 115]],
     "cardMoveArea": [-15, 35, 200, 130],
-    "phaseArea": [25, 194, 140, 12],
+    "phaseArea": [25, 190, 140, 12],
     "onlineStatusArea": [122, 24, 30, 25],
     "onlineStatusBgColor": [0, 0, 0, 0],
     "onlineStatusFont": ["SimSun",12, 0, [255, 255, 255, 255], 3, 10, [0, 0], [20, 20, 20, 155]],
