@@ -3034,7 +3034,7 @@ public:
                     if (ask_who->canSlash(target, NULL, false))
                         targets1 << target;
                 }
-                Slash *slashx = new Slash(Card::NoSuit, 0);
+                Slash *slashx = new ThunderSlash(Card::NoSuit, 0);
                 if (!targets1.isEmpty() && !ask_who->isCardLimited(slashx, Card::MethodUse))
                     choicelist << "slash";
                 slashx->deleteLater();
@@ -3048,7 +3048,7 @@ public:
                     room->useCard(CardUseStruct(slash, ask_who, target));
                 } else if (choice == "damage") {
                     ServerPlayer *target = room->askForPlayerChosen(ask_who, targets2, "ikleilan_damage", "@ikleilan-damage");
-                    room->damage(DamageStruct("ikleilan", ask_who, target));
+                    room->damage(DamageStruct("ikleilan", ask_who, target, 1, DamageStruct::Thunder));
                 } else {
                     ask_who->drawCards(1);
                     room->askForDiscard(ask_who, objectName(), 1, 1);
