@@ -2400,6 +2400,10 @@ public:
         filter_pattern = ".|spade|.|hand";
     }
 
+    virtual bool shouldBeVisible(const Player *player) const{
+        return player->getKingdom() == "hana";
+    }
+
     virtual bool isEnabledAtPlay(const Player *) const {
         return false;
     }

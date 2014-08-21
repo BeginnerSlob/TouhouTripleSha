@@ -111,6 +111,7 @@ public:
     }
 
 public slots:
+    virtual void updateAvatar();
     void sortCards();
     void beginSorting();
     void reverseSelection();

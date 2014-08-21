@@ -502,7 +502,15 @@ public:
         attached_lord_skill = true;
     }
 
+    virtual bool shouldBeVisible(const Player *player) const{
+        if (player->getWeapon() || player->hasSkill("thsilian"))
+            return false;
+        return player->hasWeapon("Spear") || player->hasWeapon("Fan");
+    }
+
     virtual bool isEnabledAtPlay(const Player *player) const {
+        if (player->getWeapon() || player->hasSkill("thsilian"))
+            return false;
         if (player->hasWeapon("Spear")) {
             const ViewAsSkill *spear_skill = Sanguosha->getViewAsSkill("Spear");
             return spear_skill->isEnabledAtPlay(player);
@@ -514,6 +522,8 @@ public:
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const {
+        if (player->getWeapon() || player->hasSkill("thsilian"))
+            return false;
         if (player->hasWeapon("Spear")) {
             const ViewAsSkill *spear_skill = Sanguosha->getViewAsSkill("Spear");
             return spear_skill->isEnabledAtResponse(player, pattern);
@@ -2101,6 +2111,10 @@ public:
     ThXinhuaViewAsSkill(): OneCardViewAsSkill("thxinhuav") {
         attached_lord_skill = true;
         filter_pattern = "Weapon";
+    }
+
+    virtual bool shouldBeVisible(const Player *player) const{
+        return player->getKingdom() == "kaze" && !player->hasFlag("ForbidThXinhua");
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const {

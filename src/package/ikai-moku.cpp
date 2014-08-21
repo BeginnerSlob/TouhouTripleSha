@@ -1948,6 +1948,10 @@ public:
         filter_pattern = ".|.|.|hand";
     }
 
+    virtual bool shouldBeVisible(const Player *player) const{
+        return !player->hasFlag("ForbidIkYihuo");
+    }
+
     virtual const Card *viewAs(const Card *originalCard) const{
         IkYihuoCard *card = new IkYihuoCard();
         card->addSubcard(originalCard);
@@ -2957,6 +2961,10 @@ class IkBianshengPindian: public ZeroCardViewAsSkill {
 public:
     IkBianshengPindian(): ZeroCardViewAsSkill("ikbiansheng_pindian") {
         attached_lord_skill = true;
+    }
+
+    virtual bool shouldBeVisible(const Player *player) const{
+        return player->getKingdom() == "yuki" && !player->hasFlag("ForbidIkBiansheng");
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
@@ -4782,8 +4790,12 @@ public:
         filter_pattern = "Jink#.|black|.|hand";
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const{
+    virtual bool shouldBeVisible(const Player *player) const{
         return player->getKingdom() == "tsuki" && !player->hasFlag("ForbidIkYuji");
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return shouldBeVisible(player);
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{

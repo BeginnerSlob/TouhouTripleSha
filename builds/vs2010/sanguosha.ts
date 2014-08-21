@@ -1141,22 +1141,22 @@
         <translation>托管中 ...</translation>
     </message>
     <message>
-        <location filename="../../src/ui/dashboard.cpp" line="782"/>
+        <location filename="../../src/ui/dashboard.cpp" line="787"/>
         <source>Sort handcards</source>
         <translation>整理手牌</translation>
     </message>
     <message>
-        <location filename="../../src/ui/dashboard.cpp" line="784"/>
+        <location filename="../../src/ui/dashboard.cpp" line="789"/>
         <source>Sort by type</source>
         <translation>按类型排序</translation>
     </message>
     <message>
-        <location filename="../../src/ui/dashboard.cpp" line="787"/>
+        <location filename="../../src/ui/dashboard.cpp" line="792"/>
         <source>Sort by suit</source>
         <translation>按花色排序</translation>
     </message>
     <message>
-        <location filename="../../src/ui/dashboard.cpp" line="790"/>
+        <location filename="../../src/ui/dashboard.cpp" line="795"/>
         <source>Sort by number</source>
         <translation>按点数排序</translation>
     </message>

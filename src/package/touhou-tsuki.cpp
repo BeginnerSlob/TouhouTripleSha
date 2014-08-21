@@ -120,6 +120,10 @@ public:
         attached_lord_skill = true;
     }
 
+    virtual bool shouldBeVisible(const Player *player) const{
+        return player->getKingdom() == "tsuki" && !player->hasFlag("ForbidThYejun");
+    }
+
     virtual bool isEnabledAtPlay(const Player *player) const{
         if (Self->isChained())
             return false;
