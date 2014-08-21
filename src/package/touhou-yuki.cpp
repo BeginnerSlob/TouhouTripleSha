@@ -1801,6 +1801,10 @@ public:
         filter_pattern = "BasicCard|red";
     }
 
+    virtual bool shouldBeVisible(const Player *player) const{
+        return !player->hasFlag("ForbidThKujie");
+    }
+
     virtual const Card *viewAs(const Card *originalCard) const{
         ThKujieCard *card = new ThKujieCard();
         card->addSubcard(originalCard);
@@ -2127,6 +2131,10 @@ class ThFuyueViewAsSkill: public ZeroCardViewAsSkill {
 public:
     ThFuyueViewAsSkill(): ZeroCardViewAsSkill("thfuyuev"){
         attached_lord_skill = true;
+    }
+
+    virtual bool shouldBeVisible(const Player *player) const{
+        return player->getKingdom() == "yuki" && !player->hasFlag("ForbidThFuyue");
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{

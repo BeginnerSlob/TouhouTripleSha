@@ -296,16 +296,18 @@ void QSanInvokeSkillDock::update() {
     if (!_m_buttons.isEmpty()) {
         QList<QSanInvokeSkillButton *> regular_buttons, lordskill_buttons, all_buttons;
         foreach (QSanInvokeSkillButton *btn, _m_buttons) {
-            if (btn->getSkill()->isAttachedLordSkill())
-                lordskill_buttons << btn;
-            else
+            if (btn->getSkill()->isAttachedLordSkill()) {
+                if (btn->getSkill()->shouldBeVisible(Self))
+                    lordskill_buttons << btn;
+            } else {
                 regular_buttons << btn;
+            }
         }
         all_buttons = regular_buttons + lordskill_buttons;
 
         int numButtons = regular_buttons.length();
         int lordskillNum = lordskill_buttons.length();
-        Q_ASSERT(lordskillNum <= 6); // HuangTian, ZhiBa and XianSi
+        //Q_ASSERT(lordskillNum <= 6); // HuangTian, ZhiBa and XianSi
         int rows = (numButtons == 0) ? 0 : (numButtons - 1) / 3 + 1;
         int rowH = G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height();
         int *btnNum = new int[rows + 2 + 1]; // we allocate one more row in case we need it.
