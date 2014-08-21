@@ -1541,7 +1541,7 @@ public:
         QMap<ServerPlayer *, QStringList> skill_list;
         if (player->getPhase() != Player::Play) return skill_list;
         foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
-            if (owner->getMark(objectName()) == 0)
+            if (owner->getMark(objectName()) == 0 && owner->distanceTo(player) == 1)
                 skill_list.insert(owner, QStringList(objectName()));
         return skill_list;
     }
