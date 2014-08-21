@@ -131,6 +131,8 @@ local t = {
 
 	["known_both"] = "幽瞳占略",
 	[":known_both"] = "锦囊牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：一名其他角色<br /><b>效果</b>：你观看目标角色的全部的手牌或其身份牌。<br />重铸：将此牌置入弃牌堆并摸一张牌。",
+	["known_both:handcards"] = "手牌",
+	["known_both:role"] = "身份牌",
 }
 
 local ohorses = { "chitu", "dayuan", "zixing" }
