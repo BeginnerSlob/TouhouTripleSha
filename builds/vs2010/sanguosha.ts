@@ -712,12 +712,12 @@
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/connectiondialog.cpp" line="67"/>
+        <location filename="../../src/dialog/connectiondialog.cpp" line="66"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/connectiondialog.cpp" line="67"/>
+        <location filename="../../src/dialog/connectiondialog.cpp" line="66"/>
         <source>The user name can not be empty!</source>
         <translation>用户名不能为空!</translation>
     </message>
@@ -2333,7 +2333,7 @@
 <context>
     <name>Player</name>
     <message>
-        <location filename="../../src/core/player.cpp" line="935"/>
+        <location filename="../../src/core/player.cpp" line="937"/>
         <source>No skills</source>
         <translation>无技能</translation>
     </message>
@@ -4054,12 +4054,12 @@ P = 你自己, R = 你所在的房间</translation>
 <context>
     <name>UdpDetectorDialog</name>
     <message>
-        <location filename="../../src/dialog/connectiondialog.cpp" line="128"/>
+        <location filename="../../src/dialog/connectiondialog.cpp" line="127"/>
         <source>Detect available server&apos;s addresses at LAN</source>
         <translation>在局域网内探测可用的服务器地址</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/connectiondialog.cpp" line="129"/>
+        <location filename="../../src/dialog/connectiondialog.cpp" line="128"/>
         <source>Refresh</source>
         <translation>刷新</translation>
     </message>

@@ -81,8 +81,8 @@ public:
     void setMaxHp(int max_hp);
     int getLostHp() const;
     bool isWounded() const;
-    General::Gender getGender() const;
-    virtual void setGender(General::Gender gender);
+    int getGender() const;
+    virtual void setGender(int gender);
     bool isMale() const;
     bool isFemale() const;
     bool isNeuter() const;

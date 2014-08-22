@@ -675,7 +675,7 @@ QList<CardItem *> PlayerCardContainer::removeEquips(const QList<int> &cardIds) {
 void PlayerCardContainer::startHuaShen(QString generalName, QString skillName) {
     _m_huashenGeneralName = generalName;
     _m_huashenSkillName = skillName;
-    Q_ASSERT(m_player->hasSkill("ikhuanshen"));
+    //Q_ASSERT(m_player->hasSkill("ikhuanshen"));
 
     bool second_zuoci = m_player && m_player->getGeneralName() != "luna009" && m_player->getGeneral2Name() == "luna009";
     int avatarSize = second_zuoci ? _m_layout->m_smallAvatarSize :

@@ -297,16 +297,20 @@ void QSanInvokeSkillDock::update() {
         QList<QSanInvokeSkillButton *> regular_buttons, lordskill_buttons, all_buttons;
         foreach (QSanInvokeSkillButton *btn, _m_buttons) {
             if (btn->getSkill()->isAttachedLordSkill()) {
-                if (btn->getSkill()->shouldBeVisible(Self))
+                if (btn->getSkill()->shouldBeVisible(Self)) {
+                    btn->setVisible(true);
                     lordskill_buttons << btn;
+                } else {
+                    btn->setVisible(false);
+                }
             } else {
                 regular_buttons << btn;
             }
         }
         all_buttons = regular_buttons + lordskill_buttons;
 
-        int numButtons = regular_buttons.length();
-        int lordskillNum = lordskill_buttons.length();
+        int numButtons = all_buttons.length();
+        //int lordskillNum = lordskill_buttons.length();
         //Q_ASSERT(lordskillNum <= 6); // HuangTian, ZhiBa and XianSi
         int rows = (numButtons == 0) ? 0 : (numButtons - 1) / 3 + 1;
         int rowH = G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height();
@@ -316,13 +320,13 @@ void QSanInvokeSkillDock::update() {
             btnNum[i] = qMin(3, remainingBtns);
             remainingBtns -= 3;
         }
-        if (lordskillNum > 3) {
+        /*if (lordskillNum > 3) {
             int half = lordskillNum / 2;
             btnNum[rows] = half;
             btnNum[rows + 1] = lordskillNum - half;
         } else if (lordskillNum > 0) {
             btnNum[rows] = lordskillNum;
-        }
+        }*/
 
         // If the buttons in rows are 3, 1, then balance them to 2, 2
         if (rows >= 2) {
@@ -330,19 +334,19 @@ void QSanInvokeSkillDock::update() {
                 btnNum[rows - 1] = 2;
                 btnNum[rows - 2] = 2;
             }
-        } else if (rows == 1 && btnNum[0] == 3 && lordskillNum == 0) {
+        }/* else if (rows == 1 && btnNum[0] == 3 && lordskillNum == 0) {
             btnNum[0] = 2;
             btnNum[1] = 1;
             rows = 2;
-        }
+        }*/
 
         int m = 0;
-        int x_ls = 0;
+        /*int x_ls = 0;
         if (lordskillNum > 0) x_ls++;
-        if (lordskillNum > 3) x_ls++;
-        for (int i = 0; i < rows + x_ls; i++) {
-            int rowTop = (RoomSceneInstance->m_skillButtonSank) ? (-rowH - 2 * (rows + x_ls - i - 1)) :
-                                                                  ((-rows - x_ls + i) * rowH);
+        if (lordskillNum > 3) x_ls++;*/
+        for (int i = 0; i < rows/* + x_ls*/; i++) {
+            int rowTop = (RoomSceneInstance->m_skillButtonSank) ? (-rowH - 2 * (rows/* + x_ls*/ - i - 1)) :
+                                                                  ((-rows/* - x_ls*/ + i) * rowH);
             int btnWidth = _m_width / btnNum[i];
             for (int j = 0; j < btnNum[i]; j++) {
                 QSanInvokeSkillButton *button = all_buttons[m++];
