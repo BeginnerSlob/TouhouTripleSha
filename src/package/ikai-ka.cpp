@@ -636,9 +636,15 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         forever {
             room->showAllCards(player);
-            foreach (const Card *card, player->getHandcards())
-                if (card->isKindOf("Slash"))
+            foreach (const Card *card, player->getHandcards()) {
+                bool has_slash = false;
+                if (card->isKindOf("Slash")) {
+                    has_slash = true;
                     break;
+                }
+                if (has_slash)
+                    break;
+            }
             player->drawCards(1, objectName());
             if (!player->askForSkillInvoke(objectName()))
                 break;
