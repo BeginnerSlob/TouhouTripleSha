@@ -712,12 +712,12 @@
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/connectiondialog.cpp" line="66"/>
+        <location filename="../../src/dialog/connectiondialog.cpp" line="67"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/connectiondialog.cpp" line="66"/>
+        <location filename="../../src/dialog/connectiondialog.cpp" line="67"/>
         <source>The user name can not be empty!</source>
         <translation>用户名不能为空!</translation>
     </message>
@@ -1478,7 +1478,7 @@
     </message>
     <message>
         <location filename="../../src/dialog/generaloverview.ui" line="257"/>
-        <location filename="../../src/dialog/generaloverview.cpp" line="659"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="637"/>
         <source>Search...</source>
         <translation>搜索...</translation>
     </message>
@@ -1488,8 +1488,8 @@
         <translation>配音</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="539"/>
-        <location filename="../../src/dialog/generaloverview.cpp" line="547"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="514"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="522"/>
         <source>Official</source>
         <translation>官方</translation>
     </message>
@@ -1511,7 +1511,7 @@
     <message>
         <location filename="../../src/dialog/generaloverview.cpp" line="305"/>
         <source>NoGender</source>
-        <translation>无性别</translation>
+        <translation>男性</translation>
     </message>
     <message>
         <location filename="../../src/dialog/generaloverview.cpp" line="322"/>
@@ -1535,32 +1535,12 @@
         <translation>阵亡</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="511"/>
-        <source>Victory</source>
-        <translation>胜利</translation>
-    </message>
-    <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="512"/>
-        <source>Six dragons lead my chariot, I will ride the wind with the greatest speed.With all of the feudal lords under my command,to rule the world with one name!</source>
-        <translation>驾六龙，乘风而行，九合诸侯，一匡天下!</translation>
-    </message>
-    <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="525"/>
-        <source>Stage Change</source>
-        <translation>变身</translation>
-    </message>
-    <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="526"/>
-        <source>Trashes, the real fun is just beginning!</source>
-        <translation>杂鱼们，好戏才刚刚开始！</translation>
-    </message>
-    <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="655"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="633"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="655"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="633"/>
         <source>No generals are found</source>
         <translation>未找到符合要求的武将</translation>
     </message>
@@ -4054,12 +4034,12 @@ P = 你自己, R = 你所在的房间</translation>
 <context>
     <name>UdpDetectorDialog</name>
     <message>
-        <location filename="../../src/dialog/connectiondialog.cpp" line="127"/>
+        <location filename="../../src/dialog/connectiondialog.cpp" line="128"/>
         <source>Detect available server&apos;s addresses at LAN</source>
         <translation>在局域网内探测可用的服务器地址</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/connectiondialog.cpp" line="128"/>
+        <location filename="../../src/dialog/connectiondialog.cpp" line="129"/>
         <source>Refresh</source>
         <translation>刷新</translation>
     </message>

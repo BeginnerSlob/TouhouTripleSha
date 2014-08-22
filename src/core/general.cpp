@@ -150,9 +150,14 @@ QString General::getSkillDescription(bool include_name) const{
     }
 
     if (include_name) {
-        QString color_str = Sanguosha->getKingdomColor(kingdom).name();
-        QString name = QString("<font color=%1><b>%2</b></font>     ").arg(color_str).arg(Sanguosha->translate(objectName()));
-        name.prepend(QString("<img src='image/kingdom/icon/%1.png'/>    ").arg(kingdom));
+        QString name;
+        if (objectName() != "sp999") {
+            QString color_str = Sanguosha->getKingdomColor(kingdom).name();
+            name = QString("<font color=%1><b>%2</b></font>     ").arg(color_str).arg(Sanguosha->translate(objectName()));
+            name.prepend(QString("<img src='image/kingdom/icon/%1.png'/>    ").arg(kingdom));
+        } else {
+            name = QString("<b>%1</b>     ").arg(Sanguosha->translate(objectName()));
+        }
         for (int i = 0; i < max_hp; i++)
             name.append("<img src='image/system/magatamas/5.png' height = 12/>");
         name.append("<br/> <br/>");

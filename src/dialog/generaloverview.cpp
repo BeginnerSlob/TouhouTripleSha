@@ -507,31 +507,6 @@ void GeneralOverview::on_tableWidget_itemSelectionChanged() {
         addCopyAction(death_button);
     }
 
-    if (general_name.contains("caocao")) {
-        QCommandLinkButton *win_button = new QCommandLinkButton(tr("Victory"),
-                                                                tr("Six dragons lead my chariot, "
-                                                                   "I will ride the wind with the greatest speed."
-                                                                   "With all of the feudal lords under my command,"
-                                                                   "to rule the world with one name!"));
-
-        button_layout->addWidget(win_button);
-        addCopyAction(win_button);
-
-        win_button->setObjectName("audio/system/win-cc.ogg");
-        connect(win_button, SIGNAL(clicked()), this, SLOT(playAudioEffect()));
-    }
-
-    if (general_name == "shenlvbu1" || general_name == "shenlvbu2") {
-        QCommandLinkButton *stage_change_button = new QCommandLinkButton(tr("Stage Change"),
-                                                                         tr("Trashes, the real fun is just beginning!"));
-
-        button_layout->addWidget(stage_change_button);
-        addCopyAction(stage_change_button);
-
-        stage_change_button->setObjectName("audio/system/stagechange.ogg");
-        connect(stage_change_button, SIGNAL(clicked()), this, SLOT(playAudioEffect()));
-    }
-
     QString designer_text = Sanguosha->translate("designer:" + general->objectName());
     if (!designer_text.startsWith("designer:"))
         ui->designerLineEdit->setText(designer_text);
@@ -550,8 +525,9 @@ void GeneralOverview::on_tableWidget_itemSelectionChanged() {
 
     button_layout->addStretch();
     ui->skillTextEdit->append(general->getSkillDescription(true));
-    ui->changeGeneralButton->setEnabled(Self && Self->getGeneralName() != general->objectName());
-    ui->changeGeneral2Button->setEnabled(Self && Self->getGeneral2Name() != general->objectName());
+    bool isXiangzhang = general->objectName() == "sp999";
+    ui->changeGeneralButton->setEnabled(Self && Self->getGeneralName() != general->objectName() && !isXiangzhang);
+    ui->changeGeneral2Button->setEnabled(Self && Self->getGeneral2Name() != general->objectName() && !isXiangzhang);
 }
 
 void GeneralOverview::playAudioEffect() {
@@ -564,6 +540,10 @@ void GeneralOverview::playAudioEffect() {
 }
 
 void GeneralOverview::askTransfiguration() {
+    int row = ui->tableWidget->currentRow();
+    QString general_name = ui->tableWidget->item(row, 0)->data(Qt::UserRole).toString();
+    if (general_name == "sp999")
+        return;
     QPushButton *button = qobject_cast<QPushButton *>(sender());
     bool isSecondaryHero = (button && button->objectName() == ui->changeGeneral2Button->objectName());
     if (ServerInfo.EnableCheat && Self) {
@@ -571,8 +551,6 @@ void GeneralOverview::askTransfiguration() {
             ui->changeGeneral2Button->setEnabled(false);
         else
             ui->changeGeneralButton->setEnabled(false);
-        int row = ui->tableWidget->currentRow();
-        QString general_name = ui->tableWidget->item(row, 0)->data(Qt::UserRole).toString();
         ClientInstance->requestCheatChangeGeneral(general_name, isSecondaryHero);
     }
 }

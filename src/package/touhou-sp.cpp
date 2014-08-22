@@ -1430,9 +1430,10 @@ TouhouSPPackage::TouhouSPPackage()
     related_skills.insertMulti("thzanghun", "#thzanghun-clear");
     related_skills.insertMulti("thzanghun", "#thzanghun-distance");
 
-    /*General *sp999 = new General(this, "sp999", "te", 5, true, true);
-    sp999->addSkill("jibu");
-    sp999->addSkill(new Skill("thfeiniang", Skill::Compulsory));*/
+    General *sp999 = new General(this, "sp999", "te", 5, true, true);
+    sp999->setGender(General::Sexless);
+    sp999->addSkill("thjibu");
+    sp999->addSkill(new Skill("thfeiniang", Skill::Compulsory));
 
     addMetaObject<ThChiyingCard>();
     addMetaObject<ThXuezhongCard>();
