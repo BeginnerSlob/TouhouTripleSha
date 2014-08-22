@@ -32,6 +32,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         int n = qMin(4, (room->alivePlayerCount() + 1) / 2);
         QList<int> card_ids = room->getNCards(n, false);
+        QList<int> copy = card_ids;
         CardMoveReason reason(CardMoveReason::S_REASON_TURNOVER, player->objectName(), objectName(), QString());
         CardsMoveStruct move(card_ids, NULL, Player::PlaceTable, reason);
         room->moveCardsAtomic(move, true);
@@ -41,6 +42,20 @@ public:
                 card_ids.removeOne(id);
                 remains << id;
             }
+        if (!card_ids.isEmpty()) {
+            room->fillAG(copy, player, remains);
+            while (!card_ids.isEmpty()) {
+                int id = room->askForAG(player, card_ids, true, objectName());
+                if (id == -1)
+                    break;
+                QList<ServerPlayer *> _player;
+                _player << player;
+                room->takeAG(NULL, id, false, _player);
+                card_ids.removeOne(id);
+                remains << id;
+            }
+            room->clearAG(player);
+        }
         if (!card_ids.isEmpty()) {
             CardMoveReason reason2(CardMoveReason::S_REASON_PUT, QString());
             CardsMoveStruct move2(card_ids, NULL, NULL, Player::PlaceTable, Player::DrawPile, reason2);
