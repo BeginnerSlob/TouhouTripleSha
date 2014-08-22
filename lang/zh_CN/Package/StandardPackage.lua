@@ -94,7 +94,7 @@ local t = {
 	["snatch"] = "妙手探云",
 	[":snatch"] = "锦囊牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：你与其距离为1且区域里有牌的一名角色<br /><b>效果</b>：你获得目标角色区域里的一张牌。",
 
-	["dismantlement"] = "心网密藏",
+	["dismantlement"] = "心网密葬",
 	[":dismantlement"] = "锦囊牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：区域里有牌的一名其他角色。<br /><b>效果</b>：你弃置目标角色区域里的一张牌。",
 
 	["collateral"] = "断灵御剑",
@@ -103,7 +103,7 @@ local t = {
 	["#CollateralSlash"] = "%from 选择了此【<font color=\"yellow\"><b>杀</b></font>】的目标 %to",
 	["#CollateralNoSlash"] = "%from 攻击范围内没有使用【<font color=\"yellow\"><b>杀</b></font>】的合法目标",
 
-	["nullification"] = "三粒天滴",
+	["nullification"] = "三滴天粒",
 	[":nullification"] = "锦囊牌<br /><b>时机</b>：一张锦囊牌对一个目标生效前<br /><b>目标</b>：此牌<br /><b>效果</b>：抵消此牌对该目标产生的效果。",
 
 	["indulgence"] = "春雪幻梦",
