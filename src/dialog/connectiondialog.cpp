@@ -25,8 +25,7 @@ void ConnectionDialog::showAvatarList() {
     QList<const General *> generals = Sanguosha->findChildren<const General *>();
     foreach (const General *general, generals) {
         QIcon icon(G_ROOM_SKIN.getGeneralPixmap(general->objectName(), QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE));
-        QString text = Sanguosha->translate(general->objectName());
-        QListWidgetItem *item = new QListWidgetItem(icon, text, ui->avatarList);
+        QListWidgetItem *item = new QListWidgetItem(icon, QString(), ui->avatarList);
         item->setData(Qt::UserRole, general->objectName());
     }
     ui->avatarList->show();

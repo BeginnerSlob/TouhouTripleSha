@@ -36,6 +36,7 @@ class Player: public QObject {
     Q_PROPERTY(bool chained READ isChained WRITE setChained)
     Q_PROPERTY(bool owner READ isOwner WRITE setOwner)
     Q_PROPERTY(bool role_shown READ hasShownRole WRITE setShownRole)
+    Q_PROPERTY(int gender READ getGender WRITE setGender)
 
     Q_PROPERTY(bool kongcheng READ isKongcheng)
     Q_PROPERTY(bool nude READ isNude)
@@ -64,8 +65,8 @@ public:
     void setMaxHp(int max_hp);
     int getLostHp() const;
     bool isWounded() const;
-    General::Gender getGender() const;
-    virtual void setGender(General::Gender gender);
+    int getGender() const;
+    virtual void setGender(int gender_num);
     bool isMale() const;
     bool isFemale() const;
     bool isNeuter() const;
