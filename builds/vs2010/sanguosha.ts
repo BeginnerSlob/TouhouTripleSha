@@ -1478,7 +1478,7 @@
     </message>
     <message>
         <location filename="../../src/dialog/generaloverview.ui" line="257"/>
-        <location filename="../../src/dialog/generaloverview.cpp" line="659"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="634"/>
         <source>Search...</source>
         <translation>搜索...</translation>
     </message>
@@ -1488,8 +1488,8 @@
         <translation>配音</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="539"/>
-        <location filename="../../src/dialog/generaloverview.cpp" line="547"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="514"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="522"/>
         <source>Official</source>
         <translation>官方</translation>
     </message>
@@ -1535,32 +1535,12 @@
         <translation>阵亡</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="511"/>
-        <source>Victory</source>
-        <translation>胜利</translation>
-    </message>
-    <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="512"/>
-        <source>Six dragons lead my chariot, I will ride the wind with the greatest speed.With all of the feudal lords under my command,to rule the world with one name!</source>
-        <translation>驾六龙，乘风而行，九合诸侯，一匡天下!</translation>
-    </message>
-    <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="525"/>
-        <source>Stage Change</source>
-        <translation>变身</translation>
-    </message>
-    <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="526"/>
-        <source>Trashes, the real fun is just beginning!</source>
-        <translation>杂鱼们，好戏才刚刚开始！</translation>
-    </message>
-    <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="655"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="630"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="655"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="630"/>
         <source>No generals are found</source>
         <translation>未找到符合要求的武将</translation>
     </message>

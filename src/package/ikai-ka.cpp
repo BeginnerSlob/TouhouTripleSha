@@ -518,10 +518,12 @@ public:
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (room->getCurrent() == player && player->getPhase() != Player::NotActive)
                 return QStringList();
-            if (move.from == player && move.from_places.contains(Player::PlaceHand) && move.is_last_handcard)
+            if (move.from == player && move.from_places.contains(Player::PlaceHand) && player->getHandcardNum() <= 1)
                 return QStringList(objectName());
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive && player->getHandcardNum() <= 1)
+                return QStringList(objectName());
             if (change.to == Player::Draw || change.to == Player::Discard)
                 return QStringList(objectName());
         }
@@ -531,7 +533,7 @@ public:
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         room->sendCompulsoryTriggerLog(player, objectName());
         room->broadcastSkillInvoke(objectName());
-        if (triggerEvent == CardsMoveOneTime) {
+        if (triggerEvent == CardsMoveOneTime || data.value<PhaseChangeStruct>().to == Player::NotActive) {
             QList<int> card_ids = room->getNCards(5, false);
             QList<int> to_get;
             room->fillAG(card_ids, player);
@@ -565,11 +567,7 @@ IkHuangshiCard::IkHuangshiCard() {
 }
 
 bool IkHuangshiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select->canDiscard(to_select, "he") && !Self->inMyAttackRange(to_select);
-}
-
-bool IkHuangshiCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
-    return targets.length() <= 1;
+    return targets.isEmpty() && to_select->canDiscard(to_select, "he") && !Self->inMyAttackRange(to_select) && to_select != Self;
 }
 
 void IkHuangshiCard::onEffect(const CardEffectStruct &effect) const{
@@ -1826,7 +1824,7 @@ public:
     }
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
-        if (player->property("ikqisi").isNull())
+        if (player->isDead() || player->property("ikqisi").isNull())
             return false;
         QString obj_name = player->property("ikqisi").toString();
         if (obj_name.isEmpty() || player->objectName() == obj_name)
@@ -1863,6 +1861,8 @@ public:
 
     virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         QMap<ServerPlayer *, QStringList> skill_list;
+        if (player->isDead())
+            return skill_list;
         DamageStruct damage = data.value<DamageStruct>();
         foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
             if (owner == player) continue;

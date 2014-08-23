@@ -1868,11 +1868,8 @@ public:
             if (change.to != Player::NotActive) return skill_list;
             foreach (ServerPlayer *zangba, room->findPlayersBySkillName("iklingxue"))
                 if (player->hasFlag("lingxue_" + zangba->objectName())) {
-                    if (player->getMark("iklingxue_discard") > 0)
+                    if (player->getMark("iklingxue_discard") == 0)
                         skill_list.insert(zangba, QStringList(objectName()));
-                    else
-                        player->setMark("iklingxue_discard", 0);
-                    room->setPlayerMark(player, "@lingxue", 0);
                 }
         }
         return skill_list;
@@ -1883,6 +1880,7 @@ public:
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             ask_who->addMark("iklingxue_discard", move.card_ids.length());
         } else if (triggerEvent == EventPhaseChanging) {
+            room->setPlayerMark(player, "@lingxue", 0);
             LogMessage log;
             log.type = "#IkLingxueDraw";
             log.from = player;
@@ -1890,7 +1888,12 @@ public:
             log.arg = "iklingxue";
             log.arg2 = QString::number(player->getMark("iklingxue_discard"));
             room->sendLog(log);
-            ask_who->drawCards(player->getMark("iklingxue_discard"), "iklingxue");
+            if (player->isNude() || room->askForChoice(ask_who, "iklingxue", "obtain+draw") == "draw") {
+                ask_who->drawCards(1, "iklingxue");
+            } else {
+                int id = room->askForCardChosen(ask_who, player, "he", "iklingxue", false, Card::MethodNone);
+                room->obtainCard(ask_who, id, false);
+            }
             player->setMark("iklingxue_discard", 0);
         }
         return false;
@@ -2785,7 +2788,7 @@ public:
         foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (!target->isAlive())
                 break;
-            if (!p->isAlive() || !target->canDiscard(p, "he"))
+            if (!p->isAlive() || !p->isChained() || !target->canDiscard(p, "he"))
                 continue;
             if (p == target) {
                 room->askForDiscard(target, objectName(), 1, 1, false, true);
