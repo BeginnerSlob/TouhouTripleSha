@@ -70,7 +70,7 @@ return {
 	["#kami005"]="丑三时的幻之舞",
 	["kami005"]="神秦心",--神 - 幻 - 3血
 	["designer:kami005"]="幻桜落 | Codeby:Slob",
-	["illustrator:kami005"]="正体不明",
+	["illustrator:kami005"]="Takibi",
 	["cv:kami005"]="暂无",
 	["thsuhu"]="肃狐",
 	[":thsuhu"]="摸牌阶段开始时，你可放弃摸牌，改为将牌堆顶的一张牌面朝上置于你的人物牌上，称为“面”，然后进行一个额外的出牌阶段。",
