@@ -499,9 +499,9 @@ bool ServerPlayer::pindian(ServerPlayer *target, const QString &reason, const Ca
             }
     }
 
-    if (card2 == NULL && target->hasLordSkill("thqiyuan") && !room->getLieges("kaze", this).isEmpty()) {
+    if (card2 == NULL && target->hasLordSkill("thqiyuan") && !room->getLieges("kaze", target).isEmpty()) {
         if (target->askForSkillInvoke("thqiyuan"))
-            foreach (ServerPlayer *p, room->getLieges("kaze", this)) {
+            foreach (ServerPlayer *p, room->getLieges("kaze", target)) {
                 const Card *cd = room->askForCard(p, ".", "@thqiyuan-pindiancard", QVariant(), Card::MethodNone, target);
                 if (cd)
                     card2 = cd;

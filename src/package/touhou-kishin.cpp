@@ -681,24 +681,6 @@ public:
     }
 };
 
-class ThYishiMaxCardsSkill: public MaxCardsSkill {
-public:
-    ThYishiMaxCardsSkill(): MaxCardsSkill("#thyishi-max-cards") {
-    }
-
-    virtual int getFixed(const Player *target) const{
-        if (target->hasSkill("thyishi")) {
-            int n = 0;
-            foreach (const Player *p, target->getAliveSiblings()) {
-                if (p->getHandcardNum() > n)
-                    n = p->getHandcardNum();
-            }
-            return n;
-        } else
-            return -1;
-    }
-};
-
 class ThMoju: public TriggerSkill {
 public:
     ThMoju(): TriggerSkill("thmoju") {
@@ -884,9 +866,7 @@ TouhouKishinPackage::TouhouKishinPackage()
     related_skills.insertMulti("thbaochui", "#thbaochui-return");
     kishin006->addSkill(new ThYishi);
     kishin006->addSkill(new ThYishiNullified);
-    kishin006->addSkill(new ThYishiMaxCardsSkill);
     related_skills.insertMulti("thyishi", "#thyishi");
-    related_skills.insertMulti("thyishi", "#thyishi-max-cards");
 
     General *kishin007 = new General(this, "kishin007", "yuki");
     kishin007->addSkill(new ThMoju);

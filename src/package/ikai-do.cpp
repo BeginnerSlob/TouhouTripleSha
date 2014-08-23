@@ -287,28 +287,16 @@ public:
 class IkJiukuang: public OneCardViewAsSkill {
 public:
     IkJiukuang(): OneCardViewAsSkill("ikjiukuang") {
+        filter_pattern = "Weapon,TrickCard+^DelayedTrick";
         response_or_use = true;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return Analeptic::IsAvailable(player) && player->getPhase() == Player::Play;
+        return Analeptic::IsAvailable(player);
     }
 
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        return pattern.contains("analeptic") && player->getPhase() == Player::Play;
-    }
-
-    virtual bool viewFilter(const Card *card) const{
-        if (!(card->isNDTrick() && card->isBlack()) && !card->isKindOf("Weapon"))
-            return false;
-
-        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) {
-            Analeptic *anal = new Analeptic(Card::SuitToBeDecided, -1);
-            anal->addSubcard(card->getEffectiveId());
-            anal->deleteLater();
-            return anal->isAvailable(Self);
-        }
-        return true;
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
+        return pattern.contains("analeptic");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
