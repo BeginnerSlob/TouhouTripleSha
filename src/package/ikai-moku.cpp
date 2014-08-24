@@ -994,7 +994,7 @@ public:
 
 class IkJuejing: public DrawCardsSkill {
 public:
-    IkJuejing(): DrawCardsSkill("#ikjuejing-draw") {
+    IkJuejing(): DrawCardsSkill("ikjuejing") {
         frequency = Compulsory;
     }
 
@@ -1005,8 +1005,8 @@ public:
 
     virtual int getDrawNum(ServerPlayer *player, int n) const{
         Room *room = player->getRoom();
-        room->notifySkillInvoked(player, "ikjuejing");
-        room->broadcastSkillInvoke("ikjuejing");
+        room->notifySkillInvoked(player, objectName());
+        room->broadcastSkillInvoke(objectName());
 
         LogMessage log;
         log.type = "#IkChenyanGood";
@@ -1020,11 +1020,11 @@ public:
 
 class IkJuejingKeep: public MaxCardsSkill {
 public:
-    IkJuejingKeep(): MaxCardsSkill("ikjuejing") {
+    IkJuejingKeep(): MaxCardsSkill("#ikjuejing-keep") {
     }
 
     virtual int getExtra(const Player *target) const{
-        if (target->hasSkill(objectName()))
+        if (target->hasSkill("ikjuejing"))
             return 2;
         else
             return 0;
@@ -5081,10 +5081,10 @@ IkaiMokuPackage::IkaiMokuPackage()
     related_skills.insertMulti("ikmiaowu", "#ikmiaowu-clear");
 
     General *wind030 = new General(this, "wind030", "kaze", 2);
-    wind030->addSkill(new IkJuejingKeep);
     wind030->addSkill(new IkJuejing);
+    wind030->addSkill(new IkJuejingKeep);
     wind030->addSkill(new IkZhihun);
-    related_skills.insertMulti("ikjuejing", "#ikjuejing-draw");
+    related_skills.insertMulti("ikjuejing", "#ikjuejing-keep");
 
     General *bloom008 = new General(this, "bloom008", "hana");
     bloom008->addSkill(new IkXunyu);

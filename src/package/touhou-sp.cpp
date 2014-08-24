@@ -824,6 +824,7 @@ const Card *ThChiyingCard::validate(CardUseStruct &cardUse) const{
             room->setPlayerFlag(user, "thchiying");
             return c;
         }
+    room->setPlayerFlag(user, "Global_ThChiyingFailed");
     return NULL;
 }
 
@@ -862,6 +863,7 @@ const Card *ThChiyingCard::validateInResponse(ServerPlayer *user) const{
             room->setPlayerFlag(user, "thchiying");
             return c;
         }
+    room->setPlayerFlag(user, "Global_ThChiyingFailed");
     return NULL;
 }
 

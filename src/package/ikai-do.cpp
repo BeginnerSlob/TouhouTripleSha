@@ -959,8 +959,6 @@ public:
             if (p->getHandcardNum() >= zhangliao->getHandcardNum())
                 targets << p;
         int num = qMin(targets.length(), data.toInt());
-        foreach (ServerPlayer *p, room->getOtherPlayers(zhangliao))
-            p->setFlags("-IkChibaoTarget");
         if (num > 0)
             return QStringList(objectName());
         return QStringList();
@@ -994,11 +992,16 @@ public:
 class IkChibaoAct: public TriggerSkill {
 public:
     IkChibaoAct(): TriggerSkill("#ikchibao") {
-        events << AfterDrawNCards;
+        events << AfterDrawNCards << EventPhaseChanging;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *zhangliao, QVariant &, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhangliao, QVariant &, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            foreach (ServerPlayer *p, room->getAlivePlayers())
+                p->setFlags("-IkChibaoTarget");
+            return QStringList();
+        }
         if (zhangliao->getMark("ikchibao") == 0) return QStringList();
         return QStringList(objectName());
     }
@@ -2362,18 +2365,18 @@ void IkMoyuCard::onUse(Room *room, const CardUseStruct &card_use) const{
     room->broadcastSkillInvoke("ikmoyu");
 
     LogMessage log;
-    log.from = card_use.from;
-    log.to << card_use.to;
+    log.from = use.from;
+    log.to << use.to;
     log.type = "#UseCard";
     log.card_str = toString();
     room->sendLog(log);
 
-    CardMoveReason reason(CardMoveReason::S_REASON_THROW, card_use.from->objectName(), QString(), "ikmoyu", QString());
-    room->moveCardTo(this, card_use.from, NULL, Player::DiscardPile, reason, true);
+    CardMoveReason reason(CardMoveReason::S_REASON_THROW, use.from->objectName(), QString(), "ikmoyu", QString());
+    room->moveCardTo(this, use.from, NULL, Player::DiscardPile, reason, true);
 
-    thread->trigger(CardUsed, room, card_use.from, data);
+    thread->trigger(CardUsed, room, use.from, data);
     use = data.value<CardUseStruct>();
-    thread->trigger(CardFinished, room, card_use.from, data);
+    thread->trigger(CardFinished, room, use.from, data);
 }
 
 void IkMoyuCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const{
