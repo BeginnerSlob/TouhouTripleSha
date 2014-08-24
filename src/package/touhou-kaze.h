@@ -69,6 +69,16 @@ public:
     virtual const Card *validate(CardUseStruct &card_use) const;
 };
 
+class ThQianyiCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThQianyiCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 class ThHuosuiCard: public SkillCard{
     Q_OBJECT
 

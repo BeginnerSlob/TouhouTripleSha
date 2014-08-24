@@ -2107,15 +2107,12 @@ public:
         if ((reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD
             || (reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_USE
             || (reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_RESPONSE) {
-            const Card *card;
             int i = 0;
             foreach (int card_id, move.card_ids) {
-                card = Sanguosha->getCard(card_id);
-                if (room->getCardOwner(card_id) == player && card->isRed()
-                    && (move.from_places[i] == Player::PlaceHand
-                        || move.from_places[i] == Player::PlaceEquip)) {
+                const Card *card = Sanguosha->getCard(card_id);
+                if (card->isRed() && (move.from_places[i] == Player::PlaceHand
+                                      || move.from_places[i] == Player::PlaceEquip))
                     skill << objectName();
-                }
                 i++;
             }
         }

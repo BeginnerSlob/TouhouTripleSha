@@ -64,9 +64,10 @@ void EquipCard::onUse(Room *room, const CardUseStruct &card_use) const{
     QVariant data = QVariant::fromValue(use);
     RoomThread *thread = room->getThread();
     thread->trigger(PreCardUsed, room, player, data);
-    thread->trigger(CardUsed, room, player, data);
     use = data.value<CardUseStruct>();
-    thread->trigger(CardFinished, room, player, data);
+    thread->trigger(CardUsed, room, use.from, data);
+    use = data.value<CardUseStruct>();
+    thread->trigger(CardFinished, room, use.from, data);
 }
 
 void EquipCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{

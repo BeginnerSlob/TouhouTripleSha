@@ -2197,12 +2197,14 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
         const Card *card = ask_who->tag["ThZhaoyuCard"].value<const Card *>();
         ask_who->tag.remove("ThZhaoyuCard");
         if (card) {
             CardMoveReason reason(CardMoveReason::S_REASON_PUT, ask_who->objectName(), "thzhaoyu", QString());
             room->moveCardTo(card, NULL, Player::DrawPile, reason, false);
+            if (!player->getJudgingArea().isEmpty() && ask_who->askForSkillInvoke("thzhaoyu-draw", "draw"))
+                ask_who->drawCards(1, objectName());
         }
         return false;
     }
@@ -2372,6 +2374,10 @@ public:
             const Card *card = move.reason.m_extraData.value<const Card *>();
             if (card) {
                 card->setFlags("-thliuzhen");
+                if (card->hasFlag("drank")) {
+                    room->setCardFlag(card, "-drank");
+                    card->setTag("drank", 0);
+                }
                 CardUseStruct use;
                 use.card = card;
                 room->setCardFlag(use.card, "liuzhenslash");

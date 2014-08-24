@@ -84,7 +84,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "@ikyingqi", true, true);
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@ikyingqi", true, true);
         if (target) {
             room->broadcastSkillInvoke(objectName());
             player->tag["IkYingqiTarget"] = QVariant::fromValue(target);
@@ -759,7 +759,7 @@ public:
         QList<ServerPlayer *> targets;
         targets << player;
         foreach (ServerPlayer *p, room->getOtherPlayers(player))
-            if (player->inMyAttackRange(p))
+            if (player->inMyAttackRange(p) && player->canDiscard(p, "he"))
                 targets << p;
         target = room->askForPlayerChosen(player, targets, objectName(), "@ikduduan", true);
         if (target) {
