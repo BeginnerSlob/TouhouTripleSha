@@ -800,6 +800,8 @@ const Card *ThChiyingCard::validate(CardUseStruct &cardUse) const{
         return NULL;
     }
 
+    room->setPlayerFlag(user, "thchiying");
+
     LogMessage log;
     log.type = "#InvokeSkill";
     log.from = user;
@@ -811,20 +813,16 @@ const Card *ThChiyingCard::validate(CardUseStruct &cardUse) const{
 
     const Card *card = Sanguosha->getCard(card_id);
     if (names.contains(card->objectName()))
-        if (user->askForSkillInvoke("thchiying_use", "use")) {
-            room->setPlayerFlag(user, "thchiying");
+        if (user->askForSkillInvoke("thchiying_use", "use"))
             return card;
-        }
     if (card->getSuit() == Club)
         if (user->askForSkillInvoke("thchiying_use", "change")) {
             QString name = room->askForChoice(user, "thchiying", names.join("+"));
             Card *c = Sanguosha->cloneCard(name);
             c->addSubcard(card);
             c->setSkillName("thchiying");
-            room->setPlayerFlag(user, "thchiying");
             return c;
         }
-    room->setPlayerFlag(user, "Global_ThChiyingFailed");
     return NULL;
 }
 
@@ -839,6 +837,8 @@ const Card *ThChiyingCard::validateInResponse(ServerPlayer *user) const{
         return NULL;
     }
 
+    room->setPlayerFlag(user, "thchiying");
+
     LogMessage log;
     log.type = "#InvokeSkill";
     log.from = user;
@@ -850,20 +850,16 @@ const Card *ThChiyingCard::validateInResponse(ServerPlayer *user) const{
 
     const Card *card = Sanguosha->getCard(card_id);
     if (names.contains(card->objectName()))
-        if (user->askForSkillInvoke("thchiying_use", "use")) {
-            room->setPlayerFlag(user, "thchiying");
+        if (user->askForSkillInvoke("thchiying_use", "use"))
             return card;
-        }
     if (card->getSuit() == Club)
         if (user->askForSkillInvoke("thchiying_use", "change")) {
             QString name = room->askForChoice(user, "thchiying", names.join("+"));
             Card *c = Sanguosha->cloneCard(name);
             c->addSubcard(card);
             c->setSkillName("thchiying");
-            room->setPlayerFlag(user, "thchiying");
             return c;
         }
-    room->setPlayerFlag(user, "Global_ThChiyingFailed");
     return NULL;
 }
 
@@ -927,6 +923,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        room->setPlayerFlag(player, "thchiying");
         ServerPlayer *current = room->getCurrent();
         int card_id = room->askForCardChosen(player, current, "h", "thchiying");
         room->showCard(current, card_id);
@@ -935,7 +932,6 @@ public:
         if (card->objectName() == "jink")
             if (player->askForSkillInvoke("thchiying_use", "use")) {
                 room->provide(card);
-                room->setPlayerFlag(player, "thchiying");
                 return true;
             }
         if (card->getSuit() == Card::Club)
@@ -944,7 +940,6 @@ public:
                 c->addSubcard(card);
                 c->setSkillName("thchiying");
                 room->provide(c);
-                room->setPlayerFlag(player, "thchiying");
                 return true;
             }
         return false;
