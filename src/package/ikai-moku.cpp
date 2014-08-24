@@ -1529,7 +1529,7 @@ IkQiangxiCard::IkQiangxiCard() {
 }
 
 bool IkQiangxiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if (!targets.isEmpty() || to_select == Self)
+    if (!targets.isEmpty())
         return false;
 
     int rangefix = 0;
@@ -1538,7 +1538,7 @@ bool IkQiangxiCard::targetFilter(const QList<const Player *> &targets, const Pla
         rangefix += card->getRange() - Self->getAttackRange(false);;
     }
 
-    return Self->inMyAttackRange(to_select, rangefix);
+    return to_select == Self || Self->inMyAttackRange(to_select, rangefix);
 }
 
 void IkQiangxiCard::onEffect(const CardEffectStruct &effect) const{
