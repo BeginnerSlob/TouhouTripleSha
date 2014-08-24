@@ -201,16 +201,57 @@ public:
     }
 };
 
-class ThZongni: public MaxCardsSkill {
+class ThZongni: public TriggerSkill {
 public:
-    ThZongni(): MaxCardsSkill("thzongni") {
+    ThZongni(): TriggerSkill("thzongni") {
+        events << EventPhaseStart;
     }
 
-    virtual int getExtra(const Player *target) const {
-        if (target->hasSkill(objectName()) && target->getHp() > 1)
-            return -1;
-        else
-            return 0;
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        ServerPlayer *current = room->getCurrent();
+        if (!TriggerSkill::triggerable(player) || current != player)
+            return QStringList();
+        if (player->getPhase() == Player::Draw)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        player->setFlags("thzongni");
+        player->setPhase(Player::Play);
+        room->broadcastProperty(player, "phase");
+        return false;
+    }
+};
+
+class ThZongniDiscard: public TriggerSkill {
+public:
+    ThZongniDiscard(): TriggerSkill("#thzongni") {
+        events << EventPhaseEnd << EventPhaseChanging;
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *player) const{
+        if (player->getPhase() == Player::PhaseNone) {
+            player->getRoom()->findPlayer(player->objectName())->setFlags("-thzongni");
+            return false;
+        }
+        return player->hasFlag("thzongni");
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        player->setFlags("-thzongni");
+        room->sendCompulsoryTriggerLog(player, "thzongni");
+        player->throwAllHandCards();
+        return false;
     }
 };
 
@@ -426,7 +467,7 @@ public:
         QMap<ServerPlayer *, QStringList> skill_list;
         if (player->getPhase() == Player::Start && !player->isKongcheng())
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
-                if (owner == player) continue;
+                if (owner == player || owner->isKongcheng()) continue;
                 skill_list.insert(owner, QStringList(objectName()));
             }
         return skill_list;
@@ -847,6 +888,8 @@ TouhouKishinPackage::TouhouKishinPackage()
     General *kishin003 = new General(this, "kishin003", "yuki");
     kishin003->addSkill(new ThJingtao);
     kishin003->addSkill(new ThZongni);
+    kishin003->addSkill(new ThZongniDiscard);
+    related_skills.insertMulti("thzongni", "#thzongni");
 
     General *kishin004 = new General(this, "kishin004", "tsuki");
     kishin004->addSkill(new ThLanzou);

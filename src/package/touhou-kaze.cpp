@@ -2220,7 +2220,7 @@ TouhouKazePackage::TouhouKazePackage()
     kaze007->addSkill(new ThBishaSlash);
     related_skills.insertMulti("thbisha", "#thbisha");
 
-    General *kaze008 = new General(this, "kaze008", "kaze");
+    General *kaze008 = new General(this, "kaze008", "kaze", 3);
     kaze008->addSkill(new ThShenzhou);
     kaze008->addSkill(new ThTianliu);
     kaze008->addSkill(new ThQianyi);
