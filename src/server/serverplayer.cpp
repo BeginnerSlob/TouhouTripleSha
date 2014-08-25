@@ -490,22 +490,51 @@ bool ServerPlayer::pindian(ServerPlayer *target, const QString &reason, const Ca
 
     const Card *card2 = NULL;
 
-    if (card1 == NULL && this->hasLordSkill("thqiyuan") && !room->getLieges("kaze", this).isEmpty()) {
-        if (askForSkillInvoke("thqiyuan"))
-            foreach (ServerPlayer *p, room->getLieges("kaze", this)) {
-                const Card *cd = room->askForCard(p, ".", "@thqiyuan-pindiancard", QVariant(), Card::MethodNone, this);
-                if (cd)
+    if (card1 == NULL && hasLordSkill("thqiyuan")) {
+        QList<ServerPlayer *> lieges = room->getLieges("kaze", this);
+        foreach (ServerPlayer *p, lieges) {
+            if (p->isKongcheng() || (p->getHandcardNum() == 1 && p == target))
+                lieges.removeOne(p);
+        }
+        if (!lieges.isEmpty() && askForSkillInvoke("thqiyuan")) {
+            foreach (ServerPlayer *p, lieges) {
+                const Card *cd = room->askForCard(p, ".", "@thqiyuan-pindiancard:" + objectName(), QVariant(), Card::MethodPindian, this);
+                if (cd) {
                     card1 = cd;
+                    room->setCardFlag(cd, "Global_DisabledPindian");
+                    break;
+                }
             }
+        }
     }
 
-    if (card2 == NULL && target->hasLordSkill("thqiyuan") && !room->getLieges("kaze", target).isEmpty()) {
-        if (target->askForSkillInvoke("thqiyuan"))
-            foreach (ServerPlayer *p, room->getLieges("kaze", target)) {
-                const Card *cd = room->askForCard(p, ".", "@thqiyuan-pindiancard", QVariant(), Card::MethodNone, target);
-                if (cd)
-                    card2 = cd;
+    if (card2 == NULL && target->hasLordSkill("thqiyuan")) {
+        QList<ServerPlayer *> lieges = room->getLieges("kaze", target);
+        foreach (ServerPlayer *p, lieges) {
+            if (p->isKongcheng()) {
+                lieges.removeOne(p);
+                continue;
             }
+            bool has_card = false;
+            foreach (const Card *cd, p->getHandcards()) {
+                if (!cd->hasFlag("Global_DisabledPindian") && (!card1 || cd->getEffectiveId() != card1->getEffectiveId())) {
+                    has_card = true;
+                    break;
+                }
+            }
+            if (!has_card)
+                lieges.removeOne(p);
+        }
+        if (!lieges.isEmpty() && target->askForSkillInvoke("thqiyuan")) {
+            foreach (ServerPlayer *p, lieges) {
+                const Card *cd = room->askForCard(p, ".", "@thqiyuan-pindiancard:" + target->objectName(), QVariant(), Card::MethodPindian, target);
+                if (cd) {
+                    card2 = cd;
+                    room->setCardFlag(cd, "Global_DisabledPindian");
+                    break;
+                }
+            }
+        }
     }
 
     if (card1 == NULL && card2 == NULL) {
@@ -513,20 +542,26 @@ bool ServerPlayer::pindian(ServerPlayer *target, const QString &reason, const Ca
         card1 = cards.first();
         card2 = cards.last();
     } else if (card1 == NULL) {
-        if (card2->isVirtualCard()) {
-            int card_id = card2->getEffectiveId();
-            card2 = Sanguosha->getCard(card_id);
-        }
-        card1 = room->askForPindian(target, this, target, reason);
-    } else if (card2 == NULL){
-        if (card1->isVirtualCard()) {
-            int card_id = card1->getEffectiveId();
-            card1 = Sanguosha->getCard(card_id);
-        }
+        card1 = room->askForPindian(this, this, target, reason);
+    } else if (card2 == NULL) {
         card2 = room->askForPindian(target, this, target, reason);
     }
 
     if (card1 == NULL || card2 == NULL) return false;
+
+    if (card1->hasFlag("Global_DisabledPindian"))
+        room->setCardFlag(card1, "-Global_DisabledPindian");
+    if (card2->hasFlag("Global_DisabledPindian"))
+        room->setCardFlag(card2, "-Global_DisabledPindian");
+
+    if (card1->isVirtualCard()) {
+        int card_id = card1->getEffectiveId();
+        card1 = Sanguosha->getCard(card_id);
+    }
+    if (card2->isVirtualCard()) {
+        int card_id = card2->getEffectiveId();
+        card2 = Sanguosha->getCard(card_id);
+    }
 
     PindianStruct pindian_struct;
     pindian_struct.from = this;
@@ -603,7 +638,7 @@ bool ServerPlayer::pindian(ServerPlayer *target, const QString &reason, const Ca
     if (room->getCardPlace(pindian_struct.from_card->getEffectiveId()) == Player::PlaceTable) {
         CardsMoveStruct move_discard_1;
         move_discard_1.card_ids << pindian_struct.from_card->getEffectiveId();
-        //move_discard_1.from = pindian_struct.from;
+        move_discard_1.from = pindian_struct.from;
         move_discard_1.to = NULL;
         move_discard_1.to_place = Player::DiscardPile;
         move_discard_1.reason = CardMoveReason(CardMoveReason::S_REASON_PINDIAN, pindian_struct.from->objectName(),
@@ -614,7 +649,7 @@ bool ServerPlayer::pindian(ServerPlayer *target, const QString &reason, const Ca
     if (room->getCardPlace(pindian_struct.to_card->getEffectiveId()) == Player::PlaceTable) {
         CardsMoveStruct move_discard_2;
         move_discard_2.card_ids << pindian_struct.to_card->getEffectiveId();
-        //move_discard_2.from = pindian_struct.to;
+        move_discard_2.from = pindian_struct.to;
         move_discard_2.to = NULL;
         move_discard_2.to_place = Player::DiscardPile;
         move_discard_2.reason = CardMoveReason(CardMoveReason::S_REASON_PINDIAN, pindian_struct.to->objectName());
