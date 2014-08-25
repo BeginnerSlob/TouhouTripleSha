@@ -215,7 +215,7 @@ public:
                     if (Sanguosha->getCard(id)->isBlack())
                         return true;
         }
-        return !player->isKongcheng() && !player->getPile("wooden_ox").isEmpty();
+        return !player->isKongcheng() || !player->getPile("wooden_ox").isEmpty();
     }
 };
 
