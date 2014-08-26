@@ -904,7 +904,7 @@ void PlayerCardContainer::_createControls() {
     }
 
     _m_markItem = new QGraphicsTextItem(_getMarkParent());
-    _m_markItem->setDefaultTextColor(Qt::white);
+    _m_markItem->setDefaultTextColor(Qt::black);
 
     _createRoleComboBox();
     repaintAll();
