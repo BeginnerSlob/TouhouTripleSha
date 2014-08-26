@@ -112,10 +112,13 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
                         break;
                     }
                 }
-                if (can_use && room->askForSkillInvoke(player, "iklingpao", data))
+                if (can_use && room->askForSkillInvoke(player, "iklingpao", data)) {
+                    if (has_changed)
+                        fire_slash->setSkillName(getSkillName(false));
                     use.card = fire_slash;
-                else
+                } else {
                     delete fire_slash;
+                }
             }
             if (use.card->objectName() == "slash" && player->hasWeapon("fan")) {
                 FireSlash *fire_slash = new FireSlash(getSuit(), getNumber());
@@ -129,10 +132,13 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
                         break;
                     }
                 }
-                if (can_use && room->askForSkillInvoke(player, "fan", data))
+                if (can_use && room->askForSkillInvoke(player, "fan", data)) {
+                    if (has_changed)
+                        fire_slash->setSkillName(getSkillName(false));
                     use.card = fire_slash;
-                else
+                } else {
                     delete fire_slash;
+                }
             }
         }
     }

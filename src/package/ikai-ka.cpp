@@ -56,13 +56,14 @@ public:
             const Card *card = room->askForExchange(player, objectName(), 2, 2, false, "@ikzhiju", true);
             if (!card) {
                 QList<const Card *> cards = player->getHandcards();
-                DummyCard *card = new DummyCard;
+                DummyCard *dummy = new DummyCard;
                 if (cards.length() > 2) {
                     qShuffle(cards);
-                    card->addSubcards(cards.mid(0, 2));
+                    dummy->addSubcards(cards.mid(0, 2));
                 } else {
-                    card->addSubcards(cards);
+                    dummy->addSubcards(cards);
                 }
+                card = dummy;
             }
             CardMoveReason reason(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
             room->moveCardTo(card, NULL, Player::DrawPile, reason, false);
