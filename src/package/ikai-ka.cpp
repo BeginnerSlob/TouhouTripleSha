@@ -584,7 +584,7 @@ public:
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
         if (to_select->isEquipped() || Self->isJilei(to_select))
             return false;
-        return selected.length() < 3;
+        return selected.length() < 2;
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
@@ -1461,7 +1461,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->isKongcheng() && !player->hasUsed("IkDianyanCard");
+        return !player->isKongcheng() && !player->hasUsed("IkDianyanCard") && player->getPile("ikdianyanpile").length() < 3;
     }
 };
 
@@ -1601,9 +1601,9 @@ public:
     }
 };
 
-class IkQiyue: public TriggerSkill {
+class IkQile: public TriggerSkill {
 public:
-    IkQiyue(): TriggerSkill("ikqiyue") {
+    IkQile(): TriggerSkill("ikqile") {
         events << EventPhaseStart;
     }
 
@@ -1614,7 +1614,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        if (room->askForCard(player, "BasicCard", "@ikqiyue", data, objectName())) {
+        if (room->askForCard(player, "BasicCard", "@ikqile", data, objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -2588,12 +2588,12 @@ public:
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == Death) {
-            if (!player || player->isAlive() || !player->hasSkill(objectName(), true))
-                return QStringList();
             DeathStruct death = data.value<DeathStruct>();
-            if (death.who != player)
-                return QStringList();
-            return QStringList(objectName());
+            if (death.who == player && player->isDead() && player->hasSkill(objectName(), true))
+                return QStringList(objectName());
+            if (TriggerSkill::triggerable(player) && death.who->getMark("@shuling") > 0)
+                return QStringList(objectName());
+            return QStringList();
         }
         if (triggerEvent == GameStart && TriggerSkill::triggerable(player))
             return QStringList(objectName());
@@ -2610,13 +2610,20 @@ public:
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         if (triggerEvent == Death) {
-            room->sendCompulsoryTriggerLog(player, objectName());
-            foreach (ServerPlayer *p, room->getAllPlayers()) {
-                if (p->getMark("@shuling") > 0)
-                    p->loseAllMarks("@shuling");
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who == player) {
+                room->sendCompulsoryTriggerLog(player, objectName());
+                foreach (ServerPlayer *p, room->getAllPlayers()) {
+                    if (p->getMark("@shuling") > 0)
+                        p->loseAllMarks("@shuling");
+                }
+                if (player->getMark("@shuling") > 0)
+                    player->loseAllMarks("@shuling");
+            } else {
+                room->sendCompulsoryTriggerLog(player, objectName());
+                player->gainMark("@shuling");
+                death.who->loseAllMarks("@shuling");
             }
-            if (player->getMark("@shuling") > 0)
-                player->loseAllMarks("@shuling");
         } else if (triggerEvent == GameStart) {
             room->sendCompulsoryTriggerLog(player, objectName());
             player->gainMark("@shuling");
@@ -2770,7 +2777,7 @@ IkaiKaPackage::IkaiKaPackage()
     related_skills.insertMulti("iklianxiao", "#iklianxiao-max");
 
     General *snow048 = new General(this, "snow048", "yuki");
-    snow048->addSkill(new IkQiyue);
+    snow048->addSkill(new IkQile);
     snow048->addSkill(new IkSaoxiao);
 
     General *luna030 = new General(this, "luna030", "tsuki");
@@ -2780,7 +2787,7 @@ IkaiKaPackage::IkaiKaPackage()
     luna031->addSkill(new IkQisi);
     luna031->addSkill(new IkMiaoxiang);
 
-    General *luna032 = new General(this, "luna032", "tsuki", 3);
+    General *luna032 = new General(this, "luna032", "tsuki", 3, false);
     luna032->addSkill(new IkJichang);
     luna032->addSkill(new IkManwu);
 

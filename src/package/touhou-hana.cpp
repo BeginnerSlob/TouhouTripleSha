@@ -1164,8 +1164,26 @@ bool ThQuanshanGiveCard::targetFilter(const QList<const Player *> &targets, cons
 }
 
 void ThQuanshanGiveCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    bool can_draw = true;
+    CardType typeId = Sanguosha->getCard(subcards.first())->getTypeId();
+    foreach (int id, subcards) {
+        const Card *card = Sanguosha->getCard(id);
+        if (card->getTypeId() != typeId) {
+            can_draw = false;
+            break;
+        }
+    }
+
     CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), targets.first()->objectName(), "thquanshan", QString());
-    room->obtainCard(targets.first(), this, reason, false);
+    room->obtainCard(targets.first(), this, reason);
+
+    if (can_draw) {
+        foreach (ServerPlayer *p, room->getAlivePlayers())
+            if (p->hasFlag("thquanshan")) {
+                p->drawCards(1, "thquanshan");
+                break;
+            }
+    }
 }
 
 class ThQuanshanGive: public ViewAsSkill {
@@ -1192,7 +1210,7 @@ ThQuanshanCard::ThQuanshanCard() {
 }
 
 bool ThQuanshanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select != Self && !to_select->isKongcheng() && to_select->getHp() >= Self->getHp();
+    return targets.isEmpty() && to_select != Self && !to_select->isKongcheng();
 }
 
 void ThQuanshanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const {
@@ -1634,33 +1652,36 @@ public:
     }
 };
 
-class ThYinghua: public TriggerSkill {
+class ThHouzhi: public TriggerSkill {
 public:
-    ThYinghua(): TriggerSkill("thyinghua") {
-        frequency = Frequent;
-        events << DamageInflicted;
+    ThHouzhi(): TriggerSkill("thhouzhi") {
+        frequency = Compulsory;
+        events << EventPhaseStart << DamageInflicted;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
-        if (!TriggerSkill::triggerable(player) || !player->hasSkill("thhouzhi"))
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
+        if (!TriggerSkill::triggerable(player))
             return QStringList();
-        if (player == room->getCurrent() && player->getPhase() != Player::NotActive)
-            return QStringList();
-        return QStringList(objectName());
+        if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Finish && player->getMark("@jianren") > 0)
+            return QStringList(objectName());
+        if (triggerEvent == DamageInflicted && (player != room->getCurrent() || player->getPhase() == Player::NotActive))
+            return QStringList(objectName());
+        return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        if (player->askForSkillInvoke(objectName())) {
-            room->broadcastSkillInvoke(objectName());
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        room->broadcastSkillInvoke(objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
+        if (triggerEvent == EventPhaseStart) {
+            int n = player->getMark("@jianren");
+            player->loseAllMarks("@jianren");
+            room->loseHp(player, n);
+            return false;
+        } else {
+            DamageStruct damage = data.value<DamageStruct>();
+            player->gainMark("@jianren", damage.damage);
             return true;
         }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        DamageStruct damage = data.value<DamageStruct>();
-        player->gainMark("@jianren", damage.damage);
-        return true;
     }
 };
 
@@ -1679,7 +1700,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        if (!room->askForCard(player, "..", "@thliaoyu", QVariant(), objectName()))
+        if (!room->askForCard(player, ".", "@thliaoyu", QVariant(), objectName()))
             return false;
         room->broadcastSkillInvoke(objectName());
         return true;
@@ -1722,29 +1743,29 @@ public:
     }
 };
 
-class ThHouzhi: public TriggerSkill {
+ThDujiaCard::ThDujiaCard() {
+    target_fixed = true;
+}
+
+void ThDujiaCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    source->gainMark("@jianren");
+    source->drawCards(3, "thdujia");
+}
+
+class ThDujia: public OneCardViewAsSkill {
 public:
-    ThHouzhi(): TriggerSkill("thhouzhi") {
-        frequency = Compulsory;
-        events << EventPhaseStart;
+    ThDujia(): OneCardViewAsSkill("thdujia") {
+        filter_pattern = "BasicCard!";
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
-        if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Finish
-            || player->getMark("@jianren") <= 0)
-            return QStringList();
-
-        return QStringList(objectName());
+    virtual bool isEnabledAtPlay(const Player *player) const {
+        return !player->hasUsed("ThDujiaCard");
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        room->broadcastSkillInvoke(objectName());
-        room->sendCompulsoryTriggerLog(player, objectName());
-        int n = player->getMark("@jianren");
-        player->loseAllMarks("@jianren");
-        room->loseHp(player, n);
-
-        return false;
+    virtual const Card *viewAs(const Card *originalCard) const {
+        ThDujiaCard *card = new ThDujiaCard;
+        card->addSubcard(originalCard);
+        return card;
     }
 };
 
@@ -2545,10 +2566,10 @@ TouhouHanaPackage::TouhouHanaPackage()
     related_skills.insertMulti("thguaitan", "#thguaitan");
     hana012->addSkill(new ThXiagong);
 
-    General *hana013 = new General(this, "hana013", "hana");
-    hana013->addSkill(new ThYinghua);
-    hana013->addSkill(new ThLiaoyu);
+    General *hana013 = new General(this, "hana013", "hana", 3);
     hana013->addSkill(new ThHouzhi);
+    hana013->addSkill(new ThLiaoyu);
+    hana013->addSkill(new ThDujia);
 
     General *hana014 = new General(this, "hana014", "hana", 4, false);
     hana014->addSkill(new ThXianfa);
@@ -2581,6 +2602,7 @@ TouhouHanaPackage::TouhouHanaPackage()
     addMetaObject<ThDuanzuiCard>();
     addMetaObject<ThZheyinCard>();
     addMetaObject<ThMengyaCard>();
+    addMetaObject<ThDujiaCard>();
     addMetaObject<ThXianfaCard>();
     addMetaObject<ThShengzhiCard>();
     addMetaObject<ThLiuzhenCard>();

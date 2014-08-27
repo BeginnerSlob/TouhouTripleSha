@@ -22,8 +22,7 @@ public:
             return QStringList();
         if (triggerEvent == EventPhaseChanging)
             player->tag.remove("ThQijiList");
-        else if (triggerEvent == EventPhaseEnd)
-        {
+        else if (triggerEvent == EventPhaseEnd) {
             if (player->getPhase() == Player::Discard && player->isWounded()) {
                 if (player->tag["ThQijiList"].toList().length() >= 2)
                     return QStringList(objectName());
@@ -43,7 +42,10 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        room->recover(player, RecoverStruct(player));
+        if (!player->isWounded() || room->askForChoice(player, objectName(), "recover+draw") == "draw")
+            player->drawCards(1, objectName());
+        else
+            room->recover(player, RecoverStruct(player));
 
         return false;
     }
@@ -823,7 +825,7 @@ public:
         events << CardResponded << Damaged;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (!TriggerSkill::triggerable(player)) return QStringList();
         QStringList skills;
         if (triggerEvent == CardResponded) {
@@ -920,7 +922,7 @@ public:
 ThQianyiCard::ThQianyiCard(){
 }
 
-bool ThQianyiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool ThQianyiCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const{
     return targets.isEmpty();
 }
 
@@ -1501,7 +1503,7 @@ public:
         if (target == NULL || target == player)
             return QStringList();
 
-        if (!target->isKongcheng()) {
+        if (!target->isNude()) {
             player->tag["ThKudaoTarget"] = QVariant::fromValue(target);
             return QStringList(objectName());
         }
@@ -1535,9 +1537,12 @@ public:
             foreach (int card_id, player->getPile("kudaopile"))
                 lists[(int)Sanguosha->getEngineCard(card_id)->getSuit()] << card_id;
 
-            for (int i = 0; i < 4; i++)
+            int empty = 0;
+            for (int i = 0; i < 4; ++i)
                 if (lists[i].isEmpty())
-                    return QStringList();
+                    ++empty;
+            if (empty > 1)
+                return QStringList();
             return QStringList(objectName());
         }
         return QStringList();
@@ -1546,29 +1551,33 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
-            QList<int> lists[4];
-            foreach (int card_id, player->getPile("kudaopile"))
-                lists[(int)Sanguosha->getEngineCard(card_id)->getSuit()] << card_id;
+            QList<int> card_ids = player->getPile("kudaopile");
+            room->fillAG(card_ids, player);
+            QList<int> to_throw;
+            while (!card_ids.isEmpty() && to_throw.length() < 3) {
+                int card_id = room->askForAG(player, card_ids, false, "thsuilun");
+                card_ids.removeOne(card_id);
+                to_throw << card_id;
+                // throw the rest cards that matches the same suit
+                const Card *card = Sanguosha->getCard(card_id);
+                Card::Suit suit = card->getSuit();
 
-            for (int i = 0; i < 4; i++)
-                if (lists[i].isEmpty())
-                    return false;
+                room->takeAG(player, card_id, false);
 
-            DummyCard *dummy = new DummyCard;
-            dummy->deleteLater();
-            for (int i = 0; i < 4; i++) {
-                room->fillAG(lists[i], player);
-                int id = room->askForAG(player, lists[i], false, objectName());
-                room->clearAG(player);
-                if (id == -1)
-                    id = lists[i].first();
-                dummy->addSubcard(id);
+                QList<int> _card_ids = card_ids;
+                foreach (int id, _card_ids) {
+                    const Card *c = Sanguosha->getCard(id);
+                    if (c->getSuit() == suit) {
+                        card_ids.removeOne(id);
+                        room->takeAG(NULL, id, false);
+                    }
+                }
             }
-            if (dummy->subcardsLength() != 4)
-                return false;
-
+            room->clearAG();
+            DummyCard *dummy = new DummyCard(to_throw);
             CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
             room->throwCard(dummy, reason, NULL);
+            delete dummy;
             return true;
         }
         return false;
@@ -1576,7 +1585,6 @@ public:
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         player->gainAnExtraTurn();
-
         return false;
     }
 };
@@ -2087,6 +2095,16 @@ void ThXinhuaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
         room->notifySkillInvoked(target, "thxinhua");
         CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "thxinhua", QString());
         room->obtainCard(target, this, reason);
+        QList<ServerPlayer *> victims;
+        foreach (ServerPlayer *p, room->getOtherPlayers(target)) {
+            if (p->isKongcheng())
+                continue;
+            victims << p;
+        }
+        if (!victims.isEmpty()) {
+            ServerPlayer *victim = room->askForPlayerChosen(source, victims, "thxinhua");
+            room->showAllCards(victim, target);
+        }
         QList<ServerPlayer *> lords;
         QList<ServerPlayer *> players = room->getOtherPlayers(source);
         foreach (ServerPlayer *p, players) {

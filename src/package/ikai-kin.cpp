@@ -3615,9 +3615,9 @@ public:
         }
 
         int n = 0;
-        if (card1 && card1->isKindOf("BasicCard"))
+        if (card1 && !card1->isKindOf("TrickCard"))
             n++;
-        if (card2 && card2->isKindOf("BasicCard"))
+        if (card2 && !card2->isKindOf("TrickCard"))
             n++;
         lingtong->drawCards(n, objectName());
 

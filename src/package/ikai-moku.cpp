@@ -69,7 +69,7 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         bool invoke = player->tag.value("InvokeIkKuanggu", false).toBool();
         player->tag["InvokeIkKuanggu"] = false;
-        if (invoke) {
+        if (invoke && (player->isWounded() || !damage.card || !damage.card->isKindOf("Slash"))) {
             QStringList skills;
             for (int i = 0; i < damage.damage; i++)
                 skills << objectName();
@@ -78,14 +78,16 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         room->broadcastSkillInvoke(objectName());
         room->sendCompulsoryTriggerLog(player, objectName());
+        DamageStruct damage = data.value<DamageStruct>();
 
         QStringList choices;
         if (player->isWounded())
             choices << "recover";
-        choices << "draw";
+        if (!damage.card || !damage.card->isKindOf("Slash"))
+            choices << "draw";
         QString choice = room->askForChoice(player, objectName(), choices.join("+"));
         if (choice == "recover")
             room->recover(player, RecoverStruct(player));
@@ -1538,7 +1540,7 @@ bool IkQiangxiCard::targetFilter(const QList<const Player *> &targets, const Pla
         rangefix += card->getRange() - Self->getAttackRange(false);;
     }
 
-    return to_select == Self || Self->inMyAttackRange(to_select, rangefix);
+    return Self->inMyAttackRange(to_select, rangefix);
 }
 
 void IkQiangxiCard::onEffect(const CardEffectStruct &effect) const{
@@ -1903,6 +1905,8 @@ public:
 };
 
 IkYihuoCard::IkYihuoCard() {
+    will_throw = false;
+    handling_method = MethodNone;
     m_skillName = "ikyihuov";
     mute = true;
 }
@@ -2622,56 +2626,78 @@ public:
     }
 };
 
-IkJianmieCard::IkJianmieCard() {
+IkJianlveCard::IkJianlveCard() {
 }
 
-bool IkJianmieCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkJianlveCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
 }
 
-void IkJianmieCard::use(Room *room, ServerPlayer *taishici, QList<ServerPlayer *> &targets) const{
-    bool success = taishici->pindian(targets.first(), "ikjianmie", NULL);
-    if (success)
-        room->setPlayerFlag(taishici, "IkJianmieSuccess");
-    else
+void IkJianlveCard::use(Room *room, ServerPlayer *taishici, QList<ServerPlayer *> &targets) const{
+    bool success = taishici->pindian(targets.first(), "ikjianlve", NULL);
+    if (success) {
+        room->setPlayerFlag(taishici, "IkJianlveSuccess");
+        room->acquireSkill(taishici, "ikkongyun");
+    } else {
         room->setPlayerCardLimitation(taishici, "use", "Slash", true);
+    }
 }
 
-class IkJianmie: public ZeroCardViewAsSkill {
+class IkJianlveViewAsSkill: public ZeroCardViewAsSkill {
 public:
-    IkJianmie(): ZeroCardViewAsSkill("ikjianmie") {
+    IkJianlveViewAsSkill(): ZeroCardViewAsSkill("ikjianlve") {
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("IkJianmieCard") && !player->isKongcheng();
+        return !player->hasUsed("IkJianlveCard") && !player->isKongcheng();
     }
 
     virtual const Card *viewAs() const{
-        return new IkJianmieCard;
+        return new IkJianlveCard;
     }
 };
 
-class IkJianmieTargetMod: public TargetModSkill {
+class IkJianlve: public TriggerSkill {
 public:
-    IkJianmieTargetMod(): TargetModSkill("#ikjianmie-target") {
+    IkJianlve(): TriggerSkill("ikjianlve") {
+        events << EventPhaseChanging;
+        view_as_skill = new IkJianlveViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!player->hasFlag("IkJianlveSuccess"))
+            return QStringList();
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (change.to == Player::NotActive) {
+            room->setPlayerFlag(player, "-IkJianlveSuccess");
+            room->detachSkillFromPlayer(player, "ikkongyun");
+        }
+        return QStringList();
+    }
+};
+
+class IkKongyun: public TargetModSkill {
+public:
+    IkKongyun(): TargetModSkill("ikkongyun") {
+        frequency = NotCompulsory;
     }
 
     virtual int getResidueNum(const Player *from, const Card *) const{
-        if (from->hasFlag("IkJianmieSuccess"))
+        if (from->hasSkill(objectName()))
             return 1;
         else
             return 0;
     }
 
     virtual int getDistanceLimit(const Player *from, const Card *) const{
-        if (from->hasFlag("IkJianmieSuccess"))
+        if (from->hasSkill(objectName()))
             return 1000;
         else
             return 0;
     }
 
     virtual int getExtraTargetNum(const Player *from, const Card *) const{
-        if (from->hasFlag("IkJianmieSuccess"))
+        if (from->hasSkill(objectName()))
             return 1;
         else
             return 0;
@@ -4235,11 +4261,26 @@ public:
         frequency = Frequent;
     }
 
-    virtual void onDamaged(ServerPlayer *zuoci, const DamageStruct &damage) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *zuoci, QVariant &data, ServerPlayer* &) const {
+        if (!MasochismSkill::triggerable(zuoci) || !zuoci->hasSkill("ikhuanshen"))
+            return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        QStringList skills;
+        for (int i = 0; i < damage.damage; ++i)
+            skills << objectName();
+        return skills;
+    }
+
+    virtual bool cost(TriggerEvent, Room *, ServerPlayer *zuoci, QVariant &, ServerPlayer *) const {
         if (zuoci->askForSkillInvoke(objectName())) {
             IkHuanshen::playAudioEffect(zuoci, objectName());
-            IkHuanshen::AcquireGenerals(zuoci, damage.damage);
+            return true;
         }
+        return false;
+    }
+
+    virtual void onDamaged(ServerPlayer *zuoci, const DamageStruct &) const{
+        IkHuanshen::AcquireGenerals(zuoci, 1);
     }
 };
 
@@ -5150,9 +5191,8 @@ IkaiMokuPackage::IkaiMokuPackage()
     related_skills.insertMulti("ikzhihui", "#ikzhihui");
 
     General *snow012 = new General(this, "snow012", "yuki");
-    snow012->addSkill(new IkJianmie);
-    snow012->addSkill(new IkJianmieTargetMod);
-    related_skills.insertMulti("ikjianmie", "#ikjianmie-target");
+    snow012->addSkill(new IkJianlve);
+    snow012->addRelateSkill("ikkongyun");
 
     General *snow013 = new General(this, "snow013", "yuki", 3);
     snow013->addSkill(new IkSusheng);
@@ -5249,7 +5289,7 @@ IkaiMokuPackage::IkaiMokuPackage()
     addMetaObject<IkShenenCard>();
     addMetaObject<IkDimengCard>();
     addMetaObject<IkZhihuiCard>();
-    addMetaObject<IkJianmieCard>();
+    addMetaObject<IkJianlveCard>();
     addMetaObject<IkBianshengCard>();
     addMetaObject<IkJibanCard>();
     addMetaObject<IkLingshiCard>();
@@ -5263,8 +5303,8 @@ IkaiMokuPackage::IkaiMokuPackage()
     addMetaObject<IkTianwuCard>();
 
     skills << new IkMohua << new IkHuanwu << new IkYihuoViewAsSkill
-           << new IkJilve << new IkJilveClear << new IkBianshengPindian
-           << new IkYujiViewAsSkill;
+           << new IkJilve << new IkJilveClear << new IkKongyun
+           << new IkBianshengPindian << new IkYujiViewAsSkill;
 }
 
 ADD_PACKAGE(IkaiMoku)
