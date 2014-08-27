@@ -1395,7 +1395,7 @@ private:
         return selected;
     }
 };
-        
+
 ThYingshiCard::ThYingshiCard() {
     mute = true;
     target_fixed = true;
