@@ -1181,8 +1181,14 @@ void ThKanyaoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
                 break;
             }
         if (unsame) {
-            ServerPlayer *target = room->askForPlayerChosen(source, room->getAllPlayers(), "thkanyao", QString(), false, true);
-            room->loseHp(target);
+            QList<ServerPlayer *> victims;
+            foreach (ServerPlayer *p, room->getOtherPlayers(source))
+                if (p->getHp() >= source->getHp())
+                    victims << p;
+            if (!victims.isEmpty()) {
+                ServerPlayer *victim = room->askForPlayerChosen(source, victims, "thkanyao", QString(), false, true);
+                room->loseHp(victim);
+            }
         }
     }
 };

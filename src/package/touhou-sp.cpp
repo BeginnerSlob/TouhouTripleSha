@@ -336,11 +336,11 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (!TriggerSkill::triggerable(player) || player == move.from) return QStringList();
+        if (!TriggerSkill::triggerable(player) || player == move.from || !move.from) return QStringList();
         if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
             && move.reason.m_reason == CardMoveReason::S_REASON_USE) {
             const Card *card = move.reason.m_extraData.value<const Card *>();
-            if (card && card->isRed() && (card->isKindOf("Slash") || card->isNDTrick()))
+            if (card && card->isRed() && (card->isKindOf("Slash") || card->isNDTrick()) && player->inMyAttackRange(move.from))
                 return QStringList(objectName());
         }
         return QStringList();
@@ -421,18 +421,35 @@ public:
     }
 
     virtual bool triggerable(const ServerPlayer *player) const {
-        foreach (ServerPlayer *p, player->getRoom()->getAllPlayers())
-            if (player->inMyAttackRange(p))
-                return PhaseChangeSkill::triggerable(player)
-                    && player->getPhase() == Player::Draw;
+        if (!PhaseChangeSkill::triggerable(player) || player->getPhase() != Player::Draw)
+            return false;
+        QStringList flags;
+        flags << "h" << "e" << "j";
+        foreach (ServerPlayer *p, player->getRoom()->getAllPlayers()) {
+            if (player->inMyAttackRange(p)) {
+                foreach (QString flag, flags) {
+                    if (qAbs(p->getCards(flag).length() - player->getCards(flag).length()) <= player->getLostHp() + 1)
+                        return true;
+                }
+            }
+        }
         return false;
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-            if (player->inMyAttackRange(p))
-                targets << p;
+        QStringList flags;
+        flags << "h" << "e" << "j";
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (player->inMyAttackRange(p)) {
+                foreach (QString flag, flags) {
+                    if (qAbs(p->getCards(flag).length() - player->getCards(flag).length()) <= player->getLostHp() + 1) {
+                        targets << p;
+                        break;
+                    }
+                }
+            }
+        }
         if (targets.isEmpty()) return false;
         ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thmodao", true, true);
         if (target) {
@@ -448,7 +465,14 @@ public:
         ServerPlayer *target = player->tag["ThModaoTarget"].value<ServerPlayer *>();
         player->tag.value("ThModaoTarget");
         if (target) {
-            QString choice = room->askForChoice(player, objectName(), "h+e+j");
+            QStringList flags;
+            flags << "h" << "e" << "j";
+            QStringList choices;
+            foreach (QString flag, flags) {
+                if (qAbs(target->getCards(flag).length() - player->getCards(flag).length()) <= player->getLostHp() + 1)
+                    choices << flag;
+            }
+            QString choice = room->askForChoice(player, objectName(), choices.join("+"));
             if (choice == "h") {
                 foreach (ServerPlayer *p, room->getAlivePlayers()) {
                     if (p != player && p != target)
@@ -1116,6 +1140,28 @@ private:
     }
 };
 
+class ThJiuzhang: public FilterSkill {
+public:
+    ThJiuzhang(): FilterSkill("thjiuzhang") {
+    }
+
+    static WrappedCard *changeToNine(int cardId) {
+        WrappedCard *new_card = Sanguosha->getWrappedCard(cardId);
+        new_card->setSkillName("thjiuzhang");
+        new_card->setNumber(9);
+        new_card->setModified(true);
+        return new_card;
+    }
+
+    virtual bool viewFilter(const Card *to_select) const{
+        return to_select->getNumber() > 9;
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        return changeToNine(originalCard->getEffectiveId());
+    }
+};
+
 ThShushuCard::ThShushuCard() {
     target_fixed = true;
     will_throw = false;
@@ -1226,28 +1272,130 @@ public:
     }
 };
 
-class ThJiuzhang: public FilterSkill {
+class ThFengling: public TriggerSkill {
 public:
-    ThJiuzhang(): FilterSkill("thjiuzhang") {
+    ThFengling(): TriggerSkill("thfengling") {
+        events << Dying;
+        frequency = Limited;
+        limit_mark = "@fengling";
     }
 
-    static WrappedCard *changeToNine(int cardId) {
-        WrappedCard *new_card = Sanguosha->getWrappedCard(cardId);
-        new_card->setSkillName("thjiuzhang");
-        new_card->setNumber(9);
-        new_card->setModified(true);
-        return new_card;
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        DyingStruct dying = data.value<DyingStruct>();
+        if (dying.who != player || player->getMark("@fengling") == 0)
+            return QStringList();
+        if (player->getHp() > 0)
+            return QStringList();
+        return QStringList(objectName());
     }
 
-    virtual bool viewFilter(const Card *to_select) const{
-        return to_select->getNumber() > 9;
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            room->removePlayerMark(player, "@fengling");
+            room->addPlayerMark(player, "@fenglingused");
+            return true;
+        }
+        return false;
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const{
-        return changeToNine(originalCard->getEffectiveId());
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        QList<int> card_ids = room->getNCards(qMax(4, player->aliveCount()), false);
+        CardMoveReason reason(CardMoveReason::S_REASON_TURNOVER, player->objectName(), "thfengling", QString());
+        CardsMoveStruct move(card_ids, NULL, Player::PlaceTable, reason);
+        room->moveCardsAtomic(move, true);
+
+        while (canCombineAsNine(card_ids)) {
+            QList<int> nines = getNine(room, player, card_ids);
+            if (nines.isEmpty())
+                break;
+            foreach (int id, nines)
+                card_ids.removeOne(id);
+            CardMoveReason reason2(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), "thfengling", QString());
+            CardsMoveStruct move2(nines, NULL, Player::DiscardPile, reason2);
+            room->moveCardsAtomic(move2, true);
+            room->recover(player, RecoverStruct(player));
+            if (!player->isWounded())
+                break;
+        }
+        if (!card_ids.isEmpty()) {
+            DummyCard *dummy = new DummyCard(card_ids);
+            room->obtainCard(player, dummy);
+            delete dummy;
+        }
+        return false;
+    }
+
+private:
+    bool canCombineAsNine(QList<int> other_ids, int num = 0) const{
+        if (num > 9)
+            return false;
+        if (num == 9)
+            return true;
+        if (num < 9) {
+            foreach (int id, other_ids) {
+                QList<int> _other_ids = other_ids;
+                _other_ids.removeOne(id);
+                int temp_num = num + Sanguosha->getCard(id)->getNumber();
+                if (canCombineAsNine(_other_ids, temp_num))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    QList<int> getNine(Room *room, ServerPlayer *player, QList<int> card_ids) const{
+        if (!canCombineAsNine(card_ids))
+            return QList<int>();
+        QList<int> selected;
+        forever {
+            QList<int> enabled, disabled;
+            foreach (int id, card_ids) {
+                if (selected.contains(id)) {
+                    disabled << id;
+                    continue;
+                }
+                int num = 0;
+                QList<int> _card_ids = card_ids;
+                foreach (int s_id, selected) {
+                    _card_ids.removeOne(s_id);
+                    num += Sanguosha->getCard(s_id)->getNumber();
+                }
+                foreach (int d_id, disabled) {
+                    _card_ids.removeOne(d_id);
+                }
+                _card_ids.removeOne(id);
+                num += Sanguosha->getCard(id)->getNumber();
+                if (canCombineAsNine(_card_ids, num))
+                    enabled << id;
+                else
+                    disabled << id;
+            }
+            if (!enabled.isEmpty()) {
+                room->fillAG(card_ids, NULL, disabled);
+                int id = room->askForAG(player, enabled, true, objectName());
+                room->clearAG();
+                if (id != -1)
+                    selected << id;
+                else
+                    return QList<int>();
+            } else {
+                return QList<int>();
+            }
+            int sum = 0;
+            foreach (int id, selected)
+                sum += Sanguosha->getCard(id)->getNumber();
+            if (sum > 9)
+                return QList<int>();
+            if (sum == 9)
+                break;
+        }
+        return selected;
     }
 };
-
+        
 ThYingshiCard::ThYingshiCard() {
     mute = true;
     target_fixed = true;
@@ -1426,8 +1574,9 @@ TouhouSPPackage::TouhouSPPackage()
     related_skills.insertMulti("thyupan", "#thyupan-record");
 
     General *sp011 = new General(this, "sp011", "yuki");
-    sp011->addSkill(new ThShushu);
     sp011->addSkill(new ThJiuzhang);
+    sp011->addSkill(new ThShushu);
+    sp011->addSkill(new ThFengling);
 
     General *sp012 = new General(this, "sp012", "tsuki");
     sp012->addSkill(new ThYingshi);

@@ -572,7 +572,7 @@ public:
             }
         } else if (triggerEvent == BeforeCardsMove && TriggerSkill::triggerable(player)) {
             ServerPlayer *current = room->getCurrent();
-            if (!current || current->getPhase() != Player::Play) return skill_list;
+            if (!current || (current->getPhase() != Player::Play && current->getPhase() != Player::Discard)) return skill_list;
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.to_place == Player::DiscardPile) {
                 QList<int> ids, disabled;
@@ -612,8 +612,6 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *player) const{
-        ServerPlayer *current = room->getCurrent();
-        if (!current || current->getPhase() != Player::Play) return false;
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
 
         QList<int> ids, disabled;
@@ -804,11 +802,37 @@ public:
     }
 };
 
+IkXinhuiCard::IkXinhuiCard() {
+}
+
+bool IkXinhuiCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const{
+    return targets.size() < 2;
+}
+
+bool IkXinhuiCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
+    return targets.size() == 2;
+}
+
+void IkXinhuiCard::onEffect(const CardEffectStruct &effect) const{
+    effect.to->drawCards(1, "ikxinhui");
+}
+
+class IkXinhuiViewAsSkill: public ZeroCardViewAsSkill {
+public:
+    IkXinhuiViewAsSkill(): ZeroCardViewAsSkill("ikxinhui") {
+        response_pattern = "@@ikxinhui";
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkXinhuiCard;
+    }
+};
+
 class IkXinhui: public TriggerSkill {
 public:
     IkXinhui(): TriggerSkill("ikxinhui") {
         events << PreDamageDone << EventPhaseEnd;
-        frequency = Frequent;
+        view_as_skill = new IkXinhuiViewAsSkill;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
@@ -826,15 +850,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        if (player->askForSkillInvoke(objectName())) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        player->drawCards(2, objectName());
+        room->askForUseCard(player, "@@ikxinhui", "@ikxinhui", -1, Card::MethodNone);
         return false;
     }
 };
@@ -2097,7 +2113,7 @@ public:
         events << CardsMoveOneTime;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         QStringList skill;
         if (!TriggerSkill::triggerable(player)) return skill;
         if (player->getPhase() != Player::NotActive) return skill;
@@ -2598,7 +2614,7 @@ public:
     virtual bool onPhaseChange(ServerPlayer *target) const{
         Room *room = target->getRoom();
         QList<ServerPlayer *> playerlist;
-        foreach (ServerPlayer *p, room->getOtherPlayers(target)) {
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (p->getHp() <= target->getHp())
                 playerlist << p;
         }
@@ -3837,6 +3853,33 @@ public:
     }
 };
 
+class IkHongta: public TriggerSkill {
+public:
+    IkHongta(): TriggerSkill("ikhongta") {
+        events << CardFinished;
+        frequency = Compulsory;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (!use.card->isKindOf("Weapon") && !use.card->isKindOf("Horse"))
+            return skill_list;
+        foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
+            if (use.from->inMyAttackRange(owner))
+                skill_list.insert(owner, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *owner) const{
+        room->sendCompulsoryTriggerLog(owner, objectName());
+        room->broadcastSkillInvoke(objectName());
+        owner->drawCards(1, objectName());
+        return false;
+    }
+};
+
 class IkNicuViewAsSkill: public OneCardViewAsSkill {
 public:
     IkNicuViewAsSkill(): OneCardViewAsSkill("iknicu") {
@@ -4290,7 +4333,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     luna021->addSkill(new SlashNoDistanceLimitSkill("ikshuangren"));
     related_skills.insertMulti("ikshuangren", "#ikshuangren-slash-ndl");
 
-    General *luna022 = new General(this, "luna022", "tsuki", 3);
+    General *luna022 = new General(this, "luna022", "tsuki");
     luna022->addSkill(new IkTianfa);
     luna022->addSkill(new IkGuyi);
 
@@ -4321,8 +4364,8 @@ IkaiSuiPackage::IkaiSuiPackage()
     luna035->addSkill(new IkSheqie);
     luna035->addSkill(new IkYanzhou);
 
-    General *luna040 = new General(this, "luna040", "tsuki");
-    luna040->addSkill("thjibu");
+    General *luna040 = new General(this, "luna040", "tsuki", 3);
+    luna040->addSkill(new IkHongta);
     luna040->addSkill(new IkNicu);
     luna040->addSkill(new IkNicuRecord);
     related_skills.insertMulti("iknicu", "#iknicu-record");
@@ -4338,6 +4381,7 @@ IkaiSuiPackage::IkaiSuiPackage()
 
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
+    addMetaObject<IkXinhuiCard>();
     addMetaObject<IkMoqiCard>();
     addMetaObject<IkTianbeiCard>();
     addMetaObject<IkDuanmengCard>();
