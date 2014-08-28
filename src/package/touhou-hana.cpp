@@ -1788,6 +1788,7 @@ void ThXianfaCard::onEffect(const CardEffectStruct &effect) const {
     log.arg = choice;
     room->sendLog(log);
 
+    effect.from->setFlags("thxianfa");
     effect.to->tag["ThXianfa"] = QVariant::fromValue(choice);
 }
 
@@ -1820,19 +1821,21 @@ public:
 class ThXianfa: public TriggerSkill {
 public:
     ThXianfa(): TriggerSkill("thxianfa") {
-        events << EventPhaseStart;
+        events << EventPhaseChanging;
         view_as_skill = new ThXianfaViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
-        if (player->getPhase() == Player::NotActive)
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (player->hasFlag("thxianfa") && change.from == Player::Discard)
             foreach (ServerPlayer *p, room->getAllPlayers())
                 if (!p->tag.value("ThXianfa").isNull())
                     return QStringList(objectName());
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const {
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        player->setFlags("-thxianfa");
         ServerPlayer *target = NULL;
         foreach (ServerPlayer *p, room->getAllPlayers())
             if (!p->tag.value("ThXianfa").isNull()) {
