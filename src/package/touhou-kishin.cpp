@@ -207,7 +207,7 @@ public:
         events << EventPhaseStart;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
         ServerPlayer *current = room->getCurrent();
         if (!TriggerSkill::triggerable(player) || current != player)
             return QStringList();
@@ -247,7 +247,7 @@ public:
         return player->hasFlag("thzongni");
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         player->setFlags("-thzongni");
         room->sendCompulsoryTriggerLog(player, "thzongni");
         player->throwAllHandCards();

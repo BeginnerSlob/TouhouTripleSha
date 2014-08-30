@@ -584,6 +584,10 @@ SkillCard *Engine::cloneSkillCard(const QString &name) const{
         return NULL;
 }
 
+QString Engine::getMembers() const{
+    return GetConfigFromLuaState(lua, "members").toString();
+}
+
 QString Engine::getVersionNumber() const{
     return GetConfigFromLuaState(lua, "version").toString();
 }

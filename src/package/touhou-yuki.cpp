@@ -42,7 +42,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         if (room->askForChoice(player, objectName(), "jian+mo") == "jian") {
             LogMessage log;
             log.type = "#thjianmochoose1";
@@ -70,7 +70,7 @@ public:
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.card->isKindOf("Slash") && player->hasFlag("jianmoinvoke"))
             return QStringList(objectName());
