@@ -326,8 +326,9 @@ int ScenarioRule::getPriority(TriggerEvent) const{
     return 0;
 }
 
-bool ScenarioRule::triggerable(const ServerPlayer *) const{
-    return true;
+QStringList ScenarioRule::triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer* &ask_who) const{
+    ask_who = NULL;
+    return QStringList(objectName());
 }
 
 MasochismSkill::MasochismSkill(const QString &name)

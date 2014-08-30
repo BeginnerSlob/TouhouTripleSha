@@ -154,7 +154,7 @@ public:
     ScenarioRule(Scenario *scenario);
 
     virtual int getPriority(TriggerEvent triggerEvent) const;
-    virtual bool triggerable(const ServerPlayer *target) const;
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer* &) const;
 };
 
 class MasochismSkill: public TriggerSkill {

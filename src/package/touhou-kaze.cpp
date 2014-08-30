@@ -23,7 +23,7 @@ public:
         if (triggerEvent == EventPhaseChanging)
             player->tag.remove("ThQijiList");
         else if (triggerEvent == EventPhaseEnd) {
-            if (player->getPhase() == Player::Discard && player->isWounded()) {
+            if (player->getPhase() == Player::Discard) {
                 if (player->tag["ThQijiList"].toList().length() >= 2)
                     return QStringList(objectName());
             }
@@ -119,13 +119,13 @@ public:
 
 class ThQiyuan: public TriggerSkill{
 public:
-    ThQiyuan(): TriggerSkill("thqiyuan$"){
+    ThQiyuan(): TriggerSkill("thqiyuan$") {
     }
 };
 
 class ThJilanwen:public TriggerSkill{
 public:
-    ThJilanwen():TriggerSkill("thjilanwen"){
+    ThJilanwen():TriggerSkill("thjilanwen") {
         events << EventPhaseStart;
     }
 
@@ -144,7 +144,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         JudgeStruct judge;
         judge.good = true;
         judge.play_animation = false;
@@ -156,8 +156,8 @@ public:
         Card::Suit suit = (Card::Suit)judge.pattern.toInt();
         QList<ServerPlayer *> targets;
         foreach(ServerPlayer *p, room->getAllPlayers())
-            foreach(const Card *card, p->getCards("ej"))
-                if(card->getSuit() != suit) {
+            foreach (const Card *card, p->getCards("ej"))
+                if (card->getSuit() != suit) {
                     targets << p;
                     break;
                 }
@@ -165,8 +165,8 @@ public:
         if (!targets.isEmpty()) {
             ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
             QList<int> disabled_ids;
-            foreach(const Card *card, target->getCards("ej"))
-                if(card->getSuit() == suit)
+            foreach (const Card *card, target->getCards("ej"))
+                if (card->getSuit() == suit)
                     disabled_ids << card->getEffectiveId();
 
             int card_id = room->askForCardChosen(player, target, "ej", objectName(), false, Card::MethodNone, disabled_ids);
@@ -189,7 +189,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (player != NULL){
             JudgeStruct *judge = data.value<JudgeStruct *>();
-            if (judge->reason == "thjilanwen"){
+            if (judge->reason == "thjilanwen") {
                 judge->pattern = QString::number(int(judge->card->getSuit()));
                 if (room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge)
                     return QStringList(objectName());

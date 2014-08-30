@@ -3812,44 +3812,69 @@ public:
 class IkShuangniang: public TriggerSkill {
 public:
     IkShuangniang(): TriggerSkill("ikshuangniang") {
-        events << EventPhaseStart << FinishJudge << EventPhaseChanging;
+        events << EventPhaseStart << EventPhaseChanging;
         view_as_skill = new IkShuangniangViewAsSkill;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == EventPhaseStart) {
-            if (player->getPhase() == Player::Start) {
+            if (player->getPhase() == Player::Start)
                 room->setPlayerMark(player, "ikshuangniang", 0);
-            } else if (player->getPhase() == Player::Draw && TriggerSkill::triggerable(player)) {
-                if (player->askForSkillInvoke(objectName())) {
-                    room->setPlayerFlag(player, "ikshuangniang");
-
-                    room->broadcastSkillInvoke("ikshuangniang", 1);
-                    JudgeStruct judge;
-                    judge.good = true;
-                    judge.play_animation = false;
-                    judge.reason = objectName();
-                    judge.who = player;
-
-                    room->judge(judge);
-                    room->setPlayerMark(player, "ikshuangniang", judge.card->isRed() ? 1 : 2);
-
-                    return true;
-                }
-            }
-        } else if (triggerEvent == FinishJudge) {
-            JudgeStruct *judge = data.value<JudgeStruct *>();
-            if (judge->reason == "ikshuangniang" && room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge)
-                player->obtainCard(judge->card);
+            else if (player->getPhase() == Player::Draw && TriggerSkill::triggerable(player))
+                return QStringList(objectName());
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to == Player::NotActive && player->hasFlag("ikshuangniang"))
                 room->setPlayerFlag(player, "-ikshuangniang");
         }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke("ikshuangniang", 1);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->setPlayerFlag(player, "ikshuangniang");
+        JudgeStruct judge;
+        judge.good = true;
+        judge.play_animation = false;
+        judge.reason = objectName();
+        judge.who = player;
+
+        room->judge(judge);
+        room->setPlayerMark(player, "ikshuangniang", judge.pattern.toInt());
+
+        return true;
+    }
+};
+
+class IkShuangniangGet: public TriggerSkill {
+public:
+    IkShuangniangGet(): TriggerSkill("#ikshuangniang") {
+        events << FinishJudge;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player != NULL){
+            JudgeStruct *judge = data.value<JudgeStruct *>();
+            if (judge->reason == "ikshuangniang") {
+                judge->pattern = QString::number(judge->card->isRed() ? 1 : 2);
+                if (room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge)
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent , Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const{
+        JudgeStruct *judge = data.value<JudgeStruct *>();
+        judge->who->obtainCard(judge->card);
 
         return false;
     }
@@ -5238,6 +5263,8 @@ IkaiMokuPackage::IkaiMokuPackage()
 
     General *luna005 = new General(this, "luna005", "tsuki");
     luna005->addSkill(new IkShuangniang);
+    luna005->addSkill(new IkShuangniangGet);
+    related_skills.insertMulti("ikshuangniang", "#ikshuangniang");
 
     General *luna007 = new General(this, "luna007", "tsuki", 3);
     luna007->addSkill(new IkSishideng);

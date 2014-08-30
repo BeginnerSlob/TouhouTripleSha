@@ -2,9 +2,9 @@
 -- and it is a little different from config.ini
 
 config = {
-	version = "20140801",
-	version_name = "V2",
-	mod_name = "Para",
+	version = "v0.78",
+	version_name = "东方绮符剧",
+	mod_name = "0830",
 	big_font = 56,
 	small_font = 27,
 	tiny_font = 18,
@@ -316,5 +316,14 @@ config = {
 	jiange_defense_soul = {
 		wei = "jg_soul_caozhen+jg_soul_simayi",
 		shu = "jg_soul_liubei+jg_soul_zhugeliang",
+	},
+
+	members = {
+		"&nbsp;&nbsp;幻桜落(小巫女莎莎、岚兮雨汐)<br/>"..
+		"&nbsp;&nbsp;昂翼天使(heerowww)<br/>"..
+		"&nbsp;&nbsp;女王受·虫(Slob)<br/>"..
+		"&nbsp;&nbsp;狈耳萌特(萌特)<br/>"..
+		"&nbsp;&nbsp;广寒冰焰(IceFlame)<br/>"..
+		"&nbsp;&nbsp;nonescarlet(寒极)"
 	}
 }

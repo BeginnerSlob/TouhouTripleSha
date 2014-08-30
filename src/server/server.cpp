@@ -218,6 +218,10 @@ QWidget *ServerDialog::createAdvancedTab() {
 
     sp_convert_checkbox = new QCheckBox(tr("Enable SP Convert"));
     sp_convert_checkbox->setChecked(Config.value("EnableSPConvert", true).toBool());
+    // temp disabled
+    sp_convert_checkbox->setEnabled(false);
+    sp_convert_checkbox->setChecked(false);
+    sp_convert_checkbox->setToolTip(tr("Temp Disabled"));
 
     maxchoice_spinbox = new QSpinBox;
     maxchoice_spinbox->setRange(3, 21);
@@ -241,9 +245,17 @@ QWidget *ServerDialog::createAdvancedTab() {
 
     second_general_checkbox = new QCheckBox(tr("Enable second general"));
     second_general_checkbox->setChecked(Config.Enable2ndGeneral);
+    // temp disabled
+    second_general_checkbox->setEnabled(false);
+    second_general_checkbox->setChecked(false);
+    second_general_checkbox->setToolTip(tr("Temp Disabled"));
 
     same_checkbox = new QCheckBox(tr("Enable Same"));
     same_checkbox->setChecked(Config.EnableSame);
+    // temp disabled
+    same_checkbox->setEnabled(false);
+    same_checkbox->setChecked(false);
+    same_checkbox->setToolTip(tr("Temp Disabled"));
 
     max_hp_label = new QLabel(tr("Max HP scheme"));
     max_hp_scheme_ComboBox = new QComboBox;
@@ -270,12 +282,20 @@ QWidget *ServerDialog::createAdvancedTab() {
     basara_checkbox->setChecked(Config.EnableBasara);
     updateButtonEnablility(mode_group->checkedButton());
     connect(mode_group, SIGNAL(buttonClicked(QAbstractButton *)), this, SLOT(updateButtonEnablility(QAbstractButton *)));
+    // temp disabled
+    basara_checkbox->setEnabled(false);
+    basara_checkbox->setChecked(false);
+    basara_checkbox->setToolTip(tr("Temp Disabled"));
 
     hegemony_checkbox = new QCheckBox(tr("Enable Hegemony"));
     hegemony_checkbox->setChecked(Config.EnableBasara && Config.EnableHegemony);
     hegemony_checkbox->setEnabled(basara_checkbox->isChecked());
     connect(basara_checkbox, SIGNAL(toggled(bool)), hegemony_checkbox, SLOT(setChecked(bool)));
     connect(basara_checkbox, SIGNAL(toggled(bool)), hegemony_checkbox, SLOT(setEnabled(bool)));
+    // temp disabled
+    hegemony_checkbox->setEnabled(false);
+    hegemony_checkbox->setChecked(false);
+    hegemony_checkbox->setToolTip(tr("Temp Disabled"));
 
     hegemony_maxchoice_label = new QLabel(tr("Upperlimit for hegemony"));
     hegemony_maxchoice_spinbox = new QSpinBox;
@@ -646,22 +666,27 @@ QGroupBox *ServerDialog::create1v1Box() {
 
     QComboBox *officialComboBox = new QComboBox;
     officialComboBox->addItem(tr("Classical"), "Classical");
-    officialComboBox->addItem("2013", "2013");
-    officialComboBox->addItem(tr("WZZZ"), "WZZZ");
+    // temp disabled
+    /*officialComboBox->addItem("2013", "2013");
+    officialComboBox->addItem(tr("WZZZ"), "WZZZ");*/
 
     official_1v1_ComboBox = officialComboBox;
 
-    QString rule = Config.value("1v1/Rule", "2013").toString();
-    if (rule == "2013")
+    QString rule = Config.value("1v1/Rule", "Classical").toString();
+    /*if (rule == "2013")
         officialComboBox->setCurrentIndex(1);
     else if (rule == "WZZZ")
-        officialComboBox->setCurrentIndex(2);
+        officialComboBox->setCurrentIndex(2);*/
 
     kof_using_extension_checkbox = new QCheckBox(tr("General extensions"));
-    kof_using_extension_checkbox->setChecked(Config.value("1v1/UsingExtension", false).toBool());
+    //kof_using_extension_checkbox->setChecked(Config.value("1v1/UsingExtension", false).toBool());
+    kof_using_extension_checkbox->setChecked(true);
+    kof_using_extension_checkbox->setEnabled(false);
 
     kof_card_extension_checkbox = new QCheckBox(tr("Card extensions"));
-    kof_card_extension_checkbox->setChecked(Config.value("1v1/UsingCardExtension", false).toBool());
+    //kof_card_extension_checkbox->setChecked(Config.value("1v1/UsingCardExtension", false).toBool());
+    kof_card_extension_checkbox->setChecked(true);
+    kof_card_extension_checkbox->setEnabled(false);
 
     vlayout->addLayout(HLay(new QLabel(tr("Rule option")), official_1v1_ComboBox));
 
@@ -780,11 +805,17 @@ QGroupBox *ServerDialog::createGameModeBox() {
 
             item_list << button << box;
         } else if (itor.key() == "06_3v3") {
+            // temp disabled
+            button->setEnabled(false);
+            button->setToolTip(tr("Temp Disabled"));
             QGroupBox *box = create3v3Box();
             connect(button, SIGNAL(toggled(bool)), box, SLOT(setEnabled(bool)));
 
             item_list << button << box;
         } else if (itor.key() == "06_XMode") {
+            // temp disabled
+            button->setEnabled(false);
+            button->setToolTip(tr("Temp Disabled"));
             QGroupBox *box = createXModeBox();
             connect(button, SIGNAL(toggled(bool)), box, SLOT(setEnabled(bool)));
 
@@ -800,6 +831,8 @@ QGroupBox *ServerDialog::createGameModeBox() {
     // add scenario modes
     QRadioButton *scenario_button = new QRadioButton(tr("Scenario mode"));
     scenario_button->setObjectName("scenario");
+    // temp disabled
+    scenario_button->setEnabled(false);
     mode_group->addButton(scenario_button);
 
     scenario_ComboBox = new QComboBox;
