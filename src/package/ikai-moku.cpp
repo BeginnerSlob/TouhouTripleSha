@@ -3689,21 +3689,21 @@ public:
     }
 };
 
-class IkShuangniangViewAsSkill: public OneCardViewAsSkill {
+class IkQiyuViewAsSkill: public OneCardViewAsSkill {
 public:
-    IkShuangniangViewAsSkill(): OneCardViewAsSkill("ikshuangniang") {
+    IkQiyuViewAsSkill(): OneCardViewAsSkill("ikqiyu") {
         response_or_use = true;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getMark("ikshuangniang") != 0 && !player->isKongcheng();
+        return player->getMark("ikqiyu") != 0 && !player->isKongcheng();
     }
 
     virtual bool viewFilter(const Card *card) const{
         if (card->isEquipped())
             return false;
 
-        int value = Self->getMark("ikshuangniang");
+        int value = Self->getMark("ikqiyu");
         if (value == 1)
             return card->isBlack();
         else if (value == 2)
@@ -3720,37 +3720,37 @@ public:
     }
 };
 
-class IkShuangniang: public TriggerSkill {
+class IkQiyu: public TriggerSkill {
 public:
-    IkShuangniang(): TriggerSkill("ikshuangniang") {
+    IkQiyu(): TriggerSkill("ikqiyu") {
         events << EventPhaseStart << EventPhaseChanging;
-        view_as_skill = new IkShuangniangViewAsSkill;
+        view_as_skill = new IkQiyuViewAsSkill;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == EventPhaseStart) {
             if (player->getPhase() == Player::Start)
-                room->setPlayerMark(player, "ikshuangniang", 0);
+                room->setPlayerMark(player, "ikqiyu", 0);
             else if (player->getPhase() == Player::Draw && TriggerSkill::triggerable(player))
                 return QStringList(objectName());
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive && player->hasFlag("ikshuangniang"))
-                room->setPlayerFlag(player, "-ikshuangniang");
+            if (change.to == Player::NotActive && player->hasFlag("ikqiyu"))
+                room->setPlayerFlag(player, "-ikqiyu");
         }
         return QStringList();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         if (player->askForSkillInvoke(objectName())) {
-            room->broadcastSkillInvoke("ikshuangniang", 1);
+            room->broadcastSkillInvoke("ikqiyu", 1);
             return true;
         }
         return false;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        room->setPlayerFlag(player, "ikshuangniang");
+        room->setPlayerFlag(player, "ikqiyu");
         JudgeStruct judge;
         judge.good = true;
         judge.play_animation = false;
@@ -3758,15 +3758,15 @@ public:
         judge.who = player;
 
         room->judge(judge);
-        room->setPlayerMark(player, "ikshuangniang", judge.pattern.toInt());
+        room->setPlayerMark(player, "ikqiyu", judge.pattern.toInt());
 
         return true;
     }
 };
 
-class IkShuangniangGet: public TriggerSkill {
+class IkQiyuGet: public TriggerSkill {
 public:
-    IkShuangniangGet(): TriggerSkill("#ikshuangniang") {
+    IkQiyuGet(): TriggerSkill("#ikqiyu") {
         events << FinishJudge;
         frequency = Compulsory;
     }
@@ -3774,7 +3774,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (player != NULL){
             JudgeStruct *judge = data.value<JudgeStruct *>();
-            if (judge->reason == "ikshuangniang") {
+            if (judge->reason == "ikqiyu") {
                 judge->pattern = QString::number(judge->card->isRed() ? 1 : 2);
                 if (room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge)
                     return QStringList(objectName());
@@ -5172,9 +5172,9 @@ IkaiMokuPackage::IkaiMokuPackage()
     luna004->addSkill(new IkXinghuang);
 
     General *luna005 = new General(this, "luna005", "tsuki");
-    luna005->addSkill(new IkShuangniang);
-    luna005->addSkill(new IkShuangniangGet);
-    related_skills.insertMulti("ikshuangniang", "#ikshuangniang");
+    luna005->addSkill(new IkQiyu);
+    luna005->addSkill(new IkQiyuGet);
+    related_skills.insertMulti("ikqiyu", "#ikqiyu");
 
     General *luna007 = new General(this, "luna007", "tsuki", 3);
     luna007->addSkill(new IkSishideng);

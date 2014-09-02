@@ -2209,6 +2209,8 @@ public:
     }
 
     virtual bool viewFilter(const Card *to_select) const{
+        if (!Self->hasSkill("thyanmeng"))
+            return false;
         return to_select->isKindOf("Jink");
     }
 
@@ -2230,7 +2232,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (TriggerSkill::triggerable(player) && !player->hasFlag("ikmoshan")) {
+        if (TriggerSkill::triggerable(player) && player->hasSkill("thyanmeng") && !player->hasFlag("ikmoshan")) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.from != player)
                 return QStringList();

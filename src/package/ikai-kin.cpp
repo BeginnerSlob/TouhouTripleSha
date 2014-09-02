@@ -2909,9 +2909,9 @@ public:
     }
 };
 
-class IkYongxin: public TriggerSkill {
+class IkXinjue: public TriggerSkill {
 public:
-    IkYongxin(): TriggerSkill("ikyongxin") {
+    IkXinjue(): TriggerSkill("ikxinjue") {
         events << EventPhaseStart;
     }
 
@@ -2938,9 +2938,9 @@ public:
         int id = room->askForCardChosen(hs, player, "j", objectName(), false, Card::MethodDiscard);
         room->throwCard(id, NULL, hs);
         if (hs->isAlive() && player->isAlive() && hs->canSlash(player, false)) {
-            room->setTag("IkYongxinUser", QVariant::fromValue(hs));
+            room->setTag("IkXinjueUser", QVariant::fromValue(hs));
             Slash *slash = new Slash(Card::NoSuit, 0);
-            slash->setSkillName("_ikyongxin");
+            slash->setSkillName("_ikxinjue");
             room->useCard(CardUseStruct(slash, hs, player));
         }
 
@@ -2948,24 +2948,24 @@ public:
     }
 };
 
-class IkYongxinSlash: public TriggerSkill {
+class IkXinjueSlash: public TriggerSkill {
 public:
-    IkYongxinSlash(): TriggerSkill("#ikyongxin") {
+    IkXinjueSlash(): TriggerSkill("#ikxinjue") {
         events << PreDamageDone << CardFinished;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == PreDamageDone) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.card && damage.card->isKindOf("Slash") && damage.card->getSkillName() == "ikyongxin")
-                damage.card->setFlags("IkYongxinDamage");
+            if (damage.card && damage.card->isKindOf("Slash") && damage.card->getSkillName() == "ikxinjue")
+                damage.card->setFlags("IkXinjueDamage");
         } else if (!player->hasFlag("Global_ProcessBroken")) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("Slash") && use.card->getSkillName() == "ikyongxin" && !use.card->hasFlag("IkYongxinDamage")) {
-                ServerPlayer *hs = room->getTag("IkYongxinUser").value<ServerPlayer *>();
-                room->removeTag("IkYongxinUser");
+            if (use.card->isKindOf("Slash") && use.card->getSkillName() == "ikxinjue" && !use.card->hasFlag("IkXinjueDamage")) {
+                ServerPlayer *hs = room->getTag("IkXinjueUser").value<ServerPlayer *>();
+                room->removeTag("IkXinjueUser");
                 if (hs)
-                    hs->drawCards(1, "ikyongxin");
+                    hs->drawCards(1, "ikxinjue");
             }
         }
         return QStringList();
@@ -5557,9 +5557,9 @@ IkaiKinPackage::IkaiKinPackage()
     bloom039->addSkill(new IkHuaanTargetMod);
     related_skills.insertMulti("ikhuaan", "#ikhuaan");
     related_skills.insertMulti("ikhuaan", "#ikhuaan-target");
-    bloom039->addSkill(new IkYongxin);
-    bloom039->addSkill(new IkYongxinSlash);
-    related_skills.insertMulti("ikyongxin", "#ikyongxin");
+    bloom039->addSkill(new IkXinjue);
+    bloom039->addSkill(new IkXinjueSlash);
+    related_skills.insertMulti("ikxinjue", "#ikxinjue");
 
     General *snow016 = new General(this, "snow016", "yuki");
     snow016->addSkill(new IkLeilan);

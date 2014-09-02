@@ -4080,7 +4080,7 @@ void RoomScene::revealGeneral(bool self, const QString &general) {
 void RoomScene::skillStateChange(const QString &skill_name) {
     static QStringList button_remain;
     if (button_remain.isEmpty())
-        button_remain << "ikshuangniang" << "thhuanlong";
+        button_remain << "ikqiyu" << "thhuanlong";
     if (button_remain.contains(skill_name)) {
         const Skill *skill = Sanguosha->getSkill(skill_name);
         addSkillButton(skill);
