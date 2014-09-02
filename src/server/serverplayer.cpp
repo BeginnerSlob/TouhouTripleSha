@@ -490,15 +490,15 @@ bool ServerPlayer::pindian(ServerPlayer *target, const QString &reason, const Ca
 
     const Card *card2 = NULL;
 
-    if (card1 == NULL && hasLordSkill("thqiyuan")) {
+    if (card1 == NULL && hasLordSkill("thhuadi")) {
         QList<ServerPlayer *> lieges = room->getLieges("kaze", this);
         foreach (ServerPlayer *p, lieges) {
             if (p->isKongcheng() || (p->getHandcardNum() == 1 && p == target))
                 lieges.removeOne(p);
         }
-        if (!lieges.isEmpty() && askForSkillInvoke("thqiyuan")) {
+        if (!lieges.isEmpty() && askForSkillInvoke("thhuadi")) {
             foreach (ServerPlayer *p, lieges) {
-                const Card *cd = room->askForCard(p, ".", "@thqiyuan-pindiancard:" + objectName(), QVariant(), Card::MethodPindian, this);
+                const Card *cd = room->askForCard(p, ".", "@thhuadi-pindiancard:" + objectName(), QVariant(), Card::MethodNone, this);
                 if (cd) {
                     card1 = cd;
                     room->setCardFlag(cd, "Global_DisabledPindian");
@@ -508,7 +508,7 @@ bool ServerPlayer::pindian(ServerPlayer *target, const QString &reason, const Ca
         }
     }
 
-    if (card2 == NULL && target->hasLordSkill("thqiyuan")) {
+    if (card2 == NULL && target->hasLordSkill("thhuadi")) {
         QList<ServerPlayer *> lieges = room->getLieges("kaze", target);
         foreach (ServerPlayer *p, lieges) {
             if (p->isKongcheng()) {
@@ -525,9 +525,9 @@ bool ServerPlayer::pindian(ServerPlayer *target, const QString &reason, const Ca
             if (!has_card)
                 lieges.removeOne(p);
         }
-        if (!lieges.isEmpty() && target->askForSkillInvoke("thqiyuan")) {
+        if (!lieges.isEmpty() && target->askForSkillInvoke("thhuadi")) {
             foreach (ServerPlayer *p, lieges) {
-                const Card *cd = room->askForCard(p, ".", "@thqiyuan-pindiancard:" + target->objectName(), QVariant(), Card::MethodPindian, target);
+                const Card *cd = room->askForCard(p, ".", "@thhuadi-pindiancard:" + target->objectName(), QVariant(), Card::MethodPindian, target);
                 if (cd) {
                     card2 = cd;
                     room->setCardFlag(cd, "Global_DisabledPindian");

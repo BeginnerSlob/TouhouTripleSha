@@ -225,14 +225,14 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
         log.from = use.from;
         log.to << use.to;
         room->sendLog(log);
-    } else if (use.from->hasFlag("ThHongyeUse")) {
-        use.from->setFlags("-ThHongyeUse");
-        room->broadcastSkillInvoke("thhongye");
+    } else if (use.from->hasFlag("ThZhanyeUse")) {
+        use.from->setFlags("-ThZhanyeUse");
+        room->broadcastSkillInvoke("thzhanye");
 
         LogMessage log;
         log.type = "#InvokeSkill";
         log.from = use.from;
-        log.arg = "thhongye";
+        log.arg = "thzhanye";
         room->sendLog(log);
     } else if (use.from->hasFlag("ThYingshiUse")) {
         use.from->setFlags("-ThYingshiUse");

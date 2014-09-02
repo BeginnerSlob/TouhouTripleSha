@@ -3932,6 +3932,16 @@ public:
         events << Damage;
     }
 
+    virtual bool triggerable(const ServerPlayer *target) const{
+        if (TriggerSkill::triggerable(target)) {
+            foreach (ServerPlayer *p, target->getRoom()->getAlivePlayers())
+                if (p->hasFlag("Global_Dying"))
+                    return false;
+            return true;
+        }
+        return false;
+    }
+
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         if (player->askForSkillInvoke(objectName(), data)) {
             room->broadcastSkillInvoke(objectName());

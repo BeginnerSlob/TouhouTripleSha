@@ -2224,13 +2224,13 @@ public:
 class IkMoshan: public TriggerSkill {
 public:
     IkMoshan(): TriggerSkill("ikmoshan") {
-        events << BeforeCardsMove << EventLoseSkill;
+        events << BeforeCardsMove;
         view_as_skill = new IkMoshanFilter;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (triggerEvent == BeforeCardsMove && TriggerSkill::triggerable(player) && !player->hasFlag("ikmoshan")) {
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player) && !player->hasFlag("ikmoshan")) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.from != player)
                 return QStringList();
@@ -2243,23 +2243,18 @@ public:
                 }
                 i++;
             }
-        } else if (triggerEvent == EventLoseSkill && data.toString() == objectName()) {
-            if (player->getArmor())
-                return QStringList(objectName());
         }
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         room->sendCompulsoryTriggerLog(player, objectName());
         room->broadcastSkillInvoke(objectName());
-        if (triggerEvent == BeforeCardsMove) {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            QList<int> ids;
-            ids << player->getArmor()->getEffectiveId();
-            move.removeCardIds(ids);
-            data = QVariant::fromValue(move);
-        }
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        QList<int> ids;
+        ids << player->getArmor()->getEffectiveId();
+        move.removeCardIds(ids);
+        data = QVariant::fromValue(move);
         ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@ikmoshan");
         CardMoveReason reason(CardMoveReason::S_REASON_GIVE, player->objectName(), target->objectName(), objectName(), QString());
         player->setFlags("ikmoshan");

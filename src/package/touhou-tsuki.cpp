@@ -2221,7 +2221,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
-        if (player->tag.value("InvokeThYunyin", false).toBool()) {
+        if (player->getKingdom() == "tsuki" && player->tag.value("InvokeThYunyin", false).toBool()) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (p->hasLordSkill(objectName()))
                     return QStringList(objectName());
@@ -2288,7 +2288,7 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         ServerPlayer *yilun = damage.from;
         if (yilun)
-            yilun->tag["InvokeThYunyin"] = yilun->getKingdom() == "tsuki";
+            yilun->tag["InvokeThYunyin"] = yilun->getKingdom() == "tsuki" && damage.card && damage.card->isKindOf("Slash");
         return QStringList();
     }
 };
