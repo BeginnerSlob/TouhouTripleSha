@@ -1460,25 +1460,25 @@ public:
     }
 };
 
-ThMengyaCard::ThMengyaCard() {
+ThYachuiCard::ThYachuiCard() {
     will_throw = false;
     handling_method = MethodNone;
 }
 
-bool ThMengyaCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool ThYachuiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     return targets.isEmpty() && to_select != Self && subcardsLength() <= to_select->getLostHp();
 }
 
-void ThMengyaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), targets.first()->objectName(), "thmengya", QString());
+void ThYachuiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), targets.first()->objectName(), "thyachui", QString());
     room->obtainCard(targets.first(), this, reason);
     source->drawCards(subcardsLength());
 }
 
-class ThMengyaViewAsSkill: public ViewAsSkill {
+class ThYachuiViewAsSkill: public ViewAsSkill {
 public:
-    ThMengyaViewAsSkill(): ViewAsSkill("thmengya") {
-        response_pattern = "@@thmengya";
+    ThYachuiViewAsSkill(): ViewAsSkill("thyachui") {
+        response_pattern = "@@thyachui";
     }
 
     virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
@@ -1488,17 +1488,17 @@ public:
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
         if (cards.isEmpty())
             return NULL;
-        Card *card = new ThMengyaCard;
+        ThYachuiCard *card = new ThYachuiCard;
         card->addSubcards(cards);
         return card;
     }
 };
 
-class ThMengya: public TriggerSkill {
+class ThYachui: public TriggerSkill {
 public:
-    ThMengya(): TriggerSkill("thmengya") {
+    ThYachui(): TriggerSkill("thyachui") {
         events << EventPhaseStart;
-        view_as_skill = new ThMengyaViewAsSkill;
+        view_as_skill = new ThYachuiViewAsSkill;
     }
 
     virtual bool triggerable(const ServerPlayer *player) const {
@@ -1508,7 +1508,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        if (room->askForUseCard(player, "@@thmengya", "@thmengya", -1, Card::MethodNone))
+        if (room->askForUseCard(player, "@@thyachui", "@thyachui", -1, Card::MethodNone))
             return true;
         return false;
     }
@@ -1518,9 +1518,9 @@ public:
     }
 };
 
-class ThXichun: public TriggerSkill{
+class ThChunhen: public TriggerSkill{
 public:
-    ThXichun():TriggerSkill("thxichun") {
+    ThChunhen():TriggerSkill("thchunhen") {
         events << BeforeCardsMove;
         frequency = Frequent;
     }
@@ -2560,8 +2560,8 @@ TouhouHanaPackage::TouhouHanaPackage()
     related_skills.insertMulti("thzheyin", "#thzheyin-prohibit");
 
     General *hana011 = new General(this, "hana011", "hana", 3);
-    hana011->addSkill(new ThMengya);
-    hana011->addSkill(new ThXichun);
+    hana011->addSkill(new ThYachui);
+    hana011->addSkill(new ThChunhen);
 
     General *hana012 = new General(this, "hana012", "hana");
     hana012->addSkill(new ThGuaitan);
@@ -2604,7 +2604,7 @@ TouhouHanaPackage::TouhouHanaPackage()
     addMetaObject<ThQuanshanCard>();
     addMetaObject<ThDuanzuiCard>();
     addMetaObject<ThZheyinCard>();
-    addMetaObject<ThMengyaCard>();
+    addMetaObject<ThYachuiCard>();
     addMetaObject<ThDujiaCard>();
     addMetaObject<ThXianfaCard>();
     addMetaObject<ThShengzhiCard>();

@@ -10,9 +10,9 @@
 #include "engine.h"
 #include "general.h"
 
-class ThQiji: public TriggerSkill {
+class ThZhiji: public TriggerSkill {
 public:
-    ThQiji(): TriggerSkill("thqiji") {
+    ThZhiji(): TriggerSkill("thzhiji") {
         frequency = Frequent;
         events << EventPhaseChanging << EventPhaseEnd;
     }
@@ -21,10 +21,10 @@ public:
         if (!TriggerSkill::triggerable(player))
             return QStringList();
         if (triggerEvent == EventPhaseChanging)
-            player->tag.remove("ThQijiList");
+            player->tag.remove("ThZhijiList");
         else if (triggerEvent == EventPhaseEnd) {
             if (player->getPhase() == Player::Discard) {
-                if (player->tag["ThQijiList"].toList().length() >= 2)
+                if (player->tag["ThZhijiList"].toList().length() >= 2)
                     return QStringList(objectName());
             }
         }
@@ -51,9 +51,9 @@ public:
     }
 };
 
-class ThQijiRecord: public TriggerSkill {
+class ThZhijiRecord: public TriggerSkill {
 public:
-    ThQijiRecord(): TriggerSkill("#thqiji") {
+    ThZhijiRecord(): TriggerSkill("#thzhiji") {
         frequency = Compulsory;
         events << CardsMoveOneTime;
     }
@@ -65,11 +65,11 @@ public:
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (player->getPhase() == Player::Discard && move.from == player
             && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
-            QVariantList QijiList = player->tag["ThQijiList"].toList();
+            QVariantList QijiList = player->tag["ThZhijiList"].toList();
             foreach (int id, move.card_ids)
                 if (!QijiList.contains(id))
                     QijiList << id;
-            player->tag["ThQijiList"] = QijiList;
+            player->tag["ThZhijiList"] = QijiList;
         }
 
         return QStringList();
@@ -117,9 +117,9 @@ public:
     }
 };
 
-class ThQiyuan: public TriggerSkill{
+class ThHuadi: public TriggerSkill{
 public:
-    ThQiyuan(): TriggerSkill("thqiyuan$") {
+    ThHuadi(): TriggerSkill("thhuadi$") {
     }
 };
 
@@ -206,16 +206,16 @@ public:
     }
 };
 
-ThNianxieCard::ThNianxieCard(){
+ThNiankeCard::ThNiankeCard(){
     will_throw = false;
     handling_method = MethodNone;
 }
 
-void ThNianxieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+void ThNiankeCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *target = targets.first();
-    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "thnianxie", QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "thnianke", QString());
     room->obtainCard(target, this, reason);
-    int card_id = room->askForCardChosen(source, target, "h", "thnianxie");
+    int card_id = room->askForCardChosen(source, target, "h", "thnianke");
     room->showCard(target, card_id);
     if (Sanguosha->getCard(card_id)->isKindOf("Jink")) {
        source->drawCards(1);
@@ -223,18 +223,18 @@ void ThNianxieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
     }
 }
 
-class ThNianxie: public OneCardViewAsSkill{
+class ThNianke: public OneCardViewAsSkill {
 public:
-    ThNianxie(): OneCardViewAsSkill("thnianxie"){
+    ThNianke(): OneCardViewAsSkill("thnianke") {
         filter_pattern = "Jink";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("ThNianxieCard");
+        return !player->hasUsed("ThNiankeCard");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
-        ThNianxieCard *card = new ThNianxieCard;
+        ThNiankeCard *card = new ThNiankeCard;
         card->addSubcard(originalCard->getId());
         return card;
     }
@@ -332,9 +332,9 @@ public:
     }
 };
 
-class ThHongye:public TriggerSkill{
+class ThZhanye: public TriggerSkill {
 public:
-    ThHongye():TriggerSkill("thhongye"){
+    ThZhanye(): TriggerSkill("thzhanye") {
         events << FinishJudge;
     }
 
@@ -360,9 +360,9 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
-        room->setPlayerFlag(ask_who, "ThHongyeUse");
-        if (!room->askForUseSlashTo(ask_who, player, "@thhongye:" + player->objectName(), false))
-            room->setPlayerFlag(ask_who, "-ThHongyeUse");
+        room->setPlayerFlag(ask_who, "ThZhanyeUse");
+        if (!room->askForUseSlashTo(ask_who, player, "@thzhanye:" + player->objectName(), false))
+            room->setPlayerFlag(ask_who, "-ThZhanyeUse");
 
         return false;
     }
@@ -2204,11 +2204,11 @@ TouhouKazePackage::TouhouKazePackage()
     :Package("touhou-kaze")
 {
     General *kaze001 = new General(this, "kaze001$", "kaze", 3);
-    kaze001->addSkill(new ThQiji);
-    kaze001->addSkill(new ThQijiRecord);
+    kaze001->addSkill(new ThZhiji);
+    kaze001->addSkill(new ThZhijiRecord);
     kaze001->addSkill(new ThJiyi);
-    kaze001->addSkill(new ThQiyuan);
-    related_skills.insertMulti("thqiji", "#thqiji");
+    kaze001->addSkill(new ThHuadi);
+    related_skills.insertMulti("thzhiji", "#thzhiji");
 
     General *kaze002 = new General(this, "kaze002", "kaze");
     kaze002->addSkill(new ThJilanwen);
@@ -2216,12 +2216,12 @@ TouhouKazePackage::TouhouKazePackage()
     related_skills.insertMulti("thjilanwen", "#thjilanwen");
 
     General *kaze003 = new General(this, "kaze003", "kaze", 3);
-    kaze003->addSkill(new ThNianxie);
+    kaze003->addSkill(new ThNianke);
     kaze003->addSkill(new ThJilan);
 
     General *kaze004 = new General(this, "kaze004", "kaze");
     kaze004->addSkill(new ThWangshou);
-    kaze004->addSkill(new ThHongye);
+    kaze004->addSkill(new ThZhanye);
 
     General *kaze005 = new General(this, "kaze005", "kaze", 3, false);
     kaze005->addSkill(new ThEnan);
@@ -2292,7 +2292,7 @@ TouhouKazePackage::TouhouKazePackage()
     kaze018->addSkill(new ThXinhua);
 
     addMetaObject<ThJiyiCard>();
-    addMetaObject<ThNianxieCard>();
+    addMetaObject<ThNiankeCard>();
     addMetaObject<ThEnanCard>();
     addMetaObject<ThMicaiCard>();
     addMetaObject<ThQiaogongCard>();

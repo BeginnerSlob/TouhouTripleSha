@@ -4096,7 +4096,7 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))
             && !damage.chain && !damage.transfer && damage.by_user) {
-            if (damage.to->getMark("ikmingzhen_" + player->objectName()) == 0)
+            if (!damage.to->hasSkill("thyanmeng") && damage.to->getMark("ikmingzhen_" + player->objectName()) == 0)
                 foreach (const Skill *skill, damage.to->getVisibleSkillList())
                     if (!skill->isAttachedLordSkill())
                         return QStringList(objectName());

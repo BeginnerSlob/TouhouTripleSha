@@ -4607,7 +4607,7 @@ public:
         if (death.who != player)
             return false;
 
-        if (death.damage && death.damage->from) {
+        if (death.damage && death.damage->from && !death.damage->from->hasSkill("thyanmeng")) {
             LogMessage log;
             log.type = "#IkQihuangLoseSkills";
             log.from = player;
@@ -4660,7 +4660,7 @@ public:
         zhangjiao->tag.remove("IkLeijiTarget");
         if (target) {
             JudgeStruct judge;
-            judge.pattern = ".|spade";
+            judge.pattern = ".|black";
             judge.good = false;
             judge.negative = true;
             judge.reason = objectName();
@@ -4668,8 +4668,11 @@ public:
 
             room->judge(judge);
 
-            if (judge.isBad())
-                room->damage(DamageStruct(objectName(), zhangjiao, target, 2, DamageStruct::Thunder));
+            if (judge.isBad()) {
+                room->damage(DamageStruct(objectName(), zhangjiao, target, 1, DamageStruct::Thunder));
+                if (zhangjiao->isWounded())
+                    room->recover(zhangjiao, RecoverStruct(zhangjiao));
+            }
         }
 
         return false;

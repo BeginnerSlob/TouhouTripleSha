@@ -75,16 +75,19 @@ public:
     }
 };
 
-class ThChuandao: public TriggerSkill {
+class ThShuling: public TriggerSkill {
 public:
-    ThChuandao(): TriggerSkill("thchuandao") {
-        events << DrawNCards << Death;
+    ThShuling(): TriggerSkill("thshuling") {
+        events << DrawNCards << Death << GameStart;
+        frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (triggerEvent == DrawNCards && player->getMark("@yaoshu") > 0)
+        if (triggerEvent == GameStart && TriggerSkill::triggerable(player)) {
             return QStringList(objectName());
-        else if (triggerEvent == Death && player->hasSkill(objectName())) {
+        } else if (triggerEvent == DrawNCards && player->getMark("@yaoshu") > 0) {
+            return QStringList(objectName());
+        } else if (triggerEvent == Death && player->hasSkill(objectName())) {
             DeathStruct death = data.value<DeathStruct>();
             if (death.who != player)
                 return QStringList();
@@ -96,36 +99,22 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        if (triggerEvent == DrawNCards && player->askForSkillInvoke(objectName())) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        } else if (triggerEvent == Death) {
-            ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), objectName(), "@thchuandao", true, true);
-            if (target) {
-                room->broadcastSkillInvoke(objectName());
-                player->tag["ThChuandaoTarget"] = QVariant::fromValue(target);
-                return true;
-            }
-        }
-        return false;
-    }
-
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        if (triggerEvent == DrawNCards)
+        room->sendCompulsoryTriggerLog(player, objectName(), true);
+        room->broadcastSkillInvoke(objectName());
+        if (triggerEvent == GameStart) {
+            player->gainMark("@yaoshu");
+        } else if (triggerEvent == DrawNCards) {
             data = data.toInt() + 1;
-        else if (triggerEvent == Death) {
-            ServerPlayer *target = player->tag["ThChuandaoTarget"].value<ServerPlayer *>();
-            player->tag.remove("ThChuandaoTarget");
-            if (target) {
-                if (target->getMark("@yaoshu") < 1)
-                    target->gainMark("@yaoshu");
-                foreach (ServerPlayer *p, room->getOtherPlayers(target))
-                    room->setPlayerMark(p, "@yaoshu", 0);
+        } else if (triggerEvent == Death) {
+            ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), objectName(), "@thshuling", false, true);
+            if (target->getMark("@yaoshu") == 0)
+                target->gainMark("@yaoshu");
+            foreach (ServerPlayer *p, room->getOtherPlayers(target))
+                room->setPlayerMark(p, "@yaoshu", 0);
 
-                target->drawCards(2);
-                room->acquireSkill(target, objectName());
-            }
+            target->drawCards(2, objectName());
+            room->acquireSkill(target, objectName());
         }
 
         return false;
@@ -202,23 +191,9 @@ public:
     }
 };
 
-class ThShuling: public TriggerSkill{
+class ThZhiyue: public TriggerSkill{
 public:
-    ThShuling(): TriggerSkill("thshuling"){
-        events << GameStart;
-        frequency = Compulsory;
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        room->sendCompulsoryTriggerLog(player, objectName());
-        player->gainMark("@yaoshu");
-        return false;
-    }
-};
-
-class ThBanyue: public TriggerSkill{
-public:
-    ThBanyue():TriggerSkill("thbanyue"){
+    ThZhiyue():TriggerSkill("thzhiyue"){
         events << CardUsed;
     }
 
@@ -247,7 +222,7 @@ public:
         room->judge(judge);
 
         if (judge.card->isRed())
-            room->setCardFlag(use.card, "thbanyuered");
+            room->setCardFlag(use.card, "thzhiyuered");
         else if (judge.card->isBlack()) {
             QList<ServerPlayer *> targets;
             foreach(ServerPlayer *p, room->getOtherPlayers(player))
@@ -259,7 +234,7 @@ public:
             use.to << target;
 
             LogMessage log;
-            log.type = "#ThBanyue";
+            log.type = "#ThZhiyue";
             log.from = player;
             log.to << target;
             log.arg = objectName();
@@ -274,16 +249,16 @@ public:
     }
 };
 
-class ThBanyueDiscard: public TriggerSkill{
+class ThZhiyueDiscard: public TriggerSkill{
 public:
-    ThBanyueDiscard():TriggerSkill("#thbanyue-discard") {
+    ThZhiyueDiscard():TriggerSkill("#thzhiyue-discard") {
         events << TargetSpecified;
         frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer* &) const{
         CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->hasFlag("thbanyuered"))
+        if (use.card->hasFlag("thzhiyuered"))
             return QStringList(objectName());
         return QStringList();
     }
@@ -705,9 +680,9 @@ public:
     }
 };
 
-class ThXiangrui: public TriggerSkill {
+class ThQinshao: public TriggerSkill {
 public:
-    ThXiangrui():TriggerSkill("thxiangrui") {
+    ThQinshao():TriggerSkill("thqinshao") {
         events << EventPhaseStart;
         frequency = Frequent;
     }
@@ -722,10 +697,10 @@ public:
 
     virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         if (player->getHandcardNum() > qMax(player->getHp(), 0)) {
-            ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@thxiangrui", true, true);
+            ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@thqinshao", true, true);
             if (target) {
                 room->broadcastSkillInvoke(objectName());
-                player->tag["ThXiangruiTarget"] = QVariant::fromValue(target);
+                player->tag["ThQinshaoTarget"] = QVariant::fromValue(target);
                 return true;
             }
         } else if (player->askForSkillInvoke(objectName())) {
@@ -738,8 +713,8 @@ public:
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         int x = player->getHandcardNum() - qMax(player->getHp(), 0);
         if (x > 0) {
-            ServerPlayer *target = player->tag["ThXiangruiTarget"].value<ServerPlayer *>();
-            player->tag.remove("ThXiangruiTarget");
+            ServerPlayer *target = player->tag["ThQinshaoTarget"].value<ServerPlayer *>();
+            player->tag.remove("ThQinshaoTarget");
             if (target)
                 target->drawCards(x);
         } else if (x < 0)
@@ -1155,14 +1130,13 @@ TouhouBangaiPackage::TouhouBangaiPackage()
     bangai001->addSkill(new ThBianfang);
 
     General *bangai002 = new General(this, "bangai002", "hana", 3);
-    bangai002->addSkill(new ThChuandao);
-    bangai002->addSkill(new ThShoujuan);
     bangai002->addSkill(new ThShuling);
+    bangai002->addSkill(new ThShoujuan);
 
     General *bangai003 = new General(this, "bangai003", "yuki");
-    bangai003->addSkill(new ThBanyue);
-    bangai003->addSkill(new ThBanyueDiscard);
-    related_skills.insertMulti("thbanyue", "#thbanyue-discard");
+    bangai003->addSkill(new ThZhiyue);
+    bangai003->addSkill(new ThZhiyueDiscard);
+    related_skills.insertMulti("thzhiyue", "#thzhiyue-discard");
 
     General *bangai004 = new General(this, "bangai004", "tsuki", 3, false);
     bangai004->addSkill(new ThZusha);
@@ -1183,7 +1157,7 @@ TouhouBangaiPackage::TouhouBangaiPackage()
     bangai006->addSkill(new Skill("thyanmeng", Skill::Compulsory));
 
     General *bangai007 = new General(this, "bangai007", "yuki");
-    bangai007->addSkill(new ThXiangrui);
+    bangai007->addSkill(new ThQinshao);
     bangai007->addSkill(new ThXingxie);
 
     General *bangai008 = new General(this, "bangai008", "tsuki", 3);
