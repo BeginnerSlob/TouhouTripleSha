@@ -134,84 +134,6 @@ public:
     }
 };
 
-class Buqu: public TriggerSkill {
-public:
-    Buqu(): TriggerSkill("buqu") {
-        events << AskForPeaches;
-        frequency = Compulsory;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *zhoutai, QVariant &data) const{
-        DyingStruct dying_data = data.value<DyingStruct>();
-        if (dying_data.who != zhoutai)
-            return false;
-
-        if (zhoutai->getHp() > 0) return false;
-        room->broadcastSkillInvoke(objectName());
-        room->sendCompulsoryTriggerLog(zhoutai, objectName());
-
-        int id = room->drawCard();
-        int num = Sanguosha->getCard(id)->getNumber();
-        bool duplicate = false;
-        foreach (int card_id, zhoutai->getPile("buqu")) {
-            if (Sanguosha->getCard(card_id)->getNumber() == num) {
-                duplicate = true;
-                break;
-            }
-        }
-        zhoutai->addToPile("buqu", id);
-        if (duplicate) {
-            CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
-            room->throwCard(Sanguosha->getCard(id), reason, NULL);
-        } else {
-            room->recover(zhoutai, RecoverStruct(zhoutai, NULL, 1 - zhoutai->getHp()));
-        }
-        return false;
-    }
-};
-
-class BuquMaxCards: public MaxCardsSkill {
-public:
-    BuquMaxCards(): MaxCardsSkill("#buqu") {
-    }
-
-    virtual int getFixed(const Player *target) const{
-        int len = target->getPile("buqu").length();
-        if (len > 0)
-            return len;
-        else
-            return -1;
-    }
-};
-
-class Fenji: public TriggerSkill {
-public:
-    Fenji(): TriggerSkill("fenji") {
-        events << CardsMoveOneTime;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (player->getHp() > 0 && move.from && move.from->isAlive() && move.from_places.contains(Player::PlaceHand)
-            && ((move.reason.m_reason == CardMoveReason::S_REASON_DISMANTLE
-                 && move.reason.m_playerId != move.reason.m_targetId)
-                || (move.to && move.to != move.from && move.to_place == Player::PlaceHand
-                    && move.reason.m_reason != CardMoveReason::S_REASON_GIVE
-                    && move.reason.m_reason != CardMoveReason::S_REASON_SWAP))) {
-            move.from->setFlags("FenjiMoveFrom"); // For AI
-            bool invoke = room->askForSkillInvoke(player, objectName(), data);
-            move.from->setFlags("-FenjiMoveFrom");
-            if (invoke) {
-                room->broadcastSkillInvoke(objectName());
-                room->loseHp(player);
-                if (move.from->isAlive())
-                    room->drawCards((ServerPlayer *)move.from, 2, "fenji");
-            }
-        }
-        return false;
-    }
-};
-
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QCommandLinkButton>
@@ -761,12 +683,6 @@ WindPackage::WindPackage()
     General *caoren = new General(this, "caoren", "wei"); // WEI 011
     caoren->addSkill(new Jushou);
     caoren->addSkill(new Jiewei);
-
-    General *zhoutai = new General(this, "zhoutai", "wu"); // WU 013
-    zhoutai->addSkill(new Buqu);
-    zhoutai->addSkill(new BuquMaxCards);
-    zhoutai->addSkill(new Fenji);
-    related_skills.insertMulti("buqu", "#buqu");
 
     General *zhangjiao = new General(this, "zhangjiao$", "qun", 3); // QUN 010
     zhangjiao->addSkill(new Leiji);

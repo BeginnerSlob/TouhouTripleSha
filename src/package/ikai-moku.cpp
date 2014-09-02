@@ -2707,180 +2707,91 @@ public:
 class IkSusheng: public TriggerSkill {
 public:
     IkSusheng(): TriggerSkill("iksusheng") {
-        events << HpChanged;
-        frequency = Frequent;
+        events << AskForPeaches;
+        frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *zhoutai, QVariant &data, ServerPlayer* &) const{
-        if (TriggerSkill::triggerable(zhoutai)
-            && !data.isNull() && !data.canConvert<RecoverStruct>() && zhoutai->getHp() < 1)
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *zhoutai, QVariant &data) const{
+        DyingStruct dying_data = data.value<DyingStruct>();
+        if (dying_data.who != zhoutai)
+            return false;
+
+        if (zhoutai->getHp() > 0) return false;
+        room->broadcastSkillInvoke(objectName());
+        room->sendCompulsoryTriggerLog(zhoutai, objectName());
+
+        int id = room->drawCard();
+        int num = Sanguosha->getCard(id)->getNumber();
+        bool duplicate = false;
+        foreach (int card_id, zhoutai->getPile("iksushengpile")) {
+            if (Sanguosha->getCard(card_id)->getNumber() == num) {
+                duplicate = true;
+                break;
+            }
+        }
+        zhoutai->addToPile("iksushengpile", id);
+        if (duplicate) {
+            CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
+            room->throwCard(Sanguosha->getCard(id), reason, NULL);
+        } else {
+            room->recover(zhoutai, RecoverStruct(zhoutai, NULL, 1 - zhoutai->getHp()));
+        }
+        return false;
+    }
+};
+
+class IkSushengMaxCards: public MaxCardsSkill {
+public:
+    IkSushengMaxCards(): MaxCardsSkill("#iksusheng") {
+    }
+
+    virtual int getFixed(const Player *target) const{
+        int len = target->getPile("iksushengpile").length();
+        if (len > 0)
+            return len;
+        else
+            return -1;
+    }
+};
+
+class IkHuapan: public TriggerSkill {
+public:
+    IkHuapan(): TriggerSkill("ikhuapan") {
+        events << CardsMoveOneTime;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (player->getHp() > 0 && move.from && move.from->isAlive() && move.from_places.contains(Player::PlaceHand)
+            && ((move.reason.m_reason == CardMoveReason::S_REASON_DISMANTLE
+                 && move.reason.m_playerId != move.reason.m_targetId)
+                || (move.to && move.to != move.from && move.to_place == Player::PlaceHand
+                    && move.reason.m_reason != CardMoveReason::S_REASON_GIVE
+                    && move.reason.m_reason != CardMoveReason::S_REASON_SWAP)))
             return QStringList(objectName());
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *zhoutai, QVariant &data, ServerPlayer *) const{
-        if (zhoutai->askForSkillInvoke(objectName(), data)) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        move.from->setFlags("IkHuapanMoveFrom"); // For AI
+        bool invoke = player->askForSkillInvoke(objectName(), data);
+        move.from->setFlags("-IkHuapanMoveFrom");
+        if (invoke) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *zhoutai, QVariant &, ServerPlayer *) const{
-        QList<int> iksusheng = zhoutai->getPile("iksushengpile");
-
-        int need = 1 - zhoutai->getHp(); // the buqu cards that should be turned over
-        int n = need - iksusheng.length();
-        if (n > 0) {
-            QList<int> card_ids = room->getNCards(n, false);
-            zhoutai->addToPile("iksushengpile", card_ids);
-        }
-        iksusheng = zhoutai->getPile("iksushengpile");
-        QList<int> duplicate_numbers;
-
-        QSet<int> numbers;
-        foreach (int card_id, iksusheng) {
-            const Card *card = Sanguosha->getCard(card_id);
-            int number = card->getNumber();
-
-            if (numbers.contains(number))
-                duplicate_numbers << number;
-            else
-                numbers << number;
-        }
-
-        if (duplicate_numbers.isEmpty())
-            return true;
-        else
-            zhoutai->clearOnePrivatePile("iksushengpile");
-
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->loseHp(player);
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.from->isAlive())
+            room->drawCards((ServerPlayer *)move.from, 2, objectName());
         return false;
-    }
-};
-
-class IkSushengRemove: public TriggerSkill {
-public:
-    IkSushengRemove(): TriggerSkill("#iksusheng-remove") {
-        events << HpRecover;
-        frequency = Compulsory;
-    }
-
-    static void Remove(ServerPlayer *zhoutai) {
-        Room *room = zhoutai->getRoom();
-        QList<int> iksusheng(zhoutai->getPile("iksushengpile"));
-
-        CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "iksusheng", QString());
-        int need = 1 - zhoutai->getHp();
-        if (need <= 0) {
-            // clear all the buqu cards
-            foreach (int card_id, iksusheng) {
-                LogMessage log;
-                log.type = "$IkSushengRemove";
-                log.from = zhoutai;
-                log.card_str = Sanguosha->getCard(card_id)->toString();
-                room->sendLog(log);
-
-                room->throwCard(Sanguosha->getCard(card_id), reason, NULL);
-            }
-        } else {
-            int to_remove = iksusheng.length() - need;
-            for (int i = 0; i < to_remove; i++) {
-                room->fillAG(iksusheng);
-                int card_id = room->askForAG(zhoutai, iksusheng, false, "iksusheng");
-
-                LogMessage log;
-                log.type = "$IkSushengRemove";
-                log.from = zhoutai;
-                log.card_str = Sanguosha->getCard(card_id)->toString();
-                room->sendLog(log);
-
-                iksusheng.removeOne(card_id);
-                room->throwCard(Sanguosha->getCard(card_id), reason, NULL);
-                room->clearAG();
-            }
-        }
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target && target->isAlive() && !target->getPile("iksushengpile").isEmpty();
-    }
-
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *zhoutai, QVariant &, ServerPlayer *) const{
-        Remove(zhoutai);
-        return false;
-    }
-};
-
-class IkSushengClear: public DetachEffectSkill {
-public:
-    IkSushengClear(): DetachEffectSkill("iksusheng") {
-    }
-
-    virtual void onSkillDetached(Room *room, ServerPlayer *player) const{
-        if (player->getHp() <= 0)
-            room->enterDying(player, NULL);
-    }
-};
-
-class IkEli: public TriggerSkill {
-public:
-    IkEli(): TriggerSkill("ikeli") {
-        events << EventPhaseEnd;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const {
-        QVariantList cards = target->tag["IkEli"].toList();
-        return cards.length() >= 2 && TriggerSkill::triggerable(target)
-            && target->getPhase() == Player::Discard;
-    }
-
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        if (player->askForSkillInvoke(objectName(), data)) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        SavageAssault *savage_assault = new SavageAssault(Card::NoSuit, 0);
-        savage_assault->setSkillName("_ikeli");
-        if (!savage_assault->isAvailable(player)) {
-            delete savage_assault;
-            return false;
-        }
-        room->useCard(CardUseStruct(savage_assault, player, QList<ServerPlayer *>()));
-        return false;
-    }
-};
-
-class IkEliRecord: public TriggerSkill {
-public:
-    IkEliRecord(): TriggerSkill("#theli-record") {
-        events << CardsMoveOneTime << EventPhaseChanging;
-        frequency = Compulsory;
-        global = true;
-    }
-
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (triggerEvent == EventPhaseChanging)
-            player->tag.remove("IkEli");
-        else if (triggerEvent == CardsMoveOneTime) {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.from != player)
-                return QStringList();
-
-            if (player->getPhase() == Player::Discard
-                && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
-                QVariantList cards = player->tag["IkEli"].toList();
-                foreach (int id, move.card_ids)
-                    if (!cards.contains(id))
-                        cards << id;
-                player->tag["IkEli"] = cards;
-            }
-        }
-
-        return QStringList();
     }
 };
 
@@ -3830,7 +3741,7 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke("ikshuangniang", 1);
             return true;
@@ -3838,7 +3749,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         room->setPlayerFlag(player, "ikshuangniang");
         JudgeStruct judge;
         judge.good = true;
@@ -5219,15 +5130,11 @@ IkaiMokuPackage::IkaiMokuPackage()
     snow012->addSkill(new IkJianlve);
     snow012->addRelateSkill("ikkongyun");
 
-    General *snow013 = new General(this, "snow013", "yuki", 3);
+    General *snow013 = new General(this, "snow013", "yuki");
     snow013->addSkill(new IkSusheng);
-    snow013->addSkill(new IkSushengRemove);
-    snow013->addSkill(new IkSushengClear);
-    related_skills.insertMulti("iksusheng", "#iksusheng-remove");
-    related_skills.insertMulti("iksusheng", "#iksusheng-clear");
-    snow013->addSkill(new IkEli);
-    snow013->addSkill(new IkEliRecord);
-    related_skills.insertMulti("ikeli", "#ikeli-record");
+    snow013->addSkill(new IkSushengMaxCards);
+    related_skills.insertMulti("iksusheng", "#iksusheng");
+    snow013->addSkill(new IkHuapan);
 
     General *snow014 = new General(this, "snow014$", "yuki");
     snow014->addSkill(new IkHeyi);
