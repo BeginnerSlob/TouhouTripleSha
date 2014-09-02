@@ -1165,7 +1165,7 @@ int Room::askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QStrin
                 QList<const Card *> cards = who->getCards(flags);
                 do {
                     card_id = cards.at(qrand() % cards.length())->getId();
-                } while (method == Card::MethodDiscard && !player->canDiscard(who, card_id));
+                } while (disabled_ids.contains(card_id) || (method == Card::MethodDiscard && !player->canDiscard(who, card_id)));
             } else
                 card_id = clientReply.asInt();
 

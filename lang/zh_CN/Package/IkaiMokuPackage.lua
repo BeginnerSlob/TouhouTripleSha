@@ -250,14 +250,9 @@ return {
 	["snow013"] = "散华礼弥",--雪 - 空 - 4血
 	["iksusheng"] = "苏生",
 	[":iksusheng"] = "锁定技，每当你处于濒死状态时，你将牌堆顶的一张牌置于人物牌上，称为“芳”，若该牌与你人物牌上的其他牌点数均不同，你将体力回复至1点，否则你将此“芳”置入弃牌堆。你的手牌上限等同于你的“芳”的数量。",
-	["#iksusheng-remove"] = "苏生（移除“芳”）",
 	["iksushengpile"] = "芳",
-	["#IkSushengDuplicate"] = "%from 发动“<font color=\"yellow\"><b>苏生</b></font>”失败，其“芳”中有 %arg 组重复点数",
-	["#IkSushengDuplicateGroup"] = "第 %arg 组重复点数为 %arg2",
-	["$IkSushengDuplicateItem"] = "重复“芳”: %card",
-	["$IkSushengRemove"] = "%from 移除了“芳”：%card",
-	["ikhualan"] = "花岚",
-	[":ikhualan"] = "每当一名角色因另一名角色的弃置或获得而失去手牌后，你可以失去1点体力，令该失去手牌的角色摸两张牌。",
+	["ikhuapan"] = "花磐",
+	[":ikhuapan"] = "每当一名角色因另一名角色的弃置或获得而失去手牌后，你可以失去1点体力，令该失去手牌的角色摸两张牌。",
 
 	["#snow014"] = "远方的苇莺",
 	["snow014"] = "远野秋叶",--雪 - 空 - 4血
