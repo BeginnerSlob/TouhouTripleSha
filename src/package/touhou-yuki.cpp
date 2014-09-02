@@ -1549,14 +1549,9 @@ public:
     }
 
     bool doQiebao(Room *room, ServerPlayer *player, QList<int> card_ids, bool discard) const {
-        const Card *card = room->askForCard(player, "slash", "@thqiebao", QVariant(), Card::MethodResponse, NULL, false, objectName());
+        const Card *card = room->askForCard(player, "slash", "@thqiebao", QVariant(), objectName());
         if (!card)
             return false;
-        LogMessage log;
-        log.type = "#InvokeSkill";
-        log.from = player;
-        log.arg = objectName();
-        room->sendLog(log);
 
         if (!card_ids.isEmpty()) {
             QList<CardsMoveStruct> exchangeMove;
