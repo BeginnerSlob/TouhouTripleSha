@@ -822,17 +822,14 @@ class ThShenzhou: public TriggerSkill {
 public:
     ThShenzhou(): TriggerSkill("thshenzhou") {
         frequency = Frequent;
-        events << CardResponded << Damaged;
+        events << TurnedOver << Damaged;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (!TriggerSkill::triggerable(player)) return QStringList();
         QStringList skills;
-        if (triggerEvent == CardResponded) {
-            CardResponseStruct resp = data.value<CardResponseStruct>();
-            const Card *card = resp.m_card;
-            if (card && card->isKindOf("Jink"))
-               skills << objectName();
+        if (triggerEvent == TurnedOver) {
+            skills << objectName();
         } else if (triggerEvent == Damaged) {
             DamageStruct damage = data.value<DamageStruct>();
             for (int i = 0; i < damage.damage; ++i)
