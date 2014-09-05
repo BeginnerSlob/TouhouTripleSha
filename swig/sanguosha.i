@@ -113,7 +113,7 @@ public:
     int getSeat() const;
     void setSeat(int seat);
     bool isAdjacentTo(const Player *another) const;
-    QString getPhaseString() const;
+    QString getPhaseString(Phase p = PhaseNone) const;
     void setPhaseString(const char *phase_str);
     Phase getPhase() const;
     void setPhase(Phase phase);
@@ -134,9 +134,10 @@ public:
     bool faceUp() const;
     void setFaceUp(bool face_up);
 
-    virtual int aliveCount() const = 0;
-    int distanceTo(const Player *other, int distance_fix = 0) const;
+    virtual int aliveCount(bool includeRemoved = true) const = 0;
     void setFixedDistance(const Player *player, int distance);
+    int originalRightDistanceTo(const Player *other) const;
+    int distanceTo(const Player *other, int distance_fix = 0) const;
     const General *getAvatarGeneral() const;
     const General *getGeneral() const;
 
@@ -194,6 +195,9 @@ public:
     void setChained(bool chained);
     bool isChained() const;
 
+    void setRemoved(bool removed);
+    bool isRemoved() const;
+
     bool canSlash(const Player *other, const Card *slash, bool distance_limit = true,
                   int rangefix = 0, const QList<const Player *> &others = QList<const Player *>()) const;
     bool canSlash(const Player *other, bool distance_limit = true,
@@ -243,6 +247,16 @@ public:
     QList<const Player *> getAliveSiblings() const;
 
     static bool isNostalGeneral(const Player *p, const char *general_name);
+
+    void setNext(Player *next);
+    void setNext(const QString &next);
+    Player *getNext(bool ignoreRemoved = true) const;
+    QString getNextName() const;
+    Player *getLast(bool ignoreRemoved = true) const;
+    Player *getNextAlive(int n = 1, bool ignoreRemoved = true) const;
+    Player *getLastAlive(int n = 1, bool ignoreRemoved = true) const;
+
+    QList<const Player *> getFormation() const;
 };
 
 %extend Player {
@@ -317,10 +331,6 @@ public:
 
     void startRecord();
     void saveRecord(const char *filename);
-
-    void setNext(ServerPlayer *next);
-    ServerPlayer *getNext() const;
-    ServerPlayer *getNextAlive(int n = 1) const;
 
     // 3v3 methods
     void addToSelected(const char *general);
@@ -1218,7 +1228,7 @@ public:
 
 %extend Room {
     ServerPlayer *nextPlayer() const{
-        return $self->getCurrent()->getNextAlive();
+        return $self->findPlayer(self->getCurrent()->getNextAlive()->objectName());
     }
     void output(const char *msg) {
         if(Config.value("DebugOutput", false).toBool())

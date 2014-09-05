@@ -2484,9 +2484,9 @@ public:
     }
 };
 
-class IkQingguo: public TriggerSkill {
+class IkFangsheng: public TriggerSkill {
 public:
-    IkQingguo(): TriggerSkill("ikqingguo") {
+    IkFangsheng(): TriggerSkill("ikfangsheng") {
         events << EventPhaseStart << ChoiceMade;
     }
 
@@ -2496,8 +2496,8 @@ public:
             return QStringList(objectName());
         else if (triggerEvent == ChoiceMade) {
             QString str = data.toString();
-            if (str.startsWith("Yiji:" + objectName()) && target->hasFlag("IkQingguoUse")) {
-                target->setFlags("-IkQingguoUse");
+            if (str.startsWith("Yiji:" + objectName()) && target->hasFlag("IkFangshengUse")) {
+                target->setFlags("-IkFangshengUse");
                 target->addMark(objectName(), str.split(":").last().split("+").length());
             }
         }
@@ -2515,7 +2515,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *) const{
         QStringList draw_num;
         for (int i = 1; i <= target->getLostHp(); draw_num << QString::number(i++)) {}
-        int num = room->askForChoice(target, "ikqingguo_draw", draw_num.join("+")).toInt();
+        int num = room->askForChoice(target, "ikfangsheng_draw", draw_num.join("+")).toInt();
         target->drawCards(num, objectName());
         target->setMark(objectName(), 0);
         if (!target->isKongcheng()) {
@@ -2523,9 +2523,9 @@ public:
                 int n = target->getMark(objectName());
                 if (n < num && !target->isKongcheng()) {
                     QList<int> handcards = target->handCards();
-                    target->setFlags("IkQingguoUse");
+                    target->setFlags("IkFangshengUse");
                     if (!room->askForYiji(target, handcards, objectName(), false, false, false, num - n)) {
-                        target->setFlags("-IkQingguoUse");
+                        target->setFlags("-IkFangshengUse");
                         break;
                     }
                 } else {
@@ -5539,7 +5539,7 @@ IkaiKinPackage::IkaiKinPackage()
     bloom027->addSkill(new IkXuelian);
 
     General *bloom031 = new General(this, "bloom031", "hana", 3, false);
-    bloom031->addSkill(new IkQingguo);
+    bloom031->addSkill(new IkFangsheng);
     bloom031->addSkill(new IkJingshi);
 
     General *bloom037 = new General(this, "bloom037", "hana");

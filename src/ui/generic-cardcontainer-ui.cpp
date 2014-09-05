@@ -223,6 +223,8 @@ void PlayerCardContainer::updateAvatar() {
     }
     _m_avatarIcon->show();
     _adjustComponentZValues();
+    _initializeRemovedEffect();
+    refresh();
 }
 
 QPixmap PlayerCardContainer::paintByMask(QPixmap &source) {
@@ -423,10 +425,10 @@ void PlayerCardContainer::_updateEquips() {
 
 void PlayerCardContainer::refresh(bool) {
     if (!m_player || !m_player->getGeneral() || !m_player->isAlive()) {
-        _m_faceTurnedIcon->setVisible(false);
-        _m_chainIcon->setVisible(false);
-        _m_actionIcon->setVisible(false);
-        _m_saveMeIcon->setVisible(false);
+        if (_m_faceTurnedIcon) _m_faceTurnedIcon->setVisible(false);
+        if (_m_chainIcon) _m_chainIcon->setVisible(false);
+        if (_m_actionIcon) _m_actionIcon->setVisible(false);
+        if (_m_saveMeIcon) _m_saveMeIcon->setVisible(false);
     } else if (m_player) {
         if (_m_faceTurnedIcon) _m_faceTurnedIcon->setVisible(!m_player->faceUp());
         if (_m_chainIcon) _m_chainIcon->setVisible(m_player->isChained());
@@ -439,6 +441,15 @@ void PlayerCardContainer::refresh(bool) {
 }
 
 void PlayerCardContainer::repaintAll() {
+    if (!_m_avatarIcon) {
+        _m_avatarIcon = new QGraphicsPixmapItem(_getAvatarParent());
+        _m_avatarIcon->setTransformationMode(Qt::SmoothTransformation);
+    }
+    if (!_m_smallAvatarIcon) {
+        _m_smallAvatarIcon = new QGraphicsPixmapItem(_getAvatarParent());
+        _m_smallAvatarIcon->setTransformationMode(Qt::SmoothTransformation);
+    }
+
     _m_avatarArea->setRect(_m_layout->m_avatarArea);
     _m_smallAvatarArea->setRect(_m_layout->m_smallAvatarArea);
 
@@ -477,6 +488,28 @@ void PlayerCardContainer::repaintAll() {
     refresh();
 }
 
+QPropertyAnimation *PlayerCardContainer::initializeBlurEffect(QGraphicsPixmapItem *icon)
+{
+    QGraphicsBlurEffect *effect = new QGraphicsBlurEffect;
+    effect->setBlurHints(QGraphicsBlurEffect::AnimationHint);
+    effect->setBlurRadius(0);
+    icon->setGraphicsEffect(effect);
+
+    QPropertyAnimation *animation = new QPropertyAnimation(effect, "blurRadius");
+    animation->setEasingCurve(QEasingCurve::OutInBounce);
+    animation->setDuration(2000);
+    animation->setStartValue(0);
+    animation->setEndValue(5);
+    return animation;
+}
+
+void PlayerCardContainer::_initializeRemovedEffect()
+{
+    _blurEffect = new QParallelAnimationGroup(this);
+    _blurEffect->addAnimation(initializeBlurEffect(_m_avatarIcon));
+    _blurEffect->addAnimation(initializeBlurEffect(_m_smallAvatarIcon));
+}
+
 void PlayerCardContainer::_createRoleComboBox() {
     _m_roleComboBox = new RoleComboBox(_getRoleComboBoxParent());
 }
@@ -495,6 +528,7 @@ void PlayerCardContainer::setPlayer(ClientPlayer *player) {
         connect(player, SIGNAL(pile_changed(QString)), this, SLOT(updatePile(QString)));
         connect(player, SIGNAL(role_changed(QString)), _m_roleComboBox, SLOT(fix(QString)));
         connect(player, SIGNAL(hp_changed()), this, SLOT(updateHp()));
+        connect(player, SIGNAL(removedChanged()), this, SLOT(onRemovedChanged()));
 
         QTextDocument *textDoc = m_player->getMarkDoc();
         Q_ASSERT(_m_markItem);
@@ -967,23 +1001,42 @@ void PlayerCardContainer::updateReformState() {
 }
 
 void PlayerCardContainer::showDistance() {
-    bool isNull = (_m_distanceItem == NULL);
-    _paintPixmap(_m_distanceItem, _m_layout->m_votesIconRegion,
-                 _getPixmap(QSanRoomSkin::S_SKIN_KEY_VOTES_NUMBER, QString::number(Self->distanceTo(m_player))),
-                 _getAvatarParent());
-    _m_distanceItem->setZValue(1.1);
-    if (!Self->inMyAttackRange(m_player)) {
-        QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect();
-        effect->setColor(_m_layout->m_deathEffectColor);
-        effect->setStrength(1.0);
-        _m_distanceItem->setGraphicsEffect(effect);
+    int dis = Self->distanceTo(m_player);
+    if (dis > 0) {
+        _paintPixmap(_m_distanceItem, _m_layout->m_votesIconRegion,
+            _getPixmap(QSanRoomSkin::S_SKIN_KEY_VOTES_NUMBER, QString::number(dis)),
+            _getAvatarParent());
+        _m_distanceItem->setZValue(1.1);
+        if (!Self->inMyAttackRange(m_player)) {
+            QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect();
+            effect->setColor(_m_layout->m_deathEffectColor);
+            effect->setStrength(1.0);
+            _m_distanceItem->setGraphicsEffect(effect);
+        } else {
+            _m_distanceItem->setGraphicsEffect(NULL);
+        }
     } else {
-        _m_distanceItem->setGraphicsEffect(NULL);
+        delete _m_distanceItem;
+        _m_distanceItem = NULL;
     }
-    if (_m_distanceItem->isVisible() && !isNull)
-        _m_distanceItem->hide();
-    else
+    if (!_m_distanceItem)
+        return;
+    if (!_m_distanceItem->isVisible())
         _m_distanceItem->show();
+}
+
+void PlayerCardContainer::hideDistance() {
+    if (_m_distanceItem && _m_distanceItem->isVisible())
+        _m_distanceItem->hide();
+}
+
+void PlayerCardContainer::onRemovedChanged()
+{
+    QAbstractAnimation::Direction direction = m_player->isRemoved() ? QAbstractAnimation::Forward
+                                                                    : QAbstractAnimation::Backward;
+
+    _getPlayerRemovedEffect()->setDirection(direction);
+    _getPlayerRemovedEffect()->start();
 }
 
 void PlayerCardContainer::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {

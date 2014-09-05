@@ -2331,11 +2331,11 @@ public:
     }
 };
 
-IkMoyuCard::IkMoyuCard(){
+IkQingguoCard::IkQingguoCard(){
     mute = true;
 }
 
-bool IkMoyuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkQingguoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     if (!to_select->isMale())
         return false;
 
@@ -2350,11 +2350,11 @@ bool IkMoyuCard::targetFilter(const QList<const Player *> &targets, const Player
     return targets.length() < 2 && to_select != Self;
 }
 
-bool IkMoyuCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
+bool IkQingguoCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
     return targets.length() == 2;
 }
 
-void IkMoyuCard::onUse(Room *room, const CardUseStruct &card_use) const{
+void IkQingguoCard::onUse(Room *room, const CardUseStruct &card_use) const{
     CardUseStruct use = card_use;
     QVariant data = QVariant::fromValue(use);
     RoomThread *thread = room->getThread();
@@ -2362,7 +2362,7 @@ void IkMoyuCard::onUse(Room *room, const CardUseStruct &card_use) const{
     thread->trigger(PreCardUsed, room, card_use.from, data);
     use = data.value<CardUseStruct>();
 
-    room->broadcastSkillInvoke("ikmoyu");
+    room->broadcastSkillInvoke("ikqingguo");
 
     LogMessage log;
     log.from = use.from;
@@ -2371,7 +2371,7 @@ void IkMoyuCard::onUse(Room *room, const CardUseStruct &card_use) const{
     log.card_str = toString();
     room->sendLog(log);
 
-    CardMoveReason reason(CardMoveReason::S_REASON_THROW, use.from->objectName(), QString(), "ikmoyu", QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_THROW, use.from->objectName(), QString(), "ikqingguo", QString());
     room->moveCardTo(this, use.from, NULL, Player::DiscardPile, reason, true);
 
     thread->trigger(CardUsed, room, use.from, data);
@@ -2379,32 +2379,32 @@ void IkMoyuCard::onUse(Room *room, const CardUseStruct &card_use) const{
     thread->trigger(CardFinished, room, use.from, data);
 }
 
-void IkMoyuCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const{
+void IkQingguoCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const{
     ServerPlayer *to = targets.at(0);
     ServerPlayer *from = targets.at(1);
 
     Duel *duel = new Duel(Card::NoSuit, 0);
     duel->setCancelable(false);
-    duel->setSkillName("_ikmoyu");
+    duel->setSkillName("_ikqingguo");
     if (!from->isCardLimited(duel, Card::MethodUse) && !from->isProhibited(to, duel))
         room->useCard(CardUseStruct(duel, from, to));
     else
         delete duel;
 }
 
-class IkMoyu: public OneCardViewAsSkill {
+class IkQingguo: public OneCardViewAsSkill {
 public:
-    IkMoyu(): OneCardViewAsSkill("ikmoyu") {
+    IkQingguo(): OneCardViewAsSkill("ikqingguo") {
         filter_pattern = ".!";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
         return player->getAliveSiblings().length() > 1
-               && player->canDiscard(player, "he") && !player->hasUsed("IkMoyuCard");
+               && player->canDiscard(player, "he") && !player->hasUsed("IkQingguoCard");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
-        IkMoyuCard *lijian_card = new IkMoyuCard;
+        IkQingguoCard *lijian_card = new IkQingguoCard;
         lijian_card->addSubcard(originalCard->getId());
         return lijian_card;
     }
@@ -2414,9 +2414,9 @@ public:
     }
 };
 
-class IkZhuoyue: public PhaseChangeSkill {
+class IkBiyue: public PhaseChangeSkill {
 public:
-    IkZhuoyue(): PhaseChangeSkill("ikzhuoyue") {
+    IkBiyue(): PhaseChangeSkill("ikbiyue") {
         frequency = Frequent;
     }
 
@@ -2979,8 +2979,8 @@ IkaiDoPackage::IkaiDoPackage()
     luna002->addSkill(new IkWudi);
 
     General *luna003 = new General(this, "luna003", "tsuki", 3, false);
-    luna003->addSkill(new IkMoyu);
-    luna003->addSkill(new IkZhuoyue);
+    luna003->addSkill(new IkQingguo);
+    luna003->addSkill(new IkBiyue);
 
     General *luna006 = new General(this, "luna006", "tsuki", 3);
     luna006->addSkill(new IkHuichun);
@@ -3017,7 +3017,7 @@ IkaiDoPackage::IkaiDoPackage()
     addMetaObject<IkCuiluCard>();
     addMetaObject<IkZiqiangCard>();
     addMetaObject<IkWudiCard>();
-    addMetaObject<IkMoyuCard>();
+    addMetaObject<IkQingguoCard>();
     addMetaObject<IkQingnangCard>();
     addMetaObject<IkYaogeCard>();
 

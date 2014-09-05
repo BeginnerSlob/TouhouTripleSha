@@ -61,15 +61,19 @@ public:
         if (triggerEvent == PreDamageDone) {
             DamageStruct damage = data.value<DamageStruct>();
             ServerPlayer *weiyan = damage.from;
-            if (weiyan)
-                weiyan->tag["InvokeIkKuanggu"] = (weiyan->distanceTo(damage.to) <= 1 && weiyan != player);
+            if (weiyan) {
+                if (weiyan->distanceTo(damage.to) != -1 && weiyan->distanceTo(damage.to) <= 1 && weiyan != player)
+                    weiyan->tag["InvokeIkKuanggu"] = damage.damage;
+                else
+                    weiyan->tag.remove("InvokeIkKuanggu");
+            }
             return QStringList();
         }
         if (!TriggerSkill::triggerable(player)) return QStringList();
+        bool ok = false;
+        int recorded_damage = player->tag["InvokeKuanggu"].toInt(&ok);
         DamageStruct damage = data.value<DamageStruct>();
-        bool invoke = player->tag.value("InvokeIkKuanggu", false).toBool();
-        player->tag["InvokeIkKuanggu"] = false;
-        if (invoke && (player->isWounded() || !damage.card || !damage.card->isKindOf("Slash"))) {
+        if (ok && recorded_damage > 0 && (player->isWounded() || !damage.card || !damage.card->isKindOf("Slash"))) {
             QStringList skills;
             for (int i = 0; i < damage.damage; i++)
                 skills << objectName();
@@ -3877,7 +3881,8 @@ void IkWenleCard::onEffect(const CardEffectStruct &effect) const{
     foreach (ServerPlayer *player, players) {
         int distance = effect.to->distanceTo(player);
         distance_list << distance;
-        nearest = qMin(nearest, distance);
+        if (distance != -1)
+            nearest = qMin(nearest, distance);
     }
 
     QList<ServerPlayer *> ikwenle_targets;
@@ -3890,9 +3895,9 @@ void IkWenleCard::onEffect(const CardEffectStruct &effect) const{
         room->loseHp(effect.to);
 }
 
-class IkMoyudeng: public ProhibitSkill {
+class IkMoyu: public ProhibitSkill {
 public:
-    IkMoyudeng(): ProhibitSkill("ikmoyudeng") {
+    IkMoyu(): ProhibitSkill("ikmoyu") {
     }
 
     virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const{
@@ -5179,7 +5184,7 @@ IkaiMokuPackage::IkaiMokuPackage()
     General *luna007 = new General(this, "luna007", "tsuki", 3);
     luna007->addSkill(new IkSishideng);
     luna007->addSkill(new IkWenle);
-    luna007->addSkill(new IkMoyudeng);
+    luna007->addSkill(new IkMoyu);
 
     General *luna008 = new General(this, "luna008", "tsuki");
     luna008->addSkill("thjibu");

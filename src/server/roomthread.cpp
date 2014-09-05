@@ -381,7 +381,7 @@ ServerPlayer *RoomThread::findHulaoPassNext(ServerPlayer *shenlvbu, QList<Server
         }
     } else {
         Q_ASSERT(stage == 2);
-        return current->getNextAlive();
+        return room->findPlayer(current->getNextAlive(1, false)->objectName());
     }
 }
 
@@ -490,7 +490,7 @@ void RoomThread::actionNormal(GameRule *game_rule) {
         forever {
             trigger(TurnStart, room, room->getCurrent());
             if (room->isFinished()) break;
-            room->setCurrent(room->getCurrent()->getNextAlive());
+            room->setCurrent(room->findPlayer(room->getCurrent()->getNextAlive(1, false)->objectName()));
         }
     }
     catch (TriggerEvent triggerEvent) {
@@ -505,7 +505,7 @@ void RoomThread::_handleTurnBrokenNormal(GameRule *game_rule) {
     try {
         ServerPlayer *player = room->getCurrent();
         trigger(TurnBroken, room, player);
-        ServerPlayer *next = player->getNextAlive();
+        ServerPlayer *next = room->findPlayer(player->getNextAlive(1, false)->objectName());
         if (player->getPhase() != Player::NotActive) {
             game_rule->trigger(EventPhaseEnd, room, player, QVariant());
             player->changePhase(player->getPhase(), Player::NotActive);
@@ -580,7 +580,7 @@ void RoomThread::run() {
                 ServerPlayer *first = room->getPlayers().first();
                 if (first->getRole() != "renegade")
                     first = room->getPlayers().at(1);
-                ServerPlayer *second = first->getNext();
+                ServerPlayer *second = room->findPlayer(first->getNext()->objectName());
                 trigger(Debut, (Room *)room, first);
                 trigger(Debut, (Room *)room, second);
                 room->setCurrent(first);

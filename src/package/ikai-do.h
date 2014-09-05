@@ -178,11 +178,11 @@ public:
     virtual const Card *validate(CardUseStruct &cardUse) const;
 };
 
-class IkMoyuCard: public SkillCard {
+class IkQingguoCard: public SkillCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE IkMoyuCard();
+    Q_INVOKABLE IkQingguoCard();
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;

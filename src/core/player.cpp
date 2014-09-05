@@ -7,10 +7,11 @@
 
 Player::Player(QObject *parent)
     : QObject(parent), owner(false), general(NULL), general2(NULL),
-      m_gender(General::Sexless), hp(-1), max_hp(-1), state("online"), seat(0), alive(true),
+      m_gender(General::Sexless), hp(-1), max_hp(-1),
+      state("online"), seat(0), alive(true),
       phase(NotActive),
       weapon(NULL), armor(NULL), defensive_horse(NULL), offensive_horse(NULL), treasure(NULL),
-      face_up(true), chained(false),
+      face_up(true), chained(false), removed(false),
       role_shown(false), pile_open(QMap<QString, QStringList>())
 {
 }
@@ -108,10 +109,8 @@ void Player::setSeat(int seat) {
 }
 
 bool Player::isAdjacentTo(const Player *another) const{
-    int alive_length = 1 + getAliveSiblings().length();
-    return qAbs(seat - another->seat) == 1
-           || (seat == 1 && another->seat == alive_length)
-           || (seat == alive_length && another->seat == 1);
+    return getNextAlive() == another
+        || another->getNextAlive() == this;
 }
 
 bool Player::isAlive() const{
@@ -184,6 +183,8 @@ int Player::getAttackRange(bool include_weapon) const{
 }
 
 bool Player::inMyAttackRange(const Player *other, int distance_fix) const{
+    if (distanceTo(other, distance_fix) == -1)
+        return false;
     if (this == other)
         return false;
     if (hasFlag("iklinbu_" + other->objectName()))
@@ -198,15 +199,28 @@ void Player::setFixedDistance(const Player *player, int distance) {
         fixed_distance.insert(player, distance);
 }
 
+int Player::originalRightDistanceTo(const Player *other) const{
+    int right = 0;
+    Player *next_p = parent()->findChild<Player *>(objectName());
+    while (next_p != other) {
+        next_p = next_p->getNextAlive();
+        ++right;
+    }
+    return right;
+}
+
 int Player::distanceTo(const Player *other, int distance_fix) const{
-    if (this == other)
+    if (this == other || isDead() || other->isDead())
         return 0;
+
+    if (isRemoved() || other->isRemoved())
+        return -1;
 
     if (fixed_distance.contains(other))
         return fixed_distance.value(other);
 
-    int right = qAbs(seat - other->seat);
-    int left = aliveCount() - right;
+    int right = originalRightDistanceTo(other);
+    int left = aliveCount(false) - right;
     int distance = qMin(left, right);
 
     distance += Sanguosha->correctDistance(this, other);
@@ -734,6 +748,17 @@ void Player::setChained(bool chained) {
     }
 }
 
+bool Player::isRemoved() const{
+    return removed;
+}
+
+void Player::setRemoved(bool removed) {
+    if (this->removed != removed) {
+        this->removed = removed;
+        emit removedChanged();
+    }
+}
+
 void Player::addMark(const QString &mark, int add_num) {
     int value = marks.value(mark, 0);
     value += add_num;
@@ -1102,4 +1127,79 @@ QList<const Player *> Player::getAliveSiblings() const{
 bool Player::isNostalGeneral(const Player *p, const QString &general_name) {
     return p->getGeneralName() == "nos_" + general_name
            || (p->getGeneralName() != general_name && p->getGeneral2Name() == "nos_" + general_name);
+}
+
+void Player::setNext(Player *next)
+{
+    this->next = next->objectName();
+}
+
+void Player::setNext(const QString &next)
+{
+    this->next = next;
+}
+
+Player *Player::getNext(bool ignoreRemoved) const
+{
+    Player *next_p = parent()->findChild<Player *>(next);
+    if (ignoreRemoved && next_p->isRemoved())
+        return next_p->getNext(ignoreRemoved);
+    return next_p;
+}
+
+QString Player::getNextName() const
+{
+    return next;
+}
+
+Player *Player::getLast(bool ignoreRemoved) const
+{
+    foreach(Player *p, parent()->findChildren<Player *>())
+        if (p->getNext(ignoreRemoved) == this)
+            return p;
+    return NULL;
+}
+
+Player *Player::getNextAlive(int n, bool ignoreRemoved) const
+{
+    bool hasAlive = (aliveCount(!ignoreRemoved) > 0);
+    Player *next = parent()->findChild<Player *>(objectName());
+    if (!hasAlive) return next;
+    for (int i = 0; i < n; ++i) {
+        do next = next->getNext(ignoreRemoved);
+        while (next->isDead());
+    }
+    return next;
+}
+
+Player *Player::getLastAlive(int n, bool ignoreRemoved) const
+{
+    return getNextAlive(aliveCount(!ignoreRemoved) - n, ignoreRemoved);
+}
+
+QList<const Player *> Player::getFormation() const
+{
+    QList<const Player *> teammates;
+    teammates << this;
+    int n = aliveCount(false);
+    int num = n;
+    for (int i = 1; i < n; ++i) {
+        Player *target = getNextAlive(i);
+        if (getKingdom() == target->getKingdom())
+            teammates << target;
+        else {
+            num = i;
+            break;
+        }
+    }
+
+    n -= num;
+    for (int i = 1; i < n; ++i) {
+        Player *target = getLastAlive(i);
+        if (getKingdom() == target->getKingdom())
+            teammates << target;
+        else break;
+    }
+
+    return teammates;
 }
