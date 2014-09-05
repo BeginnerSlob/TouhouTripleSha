@@ -859,21 +859,17 @@ public:
     ThWeide(): DrawCardsSkill("thweide") {
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
-        if (!TriggerSkill::triggerable(player) || !player->isWounded())
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        if (!TriggerSkill::triggerable(player))
             return QStringList();
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-            if (p->isWounded())
-                return QStringList(objectName());
+        int x = player->getHp() > 2 ? 1 : 2;
+        if (data.toInt() >= x)
+            return QStringList(objectName());
         return QStringList();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-            if (p->isWounded())
-                targets << p;
-        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thweide", true, true);
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@thweide", true, true);
         if (target) {
             room->broadcastSkillInvoke(objectName());
             player->tag["ThWeideTarget"] = QVariant::fromValue(target);
@@ -883,8 +879,8 @@ public:
     }
 
     virtual int getDrawNum(ServerPlayer *player, int n) const{
-        int l_hp = qMin(player->getLostHp(), 2);
-        return n - l_hp;
+        int x = player->getHp() > 2 ? 1 : 2;
+        return n - x;
     }
 };
 
@@ -904,25 +900,28 @@ public:
         ServerPlayer *target = player->tag["ThWeideTarget"].value<ServerPlayer *>();
         player->tag.remove("ThWeideTarget");
         if (target) {
-            target->drawCards(qMin(player->getLostHp(), 2));
-            QList<ServerPlayer *> victims;
-            foreach (ServerPlayer *p, room->getOtherPlayers(player))
-                if (qMax(p->getHp(), 0) >= player->getHp() && !p->isKongcheng())
-                    victims << p;
-            if (!victims.isEmpty()) {
-                ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName());
-                QList<int> ids = victim->handCards();
-                DummyCard *dummy = new DummyCard;
-                for (int i = 0; i < qMin(player->getLostHp(), 2); i++)
-                    if (ids.isEmpty())
-                        break;
-                    else {
-                        int id = ids.at(qrand() % ids.length());
-                        dummy->addSubcard(id);
-                        ids.removeOne(id);
-                    }
-                player->obtainCard(dummy);
-                delete dummy;
+            int x = player->getHp() > 2 ? 1 : 2;
+            target->drawCards(x, "thweide");
+            if (player->isWounded()) {
+                QList<ServerPlayer *> victims;
+                foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                    if (qMax(p->getHp(), 0) >= player->getHp() && !p->isKongcheng())
+                        victims << p;
+                if (!victims.isEmpty()) {
+                    ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName());
+                    QList<int> ids = victim->handCards();
+                    DummyCard *dummy = new DummyCard;
+                    for (int i = 0; i < x; i++)
+                        if (ids.isEmpty())
+                            break;
+                        else {
+                            int id = ids.at(qrand() % ids.length());
+                            dummy->addSubcard(id);
+                            ids.removeOne(id);
+                        }
+                    player->obtainCard(dummy);
+                    delete dummy;
+                }
             }
         }
 

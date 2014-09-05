@@ -1136,10 +1136,10 @@ ThChuangxinCard::ThChuangxinCard() {
 void ThChuangxinCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const {
     source->setFlags("thchuangxinUsed");
     if (subcardsLength() == 1) {
-        QString choice = room->askForChoice(source, "thchuangxin", "iklingshi+ikzhuoyue");
+        QString choice = room->askForChoice(source, "thchuangxin", "iklingshi+ikbiyue");
         room->acquireSkill(source, choice);
     } else
-        room->handleAcquireDetachSkills(source, "iklingshi|ikzhuoyue");
+        room->handleAcquireDetachSkills(source, "iklingshi|ikbiyue");
 };
 
 class ThChuangxinViewAsSkill :public ViewAsSkill {
@@ -1176,7 +1176,7 @@ public:
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to == Player::NotActive) {
                 player->setFlags("-thchuangxinUsed");
-                room->handleAcquireDetachSkills(player, "-iklingshi|-ikzhuoyue", true);
+                room->handleAcquireDetachSkills(player, "-iklingshi|-ikbiyue", true);
             }
         }
         return QStringList();
@@ -1260,7 +1260,7 @@ public:
             return QStringList(objectName());
         else if (triggerEvent == EventLoseSkill && data.toString() == objectName()) {
             QStringList detach;
-            detach << "-ikzhuoyue" << "-thmengwu" << "-ikchenhong" << "-thjibu";
+            detach << "-ikbiyue" << "-thmengwu" << "-ikchenhong" << "-thjibu";
             room->handleAcquireDetachSkills(player, detach, true);
         } else if (triggerEvent == EventAcquireSkill && data.toString() == objectName()) {
             if (!player->getPile("thrangdengpile").isEmpty()) {
@@ -1270,7 +1270,7 @@ public:
                     QString skill_name;
                     switch (Sanguosha->getCard(id)->getSuit()) {
                     case Card::Heart : {
-                        skill_name = "ikzhuoyue";
+                        skill_name = "ikbiyue";
                         break;
                                        }
                     case Card::Spade : {
@@ -1299,7 +1299,7 @@ public:
                     QString skill_name = "";
                     switch (Sanguosha->getCard(id)->getSuit()) {
                     case Card::Heart : {
-                        skill_name = "ikzhuoyue";
+                        skill_name = "ikbiyue";
                         break;
                                        }
                     case Card::Spade : {
@@ -1361,7 +1361,7 @@ ThBaihunCard::ThBaihunCard() {
 void ThBaihunCard::onEffect(const CardEffectStruct &effect) const {
     Room *room = effect.from->getRoom();
     effect.from->clearOnePrivatePile("thrangdengpile");
-    room->handleAcquireDetachSkills(effect.from, "-ikzhuoyue|-thmengwu|-ikchenhong|-thjibu", true);
+    room->handleAcquireDetachSkills(effect.from, "-ikbiyue|-thmengwu|-ikchenhong|-thjibu", true);
     room->killPlayer(effect.to);
 }
 

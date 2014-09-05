@@ -18,6 +18,8 @@
 #include <qvariant.h>
 #include <qlabel.h>
 
+class QPropertyAnimation;
+
 class GenericCardContainer: public QGraphicsObject {
     Q_OBJECT
 
@@ -99,6 +101,8 @@ public slots:
     void updateVotes(bool need_select = true, bool display_1 = false);
     void updateReformState();
     void showDistance();
+    void hideDistance();
+    void onRemovedChanged();
     virtual void refresh(bool killed = false);
 
 protected:
@@ -120,6 +124,10 @@ protected:
     virtual QGraphicsItem *_getProgressBarParent() = 0;
     virtual QGraphicsItem *_getDeathIconParent() = 0;
     virtual QString getResourceKeyName() = 0;
+
+    inline virtual QAbstractAnimation *_getPlayerRemovedEffect() { return _blurEffect; }
+    virtual void _initializeRemovedEffect();
+    QPropertyAnimation *initializeBlurEffect(QGraphicsPixmapItem *icon);
 
     void _createRoleComboBox();
     void _updateProgressBar(); // a dirty function used by the class itself only.
@@ -217,6 +225,8 @@ protected:
     QGraphicsItem *_m_huashenItem;
     QString _m_huashenGeneralName;
     QString _m_huashenSkillName;
+
+    QParallelAnimationGroup *_blurEffect;
 
 protected slots:
     virtual void _onEquipSelectChanged();

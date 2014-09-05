@@ -185,7 +185,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        ServerPlayer *opponent = player->getNext();
+        ServerPlayer *opponent = room->findPlayer(player->getNext()->objectName());
         if (!opponent->isAlive())
             return false;
         Drowning *drowning = new Drowning(Card::NoSuit, 0);
@@ -376,7 +376,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        ServerPlayer *opponent = player->getNext();
+        ServerPlayer *opponent = room->findPlayer(player->getNext()->objectName());
         if (!opponent->isAlive())
             return false;
         SavageAssault *savage_assault = new SavageAssault(Card::NoSuit, 0);
@@ -786,7 +786,7 @@ Special1v1Package::Special1v1Package()
 
     General *kof_nos_diaochan = new General(this, "kof_nos_diaochan", "qun", 3, false);
     kof_nos_diaochan->addSkill(new Pianyi);
-    kof_nos_diaochan->addSkill("ikzhuoyue");
+    kof_nos_diaochan->addSkill("ikbiyue");
 
     addMetaObject<XiechanCard>();
     addMetaObject<CangjiCard>();

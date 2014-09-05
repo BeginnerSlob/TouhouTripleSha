@@ -34,6 +34,7 @@ class Player: public QObject {
     Q_PROPERTY(bool alive READ isAlive WRITE setAlive)
     Q_PROPERTY(QString flags READ getFlags WRITE setFlags)
     Q_PROPERTY(bool chained READ isChained WRITE setChained)
+    Q_PROPERTY(bool removed READ isRemoved WRITE setRemoved)
     Q_PROPERTY(bool owner READ isOwner WRITE setOwner)
     Q_PROPERTY(bool role_shown READ hasShownRole WRITE setShownRole)
     Q_PROPERTY(int gender READ getGender WRITE setGender)
@@ -41,6 +42,8 @@ class Player: public QObject {
     Q_PROPERTY(bool kongcheng READ isKongcheng)
     Q_PROPERTY(bool nude READ isNude)
     Q_PROPERTY(bool all_nude READ isAllNude)
+
+    Q_PROPERTY(QString next READ getNextName WRITE setNext)
 
     Q_ENUMS(Phase)
     Q_ENUMS(Place)
@@ -121,8 +124,9 @@ public:
     bool faceUp() const;
     void setFaceUp(bool face_up);
 
-    virtual int aliveCount() const = 0;
+    virtual int aliveCount(bool includeRemoved = true) const = 0;
     void setFixedDistance(const Player *player, int distance);
+    int originalRightDistanceTo(const Player *other) const;
     int distanceTo(const Player *other, int distance_fix = 0) const;
     const General *getAvatarGeneral() const;
     const General *getGeneral() const;
@@ -183,6 +187,9 @@ public:
     void setChained(bool chained);
     bool isChained() const;
 
+    void setRemoved(bool removed);
+    bool isRemoved() const;
+
     bool canSlash(const Player *other, const Card *slash, bool distance_limit = true,
                   int rangefix = 0, const QList<const Player *> &others = QList<const Player *>()) const;
     bool canSlash(const Player *other, bool distance_limit = true,
@@ -235,6 +242,16 @@ public:
 
     static bool isNostalGeneral(const Player *p, const QString &general_name);
 
+    void setNext(Player *next);
+    void setNext(const QString &next);
+    Player *getNext(bool ignoreRemoved = true) const;
+    QString getNextName() const;
+    Player *getLast(bool ignoreRemoved = true) const;
+    Player *getNextAlive(int n = 1, bool ignoreRemoved = true) const;
+    Player *getLastAlive(int n = 1, bool ignoreRemoved = true) const;
+
+    QList<const Player *> getFormation() const;
+
 protected:
     QMap<QString, int> marks;
     QMap<QString, QList<int> > piles;
@@ -261,8 +278,10 @@ private:
     WrappedCard *weapon, *armor, *defensive_horse, *offensive_horse, *treasure;
     bool face_up;
     bool chained;
+    bool removed;
     QList<int> judging_area;
     QHash<const Player *, int> fixed_distance;
+    QString next;
 
     QMap<Card::HandlingMethod, QStringList> card_limitation;
 
@@ -275,6 +294,7 @@ signals:
     void kingdom_changed();
     void phase_changed();
     void owner_changed(bool owner);
+    void removedChanged();
 };
 
 #endif

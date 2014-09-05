@@ -1233,7 +1233,7 @@ BGMPackage::BGMPackage(): Package("BGM") {
 
     General *bgm_diaochan = new General(this, "bgm_diaochan", "qun", 3, false); // *SP 002
     bgm_diaochan->addSkill(new Lihun);
-    bgm_diaochan->addSkill("ikzhuoyue");
+    bgm_diaochan->addSkill("ikbiyue");
 
     General *bgm_pangtong = new General(this, "bgm_pangtong", "qun", 3); // *SP 004
     bgm_pangtong->addSkill(new Manjuan);

@@ -349,8 +349,8 @@ SPPackage::SPPackage()
 {
 
     General *sp_diaochan = new General(this, "sp_diaochan", "qun", 3, false, true); // SP 002
-    sp_diaochan->addSkill("ikmoyu");
-    sp_diaochan->addSkill("ikzhuoyue");
+    sp_diaochan->addSkill("ikqingguo");
+    sp_diaochan->addSkill("ikbiyue");
 
     General *gongsunzan = new General(this, "gongsunzan", "qun"); // SP 003
     gongsunzan->addSkill("ikzhuji");
@@ -391,7 +391,7 @@ SPPackage::SPPackage()
     General *sp_jiaxu = new General(this, "sp_jiaxu", "wei", 3, true, true); // SP 012
     sp_jiaxu->addSkill("iksishideng");
     sp_jiaxu->addSkill("ikwenle");
-    sp_jiaxu->addSkill("ikmoyudeng");
+    sp_jiaxu->addSkill("ikmoyu");
 
     General *sp_zhenji = new General(this, "sp_zhenji", "wei", 3, false, true); // SP 015
     sp_zhenji->addSkill("ikzhongyan");
@@ -460,7 +460,7 @@ OLPackage::OLPackage()
 
     General *ol_wangyi = new General(this, "ol_wangyi", "wei", 3, false, true);
     ol_wangyi->addSkill("ikjingshi");
-    ol_wangyi->addSkill("ikqingguo");
+    ol_wangyi->addSkill("ikfangsheng");
 
     addMetaObject<QingyiCard>();
 }
@@ -556,8 +556,8 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_lvbu->addSkill("ikwushuang");
 
     General *tw_diaochan = new General(this, "tw_diaochan", "qun", 3, false, true); // TW SP 002
-    tw_diaochan->addSkill("ikmoyu");
-    tw_diaochan->addSkill("ikzhuoyue");
+    tw_diaochan->addSkill("ikqingguo");
+    tw_diaochan->addSkill("ikbiyue");
 
     General *tw_xiaoqiao = new General(this, "tw_xiaoqiao", "wu", 3, false, true);
     tw_xiaoqiao->addSkill("ikzhihui");

@@ -607,12 +607,12 @@ public:
         events << PreDamageDone << DamageComplete;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const {
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const {
         DamageStruct damage = data.value<DamageStruct>();
         if (triggerEvent == PreDamageDone) {
             ServerPlayer *yijiu = damage.from;
             if (!player->isChained() && damage.nature == DamageStruct::Thunder && yijiu)
-                yijiu->tag["ThTingwuTarget"] = QVariant::fromValue(player->getNextAlive());
+                yijiu->tag["ThTingwuTarget"] = QVariant::fromValue(room->findPlayer(player->getNextAlive()->objectName()));
             else if (yijiu)
                 yijiu->tag.remove("ThTingwuTarget");
         } else if (triggerEvent == DamageComplete && TriggerSkill::triggerable(damage.from)) {

@@ -297,7 +297,7 @@ public:
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        ServerPlayer *opponent = player->getNext();
+        ServerPlayer *opponent = room->findPlayer(player->getNext()->objectName());
         if (!opponent->isAlive())
             return false;
         Slash *slash = new Slash(Card::NoSuit, 0);
