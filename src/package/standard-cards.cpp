@@ -869,22 +869,6 @@ void ArcheryAttack::onEffect(const CardEffectStruct &effect) const{
     }
 }
 
-Drowning::Drowning(Suit suit, int number)
-    : AOE(suit, number)
-{
-    setObjectName("drowning");
-}
-
-void Drowning::onEffect(const CardEffectStruct &effect) const{
-    Room *room = effect.to->getRoom();
-    if (effect.from->canDiscard(effect.to, "e")
-        && room->askForChoice(effect.to, objectName(), "throw+damage", QVariant::fromValue(effect)) == "throw") {
-        int card_id = room->askForCardChosen(effect.from, effect.to, "e", objectName(), false, MethodDiscard);
-        room->throwCard(card_id, effect.to, effect.from);
-    } else
-        room->damage(DamageStruct(this, effect.from->isAlive() ? effect.from : NULL, effect.to));
-}
-
 Collateral::Collateral(Card::Suit suit, int number)
     : SingleTargetTrick(suit, number)
 {
@@ -1230,6 +1214,27 @@ void Lightning::takeEffect(ServerPlayer *target) const{
     target->getRoom()->damage(DamageStruct(this, NULL, target, 3, DamageStruct::Thunder));
 }
 
+class HorseSkill: public DistanceSkill {
+public:
+    HorseSkill(): DistanceSkill("horse") {
+    }
+
+    virtual int getCorrect(const Player *from, const Player *to) const{
+        int correct = 0;
+        const Horse *horse = NULL;
+        if (from->getOffensiveHorse() && from->getMark("Equips_Nullified_to_Yourself") == 0) {
+            horse = qobject_cast<const Horse *>(from->getOffensiveHorse()->getRealCard());
+            correct += horse->getCorrect();
+        }
+        if (to->getDefensiveHorse() && to->getMark("Equips_Nullified_to_Yourself") == 0) {
+            horse = qobject_cast<const Horse *>(to->getDefensiveHorse()->getRealCard());
+            correct += horse->getCorrect();
+        }
+
+        return correct;
+    }
+};
+
 // EX cards
 
 class IceSwordSkill: public WeaponSkill {
@@ -1321,128 +1326,91 @@ RenwangShield::RenwangShield(Suit suit, int number)
     setObjectName("renwang_shield");
 }
 
-class HorseSkill: public DistanceSkill {
+class LureTigerSkill : public TriggerSkill {
 public:
-    HorseSkill(): DistanceSkill("horse") {
+    LureTigerSkill() : TriggerSkill("lure_tiger") {
+        events << Death << EventPhaseChanging;
+        global = true;
     }
 
-    virtual int getCorrect(const Player *from, const Player *to) const{
-        int correct = 0;
-        const Horse *horse = NULL;
-        if (from->getOffensiveHorse() && from->getMark("Equips_Nullified_to_Yourself") == 0) {
-            horse = qobject_cast<const Horse *>(from->getOffensiveHorse()->getRealCard());
-            correct += horse->getCorrect();
-        }
-        if (to->getDefensiveHorse() && to->getMark("Equips_Nullified_to_Yourself") == 0) {
-            horse = qobject_cast<const Horse *>(to->getDefensiveHorse()->getRealCard());
-            correct += horse->getCorrect();
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!player->hasFlag("LureTigerUser"))
+            return QStringList();
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to != Player::NotActive)
+                return QStringList();
+        } else if (triggerEvent == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player)
+                return QStringList();
         }
 
-        return correct;
+        foreach (ServerPlayer *p, room->getOtherPlayers(player))
+            if (p->isRemoved()) {
+                room->setPlayerProperty(p, "removed", false);
+                room->removePlayerCardLimitation(p, "use", ".$0");
+            }
+   
+        return QStringList();
     }
 };
 
-KnownBoth::KnownBoth(Card::Suit suit, int number)
-    : SingleTargetTrick(suit, number)
+class LureTigerProhibit : public ProhibitSkill {
+public:
+    LureTigerProhibit() : ProhibitSkill("#lure_tiger") {
+    }
+
+    virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const{
+        return to->isRemoved() && (card->getTypeId() != Card::TypeSkill || card->isKindOf("IkMiceCard"));
+    }
+};
+
+LureTiger::LureTiger(Card::Suit suit, int number)
+    : TrickCard(suit, number)
 {
-    setObjectName("known_both");
-    can_recast = true;
+    setObjectName("lure_tiger");
 }
 
-bool KnownBoth::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+QString LureTiger::getSubtype() const{
+    return "lure_tiger";
+}
+
+bool LureTiger::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    int total_num = 2 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
+    if (targets.length() >= total_num)
+        return false;
     if (Self->isCardLimited(this, Card::MethodUse))
         return false;
 
-    int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
-    if (targets.length() >= total_num || to_select == Self)
-        return false;
-
-    return !to_select->isKongcheng();
+    return to_select != Self;
 }
 
-bool KnownBoth::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY);
-    QList<int> sub;
-    if (isVirtualCard())
-        sub = subcards;
-    else
-        sub << getEffectiveId();
-    foreach (int id, sub) {
-        if (Self->getPile("wooden_ox").contains(id)) {
-            rec = false;
-            break;
-        }
-        // Coupling of ThBaochui
-        if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play) {
-            foreach (const Player *p, Self->getAliveSiblings())
-                if (p->getPile("thbaochuipile").contains(id)) {
-                    rec = false;
-                    break;
-                }
-            if (!rec) break;
-        }
+void LureTiger::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    foreach(ServerPlayer *target, targets) {
+        CardEffectStruct effect;
+        effect.card = this;
+        effect.from = source;
+        effect.to = target;
+
+        room->cardEffect(effect);
     }
 
-    if (rec && Self->isCardLimited(this, Card::MethodUse))
-        return targets.length() == 0;
-    int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
-    if (!rec || getSkillName() == "ikguihuo" || getSkillName() == "ikmice" || getSkillName() == "thmimeng")
-        return targets.length() > 0 && targets.length() <= total_num;
-    else
-        return targets.length() <= total_num;
+    source->drawCards(1, objectName());
+
+    if (room->getCardPlace(getEffectiveId()) == Player::PlaceTable) {
+        CardMoveReason reason(CardMoveReason::S_REASON_USE, source->objectName(), QString(), getSkillName(), QString());
+        if (targets.size() == 1) reason.m_targetId = targets.first()->objectName();
+        room->moveCardTo(this, source, NULL, Player::DiscardPile, reason, true);
+    }
 }
 
-void KnownBoth::onUse(Room *room, const CardUseStruct &card_use) const{
-    if (card_use.to.isEmpty()) {
-        CardMoveReason reason(CardMoveReason::S_REASON_RECAST, card_use.from->objectName());
-        reason.m_skillName = getSkillName();
-        room->moveCardTo(this, card_use.from, NULL, Player::DiscardPile, reason);
-        card_use.from->broadcastSkillInvoke("@recast");
-
-        LogMessage log;
-        log.type = "#UseCard_Recast";
-        log.from = card_use.from;
-        log.card_str = card_use.card->toString();
-        room->sendLog(log);
-
-        card_use.from->drawCards(1, "known_both");
-    } else
-        SingleTargetTrick::onUse(room, card_use);
-}
-
-#include "jsonutils.h"
-void KnownBoth::onEffect(const CardEffectStruct &effect) const {
+void LureTiger::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.to->getRoom();
-    QStringList choicelist;
-    if (!effect.to->isKongcheng())
-        choicelist.append("handcards");
-    if (!effect.to->isLord())
-        choicelist.append("role");
-    if (choicelist.isEmpty()) return;
-    QString choice = room->askForChoice(effect.from, objectName(), choicelist.join("+"), QVariant::fromValue(effect.to));
 
-    LogMessage log;
-    log.type = "$IkLingtongView";
-    log.from = effect.from;
-    log.to << effect.to;
-    log.arg = "iklingtong:" + choice;
-    room->sendLog(log, room->getOtherPlayers(effect.from));
-
-    if (choice == "handcards") {
-        room->showAllCards(effect.to, effect.from);
-    } else if (choice == "role") {
-        Json::Value arg(Json::arrayValue);
-        arg[0] = QSanProtocol::Utils::toJsonString(effect.to->objectName());
-        arg[1] = QSanProtocol::Utils::toJsonString(effect.to->getRole());
-        room->doNotify(effect.from, QSanProtocol::S_COMMAND_SET_EMOTION, arg);
-
-        LogMessage log;
-        log.type = "$ViewRole";
-        log.from = effect.from;
-        log.to << effect.to;
-        log.arg = effect.to->getRole();
-        room->sendLog(log, effect.from);
-    }
+    room->setPlayerCardLimitation(effect.to, "use", ".", false);
+    room->setPlayerProperty(effect.to, "removed", true);
+    effect.from->setFlags("LureTigerUser");
 }
 
 class MoonSpearSkill: public WeaponSkill {
@@ -1656,6 +1624,176 @@ void WoodenOx::onUninstall(ServerPlayer *player) const{
     Treasure::onUninstall(player);
 }
 
+BurningCamps::BurningCamps(Card::Suit suit, int number)
+    : AOE(suit, number)
+{
+    setObjectName("burning_camps");
+}
+
+bool BurningCamps::isAvailable(const Player *player) const{
+    bool canUse = false;
+    QList<const Player *> players = player->getNextAlive()->getFormation();
+    foreach (const Player *p, players) {
+        if (player->isProhibited(p, this))
+            continue;
+
+        canUse = true;
+        break;
+    }
+
+    return canUse && TrickCard::isAvailable(player);
+}
+
+void BurningCamps::onUse(Room *room, const CardUseStruct &card_use) const{
+    CardUseStruct new_use = card_use;
+    if (new_use.to.isEmpty()) {
+        QList<const Player *> targets = card_use.from->getNextAlive()->getFormation();
+        foreach (const Player *player, targets) {
+            const Skill *skill = room->isProhibited(card_use.from, player, this);
+            ServerPlayer *splayer = room->findPlayer(player->objectName());
+            if (skill) {
+                if (!skill->isVisible())
+                    skill = Sanguosha->getMainSkill(skill->objectName());
+                if (skill->isVisible()) {
+                    LogMessage log;
+                    log.type = "#SkillAvoid";
+                    log.from = splayer;
+                    log.arg = skill->objectName();
+                    log.arg2 = objectName();
+                    room->sendLog(log);
+
+                    room->broadcastSkillInvoke(skill->objectName());
+                }
+            } else
+                new_use.to << splayer;
+        }
+    }
+
+    TrickCard::onUse(room, new_use);
+}
+
+void BurningCamps::onEffect(const CardEffectStruct &effect) const {
+    effect.to->getRoom()->damage(DamageStruct(this, effect.from, effect.to, 1, DamageStruct::Fire)); 
+}
+
+Drowning::Drowning(Suit suit, int number)
+    : AOE(suit, number)
+{
+    setObjectName("drowning");
+}
+
+void Drowning::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.to->getRoom();
+    if (effect.from->canDiscard(effect.to, "e")
+        && room->askForChoice(effect.to, objectName(), "throw+damage", QVariant::fromValue(effect)) == "throw") {
+        int card_id = room->askForCardChosen(effect.from, effect.to, "e", objectName(), false, MethodDiscard);
+        room->throwCard(card_id, effect.to, effect.from);
+    } else
+        room->damage(DamageStruct(this, effect.from->isAlive() ? effect.from : NULL, effect.to));
+}
+
+KnownBoth::KnownBoth(Card::Suit suit, int number)
+    : SingleTargetTrick(suit, number)
+{
+    setObjectName("known_both");
+    can_recast = true;
+}
+
+bool KnownBoth::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (Self->isCardLimited(this, Card::MethodUse))
+        return false;
+
+    int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
+    if (targets.length() >= total_num || to_select == Self)
+        return false;
+
+    return !to_select->isKongcheng();
+}
+
+bool KnownBoth::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY);
+    QList<int> sub;
+    if (isVirtualCard())
+        sub = subcards;
+    else
+        sub << getEffectiveId();
+    foreach (int id, sub) {
+        if (Self->getPile("wooden_ox").contains(id)) {
+            rec = false;
+            break;
+        }
+        // Coupling of ThBaochui
+        if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play) {
+            foreach (const Player *p, Self->getAliveSiblings())
+                if (p->getPile("thbaochuipile").contains(id)) {
+                    rec = false;
+                    break;
+                }
+            if (!rec) break;
+        }
+    }
+
+    if (rec && Self->isCardLimited(this, Card::MethodUse))
+        return targets.length() == 0;
+    int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
+    if (!rec || getSkillName() == "ikguihuo" || getSkillName() == "ikmice" || getSkillName() == "thmimeng")
+        return targets.length() > 0 && targets.length() <= total_num;
+    else
+        return targets.length() <= total_num;
+}
+
+void KnownBoth::onUse(Room *room, const CardUseStruct &card_use) const{
+    if (card_use.to.isEmpty()) {
+        CardMoveReason reason(CardMoveReason::S_REASON_RECAST, card_use.from->objectName());
+        reason.m_skillName = getSkillName();
+        room->moveCardTo(this, card_use.from, NULL, Player::DiscardPile, reason);
+        card_use.from->broadcastSkillInvoke("@recast");
+
+        LogMessage log;
+        log.type = "#UseCard_Recast";
+        log.from = card_use.from;
+        log.card_str = card_use.card->toString();
+        room->sendLog(log);
+
+        card_use.from->drawCards(1, "known_both");
+    } else
+        SingleTargetTrick::onUse(room, card_use);
+}
+
+#include "jsonutils.h"
+void KnownBoth::onEffect(const CardEffectStruct &effect) const {
+    Room *room = effect.to->getRoom();
+    QStringList choicelist;
+    if (!effect.to->isKongcheng())
+        choicelist.append("handcards");
+    if (!effect.to->isLord())
+        choicelist.append("role");
+    if (choicelist.isEmpty()) return;
+    QString choice = room->askForChoice(effect.from, objectName(), choicelist.join("+"), QVariant::fromValue(effect.to));
+
+    LogMessage log;
+    log.type = "$IkLingtongView";
+    log.from = effect.from;
+    log.to << effect.to;
+    log.arg = "iklingtong:" + choice;
+    room->sendLog(log, room->getOtherPlayers(effect.from));
+
+    if (choice == "handcards") {
+        room->showAllCards(effect.to, effect.from);
+    } else if (choice == "role") {
+        Json::Value arg(Json::arrayValue);
+        arg[0] = QSanProtocol::Utils::toJsonString(effect.to->objectName());
+        arg[1] = QSanProtocol::Utils::toJsonString(effect.to->getRole());
+        room->doNotify(effect.from, QSanProtocol::S_COMMAND_SET_EMOTION, arg);
+
+        LogMessage log;
+        log.type = "$ViewRole";
+        log.from = effect.from;
+        log.to << effect.to;
+        log.arg = effect.to->getRole();
+        room->sendLog(log, effect.from);
+    }
+}
 StandardCardPackage::StandardCardPackage()
     : Package("standard_cards", Package::CardPack)
 {
@@ -1808,20 +1946,20 @@ StandardExCardPackage::StandardExCardPackage()
     cards << new IceSword(Card::Spade, 2)
           << new IronArmor(Card::Heart, 2)
           << new RenwangShield(Card::Club, 2)
-          //<< new LureTiger(Card::Diamond, 2)
-          //<< new LureTiger(Card::Spade, 5)
+          << new LureTiger(Card::Diamond, 2)
+          << new LureTiger(Card::Spade, 5)
           << new MoonSpear()
           << new Breastplate(Card::Club, 5)
           << new WoodenOx()
           << new Slash(Card::Spade, 7)
           << new Jink(Card::Heart, 7)
-          //<< new BurningCamps(Card::Club, 7)
+          << new BurningCamps(Card::Club, 7)
           << new Slash(Card::Diamond, 7)
           << new Slash(Card::Spade, 9)
-          //<< new LureTiger(Card::Heart, 9)
+          << new LureTiger(Card::Heart, 9)
           << new Drowning()
           << new Jink(Card::Diamond, 9)
-          //<< new BurningCamps(Card::Spade, 12)
+          << new BurningCamps(Card::Spade, 12)
           << new Lightning(Card::Heart, 12)
           << new KnownBoth(Card::Club, 12)
           << new Nullification(Card::Diamond, 12);
@@ -1829,7 +1967,9 @@ StandardExCardPackage::StandardExCardPackage()
     skills << new IceSwordSkill
            << new IronArmorSkill
            << new RenwangShieldSkill
-           << new MoonSpearSkill
+           << new LureTigerSkill << new LureTigerProhibit;
+    related_skills.insertMulti("lure_tiger", "#lure_tiger");
+    skills << new MoonSpearSkill
            << new BreastplateSkill
            << new WoodenOxSkill << new WoodenOxTriggerSkill;
 
