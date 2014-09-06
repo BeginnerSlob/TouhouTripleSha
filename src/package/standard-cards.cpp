@@ -1267,6 +1267,24 @@ IceSword::IceSword(Suit suit, int number)
     setObjectName("ice_sword");
 }
 
+class IronArmorSkill: public ProhibitSkill {
+public:
+    IronArmorSkill(): ProhibitSkill("IronArmor") {
+    }
+
+    virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const{
+        if (to->hasArmorEffect(objectName()))
+            return card->isKindOf("FireAttack") || card->isKindOf("FireSlash") || card->isKindOf("BurningCamps");
+        return false;
+    }
+};
+
+IronArmor::IronArmor(Suit suit, int number)
+    : Armor(suit, number)
+{
+    setObjectName("iron_armor");
+}
+
 class RenwangShieldSkill: public ArmorSkill {
 public:
     RenwangShieldSkill(): ArmorSkill("renwang_shield") {
@@ -1483,6 +1501,51 @@ MoonSpear::MoonSpear(Suit suit, int number)
     : Weapon(suit, number, 3)
 {
     setObjectName("moon_spear");
+}
+
+class BreastplateSkill : public ArmorSkill {
+public:
+    BreastplateSkill() : ArmorSkill("Breastplate") {
+        events << DamageInflicted;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        if (ArmorSkill::triggerable(player) && damage.damage >= player->getHp()
+            && player->getArmor() && player->canDiscard(player, player->getArmor()->getEffectiveId()))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        return player->askForSkillInvoke(objectName());
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->throwCard(player->getArmor(), player);
+        DamageStruct damage = data.value<DamageStruct>();
+        LogMessage log;
+        log.type = "#Breastplate";
+        log.from = player;
+        if (damage.from)
+            log.to << damage.from;
+        log.arg = QString::number(damage.damage);
+        if (damage.nature == DamageStruct::Normal)
+            log.arg2 = "normal_nature";
+        else if (damage.nature == DamageStruct::Fire)
+            log.arg2 = "fire_nature";
+        else if (damage.nature == DamageStruct::Thunder)
+            log.arg2 = "thunder_nature";
+        room->sendLog(log);
+        return true;
+    }
+};
+
+Breastplate::Breastplate(Suit suit, int number)
+    : Armor(suit, number)
+{
+    setObjectName("breastplate");
 }
 
 WoodenOxCard::WoodenOxCard() {
@@ -1743,16 +1806,16 @@ StandardExCardPackage::StandardExCardPackage()
 {
     QList<Card *> cards;
     cards << new IceSword(Card::Spade, 2)
-          //<< new BurningCamps(Card::Heart, 2)
+          << new IronArmor(Card::Heart, 2)
           << new RenwangShield(Card::Club, 2)
           //<< new LureTiger(Card::Diamond, 2)
-          << new KnownBoth(Card::Spade, 5)
+          //<< new LureTiger(Card::Spade, 5)
           << new MoonSpear()
-          //<< new Breastplate(Card::Club, 5)
+          << new Breastplate(Card::Club, 5)
           << new WoodenOx()
           << new Slash(Card::Spade, 7)
           << new Jink(Card::Heart, 7)
-          //<< new LureTiger(Card::Club, 7)
+          //<< new BurningCamps(Card::Club, 7)
           << new Slash(Card::Diamond, 7)
           << new Slash(Card::Spade, 9)
           //<< new LureTiger(Card::Heart, 9)
@@ -1763,7 +1826,11 @@ StandardExCardPackage::StandardExCardPackage()
           << new KnownBoth(Card::Club, 12)
           << new Nullification(Card::Diamond, 12);
 
-    skills << new RenwangShieldSkill << new IceSwordSkill << new MoonSpearSkill
+    skills << new IceSwordSkill
+           << new IronArmorSkill
+           << new RenwangShieldSkill
+           << new MoonSpearSkill
+           << new BreastplateSkill
            << new WoodenOxSkill << new WoodenOxTriggerSkill;
 
     foreach (Card *card, cards)
