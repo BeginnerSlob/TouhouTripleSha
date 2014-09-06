@@ -73,6 +73,13 @@ public:
     Q_INVOKABLE IceSword(Card::Suit suit, int number);
 };
 
+class IronArmor: public Armor {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IronArmor(Card::Suit suit, int number);
+};
+
 class RenwangShield: public Armor {
     Q_OBJECT
 
@@ -94,6 +101,13 @@ class MoonSpear: public Weapon {
 
 public:
     Q_INVOKABLE MoonSpear(Card::Suit suit = Heart, int number = 5);
+};
+
+class Breastplate: public Armor {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE Breastplate(Card::Suit suit, int number);
 };
 
 class WoodenOx: public Treasure {
