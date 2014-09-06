@@ -1084,6 +1084,7 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
 
     doAnimate(S_ANIMATE_NULLIFICATION, repliedPlayer->objectName(), to->objectName());
     useCard(CardUseStruct(card, repliedPlayer, QList<ServerPlayer *>()));
+
     if (repliedPlayer->hasFlag("thhuaji_cancel")) {
         setPlayerFlag(repliedPlayer, "-thhuaji_cancel");
         if (card->isVirtualCard())
@@ -2649,8 +2650,8 @@ void Room::swapSeat(ServerPlayer *a, ServerPlayer *b) {
         }
 
         broadcastProperty(player, "seat");
-
         player->setNext(m_players.at((i + 1) % m_players.length()));
+        broadcastProperty(player, "next");
     }
 }
 
