@@ -1083,7 +1083,13 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
         return _askForNullification(trick, from, to, positive, aiHelper);
 
     doAnimate(S_ANIMATE_NULLIFICATION, repliedPlayer->objectName(), to->objectName());
-    useCard(CardUseStruct(card, repliedPlayer, QList<ServerPlayer *>()), false);
+    useCard(CardUseStruct(card, repliedPlayer, QList<ServerPlayer *>()));
+    if (repliedPlayer->hasFlag("thhuaji_cancel")) {
+        setPlayerFlag(repliedPlayer, "-thhuaji_cancel");
+        if (card->isVirtualCard())
+            delete card;
+        return false;
+    }
 
     LogMessage log;
     log.type = "#NullificationDetails";
@@ -1096,12 +1102,6 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
     QVariant decisionData = QVariant::fromValue("Nullification:" + QString(trick->getClassName())
                                                 + ":" + to->objectName() + ":" + (positive ? "true" : "false"));
     thread->trigger(ChoiceMade, this, repliedPlayer, decisionData);
-    if (repliedPlayer->hasFlag("thhuaji_cancel")) {
-        setPlayerFlag(repliedPlayer, "-thhuaji_cancel");
-        if (card->isVirtualCard())
-            delete card;
-        return false;
-    }
     setTag("NullifyingTimes", getTag("NullifyingTimes").toInt() + 1);
 
     bool result = true;

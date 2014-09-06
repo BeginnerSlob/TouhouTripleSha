@@ -14,7 +14,7 @@
 class ThHuaji: public TriggerSkill {
 public:
     ThHuaji(): TriggerSkill("thhuaji") {
-        events << CardUsed << CardResponded << ChoiceMade;
+        events << CardUsed << CardResponded;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const {
@@ -22,15 +22,7 @@ public:
             CardUseStruct use = data.value<CardUseStruct>();
             ServerPlayer *current = room->getCurrent();
             if (TriggerSkill::triggerable(current) && current->getPhase() != Player::NotActive && player != current
-                && !use.card->isKindOf("Nullification") && (use.card->isNDTrick() || use.card->isKindOf("BasicCard"))) {
-                ask_who = current;
-                return QStringList(objectName());
-            }
-        } else if (triggerEvent == ChoiceMade) {
-            QString str = data.toString();
-            ServerPlayer *current = room->getCurrent();
-            if (TriggerSkill::triggerable(current) && current->getPhase() != Player::NotActive && player != current
-                && str.startsWith("Nullification")) {
+                && (use.card->isNDTrick() || use.card->isKindOf("BasicCard"))) {
                 ask_who = current;
                 return QStringList(objectName());
             }
@@ -57,19 +49,23 @@ public:
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         if (triggerEvent == CardUsed) {
             CardUseStruct use = data.value<CardUseStruct>();
-            QString name = use.card->getClassName();
-            if (name.endsWith("Slash"))
-                name = "Slash";
-            QString str = use.card->objectName();
-            if (str.endsWith("_slash"))
-                str = "slash";
-            if (room->askForCard(player, name, "@thhuaji:::" + str)) return false;
-            foreach (ServerPlayer *p, room->getPlayers())
-                use.nullified_list << p->objectName();
-            data = QVariant::fromValue(use);
+            if (use.card->isKindOf("Nullification")) {
+                if (room->askForCard(player, "Nullification", "@thhuaji:::nullification")) return false;
+                room->setPlayerFlag(player, "thhuaji_cancel");
+            } else {
+                QString name = use.card->getClassName();
+                if (name.endsWith("Slash"))
+                    name = "Slash";
+                QString str = use.card->objectName();
+                if (str.endsWith("_slash"))
+                    str = "slash";
+                if (room->askForCard(player, name, "@thhuaji:::" + str)) return false;
+                foreach (ServerPlayer *p, room->getPlayers())
+                    use.nullified_list << p->objectName();
+                data = QVariant::fromValue(use);
+            }
         } else {
-            QString name = "Nullification";
-            QString str = "nullification";
+            QString name, str;
             if (triggerEvent == CardResponded) {
                 CardResponseStruct resp = data.value<CardResponseStruct>();
                 name = resp.m_card->getClassName();
@@ -80,7 +76,6 @@ public:
             if (str.endsWith("_slash"))
                 str = "slash";
             if (room->askForCard(player, name, "@thhuaji:::" + str)) return false;
-            room->setPlayerFlag(player, "thhuaji_cancel");
         }
 
         return false;
