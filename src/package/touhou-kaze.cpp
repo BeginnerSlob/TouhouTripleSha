@@ -507,17 +507,17 @@ public:
     virtual bool shouldBeVisible(const Player *player) const{
         if (player->getWeapon() || player->hasSkill("thsilian"))
             return false;
-        return player->hasWeapon("Spear") || player->hasWeapon("Fan");
+        return player->hasWeapon("spear") || player->hasWeapon("fan");
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const {
         if (player->getWeapon() || player->hasSkill("thsilian"))
             return false;
-        if (player->hasWeapon("Spear")) {
-            const ViewAsSkill *spear_skill = Sanguosha->getViewAsSkill("Spear");
+        if (player->hasWeapon("spear")) {
+            const ViewAsSkill *spear_skill = Sanguosha->getViewAsSkill("spear");
             return spear_skill->isEnabledAtPlay(player);
-        } else if (player->hasWeapon("Fan")) {
-            const ViewAsSkill *fan_skill = Sanguosha->getViewAsSkill("Fan");
+        } else if (player->hasWeapon("fan")) {
+            const ViewAsSkill *fan_skill = Sanguosha->getViewAsSkill("fan");
             return fan_skill->isEnabledAtPlay(player);
         } else
             return false;
@@ -526,33 +526,33 @@ public:
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const {
         if (player->getWeapon() || player->hasSkill("thsilian"))
             return false;
-        if (player->hasWeapon("Spear")) {
-            const ViewAsSkill *spear_skill = Sanguosha->getViewAsSkill("Spear");
+        if (player->hasWeapon("spear")) {
+            const ViewAsSkill *spear_skill = Sanguosha->getViewAsSkill("spear");
             return spear_skill->isEnabledAtResponse(player, pattern);
-        } else if (player->hasWeapon("Fan")) {
-            const ViewAsSkill *fan_skill = Sanguosha->getViewAsSkill("Fan");
+        } else if (player->hasWeapon("fan")) {
+            const ViewAsSkill *fan_skill = Sanguosha->getViewAsSkill("fan");
             return fan_skill->isEnabledAtResponse(player, pattern);
         } else
             return false;
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        if (Self->hasWeapon("Spear")) {
-            const ViewAsSkill *spear_skill = Sanguosha->getViewAsSkill("Spear");
+        if (Self->hasWeapon("spear")) {
+            const ViewAsSkill *spear_skill = Sanguosha->getViewAsSkill("spear");
             return spear_skill->viewFilter(selected, to_select);
-        } else if (Self->hasWeapon("Fan")) {
-            const ViewAsSkill *fan_skill = Sanguosha->getViewAsSkill("Fan");
+        } else if (Self->hasWeapon("fan")) {
+            const ViewAsSkill *fan_skill = Sanguosha->getViewAsSkill("fan");
             return fan_skill->viewFilter(selected, to_select);
         } else
             return false;
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if (Self->hasWeapon("Spear")) {
-            const ViewAsSkill *spear_skill = Sanguosha->getViewAsSkill("Spear");
+        if (Self->hasWeapon("spear")) {
+            const ViewAsSkill *spear_skill = Sanguosha->getViewAsSkill("spear");
             return spear_skill->viewAs(cards);
-        } else if (Self->hasWeapon("Fan")) {
-            const ViewAsSkill *fan_skill = Sanguosha->getViewAsSkill("Fan");
+        } else if (Self->hasWeapon("fan")) {
+            const ViewAsSkill *fan_skill = Sanguosha->getViewAsSkill("fan");
             return fan_skill->viewAs(cards);
         } else
             return NULL;
@@ -624,7 +624,7 @@ ThQiaogongCard::ThQiaogongCard() {
 }
 
 bool ThQiaogongCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const {
-    if (!targets.isEmpty())
+    if (!targets.isEmpty() || !to_select->hasEquip())
         return false;
 
     Suit suit = Sanguosha->getCard(getEffectiveId())->getSuit();
