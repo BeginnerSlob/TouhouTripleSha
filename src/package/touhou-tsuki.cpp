@@ -121,7 +121,7 @@ public:
     }
 
     virtual bool shouldBeVisible(const Player *player) const{
-        return player->getKingdom() == "tsuki" && !player->hasFlag("ForbidThYejun");
+        return player->getKingdom() == "tsuki";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
