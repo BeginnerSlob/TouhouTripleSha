@@ -1251,6 +1251,44 @@ public:
     }
 };
 
+class IkDiebei: public TriggerSkill {
+public:
+    IkDiebei(): TriggerSkill("ikdiebei") {
+        events << EventPhaseStart;
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return TriggerSkill::triggerable(target)
+            && target->getPhase() == Player::Start;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+        if (player->getHandcardNum() != player->getHp()) {
+            player->drawCards(2, objectName());
+        } else {
+            room->loseHp(player);
+            player->setFlags("ikdiebei");
+        }
+        return false;
+    }
+};
+
+class IkDiebeiMaxCards: public MaxCardsSkill {
+public:
+    IkDiebeiMaxCards(): MaxCardsSkill("#ikdiebei") {
+    }
+
+    virtual int getExtra(const Player *target) const{
+        if (target->hasFlag("ikdiebei"))
+            return 1;
+        else
+            return 0;
+    }
+};
+
 class IkLingyun: public TriggerSkill {
 public:
     IkLingyun(): TriggerSkill("iklingyun") {
@@ -3044,6 +3082,11 @@ IkaiKaPackage::IkaiKaPackage()
     bloom047->addSkill(new IkZuiyanSlash);
     related_skills.insertMulti("ikzuiyan", "#ikzuiyan");
     bloom047->addSkill(new IkQihun);
+
+    General *bloom048 = new General(this, "bloom048", "hana");
+    bloom048->addSkill(new IkDiebei);
+    bloom048->addSkill(new IkDiebeiMaxCards);
+    related_skills.insertMulti("ikdiebei", "#ikdiebei");
 
     General *snow031 = new General(this, "snow031", "yuki", 3);
     snow031->addSkill(new IkLingyun);
