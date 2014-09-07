@@ -1806,8 +1806,8 @@ public:
         filter_pattern = "BasicCard|red";
     }
 
-    virtual bool shouldBeVisible(const Player *player) const{
-        return !player->hasFlag("ForbidThKujie");
+    virtual bool shouldBeVisible(const Player *) const{
+        return true;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
@@ -2139,7 +2139,7 @@ public:
     }
 
     virtual bool shouldBeVisible(const Player *player) const{
-        return player->getKingdom() == "yuki" && !player->hasFlag("ForbidThFuyue");
+        return player->getKingdom() == "yuki";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{

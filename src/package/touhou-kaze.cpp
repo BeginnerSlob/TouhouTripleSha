@@ -504,10 +504,8 @@ public:
         attached_lord_skill = true;
     }
 
-    virtual bool shouldBeVisible(const Player *player) const{
-        if (player->getWeapon() || player->hasSkill("thsilian"))
-            return false;
-        return player->hasWeapon("spear") || player->hasWeapon("fan");
+    virtual bool shouldBeVisible(const Player *) const{
+        return true;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const {
@@ -2122,7 +2120,7 @@ public:
     }
 
     virtual bool shouldBeVisible(const Player *player) const{
-        return player->getKingdom() == "kaze" && !player->hasFlag("ForbidThXinhua");
+        return player->getKingdom() == "kaze";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const {

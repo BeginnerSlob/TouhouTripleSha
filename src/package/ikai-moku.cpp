@@ -1956,8 +1956,8 @@ public:
         filter_pattern = ".|.|.|hand";
     }
 
-    virtual bool shouldBeVisible(const Player *player) const{
-        return !player->hasFlag("ForbidIkYihuo");
+    virtual bool shouldBeVisible(const Player *) const{
+        return true;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
@@ -2905,7 +2905,7 @@ public:
     }
 
     virtual bool shouldBeVisible(const Player *player) const{
-        return player->getKingdom() == "yuki" && !player->hasFlag("ForbidIkBiansheng");
+        return player->getKingdom() == "yuki";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
@@ -4770,17 +4770,17 @@ bool IkYujiCard::targetFilter(const QList<const Player *> &targets, const Player
 
 class IkYujiViewAsSkill: public OneCardViewAsSkill {
 public:
-    IkYujiViewAsSkill():OneCardViewAsSkill("ikyujiv") {
+    IkYujiViewAsSkill(): OneCardViewAsSkill("ikyujiv") {
         attached_lord_skill = true;
         filter_pattern = "Jink#.|black|.|hand";
     }
 
     virtual bool shouldBeVisible(const Player *player) const{
-        return player->getKingdom() == "tsuki" && !player->hasFlag("ForbidIkYuji");
+        return player->getKingdom() == "tsuki";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return shouldBeVisible(player);
+        return player->getKingdom() == "tsuki";
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{

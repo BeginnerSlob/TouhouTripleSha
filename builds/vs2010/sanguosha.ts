@@ -3204,7 +3204,7 @@ P = 你自己, R = 你所在的房间</translation>
 <context>
     <name>SelectSuitDialog</name>
     <message>
-        <location filename="../../src/package/ikai-ka.cpp" line="324"/>
+        <location filename="../../src/package/ikai-ka.cpp" line="325"/>
         <source>Please choose a suit</source>
         <translation>请选择一种花色</translation>
     </message>
