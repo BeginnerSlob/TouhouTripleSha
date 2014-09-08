@@ -112,11 +112,11 @@ void Settings::init() {
 #endif
 
     if (UserName == "Admin" || UserName == "Administrator")
-        UserName = tr("Sanguosha-fans");
-    ServerName = value("ServerName", tr("%1's server").arg(UserName)).toString();
+        UserName = tr("TripleShaFans");
+    ServerName = value("ServerName", tr("%1's touhoukifugeki").arg(UserName)).toString();
 
     HostAddress = value("HostAddress", "127.0.0.1").toString();
-    UserAvatar = value("UserAvatar", "shencaocao").toString();
+    UserAvatar = value("UserAvatar", "kaze001").toString();
     HistoryIPs = value("HistoryIPs").toStringList();
     DetectorPort = value("DetectorPort", 9526u).toUInt();
     MaxCards = value("MaxCards", 15).toInt();
