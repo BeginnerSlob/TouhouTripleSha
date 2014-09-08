@@ -2257,7 +2257,7 @@ public:
 
 class IkTianyanViewAsSkill: public ZeroCardViewAsSkill {
 public:
-    IkTianyanViewAsSkill(): ZeroCardViewAsSkill("iktianan") {
+    IkTianyanViewAsSkill(): ZeroCardViewAsSkill("iktianyan") {
     }
 
     virtual bool isEnabledAtPlay(const Player *) const{
