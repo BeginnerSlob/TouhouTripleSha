@@ -1263,7 +1263,7 @@ public:
             && target->getPhase() == Player::Start;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         room->sendCompulsoryTriggerLog(player, objectName());
         room->broadcastSkillInvoke(objectName());
         if (player->getHandcardNum() != player->getHp()) {
@@ -3024,6 +3024,52 @@ public:
     }
 };
 
+class IkZhiwang: public PhaseChangeSkill {
+public:
+    IkZhiwang(): PhaseChangeSkill("ikzhiwang") {
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+            && target->getPhase() == Player::Play;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (player->canSlash(p, false) && player->inMyAttackRange(p))
+                targets << p;
+        }
+        targets << player;
+        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
+        Slash *slash = new Slash(Card::NoSuit, 0);
+        slash->setSkillName("_ikzhiwang");
+        room->useCard(CardUseStruct(slash, player, target));
+        return false;
+    }
+};
+
+class IkLianlong: public DistanceSkill {
+public:
+    IkLianlong(): DistanceSkill("iklianlong") {
+    }
+
+    virtual int getCorrect(const Player *from, const Player *) const{
+        if (from->hasSkill(objectName())) {
+            if (from->getHandcardNum() % 2 == 1)
+                return 1;
+            else
+                return -1;
+        }
+        return 0;
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -3160,6 +3206,12 @@ IkaiKaPackage::IkaiKaPackage()
     General *luna047 = new General(this, "luna047", "tsuki");
     luna047->addSkill(new IkYuanji);
     luna047->addSkill(new IkShuluo);
+
+    General *luna048 = new General(this, "luna048", "tsuki");
+    luna048->addSkill(new IkZhiwang);
+    luna048->addSkill(new SlashNoDistanceLimitSkill("ikzhiwang"));
+    related_skills.insertMulti("ikzhiwang", "#ikzhiwang-slash-ndl");
+    luna048->addSkill(new IkLianlong);
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
