@@ -946,9 +946,9 @@ public:
     }
 };
 
-class ThHuanzang: public TriggerSkill{
+class ThHuanzang: public TriggerSkill {
 public:
-    ThHuanzang(): TriggerSkill("thhuanzang"){
+    ThHuanzang(): TriggerSkill("thhuanzang") {
         events << EventPhaseEnd;
         frequency = Compulsory;
     }
@@ -962,7 +962,7 @@ public:
         room->sendCompulsoryTriggerLog(player, objectName());
 
         JudgeStruct judge;
-        judge.pattern = ".|spade";
+        judge.pattern = ".|black";
         judge.good = false;
         judge.negative = true;
         judge.reason = objectName();
