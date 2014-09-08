@@ -1548,6 +1548,8 @@ TouhouSPPackage::TouhouSPPackage()
 
     General *sp004 = new General(this, "sp004", "tsuki", 3);
     sp004->addSkill(new ThChuangshi);
+    sp004->addSkill(new SlashNoDistanceLimitSkill("thchuangshi"));
+    related_skills.insertMulti("thchuangshi", "#thchuangshi-slash-ndl");
     sp004->addSkill(new ThGaotian);
 
     General *sp005 = new General(this, "sp005", "kaze", 3);

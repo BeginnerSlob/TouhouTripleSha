@@ -803,7 +803,7 @@ public:
         player->tag["ThBishaTarget"] = QVariant::fromValue(victim);
         Slash *slash = new Slash(Card::NoSuit, 0);
         slash->setSkillName("_thbisha");
-        if (player->canSlash(victim, slash, false)) {
+        if (player->canSlash(victim, slash)) {
             CardUseStruct use;
             use.card = slash;
             use.from = player;

@@ -3029,21 +3029,21 @@ public:
                 }
                 if (!targets2.isEmpty())
                     choicelist << "damage";
+                ThunderSlash *slashx = new ThunderSlash(Card::NoSuit, 0);
+                slashx->deleteLater();
                 QList<ServerPlayer *> targets1;
                 foreach (ServerPlayer *target, room->getAlivePlayers()) {
-                    if (ask_who->canSlash(target, NULL, false))
+                    if (ask_who->canSlash(target, slashx, false))
                         targets1 << target;
                 }
-                Slash *slashx = new ThunderSlash(Card::NoSuit, 0);
                 if (!targets1.isEmpty() && !ask_who->isCardLimited(slashx, Card::MethodUse))
                     choicelist << "slash";
-                slashx->deleteLater();
                 choicelist << "draw";
 
                 QString choice = room->askForChoice(ask_who, objectName(), choicelist.join("+"));
                 if (choice == "slash") {
                     ServerPlayer *target = room->askForPlayerChosen(ask_who, targets1, "ikleilan_slash", "@dummy-slash");
-                    Slash *slash = new Slash(Card::NoSuit, 0);
+                    ThunderSlash *slash = new ThunderSlash(Card::NoSuit, 0);
                     slash->setSkillName("_ikleilan");
                     room->useCard(CardUseStruct(slash, ask_who, target));
                 } else if (choice == "damage") {
