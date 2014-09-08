@@ -3081,9 +3081,13 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *wind033 = new General(this, "wind033", "kaze");
     wind033->addSkill(new IkJilun);
+    wind033->addSkill(new SlashNoDistanceLimitSkill("ikjilun"));
+    related_skills.insertMulti("ikjilun", "#ikjilun-slash-ndl");
 
     General *wind034 = new General(this, "wind034", "kaze");
     wind034->addSkill(new IkJiqiao);
+    wind034->addSkill(new SlashNoDistanceLimitSkill("ikjiqiao"));
+    related_skills.insertMulti("ikjiqiao", "#ikjiqiao-slash-ndl");
 
     General *wind035 = new General(this, "wind035", "kaze");
     wind035->addSkill(new IkKangjin);
@@ -3092,6 +3096,8 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *wind036 = new General(this, "wind036", "kaze");
     wind036->addSkill(new IkHunkao);
+    wind036->addSkill(new SlashNoDistanceLimitSkill("ikhunkao"));
+    related_skills.insertMulti("ikhunkao", "#ikhunkao-slash-ndl");
 
     General *wind045 = new General(this, "wind045", "kaze");
     wind045->addSkill(new IkHudie);

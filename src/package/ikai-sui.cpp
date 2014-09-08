@@ -4362,6 +4362,8 @@ IkaiSuiPackage::IkaiSuiPackage()
 
     General *luna035 = new General(this, "luna035", "tsuki");
     luna035->addSkill(new IkSheqie);
+    luna035->addSkill(new SlashNoDistanceLimitSkill("iksheqie"));
+    related_skills.insertMulti("iksheqie", "#iksheqie-slash-ndl");
     luna035->addSkill(new IkYanzhou);
 
     General *luna040 = new General(this, "luna040", "tsuki", 3);

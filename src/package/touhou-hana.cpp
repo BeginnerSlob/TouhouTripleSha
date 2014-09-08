@@ -2507,6 +2507,8 @@ TouhouHanaPackage::TouhouHanaPackage()
 
     General *hana002 = new General(this, "hana002", "hana");
     hana002->addSkill(new ThJiewu);
+    hana002->addSkill(new SlashNoDistanceLimitSkill("thjiewu"));
+    related_skills.insertMulti("thjiewu", "#thjiewu-slash-ndl");
     hana002->addSkill(new ThGenxing);
     hana002->addRelateSkill("thmopao");
 
@@ -2534,6 +2536,8 @@ TouhouHanaPackage::TouhouHanaPackage()
 
     General *hana006 = new General(this, "hana006", "hana");
     hana006->addSkill(new ThXihua);
+    hana006->addSkill(new SlashNoDistanceLimitSkill("thxihua"));
+    related_skills.insertMulti("thxihua", "#thxihua-slash-ndl");
 
     General *hana007 = new General(this, "hana007", "hana", 3, false);
     hana007->addSkill(new ThMimeng);
@@ -2545,6 +2549,8 @@ TouhouHanaPackage::TouhouHanaPackage()
 
     General *hana009 = new General(this, "hana009", "hana");
     hana009->addSkill(new ThDuanzui);
+    hana009->addSkill(new SlashNoDistanceLimitSkill("thduanzui"));
+    related_skills.insertMulti("thduanzui", "#thduanzui-slash-ndl");
 
     General *hana010 = new General(this, "hana010", "hana");
     hana010->addSkill(new ThYingdeng);

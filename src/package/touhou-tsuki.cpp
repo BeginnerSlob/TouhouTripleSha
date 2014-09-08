@@ -1236,13 +1236,15 @@ public:
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
-        room->sendCompulsoryTriggerLog(ask_who, objectName());
-        room->broadcastSkillInvoke(objectName());
-        if (triggerEvent == Damaged)
+        if (triggerEvent == Damaged) {
             room->setPlayerMark(ask_who, "zhehui", 1);
-        else if (triggerEvent == DamageInflicted)
+        } else if (triggerEvent == DamageInflicted) {
+            room->sendCompulsoryTriggerLog(ask_who, objectName());
+            room->broadcastSkillInvoke(objectName());
             return true;
-        else if (triggerEvent == EventPhaseStart) {
+        } else if (triggerEvent == EventPhaseStart) {
+            room->sendCompulsoryTriggerLog(ask_who, objectName());
+            room->broadcastSkillInvoke(objectName());
             room->setPlayerMark(ask_who, "zhehui", 0);
             QList<ServerPlayer *> targets;
             foreach (ServerPlayer *p, room->getOtherPlayers(ask_who))
