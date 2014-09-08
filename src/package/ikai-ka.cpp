@@ -1647,8 +1647,11 @@ void IkLinghuiCard::onEffect(const CardEffectStruct &effect) const{
         effect.to->drawCards(1, "iklinghui");
         if (!effect.to->isKongcheng()) {
             Room *room = effect.from->getRoom();
-            const Card *card = room->askForCardShow(effect.to, effect.from, "iklinghui");
-            room->showCard(effect.to, card->getEffectiveId());
+            const Card *card = room->askForCard(effect.to, ".", "@iklinghui-discard");
+            if (!card) {
+                card = effect.to->getRandomHandCard();
+                room->throwCard(card, effect.to);
+            }
             room->setPlayerMark(effect.from, "iklinghui", card->getColor() + 1);
             room->askForUseCard(effect.from, "@@iklinghui", "@iklinghui", -1, Card::MethodDiscard, false);
             room->setPlayerMark(effect.from, "iklinghui", 0);
