@@ -71,7 +71,7 @@ public:
         }
         if (!TriggerSkill::triggerable(player)) return QStringList();
         bool ok = false;
-        int recorded_damage = player->tag["InvokeKuanggu"].toInt(&ok);
+        int recorded_damage = player->tag["InvokeIkKuanggu"].toInt(&ok);
         DamageStruct damage = data.value<DamageStruct>();
         if (ok && recorded_damage > 0 && (player->isWounded() || !damage.card || !damage.card->isKindOf("Slash"))) {
             QStringList skills;
