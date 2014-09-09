@@ -400,7 +400,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
         player->drawCards(1, objectName());
         DamageStruct damage = data.value<DamageStruct>();
         LogMessage log;
