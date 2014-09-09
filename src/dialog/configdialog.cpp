@@ -29,7 +29,10 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 
     ui->enableBgMusicCheckBox->setChecked(Config.EnableBgMusic);
 
-    bool enabled_full = QFile::exists("skins/fulldefaultSkin.layout.json");
+    //bool enabled_full = QFile::exists("skins/fulldefaultSkin.layout.json");
+    //temp disabled
+    bool enabled_full = false;
+    ui->fullSkinCheckBox->setToolTip(tr("Temp Disabled"));
     ui->fullSkinCheckBox->setEnabled(enabled_full);
     ui->fullSkinCheckBox->setChecked(enabled_full && Config.value("UseFullSkin", false).toBool());
     ui->noIndicatorCheckBox->setChecked(Config.value("NoIndicator", false).toBool());
