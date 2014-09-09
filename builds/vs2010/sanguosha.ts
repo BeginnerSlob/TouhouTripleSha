@@ -633,27 +633,32 @@
         <translation>启用超级拖拽</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="47"/>
+        <location filename="../../src/dialog/configdialog.cpp" line="35"/>
+        <source>Temp Disabled</source>
+        <translation>暂时禁用</translation>
+    </message>
+    <message>
+        <location filename="../../src/dialog/configdialog.cpp" line="50"/>
         <source> millisecond</source>
         <translation> 毫秒</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="77"/>
+        <location filename="../../src/dialog/configdialog.cpp" line="80"/>
         <source>Select a background image</source>
         <translation>请选择一张背景图片</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="79"/>
+        <location filename="../../src/dialog/configdialog.cpp" line="82"/>
         <source>Images (*.png *.bmp *.jpg)</source>
         <translation>图片 (*.png *.bmp *.jpg)</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="181"/>
+        <location filename="../../src/dialog/configdialog.cpp" line="184"/>
         <source>Select a background music</source>
         <translation>请选择背景音乐文件</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="183"/>
+        <location filename="../../src/dialog/configdialog.cpp" line="186"/>
         <source>Audio files (*.wav *.mp3 *.ogg)</source>
         <translation>音频 (*.wav *.mp3 *.ogg)</translation>
     </message>
