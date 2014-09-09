@@ -48,7 +48,7 @@ return {
 	["@gaotian-discard"] = "你可以弃置一张牌并获得其中一张相同颜色的牌",
 	
 	["#sp005"]="濡衣的子猫",
-	["sp005"]="SP火焰猫燐",--风 - 空 - 3血
+	["sp005"]="SP火焰猫燐",--风 - 空 - 4血
 	["designer:sp005"]="幻桜落 | Codeby:Slob",
 	["illustrator:sp005"]="正体不明",
 	["cv:sp005"]="暂无",
@@ -57,8 +57,7 @@ return {
 	["@thwanling"]="你可以弃置一张牌获得该牌，或点“取消”令 %src 摸一张牌",
 	["thzuibu"]="醉步",
 	[":thzuibu"]="每当你受到伤害时，伤害来源可以令你摸一张牌，然后令此伤害-1。",
-	["thzuibu:decrease"]="受“醉步”影响，你可以摸一张牌并令此伤害-1",
-	["#ThZuibu"] = "%from 发动了“<font color=\"yellow\"><b>醉步</b></font>”，伤害点数从 %arg 点减少至 %arg2 点",
+	["#ThZuibu"] = "%from 发动了 %to 的“<font color=\"yellow\"><b>醉步</b></font>”，伤害点数从 %arg 点减少至 %arg2 点",
 	
 	["#sp006"]="恋之白魔导士",
 	["sp006"]="SP雾雨魔理沙",--花 - 空 - 4血

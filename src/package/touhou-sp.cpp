@@ -340,7 +340,7 @@ public:
         if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
             && move.reason.m_reason == CardMoveReason::S_REASON_USE) {
             const Card *card = move.reason.m_extraData.value<const Card *>();
-            if (card && card->isRed() && (card->isKindOf("Slash") || card->isNDTrick()) && player->inMyAttackRange(move.from))
+            if (card && card->isRed() && (card->isKindOf("Slash") || card->isNDTrick()))
                 return QStringList(objectName());
         }
         return QStringList();
@@ -356,25 +356,16 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        JudgeStruct judge;
-        judge.pattern = ".|heart";
-        judge.good = false;
-        judge.reason = objectName();
-        judge.who = player;
-        room->judge(judge);
-
-        if (judge.isGood()) {
-            if (player->canDiscard(player, "he") && room->askForCard(player,
-                                                                     "..",
-                                                                     "@thwanling:" + move.from->objectName(),
-                                                                     data,
-                                                                     objectName())) {
-                player->obtainCard(move.reason.m_extraData.value<const Card *>());
-                move.removeCardIds(move.card_ids);
-                data = QVariant::fromValue(move);
-            } else
-                room->drawCards((ServerPlayer *)move.from, 1, objectName());
-        }
+        if (player->canDiscard(player, "he") && room->askForCard(player,
+                                                                 "..",
+                                                                 "@thwanling:" + move.from->objectName(),
+                                                                 data,
+                                                                 objectName())) {
+            player->obtainCard(move.reason.m_extraData.value<const Card *>());
+            move.removeCardIds(move.card_ids);
+            data = QVariant::fromValue(move);
+        } else
+            room->drawCards((ServerPlayer *)move.from, 1, objectName());
         return false;
     }
 };
@@ -385,18 +376,25 @@ public:
         events << DamageInflicted;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
         if (!TriggerSkill::triggerable(player))
             return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.card && damage.card->isKindOf("SavageAssault"))
+        if (!damage.from || damage.from->isDead())
             return QStringList();
+        ask_who = damage.from;
         return QStringList(objectName());
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        if (player->askForSkillInvoke(objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
             room->broadcastSkillInvoke(objectName());
+            LogMessage log;
+            log.type = "#InvokeOthersSkill";
+            log.from = ask_who;
+            log.to << player;
+            log.arg = objectName();
+            room->sendLog(log);
             return true;
         }
         return false;
@@ -405,20 +403,17 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         player->drawCards(1, objectName());
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.from && damage.from->askForSkillInvoke(objectName(), "decrease")) {
-            damage.from->drawCards(1);
+        LogMessage log;
+        log.type = "#ThZuibu";
+        log.from = ask_who;
+        log.to << player;
+        log.arg = QString::number(damage.damage);
+        log.arg2 = QString::number(--damage.damage);
+        room->sendLog(log);
 
-            LogMessage log;
-            log.type = "#ThZuibu";
-            log.from = player;
-            log.arg = QString::number(damage.damage);
-            log.arg2 = QString::number(--damage.damage);
-            room->sendLog(log);
-
-            data = QVariant::fromValue(damage);
-            if (damage.damage < 1)
-                return true;
-        }
+        data = QVariant::fromValue(damage);
+        if (damage.damage < 1)
+            return true;
         return false;
     }
 };
@@ -1552,7 +1547,7 @@ TouhouSPPackage::TouhouSPPackage()
     related_skills.insertMulti("thchuangshi", "#thchuangshi-slash-ndl");
     sp004->addSkill(new ThGaotian);
 
-    General *sp005 = new General(this, "sp005", "kaze", 3);
+    General *sp005 = new General(this, "sp005", "kaze");
     sp005->addSkill(new ThWanling);
     sp005->addSkill(new ThZuibu);
 
