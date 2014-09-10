@@ -1274,7 +1274,7 @@ IceSword::IceSword(Suit suit, int number)
 
 class IronArmorSkill: public ProhibitSkill {
 public:
-    IronArmorSkill(): ProhibitSkill("IronArmor") {
+    IronArmorSkill(): ProhibitSkill("iron_armor") {
     }
 
     virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const{
@@ -1387,11 +1387,14 @@ bool LureTiger::targetFilter(const QList<const Player *> &targets, const Player 
 }
 
 void LureTiger::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    foreach(ServerPlayer *target, targets) {
+    QStringList nullified_list = room->getTag("CardUseNullifiedList").toStringList();
+    foreach (ServerPlayer *target, targets) {
         CardEffectStruct effect;
         effect.card = this;
         effect.from = source;
         effect.to = target;
+        effect.multiple = (targets.length() > 1);
+        effect.nullified = (nullified_list.contains(target->objectName()));
 
         room->cardEffect(effect);
     }
@@ -1401,6 +1404,7 @@ void LureTiger::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
     if (room->getCardPlace(getEffectiveId()) == Player::PlaceTable) {
         CardMoveReason reason(CardMoveReason::S_REASON_USE, source->objectName(), QString(), getSkillName(), QString());
         if (targets.size() == 1) reason.m_targetId = targets.first()->objectName();
+        reason.m_extraData = QVariant::fromValue((const Card *)this);
         room->moveCardTo(this, source, NULL, Player::DiscardPile, reason, true);
     }
 }
@@ -1473,7 +1477,7 @@ MoonSpear::MoonSpear(Suit suit, int number)
 
 class BreastplateSkill : public ArmorSkill {
 public:
-    BreastplateSkill() : ArmorSkill("Breastplate") {
+    BreastplateSkill() : ArmorSkill("breastplate") {
         events << DamageInflicted;
         frequency = Compulsory;
     }

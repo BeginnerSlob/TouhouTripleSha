@@ -159,7 +159,7 @@ public:
                 return QStringList(objectName());
         } else if (triggerEvent == CardEffected) {
             CardEffectStruct effect = data.value<CardEffectStruct>();
-            if (effect.card->isKindOf("AOE"))
+            if (effect.card->isKindOf("SavageAssault") || effect.card->isKindOf("ArcheryAttack") || effect.card->isKindOf("Drowning"))
                 return QStringList(objectName());
         } else if (triggerEvent == DamageInflicted) {
             DamageStruct damage = data.value<DamageStruct>();
