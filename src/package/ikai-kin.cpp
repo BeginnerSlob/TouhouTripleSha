@@ -4377,7 +4377,7 @@ public:
             DeathStruct death = data.value<DeathStruct>();
             if (death.who != gaoshun) {
                 if (death.who == target) {
-                    room->setFixedDistance(gaoshun, target, -1);
+                    room->removeFixedDistance(gaoshun, target, 1);
                     gaoshun->tag.remove("IkLvdongTarget");
                     room->setPlayerFlag(gaoshun, "-IkLvdongSuccess");
                 }
@@ -4389,7 +4389,7 @@ public:
             assignee_list.removeOne(target->objectName());
             room->setPlayerProperty(gaoshun, "extra_slash_specific_assignee", assignee_list.join("+"));
 
-            room->setFixedDistance(gaoshun, target, -1);
+            room->removeFixedDistance(gaoshun, target, 1);
             gaoshun->tag.remove("IkLvdongTarget");
             room->removePlayerMark(target, "Armor_Nullified");
         }

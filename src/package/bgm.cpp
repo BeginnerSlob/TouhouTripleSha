@@ -540,7 +540,7 @@ public:
             ServerPlayer *target = player->tag["TanhuInvoke"].value<ServerPlayer *>();
 
             target->setFlags("-TanhuTarget");
-            room->setFixedDistance(player, target, -1);
+            room->removeFixedDistance(player, target, 1);
             player->tag.remove("TanhuInvoke");
         }
         return false;

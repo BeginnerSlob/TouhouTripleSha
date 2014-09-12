@@ -791,6 +791,12 @@ void RoomScene::adjustItems() {
     updateTable();
     updateRolesBox();
     setChatBoxVisible(chat_box_widget->isVisible());
+
+    QMapIterator<QString, BubbleChatBox *> iter(bubbleChatBoxes);
+    while (iter.hasNext()) {
+        iter.next();
+        iter.value()->setArea(getBubbleChatBoxShowArea(iter.key()));
+    }
 }
 
 void RoomScene::_dispersePhotos(QList<Photo *> &photos, QRectF fillRegion,

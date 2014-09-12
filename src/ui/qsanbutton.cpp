@@ -296,16 +296,16 @@ void QSanInvokeSkillDock::update() {
     if (!_m_buttons.isEmpty()) {
         QList<QSanInvokeSkillButton *> regular_buttons, lordskill_buttons, all_buttons;
         foreach (QSanInvokeSkillButton *btn, _m_buttons) {
-            if (btn->getSkill()->isAttachedLordSkill()) {
-                if (btn->getSkill()->shouldBeVisible(Self)) {
-                    btn->setVisible(true);
-                    lordskill_buttons << btn;
-                } else {
-                    btn->setVisible(false);
-                }
+            if (!btn->getSkill()->shouldBeVisible(Self)) {
+                btn->setVisible(false);
+                continue;
             } else {
-                regular_buttons << btn;
+                btn->setVisible(true);
             }
+            if (btn->getSkill()->isAttachedLordSkill())
+                lordskill_buttons << btn;
+            else
+                regular_buttons << btn;
         }
         all_buttons = regular_buttons + lordskill_buttons;
 

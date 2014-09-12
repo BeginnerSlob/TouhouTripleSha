@@ -871,16 +871,14 @@ void ServerPlayer::loseSkill(const QString &skill_name) {
     room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 }
 
-void ServerPlayer::setGender(int gender_num) {
-    Q_ASSERT(gender_num < 0 || gender_num > 3);
-    General::Gender gender = (General::Gender)gender_num;
+void ServerPlayer::setGender(General::Gender gender) {
     if (gender == getGender())
         return;
     Player::setGender(gender);
     Json::Value args;
     args[0] = QSanProtocol::S_GAME_EVENT_CHANGE_GENDER;
     args[1] = toJsonString(objectName());
-    args[2] = gender_num;
+    args[2] = (int)gender;
     room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 }
 

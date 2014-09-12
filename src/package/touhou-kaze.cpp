@@ -762,14 +762,14 @@ public:
                 DeathStruct death = data.value<DeathStruct>();
                 if (death.who != player) {
                     if (death.who == target) {
-                        room->setFixedDistance(player, target, -1);
+                        room->removeFixedDistance(player, target, 1);
                         player->tag.remove("ThBishaTarget");
                     }
                     return QStringList();
                 }
             }
             if (target) {
-                room->setFixedDistance(player, target, -1);
+                room->removeFixedDistance(player, target, 1);
                 player->tag.remove("ThBishaTarget");
             }
         }

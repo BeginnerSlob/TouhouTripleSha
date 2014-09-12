@@ -2905,11 +2905,11 @@ public:
     }
 
     virtual bool shouldBeVisible(const Player *player) const{
-        return player->getKingdom() == "yuki";
+        return player && player->getKingdom() == "yuki";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getKingdom() == "yuki" && !player->isKongcheng() && !player->hasFlag("ForbidIkBiansheng");
+        return shouldBeVisible(player) && !player->isKongcheng() && !player->hasFlag("ForbidIkBiansheng");
     }
 
     virtual const Card *viewAs() const{
@@ -4776,11 +4776,11 @@ public:
     }
 
     virtual bool shouldBeVisible(const Player *player) const{
-        return player->getKingdom() == "tsuki";
+        return player && player->getKingdom() == "tsuki";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getKingdom() == "tsuki";
+        return shouldBeVisible(player) && !player->hasFlag("ForbidIkYuji");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{

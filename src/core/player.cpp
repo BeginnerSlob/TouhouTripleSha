@@ -78,13 +78,11 @@ bool Player::isWounded() const{
         return hp < max_hp;
 }
 
-int Player::getGender() const{
-    return (int)m_gender;
+General::Gender Player::getGender() const{
+    return m_gender;
 }
 
-void Player::setGender(int gender_num) {
-    Q_ASSERT(gender_num < 0 || gender_num > 3);
-    General::Gender gender = (General::Gender)gender_num;
+void Player::setGender(General::Gender gender) {
     m_gender = gender;
 }
 
@@ -187,16 +185,28 @@ bool Player::inMyAttackRange(const Player *other, int distance_fix) const{
         return false;
     if (this == other)
         return false;
-    if (hasFlag("iklinbu_" + other->objectName()))
+    if (attack_range_pair.contains(other))
         return true;
     return distanceTo(other, distance_fix) <= getAttackRange();
 }
 
 void Player::setFixedDistance(const Player *player, int distance) {
-    if (distance == -1)
-        fixed_distance.remove(player);
+    if (distance < 0)
+        fixed_distance.remove(player, -distance);
     else
         fixed_distance.insert(player, distance);
+}
+
+void Player::removeFixedDistance(const Player *player, int distance) {
+    fixed_distance.remove(player, distance);
+}
+
+void Player::insertAttackRangePair(const Player *player) {
+    attack_range_pair.append(player);
+}
+
+void Player::removeAttackRangePair(const Player *player) {
+    attack_range_pair.removeOne(player);
 }
 
 int Player::originalRightDistanceTo(const Player *other) const{
@@ -216,8 +226,16 @@ int Player::distanceTo(const Player *other, int distance_fix) const{
     if (isRemoved() || other->isRemoved())
         return -1;
 
-    if (fixed_distance.contains(other))
-        return fixed_distance.value(other);
+    if (fixed_distance.contains(other)) {
+        QList<int> distance_list = fixed_distance.values(other);
+        int min = 10000;
+        foreach (int d, distance_list) {
+            if (min > d)
+                min = d;
+        }
+
+        return min;
+    }
 
     int right = originalRightDistanceTo(other);
     int left = aliveCount(false) - right;
@@ -792,10 +810,8 @@ bool Player::canSlash(const Player *other, const Card *slash, bool distance_limi
     if (isProhibited(other, THIS_SLASH, others))
         return false;
 
-    rangefix -= Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, this, THIS_SLASH);
-
     if (distance_limit)
-        return inMyAttackRange(other, rangefix);
+        return inMyAttackRange(other, rangefix - Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, this, THIS_SLASH));
     else
         return true;
 #undef THIS_SLASH
@@ -1100,7 +1116,7 @@ void Player::copyFrom(Player *p) {
     b->face_up          = a->face_up;
     b->chained          = a->chained;
     b->judging_area     = QList<int>(a->judging_area);
-    b->fixed_distance   = QHash<const Player *, int>(a->fixed_distance);
+    b->fixed_distance   = QMultiHash<const Player *, int>(a->fixed_distance);
     b->card_limitation  = QMap<Card::HandlingMethod, QStringList>(a->card_limitation);
 
     b->tag              = QVariantMap(a->tag);

@@ -482,6 +482,7 @@ enum TriggerEvent {
     SlashMissed,
 
     JinkEffect,
+    NullificationEffect,
 
     CardAsked,
     PreCardResponded,
