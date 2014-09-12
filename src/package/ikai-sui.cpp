@@ -2824,9 +2824,13 @@ public:
         QMap<ServerPlayer *, QStringList> skill_list;
         if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive && player->hasFlag("iklinbu_target") && player->hasSkill("#iklinbu")) {
-                room->detachSkillFromPlayer(player, "#iklinbu", false, true);
-                room->getThread()->trigger(EventLoseSkill, room, player, QVariant("#iklinbu"));
+            if (change.to == Player::NotActive) {
+                QVariantList sunluyus = player->tag[objectName()].toList();
+                foreach (QVariant sunluyu, sunluyus) {
+                    ServerPlayer *s = sunluyu.value<ServerPlayer *>();
+                    room->removeAttackRangePair(player, s);
+                    room->detachSkillFromPlayer(player, "#iklinbu", false, true);
+                }
             }
             return skill_list;
         }
@@ -2849,11 +2853,12 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *owner) const{
-        room->acquireSkill(player, "#iklinbu", false);
-        room->getThread()->trigger(EventAcquireSkill, room, player, QVariant("#iklinbu"));
-        room->setPlayerFlag(player, "iklinbu_target");
-        room->setPlayerFlag(player, "iklinbu_" + owner->objectName());
-        room->setPlayerCardLimitation(player, "use", "TrickCard", true);
+        if (!player->hasSkill("#iklinbu", true))
+            room->acquireSkill(player, "#iklinbu", false);
+        QVariantList sunluyus = player->tag[objectName()].toList();
+        sunluyus << QVariant::fromValue(owner);
+        player->tag[objectName()] = QVariant::fromValue(sunluyus);
+        room->insertAttackRangePair(player, owner);
         return false;
     }
 };
@@ -2864,12 +2869,12 @@ public:
     }
 
     virtual bool viewFilter(const Card *to_select) const{
-        return to_select->isKindOf("TrickCard");
+        return to_select->getTypeId() == Card::TypeTrick;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
         Slash *slash = new Slash(originalCard->getSuit(), originalCard->getNumber());
-        slash->setSkillName("_iklinbu");
+        slash->setSkillName("iklinbu");
         WrappedCard *card = Sanguosha->getWrappedCard(originalCard->getId());
         card->takeOver(slash);
         return card;

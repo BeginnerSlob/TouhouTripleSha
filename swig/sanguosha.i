@@ -81,8 +81,8 @@ public:
     void setMaxHp(int max_hp);
     int getLostHp() const;
     bool isWounded() const;
-    int getGender() const;
-    virtual void setGender(int gender);
+    General::Gender getGender() const;
+    virtual void setGender(General::Gender gender);
     bool isMale() const;
     bool isFemale() const;
     bool isNeuter() const;
@@ -136,6 +136,9 @@ public:
 
     virtual int aliveCount(bool includeRemoved = true) const = 0;
     void setFixedDistance(const Player *player, int distance);
+    void removeFixedDistance(const Player *player, int distance);
+    void insertAttackRangePair(const Player *player);
+    void removeAttackRangePair(const Player *player);
     int originalRightDistanceTo(const Player *other) const;
     int distanceTo(const Player *other, int distance_fix = 0) const;
     const General *getAvatarGeneral() const;
@@ -691,6 +694,7 @@ enum TriggerEvent {
     SlashMissed,
 
     JinkEffect,
+    NullificationEffect,
 
     CardAsked,
     PreCardResponded,
@@ -1137,6 +1141,9 @@ public:
     void swapSeat(ServerPlayer *a, ServerPlayer *b);
     lua_State *getLuaState() const;
     void setFixedDistance(Player *from, const Player *to, int distance);
+    void removeFixedDistance(Player *from, const Player *to, int distance);
+    void insertAttackRangePair(Player *from, const Player *to);
+    void removeAttackRangePair(Player *from, const Player *to);
     void reverseFor3v3(const Card *card, ServerPlayer *player, QList<ServerPlayer *> &list);
     bool hasWelfare(const ServerPlayer *player) const;
     ServerPlayer *getFront(ServerPlayer *a, ServerPlayer *b) const;

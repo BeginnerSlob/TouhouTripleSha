@@ -155,6 +155,16 @@ return {
 	["$JuyiAnimate"] = "image=image/animate/juyi.png",
 	["#JuyiWake"] = "%from 的体力上限(%arg)大于角色数(%arg2)，触发“<font color=\"yellow\"><b>举义</b></font>”觉醒",
 
+	["#sunluyu"] = "舍身饲虎",
+	["sunluyu"] = "孙鲁育",
+	["illustrator:sunluyu"] = "depp",
+	["meibu"] = "魅步",
+	[":meibu"] = "一名其他角色的出牌阶段开始时，若你不在其攻击范围内，你可以令该角色的锦囊牌均视为【杀】,直到回合结束：若如此做，本回合你在其攻击范围内。",
+	["mumu"] = "穆穆",
+	[":mumu"] = "结束阶段开始时，若你未于本回合出牌阶段内造成伤害，你可以选择一项：弃置一名角色装备区的武器牌，然后摸一张牌；或将一名其他角色装备区的防具牌移动至你的装备区（替换原装备）。",
+	["@mumu-weapon"] = "你可以弃置一名角色装备区的武器牌",
+	["@mumu-armor"] = "你可以将一名其他角色装备区的防具牌移动至你的装备区",
+
 	["#maliang"] = "白眉智士",
 	["maliang"] = "马良",
 	["illustrator:maliang"] = "LiuHeng",
@@ -190,6 +200,14 @@ return {
 	["shixin"] = "释衅",
 	[":shixin"] = "锁定技。每当你受到火焰伤害时，防止此伤害。",
 	["#ShixinProtect"] = "%from 的“<font color=\"yellow\"><b>释衅</b></font>”被触发，防止了 %arg 点伤害[%arg2]",
+
+	["ol_masu"] = "OL马谡",
+	["&ol_masu"] = "马谡",
+	["illustrator:ol_masu"] = "张帅",
+	["sanyao"] = "散谣",
+	[":sanyao"] = "阶段技。你可以弃置一张牌并选择一名体力值为场上最多（或之一）的角色：若如此做，该角色受到1点伤害。",
+	["zhiman"] = "制蛮",
+	[":zhiman"] = "每当你对一名角色造成伤害时，你可以防止此伤害，然后获得其装备区或判定区的一张牌。",
 
 	-- HuLao Pass
 	["Hulaopass"] = "虎牢关模式",

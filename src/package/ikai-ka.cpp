@@ -1012,7 +1012,7 @@ public:
                 ServerPlayer *target = player->tag["IkDengpoTarget"].value<ServerPlayer *>();
                 player->tag.remove("IkDengpoTarget");
                 if (target)
-                    room->setFixedDistance(player, target, -1);
+                    room->removeFixedDistance(player, target, 1);
             }
         }
         return QStringList();

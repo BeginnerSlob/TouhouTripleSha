@@ -22,7 +22,6 @@ class Player: public QObject {
     Q_PROPERTY(int hp READ getHp WRITE setHp)
     Q_PROPERTY(int maxhp READ getMaxHp WRITE setMaxHp)
     Q_PROPERTY(QString kingdom READ getKingdom WRITE setKingdom)
-    Q_PROPERTY(bool wounded READ isWounded STORED false)
     Q_PROPERTY(QString role READ getRole WRITE setRole)
     Q_PROPERTY(QString general READ getGeneralName WRITE setGeneralName)
     Q_PROPERTY(QString general2 READ getGeneral2Name WRITE setGeneral2Name)
@@ -37,11 +36,7 @@ class Player: public QObject {
     Q_PROPERTY(bool removed READ isRemoved WRITE setRemoved)
     Q_PROPERTY(bool owner READ isOwner WRITE setOwner)
     Q_PROPERTY(bool role_shown READ hasShownRole WRITE setShownRole)
-    Q_PROPERTY(int gender READ getGender WRITE setGender)
-
-    Q_PROPERTY(bool kongcheng READ isKongcheng)
-    Q_PROPERTY(bool nude READ isNude)
-    Q_PROPERTY(bool all_nude READ isAllNude)
+    Q_PROPERTY(General::Gender gender READ getGender WRITE setGender)
 
     Q_PROPERTY(QString next READ getNextName WRITE setNext)
 
@@ -68,8 +63,8 @@ public:
     void setMaxHp(int max_hp);
     int getLostHp() const;
     bool isWounded() const;
-    int getGender() const;
-    virtual void setGender(int gender_num);
+    General::Gender getGender() const;
+    virtual void setGender(General::Gender gender);
     bool isMale() const;
     bool isFemale() const;
     bool isNeuter() const;
@@ -126,6 +121,9 @@ public:
 
     virtual int aliveCount(bool includeRemoved = true) const = 0;
     void setFixedDistance(const Player *player, int distance);
+    void removeFixedDistance(const Player *player, int distance);
+    void insertAttackRangePair(const Player *player);
+    void removeAttackRangePair(const Player *player);
     int originalRightDistanceTo(const Player *other) const;
     int distanceTo(const Player *other, int distance_fix = 0) const;
     const General *getAvatarGeneral() const;
@@ -280,7 +278,8 @@ private:
     bool chained;
     bool removed;
     QList<int> judging_area;
-    QHash<const Player *, int> fixed_distance;
+    QMultiHash<const Player *, int> fixed_distance;
+    QList<const Player *> attack_range_pair;
     QString next;
 
     QMap<Card::HandlingMethod, QStringList> card_limitation;
