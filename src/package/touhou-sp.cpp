@@ -927,11 +927,21 @@ public:
 class ThChiying: public TriggerSkill {
 public:
     ThChiying(): TriggerSkill("thchiying") {
-        events << CardAsked;
+        events << CardAsked << EventPhaseChanging;
         view_as_skill = new ThChiyingViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    if (p->hasFlag("thchiying"))
+                        room->setPlayerFlag(p, "-thchiying");
+                }
+            }
+            return QStringList();
+        }
         ServerPlayer *current = room->getCurrent();
         if (!TriggerSkill::triggerable(player) || player->hasFlag("thchiying")) return QStringList();
         if (!current || current == player || current->getPhase() == Player::NotActive || current->isKongcheng()) return QStringList();
