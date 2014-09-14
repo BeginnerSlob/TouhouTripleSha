@@ -473,7 +473,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("ThGugaoCard");
+        return !player->isKongcheng() && !player->hasUsed("ThGugaoCard");
     }
 
     virtual const Card *viewAs() const{

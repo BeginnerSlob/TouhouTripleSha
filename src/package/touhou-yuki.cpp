@@ -303,9 +303,9 @@ public:
     }
 };
 
-class ThZuimengFilterSkill: public FilterSkill {
+class ThZuishangFilterSkill: public FilterSkill {
 public:
-    ThZuimengFilterSkill(): FilterSkill("thzuimeng") {
+    ThZuishangFilterSkill(): FilterSkill("thzuishang") {
     }
 
     virtual bool viewFilter(const Card* to_select) const{
@@ -321,12 +321,12 @@ public:
     }
 };
 
-class ThZuimeng: public TriggerSkill {
+class ThZuishang: public TriggerSkill {
 public:
-    ThZuimeng(): TriggerSkill("thzuimeng") {
+    ThZuishang(): TriggerSkill("thzuishang") {
         events << CardUsed;
         frequency = Compulsory;
-        view_as_skill = new ThZuimengFilterSkill;
+        view_as_skill = new ThZuishangFilterSkill;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
@@ -337,7 +337,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        room->sendCompulsoryTriggerLog(player, "thzuimeng");
+        room->sendCompulsoryTriggerLog(player, "thzuishang");
         player->drawCards(1);
         return false;
     }
@@ -511,7 +511,6 @@ void ThYuanqiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
         pattern += "red";
     else if (judge.card->isBlack())
         pattern += "black";
-    pattern += "|.|hand";
     room->setPlayerProperty(source, "thyuanqi_pattern", pattern);
     room->askForUseCard(source, "@@thyuanqi", "@thyuanqi", -1, MethodNone);
     room->setPlayerProperty(source, "thyuanqi_pattern", "");
@@ -1950,9 +1949,8 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (!TriggerSkill::triggerable(player)) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.nature != DamageStruct::Normal) {
+        if (damage.nature != DamageStruct::Normal)
             return QStringList(objectName());
-        }
         return QStringList();
     }
 
@@ -2224,7 +2222,7 @@ TouhouYukiPackage::TouhouYukiPackage()
     yuki002->addSkill(new ThCuimeng);
     yuki002->addSkill(new ThCuimengMove);
     related_skills.insertMulti("thcuimeng", "#thcuimeng-move");
-    yuki002->addSkill(new ThZuimeng);
+    yuki002->addSkill(new ThZuishang);
     yuki002->addSkill(new ThMengwu);
 
     General *yuki003 = new General(this, "yuki003", "yuki");
