@@ -1286,12 +1286,54 @@ public:
     }
 };
 
+ThFenglingCard::ThFenglingCard() {
+    target_fixed = true;
+}
+
+void ThFenglingCard::onUse(Room *room, const CardUseStruct &card_use) const{
+    QList<int> ids = StringList2IntList(card_use.from->property("thfengling").toString().split("+"));
+    foreach (int id, subcards)
+        ids.removeOne(id);
+    room->setPlayerProperty(card_use.from, "thfengling", IntList2StringList(ids).join("+"));
+    SkillCard::onUse(room, card_use);
+}
+
+class ThFenglingViewAsSkill: public ViewAsSkill {
+public:
+    ThFenglingViewAsSkill(): ViewAsSkill("thfengling") {
+        response_pattern = "@@thfengling";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        int n = 0;
+        foreach (const Card *cd, selected)
+            n += cd->getNumber();
+        if (n >= 9)
+            return false;
+        QList<int> ids = StringList2IntList(Self->property("thfengling").toString().split("+"));
+        return ids.contains(to_select->getId()) && n + to_select->getNumber() <= 9;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        int n = 0;
+        foreach (const Card *cd, cards)
+            n += cd->getNumber();
+        if (n != 9)
+            return NULL;
+
+        ThFenglingCard *card = new ThFenglingCard;
+        card->addSubcards(cards);
+        return card;
+    }
+};
+
 class ThFengling: public TriggerSkill {
 public:
     ThFengling(): TriggerSkill("thfengling") {
         events << Dying;
         frequency = Limited;
         limit_mark = "@fengling";
+        view_as_skill = new ThFenglingViewAsSkill;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
@@ -1321,92 +1363,20 @@ public:
         CardsMoveStruct move(card_ids, NULL, Player::PlaceTable, reason);
         room->moveCardsAtomic(move, true);
 
-        while (canCombineAsNine(card_ids)) {
-            QList<int> nines = getNine(room, player, card_ids);
-            if (nines.isEmpty())
-                break;
-            foreach (int id, nines)
-                card_ids.removeOne(id);
-            CardMoveReason reason2(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), "thfengling", QString());
-            CardsMoveStruct move2(nines, NULL, Player::DiscardPile, reason2);
-            room->moveCardsAtomic(move2, true);
+        DummyCard *dummy = new DummyCard(card_ids);
+        room->obtainCard(player, dummy);
+        delete dummy;
+
+        room->setPlayerProperty(player, "thfengling", IntList2StringList(card_ids).join("+"));
+        while (room->askForUseCard(player, "@@thfengling", "@thfengling", -1, Card::MethodDiscard)) {
             room->recover(player, RecoverStruct(player));
             if (!player->isWounded())
                 break;
-        }
-        if (!card_ids.isEmpty()) {
-            DummyCard *dummy = new DummyCard(card_ids);
-            room->obtainCard(player, dummy);
-            delete dummy;
-        }
-        return false;
-    }
-
-private:
-    bool canCombineAsNine(QList<int> other_ids, int num = 0) const{
-        if (num > 9)
-            return false;
-        if (num == 9)
-            return true;
-        if (num < 9) {
-            foreach (int id, other_ids) {
-                QList<int> _other_ids = other_ids;
-                _other_ids.removeOne(id);
-                int temp_num = num + Sanguosha->getCard(id)->getNumber();
-                if (canCombineAsNine(_other_ids, temp_num))
-                    return true;
-            }
-        }
-        return false;
-    }
-
-    QList<int> getNine(Room *room, ServerPlayer *player, QList<int> card_ids) const{
-        if (!canCombineAsNine(card_ids))
-            return QList<int>();
-        QList<int> selected;
-        forever {
-            QList<int> enabled, disabled;
-            foreach (int id, card_ids) {
-                if (selected.contains(id)) {
-                    disabled << id;
-                    continue;
-                }
-                int num = 0;
-                QList<int> _card_ids = card_ids;
-                foreach (int s_id, selected) {
-                    _card_ids.removeOne(s_id);
-                    num += Sanguosha->getCard(s_id)->getNumber();
-                }
-                foreach (int d_id, disabled) {
-                    _card_ids.removeOne(d_id);
-                }
-                _card_ids.removeOne(id);
-                num += Sanguosha->getCard(id)->getNumber();
-                if (canCombineAsNine(_card_ids, num))
-                    enabled << id;
-                else
-                    disabled << id;
-            }
-            if (!enabled.isEmpty()) {
-                room->fillAG(card_ids, NULL, disabled);
-                int id = room->askForAG(player, enabled, true, objectName());
-                room->clearAG();
-                if (id != -1)
-                    selected << id;
-                else
-                    return QList<int>();
-            } else {
-                return QList<int>();
-            }
-            int sum = 0;
-            foreach (int id, selected)
-                sum += Sanguosha->getCard(id)->getNumber();
-            if (sum > 9)
-                return QList<int>();
-            if (sum == 9)
+            if (player->property("thfengling").toString().isEmpty())
                 break;
         }
-        return selected;
+        room->setPlayerProperty(player, "thfengling", QVariant());
+        return false;
     }
 };
 
@@ -1610,6 +1580,7 @@ TouhouSPPackage::TouhouSPPackage()
     addMetaObject<ThXuezhongCard>();
     addMetaObject<ThLunminCard>();
     addMetaObject<ThShushuCard>();
+    addMetaObject<ThFenglingCard>();
     addMetaObject<ThYingshiCard>();
 }
 

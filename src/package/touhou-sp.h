@@ -53,6 +53,15 @@ public:
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
+class ThFenglingCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThFenglingCard();
+
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+};
+
 class ThYingshiCard: public SkillCard{
     Q_OBJECT
 
