@@ -78,11 +78,11 @@ return {
 	["#bloom002"] = "壶中之天",
 	["bloom002"] = "丹特丽安",--花 - 空 - 3血
 	["iktiansuo"] = "天锁",
-	[":iktiansuo"] = "在一名角色的判定牌生效前，你可以打出一张手牌代替之。",
+	[":iktiansuo"] = "每当一名角色的判定牌生效前，你可以打出一张牌代替之。",
 	["@iktiansuo-card"] = CommonTranslationTable["@askforretrial"],
-	["~iktiansuo"] = "选择一张手牌→点击确定",
+	["~iktiansuo"] = "选择一张牌→点击确定",
 	["ikhuanji"] = "幻姬",
-	[":ikhuanji"] = "每当你受到一次伤害后，你可以获得伤害来源区域内的一张牌。",
+	[":ikhuanji"] = "每当你受到1点伤害后，你可以获得伤害来源区域内的一张牌。",
 
 	["#bloom003"] = "半月夜的呢喃",
 	["bloom003"] = "秋庭里香",--花 - 空 - 4血
