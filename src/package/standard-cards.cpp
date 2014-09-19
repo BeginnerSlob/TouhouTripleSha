@@ -1636,7 +1636,10 @@ BurningCamps::BurningCamps(Card::Suit suit, int number)
 
 bool BurningCamps::isAvailable(const Player *player) const{
     bool canUse = false;
-    QList<const Player *> players = player->getNextAlive()->getFormation();
+    const Player *next = player->getNextAlive();
+    if (!next || next == player)
+        return false;
+    QList<const Player *> players = next->getFormation();
     foreach (const Player *p, players) {
         if (player->isProhibited(p, this))
             continue;
@@ -1951,21 +1954,25 @@ StandardExCardPackage::StandardExCardPackage()
           << new IronArmor(Card::Heart, 2)
           << new RenwangShield(Card::Club, 2)
           << new LureTiger(Card::Diamond, 2)
-          << new LureTiger(Card::Spade, 5)
+          << new LureTiger(Card::Spade, 4)
           << new MoonSpear()
-          << new Breastplate(Card::Club, 5)
+          << new KnownBoth(Card::Club, 4)
           << new WoodenOx()
-          << new Slash(Card::Spade, 7)
-          << new Jink(Card::Heart, 7)
-          << new BurningCamps(Card::Club, 7)
-          << new Slash(Card::Diamond, 7)
-          << new Slash(Card::Spade, 9)
-          << new LureTiger(Card::Heart, 9)
-          << new Drowning()
-          << new Jink(Card::Diamond, 9)
-          << new BurningCamps(Card::Spade, 12)
+          << new Slash(Card::Spade, 6)
+          << new Jink(Card::Heart, 6)
+          << new BurningCamps(Card::Club, 6)
+          << new Slash(Card::Diamond, 6)
+          << new KnownBoth(Card::Spade, 8)
+          << new Peach(Card::Heart, 8)
+          << new Slash(Card::Club, 8)
+          << new BurningCamps(Card::Club, 8)
+          << new Slash(Card::Spade, 10)
+          << new LureTiger(Card::Heart, 10)
+          << new Breastplate(Card::Club, 10)
+          << new Jink(Card::Diamond, 10)
+          << new Analeptic(Card::Spade, 12)
           << new Lightning(Card::Heart, 12)
-          << new KnownBoth(Card::Club, 12)
+          << new Drowning()
           << new Nullification(Card::Diamond, 12);
 
     skills << new IceSwordSkill
