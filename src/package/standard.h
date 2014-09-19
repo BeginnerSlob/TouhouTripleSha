@@ -403,7 +403,7 @@ class Drowning: public AOE {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE Drowning(Card::Suit suit = Club, int number = 9);
+    Q_INVOKABLE Drowning(Card::Suit suit = Club, int number = 12);
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 

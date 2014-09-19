@@ -4937,7 +4937,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!player->hasFlag("IkSukongSource")) return QStringList();
+        if (!player->hasFlag("IkSuikongSource")) return QStringList();
         if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to != Player::NotActive)
@@ -4950,8 +4950,8 @@ public:
         }
 
         foreach (ServerPlayer *p , room->getAllPlayers()) {
-            if (p->hasFlag("IkSukongTarget")) {
-                p->setFlags("-IkSukongTarget");
+            if (p->hasFlag("IkSuikongTarget")) {
+                p->setFlags("-IkSuikongTarget");
                 if (p->getMark("Armor_Nullified") > 0)
                     room->removePlayerMark(p, "Armor_Nullified");
             }
