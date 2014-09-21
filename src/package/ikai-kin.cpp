@@ -339,7 +339,8 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (!TriggerSkill::triggerable(player)) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
-        if (player->distanceTo(damage.to) <= 2 && damage.by_user && !damage.chain && !damage.transfer
+        int dis = player->distanceTo(damage.to);
+        if (dis != -1 && dis <= 2 && damage.by_user && !damage.chain && !damage.transfer
             && damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel")))
             return QStringList(objectName());
         return QStringList();
