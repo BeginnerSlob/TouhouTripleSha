@@ -682,7 +682,7 @@
         <translation>头像:</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/connectiondialog.ui" line="131"/>
+        <location filename="../../src/dialog/connectiondialog.ui" line="135"/>
         <source>Host:</source>
         <translation>主机:</translation>
     </message>
@@ -702,17 +702,17 @@
         <translation>探测局域网 ...</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/connectiondialog.ui" line="190"/>
+        <location filename="../../src/dialog/connectiondialog.ui" line="194"/>
         <source>Connect</source>
         <translation>连接</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/connectiondialog.ui" line="203"/>
+        <location filename="../../src/dialog/connectiondialog.ui" line="207"/>
         <source>Reconnection</source>
         <translation>断线重连</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/connectiondialog.ui" line="177"/>
+        <location filename="../../src/dialog/connectiondialog.ui" line="181"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
