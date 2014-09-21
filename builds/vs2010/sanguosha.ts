@@ -271,12 +271,12 @@
     <message>
         <location filename="../../src/client/client.cpp" line="906"/>
         <source>Do you want to use nullification to trick card %1 from %2?</source>
-        <translation>是否对 %2 的 %1 使用【三滴天粒】？</translation>
+        <translation>是否对 %2 的 %1 使用【三粒天滴】？</translation>
     </message>
     <message>
         <location filename="../../src/client/client.cpp" line="910"/>
         <source>%1 used trick card %2 to %3 &lt;br&gt;Do you want to use nullification?</source>
-        <translation>%1 对 %3 使用锦囊【%2】 &lt;br&gt;是否使用【三滴天粒】？</translation>
+        <translation>%1 对 %3 使用锦囊【%2】 &lt;br&gt;是否使用【三粒天滴】？</translation>
     </message>
     <message>
         <location filename="../../src/client/client.cpp" line="1066"/>
@@ -605,7 +605,7 @@
     <message>
         <location filename="../../src/dialog/configdialog.ui" line="470"/>
         <source>Never nullify my single target trick</source>
-        <translation>从不对自己使用的单目标锦囊使用【三滴天粒】</translation>
+        <translation>从不对自己使用的单目标锦囊使用【三粒天滴】</translation>
     </message>
     <message>
         <location filename="../../src/dialog/configdialog.ui" line="489"/>
@@ -3438,7 +3438,7 @@ P = 你自己, R = 你所在的房间</translation>
     <message>
         <location filename="../../src/server/server.cpp" line="446"/>
         <source>Nullification count down</source>
-        <translation>【三滴天粒】等待时长</translation>
+        <translation>【三粒天滴】等待时长</translation>
     </message>
     <message>
         <location filename="../../src/server/server.cpp" line="673"/>

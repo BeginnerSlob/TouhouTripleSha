@@ -94,7 +94,7 @@ local t = {
 	["#CollateralSlash"] = "%from 选择了此【<font color=\"yellow\"><b>杀</b></font>】的目标 %to",
 	["#CollateralNoSlash"] = "%from 攻击范围内没有使用【<font color=\"yellow\"><b>杀</b></font>】的合法目标",
 
-	["nullification"] = "三滴天粒",
+	["nullification"] = "三粒天滴",
 	[":nullification"] = "锦囊牌<br /><b>时机</b>：一张锦囊牌对一个目标生效前<br /><b>目标</b>：此牌<br /><b>效果</b>：抵消此牌对该目标产生的效果。",
 
 	["indulgence"] = "春雪幻梦",
