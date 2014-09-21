@@ -3023,6 +3023,12 @@ bool Room::useCard(const CardUseStruct &use, bool add_history) {
     if (card == NULL)
         return false;
 
+    // for ThZhouhua
+    if (card->isKindOf("Analeptic")) {
+        if (current && card_use.from == current && current->hasSkill("thzhouhua"))
+            add_history = false;
+    }
+    // -------------
     if (card_use.from->getPhase() == Player::Play && add_history) {
         if (!slash_not_record) {
             card_use.m_addHistory = true;
