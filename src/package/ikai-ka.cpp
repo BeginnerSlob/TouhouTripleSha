@@ -306,7 +306,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        player->drawCards(player->getLostHp(), objectName());
+        player->drawCards(qMin(5, player->getLostHp()), objectName());
         return false;
     }
 };
@@ -2478,7 +2478,7 @@ public:
         if (Sanguosha->currentRoomState()->getCurrentCardUsePattern().endsWith("1"))
             return false;
         else
-            return selected.isEmpty() && to_select->isKindOf("EquipCard") && !Self->isJilei(to_select);
+            return selected.isEmpty() && !to_select->isKindOf("BasicCard") && !Self->isJilei(to_select);
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{

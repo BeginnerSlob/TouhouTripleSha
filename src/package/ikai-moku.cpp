@@ -187,7 +187,7 @@ public:
 class IkJianyan: public OneCardViewAsSkill {
 public:
     IkJianyan(): OneCardViewAsSkill("ikjianyan") {
-        filter_pattern = ".|red|.|hand";
+        filter_pattern = ".|red";
         response_or_use = true;
     }
 
@@ -202,7 +202,7 @@ public:
 class IkXuanying: public OneCardViewAsSkill {
 public:
     IkXuanying(): OneCardViewAsSkill("ikxuanying") {
-        filter_pattern = ".|black|.|hand";
+        filter_pattern = ".|black";
         response_pattern = "nullification";
         response_or_use = true;
     }
@@ -215,6 +215,10 @@ public:
     }
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
+        foreach (const Card *cd, player->getEquips()) {
+            if (cd->isBlack())
+                return true;
+        }
         if (player->hasFlag("thbaochui") && player->getPhase() == Player::Play) {
             foreach (const Player *p, player->getAliveSiblings())
                 foreach (int id, p->getPile("thbaochuipile"))
@@ -2839,7 +2843,7 @@ public:
         return PhaseChangeSkill::triggerable(target)
                && target->getMark("@chizhu") == 0
                && target->getPhase() == Player::Start
-               && target->getHp() <= 2;
+               && target->getHp() == 1;
     }
 
     virtual bool onPhaseChange(ServerPlayer *sunce) const{
@@ -2856,8 +2860,13 @@ public:
         room->broadcastSkillInvoke(objectName());
 
         room->setPlayerMark(sunce, "@chizhu", 1);
-        if (room->changeMaxHpForAwakenSkill(sunce))
+        if (room->changeMaxHpForAwakenSkill(sunce)) {
+            if (sunce->isWounded() && room->askForChoice(sunce, objectName(), "recover+draw") == "recover")
+                room->recover(sunce, RecoverStruct(sunce));
+            else
+                sunce->drawCards(2, objectName());
             room->handleAcquireDetachSkills(sunce, "ikchenhong|ikliangban");
+        }
         return false;
     }
 };
