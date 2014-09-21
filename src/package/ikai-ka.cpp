@@ -1211,11 +1211,11 @@ public:
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (!player) return QStringList();
-        if ((triggerEvent == GameStart && player->isLord())
+        if ((triggerEvent == GameStart)
             || (triggerEvent == EventAcquireSkill && data.toString() == "ikqihun")) {
             QList<ServerPlayer *> lords;
             foreach (ServerPlayer *p, room->getAlivePlayers()) {
-                if (p->hasLordSkill(objectName()))
+                if (p->hasSkill(objectName()))
                     lords << p;
             }
             if (lords.isEmpty()) return QStringList();
@@ -1232,7 +1232,7 @@ public:
         } else if (triggerEvent == EventLoseSkill && data.toString() == "ikqihun") {
             QList<ServerPlayer *> lords;
             foreach (ServerPlayer *p, room->getAlivePlayers()) {
-                if (p->hasLordSkill(objectName()))
+                if (p->hasSkill(objectName()))
                     lords << p;
             }
             if (lords.length() > 2) return QStringList();
