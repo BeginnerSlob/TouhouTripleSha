@@ -675,102 +675,115 @@ public:
     }
 };
 
-ThBishaCard::ThBishaCard() {
-    target_fixed = true;
-    will_throw = false;
-    mute = true;
-}
-
-const Card *ThBishaCard::validate(CardUseStruct &card_use) const{
-    const Card *card = Sanguosha->getCard(getEffectiveId());
-    QString cardname;
-    if(card->isRed())
-        cardname = "indulgence";
-    else
-        cardname = "supply_shortage";
-
-    Card *newcard = Sanguosha->cloneCard(cardname, card->getSuit(), card->getNumber());
-    newcard->addSubcard(card);
-    newcard->setSkillName("thbisha");
-    card_use.to << card_use.from;
-    return newcard;
-}
-
-class ThBishaViewAsSkill: public OneCardViewAsSkill {
+class ThZhouhuaGivenSkill: public ViewAsSkill {
 public:
-    ThBishaViewAsSkill(): OneCardViewAsSkill("thbisha") {
-        filter_pattern = ".|diamond#^TrickCard|black";
+    ThZhouhuaGivenSkill(): ViewAsSkill("thzhouhuav") {
         response_or_use = true;
+        attached_lord_skill = true;
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const {
-        if (player->hasUsed("ThBishaCard")) return false;
-        bool can_le = true, can_bing = true;
-        if (!player->containsTrick("indulgence")) {
-            Card *le = Sanguosha->cloneCard("indulgence");
-            le->deleteLater();
-            if (player->isCardLimited(le, Card::MethodUse))
-                can_le = false;
-        } else
-            can_le = false;
-
-        if (!player->containsTrick("supply_shortage")) {
-            Card *bing = Sanguosha->cloneCard("supply_shortage");
-            bing->deleteLater();
-            if (player->isCardLimited(bing, Card::MethodUse))
-                can_bing = false;
-        } else
-            can_bing = false;
-
-        return can_le || can_bing;
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *) const{
+        return selected.length() < 2;
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const {
-        QString cardname;
-        if(originalCard->isRed())
-            cardname = "indulgence";
-        else
-            cardname = "supply_shortage";
-        Card *trick = Sanguosha->cloneCard(cardname);
-        trick->addSubcard(originalCard);
-        trick->deleteLater();
-        if (Self->containsTrick(cardname) || Self->isCardLimited(trick, Card::MethodUse))
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.length() != 2)
             return NULL;
 
-        ThBishaCard *card = new ThBishaCard;
-        card->addSubcard(originalCard);
+        Analeptic *card = new Analeptic(Card::SuitToBeDecided, -1);
+        card->addSubcards(cards);
+        card->setSkillName("thzhouhua");
         return card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        QString obj_name = player->property("zhouhua_source").toString();
+        const Player *source = NULL;
+        foreach (const Player *p, player->getAliveSiblings()) {
+            if (p->objectName() == obj_name) {
+                source = p;
+                break;
+            }
+        }
+        if (source && source->hasSkill("thzhouhua"))
+            return IsEnabledAtPlay(player);
+        return false;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const {
+        QString obj_name = player->property("zhouhua_source").toString();
+        const Player *source = NULL;
+        foreach (const Player *p, player->getAliveSiblings()) {
+            if (p->objectName() == obj_name) {
+                source = p;
+                break;
+            }
+        }
+        if (source && source->hasSkill("thzhouhua"))
+            return IsEnabledAtResponse(player, pattern);
+        return false;
+    }
+
+    bool IsEnabledAtPlay(const Player *player) const{
+        return Analeptic::IsAvailable(player);
+    }
+
+    bool IsEnabledAtResponse(const Player *, const QString &pattern) const {
+        return pattern.contains("analeptic");
     }
 };
 
-class ThBisha: public TriggerSkill {
+class ThZhouhuaViewAsSkill: public ThZhouhuaGivenSkill{
 public:
-    ThBisha(): TriggerSkill("thbisha") {
-        events << EventPhaseChanging << Death;
-        view_as_skill = new ThBishaViewAsSkill;
+    ThZhouhuaViewAsSkill(): ThZhouhuaGivenSkill() {
+        attached_lord_skill = false;
+        setObjectName("thzhouhua");
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return IsEnabledAtPlay(player);
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const {
+        return player->getPhase() != Player::NotActive && IsEnabledAtResponse(player, pattern);
+    }
+};
+
+class ThZhouhua: public TriggerSkill {
+public:
+    ThZhouhua(): TriggerSkill("thzhouhua") {
+        events << EventPhaseStart << EventPhaseChanging << Death;
+        view_as_skill = new ThZhouhuaViewAsSkill;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        if (player != NULL && player->tag["ThBishaTarget"].value<ServerPlayer *>() != NULL) {
+        if (triggerEvent == EventPhaseStart) {
+            if (player->getPhase() == Player::RoundStart && player->hasSkill(objectName(), true) && player->isAlive()) {
+                player->setFlags("ZhouhuaTurn");
+                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                    if (!p->hasSkill("thzhouhuav"))
+                        room->attachSkillToPlayer(p, "thzhouhuav");
+                    room->setPlayerProperty(p, "zhouhua_source", player->objectName());
+                }
+            }
+            return QStringList();
+        }
+        if (player != NULL && player->hasFlag("ZhouhuaTurn")) {
             if (triggerEvent == EventPhaseChanging) {
                 PhaseChangeStruct change = data.value<PhaseChangeStruct>();
                 if (change.to != Player::NotActive)
                     return QStringList();
             }
-            ServerPlayer *target = player->tag["ThBishaTarget"].value<ServerPlayer *>();
             if (triggerEvent == Death) {
                 DeathStruct death = data.value<DeathStruct>();
-                if (death.who != player) {
-                    if (death.who == target) {
-                        room->removeFixedDistance(player, target, 1);
-                        player->tag.remove("ThBishaTarget");
-                    }
+                if (death.who != player)
                     return QStringList();
-                }
             }
-            if (target) {
-                room->removeFixedDistance(player, target, 1);
-                player->tag.remove("ThBishaTarget");
+            player->setFlags("-ZhouhuaTurn");
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (p->hasSkill("thzhouhuav"))
+                    room->detachSkillFromPlayer(p, "thzhouhuav", true);
+                room->setPlayerProperty(p, "zhouhua_source", "");
             }
         }
         return QStringList();
@@ -781,37 +794,43 @@ public:
     }
 };
 
-class ThBishaSlash: public TriggerSkill {
+class ThXugu: public TriggerSkill {
 public:
-    ThBishaSlash(): TriggerSkill("#thbisha") {
+    ThXugu(): TriggerSkill("thxugu") {
         events << CardFinished;
-        frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer* &) const {
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->getSkillName(false) == "thbisha")
-            return QStringList(objectName());
+        if (TriggerSkill::triggerable(player) && player == room->getCurrent() && player->getPhase() != Player::NotActive) {
+            if (!player->hasFlag("ThXuguFailed") && use.card->isKindOf("Analeptic"))
+                return QStringList(objectName());
+        }
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        player->drawCards(1);
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        ServerPlayer *p = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@thxugu", true, true);
+        if (p) {
+            player->tag["ThXuguTarget"] = QVariant::fromValue(p);
+            return true;
+        }
+        return false;
+    }
 
-        ServerPlayer *victim = room->askForPlayerChosen(player, room->getOtherPlayers(player), "thbisha");
-        room->setFixedDistance(player, victim, 1);
-        player->tag["ThBishaTarget"] = QVariant::fromValue(victim);
-        Slash *slash = new Slash(Card::NoSuit, 0);
-        slash->setSkillName("_thbisha");
-        if (player->canSlash(victim, slash)) {
-            CardUseStruct use;
-            use.card = slash;
-            use.from = player;
-            use.to << victim;
-            victim->addQinggangTag(slash);
-            room->useCard(use, false);
-        } else
-            delete slash;
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        ServerPlayer *victim = player->tag["ThXuguTarget"].value<ServerPlayer *>();
+        player->tag.remove("ThXuguTarget");
+        if (victim) {
+            if (!room->askForUseCard(victim, "analeptic", "@thxugu-use", -1, Card::MethodUse, false)) {
+                player->setFlags("ThXuguFailed");
+                if (player->canSlash(victim, false)) {
+                    Slash *slash = new Slash(Card::NoSuit, 0);
+                    slash->setSkillName("_thxugu");
+                    room->useCard(CardUseStruct(slash, player, victim));
+                }
+            }
+        }
         return false;
     }
 };
@@ -2229,9 +2248,10 @@ TouhouKazePackage::TouhouKazePackage()
     kaze006->addSkill(new ThQiaogong);
 
     General *kaze007 = new General(this, "kaze007", "kaze");
-    kaze007->addSkill(new ThBisha);
-    kaze007->addSkill(new ThBishaSlash);
-    related_skills.insertMulti("thbisha", "#thbisha");
+    kaze007->addSkill(new ThZhouhua);
+    kaze007->addSkill(new ThXugu);
+    kaze007->addSkill(new SlashNoDistanceLimitSkill("thxugu"));
+    related_skills.insertMulti("thxugu", "#thxugu-slash-ndl");
 
     General *kaze008 = new General(this, "kaze008", "kaze", 3);
     kaze008->addSkill(new ThShenzhou);
@@ -2291,7 +2311,6 @@ TouhouKazePackage::TouhouKazePackage()
     addMetaObject<ThEnanCard>();
     addMetaObject<ThMicaiCard>();
     addMetaObject<ThQiaogongCard>();
-    addMetaObject<ThBishaCard>();
     addMetaObject<ThQianyiCard>();
     addMetaObject<ThHuosuiCard>();
     addMetaObject<ThKunyiCard>();
@@ -2304,7 +2323,8 @@ TouhouKazePackage::TouhouKazePackage()
     addMetaObject<ThSangzhiCard>();
     addMetaObject<ThXinhuaCard>();
 
-    skills << new ThMicaiGivenSkill << new ThYanlun << new ThHeyu << new ThXinhuaViewAsSkill;
+    skills << new ThMicaiGivenSkill << new ThZhouhuaGivenSkill << new ThYanlun
+           << new ThHeyu << new ThXinhuaViewAsSkill;
 }
 
 ADD_PACKAGE(TouhouKaze)

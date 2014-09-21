@@ -3045,7 +3045,8 @@ IkaiDoPackage::IkaiDoPackage()
     patterns[".Weapon"] = new ExpPattern("Weapon");
     patterns["slash"] = new ExpPattern("Slash");
     patterns["jink"] = new ExpPattern("Jink");
-    patterns["peach"] = new  ExpPattern("Peach");
+    patterns["peach"] = new ExpPattern("Peach");
+    patterns["analeptic"] = new ExpPattern("Analeptic");
     patterns["nullification"] = new ExpPattern("Nullification");
     patterns["peach+analeptic"] = new ExpPattern("Peach,Analeptic");
 }

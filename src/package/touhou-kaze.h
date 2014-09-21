@@ -60,15 +60,6 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class ThBishaCard: public SkillCard{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE ThBishaCard();
-
-    virtual const Card *validate(CardUseStruct &card_use) const;
-};
-
 class ThQianyiCard: public SkillCard{
     Q_OBJECT
 
