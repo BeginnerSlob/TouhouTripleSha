@@ -1204,8 +1204,8 @@ public:
                 QStringList skill;
                 if (!damage.from->hasSkill("ikchilian"))
                     skill << "ikchilian";
-                if (!damage.from->hasSkill("iklipao"))
-                    skill << "iklipao";
+                if (!damage.from->hasSkill("ikyipao"))
+                    skill << "ikyipao";
                 if (!skill.isEmpty())
                     room->handleAcquireDetachSkills(damage.from, skill);
                 damage.from->setFlags(objectName());
@@ -1213,7 +1213,7 @@ public:
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to == Player::NotActive && player->hasFlag(objectName()))
-                room->handleAcquireDetachSkills(player, "-ikchilian|-iklipao", true);
+                room->handleAcquireDetachSkills(player, "-ikchilian|-ikyipao", true);
         }
 
         return QStringList();

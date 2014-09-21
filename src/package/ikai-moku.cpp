@@ -101,9 +101,9 @@ public:
     }
 };
 
-class IkFuyao: public OneCardViewAsSkill {
+class IkFuhua: public OneCardViewAsSkill {
 public:
-    IkFuyao(): OneCardViewAsSkill("ikfuyao") {
+    IkFuhua(): OneCardViewAsSkill("ikfuhua") {
         filter_pattern = ".|club";
         response_or_use = true;
     }
@@ -116,16 +116,16 @@ public:
     }
 };
 
-class IkNiepan: public TriggerSkill {
+class IkSuinie: public TriggerSkill {
 public:
-    IkNiepan(): TriggerSkill("ikniepan") {
+    IkSuinie(): TriggerSkill("iksuinie") {
         events << AskForPeaches;
         frequency = Limited;
-        limit_mark = "@niepan";
+        limit_mark = "@suinie";
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *pangtong, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(pangtong) || pangtong->getMark("@niepan") == 0)
+        if (!TriggerSkill::triggerable(pangtong) || pangtong->getMark("@suinie") == 0)
             return QStringList();
         DyingStruct dying_data = data.value<DyingStruct>();
         if (dying_data.who != pangtong)
@@ -144,8 +144,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *pangtong, QVariant &, ServerPlayer *) const{
-        room->removePlayerMark(pangtong, "@niepan");
-        room->addPlayerMark(pangtong, "@niepanused");
+        room->removePlayerMark(pangtong, "@suinie");
+        room->addPlayerMark(pangtong, "@suinieused");
 
         QList<const Card *> tricks = pangtong->getJudgingArea();
         foreach (const Card *trick, tricks) {
@@ -5017,8 +5017,8 @@ IkaiMokuPackage::IkaiMokuPackage()
     wind009->addSkill(new IkKuanggu);
 
     General *wind010 = new General(this, "wind010", "kaze", 3);
-    wind010->addSkill(new IkFuyao);
-    wind010->addSkill(new IkNiepan);
+    wind010->addSkill(new IkFuhua);
+    wind010->addSkill(new IkSuinie);
 
     General *wind011 = new General(this, "wind011", "kaze", 3);
     wind011->addSkill(new IkJingnie);

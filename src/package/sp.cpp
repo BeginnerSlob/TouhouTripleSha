@@ -573,7 +573,7 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_guanyu->addSkill("ikchilian");
 
     General *tw_zhangfei = new General(this, "tw_zhangfei", "shu", 4, true, true);
-    tw_zhangfei->addSkill("iklipao");
+    tw_zhangfei->addSkill("ikyipao");
 
     General *tw_zhugeliang = new General(this, "tw_zhugeliang", "shu", 3, true, true); // TW SP 012
     tw_zhugeliang->addSkill("ikyuxi");

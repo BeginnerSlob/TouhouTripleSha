@@ -173,14 +173,14 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
 
     if (player->getPhase() == Player::Play && player->hasFlag("Global_MoreSlashInOneTurn")) {
         QString name;
-        if (player->hasSkill("iklipao"))
-            name = "iklipao";
+        if (player->hasSkill("ikyipao"))
+            name = "ikyipao";
         else if (player->hasSkill("ikcanyue") && player->getMark("ikcanyue") > 0)
             name = "ikcanyue";
         if (!name.isEmpty()) {
             player->setFlags("-Global_MoreSlashInOneTurn");
             int index = qrand() % 2 + 1;
-            if (name == "iklipao") {
+            if (name == "ikyipao") {
                 if (Player::isNostalGeneral(player, "zhangfei"))
                     index += 2;
             }
@@ -259,7 +259,7 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
     if (player->getPhase() == Player::Play
         && player->hasFlag("Global_MoreSlashInOneTurn")
         && player->hasWeapon("crossbow")
-        && !player->hasSkill("iklipao")
+        && !player->hasSkill("ikyipao")
         && !(player->hasSkill("ikcanyue") && player->getMark("ikcanyue") > 0)) {
         player->setFlags("-Global_MoreSlashInOneTurn");
         room->setEmotion(player, "weapon/crossbow");
