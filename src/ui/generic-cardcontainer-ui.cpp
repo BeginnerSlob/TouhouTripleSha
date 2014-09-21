@@ -490,12 +490,12 @@ void PlayerCardContainer::repaintAll() {
 
 QPropertyAnimation *PlayerCardContainer::initializeBlurEffect(QGraphicsPixmapItem *icon)
 {
-    QGraphicsBlurEffect *effect = new QGraphicsBlurEffect;
+    QGraphicsBlurEffect *effect = new QGraphicsBlurEffect(this);
     effect->setBlurHints(QGraphicsBlurEffect::AnimationHint);
     effect->setBlurRadius(0);
     icon->setGraphicsEffect(effect);
 
-    QPropertyAnimation *animation = new QPropertyAnimation(effect, "blurRadius");
+    QPropertyAnimation *animation = new QPropertyAnimation(effect, "blurRadius", this);
     animation->setEasingCurve(QEasingCurve::OutInBounce);
     animation->setDuration(2000);
     animation->setStartValue(0);
