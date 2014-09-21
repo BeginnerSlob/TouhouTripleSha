@@ -1956,15 +1956,19 @@ public:
             DyingStruct dying = data.value<DyingStruct>();
             QList<ServerPlayer *> targets;
             int min = 998;
-            foreach (ServerPlayer *p, room->getOtherPlayers(dying.who))
-                if (targets.isEmpty() || dying.who->distanceTo(p) == min) {
+            foreach (ServerPlayer *p, room->getOtherPlayers(dying.who)) {
+                int dis = dying.who->distanceTo(p);
+                if (dis == -1)
+                    continue;
+                if (targets.isEmpty() || dis == min) {
                     targets << p;
                     min = dying.who->distanceTo(p);
-                } else if (dying.who->distanceTo(p) < min) {
+                } else if (dis < min) {
                     targets.clear();
                     targets << p;
                     min = dying.who->distanceTo(p);
                 }
+            }
             ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thleishi", true, true);
             if (target) {
                 room->broadcastSkillInvoke(objectName());
@@ -2008,15 +2012,19 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         QList<ServerPlayer *> targets;
         int min = 998;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-            if (targets.isEmpty() || player->distanceTo(p) == min) {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            int dis = player->distanceTo(p);
+            if (dis == -1)
+                continue;
+            if (targets.isEmpty() || dis == min) {
                 targets << p;
                 min = player->distanceTo(p);
-            } else if (player->distanceTo(p) < min) {
+            } else if (dis < min) {
                 targets.clear();
                 targets << p;
                 min = player->distanceTo(p);
             }
+        }
         ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thshanling", true, true);
         if (target) {
             room->broadcastSkillInvoke(objectName());

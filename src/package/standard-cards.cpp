@@ -1100,7 +1100,8 @@ bool Snatch::targetFilter(const QList<const Player *> &targets, const Player *to
     if (getSkillName() == "jixi")
         rangefix += 1;
 
-    if (Self->distanceTo(to_select, rangefix) > distance_limit)
+    int distance = Self->distanceTo(to_select, rangefix);
+    if (distance == -1 || distance > distance_limit)
         return false;
 
     return true;

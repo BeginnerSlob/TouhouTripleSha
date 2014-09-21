@@ -1584,7 +1584,8 @@ public:
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.card->isKindOf("Slash")) {
             foreach (ServerPlayer *to, use.to) {
-                if (player->distanceTo(to) <= 1) {
+                int dis = player->distanceTo(to);
+                if (dis != -1 && dis <= 1) {
                     return QStringList(objectName());
                 }
             }
@@ -1595,7 +1596,8 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         CardUseStruct use = data.value<CardUseStruct>();
         foreach (ServerPlayer *to, use.to) {
-            if (player->distanceTo(to) <= 1 && TriggerSkill::triggerable(player)) {
+            int dis = player->distanceTo(to);
+            if (dis != -1 && dis <= 1 && TriggerSkill::triggerable(player)) {
                 if (!room->askForSkillInvoke(player, objectName(), QVariant::fromValue(to))) continue;
                 room->broadcastSkillInvoke(objectName());
                 if (!player->isNude() && player != to) {

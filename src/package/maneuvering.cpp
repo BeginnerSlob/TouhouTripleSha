@@ -428,7 +428,8 @@ bool SupplyShortage::targetFilter(const QList<const Player *> &targets, const Pl
     if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
         rangefix += 1;
 
-    if (Self->distanceTo(to_select, rangefix) > distance_limit)
+    int dis = Self->distanceTo(to_select, rangefix);
+    if (dis == -1 || dis > distance_limit)
         return false;
 
     return true;

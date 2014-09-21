@@ -339,7 +339,8 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (!player || player->isDead()) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.card->isKindOf("Slash") && player->distanceTo(damage.to) <= 1 && player->isWounded()) {
+        int dis = player->distanceTo(damage.to);
+        if (damage.card->isKindOf("Slash") && dis != -1 && dis <= 1 && player->isWounded()) {
             foreach (ServerPlayer *p, room->getAllPlayers())
                 if (p->getMark("@jhnongwu") > 0)
                     return QStringList(objectName());
