@@ -742,7 +742,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *player) const{
         return TriggerSkill::triggerable(player)
-            && !player->isKongcheng();
+            && !player->isNude();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
@@ -752,8 +752,9 @@ public:
         prompt_list << "@iktiansuo-card" << judge->who->objectName()
                     << objectName() << judge->reason << QString::number(judge->card->getEffectiveId());
         QString prompt = prompt_list.join(":");
-        const Card *card = room->askForCard(player, "." , prompt, data, Card::MethodResponse, judge->who, true);
+        const Card *card = room->askForCard(player, ".." , prompt, data, Card::MethodResponse, judge->who, true);
         if (card) {
+            room->broadcastSkillInvoke(objectName());
             player->tag["IkTiansuoCard"] = QVariant::fromValue(card);
             return true;
         }
@@ -763,14 +764,8 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         const Card *card = player->tag["IkTiansuoCard"].value<const Card *>();
         player->tag.remove("IkTiansuoCard");
-        if (card) {
-            if (player->hasInnateSkill("iktiansuo") || !player->hasSkill("jilve"))
-                room->broadcastSkillInvoke(objectName());
-            else
-                room->broadcastSkillInvoke("jilve", 1);
+        if (card)
             room->retrial(card, player, data.value<JudgeStruct *>(), objectName());
-        }
-
         return false;
     }
 };
@@ -784,8 +779,10 @@ public:
         QStringList skill;
         if (!TriggerSkill::triggerable(player)) return skill;
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.from && !damage.from->isAllNude())
-            skill << objectName();
+        if (damage.from && !damage.from->isAllNude()) {
+            for (int i = 0; i < damage.damage; ++i)
+                skill << objectName();
+        }
         return skill;
     }
 

@@ -991,27 +991,37 @@ public:
 class ThChuiji: public TriggerSkill {
 public:
     ThChuiji(): TriggerSkill("thchuiji") {
-        events << CardsMoveOneTime;
+        events << CardsMoveOneTime << EventPhaseChanging << EventPhaseEnd;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(player)) return QStringList();
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (move.from == player && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip))
-            && (move.to != player || (move.to_place != Player::PlaceHand && move.to_place != Player::PlaceEquip))) {
-            bool invoke = false;
-            if (player->isWounded())
-                invoke = true;
-            else
-                foreach (ServerPlayer *p, room->getOtherPlayers(player))
-                    if (!p->isNude() || p->isWounded()) {
-                        invoke = true;
-                        break;
-                    }
-
-            if (invoke && player != room->getCurrent())
-                return QStringList(objectName());
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            player->setMark(objectName(), 0);
+            return QStringList();
         }
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        if (triggerEvent == EventPhaseEnd) {
+            if (player->getPhase() != Player::Discard || player->getMark(objectName()) < 2)
+                return QStringList();
+        }
+        if (triggerEvent == CardsMoveOneTime) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from != player || !(move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip))
+                || !(move.to != player || (move.to_place != Player::PlaceHand && move.to_place != Player::PlaceEquip)))
+                return QStringList();
+        }
+        bool invoke = false;
+        if (player->isWounded())
+            invoke = true;
+        else
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                if (!p->isNude() || p->isWounded()) {
+                    invoke = true;
+                    break;
+                }
+
+        if (invoke && (player != room->getCurrent() || player->getPhase() == Player::NotActive))
+            return QStringList(objectName());
         return QStringList();
     }
 
@@ -1047,16 +1057,41 @@ public:
         } else if (judge.card->isBlack()) {
             QList<ServerPlayer *> targets;
             foreach (ServerPlayer *p, room->getOtherPlayers(player))
-                if (p->canDiscard(p, "he"))
+                if (player->canDiscard(p, "he"))
                     targets << p;
 
             if (targets.isEmpty())
                 return false;
 
             ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
-            room->askForDiscard(target, objectName(), 1, 1, false, true);
+            int card_id = room->askForCardChosen(player, target, "he", objectName(), false, Card::MethodDiscard);
+            room->throwCard(card_id, target, player);
         }
 
+        return false;
+    }
+};
+
+class ThChuijiRecord: public TriggerSkill {
+public:
+    ThChuijiRecord(): TriggerSkill("#thchuiji") {
+        events << CardsMoveOneTime;
+        global = true;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.from == player) {
+            if (player->getPhase() == Player::Discard
+                && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        player->addMark("thchuiji", data.value<CardsMoveOneTimeStruct>().card_ids.length());
         return false;
     }
 };

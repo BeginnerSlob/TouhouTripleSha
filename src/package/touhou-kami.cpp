@@ -110,7 +110,7 @@ public:
         if (selected.length() >= 2)
             return false;
         else if (!selected.isEmpty())
-            return to_select->getSuit() == selected.first()->getSuit();
+            return to_select->getColor() == selected.first()->getColor();
         else
             return true;
     }
@@ -172,39 +172,39 @@ public:
     }
 };
 
-class ThJiguang: public TriggerSkill {
+class ThJihui: public TriggerSkill {
 public:
-    ThJiguang(): TriggerSkill("thjiguang") {
+    ThJihui(): TriggerSkill("thjihui") {
         events << EventPhaseStart << Death;
         frequency = Frequent;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        if ((triggerEvent == Death || player->getPhase() == Player::RoundStart) && !player->tag["ThJiguang"].toString().isEmpty()) {
+        if ((triggerEvent == Death || player->getPhase() == Player::RoundStart) && !player->tag["ThJihui"].toString().isEmpty()) {
             if (triggerEvent == Death) {
                 DeathStruct death = data.value<DeathStruct>();
                 if (death.who != player) return QStringList();
             }
-            QString name = player->tag["ThJiguang"].toString();
+            QString name = player->tag["ThJihui"].toString();
             if (triggerEvent != Death)
                 room->setPlayerMark(player, "@" + name, 0);
-            if (name == "jgtantian") {
+            if (name == "jhtantian") {
                 bool detach = true;
                 foreach (ServerPlayer *owner, room->getAllPlayers())
-                    if (owner->getMark("@jgtantian") > 0) {
+                    if (owner->getMark("@jhtantian") > 0) {
                         detach = false;
                         break;
                     }
                 if (detach)
                     foreach (ServerPlayer *p, room->getAllPlayers())
-                        room->detachSkillFromPlayer(p, "thjiguangv", true, true);
+                        room->detachSkillFromPlayer(p, "thjihuiv", true, true);
             }
         } else if (TriggerSkill::triggerable(player) && triggerEvent == EventPhaseStart && player->getPhase() == Player::Start)
             return QStringList(objectName());
         else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::NotActive) {
-            QString name = player->tag["ThJiguang"].toString();
+            QString name = player->tag["ThJihui"].toString();
             if (!name.isEmpty() && player->getMark("@" + name) <= 0)
-                 player->tag.remove("ThJiguang");
+                 player->tag.remove("ThJihui");
         }
         return QStringList();
     }
@@ -219,25 +219,25 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         QStringList choices;
-        choices << "jglieri" << "jgfengyu" << "jghuangsha" << "jgtantian" << "jgnongwu";
-        QString name = player->tag["ThJiguang"].toString();
+        choices << "jhlieri" << "jhfengyu" << "jhhuangsha" << "jhtantian" << "jhnongwu";
+        QString name = player->tag["ThJihui"].toString();
         if (!name.isEmpty())
             choices.removeOne(name);
         QString choice = room->askForChoice(player, objectName(), choices.join("+"));
-        player->tag["ThJiguang"] = choice;
+        player->tag["ThJihui"] = choice;
         player->gainMark("@" + choice);
-        if (choice == "jgtantian")
+        if (choice == "jhtantian")
             foreach(ServerPlayer *p, room->getAllPlayers())
-                if (!p->hasSkill("thjiguangv"))
-                    room->attachSkillToPlayer(p, "thjiguangv");
+                if (!p->hasSkill("thjihuiv"))
+                    room->attachSkillToPlayer(p, "thjihuiv");
 
         return false;
     }
 };
 
-class ThJiguangLieri: public TriggerSkill {
+class ThJihuiLieri: public TriggerSkill {
 public:
-    ThJiguangLieri():TriggerSkill("#thjiguang-lieri") {
+    ThJihuiLieri():TriggerSkill("#thjihui-lieri") {
         events << DamageInflicted;
         frequency = Compulsory;
     }
@@ -247,7 +247,7 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.nature == DamageStruct::Fire) {
             foreach (ServerPlayer *p, room->getAllPlayers())
-                if (p->getMark("@jglieri") > 0)
+                if (p->getMark("@jhlieri") > 0)
                     return QStringList(objectName());
         }
         return QStringList();
@@ -255,32 +255,32 @@ public:
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const {
         DamageStruct damage = data.value<DamageStruct>();
-        damage.damage ++;
+        ++damage.damage;
         data = QVariant::fromValue(damage);
         return false;
     }
 };
 
-class ThJiguangFengyu: public DistanceSkill {
+class ThJihuiFengyu: public DistanceSkill {
 public:
-    ThJiguangFengyu(): DistanceSkill("#thjiguang-fengyu") {
+    ThJihuiFengyu(): DistanceSkill("#thjihui-fengyu") {
     }
 
     virtual int getCorrect(const Player *from, const Player *) const{
-        if (from->getMark("@jgfengyu") > 0)
+        if (from->getMark("@jhfengyu") > 0)
             return -1;
         else {
             foreach (const Player *p, from->getAliveSiblings())
-                if (p->getMark("@jgfengyu") > 0)
+                if (p->getMark("@jhfengyu") > 0)
                     return -1;
         }
         return 0;
     }
 };
 
-class ThJiguangHuangsha: public TriggerSkill {
+class ThJihuiHuangsha: public TriggerSkill {
 public:
-    ThJiguangHuangsha():TriggerSkill("#thjiguang-huangsha") {
+    ThJihuiHuangsha():TriggerSkill("#thjihui-huangsha") {
         events << DamageInflicted;
         frequency = Compulsory;
     }
@@ -290,7 +290,7 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.damage > 2) {
             foreach (ServerPlayer *p, room->getAllPlayers())
-                if (p->getMark("@jghuangsha") > 0)
+                if (p->getMark("@jhhuangsha") > 0)
                     return QStringList(objectName());
         }
         return QStringList();
@@ -304,9 +304,9 @@ public:
     }
 };
 
-class ThJiguangTantian: public OneCardViewAsSkill {
+class ThJihuiTantian: public OneCardViewAsSkill {
 public:
-    ThJiguangTantian(): OneCardViewAsSkill("thjiguangv") {
+    ThJihuiTantian(): OneCardViewAsSkill("thjihuiv") {
         attached_lord_skill = true;
         response_or_use = true;
         filter_pattern = "Jink|heart";
@@ -329,9 +329,9 @@ public:
     }
 };
 
-class ThJiguangNongwu: public TriggerSkill {
+class ThJihuiNongwu: public TriggerSkill {
 public:
-    ThJiguangNongwu():TriggerSkill("#thjiguang-nongwu") {
+    ThJihuiNongwu():TriggerSkill("#thjihui-nongwu") {
         events << Damage;
         frequency = Compulsory;
     }
@@ -341,7 +341,7 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.card->isKindOf("Slash") && player->distanceTo(damage.to) <= 1 && player->isWounded()) {
             foreach (ServerPlayer *p, room->getAllPlayers())
-                if (p->getMark("@jgnongwu") > 0)
+                if (p->getMark("@jhnongwu") > 0)
                     return QStringList(objectName());
         }
         return QStringList();
@@ -2420,15 +2420,15 @@ TouhouKamiPackage::TouhouKamiPackage()
     kami001->addSkill(new ThKaihai);
 
     General *kami002 = new General(this, "kami002", "kami");
-    kami002->addSkill(new ThJiguang);
-    kami002->addSkill(new ThJiguangLieri);
-    kami002->addSkill(new ThJiguangFengyu);
-    kami002->addSkill(new ThJiguangHuangsha);
-    kami002->addSkill(new ThJiguangNongwu);
-    related_skills.insertMulti("thjiguang", "#thjiguang-lieri");
-    related_skills.insertMulti("thjiguang", "#thjiguang-fengyu");
-    related_skills.insertMulti("thjiguang", "#thjiguang-huangsha");
-    related_skills.insertMulti("thjiguang", "#thjiguang-nongwu");
+    kami002->addSkill(new ThJihui);
+    kami002->addSkill(new ThJihuiLieri);
+    kami002->addSkill(new ThJihuiFengyu);
+    kami002->addSkill(new ThJihuiHuangsha);
+    kami002->addSkill(new ThJihuiNongwu);
+    related_skills.insertMulti("thjihui", "#thjihui-lieri");
+    related_skills.insertMulti("thjihui", "#thjihui-fengyu");
+    related_skills.insertMulti("thjihui", "#thjihui-huangsha");
+    related_skills.insertMulti("thjihui", "#thjihui-nongwu");
 
     General *kami003 = new General(this, "kami003", "kami", 8);
     kami003->addSkill(new ThWudao);
@@ -2523,7 +2523,7 @@ TouhouKamiPackage::TouhouKamiPackage()
     addMetaObject<ThSiqiangCard>();
     addMetaObject<ThJiefuCard>();
 
-    skills << new ThJiguangTantian << new ThKuangmo;
+    skills << new ThJihuiTantian << new ThKuangmo;
 }
 
 ADD_PACKAGE(TouhouKami)

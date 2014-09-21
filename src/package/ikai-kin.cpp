@@ -1026,9 +1026,9 @@ public:
     }
 };
 
-class IkYaolun: public TriggerSkill {
+class IkHuanglun: public TriggerSkill {
 public:
-    IkYaolun(): TriggerSkill("ikyaolun") {
+    IkHuanglun(): TriggerSkill("ikhuanglun") {
         events << CardUsed;
     }
 
@@ -1045,7 +1045,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *guanping) const{
-        if (room->askForCard(guanping, "..", "@ikyaolun", data, objectName())) {
+        if (room->askForCard(guanping, "..", "@ikhuanglun", data, objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -5465,7 +5465,7 @@ IkaiKinPackage::IkaiKinPackage()
     wind027->addSkill(new IkZongshi);
 
     General *wind028 = new General(this, "wind028", "kaze");
-    wind028->addSkill(new IkYaolun);
+    wind028->addSkill(new IkHuanglun);
 
     General *wind031 = new General(this, "wind031", "kaze");
     wind031->addSkill("thjibu");

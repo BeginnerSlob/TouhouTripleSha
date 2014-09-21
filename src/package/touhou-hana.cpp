@@ -899,6 +899,8 @@ QGroupBox *ThMimengDialog::createRight() {
     if (object_name == "thmimeng")
         ban_list << "ExNihilo" << "AmazingGrace" << "Snatch" << "GodSalvation" << "ArcheryAttack"
                  << "Drowning" << "BurningCamps" << "LureTiger";
+    if (object_name == "ikmice")
+        ban_list << "Drowning";
     QList<const Card *> cards = Sanguosha->findChildren<const Card *>();
     foreach(const Card *card, cards){
         if (card->isNDTrick() && !map.contains(card->objectName()) && !ban_list.contains(card->getClassName())
@@ -2222,8 +2224,20 @@ public:
         if (card) {
             CardMoveReason reason(CardMoveReason::S_REASON_PUT, ask_who->objectName(), "thzhaoyu", QString());
             room->moveCardTo(card, NULL, Player::DrawPile, reason, false);
-            if (!player->getJudgingArea().isEmpty() && ask_who->askForSkillInvoke("thzhaoyu-draw", "draw"))
-                ask_who->drawCards(1, objectName());
+            if ((!player->getJudgingArea().isEmpty() || player->getWeapon())
+                && ask_who->askForSkillInvoke("thzhaoyu-draw", "draw")) {
+                QList<int> card_ids;
+                room->getThread()->trigger(FetchDrawPileCard, room, NULL);
+                QList<int> &draw = room->getDrawPile();
+                if (draw.isEmpty())
+                    room->swapPile();
+                card_ids << draw.takeLast();
+                CardsMoveStruct move(card_ids,
+                                     ask_who,
+                                     Player::PlaceHand,
+                                     CardMoveReason(CardMoveReason::S_REASON_DRAW, ask_who->objectName(), objectName(), QString()));
+                room->moveCardsAtomic(move, false);
+            }
         }
         return false;
     }
@@ -2300,7 +2314,7 @@ ThLiuzhenCard::ThLiuzhenCard() {
 }
 
 bool ThLiuzhenCard::targetFilter(const QList<const Player *> &, const Player *to_select, const Player *player) const{
-    return !to_select->hasFlag("liuzhenold") && player->inMyAttackRange(to_select);
+    return !to_select->hasFlag("liuzhenold") && to_select != player;
 }
 
 void ThLiuzhenCard::onEffect(const CardEffectStruct &effect) const {
@@ -2418,9 +2432,9 @@ public:
     }
 };
 
-class ThTiandaoViewAsSkill: public OneCardViewAsSkill {
+class ThTianchanViewAsSkill: public OneCardViewAsSkill {
 public:
-    ThTiandaoViewAsSkill(): OneCardViewAsSkill("thtiandaov") {
+    ThTianchanViewAsSkill(): OneCardViewAsSkill("thtianchanv") {
         attached_lord_skill = true;
         filter_pattern = ".|spade|.|hand";
     }
@@ -2437,7 +2451,7 @@ public:
         if (pattern != "peach" || player->getKingdom() != "hana") return false;
         QString str = player->property("currentdying").toString();
         foreach (const Player *p, player->getAliveSiblings())
-            if (p->objectName() == str && p->hasLordSkill("thtiandao"))
+            if (p->objectName() == str && p->hasLordSkill("thtianchan"))
                 return true;
         return false;
     }
@@ -2445,21 +2459,21 @@ public:
     virtual const Card *viewAs(const Card *originalCard) const {
         Peach *card = new Peach(originalCard->getSuit(), originalCard->getNumber());
         card->addSubcard(originalCard);
-        card->setSkillName("thtiandao");
+        card->setSkillName("thtianchan");
         return card;
     }
 };
 
-class ThTiandao: public TriggerSkill {
+class ThTianchan: public TriggerSkill {
 public:
-    ThTiandao(): TriggerSkill("thtiandao$") {
+    ThTianchan(): TriggerSkill("thtianchan$") {
         events << GameStart << EventAcquireSkill << EventLoseSkill << EventPhaseChanging;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (!player) return QStringList();
         if ((triggerEvent == GameStart && player->isLord())
-            || (triggerEvent == EventAcquireSkill && data.toString() == "thtiandao")) {
+            || (triggerEvent == EventAcquireSkill && data.toString() == "thtianchan")) {
             QList<ServerPlayer *> lords;
             foreach (ServerPlayer *p, room->getAlivePlayers()) {
                 if (p->hasLordSkill(objectName()))
@@ -2473,10 +2487,10 @@ public:
             else
                 players = room->getOtherPlayers(lords.first());
             foreach (ServerPlayer *p, players) {
-                if (!p->hasSkill("thtiandaov"))
-                    room->attachSkillToPlayer(p, "thtiandaov");
+                if (!p->hasSkill("thtianchanv"))
+                    room->attachSkillToPlayer(p, "thtianchanv");
             }
-        } else if (triggerEvent == EventLoseSkill && data.toString() == "thtiandao") {
+        } else if (triggerEvent == EventLoseSkill && data.toString() == "thtianchan") {
             QList<ServerPlayer *> lords;
             foreach (ServerPlayer *p, room->getAlivePlayers()) {
                 if (p->hasLordSkill(objectName()))
@@ -2490,8 +2504,8 @@ public:
             else
                 players << lords.first();
             foreach (ServerPlayer *p, players) {
-                if (p->hasSkill("thtiandaov"))
-                    room->detachSkillFromPlayer(p, "thtiandaov", true);
+                if (p->hasSkill("thtianchanv"))
+                    room->detachSkillFromPlayer(p, "thtianchanv", true);
             }
         }
         return QStringList();
@@ -2595,7 +2609,7 @@ TouhouHanaPackage::TouhouHanaPackage()
     General *hana018 = new General(this, "hana018$", "hana");
     hana018->addSkill(new ThJibu);
     hana018->addSkill(new ThLiuzhen);
-    hana018->addSkill(new ThTiandao);
+    hana018->addSkill(new ThTianchan);
 
     addMetaObject<ThJiewuCard>();
     addMetaObject<ThWujianCard>();
@@ -2611,7 +2625,7 @@ TouhouHanaPackage::TouhouHanaPackage()
     addMetaObject<ThShengzhiCard>();
     addMetaObject<ThLiuzhenCard>();
 
-    skills << new ThMopao << new ThQuanshanGive << new ThTiandaoViewAsSkill;
+    skills << new ThMopao << new ThQuanshanGive << new ThTianchanViewAsSkill;
 }
 
 ADD_PACKAGE(TouhouHana)

@@ -261,6 +261,8 @@ return {
 	["ikchizhu"] = "赤主",
 	[":ikchizhu"] = "觉醒技，准备阶段开始时，若你的体力值为1，你须减少1点体力上限，并回复1点体力或摸两张牌，然后获得技能“沉红”和“良坂”。",
 	["#IkChizhuWake"] = "%from 的体力值为 %arg2，触发“%arg”觉醒",
+	["ikchizhu:recover"] = "回复1点体力",
+	["ikchizhu:draw"] = "摸两张牌",
 	["ikbiansheng"] = "遍生",
 	[":ikbiansheng"] = "主公技，其他雪势力角色的出牌阶段限一次，可以与你拼点，若该角色没赢，你可以获得双方拼点的牌；“赤主”发动后，你可以拒绝此拼点。",
 	["ikbiansheng:pindian"] = "你可以获得双方的拼点牌",
