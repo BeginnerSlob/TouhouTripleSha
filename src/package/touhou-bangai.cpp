@@ -78,21 +78,27 @@ public:
 class ThShuling: public TriggerSkill {
 public:
     ThShuling(): TriggerSkill("thshuling") {
-        events << DrawNCards << Death << GameStart;
+        events << DrawNCards << Death << GameStart << EventPhaseEnd;
         frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == GameStart && TriggerSkill::triggerable(player)) {
             return QStringList(objectName());
-        } else if (triggerEvent == DrawNCards && player->getMark("@yaoshu") > 0) {
+        } else if (triggerEvent == DrawNCards && (TriggerSkill::triggerable(player) || player->getMark("@yaoshu") > 0)) {
             return QStringList(objectName());
+        } else if (triggerEvent == EventPhaseEnd && player->getPhase() == Player::Draw
+                   && TriggerSkill::triggerable(player) && player->getMark("@yaoshu") == 0 && !player->isKongcheng()) {
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                if (p->getMark("@yaoshu") > 0)
+                    return QStringList(objectName());
         } else if (triggerEvent == Death && player->hasSkill(objectName())) {
             DeathStruct death = data.value<DeathStruct>();
             if (death.who != player)
                 return QStringList();
-            if (player->getMark("@yaoshu")) return QStringList(objectName());
-            foreach (ServerPlayer *p, room->getAllPlayers())
+            if (player->getMark("@yaoshu") > 0)
+                return QStringList(objectName());
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
                 if (p->getMark("@yaoshu") > 0)
                     return QStringList(objectName());
         }
@@ -106,6 +112,13 @@ public:
             player->gainMark("@yaoshu");
         } else if (triggerEvent == DrawNCards) {
             data = data.toInt() + 1;
+        } else if (triggerEvent == EventPhaseEnd) {
+            QList<ServerPlayer *> targets;
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                if (p->getMark("@yaoshu") > 0)
+                    targets << p;
+            room->askForYiji(player, player->handCards(), objectName(), false, false, false,
+                             1, targets, CardMoveReason(), "@thshuling-give");
         } else if (triggerEvent == Death) {
             ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), objectName(), "@thshuling", false, true);
             if (target->getMark("@yaoshu") == 0)

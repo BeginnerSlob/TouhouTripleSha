@@ -125,8 +125,8 @@ protected:
     virtual QGraphicsItem *_getDeathIconParent() = 0;
     virtual QString getResourceKeyName() = 0;
 
-    inline virtual QAbstractAnimation *_getPlayerRemovedEffect() { return _blurEffect; }
-    virtual void _initializeRemovedEffect();
+    inline QAbstractAnimation *_getPlayerRemovedEffect() { return _blurEffect; }
+    void _initializeRemovedEffect();
     QPropertyAnimation *initializeBlurEffect(QGraphicsPixmapItem *icon);
 
     void _createRoleComboBox();
