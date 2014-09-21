@@ -270,9 +270,9 @@ public:
     }
 };
 
-class IkLipao: public TargetModSkill {
+class IkYipao: public TargetModSkill {
 public:
-    IkLipao(): TargetModSkill("iklipao") {
+    IkYipao(): TargetModSkill("ikyipao") {
         frequency = NotCompulsory;
     }
 
@@ -284,9 +284,9 @@ public:
     }
 };
 
-class IkJiukuang: public OneCardViewAsSkill {
+class IkShijiu: public OneCardViewAsSkill {
 public:
-    IkJiukuang(): OneCardViewAsSkill("ikjiukuang") {
+    IkShijiu(): OneCardViewAsSkill("ikshijiu") {
         filter_pattern = "Weapon,TrickCard+^DelayedTrick";
         response_or_use = true;
     }
@@ -2865,8 +2865,8 @@ IkaiDoPackage::IkaiDoPackage()
     related_skills.insertMulti("ikzhenhong", "#ikzhenhong-target");
 
     General *wind003 = new General(this, "wind003", "kaze");
-    wind003->addSkill(new IkLipao);
-    wind003->addSkill(new IkJiukuang);
+    wind003->addSkill(new IkYipao);
+    wind003->addSkill(new IkShijiu);
 
     General *wind004 = new General(this, "wind004", "kaze", 3);
     wind004->addSkill(new IkYuxi);

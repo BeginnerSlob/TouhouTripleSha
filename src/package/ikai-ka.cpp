@@ -365,7 +365,7 @@ IkHunkaoCard::IkHunkaoCard() {
 }
 
 bool IkHunkaoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.length() < subcardsLength() && to_select != Self;
+    return targets.length() < subcardsLength() && targets.length() < 2 && to_select != Self;
 }
 
 void IkHunkaoCard::onUse(Room *room, const CardUseStruct &use) const{

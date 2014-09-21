@@ -1031,7 +1031,7 @@ NostalStandardPackage::NostalStandardPackage()
     nos_guanyu->addSkill("ikchilian");
 
     General *nos_zhangfei = new General(this, "nos_zhangfei", "shu");
-    nos_zhangfei->addSkill("iklipao");
+    nos_zhangfei->addSkill("ikyipao");
 
     General *nos_zhaoyun = new General(this, "nos_zhaoyun", "shu");
     nos_zhaoyun->addSkill("ikhuahuan");
