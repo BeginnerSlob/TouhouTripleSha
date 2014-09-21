@@ -130,7 +130,7 @@ CommonTranslationTable = {
 	["#Recover"] = "%from 回复了 %arg 点体力",
 	["#AskForPeaches"] = "%from 濒死求桃，一共需要 %arg 张【<font color=\"yellow\"><b>桃</b></font>】",
 	["#ChooseKingdom"] = "%from 选择了 %arg 势力",
-	["#NullificationDetails"] = "【<font color=\"yellow\"><b>三滴天粒</b></font>】的目标是 %from 对 %to 的锦囊【%arg】",
+	["#NullificationDetails"] = "【<font color=\"yellow\"><b>三粒天滴</b></font>】的目标是 %from 对 %to 的锦囊【%arg】",
 	["#SkillAvoid"] = "%from 的“%arg”被触发，不能被选择为此【%arg2】的目标",
 	["#CardNullified"] = "【%arg】对 %from 无效",
 	["#Transfigure"] = "%from 变身为 %arg",
