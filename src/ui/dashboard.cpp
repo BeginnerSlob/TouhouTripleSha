@@ -73,7 +73,7 @@ void Dashboard::showProgressBar(QSanProtocol::Countdown countdown) {
 }
 
 QGraphicsItem *Dashboard::getMouseClickReceiver() {
-    return _m_avatarIcon;
+    return _m_rightFrame;
 }
 
 void Dashboard::_createLeft() {
