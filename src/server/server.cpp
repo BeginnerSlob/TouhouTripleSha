@@ -464,7 +464,8 @@ void ServerDialog::updateButtonEnablility(QAbstractButton *button) {
         basara_checkbox->setChecked(false);
         basara_checkbox->setEnabled(false);
     } else {
-        basara_checkbox->setEnabled(true);
+        // temp disabled
+        //basara_checkbox->setEnabled(true);
     }
 
     if (button->objectName().contains("mini")) {
@@ -472,7 +473,8 @@ void ServerDialog::updateButtonEnablility(QAbstractButton *button) {
         second_general_checkbox->setChecked(false);
         second_general_checkbox->setEnabled(false);
     } else {
-        second_general_checkbox->setEnabled(true);
+        // temp disabled
+        //second_general_checkbox->setEnabled(true);
         mini_scene_button->setEnabled(false);
     }
 }
