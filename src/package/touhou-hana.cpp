@@ -1656,12 +1656,12 @@ public:
         events << EventPhaseStart << DamageInflicted;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
         if (!TriggerSkill::triggerable(player))
             return QStringList();
         if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Finish && player->getMark("@jianren") > 0)
             return QStringList(objectName());
-        if (triggerEvent == DamageInflicted && (player != room->getCurrent() || player->getPhase() == Player::NotActive))
+        if (triggerEvent == DamageInflicted && player->hasSkill("thliaoyu"))
             return QStringList(objectName());
         return QStringList();
     }
@@ -1744,8 +1744,8 @@ ThDujiaCard::ThDujiaCard() {
     target_fixed = true;
 }
 
-void ThDujiaCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    source->gainMark("@jianren");
+void ThDujiaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    room->damage(DamageStruct("thdujia", source, source));
     source->drawCards(3, "thdujia");
 }
 
