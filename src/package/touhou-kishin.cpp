@@ -126,7 +126,8 @@ public:
         if (triggerEvent == EventPhaseChanging) {
             foreach (ServerPlayer *p, room->getAlivePlayers())
                 p->setMark("thguaiqi", 0);
-        } else if (triggerEvent == EventPhaseEnd && player->getPhase() == Player::Play && player->hasFlag("thguaiqi_invoke"))
+        } else if (triggerEvent == EventPhaseEnd && player->getPhase() == Player::Play
+                   && player->hasFlag("thguaiqi_invoke") && player->isAlive())
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
                 skill_list.insert(owner, QStringList(objectName()));
         return skill_list;

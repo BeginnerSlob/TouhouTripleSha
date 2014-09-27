@@ -1335,7 +1335,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!player->hasFlag("LureTigerUser"))
+        if (!player->hasFlag("LureTigerTurn"))
             return QStringList();
         if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
@@ -1412,10 +1412,13 @@ void LureTiger::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
 
 void LureTiger::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.to->getRoom();
+    ServerPlayer *current = room->getCurrent();
+    if (!current || current->getPhase() == Player::NotActive || current->isDead())
+        return;
 
     room->setPlayerCardLimitation(effect.to, "use", ".", false);
     room->setPlayerProperty(effect.to, "removed", true);
-    effect.from->setFlags("LureTigerUser");
+    current->setFlags("LureTigerTurn");
 }
 
 class MoonSpearSkill: public WeaponSkill {

@@ -845,7 +845,7 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (!TriggerSkill::triggerable(player)) return QStringList();
         QStringList skills;
-        if (triggerEvent == TurnedOver) {
+        if (triggerEvent == TurnedOver && player->faceUp()) {
             skills << objectName();
         } else if (triggerEvent == Damaged) {
             DamageStruct damage = data.value<DamageStruct>();
