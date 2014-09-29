@@ -943,7 +943,7 @@ bool ThQianyiCard::targetFilter(const QList<const Player *> &targets, const Play
 void ThQianyiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *target = targets.first();
     room->removePlayerMark(source, "@qianyi");
-    room->addPlayerMark(source, "@qianyiyiused");
+    room->addPlayerMark(source, "@qianyiused");
     //room->broadcastInvoke("animate", "lightbox:$kunyi");
 
     source->turnOver();
