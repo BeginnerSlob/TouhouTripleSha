@@ -1200,6 +1200,75 @@ public:
     }
 };
 
+IkFanzhongCard::IkFanzhongCard() {
+}
+
+bool IkFanzhongCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (!targets.isEmpty()) return false;
+    QList<const Player *> players = Self->getAliveSiblings();
+    players << Self;
+    int max = -1000;
+    foreach (const Player *p, players) {
+        if (max < p->getHp()) max = p->getHp();
+    }
+    return to_select->getHp() == max;
+}
+
+void IkFanzhongCard::onEffect(const CardEffectStruct &effect) const{
+    effect.from->getRoom()->damage(DamageStruct("ikfanzhong", effect.from, effect.to));
+}
+
+class IkFanzhong: public OneCardViewAsSkill {
+public:
+    IkFanzhong(): OneCardViewAsSkill("ikfanzhong") {
+        filter_pattern = ".!";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->canDiscard(player, "he") && !player->hasUsed("IkFanzhongCard");
+    }
+
+    virtual const Card *viewAs(const Card *originalcard) const{
+        IkFanzhongCard *first = new IkFanzhongCard;
+        first->addSubcard(originalcard->getId());
+        first->setSkillName(objectName());
+        return first;
+    }
+};
+
+class IkYuanyuan: public TriggerSkill {
+public:
+    IkYuanyuan(): TriggerSkill("ikyuanyuan") {
+        events << DamageCaused;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName(), data)) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+
+        LogMessage log;
+        log.type = "#IkYuanyuan";
+        log.from = player;
+        log.arg = objectName();
+        log.to << damage.to;
+        room->sendLog(log);
+
+        if (damage.to->getEquips().isEmpty() && damage.to->getJudgingArea().isEmpty())
+            return true;
+        int card_id = room->askForCardChosen(player, damage.to, "ej", objectName());
+        CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, player->objectName());
+        room->obtainCard(player, Sanguosha->getCard(card_id), reason);
+        return true;
+    }
+};
+
 class IkXiaorui: public TriggerSkill {
 public:
     IkXiaorui(): TriggerSkill("ikxiaorui") {
@@ -4278,6 +4347,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     wind046->addSkill(new IkJingmu);
     wind046->addSkill(new IkDuanmeng);
 
+    General *wind049 = new General(this, "wind049", "kaze", 3);
+    wind049->addSkill(new IkFanzhong);
+    wind049->addSkill(new IkYuanyuan);
+
     General *bloom023 = new General(this, "bloom023", "hana");
     bloom023->addSkill(new IkXiaorui);
 
@@ -4424,6 +4497,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkMoqiCard>();
     addMetaObject<IkTianbeiCard>();
     addMetaObject<IkDuanmengCard>();
+    addMetaObject<IkFanzhongCard>();
     addMetaObject<IkXinbanCard>();
     addMetaObject<IkShenyuCard>();
     addMetaObject<IkHongfaCard>();
