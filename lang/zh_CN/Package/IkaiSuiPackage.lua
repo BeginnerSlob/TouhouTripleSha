@@ -251,15 +251,6 @@ return {
 	["#IkChenyanWorst"] = "%from 的“%arg2”被触发，弃置了所有牌（共 %arg 张）",
 	--ikshengzun
 
-	["#luna018"] = "默然的空之音",
-	["luna018"] = "筒隐月子",--月 - 空 - 3血
-	["ikzhuji"] = "祝祭",
-	[":ikzhuji"] = "锁定技，若你的体力值大于2，当你计算与其他角色的距离时，始终-1；若你的体力值不大于2，当其他角色计算与你的距离时，始终+1。",
-	["ikbenyin"] = "本音",
-	[":ikbenyin"] = "每当你使用黑色【杀】对一名角色造成伤害后，你可以选择一项：弃置该角色装备区里的一张非坐骑牌；或获得该角色装备区里的一张坐骑牌。",
-	["ikguizhi"] = "鬼贽",
-	[":ikguizhi"] = "每当一名其他角色进入濒死状态时，若你的体力值大于1，你可以失去1点体力并弃置一张牌，然后令其回复1点体力。",
-
 	["#luna019"] = "超弩级巡洋战舰",
 	["luna019"] = "大和",--月 - 空 - 4血
 	--thxiagong
@@ -301,8 +292,14 @@ return {
 	--thjibu
 	["ikshunqie"] = "瞬切",
 	[":ikshunqie"] = "每当你使用【杀】或【碎月绮斗】对其他角色造成一次伤害后，你可以将受到该伤害的角色的装备区里的一张牌移动到你的装备区的相应位置；或弃置这张牌。",
-	["ikshunqie:obtain"] = "获得此牌",
-	["ikshunqie:throw"] = "弃置此牌",
+	["ikshunqie:move"] = "将此装备移动到自己的装备区",
+	["ikshunqie:throw"] = "弃置此装备",
+	["ikshunqie_equip"] = "瞬切",
+	["ikshunqie_equip:0"] = "武器牌",
+	["ikshunqie_equip:1"] = "防具牌",
+	["ikshunqie_equip:2"] = "+1坐骑",
+	["ikshunqie_equip:3"] = "-1坐骑",
+	["ikshunqie_equip:4"] = "宝物牌",
 
 	["#luna024"] = "迅舞的人神兵",
 	["luna024"] = "KOS-MOS",--月 - 空 - 4血

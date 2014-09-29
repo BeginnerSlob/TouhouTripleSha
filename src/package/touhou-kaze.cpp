@@ -1423,12 +1423,22 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         room->sendCompulsoryTriggerLog(player, objectName());
-
-        DummyCard *dummy = new DummyCard;
-        dummy->deleteLater();
-        dummy->addSubcards(player->getPile("dasuipile"));
-        CardMoveReason reason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE, player->objectName(), objectName(), QString());
-        room->obtainCard(player, dummy, reason);
+        
+        QList<int> card_ids = player->getPile("dasuipile");
+        DummyCard *dummy = new DummyCard(card_ids);
+        QStringList choices;
+        if (card_ids.length() >= 2 && player->isWounded())
+            choices << "recover";
+        choices << "obtain";
+        QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+        if (choice == "recover") {
+            CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
+            room->throwCard(dummy, reason, NULL);
+            room->recover(player, RecoverStruct(player));
+        } else {
+            CardMoveReason reason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE, player->objectName(), objectName(), QString());
+            room->obtainCard(player, dummy, reason);
+        }
 
         return false;
     }
@@ -1488,7 +1498,6 @@ class ThKudao: public TriggerSkill {
 public:
     ThKudao(): TriggerSkill("thkudao") {
         events << TargetConfirmed << CardUsed << CardResponded;
-        frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
@@ -1525,15 +1534,23 @@ public:
         return QStringList();
     }
 
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        ServerPlayer *target = player->tag["ThKudaoTarget"].value<ServerPlayer *>();
+        if (target && player->askForSkillInvoke(objectName(), QVariant::fromValue(target))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        player->tag.remove("ThKudaoTarget");
+        return false;
+    }
+
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         ServerPlayer *target = player->tag["ThKudaoTarget"].value<ServerPlayer *>();
         player->tag.remove("ThKudaoTarget");
-        if (!target) return false;
-        room->sendCompulsoryTriggerLog(player, objectName());
-        room->broadcastSkillInvoke(objectName());
-
-        player->addToPile("kudaopile", room->askForCardChosen(player, target, "h", objectName()), true);
-
+        if (target) {
+            int card_id = room->askForCardChosen(player, target, "he", objectName());
+            player->addToPile("kudaopile", card_id, true);
+        }
         return false;
     }
 };

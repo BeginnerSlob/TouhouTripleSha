@@ -2703,6 +2703,38 @@ public:
     }
 };
 
+class IkGuizhi: public TriggerSkill {
+public:
+    IkGuizhi(): TriggerSkill("ikguizhi") {
+        events << Dying;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        DyingStruct dying = data.value<DyingStruct>();
+        if (dying.who == player || dying.who->isDead() || dying.who->getHp() > 0)
+            return QStringList();
+        if (player->getHp() > 1)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (room->askForCard(player, "..", "@ikguizhi", data, objectName())) {
+            room->loseHp(player);
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        ServerPlayer *target = data.value<DyingStruct>().who;
+        room->recover(target, RecoverStruct(player));
+        return true;
+    }
+};
+
 class IkGuijiao: public TriggerSkill {
 public:
     IkGuijiao(): TriggerSkill("ikguijiao") {

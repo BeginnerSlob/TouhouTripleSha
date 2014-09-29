@@ -82,54 +82,21 @@ public:
     }
 };
 
-class ThFeizhan: public TriggerSkill {
+class ThFeizhan: public MaxCardsSkill {
 public:
-    ThFeizhan(): TriggerSkill("thfeizhan$") {
-        events << EventPhaseStart;
-        frequency = Wake;
+    ThFeizhan(): MaxCardsSkill("thfeizhan$") {
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
-        bool can_invoke = true;
-        foreach (ServerPlayer *p, room->getAllPlayers()) {
-            if (player->getHp() > qMax(p->getHp(), 0)) {
-                can_invoke = false;
-                break;
-            }
+    virtual int getExtra(const Player *target) const{
+        if (target->hasLordSkill(objectName())) {
+            int n = 0;
+            foreach (const Player *p, target->getAliveSiblings())
+                if (p->getKingdom() == "hana")
+                    ++n;
+            return n;
+        } else {
+            return 0;
         }
-        if (can_invoke && player && player->isAlive() && player->hasLordSkill(objectName()) && player->getPhase() == Player::Start
-            && player->getMark("@feizhan") <= 0)
-            return QStringList(objectName());
-        return QStringList();
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        room->notifySkillInvoked(player, objectName());
-
-        LogMessage log;
-        log.type = "#ThFeizhanWake";
-        log.from = player;
-        log.arg = QString::number(qMax(player->getHp(), 0));
-        log.arg2 = objectName();
-        room->sendLog(log);
-
-        room->addPlayerMark(player, "@feizhan");
-        QStringList choices;
-        if (player->isWounded())
-            choices << "recover";
-        choices << "draw";
-
-        QString choice = room->askForChoice(player, objectName(), choices.join("+"));
-        if (choice == "recover") {
-            RecoverStruct recover;
-            recover.who = player;
-            room->recover(player, recover);
-        }
-        else
-            player->drawCards(2);
-
-        room->acquireSkill(player, "ikhuanwei");
-        return false;
     }
 };
 
