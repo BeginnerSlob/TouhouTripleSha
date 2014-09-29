@@ -177,6 +177,14 @@ int Player::getAttackRange(bool include_weapon) const{
     int extra_range = 0;
     if (hasFlag("thhuanlong1"))
         extra_range += 1;
+    if (hasLordSkill("thfeizhan")) {
+        int n = 0;
+        foreach (const Player *p, getAliveSiblings()) {
+            if (p->getKingdom() == "hana")
+                ++n;
+        }
+        extra_range += n;
+    }
     return qMax(original_range, weapon_range) + extra_range;
 }
 

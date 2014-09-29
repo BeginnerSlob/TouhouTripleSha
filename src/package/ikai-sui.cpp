@@ -3320,8 +3320,14 @@ public:
         if (!TriggerSkill::triggerable(panfeng)) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
         ServerPlayer *target = damage.to;
-        if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel")) && target->hasEquip())
-            return QStringList(objectName());
+        if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel")) && target->hasEquip()
+            && !target->hasFlag("Global_DebutFlag") && panfeng != target) {
+            for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
+                if (!target->getEquip(i)) continue;
+                if (panfeng->canDiscard(target, target->getEquip(i)->getEffectiveId()) || panfeng->getEquip(i) == NULL)
+                    return QStringList(objectName());
+            }
+        }
         return QStringList();
     }
 
@@ -3336,18 +3342,30 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *panfeng, QVariant &data, ServerPlayer *) const{
         DamageStruct damage = data.value<DamageStruct>();
         ServerPlayer *target = damage.to;
-        int card_id = room->askForCardChosen(panfeng, target, "e", objectName());
+        QStringList equiplist;
+        for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
+            if (!target->getEquip(i)) continue;
+            if (panfeng->canDiscard(target, target->getEquip(i)->getEffectiveId()) || panfeng->getEquip(i) == NULL)
+                equiplist << QString::number(i);
+        }
+        if (equiplist.isEmpty())
+            return false;
+        int equip_index = room->askForChoice(panfeng, "ikshunqie_equip", equiplist.join("+"), QVariant::fromValue(target)).toInt();
+        const Card *card = target->getEquip(equip_index);
+        int card_id = card->getEffectiveId();
+
         QStringList choicelist;
-        choicelist << "obtain";
+        if (equip_index > -1 && panfeng->getEquip(equip_index) == NULL)
+            choicelist << "move";
         if (panfeng->canDiscard(target, card_id))
             choicelist << "throw";
 
-        QString choice = room->askForChoice(panfeng, objectName(), choicelist.join("+"));
-        if (choice == "throw") {
-            room->throwCard(card_id, target, panfeng);
-        } else {
-            room->obtainCard(panfeng, card_id);
-        }
+        QString choice = room->askForChoice(panfeng, "ikshunqie", choicelist.join("+"));
+
+        if (choice == "move")
+            room->moveCardTo(card, panfeng, Player::PlaceEquip);
+        else
+            room->throwCard(card, target, panfeng);
 
         return false;
     }
@@ -3465,7 +3483,13 @@ public:
                 return false;
         }
         ServerPlayer *mosthp = maxs.first();
-        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(mosthp))) {
+        if (mosthp->askForSkillInvoke(objectName())) {
+            LogMessage log;
+            log.type = "#InvokeOthersSkill";
+            log.from = mosthp;
+            log.to << player;
+            log.arg = objectName();
+            room->sendLog(log);
             room->askForDiscard(mosthp, objectName(), 2, 2, false, true);
             mosthp->drawCards(2, objectName());
         }
@@ -4103,10 +4127,16 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))
             && !damage.chain && !damage.transfer && damage.by_user) {
-            if (!damage.to->hasSkill("thyanmeng") && damage.to->getMark("ikmingzhen_" + player->objectName()) == 0)
-                foreach (const Skill *skill, damage.to->getVisibleSkillList())
-                    if (!skill->isAttachedLordSkill())
-                        return QStringList(objectName());
+            if (!damage.to->hasSkill("thyanmeng") && damage.to->getMark("ikmingzhen_" + player->objectName()) == 0) {
+                int n = 0;
+                foreach (const Skill *skill, damage.to->getVisibleSkillList()) {
+                    if (!skill->isAttachedLordSkill()) {
+                        if (n > 0)
+                            return QStringList(objectName());
+                        ++n;
+                    }
+                }
+            }
             if (damage.to->canDiscard(damage.to, "e"))
                 return QStringList(objectName());
         }

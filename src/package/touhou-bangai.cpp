@@ -17,7 +17,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         DamageStruct damage = data.value<DamageStruct>();
-        if (!TriggerSkill::triggerable(player) || !player->isWounded() || !damage.card || !damage.card->isKindOf("Slash"))
+        if (!TriggerSkill::triggerable(player) || !damage.card || !damage.card->isKindOf("Slash"))
             return QStringList();
         if (triggerEvent == Damage && (damage.chain || damage.transfer))
             return QStringList();
@@ -33,7 +33,9 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         QStringList chosen;
-        int n = qMin(3, player->getLostHp());
+        int n = player->getLostHp();
+        n = qMax(1, n);
+        n = qMin(3, n);
         QStringList choices;
         choices << "spade" << "heart" << "club" << "diamond";
         for (int i = 0; i < n; i++) {

@@ -14,9 +14,6 @@ return {
 	["@thhuaji"]="请弃置一张【%arg】使“花祭”失效",
 	["thfeizhan"]="菲绽",
 	[":thfeizhan"]="主公技，锁定技，你的攻击范围和你的手牌上限+X（X为存活的其他花势力角色的数量）。",
-	--["#ThFeizhanWake"] = "%from 的体力值 %arg 为场上最少，触发“%arg2”觉醒",
-	--["thfeizhan:recover"]="回复1点体力",
-	--["thfeizhan:draw"]="摸两张牌",
 	
 	["#hana002"]="普通的魔法使",
 	["hana002"]="雾雨魔理沙",--花 - 空 - 4血
