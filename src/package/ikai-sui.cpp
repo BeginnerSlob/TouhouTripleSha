@@ -4297,6 +4297,92 @@ public:
     }
 };
 
+class IkLeimai: public TriggerSkill {
+public:
+    IkLeimai(): TriggerSkill("ikleimai") {
+        events << DamageCaused << FinishJudge;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (triggerEvent == FinishJudge) {
+            JudgeStruct *judge = data.value<JudgeStruct *>();
+            if (judge->reason == objectName()) {
+                if (judge->card->isBlack())
+                    judge->pattern = QString::number(1);
+                else if (judge->card->isRed())
+                    judge->pattern = QString::number(2);
+            }
+            return skill_list;
+        }
+        DamageStruct damage = data.value<DamageStruct>();
+        if (player->isAlive() && damage.nature == DamageStruct::Thunder && !damage.to->isChained()) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+                skill_list.insert(p, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *owner) const{
+        if (owner->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *owner) const{
+        JudgeStruct judge;
+        judge.who = player;
+        judge.reason = objectName();
+        judge.play_animation = false;
+        room->judge(judge);
+
+        bool ok = false;
+        int num = judge.pattern.toInt(&ok);
+        if (ok) {
+            if (num == 1) {
+                DamageStruct damage = data.value<DamageStruct>();
+                LogMessage log;
+                log.type = "#IkLeimai";
+                log.from = owner;
+                log.to << player;
+                log.arg  = QString::number(damage.damage);
+                log.arg2 = QString::number(++damage.damage);
+                room->sendLog(log);
+                data = QVariant::fromValue(damage);
+            } else if (num == 2) {
+                player->obtainCard(judge.card);
+            }
+        }
+        return false;
+    }
+};
+
+class IkHuangzhen: public OneCardViewAsSkill {
+public:
+    IkHuangzhen(): OneCardViewAsSkill("ikhuangzhen") {
+        filter_pattern = "Slash";
+        response_or_use = true;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return Slash::IsAvailable(player);
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
+        return Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE
+               && pattern == "slash";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        Card *acard = new ThunderSlash(originalCard->getSuit(), originalCard->getNumber());
+        acard->addSubcard(originalCard->getId());
+        acard->setSkillName(objectName());
+        return acard;
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -4490,6 +4576,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *luna044 = new General(this, "luna044", "tsuki");
     luna044->addSkill(new IkMingzhen);
     luna044->addSkill(new IkYishi);
+
+    General *luna050 = new General(this, "luna050", "tsuki");
+    luna050->addSkill(new IkLeimai);
+    luna050->addSkill(new IkHuangzhen);
 
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
