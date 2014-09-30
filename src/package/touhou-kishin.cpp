@@ -251,7 +251,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         player->setFlags("-thzongni");
         room->sendCompulsoryTriggerLog(player, "thzongni");
-        room->askForDiscard(player, "thzongni", 1, 1);
+        room->askForDiscard(player, "thzongni", 998, 1, false, false, "@thzongni-discard");
         return false;
     }
 };
