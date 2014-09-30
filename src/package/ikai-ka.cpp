@@ -1289,6 +1289,17 @@ public:
     }
 };
 
+class IkXunfeng: public TriggerSkill {
+public:
+    IkXunfeng(): TriggerSkill("ikxunfeng") {
+        events << CardFinished;
+        frequency = Frequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
+    }
+};
+
 class IkLingyun: public TriggerSkill {
 public:
     IkLingyun(): TriggerSkill("iklingyun") {
