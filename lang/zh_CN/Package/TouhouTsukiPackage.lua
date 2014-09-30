@@ -42,7 +42,7 @@ return {
 	["thkuangqi"]="狂气",
 	[":thkuangqi"]="出牌阶段，当你使用【杀】或【碎月绮斗】对目标角色造成伤害时，你可以弃置一张【桃】、【酒】或装备牌，则此伤害+1。",
 	["@thkuangqi"]="你可以弃置一张【桃】、【酒】或装备牌发动“狂气”",
-	["#ThKuangqi"]="%from 发动了“<font color=\"yellow\"><b>狂气</b></font>”，%to 受到的伤害由 %arg 上升到了 %arg2 。",
+	["#ThKuangqi"]="%from 发动了“<font color=\"yellow\"><b>狂气</b></font>”，%to 受到的伤害由 %arg 上升到了 %arg2",
 	
 	["#tsuki004"]="幸运的白兔",
 	["tsuki004"]="因幡帝",--月 - 幻 - 3血
