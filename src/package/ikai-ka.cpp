@@ -3362,6 +3362,152 @@ public:
     }
 };
 
+class IkHuanxian: public TriggerSkill {
+public:
+    IkHuanxian(): TriggerSkill("ikhuanxian") {
+        events << CardAsked;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
+            return QStringList();
+        QString pattern = data.toStringList().first();
+        if (pattern == "jink")
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        QString pattern = data.toStringList().first();
+        bool jink = true;
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            const Card *card = room->askForCard(p, "..", "@ikhuanxian-give:" + player->objectName(), QVariant(), Card::MethodNone, player);
+            if (card) {
+                CardMoveReason reason(CardMoveReason::S_REASON_GIVE, p->objectName(), player->objectName(), objectName());
+                room->obtainCard(player, card, reason, false);
+                jink = false;
+            }
+        }
+        if (jink) {
+            Card *card = new Jink(Card::NoSuit, 0);
+            card->setSkillName(objectName());
+            room->provide(card);
+            return true;
+        }
+        return false;
+    }
+};
+
+class IkWuyu: public TriggerSkill {
+public:
+    IkWuyu(): TriggerSkill("ikwuyu") {
+        events << EventPhaseEnd << EventPhaseChanging;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            player->tag.remove("IkWuyu");
+        } else if (triggerEvent == EventPhaseEnd) {
+            if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Discard)
+                return skill_list;
+            QVariantList ikwuyu = player->tag["IkWuyu"].toList();
+            foreach (QVariant card_data, ikwuyu) {
+                int card_id = card_data.toInt();
+                if (room->getCardPlace(card_id) == Player::DiscardPile) {
+                    foreach (ServerPlayer *p, room->getAllPlayers()) {
+                        if (player->inMyAttackRange(p))
+                            skill_list.insert(p, QStringList(objectName()));
+                    }
+                }
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
+        return ask_who->askForSkillInvoke("ikwuyu_get");
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        QVariantList ikwuyu = player->tag["IkWuyu"].toList();
+
+        QList<int> cards;
+        foreach (QVariant card_data, ikwuyu) {
+            int card_id = card_data.toInt();
+            if (room->getCardPlace(card_id) == Player::DiscardPile)
+                cards << card_id;
+        }
+
+        if (cards.isEmpty())
+            return false;
+
+        room->fillAG(cards, ask_who);
+
+        int to_get = room->askForAG(ask_who, cards, true, objectName());
+        room->clearAG(ask_who);
+        if (to_get == -1)
+            return false;
+        room->broadcastSkillInvoke(objectName());
+        LogMessage log;
+        log.type = "#InvokeOthersSkill";
+        log.from = ask_who;
+        log.to << player;
+        log.arg = objectName();
+        room->sendLog(log);
+        room->notifySkillInvoked(player, objectName());
+
+        bool red = Sanguosha->getCard(to_get)->isRed();
+        ask_who->obtainCard(Sanguosha->getCard(to_get));
+
+        ikwuyu.removeAll(to_get);
+
+        if (red && player->isWounded())
+            room->recover(player, RecoverStruct(ask_who));
+        player->tag["IkWuyu"] = ikwuyu;
+        return false;
+    }
+};
+
+class IkWuyuRecord : public TriggerSkill {
+public:
+    IkWuyuRecord() : TriggerSkill("#ikwuyu-record") {
+        events << CardsMoveOneTime;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *erzhang, QVariant &data, ServerPlayer * &) const{
+        if (!erzhang || !erzhang->isAlive() || !erzhang->hasSkill("ikwuyu")) return QStringList();
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+
+        if (erzhang->getPhase() == Player::Discard) {
+            QVariantList ikwuyu = erzhang->tag["IkWuyu"].toList();
+
+            if (move.to_place == Player::DiscardPile) {
+                foreach (int id, move.card_ids) {
+                    if (!ikwuyu.contains(id))
+                        ikwuyu << id;
+                }
+            }
+
+            erzhang->tag["IkWuyu"] = ikwuyu;
+        }
+
+        return QStringList();
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -3523,6 +3669,12 @@ IkaiKaPackage::IkaiKaPackage()
     luna048->addSkill(new SlashNoDistanceLimitSkill("ikzhiwang"));
     related_skills.insertMulti("ikzhiwang", "#ikzhiwang-slash-ndl");
     luna048->addSkill(new IkLianlong);
+
+    General *luna049 = new General(this, "luna049", "tsuki", 3);
+    luna049->addSkill(new IkHuanxian);
+    luna049->addSkill(new IkWuyu);
+    luna049->addSkill(new IkWuyuRecord);
+    related_skills.insertMulti("ikwuyu", "#ikwuyu-record");
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
