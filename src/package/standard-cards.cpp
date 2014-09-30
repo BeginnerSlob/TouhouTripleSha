@@ -1711,9 +1711,6 @@ KnownBoth::KnownBoth(Card::Suit suit, int number)
 }
 
 bool KnownBoth::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if (Self->isCardLimited(this, Card::MethodUse))
-        return false;
-
     int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
     if (targets.length() >= total_num || to_select == Self)
         return false;
@@ -1721,90 +1718,43 @@ bool KnownBoth::targetFilter(const QList<const Player *> &targets, const Player 
     return !to_select->isKongcheng();
 }
 
-bool KnownBoth::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY);
-    QList<int> sub;
-    if (isVirtualCard())
-        sub = subcards;
-    else
-        sub << getEffectiveId();
-    foreach (int id, sub) {
-        if (Self->getPile("wooden_ox").contains(id)) {
-            rec = false;
-            break;
-        }
-        // Coupling of ThBaochui
-        if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play) {
-            foreach (const Player *p, Self->getAliveSiblings())
-                if (p->getPile("thbaochuipile").contains(id)) {
-                    rec = false;
-                    break;
-                }
-            if (!rec) break;
-        }
+void KnownBoth::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    QStringList nullified_list = room->getTag("CardUseNullifiedList").toStringList();
+    foreach (ServerPlayer *target, targets) {
+        CardEffectStruct effect;
+        effect.card = this;
+        effect.from = source;
+        effect.to = target;
+        effect.multiple = (targets.length() > 1);
+        effect.nullified = (nullified_list.contains(target->objectName()));
+
+        room->cardEffect(effect);
     }
 
-    if (rec && Self->isCardLimited(this, Card::MethodUse))
-        return targets.length() == 0;
-    int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
-    if (!rec || getSkillName() == "ikguihuo" || getSkillName() == "ikmice" || getSkillName() == "thmimeng")
-        return targets.length() > 0 && targets.length() <= total_num;
-    else
-        return targets.length() <= total_num;
-}
+    source->drawCards(1, objectName());
 
-void KnownBoth::onUse(Room *room, const CardUseStruct &card_use) const{
-    if (card_use.to.isEmpty()) {
-        CardMoveReason reason(CardMoveReason::S_REASON_RECAST, card_use.from->objectName());
-        reason.m_skillName = getSkillName();
-        room->moveCardTo(this, card_use.from, NULL, Player::DiscardPile, reason);
-        card_use.from->broadcastSkillInvoke("@recast");
-
-        LogMessage log;
-        log.type = "#UseCard_Recast";
-        log.from = card_use.from;
-        log.card_str = card_use.card->toString();
-        room->sendLog(log);
-
-        card_use.from->drawCards(1, "known_both");
-    } else
-        SingleTargetTrick::onUse(room, card_use);
+    if (room->getCardPlace(getEffectiveId()) == Player::PlaceTable) {
+        CardMoveReason reason(CardMoveReason::S_REASON_USE, source->objectName(), QString(), getSkillName(), QString());
+        if (targets.size() == 1) reason.m_targetId = targets.first()->objectName();
+        reason.m_extraData = QVariant::fromValue((const Card *)this);
+        room->moveCardTo(this, source, NULL, Player::DiscardPile, reason, true);
+    }
 }
 
 #include "jsonutils.h"
 void KnownBoth::onEffect(const CardEffectStruct &effect) const {
     Room *room = effect.to->getRoom();
-    QStringList choicelist;
-    if (!effect.to->isKongcheng())
-        choicelist.append("handcards");
-    if (!effect.to->isLord())
-        choicelist.append("role");
-    if (choicelist.isEmpty()) return;
-    QString choice = room->askForChoice(effect.from, objectName(), choicelist.join("+"), QVariant::fromValue(effect.to));
 
     LogMessage log;
     log.type = "$IkLingtongView";
     log.from = effect.from;
     log.to << effect.to;
-    log.arg = "iklingtong:" + choice;
+    log.arg = "iklingtong:handcards";
     room->sendLog(log, room->getOtherPlayers(effect.from));
 
-    if (choice == "handcards") {
-        room->showAllCards(effect.to, effect.from);
-    } else if (choice == "role") {
-        Json::Value arg(Json::arrayValue);
-        arg[0] = QSanProtocol::Utils::toJsonString(effect.to->objectName());
-        arg[1] = QSanProtocol::Utils::toJsonString(effect.to->getRole());
-        room->doNotify(effect.from, QSanProtocol::S_COMMAND_SET_EMOTION, arg);
-
-        LogMessage log;
-        log.type = "$ViewRole";
-        log.from = effect.from;
-        log.to << effect.to;
-        log.arg = effect.to->getRole();
-        room->sendLog(log, effect.from);
-    }
+    room->showAllCards(effect.to, effect.from);
 }
+
 StandardCardPackage::StandardCardPackage()
     : Package("standard_cards", Package::CardPack)
 {
