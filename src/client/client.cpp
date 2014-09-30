@@ -1656,8 +1656,8 @@ void Client::speak(const Json::Value &speak_data) {
 
     QString title;
     if (from) {
-        title = from->getGeneralName();
-        title = Sanguosha->translate(title);
+        if (from->getGeneral())
+            title = from->getGeneral()->getTranslatedName();
         title.append(QString("(%1)").arg(from->screenName()));
     }
 
