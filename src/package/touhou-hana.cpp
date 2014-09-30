@@ -76,6 +76,7 @@ public:
             if (str.endsWith("_slash"))
                 str = "slash";
             if (room->askForCard(player, name, "@thhuaji:::" + str)) return false;
+            room->setPlayerFlag(player, "thhuaji_cancel");
         }
 
         return false;
