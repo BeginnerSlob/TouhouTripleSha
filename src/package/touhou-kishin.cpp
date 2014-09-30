@@ -886,7 +886,7 @@ TouhouKishinPackage::TouhouKishinPackage()
     kishin002->addSkill(new ThGuaiqiRecord);
     related_skills.insertMulti("thguaiqi", "#thguaiqi-record");
 
-    General *kishin003 = new General(this, "kishin003", "yuki");
+    General *kishin003 = new General(this, "kishin003", "yuki", 3);
     kishin003->addSkill(new ThJingtao);
     kishin003->addSkill(new ThZongni);
     kishin003->addSkill(new ThZongniDiscard);
