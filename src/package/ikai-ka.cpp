@@ -1296,7 +1296,149 @@ public:
         frequency = Frequent;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->getTypeId() != Card::TypeSkill && player->getPhase() == Player::Play) {
+            int n = player->getMark("ikxunfeng_count");
+            if (n == 1)
+                return QStringList(objectName());
+            else if (n == 2 && player->hasFlag("IkXunfengUsed"))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        int n = player->getMark("ikxunfeng_count");
+        if (n == 2) {
+            room->sendCompulsoryTriggerLog(player, objectName());
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        } else if (n == 1 && player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        int n = player->getMark("ikxunfeng_count");
+        if (n == 2)
+            room->askForDiscard(player, objectName(), 1, 1, false, true);
+        else if (n == 1) {
+            player->drawCards(1, objectName());
+            player->setFlags("IkXunfengUsed");
+        }
+        return false;
+    }
+};
+
+class IkXunfengRecord: public TriggerSkill {
+public:
+    IkXunfengRecord(): TriggerSkill("#ikxunfeng-record") {
+        events << CardFinished << EventPhaseChanging;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            player->setMark("ikxunfeng_count", 0);
+            if (player->hasFlag("IkXunfengUsed"))
+                player->setFlags("-IkXunfengUsed");
+            return QStringList();
+        }
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->getTypeId() != Card::TypeSkill)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        player->addMark("ikxunfeng_count");
+        return false;
+    }
+};
+
+class IkLuhua: public TriggerSkill {
+public:
+    IkLuhua(): TriggerSkill("ikluhua") {
+        events << CardFinished;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->getTypeId() != Card::TypeSkill && player->getPhase() == Player::Play) {
+            int n = player->getMark("ikluhua_count");
+            if (n == 3) {
+                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                    if (player == p) continue;
+                    skill_list.insert(p, QStringList(objectName()));
+                }
+            } else if (n == 4) {
+                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                    if (p->hasFlag("IkLuhuaUsed"))
+                        skill_list.insert(p, QStringList(objectName()));
+                }
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        int n = player->getMark("ikluhua_count");
+        if (n == 4) {
+            room->sendCompulsoryTriggerLog(ask_who, objectName());
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        } else if (n == 3 && ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        int n = player->getMark("ikluhua_count");
+        if (n == 4)
+            ask_who->drawCards(1, objectName());
+        else if (n == 3) {
+            player->drawCards(1, objectName());
+            ask_who->setFlags("IkLuhuaUsed");
+        }
+        return false;
+    }
+};
+
+class IkLuhuaRecord: public TriggerSkill {
+public:
+    IkLuhuaRecord(): TriggerSkill("#ikluhua-record") {
+        events << CardFinished << EventPhaseChanging;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            player->setMark("ikluhua_count", 0);
+            foreach (ServerPlayer *p, room->getAllPlayers()) {
+                if (p->hasFlag("IkLuhuaUsed"))
+                    p->setFlags("-IkLuhuaUsed");
+            }
+            return QStringList();
+        }
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->getTypeId() != Card::TypeSkill)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        player->addMark("ikluhua_count");
+        return false;
     }
 };
 
@@ -3153,6 +3295,14 @@ IkaiKaPackage::IkaiKaPackage()
     bloom048->addSkill(new IkDiebei);
     bloom048->addSkill(new IkDiebeiMaxCards);
     related_skills.insertMulti("ikdiebei", "#ikdiebei");
+
+    General *bloom049 = new General(this, "bloom049", "hana", 3);
+    bloom049->addSkill(new IkXunfeng);
+    bloom049->addSkill(new IkXunfengRecord);
+    related_skills.insertMulti("ikxunfeng", "#ikxunfeng-record");
+    bloom049->addSkill(new IkLuhua);
+    bloom049->addSkill(new IkLuhuaRecord);
+    related_skills.insertMulti("ikluhua", "#ikluhua-record");
 
     General *snow031 = new General(this, "snow031", "yuki", 3);
     snow031->addSkill(new IkLingyun);
