@@ -2956,11 +2956,6 @@ const Card *IkXiekeCard::validate(CardUseStruct &card_use) const{
             to_ikshidao = room->askForChoice(wenyang, "ikxieke_slash", ikshidao_list.join("+"));
     }
 
-    wenyang->setChained(true);
-    room->setEmotion(wenyang, "chain");
-    room->broadcastProperty(wenyang, "chained");
-    room->getThread()->trigger(ChainStateChanged, room, wenyang);
-
     Card *use_card = Sanguosha->cloneCard(to_ikshidao);
     use_card->setSkillName("ikxieke");
     return use_card;
@@ -2984,11 +2979,6 @@ const Card *IkXiekeCard::validateInResponse(ServerPlayer *wenyang) const{
         to_ikshidao = room->askForChoice(wenyang, "ikxieke_slash", ikshidao_list.join("+"));
     } else
         to_ikshidao = user_string;
-
-    wenyang->setChained(true);
-    room->setEmotion(wenyang, "chain");
-    room->broadcastProperty(wenyang, "chained");
-    room->getThread()->trigger(ChainStateChanged, room, wenyang);
 
     Card *use_card = Sanguosha->cloneCard(to_ikshidao);
     use_card->setSkillName("ikxieke");
@@ -3038,6 +3028,32 @@ public:
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
         return !player->isChained() && player->getPhase() == Player::Play;
+    }
+};
+
+class IkXiekeChain: public TriggerSkill {
+public:
+    IkXiekeChain(): TriggerSkill("#ikxieke") {
+        events << CardFinished;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player->isChained())
+            return QStringList();
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card && use.card->getSkillName() == "ikxieke")
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        player->setChained(true);
+        room->setEmotion(player, "chain");
+        room->broadcastProperty(player, "chained");
+        room->getThread()->trigger(ChainStateChanged, room, player);
+
+        return false;
     }
 };
 
@@ -3652,6 +3668,8 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *luna045 = new General(this, "luna045", "tsuki");
     luna045->addSkill(new IkXieke);
+    luna045->addSkill(new IkXiekeChain);
+    related_skills.insertMulti("ikxieke", "#ikxieke");
     luna045->addSkill(new IkYunmai);
 
     General *luna046 = new General(this, "luna046", "tsuki", 3);
