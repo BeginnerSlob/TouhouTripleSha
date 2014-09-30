@@ -2197,6 +2197,142 @@ public:
     }
 };
 
+IkXiaowuCard::IkXiaowuCard() {
+    target_fixed = true;
+    will_throw = false;
+}
+
+const Card *IkXiaowuCard::validate(CardUseStruct &card_use) const{
+    const Card *card = Sanguosha->getCard(getEffectiveId());
+    QString cardname;
+    if(card->isRed())
+        cardname = "indulgence";
+    else
+        cardname = "supply_shortage";
+
+    Card *newcard = Sanguosha->cloneCard(cardname, card->getSuit(), card->getNumber());
+    newcard->addSubcard(card);
+    newcard->setSkillName("ikxiaowu");
+    card_use.to << card_use.from;
+    return newcard;
+}
+
+class IkXiaowuViewAsSkill: public OneCardViewAsSkill {
+public:
+    IkXiaowuViewAsSkill(): OneCardViewAsSkill("ikxiaowu") {
+        filter_pattern = ".|diamond#^TrickCard|black";
+        response_or_use = true;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const {
+        if (player->hasUsed("IkXiaowuCard")) return false;
+        bool can_le = true, can_bing = true;
+        if (!player->containsTrick("indulgence")) {
+            Card *le = Sanguosha->cloneCard("indulgence");
+            le->deleteLater();
+            if (player->isCardLimited(le, Card::MethodUse))
+                can_le = false;
+        } else
+            can_le = false;
+
+        if (!player->containsTrick("supply_shortage")) {
+            Card *bing = Sanguosha->cloneCard("supply_shortage");
+            bing->deleteLater();
+            if (player->isCardLimited(bing, Card::MethodUse))
+                can_bing = false;
+        } else
+            can_bing = false;
+
+        return can_le || can_bing;
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const {
+        QString cardname;
+        if(originalCard->isRed())
+            cardname = "indulgence";
+        else
+            cardname = "supply_shortage";
+        Card *trick = Sanguosha->cloneCard(cardname);
+        trick->addSubcard(originalCard);
+        trick->deleteLater();
+        if (Self->containsTrick(cardname) || Self->isCardLimited(trick, Card::MethodUse))
+            return NULL;
+
+        IkXiaowuCard *card = new IkXiaowuCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+};
+
+class IkXiaowu: public TriggerSkill {
+public:
+    IkXiaowu(): TriggerSkill("ikxiaowu") {
+        events << EventPhaseChanging << Death;
+        view_as_skill = new IkXiaowuViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        if (player != NULL && player->tag["IkXiaowuTarget"].value<ServerPlayer *>() != NULL) {
+            if (triggerEvent == EventPhaseChanging) {
+                PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+                if (change.to != Player::NotActive)
+                    return QStringList();
+            }
+            ServerPlayer *target = player->tag["IkXiaowuTarget"].value<ServerPlayer *>();
+            if (triggerEvent == Death) {
+                DeathStruct death = data.value<DeathStruct>();
+                if (death.who != player) {
+                    if (death.who == target) {
+                        room->removeFixedDistance(player, target, 1);
+                        player->tag.remove("IkXiaowuTarget");
+                    }
+                    return QStringList();
+                }
+            }
+            if (target) {
+                room->removeFixedDistance(player, target, 1);
+                player->tag.remove("IkXiaowuTarget");
+            }
+        }
+        return QStringList();
+    }
+};
+
+class IkXiaowuSlash: public TriggerSkill {
+public:
+    IkXiaowuSlash(): TriggerSkill("#ikxiaowu") {
+        events << CardFinished;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer* &) const {
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->getSkillName(false) == "ikxiaowu")
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        player->drawCards(1);
+
+        ServerPlayer *victim = room->askForPlayerChosen(player, room->getOtherPlayers(player), "ikxiaowu");
+        room->setFixedDistance(player, victim, 1);
+        player->tag["IkXiaowuTarget"] = QVariant::fromValue(victim);
+        Slash *slash = new Slash(Card::NoSuit, 0);
+        slash->setSkillName("_ikxiaowu");
+        if (player->canSlash(victim, slash, false)) {
+            CardUseStruct use;
+            use.card = slash;
+            use.from = player;
+            use.to << victim;
+            victim->addQinggangTag(slash);
+            room->useCard(use, false);
+        } else
+            delete slash;
+        return false;
+    }
+};
+
 class IkLingcu: public TriggerSkill {
 public:
     IkLingcu(): TriggerSkill("iklingcu") {
@@ -3338,6 +3474,11 @@ IkaiKaPackage::IkaiKaPackage()
     snow048->addSkill(new IkQile);
     snow048->addSkill(new IkSaoxiao);
 
+    General *snow049 = new General(this, "snow049", "yuki");
+    snow049->addSkill(new IkXiaowu);
+    snow049->addSkill(new IkXiaowuSlash);
+    related_skills.insertMulti("ikxiaowu", "#ikxiaowu");
+
     General *luna030 = new General(this, "luna030", "tsuki");
     luna030->addSkill(new IkLingcu);
 
@@ -3395,6 +3536,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkLinghuiCard>();
     addMetaObject<IkDianyanCard>();
     addMetaObject<IkDianyanPutCard>();
+    addMetaObject<IkXiaowuCard>();
     addMetaObject<IkQisiCard>();
     addMetaObject<IkManwuCard>();
     addMetaObject<IkXianlvCard>();

@@ -153,6 +153,15 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class IkXiaowuCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkXiaowuCard();
+
+    virtual const Card *validate(CardUseStruct &card_use) const;
+};
+
 class IkQisiCard: public SkillCard{
     Q_OBJECT
 
