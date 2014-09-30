@@ -2933,7 +2933,7 @@ IkaiDoPackage::IkaiDoPackage()
     General *bloom004 = new General(this, "bloom004", "hana");
     bloom004->addSkill(new IkChibao);
     bloom004->addSkill(new IkChibaoAct);
-    related_skills.insertMulti("ikchibao", "#ikchubao");
+    related_skills.insertMulti("ikchibao", "#ikchibao");
 
     General *bloom005 = new General(this, "bloom005", "hana");
     bloom005->addSkill(new IkLuoyi);

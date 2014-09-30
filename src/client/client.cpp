@@ -129,7 +129,10 @@ Client::Client(QObject *parent, const QString &filename)
     m_respondingUseFixedTarget = NULL;
 
     Self = new ClientPlayer(this);
-    Self->setScreenName(Config.UserName);
+    QString screen_name = Config.UserName;
+    if (screen_name.length() > 8)
+        screen_name = screen_name.left(8);
+    Self->setScreenName(screen_name);
     Self->setProperty("avatar", Config.UserAvatar);
     connect(Self, SIGNAL(phase_changed()), this, SLOT(alertFocus()));
     connect(Self, SIGNAL(role_changed(QString)), this, SLOT(notifyRoleChange(QString)));
@@ -327,6 +330,8 @@ void Client::addPlayer(const Json::Value &player_info) {
     QString base64 = toQString(player_info[1]);
     QByteArray data = QByteArray::fromBase64(base64.toAscii());
     QString screen_name = QString::fromUtf8(data);
+    if (screen_name.length() > 8)
+        screen_name = screen_name.left(8);
     QString avatar = toQString(player_info[2]);
 
     ClientPlayer *player = new ClientPlayer(this);
