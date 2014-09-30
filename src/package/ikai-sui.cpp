@@ -187,7 +187,7 @@ bool IkXielunCard::targetFilter(const QList<const Player *> &targets, const Play
     } else if (Self->getOffensiveHorse() && Self->getOffensiveHorse()->getEffectiveId() == getEffectiveId())
         range_fix += 1;
 
-    return Self->inMyAttackRange(to_select, range_fix);
+    return Self->getMark("@jiuming") > 0 || Self->inMyAttackRange(to_select, range_fix);
 }
 
 void IkXielunCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
