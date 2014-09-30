@@ -37,7 +37,7 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
     ui->setupUi(this);
 
     ui->nameLineEdit->setText(Config.UserName);
-    ui->nameLineEdit->setMaxLength(64);
+    ui->nameLineEdit->setMaxLength(8);
 
     ui->hostComboBox->addItems(Config.HistoryIPs);
     ui->hostComboBox->lineEdit()->setText(Config.HostAddress);
