@@ -10,6 +10,8 @@
 #include <QComboBox>
 #include <QCheckBox>
 #include <QSpinBox>
+#include <QNetworkReply>
+#include <QUrl>
 
 namespace Ui {
     class MainWindow;
@@ -50,6 +52,7 @@ public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
     void setBackgroundBrush(bool center_as_origin);
+    void checkUpdate();
 
 protected:
     virtual void closeEvent(QCloseEvent *);
@@ -61,7 +64,10 @@ private:
     ConnectionDialog *connection_dialog;
     ConfigDialog *config_dialog;
     QSystemTrayIcon *systray;
+
     Server *server;
+    QNetworkReply *reply;
+    QUrl url;
 
     void restoreFromConfig();
 
@@ -99,6 +105,8 @@ private slots:
     void startGameInAnotherInstance();
     void changeBackground();
     void on_actionView_ban_list_triggered();
+
+    void httpFinished();
 };
 
 #endif

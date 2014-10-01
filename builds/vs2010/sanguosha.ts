@@ -2005,6 +2005,11 @@
         <translation>下载链接: &lt;a href=&apos;%1&apos;&gt;%1&lt;/a&gt; &lt;br/&gt;</translation>
     </message>
     <message>
+        <location filename="../../src/dialog/mainwindow.cpp" line="254"/>
+        <source>Select a replay file</source>
+        <translation>选择一个重放文件</translation>
+    </message>
+    <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="256"/>
         <location filename="../../src/dialog/mainwindow.cpp" line="678"/>
         <location filename="../../src/dialog/mainwindow.cpp" line="720"/>
@@ -2190,6 +2195,17 @@
         <translation>GNU 通用公共许可协议（简称GNU GPL或GPL），是一个广泛被使用的自由软件许可证条款，它确保了广大用户自由地使用、学习、共享或修改软件。</translation>
     </message>
     <message>
+        <location filename="../../src/dialog/mainwindow.cpp" line="935"/>
+        <location filename="../../src/dialog/mainwindow.cpp" line="944"/>
+        <source>New Version Available</source>
+        <translation>新版本可用</translation>
+    </message>
+    <message>
+        <location filename="../../src/dialog/mainwindow.cpp" line="945"/>
+        <source>There is a new version as &quot;%1&quot;, update date is %2, please download it in our QQ Group. The Group number is 221093508</source>
+        <translation>存在新版本&lt;br/&gt;版本号为&quot;%1&quot;&lt;br/&gt;更新日期 %2&lt;br/&gt;请到我们的QQ群内下载，群号 221093508</translation>
+    </message>
+    <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="647"/>
         <source>Server is not started yet!</source>
         <translation>服务器尚未启动!</translation>
@@ -2264,11 +2280,6 @@
         <location filename="../../src/dialog/mainwindow.cpp" line="548"/>
         <source>Game is minimized</source>
         <translation>游戏已经最小化到系统托盘</translation>
-    </message>
-    <message>
-        <location filename="../../src/dialog/mainwindow.cpp" line="254"/>
-        <source>Select a reply file</source>
-        <translation>请选择重放文件</translation>
     </message>
 </context>
 <context>
