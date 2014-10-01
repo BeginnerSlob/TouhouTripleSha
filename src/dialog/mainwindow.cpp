@@ -942,7 +942,12 @@ void MainWindow::httpFinished()
     }
     if (has_new_version) {
         QMessageBox::warning(this, tr("New Version Available"),
-                             tr("There is a new version as \"%1\", update date is %2, please download it in our QQ Group. The Group number is 221093508").arg(newVersionNumber).arg(updateDate),
+                             tr("There is a new version for TouhouTripleSha<br/> \
+                                 The version number is %1<br/> \
+                                 Update date is %2<br/> \
+                                 Please download it in our QQ Group<br/> \
+                                 The Group number is 221093508<br/> \
+                                 Hope you enjoy this game").arg(newVersionNumber).arg(updateDate),
                              QMessageBox::Ok, QMessageBox::Ok);
     }
     reply->deleteLater();

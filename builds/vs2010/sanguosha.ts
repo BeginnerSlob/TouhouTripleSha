@@ -2202,8 +2202,8 @@
     </message>
     <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="945"/>
-        <source>There is a new version as &quot;%1&quot;, update date is %2, please download it in our QQ Group. The Group number is 221093508</source>
-        <translation>存在新版本&lt;br/&gt;版本号为&quot;%1&quot;&lt;br/&gt;更新日期 %2&lt;br/&gt;请到我们的QQ群内下载，群号 221093508</translation>
+        <source>There is a new version for TouhouTripleSha&lt;br/&gt;                                  The version number is %1&lt;br/&gt;                                  Update date is %2&lt;br/&gt;                                  Please download it in our QQ Group&lt;br/&gt;                                  The Group number is 221093508&lt;br/&gt;                                  Hope you enjoy this game</source>
+        <translation>东方绮符剧更新新版本啦&lt;br/&gt;版本号为 %1&lt;br/&gt;更新日期为 %2&lt;br/&gt;因为做出了很多改动也修复了不少bug，为了能更加愉快的玩耍请尽快下载哟&lt;br/&gt;暂时只能通过官方QQ群的群文件下载哦，QQ群号为 221093508&lt;br/&gt;撒，最后还是祝游戏愉快的说～</translation>
     </message>
     <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="647"/>
