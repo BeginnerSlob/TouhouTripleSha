@@ -251,7 +251,7 @@ void MainWindow::on_actionReplay_triggered() {
         location = last_dir;
 
     QString filename = QFileDialog::getOpenFileName(this,
-                                                    tr("Select a reply file"),
+                                                    tr("Select a replay file"),
                                                     location,
                                                     tr("Pure text replay file (*.txt);; Image replay file (*.png)"));
 
@@ -906,3 +906,45 @@ void MainWindow::on_actionAbout_GPLv3_triggered() {
     window->appear();
 }
 
+void MainWindow::checkUpdate()
+{
+    url = "http://ver.qsanguosha.org/UpdateInfoForTouhouTripleSha";
+
+    static QNetworkAccessManager *qnam = new QNetworkAccessManager(this);
+    reply = qnam->get(QNetworkRequest(url));
+    connect(reply, SIGNAL(finished()), this, SLOT(httpFinished()));
+}
+
+void MainWindow::httpFinished()
+{
+    QString newVersionNumber, updateDate;
+    bool has_new_version = false;
+    while (!reply->atEnd()) {
+        QString line = reply->readLine();
+        line.remove('\n');
+
+        QStringList texts = line.split(':', QString::SkipEmptyParts);
+
+        if(texts.size() != 2)
+            return;
+
+        QString key = texts.at(0);
+        QString value = texts.at(1);
+        if ("VersionNumber" == key) {
+            if (Sanguosha->getVersionNumber() < value) {
+                setWindowTitle(tr("New Version Available") + "  " + windowTitle());
+                has_new_version = true;
+                newVersionNumber = value;
+            }
+        } else if ("UpdateDate" == key) {
+            updateDate = value;
+        }
+    }
+    if (has_new_version) {
+        QMessageBox::warning(this, tr("New Version Available"),
+                             tr("There is a new version as \"%1\", update date is %2, please download it in our QQ Group. The Group number is 221093508").arg(newVersionNumber).arg(updateDate),
+                             QMessageBox::Ok, QMessageBox::Ok);
+    }
+    reply->deleteLater();
+    reply = NULL;
+}

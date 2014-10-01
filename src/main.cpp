@@ -91,6 +91,8 @@ int main(int argc, char *argv[]) {
     Sanguosha->setParent(main_window);
     main_window->show();
 
+    main_window->checkUpdate();
+
     foreach (QString arg, qApp->arguments()) {
         if (arg.startsWith("-connect:")) {
             arg.remove("-connect:");
