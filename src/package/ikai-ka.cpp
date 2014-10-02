@@ -2831,7 +2831,8 @@ public:
     }
 
     virtual bool viewFilter(const Card *to_select) const{
-        if (!Self->hasSkill("thyanmeng"))
+        ServerPlayer *owner = Sanguosha->currentRoom()->getCardOwner(to_select->getEffectiveId());
+        if (!owner || !owner->hasSkill("thyanmeng"))
             return false;
         return to_select->isKindOf("Jink");
     }
