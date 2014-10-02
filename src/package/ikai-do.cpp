@@ -2695,7 +2695,8 @@ public:
                 disabled_ids << id;
         }
         int card_id = room->askForCardChosen(player, damage.to, "e", objectName(), false, Card::MethodNone, disabled_ids);
-        if (card_id == damage.to->getEquip(2)->getEffectiveId() || card_id == damage.to->getEquip(3)->getEffectiveId())
+        if ((damage.to->getEquip(2) && card_id == damage.to->getEquip(2)->getEffectiveId())
+            || (damage.to->getEquip(3) && card_id == damage.to->getEquip(3)->getEffectiveId()))
             room->obtainCard(player, card_id);
         else
             room->throwCard(card_id, damage.to, player);
@@ -3015,11 +3016,12 @@ IkaiDoPackage::IkaiDoPackage()
     luna006->addSkill(new IkHuichun);
     luna006->addSkill(new IkQingnang);
 
-    General *luna018 = new General(this, "luna018", "tsuki");
+    General *luna018 = new General(this, "luna018", "tsuki", 3);
     luna018->addSkill(new IkZhuji);
     luna018->addSkill(new IkZhujiEffect);
     related_skills.insertMulti("ikzhuji", "#ikzhuji-effect");
     luna018->addSkill(new IkBenyin);
+    luna018->addSkill(new IkGuizhi);
 
     General *luna034 = new General(this, "luna034", "tsuki");
     luna034->addSkill(new IkGuijiao);
