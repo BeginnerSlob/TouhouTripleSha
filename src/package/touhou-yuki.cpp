@@ -1005,24 +1005,14 @@ public:
                 return QStringList();
         }
         if (triggerEvent == CardsMoveOneTime) {
+            if (player == room->getCurrent() && player->getPhase() != Player::NotActive)
+                return QStringList();
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.from != player || !(move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip))
                 || !(move.to != player || (move.to_place != Player::PlaceHand && move.to_place != Player::PlaceEquip)))
                 return QStringList();
         }
-        bool invoke = false;
-        if (player->isWounded())
-            invoke = true;
-        else
-            foreach (ServerPlayer *p, room->getOtherPlayers(player))
-                if (!p->isNude() || p->isWounded()) {
-                    invoke = true;
-                    break;
-                }
-
-        if (invoke && (player != room->getCurrent() || player->getPhase() == Player::NotActive))
-            return QStringList(objectName());
-        return QStringList();
+        return QStringList(objectName());
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
@@ -2288,6 +2278,8 @@ TouhouYukiPackage::TouhouYukiPackage()
     General *yuki008 = new General(this, "yuki008", "yuki", 3);
     yuki008->addSkill(new ThZiyun);
     yuki008->addSkill(new ThChuiji);
+    yuki008->addSkill(new ThChuijiRecord);
+    related_skills.insertMulti("thchuiji", "#thchuiji");
 
     General *yuki009 = new General(this, "yuki009", "yuki");
     yuki009->addSkill(new ThLingya);
