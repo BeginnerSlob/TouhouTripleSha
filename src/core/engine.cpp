@@ -182,6 +182,8 @@ void Engine::addSkills(const QList<const Skill *> &all_skills) {
             const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(skill);
             if (trigger_skill && trigger_skill->isGlobal())
                 global_trigger_skills << trigger_skill;
+            else if (trigger_skill && trigger_skill->getTriggerEvents().contains(TriggerEvent::GameStart))
+                global_trigger_skills << trigger_skill; // for GameStartSkill combines Zuoci
         }
     }
 }

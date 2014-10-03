@@ -551,6 +551,7 @@ public:
     SpearEmotion(): TriggerSkill("#spear-emotion") {
         events << PreCardUsed << CardResponded;
         global = true;
+        frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
@@ -1332,6 +1333,7 @@ public:
     LureTigerSkill() : TriggerSkill("lure_tiger") {
         events << Death << EventPhaseChanging;
         global = true;
+        frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{

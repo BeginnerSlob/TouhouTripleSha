@@ -714,7 +714,9 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         QString name;
                         foreach (QString sn, names) {
                             const TriggerSkill *skill = Sanguosha->getTriggerSkill(sn);
-                            if (skill && skill->isGlobal()) {
+                            if (skill && skill->isGlobal() && (skill->getFrequency() == Skill::Compulsory
+                                                               || skill->getFrequency() == Skill::NotCompulsory
+                                                               || skill->getFrequency() == Skill::Wake)) {
                                 name = sn;
                                 break;
                             }

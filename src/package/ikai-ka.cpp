@@ -1902,6 +1902,7 @@ public:
     IkHuaijiRecord(): TriggerSkill("#ikhuaiji") {
         events << CardsMoveOneTime << EventPhaseChanging;
         global = true;
+        frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
