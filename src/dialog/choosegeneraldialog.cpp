@@ -82,7 +82,9 @@ ChooseGeneralDialog::ChooseGeneralDialog(const QStringList &general_names, QWidg
         }
     }
     foreach (const General *general, generals) {
-        QString caption = general->getTranslatedName();
+        QString caption;
+        if (general != NULL)
+            caption = general->getTranslatedName();
         OptionButton *button = new OptionButton(QString(), caption);
         if (no_icon) {
             button->setIcon(QIcon("image/system/no-general-icon.png"));
