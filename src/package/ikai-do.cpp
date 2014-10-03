@@ -534,6 +534,7 @@ public:
     IkBaoouRecord(): TriggerSkill("#ikbaoou-record") {
         events << PreDamageDone;
         global = true;
+        frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer* &) const{

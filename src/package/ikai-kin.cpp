@@ -2362,6 +2362,7 @@ public:
     IkJingceRecord(): TriggerSkill("#ikjingce-record") {
         events << PreCardUsed << CardResponded << EventPhaseStart;
         global = true;
+        frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
@@ -4856,6 +4857,7 @@ public:
     IkShangyeEffect(): TriggerSkill("#ikshangye-effect") {
         events << PreCardUsed;
         global = true;
+        frequency = Compulsory;
     }
 
     virtual int getPriority(TriggerEvent) const{
