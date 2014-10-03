@@ -898,29 +898,9 @@ public:
                && target->getMark("choucecount") >= 3;
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer *) const {
-        target->addMark("extra_turn");
-        return false;
-    }
-};
-
-class ThZhanshiDo: public TriggerSkill {
-public:
-    ThZhanshiDo(): TriggerSkill("#thzhanshi") {
-        events << EventPhaseStart;
-        frequency = Compulsory;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const {
-        return TriggerSkill::triggerable(target)
-               && target->getPhase() == Player::NotActive
-               && target->getMark("extra_turn") > 0;
-    }
-
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *) const {
-        room->sendCompulsoryTriggerLog(target, "thzhanshi");
-        target->removeMark("extra_turn");
-        target->setFlags("thhuanzang_remove");
+        room->sendCompulsoryTriggerLog(target, objectName());
+        target->addMark("thhuanzang_remove");
         target->gainAnExtraTurn();
         return false;
     }
@@ -933,13 +913,15 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer* &) const {
-        if (triggerEvent == EventPhaseStart && target->getPhase() == Player::RoundStart && target->hasFlag("thhuanzang_remove")
-            && !target->hasSkill("thhuanzang")) {
+        if (triggerEvent == EventPhaseStart && target->getPhase() == Player::RoundStart && target->getMark("thhuanzang_remove") > 0) {
             room->acquireSkill(target, "thhuanzang");
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive && target->hasFlag("thhuanzang_remove") && target->hasSkill("thhuanzang"))
-                room->detachSkillFromPlayer(target, "thhuanzang", false, true);
+            if (change.to == Player::NotActive && target->hasSkill("thhuanzang")) {
+                if (target->getMark("thhuanzang_remove") > 0)
+                    room->detachSkillFromPlayer(target, "thhuanzang", false, true);
+                target->setMark("thhuanzang_remove", 0);
+            }
         }
         return QStringList();
     }
@@ -2269,9 +2251,7 @@ TouhouYukiPackage::TouhouYukiPackage()
     General *yuki007 = new General(this, "yuki007", "yuki", 3);
     yuki007->addSkill(new ThChouce);
     yuki007->addSkill(new ThZhanshi);
-    yuki007->addSkill(new ThZhanshiDo);
     yuki007->addSkill(new ThZhanshiClear);
-    related_skills.insertMulti("thzhanshi", "#thzhanshi");
     related_skills.insertMulti("thzhanshi", "#thzhanshi-clear");
     yuki007->addRelateSkill("thhuanzang");
 

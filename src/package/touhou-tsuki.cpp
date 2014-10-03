@@ -1498,9 +1498,10 @@ void ThExiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
     room->showCard(targets[1], cards[1]->getId());
     const Card *big, *small;
     ServerPlayer *target;
-    if (cards[0]->getNumber() == cards[1]->getNumber())
-        source->addMark("exi");
-    else {
+    if (cards[0]->getNumber() == cards[1]->getNumber()) {
+        source->gainAnExtraTurn();
+        source->addMark("exicount");
+    } else {
         if (cards[0]->getNumber() > cards[1]->getNumber()) {
             big = cards[0];
             small = cards[1];
@@ -1545,41 +1546,27 @@ public:
         view_as_skill = new ThExiViewAsSkill;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        QMap<ServerPlayer *, QStringList> skill_list;
-        if (player->getPhase() == Player::NotActive) {
-            foreach (ServerPlayer *p, room->getAlivePlayers())
-                if (p->getMark("exi") > 0)
-                    skill_list.insert(p, QStringList(objectName()));
-        } else if (player->getPhase() == Player::Finish && TriggerSkill::triggerable(player) && player->getMark("exicount") <= 0
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
+        if (player->getPhase() == Player::RoundStart && player->getMark("exicount") > 0) {
+            player->setMark("exicount", 0);
+            player->setFlags("Global_ThExiDisabled");
+        } else if (player->getPhase() == Player::Finish && TriggerSkill::triggerable(player) && !player->hasFlag("Global_ThExiDisabled")
             && player->canDiscard(player, "h")) {
             int n = 0;
             foreach (ServerPlayer *p, room->getAllPlayers()) {
                 if (p == player && p->getHandcardNum() > 1)
-                    n++;
+                    ++n;
                 else if (p != player && !p->isKongcheng())
-                    n++;
-                if (n > 1) {
-                    skill_list.insert(player, QStringList(objectName()));
-                    break;
-                }
+                    ++n;
+                if (n > 1)
+                    return QStringList(objectName());
             }
         }
-        return skill_list;
+        return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
-        if (player->getPhase() == Player::NotActive)
-            return true;
-        room->askForUseCard(ask_who, "@@thexi", "@thexi");
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
-        room->removePlayerMark(ask_who, "exi");
-        room->addPlayerMark(ask_who, "exicount");
-        ask_who->gainAnExtraTurn();
-        room->removePlayerMark(ask_who, "exicount");
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        room->askForUseCard(player, "@@thexi", "@thexi");
         return false;
     }
 };

@@ -512,7 +512,7 @@ void IkBaishenCard::onEffect(const CardEffectStruct &effect) const{
     log.to << player;
     room->sendLog(log);
 
-    room->setTag("IkBaishenTarget", QVariant::fromValue(player));
+    player->gainAnExtraTurn();
 }
 
 class IkBaishenViewAsSkill: public OneCardViewAsSkill {
@@ -532,71 +532,53 @@ public:
 class IkBaishen: public TriggerSkill {
 public:
     IkBaishen(): TriggerSkill("ikbaishen") {
-        events << EventPhaseChanging << EventPhaseStart;
+        events << EventPhaseChanging;
         view_as_skill = new IkBaishenViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *liushan, QVariant &data, ServerPlayer* &) const{
-        if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            switch (change.to) {
-            case Player::Play: {
-                    if (!TriggerSkill::triggerable(liushan) || liushan->isSkipped(Player::Play))
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *liushan, QVariant &data, ServerPlayer* &) const{
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        switch (change.to) {
+        case Player::Play: {
+                if (!TriggerSkill::triggerable(liushan) || liushan->isSkipped(Player::Play))
+                    return QStringList();
+                return QStringList(objectName());
+            }
+        case Player::NotActive: {
+                if (liushan->hasFlag(objectName())) {
+                    if (!liushan->canDiscard(liushan, "h"))
                         return QStringList();
                     return QStringList(objectName());
                 }
-            case Player::NotActive: {
-                    if (liushan->hasFlag(objectName())) {
-                        if (!liushan->canDiscard(liushan, "h"))
-                            return QStringList();
-                        return QStringList(objectName());
-                    }
-                    break;
-                }
-            default:
-                    break;
+                break;
             }
-        } else if (triggerEvent == EventPhaseStart && liushan->getPhase() == Player::NotActive) {
-            Room *room = liushan->getRoom();
-            if (!room->getTag("IkBaishenTarget").isNull()) {
-                ServerPlayer *target = room->getTag("IkBaishenTarget").value<ServerPlayer *>();
-                if (target->isAlive())
-                    return QStringList(objectName());
-            }
+        default:
+                break;
         }
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *liushan, QVariant &data, ServerPlayer *) const{
-        if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            switch (change.to) {
-            case Player::Play: {
-                if (liushan->askForSkillInvoke(objectName()))
-                    return true;
-                break;
-                }
-            case Player::NotActive: {
-                room->askForUseCard(liushan, "@@ikbaishen", "@ikbaishen-give", -1, Card::MethodDiscard);
-                break;
-                }
-            default:
-                    break;
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *liushan, QVariant &data, ServerPlayer *) const{
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        switch (change.to) {
+        case Player::Play: {
+            if (liushan->askForSkillInvoke(objectName()))
+                return true;
+            break;
             }
-        } else if (triggerEvent == EventPhaseStart)
-            return true;
+        case Player::NotActive: {
+            room->askForUseCard(liushan, "@@ikbaishen", "@ikbaishen-give", -1, Card::MethodDiscard);
+            break;
+            }
+        default:
+                break;
+        }
         return false;
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *liushan, QVariant &, ServerPlayer *) const{
-        if (triggerEvent == EventPhaseChanging) {
-            liushan->setFlags(objectName());
-            liushan->skip(Player::Play, true);
-        } else if (triggerEvent == EventPhaseStart) {
-            ServerPlayer *target = room->getTag("IkBaishenTarget").value<ServerPlayer *>();
-            room->removeTag("IkBaishenTarget");
-            target->gainAnExtraTurn();
-        }
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *liushan, QVariant &, ServerPlayer *) const{
+        liushan->setFlags(objectName());
+        liushan->skip(Player::Play, true);
         return false;
     }
 };
