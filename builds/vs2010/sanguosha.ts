@@ -189,17 +189,17 @@
         <translation>选择人物</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="185"/>
+        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="187"/>
         <source>Your role is %1</source>
         <translation>你的身份是 %1</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="186"/>
+        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="188"/>
         <source>The lord has chosen %1. Your seat is %2. %3</source>
         <translation>主公选择了 %1，你处于 %2号位，%3</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="212"/>
+        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="214"/>
         <source>Free choose ...</source>
         <translation>自由选将 ...</translation>
     </message>
@@ -1358,7 +1358,7 @@
         <translation>重复技能: %1</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="738"/>
+        <location filename="../../src/core/engine.cpp" line="740"/>
         <source>%1 [Scenario mode]</source>
         <translation>%1 【剧情模式】</translation>
     </message>
@@ -1366,17 +1366,17 @@
 <context>
     <name>FreeChooseDialog</name>
     <message>
-        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="249"/>
+        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="251"/>
         <source>Free choose generals</source>
         <translation>自由选择人物</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="278"/>
+        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="280"/>
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="281"/>
+        <location filename="../../src/dialog/choosegeneraldialog.cpp" line="283"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
