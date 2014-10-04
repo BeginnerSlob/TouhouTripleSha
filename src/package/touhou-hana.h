@@ -54,15 +54,19 @@ class ThMimengDialog: public QDialog {
     Q_OBJECT
 
 public:
-    static ThMimengDialog *getInstance(const QString &object, bool left = true, bool right = true);
+    static ThMimengDialog *getInstance(const QString &object, bool left = true, bool right = true,
+                                       bool play_only = true, bool slash_combined = false, bool delayed_tricks = false);
 
 public slots:
     void popup();
     void selectCard(QAbstractButton *button);
 
-private:
-    explicit ThMimengDialog(const QString &object, bool left = true, bool right = true);
+protected:
+    explicit ThMimengDialog(const QString &object, bool left = true, bool right = true,
+                            bool play_only = true, bool slash_combined = false, bool delayed_tricks = false);
+    virtual bool isButtonEnabled(const QString &button_name) const;
 
+private:
     QGroupBox *createLeft();
     QGroupBox *createRight();
     QAbstractButton *createButton(const Card *card);
@@ -70,6 +74,9 @@ private:
     QHash<QString, const Card *> map;
 
     QString object_name;
+    bool play_only; // whether the dialog will pop only during the Play phase
+    bool slash_combined; // create one 'Slash' button instead of 'Slash', 'Fire Slash', 'Thunder Slash'
+    bool delayed_tricks; // whether buttons of Delayed Tricks will be created
 
 signals:
     void onButtonClick();

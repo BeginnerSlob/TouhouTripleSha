@@ -3750,10 +3750,11 @@ public:
         judge.good = true;
         judge.play_animation = false;
         judge.reason = objectName();
+        judge.pattern = ".";
         judge.who = player;
 
         room->judge(judge);
-        room->setPlayerMark(player, "ikqiyu", judge.pattern.toInt());
+        room->setPlayerMark(player, "ikqiyu", judge.pattern == "red" ? 1 : 2);
 
         return true;
     }
@@ -3770,7 +3771,7 @@ public:
         if (player != NULL){
             JudgeStruct *judge = data.value<JudgeStruct *>();
             if (judge->reason == "ikqiyu") {
-                judge->pattern = QString::number(judge->card->isRed() ? 1 : 2);
+                judge->pattern = (judge->card->isRed() ? "red" : "black");
                 if (room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge)
                     return QStringList(objectName());
             }

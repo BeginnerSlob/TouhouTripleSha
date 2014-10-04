@@ -120,6 +120,26 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
                     delete fire_slash;
                 }
             }
+            if (use.card->objectName() == "slash" && player->hasSkill("ikhuangzhen")) {
+                ThunderSlash *thunder_slash = new ThunderSlash(getSuit(), getNumber());
+                if (!isVirtualCard() || subcardsLength() > 0)
+                    thunder_slash->addSubcard(this);
+                thunder_slash->setSkillName("ikhuangzhen");
+                bool can_use = true;
+                foreach (ServerPlayer *p, use.to) {
+                    if (!player->canSlash(p, thunder_slash, false)) {
+                        can_use = false;
+                        break;
+                    }
+                }
+                if (can_use && room->askForSkillInvoke(player, "ikhuangzhen", data)) {
+                    if (has_changed)
+                        thunder_slash->setSkillName(getSkillName(false));
+                    use.card = thunder_slash;
+                } else {
+                    delete thunder_slash;
+                }
+            }
             if (use.card->objectName() == "slash" && player->hasWeapon("fan")) {
                 FireSlash *fire_slash = new FireSlash(getSuit(), getNumber());
                 if (!isVirtualCard() || subcardsLength() > 0)
@@ -1391,13 +1411,14 @@ bool LureTiger::targetFilter(const QList<const Player *> &targets, const Player 
 
 void LureTiger::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     QStringList nullified_list = room->getTag("CardUseNullifiedList").toStringList();
+    bool all_nullified = nullified_list.contains("_ALL_TARGETS");
     foreach (ServerPlayer *target, targets) {
         CardEffectStruct effect;
         effect.card = this;
         effect.from = source;
         effect.to = target;
         effect.multiple = (targets.length() > 1);
-        effect.nullified = (nullified_list.contains(target->objectName()));
+        effect.nullified = (all_nullified || nullified_list.contains(target->objectName()));
 
         room->cardEffect(effect);
     }
@@ -1722,13 +1743,14 @@ bool KnownBoth::targetFilter(const QList<const Player *> &targets, const Player 
 
 void KnownBoth::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     QStringList nullified_list = room->getTag("CardUseNullifiedList").toStringList();
+    bool all_nullified = nullified_list.contains("_ALL_TARGETS");
     foreach (ServerPlayer *target, targets) {
         CardEffectStruct effect;
         effect.card = this;
         effect.from = source;
         effect.to = target;
         effect.multiple = (targets.length() > 1);
-        effect.nullified = (nullified_list.contains(target->objectName()));
+        effect.nullified = (all_nullified || nullified_list.contains(target->objectName()));
 
         room->cardEffect(effect);
     }

@@ -571,12 +571,10 @@ void Room::detachSkillFromPlayer(ServerPlayer *player, const QString &skill_name
             log.arg = skill_name;
             sendLog(log);
         }
-    }
 
-    QVariant data = skill_name;
-    thread->trigger(EventLoseSkill, this, player, data);
+        QVariant data = skill_name;
+        thread->trigger(EventLoseSkill, this, player, data);
 
-    if (skill && skill->isVisible()) {
         foreach (const Skill *skill, Sanguosha->getRelatedSkills(skill_name)) {
             if (skill->isVisible())
                 detachSkillFromPlayer(player, skill->objectName());
@@ -4211,14 +4209,14 @@ void Room::acquireSkill(ServerPlayer *player, const Skill *skill, bool open) {
             doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
         }
 
+        QVariant data = skill_name;
+        thread->trigger(EventAcquireSkill, this, player, data);
+
         foreach (const Skill *related_skill, Sanguosha->getRelatedSkills(skill_name)) {
             if (!related_skill->isVisible())
                 acquireSkill(player, related_skill);
         }
     }
-
-    QVariant data = skill_name;
-    thread->trigger(EventAcquireSkill, this, player, data);
 }
 
 void Room::acquireSkill(ServerPlayer *player, const QString &skill_name, bool open) {

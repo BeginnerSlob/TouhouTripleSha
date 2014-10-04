@@ -2900,8 +2900,9 @@ public:
                 foreach (QVariant sunluyu, sunluyus) {
                     ServerPlayer *s = sunluyu.value<ServerPlayer *>();
                     room->removeAttackRangePair(player, s);
-                    room->detachSkillFromPlayer(player, "#iklinbu", false, true);
                 }
+                room->detachSkillFromPlayer(player, "#iklinbu", false, true);
+                room->filterCards(player, player->getCards("he"), true);
             }
             return skill_list;
         }
@@ -2924,8 +2925,10 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *owner) const{
-        if (!player->hasSkill("#iklinbu", true))
+        if (!player->hasSkill("#iklinbu", true)) {
             room->acquireSkill(player, "#iklinbu", false);
+            room->filterCards(player, player->getCards("he"), false);
+        }
         QVariantList sunluyus = player->tag[objectName()].toList();
         sunluyus << QVariant::fromValue(owner);
         player->tag[objectName()] = QVariant::fromValue(sunluyus);
@@ -4308,10 +4311,9 @@ public:
         if (triggerEvent == FinishJudge) {
             JudgeStruct *judge = data.value<JudgeStruct *>();
             if (judge->reason == objectName()) {
-                if (judge->card->isBlack())
-                    judge->pattern = QString::number(1);
-                else if (judge->card->isRed())
-                    judge->pattern = QString::number(2);
+                judge->pattern = (judge->card->isRed() ? "red" : "black");
+                if (room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge && judge->card->isRed())
+                    player->obtainCard(judge->card);
             }
             return skill_list;
         }
@@ -4335,25 +4337,22 @@ public:
         JudgeStruct judge;
         judge.who = player;
         judge.reason = objectName();
+        judge.pattern = ".";
+        judge.good = true;
         judge.play_animation = false;
         room->judge(judge);
 
         bool ok = false;
-        int num = judge.pattern.toInt(&ok);
-        if (ok) {
-            if (num == 1) {
-                DamageStruct damage = data.value<DamageStruct>();
-                LogMessage log;
-                log.type = "#IkLeimai";
-                log.from = owner;
-                log.to << player;
-                log.arg  = QString::number(damage.damage);
-                log.arg2 = QString::number(++damage.damage);
-                room->sendLog(log);
-                data = QVariant::fromValue(damage);
-            } else if (num == 2) {
-                player->obtainCard(judge.card);
-            }
+        if (judge.pattern == "black") {
+            DamageStruct damage = data.value<DamageStruct>();
+            LogMessage log;
+            log.type = "#IkLeimai";
+            log.from = owner;
+            log.to << player;
+            log.arg  = QString::number(damage.damage);
+            log.arg2 = QString::number(++damage.damage);
+            room->sendLog(log);
+            data = QVariant::fromValue(damage);
         }
         return false;
     }

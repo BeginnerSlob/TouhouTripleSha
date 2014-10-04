@@ -80,6 +80,7 @@ public:
     Replayer *getReplayer() const;
     QString getPlayerName(const QString &str);
     QString getSkillNameToInvoke() const;
+    QString getSkillNameToInvokeData() const;
 
     QTextDocument *getLinesDoc() const;
     QTextDocument *getPromptDoc() const;
@@ -239,6 +240,7 @@ private:
     QTextDocument *lines_doc, *prompt_doc;
     int pile_num;
     QString skill_to_invoke;
+    QString skill_to_invoke_data;
     QList<int> available_cards;
 
     unsigned int _m_lastServerSerial;
