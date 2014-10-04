@@ -461,7 +461,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
     case CardEffected: {
             if (data.canConvert<CardEffectStruct>()) {
                 CardEffectStruct effect = data.value<CardEffectStruct>();
-                if (effect.nullified) {
+                if (!effect.card->isKindOf("Slash") && effect.nullified) {
                     LogMessage log;
                     log.type = "#CardNullified";
                     log.from = effect.to;

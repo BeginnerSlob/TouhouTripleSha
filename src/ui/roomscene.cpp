@@ -75,6 +75,7 @@ RoomScene::RoomScene(QMainWindow *main_window)
     _m_commonLayout = &(G_ROOM_SKIN.getCommonLayout());
 
     m_skillButtonSank = false;
+    m_ShefuAskState = ShefuAskNecessary;
     ikguihuo_log = QString();
 
     // create photos
@@ -2171,6 +2172,13 @@ void RoomScene::useSelectedCard() {
     case Client::AskForSkillInvoke: {
             prompt_box->disappear();
             QString skill_name = ClientInstance->getSkillNameToInvoke();
+            if (skill_name == "shefu_cancel") {
+                QString data = ClientInstance->getSkillNameToInvokeData().split(":").last();
+                if (m_ShefuAskState == ShefuAskNone || (m_ShefuAskState == ShefuAskNecessary && Self->getMark("Shefu_" + data) == 0)) {
+                    ClientInstance->onPlayerInvokeSkill(false);
+                    return;
+                }
+            }
             dashboard->highlightEquip(skill_name, false);
             ClientInstance->onPlayerInvokeSkill(true);
             break;

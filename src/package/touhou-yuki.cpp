@@ -86,10 +86,8 @@ public:
         log.arg2 = use.card->objectName();
         room->sendLog(log);
 
-        if (!room->askForDiscard(player, objectName(), 1, 1, true, true, "@thjianmo")) {
-            foreach (ServerPlayer *p, room->getAllPlayers())
-                use.nullified_list << p->objectName();
-        }
+        if (!room->askForDiscard(player, objectName(), 1, 1, true, true, "@thjianmo"))
+            use.nullified_list << "_ALL_TARGETS";
         data = QVariant::fromValue(use);
 
         return false;
