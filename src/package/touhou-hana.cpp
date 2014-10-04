@@ -534,11 +534,19 @@ public:
 class ThJuedu: public TriggerSkill {
 public:
     ThJuedu():TriggerSkill("thjuedu") {
-        events << Death;
+        events << Death << GameStart;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        if (triggerEvent == GameStart) {
+            if (player == NULL) {
+                const TriggerSkill *benghuai = Sanguosha->getTriggerSkill("ikbenghuai");
+                if (benghuai)
+                    room->getThread()->addTriggerSkill(benghuai);
+            }
+            return QStringList();
+        }
         if (player && player->hasSkill(objectName())) {
             DeathStruct death = data.value<DeathStruct>();
             if (death.who != player)
@@ -547,7 +555,7 @@ public:
             ServerPlayer *killer = death.damage ? death.damage->from : NULL;
 
             if (killer)
-                if (killer != player && !killer->hasSkill("ikbenghuai"))
+                if (killer != player)
                     return QStringList(objectName());
         }
         return QStringList();
