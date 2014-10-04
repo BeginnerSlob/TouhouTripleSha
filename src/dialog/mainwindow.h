@@ -11,7 +11,6 @@
 #include <QCheckBox>
 #include <QSpinBox>
 #include <QNetworkReply>
-#include <QUrl>
 
 namespace Ui {
     class MainWindow;
@@ -67,7 +66,6 @@ private:
 
     Server *server;
     QNetworkReply *reply;
-    QUrl url;
 
     void restoreFromConfig();
 

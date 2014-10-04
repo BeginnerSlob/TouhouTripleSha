@@ -26,6 +26,7 @@
 #include <QLabel>
 #include <QProcess>
 #include <QSystemTrayIcon>
+#include <QUrl>
 
 class FitView: public QGraphicsView {
 public:
@@ -908,10 +909,8 @@ void MainWindow::on_actionAbout_GPLv3_triggered() {
 
 void MainWindow::checkUpdate()
 {
-    url = "http://ver.qsanguosha.org/UpdateInfoForTouhouTripleSha";
-
     static QNetworkAccessManager *qnam = new QNetworkAccessManager(this);
-    reply = qnam->get(QNetworkRequest(url));
+    reply = qnam->get(QNetworkRequest(QUrl("http://ver.qsanguosha.org/UpdateInfoForTouhouTripleSha")));
     connect(reply, SIGNAL(finished()), this, SLOT(httpFinished()));
 }
 
