@@ -787,9 +787,9 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         if (has_compulsory){
                             has_compulsory = false;
                             foreach (const TriggerSkill *s, trigger_who[p]){
-                                if (s->getFrequency() == Skill::Compulsory
-                                    || s->getFrequency() == Skill::NotCompulsory
-                                    || s->getFrequency() == Skill::Wake) {
+                                if (s && (s->getFrequency() == Skill::Compulsory
+                                          || s->getFrequency() == Skill::NotCompulsory
+                                          || s->getFrequency() == Skill::Wake)) {
                                     has_compulsory = true;
                                     break;
                                 }

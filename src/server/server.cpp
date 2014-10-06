@@ -187,7 +187,12 @@ QWidget *ServerDialog::createAdvancedTab() {
 
     enable_cheat_checkbox = new QCheckBox(tr("Enable cheat"));
     enable_cheat_checkbox->setToolTip(tr("This option enables the cheat menu"));
+#ifdef QT_RELEASE
+    enable_cheat_checkbox->setChecked(false);
+    enable_cheat_checkbox->setEnabled(false);
+#else
     enable_cheat_checkbox->setChecked(Config.EnableCheat);
+#endif
 
     free_choose_checkbox = new QCheckBox(tr("Choose generals and cards freely"));
     free_choose_checkbox->setChecked(Config.FreeChoose);
@@ -217,37 +222,45 @@ QWidget *ServerDialog::createAdvancedTab() {
     without_lordskill_checkbox->setChecked(Config.value("WithoutLordskill", false).toBool());
 
     sp_convert_checkbox = new QCheckBox(tr("Enable SP Convert"));
-    sp_convert_checkbox->setChecked(Config.value("EnableSPConvert", true).toBool());
-    // temp disabled
+#ifdef QT_RELEASE
     sp_convert_checkbox->setEnabled(false);
     sp_convert_checkbox->setChecked(false);
     sp_convert_checkbox->setToolTip(tr("Temp Disabled"));
+#else
+    sp_convert_checkbox->setChecked(Config.value("EnableSPConvert", true).toBool());
+#endif
 
     maxchoice_spinbox = new QSpinBox;
     maxchoice_spinbox->setRange(3, 21);
-    //maxchoice_spinbox->setValue(Config.value("MaxChoice", 7).toInt());
-    // temp disabled
+#ifdef QT_RELEASE
     maxchoice_spinbox->setValue(7);
     maxchoice_spinbox->setEnabled(false);
     maxchoice_spinbox->setToolTip(tr("Temp Disabled"));
+#else
+    maxchoice_spinbox->setValue(Config.value("MaxChoice", 7).toInt());
+#endif
 
     lord_maxchoice_label = new QLabel(tr("Upperlimit for lord"));
     lord_maxchoice_label->setToolTip(tr("-1 means that all lords are available"));
     lord_maxchoice_spinbox = new QSpinBox;
     lord_maxchoice_spinbox->setRange(-1, 15);
-    //lord_maxchoice_spinbox->setValue(Config.value("LordMaxChoice", -1).toInt());
-    // temp disabled
+#ifdef QT_RELEASE
     lord_maxchoice_spinbox->setValue(5);
     lord_maxchoice_spinbox->setEnabled(false);
     lord_maxchoice_spinbox->setToolTip(tr("Temp Disabled"));
+#else
+    lord_maxchoice_spinbox->setValue(Config.value("LordMaxChoice", -1).toInt());
+#endif
 
     nonlord_maxchoice_spinbox = new QSpinBox;
     nonlord_maxchoice_spinbox->setRange(0, 15);
-    //nonlord_maxchoice_spinbox->setValue(Config.value("NonLordMaxChoice", 4).toInt());
-    // temp disabled
+#ifdef QT_RELEASE
     nonlord_maxchoice_spinbox->setValue(4);
     nonlord_maxchoice_spinbox->setEnabled(false);
     nonlord_maxchoice_spinbox->setToolTip(tr("Temp Disabled"));
+#else
+    nonlord_maxchoice_spinbox->setValue(Config.value("NonLordMaxChoice", 4).toInt());
+#endif
 
     forbid_same_ip_checkbox = new QCheckBox(tr("Forbid same IP with multiple connection"));
     forbid_same_ip_checkbox->setChecked(Config.ForbidSIMC);
@@ -256,18 +269,22 @@ QWidget *ServerDialog::createAdvancedTab() {
     disable_chat_checkbox->setChecked(Config.DisableChat);
 
     second_general_checkbox = new QCheckBox(tr("Enable second general"));
-    second_general_checkbox->setChecked(Config.Enable2ndGeneral);
-    // temp disabled
+#ifdef QT_RELEASE
     second_general_checkbox->setEnabled(false);
     second_general_checkbox->setChecked(false);
     second_general_checkbox->setToolTip(tr("Temp Disabled"));
+#else
+    second_general_checkbox->setChecked(Config.Enable2ndGeneral);
+#endif
 
     same_checkbox = new QCheckBox(tr("Enable Same"));
-    same_checkbox->setChecked(Config.EnableSame);
-    // temp disabled
+#ifdef QT_RELEASE
     same_checkbox->setEnabled(false);
     same_checkbox->setChecked(false);
     same_checkbox->setToolTip(tr("Temp Disabled"));
+#else
+    same_checkbox->setChecked(Config.EnableSame);
+#endif
 
     max_hp_label = new QLabel(tr("Max HP scheme"));
     max_hp_scheme_ComboBox = new QComboBox;
@@ -291,23 +308,27 @@ QWidget *ServerDialog::createAdvancedTab() {
     connect(max_hp_scheme_ComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setMaxHpSchemeBox()));
 
     basara_checkbox = new QCheckBox(tr("Enable Basara"));
-    basara_checkbox->setChecked(Config.EnableBasara);
-    updateButtonEnablility(mode_group->checkedButton());
-    connect(mode_group, SIGNAL(buttonClicked(QAbstractButton *)), this, SLOT(updateButtonEnablility(QAbstractButton *)));
-    // temp disabled
+#ifdef QT_RELEASE
     basara_checkbox->setEnabled(false);
     basara_checkbox->setChecked(false);
     basara_checkbox->setToolTip(tr("Temp Disabled"));
+#else
+    basara_checkbox->setChecked(Config.EnableBasara);
+#endif
+    updateButtonEnablility(mode_group->checkedButton());
+    connect(mode_group, SIGNAL(buttonClicked(QAbstractButton *)), this, SLOT(updateButtonEnablility(QAbstractButton *)));
 
     hegemony_checkbox = new QCheckBox(tr("Enable Hegemony"));
-    hegemony_checkbox->setChecked(Config.EnableBasara && Config.EnableHegemony);
-    hegemony_checkbox->setEnabled(basara_checkbox->isChecked());
-    connect(basara_checkbox, SIGNAL(toggled(bool)), hegemony_checkbox, SLOT(setChecked(bool)));
-    connect(basara_checkbox, SIGNAL(toggled(bool)), hegemony_checkbox, SLOT(setEnabled(bool)));
-    // temp disabled
+#ifdef QT_RELEASE
     hegemony_checkbox->setEnabled(false);
     hegemony_checkbox->setChecked(false);
     hegemony_checkbox->setToolTip(tr("Temp Disabled"));
+#else
+    hegemony_checkbox->setChecked(Config.EnableBasara && Config.EnableHegemony);
+    hegemony_checkbox->setEnabled(basara_checkbox->isChecked());
+#endif
+    connect(basara_checkbox, SIGNAL(toggled(bool)), hegemony_checkbox, SLOT(setChecked(bool)));
+    connect(basara_checkbox, SIGNAL(toggled(bool)), hegemony_checkbox, SLOT(setEnabled(bool)));
 
     hegemony_maxchoice_label = new QLabel(tr("Upperlimit for hegemony"));
     hegemony_maxchoice_spinbox = new QSpinBox;
@@ -464,8 +485,9 @@ void ServerDialog::updateButtonEnablility(QAbstractButton *button) {
         basara_checkbox->setChecked(false);
         basara_checkbox->setEnabled(false);
     } else {
-        // temp disabled
-        //basara_checkbox->setEnabled(true);
+#ifdef QT_DEBUG
+        basara_checkbox->setEnabled(true);
+#endif
     }
 
     if (button->objectName().contains("mini")) {
@@ -473,8 +495,9 @@ void ServerDialog::updateButtonEnablility(QAbstractButton *button) {
         second_general_checkbox->setChecked(false);
         second_general_checkbox->setEnabled(false);
     } else {
-        // temp disabled
-        //second_general_checkbox->setEnabled(true);
+#ifdef QT_DEBUG
+        second_general_checkbox->setEnabled(true);
+#endif
         mini_scene_button->setEnabled(false);
     }
 }
@@ -819,17 +842,19 @@ QGroupBox *ServerDialog::createGameModeBox() {
 
             item_list << button << box;
         } else if (itor.key() == "06_3v3") {
-            // temp disabled
+#ifdef QT_RELEASE
             button->setEnabled(false);
             button->setToolTip(tr("Temp Disabled"));
+#endif
             QGroupBox *box = create3v3Box();
             connect(button, SIGNAL(toggled(bool)), box, SLOT(setEnabled(bool)));
 
             item_list << button << box;
         } else if (itor.key() == "06_XMode") {
-            // temp disabled
+#ifdef QT_RELEASE
             button->setEnabled(false);
             button->setToolTip(tr("Temp Disabled"));
+#endif
             QGroupBox *box = createXModeBox();
             connect(button, SIGNAL(toggled(bool)), box, SLOT(setEnabled(bool)));
 
@@ -845,8 +870,9 @@ QGroupBox *ServerDialog::createGameModeBox() {
     // add scenario modes
     QRadioButton *scenario_button = new QRadioButton(tr("Scenario mode"));
     scenario_button->setObjectName("scenario");
-    // temp disabled
+#ifdef QT_RELEASE
     scenario_button->setEnabled(false);
+#endif
     mode_group->addButton(scenario_button);
 
     scenario_ComboBox = new QComboBox;

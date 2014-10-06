@@ -4342,7 +4342,6 @@ public:
         judge.play_animation = false;
         room->judge(judge);
 
-        bool ok = false;
         if (judge.pattern == "black") {
             DamageStruct damage = data.value<DamageStruct>();
             LogMessage log;
