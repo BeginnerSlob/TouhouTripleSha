@@ -1456,7 +1456,7 @@ public:
         if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
             && ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_USE)) {
             const Card *card = move.reason.m_extraData.value<const Card *>();
-            if (card->isKindOf("BasicCard"))
+            if (card && card->getTypeId() == Card::TypeBasic)
                 return QStringList(objectName());
         }
         return QStringList();

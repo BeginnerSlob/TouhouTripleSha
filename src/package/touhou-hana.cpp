@@ -893,7 +893,7 @@ QGroupBox *ThMimengDialog::createRight() {
     QStringList ban_list;
     if (object_name == "thmimeng")
         ban_list << "ExNihilo" << "AmazingGrace" << "Snatch" << "GodSalvation" << "ArcheryAttack"
-                 << "Drowning" << "BurningCamps" << "LureTiger";
+                 << "Drowning" << "BurningCamps" << "LureTiger" << "KnownBoth";
     if (object_name == "ikmice")
         ban_list << "Drowning";
     QList<const Card *> cards = Sanguosha->findChildren<const Card *>();

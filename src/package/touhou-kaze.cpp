@@ -1593,7 +1593,9 @@ public:
                 const Card *card = Sanguosha->getCard(card_id);
                 Card::Suit suit = card->getSuit();
 
-                room->takeAG(player, card_id, false);
+                QList<ServerPlayer *> _player;
+                _player << player;
+                room->takeAG(player, card_id, false, _player);
 
                 QList<int> _card_ids = card_ids;
                 foreach (int id, _card_ids) {
@@ -1604,7 +1606,7 @@ public:
                     }
                 }
             }
-            room->clearAG();
+            room->clearAG(player);
             DummyCard *dummy = new DummyCard(to_throw);
             CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
             room->throwCard(dummy, reason, NULL);

@@ -83,7 +83,12 @@ void Settings::init() {
     BanPackages = value("BanPackages").toStringList();
 
     RandomSeat = value("RandomSeat", true).toBool();
+#ifdef QT_RELEASE
+    EnableCheat = false;
+#else
     EnableCheat = value("EnableCheat", false).toBool();
+#endif
+
     FreeChoose = EnableCheat && value("FreeChoose", false).toBool();
     ForbidSIMC = value("ForbidSIMC", false).toBool();
     DisableChat = value("DisableChat", false).toBool();
