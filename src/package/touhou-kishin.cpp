@@ -242,7 +242,9 @@ public:
 
     virtual bool triggerable(const ServerPlayer *player) const{
         if (player->getPhase() == Player::PhaseNone) {
-            player->getRoom()->findPlayer(player->objectName())->setFlags("-thzongni");
+            ServerPlayer *splayer = player->getRoom()->findPlayer(player->objectName());
+            if (splayer)
+                splayer->setFlags("-thzongni");
             return false;
         }
         return player->hasFlag("thzongni");
