@@ -1736,9 +1736,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
-        if (ask_who->isWounded()) {
+        if (ask_who->isWounded())
             room->recover(ask_who, RecoverStruct(ask_who));
-        }
         if (ask_who->canDiscard(player, "h")) {
             int card_id = room->askForCardChosen(ask_who, player, "h", objectName(), false, Card::MethodDiscard);
             room->throwCard(card_id, player, ask_who);
