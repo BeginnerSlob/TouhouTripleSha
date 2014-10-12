@@ -4970,12 +4970,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         CardUseStruct use = data.value<CardUseStruct>();
-        QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-            if (p != use.from)
-                targets << p;
-        }
-        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "ikmeihun-invoke", true, true);
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "ikmeihun-invoke", true, true);
         if (target) {
             room->broadcastSkillInvoke(objectName());
             player->tag["IkMeihunTarget"] = QVariant::fromValue(target);
@@ -4992,7 +4987,6 @@ public:
             const Card *card = NULL;
             if (!target->isKongcheng())
                 card = room->askForCard(target, "Jink", "@ikmeihun-give:" + player->objectName(), data, Card::MethodNone);
-            CardMoveReason reason(CardMoveReason::S_REASON_GIVE, target->objectName(), player->objectName(), objectName(), QString());
             if (!card) {
                 if (use.from->canSlash(target, use.card, false)) {
                     LogMessage log;
@@ -5009,6 +5003,7 @@ public:
                     room->getThread()->trigger(TargetConfirming, room, target, data);
                 }
             } else {
+                CardMoveReason reason(CardMoveReason::S_REASON_GIVE, target->objectName(), player->objectName(), objectName(), QString());
                 room->obtainCard(player, card, reason);
             }
         }
