@@ -1301,7 +1301,7 @@ public:
             return QStringList();
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.card->getTypeId() != Card::TypeSkill && player->getPhase() == Player::Play) {
-            int n = player->getMark("ikxunfeng_count");
+            int n = use.card->tag["ikxunfeng_count"].toInt();
             if (n == 1)
                 return QStringList(objectName());
             else if (n == 2 && player->hasFlag("IkXunfengUsed"))
@@ -1310,8 +1310,9 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        int n = player->getMark("ikxunfeng_count");
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        int n = use.card->tag["ikxunfeng_count"].toInt();
         if (n == 2) {
             room->sendCompulsoryTriggerLog(player, objectName());
             room->broadcastSkillInvoke(objectName());
@@ -1323,8 +1324,9 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        int n = player->getMark("ikxunfeng_count");
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        int n = use.card->tag["ikxunfeng_count"].toInt();
         if (n == 2)
             room->askForDiscard(player, objectName(), 1, 1, false, true);
         else if (n == 1) {
@@ -1338,7 +1340,7 @@ public:
 class IkXunfengRecord: public TriggerSkill {
 public:
     IkXunfengRecord(): TriggerSkill("#ikxunfeng-record") {
-        events << CardFinished << EventPhaseChanging;
+        events << PreCardUsed << EventPhaseChanging;
         frequency = Compulsory;
         global = true;
     }
@@ -1356,8 +1358,10 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         player->addMark("ikxunfeng_count");
+        CardUseStruct use = data.value<CardUseStruct>();
+        use.card->setTag("ikxunfeng_count", player->getMark("ikxunfeng_count"));
         return false;
     }
 };
@@ -1372,7 +1376,7 @@ public:
         QMap<ServerPlayer *, QStringList> skill_list;
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.card->getTypeId() != Card::TypeSkill && player->getPhase() == Player::Play) {
-            int n = player->getMark("ikluhua_count");
+            int n = use.card->tag["ikluhua_count"].toInt();
             if (n == 3) {
                 foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
                     if (player == p) continue;
@@ -1388,8 +1392,9 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
-        int n = player->getMark("ikluhua_count");
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        int n = use.card->tag["ikluhua_count"].toInt();
         if (n == 4) {
             room->sendCompulsoryTriggerLog(ask_who, objectName());
             room->broadcastSkillInvoke(objectName());
@@ -1401,8 +1406,9 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
-        int n = player->getMark("ikluhua_count");
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        int n = use.card->tag["ikluhua_count"].toInt();
         if (n == 4)
             ask_who->drawCards(1, objectName());
         else if (n == 3) {
@@ -1416,7 +1422,7 @@ public:
 class IkLuhuaRecord: public TriggerSkill {
 public:
     IkLuhuaRecord(): TriggerSkill("#ikluhua-record") {
-        events << CardFinished << EventPhaseChanging;
+        events << PreCardUsed << EventPhaseChanging;
         frequency = Compulsory;
         global = true;
     }
@@ -1436,8 +1442,10 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         player->addMark("ikluhua_count");
+        CardUseStruct use = data.value<CardUseStruct>();
+        use.card->setTag("ikluhua_count", player->getMark("ikluhua_count"));
         return false;
     }
 };
