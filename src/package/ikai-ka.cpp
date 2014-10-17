@@ -2498,7 +2498,7 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
             if (owner == player) continue;
-            if (owner->getHandcardNum() <= owner->getHandcardNum() && owner->getHandcardNum() % 2 == 0)
+            if (player->getHandcardNum() <= owner->getHandcardNum() && owner->getHandcardNum() % 2 == 0)
                 skill_list.insert(owner, QStringList(objectName()));
         }
         return skill_list;

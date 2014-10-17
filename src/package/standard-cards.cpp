@@ -1730,7 +1730,6 @@ KnownBoth::KnownBoth(Card::Suit suit, int number)
     : SingleTargetTrick(suit, number)
 {
     setObjectName("known_both");
-    can_recast = true;
 }
 
 bool KnownBoth::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
