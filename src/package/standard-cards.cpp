@@ -1301,7 +1301,10 @@ public:
 
     virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const{
         if (to->hasArmorEffect(objectName()))
-            return card->isKindOf("FireAttack") || card->isKindOf("FireSlash") || card->isKindOf("BurningCamps");
+            return card->isKindOf("FireAttack")
+                || card->isKindOf("BurningCamps")
+                || card->isKindOf("IronChain")
+                || (card->isKindOf("Slash") && card->isRed());
         return false;
     }
 };
@@ -1523,6 +1526,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         room->throwCard(player->getArmor(), player);
+        player->drawCards(1, objectName());
         DamageStruct damage = data.value<DamageStruct>();
         LogMessage log;
         log.type = "#Breastplate";
