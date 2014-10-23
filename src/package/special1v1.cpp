@@ -436,7 +436,7 @@ public:
                     QString choice = room->askForChoice(sunshangxiang, objectName(), choicelist.join("+"));
                     if (choice == "cancel")
                         return false;
-                    room->broadcastSkillInvoke("ikcangmeng");
+                    room->broadcastSkillInvoke("ikcangyou");
                     room->notifySkillInvoked(sunshangxiang, objectName());
 
                     LogMessage log;

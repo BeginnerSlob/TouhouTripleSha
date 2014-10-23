@@ -381,11 +381,11 @@ extern ClientPlayer *Self;
 class CardMoveReason {
 public:
     int m_reason;
-    QString m_playerId; // the cause (not the source) of the movement, such as "lusu" when "ikdimeng", or "zhanghe" when "ikmancai"
+    QString m_playerId; // the cause (not the source) of the movement, such as "lusu" when "ikyijing", or "zhanghe" when "ikmancai"
     QString m_targetId; // To keep this structure lightweight, currently this is only used for UI purpose.
                         // It will be set to empty if multiple targets are involved. NEVER use it for trigger condition
                         // judgement!!! It will not accurately reflect the real reason.
-    QString m_skillName; // skill that triggers movement of the cards, such as "ikhuahuan", "ikdimeng"
+    QString m_skillName; // skill that triggers movement of the cards, such as "ikhuahuan", "ikyijing"
     QString m_eventName; // additional arg such as "lebusishu" on top of "S_REASON_JUDGE"
     QVariant m_extraData; // additional data and will not be parsed to clients
 
@@ -670,7 +670,7 @@ enum TriggerEvent {
     ConfirmDamage,    // confirm the damage's count and damage's nature
     Predamage,        // trigger the certain skill -- ikxuwu
     DamageForseen,    // the first event in a damage -- ikliefeng dawu
-    DamageCaused,     // the moment for -- ikqiansha..
+    DamageCaused,     // the moment for -- ikmoguang..
     DamageInflicted,  // the moment for -- ikzhihui..
     PreDamageDone,    // before reducing Hp
     DamageDone,       // it's time to do the damage

@@ -1099,8 +1099,8 @@ public:
         int card2 = room->drawCard();
         QList<int> ids;
         ids << card1 << card2;
-        bool heart = Sanguosha->getCard(card1)->getSuit() == Card::Heart
-                  && Sanguosha->getCard(card2)->getSuit() == Card::Heart;
+        bool red = Sanguosha->getCard(card1)->isRed()
+                   && Sanguosha->getCard(card2)->isRed();
 
         CardsMoveStruct move;
         move.card_ids = ids;
@@ -1113,7 +1113,7 @@ public:
         room->obtainCard(player, dummy);
         delete dummy;
 
-        if (heart) {
+        if (red) {
             QList<ServerPlayer *> targets;
             foreach(ServerPlayer *p, room->getAllPlayers())
                 if (p->isWounded())

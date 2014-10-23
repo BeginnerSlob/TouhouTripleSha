@@ -163,17 +163,21 @@ public:
                 }
 
         if (!targets.isEmpty()) {
-            ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
-            QList<int> disabled_ids;
-            foreach (const Card *card, target->getCards("ej"))
-                if (card->getSuit() == suit)
-                    disabled_ids << card->getEffectiveId();
+            ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "thjilanwen-choose", true);
+            if (target) {
+                QList<int> disabled_ids;
+                foreach (const Card *card, target->getCards("ej"))
+                    if (card->getSuit() == suit)
+                        disabled_ids << card->getEffectiveId();
 
-            int card_id = room->askForCardChosen(player, target, "ej", objectName(), false, Card::MethodNone, disabled_ids);
+                int card_id = room->askForCardChosen(player, target, "ej", objectName(), false, Card::MethodNone, disabled_ids);
 
-            if (card_id != -1)
-                room->obtainCard(player, card_id);
-        }
+                if (card_id != -1)
+                    room->obtainCard(player, card_id);
+            } else
+                player->drawCards(1, objectName());
+        } else
+            player->drawCards(1, objectName());
 
         return true;
     }
@@ -217,9 +221,11 @@ void ThNiankeCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     room->obtainCard(target, this, reason);
     int card_id = room->askForCardChosen(source, target, "h", "thnianke");
     room->showCard(target, card_id);
-    if (Sanguosha->getCard(card_id)->isKindOf("Jink")) {
-       source->drawCards(1);
-       target->drawCards(1);
+    if (Sanguosha->getCard(card_id)->isRed()) {
+        QList<ServerPlayer *> players;
+        players << source << target;
+        room->sortByActionOrder(players);
+        room->drawCards(players, 1, "thnianke");
     }
 }
 
@@ -2058,6 +2064,10 @@ public:
         ThSangzhiCard *card = new ThSangzhiCard;
         card->addSubcard(originalCard);
         return card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const {
+        return !player->hasUsed("ThSangzhiCard");
     }
 };
 

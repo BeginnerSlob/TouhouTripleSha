@@ -8,6 +8,19 @@
 #include "maneuvering.h"
 
 IkShenaiCard::IkShenaiCard() {
+    target_fixed = true;
+    handling_method = Card::MethodNone;
+}
+
+void IkShenaiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    QList<int> handCards = source->handCards();
+    if (room->askForRende(source, handCards, "ikshenai", false, true, -1, QList<ServerPlayer *>(),
+                          CardMoveReason(), "@ikshenai", false) >= 2) {
+        room->recover(source, RecoverStruct(source));
+    }
+}
+/*
+IkShenaiCard::IkShenaiCard() {
     will_throw = false;
     handling_method = Card::MethodNone;
 }
@@ -38,7 +51,7 @@ void IkShenaiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     if (num >= 2)
         room->recover(source, RecoverStruct(source));
 }
-
+*/
 class IkShenai: public ViewAsSkill {
 public:
     IkShenai(): ViewAsSkill("ikshenai") {
@@ -2140,30 +2153,30 @@ public:
     }
 };
 
-IkCuiluCard::IkCuiluCard() {
+IkHuanluCard::IkHuanluCard() {
 }
 
-bool IkCuiluCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkHuanluCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     if (!targets.isEmpty())
         return false;
 
     return to_select->isMale() && to_select->isWounded() && to_select != Self;
 }
 
-void IkCuiluCard::onEffect(const CardEffectStruct &effect) const{
+void IkHuanluCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
     RecoverStruct recover(effect.from);
     room->recover(effect.from, recover, true);
     room->recover(effect.to, recover, true);
 }
 
-class IkCuilu: public ViewAsSkill {
+class IkHuanlu: public ViewAsSkill {
 public:
-    IkCuilu(): ViewAsSkill("ikcuilu") {
+    IkHuanlu(): ViewAsSkill("ikhuanlu") {
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getHandcardNum() >= 2 && !player->hasUsed("IkCuiluCard");
+        return player->getHandcardNum() >= 2 && !player->hasUsed("IkHuanluCard");
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
@@ -2177,15 +2190,15 @@ public:
         if (cards.length() != 2)
             return NULL;
 
-        IkCuiluCard *cuilu_card = new IkCuiluCard();
+        IkHuanluCard *cuilu_card = new IkHuanluCard();
         cuilu_card->addSubcards(cards);
         return cuilu_card;
     }
 };
 
-class IkCangmeng: public TriggerSkill {
+class IkCangyou: public TriggerSkill {
 public:
-    IkCangmeng(): TriggerSkill("ikcangmeng") {
+    IkCangyou(): TriggerSkill("ikcangyou") {
         events << CardsMoveOneTime;
         frequency = Frequent;
     }
@@ -2994,8 +3007,8 @@ IkaiDoPackage::IkaiDoPackage()
     snow007->addSkill(new IkYuanhe);
 
     General *snow008 = new General(this, "snow008", "yuki", 3, false);
-    snow008->addSkill(new IkCuilu);
-    snow008->addSkill(new IkCangmeng);
+    snow008->addSkill(new IkHuanlu);
+    snow008->addSkill(new IkCangyou);
 
     General *snow042 = new General(this, "snow042", "yuki");
     snow042->addSkill(new IkZiqiang);
@@ -3046,7 +3059,7 @@ IkaiDoPackage::IkaiDoPackage()
     addMetaObject<IkWanmeiCard>();
     addMetaObject<IkXuanhuoCard>();
     addMetaObject<IkYuanheCard>();
-    addMetaObject<IkCuiluCard>();
+    addMetaObject<IkHuanluCard>();
     addMetaObject<IkZiqiangCard>();
     addMetaObject<IkWudiCard>();
     addMetaObject<IkQingguoCard>();

@@ -2045,34 +2045,54 @@ public:
     }
 };
 
-ThLingdieCard::ThLingdieCard(){
+ThLingdieCard::ThLingdieCard() {
+    will_throw = false;
 }
 
-bool ThLingdieCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const {
-    return targets.isEmpty();
+bool ThLingdieCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const {
+    return targets.isEmpty() && (subcards.isEmpty() == (to_select == Self));
 }
 
-void ThLingdieCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const{
+void ThLingdieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *target = targets.first();
-    ServerPlayer *victim = room->askForPlayerChosen(target, room->getOtherPlayers(target), "thlingdie", QString(), true);
-    if (victim)
+    if (target != source) {
+        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), QString());
+        room->obtainCard(target, this, reason, false);
+    }
+    ServerPlayer *victim = room->askForPlayerChosen(target, room->getOtherPlayers(target), "thlingdie");
+    if (victim) {
         room->showAllCards(victim, target);
+        LogMessage log;
+        log.type = "$IkLingtongView";
+        log.from = target;
+        log.to << victim;
+        log.arg = "iklingtong:handcards";
+        room->sendLog(log, room->getOtherPlayers(target));
+    }
 }
 
-class ThLingdie: public OneCardViewAsSkill {
+class ThLingdie: public ViewAsSkill {
 public:
-    ThLingdie(): OneCardViewAsSkill("thlingdie") {
-        filter_pattern = ".!";
+    ThLingdie(): ViewAsSkill("thlingdie") {
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
         return !player->hasUsed("ThLingdieCard");
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const{
-        ThLingdieCard *card = new ThLingdieCard;
-        card->addSubcard(originalCard->getId());
-        return card;
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        return selected.isEmpty() && !to_select->isEquipped();
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.isEmpty())
+            return new ThLingdieCard;
+        else if (cards.length() == 1) {
+            ThLingdieCard *card = new ThLingdieCard;
+            card->addSubcards(cards);
+            return card;
+        } else
+            return NULL;
     }
 };
 

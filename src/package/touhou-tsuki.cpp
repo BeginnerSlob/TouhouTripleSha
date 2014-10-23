@@ -1090,7 +1090,6 @@ public:
 class ThAnyue: public FilterSkill{
 public:
     ThAnyue():FilterSkill("thanyue"){
-
     }
 
     static WrappedCard *changeToSpade(int cardId){
@@ -1102,6 +1101,10 @@ public:
     }
 
     virtual bool viewFilter(const Card *to_select) const{
+        Room *room = Sanguosha->currentRoom();
+        ServerPlayer *owner = room->getCardOwner(to_select->getEffectiveId());
+        if (owner && owner->hasSkill("ikchiqiu"))
+            return false;
         return to_select->getSuit() == Card::Heart;
     }
 
@@ -2317,7 +2320,7 @@ TouhouTsukiPackage::TouhouTsukiPackage()
     tsuki007->addSkill(new ThCunjing);
     tsuki007->addSkill(new ThLianhua);
 
-    General *tsuki008 = new General(this, "tsuki008", "tsuki", 3);
+    General *tsuki008 = new General(this, "tsuki008", "tsuki");
     tsuki008->addSkill(new ThQishu);
     tsuki008->addSkill(new ThShiting);
     tsuki008->addSkill(new ThHuanzai);

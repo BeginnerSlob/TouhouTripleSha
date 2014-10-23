@@ -165,7 +165,7 @@ HMomentumPackage::HMomentumPackage()
 
     General *heg_madai = new General(this, "heg_madai", "shu", 4, true, true); // SHU 019
     heg_madai->addSkill("thjibu");
-    heg_madai->addSkill("ikqiansha");
+    heg_madai->addSkill("ikmoguang");
 
     General *heg_sunce = new General(this, "heg_sunce$", "wu", 4); // WU 010 G
     heg_sunce->addSkill("ikheyi");
