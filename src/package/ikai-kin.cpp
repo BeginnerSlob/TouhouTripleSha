@@ -1066,9 +1066,9 @@ public:
     }
 };
 
-class IkQiansha: public TriggerSkill {
+class IkMoguang: public TriggerSkill {
 public:
-    IkQiansha(): TriggerSkill("ikqiansha") {
+    IkMoguang(): TriggerSkill("ikmoguang") {
         events << EventPhaseStart << FinishJudge;
     }
 
@@ -1115,12 +1115,12 @@ public:
         ServerPlayer *victim = room->askForPlayerChosen(target, to_choose, objectName());
         QString pattern = QString(".|%1|.|hand$0").arg(color);
 
-        room->setPlayerFlag(victim, "IkQianshaTarget");
-        room->addPlayerMark(victim, QString("@qiansha_%1").arg(color));
+        room->setPlayerFlag(victim, "IkMoguangTarget");
+        room->addPlayerMark(victim, QString("@moguang_%1").arg(color));
         room->setPlayerCardLimitation(victim, "use,response", pattern, false);
 
         LogMessage log;
-        log.type = "#IkQiansha";
+        log.type = "#IkMoguang";
         log.from = victim;
         log.arg = QString("no_suit_%1").arg(color);
         room->sendLog(log);
@@ -1129,14 +1129,14 @@ public:
     }
 };
 
-class IkQianshaClear: public TriggerSkill {
+class IkMoguangClear: public TriggerSkill {
 public:
-    IkQianshaClear(): TriggerSkill("#ikqiansha-clear") {
+    IkMoguangClear(): TriggerSkill("#ikmoguang-clear") {
         events << EventPhaseChanging << Death;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!player->tag["ikqiansha"].toString().isNull()) {
+        if (!player->tag["ikmoguang"].toString().isNull()) {
             if (triggerEvent == EventPhaseChanging) {
                 PhaseChangeStruct change = data.value<PhaseChangeStruct>();
                 if (change.to != Player::NotActive)
@@ -1147,11 +1147,11 @@ public:
                     return QStringList();
             }
 
-            QString color = player->tag["ikqiansha"].toString();
+            QString color = player->tag["ikmoguang"].toString();
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                if (p->hasFlag("IkQianshaTarget")) {
+                if (p->hasFlag("IkMoguangTarget")) {
                     room->removePlayerCardLimitation(p, "use,response", QString(".|%1|.|hand$0").arg(color));
-                    room->setPlayerMark(p, QString("@qiansha_%1").arg(color), 0);
+                    room->setPlayerMark(p, QString("@moguang_%1").arg(color), 0);
                 }
             }
         }
@@ -5467,9 +5467,9 @@ IkaiKinPackage::IkaiKinPackage()
 
     General *wind031 = new General(this, "wind031", "kaze");
     wind031->addSkill("thjibu");
-    wind031->addSkill(new IkQiansha);
-    wind031->addSkill(new IkQianshaClear);
-    related_skills.insertMulti("ikqiansha", "#ikqiansha-clear");
+    wind031->addSkill(new IkMoguang);
+    wind031->addSkill(new IkMoguangClear);
+    related_skills.insertMulti("ikmoguang", "#ikmoguang-clear");
 
     General *wind032 = new General(this, "wind032", "kaze");
     wind032->addSkill(new IkLichi);

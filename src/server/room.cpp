@@ -5376,6 +5376,145 @@ void Room::retrial(const Card *card, ServerPlayer *player, JudgeStruct *judge, c
     }
 }
 
+int Room::askForRende(ServerPlayer *liubei, QList<int> &cards, const QString &skill_name,
+                      bool visible, bool optional, int max_num,
+                      QList<ServerPlayer *> players, CardMoveReason reason, const QString &prompt,
+                      bool notify_skill) {
+    if (max_num == -1)
+        max_num = cards.length();
+    if (players.isEmpty())
+        players = getOtherPlayers(liubei);
+    if (cards.isEmpty() || max_num == 0)
+        return false;
+    if (reason.m_reason == CardMoveReason::S_REASON_UNKNOWN) {
+        reason.m_playerId = liubei->objectName();
+        reason.m_reason = CardMoveReason::S_REASON_GIVE;
+    }
+    tryPause();
+    notifyMoveFocus(liubei, S_COMMAND_SKILL_YIJI);
+
+    QMap<int, ServerPlayer *> give_map;
+    QList<int> remain_cards = cards;
+    int num = max_num;
+
+    while (!remain_cards.isEmpty() && num > 0){
+        QList<int> ids;
+        ServerPlayer *target = NULL;
+        AI *ai = liubei->getAI();
+        if (ai) {
+            setPlayerFlag(liubei, "Global_AIAskForRende");
+            int card_id;
+            ServerPlayer *who = ai->askForYiji(remain_cards, skill_name, card_id);
+            setPlayerFlag(liubei, "-Global_AIAskForRende");
+            if (!who)
+                break;
+            else {
+                target = who;
+                ids << card_id;
+            }
+        } else {
+            Json::Value arg(Json::arrayValue);
+            arg[0] = toJsonArray(remain_cards);
+            arg[1] = optional;
+            arg[2] = num;
+            QStringList player_names;
+            foreach (ServerPlayer *player, players)
+                player_names << player->objectName();
+            arg[3] = toJsonArray(player_names);
+            if (!prompt.isEmpty())
+                arg[4] = toJsonString(prompt);
+            bool success = doRequest(liubei, S_COMMAND_SKILL_YIJI, arg, true);
+
+            //Validate client response
+            Json::Value clientReply = liubei->getClientReply();
+            if (!success || !clientReply.isArray() || clientReply.size() != 2)
+                break;
+
+            if (!tryParse(clientReply[0], ids) || !clientReply[1].isString())
+                break;
+
+            bool foreach_flag = true;
+            foreach (int id, ids)
+                if (!remain_cards.contains(id)){
+                    foreach_flag = false;
+                    break;
+                }
+
+            if (!foreach_flag)
+                break;
+
+            ServerPlayer *who = findChild<ServerPlayer *>(toQString(clientReply[1]));
+            if (!who)
+                break;
+            else
+                target = who;
+        }
+
+        Q_ASSERT(target != NULL);
+
+        foreach (int id, ids){
+            remain_cards.removeOne(id);
+            give_map.insert(id, target);
+        }
+
+        num -= ids.length();
+    }
+
+    while(!optional && num > 0){
+        int id = remain_cards[qrand() % remain_cards.length()];
+        remain_cards.removeOne(id);
+        num --;
+        give_map.insert(id, players[qrand() % players.length()]);
+    }
+    
+    if (give_map.isEmpty())
+        return 0;
+
+    cards = remain_cards;
+
+    QStringList namelist;
+    foreach (ServerPlayer *p, give_map)
+        namelist << p->objectName();
+
+    QVariant decisionData = QString("Rende:%1:%2:%3:%4").arg(skill_name, 
+                                                             liubei->objectName(), 
+                                                             namelist.join("+"), 
+                                                             IntList2StringList(give_map.keys()).join("+"));
+    thread->trigger(ChoiceMade, this, liubei, decisionData);
+
+    if (notify_skill) {
+        LogMessage log;
+        log.type = "#InvokeSkill";
+        log.from = liubei;
+        log.arg = skill_name;
+        sendLog(log);
+
+        const Skill *skill = Sanguosha->getSkill(skill_name);
+        if (skill)
+            broadcastSkillInvoke(skill_name);
+        notifySkillInvoked(liubei, skill_name);
+    }
+
+    QMap<ServerPlayer *, QList<int> > rev_give_map;
+    foreach (int id, give_map.keys()){
+        rev_give_map[give_map[id]] << id;
+    }
+
+    QList<CardsMoveStruct> movelist;
+
+    foreach (ServerPlayer *p, rev_give_map.keys()){
+        QList<int> card_ids = rev_give_map[p];
+        CardsMoveStruct move(card_ids, p, Player::PlaceHand, reason);
+        movelist << move;
+    }
+
+    liubei->setFlags("Global_GongxinOperator");
+    moveCardsAtomic(movelist, visible);
+    liubei->setFlags("-Global_GongxinOperator");
+
+    return give_map.keys().length();
+}
+
 bool Room::askForYiji(ServerPlayer *guojia, QList<int> &cards, const QString &skill_name,
                       bool is_preview, bool visible, bool optional, int max_num,
                       QList<ServerPlayer *> players, CardMoveReason reason, const QString &prompt,

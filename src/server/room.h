@@ -335,6 +335,10 @@ public:
                                  bool distance_limit = true, bool disable_extra = false, bool addHistory = false);
     int askForAG(ServerPlayer *player, const QList<int> &card_ids, bool refusable, const QString &reason);
     const Card *askForCardShow(ServerPlayer *player, ServerPlayer *requestor, const QString &reason);
+    int askForRende(ServerPlayer *liubei, QList<int> &cards, const QString &skill_name = QString(),
+                    bool visible = false, bool optional = true, int max_num = -1,
+                    QList<ServerPlayer *> players = QList<ServerPlayer *>(), CardMoveReason reason = CardMoveReason(),
+                    const QString &prompt = QString(), bool notify_skill = false);
     bool askForYiji(ServerPlayer *guojia, QList<int> &cards, const QString &skill_name = QString(),
                     bool is_preview = false, bool visible = false, bool optional = true, int max_num = -1,
                     QList<ServerPlayer *> players = QList<ServerPlayer *>(), CardMoveReason reason = CardMoveReason(),

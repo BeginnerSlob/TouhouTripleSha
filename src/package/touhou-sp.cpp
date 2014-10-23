@@ -179,20 +179,17 @@ public:
         room->moveCardsAtomic(move, true);
         room->getThread()->delay();
 
-        bool next = true;
         const Card *card = Sanguosha->getCard(id);
         if (card->isKindOf("BasicCard")) {
             ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName());
             room->obtainCard(target, card);
-            if (card->isKindOf("Peach"))
-                next = false;
         } else {
             CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, player->objectName(), objectName(), QString());
             room->throwCard(card, reason, NULL);
-            next = false;
+            return false;
         }
 
-        if (next && player->askForSkillInvoke(objectName()))
+        if (player->askForSkillInvoke(objectName()))
             effect(NonTrigger, room, player, data, player);
         return false;
     }

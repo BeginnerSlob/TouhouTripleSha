@@ -579,7 +579,7 @@ public:
                 QList<int> all_ids = move.card_ids;
                 foreach (int id, move.card_ids) {
                     const Card *card = Sanguosha->getCard(id);
-                    if (card->isKindOf("TrickCard") || card->isKindOf("Peach")) continue;
+                    if (!card->isKindOf("Slash") && !card->isKindOf("Jink")) continue;
                     if (player->getMark("IkYanyuDiscard" + QString::number(card->getTypeId())) > 0) {
                         skill_list.insert(player, QStringList(objectName()));
                         break;
@@ -601,7 +601,7 @@ public:
 
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *xiahou) const{
         if (triggerEvent == EventPhaseStart) {
-            const Card *card = room->askForCard(xiahou, "..", "@ikyanyu-discard", QVariant(), objectName());
+            const Card *card = room->askForCard(xiahou, "Slash,Jink", "@ikyanyu-discard", QVariant(), objectName());
             if (card) {
                 room->broadcastSkillInvoke(objectName());
                 xiahou->addMark("IkYanyuDiscard" + QString::number(card->getTypeId()), 3);
@@ -618,7 +618,7 @@ public:
         QList<int> all_ids = move.card_ids;
         foreach (int id, move.card_ids) {
             const Card *card = Sanguosha->getCard(id);
-            if (card->isKindOf("TrickCard") || card->isKindOf("Peach")) {
+            if (!card->isKindOf("Slash") && !card->isKindOf("Jink")) {
                 disabled << id;
                 continue;
             }
@@ -1473,9 +1473,9 @@ public:
     }
 };
 
-class IkHongce: public TriggerSkill {
+class IkHongcai: public TriggerSkill {
 public:
-    IkHongce(): TriggerSkill("ikhongce") {
+    IkHongcai(): TriggerSkill("ikhongcai") {
         events << TargetSpecified;
     }
 
@@ -1642,9 +1642,9 @@ public:
     }
 };
 
-class IkHujie: public TriggerSkill {
+class IkBihua: public TriggerSkill {
 public:
-    IkHujie(): TriggerSkill("ikhujie") {
+    IkBihua(): TriggerSkill("ikbihua") {
         events << TargetConfirmed;
     }
 
@@ -1672,7 +1672,7 @@ public:
                 if (!player->isNude() && player != to) {
                     const Card *card = NULL;
                     if (player->getCardCount() > 1) {
-                        card = room->askForCard(player, "..!", "@ikhujie-give:" + to->objectName(), data, Card::MethodNone);
+                        card = room->askForCard(player, "..!", "@ikbihua-give:" + to->objectName(), data, Card::MethodNone);
                         if (!card)
                             card = player->getCards("he").at(qrand() % player->getCardCount());
                     } else {
@@ -1682,7 +1682,7 @@ public:
                     to->obtainCard(card);
                     if (card->getTypeId() == Card::TypeEquip && room->getCardOwner(card->getEffectiveId()) == to
                         && !to->isLocked(card))
-                        if (room->askForSkillInvoke(to, "ikhujie_use", "use"))
+                        if (room->askForSkillInvoke(to, "ikbihua_use", "use"))
                             room->useCard(CardUseStruct(card, to, to));
                 }
                 player->drawCards(1, objectName());
@@ -4444,7 +4444,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *bloom028 = new General(this, "bloom028", "hana", 3);
     bloom028->addSkill(new IkHuyin);
     bloom028->addSkill(new IkHuyinClear);
-    bloom028->addSkill(new IkHongce);
+    bloom028->addSkill(new IkHongcai);
     related_skills.insertMulti("ikhuyin", "#ikhuyin-clear");
 
     General *bloom033 = new General(this, "bloom033", "hana");
@@ -4457,7 +4457,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     bloom040->addSkill(new IkShenji);
 
     General *bloom041 = new General(this, "bloom041", "hana");
-    bloom041->addSkill(new IkHujie);
+    bloom041->addSkill(new IkBihua);
 
     General *bloom043 = new General(this, "bloom043", "hana");
     bloom043->addSkill(new IkHongfa);

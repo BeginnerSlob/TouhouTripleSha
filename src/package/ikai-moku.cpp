@@ -467,9 +467,9 @@ public:
     }
 };
 
-class IkManbo: public TriggerSkill {
+class IkChihu: public TriggerSkill {
 public:
-    IkManbo(): TriggerSkill("ikmanbo") {
+    IkChihu(): TriggerSkill("ikchihu") {
         events << TargetConfirming;
         frequency = Compulsory;
     }
@@ -486,7 +486,7 @@ public:
         room->broadcastSkillInvoke(objectName());
         room->sendCompulsoryTriggerLog(liushan, objectName());
 
-        if (!room->askForCard(use.from, ".Basic", "@ikmanbo-discard")) {
+        if (!room->askForCard(use.from, ".Basic", "@ikchihu-discard")) {
             use.nullified_list << liushan->objectName();
             data = QVariant::fromValue(use);
         }
@@ -495,19 +495,19 @@ public:
     }
 };
 
-IkBaishenCard::IkBaishenCard() {
+IkYouxingCard::IkYouxingCard() {
 }
 
-bool IkBaishenCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkYouxingCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     return targets.isEmpty() && to_select != Self;
 }
 
-void IkBaishenCard::onEffect(const CardEffectStruct &effect) const{
+void IkYouxingCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
     ServerPlayer *liushan = effect.from, *player = effect.to;
 
     LogMessage log;
-    log.type = "#IkBaishen";
+    log.type = "#IkYouxing";
     log.from = liushan;
     log.to << player;
     room->sendLog(log);
@@ -515,25 +515,25 @@ void IkBaishenCard::onEffect(const CardEffectStruct &effect) const{
     player->gainAnExtraTurn();
 }
 
-class IkBaishenViewAsSkill: public OneCardViewAsSkill {
+class IkYouxingViewAsSkill: public OneCardViewAsSkill {
 public:
-    IkBaishenViewAsSkill(): OneCardViewAsSkill("ikbaishen") {
+    IkYouxingViewAsSkill(): OneCardViewAsSkill("ikyouxing") {
         filter_pattern = ".|.|.|hand!";
-        response_pattern = "@@ikbaishen";
+        response_pattern = "@@ikyouxing";
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
-        IkBaishenCard *ikbaishen = new IkBaishenCard;
-        ikbaishen->addSubcard(originalCard);
-        return ikbaishen;
+        IkYouxingCard *ikyouxing = new IkYouxingCard;
+        ikyouxing->addSubcard(originalCard);
+        return ikyouxing;
     }
 };
 
-class IkBaishen: public TriggerSkill {
+class IkYouxing: public TriggerSkill {
 public:
-    IkBaishen(): TriggerSkill("ikbaishen") {
+    IkYouxing(): TriggerSkill("ikyouxing") {
         events << EventPhaseChanging;
-        view_as_skill = new IkBaishenViewAsSkill;
+        view_as_skill = new IkYouxingViewAsSkill;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *liushan, QVariant &data, ServerPlayer* &) const{
@@ -567,7 +567,7 @@ public:
             break;
             }
         case Player::NotActive: {
-            room->askForUseCard(liushan, "@@ikbaishen", "@ikbaishen-give", -1, Card::MethodDiscard);
+            room->askForUseCard(liushan, "@@ikyouxing", "@ikyouxing-give", -1, Card::MethodDiscard);
             break;
             }
         default:
@@ -583,9 +583,9 @@ public:
     }
 };
 
-class IkHunshou: public PhaseChangeSkill {
+class IkMugua: public PhaseChangeSkill {
 public:
-    IkHunshou(): PhaseChangeSkill("ikhunshou$") {
+    IkMugua(): PhaseChangeSkill("ikmugua$") {
         frequency = Wake;
     }
 
@@ -598,9 +598,9 @@ public:
             }
         }
         return can_invoke && target != NULL && target->getPhase() == Player::Start
-               && target->hasLordSkill("ikhunshou")
+               && target->hasLordSkill("ikmugua")
                && target->isAlive()
-               && target->getMark("@hunshou") == 0;
+               && target->getMark("@mugua") == 0;
     }
 
     virtual bool onPhaseChange(ServerPlayer *liushan) const{
@@ -608,7 +608,7 @@ public:
         room->notifySkillInvoked(liushan, objectName());
 
         LogMessage log;
-        log.type = "#IkHunshouWake";
+        log.type = "#IkMuguaWake";
         log.from = liushan;
         log.arg = QString::number(liushan->getHp());
         log.arg2 = objectName();
@@ -616,7 +616,7 @@ public:
 
         room->broadcastSkillInvoke(objectName());
 
-        room->setPlayerMark(liushan, "@hunshou", 1);
+        room->setPlayerMark(liushan, "@mugua", 1);
         if (room->changeMaxHpForAwakenSkill(liushan, 1)) {
             room->recover(liushan, RecoverStruct(liushan));
             if (liushan->isLord())
@@ -2326,30 +2326,30 @@ public:
     }
 };
 
-IkShenenCard::IkShenenCard() {
+IkZhuoshiCard::IkZhuoshiCard() {
     will_throw = false;
     mute = true;
     handling_method = Card::MethodNone;
-    m_skillName = "_ikshenen";
+    m_skillName = "_ikzhuoshi";
 }
 
-bool IkShenenCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkZhuoshiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     if (!targets.isEmpty() || to_select == Self)
         return false;
 
-    return to_select->getHandcardNum() == Self->getMark("ikshenen");
+    return to_select->getHandcardNum() == Self->getMark("ikzhuoshi");
 }
 
-void IkShenenCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+void IkZhuoshiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(),
-                          targets.first()->objectName(), "ikshenen", QString());
+                          targets.first()->objectName(), "ikzhuoshi", QString());
     room->moveCardTo(this, targets.first(), Player::PlaceHand, reason);
 }
 
-class IkShenenViewAsSkill: public ViewAsSkill {
+class IkZhuoshiViewAsSkill: public ViewAsSkill {
 public:
-    IkShenenViewAsSkill(): ViewAsSkill("ikshenen") {
-        response_pattern = "@@ikshenen!";
+    IkZhuoshiViewAsSkill(): ViewAsSkill("ikzhuoshi") {
+        response_pattern = "@@ikzhuoshi!";
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
@@ -2364,16 +2364,16 @@ public:
         if (cards.length() != Self->getHandcardNum() / 2)
             return NULL;
 
-        IkShenenCard *card = new IkShenenCard;
+        IkZhuoshiCard *card = new IkZhuoshiCard;
         card->addSubcards(cards);
         return card;
     }
 };
 
-class IkShenen: public DrawCardsSkill {
+class IkZhuoshi: public DrawCardsSkill {
 public:
-    IkShenen(): DrawCardsSkill("ikshenen") {
-        view_as_skill = new IkShenenViewAsSkill;
+    IkZhuoshi(): DrawCardsSkill("ikzhuoshi") {
+        view_as_skill = new IkZhuoshiViewAsSkill;
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
@@ -2385,31 +2385,31 @@ public:
     }
 
     virtual int getDrawNum(ServerPlayer *lusu, int n) const{
-        lusu->setFlags("ikshenen");
+        lusu->setFlags("ikzhuoshi");
         return n + 2;
     }
 };
 
-class IkShenenGive: public TriggerSkill {
+class IkZhuoshiGive: public TriggerSkill {
 public:
-    IkShenenGive(): TriggerSkill("#ikshenen-give") {
+    IkZhuoshiGive(): TriggerSkill("#ikzhuoshi-give") {
         events << AfterDrawNCards;
         frequency = Compulsory;
     }
 
     virtual bool triggerable(const ServerPlayer *lusu) const{
-        return lusu && lusu->hasFlag("ikshenen") && lusu->getHandcardNum() > 5;
+        return lusu && lusu->hasFlag("ikzhuoshi") && lusu->getHandcardNum() > 5;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *lusu, QVariant &, ServerPlayer *) const{
-        lusu->setFlags("-ikshenen");
+        lusu->setFlags("-ikzhuoshi");
 
         QList<ServerPlayer *> other_players = room->getOtherPlayers(lusu);
         int least = 1000;
         foreach (ServerPlayer *player, other_players)
             least = qMin(player->getHandcardNum(), least);
-        room->setPlayerMark(lusu, "ikshenen", least);
-        bool used = room->askForUseCard(lusu, "@@ikshenen!", "@ikshenen", -1, Card::MethodNone);
+        room->setPlayerMark(lusu, "ikzhuoshi", least);
+        bool used = room->askForUseCard(lusu, "@@ikzhuoshi!", "@ikzhuoshi", -1, Card::MethodNone);
 
         if (!used) {
             // force lusu to give his half cards
@@ -2423,22 +2423,22 @@ public:
 
             int n = lusu->getHandcardNum() / 2;
             QList<int> to_give = lusu->handCards().mid(0, n);
-            IkShenenCard *ikshenen_card = new IkShenenCard;
-            ikshenen_card->addSubcards(to_give);
+            IkZhuoshiCard *ikzhuoshi_card = new IkZhuoshiCard;
+            ikzhuoshi_card->addSubcards(to_give);
             QList<ServerPlayer *> targets;
             targets << beggar;
-            ikshenen_card->use(room, lusu, targets);
-            delete ikshenen_card;
+            ikzhuoshi_card->use(room, lusu, targets);
+            delete ikzhuoshi_card;
         }
 
         return false;
     }
 };
 
-IkDimengCard::IkDimengCard() {
+IkYijingCard::IkYijingCard() {
 }
 
-bool IkDimengCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkYijingCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     if (to_select == Self)
         return false;
 
@@ -2452,16 +2452,16 @@ bool IkDimengCard::targetFilter(const QList<const Player *> &targets, const Play
     return false;
 }
 
-bool IkDimengCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
+bool IkYijingCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
     return targets.length() == 2;
 }
 
 #include "jsonutils.h"
-void IkDimengCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const{
+void IkYijingCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const{
     ServerPlayer *a = targets.at(0);
     ServerPlayer *b = targets.at(1);
-    a->setFlags("IkDimengTarget");
-    b->setFlags("IkDimengTarget");
+    a->setFlags("IkYijingTarget");
+    b->setFlags("IkYijingTarget");
 
     int n1 = a->getHandcardNum();
     int n2 = b->getHandcardNum();
@@ -2474,15 +2474,15 @@ void IkDimengCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &target
         }
         QList<CardsMoveStruct> exchangeMove;
         CardsMoveStruct move1(a->handCards(), b, Player::PlaceHand,
-                              CardMoveReason(CardMoveReason::S_REASON_SWAP, a->objectName(), b->objectName(), "ikdimeng", QString()));
+                              CardMoveReason(CardMoveReason::S_REASON_SWAP, a->objectName(), b->objectName(), "ikyijing", QString()));
         CardsMoveStruct move2(b->handCards(), a, Player::PlaceHand,
-                              CardMoveReason(CardMoveReason::S_REASON_SWAP, b->objectName(), a->objectName(), "ikdimeng", QString()));
+                              CardMoveReason(CardMoveReason::S_REASON_SWAP, b->objectName(), a->objectName(), "ikyijing", QString()));
         exchangeMove.push_back(move1);
         exchangeMove.push_back(move2);
         room->moveCardsAtomic(exchangeMove, false);
 
         LogMessage log;
-        log.type = "#IkDimeng";
+        log.type = "#IkYijing";
         log.from = a;
         log.to << b;
         log.arg = QString::number(n1);
@@ -2490,21 +2490,21 @@ void IkDimengCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &target
         room->sendLog(log);
         room->getThread()->delay();
 
-        a->setFlags("-IkDimengTarget");
-        b->setFlags("-IkDimengTarget");
+        a->setFlags("-IkYijingTarget");
+        b->setFlags("-IkYijingTarget");
     }
     catch (TriggerEvent triggerEvent) {
         if (triggerEvent == TurnBroken || triggerEvent == StageChange) {
-            a->setFlags("-IkDimengTarget");
-            b->setFlags("-IkDimengTarget");
+            a->setFlags("-IkYijingTarget");
+            b->setFlags("-IkYijingTarget");
         }
         throw triggerEvent;
     }
 }
 
-class IkDimeng: public ViewAsSkill {
+class IkYijing: public ViewAsSkill {
 public:
-    IkDimeng(): ViewAsSkill("ikdimeng") {
+    IkYijing(): ViewAsSkill("ikyijing") {
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
@@ -2512,14 +2512,14 @@ public:
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        IkDimengCard *card = new IkDimengCard;
+        IkYijingCard *card = new IkYijingCard;
         foreach (const Card *c, cards)
             card->addSubcard(c);
         return card;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("IkDimengCard");
+        return !player->hasUsed("IkYijingCard");
     }
 };
 
@@ -5030,9 +5030,9 @@ IkaiMokuPackage::IkaiMokuPackage()
     related_skills.insertMulti("ikhuoshou", "#sa_avoid_ikhuoshou");
 
     General *wind014 = new General(this, "wind014$", "kaze", 3);
-    wind014->addSkill(new IkManbo);
-    wind014->addSkill(new IkBaishen);
-    wind014->addSkill(new IkHunshou);
+    wind014->addSkill(new IkChihu);
+    wind014->addSkill(new IkYouxing);
+    wind014->addSkill(new IkMugua);
 
     General *wind015 = new General(this, "wind015", "kaze", 4, false);
     wind015->addSkill(new SavageAssaultAvoid("ikjugui"));
@@ -5115,10 +5115,10 @@ IkaiMokuPackage::IkaiMokuPackage()
     snow009->addSkill(new IkLiangban);
 
     General *snow010 = new General(this, "snow010", "yuki", 3);
-    snow010->addSkill(new IkShenen);
-    snow010->addSkill(new IkShenenGive);
-    related_skills.insertMulti("ikshenen", "#ikshenen-give");
-    snow010->addSkill(new IkDimeng);
+    snow010->addSkill(new IkZhuoshi);
+    snow010->addSkill(new IkZhuoshiGive);
+    related_skills.insertMulti("ikzhuoshi", "#ikzhuoshi-give");
+    snow010->addSkill(new IkYijing);
 
     General *snow011 = new General(this, "snow011", "yuki", 3, false);
     snow011->addSkill(new IkZhihui);
@@ -5211,7 +5211,7 @@ IkaiMokuPackage::IkaiMokuPackage()
     related_skills.insertMulti("ikzhuohuo", "#@mailun-2");
 
     addMetaObject<IkTiaoxinCard>();
-    addMetaObject<IkBaishenCard>();
+    addMetaObject<IkYouxingCard>();
     addMetaObject<IkLiefengCard>();
     addMetaObject<IkMiaowuCard>();
     addMetaObject<IkXunyuCard>();
@@ -5220,8 +5220,8 @@ IkaiMokuPackage::IkaiMokuPackage()
     addMetaObject<IkYushenCard>();
     addMetaObject<IkYihuoCard>();
     addMetaObject<IkJilveCard>();
-    addMetaObject<IkShenenCard>();
-    addMetaObject<IkDimengCard>();
+    addMetaObject<IkZhuoshiCard>();
+    addMetaObject<IkYijingCard>();
     addMetaObject<IkZhihuiCard>();
     addMetaObject<IkJianlveCard>();
     addMetaObject<IkBianshengCard>();
