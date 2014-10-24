@@ -2595,7 +2595,7 @@ public:
             return QStringList();
 
         ServerPlayer *winner = pindian->isSuccess() ? pindian->from : pindian->to;
-        if (winner->getHandcardNum() < winner->getHp())
+        if (winner->getHandcardNum() < winner->getMaxHp())
             return QStringList(objectName());
         return QStringList();
     }
@@ -2603,7 +2603,7 @@ public:
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const{
         PindianStruct *pindian = data.value<PindianStruct *>();
         ServerPlayer *winner = pindian->isSuccess() ? pindian->from : pindian->to;
-        winner->drawCards(winner->getHp() - winner->getHandcardNum(), objectName());
+        winner->drawCards(winner->getMaxHp() - winner->getHandcardNum(), objectName());
         return false;
     }
 };
@@ -2945,7 +2945,7 @@ bool IkXiekeCard::targetsFeasible(const QList<const Player *> &targets, const Pl
             card = Sanguosha->cloneCard(user_string.split("+").first());
         return card && card->targetsFeasible(targets, Self);
     } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
-        return true;
+        return false;
     }
 
     const Card *card = Self->tag.value("ikxieke").value<const Card *>();
@@ -3002,9 +3002,13 @@ public:
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
         if (player->getPhase() != Player::Play || player->isChained()) return false;
+        if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
+            return false;
         if (pattern == "peach")
             return player->getMark("Global_PreventPeach") == 0;
-        else if (pattern.contains("analeptic") || pattern == "slash" || pattern == "jink" || pattern == "nullification")
+        else if (player->aliveCount() != 2 && (pattern.contains("analeptic") || pattern == "jink" || pattern == "nullification"))
+            return true;
+        else if (pattern == "slash")
             return true;
         return false;
     }
@@ -3033,11 +3037,11 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->isChained();
+        return !player->isChained() && (player->aliveCount() != 2 || Slash::IsAvailable(player));
     }
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
-        return !player->isChained() && player->getPhase() == Player::Play;
+        return !player->isChained() && player->getPhase() == Player::Play && player->aliveCount() != 2;
     }
 };
 
@@ -3113,9 +3117,9 @@ public:
     }
 };
 
-class IkHaidao: public TriggerSkill {
+class IkLunyao: public TriggerSkill {
 public:
-    IkHaidao(): TriggerSkill("ikhaidao") {
+    IkLunyao(): TriggerSkill("iklunyao") {
         events << BeforeCardsMove;
         frequency = Compulsory;
     }
@@ -3154,9 +3158,9 @@ public:
     }
 };
 
-class IkYaopu: public TriggerSkill {
+class IkQimu: public TriggerSkill {
 public:
-    IkYaopu(): TriggerSkill("ikyaopu") {
+    IkQimu(): TriggerSkill("ikqimu") {
         events << BeforeCardsMove;
         frequency = Compulsory;
     }
@@ -3168,7 +3172,7 @@ public:
         if (move.from == player && move.to_place == Player::DiscardPile
             && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_USE) {
             const Card *yaopu_card = move.reason.m_extraData.value<const Card *>();
-            if (!yaopu_card || !yaopu_card->hasFlag("ikyaopu"))
+            if (!yaopu_card || !yaopu_card->hasFlag("ikqimu"))
                 return QStringList();
             return QStringList(objectName());
         }
@@ -3188,9 +3192,9 @@ public:
     }
 };
 
-class IkYaopuRecord: public TriggerSkill {
+class IkQimuRecord: public TriggerSkill {
 public:
-    IkYaopuRecord(): TriggerSkill("#ikyaopu-record") {
+    IkQimuRecord(): TriggerSkill("#ikqimu-record") {
         events << PreCardUsed << CardResponded;
         frequency = Compulsory;
     }
@@ -3208,15 +3212,15 @@ public:
         }
         if (card && card->getHandlingMethod() == Card::MethodUse) {
             ServerPlayer *current = room->getCurrent();
-            if (current && current->getPhase() != Player::NotActive && !current->hasFlag("ikyaopu")) {
-                current->setFlags("ikyaopu");
+            if (current && current->getPhase() != Player::NotActive && !current->hasFlag("ikqimu")) {
+                current->setFlags("ikqimu");
                 QList<int> ids;
                 if (!card->isVirtualCard())
                     ids << card->getEffectiveId();
                 else if (card->subcardsLength() > 0)
                     ids = card->getSubcards();
                 if (!ids.isEmpty())
-                    room->setCardFlag(card, "ikyaopu");
+                    room->setCardFlag(card, "ikqimu");
             }
         }
 
@@ -3683,10 +3687,10 @@ IkaiKaPackage::IkaiKaPackage()
     luna045->addSkill(new IkYunmai);
 
     General *luna046 = new General(this, "luna046", "tsuki", 3);
-    luna046->addSkill(new IkHaidao);
-    luna046->addSkill(new IkYaopu);
-    luna046->addSkill(new IkYaopuRecord);
-    related_skills.insertMulti("ikyaopu", "#ikyaopu-record");
+    luna046->addSkill(new IkLunyao);
+    luna046->addSkill(new IkQimu);
+    luna046->addSkill(new IkQimuRecord);
+    related_skills.insertMulti("ikqimu", "#ikqimu-record");
 
     General *luna047 = new General(this, "luna047", "tsuki");
     luna047->addSkill(new IkYuanji);

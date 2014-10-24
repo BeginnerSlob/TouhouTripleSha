@@ -2128,7 +2128,7 @@ public:
             invoke = true;
         if (from->hasSkill("ikyinsha") && to->getKingdom() == from->getKingdom())
             invoke = true;
-        if (from->hasFlag("ikduopo_" + to->objectName()))
+        if (from->hasFlag("ikqingpo_" + to->objectName()))
             invoke = true;
         if (from->hasSkill("ikpaomu") && to->getMark("@liebiao") > 0)
             invoke = true;
@@ -3130,24 +3130,23 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (!TriggerSkill::triggerable(player)) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.from)
+        if (damage.from && damage.from->isAlive())
             return QStringList(objectName());
         return QStringList();
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        room->notifySkillInvoked(player, objectName());
         room->broadcastSkillInvoke(objectName());
+        room->sendCompulsoryTriggerLog(player, objectName(), true);
 
         DamageStruct damage = data.value<DamageStruct>();
         QStringList choices;
         if (!damage.from->isKongcheng())
             choices << "show";
-        choices << "reduce";
-        if (room->askForChoice(damage.from, objectName(), choices.join("+")) == "show") {
-            room->sendCompulsoryTriggerLog(player, objectName(), false);
-            room->showAllCards(damage.from);
-        } else {
+        if (player->canDiscard(damage.from, "he"))
+            choices << "discard";
+        bool reduce = choices.isEmpty();
+        if (reduce || room->askForSkillInvoke(damage.from, "ikzhizhai_decrease", "yes:" + player->objectName())) {
             LogMessage log;
             log.type = "#IkZhizhai";
             log.from = player;
@@ -3158,6 +3157,13 @@ public:
             if (damage.damage < 1)
                 return true;
             data = QVariant::fromValue(damage);
+        } else {
+            if (room->askForChoice(player, objectName(), choices.join("+")) == "show")
+                room->showAllCards(damage.from);
+            else {
+                int card_id = room->askForCardChosen(player, damage.from, "he", objectName(), false, Card::MethodDiscard);
+                room->throwCard(card_id, damage.from, player);
+            }
         }
 
         return false;
