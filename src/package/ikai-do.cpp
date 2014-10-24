@@ -9,15 +9,13 @@
 
 IkShenaiCard::IkShenaiCard() {
     target_fixed = true;
-    handling_method = Card::MethodNone;
 }
 
 void IkShenaiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
     QList<int> handCards = source->handCards();
     if (room->askForRende(source, handCards, "ikshenai", false, true, -1, QList<ServerPlayer *>(),
-                          CardMoveReason(), "@ikshenai", false) >= 2) {
+                          CardMoveReason(), "@ikshenai", false) >= 2)
         room->recover(source, RecoverStruct(source));
-    }
 }
 /*
 IkShenaiCard::IkShenaiCard() {
@@ -52,29 +50,17 @@ void IkShenaiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
         room->recover(source, RecoverStruct(source));
 }
 */
-class IkShenai: public ViewAsSkill {
+class IkShenai: public ZeroCardViewAsSkill {
 public:
-    IkShenai(): ViewAsSkill("ikshenai") {
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        if (selected.length() >= 3)
-           return false;
-        else
-            return !to_select->isEquipped();
+    IkShenai(): ZeroCardViewAsSkill("ikshenai") {
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
         return !player->hasUsed("IkShenaiCard") && !player->isKongcheng();
     }
 
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if (cards.isEmpty())
-            return NULL;
-
-        IkShenaiCard *ikshenai_card = new IkShenaiCard;
-        ikshenai_card->addSubcards(cards);
-        return ikshenai_card;
+    virtual const Card *viewAs() const{
+        return new IkShenaiCard;
     }
 };
 
