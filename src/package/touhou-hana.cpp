@@ -812,7 +812,15 @@ ThMimengDialog::ThMimengDialog(const QString &object, bool left, bool right, boo
 
 bool ThMimengDialog::isButtonEnabled(const QString &button_name) const{
     const Card *card = map[button_name];
-    return !Self->isCardLimited(card, Card::MethodUse, true) && card->isAvailable(Self);
+    QStringList ban_list;
+    if (object_name == "thmimeng")
+        ban_list << "ExNihilo" << "AmazingGrace" << "Snatch" << "GodSalvation" << "ArcheryAttack"
+                 << "Drowning" << "BurningCamps" << "LureTiger" << "KnownBoth";
+    if (object_name == "ikmice")
+        ban_list << "Drowning";
+    if (object_name == "ikxieke" && Self->aliveCount() == 2)
+        ban_list << "Jink" << "Analeptic" << "Peach";
+    return !ban_list.contains(card->getClassName()) && !Self->isCardLimited(card, Card::MethodUse, true) && card->isAvailable(Self);
 }
 
 void ThMimengDialog::popup() {
@@ -890,17 +898,10 @@ QGroupBox *ThMimengDialog::createRight() {
     QGroupBox *box3 = new QGroupBox(Sanguosha->translate("delayed_trick"));
     QVBoxLayout *layout3 = new QVBoxLayout;
 
-    QStringList ban_list;
-    if (object_name == "thmimeng")
-        ban_list << "ExNihilo" << "AmazingGrace" << "Snatch" << "GodSalvation" << "ArcheryAttack"
-                 << "Drowning" << "BurningCamps" << "LureTiger" << "KnownBoth";
-    if (object_name == "ikmice")
-        ban_list << "Drowning";
     QList<const Card *> cards = Sanguosha->findChildren<const Card *>();
     foreach(const Card *card, cards){
         if (card->getTypeId() == Card::TypeTrick && (delayed_tricks || card->isNDTrick())
             && !map.contains(card->objectName())
-            && !ban_list.contains(card->getClassName())
             && !ServerInfo.Extensions.contains("!" + card->getPackage())) {
             Card *c = Sanguosha->cloneCard(card->objectName());
             c->setSkillName(object_name);
