@@ -4914,9 +4914,9 @@ public:
     }
 };
 
-class IkQingpo: public TriggerSkill {
+class IkRongxin: public TriggerSkill {
 public:
-    IkQingpo(): TriggerSkill("ikqingpo") {
+    IkRongxin(): TriggerSkill("ikrongxin") {
         events << EventPhaseStart;
     }
 
@@ -4944,14 +4944,14 @@ public:
         if (fuhuanghou->pindian(player, objectName(), NULL)) {
             player->skip(Player::Play);
         } else
-            room->setPlayerFlag(player, "ikqingpo_" + fuhuanghou->objectName());
+            room->setPlayerFlag(player, "ikrongxin_" + fuhuanghou->objectName());
         return false;
     }
 };
 
-class IkMeichu: public TriggerSkill {
+class IkKehun: public TriggerSkill {
 public:
-    IkMeichu(): TriggerSkill("ikmeichu") {
+    IkKehun(): TriggerSkill("ikkehun") {
         events << TargetConfirming;
     }
 
@@ -4970,10 +4970,10 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         CardUseStruct use = data.value<CardUseStruct>();
-        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "ikmeichu-invoke", true, true);
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "ikkehun-invoke", true, true);
         if (target) {
             room->broadcastSkillInvoke(objectName());
-            player->tag["IkMeichuTarget"] = QVariant::fromValue(target);
+            player->tag["IkKehunTarget"] = QVariant::fromValue(target);
             return true;
         }
         return false;
@@ -4981,12 +4981,12 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         CardUseStruct use = data.value<CardUseStruct>();
-        ServerPlayer *target = player->tag["IkMeichuTarget"].value<ServerPlayer *>();
-        player->tag.remove("IkMeichuTarget");
+        ServerPlayer *target = player->tag["IkKehunTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkKehunTarget");
         if (target) {
             const Card *card = NULL;
             if (!target->isKongcheng())
-                card = room->askForCard(target, "Jink", "@ikmeichu-give:" + player->objectName(), data, Card::MethodNone);
+                card = room->askForCard(target, "Jink", "@ikkehun-give:" + player->objectName(), data, Card::MethodNone);
             if (!card) {
                 if (use.from->canSlash(target, use.card, false)) {
                     LogMessage log;
@@ -5651,8 +5651,8 @@ IkaiKinPackage::IkaiKinPackage()
     luna027->addSkill(new IkFenshi);
 
     General *luna028 = new General(this, "luna028", "tsuki", 3, false);
-    luna028->addSkill(new IkQingpo);
-    luna028->addSkill(new IkMeichu);
+    luna028->addSkill(new IkRongxin);
+    luna028->addSkill(new IkKehun);
 
     General *luna038 = new General(this, "luna038", "tsuki", 3);
     luna038->addSkill(new IkLianzhuang);
