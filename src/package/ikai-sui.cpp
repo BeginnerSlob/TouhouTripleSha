@@ -2128,7 +2128,7 @@ public:
             invoke = true;
         if (from->hasSkill("ikyinsha") && to->getKingdom() == from->getKingdom())
             invoke = true;
-        if (from->hasFlag("ikqingpo_" + to->objectName()))
+        if (from->hasFlag("ikrongxin_" + to->objectName()))
             invoke = true;
         if (from->hasSkill("ikpaomu") && to->getMark("@liebiao") > 0)
             invoke = true;
