@@ -2057,6 +2057,107 @@ public:
     }
 };
 
+class IkQingwei: public TriggerSkill {
+public:
+    IkQingwei(): TriggerSkill("ikqingwei") {
+        events << TargetConfirming << EventPhaseChanging;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (triggerEvent == TargetConfirming) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash") || (use.card->getTypeId() == Card::TypeTrick && use.card->isBlack())) {
+                if (use.to.length() == 1) {
+                    foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
+                        if (owner->getHp() > player->getHp())
+                            skill_list.insert(owner, QStringList(objectName()));
+                    }
+                }
+            }
+        } else if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAllPlayers()) {
+                    if (!p->tag["ikqingwei_cards"].toList().isEmpty()) {
+                        DummyCard *dummy = new DummyCard(VariantList2IntList(p->tag["ikqingwei_cards"].toList()));
+                        p->obtainCard(dummy);
+                        delete dummy;
+                        p->tag.remove("ikqingwei_cards");
+                    }
+                }
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *owner) const{
+        if (room->askForCard(owner, "..", "@ikqingwei", data, objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *owner) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        QString choice = room->askForChoice(owner, objectName(), "null+draw");
+        if (choice == "null") {
+            use.nullified_list << "_ALL_TARGETS";
+            QList<int> card_ids;
+            if (!use.card->isVirtualCard())
+                card_ids << use.card->getId();
+            else
+                card_ids = use.card->getSubcards();
+            if (!card_ids.isEmpty()) {
+                owner->addToPile("ikqingweipile", use.card);
+                if (use.from) {
+                    QVariantList ikqingwei_cards = use.from->tag["ikqingwei_cards"].toList();
+                    ikqingwei_cards << IntList2VariantList(card_ids);
+                    use.from->tag["ikqingwei_cards"] = QVariant::fromValue(ikqingwei_cards);
+                }
+            }
+            data = QVariant::fromValue(use);
+        } else {
+            owner->drawCards(1, objectName());
+            if (use.from->isProhibited(owner, use.card))
+                return false;
+            if (use.card->isKindOf("Slash")) {
+                if (!use.from->canSlash(owner, use.card, false))
+                    return false;
+            } else if (use.card->isKindOf("Collateral")) {
+                QList<ServerPlayer *> victims;
+                foreach (ServerPlayer *p, room->getOtherPlayers(owner)) {
+                    if (owner->canSlash(p))
+                        victims << p;
+                }
+                if (victims.isEmpty())
+                    return false;
+                ServerPlayer *victim = room->askForPlayerChosen(use.from, victims, objectName(), "@dummy-slash2:" + owner->objectName());
+                use.to.first()->tag.remove("collateralVictim");
+                owner->tag["collateralVictim"] = QVariant::fromValue(victim);
+                
+                LogMessage log;
+                log.type = "#CollateralSlash";
+                log.from = use.from;
+                log.to << victim;
+                room->sendLog(log);
+                room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, owner->objectName(), victim->objectName());
+            }
+
+            if (use.card->isKindOf("DelayedTrick"))
+                room->moveCardTo(use.card, owner, Player::PlaceDelayedTrick, true);
+            else {
+                use.to.clear();
+                use.to << owner;
+            }
+            data = QVariant::fromValue(use);
+            return true;
+        }
+        return false;
+    }
+};
+
 IkFenxunCard::IkFenxunCard() {
 }
 
@@ -4480,6 +4581,9 @@ IkaiSuiPackage::IkaiSuiPackage()
     bloom046->addSkill(new IkGonghu);
     bloom046->addSkill(new IkXuewu);
     bloom046->addSkill("ikbenghuai");
+
+    General *bloom050 = new General(this, "bloom050", "hana");
+    bloom050->addSkill(new IkQingwei);
 
     General *snow022 = new General(this, "snow022", "yuki");
     snow022->addSkill(new Skill("ikxindu", Skill::NotCompulsory));
