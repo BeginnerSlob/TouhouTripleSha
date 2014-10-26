@@ -2231,7 +2231,7 @@ public:
             invoke = true;
         if (from->hasFlag("ikrongxin_" + to->objectName()))
             invoke = true;
-        if (from->hasSkill("ikpaomu") && to->getMark("@liebiao") > 0)
+        if (from->hasSkill("ikqingmu") && to->getMark("@qinghuo") > 0)
             invoke = true;
         if ((from->hasSkill("thqimen") && to->isChained())
             || (to->hasSkill("thqimen") && from->isChained())) {
@@ -4298,22 +4298,29 @@ public:
 class IkMingzhen: public TriggerSkill {
 public:
     IkMingzhen(): TriggerSkill("ikmingzhen") {
-        events << DamageCaused;
+        events << DamageCaused << EventPhaseStart;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseStart) {
+            if (player->getPhase() == Player::Play) {
+                foreach (ServerPlayer *p, room->getAllPlayers()) {
+                    if (p->getMark("mingzhen_" + player->objectName()) > 0) {
+                        room->removePlayerMark(p, "@mingzhen", p->getMark("mingzhen_" + player->objectName()));
+                        room->setPlayerMark(p, "mingzhen_" + player->objectName(), 0);
+                    }
+                }
+            }
+            return QStringList();
+        }
         if (!TriggerSkill::triggerable(player)) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))
             && !damage.chain && !damage.transfer && damage.by_user) {
-            if (!damage.to->hasSkill("thyanmeng") && damage.to->getMark("ikmingzhen_" + player->objectName()) == 0) {
-                int n = 0;
+            if (!damage.to->hasSkill("thyanmeng")) {
                 foreach (const Skill *skill, damage.to->getVisibleSkillList()) {
-                    if (!skill->isAttachedLordSkill()) {
-                        if (n > 0)
-                            return QStringList(objectName());
-                        ++n;
-                    }
+                    if (!skill->isAttachedLordSkill())
+                        return QStringList(objectName());
                 }
             }
             if (damage.to->canDiscard(damage.to, "e"))
@@ -4334,16 +4341,15 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         DamageStruct damage = data.value<DamageStruct>();
         QStringList choices;
-        QStringList skills_list;
-        if (damage.to->getMark("ikmingzhen_" + player->objectName()) == 0) {
+        if (!damage.to->hasSkill("thyanmeng")) {
             foreach (const Skill *skill, damage.to->getVisibleSkillList()) {
-                if (!skill->isAttachedLordSkill())
-                    skills_list << skill->objectName();
+                if (!skill->isAttachedLordSkill()) {
+                    choices << "null";
+                    break;
+                }
             }
-            if (skills_list.length() > 1)
-                choices << "detach";
         }
-        if (!damage.to->getEquips().isEmpty())
+        if (damage.to->canDiscard(damage.to, "e"))
             choices << "throw";
 
         if (!choices.isEmpty()) {
@@ -4353,14 +4359,22 @@ public:
                 if (damage.to->isAlive())
                     room->loseHp(damage.to);
             } else {
-                room->addPlayerMark(damage.to, "ikmingzhen_" + player->objectName());
                 room->addPlayerMark(damage.to, "@mingzhen");
-                QString lost_skill = room->askForChoice(damage.to, "ikmingzhen_lose", skills_list.join("+"), data);
-                room->detachSkillFromPlayer(damage.to, lost_skill);
+                room->addPlayerMark(damage.to, "mingzhen_" + player->objectName());
             }
         }
 
         return true;
+    }
+};
+
+class IkMingzhenInvalidity: public InvaliditySkill {
+public:
+    IkMingzhenInvalidity(): InvaliditySkill("#ikmingzhen-inv") {
+    }
+
+    virtual bool isSkillValid(const Player *player, const Skill *) const{
+        return player->getMark("@mingzhen") == 0;
     }
 };
 
@@ -4683,6 +4697,8 @@ IkaiSuiPackage::IkaiSuiPackage()
 
     General *luna044 = new General(this, "luna044", "tsuki");
     luna044->addSkill(new IkMingzhen);
+    luna044->addSkill(new IkMingzhenInvalidity);
+    related_skills.insertMulti("ikmingzhen", "#ikmingzhen-inv");
     luna044->addSkill(new IkYishi);
 
     General *luna050 = new General(this, "luna050", "tsuki");
