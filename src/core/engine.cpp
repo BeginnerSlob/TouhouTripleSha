@@ -881,8 +881,8 @@ QStringList Engine::getRandomLords() const{
         lords << alord;
     }
 
-    int lord_num = Config.value("LordMaxChoice", 5).toInt();
-    if (lord_num != -1 && lord_num < lords.length()) {
+    int lord_num = 6;
+    if (lord_num < lords.length()) {
         int to_remove = lords.length() - lord_num;
         for (int i = 0; i < to_remove; i++) {
             lords.removeAt(qrand() % lords.length());
@@ -905,11 +905,8 @@ QStringList Engine::getRandomLords() const{
 
     qShuffle(nonlord_list);
 
-    int i;
-    int extra = Config.value("NonLordMaxChoice", 4).toInt();
-    if (lord_num == 0 && extra == 0)
-        extra = 1;
-    for (i = 0; i < extra; i++) {
+    int extra = 4;
+    for (int i = 0; i < extra; i++) {
         lords << nonlord_list.at(i);
         if (i == nonlord_list.length() - 1) break;
     }

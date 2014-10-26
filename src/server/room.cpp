@@ -2405,60 +2405,43 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign) {
     foreach (ServerPlayer *player, m_players) {
         if (player->getGeneral())
             existed << player->getGeneralName();
-        if (player->getGeneral2())
-            existed << player->getGeneral2Name();
-    }
-    if (Config.Enable2ndGeneral) {
-        foreach (QString name, BanPair::getAllBanSet())
-            existed << name;
-        if (to_assign.first()->getGeneral()) {
-            foreach (QString name, BanPair::getSecondBanSet())
-                existed << name;
-        }
     }
 
-    const int max_choice = (Config.EnableHegemony && Config.Enable2ndGeneral) ?
-                               Config.value("HegemonyMaxChoice", 10).toInt() :
-                               Config.value("MaxChoice", 7).toInt();
-    const int total = Sanguosha->getGeneralCount();
-    const int max_available = (total - existed.size()) / to_assign.length();
-    const int choice_count = qMin(max_choice, max_available);
+    QList<int> max_choice;
+    foreach (ServerPlayer *p, to_assign) {
+        if (p->getRole() == "loyalist")
+            max_choice << 10;
+        if (p->getRole() == "rebel")
+            max_choice << 8;
+        if (p->getRole() == "renegade")
+            max_choice << 12;
+    }
+    int total = Sanguosha->getGeneralCount();
+    int max_available = (total - existed.size()) / to_assign.length();
+    //int choice_count = qMin(max_choice, max_available);
 
     QStringList choices = Sanguosha->getRandomGenerals(total - existed.size(), existed);
 
-    if (Config.EnableHegemony) {
-        if (to_assign.first()->getGeneral()) {
-            foreach (ServerPlayer *sp, m_players) {
-                QStringList old_list = sp->getSelected();
-                sp->clearSelected();
-                QString choice;
-
-                //keep legal generals
-                foreach (QString name, old_list) {
-                    if (Sanguosha->getGeneral(name)->getKingdom() != sp->getGeneral()->getKingdom()
-                        || sp->findReasonable(old_list, true) == name) {
-                        sp->addToSelected(name);
-                        old_list.removeOne(name);
-                    }
-                }
-
-                //drop the rest and add new generals
-                while (old_list.length()) {
-                    choice = sp->findReasonable(choices);
-                    sp->addToSelected(choice);
-                    old_list.pop_front();
-                    choices.removeOne(choice);
-                }
-            }
-            return;
-        }
-    }
-
     foreach (ServerPlayer *player, to_assign) {
         player->clearSelected();
-
+        int index = to_assign.indexOf(player);
+        int choice_count = qMin(max_choice.at(index), max_available);
         for (int i = 0; i < choice_count; i++) {
-            QString choice = player->findReasonable(choices, true);
+            QString choice;
+            forever {
+                choice = player->findReasonable(choices, true);
+                if (choice.isEmpty())
+                    break;
+                if (i >= 3)
+                    break;
+                else {
+                    const General *general = Sanguosha->getGeneral(choice);
+                    if (general && general->getPackage().startsWith("touhou"))
+                        break;
+                    else
+                        qShuffle(choices);
+                }
+            }
             if (choice.isEmpty()) break;
             player->addToSelected(choice);
             choices.removeOne(choice);
@@ -2469,6 +2452,7 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign) {
 void Room::chooseGenerals(QList<ServerPlayer *> players) {
     if (players.isEmpty()) players = m_players;
     // for lord.
+    /*
     int lord_num = Config.value("LordMaxChoice", 5).toInt();
     int nonlord_num = Config.value("NonLordMaxChoice", 4).toInt();
     if (lord_num == 0 && nonlord_num == 0)
@@ -2503,8 +2487,26 @@ void Room::chooseGenerals(QList<ServerPlayer *> players) {
             return;
         }
     }
+    */
+    int nonlord_prob = 49;
+    ServerPlayer *the_lord = getLord();
+    if (the_lord && players.contains(the_lord)) {
+        QStringList lord_list;
+        if (the_lord->getState() == "robot")
+            if (qrand() % 100 < nonlord_prob || Sanguosha->getLords().length() == 0)
+                lord_list = Sanguosha->getRandomGenerals(1);
+            else
+                lord_list = Sanguosha->getLords();
+        else
+            lord_list = Sanguosha->getRandomLords();
+        QString general = askForGeneral(the_lord, lord_list);
+        the_lord->setGeneralName(general);
+
+        broadcastProperty(the_lord, "general", general);
+    }
     QList<ServerPlayer *> to_assign = players;
-    if (the_lord && !Config.EnableHegemony) to_assign.removeOne(the_lord);
+    if (the_lord)
+        to_assign.removeOne(the_lord);
 
     assignGeneralsForPlayers(to_assign);
     foreach (ServerPlayer *player, to_assign)
