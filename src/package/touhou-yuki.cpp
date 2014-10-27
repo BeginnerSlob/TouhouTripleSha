@@ -689,8 +689,7 @@ bool ThChouceCard::targetsFeasible(const QList<const Player *> &targets, const P
 
 const Card *ThChouceCard::validate(CardUseStruct &card_use) const{
     const Card *card = Sanguosha->getCard(getSubcards().first());
-    Card *use_card = Sanguosha->cloneCard(card->objectName(), card->getSuit(), card->getNumber());
-    use_card->addSubcard(card);
+    Card *use_card = Sanguosha->cloneCard(card);
     use_card->setSkillName("thchouce");
     Room *room = card_use.from->getRoom();
 
