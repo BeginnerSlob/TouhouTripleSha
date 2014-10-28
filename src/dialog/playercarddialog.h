@@ -23,7 +23,7 @@ class PlayerCardDialog: public QDialog {
 public:
     explicit PlayerCardDialog(const ClientPlayer *player, const QString &flags = "hej",
                               bool handcard_visible = false, Card::HandlingMethod method = Card::MethodNone,
-                              QList<int> &disabled_ids = QList<int>());
+                              const QList<int> &disabled_ids = QList<int>());
 
 private:
     QWidget *createAvatar();
@@ -35,7 +35,7 @@ private:
     QMap<QObject *, int> mapper;
     bool handcard_visible;
     Card::HandlingMethod method;
-    QList<int> disabled_ids;
+    const QList<int> disabled_ids;
 
 private slots:
     void emitId();

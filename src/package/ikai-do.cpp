@@ -398,7 +398,7 @@ public:
 
                 room->judge(judge);
 
-                if (p->isAlive() && !p->canDiscard(p, "he")
+                if ((p->isAlive() && !p->canDiscard(p, "he"))
                     || !room->askForCard(p, ".|" + judge.pattern, "@ikyufeng-discard:::" + judge.pattern, data, Card::MethodDiscard)) {
                     LogMessage log;
                     log.type = "#NoJink";

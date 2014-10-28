@@ -1091,7 +1091,8 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
     thread->delay(500);
 
     useCard(CardUseStruct(card, repliedPlayer, QList<ServerPlayer *>()));
-    if (thread->trigger(NullificationEffect, this, repliedPlayer, QVariant::fromValue(card)))
+    QVariant nullifionEffectData = QVariant::fromValue(card);
+    if (thread->trigger(NullificationEffect, this, repliedPlayer, nullifionEffectData))
         return _askForNullification(trick, from, to, positive, aiHelper);
 
     if (repliedPlayer->hasFlag("thhuaji_cancel")) {
@@ -1904,7 +1905,8 @@ void Room::changeHero(ServerPlayer *player, const QString &new_general, bool ful
             }
             if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty())
                 addPlayerMark(player, skill->getLimitMark());
-            thread->trigger(EventAcquireSkill, this, player, QVariant::fromValue(skill->objectName()));
+            QVariant skill_name = skill->objectName();
+            thread->trigger(EventAcquireSkill, this, player, skill_name);
         }
     }
     if (invokeStart) {
@@ -2303,7 +2305,7 @@ bool Room::processRequestSurrender(ServerPlayer *player, const Json::Value &) {
 
 void Room::processClientPacket(const QString &request) {
     QSanGeneralPacket packet;
-    if (packet.parse(request.toAscii().constData())) {
+    if (packet.parse(request.toLatin1().constData())) {
         ServerPlayer *player = qobject_cast<ServerPlayer *>(sender());
         if (game_finished) {
             if (player && player->isOnline())
@@ -2323,7 +2325,7 @@ void Room::processClientPacket(const QString &request) {
 }
 
 bool Room::addRobotCommand(ServerPlayer *player, const Json::Value &arg) {
-    if (player && !player->isOwner() || !arg.isInt()) return false;
+    if ((player && !player->isOwner()) || !arg.isInt()) return false;
 
     int n = 0;
     foreach (ServerPlayer *player, m_players) {
@@ -2800,7 +2802,7 @@ bool Room::speakCommand(ServerPlayer *player, const Json::Value &arg) {
                                }
     bool broadcast = true;
     if (player && Config.EnableCheat) {
-        QString sentence = QString::fromUtf8(QByteArray::fromBase64(toQString(arg.asString()).toAscii()));
+        QString sentence = QString::fromUtf8(QByteArray::fromBase64(toQString(arg.asString()).toLatin1()));
         if (sentence == ".BroadcastRoles") {
             _NO_BROADCAST_SPEAKING
             foreach (ServerPlayer *p, m_alivePlayers)
@@ -3156,8 +3158,10 @@ void Room::loseMaxHp(ServerPlayer *victim, int lose) {
 
     if (victim->getMaxHp() == 0)
         killPlayer(victim);
-    else
-        thread->trigger(MaxHpChanged, this, victim, QVariant(-lose));
+    else {
+        QVariant loseData = -lose;
+        thread->trigger(MaxHpChanged, this, victim, loseData);
+    }
 }
 
 bool Room::changeMaxHpForAwakenSkill(ServerPlayer *player, int magnitude) {

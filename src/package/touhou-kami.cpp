@@ -1286,6 +1286,9 @@ public:
                         skill_name = "thjibu";
                         break;
                                        }
+                    default : {
+                        break;
+                              }
                     }
                     if (!skill_name.isEmpty() && !attach.contains(skill_name))
                         attach << skill_name;
@@ -1315,6 +1318,9 @@ public:
                         skill_name = "thjibu";
                         break;
                                        }
+                    default : {
+                        break;
+                              }
                     }
                     if (!skill_name.isEmpty() && !player->hasSkill(skill_name))
                         skills << skill_name;

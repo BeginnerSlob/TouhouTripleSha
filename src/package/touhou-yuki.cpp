@@ -16,10 +16,9 @@ public:
         events << EventPhaseStart << EventPhaseChanging;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
         QMap<ServerPlayer *, QStringList> skill_list;
         if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (player->hasFlag("jianmoinvoke"))
                 room->setPlayerFlag(player, "-jianmoinvoke");
             room->removePlayerCardLimitation(player, "use,response", "Slash$0");

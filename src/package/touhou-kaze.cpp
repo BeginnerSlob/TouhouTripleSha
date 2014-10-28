@@ -933,6 +933,7 @@ public:
         case Card::Heart: player->drawCards(3); break;
         case Card::Diamond: player->drawCards(2); break;
         case Card::Club: player->drawCards(1); break;
+        default: break;
         }
 
         return true;

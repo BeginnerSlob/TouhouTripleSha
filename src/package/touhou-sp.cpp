@@ -44,6 +44,9 @@ public:
                     return NULL;
                 break;
                                                           }
+        default: {
+            break;
+                 }
         }
         if (card != NULL){
             card->setSkillName(objectName());

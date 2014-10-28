@@ -8,13 +8,16 @@
 #include <QPainter>
 #include <QGraphicsSceneHoverEvent>
 
-QSanButton::QSanButton(QGraphicsItem *parent): QGraphicsObject(parent)
+QSanButton::QSanButton(QGraphicsItem *parent)
+    : QGraphicsObject(parent), _m_state(S_STATE_UP),
+      _m_style(S_STYLE_PUSH), _m_mouseEntered(false)
 {
-    _m_state = S_STATE_UP;
-    _m_style = S_STYLE_PUSH;
-    _m_mouseEntered = false;
     setSize(QSize(0, 0));
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     setAcceptsHoverEvents(true);
+#else
+    setAcceptHoverEvents(true);
+#endif
     setAcceptedMouseButtons(Qt::LeftButton);
 }
 
@@ -31,7 +34,11 @@ QSanButton::QSanButton(const QString &groupName, const QString &buttonName, QGra
         _m_bgPixmap[i] = G_ROOM_SKIN.getButtonPixmap(groupName, buttonName, (QSanButton::ButtonState)i);
     setSize(_m_bgPixmap[0].size());
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     setAcceptsHoverEvents(true);
+#else
+    setAcceptHoverEvents(true);
+#endif
     setAcceptedMouseButtons(Qt::LeftButton);
 }
 
