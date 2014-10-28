@@ -26,7 +26,7 @@ public:
             soundGroup = BackgroundMusicGroup;
         }
 
-        FMOD_System_CreateSound(System, fileName.toAscii(),
+        FMOD_System_CreateSound(System, fileName.toLatin1(),
             mode, NULL, &m_sound);
         FMOD_Sound_SetSoundGroup(m_sound, soundGroup);
         FMOD_System_Update(System);

@@ -2744,6 +2744,8 @@ void IkLianwuCard::onEffect(const CardEffectStruct &effect) const{
     case TypeEquip:
         room->setPlayerFlag(effect.from, "iklianwu3");
         break;
+    default:
+        break;
     }
 }
 
@@ -3444,10 +3446,9 @@ public:
         events << EventPhaseEnd << EventPhaseChanging;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
         QMap<ServerPlayer *, QStringList> skill_list;
         if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             player->tag.remove("IkWuyu");
         } else if (triggerEvent == EventPhaseEnd) {
             if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Discard)

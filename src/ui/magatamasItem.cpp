@@ -1,7 +1,6 @@
-#include <magatamasItem.h>
+#include "magatamasitem.h"
 #include <QPropertyAnimation>
 #include <QParallelAnimationGroup>
-#include "skin-bank.h"
 
 MagatamasBoxItem::MagatamasBoxItem()
     : QGraphicsObject(NULL)

@@ -1428,7 +1428,7 @@ void RoomScene::keyReleaseEvent(QKeyEvent *event) {
 void RoomScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     QGraphicsScene::contextMenuEvent(event);
 
-    QGraphicsItem *item = itemAt(event->scenePos());
+    QGraphicsItem *item = itemAt(event->scenePos(), QTransform());
     if (!item) {
         QMenu *menu = miscellaneous_menu;
         menu->clear();
@@ -2930,7 +2930,11 @@ void RoomScene::addRestartButton(QDialog *dialog) {
 }
 
 void RoomScene::saveReplayRecord() {
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     QString location = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
+#else
+    QString location = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+#endif
     QString filename = QFileDialog::getSaveFileName(main_window,
                                                     tr("Save replay record"),
                                                     location,
@@ -2969,7 +2973,7 @@ void ScriptExecutor::doScript() {
     if (box == NULL) return;
 
     QString script = box->toPlainText();
-    QByteArray data = script.toAscii();
+    QByteArray data = script.toLatin1();
     data = qCompress(data);
     script = data.toBase64();
 
@@ -3243,7 +3247,7 @@ void RoomScene::fillTable(QTableWidget *table, const QList<const ClientPlayer *>
         table->setItem(i, 9, item);
 
         item = new QTableWidgetItem;
-        QString handcards = QString::fromUtf8(QByteArray::fromBase64(player->property("last_handcards").toString().toAscii()));
+        QString handcards = QString::fromUtf8(QByteArray::fromBase64(player->property("last_handcards").toString().toLatin1()));
         handcards.replace("<img src='image/system/log/spade.png' height = 12/>", tr("Spade"));
         handcards.replace("<img src='image/system/log/heart.png' height = 12/>", tr("Heart"));
         handcards.replace("<img src='image/system/log/club.png' height = 12/>", tr("Club"));

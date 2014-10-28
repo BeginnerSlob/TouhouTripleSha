@@ -119,7 +119,8 @@ public:
             foreach (ServerPlayer *p, room->getOtherPlayers(player))
                 if (p->getMark("@yaoshu") > 0)
                     targets << p;
-            room->askForYiji(player, player->handCards(), objectName(), false, false, false,
+            QList<int> hand_cards = player->handCards();
+            room->askForYiji(player, hand_cards, objectName(), false, false, false,
                              1, targets, CardMoveReason(), "@thshuling-give");
         } else if (triggerEvent == Death) {
             ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), objectName(), "@thshuling", false, true);

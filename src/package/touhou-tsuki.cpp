@@ -1223,18 +1223,21 @@ public:
             if (player->getMark("zhehui") > 0 && data.toString() == objectName())
                 room->setPlayerMark(player, "zhehui", 0);
             return skill_list;
-        }else if (triggerEvent == Damaged && TriggerSkill::triggerable(player) && player->getMark("zhehui") < 1)
+        } else if (triggerEvent == Damaged && TriggerSkill::triggerable(player) && player->getMark("zhehui") < 1) {
             skill_list.insert(player, QStringList(objectName()));
-        else if (triggerEvent == DamageInflicted && TriggerSkill::triggerable(player) && player->getMark("zhehui") > 0)
+        } else if (triggerEvent == DamageInflicted && TriggerSkill::triggerable(player) && player->getMark("zhehui") > 0) {
             skill_list.insert(player, QStringList(objectName()));
-        else if (triggerEvent == EventPhaseStart)
-            if (player->getPhase() == Player::NotActive)
+        } else if (triggerEvent == EventPhaseStart) {
+            if (player->getPhase() == Player::NotActive) {
                 foreach (ServerPlayer *p, room->getAllPlayers())
                     room->setPlayerMark(p, "zhehui", 0);
-            else if (player->getPhase() == Player::Finish)
-                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+            } else if (player->getPhase() == Player::Finish) {
+                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
                     if (p->getMark("zhehui") > 0)
                         skill_list.insert(p, QStringList(objectName()));
+                }
+            }
+        }
         return skill_list;
     }
 
@@ -1686,7 +1689,7 @@ public:
 
     virtual const Card *viewAs(const Card *originalCard) const{
         QStringList card_str = Self->property("thhuilve").toString().split("+");
-        if (card_str.size() < 2) return false;
+        if (card_str.size() < 2) return NULL;
         Card *trick = Sanguosha->cloneCard(card_str.first(), originalCard->getSuit(), originalCard->getNumber());
         trick->addSubcard(originalCard);
         trick->setSkillName(objectName());

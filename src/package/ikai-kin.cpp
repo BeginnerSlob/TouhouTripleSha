@@ -446,8 +446,7 @@ public:
         return kingdom_set.size();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *liaohua, QVariant &data, ServerPlayer *) const{
-        DyingStruct dying_data = data.value<DyingStruct>();
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *liaohua, QVariant &, ServerPlayer *) const{
         room->removePlayerMark(liaohua, "@fansheng");
         room->addPlayerMark(liaohua, "@fanshengused");
         liaohua->drawCards(2);
@@ -5037,7 +5036,6 @@ public:
                     || (number > 0 && card->getNumber() == number)))
                 return QStringList(objectName());
         } else if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             player->setMark("IkLianzhuangSuit", 0);
             player->setMark("IkLianzhuangNumber", 0);
         }
@@ -5136,8 +5134,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *caifuren) const{
-        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *caifuren) const{
         QStringList choices;
         for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
             if (player->getEquip(i) && !caifuren->getEquip(i))

@@ -279,9 +279,6 @@
     <ClCompile Include="..\..\src\ui\qsanbutton.cpp">
       <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\package\greenhand.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\package\hegemony.cpp">
       <Filter>package</Filter>
     </ClCompile>
@@ -370,9 +367,6 @@
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="Release\moc_god.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_greenhand.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="Release\moc_guandu-scenario.cpp">
@@ -934,9 +928,6 @@
     </CustomBuild>
     <CustomBuild Include="..\..\src\ui\magatamasItem.h">
       <Filter>ui</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\src\package\greenhand.h">
-      <Filter>package</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\hegemony.h">
       <Filter>package</Filter>
