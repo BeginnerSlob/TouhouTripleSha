@@ -30,7 +30,6 @@ Bin/
 /builds/vs2010/*.user
 /builds/vs2010/*.opensdf
 /sanguosha.ts
-/QSanguosha.pro
 /image/system/button/promptbox
 /image/system/button/back2.png
 /image/system/button/back.png
@@ -41,8 +40,4 @@ ai.html
 *.sh
 /Qt*.dll
 /psd
-/lib/libplibul.a
-/lib/libfmodex.a
-/lib/libfreetype.dll.a
-/lib/libplibjs.a
 fmod.log
