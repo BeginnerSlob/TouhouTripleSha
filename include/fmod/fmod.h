@@ -15,7 +15,7 @@
     0xaaaabbcc -> aaaa = major version number.  bb = minor version number.  cc = development version number.
 */
 
-#define FMOD_VERSION    0x00044428
+#define FMOD_VERSION    0x00044445
 
 /*
     Compiler specific settings.
@@ -71,6 +71,7 @@ typedef struct FMOD_DSPCONNECTION FMOD_DSPCONNECTION;
 typedef struct FMOD_POLYGON		  FMOD_POLYGON;
 typedef struct FMOD_GEOMETRY	  FMOD_GEOMETRY;
 typedef struct FMOD_SYNCPOINT	  FMOD_SYNCPOINT;
+typedef struct FMOD_ASYNCREADINFO FMOD_ASYNCREADINFO;
 typedef unsigned int              FMOD_MODE;
 typedef unsigned int              FMOD_TIMEUNIT;
 typedef unsigned int              FMOD_INITFLAGS;
@@ -288,7 +289,7 @@ typedef struct
     FMOD_FILE_ASYNCCANCELCALLBACK
 ]
 */
-typedef struct
+struct FMOD_ASYNCREADINFO
 {
     void           *handle;         /* [r] The file handle that was filled out in the open callback. */
     unsigned int    offset;         /* [r] Seek position, make sure you read from this file offset. */
@@ -300,7 +301,9 @@ typedef struct
     FMOD_RESULT     result;         /* [r/w] Result code, FMOD_OK tells the system it is ready to consume the data.  Set this last!  Default value = FMOD_ERR_NOTREADY. */
 
     void           *userdata;       /* [r] User data pointer. */
-} FMOD_ASYNCREADINFO;
+
+    const void    (*done)(FMOD_ASYNCREADINFO *info, FMOD_RESULT result);    /* FMOD file system wake up function.  Use instead of 'result' with FMOD_INIT_ASYNCREAD_FAST to get semaphore based performance improvement.  Call this when user file read is finished.  Pass result of file read as a parameter. */
+};
 
 
 /*
@@ -318,6 +321,7 @@ typedef struct
     - FMOD_OUTPUTTYPE_GC - extradriverdata is a pointer to a FMOD_GC_INFO struct. This can be found in fmodgc.h.
     - FMOD_OUTPUTTYPE_WII - extradriverdata is a pointer to a FMOD_WII_INFO struct. This can be found in fmodwii.h.
     - FMOD_OUTPUTTYPE_ALSA - extradriverdata is a pointer to a FMOD_LINUX_EXTRADRIVERDATA struct. This can be found in fmodlinux.h.
+    - FMOD_OUTPUTTYPE_PULSEAUDIO - extradriverdata is a const char * representing the name of the application to appear in PulseAudio mixer GUIs.
     
     Currently these are the only FMOD drivers that take extra information.  Other unknown plugins may have different requirements.
     
@@ -748,6 +752,7 @@ typedef enum
 #define FMOD_INIT_PS3_DISABLEDTS             0x10000000 /* PS3 only - Disable DTS output mode selection */
 #define FMOD_INIT_PS3_DISABLEDOLBYDIGITAL    0x20000000 /* PS3 only - Disable Dolby Digital output mode selection */
 #define FMOD_INIT_7POINT1_DOLBYMAPPING       0x40000000 /* PS3/PS4 only - FMOD uses the WAVEFORMATEX Microsoft 7.1 speaker mapping where the last 2 pairs of speakers are 'rears' then 'sides', but on PS3/PS4 these are mapped to 'surrounds' and 'backs'.  Use this flag to swap fmod's last 2 pair of speakers on PS3/PS4 to avoid needing to do a special case for these platforms. */
+#define FMOD_INIT_ASYNCREAD_FAST             0x80000000 /* All platforms - Rather than setting FMOD_ASYNCREADINFO::result, call FMOD_ASYNCREADINFO::done to enable a semaphore based wait inside fmod, rather than the older method which can incur up to 10ms delay per read. */
 /* [DEFINE_END] */
 
 
@@ -1036,7 +1041,7 @@ typedef enum
     
     <b>Note!</b> Using FMOD_SYSTEM_CALLBACKTYPE_DEVICELISTCHANGED (on Mac only) requires the application to be running an event loop which will allow external changes to device list to be detected by FMOD.
     
-    <b>Note!</b> The 'system' object pointer will be null for FMOD_SYSTEM_CALLBACKTYPE_THREADCREATED and FMOD_SYSTEM_CALLBACKTYPE_MEMORYALLOCATIONFAILED callbacks.
+    <b>Note!</b> The 'system' object pointer will be null for FMOD_SYSTEM_CALLBACKTYPE_MEMORYALLOCATIONFAILED callback.
 
     [PLATFORMS]
     Win32, Win64, Linux, Linux64, Macintosh, Xbox360, PlayStation Portable, PlayStation 3, Wii, iPhone, 3GS, NGP, Android
@@ -1053,9 +1058,10 @@ typedef enum
     FMOD_SYSTEM_CALLBACKTYPE_DEVICELISTCHANGED,         /* Called from System::update when the enumerated list of devices has changed. */
     FMOD_SYSTEM_CALLBACKTYPE_DEVICELOST,                /* Called from System::update when an output device has been lost due to control panel parameter changes and FMOD cannot automatically recover. */
     FMOD_SYSTEM_CALLBACKTYPE_MEMORYALLOCATIONFAILED,    /* Called directly when a memory allocation fails somewhere in FMOD.  (NOTE - 'system' will be NULL in this callback type.)*/
-    FMOD_SYSTEM_CALLBACKTYPE_THREADCREATED,             /* Called directly when a thread is created. (NOTE - 'system' will be NULL in this callback type.) */
+    FMOD_SYSTEM_CALLBACKTYPE_THREADCREATED,             /* Called directly when a thread is created. */
     FMOD_SYSTEM_CALLBACKTYPE_BADDSPCONNECTION,          /* Called when a bad connection was made with DSP::addInput. Usually called from mixer thread because that is where the connections are made.  */
     FMOD_SYSTEM_CALLBACKTYPE_BADDSPLEVEL,               /* Called when too many effects were added exceeding the maximum tree depth of 128.  This is most likely caused by accidentally adding too many DSP effects. Usually called from mixer thread because that is where the connections are made.  */
+    FMOD_SYSTEM_CALLBACKTYPE_THREADDESTROYED,           /* Called directly when a thread is destroyed. */
 
     FMOD_SYSTEM_CALLBACKTYPE_MAX,                       /* Maximum number of callback types supported. */
     FMOD_SYSTEM_CALLBACKTYPE_FORCEINT = 65536           /* Makes sure this enum is signed 32bit. */
@@ -2046,6 +2052,7 @@ FMOD_RESULT F_API FMOD_Sound_Set3DCustomRolloff      (FMOD_SOUND *sound, FMOD_VE
 FMOD_RESULT F_API FMOD_Sound_Get3DCustomRolloff      (FMOD_SOUND *sound, FMOD_VECTOR **points, int *numpoints);
 FMOD_RESULT F_API FMOD_Sound_SetSubSound             (FMOD_SOUND *sound, int index, FMOD_SOUND *subsound);
 FMOD_RESULT F_API FMOD_Sound_GetSubSound             (FMOD_SOUND *sound, int index, FMOD_SOUND **subsound);
+FMOD_RESULT F_API FMOD_Sound_GetSubSoundParent       (FMOD_SOUND *sound, FMOD_SOUND **parentsound);
 FMOD_RESULT F_API FMOD_Sound_SetSubSoundSentence     (FMOD_SOUND *sound, int *subsoundlist, int numsubsounds);
 FMOD_RESULT F_API FMOD_Sound_GetName                 (FMOD_SOUND *sound, char *name, int namelen);
 FMOD_RESULT F_API FMOD_Sound_GetLength               (FMOD_SOUND *sound, unsigned int *length, FMOD_TIMEUNIT lengthtype);
