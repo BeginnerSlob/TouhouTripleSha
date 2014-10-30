@@ -922,7 +922,7 @@ public:
                 }
             }
             bool use = false;
-            if (target->canSlash(victim)) {
+            if (target->canSlash(victim, false)) {
                 QString prompt = QString("@ikqingmu-slash:%1:%2").arg(player->objectName()).arg(victim->objectName());
                 use = room->askForUseSlashTo(target, victim, prompt, false);
             }
