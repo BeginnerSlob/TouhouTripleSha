@@ -3163,11 +3163,20 @@ public:
 class IkQimu: public TriggerSkill {
 public:
     IkQimu(): TriggerSkill("ikqimu") {
-        events << BeforeCardsMove;
+        events << BeforeCardsMove << EventPhaseChanging;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAllPlayers()) {
+                    if (p->hasFlag("ikqimu"))
+                        p->setFlags("-ikqimu");
+                }
+            }
+            return QStringList();
+        }
         if (!TriggerSkill::triggerable(player))
             return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
@@ -3202,7 +3211,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(player))
+        if (!player || player->hasFlag("ikqimu"))
             return QStringList();
         const Card *card = NULL;
         if (triggerEvent == PreCardUsed)
@@ -3212,10 +3221,10 @@ public:
             if (response.m_isUse)
                card = response.m_card;
         }
-        if (card && card->getHandlingMethod() == Card::MethodUse) {
+        if (card && card->getHandlingMethod() == Card::MethodUse && card->getTypeId() != Card::TypeSkill) {
             ServerPlayer *current = room->getCurrent();
-            if (current && current->getPhase() != Player::NotActive && !current->hasFlag("ikqimu")) {
-                current->setFlags("ikqimu");
+            if (current && current->getPhase() != Player::NotActive) {
+                player->setFlags("ikqimu");
                 QList<int> ids;
                 if (!card->isVirtualCard())
                     ids << card->getEffectiveId();
