@@ -488,6 +488,8 @@ void Player::setEquip(WrappedCard *equip) {
 void Player::removeEquip(WrappedCard *equip) {
     const EquipCard *card = qobject_cast<const EquipCard *>(equip->getRealCard());
     Q_ASSERT(card != NULL);
+    if (!card)
+        card = qobject_cast<const EquipCard *>(Sanguosha->getEngineCard(equip->getEffectiveId()));
     switch(card->location()) {
     case EquipCard::WeaponLocation: weapon = NULL; break;
     case EquipCard::ArmorLocation: armor = NULL; break;
