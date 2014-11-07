@@ -1003,6 +1003,7 @@ Nullification::Nullification(Suit suit, int number)
 void Nullification::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
     // does nothing, just throw it
     CardMoveReason reason(CardMoveReason::S_REASON_USE, source->objectName());
+    reason.m_extraData = QVariant::fromValue((const Card *)this);
     room->moveCardTo(this, source, NULL, Player::DiscardPile, reason);
 }
 

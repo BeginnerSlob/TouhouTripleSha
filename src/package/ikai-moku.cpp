@@ -590,16 +590,15 @@ public:
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
-        bool can_invoke = true;
+        if (!target)
+            return false;
         foreach (ServerPlayer *p, target->getRoom()->getAllPlayers()) {
-            if (target->getHp() > p->getHp()) {
-                can_invoke = false;
-                break;
-            }
+            if (p->getHp() < target->getHp())
+                return false;
         }
-        return can_invoke && target != NULL && target->getPhase() == Player::Start
-               && target->hasLordSkill("ikmugua")
+        return target->getPhase() == Player::Start
                && target->isAlive()
+               && target->hasLordSkill("ikmugua")
                && target->getMark("@mugua") == 0;
     }
 
@@ -3006,7 +3005,8 @@ bool IkJibanCard::targetFilter(const QList<const Player *> &targets, const Playe
 
 void IkJibanCard::onEffect(const CardEffectStruct &effect) const{
     ServerPlayer *erzhang = effect.from;
-    erzhang->getRoom()->moveCardTo(this, erzhang, effect.to, Player::PlaceEquip,
+    Room *room = erzhang->getRoom();
+    room->moveCardTo(this, erzhang, effect.to, Player::PlaceEquip,
                                    CardMoveReason(CardMoveReason::S_REASON_PUT,
                                                   erzhang->objectName(), "ikjiban", QString()));
 
@@ -3014,7 +3014,7 @@ void IkJibanCard::onEffect(const CardEffectStruct &effect) const{
     log.type = "$IkJibanEquip";
     log.from = effect.to;
     log.card_str = QString::number(getEffectiveId());
-    erzhang->getRoom()->sendLog(log);
+    room->sendLog(log);
 
     erzhang->drawCards(1, "ikjiban");
 }
@@ -4275,6 +4275,7 @@ bool IkGuihuoCard::ikguihuo(ServerPlayer *yuji) const{
             room->setEmotion(player, ".");
 
         CardMoveReason reason(CardMoveReason::S_REASON_USE, yuji->objectName(), QString(), "ikguihuo");
+        reason.m_extraData = QVariant::fromValue((const Card *)this);
         CardsMoveStruct move(used_cards, yuji, NULL, Player::PlaceUnknown, Player::PlaceTable, reason);
         moves.append(move);
         room->moveCardsAtomic(moves, true);
@@ -4293,6 +4294,7 @@ bool IkGuihuoCard::ikguihuo(ServerPlayer *yuji) const{
         success = real && card->getSuit() == Card::Heart;
         if (success) {
             CardMoveReason reason(CardMoveReason::S_REASON_USE, yuji->objectName(), QString(), "ikguihuo");
+            reason.m_extraData = QVariant::fromValue((const Card *)this);
             CardsMoveStruct move(used_cards, yuji, NULL, Player::PlaceUnknown, Player::PlaceTable, reason);
             moves.append(move);
             room->moveCardsAtomic(moves, true);
