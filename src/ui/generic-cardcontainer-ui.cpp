@@ -676,6 +676,8 @@ QList<CardItem *> PlayerCardContainer::removeEquips(const QList<int> &cardIds) {
     foreach (int card_id, cardIds) {
         WrappedCard *wrapped = Sanguosha->getWrappedCard(card_id);
         const EquipCard *equip_card = qobject_cast<const EquipCard *>(wrapped->getRealCard());
+        if (!equip_card)
+            equip_card = qobject_cast<const EquipCard *>(Sanguosha->getEngineCard(card_id));
         int index = (int)(equip_card->location());
         Q_ASSERT(_m_equipCards[index] != NULL);
         CardItem *equip = _m_equipCards[index];
