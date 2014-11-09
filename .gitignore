@@ -19,8 +19,10 @@ etc/customScenes/custom_scenario.txt
 QSanguosha.exe
 /tools/
 builds/vs2010/Win32/
+builds/vs2010__/Win32/
 Bin/
 /builds/vs2010/ipch
+/builds/vs2010__/ipch
 /lib/lua.lib
 /lib/jsoncpp.lib
 /lib/breakpad.lib
@@ -29,6 +31,11 @@ Bin/
 /builds/vs2010/QSanguosha.suo
 /builds/vs2010/*.user
 /builds/vs2010/*.opensdf
+/builds/vs2010__/ipch
+/builds/vs2010__/QSanguosha.sdf
+/builds/vs2010__/QSanguosha.suo
+/builds/vs2010__/*.user
+/builds/vs2010__/*.opensdf
 /sanguosha.ts
 /image/system/button/promptbox
 /image/system/button/back2.png
