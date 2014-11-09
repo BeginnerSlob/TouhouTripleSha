@@ -1455,15 +1455,18 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!WeaponSkill::triggerable(player) || player->getPhase() != Player::NotActive || player->hasFlag("Global_MoonSpearDisabled"))
+        if (!WeaponSkill::triggerable(player) || player->getPhase() != Player::NotActive)
             return QStringList();
 
         const Card *card = NULL;
         if (triggerEvent == CardUsed) {
             CardUseStruct card_use = data.value<CardUseStruct>();
-            card = card_use.card;
+            if (card_use.m_isHandcard)
+                card = card_use.card;
         } else if (triggerEvent == CardResponded) {
-            card = data.value<CardResponseStruct>().m_card;
+            CardResponseStruct resp = data.value<CardResponseStruct>();
+            if (resp.m_isHandcard && !resp.m_isRetrial)
+                card = resp.m_card;
         }
 
         if (card == NULL || !card->isBlack()

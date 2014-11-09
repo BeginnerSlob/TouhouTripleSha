@@ -639,18 +639,6 @@ void Card::onUse(Room *room, const CardUseStruct &use) const{
     else
         used_cards << card_use.card->getEffectiveId();
 
-    bool isHandcard = true;
-    if (!used_cards.isEmpty()) {
-        foreach (int id, used_cards) {
-            if (room->getCardOwner(id) != use.from || room->getCardPlace(id) != Player::PlaceHand) {
-                isHandcard = false;
-                break;
-            }
-        }
-    } else {
-        isHandcard = false;
-    }
-
     if (card_use.card->getTypeId() != TypeSkill) {
         CardMoveReason reason(CardMoveReason::S_REASON_USE, card_use.from->objectName(), QString(), card_use.card->getSkillName(), QString());
         if (card_use.to.size() == 1)
@@ -668,10 +656,7 @@ void Card::onUse(Room *room, const CardUseStruct &use) const{
     }
 
     data = QVariant::fromValue(card_use);
-    if (!isHandcard)
-        card_use.from->setFlags("Global_MoonSpearDisabled");
     thread->trigger(CardUsed, room, card_use.from, data);
-    card_use.from->setFlags("-Global_MoonSpearDisabled");
     card_use = data.value<CardUseStruct>();
     thread->trigger(CardFinished, room, card_use.from, data);
 }
