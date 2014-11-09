@@ -1352,10 +1352,7 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
                 }
             }
 
-            if (!isHandcard)
-                player->setFlags("Global_MoonSpearDisabled");
             thread->trigger(CardResponded, this, player, data);
-            player->setFlags("-Global_MoonSpearDisabled");
             if (method == Card::MethodUse) {
                 if (getCardPlace(card->getEffectiveId()) == Player::PlaceTable) {
                     CardMoveReason reason(CardMoveReason::S_REASON_LETUSE, player->objectName(),
@@ -5375,11 +5372,8 @@ void Room::retrial(const Card *card, ServerPlayer *player, JudgeStruct *judge, c
     moveCardsAtomic(moves, true);
     judge->updateResult();
 
-    if (triggerResponded) {
-        player->setFlags("Global_MoonSpearDisabled");
+    if (triggerResponded)
         thread->trigger(CardResponded, this, player, data);
-        player->setFlags("-Global_MoonSpearDisabled");
-    }
 }
 
 int Room::askForRende(ServerPlayer *liubei, QList<int> &cards, const QString &skill_name,
