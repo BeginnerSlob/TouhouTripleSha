@@ -702,6 +702,10 @@ public:
     virtual bool isEnabledAtPlay(const Player *player) const {
         return player->hasFlag("thhuanlong") && Slash::IsAvailable(player);
     }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+        return player->hasFlag("thhuanlong") && pattern == "slash";
+    }
 };
 
 class ThHuanlong: public TriggerSkill {
