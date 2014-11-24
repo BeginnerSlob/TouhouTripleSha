@@ -417,10 +417,12 @@ public:
     virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const {
         QMap<ServerPlayer *, QStringList> skill_list;
         CardEffectStruct effect = data.value<CardEffectStruct>();
-        if (effect.card->isKindOf("Peach"))
-            foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
+        if (effect.card->isKindOf("Peach") && !effect.nullified) {
+            foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
                 if (owner->canDiscard(owner, "he"))
                     skill_list.insert(owner, QStringList(objectName()));
+            }
+        }
         return skill_list;
     }
 
@@ -435,20 +437,22 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         CardEffectStruct effect = data.value<CardEffectStruct>();
-        room->setPlayerProperty(player, "maxhp", player->getMaxHp() + 1);
+        if (player->getMaxHp() <= player->getGeneralMaxHp()) {
+            room->setPlayerProperty(player, "maxhp", player->getMaxHp() + 1);
 
-        LogMessage log;
-        log.type = "#GainMaxHp";
-        log.from = player;
-        log.arg = QString::number(1);
-        room->sendLog(log);
+            LogMessage log;
+            log.type = "#GainMaxHp";
+            log.from = player;
+            log.arg = QString::number(1);
+            room->sendLog(log);
 
-        LogMessage log2;
-        log2.type = "#GetHp";
-        log2.from = player;
-        log2.arg = QString::number(player->getHp());
-        log2.arg2 = QString::number(player->getMaxHp());
-        room->sendLog(log2);
+            LogMessage log2;
+            log2.type = "#GetHp";
+            log2.from = player;
+            log2.arg = QString::number(player->getHp());
+            log2.arg2 = QString::number(player->getMaxHp());
+            room->sendLog(log2);
+        }
 
         effect.nullified = true;
 
