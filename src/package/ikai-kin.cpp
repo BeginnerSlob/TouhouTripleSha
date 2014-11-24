@@ -91,9 +91,17 @@ public:
         if (triggerEvent == CardsMoveOneTime) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.to == player && move.from && move.from->isAlive() && move.from != move.to
-                && move.card_ids.size() >= 2
-                && move.reason.m_reason != CardMoveReason::S_REASON_PREVIEWGIVE)
-                return QStringList(objectName());
+                && (move.to_place == Player::PlaceHand || move.to_place == Player::PlaceEquip)
+                && move.reason.m_reason != CardMoveReason::S_REASON_PREVIEWGIVE) {
+                int n = 0;
+                foreach (Player::Place place, move.from_places) {
+                    if (place == Player::PlaceHand || place == Player::PlaceEquip)
+                        ++n;
+                    if (n >= 2)
+                        return QStringList(objectName());
+                }
+                return QStringList();
+            }
         } else if (triggerEvent == Damaged) {
             DamageStruct damage = data.value<DamageStruct>();
             ServerPlayer *source = damage.from;
