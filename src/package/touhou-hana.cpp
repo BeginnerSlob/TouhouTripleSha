@@ -1540,15 +1540,13 @@ public:
             return QStringList();
         if (move.to_place == Player::DiscardPile
             && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
-            QStringList skill_list;
             int i = 0;
             foreach (int card_id, move.card_ids) {
                 if (Sanguosha->getCard(card_id)->getSuit() == Card::Diamond && room->getCardOwner(card_id) == move.from
                     && (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip))
-                    skill_list << objectName();
+                    return QStringList(objectName());
                 i++;
             }
-            return skill_list;
         }
         return QStringList();
     }
