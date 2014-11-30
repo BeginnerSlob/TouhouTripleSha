@@ -1269,6 +1269,118 @@ public:
     }
 };
 
+IkWujietiyaCard::IkWujietiyaCard() {
+}
+
+bool IkWujietiyaCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && !to_select->isNude() && to_select != Self;
+}
+
+void IkWujietiyaCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    bool can_discard = effect.from->canDiscard(effect.to, "he");
+    QString pattern = "..";
+    if (!can_discard)
+        pattern += "!";
+    const Card *card = room->askForCard(effect.to, pattern, "@ikwujietiya-put:" + effect.from->objectName(), QVariant(), MethodNone);
+    if (!card && !can_discard) {
+        QList<const Card *> cards = effect.to->getCards("he");
+        card = cards.at(qrand() % cards.length());
+    }
+    if (card)
+        effect.from->addToPile("ikwujietiyapile", card);
+    else if (can_discard) {
+        int card_id = room->askForCardChosen(effect.from, effect.to, "he", "ikwujietiya", false, MethodDiscard);
+        room->throwCard(card_id, effect.to, effect.from);
+    }
+}
+
+class IkWujietiyaViewAsSkill: public OneCardViewAsSkill {
+public:
+    IkWujietiyaViewAsSkill(): OneCardViewAsSkill("ikwujietiya") {
+        response_or_use = true;
+    }
+
+    virtual bool viewFilter(const Card *card) const{
+        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) {
+            if (Self->isJilei(card))
+                return false;
+            if (Self->getPile("wooden_ox").contains(card->getEffectiveId()))
+                return false;
+            if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play) {
+                foreach (const Player *p, Self->getAliveSiblings()) {
+                    if (p->getPile("thbaochuipile").contains(card->getEffectiveId()))
+                        return false;
+                }
+            }
+            return true;
+        }
+        QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+        if (pattern == "jink")
+            return card->isRed();
+        else if (pattern == "nullification")
+            return card->isBlack();
+        return false;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->canDiscard(player, "he") && !player->hasUsed("IkWujietiyaCard");
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+        if (player->getPile("ikwujietiyapile").isEmpty())
+            return false;
+        return  pattern == "jink" || pattern == "nullification";
+    }
+
+    virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
+        return !player->getPile("ikwujietiyapile").isEmpty();
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) {
+            IkWujietiyaCard *first = new IkWujietiyaCard;
+            first->addSubcard(originalCard);
+            return first;
+        }
+        if (originalCard->isRed()) {
+            Jink *jink = new Jink(originalCard->getSuit(), originalCard->getNumber());
+            jink->addSubcard(originalCard);
+            jink->setSkillName(objectName());
+            return jink;
+        }
+        if (originalCard->isBlack()) {
+            Nullification *nullification = new Nullification(originalCard->getSuit(), originalCard->getNumber());
+            nullification->addSubcard(originalCard);
+            nullification->setSkillName(objectName());
+            return nullification;
+        }
+        return NULL;
+    }
+};
+
+class IkWujietiya: public PhaseChangeSkill {
+public:
+    IkWujietiya(): PhaseChangeSkill("ikwujietiya") {
+        view_as_skill = new IkWujietiyaViewAsSkill;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+            && target->getPhase() == Player::Start
+            && !target->getPile("ikwujietiyapile").isEmpty();
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        room->sendCompulsoryTriggerLog(player, objectName());
+        DummyCard *dummy = new DummyCard(player->getPile("ikwujietiyapile"));
+        player->obtainCard(dummy);
+        delete dummy;
+        return false;
+    }
+};
+
 class IkXiaorui: public TriggerSkill {
 public:
     IkXiaorui(): TriggerSkill("ikxiaorui") {
@@ -4556,6 +4668,9 @@ IkaiSuiPackage::IkaiSuiPackage()
     wind049->addSkill(new IkFanzhong);
     wind049->addSkill(new IkYuanyuan);
 
+    General *wind050 = new General(this, "wind050", "kaze");
+    wind050->addSkill(new IkWujietiya);
+
     General *bloom023 = new General(this, "bloom023", "hana");
     bloom023->addSkill(new IkXiaorui);
 
@@ -4712,6 +4827,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkTianbeiCard>();
     addMetaObject<IkDuanmengCard>();
     addMetaObject<IkFanzhongCard>();
+    addMetaObject<IkWujietiyaCard>();
     addMetaObject<IkXinbanCard>();
     addMetaObject<IkShenyuCard>();
     addMetaObject<IkHongfaCard>();
