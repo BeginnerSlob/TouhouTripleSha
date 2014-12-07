@@ -716,29 +716,24 @@ public:
 class IkQizhong: public TriggerSkill {
 public:
     IkQizhong(): TriggerSkill("ikqizhong") {
-        events << CardUsed << EventPhaseChanging << CardFinished;
+        events << CardUsed << EventPhaseChanging << PreCardUsed;
         frequency = Frequent;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == EventPhaseChanging)
             player->setMark(objectName(), 0);
-        else if (triggerEvent == CardFinished) {
-            const Card *card = data.value<CardUseStruct>().card;
-            player->setMark(objectName(), card->getColor() + 1);
+        else if (triggerEvent == PreCardUsed) {
+            const Card *this_card = data.value<CardUseStruct>().card;
+            if (this_card && this_card->getTypeId() != Card::TypeSkill) {
+                const Card *last_card = player->tag["IkQizhongCard"].value<const Card *>();
+                if (last_card && !this_card->sameColorWith(last_card))
+                    room->setCardFlag(this_card, "IkQizhongInvoke");
+                player->tag["IkQizhongCard"] = QVariant::fromValue(this_card);
+            }
         } else if (triggerEvent == CardUsed && player->getPhase() == Player::Play && TriggerSkill::triggerable(player)) {
             CardUseStruct use = data.value<CardUseStruct>();
-            int num = player->getMark(objectName());
-            int color = -1;
-            if (num == 0)
-                return QStringList();
-            else if (num == 1)
-                color = Card::Red;
-            else if (num == 2)
-                color = Card::Black;
-            else if (num == 3)
-                color = Card::Colorless;
-            if (use.card->getColor() != color)
+            if (use.card->hasFlag("IkQizhongInvoke"))
                 return QStringList(objectName());
         }
         return QStringList();
