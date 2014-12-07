@@ -669,7 +669,7 @@ public:
                     log.card_str = QString::number(card_id);
                     room->sendLog(log);
                 }
-                target->obtainCard(card);
+                room->obtainCard(target, card, move.reason);
             } else
                 break;
         }
