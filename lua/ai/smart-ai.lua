@@ -1377,6 +1377,8 @@ function SmartAI:isFriend(other, another)
 end
 
 function SmartAI:isEnemy(other, another)
+	other = self.room:findPlayer(other:objectName())
+	another = self.room:findPlayer(another:objectName())
 	if not other then self.room:writeToConsole(debug.traceback()) return end
 	if another then
 		local of, af = self:isFriend(other), self:isFriend(another)
