@@ -74,10 +74,6 @@ public:
 
         return QStringList();
     }
-
-    virtual bool cost(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *) const{
-        return false;
-    }
 };
 
 ThJiyiCard::ThJiyiCard(){
