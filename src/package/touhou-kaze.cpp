@@ -400,6 +400,7 @@ public:
 class ThBeiyun: public TriggerSkill {
 public:
     ThBeiyun(): TriggerSkill("thbeiyun") {
+        frequency = Frequent;
         events << Dying;
     }
 
@@ -413,9 +414,8 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        if(!player->askForSkillInvoke(objectName()))
+        if (!player->askForSkillInvoke(objectName()))
             return false;
-
         room->broadcastSkillInvoke(objectName());
         return true;
     }
@@ -441,7 +441,7 @@ public:
                     break;
                 }
             }
-            QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+            QString choice = room->askForChoice(player, objectName(), choices.join("+"), QVariant::fromValue(IntList2VariantList(card_ids)));
 
             DummyCard *dummy = new DummyCard;
             dummy->deleteLater();
