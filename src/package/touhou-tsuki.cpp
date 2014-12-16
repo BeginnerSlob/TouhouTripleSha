@@ -402,7 +402,9 @@ public:
         JudgeStruct *judge = data.value<JudgeStruct *>();
         QList<int> card_ids = room->getNCards(2, false);
         room->fillAG(card_ids, player);
+        player->tag["ThKaiyunJudge"] = data;
         int card_id = room->askForAG(player, card_ids, false, objectName());
+        player->tag.remove("ThKaiyunJudge");
         card_ids.removeOne(card_id);
         room->clearAG(player);
         room->retrial(Sanguosha->getEngineCard(card_id), player, judge, objectName());
@@ -446,7 +448,9 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         DamageStruct damage = data.value<DamageStruct>();
+        player->tag["ThJiaotuTarget"] = QVariant::fromValue(damage.from);
         if (player->askForSkillInvoke(objectName(), QVariant::fromValue(damage.from))) {
+            player->tag.remove("ThJiaotuTarget");
             room->broadcastSkillInvoke(objectName());
             return true;
         }
