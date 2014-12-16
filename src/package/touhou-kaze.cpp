@@ -301,7 +301,7 @@ public:
         if (!TriggerSkill::triggerable(player))
             return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
-        if(damage.to->isDead())
+        if (damage.to->isDead())
             return QStringList();
         return QStringList(objectName());
     }
