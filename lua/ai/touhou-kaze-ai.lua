@@ -270,3 +270,73 @@ sgs.ai_skill_cardask["@thzhanye"] = function(self, data, pattern, target)
 	end
 	return "."
 end
+
+local thenan_skill = {}
+thenan_skill.name = "thenan"
+table.insert(sgs.ai_skills, thenan_skill)
+thenan_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThEnanCard") then
+		return nil
+	end
+
+	local skillcard = sgs.Card_Parse("@ThEnanCard=.")
+	assert(skillcard)
+	return skillcard
+end
+
+sgs.ai_skill_use_func.ThEnanCard = function(card, use, self)
+	if self.player:getHandcardNum() <= 1 and self.player:getHp() == 1 and self.player:getMaxHp() > 4 and getCardsNum("Peach", self.player) + getCardsNum("Analeptic", self.player) > 0 then
+		use.card = card
+		if use.to then
+			use.to:append(self.player)
+		end
+		return
+	end
+	for _, enemy in ipairs(self.enemies) do
+		if self.player:inMyAttackRange(enemy) and self:isWeak(enemy) then
+			use.card = card
+			if use.to then
+				use.to:append(enemy)
+			end
+			return
+		end
+	end
+	return "."	
+end
+
+sgs.ai_card_intention.ThEnanCard = 80
+
+sgs.ai_skill_choice.thbeiyun = function(self, choices, data)
+	if string.find(choices, "get") then
+		return "get"
+	end
+	local beiyun_ids = data:toIntList()
+	local red, black, not_red, not_black = false, false, false, false
+	for _, id in sgs.qlist(beiyun_ids) do
+		local card = sgs.Sanguosha:getCard(id)
+		if card:isRed() then
+			if not red and card:getSuit() == sgs.Card_Diamond then
+				red = true
+			end
+			if card:isKindOf("Peach") or card:isKindOf("Analeptic") then
+				not_red = true
+			end
+		elseif card:isBlack() then
+			if not black then
+				black = true
+			end
+			if card:isKindOf("Peach") or card:isKindOf("Analeptic") then
+				not_black = true
+			end
+		end
+	end
+	if not not_red and red then
+		return "red"
+	end
+	if getCardsNum("Peach", self.player) + getCardsNum("Analeptic", self.player) >= 1 - self.player:getHp() then -- i'm safe
+		return black and "black" or "cancel"
+	else
+		return not not_black and black and "black" or "cancel"
+	end
+	return "cancel"
+end
