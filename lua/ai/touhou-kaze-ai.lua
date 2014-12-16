@@ -244,3 +244,29 @@ sgs.ai_skill_playerchosen.thjilan = function(self, targets)
 	end
 	return enemies[1]
 end
+
+sgs.ai_skill_invoke.thwangshou = function(self, data)
+	local target = data:toPlayer()
+	if self:isFriend(target) then
+		return (target:hasSkill("ikcangyou") and not target:getEquips():isEmpty()) or self:needToThrowArmor(target)
+	end
+	return self:isEnemy(target)
+end
+
+sgs.ai_skill_cardask["@thzhanye"] = function(self, data, pattern, target)
+	for _, slash in ipairs(self:getCards("Slash")) do
+		if self:isFriend(target) and self:slashIsEffective(slash, target) then
+			if self:findLeijiTarget(target, 50, self.player) then return slash:toString() end
+			if self:getDamagedEffects(target, self.player, true) then return slash:toString() end
+		end
+
+		local nature = sgs.DamageStruct_Normal
+		if slash:isKindOf("FireSlash") then nature = sgs.DamageStruct_Fire
+		elseif slash:isKindOf("ThunderSlash") then nature = sgs.DamageStruct_Thunder end
+		if self:isEnemy(target) and self:slashIsEffective(slash, target) and self:canAttack(target, self.player, nature)
+			and not self:getDamagedEffects(target, self.player, true) and not self:findLeijiTarget(target, 50, self.player) then
+			return slash:toString()
+		end
+	end
+	return "."
+end
