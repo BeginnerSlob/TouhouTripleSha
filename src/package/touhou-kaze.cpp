@@ -142,7 +142,6 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         JudgeStruct judge;
-        judge.good = true;
         judge.play_animation = false;
         judge.reason = objectName();
         judge.who = player;
@@ -159,7 +158,9 @@ public:
                 }
 
         if (!targets.isEmpty()) {
+            player->tag["ThJilanwenJudge"] = QVariant::fromValue(&judge); //for AI
             ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "thjilanwen-choose", true);
+            player->tag.remove("ThJilanwenJudge");
             if (target) {
                 QList<int> disabled_ids;
                 foreach (const Card *card, target->getCards("ej"))
