@@ -787,6 +787,16 @@ sgs.ai_compare_funcs = {
 			return c1 < c2
 		end
 	end,
+	
+	losthp = function(a, b)
+		local c1 = a:getLostHp()
+		local c2 = b:getLostHp()
+		if c1 == c2 then
+			return sgs.ai_compare_funcs.defense(a, b)
+		else
+			return c1 < c2
+		end
+	end,
 
 	value = function(a, b)
 		return sgs.getValue(a) < sgs.getValue(b)

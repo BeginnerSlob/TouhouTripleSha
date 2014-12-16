@@ -2664,6 +2664,15 @@ function SmartAI:useCardIndulgence(card, use)
 	table.sort(enemies, cmp)
 
 	local target = enemies[1]
+	if not target then
+		self.room:writeToConsole("no Target!")
+	end
+	if not target:inherits("ServerPlayer") then
+		self.room:writeToConsole("not ServerPlayer!")
+		if target:inherits("Player") then
+			self.room:writeToConsole("is Player!")
+		end
+	end
 	if getvalue(target) > -100 then
 		use.card = card
 		if use.to then use.to:append(target) end
