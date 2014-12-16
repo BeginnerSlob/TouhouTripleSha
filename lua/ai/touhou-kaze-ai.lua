@@ -158,3 +158,89 @@ sgs.ai_skill_playerchosen.thjilanwen = function(self, targets)
 	end
 	return nil
 end
+
+local thnianke_skill = {}
+thnianke_skill.name = "thnianke"
+table.insert(sgs.ai_skills, thnianke_skill)
+thnianke_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThNiankeCard") then
+		return nil
+	end
+	local cards = self.player:getCards("h")
+	cards = sgs.QList2Table(cards)
+
+	local card
+
+	self:sortByUseValue(cards, true)
+
+	for _, acard in ipairs(cards) do
+		if acard:isKindOf("Jink") then
+			card = acard
+			break
+		end
+	end
+
+	if not card then
+		return nil
+	end
+
+	local card_id = card:getEffectiveId()
+	local card_str = "@ThNiankeCard=" .. card_id
+	local skillcard = sgs.Card_Parse(card_str)
+
+	assert(skillcard)
+	return skillcard
+end
+
+sgs.ai_skill_use_func.ThNiankeCard = function(card, use, self)
+	local targets_red = {}
+	local targets = {}
+	for _, friend in ipairs(self.friends_noself) do
+		if (friend:isKongcheng() and not self:needKongcheng(friend, true)) or getKnownCard(friend, self.player, "red") == friend:getHandcardNum() then
+			table.insert(targets_red, friend)
+		else
+			table.insert(targets, friend)
+		end
+	end
+	if #targets_red > 0 then
+		use.card = card
+		self:sort(targets_red, "defense")
+		if use.to then
+			use.to:append(targets_red[1])
+		end
+	end
+	if self:getCardsNum("Jink", "h") <= 1 then
+		return "."
+	end
+	if #targets > 0 then
+		use.card = card
+		self:sort(targets, "defense")
+		if use.to then
+			use.to:append(targets[1])
+		end
+	end
+end
+
+sgs.ai_card_intention.ThNiankeCard = -80
+
+sgs.ai_skill_playerchosen.thjilan = function(self, targets)
+	for _, p in ipairs(self.friends) do
+		if p:getArmor() and self:needToThrowArmor(p) and p:canDiscard(p, p:getArmor():getEffectiveId()) and p:getLostHp() <= 1 then
+			return p
+		end
+	end
+	local enemies = {}
+	for _, p in ipairs(self.enemies) do
+		if p:canDiscard(p, "he") then
+			table.insert(enemies, p)
+		end
+	end
+	self:sort(enemies, "losthp")
+	enemies = sgs.reverse(enemies)
+	for _, enemy in ipairs(enemies) do
+		if self:isWeak(enemy) then
+			return enemy
+		end
+	end
+	return enemies[1]
+end
