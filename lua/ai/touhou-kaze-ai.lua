@@ -73,7 +73,7 @@ sgs.ai_skill_cardask["@thjiyi"] = function(self, data, pattern, target)
 	self:sortByKeepValue(cards)
 	for _, cd in ipairs(cards) do
 		if cd:isKindOf("TrickCard") then
-			return "$"..cd:getEffective()
+			return "$"..cd:getEffectiveId()
 		end
 	end
 	return "."
@@ -88,3 +88,73 @@ sgs.ai_card_intention.ThJiyiCard = function(self, card, from, to)
 end
 
 --thhuadi @to_do
+
+sgs.ai_skill_invoke.thjilanwen = function(self, data)
+	for _, target in sgs.qlist(self.room:getAllPlayers()) do
+		if self:isFriend(target) then
+			if (target:hasSkill("ikcangyou") and not target:getEquips():isEmpty()) or self:needToThrowArmor(target) then
+				return true
+			end
+			if target:containsTrick("indulgence") or target:containsTrick("supply_shortage") then
+				return true
+			end
+		end
+		if self:isEnemy(target) then
+			if target:hasSkills("ikyindie+ikguiyue") and target:getPhase() == sgs.Player_NotActive then return false end
+			if not target:getEquips():isEmpty() then
+				return true
+			else
+				return false
+			end
+		end
+	end
+	return true
+end
+
+sgs.ai_skill_playerchosen.thjilanwen = function(self, targets)
+	local judge = self.player:getTag("ThJilanwenJudge"):toJudge()
+	local suit = tonumber(judge.pattern)
+	for _, p in ipairs(self.friends_noself) do
+		if not targets:contains(p) then
+			continue
+		end
+		if p:hasSkill("ikcangyou") then
+			for _, cd in sgs.qlist(p:getEquips()) do
+				if cd:getSuit() ~= suit then
+					return p
+				end
+			end
+		end
+		if self:needToThrowArmor(p) then
+			if p:getArmor() and p:getArmor():getSuit() ~= suit then
+				return p
+			end
+		end
+		for _, cd in sgs.qlist(p:getJudgingArea()) do
+			if cd:isKindOf("Indulgence") or cd:isKindOf("SupplyShortage") then
+				return p
+			end
+		end
+	end
+	for _, p in ipairs(self.enemies) do
+		if not targets:contains(p) then
+			continue
+		end
+		if p:hasSkills("ikyindie+ikguiyue") and p:getPhase() == sgs.Player_NotActive then
+			continue
+		end
+		local equips = sgs.IntList()
+		for _, cd in sgs.qlist(p:getEquips()) do
+			equips:append(cd:getEffectiveId())
+		end
+		if p:getArmor() and self:needToThrowArmor(p) then
+			equips:removeOne(p:getArmor():getEffectiveId())
+		end
+		for _, id in sgs.qlist(equips) do
+			if sgs.Sanguosha:getCard(id):getSuit() ~= suit then
+				return p
+			end
+		end
+	end
+	return nil
+end
