@@ -326,6 +326,11 @@ function SmartAI:slashIsEffective(slash, to, from, ignore_armor)
 	if not to then self.room:writeToConsole(debug.traceback()) return false end
 	slash = slash or sgs.Sanguosha:cloneCard("slash")
 	from = from or self.player
+	--check【无念】
+	if to:hasSkill("thwunian") 
+	and from:getMaxHp() ~=1 and not from:isWounded() then
+		return false
+	end
 	if not ignore_armor and from:objectName() == self.player:objectName() then
 		if self.moukui_effect then
 			ignore_armor = true
