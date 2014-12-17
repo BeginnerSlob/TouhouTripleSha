@@ -878,7 +878,7 @@ public:
                 continue;
             choices << str;
         }
-        QString type = room->askForChoice(player, objectName(), choices.join("+"));
+        QString type = room->askForChoice(player, objectName(), choices.join("+"), QVariant::fromValue(IntList2VariantList(card_ids)));
         ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), objectName(), QString(), false, true);
         CardMoveReason reason2(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), objectName(), QString());
         DummyCard *dummy = new DummyCard;
@@ -955,7 +955,7 @@ void ThQianyiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     if (target->isWounded())
         choices << "recover";
     choices << "draw";
-    QString choice = room->askForChoice(source, "thqianyi", choices.join("+"));
+    QString choice = room->askForChoice(source, "thqianyi", choices.join("+"), QVariant::fromValue(target));
     if (choice == "recover")
         room->recover(target, RecoverStruct(source));
     else

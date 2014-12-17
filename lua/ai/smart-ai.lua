@@ -88,7 +88,7 @@ function setInitialTables()
 	sgs.lose_equip_skill = "kofxiaoji|xiaoji|xuanfeng|nosxuanfeng"
 	sgs.need_kongcheng = "lianying|noslianying|kongcheng|sijian"
 	sgs.masochism_skill = "nosyiji|yiji|jieming|fankui|nosfankui|nosenyuan|ganglie|vsganglie|nosganglie|enyuan|fangzhu|guixin|langgu|quanji|fenyong|chengxiang|noschengxiang"
-	sgs.wizard_skill = "guicainosguicai|guidao|jilve|tiandu|noszhenlie|huanshi"
+	sgs.wizard_skill = "guicai|nosguicai|guidao|jilve|tiandu|noszhenlie|huanshi"
 	sgs.wizard_harm_skill = "guicai|nosguicai|guidao|jilve|huanshi"
 	sgs.priority_skill = "dimeng|haoshi|qingnang|nosjizhi|jizhi|guzheng|qixi|jieyin|nosguose|guose|duanliang|jujian|fanjian|nosfanjian|noslijian|lijian|" ..
 							"manjuan|lihun|tuxi|nostuxi|qiaobian|yongsi|zhiheng|luoshen|nosrende|rende|mingce|wansha|gongxin|jilve|" ..
@@ -1387,10 +1387,8 @@ function SmartAI:isFriend(other, another)
 end
 
 function SmartAI:isEnemy(other, another)
-	other = self.room:findPlayer(other:objectName())
 	if not other then self.room:writeToConsole(debug.traceback()) return end
 	if another then
-		another = self.room:findPlayer(another:objectName())
 		local of, af = self:isFriend(other), self:isFriend(another)
 		return of ~= nil and af ~= nil and of ~= af
 	end
@@ -1831,7 +1829,7 @@ function SmartAI:filterEvent(triggerEvent, player, data)
 		end
 
 		sgs.do_not_save_targets = {}
-		if from and sgs.ai_role[from:objectName()] == "rebel" and not self:isFriend(from, from:getNextAlive())
+		if from and sgs.ai_role[from:objectName()] == "rebel" and not self:isFriend(from, self.room:findPlayer(from:getNextAlive():objectName()))
 			and (card:isKindOf("SavageAssault") or card:isKindOf("ArcheryAttack") or card:isKindOf("Duel") or card:isKindOf("Slash")) then
 			for _, target in ipairs(to) do
 				if self:isFriend(target, from) and sgs.ai_role[target:objectName()] == "rebel" and target:getHp() == 1 and target:isKongcheng()
@@ -2356,7 +2354,7 @@ function SmartAI:askForNullification(trick, from, to, positive)
 					return null_card
 				end
 				if trick:isKindOf("AmazingGrace") then
-					local NP = to:getNextAlive()
+					local NP = self.room:findPlayer(to:getNextAlive():objectName())
 					if self:isFriend(NP) then
 						local ag_ids = self.room:getTag("AmazingGrace"):toIntList()
 						local peach_num, exnihilo_num, snatch_num, analeptic_num, crossbow_num, indulgence_num = 0, 0, 0, 0, 0, 0
@@ -2723,7 +2721,7 @@ function SmartAI:askForAG(card_ids, refusable, reason)
 	end
 
 	if refusable and reason == "xinzhan" then
-		local next_player = self.player:getNextAlive()
+		local next_player = self.room:findPlayer(self.player:getNextAlive():objectName())
 		if self:isFriend(next_player) and next_player:containsTrick("indulgence") and not next_player:containsTrick("YanxiaoCard") then
 			if #card_ids == 1 then return -1 end
 		end
