@@ -3278,6 +3278,8 @@ void Room::damage(const DamageStruct &data) {
         return;
     }
 
+    damage_data = qdata.value<DamageStruct>();
+
     try {
         bool enter_stack = false;
         do {
@@ -3285,6 +3287,8 @@ void Room::damage(const DamageStruct &data) {
                 REMOVE_QINGGANG_TAG
                 break;
             }
+
+            damage_data = qdata.value<DamageStruct>();
 
             if (damage_data.from) {
                 if (thread->trigger(DamageCaused, this, damage_data.from, qdata)) {
