@@ -552,11 +552,14 @@ sgs.ai_skill_use_func.ThQianyiCard = function(card, use, self)
 end
 
 sgs.ai_skill_choice.thqianyi = function(self, choices, data)
-	local player = target
-	if player:hasSkills(sgs.cardneed_skill) and not self:isWeak(player) then
+	local player = data:toPlayer()
+	if not player:isWounded() then
 		return "draw"
-	end
-	if self:isWeak(player) and player:hasSkills(sgs.masochism_skill) then
+	elseif  self:willSkipPlayPhase(player)  then
+		return "recover"
+	elseif player:hasSkills(sgs.cardneed_skill) and not self:isWeak(player) then
+		return "draw"
+	elseif self:isWeak(player) and player:hasSkills(sgs.masochism_skill) then
 		return "recover"
 	end
 	return math.random(1, 2) == 1 and "draw" or "recover"
@@ -565,7 +568,7 @@ end
 sgs.ai_use_priority.ThQianyiCard = -5
 sgs.ai_card_intention.ThQianyiCard = -150
 
---¡¾Âñ»ğ¡¿ai
+--ã€åŸ‹ç«ã€‘ai
 sgs.string2suit = {
         spade = 0 ,
         club = 1 ,
@@ -576,7 +579,7 @@ local countKnownSuits = function(target)
 	local suits = {}
 	local knowncards={}
 	for _, card in sgs.qlist(target:getHandcards()) do
-		--flagµÄÇé¿öÆäÊµ¿ÉÒÔ²»Òª¡£¡£¡£
+		--flagçš„æƒ…å†µå…¶å®å¯ä»¥ä¸è¦ã€‚ã€‚ã€‚
 		local flag = string.format("%s_%s_%s", "visible", global_room:getCurrent():objectName(), target:objectName())
 		if  card:hasFlag("visible") or card:hasFlag(flag) then	
 			table.insert(knowncards,card)
@@ -623,7 +626,7 @@ sgs.ai_skill_use_func.ThMaihuoCard = function(card, use, self)
 		end
 	end
 	if #targets ==0 then return nil end
-	--µ¥´¿´ÓÂñ»ğÃşÅÆÊÕÒæ¿¼ÂÇ Ã»ÓĞ¿¼ÂÇcardneedµÄĞÅÏ¢ Ã»ÓĞ¿¼ÂÇfindPlayerToDraw
+	--å•çº¯ä»åŸ‹ç«æ‘¸ç‰Œæ”¶ç›Šè€ƒè™‘ æ²¡æœ‰è€ƒè™‘cardneedçš„ä¿¡æ¯ æ²¡æœ‰è€ƒè™‘findPlayerToDraw
 	table.sort(targets, maihuoCompare_func)
 	use.card = card
 	if use.to then
@@ -634,7 +637,7 @@ sgs.ai_skill_use_func.ThMaihuoCard = function(card, use, self)
 		if use.to:length() >= 1 then return end
 	end
 end
---ThMaihuoCard ÓÅÏÈ¶È²»ºÃÄÃÄó°¡¡£¡£¡£
+--ThMaihuoCard ä¼˜å…ˆåº¦ä¸å¥½æ‹¿æå•Šã€‚ã€‚ã€‚
 sgs.ai_use_priority.ThMaihuoCard =sgs.ai_use_priority.Peach +0.2
 sgs.ai_card_intention.ThMaihuoCard = -70
 sgs.ai_skill_suit.thmaihuo = function(self)
@@ -648,8 +651,8 @@ sgs.ai_skill_suit.thmaihuo = function(self)
     return  sgs.Card_Heart
 end
 
---¡¾ÎŞÄî¡¿ai
---ËùÓĞĞèÒªÉËº¦À´Ô´µÄneedDamage¶¼Òª¼ÇµÃ¼ì²â³ÖÓĞ¡¾ÎŞÄî¡¿¼¼ÄÜµÄattacker
+--ã€æ— å¿µã€‘ai
+--æ‰€æœ‰éœ€è¦ä¼¤å®³æ¥æºçš„needDamageéƒ½è¦è®°å¾—æ£€æµ‹æŒæœ‰ã€æ— å¿µã€‘æŠ€èƒ½çš„attacker
 --smart-ai hasTrickEffective
 --standardcards-ai slashIsEffective
 
