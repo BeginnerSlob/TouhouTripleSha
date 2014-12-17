@@ -1926,6 +1926,7 @@ public:
         if (triggerEvent == Predamage) {
             DamageStruct damage = data.value<DamageStruct>();
             damage.from = NULL;
+            damage.by_user = false;
             data = QVariant::fromValue(damage);
         } else if (triggerEvent == CardEffected) {
             CardEffectStruct effect = data.value<CardEffectStruct>();
