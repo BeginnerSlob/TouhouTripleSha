@@ -340,3 +340,99 @@ sgs.ai_skill_choice.thbeiyun = function(self, choices, data)
 	end
 	return "cancel"
 end
+
+
+
+
+--【埋火】ai
+sgs.string2suit = {
+        spade = 0 ,
+        club = 1 ,
+        heart = 2 ,
+        diamond = 3
+}
+local countKnownSuits = function(target)
+	local suits = {}
+	local knowncards={}
+	for _, card in sgs.qlist(target:getHandcards()) do
+		--flag的情况其实可以不要。。。
+		local flag = string.format("%s_%s_%s", "visible", global_room:getCurrent():objectName(), target:objectName())
+		if  card:hasFlag("visible") or card:hasFlag(flag) then	
+			table.insert(knowncards,card)
+		end
+	end
+	
+	if #knowncards==0 then return 1, nil end
+	
+	for _,c in pairs(knowncards)do
+		local suit = c:getSuitString()
+        if not suits[suit] then suits[suit] = 1 end
+        suits[suit] = suits[suit] + 1
+	end
+	local maxsuit = knowncards[1]:getSuitString()
+    for s, n in pairs(suits) do
+        if n > suits[maxsuit] then maxsuit = s end
+    end
+
+		return math.min(suits[maxsuit],3),sgs.string2suit[maxsuit] 
+end
+local maihuoCompare_func = function(a, b)
+	return countKnownSuits(a)> countKnownSuits(b)
+end
+local thmaihuo_skill = {}
+thmaihuo_skill.name = "thmaihuo"
+table.insert(sgs.ai_skills, thmaihuo_skill)
+function thmaihuo_skill.getTurnUseCard(self)
+	if self.player:hasUsed("ThMaihuoCard") then return nil end
+	local hearts={}
+	for _,c in sgs.qlist (self.player:getHandcards()) do
+		if c:getSuit() == sgs.Card_Heart then
+			table.insert(hearts,c)
+		end
+	end
+	if #hearts==0 then return nil end
+	self:sortByKeepValue(hearts)
+	return sgs.Card_Parse("@ThMaihuoCard=" .. hearts[1]:getEffectiveId())
+end
+sgs.ai_skill_use_func.ThMaihuoCard = function(card, use, self)
+	local targets={}
+	for _,p in pairs (self.friends_noself) do
+		if not self:willSkipPlayPhase(p)  then
+			table.insert(targets,p)
+		end
+	end
+	if #targets ==0 then return nil end
+	--单纯从埋火摸牌收益考虑 没有考虑cardneed的信息 没有考虑findPlayerToDraw
+	table.sort(targets, maihuoCompare_func)
+	use.card = card
+	if use.to then
+		local maihuo_data=sgs.QVariant()
+		maihuo_data:setValue(targets[1])
+		self.player:setTag("thmaihuo_target",maihuo_data)
+		use.to:append(targets[1])
+		if use.to:length() >= 1 then return end
+	end
+end
+--ThMaihuoCard 优先度不好拿捏啊。。。
+sgs.ai_use_priority.ThMaihuoCard =sgs.ai_use_priority.Peach +0.2
+sgs.ai_card_intention.ThMaihuoCard = -70
+sgs.ai_skill_suit.thmaihuo = function(self)
+    local target= self.player:getTag("thmaihuo_target"):toPlayer()
+	if target then
+		local num, suit = countKnownSuits(target)
+		if suit then
+			return suit
+		end
+	end
+    return  sgs.Card_Heart
+end
+
+--【无念】ai
+--所有需要伤害来源的needDamage都要记得检测持有【无念】技能的attacker
+--smart-ai hasTrickEffective
+--standardcards-ai slashIsEffective
+
+
+
+
+
