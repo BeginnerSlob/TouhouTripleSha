@@ -402,7 +402,6 @@ thzhouhua_skill.getTurnUseCard = function(self, inclusive)
 	return analeptic
 end
 
-
 function cardsView_thzhouhua(self, player)
 	local cards = player:getCards("he")
 	for _, id in sgs.qlist(player:getPile("wooden_ox")) do
@@ -445,6 +444,126 @@ function sgs.ai_cardsview.thzhouhuav(self, class_name, player)
 end
 
 sgs.ai_skill_playerchosen["@thxugu"] = sgs.ai_skill_playerchosen.zero_card_as_slash
+
+sgs.thshenzhou_current = false
+
+sgs.ai_skill_choice.thshenzhou = function(self, choices, data)
+	local card_ids = data:toIntList()
+	local has_peach = false
+	local num = {basic = 0,
+				 equip = 0,
+				 trick = 0}
+	for _, id in sgs.qlist(card_ids) do
+		local card = sgs.Sanguosha:getCard(card_ids)
+		if card:isKindOf("Peach") then
+			has_peach = true
+		end
+		num[card:getType()] = num[card:getType()] + 1
+	end
+	self:sort(self.friends, "defense")
+	if has_peach then
+		if self:isWeak(self.friends[1]) then
+			return "basic"
+		end
+	end
+	if num.basic > num.trick then
+		return "basic"
+	end
+	local current = self.room:getCurrent()
+	if current and current:isAlive() and self:isFriend(current) and current:getPhase() ~= sgs.Player_NotActive and current:getPhase() <= sgs.Player_Play then
+		sgs.thshenzhou_current = true
+		if num.trick > num.basic then
+			return "trick"
+		elseif num.basic > 0 then
+			return "basic"
+		else
+			return num.trick > num.equip and "trick" or "equip"
+		end
+	end
+	if num.basic > num.trick then
+		return "basic"
+	elseif num.trick > num.basic then
+		return "trick"
+	elseif num.basic > 0 then
+		local n = math.random(1, 3)
+		if n == 1 then
+			return "trick"
+		else
+			return "basic"
+		end
+	else
+		local choice_list = choices:split("+")
+		return choice_list[math.random(1, #choice_list)]
+	end
+end
+
+sgs.ai_skill_playerchosen.thshenzhou = function(self, targets)
+	local true_target = nil
+	if sgs.thshenzhou_current then
+		sgs.thshenzhou_current = false
+		true_target = self.room:getCurrent()
+	else
+		self:sort(self.friends, "defense")
+		true_target = self.friends[1]
+	end
+	local n = math.random(1, 5)
+	if n > 2 then
+		return true_target
+	elseif n == 2 then
+		return self.player
+	else
+		return self.friends[math.random(1, #self.friends)]
+	end
+end
+
+sgs.ai_playerchosen_intention.thshenzhou = -80
+
+local thqianyi_skill = {}
+thqianyi_skill.name = "thqianyi"
+table.insert(sgs.ai_skills, thqianyi_skill)
+thqianyi_skill.getTurnUseCard = function(self)
+	if self.player:getMark("@qianyi") <= 0 then return end
+	local good, bad = 0, 0
+	local lord = self.room:getLord()
+	if self.role ~= "rebel" and lord and self:isWeak(lord) then
+		return sgs.Card_Parse("@ThQianyiCard=.")
+	end
+	if not self.player:faceUp() then
+		return sgs.Card_Parse("@ThQianyiCard=.")
+	end
+	for _, p in ipairs(self.friends) do
+		if self:isWeak(p) or sgs.getDefense(p) < 2 then
+			return sgs.Card_Parse("@ThQianyiCard=.")
+		end
+	end
+end
+
+sgs.ai_skill_use_func.ThQianyiCard = function(card, use, self)
+	use.card = card
+	if use.to then
+		local lord = self.room:getLord()
+		if self.role ~= "rebel" and lord and self:isWeak(lord) then
+			use.to:append(lord)
+			return
+		end
+		self:sort(self.friends)
+		use.to:append(self.friends[1])
+	end
+end
+
+sgs.ai_skill_choice.thqianyi = function(self, choices, data)
+	local player = target
+	if player:hasSkills(sgs.cardneed_skill) and not self:isWeak(player) then
+		return "draw"
+	end
+	if self:isWeak(player) and player:hasSkills(sgs.masochism_skill) then
+		return "recover"
+	end
+	return math.random(1, 2) == 1 and "draw" or "recover"
+end
+
+sgs.ai_use_priority.ThQianyiCard = -5
+sgs.ai_card_intention.ThQianyiCard = -150
 
 --¡¾Âñ»ð¡¿ai
 sgs.string2suit = {
