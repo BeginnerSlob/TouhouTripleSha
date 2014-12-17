@@ -285,7 +285,7 @@ thenan_skill.getTurnUseCard = function(self)
 end
 
 sgs.ai_skill_use_func.ThEnanCard = function(card, use, self)
-	if self.player:getHandcardNum() <= 1 and self.player:getHp() == 1 and self.player:getMaxHp() > 4 and getCardsNum("Peach", self.player) + getCardsNum("Analeptic", self.player) > 0 then
+	if self.player:getHandcardNum() <= 1 and self.player:getHp() == 1 and self.player:getMaxHp() > 4 and self:getCardsNum({"Peach", "Analeptic"}, "h") > 0 then
 		use.card = card
 		if use.to then
 			use.to:append(self.player)
@@ -333,7 +333,7 @@ sgs.ai_skill_choice.thbeiyun = function(self, choices, data)
 	if not not_red and red then
 		return "red"
 	end
-	if getCardsNum("Peach", self.player) + getCardsNum("Analeptic", self.player) >= 1 - self.player:getHp() then -- i'm safe
+	if self:getCardsNum({"Peach", "Analeptic"}, "h") >= 1 - self.player:getHp() then -- i'm safe
 		return black and "black" or "cancel"
 	else
 		return not not_black and black and "black" or "cancel"
@@ -342,9 +342,111 @@ sgs.ai_skill_choice.thbeiyun = function(self, choices, data)
 end
 
 
+--thmicai @to_do
+--[[ thqiaogong -future @to_do_future
+local thqiaogong = {}
+thqiaogong.name = "thqiaogong"
+table.insert(sgs.ai_skills, thqiaogong)
+thqiaogong.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThQiaogong") then
+		return nil
+	end
+
+	local skillcard = sgs.Card_Parse("@ThQiaogong=.")
+	assert(skillcard)
+	return skillcard
+end
+
+sgs.ai_skill_use_func.ThQiaogong = function(card, use, self)
+	
+end]]
+
+local thzhouhua_skill = {}
+thzhouhua_skill.name = "thzhouhua"
+table.insert(sgs.ai_skills, thzhouhua_skill)
+thzhouhua_skill.getTurnUseCard = function(self, inclusive)
+	local cards = self.player:getCards("he")
+	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+		cards:prepend(sgs.Sanguosha:getCard(id))
+	end
+	cards = sgs.QList2Table(cards)
+	for _, acard in ipairs(cards) do
+		if isCard("Analeptic", acard, self.player) then return end
+	end
+	self:sortByUseValue(cards)
+	local newcards = {}
+	local has_slash = false
+	for _, card in ipairs(cards) do
+		if self:getCardsNum("Slash") == 1 and isCard("Slash", card, self.player) then
+			continue
+		end
+		if self:getCardsNum("Slash") == 2 and isCard("Slash", card, self.player) and has_slash then
+			continue
+		end
+		if not isCard("Analeptic", card, self.player) and not isCard("Peach", card, self.player) and not (isCard("ExNihilo", card, self.player) and self.player:getPhase() == sgs.Player_Play) then
+			if isCard("Slash", card, self.player) then
+				has_slash = true
+			end
+			table.insert(newcards, card)
+		end
+	end
+	if #newcards <= self.player:getHp() - 1 and self.player:getHp() <= 4 and self:needKongcheng()
+		and not (self.player:hasSkill("ikshengtian") and self.player:getMark("@shengtian") == 0) then return end
+	if #newcards < 2 then return end
+
+	local card_id1 = newcards[1]:getEffectiveId()
+	local card_id2 = newcards[2]:getEffectiveId()
+
+	local card_str = ("analeptic:%s[%s:%s]=%d+%d"):format("thzhouhua", "to_be_decided", 0, card_id1, card_id2)
+	local analeptic = sgs.Card_Parse(card_str)
+	return analeptic
+end
 
 
---ã€åŸ‹ç«ã€‘ai
+function cardsView_thzhouhua(self, player)
+	local cards = player:getCards("he")
+	for _, id in sgs.qlist(player:getPile("wooden_ox")) do
+		cards:prepend(sgs.Sanguosha:getCard(id))
+	end
+	cards = sgs.QList2Table(cards)
+	for _, acard in ipairs(cards) do
+		if isCard("Analeptic", acard, player) then return end
+	end
+	local newcards = {}
+	for _, card in ipairs(cards) do
+		if not isCard("Analeptic", card, player) and not isCard("Peach", card, player) and not (isCard("ExNihilo", card, player) and player:getPhase() == sgs.Player_Play) then
+			table.insert(newcards, card)
+		end
+	end
+	if #newcards < 2 then return end
+	sgs.ais[player:objectName()]:sortByKeepValue(newcards)
+	
+	local card_id1 = newcards[1]:getEffectiveId()
+	local card_id2 = newcards[2]:getEffectiveId()
+	
+	local card_str = ("analeptic:%s[%s:%s]=%d+%d"):format("thzhouhua", "to_be_decided", 0, card_id1, card_id2)
+	return card_str
+end
+
+function sgs.ai_cardsview.thzhouhua(self, class_name, player)
+	if class_name == "Analeptic" and player:getPhase() ~= sgs.Player_NotActive then
+		return cardsView_thzhouhua(self, player)
+	end
+end
+
+function sgs.ai_cardsview.thzhouhuav(self, class_name, player)
+	if class_name == "Analeptic" then
+		local obj_name = player:property("zhouhua_source"):toString()
+		local splayer = self.room:findPlayer(obj_name)
+        if splayer and splayer:hasSkill("thzhouhua") then
+            return cardsView_thzhouhua(self, player)
+		end
+	end
+end
+
+sgs.ai_skill_playerchosen["@thxugu"] = sgs.ai_skill_playerchosen.zero_card_as_slash
+
+--¡¾Âñ»ğ¡¿ai
 sgs.string2suit = {
         spade = 0 ,
         club = 1 ,
@@ -355,7 +457,7 @@ local countKnownSuits = function(target)
 	local suits = {}
 	local knowncards={}
 	for _, card in sgs.qlist(target:getHandcards()) do
-		--flagçš„æƒ…å†µå…¶å®å¯ä»¥ä¸è¦ã€‚ã€‚ã€‚
+		--flagµÄÇé¿öÆäÊµ¿ÉÒÔ²»Òª¡£¡£¡£
 		local flag = string.format("%s_%s_%s", "visible", global_room:getCurrent():objectName(), target:objectName())
 		if  card:hasFlag("visible") or card:hasFlag(flag) then	
 			table.insert(knowncards,card)
@@ -402,7 +504,7 @@ sgs.ai_skill_use_func.ThMaihuoCard = function(card, use, self)
 		end
 	end
 	if #targets ==0 then return nil end
-	--å•çº¯ä»åŸ‹ç«æ‘¸ç‰Œæ”¶ç›Šè€ƒè™‘ æ²¡æœ‰è€ƒè™‘cardneedçš„ä¿¡æ¯ æ²¡æœ‰è€ƒè™‘findPlayerToDraw
+	--µ¥´¿´ÓÂñ»ğÃşÅÆÊÕÒæ¿¼ÂÇ Ã»ÓĞ¿¼ÂÇcardneedµÄĞÅÏ¢ Ã»ÓĞ¿¼ÂÇfindPlayerToDraw
 	table.sort(targets, maihuoCompare_func)
 	use.card = card
 	if use.to then
@@ -413,7 +515,7 @@ sgs.ai_skill_use_func.ThMaihuoCard = function(card, use, self)
 		if use.to:length() >= 1 then return end
 	end
 end
---ThMaihuoCard ä¼˜å…ˆåº¦ä¸å¥½æ‹¿æå•Šã€‚ã€‚ã€‚
+--ThMaihuoCard ÓÅÏÈ¶È²»ºÃÄÃÄó°¡¡£¡£¡£
 sgs.ai_use_priority.ThMaihuoCard =sgs.ai_use_priority.Peach +0.2
 sgs.ai_card_intention.ThMaihuoCard = -70
 sgs.ai_skill_suit.thmaihuo = function(self)
@@ -427,8 +529,8 @@ sgs.ai_skill_suit.thmaihuo = function(self)
     return  sgs.Card_Heart
 end
 
---ã€æ— å¿µã€‘ai
---æ‰€æœ‰éœ€è¦ä¼¤å®³æ¥æºçš„needDamageéƒ½è¦è®°å¾—æ£€æµ‹æŒæœ‰ã€æ— å¿µã€‘æŠ€èƒ½çš„attacker
+--¡¾ÎŞÄî¡¿ai
+--ËùÓĞĞèÒªÉËº¦À´Ô´µÄneedDamage¶¼Òª¼ÇµÃ¼ì²â³ÖÓĞ¡¾ÎŞÄî¡¿¼¼ÄÜµÄattacker
 --smart-ai hasTrickEffective
 --standardcards-ai slashIsEffective
 
