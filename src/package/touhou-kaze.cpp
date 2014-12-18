@@ -987,8 +987,8 @@ bool ThHuosuiCard::targetFilter(const QList<const Player *> &targets, const Play
 
 void ThHuosuiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const {
     ServerPlayer *target = targets.first();
-    if (!room->askForCard(target, "jink", "@thhuosuijink", QVariant(), Card::MethodResponse, source))
-        if(!room->askForUseSlashTo(source, target, "@thhuosui-slash"))
+    if (!room->askForCard(target, "jink", "@thhuosuijink:" + source->objectName(), QVariant(), Card::MethodResponse, source))
+        if(!room->askForUseSlashTo(source, target, "@thhuosui-slash:" + target->objectName()))
             source->drawCards(1);
 }
 

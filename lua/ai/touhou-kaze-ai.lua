@@ -523,7 +523,6 @@ thqianyi_skill.name = "thqianyi"
 table.insert(sgs.ai_skills, thqianyi_skill)
 thqianyi_skill.getTurnUseCard = function(self)
 	if self.player:getMark("@qianyi") <= 0 then return end
-	local good, bad = 0, 0
 	local lord = self.room:getLord()
 	if self.role ~= "rebel" and lord and self:isWeak(lord) then
 		return sgs.Card_Parse("@ThQianyiCard=.")
@@ -567,6 +566,116 @@ end
 
 sgs.ai_use_priority.ThQianyiCard = -5
 sgs.ai_card_intention.ThQianyiCard = -150
+
+local thhuosui_skill = {}
+thhuosui_skill.name = "thhuosui"
+table.insert(sgs.ai_skills, thhuosui_skill)
+thhuosui_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThHuosuiCard") then return end
+	local cards = self.player:getCards("h")
+	cards = sgs.QList2Table(cards)
+
+	self:sortByUseValue(cards, true)
+
+	local card_id = cards[1]:getEffectiveId()
+	local card_str = "@ThHuosuiCard=" .. card_id
+	local skillcard = sgs.Card_Parse(card_str)
+
+	assert(skillcard)
+	return skillcard
+end
+
+sgs.ai_skill_use_func.ThHuosuiCard = function(card, use, self)
+	local target = nil
+	self:sort(self.enemies, "defense")
+	for _, enemy in ipairs(self.enemies) do
+		if self.player:inMyAttackRange(enemy) then
+			use.card = card
+			if use.to then
+				use.to:append(enemy)
+			end
+			return
+		end
+	end
+end
+
+sgs.ai_skill_cardask["@thhuosuijink"] = function(self, data, pattern, target)
+	if self:isFriend(target) then
+		return "."
+	end
+	for _, card in ipairs(self:getCards("Jink")) do
+		return card:toString()
+	end
+	return "."
+end
+
+sgs.ai_skill_cardask["@thhuosui-slash"] = function(self, data, pattern, target)
+	if getCardsNum("Slash") == 1 then
+		return "."
+	end
+	for _, slash in ipairs(self:getCards("Slash")) do
+		if self:isFriend(target) and self:slashIsEffective(slash, target) then
+			if self:findLeijiTarget(target, 50, self.player) then return slash:toString() end
+			if self:getDamagedEffects(target, self.player, true) then return slash:toString() end
+		end
+
+		local nature = sgs.DamageStruct_Normal
+		if slash:isKindOf("FireSlash") then nature = sgs.DamageStruct_Fire
+		elseif slash:isKindOf("ThunderSlash") then nature = sgs.DamageStruct_Thunder end
+		if self:isEnemy(target2) and self:slashIsEffective(slash, target2) and self:canAttack(target2, self.player, nature)
+			and not self:getDamagedEffects(target2, self.player, true) and not self:findLeijiTarget(target2, 50, self.player) then
+			return slash:toString()
+		end
+	end
+	return "."
+end
+
+sgs.ai_use_priority.ThHuosuiCard = sgs.ai_use_priority.Slash + 1
+
+local thkunyi_skill = {}
+thkunyi_skill.name = "thkunyi"
+table.insert(sgs.ai_skills, thkunyi_skill)
+thkunyi_skill.getTurnUseCard = function(self)
+	if self.player:getMark("@kunyi") <= 0 then return end
+	self:sort(self.enemies, "defense")
+	for _, p in ipairs(self.enemies) do
+		if (not self.player:faceUp() or p:getHp() == 1) and self.player:inMyAttackRange(p) and self:damageIsEffective(p, nil, self.player) then
+			return sgs.Card_Parse("@ThKunyiCard=.")
+		end
+	end
+end
+
+sgs.ai_skill_use_func.ThKunyiCard = function(card, use, self)
+	if self.player:faceUp() then
+		local in_range = {}
+		for _, enemy in ipairs(self.enemies) do
+			if self.player:inMyAttackRange(enemy) and self:damageIsEffective(enemy, nil, self.player) then
+				table.insert(in_range, enemy)
+			end
+		end
+		self:sort(in_range, "hp")
+		if #in_range > 0 then
+			use.card = card
+			if use.to then
+				use.to:append(in_range[1])
+			end
+			return 
+		end
+	else
+		self:sort(self.enemies, "defense")
+		for _, p in ipairs(self.enemies) do
+			if p:getHp() == 1 and self.player:inMyAttackRange(p) and self:damageIsEffective(p, nil, self.player) then
+				use.card = card
+				if use.to then
+					use.to:append(in_range[1])
+				end
+				return
+			end
+		end
+	end
+end
+
+sgs.ai_card_intention.ThKunyiCard = 80
 
 --【埋火】ai
 sgs.string2suit = {
