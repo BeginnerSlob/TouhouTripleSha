@@ -1,3 +1,50 @@
+
+--【冬末】ai
+sgs.ai_skill_use["@@thdongmo"] = function(self, prompt)
+	local score=0
+	local threshold=
+	local targetNames={}
+	--need a sort method... 
+	for _,p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+		if (self:isFriend(p) and not p:faceUp()) 
+		or (self:isEnemy(p) and  p:faceUp()) then
+			table.insert(targetNames,p:objectName())
+		end
+		if #targetNames>=self.player:getLostHp() then
+			break
+		end
+	end
+	if #targetNames ==0 then 
+		return "."	 
+	elseif #targetNames < self.player:getLostHp() then
+		local can=false
+		if not self.player:faceUp() then
+			can =true
+		elseif self.player:getLostHp() -#targetNames<2 then
+			can =true
+		end
+		if can then
+			return "@ThDongmoCard=.->" .. table.concat(targetNames, "+")
+		end
+	else
+		return "@ThDongmoCard=.->" .. table.concat(targetNames, "+")
+	end
+	return "."
+end
+sgs.ai_card_intention.ThDongmoCard = function(self, card, from, tos)
+	for _,to in pairs (tos) do
+		if to:faceUp() then
+			sgs.updateIntention(from, to, 50)
+		else
+			sgs.updateIntention(from, to, -50)	
+		end
+	end
+end
+
+--【凛寒】ai
+sgs.ai_skill_invoke.thlinhan = true
+
+
 --【骚葬】ai
 --要确保弃牌发动技能，ai都是不用牌不舒服斯基的主
 --这个属于修改基础用牌ai 暂时不弄了。。。
