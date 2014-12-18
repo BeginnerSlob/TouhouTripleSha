@@ -64,7 +64,7 @@ end
 sgs.ai_playerchosen_intention.tyshouye = -60
 --【虚史】ai
 sgs.ai_skill_invoke.thxushi = true
-function sgs.ai_cardsview_valuable.thtianchanv(self, class_name, player)
+function sgs.ai_cardsview_valuable.thxushi(self, class_name, player)
 	if class_name == "Slash" then
 		if player::getPhase() ~= sgs.Player_NotActive then 
 			return nil 
