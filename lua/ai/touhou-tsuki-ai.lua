@@ -53,3 +53,55 @@ sgs.ai_choicemade_filter.skillInvoke.thjiaotu = function(self, player, promptlis
 	end
 end
 
+
+
+
+--【凤翔】ai
+sgs.ai_skill_invoke.thfengxiang = true
+--【浴火】ai
+sgs.ai_skill_invoke.thyuhuo = function(self,data)
+	local damage = data:toDamage()
+	local target=damage.from
+	if self:isEnemy(target) then
+		local score=0
+		--masochism
+		if not (damage.damage<=1 and self:getDamagedEffects(target, self.player)) then
+			score=score+1
+		end
+		if (damage.damage>2) then
+			score=score+1
+		end
+		if target:faceUp() then
+			score=score+1
+		end
+		if self.player:getHp()-damage.damage<=0 then
+			score=score+2
+		end
+		return score>=2
+	end
+	return false
+end
+sgs.ai_choicemade_filter.skillInvoke.thyuhuo = function(self, player, promptlist)
+	local from=player:getTag("ThYuhuoDamage"):toDamage().from
+	if from and promptlist[#promptlist] == "yes" and from:getLostHp()>0 then
+		sgs.updateIntention(player, from, 60)
+	end
+end
+sgs.ai_need_damaged.thyuhuo = function(self, attacker, player)
+	if player:getMark("@yuhuo") == 0  then return false end
+	if not attacker or attacker:hasSkill("thwunian") then return false end
+	if  self:isEnemy(attacker,player) then
+		if not self:getDamagedEffects(attacker,player) and attacker:faceUp() then
+			return true
+		end
+	end
+	return false
+end
+sgs.ai_slash_prohibit.thyuhuo = function(self, from, to, card)
+	local callback=sgs.ai_need_damaged["thyuhuo"]
+	if callback then
+		return  callback(self, from, to)
+	end
+	return false
+end
+--need bulid trick_prohibit or damage_prohibit in smart-ai and standardcards-ai
