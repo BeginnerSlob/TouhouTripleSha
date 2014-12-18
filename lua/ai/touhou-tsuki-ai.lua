@@ -54,6 +54,26 @@ sgs.ai_choicemade_filter.skillInvoke.thjiaotu = function(self, player, promptlis
 end
 
 
+--【授业】ai
+sgs.ai_skill_playerchosen.thshouye = function(self, targets)
+	if self:isWeak(self.player) and not self:willSkipPlayPhase() then return nil end
+	local target =self:touhouFindPlayerToDraw(false, 2)--it could be 3 (for instance:yingzi)
+	if target then return target end
+	return nil
+end
+sgs.ai_playerchosen_intention.tyshouye = -60
+--【虚史】ai
+sgs.ai_skill_invoke.thxushi = true
+function sgs.ai_cardsview_valuable.thtianchanv(self, class_name, player)
+	if class_name == "Slash" then
+		if player::getPhase() ~= sgs.Player_NotActive then 
+			return nil 
+		end
+		return "@ThXushiCard=."
+	end
+end
+
+
 
 
 --【凤翔】ai
