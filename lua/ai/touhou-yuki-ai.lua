@@ -1,8 +1,6 @@
 
 --【冬末】ai
 sgs.ai_skill_use["@@thdongmo"] = function(self, prompt)
-	local score=0
-	local threshold=
 	local targetNames={}
 	--need a sort method... 
 	for _,p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
