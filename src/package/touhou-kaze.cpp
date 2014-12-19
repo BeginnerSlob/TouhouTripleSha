@@ -1102,7 +1102,7 @@ void ThCannueCard::onEffect(const CardEffectStruct &effect) const {
     if (!effect.to->isNude())
         choices << "get";
     choices << "hit";
-    QString choice = room->askForChoice(effect.from, "thcannue", choices.join("+"));
+    QString choice = room->askForChoice(effect.from, "thcannue", choices.join("+"), QVariant::fromValue(effect.to));
     if (choice == "get") {
         int card_id = room->askForCardChosen(effect.from, effect.to, "he", "thcannue");
         room->obtainCard(effect.from, card_id, false);
