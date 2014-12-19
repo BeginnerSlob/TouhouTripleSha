@@ -667,7 +667,7 @@ sgs.ai_skill_use_func.ThKunyiCard = function(card, use, self)
 			if p:getHp() == 1 and self.player:inMyAttackRange(p) and self:damageIsEffective(p, nil, self.player) then
 				use.card = card
 				if use.to then
-					use.to:append(in_range[1])
+					use.to:append(p)
 				end
 				return
 			end
@@ -676,6 +676,178 @@ sgs.ai_skill_use_func.ThKunyiCard = function(card, use, self)
 end
 
 sgs.ai_card_intention.ThKunyiCard = 80
+
+local thcannue_skill = {}
+thcannue_skill.name = "thcannue"
+table.insert(sgs.ai_skills, thcannue_skill)
+thcannue_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThCannueCard") then return end
+	local cards = self.player:getCards("h")
+	cards = sgs.QList2Table(cards)
+
+	self:sortByUseValue(cards, true)
+	
+	local card = nil
+	for _, cd in ipairs(cards) do
+		if cd:getSuit() == sgs.Card_Diamond then
+			card = cd
+			break
+		end
+	end
+
+	if not card then return end
+	local card_id = card:getEffectiveId()
+	local card_str = "@ThCannueCard=" .. card_id
+	local skillcard = sgs.Card_Parse(card_str)
+
+	assert(skillcard)
+	return skillcard
+end
+
+sgs.thcannue_slash_target = nil
+
+sgs.ai_skill_use_func.ThCannueCard = function(card, use, self)
+	sgs.thcannue_slash_target = nil
+	local original_card = sgs.Sanguosha:getCard(card:getEffectiveId())
+	if original_card:isKindOf("Slash") then
+		self:sort(self.enemies, "defense")
+		for _, enemy in ipairs(self.enemies) do
+			for _, friend in ipairs(self.friends_noself) do
+				if friend:canSlash(enemy, original_card) then
+					sgs.thcannue_slash_target = enemy
+					use.card = card
+					if use.to then
+						use.to:append(friend)
+					end
+					return
+				end
+			end
+		end
+	elseif original_card:isKindOf("Jink") or original_card:isKindOf("Peach") or original_card:isKindOf("Analeptic") then
+		self:sort(self.friends_noself, "defense")
+		self:sort(self.enemies, "defense")
+		for _, friend in ipairs(self.friends_noself) do
+			if getKnownCard(friend, self.player, "Slash") > 0 then
+				for _, enemy in ipairs(self.enemies) do
+					if friend:canSlash(enemy) then
+						sgs.thcannue_slash_target = enemy
+						use.card = card
+						if use.to then
+							use.to:append(friend)
+						end
+						return
+					end
+				end
+			end
+		end
+	else
+		self:sort(self.enemies, "hp")
+		for _, enemy in ipairs(self.enemies) do
+			if getKnownCard(enemy, self.player, "Slash") == 0 then
+				local in_range = {}
+				local has_friend = false
+				for _, p in sgs.qlist(self.room:getOtherPlayers(enemy)) do
+					if not self:isFriend(p) and enemy:canSlash(p) then
+						table.insert(in_range, p)
+					elseif self:isFriend(p) then
+						has_friend = true
+					end
+				end
+				if #in_range == 0 and has_friend then
+					continue
+				end
+				if #in_range > 0 then
+					self:sort(in_range, "defense")
+					sgs.thcannue_slash_target = in_range[1]
+				end
+				use.card = card
+				if use.to then
+					use.to:append(enemy)
+				end
+				return
+			end
+		end
+	end
+end
+
+sgs.ai_skill_playerchosen.thcannue = function(self, targets)
+	if sgs.thcannue_slash_target and targets:contains(sgs.thcannue_slash_target) then
+		return sgs.thcannue_slash_target
+	end
+	local enemies = {}
+	for _, p in sgs.qlist(targets) do
+		if not self:isFriend(p) then
+			table.insert(enemies, p)
+		end
+	end
+	if #enemies > 0 then
+		self:sort(enemies, "defense")
+		return enemies[1]
+	end
+	return targets:at(math.random(0, targets:length() - 1))
+end
+
+sgs.ai_playerchosen_intention.thcannue = 30
+
+sgs.ai_skill_choice.thcannue = function(self, choices, data)
+	local target = data:toPlayer()
+	if self:isFriend(target) and self:needToThrowArmor(target) and target:getArmor() then
+		return string.find(choices, "get") and "get" or "hit"
+	elseif self:isEnemy(target) and self:isWeak(target) then
+		return "hit"
+	end
+	local choice_list = choices:split("+")
+	return math.random(0, 1) == 0 and choice_list[#choice_list] or choice_list[1]
+end
+
+thsibao_skill = {}
+thsibao_skill.name = "thsibao"
+table.insert(sgs.ai_skills, thsibao_skill)
+thsibao_skill.getTurnUseCard = function(self)
+	local cards = self.player:getCards("he")
+	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+		cards:prepend(sgs.Sanguosha:getCard(id))
+	end
+	cards = sgs.QList2Table(cards)
+
+	local card
+
+	self:sortByKeepValue(cards, true)
+
+	for _, acard in ipairs(cards) do
+		if acard:isKindOf("EquipCard") then
+			card = acard
+			break
+		end
+	end
+
+	if not card then return nil end
+	local suit = card:getSuitString()
+	local number = card:getNumberString()
+	local card_id = card:getEffectiveId()
+	local card_str = ("analeptic:thsibao[%s:%s]=%d"):format(suit, number, card_id)
+	local analeptic = sgs.Card_Parse(card_str)
+
+	if sgs.Analeptic_IsAvailable(self.player, analeptic) then
+		assert(analeptic)
+		return analeptic
+	end
+end
+
+sgs.ai_view_as.thsibao = function(card, player, card_place)
+	local suit = card:getSuitString()
+	local number = card:getNumberString()
+	local card_id = card:getEffectiveId()
+	if card_place == sgs.Player_PlaceHand or card_place == sgs.Player_PlaceEquip then
+		if card:isKindOf("EquipCard") then
+			return ("analeptic:thsibao[%s:%s]=%d"):format(suit, number, card_id)
+		end
+	end
+end
+
+function sgs.ai_cardneed.thsibao(to, card, self)
+	return card:isKindOf("EquipCard") and getKnownCard(to, self.player, "EquipCard", nil, "he") < 2
+end
 
 --【埋火】ai
 sgs.string2suit = {
