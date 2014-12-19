@@ -121,7 +121,25 @@ sgs.ai_card_intention.ThDuanzuiCard = 50
 
 
 
-
+--【六震】ai
+sgs.ai_skill_use["@@thliuzhen"] = function(self, prompt)
+	local targetNames={}
+	local card = self.player:getTag("thliuzhen_carduse"):toCardUse().card
+	for _,p in sgs.qlist(self.enemies) do
+		if p:hasFlag("liuzhenold") then continue end
+		if (getCardsNum("Jink", p, self.player) < 1 
+				or sgs.card_lack[p:objectName()]["Jink"] == 1 )
+			and not self:slashProhibit(card, p, self.player)then
+			table.insert(targetNames,p:objectName())
+		end
+	end
+	
+	if #targetNames>0 then
+		return "@ThLiuzhenCard=.->" .. table.concat(targetNames, "+")
+	end
+	return "."
+end
+--liuzhen intention = slash intention?
 
 
 --【天禅】ai
