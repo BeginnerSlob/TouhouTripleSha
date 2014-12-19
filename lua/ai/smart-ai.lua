@@ -3810,6 +3810,9 @@ function SmartAI:damageIsEffective(player, nature, source)
 	if player:hasSkill("shixin") and nature == sgs.DamageStruct_Fire then return false end
 	local equipsToDec = source:objectName() == self.player:objectName() and self.equipsToDec or 0
 	if player:hasSkill("mingshi") and source:getEquips():length() - equipsToDec <= math.min(2, player:getEquips():length()) then return false end
+	if player:hasSkill("thzuibu") and self:isFriend(player, source) then
+		return false
+	end
 	if player:hasSkill("yuce") and not player:isKongcheng() and player:getHp() > 1 then
 		if self:isFriend(player, source) then return false
 		else
@@ -4708,6 +4711,7 @@ function SmartAI:getAoeValueTo(card, to, from)
 		value = value + 10
 		if to:hasSkill("juxiang") and not card:isVirtualCard() then value = value + 20 end
 		if to:hasSkill("danlao") and self.player:aliveCount() > 2 then value = value + 20 end
+	        if to:hasSkill("thzuibu") and self:isFriend(from,to)  then value = value + 20 end
 	end
 	return value
 end
