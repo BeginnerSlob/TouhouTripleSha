@@ -2390,8 +2390,10 @@ public:
             CardUseStruct use = data.value<CardUseStruct>();
             foreach (ServerPlayer *tar, use.to)
                 room->setPlayerFlag(tar, "liuzhenold");
-
+            //tag for ai
+            player->tag["thliuzhen_carduse"] = data;
             if (room->askForUseCard(player, "@@thliuzhen", "@thliuzhen", -1, Card::MethodNone)) {
+                player->tag.remove("thliuzhen_carduse");
                 room->setCardFlag(use.card, "thliuzhen");
                 player->tag["thliuzhen_user"] = true;
             }
