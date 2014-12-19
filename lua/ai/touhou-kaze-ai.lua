@@ -787,8 +787,6 @@ sgs.ai_skill_playerchosen.thcannue = function(self, targets)
 	return targets:at(math.random(0, targets:length() - 1))
 end
 
-sgs.ai_playerchosen_intention.thcannue = 30
-
 sgs.ai_skill_choice.thcannue = function(self, choices, data)
 	local target = data:toPlayer()
 	if self:isFriend(target) and self:needToThrowArmor(target) and target:getArmor() then
@@ -799,6 +797,10 @@ sgs.ai_skill_choice.thcannue = function(self, choices, data)
 	local choice_list = choices:split("+")
 	return math.random(0, 1) == 0 and choice_list[#choice_list] or choice_list[1]
 end
+
+
+sgs.ai_use_priority.ThCannueCard = sgs.ai_use_priority.Slash + 0.1
+sgs.ai_playerchosen_intention.thcannue = 30
 
 thsibao_skill = {}
 thsibao_skill.name = "thsibao"

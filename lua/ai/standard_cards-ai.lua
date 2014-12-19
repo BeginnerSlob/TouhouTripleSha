@@ -2610,9 +2610,9 @@ function SmartAI:useCardIndulgence(card, use)
 	local enemies = {}
 	if #self.enemies == 0 then
 		if sgs.turncount <= 1 and self.role == "lord" and not sgs.isRolePredictable()
-			and sgs.evaluatePlayerRole(self.player:getNextAlive()) == "neutral"
-			and not (self.player:hasLordSkill("shichou") and self.player:getNextAlive():getKingdom() == "shu") then
-			enemies = self:exclude({ self.player:getNextAlive() }, card)
+			and sgs.evaluatePlayerRole(self.room:findPlayer(self.player:getNextAlive():objectName())) == "neutral"
+			and not (self.player:hasLordSkill("shichou") and self.room:findPlayer(self.player:getNextAlive():objectName()):getKingdom() == "shu") then
+			enemies = self:exclude({ self.room:findPlayer(self.player:getNextAlive():objectName()) }, card)
 		end
 	else
 		enemies = self:exclude(self.enemies, card)
@@ -2704,7 +2704,7 @@ function SmartAI:willUseLightning(card)
 		for _, aplayer in ipairs(self.enemies) do
 			if aplayer:hasSkill("guanxing") or (aplayer:hasSkill("gongxin") and hashy)
 			or aplayer:hasSkill("xinzhan") then
-				if self:isFriend(aplayer:getNextAlive()) then return true end
+				if self:isFriend(self.room:findPlayer(aplayer:getNextAlive():objectName())) then return true end
 			end
 		end
 		return false
@@ -2751,7 +2751,7 @@ sgs.ai_keep_value.Lightning = -1
 
 sgs.ai_skill_askforag.amazing_grace = function(self, card_ids)
 	local nextPlayerCanUse, nextPlayerIsEnemy = false, false
-	local nextAlive = self.player:getNextAlive()
+	local nextAlive = self.room:findPlayer(self.player:getNextAlive():objectName())
 	if not nextAlive:hasSkill("manjuan") and sgs.turncount > 1 and not self:willSkipPlayPhase(nextAlive) then
 		if self:isFriend(nextAlive) then
 			nextPlayerCanUse = true
@@ -2771,10 +2771,10 @@ sgs.ai_skill_askforag.amazing_grace = function(self, card_ids)
 	end
 
 	local nextFriendNum = 0
-	local aplayer = self.player:getNextAlive()
+	local aplayer = self.room:findPlayer(self.player:getNextAlive():objectName())
 	for i = 1, self.player:aliveCount() do
 		if self:isFriend(aplayer) then
-			aplayer = aplayer:getNextAlive()
+			aplayer = self.room:findPlayer(aplayer:getNextAlive():objectName())
 			if not aplayer:hasSkill("manjuan") then nextFriendNum = nextFriendNum + 1 end
 		else
 			break

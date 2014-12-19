@@ -1094,7 +1094,7 @@ void ThCannueCard::onEffect(const CardEffectStruct &effect) const {
         log.to << target;
         room->sendLog(log);
 
-        if (room->askForUseSlashTo(effect.to, target, "@thcannue-slash"))
+        if (room->askForUseSlashTo(effect.to, target, "@thcannue-slash:" + target->objectName()))
             return ;
     }
 
