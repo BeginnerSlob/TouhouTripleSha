@@ -494,16 +494,20 @@ bool ServerPlayer::pindian(ServerPlayer *target, const QString &reason, const Ca
     room->sendLog(log);
 
     const Card *card2 = NULL;
-
+    PindianStruct prepindian;
+    prepindian.from = this;
+    prepindian.to = target;
+    prepindian.reason = reason;
+    QVariant huadiData = QVariant::fromValue(prepindian);
     if (card1 == NULL && hasLordSkill("thhuadi")) {
         QList<ServerPlayer *> lieges = room->getLieges("kaze", this);
         foreach (ServerPlayer *p, lieges) {
             if (p->isKongcheng() || (p->getHandcardNum() == 1 && p == target))
                 lieges.removeOne(p);
         }
-        if (!lieges.isEmpty() && askForSkillInvoke("thhuadi")) {
+        if (!lieges.isEmpty() && askForSkillInvoke("thhuadi", huadiData)) {
             foreach (ServerPlayer *p, lieges) {
-                const Card *cd = room->askForCard(p, ".", "@thhuadi-pindiancard:" + objectName(), QVariant(), Card::MethodNone, this);
+                const Card *cd = room->askForCard(p, ".", "@thhuadi-pindiancard:" + objectName(), huadiData, Card::MethodNone, this);
                 if (cd) {
                     card1 = cd;
                     room->setCardFlag(cd, "Global_DisabledPindian");
@@ -530,9 +534,9 @@ bool ServerPlayer::pindian(ServerPlayer *target, const QString &reason, const Ca
             if (!has_card)
                 lieges.removeOne(p);
         }
-        if (!lieges.isEmpty() && target->askForSkillInvoke("thhuadi")) {
+        if (!lieges.isEmpty() && target->askForSkillInvoke("thhuadi", huadiData)) {
             foreach (ServerPlayer *p, lieges) {
-                const Card *cd = room->askForCard(p, ".", "@thhuadi-pindiancard:" + target->objectName(), QVariant(), Card::MethodPindian, target);
+                const Card *cd = room->askForCard(p, ".", "@thhuadi-pindiancard:" + target->objectName(), huadiData, Card::MethodPindian, target);
                 if (cd) {
                     card2 = cd;
                     room->setCardFlag(cd, "Global_DisabledPindian");
