@@ -87,7 +87,59 @@ sgs.ai_card_intention.ThJiyiCard = function(self, card, from, to)
 	sgs.updateIntention(from, to[1], 50)
 end
 
---thhuadi @to_do
+--【华袛】ai
+table.insert(sgs.ai_global_flags, "thhuadisource")
+--now we have information of pindian,but how to parse it?
+function parsePindianReason(pindian)
+	local need_win=true
+	return need_win
+end
+sgs.ai_skill_invoke.thhuadi =  function(self,data)
+	if sgs.thhuadisource then return false end
+	local need_win = parsePindianReason(data:toPindian()) 
+	if need_win and self:getMaxCard()<10 then
+		return true
+	elseif not need_win and self:getMinCard()>6 then
+		return true
+	end
+	return false
+end
+sgs.ai_choicemade_filter.skillInvoke.thhuadi = function(self, player, promptlist)
+	if promptlist[#promptlist] == "yes" then
+		sgs.thhuadisource = player
+	end
+end
+sgs.ai_skill_cardask["@thhuadi-pindiancard"] = function(self, data)
+	if not sgs.thhuadisource then return  "." end
+	local pindian=data:toPindian()
+	if self:isFriend(sgs.thhuadisource) then
+		if parsePindianReason(pindian) then
+			local max_card =self:getMaxCard()
+			if max_card then return   "$" .. max_card:getId() end
+		else
+			local min_card =self:getMinCard()
+			if min_card then return "$" .. min_card:getId() end
+		end
+	end
+	return  "." 
+end
+sgs.ai_choicemade_filter.cardResponded["@thhuadi-pindiancard"] = function(self, player, promptlist)
+	if promptlist[#promptlist] ~= "_nil_" then
+		sgs.updateIntention(player, sgs.thhuadisource, -80)
+		sgs.thhuadisource = nil
+	elseif sgs.thhuadisource then
+		local lieges = player:getRoom():getLieges("hana", sgs.thhuadisource)
+		if lieges and not lieges:isEmpty() then
+			if player:objectName() == lieges:last():objectName() then
+				sgs.thhuadisource = nil
+			end
+		end
+	end
+end
+
+
+
+
 
 sgs.ai_skill_invoke.thjilanwen = function(self, data)
 	for _, target in sgs.qlist(self.room:getAllPlayers()) do
