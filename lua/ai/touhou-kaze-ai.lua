@@ -610,7 +610,7 @@ sgs.ai_skill_cardask["@thhuosuijink"] = function(self, data, pattern, target)
 end
 
 sgs.ai_skill_cardask["@thhuosui-slash"] = function(self, data, pattern, target)
-	if getCardsNum("Slash") == 1 then
+	if self:getCardsNum("Slash") == 1 then
 		return "."
 	end
 	for _, slash in ipairs(self:getCards("Slash")) do
@@ -798,7 +798,6 @@ sgs.ai_skill_choice.thcannue = function(self, choices, data)
 	return math.random(0, 1) == 0 and choice_list[#choice_list] or choice_list[1]
 end
 
-
 sgs.ai_use_priority.ThCannueCard = sgs.ai_use_priority.Slash + 0.1
 sgs.ai_playerchosen_intention.thcannue = 30
 
@@ -850,6 +849,51 @@ end
 function sgs.ai_cardneed.thsibao(to, card, self)
 	return card:isKindOf("EquipCard") and getKnownCard(to, self.player, "EquipCard", nil, "he") < 2
 end
+
+sgs.ai_skill_invoke.thwangqin = function(self, data)
+	local target = data:toPlayer()
+	if self:isFriend(target) and not target:faceUp() then
+		return true
+	end
+	if self:isEnemy(target) and target:faceUp() then
+		return true
+	end
+	return false
+end
+
+sgs.ai_choicemade_filter.skillInvoke.thwangqin = function(self, player, promptlist)
+	if promptlist[#promptlist] == "yes" then
+		local target = player:getTag("ThWangqinData"):toPlayer()
+		if target:faceUp() then
+			sgs.updateIntention(player, target, 50)
+		else
+			sgs.updateIntention(player, target, -50)
+		end
+	end
+end
+
+sgs.ai_skill_playerchosen.thfusuo = function(self, targets)
+	if self.player:getHp() + self:getCardsNum("Peach") <= 2 then
+		return nil
+	end
+	local lord = self.room:getLord()
+	if lord and self:isEnemy(lord) and targets:contains(lord) then
+		return lord
+	end
+	self:sort(self.enemies, "defense")
+	for _, enemy in ipairs(self.enemies) do
+		if self:isWeak(enemy) and targets:contains(enemy) then
+			return enemy
+		end
+	end
+	return nil
+end
+
+sgs.ai_playerchosen_intention.thfusuo = 40
+
+--[[sgs.ai_skill_cardask["@thfusuo"] = function(self, data, pattern, target)
+	return "."
+end]]
 
 --【埋火】ai
 sgs.string2suit = {
