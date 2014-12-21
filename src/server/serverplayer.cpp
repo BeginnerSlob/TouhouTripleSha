@@ -498,7 +498,8 @@ bool ServerPlayer::pindian(ServerPlayer *target, const QString &reason, const Ca
     prepindian.from = this;
     prepindian.to = target;
     prepindian.reason = reason;
-    QVariant huadiData = QVariant::fromValue(prepindian);
+    PindianStruct *prepindian_star = &prepindian;
+    QVariant huadiData = QVariant::fromValue(prepindian_star);
     if (card1 == NULL && hasLordSkill("thhuadi")) {
         QList<ServerPlayer *> lieges = room->getLieges("kaze", this);
         foreach (ServerPlayer *p, lieges) {
