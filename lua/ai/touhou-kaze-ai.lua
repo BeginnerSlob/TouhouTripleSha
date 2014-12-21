@@ -947,6 +947,112 @@ sgs.ai_playerchosen_intention.thfusuo = 40
 	return "."
 end]]
 
+local thgelong_skill = {}
+thgelong_skill.name = "thgelong"
+table.insert(sgs.ai_skills, thgelong_skill)
+thgelong_skill.getTurnUseCard = function(self)
+	if not self.player:hasUsed("ThGelongCard") and not self.player:isKongcheng()
+		then return sgs.Card_Parse("@ThGelongCard=.")
+	end
+end
+
+sgs.ai_skill_use_func.ThGelongCard = function(card, use, self)
+	self:sort(self.enemies, "handcard")
+	local min_card = self:getMinCard()
+	if not min_card then return end
+	local min_point = min_card:getNumber()
+
+	local zhugeliang = self.room:findPlayerBySkillName("ikjingyou")
+
+	sgs.ai_use_priority.ThGelongCard = 7.2
+	self:sort(self.enemies)
+	self.enemies = sgs.reverse(self.enemies)
+	for _, enemy in ipairs(self.enemies) do
+		if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+			local enemy_min_card = self:getMinCard(enemy)
+			local enemy_min_point = enemy_min_card and enemy_min_card:getNumber() or 0
+			if min_point < enemy_min_point then
+				self.thgelong_card = min_card:getId()
+				use.card = sgs.Card_Parse("@ThGelongCard=.")
+				if use.to then use.to:append(enemy) end
+				return
+			end
+		end
+	end
+	for _, enemy in ipairs(self.enemies) do
+		if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+			if min_point <= 4 then
+				self.thgelong_card = min_card:getId()
+				use.card = sgs.Card_Parse("@ThGelongCard=.")
+				if use.to then use.to:append(enemy) end
+				return
+			end
+		end
+	end
+end
+
+function sgs.ai_skill_pindian.thgelong(minusecard, self, requestor)
+	if requestor:getHandcardNum() == 1 then
+		local cards = sgs.QList2Table(self.player:getHandcards())
+		self:sortByKeepValue(cards)
+		return cards[1]
+	end
+	return self:getMinCard()
+end
+
+sgs.ai_cardneed.thgelong = function(to, card, self)
+	if not self:willSkipPlayPhase(to) and self:getUseValue(card) < 6 then
+		return card:getNumber() < 4
+	end
+end
+
+sgs.ai_card_intention.ThGelongCard = 30
+sgs.ai_use_value.ThGelongCard = 8.5
+
+sgs.ai_skill_cardask["@thgelonggive"] = function(self, data, pattern, target)
+	if self:isFriend(target) then
+		return
+	end
+	if self:getCardsNum("Peach") > 0 then
+		return "."
+	end
+	local cards = self.player:getHandcards()
+	self:sortByUseValue(cards)
+	for _, card in sgs.qlist(cards) do
+		if not (isCard("Peach", card, self.player) or (isCard("ExNihilo", card, self.player) and self.player:getPhase() == sgs.Player_Play)) then
+			return card:getEffectiveId()
+		end
+	end
+	return "."
+end
+
+sgs.ai_skill_choice.thgelong = function(self, choices, data)
+	local target = data:toPlayer()
+	if self:isEnemy(target) and self:isWeak(target) and self:damageIsEffective(target, nil, self.player) then
+		return "damage"
+	end
+	if self:isFriend(target) and self:needToThrowArmor(target) and target:getArmor() then
+		return "get"
+	end
+	return self:damageIsEffective(target, nil, self.player) and "damage" or (string.find(choices, "get") and "get" or "damage")
+end
+
+sgs.ai_skill_playerchosen["@thyuanzhou"] = function(self, targets)
+	local ps = sgs.QList2Table(targets)
+	self:sort(ps, "defense")
+	for _, p in sgs.qlist(targets) do
+		if self:isFriend(p) and not p:getJudgingArea():isEmpty() then
+			return p
+		end
+	end
+	for _, p in sgs.qlist(targets) do
+		if self:isEnemy(p) then
+			return p
+		end
+	end
+	return nil
+end
+
 --【埋火】ai
 sgs.string2suit = {
         spade = 0 ,
