@@ -116,6 +116,7 @@ public:
 class ThHuadi: public TriggerSkill{
 public:
     ThHuadi(): TriggerSkill("thhuadi$") {
+            // ServerPlayer::pindian
     }
 };
 
@@ -1273,7 +1274,7 @@ void ThGelongCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
         choices << "damage";
         if (!target->isNude())
             choices << "get";
-        QString choice = room->askForChoice(source, "thgelong", choices.join("+"));
+        QString choice = room->askForChoice(source, "thgelong", choices.join("+"), QVariant::fromValue(target));
         if(choice == "damage")
             room->damage(DamageStruct("thgelong", source, target));
         else {
