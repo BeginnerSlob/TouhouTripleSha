@@ -1,3 +1,30 @@
+--【萃梦】ai
+sgs.ai_skill_invoke.thcuimeng = function(self, data)
+ 	--等待同步替换二张， 张宝 等的技能
+	--[[if self:willSkipPlayPhase() then
+		local erzhang = self.room:findPlayerBySkillName("guzheng")
+		if erzhang and self:isEnemy(erzhang) then return false end
+		if self.player:getPile("incantation"):length() > 0 then
+			local card = sgs.Sanguosha:getCard(self.player:getPile("incantation"):first())
+			if not self.player:getJudgingArea():isEmpty() and not self.player:containsTrick("YanxiaoCard") and not self:hasWizard(self.enemies, true) then
+				local trick = self.player:getJudgingArea():last()
+				if trick:isKindOf("Indulgence") then
+					if card:getSuit() == sgs.Card_Heart or (self.player:hasSkill("hongyan") and card:getSuit() == sgs.Card_Spade) then return false end
+				elseif trick:isKindOf("SupplyShortage") then
+					if card:getSuit() == sgs.Card_Club then return false end
+				end
+			end
+			local zhangbao = self.room:findPlayerBySkillName("yingbing")
+			if zhangbao and self:isEnemy(zhangbao) and not zhangbao:hasSkill("manjuan")
+				and (card:isRed() or (self.player:hasSkill("hongyan") and card:getSuit() == sgs.Card_Spade)) then return false end
+		end
+ 	end
+	]]
+ 	return true
+end
+
+
+
 
 --【冬末】ai
 sgs.ai_skill_use["@@thdongmo"] = function(self, prompt)
@@ -72,6 +99,87 @@ sgs.ai_skill_playerchosen.thxuqu = function(self, targets)
 	return nil
 end
 sgs.ai_playerchosen_intention.thxuqu = -30
+
+--【苦戒】ai
+local thkujiev_skill = {}
+thkujiev_skill.name = "thkujiev"
+table.insert(sgs.ai_skills, thkujiev_skill)
+thkujiev_skill.getTurnUseCard = function(self)
+	if self.player:hasFlag("ForbidThKujie") then return nil end
+	local reds={}
+	for _,c in sgs.qlist(self.player:getCards("he")) do
+		if c:isRed() and c:isKindOf("BasicCard") then
+			table.insert(reds,c)
+		end
+	end
+	if #reds==0 then return nil end
+	self:sortByKeepValue(reds)
+	return sgs.Card_Parse("@ThKujieCard=" .. reds[1]:getEffectiveId())
+end
+sgs.ai_skill_use_func.ThKujieCard = function(card, use, self)
+	local targets ={}
+	for _,p in sgs.qlist(self.room:findPlayersBySkillName("thkujie")) do
+		if  self.player:inMyAttackRange(p) and not p:hasFlag("ThKujieInvoked") then
+			table.insert(targets,p)
+		end
+	end
+	if #targets==0 then return nil end
+	self:sort(targets, "hp")
+	local good_target 
+	for _,p in pairs (targets) do
+		if self:isEnemy(p) then
+			if p:getHp()==1 and self:getAllPeachNum(p)<=0 then
+				good_target = p
+				break
+			end
+		elseif self:isFriend(p) then
+			if p:isWounded() and p:getHp()>1 then
+				good_target = p
+				break
+			end
+		end
+	end
+	if good_target then
+		use.card = card
+		if use.to then
+			use.to:append(good_target)
+			return
+		end
+	end
+end
+sgs.ai_card_intention.ThKujieCard = function(self, card, from, tos)
+	for _, to in pairs(tos) do
+		if to:getHp()<=1 then
+			sgs.updateIntention(from, to, 80)
+		else
+			sgs.updateIntention(from, to, -20)
+		end
+	end
+end
+
+--【廕庇】ai
+sgs.ai_skill_invoke.thyinbi = function(self, data)
+	local damage = data:toDamage()
+	if self:isFriend(damage.to) then
+		if damage.to:getLostHp() >= damage.damage and  self.player:getHp() > damage.damage then
+			local isSlash 
+			if damage.card and damage.card:isKindOf("Slash") then
+				isSlash= true
+			end
+			return not self:needToLoseHp(damage.to, damage.from, isSlash, true)
+		end
+	end
+	return false
+end
+sgs.ai_choicemade_filter.skillInvoke.thyinbi = function(self, player, promptlist)
+	local to=player:getTag("thyinbiDamage"):toDamage().to
+	if to and promptlist[#promptlist] == "yes" then
+		sgs.updateIntention(player, to, -80)
+	end
+end
+
+
+
 
 --【灵蝶】ai
 local function countKnownCards(target)
