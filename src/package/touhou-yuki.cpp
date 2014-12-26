@@ -1925,8 +1925,10 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
-        if (ask_who->askForSkillInvoke(objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
+        ask_who->tag["thyinbiDamage"] = data;
+        if (ask_who->askForSkillInvoke(objectName(), data)) {
+            ask_who->tag.remove("thyinbiDamage");
             room->broadcastSkillInvoke(objectName());
             return true;
         }
