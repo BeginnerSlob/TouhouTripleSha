@@ -2,17 +2,17 @@ To build QSanguosha with VS2010
 
 1. Download the following packages: 
 --using QT4:
-(1) QT libraries for Windows (Visual Studio 2010, 4.8) http://download.qt-project.org/official_releases/qt/4.8/4.8.6/qt-opensource-windows-x86-vs2010-4.8.6.exe
-(2) QT Visual Studio Add-in (for Qt 4) http://download.qt-project.org/official_releases/vsaddin/qt-vs-addin-1.1.11-opensource.exe
+(1) QT libraries for Windows (Visual Studio 2010, 4.8) http://download.qt.io/official_releases/qt/4.8/4.8.6/qt-opensource-windows-x86-vs2010-4.8.6.exe
+(2) QT Visual Studio Add-in (for Qt 4) http://download.qt.io/official_releases/vsaddin/qt-vs-addin-1.1.11-opensource.exe
    and then install them.
   
 --using QT5:
-(1) QT libraries for Windows (Visual Studio 2010, 5.3) http://download.qt-project.org/official_releases/qt/5.3/5.3.2/qt-opensource-windows-x86-msvc2010_opengl-5.3.2.exe
-(2) QT Visual Studio Add-in (for Qt 5) http://download.qt-project.org/official_releases/vsaddin/qt-vs-addin-1.2.3-opensource.exe
+(1) QT libraries for Windows (Visual Studio 2010, 5.4) http://download.qt.io/official_releases/qt/5.4/5.4.0/qt-opensource-windows-x86-msvc2010_opengl-5.4.0.exe
+(2) QT Visual Studio Add-in (for Qt 5) http://download.qt.io/official_releases/vsaddin/qt-vs-addin-1.2.4-opensource.exe
    and then install them.
 
 
-2. Download the swigwin (swig for Windows, 2.0.12 to ensure the support for Lua 5.2) http://sourceforge.net/projects/swig/files/swigwin/
+2. Download the swigwin (swig for Windows, 3.0.2 to ensure the support for Lua 5.2) http://sourceforge.net/projects/swig/files/swigwin/
 
 3. Create a tools/swig folder under your source directory. Unzip swigwin and copy all unzipped files to tools/swig. To make sure you copied them to the right directory hierachy, check if this file exists: <Your source direcotry>/QSanguosha/tools/swig/swig.exe
 
