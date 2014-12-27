@@ -187,7 +187,7 @@ QWidget *ServerDialog::createAdvancedTab() {
 
     enable_cheat_checkbox = new QCheckBox(tr("Enable cheat"));
     enable_cheat_checkbox->setToolTip(tr("This option enables the cheat menu"));
-#ifdef QT_RELEASE
+#ifdef QT_NO_DEBUG
     enable_cheat_checkbox->setChecked(false);
     enable_cheat_checkbox->setEnabled(false);
 #else
@@ -222,7 +222,7 @@ QWidget *ServerDialog::createAdvancedTab() {
     without_lordskill_checkbox->setChecked(Config.value("WithoutLordskill", false).toBool());
 
     sp_convert_checkbox = new QCheckBox(tr("Enable SP Convert"));
-#ifdef QT_RELEASE
+#ifdef QT_NO_DEBUG
     sp_convert_checkbox->setEnabled(false);
     sp_convert_checkbox->setChecked(false);
     sp_convert_checkbox->setToolTip(tr("Temp Disabled"));
@@ -232,7 +232,7 @@ QWidget *ServerDialog::createAdvancedTab() {
 
     maxchoice_spinbox = new QSpinBox;
     maxchoice_spinbox->setRange(3, 21);
-#ifdef QT_RELEASE
+#ifdef QT_NO_DEBUG
     maxchoice_spinbox->setValue(7);
     maxchoice_spinbox->setEnabled(false);
     maxchoice_spinbox->setToolTip(tr("Temp Disabled"));
@@ -244,7 +244,7 @@ QWidget *ServerDialog::createAdvancedTab() {
     lord_maxchoice_label->setToolTip(tr("-1 means that all lords are available"));
     lord_maxchoice_spinbox = new QSpinBox;
     lord_maxchoice_spinbox->setRange(-1, 15);
-#ifdef QT_RELEASE
+#ifdef QT_NO_DEBUG
     lord_maxchoice_spinbox->setValue(5);
     lord_maxchoice_spinbox->setEnabled(false);
     lord_maxchoice_spinbox->setToolTip(tr("Temp Disabled"));
@@ -254,7 +254,7 @@ QWidget *ServerDialog::createAdvancedTab() {
 
     nonlord_maxchoice_spinbox = new QSpinBox;
     nonlord_maxchoice_spinbox->setRange(0, 15);
-#ifdef QT_RELEASE
+#ifdef QT_NO_DEBUG
     nonlord_maxchoice_spinbox->setValue(4);
     nonlord_maxchoice_spinbox->setEnabled(false);
     nonlord_maxchoice_spinbox->setToolTip(tr("Temp Disabled"));
@@ -269,7 +269,7 @@ QWidget *ServerDialog::createAdvancedTab() {
     disable_chat_checkbox->setChecked(Config.DisableChat);
 
     second_general_checkbox = new QCheckBox(tr("Enable second general"));
-#ifdef QT_RELEASE
+#ifdef QT_NO_DEBUG
     second_general_checkbox->setEnabled(false);
     second_general_checkbox->setChecked(false);
     second_general_checkbox->setToolTip(tr("Temp Disabled"));
@@ -278,7 +278,7 @@ QWidget *ServerDialog::createAdvancedTab() {
 #endif
 
     same_checkbox = new QCheckBox(tr("Enable Same"));
-#ifdef QT_RELEASE
+#ifdef QT_NO_DEBUG
     same_checkbox->setEnabled(false);
     same_checkbox->setChecked(false);
     same_checkbox->setToolTip(tr("Temp Disabled"));
@@ -308,7 +308,7 @@ QWidget *ServerDialog::createAdvancedTab() {
     connect(max_hp_scheme_ComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setMaxHpSchemeBox()));
 
     basara_checkbox = new QCheckBox(tr("Enable Basara"));
-#ifdef QT_RELEASE
+#ifdef QT_NO_DEBUG
     basara_checkbox->setEnabled(false);
     basara_checkbox->setChecked(false);
     basara_checkbox->setToolTip(tr("Temp Disabled"));
@@ -319,7 +319,7 @@ QWidget *ServerDialog::createAdvancedTab() {
     connect(mode_group, SIGNAL(buttonClicked(QAbstractButton *)), this, SLOT(updateButtonEnablility(QAbstractButton *)));
 
     hegemony_checkbox = new QCheckBox(tr("Enable Hegemony"));
-#ifdef QT_RELEASE
+#ifdef QT_NO_DEBUG
     hegemony_checkbox->setEnabled(false);
     hegemony_checkbox->setChecked(false);
     hegemony_checkbox->setToolTip(tr("Temp Disabled"));
@@ -842,7 +842,7 @@ QGroupBox *ServerDialog::createGameModeBox() {
 
             item_list << button << box;
         } else if (itor.key() == "06_3v3") {
-#ifdef QT_RELEASE
+#ifdef QT_NO_DEBUG
             button->setEnabled(false);
             button->setToolTip(tr("Temp Disabled"));
 #endif
@@ -851,7 +851,7 @@ QGroupBox *ServerDialog::createGameModeBox() {
 
             item_list << button << box;
         } else if (itor.key() == "06_XMode") {
-#ifdef QT_RELEASE
+#ifdef QT_NO_DEBUG
             button->setEnabled(false);
             button->setToolTip(tr("Temp Disabled"));
 #endif
@@ -870,7 +870,7 @@ QGroupBox *ServerDialog::createGameModeBox() {
     // add scenario modes
     QRadioButton *scenario_button = new QRadioButton(tr("Scenario mode"));
     scenario_button->setObjectName("scenario");
-#ifdef QT_RELEASE
+#ifdef QT_NO_DEBUG
     scenario_button->setEnabled(false);
 #endif
     mode_group->addButton(scenario_button);
