@@ -539,6 +539,7 @@ void MainWindow::on_actionMinimize_to_system_tray_triggered()
 
         QAction *appear = new QAction(tr("Show main window"), this);
         connect(appear, SIGNAL(triggered()), this, SLOT(show()));
+        connect(appear, SIGNAL(triggered()), systray, SLOT(hide()));
 
         QMenu *menu = new QMenu;
         menu->addAction(appear);
@@ -548,12 +549,11 @@ void MainWindow::on_actionMinimize_to_system_tray_triggered()
         menu->addMenu(ui->menuHelp);
 
         systray->setContextMenu(menu);
-
-        systray->show();
-        systray->showMessage(windowTitle(), tr("Game is minimized"));
-
-        hide();
     }
+    systray->show();
+    systray->showMessage(windowTitle(), tr("Game is minimized"));
+
+    hide();
 }
 
 void MainWindow::on_actionRole_assign_table_triggered()
