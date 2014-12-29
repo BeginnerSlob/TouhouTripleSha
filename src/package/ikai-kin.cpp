@@ -983,8 +983,8 @@ public:
         frequency = Frequent;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
+        TriggerList skill_list;
         const Card *to_obtain = NULL;
         PindianStruct *pindian = data.value<PindianStruct *>();
         if (TriggerSkill::triggerable(pindian->from)) {
@@ -1040,8 +1040,8 @@ public:
         events << CardUsed;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        TriggerList skill_list;
         if (player->getPhase() == Player::Play) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("Slash"))
@@ -1438,8 +1438,8 @@ public:
         events << EventPhaseStart << EventPhaseEnd << Death;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        TriggerList skill_list;
         if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Play) {
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
                 if (p != player)
@@ -1768,8 +1768,8 @@ public:
         events << TargetConfirming;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        TriggerList skill_list;
         CardUseStruct use = data.value<CardUseStruct>();
 
         if (use.card->isKindOf("Slash") && use.to.contains(player))
@@ -2305,8 +2305,8 @@ public:
         events << DamageInflicted;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        TriggerList skill_list;
         DamageStruct damage = data.value<DamageStruct>();
         if (player->getHp() == 1) {
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
@@ -2609,8 +2609,8 @@ public:
         events << CardResponded << EventPhaseStart << EventPhaseChanging;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        TriggerList skill_list;
         if (triggerEvent == EventPhaseChanging) {
             room->setPlayerMark(player, objectName(), 0);
         } else if (triggerEvent == CardResponded) {
@@ -2778,8 +2778,8 @@ public:
         events << TurnedOver << ChainStateChanged;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+        TriggerList skill_list;
         if (triggerEvent == ChainStateChanged && !player->isChained()) return skill_list;
         foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
             skill_list.insert(owner, QStringList(objectName()));
@@ -2924,8 +2924,8 @@ public:
         events << EventPhaseStart;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+        TriggerList skill_list;
         if (player->getPhase() == Player::Judge && !player->getJudgingArea().isEmpty()) {
             foreach (ServerPlayer *hs, room->findPlayersBySkillName(objectName())) {
                 if (hs->inMyAttackRange(player))
@@ -2988,8 +2988,8 @@ public:
         frequency = Compulsory;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        TriggerList skill_list;
         if (triggerEvent == CardsMoveOneTime && TriggerSkill::triggerable(player)) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.from == player) {
@@ -4927,8 +4927,8 @@ public:
         events << EventPhaseStart;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+        TriggerList skill_list;
         if (player->getPhase() != Player::RoundStart || player->isKongcheng())
             return skill_list;
         foreach (ServerPlayer *fuhuanghou, room->findPlayersBySkillName(objectName())) {
@@ -5123,8 +5123,8 @@ public:
         events << EventPhaseChanging;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        TriggerList skill_list;
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
         if (change.to != Player::NotActive || player->getMark("iklanhuan") > 0) return skill_list;
         foreach (ServerPlayer *caifuren, room->findPlayersBySkillName(objectName())) {

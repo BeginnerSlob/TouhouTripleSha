@@ -414,8 +414,8 @@ public:
         events << CardEffected;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const {
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const {
+        TriggerList skill_list;
         CardEffectStruct effect = data.value<CardEffectStruct>();
         if (effect.card->isKindOf("Peach") && !effect.nullified) {
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
@@ -2138,8 +2138,8 @@ public:
         view_as_skill = new ThShengzhiViewAsSkill;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const {
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const {
+        TriggerList skill_list;
         if (player->getPhase() != Player::RoundStart)
             return skill_list;
 
@@ -2209,8 +2209,8 @@ public:
         events << EventPhaseStart;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const {
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const {
+        TriggerList skill_list;
         if (player->getPhase() != Player::Start)
             return skill_list;
         foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))

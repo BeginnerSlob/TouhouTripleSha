@@ -518,8 +518,8 @@ public:
         frequency = Wake;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const {
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const {
+        TriggerList skill_list;
         if (player->getPhase() == Player::NotActive) {
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
                 if (p->getHp() == 1 && p->getMark("@qianyu") <= 0)
@@ -1698,8 +1698,8 @@ public:
         events << CardUsed << HpRecover << Damaged << CardResponded << DamageCaused;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
+        TriggerList skill_list;
         if (player->isDead()) return skill_list;
         if (triggerEvent == CardUsed) {
             CardUseStruct use = data.value<CardUseStruct>();
@@ -1760,8 +1760,8 @@ public:
         frequency = Compulsory;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const {
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const {
+        TriggerList skill_list;
         if (player->getPhase() == Player::NotActive) {
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
                 if (owner->isKongcheng())
