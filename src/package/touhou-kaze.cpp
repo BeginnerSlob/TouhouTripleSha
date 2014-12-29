@@ -342,8 +342,8 @@ public:
         events << FinishJudge;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        TriggerList skill_list;
         if (player == NULL)
             return skill_list;
         JudgeStruct *judge = data.value<JudgeStruct *>();
@@ -1154,8 +1154,8 @@ public:
         events << CardUsed << CardResponded;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
+        TriggerList skill_list;
         const Card *card = NULL;
         if (triggerEvent == CardUsed) {
             CardUseStruct use = data.value<CardUseStruct>();
@@ -1385,8 +1385,8 @@ public:
         view_as_skill = new ThDasuiViewAsSkill;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const {
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const {
+        TriggerList skill_list;
         if (player->getPhase() != Player::Play) return skill_list;
         foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
             if (owner == player || owner->getPile("dasuipile").isEmpty())
@@ -1968,7 +1968,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        QMap<ServerPlayer *, QStringList> skill_list;
+        TriggerList skill_list;
         foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
             QStringList skills;
             foreach (const Skill *skill, p->getVisibleSkillList()) {

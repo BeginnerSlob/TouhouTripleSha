@@ -121,8 +121,8 @@ public:
         events << EventPhaseChanging << EventPhaseEnd;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &) const {
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &) const {
+        TriggerList skill_list;
         if (triggerEvent == EventPhaseChanging) {
             foreach (ServerPlayer *p, room->getAlivePlayers())
                 p->setMark("thguaiqi", 0);
@@ -431,8 +431,8 @@ public:
         frequency = Compulsory;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        TriggerList skill_list;
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.card->isNDTrick() && use.card->isBlack())
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
@@ -466,8 +466,8 @@ public:
         events << EventPhaseStart;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+        TriggerList skill_list;
         if (player->getPhase() == Player::Start && !player->isKongcheng())
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
                 if (owner == player || owner->isKongcheng()) continue;
@@ -574,8 +574,8 @@ public:
         events << EventPhaseEnd;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+        TriggerList skill_list;
         if (player->getPhase() == Player::Draw && !player->isKongcheng())
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
                 if (owner == player) continue;
@@ -612,8 +612,8 @@ public:
         frequency = Compulsory;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        QMap<ServerPlayer *, QStringList> skill_list;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+        TriggerList skill_list;
         if (player->hasFlag("thbaochui") && player->getPhase() == Player::Play)
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (p->getPile("thbaochuipile").isEmpty()) continue;

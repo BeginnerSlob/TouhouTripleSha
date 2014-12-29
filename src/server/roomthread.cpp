@@ -676,7 +676,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         room->tryPause();
                         if (will_trigger.isEmpty()
                                 || skill->getDynamicPriority() == will_trigger.last()->getDynamicPriority()) {
-                            QMap<ServerPlayer *, QStringList> triggerSkillList = skill->triggerable(triggerEvent, room, target, data);
+                            TriggerList triggerSkillList = skill->triggerable(triggerEvent, room, target, data);
                             foreach (ServerPlayer *p, room->getAllPlayers(true))
                                 if (triggerSkillList.contains(p) && !triggerSkillList.value(p).isEmpty())
                                     foreach(QString skill_name, triggerSkillList.value(p)) {
@@ -770,7 +770,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                 continue;
                             } else {
                                 if (skill->getDynamicPriority() == triggered.first()->getDynamicPriority()) {
-                                    QMap<ServerPlayer *, QStringList> triggerSkillList = skill->triggerable(triggerEvent, room, target, data);
+                                    TriggerList triggerSkillList = skill->triggerable(triggerEvent, room, target, data);
                                     foreach (ServerPlayer *player, room->getAllPlayers(true))
                                         if (triggerSkillList.contains(player) && !triggerSkillList.value(player).isEmpty())
                                             foreach(QString skill_name, triggerSkillList.value(player)) {
