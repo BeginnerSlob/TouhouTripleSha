@@ -498,7 +498,7 @@ public:
                                                      QString()));
                 exchangeMove.push_back(move1);
                 exchangeMove.push_back(move2);
-                room->moveCardsAtomic(exchangeMove, false);
+                room->moveCards(exchangeMove, false);
             } else if (choice == "e") {
                 QList<CardsMoveStruct> exchangeMove;
                 QList<int> ids1;
@@ -521,7 +521,7 @@ public:
                                                      QString()));
                 exchangeMove.push_back(move1);
                 exchangeMove.push_back(move2);
-                room->moveCardsAtomic(exchangeMove, false);
+                room->moveCards(exchangeMove, false);
             } else if (choice == "j") {
                 QList<CardsMoveStruct> exchangeMove;
                 CardsMoveStruct move1(player->getJudgingAreaID(), target, Player::PlaceDelayedTrick,
@@ -538,7 +538,7 @@ public:
                                                      QString()));
                 exchangeMove.push_back(move1);
                 exchangeMove.push_back(move2);
-                room->moveCardsAtomic(exchangeMove, false);
+                room->moveCards(exchangeMove, false);
             }
             player->drawCards(1);
             target->drawCards(1);
