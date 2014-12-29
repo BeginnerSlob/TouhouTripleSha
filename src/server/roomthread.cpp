@@ -684,6 +684,12 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                         if (trskill) {
                                             will_trigger.append(trskill);
                                             trigger_who[p].append(trskill);
+                                        } else {
+                                            trskill = Sanguosha->getTriggerSkill(skill_name.split("!").first());
+                                            if (trskill) {
+                                                will_trigger.append(trskill);
+                                                trigger_who[p].append(trskill);
+                                            }
                                         }
                                     }
                         } else if(skill->getDynamicPriority() != will_trigger.last()->getDynamicPriority())
