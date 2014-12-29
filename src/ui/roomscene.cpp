@@ -1592,10 +1592,21 @@ void RoomScene::chooseOption(const QString &skillName, const QStringList &option
 
     foreach (QString option, options) {
         QCommandLinkButton *button = new QCommandLinkButton;
-        QString text = QString("%1:%2").arg(skillName).arg(option);
-        QString translated = Sanguosha->translate(text);
-        if (text == translated)
-            translated = Sanguosha->translate(option);
+        QString text, translated;
+        if (skillName == "TriggerOrder") {
+            text = option;
+            translated = Sanguosha->translate(text);
+            if (option == translated) {
+                QStringList list = option.split("!");
+                text = list.first();
+                translated = QString("%1(%2)").arg(Sanguosha->translate(text)).arg(ClientInstance->getPlayerName(list.last()));
+            }
+        } else {
+            text = QString("%1:%2").arg(skillName).arg(option);
+            QString translated = Sanguosha->translate(text);
+            if (text == translated)
+                translated = Sanguosha->translate(option);
+        }
 
         button->setObjectName(option);
         button->setText(translated);

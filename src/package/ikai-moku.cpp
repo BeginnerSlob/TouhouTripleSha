@@ -1716,44 +1716,38 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        QStringList skill_list;
         if (player->getKingdom() != "hana")
-            return QStringList();
+            return skill_list;
         JudgeStruct *judge = data.value<JudgeStruct *>();
-
+        
         if (judge->card->isBlack()) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (p->hasLordSkill("iksongwei"))
-                    return QStringList(objectName());
+                    skill_list << objectName() + "!" + p->objectName();
             }
         }
-        return QStringList();
+        return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        QList<ServerPlayer *> caopis;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-            if (p->hasLordSkill(objectName()))
-                caopis << p;
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *skill_target, QVariant &, ServerPlayer *skill_invoker) const{
+        if (skill_invoker->askForSkillInvoke(objectName(), QVariant::fromValue(skill_target))) {
+            room->broadcastSkillInvoke(objectName());
+            room->notifySkillInvoked(skill_target, objectName());
+            LogMessage log;
+            log.type = "#InvokeOthersSkill";
+            log.from = skill_invoker;
+            log.to << skill_target;
+            log.arg = objectName();
+            room->sendLog(log);
+
+            return true;
         }
+        return false;
+    }
 
-        while (!caopis.isEmpty()) {
-            ServerPlayer *caopi = room->askForPlayerChosen(player, caopis, objectName(), "@iksongwei-to", true);
-            if (caopi) {
-                room->broadcastSkillInvoke(objectName());
-                room->notifySkillInvoked(caopi, objectName());
-                LogMessage log;
-                log.type = "#InvokeOthersSkill";
-                log.from = player;
-                log.to << caopi;
-                log.arg = objectName();
-                room->sendLog(log);
-
-                caopi->drawCards(1, objectName());
-                caopis.removeOne(caopi);
-            } else
-                break;
-        }
-
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *skill_target, QVariant &, ServerPlayer *) const{
+        skill_target->drawCards(1, objectName());
         return false;
     }
 };
@@ -3590,52 +3584,45 @@ public:
         events << Damage;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        QStringList skill_list;
         if (player->tag.value("InvokeIkWuhua", false).toBool()) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                if (p->hasLordSkill(objectName()))
-                    return QStringList(objectName());
+                if (p->hasLordSkill("ikwuhua"))
+                    skill_list << objectName() + "!" + p->objectName();
             }
         }
-        return QStringList();
+        return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        QList<ServerPlayer *> dongzhuos;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-            if (p->hasLordSkill(objectName()))
-                dongzhuos << p;
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *skill_target, QVariant &, ServerPlayer *skill_invoker) const{
+        if (skill_invoker->askForSkillInvoke(objectName(), QVariant::fromValue(skill_target))) {
+            room->notifySkillInvoked(skill_target, objectName());
+            LogMessage log;
+            log.type = "#InvokeOthersSkill";
+            log.from = skill_invoker;
+            log.to << skill_target;
+            log.arg = objectName();
+            room->sendLog(log);
+
+            return true;
         }
+        return false;
+    }
 
-        while (!dongzhuos.isEmpty()) {
-            ServerPlayer *dongzhuo = room->askForPlayerChosen(player, dongzhuos, objectName(), "@ikwuhua-to", true);
-            if (dongzhuo) {
-                dongzhuos.removeOne(dongzhuo);
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *skill_target, QVariant &, ServerPlayer *skill_invoker) const{
+        JudgeStruct judge;
+        judge.pattern = ".|spade";
+        judge.good = true;
+        judge.reason = objectName();
+        judge.who = skill_invoker;
 
-                LogMessage log;
-                log.type = "#InvokeOthersSkill";
-                log.from = player;
-                log.to << dongzhuo;
-                log.arg = objectName();
-                room->sendLog(log);
-                room->notifySkillInvoked(dongzhuo, objectName());
+        room->judge(judge);
 
-                JudgeStruct judge;
-                judge.pattern = ".|spade";
-                judge.good = true;
-                judge.reason = objectName();
-                judge.who = player;
-
-                room->judge(judge);
-
-                if (judge.isGood()) {
-                    room->broadcastSkillInvoke(objectName());
-                    room->recover(dongzhuo, RecoverStruct(player));
-                }
-            } else
-                break;
+        if (judge.isGood()) {
+            room->broadcastSkillInvoke(objectName());
+            room->recover(skill_target, RecoverStruct(skill_invoker));
         }
-
         return false;
     }
 };
