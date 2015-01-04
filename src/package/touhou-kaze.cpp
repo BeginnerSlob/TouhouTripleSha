@@ -1396,8 +1396,11 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
-        if (ask_who->askForSkillInvoke(objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
+        ask_who->tag["ThDasuiData"] = QVariant::fromValue(player); // for AI
+        bool invoke = ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player));
+        ask_who->tag.remove("ThDasuiData");
+        if (invoke) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }

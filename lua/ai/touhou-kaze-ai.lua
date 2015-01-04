@@ -1040,17 +1040,68 @@ end
 sgs.ai_skill_playerchosen["@thyuanzhou"] = function(self, targets)
 	local ps = sgs.QList2Table(targets)
 	self:sort(ps, "defense")
-	for _, p in sgs.qlist(targets) do
+	for _, p in ipairs(ps) do
 		if self:isFriend(p) and not p:getJudgingArea():isEmpty() then
 			return p
 		end
 	end
-	for _, p in sgs.qlist(targets) do
+	for _, p in ipairs(ps) do
 		if self:isEnemy(p) then
 			return p
 		end
 	end
 	return nil
+end
+
+local thdasui_skill = {}
+thdasui_skill.name = "thdasui"
+table.insert(sgs.ai_skills, thdasui_skill)
+thdasui_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThDasuiCard") then return nil end
+	if self:getOverflow() < 1 then
+		return
+	end
+	local cards = self.player:getHandcards()
+	cards = sgs.QList2Table(cards)
+	self:sortByKeepValue(cards)
+	local n = math.min(self:getOverflow(), 2)
+	local int_table = {}
+	for i = 1, n, 1 do
+		table.insert(int_table, tostring(cards[i]:getId()))
+	end
+	local card_str = ("@ThDasuiCard=%s"):format(table.concat(int_table, "+"))
+	return sgs.Card_Parse(card_str)
+end
+
+sgs.ai_skill_use_func.ThDasuiCard = function(card, use, self)
+	use.card = card
+	return 
+end
+sgs.ai_use_priority.ThDasuiCard = -5
+
+sgs.ai_skill_invoke.thdasui = function(self, data)
+	local target = data:toPlayer()
+	return self:isFriend(target)
+end
+
+sgs.ai_choicemade_filter.skillInvoke.thdasui = function(self, player, promptlist)
+	if promptlist[#promptlist] == "yes" then
+		local target = player:getTag("ThDasuiData"):toPlayer()
+		sgs.updateIntention(player, target, -30)
+	end
+end
+
+sgs.ai_skill_choice.thfengren = function(self, choices, data)
+	local ids = self.player:getPile("dasuipile")
+	if ids:length() == 2 then
+		for _, id in sgs.qlist(ids) do
+			if sgs.Sanguosha:getCard(id):isKindOf("Peach") then
+				return "obtain"
+			end
+		end
+		return self.player:isWounded() and "recover" or "obtain"
+	end
+	return "obtain"
 end
 
 --【埋火】ai
