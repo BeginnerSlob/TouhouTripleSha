@@ -1079,6 +1079,7 @@ sgs.ai_skill_use_func.ThDasuiCard = function(card, use, self)
 	use.card = card
 	return 
 end
+
 sgs.ai_use_priority.ThDasuiCard = -5
 
 sgs.ai_skill_invoke.thdasui = function(self, data)
@@ -1120,6 +1121,164 @@ sgs.ai_skill_invoke.thkudao = function(self, data)
 end
 
 sgs.ai_skill_invoke.thsuilun = true
+
+local thransang_skill = {}
+thransang_skill.name = "thransang"
+table.insert(sgs.ai_skills, thransang_skill)
+thransang_skill.getTurnUseCard = function(self)
+	if not self.player:hasUsed("ThRansangCard") and not self.player:isKongcheng()
+		then return sgs.Card_Parse("@ThRansangCard=.")
+	end
+end
+
+sgs.ai_skill_use_func.ThRansangCard = function(card, use, self)
+	local trick_num = 0
+	for _, card in sgs.qlist(self.player:getHandcards()) do
+		if card:isNDTrick() and not card:isKindOf("Nullification") then trick_num = trick_num + 1 end
+	end
+	self:sort(self.enemies, "handcard")
+	local max_card = self:getMaxCard()
+	local max_point = max_card:getNumber()
+
+	for _, enemy in ipairs(self.enemies) do
+		if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+			local enemy_max_card = self:getMaxCard(enemy)
+			local enemy_max_point = enemy_max_card and enemy_max_card:getNumber() or 100
+			if max_point > enemy_max_point then
+				self.thransang_card = max_card:getEffectiveId()
+				use.card = card
+				if use.to then
+					use.to:append(enemy)
+				end
+				return
+			end
+		end
+	end
+	for _, enemy in ipairs(self.enemies) do
+		if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+			if max_point >= 10 then
+				self.thransang_card = max_card:getEffectiveId()
+				use.card = card
+				if use.to then
+					use.to:append(enemy)
+				end
+				return
+			end
+		end
+	end
+
+	self:sort(self.friends_noself, "handcard")
+	for index = #self.friends_noself, 1, -1 do
+		local friend = self.friends_noself[index]
+		if not friend:isKongcheng() then
+			local friend_min_card = self:getMinCard(friend)
+			local friend_min_point = friend_min_card and friend_min_card:getNumber() or 100
+			if max_point > friend_min_point then
+				self.thransang_card = max_card:getEffectiveId()
+				use.card = card
+				if use.to then
+					use.to:append(friend)
+				end
+				return
+			end
+		end
+	end
+
+	local zhugeliang = self.room:findPlayerBySkillName("ikjingyou")
+	if zhugeliang and self:isFriend(zhugeliang) and zhugeliang:getHandcardNum() == 1 and zhugeliang:objectName() ~= self.player:objectName() then
+		if max_point >= 7 then
+			self.thransang_card = max_card:getEffectiveId()
+			use.card = card
+			if use.to then
+				use.to:append(zhugeliang)
+			end
+			return
+		end
+	end
+
+	for index = #self.friends_noself, 1, -1 do
+		local friend = self.friends_noself[index]
+		if not friend:isKongcheng() then
+			if max_point >= 7 then
+				self.thransang_card = max_card:getEffectiveId()
+				use.card = card
+				if use.to then
+					use.to:append(friend)
+				end
+				return
+			end
+		end
+	end
+
+	if trick_num == 0 and not self:isValuableCard(max_card) then
+		for _, enemy in ipairs(self.enemies) do
+			if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() and self:hasLoseHandcardEffective(enemy) then
+				self.thransang_card = max_card:getEffectiveId()
+				use.card = card
+				if use.to then
+					use.to:append(enemy)
+				end
+				return
+			end
+		end
+	end
+	return
+end
+
+sgs.ai_card_intention.ThRansangCard = 0
+sgs.ai_cardneed.thransang = sgs.ai_cardneed.bignumber
+sgs.ai_use_priority.ThDasuiCard = sgs.ai_use_priority.FireAttack + 0.1
+
+sgs.ai_skill_invoke.thyanlun = true
+
+local thyanlun_skill = {}
+thyanlun_skill.name = "thyanlun"
+table.insert(sgs.ai_skills, thyanlun_skill)
+thyanlun_skill.getTurnUseCard = function(self)
+	local cards = self.player:getCards("h")
+	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+		cards:prepend(sgs.Sanguosha:getCard(id))
+	end
+	cards = sgs.QList2Table(cards)
+
+	local card
+	self:sortByUseValue(cards, true)
+
+	for _, acard in ipairs(cards) do
+		if not acard:isRed() then continue end
+		if not isCard("Peach", acard, self.player) and (self:getUsePriority(acard) < sgs.ai_use_value.FireAttack or self:getOverflow() > 0) then
+			if acard:isKindOf("Slash") and self:getCardsNum("Slash") == 1 then
+				local keep
+				local dummy_use = { isDummy = true , to = sgs.SPlayerList() }
+				self:useBasicCard(acard, dummy_use)
+				if dummy_use.card and dummy_use.to:length() > 0 then
+					for _, p in sgs.qlist(dummy_use.to) do
+						if p:getHp() <= 1 then keep = true break end
+					end
+					if dummy_use.to:length() > 1 then keep = true end
+				end
+				if keep then sgs.ai_use_priority.Slash = sgs.ai_use_priority.FireAttack + 0.1 end
+			else
+				sgs.ai_use_priority.Slash = 2.6
+				card = acard
+				break
+			end
+		else
+			card = acard
+			break
+		end
+	end
+
+	if not card then return nil end
+	local suit = card:getSuitString()
+	local number = card:getNumberString()
+	local card_id = card:getEffectiveId()
+	local card_str = ("fire_attack:thyanlun[%s:%s]=%d"):format(suit, number, card_id)
+	local skillcard = sgs.Card_Parse(card_str)
+
+	assert(skillcard)
+	return skillcard
+end
 
 --【埋火】ai
 sgs.string2suit = {

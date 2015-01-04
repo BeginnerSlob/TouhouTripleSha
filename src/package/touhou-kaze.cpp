@@ -1722,7 +1722,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        player->drawCards(1);
+        player->drawCards(1, objectName());
         return false;
     }
 };
