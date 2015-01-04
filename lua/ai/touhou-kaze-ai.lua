@@ -1052,6 +1052,8 @@ sgs.ai_skill_playerchosen["@thyuanzhou"] = function(self, targets)
 	end
 	return nil
 end
+sgs.ai_choicemade_filter.cardChosen.thyuanzhou = sgs.ai_choicemade_filter.cardChosen.dismantlement
+
 
 local thdasui_skill = {}
 thdasui_skill.name = "thdasui"
