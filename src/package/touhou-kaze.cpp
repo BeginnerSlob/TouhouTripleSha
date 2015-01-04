@@ -1613,7 +1613,7 @@ public:
                     const Card *c = Sanguosha->getCard(id);
                     if (c->getSuit() == suit) {
                         card_ids.removeOne(id);
-                        room->takeAG(NULL, id, false);
+                        room->takeAG(NULL, id, false, _player);
                     }
                 }
             }
