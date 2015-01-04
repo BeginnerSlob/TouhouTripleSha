@@ -38,7 +38,12 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+        //if (data.canConvert<CardUseStruct>())
+        //    ask_who->tag["thhuajiTarget"] = QVariant::fromValue(data.value<CardUseStruct>().from);
+        //else if (data.canConvert<CardResponseStruct>())
+        //    ask_who->tag["thhuajiTarget"] = QVariant::fromValue(player);
+        ask_who->tag["thhuajiTarget"] = QVariant::fromValue(player);
         if (room->askForCard(ask_who, ".|black", "@thhuajiuse", data, objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
