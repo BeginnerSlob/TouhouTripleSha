@@ -2411,7 +2411,7 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign) {
         if (p->getRole() == "loyalist")
             max_choice << 10;
         if (p->getRole() == "rebel")
-            max_choice << 8;
+            max_choice << 6;
         if (p->getRole() == "renegade")
             max_choice << 12;
     }
