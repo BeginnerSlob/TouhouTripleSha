@@ -1,3 +1,48 @@
+--【花祭】ai
+sgs.ai_skill_cardask["@thhuajiuse"] = function(self, data)
+	local target = self.player:getTag("thhuajiTarget"):toPlayer()
+	if not self:isEnemy(target) then return "." end
+	local keepSlash =  self:slashIsAvailable() and self:getCardsNum("Slash")<=1 
+	local blacks={}
+	local cards = sgs.QList2Table(self.player:getCards("he"))
+	--目的是把红杀排在前面
+	self:sortByKeepValue(cards,true)
+	for _,c in pairs(cards) do
+		if not c:isBlack()  then 
+			if c:isKindOf("Slash") then
+				keepSlash =false
+			end
+			continue 
+		end
+		if c:isKindOf("Slash") and keepSlash then
+			keepSlash =false
+			continue 
+		end
+		if c:isKindOf("AOE") then
+			local dummy_use = { isDummy = true, to = sgs.SPlayerList() }
+			self:useTrickCard(c, dummy_use)
+			if  dummy_use.card then 
+				continue
+			end
+		end
+		table.insert(blacks,c)
+	end
+	if #blacks==0 then return "." end
+	self:sortByKeepValue(blacks)
+	return "$" .. blacks[1]:getId()
+end
+sgs.ai_choicemade_filter.cardResponded["@thhuajiuse"] = function(self, player, promptlist)
+	if promptlist[#promptlist] ~= "_nil_" then
+		local target =player:getTag("thhuajiTarget"):toPlayer()
+		if not target then return end	
+		sgs.updateIntention(player, target, 80)
+	end
+end
+--sgs.ai_skill_cardask["@thhuaji"] = function(self, data)
+--default: discard card
+-- since the enemy can make huaji opportunity, this player should not use card at first
+
+
 --【血兰】ai
 sgs.ai_skill_cardask["@thxuelan"] = function(self, data)
 	local peach_effect = data:toCardEffect()
