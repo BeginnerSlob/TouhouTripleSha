@@ -1104,6 +1104,21 @@ sgs.ai_skill_choice.thfengren = function(self, choices, data)
 	return "obtain"
 end
 
+sgs.ai_skill_invoke.thkudao = function(self, data)
+	local target = data:toPlayer()
+	if self:isFriend(target) then
+		if (target:hasSkill("ikcangyou") and not target:getEquips():isEmpty()) or self:needToThrowArmor(target) then
+			return true
+		end
+	end
+	if self:isEnemy(target) then
+		if target:hasSkills("ikyindie+ikguiyue") and target:getPhase() == sgs.Player_NotActive then return false end
+		return true
+	end
+end
+
+sgs.ai_skill_invoke.thsuilun = true
+
 --【埋火】ai
 sgs.string2suit = {
         spade = 0 ,
