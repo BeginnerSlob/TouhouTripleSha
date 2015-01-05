@@ -262,12 +262,12 @@ sgs.ai_playerchosen_intention.thlingdie =function(self, from, to)
 end
 --灵蝶优先度应该很低。。。
 
---【灵蝶】ai
+--【无寿】ai
 sgs.ai_need_damaged.thwushou = function(self, attacker, player)
 	--卖血条件：体力值大于1，且能补3张以上
-	if attacker and attacker:hasSkill("jueqing") then return false end
-	local num = 4- player:getHp()
-	return num>=3  
+	if attacker and attacker:hasSkill("ikxuwu") then return false end
+	local num = 4 - player:getHp()
+	return num >= 2
 end
 
 --【浮月】ai
