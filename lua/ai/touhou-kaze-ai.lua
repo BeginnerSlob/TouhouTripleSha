@@ -1280,6 +1280,11 @@ thyanlun_skill.getTurnUseCard = function(self)
 	return skillcard
 end
 
+sgs.ai_skill_invoke.thheyu = function(self, data)
+	local target = data:toPlayer()
+	return not self:isFriend(target)
+end
+
 --【埋火】ai
 sgs.string2suit = {
         spade = 0 ,
