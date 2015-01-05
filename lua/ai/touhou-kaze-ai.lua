@@ -1280,9 +1280,100 @@ thyanlun_skill.getTurnUseCard = function(self)
 	return skillcard
 end
 
+--【八咫】ai
+function checkBazhiHp(player)
+	if not player:hasSkills("ThYanxing+ThBaZhi") then return false end
+	local preLoseHp = 1
+	if player:getLostHp() >=2 then
+		preLoseHp = 0
+	--elseif player:getLostHp() <=1 and self:getCardsNum("Peach") >0 then
+	--严格来说还需要调整peach的优先度，防止扣血后没有八咫效果时先使用了普通杀	
+	end
+	for _,p in sgs.qlist(player:getRoom():getOtherPlayers(player)) do
+		if p:getHp() < player:getHp() - preLoseHp then 
+			return true 
+		end
+	end
+	return false
+end
+sgs.ai_cardneed.thbazhi = function(to, card, self)
+	if not self:willSkipPlayPhase(to) and checkBazhiHp(to) 
+		and getCardsNum("FireSlash", to, self.player) <1 then
+		
+		return (card:getSuit()==sgs.Card_Diamond  and card:isKindOf("Jink"))
+			or card:isKindOf("Lightning")
+	end
+end
+
+--【焰星】ai
+local thyanxing_skill = {}
+thyanxing_skill.name = "thyanxing"
+table.insert(sgs.ai_skills, thyanxing_skill)
+thfuyuev_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThYanxingCard") then return nil end
+	if self:getCardsNum("NatureSlash")<1 then return nil end
+	if not checkBazhiHp(self.player) then 
+		return nil
+	end
+	--ignore ironchain effect and slash friend who is chained
+	local willHit = false
+	local cards = self.player:getCards("h")
+	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+		cards:prepend(sgs.Sanguosha:getCard(id))
+	end
+	cards = sgs.QList2Table(cards)
+	self:sortByUseValue(cards, true)
+	for _, c in ipairs(cards) do
+		if c:isKindOf("NatureSlash") then
+			local dummy_use = { isDummy = true , to = sgs.SPlayerList() }
+			self:useBasicCard(c, dummy_use)
+			if dummy_use.card and dummy_use.to:length() > 0 then
+				for _, to in sgs.qlist(dummy_use.to) do
+					if self:isEnemy(to) and 
+					(getCardsNum("Jink", to, self.player) < 1 
+					or sgs.card_lack[to:objectName()]["Jink"] == 1 or self:isWeak(to))  then    
+						willHit = true
+						break
+					end
+				end
+			end
+		end
+		if willHit then
+			break
+		end
+	end
+	if willHit then
+		return sgs.Card_Parse("@ThYanxingCard=.")
+	end
+	return nil
+end
+sgs.ai_skill_use_func.ThYanxingCard = function(card, use, self)
+	use.card = card
+end
+sgs.ai_skill_choice.thyanxing=function(self, choices)
+	if self.player:getLostHp() >=2 then
+		return "maxhp"
+	else
+		return "hp"
+	end
+	return "maxhp"
+end
+sgs.ai_use_priority.ThYanxingCard =sgs.ai_use_priority.Slash +0.2
+
+--为什么keepvalue只接受number.....
+sgs.thyanxing_keep_value = { 
+	NatureSlash = 6.4,
+}
+
+--貌似不用调整属性杀的use_priority
+--属性杀本来就比普通杀优先
 sgs.ai_skill_invoke.thheyu = function(self, data)
 	local target = data:toPlayer()
-	return not self:isFriend(target)
+	return not self:isFriend(target) and not self:needToLoseHp(target, self.player, false, true) 
+	and not self:getDamagedEffects(target, self.player, false) 
+	--其实可以考虑给队友卖血
+	--不过需要在filterevent中将此伤害仇恨屏蔽，
+	--改为用ai_choicemade_filter.skillInvoke 来增加仇恨。
 end
 
 --【埋火】ai
