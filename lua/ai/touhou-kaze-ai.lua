@@ -1373,7 +1373,78 @@ end
 --smart-ai hasTrickEffective
 --standardcards-ai slashIsEffective
 
+local thsangzhi_skill = {}
+thsangzhi_skill.name = "thsangzhi"
+table.insert(sgs.ai_skills, thsangzhi_skill)
+thsangzhi_skill.getTurnUseCard = function(self)
+	-- not Peach
+	if not self.player:hasUsed("ThSangzhiCard") then
+		local cards = sgs.QList2Table(self.player:getCards("he"))
+		self:sortByKeepValue(cards)
+		for _, card in ipairs(cards) do
+			if card:isKindOf("EquipCard") and self.player:canDiscard(self.player, card:getId()) then
+				return sgs.Card_Parse("@ThSangzhiCard=" .. card:getId())
+			end
+		end
+	end
+end
 
+sgs.ai_skill_use_func.ThSangzhiCard = function(card, use, self)
+	-- todo
+	return
+end
 
+local thxinhuav_skill = {}
+thxinhuav_skill.name = "thxinhuav"
+table.insert(sgs.ai_skills, thxinhuav_skill)
+thxinhuav_skill.getTurnUseCard = function(self)
+	if self.player:hasFlag("ForbidThXinhua") then return nil end
+	if self.player:getKingdom() ~= "kaze" then return nil end
 
+	local cards = self.player:getCards("he")
+	cards = sgs.QList2Table(cards)
 
+	local card
+
+	self:sortByUseValue(cards, true)
+
+	for _, acard in ipairs(cards) do
+		if acard:isKindOf("Weapon") then
+			card = acard
+			break
+		end
+	end
+
+	if not card then
+		return nil
+	end
+
+	local card_id = card:getEffectiveId()
+	local card_str = "@ThXinhuaCard=" .. card_id
+	local skillcard = sgs.Card_Parse(card_str)
+
+	assert(skillcard)
+	return skillcard
+end
+
+sgs.ai_skill_use_func.ThXinhuaCard = function(card, use, self)
+	if self:needBear() and self.room:getCardPlace(card:getEffectiveId()) == sgs.Player_PlaceHand then
+		return "."
+	end
+	local targets = {}
+	for _, friend in ipairs(self.friends_noself) do
+		if friend:hasLordSkill("thxinhua") and not friend:hasFlag("ThXinhuaInvoked") and not friend:hasSkill("manjuan") then
+			table.insert(targets, friend)
+		end
+	end
+
+	if #targets > 0 then
+		use.card = card
+		self:sort(targets, "defense")
+		if use.to then
+			use.to:append(targets[1])
+		end
+	end
+end
+
+sgs.ai_card_intention.ThXinhuaCard = -50
