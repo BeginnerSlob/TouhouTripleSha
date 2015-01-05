@@ -1282,7 +1282,7 @@ end
 
 --【八咫】ai
 function checkBazhiHp(player)
-	if not player:hasSkills("ThYanxing+ThBaZhi") then return false end
+	if not player:hasSkills("thyanxing+thbazhi") then return false end
 	local preLoseHp = 1
 	if player:getLostHp() >=2 then
 		preLoseHp = 0
