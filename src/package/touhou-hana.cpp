@@ -2557,9 +2557,8 @@ TouhouHanaPackage::TouhouHanaPackage()
     hana003->addSkill(new ThGuihang);
     hana003->addSkill(new ThWujian);
     hana003->addSkill(new ThWujianClear);
-    hana003->addSkill(new ThWujianDistanceSkill);
     related_skills.insertMulti("thwujian", "#thwujian");
-    related_skills.insertMulti("thwujian", "#thwujian-distance");
+    skills << new ThWujianDistanceSkill;
 
     General *hana004 = new General(this, "hana004", "hana", 3);
     hana004->addSkill(new ThXuelan);
