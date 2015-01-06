@@ -149,80 +149,76 @@ public:
             return QStringList();
 
         if (trigger_card->isKindOf("BasicCard") && trigger_card->getSuit() == Card::Heart) {
+            QStringList skills;
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (p->hasLordSkill("thchundu"))
-                    return QStringList(objectName());
+                    skills << objectName() + "!" + p->objectName();
             }
+            return skills;
         }
 
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-            if (p->hasLordSkill("thchundu"))
-                targets << p;
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *skill_target, QVariant &, ServerPlayer *skill_invoker) const{
+        if (skill_invoker->askForSkillInvoke(objectName(), QVariant::fromValue(skill_target))) {
+            room->broadcastSkillInvoke(objectName());
+            room->notifySkillInvoked(skill_target, objectName());
+            LogMessage log;
+            log.type = "#InvokeOthersSkill";
+            log.from = skill_invoker;
+            log.to << skill_target;
+            log.arg = objectName();
+            room->sendLog(log);
+
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *) const{
+        QList<ServerPlayer *> _target;
+        _target.append(target);
+        QList<int> chundu_cards = room->getNCards(1, false);
+
+        CardsMoveStruct move(chundu_cards, NULL, target, Player::PlaceTable, Player::PlaceHand,
+                             CardMoveReason(CardMoveReason::S_REASON_PREVIEW, target->objectName(), objectName(), QString()));
+        QList<CardsMoveStruct> moves;
+        moves.append(move);
+        room->notifyMoveCards(true, moves, false, _target);
+        room->notifyMoveCards(false, moves, false, _target);
+
+        QList<int> origin_chundu = chundu_cards;
+        while (room->askForYiji(target, chundu_cards, objectName(), true, false, true, -1, room->getOtherPlayers(target))) {
+            CardsMoveStruct move(QList<int>(), target, NULL, Player::PlaceHand, Player::PlaceTable,
+                                 CardMoveReason(CardMoveReason::S_REASON_PREVIEW, target->objectName(), objectName(), QString()));
+            foreach (int id, origin_chundu) {
+                if (room->getCardPlace(id) != Player::DrawPile) {
+                    move.card_ids << id;
+                    chundu_cards.removeOne(id);
+                }
+            }
+            origin_chundu = chundu_cards;
+            QList<CardsMoveStruct> moves;
+            moves.append(move);
+            room->notifyMoveCards(true, moves, false, _target);
+            room->notifyMoveCards(false, moves, false, _target);
+            if (!target->isAlive())
+                return false;
         }
 
-        while (!targets.isEmpty()) {
-            ServerPlayer *target = room->askForPlayerChosen(player, targets, "thchundu", QString(), true);
-            if (target) {
-                targets.removeOne(target);
+        if (!chundu_cards.isEmpty()) {
+            CardsMoveStruct move(chundu_cards, target, NULL, Player::PlaceHand, Player::PlaceTable,
+                                 CardMoveReason(CardMoveReason::S_REASON_PREVIEW, target->objectName(), objectName(), QString()));
+            QList<CardsMoveStruct> moves;
+            moves.append(move);
+            room->notifyMoveCards(true, moves, false, _target);
+            room->notifyMoveCards(false, moves, false, _target);
 
-                LogMessage log;
-                log.type = "#InvokeOthersSkill";
-                log.from = player;
-                log.to << target;
-                log.arg = objectName();
-                room->sendLog(log);
-                room->notifySkillInvoked(target, objectName());
-
-                QList<ServerPlayer *> _target;
-                _target.append(target);
-                QList<int> chundu_cards = room->getNCards(1, false);
-
-                CardsMoveStruct move(chundu_cards, NULL, target, Player::PlaceTable, Player::PlaceHand,
-                                     CardMoveReason(CardMoveReason::S_REASON_PREVIEW, target->objectName(), objectName(), QString()));
-                QList<CardsMoveStruct> moves;
-                moves.append(move);
-                room->notifyMoveCards(true, moves, false, _target);
-                room->notifyMoveCards(false, moves, false, _target);
-
-                QList<int> origin_chundu = chundu_cards;
-                while (room->askForYiji(target, chundu_cards, objectName(), true, false, true, -1, room->getOtherPlayers(target))) {
-                    CardsMoveStruct move(QList<int>(), target, NULL, Player::PlaceHand, Player::PlaceTable,
-                                         CardMoveReason(CardMoveReason::S_REASON_PREVIEW, target->objectName(), objectName(), QString()));
-                    foreach (int id, origin_chundu) {
-                        if (room->getCardPlace(id) != Player::DrawPile) {
-                            move.card_ids << id;
-                            chundu_cards.removeOne(id);
-                        }
-                    }
-                    origin_chundu = chundu_cards;
-                    QList<CardsMoveStruct> moves;
-                    moves.append(move);
-                    room->notifyMoveCards(true, moves, false, _target);
-                    room->notifyMoveCards(false, moves, false, _target);
-                    if (!target->isAlive())
-                        return false;
-                }
-
-                if (!chundu_cards.isEmpty()) {
-                    CardsMoveStruct move(chundu_cards, target, NULL, Player::PlaceHand, Player::PlaceTable,
-                                         CardMoveReason(CardMoveReason::S_REASON_PREVIEW, target->objectName(), objectName(), QString()));
-                    QList<CardsMoveStruct> moves;
-                    moves.append(move);
-                    room->notifyMoveCards(true, moves, false, _target);
-                    room->notifyMoveCards(false, moves, false, _target);
-
-                    DummyCard *dummy = new DummyCard(chundu_cards);
-                    CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, target->objectName(), objectName(), QString());
-                    room->throwCard(dummy, reason, NULL);
-                    delete dummy;
-                }
-            } else
-                break;
+            DummyCard *dummy = new DummyCard(chundu_cards);
+            CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, target->objectName(), objectName(), QString());
+            room->throwCard(dummy, reason, NULL);
+            delete dummy;
         }
 
         return false;

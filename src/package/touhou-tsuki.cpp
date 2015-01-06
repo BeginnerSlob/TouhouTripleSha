@@ -2222,57 +2222,53 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
+        QStringList skills;
         if (player->getKingdom() == "tsuki" && player->tag.value("InvokeThYunyin", false).toBool()) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (p->hasLordSkill(objectName()))
-                    return QStringList(objectName());
+                    skills << objectName() + "!" + p->objectName();
             }
         }
-        return QStringList();
+        return skills;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-            if (p->hasLordSkill("thyunyin"))
-                targets << p;
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *skill_target, QVariant &, ServerPlayer *skill_invoker) const{
+        if (skill_invoker->askForSkillInvoke(objectName(), QVariant::fromValue(skill_target))) {
+            room->broadcastSkillInvoke(objectName());
+            room->notifySkillInvoked(skill_target, objectName());
+            LogMessage log;
+            log.type = "#InvokeOthersSkill";
+            log.from = skill_invoker;
+            log.to << skill_target;
+            log.arg = objectName();
+            room->sendLog(log);
+
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *skill_invoker) const {
+        JudgeStruct judge;
+        judge.pattern = ".|black";
+        judge.good = true;
+        judge.reason = objectName();
+        judge.who = skill_invoker;
+
+        room->judge(judge);
+
+        if (judge.isGood()) {
+            QList<ServerPlayer *> victims;
+            foreach (ServerPlayer *p, room->getAllPlayers())
+                if (p->getWeapon())
+                    victims << p;
+
+            if (!victims.isEmpty()) {
+                ServerPlayer *victim = room->askForPlayerChosen(skill_invoker, victims, objectName());
+                target->obtainCard(victim->getWeapon());
+            }
         }
 
-        while (!targets.isEmpty()) {
-            ServerPlayer *target = room->askForPlayerChosen(player, targets, "thyunyin", QString(), true);
-            if (target) {
-                targets.removeOne(target);
-
-                LogMessage log;
-                log.type = "#InvokeOthersSkill";
-                log.from = player;
-                log.to << target;
-                log.arg = objectName();
-                room->sendLog(log);
-                room->notifySkillInvoked(target, objectName());
-
-                JudgeStruct judge;
-                judge.pattern = ".|black";
-                judge.good = true;
-                judge.reason = objectName();
-                judge.who = player;
-
-                room->judge(judge);
-
-                if (judge.isGood()) {
-                    QList<ServerPlayer *> victims;
-                    foreach (ServerPlayer *p, room->getAllPlayers())
-                        if (p->getWeapon())
-                            victims << p;
-
-                    if (!victims.isEmpty()) {
-                        ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName());
-                        target->obtainCard(victim->getWeapon());
-                    }
-                }
-            } else
-                break;
-        }
         return false;
     }
 };
