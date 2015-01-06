@@ -677,7 +677,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                     } else {
                         room->tryPause();
                         if (will_trigger.isEmpty()
-                                || skill->getDynamicPriority() == will_trigger.last()->getDynamicPriority()) {
+                            || skill->getDynamicPriority() == will_trigger.last()->getDynamicPriority()) {
                             TriggerList triggerSkillList = skill->triggerable(triggerEvent, room, target, data);
                             foreach (ServerPlayer *p, room->getAllPlayers(true))
                                 if (triggerSkillList.contains(p) && !triggerSkillList.value(p).isEmpty())
@@ -776,7 +776,8 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         //----------------------------------------------- TriggerSkill::effect
                         if (do_effect) {
                             broken = result_skill->effect(triggerEvent, room, skill_target, data, p);
-                                if (broken) break;
+                            if (broken)
+                                break;
                         }
                         //-----------------------------------------------
 
@@ -784,8 +785,10 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         foreach (const TriggerSkill *skill, triggered) {
                             if (skill->objectName() == "game_rule" || (room->getScenario()
                                                                        && room->getScenario()->objectName() == skill->objectName())) {
+                                room->tryPause();
                                 continue;
                             } else {
+                                room->tryPause();
                                 if (skill->getDynamicPriority() == triggered.first()->getDynamicPriority()) {
                                     TriggerList triggerSkillList = skill->triggerable(triggerEvent, room, target, data);
                                     foreach (ServerPlayer *player, room->getAllPlayers(true))
@@ -801,7 +804,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                                 }
                                             }
                                 } else
-                                    continue;
+                                    break;
                             }
                         }
 
@@ -847,8 +850,8 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                 }
             }
 
-            if (broken) break;
-
+            if (broken)
+                break;
         } while (skills.length() != triggerable_tested.size());
 
         if (target) {
