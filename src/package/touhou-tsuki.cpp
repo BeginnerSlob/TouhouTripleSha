@@ -2226,7 +2226,7 @@ public:
         if (player->getKingdom() == "tsuki" && player->tag.value("InvokeThYunyin", false).toBool()) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (p->hasLordSkill(objectName()))
-                    skills << objectName() + "!" + p->objectName();
+                    skills << p->objectName() + "'" + objectName();
             }
         }
         return skills;

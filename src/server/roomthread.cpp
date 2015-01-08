@@ -687,7 +687,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                             will_trigger.append(trskill);
                                             trigger_who[p].append(skill_name);
                                         } else {
-                                            trskill = Sanguosha->getTriggerSkill(skill_name.split("!").first());
+                                            trskill = Sanguosha->getTriggerSkill(skill_name.split("'").last());
                                             if (trskill) {
                                                 will_trigger.append(trskill);
                                                 trigger_who[p].append(skill_name);
@@ -715,7 +715,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         foreach (QString skill, who_skills) {
                             const TriggerSkill *trskill = Sanguosha->getTriggerSkill(skill);
                             if (!trskill)
-                                trskill = Sanguosha->getTriggerSkill(skill.split("!").first());
+                                trskill = Sanguosha->getTriggerSkill(skill.split("'").last());
                             if (trskill && (trskill->getFrequency() == Skill::Compulsory
                                             || trskill->getFrequency() == Skill::NotCompulsory
                                             || trskill->getFrequency() == Skill::Wake)) {
@@ -761,9 +761,9 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         QString result_skill_name = who_skills[_names.indexOf(name)];
                         const TriggerSkill *result_skill = Sanguosha->getTriggerSkill(result_skill_name);
                         if (!result_skill) {
-                            QStringList list = result_skill_name.split("!");
-                            result_skill = Sanguosha->getTriggerSkill(list.first());
-                            skill_target = room->findPlayer(list.last());
+                            QStringList list = result_skill_name.split("'");
+                            result_skill = Sanguosha->getTriggerSkill(list.last());
+                            skill_target = room->findPlayer(list.first());
                         }
 
                         //----------------------------------------------- TriggerSkill::cost
@@ -798,7 +798,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                                 if (trskill) {
                                                     trigger_who[player].append(skill_name);
                                                 } else {
-                                                    trskill = Sanguosha->getTriggerSkill(skill_name.split("!").first());
+                                                    trskill = Sanguosha->getTriggerSkill(skill_name.split("'").last());
                                                     if (trskill)
                                                         trigger_who[player].append(skill_name);
                                                 }
@@ -817,7 +817,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                             foreach (QString sn, trigger_who[p]){
                                 const TriggerSkill *s = Sanguosha->getTriggerSkill(sn);
                                 if (!s)
-                                    s = Sanguosha->getTriggerSkill(sn.split("!").first());
+                                    s = Sanguosha->getTriggerSkill(sn.split("'").last());
                                 if (s && (s->getFrequency() == Skill::Compulsory
                                           || s->getFrequency() == Skill::NotCompulsory
                                           || s->getFrequency() == Skill::Wake)) {

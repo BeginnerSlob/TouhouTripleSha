@@ -152,7 +152,7 @@ public:
             QStringList skills;
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (p->hasLordSkill("thchundu"))
-                    skills << objectName() + "!" + p->objectName();
+                    skills << p->objectName() + "'" + objectName();
             }
             return skills;
         }
