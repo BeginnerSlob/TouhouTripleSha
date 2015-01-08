@@ -1724,7 +1724,7 @@ public:
         if (judge->card->isBlack()) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (p->hasLordSkill("iksongwei"))
-                    skill_list << objectName() + "!" + p->objectName();
+                    skill_list << p->objectName() + "'" + objectName();
             }
         }
         return skill_list;
@@ -3589,7 +3589,7 @@ public:
         if (player->tag.value("InvokeIkWuhua", false).toBool()) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (p->hasLordSkill("ikwuhua"))
-                    skill_list << objectName() + "!" + p->objectName();
+                    skill_list << p->objectName() + "'" + objectName();
             }
         }
         return skill_list;

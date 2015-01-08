@@ -1597,9 +1597,9 @@ void RoomScene::chooseOption(const QString &skillName, const QStringList &option
             text = option;
             translated = Sanguosha->translate(text);
             if (option == translated) {
-                QStringList list = option.split("!");
-                text = list.first();
-                translated = QString("%1(%2)").arg(Sanguosha->translate(text)).arg(ClientInstance->getPlayerName(list.last()));
+                QStringList list = option.split("'");
+                text = list.last();
+                translated = QString("%1(%2)").arg(Sanguosha->translate(text)).arg(ClientInstance->getPlayerName(list.first()));
             }
         } else {
             text = QString("%1:%2").arg(skillName).arg(option);
