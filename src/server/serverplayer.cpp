@@ -1115,6 +1115,13 @@ void ServerPlayer::marshal(ServerPlayer *player) const{
 
     if (hasShownRole())
         room->notifyProperty(player, this, "role");
+
+    if (!tag["IkHuanshens"].toList().isEmpty()) {
+        QStringList acquired;
+        foreach (QVariant name, tag["IkHuanshens"].toList())
+            acquired << name.toString();
+        room->doAnimate(QSanProtocol::S_ANIMATE_HUASHEN, objectName(), acquired.join(":"), players);
+    }
 }
 
 void ServerPlayer::addToPile(const QString &pile_name, const Card *card, bool open, QList<ServerPlayer *> open_players) {
