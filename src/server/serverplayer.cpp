@@ -877,14 +877,14 @@ void ServerPlayer::loseSkill(const QString &skill_name) {
     room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 }
 
-void ServerPlayer::setGender(General::Gender gender) {
+void ServerPlayer::setGender(int gender) {
     if (gender == getGender())
         return;
     Player::setGender(gender);
     Json::Value args;
     args[0] = QSanProtocol::S_GAME_EVENT_CHANGE_GENDER;
     args[1] = toJsonString(objectName());
-    args[2] = (int)gender;
+    args[2] = gender;
     room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 }
 
@@ -978,7 +978,6 @@ void ServerPlayer::introduceTo(ServerPlayer *player) {
 void ServerPlayer::marshal(ServerPlayer *player) const{
     room->notifyProperty(player, this, "maxhp");
     room->notifyProperty(player, this, "hp");
-    room->notifyProperty(player, this, "gender");
 
     if (getKingdom() != getGeneral()->getKingdom())
         room->notifyProperty(player, this, "kingdom");
@@ -998,6 +997,8 @@ void ServerPlayer::marshal(ServerPlayer *player) const{
 
     if (isChained())
         room->notifyProperty(player, this, "chained");
+
+    room->notifyProperty(player, this, "gender");
 
     QList<ServerPlayer*> players;
     players << player;

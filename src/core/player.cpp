@@ -78,12 +78,12 @@ bool Player::isWounded() const{
         return hp < max_hp;
 }
 
-General::Gender Player::getGender() const{
-    return m_gender;
+int Player::getGender() const{
+    return (int)m_gender;
 }
 
-void Player::setGender(General::Gender gender) {
-    m_gender = gender;
+void Player::setGender(int gender) {
+    m_gender = (General::Gender)gender;
 }
 
 bool Player::isMale() const{
