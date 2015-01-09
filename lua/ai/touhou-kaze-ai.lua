@@ -1309,7 +1309,7 @@ end
 local thyanxing_skill = {}
 thyanxing_skill.name = "thyanxing"
 table.insert(sgs.ai_skills, thyanxing_skill)
-thfuyuev_skill.getTurnUseCard = function(self)
+thyanxing_skill.getTurnUseCard = function(self)
 	if self.player:hasUsed("ThYanxingCard") then return nil end
 	if self:getCardsNum("NatureSlash")<1 then return nil end
 	if not checkBazhiHp(self.player) then 
