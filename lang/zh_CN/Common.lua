@@ -202,6 +202,7 @@ CommonTranslationTable = {
 	["$CancelTargetNoUser"] = "【%arg】的目标 %to 被取消",
 	["$ViewRole"] = "%from 观看了 %to 的身份 %arg",
 	["#UseLuckCard"] = "%from 使用了 <font color=\"yellow\"><b>手气卡</b></font>",
+	["luck_card"] = "手气卡",
 
 	["cw"] = "顺时针",
 	["ccw"] = "逆时针",
