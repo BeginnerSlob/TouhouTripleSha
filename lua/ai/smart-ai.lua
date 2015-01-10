@@ -3747,6 +3747,9 @@ function SmartAI:getRetrialCardId(cards, judge, self_card)
 		if who:hasSkill("hongyan") and card_x:getSuit() == sgs.Card_Spade then
 			card_x = sgs.cloneCard(card_x:objectName(), sgs.Card_Heart, card:getNumber())
 		end
+		if who:hasSkill("thjiuzhang") and card_x:getNumber() > 9 then
+			card_x = sgs.cloneCard(card_x:objectName(), card_x:getSuit(), 9)
+		end
 		if reason == "beige" and not isCard("Peach", card_x, self.player) then
 			local damage = self.room:getTag("CurrentDamageStruct"):toDamage()
 			if damage.from then
@@ -3969,6 +3972,14 @@ function isCard(class_name, card, player)
 	return false
 end
 
+function SmartAI:getRealNumber(card,player) 
+	player = player or self.player
+	if player:hasSkill("thjiuzhang") and card:getNumber()>9 then
+		return 9
+	end
+	return card:getNumber()
+end
+
 function SmartAI:getMaxCard(player, cards)
 	player = player or self.player
 	if player:isKongcheng() then return nil end
@@ -3978,7 +3989,7 @@ function SmartAI:getMaxCard(player, cards)
 	for _, card in ipairs(cards) do
 		local flag = string.format("%s_%s_%s", "visible", global_room:getCurrent():objectName(), player:objectName())
 		if (player:objectName() == self.player:objectName() and not self:isValuableCard(card)) or card:hasFlag("visible") or card:hasFlag(flag) then
-			local point = card:getNumber()
+			local point = self:getRealNumber(card,player) 
 			if point > max_point then
 				max_point = point
 				max_card = card
@@ -3987,7 +3998,7 @@ function SmartAI:getMaxCard(player, cards)
 	end
 	if player:objectName() == self.player:objectName() and not max_card then
 		for _, card in ipairs(cards) do
-			local point = card:getNumber()
+			local point = self:getRealNumber(card,player) 
 			if point > max_point then
 				max_point = point
 				max_card = card
@@ -3999,14 +4010,14 @@ function SmartAI:getMaxCard(player, cards)
 
 	if (player:hasSkills("tianyi|dahe|xianzhen") or self.player:hasFlag("AI_XiechanUsing")) and max_point > 0 then
 		for _, card in ipairs(cards) do
-			if card:getNumber() == max_point and not isCard("Slash", card, player) then
+			if self:getRealNumber(card,player) == max_point and not isCard("Slash", card, player) then
 				return card
 			end
 		end
 	end
 	if player:hasSkill("qiaoshui") and max_point > 0 then
 		for _, card in ipairs(cards) do
-			if card:getNumber() == max_point and not card:isNDTrick() then
+			if self:getRealNumber(card,player) == max_point and not card:isNDTrick() then
 				return card
 			end
 		end
@@ -4027,7 +4038,7 @@ function SmartAI:getMinCard(player)
 	for _, card in sgs.qlist(cards) do
 		local flag = string.format("%s_%s_%s", "visible", global_room:getCurrent():objectName(), player:objectName())
 		if player:objectName() == self.player:objectName() or card:hasFlag("visible") or card:hasFlag(flag) then
-			local point = card:getNumber()
+			local point = self:getRealNumber(card, player)
 			if point < min_point then
 				min_point = point
 				min_card = card
@@ -4037,6 +4048,9 @@ function SmartAI:getMinCard(player)
 
 	return min_card
 end
+
+
+
 
 function getKnownNum(player)
 	if not player then
