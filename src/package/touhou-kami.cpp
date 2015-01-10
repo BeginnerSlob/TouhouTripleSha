@@ -2417,6 +2417,157 @@ public:
     }
 };
 
+class ThPanghun: public TriggerSkill {
+public:
+    ThPanghun(): TriggerSkill("thpanghun") {
+        events << EventPhaseEnd << EventPhaseChanging;
+    }
+
+	virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseEnd) {
+            if (player->getPhase() == Player::Draw && TriggerSkill::triggerable(player))
+                return QStringList(objectName());
+        } else if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive && player->hasFlag("thpanghunMark"))
+                room->setPlayerFlag(player, "-thpanghunMark");
+				room->filterCards(player, player->getCards("he"), true);
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *owner) const{
+        const Card *card = room->askForCard(player, "..", "@thpanghun", QVariant(), objectName());
+        if (card) {
+            room->broadcastSkillInvoke(objectName());
+			room->setPlayerFlag(player, "thpanghunMark");
+			room->filterCards(player, player->getCards("he"), true);
+            return true;
+        }
+        return false;
+    }
+};
+
+
+class ThPanghunTarget: public DistanceSkill {
+public:
+    ThPanghunTarget(): DistanceSkill("#thpanghun-tar") {
+    }
+
+    virtual int getCorrect(const Player *from, const Player *) const {
+        if (from->hasFlag("thpanghunMark") && from->hasSkill("thpanghun"))
+            return -1000;
+        else
+            return 0;
+    }
+};
+
+class ThPanghunFilter: public FilterSkill {
+public:
+	ThPanghunFilter(): FilterSkill("#thpanghun-fil") {
+    }
+
+    virtual bool viewFilter(const Card *to_select) const{
+		Room *room = Sanguosha->currentRoom();
+        ServerPlayer *owner = room->getCardOwner(to_select->getEffectiveId());
+		if (owner && owner->hasFlag("thpanghunMark"))
+			return to_select->isKindOf("Slash"); 
+		return false; 
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+			IronChain *ironchain = new IronChain(originalCard->getSuit(), originalCard->getNumber());
+			ironchain->setSkillName(objectName());
+			WrappedCard *card = Sanguosha->getWrappedCard(originalCard->getId());
+			card->takeOver(ironchain);
+        return card;
+    }
+};
+
+ThJingwuCard::ThJingwuCard() {
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+bool ThJingwuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && (to_select->hasEquip() || !to_select->getJudgingArea().isEmpty());
+}
+
+void ThJingwuCard::onEffect(const CardEffectStruct &effect) const{
+    ServerPlayer *player = effect.from;
+    ServerPlayer *target = effect.to;
+    Room *room = player->getRoom();
+	int card = this->getEffectiveId();
+	room->showCard(player, card);
+	room->setPlayerFlag(player, "thjingwuMark");
+    int card_id = room->askForCardChosen(player, target, "ej", objectName(), false, Card::MethodNone);
+	if (card_id != -1)
+		room->throwCard(card_id, player);
+}
+
+class ThJingwu: public OneCardViewAsSkill {
+public:
+    ThJingwu(): OneCardViewAsSkill("thjingwu") {
+        filter_pattern = "TrickCard|black";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->isKongcheng() && !player->hasUsed("ThJingwuCard") ;
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        ThJingwuCard *card = new ThJingwuCard;
+        card->addSubcard(originalCard);
+        card->setSkillName(objectName());
+        return card;
+    }
+};
+
+class ThLunyu : public TriggerSkill {
+public:
+    ThLunyu() : TriggerSkill("thlunyu") {
+        events << CardsMoveOneTime << EventPhaseEnd;
+    }
+
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+		CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+
+        Player *current = room->getCurrent();
+        if (current != NULL && current == player )
+			if (triggerEvent == EventPhaseEnd) {
+				if (current->hasFlag("thlunyuDraw")){
+					room->setPlayerFlag(player, "-thlunyuDraw");
+					CardsMoveStruct move;
+                    move.to = player;
+                    move.to_place = Player::PlaceHand;
+                    move.card_ids << (room->getDrawPile().last());
+                    room->moveCardsAtomic(move, false);
+				}
+			 }
+			else if (triggerEvent == CardsMoveOneTime) {
+				if (current->hasFlag("thpanghunMark") && current->hasFlag("thjingwuMark") && !current->hasFlag("thlunyuUsed")){
+					if (move.from != NULL && move.to != player && move.to_place == Player::DiscardPile){
+
+						foreach (int id, move.card_ids) {
+				 			if (move.from_places.at(move.card_ids.indexOf(id)) == Player::PlaceHand
+							|| move.from_places.at(move.card_ids.indexOf(id)) == Player::PlaceEquip
+							|| move.from_places.at(move.card_ids.indexOf(id)) == Player::PlaceTable){
+								if (room->getCardPlace(id) == Player::DiscardPile && room->askForSkillInvoke(player, objectName(), data)){
+									room->setPlayerFlag(player, "thlunyuUsed");
+									room->setPlayerFlag(player, "thlunyuDraw");
+									CardMoveReason reason(CardMoveReason::S_REASON_PUT, player->objectName(), QString(), "thlunyu", QString());
+									room->moveCardTo(Sanguosha->getCard(id), player, NULL, Player::DrawPile, reason, true);
+								break;
+								}
+							}
+						}
+					}
+				}
+			}
+	return false;
+	}
+};
+
 TouhouKamiPackage::TouhouKamiPackage()
     :Package("touhou-kami")
 {
@@ -2455,6 +2606,13 @@ TouhouKamiPackage::TouhouKamiPackage()
     kami005->addSkill(new ThYouliMaxCardsSkill);
     related_skills.insertMulti("thyouli", "#thyouli");
     kami005->addSkill(new ThJingyuan);
+
+	General *kami006 = new General(this, "kami006", "kami", 3);
+	kami006->addSkill(new ThPanghun);
+	kami006->addSkill(new ThPanghunTarget);
+    kami006->addSkill(new ThPanghunFilter);
+	kami006->addSkill(new ThJingwu);
+	kami006->addSkill(new ThLunyu);
 
     General *kami007 = new General(this, "kami007", "kami", 2, false);
     kami007->addSkill(new ThFanhun);
@@ -2528,6 +2686,7 @@ TouhouKamiPackage::TouhouKamiPackage()
     addMetaObject<ThBingzhangCard>();
     addMetaObject<ThSiqiangCard>();
     addMetaObject<ThJiefuCard>();
+	addMetaObject<ThJingwuCard>();
 
     skills << new ThJihuiTantian << new ThKuangmo;
 }
