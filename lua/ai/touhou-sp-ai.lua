@@ -75,3 +75,69 @@ sgs.ai_skill_invoke.thzuibu = function(self,data)
 end
 --smart-ai  damageIsEffective  getAoeValueTo
 
+
+
+
+--如何更好的获取和为9的集合？？
+function SmartAI:findTableByPlusValue(cards, neednumber, plus, pointer,need_cards)
+		if neednumber == 0 and plus == 9 then 
+			return true
+		end
+		if  pointer > #cards then
+			return false 
+		end
+		for i = pointer, #cards, 1 do
+			if self:getRealNumber(cards[i]) <= neednumber then
+				if self:findTableByPlusValue(cards, 9-plus-self:getRealNumber(cards[i]), plus+self:getRealNumber(cards[i]),i+1,need_cards) then
+					table.insert(need_cards,cards[i]:getId())
+					return true
+				end
+			end
+		end
+		if neednumber == 0 and plus == 9 then 
+			return true
+		else
+			return false 
+		end 
+	end
+--【数术】ai
+--不清楚收益，暂时不写 = =
+
+--【封凌】ai
+sgs.ai_skill_invoke.thfengling = function(self,data)
+	return true
+end
+sgs.ai_skill_use["@@thfengling"] = function(self, prompt)
+	local cards = sgs.QList2Table(self.player:getCards("he"))
+	if #cards == 0 then return "." end 
+	self:sortByKeepValue(cards)
+	
+
+	local function numberCompareFunc(card1,card2)
+		return self:getRealNumber(card2) > self:getRealNumber(card1)
+	end
+	--按从大到小排序 同点数则按keepvalue
+	local function bubbleSort(cards,numberCompareFunc)  
+		local len = #cards 
+		local i = len  
+		while i > 0 do  
+			j=1  
+			while j< len do  
+				if numberCompareFunc(cards[j],cards[j+1]) then  
+					cards[j],cards[j+1] = cards[j+1],cards[j]  
+				end  
+				j = j + 1  
+			end  
+			i = i - 1  
+		end  
+	end 
+	bubbleSort(cards,numberCompareFunc)
+	
+	local need_cards ={}
+	local find9  = self:findTableByPlusValue(cards, 9, 0, 1,need_cards)
+	
+	if find9 and #need_cards > 0 then
+		return "@ThFenglingCard="..  table.concat(need_cards, "+")
+	end
+	return "."
+end
