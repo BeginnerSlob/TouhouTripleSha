@@ -2429,9 +2429,15 @@ public:
                 return QStringList(objectName());
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive && player->hasFlag("thpanghunMark"))
+            if (change.to == Player::NotActive && player->hasFlag("thpanghunMark")){
                 room->setPlayerFlag(player, "-thpanghunMark");
 				room->filterCards(player, player->getCards("he"), true);
+				QList<ServerPlayer *> players = room->getOtherPlayers(player);
+				foreach (ServerPlayer *p, players) {
+					if (p->isAlive())
+					room->removeFixedDistance(player, p, 1);
+				}
+			}
         }
         return QStringList();
     }
@@ -2441,24 +2447,15 @@ public:
         if (card) {
             room->broadcastSkillInvoke(objectName());
 			room->setPlayerFlag(player, "thpanghunMark");
-			room->filterCards(player, player->getCards("he"), true);
+			room->filterCards(player, player->getCards("he"), false);
+			QList<ServerPlayer *> players = room->getOtherPlayers(player);
+			foreach (ServerPlayer *p, players) {
+                if (p->isAlive())
+                room->setFixedDistance(player, p, 1);
+            }
             return true;
         }
         return false;
-    }
-};
-
-
-class ThPanghunTarget: public DistanceSkill {
-public:
-    ThPanghunTarget(): DistanceSkill("#thpanghun-tar") {
-    }
-
-    virtual int getCorrect(const Player *from, const Player *) const {
-        if (from->hasFlag("thpanghunMark") && from->hasSkill("thpanghun"))
-            return -1000;
-        else
-            return 0;
     }
 };
 
@@ -2609,7 +2606,6 @@ TouhouKamiPackage::TouhouKamiPackage()
 
 	General *kami006 = new General(this, "kami006", "kami", 3);
 	kami006->addSkill(new ThPanghun);
-	kami006->addSkill(new ThPanghunTarget);
     kami006->addSkill(new ThPanghunFilter);
 	kami006->addSkill(new ThJingwu);
 	kami006->addSkill(new ThLunyu);
