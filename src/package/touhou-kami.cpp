@@ -2523,17 +2523,58 @@ public:
 class ThLunyu : public TriggerSkill {
 public:
     ThLunyu() : TriggerSkill("thlunyu") {
-        events << CardsMoveOneTime << EventPhaseEnd;
+        events << CardEffect << CardsMoveOneTime << EventPhaseEnd;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-		CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-
-        Player *current = room->getCurrent();
-        if (current != NULL && current == player )
-			if (triggerEvent == EventPhaseEnd) {
+	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        ServerPlayer *current = room->getCurrent();
+		if (triggerEvent == CardEffect) {
+			CardEffectStruct use = data.value<CardEffectStruct>();
+			if (use.to == current && current->hasFlag("thpanghunMark") && current->hasFlag("thjingwuMark") 
+			&& !current->hasFlag("thlunyuUsed"))
+				room->setCardFlag(use.card, "thlunyuNOt");
+		}
+		if (triggerEvent == CardsMoveOneTime) {
+			CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+			if (move.from != NULL && current->hasFlag("thpanghunMark") && current->hasFlag("thjingwuMark") 
+			&& !current->hasFlag("thlunyuUsed")){
+				QList<int> ids, disabled;
+				QList<int> all_ids = move.card_ids;
+				foreach (int id, move.card_ids) {
+					const Card *card = Sanguosha->getCard(id);
+					if (!card->hasFlag("thlunyuNOt") && move.to_place == Player::DiscardPile) {
+						ids << id;
+						continue;
+					 }
+					else{
+						card->clearFlags();
+						if (move.to_place != Player::DiscardPile)
+							continue;
+						disabled << id;
+					}
+				}
+				if (ids.isEmpty()) return false;
+				if (room->askForSkillInvoke(current, objectName(), data)){
+					room->fillAG(all_ids, current, disabled);
+					bool only = (all_ids.length() == 1);
+					int card_id = -1;
+					if (only)
+						card_id = ids.first();
+					else
+						card_id = room->askForAG(current, ids, true, objectName());
+					room->clearAG(current);
+					if (card_id == -1) return false;
+					const Card *card = Sanguosha->getCard(card_id);
+					CardMoveReason reason(CardMoveReason::S_REASON_PUT, current->objectName(), QString(), "thlunyu", QString());
+					room->moveCardTo(card, current, NULL, Player::DrawPile, reason, true);;
+					room->setPlayerFlag(current, "thlunyuUsed");
+					room->setPlayerFlag(current, "thlunyuDraw");
+				}
+			}
+		}
+		if (triggerEvent == EventPhaseEnd) {
 				if (current->hasFlag("thlunyuDraw")){
-					room->setPlayerFlag(player, "-thlunyuDraw");
+					room->setPlayerFlag(current, "-thlunyuDraw");
 					CardsMoveStruct move;
                     move.to = player;
                     move.to_place = Player::PlaceHand;
@@ -2541,28 +2582,8 @@ public:
                     room->moveCardsAtomic(move, false);
 				}
 			 }
-			else if (triggerEvent == CardsMoveOneTime) {
-				if (current->hasFlag("thpanghunMark") && current->hasFlag("thjingwuMark") && !current->hasFlag("thlunyuUsed")){
-					if (move.from != NULL && move.to != player && move.to_place == Player::DiscardPile){
-
-						foreach (int id, move.card_ids) {
-				 			if (move.from_places.at(move.card_ids.indexOf(id)) == Player::PlaceHand
-							|| move.from_places.at(move.card_ids.indexOf(id)) == Player::PlaceEquip
-							|| move.from_places.at(move.card_ids.indexOf(id)) == Player::PlaceTable){
-								if (room->getCardPlace(id) == Player::DiscardPile && room->askForSkillInvoke(player, objectName(), data)){
-									room->setPlayerFlag(player, "thlunyuUsed");
-									room->setPlayerFlag(player, "thlunyuDraw");
-									CardMoveReason reason(CardMoveReason::S_REASON_PUT, player->objectName(), QString(), "thlunyu", QString());
-									room->moveCardTo(Sanguosha->getCard(id), player, NULL, Player::DrawPile, reason, true);
-								break;
-								}
-							}
-						}
-					}
-				}
-			}
-	return false;
-	}
+        return false;
+    }
 };
 
 TouhouKamiPackage::TouhouKamiPackage()
