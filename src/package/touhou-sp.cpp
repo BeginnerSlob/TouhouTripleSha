@@ -84,7 +84,7 @@ public:
         if (target) {
             target->setChained(!target->isChained());
             room->broadcastProperty(target, "chained");
-            room->setEmotion(target, "chain");
+            room->setEmotion(target, "effects/iron_chain");
             room->getThread()->trigger(ChainStateChanged, room, target);
         }
 

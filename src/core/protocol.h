@@ -167,7 +167,7 @@ namespace QSanProtocol {
 
         S_ANIMATE_INDICATE,
         S_ANIMATE_LIGHTBOX,
-        S_ANIMATE_NULLIFICATION,
+        S_ANIMATE_NULLIFICATION, // useless
         S_ANIMATE_HUASHEN,
         S_ANIMATE_FIRE,
         S_ANIMATE_LIGHTNING

@@ -1796,7 +1796,7 @@ public:
                 if (!p->isChained()) {
                     p->setChained(true);
                     room->broadcastProperty(p, "chained");
-                    room->setEmotion(p, "chain");
+                    room->setEmotion(p, "effects/iron_chain");
                     room->getThread()->trigger(ChainStateChanged, room, p);
                 }
             return true;

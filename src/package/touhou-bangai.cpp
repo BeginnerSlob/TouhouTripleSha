@@ -787,7 +787,7 @@ void ThYuboCard::onEffect(const CardEffectStruct &effect) const {
     effect.to->setChained(true);
     Room *room = effect.from->getRoom();
     room->broadcastProperty(effect.to, "chained");
-    room->setEmotion(effect.to, "chain");
+    room->setEmotion(effect.to, "effects/iron_chain");
     room->getThread()->trigger(ChainStateChanged, room, effect.to);
 }
 
@@ -863,7 +863,7 @@ public:
 
         player->setChained(false);
         room->broadcastProperty(player, "chained");
-        room->setEmotion(player, "chain");
+        room->setEmotion(player, "effects/iron_chain");
         room->getThread()->trigger(ChainStateChanged, room, player);
 
         return false;

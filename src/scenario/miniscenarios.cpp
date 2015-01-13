@@ -223,7 +223,7 @@ bool MiniSceneRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer 
             if (this->players.at(i)["chained"] != QString()) {
                 sp->setChained(true);
                 room->broadcastProperty(sp, "chained");
-                room->setEmotion(sp, "chain");
+                room->setEmotion(sp, "effects/iron_chain");
             }
 
             if (this->players.at(i)["turned"] != QString()) {

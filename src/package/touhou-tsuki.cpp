@@ -50,7 +50,7 @@ public:
         if (target) {
             target->setChained(!target->isChained());
             room->broadcastProperty(target, "chained");
-            room->setEmotion(target, "chain");
+            room->setEmotion(target, "effects/iron_chain");
             room->getThread()->trigger(ChainStateChanged, room, target);
         }
         return false;
@@ -100,7 +100,7 @@ void ThYejunCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
         room->setPlayerFlag(target, "ThYejunInvoked");
         target->setChained(true);
         room->broadcastProperty(target, "chained");
-        room->setEmotion(target, "chain");
+        room->setEmotion(target, "effects/iron_chain");
         room->getThread()->trigger(ChainStateChanged, room, target);
         QList<ServerPlayer *> lords;
         QList<ServerPlayer *> players = room->getOtherPlayers(source);
@@ -1313,7 +1313,7 @@ public:
         if (target) {
             target->setChained(!target->isChained());
             room->broadcastProperty(target, "chained");
-            room->setEmotion(target, "chain");
+            room->setEmotion(target, "effects/iron_chain");
             room->getThread()->trigger(ChainStateChanged, room, target);
         }
         return false;
@@ -1474,7 +1474,7 @@ public:
                 if (p->getMark("kuangxiang") > 0) {
                     room->setPlayerMark(p, "kuangxiang", 0);
                     if (p->isChained()) {
-                        room->setEmotion(p, "chain");
+                        room->setEmotion(p, "effects/iron_chain");
                         room->setPlayerProperty(p, "chained", false);
                     }
                 }

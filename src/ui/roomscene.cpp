@@ -3872,7 +3872,7 @@ void RoomScene::doIndicate(const QString &, const QStringList &args) {
 void RoomScene::doAnimation(int name, const QStringList &args) {
     static QMap<AnimateType, AnimationFunc> map;
     if (map.isEmpty()) {
-        map[S_ANIMATE_NULLIFICATION] = &RoomScene::doMovingAnimation;
+        map[S_ANIMATE_NULLIFICATION] = &RoomScene::doMovingAnimation; // useless
 
         map[S_ANIMATE_FIRE] = &RoomScene::doAppearingAnimation;
         map[S_ANIMATE_LIGHTNING] = &RoomScene::doAppearingAnimation;
@@ -3884,7 +3884,7 @@ void RoomScene::doAnimation(int name, const QStringList &args) {
 
     static QMap<AnimateType, QString> anim_name;
     if (anim_name.isEmpty()) {
-        anim_name[S_ANIMATE_NULLIFICATION] = "nullification";
+        anim_name[S_ANIMATE_NULLIFICATION] = "nullification"; // useless
 
         anim_name[S_ANIMATE_FIRE] = "fire";
         anim_name[S_ANIMATE_LIGHTNING] = "lightning";
