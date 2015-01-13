@@ -37,6 +37,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
     ui->fullSkinCheckBox->setChecked(enabled_full && Config.value("UseFullSkin", false).toBool());
     ui->noIndicatorCheckBox->setChecked(Config.value("NoIndicator", false).toBool());
     ui->noEquipAnimCheckBox->setChecked(Config.value("NoEquipAnim", false).toBool());
+    ui->noEffectsAnimCheckBox->setChecked(Config.value("NoEffectsAnim", false).toBool());
 
     ui->bgmVolumeSlider->setValue(100 * Config.BGMVolume);
     ui->effectVolumeSlider->setValue(100 * Config.EffectVolume);
@@ -156,6 +157,7 @@ void ConfigDialog::saveConfig() {
     Config.setValue("UseFullSkin", ui->fullSkinCheckBox->isChecked());
     Config.setValue("NoIndicator", ui->noIndicatorCheckBox->isChecked());
     Config.setValue("NoEquipAnim", ui->noEquipAnimCheckBox->isChecked());
+    Config.setValue("NoEquipAnim", ui->noEffectsAnimCheckBox->isChecked());
 
     Config.NeverNullifyMyTrick = ui->neverNullifyMyTrickCheckBox->isChecked();
     Config.setValue("NeverNullifyMyTrick", Config.NeverNullifyMyTrick);
