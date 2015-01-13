@@ -568,67 +568,72 @@
         <translation>启用全幅界面</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="349"/>
+        <location filename="../../src/dialog/configdialog.ui" line="348"/>
+        <source>No effects anim</source>
+        <translation>不显示卡牌/技能动画</translation>
+    </message>
+    <message>
+        <location filename="../../src/dialog/configdialog.ui" line="362"/>
         <source>Font setup</source>
         <translation>字体设置</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="361"/>
+        <location filename="../../src/dialog/configdialog.ui" line="374"/>
         <source>Set application font</source>
         <translation>设置应用程序字体</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="374"/>
+        <location filename="../../src/dialog/configdialog.ui" line="387"/>
         <source>Application font</source>
         <translation>应用程序字体</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="422"/>
+        <location filename="../../src/dialog/configdialog.ui" line="435"/>
         <source>Font ...</source>
         <translation>字体 ...</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="435"/>
+        <location filename="../../src/dialog/configdialog.ui" line="448"/>
         <source>Text edit font</source>
         <translation>文本框字体</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="451"/>
+        <location filename="../../src/dialog/configdialog.ui" line="464"/>
         <source>Color ...</source>
         <translation>颜色 ...</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="458"/>
+        <location filename="../../src/dialog/configdialog.ui" line="471"/>
         <source>Game</source>
         <translation>游戏</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="470"/>
+        <location filename="../../src/dialog/configdialog.ui" line="483"/>
         <source>Never nullify my single target trick</source>
         <translation>从不对自己使用的单目标锦囊使用【三粒天滴】</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="489"/>
+        <location filename="../../src/dialog/configdialog.ui" line="502"/>
         <source>Enable auto target</source>
         <translation>自动选择唯一目标</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="508"/>
+        <location filename="../../src/dialog/configdialog.ui" line="521"/>
         <source>Enable intellectual selection</source>
         <translation>智能选牌</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="527"/>
+        <location filename="../../src/dialog/configdialog.ui" line="540"/>
         <source>Enable double-click</source>
         <translation>双击牌或头像使用牌</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="546"/>
+        <location filename="../../src/dialog/configdialog.ui" line="559"/>
         <source>Bubble Chat Box Keep Time</source>
         <translation>泡泡聊天框闪现时间</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="575"/>
+        <location filename="../../src/dialog/configdialog.ui" line="588"/>
         <source>Enable super-drag</source>
         <translation>启用超级拖拽</translation>
     </message>
@@ -638,27 +643,27 @@
         <translation>暂时禁用</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="50"/>
+        <location filename="../../src/dialog/configdialog.cpp" line="51"/>
         <source> millisecond</source>
         <translation> 毫秒</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="80"/>
+        <location filename="../../src/dialog/configdialog.cpp" line="81"/>
         <source>Select a background image</source>
         <translation>请选择一张背景图片</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="82"/>
+        <location filename="../../src/dialog/configdialog.cpp" line="83"/>
         <source>Images (*.png *.bmp *.jpg)</source>
         <translation>图片 (*.png *.bmp *.jpg)</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="184"/>
+        <location filename="../../src/dialog/configdialog.cpp" line="186"/>
         <source>Select a background music</source>
         <translation>请选择背景音乐文件</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="186"/>
+        <location filename="../../src/dialog/configdialog.cpp" line="188"/>
         <source>Audio files (*.wav *.mp3 *.ogg)</source>
         <translation>音频 (*.wav *.mp3 *.ogg)</translation>
     </message>
@@ -2767,7 +2772,7 @@
         <location filename="../../src/ui/roomscene.cpp" line="3104"/>
         <location filename="../../src/ui/roomscene.cpp" line="3114"/>
         <location filename="../../src/ui/roomscene.cpp" line="3129"/>
-        <location filename="../../src/ui/roomscene.cpp" line="3915"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3916"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -2793,7 +2798,7 @@
     </message>
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="332"/>
-        <location filename="../../src/ui/roomscene.cpp" line="4440"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4441"/>
         <source>Add robots</source>
         <translation>添加电脑</translation>
     </message>
@@ -2814,7 +2819,7 @@
     </message>
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="375"/>
-        <location filename="../../src/ui/roomscene.cpp" line="4284"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4285"/>
         <source>pindian</source>
         <translation>拼点</translation>
     </message>
@@ -3001,7 +3006,7 @@
         <translation>下一场景</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="4443"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4444"/>
         <source>%1 robots</source>
         <translation>%1 名电脑</translation>
     </message>
@@ -3155,27 +3160,27 @@
         <translation>&lt;font color=&apos;%1&apos;&gt;────────游戏开始────────&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3902"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3903"/>
         <source>Server information</source>
         <translation>服务器信息</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3915"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3916"/>
         <source>You can only initiate a surrender poll at your play phase!</source>
         <translation>只有在你的出牌阶段才能请求投降！</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3920"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3921"/>
         <source>Surrender</source>
         <translation>投降</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3920"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3921"/>
         <source>Are you sure to surrender ?</source>
         <translation>你真的要投降吗？</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="4202"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4203"/>
         <source>Complete</source>
         <translation>完成</translation>
     </message>

@@ -3644,6 +3644,7 @@ void RoomScene::setEmotion(const QString &who, const QString &emotion) {
         Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath(name, QString("equip"), -1));
     }
     if (emotion.startsWith("effects/")) {
+        if (Config.value("NoEffectsAnim", false).toBool()) return;
         QString name = emotion.split("/").last();
         Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath(name, QString("effects"), -1));
     }

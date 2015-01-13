@@ -15,7 +15,18 @@
    "weapon/guding_blade", "weapon/halberd",
    "weapon/ice_sword", "weapon/kylin_bow",
    "weapon/qinggang_sword", "weapon/moonspear",
-   "weapon/spear"],
+   "weapon/spear",
+   // tricks
+   "effects/ex_nihilo", "effects/snatch",
+   "effects/dismantlement", "effects/collateral",
+   "effects/duel", "effects/fire_attack",
+   "effects/nullification", "effects/iron_chain",
+   "effects/god_salvation", "effects/amazing_grace",
+   "effects/savage_assault", "effects/archery_attack",
+   "effects/indulgence", "effects/supply_shortage",
+   "effects/lightning", "effects/drowning",
+   "effects/known_both", "effects/burning_camps",
+   "effects/lure_tiger"],
 
 "huashen": [
 7000,
