@@ -2487,19 +2487,16 @@ ThJingwuCard::ThJingwuCard() {
 }
 
 bool ThJingwuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && (to_select->hasEquip() || !to_select->getJudgingArea().isEmpty());
+    return targets.isEmpty() && (Self->canDiscard(to_select,"ej"));
 }
 
-void ThJingwuCard::onEffect(const CardEffectStruct &effect) const{
-    ServerPlayer *player = effect.from;
-    ServerPlayer *target = effect.to;
-    Room *room = player->getRoom();
+void ThJingwuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    ServerPlayer *target = targets.first();
 	int card = this->getEffectiveId();
-	room->showCard(player, card);
-	room->setPlayerFlag(player, "thjingwuMark");
-    int card_id = room->askForCardChosen(player, target, "ej", objectName(), false, Card::MethodNone);
-	if (card_id != -1)
-		room->throwCard(card_id, player);
+	room->showCard(source, card);
+	room->setPlayerFlag(source, "thjingwuMark");
+	int card_id = room->askForCardChosen(source, target, "ej", "thjingwu", false, Card::MethodNone);
+	room->throwCard(card_id, room->getCardPlace(card_id) == Player::PlaceDelayedTrick ? NULL : target, source);
 }
 
 class ThJingwu: public OneCardViewAsSkill {
@@ -2526,64 +2523,74 @@ public:
         events << CardEffect << CardsMoveOneTime << EventPhaseEnd;
     }
 
-	virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        ServerPlayer *current = room->getCurrent();
-		if (triggerEvent == CardEffect) {
+	virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        if (triggerEvent == CardEffect) {
 			CardEffectStruct use = data.value<CardEffectStruct>();
-			if (use.to == current && current->hasFlag("thpanghunMark") && current->hasFlag("thjingwuMark") 
-			&& !current->hasFlag("thlunyuUsed"))
+			if (use.to == player && player->hasFlag("thpanghunMark") && player->hasFlag("thjingwuMark") 
+			&& !player->hasFlag("thlunyuUsed"))
 				room->setCardFlag(use.card, "thlunyuNOt");
 		}
-		if (triggerEvent == CardsMoveOneTime) {
+		else if (triggerEvent == CardsMoveOneTime) {
 			CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-			if (move.from != NULL && current->hasFlag("thpanghunMark") && current->hasFlag("thjingwuMark") 
-			&& !current->hasFlag("thlunyuUsed")){
-				QList<int> ids, disabled;
-				QList<int> all_ids = move.card_ids;
-				foreach (int id, move.card_ids) {
-					const Card *card = Sanguosha->getCard(id);
-					if (!card->hasFlag("thlunyuNOt") && move.to_place == Player::DiscardPile) {
-						ids << id;
-						continue;
-					 }
-					else{
-						card->clearFlags();
-						if (move.to_place != Player::DiscardPile)
-							continue;
-						disabled << id;
-					}
-				}
-				if (ids.isEmpty()) return false;
-				if (room->askForSkillInvoke(current, objectName(), data)){
-					room->fillAG(all_ids, current, disabled);
-					bool only = (all_ids.length() == 1);
-					int card_id = -1;
-					if (only)
-						card_id = ids.first();
-					else
-						card_id = room->askForAG(current, ids, true, objectName());
-					room->clearAG(current);
-					if (card_id == -1) return false;
-					const Card *card = Sanguosha->getCard(card_id);
-					CardMoveReason reason(CardMoveReason::S_REASON_PUT, current->objectName(), QString(), "thlunyu", QString());
-					room->moveCardTo(card, current, NULL, Player::DrawPile, reason, true);;
-					room->setPlayerFlag(current, "thlunyuUsed");
-					room->setPlayerFlag(current, "thlunyuDraw");
-				}
+			if (player->hasFlag("thpanghunMark") && player->hasFlag("thjingwuMark") 
+			&& !player->hasFlag("thlunyuUsed")){
+				return QStringList(objectName());
 			}
 		}
-		if (triggerEvent == EventPhaseEnd) {
-				if (current->hasFlag("thlunyuDraw")){
-					room->setPlayerFlag(current, "-thlunyuDraw");
-					CardsMoveStruct move;
-                    move.to = player;
-                    move.to_place = Player::PlaceHand;
-                    move.card_ids << (room->getDrawPile().last());
-                    room->moveCardsAtomic(move, false);
+		else if (triggerEvent == EventPhaseEnd && player->hasFlag("thlunyuDraw")) {
+			return QStringList(objectName());
+		}
+        return QStringList();
+	}
+
+	virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        if (triggerEvent == CardsMoveOneTime) {
+			CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+			QList<int> ids, disabled;
+			QList<int> all_ids = move.card_ids;
+			foreach (int id, move.card_ids) {
+				const Card *card = Sanguosha->getCard(id);
+				if (!card->hasFlag("thlunyuNOt") && move.to_place == Player::DiscardPile) {
+					ids << id;
+					continue;
 				}
-			 }
-        return false;
-    }
+				else{
+					card->clearFlags();
+					if (move.to_place != Player::DiscardPile)
+						continue;
+					disabled << id;
+				}
+			}
+			if (ids.isEmpty()) return false;
+			if (room->askForSkillInvoke(player, objectName(), data)){
+				room->fillAG(all_ids, player, disabled);
+				bool only = (all_ids.length() == 1);
+				int card_id = -1;
+				if (only)
+					card_id = ids.first();
+				else
+					card_id = room->askForAG(player, ids, true, objectName());
+				room->clearAG(player);
+				if (card_id == -1) return false;
+				const Card *card = Sanguosha->getCard(card_id);
+				CardMoveReason reason(CardMoveReason::S_REASON_PUT, player->objectName(), QString(), "thlunyu", QString());
+				room->moveCardTo(card, player, NULL, Player::DrawPile, reason, false);
+				room->setPlayerFlag(player, "thlunyuUsed");
+				room->setPlayerFlag(player, "thlunyuDraw");
+			}
+		}
+		else if (triggerEvent == EventPhaseEnd) {
+			room->setPlayerFlag(player, "-thlunyuDraw");
+			CardsMoveStruct move;
+			move.to = player;
+			move.to_place = Player::PlaceHand;
+			move.card_ids << (room->getDrawPile().last());
+			move.reason = CardMoveReason(CardMoveReason::S_REASON_DRAW, player->objectName(), objectName(), QString());
+			room->moveCardsAtomic(move, false);
+		}
+		return false;
+	}
 };
 
 TouhouKamiPackage::TouhouKamiPackage()
