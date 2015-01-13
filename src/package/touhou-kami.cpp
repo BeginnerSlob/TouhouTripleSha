@@ -2563,19 +2563,26 @@ public:
 				}
 			}
 			if (ids.isEmpty()) return false;
-			if (room->askForSkillInvoke(player, objectName(), data)){
-				room->fillAG(all_ids, player, disabled);
-				bool only = (all_ids.length() == 1);
-				int card_id = -1;
-				if (only)
-					card_id = ids.first();
-				else
-					card_id = room->askForAG(player, ids, true, objectName());
-				room->clearAG(player);
-				if (card_id == -1) return false;
-				const Card *card = Sanguosha->getCard(card_id);
+			room->fillAG(all_ids, player, disabled);
+			bool only = (all_ids.length() == 1);
+			int card_id = -1;
+			if (only)
+				card_id = ids.first();
+			else
+				card_id = room->askForAG(player, ids, true, objectName());
+			room->clearAG(player);
+			if (card_id == -1) return false;
+			const Card *card = Sanguosha->getCard(card_id);
+			if (player->askForSkillInvoke(objectName(), QString("prompt:::%1:%2\\%3").arg(card->objectName())
+                                                                                                .arg(card->getSuitString() + "_char")
+                                                                                                .arg(card->getNumberString()))){
 				CardMoveReason reason(CardMoveReason::S_REASON_PUT, player->objectName(), QString(), "thlunyu", QString());
-				room->moveCardTo(card, player, NULL, Player::DrawPile, reason, false);
+				LogMessage log;
+				log.type = "#ThLunyuPut";
+				log.from = player;
+				log.card_str = card->toString();
+				room->sendLog(log);
+				room->moveCardTo(card, player, NULL, Player::DrawPile, reason, true);
 				room->setPlayerFlag(player, "thlunyuUsed");
 				room->setPlayerFlag(player, "thlunyuDraw");
 			}
