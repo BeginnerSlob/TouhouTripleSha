@@ -3031,13 +3031,13 @@ void IkLunkeCard::onEffect(const CardEffectStruct &effect) const{
     if (!effect.to->isChained()) {
         effect.to->setChained(true);
         room->broadcastProperty(effect.to, "chained");
-        room->setEmotion(effect.to, "chain");
+        room->setEmotion(effect.to, "effects/iron_chain");
         room->getThread()->trigger(ChainStateChanged, room, effect.to);
     }
     if (!effect.from->isChained()) {
         effect.from->setChained(true);
         room->broadcastProperty(effect.from, "chained");
-        room->setEmotion(effect.from, "chain");
+        room->setEmotion(effect.from, "effects/iron_chain");
         room->getThread()->trigger(ChainStateChanged, room, effect.from);
     }
 }

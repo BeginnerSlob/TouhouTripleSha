@@ -22,7 +22,7 @@ void IkZhijuCard::onEffect(const CardEffectStruct &effect) const{
     ServerPlayer *target = room->askForPlayerChosen(effect.from, room->getAllPlayers(), objectName(), "@ikzhiju-chain");
     target->setChained(!target->isChained());
     room->broadcastProperty(target, "chained");
-    room->setEmotion(target, "chain");
+    room->setEmotion(target, "effects/iron_chain");
     room->getThread()->trigger(ChainStateChanged, room, target);
     if (effect.from->isWounded())
         room->recover(effect.from, RecoverStruct(effect.from));
@@ -3060,7 +3060,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         player->setChained(true);
-        room->setEmotion(player, "chain");
+        room->setEmotion(player, "effects/iron_chain");
         room->broadcastProperty(player, "chained");
         room->getThread()->trigger(ChainStateChanged, room, player);
 
@@ -3106,7 +3106,7 @@ public:
         player->tag.remove("IkYunmaiTarget");
         if (target) {
             target->setChained(!target->isChained());
-            room->setEmotion(target, "chain");
+            room->setEmotion(target, "effects/iron_chain");
             room->broadcastProperty(target, "chained");
             room->getThread()->trigger(ChainStateChanged, room, target);
         }

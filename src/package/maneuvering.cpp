@@ -405,7 +405,7 @@ void IronChain::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.to->getRoom();
 
     room->broadcastProperty(effect.to, "chained");
-    room->setEmotion(effect.to, "chain");
+    room->setEmotion(effect.to, "effects/iron_chain");
     room->getThread()->trigger(ChainStateChanged, room, effect.to);
 }
 
