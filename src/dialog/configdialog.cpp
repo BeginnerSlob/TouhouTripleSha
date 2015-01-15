@@ -35,7 +35,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
     ui->fullSkinCheckBox->setToolTip(tr("Temp Disabled"));
     ui->fullSkinCheckBox->setEnabled(enabled_full);
     ui->fullSkinCheckBox->setChecked(enabled_full && Config.value("UseFullSkin", false).toBool());
-    ui->noIndicatorCheckBox->setChecked(Config.value("NoIndicator", false).toBool());
+    ui->noIndicatorCheckBox->setChecked(Config.value("NoIndicator", true).toBool());
     ui->noEquipAnimCheckBox->setChecked(Config.value("NoEquipAnim", false).toBool());
     ui->noEffectsAnimCheckBox->setChecked(Config.value("NoEffectsAnim", false).toBool());
 
