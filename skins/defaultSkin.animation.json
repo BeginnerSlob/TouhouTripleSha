@@ -19,6 +19,7 @@
    // tricks
    "effects/ex_nihilo", "effects/snatch",
    "effects/dismantlement", "effects/collateral",
+   "effects/collateral_slash",
    "effects/duel", "effects/fire_attack",
    "effects/nullification", "effects/iron_chain",
    "effects/god_salvation", "effects/amazing_grace",

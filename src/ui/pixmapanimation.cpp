@@ -82,9 +82,14 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
             pma->moveBy(0, -20);
         else if (emotion.contains("/spear"))
             pma->moveBy(-20, -20);
+        else if (emotion == "effects/amazing_grace") {
+            pma->moveBy(-pma->boundingRect().width() * 0.9,
+                        -pma->boundingRect().height() * 0.9);
+            pma->setScale(2.8);
+        }
 
-        pma->moveBy((parent->boundingRect().width() - pma->boundingRect().width()) / 2,
-                    (parent->boundingRect().height() - pma->boundingRect().height()) / 2);
+        pma->moveBy((parent->boundingRect().width() - pma->boundingRect().width()) * 0.5,
+                    (parent->boundingRect().height() - pma->boundingRect().height() * 1.2) * 0.5);
 
         pma->setParentItem(parent);
         pma->setZValue(20002.0);

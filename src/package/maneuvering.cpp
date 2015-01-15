@@ -308,6 +308,7 @@ void FireAttack::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
     if (effect.to->isKongcheng())
         return;
+    room->setEmotion(effect.to, "effects/fire_attack");
 
     const Card *card = room->askForCardShow(effect.to, effect.from, objectName());
     room->showCard(effect.to, card->getEffectiveId());
@@ -436,6 +437,7 @@ bool SupplyShortage::targetFilter(const QList<const Player *> &targets, const Pl
 }
 
 void SupplyShortage::takeEffect(ServerPlayer *target) const{
+    target->getRoom()->setEmotion(target, "effects/supply_shortage");
     target->skip(Player::Draw);
 }
 

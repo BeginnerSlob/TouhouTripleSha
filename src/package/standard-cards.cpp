@@ -802,6 +802,7 @@ void AmazingGrace::doPreAction(Room *room, const CardUseStruct &) const{
 
 void AmazingGrace::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     try {
+        room->doLightbox("anim=effects/amazing_grace");
         GlobalEffect::use(room, source, targets);
         clearRestCards(room);
     }
@@ -840,10 +841,10 @@ bool GodSalvation::isCancelable(const CardEffectStruct &effect) const{
 
 void GodSalvation::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.to->getRoom();
-    if (!effect.to->isWounded())
-        room->setEmotion(effect.to, "skill_nullify");
-    else
+    if (effect.to->isWounded()) {
+        room->setEmotion(effect.to, "effects/god_salvation");
         room->recover(effect.to, RecoverStruct(effect.from, this));
+    }
 }
 
 SavageAssault::SavageAssault(Suit suit, int number)
@@ -854,6 +855,7 @@ SavageAssault::SavageAssault(Suit suit, int number)
 
 void SavageAssault::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.to->getRoom();
+    room->setEmotion(effect.to, "effects/savage_assault");
     const Card *slash = room->askForCard(effect.to,
                                          "slash",
                                          "savage-assault-slash:"+ effect.from->objectName(),
@@ -872,6 +874,11 @@ ArcheryAttack::ArcheryAttack(Card::Suit suit, int number)
     : AOE(suit, number)
 {
     setObjectName("archery_attack");
+}
+
+void ArcheryAttack::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    room->doLightbox("anim=effects/archery_attack");
+    AOE::use(room, source, targets);
 }
 
 void ArcheryAttack::onEffect(const CardEffectStruct &effect) const{
@@ -951,8 +958,12 @@ void Collateral::onUse(Room *room, const CardUseStruct &card_use) const{
 
 bool Collateral::doCollateral(Room *room, ServerPlayer *killer, ServerPlayer *victim, const QString &prompt) const{
     bool useSlash = false;
-    if (killer->canSlash(victim, NULL, false))
+    room->setEmotion(killer, "effects/collateral");
+    if (killer->canSlash(victim, NULL, false)) {
+        room->getThread()->delay(1000);
+        room->setEmotion(victim, "effects/collateral_slash");
         useSlash = room->askForUseSlashTo(killer, victim, prompt);
+    }
     return useSlash;
 }
 
@@ -1044,6 +1055,7 @@ void ExNihilo::onEffect(const CardEffectStruct &effect) const{
         }
         if (friend_num < enemy_num) extra = 1;
     }
+    room->setEmotion(effect.to, "effects/ex_nihilo");
     effect.to->drawCards(2 + extra, "ex_nihilo");
 }
 
@@ -1062,6 +1074,8 @@ void Duel::onEffect(const CardEffectStruct &effect) const{
     ServerPlayer *first = effect.to;
     ServerPlayer *second = effect.from;
     Room *room = first->getRoom();
+    room->setEmotion(first, "effects/duel");
+    room->setEmotion(second, "effects/duel");
 
     forever {
         if (!first->isAlive())
@@ -1138,6 +1152,7 @@ void Snatch::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.to->getRoom();
     bool using_2013 = (room->getMode() == "02_1v1" && Config.value("1v1/Rule", "2013").toString() != "Classical");
     QString flag = using_2013 ? "he" : "hej";
+    room->setEmotion(effect.to, "effects/snatch");
     int card_id = room->askForCardChosen(effect.from, effect.to, flag, objectName());
     CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, effect.from->objectName());
     room->obtainCard(effect.from, Sanguosha->getCard(card_id), reason, room->getCardPlace(card_id) != Player::PlaceHand);
@@ -1164,7 +1179,8 @@ void Dismantlement::onEffect(const CardEffectStruct &effect) const{
     QString flag = using_2013 ? "he" : "hej";
     if (!effect.from->canDiscard(effect.to, flag))
         return;
-
+    
+    room->setEmotion(effect.to, "effects/dismantlement");
     int card_id = -1;
     AI *ai = effect.from->getAI();
     if (!using_2013 || ai)
@@ -1201,6 +1217,7 @@ bool Indulgence::targetFilter(const QList<const Player *> &targets, const Player
 }
 
 void Indulgence::takeEffect(ServerPlayer *target) const{
+    target->getRoom()->setEmotion(target, "effects/indulgence");
     target->clearHistory();
     target->skip(Player::Play);
 }
@@ -1234,7 +1251,9 @@ Lightning::Lightning(Suit suit, int number):Disaster(suit, number) {
 }
 
 void Lightning::takeEffect(ServerPlayer *target) const{
-    target->getRoom()->damage(DamageStruct(this, NULL, target, 3, DamageStruct::Thunder));
+    Room *room = target->getRoom();
+    room->doLightbox("anim=effects/lightning");
+    room->damage(DamageStruct(this, NULL, target, 3, DamageStruct::Thunder));
 }
 
 class HorseSkill: public DistanceSkill {
@@ -1443,6 +1462,7 @@ void LureTiger::onEffect(const CardEffectStruct &effect) const{
     if (!current || current->getPhase() == Player::NotActive || current->isDead())
         return;
 
+    room->setEmotion(effect.to, "effects/lure_tiger");
     room->setPlayerCardLimitation(effect.to, "use", ".", false);
     room->setPlayerProperty(effect.to, "removed", true);
     current->setFlags("LureTigerTurn");
@@ -1714,6 +1734,11 @@ void BurningCamps::onUse(Room *room, const CardUseStruct &card_use) const{
     TrickCard::onUse(room, new_use);
 }
 
+void BurningCamps::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    room->doLightbox("anim=effects/burning_camps");
+    AOE::use(room, source, targets);
+}
+
 void BurningCamps::onEffect(const CardEffectStruct &effect) const {
     effect.to->getRoom()->damage(DamageStruct(this, effect.from, effect.to, 1, DamageStruct::Fire)); 
 }
@@ -1722,6 +1747,11 @@ Drowning::Drowning(Suit suit, int number)
     : AOE(suit, number)
 {
     setObjectName("drowning");
+}
+
+void Drowning::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    room->doLightbox("anim=effects/drowning");
+    AOE::use(room, source, targets);
 }
 
 void Drowning::onEffect(const CardEffectStruct &effect) const{
@@ -1775,6 +1805,7 @@ void KnownBoth::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
 #include "jsonutils.h"
 void KnownBoth::onEffect(const CardEffectStruct &effect) const {
     Room *room = effect.to->getRoom();
+    room->setEmotion(effect.to, "effects/known_both");
 
     LogMessage log;
     log.type = "$IkLingtongView";
