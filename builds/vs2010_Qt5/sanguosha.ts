@@ -2772,7 +2772,7 @@
         <location filename="../../src/ui/roomscene.cpp" line="3109"/>
         <location filename="../../src/ui/roomscene.cpp" line="3119"/>
         <location filename="../../src/ui/roomscene.cpp" line="3134"/>
-        <location filename="../../src/ui/roomscene.cpp" line="3921"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3927"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -2798,7 +2798,7 @@
     </message>
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="332"/>
-        <location filename="../../src/ui/roomscene.cpp" line="4446"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4452"/>
         <source>Add robots</source>
         <translation>添加电脑</translation>
     </message>
@@ -2819,7 +2819,7 @@
     </message>
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="375"/>
-        <location filename="../../src/ui/roomscene.cpp" line="4290"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4296"/>
         <source>pindian</source>
         <translation>拼点</translation>
     </message>
@@ -3006,7 +3006,7 @@
         <translation>下一场景</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="4449"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4455"/>
         <source>%1 robots</source>
         <translation>%1 名电脑</translation>
     </message>
@@ -3160,27 +3160,27 @@
         <translation>&lt;font color=&apos;%1&apos;&gt;────────游戏开始────────&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3908"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3914"/>
         <source>Server information</source>
         <translation>服务器信息</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3921"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3927"/>
         <source>You can only initiate a surrender poll at your play phase!</source>
         <translation>只有在你的出牌阶段才能请求投降！</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3926"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3932"/>
         <source>Surrender</source>
         <translation>投降</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3926"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3932"/>
         <source>Are you sure to surrender ?</source>
         <translation>你真的要投降吗？</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="4208"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4214"/>
         <source>Complete</source>
         <translation>完成</translation>
     </message>
