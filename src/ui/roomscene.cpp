@@ -3651,7 +3651,7 @@ void RoomScene::setEmotion(const QString &who, const QString &emotion) {
     if (emotion.startsWith("effects/")) {
         if (Config.value("NoEffectsAnim", false).toBool()) return;
         QString name = emotion.split("/").last();
-        Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath(name, QString("effects"), -1));
+        Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath(name, QString("effects"), -1), false);
     }
     Photo *photo = name2photo[who];
     if (photo) {
@@ -3783,10 +3783,16 @@ void RoomScene::doLightboxAnimation(const QString &, const QStringList &args) {
         connect(appear, SIGNAL(finished()), line, SLOT(deleteLater()));
         connect(appear, SIGNAL(finished()), this, SLOT(removeLightBox()));
     } else if (word.startsWith("anim=")) {
+        if (word.contains("effects")) {
+            if (Config.value("NoEffectsAnim", false).toBool()) return;
+            QString name = word.split("/").last();
+            Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath(name, QString("effects"), -1), false);
+            lightbox->setData(998, "light_box");
+        }
         PixmapAnimation *pma = PixmapAnimation::GetPixmapAnimation(lightbox, word.mid(5));
         if (pma) {
             pma->setZValue(20002.0);
-            pma->moveBy(-sceneRect().width() * _m_roomLayout->m_infoPlaneWidthPercentage / 2, 0);
+            pma->moveBy(-sceneRect().width() * _m_roomLayout->m_infoPlaneWidthPercentage / 2, - pma->boundingRect().height() * 0.1);
             connect(pma, SIGNAL(finished()), this, SLOT(removeLightBox()));
         }
     } else {

@@ -1,5 +1,6 @@
 #include "pixmapanimation.h"
 #include "skin-bank.h"
+#include "roomscene.h"
 
 #include <QPainter>
 #include <QPixmapCache>
@@ -82,20 +83,75 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
             pma->moveBy(0, -20);
         else if (emotion.contains("/spear"))
             pma->moveBy(-20, -20);
-        else if (emotion == "effects/amazing_grace") {
+        else if (emotion == "effects/god_salvation") {
+            pma->moveBy(pma->boundingRect().width() * 0.2,
+                        pma->boundingRect().height() * 0.2);
+            pma->setScale(0.6);
+        } else if (emotion == "effects/amazing_grace") {
             pma->moveBy(-pma->boundingRect().width() * 0.9,
                         -pma->boundingRect().height() * 0.9);
             pma->setScale(2.8);
+        } else if (emotion == "effects/savage_assault") {
+            pma->moveBy(pma->boundingRect().width() * 0.1,
+                        pma->boundingRect().height() * 0.1);
+            pma->setScale(0.8);
+        } else if (emotion == "effects/archery_attack") {
+            pma->moveBy(-pma->boundingRect().width() * 0.35,
+                        -pma->boundingRect().height() * 0.3);
+            pma->setScale(1.8);
+        } else if (emotion == "effects/snatch") {
+            pma->moveBy(pma->boundingRect().width() * 0.25,
+                        pma->boundingRect().height() * 0.25);
+            pma->setScale(0.5);
+        } else if (emotion == "effects/collateral_slash") {
+            pma->moveBy(pma->boundingRect().width() * 0.4,
+                        pma->boundingRect().height() * 0.2);
+            pma->setScale(0.6);
+        } else if (emotion == "effects/lightning") {
+            pma->moveBy(-pma->boundingRect().width() * 0.15,
+                        -pma->boundingRect().height() * 0.25);
+            pma->setScale(1.8);
+        } else if (emotion == "effects/burning_camps") {
+            pma->moveBy(-pma->boundingRect().width() * 0.4,
+                        -pma->boundingRect().height() * 0.25);
+            pma->setScale(1.5);
+        } else if (emotion == "effects/drowning") {
+            pma->moveBy(-pma->boundingRect().width() * 0.15,
+                        -pma->boundingRect().height() * 0.15);
+            pma->setScale(1.3);
+        } else if (emotion == "effects/lure_tiger") {
+            pma->moveBy(pma->boundingRect().width() * 0.2,
+                        pma->boundingRect().height() * 0.2);
+            pma->setScale(0.6);
+        } else if (emotion == "effects/fire_attack") {
+            pma->moveBy(pma->boundingRect().width() * 0.2,
+                        pma->boundingRect().height() * 0.2);
+            pma->setScale(0.6);
+        } else if (emotion == "effects/iron_chain") {
+            pma->moveBy(pma->boundingRect().width() * 0.2,
+                        pma->boundingRect().height() * 0.1);
+            pma->setScale(0.8);
+        } else if (emotion == "effects/supply_shortage") {
+            pma->moveBy(pma->boundingRect().width() * 0.1,
+                        pma->boundingRect().height() * 0.1);
+            pma->setScale(0.8);
         }
 
         pma->moveBy((parent->boundingRect().width() - pma->boundingRect().width()) * 0.5,
-                    (parent->boundingRect().height() - pma->boundingRect().height() * 1.2) * 0.5);
+                    (parent->boundingRect().height() - pma->boundingRect().height()) * 0.5);
 
         pma->setParentItem(parent);
         pma->setZValue(20002.0);
         if (emotion.contains("weapon")) {
             pma->hide();
             QTimer::singleShot(600, pma, SLOT(preStart()));
+        } else if (emotion.contains("effects")) {
+            if (parent->data(998).toString() == "light_box") {
+                pma->setZValue(20002.0);
+                pma->moveBy(0, - pma->boundingRect().height() * 0.1);
+            }
+            pma->hide();
+            QTimer::singleShot(33, pma, SLOT(preStart()));
         } else
             pma->startTimer(S_DEFAULT_INTERVAL);
 
