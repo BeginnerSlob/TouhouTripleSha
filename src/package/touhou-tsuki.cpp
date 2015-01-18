@@ -546,7 +546,7 @@ const Card *ThXushiCard::validateInResponse(ServerPlayer *user) const {
     CardMoveReason reason(CardMoveReason::S_REASON_TURNOVER, user->objectName(), "thxushi", QString());
     const Card *card = Sanguosha->getCard(room->drawCard());
     room->moveCardTo(card, NULL, Player::PlaceTable, reason, true);
-    if (card->isKindOf("Slash") || card->isKindOf("Jink"))
+    if (card->getTypeId() == TypeBasic)
         user->obtainCard(card);
     else {
         CardMoveReason reason2(CardMoveReason::S_REASON_NATURAL_ENTER, user->objectName(), "thxushi", QString());
@@ -852,8 +852,8 @@ public:
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         player->turnOver();
-        if (player->getHandcardNum() < player->getMaxHp())
-            player->drawCards(player->getMaxHp() - player->getHandcardNum());
+        if (player->getHandcardNum() < 3)
+            player->drawCards(3 - player->getHandcardNum());
 
         player->skip(Player::Judge);
         player->skip(Player::Draw);
