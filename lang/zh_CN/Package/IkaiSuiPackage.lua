@@ -277,7 +277,7 @@ return {
 	["#IkChenyanGood"] = "%from 的“%arg2”被触发，额外摸了 %arg 张牌",
 	["#IkChenyanBad"] = "%from 的“%arg2”被触发，须弃置 %arg 张牌",
 	["#IkChenyanWorst"] = "%from 的“%arg2”被触发，弃置了所有牌（共 %arg 张）",
-	["ikmoliao"] = "殁廖",
+	["ikmoliao"] = "殁寥",
 	[":ikmoliao"] = "锁定技，当你受到伤害时，若你没有手牌，且该伤害多余1点，防止多余的伤害。",
 	--ikshengzun
 
