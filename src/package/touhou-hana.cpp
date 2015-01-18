@@ -1366,7 +1366,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        const Card *card = room->askForCard(player, "^EquipCard", "@thyingdeng", data, objectName());
+        const Card *card = room->askForCard(player, "..", "@thyingdeng", data, objectName());
         if (card == NULL)
             return false;
         room->broadcastSkillInvoke(objectName());
@@ -1417,27 +1417,33 @@ public:
 
 ThZheyinCard::ThZheyinCard() {
     target_fixed = true;
-    will_throw = false;
-    handling_method = MethodNone;
 }
 
 void ThZheyinCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const {
-    source->addToPile("thzheyinpile", this);
+    Room *room = source->getRoom();
+    source->drawCards(1, "thzheyin");
+    if (!source->isNude()) {
+        const Card *card = NULL;
+        card = room->askForCard(source, "..!", "@thzheyin", QVariant(), MethodNone);
+        if (!card) {
+            QList<const Card *> cards = source->getCards("he");
+            card = cards.at(qrand() % cards.length());
+        }
+        source->addToPile("thzheyinpile", card, false);
+    }
 }
 
-class ThZheyinViewAsSkill: public OneCardViewAsSkill {
+class ThZheyinViewAsSkill: public ZeroCardViewAsSkill {
 public:
-    ThZheyinViewAsSkill(): OneCardViewAsSkill("thzheyin") {
-        filter_pattern = ".|.|.|hand";
+    ThZheyinViewAsSkill(): ZeroCardViewAsSkill("thzheyin") {
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
         return !player->hasUsed("ThZheyinCard");
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const{
+    virtual const Card *viewAs() const{
         ThZheyinCard *card = new ThZheyinCard;
-        card->addSubcard(originalCard);
         return card;
     }
 };
@@ -1445,30 +1451,78 @@ public:
 class ThZheyin: public TriggerSkill {
 public:
     ThZheyin(): TriggerSkill("thzheyin") {
-        events << EventPhaseStart;
+        events << EventPhaseStart << TargetConfirming << CardEffected;
         view_as_skill = new ThZheyinViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
-        if (player->getPile("thzheyinpile").isEmpty()) return QStringList();
-        if (player->getPhase() == Player::RoundStart)
-            player->clearOnePrivatePile("thzheyinpile");
-
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        if (triggerEvent == EventPhaseStart) {
+            if (player->getPile("thzheyinpile").isEmpty()) return QStringList();
+            if (player->getPhase() == Player::RoundStart)
+                player->clearOnePrivatePile("thzheyinpile");
+        } else if (triggerEvent == TargetConfirming) {
+            if (player && player->isAlive() && !player->getPile("thzheyinpile").isEmpty()) {
+                CardUseStruct use = data.value<CardUseStruct>();
+                if (use.to.contains(player)) {
+                    Card::Suit suit = use.card->getSuit();
+                    foreach (int id, player->getPile("thzheyinpile")) {
+                        if (Sanguosha->getCard(id)->getSuit() == suit) {
+                            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                                if (!player->pileOpen("thzheyinpile", p->objectName()))
+                                    return QStringList(objectName());
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (triggerEvent == CardEffected) {
+            if (player && player->isAlive() && !player->getPile("thzheyinpile").isEmpty()) {
+                CardEffectStruct effect = data.value<CardEffectStruct>();
+                if (!effect.nullified) {
+                    Card::Suit suit = effect.card->getSuit();
+                    foreach (int id, player->getPile("thzheyinpile")) {
+                        if (Sanguosha->getCard(id)->getSuit() == suit) {
+                            bool invoke = true;
+                            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                                if (!player->pileOpen("thzheyinpile", p->objectName())) {
+                                    invoke = false;
+                                    break;
+                                }
+                            }
+                            if (invoke)
+                                return QStringList(objectName());
+                        }
+                    }
+                }
+            }
+        }
         return QStringList();
     }
-};
 
-class ThZheyinProhibit: public ProhibitSkill {
-public:
-    ThZheyinProhibit(): ProhibitSkill("#thzheyin-prohibit") {
-    }
-
-    virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const{
-        if (to->hasSkill("thzheyin") && !to->getPile("thzheyinpile").isEmpty()
-            && card->getSuit() == Sanguosha->getCard(to->getPile("thzheyinpile").first())->getSuit()) {
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        if (triggerEvent == TargetConfirming) {
+            if (player->askForSkillInvoke(objectName())) {
+                room->broadcastSkillInvoke(objectName());
+                return true;
+            }
+        } else if (triggerEvent == CardEffected) {
+            room->sendCompulsoryTriggerLog(player, objectName());
             return true;
         }
+        return false;
+    }
 
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        if (triggerEvent == TargetConfirming) {
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                player->setPileOpen("thzheyinpile", p->objectName());
+            foreach (int id, player->getPile("thzheyinpile"))
+                room->showCard(player, id);
+        } else if (triggerEvent == CardEffected) {
+            CardEffectStruct effect = data.value<CardEffectStruct>();
+            effect.nullified = true;
+            data = QVariant::fromValue(effect);
+        }
         return false;
     }
 };
@@ -2594,8 +2648,6 @@ TouhouHanaPackage::TouhouHanaPackage()
     hana010->addSkill(new ThYingdengClear);
     related_skills.insertMulti("thyingdeng", "#thyingdeng");
     hana010->addSkill(new ThZheyin);
-    hana010->addSkill(new ThZheyinProhibit);
-    related_skills.insertMulti("thzheyin", "#thzheyin-prohibit");
 
     General *hana011 = new General(this, "hana011", "hana", 3);
     hana011->addSkill(new ThYachui);
