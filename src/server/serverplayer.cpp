@@ -943,6 +943,9 @@ int ServerPlayer::getGeneralMaxHp() const{
     if (room->hasWelfare(this))
         max_hp++;
 
+    if (hasLordSkill("thyisi") || (isLord() && hasInnateSkill("thyisi")))
+        max_hp++; // hack For ThYisi when game_stat
+
     return max_hp;
 }
 

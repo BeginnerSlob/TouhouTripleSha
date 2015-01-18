@@ -2255,9 +2255,10 @@ TouhouKazePackage::TouhouKazePackage()
     General *kaze001 = new General(this, "kaze001$", "kaze", 3);
     kaze001->addSkill(new ThZhiji);
     kaze001->addSkill(new ThZhijiRecord);
+    related_skills.insertMulti("thzhiji", "#thzhiji");
     kaze001->addSkill(new ThJiyi);
     kaze001->addSkill(new ThHuadi);
-    related_skills.insertMulti("thzhiji", "#thzhiji");
+    kaze001->addSkill(new Skill("thyisi$", Skill::Compulsory));
 
     General *kaze002 = new General(this, "kaze002", "kaze");
     kaze002->addSkill(new ThJilanwen);
