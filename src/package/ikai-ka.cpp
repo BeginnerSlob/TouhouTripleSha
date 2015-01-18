@@ -1948,6 +1948,7 @@ class IkHuaiji: public TriggerSkill {
 public:
     IkHuaiji(): TriggerSkill("ikhuaiji") {
         events << EventPhaseStart;
+        frequency = Compulsory;
     }
 
     virtual bool triggerable(const ServerPlayer *player) const{
