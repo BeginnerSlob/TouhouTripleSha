@@ -1792,19 +1792,6 @@ void Room::swapPile() {
     qShuffle(*m_drawPile);
     foreach (int card_id, *m_drawPile)
         setCardMapping(card_id, NULL, Player::DrawPile);
-    // for IkDianyan
-    foreach (ServerPlayer *p, getAllPlayers()) {
-        p->tag.remove("IkDianyanIds");
-        if (!p->getPile("ikdianyanpile").isEmpty()) {
-            p->tag["IkDianyanIds"] = IntList2StringList(p->getPile("ikdianyanpile")).join("+");
-            if (!askForUseCard(p, "@@ikdianyanput!", "@ikdianyanput", -1, Card::MethodNone))
-                moveCardsAtomic(CardsMoveStruct(p->getPile("ikdianyanpile"),
-                                                NULL,
-                                                Player::DrawPile,
-                                                CardMoveReason(CardMoveReason::S_REASON_PUT, p->objectName())),
-                                true);
-        }
-    }
 }
 
 ServerPlayer *Room::findPlayer(const QString &general_name, bool include_dead) const{
