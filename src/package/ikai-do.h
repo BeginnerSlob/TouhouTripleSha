@@ -44,6 +44,32 @@ private:
     static bool hasKazeGenerals(const Player *player);
 };
 
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QCommandLinkButton>
+#include <QButtonGroup>
+class IkChilianDialog: public QDialog {
+    Q_OBJECT
+
+public:
+    static IkChilianDialog *getInstance();
+
+public slots:
+    void popup();
+    void selectCard(QAbstractButton *button);
+
+private:
+    explicit IkChilianDialog();
+
+    QButtonGroup *group;
+    QVBoxLayout *button_layout;
+
+    QHash<QString, const Card *> map;
+
+signals:
+    void onButtonClick();
+};
+
 class IkXingyuCard: public SkillCard {
     Q_OBJECT
 

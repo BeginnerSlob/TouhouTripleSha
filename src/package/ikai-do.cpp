@@ -196,6 +196,65 @@ public:
     }
 };
 
+IkChilianDialog *IkChilianDialog::getInstance() {
+    static IkChilianDialog *instance;
+    if (instance == NULL)
+        instance = new IkChilianDialog();
+
+    return instance;
+}
+
+IkChilianDialog::IkChilianDialog() {
+    setObjectName("ikchilian");
+    setWindowTitle(Sanguosha->translate("ikchilian"));
+    group = new QButtonGroup(this);
+
+    button_layout = new QVBoxLayout;
+    setLayout(button_layout);
+    connect(group, SIGNAL(buttonClicked(QAbstractButton *)), this, SLOT(selectCard(QAbstractButton *)));
+}
+
+void IkChilianDialog::popup() {
+    foreach (QAbstractButton *button, group->buttons()) {
+        button_layout->removeWidget(button);
+        group->removeButton(button);
+        delete button;
+    }
+
+    QStringList card_names;
+    card_names << "slash" << "fire_slash";
+
+    foreach (QString card_name, card_names) {
+        QCommandLinkButton *button = new QCommandLinkButton;
+        button->setText(Sanguosha->translate(card_name));
+        button->setObjectName(card_name);
+        group->addButton(button);
+
+        bool can = true;
+        const Card *c = Sanguosha->cloneCard(card_name);
+        if (Self->isCardLimited(c, Card::MethodUse) || !c->isAvailable(Self))
+            can = false;
+        delete c;
+        button->setEnabled(can);
+        button_layout->addWidget(button);
+
+        if (!map.contains(card_name)) {
+            Card *c = Sanguosha->cloneCard(card_name);
+            c->setParent(this);
+            map.insert(card_name, c);
+        }
+    }
+
+    exec();
+}
+
+void IkChilianDialog::selectCard(QAbstractButton *button) {
+    const Card *card = map.value(button->objectName());
+    Self->tag["ikchilian"] = QVariant::fromValue(card);
+    emit onButtonClick();
+    accept();
+}
+
 class IkChilian: public OneCardViewAsSkill {
 public:
     IkChilian(): OneCardViewAsSkill("ikchilian") {
@@ -210,6 +269,10 @@ public:
         return pattern == "slash";
     }
 
+    virtual QDialog *getDialog() const{
+        return IkChilianDialog::getInstance();
+    }
+
     virtual bool viewFilter(const Card *card) const{
         if (!card->isRed())
             return false;
@@ -218,16 +281,23 @@ public:
             Slash *slash = new Slash(Card::SuitToBeDecided, -1);
             slash->addSubcard(card->getEffectiveId());
             slash->deleteLater();
-            return slash->isAvailable(Self);
+            FireSlash *fire_slash = new FireSlash(Card::SuitToBeDecided, -1);
+            fire_slash->addSubcard(card->getEffectiveId());
+            fire_slash->deleteLater();
+            return slash->isAvailable(Self) || fire_slash->isAvailable(Self);
         }
         return true;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
-        Card *slash = new Slash(originalCard->getSuit(), originalCard->getNumber());
-        slash->addSubcard(originalCard->getId());
-        slash->setSkillName(objectName());
-        return slash;
+        const Card *c = Self->tag.value("ikchilian").value<const Card *>();
+        if (c) {
+            Card *card = Sanguosha->cloneCard(c);
+            card->addSubcard(originalCard);
+            card->setSkillName(objectName());
+            return card;
+        } else
+            return NULL;
     }
 };
 
@@ -874,7 +944,7 @@ public:
         if (!TriggerSkill::triggerable(player)) return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (!room->getTag("FirstRound").toBool() && player->getPhase() != Player::Draw
-            && move.to == player && move.to_place == Player::PlaceHand) {
+            && move.to == player && move.to_place == Player::PlaceHand && player->getHandcardNum() >= 2) {
             QList<int> ids;
             foreach (int id, move.card_ids)
                 if (room->getCardOwner(id) == player && room->getCardPlace(id) == Player::PlaceHand)
@@ -885,17 +955,14 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (!room->getTag("FirstRound").toBool() && player->getPhase() != Player::Draw
-            && move.to == player && move.to_place == Player::PlaceHand) {
-            QList<int> ids;
-            foreach (int id, move.card_ids) {
-                if (room->getCardOwner(id) == player && room->getCardPlace(id) == Player::PlaceHand)
-                    ids << id;
-            }
-            if (room->askForYiji(player, ids, objectName(), false, true, true, -1,
-                                 QList<ServerPlayer *>(), CardMoveReason(), "@ikqingjian-distribute", true))
-                return true;
+        QList<int> ids;
+        foreach (int id, move.card_ids) {
+            if (room->getCardOwner(id) == player && room->getCardPlace(id) == Player::PlaceHand)
+                ids << id;
         }
+        if (room->askForYiji(player, ids, objectName(), false, true, true, -1,
+                             QList<ServerPlayer *>(), CardMoveReason(), "@ikqingjian-distribute", true))
+            return true;
         return false;
     }
 
@@ -1619,7 +1686,7 @@ public:
     virtual bool triggerable(const ServerPlayer *target) const{
         return TriggerSkill::triggerable(target)
             && target->getPhase() == Player::Finish
-            && target->getMark("ikpojian") >= 5
+            && target->getMark("ikpojian") >= 4
             && target->getMark("@pojian") == 0;
     }
 
@@ -1635,8 +1702,11 @@ public:
         room->sendLog(log);
         room->addPlayerMark(player, "@pojian");
 
-        room->recover(player, RecoverStruct(player));
         room->changeMaxHpForAwakenSkill(player);
+        if (player->isWounded() && room->askForChoice(player, objectName(), "recover+draw") == "recover")
+            room->recover(player, RecoverStruct(player));
+        else
+            player->drawCards(1, objectName());
 
         room->acquireSkill(player, "ikqinghua");
         return false;
