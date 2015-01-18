@@ -457,7 +457,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *liaohua, QVariant &, ServerPlayer *) const{
         room->removePlayerMark(liaohua, "@fansheng");
         room->addPlayerMark(liaohua, "@fanshengused");
-        liaohua->drawCards(2);
+        liaohua->drawCards(4, objectName());
         room->recover(liaohua, RecoverStruct(liaohua, NULL, getKingdoms(room) - liaohua->getHp()));
         liaohua->turnOver();
 
