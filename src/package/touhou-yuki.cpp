@@ -1898,7 +1898,10 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
         room->setPlayerMark(ask_who, "kujie-invoke", 0);
+        room->sendCompulsoryTriggerLog(ask_who, "thkujie");
         room->recover(ask_who, RecoverStruct(ask_who, NULL, 2));
+        ServerPlayer *target = room->askForPlayerChosen(ask_who, room->getAlivePlayers(), objectName());
+        target->drawCards(1, "thkujie");
         return false;
     }
 };
@@ -1976,8 +1979,10 @@ bool ThChuanshangCard::targetFilter(const QList<const Player *> &targets, const 
 }
 
 void ThChuanshangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const {
-    targets.first()->gainMark("@nishui");
-    room->loseHp(source);
+    ServerPlayer *target = targets.first();
+    target->gainMark("@nishui");
+    if (target->getMark("@nishui") > 1) // trick
+        room->loseHp(source);
 }
 
 class ThChuanshangViewAsSkill: public ZeroCardViewAsSkill {
