@@ -12,77 +12,6 @@
 #include "settings.h"
 #include "jsonutils.h"
 
-class Yingyang: public TriggerSkill {
-public:
-    Yingyang(): TriggerSkill("yingyang") {
-        events << PindianVerifying;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL;
-    }
-
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
-        PindianStruct *pindian = data.value<PindianStruct *>();
-        if (TriggerSkill::triggerable(pindian->from)) {
-            QString choice = room->askForChoice(pindian->from, objectName(), "up+down+cancel", data);
-            if (choice == "up") {
-                pindian->from_number = qMin(pindian->from_number + 3, 13);
-                doYingyangLog(room, pindian->from, choice, pindian->from_number);
-                data = QVariant::fromValue(pindian);
-            } else if (choice == "down") {
-                pindian->from_number = qMax(pindian->from_number - 3, 1);
-                doYingyangLog(room, pindian->from, choice, pindian->from_number);
-                data = QVariant::fromValue(pindian);
-            }
-        }
-        if (TriggerSkill::triggerable(pindian->to)) {
-            QString choice = room->askForChoice(pindian->to, objectName(), "up+down+cancel", data);
-            if (choice == "up") {
-                pindian->to_number = qMin(pindian->to_number + 3, 13);
-                doYingyangLog(room, pindian->to, choice, pindian->to_number);
-                data = QVariant::fromValue(pindian);
-            } else if (choice == "down") {
-                pindian->to_number = qMax(pindian->to_number - 3, 1);
-                doYingyangLog(room, pindian->to, choice, pindian->to_number);
-                data = QVariant::fromValue(pindian);
-            }
-        }
-        return false;
-    }
-
-private:
-    QString getNumberString(int number) const{
-        if (number == 10)
-            return "10";
-        else {
-            static const char *number_string = "-A23456789-JQK";
-            return QString(number_string[number]);
-        }
-    }
-
-    void doYingyangLog(Room *room, ServerPlayer *player, const QString &choice, int number) const{
-        room->notifySkillInvoked(player, objectName());
-        if (choice == "up") {
-            room->broadcastSkillInvoke(objectName(), 1);
-
-            LogMessage log;
-            log.type = "#YingyangUp";
-            log.from = player;
-            log.arg = getNumberString(number);
-            room->sendLog(log);
-        } else if (choice == "down") {
-            room->broadcastSkillInvoke(objectName(), 2);
-
-            LogMessage log;
-            log.type = "#YingyangDown";
-            log.from = player;
-            log.arg = getNumberString(number);
-            room->sendLog(log);
-        }
-    }
-};
-
 class Hengzheng: public PhaseChangeSkill {
 public:
     Hengzheng(): PhaseChangeSkill("hengzheng") {
@@ -166,11 +95,6 @@ HMomentumPackage::HMomentumPackage()
     General *heg_madai = new General(this, "heg_madai", "shu", 4, true, true); // SHU 019
     heg_madai->addSkill("thjibu");
     heg_madai->addSkill("ikmoguang");
-
-    General *heg_sunce = new General(this, "heg_sunce$", "wu", 4); // WU 010 G
-    heg_sunce->addSkill("ikheyi");
-    heg_sunce->addSkill(new Yingyang);
-    heg_sunce->addSkill("ikbiansheng");
 
     General *heg_dongzhuo = new General(this, "heg_dongzhuo$", "qun", 4); // QUN 006 G
     heg_dongzhuo->addSkill(new Hengzheng);

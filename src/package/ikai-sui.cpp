@@ -3415,6 +3415,31 @@ bool IkChenyan::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *yuan
     return false;
 }
 
+class IkMoliao: public TriggerSkill {
+public:
+    IkMoliao(): TriggerSkill("ikmoliao") {
+        events << DamageInflicted;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player) || !player->isKongcheng())
+            return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.damage > 1)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, objectName());
+        DamageStruct damage = data.value<DamageStruct>();
+        damage.damage = 1;
+        data = QVariant::fromValue(data);
+        return false;
+    }
+};
+
 IkZhangeCard::IkZhangeCard() {
 }
 
@@ -3565,50 +3590,133 @@ public:
     }
 };
 
-IkShuangrenCard::IkShuangrenCard() {
-}
-
-bool IkShuangrenCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
-}
-
-void IkShuangrenCard::onEffect(const CardEffectStruct &effect) const{
-    Room *room = effect.from->getRoom();
-    bool success = effect.from->pindian(effect.to, "ikshuangren", NULL);
-    if (success) {
-        QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *target, room->getAlivePlayers()) {
-            if (effect.from->canSlash(target, NULL, false))
-                targets << target;
-        }
-        if (targets.isEmpty())
-            return;
-
-        ServerPlayer *target = room->askForPlayerChosen(effect.from, targets, "ikshuangren", "@dummy-slash");
-
-        Slash *slash = new Slash(Card::NoSuit, 0);
-        slash->setSkillName("_ikshuangren");
-        room->useCard(CardUseStruct(slash, effect.from, target));
-    } else {
-        room->setPlayerFlag(effect.from, "IkShuangrenSkipPlay");
-    }
-}
-
-class IkShuangrenViewAsSkill: public ZeroCardViewAsSkill {
+class IkCunyang: public TriggerSkill {
 public:
-    IkShuangrenViewAsSkill(): ZeroCardViewAsSkill("ikshuangren") {
-        response_pattern = "@@ikshuangren";
+    IkCunyang(): TriggerSkill("ikcunyang") {
+        events << PindianVerifying;
     }
 
-    virtual const Card *viewAs() const{
-        return new IkShuangrenCard;
+    virtual TriggerList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data) const{
+        TriggerList skill_list;
+        PindianStruct *pindian = data.value<PindianStruct *>();
+        if (TriggerSkill::triggerable(pindian->from))
+            skill_list.insert(pindian->from, QStringList(objectName()));
+        if (TriggerSkill::triggerable(pindian->to))
+            skill_list.insert(pindian->to, QStringList(objectName()));
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+        if (ask_who->askForSkillInvoke(objectName(), data)) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+        PindianStruct *pindian = data.value<PindianStruct *>();
+        if (ask_who == pindian->from) {
+            QStringList choices;
+            if (pindian->from_number < 13)
+                choices << "up";
+            if (pindian->from_number > 1)
+                choices << "down";
+            QString choice = room->askForChoice(pindian->from, objectName(), choices.join("+"), data);
+            if (choice == "up") {
+                pindian->from_number = qMin(pindian->from_number + 3, 13);
+                doIkCunyangLog(room, pindian->from, choice, pindian->from_number);
+                data = QVariant::fromValue(pindian);
+            } else if (choice == "down") {
+                pindian->from_number = qMax(pindian->from_number - 3, 1);
+                doIkCunyangLog(room, pindian->from, choice, pindian->from_number);
+                data = QVariant::fromValue(pindian);
+            }
+        }
+        if (ask_who == pindian->to) {
+            QStringList choices;
+            if (pindian->to_number < 13)
+                choices << "up";
+            if (pindian->to_number > 1)
+                choices << "down";
+            QString choice = room->askForChoice(pindian->to, objectName(), "up+down+cancel", data);
+            if (choice == "up") {
+                pindian->to_number = qMin(pindian->to_number + 3, 13);
+                doIkCunyangLog(room, pindian->to, choice, pindian->to_number);
+                data = QVariant::fromValue(pindian);
+            } else if (choice == "down") {
+                pindian->to_number = qMax(pindian->to_number - 3, 1);
+                doIkCunyangLog(room, pindian->to, choice, pindian->to_number);
+                data = QVariant::fromValue(pindian);
+            }
+        }
+        return false;
+    }
+
+private:
+    QString getNumberString(int number) const{
+        if (number == 10)
+            return "10";
+        else {
+            static const char *number_string = "-A23456789-JQK";
+            return QString(number_string[number]);
+        }
+    }
+
+    void doIkCunyangLog(Room *room, ServerPlayer *player, const QString &choice, int number) const{
+        room->notifySkillInvoked(player, objectName());
+        if (choice == "up") {
+            LogMessage log;
+            log.type = "#IkCunyangUp";
+            log.from = player;
+            log.arg = getNumberString(number);
+            room->sendLog(log);
+        } else if (choice == "down") {
+            LogMessage log;
+            log.type = "#IkCunyangDown";
+            log.from = player;
+            log.arg = getNumberString(number);
+            room->sendLog(log);
+        }
     }
 };
 
-class IkShuangren: public PhaseChangeSkill {
+IkFeishanCard::IkFeishanCard() {
+}
+
+bool IkFeishanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
+}
+
+void IkFeishanCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    bool success = effect.from->pindian(effect.to, "ikfeishan", NULL);
+    if (success) {
+        Slash *slash = new Slash(Card::NoSuit, 0);
+        slash->setSkillName("_ikfeishan");
+        if (!effect.from->canSlash(effect.to, slash, false))
+            delete slash;
+        room->useCard(CardUseStruct(slash, effect.from, effect.to));
+    } else {
+        room->setPlayerFlag(effect.from, "IkFeishanDisableSlashTo" + effect.to->objectName());
+    }
+}
+
+class IkFeishanViewAsSkill: public ZeroCardViewAsSkill {
 public:
-    IkShuangren(): PhaseChangeSkill("ikshuangren") {
-        view_as_skill = new IkShuangrenViewAsSkill;
+    IkFeishanViewAsSkill(): ZeroCardViewAsSkill("ikfeishan") {
+        response_pattern = "@@ikfeishan";
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkFeishanCard;
+    }
+};
+
+class IkFeishan: public PhaseChangeSkill {
+public:
+    IkFeishan(): PhaseChangeSkill("ikfeishan") {
+        view_as_skill = new IkFeishanViewAsSkill;
     }
 
     virtual bool triggerable(const ServerPlayer *jiling) const{
@@ -3621,11 +3729,21 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *jiling, QVariant &, ServerPlayer *) const{
-        return room->askForUseCard(jiling, "@@ikshuangren", "@ikshuangren-card");
+        return room->askForUseCard(jiling, "@@ikfeishan", "@ikfeishan-card");
     }
 
-    virtual bool onPhaseChange(ServerPlayer *jiling) const{
-        return jiling->hasFlag("IkShuangrenSkipPlay");
+    virtual bool onPhaseChange(ServerPlayer *) const{
+        return false;
+    }
+};
+
+class IkFeishanProhibit: public ProhibitSkill {
+public:
+    IkFeishanProhibit(): ProhibitSkill("#ikfeishan") {
+    }
+
+    virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &) const{
+        return card->isKindOf("Slash") && from->hasFlag("IkFeishanDisableSlashTo" + to->objectName());
     }
 };
 
@@ -4876,6 +4994,7 @@ IkaiSuiPackage::IkaiSuiPackage()
 
     General *luna017 = new General(this, "luna017", "tsuki");
     luna017->addSkill(new IkChenyan);
+    luna017->addSkill(new IkMoliao);
     luna017->addSkill("ikshengzun");
 
     General *luna019 = new General(this, "luna019", "tsuki");
@@ -4887,10 +5006,12 @@ IkaiSuiPackage::IkaiSuiPackage()
     luna020->addSkill(new IkLihui);
 
     General *luna021 = new General(this, "luna021", "tsuki");
-    luna021->addSkill("thjibu");
-    luna021->addSkill(new IkShuangren);
-    luna021->addSkill(new SlashNoDistanceLimitSkill("ikshuangren"));
-    related_skills.insertMulti("ikshuangren", "#ikshuangren-slash-ndl");
+    luna021->addSkill(new IkCunyang);
+    luna021->addSkill(new IkFeishan);
+    luna021->addSkill(new IkFeishanProhibit);
+    luna021->addSkill(new SlashNoDistanceLimitSkill("ikfeishan"));
+    related_skills.insertMulti("ikfeishan", "#ikfeishan");
+    related_skills.insertMulti("ikfeishan", "#ikfeishan-slash-ndl");
 
     General *luna022 = new General(this, "luna022", "tsuki");
     luna022->addSkill(new IkTianfa);
@@ -4967,7 +5088,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkLunkeCard>();
     addMetaObject<IkYaoyinCard>();
     addMetaObject<IkZhangeCard>();
-    addMetaObject<IkShuangrenCard>();
+    addMetaObject<IkFeishanCard>();
     addMetaObject<IkXincaoCard>();
     addMetaObject<IkKouzhuCard>();
     addMetaObject<IkJiaojinCard>();
