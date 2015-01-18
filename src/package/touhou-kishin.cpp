@@ -253,7 +253,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         player->setFlags("-thzongni");
         room->sendCompulsoryTriggerLog(player, "thzongni");
-        player->throwAllHandCards();
+        room->askForDiscard(player, objectName(), 998, 1, false, false, "@thzongni-discard");
         return false;
     }
 };
@@ -269,19 +269,18 @@ bool ThLanzouCard::targetFilter(const QList<const Player *> &, const Player *, c
 bool ThLanzouCard::targetFilter(const QList<const Player *> &targets, const Player *to_select,
                                   const Player *Self, int &maxVotes) const {
     if (to_select == Self) return false;
-    int n = qMin(Self->getEquips().length(), 4);
     int i = 0;
     foreach (const Player *player, targets)
         if (player == to_select) i++;
-    maxVotes = qMax(n - targets.size(), 0) + i;
+    maxVotes = qMax(3 - targets.size(), 0) + i;
     return maxVotes > 0;
 }
 
 bool ThLanzouCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const {
     if (targets.size() == 1)
-        return targets.first()->getCardCount() >= qMin(Self->getEquips().length(), 4);
+        return targets.first()->getCardCount() >= 3;
     else {
-        if (targets.size() != qMin(Self->getEquips().length(), 4)) return false;
+        if (targets.size() != 3) return false;
         QMap<const Player *, int> map;
         foreach (const Player *p, targets)
             map[p]++;
@@ -296,7 +295,7 @@ bool ThLanzouCard::targetsFeasible(const QList<const Player *> &targets, const P
 }
 
 void ThLanzouCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    int total = qMin(Self->getEquips().length(), 4);
+    int total = 3;
     QMap<ServerPlayer *, int> map;
 
     foreach (ServerPlayer *sp, targets)
@@ -888,7 +887,7 @@ TouhouKishinPackage::TouhouKishinPackage()
     kishin002->addSkill(new ThGuaiqiRecord);
     related_skills.insertMulti("thguaiqi", "#thguaiqi-record");
 
-    General *kishin003 = new General(this, "kishin003", "yuki", 3);
+    General *kishin003 = new General(this, "kishin003", "yuki", 2);
     kishin003->addSkill(new ThJingtao);
     kishin003->addSkill(new ThZongni);
     kishin003->addSkill(new ThZongniDiscard);
