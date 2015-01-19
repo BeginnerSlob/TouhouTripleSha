@@ -1823,7 +1823,7 @@ public:
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.card->isKindOf("TrickCard") && !use.card->isKindOf("Nullification")) {
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
-                if (owner->getPile("guixupile").length() <= 1 && (owner != room->getCurrent() || owner->getPhase() == Player::NotActive))
+                if (owner->getPile("guixupile").length() < 1 && (owner != room->getCurrent() || owner->getPhase() == Player::NotActive))
                     skill_list.insert(owner, QStringList(objectName()));
         }
         return skill_list;
