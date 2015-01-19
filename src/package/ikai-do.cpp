@@ -920,8 +920,8 @@ public:
             }
         case Card::Club:
         case Card::Spade: {
-                if (xiahou->canDiscard(damage.from, "he")) {
-                    int id = room->askForCardChosen(xiahou, damage.from, "he", objectName(), false, Card::MethodDiscard);
+                if (xiahou->canDiscard(damage.from, "jhe")) {
+                    int id = room->askForCardChosen(xiahou, damage.from, "jhe", objectName(), false, Card::MethodDiscard);
                     room->throwCard(id, damage.from, xiahou);
                 }
                 break;
@@ -944,7 +944,7 @@ public:
         if (!TriggerSkill::triggerable(player)) return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (!room->getTag("FirstRound").toBool() && player->getPhase() != Player::Draw
-            && move.to == player && move.to_place == Player::PlaceHand && player->getHandcardNum() >= 2) {
+            && move.to == player && move.to_place == Player::PlaceHand) {
             QList<int> ids;
             foreach (int id, move.card_ids)
                 if (room->getCardOwner(id) == player && room->getCardPlace(id) == Player::PlaceHand)
