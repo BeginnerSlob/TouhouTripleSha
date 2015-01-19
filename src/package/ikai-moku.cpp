@@ -3884,9 +3884,9 @@ public:
     }
 };
 
-class IkMengjin: public TriggerSkill {
+class IkKongsa: public TriggerSkill {
 public:
-    IkMengjin():TriggerSkill("ikmengjin") {
+    IkKongsa():TriggerSkill("ikkongsa") {
         events << SlashMissed << Damage;
     }
 
@@ -5168,7 +5168,7 @@ IkaiMokuPackage::IkaiMokuPackage()
 
     General *luna008 = new General(this, "luna008", "tsuki");
     luna008->addSkill("thjibu");
-    luna008->addSkill(new IkMengjin);
+    luna008->addSkill(new IkKongsa);
 
     General *luna009 = new General(this, "luna009", "tsuki", 3);
     luna009->addSkill(new IkHuanshen);
