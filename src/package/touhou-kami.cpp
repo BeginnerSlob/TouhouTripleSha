@@ -2568,8 +2568,10 @@ public:
 			int card_id = -1;
 			if (only)
 				card_id = ids.first();
-			else
-				card_id = room->askForAG(player, ids, true, objectName());
+			else if (all_ids.length() > 1){
+				if (!room->askForSkillInvoke(player, "thlunyu_obtain", QString("prompt"))) {room->clearAG(player); return false;}
+				card_id = room->askForAG(player, ids, false, objectName());
+			}
 			room->clearAG(player);
 			if (card_id == -1) return false;
 			const Card *card = Sanguosha->getCard(card_id);

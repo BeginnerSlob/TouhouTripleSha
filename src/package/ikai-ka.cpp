@@ -841,37 +841,37 @@ public:
     }
 };
 
-IkQingmuCard::IkQingmuCard() {
+IkKuangmuCard::IkKuangmuCard() {
 }
 
-void IkQingmuCard::onEffect(const CardEffectStruct &effect) const{
+void IkKuangmuCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
-    room->removePlayerMark(effect.from, "@qingmu");
-    room->addPlayerMark(effect.from, "@qingmuused");
+    room->removePlayerMark(effect.from, "@kuangmu");
+    room->addPlayerMark(effect.from, "@kuangmuused");
     effect.to->gainMark("@qinghuo");
 }
 
-class IkQingmuViewAsSkill: public ZeroCardViewAsSkill {
+class IkKuangmuViewAsSkill: public ZeroCardViewAsSkill {
 public:
-    IkQingmuViewAsSkill(): ZeroCardViewAsSkill("ikqingmu") {
+    IkKuangmuViewAsSkill(): ZeroCardViewAsSkill("ikkuangmu") {
     }
 
     virtual const Card *viewAs() const{
-        return new IkQingmuCard;
+        return new IkKuangmuCard;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getMark("@qingmu") > 0;
+        return player->getMark("@kuangmu") > 0;
     }
 };
 
-class IkQingmu: public TriggerSkill {
+class IkKuangmu: public TriggerSkill {
 public:
-    IkQingmu(): TriggerSkill("ikqingmu") {
+    IkKuangmu(): TriggerSkill("ikkuangmu") {
         events << CardFinished << Death;
-        view_as_skill = new IkQingmuViewAsSkill;
+        view_as_skill = new IkKuangmuViewAsSkill;
         frequency = Limited;
-        limit_mark = "@qingmu";
+        limit_mark = "@kuangmu";
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
@@ -899,15 +899,15 @@ public:
         ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@ikqingmu", false, true);
         if (target) {
             room->broadcastSkillInvoke(objectName());
-            player->tag["IkQingmuTarget"] = QVariant::fromValue(target);
+            player->tag["IkKuangmuTarget"] = QVariant::fromValue(target);
             return true;
         }
         return false;
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const{
-        ServerPlayer *target = player->tag["IkQingmuTarget"].value<ServerPlayer *>();
-        player->tag.remove("IkQingmuTarget");
+        ServerPlayer *target = player->tag["IkKuangmuTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkKuangmuTarget");
         if (triggerEvent == CardFinished && target) {
             ServerPlayer *victim = NULL;
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
@@ -918,7 +918,7 @@ public:
             }
             bool use = false;
             if (target->canSlash(victim, false)) {
-                QString prompt = QString("@ikqingmu-slash:%1:%2").arg(player->objectName()).arg(victim->objectName());
+                QString prompt = QString("@ikKuangmu-slash:%1:%2").arg(player->objectName()).arg(victim->objectName());
                 use = room->askForUseSlashTo(target, victim, prompt, false);
             }
             if (!use)
@@ -3547,7 +3547,7 @@ IkaiKaPackage::IkaiKaPackage()
     related_skills.insertMulti("ikduduan", "#ikduduan");
 
     General *bloom036 = new General(this, "bloom036", "hana");
-    bloom036->addSkill(new IkQingmu);
+    bloom036->addSkill(new IkKuangmu);
 
     General *bloom045 = new General(this, "bloom045", "hana", 4, false);
     bloom045->addSkill(new IkDengpo);
@@ -3666,7 +3666,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkKangjinCard>();
     addMetaObject<IkHunkaoCard>();
     addMetaObject<IkHuangshiCard>();
-    addMetaObject<IkQingmuCard>();
+    addMetaObject<IkKuangmuCard>();
     addMetaObject<IkDengpoCard>();
     addMetaObject<IkQihunCard>();
     addMetaObject<IkShidaoCard>();
