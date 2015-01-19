@@ -881,7 +881,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (!TriggerSkill::triggerable(player) || !player->hasSkill("thmanxiao")) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.card && damage.card->isRed() && !damage.chain && !damage.transfer)
+        if (damage.card && damage.card->getSuit() !=  Card::Spade && !damage.chain && !damage.transfer)
             return QStringList(objectName());
         return QStringList();
     }
