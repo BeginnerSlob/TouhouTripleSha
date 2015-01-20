@@ -920,9 +920,9 @@ public:
             }
         case Card::Club:
         case Card::Spade: {
-                if (xiahou->canDiscard(damage.from, "jhe")) {
-                    int id = room->askForCardChosen(xiahou, damage.from, "jhe", objectName(), false, Card::MethodDiscard);
-                    room->throwCard(id, damage.from, xiahou);
+                if (xiahou->canDiscard(damage.from, "hej")) {
+                    int id = room->askForCardChosen(xiahou, damage.from, "hej", objectName(), false, Card::MethodDiscard);
+                    room->throwCard(id, room->getCardPlace(id) == Player::PlaceDelayedTrick ? NULL : damage.from, xiahou);
                 }
                 break;
             }

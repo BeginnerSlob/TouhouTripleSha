@@ -858,11 +858,16 @@ public:
 class IkYongji: public TriggerSkill {
 public:
     IkYongji(): TriggerSkill("ikyongji") {
-        events << CardsMoveOneTime;
+        events << CardsMoveOneTime << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(player)) return QStringList();
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            foreach (ServerPlayer *p, room->getAlivePlayers())
+                p->setMark(objectName(), 0);
+            return QStringList();
+        }
+        if (!TriggerSkill::triggerable(player) || player->getMark(objectName()) >= 3) return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (move.from && move.from->isAlive() && move.from->getPhase() == Player::NotActive
             && move.from_places.contains(Player::PlaceHand) && move.is_last_handcard)
@@ -878,7 +883,8 @@ public:
         return false;
     }
 
-    virtual bool trigger(TriggerEvent, Room *, ServerPlayer *, QVariant &data) const{
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        player->addMark(objectName());
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         ServerPlayer *from = (ServerPlayer *)move.from;
         from->drawCards(1, objectName());
