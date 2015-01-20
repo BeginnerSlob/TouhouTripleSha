@@ -84,11 +84,11 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkKuangmuCard: public SkillCard {
+class IkJimuCard: public SkillCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE IkKuangmuCard();
+    Q_INVOKABLE IkJimuCard();
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
