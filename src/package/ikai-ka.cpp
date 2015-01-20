@@ -841,37 +841,37 @@ public:
     }
 };
 
-IkKuangmuCard::IkKuangmuCard() {
+IkJimuCard::IkJimuCard() {
 }
 
-void IkKuangmuCard::onEffect(const CardEffectStruct &effect) const{
+void IkJimuCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
-    room->removePlayerMark(effect.from, "@kuangmu");
-    room->addPlayerMark(effect.from, "@kuangmuused");
+    room->removePlayerMark(effect.from, "@jimu");
+    room->addPlayerMark(effect.from, "@jimuused");
     effect.to->gainMark("@qinghuo");
 }
 
-class IkKuangmuViewAsSkill: public ZeroCardViewAsSkill {
+class IkJimuViewAsSkill: public ZeroCardViewAsSkill {
 public:
-    IkKuangmuViewAsSkill(): ZeroCardViewAsSkill("ikkuangmu") {
+    IkJimuViewAsSkill(): ZeroCardViewAsSkill("ikjimu") {
     }
 
     virtual const Card *viewAs() const{
-        return new IkKuangmuCard;
+        return new IkJimuCard;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getMark("@kuangmu") > 0;
+        return player->getMark("@jimu") > 0;
     }
 };
 
-class IkKuangmu: public TriggerSkill {
+class IkJimu: public TriggerSkill {
 public:
-    IkKuangmu(): TriggerSkill("ikkuangmu") {
+    IkJimu(): TriggerSkill("ikjimu") {
         events << CardFinished << Death;
-        view_as_skill = new IkKuangmuViewAsSkill;
+        view_as_skill = new IkJimuViewAsSkill;
         frequency = Limited;
-        limit_mark = "@kuangmu";
+        limit_mark = "@jimu";
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
@@ -896,18 +896,18 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const{
-        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@ikkuangmu", false, true);
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@ikjimu", false, true);
         if (target) {
             room->broadcastSkillInvoke(objectName());
-            player->tag["IkKuangmuTarget"] = QVariant::fromValue(target);
+            player->tag["IkJimuTarget"] = QVariant::fromValue(target);
             return true;
         }
         return false;
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const{
-        ServerPlayer *target = player->tag["IkKuangmuTarget"].value<ServerPlayer *>();
-        player->tag.remove("IkKuangmuTarget");
+        ServerPlayer *target = player->tag["IkJimuTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkJimuTarget");
         if (triggerEvent == CardFinished && target) {
             ServerPlayer *victim = NULL;
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
@@ -918,7 +918,7 @@ public:
             }
             bool use = false;
             if (target->canSlash(victim, false)) {
-                QString prompt = QString("@ikkuangmu-slash:%1:%2").arg(player->objectName()).arg(victim->objectName());
+                QString prompt = QString("@ikjimu-slash:%1:%2").arg(player->objectName()).arg(victim->objectName());
                 use = room->askForUseSlashTo(target, victim, prompt, false);
             }
             if (!use)
@@ -3547,7 +3547,7 @@ IkaiKaPackage::IkaiKaPackage()
     related_skills.insertMulti("ikduduan", "#ikduduan");
 
     General *bloom036 = new General(this, "bloom036", "hana");
-    bloom036->addSkill(new IkKuangmu);
+    bloom036->addSkill(new IkJimu);
 
     General *bloom045 = new General(this, "bloom045", "hana", 4, false);
     bloom045->addSkill(new IkDengpo);
@@ -3666,7 +3666,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkKangjinCard>();
     addMetaObject<IkHunkaoCard>();
     addMetaObject<IkHuangshiCard>();
-    addMetaObject<IkKuangmuCard>();
+    addMetaObject<IkJimuCard>();
     addMetaObject<IkDengpoCard>();
     addMetaObject<IkQihunCard>();
     addMetaObject<IkShidaoCard>();
