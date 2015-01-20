@@ -896,7 +896,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const{
-        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@ikqingmu", false, true);
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@ikkuangmu", false, true);
         if (target) {
             room->broadcastSkillInvoke(objectName());
             player->tag["IkKuangmuTarget"] = QVariant::fromValue(target);
@@ -918,7 +918,7 @@ public:
             }
             bool use = false;
             if (target->canSlash(victim, false)) {
-                QString prompt = QString("@ikKuangmu-slash:%1:%2").arg(player->objectName()).arg(victim->objectName());
+                QString prompt = QString("@ikkuangmu-slash:%1:%2").arg(player->objectName()).arg(victim->objectName());
                 use = room->askForUseSlashTo(target, victim, prompt, false);
             }
             if (!use)

@@ -5075,10 +5075,10 @@ public:
             && player->getMark("ikguijing") > 0;
     }
 
-    virtual void onDamaged(ServerPlayer *player, const DamageStruct & damage) const{
+    virtual void onDamaged(ServerPlayer *player, const DamageStruct &damage) const{
         Room *room = player->getRoom();
 
-		if (damage.nature == DamageStruct::Normal){
+		if (damage.nature == DamageStruct::Normal) {
 			room->sendCompulsoryTriggerLog(player, objectName());
 			room->broadcastSkillInvoke(objectName());
 			if (player->getMark("ikguijing") == 1)
