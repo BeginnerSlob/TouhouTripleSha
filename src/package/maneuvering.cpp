@@ -121,7 +121,7 @@ public:
         if (damage.card && damage.card->isKindOf("Slash")
             && damage.to->getMark("Equips_of_Others_Nullified_to_You") == 0
             && damage.to->isKongcheng() && damage.by_user && !damage.chain && !damage.transfer) {
-            room->setEmotion(player, "weapon/guding_blade");
+            room->setEmotion(player, "effects/weapon");
 
             LogMessage log;
             log.type = "#GudingBladeEffect";
@@ -173,7 +173,7 @@ public:
         if (triggerEvent == SlashEffected) {
             SlashEffectStruct effect = data.value<SlashEffectStruct>();
 
-            room->setEmotion(player, "armor/vine");
+            room->setEmotion(player, "effects/armor");
             LogMessage log;
             log.from = player;
             log.type = "#ArmorNullify";
@@ -185,7 +185,7 @@ public:
             return true;
         } else if (triggerEvent == CardEffected) {
             CardEffectStruct effect = data.value<CardEffectStruct>();
-            room->setEmotion(player, "armor/vine");
+            room->setEmotion(player, "effects/armor");
             LogMessage log;
             log.from = player;
             log.type = "#ArmorNullify";
@@ -197,7 +197,7 @@ public:
             return true;
         } else if (triggerEvent == DamageInflicted) {
             DamageStruct damage = data.value<DamageStruct>();
-            room->setEmotion(player, "armor/vineburn");
+            room->setEmotion(player, "effects/armor_vineburn");
             LogMessage log;
             log.type = "#VineDamage";
             log.from = player;
@@ -251,7 +251,7 @@ public:
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         if (triggerEvent == DamageInflicted) {
             DamageStruct damage = data.value<DamageStruct>();
-            room->setEmotion(player, "armor/silver_lion");
+            room->setEmotion(player, "effects/armor");
             LogMessage log;
             log.type = "#SilverLion";
             log.from = player;
@@ -268,7 +268,7 @@ public:
                 if (move.from_places[i] != Player::PlaceEquip) continue;
                 const Card *card = Sanguosha->getEngineCard(move.card_ids[i]);
                 if (card->objectName() == objectName()) {
-                    room->setEmotion(player, "armor/silver_lion");
+                    room->setEmotion(player, "effects/armor_silver_lion");
                     RecoverStruct recover;
                     recover.card = card;
                     room->recover(player, recover);
@@ -388,6 +388,7 @@ void IronChain::onUse(Room *room, const CardUseStruct &card_use) const{
         reason.m_skillName = this->getSkillName();
         room->moveCardTo(this, card_use.from, NULL, Player::DiscardPile, reason);
         card_use.from->broadcastSkillInvoke("@recast");
+        room->setEmotion(card_use.from, "effects/recast");
 
         LogMessage log;
         log.type = "#UseCard_Recast";
