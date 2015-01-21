@@ -3584,7 +3584,7 @@ public:
         events << Damage;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
         QStringList skill_list;
         if (player->tag.value("InvokeIkWuhua", false).toBool()) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {

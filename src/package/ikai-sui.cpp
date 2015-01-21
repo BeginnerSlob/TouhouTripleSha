@@ -3313,7 +3313,7 @@ public:
 IkYaoyinCard::IkYaoyinCard() {
 }
 
-bool IkYaoyinCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkYaoyinCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
     return targets.length() < subcardsLength() && to_select->isWounded();
 }
 
