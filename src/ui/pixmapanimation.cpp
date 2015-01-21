@@ -133,10 +133,10 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
             pma->moveBy(pma->boundingRect().width() * 0.2,
                         pma->boundingRect().height() * 0.2);
             pma->setScale(0.6);
-        } else if (emotion.contains("damage") || emotion == "hplost") {
-            pma->moveBy(-pma->boundingRect().width() * 0.25,
-                        -pma->boundingRect().height() * 0.25);
-            pma->setScale(1.5);
+        } else if (emotion == "effects/hplost") {
+            pma->moveBy(pma->boundingRect().width() * 0.1,
+                        pma->boundingRect().height() * 0.1);
+            pma->setScale(0.8);
         }
 /*
         else if (emotion == "effects/amazing_grace") {
@@ -170,7 +170,7 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
                 connect(pma, SIGNAL(finished()), RoomSceneInstance, SLOT(removeLightBox()));
             }
             pma->hide();
-            QTimer::singleShot(25, pma, SLOT(preStart()));
+            QTimer::singleShot(33, pma, SLOT(preStart()));
         } else
             pma->startTimer(S_DEFAULT_INTERVAL);
 

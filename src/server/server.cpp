@@ -187,12 +187,12 @@ QWidget *ServerDialog::createAdvancedTab() {
 
     enable_cheat_checkbox = new QCheckBox(tr("Enable cheat"));
     enable_cheat_checkbox->setToolTip(tr("This option enables the cheat menu"));
-/*#ifdef QT_NO_DEBUG
+#ifdef QT_NO_DEBUG
     enable_cheat_checkbox->setChecked(false);
     enable_cheat_checkbox->setEnabled(false);
-#else*/
+#else
     enable_cheat_checkbox->setChecked(Config.EnableCheat);
-//#endif
+#endif
 
     free_choose_checkbox = new QCheckBox(tr("Choose generals and cards freely"));
     free_choose_checkbox->setChecked(Config.FreeChoose);
