@@ -268,7 +268,7 @@ void Room::revivePlayer(ServerPlayer *player, bool sendlog) {
     player->setAlive(true);
     player->throwAllMarks(false);
     broadcastProperty(player, "alive");
-    setEmotion(player, "revive");
+    setEmotion(player, "effects/revive");
     setPlayerMark(player, "Global_TurnCount", turn);
 
     m_alivePlayers.clear();
@@ -3152,6 +3152,7 @@ void Room::loseMaxHp(ServerPlayer *victim, int lose) {
 bool Room::changeMaxHpForAwakenSkill(ServerPlayer *player, int magnitude) {
     //addPlayerMark(player, "@waked");
     //int n = player->getMark("@waked");
+    doLightbox("anim=effects/wake", 4000);
     if (magnitude < 0) {
         /*if (Config.Enable2ndGeneral && player->getGeneral() && player->getGeneral2()
             && Config.MaxHpScheme > 0 && Config.PreventAwakenBelow3

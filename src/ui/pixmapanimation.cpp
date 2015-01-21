@@ -77,20 +77,14 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
             pma->moveBy(pma->boundingRect().width() * 0.1,
                         pma->boundingRect().height() * 0.1);
             pma->setScale(0.8);
-        } else if (emotion.contains("double_sword"))
-            pma->moveBy(13, -20);
-        else if (emotion.contains("fan") || emotion.contains("guding_blade"))
-            pma->moveBy(0, -20);
-        else if (emotion.contains("/spear"))
-            pma->moveBy(-20, -20);
-        else if (emotion == "effects/god_salvation") {
+        } else if (emotion == "effects/god_salvation") {
             pma->moveBy(pma->boundingRect().width() * 0.2,
                         pma->boundingRect().height() * 0.2);
             pma->setScale(0.6);
         } else if (emotion == "effects/amazing_grace") {
-            pma->moveBy(-pma->boundingRect().width() * 0.9,
+            /*pma->moveBy(-pma->boundingRect().width() * 0.9,
                         -pma->boundingRect().height() * 0.9);
-            pma->setScale(2.8);
+            pma->setScale(2.8);*/
         } else if (emotion == "effects/savage_assault") {
             pma->moveBy(pma->boundingRect().width() * 0.1,
                         pma->boundingRect().height() * 0.1);
@@ -111,14 +105,6 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
             pma->moveBy(-pma->boundingRect().width() * 0.15,
                         -pma->boundingRect().height() * 0.25);
             pma->setScale(1.8);
-        } else if (emotion == "effects/burning_camps") {
-            pma->moveBy(-pma->boundingRect().width() * 0.4,
-                        -pma->boundingRect().height() * 0.25);
-            pma->setScale(1.5);
-        } else if (emotion == "effects/drowning") {
-            pma->moveBy(-pma->boundingRect().width() * 0.15,
-                        -pma->boundingRect().height() * 0.15);
-            pma->setScale(1.3);
         } else if (emotion == "effects/lure_tiger") {
             pma->moveBy(pma->boundingRect().width() * 0.2,
                         pma->boundingRect().height() * 0.2);
@@ -136,6 +122,21 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
                         pma->boundingRect().height() * 0.1);
             pma->setScale(0.8);
         }
+/*
+        else if (emotion == "effects/amazing_grace") {
+            pma->moveBy(-pma->boundingRect().width() * 0.9,
+                        -pma->boundingRect().height() * 0.9);
+            pma->setScale(2.8);
+        } else if (emotion == "effects/drowning") {
+            pma->moveBy(-pma->boundingRect().width() * 0.15,
+                        -pma->boundingRect().height() * 0.15);
+            pma->setScale(1.3);
+        } else if (emotion == "effects/burning_camps") {
+            pma->moveBy(-pma->boundingRect().width() * 0.4,
+                        -pma->boundingRect().height() * 0.25);
+            pma->setScale(1.5);
+        }
+*/
 
         pma->moveBy((parent->boundingRect().width() - pma->boundingRect().width()) * 0.5,
                     (parent->boundingRect().height() - pma->boundingRect().height()) * 0.5);

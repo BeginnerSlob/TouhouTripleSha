@@ -399,6 +399,7 @@ void Weapon::onUse(Room *room, const CardUseStruct &card_use) const{
         reason.m_eventName = "weapon_recast";
         room->moveCardTo(use.card, player, NULL, Player::DiscardPile, reason);
         player->broadcastSkillInvoke("@recast");
+        room->setEmotion(player, "effects/recast");
 
         LogMessage log;
         log.type = "#UseCard_Recast";

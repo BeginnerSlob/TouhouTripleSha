@@ -2786,6 +2786,7 @@ void RoomScene::changeHp(const QString &who, int delta, DamageStruct::Nature nat
     if (delta < 0) {
         if (losthp) {
             Sanguosha->playSystemAudioEffect("hplost");
+            setEmotion(who, "effects/hplost");
             QString from_general = ClientInstance->getPlayer(who)->objectName();
             log_box->appendLog("#GetHp", from_general, QStringList(), QString(), hp, maxhp);
             return;
@@ -2794,14 +2795,14 @@ void RoomScene::changeHp(const QString &who, int delta, DamageStruct::Nature nat
         QString damage_effect;
         QString from_general = ClientInstance->getPlayer(who)->objectName();
         log_box->appendLog("#GetHp", from_general, QStringList(), QString(), hp, maxhp);
-        switch (delta) {
+        /*switch (delta) {
         case -1: damage_effect = "injure1"; break;
         case -2: damage_effect = "injure2"; break;
         case -3:
         default: damage_effect = "injure3"; break;
         }
 
-        Sanguosha->playSystemAudioEffect(damage_effect);
+        Sanguosha->playSystemAudioEffect(damage_effect);*/
 
         if (photo) {
             setEmotion(who, "damage");
@@ -2809,9 +2810,13 @@ void RoomScene::changeHp(const QString &who, int delta, DamageStruct::Nature nat
         }
 
         if (nature == DamageStruct::Fire)
-            doAnimation(S_ANIMATE_FIRE, QStringList() << who);
+            //doAnimation(S_ANIMATE_FIRE, QStringList() << who);
+            setEmotion(who, "effects/damage/fire");
         else if (nature == DamageStruct::Thunder)
-            doAnimation(S_ANIMATE_LIGHTNING, QStringList() << who);
+            //doAnimation(S_ANIMATE_LIGHTNING, QStringList() << who);
+            setEmotion(who, "effects/damage/thunder");
+        else
+            setEmotion(who, "effects/damage/normal");
     } else {
         QString type = "#Recover";
         QString from_general = player->objectName();
@@ -3643,14 +3648,14 @@ void RoomScene::moveFocus(const QStringList &players, Countdown countdown) {
 
 void RoomScene::setEmotion(const QString &who, const QString &emotion) {
     bool permanent = (emotion == "question" || emotion == "no-question");
-    if (emotion.startsWith("weapon/") || emotion.startsWith("armor/")) {
+    if (emotion.contains("weapon") || emotion.contains("armor") || emotion.contains("wooden_ox")) {
         if (Config.value("NoEquipAnim", false).toBool()) return;
-        QString name = emotion.split("/").last();
-        Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath(name, QString("equip"), -1));
+        /*QString name = emotion.split("/").last();
+        Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath(name, QString("equip"), -1));*/
     }
     if (emotion.startsWith("effects/")) {
         if (Config.value("NoEffectsAnim", false).toBool()) return;
-        QString name = emotion.split("/").last();
+        QString name = emotion.mid(8);
         Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath(name, QString("effects"), -1), false);
     }
     Photo *photo = name2photo[who];
@@ -3761,7 +3766,8 @@ void RoomScene::doLightboxAnimation(const QString &, const QStringList &args) {
     QRect rect = main_window->rect();
     QGraphicsRectItem *lightbox = addRect(rect);
 
-    lightbox->setBrush(QColor(32, 32, 32, 204));
+    if (word.contains("effects/wake"))
+        lightbox->setBrush(QColor(32, 32, 32, 204));
     lightbox->setZValue(20001.0);
 
     if (word.startsWith("image=")) {

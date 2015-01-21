@@ -406,7 +406,6 @@ class Drowning: public AOE {
 
 public:
     Q_INVOKABLE Drowning(Card::Suit suit = Club, int number = 12);
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
