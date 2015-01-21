@@ -7,7 +7,7 @@
 #include <QDir>
 #include <QTimer>
 
-const int PixmapAnimation::S_DEFAULT_INTERVAL = 50;
+const int PixmapAnimation::S_DEFAULT_INTERVAL = 33;
 
 PixmapAnimation::PixmapAnimation()
     : QGraphicsItem(0)
@@ -77,14 +77,22 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
             pma->moveBy(pma->boundingRect().width() * 0.1,
                         pma->boundingRect().height() * 0.1);
             pma->setScale(0.8);
+        } else if (emotion == "effects/dismantlement") {
+            pma->moveBy(pma->boundingRect().width() * 0.4,
+                        pma->boundingRect().height() * 0.3);
+            pma->setScale(0.4);
         } else if (emotion == "effects/god_salvation") {
             pma->moveBy(pma->boundingRect().width() * 0.2,
                         pma->boundingRect().height() * 0.2);
             pma->setScale(0.6);
         } else if (emotion == "effects/amazing_grace") {
-            /*pma->moveBy(-pma->boundingRect().width() * 0.9,
+            pma->moveBy(-pma->boundingRect().width() * 0.9,
                         -pma->boundingRect().height() * 0.9);
-            pma->setScale(2.8);*/
+            pma->setScale(2.8);
+        } else if (emotion == "effects/burning_camps") {
+            pma->moveBy(-pma->boundingRect().width() * 0.25,
+                        -pma->boundingRect().height() * 0.25);
+            pma->setScale(1.5);
         } else if (emotion == "effects/savage_assault") {
             pma->moveBy(pma->boundingRect().width() * 0.1,
                         pma->boundingRect().height() * 0.1);
@@ -121,6 +129,14 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
             pma->moveBy(pma->boundingRect().width() * 0.1,
                         pma->boundingRect().height() * 0.1);
             pma->setScale(0.8);
+        } else if (emotion.contains("slash") || emotion.endsWith("damage/normal")) {
+            pma->moveBy(pma->boundingRect().width() * 0.2,
+                        pma->boundingRect().height() * 0.2);
+            pma->setScale(0.6);
+        } else if (emotion.contains("damage") || emotion == "hplost") {
+            pma->moveBy(-pma->boundingRect().width() * 0.25,
+                        -pma->boundingRect().height() * 0.25);
+            pma->setScale(1.5);
         }
 /*
         else if (emotion == "effects/amazing_grace") {
@@ -137,9 +153,9 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
             pma->setScale(1.5);
         }
 */
-
-        pma->moveBy((parent->boundingRect().width() - pma->boundingRect().width()) * 0.5,
-                    (parent->boundingRect().height() - pma->boundingRect().height()) * 0.5);
+        if (emotion != "effects/burning_camps")
+            pma->moveBy((parent->boundingRect().width() - pma->boundingRect().width()) * 0.5,
+                        (parent->boundingRect().height() - pma->boundingRect().height()) * 0.5);
 
         pma->setParentItem(parent);
         pma->setZValue(20002.0);
@@ -149,10 +165,12 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
         } else if (emotion.contains("effects")) {
             if (parent->data(998).toString() == "light_box") {
                 pma->setZValue(20002.0);
-                pma->moveBy(0, - pma->boundingRect().height() * 0.1);
+                if (emotion != "effects/burning_camps")
+                    pma->moveBy(0, - pma->boundingRect().height() * 0.1);
+                connect(pma, SIGNAL(finished()), RoomSceneInstance, SLOT(removeLightBox()));
             }
             pma->hide();
-            QTimer::singleShot(33, pma, SLOT(preStart()));
+            QTimer::singleShot(25, pma, SLOT(preStart()));
         } else
             pma->startTimer(S_DEFAULT_INTERVAL);
 
