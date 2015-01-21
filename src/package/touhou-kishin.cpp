@@ -276,7 +276,7 @@ bool ThLanzouCard::targetFilter(const QList<const Player *> &targets, const Play
     return maxVotes > 0;
 }
 
-bool ThLanzouCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const {
+bool ThLanzouCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const {
     if (targets.size() == 1)
         return targets.first()->getCardCount() >= 3;
     else {

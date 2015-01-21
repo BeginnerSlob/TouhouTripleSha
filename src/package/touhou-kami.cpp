@@ -2442,7 +2442,7 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *owner) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         const Card *card = room->askForCard(player, "..", "@thpanghun", QVariant(), objectName());
         if (card) {
             room->broadcastSkillInvoke(objectName());
