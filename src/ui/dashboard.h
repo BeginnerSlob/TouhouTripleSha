@@ -110,6 +110,10 @@ public:
         return _m_rightFrame->sceneBoundingRect();
     }
 
+    inline QSanInvokeSkillDock *getSkillDock() const{
+        return _m_skillDock;
+    }
+
 public slots:
     virtual void updateAvatar();
 
