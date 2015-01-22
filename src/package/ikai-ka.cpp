@@ -3569,13 +3569,13 @@ public:
 };
 
 IkKezhanCard::IkKezhanCard() {
-	will_throw = false;
+    will_throw = false;
     target_fixed = true;
 }
 
 void IkKezhanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-	int card = this->getEffectiveId();
-	room->showCard(source, card);
+    int card = this->getEffectiveId();
+    room->showCard(source, card);
 }
 
 class IkKezhanViewAsSkill: public OneCardViewAsSkill {
@@ -3597,37 +3597,37 @@ public:
     IkKezhan() : TriggerSkill("ikkezhan") {
         events << EventPhaseProceeding << Damage;
         frequency = Compulsory;
-		view_as_skill = new IkKezhanViewAsSkill;
+        view_as_skill = new IkKezhanViewAsSkill;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
         if (!TriggerSkill::triggerable(player)) return QStringList();
-		if (triggerEvent == Damage && !player->hasFlag("ikkezhandamage")) {
-			DamageStruct damage = data.value<DamageStruct>();
-			if (damage.from == player && damage.from->isAlive())
-				room->setPlayerFlag(player, "ikkezhandamage");
-		}
-		if (triggerEvent == EventPhaseProceeding && player->getPhase() == Player::Finish) {
-			int n = 0;
-			if (player->hasFlag("ikkezhandamage"))
-				n += 1;
-			if (!player->isKongcheng()) {
-				if (room->askForUseCard(player, "@@ikkezhan", "@ikkezhan")) 
-					n += 1;
-			}
-			foreach (ServerPlayer *p, room->getPlayers()) {
-				if (!p->isAlive() && p->getRole() == "renegade") {
-					n += 1;
-					break;
-				}
-			}
-			room->sendCompulsoryTriggerLog(player, objectName());
-			room->broadcastSkillInvoke(objectName());
-			if (n != 0)
-				player->drawCards(n);
-			else
-				room->loseHp(player);
-		}
+        if (triggerEvent == Damage && !player->hasFlag("ikkezhandamage")) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.from == player && damage.from->isAlive())
+                room->setPlayerFlag(player, "ikkezhandamage");
+        }
+        if (triggerEvent == EventPhaseProceeding && player->getPhase() == Player::Finish) {
+            int n = 0;
+            if (player->hasFlag("ikkezhandamage"))
+                n += 1;
+            if (!player->isKongcheng()) {
+                if (room->askForUseCard(player, "@@ikkezhan", "@ikkezhan")) 
+                    n += 1;
+            }
+            foreach (ServerPlayer *p, room->getPlayers()) {
+                if (!p->isAlive() && p->getRole() == "renegade") {
+                    n += 1;
+                    break;
+                }
+            }
+            room->sendCompulsoryTriggerLog(player, objectName());
+            room->broadcastSkillInvoke(objectName());
+            if (n != 0)
+                player->drawCards(n);
+            else
+                room->loseHp(player);
+        }
         return QStringList();
     }
 };
@@ -3802,8 +3802,8 @@ IkaiKaPackage::IkaiKaPackage()
     luna049->addSkill(new IkWuyuRecord);
     related_skills.insertMulti("ikwuyu", "#ikwuyu-record");
 
-	General *luna051 = new General(this, "luna051", "tsuki");
-	luna051->addSkill(new IkKezhan);
+    General *luna051 = new General(this, "luna051", "tsuki");
+    luna051->addSkill(new IkKezhan);
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
@@ -3823,7 +3823,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkLianwuCard>();
     addMetaObject<IkLianwuDrawCard>();
     addMetaObject<IkXiekeCard>();
-	addMetaObject<IkKezhanCard>();
+    addMetaObject<IkKezhanCard>();
 
     skills << new IkQihunViewAsSkill;
 }

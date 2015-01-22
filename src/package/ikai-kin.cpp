@@ -5095,14 +5095,14 @@ public:
     virtual void onDamaged(ServerPlayer *player, const DamageStruct &damage) const{
         Room *room = player->getRoom();
 
-		if (damage.nature == DamageStruct::Normal) {
-			room->sendCompulsoryTriggerLog(player, objectName());
-			room->broadcastSkillInvoke(objectName());
-			if (player->getMark("ikguijing") == 1)
-				room->recover(player, RecoverStruct(player));
-			else
-				room->loseHp(player);
-		}
+        if (damage.nature == DamageStruct::Normal) {
+            room->sendCompulsoryTriggerLog(player, objectName());
+            room->broadcastSkillInvoke(objectName());
+            if (player->getMark("ikguijing") == 1)
+                room->recover(player, RecoverStruct(player));
+            else
+                room->loseHp(player);
+        }
     }
 };
 
