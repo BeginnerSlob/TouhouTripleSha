@@ -599,13 +599,23 @@ public:
 class IkHuangshi: public TriggerSkill {
 public:
     IkHuangshi(): TriggerSkill("ikhuangshi") {
-        events << Damaged;
+        events << EventPhaseStart << Damaged;
         view_as_skill = new IkHuangshiViewAsSkill;
     }
 
-    virtual bool triggerable(const ServerPlayer *player) const{
-        return TriggerSkill::triggerable(player)
-            && player->canDiscard(player, "h");
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Play)
+            return QStringList(objectName());
+        else if (triggerEvent == Damaged) {
+            QStringList skills;
+            int damage = data.value<DamageStruct>().damage;
+            for (int i = 0; i < damage; ++i)
+                skills << objectName();
+            return skills;
+        }
+        return QStringList();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
