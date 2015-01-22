@@ -683,6 +683,70 @@ public:
     }
 };
 
+class IkElu: public TriggerSkill {
+public:
+    IkElu(): TriggerSkill("ikelu") {
+        events << PreCardUsed << PreDamageDone << EventPhaseStart << CardFinished << ChoiceMade;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        TriggerList skill_list;
+        if (triggerEvent == PreCardUsed && player->hasFlag("IkEluLog") && data.canConvert<CardUseStruct>()) {
+            room->broadcastSkillInvoke(objectName());
+            room->notifySkillInvoked(player, objectName());
+
+            LogMessage log;
+            log.type = "#InvokeSkill";
+            log.from = player;
+            log.arg = objectName();
+            room->sendLog(log);
+
+            player->setFlags("-IkEluLog");
+        } else if (triggerEvent == PreCardUsed) {
+            if (!player->hasFlag("IkEluUsed"))
+                return skill_list;
+
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash")) {
+                player->setFlags("-IkEluUsed");
+                room->setCardFlag(use.card, "ikeli_slash");
+            }
+        } else if (triggerEvent == PreDamageDone) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card->hasFlag("ikeli_slash")) {
+                room->setCardFlag(damage.card, "-ikeli_slash");
+                room->setPlayerCardLimitation(player, "use", "Slash", true);
+            }
+        } else if (triggerEvent == CardFinished && !player->hasFlag("Global_ProcessBroken")) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash") && use.card->hasFlag("ikeli_slash")) {
+                ServerPlayer *current = room->getCurrent();
+                if (current && current->isAlive() && current->getPhase() != Player::NotActive)
+                    room->setPlayerFlag(current, "ikelu_" + player->objectName());
+            }
+        } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Play) {
+            foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
+                if (player == owner)
+                    continue;
+                if (owner->canSlash(player, false))
+                    skill_list.insert(owner, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        ask_who->setFlags("IkEluUsed");
+        ask_who->setFlags("IkEluLog");
+        bool invoke = room->askForUseSlashTo(ask_who, player, "@ikelu" + player->objectName(), false);
+        if (!invoke) {
+            ask_who->setFlags("-IkEluUsed");
+            ask_who->setFlags("-IkEluLog");
+        }
+        return false;
+    }
+};
+
 class IkFengxing: public TriggerSkill {
 public:
     IkFengxing(): TriggerSkill("ikfengxing") {
@@ -3544,6 +3608,9 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *wind048 = new General(this, "wind048", "kaze");
     wind048->addSkill(new IkXizi);
+
+    General *wind051 = new General(this, "wind051", "kaze");
+    wind051->addSkill(new IkElu);
 
     General *bloom032 = new General(this, "bloom032", "hana");
     bloom032->addSkill(new IkFengxing);
