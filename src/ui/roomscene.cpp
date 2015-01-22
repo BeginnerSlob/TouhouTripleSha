@@ -493,6 +493,8 @@ void RoomScene::handleGameEvent(const Json::Value &arg) {
             dashboard->updateAvatarTooltip();
             if (eventType == S_GAME_EVENT_PREPARE_SKILL)
                 updateSkillButtons(true);
+            else
+                updateSkillButtons();
             break;
         }
     case S_GAME_EVENT_CHANGE_GENDER: {
@@ -2068,7 +2070,32 @@ void RoomScene::addSkillButton(const Skill *skill) {
     if (skill->inherits("SPConvertSkill")) return;
     // check duplication
     QSanSkillButton *btn = dashboard->addSkillButton(skill->objectName());
-    if (btn == NULL) return;
+    if (btn == NULL) {
+        if (skill->objectName() == "ikzhiyu") {
+        // for IkZhiyu::getDialog
+            btn = dashboard->getSkillDock()->getSkillButtonByName("ikzhiyu");
+            Q_ASSERT(btn);
+            QDialog *dialog = skill->getDialog();
+            if (dialog && !main_window->findChildren<QDialog *>().contains(dialog)) {
+                dialog->setParent(main_window, Qt::Dialog);
+                connect(btn, SIGNAL(skill_activated()), dialog, SLOT(popup()));
+                connect(btn, SIGNAL(skill_deactivated()), dialog, SLOT(reject()));
+                disconnect(btn, SIGNAL(skill_activated()), this, SLOT(onSkillActivated()));
+                connect(dialog, SIGNAL(onButtonClick()), this, SLOT(onSkillActivated()));
+            } else if (!dialog) {
+                QDialog *dialog = main_window->findChild<QDialog *>("ikzhiyu");
+                if (dialog) {
+                    dialog->setParent(NULL);
+                    disconnect(btn, SIGNAL(skill_activated()), dialog, SLOT(popup()));
+                    disconnect(btn, SIGNAL(skill_deactivated()), dialog, SLOT(reject()));
+                    connect(btn, SIGNAL(skill_activated()), this, SLOT(onSkillActivated()));
+                    disconnect(dialog, SIGNAL(onButtonClick()), this, SLOT(onSkillActivated()));
+                    dialog->deleteLater();
+                }
+            }
+        }
+        return;
+    }
 
     if (btn->getViewAsSkill() != NULL  && !m_replayControl) {
         connect(btn, SIGNAL(skill_activated()), dashboard, SLOT(skillButtonActivated()));
