@@ -2083,9 +2083,9 @@ public:
     }
 };
 
-class IkZhiyu: public MasochismSkill {
+class IkZhiyuxi: public MasochismSkill {
 public:
-    IkZhiyu(): MasochismSkill("ikzhiyu") {
+    IkZhiyuxi(): MasochismSkill("ikzhiyuxi") {
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
@@ -5536,7 +5536,7 @@ IkaiKinPackage::IkaiKinPackage()
 
     General *bloom020 = new General(this, "bloom020", "hana", 3);
     bloom020->addSkill(new IkMice);
-    bloom020->addSkill(new IkZhiyu);
+    bloom020->addSkill(new IkZhiyuxi);
 
     General *bloom021 = new General(this, "bloom021", "hana");
     bloom021->addSkill(new IkGuanchong);
