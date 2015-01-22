@@ -4588,21 +4588,21 @@ public:
     }
 
     virtual int getExtra(const Player *target) const{
-        if (target->hasSkill(objectName()) && target->isWounded())
-            return 4;
-        else
-            return 0;
+        if (target->hasSkill(objectName())) {
+            QSet<QString> kingdom_set;
+            kingdom_set << target->getKingdom();
+            foreach (const Player *p, target->getAliveSiblings())
+                kingdom_set << p->getKingdom();
+
+            return kingdom_set.size();
+        }
+        return 0;
     }
 };
 
 class IkDanbo: public DrawCardsSkill {
 public:
     IkDanbo(): DrawCardsSkill("ikdanbo") {
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return DrawCardsSkill::triggerable(target)
-            && target->isWounded();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
@@ -4614,10 +4614,27 @@ public:
     }
 
     virtual int getDrawNum(ServerPlayer *liubiao, int n) const{
-        int losthp = liubiao->getLostHp();
-        liubiao->clearHistory();
-        liubiao->skip(Player::Play);
-        return n + losthp;
+        liubiao->getRoom()->setPlayerFlag(liubiao, "IkDanboDisabled");
+        return n + getKingdoms(liubiao);
+    }
+
+    int getKingdoms(const ServerPlayer *liubiao) const{
+        QSet<QString> kingdom_set;
+        Room *room = liubiao->getRoom();
+        foreach (ServerPlayer *p, room->getAlivePlayers())
+            kingdom_set << p->getKingdom();
+
+        return kingdom_set.size();
+    }
+};
+
+class IkDanboProhibit: public ProhibitSkill {
+public:
+    IkDanboProhibit(): ProhibitSkill("#ikdanbo") {
+    }
+
+    virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &) const{
+        return from && from->hasFlag("IkDanboDisabled") && card->getTypeId() != Card::TypeSkill && from != to;
     }
 };
 
@@ -5643,6 +5660,8 @@ IkaiKinPackage::IkaiKinPackage()
     General *luna015 = new General(this, "luna015", "tsuki");
     luna015->addSkill(new IkTianjing);
     luna015->addSkill(new IkDanbo);
+    luna015->addSkill(new IkDanboProhibit);
+    related_skills.insertMulti("ikdanbo", "#ikdanbo");
 
     General *luna016 = new General(this, "luna016", "tsuki", 6);
     luna016->addSkill(new IkXinshang);
