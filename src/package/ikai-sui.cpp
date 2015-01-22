@@ -2356,6 +2356,8 @@ public:
             invoke = true;
             person_only = true;
         }
+        if (from->hasFlag("ikelu_" + to->objectName()))
+            invoke = true;
         if (invoke) {
             int x = qAbs(from->getSeat() - to->getSeat());
             int y = from->aliveCount() - x;
