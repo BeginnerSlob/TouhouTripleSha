@@ -1821,10 +1821,13 @@ public:
     virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
         TriggerList skill_list;
         CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("TrickCard") && !use.card->isKindOf("Nullification")) {
-            foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
-                if (owner->getPile("guixupile").isEmpty() && (owner != room->getCurrent() || owner->getPhase() == Player::NotActive))
+        if (use.card->isNDTrick() && !use.card->isKindOf("Nullification")) {
+            foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
+                if (use.from == owner)
+                    continue;
+                if (owner->getPile("guixupile").length() < 2 && (owner != room->getCurrent() || owner->getPhase() == Player::NotActive))
                     skill_list.insert(owner, QStringList(objectName()));
+            }
         }
         return skill_list;
     }
@@ -1839,23 +1842,54 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
         JudgeStruct judge;
-        judge.pattern = ".|red";
-        judge.good = true;
+        judge.pattern = ".|diamond";
+        judge.good = false;
         judge.reason = objectName();
         judge.who = ask_who;
         room->judge(judge);
-
-        if (judge.isGood()) {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (room->getCardPlace(use.card->getEffectiveId()) == Player::PlaceTable) {
-                ask_who->addToPile("guixupile", use.card);
-                foreach (ServerPlayer *to, use.to)
-                    use.nullified_list << to->objectName();
-                data = QVariant::fromValue(use);
-            } else if (room->getCardPlace(use.card->getEffectiveId()) == Player::PlaceDelayedTrick) {
-                ask_who->addToPile("guixupile", use.card);
-            }
+        
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (judge.card->getSuit() == Card::Heart) {
+            foreach (ServerPlayer *to, use.to)
+                use.nullified_list << to->objectName();
+            data = QVariant::fromValue(use);
         }
+
+        if (judge.card->getSuit() != Card::Diamond)
+            room->setCardFlag(use.card, "ThGuixuObtain_" + ask_who->objectName());
+
+        return false;
+    }
+};
+
+class ThGuixuObtain: public TriggerSkill {
+public:
+    ThGuixuObtain(): TriggerSkill("#thguixu") {
+        events << BeforeCardsMove;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (!move.card_ids.isEmpty() && move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
+            && move.reason.m_reason == CardMoveReason::S_REASON_USE) {
+            const Card *card = move.reason.m_extraData.value<const Card *>();
+            if (!card || !card->isNDTrick() || card->isKindOf("Nullification"))
+                return QStringList();
+            if (card->hasFlag("ThGuixuObtain_" + player->objectName()))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        room->sendCompulsoryTriggerLog(player, "thguixu");
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        const Card *card = move.reason.m_extraData.value<const Card *>();
+        player->addToPile("guixupile", card);
+        move.removeCardIds(move.card_ids);
+        data = QVariant::fromValue(move);
+        
         return false;
     }
 };
@@ -2371,6 +2405,8 @@ TouhouTsukiPackage::TouhouTsukiPackage()
 
     General *tsuki017 = new General(this, "tsuki017", "tsuki");
     tsuki017->addSkill(new ThGuixu);
+    tsuki017->addSkill(new ThGuixuObtain);
+    related_skills.insertMulti("thguixu", "#thguixu");
     tsuki017->addSkill(new ThTianque);
 
     General *tsuki018 = new General(this, "tsuki018$", "tsuki", 3);
