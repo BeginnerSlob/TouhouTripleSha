@@ -221,4 +221,13 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
+class IkKezhanCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkKezhanCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 #endif // IKAIKA_H
