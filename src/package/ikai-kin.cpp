@@ -5657,7 +5657,7 @@ IkaiKinPackage::IkaiKinPackage()
     related_skills.insertMulti("ikzhichi", "#ikzhichi-protect");
     related_skills.insertMulti("ikzhichi", "#ikzhichi-clear");
 
-    General *luna015 = new General(this, "luna015", "tsuki");
+    General *luna015 = new General(this, "luna015", "tsuki", 3);
     luna015->addSkill(new IkTianjing);
     luna015->addSkill(new IkDanbo);
     luna015->addSkill(new IkDanboProhibit);
