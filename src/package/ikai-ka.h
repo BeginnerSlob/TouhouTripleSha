@@ -112,6 +112,29 @@ public:
     virtual const Card *validate(CardUseStruct &cardUse) const;
 };
 
+class IkZhiyuCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkZhiyuCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class IkZhiyuBasicCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkZhiyuBasicCard();
+
+    virtual bool targetFixed() const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
+
+    virtual const Card *validate(CardUseStruct &card_use) const;
+    virtual const Card *validateInResponse(ServerPlayer *user) const;
+};
+
 class IkShidaoCard: public SkillCard {
     Q_OBJECT
 
