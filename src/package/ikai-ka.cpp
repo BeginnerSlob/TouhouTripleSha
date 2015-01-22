@@ -738,7 +738,7 @@ public:
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
         ask_who->setFlags("IkEluUsed");
         ask_who->setFlags("IkEluLog");
-        bool invoke = room->askForUseSlashTo(ask_who, player, "@ikelu" + player->objectName(), false);
+        bool invoke = room->askForUseSlashTo(ask_who, player, "@ikelu:" + player->objectName(), false);
         if (!invoke) {
             ask_who->setFlags("-IkEluUsed");
             ask_who->setFlags("-IkEluLog");
