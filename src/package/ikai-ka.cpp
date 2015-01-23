@@ -4015,9 +4015,7 @@ public:
         if (player->hasFlag("IkKezhanDamage"))
             ++n;
         if (!player->isKongcheng()) {
-            const Card *card = room->askForCard(player, ".", "@ikkezhan", QVariant(), Card::MethodNone);
-            if (!card)
-                card = player->getRandomHandCard();
+            const Card *card = room->askForCard(player, "Slash|.|.|hand", "@ikkezhan", QVariant(), Card::MethodNone);
             if (card) {
                 room->showCard(player, card->getEffectiveId());
                 if (card->isKindOf("Slash"))
