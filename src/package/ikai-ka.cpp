@@ -3980,67 +3980,63 @@ public:
     }
 };
 
-IkKezhanCard::IkKezhanCard() {
-    will_throw = false;
-    target_fixed = true;
-}
-
-void IkKezhanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    int card = this->getEffectiveId();
-    room->showCard(source, card);
-}
-
-class IkKezhanViewAsSkill: public OneCardViewAsSkill {
-public:
-    IkKezhanViewAsSkill(): OneCardViewAsSkill("ikkezhan") {
-        response_pattern = "@@ikkezhan";
-        filter_pattern = "Slash";
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const {
-        IkKezhanCard *card = new IkKezhanCard;
-        card->addSubcard(originalCard->getId());
-        return card;
-    }
-};
-
 class IkKezhan : public TriggerSkill {
 public:
     IkKezhan() : TriggerSkill("ikkezhan") {
-        events << EventPhaseProceeding << Damage;
+        events << EventPhaseChanging << PreDamageDone;
         frequency = Compulsory;
-        view_as_skill = new IkKezhanViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
-        if (!TriggerSkill::triggerable(player)) return QStringList();
-        if (triggerEvent == Damage && !player->hasFlag("ikkezhandamage")) {
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == PreDamageDone) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.from == player && damage.from->isAlive())
-                room->setPlayerFlag(player, "ikkezhandamage");
+            if (damage.from && damage.from->isAlive() && !damage.from->hasFlag("IkKezhanDamage")) {
+                ServerPlayer *current = room->getCurrent();
+                if (current == damage.from && current->getPhase() != Player::NotActive)
+                    current->setFlags("IkKezhanDamage");
+            }
+            return QStringList();
         }
-        if (triggerEvent == EventPhaseProceeding && player->getPhase() == Player::Finish) {
-            int n = 0;
-            if (player->hasFlag("ikkezhandamage"))
-                n += 1;
-            if (!player->isKongcheng()) {
-                if (room->askForUseCard(player, "@@ikkezhan", "@ikkezhan")) 
-                    n += 1;
-            }
-            foreach (ServerPlayer *p, room->getPlayers()) {
-                if (!p->isAlive() && p->getRole() == "renegade") {
-                    n += 1;
-                    break;
-                }
-            }
-            room->sendCompulsoryTriggerLog(player, objectName());
-            room->broadcastSkillInvoke(objectName());
-            if (n != 0)
-                player->drawCards(n);
-            else
-                room->loseHp(player);
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive)
+                return QStringList(objectName());
         }
         return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+
+        int n = 0;
+        if (player->hasFlag("IkKezhanDamage"))
+            ++n;
+        if (!player->isKongcheng()) {
+            const Card *card = room->askForCard(player, ".", "@ikkezhan", QVariant(), Card::MethodNone);
+            if (!card)
+                card = player->getRandomHandCard();
+            if (card) {
+                room->showCard(player, card->getEffectiveId());
+                if (card->isKindOf("Slash"))
+                    ++n;
+            }
+        }
+        foreach (ServerPlayer *p, room->getPlayers()) {
+            if (p->isDead() && p->getRole() == "renegade") {
+                ++n;
+                break;
+            }
+        }
+
+        if (n != 0)
+            player->drawCards(n, objectName());
+        else
+            room->loseHp(player);
+        
+        return false;
     }
 };
 
@@ -4246,7 +4242,6 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkLianwuCard>();
     addMetaObject<IkLianwuDrawCard>();
     addMetaObject<IkXiekeCard>();
-    addMetaObject<IkKezhanCard>();
 
     skills << new IkQihunViewAsSkill;
 }
