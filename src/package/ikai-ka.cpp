@@ -2602,6 +2602,178 @@ public:
     }
 };
 
+class IkWanmiViewAsSkill: public ZeroCardViewAsSkill {
+public:
+    IkWanmiViewAsSkill(): ZeroCardViewAsSkill("ikwanmi") {
+        response_pattern = "@@ikwanmi";
+    }
+
+    virtual const Card *viewAs() const {
+        const Card *card = Card::Parse(Self->property("ikwanmi_card").toString());
+        Card *use_card = Sanguosha->cloneCard(card->objectName());
+        use_card->addSubcards(card->getSubcards());
+        use_card->setSkillName(objectName());
+        return use_card;
+    }
+};
+
+class IkWanmi: public TriggerSkill {
+public:
+    IkWanmi(): TriggerSkill("ikwanmi") {
+        events << CardsMoveOneTime << EventPhaseChanging;
+        view_as_skill = new IkWanmiViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    p->setMark(objectName(), 0);
+            }
+            return QStringList();
+        }
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (room->getTag("FirstRound").toBool() || player->getMark(objectName()) >= 2)
+            return QStringList();
+        if (move.to == player && (move.to_place == Player::PlaceHand
+                                  || move.to_place == Player::PlaceEquip
+                                  || move.to_place == Player::PlaceDelayedTrick)) {
+            QList<int> ids;
+            foreach (int id, move.card_ids) {
+                if (room->getCardOwner(id) == player && room->getCardPlace(id) == move.to_place)
+                    ids << id;
+            }
+            if (ids.isEmpty())
+                return QStringList();
+            // -- Slash
+            Slash *slash = new Slash(Card::SuitToBeDecided, -1);
+            slash->addSubcards(ids);
+            slash->setSkillName(objectName());
+            slash->deleteLater();
+            if (slash->isAvailable(player))
+                return QStringList(objectName());
+            // -- Jink
+            // nothing
+            // -- Analeptic
+            Analeptic *anal = new Analeptic(Card::SuitToBeDecided, -1);
+            anal->addSubcards(ids);
+            anal->setSkillName(objectName());
+            anal->deleteLater();
+            if (anal->isAvailable(player))
+                return QStringList(objectName());
+            // -- Peach
+            Peach *peach = new Peach(Card::SuitToBeDecided, -1);
+            peach->addSubcards(ids);
+            peach->setSkillName(objectName());
+            peach->deleteLater();
+            if (peach->isAvailable(player))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        QString place_str = "";
+        if (move.to_place == Player::PlaceHand)
+            place_str = "ikwanmi_h";
+        else if (move.to_place == Player::PlaceEquip)
+            place_str = "ikwanmi_e";
+        else if (move.to_place == Player::PlaceDelayedTrick)
+            place_str = "ikwanmi_j";
+        if (player->askForSkillInvoke("ikwanmi_invoke", "invoke:::" + place_str))
+            return true;
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        QList<int> ids;
+        foreach (int id, move.card_ids) {
+            if (room->getCardOwner(id) == player && room->getCardPlace(id) == move.to_place)
+                ids << id;
+        }
+        if (ids.isEmpty())
+            return false;
+        QStringList choices;
+        // -- Slash
+        Slash *slash = new Slash(Card::SuitToBeDecided, -1);
+        slash->addSubcards(ids);
+        slash->setSkillName(objectName());
+        slash->deleteLater();
+        if (slash->isAvailable(player)) {
+            choices << "slash";
+            if (!Config.BanPackages.contains("maneuvering"))
+                choices << "thunder_slash" << "fire_slash";
+        }
+        // -- Jink
+        // nothing
+        // -- Analeptic
+        Analeptic *anal = new Analeptic(Card::SuitToBeDecided, -1);
+        anal->addSubcards(ids);
+        anal->setSkillName(objectName());
+        anal->deleteLater();
+        if (anal->isAvailable(player))
+            choices << "analeptic";
+        // -- Peach
+        Peach *peach = new Peach(Card::SuitToBeDecided, -1);
+        peach->addSubcards(ids);
+        peach->setSkillName(objectName());
+        peach->deleteLater();
+        if (peach->isAvailable(player))
+            choices << "peach";
+        Q_ASSERT(!choices.isEmpty());
+        QString card_name = room->askForChoice(player, objectName(), choices.join("+"));
+        Card *use_card = Sanguosha->cloneCard(card_name);
+        use_card->addSubcards(ids);
+        use_card->setSkillName(objectName());
+        room->setPlayerProperty(player, "ikwanmi_card", use_card->toString());
+        if (room->askForUseCard(player, "@@ikwanmi", "@ikwanmi", -1, Card::MethodUse, false))
+            player->addMark(objectName());
+        delete use_card;
+        room->setPlayerProperty(player, "ikwanmi_card", QVariant());
+        return false;
+    }
+};
+
+class IkGuichan: public TriggerSkill {
+public:
+    IkGuichan(): TriggerSkill("ikguichan") {
+        events << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player && player->isDead() && player->hasSkill(objectName())) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who == player)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        Card::Suit suit = room->askForSuit(player, objectName());
+        QString suit_str = Card::Suit2String(suit);
+        LogMessage log;
+        log.type = "#ChooseSuit";
+        log.from = player;
+        log.arg = suit_str;
+        room->sendLog(log);
+        foreach (ServerPlayer *p, room->getAllPlayers())
+            room->setPlayerCardLimitation(p, "use,response", ".|" + suit_str, true);
+        return false;
+    }
+};
+
 class IkLingcu: public TriggerSkill {
 public:
     IkLingcu(): TriggerSkill("iklingcu") {
@@ -3993,6 +4165,10 @@ IkaiKaPackage::IkaiKaPackage()
     snow049->addSkill(new IkXiaowu);
     snow049->addSkill(new IkXiaowuSlash);
     related_skills.insertMulti("ikxiaowu", "#ikxiaowu");
+
+    General *snow051 = new General(this, "snow051", "yuki", 3);
+    snow051->addSkill(new IkWanmi);
+    snow051->addSkill(new IkGuichan);
 
     General *luna030 = new General(this, "luna030", "tsuki");
     luna030->addSkill(new IkLingcu);

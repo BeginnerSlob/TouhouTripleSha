@@ -491,10 +491,7 @@ void RoomScene::handleGameEvent(const Json::Value &arg) {
             foreach (Photo *photo, photos)
                 photo->updateAvatarTooltip();
             dashboard->updateAvatarTooltip();
-            if (eventType == S_GAME_EVENT_PREPARE_SKILL)
-                updateSkillButtons(true);
-            else
-                updateSkillButtons();
+            updateSkillButtons(eventType == S_GAME_EVENT_PREPARE_SKILL);
             break;
         }
     case S_GAME_EVENT_CHANGE_GENDER: {
