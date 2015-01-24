@@ -189,7 +189,7 @@
     "actionedIconRegion": [80, 37, 52, 21],
     "saveMeIconRegion": [5, 15, 122, 50],
     "votesIconRegion": [50, 52, 50, 50],
-    "chainedIconRegion": [8, 90, 134, 19],
+    "chainedIconRegion": [8, 25, 134, 19],
     "deathIconRegion": ["center", "center", [0, 0], [157, 102]],
     "drankMaskColor": [250, 0, 0, 115],
     "ikqihuangMaskColor": [255, 255, 255, 128],
