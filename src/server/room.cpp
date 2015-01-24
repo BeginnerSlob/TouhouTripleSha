@@ -1102,7 +1102,7 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
         return false;
     }
 
-    setEmotion(from ? from : to, "effects/nullification");
+    setEmotion(to, "effects/nullification");
     //doAnimate(S_ANIMATE_NULLIFICATION, repliedPlayer->objectName(), to->objectName());
     QVariant decisionData = QVariant::fromValue("Nullification:" + QString(trick->getClassName())
                                                 + ":" + to->objectName() + ":" + (positive ? "true" : "false"));
