@@ -558,82 +558,82 @@
         <translation>不显示指示线</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="322"/>
+        <location filename="../../src/dialog/configdialog.ui" line="325"/>
         <source>No equip anim</source>
         <translation>不显示装备动画</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="335"/>
+        <location filename="../../src/dialog/configdialog.ui" line="338"/>
         <source>Use full skin</source>
         <translation>启用全幅界面</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="348"/>
+        <location filename="../../src/dialog/configdialog.ui" line="351"/>
         <source>No effects anim</source>
         <translation>不显示卡牌/技能动画</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="362"/>
+        <location filename="../../src/dialog/configdialog.ui" line="365"/>
         <source>Font setup</source>
         <translation>字体设置</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="374"/>
+        <location filename="../../src/dialog/configdialog.ui" line="377"/>
         <source>Set application font</source>
         <translation>设置应用程序字体</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="387"/>
+        <location filename="../../src/dialog/configdialog.ui" line="390"/>
         <source>Application font</source>
         <translation>应用程序字体</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="435"/>
+        <location filename="../../src/dialog/configdialog.ui" line="438"/>
         <source>Font ...</source>
         <translation>字体 ...</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="448"/>
+        <location filename="../../src/dialog/configdialog.ui" line="451"/>
         <source>Text edit font</source>
         <translation>文本框字体</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="464"/>
+        <location filename="../../src/dialog/configdialog.ui" line="467"/>
         <source>Color ...</source>
         <translation>颜色 ...</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="471"/>
+        <location filename="../../src/dialog/configdialog.ui" line="474"/>
         <source>Game</source>
         <translation>游戏</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="483"/>
+        <location filename="../../src/dialog/configdialog.ui" line="486"/>
         <source>Never nullify my single target trick</source>
         <translation>从不对自己使用的单目标锦囊使用【三粒天滴】</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="502"/>
+        <location filename="../../src/dialog/configdialog.ui" line="505"/>
         <source>Enable auto target</source>
         <translation>自动选择唯一目标</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="521"/>
+        <location filename="../../src/dialog/configdialog.ui" line="524"/>
         <source>Enable intellectual selection</source>
         <translation>智能选牌</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="540"/>
+        <location filename="../../src/dialog/configdialog.ui" line="543"/>
         <source>Enable double-click</source>
         <translation>双击牌或头像使用牌</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="559"/>
+        <location filename="../../src/dialog/configdialog.ui" line="562"/>
         <source>Bubble Chat Box Keep Time</source>
         <translation>泡泡聊天框闪现时间</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.ui" line="588"/>
+        <location filename="../../src/dialog/configdialog.ui" line="591"/>
         <source>Enable super-drag</source>
         <translation>启用超级拖拽</translation>
     </message>
@@ -3872,12 +3872,12 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>不能载入字体文件 %1 !</translation>
     </message>
     <message>
-        <location filename="../../src/core/settings.cpp" line="120"/>
+        <location filename="../../src/core/settings.cpp" line="119"/>
         <source>TripleShaFans</source>
         <translation>莎莎杀Fans</translation>
     </message>
     <message>
-        <location filename="../../src/core/settings.cpp" line="121"/>
+        <location filename="../../src/core/settings.cpp" line="120"/>
         <source>%1&apos;s touhoukifugeki</source>
         <translation>%1的东方绮符剧</translation>
     </message>

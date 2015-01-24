@@ -122,14 +122,14 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
                         pma->boundingRect().height() * 0.2);
             pma->setScale(0.6);
         } else if (emotion == "effects/iron_chain") {
-            pma->moveBy(pma->boundingRect().width() * 0.2,
-                        pma->boundingRect().height() * 0.1);
-            pma->setScale(0.8);
+            pma->moveBy(pma->boundingRect().width() * 0.4,
+                        pma->boundingRect().height() * 0.2);
+            pma->setScale(0.6);
         } else if (emotion == "effects/supply_shortage") {
             pma->moveBy(pma->boundingRect().width() * 0.1,
                         pma->boundingRect().height() * 0.1);
             pma->setScale(0.8);
-        } else if (emotion.contains("slash") || emotion.endsWith("damage/normal")) {
+        } else if ((emotion.startsWith("effects/") && emotion.contains("slash")) || emotion.endsWith("damage/normal")) {
             pma->moveBy(pma->boundingRect().width() * 0.2,
                         pma->boundingRect().height() * 0.2);
             pma->setScale(0.6);
