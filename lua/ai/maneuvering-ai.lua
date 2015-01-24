@@ -823,7 +823,6 @@ sgs.ai_cardshow.fire_attack = function(self, requestor)
 		end
 			
 		local index = -1
-		local result
 		for _, card in ipairs(cards) do
 			if priority[card:getSuitString()] > index then
 				result = card
