@@ -2540,7 +2540,7 @@ public:
         }
         if (triggerEvent == EventPhaseEnd) {
             foreach (ServerPlayer *p, room->getAllPlayers()) {
-                if (p->hasFlag("thlunyuInvoke"))
+                if (p->hasFlag("thlunyuDraw"))
                     skill_list.insert(p, QStringList(objectName()));
             }
         }
