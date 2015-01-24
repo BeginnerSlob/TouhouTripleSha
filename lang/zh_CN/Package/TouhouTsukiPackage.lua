@@ -80,7 +80,7 @@ return {
 	["illustrator:tsuki006"]="正体不明",
 	["cv:tsuki006"]="暂无",
 	["thfengxiang"]="凤翔",
-	[":thfengxiang"]="每当有一名角色的人物牌被横置或重置时，你可以摸一张牌。",
+	[":thfengxiang"]="每当有一名角色的人物牌被横置或重置时，你可以摸一张牌，每回合限四次。",
 	["thkuaiqing"]="快晴",
 	[":thkuaiqing"]="锁定技，你使用的非延时类锦囊牌对其他未受伤的角色的效果不可以被【三粒天滴】抵消。",
 	["thyuhuo"]="浴火",
