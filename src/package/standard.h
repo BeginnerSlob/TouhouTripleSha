@@ -88,6 +88,7 @@ class GodSalvation: public GlobalEffect {
 public:
     Q_INVOKABLE GodSalvation(Card::Suit suit = Heart, int number = 1);
     virtual bool isCancelable(const CardEffectStruct &effect) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
@@ -119,6 +120,7 @@ class SavageAssault:public AOE {
 
 public:
     Q_INVOKABLE SavageAssault(Card::Suit suit, int number);
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
@@ -150,6 +152,7 @@ public:
     virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
 
 private:
@@ -162,6 +165,7 @@ class ExNihilo: public SingleTargetTrick {
 public:
     Q_INVOKABLE ExNihilo(Card::Suit suit, int number);
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
     virtual bool isAvailable(const Player *player) const;
 };
@@ -171,7 +175,9 @@ class Duel: public SingleTargetTrick {
 
 public:
     Q_INVOKABLE Duel(Card::Suit suit, int number);
+
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
@@ -202,6 +208,7 @@ public:
     Q_INVOKABLE Indulgence(Card::Suit suit, int number);
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual void takeEffect(ServerPlayer *target) const;
 };
 
@@ -220,6 +227,7 @@ class Lightning: public Disaster {
 public:
     Q_INVOKABLE Lightning(Card::Suit suit, int number);
 
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual void takeEffect(ServerPlayer *target) const;
 };
 
@@ -322,6 +330,7 @@ public:
 
     virtual QString getSubtype() const;
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
 
     virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
@@ -363,6 +372,7 @@ public:
     Q_INVOKABLE Snatch(Card::Suit suit, int number);
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
@@ -373,6 +383,7 @@ public:
     Q_INVOKABLE Dismantlement(Card::Suit suit, int number);
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
@@ -406,6 +417,8 @@ class Drowning: public AOE {
 
 public:
     Q_INVOKABLE Drowning(Card::Suit suit = Club, int number = 12);
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 

@@ -304,11 +304,16 @@ bool FireAttack::targetFilter(const QList<const Player *> &targets, const Player
     return targets.length() < total_num && !to_select->isKongcheng() && (to_select != Self || !Self->isLastHandCard(this, true));
 }
 
+void FireAttack::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    foreach (ServerPlayer *p, targets)
+        room->setEmotion(p, "effects/fire_attack");
+    SingleTargetTrick::use(room, source, targets);
+}
+
 void FireAttack::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
     if (effect.to->isKongcheng())
         return;
-    room->setEmotion(effect.to, "effects/fire_attack");
 
     const Card *card = room->askForCardShow(effect.to, effect.from, objectName());
     room->showCard(effect.to, card->getEffectiveId());
@@ -382,6 +387,14 @@ bool IronChain::targetsFeasible(const QList<const Player *> &targets, const Play
         return targets.length() <= total_num;
 }
 
+void IronChain::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    if (!targets.isEmpty()) {
+        foreach (ServerPlayer *p, targets)
+            room->setEmotion(p, "effects/iron_chain");
+    }
+    TrickCard::use(room, source, targets);
+}
+
 void IronChain::onUse(Room *room, const CardUseStruct &card_use) const{
     if (card_use.to.isEmpty()) {
         CardMoveReason reason(CardMoveReason::S_REASON_RECAST, card_use.from->objectName());
@@ -407,7 +420,6 @@ void IronChain::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.to->getRoom();
 
     room->broadcastProperty(effect.to, "chained");
-    room->setEmotion(effect.to, "effects/iron_chain");
     room->getThread()->trigger(ChainStateChanged, room, effect.to);
 }
 
@@ -419,6 +431,12 @@ SupplyShortage::SupplyShortage(Card::Suit suit, int number)
     judge.pattern = ".|club";
     judge.good = true;
     judge.reason = objectName();
+}
+
+void SupplyShortage::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    Q_ASSERT(targets.length() != 1);
+    room->setEmotion(targets.first(), "effects/supply_shortage");
+    DelayedTrick::use(room, source, targets);
 }
 
 bool SupplyShortage::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
@@ -438,7 +456,6 @@ bool SupplyShortage::targetFilter(const QList<const Player *> &targets, const Pl
 }
 
 void SupplyShortage::takeEffect(ServerPlayer *target) const{
-    target->getRoom()->setEmotion(target, "effects/supply_shortage");
     target->skip(Player::Draw);
 }
 

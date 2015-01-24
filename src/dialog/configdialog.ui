@@ -308,6 +308,9 @@
       <property name="text">
        <string>No indicator</string>
       </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
      </widget>
      <widget class="QCheckBox" name="noEquipAnimCheckBox">
       <property name="geometry">
