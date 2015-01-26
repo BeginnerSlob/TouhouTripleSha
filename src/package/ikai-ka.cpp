@@ -1699,7 +1699,28 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("IkZhiyuCard") || player->hasFlag("IkZhiyu1");
+        if (!player->hasUsed("IkZhiyuCard"))
+            return player->canDiscard(player, "he");
+
+        if (!player->hasFlag("IkZhiyu1"))
+            return false;
+
+        Slash *slash = Sanguosha->cloneCard("slash");
+        slash->deleteLater();
+        if (slash->isAvailable(player))
+            return true;
+
+        Peach *peach = Sanguosha->cloneCard("peach");
+        peach->deleteLater();
+        if (peach->isAvailable(player))
+            return true;
+
+        Analeptic *analeptic = Sanguosha->cloneCard("analeptic");
+        analeptic->deleteLater();
+        if (analeptic->isAvailable(player))
+            return true;
+
+        return false;
     }
 };
 
