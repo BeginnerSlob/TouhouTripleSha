@@ -17,7 +17,7 @@ end
 
 sgs.ai_skill_use_func.ThJiyiCard = function(card, use, self)
 	for _, p in ipairs(self.enemies) do
-		if self:isWeak(p) and getKnownCard(p, self.player, "TrickCard") == 0 then
+		if not p:isKongcheng() and self:isWeak(p) and getKnownCard(p, self.player, "TrickCard") == 0 then
 			use.card = sgs.Card_Parse("@ThJiyiCard=.")
 			if use.to then
 				use.to:append(p)
@@ -27,7 +27,7 @@ sgs.ai_skill_use_func.ThJiyiCard = function(card, use, self)
 	end --weak enemy
 
 	for _, p in ipairs(self.friends_noself) do
-		if p:getPile("wooden_ox"):isEmpty() and getKnownCard(p, self.player, "TrickCard") > 0 then
+		if not p:isKongcheng() and p:getPile("wooden_ox"):isEmpty() and getKnownCard(p, self.player, "TrickCard") > 0 then
 			if not self:needKongcheng(self.player, true) then
 				use.card = sgs.Card_Parse("@ThJiyiCard=.")
 				if use.to then
@@ -39,7 +39,7 @@ sgs.ai_skill_use_func.ThJiyiCard = function(card, use, self)
 	end --friend who has known trick
 
 	for _, p in ipairs(self.enemies) do
-		if getKnownCard(p, self.player, "TrickCard") == 0 then
+		if not p:isKongcheng() and getKnownCard(p, self.player, "TrickCard") == 0 then
 			use.card = sgs.Card_Parse("@ThJiyiCard=.")
 			if use.to then
 				use.to:append(p)
