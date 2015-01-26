@@ -245,15 +245,6 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
         log.from = use.from;
         log.to << use.to;
         room->sendLog(log);
-    } else if (use.from->hasFlag("ThZhanyeUse")) {
-        use.from->setFlags("-ThZhanyeUse");
-        room->broadcastSkillInvoke("thzhanye");
-
-        LogMessage log;
-        log.type = "#InvokeSkill";
-        log.from = use.from;
-        log.arg = "thzhanye";
-        room->sendLog(log);
     } else if (use.from->hasFlag("ThYingshiUse")) {
         use.from->setFlags("-ThYingshiUse");
         room->broadcastSkillInvoke("thyingshi");
@@ -983,7 +974,7 @@ void Collateral::onUse(Room *room, const CardUseStruct &card_use) const{
 }
 
 void Collateral::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    Q_ASSERT(targets.length() != 1);
+    Q_ASSERT(targets.length() == 1);
     ServerPlayer *killer = targets.first();
     ServerPlayer *victim = killer->tag["collateralVictim"].value<ServerPlayer *>();
     room->setEmotion(killer, "effects/collateral");
@@ -1273,7 +1264,7 @@ bool Indulgence::targetFilter(const QList<const Player *> &targets, const Player
 }
 
 void Indulgence::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    Q_ASSERT(targets.length() != 1);
+    Q_ASSERT(targets.length() == 1);
     room->setEmotion(targets.first(), "effects/indulgence");
     DelayedTrick::use(room, source, targets);
 }

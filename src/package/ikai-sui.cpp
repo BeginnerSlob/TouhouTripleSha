@@ -3859,8 +3859,7 @@ public:
         if (!TriggerSkill::triggerable(panfeng)) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
         ServerPlayer *target = damage.to;
-        if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel")) && target->hasEquip()
-            && !target->hasFlag("Global_DebutFlag") && panfeng != target) {
+        if (target->hasEquip() && !target->hasFlag("Global_DebutFlag") && panfeng != target) {
             for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
                 if (!target->getEquip(i)) continue;
                 if (panfeng->canDiscard(target, target->getEquip(i)->getEffectiveId()) || panfeng->getEquip(i) == NULL)

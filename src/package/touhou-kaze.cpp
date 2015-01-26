@@ -353,21 +353,36 @@ public:
         if (player->isDead())
             return skill_list;
 
-        QList<ServerPlayer *> owners = room->findPlayersBySkillName(objectName());
-        foreach (ServerPlayer *owner, owners) {
+        foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
             if (owner == player || owner == room->getCurrent())
                 continue;
-            skill_list.insert(owner, QStringList(objectName()));
+            Slash *slash = new Slash(Card::NoSuit, 0);
+            slash->setSkillName("_thzhanye");
+            if (owner->canSlash(player, slash, false))
+                skill_list.insert(owner, QStringList(objectName()));
+            delete slash;
         }
 
         return skill_list;
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
-        room->setPlayerFlag(ask_who, "ThZhanyeUse");
-        if (!room->askForUseSlashTo(ask_who, player, "@thzhanye:" + player->objectName(), false))
-            room->setPlayerFlag(ask_who, "-ThZhanyeUse");
+        if (room->askForCard(ask_who, "..", "@thzhanye:" + player->objectName(), QVariant::fromValue(player), objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
 
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
+        Slash *slash = new Slash(Card::NoSuit, 0);
+        slash->setSkillName("_thzhanye");
+        if (!ask_who->canSlash(player, slash, false)) {
+            delete slash;
+            return false;
+        }
+        room->useCard(CardUseStruct(slash, ask_who, player));
         return false;
     }
 };
@@ -2272,6 +2287,8 @@ TouhouKazePackage::TouhouKazePackage()
     General *kaze004 = new General(this, "kaze004", "kaze");
     kaze004->addSkill(new ThWangshou);
     kaze004->addSkill(new ThZhanye);
+    kaze004->addSkill(new SlashNoDistanceLimitSkill("thzhanye"));
+    related_skills.insertMulti("thzhanye", "#thzhanye-ndl");
 
     General *kaze005 = new General(this, "kaze005", "kaze", 3, false);
     kaze005->addSkill(new ThEnan);

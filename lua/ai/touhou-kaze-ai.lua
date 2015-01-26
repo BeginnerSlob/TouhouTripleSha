@@ -306,20 +306,26 @@ sgs.ai_skill_invoke.thwangshou = function(self, data)
 end
 
 sgs.ai_skill_cardask["@thzhanye"] = function(self, data, pattern, target)
-	for _, slash in ipairs(self:getCards("Slash")) do
-		if self:isFriend(target) and self:slashIsEffective(slash, target) then
-			if self:findLeijiTarget(target, 50, self.player) then return slash:toString() end
-			if self:getDamagedEffects(target, self.player, true) then return slash:toString() end
-		end
-
-		local nature = sgs.DamageStruct_Normal
-		if slash:isKindOf("FireSlash") then nature = sgs.DamageStruct_Fire
-		elseif slash:isKindOf("ThunderSlash") then nature = sgs.DamageStruct_Thunder end
-		if self:isEnemy(target) and self:slashIsEffective(slash, target) and self:canAttack(target, self.player, nature)
-			and not self:getDamagedEffects(target, self.player, true) and not self:findLeijiTarget(target, 50, self.player) then
-			return slash:toString()
-		end
+	if self.player:isNude() then
+		return "."
 	end
+	local cards = self.player:getCards("he")
+	cards = sgs.QList2Table(cards)
+	self:sortByKeepValue(cards)
+
+	local slash = sgs.Sanguosha:cloneCard("slash", sgs.Card_NoSuit, 0)
+	slash:deleteLater()
+	if self:isFriend(target) and self:slashIsEffective(slash, target) then
+		if self:findLeijiTarget(target, 50, self.player) then return "$" .. cards[1]:getEffectiveId() end
+		if self:getDamagedEffects(target, self.player, true) then return "$" .. cards[1]:getEffectiveId() end
+	end
+
+	local nature = sgs.DamageStruct_Normal
+	if self:isEnemy(target) and self:slashIsEffective(slash, target) and self:canAttack(target, self.player, nature)
+		and not self:getDamagedEffects(target, self.player, true) and not self:findLeijiTarget(target, 50, self.player) then
+		return "$" .. cards[1]:getEffectiveId()
+	end
+
 	return "."
 end
 

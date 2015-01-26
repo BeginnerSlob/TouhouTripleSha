@@ -3710,6 +3710,7 @@ public:
             skill->addSubcard(card);
             return skill;
         }
+        return NULL;
     }
 };
 
