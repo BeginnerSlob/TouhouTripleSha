@@ -837,6 +837,7 @@ void ServerPlayer::gainMark(const QString &mark, int n) {
     log.arg2 = QString::number(n);
 
     room->sendLog(log);
+    room->setEmotion(this, "effects/mark_got");
     room->setPlayerMark(this, mark, value);
 }
 
@@ -852,6 +853,7 @@ void ServerPlayer::loseMark(const QString &mark, int n) {
     log.arg2 = QString::number(n);
 
     room->sendLog(log);
+    room->setEmotion(this, "effects/mark_lost");
     room->setPlayerMark(this, mark, value);
 }
 

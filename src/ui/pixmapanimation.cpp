@@ -122,7 +122,7 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
                         pma->boundingRect().height() * 0.2);
             pma->setScale(0.6);
         } else if (emotion == "effects/iron_chain") {
-            pma->moveBy(pma->boundingRect().width() * 0.4,
+            pma->moveBy(pma->boundingRect().width() * 0.3,
                         pma->boundingRect().height() * 0.2);
             pma->setScale(0.6);
         } else if (emotion == "effects/supply_shortage") {
