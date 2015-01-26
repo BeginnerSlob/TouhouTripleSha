@@ -2839,6 +2839,8 @@ void RoomScene::changeHp(const QString &who, int delta, DamageStruct::Nature nat
         else if (nature == DamageStruct::Thunder)
             //doAnimation(S_ANIMATE_LIGHTNING, QStringList() << who);
             setEmotion(who, "effects/damage/thunder");
+        else if (delta < -1)
+            setEmotion(who, "effects/damage/heavy");
         else
             setEmotion(who, "effects/damage/normal");
     } else {
