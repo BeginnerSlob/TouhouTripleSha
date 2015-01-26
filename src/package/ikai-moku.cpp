@@ -3671,6 +3671,48 @@ public:
     }
 };
 
+IkXuzhaoCard::IkXuzhaoCard() {
+    will_throw = false;
+}
+
+bool IkXuzhaoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    LureTiger *lure_tiger = new LureTiger(SuitToBeDecided, -1);
+    lure_tiger->addSubcards(subcards);
+    lure_tiger->deleteLater();
+    return lure_tiger->targetFilter(targets, to_select, Self);
+}
+
+const Card *IkXuzhaoCard::validate(CardUseStruct &use) const{
+    Room *room = use.from->getRoom();
+    room->loseHp(use.from);
+    if (use.from->isDead())
+        return NULL;
+    LureTiger *lure_tiger = new LureTiger(SuitToBeDecided, -1);
+    lure_tiger->addSubcards(subcards);
+    lure_tiger->setSkillName("ikxuzhao");
+    return lure_tiger;
+}
+
+class IkXuzhao: public OneCardViewAsSkill {
+public:
+    IkXuzhao(): OneCardViewAsSkill("ikxuzhao") {
+        filter_pattern = ".|.|.|hand";
+        response_or_use = true;
+    }
+
+    virtual const Card *viewAs(const Card *card) const{
+        LureTiger *lure_tiger = new LureTiger(Card::SuitToBeDecided, -1);
+        lure_tiger->addSubcard(card);
+        lure_tiger->setSkillName(objectName());
+        lure_tiger->deleteLater();
+        if (lure_tiger->isAvailable(Self)) {
+            IkXuzhaoCard *skill = new IkXuzhaoCard;
+            skill->addSubcard(card);
+            return skill;
+        }
+    }
+};
+
 class IkQiyuViewAsSkill: public OneCardViewAsSkill {
 public:
     IkQiyuViewAsSkill(): OneCardViewAsSkill("ikqiyu") {
@@ -5155,6 +5197,7 @@ IkaiMokuPackage::IkaiMokuPackage()
 
     General *luna004 = new General(this, "luna004", "tsuki");
     luna004->addSkill(new IkXinghuang);
+    luna004->addSkill(new IkXuzhao);
 
     General *luna005 = new General(this, "luna005", "tsuki");
     luna005->addSkill(new IkQiyu);
@@ -5218,6 +5261,7 @@ IkaiMokuPackage::IkaiMokuPackage()
     addMetaObject<IkYeyanCard>();
     addMetaObject<GreatIkYeyanCard>();
     addMetaObject<SmallIkYeyanCard>();
+    addMetaObject<IkXuzhaoCard>();
     addMetaObject<IkWenleCard>();
     addMetaObject<IkGuihuoCard>();
     addMetaObject<IkYujiCard>();
