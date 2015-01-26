@@ -2072,22 +2072,26 @@ void RoomScene::addSkillButton(const Skill *skill) {
         // for IkZhiyu::getDialog
             btn = dashboard->getSkillDock()->getSkillButtonByName("ikzhiyu");
             Q_ASSERT(btn);
-            QDialog *dialog = skill->getDialog();
-            if (dialog && !main_window->findChildren<QDialog *>().contains(dialog)) {
-                dialog->setParent(main_window, Qt::Dialog);
+            QDialog *dialog = main_window->findChild<QDialog *>("ikzhiyu");
+            if (dialog && skill->getDialog()) {
                 connect(btn, SIGNAL(skill_activated()), dialog, SLOT(popup()));
                 connect(btn, SIGNAL(skill_deactivated()), dialog, SLOT(reject()));
                 disconnect(btn, SIGNAL(skill_activated()), this, SLOT(onSkillActivated()));
                 connect(dialog, SIGNAL(onButtonClick()), this, SLOT(onSkillActivated()));
-            } else if (!dialog) {
+            } else if (!dialog && skill->getDialog()) {
+                QDialog *skill_dialog = skill->getDialog();
+                skill_dialog->setParent(main_window, Qt::Dialog);
+                connect(btn, SIGNAL(skill_activated()), skill_dialog, SLOT(popup()));
+                connect(btn, SIGNAL(skill_deactivated()), skill_dialog, SLOT(reject()));
+                disconnect(btn, SIGNAL(skill_activated()), this, SLOT(onSkillActivated()));
+                connect(skill_dialog, SIGNAL(onButtonClick()), this, SLOT(onSkillActivated()));
+            } else if (!skill->getDialog()) {
                 QDialog *dialog = main_window->findChild<QDialog *>("ikzhiyu");
                 if (dialog) {
-                    dialog->setParent(NULL);
                     disconnect(btn, SIGNAL(skill_activated()), dialog, SLOT(popup()));
                     disconnect(btn, SIGNAL(skill_deactivated()), dialog, SLOT(reject()));
                     connect(btn, SIGNAL(skill_activated()), this, SLOT(onSkillActivated()));
                     disconnect(dialog, SIGNAL(onButtonClick()), this, SLOT(onSkillActivated()));
-                    dialog->deleteLater();
                 }
             }
         }
