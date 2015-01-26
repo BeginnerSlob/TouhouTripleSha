@@ -1805,6 +1805,8 @@ public:
             ServerPlayer *target = player->tag["ThShenyouTarget"].value<ServerPlayer *>();
             player->tag.remove("ThShenyouTarget");
             if (target) {
+                if (target->getHandcardNum() > player->getHandcardNum())
+                    player->drawCards(1, objectName());
                 int card_id = room->askForCardChosen(player, target, "hej", objectName());
                 room->obtainCard(player, card_id, false);
                 room->addPlayerMark(player, objectName());
@@ -1817,26 +1819,6 @@ public:
             room->loseHp(damage.to, damage.damage);
             return true;
         }
-        return false;
-    }
-};
-
-class ThShenyouDraw: public TriggerSkill {
-public:
-    ThShenyouDraw(): TriggerSkill("#thshenyou") {
-        events << Predamage;
-    }
-
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        DamageStruct damage = data.value<DamageStruct>();
-        if (damage.card && damage.card->isKindOf("Slash") && damage.card->isRed()
-            && player->getMark(objectName()) > 0)
-            return QStringList(objectName());
-        return QStringList();
-    }
-
-    virtual bool effect(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        player->drawCards(1, objectName());
         return false;
     }
 };
@@ -2431,8 +2413,6 @@ TouhouTsukiPackage::TouhouTsukiPackage()
 
     General *tsuki016 = new General(this, "tsuki016", "tsuki");
     tsuki016->addSkill(new ThShenyou);
-    tsuki016->addSkill(new ThShenyouDraw);
-    related_skills.insertMulti("thshenyou", "#thshenyou");
 
     General *tsuki017 = new General(this, "tsuki017", "tsuki");
     tsuki017->addSkill(new ThGuixu);
