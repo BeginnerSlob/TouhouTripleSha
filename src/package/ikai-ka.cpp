@@ -2737,6 +2737,20 @@ public:
     }
 };
 
+class IkWanmiTargetMod: public TargetModSkill {
+public:
+    IkWanmiTargetMod(): TargetModSkill("#ikwanmi-tar") {
+        pattern = "BasicCard";
+    }
+
+    virtual int getDistanceLimit(const Player *from, const Card *card) const{
+        if (card->getSkillName() == "ikwanmi")
+            return 1000;
+        else
+            return 0;
+    }
+};
+
 class IkGuichan: public TriggerSkill {
 public:
     IkGuichan(): TriggerSkill("ikguichan") {
@@ -4162,6 +4176,8 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *snow051 = new General(this, "snow051", "yuki", 3);
     snow051->addSkill(new IkWanmi);
+    snow051->addSkill(new IkWanmiTargetMod);
+    related_skills.insertMulti("ikwanmi", "#ikwanmi-tar");
     snow051->addSkill(new IkGuichan);
 
     General *luna030 = new General(this, "luna030", "tsuki");
