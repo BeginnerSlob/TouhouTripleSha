@@ -683,8 +683,8 @@ bool ThChouceCard::targetsFeasible(const QList<const Player *> &targets, const P
 }
 
 const Card *ThChouceCard::validate(CardUseStruct &card_use) const{
-    const Card *card = Sanguosha->getCard(getSubcards().first());
-    Card *use_card = Sanguosha->cloneCard(card);
+    Card *use_card = Sanguosha->cloneCard(Sanguosha->getCard(subcards.first())->objectName());
+    use_card->addSubcards(subcards);
     use_card->setSkillName("thchouce");
     Room *room = card_use.from->getRoom();
 
@@ -711,6 +711,7 @@ public:
             return to_select->isAvailable(Self);
         else
             return !Self->isCardLimited(to_select, Card::MethodUse, true)
+                && !to_select->isKindOf("Horse")
                 && !to_select->isKindOf("Jink")
                 && !to_select->isKindOf("Nullification")
                 && !to_select->isEquipped();

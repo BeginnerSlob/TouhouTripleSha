@@ -91,7 +91,10 @@ return {
 	["illustrator:yuki007"]="正体不明",
 	["cv:yuki007"]="暂无",
 	["thchouce"]="筹策",
-	[":thchouce"]="你于出牌阶段使用的第一张牌，或点数比你此阶段使用的前一张牌大的牌，可以无视合法性指定一名角色为目标。<br />◇<font color=\"red\"><b>注意</b></font>：此技能的两种使用方法：<br />1. 通过点击“<font color=\"green\"><b>筹策</b></font>”按钮使用。<br />2. 正常使用一张卡牌（可随意选择目标），若满足“筹策”条件，则会在<font color=\"red\"><b>点击确定后</b></font>询问；",
+	[":thchouce"]="你于出牌阶段使用的第一张牌，或点数比你此阶段使用的前一张牌大的牌，可以无视合法性指定一名角色为目标。<br />" ..
+				  "◇<font color=\"red\"><b>注意</b></font>：此技能的两种使用方法：<br />" ..
+				  "1. 通过点击“<font color=\"green\"><b>筹策</b></font>”按钮使用；<br />" ..
+				  "2. 正常使用一张卡牌（可随意选择目标），若满足“筹策”条件，则会在<font color=\"red\"><b>点击确定后</b></font>询问。",
 	["@thchouce"]="你可以发动“筹策”",
 	["$ThChouce"]="%from 发动了“%arg”将 %to 指定为了 %card 的目标",
 	["thzhanshi"]="占筮",
