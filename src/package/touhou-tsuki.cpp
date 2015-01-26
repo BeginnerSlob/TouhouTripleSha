@@ -639,15 +639,23 @@ public:
 class ThFengxiang: public TriggerSkill {
 public:
     ThFengxiang(): TriggerSkill("thfengxiang") {
-        events << ChainStateChanged;
+        events << ChainStateChanged << EventPhaseChanging;
         frequency = Frequent;
     }
 
-    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
         TriggerList skill_list;
+        if (triggerEvent == EventPhaseChanging) {
+            foreach (ServerPlayer *p, room->getAlivePlayers())
+                p->setMark(objectName(), 0);
+            return skill_list;
+        }
         if (player->isDead()) return skill_list;
-        foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+        foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+            if (p->getMark(objectName()) >= 4)
+                continue;
             skill_list.insert(p, QStringList(objectName()));
+        }
         return skill_list;
     }
 
@@ -660,7 +668,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
-        ask_who->drawCards(1);
+        ask_who->addMark(objectName());
+        ask_who->drawCards(1, objectName());
         return false;
     }
 };
@@ -1812,6 +1821,26 @@ public:
     }
 };
 
+class ThShenyouDraw: public TriggerSkill {
+public:
+    ThShenyouDraw(): TriggerSkill("#thshenyou") {
+        events << Predamage;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.card && damage.card->isKindOf("Slash") && damage.card->isRed()
+            && player->getMark(objectName()) > 0)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        player->drawCards(1, objectName());
+        return false;
+    }
+};
+
 class ThGuixu: public TriggerSkill {
 public:
     ThGuixu(): TriggerSkill("thguixu") {
@@ -2402,6 +2431,8 @@ TouhouTsukiPackage::TouhouTsukiPackage()
 
     General *tsuki016 = new General(this, "tsuki016", "tsuki");
     tsuki016->addSkill(new ThShenyou);
+    tsuki016->addSkill(new ThShenyouDraw);
+    related_skills.insertMulti("thshenyou", "#thshenyou");
 
     General *tsuki017 = new General(this, "tsuki017", "tsuki");
     tsuki017->addSkill(new ThGuixu);

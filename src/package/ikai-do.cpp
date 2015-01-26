@@ -2345,18 +2345,18 @@ public:
 };
 
 IkWudiCard::IkWudiCard() {
-    handling_method = MethodUse;
+    will_throw = false;
 }
 
 bool IkWudiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    Duel *duel = new Duel(SuitToBeDecided, 0);
+    Duel *duel = new Duel(SuitToBeDecided, -1);
     duel->addSubcards(subcards);
     duel->deleteLater();
     return duel->targetFilter(targets, to_select, Self);
 }
 
 const Card *IkWudiCard::validate(CardUseStruct &) const{
-    Duel *duel = new Duel(SuitToBeDecided, 0);
+    Duel *duel = new Duel(SuitToBeDecided, -1);
     duel->addSubcards(subcards);
     duel->setSkillName("ikwudi");
     return duel;
@@ -2384,7 +2384,7 @@ public:
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
         if (cards.length() == 2) {
-            Duel *duel = new Duel(Card::SuitToBeDecided, 0);
+            Duel *duel = new Duel(Card::SuitToBeDecided, -1);
             duel->addSubcards(cards);
             duel->setSkillName(objectName());
             duel->deleteLater();
@@ -2981,6 +2981,7 @@ IkaiDoPackage::IkaiDoPackage()
     General *wind007 = new General(this, "wind007", "kaze", 3, false);
     wind007->addSkill(new IkHuiquan);
     wind007->addSkill("thjizhi");
+    wind007->addSkill(new Skill("ikhugu", Skill::Compulsory)); // Player::canDiscard
 
     General *wind042 = new General(this, "wind042", "kaze");
     wind042->addSkill(new IkBaoou);
