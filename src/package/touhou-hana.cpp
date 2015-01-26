@@ -794,7 +794,7 @@ public:
 
 ThMimengDialog *ThMimengDialog::getInstance(const QString &object, bool left, bool right,
                                       bool play_only, bool slash_combined, bool delayed_tricks) {
-    static ThMimengDialog *instance;
+    static ThMimengDialog *instance = NULL;
     if (instance == NULL || instance->objectName() != object)
         instance = new ThMimengDialog(object, left, right, play_only, slash_combined, delayed_tricks);
 
@@ -806,7 +806,7 @@ ThMimengDialog::ThMimengDialog(const QString &object, bool left, bool right, boo
     : object_name(object), play_only(play_only),
       slash_combined(slash_combined), delayed_tricks(delayed_tricks)
 {
-    setObjectName(object);
+    setObjectName(object_name);
     setWindowTitle(Sanguosha->translate(object));
     group = new QButtonGroup(this);
 
