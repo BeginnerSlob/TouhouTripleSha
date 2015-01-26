@@ -1705,17 +1705,17 @@ public:
         if (!player->hasFlag("IkZhiyu1"))
             return false;
 
-        Slash *slash = Sanguosha->cloneCard("slash");
+        Slash *slash = new Slash(Card::NoSuit, 0);
         slash->deleteLater();
         if (slash->isAvailable(player))
             return true;
 
-        Peach *peach = Sanguosha->cloneCard("peach");
+        Peach *peach = new Peach(Card::NoSuit, 0);
         peach->deleteLater();
         if (peach->isAvailable(player))
             return true;
 
-        Analeptic *analeptic = Sanguosha->cloneCard("analeptic");
+        Analeptic *analeptic = new Analeptic(Card::NoSuit, 0);
         analeptic->deleteLater();
         if (analeptic->isAvailable(player))
             return true;
