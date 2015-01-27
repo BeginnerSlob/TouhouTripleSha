@@ -1805,7 +1805,7 @@ public:
             ServerPlayer *target = player->tag["ThShenyouTarget"].value<ServerPlayer *>();
             player->tag.remove("ThShenyouTarget");
             if (target) {
-                if (target->getHandcardNum() > player->getHandcardNum())
+                if (target->getHandcardNum() >= player->getHandcardNum())
                     player->drawCards(1, objectName());
                 int card_id = room->askForCardChosen(player, target, "hej", objectName());
                 room->obtainCard(player, card_id, false);
