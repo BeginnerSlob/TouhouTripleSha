@@ -2584,7 +2584,19 @@ public:
             data = QVariant::fromValue(data_move);
         } else {
             room->setPlayerFlag(ask_who, "-thlunyuDraw");
-            ask_who->drawCards(1, objectName());
+            QList<int> card_ids;
+            room->getThread()->trigger(FetchDrawPileCard, room, NULL);
+            QList<int> &draw = room->getDrawPile();
+            if (draw.isEmpty())
+                room->swapPile();
+            card_ids << draw.takeLast();
+            CardsMoveStruct move;
+            move.card_ids = card_ids;
+            move.from = NULL;
+            move.to = player;
+            move.to_place = Player::PlaceHand;
+            move.reason = CardMoveReason(CardMoveReason::S_REASON_DRAW, player->objectName(), objectName(), QString());
+            room->moveCardsAtomic(move, false);
         }
         return false;
     }
