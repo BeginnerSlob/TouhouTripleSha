@@ -2593,9 +2593,9 @@ public:
             CardsMoveStruct move;
             move.card_ids = card_ids;
             move.from = NULL;
-            move.to = player;
+            move.to = ask_who;
             move.to_place = Player::PlaceHand;
-            move.reason = CardMoveReason(CardMoveReason::S_REASON_DRAW, player->objectName(), objectName(), QString());
+            move.reason = CardMoveReason(CardMoveReason::S_REASON_DRAW, ask_who->objectName(), objectName(), QString());
             room->moveCardsAtomic(move, false);
         }
         return false;
