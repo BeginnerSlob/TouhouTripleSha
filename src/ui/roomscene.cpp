@@ -3889,7 +3889,7 @@ void RoomScene::doHuashen(const QString &, const QStringList &args) {
 }
 
 void RoomScene::showIndicator(const QString &from, const QString &to) {
-    if (Config.value("NoIndicator", false).toBool())
+    if (Config.value("NoIndicator", true).toBool())
         return;
 
     QGraphicsObject *obj1 = getAnimationObject(from);
