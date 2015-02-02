@@ -157,7 +157,7 @@ void ConfigDialog::saveConfig() {
     Config.setValue("UseFullSkin", ui->fullSkinCheckBox->isChecked());
     Config.setValue("NoIndicator", ui->noIndicatorCheckBox->isChecked());
     Config.setValue("NoEquipAnim", ui->noEquipAnimCheckBox->isChecked());
-    Config.setValue("NoEquipAnim", ui->noEffectsAnimCheckBox->isChecked());
+    Config.setValue("NoEffectsAnim", ui->noEffectsAnimCheckBox->isChecked());
 
     Config.NeverNullifyMyTrick = ui->neverNullifyMyTrickCheckBox->isChecked();
     Config.setValue("NeverNullifyMyTrick", Config.NeverNullifyMyTrick);
