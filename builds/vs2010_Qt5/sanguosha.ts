@@ -1283,107 +1283,113 @@
 <context>
     <name>Engine</name>
     <message>
-        <location filename="../../src/core/engine.cpp" line="96"/>
         <source>2 players</source>
-        <translation>2 人局</translation>
+        <translation type="vanished">2 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="98"/>
         <source>2 players (KOF style)</source>
-        <translation>2 人局 [KOF模式]</translation>
+        <translation type="vanished">2 人局 [KOF模式]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="99"/>
         <source>3 players</source>
-        <translation>3 人局</translation>
+        <translation type="vanished">3 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="100"/>
+        <location filename="../../src/core/engine.cpp" line="101"/>
         <source>4 players</source>
         <translation>4 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="101"/>
         <source>4 players (Hulao Pass)</source>
-        <translation>4 人局 [虎牢关1v3]</translation>
+        <translation type="vanished">4 人局 [虎牢关1v3]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="102"/>
+        <location filename="../../src/core/engine.cpp" line="103"/>
         <source>5 players</source>
         <translation>5 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="103"/>
+        <location filename="../../src/core/engine.cpp" line="104"/>
         <source>6 players</source>
         <translation>6 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="104"/>
         <source>6 players (2 renegades)</source>
-        <translation>6 人局 [双内奸]</translation>
+        <translation type="vanished">6 人局 [双内奸]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="105"/>
         <source>6 players (3v3)</source>
-        <translation>6 人局 [3v3]</translation>
+        <translation type="vanished">6 人局 [3v3]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="106"/>
         <source>6 players (XMode)</source>
-        <translation>6 人局 [血战到底]</translation>
+        <translation type="vanished">6 人局 [血战到底]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="107"/>
+        <location filename="../../src/core/engine.cpp" line="98"/>
+        <source>2 players [KOF style]</source>
+        <translation>2 人局 [擂台对决]</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/engine.cpp" line="100"/>
+        <source>3 players [Tripod]</source>
+        <translation>3 人局 [杀上保下]</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/engine.cpp" line="102"/>
+        <source>4 players [Hulao Pass]</source>
+        <translation>4 人局 [魔王试炼]</translation>
+    </message>
+    <message>
+        <location filename="../../src/core/engine.cpp" line="108"/>
         <source>7 players</source>
         <translation>7 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="108"/>
+        <location filename="../../src/core/engine.cpp" line="109"/>
         <source>8 players</source>
         <translation>8 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="109"/>
+        <location filename="../../src/core/engine.cpp" line="110"/>
         <source>8 players (2 renegades)</source>
         <translation>8 人局 [双内奸]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="110"/>
         <source>8 players (0 renegade)</source>
-        <translation>8 人局 [无内奸]</translation>
+        <translation type="vanished">8 人局 [无内奸]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="111"/>
+        <location filename="../../src/core/engine.cpp" line="112"/>
         <source>9 players</source>
         <translation>9 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="112"/>
+        <location filename="../../src/core/engine.cpp" line="113"/>
         <source>10 players</source>
         <translation>10 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="113"/>
+        <location filename="../../src/core/engine.cpp" line="114"/>
         <source>10 players (1 renegade)</source>
         <translation>10 人局 [单内奸]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="114"/>
         <source>10 players (0 renegade)</source>
-        <translation>10 人局 [无内奸]</translation>
+        <translation type="vanished">10 人局 [无内奸]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="163"/>
+        <location filename="../../src/core/engine.cpp" line="164"/>
         <source>The engine tries to add an invalid skill</source>
         <translation>程序试图添加不合法技能</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="167"/>
+        <location filename="../../src/core/engine.cpp" line="168"/>
         <source>Duplicated skill : %1</source>
         <translation>重复技能: %1</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="740"/>
+        <location filename="../../src/core/engine.cpp" line="741"/>
         <source>%1 [Scenario mode]</source>
         <translation>%1 【剧情模式】</translation>
     </message>
@@ -3227,17 +3233,17 @@ P = 你自己, R = 你所在的房间</translation>
 <context>
     <name>Select3v3GeneralDialog</name>
     <message>
-        <location filename="../../src/server/server.cpp" line="1009"/>
+        <location filename="../../src/server/server.cpp" line="1014"/>
         <source>Select generals in extend 3v3 mode</source>
         <translation>选择在扩展 3v3 模式中启用的人物</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="1015"/>
+        <location filename="../../src/server/server.cpp" line="1020"/>
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="1065"/>
+        <location filename="../../src/server/server.cpp" line="1070"/>
         <source>Check/Uncheck all</source>
         <translation>全部勾选或取消勾选</translation>
     </message>
@@ -3253,17 +3259,17 @@ P = 你自己, R = 你所在的房间</translation>
 <context>
     <name>Server</name>
     <message>
-        <location filename="../../src/server/server.cpp" line="1303"/>
+        <location filename="../../src/server/server.cpp" line="1297"/>
         <source>Forbid the connection of address %1</source>
         <translation>禁止了地址 %1 的连接</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="1318"/>
+        <location filename="../../src/server/server.cpp" line="1312"/>
         <source>%1 connected</source>
         <translation>%1 已连接</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="1334"/>
+        <location filename="../../src/server/server.cpp" line="1328"/>
         <source>Invalid signup string: %1</source>
         <translation>无效的登录字符串: %1</translation>
     </message>
@@ -3371,8 +3377,6 @@ P = 你自己, R = 你所在的房间</translation>
         <location filename="../../src/server/server.cpp" line="284"/>
         <location filename="../../src/server/server.cpp" line="314"/>
         <location filename="../../src/server/server.cpp" line="325"/>
-        <location filename="../../src/server/server.cpp" line="847"/>
-        <location filename="../../src/server/server.cpp" line="856"/>
         <source>Temp Disabled</source>
         <translation>暂时禁用</translation>
     </message>
@@ -3422,12 +3426,52 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>同势力最大亮将数</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="969"/>
+        <location filename="../../src/server/server.cpp" line="827"/>
+        <source>Role modes [Standard]</source>
+        <translation>身份模式 [经典]</translation>
+    </message>
+    <message>
+        <location filename="../../src/server/server.cpp" line="829"/>
+        <source>Role modes [Other]</source>
+        <translation>身份模式 [其他]</translation>
+    </message>
+    <message>
+        <location filename="../../src/server/server.cpp" line="831"/>
+        <source>Role modes [Special]</source>
+        <translation>身份模式 [特殊]</translation>
+    </message>
+    <message>
+        <location filename="../../src/server/server.cpp" line="834"/>
+        <source>Special modes</source>
+        <translation>特殊模式</translation>
+    </message>
+    <message>
+        <location filename="../../src/server/server.cpp" line="836"/>
+        <source>Basara modes</source>
+        <translation>暗将模式</translation>
+    </message>
+    <message>
+        <location filename="../../src/server/server.cpp" line="838"/>
+        <source>Story modes</source>
+        <translation>剧情模式</translation>
+    </message>
+    <message>
+        <location filename="../../src/server/server.cpp" line="840"/>
+        <source>Scenario modes</source>
+        <translation>场景模式</translation>
+    </message>
+    <message>
+        <location filename="../../src/server/server.cpp" line="842"/>
+        <source>Custom modes</source>
+        <translation>自定义模式</translation>
+    </message>
+    <message>
+        <location filename="../../src/server/server.cpp" line="974"/>
         <source>PC Console Start</source>
         <translation>单机启动</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="970"/>
+        <location filename="../../src/server/server.cpp" line="975"/>
         <source>Start Server</source>
         <translation>启动服务器</translation>
     </message>
@@ -3531,7 +3575,7 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>血战到底模式选项</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="871"/>
+        <location filename="../../src/server/server.cpp" line="882"/>
         <source>Scenario mode</source>
         <translation>剧情模式</translation>
     </message>
@@ -3643,12 +3687,12 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>经典</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="922"/>
+        <location filename="../../src/server/server.cpp" line="933"/>
         <source>Custom Mini Scene</source>
         <translation>自定义小型场景</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="897"/>
+        <location filename="../../src/server/server.cpp" line="908"/>
         <source>Mini Scenes</source>
         <translation>小型场景</translation>
     </message>
@@ -3663,8 +3707,8 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>游戏模式</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="884"/>
-        <location filename="../../src/server/server.cpp" line="910"/>
+        <location filename="../../src/server/server.cpp" line="895"/>
+        <location filename="../../src/server/server.cpp" line="921"/>
         <source>%1 (%2 persons)</source>
         <translation>%1 (%2 人)</translation>
     </message>
@@ -3694,7 +3738,7 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>启用 AI</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="971"/>
+        <location filename="../../src/server/server.cpp" line="976"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>

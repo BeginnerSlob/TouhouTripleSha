@@ -93,25 +93,26 @@ Engine::Engine()
     if (!DoLuaScript(lua, "lua/sanguosha.lua")) exit(1);
 
     // available game modes
-    modes["02p"] = tr("2 players");
+    //modes["02p"] = tr("2 players");
     //modes["02pbb"] = tr("2 players (using blance beam)");
-    modes["02_1v1"] = tr("2 players (KOF style)");
-    modes["03p"] = tr("3 players");
+    modes["02_1v1"] = tr("2 players [KOF style]");
+    //modes["03p"] = tr("3 players");
+    modes["03_1v1v1"] = tr("3 players [Tripod]");
     modes["04p"] = tr("4 players");
-    modes["04_1v3"] = tr("4 players (Hulao Pass)");
+    modes["04_1v3"] = tr("4 players [Hulao Pass]");
     modes["05p"] = tr("5 players");
     modes["06p"] = tr("6 players");
-    modes["06pd"] = tr("6 players (2 renegades)");
-    modes["06_3v3"] = tr("6 players (3v3)");
-    modes["06_XMode"] = tr("6 players (XMode)");
+    //modes["06pd"] = tr("6 players (2 renegades)");
+    //modes["06_3v3"] = tr("6 players (3v3)");
+    //modes["06_XMode"] = tr("6 players (XMode)");
     modes["07p"] = tr("7 players");
     modes["08p"] = tr("8 players");
     modes["08pd"] = tr("8 players (2 renegades)");
-    modes["08pz"] = tr("8 players (0 renegade)");
+    //modes["08pz"] = tr("8 players (0 renegade)");
     modes["09p"] = tr("9 players");
     modes["10pd"] = tr("10 players");
     modes["10p"] = tr("10 players (1 renegade)");
-    modes["10pz"] = tr("10 players (0 renegade)");
+    //modes["10pz"] = tr("10 players (0 renegade)");
 
     connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(deleteLater()));
 

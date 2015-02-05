@@ -824,7 +824,23 @@ QGroupBox *ServerDialog::createGameModeBox() {
     QGroupBox *mode_box = new QGroupBox(tr("Game mode"));
     mode_group = new QButtonGroup;
 
-    QObjectList item_list;
+    QGroupBox *roleModesStandard = new QGroupBox(tr("Role modes [Standard]"), mode_box);
+    QVBoxLayout *roleModesStandardLayout = new QVBoxLayout(mode_box);
+    QGroupBox *roleModesOther = new QGroupBox(tr("Role modes [Other]"), mode_box);
+    QVBoxLayout *roleModesOtherLayout = new QVBoxLayout(mode_box);
+    QGroupBox *roleModesSpecial = new QGroupBox(tr("Role modes [Special]"), mode_box);
+    QVBoxLayout *roleModesSpecialLayout = new QVBoxLayout(mode_box);
+
+    QGroupBox *specialModes = new QGroupBox(tr("Special modes"), mode_box);
+    QVBoxLayout *specialModesLayout = new QVBoxLayout(mode_box);
+    QGroupBox *basaraModes = new QGroupBox(tr("Basara modes"), mode_box);
+    QVBoxLayout *basaraModesLayout = new QVBoxLayout(mode_box);
+    QGroupBox *storyModes = new QGroupBox(tr("Story modes"), mode_box);
+    QVBoxLayout *storyModesLayout = new QVBoxLayout(mode_box);
+    QGroupBox *scenarioModes = new QGroupBox(tr("Scenario modes"), mode_box);
+    QVBoxLayout *scenarioModesLayout = new QVBoxLayout(mode_box);
+    QGroupBox *customModes = new QGroupBox(tr("Custom modes"), mode_box);
+    QVBoxLayout *customModesLayout = new QVBoxLayout(mode_box);
 
     // normal modes
     QMap<QString, QString> modes = Sanguosha->getAvailableModes();
@@ -832,38 +848,33 @@ QGroupBox *ServerDialog::createGameModeBox() {
     while (itor.hasNext()) {
         itor.next();
 
-        QRadioButton *button = new QRadioButton(itor.value());
-        button->setObjectName(itor.key());
-        mode_group->addButton(button);
-
-        if (itor.key() == "02_1v1") {
-            QGroupBox *box = create1v1Box();
-            connect(button, SIGNAL(toggled(bool)), box, SLOT(setEnabled(bool)));
-
-            item_list << button << box;
-        } else if (itor.key() == "06_3v3") {
-#ifdef QT_NO_DEBUG
-            button->setEnabled(false);
-            button->setToolTip(tr("Temp Disabled"));
-#endif
-            QGroupBox *box = create3v3Box();
-            connect(button, SIGNAL(toggled(bool)), box, SLOT(setEnabled(bool)));
-
-            item_list << button << box;
-        } else if (itor.key() == "06_XMode") {
-#ifdef QT_NO_DEBUG
-            button->setEnabled(false);
-            button->setToolTip(tr("Temp Disabled"));
-#endif
-            QGroupBox *box = createXModeBox();
-            connect(button, SIGNAL(toggled(bool)), box, SLOT(setEnabled(bool)));
-
-            item_list << button << box;
-        } else {
-            item_list << button;
+        QString key = itor.key();
+        QString value = itor.value();
+        QGroupBox *parent = NULL;
+        QVBoxLayout *layout = NULL;
+        if (key == "05p" || key == "06p" || key == "08p") {
+            parent = roleModesStandard;
+            layout = roleModesStandardLayout;
+        } else if (key == "04p" || key == "07p" || key == "09p" || key == "10pd") {
+            parent = roleModesOther;
+            layout = roleModesOtherLayout;
+        } else if (key == "08pd" || key == "10p") {
+            parent = roleModesSpecial;
+            layout = roleModesSpecialLayout;
+        } else if (key == "02_1v1" || key == "03_1v1v1" || key == "04_1v3") {
+            parent = specialModes;
+            layout = specialModesLayout;
         }
 
-        if (itor.key() == Config.GameMode)
+        if (parent == NULL)
+            continue;
+        QRadioButton *button = new QRadioButton(value, parent);
+        button->setObjectName(key);
+        mode_group->addButton(button);
+        layout->addWidget(button);
+        parent->setLayout(layout);
+
+        if (key == Config.GameMode)
             button->setChecked(true);
     }
 
@@ -926,32 +937,26 @@ QGroupBox *ServerDialog::createGameModeBox() {
                                       mode_group->checkedButton()->objectName() == "mini" :
                                       false);
 
-    item_list << HLay(scenario_button, scenario_ComboBox);
-    item_list << HLay(mini_scenes, mini_scene_ComboBox);
-    item_list << HLay(mini_scenes, mini_scene_button);
+    //item_list << HLay(scenario_button, scenario_ComboBox);
+    //item_list << HLay(mini_scenes, mini_scene_ComboBox);
+    //item_list << HLay(mini_scenes, mini_scene_button);
 
     // ============
 
     QVBoxLayout *left = new QVBoxLayout;
     QVBoxLayout *right = new QVBoxLayout;
+    
+    left->addWidget(roleModesStandard);
+    left->addWidget(roleModesOther);
+    left->addWidget(roleModesSpecial);
 
-    for (int i = 0; i < item_list.length(); i++) {
-        QObject *item = item_list.at(i);
+    left->addStretch();
 
-        QVBoxLayout *side = i <= item_list.length() / 2 - 4 ? left : right;
-
-        if (item->isWidgetType()) {
-            QWidget *widget = qobject_cast<QWidget *>(item);
-            side->addWidget(widget);
-        } else {
-            QLayout *item_layout = qobject_cast<QLayout *>(item);
-            side->addLayout(item_layout);
-        }
-        if (i == item_list.length() / 2 - 4)
-            side->addStretch();
-    }
-
-    right->addStretch();
+    right->addWidget(specialModes);
+    right->addWidget(basaraModes);
+    right->addWidget(storyModes);
+    right->addWidget(scenarioModes);
+    right->addWidget(customModes);
 
     QHBoxLayout *layout = new QHBoxLayout;
     layout->addLayout(left);
@@ -1212,21 +1217,10 @@ int ServerDialog::config() {
     Config.setValue("Address", Config.Address);
     Config.setValue("DisableLua", disable_lua_checkbox->isChecked());
 
-    Config.beginGroup("3v3");
-    Config.setValue("UsingExtension", !official_3v3_radiobutton->isChecked());
-    Config.setValue("RoleChoose", role_choose_ComboBox->itemData(role_choose_ComboBox->currentIndex()).toString());
-    Config.setValue("ExcludeDisaster", exclude_disaster_checkbox->isChecked());
-    Config.setValue("OfficialRule", official_3v3_ComboBox->itemData(official_3v3_ComboBox->currentIndex()).toString());
-    Config.endGroup();
-
     Config.beginGroup("1v1");
-    Config.setValue("Rule", official_1v1_ComboBox->itemData(official_1v1_ComboBox->currentIndex()).toString());
-    Config.setValue("UsingExtension", kof_using_extension_checkbox->isChecked());
-    Config.setValue("UsingCardExtension", kof_card_extension_checkbox->isChecked());
-    Config.endGroup();
-
-    Config.beginGroup("XMode");
-    Config.setValue("RoleChooseX", role_choose_xmode_ComboBox->itemData(role_choose_xmode_ComboBox->currentIndex()).toString());
+    Config.setValue("Rule", "Classical");
+    Config.setValue("UsingExtension", true);
+    Config.setValue("UsingCardExtension", true);
     Config.endGroup();
 
     QSet<QString> ban_packages;
