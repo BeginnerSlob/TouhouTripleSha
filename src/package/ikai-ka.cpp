@@ -797,7 +797,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == EventPhaseChanging)
-            player->setMark(objectName(), 0);
+            player->tag.remove("IkQizhongCard");
         else if (triggerEvent == PreCardUsed) {
             const Card *this_card = data.value<CardUseStruct>().card;
             if (this_card && this_card->getTypeId() != Card::TypeSkill) {
