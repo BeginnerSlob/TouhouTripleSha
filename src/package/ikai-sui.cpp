@@ -2349,7 +2349,7 @@ public:
             invoke = true;
         if (from->hasFlag("ikrongxin_" + to->objectName()))
             invoke = true;
-        if (from->hasSkill("ikqingmu") && to->getMark("@qinghuo") > 0)
+        if (from->hasSkill("ikjimu") && to->getMark("@qinghuo") > 0)
             invoke = true;
         if ((from->hasSkill("thqimen") && to->isChained())
             || (to->hasSkill("thqimen") && from->isChained())) {
