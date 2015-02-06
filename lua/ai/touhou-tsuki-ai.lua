@@ -57,7 +57,7 @@ end
 --【授业】ai
 sgs.ai_skill_playerchosen.thshouye = function(self, targets)
 	if self:isWeak(self.player) and not self:willSkipPlayPhase() then return nil end
-	local target =self:touhouFindPlayerToDraw(false, 2)--it could be 3 (for instance:yingzi)
+	local target =self:findPlayerToDraw(false, 2)--it could be 3 (for instance:yingzi)
 	if target then return target end
 	return nil
 end

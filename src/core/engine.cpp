@@ -49,9 +49,9 @@ void Engine::_loadMiniScenarios() {
 }
 
 void Engine::_loadModScenarios() {
-    addScenario(new GuanduScenario());
+    //addScenario(new GuanduScenario());
     addScenario(new CoupleScenario());
-    addScenario(new FanchengScenario());
+    //addScenario(new FanchengScenario());
 }
 
 void Engine::addPackage(const QString &name) {

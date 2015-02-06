@@ -2738,7 +2738,7 @@ local function getPriorFriendsOfLiyu(self, lvbu)
 			local lord = self.room:getLord()
 			if lord then prior_friends = { lord } end
 		elseif self.room:getMode() == "couple" then
-			local diaochan = self.room:getPlayer("diaochan")
+			local diaochan = self.room:findPlayer("diaochan")
 			if diaochan then prior_friends = { diaochan } end
 		end
 	elseif self.room:getMode() == "06_3v3" then
