@@ -73,9 +73,6 @@ function sgs.ai_cardsview_valuable.thxushi(self, class_name, player)
 	end
 end
 
-
-
-
 --【凤翔】ai
 sgs.ai_skill_invoke.thfengxiang = true
 --【浴火】ai

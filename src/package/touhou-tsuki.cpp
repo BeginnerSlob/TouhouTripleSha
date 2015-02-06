@@ -567,7 +567,7 @@ const Card *ThXushiCard::validate(CardUseStruct &cardUse) const{
     CardMoveReason reason(CardMoveReason::S_REASON_TURNOVER, user->objectName(), "thxushi", QString());
     const Card *card = Sanguosha->getCard(room->drawCard());
     room->moveCardTo(card, NULL, Player::PlaceTable, reason, true);
-    if (card->isKindOf("Slash") || card->isKindOf("Jink"))
+    if (card->getTypeId() == TypeBasic)
         user->obtainCard(card);
     else {
         CardMoveReason reason2(CardMoveReason::S_REASON_NATURAL_ENTER, user->objectName(), "thxushi", QString());
@@ -625,7 +625,7 @@ public:
         CardMoveReason reason(CardMoveReason::S_REASON_TURNOVER, player->objectName(), objectName(), QString());
         const Card *card = Sanguosha->getCard(room->drawCard());
         room->moveCardTo(card, NULL, Player::PlaceTable, reason, true);
-        if (card->isKindOf("Slash") || card->isKindOf("Jink"))
+        if (card->getTypeId() == Card::TypeBasic)
             player->obtainCard(card);
         else {
             CardMoveReason reason2(CardMoveReason::S_REASON_NATURAL_ENTER, player->objectName(), objectName(), QString());
