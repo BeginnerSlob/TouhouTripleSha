@@ -274,7 +274,7 @@ public:
                 reds << id;
             else if (Sanguosha->getCard(id)->isBlack())
                 blacks << id;
-        QString pattern = ".";
+        QString pattern = "..";
         if (reds.isEmpty())
             pattern = ".|black";
         else if (blacks.isEmpty())
