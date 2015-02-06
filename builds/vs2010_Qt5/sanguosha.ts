@@ -3233,17 +3233,17 @@ P = 你自己, R = 你所在的房间</translation>
 <context>
     <name>Select3v3GeneralDialog</name>
     <message>
-        <location filename="../../src/server/server.cpp" line="1014"/>
+        <location filename="../../src/server/server.cpp" line="1005"/>
         <source>Select generals in extend 3v3 mode</source>
         <translation>选择在扩展 3v3 模式中启用的人物</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="1020"/>
+        <location filename="../../src/server/server.cpp" line="1011"/>
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="1070"/>
+        <location filename="../../src/server/server.cpp" line="1061"/>
         <source>Check/Uncheck all</source>
         <translation>全部勾选或取消勾选</translation>
     </message>
@@ -3259,17 +3259,17 @@ P = 你自己, R = 你所在的房间</translation>
 <context>
     <name>Server</name>
     <message>
-        <location filename="../../src/server/server.cpp" line="1297"/>
+        <location filename="../../src/server/server.cpp" line="1288"/>
         <source>Forbid the connection of address %1</source>
         <translation>禁止了地址 %1 的连接</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="1312"/>
+        <location filename="../../src/server/server.cpp" line="1303"/>
         <source>%1 connected</source>
         <translation>%1 已连接</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="1328"/>
+        <location filename="../../src/server/server.cpp" line="1319"/>
         <source>Invalid signup string: %1</source>
         <translation>无效的登录字符串: %1</translation>
     </message>
@@ -3466,12 +3466,12 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>自定义模式</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="974"/>
+        <location filename="../../src/server/server.cpp" line="965"/>
         <source>PC Console Start</source>
         <translation>单机启动</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="975"/>
+        <location filename="../../src/server/server.cpp" line="966"/>
         <source>Start Server</source>
         <translation>启动服务器</translation>
     </message>
@@ -3575,9 +3575,8 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>血战到底模式选项</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="882"/>
         <source>Scenario mode</source>
-        <translation>剧情模式</translation>
+        <translation type="vanished">剧情模式</translation>
     </message>
     <message>
         <location filename="../../src/server/server.cpp" line="43"/>
@@ -3687,12 +3686,12 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>经典</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="933"/>
+        <location filename="../../src/server/server.cpp" line="924"/>
         <source>Custom Mini Scene</source>
         <translation>自定义小型场景</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="908"/>
+        <location filename="../../src/server/server.cpp" line="899"/>
         <source>Mini Scenes</source>
         <translation>小型场景</translation>
     </message>
@@ -3707,8 +3706,8 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>游戏模式</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="895"/>
-        <location filename="../../src/server/server.cpp" line="921"/>
+        <location filename="../../src/server/server.cpp" line="887"/>
+        <location filename="../../src/server/server.cpp" line="912"/>
         <source>%1 (%2 persons)</source>
         <translation>%1 (%2 人)</translation>
     </message>
@@ -3738,7 +3737,7 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>启用 AI</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="976"/>
+        <location filename="../../src/server/server.cpp" line="967"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>

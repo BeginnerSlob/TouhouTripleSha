@@ -1,0 +1,32 @@
+-- translation for HuLao Pass
+return {
+	["Hulaopass"] = "魔王试炼",
+	["HulaoPass"] = "魔王试炼",
+
+	["#shenlvbu1"] = "最强神话",
+	["shenlvbu1"] = "吕布-虎牢关",
+	["&shenlvbu1"] = "最强神话",
+	["illustrator:shenlvbu1"] = "LiuHeng",
+	["#shenlvbu2"] = "暴怒的战神",
+	["shenlvbu2"] = "吕布-虎牢关",
+	["&shenlvbu2"] = "暴怒战神",
+	["illustrator:shenlvbu2"] = "LiuHeng",
+	["xiuluo"] = "修罗",
+	[":xiuluo"] = "准备阶段开始时，你可以弃置一张与判定区内延时锦囊牌花色相同的手牌：若如此做，你弃置该延时锦囊牌。",
+	["@xiuluo"] = "请弃置一张与判定区某一张牌花色相同的手牌",
+	["shenwei"] = "神威",
+	[":shenwei"] = "锁定技。摸牌阶段，你额外摸两张牌。你的手牌上限+2。",
+	["shenji"] = "神戟",
+	[":shenji"] = "锁定技。若你的装备区没有武器牌，你使用【杀】可以额外选择至多两名目标。",
+
+	["#HulaoTransfigure"] = "%arg 变身为 %arg2, 第二阶段开始！",
+	["#Reforming"] = "%from 进入重整状态",
+	["#ReformingRecover"] = "%from 在重整状态中回复了 %arg 点体力",
+	["#ReformingDraw"] = "%from 在重整状态中摸了 %arg 张牌",
+	["#ReformingRevive"] = "%from 从重整状态中复活！",
+	["draw_1v3"] = "重整摸牌",
+	["weapon_recast"] = "武器重铸",
+	["Hulaopass:recover"] = "回复1点体力",
+	["Hulaopass:draw"] = "摸一张牌",
+	["$StageChange"] = "image=image/animate/StageChange.png",
+}

@@ -879,29 +879,20 @@ QGroupBox *ServerDialog::createGameModeBox() {
     }
 
     // add scenario modes
-    QRadioButton *scenario_button = new QRadioButton(tr("Scenario mode"));
-    scenario_button->setObjectName("scenario");
-#ifdef QT_NO_DEBUG
-    scenario_button->setEnabled(false);
-#endif
-    mode_group->addButton(scenario_button);
-
-    scenario_ComboBox = new QComboBox;
     QStringList names = Sanguosha->getModScenarioNames();
     foreach (QString name, names) {
         QString scenario_name = Sanguosha->translate(name);
         const Scenario *scenario = Sanguosha->getScenario(name);
         int count = scenario->getPlayerCount();
         QString text = tr("%1 (%2 persons)").arg(scenario_name).arg(count);
-        scenario_ComboBox->addItem(text, name);
-    }
+        QRadioButton *button = new QRadioButton(text, scenarioModes);
+        button->setObjectName(name);
+        mode_group->addButton(button);
+        scenarioModesLayout->addWidget(button);
+        scenarioModes->setLayout(scenarioModesLayout);
 
-    if (mode_group->checkedButton() == NULL) {
-        int index = names.indexOf(Config.GameMode);
-        if (index != -1) {
-            scenario_button->setChecked(true);
-            scenario_ComboBox->setCurrentIndex(index);
-        }
+        if (name == Config.GameMode)
+            button->setChecked(true);
     }
 
     //mini scenes
