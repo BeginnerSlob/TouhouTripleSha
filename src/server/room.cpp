@@ -2395,13 +2395,18 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign) {
     }
 
     QList<int> max_choice;
-    foreach (ServerPlayer *p, to_assign) {
-        if (p->getRole() == "loyalist")
-            max_choice << 10;
-        if (p->getRole() == "rebel")
-            max_choice << 6;
-        if (p->getRole() == "renegade")
-            max_choice << 12;
+    if (getMode() == "03_1v1v1") {
+        for (int i = 0; i < to_assign.length(); ++i)
+            max_choice << 9;
+    } else {
+        foreach (ServerPlayer *p, to_assign) {
+            if (p->getRole() == "loyalist")
+                max_choice << 10;
+            if (p->getRole() == "rebel")
+                max_choice << 6;
+            if (p->getRole() == "renegade")
+                max_choice << 12;
+        }
     }
     int total = Sanguosha->getGeneralCount();
     int max_available = (total - existed.size()) / to_assign.length();
@@ -2439,57 +2444,24 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign) {
 void Room::chooseGenerals(QList<ServerPlayer *> players) {
     if (players.isEmpty()) players = m_players;
     // for lord.
-    /*
-    int lord_num = Config.value("LordMaxChoice", 5).toInt();
-    int nonlord_num = Config.value("NonLordMaxChoice", 4).toInt();
-    if (lord_num == 0 && nonlord_num == 0)
-        nonlord_num = 1;
-    int nonlord_prob = (lord_num == -1) ? 5 : 55 - qMin(lord_num, 10);
-    ServerPlayer *the_lord = getLord();
-    if (!Config.EnableHegemony && the_lord && players.contains(the_lord)) {
-        QStringList lord_list;
-        ServerPlayer *the_lord = getLord();
-        if (Config.EnableSame)
-            lord_list = Sanguosha->getRandomGenerals(Config.value("MaxChoice", 7).toInt());
-        else if (the_lord->getState() == "robot")
-            if (((qrand() % 100 < nonlord_prob || lord_num == 0) && nonlord_num > 0)
-                || Sanguosha->getLords().length() == 0)
-                lord_list = Sanguosha->getRandomGenerals(1);
+    ServerPlayer *the_lord = NULL;
+    if (getMode() != "03_1v1v1") {
+        int nonlord_prob = 49;
+        the_lord = getLord();
+        if (the_lord && players.contains(the_lord)) {
+            QStringList lord_list;
+            if (the_lord->getState() == "robot")
+                if (qrand() % 100 < nonlord_prob || Sanguosha->getLords().length() == 0)
+                    lord_list = Sanguosha->getRandomGenerals(1);
+                else
+                    lord_list = Sanguosha->getLords();
             else
-                lord_list = Sanguosha->getLords();
-        else
-            lord_list = Sanguosha->getRandomLords();
-        QString general = askForGeneral(the_lord, lord_list);
-        the_lord->setGeneralName(general);
-        if (!Config.EnableBasara)
+                lord_list = Sanguosha->getRandomLords();
+            QString general = askForGeneral(the_lord, lord_list);
+            the_lord->setGeneralName(general);
+
             broadcastProperty(the_lord, "general", general);
-
-        if (Config.EnableSame) {
-            foreach (ServerPlayer *p, players) {
-                if (!p->isLord())
-                    p->setGeneralName(general);
-            }
-
-            Config.Enable2ndGeneral = false;
-            return;
         }
-    }
-    */
-    int nonlord_prob = 49;
-    ServerPlayer *the_lord = getLord();
-    if (the_lord && players.contains(the_lord)) {
-        QStringList lord_list;
-        if (the_lord->getState() == "robot")
-            if (qrand() % 100 < nonlord_prob || Sanguosha->getLords().length() == 0)
-                lord_list = Sanguosha->getRandomGenerals(1);
-            else
-                lord_list = Sanguosha->getLords();
-        else
-            lord_list = Sanguosha->getRandomLords();
-        QString general = askForGeneral(the_lord, lord_list);
-        the_lord->setGeneralName(general);
-
-        broadcastProperty(the_lord, "general", general);
     }
     QList<ServerPlayer *> to_assign = players;
     if (the_lord)

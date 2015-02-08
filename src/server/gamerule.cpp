@@ -792,8 +792,10 @@ void GameRule::rewardAndPunish(ServerPlayer *killer, ServerPlayer *victim) const
 QString GameRule::getWinner(ServerPlayer *victim) const{
     Room *room = victim->getRoom();
     QString winner;
-
-    if (room->getMode() == "06_3v3") {
+    
+    if (room->getMode() == "03_1v1v1")
+        winner = victim->getNextAlive()->objectName();
+    else if (room->getMode() == "06_3v3") {
         switch (victim->getRoleEnum()) {
         case Player::Lord: winner = "renegade+rebel"; break;
         case Player::Renegade: winner = "lord+loyalist"; break;
