@@ -77,9 +77,6 @@ void RoomThread1v1::run() {
 
     int index = qrand() % 2;
     ServerPlayer *first = room->getPlayers().at(index), *next = room->getPlayers().at(1 - index);
-    QString order = room->askForOrder(first, "warm");
-    if (order == "cool")
-        qSwap(first, next);
     first->setRole("lord");
     next->setRole("renegade");
 
