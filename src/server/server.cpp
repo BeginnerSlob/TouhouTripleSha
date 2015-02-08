@@ -841,6 +841,10 @@ QGroupBox *ServerDialog::createGameModeBox() {
     QVBoxLayout *scenarioModesLayout = new QVBoxLayout(mode_box);
     QGroupBox *customModes = new QGroupBox(tr("Custom modes"), mode_box);
     QVBoxLayout *customModesLayout = new QVBoxLayout(mode_box);
+    
+    Q_UNUSED(basaraModesLayout);
+    Q_UNUSED(storyModesLayout);
+    Q_UNUSED(customModesLayout);
 
     // normal modes
     QMap<QString, QString> modes = Sanguosha->getAvailableModes();

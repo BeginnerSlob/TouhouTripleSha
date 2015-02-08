@@ -454,8 +454,10 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
                 foreach (ServerPlayer *p, room->getAllPlayers()) {
                     if (p->hasFlag("Global_DebutFlag")) {
                         p->setFlags("-Global_DebutFlag");
-                        if (room->getMode() == "02_1v1")
+                        if (room->getMode() == "02_1v1") {
                             room->getThread()->trigger(Debut, room, p);
+                            room->getThread()->trigger(GameStart, room, p);
+                        }
                     }
                 }
             }
@@ -578,9 +580,10 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
                 }
 
                 changeGeneral1v1(player);
-                if (death.damage == NULL)
+                if (death.damage == NULL) {
                     room->getThread()->trigger(Debut, room, player);
-                else
+                    room->getThread()->trigger(GameStart, room, player);
+                } else
                     player->setFlags("Global_DebutFlag");
                 return false;
             } else if (room->getMode() == "06_XMode") {
@@ -771,7 +774,9 @@ void GameRule::rewardAndPunish(ServerPlayer *killer, ServerPlayer *victim) const
     if (killer->isDead() || killer->getRoom()->getMode() == "06_XMode")
         return;
 
-    if (killer->getRoom()->getMode() == "06_3v3") {
+    if (killer->getRoom()->getMode() == "02_1v1") {
+        killer->drawCards(1, "kill");
+    } else if (killer->getRoom()->getMode() == "06_3v3") {
         if (Config.value("3v3/OfficialRule", "2013").toString().startsWith("201"))
             killer->drawCards(2, "kill");
         else
