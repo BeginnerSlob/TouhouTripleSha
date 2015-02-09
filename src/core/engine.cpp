@@ -1162,7 +1162,7 @@ int Engine::correctCardTarget(const TargetModSkill::ModType type, const Player *
 }
 
 bool Engine::correctSkillValidity(const Player *player, const Skill *skill) const{
-    if (player->hasSkill("thyanmeng"))
+    if (player->hasSkill("thyanmeng") || player->hasSkill("thxuanyan"))
         return true;
     foreach (const InvaliditySkill *is, invalidity_skills) {
         if (!is->isSkillValid(player, skill))

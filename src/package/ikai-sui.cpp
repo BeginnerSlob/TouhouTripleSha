@@ -4676,7 +4676,7 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))
             && !damage.chain && !damage.transfer && damage.by_user) {
-            if (!damage.to->hasSkill("thyanmeng")) {
+            if (!damage.to->hasSkill("thyanmeng") && !damage.to->hasSkill("thxuanyan")) {
                 foreach (const Skill *skill, damage.to->getVisibleSkillList()) {
                     if (!skill->isAttachedLordSkill())
                         return QStringList(objectName());
@@ -4700,7 +4700,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         DamageStruct damage = data.value<DamageStruct>();
         QStringList choices;
-        if (!damage.to->hasSkill("thyanmeng")) {
+        if (!damage.to->hasSkill("thyanmeng") && !damage.from->hasSkill("thxuanyan")) {
             foreach (const Skill *skill, damage.to->getVisibleSkillList()) {
                 if (!skill->isAttachedLordSkill()) {
                     choices << "null";

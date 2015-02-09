@@ -4635,7 +4635,7 @@ public:
         if (death.who != player)
             return false;
 
-        if (death.damage && death.damage->from && !death.damage->from->hasSkill("thyanmeng")) {
+        if (death.damage && death.damage->from && !(death.damage->from->hasSkill("thyanmeng") || death.damage->from->hasSkill("thxuanyan"))) {
             LogMessage log;
             log.type = "#IkQihuangLoseSkills";
             log.from = player;
