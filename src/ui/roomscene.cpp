@@ -3251,7 +3251,7 @@ void RoomScene::fillTable(QTableWidget *table, const QList<const ClientPlayer *>
             } else if (ServerInfo.GameMode == "04_1v3") {
                 int seat = player->getSeat();
                 switch (seat) {
-                case 1: role = "lvbu"; break;
+                case 1: role = "hulaoboss"; break;
                 case 2: role = "vanguard"; break;
                 case 3: role = "mainstay"; break;
                 case 4: role = "general"; break;
@@ -3796,7 +3796,7 @@ void RoomScene::doLightboxAnimation(const QString &, const QStringList &args) {
     QRect rect = main_window->rect();
     QGraphicsRectItem *lightbox = addRect(rect);
 
-    if (word.contains("effects/wake"))
+    if (!Config.value("NoEffectsAnim", false).toBool() && word.contains("effects/wake"))
         lightbox->setBrush(QColor(32, 32, 32, 204));
     lightbox->setZValue(20001.0);
 

@@ -5,7 +5,7 @@ return {
 	
 	["#kishin001"] = "逆袭的天邪鬼",
 	["kishin001"] = "鬼人正邪",--风 - 空 - 4血
-	["designer:kishin001"] = "幻桜落 | Codeby:Slob",
+	["designer:kishin001"] = "幻桜落",
 	["illustrator:kishin001"] = "正体不明",
 	["cv:kishin001"] = "向晚",
 	["~kishin001"] = "善哉善哉...无上甚深圆满正等觉...",
@@ -18,7 +18,7 @@ return {
 	
 	["#kishin002"] = "柳下的辘轳首",
 	["kishin002"] = "赤蛮奇",--花 - 空 - 4血
-	["designer:kishin002"] = "幻桜落 | Codeby:Slob",
+	["designer:kishin002"] = "幻桜落",
 	["illustrator:kishin002"] = "正体不明",
 	["cv:kishin002"] = "暂无",
 	["thfeiman"] = "飞蛮",
@@ -31,7 +31,7 @@ return {
 	
 	["#kishin003"] = "秘境的人鱼",
 	["kishin003"] = "若鹭姬",--雪 - 空 - 2血
-	["designer:kishin003"] = "幻桜落 | Codeby:Slob",
+	["designer:kishin003"] = "幻桜落",
 	["illustrator:kishin003"] = "正体不明",
 	["cv:kishin003"] = "暂无",
 	["thjingtao"] = "惊涛",
@@ -43,7 +43,7 @@ return {
 	
 	["#kishin004"] = "幻想琉璃双镜",
 	["kishin004"] = "九十九弁弁＆九十九八桥",--月 - 空 - 4血
-	["designer:kishin004"] = "幻桜落 | Codeby:Slob",
+	["designer:kishin004"] = "幻桜落",
 	["illustrator:kishin004"] = "正体不明",
 	["cv:kishin004"] = "暂无",
 	["thlanzou"] = "岚奏",
@@ -53,7 +53,7 @@ return {
 	
 	["#kishin005"] = "丧心的假面",
 	["kishin005"] = "秦心",--风 - 幻 - 3血
-	["designer:kishin005"] = "幻桜落 | Codeby:Slob",
+	["designer:kishin005"] = "幻桜落",
 	["illustrator:kishin005"] = "正体不明",
 	["cv:kishin005"] = "暂无",
 	["thxinqi"] = "心绮",
@@ -67,7 +67,7 @@ return {
 	
 	["#kishin006"] = "小人的末裔",
 	["kishin006"] = "少名针妙丸",--花 - 空 - 3血
-	["designer:kishin006"] = "幻桜落 | Codeby:Slob",
+	["designer:kishin006"] = "幻桜落",
 	["illustrator:kishin006"] = "正体不明",
 	["cv:kishin006"] = "暂无",
 	["thbaochui"] = "宝锤",
@@ -80,7 +80,7 @@ return {
 	
 	["#kishin007"] = "幻梦的演奏家",
 	["kishin007"] = "堀川雷鼓",--雪 - 空 - 4血
-	["designer:kishin007"] = "幻桜落 | Codeby:Slob",
+	["designer:kishin007"] = "幻桜落",
 	["illustrator:kishin007"] = "正体不明",
 	["cv:kishin007"] = "暂无",
 	["thmoju"] = "魔具",
@@ -88,7 +88,7 @@ return {
 	
 	["#kishin008"] = "月下的独狼",
 	["kishin008"] = "今泉影狼",--月 - 空 - 4血
-	["designer:kishin008"] = "幻桜落 | Codeby:Slob",
+	["designer:kishin008"] = "幻桜落",
 	["illustrator:kishin008"] = "正体不明",
 	["cv:kishin008"] = "暂无",
 	["thlianying"] = "莲影",

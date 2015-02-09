@@ -5,7 +5,7 @@ return {
 
 	["#hana001"]="四时的花之主",
 	["hana001"]="风见幽香",--花 - 空 - 4血
-	["designer:hana001"]="幻桜落 | Codeby:Slob",
+	["designer:hana001"]="幻桜落",
 	["illustrator:hana001"]="正体不明",
 	["cv:hana001"]="暂无",
 	["thhuaji"]="花祭",
@@ -17,7 +17,7 @@ return {
 	
 	["#hana002"]="普通的魔法使",
 	["hana002"]="雾雨魔理沙",--花 - 空 - 4血
-	["designer:hana002"]="幻桜落 | Codeby:Slob",
+	["designer:hana002"]="幻桜落",
 	["illustrator:hana002"]="正体不明",
 	["cv:hana002"]="暂无",
 	["thjiewu"]="借物",
@@ -34,7 +34,7 @@ return {
 	
 	["#hana003"]="三途川的引路人",
 	["hana003"]="小野塚小町",--花  - 幻 - 3血
-	["designer:hana003"]="幻桜落 | Codeby:Slob",
+	["designer:hana003"]="幻桜落",
 	["illustrator:hana003"]="ideolo",
 	["cv:hana003"]="飞鸟",
 	["~hana003"]="死神，亦有归去之时...",
@@ -58,7 +58,7 @@ return {
 	["#hana004"]="小小甘蜜毒药",
 	["hana004"]="梅蒂欣•梅兰可莉",--花 - 空 - 3血
 	["&hana004"]="梅蒂欣",
-	["designer:hana004"]="幻桜落 | Codeby:Slob",
+	["designer:hana004"]="幻桜落",
 	["illustrator:hana004"]="正体不明",
 	["cv:hana004"]="暂无",
 	["thxuelan"]="血兰",
@@ -72,7 +72,7 @@ return {
 	
 	["#hana005"]="暗海的绯之衣",
 	["hana005"]="永江衣玖",--花 - 空 - 4血
-	["designer:hana005"]="幻桜落 | Codeby:Slob",
+	["designer:hana005"]="幻桜落",
 	["illustrator:hana005"]="正体不明",
 	["cv:hana005"]="暂无",
 	["thtingwu"]="霆舞",
@@ -82,7 +82,7 @@ return {
 	
 	["#hana006"]="佐渡的狸妖",
 	["hana006"]="二岩猯藏",--花 - 空 - 4血
-	["designer:hana006"]="昂翼天使 | Codeby:Slob",
+	["designer:hana006"]="昂翼天使",
 	["illustrator:hana006"]="八重樫 南",
 	["cv:hana006"]="暂无",
 	["thxihua"]="戏画",
@@ -111,7 +111,7 @@ return {
 	
 	["#hana008"]="独臂有角的仙人",
 	["hana008"]="茨木华扇",--花 - 空 - 3血
-	["designer:hana008"]="jachsu | Codeby:Slob",
+	["designer:hana008"]="jachsu",
 	["illustrator:hana008"]="米白",
 	["cv:hana008"]="暂无",
 	["thquanshan"]="劝善",
@@ -125,7 +125,7 @@ return {
 	
 	["#hana009"]="地狱的裁判长",
 	["hana009"]="四季映姬",--花 - 空 - 4血
-	["designer:hana009"]="幻桜落 | Codeby:Slob",
+	["designer:hana009"]="幻桜落",
 	["illustrator:hana009"]="正体不明",
 	["cv:hana009"]="暂无",
 	["thduanzui"]="断罪",
@@ -134,7 +134,7 @@ return {
 	["#hana010"]="地上的彗星",
 	["hana010"]="莉格露•奈特巴格",--花 - 空 - 4血
 	["&hana010"]="莉格露",
-	["designer:hana010"]="幻桜落 | Codeby:Slob",
+	["designer:hana010"]="幻桜落",
 	["illustrator:hana010"]="正体不明",
 	["cv:hana010"]="暂无",
 	["thyingdeng"]="萤灯",
@@ -148,7 +148,7 @@ return {
 	["#hana011"]="浅春的妖精",
 	["hana011"]="莉莉•白",--花 - 空 - 3血
 	["&hana011"]="莉莉",
-	["designer:hana011"]="妒天のPAD | Codeby:Slob",
+	["designer:hana011"]="妒天のPAD",
 	["illustrator:hana011"]="sola7764",
 	["cv:hana011"]="暂无",
 	["thyachui"]="芽吹",
@@ -160,7 +160,7 @@ return {
 	
 	["#hana012"]="欢愉的遗忘之伞",
 	["hana012"]="多多良小伞",--花 - 空 - 4血
-	["designer:hana012"]="幻桜落 | Codeby:Slob",
+	["designer:hana012"]="幻桜落",
 	["illustrator:hana012"]="正体不明",
 	["cv:hana012"]="暂无",
 	["thguaitan"]="怪谈",
@@ -175,7 +175,7 @@ return {
 	
 	["#hana013"]="忠实的死体",
 	["hana013"]="宫古芳香",--花 - 空 - 3血
-	["designer:hana013"]="幻桜落 | Codeby:Slob",
+	["designer:hana013"]="幻桜落",
 	["illustrator:hana013"]="KS",
 	["cv:hana013"]="暂无",
 	["thhouzhi"]="后知",
@@ -189,7 +189,7 @@ return {
 	
 	["#hana014"]="无理非道的仙人",
 	["hana014"]="霍青娥",--花 - 幻 - 4血
-	["designer:hana014"]="幻桜落 | Codeby:Slob",
+	["designer:hana014"]="幻桜落",
 	["illustrator:hana014"]="KS",
 	["cv:hana014"]="暂无",
 	["thxianfa"]="仙法",
@@ -203,7 +203,7 @@ return {
 	
 	["#hana015"]="神明末裔的亡灵",
 	["hana015"]="苏我屠自古",--花 - 空 - 3血
-	["designer:hana015"]="幻桜落 | Codeby:Slob",
+	["designer:hana015"]="幻桜落",
 	["illustrator:hana015"]="正体不明",
 	["cv:hana015"]="暂无",
 	["thleishi"]="雷矢",
@@ -215,7 +215,7 @@ return {
 	
 	["#hana016"]="阴阳圣童女",
 	["hana016"]="物部布都",--花 - 空 - 3血
-	["designer:hana016"]="幻桜落 | Codeby:Slob",
+	["designer:hana016"]="幻桜落",
 	["illustrator:hana016"]="ファルまろ",
 	["cv:hana016"]="暂无",
 	["thshijie"]="尸解",
@@ -228,7 +228,7 @@ return {
 	
 	["#hana017"]="圣德道士",
 	["hana017"]="丰聪耳神子",--花 - 空 - 7血
-	["designer:hana017"]="幻桜落 | Codeby:Slob",
+	["designer:hana017"]="幻桜落",
 	["illustrator:hana017"]="いちやん",
 	["cv:hana017"]="凉子",
 	["~hana017"]="该来的，还是躲不...过...",
@@ -250,7 +250,7 @@ return {
 	
 	["#hana018"]="非想非非想之女",
 	["hana018"]="比那名居天子",--花 - 空 - 4血
-	["designer:hana018"]="晓ャ绝对 | Codeby:Slob",
+	["designer:hana018"]="晓ャ绝对",
 	["illustrator:hana018"]="田中にゃん",
 	["cv:hana018"]="暂无",
 	--["~hana018"]="铭志，天地...不仁...",

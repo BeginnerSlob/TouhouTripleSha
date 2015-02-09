@@ -409,7 +409,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
 
             if (damage.nature != DamageStruct::Normal && player->isChained() && !damage.chain) {
                 int n = room->getTag("is_chained").toInt();
-                n++;
+                ++n;
                 room->setTag("is_chained", n);
             }
 
@@ -425,7 +425,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
                 if (damage.nature != DamageStruct::Normal && !damage.chain) {
                     // iron chain effect
                     int n = room->getTag("is_chained").toInt();
-                    n--;
+                    --n;
                     room->setTag("is_chained", n);
                     QList<ServerPlayer *> chained_players;
                     if (room->getCurrent()->isDead())
@@ -896,18 +896,18 @@ bool HulaoPassMode::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer 
     case StageChange: {
             ServerPlayer *lord = room->getLord();
             room->setPlayerMark(lord, "secondMode", 1);
-            room->changeHero(lord, "shenlvbu2", true, true, false, false);
+            room->changeHero(lord, "story003", false, true, false, false);
 
             LogMessage log;
             log.type = "$AppendSeparator";
             room->sendLog(log);
 
             log.type = "#HulaoTransfigure";
-            log.arg = "#shenlvbu1";
-            log.arg2 = "#shenlvbu2";
+            log.arg = "#story002";
+            log.arg2 = "#story003";
             room->sendLog(log);
 
-            room->doLightbox("$StageChange", 5000);
+            //room->doLightbox("$StageChange", 5000);
 
             QList<const Card *> tricks = lord->getJudgingArea();
             if (!tricks.isEmpty()) {
@@ -918,6 +918,8 @@ bool HulaoPassMode::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer 
                 room->throwCard(dummy, reason, NULL);
                 delete dummy;
             }
+            if (lord->getHp() < qMin(lord->getMaxHp(), 4))
+                room->recover(lord, RecoverStruct(NULL, NULL, 4 - lord->getHp()));
             if (!lord->faceUp())
                 lord->turnOver();
             if (lord->isChained())
@@ -927,12 +929,18 @@ bool HulaoPassMode::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer 
     case GameStart: {
             // Handle global events
             if (player == NULL) {
-                ServerPlayer *lord = room->getLord();
-                lord->drawCards(8);
-                foreach (ServerPlayer *player, room->getPlayers()) {
-                    if (!player->isLord())
-                        player->drawCards(player->getSeat() + 1);
+                QList<int> n_list;
+                foreach (ServerPlayer *p, room->getPlayers()) {
+                    int n = 0;
+                    if (p->isLord())
+                        n = 8;
+                    else
+                        n = p->getSeat() + 1;
+                    QVariant data = n;
+                    room->getThread()->trigger(DrawInitialCards, room, p, data);
+                    n_list << data.toInt();
                 }
+                room->drawCards(room->getPlayers(), n_list);
                 return false;
             }
             break;
@@ -976,11 +984,7 @@ bool HulaoPassMode::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer 
                 arg[1] = QSanProtocol::Utils::toJsonString(player->objectName());
                 room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
 
-                QString choice = player->isWounded() ? "recover" : "draw";
-                if (player->isWounded() && player->getHp() > 0)
-                    choice = room->askForChoice(player, "Hulaopass", "recover+draw");
-
-                if (choice == "draw") {
+                if (!player->isWounded()) {
                     LogMessage log;
                     log.type = "#ReformingDraw";
                     log.from = player;
@@ -1003,6 +1007,11 @@ bool HulaoPassMode::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer 
                     room->sendLog(log);
 
                     room->revivePlayer(player);
+
+                    int n = 3;
+                    if (player->getMaxHp() >= 4)
+                        n = 2;
+                    player->drawCards(n, "revive");
                 }
             } else {
                 LogMessage log;
