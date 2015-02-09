@@ -40,6 +40,16 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class ThJingwuCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThJingwuCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 class ThYouyaCard: public SkillCard{
     Q_OBJECT
 
@@ -148,16 +158,6 @@ public:
     Q_INVOKABLE ThJiefuCard();
 
     virtual void onEffect(const CardEffectStruct &effect) const;
-};
-
-class ThJingwuCard: public SkillCard {
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE ThJingwuCard();
-
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
 #endif // TOUHOUKAMI_H
