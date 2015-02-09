@@ -359,7 +359,7 @@ bool Player::hasSkill(const QString &skill_name, bool include_lose) const{
     if (!include_lose) {
         if (!hasEquipSkill(skill_name)) {
             const Skill *skill = Sanguosha->getSkill(skill_name);
-            if (skill && skill_name != "thyanmeng" && !Sanguosha->correctSkillValidity(this, skill))
+            if (skill && skill_name != "thyanmeng" && skill_name != "thxuanyan" && !Sanguosha->correctSkillValidity(this, skill))
                 return false;
         }
     }
