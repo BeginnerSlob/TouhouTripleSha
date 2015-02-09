@@ -3407,7 +3407,7 @@ void Room::startGame() {
 
     foreach (ServerPlayer *player, m_players) {
         if (!Config.EnableBasara
-            && (mode == "06_3v3" || mode == "02_1v1" || mode == "06_XMode" || !player->isLord()))
+            && (mode == "06_3v3" || mode == "02_1v1" || mode == "03_1v1v1" || mode == "06_XMode" || !player->isLord()))
             broadcastProperty(player, "general");
 
         if (mode == "02_1v1")
