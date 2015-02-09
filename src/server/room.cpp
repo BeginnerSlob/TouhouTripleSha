@@ -1780,7 +1780,7 @@ void Room::swapPile() {
 
     int limit = Config.value("PileSwappingLimitation", 5).toInt() + 1;
     if (mode == "04_1v3")
-        limit = qMin(limit, Config.BanPackages.contains("maneuvering") ? 3 : 2);
+        limit = 2;
     if (limit > 0 && times == limit)
         gameOver(".");
 
@@ -2568,7 +2568,7 @@ void Room::run() {
         connect(thread_1v1, SIGNAL(finished()), thread_1v1, SLOT(deleteLater()));
     } else if (mode == "04_1v3") {
         ServerPlayer *lord = m_players.first();
-        setPlayerProperty(lord, "general", "shenlvbu1");
+        setPlayerProperty(lord, "general", "story002");
 
         QStringList names;
         foreach (QString gen_name, GetConfigFromLuaState(Sanguosha->getLuaState(), "hulao_generals").toStringList()) {
@@ -2595,7 +2595,7 @@ void Room::run() {
                 continue;
 
             qShuffle(names);
-            QStringList choices = names.mid(0, 3);
+            QStringList choices = names.mid(0, 8);
             QString name = askForGeneral(player, choices);
 
             setPlayerProperty(player, "general", name);

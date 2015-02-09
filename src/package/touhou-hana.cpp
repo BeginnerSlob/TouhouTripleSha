@@ -969,26 +969,6 @@ ThMimengCard::ThMimengCard() {
     will_throw = false;
 }
 
-bool ThMimengCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const {
-    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
-        const Card *card = NULL;
-        if (!user_string.isEmpty()) {
-            const Card *oc = Sanguosha->getCard(subcards.first());
-            card = Sanguosha->cloneCard(user_string.split("+").first(), oc->getSuit(), oc->getNumber());
-        }
-        return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
-    } else if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
-        return false;
-    }
-
-    const Card *card = Self->tag.value("thmimeng").value<const Card *>();
-    const Card *oc = Sanguosha->getCard(subcards.first());
-    Card *new_card = Sanguosha->cloneCard(card->objectName(), oc->getSuit(), oc->getNumber());
-    new_card->addSubcard(oc);
-    new_card->setSkillName("thmimeng");
-    return new_card && new_card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, new_card, targets);
-}
-
 bool ThMimengCard::targetFixed() const {
     if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
         const Card *card = NULL;
@@ -1007,6 +987,26 @@ bool ThMimengCard::targetFixed() const {
     new_card->addSubcard(oc);
     new_card->setSkillName("thmimeng");
     return new_card && new_card->targetFixed();
+}
+
+bool ThMimengCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const {
+    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        const Card *card = NULL;
+        if (!user_string.isEmpty()) {
+            const Card *oc = Sanguosha->getCard(subcards.first());
+            card = Sanguosha->cloneCard(user_string.split("+").first(), oc->getSuit(), oc->getNumber());
+        }
+        return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
+    } else if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+        return false;
+    }
+
+    const Card *card = Self->tag.value("thmimeng").value<const Card *>();
+    const Card *oc = Sanguosha->getCard(subcards.first());
+    Card *new_card = Sanguosha->cloneCard(card->objectName(), oc->getSuit(), oc->getNumber());
+    new_card->addSubcard(oc);
+    new_card->setSkillName("thmimeng");
+    return new_card && new_card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, new_card, targets);
 }
 
 bool ThMimengCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{

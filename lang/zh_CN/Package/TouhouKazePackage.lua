@@ -5,7 +5,7 @@ return {
 	
 	["#kaze001"]="霁月的风祝",
 	["kaze001"]="东风谷早苗",--风 - 空 - 3血
-	["designer:kaze001"]="幻桜落 | Codeby:Slob",
+	["designer:kaze001"]="幻桜落",
 	["illustrator:kaze001"]="正体不明",
 	["cv:kaze001"]="暂无",
 	--["~kaze001"]="",
@@ -24,7 +24,7 @@ return {
 	
 	["#kaze002"]="幻想风靡",
 	["kaze002"]="射命丸文",--风 - 空 - 4血
-	["designer:kaze002"]="幻桜落 | Codeby:Slob",
+	["designer:kaze002"]="幻桜落",
 	["illustrator:kaze002"]="水佾",
 	["cv:kaze002"]="飞鸟",
 	["~kaze002"]="糟了...被追上了...",
@@ -37,7 +37,7 @@ return {
 	
 	["#kaze003"]="天之八衢",
 	["kaze003"]="姬海棠羽立",--风 - 空 - 3血
-	["designer:kaze003"]="神·冥狐 | Codeby:Slob",
+	["designer:kaze003"]="神·冥狐",
 	["illustrator:kaze003"]="nyanya",
 	["cv:kaze003"]="暂无",
 	["thnianke"]="念刻",
@@ -48,7 +48,7 @@ return {
 	
 	["#kaze004"]="下位哨戒天狗",
 	["kaze004"]="犬走椛",--风 - 空 - 4血
-	["designer:kaze004"]="幻桜落 | Codeby:Slob",
+	["designer:kaze004"]="幻桜落",
 	["illustrator:kaze004"]="明星かがよ",
 	["cv:kaze004"]="凉子",
 	["~kaze004"]="一招不慎...满盘皆输...",
@@ -64,7 +64,7 @@ return {
 	
 	["#kaze005"]="运命之暗",
 	["kaze005"]="键山雏",--风 - 幻 - 3血
-	["designer:kaze005"]="零度雨 | Codeby:Slob",
+	["designer:kaze005"]="零度雨",
 	["illustrator:kaze005"]="DomotoLain",
 	["cv:kaze005"]="暂无",
 	["thenan"]="厄难",
@@ -79,7 +79,7 @@ return {
 	
 	["#kaze006"]="超妖怪弹头",
 	["kaze006"]="河城荷取",--风 - 空 - 4血
-	["designer:kaze006"]="幻桜落 | Codeby:Slob",
+	["designer:kaze006"]="幻桜落",
 	["illustrator:kaze006"]="正体不明",
 	["cv:kaze006"]="暂无",
 	["thmicai"]="迷彩",
@@ -91,7 +91,7 @@ return {
 	
 	["#kaze007"]="大江山岚",
 	["kaze007"]="星熊勇仪",--风 - 空 - 4血
-	["designer:kaze007"]="幻桜落 | Codeby:Slob",
+	["designer:kaze007"]="幻桜落",
 	["illustrator:kaze007"]="けん",
 	["cv:kaze007"]="暂无",
 	--["~kaze007"]="哈哈哈...痛快！",
@@ -106,7 +106,7 @@ return {
 	
 	["#kaze008"]="山与湖的化身",
 	["kaze008"]="八坂神奈子",--风 - 空 - 3血
-	["designer:kaze008"]="妒天のPAD | Codeby:Slob",
+	["designer:kaze008"]="妒天のPAD",
 	["illustrator:kaze008"]="Gekka",
 	["cv:kaze008"]="暂无",
 	["thshenzhou"]="神粥",
@@ -120,7 +120,7 @@ return {
 	
 	["#kaze009"]="土著神的顶点",
 	["kaze009"]="洩矢诹访子",--风 - 幻 - 3血
-	["designer:kaze009"]="幻桜落 | Codeby:Slob",
+	["designer:kaze009"]="幻桜落",
 	["illustrator:kaze009"]="An2A",
 	["cv:kaze009"]="暂无",
 	["thhuosui"]="祸祟",
@@ -134,7 +134,7 @@ return {
 	
 	["#kaze010"]="井户的恐妖",
 	["kaze010"]="琪斯美",--风 - 空 - 3血
-	["designer:kaze010"]="小掉线仙 | Codeby:Slob",
+	["designer:kaze010"]="小掉线仙",
 	["illustrator:kaze010"]="黒鴉",
 	["cv:kaze010"]="暂无",
 	["thcannue"]="残虐",
@@ -147,7 +147,7 @@ return {
 	
 	["#kaze011"]="暗之窟的明之网",
 	["kaze011"]="黑谷山女",--风 - 空 - 4血
-	["designer:kaze011"]="幻桜落 | Codeby:Slob",
+	["designer:kaze011"]="幻桜落",
 	["illustrator:kaze011"]="ふーかでぃあ",
 	["cv:kaze011"]="暂无",
 	["thwangqin"]="罔擒",
@@ -159,7 +159,7 @@ return {
 	
 	["#kaze012"]="绿眼的嫉妒",
 	["kaze012"]="水桥帕露西",--风 - 空 - 4血
-	["designer:kaze012"]="幻桜落 | Codeby:Slob",
+	["designer:kaze012"]="幻桜落",
 	["illustrator:kaze012"]="ラムディア",
 	["cv:kaze012"]="暂无",
 	["thgelong"]="葛笼",
@@ -173,7 +173,7 @@ return {
 	
 	["#kaze013"]="丰饶与收获的象征",
 	["kaze013"]="秋穰子",--风 - 空 - 3血
-	["designer:kaze013"]="幻桜落 | Codeby:Slob",
+	["designer:kaze013"]="幻桜落",
 	["illustrator:kaze013"]="正体不明",
 	["cv:kaze013"]="暂无",
 	["thdasui"]="大岁",
@@ -188,7 +188,7 @@ return {
 	
 	["#kaze014"]="寂寥与终焉的象征",
 	["kaze014"]="秋静叶",--风 - 空 - 3血
-	["designer:kaze014"]="幻桜落 | Codeby:Slob",
+	["designer:kaze014"]="幻桜落",
 	["illustrator:kaze014"]="正体不明",
 	["cv:kaze014"]="暂无",
 	["thkudao"]="枯道",
@@ -214,7 +214,7 @@ return {
 	
 	["#kaze016"]="热恼的神之火",
 	["kaze016"]="灵乌路空",--风 - 空 - 5血
-	["designer:kaze016"]="幻桜落 | Codeby:Slob",
+	["designer:kaze016"]="幻桜落",
 	["illustrator:kaze016"]="正体不明",
 	["cv:kaze016"]="暂无",
 	["thbazhi"]="八咫",
@@ -228,7 +228,7 @@ return {
 	
 	["#kaze017"]="紧闭的恋之扉",
 	["kaze017"]="古明地恋",--风 - 幻 - 3血
-	["designer:kaze017"]="冬天吃雪糕 | Codeby:Slob",
+	["designer:kaze017"]="冬天吃雪糕",
 	["illustrator:kaze017"]="bon",
 	["cv:kaze017"]="暂无",
 	["thmaihuo"]="埋火",
@@ -238,7 +238,7 @@ return {
 	
 	["#kaze018"]="第三只眼",
 	["kaze018"]="古明地觉",--风 - 空 - 3血
-	["designer:kaze018"]="幻桜落 | Codeby:Slob",
+	["designer:kaze018"]="幻桜落",
 	["illustrator:kaze018"]="正体不明",
 	["cv:kaze018"]="暂无",
 	["thdongxi"]="洞悉",

@@ -6,7 +6,7 @@ LuaTriggerSkill::LuaTriggerSkill(const char *name, Frequency frequency, const ch
 {
     this->frequency = frequency;
     this->limit_mark = QString(limit_mark);
-    this->priority = (frequency == Skill::Wake) ? 3 : 2;
+    this->priority = 3;
 }
 
 int LuaTriggerSkill::getPriority(TriggerEvent triggerEvent) const{

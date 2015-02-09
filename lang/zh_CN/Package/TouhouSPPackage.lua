@@ -5,7 +5,7 @@ return {
 	
 	["#sp001"] = "风月无边",
 	["sp001"] = "SP东风谷早苗",--风 - 空 - 4血
-	["designer:sp001"] = "幻桜落 | Codeby:Slob",
+	["designer:sp001"] = "幻桜落",
 	["illustrator:sp001"] = "正体不明",
 	["cv:sp001"] = "暂无",
 	["thfanshi"] = "凡识",
@@ -13,7 +13,7 @@ return {
 	
 	["#sp002"] = "古晋的玄仙",
 	["sp002"] = "SP霍青娥",--花 - 幻 - 4血
-	["designer:sp002"] = "幻桜落 | Codeby:Slob",
+	["designer:sp002"] = "幻桜落",
 	["illustrator:sp002"] = "米白",
 	["cv:sp002"] = "暂无",
 	["thnichang"] = "霓裳",
@@ -26,7 +26,7 @@ return {
 	
 	["#sp003"] = "酒吞的巫女",
 	["sp003"] = "SP伊吹萃香",--雪 - 空 - 3血
-	["designer:sp003"] = "幻桜落 | Codeby:Slob",
+	["designer:sp003"] = "幻桜落",
 	["illustrator:sp003"] = "正体不明",
 	["cv:sp003"] = "暂无",
 	["thshenshi"] = "神事",
@@ -38,7 +38,7 @@ return {
 	
 	["#sp004"] = "日出国之贤兽",
 	["sp004"] = "SP上白泽慧音",--月 - 空 - 3血
-	["designer:sp004"] = "幻桜落 | Codeby:Slob",
+	["designer:sp004"] = "幻桜落",
 	["illustrator:sp004"] = "正体不明",
 	["cv:sp004"] = "暂无",
 	["thchuangshi"] = "创史",
@@ -49,7 +49,7 @@ return {
 	
 	["#sp005"]="濡衣的子猫",
 	["sp005"]="SP火焰猫燐",--风 - 空 - 4血
-	["designer:sp005"]="幻桜落 | Codeby:Slob",
+	["designer:sp005"]="幻桜落",
 	["illustrator:sp005"]="正体不明",
 	["cv:sp005"]="暂无",
 	["thwanling"]="万灵",
@@ -61,7 +61,7 @@ return {
 	
 	["#sp006"]="恋之白魔导士",
 	["sp006"]="SP雾雨魔理沙",--花 - 空 - 4血
-	["designer:sp006"]="幻桜落 | Codeby:Slob",
+	["designer:sp006"]="幻桜落",
 	["illustrator:sp006"]="正体不明",
 	["cv:sp006"]="暂无",
 	["thmodao"]="魔盗",
@@ -73,7 +73,7 @@ return {
 	
 	["#sp007"]="七色莲华之蝶",
 	["sp007"]="SP博丽灵梦",--雪 - 空 - 3血
-	["designer:sp007"]="幻桜落 | Codeby:Slob",
+	["designer:sp007"]="幻桜落",
 	["illustrator:sp007"]="正体不明",
 	["cv:sp007"]="暂无",
 	["thmengsheng"]="梦生",
@@ -88,7 +88,7 @@ return {
 	["#sp008"]="霓岚暗月殇",
 	["sp008"]="SP铃仙•优昙华院•稻叶",--月 - 空 - 4血
 	["&sp008"] = "SP铃仙",
-	["designer:sp008"]="幻桜落 | Codeby:Slob",
+	["designer:sp008"]="幻桜落",
 	["illustrator:sp008"]="正体不明",
 	["cv:sp008"]="暂无",
 	["thhuanlong"]="幻胧",
@@ -100,7 +100,7 @@ return {
 	
 	["#sp009"]="赤蛙的祟塗姬",
 	["sp009"]="SP洩矢诹访子",--风 - 空 - 3血
-	["designer:sp009"]="幻桜落 | Codeby:Slob",
+	["designer:sp009"]="幻桜落",
 	["illustrator:sp009"]="正体不明",
 	["cv:sp009"]="暂无",
 	["thchiying"]="赤樱",
@@ -112,7 +112,7 @@ return {
 	
 	["#sp010"]="豪族的女仆",
 	["sp010"]="SP物部布都",--花 - 空 - 3血
-	["designer:sp010"]="幻桜落 | Codeby:Slob",
+	["designer:sp010"]="幻桜落",
 	["illustrator:sp010"]="正体不明",
 	["cv:sp010"]="暂无",
 	["thlunmin"]="轮皿",
@@ -123,7 +123,7 @@ return {
 	
 	["#sp011"] = "算术教室",
 	["sp011"] = "SP琪露诺",--雪 - 空 - 4血
-	["designer:sp011"] = "幻桜落 | Codeby:Slob",
+	["designer:sp011"] = "幻桜落",
 	["illustrator:sp011"] = "正体不明",
 	["cv:sp011"] = "暂无",
 	["thjiuzhang"] = "九章",
@@ -140,7 +140,7 @@ return {
 	
 	["#sp012"] = "终末之暗",
 	["sp012"] = "SP露米娅",--月 - 空 - 4血
-	["designer:sp012"] = "幻桜落 | Codeby:Slob",
+	["designer:sp012"] = "幻桜落",
 	["illustrator:sp012"] = "正体不明",
 	["cv:sp012"] = "暂无",
 	["thyingshi"] = "影弑",
@@ -152,7 +152,7 @@ return {
 	
 	["#sp999"] = "香霖堂的店主",
 	["sp999"] = "森近霖之助",--特 - 特 - 5血
-	["designer:sp999"] = "幻桜落 | Codeby:Slob",
+	["designer:sp999"] = "幻桜落",
 	["illustrator:sp999"] = "正体不明",
 	["cv:sp999"] = "暂无",
 	--thjibu

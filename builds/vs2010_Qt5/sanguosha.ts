@@ -3915,12 +3915,12 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>不能载入字体文件 %1 !</translation>
     </message>
     <message>
-        <location filename="../../src/core/settings.cpp" line="119"/>
+        <location filename="../../src/core/settings.cpp" line="120"/>
         <source>TripleShaFans</source>
         <translation>莎莎杀Fans</translation>
     </message>
     <message>
-        <location filename="../../src/core/settings.cpp" line="120"/>
+        <location filename="../../src/core/settings.cpp" line="121"/>
         <source>%1&apos;s touhoukifugeki</source>
         <translation>%1的东方绮符剧</translation>
     </message>

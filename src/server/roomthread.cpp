@@ -393,7 +393,6 @@ void RoomThread::actionHulaoPass(ServerPlayer *shenlvbu, QList<ServerPlayer *> l
                 ServerPlayer *current = room->getCurrent();
                 trigger(TurnStart, room, current);
 
-                ServerPlayer *next = findHulaoPassNext(shenlvbu, league, 1);
                 if (current != shenlvbu) {
                     if (current->isAlive() && !current->hasFlag("actioned"))
                         room->setPlayerFlag(current, "actioned");
@@ -417,7 +416,20 @@ void RoomThread::actionHulaoPass(ServerPlayer *shenlvbu, QList<ServerPlayer *> l
                     }
                 }
 
-                room->setCurrent(next);
+                ServerPlayer *regular_next = findHulaoPassNext(shenlvbu, league, 1);
+                while (!room->getTag("ExtraTurnList").isNull()) {
+                    QStringList extraTurnList = room->getTag("ExtraTurnList").toStringList();
+                    if (!extraTurnList.isEmpty()) {
+                        QString extraTurnPlayer = extraTurnList.takeFirst();
+                        room->setTag("ExtraTurnList", QVariant::fromValue(extraTurnList));
+                        ServerPlayer *next = room->findPlayer(extraTurnPlayer);
+                        room->setCurrent(next);
+                        trigger(TurnStart, room, next);
+                    } else
+                        room->removeTag("ExtraTurnList");
+                }
+
+                room->setCurrent(regular_next);
             }
         } else {
             Q_ASSERT(stage == 2);
@@ -425,15 +437,27 @@ void RoomThread::actionHulaoPass(ServerPlayer *shenlvbu, QList<ServerPlayer *> l
                 ServerPlayer *current = room->getCurrent();
                 trigger(TurnStart, room, current);
 
-                ServerPlayer *next = findHulaoPassNext(shenlvbu, league, 2);
-
                 if (current == shenlvbu) {
                     foreach (ServerPlayer *player, league) {
                         if (player->isDead())
                             trigger(TurnStart, room, player);
                     }
                 }
-                room->setCurrent(next);
+
+                ServerPlayer *regular_next = findHulaoPassNext(shenlvbu, league, 2);
+                while (!room->getTag("ExtraTurnList").isNull()) {
+                    QStringList extraTurnList = room->getTag("ExtraTurnList").toStringList();
+                    if (!extraTurnList.isEmpty()) {
+                        QString extraTurnPlayer = extraTurnList.takeFirst();
+                        room->setTag("ExtraTurnList", QVariant::fromValue(extraTurnList));
+                        ServerPlayer *next = room->findPlayer(extraTurnPlayer);
+                        room->setCurrent(next);
+                        trigger(TurnStart, room, next);
+                    } else
+                        room->removeTag("ExtraTurnList");
+                }
+
+                room->setCurrent(regular_next);
             }
         }
     }
@@ -441,6 +465,7 @@ void RoomThread::actionHulaoPass(ServerPlayer *shenlvbu, QList<ServerPlayer *> l
         if (triggerEvent == StageChange) {
             stage = 2;
             trigger(triggerEvent, room, NULL);
+            room->removeTag("ExtraTurnList");
             foreach (ServerPlayer *player, room->getPlayers()) {
                 if (player != shenlvbu) {
                     if (player->hasFlag("actioned"))
@@ -468,7 +493,6 @@ void RoomThread::_handleTurnBrokenHulaoPass(ServerPlayer *shenlvbu, QList<Server
     try {
         ServerPlayer *player = room->getCurrent();
         trigger(TurnBroken, room, player);
-        ServerPlayer *next = findHulaoPassNext(shenlvbu, league, stage);
         if (player->getPhase() != Player::NotActive) {
             QVariant empty_data;
             game_rule->trigger(EventPhaseEnd, room, player, empty_data);
@@ -477,7 +501,21 @@ void RoomThread::_handleTurnBrokenHulaoPass(ServerPlayer *shenlvbu, QList<Server
                 room->setPlayerFlag(player, "actioned");
         }
 
-        room->setCurrent(next);
+        ServerPlayer *regular_next = findHulaoPassNext(shenlvbu, league, stage);
+
+        while (!room->getTag("ExtraTurnList").isNull()) {
+            QStringList extraTurnList = room->getTag("ExtraTurnList").toStringList();
+            if (!extraTurnList.isEmpty()) {
+                QString extraTurnPlayer = extraTurnList.takeFirst();
+                room->setTag("ExtraTurnList", QVariant::fromValue(extraTurnList));
+                ServerPlayer *next = room->findPlayer(extraTurnPlayer);
+                room->setCurrent(next);
+                trigger(TurnStart, room, next);
+            } else
+                room->removeTag("ExtraTurnList");
+        }
+
+        room->setCurrent(regular_next);
         actionHulaoPass(shenlvbu, league, game_rule, stage);
     }
     catch (TriggerEvent triggerEvent) {
@@ -492,7 +530,6 @@ void RoomThread::actionNormal(GameRule *game_rule) {
     try {
         forever {
             trigger(TurnStart, room, room->getCurrent());
-            if (room->isFinished()) break;
             ServerPlayer *regular_next = qobject_cast<ServerPlayer *>(room->getCurrent()->getNextAlive(1, false));
             while (!room->getTag("ExtraTurnList").isNull()) {
                 QStringList extraTurnList = room->getTag("ExtraTurnList").toStringList();
@@ -502,11 +539,9 @@ void RoomThread::actionNormal(GameRule *game_rule) {
                     ServerPlayer *next = room->findPlayer(extraTurnPlayer);
                     room->setCurrent(next);
                     trigger(TurnStart, room, next);
-                    if (room->isFinished()) break;
                 } else
                     room->removeTag("ExtraTurnList");
             }
-            if (room->isFinished()) break;
             room->setCurrent(regular_next);
         }
     }
@@ -522,14 +557,26 @@ void RoomThread::_handleTurnBrokenNormal(GameRule *game_rule) {
     try {
         ServerPlayer *player = room->getCurrent();
         trigger(TurnBroken, room, player);
-        ServerPlayer *next = room->findPlayer(player->getNextAlive(1, false)->objectName());
+
         if (player->getPhase() != Player::NotActive) {
             QVariant empty_data;
             game_rule->trigger(EventPhaseEnd, room, player, empty_data);
             player->changePhase(player->getPhase(), Player::NotActive);
         }
 
-        room->setCurrent(next);
+        ServerPlayer *regular_next = qobject_cast<ServerPlayer *>(room->getCurrent()->getNextAlive(1, false));
+        while (!room->getTag("ExtraTurnList").isNull()) {
+            QStringList extraTurnList = room->getTag("ExtraTurnList").toStringList();
+            if (!extraTurnList.isEmpty()) {
+                QString extraTurnPlayer = extraTurnList.takeFirst();
+                room->setTag("ExtraTurnList", QVariant::fromValue(extraTurnList));
+                ServerPlayer *next = room->findPlayer(extraTurnPlayer);
+                room->setCurrent(next);
+                trigger(TurnStart, room, next);
+            } else
+                room->removeTag("ExtraTurnList");
+        }
+        room->setCurrent(regular_next);
         actionNormal(game_rule);
     }
     catch (TriggerEvent triggerEvent) {
@@ -663,8 +710,8 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
             trigger_who.clear();
             foreach (const TriggerSkill *skill, skills) {
                 if (!triggered.contains(skill)) {
-                    if (skill->objectName() == "game_rule" || (room->getScenario()
-                                                              && room->getScenario()->objectName() == skill->objectName())) {
+                    if ((skill->objectName() == "game_rule" || skill->objectName() == "hulaopass_mode")
+                        || (room->getScenario() && room->getScenario()->objectName() == skill->objectName())) {
                         room->tryPause();
                         if (will_trigger.isEmpty()
                                 || skill->getDynamicPriority() == will_trigger.last()->getDynamicPriority()) {
@@ -783,8 +830,8 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
 
                         trigger_who.clear();
                         foreach (const TriggerSkill *skill, triggered) {
-                            if (skill->objectName() == "game_rule" || (room->getScenario()
-                                                                       && room->getScenario()->objectName() == skill->objectName())) {
+                            if ((skill->objectName() == "game_rule" || skill->objectName() == "hulaopass_mode")
+                                || (room->getScenario() && room->getScenario()->objectName() == skill->objectName())) {
                                 room->tryPause();
                                 continue;
                             } else {
@@ -833,7 +880,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                 if (!broken) {
                     if (!trigger_who[NULL].isEmpty()) {
                         foreach (QString skill_name, trigger_who[NULL]) {
-                            const TriggerSkill *skill;
+                            const TriggerSkill *skill = NULL;
                             foreach (const TriggerSkill *rule, rules) {
                                 if (rule->objectName() == skill_name) {
                                     skill = rule;
@@ -896,7 +943,8 @@ void RoomThread::addTriggerSkill(const TriggerSkill *skill) {
     QList<TriggerEvent> events = skill->getTriggerEvents();
     foreach (TriggerEvent triggerEvent, events) {
         QList<const TriggerSkill *> &table = skill_table[triggerEvent];
-        table << skill;
+        if (!table.contains(skill))
+            table << skill;
         foreach (const TriggerSkill *askill, table) {
             double priority = askill->getPriority(triggerEvent);
             /*int len = room->getPlayers().length();

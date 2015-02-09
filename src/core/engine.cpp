@@ -975,8 +975,8 @@ QList<int> Engine::getRandomCards() const{
         exclude_disaters = !Config.value("3v3/UsingExtension", false).toBool() || Config.value("3v3/ExcludeDisasters", true).toBool();
     }
 
-    if (Config.GameMode == "04_1v3")
-        exclude_disaters = true;
+    /*if (Config.GameMode == "04_1v3")
+        exclude_disaters = true;*/
 
     QList<int> list;
     foreach (Card *card, cards) {

@@ -5,9 +5,6 @@ CommonTranslationTable = {
 	["renegade"] = "内奸",
 	["leader"] = "主帅",
 	["guard"] = "前锋",
-	["vanguard"] = "先锋",
-	["mainstay"] = "中坚",
-	["general"] = "大将",
 	["offensive"] = "先手",
 	["defensive"] = "后手",
 

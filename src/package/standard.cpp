@@ -394,9 +394,9 @@ void Weapon::onUse(Room *room, const CardUseStruct &card_use) const{
         && use.card->isKindOf("Weapon")
         && (player->isCardLimited(use.card, Card::MethodUse)
             || (!player->getPile("wooden_ox").contains(getEffectiveId())
-                && player->askForSkillInvoke("weapon_recast", QVariant::fromValue(use))))) {
+                && player->askForSkillInvoke("alliance_recast", QVariant::fromValue(use))))) {
         CardMoveReason reason(CardMoveReason::S_REASON_RECAST, player->objectName());
-        reason.m_eventName = "weapon_recast";
+        reason.m_eventName = "alliance_recast";
         room->moveCardTo(use.card, player, NULL, Player::DiscardPile, reason);
         player->broadcastSkillInvoke("@recast");
         room->setEmotion(player, "effects/recast");
@@ -407,7 +407,7 @@ void Weapon::onUse(Room *room, const CardUseStruct &card_use) const{
         log.card_str = use.card->toString();
         room->sendLog(log);
 
-        player->drawCards(1, "weapon_recast");
+        player->drawCards(1, "alliance_recast");
         return;
     }
     EquipCard::onUse(room, use);

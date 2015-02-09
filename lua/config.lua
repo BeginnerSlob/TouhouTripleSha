@@ -47,15 +47,23 @@ config = {
 		"IkaiSui",
 		"IkaiKin",
 		"IkaiKa",
+		"Hulaopass",
 	},
 
 	hulao_generals = {
-		"package:nostal_standard",
-		"package:wind",
-		"package:nostal_wind",
-		"zhenji", "zhugeliang", "sunquan", "sunshangxiang",
-		"-zhangjiao", "-zhoutai", "-caoren", "-yuji",
-		"-nos_yuji"
+		"package:touhou-kaze",
+		"package:touhou-hana",
+		"package:touhou-yuki",
+		"package:touhou-tsuki",
+		"package:touhou-kishin",
+		"package:touhou-sp",
+		"package:touhou-bangai",
+		"package:touhou-kami",
+		"package:ikai-do",
+		"package:ikai-moku",
+		"package:ikai-sui",
+		"package:ikai-kin",
+		"package:ikai-ka"
 	},
 
 	xmode_generals = {
