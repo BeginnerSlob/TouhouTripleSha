@@ -4007,7 +4007,16 @@ void Room::broadcastSkillInvoke(const QString &skill_name, bool isMale, int type
 void Room::doLightbox(const QString &lightboxName, int duration, int pixelSize) {
     if (Config.AIDelay == 0) return;
     doAnimate(S_ANIMATE_LIGHTBOX, lightboxName, QString("%1:%2").arg(duration).arg(pixelSize));
-    thread->delay(duration / 1.2);
+    thread->delay(duration);
+}
+
+void Room::doStory(const QString &storyName, int duration, int pixelSize) {
+    for (int i = 1; ; ++i) {
+        QString to_translate = QString("%1%2").arg(storyName).arg(i);
+        if (Sanguosha->translate(to_translate) == to_translate)
+            break;
+        doLightbox(to_translate, duration, pixelSize);
+    }
 }
 
 void Room::doAnimate(QSanProtocol::AnimateType type, const QString &arg1, const QString &arg2,

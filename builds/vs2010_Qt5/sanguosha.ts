@@ -2752,14 +2752,14 @@
         <translation>玩家序号应为 %1 而不是 %2</translation>
     </message>
     <message>
-        <location filename="../../src/server/room.cpp" line="4261"/>
+        <location filename="../../src/server/room.cpp" line="4270"/>
         <source>Card cannot be parsed:
  %1</source>
         <translation>卡牌字符串无法解析:
 %1</translation>
     </message>
     <message>
-        <location filename="../../src/server/room.cpp" line="5620"/>
+        <location filename="../../src/server/room.cpp" line="5629"/>
         <source>&lt;font color=#EEB422&gt;The network delay of player &lt;b&gt;%1&lt;/b&gt; is %2 milliseconds.&lt;/font&gt;</source>
         <translation>&lt;font color=#EEB422&gt;玩家 &lt;b&gt;%1&lt;/b&gt; 的网络延迟为 %2 毫秒&lt;/font&gt;</translation>
     </message>
@@ -2778,7 +2778,7 @@
         <location filename="../../src/ui/roomscene.cpp" line="3144"/>
         <location filename="../../src/ui/roomscene.cpp" line="3154"/>
         <location filename="../../src/ui/roomscene.cpp" line="3169"/>
-        <location filename="../../src/ui/roomscene.cpp" line="3963"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3965"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -2804,7 +2804,7 @@
     </message>
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="332"/>
-        <location filename="../../src/ui/roomscene.cpp" line="4488"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4490"/>
         <source>Add robots</source>
         <translation>添加电脑</translation>
     </message>
@@ -2825,7 +2825,7 @@
     </message>
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="375"/>
-        <location filename="../../src/ui/roomscene.cpp" line="4332"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4334"/>
         <source>pindian</source>
         <translation>拼点</translation>
     </message>
@@ -3012,7 +3012,7 @@
         <translation>下一场景</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="4491"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4493"/>
         <source>%1 robots</source>
         <translation>%1 名电脑</translation>
     </message>
@@ -3166,27 +3166,27 @@
         <translation>&lt;font color=&apos;%1&apos;&gt;────────游戏开始────────&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3950"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3952"/>
         <source>Server information</source>
         <translation>服务器信息</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3963"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3965"/>
         <source>You can only initiate a surrender poll at your play phase!</source>
         <translation>只有在你的出牌阶段才能请求投降！</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3968"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3970"/>
         <source>Surrender</source>
         <translation>投降</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3968"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3970"/>
         <source>Are you sure to surrender ?</source>
         <translation>你真的要投降吗？</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="4250"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4252"/>
         <source>Complete</source>
         <translation>完成</translation>
     </message>
