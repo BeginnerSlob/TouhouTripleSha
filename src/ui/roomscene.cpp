@@ -3796,7 +3796,9 @@ void RoomScene::doLightboxAnimation(const QString &, const QStringList &args) {
     QRect rect = main_window->rect();
     QGraphicsRectItem *lightbox = addRect(rect);
 
-    if (!Config.value("NoEffectsAnim", false).toBool() && word.contains("effects/wake"))
+    if (!word.startsWith("anim=effects"))
+        lightbox->setBrush(QColor(32, 32, 32, 204));
+    else if (!Config.value("NoEffectsAnim", false).toBool() && word.contains("effects/wake"))
         lightbox->setBrush(QColor(32, 32, 32, 204));
     lightbox->setZValue(20001.0);
 
