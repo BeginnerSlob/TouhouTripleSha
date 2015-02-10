@@ -843,7 +843,6 @@ QGroupBox *ServerDialog::createGameModeBox() {
     QVBoxLayout *customModesLayout = new QVBoxLayout(mode_box);
     
     Q_UNUSED(basaraModesLayout);
-    Q_UNUSED(storyModesLayout);
     Q_UNUSED(customModesLayout);
 
     // normal modes
@@ -889,11 +888,22 @@ QGroupBox *ServerDialog::createGameModeBox() {
         const Scenario *scenario = Sanguosha->getScenario(name);
         int count = scenario->getPlayerCount();
         QString text = tr("%1 (%2 persons)").arg(scenario_name).arg(count);
-        QRadioButton *button = new QRadioButton(text, scenarioModes);
+
+        QGroupBox *parent = NULL;
+        QLayout *layout = NULL;
+        if (name == "chunxue") {
+            parent = storyModes;
+            layout = storyModesLayout;
+        } else {
+            parent = scenarioModes;
+            layout = scenarioModesLayout;
+        }
+
+        QRadioButton *button = new QRadioButton(text, parent);
         button->setObjectName(name);
         mode_group->addButton(button);
-        scenarioModesLayout->addWidget(button);
-        scenarioModes->setLayout(scenarioModesLayout);
+        layout->addWidget(button);
+        parent->setLayout(layout);
 
         if (name == Config.GameMode)
             button->setChecked(true);

@@ -1295,7 +1295,7 @@
         <translation type="vanished">3 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="101"/>
+        <location filename="../../src/core/engine.cpp" line="103"/>
         <source>4 players</source>
         <translation>4 人局</translation>
     </message>
@@ -1304,12 +1304,12 @@
         <translation type="vanished">4 人局 [虎牢关1v3]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="103"/>
+        <location filename="../../src/core/engine.cpp" line="105"/>
         <source>5 players</source>
         <translation>5 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="104"/>
+        <location filename="../../src/core/engine.cpp" line="106"/>
         <source>6 players</source>
         <translation>6 人局</translation>
     </message>
@@ -1326,32 +1326,32 @@
         <translation type="vanished">6 人局 [血战到底]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="98"/>
+        <location filename="../../src/core/engine.cpp" line="100"/>
         <source>2 players [KOF style]</source>
         <translation>2 人局 [擂台对决]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="100"/>
+        <location filename="../../src/core/engine.cpp" line="102"/>
         <source>3 players [Tripod]</source>
         <translation>3 人局 [杀上保下]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="102"/>
+        <location filename="../../src/core/engine.cpp" line="104"/>
         <source>4 players [Hulao Pass]</source>
         <translation>4 人局 [魔王试炼]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="108"/>
+        <location filename="../../src/core/engine.cpp" line="110"/>
         <source>7 players</source>
         <translation>7 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="109"/>
+        <location filename="../../src/core/engine.cpp" line="111"/>
         <source>8 players</source>
         <translation>8 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="110"/>
+        <location filename="../../src/core/engine.cpp" line="112"/>
         <source>8 players (2 renegades)</source>
         <translation>8 人局 [双内奸]</translation>
     </message>
@@ -1360,17 +1360,17 @@
         <translation type="vanished">8 人局 [无内奸]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="112"/>
+        <location filename="../../src/core/engine.cpp" line="114"/>
         <source>9 players</source>
         <translation>9 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="113"/>
+        <location filename="../../src/core/engine.cpp" line="115"/>
         <source>10 players</source>
         <translation>10 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="114"/>
+        <location filename="../../src/core/engine.cpp" line="116"/>
         <source>10 players (1 renegade)</source>
         <translation>10 人局 [单内奸]</translation>
     </message>
@@ -1379,17 +1379,17 @@
         <translation type="vanished">10 人局 [无内奸]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="164"/>
+        <location filename="../../src/core/engine.cpp" line="166"/>
         <source>The engine tries to add an invalid skill</source>
         <translation>程序试图添加不合法技能</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="168"/>
+        <location filename="../../src/core/engine.cpp" line="170"/>
         <source>Duplicated skill : %1</source>
         <translation>重复技能: %1</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="741"/>
+        <location filename="../../src/core/engine.cpp" line="743"/>
         <source>%1 [Scenario mode]</source>
         <translation>%1 【剧情模式】</translation>
     </message>
@@ -3233,17 +3233,17 @@ P = 你自己, R = 你所在的房间</translation>
 <context>
     <name>Select3v3GeneralDialog</name>
     <message>
-        <location filename="../../src/server/server.cpp" line="1009"/>
+        <location filename="../../src/server/server.cpp" line="1019"/>
         <source>Select generals in extend 3v3 mode</source>
         <translation>选择在扩展 3v3 模式中启用的人物</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="1015"/>
+        <location filename="../../src/server/server.cpp" line="1025"/>
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="1065"/>
+        <location filename="../../src/server/server.cpp" line="1075"/>
         <source>Check/Uncheck all</source>
         <translation>全部勾选或取消勾选</translation>
     </message>
@@ -3259,17 +3259,17 @@ P = 你自己, R = 你所在的房间</translation>
 <context>
     <name>Server</name>
     <message>
-        <location filename="../../src/server/server.cpp" line="1292"/>
+        <location filename="../../src/server/server.cpp" line="1302"/>
         <source>Forbid the connection of address %1</source>
         <translation>禁止了地址 %1 的连接</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="1307"/>
+        <location filename="../../src/server/server.cpp" line="1317"/>
         <source>%1 connected</source>
         <translation>%1 已连接</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="1323"/>
+        <location filename="../../src/server/server.cpp" line="1333"/>
         <source>Invalid signup string: %1</source>
         <translation>无效的登录字符串: %1</translation>
     </message>
@@ -3466,12 +3466,12 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>自定义模式</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="969"/>
+        <location filename="../../src/server/server.cpp" line="979"/>
         <source>PC Console Start</source>
         <translation>单机启动</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="970"/>
+        <location filename="../../src/server/server.cpp" line="980"/>
         <source>Start Server</source>
         <translation>启动服务器</translation>
     </message>
@@ -3686,12 +3686,12 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>经典</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="928"/>
+        <location filename="../../src/server/server.cpp" line="938"/>
         <source>Custom Mini Scene</source>
         <translation>自定义小型场景</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="903"/>
+        <location filename="../../src/server/server.cpp" line="913"/>
         <source>Mini Scenes</source>
         <translation>小型场景</translation>
     </message>
@@ -3706,8 +3706,8 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>游戏模式</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="891"/>
-        <location filename="../../src/server/server.cpp" line="916"/>
+        <location filename="../../src/server/server.cpp" line="890"/>
+        <location filename="../../src/server/server.cpp" line="926"/>
         <source>%1 (%2 persons)</source>
         <translation>%1 (%2 人)</translation>
     </message>
@@ -3737,7 +3737,7 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>启用 AI</translation>
     </message>
     <message>
-        <location filename="../../src/server/server.cpp" line="971"/>
+        <location filename="../../src/server/server.cpp" line="981"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>

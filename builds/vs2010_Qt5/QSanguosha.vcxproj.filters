@@ -942,6 +942,15 @@
     <ClCompile Include="Release\moc_touhou-story.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\scenario\chunxue-scenario.cpp">
+      <Filter>scenario</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_chunxue-scenario.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_chunxue-scenario.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\src\client\aux-skills.h">
@@ -1240,6 +1249,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\touhou-story.h">
       <Filter>package</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\scenario\chunxue-scenario.h">
+      <Filter>scenario</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
