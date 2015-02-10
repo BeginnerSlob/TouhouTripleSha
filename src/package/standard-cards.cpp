@@ -1296,10 +1296,45 @@ bool Disaster::isAvailable(const Player *player) const{
 
 Lightning::Lightning(Suit suit, int number):Disaster(suit, number) {
     setObjectName("lightning");
+    can_recast = true;
 
     judge.pattern = ".|spade|2~9";
     judge.good = false;
     judge.reason = objectName();
+}
+
+bool Lightning::isAvailable(const Player *player) const{
+    if (player->getGameMode() == "04_1v3" && !player->isLord() && !player->isCardLimited(this, Card::MethodRecast))
+        return true;
+    return !player->isCardLimited(this, Card::MethodUse) && Disaster::isAvailable(player);
+}
+
+void Lightning::onUse(Room *room, const CardUseStruct &card_use) const{
+    CardUseStruct use = card_use;
+    ServerPlayer *player = card_use.from;
+    if (room->getMode() == "04_1v3"
+        && use.card->isKindOf("Lightning")
+        && !player->isLord()
+        && (player->isCardLimited(use.card, Card::MethodUse)
+            || player->isProhibited(player, use.card)
+            || (player->handCards().contains(getEffectiveId())
+                && player->askForSkillInvoke("alliance_recast", QVariant::fromValue(use))))) {
+        CardMoveReason reason(CardMoveReason::S_REASON_RECAST, player->objectName());
+        reason.m_eventName = "alliance_recast";
+        room->moveCardTo(use.card, player, NULL, Player::DiscardPile, reason);
+        player->broadcastSkillInvoke("@recast");
+        room->setEmotion(player, "effects/recast");
+
+        LogMessage log;
+        log.type = "#UseCard_Recast";
+        log.from = player;
+        log.card_str = use.card->toString();
+        room->sendLog(log);
+
+        player->drawCards(1, "alliance_recast");
+        return;
+    }
+    Disaster::onUse(room, use);
 }
 
 void Lightning::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
@@ -1746,9 +1781,13 @@ BurningCamps::BurningCamps(Card::Suit suit, int number)
     : AOE(suit, number)
 {
     setObjectName("burning_camps");
+    can_recast = true;
 }
 
 bool BurningCamps::isAvailable(const Player *player) const{
+    if (player->getGameMode() == "04_1v3" && !player->isLord() && !player->isCardLimited(this, Card::MethodRecast))
+        return true;
+
     bool canUse = false;
     const Player *next = player->getNextAlive();
     if (!next || next == player)
@@ -1762,11 +1801,44 @@ bool BurningCamps::isAvailable(const Player *player) const{
         break;
     }
 
-    return canUse && TrickCard::isAvailable(player);
+    return canUse && !player->isCardLimited(this, Card::MethodUse) && TrickCard::isAvailable(player);
 }
 
 void BurningCamps::onUse(Room *room, const CardUseStruct &card_use) const{
     CardUseStruct new_use = card_use;
+    if (room->getMode() == "04_1v3"
+        && card_use.card->isKindOf("BurningCamps")
+        && !card_use.from->isLord()) {
+        bool recast = card_use.from->isCardLimited(card_use.card, Card::MethodUse);
+        if (!recast) {
+            bool all_prohibit = true;
+            foreach (const Player *target, card_use.from->getNextAlive()->getFormation()) {
+                if (!card_use.from->isProhibited(target, card_use.card)) {
+                    all_prohibit = false;
+                    break;
+                }
+            }
+            recast = all_prohibit;
+        }
+        if (recast || (card_use.from->handCards().contains(getEffectiveId())
+                       && card_use.from->askForSkillInvoke("alliance_recast", QVariant::fromValue(card_use)))) {
+            CardMoveReason reason(CardMoveReason::S_REASON_RECAST, card_use.from->objectName());
+            reason.m_eventName = "alliance_recast";
+            room->moveCardTo(card_use.card, card_use.from, NULL, Player::DiscardPile, reason);
+            card_use.from->broadcastSkillInvoke("@recast");
+            room->setEmotion(card_use.from, "effects/recast");
+
+            LogMessage log;
+            log.type = "#UseCard_Recast";
+            log.from = card_use.from;
+            log.card_str = card_use.card->toString();
+            room->sendLog(log);
+
+            card_use.from->drawCards(1, "alliance_recast");
+            return;
+        }
+    }
+
     if (new_use.to.isEmpty()) {
         QList<const Player *> targets = card_use.from->getNextAlive()->getFormation();
         foreach (const Player *player, targets) {
