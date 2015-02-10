@@ -323,7 +323,7 @@ ScenarioRule::ScenarioRule(Scenario *scenario)
 }
 
 int ScenarioRule::getPriority(TriggerEvent) const{
-    return 0;
+    return 1;
 }
 
 QStringList ScenarioRule::triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer* &ask_who) const{

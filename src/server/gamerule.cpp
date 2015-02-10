@@ -6,6 +6,7 @@
 #include "engine.h"
 #include "settings.h"
 #include "jsonutils.h"
+#include "scenario.h"
 
 #include <QTime>
 
@@ -771,20 +772,25 @@ void GameRule::changeGeneralXMode(ServerPlayer *player) const{
 }
 
 void GameRule::rewardAndPunish(ServerPlayer *killer, ServerPlayer *victim) const{
-    if (killer->isDead() || killer->getRoom()->getMode() == "06_XMode")
+    Room *room = killer->getRoom();
+    if (killer->isDead() || room->getMode() == "06_XMode")
         return;
 
-    if (killer->getRoom()->getMode() == "02_1v1") {
+    if (room->getMode() == "02_1v1") {
         killer->drawCards(1, "kill");
-    } else if (killer->getRoom()->getMode() == "06_3v3") {
+    } else if (room->getMode() == "06_3v3") {
         if (Config.value("3v3/OfficialRule", "2013").toString().startsWith("201"))
             killer->drawCards(2, "kill");
         else
             killer->drawCards(3, "kill");
     } else {
-        if (victim->getRole() == "rebel" && killer != victim)
-            killer->drawCards(3, "kill");
-        else if (victim->getRole() == "loyalist" && killer->getRole() == "lord")
+        bool is_chunxue = room->getScenario() && room->getScenario()->objectName() == "chunxue";
+        if (victim->getRole() == "rebel" && killer != victim) {
+            if (is_chunxue && killer->getRole() == "rebel")
+                killer->throwAllHandCardsAndEquips();
+            else
+                killer->drawCards(3, "kill");
+        } else if (victim->getRole() == "loyalist" && killer->getRole() == "lord")
             killer->throwAllHandCardsAndEquips();
     }
 }
