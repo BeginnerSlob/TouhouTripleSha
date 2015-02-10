@@ -373,8 +373,7 @@ Weapon::Weapon(Suit suit, int number, int range)
 }
 
 bool Weapon::isAvailable(const Player *player) const{
-    QString mode = player->getGameMode();
-    if (mode == "04_1v3" && !player->isCardLimited(this, Card::MethodRecast))
+    if (player->getGameMode() == "04_1v3" && !player->isLord() && !player->isCardLimited(this, Card::MethodRecast))
         return true;
     return !player->isCardLimited(this, Card::MethodUse) && EquipCard::isAvailable(player);
 }
@@ -392,8 +391,10 @@ void Weapon::onUse(Room *room, const CardUseStruct &card_use) const{
     ServerPlayer *player = card_use.from;
     if (room->getMode() == "04_1v3"
         && use.card->isKindOf("Weapon")
+        && !player->isLord()
         && (player->isCardLimited(use.card, Card::MethodUse)
-            || (!player->getPile("wooden_ox").contains(getEffectiveId())
+            || player->isProhibited(player, use.card)
+            || (player->handCards().contains(getEffectiveId())
                 && player->askForSkillInvoke("alliance_recast", QVariant::fromValue(use))))) {
         CardMoveReason reason(CardMoveReason::S_REASON_RECAST, player->objectName());
         reason.m_eventName = "alliance_recast";
