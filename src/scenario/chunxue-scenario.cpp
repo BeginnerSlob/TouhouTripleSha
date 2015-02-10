@@ -13,25 +13,25 @@ public:
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         switch (triggerEvent) {
         case GameStart: {
-                /*player = room->getLord();
-                room->installEquip(player, "renwang_shield");
-                room->installEquip(player, "hualiu");
+                if (player == NULL) {
+                    ServerPlayer *lord = room->getLord();
+                    room->installEquip(lord, "moon_spear");
 
-                ServerPlayer *caocao = room->findPlayer("caocao");
-                room->installEquip(caocao, "qinggang_sword");
-                room->installEquip(caocao, "zhuahuangfeidian");
+                    ServerPlayer *youmeng = room->findPlayer("yuki003");
+                    room->installEquip(youmeng, "qinggang_sword");
 
-                ServerPlayer *liubei = room->findPlayer("liubei");
-                room->installEquip(liubei, "double_sword");
+                    ServerPlayer *lingmeng = room->findPlayer("yuki001");
+                    room->installEquip(lingmeng, "chitu");
 
-                ServerPlayer *guanyu = room->findPlayer("guanyu");
-                room->installEquip(guanyu, "blade");
-                room->installEquip(guanyu, "chitu");
-                room->acquireSkill(guanyu, "zhanshuangxiong");
+                    ServerPlayer *molisha = room->findPlayer("hana002");
+                    room->installEquip(molisha, "fan");
 
+                    ServerPlayer *ailisi = room->findPlayer("yuki004");
+                    room->installEquip(ailisi, "vine");
 
-                ServerPlayer *zhangliao = room->findPlayer("nos_zhangliao");
-                room->handleAcquireDetachSkills(zhangliao, "-nostuxi|smalltuxi");*/
+                    /*ServerPlayer *zhangliao = room->findPlayer("nos_zhangliao");
+                    room->handleAcquireDetachSkills(zhangliao, "-nostuxi|smalltuxi");*/
+                }
 
                 break;
             }
