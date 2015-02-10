@@ -13,9 +13,10 @@
 #include "lua-wrapper.h"
 #include "room-state.h"
 
-#include "guandu-scenario.h"
+//#include "guandu-scenario.h"
+#include "chunxue-scenario.h"
 #include "couple-scenario.h"
-#include "fancheng-scenario.h"
+//#include "fancheng-scenario.h"
 
 #include <QFile>
 #include <QTextStream>
@@ -50,6 +51,7 @@ void Engine::_loadMiniScenarios() {
 
 void Engine::_loadModScenarios() {
     //addScenario(new GuanduScenario());
+    addScenario(new ChunxueScenario());
     addScenario(new CoupleScenario());
     //addScenario(new FanchengScenario());
 }
