@@ -23,9 +23,9 @@ QString Scenario::getRoles() const{
     for (int i = 0; i < loyalists.length(); i++)
         roles.append('C');
     for (int i = 0; i < rebels.length(); i++)
-        roles.append('N');
-    for (int i = 0; i < rebels.length(); i++)
         roles.append('F');
+    for (int i = 0; i < renegades.length(); i++)
+        roles.append('N');
     return roles;
 }
 
