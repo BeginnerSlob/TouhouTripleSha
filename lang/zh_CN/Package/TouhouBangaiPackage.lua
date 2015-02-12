@@ -72,7 +72,7 @@ return {
 	["#thlingzhan"] = "灵战（操作判定牌）",
 	["lingzhanpile"] = "幻",
 	["thyanmeng"] = "衍梦",
-	[":thyanmeng"] = "锁定技，你的人物技能不能被无效且不会失去。",
+	[":thyanmeng"] = "锁定技，其他角色不能令你的人物技能无效或失去。",
 	
 	["#bangai007"] = "荒城的苍影",
 	["bangai007"] = "冴月麟",--雪 - 空 - 4血
