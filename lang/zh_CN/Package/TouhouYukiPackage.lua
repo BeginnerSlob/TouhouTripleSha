@@ -79,7 +79,8 @@ return {
 	["designer:yuki006"]="幻桜落",
 	["illustrator:yuki006"]="正体不明",
 	["cv:yuki006"]="暂无",
-	--thjibu
+	["thjibu"]="疾步",
+	[":thjibu"]="锁定技，当你计算与其他角色的距离时，始终-1。",
 	["thdunjia"]="遁甲",
 	[":thdunjia"]="每当你使用【杀】造成一次伤害后，你可以选择一项：弃置受到该伤害的角色X张牌；或摸X张牌（X为你与该角色的装备区里的装备牌数差，且至多为三）。",
 	["thdunjia:discard"]="弃置其X张牌",
