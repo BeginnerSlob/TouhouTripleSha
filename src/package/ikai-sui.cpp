@@ -685,22 +685,29 @@ public:
         frequency = Frequent;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (!TriggerSkill::triggerable(player)) return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (player->getPhase() == Player::NotActive && move.from && move.from->isAlive()
             && move.from->objectName() != player->objectName()
             && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip))
-            && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
-            foreach (int id, move.card_ids)
-                if (Sanguosha->getCard(id)->getTypeId() == Card::TypeBasic)
-                    return QStringList(objectName());
+            && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
+            foreach (int id, move.card_ids) {
+                if (Sanguosha->getCard(id)->getTypeId() == Card::TypeBasic) {
+                    if (room->getCurrent() && room->getCurrent()->getPhase() != Player::NotActive) {
+                        if (!room->getCurrent()->hasFlag("IkWuyue_" + player->objectName()))
+                            return QStringList(objectName());
+                    }
+                }
+            }
+        }
         return QStringList();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
+            room->setPlayerFlag(room->getCurrent(), "IkWuyue_" + player->objectName());
             return true;
         }
         return false;
