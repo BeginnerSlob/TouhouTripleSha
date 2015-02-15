@@ -783,12 +783,12 @@ public:
     virtual int getExtra(const Player *target) const {
         int delta = 0;
         if (target->hasFlag("thhuanlong1"))
-            delta += 1;
+            --delta;
         if (target->hasFlag("thhuanlong2"))
-            delta += 1;
+            --delta;
         if (target->hasFlag("thhuanlong"))
-            delta += 1;
-        return -delta;
+            --delta;
+        return delta;
     }
 };
 
