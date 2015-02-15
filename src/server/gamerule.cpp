@@ -966,7 +966,8 @@ bool HulaoPassMode::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer 
             return false;
         }
     case BuryVictim: {
-            if (player->hasFlag("actioned")) room->setPlayerFlag(player, "-actioned");
+            if (player->hasFlag("actioned"))
+                room->setPlayerFlag(player, "-actioned");
 
             LogMessage log;
             log.type = "#Reforming";
@@ -1006,7 +1007,7 @@ bool HulaoPassMode::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer 
                     room->setPlayerProperty(player, "hp", player->getHp() + 1);
                 }
 
-                if (player->getHp() + player->getHandcardNum() == 6) {
+                if (player->getHp() + player->getHandcardNum() == 4) {
                     LogMessage log;
                     log.type = "#ReformingRevive";
                     log.from = player;
