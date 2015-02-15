@@ -32,6 +32,45 @@ public:
     }
 };
 
+class CxQihuang: public TriggerSkill {
+public:
+    CxQihuang(): TriggerSkill("cxqihuang") {
+        events << CardUsed;
+        frequency = Wake;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
+        if (player->getGeneralName() == "hana002") {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card && (use.card->isKindOf("Snatch") || use.card->isKindOf("ThJiewuCard"))) {
+                foreach (ServerPlayer *p, use.to) {
+                    if (TriggerSkill::triggerable(p)) {
+                        ask_who = p;
+                        return QStringList(objectName());
+                    }
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
+        room->doStory("$TouXinDao", 4000);
+
+        LogMessage log;
+        log.type = "#CxQihuang";
+        log.from = ask_who;
+        log.arg = "TouXinDao";
+        room->sendLog(log);
+
+        room->changeMaxHpForAwakenSkill(ask_who, 0);
+
+        ask_who->drawCards(1, objectName());
+        room->setPlayerProperty(ask_who, "role", "rebel");
+        return false;
+    }
+};
+
 class ChunxueRule: public ScenarioRule {
 public:
     ChunxueRule(Scenario *scenario)
@@ -48,7 +87,7 @@ public:
 
                     ServerPlayer *lord = room->getLord();
                     room->installEquip(lord, "moon_spear");
-                    room->attachSkillToPlayer(lord, "cxlinli_lord");
+                    room->acquireSkill(lord, "cxlinli_lord");
                     room->setPlayerMark(lord, "ChunXueWu", 1);
 
                     ServerPlayer *youmeng = room->findPlayer("yuki003");
@@ -56,18 +95,19 @@ public:
 
                     ServerPlayer *lingmeng = room->findPlayer("yuki001");
                     room->installEquip(lingmeng, "chitu");
-                    room->attachSkillToPlayer(lingmeng, "cxlinli");
+                    room->acquireSkill(lingmeng, "cxlinli");
 
                     ServerPlayer *molisha = room->findPlayer("hana002");
                     room->installEquip(molisha, "fan");
-                    room->attachSkillToPlayer(molisha, "cxlinli");
+                    room->acquireSkill(molisha, "cxlinli");
 
                     ServerPlayer *xiaoye = room->findPlayer("tsuki008");
-                    room->attachSkillToPlayer(xiaoye, "cxlinli");
+                    room->acquireSkill(xiaoye, "cxlinli");
 
                     ServerPlayer *ailisi = room->findPlayer("yuki004");
                     room->installEquip(ailisi, "vine");
-                    room->attachSkillToPlayer(ailisi, "cxlinli");
+                    room->acquireSkill(ailisi, "cxlinli");
+                    room->acquireSkill(ailisi, "cxqihuang");
                 }
 
                 break;
@@ -157,7 +197,8 @@ ChunxueScenario::ChunxueScenario()
     rule = new ChunxueRule(this);
 
     skills << new CxLinli
-           << new CxLinliLord;
+           << new CxLinliLord
+           << new CxQihuang;
 }
 
 void ChunxueScenario::onTagSet(Room *room, const QString &key) const{
