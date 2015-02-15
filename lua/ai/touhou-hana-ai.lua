@@ -117,6 +117,7 @@ thduanzui_skill.getTurnUseCard = function(self)
 	if #self.enemies ==0 then return nil end
 	return sgs.Card_Parse("@ThDuanzuiCard=.")
 end
+
 sgs.ai_skill_use_func.ThDuanzuiCard = function(card, use, self)
 	local slashCount=getCardsNum("Slash", self.player, self.player)
 	local duel_targets={}
@@ -133,8 +134,8 @@ sgs.ai_skill_use_func.ThDuanzuiCard = function(card, use, self)
 	local target
 	if #duel_targets>0 then
 		self:sort(duel_targets, "handcard")
-		for _,p in pairs (duel_targets) do
-			if slashCount >= getCardsNum("Slash", p, self.player) then
+		for _, p in pairs(duel_targets) do
+			if slashCount >= getCardsNum("Slash", p, self.player) and not p:isKongcheng() then
 				target =p
 				break
 			end
@@ -142,9 +143,9 @@ sgs.ai_skill_use_func.ThDuanzuiCard = function(card, use, self)
 	end
 	if not target and #slash_targets>0 then
 		self:sort(slash_targets, "defenseSlash")
-		for _,p in pairs (slash_targets) do
+		for _, p in pairs(slash_targets) do
 			local slash = sgs.Sanguosha:cloneCard("slash")
-			if not self:slashProhibit(slash,p,self.player)   then
+			if not self:slashProhibit(slash,p,self.player) and not p:isKongcheng() then
 				--sgs.isGoodTarget(p, self.enemies, self)
 				target = p
 				break
@@ -153,18 +154,19 @@ sgs.ai_skill_use_func.ThDuanzuiCard = function(card, use, self)
 	end
 	if not target then
 		self:sort(self.enemies, "handcard")
-		target =self.enemies[1]
+		for _, p in pairs(self.enemies) do
+			if not p:isKongcheng() then
+				target = self.enemies[1]
+			end
+		end
 	end
-	use.card=card
+	use.card = card
 	if use.to then
 		use.to:append(target)
-		if use.to:length()>0 then return end
+		if use.to:length() > 0 then return end
 	end
 end
 sgs.ai_card_intention.ThDuanzuiCard = 50
-
-
-
 
 --【六震】ai
 sgs.ai_skill_use["@@thliuzhen"] = function(self, prompt)
