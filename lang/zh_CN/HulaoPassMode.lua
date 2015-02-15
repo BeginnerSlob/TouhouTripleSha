@@ -46,7 +46,5 @@ return {
 	["#ReformingRevive"] = "%from 从重整状态中复活！",
 	["draw_1v3"] = "重整摸牌",
 	["alliance_recast"] = "联军重铸",
-	["Hulaopass:recover"] = "回复1点体力",
-	["Hulaopass:draw"] = "摸一张牌",
 	--["$StageChange"] = "第二阶段",
 }

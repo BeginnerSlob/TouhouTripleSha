@@ -968,7 +968,7 @@ void PlayerCardContainer::killPlayer() {
     refresh(true);
     if (ServerInfo.GameMode == "04_1v3" && !m_player->isLord()) {
         _m_deathIcon->hide();
-        _m_votesGot = 6;
+        _m_votesGot = 4;
         updateVotes(false, true);
     } else
         _m_deathIcon->show();
