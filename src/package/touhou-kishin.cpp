@@ -570,16 +570,18 @@ public:
 class ThBaochui: public TriggerSkill {
 public:
     ThBaochui(): TriggerSkill("thbaochui") {
-        events << EventPhaseEnd;
+        events << EventPhaseStart;
     }
 
     virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
         TriggerList skill_list;
-        if (player->getPhase() == Player::Draw && !player->isKongcheng())
+        if (player->getPhase() == Player::Play && !player->isKongcheng()) {
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
-                if (owner == player) continue;
+                if (owner == player)
+                    continue;
                 skill_list.insert(owner, QStringList(objectName()));
             }
+        }
         return skill_list;
     }
 
