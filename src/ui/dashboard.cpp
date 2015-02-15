@@ -184,7 +184,7 @@ void Dashboard::killPlayer() {
     refresh(true);
     _m_deathIcon->show();
     if (ServerInfo.GameMode == "04_1v3" && !Self->isLord()) {
-        _m_votesGot = 6;
+        _m_votesGot = 4;
         updateVotes(false);
     }
 }
