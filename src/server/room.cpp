@@ -355,9 +355,12 @@ void Room::killPlayer(ServerPlayer *victim, DamageStruct *reason) {
 
     thread->trigger(GameOverJudge, this, victim, data);
 
-    foreach (ServerPlayer *p, players_with_victim)
-        if (p->isAlive() || p == victim)
-            thread->trigger(Death, this, p, data);
+    if (getMode() != "04_1v3") {
+        foreach (ServerPlayer *p, players_with_victim) {
+            if (p->isAlive() || p == victim)
+                thread->trigger(Death, this, p, data);
+        }
+    }
 
     victim->detachAllSkills();
     thread->trigger(BuryVictim, this, victim, data);

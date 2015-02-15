@@ -341,9 +341,10 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         int dis = player->distanceTo(damage.to);
         if (damage.card && damage.card->isKindOf("Slash") && dis != -1 && dis <= 1 && player->isWounded()) {
-            foreach (ServerPlayer *p, room->getAllPlayers())
+            foreach (ServerPlayer *p, room->getAllPlayers()) {
                 if (p->getMark("@jhnongwu") > 0)
                     return QStringList(objectName());
+            }
         }
         return QStringList();
     }
