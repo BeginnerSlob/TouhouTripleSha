@@ -1394,9 +1394,9 @@ public:
     }
 };
 
-class IkXiaorui: public TriggerSkill {
+class IkBashou: public TriggerSkill {
 public:
-    IkXiaorui(): TriggerSkill("ikxiaorui") {
+    IkBashou(): TriggerSkill("ikbashou") {
         events << EventPhaseStart;
     }
 
@@ -1413,7 +1413,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *yuejin) const{
-        if (room->askForCard(yuejin, ".Basic", "@ikxiaorui", QVariant(), objectName())) {
+        if (room->askForCard(yuejin, ".Basic", "@ikbashou", QVariant(), objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -1421,7 +1421,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *yuejin) const{
-        if (!room->askForCard(player, "^BasicCard", "@ikxiaorui-discard"))
+        if (!room->askForCard(player, "^BasicCard", "@ikbashou-discard"))
             room->damage(DamageStruct(objectName(), yuejin, player));
         return false;
     }
@@ -1849,7 +1849,7 @@ void IkHongfaCard::onEffect(const CardEffectStruct &effect) const{
 
     QList<ServerPlayer *> targets;
     foreach (ServerPlayer *p, room->getAllPlayers()) {
-        if (effect.to->distanceTo(p) == 1 && caohong->canDiscard(p, "hej"))
+        if (effect.to->distanceTo(p) == 2 && caohong->canDiscard(p, "hej"))
             targets << p;
     }
     if (!targets.isEmpty()) {
@@ -1882,7 +1882,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return PhaseChangeSkill::triggerable(target)
-            && target->getPhase() == Player::Finish
+            && target->getPhase() == Player::Discard
             && !target->isNude();
     }
 
@@ -4926,7 +4926,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     wind050->addSkill(new IkWujietiya);
 
     General *bloom023 = new General(this, "bloom023", "hana");
-    bloom023->addSkill(new IkXiaorui);
+    bloom023->addSkill(new IkBashou);
 
     General *bloom024 = new General(this, "bloom024", "hana");
     bloom024->addSkill(new IkXinban);

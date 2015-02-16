@@ -2372,19 +2372,6 @@ public:
     }
 };
 
-class ThJibu: public DistanceSkill {
-public:
-    ThJibu(): DistanceSkill("thjibu") {
-    }
-
-    virtual int getCorrect(const Player *from, const Player *) const {
-        if (from->hasSkill(objectName()))
-            return -1;
-        else
-            return 0;
-    }
-};
-
 ThLiuzhenCard::ThLiuzhenCard() {
     handling_method = MethodNone;
 }
@@ -2478,7 +2465,7 @@ public:
             log.to << effect.to;
             log.arg  = objectName();
             room->sendLog(log);
-            if (player->getCardCount(true) < 2 || !room->askForDiscard(player, objectName(), 2, 2, true, true))
+            if (!player->canDiscard(player, "he") || !room->askForDiscard(player, objectName(), 1, 1, true, true))
                 room->loseHp(player);
         } else if (triggerEvent == BeforeCardsMove) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
@@ -2514,7 +2501,7 @@ class ThTianchanViewAsSkill: public OneCardViewAsSkill {
 public:
     ThTianchanViewAsSkill(): OneCardViewAsSkill("thtianchanv") {
         attached_lord_skill = true;
-        filter_pattern = ".|spade|.|hand";
+        filter_pattern = ".|spade";
     }
 
     virtual bool shouldBeVisible(const Player *player) const{
@@ -2682,7 +2669,6 @@ TouhouHanaPackage::TouhouHanaPackage()
     hana017->addSkill(new ThRudao);
 
     General *hana018 = new General(this, "hana018$", "hana");
-    hana018->addSkill(new ThJibu);
     hana018->addSkill(new ThLiuzhen);
     hana018->addSkill(new ThTianchan);
 
