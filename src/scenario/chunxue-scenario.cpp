@@ -120,6 +120,136 @@ public:
     }
 };
 
+CxQiuwenCard::CxQiuwenCard() {
+    target_fixed = true;
+}
+
+void CxQiuwenCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    room->doStory("$YouMingFa", 4000);
+    room->setPlayerFlag(source, "CxQiuwenUsed");
+    room->setTag("YouMingFa", true);
+}
+
+class CxQiuwen: public ZeroCardViewAsSkill {
+public:
+    CxQiuwen(): ZeroCardViewAsSkill("cxqiuwen") {
+        frequency = Limited;
+    }
+
+    virtual const Card *viewAs() const {
+        return new CxQiuwenCard;
+    }
+};
+
+class CxQiuwenTrigger: public TriggerSkill {
+public:
+    CxQiuwenTrigger(): TriggerSkill("#cxqiuwen") {
+        events << PreCardUsed << TargetSpecified;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (triggerEvent == TargetSpecified) {
+            if (use.card->isKindOf("Slash") && player->hasFlag("CxQiuwenUsed"))
+                return QStringList(objectName());
+        } else if (triggerEvent == PreCardUsed) {
+            if (use.card->isKindOf("Slash") && player->hasFlag("CxQiuwenUsed")) {
+                if (use.m_addHistory)
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (triggerEvent == TargetSpecified) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            foreach (ServerPlayer *p, use.to.toSet())
+                p->addQinggangTag(use.card);
+        } else if (triggerEvent == PreCardUsed) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            room->addPlayerHistory(player, use.card->getClassName(), -1);
+            use.m_addHistory = false;
+            data = QVariant::fromValue(use);
+        }
+
+        return false;
+    }
+};
+
+class CxQiuwenTargetMod: public TargetModSkill {
+public:
+    CxQiuwenTargetMod(): TargetModSkill("#cxqiuwen-tar") {
+        frequency = Limited;
+    }
+
+    virtual int getDistanceLimit(const Player *from, const Card *) const{
+        if (from->hasFlag("CxQiuwenUsed"))
+            return 1000;
+        else
+            return 0;
+    }
+
+    virtual int getResidueNum(const Player *from, const Card *) const{
+        if (from->hasFlag("CxQiuwenUsed"))
+            return 1000;
+        else
+            return 0;
+    }
+
+    virtual int getExtraTargetNum(const Player *from, const Card *) const{
+        if (from->hasFlag("CxQiuwenUsed"))
+            return 1;
+        else
+            return 0;
+    }
+};
+
+class CxLiujing: public TriggerSkill {
+public:
+    CxLiujing(): TriggerSkill("cxliujing") {
+        events << DamageInflicted;
+        frequency = Limited;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.from && damage.from->isAlive())
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        if (player->askForSkillInvoke(objectName())) {
+            room->doStory("$KongGuanJian", 4000);
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        if (player->getHandcardNum() < 4)
+            player->drawCards(4 - player->getHandcardNum(), objectName());
+
+        DamageStruct damage = data.value<DamageStruct>();
+        damage.to = damage.from;
+        damage.transfer = true;
+        damage.transfer_reason = objectName();
+        player->tag["TransferDamage"] = QVariant::fromValue(damage);
+
+        if (damage.from->isAlive())
+            damage.from->turnOver();
+
+        room->setTag("KongGuanJian", true);
+
+        return true;
+    }
+};
+
 class ChunxueRule: public ScenarioRule {
 public:
     ChunxueRule(Scenario *scenario)
@@ -136,30 +266,30 @@ public:
 
                     ServerPlayer *lord = room->getLord();
                     room->installEquip(lord, "moon_spear");
-                    room->acquireSkill(lord, "cxlinli_lord", false);
+                    room->acquireSkill(lord, "cxlinli_lord");
                     room->setPlayerMark(lord, "ChunXueWu", 1);
 
-                    ServerPlayer *youmeng = room->findPlayer("yuki003");
-                    room->installEquip(youmeng, "qinggang_sword");
+                    ServerPlayer *yaomeng = room->findPlayer("yuki003");
+                    room->installEquip(yaomeng, "qinggang_sword");
 
                     ServerPlayer *chen = room->findPlayer("yuki006");
-                    room->acquireSkill(chen, "cxxuqu", false);
+                    room->acquireSkill(chen, "cxxuqu");
 
                     ServerPlayer *lingmeng = room->findPlayer("yuki001");
                     room->installEquip(lingmeng, "chitu");
-                    room->acquireSkill(lingmeng, "cxlinli", false);
+                    room->acquireSkill(lingmeng, "cxlinli");
 
                     ServerPlayer *molisha = room->findPlayer("hana002");
                     room->installEquip(molisha, "fan");
-                    room->acquireSkill(molisha, "cxlinli", false);
+                    room->acquireSkill(molisha, "cxlinli");
 
                     ServerPlayer *xiaoye = room->findPlayer("tsuki008");
-                    room->acquireSkill(xiaoye, "cxlinli", false);
+                    room->acquireSkill(xiaoye, "cxlinli");
 
                     ServerPlayer *ailisi = room->findPlayer("yuki004");
                     room->installEquip(ailisi, "vine");
-                    room->acquireSkill(ailisi, "cxlinli", false);
-                    room->acquireSkill(ailisi, "cxqihuang", false);
+                    room->acquireSkill(ailisi, "cxlinli");
+                    room->acquireSkill(ailisi, "cxqihuang");
                 }
 
                 break;
@@ -251,11 +381,25 @@ ChunxueScenario::ChunxueScenario()
     skills << new CxLinli
            << new CxLinliLord
            << new CxQihuang
-           << new CxXuqu;
+           << new CxXuqu
+           << new CxQiuwen
+           << new CxQiuwenTrigger
+           << new CxQiuwenTargetMod
+           << new CxLiujing;
+    related_skills.insertMulti("cxqiuwen", "#cxqiuwen");
+    related_skills.insertMulti("cxqiuwen", "#cxqiuwen-tar");
+
+    addMetaObject<CxQiuwenCard>();
 }
 
 void ChunxueScenario::onTagSet(Room *room, const QString &key) const{
     if (key == "MingYuFei") {
+        ServerPlayer *yaomeng = room->findPlayer("yuki003");
+        if (yaomeng) {
+            room->acquireSkill(yaomeng, "cxqiuwen");
+            room->acquireSkill(yaomeng, "cxliujing");
+        }
+
         ServerPlayer *chen = room->findPlayer("yuki006");
         if (chen)
             room->detachSkillFromPlayer(chen, "cxxuqu", true);
@@ -275,6 +419,14 @@ void ChunxueScenario::onTagSet(Room *room, const QString &key) const{
         ServerPlayer *ailisi = room->findPlayer("yuki004");
         if (ailisi)
             room->detachSkillFromPlayer(ailisi, "cxlinli", true);
+    } else if (key == "YouMingFa") {
+        ServerPlayer *yaomeng = room->findPlayer("yuki003");
+        if (yaomeng)
+            room->detachSkillFromPlayer(yaomeng, "cxqiuwen", true);
+    } else if (key == "KongGuanJian") {
+        ServerPlayer *yaomeng = room->findPlayer("yuki003");
+        if (yaomeng)
+            room->detachSkillFromPlayer(yaomeng, "cxliujing", true);
     } else if (key == "MoRanYing") {
         ServerPlayer *lord = room->getLord();
         if (lord) {

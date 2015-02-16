@@ -1774,7 +1774,7 @@ public:
 
     virtual int getDistanceLimit(const Player *from, const Card *) const {
         if (from->hasFlag("IkZhiyu2"))
-            return 998;
+            return 1000;
         else
             return 0;
     }

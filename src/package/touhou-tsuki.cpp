@@ -724,7 +724,7 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         player->tag["ThYuhuoDamage"] = data;
         if (player->askForSkillInvoke(objectName(), data)) {
-             player->tag.remove("ThYuhuoDamage");
+            player->tag.remove("ThYuhuoDamage");
             room->broadcastSkillInvoke(objectName());
             return true;
         }
