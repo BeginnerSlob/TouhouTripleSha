@@ -77,7 +77,7 @@ public:
 class ThXuanyan: public TriggerSkill {
 public:
     ThXuanyan(): TriggerSkill("thxuanyan") {
-        events << DamageInflicted << Dying << TurnedOver;
+        events << DamageInflicted << TurnedOver;
         frequency = Compulsory;
     }
 
@@ -87,10 +87,6 @@ public:
         if (triggerEvent == DamageInflicted) {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.damage > 1)
-                return QStringList(objectName());
-        } else if (triggerEvent == Dying) {
-            DyingStruct dying = data.value<DyingStruct>();
-            if (dying.who == player)
                 return QStringList(objectName());
         } else if (triggerEvent == TurnedOver)
             return QStringList(objectName());

@@ -3714,6 +3714,53 @@ public:
     }
 };
 
+class IkJingfa: public TriggerSkill {
+public:
+    IkJingfa(): TriggerSkill("ikjingfa") {
+        events << PreDamageDone << EventPhaseEnd;
+        frequency = Frequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == PreDamageDone) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.from && damage.from->getPhase() == Player::Play)
+                damage.from->setFlags("IkJingfaDamageInPlayPhase");
+        } else if (triggerEvent == EventPhaseEnd && TriggerSkill::triggerable(player) && player->getPhase() == Player::Play) {
+            if (!player->hasFlag("IkJingfaDamageInPlayPhase"))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            if (player->canDiscard(p, "ej"))
+                targets << p;
+        }
+        ServerPlayer *target = NULL;
+        if (!targets.isEmpty())
+            target = room->askForPlayerChosen(player, targets, objectName(), "@ikjingfa", true);
+
+        if (target) {
+            int card_id = room->askForCardChosen(player, target, "ej", objectName(), false, Card::MethodDiscard);
+            room->throwCard(card_id, player, room->getCardPlace(card_id) == Player::PlaceDelayedTrick ? NULL : target);
+        } else
+            player->drawCards(1, objectName());
+
+        return false;
+    }
+};
+
 class IkQiyuViewAsSkill: public OneCardViewAsSkill {
 public:
     IkQiyuViewAsSkill(): OneCardViewAsSkill("ikqiyu") {
@@ -5201,6 +5248,7 @@ IkaiMokuPackage::IkaiMokuPackage()
     luna004->addSkill(new IkXuzhao);
 
     General *luna005 = new General(this, "luna005", "tsuki");
+    luna005->addSkill(new IkJingfa);
     luna005->addSkill(new IkQiyu);
     luna005->addSkill(new IkQiyuGet);
     related_skills.insertMulti("ikqiyu", "#ikqiyu");

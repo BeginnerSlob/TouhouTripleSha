@@ -2981,9 +2981,9 @@ public:
     }
 };
 
-class IkLeilan: public TriggerSkill {
+class IkNilan: public TriggerSkill {
 public:
-    IkLeilan(): TriggerSkill("ikleilan") {
+    IkNilan(): TriggerSkill("iknilan") {
         events << CardsMoveOneTime << EventPhaseEnd << EventPhaseStart << EventPhaseChanging;
         frequency = Compulsory;
     }
@@ -3051,13 +3051,13 @@ public:
 
                 QString choice = room->askForChoice(ask_who, objectName(), choicelist.join("+"));
                 if (choice == "slash") {
-                    ServerPlayer *target = room->askForPlayerChosen(ask_who, targets1, "ikleilan_slash", "@dummy-slash");
+                    ServerPlayer *target = room->askForPlayerChosen(ask_who, targets1, "iknilan_slash", "@dummy-slash");
                     ThunderSlash *slash = new ThunderSlash(Card::NoSuit, 0);
-                    slash->setSkillName("_ikleilan");
+                    slash->setSkillName("_iknilan");
                     room->useCard(CardUseStruct(slash, ask_who, target));
                 } else if (choice == "damage") {
-                    ServerPlayer *target = room->askForPlayerChosen(ask_who, targets2, "ikleilan_damage", "@ikleilan-damage");
-                    room->damage(DamageStruct("ikleilan", ask_who, target, 1, DamageStruct::Thunder));
+                    ServerPlayer *target = room->askForPlayerChosen(ask_who, targets2, "iknilan_damage", "@iknilan-damage");
+                    room->damage(DamageStruct("iknilan", ask_who, target, 1, DamageStruct::Thunder));
                 } else {
                     ask_who->drawCards(1);
                     room->askForDiscard(ask_who, objectName(), 1, 1);
@@ -5584,9 +5584,9 @@ IkaiKinPackage::IkaiKinPackage()
     related_skills.insertMulti("ikxinjue", "#ikxinjue");
 
     General *snow016 = new General(this, "snow016", "yuki");
-    snow016->addSkill(new IkLeilan);
-    snow016->addSkill(new SlashNoDistanceLimitSkill("ikleilan"));
-    related_skills.insertMulti("ikleilan", "#ikleilan-slash-ndl");
+    snow016->addSkill(new IkNilan);
+    snow016->addSkill(new SlashNoDistanceLimitSkill("iknilan"));
+    related_skills.insertMulti("iknilan", "#iknilan-slash-ndl");
 
     General *snow017 = new General(this, "snow017", "yuki", 3, false);
     snow017->addSkill(new IkYuanfa);
