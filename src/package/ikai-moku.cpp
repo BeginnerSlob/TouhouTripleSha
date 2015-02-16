@@ -1994,7 +1994,7 @@ public:
             }
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct phase_change = data.value<PhaseChangeStruct>();
-            if (phase_change.from != Player::Play)
+            if (phase_change.from != Player::Play && phase_change.to != Player::Play)
                   return QStringList();
             if (player->hasFlag("ForbidIkYihuo"))
                 room->setPlayerFlag(player, "-ForbidIkYihuo");
@@ -2954,7 +2954,7 @@ public:
             }
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct phase_change = data.value<PhaseChangeStruct>();
-            if (phase_change.from != Player::Play)
+            if (phase_change.from != Player::Play && phase_change.to != Player::Play)
                 return QStringList();
             if (player->hasFlag("ForbidIkBiansheng"))
                 room->setPlayerFlag(player, "-ForbidIkBiansheng");
@@ -4906,7 +4906,7 @@ public:
             }
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct phase_change = data.value<PhaseChangeStruct>();
-            if (phase_change.from != Player::Play)
+            if (phase_change.from != Player::Play && phase_change.to != Player::Play)
                   return QStringList();
             if (player->hasFlag("ForbidIkYuji"))
                 room->setPlayerFlag(player, "-ForbidIkYuji");
