@@ -2,6 +2,16 @@
 #define _CHUNXUE_SCENARIO_H
 
 #include "scenario.h"
+#include "card.h"
+
+class CxQiuwenCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE CxQiuwenCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
 
 class ChunxueScenario : public Scenario {
     Q_OBJECT
