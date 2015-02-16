@@ -31,11 +31,24 @@ public:
         CardUseStruct use = data.value<CardUseStruct>();
         QVariantList jink_list = player->tag["Jink_" + use.card->toString()].toList();
         int index = 0;
+        QList<ServerPlayer *> tos;
         foreach (ServerPlayer *p, use.to) {
             int handcardnum = p->getHandcardNum();
             if ((player->getHp() <= handcardnum || player->getAttackRange() >= handcardnum)
                 && player->askForSkillInvoke(objectName(), QVariant::fromValue(p))) {
                 room->broadcastSkillInvoke(objectName());
+
+                if (!tos.contains(p)) {
+                    p->addMark("ikliegong");
+                    room->addPlayerMark(p, "@skill_invalidity");
+                    tos << p;
+
+                    foreach (ServerPlayer *pl, room->getAllPlayers())
+                        room->filterCards(pl, pl->getCards("he"), true);
+                    Json::Value args;
+                    args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+                }
 
                 LogMessage log;
                 log.type = "#NoJink";
@@ -47,6 +60,39 @@ public:
         }
         player->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
         return false;
+    }
+};
+
+class IkLiegongClear: public TriggerSkill {
+public:
+    IkLiegongClear(): TriggerSkill("#ikliegong-clear") {
+        events << EventPhaseChanging << Death;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to != Player::NotActive)
+                return QStringList();
+        } else if (triggerEvent == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != target || target != room->getCurrent())
+                return QStringList();
+        }
+        QList<ServerPlayer *> players = room->getAllPlayers();
+        foreach (ServerPlayer *player, players) {
+            if (player->getMark("ikliegong") == 0) continue;
+            room->removePlayerMark(player, "@skill_invalidity", player->getMark("ikliegong"));
+            player->setMark("ikliegong", 0);
+
+            foreach (ServerPlayer *p, room->getAllPlayers())
+                room->filterCards(p, p->getCards("he"), false);
+            Json::Value args;
+            args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+            room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+        }
+        return QStringList();
     }
 };
 
@@ -5082,6 +5128,8 @@ IkaiMokuPackage::IkaiMokuPackage()
     General *wind008 = new General(this, "wind008", "kaze");
     wind008->addSkill("thxiagong");
     wind008->addSkill(new IkLiegong);
+    wind008->addSkill(new IkLiegongClear);
+    related_skills.insertMulti("ikliegong", "#ikliegong-clear");
 
     General *wind009 = new General(this, "wind009", "kaze");
     wind009->addSkill(new IkKuanggu);
