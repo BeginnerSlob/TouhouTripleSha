@@ -2532,7 +2532,7 @@ public:
 class ThTianchan: public TriggerSkill {
 public:
     ThTianchan(): TriggerSkill("thtianchan$") {
-        events << GameStart << EventAcquireSkill << EventLoseSkill << EventPhaseChanging;
+        events << GameStart << EventAcquireSkill << EventLoseSkill;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
