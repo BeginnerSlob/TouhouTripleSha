@@ -2693,6 +2693,8 @@ int Room::getCardFromPile(const QString &card_pattern) {
                     return card_id;
             }
         }
+        if (card_pattern == "@cxhuaxu")
+            return (*m_drawPile).first();
     } else {
         QString card_name = card_pattern;
         foreach (int card_id, *m_drawPile) {
