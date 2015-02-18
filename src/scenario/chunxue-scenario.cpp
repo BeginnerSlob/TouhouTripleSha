@@ -423,6 +423,58 @@ private:
     QString wake;
 };
 
+class CxJiushi: public TriggerSkill {
+public:
+    CxJiushi(): TriggerSkill("cxjiushi") {
+        events << BuryVictim;
+        frequency = Wake;
+    }
+
+    virtual int getPriority(TriggerEvent triggerEvent) const{
+        return -4;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer* &ask_who) const{
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who->getGeneralName() == "yuki007") {
+            if (death.damage && TriggerSkill::triggerable(death.damage->from)) {
+                ask_who = death.damage->from;
+                return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *player) const{
+        room->doStory("$TianCeYun", 4000);
+
+        LogMessage log;
+        log.type = "#CxWake";
+        log.from = player;
+        log.arg = "TianCeYun";
+        room->sendLog(log);
+
+        room->setPlayerProperty(player, "general", "sp011");
+
+        room->handleAcquireDetachSkills(player, "thjiuzhang|thshushu|thfengling");
+
+        if (player->getHandcardNum() < 4)
+            player->drawCards(4 - player->getHandcardNum(), objectName());
+
+        room->recover(player, RecoverStruct(player, NULL, 3));
+
+        if (player->isChained()) {
+            player->setChained(true);
+            room->setEmotion(player, "effects/iron_chain");
+            room->broadcastProperty(player, "chained");
+        }
+
+        room->detachSkillFromPlayer(player, "cxjiushi", true);
+
+        return false;
+    }
+};
+
 class ChunxueRule: public ScenarioRule {
 public:
     ChunxueRule(Scenario *scenario)
@@ -499,7 +551,8 @@ ChunxueScenario::ChunxueScenario()
            << new CxChunzuiBase("hana002", "thhuaji", "genxing")
            << new CxChunzuiBase("tsuki008", "thshennao", QString())
            << new CxChunzuiBase("yuki004", "thhuilun", QString())
-           << new CxChunzuiBase("yuki001", "thmengsheng", "erchong");
+           << new CxChunzuiBase("yuki001", "thmengsheng", "erchong")
+           << new CxJiushi;
     related_skills.insertMulti("cxqiuwen", "#cxqiuwen");
     related_skills.insertMulti("cxqiuwen", "#cxqiuwen-tar");
 
@@ -573,6 +626,10 @@ void ChunxueScenario::onTagSet(Room *room, const QString &key) const{
         ServerPlayer *lan = room->findPlayer("yuki007");
         if (lan)
             room->detachSkillFromPlayer(lan, "cxxianlin", true);
+
+        ServerPlayer *baka = room->findPlayer("yuki010");
+        if (baka)
+            room->acquireSkill(baka, "cxjiushi");
     } else if (key == "MiJinZhan") {
         ServerPlayer *yaomeng = room->findPlayer("yuki003");
         if (yaomeng)
