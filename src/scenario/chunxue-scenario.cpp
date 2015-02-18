@@ -1,6 +1,7 @@
 #include "chunxue-scenario.h"
 
 #include "skill.h"
+#include "engine.h"
 
 class CxLinli: public DrawCardsSkill {
 public:
@@ -360,6 +361,68 @@ public:
     }
 };
 
+class CxChunzuiBase: public TriggerSkill {
+public:
+    CxChunzuiBase(const QString &general_name, const QString &obtain_skill, const QString &wake)
+        : TriggerSkill("cxchunzui_" + general_name),
+          general_name(general_name), obtain_skill(obtain_skill), wake(wake) {
+        events << BuryVictim;
+        frequency = Wake;
+    }
+
+    virtual int getPriority(TriggerEvent triggerEvent) const{
+        return -4;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer* &ask_who) const{
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who->getRole() == "rebel") {
+            ServerPlayer *player = room->findPlayerBySkillName(objectName());
+            if (player && player->getRole() == "rebel") {
+                ask_who = player;
+                return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const{
+        room->doLightbox("$ZaiMiGui_" + general_name, 4000);
+
+        LogMessage log;
+        log.type = "#CxWake";
+        log.from = player;
+        log.arg = "ZaiMiGui";
+        room->sendLog(log);
+
+        LogMessage log2;
+        log2.type = "#GainMaxHp";
+        log2.from = player;
+        log2.arg = "1";
+        room->sendLog(log2);
+
+        room->setPlayerProperty(player, "maxhp", player->getMaxHp() + 1);
+        room->recover(player, RecoverStruct(player, NULL, 1));
+
+        room->acquireSkill(player, obtain_skill);
+
+        if (!wake.isEmpty() && player->getMark("@" + wake) == 0) {
+            const TriggerSkill *skill = Sanguosha->getTriggerSkill("th" + wake);
+            if (skill)
+                skill->effect(NonTrigger, room, player, QVariant(), player);
+        }
+
+        room->detachSkillFromPlayer(player, objectName(), true);
+
+        return false;
+    }
+
+private:
+    QString general_name;
+    QString obtain_skill;
+    QString wake;
+};
+
 class ChunxueRule: public ScenarioRule {
 public:
     ChunxueRule(Scenario *scenario)
@@ -432,7 +495,11 @@ ChunxueScenario::ChunxueScenario()
            << new CxLiujing
            << new CxWangwo
            << new CxXianlin
-           << new CxYongjie;
+           << new CxYongjie
+           << new CxChunzuiBase("hana002", "thhuaji", "genxing")
+           << new CxChunzuiBase("tsuki008", "thshennao", QString())
+           << new CxChunzuiBase("yuki004", "thhuilun", QString())
+           << new CxChunzuiBase("yuki001", "thmengsheng", "erchong");
     related_skills.insertMulti("cxqiuwen", "#cxqiuwen");
     related_skills.insertMulti("cxqiuwen", "#cxqiuwen-tar");
 
@@ -497,11 +564,16 @@ void ChunxueScenario::onTagSet(Room *room, const QString &key) const{
         ServerPlayer *chen = room->findPlayer("yuki006");
         if (chen)
             room->acquireSkill(chen, "cxxianlin");
+
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            if (p->getRole() == "rebel" || p->getGeneralName() == "yuki004")
+                room->acquireSkill(p, "cxchunzui_" + p->getGeneralName());
+        }
     } else if (key == "XianHuYan") {
         ServerPlayer *lan = room->findPlayer("yuki007");
         if (lan)
             room->detachSkillFromPlayer(lan, "cxxianlin", true);
-    } else if (key == "XianHuYan") {
+    } else if (key == "MiJinZhan") {
         ServerPlayer *yaomeng = room->findPlayer("yuki003");
         if (yaomeng)
             room->detachSkillFromPlayer(yaomeng, "cxyongjie", true);

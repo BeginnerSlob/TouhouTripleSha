@@ -162,6 +162,7 @@ public:
         log.type = "#ThGenxing";
         log.from = player;
         log.arg = objectName();
+        log.arg2 = QString::number(player->getHp());
         room->sendLog(log);
 
         room->setPlayerMark(player, "@genxing", 1);
