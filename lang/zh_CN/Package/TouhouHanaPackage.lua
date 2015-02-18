@@ -27,7 +27,7 @@ return {
 	["thgenxing:recover"]="回复1点体力",
 	["thgenxing:draw"]="摸两张牌",
 	["@genxing"]="根性",
-	["#ThGenxing"]="%from 的体力值为 <font color=\"yellow\"><b>1</b></font>，触发“%arg”觉醒",
+	["#ThGenxing"]="%from 的体力值为 %arg2，触发“%arg”觉醒",
 	["thmopao"]="魔炮",
 	[":thmopao"]="每当你使用或打出一张【闪】时，你可以令一名其他角色摸一张牌，然后你对其造成1点火焰伤害。",
 	["@thmopao"]="你可以发动“魔炮”",
