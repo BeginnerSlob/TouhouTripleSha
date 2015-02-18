@@ -1044,11 +1044,10 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         player->gainMark("@yingxiao");
-        if (player->getMark("@yingxiao") >= 4 && player->hasSkill("thmanxiao")) {
-            room->sendCompulsoryTriggerLog(player, "thmanxiao");
-            room->killPlayer(player, NULL);
+
+        if (player->isDead())
             return false;
-        }
+
         room->recover(player, RecoverStruct(player, NULL, 1 - player->getHp()));
         if (player->isChained())
             room->setPlayerProperty(player, "chained", false);
@@ -1084,10 +1083,6 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         room->loseMaxHp(damage.to);
         player->gainMark("@yingxiao");
-        if (player->getMark("@yingxiao") >= 4 && player->hasSkill("thmanxiao")) {
-            room->sendCompulsoryTriggerLog(player, "thmanxiao");
-            room->killPlayer(player, NULL);
-        }
         return true;
     }
 };
@@ -1142,13 +1137,31 @@ public:
     }
 };
 
-class ThManxiao: public MaxCardsSkill{
+class ThManxiao: public TriggerSkill{
 public:
-    ThManxiao(): MaxCardsSkill("thmanxiao"){
+    ThManxiao(): TriggerSkill("thmanxiao") {
+        events << EventMarksGot;
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return TriggerSkill::triggerable(target)
+            && target->getMark("@yingxiao") >= 4;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        room->killPlayer(player);
+        return false;
+    }
+};
+
+class ThManxiaoMaxCards: public MaxCardsSkill{
+public:
+    ThManxiaoMaxCards(): MaxCardsSkill("#thmanxiao"){
     }
 
     virtual int getExtra(const Player *target) const{
-        if (target->hasSkill(objectName()))
+        if (target->hasSkill("thmanxiao"))
             return target->getMark("@yingxiao");
         else
             return 0;
@@ -2653,6 +2666,8 @@ TouhouKamiPackage::TouhouKamiPackage()
     kami007->addSkill(new ThYoushang);
     kami007->addSkill(new ThYouya);
     kami007->addSkill(new ThManxiao);
+    kami007->addSkill(new ThManxiaoMaxCards);
+    related_skills.insertMulti("thmanxiao", "#thmanxiao");
 
     General *kami008 = new General(this, "kami008", "kami", 3);
     kami008->addSkill(new ThJinlu);
