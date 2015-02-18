@@ -667,6 +667,9 @@ enum TriggerEvent {
     TurnedOver,
     ChainStateChanged,
 
+    EventMarksGot,
+    EventMarksLost,
+
     ConfirmDamage,    // confirm the damage's count and damage's nature
     Predamage,        // trigger the certain skill -- ikxuwu
     DamageForseen,    // the first event in a damage -- ikliefeng dawu
