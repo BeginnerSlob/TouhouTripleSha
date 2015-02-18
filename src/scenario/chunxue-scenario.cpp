@@ -590,6 +590,68 @@ public:
     }
 };
 
+class CxZhongyan: public TriggerSkill {
+public:
+    CxZhongyan(): TriggerSkill("cxzhongyan") {
+        events << GameOverJudge;
+        frequency = Wake;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
+        if (player->isLord() && player->isDead()) {
+            int n = 0;
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (p->getRole() == "rebel")
+                    ++n;
+                else
+                    return QStringList();
+            }
+            if (n >= 3)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->doStory("$ShenMengYin", 4000);
+
+        LogMessage log;
+        log.type = "#CxWake";
+        log.from = player;
+        log.arg = "ShenMengYin";
+        room->sendLog(log);
+
+        room->revivePlayer(player);
+
+        room->setPlayerProperty(player, "general", "yuki009");
+        room->setPlayerProperty(player, "gender", (int)player->getGeneral()->getGender());
+
+        QList<const Skill *> skills = player->getVisibleSkillList();
+        QStringList detachList;
+        foreach (const Skill *skill, skills) {
+            if (!skill->inherits("SPConvertSkill") && !skill->isAttachedLordSkill())
+                detachList.append("-" + skill->objectName());
+        }
+        room->handleAcquireDetachSkills(player, detachList);
+
+        room->handleAcquireDetachSkills(player, "thlingya|thheimu|thxijing|thhongdao");
+
+        if (player->getHandcardNum() < 4)
+            player->drawCards(4 - player->getHandcardNum(), objectName());
+
+        room->setPlayerProperty(player, "maxhp", player->getMaxHp() + 1);
+        room->recover(player, RecoverStruct(player, NULL, 3));
+
+        if (player->isChained()) {
+            player->setChained(true);
+            room->setEmotion(player, "effects/iron_chain");
+            room->broadcastProperty(player, "chained");
+        }
+
+        return true;
+    }
+};
+
 class ChunxueRule: public ScenarioRule {
 public:
     ChunxueRule(Scenario *scenario)
@@ -645,10 +707,10 @@ public:
 ChunxueScenario::ChunxueScenario()
     : Scenario("chunxue")
 {
-    lord = "kami007";
+    lord = "kami007"; // kami007->yuki009
     loyalists << "yuki003" << "yuki006"; // yuki006->yuki007
     rebels << "yuki001" << "hana002" << "tsuki008";
-    renegades << "yuki004" << "yuki010";
+    renegades << "yuki004" << "yuki010"; // yuki010->sp011
 
     rule = new ChunxueRule(this);
 
@@ -670,7 +732,8 @@ ChunxueScenario::ChunxueScenario()
            << new CxJiushi
            << new CxWangdie
            << new CxKongnie
-           << new CxHuaxu;
+           << new CxHuaxu
+           << new CxZhongyan;
     related_skills.insertMulti("cxqiuwen", "#cxqiuwen");
     related_skills.insertMulti("cxqiuwen", "#cxqiuwen-tar");
 
