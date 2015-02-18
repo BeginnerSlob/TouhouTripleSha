@@ -840,8 +840,8 @@ void ServerPlayer::gainMark(const QString &mark, int n) {
     room->setEmotion(this, "effects/mark_got");
     room->setPlayerMark(this, mark, value);
 
-    QVariant _n = QVariant::fromValue(n);
-    room->getThread()->trigger(EventMarksGot, room, this, _n);
+    QVariant _mark = QVariant::fromValue(mark);
+    room->getThread()->trigger(EventMarksGot, room, this, _mark);
 }
 
 void ServerPlayer::loseMark(const QString &mark, int n) {
@@ -859,8 +859,8 @@ void ServerPlayer::loseMark(const QString &mark, int n) {
     room->setEmotion(this, "effects/mark_lost");
     room->setPlayerMark(this, mark, value);
 
-    QVariant _n = QVariant::fromValue(n);
-    room->getThread()->trigger(EventMarksLost, room, this, _n);
+    QVariant _mark = QVariant::fromValue(mark);
+    room->getThread()->trigger(EventMarksLost, room, this, _mark);
 }
 
 void ServerPlayer::loseAllMarks(const QString &mark_name) {

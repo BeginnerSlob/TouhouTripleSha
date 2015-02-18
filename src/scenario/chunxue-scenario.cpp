@@ -2,6 +2,7 @@
 
 #include "skill.h"
 #include "engine.h"
+#include "standard.h"
 
 class CxLinli: public DrawCardsSkill {
 public:
@@ -475,6 +476,120 @@ public:
     }
 };
 
+class CxWangdie: public TriggerSkill {
+public:
+    CxWangdie(): TriggerSkill("cxwangdie") {
+        events << EventMarksGot;
+        frequency = Wake;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return TriggerSkill::triggerable(target)
+            && target->getMark("@yingxiao") == 1;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->doStory("$SanFenXiao", 4000);
+
+        LogMessage log;
+        log.type = "#CxWake";
+        log.from = player;
+        log.arg = "SanFenXiao";
+        room->sendLog(log);
+
+        room->acquireSkill(player, "thlingdie");
+
+        room->detachSkillFromPlayer(player, "cxwangdie", true);
+        room->acquireSkill(player, "cxkongnie");
+
+        return false;
+    }
+};
+
+class CxKongnie: public TriggerSkill {
+public:
+    CxKongnie(): TriggerSkill("cxkongnie") {
+        events << EventMarksGot;
+        frequency = Wake;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return TriggerSkill::triggerable(target)
+            && target->getMark("@yingxiao") == 2;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->doStory("$WuFenXiao", 4000);
+
+        LogMessage log;
+        log.type = "#CxWake";
+        log.from = player;
+        log.arg = "WuFenXiao";
+        room->sendLog(log);
+
+        room->acquireSkill(player, "thwushou");
+
+        room->detachSkillFromPlayer(player, "cxkongnie", true);
+        room->acquireSkill(player, "cxhuaxu");
+
+        return false;
+    }
+};
+
+class CxHuaxu: public TriggerSkill {
+public:
+    CxHuaxu(): TriggerSkill("cxhuaxu") {
+        events << EventMarksGot;
+        frequency = Wake;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return TriggerSkill::triggerable(target)
+            && target->getMark("@yingxiao") == 3;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->doStory("$BaFenXiao", 4000);
+
+        LogMessage log;
+        log.type = "#CxWake";
+        log.from = player;
+        log.arg = "BaFenXiao";
+        room->sendLog(log);
+
+        QList<ServerPlayer *> lists;
+        lists << player;
+        ServerPlayer *yaomeng = NULL;
+        yaomeng = room->findPlayer("yuki003");
+        if (yaomeng)
+            lists << yaomeng;
+        room->drawCards(lists, 3, objectName());
+
+        QList<ServerPlayer *> victims = room->getOtherPlayers(player);
+        if (yaomeng)
+            victims.removeOne(yaomeng);
+        foreach (ServerPlayer *p, victims) {
+            int card_id = room->getCardFromPile("@cxhuaxu");
+            if (card_id == -1)
+                break;
+
+            const Card *originalCard = Sanguosha->getCard(card_id);
+            Indulgence *indulgence = new Indulgence(originalCard->getSuit(), originalCard->getNumber());
+            indulgence->setSkillName("BaFenXiao");
+            WrappedCard *card = Sanguosha->getWrappedCard(originalCard->getId());
+            card->takeOver(indulgence);
+            room->broadcastUpdateCard(room->getPlayers(), card->getId(), card);
+            room->moveCardTo(card, p, Player::PlaceDelayedTrick, true);
+            indulgence->deleteLater();
+        }
+
+        room->detachSkillFromPlayer(player, "cxhuaxu", true);
+        room->acquireSkill(player, "cxzhongyan");
+
+        return false;
+    }
+};
+
 class ChunxueRule: public ScenarioRule {
 public:
     ChunxueRule(Scenario *scenario)
@@ -552,7 +667,10 @@ ChunxueScenario::ChunxueScenario()
            << new CxChunzuiBase("tsuki008", "thshennao", QString())
            << new CxChunzuiBase("yuki004", "thhuilun", QString())
            << new CxChunzuiBase("yuki001", "thmengsheng", "erchong")
-           << new CxJiushi;
+           << new CxJiushi
+           << new CxWangdie
+           << new CxKongnie
+           << new CxHuaxu;
     related_skills.insertMulti("cxqiuwen", "#cxqiuwen");
     related_skills.insertMulti("cxqiuwen", "#cxqiuwen-tar");
 
@@ -612,6 +730,8 @@ void ChunxueScenario::onTagSet(Room *room, const QString &key) const{
             room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 
             room->detachSkillFromPlayer(lord, "cxwangwo", true);
+
+            room->acquireSkill(lord, "cxwangdie");
         }
 
         ServerPlayer *chen = room->findPlayer("yuki006");
