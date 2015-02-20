@@ -28,9 +28,6 @@
     <Filter Include="dialog">
       <UniqueIdentifier>{be9e2452-57ca-46f7-b067-be44fd16c604}</UniqueIdentifier>
     </Filter>
-    <Filter Include="package">
-      <UniqueIdentifier>{12921f3f-26ad-402c-a6a2-9865e25d3ec8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="scenario">
       <UniqueIdentifier>{6db79ca9-2e4f-498e-b52b-c59736aabf0f}</UniqueIdentifier>
     </Filter>
@@ -59,6 +56,9 @@
     </Filter>
     <Filter Include="Form Files">
       <UniqueIdentifier>{c1f0d23e-0665-4100-990b-a5a0d4709b14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="package">
+      <UniqueIdentifier>{12921f3f-26ad-402c-a6a2-9865e25d3ec8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -951,6 +951,15 @@
     <ClCompile Include="Release\moc_chunxue-scenario.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\scenario\jianniang-scenario.cpp">
+      <Filter>scenario</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_jianniang-scenario.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_jianniang-scenario.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\src\client\aux-skills.h">
@@ -1251,6 +1260,9 @@
       <Filter>package</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\scenario\chunxue-scenario.h">
+      <Filter>scenario</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\scenario\jianniang-scenario.h">
       <Filter>scenario</Filter>
     </CustomBuild>
   </ItemGroup>
