@@ -16,6 +16,7 @@
 //#include "guandu-scenario.h"
 #include "chunxue-scenario.h"
 #include "couple-scenario.h"
+#include "jianniang-scenario.h"
 //#include "fancheng-scenario.h"
 
 #include <QFile>
@@ -53,6 +54,7 @@ void Engine::_loadModScenarios() {
     //addScenario(new GuanduScenario());
     addScenario(new ChunxueScenario());
     addScenario(new CoupleScenario());
+    addScenario(new JianniangScenario());
     //addScenario(new FanchengScenario());
 }
 
