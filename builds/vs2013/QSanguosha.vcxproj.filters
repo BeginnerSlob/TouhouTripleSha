@@ -951,6 +951,15 @@
     <ClCompile Include="Release\moc_chunxue-scenario.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\scenario\jianniang-scenario.cpp">
+      <Filter>scenario</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_jianniang-scenario.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_jianniang-scenario.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\src\client\aux-skills.h">
@@ -1251,6 +1260,9 @@
       <Filter>package</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\scenario\chunxue-scenario.h">
+      <Filter>scenario</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\scenario\jianniang-scenario.h">
       <Filter>scenario</Filter>
     </CustomBuild>
   </ItemGroup>
