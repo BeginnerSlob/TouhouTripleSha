@@ -2565,6 +2565,10 @@ public:
         qingnang_card->addSubcard(originalCard->getId());
         return qingnang_card;
     }
+
+    virtual int getEffectIndex(const ServerPlayer *player, const Card *) const{
+        return player->getGeneral()->objectName() == "wind003" ? (qrand() % 2 + 1) : 0;
+    }
 };
 
 IkZiqiangCard::IkZiqiangCard() {
@@ -2967,6 +2971,7 @@ IkaiDoPackage::IkaiDoPackage()
     General *wind003 = new General(this, "wind003", "kaze");
     wind003->addSkill(new IkYipao);
     wind003->addSkill(new IkShijiu);
+    wind003->addRelateSkill("ikqingnang");
 
     General *wind004 = new General(this, "wind004", "kaze", 3);
     wind004->addSkill(new IkYuxi);

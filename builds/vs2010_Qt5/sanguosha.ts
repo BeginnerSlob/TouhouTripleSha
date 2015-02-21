@@ -1512,7 +1512,7 @@
     </message>
     <message>
         <location filename="../../src/dialog/generaloverview.ui" line="257"/>
-        <location filename="../../src/dialog/generaloverview.cpp" line="634"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="636"/>
         <source>Search...</source>
         <translation>搜索...</translation>
     </message>
@@ -1522,8 +1522,8 @@
         <translation>配音</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="514"/>
-        <location filename="../../src/dialog/generaloverview.cpp" line="522"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="516"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="524"/>
         <source>Official</source>
         <translation>官方</translation>
     </message>
@@ -1559,22 +1559,22 @@
         <translation>该包为Lua扩展包</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="463"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="465"/>
         <source>Copy lines</source>
         <translation>复制台词</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="502"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="504"/>
         <source>Death</source>
         <translation>阵亡</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="630"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="632"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="630"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="632"/>
         <source>No generals are found</source>
         <translation>未找到符合要求的人物</translation>
     </message>
