@@ -5497,6 +5497,8 @@ IkaiKinPackage::IkaiKinPackage()
 
     General *wind032 = new General(this, "wind032", "kaze");
     wind032->addSkill(new IkLichi);
+    wind032->addRelateSkill("ikchilian");
+    wind032->addRelateSkill("ikyipao");
 
     General *wind037 = new General(this, "wind037", "kaze");
     wind037->addSkill(new IkXuanren);

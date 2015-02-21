@@ -416,22 +416,24 @@ QString GeneralOverview::getIllustratorInfo(const QString &general_name) {
 void GeneralOverview::addLines(const Skill *skill, const General *general) {
     QString skill_name = Sanguosha->translate(skill->objectName());
     QStringList sources = skill->getSources();
+    QStringList new_sources;
+    for (int i = 0; i < sources.length(); i++) {
+        QString source = sources[i];
+        if (source.split("/").last().startsWith(general->objectName()))
+            new_sources << source;
+        else if (Sanguosha->getGeneral(source.split("/").last().split("_").first()))
+            continue;
+        else
+            new_sources << source;
+    }
 
-    if (sources.isEmpty()) {
+    if (new_sources.isEmpty()) {
         QCommandLinkButton *button = new QCommandLinkButton(skill_name);
 
         button->setEnabled(false);
         button_layout->addWidget(button);
     } else {
         QRegExp rx(".+/(\\w+\\d?).ogg");
-        QStringList new_sources;
-        for (int i = 0; i < sources.length(); i++) {
-            QString source = sources[i];
-            if (source.contains(general->objectName()))
-                new_sources << source;
-        }
-        if (new_sources.isEmpty())
-            new_sources = sources;
         for (int i = 0; i < new_sources.length(); i++) {
             QString source = new_sources[i];
             if (!rx.exactMatch(source))
