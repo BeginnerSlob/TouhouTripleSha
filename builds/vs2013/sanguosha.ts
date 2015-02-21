@@ -1295,7 +1295,7 @@
         <translation type="vanished">3 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="103"/>
+        <location filename="../../src/core/engine.cpp" line="105"/>
         <source>4 players</source>
         <translation>4 人局</translation>
     </message>
@@ -1304,12 +1304,12 @@
         <translation type="vanished">4 人局 [虎牢关1v3]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="105"/>
+        <location filename="../../src/core/engine.cpp" line="107"/>
         <source>5 players</source>
         <translation>5 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="106"/>
+        <location filename="../../src/core/engine.cpp" line="108"/>
         <source>6 players</source>
         <translation>6 人局</translation>
     </message>
@@ -1326,32 +1326,32 @@
         <translation type="vanished">6 人局 [血战到底]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="100"/>
+        <location filename="../../src/core/engine.cpp" line="102"/>
         <source>2 players [KOF style]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="102"/>
+        <location filename="../../src/core/engine.cpp" line="104"/>
         <source>3 players [Tripod]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="104"/>
+        <location filename="../../src/core/engine.cpp" line="106"/>
         <source>4 players [Hulao Pass]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="110"/>
+        <location filename="../../src/core/engine.cpp" line="112"/>
         <source>7 players</source>
         <translation>7 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="111"/>
+        <location filename="../../src/core/engine.cpp" line="113"/>
         <source>8 players</source>
         <translation>8 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="112"/>
+        <location filename="../../src/core/engine.cpp" line="114"/>
         <source>8 players (2 renegades)</source>
         <translation>8 人局 [双内奸]</translation>
     </message>
@@ -1360,17 +1360,17 @@
         <translation type="vanished">8 人局 [无内奸]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="114"/>
+        <location filename="../../src/core/engine.cpp" line="116"/>
         <source>9 players</source>
         <translation>9 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="115"/>
+        <location filename="../../src/core/engine.cpp" line="117"/>
         <source>10 players</source>
         <translation>10 人局</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="116"/>
+        <location filename="../../src/core/engine.cpp" line="118"/>
         <source>10 players (1 renegade)</source>
         <translation>10 人局 [单内奸]</translation>
     </message>
@@ -1379,17 +1379,17 @@
         <translation type="vanished">10 人局 [无内奸]</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="166"/>
+        <location filename="../../src/core/engine.cpp" line="168"/>
         <source>The engine tries to add an invalid skill</source>
         <translation>程序试图添加不合法技能</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="170"/>
+        <location filename="../../src/core/engine.cpp" line="172"/>
         <source>Duplicated skill : %1</source>
         <translation>重复技能: %1</translation>
     </message>
     <message>
-        <location filename="../../src/core/engine.cpp" line="743"/>
+        <location filename="../../src/core/engine.cpp" line="745"/>
         <source>%1 [Scenario mode]</source>
         <translation>%1 【剧情模式】</translation>
     </message>
@@ -2707,59 +2707,59 @@
 <context>
     <name>Room</name>
     <message>
-        <location filename="../../src/server/room.cpp" line="2101"/>
+        <location filename="../../src/server/room.cpp" line="2105"/>
         <source>disconnected</source>
         <translation>断开</translation>
     </message>
     <message>
-        <location filename="../../src/server/room.cpp" line="2329"/>
+        <location filename="../../src/server/room.cpp" line="2333"/>
         <source>Computer %1</source>
         <translation>电脑 %1</translation>
     </message>
     <message>
-        <location filename="../../src/server/room.cpp" line="2124"/>
+        <location filename="../../src/server/room.cpp" line="2128"/>
         <source>&lt;font color=#000000&gt;Player &lt;b&gt;%1&lt;/b&gt; left the game&lt;/font&gt;</source>
         <translation>&lt;font color=#000000&gt;玩家 %1 离开了游戏&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/server/room.cpp" line="2334"/>
+        <location filename="../../src/server/room.cpp" line="2338"/>
         <source>Hello, I&apos;m a robot</source>
         <translation>大家好，我是一个机器人</translation>
     </message>
     <message>
-        <location filename="../../src/server/room.cpp" line="2377"/>
+        <location filename="../../src/server/room.cpp" line="2381"/>
         <source>&lt;font color=#EEB422&gt;Player &lt;b&gt;%1&lt;/b&gt; joined the game&lt;/font&gt;</source>
         <translation>&lt;font color=#EEB422&gt;玩家 &lt;b&gt;%1&lt;/b&gt; 加入了游戏&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/server/room.cpp" line="2905"/>
+        <location filename="../../src/server/room.cpp" line="2911"/>
         <source>Unable to parse player</source>
         <translation>不可分析的玩家</translation>
     </message>
     <message>
-        <location filename="../../src/server/room.cpp" line="2907"/>
+        <location filename="../../src/server/room.cpp" line="2913"/>
         <source>Server is not waiting for reply from %1</source>
         <translation>服务器无法获取 %1 的响应</translation>
     </message>
     <message>
-        <location filename="../../src/server/room.cpp" line="2909"/>
+        <location filename="../../src/server/room.cpp" line="2915"/>
         <source>Reply command should be %1 instead of %2</source>
         <translation>应答指令应为 %1 而不是 %2</translation>
     </message>
     <message>
-        <location filename="../../src/server/room.cpp" line="2912"/>
+        <location filename="../../src/server/room.cpp" line="2918"/>
         <source>Reply serial should be %1 instead of %2</source>
         <translation>玩家序号应为 %1 而不是 %2</translation>
     </message>
     <message>
-        <location filename="../../src/server/room.cpp" line="4261"/>
+        <location filename="../../src/server/room.cpp" line="4276"/>
         <source>Card cannot be parsed:
  %1</source>
         <translation>卡牌字符串无法解析:
 %1</translation>
     </message>
     <message>
-        <location filename="../../src/server/room.cpp" line="5620"/>
+        <location filename="../../src/server/room.cpp" line="5635"/>
         <source>&lt;font color=#EEB422&gt;The network delay of player &lt;b&gt;%1&lt;/b&gt; is %2 milliseconds.&lt;/font&gt;</source>
         <translation>&lt;font color=#EEB422&gt;玩家 &lt;b&gt;%1&lt;/b&gt; 的网络延迟为 %2 毫秒&lt;/font&gt;</translation>
     </message>
@@ -2778,7 +2778,7 @@
         <location filename="../../src/ui/roomscene.cpp" line="3144"/>
         <location filename="../../src/ui/roomscene.cpp" line="3154"/>
         <location filename="../../src/ui/roomscene.cpp" line="3169"/>
-        <location filename="../../src/ui/roomscene.cpp" line="3963"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3965"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -2804,7 +2804,7 @@
     </message>
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="332"/>
-        <location filename="../../src/ui/roomscene.cpp" line="4488"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4490"/>
         <source>Add robots</source>
         <translation>添加电脑</translation>
     </message>
@@ -2825,7 +2825,7 @@
     </message>
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="375"/>
-        <location filename="../../src/ui/roomscene.cpp" line="4332"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4334"/>
         <source>pindian</source>
         <translation>拼点</translation>
     </message>
@@ -3012,7 +3012,7 @@
         <translation>下一场景</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="4491"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4493"/>
         <source>%1 robots</source>
         <translation>%1 名电脑</translation>
     </message>
@@ -3166,27 +3166,27 @@
         <translation>&lt;font color=&apos;%1&apos;&gt;────────游戏开始────────&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3950"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3952"/>
         <source>Server information</source>
         <translation>服务器信息</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3963"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3965"/>
         <source>You can only initiate a surrender poll at your play phase!</source>
         <translation>只有在你的出牌阶段才能请求投降！</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3968"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3970"/>
         <source>Surrender</source>
         <translation>投降</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3968"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3970"/>
         <source>Are you sure to surrender ?</source>
         <translation>你真的要投降吗？</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="4250"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4252"/>
         <source>Complete</source>
         <translation>完成</translation>
     </message>
