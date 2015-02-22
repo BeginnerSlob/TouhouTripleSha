@@ -706,7 +706,7 @@ public:
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         TriggerList skill_list;
         if (triggerEvent == PreCardUsed && player->hasFlag("IkEluLog") && data.canConvert<CardUseStruct>()) {
-            room->broadcastSkillInvoke(objectName());
+            room->broadcastSkillInvoke(objectName(), qrand() % 2 + 1);
             room->notifySkillInvoked(player, objectName());
 
             LogMessage log;
@@ -723,20 +723,23 @@ public:
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("Slash")) {
                 player->setFlags("-IkEluUsed");
-                room->setCardFlag(use.card, "ikeli_slash");
+                room->setCardFlag(use.card, "ikelu_slash");
             }
         } else if (triggerEvent == PreDamageDone) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.card->hasFlag("ikeli_slash")) {
-                room->setCardFlag(damage.card, "-ikeli_slash");
+            if (damage.card->hasFlag("ikelu_slash")) {
+                room->setCardFlag(damage.card, "-ikelu_slash");
                 room->setPlayerCardLimitation(player, "use", "Slash", true);
             }
         } else if (triggerEvent == CardFinished && !player->hasFlag("Global_ProcessBroken")) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("Slash") && use.card->hasFlag("ikeli_slash")) {
+            if (use.card->isKindOf("Slash") && use.card->hasFlag("ikelu_slash")) {
+                room->setCardFlag(use.card, "-ikelu_slash");
                 ServerPlayer *current = room->getCurrent();
-                if (current && current->isAlive() && current->getPhase() != Player::NotActive)
+                if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
+                    room->broadcastSkillInvoke(objectName(), 3);
                     room->setPlayerFlag(current, "ikelu_" + player->objectName());
+                }
             }
         } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Play) {
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
