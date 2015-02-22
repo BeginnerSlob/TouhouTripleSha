@@ -933,10 +933,12 @@ public:
 };
 
 IkJimuCard::IkJimuCard() {
+    mute = true;
 }
 
 void IkJimuCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
+    room->broadcastSkillInvoke("ikjimu", 1);
     room->removePlayerMark(effect.from, "@jimu");
     room->addPlayerMark(effect.from, "@jimuused");
     effect.to->gainMark("@qinghuo");
@@ -986,10 +988,13 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const{
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const{
         ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@ikjimu", false, true);
         if (target) {
-            room->broadcastSkillInvoke(objectName());
+            if (triggerEvent == CardFinished)
+                room->broadcastSkillInvoke(objectName(), qrand() % 2 + 4);
+            else
+                room->broadcastSkillInvoke(objectName(), 6);
             player->tag["IkJimuTarget"] = QVariant::fromValue(target);
             return true;
         }
@@ -1016,6 +1021,28 @@ public:
                 player->drawCards(1, objectName());
         } else if (triggerEvent == Death && target) {
             target->gainMark("@qinghuo");
+        }
+        return false;
+    }
+};
+
+class IkJimuEffect: public TriggerSkill {
+public:
+    IkJimuEffect(): TriggerSkill("#ikjimu-effect") {
+        events << PreCardUsed;
+        global = true;
+        frequency = Compulsory;
+    }
+
+    virtual int getPriority(TriggerEvent) const{
+        return 6;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("Slash") || use.card->isKindOf("Snatch") || use.card->isKindOf("SupplyShortage")) {
+            if (use.from->hasSkill("ikjimu") && use.to.length() == 1 && use.to.first()->getMark("@qinghuo") > 0)
+                room->broadcastSkillInvoke("ikjimu", qrand() % 2 + 2);
         }
         return false;
     }
@@ -4147,6 +4174,9 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *bloom036 = new General(this, "bloom036", "hana");
     bloom036->addSkill(new IkJimu);
+    bloom036->addSkill(new IkJimuEffect);
+    related_skills.insertMulti("ikjimu", "#ikjimu-effect");
+    bloom036->addRelateSkill("ikxunlv");
 
     General *bloom045 = new General(this, "bloom045", "hana", 4, false);
     bloom045->addSkill(new IkDengpo);
