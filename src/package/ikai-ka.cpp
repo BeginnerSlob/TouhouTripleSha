@@ -4132,6 +4132,7 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *wind051 = new General(this, "wind051", "kaze");
     wind051->addSkill(new IkElu);
+    wind051->addRelateSkill("iktanyan");
 
     General *bloom032 = new General(this, "bloom032", "hana");
     bloom032->addSkill(new IkFengxing);

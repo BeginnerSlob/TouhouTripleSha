@@ -94,7 +94,8 @@ QList<const Skill *> General::getSkillList() const{
             && ServerInfo.GameMode == "02_1v1" && ServerInfo.GameRuleMode != "Classical")
             skill_name = "xiaoxi";
         const Skill *skill = Sanguosha->getSkill(skill_name);
-        skills << skill;
+        if (skill)
+            skills << skill;
     }
     return skills;
 }
