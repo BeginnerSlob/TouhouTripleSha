@@ -3395,7 +3395,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         room->sendCompulsoryTriggerLog(player, objectName());
-        room->broadcastSkillInvoke(objectName());
+        room->broadcastSkillInvoke(objectName(), qrand() % 2 + 3);
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         QList<int> ids;
         ids << player->getArmor()->getEffectiveId();
@@ -3416,6 +3416,10 @@ public:
             room->throwCard(id, victim, player);
         }
         return false;
+    }
+
+    virtual int getEffectIndex(const ServerPlayer *, const Card *) const{
+        return qrand() % 2 + 1;
     }
 };
 
