@@ -160,6 +160,10 @@ public:
         chain->setSkillName(objectName());
         return chain;
     }
+
+    virtual int getEffectIndex(const ServerPlayer *, const Card *) const{
+        return qrand() % 2 + 1;
+    }
 };
 
 class IkSuinie: public TriggerSkill {
@@ -5137,6 +5141,7 @@ IkaiMokuPackage::IkaiMokuPackage()
     General *wind010 = new General(this, "wind010", "kaze", 3);
     wind010->addSkill(new IkFuhua);
     wind010->addSkill(new IkSuinie);
+    wind010->addSkill("ikmopan");
 
     General *wind011 = new General(this, "wind011", "kaze", 3);
     wind011->addSkill(new IkJingnie);

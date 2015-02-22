@@ -402,7 +402,10 @@ void IronChain::onUse(Room *room, const CardUseStruct &card_use) const{
         CardMoveReason reason(CardMoveReason::S_REASON_RECAST, card_use.from->objectName());
         reason.m_skillName = this->getSkillName();
         room->moveCardTo(this, card_use.from, NULL, Player::DiscardPile, reason);
-        card_use.from->broadcastSkillInvoke("@recast");
+        if (card_use.card->getSkillName() == "ikfuhua")
+            room->broadcastSkillInvoke("ikfuhua", 3);
+        else
+            card_use.from->broadcastSkillInvoke("@recast");
         room->setEmotion(card_use.from, "effects/recast");
 
         LogMessage log;
