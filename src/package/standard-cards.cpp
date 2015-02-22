@@ -212,12 +212,23 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
     if (use.to.size() > 1 && player->hasSkill("thshenmie")) {
         room->broadcastSkillInvoke("thshenmie");
         room->notifySkillInvoked(player, "thshenmie");
+    } else if (use.to.size() > 1 && !player->getWeapon() && player->hasSkill("ikshenti")) {
+        room->broadcastSkillInvoke("ikshenti");
+        room->notifySkillInvoked(player, "ikshenti");
     } else if (use.to.size() > 1 && player->hasSkill("iklingpao") && use.card->isKindOf("FireSlash") && use.card->getSkillName() != "iklingpao") {
         room->broadcastSkillInvoke("iklingpao");
         room->notifySkillInvoked(player, "iklingpao");
     } else if (use.to.size() > 1 && player->hasSkill("ikxindu")) {
         room->broadcastSkillInvoke("ikxindu");
         room->notifySkillInvoked(player, "ikxindu");
+    } else if (player->hasSkill("thxiagong") && !player->getWeapon() && player->getAttackRange() < 2) {
+        foreach (ServerPlayer *p, use.to) {
+            if (player->distanceTo(p) == 2) {
+                room->broadcastSkillInvoke("thxiagong");
+                room->notifySkillInvoked(player, "thxiagong");
+                break;
+            }
+        }
     }
 
     int rangefix = 0;

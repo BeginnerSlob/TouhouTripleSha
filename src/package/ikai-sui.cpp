@@ -3456,6 +3456,7 @@ public:
 };
 
 IkZhangeCard::IkZhangeCard() {
+    mute = true;
 }
 
 bool IkZhangeCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *Self) const{
@@ -3467,6 +3468,10 @@ bool IkZhangeCard::targetFilter(const QList<const Player *> &targets, const Play
 
 void IkZhangeCard::onUse(Room *room, const CardUseStruct &card_use) const{
     CardUseStruct use = card_use;
+    if (card_use.to.length() == 1 && card_use.to.contains(card_use.from))
+        room->broadcastSkillInvoke("ikzhange", 2);
+    else
+        room->broadcastSkillInvoke("ikzhange", 1);
     room->removePlayerMark(use.from, "@zhange");
     room->addPlayerMark(use.from, "@zhangeused");
     SkillCard::onUse(room, use);
@@ -5021,6 +5026,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *luna019 = new General(this, "luna019", "tsuki");
     luna019->addSkill("thxiagong");
     luna019->addSkill(new IkZhange);
+    luna019->addRelateSkill("ikshenti");
 
     General *luna020 = new General(this, "luna020", "tsuki", 3);
     luna020->addSkill(new IkZhizhai);
