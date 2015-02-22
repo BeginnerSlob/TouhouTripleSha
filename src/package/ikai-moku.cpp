@@ -4732,25 +4732,33 @@ public:
         if (death.who != player)
             return false;
 
-        if (death.damage && death.damage->from && !(death.damage->from->hasSkill("thyanmeng") || death.damage->from->hasSkill("thxuanyan"))) {
-            LogMessage log;
-            log.type = "#IkQihuangLoseSkills";
-            log.from = player;
-            log.to << death.damage->from;
-            log.arg = objectName();
-            room->sendLog(log);
-            room->broadcastSkillInvoke(objectName());
-            room->notifySkillInvoked(player, objectName());
+        if (death.damage && death.damage->from) {
+            if (death.damage->from->hasSkill("thyanmeng")) {
+                int index = qrand() % 2 + 1;
+                if (death.damage->from->getGeneralName() == "luna037")
+                    room->broadcastSkillInvoke("thyanmeng", index);
+            } else if (death.damage->from->hasSkill("thxuanyan"))
+                room->broadcastSkillInvoke("thxuanyan");
+            else {
+                LogMessage log;
+                log.type = "#IkQihuangLoseSkills";
+                log.from = player;
+                log.to << death.damage->from;
+                log.arg = objectName();
+                room->sendLog(log);
+                room->broadcastSkillInvoke(objectName());
+                room->notifySkillInvoked(player, objectName());
 
-            QList<const Skill *> skills = death.damage->from->getVisibleSkillList();
-            QStringList detachList;
-            foreach (const Skill *skill, skills) {
-                if (!skill->inherits("SPConvertSkill") && !skill->isAttachedLordSkill())
-                    detachList.append("-" + skill->objectName());
+                QList<const Skill *> skills = death.damage->from->getVisibleSkillList();
+                QStringList detachList;
+                foreach (const Skill *skill, skills) {
+                    if (!skill->inherits("SPConvertSkill") && !skill->isAttachedLordSkill())
+                        detachList.append("-" + skill->objectName());
+                }
+                room->handleAcquireDetachSkills(death.damage->from, detachList);
+                if (death.damage->from->isAlive())
+                    death.damage->from->gainMark("@qihuang");
             }
-            room->handleAcquireDetachSkills(death.damage->from, detachList);
-            if (death.damage->from->isAlive())
-                death.damage->from->gainMark("@qihuang");
         }
 
         return false;
