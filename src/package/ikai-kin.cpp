@@ -5643,6 +5643,8 @@ IkaiKinPackage::IkaiKinPackage()
     General *snow039 = new General (this, "snow039", "yuki", 3);
     snow039->addSkill(new IkShenxing);
     snow039->addSkill(new IkXiangzhao);
+    snow039->addRelateSkill("iklihui");
+    snow039->addRelateSkill("ikkongni");
 
     General *snow041 = new General(this, "snow041", "yuki");
     snow041->addSkill(new IkYoudan);

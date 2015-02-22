@@ -3603,6 +3603,13 @@ public:
 
         return false;
     }
+
+    virtual int getEffectIndex(const ServerPlayer *target, const Card *dummy) const{
+        ServerPlayer *owner = target->getRoom()->getCardOwner(dummy->getEffectiveId());
+        if (owner && owner->getGeneralName() == "snow039")
+            return qrand() % 2 + 1;
+        return 0;
+    }
 };
 
 class IkCunyang: public TriggerSkill {
