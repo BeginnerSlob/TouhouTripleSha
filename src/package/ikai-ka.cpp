@@ -535,8 +535,8 @@ public:
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         room->sendCompulsoryTriggerLog(player, objectName());
-        room->broadcastSkillInvoke(objectName());
         if (triggerEvent == CardsMoveOneTime || data.value<PhaseChangeStruct>().to == Player::NotActive) {
+            room->broadcastSkillInvoke(objectName(), qrand() % 2 + 1);
             QList<int> card_ids = room->getNCards(5, false);
             QList<int> to_get;
             room->fillAG(card_ids, player);
@@ -559,6 +559,8 @@ public:
                 room->askForGuanxing(player, card_ids, Room::GuanxingUpOnly);
         } else {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to != Player::Draw)
+                room->broadcastSkillInvoke(objectName(), 3);
             player->skip(change.to);
         }
         return false;
@@ -619,9 +621,20 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (triggerEvent == Damaged)
+            room->setPlayerFlag(player, "ikhuangshi_damage"); // for Audio
+        else
+            room->setPlayerFlag(player, "-ikhuangshi_damage");
         room->askForUseCard(player, "@@ikhuangshi", "@ikhuangshi", -1, Card::MethodDiscard);
         return false;
+    }
+
+    virtual int getEffectIndex(const ServerPlayer *player, const Card *) const{
+        int index = qrand() % 2 + 1;
+        if (player->hasFlag("ikhuangshi_damage"))
+            index += 2;
+        return index;
     }
 };
 

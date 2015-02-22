@@ -374,6 +374,13 @@ public:
         anal->setSkillName(objectName());
         return anal;
     }
+
+    virtual int getEffectIndex(const ServerPlayer *, const Card *card) const{
+        int index = qrand() % 2 + 1;
+        if (card->hasFlag("analeptic_recover"))
+            index += 2;
+        return index;
+    }
 };
 
 class IkYuxi: public PhaseChangeSkill {

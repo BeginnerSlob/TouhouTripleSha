@@ -61,6 +61,8 @@ void Analeptic::onUse(Room *room, const CardUseStruct &card_use) const{
     CardUseStruct use = card_use;
     if (use.to.isEmpty())
         use.to << use.from;
+    if (use.from->hasFlag("Global_Dying") && Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY)
+        room->setCardFlag(use.card, "analeptic_recover");
     BasicCard::onUse(room, use);
 }
 
@@ -74,7 +76,7 @@ void Analeptic::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.to->getRoom();
     room->setEmotion(effect.to, "analeptic");
 
-    if (effect.from->hasFlag("Global_Dying") && Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY)
+    if (effect.card->hasFlag("analeptic_recover"))
         room->recover(effect.to, RecoverStruct(effect.from, this));
     else
         room->addPlayerMark(effect.to, "drank");
