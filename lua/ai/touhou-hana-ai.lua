@@ -208,7 +208,7 @@ sgs.ai_skill_use["@@thyachui"] = function(self, prompt)
     end
     return "."     
 end
-sgs.ai_card_intention.ThYachuiCard = 80
+sgs.ai_card_intention.ThYachuiCard = -80
 
 
 --【春痕】ai
