@@ -168,6 +168,55 @@ sgs.ai_skill_use_func.ThDuanzuiCard = function(card, use, self)
 end
 sgs.ai_card_intention.ThDuanzuiCard = 50
 
+
+--【芽吹】ai
+sgs.ai_skill_use["@@thyachui"] = function(self, prompt)
+	
+    if #self.friends_noself == 0  then return "." end
+    local redcards ={}
+    for _,c in sgs.qlist(self.player:getHandcards()) do
+        if c:isRed() then
+            table.insert(redcards,c)
+        end
+    end
+    
+    
+    if #redcards==0 then return "." end
+    
+    --SmartAI:findPlayerToDraw(include_self, drawnum)
+    --芽吹目标有限制条件，所以这个函数并不好用
+    
+    self:sort(self.friends_noself,"handcard")
+    local targets={}
+    for _, p in ipairs(self.friends_noself) do
+        if p:getLostHp() <= #redcards then
+            table.insert(targets,p)
+        end
+    end
+    local compare_func = function(a, b)
+        return a:getLostHp() > b:getLostHp() 
+    end
+    
+    if #targets >=1 then
+        table.sort(targets, compare_func)
+        self:sortByUseValue(redcards)
+        local cardIds = {}
+        for var = 1, targets[1]:getLostHp() , 1 do
+            table.insert(cardIds,redcards[var]:getId())
+        end        
+        return "@ThYachuiCard=".. table.concat(cardIds, "+") .."->" .. targets[1]:objectName()
+    end
+    return "."     
+end
+sgs.ai_card_intention.ThYachuiCard = 80
+
+
+--【春痕】ai
+sgs.ai_skill_invoke.thchunhen = true
+
+
+
+
 --【六震】ai
 sgs.ai_skill_use["@@thliuzhen"] = function(self, prompt)
 	local targetNames={}
