@@ -215,6 +215,121 @@ sgs.ai_card_intention.ThYachuiCard = -80
 sgs.ai_skill_invoke.thchunhen = true
 
 
+function SmartAI:ChainDamage(damage,from, to)
+    local x=0
+    local y=0
+    if self:isFriend(to) then
+        y= damage
+    end
+    if self:isEnemy(to) then
+        x= damage
+    end
+    if not to:isChained() then
+        return x,y
+    end
+
+    --开始传导铁锁
+    local tos = sgs.SPlayerList()
+    for _,p in sgs.qlist(self.room:getOtherPlayers(to)) do
+        if p:isChained() then
+            tos:append(p)
+        end
+    end
+    if not tos:isEmpty() then
+        self.room:sortByActionOrder(tos)
+        for _,p  in sgs.qlist(tos) do
+            if self:isFriend(p) and self:damageIsEffective(p, sgs.DamageStruct_Thunder, from) then
+                y=y + damage
+            end
+            if self:isEnemy(p) and self:damageIsEffective(p, sgs.DamageStruct_Thunder, from) then
+                x=x + damage
+            end
+        end
+    end
+    return x,y
+end
+function SmartAI:getThunderAttackTargets(targets,consider_chain)
+    consider_chain = consider_chain or true
+    local enemies = {}
+    --local friends = {}
+    local weakers = {}
+    for _, p in sgs.qlist(targets) do
+        if self:damageIsEffective(p, sgs.DamageStruct_Thunder, self.player)  then
+            local x,y=0,0 
+            if consider_chain then
+                x , y =  self:ChainDamage(1,self.player, p)
+            end
+            if x >= y then
+                --if self:isFriend(p) and self:getDamagedEffects(p, self.player, false) then
+                --    table.insert(friends,p)
+                --end
+                if     self:isEnemy(p) and not self:getDamagedEffects(p, self.player, false) then
+                    table.insert(enemies,p)
+                    if self.player:hasSkill("thleishi") and p:getHp() == 1 and self:getLeishiTarget(p) then
+                        table.insert(weakers,p)
+                    end
+                end
+            end
+        end
+    end
+    return enemies, weakers
+end
+--其实还需要一个预估伤害的函数 记得绮符剧里有属性免疫还是属性伤害加深神马的
+
+function SmartAI:getLeishiTarget(victim)
+    local  minDis = 998; 
+    local targets = sgs.SPlayerList()
+    for _,p in sgs.qlist(self.room:getOtherPlayers(victim))do
+        local dis = victim:distanceTo(p); 
+        if (dis == -1) then
+            continue end
+        if (targets:isEmpty() or dis == minDis)  then
+            targets:append(p)  
+            minDis = victim:distanceTo(p)
+         elseif (dis < minDis) then
+            targets= sgs.SPlayerList()
+            targets:append(p)
+             minDis = victim:distanceTo(p)
+        end
+    end
+    for _,p in sgs.qlist(targets)do
+        if self:isEnemy(p) and self:damageIsEffective(p, sgs.DamageStruct_Thunder, self.player) 
+        then
+            return true
+        end
+    end
+    return false
+end
+
+--【雷矢】ai
+sgs.ai_skill_playerchosen.thleishi = function(self, targets)
+    local enemies, weakers = self:getThunderAttackTargets(targets,false)
+    if #weakers>0 then
+        return weakers[1]
+    end
+    if #enemies>0 then
+        self:sort(enemies, "hp")
+        return enemies[1]
+    end
+    return nil
+end
+
+--【闪灵】ai
+sgs.ai_skill_playerchosen.thshanling = function(self, targets)
+    local enemies, weakers = self:getThunderAttackTargets(targets)
+    if #weakers>0 then
+        return weakers[1]
+    end
+    if #enemies>0 then
+        self:sort(enemies, "hp")
+        return enemies[1]
+    end
+    return nil
+end
+--目前没有playerchosen仇恨,由伤害仇恨代替
+--其实可以加入主动为卖血队友提供伤害
+--不过由于ai里damage事件应该会导致直接增加仇恨。 
+--需要smart-ai里设置no intention damage 
 
 
 --【六震】ai
