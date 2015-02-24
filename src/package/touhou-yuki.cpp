@@ -332,7 +332,6 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         room->sendCompulsoryTriggerLog(player, "thzuishang");
         player->drawCards(1);
-        room->setEmotion(player, "effects/1");
         return false;
     }
 };

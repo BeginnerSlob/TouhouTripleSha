@@ -122,9 +122,9 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
                         pma->boundingRect().height() * 0.2);
             pma->setScale(0.6);
         } else if (emotion == "effects/iron_chain") {
-            pma->moveBy(pma->boundingRect().width() * 0.3,
-                        pma->boundingRect().height() * 0.2);
-            pma->setScale(0.6);
+            pma->moveBy(pma->boundingRect().width() * 0.25,
+                        pma->boundingRect().height() * 0.25);
+            pma->setScale(0.5);
         } else if (emotion == "effects/supply_shortage") {
             pma->moveBy(pma->boundingRect().width() * 0.1,
                         pma->boundingRect().height() * 0.1);
@@ -138,6 +138,14 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
             pma->moveBy(pma->boundingRect().width() * 0.1,
                         pma->boundingRect().height() * 0.1);
             pma->setScale(0.8);
+        } else if (emotion == "effects/armor") {
+            pma->moveBy(pma->boundingRect().width() * 0.1,
+                        pma->boundingRect().height() * 0.1);
+            pma->setScale(0.8);
+        } else if (emotion == "effects/wake") {
+            pma->moveBy(-pma->boundingRect().width() * 0.05,
+                        -pma->boundingRect().height() * 0.05);
+            pma->setScale(1.1);
         }
 /*
         else if (emotion == "effects/amazing_grace") {
