@@ -109,7 +109,7 @@ public:
                 // reward and punishment
                 if (death.damage && death.damage->from) {
                     ServerPlayer *killer = death.damage->from;
-                    if (killer == player)
+                    if (killer == player || killer->hasSkill("iktianzuo"))
                         return false;
 
                     if (scenario->getSpouse(killer) == player)

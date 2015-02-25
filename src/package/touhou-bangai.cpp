@@ -1041,16 +1041,38 @@ ThWangdaoCard::ThWangdaoCard() {
 
 void ThWangdaoCard::onEffect(const CardEffectStruct &effect) const {
     Room *room = effect.from->getRoom();
-    room->showCard(effect.from, getEffectiveId());
+    int id = getEffectiveId();
+    const Card *original = Sanguosha->getCard(id);
+    room->showCard(effect.from, id);
     const Card *slash = NULL;
     if (effect.to->canSlash(effect.from)) {
-        room->setPlayerCardLimitation(effect.to, "use", "Slash|^black", false);
+        room->setPlayerCardLimitation(effect.to, "use", "Slash|^" + original->getSuitString(), false);
         slash = room->askForUseSlashTo(effect.to, effect.from, "@thwangdao:" + effect.from->objectName(), false);
         room->removePlayerCardLimitation(effect.to, "use", "Slash|^black$0");
     }
     if (!slash) {
         effect.to->obtainCard(this);
-        room->loseHp(effect.to);
+        if (effect.from->canDiscard(effect.to, "he") && room->askForChoice(effect.from, "thwangdao", "discard+lose") == "discard") {
+            room->setPlayerFlag(effect.to, "thwangdao_InTempMoving");
+            DummyCard *dummy = new DummyCard;
+            QList<int> card_ids;
+            QList<Player::Place> original_places;
+            for (int i = 0; i < 2; i++) {
+                if (!effect.from->canDiscard(effect.to, "he"))
+                    break;
+                card_ids << room->askForCardChosen(effect.from, effect.to, "he", "thwangdao");
+                original_places << room->getCardPlace(card_ids[i]);
+                dummy->addSubcard(card_ids[i]);
+                effect.to->addToPile("#thwangdao", card_ids[i], false);
+            }
+            for (int i = 0; i < dummy->subcardsLength(); i++)
+                room->moveCardTo(Sanguosha->getCard(card_ids[i]), effect.to, original_places[i], false);
+            room->setPlayerFlag(effect.to, "-thwangdao_InTempMoving");
+            if (dummy->subcardsLength() > 0)
+                room->throwCard(dummy, effect.to, effect.from);
+            dummy->deleteLater();
+        } else
+            room->loseHp(effect.to);
     }
 }
 
@@ -1149,6 +1171,7 @@ TouhouBangaiPackage::TouhouBangaiPackage()
     bangai002->addSkill(new ThShoujuan);
 
     General *bangai003 = new General(this, "bangai003", "yuki");
+    bangai003->addSkill("thjibu");
     bangai003->addSkill(new ThZhiyue);
     bangai003->addSkill(new ThZhiyueDiscard);
     related_skills.insertMulti("thzhiyue", "#thzhiyue-discard");
@@ -1191,6 +1214,8 @@ TouhouBangaiPackage::TouhouBangaiPackage()
     General *bangai011 = new General(this, "bangai011", "yuki", 3);
     bangai011->addSkill(new ThHuilun);
     bangai011->addSkill(new ThWangdao);
+    bangai011->addSkill(new FakeMoveSkill("thwangdao"));
+    related_skills.insertMulti("thwangdao", "#thwangdao-fake-move");
 
     General *bangai012 = new General(this, "bangai012", "tsuki");
     bangai012->addSkill(new ThSixiang);

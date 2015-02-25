@@ -245,7 +245,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (!player || player->isDead()) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.nature == DamageStruct::Fire) {
+        if (damage.nature != DamageStruct::Normal) {
             foreach (ServerPlayer *p, room->getAllPlayers())
                 if (p->getMark("@jhlieri") > 0)
                     return QStringList(objectName());
@@ -268,11 +268,11 @@ public:
 
     virtual int getCorrect(const Player *from, const Player *) const{
         if (from->getMark("@jhfengyu") > 0)
-            return -1;
+            return -2;
         else {
             foreach (const Player *p, from->getAliveSiblings())
                 if (p->getMark("@jhfengyu") > 0)
-                    return -1;
+                    return -2;
         }
         return 0;
     }
@@ -288,7 +288,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (!player || player->isDead()) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.damage > 2) {
+        if (damage.damage > 1) {
             foreach (ServerPlayer *p, room->getAllPlayers())
                 if (p->getMark("@jhhuangsha") > 0)
                     return QStringList(objectName());
@@ -296,10 +296,11 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const {
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         DamageStruct damage = data.value<DamageStruct>();
         damage.damage = 1;
         data = QVariant::fromValue(damage);
+        player->drawCards(1, "thjihui");
         return false;
     }
 };
@@ -309,7 +310,7 @@ public:
     ThJihuiTantian(): OneCardViewAsSkill("thjihuiv") {
         attached_lord_skill = true;
         response_or_use = true;
-        filter_pattern = "Jink|heart";
+        filter_pattern = "Jink|diamond";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
@@ -340,7 +341,7 @@ public:
         if (!player || player->isDead()) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
         int dis = player->distanceTo(damage.to);
-        if (damage.card && damage.card->isKindOf("Slash") && dis != -1 && dis <= 1 && player->isWounded()) {
+        if (damage.card && damage.card->isKindOf("Slash") && dis != -1 && dis <= 2 && player->isWounded()) {
             foreach (ServerPlayer *p, room->getAllPlayers()) {
                 if (p->getMark("@jhnongwu") > 0)
                     return QStringList(objectName());

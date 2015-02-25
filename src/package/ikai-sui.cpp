@@ -689,16 +689,13 @@ public:
         if (!TriggerSkill::triggerable(player)) return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (player->getPhase() == Player::NotActive && move.from && move.from->isAlive()
-            && move.from->objectName() != player->objectName()
+            && move.from->objectName() != player->objectName() && player->inMyAttackRange(move.from)
             && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip))
             && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
             foreach (int id, move.card_ids) {
-                if (Sanguosha->getCard(id)->getTypeId() == Card::TypeBasic) {
-                    if (room->getCurrent() && room->getCurrent()->getPhase() != Player::NotActive) {
-                        if (!room->getCurrent()->hasFlag("IkWuyue_" + player->objectName()))
-                            return QStringList(objectName());
-                    }
-                }
+                const Card *card = Sanguosha->getCard(id);
+                if (card->getTypeId() == Card::TypeBasic || (card->getTypeId() == Card::TypeTrick && card->isRed()))
+                    return QStringList(objectName());
             }
         }
         return QStringList();
@@ -707,14 +704,13 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
-            room->setPlayerFlag(room->getCurrent(), "IkWuyue_" + player->objectName());
             return true;
         }
         return false;
     }
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        player->drawCards(1, "ikwuyue");
+        player->drawCards(1, objectName());
         return false;
     }
 };
@@ -1714,9 +1710,9 @@ public:
     }
 };
 
-class IkKuangzhan: public TriggerSkill {
+class IkTianzuo: public TriggerSkill {
 public:
-    IkKuangzhan(): TriggerSkill("ikkuangzhan") {
+    IkTianzuo(): TriggerSkill("iktianzuo") {
         events << Death;
         frequency = Compulsory;
     }
@@ -1764,6 +1760,78 @@ public:
         }
 
         return false;
+    }
+};
+
+class IkKuanglu: public PhaseChangeSkill {
+public:
+    IkKuanglu(): PhaseChangeSkill("ikkuanglu") {
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+            && target->getPhase() == Player::Play
+            && target->isWounded();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        player->drawCards(1, objectName());
+        room->setPlayerFlag(player, "IkKuangluInvoke");
+        return false;
+    }
+};
+
+class IkKuangluRecord: public TriggerSkill {
+public:
+    IkKuangluRecord(): TriggerSkill("#ikkuanglu-record") {
+        events << PreDamageDone << EventPhaseChanging;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    room->setPlayerMark(p, "ikkuanglu", 0);
+            }
+            return QStringList();
+        }
+        ServerPlayer *current = room->getCurrent();
+        if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.from && damage.from->isAlive())
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer* &) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        room->addPlayerMark(damage.from, "ikkuanglu", damage.damage);
+        return false;
+    }
+};
+
+class IkKuangluMaxCards: public MaxCardsSkill {
+public:
+    IkKuangluMaxCards(): MaxCardsSkill("#ikkuanglu") {
+    }
+
+    virtual int getFixed(const Player *target) const{
+        if (target->hasFlag("IkKuangluInvoke"))
+            return target->getMark("ikkuanglu");
+        return -1;
     }
 };
 
@@ -4955,8 +5023,13 @@ IkaiSuiPackage::IkaiSuiPackage()
     related_skills.insert("ikshenyu", "#ikshenyu");
 
     General *bloom040 = new General(this, "bloom040", "hana");
-    bloom040->addSkill(new IkKuangzhan);
+    bloom040->addSkill(new IkTianzuo);
     bloom040->addSkill(new IkShenji);
+    bloom040->addSkill(new IkKuanglu);
+    bloom040->addSkill(new IkKuangluRecord);
+    bloom040->addSkill(new IkKuangluMaxCards);
+    related_skills.insert("ikkuanglu", "#ikkuanglu-record");
+    related_skills.insert("ikkuanglu", "#ikkuanglu");
 
     General *bloom041 = new General(this, "bloom041", "hana");
     bloom041->addSkill(new IkBihua);

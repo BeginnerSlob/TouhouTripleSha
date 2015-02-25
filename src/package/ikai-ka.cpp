@@ -785,6 +785,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         forever {
+            room->addPlayerMark(player, objectName());
             room->showAllCards(player);
             bool has_slash = false;
             foreach (const Card *card, player->getHandcards()) {
@@ -801,6 +802,16 @@ public:
         }
 
         return true;
+    }
+};
+
+class IkFengxingDistance: public DistanceSkill {
+public:
+    IkFengxingDistance(): DistanceSkill("#ikfengxing") {
+    }
+
+    virtual int getCorrect(const Player *from, const Player *) const{
+        return qMax(from->getMark("ikfengxing") - 2, 0);
     }
 };
 
@@ -2235,10 +2246,10 @@ public:
         response_pattern = "@@iklinghui";
     }
 
-    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
         if (Self->getMark(objectName()) > 0) {
             Card::Color color = (Card::Color)(Self->getMark(objectName()) - 1);
-            return !Self->isJilei(to_select) && to_select->getColor() == color && !to_select->isEquipped();
+            return selected.length() < 3 && !Self->isJilei(to_select) && to_select->getColor() == color && !to_select->isEquipped();
         }
         return false;
     }
@@ -4167,6 +4178,8 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *bloom032 = new General(this, "bloom032", "hana");
     bloom032->addSkill(new IkFengxing);
+    bloom032->addSkill(new IkFengxingDistance);
+    related_skills.insertMulti("ikfengxing", "#ikfengxing");
 
     General *bloom034 = new General(this, "bloom034", "hana");
     bloom034->addSkill(new IkQizhong);

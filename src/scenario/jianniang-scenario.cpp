@@ -44,9 +44,12 @@ public:
             // reward and punishment
             if (death.damage && death.damage->from) {
                 ServerPlayer *killer = death.damage->from;
-                if (killer == player)
+                if (killer == player || killer->hasSkill("iktianzuo"))
                     return false;
-                killer->drawCards(3, "kill");
+                if (killer->getRole() != "renegade" && killer->getRole() == death.who->getRole())
+                    killer->throwAllHandCardsAndEquips();
+                else
+                    killer->drawCards(3, "kill");
             }
 
             break;
