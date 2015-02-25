@@ -1504,7 +1504,7 @@ public:
 class IkShensha: public TriggerSkill {
 public:
     IkShensha(): TriggerSkill("ikshensha") {
-        events << EventPhaseChanging << CardFinished << EventAcquireSkill << EventLoseSkill;
+        events << EventPhaseChanging << CardFinished << EventAcquireSkill << EventLoseSkill << EventPhaseStart;
         frequency = Compulsory;
     }
 
@@ -1526,11 +1526,33 @@ public:
             int mark_num = player->getMark("ikshensha");
             int num = triggerEvent == EventAcquireSkill ? (mark_num >= 6 ? mark_num : 1) : 0;
             room->setPlayerMark(player, "@shensha" + QString::number(qMin(6, mark_num)), num);
+        } else if (triggerEvent == EventPhaseStart && TriggerSkill::triggerable(player) && player->getPhase() == Player::Finish) {
+            bool all_adj = true;
+            bool has_wounded = player->isWounded();
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (player->distanceTo(p) != 1) {
+                    all_adj = false;
+                    break;
+                }
+                if (p->isWounded())
+                    has_wounded = true;
+            }
+            if (all_adj && has_wounded)
+                return QStringList(objectName());
         }
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (triggerEvent == EventPhaseStart) {
+            int n = 0;
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (p->isWounded())
+                    ++n;
+            }
+            player->drawCards(qMin(n, 4), objectName());
+            return false;
+        }
         room->addPlayerMark(player, "ikshensha");
         if (TriggerSkill::triggerable(player)) {
             int num = player->getMark("ikshensha");

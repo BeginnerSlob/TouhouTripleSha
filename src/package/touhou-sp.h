@@ -58,8 +58,6 @@ class ThFenglingCard: public SkillCard{
 
 public:
     Q_INVOKABLE ThFenglingCard();
-
-    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
 class ThYingshiCard: public SkillCard{

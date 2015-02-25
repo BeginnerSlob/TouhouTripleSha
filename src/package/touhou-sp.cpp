@@ -1238,29 +1238,36 @@ public:
         view_as_skill = new ThShushuViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        if (!TriggerSkill::triggerable(player)) return QStringList();
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
+        TriggerList skill_list;
         CardUseStruct use = data.value<CardUseStruct>();
-        if ((use.card->isKindOf("BasicCard") || use.card->isNDTrick()) && !use.card->isKindOf("ExNihilo") && use.card->getNumber() > 0)
-            if (player->canDiscard(player, "he")) {
-                QList<int> ids;
-                if (use.card->isVirtualCard())
-                    ids = use.card->getSubcards();
-                else
-                    ids << use.card->getEffectiveId();
-                if (ids.length() > 0) {
-                    bool all_place_table = true;
-                    foreach (int id, ids) {
-                        if (room->getCardPlace(id) != Player::PlaceTable) {
-                            all_place_table = false;
-                            break;
-                        }
+        if ((use.card->isKindOf("BasicCard") || use.card->isNDTrick()) && !use.card->isKindOf("ExNihilo") && use.card->getNumber() > 0) {
+            QList<int> ids;
+            if (use.card->isVirtualCard())
+                ids = use.card->getSubcards();
+            else
+                ids << use.card->getEffectiveId();
+            if (ids.length() > 0) {
+                bool all_place_table = true;
+                foreach (int id, ids) {
+                    if (room->getCardPlace(id) != Player::PlaceTable) {
+                        all_place_table = false;
+                        break;
                     }
-                    if (all_place_table)
-                        return QStringList(objectName());
+                }
+                if (all_place_table) {
+                    foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                        if (p->isNude())
+                            continue;
+                        int dis = p->distanceTo(player);
+                        if (dis >= 0 && dis <= 2)
+                            skill_list.insert(p, QStringList(objectName()));
+                    }
                 }
             }
-        return QStringList();
+        }
+            
+        return skill_list;
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
@@ -1294,14 +1301,6 @@ ThFenglingCard::ThFenglingCard() {
     target_fixed = true;
 }
 
-void ThFenglingCard::onUse(Room *room, const CardUseStruct &card_use) const{
-    QList<int> ids = StringList2IntList(card_use.from->property("thfengling").toString().split("+"));
-    foreach (int id, subcards)
-        ids.removeOne(id);
-    room->setPlayerProperty(card_use.from, "thfengling", IntList2StringList(ids).join("+"));
-    SkillCard::onUse(room, card_use);
-}
-
 class ThFenglingViewAsSkill: public ViewAsSkill {
 public:
     ThFenglingViewAsSkill(): ViewAsSkill("thfengling") {
@@ -1314,8 +1313,7 @@ public:
             n += cd->getNumber();
         if (n >= 9)
             return false;
-        QList<int> ids = StringList2IntList(Self->property("thfengling").toString().split("+"));
-        return ids.contains(to_select->getId()) && n + to_select->getNumber() <= 9;
+        return n + to_select->getNumber() <= 9;
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
@@ -1371,15 +1369,13 @@ public:
         room->obtainCard(player, dummy);
         delete dummy;
 
-        room->setPlayerProperty(player, "thfengling", IntList2StringList(card_ids).join("+"));
         while (room->askForUseCard(player, "@@thfengling", "@thfengling", -1, Card::MethodDiscard)) {
             room->recover(player, RecoverStruct(player));
             if (!player->isWounded())
                 break;
-            if (player->property("thfengling").toString().isEmpty())
+            if (!player->canDiscard(player, "he"))
                 break;
         }
-        room->setPlayerProperty(player, "thfengling", QVariant());
         return false;
     }
 };
