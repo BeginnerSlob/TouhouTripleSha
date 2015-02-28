@@ -727,7 +727,7 @@ public:
             }
         } else if (triggerEvent == PreDamageDone) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.card->hasFlag("ikelu_slash")) {
+            if (damage.card && damage.card->hasFlag("ikelu_slash")) {
                 room->setCardFlag(damage.card, "-ikelu_slash");
                 room->setPlayerCardLimitation(player, "use", "Slash", true);
             }
