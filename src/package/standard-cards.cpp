@@ -1899,10 +1899,33 @@ void Drowning::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targ
 
 void Drowning::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.to->getRoom();
-    if (effect.from->canDiscard(effect.to, "e")
-        && room->askForChoice(effect.to, objectName(), "throw+damage", QVariant::fromValue(effect)) == "throw") {
+    QStringList choices;
+    if (effect.from->canDiscard(effect.to, "e"))
+        choices << "throw";
+    if (effect.from->canDiscard(effect.to, "h") && effect.to->getHandcardNum() > 2)
+        choices << "discard";
+    choices << "damage";
+    QString choice = room->askForChoice(effect.to, objectName(), choices.join("+"), QVariant::fromValue(effect));
+    if (choice == "throw") {
         int card_id = room->askForCardChosen(effect.from, effect.to, "e", objectName(), false, MethodDiscard);
         room->throwCard(card_id, effect.to, effect.from);
+    } else if (choice == "discard") {
+        room->setPlayerFlag(effect.to, "drowning_InTempMoving");
+        DummyCard *dummy = new DummyCard;
+        QList<int> card_ids;
+        for (int i = 0; i < 2; i++) {
+            if (!effect.from->canDiscard(effect.to, "h"))
+                break;
+            card_ids << room->askForCardChosen(effect.from, effect.to, "h", objectName(), false, Card::MethodDiscard);
+            dummy->addSubcard(card_ids[i]);
+            effect.to->addToPile("#drowning", card_ids[i], false);
+        }
+        for (int i = 0; i < dummy->subcardsLength(); i++)
+            room->moveCardTo(Sanguosha->getCard(card_ids[i]), effect.to, Player::PlaceHand, false);
+        room->setPlayerFlag(effect.to, "-drowning_InTempMoving");
+        if (dummy->subcardsLength() > 0)
+            room->throwCard(dummy, effect.to, effect.from);
+        dummy->deleteLater();
     } else
         room->damage(DamageStruct(this, effect.from->isAlive() ? effect.from : NULL, effect.to));
 }
@@ -2135,7 +2158,8 @@ StandardExCardPackage::StandardExCardPackage()
           << new Drowning()
           << new Nullification(Card::Diamond, 12);
 
-    skills << new IceSwordSkill
+    skills << new FakeMoveSkill("drowning")
+           << new IceSwordSkill
            << new IronArmorSkill
            << new RenwangShieldSkill
            << new LureTigerSkill << new LureTigerProhibit;
