@@ -71,7 +71,13 @@ int Player::getLostHp() const{
     return max_hp - qMax(hp, 0);
 }
 
-bool Player::isWounded() const{
+bool Player::isWounded() const
+{
+    foreach (const Player *p, getAliveSiblings()) {
+        if (p->getPhase() != NotActive && p->hasSkill("guiming") && p->getHp() <= 2 && getKingdom() == "kaze")
+            return true;
+    }
+
     if (hp < 0)
         return true;
     else

@@ -78,6 +78,7 @@ void JianniangScenario::assign(QStringList &generals, QStringList &roles) const{
              << "wind047"  // jiahe
              << "wind051"; // xili
     qShuffle(generals);
+    generals.mid(0, 8);
 
     // roles
     for (int i = 0; i < 8; i++)
