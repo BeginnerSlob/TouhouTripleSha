@@ -135,6 +135,46 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QCommandLinkButton>
+#include <QButtonGroup>
+class IkLingchaDialog: public QDialog {
+    Q_OBJECT
+
+public:
+    static IkLingchaDialog *getInstance();
+
+public slots:
+    void popup();
+    void selectCard(QAbstractButton *button);
+
+private:
+    explicit IkLingchaDialog();
+
+    QButtonGroup *group;
+    QVBoxLayout *button_layout;
+
+    QHash<QString, const Card *> map;
+
+signals:
+    void onButtonClick();
+};
+
+class IkLingchaCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkLingchaCard();
+
+    virtual bool targetFixed() const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
+
+    virtual const Card *validate(CardUseStruct &card_use) const;
+    virtual const Card *validateInResponse(ServerPlayer *user) const;
+};
+
 class IkShidaoCard: public SkillCard {
     Q_OBJECT
 

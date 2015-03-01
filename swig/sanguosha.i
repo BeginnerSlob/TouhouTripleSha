@@ -718,6 +718,7 @@ enum TriggerEvent {
     CardFinished,
     TrickCardCanceling,
     TrickEffect,
+    TrickMissed,
 
     ChoiceMade,
 
