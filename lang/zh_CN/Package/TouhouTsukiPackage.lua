@@ -7,7 +7,7 @@ return {
 	["tsuki001"]="蕾米莉娅•斯卡雷特",--月 - 空 - 4血
 	["&tsuki001"]="蕾米莉娅",
 	["designer:tsuki001"]="幻桜落",
-	["illustrator:tsuki001"]="正体不明",
+	["illustrator:tsuki001"]="c7肘",
 	["cv:tsuki001"]="暂无",
 	["thsuoming"]="锁命",
 	[":thsuoming"]="每当你受到1点伤害后或你的人物牌翻面或横置时，你可指定一名角色，横置或重置其人物牌。",
@@ -23,7 +23,7 @@ return {
 	["tsuki002"]="芙兰朵露•斯卡雷特",--月 - 空 - 4血
 	["&tsuki002"]="芙兰朵露",
 	["designer:tsuki002"]="幻桜落",
-	["illustrator:tsuki002"]="正体不明",
+	["illustrator:tsuki002"]="幻騒アぽろ",
 	["cv:tsuki002"]="暂无",
 	["thjinguo"]="禁果",
 	[":thjinguo"]="出牌阶段限一次，你可以选择一项：<br />1. 弃置一张红桃手牌并获得一名其他角色的两张牌（不足则全部获得），然后该角色回复1点体力；<br />2. 获得技能“血呓”直到回合结束（你可以将红桃非锦囊牌当【春雪幻梦】使用。）。",
@@ -37,7 +37,7 @@ return {
 	["tsuki003"]="铃仙•优昙华院•稻叶",--月 - 空 - 4血
 	["&tsuki003"]="铃仙",
 	["designer:tsuki003"]="幻桜落",
-	["illustrator:tsuki003"]="正体不明",
+	["illustrator:tsuki003"]="多門結之",
 	["cv:tsuki003"]="暂无",
 	["thkuangqi"]="狂气",
 	[":thkuangqi"]="出牌阶段，当你使用【杀】或【碎月绮斗】对目标角色造成伤害时，你可以弃置一张【桃】、【酒】或装备牌，则此伤害+1。",
@@ -66,7 +66,7 @@ return {
 	["#tsuki005"]="知识与历史的半兽",
 	["tsuki005"]="上白泽慧音",--月 - 空 - 3血
 	["designer:tsuki005"]="幻桜落",
-	["illustrator:tsuki005"]="正体不明",
+	["illustrator:tsuki005"]="十誤一会",
 	["cv:tsuki005"]="暂无",
 	["thshouye"]="授业",
 	[":thshouye"]="摸牌阶段摸牌时，你可以少摸一张牌并指定一名其他角色，若如此做，此回合结束时，该角色须进行一个额外的摸牌阶段。",
@@ -77,7 +77,7 @@ return {
 	["#tsuki006"]="不死之烟",
 	["tsuki006"]="藤原妹红",--月 - 空 - 3血
 	["designer:tsuki006"]="幻桜落",
-	["illustrator:tsuki006"]="正体不明",
+	["illustrator:tsuki006"]="saku",
 	["cv:tsuki006"]="暂无",
 	["thfengxiang"]="凤翔",
 	[":thfengxiang"]="每当有一名角色的人物牌被横置或重置时，你可以摸一张牌，每回合限四次。",
@@ -89,7 +89,7 @@ return {
 	["#tsuki007"]="虹色的门番",
 	["tsuki007"]="红美铃",--月 - 空 - 4血
 	["designer:tsuki007"]="零度雨",
-	["illustrator:tsuki007"]="miya9",
+	["illustrator:tsuki007"]="十誤一会",
 	["cv:tsuki007"]="向晚",
 	["~tsuki007"]="对不起...大小姐...",
 	["thcunjing"]="寸刭",
@@ -106,7 +106,7 @@ return {
 	["#tsuki008"]="完美潇洒的从者",
 	["tsuki008"]="十六夜咲夜",--月 - 空 - 4血
 	["designer:tsuki008"]="scorpio",
-	["illustrator:tsuki008"]="雨神",
+	["illustrator:tsuki008"]="小D",
 	["cv:tsuki008"]="向晚",
 	["~tsuki008"]="真是...精彩...",
 	["thqishu"]="奇术",
@@ -126,7 +126,7 @@ return {
 	["#tsuki009"]="宙古的大贤者",
 	["tsuki009"]="八意永琳",--月 - 空 - 3血
 	["designer:tsuki009"]="狐耳魔师",
-	["illustrator:tsuki009"]="結之",
+	["illustrator:tsuki009"]="朱シオ",
 	["cv:tsuki009"]="暂无",
 	["thshennao"]="神脑",
 	[":thshennao"]="若你的手牌数不小于体力值，你可以将一张手牌当【三粒天滴】使用；若你的手牌数小于体力值，你可以失去1点体力并摸一张牌，视为使用了一张【三粒天滴】。",
@@ -136,7 +136,7 @@ return {
 	["#tsuki010"]="宵暗的妖魔",
 	["tsuki010"]="露米娅",--月 - 空 - 4血
 	["designer:tsuki010"]="幻桜落",
-	["illustrator:tsuki010"]="正体不明",
+	["illustrator:tsuki010"]="ぬぬっこ",
 	["cv:tsuki010"]="暂无",
 	["thheiguan"]="黑棺",
 	[":thheiguan"]="出牌阶段限一次，你可以交给一名其他角色一张黑色手牌，则你不能成为其使用的【杀】的目标；或获得一名其他角色的一张手牌，则该角色不能成为【杀】的目标。效果持续到你的下回合开始。",
@@ -158,7 +158,7 @@ return {
 	["tsuki012"]="桑妮•米尔克",--月 - 空 - 4血
 	["&tsuki012"]="桑妮",
 	["designer:tsuki012"]="幻桜落",
-	["illustrator:tsuki012"]="正体不明",
+	["illustrator:tsuki012"]="シロ９じら",
 	["cv:tsuki012"]="暂无",
 	["thzhehui"]="折辉",
 	[":thzhehui"]="锁定技，每当你受到一次伤害后，你防止你受到的伤害，直到回合结束。且此回合的结束阶段开始时，你须弃置当前回合角色的一张牌；或视为对一名其他角色使用一张无视距离的【杀】。",
@@ -169,7 +169,7 @@ return {
 	["tsuki013"]="露娜•琪尔德",--月 - 空 - 3血
 	["&tsuki013"]="露娜",
 	["designer:tsuki013"]="幻桜落",
-	["illustrator:tsuki013"]="正体不明",
+	["illustrator:tsuki013"]="ke-ta",
 	["cv:tsuki013"]="暂无",
 	["thchenji"]="沉寂",
 	[":thchenji"]="你的回合外，每当失去牌时，你可以将一名角色的人物牌横置或者重置。",
@@ -182,7 +182,7 @@ return {
 	["tsuki014"]="斯塔•莎菲雅",--月 - 空 - 3血
 	["&tsuki014"]="斯塔",
 	["designer:tsuki014"]="jachsu&幻桜落",
-	["illustrator:tsuki014"]="kinakomoti",
+	["illustrator:tsuki014"]="せとらん",
 	["cv:tsuki014"]="暂无",
 	["thexi"]="恶戏",
 	[":thexi"]="结束阶段开始时，你可以弃置一张手牌并选择两名有手牌的角色，这两名角色须同时展示一张手牌：若这两张牌点数不同，你获得其中一张牌，所展示的牌点数大的角色获得另一张牌；若点数相同，你须在此回合结束后进行一个额外的回合，且此额外的回合内你不可以发动“恶戏”。",
@@ -198,7 +198,7 @@ return {
 	["tsuki015"]="帕秋莉•诺蕾姬",--月 - 幻 - 3血
 	["&tsuki015"]="帕秋莉",
 	["designer:tsuki015"]="幻桜落",
-	["illustrator:tsuki015"]="正体不明",
+	["illustrator:tsuki015"]="忘川の泉眼",
 	["cv:tsuki015"]="暂无",
 	["thanbing"]="暗病",
 	[":thanbing"]="锁定技，你的手牌上限始终-1，且若你于出牌阶段未使用过锦囊牌，你跳过此回合的弃牌阶段。",
@@ -210,7 +210,7 @@ return {
 	["#tsuki016"]="神灵依凭的月姬",
 	["tsuki016"]="绵月依姬",--月 - 空 - 4血
 	["designer:tsuki016"]="幻桜落",
-	["illustrator:tsuki016"]="正体不明",
+	["illustrator:tsuki016"]="あじりこ",
 	["cv:tsuki016"]="暂无",
 	["thshenyou"]="神佑",
 	[":thshenyou"]="摸牌阶段开始时，你可以放弃摸牌，改为选择一名其他角色，且若其手牌数不小于你，你摸一张牌；然后你可以获得其区域内的一张牌，你还可以对其使用一张无视距离的【杀】，且你可以令此【杀】即将造成的伤害视为失去体力。",
@@ -221,7 +221,7 @@ return {
 	["#tsuki017"]="海与山的境界",
 	["tsuki017"]="绵月丰姬",--月 - 空 - 4血
 	["designer:tsuki017"]="幻桜落",
-	["illustrator:tsuki017"]="正体不明",
+	["illustrator:tsuki017"]="藍·Hallelujah",
 	["cv:tsuki017"]="暂无",
 	["thguixu"]="归墟",
 	[":thguixu"]="你的回合外，当其他角色使用一张除【三粒天滴】外的非延时类锦囊牌时，你可以进行一次判定：若为红桃，该锦囊牌对目标角色无效；若不为方块，在结算后，将该牌置于你的人物牌上，称为“海”。若你的“海”的数量不小于2，你不能以此法进行判定。",
@@ -234,7 +234,7 @@ return {
 	["#tsuki018"]="永远与须臾的罪人",
 	["tsuki018"]="蓬莱山辉夜",--月 - 空 - 3血
 	["designer:tsuki018"]="幻桜落",
-	["illustrator:tsuki018"]="Emiaエミア",
+	["illustrator:tsuki018"]="エミニャ",
 	["cv:tsuki018"]="暂无",
 	["thyongye"]="永夜",
 	[":thyongye"]="出牌阶段，当你使用一张非延时类锦囊牌时，你可以弃置一张黑色牌并为该牌多或少指定一个目标。",
