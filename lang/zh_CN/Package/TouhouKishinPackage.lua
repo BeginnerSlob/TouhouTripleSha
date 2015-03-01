@@ -6,7 +6,7 @@ return {
 	["#kishin001"] = "逆袭的天邪鬼",
 	["kishin001"] = "鬼人正邪",--风 - 空 - 4血
 	["designer:kishin001"] = "幻桜落",
-	["illustrator:kishin001"] = "正体不明",
+	["illustrator:kishin001"] = "ひそな",
 	["cv:kishin001"] = "向晚",
 	["~kishin001"] = "善哉善哉...无上甚深圆满正等觉...",
 	["thluanshen"] = "乱神",
@@ -19,7 +19,7 @@ return {
 	["#kishin002"] = "柳下的辘轳首",
 	["kishin002"] = "赤蛮奇",--花 - 空 - 4血
 	["designer:kishin002"] = "幻桜落",
-	["illustrator:kishin002"] = "正体不明",
+	["illustrator:kishin002"] = "キラメ☆キライ",
 	["cv:kishin002"] = "暂无",
 	["thfeiman"] = "飞蛮",
 	[":thfeiman"] = "出牌阶段开始时，你可以对一名其他角色造成1点伤害，然后令其选择一项：对其攻击范围内的一名角色造成一点火焰伤害，或获得场上的一张牌。",
@@ -32,7 +32,7 @@ return {
 	["#kishin003"] = "秘境的人鱼",
 	["kishin003"] = "若鹭姬",--雪 - 空 - 2血
 	["designer:kishin003"] = "幻桜落",
-	["illustrator:kishin003"] = "正体不明",
+	["illustrator:kishin003"] = "その",
 	["cv:kishin003"] = "暂无",
 	["thjingtao"] = "惊涛",
 	[":thjingtao"] = "每当你失去最后的手牌时，你可以摸两张牌。",
@@ -44,7 +44,7 @@ return {
 	["#kishin004"] = "幻想琉璃双镜",
 	["kishin004"] = "九十九弁弁＆九十九八桥",--月 - 空 - 4血
 	["designer:kishin004"] = "幻桜落",
-	["illustrator:kishin004"] = "正体不明",
+	["illustrator:kishin004"] = "ラサハン",
 	["cv:kishin004"] = "暂无",
 	["thlanzou"] = "岚奏",
 	[":thlanzou"] = "弃牌阶段结束时，若你于此阶段弃置了X张或更多的手牌，你可以将此阶段弃置的牌交给一名其他角色，然后其失去1点体力；若你在此阶段弃置了小于X张的手牌，你可以失去1点体力，然后弃置任意名其他角色的共计三张牌（X为你装备区的牌的数量，且至多为四）。",
@@ -54,7 +54,7 @@ return {
 	["#kishin005"] = "丧心的假面",
 	["kishin005"] = "秦心",--风 - 幻 - 3血
 	["designer:kishin005"] = "幻桜落",
-	["illustrator:kishin005"] = "正体不明",
+	["illustrator:kishin005"] = "kaze",
 	["cv:kishin005"] = "暂无",
 	["thxinqi"] = "心绮",
 	[":thxinqi"] = "锁定技，当其他角色使用黑色非延时类锦囊牌指定你为目标时，需令你摸一张牌，且若其有手牌需令你观看之，否则该锦囊牌对你无效。",
@@ -68,7 +68,7 @@ return {
 	["#kishin006"] = "小人的末裔",
 	["kishin006"] = "少名针妙丸",--花 - 空 - 3血
 	["designer:kishin006"] = "幻桜落",
-	["illustrator:kishin006"] = "正体不明",
+	["illustrator:kishin006"] = "えふぇ",
 	["cv:kishin006"] = "暂无",
 	["thbaochui"] = "宝锤",
 	[":thbaochui"] = "其他角色的出牌阶段开始时，若你有手牌，你可令其交给你一张手牌，然后你将全部的手牌置于你的人物牌上，若如此做，该角色可于此出牌阶段将你人物牌上的牌如手牌般使用或打出，且此出牌阶段结束时，你获得你人物牌上全部的牌，并摸一张牌。",
@@ -81,7 +81,7 @@ return {
 	["#kishin007"] = "幻梦的演奏家",
 	["kishin007"] = "堀川雷鼓",--雪 - 空 - 4血
 	["designer:kishin007"] = "幻桜落",
-	["illustrator:kishin007"] = "正体不明",
+	["illustrator:kishin007"] = "みるき。",
 	["cv:kishin007"] = "暂无",
 	["thmoju"] = "魔具",
 	[":thmoju"] = "锁定技，摸牌阶段，若你的装备区有武器牌，你摸牌的数量改为你攻击范围的数量（至少摸两张）；出牌阶段，当你使用【杀】指定一名角色为目标后，若你的装备区有防具牌，此【杀】不可以被【闪】响应；你的装备区每有一张坐骑牌，你的手牌上限便+1。",
@@ -89,7 +89,7 @@ return {
 	["#kishin008"] = "月下的独狼",
 	["kishin008"] = "今泉影狼",--月 - 空 - 4血
 	["designer:kishin008"] = "幻桜落",
-	["illustrator:kishin008"] = "正体不明",
+	["illustrator:kishin008"] = "susu",
 	["cv:kishin008"] = "暂无",
 	["thlianying"] = "莲影",
 	[":thlianying"] = "出牌阶段限一次，你可以弃置两张牌，若如此做，你获得技能“赤莲”和“疾步”，直到回合结束。",

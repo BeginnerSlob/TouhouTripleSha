@@ -15,7 +15,7 @@ return {
 	["#bangai002"] = "戾血的妖灵",
 	["bangai002"] = "朱鹭子",--花 - 空 - 3血
 	["designer:bangai002"] = "幻桜落",
-	["illustrator:bangai002"] = "正体不明",
+	["illustrator:bangai002"] = "DClockwork",
 	["cv:bangai002"] = "暂无",
 	["thshuling"] = "书灵",
 	[":thshuling"] = "锁定技，游戏开始时，你获得1枚“妖书”标记。你或拥有该标记的其他角色的摸牌阶段摸牌时，额外摸一张牌，若你没有该标记，摸牌阶段结束时，你须将一张手牌交给拥有该标记的角色。你死亡时，将场上的该标记转移给一名其他角色，然后令其摸两张牌，并获得技能“书灵”。",
@@ -38,7 +38,7 @@ return {
 	["#bangai004"] = "星耀的使役魔",
 	["bangai004"] = "小恶魔",--月 - 幻 - 3血
 	["designer:bangai004"] = "幻桜落",
-	["illustrator:bangai004"] = "yamasan",
+	["illustrator:bangai004"] = "konomi",
 	["cv:bangai004"] = "暂无",
 	["thzusha"] = "诅杀", 
 	[":thzusha"] = "出牌阶段限一次，你可以弃置一张黑桃手牌并令一名其他角色获得1枚“诅咒”标记。其他角色的判定阶段开始时，若其拥有1枚或更多的“诅咒”标记，须进行一次判定，若为黑色，该角色失去1点体力；若为红色，弃置1枚“诅咒”标记。",
@@ -53,7 +53,7 @@ return {
 	["bangai005"] = "玛艾露贝莉•赫恩",--风 - 空 - 3血
 	["&bangai005"] = "玛艾露贝莉",
 	["designer:bangai005"] = "幻桜落",
-	["illustrator:bangai005"] = "正体不明",
+	["illustrator:bangai005"] = "十誤一会",
 	["cv:bangai005"] = "暂无",
 	["thxijing"] = "隙境", 
 	[":thxijing"] = "你的回合外，每当你的非装备牌进入弃牌堆后，你可以用一张相同颜色的手牌替换之。",
@@ -64,7 +64,7 @@ return {
 	["#bangai006"] = "幻梦的林檎",
 	["bangai006"] = "艾丽",--花 - 空 - 4血
 	["designer:bangai006"] = "幻桜落",
-	["illustrator:bangai006"] = "正体不明",
+	["illustrator:bangai006"] = "UGUME",
 	["cv:bangai006"] = "暂无",
 	["thsilian"] = "死镰",
 	[":thsilian"] = "锁定技，你手牌中的武器牌均视为【杀】；你获得即将进入你装备区的武器牌；若你的装备区没有武器牌，你视为装备着【离魂之镰】。",
@@ -78,7 +78,7 @@ return {
 	["#bangai007"] = "荒城的苍影",
 	["bangai007"] = "冴月麟",--雪 - 空 - 4血
 	["designer:bangai007"] = "幻桜落",
-	["illustrator:bangai007"] = "正体不明",
+	["illustrator:bangai007"] = "ForgottenGirlRin",
 	["cv:bangai007"] = "暂无",
 	["thqinshao"] = "琴韶",
 	[":thqinshao"] = "弃牌阶段开始时，若你的手牌数大于体力值，你可以令一名其他角色摸X张牌；若你的手牌数小于体力值，你可以摸X张牌（X为你的手牌数与体力值之差）。",
@@ -89,7 +89,7 @@ return {
 	["#bangai008"] = "月都的玉兔",
 	["bangai008"] = "泠仙",--月 - 空 - 3血
 	["designer:bangai008"] = "幻桜落",
-	["illustrator:bangai008"] = "正体不明",
+	["illustrator:bangai008"] = "tucana",
 	["cv:bangai008"] = "暂无",
 	["thyubo"] = "羽帛",
 	[":thyubo"] = "出牌阶段限一次，你可以弃置一张黑色手牌并将至多两名角色的人物牌横置。",
@@ -103,7 +103,7 @@ return {
 	["#bangai009"] = "至高的龙神",
 	["bangai009"] = "濑织津姬",--风 - 空 - 4血
 	["designer:bangai009"] = "幻桜落",
-	["illustrator:bangai009"] = "正体不明",
+	["illustrator:bangai009"] = "藤原",
 	["cv:bangai009"] = "暂无",
 	["thweide"] = "威德",
 	[":thweide"] = "摸牌阶段摸牌时，你可少摸X张牌，并令一名其他角色摸X张牌，然后若你已受伤，你可获得一名体力值不小于你的其他角色的X张手牌（不足则全部获得；你的体力值大于2时X为1，否则为2）。",
@@ -113,7 +113,7 @@ return {
 	["#bangai010"] = "禁书的评者",
 	["bangai010"] = "本居小铃",--花 - 幻 - 3血
 	["designer:bangai010"] = "幻桜落",
-	["illustrator:bangai010"] = "正体不明",
+	["illustrator:bangai010"] = "湧々ごろり",
 	["cv:bangai010"] = "暂无",
 	["thguijuan"] = "诡卷",
 	[":thguijuan"] = "出牌阶段，你可以摸一张牌，然后展示之并选择一项：使用此牌，或失去1点体力。若你以此法使用了一张【杀】或装备牌，你不可以发动“诡卷”，直到回合结束。",
@@ -125,7 +125,7 @@ return {
 	["#bangai011"] = "神话的黄昏",
 	["bangai011"] = "神绮",--雪 - 空 - 3血
 	["designer:bangai011"] = "幻桜落",
-	["illustrator:bangai011"] = "正体不明",
+	["illustrator:bangai011"] = "湿布満",
 	["cv:bangai011"] = "暂无",
 	["thhuilun"] = "辉轮",
 	[":thhuilun"] = "锁定技，你的黑色【杀】均视为【桃】；你的红色【桃】均视为【杀】。",
@@ -138,7 +138,7 @@ return {
 	["#bangai012"]="高天原之主",
 	["bangai012"]="天照",--月 - 空 - 4血
 	["designer:bangai012"]="妒天のPAD",
-	["illustrator:bangai012"]="八重樫 南",
+	["illustrator:bangai012"]="水鼠",
 	["cv:bangai012"]="暂无",
 	["thsixiang"]="四象",
 	[":thsixiang"]="出牌阶段，你可以选择一项：<br />1. 弃置两张黑桃牌并回复1点体力。<br />2. 弃置两张方块牌并弃置一名其他角色区域的一张牌。<br />3. 弃置两张梅花牌并令一名其他角色摸两张牌，然后该角色须弃置一张牌。<br />4. 弃置两张红桃牌并令一名其他角色摸一张牌，然后该角色将其人物牌翻面。",
