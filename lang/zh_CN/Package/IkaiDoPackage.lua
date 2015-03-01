@@ -24,7 +24,7 @@ return {
 
 	["#wind003"] = "小柄的空母",
 	["wind003"] = "瑞凤",--风 - 空 - 4血
-    ["illustrator:wind003"]="双月アイジ",
+	["illustrator:wind003"]="双月アイジ",
 	["ikyipao"] = "翼咆",
 	[":ikyipao"] = "出牌阶段，你可以使用任意数量的【杀】。",
 	["ikshijiu"] = "酾酒",
