@@ -1390,6 +1390,97 @@ public:
     }
 };
 
+class IkShangshiShu: public TriggerSkill {
+public:
+    IkShangshiShu(): TriggerSkill("ikshangshishu") {
+        events << EventPhaseStart;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        QList<ServerPlayer *> players = target->getRoom()->getAllPlayers();
+        foreach (ServerPlayer *p, players) {
+            if (p->isWounded())
+                return TriggerSkill::triggerable(target) && target->getPhase() == Player::Draw;
+        }
+        return false;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName(), qrand() % 2 + 1);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        int n = 0;
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
+            if (p->isWounded())
+                ++n;
+        }
+
+        player->setFlags(objectName());
+        player->drawCards(n, objectName());
+        return true;
+    }
+};
+
+class IkShangshiShuTrigger: public TriggerSkill {
+public:
+    IkShangshiShuTrigger(): TriggerSkill("#ikshangshishu") {
+        events << CardUsed << CardResponded;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        if (player != NULL && player->isAlive() && player->hasFlag("ikshangshishu")) {
+            const Card *card = NULL;
+            if (triggerEvent == CardUsed)
+                card = data.value<CardUseStruct>().card;
+            else {
+                CardResponseStruct resp = data.value<CardResponseStruct>();
+                if (resp.m_isUse)
+                    card = resp.m_card;
+            }
+            if (card && (card->getTypeId() == Card::TypeBasic || card->getTypeId() == Card::TypeTrick) && player->canDiscard(player, "he"))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke("ikshangshishu", 3);
+        room->askForDiscard(player, objectName(), 1, 1, false, true, "@ikshangshishu-discard");
+        return false;
+    }
+};
+
+class IkChouhai : public TriggerSkill {
+public:
+    IkChouhai() : TriggerSkill("ikchouhai") {
+        events << DamageInflicted;
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return TriggerSkill::triggerable(target)
+            && target->isKongcheng();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+
+        DamageStruct damage = data.value<DamageStruct>();
+        ++damage.damage;
+        data = QVariant::fromValue(damage);
+
+        return false;
+    }
+};
+
 class IkBashou: public TriggerSkill {
 public:
     IkBashou(): TriggerSkill("ikbashou") {
@@ -5004,6 +5095,13 @@ IkaiSuiPackage::IkaiSuiPackage()
 
     General *wind050 = new General(this, "wind050", "kaze");
     wind050->addSkill(new IkWujietiya);
+
+    General *wind052 = new General(this, "wind052", "kaze", 5);
+    wind052->addSkill(new IkShangshiShu);
+    wind052->addSkill(new IkShangshiShuTrigger);
+    related_skills.insertMulti("ikshangshishu", "#ikshangshishu");
+    wind052->addSkill(new IkChouhai);
+    wind052->addSkill(new Skill("ikguiming", Skill::Compulsory));
 
     General *bloom023 = new General(this, "bloom023", "hana");
     bloom023->addSkill(new IkBashou);
