@@ -255,12 +255,10 @@ IkKangjinCard::IkKangjinCard() {
 void IkKangjinCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
     const Card *card = Sanguosha->getCard(getEffectiveId());
-    if (effect.from->hasFlag("ikkangjin_red"))
-        room->setPlayerFlag(effect.from, "-ikkangjin_red");
-    if (effect.from->hasFlag("ikkangjin_black"))
-        room->setPlayerFlag(effect.from, "-ikkangjin_black");
-    if (card->isRed()) room->setPlayerFlag(effect.from, "ikkangjin_red");
-    if (card->isBlack()) room->setPlayerFlag(effect.from, "ikkangjin_black");
+    int mark = effect.from->getMark("ikkangjin");
+    int mask = (1 << card->getTypeId());
+    mark = mark | mask;
+    room->setPlayerMark(effect.from, "ikkangjin", mark);
     CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "ikkangjin", QString());
     room->obtainCard(effect.to, this, reason);
     Duel *duel = new Duel(NoSuit, 0);
@@ -279,9 +277,8 @@ public:
 
     virtual bool viewFilter(const Card *to_select) const{
         if (to_select->isEquipped()) return false;
-        if (Self->hasFlag("ikkangjin_red") && to_select->isRed()) return false;
-        if (Self->hasFlag("ikkangjin_black") && to_select->isBlack()) return false;
-        return true;
+        int mask = (1 << to_select->getTypeId());
+        return !(Self->getMark("ikkangjin") & mask);
     }
 
     virtual const Card *viewAs(const Card *originalcard) const{
@@ -289,19 +286,28 @@ public:
         card->addSubcard(originalcard);
         return card;
     }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->getMark("ikkangjin") < 0xe; // 1110(2)
+    }
 };
 
 class IkKangjinTrigger: public TriggerSkill {
 public:
     IkKangjinTrigger(): TriggerSkill("#ikkangjin") {
-        events << Damaged;
+        events << Damaged << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
-        DamageStruct damage = data.value<DamageStruct>();
-        if (damage.card && damage.card->isKindOf("Duel") && damage.card->getSkillName() == "ikkangjin") {
-            ask_who = damage.by_user ? damage.from : player;
-            return QStringList(objectName());
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            room->setPlayerMark(player, "ikkangjin", 0);
+        } else {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card && damage.card->isKindOf("Duel") && damage.card->getSkillName() == "ikkangjin") {
+                ask_who = damage.by_user ? damage.from : player;
+                return QStringList(objectName());
+            }
         }
         return QStringList();
     }
