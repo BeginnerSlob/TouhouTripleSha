@@ -478,6 +478,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
                 } else if (effect.card->getTypeId() == Card::TypeTrick) {
                     if (room->isCanceled(effect)) {
                         effect.to->setFlags("Global_NonSkillNullify");
+                        room->getThread()->trigger(TrickMissed, room, effect.from, data);
                         return true;
                     } else {
                         room->getThread()->trigger(TrickEffect, room, effect.to, data);

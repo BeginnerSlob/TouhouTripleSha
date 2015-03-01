@@ -1834,6 +1834,250 @@ public:
     }
 };
 
+IkLingchaDialog *IkLingchaDialog::getInstance() {
+    static IkLingchaDialog *instance;
+    if (instance == NULL)
+        instance = new IkLingchaDialog();
+
+    return instance;
+}
+
+IkLingchaDialog::IkLingchaDialog() {
+    setObjectName("iklingcha");
+    setWindowTitle(Sanguosha->translate("iklingcha"));
+    group = new QButtonGroup(this);
+
+    button_layout = new QVBoxLayout;
+    setLayout(button_layout);
+    connect(group, SIGNAL(buttonClicked(QAbstractButton *)), this, SLOT(selectCard(QAbstractButton *)));
+}
+
+void IkLingchaDialog::popup() {
+    foreach (QAbstractButton *button, group->buttons()) {
+        button_layout->removeWidget(button);
+        group->removeButton(button);
+        delete button;
+    }
+
+    QStringList card_names;
+    card_names << "slash" << "ex_nihilo";
+
+    foreach (QString card, card_names) {
+        QCommandLinkButton *button = new QCommandLinkButton;
+        button->setText(Sanguosha->translate(card));
+        button->setObjectName(card);
+        group->addButton(button);
+
+        bool can = true;
+        if (can) {
+            const Card *c = Sanguosha->cloneCard(card);
+            if (Self->isCardLimited(c, Card::MethodUse) || !c->isAvailable(Self))
+                can = false;
+            delete c;
+        }
+        button->setEnabled(can);
+        button_layout->addWidget(button);
+
+        if (!map.contains(card)) {
+            Card *c = Sanguosha->cloneCard(card, Card::NoSuit, 0);
+            c->setParent(this);
+            map.insert(card, c);
+        }
+    }
+
+    exec();
+}
+
+void IkLingchaDialog::selectCard(QAbstractButton *button) {
+    const Card *card = map.value(button->objectName());
+    Self->tag["iklingcha"] = QVariant::fromValue(card);
+    emit onButtonClick();
+    accept();
+}
+
+IkLingchaCard::IkLingchaCard() {
+    will_throw = false;
+}
+
+bool IkLingchaCard::targetFixed() const {
+    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = NULL;
+        if (!user_string.isEmpty()) {
+            card = Sanguosha->cloneCard(user_string.split("+").first());
+            card->addSubcards(subcards);
+            card->deleteLater();
+        }
+        return card && card->targetFixed();
+    } else if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+        return true;
+    }
+
+    const Card *card = Self->tag.value("iklingcha").value<const Card *>();
+    Card *new_card = Sanguosha->cloneCard(card->objectName());
+    new_card->addSubcards(subcards);
+    new_card->setSkillName("iklingcha");
+    new_card->deleteLater();
+    return new_card->targetFixed();
+}
+
+bool IkLingchaCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const {
+    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = NULL;
+        if (!user_string.isEmpty()) {
+            card = Sanguosha->cloneCard(user_string.split("+").first());
+            card->addSubcards(subcards);
+            card->deleteLater();
+        }
+        return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
+    } else if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+        return false;
+    }
+
+    const Card *card = Self->tag.value("iklingcha").value<const Card *>();
+    Card *new_card = Sanguosha->cloneCard(card->objectName());
+    new_card->addSubcards(subcards);
+    new_card->setSkillName("iklingcha");
+    new_card->deleteLater();
+    return new_card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, new_card, targets);
+}
+
+bool IkLingchaCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = NULL;
+        if (!user_string.isEmpty()) {
+            card = Sanguosha->cloneCard(user_string.split("+").first());
+            card->addSubcards(subcards);
+            card->deleteLater();
+        }
+        return card && card->targetsFeasible(targets, Self);
+    } else if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+        return true;
+    }
+
+    const Card *card = Self->tag.value("iklingcha").value<const Card *>();
+    Card *new_card = Sanguosha->cloneCard(card->objectName());
+    new_card->addSubcards(subcards);
+    new_card->setSkillName("iklingcha");
+    new_card->deleteLater();
+    return new_card->targetsFeasible(targets, Self);
+}
+
+const Card *IkLingchaCard::validate(CardUseStruct &use) const{
+    Card *use_card = Sanguosha->cloneCard(user_string);
+    use_card->setSkillName("iklingcha");
+    use_card->addSubcards(subcards);
+    use.from->getRoom()->setPlayerFlag(use.from, "IkLingchaUsed");
+    return use_card;
+}
+
+const Card *IkLingchaCard::validateInResponse(ServerPlayer *player) const{
+    Card *use_card = Sanguosha->cloneCard(user_string);
+    use_card->setSkillName("iklingcha");
+    use_card->addSubcards(subcards);
+    player->getRoom()->setPlayerFlag(player, "IkLingchaUsed");
+    return use_card;
+}
+
+class IkLingcha: public ViewAsSkill {
+public:
+    IkLingcha(): ViewAsSkill("iklingcha") {
+        response_or_use = true;
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const {
+        return !to_select->isEquipped();
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const {
+        if (player->getPhase() != Player::Play || player->hasUsed("IkLingchaUsed"))
+            return false;
+        return pattern == "slash";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const {
+        if (player->getPhase() != Player::Play || player->hasUsed("IkLingchaUsed"))
+            return false;
+        Slash *slash = new Slash(Card::NoSuit, 0);
+        slash->deleteLater();
+        ExNihilo *ex_nihilo = new ExNihilo(Card::NoSuit, 0);
+        ex_nihilo->deleteLater();
+        return slash->isAvailable(player) || ex_nihilo->isAvailable(player);
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const {
+        if (cards.isEmpty())
+            return NULL;
+
+        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE
+            || Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+            IkLingchaCard *card = new IkLingchaCard;
+            card->setUserString(Sanguosha->currentRoomState()->getCurrentCardUsePattern());
+            card->addSubcards(cards);
+            return card;
+        }
+
+        const Card *c = Self->tag.value("iklingcha").value<const Card *>();
+        if (c) {
+            IkLingchaCard *card = new IkLingchaCard;
+            card->setUserString(c->objectName());
+            card->addSubcards(cards);
+            return card;
+        } else
+            return NULL;
+    }
+
+    virtual QDialog *getDialog() const {
+        return IkLingchaDialog::getInstance();
+    }
+
+    virtual int getEffectIndex(const ServerPlayer *, const Card *card) const{
+        int step = -2;
+        if (card->isKindOf("Slash"))
+            step = 0;
+        else if (card->isKindOf("ExNihilo"))
+            step = 2;
+        else if (card->isKindOf("Dismantlement"))
+            step = 4;
+        if (step == -2)
+            return step;
+        return qrand() % 2 + 1 + step;
+    }
+};
+
+class IkLingchaTrigger: public TriggerSkill {
+public:
+    IkLingchaTrigger(): TriggerSkill("#iklingcha") {
+        events << TrickMissed << SlashMissed;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player && player->isAlive()) {
+            const Card *card = NULL;
+            if (triggerEvent == TrickMissed)
+                card = data.value<CardEffectStruct>().card;
+            else if (triggerEvent == SlashMissed)
+                card = data.value<SlashEffectStruct>().slash;
+            if (card && card->getSkillName() == "iklingcha")
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, "iklingcha");
+        room->broadcastSkillInvoke("iklingcha", qrand() % 2 + 7);
+
+        const Card *card = NULL;
+        if (triggerEvent == TrickMissed)
+            card = data.value<CardEffectStruct>().card;
+        else if (triggerEvent == SlashMissed)
+            card = data.value<SlashEffectStruct>().slash;
+        player->drawCards(card->subcardsLength(), "iklingcha");
+        return false;
+    }
+};
+
 class IkLingyun: public TriggerSkill {
 public:
     IkLingyun(): TriggerSkill("iklingyun") {
@@ -4223,6 +4467,11 @@ IkaiKaPackage::IkaiKaPackage()
     bloom051->addSkill(new IkZhiyuTargetMod);
     related_skills.insertMulti("ikzhiyu", "#ikzhiyu-tar");
 
+    General *bloom052 = new General(this, "bloom052", "hana");
+    bloom052->addSkill(new IkLingcha);
+    bloom052->addSkill(new IkLingchaTrigger);
+    related_skills.insertMulti("iklingcha", "#iklingcha");
+
     General *snow031 = new General(this, "snow031", "yuki", 3);
     snow031->addSkill(new IkLingyun);
     snow031->addSkill(new IkMiyao);
@@ -4331,6 +4580,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkQihunCard>();
     addMetaObject<IkZhiyuCard>();
     addMetaObject<IkZhiyuBasicCard>();
+    addMetaObject<IkLingchaCard>();
     addMetaObject<IkShidaoCard>();
     addMetaObject<IkMingwangCard>();
     addMetaObject<IkLinghuiCard>();
