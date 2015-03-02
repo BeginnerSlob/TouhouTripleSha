@@ -18,7 +18,7 @@ return {
 	["#hana002"]="普通的魔法使",
 	["hana002"]="雾雨魔理沙",--花 - 空 - 4血
 	["designer:hana002"]="幻桜落",
-	["illustrator:hana002"]="亜音",
+	["illustrator:hana002"]="えふぇ",
 	["cv:hana002"]="暂无",
 	["thjiewu"]="借物",
 	[":thjiewu"]="出牌阶段限一次，你可获得一名你攻击范围内的角色的一张牌，视为该角色对你使用一张无视距离的【杀】，且此【杀】无视你的防具。",
@@ -35,7 +35,7 @@ return {
 	["#hana003"]="三途川的引路人",
 	["hana003"]="小野塚小町",--花  - 幻 - 3血
 	["designer:hana003"]="幻桜落",
-	["illustrator:hana003"]="エミア",
+	["illustrator:hana003"]="G.H",
 	["cv:hana003"]="飞鸟",
 	["~hana003"]="死神，亦有归去之时...",
 	["thbian"]="彼岸",
