@@ -12,7 +12,7 @@ return {
 	["#story002"]="梦想天生",
 	["story002"]="魔王博丽灵梦",--神 - 空 - 8血
 	["designer:story002"]="幻桜落",
-	["illustrator:story002"]="正体不明",
+	["illustrator:story002"]="Samail",
 	["cv:story002"]="暂无",
 	--thjibu
 	--ikwushuang
@@ -26,7 +26,7 @@ return {
 	["#story003"]="巫祖",
 	["story003"]="魔王博丽灵梦",--神 - 空 - 4血
 	["designer:story003"]="幻桜落",
-	["illustrator:story003"]="正体不明",
+	["illustrator:story003"]="manabi",
 	["cv:story003"]="暂无",
 	--thjibu
 	--ikwushuang
