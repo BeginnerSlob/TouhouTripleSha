@@ -632,8 +632,9 @@ public:
             choices << "discard";
 
         choices << "draw";
-
+        player->tag["ThDunjiaTarget"] = QVariant::fromValue(damage.to);
         QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+        player->tag.remove("ThDunjiaTarget");
         if (choice == "discard") {
             room->setPlayerFlag(damage.to, "thdunjia_InTempMoving");
             DummyCard *dummy = new DummyCard;
@@ -1104,8 +1105,11 @@ public:
         choices << "letdraw";
         if (ask_who->canDiscard(player, "he"))
             choices << "discard";
-
+        
+        player->tag["ThLingyaSource"] = QVariant::fromValue(ask_who);
         QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+        player->tag.remove("ThLingyaSource");
+        
         if (choice == "discard") {
             int card_id = room->askForCardChosen(ask_who, player, "he", objectName(), false, Card::MethodDiscard);
             room->throwCard(card_id, player, ask_who);
@@ -1145,7 +1149,11 @@ public:
             if (!can) continue;
             targets << p;
         }
+        
+        
+        player->tag["ThHeimuCardUse"] = data;
         ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thheimu", true, true);
+        player->tag.remove("ThHeimuCardUse");
         if (target) {
             room->broadcastSkillInvoke(objectName());
             player->tag["ThHeimuTarget"] = QVariant::fromValue(target);
