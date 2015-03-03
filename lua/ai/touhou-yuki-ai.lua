@@ -23,6 +23,118 @@ sgs.ai_skill_invoke.thcuimeng = function(self, data)
  	return true
 end
 
+--【遁甲】ai
+sgs.ai_skill_invoke.thdunjia = true
+sgs.ai_skill_choice.thdunjia = function(self, choices, data)	
+	local target = self.player:getTag("ThDunjiaTarget"):toPlayer()
+	if not target or not self:isEnemy(target) then return "draw" end
+	if choices:match("discard") then
+		local x = math.abs(self.player:getEquips():length()- target:getEquips():length())
+		if target:getCards("he"):length() >= x then
+			return "discard"
+		end
+		-- 目前无脑拆
+		--其实判断最好加入对于敌人装备值得衡量和自身需要过牌的考虑，而不是无脑发动 = =
+		--高阶ai aoe时需要队友会卖血
+	end
+	return "draw"
+end
+--sgs.ai_skill_cardchosen.thdunjia = function(self, who, flags)
+--交给smart-ai的askForCardChosen去选择,应该没有特别要注意的
+
+
+sgs.ai_skill_invoke.thlingya = true
+sgs.ai_skill_choice.thlingya = function(self, choices, data)	
+	local yukari = self.player:getTag("ThLingyaSource"):toPlayer()
+	if yukari and choices:match("discard") then 
+		if self:isFriend(yukari) and  self:hasSkills(sgs.lose_equip_skill) then
+			return "discard"
+		elseif self:isEnemy(yukari) then
+			local LetDiscard = false
+			--高级ai 应该对letdiscard做更详细的评估
+			if not yukari:canDiscard(self.player,"h") and self:hasSkills(sgs.lose_equip_skill) then
+				LetDiscard  = true
+			elseif  self:needKongcheng(p) and self:getHandcardNum()==1  then 
+				if not yukari:canDiscard(self.player,"e") or self:hasSkills(sgs.lose_equip_skill) then
+					LetDiscard  = true
+				end
+			end
+			if LetDiscard then  return "discard" end
+		end
+	end
+	return "letdraw"
+end
+
+
+--黑幕的存在使得carduse本身就有变化。。。。比如可以故意作死地去决斗敌人。。。反正会转移使用者当一个离间。。。
+-- 一般ai使用决斗不会这么做,这个功能需要改usecard的底层ai本身 = =
+sgs.ai_skill_playerchosen.thheimu = function(self, targets)
+    local cardUse = self.player:getTag("ThHeimuCardUse"):toCardUse()
+    local isRed = cardUse.card:isRed()
+    
+    --case1  灵压敌人
+    local goodLingyaCard = "god_salvation|amazing_grace|iron_chain" 
+    --|slash|thunder_slash|fire_slash
+    local isGoodLingyaCard =  goodLingyaCard:match(cardUse.card:objectName())
+    if self.player:hasSkill("thlingya") and isGoodLingyaCard and isRed then
+        if #self.enemies > 0 then
+            self:sort(self.enemies, "defense")
+            return self.enemies[1]
+        end
+    end
+    
+    --case2 助队友收反或使主公杀忠掉牌
+    local isDamageCard =  sgs.dynamic_value.damage_card[cardUse.card:getClassName()]
+    if isDamageCard then
+        local lord = self.room:getLord()
+        if self:isFriend(lord) then
+            local weakRebel 
+            for _,p in sgs.qlist(cardUse.to) do
+                if p:getHp()<=1 and self:isEnemy(p) then
+                    weakRebel  = p
+                    continue
+                end
+            end
+            if weakRebel  then
+                for _, p in sgs.qlist(targets) do
+                    if self:isFriend(p) and p:hasSkills(sgs.cardneed_skill) then
+                        if (cardUse.card:isKindOf("TrickCard") and self:hasTrickEffective(cardUse.card, weakRebel, p)) 
+                        or (cardUse.card:isKindOf("Slash") and self:slashIsEffective(cardUse.card, weakRebel, p)) then
+                            return p
+                        end
+                    end
+                end
+            end
+        else
+            local weakLoyalist
+            for _,p in sgs.qlist(cardUse.to) do
+                if p:getHp()<=1 and self:isEnemy(p) then
+                    weakLoyalist  = p
+                    continue
+                end
+            end
+            if weakLoyalist then
+                for _, p in sgs.qlist(targets) do
+                    if p:isLord(p) then
+                        if (cardUse.card:isKindOf("TrickCard") and self:hasTrickEffective(cardUse.card, weakLoyalist, p)) 
+                        or (cardUse.card:isKindOf("Slash") and self:slashIsEffective(cardUse.card, weakLoyalist, p)) then
+                            return p
+                        end
+                    end
+                end
+            end
+        end
+    end
+    --case3  一般灵压 针对队友
+    if isRed() and self.player:hasSkill("thlingya")  then
+        for _, p in sgs.qlist(targets) do
+            if self:isFriend(p) then
+                return p
+            end
+        end
+    end
+    return nil
+end
 
 
 
