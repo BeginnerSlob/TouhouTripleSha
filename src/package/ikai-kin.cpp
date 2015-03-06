@@ -2362,13 +2362,13 @@ public:
 class IkJingce: public TriggerSkill {
 public:
     IkJingce(): TriggerSkill("ikjingce") {
-        events << EventPhaseEnd;
+        events << EventPhaseStart;
         frequency = Frequent;
     }
 
     virtual bool triggerable(const ServerPlayer *player) const{
         return TriggerSkill::triggerable(player)
-            && player->getPhase() == Player::Play
+            && player->getPhase() == Player::Finish
             && player->getMark(objectName()) >= player->getHp();
     }
 
@@ -2389,7 +2389,7 @@ public:
 class IkJingceRecord: public TriggerSkill {
 public:
     IkJingceRecord(): TriggerSkill("#ikjingce-record") {
-        events << PreCardUsed << CardResponded << EventPhaseStart;
+        events << PreCardUsed << CardResponded << EventPhaseChanging;
         global = true;
         frequency = Compulsory;
     }
@@ -2406,8 +2406,9 @@ public:
             }
             if (card && card->getTypeId() != Card::TypeSkill)
                 return QStringList(objectName());
-        } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::RoundStart) {
-            player->setMark("ikjingce", 0);
+        } else if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive)
+                player->setMark("ikjingce", 0);
         }
         return QStringList();
     }
@@ -3745,9 +3746,8 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (TriggerSkill::triggerable(player)) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (!damage.card || !damage.card->isKindOf("Slash") || !player->canDiscard(player, "he"))
-                return QStringList();
-            return QStringList(objectName());
+            if (player->canDiscard(player, "he"))
+                return QStringList(objectName());
         }
         return QStringList();
     }
@@ -3760,7 +3760,16 @@ public:
         Room *room = target->getRoom();
         if (damage.from && damage.from->getWeapon()) {
             room->broadcastSkillInvoke(objectName());
-            target->obtainCard(damage.from->getWeapon());
+            QStringList choices;
+            if (target->canDiscard(damage.from, damage.from->getWeapon()->getId()))
+                choices << "throw";
+            choices << "obtain";
+            QString choice = room->askForChoice(target, objectName(), choices.join("+"));
+            if (choice == "throw") {
+                room->throwCard(damage.from->getWeapon(), damage.from, target);
+                target->drawCards(1, objectName());
+            } else
+                target->obtainCard(damage.from->getWeapon());
         }
     }
 };
@@ -3776,7 +3785,7 @@ public:
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.chain || damage.transfer || !damage.by_user) return QStringList();
             if (!damage.to->inMyAttackRange(player)
-                && damage.card && damage.card->isKindOf("Slash"))
+                && damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel")))
                 return QStringList(objectName());
         }
         return QStringList();
@@ -3791,17 +3800,20 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         DamageStruct damage = data.value<DamageStruct>();
-        LogMessage log;
-        log.type = "#IkAnjuBuff";
-        log.from = damage.from;
-        log.to << damage.to;
-        log.arg = QString::number(damage.damage);
-        log.arg2 = QString::number(++damage.damage);
-        room->sendLog(log);
+        if (room->askForChoice(player, objectName(), "draw+buff") == "buff") {
+            LogMessage log;
+            log.type = "#IkAnjuBuff";
+            log.from = damage.from;
+            log.to << damage.to;
+            log.arg = QString::number(damage.damage);
+            log.arg2 = QString::number(++damage.damage);
+            room->sendLog(log);
 
-        data = QVariant::fromValue(damage);
+            data = QVariant::fromValue(damage);
+        } else
+            player->drawCards(1, objectName());
 
         return false;
     }
@@ -4752,7 +4764,7 @@ public:
         if (!TriggerSkill::triggerable(player)) return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (player == room->getCurrent() && player->getPhase() != Player::NotActive && move.from
-            && move.from_places.contains(Player::PlaceHand) && move.is_last_handcard && move.from->getHp() > 0)
+            && move.from_places.contains(Player::PlaceHand) && move.from->getHandcardNum() <= 1)
             return QStringList(objectName());
         return QStringList();
     }

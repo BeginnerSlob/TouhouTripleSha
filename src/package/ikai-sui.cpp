@@ -688,13 +688,12 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (!TriggerSkill::triggerable(player)) return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (player->getPhase() == Player::NotActive && move.from && move.from->isAlive()
-            && move.from->objectName() != player->objectName() && player->inMyAttackRange(move.from)
+        if (player->getPhase() == Player::NotActive && move.from && move.from->isAlive() && move.from != player
             && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip))
             && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
             foreach (int id, move.card_ids) {
                 const Card *card = Sanguosha->getCard(id);
-                if (card->getTypeId() == Card::TypeBasic || (card->getTypeId() == Card::TypeTrick && card->isRed()))
+                if (card->getTypeId() == Card::TypeBasic)
                     return QStringList(objectName());
             }
         }
@@ -709,8 +708,10 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         player->drawCards(1, objectName());
+        if (player->getHandcardNum() > 3)
+            room->askForDiscard(player, objectName(), 1, 1, false, true);
         return false;
     }
 };
