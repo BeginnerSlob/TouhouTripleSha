@@ -2026,7 +2026,6 @@ public:
 
 IkMiceCard::IkMiceCard() {
     will_throw = false;
-    handling_method = Card::MethodNone;
 }
 
 bool IkMiceCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
