@@ -1805,7 +1805,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
-        if (ask_who->canDiscard(ask_who, "he") && room->askForCard(ask_who, "Armor", "@ikpiaohu:" + player->objectName(), data, objectName())) {
+        if (ask_who->canDiscard(ask_who, "he") && room->askForCard(ask_who, "EquipCard", "@ikpiaohu:" + player->objectName(), data, objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         } else if (!player->isChained() && !ask_who->isChained() && ask_who->askForSkillInvoke(objectName(), "chain:" + player->objectName())) {
