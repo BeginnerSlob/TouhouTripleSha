@@ -3207,6 +3207,13 @@ public:
         if (cards.length() != 2)
             return NULL;
 
+        if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
+            IkHuanlueCard *card = new IkHuanlueCard;
+            card->setUserString(Sanguosha->getCurrentCardUsePattern());
+            card->addSubcards(cards);
+            return card;
+        }
+
         const Card *c = Self->tag.value("ikhuanlue").value<const Card *>();
         if (c) {
             IkHuanlueCard *card = new IkHuanlueCard;
