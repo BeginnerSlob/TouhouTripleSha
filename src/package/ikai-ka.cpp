@@ -3113,6 +3113,171 @@ public:
     }
 };
 
+IkHuanlueCard::IkHuanlueCard() {
+    will_throw = false;
+}
+
+bool IkHuanlueCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    const Card *card = Self->tag.value("ikhuanlue").value<const Card *>();
+    Card *mutable_card = const_cast<Card *>(card);
+    if (mutable_card)
+        mutable_card->addSubcards(this->subcards);
+    return mutable_card && mutable_card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, mutable_card, targets);
+}
+
+bool IkHuanlueCard::targetFixed() const{
+    const Card *card = Self->tag.value("ikhuanlue").value<const Card *>();
+    Card *mutable_card = const_cast<Card *>(card);
+    if (mutable_card)
+        mutable_card->addSubcards(this->subcards);
+    return mutable_card && mutable_card->targetFixed();
+}
+
+bool IkHuanlueCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    const Card *card = Self->tag.value("ikhuanlue").value<const Card *>();
+    Card *mutable_card = const_cast<Card *>(card);
+    if (mutable_card)
+        mutable_card->addSubcards(this->subcards);
+    return mutable_card && mutable_card->targetsFeasible(targets, Self);
+}
+
+const Card *IkHuanlueCard::validate(CardUseStruct &card_use) const{
+    Card *use_card = Sanguosha->cloneCard(user_string);
+    use_card->setSkillName("ikhuanlue");
+    use_card->addSubcards(this->subcards);
+    bool available = true;
+    foreach (ServerPlayer *to, card_use.to)
+        if (card_use.from->isProhibited(to, use_card)) {
+            available = false;
+            break;
+        }
+    available = available && use_card->isAvailable(card_use.from);
+    use_card->deleteLater();
+    if (!available) return NULL;
+    bool all_tricks = true;
+    foreach (int id, subcards) {
+        if (Sanguosha->getCard(id)->getTypeId() != Card::TypeTrick) {
+            all_tricks = false;
+            break;
+        }
+    }
+    if (all_tricks)
+        card_use.from->getRoom()->setPlayerFlag(card_use.from, "IkHuanlueTrick");
+    return use_card;
+}
+
+const Card *IkHuanlueCard::validateInResponse(ServerPlayer *user) const{
+    Card *use_card = Sanguosha->cloneCard(user_string);
+    use_card->setSkillName("ikhuanlue");
+    use_card->addSubcards(this->subcards);
+    use_card->deleteLater();
+
+    bool all_tricks = true;
+    foreach (int id, subcards) {
+        if (Sanguosha->getCard(id)->getTypeId() != Card::TypeTrick) {
+            all_tricks = false;
+            break;
+        }
+    }
+    if (all_tricks)
+        user->getRoom()->setPlayerFlag(user, "IkHuanlueTrick");
+
+    return use_card;
+}
+
+class IkHuanlue: public ViewAsSkill {
+public:
+    IkHuanlue(): ViewAsSkill("ikhuanlue") {
+        response_or_use = true;
+    }
+
+    virtual QDialog *getDialog() const{
+        return ThMimengDialog::getInstance("ikhuanlue", false);
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        if (selected.length() >= 2)
+            return false;
+        if (selected.isEmpty())
+            return to_select->isKindOf("TrickCard");
+        return true;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.length() != 2)
+            return NULL;
+
+        const Card *c = Self->tag.value("ikhuanlue").value<const Card *>();
+        if (c) {
+            IkHuanlueCard *card = new IkHuanlueCard;
+            card->setUserString(c->objectName());
+            card->addSubcards(cards);
+            return card;
+        } else
+            return NULL;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+        if (player->getPhase() != Player::Play) return false;
+        if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
+            return false;
+        return pattern == "nullification";
+    }
+
+    virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
+        return player->getPhase() == Player::Play;
+    }
+
+    virtual int getEffectIndex(const ServerPlayer *, const Card *) const{
+        return qrand() % 2 + 1;
+    }
+};
+
+class IkHuanlueTrigger: public PhaseChangeSkill {
+public:
+    IkHuanlueTrigger(): PhaseChangeSkill("#ikhuanlue") {
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target && target->isAlive() && target->hasFlag("IkHuanlueTrick")
+            && target->getPhase() == Player::Finish;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *target) const{
+        target->drawCards(2, objectName());
+        return false;
+    }
+};
+
+class IkMuguang: public TriggerSkill {
+public:
+    IkMuguang(): TriggerSkill("ikmuguang") {
+        events << DamageInflicted;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player)) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if ((damage.nature == DamageStruct::Normal) == player->isKongcheng())
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.nature != DamageStruct::Normal)
+            room->recover(player, RecoverStruct(damage.from, damage.card));
+
+        return true;
+    }
+};
+
 class IkLingcu: public TriggerSkill {
 public:
     IkLingcu(): TriggerSkill("iklingcu") {
@@ -4520,6 +4685,13 @@ IkaiKaPackage::IkaiKaPackage()
     related_skills.insertMulti("ikwanmi", "#ikwanmi-tar");
     snow051->addSkill(new IkGuichan);
 
+    General *snow052 = new General(this, "snow052", "yuki", 3, false);
+    snow052->addSkill(new IkHuanlue);
+    snow052->addSkill(new IkHuanlueTrigger);
+    related_skills.insertMulti("ikhualue", "#ikhualue");
+    snow052->addSkill(new IkMuguang);
+    snow052->addRelateSkill("ikchilian");
+
     General *luna030 = new General(this, "luna030", "tsuki");
     luna030->addSkill(new IkLingcu);
 
@@ -4591,6 +4763,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkMingwangCard>();
     addMetaObject<IkLinghuiCard>();
     addMetaObject<IkXiaowuCard>();
+    addMetaObject<IkHuanlueCard>();
     addMetaObject<IkQisiCard>();
     addMetaObject<IkManwuCard>();
     addMetaObject<IkXianlvCard>();

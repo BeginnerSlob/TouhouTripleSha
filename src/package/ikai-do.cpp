@@ -299,6 +299,12 @@ public:
         } else
             return NULL;
     }
+
+    virtual int getEffectIndex(const ServerPlayer *target, const Card *) const{
+        if (target->getGeneralName() == "snow052")
+            return qrand() % 2 + 1;
+        return 0;
+    }
 };
 
 class IkZhenhong: public TriggerSkill {
