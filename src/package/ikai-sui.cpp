@@ -2,7 +2,6 @@
 
 #include "general.h"
 #include "engine.h"
-#include "standard.h"
 #include "client.h"
 #include "maneuvering.h"
 
@@ -2525,13 +2524,17 @@ public:
         }
         if (from->hasFlag("ikelu_" + to->objectName()))
             invoke = true;
+        if (from->hasSkill("ikhuisuo") && to->getHp() < from->getHp())
+            invoke = true;
         if (invoke) {
             int x = qAbs(from->getSeat() - to->getSeat());
             int y = from->aliveCount() - x;
             n = 1 - qMin(x, y);
             if (!person_only) {
-                if (from->getOffensiveHorse()) n++;
-                if (to->getDefensiveHorse()) n--;
+                if (from->getOffensiveHorse())
+                    ++n;
+                if (to->getDefensiveHorse())
+                    --n;
             }
         }
         return n;
@@ -5040,6 +5043,132 @@ public:
     }
 };
 
+IkCangliuSlash::IkCangliuSlash() {
+    handling_method = MethodUse;
+}
+
+bool IkCangliuSlash::targetFixed() const{
+    Slash *slash = new Slash(NoSuit, 0);
+    slash->setSkillName("ikcangliu");
+    slash->deleteLater();
+    return slash->targetFixed();
+}
+
+bool IkCangliuSlash::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    Slash *slash = new Slash(NoSuit, 0);
+    slash->setSkillName("ikcangliu");
+    slash->deleteLater();
+    return slash->targetFilter(targets, to_select, Self);
+}
+
+bool IkCangliuSlash::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    Slash *slash = new Slash(NoSuit, 0);
+    slash->setSkillName("ikcangliu");
+    slash->deleteLater();
+    return slash->targetsFeasible(targets, Self);
+}
+
+const Card *IkCangliuSlash::validate(CardUseStruct &use) const{
+    use.from->getRoom()->addPlayerMark(use.from, "ikcangliucount");
+    Slash *slash = new Slash(NoSuit, 0);
+    slash->setSkillName("ikcangliu");
+    return slash;
+}
+
+const Card *IkCangliuSlash::validateInResponse(ServerPlayer *user) const{
+    user->getRoom()->addPlayerMark(user, "ikcangliucount");
+    Slash *slash = new Slash(NoSuit, 0);
+    slash->setSkillName("ikcangliu");
+    return slash;
+}
+
+class IkCangliuVS : public ZeroCardViewAsSkill{
+public:
+    IkCangliuVS() : ZeroCardViewAsSkill("ikcangliu"){
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return Slash::IsAvailable(player) && player->getMark("IkCangliuInvoke") > 0 && player->getMark("ikcangliucount") < 3;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+        return pattern == "slash" && player->getMark("IkCangliuInvoke") > 0 && player->getMark("ikcangliucount") < 3;
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkCangliuSlash;
+    }
+};
+
+class IkCangliu: public PhaseChangeSkill{
+public:
+    IkCangliu(): PhaseChangeSkill("ikcangliu") {
+        view_as_skill = new IkCangliuVS;
+    }
+    
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+            && target->getPhase() == Player::Play
+            && !target->isKongcheng();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName(), qrand() % 2 + 1);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        room->showAllCards(player);
+        bool flag = true;
+        foreach (const Card *card, player->getHandcards()) {
+            if (card->isKindOf("Slash")) {
+                flag = false;
+                break;
+            }
+        }
+        if (flag) {
+            room->setPlayerMark(player, "ikcangliu_handcardnum", player->getHandcardNum());
+            room->setPlayerMark(player, "IkCangliuInvoke", 1);
+            room->setPlayerMark(player, "ikcangliucount", 0);
+        }
+        return false;
+    }
+
+    virtual int getEffectIndex(const ServerPlayer *player, const Card *) const{
+        return player->getMark("ikcangliucount") + 2;
+    }
+};
+
+class IkCangliuClear: public TriggerSkill{
+public:
+    IkCangliuClear(): TriggerSkill("#ikcangliu-clear") {
+        events << EventPhaseChanging << CardsMoveOneTime << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    room->setPlayerMark(p, "ikcangliucount", 0);
+            }
+        } else if (triggerEvent == CardsMoveOneTime) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (player->getMark("IkCangliuInvoke") > 0 && ((move.from == player && move.from_places.contains(Player::PlaceHand))
+                                                           || (move.to == player && move.to_place == Player::PlaceHand)))
+                room->setPlayerMark(player, "IkCangliuInvoke", 0);
+        } else if (triggerEvent == Death) {
+            if (player->getMark("IkCangliuInvoke") > 0)
+                room->setPlayerMark(player, "IkCangliuInvoke", 0);
+        }
+        return QStringList();
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     :Package("ikai-sui")
 {
@@ -5266,6 +5395,12 @@ IkaiSuiPackage::IkaiSuiPackage()
     luna050->addSkill(new IkLeimai);
     luna050->addSkill(new IkHuangzhen);
 
+    General *luna052 = new General(this, "luna052", "tsuki");
+    luna052->addSkill(new Skill("ikhuisuo", Skill::Compulsory));
+    luna052->addSkill(new IkCangliu);
+    luna052->addSkill(new IkCangliuClear);
+    related_skills.insertMulti("ikcangliu", "#ikcangliu-clear");
+
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
     addMetaObject<IkXinhuiCard>();
@@ -5292,6 +5427,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkKouzhuCard>();
     addMetaObject<IkJiaojinCard>();
     addMetaObject<IkSheqieCard>();
+    addMetaObject<IkCangliuSlash>();
 
     skills << new IkAnshen << new IkAnshenRecord << new OthersNullifiedDistance << new IkLinbuFilter;
     related_skills.insertMulti("ikanshen", "#ikanshen-record");
