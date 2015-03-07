@@ -3161,8 +3161,10 @@ const Card *IkHuanlueCard::validate(CardUseStruct &card_use) const{
             break;
         }
     }
+    Room *room = card_use.from->getRoom();
     if (all_tricks)
-        card_use.from->getRoom()->setPlayerFlag(card_use.from, "IkHuanlueTrick");
+        room->setPlayerFlag(card_use.from, "IkHuanlueTrick");
+    room->addPlayerMark(card_use.from, "IkHuanlueTimes");
     return use_card;
 }
 
@@ -3179,9 +3181,10 @@ const Card *IkHuanlueCard::validateInResponse(ServerPlayer *user) const{
             break;
         }
     }
+    Room *room = user->getRoom();
     if (all_tricks)
-        user->getRoom()->setPlayerFlag(user, "IkHuanlueTrick");
-
+        room->setPlayerFlag(user, "IkHuanlueTrick");
+    room->addPlayerMark(user, "IkHuanlueTimes");
     return use_card;
 }
 
@@ -3224,15 +3227,19 @@ public:
             return NULL;
     }
 
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->getPhase() == Player::Play && player->getMark("IkHuanlueTimes") < 2;
+    }
+
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        if (player->getPhase() != Player::Play) return false;
+        if (player->getPhase() != Player::Play || player->getMark("IkHuanlueTimes") >= 2) return false;
         if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
             return false;
         return pattern == "nullification";
     }
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
-        return player->getPhase() == Player::Play;
+        return player->getPhase() == Player::Play && player->getMark("IkHuanlueTimes") < 2;
     }
 
     virtual int getEffectIndex(const ServerPlayer *, const Card *) const{
@@ -3240,19 +3247,25 @@ public:
     }
 };
 
-class IkHuanlueTrigger: public PhaseChangeSkill {
+class IkHuanlueTrigger: public TriggerSkill {
 public:
-    IkHuanlueTrigger(): PhaseChangeSkill("#ikhuanlue") {
+    IkHuanlueTrigger(): TriggerSkill("#ikhuanlue") {
+        events << EventPhaseStart << EventPhaseChanging;
         frequency = Compulsory;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target && target->isAlive() && target->hasFlag("IkHuanlueTrick")
-            && target->getPhase() == Player::Finish;
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging)
+            room->setPlayerMark(player, "IkHuanlueTimes", 0);
+        else if (triggerEvent == EventPhaseStart) {
+            if (player->isAlive() && player->hasFlag("IkHuanlueTrick") && player->getPhase() == Player::Finish)
+                return QStringList(objectName());
+        }
+        return QStringList();
     }
 
-    virtual bool onPhaseChange(ServerPlayer *target) const{
-        target->drawCards(2, objectName());
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        player->drawCards(2, objectName());
         return false;
     }
 };
