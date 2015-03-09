@@ -69,14 +69,18 @@ JianniangScenario::JianniangScenario()
 }
 
 void JianniangScenario::assign(QStringList &generals, QStringList &roles) const{
-    generals << "bloom036" // beishang
-             << "luna019"  // dahe
-             << "luna037"  // daofeng
-             << "snow039"  // zhenming
-             << "wind003"  // ruifeng
+    generals << "wind003"  // ruifeng
              << "wind010"  // xiang
              << "wind047"  // jiahe
-             << "wind051"; // xili
+             << "wind051"  // xili
+             << "wind052"  // shu
+             << "bloom036" // beishang
+             << "bloom052" // aidang
+             << "snow039"  // zhenming
+             << "snow052"  // misheng
+             << "luna019"  // dahe
+             << "luna037"  // daofeng
+             << "luna052"; // chicheng
     qShuffle(generals);
     generals.mid(0, 8);
 
