@@ -122,19 +122,6 @@ public:
     }
 };
 
-class Shenji: public TargetModSkill {
-public:
-    Shenji(): TargetModSkill("shenji") {
-    }
-
-    virtual int getExtraTargetNum(const Player *from, const Card *) const{
-        if (from->hasSkill(objectName()) && from->getWeapon() == NULL)
-            return 2;
-        else
-            return 0;
-    }
-};
-
 ZhoufuCard::ZhoufuCard() {
     mute = true;
     will_throw = false;
@@ -616,7 +603,6 @@ SPPackage::SPPackage()
     shenlvbu2->addSkill(new Xiuluo);
     shenlvbu2->addSkill(new ShenweiKeep);
     shenlvbu2->addSkill(new Shenwei);
-    shenlvbu2->addSkill(new Shenji);
     related_skills.insertMulti("shenwei", "#shenwei-draw");
 
     General *sp_caiwenji = new General(this, "sp_caiwenji", "wei", 3, false, true); // SP 009
