@@ -3,6 +3,19 @@
 #include "skill.h"
 #include "engine.h"
 
+#define DAHE "luna019"
+#define ZHENMING "snow039"
+#define XIANG "wind010"
+#define XILI "wind051"
+#define RUIFENG "wind003"
+#define JIAHE "wind047"
+#define BEISHANG "bloom036"
+#define DAOFENG "luna037"
+#define AIDANG "bloom052"
+#define MISHENG "snow052"
+#define CHICHENG "luna052"
+#define SHU "wind052"
+
 class JianniangScenarioRule: public ScenarioRule {
 public:
     JianniangScenarioRule(Scenario *scenario)
@@ -14,8 +27,10 @@ public:
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         switch (triggerEvent) {
         case GameStart: {
-            if (player != NULL)
+            if (player != NULL) {
+                
                 return false;
+            }
             break;
                         }
         case GameOverJudge: {
@@ -69,18 +84,18 @@ JianniangScenario::JianniangScenario()
 }
 
 void JianniangScenario::assign(QStringList &generals, QStringList &roles) const{
-    generals << "wind003"  // ruifeng
-             << "wind010"  // xiang
-             << "wind047"  // jiahe
-             << "wind051"  // xili
-             << "wind052"  // shu
-             << "bloom036" // beishang
-             << "bloom052" // aidang
-             << "snow039"  // zhenming
-             << "snow052"  // misheng
-             << "luna019"  // dahe
-             << "luna037"  // daofeng
-             << "luna052"; // chicheng
+    generals << DAHE
+             << ZHENMING
+             << XIANG
+             << XILI
+             << RUIFENG
+             << JIAHE
+             << BEISHANG
+             << DAOFENG
+             << AIDANG
+             << MISHENG
+             << CHICHENG
+             << SHU;
     qShuffle(generals);
     generals.mid(0, 8);
 
