@@ -502,7 +502,7 @@ public:
         if (use.card->isKindOf("Slash")) {
             bool do_anim = false;
             foreach (ServerPlayer *p, use.to.toSet()) {
-                if (p->getMark("Equips_of_Others_Nullified_to_You") == 0) {
+                if (p->getMark("Equips_of_Others_Nullified_to_You") == 0 && !p->hasSkill("ikkongni")) {
                     do_anim = (p->getArmor() && p->hasArmorEffect(p->getArmor()->objectName())) || p->hasSkill("ikjingnie");
                     p->addQinggangTag(use.card);
                 }
@@ -1365,11 +1365,13 @@ public:
     virtual int getCorrect(const Player *from, const Player *to) const{
         int correct = 0;
         const Horse *horse = NULL;
-        if (from->getOffensiveHorse() && from->getMark("Equips_Nullified_to_Yourself") == 0) {
+        if (from->getOffensiveHorse() && from->getMark("Equips_Nullified_to_Yourself") == 0
+            && !(from->hasSkill("ikkongni") || to->hasSkill("ikkongni"))) {
             horse = qobject_cast<const Horse *>(from->getOffensiveHorse()->getRealCard());
             correct += horse->getCorrect();
         }
-        if (to->getDefensiveHorse() && to->getMark("Equips_Nullified_to_Yourself") == 0) {
+        if (to->getDefensiveHorse() && to->getMark("Equips_Nullified_to_Yourself") == 0
+            && !(to->hasSkill("ikkongni") || from->hasSkill("ikkongni"))) {
             horse = qobject_cast<const Horse *>(to->getDefensiveHorse()->getRealCard());
             correct += horse->getCorrect();
         }
@@ -1420,8 +1422,8 @@ public:
     IronArmorSkill(): ProhibitSkill("iron_armor") {
     }
 
-    virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const{
-        if (to->hasArmorEffect(objectName()))
+    virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &) const{
+        if (to->hasArmorEffect(objectName()) && !from->hasSkill("ikkongni"))
             return card->isKindOf("FireAttack")
                 || card->isKindOf("BurningCamps")
                 || card->isKindOf("IronChain")
@@ -1446,7 +1448,7 @@ public:
     virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (!ArmorSkill::triggerable(player)) return QStringList();
         SlashEffectStruct effect = data.value<SlashEffectStruct>();
-        if (effect.from->getMark("Equips_of_Others_Nullified_to_You") > 0) return QStringList();
+        if (effect.from->getMark("Equips_of_Others_Nullified_to_You") > 0 || effect.from->hasSkill("ikkongni")) return QStringList();
         if (effect.slash->isBlack()) return QStringList(objectName());
         return QStringList();
     }
