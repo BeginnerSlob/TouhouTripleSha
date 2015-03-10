@@ -1694,10 +1694,9 @@ public:
     virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
         TriggerList skill;
         CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("TrickCard")) {
+        if (use.card->isKindOf("TrickCard") && use.to.length() > 1) {
             foreach (ServerPlayer *yangxiu, room->findPlayersBySkillName(objectName()))
-                if (use.to.contains(yangxiu))
-                    skill.insert(yangxiu, QStringList(objectName()));
+                skill.insert(yangxiu, QStringList(objectName()));
         }
         return skill;
     }
@@ -1713,7 +1712,7 @@ public:
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *player) const{
         player->drawCards(1, objectName());
         CardUseStruct use = data.value<CardUseStruct>();
-        if (use.to.length() > 1) {
+        if (use.to.contains(player)) {
             use.nullified_list << player->objectName();
             data = QVariant::fromValue(use);
         }
