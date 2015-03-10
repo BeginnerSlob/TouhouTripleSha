@@ -111,7 +111,7 @@ return {
 	
 	["#hana008"]="独臂有角的仙人",
 	["hana008"]="茨木华扇",--花 - 空 - 3血
-	["designer:hana008"]="jachsu",
+	["designer:hana008"]="桃花僧",
 	["illustrator:hana008"]="十誤一会",
 	["cv:hana008"]="暂无",
 	["thquanshan"]="劝善",
@@ -125,7 +125,7 @@ return {
 	
 	["#hana009"]="地狱的裁判长",
 	["hana009"]="四季映姬",--花 - 空 - 4血
-	["designer:hana009"]="幻桜落",
+	["designer:hana009"]="笔枔",
 	["illustrator:hana009"]="珠洲城くるみ",
 	["cv:hana009"]="暂无",
 	["thduanzui"]="断罪",
@@ -134,7 +134,7 @@ return {
 	["#hana010"]="地上的彗星",
 	["hana010"]="莉格露•奈特巴格",--花 - 空 - 4血
 	["&hana010"]="莉格露",
-	["designer:hana010"]="幻桜落",
+	["designer:hana010"]="冬天吃雪糕",
 	["illustrator:hana010"]="くまだ",
 	["cv:hana010"]="暂无",
 	["thyingdeng"]="萤灯",
@@ -175,7 +175,7 @@ return {
 	
 	["#hana013"]="忠实的死体",
 	["hana013"]="宫古芳香",--花 - 空 - 3血
-	["designer:hana013"]="幻桜落",
+	["designer:hana013"]="昂翼天使",
 	["illustrator:hana013"]="KS",
 	["cv:hana013"]="暂无",
 	["thhouzhi"]="后知",
@@ -215,7 +215,7 @@ return {
 	
 	["#hana016"]="阴阳圣童女",
 	["hana016"]="物部布都",--花 - 空 - 3血
-	["designer:hana016"]="幻桜落",
+	["designer:hana016"]="昂翼天使",
 	["illustrator:hana016"]="ファルまろ",
 	["cv:hana016"]="暂无",
 	["thshijie"]="尸解",
