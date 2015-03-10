@@ -65,7 +65,7 @@ return {
 	
 	["#tsuki005"]="知识与历史的半兽",
 	["tsuki005"]="上白泽慧音",--月 - 空 - 3血
-	["designer:tsuki005"]="幻桜落",
+	["designer:tsuki005"]="梁山丶呼延灼",
 	["illustrator:tsuki005"]="十誤一会",
 	["cv:tsuki005"]="暂无",
 	["thshouye"]="授业",
@@ -157,7 +157,7 @@ return {
 	["#tsuki012"]="耀目的日光",
 	["tsuki012"]="桑妮•米尔克",--月 - 空 - 4血
 	["&tsuki012"]="桑妮",
-	["designer:tsuki012"]="幻桜落",
+	["designer:tsuki012"]="舟亢",
 	["illustrator:tsuki012"]="シロ９じら",
 	["cv:tsuki012"]="暂无",
 	["thzhehui"]="折辉",
@@ -168,7 +168,7 @@ return {
 	["#tsuki013"]="静谧的月光",
 	["tsuki013"]="露娜•琪尔德",--月 - 空 - 3血
 	["&tsuki013"]="露娜",
-	["designer:tsuki013"]="幻桜落",
+	["designer:tsuki013"]="淬毒",
 	["illustrator:tsuki013"]="ke-ta",
 	["cv:tsuki013"]="暂无",
 	["thchenji"]="沉寂",
@@ -181,7 +181,7 @@ return {
 	["#tsuki014"]="灿烂的星光",
 	["tsuki014"]="斯塔•莎菲雅",--月 - 空 - 3血
 	["&tsuki014"]="斯塔",
-	["designer:tsuki014"]="jachsu&幻桜落",
+	["designer:tsuki014"]="桃花僧",
 	["illustrator:tsuki014"]="せとらん",
 	["cv:tsuki014"]="暂无",
 	["thexi"]="恶戏",
@@ -209,7 +209,7 @@ return {
 	
 	["#tsuki016"]="神灵依凭的月姬",
 	["tsuki016"]="绵月依姬",--月 - 空 - 4血
-	["designer:tsuki016"]="幻桜落",
+	["designer:tsuki016"]="天妒のPAD",
 	["illustrator:tsuki016"]="あじりこ",
 	["cv:tsuki016"]="暂无",
 	["thshenyou"]="神佑",
@@ -220,7 +220,7 @@ return {
 	
 	["#tsuki017"]="海与山的境界",
 	["tsuki017"]="绵月丰姬",--月 - 空 - 4血
-	["designer:tsuki017"]="幻桜落",
+	["designer:tsuki017"]="冬天吃雪糕",
 	["illustrator:tsuki017"]="藍·Hallelujah",
 	["cv:tsuki017"]="暂无",
 	["thguixu"]="归墟",

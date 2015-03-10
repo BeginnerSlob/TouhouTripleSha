@@ -5,7 +5,7 @@ return {
 	
 	["#kishin001"] = "逆袭的天邪鬼",
 	["kishin001"] = "鬼人正邪",--风 - 空 - 4血
-	["designer:kishin001"] = "幻桜落",
+	["designer:kishin001"] = "狐耳魔师",
 	["illustrator:kishin001"] = "ひそな",
 	["cv:kishin001"] = "向晚",
 	["~kishin001"] = "善哉善哉...无上甚深圆满正等觉...",
@@ -18,7 +18,7 @@ return {
 	
 	["#kishin002"] = "柳下的辘轳首",
 	["kishin002"] = "赤蛮奇",--花 - 空 - 4血
-	["designer:kishin002"] = "幻桜落",
+	["designer:kishin002"] = "沸治·克里夫",
 	["illustrator:kishin002"] = "キラメ☆キライ",
 	["cv:kishin002"] = "暂无",
 	["thfeiman"] = "飞蛮",
@@ -31,7 +31,7 @@ return {
 	
 	["#kishin003"] = "秘境的人鱼",
 	["kishin003"] = "若鹭姬",--雪 - 空 - 2血
-	["designer:kishin003"] = "幻桜落",
+	["designer:kishin003"] = "昂翼天使",
 	["illustrator:kishin003"] = "その",
 	["cv:kishin003"] = "暂无",
 	["thjingtao"] = "惊涛",
@@ -67,7 +67,7 @@ return {
 	
 	["#kishin006"] = "小人的末裔",
 	["kishin006"] = "少名针妙丸",--花 - 空 - 3血
-	["designer:kishin006"] = "幻桜落",
+	["designer:kishin006"] = "军师祭酒",
 	["illustrator:kishin006"] = "えふぇ",
 	["cv:kishin006"] = "暂无",
 	["thbaochui"] = "宝锤",
@@ -80,7 +80,7 @@ return {
 	
 	["#kishin007"] = "幻梦的演奏家",
 	["kishin007"] = "堀川雷鼓",--雪 - 空 - 4血
-	["designer:kishin007"] = "幻桜落",
+	["designer:kishin007"] = "精精神神",
 	["illustrator:kishin007"] = "みるき。",
 	["cv:kishin007"] = "暂无",
 	["thmoju"] = "魔具",
@@ -88,7 +88,7 @@ return {
 	
 	["#kishin008"] = "月下的独狼",
 	["kishin008"] = "今泉影狼",--月 - 空 - 4血
-	["designer:kishin008"] = "幻桜落",
+	["designer:kishin008"] = "军师祭酒",
 	["illustrator:kishin008"] = "susu",
 	["cv:kishin008"] = "暂无",
 	["thlianying"] = "莲影",

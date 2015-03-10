@@ -14,7 +14,7 @@ return {
 	
 	["#bangai002"] = "戾血的妖灵",
 	["bangai002"] = "朱鹭子",--花 - 空 - 3血
-	["designer:bangai002"] = "幻桜落",
+	["designer:bangai002"] = "昂翼天使",
 	["illustrator:bangai002"] = "DClockwork",
 	["cv:bangai002"] = "暂无",
 	["thshuling"] = "书灵",
@@ -27,7 +27,7 @@ return {
 	
 	["#bangai003"] = "胧望的幻灵",
 	["bangai003"] = "大妖精",--雪 - 空 - 4血
-	["designer:bangai003"] = "幻桜落",
+	["designer:bangai003"] = "桃花僧",
 	["illustrator:bangai003"] = "蓮芽しい",
 	["cv:bangai003"] = "暂无",
 	--thjibu
@@ -37,7 +37,7 @@ return {
 	
 	["#bangai004"] = "星耀的使役魔",
 	["bangai004"] = "小恶魔",--月 - 幻 - 3血
-	["designer:bangai004"] = "幻桜落",
+	["designer:bangai004"] = "桃花僧",
 	["illustrator:bangai004"] = "konomi",
 	["cv:bangai004"] = "暂无",
 	["thzusha"] = "诅杀", 
@@ -52,7 +52,7 @@ return {
 	["#bangai005"] = "朝霭的幻世",
 	["bangai005"] = "玛艾露贝莉•赫恩",--风 - 空 - 3血
 	["&bangai005"] = "玛艾露贝莉",
-	["designer:bangai005"] = "幻桜落",
+	["designer:bangai005"] = "雷神之魂",
 	["illustrator:bangai005"] = "十誤一会",
 	["cv:bangai005"] = "暂无",
 	["thxijing"] = "隙境", 
@@ -112,7 +112,7 @@ return {
 	
 	["#bangai010"] = "禁书的评者",
 	["bangai010"] = "本居小铃",--花 - 幻 - 3血
-	["designer:bangai010"] = "幻桜落",
+	["designer:bangai010"] = "xyzbilliu",
 	["illustrator:bangai010"] = "湧々ごろり",
 	["cv:bangai010"] = "暂无",
 	["thguijuan"] = "诡卷",
@@ -124,7 +124,7 @@ return {
 	
 	["#bangai011"] = "神话的黄昏",
 	["bangai011"] = "神绮",--雪 - 空 - 3血
-	["designer:bangai011"] = "幻桜落",
+	["designer:bangai011"] = "沸治·克里夫",
 	["illustrator:bangai011"] = "湿布満",
 	["cv:bangai011"] = "暂无",
 	["thhuilun"] = "辉轮",
@@ -137,7 +137,7 @@ return {
 	
 	["#bangai012"]="高天原之主",
 	["bangai012"]="天照",--月 - 空 - 4血
-	["designer:bangai012"]="妒天のPAD",
+	["designer:bangai012"]="昂翼天使",
 	["illustrator:bangai012"]="水鼠",
 	["cv:bangai012"]="暂无",
 	["thsixiang"]="四象",

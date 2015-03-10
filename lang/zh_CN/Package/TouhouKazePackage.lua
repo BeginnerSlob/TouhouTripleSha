@@ -79,7 +79,7 @@ return {
 	
 	["#kaze006"]="超妖怪弹头",
 	["kaze006"]="河城荷取",--风 - 空 - 4血
-	["designer:kaze006"]="幻桜落",
+	["designer:kaze006"]="三秋之蓝",
 	["illustrator:kaze006"]="紅緒",
 	["cv:kaze006"]="暂无",
 	["thmicai"]="迷彩",
@@ -91,7 +91,7 @@ return {
 	
 	["#kaze007"]="大江山岚",
 	["kaze007"]="星熊勇仪",--风 - 空 - 4血
-	["designer:kaze007"]="幻桜落",
+	["designer:kaze007"]="数据流突袭者",
 	["illustrator:kaze007"]="恋河ミノル",
 	["cv:kaze007"]="暂无",
 	--["~kaze007"]="哈哈哈...痛快！",
@@ -147,7 +147,7 @@ return {
 	
 	["#kaze011"]="暗之窟的明之网",
 	["kaze011"]="黑谷山女",--风 - 空 - 4血
-	["designer:kaze011"]="幻桜落",
+	["designer:kaze011"]="Aimer彩三",
 	["illustrator:kaze011"]="みや",
 	["cv:kaze011"]="暂无",
 	["thwangqin"]="罔擒",
@@ -173,7 +173,7 @@ return {
 	
 	["#kaze013"]="丰饶与收获的象征",
 	["kaze013"]="秋穰子",--风 - 空 - 3血
-	["designer:kaze013"]="幻桜落",
+	["designer:kaze013"]="背碗卤粉",
 	["illustrator:kaze013"]="shinia",
 	["cv:kaze013"]="暂无",
 	["thdasui"]="大岁",
@@ -214,7 +214,7 @@ return {
 	
 	["#kaze016"]="热恼的神之火",
 	["kaze016"]="灵乌路空",--风 - 空 - 5血
-	["designer:kaze016"]="幻桜落",
+	["designer:kaze016"]="桃花僧",
 	["illustrator:kaze016"]="NAbyssor",
 	["cv:kaze016"]="暂无",
 	["thbazhi"]="八咫",
