@@ -88,7 +88,7 @@ return {
 
 	["#yuki007"]="策士的九尾",
 	["yuki007"]="八云蓝",--雪 - 空 - 3血
-	["designer:yuki007"]="幻桜落",
+	["designer:yuki007"]="淬毒",
 	["illustrator:yuki007"]="橙狼",
 	["cv:yuki007"]="暂无",
 	["thchouce"]="筹策",
@@ -116,7 +116,7 @@ return {
 
 	["#yuki009"]="幻想的境界",
 	["yuki009"]="八云紫",--雪 - 空 - 4血
-	["designer:yuki009"]="幻桜落",
+	["designer:yuki009"]="昂翼天使",
 	["illustrator:yuki009"]="DomotoLain",
 	["cv:yuki009"]="暂无",
 	["thlingya"]="灵压",
@@ -129,7 +129,7 @@ return {
 
 	["#yuki010"]="湖上的冰精",
 	["yuki010"]="琪露诺",--雪 - 空 - 4血
-	["designer:yuki010"]="幻桜落",
+	["designer:yuki010"]="昂翼天使",
 	["illustrator:yuki010"]="橙狼",
 	["cv:yuki010"]="暂无",
 	["thhanpo"]="寒魄",
@@ -157,7 +157,7 @@ return {
 
 	["#yuki012"]="平凡陈腐的山彦",
 	["yuki012"]="幽谷响子",--雪 - 空 - 3血
-	["designer:yuki012"]="幻桜落",
+	["designer:yuki012"]="仲达与孔明",
 	["illustrator:yuki012"]="CUBE",
 	["cv:yuki012"]="暂无",
 	["thfusheng"]="复声",
@@ -170,7 +170,7 @@ return {
 	["#yuki013"]="骚灵乐团",
 	["yuki013"]="普莉茲姆利巴三姐妹",--雪 - 空 - 3血
 	["&yuki013"]="骚灵三姐妹",
-	["designer:yuki013"]="幻桜落",
+	["designer:yuki013"]="绝顶油条",
 	["illustrator:yuki013"]="ke-ta",
 	["cv:yuki013"]="暂无",
 	["thsaozang"]="骚葬",
@@ -182,7 +182,7 @@ return {
 
 	["#yuki014"]="小小贤将",
 	["yuki014"]="娜兹玲",--雪 - 空 - 4血
-	["designer:yuki014"]="幻桜落",
+	["designer:yuki014"]="xyzbilliu",
 	["illustrator:yuki014"]="DomotoLain",
 	["cv:yuki014"]="暂无",
 	["thqiebao"]="窃宝",
@@ -211,7 +211,7 @@ return {
 	
 	["#yuki016"]="宝船之御守",
 	["yuki016"]="云居一轮",--雪 - 空 - 4血
-	["designer:yuki016"]="幻桜落",
+	["designer:yuki016"]="香蒲神殇",
 	["illustrator:yuki016"]="閏月戈",
 	["cv:yuki016"]="暂无",
 	["thkujie"]="苦戒",

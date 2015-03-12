@@ -53,7 +53,7 @@ return {
 	["#kami004"]="子夜的女皇",
 	["kami004"]="神蕾米莉娅•斯卡雷特",--神 - 空 - 4血
 	["&kami004"]="神蕾米莉娅",
-	["designer:kami004"]="幻桜落",
+	["designer:kami004"]="昂翼天使",
 	["illustrator:kami004"]="墨洲",
 	["cv:kami004"]="暂无",
 	["thgugao"]="孤高",
@@ -69,7 +69,7 @@ return {
 	
 	["#kami005"]="丑三时的幻之舞",
 	["kami005"]="神秦心",--神 - 幻 - 3血
-	["designer:kami005"]="幻桜落",
+	["designer:kami005"]="昂翼天使",
 	["illustrator:kami005"]="Takibi",
 	["cv:kami005"]="暂无",
 	["thsuhu"]="肃狐",
@@ -88,7 +88,7 @@ return {
 
 	["#kami006"]="千宫神羽映华",
 	["kami006"]="神四季映姬",--神 - 空 - 3血
-	["designer:kami006"]="幻桜落",
+	["designer:kami006"]="浪人兵法家",
 	["illustrator:kami006"]="DomotoLain",
 	["cv:kami006"]="暂无",
 	["thpanghun"]="彷魂",
@@ -125,7 +125,7 @@ return {
 	["#kami008"]="夫众生者悉皆杀",
 	["kami008"]="神芙兰朵露•斯卡雷特",--神 - 空 - 4血
 	["&kami008"]="神芙兰朵露",
-	["designer:kami008"]="幻桜落",
+	["designer:kami008"]="Danny",
 	["illustrator:kami008"]="Dhiea",
 	["cv:kami008"]="暂无",
 	["thjinlu"]="尽戮",
@@ -155,7 +155,7 @@ return {
 	
 	["#kami010"]="星煌的祈者",
 	["kami010"]="神霍青娥",--神 - 幻 - 3血
-	["designer:kami010"]="幻桜落",
+	["designer:kami010"]="昂翼天使",
 	["illustrator:kami010"]="c7肘",
 	["cv:kami010"]="暂无",
 	["thrangdeng"]="禳灯",
@@ -207,7 +207,7 @@ return {
 	
 	["#kami014"]="诞妄的妖姬",
 	["kami014"]="神封兽鵺",--神 - 幻 - 3血
-	["designer:kami014"]="幻桜落",
+	["designer:kami014"]="韩旭",
 	["illustrator:kami014"]="目薬",
 	["cv:kami014"]="暂无",
 	["thluli"]="陆离",
@@ -221,7 +221,7 @@ return {
 	
 	["#kami015"]="冰魄的女仙",
 	["kami015"]="神琪露诺",--神 - 空 - 4血
-	["designer:kami015"]="幻桜落",
+	["designer:kami015"]="游卡桌游",
 	["illustrator:kami015"]="ヨシュア",
 	["cv:kami015"]="暂无",
 	["thzhizun"]="至尊",
