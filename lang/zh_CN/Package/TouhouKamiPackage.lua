@@ -217,7 +217,7 @@ return {
 	["#ThLuliIncrease"] = "%from 发动了“<font color=\"yellow\"><b>陆离</b></font>”，伤害点数从 %arg 点增加至 %arg2 点",
 	["#ThLuliDecrease"] = "%from 发动了“<font color=\"yellow\"><b>陆离</b></font>”，伤害点数从 %arg 点减少至 %arg2 点",
 	["thguihuan"]="诡幻",
-	[":thguihuan"]="限定技，若你的身份不是主公，当你杀死一名身份不是主公的其他角色，在其翻开身份牌之前，你可以与该角色交换身份牌。",
+	[":thguihuan"]="限定技，若你的身份不是君主，当你杀死一名身份不是君主的其他角色，在其翻开身份牌之前，你可以与该角色交换身份牌。",
 	
 	["#kami015"]="冰魄的女仙",
 	["kami015"]="神琪露诺",--神 - 空 - 4血
