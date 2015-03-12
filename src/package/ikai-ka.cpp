@@ -395,7 +395,7 @@ void IkHunkaoCard::onEffect(const CardEffectStruct &effect) const{
         Slash *slash = new Slash(NoSuit, 0);
         slash->setSkillName("_ikhunkao");
         if (!effect.from->isCardLimited(slash, MethodUse) && effect.from->canSlash(effect.to, slash, false))
-            room->useCard(CardUseStruct(slash, effect.from, effect.to), false);
+            room->useCard(CardUseStruct(slash, effect.from, effect.to));
         else
             delete slash;
     }
@@ -1205,7 +1205,7 @@ public:
             if (p->isProhibited(p, anal))
                 delete anal;
             else
-                room->useCard(CardUseStruct(anal, p, p));
+                room->useCard(CardUseStruct(anal, p, p), true);
         }
         return false;
     }

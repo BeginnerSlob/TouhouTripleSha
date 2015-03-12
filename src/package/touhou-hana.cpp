@@ -1334,7 +1334,7 @@ void ThDuanzuiCard::onEffect(const CardEffectStruct &effect) const {
         use_card->deleteLater();
         use.card = use_card;
         if (effect.from->canSlash(effect.to, use_card, false))
-            room->useCard(use, false);
+            room->useCard(use);
     }
 };
 
