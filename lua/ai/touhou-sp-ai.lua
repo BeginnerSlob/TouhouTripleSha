@@ -75,7 +75,85 @@ sgs.ai_skill_invoke.thzuibu = function(self,data)
 end
 --smart-ai  damageIsEffective  getAoeValueTo
 
-
+--【魔盗】ai
+--送关键牌给队友什么的高级手法。。。不考虑
+--其实还需要一个排序函数 不过懒了
+local parseTargetForModao = function(self,source,target)
+	local flag = "h"
+	local diff = 0
+	 local isGood = false
+	local handDiff = target:getCards("h"):length() -  source:getCards("h"):length() 
+	local equipDiff = target:getCards("e"):length() -  source:getCards("e"):length() 
+	local judgeDiff = target:getCards("j"):length() -  source:getCards("j"):length() 
+	local standardMax = source:getLostHp() + 1
+	if self:isFriend(source,target) then
+		if  target:hasSkills(sgs.lose_equip_skill)  then
+			diff = equipDiff
+			flag = "e"
+			isGood = true
+		end
+		--闪电比较复杂 暂时不管了
+		if handDiff > 0 and math.abs(handDiff) <= standardMax and  (target:containsTrick("indulgence") or target:containsTrick("supply_shortage") ) then
+			diff = judgeDiff
+			flag = "j"
+			isGood = true
+		end
+	else
+		if equipDiff > 0 and math.abs(equipDiff) <= standardMax and not target:hasSkills(sgs.lose_equip_skill) then
+			diff = equipDiff
+			flag = "e"
+			isGood = true
+		end
+		if handDiff > 0 and math.abs(handDiff) <= standardMax then
+			isGood = true
+			if diff > 0  then
+				if diff < handDiff then
+					diff = handDiff
+					flag = "h"
+				end
+			else
+				diff = handDiff
+				flag = "h"
+			end
+		end
+	end
+	return isGood,flag,diff
+end
+sgs.ai_skill_playerchosen.thmodao = function(self, targets)
+	for _,p in sgs.qlist(targets)do
+		if parseTargetForModao(self,self.player, p) then
+			return p
+		end
+	end
+	return nil
+end
+sgs.ai_skill_choice.thmodao= function(self, choices, data)	
+	local target = self.player:getTag("ThModaoTarget"):toPlayer()
+	local isGood,flag =  parseTargetForModao(self,self.player, target)
+	return flag
+end
+sgs.ai_choicemade_filter.skillInvoke.thmodao = function(self, player, promptlist)
+	local target = player:getTag("ThModaoTarget"):toPlayer()
+	if target then
+		local flag =  promptlist[#promptlist] 
+		local diff =  target:getCards(flag):length() -  source:getCards(flag):length() 
+		local friendly
+		if flag == "e" then
+			if not target:hasSkills(sgs.lose_equip_skill) then
+				friendly = diff < 0
+			else
+				friendly = true
+			end
+		elseif flag == "j" or flag == "h" then
+			friendly = diff < 0
+		end
+		if friendly then
+			sgs.updateIntention(player, target, -50)
+		else
+			sgs.updateIntention(player, target, 50)
+		end	
+	end
+end
 
 
 --如何更好的获取和为9的集合？？
