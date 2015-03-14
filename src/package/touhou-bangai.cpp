@@ -16,12 +16,12 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        DamageStruct damage = data.value<DamageStruct>();
-        if (!TriggerSkill::triggerable(player) || !damage.card || !damage.card->isKindOf("Slash"))
-            return QStringList();
-        if (triggerEvent == Damage && (damage.chain || damage.transfer))
-            return QStringList();
-        return QStringList(objectName());
+        if (TriggerSkill::triggerable(player)) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card && damage.card->isKindOf("Slash") && damage.from != damage.to)
+                return QStringList(objectName());
+        }
+        return QStringList();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
@@ -31,48 +31,31 @@ public:
         return true;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        QStringList chosen;
-        int n = player->getLostHp();
-        n = qMax(1, n);
-        n = qMin(3, n);
-        QStringList choices;
-        choices << "spade" << "heart" << "club" << "diamond";
-        for (int i = 0; i < n; i++) {
-            QString choice = room->askForChoice(player, objectName(), choices.join("+"));
-            LogMessage log;
-            log.type = "#ChooseSuit";
-            log.from = player;
-            log.arg  = choice;
-            room->sendLog(log);
-            choices.removeOne(choice);
-            chosen << choice;
-        }
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        int n = qMax(1, player->getLostHp());
 
-        JudgeStruct judge;
-        judge.pattern = ".|" + chosen.join(",");
-        judge.good = true;
-        judge.reason = objectName();
-        judge.who = player;
-        room->judge(judge);
+        for (int i = 0; i < n; ++i) {
+            JudgeStruct judge;
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card->getSuit() > Card::Diamond)
+                judge.good = false;
+            else {
+                judge.pattern = ".|" + damage.card->getSuitString();
+                judge.good = true;
+            }
+            judge.reason = objectName();
+            judge.who = player;
+            room->judge(judge);
 
-        if (judge.isGood()) {
-            QList<ServerPlayer *> targets;
-            foreach(ServerPlayer *p, room->getOtherPlayers(player))
-                if (player->canDiscard(p, "he"))
-                    targets << p;
-
-            ServerPlayer *target = NULL;
-            if (!targets.isEmpty())
-                target = room->askForPlayerChosen(player, targets, objectName(), "@thbianfang", true);
-
-            if (target) {
-                int card_id = room->askForCardChosen(player, target, "he", objectName(), false, Card::MethodDiscard);
-                room->throwCard(card_id, target, player);
-            } else {
-                room->recover(player, RecoverStruct(player));
+            if (judge.isGood()) {
+                ServerPlayer *target = triggerEvent == Damage ? damage.to : damage.from;
+                if (target && target->isAlive() && !target->isNude()) {
+                    int card_id = room->askForCardChosen(player, target, "he", objectName());
+                    room->obtainCard(player, card_id, false);
+                }
             }
         }
+
         return false;
     }
 };
