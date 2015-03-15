@@ -31,7 +31,7 @@ public:
         return true;
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         int n = qMax(1, player->getLostHp());
 
         for (int i = 0; i < n; ++i) {
@@ -853,78 +853,57 @@ public:
     }
 };
 
-class ThWeide: public DrawCardsSkill {
+class ThWeide: public TriggerSkill {
 public:
-    ThWeide(): DrawCardsSkill("thweide") {
+    ThWeide(): TriggerSkill("thweide") {
+        events << DrawNCards;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        if (!TriggerSkill::triggerable(player))
-            return QStringList();
-        int x = player->getHp() > 2 ? 1 : 2;
-        if (data.toInt() >= x)
+        if (TriggerSkill::triggerable(player))
             return QStringList(objectName());
         return QStringList();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@thweide", true, true);
-        if (target) {
+        if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
-            player->tag["ThWeideTarget"] = QVariant::fromValue(target);
             return true;
         }
         return false;
     }
 
-    virtual int getDrawNum(ServerPlayer *player, int n) const{
-        int x = player->getHp() > 2 ? 1 : 2;
-        return n - x;
-    }
-};
-
-class ThWeideAct: public TriggerSkill {
-public:
-    ThWeideAct(): TriggerSkill("#thweide") {
-        events << AfterDrawNCards;
-        frequency = Compulsory;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
-        if (player->tag["ThWeideTarget"].isNull()) return QStringList();
-        return QStringList(objectName());
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        ServerPlayer *target = player->tag["ThWeideTarget"].value<ServerPlayer *>();
-        player->tag.remove("ThWeideTarget");
-        if (target) {
-            int x = player->getHp() > 2 ? 1 : 2;
-            target->drawCards(x, "thweide");
-            if (player->isWounded()) {
-                QList<ServerPlayer *> victims;
-                foreach (ServerPlayer *p, room->getOtherPlayers(player))
-                    if (qMax(p->getHp(), 0) >= player->getHp() && !p->isKongcheng())
-                        victims << p;
-                if (!victims.isEmpty()) {
-                    ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName());
-                    QList<int> ids = victim->handCards();
-                    DummyCard *dummy = new DummyCard;
-                    for (int i = 0; i < x; i++)
-                        if (ids.isEmpty())
-                            break;
-                        else {
-                            int id = ids.at(qrand() % ids.length());
-                            dummy->addSubcard(id);
-                            ids.removeOne(id);
-                        }
-                    player->obtainCard(dummy);
-                    delete dummy;
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        QList<int> card_ids = room->getNCards(2, false);
+        room->fillAG(card_ids, player);
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName());
+        room->clearAG(player);
+        room->moveCardsAtomic(CardsMoveStruct(card_ids,
+                                              target,
+                                              Player::PlaceHand,
+                                              CardMoveReason(CardMoveReason::S_REASON_PREVIEWGIVE,
+                                                             player->objectName(),
+                                                             target->objectName(),
+                                                             objectName(),
+                                                             QString())),
+                              false);
+        if (target != player && player->isWounded()) {
+            QList<ServerPlayer *> victims;
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (!p->isAllNude())
+                    victims << p;
+            }
+            if (!victims.isEmpty()) {
+                ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName(), "@thweide", true);
+                if (victim) {
+                    int card_id = room->askForCardChosen(player, victim, "hej", objectName());
+                    room->obtainCard(player, card_id, false);
                 }
             }
         }
 
-        return false;
+        data = 0;
+        return true;
     }
 };
 
@@ -1187,8 +1166,6 @@ TouhouBangaiPackage::TouhouBangaiPackage()
 
     General *bangai009 = new General(this, "bangai009", "kaze");
     bangai009->addSkill(new ThWeide);
-    bangai009->addSkill(new ThWeideAct);
-    related_skills.insertMulti("thweide", "#thweide");
 
     General *bangai010 = new General(this, "bangai010", "hana", 3, false);
     bangai010->addSkill(new ThGuijuan);
