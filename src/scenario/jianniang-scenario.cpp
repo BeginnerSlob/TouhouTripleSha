@@ -81,7 +81,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         player->gainAnExtraTurn();
-        room->removePlayerCardLimitation(player, "use", "Slash@0");
+        room->removePlayerCardLimitation(player, "use", "Slash$0");
         room->setPlayerFlag(player, "jnchaonu_flag");
         room->setPlayerMark(player, "jndaizhan", 0);
         room->detachSkillFromPlayer(player, "jndaizhan", true);
