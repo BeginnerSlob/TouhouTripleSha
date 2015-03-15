@@ -1511,7 +1511,10 @@ public:
     }
 
     virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const{
-        return to->isRemoved() && (card->getTypeId() != Card::TypeSkill || card->isKindOf("IkMiceCard"));
+        return to->isRemoved() && (card->getTypeId() != Card::TypeSkill
+                                   || card->isKindOf("IkMiceCard")
+                                   || card->isKindOf("IkWudiCard")
+                                   || card->isKindOf("IkMingwangCard"));
     }
 };
 

@@ -2390,10 +2390,10 @@ bool IkMingwangCard::targetFilter(const QList<const Player *> &targets, const Pl
 }
 
 const Card *IkMingwangCard::validate(CardUseStruct &) const{
-    LureTiger *duel = new LureTiger(SuitToBeDecided, 0);
-    duel->addSubcards(subcards);
-    duel->setSkillName("ikmingwang");
-    return duel;
+    LureTiger *lure_tiger = new LureTiger(SuitToBeDecided, 0);
+    lure_tiger->addSubcards(subcards);
+    lure_tiger->setSkillName("ikmingwang");
+    return lure_tiger;
 }
 
 class IkMingwang: public OneCardViewAsSkill {
