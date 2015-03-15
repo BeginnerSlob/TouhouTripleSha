@@ -2,6 +2,7 @@
 
 #include "skill.h"
 #include "engine.h"
+#include "standard.h"
 
 #define DAHE "luna019"
 #define ZHENMING "snow039"
@@ -268,6 +269,96 @@ public:
     }
 };
 
+class JnHuangqi: public PhaseChangeSkill {
+public:
+    JnHuangqi(): PhaseChangeSkill("jnhuangqi") {
+        frequency = Wake;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+            && target->getPhase() == Player::Start
+            && target->getMark("@suinieused") > 0;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        room->broadcastSkillInvoke(objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
+
+        player->drawCards(1, objectName());
+        room->acquireSkill(player, "ikmopan");
+        room->detachSkillFromPlayer(player, objectName(), true);
+        return false;
+    }
+};
+
+class IkMopan: public OneCardViewAsSkill {
+public:
+    IkMopan(): OneCardViewAsSkill("ikmopan") {
+        response_or_use = true;
+        filter_pattern = ".|red|.|hand";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *) const {
+        return false;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const {
+        if (pattern != "peach")
+            return false;
+        QString str = player->property("currentdying").toString();
+        return player->objectName() == str;
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const {
+        Peach *card = new Peach(originalCard->getSuit(), originalCard->getNumber());
+        card->addSubcard(originalCard);
+        card->setSkillName("ikmopan");
+        return card;
+    }
+};
+
+class JnLaishi: public TriggerSkill{
+public:
+    JnLaishi(): TriggerSkill("jnlaishi"){
+        events << HpRecover;
+        frequency = Limited;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player) && player->getHp() > 0 && player->hasFlag("Global_Dying")) {
+            RecoverStruct recover = data.value<RecoverStruct>();
+            if (recover.who && recover.who->isAlive() && recover.who != player)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        RecoverStruct recover = data.value<RecoverStruct>();
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(recover.who))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        RecoverStruct recover = data.value<RecoverStruct>();
+        recover.who->drawCards(1, objectName());
+        if (recover.who->getRole() == "loyalist")
+            room->setPlayerProperty(player, "role", "loyalist");
+        else {
+            room->setPlayerProperty(player, "role", "rebel");
+            room->setPlayerProperty(recover.who, "role", "rebel");
+        }
+
+        room->detachSkillFromPlayer(player, objectName(), true);
+        return false;
+    }
+};
+
 class JianniangScenarioRule: public ScenarioRule {
 public:
     JianniangScenarioRule(Scenario *scenario)
@@ -293,6 +384,12 @@ public:
                 if (zhenming) {
                     room->acquireSkill(zhenming, "jnxiangwu");
                     room->acquireSkill(zhenming, "jnkongwu");
+                }
+
+                ServerPlayer *xiang = room->findPlayer(XIANG);
+                if (xiang) {
+                    room->acquireSkill(xiang, "jnhuangqi");
+                    room->acquireSkill(xiang, "jnlaishi");
                 }
                 return false;
             }
@@ -353,7 +450,10 @@ JianniangScenario::JianniangScenario()
            << new IkShenti
            << new JnXiangwu
            << new JnKongwu
-           << new IkKongni;
+           << new IkKongni
+           << new JnHuangqi
+           << new IkMopan
+           << new JnLaishi;
     related_skills.insert("jndaizhan", "#jndaizhan-prohibit");
     related_skills.insert("jndaizhan", "#jndaizhan-inv");
     related_skills.insert("jnchaonu", "#jnchaonu-tar");

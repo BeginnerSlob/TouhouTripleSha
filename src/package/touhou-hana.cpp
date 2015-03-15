@@ -2502,6 +2502,7 @@ class ThTianchanViewAsSkill: public OneCardViewAsSkill {
 public:
     ThTianchanViewAsSkill(): OneCardViewAsSkill("thtianchanv") {
         attached_lord_skill = true;
+        response_or_use = true;
         filter_pattern = ".|spade";
     }
 
