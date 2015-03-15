@@ -1,8 +1,8 @@
 CommonTranslationTable = {
-	["lord"] = "主公",
-	["loyalist"] = "忠臣",
-	["rebel"] = "反贼",
-	["renegade"] = "内奸",
+	["lord"] = "君主",
+	["loyalist"] = "司祝",
+	["rebel"] = "异端",
+	["renegade"] = "黑幕",
 	["leader"] = "主帅",
 	["guard"] = "前锋",
 	["offensive"] = "先手",
@@ -11,7 +11,7 @@ CommonTranslationTable = {
 	["compulsoryskill"] = "锁定技，",
 	["limitedskill"] = "限定技，",
 	["wakeskill"] = "觉醒技，",
-	["lordskill"] = "主公技，",
+	["lordskill"] = "君主技，",
 	["oppphskill"] = "出牌阶段限一次，",
 
 	["Pairs"] = "双将",
