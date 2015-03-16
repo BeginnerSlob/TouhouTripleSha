@@ -724,38 +724,71 @@ public:
 };
 
 ThXingxieCard::ThXingxieCard() {
-    target_fixed = true;
 }
 
-void ThXingxieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const {
-    source->throwAllHandCards();
-    room->removePlayerMark(source, "@xingxie");
-    room->addPlayerMark(source, "@xingxieused");
+bool ThXingxieCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
+    return targets.isEmpty() && to_select->hasEquip();
+}
 
+void ThXingxieCard::onEffect(const CardEffectStruct &effect) const{
     DummyCard *dummy = new DummyCard;
-    foreach(ServerPlayer *p, room->getOtherPlayers(source)) {
-        dummy->addSubcards(p->getEquips());
-        if (dummy->subcardsLength() == 0)
-            continue;
-        p->obtainCard(dummy);
-        dummy->clearSubcards();
-    }
+    dummy->addSubcards(effect.to->getEquips());
+    effect.from->addToPile("thxingxiepile", dummy);
+    effect.to->setFlags("ThXingxieTarget");
     delete dummy;
 }
 
-class ThXingxie: public ZeroCardViewAsSkill {
+class ThXingxieVS: public OneCardViewAsSkill {
 public:
-    ThXingxie(): ZeroCardViewAsSkill("thxingxie") {
-        frequency = Limited;
-        limit_mark = "@xingxie";
+    ThXingxieVS(): OneCardViewAsSkill("thxingxie") {
+        filter_pattern = ".|.|.|hand!";
     }
 
-    virtual const Card *viewAs() const {
-        return new ThXingxieCard;
+    virtual const Card *viewAs(const Card *originalCard) const {
+        Card *card = new ThXingxieCard;
+        card->addSubcard(originalCard);
+        return card;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const {
-        return player->canDiscard(player, "h") && player->getMark("@xingxie") > 0 && !player->isKongcheng();
+        return player->canDiscard(player, "h") && !player->hasUsed("ThXingxieCard");
+    }
+};
+
+class ThXingxie: public TriggerSkill {
+public:
+    ThXingxie(): TriggerSkill("thxingxie") {
+        events << EventPhaseChanging;
+        view_as_skill = new ThXingxieVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (change.to == Player::NotActive) {
+            foreach (ServerPlayer *p, room->getAllPlayers()) {
+                if (p->hasFlag("ThXingxieTarget")) {
+                    p->setFlags("-ThXingxieTarget");
+                    if (!player->getPile("thxingxiepile").isEmpty()) {
+                        QList<int> card_ids = player->getPile("thxingxiepile");
+                        DummyCard *dummy = new DummyCard(card_ids);
+                        room->obtainCard(p, dummy);
+                        delete dummy;
+                        foreach (int id, card_ids) {
+                            if (room->getCardOwner(id) != p)
+                                continue;
+                            if (room->getCardPlace(id) != Player::PlaceHand)
+                                continue;
+                            const Card *card = Sanguosha->getCard(id);
+                            if (card->getTypeId() != Card::TypeEquip)
+                                continue;
+                            room->useCard(CardUseStruct(card, p, QList<ServerPlayer *>()));
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return QStringList();
     }
 };
 
@@ -890,13 +923,13 @@ public:
         if (target != player && player->isWounded()) {
             QList<ServerPlayer *> victims;
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                if (!p->isAllNude())
+                if (!p->isKongcheng())
                     victims << p;
             }
             if (!victims.isEmpty()) {
                 ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName(), "@thweide", true);
                 if (victim) {
-                    int card_id = room->askForCardChosen(player, victim, "hej", objectName());
+                    int card_id = room->askForCardChosen(player, victim, "h", objectName());
                     room->obtainCard(player, card_id, false);
                 }
             }

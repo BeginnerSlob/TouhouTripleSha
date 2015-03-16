@@ -460,88 +460,45 @@ public:
     }
 };
 
-ThYuanqiGiveCard::ThYuanqiGiveCard() {
-    m_skillName = "thyuanqi";
+ThYuanqiCard::ThYuanqiCard() {
     will_throw = false;
     handling_method = MethodNone;
 }
 
-void ThYuanqiGiveCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const {
-    ServerPlayer *target = targets.first();
-    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "thyuanqi", QString());
-    room->obtainCard(target, this, reason);
+void ThYuanqiCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    room->showCard(effect.from, getEffectiveId());
 
     QStringList choices;
     choices << "draw";
-    if (target->getCards("he").length() != 1)
+    if (effect.to->getCards("he").length() != 1)
         choices << "throw";
-    QString choice = room->askForChoice(target, "thyuanqi", choices.join("+"));
+    QString choice = room->askForChoice(effect.to, "thyuanqi", choices.join("+"));
 
     if (choice == "draw") {
-        target->drawCards(1);
-        room->loseHp(target);
+        effect.to->drawCards(1);
+        room->loseHp(effect.to);
     } else {
-        room->throwCard(this, target);
-        int id = room->askForCardChosen(source, target, "he", "thyuanqi");
-        room->obtainCard(source, id, false);
+        room->throwCard(this, effect.from, effect.to);
+        int id = room->askForCardChosen(effect.from, effect.to, "he", "thyuanqi");
+        room->obtainCard(effect.from, id, false);
     }
 }
 
-ThYuanqiCard::ThYuanqiCard() {
-    target_fixed = true;
-}
-
-void ThYuanqiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const {
-    JudgeStruct judge;
-    judge.good = true;
-    judge.play_animation = false;
-    judge.reason = "thyuanqi";
-    judge.who = source;
-    room->judge(judge);
-
-    QString pattern = ".|";
-    if (judge.card->isRed())
-        pattern += "red";
-    else if (judge.card->isBlack())
-        pattern += "black";
-    room->setPlayerProperty(source, "thyuanqi_pattern", pattern);
-    room->askForUseCard(source, "@@thyuanqi", "@thyuanqi", -1, MethodNone);
-    room->setPlayerProperty(source, "thyuanqi_pattern", "");
-}
-
-class ThYuanqi: public ViewAsSkill {
+class ThYuanqi: public OneCardViewAsSkill {
 public:
-    ThYuanqi(): ViewAsSkill("thyuanqi") {
+    ThYuanqi(): OneCardViewAsSkill("thyuanqi") {
+        filter_pattern = ".|.|.|hand";
     }
 
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const {
-        if (Self->property("thyuanqi_pattern").toString().isEmpty())
-            return false;
-        else if (selected.isEmpty()) {
-            QString str = Self->property("thyuanqi_pattern").toString();
-            ExpPattern pattern(str);
-            return pattern.match(Self, to_select);
-        } else
-            return false;
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const {
-        if (Self->property("thyuanqi_pattern").toString().isEmpty())
-            return new ThYuanqiCard;
-        else if (!cards.isEmpty()) {
-            ThYuanqiGiveCard *card = new ThYuanqiGiveCard;
-            card->addSubcards(cards);
-            return card;
-        } else
-            return NULL;
+    virtual const Card *viewAs(const Card *originalCard) const {
+        ThYuanqiCard *card = new ThYuanqiCard;
+        card->addSubcard(originalCard);
+        return card;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const {
         return !player->hasUsed("ThYuanqiCard");
-    }
-
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const {
-        return pattern == "@@thyuanqi";
     }
 };
 
@@ -2351,7 +2308,6 @@ TouhouYukiPackage::TouhouYukiPackage()
     yuki018->addSkill(new ThFuyue);
 
     addMetaObject<ThYuanqiCard>();
-    addMetaObject<ThYuanqiGiveCard>();
     addMetaObject<ThChouceCard>();
     addMetaObject<ThBingpuCard>();
     addMetaObject<ThDongmoCard>();
