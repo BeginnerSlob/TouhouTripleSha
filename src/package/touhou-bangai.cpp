@@ -770,10 +770,8 @@ public:
                     p->setFlags("-ThXingxieTarget");
                     if (!player->getPile("thxingxiepile").isEmpty()) {
                         QList<int> card_ids = player->getPile("thxingxiepile");
-                        DummyCard *dummy = new DummyCard(card_ids);
-                        room->obtainCard(p, dummy);
-                        delete dummy;
                         foreach (int id, card_ids) {
+                            room->obtainCard(p, id);
                             if (room->getCardOwner(id) != p)
                                 continue;
                             if (room->getCardPlace(id) != Player::PlaceHand)
