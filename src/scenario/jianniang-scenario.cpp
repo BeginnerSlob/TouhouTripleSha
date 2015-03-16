@@ -359,6 +359,121 @@ public:
     }
 };
 
+class JnLuomo: public PhaseChangeSkill {
+public:
+    JnLuomo(): PhaseChangeSkill("jnluomo") {
+        frequency = Wake;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+            && target->getPhase() == Player::Start
+            && target->getHp() == 1;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        room->broadcastSkillInvoke(objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
+
+        room->loseMaxHp(player);
+
+        room->acquireSkill(player, "iktanyan");
+        room->detachSkillFromPlayer(player, objectName(), true);
+        return false;
+    }
+};
+
+IkTanyanCard::IkTanyanCard() {
+}
+
+bool IkTanyanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    Slash *slash = new Slash(NoSuit, 0);
+    slash->deleteLater();
+    return slash->targetFilter(targets, to_select, Self);
+}
+
+bool IkTanyanCard::targetFixed() const{
+    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE)
+        return true;
+
+    Slash *slash = new Slash(NoSuit, 0);
+    slash->deleteLater();
+    return slash->targetFixed();
+}
+
+bool IkTanyanCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    Slash *slash = new Slash(NoSuit, 0);
+    slash->deleteLater();
+    return slash->targetsFeasible(targets, Self);
+}
+
+const Card *IkTanyanCard::validateInResponse(ServerPlayer *user) const{
+    Room *room = user->getRoom();
+    room->showCard(user, getEffectiveId());
+    Slash *slash = new Slash(NoSuit, 0);
+    slash->setSkillName("iktanyan");
+    room->setPlayerFlag(user, "IkTanyanUsed");
+    return slash;
+}
+
+const Card *IkTanyanCard::validate(CardUseStruct &cardUse) const{
+    ServerPlayer *user = cardUse.from;
+    Room *room = user->getRoom();
+    room->showCard(user, getEffectiveId());
+    Slash *slash = new Slash(NoSuit, 0);
+    slash->setSkillName("iktanyan");
+    room->setPlayerFlag(user, "IkTanyanUsed");
+    return slash;
+}
+
+class IkTanyanViewAsSkill: public OneCardViewAsSkill {
+public:
+    IkTanyanViewAsSkill(): OneCardViewAsSkill("iktanyan") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return Slash::IsAvailable(player) && !player->hasFlag("IkTanyanUsed");
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+        return pattern == "slash" && !player->hasFlag("IkTanyanUsed");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        IkTanyanCard *tanyan_card = new IkTanyanCard;
+        tanyan_card->addSubcard(originalCard);
+        return tanyan_card;
+    }
+};
+
+class IkTanyan: public TriggerSkill {
+public:
+    IkTanyan(): TriggerSkill("iktanyan") {
+        events << EventPhaseChanging;
+        view_as_skill = new IkTanyanViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (change.to == Player::NotActive) {
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (p->hasFlag("IkTanyanUsed"))
+                    room->setPlayerFlag(p, "-IkTanyanUsed");
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+};
+
 class JianniangScenarioRule: public ScenarioRule {
 public:
     JianniangScenarioRule(Scenario *scenario)
@@ -391,6 +506,10 @@ public:
                     room->acquireSkill(xiang, "jnhuangqi");
                     room->acquireSkill(xiang, "jnlaishi");
                 }
+
+                ServerPlayer *xili = room->findPlayer(XILI);
+                if (xili)
+                    room->acquireSkill(xili, "jnluomo");
                 return false;
             }
             break;
@@ -453,10 +572,14 @@ JianniangScenario::JianniangScenario()
            << new IkKongni
            << new JnHuangqi
            << new IkMopan
-           << new JnLaishi;
+           << new JnLaishi
+           << new JnLuomo
+           << new IkTanyan;
     related_skills.insert("jndaizhan", "#jndaizhan-prohibit");
     related_skills.insert("jndaizhan", "#jndaizhan-inv");
     related_skills.insert("jnchaonu", "#jnchaonu-tar");
+
+    addMetaObject<IkTanyanCard>();
 }
 
 void JianniangScenario::assign(QStringList &generals, QStringList &roles) const{
