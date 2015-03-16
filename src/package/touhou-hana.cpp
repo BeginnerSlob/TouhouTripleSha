@@ -2421,7 +2421,7 @@ public:
         } else if (triggerEvent == BeforeCardsMove) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
-            && move.reason.m_reason == CardMoveReason::S_REASON_USE) {
+                && move.reason.m_reason == CardMoveReason::S_REASON_USE) {
                 if (player->tag["thliuzhen_user"].toBool()) {
                     const Card *liuzhen_card = move.reason.m_extraData.value<const Card *>();
                     if (liuzhen_card && liuzhen_card->hasFlag("thliuzhen"))
