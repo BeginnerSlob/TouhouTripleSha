@@ -376,7 +376,15 @@ public:
         room->broadcastSkillInvoke(objectName());
         room->sendCompulsoryTriggerLog(player, objectName());
 
-        room->loseMaxHp(player);
+        QStringList choices;
+        if (player->isWounded())
+            choices << "recover";
+        choices << "draw";
+        QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+        if (choice == "recover")
+            room->recover(player, RecoverStruct(player));
+        else
+            player->drawCards(2, objectName());
 
         room->acquireSkill(player, "iktanyan");
         room->detachSkillFromPlayer(player, objectName(), true);
