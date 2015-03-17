@@ -1360,14 +1360,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        QList<int> card_ids = room->getNCards(qMax(4, player->aliveCount()), false);
-        CardMoveReason reason(CardMoveReason::S_REASON_TURNOVER, player->objectName(), "thfengling", QString());
-        CardsMoveStruct move(card_ids, NULL, Player::PlaceTable, reason);
-        room->moveCardsAtomic(move, true);
-
-        DummyCard *dummy = new DummyCard(card_ids);
-        room->obtainCard(player, dummy);
-        delete dummy;
+        player->drawCards(5, objectName());
 
         while (room->askForUseCard(player, "@@thfengling", "@thfengling", -1, Card::MethodDiscard)) {
             room->recover(player, RecoverStruct(player));

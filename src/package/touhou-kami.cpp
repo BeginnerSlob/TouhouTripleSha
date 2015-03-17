@@ -2385,7 +2385,6 @@ public:
             room->removePlayerMark(player, "@lijian");
             room->addPlayerMark(player, "@lijianused");
             room->addPlayerMark(player, objectName());
-            player->setFlags("lijian_first");
             return true;
         }
         return false;
@@ -2401,35 +2400,16 @@ public:
         QString pattern = card->getType();
         pattern[0] = pattern[0].toUpper();
         pattern.prepend(".");
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-            if (!p->canDiscard(p, "he") || !room->askForCard(p, pattern, "@thlijian-discard"))
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            const Card *card = room->askForCard(p, pattern, "@thlijian-give", QVariant(), Card::MethodNone);
+            if (card) {
+                CardMoveReason reason(CardMoveReason::S_REASON_GIVE, p->objectName(), player->objectName(), objectName(), QString());
+                room->obtainCard(player, card, reason);
+            } else
                 room->damage(DamageStruct("thlijian", player, p));
+        }
 
         return false;
-    }
-};
-
-class ThLijianNext: public ThLijian {
-public:
-    ThLijianNext(): ThLijian() {
-        setObjectName("#thlijian");
-        frequency = Compulsory;
-        limit_mark = QString();
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
-        if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Start)
-            return QStringList();
-        if (player->getMark("thlijian") > 0 && !player->hasFlag("lijian_first"))
-            return QStringList(objectName());
-        return QStringList();
-    }
-
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        room->broadcastSkillInvoke("thlijian");
-        room->sendCompulsoryTriggerLog(player, "thlijian");
-        room->removePlayerMark(player, "thlijian");
-        return true;
     }
 };
 
@@ -2441,7 +2421,7 @@ void ThSiqiangCard::onEffect(const CardEffectStruct &effect) const {
     room->removePlayerMark(effect.from, "@siqiang");
     room->addPlayerMark(effect.from, "@siqiangused");
     effect.from->tag["ThSiqiangTarget"] = QVariant::fromValue(effect.to);
-    room->setPlayerCardLimitation(effect.to, "use,response", "Slash,Jink,Nullification", false);
+    room->setPlayerCardLimitation(effect.to, "use,response", ".", false);
 }
 
 class ThSiqiangViewAsSkill: public ZeroCardViewAsSkill {
@@ -2483,7 +2463,7 @@ public:
         ServerPlayer *target = player->tag["ThSiqiangTarget"].value<ServerPlayer *>();
         player->tag.remove("ThSiqiangTarget");
         if (target)
-            room->removePlayerCardLimitation(target, "use,response", "Slash,Jink,Nullification$0");
+            room->removePlayerCardLimitation(target, "use,response", ".$0");
         return QStringList();
     }
 };
@@ -2716,8 +2696,6 @@ TouhouKamiPackage::TouhouKamiPackage()
 
     General *kami016 = new General(this, "kami016", "kami", 3, false);
     kami016->addSkill(new ThLijian);
-    kami016->addSkill(new ThLijianNext);
-    related_skills.insertMulti("thlijian", "#thlijian");
     kami016->addSkill(new ThSiqiang);
     kami016->addSkill(new ThJiefu);
     kami016->addSkill(new ThJiefuInvalidity);

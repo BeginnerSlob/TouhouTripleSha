@@ -224,34 +224,26 @@ public:
 class ThBian: public TriggerSkill {
 public:
     ThBian(): TriggerSkill("thbian") {
-        events << Dying;
+        events << TargetConfirming;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        if (!TriggerSkill::triggerable(player)) return QStringList();
-        DyingStruct dying = data.value<DyingStruct>();
-        if (dying.who->getHp() > 0 || dying.who->isDead())
-            return QStringList();
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
+        TriggerList skill_list;
+        if (player->hasFlag("Global_Dying")) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Peach")) {
+                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                    if (p->canDiscard(p, "he"))
+                        skill_list.insert(p, QStringList(objectName()));
+                }
+            }
+        }
 
-        if (player->hasFlag("ThBianUsed") || player->getHandcardNum() < 2)
-            return QStringList();
-
-        return QStringList(objectName());
+        return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        const Card *dummy = room->askForExchange(player, objectName(), 2, 2, false, "@thbian", true);
-        if (dummy && dummy->subcardsLength() > 0) {
-            LogMessage log;
-            log.type = "$DiscardCardWithSkill";
-            log.from = player;
-            log.card_str = IntList2StringList(dummy->getSubcards()).join("+");
-            log.arg = objectName();
-            room->sendLog(log);
-            CardMoveReason reason(CardMoveReason::S_REASON_THROW, player->objectName());
-            room->moveCardTo(dummy, NULL, Player::DiscardPile, reason, true);
-            delete dummy;
-            room->notifySkillInvoked(player, objectName());
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        if (room->askForCard(player, "TrickCard", "@thbian:" + player->objectName(), data, objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -260,29 +252,11 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        DyingStruct dying = data.value<DyingStruct>();
-        room->setPlayerFlag(player, "ThBianUsed");
-        room->loseHp(dying.who);
+        CardUseStruct use = data.value<CardUseStruct>();
+        use.nullified_list << player->objectName();
+        data = QVariant::fromValue(use);
 
         return false;
-    }
-};
-
-class ThBianClear: public TriggerSkill {
-public:
-    ThBianClear(): TriggerSkill("#thbian") {
-        events << EventPhaseChanging;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer* &) const {
-        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-        if (change.to == Player::NotActive) {
-            foreach (ServerPlayer *p, room->getAlivePlayers()) {
-                if (p->hasFlag("ThBianUsed"))
-                    room->setPlayerFlag(p, "-ThBianUsed");
-            }
-        }
-        return QStringList();
     }
 };
 
@@ -1625,6 +1599,19 @@ public:
     }
 };
 
+class ThXiagong: public TargetModSkill {
+public:
+    ThXiagong(): TargetModSkill("thxiagong") {
+    }
+
+    virtual int getDistanceLimit(const Player *from, const Card *) const {
+        if (!from->getWeapon() && from->hasSkill(objectName()) && from->getAttackRange() < 2)
+            return 2 - from->getAttackRange();
+        else
+            return 0;
+    }
+};
+
 class ThGuaitan: public TriggerSkill {
 public:
     ThGuaitan():TriggerSkill("thguaitan") {
@@ -1702,19 +1689,6 @@ public:
         }
 
         return QStringList();
-    }
-};
-
-class ThXiagong: public TargetModSkill {
-public:
-    ThXiagong(): TargetModSkill("thxiagong") {
-    }
-
-    virtual int getDistanceLimit(const Player *from, const Card *) const {
-        if (!from->getWeapon() && from->hasSkill(objectName()) && from->getAttackRange() < 2)
-            return 2 - from->getAttackRange();
-        else
-            return 0;
     }
 };
 
@@ -1996,57 +1970,42 @@ public:
 class ThLeishi: public TriggerSkill {
 public:
     ThLeishi(): TriggerSkill("thleishi") {
-        events << Dying << DamageComplete;
+        events << DamageComplete;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const {
-        if (triggerEvent == Dying && TriggerSkill::triggerable(player)) {
-            DyingStruct dying = data.value<DyingStruct>();
-            DamageStruct *damage = dying.damage;
-            if (dying.who->isDead() || dying.who->getHp() > 0
-                || !damage || damage->from != player)
-                return QStringList();
-            return QStringList(objectName());
-        } else if (triggerEvent == DamageComplete) {
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const {
+        if (player && player->isAlive() && player->getHp() <= 1) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (!damage.from || damage.from->isDead())
-                return QStringList();
-            ServerPlayer *target = damage.from->tag["ThLeishiTarget"].value<ServerPlayer *>();
-            if (!target || target->isDead())
-                return QStringList();
-            ask_who = damage.from;
-            return QStringList(objectName());
+            if (TriggerSkill::triggerable(damage.from)) {
+                ask_who = damage.from;
+                return QStringList(objectName());
+            }
         }
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        if (triggerEvent == Dying) {
-            DyingStruct dying = data.value<DyingStruct>();
-            QList<ServerPlayer *> targets;
-            int min = 998;
-            foreach (ServerPlayer *p, room->getOtherPlayers(dying.who)) {
-                int dis = dying.who->distanceTo(p);
-                if (dis == -1)
-                    continue;
-                if (targets.isEmpty() || dis == min) {
-                    targets << p;
-                    min = dying.who->distanceTo(p);
-                } else if (dis < min) {
-                    targets.clear();
-                    targets << p;
-                    min = dying.who->distanceTo(p);
-                }
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+        QList<ServerPlayer *> targets;
+        int min = 998;
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            int dis = player->distanceTo(p);
+            if (dis == -1)
+                continue;
+            if (targets.isEmpty() || dis == min) {
+                targets << p;
+                min = dis;
+            } else if (dis < min) {
+                targets.clear();
+                targets << p;
+                min = dis;
             }
-            ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thleishi", true, true);
-            if (target) {
-                room->broadcastSkillInvoke(objectName());
-                player->tag["ThLeishiTarget"] = QVariant::fromValue(target);
-                return false;
-            }
-            player->tag.remove("ThLeishiTarget");
-        } else
+        }
+        ServerPlayer *target = room->askForPlayerChosen(ask_who, targets, objectName(), "@thleishi", true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["ThLeishiTarget"] = QVariant::fromValue(target);
             return true;
+        }
         return false;
     }
 
@@ -2067,32 +2026,23 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const {
         if (TriggerSkill::triggerable(target) && target->getPhase() == Player::Start) {
-            bool can_invoke = true;
-            foreach (ServerPlayer *p, target->getRoom()->getAllPlayers())
-                if (target->getHp() > qMax(0, p->getHp())) {
-                    can_invoke = false;
-                    break;
-                }
-            return can_invoke;
+            foreach (ServerPlayer *p, target->getRoom()->getAllPlayers()) {
+                if (target->getHp() > qMax(0, p->getHp()))
+                    return false;
+            }
+            foreach (ServerPlayer *p, target->getRoom()->getAllPlayers()) {
+                if (target->inMyAttackRange(p))
+                    return true;
+            }
         }
         return false;
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         QList<ServerPlayer *> targets;
-        int min = 998;
         foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-            int dis = player->distanceTo(p);
-            if (dis == -1)
-                continue;
-            if (targets.isEmpty() || dis == min) {
+            if (player->inMyAttackRange(p))
                 targets << p;
-                min = player->distanceTo(p);
-            } else if (dis < min) {
-                targets.clear();
-                targets << p;
-                min = player->distanceTo(p);
-            }
         }
         ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thshanling", true, true);
         if (target) {
@@ -2595,8 +2545,6 @@ TouhouHanaPackage::TouhouHanaPackage()
 
     General *hana003 = new General(this, "hana003", "hana", 3, false);
     hana003->addSkill(new ThBian);
-    hana003->addSkill(new ThBianClear);
-    related_skills.insertMulti("thbian", "#thbian");
     hana003->addSkill(new ThGuihang);
     hana003->addSkill(new ThWujian);
     hana003->addSkill(new ThWujianClear);
@@ -2643,10 +2591,10 @@ TouhouHanaPackage::TouhouHanaPackage()
     hana011->addSkill(new ThChunhen);
 
     General *hana012 = new General(this, "hana012", "hana");
+    hana012->addSkill(new ThXiagong);
     hana012->addSkill(new ThGuaitan);
     hana012->addSkill(new ThGuaitanClear);
     related_skills.insertMulti("thguaitan", "#thguaitan");
-    hana012->addSkill(new ThXiagong);
 
     General *hana013 = new General(this, "hana013", "hana", 3);
     hana013->addSkill(new ThHouzhi);
