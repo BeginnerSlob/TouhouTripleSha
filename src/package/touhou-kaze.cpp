@@ -43,7 +43,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         if (!player->isWounded() || room->askForChoice(player, objectName(), "recover+draw") == "draw")
-            player->drawCards(1, objectName());
+            player->drawCards(2, objectName());
         else
             room->recover(player, RecoverStruct(player));
 
@@ -79,24 +79,22 @@ public:
 ThJiyiCard::ThJiyiCard(){
 }
 
-bool ThJiyiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
-}
-
 void ThJiyiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *target = targets.first();
-    const Card *card = room->askForCardShow(target, source, "thjiyi");
-    room->showCard(target, card->getId());
-    if(card->getTypeId() == TypeTrick) {
-        const Card *card2 = room->askForCard(source, ".Trick", "@thjiyi:" + target->objectName(), QVariant(), MethodNone);
-        if(!card2)
-            target->drawCards(1);
-        else {
-            CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "thjiyi", QString());
-            room->obtainCard(target, card2, reason);
+    const Card *card = room->askForCard(target, ".Trick", "@thjiyi:" + source->objectName(), QVariant(), MethodNone);
+    if (card) {
+        room->showCard(target, card->getId());
+        target->drawCards(1, "thjiyi");
+    } else if (!target->isNude()) {
+        const Card *card2 = room->askForCard(target, "..!", "@thjiyigive:" + source->objectName(), QVariant(), MethodNone);
+        if (!card2) {
+            QList<const Card *> cards = target->getCards("he");
+            card2 = cards.at(qrand() % cards.length());
         }
-    } else
-        source->obtainCard(card);
+
+        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, target->objectName(), source->objectName(), "thjiyi", QString());
+        room->obtainCard(source, card2, reason, false);
+    }
 }
 
 class ThJiyi: public ZeroCardViewAsSkill{
@@ -110,6 +108,44 @@ public:
 
     virtual const Card *viewAs() const{
         return new ThJiyiCard;
+    }
+};
+
+class ThYisi: public PhaseChangeSkill{
+public:
+    ThYisi(): PhaseChangeSkill("thyisi$"){
+        frequency = Wake;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target && target->isAlive() && target->hasLordSkill(objectName())
+               && target->getPhase() == Player::Start
+               && target->getHp() == 1
+               && target->getMark("@yisi") == 0;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        room->notifySkillInvoked(player, objectName());
+
+        LogMessage log;
+        log.type = "#ThYisiWake";
+        log.from = player;
+        log.arg = QString::number(player->getHp());
+        log.arg2 = objectName();
+        room->sendLog(log);
+
+        room->broadcastSkillInvoke(objectName());
+
+        room->setPlayerMark(player, "@yisi", 1);
+        if (player->isWounded())
+            room->recover(player, RecoverStruct(player));
+        if (room->changeMaxHpForAwakenSkill(player, 1)) {
+            if (player->isLord())
+                room->acquireSkill(player, "thhuadi");
+        }
+
+        return false;
     }
 };
 
@@ -134,6 +170,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         if (player->askForSkillInvoke(objectName())) {
+            player->setFlags("ThJilanwenInvoke");
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -172,10 +209,10 @@ public:
 
                 if (card_id != -1)
                     room->obtainCard(player, card_id);
-            } else
-                player->drawCards(1, objectName());
-        } else
-            player->drawCards(1, objectName());
+            } else if (room->getCardPlace(judge.card->getEffectiveId()) == Player::PlaceJudge)
+                player->obtainCard(judge.card);
+        } else if (room->getCardPlace(judge.card->getEffectiveId()) == Player::PlaceJudge)
+            player->obtainCard(judge.card);
 
         return true;
     }
@@ -191,22 +228,33 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (player != NULL){
             JudgeStruct *judge = data.value<JudgeStruct *>();
-            if (judge->reason == "thjilanwen") {
+            if (judge->reason == "thjilanwen")
                 judge->pattern = QString::number(int(judge->card->getSuit()));
-                if (room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge)
-                    return QStringList(objectName());
-            }
         }
         return QStringList();
     }
+};
 
-    virtual bool effect(TriggerEvent , Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const{
-        JudgeStruct *judge = data.value<JudgeStruct *>();
-        judge->who->obtainCard(judge->card);
+class ThJilanwenDraw: public DrawCardsSkill{
+public:
+    ThJilanwenDraw(): DrawCardsSkill("#thjilanwen-draw") {
+        frequency = Compulsory;
+    }
 
-        return false;
+    virtual bool triggerable(const ServerPlayer *player) const{
+        return DrawCardsSkill::triggerable(player)
+               && player->hasFlag("ThJilanwenInvoke");
+    }
+
+    virtual int getDrawNum(ServerPlayer *player, int n) const{
+        Room *room = player->getRoom();
+        player->setFlags("-ThJilanwenInvoke");
+        room->sendCompulsoryTriggerLog(player, objectName());
+
+        return n - 1;
     }
 };
+
 
 ThNiankeCard::ThNiankeCard(){
     will_throw = false;
@@ -2272,13 +2320,15 @@ TouhouKazePackage::TouhouKazePackage()
     kaze001->addSkill(new ThZhijiRecord);
     related_skills.insertMulti("thzhiji", "#thzhiji");
     kaze001->addSkill(new ThJiyi);
-    kaze001->addSkill(new ThHuadi);
-    kaze001->addSkill(new Skill("thyisi$", Skill::Compulsory));
+    kaze001->addSkill(new ThYisi);
+    kaze001->addRelateSkill("thhuadi");
 
     General *kaze002 = new General(this, "kaze002", "kaze");
     kaze002->addSkill(new ThJilanwen);
     kaze002->addSkill(new ThJilanwenGet);
+    kaze002->addSkill(new ThJilanwenDraw);
     related_skills.insertMulti("thjilanwen", "#thjilanwen");
+    related_skills.insertMulti("thjilanwen", "#thjilanwen-draw");
 
     General *kaze003 = new General(this, "kaze003", "kaze", 3);
     kaze003->addSkill(new ThNianke);
@@ -2376,7 +2426,7 @@ TouhouKazePackage::TouhouKazePackage()
     addMetaObject<ThSangzhiCard>();
     addMetaObject<ThXinhuaCard>();
 
-    skills << new ThMicaiGivenSkill << new ThZhouhuaGivenSkill << new ThYanlun
+    skills << new ThHuadi << new ThMicaiGivenSkill << new ThZhouhuaGivenSkill << new ThYanlun
            << new ThHeyu << new ThXinhuaViewAsSkill;
 }
 

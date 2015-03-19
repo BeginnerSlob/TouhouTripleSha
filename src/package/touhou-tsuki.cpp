@@ -314,7 +314,7 @@ public:
         return TriggerSkill::triggerable(player)
             && player->getPhase() == Player::Start
             && player->getMark("@lianmi") <= 0
-            && (player->getEquip(2) || player->getEquip(3));
+            && player->getEquips().length() >= player->getHp();
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
