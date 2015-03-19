@@ -258,119 +258,40 @@ public:
     }
 };
 
-ThLanzouCard::ThLanzouCard() {
-}
-
-bool ThLanzouCard::targetFilter(const QList<const Player *> &, const Player *, const Player *) const {
-    Q_ASSERT(false);
-    return false;
-}
-
-bool ThLanzouCard::targetFilter(const QList<const Player *> &targets, const Player *to_select,
-                                  const Player *Self, int &maxVotes) const {
-    if (to_select == Self) return false;
-    int i = 0;
-    foreach (const Player *player, targets)
-        if (player == to_select) i++;
-    maxVotes = qMax(3 - targets.size(), 0) + i;
-    return maxVotes > 0;
-}
-
-bool ThLanzouCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const {
-    if (targets.size() == 1)
-        return targets.first()->getCardCount() >= 3;
-    else {
-        if (targets.size() != 3) return false;
-        QMap<const Player *, int> map;
-        foreach (const Player *p, targets)
-            map[p]++;
-        bool can = true;
-        foreach (const Player *p, map.keys())
-            if (map[p] > p->getCardCount()) {
-                can = false;
-                break;
-            }
-        return can;
-    }
-}
-
-void ThLanzouCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    int total = 3;
-    QMap<ServerPlayer *, int> map;
-
-    foreach (ServerPlayer *sp, targets)
-        map[sp]++;
-
-    if (targets.size() == 1)
-        map[targets.first()] = total;
-
-    room->loseHp(source);
-    QList<ServerPlayer *> victims = map.keys();
-    room->sortByActionOrder(victims);
-    foreach (ServerPlayer *sp, victims)
-        discard(source, sp, map[sp]);
-}
-
-void ThLanzouCard::discard(ServerPlayer *source, ServerPlayer *target, int num) const {
-    Room *room = source->getRoom();
-    room->setPlayerFlag(target, "thlanzou_InTempMoving");
-    DummyCard *dummy = new DummyCard;
-    QList<int> card_ids;
-    QList<Player::Place> original_places;
-    for (int i = 0; i < num; i++) {
-        if (!source->canDiscard(target, "he"))
-            break;
-        card_ids << room->askForCardChosen(source, target, "he", objectName(), false, Card::MethodDiscard);
-        original_places << room->getCardPlace(card_ids[i]);
-        dummy->addSubcard(card_ids[i]);
-        source->addToPile("#thlanzou", card_ids[i], false);
-    }
-    for (int i = 0; i < dummy->subcardsLength(); i++)
-        room->moveCardTo(Sanguosha->getCard(card_ids[i]), target, original_places[i], false);
-    room->setPlayerFlag(target, "-thlanzou_InTempMoving");
-    if (dummy->subcardsLength() > 0)
-        room->throwCard(dummy, target, source);
-    delete dummy;
-}
-
-class ThLanzouViewAsSkill: public ZeroCardViewAsSkill {
-public:
-    ThLanzouViewAsSkill(): ZeroCardViewAsSkill("thlanzou") {
-        response_pattern = "@@thlanzou";
-    }
-
-    virtual const Card *viewAs() const{
-        return new ThLanzouCard;
-    }
-};
-
 class ThLanzou: public TriggerSkill {
 public:
     ThLanzou(): TriggerSkill("thlanzou") {
-        events << EventPhaseEnd;
-        view_as_skill = new ThLanzouViewAsSkill;
+        events << CardsMoveOneTime;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const {
-        QVariantList cards = target->tag["ThLanzou"].toList();
-        return !cards.isEmpty() && TriggerSkill::triggerable(target)
-            && target->getPhase() == Player::Discard;
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player)) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from == player && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
+                int index = 0;
+                foreach (int id, move.card_ids) {
+                    if (move.from_places[index] != Player::PlaceHand
+                        && move.from_places[index] != Player::PlaceEquip) {
+                        ++index;
+                        continue;
+                    }
+                    const Card *card = Sanguosha->getCard(id);
+                    if (card->isKindOf("Jink") || card->isKindOf("Nullification"))
+                        return QStringList(objectName());
+                    ++index;
+                }
+            }
+        }
+        return QStringList();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        QVariantList cards = player->tag["ThLanzou"].toList();
-        int x = cards.length();
-        int n = player->getEquips().length();
-        if (x >= n) {
-            ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@thlanzou", true, true);
-            if (target) {
-                room->broadcastSkillInvoke(objectName());
-                player->tag["ThLanzouTarget"] = QVariant::fromValue(target);
-                return true;
-            } else
-                player->tag.remove("ThLanzou");
-        } else
-            room->askForUseCard(player, "@@thlanzou", "@thlanzou", -1, Card::MethodNone);
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@thlanzou", true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["ThLanzouTarget"] = QVariant::fromValue(target);
+            return true;
+        }
 
         return false;
     }
@@ -378,48 +299,65 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         ServerPlayer *target = player->tag["ThLanzouTarget"].value<ServerPlayer *>();
         player->tag.remove("ThLanzouTarget");
-        if (target) {
-            QVariantList cards = player->tag["ThLanzou"].toList();
-            DummyCard *dummy = new DummyCard;
-            foreach (QVariant id, cards)
-                dummy->addSubcard(id.toInt());
-            if (dummy->subcardsLength() > 0) {
-                target->obtainCard(dummy);
-                room->loseHp(target);
-            }
-            delete dummy;
-        }
+        if (target)
+            target->drawCards(1, objectName());
+
         return false;
     }
 };
 
-class ThLanzouRecord: public TriggerSkill {
+class ThLanzouSecond: public TriggerSkill {
 public:
-    ThLanzouRecord(): TriggerSkill("#thlanzou-record") {
-        events << CardsMoveOneTime << EventPhaseChanging;
-        frequency = Compulsory;
-        global = true;
+    ThLanzouSecond(): TriggerSkill("#thlanzou") {
+        events << CardsMoveOneTime;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (triggerEvent == EventPhaseChanging)
-            player->tag.remove("ThLanzou");
-        else if (triggerEvent == CardsMoveOneTime) {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.from != player)
-                return QStringList();
-
-            if (player->getPhase() == Player::Discard
-                && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
-                QVariantList cards = player->tag["ThLanzou"].toList();
-                foreach (int id, move.card_ids)
-                    if (!cards.contains(id))
-                        cards << id;
-                player->tag["ThLanzou"] = cards;
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.from == player && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
+            int index = 0;
+            foreach (int id, move.card_ids) {
+                if (move.from_places[index] != Player::PlaceHand
+                    && move.from_places[index] != Player::PlaceEquip) {
+                    ++index;
+                    continue;
+                }
+                const Card *card = Sanguosha->getCard(id);
+                if (card->isKindOf("Jink") || card->isKindOf("Nullification")) {
+                    QStringList skill_list;
+                    foreach (ServerPlayer *p, room->findPlayersBySkillName("thlanzou")) {
+                        if (p == player)
+                            continue;
+                        skill_list << p->objectName() + "'" + objectName();
+                    }
+                    return skill_list;
+                }
+                ++index;
             }
         }
-
         return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *skill_target, QVariant &, ServerPlayer *skill_invoker) const{
+        if (skill_invoker->askForSkillInvoke("thlanzou", QVariant::fromValue(skill_target))) {
+            room->broadcastSkillInvoke("thlanzou");
+            room->notifySkillInvoked(skill_target, "thlanzou");
+            LogMessage log;
+            log.type = "#InvokeOthersSkill";
+            log.from = skill_invoker;
+            log.to << skill_target;
+            log.arg = "thlanzou";
+            room->sendLog(log);
+
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *skill_target, QVariant &, ServerPlayer *) const {
+        skill_target->drawCards(1, "thlanzou");
+
+        return false;
     }
 };
 
@@ -897,9 +835,8 @@ TouhouKishinPackage::TouhouKishinPackage()
 
     General *kishin004 = new General(this, "kishin004", "tsuki");
     kishin004->addSkill(new ThLanzou);
-    kishin004->addSkill(new ThLanzouRecord);
-    kishin004->addSkill(new FakeMoveSkill("thlanzou"));
-    related_skills.insertMulti("thlanzou", "#thlanzou-fake-move");
+    kishin004->addSkill(new ThLanzouSecond);
+    related_skills.insertMulti("thlanzou", "#thlanzou");
 
     General *kishin005 = new General(this, "kishin005", "kaze", 3, false);
     kishin005->addSkill(new ThXinqi);
@@ -925,7 +862,6 @@ TouhouKishinPackage::TouhouKishinPackage()
     kishin008->addSkill(new ThYuanxiao);
 
     addMetaObject<ThLuanshenCard>();
-    addMetaObject<ThLanzouCard>();
     addMetaObject<ThLianyingCard>();
 
     skills << new ThBaochuiRecord;
