@@ -93,7 +93,7 @@ return {
 	
 	["#kaze007"]="大江山岚",
 	["kaze007"]="星熊勇仪",--风 - 空 - 4血
-	["designer:kaze007"]="数据流突袭者",
+	["designer:kaze007"]="半缘修道",
 	["illustrator:kaze007"]="恋河ミノル",
 	["cv:kaze007"]="暂无",
 	--["~kaze007"]="哈哈哈...痛快！",
