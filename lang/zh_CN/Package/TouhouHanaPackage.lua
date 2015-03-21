@@ -93,7 +93,7 @@ return {
 	
 	["#hana007"]="平安京的妖云",
 	["hana007"]="封兽鵺",--花 - 幻 - 3血
-	["designer:hana007"]="星野梦美&幻桜落 | Codeby:Ellis",
+	["designer:hana007"]="星野梦美",
 	["illustrator:hana007"]="にろ",
 	["cv:hana007"]="子覃",
 	["~hana007"]="这...这张弓是...？！",
