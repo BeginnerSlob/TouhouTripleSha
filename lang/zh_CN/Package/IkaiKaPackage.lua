@@ -344,7 +344,7 @@ return {
 	["~iklianwu1"] = "选择至多X名角色→点击确定",
 
 	["#luna037"] = "天仪的孤风",
-	["luna037"] = "岛风",--月 - 空 - 4血
+	["luna037"] = "岛风",--月 - 空 - 5血
 	["designer:luna037"] = "幻桜落",
 	["illustrator:luna037"]="ゆらん",
 	["ikmoshan"] = "魔闪",
