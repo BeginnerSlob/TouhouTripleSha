@@ -1257,7 +1257,16 @@ void Dismantlement::onEffect(const CardEffectStruct &effect) const{
             card_id = room->askForCardChosen(effect.from, effect.to, "h", objectName(), true, Card::MethodDiscard);
         }
     }
+    // for ThDunjia ------------
+    bool invoke_dunjia = getSkillName() == "thdunjia" && Sanguosha->getCard(card_id)->isKindOf("Jink");
+    // -------------------------
     room->throwCard(card_id, room->getCardPlace(card_id) == Player::PlaceDelayedTrick ? NULL : effect.to, effect.from);
+    // for ThDunjia ------------
+    if (invoke_dunjia) {
+        room->sendCompulsoryTriggerLog(effect.from, "thdunjia");
+        room->damage(DamageStruct("thdunjia", effect.from, effect.to));
+    }
+    // -------------------------
 }
 
 Indulgence::Indulgence(Suit suit, int number)

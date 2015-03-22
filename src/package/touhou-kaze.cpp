@@ -742,166 +742,6 @@ public:
     }
 };
 
-class ThZhouhuaGivenSkill: public ViewAsSkill {
-public:
-    ThZhouhuaGivenSkill(): ViewAsSkill("thzhouhuav") {
-        response_or_use = true;
-        attached_lord_skill = true;
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *) const{
-        return selected.length() < 2;
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if (cards.length() != 2)
-            return NULL;
-
-        Analeptic *card = new Analeptic(Card::SuitToBeDecided, -1);
-        card->addSubcards(cards);
-        card->setSkillName("thzhouhua");
-        return card;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        QString obj_name = player->property("zhouhua_source").toString();
-        const Player *source = NULL;
-        foreach (const Player *p, player->getAliveSiblings()) {
-            if (p->objectName() == obj_name) {
-                source = p;
-                break;
-            }
-        }
-        if (source && source->hasSkill("thzhouhua"))
-            return IsEnabledAtPlay(player);
-        return false;
-    }
-
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const {
-        QString obj_name = player->property("zhouhua_source").toString();
-        const Player *source = NULL;
-        foreach (const Player *p, player->getAliveSiblings()) {
-            if (p->objectName() == obj_name) {
-                source = p;
-                break;
-            }
-        }
-        if (source && source->hasSkill("thzhouhua"))
-            return IsEnabledAtResponse(player, pattern);
-        return false;
-    }
-
-    bool IsEnabledAtPlay(const Player *player) const{
-        return Analeptic::IsAvailable(player);
-    }
-
-    bool IsEnabledAtResponse(const Player *, const QString &pattern) const {
-        return pattern.contains("analeptic");
-    }
-};
-
-class ThZhouhuaViewAsSkill: public ThZhouhuaGivenSkill{
-public:
-    ThZhouhuaViewAsSkill(): ThZhouhuaGivenSkill() {
-        attached_lord_skill = false;
-        setObjectName("thzhouhua");
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return IsEnabledAtPlay(player);
-    }
-
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const {
-        return player->getPhase() != Player::NotActive && IsEnabledAtResponse(player, pattern);
-    }
-};
-
-class ThZhouhua: public TriggerSkill {
-public:
-    ThZhouhua(): TriggerSkill("thzhouhua") {
-        events << EventPhaseStart << EventPhaseChanging << Death;
-        view_as_skill = new ThZhouhuaViewAsSkill;
-    }
-
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        if (triggerEvent == EventPhaseStart) {
-            if (player->getPhase() == Player::RoundStart && player->hasSkill(objectName(), true) && player->isAlive()) {
-                player->setFlags("ZhouhuaTurn");
-                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                    if (!p->hasSkill("thzhouhuav"))
-                        room->attachSkillToPlayer(p, "thzhouhuav");
-                    room->setPlayerProperty(p, "zhouhua_source", player->objectName());
-                }
-            }
-            return QStringList();
-        }
-        if (player != NULL && player->hasFlag("ZhouhuaTurn")) {
-            if (triggerEvent == EventPhaseChanging) {
-                PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-                if (change.to != Player::NotActive)
-                    return QStringList();
-            }
-            if (triggerEvent == Death) {
-                DeathStruct death = data.value<DeathStruct>();
-                if (death.who != player)
-                    return QStringList();
-            }
-            player->setFlags("-ZhouhuaTurn");
-            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                if (p->hasSkill("thzhouhuav"))
-                    room->detachSkillFromPlayer(p, "thzhouhuav", true);
-                room->setPlayerProperty(p, "zhouhua_source", "");
-            }
-        }
-        return QStringList();
-    }
-
-    virtual bool cost(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *) const {
-        return false;
-    }
-};
-
-class ThXugu: public TriggerSkill {
-public:
-    ThXugu(): TriggerSkill("thxugu") {
-        events << CardFinished;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (TriggerSkill::triggerable(player) && player == room->getCurrent() && player->getPhase() != Player::NotActive) {
-            if (!player->hasFlag("ThXuguFailed") && use.card->isKindOf("Analeptic"))
-                return QStringList(objectName());
-        }
-        return QStringList();
-    }
-
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        ServerPlayer *p = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@thxugu", true, true);
-        if (p) {
-            player->tag["ThXuguTarget"] = QVariant::fromValue(p);
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        ServerPlayer *victim = player->tag["ThXuguTarget"].value<ServerPlayer *>();
-        player->tag.remove("ThXuguTarget");
-        if (victim) {
-            if (!room->askForUseCard(victim, "analeptic", "@thxugu-use", -1, Card::MethodUse, false)) {
-                player->setFlags("ThXuguFailed");
-                if (player->canSlash(victim, false)) {
-                    Slash *slash = new Slash(Card::NoSuit, 0);
-                    slash->setSkillName("_thxugu");
-                    room->useCard(CardUseStruct(slash, player, victim));
-                }
-            }
-        }
-        return false;
-    }
-};
-
 class ThShenzhou: public TriggerSkill {
 public:
     ThShenzhou(): TriggerSkill("thshenzhou") {
@@ -2351,10 +2191,8 @@ TouhouKazePackage::TouhouKazePackage()
     kaze006->addSkill(new ThQiaogong);
 
     General *kaze007 = new General(this, "kaze007", "kaze");
-    kaze007->addSkill(new ThZhouhua);
-    kaze007->addSkill(new ThXugu);
-    kaze007->addSkill(new SlashNoDistanceLimitSkill("thxugu"));
-    related_skills.insertMulti("thxugu", "#thxugu-slash-ndl");
+    Q_UNUSED(kaze007);
+    //kaze007->addSkill(new ThZhouhua);
 
     General *kaze008 = new General(this, "kaze008", "kaze", 3);
     kaze008->addSkill(new ThShenzhou);
@@ -2426,7 +2264,7 @@ TouhouKazePackage::TouhouKazePackage()
     addMetaObject<ThSangzhiCard>();
     addMetaObject<ThXinhuaCard>();
 
-    skills << new ThHuadi << new ThMicaiGivenSkill << new ThZhouhuaGivenSkill << new ThYanlun
+    skills << new ThHuadi << new ThMicaiGivenSkill << new ThYanlun
            << new ThHeyu << new ThXinhuaViewAsSkill;
 }
 

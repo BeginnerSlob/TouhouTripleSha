@@ -57,6 +57,19 @@ public:
     }
 };
 
+class ThJifeng: public MaxCardsSkill {
+public:
+    ThJifeng(): MaxCardsSkill("thjifeng") {
+    }
+
+    virtual int getExtra(const Player *target) const{
+        if (target->hasSkill(objectName()))
+            return 1;
+        else
+            return 0;
+    }
+};
+
 class ThNichang: public TriggerSkill {
 public:
     ThNichang(): TriggerSkill("thnichang") {
@@ -1504,6 +1517,7 @@ TouhouSPPackage::TouhouSPPackage()
 {
     General *sp001 = new General(this, "sp001", "kaze");
     sp001->addSkill(new ThFanshi);
+    sp001->addSkill(new ThJifeng);
 
     General *sp002 = new General(this, "sp002", "hana", 4, false);
     sp002->addSkill(new ThNichang);

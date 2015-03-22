@@ -1595,53 +1595,95 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("IkXinbanCard") && !player->isNude();
+        return !player->hasUsed("IkXinbanCard") && player->canDiscard(player, "he");
     }
 };
 
-class IkHuyin: public TriggerSkill {
+IkHuyinCard::IkHuyinCard() {
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+void IkHuyinCard::onEffect(const CardEffectStruct &effect) const{
+    effect.from->addToPile("ikhuyinpile", this);
+    Room *room = effect.from->getRoom();
+    room->addPlayerMark(effect.to, "@huyin");
+    room->addPlayerMark(effect.to, "huyin_" + effect.from->objectName());
+}
+
+class IkHuyin: public OneCardViewAsSkill {
 public:
-    IkHuyin(): TriggerSkill("ikhuyin") {
-        events << Damaged;
+    IkHuyin(): OneCardViewAsSkill("ikhuyin") {
+        filter_pattern = ".";
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *yangxiu, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(yangxiu)) return QStringList();
-        DamageStruct damage = data.value<DamageStruct>();
-        ServerPlayer *current = room->getCurrent();
-        if (!current || current->getPhase() == Player::NotActive || current->isDead() || !damage.from)
-            return QStringList();
-        return QStringList(objectName());
+    virtual const Card *viewAs(const Card *originalcard) const{
+        IkHuyinCard *first = new IkHuyinCard;
+        first->addSubcard(originalcard);
+        return first;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *yangxiu, QVariant &data, ServerPlayer *) const{
-        if (yangxiu->askForSkillInvoke(objectName(), data)) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkHuyinCard") && !player->isNude();
+    }
+};
+
+class IkHuyinTrigger: public TriggerSkill {
+public:
+    IkHuyinTrigger(): TriggerSkill("#ikhuyin") {
+        events << CardUsed << CardResponded << CardsMoveOneTime;
+        frequency = Compulsory;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        TriggerList skill_list;
+        QStringList type_list;
+        if (triggerEvent == CardUsed) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->getTypeId() != Card::TypeSkill)
+                type_list << use.card->getType();
+        } else if (triggerEvent == CardResponded) {
+            CardResponseStruct resp = data.value<CardResponseStruct>();
+            if (resp.m_card->getTypeId() != Card::TypeSkill)
+                type_list << resp.m_card->getType();
+        } else if (triggerEvent == CardsMoveOneTime) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from == player && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
+                int index = 0;
+                foreach (int id, move.card_ids) {
+                    if (move.from_places[index] == Player::PlaceHand || move.from_places[index] == Player::PlaceEquip) {
+                        const Card *card = Sanguosha->getCard(id);
+                        type_list << card->getType();
+                    }
+                    ++index;
+                }
+            }
         }
-        return false;
+        if (!type_list.isEmpty()) {
+            foreach (ServerPlayer *p, room->getAllPlayers()) {
+                if (player->getMark("huyin_" + p->objectName()) > 0) {
+                    foreach (int id, p->getPile("ikhuyinpile")) {
+                        if (type_list.contains(Sanguosha->getCard(id)->getType())) {
+                            skill_list.insert(p, QStringList(objectName()));
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return skill_list;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *yangxiu, QVariant &data, ServerPlayer *) const{
-        DamageStruct damage = data.value<DamageStruct>();
-        QString choice = room->askForChoice(yangxiu, objectName(), "BasicCard+EquipCard+TrickCard");
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        room->sendCompulsoryTriggerLog(ask_who, objectName());
 
-        LogMessage log;
-        log.type = "#IkHuyin";
-        log.from = damage.from;
-        log.arg = choice;
-        room->sendLog(log);
+        room->removePlayerMark(player, "huyin_" + ask_who->objectName());
+        room->removePlayerMark(player, "@huyin");
 
-        QStringList huyin_list = damage.from->tag[objectName()].toStringList();
-        if (huyin_list.contains(choice)) return false;
-        huyin_list.append(choice);
-        damage.from->tag[objectName()] = QVariant::fromValue(huyin_list);
-        QString _type = choice + "|.|.|hand"; // Handcards only
-        room->setPlayerCardLimitation(damage.from, "use,response,discard", _type, true);
-
-        QString type_name = choice.replace("Card", "").toLower();
-        if (damage.from->getMark("@huyin_" + type_name) == 0)
-            room->addPlayerMark(damage.from, "@huyin_" + type_name);
+        DummyCard *dummy = new DummyCard(ask_who->getPile("ikhuyinpile"));
+        player->obtainCard(dummy);
+        delete dummy;
+        room->loseHp(player);
 
         return false;
     }
@@ -1650,34 +1692,20 @@ public:
 class IkHuyinClear: public TriggerSkill {
 public:
     IkHuyinClear(): TriggerSkill("#ikhuyin-clear") {
-        events << EventPhaseChanging << Death;
+        events << EventPhaseStart;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer* &) const{
-        if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to != Player::NotActive)
-                return QStringList();
-        } else if (triggerEvent == Death) {
-            DeathStruct death = data.value<DeathStruct>();
-            if (death.who != target || target != room->getCurrent())
-                return QStringList();
-        }
-        QList<ServerPlayer *> players = room->getAllPlayers();
-        foreach (ServerPlayer *player, players) {
-            QStringList huyin_list = player->tag["ikhuyin"].toStringList();
-            if (!huyin_list.isEmpty()) {
-                LogMessage log;
-                log.type = "#IkHuyinClear";
-                log.from = player;
-                room->sendLog(log);
-
-                foreach (QString huyin_type, huyin_list) {
-                    room->removePlayerCardLimitation(player, "use,response,discard", huyin_type + "|.|.|hand$1");
-                    QString type_name = huyin_type.replace("Card", "").toLower();
-                    room->setPlayerMark(player, "@huyin_" + type_name, 0);
+        if (triggerEvent == EventPhaseStart && target->getPhase() == Player::RoundStart && !target->getPile("ikhuyinpile").isEmpty()) {
+            DummyCard *dummy = new DummyCard(target->getPile("ikhuyinpile"));
+            target->obtainCard(dummy);
+            delete dummy;
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (p->getMark("huyin_" + target->objectName()) > 0) {
+                    int n = p->getMark("huyin_" + target->objectName());
+                    room->removePlayerMark(p, "@huyin", n);
+                    room->setPlayerMark(p, "huyin_" + target->objectName(), 0);
                 }
-                player->tag.remove("ikhuyin");
             }
         }
 
@@ -5240,9 +5268,11 @@ IkaiSuiPackage::IkaiSuiPackage()
 
     General *bloom028 = new General(this, "bloom028", "hana", 3);
     bloom028->addSkill(new IkHuyin);
+    bloom028->addSkill(new IkHuyinTrigger);
     bloom028->addSkill(new IkHuyinClear);
-    bloom028->addSkill(new IkHongcai);
+    related_skills.insertMulti("ikhuyin", "#ikhuyin");
     related_skills.insertMulti("ikhuyin", "#ikhuyin-clear");
+    bloom028->addSkill(new IkHongcai);
 
     General *bloom033 = new General(this, "bloom033", "hana");
     bloom033->addSkill(new IkShenyu);
@@ -5409,6 +5439,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkFanzhongCard>();
     addMetaObject<IkWujietiyaCard>();
     addMetaObject<IkXinbanCard>();
+    addMetaObject<IkHuyinCard>();
     addMetaObject<IkShenyuCard>();
     addMetaObject<IkHongfaCard>();
     addMetaObject<IkTianyuCard>();

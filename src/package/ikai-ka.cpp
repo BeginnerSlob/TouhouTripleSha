@@ -696,8 +696,8 @@ public:
         if (!card_ids.isEmpty()) {
             DummyCard *dummy = new DummyCard(card_ids);
             room->throwCard(dummy, player);
+            player->drawCards(qMin(dummy->subcardsLength(), 2), objectName());
             delete dummy;
-            player->drawCards(2, objectName());
         }
         return false;
     }
@@ -3551,7 +3551,7 @@ public:
             return QStringList();
 
         ServerPlayer *winner = pindian->isSuccess() ? pindian->from : pindian->to;
-        if (winner->getHandcardNum() < winner->getMaxHp())
+        if (winner->getHandcardNum() < winner->getHp())
             return QStringList(objectName());
         return QStringList();
     }
@@ -3559,7 +3559,7 @@ public:
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const{
         PindianStruct *pindian = data.value<PindianStruct *>();
         ServerPlayer *winner = pindian->isSuccess() ? pindian->from : pindian->to;
-        winner->drawCards(winner->getMaxHp() - winner->getHandcardNum(), objectName());
+        winner->drawCards(winner->getHp() - winner->getHandcardNum(), objectName());
         return false;
     }
 };
