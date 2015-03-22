@@ -11,33 +11,26 @@ public:
     TouhouBangaiPackage();
 };
 
-class ThShoujuanCard: public SkillCard{
+class ThMiqiCard: public SkillCard{
     Q_OBJECT
 
 public:
-    Q_INVOKABLE ThShoujuanCard();
+    Q_INVOKABLE ThMiqiCard();
 
-    virtual void onEffect(const CardEffectStruct &effect) const;
+    virtual bool targetFilter(const QList<const Player *> &targets,
+                              const Player *to_select, const Player *Self) const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select,
+                              const Player *Self, int &maxVotes) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+
+    void discard(ServerPlayer *source, ServerPlayer *target, int num) const;
 };
 
-class ThZushaCard: public SkillCard{
+class ThXumeiCard: public SkillCard{
     Q_OBJECT
 
 public:
-    Q_INVOKABLE ThZushaCard();
-
-    virtual void onEffect(const CardEffectStruct &effect) const;
-};
-
-class ThYaomeiCard: public SkillCard{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE ThYaomeiCard();
-
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
-    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+    Q_INVOKABLE ThXumeiCard();
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 

@@ -2988,9 +2988,9 @@ bool Room::useCard(const CardUseStruct &use, bool add_history) {
     if (card == NULL)
         return false;
 
-    // for ThZhouhua
+    // for ThZuishang
     if (card->isKindOf("Analeptic")) {
-        if (current && card_use.from == current && current->hasSkill("thzhouhua"))
+        if (current && card_use.from == current && current->hasSkill("thzuishang"))
             add_history = false;
     }
     // -------------

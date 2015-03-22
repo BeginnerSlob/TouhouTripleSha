@@ -1463,7 +1463,7 @@ public:
             return QStringList(objectName());
         else if (triggerEvent == EventLoseSkill && data.toString() == objectName()) {
             QStringList detach;
-            detach << "-ikbiyue" << "-thmengwu" << "-ikchenhong" << "-thjibu";
+            detach << "-ikbiyue" << "-thjifeng" << "-ikchenhong" << "-thjibu";
             room->handleAcquireDetachSkills(player, detach, true);
         } else if (triggerEvent == EventAcquireSkill && data.toString() == objectName()) {
             if (!player->getPile("thrangdengpile").isEmpty()) {
@@ -1477,7 +1477,7 @@ public:
                         break;
                                        }
                     case Card::Spade : {
-                        skill_name = "thmengwu";
+                        skill_name = "thjifeng";
                         break;
                                        }
                     case Card::Diamond : {
@@ -1509,7 +1509,7 @@ public:
                         break;
                                        }
                     case Card::Spade : {
-                        skill_name = "thmengwu";
+                        skill_name = "thjifeng";
                         break;
                                        }
                     case Card::Diamond : {
@@ -1570,7 +1570,7 @@ ThBaihunCard::ThBaihunCard() {
 void ThBaihunCard::onEffect(const CardEffectStruct &effect) const {
     Room *room = effect.from->getRoom();
     effect.from->clearOnePrivatePile("thrangdengpile");
-    room->handleAcquireDetachSkills(effect.from, "-ikbiyue|-thmengwu|-ikchenhong|-thjibu", true);
+    room->handleAcquireDetachSkills(effect.from, "-ikbiyue|-thjifeng|-ikchenhong|-thjibu", true);
     room->killPlayer(effect.to);
 }
 
@@ -1639,8 +1639,8 @@ public:
                     skills << "thanyue";
                 room->setPlayerMark(use.from, "@xujing_bad", 1);
             } else {
-                if (!use.from->hasSkill("thmengwu"))
-                    skills << "thmengwu";
+                if (!use.from->hasSkill("thjifeng"))
+                    skills << "thjifeng";
                 if (!use.from->hasSkill("thxijing"))
                     skills << "thxijing";
                 room->setPlayerMark(use.from, "@xujing_good", 1);

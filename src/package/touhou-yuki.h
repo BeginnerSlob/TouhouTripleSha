@@ -12,13 +12,37 @@ public:
     TouhouYukiPackage();
 };
 
+class ThMojiCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThMojiCard();
+
+    virtual bool targetFixed() const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
+
+    virtual const Card *validate(CardUseStruct &card_use) const;
+    virtual const Card *validateInResponse(ServerPlayer *user) const;
+};
+
 class ThYuanqiCard: public SkillCard{
     Q_OBJECT
 
 public:
     Q_INVOKABLE ThYuanqiCard();
 
-    virtual void onEffect(const CardEffectStruct &effect) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThDunjiaCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThDunjiaCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual const Card *validate(CardUseStruct &card_use) const;
 };
 
 class ThChouceCard: public SkillCard{

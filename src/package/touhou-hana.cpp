@@ -799,8 +799,6 @@ bool ThMimengDialog::isButtonEnabled(const QString &button_name) const{
     if (object_name == "thmimeng")
         ban_list << "ExNihilo" << "AmazingGrace" << "Snatch" << "GodSalvation" << "ArcheryAttack"
                  << "Drowning" << "BurningCamps" << "LureTiger" << "KnownBoth";
-    if (object_name == "ikmice")
-        ban_list << "Drowning";
     if (object_name == "ikxieke" && Self->aliveCount() == 2)
         ban_list << "Jink" << "Analeptic" << "Peach";
     return !ban_list.contains(card->getClassName()) && !Self->isCardLimited(card, Card::MethodUse, true) && card->isAvailable(Self);
