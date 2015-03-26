@@ -441,7 +441,7 @@ public:
         if (triggerEvent == TargetConfirming) {
             if (ask_who->askForSkillInvoke(objectName())) {
                 room->broadcastSkillInvoke(objectName());
-                if (!room->askForCard(ask_who, "EquipCard|.|.|equipped", "@thzhancao")) {
+                if (!room->askForCard(ask_who, "^BasicCard", "@thzhancao")) {
                     room->loseHp(ask_who);
                     CardUseStruct use = data.value<CardUseStruct>();
                     const Card *card = use.card;
