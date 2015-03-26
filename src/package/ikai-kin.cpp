@@ -3006,85 +3006,57 @@ public:
 class IkNilan: public TriggerSkill {
 public:
     IkNilan(): TriggerSkill("iknilan") {
-        events << CardsMoveOneTime << EventPhaseEnd << EventPhaseStart << EventPhaseChanging;
+        events << CardsMoveOneTime;
         frequency = Compulsory;
     }
 
-    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         TriggerList skill_list;
-        if (triggerEvent == CardsMoveOneTime && TriggerSkill::triggerable(player)) {
+        if (TriggerSkill::triggerable(player)) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.from == player) {
-                if (move.from_places.contains(Player::PlaceEquip) || (player->getPhase() == Player::Discard
-                    && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD))
-                    skill_list.insert(player, QStringList(objectName()));
-            }
-        } else if (triggerEvent == EventPhaseEnd && TriggerSkill::triggerable(player)) {
-            if (player->getPhase() == Player::Discard && player->getMark(objectName()) >= 2)
+            if (move.from == player && move.from_places.contains(Player::PlaceEquip))
                 skill_list.insert(player, QStringList(objectName()));
-        } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Finish) {
-            foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
-                if (owner->getMark("@jilei") > 0)
-                    skill_list.insert(owner, QStringList(objectName()));
-        } else if (triggerEvent == EventPhaseChanging) {
-            player->setMark(objectName(), 0);
         }
         return skill_list;
     }
 
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
-        if (triggerEvent == CardsMoveOneTime) {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (ask_who->getPhase() == Player::Discard
-                && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
-                ask_who->addMark(objectName(), move.card_ids.length());
-            if (move.from_places.contains(Player::PlaceEquip)) {
-                room->sendCompulsoryTriggerLog(ask_who, objectName());
-                ask_who->gainMark("@jilei");
+        QStringList choicelist;
+        ThunderSlash *slashx = new ThunderSlash(Card::NoSuit, 0);
+        slashx->deleteLater();
+        QList<ServerPlayer *> targets1;
+        foreach (ServerPlayer *target, room->getAlivePlayers()) {
+            if (ask_who->canSlash(target, slashx, false))
+                targets1 << target;
+        }
+        if (!targets1.isEmpty() && !ask_who->isCardLimited(slashx, Card::MethodUse))
+            choicelist << "slash";
+        QList<ServerPlayer *> targets2;
+        foreach (ServerPlayer *p, room->getOtherPlayers(ask_who)) {
+            if (ask_who->distanceTo(p) == 1)
+                targets2 << p;
+        }
+        if (!targets2.isEmpty())
+            choicelist << "damage";
+        if (!choicelist.isEmpty()) {
+            QString choice = room->askForChoice(ask_who, objectName(), choicelist.join("+"));
+            if (choice == "slash") {
+                ServerPlayer *target = room->askForPlayerChosen(ask_who, targets1, "iknilan_slash", "@dummy-slash");
+                ThunderSlash *slash = new ThunderSlash(Card::NoSuit, 0);
+                slash->setSkillName("_iknilan");
+                room->useCard(CardUseStruct(slash, ask_who, target));
+            } else if (choice == "damage") {
+                ServerPlayer *target = room->askForPlayerChosen(ask_who, targets2, "iknilan_damage", "@iknilan-damage");
+                room->damage(DamageStruct("iknilan", ask_who, target, 1, DamageStruct::Thunder));
             }
-        } else if (triggerEvent == EventPhaseEnd) {
-            room->sendCompulsoryTriggerLog(ask_who, objectName());
-            ask_who->gainMark("@jilei");
-        } else if (triggerEvent == EventPhaseStart) {
-            do {
-                room->sendCompulsoryTriggerLog(ask_who, objectName());
-                room->broadcastSkillInvoke(objectName());
-
-                ask_who->loseMark("@jilei");
-
-                QStringList choicelist;
-                QList<ServerPlayer *> targets2;
-                foreach (ServerPlayer *p, room->getOtherPlayers(ask_who)) {
-                    if (ask_who->distanceTo(p) == 1)
-                        targets2 << p;
-                }
-                if (!targets2.isEmpty())
-                    choicelist << "damage";
-                ThunderSlash *slashx = new ThunderSlash(Card::NoSuit, 0);
-                slashx->deleteLater();
-                QList<ServerPlayer *> targets1;
-                foreach (ServerPlayer *target, room->getAlivePlayers()) {
-                    if (ask_who->canSlash(target, slashx, false))
-                        targets1 << target;
-                }
-                if (!targets1.isEmpty() && !ask_who->isCardLimited(slashx, Card::MethodUse))
-                    choicelist << "slash";
-                choicelist << "draw";
-
-                QString choice = room->askForChoice(ask_who, objectName(), choicelist.join("+"));
-                if (choice == "slash") {
-                    ServerPlayer *target = room->askForPlayerChosen(ask_who, targets1, "iknilan_slash", "@dummy-slash");
-                    ThunderSlash *slash = new ThunderSlash(Card::NoSuit, 0);
-                    slash->setSkillName("_iknilan");
-                    room->useCard(CardUseStruct(slash, ask_who, target));
-                } else if (choice == "damage") {
-                    ServerPlayer *target = room->askForPlayerChosen(ask_who, targets2, "iknilan_damage", "@iknilan-damage");
-                    room->damage(DamageStruct("iknilan", ask_who, target, 1, DamageStruct::Thunder));
-                } else {
-                    ask_who->drawCards(1);
-                    room->askForDiscard(ask_who, objectName(), 1, 1);
-                }
-            } while (ask_who->getMark("@jilei") > 0);
         }
 
         return false;
@@ -3395,7 +3367,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *player) const{
         return TriggerSkill::triggerable(player)
-            && player->getPhase() == Player::Finish
+            && player->getPhase() == Player::Discard
             && !player->isKongcheng()
             && player->getPile("ikxiaozuipile").isEmpty();
     }

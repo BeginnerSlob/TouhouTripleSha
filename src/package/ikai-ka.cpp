@@ -249,36 +249,30 @@ public:
 
 IkKangjinCard::IkKangjinCard() {
     will_throw = false;
-    handling_method = MethodNone;
+    handling_method = MethodUse;
 }
 
-void IkKangjinCard::onEffect(const CardEffectStruct &effect) const{
-    Room *room = effect.from->getRoom();
-    const Card *card = Sanguosha->getCard(getEffectiveId());
-    int mark = effect.from->getMark("ikkangjin");
-    int mask = (1 << card->getTypeId());
-    mark = mark | mask;
-    room->setPlayerMark(effect.from, "ikkangjin", mark);
-    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "ikkangjin", QString());
-    room->obtainCard(effect.to, this, reason);
-    Duel *duel = new Duel(NoSuit, 0);
-    duel->setSkillName("_ikkangjin");
-    if (!effect.from->isProhibited(effect.to, duel) && !effect.from->isCardLimited(duel, Card::MethodUse))
-        room->useCard(CardUseStruct(duel, effect.from, effect.to));
-    else
-        delete duel;
+bool IkKangjinCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (to_select->getHp() <= Self->getHp())
+        return false;
+    Card *card = Sanguosha->cloneCard("duel");
+    card->addSubcards(subcards);
+    card->deleteLater();
+    return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card);
+}
+
+const Card *IkKangjinCard::validate(CardUseStruct &) const{
+    Card *card = Sanguosha->cloneCard("duel");
+    card->addSubcards(subcards);
+    card->setSkillName("ikkangjin");
+    return card;
 }
 
 class IkKangjin: public OneCardViewAsSkill {
 public:
     IkKangjin(): OneCardViewAsSkill("ikkangjin") {
         response_or_use = true;
-    }
-
-    virtual bool viewFilter(const Card *to_select) const{
-        if (to_select->isEquipped()) return false;
-        int mask = (1 << to_select->getTypeId());
-        return !(Self->getMark("ikkangjin") & mask);
+        filter_pattern = ".|.|.|hand";
     }
 
     virtual const Card *viewAs(const Card *originalcard) const{
@@ -286,34 +280,39 @@ public:
         card->addSubcard(originalcard);
         return card;
     }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getMark("ikkangjin") < 0xe; // 1110(2)
-    }
 };
 
-class IkKangjinTrigger: public TriggerSkill {
+class IkYunjue: public PhaseChangeSkill {
 public:
-    IkKangjinTrigger(): TriggerSkill("#ikkangjin") {
-        events << Damaged << EventPhaseChanging;
+    IkYunjue(): PhaseChangeSkill("ikyunjue") {
+        frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
-        if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            room->setPlayerMark(player, "ikkangjin", 0);
-        } else {
-            DamageStruct damage = data.value<DamageStruct>();
-            if (damage.card && damage.card->isKindOf("Duel") && damage.card->getSkillName() == "ikkangjin") {
-                ask_who = damage.by_user ? damage.from : player;
-                return QStringList(objectName());
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+            && target->getPhase() == Player::Finish;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+        while (true) {
+            if (!player->isKongcheng())
+                room->showAllCards(player);
+            bool has_slash = false;
+            foreach (const Card *c, player->getHandcards()) {
+                if (c->isKindOf("Slash")) {
+                    has_slash = true;
+                    break;
+                }
             }
+            if (has_slash) {
+                room->loseHp(player);
+                break;
+            }
+            player->drawCards(2, objectName());
         }
-        return QStringList();
-    }
-
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        player->drawCards(qMin(5, player->getLostHp()), objectName());
         return false;
     }
 };
@@ -4587,8 +4586,7 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *wind035 = new General(this, "wind035", "kaze");
     wind035->addSkill(new IkKangjin);
-    wind035->addSkill(new IkKangjinTrigger);
-    related_skills.insertMulti("ikkangjin", "#ikkangjin");
+    wind035->addSkill(new IkYunjue);
 
     General *wind036 = new General(this, "wind036", "kaze");
     wind036->addSkill(new IkHunkao);
@@ -4733,7 +4731,7 @@ IkaiKaPackage::IkaiKaPackage()
     related_skills.insertMulti("iklianwu", "#iklianwu-dist");
     related_skills.insertMulti("iklianwu", "#iklianwu-tar");
 
-    General *luna037 = new General(this, "luna037", "tsuki");
+    General *luna037 = new General(this, "luna037", "tsuki", 5);
     luna037->addSkill(new IkMoshan);
     luna037->addSkill("thyanmeng");
 
