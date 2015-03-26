@@ -36,7 +36,9 @@ class IkKangjinCard: public SkillCard {
 
 public:
     Q_INVOKABLE IkKangjinCard();
-    virtual void onEffect(const CardEffectStruct &effect) const;
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual const Card *validate(CardUseStruct &cardUse) const;
 };
 
 #include <QDialog>

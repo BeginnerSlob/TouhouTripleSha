@@ -1099,13 +1099,6 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
     if (thread->trigger(NullificationEffect, this, repliedPlayer, nullifionEffectData))
         return _askForNullification(trick, from, to, positive, aiHelper);
 
-    if (repliedPlayer->hasFlag("thhuaji_cancel")) {
-        setPlayerFlag(repliedPlayer, "-thhuaji_cancel");
-        if (card->isVirtualCard())
-            delete card;
-        return false;
-    }
-
     setEmotion(to, "effects/nullification");
     //doAnimate(S_ANIMATE_NULLIFICATION, repliedPlayer->objectName(), to->objectName());
     QVariant decisionData = QVariant::fromValue("Nullification:" + QString(trick->getClassName())
