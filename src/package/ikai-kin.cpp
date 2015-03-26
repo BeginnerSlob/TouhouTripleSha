@@ -447,20 +447,77 @@ public:
         return false;
     }
 
-    int getKingdoms(Room *room) const{
-        QSet<QString> kingdom_set;
-        foreach (ServerPlayer *p, room->getAlivePlayers())
-            kingdom_set << p->getKingdom();
-        return kingdom_set.size();
-    }
-
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *liaohua, QVariant &, ServerPlayer *) const{
         room->removePlayerMark(liaohua, "@fansheng");
         room->addPlayerMark(liaohua, "@fanshengused");
-        liaohua->drawCards(4, objectName());
-        room->recover(liaohua, RecoverStruct(liaohua, NULL, getKingdoms(room) - liaohua->getHp()));
+        room->recover(liaohua, RecoverStruct(liaohua, NULL, qMin(3, liaohua->getMaxHp()) - liaohua->getHp()));
         liaohua->turnOver();
 
+        return false;
+    }
+};
+
+class IkMohun: public PhaseChangeSkill {
+public:
+    IkMohun(): PhaseChangeSkill("ikmohun") {
+        frequency = Wake;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+            && target->getPhase() == Player::Finish
+            && target->hasFlag("IkMohunWake")
+            && target->getMark("@mohun") <= 0;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        room->notifySkillInvoked(player, objectName());
+
+        LogMessage log;
+        log.type = "#IkMohun";
+        log.from = player;
+        log.arg  = objectName();
+        room->sendLog(log);
+
+        room->broadcastSkillInvoke(objectName());
+
+        room->addPlayerMark(player, "@mohun");
+
+        if (room->changeMaxHpForAwakenSkill(player))
+            room->acquireSkill(player, "thheiguan");
+
+        return false;
+    }
+};
+
+class IkMohunRecord: public TriggerSkill {
+public:
+    IkMohunRecord(): TriggerSkill("#ikmohun") {
+        events << PreCardUsed;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player == room->getCurrent() && player->isAlive() && player->getPhase() != Player::NotActive) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card && use.card->isKindOf("Slash"))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        QString str = use.card->getSuitString();
+        if (str.startsWith("no_suit"))
+            str = "no_suit";
+        QString flag = "IkMohun_" + str;
+        if (!player->hasFlag(flag))
+            room->setPlayerFlag(player, flag);
+        else
+            room->setPlayerFlag(player, "IkMohunWake");
         return false;
     }
 };
@@ -5472,6 +5529,10 @@ IkaiKinPackage::IkaiKinPackage()
     General *wind020 = new General(this, "wind020", "kaze");
     wind020->addSkill(new IkMeiying);
     wind020->addSkill(new IkFansheng);
+    wind020->addSkill(new IkMohun);
+    wind020->addSkill(new IkMohunRecord);
+    related_skills.insertMulti("ikmohun", "#ikmohun");
+    wind020->addRelateSkill("thheiguan");
 
     General *wind021 = new General(this, "wind021", "kaze");
     wind021->addSkill(new IkLiyao);
