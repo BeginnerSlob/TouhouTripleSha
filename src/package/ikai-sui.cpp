@@ -1481,6 +1481,106 @@ public:
     }
 };
 
+class IkJueche: public PhaseChangeSkill {
+public:
+    IkJueche(): PhaseChangeSkill("ikjueche") {
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+            && target->getPhase() == Player::Finish
+            && target->getHp() > 0;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+        return true;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        room->loseHp(player);
+        player->drawCards(2, objectName());
+        return false;
+    }
+};
+
+class IkJuecheNotCompulsory: public IkJueche {
+public:
+    IkJuecheNotCompulsory(): IkJueche() {
+        setObjectName("ikjueche-edit");
+        frequency = NotFrequent;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+};
+
+class IkJuecheInvalidity: public InvaliditySkill {
+public:
+    IkJuecheInvalidity(): InvaliditySkill("#ikjueche-inv") {
+    }
+
+    virtual bool isSkillValid(const Player *player, const Skill *skill) const{
+        if (player->getMark("@hewu") > 0)
+            return skill->objectName() != "ikjueche";
+        else
+            return skill->objectName() != "ikjueche-edit";
+    }
+};
+
+class IkHewu: public TriggerSkill {
+public:
+    IkHewu(): TriggerSkill("ikhewu") {
+        events << Dying << GameStart;
+        frequency = Wake;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == GameStart) {
+            if (player == NULL) {
+                Json::Value args;
+                args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+            }
+        } else if (TriggerSkill::triggerable(player) && player->getMark("@hewu") == 0) {
+            DyingStruct dying = data.value<DyingStruct>();
+            if (dying.who == player && player->getHp() <= 0)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        LogMessage log;
+        log.type = "#IkHewuWake";
+        log.from = player;
+        log.arg = objectName();
+        room->sendLog(log);
+        room->notifySkillInvoked(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+
+        room->addPlayerMark(player, "@hewu");
+
+        Json::Value args;
+        args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+
+        if (room->changeMaxHpForAwakenSkill(player)) {
+            room->recover(player, RecoverStruct(player, NULL, 2 - player->getHp()));
+            room->handleAcquireDetachSkills(player, "ikjingnie|iktiaoxin");
+        }
+        return false;
+    }
+};
+
 class IkBashou: public TriggerSkill {
 public:
     IkBashou(): TriggerSkill("ikbashou") {
@@ -5259,6 +5359,13 @@ IkaiSuiPackage::IkaiSuiPackage()
     related_skills.insertMulti("ikshangshishu", "#ikshangshishu");
     wind052->addSkill(new IkChouhai);
     wind052->addSkill(new Skill("ikguiming", Skill::Compulsory));
+
+    General *wind053 = new General(this, "wind053", "kaze");
+    wind053->addSkill(new IkJueche);
+    wind053->addSkill(new IkJuecheNotCompulsory);
+    wind053->addSkill(new IkJuecheInvalidity);
+    related_skills.insertMulti("ikjueche", "#ikjueche-inv");
+    wind053->addSkill(new IkHewu);
 
     General *bloom023 = new General(this, "bloom023", "hana");
     bloom023->addSkill(new IkBashou);

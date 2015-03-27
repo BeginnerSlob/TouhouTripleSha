@@ -2139,6 +2139,30 @@ void RoomScene::updateSkillButtons(bool isPrepare) {
         skill_list = Self->getVisibleSkillList();
     }
     foreach (const Skill *skill, skill_list) {
+        if (skill->objectName().endsWith("-edit")) {
+            if (Self->hasSkill(skill->objectName())) {
+                QString skill_name = skill->objectName();
+                skill_name.chop(5);
+                QSanSkillButton *btn = dashboard->getSkillDock()->removeSkillButtonByName(skill_name);
+                if (btn) {
+                    btn->hide();
+                    m_skillButtons.removeOne(btn);
+                }
+                const Skill *old_skill = Sanguosha->getSkill(skill_name);
+                if (skill_list.contains(old_skill))
+                    skill_list.removeOne(old_skill);
+            } else {
+                QString skill_name = skill->objectName();
+                QSanSkillButton *btn = dashboard->getSkillDock()->removeSkillButtonByName(skill_name);
+                if (btn) {
+                    btn->hide();
+                    m_skillButtons.removeOne(btn);
+                }
+                skill_list.removeOne(skill);
+            }
+        }
+    }
+    foreach (const Skill *skill, skill_list) {
         if (skill->isLordSkill()
             && (Self->getRole() != "lord"
                 || ServerInfo.GameMode == "06_3v3"

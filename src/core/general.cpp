@@ -144,6 +144,8 @@ QString General::getSkillDescription(bool include_name) const{
     QString description;
 
     foreach (const Skill *skill, getVisibleSkillList()) {
+        if (skill->objectName().endsWith("-edit"))
+            continue;
         QString skill_name = Sanguosha->translate(skill->objectName());
         QString desc = skill->getDescription();
         desc.replace("\n", "<br/>");
