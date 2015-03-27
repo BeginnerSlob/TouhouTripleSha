@@ -309,6 +309,8 @@ void QSanInvokeSkillDock::update() {
             } else {
                 btn->setVisible(true);
             }
+            if (!btn->isVisible())
+                continue;
             if (btn->getSkill()->isAttachedLordSkill())
                 lordskill_buttons << btn;
             else
