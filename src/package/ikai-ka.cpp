@@ -2083,6 +2083,71 @@ public:
     }
 };
 
+class IkMingshi: public TriggerSkill {
+public:
+    IkMingshi(): TriggerSkill("ikmingshi") {
+        events << BeforeCardsMove;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player)) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from == player && move.to_place == Player::DiscardPile) {
+                foreach (int id, move.card_ids) {
+                    const Card *card = Sanguosha->getCard(id);
+                    if (card->isKindOf("Jink") || card->isKindOf("Weapon"))
+                        return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        QList<int> ids, disabled_ids;
+        foreach (int id, move.card_ids) {
+            const Card *card = Sanguosha->getCard(id);
+            if (card->isKindOf("Jink") || card->isKindOf("Weapon"))
+                ids << id;
+            else
+                disabled_ids << id;
+        }
+        if (!ids.isEmpty()) {
+            room->fillAG(move.card_ids, NULL, disabled_ids);
+            do {
+                int id = room->askForAG(player, ids, true, objectName());
+                if (id == -1)
+                    break;
+                ids.removeOne(id);
+                ServerPlayer *target = room->askForPlayerChosen(player,
+                                                                room->getOtherPlayers(player),
+                                                                objectName(),
+                                                                "@ikmingshi",
+                                                                true, 
+                                                                true);
+                if (target) {
+                    room->takeAG(target, id);
+                    QList<int> _id;
+                    _id << id;
+                    move.removeCardIds(_id);
+                } else {
+                    room->takeAG(NULL, id, false);
+                    LogMessage log;
+                    log.type = "#InvokeSkill";
+                    log.from = player;
+                    log.arg = objectName();
+                    room->sendLog(log);
+                    player->drawCards(1, objectName());
+                }
+            } while (!ids.isEmpty());
+            room->clearAG();
+            data = QVariant::fromValue(move);
+        }
+        return false;   
+    }
+};
+
 class IkLingyun: public TriggerSkill {
 public:
     IkLingyun(): TriggerSkill("iklingyun") {
@@ -4660,6 +4725,9 @@ IkaiKaPackage::IkaiKaPackage()
     bloom052->addSkill(new IkLingcha);
     bloom052->addSkill(new IkLingchaTrigger);
     related_skills.insertMulti("iklingcha", "#iklingcha");
+
+    General *bloom053 = new General(this, "bloom053", "hana");
+    bloom053->addSkill(new IkMingshi);
 
     General *snow031 = new General(this, "snow031", "yuki", 3);
     snow031->addSkill(new IkLingyun);
