@@ -191,6 +191,27 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
     if (player->hasFlag("slashDisableExtraTarget"))
         room->setPlayerFlag(player, "-slashDisableExtraTarget");
 
+    if (use.from->hasFlag("IkXiashanUse")) {
+        use.from->setFlags("-IkXiashanUse");
+        room->broadcastSkillInvoke("ikxiashan");
+
+        LogMessage log;
+        log.type = "#InvokeSkill";
+        log.from = use.from;
+        log.arg = "ikxiashan";
+        room->sendLog(log);
+
+        foreach (ServerPlayer *p, use.to) {
+            if (!use.from->inMyAttackRange(p)) {
+                room->setPlayerFlag(use.from, "ikxiashan_ikyipao");
+                Json::Value args;
+                args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+                break;
+            }
+        }
+    }
+
     if (player->getPhase() == Player::Play && player->hasFlag("Global_MoreSlashInOneTurn")) {
         QString name;
         if (player->hasSkill("ikyipao"))
@@ -349,7 +370,7 @@ bool Slash::targetsFeasible(const QList<const Player *> &targets, const Player *
 bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     int slash_targets = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
     bool distance_limit = ((1 + Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, Self, this)) < 500);
-    if (Self->hasFlag("slashNoDistanceLimit"))
+    if (Self->hasFlag("slashNoDistanceLimit") || Self->hasFlag("IkXiashanUse"))
         distance_limit = false;
 
     int rangefix = 0;
