@@ -482,6 +482,130 @@ public:
     }
 };
 
+class JnQiwang: public PhaseChangeSkill {
+public:
+    JnQiwang(): PhaseChangeSkill("jnqiwang") {
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target && target->isAlive() && target->getMark("jnqiwang") > 0
+            && target->getPhase() == Player::Play;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        player->getRoom()->broadcastSkillInvoke("jnqiwang");
+        return false;
+    }
+};
+
+class JnQiwangInvalidity: public InvaliditySkill {
+public:
+    JnQiwangInvalidity(): InvaliditySkill("#jnqiwang-inv") {
+    }
+
+    virtual bool isSkillValid(const Player *player, const Skill *skill) const{
+        return player->getMark("jnqiwang") == 0 || (skill->objectName() != "ikyipao" && skill->objectName() != "ikshijiu");
+    }
+};
+
+class JnLinbing: public TriggerSkill {
+public:
+    JnLinbing(): TriggerSkill("jnlinbing") {
+        events << Damaged;
+        frequency = Wake;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return TriggerSkill::triggerable(target)
+            && target->getLostHp() >= 2;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+
+        room->recover(player, RecoverStruct(player, NULL, player->getLostHp()));
+        room->setPlayerMark(player, "jnqiwang", 0);
+        room->detachSkillFromPlayer(player, "jnqiwang", true);
+        room->acquireSkill(player, "ikxiashan");
+        room->detachSkillFromPlayer(player, "jnlinbing", true);
+        return false;
+    }
+};
+
+IkXiashanCard::IkXiashanCard() {
+    target_fixed = true;
+    mute = true;
+}
+
+const Card *IkXiashanCard::validate(CardUseStruct &card_use) const{
+    ServerPlayer *player = card_use.from;
+    Room *room = player->getRoom();
+    room->setPlayerFlag(player, "IkXiashanUse");
+    bool use = room->askForUseCard(player, "slash", "@ikxiashan");
+    if (!use) {
+        room->setPlayerFlag(player, "Global_IkXiashanFailed");
+        room->setPlayerFlag(player, "-IkXiashanUse");
+        return NULL;
+    }
+    return this;
+}
+
+const Card *IkXiashanCard::validateInResponse(ServerPlayer *player) const{
+    Room *room = player->getRoom();
+    room->setPlayerFlag(player, "HalberdUse");
+    room->setPlayerFlag(player, "HalberdSlashFilter");
+    if (player->getWeapon() != NULL)
+        room->setCardFlag(player->getWeapon()->getId(), "using");
+    bool use = room->askForUseCard(player, "slash", "@Halberd");
+    if (!use) {
+        if (player->getWeapon() != NULL)
+            room->setCardFlag(player->getWeapon()->getId(), "-using");
+        room->setPlayerFlag(player, "Global_HalberdFailed");
+        room->setPlayerFlag(player, "-HalberdUse");
+        room->setPlayerFlag(player, "-HalberdSlashFilter");
+        return NULL;
+    }
+    return this;
+}
+
+void IkXiashanCard::onUse(Room *, const CardUseStruct &) const{
+    // do nothing
+}
+
+class IkXiashan: public ZeroCardViewAsSkill {
+public:
+    IkXiashan(): ZeroCardViewAsSkill("ikxiashan") {
+        response_pattern = "slash";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasFlag("Global_IkXiashanFailed") && Slash::IsAvailable(player);
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+        return !player->hasFlag("Global_IkXiashanFailed")
+            && Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE
+            && pattern == "slash"
+            && !player->hasFlag("IkXiashanUse");
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkXiashanCard;
+    }
+};
+
+class IkXiashanInvalidity: public InvaliditySkill {
+public:
+    IkXiashanInvalidity(): InvaliditySkill("#ikxiashan-inv") {
+    }
+
+    virtual bool isSkillValid(const Player *player, const Skill *skill) const{
+        return !player->hasFlag("ikxiashan_ikyipao") || skill->objectName() != "ikyipao";
+    }
+};
+
 class JianniangScenarioRule: public ScenarioRule {
 public:
     JianniangScenarioRule(Scenario *scenario)
@@ -518,6 +642,16 @@ public:
                 ServerPlayer *xili = room->findPlayer(XILI);
                 if (xili)
                     room->acquireSkill(xili, "jnluomo");
+
+                ServerPlayer *ruifeng = room->findPlayer(RUIFENG);
+                if (ruifeng) {
+                    room->addPlayerMark(ruifeng, "jnqiwang");
+                    room->acquireSkill(ruifeng, "jnqiwang");
+                    room->sendCompulsoryTriggerLog(ruifeng, "jnqiwang");
+                    room->acquireSkill(ruifeng, "ikqingnang");
+                    room->acquireSkill(ruifeng, "jnlinbing");
+                }
+
                 return false;
             }
             break;
@@ -582,12 +716,18 @@ JianniangScenario::JianniangScenario()
            << new IkMopan
            << new JnLaishi
            << new JnLuomo
-           << new IkTanyan;
+           << new IkTanyan
+           << new JnQiwang << new JnQiwangInvalidity
+           << new JnLinbing
+           << new IkXiashan << new IkXiashanInvalidity;
     related_skills.insert("jndaizhan", "#jndaizhan-prohibit");
     related_skills.insert("jndaizhan", "#jndaizhan-inv");
     related_skills.insert("jnchaonu", "#jnchaonu-tar");
+    related_skills.insert("jnqiwang", "#jnqiwang-inv");
+    related_skills.insert("ikxiashan", "#ikxiashan-inv");
 
     addMetaObject<IkTanyanCard>();
+    addMetaObject<IkXiashanCard>();
 }
 
 void JianniangScenario::assign(QStringList &generals, QStringList &roles) const{

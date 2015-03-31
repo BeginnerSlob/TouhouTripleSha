@@ -1241,7 +1241,7 @@ void RoomScene::updateTargetsEnablity(const Card *card) {
 
         if (item->isSelected()) continue;
 
-        //=====================================
+        //====For IkMoyu=======================
         bool isCollateral = false;
         if (card) {
             if (card->isKindOf("Collateral"))
