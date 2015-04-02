@@ -169,7 +169,7 @@ return {
 	["designer:snow001"] = "幻桜落",
 	["illustrator:snow001"]="KD",
 	["ikzhiheng"] = "制衡",
-	[":ikzhiheng"] = "出牌阶段限一次，你可以弃置至多X张牌，然后摸等量的牌（X为你的体力上限）。",
+	[":ikzhiheng"] = "出牌阶段限一次，你可以弃置一至X张牌，然后摸等量的牌（X为你的体力上限）。",
 	["ikjiyuan"] = "济援",
 	[":ikjiyuan"] = "君主技，锁定技，其他雪势力角色使用的【桃】指定你为目标后，回复的体力+1。",
 	["#IkJiyuanExtraRecover"] = "%from 的“%arg”被触发，将额外回复 <font color=\"yellow\"><b>1</b></font> 点体力",
