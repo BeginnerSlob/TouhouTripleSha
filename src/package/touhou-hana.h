@@ -154,6 +154,16 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class ThLeishiCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThLeishiCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class ThShengzhiCard: public SkillCard {
     Q_OBJECT
 

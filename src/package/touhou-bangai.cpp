@@ -1047,7 +1047,7 @@ void ThWangdaoCard::onEffect(const CardEffectStruct &effect) const {
             for (int i = 0; i < 2; i++) {
                 if (!effect.from->canDiscard(effect.to, "he"))
                     break;
-                card_ids << room->askForCardChosen(effect.from, effect.to, "he", "thwangdao");
+                card_ids << room->askForCardChosen(effect.from, effect.to, "he", "thwangdao", false, MethodDiscard);
                 original_places << room->getCardPlace(card_ids[i]);
                 dummy->addSubcard(card_ids[i]);
                 effect.to->addToPile("#thwangdao", card_ids[i], false);

@@ -485,7 +485,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        QList<int> card_ids = room->getNCards(qMin(4, player->getMaxHp()));
+        QList<int> card_ids = room->getNCards(qMax(5 - player->getMaxHp(), 1), false);
         CardMoveReason reason(CardMoveReason::S_REASON_TURNOVER, player->objectName(), objectName(), QString());
         room->moveCardsAtomic(CardsMoveStruct(card_ids, NULL, Player::PlaceTable, reason), true);
         while (!card_ids.isEmpty()) {
@@ -493,14 +493,14 @@ public:
             choices << "cancel";
             foreach (int id, card_ids) {
                 const Card *card = Sanguosha->getCard(id);
-                if(card->getSuit() == Card::Diamond) {
+                if (card->isRed() && card->getTypeId() != Card::TypeTrick) {
                     choices << "red";
                     break;
                 }
             }
             foreach (int id, card_ids) {
                 const Card *card = Sanguosha->getCard(id);
-                if(card->isBlack()) {
+                if (card->isBlack() && card->getTypeId() != Card::TypeTrick) {
                     choices << "black";
                     break;
                 }
@@ -513,7 +513,7 @@ public:
             if (choice == "red") {
                 foreach (int id, card_ids) {
                     const Card *card = Sanguosha->getCard(id);
-                    if (card->isRed()) {
+                    if (card->isRed() && card->getTypeId() != Card::TypeTrick) {
                         dummy->addSubcard(id);
                         card_ids.removeOne(id);
                     }
@@ -526,7 +526,7 @@ public:
             } else if (choice == "black") {
                 foreach (int id, card_ids) {
                     const Card *card = Sanguosha->getCard(id);
-                    if (card->isBlack()) {
+                    if (card->isBlack() && card->getTypeId() != Card::TypeTrick) {
                         dummy->addSubcard(id);
                         card_ids.removeOne(id);
                     }
