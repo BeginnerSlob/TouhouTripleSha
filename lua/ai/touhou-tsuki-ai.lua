@@ -66,10 +66,12 @@ sgs.ai_playerchosen_intention.tyshouye = -60
 sgs.ai_skill_invoke.thxushi = true
 function sgs.ai_cardsview_valuable.thxushi(self, class_name, player)
 	if class_name == "Slash" then
-		if player:getPhase() ~= sgs.Player_NotActive or player:hasFlag("Global_ThXushiFailed") then 
+		if player:getPhase() ~= sgs.Player_NotActive or player:hasFlag("Global_ThXushiFailed") then
 			return nil 
 		end
-		return "@ThXushiCard=."
+		if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
+			return "@ThXushiCard=."
+		end
 	end
 end
 

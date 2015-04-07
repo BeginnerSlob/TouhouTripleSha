@@ -17,39 +17,7 @@ void IkShenaiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
                           CardMoveReason(), "@ikshenai", false) >= 2)
         room->recover(source, RecoverStruct(source));
 }
-/*
-IkShenaiCard::IkShenaiCard() {
-    will_throw = false;
-    handling_method = Card::MethodNone;
-}
 
-void IkShenaiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    ServerPlayer *target = targets.first();
-    int num = 0;
-    QList<int> ikshenai_list = source->handCards();
-    foreach (int id, getSubcards())
-        ikshenai_list.removeOne(id);
-
-    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "ikshenai", QString());
-    room->obtainCard(target, this, reason, false);
-
-    num += subcardsLength();
-
-    if (!ikshenai_list.isEmpty() && num < 3) {
-        int record = ikshenai_list.length();
-        QList<ServerPlayer *> targets = room->getOtherPlayers(source);
-        targets.removeOne(target);
-        if (!targets.isEmpty())
-            room->askForYiji(source, ikshenai_list, "ikshenai", false, false, true, 3 - num,
-                             targets, reason, "@ikshenai:" + target->objectName(), false);
-        record -= ikshenai_list.length();
-        num += record;
-    }
-
-    if (num >= 2)
-        room->recover(source, RecoverStruct(source));
-}
-*/
 class IkShenai: public ZeroCardViewAsSkill {
 public:
     IkShenai(): ZeroCardViewAsSkill("ikshenai") {
@@ -1496,7 +1464,8 @@ public:
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        if (selected.length() >= Self->getMaxHp()) return false;
+        if (selected.length() >= Self->getMaxHp())
+            return false;
         return !Self->isJilei(to_select);
     }
 

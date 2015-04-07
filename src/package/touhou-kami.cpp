@@ -500,14 +500,20 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         PindianStruct *pindian = data.value<PindianStruct *>();
+        ServerPlayer *win = NULL, *lose = NULL;
         if (pindian->isSuccess()) {
-            if (player->getMark("@huangyi") > 0)
-                room->addPlayerHistory(player, "ThGugaoCard", -1);
-            room->damage(DamageStruct(objectName(), player, pindian->to));
-        } else if (player->getMark("@qianyu") > 0 && pindian->from_card->getSuit() != pindian->to_card->getSuit())
-            ; //do nothing
-        else
-            room->damage(DamageStruct(objectName(), pindian->to, player));
+            win = pindian->from;
+            lose = pindian->to;
+            if (win->getMark("@huangyi") > 0)
+                room->addPlayerHistory(win, "ThGugaoCard", -1);
+        } else if (pindian->from_number < pindian->to_number) {
+            if (player->getMark("@qianyu") == 0) {
+                win = pindian->to;
+                lose = pindian->from;
+            }
+        }
+        if (win && lose)
+            room->damage(DamageStruct(objectName(), win, lose));
 
         return false;
     }

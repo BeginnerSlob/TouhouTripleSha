@@ -1856,10 +1856,57 @@ public:
     }
 };
 
+ThLeishiCard::ThLeishiCard(){
+}
+
+bool ThLeishiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (!targets.isEmpty())
+        return false;
+    const Player *from = Self->parent()->findChild<const Player *>(Self->property("thleishi").toString());
+    if (from) {
+        QList<const Player *> targets;
+        int min = 998;
+        foreach (const Player *p, from->getAliveSiblings()) {
+            int dis = from->distanceTo(p);
+            if (dis == -1)
+                continue;
+            if (targets.isEmpty() || dis == min) {
+                targets << p;
+                min = dis;
+            } else if (dis < min) {
+                targets.clear();
+                targets << p;
+                min = dis;
+            }
+        }
+        return targets.contains(to_select);
+    }
+    return false;
+}
+
+void ThLeishiCard::onEffect(const CardEffectStruct &effect) const{
+    effect.from->getRoom()->damage(DamageStruct("thleishi", effect.from, effect.to, 1, DamageStruct::Thunder));
+}
+
+class ThLeishiVS: public OneCardViewAsSkill{
+public:
+    ThLeishiVS(): OneCardViewAsSkill("thleishi") {
+        response_pattern = "@@thleishi";
+        filter_pattern = ".!";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        Card *card = new ThLeishiCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+};
+
 class ThLeishi: public TriggerSkill {
 public:
     ThLeishi(): TriggerSkill("thleishi") {
         events << DamageComplete;
+        view_as_skill = new ThLeishiVS;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const {
@@ -1874,35 +1921,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
-        QList<ServerPlayer *> targets;
-        int min = 998;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-            int dis = player->distanceTo(p);
-            if (dis == -1)
-                continue;
-            if (targets.isEmpty() || dis == min) {
-                targets << p;
-                min = dis;
-            } else if (dis < min) {
-                targets.clear();
-                targets << p;
-                min = dis;
-            }
-        }
-        ServerPlayer *target = room->askForPlayerChosen(ask_who, targets, objectName(), "@thleishi", true, true);
-        if (target) {
-            room->broadcastSkillInvoke(objectName());
-            player->tag["ThLeishiTarget"] = QVariant::fromValue(target);
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
-        ServerPlayer *target = ask_who->tag["ThLeishiTarget"].value<ServerPlayer *>();
-        ask_who->tag.remove("ThLeishiTarget");
-        if (target)
-            room->damage(DamageStruct(objectName(), ask_who, target, 1, DamageStruct::Thunder));
+        room->askForUseCard(ask_who, "@@thleishi", "@thleishi", -1, Card::MethodDiscard);
         return false;
     }
 };
@@ -2519,6 +2538,7 @@ TouhouHanaPackage::TouhouHanaPackage()
     addMetaObject<ThYachuiCard>();
     addMetaObject<ThDujiaCard>();
     addMetaObject<ThXianfaCard>();
+    addMetaObject<ThLeishiCard>();
     addMetaObject<ThShengzhiCard>();
     addMetaObject<ThLiuzhenCard>();
 
