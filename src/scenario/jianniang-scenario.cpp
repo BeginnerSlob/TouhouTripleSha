@@ -554,17 +554,11 @@ const Card *IkXiashanCard::validate(CardUseStruct &card_use) const{
 
 const Card *IkXiashanCard::validateInResponse(ServerPlayer *player) const{
     Room *room = player->getRoom();
-    room->setPlayerFlag(player, "HalberdUse");
-    room->setPlayerFlag(player, "HalberdSlashFilter");
-    if (player->getWeapon() != NULL)
-        room->setCardFlag(player->getWeapon()->getId(), "using");
-    bool use = room->askForUseCard(player, "slash", "@Halberd");
+    room->setPlayerFlag(player, "IkXiashanUse");
+    bool use = room->askForUseCard(player, "slash", "@ikxiashan");
     if (!use) {
-        if (player->getWeapon() != NULL)
-            room->setCardFlag(player->getWeapon()->getId(), "-using");
-        room->setPlayerFlag(player, "Global_HalberdFailed");
-        room->setPlayerFlag(player, "-HalberdUse");
-        room->setPlayerFlag(player, "-HalberdSlashFilter");
+        room->setPlayerFlag(player, "Global_IkXiashanFailed");
+        room->setPlayerFlag(player, "-IkXiashanUse");
         return NULL;
     }
     return this;

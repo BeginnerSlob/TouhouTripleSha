@@ -1512,6 +1512,154 @@ public:
     }
 };
 
+class ThYimeng: public TriggerSkill {
+public:
+    ThYimeng(): TriggerSkill("thyimeng") {
+        events << Damage;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        TriggerList skill_list;
+        DamageStruct damage = data.value<DamageStruct>();
+        if (!player->isNude()) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (player == p)
+                    continue;
+                if (damage.to == p)
+                    skill_list.insert(p, QStringList(objectName()));
+                else if (!damage.to->isRemoved() && !p->isRemoved() && p->isAdjacentTo(damage.to))
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        int card_id = room->askForCardChosen(ask_who, player, "he", objectName());
+        room->obtainCard(ask_who, card_id, false);
+        player->drawCards(1, objectName());
+        return false;
+    }
+};
+
+ThXuyouCard::ThXuyouCard() {
+    target_fixed = true;
+    mute = true;
+}
+
+const Card *ThXuyouCard::validate(CardUseStruct &card_use) const{
+    ServerPlayer *player = card_use.from;
+    Room *room = player->getRoom();
+    room->setPlayerFlag(player, "ThXuyouUse");
+    bool use = room->askForUseCard(player, "slash", "@thxuyou");
+    if (!use) {
+        room->setPlayerFlag(player, "Global_ThXuyouFailed");
+        room->setPlayerFlag(player, "-ThXuyouUse");
+        return NULL;
+    }
+    return this;
+}
+
+const Card *ThXuyouCard::validateInResponse(ServerPlayer *player) const{
+    Room *room = player->getRoom();
+    room->setPlayerFlag(player, "ThXuyouUse");
+    bool use = room->askForUseCard(player, "slash", "@thxuyou");
+    if (!use) {
+        room->setPlayerFlag(player, "Global_ThXuyouFailed");
+        room->setPlayerFlag(player, "-ThXuyouUse");
+        return NULL;
+    }
+    return this;
+}
+
+void ThXuyouCard::onUse(Room *, const CardUseStruct &) const{
+    // do nothing
+}
+
+class ThXuyou: public ZeroCardViewAsSkill {
+public:
+    ThXuyou(): ZeroCardViewAsSkill("thxuyou") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasFlag("Global_ThXuyouFailed") && Slash::IsAvailable(player);
+    }
+
+    virtual const Card *viewAs() const{
+        return new ThXuyouCard;
+    }
+};
+
+class ThXuyouTrigger: public TriggerSkill {
+public:
+    ThXuyouTrigger(): TriggerSkill("#thxuyou") {
+        events << ChoiceMade << CardFinished << PreDamageDone << Damage;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == ChoiceMade && player->hasFlag("ThXuyouUse") && data.canConvert<CardUseStruct>()) {
+            room->broadcastSkillInvoke("thxuyou");
+            room->notifySkillInvoked(player, "thxuyou");
+
+            LogMessage log;
+            log.type = "#InvokeSkill";
+            log.from = player;
+            log.arg = "thxuyou";
+            room->sendLog(log);
+
+            player->setFlags("-ThXuyouUse");
+            room->setCardFlag(data.value<CardUseStruct>().card, "thxuyou_slash");
+        } else if (triggerEvent == CardFinished) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card && use.card->hasFlag("thxuyou_slash") && !use.card->hasFlag("ThXuyouDamage")) {
+                if (!player->isRemoved()) {
+                    foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                        if (p->isRemoved() || !player->isAdjacentTo(p))
+                            continue;
+                        if (player->canDiscard(p, "he"))
+                            return QStringList(objectName());
+                    }
+                }
+            }
+        } else if (triggerEvent == PreDamageDone) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card && damage.card->hasFlag("thxuyou_slash"))
+                room->setCardFlag(damage.card, "ThXuyouDamage");
+        } else if (triggerEvent == Damage) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card && damage.card->hasFlag("thxuyou_slash"))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, "thxuyou");
+        room->broadcastSkillInvoke("thxuyou");
+        if (triggerEvent == CardFinished) {
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (p->isRemoved() || !player->isAdjacentTo(p))
+                    continue;
+                if (player->canDiscard(p, "he")) {
+                    int card_id = room->askForCardChosen(player, p, "he", "thxuyou", false, Card::MethodDiscard);
+                    room->throwCard(card_id, p, player);
+                }
+            }
+        } else
+            player->drawCards(1, objectName());
+        return false;
+    }
+};
+
 TouhouSPPackage::TouhouSPPackage()
     :Package("touhou-sp")
 {
@@ -1579,6 +1727,12 @@ TouhouSPPackage::TouhouSPPackage()
     related_skills.insertMulti("thzanghun", "#thzanghun-clear");
     related_skills.insertMulti("thzanghun", "#thzanghun-distance");
 
+    General *sp013 = new General(this, "sp013", "kaze", 3, false);
+    sp013->addSkill(new ThYimeng);
+    sp013->addSkill(new ThXuyou);
+    sp013->addSkill(new ThXuyouTrigger);
+    related_skills.insertMulti("thxuyou", "#thxuyou");
+
     /*General *sp999 = new General(this, "sp999", "te", 5, true, true);
     sp999->addSkill("jibu");
     sp999->addSkill(new Skill("thfeiniang", Skill::Compulsory));*/
@@ -1589,6 +1743,7 @@ TouhouSPPackage::TouhouSPPackage()
     addMetaObject<ThShushuCard>();
     addMetaObject<ThFenglingCard>();
     addMetaObject<ThYingshiCard>();
+    addMetaObject<ThXuyouCard>();
 }
 
 ADD_PACKAGE(TouhouSP)

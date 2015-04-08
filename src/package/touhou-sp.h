@@ -69,4 +69,16 @@ public:
     virtual const Card *validate(CardUseStruct &card_use) const;
 };
 
+class ThXuyouCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThXuyouCard();
+
+    virtual const Card *validate(CardUseStruct &card_use) const;
+    virtual const Card *validateInResponse(ServerPlayer *user) const;
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+};
+
 #endif // TOUHOUSP_H

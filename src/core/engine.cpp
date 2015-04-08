@@ -1101,6 +1101,10 @@ const ProhibitSkill *Engine::isProhibited(const Player *from, const Player *to, 
     if (card->isKindOf("Slash") && from && from->hasSkill("ikxiashan"))
         return NULL;
     //===================================
+    // for ThXuyou ======================
+    if (card->isKindOf("Slash") && from && from->hasSkill("thxuyou"))
+        return NULL;
+    //===================================
     foreach (const ProhibitSkill *skill, prohibit_skills) {
         if (skill->isProhibited(from, to, card, others))
             return skill;

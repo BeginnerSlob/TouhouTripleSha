@@ -370,7 +370,7 @@ bool Slash::targetsFeasible(const QList<const Player *> &targets, const Player *
 bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     int slash_targets = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
     bool distance_limit = ((1 + Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, Self, this)) < 500);
-    if (Self->hasFlag("slashNoDistanceLimit") || Self->hasFlag("IkXiashanUse"))
+    if (Self->hasFlag("slashNoDistanceLimit") || Self->hasFlag("IkXiashanUse") || Self->hasFlag("ThXuyouUse"))
         distance_limit = false;
 
     int rangefix = 0;
