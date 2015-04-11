@@ -1660,6 +1660,122 @@ public:
     }
 };
 
+class ThTianqi: public TriggerSkill {
+public:
+    ThTianqi(): TriggerSkill("thtianqi") {
+        events << CardResponded;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player)) {
+            CardResponseStruct resp = data.value<CardResponseStruct>();
+            if (resp.m_card->isKindOf("Jink") && resp.m_who && resp.m_who->isAlive()) {
+                if (player->canDiscard(player, "h"))
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        ServerPlayer *target = data.value<CardResponseStruct>().m_who;
+        const Card *card = room->askForExchange(player, objectName(), 998, 1, false, "@thtianqi:" + target->objectName(), true);
+        if (card) {
+            LogMessage log;
+            log.type = "$ChoosePlayerWithSkill";
+            log.from = player;
+            log.to << target;
+            log.arg = objectName();
+            room->sendLog(log);
+            room->throwCard(card, player);
+            player->tag["ThTianqiNum"] = card->subcardsLength();
+            room->broadcastSkillInvoke(objectName());
+            delete card;
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        int n = player->tag["ThTianqiNum"].toInt();
+        player->tag.remove("ThTianqiNum");
+        if (n > 0) {
+            ServerPlayer *target = data.value<CardResponseStruct>().m_who;
+            if (target->canDiscard(target, "h"))
+                room->askForDiscard(target, objectName(), n, n, false, true);
+        }
+        return false;
+    }
+};
+
+class ThLinyao: public TriggerSkill {
+public:
+    ThLinyao(): TriggerSkill("thlinyao") {
+        events << CardAsked;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        TriggerList skill_list;
+        QString asked = data.toStringList().first();
+        if (asked == "jink") {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p == player)
+                    continue;
+                if (!p->faceUp())
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+        if (ask_who->askForSkillInvoke(objectName())) {
+            ask_who->turnOver();
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const{
+        Jink *jink = new Jink(Card::NoSuit, 0);
+        jink->setSkillName("_thlinyao");
+        room->provide(jink);
+        return true;
+    }
+};
+
+class ThFeijing: public TriggerSkill {
+public:
+    ThFeijing(): TriggerSkill("thfeijing") {
+        events << CardsMoveOneTime;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player)) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from == player && move.is_last_handcard)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->getHandcardNum() < player->getMaxHp())
+            player->drawCards(player->getMaxHp() - player->getHandcardNum(), objectName());
+        player->turnOver();
+        return false;
+    }
+};
+
 TouhouSPPackage::TouhouSPPackage()
     :Package("touhou-sp")
 {
@@ -1732,6 +1848,11 @@ TouhouSPPackage::TouhouSPPackage()
     sp013->addSkill(new ThXuyou);
     sp013->addSkill(new ThXuyouTrigger);
     related_skills.insertMulti("thxuyou", "#thxuyou");
+
+    General *sp014 = new General(this, "sp014", "hana", 3);
+    sp014->addSkill(new ThTianqi);
+    sp014->addSkill(new ThLinyao);
+    sp014->addSkill(new ThFeijing);
 
     /*General *sp999 = new General(this, "sp999", "te", 5, true, true);
     sp999->addSkill("jibu");
