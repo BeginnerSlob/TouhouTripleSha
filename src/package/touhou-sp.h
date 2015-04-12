@@ -81,4 +81,15 @@ public:
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
+class ThJingyuanspCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThJingyuanspCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 #endif // TOUHOUSP_H
