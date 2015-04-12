@@ -1776,6 +1776,106 @@ public:
     }
 };
 
+class ThOuji: public TriggerSkill {
+public:
+    ThOuji(): TriggerSkill("thouji") {
+        events << CardsMoveOneTime;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        QStringList skills;
+        if (TriggerSkill::triggerable(player)) {
+            if (room->getCurrent() == player && player->getPhase() != Player::NotActive) {
+                CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+                if (move.from && move.from_places.contains(Player::PlaceEquip))
+                    skills << objectName();
+                if (move.to && move.to_place == Player::PlaceEquip)
+                    skills << objectName();
+            }
+        }
+        return skills;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            if (player->canDiscard(p, "h"))
+                targets << p;
+        }
+        ServerPlayer *target = NULL;
+        if (!targets.isEmpty())
+            target = room->askForPlayerChosen(player, targets, objectName(), "@thouji", true);
+        if (target) {
+            int card_id = room->askForCardChosen(player, target, "h", objectName(), false, Card::MethodDiscard);
+            room->throwCard(card_id, target, player);
+        } else
+            player->drawCards(1, objectName());
+        return false;
+    }
+};
+
+ThJingyuanspCard::ThJingyuanspCard() {
+}
+
+bool ThJingyuanspCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
+    return targets.length() < 2 && to_select->hasEquip();
+}
+
+void ThJingyuanspCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    QString pattern = ".|.|.|equipped";
+    QString prompt = "@thjingyuansp";
+    if (effect.from == effect.to || effect.to->isKongcheng()) {
+        pattern += "!";
+        prompt += "-give";
+    } else
+        prompt += QString(":%1").arg(effect.from->objectName());
+    const Card *card = room->askForCard(effect.to, pattern, prompt, QVariant(), Card::MethodNone);
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.to->objectName(), "thjingyuansp", QString());
+    if (card) {
+        ServerPlayer *target = room->askForPlayerChosen(effect.to, room->getOtherPlayers(effect.to), "thjingyuansp");
+        reason.m_targetId = target->objectName();
+        room->obtainCard(target, card, reason);
+    } else if (pattern.endsWith("!")) {
+        QList<const Card *> equips = effect.to->getEquips();
+        if (!equips.isEmpty()) {
+            card = equips.at(qrand() % equips.length());
+            QList<ServerPlayer *> targets = room->getOtherPlayers(effect.to);
+            ServerPlayer *target = targets.at(qrand() % targets.length());
+            reason.m_targetId = target->objectName();
+            room->obtainCard(target, card, reason);
+        }
+    } else if (!effect.to->isKongcheng()) {
+        int card_id = room->askForCardChosen(effect.from, effect.to, "h", "thjingyuansp");
+        room->obtainCard(effect.from, card_id, false);
+    }
+}
+
+class ThJingyuansp: public OneCardViewAsSkill {
+public:
+    ThJingyuansp(): OneCardViewAsSkill("thjingyuansp") {
+        filter_pattern = "BasicCard!";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("ThJingyuanspCard");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        Card *card = new ThJingyuanspCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+};
+
 TouhouSPPackage::TouhouSPPackage()
     :Package("touhou-sp")
 {
@@ -1854,6 +1954,10 @@ TouhouSPPackage::TouhouSPPackage()
     sp014->addSkill(new ThLinyao);
     sp014->addSkill(new ThFeijing);
 
+    General *sp015 = new General(this, "sp015", "yuki", 3);
+    sp015->addSkill(new ThOuji);
+    sp015->addSkill(new ThJingyuansp);
+
     /*General *sp999 = new General(this, "sp999", "te", 5, true, true);
     sp999->addSkill("jibu");
     sp999->addSkill(new Skill("thfeiniang", Skill::Compulsory));*/
@@ -1865,6 +1969,7 @@ TouhouSPPackage::TouhouSPPackage()
     addMetaObject<ThFenglingCard>();
     addMetaObject<ThYingshiCard>();
     addMetaObject<ThXuyouCard>();
+    addMetaObject<ThJingyuanspCard>();
 }
 
 ADD_PACKAGE(TouhouSP)
