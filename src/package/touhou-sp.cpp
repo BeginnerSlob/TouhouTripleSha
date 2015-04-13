@@ -1876,6 +1876,50 @@ public:
     }
 };
 
+ThFeihuCard::ThFeihuCard() {
+}
+
+bool ThFeihuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && to_select->getHp() <= Self->getHp() && (Self->getHp() <= 2 || to_select != Self);
+}
+
+void ThFeihuCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    QStringList choices;
+    if (effect.from->canDiscard(effect.to, "he"))
+        choices << "recover";
+    choices << "damage";
+    QString choice = room->askForChoice(effect.from, "thfeihu", choices.join("+"));
+    if (choice == "recover") {
+        if (effect.from == effect.to)
+            room->askForDiscard(effect.to, "thfeihu", 1, 1, false, true);
+        else {
+            int card_id = room->askForCardChosen(effect.from, effect.to, "he", "thfeihu", false, Card::MethodDiscard);
+            room->throwCard(card_id, effect.to, effect.from);
+        }
+    } else {
+        room->damage(DamageStruct("thfeihu", effect.from, effect.to));
+        if (effect.to->isAlive()) {
+            room->recover(effect.to, RecoverStruct(effect.from));
+            effect.to->drawCards(1, "thfeihu");
+        }
+    }
+}
+
+class ThFeihu: public ZeroCardViewAsSkill {
+public:
+    ThFeihu(): ZeroCardViewAsSkill("thfeihu") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("ThFeihuCard");
+    }
+
+    virtual const Card *viewAs() const{
+        return new ThFeihuCard;
+    }
+};
+
 TouhouSPPackage::TouhouSPPackage()
     :Package("touhou-sp")
 {
@@ -1958,6 +2002,9 @@ TouhouSPPackage::TouhouSPPackage()
     sp015->addSkill(new ThOuji);
     sp015->addSkill(new ThJingyuansp);
 
+    General *sp016 = new General(this, "sp016", "tsuki");
+    sp016->addSkill(new ThFeihu);
+
     /*General *sp999 = new General(this, "sp999", "te", 5, true, true);
     sp999->addSkill("jibu");
     sp999->addSkill(new Skill("thfeiniang", Skill::Compulsory));*/
@@ -1970,6 +2017,7 @@ TouhouSPPackage::TouhouSPPackage()
     addMetaObject<ThYingshiCard>();
     addMetaObject<ThXuyouCard>();
     addMetaObject<ThJingyuanspCard>();
+    addMetaObject<ThFeihuCard>();
 }
 
 ADD_PACKAGE(TouhouSP)
