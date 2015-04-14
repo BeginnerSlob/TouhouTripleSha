@@ -287,6 +287,16 @@ protected:
     virtual int getKingdoms(ServerPlayer *yuanshu) const;
 };
 
+class IkBinglingCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkBinglingCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class IkZhangeCard: public SkillCard {
     Q_OBJECT
 
