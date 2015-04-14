@@ -3944,6 +3944,147 @@ public:
     }
 };
 
+class IkCiyu: public TriggerSkill {
+public:
+    IkCiyu(): TriggerSkill("ikciyu") {
+        events << HpRecover;
+        frequency = Frequent;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+        TriggerList skill_list;
+        if (player && player->isAlive() && player == room->getCurrent() && player->getPhase() != Player::NotActive) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+                skill_list.insert(p, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        QString choice = room->askForChoice(ask_who, objectName(), "draw+letdraw");
+        if (choice == "draw") {
+            ask_who->drawCards(1, objectName());
+            room->setPlayerMark(ask_who, "ikciyu_" + ask_who->objectName(), 1);
+        } else {
+            player->drawCards(2, objectName());
+            room->setPlayerMark(player, "ikciyu_" + ask_who->objectName(), 1);
+        }
+        return false;
+    }
+};
+
+class IkQingshe: public PhaseChangeSkill {
+public:
+    IkQingshe(): PhaseChangeSkill("ikqingshe") {
+        frequency = Wake;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        if (PhaseChangeSkill::triggerable(target) && target->getPhase() == Player::Start) {
+            if (target->isWounded() && target->getMark("ikciyu_" + target->objectName()) > 0)
+                return true;
+            foreach (const Player *p, target->getAliveSiblings()) {
+                if (p->isWounded() && p->getMark("ikciyu_" + target->objectName()) > 0)
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        room->notifySkillInvoked(player, objectName());
+
+        LogMessage log;
+        log.type = "#IkQingsheWake";
+        log.from = player;
+        log.arg = objectName();
+        room->sendLog(log);
+
+        room->broadcastSkillInvoke(objectName());
+
+        room->setPlayerMark(player, "@qingshe", 1);
+        if (room->changeMaxHpForAwakenSkill(player, 1)) {
+            room->recover(player, RecoverStruct(player));
+            room->acquireSkill(player, "ikbingling");
+        }
+
+        return false;
+    }
+};
+
+IkBinglingCard::IkBinglingCard() {
+}
+
+bool IkBinglingCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && to_select->canDiscard(to_select, "hej");
+}
+
+void IkBinglingCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    QStringList choices;
+    if (effect.to->canDiscard(effect.to, "h"))
+        choices << "h";
+    if (effect.to->canDiscard(effect.to, "e"))
+        choices << "e";
+    if (effect.to->canDiscard(effect.to, "j"))
+        choices << "j";
+    QString choice = room->askForChoice(effect.from, "ikbingling", choices.join("+"));
+    QList<int> card_ids;
+    if (choice == "h")
+        card_ids = effect.to->handCards();
+    else if (choice == "e") {
+        foreach (const Card *cd, effect.to->getEquips())
+            card_ids << cd->getId();
+    } else if (choice == "j")
+        card_ids = effect.to->getJudgingAreaID();
+    if (!card_ids.isEmpty()) {
+        DummyCard *dummy = new DummyCard(card_ids);
+        if (choice == "j")
+            room->throwCard(dummy, NULL, effect.to);
+        else
+            room->throwCard(dummy, effect.to);
+        delete dummy;
+        effect.to->drawCards(card_ids.length(), "ikbingling");
+        room->setPlayerFlag(effect.from, "IkBingling");
+    }
+}
+
+class IkBingling: public ZeroCardViewAsSkill {
+public:
+    IkBingling(): ZeroCardViewAsSkill("ikbingling") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkBinglingCard");
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkBinglingCard;
+    }
+};
+
+class IkBinglingMaxCards: public MaxCardsSkill {
+public:
+    IkBinglingMaxCards(): MaxCardsSkill("#ikbingling-max-cards") {
+    }
+
+    virtual int getExtra(const Player *target) const{
+        if (target->hasFlag("IkBingling"))
+            return -1;
+        else
+            return 0;
+    }
+};
+
 IkChenyan::IkChenyan(): TriggerSkill("ikchenyan") {
     events << DrawNCards << EventPhaseStart;
     frequency = Compulsory;
@@ -5737,6 +5878,11 @@ IkaiSuiPackage::IkaiSuiPackage()
     snow050->addSkill(new IkYanhuo);
     snow050->addSkill(new IkYaoyin);
 
+    General *snow053 = new General(this, "snow053", "yuki", 3, false);
+    snow053->addSkill(new IkCiyu);
+    snow053->addSkill(new IkQingshe);
+    snow053->addRelateSkill("ikbingling");
+
     General *luna017 = new General(this, "luna017", "tsuki");
     luna017->addSkill(new IkChenyan);
     luna017->addSkill(new IkMoliao);
@@ -5842,6 +5988,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkLingtongCard>();
     addMetaObject<IkLunkeCard>();
     addMetaObject<IkYaoyinCard>();
+    addMetaObject<IkBinglingCard>();
     addMetaObject<IkZhangeCard>();
     addMetaObject<IkFeishanCard>();
     addMetaObject<IkXincaoCard>();
@@ -5850,8 +5997,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkSheqieCard>();
     addMetaObject<IkCangliuSlash>();
 
-    skills << new IkAnshen << new IkAnshenRecord << new OthersNullifiedDistance << new IkLinbuFilter;
+    skills << new IkAnshen << new IkAnshenRecord << new OthersNullifiedDistance
+           << new IkLinbuFilter << new IkBingling << new IkBinglingMaxCards;
     related_skills.insertMulti("ikanshen", "#ikanshen-record");
+    related_skills.insertMulti("ikbingling", "#ikbingling-max-cards");
 }
 
 ADD_PACKAGE(IkaiSui)
