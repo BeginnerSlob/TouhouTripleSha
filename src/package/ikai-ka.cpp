@@ -4414,6 +4414,11 @@ void IkQiansheCard::onEffect(const CardEffectStruct &effect) const{
                                                 effect.from->objectName(),
                                                 "ikqianshe",
                                                 QString()));
+        LogMessage log;
+        log.type = "$DiscardCard";
+        log.from = effect.from;
+        log.card_str = IntList2StringList(subcards).join("+");
+        room->sendLog(log);
     }
     if (dummy->subcardsLength() > 0) {
         moves << CardsMoveStruct(dummy->getSubcards(),
@@ -4423,6 +4428,11 @@ void IkQiansheCard::onEffect(const CardEffectStruct &effect) const{
                                                 effect.to->objectName(),
                                                 "ikqianshe",
                                                 QString()));
+        LogMessage log;
+        log.type = "$DiscardCard";
+        log.from = effect.to;
+        log.card_str = IntList2StringList(dummy->getSubcards()).join("+");
+        room->sendLog(log);
     }
     if (!moves.isEmpty())
         room->moveCardsAtomic(moves, true);
