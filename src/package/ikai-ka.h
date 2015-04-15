@@ -277,4 +277,24 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
+class IkQiansheCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkQiansheCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class IkDaoleiCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkDaoleiCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 #endif // IKAIKA_H

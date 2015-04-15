@@ -4391,6 +4391,130 @@ public:
     }
 };
 
+IkQiansheCard::IkQiansheCard() {
+    will_throw = false;
+}
+
+bool IkQiansheCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && to_select->getHandcardNum() > Self->getHandcardNum();
+}
+
+void IkQiansheCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    const Card *dummy = room->askForExchange(effect.to, "ikqianshe", 998, 1, false, "@ikqianshe-discard", true);
+    if (!dummy)
+        dummy = new DummyCard;
+    QList<CardsMoveStruct> moves;
+    CardMoveReason(CardMoveReason::S_REASON_DISCARD, effect.from->objectName(), "ikqianshe", QString());
+    if (subcardsLength() > 0) {
+        moves << CardsMoveStruct(subcards,
+                                 NULL,
+                                 Player::DiscardPile,
+                                 CardMoveReason(CardMoveReason::S_REASON_DISCARD,
+                                                effect.from->objectName(),
+                                                "ikqianshe",
+                                                QString()));
+    }
+    if (dummy->subcardsLength() > 0) {
+        moves << CardsMoveStruct(dummy->getSubcards(),
+                                 NULL,
+                                 Player::DiscardPile,
+                                 CardMoveReason(CardMoveReason::S_REASON_DISCARD,
+                                                effect.to->objectName(),
+                                                "ikqianshe",
+                                                QString()));
+    }
+    if (!moves.isEmpty())
+        room->moveCardsAtomic(moves, true);
+    if (subcardsLength() > dummy->subcardsLength())
+        room->damage(DamageStruct("ikqianshe", effect.from, effect.to));
+    delete dummy;
+}
+
+class IkQianshe: public ViewAsSkill {
+public:
+    IkQianshe(): ViewAsSkill("ikqianshe") {
+        response_pattern = "@@ikqianshe";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkQiansheCard");
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
+        return !to_select->isEquipped() && !Self->isJilei(to_select);
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        Card *card = new IkQiansheCard;
+        card->addSubcards(cards);
+        return card;
+    }
+};
+
+IkDaoleiCard::IkDaoleiCard() {
+    will_throw = false;
+}
+
+bool IkDaoleiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && to_select->getHandcardNum() < Self->getHandcardNum();
+}
+
+void IkDaoleiCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "ikdaolei", QString());
+    room->obtainCard(effect.to, this, reason);
+    int max = effect.to->getHandcardNum();
+    QStringList choices;
+    for (int i = 1; i <= max; ++i)
+        choices << QString::number(i);
+    QString choice = room->askForChoice(effect.from, "ikdaolei_show", choices.join("+"));
+    int n = choice.toInt();
+    QList<int> original_ids = effect.to->handCards();
+    qShuffle(original_ids);
+    QList<int> ids = original_ids.mid(1, n);
+    foreach (int id, ids)
+        room->showCard(effect.to, id);
+    bool spade = false;
+    foreach (int id, ids) {
+        const Card *card = Sanguosha->getCard(id);
+        if (card->getSuit() == Card::Spade) {
+            spade = true;
+            break;
+        }
+    }
+    if (spade) {
+        QList<int> obtain;
+        foreach (int id, original_ids) {
+            if (!ids.contains(id))
+                obtain << id;
+        }
+        if (!obtain.isEmpty()) {
+            Card *dummy = new DummyCard(obtain);
+            room->obtainCard(effect.from, dummy, false);
+            delete dummy;
+        }
+    }
+}
+
+class IkDaolei: public OneCardViewAsSkill {
+public:
+    IkDaolei(): OneCardViewAsSkill("ikdaolei") {
+        filter_pattern = ".|spade";
+        response_pattern = "@@ikdaolei";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkDaoleiCard");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        Card *card = new IkDaoleiCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+};
+
 IkaiKaPackage::IkaiKaPackage()
     :Package("ikai-ka")
 {
@@ -4590,6 +4714,10 @@ IkaiKaPackage::IkaiKaPackage()
     General *luna051 = new General(this, "luna051", "tsuki");
     luna051->addSkill(new IkKezhan);
 
+    General *luna054 = new General(this, "luna054", "tsuki", 3);
+    luna054->addSkill(new IkQianshe);
+    luna054->addSkill(new IkDaolei);
+
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
     addMetaObject<IkKangjinCard>();
@@ -4610,6 +4738,8 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkLianwuCard>();
     addMetaObject<IkLianwuDrawCard>();
     addMetaObject<IkXiekeCard>();
+    addMetaObject<IkQiansheCard>();
+    addMetaObject<IkDaoleiCard>();
 
     skills << new IkQihunViewAsSkill;
 }
