@@ -16,6 +16,7 @@
 #define MISHENG "snow052"
 #define CHICHENG "luna052"
 #define SHU "wind052"
+#define YISHIJIU "luna054"
 
 class JnDaizhan: public PhaseChangeSkill {
 public:
@@ -736,7 +737,8 @@ void JianniangScenario::assign(QStringList &generals, QStringList &roles) const{
              << AIDANG
              << MISHENG
              << CHICHENG
-             << SHU;
+             << SHU
+             << YISHIJIU;
     qShuffle(generals);
     generals.mid(0, 8);
 
