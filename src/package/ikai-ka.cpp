@@ -4391,6 +4391,135 @@ public:
     }
 };
 
+class IkHuwu: public TriggerSkill {
+public:
+    IkHuwu(): TriggerSkill("ikhuwu") {
+        events << DamageCaused;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        TriggerList skill_list;
+        if (player->isAlive() && player->getPhase() != Player::NotActive && player == room->getCurrent()) {
+            if (player->getMark("ikhuwu") == 2) {
+                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                    if (p->canDiscard(p, "he"))
+                        skill_list.insert(p, QStringList(objectName()));
+                }
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        if (room->askForCard(ask_who, "..", "@ikhuwu:" + player->objectName(), data, objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        player->drawCards(2, objectName());
+        return false;
+    }
+};
+
+class IkHuwuRecord: public TriggerSkill {
+public:
+    IkHuwuRecord(): TriggerSkill("#ikhuwu-record") {
+        events << DamageCaused << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive)
+                player->setMark("ikhuwu", 0);
+        } else if (triggerEvent == DamageCaused) {
+            if (player->isAlive() && player->getPhase() != Player::NotActive && player == room->getCurrent())
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        player->addMark("ikhuwu");
+        return false;
+    }
+};
+
+class IkMosu: public TriggerSkill {
+public:
+    IkMosu(): TriggerSkill("ikmosu") {
+        events << DamageInflicted;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player) && !player->hasFlag("IkMosuUsed")) {
+            ServerPlayer *current = room->getCurrent();
+            if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
+                DamageStruct damage = data.value<DamageStruct>();
+                if (damage.from && damage.from->getMark("ikmosu") != 1)
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            room->setPlayerFlag(player, "IkMosuUsed");
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->isWounded())
+            room->recover(player, RecoverStruct(player));
+
+        QList<ServerPlayer *> players;
+        players << data.value<DamageStruct>().from << player;
+        room->sortByActionOrder(players);
+
+        room->drawCards(players, 1, objectName());
+
+        return true;
+    }
+};
+
+class IkMosuRecord: public TriggerSkill {
+public:
+    IkMosuRecord(): TriggerSkill("#ikmosu-record") {
+        events << DamageInflicted << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    if (p->hasFlag("IkMosuUsed"))
+                        room->setPlayerFlag(p, "-IkMosuUsed");
+                    p->setMark("ikmosu", 0);
+                }
+            }
+        } else if (triggerEvent == DamageInflicted) {
+            ServerPlayer *current = room->getCurrent();
+            if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
+                DamageStruct damage = data.value<DamageStruct>();
+                if (damage.from)
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const{
+        data.value<DamageStruct>().from->addMark("ikmosu");
+        return false;
+    }
+};
+
 IkQiansheCard::IkQiansheCard() {
     will_throw = false;
 }
@@ -4723,6 +4852,14 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *luna051 = new General(this, "luna051", "tsuki");
     luna051->addSkill(new IkKezhan);
+
+    General *luna053 = new General(this, "luna053", "tsuki", 3, false);
+    luna053->addSkill(new IkHuwu);
+    luna053->addSkill(new IkHuwuRecord);
+    related_skills.insertMulti("ikhuwu", "#ikhuwu-record");
+    luna053->addSkill(new IkMosu);
+    luna053->addSkill(new IkMosuRecord);
+    related_skills.insertMulti("ikmosu", "#ikmosu-record");
 
     General *luna054 = new General(this, "luna054", "tsuki", 3);
     luna054->addSkill(new IkQianshe);
