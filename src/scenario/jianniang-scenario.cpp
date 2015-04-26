@@ -3,6 +3,7 @@
 #include "skill.h"
 #include "engine.h"
 #include "standard.h"
+#include "maneuvering.h"
 
 #define DAHE "luna019"
 #define ZHENMING "snow039"
@@ -601,6 +602,113 @@ public:
     }
 };
 
+class JnBizheng: public TriggerSkill {
+public:
+    JnBizheng(): TriggerSkill("jnbizheng") {
+        events << DamageInflicted;
+        frequency = Limited;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        TriggerList skill_list;
+        foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+            if (player == p)
+                continue;
+            skill_list.insert(p, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        damage.to = ask_who;
+        damage.transfer = true;
+        damage.transfer_reason = "jnbizheng";
+        player->tag["TransferDamage"] = QVariant::fromValue(damage);
+
+        room->detachSkillFromPlayer(player, objectName(), true);
+        return true;
+    }
+};
+
+JnMingshiCard::JnMingshiCard() {
+}
+
+bool JnMingshiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.length() < Self->getHandcardNum() && to_select != Self;
+}
+
+void JnMingshiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    SkillCard::use(room, source, targets);
+    source->throwAllHandCards();
+    foreach (ServerPlayer *p, targets)
+        slash(room, source, p);
+}
+
+void JnMingshiCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    const Card *card = room->askForCard(effect.from, ".", "@jnmingshi-card:" + effect.to->objectName(), QVariant(), MethodNone);
+
+    SupplyShortage *shortage = new SupplyShortage(card->getSuit(), card->getNumber());
+    shortage->setSkillName("jnmingshi");
+    WrappedCard *wrapped_card = Sanguosha->getWrappedCard(card->getId());
+    wrapped_card->takeOver(shortage);
+    room->broadcastUpdateCard(room->getPlayers(), wrapped_card->getId(), wrapped_card);
+    room->moveCardTo(wrapped_card, effect.to, Player::PlaceDelayedTrick, true);
+    shortage->deleteLater();
+}
+
+void JnMingshiCard::slash(Room *room, ServerPlayer *from, ServerPlayer *to) const{
+    Slash *slash = new Slash(NoSuit, 0);
+    slash->setSkillName("_jnmingshi");
+    if (from->canSlash(to, slash, false))
+        room->useCard(CardUseStruct(slash, from, to));
+    else
+        delete slash;
+}
+
+class JnMingshiVS: public ZeroCardViewAsSkill {
+public:
+    JnMingshiVS(): ZeroCardViewAsSkill("jnmingshi") {
+        response_pattern = "@@jnmingshi";
+    }
+
+    virtual const Card *viewAs() const{
+        return new JnMingshiCard;
+    }
+};
+
+class JnMingshi: public PhaseChangeSkill {
+public:
+    JnMingshi(): PhaseChangeSkill("jnmingshi") {
+        view_as_skill = new JnMingshiVS;
+    }
+
+    virtual bool triggerable(const ServerPlayer *player) const{
+        return PhaseChangeSkill::triggerable(player)
+            && !player->isKongcheng()
+            && player->getPhase() == Player::Play;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        return room->askForUseCard(player, "@@jnmingshi", "@jnmingshi");
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        room->detachSkillFromPlayer(player, objectName(), true);
+        return false;
+    }
+};
+
 class JianniangScenarioRule: public ScenarioRule {
 public:
     JianniangScenarioRule(Scenario *scenario)
@@ -645,6 +753,12 @@ public:
                     room->sendCompulsoryTriggerLog(ruifeng, "jnqiwang");
                     room->acquireSkill(ruifeng, "ikqingnang");
                     room->acquireSkill(ruifeng, "jnlinbing");
+                }
+
+                ServerPlayer *jiahe = room->findPlayer(JIAHE);
+                if (jiahe) {
+                    room->acquireSkill(jiahe, "jnbizheng");
+                    room->acquireSkill(jiahe, "jnmingshi");
                 }
 
                 return false;
@@ -714,15 +828,19 @@ JianniangScenario::JianniangScenario()
            << new IkTanyan
            << new JnQiwang << new JnQiwangInvalidity
            << new JnLinbing
-           << new IkXiashan << new IkXiashanInvalidity;
+           << new IkXiashan << new IkXiashanInvalidity
+           << new JnBizheng
+           << new JnMingshi << new SlashNoDistanceLimitSkill("jnmingshi");
     related_skills.insert("jndaizhan", "#jndaizhan-prohibit");
     related_skills.insert("jndaizhan", "#jndaizhan-inv");
     related_skills.insert("jnchaonu", "#jnchaonu-tar");
     related_skills.insert("jnqiwang", "#jnqiwang-inv");
     related_skills.insert("ikxiashan", "#ikxiashan-inv");
+    related_skills.insert("jnmingshi", "#jnmingshi-slash-ndl");
 
     addMetaObject<IkTanyanCard>();
     addMetaObject<IkXiashanCard>();
+    addMetaObject<JnMingshiCard>();
 }
 
 void JianniangScenario::assign(QStringList &generals, QStringList &roles) const{

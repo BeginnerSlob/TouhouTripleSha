@@ -1343,21 +1343,26 @@ public:
         if (use.to.isEmpty())
             use.to << use.from;
         //----------- 1
-        foreach (ServerPlayer *to, use.to)
+        foreach (ServerPlayer *to, use.to) {
             if (to->isChained()) {
-                foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
+                foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
                     if (!use.to.contains(owner))
                         skill_list.insert(owner, QStringList(objectName()));
+                }
                 break;
             }
+        }
         //----------- 2
-        foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
-            if (use.to.contains(owner))
-                foreach (ServerPlayer *p, room->getAllPlayers())
+        foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
+            if (use.to.contains(owner)) {
+                foreach (ServerPlayer *p, room->getAllPlayers()) {
                     if (p->isChained() && !use.to.contains(p)) {
                         skill_list.insert(owner, QStringList(objectName()));
                         break;
                     }
+                }
+            }
+        }
         return skill_list;
     }
 
