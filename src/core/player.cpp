@@ -262,6 +262,9 @@ int Player::distanceTo(const Player *other, int distance_fix) const{
     if (distance < 1)
         distance = 1;
 
+    if (distance == 1 && other->hasSkill("jnjicha") && other->getHp() == 1 && getHp() != 1)
+        distance = 2;
+
     return distance;
 }
 

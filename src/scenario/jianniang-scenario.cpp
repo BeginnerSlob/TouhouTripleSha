@@ -804,6 +804,25 @@ public:
     }
 };
 
+class JnJicha: public TriggerSkill {
+public: // EightDiagram && distanceTo
+    JnJicha(): TriggerSkill("jnjicha") {
+        frequency = Compulsory;
+        events << HpChanged;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player) && player->getHp() == 1)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const{
+        room->broadcastSkillInvoke(objectName(), 2);
+        return false;
+    }
+};
+
 class JianniangScenarioRule: public ScenarioRule {
 public:
     JianniangScenarioRule(Scenario *scenario)
@@ -861,6 +880,10 @@ public:
                     room->acquireSkill(beishang, "jnyiwu");
                     room->acquireSkill(beishang, "jnzhonglei");
                 }
+
+                ServerPlayer *daofeng = room->findPlayer(DAOFENG);
+                if (daofeng)
+                    room->acquireSkill(daofeng, "jnjicha");
 
                 return false;
             }
@@ -934,7 +957,8 @@ JianniangScenario::JianniangScenario()
            << new JnMingshi << new SlashNoDistanceLimitSkill("jnmingshi")
            << new JnYiwu
            << new JnZhonglei
-           << new IkXunlv << new IkXunlvTargetMod;
+           << new IkXunlv << new IkXunlvTargetMod
+           << new JnJicha;
     related_skills.insert("jndaizhan", "#jndaizhan-prohibit");
     related_skills.insert("jndaizhan", "#jndaizhan-inv");
     related_skills.insert("jnchaonu", "#jnchaonu-tar");

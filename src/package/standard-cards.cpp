@@ -793,7 +793,15 @@ public:
         if (armor_id != -1)
             room->setCardFlag(armor_id, "-using");
 
-        if (judge.isGood()) {
+        bool good = judge.isGood();
+
+        if (player->hasSkill("jnjicha") && player->getHp() > 1) {
+            room->sendCompulsoryTriggerLog(player, "jnjicha");
+            room->broadcastSkillInvoke("jnjicha", 1);
+            good = true;
+        }
+
+        if (good) {
             Jink *jink = new Jink(Card::NoSuit, 0);
             jink->setSkillName(objectName());
             room->provide(jink);
