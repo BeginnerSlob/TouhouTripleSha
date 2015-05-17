@@ -949,6 +949,12 @@ public:
                 if (daofeng)
                     room->acquireSkill(daofeng, "jnjicha");
 
+                ServerPlayer *aidang = room->findPlayer(AIDANG);
+                if (aidang) {
+                    room->acquireSkill(aidang, "jnyuhe");
+                    room->acquireSkill(aidang, "jnyanwang");
+                }
+
                 return false;
             }
             break;
