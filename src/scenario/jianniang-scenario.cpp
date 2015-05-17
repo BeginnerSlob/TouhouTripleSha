@@ -823,6 +823,70 @@ public: // EightDiagram && distanceTo
     }
 };
 
+class JnYuhe: public TriggerSkill {
+public:
+    JnYuhe(): TriggerSkill("jnyuhe") {
+        events << EventPhaseStart << PreCardUsed;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player)
+            && triggerEvent == EventPhaseStart && player->getPhase() == Player::Play && player->canDiscard(player, "h"))
+            return QStringList(objectName());
+        else if (triggerEvent == PreCardUsed && player->hasFlag("JnYuheUsed")) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->getSkillName() == "iklingcha")
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (triggerEvent == EventPhaseStart)
+            return room->askForCard(player, ".", "@jnyuhe", QVariant(), objectName());
+        else {
+            ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "@jnyuhe-draw", true, true);
+            if (target)
+                target->drawCards(1, objectName());
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        room->setPlayerFlag(player, "JnYuheUsed");
+        return false;
+    }
+};
+
+class JnYanwang: public TriggerSkill {
+public:
+    JnYanwang(): TriggerSkill("jnyanwang") {
+        events << CardFinished;
+        frequency = Wake;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->getSkillName() == "iklingcha") {
+                if (room->alivePlayerCount() < player->getHp())
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->broadcastSkillInvoke(objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
+
+        room->loseHp(player);
+        room->addPlayerMark(player, objectName());
+        room->detachSkillFromPlayer(player, objectName(), true);
+        return false;
+    }
+};
+
 class JianniangScenarioRule: public ScenarioRule {
 public:
     JianniangScenarioRule(Scenario *scenario)
@@ -958,7 +1022,9 @@ JianniangScenario::JianniangScenario()
            << new JnYiwu
            << new JnZhonglei
            << new IkXunlv << new IkXunlvTargetMod
-           << new JnJicha;
+           << new JnJicha
+           << new JnYuhe
+           << new JnYanwang;
     related_skills.insert("jndaizhan", "#jndaizhan-prohibit");
     related_skills.insert("jndaizhan", "#jndaizhan-inv");
     related_skills.insert("jnchaonu", "#jnchaonu-tar");
