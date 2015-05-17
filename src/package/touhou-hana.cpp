@@ -952,8 +952,10 @@ bool ThMimengCard::targetFixed() const {
         if (!user_string.isEmpty()) {
             const Card *oc = Sanguosha->getCard(subcards.first());
             card = Sanguosha->cloneCard(user_string.split("+").first(), oc->getSuit(), oc->getNumber());
+            card->addSubcard(oc);
+            return card && card->targetFixed();
         }
-        return card && card->targetFixed();
+        return false;
     } else if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
         return true;
     }
@@ -972,8 +974,10 @@ bool ThMimengCard::targetFilter(const QList<const Player *> &targets, const Play
         if (!user_string.isEmpty()) {
             const Card *oc = Sanguosha->getCard(subcards.first());
             card = Sanguosha->cloneCard(user_string.split("+").first(), oc->getSuit(), oc->getNumber());
+            card->addSubcard(oc);
+            return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
         }
-        return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
+        return false;
     } else if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
         return false;
     }
@@ -992,8 +996,10 @@ bool ThMimengCard::targetsFeasible(const QList<const Player *> &targets, const P
         if (!user_string.isEmpty()) {
             const Card *oc = Sanguosha->getCard(subcards.first());
             card = Sanguosha->cloneCard(user_string.split("+").first(), oc->getSuit(), oc->getNumber());
+            card->addSubcard(oc);
+            return card && card->targetsFeasible(targets, Self);
         }
-        return card && card->targetsFeasible(targets, Self);
+        return false;
     } else if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
         return true;
     }
