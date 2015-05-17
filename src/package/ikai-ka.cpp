@@ -1627,6 +1627,8 @@ void IkLingchaDialog::popup() {
 
     QStringList card_names;
     card_names << "slash" << "ex_nihilo";
+    if (Self->getMark("jnyanwang") > 0)
+        card_names << "dismantlement";
 
     foreach (QString card, card_names) {
         QCommandLinkButton *button = new QCommandLinkButton;
@@ -1732,7 +1734,7 @@ const Card *IkLingchaCard::validate(CardUseStruct &use) const{
     Card *use_card = Sanguosha->cloneCard(user_string);
     use_card->setSkillName("iklingcha");
     use_card->addSubcards(subcards);
-    use.from->getRoom()->setPlayerFlag(use.from, "IkLingchaUsed");
+    use.from->getRoom()->addPlayerMark(use.from, "iklingcha_count");
     return use_card;
 }
 
@@ -1740,13 +1742,13 @@ const Card *IkLingchaCard::validateInResponse(ServerPlayer *player) const{
     Card *use_card = Sanguosha->cloneCard(user_string);
     use_card->setSkillName("iklingcha");
     use_card->addSubcards(subcards);
-    player->getRoom()->setPlayerFlag(player, "IkLingchaUsed");
+    player->getRoom()->addPlayerMark(player, "iklingcha_count");
     return use_card;
 }
 
-class IkLingcha: public ViewAsSkill {
+class IkLingchaVS: public ViewAsSkill {
 public:
-    IkLingcha(): ViewAsSkill("iklingcha") {
+    IkLingchaVS(): ViewAsSkill("iklingcha") {
         response_or_use = true;
     }
 
@@ -1755,19 +1757,21 @@ public:
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const {
-        if (player->getPhase() != Player::Play || player->hasUsed("IkLingchaUsed"))
+        if (player->getPhase() != Player::Play || player->getMark("iklingcha_count") >= getUseTimes(player))
             return false;
         return pattern == "slash";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const {
-        if (player->getPhase() != Player::Play || player->hasUsed("IkLingchaUsed"))
+        if (player->getPhase() != Player::Play || player->getMark("iklingcha_count") >= getUseTimes(player))
             return false;
         Slash *slash = new Slash(Card::NoSuit, 0);
         slash->deleteLater();
         ExNihilo *ex_nihilo = new ExNihilo(Card::NoSuit, 0);
         ex_nihilo->deleteLater();
-        return slash->isAvailable(player) || ex_nihilo->isAvailable(player);
+        Dismantlement *chai = new Dismantlement(Card::NoSuit, 0);
+        chai->deleteLater();
+        return slash->isAvailable(player) || ex_nihilo->isAvailable(player) || (player->getMark("jnyanwang") > 0 && chai->isAvailable(player));
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const {
@@ -1807,6 +1811,23 @@ public:
         if (step == -2)
             return step;
         return qrand() % 2 + 1 + step;
+    }
+
+    int getUseTimes(const Player *player) const{
+        return player->getMark("jnyanwang") > 0 ? 2 : 1;
+    }
+};
+
+class IkLingcha: public TriggerSkill {
+public:
+    IkLingcha(): TriggerSkill("iklingcha") {
+        events << EventPhaseChanging;
+        view_as_skill = new IkLingchaVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
+        room->setPlayerMark(player, "iklingcha_count", 0);
+        return QStringList();
     }
 };
 
