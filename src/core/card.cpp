@@ -566,11 +566,15 @@ Card *Card::Clone(const Card *card) {
 }
 
 bool Card::targetFixed() const{
+    // for JnXianmao ======
+    if (Self && Self->hasFlag("JnXianmaoUsed"))
+        return false;
+    // ====================
     return target_fixed;
 }
 
 bool Card::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
-    if (target_fixed)
+    if (targetFixed())
         return true;
     else
         return !targets.isEmpty();
@@ -582,6 +586,13 @@ bool Card::targetFilter(const QList<const Player *> &targets, const Player *to_s
 
 bool Card::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self,
                         int &maxVotes) const{
+    // for JnXianmao ======
+    if (Self->hasFlag("JnXianmaoUsed")) {
+        bool canSelect = targets.isEmpty() && to_select->hasFlag("JnXianmaoTarget");
+        maxVotes = canSelect ? 1 : 0;
+        return canSelect;
+    }
+    // ====================
     bool canSelect = targetFilter(targets, to_select, Self);
     maxVotes = canSelect ? 1 : 0;
     return canSelect;

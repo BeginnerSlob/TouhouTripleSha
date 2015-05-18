@@ -353,8 +353,10 @@ void Room::killPlayer(ServerPlayer *victim, DamageStruct *reason) {
 
     doBroadcastNotify(S_COMMAND_KILL_PLAYER, toJsonString(victim->objectName()));
 
-    if (thread->trigger(GameOverJudge, this, victim, data))
-        return;
+    if (thread->trigger(GameOverJudge, this, victim, data)) {
+        if (victim->isAlive())
+            return;
+    }
 
     if (getMode() != "04_1v3") {
         foreach (ServerPlayer *p, players_with_victim) {

@@ -79,12 +79,25 @@ void GameRule::onPhaseProceed(ServerPlayer *player) const{
         }
     case Player::Play: {
             while (player->isAlive()) {
-                CardUseStruct card_use;
-                room->activate(player, card_use);
-                if (card_use.card != NULL)
-                    room->useCard(card_use, true);
-                else
-                    break;
+                // for JnXianmao
+                if (!player->hasFlag("JnXianmaoUsed")) {
+                    CardUseStruct card_use;
+                    room->activate(player, card_use);
+                    if (card_use.card != NULL)
+                        room->useCard(card_use, true);
+                    else
+                        break;
+                } else {
+                    Sanguosha->currentRoomState()->setCurrentCardUseReason(CardUseStruct::CARD_USE_REASON_PLAY); // for slash
+                    QString pattern = "^Jink+^Nullification";
+                    if (!Slash::IsAvailable(player))
+                        pattern.append("+^Slash");
+                    if (!Analeptic::IsAvailable(player))
+                        pattern.append("+^Analeptic");
+                    pattern.append("|.|.|hand");
+                    if (!room->askForUseCard(player, pattern, "@jnxianmao"))
+                        break;
+                }
             }
             break;
         }
