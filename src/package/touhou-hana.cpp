@@ -948,11 +948,12 @@ ThMimengCard::ThMimengCard() {
 
 bool ThMimengCard::targetFixed() const {
     if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
-        const Card *card = NULL;
+        Card *card = NULL;
         if (!user_string.isEmpty()) {
             const Card *oc = Sanguosha->getCard(subcards.first());
             card = Sanguosha->cloneCard(user_string.split("+").first(), oc->getSuit(), oc->getNumber());
             card->addSubcard(oc);
+            card->deleteLater();
             return card && card->targetFixed();
         }
         return false;
@@ -970,11 +971,12 @@ bool ThMimengCard::targetFixed() const {
 
 bool ThMimengCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const {
     if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
-        const Card *card = NULL;
+        Card *card = NULL;
         if (!user_string.isEmpty()) {
             const Card *oc = Sanguosha->getCard(subcards.first());
             card = Sanguosha->cloneCard(user_string.split("+").first(), oc->getSuit(), oc->getNumber());
             card->addSubcard(oc);
+            card->deleteLater();
             return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
         }
         return false;
@@ -992,11 +994,12 @@ bool ThMimengCard::targetFilter(const QList<const Player *> &targets, const Play
 
 bool ThMimengCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
     if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
-        const Card *card = NULL;
+        Card *card = NULL;
         if (!user_string.isEmpty()) {
             const Card *oc = Sanguosha->getCard(subcards.first());
             card = Sanguosha->cloneCard(user_string.split("+").first(), oc->getSuit(), oc->getNumber());
             card->addSubcard(oc);
+            card->deleteLater();
             return card && card->targetsFeasible(targets, Self);
         }
         return false;

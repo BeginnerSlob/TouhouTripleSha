@@ -74,7 +74,7 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const{
         if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -82,7 +82,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const{
         player->gainAnExtraTurn();
         room->removePlayerCardLimitation(player, "use", "Slash$0");
         room->setPlayerFlag(player, "jnchaonu_flag");
@@ -887,6 +887,139 @@ public:
     }
 };
 
+class JnXianmao: public TriggerSkill {
+public:
+    JnXianmao(): TriggerSkill("jnxianmao") {
+        events << EventPhaseStart << DamageDone;
+        frequency = Limited;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
+        if (triggerEvent == DamageDone) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.from && damage.from == room->getCurrent() && damage.from->getPhase() != Player::NotActive)
+                player->setMark(objectName(), 1);
+        } else {
+            if (player->getPhase() == Player::RoundStart) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    p->setMark(objectName(), 0);
+            } else if (player->getPhase() == Player::Finish) {
+                if (player->hasFlag("JnXianmaoUsed"))
+                    return QStringList(objectName());
+            } else if (player->getPhase() == Player::NotActive) {
+                ServerPlayer *misheng = room->findPlayerBySkillName(objectName());
+                if (TriggerSkill::triggerable(misheng) && misheng->getMark(objectName()) > 0) {
+                    ask_who = misheng;
+                    return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        if (player->getPhase() == Player::Finish) {
+            room->sendCompulsoryTriggerLog(player, objectName());
+            return true;
+        } else if (ask_who->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        if (player->getPhase() == Player::Finish) {
+            player->turnOver();
+            foreach (ServerPlayer *p, room->getAlivePlayers())
+                room->setPlayerFlag(p, "-JnXianmaoTarget");
+        } else {
+            room->detachSkillFromPlayer(ask_who, objectName(), true);
+            room->setPlayerFlag(ask_who, "JnXianmaoUsed");
+            room->setPlayerFlag(player, "JnXianmaoTarget");
+            ask_who->gainAnExtraTurn();
+        }
+        return false;
+    }
+};
+
+class JnXianmaoProhibit: public ProhibitSkill {
+public:
+    JnXianmaoProhibit(): ProhibitSkill("#jnxianmao-prohibit") {
+    }
+
+    virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &) const{
+        return card->getTypeId() != Card::TypeSkill && from->hasFlag("JnXianmaoUsed") && !to->hasFlag("JnXianmaoTarget");
+    }
+};
+
+class JnChunyu: public TriggerSkill {
+public:
+    JnChunyu(): TriggerSkill("jnchunyu") {
+        events << Death;
+        frequency = Limited;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *caopi, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(caopi)) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (caopi != death.who && !death.who->isAllNude())
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *caopi, QVariant &, ServerPlayer *) const{
+        if (caopi->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *caopi, QVariant &data, ServerPlayer *) const{
+        room->detachSkillFromPlayer(caopi, objectName(), true);
+        DeathStruct death = data.value<DeathStruct>();
+        DummyCard *dummy = new DummyCard(death.who->handCards());
+        QList<const Card *> equips = death.who->getEquips();
+        dummy->addSubcards(equips);
+        foreach (const Card *cd, death.who->getJudgingArea())
+            dummy->addSubcard(cd);
+
+        if (dummy->subcardsLength() > 0)
+            room->obtainCard(caopi, dummy, false);
+
+        delete dummy;
+
+        room->acquireSkill(caopi, "thjizhi");
+
+        return false;
+    }
+};
+
+class JnSongyi: public PhaseChangeSkill {
+public:
+    JnSongyi(): PhaseChangeSkill("jnsongyi") {
+        frequency = Wake;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+            && target->getPhase() == Player::Start
+            && target->getHp() == 1;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        room->broadcastSkillInvoke(objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
+
+        room->acquireSkill(player, "ikchilian");
+        room->detachSkillFromPlayer(player, objectName(), true);
+        return false;
+    }
+};
+
 class JianniangScenarioRule: public ScenarioRule {
 public:
     JianniangScenarioRule(Scenario *scenario)
@@ -953,6 +1086,13 @@ public:
                 if (aidang) {
                     room->acquireSkill(aidang, "jnyuhe");
                     room->acquireSkill(aidang, "jnyanwang");
+                }
+
+                ServerPlayer *misheng = room->findPlayer(MISHENG);
+                if (misheng) {
+                    room->acquireSkill(misheng, "jnxianmao");
+                    room->acquireSkill(misheng, "jnchunyu");
+                    room->acquireSkill(misheng, "jnsongyi");
                 }
 
                 return false;
@@ -1030,7 +1170,10 @@ JianniangScenario::JianniangScenario()
            << new IkXunlv << new IkXunlvTargetMod
            << new JnJicha
            << new JnYuhe
-           << new JnYanwang;
+           << new JnYanwang
+           << new JnXianmao << new JnXianmaoProhibit
+           << new JnChunyu
+           << new JnSongyi;
     related_skills.insert("jndaizhan", "#jndaizhan-prohibit");
     related_skills.insert("jndaizhan", "#jndaizhan-inv");
     related_skills.insert("jnchaonu", "#jnchaonu-tar");
@@ -1038,6 +1181,7 @@ JianniangScenario::JianniangScenario()
     related_skills.insert("ikxiashan", "#ikxiashan-inv");
     related_skills.insert("jnmingshi", "#jnmingshi-slash-ndl");
     related_skills.insert("ikxunlv", "#ikxunlv-target");
+    related_skills.insert("jnxianmao", "#jnxianmao-prohibit");
 
     addMetaObject<IkTanyanCard>();
     addMetaObject<IkXiashanCard>();

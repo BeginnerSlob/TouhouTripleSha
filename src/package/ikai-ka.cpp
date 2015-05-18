@@ -4816,6 +4816,7 @@ IkaiKaPackage::IkaiKaPackage()
     snow052->addSkill(new IkHuanlueTrigger);
     related_skills.insertMulti("ikhualue", "#ikhualue");
     snow052->addSkill(new IkMuguang);
+    snow052->addRelateSkill("thjizhi");
     snow052->addRelateSkill("ikchilian");
 
     General *luna030 = new General(this, "luna030", "tsuki");
