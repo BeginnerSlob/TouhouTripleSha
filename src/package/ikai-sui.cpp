@@ -5703,8 +5703,9 @@ public:
             }
         } else if (triggerEvent == CardsMoveOneTime) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (player->getMark("IkCangliuInvoke") > 0 && ((move.from == player && move.from_places.contains(Player::PlaceHand))
-                                                           || (move.to == player && move.to_place == Player::PlaceHand)))
+            if (player->getMark("IkCangliuInvoke") > 0
+                && ((move.to == player && move.to_place == Player::PlaceHand)
+                    || (move.from == player && move.from_places.contains(Player::PlaceHand) && player->getMark("jnlinglie") == 0)))
                 room->setPlayerMark(player, "IkCangliuInvoke", 0);
         } else if (triggerEvent == Death) {
             if (player->getMark("IkCangliuInvoke") > 0)

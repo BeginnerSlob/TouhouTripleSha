@@ -796,8 +796,8 @@ public:
     IkXunlvTargetMod(): TargetModSkill("#ikxunlv-target") {
     }
 
-    virtual int getResidueNum(const Player *, const Card *card) const{
-        if (card->getSkillName() == "ikxunlv" || card->hasFlag("Global_SlashAvailabilityChecker"))
+    virtual int getResidueNum(const Player *from, const Card *card) const{
+        if (card->getSkillName() == "ikxunlv" || (from->hasSkill("ikxunlv") && card->hasFlag("Global_SlashAvailabilityChecker")))
             return 1000;
         else
             return 0;
@@ -1020,6 +1020,65 @@ public:
     }
 };
 
+class JnTaozui: public DrawCardsSkill {
+public:
+    JnTaozui(): DrawCardsSkill("jntaozui") {
+        frequency = Compulsory;
+    }
+
+    virtual int getDrawNum(ServerPlayer *player, int n) const{
+        Room *room = player->getRoom();
+        room->broadcastSkillInvoke(objectName(), qrand() % 2 + 2);
+        room->sendCompulsoryTriggerLog(player, objectName());
+        return n + 2;
+    }
+};
+
+class JnTaozuiEffect: public PhaseChangeSkill {
+public:
+    JnTaozuiEffect(): PhaseChangeSkill("#jntaozui-effect") {
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target && target->isAlive() && target->hasSkill("jntaozui")
+            && target->getPhase() == Player::Play;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        player->getRoom()->broadcastSkillInvoke("jntaozui", 1);
+        return false;
+    }
+};
+
+class JnLinglie: public PhaseChangeSkill {
+public:
+    JnLinglie(): PhaseChangeSkill("jnlinglie") {
+        frequency = Wake;
+    }
+
+    virtual bool triggerable(const ServerPlayer *player) const{
+        return PhaseChangeSkill::triggerable(player)
+            && player->getPhase() == Player::Start
+            && player->getHp() <= 3;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+        room->loseMaxHp(player, 3);
+        if (player->isWounded() && player->getHp() < 3)
+            room->recover(player, RecoverStruct(player, NULL, 3 - player->getHp()));
+        room->removePlayerCardLimitation(player, "use,response", "BasicCard+^Slash$0");
+        room->detachSkillFromPlayer(player, "jntaozui", true);
+        room->detachSkillFromPlayer(player, "jnlinglie", true);
+        room->addPlayerMark(player, "jnlinglie");
+        return false;
+    }
+};
+
 class JianniangScenarioRule: public ScenarioRule {
 public:
     JianniangScenarioRule(Scenario *scenario)
@@ -1093,6 +1152,23 @@ public:
                     room->acquireSkill(misheng, "jnxianmao");
                     room->acquireSkill(misheng, "jnchunyu");
                     room->acquireSkill(misheng, "jnsongyi");
+                }
+
+                ServerPlayer *chicheng = room->findPlayer(CHICHENG);
+                if (chicheng) {
+                    room->setPlayerCardLimitation(chicheng, "use,response", "BasicCard+^Slash", false);
+                    room->acquireSkill(chicheng, "jntaozui");
+                    room->sendCompulsoryTriggerLog(chicheng, "jntaozui");
+                    LogMessage log;
+                    log.type = "#GainMaxHp";
+                    log.from = chicheng;
+                    log.arg = "2";
+                    room->sendLog(log);
+
+                    room->setPlayerProperty(chicheng, "maxhp", chicheng->getMaxHp() + 2);
+                    room->recover(chicheng, RecoverStruct(chicheng, NULL, 2));
+
+                    room->acquireSkill(chicheng, "jnlinglie");
                 }
 
                 return false;
@@ -1173,7 +1249,9 @@ JianniangScenario::JianniangScenario()
            << new JnYanwang
            << new JnXianmao << new JnXianmaoProhibit
            << new JnChunyu
-           << new JnSongyi;
+           << new JnSongyi
+           << new JnTaozui << new JnTaozuiEffect
+           << new JnLinglie;
     related_skills.insert("jndaizhan", "#jndaizhan-prohibit");
     related_skills.insert("jndaizhan", "#jndaizhan-inv");
     related_skills.insert("jnchaonu", "#jnchaonu-tar");
@@ -1182,6 +1260,7 @@ JianniangScenario::JianniangScenario()
     related_skills.insert("jnmingshi", "#jnmingshi-slash-ndl");
     related_skills.insert("ikxunlv", "#ikxunlv-target");
     related_skills.insert("jnxianmao", "#jnxianmao-prohibit");
+    related_skills.insert("jntaozui", "#jntaozui-effect");
 
     addMetaObject<IkTanyanCard>();
     addMetaObject<IkXiashanCard>();
@@ -1199,11 +1278,12 @@ void JianniangScenario::assign(QStringList &generals, QStringList &roles) const{
              << DAOFENG
              << AIDANG
              << MISHENG
-             << CHICHENG
+             //<< CHICHENG
              << SHU
              << YISHIJIU;
     qShuffle(generals);
-    generals.mid(0, 8);
+    generals.mid(0, 7);
+    generals.prepend(CHICHENG);
 
     // roles
     for (int i = 0; i < 8; i++)
