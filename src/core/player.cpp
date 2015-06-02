@@ -74,7 +74,7 @@ int Player::getLostHp() const{
 bool Player::isWounded() const
 {
     foreach (const Player *p, getAliveSiblings()) {
-        if (p->getPhase() != NotActive && p->hasSkill("guiming") && p->getHp() <= 2 && getKingdom() == "kaze")
+        if (p->getPhase() != NotActive && p->hasSkill("ikguiming") && p->getHp() <= 2 && getKingdom() == "kaze")
             return true;
     }
 
