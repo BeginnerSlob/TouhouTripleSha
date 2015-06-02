@@ -4,6 +4,7 @@
 #include "engine.h"
 #include "standard.h"
 #include "maneuvering.h"
+#include "client.h"
 
 #define DAHE "luna019"
 #define ZHENMING "snow039"
@@ -1079,6 +1080,176 @@ public:
     }
 };
 
+class JnDongao: public TriggerSkill {
+public:
+    JnDongao(): TriggerSkill("jndongao") {
+        events << DamageInflicted;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player) && player->canDiscard(player, "he")) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.damage > 1)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (room->askForCard(player, "..", "@jndongao", data, objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        damage.damage = 1;
+        data = QVariant::fromValue(damage);
+        return false;
+    }
+};
+
+JnChunsuCard::JnChunsuCard() {
+    will_throw = false;
+    handling_method = MethodNone;
+}
+
+void JnChunsuCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "jnchunsu", QString());
+    room->obtainCard(effect.to, this, reason, false);
+    if (effect.to->getKingdom() != "kaze")
+        room->setPlayerProperty(effect.to, "kingdom", "kaze");
+    room->setPlayerFlag(effect.from, "jnchunshu_" + effect.to->objectName());
+    room->detachSkillFromPlayer(effect.from, "jnchunsu", true);
+}
+
+class JnChunsuVS: public ViewAsSkill {
+public:
+    JnChunsuVS(): ViewAsSkill("jnchunsu") {
+        response_pattern = "@@jnchunsu";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        return selected.length() < Self->getHp() && !to_select->isEquipped();
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.length() != Self->getHp())
+            return NULL;
+
+        JnChunsuCard *card = new JnChunsuCard;
+        card->addSubcards(cards);
+        return card;
+    }
+};
+
+class JnChunsu: public TriggerSkill {
+public:
+    JnChunsu(): TriggerSkill("jnchunsu") {
+        events << EventPhaseStart;
+        frequency = Limited;
+        view_as_skill = new JnChunsuVS;
+    }
+
+    virtual bool triggerable(const ServerPlayer *player) const{
+        return TriggerSkill::triggerable(player)
+            && player->getPhase() == Player::Start
+            && player->getHandcardNum() >= player->getHp();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        return room->askForUseCard(player, "@@jnchunsu", "@jnchunsu", -1, Card::MethodNone);
+    }
+};
+
+class JnChunsuTrigger: public TriggerSkill {
+public:
+    JnChunsuTrigger(): TriggerSkill("#jnchunsu") {
+        events << DamageCaused;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.to && player->hasFlag("jnchunsu_" + damage.to->objectName()))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, "jnchunsu");
+        room->broadcastSkillInvoke("jnchunsu");
+        return true;
+    }
+};
+
+class JnXiamu: public TriggerSkill {
+public:
+    JnXiamu(): TriggerSkill("jnxiamu") {
+        events << Dying;
+        frequency = Limited;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (TriggerSkill::triggerable(player)) {
+            DyingStruct dying = data.value<DyingStruct>();
+            if (dying.who == player && player->getHp() < 1)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        room->recover(player, RecoverStruct(player, NULL, 2));
+        player->drawCards(qMin(room->alivePlayerCount(), 4), objectName());
+        room->detachSkillFromPlayer(player, objectName(), true);
+        return false;
+    }
+};
+
+class JnQiuling: public TriggerSkill {
+public:
+    JnQiuling(): TriggerSkill("jnqiuling") {
+        events << Death;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player && player->isDead() && player->hasSkill(objectName())) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (player == death.who)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, objectName());
+        ServerPlayer *killer = NULL;
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.damage)
+            killer = death.damage->from;
+        if (killer && killer->isAlive() && killer->canDiscard(killer, "h"))
+            room->askForDiscard(killer, objectName(), 1, 1);
+        QList<ServerPlayer *> players = room->getAllPlayers();
+        if (killer && players.contains(killer))
+            players.removeOne(killer);
+        room->drawCards(players, 1, objectName());
+        return false;
+    }
+};
+
 class JianniangScenarioRule: public ScenarioRule {
 public:
     JianniangScenarioRule(Scenario *scenario)
@@ -1171,6 +1342,14 @@ public:
                     room->acquireSkill(chicheng, "jnlinglie");
                 }
 
+                ServerPlayer *shu = room->findPlayer(SHU);
+                if (shu) {
+                    room->acquireSkill(shu, "jndongao");
+                    room->acquireSkill(shu, "jnchunsu");
+                    room->acquireSkill(shu, "jnxiamu");
+                    room->acquireSkill(shu, "jnqiuling");
+                }
+
                 return false;
             }
             break;
@@ -1251,7 +1430,11 @@ JianniangScenario::JianniangScenario()
            << new JnChunyu
            << new JnSongyi
            << new JnTaozui << new JnTaozuiEffect
-           << new JnLinglie;
+           << new JnLinglie
+           << new JnDongao
+           << new JnChunsu << new JnChunsuTrigger
+           << new JnXiamu
+           << new JnQiuling;
     related_skills.insert("jndaizhan", "#jndaizhan-prohibit");
     related_skills.insert("jndaizhan", "#jndaizhan-inv");
     related_skills.insert("jnchaonu", "#jnchaonu-tar");
@@ -1261,10 +1444,12 @@ JianniangScenario::JianniangScenario()
     related_skills.insert("ikxunlv", "#ikxunlv-target");
     related_skills.insert("jnxianmao", "#jnxianmao-prohibit");
     related_skills.insert("jntaozui", "#jntaozui-effect");
+    related_skills.insert("jnchunsu", "#jnchunsu");
 
     addMetaObject<IkTanyanCard>();
     addMetaObject<IkXiashanCard>();
     addMetaObject<JnMingshiCard>();
+    addMetaObject<JnChunsuCard>();
 }
 
 void JianniangScenario::assign(QStringList &generals, QStringList &roles) const{
@@ -1278,12 +1463,11 @@ void JianniangScenario::assign(QStringList &generals, QStringList &roles) const{
              << DAOFENG
              << AIDANG
              << MISHENG
-             //<< CHICHENG
+             << CHICHENG
              << SHU
              << YISHIJIU;
     qShuffle(generals);
-    generals.mid(0, 7);
-    generals.prepend(CHICHENG);
+    generals.mid(0, 8);
 
     // roles
     for (int i = 0; i < 8; i++)

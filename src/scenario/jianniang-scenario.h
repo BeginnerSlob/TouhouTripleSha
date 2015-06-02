@@ -44,6 +44,14 @@ public:
     void slash(Room *room, ServerPlayer *from, ServerPlayer *to) const;
 };
 
+class JnChunsuCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE JnChunsuCard();
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class JianniangScenario: public Scenario {
     Q_OBJECT
 
