@@ -1808,7 +1808,7 @@
     <message>
         <location filename="../../src/dialog/mainwindow.ui" line="252"/>
         <source>Scenario overview</source>
-        <translation>剧情一览</translation>
+        <translation>模式一览</translation>
     </message>
     <message>
         <location filename="../../src/dialog/mainwindow.ui" line="260"/>
@@ -2696,34 +2696,34 @@
         <translation>&lt;font color=#EEB422&gt;玩家 &lt;b&gt;%1&lt;/b&gt; 加入了游戏&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/server/room.cpp" line="2906"/>
+        <location filename="../../src/server/room.cpp" line="2913"/>
         <source>Unable to parse player</source>
         <translation>不可分析的玩家</translation>
     </message>
     <message>
-        <location filename="../../src/server/room.cpp" line="2908"/>
+        <location filename="../../src/server/room.cpp" line="2915"/>
         <source>Server is not waiting for reply from %1</source>
         <translation>服务器无法获取 %1 的响应</translation>
     </message>
     <message>
-        <location filename="../../src/server/room.cpp" line="2910"/>
+        <location filename="../../src/server/room.cpp" line="2917"/>
         <source>Reply command should be %1 instead of %2</source>
         <translation>应答指令应为 %1 而不是 %2</translation>
     </message>
     <message>
-        <location filename="../../src/server/room.cpp" line="2913"/>
+        <location filename="../../src/server/room.cpp" line="2920"/>
         <source>Reply serial should be %1 instead of %2</source>
         <translation>玩家序号应为 %1 而不是 %2</translation>
     </message>
     <message>
-        <location filename="../../src/server/room.cpp" line="4271"/>
+        <location filename="../../src/server/room.cpp" line="4278"/>
         <source>Card cannot be parsed:
  %1</source>
         <translation>卡牌字符串无法解析:
 %1</translation>
     </message>
     <message>
-        <location filename="../../src/server/room.cpp" line="5630"/>
+        <location filename="../../src/server/room.cpp" line="5637"/>
         <source>&lt;font color=#EEB422&gt;The network delay of player &lt;b&gt;%1&lt;/b&gt; is %2 milliseconds.&lt;/font&gt;</source>
         <translation>&lt;font color=#EEB422&gt;玩家 &lt;b&gt;%1&lt;/b&gt; 的网络延迟为 %2 毫秒&lt;/font&gt;</translation>
     </message>
@@ -3170,7 +3170,7 @@
     <message>
         <location filename="../../src/dialog/scenario-overview.cpp" line="14"/>
         <source>Scenario overview</source>
-        <translation>剧情一览</translation>
+        <translation>模式一览</translation>
     </message>
 </context>
 <context>
