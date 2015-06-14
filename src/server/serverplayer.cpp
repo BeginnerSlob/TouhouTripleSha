@@ -1010,6 +1010,7 @@ void ServerPlayer::marshal(ServerPlayer *player) const{
         room->notifyProperty(player, this, "chained");
 
     room->notifyProperty(player, this, "gender");
+    room->notifyProperty(player, this, "removed");
 
     QList<ServerPlayer*> players;
     players << player;
