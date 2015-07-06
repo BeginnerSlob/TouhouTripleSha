@@ -386,17 +386,29 @@ public:
 class ThZuibu: public TriggerSkill {
 public:
     ThZuibu(): TriggerSkill("thzuibu") {
-        events << DamageInflicted;
+        events << DamageInflicted << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
-        if (!TriggerSkill::triggerable(player))
-            return QStringList();
-        DamageStruct damage = data.value<DamageStruct>();
-        if (!damage.from || damage.from->isDead())
-            return QStringList();
-        ask_who = damage.from;
-        return QStringList(objectName());
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAllPlayers())
+                    p->setMark(objectName(), 0);
+            }
+        } else if (triggerEvent == DamageInflicted) {
+            if (TriggerSkill::triggerable(player) && player->getMark(objectName()) < 3) {
+                ServerPlayer *current = room->getCurrent();
+                if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
+                    DamageStruct damage = data.value<DamageStruct>();
+                    if (!damage.from || damage.from->isDead())
+                        return QStringList();
+                    ask_who = damage.from;
+                    return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
@@ -414,6 +426,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+        player->addMark(objectName());
         player->drawCards(1, objectName());
         DamageStruct damage = data.value<DamageStruct>();
         LogMessage log;

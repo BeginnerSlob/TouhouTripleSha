@@ -485,7 +485,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (triggerEvent == DrawNCards && TriggerSkill::triggerable(player)) {
+        if (triggerEvent == DrawNCards && TriggerSkill::triggerable(player) && player->hasSkill("thxushi")) {
             if (data.toInt() > 0)
                 return QStringList(objectName());
         } else if (triggerEvent == EventPhaseChanging) {
