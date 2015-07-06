@@ -2100,13 +2100,14 @@ void ThLingdieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
     if (!victims.isEmpty())
         victim = room->askForPlayerChosen(target, victims, "thlingdie", "@thlingdie", true);
     if (victim) {
-        room->showAllCards(victim, target);
         LogMessage log;
         log.type = "$IkLingtongView";
         log.from = target;
         log.to << victim;
         log.arg = "iklingtong:handcards";
         room->sendLog(log, room->getOtherPlayers(target));
+
+        room->showAllCards(victim, target);
     } else
         target->drawCards(1, "thlingdie");
 }

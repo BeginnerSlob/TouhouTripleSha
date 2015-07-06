@@ -404,9 +404,16 @@ public:
                 targets << p;
         if (!targets.isEmpty())
             target = room->askForPlayerChosen(liaohua, targets, objectName(), "@ikmeiying", true, true);
-        if (target)
+        if (target) {
+            LogMessage log;
+            log.type = "$IkLingtongView";
+            log.from = liaohua;
+            log.to << target;
+            log.arg = "iklingtong:handcards";
+            room->sendLog(log, room->getOtherPlayers(liaohua));
+
             room->showAllCards(target, liaohua);
-        else {
+        } else {
             liaohua->setPhase(Player::Play);
             room->broadcastProperty(liaohua, "phase");
             RoomThread *thread = room->getThread();
