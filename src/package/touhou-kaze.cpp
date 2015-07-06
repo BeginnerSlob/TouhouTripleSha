@@ -2171,6 +2171,14 @@ void ThXinhuaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
         }
         if (!victims.isEmpty()) {
             ServerPlayer *victim = room->askForPlayerChosen(source, victims, "thxinhua");
+
+            LogMessage log;
+            log.type = "$IkLingtongView";
+            log.from = target;
+            log.to << victim;
+            log.arg = "iklingtong:handcards";
+            room->sendLog(log, room->getOtherPlayers(target));
+
             room->showAllCards(victim, target);
         }
         QList<ServerPlayer *> lords;

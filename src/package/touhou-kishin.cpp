@@ -386,9 +386,16 @@ public:
 
         ask_who->drawCards(1);
         if (player->isKongcheng()) return false;
-        if (room->askForChoice(player, objectName(), "show+cancel") == "show")
+        if (room->askForChoice(player, objectName(), "show+cancel") == "show") {
+            LogMessage log;
+            log.type = "$IkLingtongView";
+            log.from = ask_who;
+            log.to << player;
+            log.arg = "iklingtong:handcards";
+            room->sendLog(log, room->getOtherPlayers(ask_who));
+
             room->showAllCards(player, ask_who);
-        else {
+        } else {
             CardUseStruct use = data.value<CardUseStruct>();
             use.nullified_list << ask_who->objectName();
             data = QVariant::fromValue(use);
@@ -458,7 +465,7 @@ public:
 class ThNengwuClear: public TriggerSkill {
 public:
     ThNengwuClear(): TriggerSkill("#thnengwu-clear") {
-        events << EventPhaseChanging << CardsMoveOneTime;
+        events << EventPhaseChanging << CardsMoveOneTime << Death;
         frequency = Compulsory;
     }
 
@@ -488,6 +495,17 @@ public:
                             player->tag["ThNengwuSource"] = QVariant::fromValue(sources);
                         }
                     }
+            }
+        } else if (triggerEvent == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who == player) {
+                QVariantList ids = player->tag["ThNengwuId"].toList();
+                if (!ids.isEmpty()) {
+                    foreach (QVariant id, ids)
+                        room->removePlayerCardLimitation(player, "use", "^" + QString::number(id.toInt()) + "$0");
+                    player->tag.remove("ThNengwuId");
+                    player->tag.remove("ThNengwuSource");
+                }
             }
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
