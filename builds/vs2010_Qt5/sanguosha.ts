@@ -1893,7 +1893,7 @@
     <message>
         <location filename="../../src/dialog/mainwindow.ui" line="344"/>
         <source>Never nullify my trick</source>
-        <translation>不无懈自己的单体锦囊</translation>
+        <translation>不对自己的指向性锦囊询问【三粒天滴】</translation>
     </message>
     <message>
         <location filename="../../src/dialog/mainwindow.ui" line="357"/>
