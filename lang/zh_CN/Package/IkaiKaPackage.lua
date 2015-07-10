@@ -173,7 +173,7 @@ return {
 	["#bloom053"] = "鬼斩的妖剑",
 	["bloom053"] = "野井原绯鞠",--花 - 空 - 4血
 	["designer:bloom053"] = "殇の腥",
-	["illustrator:bloom053"]="かろりー",
+	["illustrator:bloom053"]="refeia",
 	["ikmingshi"] = "铭侍",
 	[":ikmingshi"] = "每当你的【闪】或武器牌置入弃牌堆时，你可以选择一项：摸一张牌；或将该牌交给一名其他角色。<br/><font color = \'blue\'>★双击选框中满足条件的牌来发动技能</font>",
 	["@ikmingshi"] = "你发动了“铭侍”，请将此牌交给一名其他角色或点“取消”摸一张牌",
