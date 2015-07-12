@@ -2914,27 +2914,35 @@ public:
 
     virtual int getCorrect(const Player *from, const Player *to) const {
         int n = 0;
-        bool invoke = false, person_only = false;
-        if (from->hasSkill("ikfenxun") && to->hasFlag("ikfenxun_target"))
+        bool invoke = false, including_horse = false;
+        if (from->hasSkill("ikfenxun") && to->hasFlag("ikfenxun_target")) {
             invoke = true;
-        if (from->hasFlag("ikrongxin_" + to->objectName()))
-            invoke = true;
-        if (from->hasSkill("ikjimu") && to->getMark("@qinghuo") > 0)
-            invoke = true;
-        if ((from->hasSkill("thqimen") && to->isChained())
-            || (to->hasSkill("thqimen") && from->isChained())) {
-            invoke = true;
-            person_only = true;
+            including_horse = true;
         }
-        if (from->hasFlag("ikelu_" + to->objectName()))
+        if (from->hasFlag("ikrongxin_" + to->objectName())) {
             invoke = true;
-        if (from->hasSkill("ikhuisuo") && to->getHp() < from->getHp())
+            including_horse = true;
+        }
+        if (from->hasSkill("ikjimu") && to->getMark("@qinghuo") > 0) {
             invoke = true;
+            including_horse = true;
+        }
+        if ((from->hasSkill("thqimen") && to->isChained())
+            || (to->hasSkill("thqimen") && from->isChained()))
+            invoke = true;
+        if (from->hasFlag("ikelu_" + to->objectName())) {
+            invoke = true;
+            including_horse = true;
+        }
+        if (from->hasSkill("ikhuisuo") && to->getHp() < from->getHp()) {
+            invoke = true;
+            including_horse = true;
+        }
         if (invoke) {
-            int x = qAbs(from->getSeat() - to->getSeat());
-            int y = from->aliveCount() - x;
+            int x = from->originalRightDistanceTo(to);
+            int y = from->aliveCount(false) - x;
             n = 1 - qMin(x, y);
-            if (!person_only) {
+            if (including_horse) {
                 if (from->getOffensiveHorse())
                     ++n;
                 if (to->getDefensiveHorse())
