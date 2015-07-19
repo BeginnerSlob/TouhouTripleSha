@@ -1101,6 +1101,7 @@ bool ThSixiangCard::targetFilter(const QList<const Player *> &targets, const Pla
 }
 
 void ThSixiangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+	room->addPlayerMark(source, "thsixiang");
     Card::Suit suit = Sanguosha->getCard(getEffectiveId())->getSuit();
     ServerPlayer *target = NULL;
     if (!targets.isEmpty())
@@ -1144,6 +1145,31 @@ public:
             return card;
         } else
             return NULL;
+    }
+};
+
+class ThSixiangDraw: public TriggerSkill {
+public:
+    ThSixiangDraw(): TriggerSkill("#thsixiang-draw") {
+        events << EventPhaseChanging << EventPhaseStart;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive)
+                if (player->getMark("thsixiang") > 0)
+                    room->setPlayerMark(player, "thsixiang", 0);
+        } 
+		else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Finish 
+			&& player->getMark("thsixiang") > 1) {
+				int x = player->getMark("thsixiang")-1;
+				player->drawCards(x, objectName());
+				room->setPlayerMark(player, "thsixiang", 0);
+        }
+        return QStringList();
     }
 };
 
@@ -1203,6 +1229,8 @@ TouhouBangaiPackage::TouhouBangaiPackage()
 
     General *bangai012 = new General(this, "bangai012", "tsuki");
     bangai012->addSkill(new ThSixiang);
+	bangai012->addSkill(new ThSixiangDraw);
+	related_skills.insertMulti("thsixiang", "#thsixiang-draw");
 
     addMetaObject<ThMiqiCard>();
     addMetaObject<ThXumeiCard>();

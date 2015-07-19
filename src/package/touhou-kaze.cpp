@@ -1383,7 +1383,7 @@ public:
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const {
-        return selected.size() < 2 && !to_select->isEquipped();
+        return selected.size() < 3 && !to_select->isEquipped();
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const {
