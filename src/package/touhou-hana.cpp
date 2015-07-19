@@ -723,7 +723,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (triggerEvent == EventPhaseStart && TriggerSkill::triggerable(player)
-            && player->getPhase() == Player::Start && !player->isKongcheng())
+            && player->getPhase() == Player::Play && !player->isKongcheng())
             return QStringList(objectName());
         else if (triggerEvent == Predamage) {
             DamageStruct damage = data.value<DamageStruct>();
