@@ -4883,9 +4883,9 @@ IkaiKaPackage::IkaiKaPackage()
     luna053->addSkill(new IkMosuRecord);
     related_skills.insertMulti("ikmosu", "#ikmosu-record");
 
-    General *luna054 = new General(this, "luna054", "tsuki", 3);
-    luna054->addSkill(new IkQianshe);
-    luna054->addSkill(new IkDaolei);
+    General *luna055 = new General(this, "luna055", "tsuki", 3);
+    luna055->addSkill(new IkQianshe);
+    luna055->addSkill(new IkDaolei);
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
