@@ -14,34 +14,34 @@
 class ThSuoming: public TriggerSkill{
 public:
     ThSuoming(): TriggerSkill("thsuoming"){
-        events << Damaged << CardsMoveOneTime;
+        events << Damaged << BeforeCardsMove;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        if (!TriggerSkill::triggerable(player)) return QStringList();
+        QStringList skills;
+        if (!TriggerSkill::triggerable(player))
+            return skills;
         if (triggerEvent == Damaged) {
             DamageStruct damage = data.value<DamageStruct>();
-            QStringList skills;
-            for (int i = 0; i < damage.damage; i++) {
+            for (int i = 0; i < damage.damage; i++)
                 skills << objectName();
-            }
-            return skills;
-        } 
-		else if (triggerEvent == CardsMoveOneTime) {
-			if (player != room->getCurrent()) return QStringList();
-			 CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-			if (move.from && move.from->isAlive()
-            && move.to_place == Player::DiscardPile && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip) 
-			|| move.reason.m_reason == CardMoveReason::S_REASON_JUDGEDONE)) {
+        } else if (triggerEvent == BeforeCardsMove) {
+            if (player != room->getCurrent() || player->getPhase() != Player::NotActive)
+                return skills;
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from && move.from->isAlive() && move.to_place == Player::DiscardPile
+                && (move.from_places.contains(Player::PlaceHand)
+                    || move.from_places.contains(Player::PlaceEquip)
+                    || move.from_places.contains(Player::PlaceJudge))) {
 				foreach (int id, move.card_ids) {
 					const Card *card = Sanguosha->getCard(id);
 					if (card->getTypeId() == Card::TypeBasic && card->isRed())
-						return QStringList(objectName());
+						skills << objectName();
 				}
 			}
         }
 
-        return QStringList();
+        return skills;
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {

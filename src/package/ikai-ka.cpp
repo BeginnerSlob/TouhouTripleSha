@@ -3146,6 +3146,7 @@ public:
 
 IkLihunCard::IkLihunCard() {
 	will_throw = false;
+    handling_method = MethodNone;
 }
 
 bool IkLihunCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
@@ -3155,30 +3156,29 @@ bool IkLihunCard::targetFilter(const QList<const Player *> &targets, const Playe
 void IkLihunCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
     DummyCard *dummy_card = new DummyCard(effect.from->handCards());
-    CardMoveReason reason(CardMoveReason::S_REASON_TRANSFER, effect.to->objectName(),
-                              effect.from->objectName(), "iklihun", QString());
-    room->moveCardTo(dummy_card, effect.from, effect.to, Player::PlaceHand, reason, false);
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(),
+                          effect.to->objectName(), "iklihun", QString());
+    room->obtainCard(effect.to, dummy_card, reason, false);
+    delete dummy_card;
 	if (!effect.to->isKongcheng()) {
 		const Card *dummy = room->askForExchange(effect.to, "iklihun", 998, 1, false, "@iklihun-showcard", false);
-		int n = dummy->subcardsLength();
-		QList<int> noshow_ids = effect.to->handCards();
-		QList<int> dummy_ids = dummy->getSubcards();
-		QList<int> ids = dummy_ids.mid(1, n);
-		foreach (int id, dummy_ids) {
-			room->showCard(effect.to, id);
-			noshow_ids.removeOne(id);
-		}
-		QString choice = room->askForChoice(effect.from, "iklihun", "showcard+noshowcard");
+        if (!dummy)
+            dummy = new DummyCard(QList<int>() << effect.to->getRandomHandCardId());
+        foreach (int id, dummy->getSubcards())
+            room->showCard(effect.to, id);
+        QString choice = room->askForChoice(effect.from, "iklihun", "showcard+noshowcard");
 		if (choice == "showcard") {
-			room->obtainCard(effect.from, dummy, false);
+			room->obtainCard(effect.from, dummy);
 		} else {
-			Card *noshowcard = new DummyCard(noshow_ids);
-			room->obtainCard(effect.from, noshowcard, false);
-			delete noshowcard;
+            QList<int> ids = effect.to->handCards();
+            foreach (int id, dummy->getSubcards())
+                ids.removeOne(id);
+            DummyCard *dummy2 = new DummyCard(ids);
+			room->obtainCard(effect.from, dummy2, false);
+            delete dummy2;
 		}
 		delete dummy;
 	}
-	delete dummy_card;
 }
 
 class IkLihun: public ZeroCardViewAsSkill {
@@ -4870,8 +4870,8 @@ IkaiKaPackage::IkaiKaPackage()
     snow052->addRelateSkill("thjizhi");
     snow052->addRelateSkill("ikchilian");
 
-	General *snow054 = new General(this, "snow054", "yuki", 4);
-	snow054->addSkill(new IkLihun);
+    General *snow054 = new General(this, "snow054", "yuki", 4);
+    snow054->addSkill(new IkLihun);
 
     General *luna030 = new General(this, "luna030", "tsuki");
     luna030->addSkill(new IkLingcu);
@@ -4955,13 +4955,13 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkLinghuiCard>();
     addMetaObject<IkXiaowuCard>();
     addMetaObject<IkHuanlueCard>();
+	addMetaObject<IkLihunCard>();
     addMetaObject<IkQisiCard>();
     addMetaObject<IkManwuCard>();
     addMetaObject<IkXianlvCard>();
     addMetaObject<IkLianwuCard>();
     addMetaObject<IkLianwuDrawCard>();
     addMetaObject<IkXiekeCard>();
-	addMetaObject<IkLihunCard>();
     addMetaObject<IkQiansheCard>();
     addMetaObject<IkDaoleiCard>();
 
