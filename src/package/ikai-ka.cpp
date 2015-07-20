@@ -3144,6 +3144,57 @@ public:
     }
 };
 
+IkLihunCard::IkLihunCard() {
+	will_throw = false;
+}
+
+bool IkLihunCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && to_select->getHandcardNum() < Self->getHandcardNum();
+}
+
+void IkLihunCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    DummyCard *dummy_card = new DummyCard(effect.from->handCards());
+    CardMoveReason reason(CardMoveReason::S_REASON_TRANSFER, effect.to->objectName(),
+                              effect.from->objectName(), "iklihun", QString());
+    room->moveCardTo(dummy_card, effect.from, effect.to, Player::PlaceHand, reason, false);
+	if (!effect.to->isKongcheng()) {
+		const Card *dummy = room->askForExchange(effect.to, "iklihun", 998, 1, false, "@iklihun-showcard", false);
+		int n = dummy->subcardsLength();
+		QList<int> noshow_ids = effect.to->handCards();
+		QList<int> dummy_ids = dummy->getSubcards();
+		QList<int> ids = dummy_ids.mid(1, n);
+		foreach (int id, dummy_ids) {
+			room->showCard(effect.to, id);
+			noshow_ids.removeOne(id);
+		}
+		QString choice = room->askForChoice(effect.from, "iklihun", "showcard+noshowcard");
+		if (choice == "showcard") {
+			room->obtainCard(effect.from, dummy, false);
+		} else {
+			Card *noshowcard = new DummyCard(noshow_ids);
+			room->obtainCard(effect.from, noshowcard, false);
+			delete noshowcard;
+		}
+		delete dummy;
+	}
+	delete dummy_card;
+}
+
+class IkLihun: public ZeroCardViewAsSkill {
+public:
+    IkLihun(): ZeroCardViewAsSkill("iklihun") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+		return !player->isKongcheng() && !player->hasUsed("IkLihunCard");
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkLihunCard;
+    }
+};
+
 class IkLingcu: public TriggerSkill {
 public:
     IkLingcu(): TriggerSkill("iklingcu") {
@@ -4819,6 +4870,9 @@ IkaiKaPackage::IkaiKaPackage()
     snow052->addRelateSkill("thjizhi");
     snow052->addRelateSkill("ikchilian");
 
+	General *snow054 = new General(this, "snow054", "yuki", 4);
+	snow054->addSkill(new IkLihun);
+
     General *luna030 = new General(this, "luna030", "tsuki");
     luna030->addSkill(new IkLingcu);
 
@@ -4883,9 +4937,9 @@ IkaiKaPackage::IkaiKaPackage()
     luna053->addSkill(new IkMosuRecord);
     related_skills.insertMulti("ikmosu", "#ikmosu-record");
 
-    General *luna054 = new General(this, "luna054", "tsuki", 3);
-    luna054->addSkill(new IkQianshe);
-    luna054->addSkill(new IkDaolei);
+    General *luna055 = new General(this, "luna055", "tsuki", 3);
+    luna055->addSkill(new IkQianshe);
+    luna055->addSkill(new IkDaolei);
 
     addMetaObject<IkZhijuCard>();
     addMetaObject<IkJilunCard>();
@@ -4907,6 +4961,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkLianwuCard>();
     addMetaObject<IkLianwuDrawCard>();
     addMetaObject<IkXiekeCard>();
+	addMetaObject<IkLihunCard>();
     addMetaObject<IkQiansheCard>();
     addMetaObject<IkDaoleiCard>();
 

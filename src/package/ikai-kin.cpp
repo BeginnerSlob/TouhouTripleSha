@@ -3257,12 +3257,14 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         DamageStruct damage = data.value<DamageStruct>();
-        int x = qMin(5, damage.to->getHp());
-        if (x > 0)
-            damage.to->drawCards(x, objectName());
-        damage.to->turnOver();
+		damage.to->turnOver();
+		QString choice = room->askForChoice(player, objectName(), "drawHp+drawlossHp");
+        int x = damage.to->getHp();
+        if (choice == "drawlossHp")
+            x = damage.to->getMaxHp() - x;
+		damage.to->drawCards(x, objectName());
 
         return false;
     }
