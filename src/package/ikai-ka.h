@@ -212,6 +212,16 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
+class IkLihunCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkLihunCard();
+
+	virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class IkQisiCard: public SkillCard{
     Q_OBJECT
 
@@ -275,16 +285,6 @@ public:
 
     virtual const Card *validate(CardUseStruct &card_use) const;
     virtual const Card *validateInResponse(ServerPlayer *user) const;
-};
-
-class IkLihunCard: public SkillCard{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE IkLihunCard();
-
-	virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
 class IkQiansheCard: public SkillCard {

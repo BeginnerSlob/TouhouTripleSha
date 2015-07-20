@@ -3263,7 +3263,7 @@ public:
 		QString choice = room->askForChoice(player, objectName(), "drawHp+drawlossHp");
         int x = damage.to->getHp();
         if (choice == "drawlossHp")
-            x = damage.to->getMaxHp() - x;
+            x = damage.to->getLostHp();
 		damage.to->drawCards(x, objectName());
 
         return false;
