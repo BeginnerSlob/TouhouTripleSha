@@ -14,10 +14,10 @@
 class ThSuoming: public TriggerSkill{
 public:
     ThSuoming(): TriggerSkill("thsuoming"){
-        events << Damaged << ChainStateChanged << TurnedOver;
+        events << Damaged << CardsMoveOneTime;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (!TriggerSkill::triggerable(player)) return QStringList();
         if (triggerEvent == Damaged) {
             DamageStruct damage = data.value<DamageStruct>();
@@ -26,10 +26,20 @@ public:
                 skills << objectName();
             }
             return skills;
-        } else if (triggerEvent == ChainStateChanged && player->isChained())
-            return QStringList(objectName());
-        else if (triggerEvent == TurnedOver)
-            return QStringList(objectName());
+        } 
+		else if (triggerEvent == CardsMoveOneTime) {
+			if (player != room->getCurrent()) return QStringList();
+			 CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+			if (move.from && move.from->isAlive()
+            && move.to_place == Player::DiscardPile && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip) 
+			|| move.reason.m_reason == CardMoveReason::S_REASON_JUDGEDONE)) {
+				foreach (int id, move.card_ids) {
+					const Card *card = Sanguosha->getCard(id);
+					if (card->getTypeId() == Card::TypeBasic && card->isRed())
+						return QStringList(objectName());
+				}
+			}
+        }
 
         return QStringList();
     }
