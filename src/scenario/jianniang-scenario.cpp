@@ -18,7 +18,7 @@
 #define MISHENG "snow052"
 #define CHICHENG "luna052"
 #define SHU "wind052"
-#define YISHIJIU "luna054"
+#define YISHIJIU "luna055"
 
 class JnDaizhan: public PhaseChangeSkill {
 public:
@@ -1247,6 +1247,23 @@ public:
             players.removeOne(killer);
         room->drawCards(players, 1, objectName());
         return false;
+    }
+};
+
+class JnHuoji: public OneCardViewAsSkill {
+public:
+    JnHuoji(): OneCardViewAsSkill("jnhuoji") {
+        filter_pattern = "BasicCard";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const {
+        return player->getPile("jnhuojipile").length() < 3 && !player->hasUsed("JnHuojiCard");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const {
+        JnHuojiCard *card = new JnHuojiCard;
+        card->addSubcard(originalCard);
+        return card;
     }
 };
 
