@@ -52,6 +52,14 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class JnAngongCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE JnAngongCard();
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 class JianniangScenario: public Scenario {
     Q_OBJECT
 
