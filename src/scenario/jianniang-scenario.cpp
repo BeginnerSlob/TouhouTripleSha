@@ -1251,6 +1251,8 @@ public:
 };
 
 JnAngongCard::JnAngongCard(){
+    will_throw = false;
+    handling_method = MethodNone;
     target_fixed = true;
 }
 
@@ -1272,6 +1274,190 @@ public:
         JnAngongCard *card = new JnAngongCard;
         card->addSubcard(originalCard);
         return card;
+    }
+};
+
+JnHuojiCard::JnHuojiCard() {
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+bool JnHuojiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = NULL;
+        if (!user_string.isEmpty()) {
+            card = Sanguosha->cloneCard(user_string.split("+").first());
+            card->addSubcards(subcards);
+            card->setSkillName("_jnhuoji");
+        }
+        return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
+    } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+        return false;
+    }
+
+    Card *card = Sanguosha->cloneCard(Self->tag.value("jnhuoji").value<const Card *>()->objectName());
+    card->addSubcards(subcards);
+    card->setSkillName("_jnhuoji");
+    return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
+}
+
+bool JnHuojiCard::targetFixed() const{
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        const Card *card = NULL;
+        if (!user_string.isEmpty())
+            card = Sanguosha->cloneCard(user_string.split("+").first());
+        return card && card->targetFixed();
+    } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+        return true;
+    }
+
+    const Card *card = Self->tag.value("jnhuoji").value<const Card *>();
+    return card && card->targetFixed();
+}
+
+bool JnHuojiCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = NULL;
+        if (!user_string.isEmpty()) {
+            card = Sanguosha->cloneCard(user_string.split("+").first());
+            card->addSubcards(subcards);
+            card->setSkillName("_jnhuoji");
+        }
+        return card && card->targetsFeasible(targets, Self);
+    } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE)
+        return true;
+
+    Card *card = Sanguosha->cloneCard(Self->tag.value("jnhuoji").value<const Card *>()->objectName());
+    card->addSubcards(subcards);
+    card->setSkillName("_jnhuoji");
+    return card && card->targetsFeasible(targets, Self);
+}
+
+const Card *JnHuojiCard::validate(CardUseStruct &card_use) const{
+    ServerPlayer *wenyang = card_use.from;
+    Room *room = wenyang->getRoom();
+
+    QString to_ikshidao = user_string;
+    if (user_string == "slash"
+        && Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        QStringList ikshidao_list;
+        ikshidao_list << "slash";
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
+            ikshidao_list << "thunder_slash" << "fire_slash";
+        to_ikshidao = room->askForChoice(wenyang, "jnhuoji_slash", ikshidao_list.join("+"));
+    }
+
+    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, wenyang->objectName(), "jnhuoji", QString());
+    room->throwCard(this, reason, NULL);
+
+    Card *use_card = Sanguosha->cloneCard(to_ikshidao, NoSuit, 0);
+    use_card->setSkillName("_jnhuoji");
+    use_card->deleteLater();
+    return use_card;
+}
+
+const Card *JnHuojiCard::validateInResponse(ServerPlayer *wenyang) const{
+    Room *room = wenyang->getRoom();
+
+    QString to_ikshidao;
+    if (user_string == "peach+analeptic") {
+        QStringList ikshidao_list;
+        ikshidao_list << "peach";
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
+            ikshidao_list << "analeptic";
+        to_ikshidao = room->askForChoice(wenyang, "jnhuoji_saveself", ikshidao_list.join("+"));
+    } else if (user_string == "slash") {
+        QStringList ikshidao_list;
+        ikshidao_list << "slash";
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
+            ikshidao_list << "thunder_slash" << "fire_slash";
+        to_ikshidao = room->askForChoice(wenyang, "jnhuoji_slash", ikshidao_list.join("+"));
+    } else
+        to_ikshidao = user_string;
+
+    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, wenyang->objectName(), "jnhuoji", QString());
+    room->throwCard(this, reason, NULL);
+
+    Card *use_card = Sanguosha->cloneCard(to_ikshidao, NoSuit, 0);
+    use_card->setSkillName("_jnhuoji");
+    use_card->deleteLater();
+    return use_card;
+}
+
+#include "touhou-hana.h"
+class JnHuoji: public OneCardViewAsSkill {
+public:
+    JnHuoji(): OneCardViewAsSkill("jnhuoji") {
+        filter_pattern = ".|.|.|jnangongpile";
+        expand_pile = "jnangongpile";
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+        if (player->getPile("jnangongpile").isEmpty())
+            return false;
+        if (pattern == "peach")
+            return player->getMark("Global_PreventPeach") == 0;
+        else if (pattern.contains("analeptic") || pattern == "slash" || pattern == "jink")
+            return true;
+        return false;
+    }
+
+    virtual QDialog *getDialog() const{
+        return ThMimengDialog::getInstance("jnhuoji", true, false);
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE
+            || Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+            JnHuojiCard *tianyan_card = new JnHuojiCard;
+            QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+            if (pattern == "peach+analeptic" && Self->getMark("Global_PreventPeach") > 0)
+                pattern = "analeptic";
+            tianyan_card->setUserString(pattern);
+            tianyan_card->addSubcard(originalCard);
+            return tianyan_card;
+        }
+
+        const Card *c = Self->tag["jnhuoji"].value<const Card *>();
+        if (c) {
+            JnHuojiCard *card = new JnHuojiCard;
+            card->setUserString(c->objectName());
+            card->addSubcard(originalCard);
+            return card;
+        } else
+            return NULL;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->getPile("jnangongpile").isEmpty();
+    }
+};
+
+class JnHuojiDraw: public TriggerSkill {
+public:
+    JnHuojiDraw(): TriggerSkill("#jnhuoji") {
+        events << CardResponded << CardFinished;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player && player->isAlive()) {
+            if (triggerEvent == CardResponded) {
+                CardResponseStruct resp = data.value<CardResponseStruct>();
+                if (resp.m_card && resp.m_card->getSkillName() == "jnhuoji" && !resp.m_isUse)
+                    return QStringList(objectName());
+            } else if (triggerEvent == CardFinished) {
+                CardUseStruct use = data.value<CardUseStruct>();
+                if (use.card && use.card->getSkillName() == "jnhuoji")
+                    return QStringList(objectName());
+            }
+        }
+
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        player->drawCards(1, "jnhuoji");
+        return false;
     }
 };
 
@@ -1378,7 +1564,7 @@ public:
                 ServerPlayer *yi19 = room->findPlayer(YISHIJIU);
                 if (yi19) {
                     room->acquireSkill(yi19, "jnangong");
-                    //room->acquireSkill(yi19, "jnhuoji");
+                    room->acquireSkill(yi19, "jnhuoji");
                     //room->acquireSkill(yi19, "jnniying");
                     //room->acquireSkill(yi19, "jntaoxi");
                 }
@@ -1468,7 +1654,8 @@ JianniangScenario::JianniangScenario()
            << new JnChunsu << new JnChunsuTrigger
            << new JnXiamu
            << new JnQiuling
-           << new JnAngong;
+           << new JnAngong
+           << new JnHuoji << new JnHuojiDraw;
     related_skills.insert("jndaizhan", "#jndaizhan-prohibit");
     related_skills.insert("jndaizhan", "#jndaizhan-inv");
     related_skills.insert("jnchaonu", "#jnchaonu-tar");
@@ -1479,12 +1666,14 @@ JianniangScenario::JianniangScenario()
     related_skills.insert("jnxianmao", "#jnxianmao-prohibit");
     related_skills.insert("jntaozui", "#jntaozui-effect");
     related_skills.insert("jnchunsu", "#jnchunsu");
+    related_skills.insert("jnhuoji", "#jnhuoji");
 
     addMetaObject<IkTanyanCard>();
     addMetaObject<IkXiashanCard>();
     addMetaObject<JnMingshiCard>();
     addMetaObject<JnChunsuCard>();
     addMetaObject<JnAngongCard>();
+    addMetaObject<JnHuojiCard>();
 }
 
 void JianniangScenario::assign(QStringList &generals, QStringList &roles) const{
