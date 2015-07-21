@@ -173,7 +173,7 @@ return {
 	
 	["#hana013"]="忠实的死体",
 	["hana013"]="宫古芳香",--花 - 空 - 3血
-	["designer:hana013"]="昂翼天使",
+	["designer:hana013"]="幻桜落",
 	["illustrator:hana013"]="KS",
 	["cv:hana013"]="暂无",
 	["thhouzhi"]="后知",
