@@ -2658,7 +2658,7 @@ const Card *IkZhiyuBasicCard::validate(CardUseStruct &card_use) const{
         && Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
             QStringList ikshidao_list;
             ikshidao_list << "slash";
-            if (!Config.BanPackages.contains("maneuvering"))
+            if (!ServerInfo.Extensions.contains("!maneuvering"))
                 ikshidao_list << "thunder_slash" << "fire_slash";
             to_ikshidao = room->askForChoice(wenyang, "ikzhiyu_slash", ikshidao_list.join("+"));
     }
@@ -2676,13 +2676,13 @@ const Card *IkZhiyuBasicCard::validateInResponse(ServerPlayer *wenyang) const{
     if (user_string == "peach+analeptic") {
         QStringList ikshidao_list;
         ikshidao_list << "peach";
-        if (!Config.BanPackages.contains("maneuvering"))
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
             ikshidao_list << "analeptic";
         to_ikshidao = room->askForChoice(wenyang, "ikzhiyu_saveself", ikshidao_list.join("+"));
     } else if (user_string == "slash") {
         QStringList ikshidao_list;
         ikshidao_list << "slash";
-        if (!Config.BanPackages.contains("maneuvering"))
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
             ikshidao_list << "thunder_slash" << "fire_slash";
         to_ikshidao = room->askForChoice(wenyang, "ikzhiyu_slash", ikshidao_list.join("+"));
     } else
