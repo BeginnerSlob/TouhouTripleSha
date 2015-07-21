@@ -1290,12 +1290,11 @@ public:
 
     virtual bool triggerable(const ServerPlayer *player) const {
         return TriggerSkill::triggerable(player)
-            && player->getPhase() == Player::Draw
-            && player->canDiscard(player, "he");
+            && player->getPhase() == Player::Draw;
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        if (room->askForCard(player, "..", "@thyuxin", QVariant(), objectName())) {
+        if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }

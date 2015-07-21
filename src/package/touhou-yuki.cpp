@@ -1807,8 +1807,7 @@ ThKujieCard::ThKujieCard() {
 }
 
 bool ThKujieCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select->hasSkill("thkujie")
-           && Self->inMyAttackRange(to_select) && !to_select->hasFlag("ThKujieInvoked");
+    return targets.isEmpty() && to_select->hasSkill("thkujie") && !to_select->hasFlag("ThKujieInvoked");
 }
 
 void ThKujieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const {
