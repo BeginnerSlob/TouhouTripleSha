@@ -1250,18 +1250,26 @@ public:
     }
 };
 
-class JnHuoji: public OneCardViewAsSkill {
+JnAngongCard::JnAngongCard(){
+    target_fixed = true;
+}
+
+void JnAngongCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    source->addToPile("jnangongpile", this);
+}
+
+class JnAngong: public OneCardViewAsSkill {
 public:
-    JnHuoji(): OneCardViewAsSkill("jnhuoji") {
+    JnAngong(): OneCardViewAsSkill("jnangong") {
         filter_pattern = "BasicCard";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const {
-        return player->getPile("jnhuojipile").length() < 3 && !player->hasUsed("JnHuojiCard");
+        return player->getPile("jnangongpile").length() < 3 && !player->hasUsed("JnAngongCard");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const {
-        JnHuojiCard *card = new JnHuojiCard;
+        JnAngongCard *card = new JnAngongCard;
         card->addSubcard(originalCard);
         return card;
     }
@@ -1367,6 +1375,14 @@ public:
                     room->acquireSkill(shu, "jnqiuling");
                 }
 
+                ServerPlayer *yi19 = room->findPlayer(YISHIJIU);
+                if (yi19) {
+                    room->acquireSkill(yi19, "jnangong");
+                    //room->acquireSkill(yi19, "jnhuoji");
+                    //room->acquireSkill(yi19, "jnniying");
+                    //room->acquireSkill(yi19, "jntaoxi");
+                }
+
                 return false;
             }
             break;
@@ -1451,7 +1467,8 @@ JianniangScenario::JianniangScenario()
            << new JnDongao
            << new JnChunsu << new JnChunsuTrigger
            << new JnXiamu
-           << new JnQiuling;
+           << new JnQiuling
+           << new JnAngong;
     related_skills.insert("jndaizhan", "#jndaizhan-prohibit");
     related_skills.insert("jndaizhan", "#jndaizhan-inv");
     related_skills.insert("jnchaonu", "#jnchaonu-tar");
@@ -1467,6 +1484,7 @@ JianniangScenario::JianniangScenario()
     addMetaObject<IkXiashanCard>();
     addMetaObject<JnMingshiCard>();
     addMetaObject<JnChunsuCard>();
+    addMetaObject<JnAngongCard>();
 }
 
 void JianniangScenario::assign(QStringList &generals, QStringList &roles) const{
