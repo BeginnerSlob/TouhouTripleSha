@@ -4482,7 +4482,7 @@ const Card *IkGuihuoCard::validate(CardUseStruct &card_use) const{
         && Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
         QStringList ikguihuo_list;
         ikguihuo_list << "slash";
-        if (!Config.BanPackages.contains("maneuvering"))
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
             ikguihuo_list << "normal_slash" << "thunder_slash" << "fire_slash";
         to_ikguihuo = room->askForChoice(yuji, "ikguihuo_slash", ikguihuo_list.join("+"));
         yuji->tag["IkGuihuoSlash"] = QVariant(to_ikguihuo);
@@ -4527,14 +4527,14 @@ const Card *IkGuihuoCard::validateInResponse(ServerPlayer *yuji) const{
     if (user_string == "peach+analeptic") {
         QStringList ikguihuo_list;
         ikguihuo_list << "peach";
-        if (!Config.BanPackages.contains("maneuvering"))
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
             ikguihuo_list << "analeptic";
         to_ikguihuo = room->askForChoice(yuji, "ikguihuo_saveself", ikguihuo_list.join("+"));
         yuji->tag["IkGuihuoSaveSelf"] = QVariant(to_ikguihuo);
     } else if (user_string == "slash") {
         QStringList ikguihuo_list;
         ikguihuo_list << "slash";
-        if (!Config.BanPackages.contains("maneuvering"))
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
             ikguihuo_list << "normal_slash" << "thunder_slash" << "fire_slash";
         to_ikguihuo = room->askForChoice(yuji, "ikguihuo_slash", ikguihuo_list.join("+"));
         yuji->tag["IkGuihuoSlash"] = QVariant(to_ikguihuo);

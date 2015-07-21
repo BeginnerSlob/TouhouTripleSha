@@ -1025,7 +1025,7 @@ const Card *ThMimengCard::validate(CardUseStruct &card_use) const {
         && Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
         QStringList use_list;
         use_list << "slash";
-        if (!Config.BanPackages.contains("maneuvering"))
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
             use_list << "thunder_slash" << "fire_slash";
         to_use = room->askForChoice(thmimeng_general, "thmimeng_skill_slash", use_list.join("+"));
     }
@@ -1046,13 +1046,13 @@ const Card *ThMimengCard::validateInResponse(ServerPlayer *user) const{
     if (user_string == "peach+analeptic") {
         QStringList use_list;
         use_list << "peach";
-        if (!Config.BanPackages.contains("maneuvering"))
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
             use_list << "analeptic";
         to_use = room->askForChoice(user, "thmimeng_skill_saveself", use_list.join("+"));
     } else if (user_string == "slash") {
         QStringList use_list;
         use_list << "slash";
-        if (!Config.BanPackages.contains("maneuvering"))
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
             use_list << "thunder_slash" << "fire_slash";
         to_use = room->askForChoice(user, "thmimeng_skill_slash", use_list.join("+"));
     } else
