@@ -1746,9 +1746,9 @@ const Card *IkLingchaCard::validateInResponse(ServerPlayer *player) const{
     return use_card;
 }
 
-class IkLingchaVS: public ViewAsSkill {
+class IkLingcha: public ViewAsSkill {
 public:
-    IkLingchaVS(): ViewAsSkill("iklingcha") {
+    IkLingcha(): ViewAsSkill("iklingcha") {
         response_or_use = true;
     }
 
@@ -1818,27 +1818,16 @@ public:
     }
 };
 
-class IkLingcha: public TriggerSkill {
-public:
-    IkLingcha(): TriggerSkill("iklingcha") {
-        events << EventPhaseChanging;
-        view_as_skill = new IkLingchaVS;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
-        room->setPlayerMark(player, "iklingcha_count", 0);
-        return QStringList();
-    }
-};
-
 class IkLingchaTrigger: public TriggerSkill {
 public:
     IkLingchaTrigger(): TriggerSkill("#iklingcha") {
-        events << TrickMissed << SlashMissed;
+        events << TrickMissed << SlashMissed << EventPhaseChanging;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging)
+            room->setPlayerMark(player, "iklingcha_count", 0);
         if (player && player->isAlive()) {
             const Card *card = NULL;
             if (triggerEvent == TrickMissed)
@@ -4683,7 +4672,7 @@ void IkDaoleiCard::onEffect(const CardEffectStruct &effect) const{
     int n = choice.toInt();
     QList<int> original_ids = effect.to->handCards();
     qShuffle(original_ids);
-    QList<int> ids = original_ids.mid(1, n);
+    QList<int> ids = original_ids.mid(0, n);
     foreach (int id, ids)
         room->showCard(effect.to, id);
     bool spade = false;
