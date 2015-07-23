@@ -1796,6 +1796,18 @@ public:
             return NULL;
     }
 
+    int getUseTimes(const Player *player) const{
+        return player->getMark("jnyanwang") > 0 ? 2 : 1;
+    }
+};
+
+class IkLingcha: public TriggerSkill {
+public:
+    IkLingcha(): TriggerSkill("iklingcha") {
+        events << EventPhaseChanging;
+        view_as_skill = new IkLingchaVS;
+    }
+
     virtual QDialog *getDialog() const {
         return IkLingchaDialog::getInstance();
     }
@@ -1811,18 +1823,6 @@ public:
         if (step == -2)
             return step;
         return qrand() % 2 + 1 + step;
-    }
-
-    int getUseTimes(const Player *player) const{
-        return player->getMark("jnyanwang") > 0 ? 2 : 1;
-    }
-};
-
-class IkLingcha: public TriggerSkill {
-public:
-    IkLingcha(): TriggerSkill("iklingcha") {
-        events << EventPhaseChanging;
-        view_as_skill = new IkLingchaVS;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
@@ -4683,7 +4683,7 @@ void IkDaoleiCard::onEffect(const CardEffectStruct &effect) const{
     int n = choice.toInt();
     QList<int> original_ids = effect.to->handCards();
     qShuffle(original_ids);
-    QList<int> ids = original_ids.mid(1, n);
+    QList<int> ids = original_ids.mid(0, n);
     foreach (int id, ids)
         room->showCard(effect.to, id);
     bool spade = false;
