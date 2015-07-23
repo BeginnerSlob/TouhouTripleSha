@@ -74,6 +74,14 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
+class JnTaoxiCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE JnTaoxiCard();
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 class JianniangScenario: public Scenario {
     Q_OBJECT
 

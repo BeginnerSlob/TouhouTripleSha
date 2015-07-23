@@ -1461,6 +1461,122 @@ public:
     }
 };
 
+class JnNiying: public TriggerSkill {
+public:
+    JnNiying(): TriggerSkill("jnniying") {
+        events << EventPhaseStart << CardEffect << CardEffected;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseStart) {
+            if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Finish) {
+                if (player->getMark("@qianhang") > 0)
+                    return QStringList(objectName());
+            }
+        } else {
+            CardEffectStruct effect = data.value<CardEffectStruct>();
+            if (player && player->isAlive() && player->getMark("@qianhang") > 0) {
+                if (effect.card && !((effect.card->isKindOf("AOE") && !effect.card->isKindOf("BurningCamps"))
+                                     || effect.card->isKindOf("GlobalEffect")))
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+        if (triggerEvent == EventPhaseStart)
+            player->loseAllMarks("@qianhang");
+        else {
+            CardEffectStruct effect = data.value<CardEffectStruct>();
+            effect.nullified = true;
+            data = QVariant::fromValue(effect);
+            return true;
+        }
+        return false;
+    }
+};
+
+JnTaoxiCard::JnTaoxiCard() {
+    will_throw = false;
+    handling_method = MethodNone;
+    target_fixed = true;
+}
+
+void JnTaoxiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, source->objectName(), "jntaoxi", QString());
+    room->throwCard(this, reason, NULL);
+    source->gainMark("@qianhang");
+}
+
+class JnTaoxiVS: public ViewAsSkill {
+public:
+    JnTaoxiVS(): ViewAsSkill("jntaoxi") {
+        expand_pile = "jnangongpile";
+        response_pattern = "@@jntaoxi";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        return selected.length() < Self->getHp() && Self->getPile("jnangongpile").contains(to_select->getId());
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.length() != Self->getHp())
+            return NULL;
+
+        JnTaoxiCard *card = new JnTaoxiCard;
+        card->addSubcards(cards);
+        return card;
+    }
+};
+
+class JnTaoxi: public TriggerSkill {
+public:
+    JnTaoxi(): TriggerSkill("jntaoxi") {
+        events << EventPhaseChanging << EventPhaseStart;
+        view_as_skill = new JnTaoxiVS;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        TriggerList skills;
+        if (triggerEvent == EventPhaseChanging && TriggerSkill::triggerable(player)) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive && player->getPile("jnangongpile").length() >= player->getHp())
+                skills.insert(player, QStringList(objectName()));
+        } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Play) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p == player)
+                    continue;
+                if (p->getMark("@qianhang") > 0)
+                    skills.insert(p, QStringList(objectName()));
+            }
+        }
+        return skills;
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        if (triggerEvent == EventPhaseChanging)
+            room->askForUseCard(ask_who, "@@jntaoxi", "@jntaoxi", -1, Card::MethodNone);
+        else if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        player->loseAllMarks("@qianhang");
+        if (player->getHandcardNum() > ask_who->getHandcardNum())
+            room->askForUseCard(ask_who, "@@ikqianshe", "@ikqianshe", -1, Card::MethodNone);
+        else if (player->getHandcardNum() < ask_who->getHandcardNum())
+            room->askForUseCard(ask_who, "@@ikdaolei", "@ikdaolei", -1, Card::MethodNone);
+        return false;
+    }
+};
+
 class JianniangScenarioRule: public ScenarioRule {
 public:
     JianniangScenarioRule(Scenario *scenario)
@@ -1565,8 +1681,10 @@ public:
                 if (yi19) {
                     room->acquireSkill(yi19, "jnangong");
                     room->acquireSkill(yi19, "jnhuoji");
-                    //room->acquireSkill(yi19, "jnniying");
-                    //room->acquireSkill(yi19, "jntaoxi");
+                    room->acquireSkill(yi19, "jnniying");
+                    room->sendCompulsoryTriggerLog(yi19, "jnniying");
+                    yi19->gainMark("@qianhang");
+                    room->acquireSkill(yi19, "jntaoxi");
                 }
 
                 return false;
@@ -1655,7 +1773,9 @@ JianniangScenario::JianniangScenario()
            << new JnXiamu
            << new JnQiuling
            << new JnAngong
-           << new JnHuoji << new JnHuojiDraw;
+           << new JnHuoji << new JnHuojiDraw
+           << new JnNiying
+           << new JnTaoxi;
     related_skills.insert("jndaizhan", "#jndaizhan-prohibit");
     related_skills.insert("jndaizhan", "#jndaizhan-inv");
     related_skills.insert("jnchaonu", "#jnchaonu-tar");
@@ -1674,6 +1794,7 @@ JianniangScenario::JianniangScenario()
     addMetaObject<JnChunsuCard>();
     addMetaObject<JnAngongCard>();
     addMetaObject<JnHuojiCard>();
+    addMetaObject<JnTaoxiCard>();
 }
 
 void JianniangScenario::assign(QStringList &generals, QStringList &roles) const{
