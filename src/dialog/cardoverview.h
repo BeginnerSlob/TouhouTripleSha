@@ -27,6 +27,7 @@ private:
     Ui::CardOverview *ui;
 
     void addCard(int i, const Card *card);
+    QString getIllustratorInfo(const QString &general_name);
 
 private slots:
     void on_playAudioEffectButton_clicked();
