@@ -1,2 +1,0 @@
-﻿general:select|role:rebel|starter:true 
-general:wind005|general2:wind003|maxhp:5|hp:5|role:lord|draw:5|equip:qinggang_sword,zixing
