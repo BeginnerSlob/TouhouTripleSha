@@ -2312,7 +2312,7 @@
 <context>
     <name>Player</name>
     <message>
-        <location filename="../../src/core/player.cpp" line="1001"/>
+        <location filename="../../src/core/player.cpp" line="1014"/>
         <source>No skills</source>
         <translation>无技能</translation>
     </message>

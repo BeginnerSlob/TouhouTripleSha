@@ -165,19 +165,24 @@ int Player::getAttackRange(bool include_weapon) const{
     if (hasFlag("InfinityAttackRange") || getMark("InfinityAttackRange") > 0) original_range = 10000; // Actually infinity
     int weapon_range = 0;
     if (include_weapon) {
-        WrappedCard *wp = weapon;
-        if (!wp && !hasSkill("thsilian") && getMark("@micai") > 0)
-            foreach (const Player *p, getAliveSiblings())
-                if (p->getMark("thmicaisource") > 0) {
-                    wp = p->weapon;
-                    break;
-                }
-        if (!wp && hasSkill("thsilian"))
+        if (!weapon && hasSkill("thsilian"))
             weapon_range = 3;
-        else if (wp) {
-            const Weapon *card = qobject_cast<const Weapon *>(weapon->getRealCard());
-            Q_ASSERT(card);
-            weapon_range = card->getRange();
+        else {
+            WrappedCard *wp = weapon;
+            if (!wp && !hasSkill("thsilian") && getMark("@micai") > 0) {
+                foreach (const Player *p, getAliveSiblings()) {
+                    if (p->getMark("thmicaisource") > 0) {
+                        wp = p->weapon;
+                        break;
+                    }
+                }
+            }
+
+            if (wp) {
+                const Weapon *card = qobject_cast<const Weapon *>(wp->getRealCard());
+                Q_ASSERT(card);
+                weapon_range = card->getRange();
+            }
         }
     }
     int extra_range = 0;
@@ -595,15 +600,19 @@ bool Player::hasWeapon(const QString &weapon_name) const {
     }
 
     WrappedCard *wp = weapon;
-    if (!wp && !hasSkill("thsilian") && getMark("@micai") > 0)
-        foreach (const Player *p, getAliveSiblings())
+    if (!wp && !hasSkill("thsilian") && getMark("@micai") > 0) {
+        foreach (const Player *p, getAliveSiblings()) {
             if (p->getMark("thmicaisource") > 0) {
                 wp = p->weapon;
                 break;
             }
-    if (!wp) return false;
-    if (wp->objectName() == weapon_name || wp->isKindOf(weapon_name.toStdString().c_str())) return true;
-    const Card *real_weapon = Sanguosha->getEngineCard(weapon->getEffectiveId());
+        }
+    }
+    if (!wp)
+        return false;
+    if (wp->objectName() == weapon_name || wp->isKindOf(weapon_name.toStdString().c_str()))
+        return true;
+    const Card *real_weapon = Sanguosha->getEngineCard(wp->getEffectiveId());
     return real_weapon->objectName() == weapon_name || real_weapon->isKindOf(weapon_name.toStdString().c_str());
 }
 
@@ -638,15 +647,19 @@ bool Player::hasArmorEffect(const QString &armor_name) const{
     }
 
     WrappedCard *am = armor;
-    if (!am && !hasSkill("ikjingnie") && getMark("@micai") > 0)
-        foreach (const Player *p, getAliveSiblings())
+    if (!am && !hasSkill("ikjingnie") && getMark("@micai") > 0) {
+        foreach (const Player *p, getAliveSiblings()) {
             if (p->getMark("thmicaisource") > 0) {
                 am = p->armor;
                 break;
             }
-    if (!am) return false;
-    if (am->objectName() == armor_name || am->isKindOf(armor_name.toStdString().c_str())) return true;
-    const Card *real_armor = Sanguosha->getEngineCard(armor->getEffectiveId());
+        }
+    }
+    if (!am)
+        return false;
+    if (am->objectName() == armor_name || am->isKindOf(armor_name.toStdString().c_str()))
+        return true;
+    const Card *real_armor = Sanguosha->getEngineCard(am->getEffectiveId());
     return real_armor->objectName() == armor_name || real_armor->isKindOf(armor_name.toStdString().c_str());
 }
 
