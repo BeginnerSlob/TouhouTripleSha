@@ -153,6 +153,7 @@ QWidget *ServerDialog::createPackageTab() {
 }
 
 void ServerDialog::setMaxHpSchemeBox() {
+#ifdef QT_DEBUG
     if (!second_general_checkbox->isChecked()) {
         prevent_awaken_below3_checkbox->setVisible(false);
 
@@ -177,6 +178,7 @@ void ServerDialog::setMaxHpSchemeBox() {
         scheme0_subtraction_label->setVisible(false);
         scheme0_subtraction_spinbox->setVisible(false);
     }
+#endif
 }
 
 QWidget *ServerDialog::createAdvancedTab() {
@@ -221,44 +223,22 @@ QWidget *ServerDialog::createAdvancedTab() {
     without_lordskill_checkbox = new QCheckBox(tr("Without Lordskill"));
     without_lordskill_checkbox->setChecked(Config.value("WithoutLordskill", false).toBool());
 
+#ifdef QT_DEBUG
     sp_convert_checkbox = new QCheckBox(tr("Enable SP Convert"));
-#ifdef QT_NO_DEBUG
-    sp_convert_checkbox->setEnabled(false);
-    sp_convert_checkbox->setChecked(false);
-    sp_convert_checkbox->setToolTip(tr("Temp Disabled"));
-#else
     sp_convert_checkbox->setChecked(Config.value("EnableSPConvert", true).toBool());
-#endif
 
     maxchoice_spinbox = new QSpinBox;
     maxchoice_spinbox->setRange(3, 21);
-#ifdef QT_NO_DEBUG
-    maxchoice_spinbox->setValue(7);
-    maxchoice_spinbox->setEnabled(false);
-    maxchoice_spinbox->setToolTip(tr("Temp Disabled"));
-#else
     maxchoice_spinbox->setValue(Config.value("MaxChoice", 7).toInt());
-#endif
 
     lord_maxchoice_label = new QLabel(tr("Upperlimit for lord"));
     lord_maxchoice_label->setToolTip(tr("-1 means that all lords are available"));
     lord_maxchoice_spinbox = new QSpinBox;
     lord_maxchoice_spinbox->setRange(-1, 15);
-#ifdef QT_NO_DEBUG
-    lord_maxchoice_spinbox->setValue(5);
-    lord_maxchoice_spinbox->setEnabled(false);
-    lord_maxchoice_spinbox->setToolTip(tr("Temp Disabled"));
-#else
     lord_maxchoice_spinbox->setValue(Config.value("LordMaxChoice", -1).toInt());
-#endif
 
     nonlord_maxchoice_spinbox = new QSpinBox;
     nonlord_maxchoice_spinbox->setRange(0, 15);
-#ifdef QT_NO_DEBUG
-    nonlord_maxchoice_spinbox->setValue(4);
-    nonlord_maxchoice_spinbox->setEnabled(false);
-    nonlord_maxchoice_spinbox->setToolTip(tr("Temp Disabled"));
-#else
     nonlord_maxchoice_spinbox->setValue(Config.value("NonLordMaxChoice", 4).toInt());
 #endif
 
@@ -268,23 +248,12 @@ QWidget *ServerDialog::createAdvancedTab() {
     disable_chat_checkbox = new QCheckBox(tr("Disable chat"));
     disable_chat_checkbox->setChecked(Config.DisableChat);
 
+#ifdef QT_DEBUG
     second_general_checkbox = new QCheckBox(tr("Enable second general"));
-#ifdef QT_NO_DEBUG
-    second_general_checkbox->setEnabled(false);
-    second_general_checkbox->setChecked(false);
-    second_general_checkbox->setToolTip(tr("Temp Disabled"));
-#else
     second_general_checkbox->setChecked(Config.Enable2ndGeneral);
-#endif
 
     same_checkbox = new QCheckBox(tr("Enable Same"));
-#ifdef QT_NO_DEBUG
-    same_checkbox->setEnabled(false);
-    same_checkbox->setChecked(false);
-    same_checkbox->setToolTip(tr("Temp Disabled"));
-#else
     same_checkbox->setChecked(Config.EnableSame);
-#endif
 
     max_hp_label = new QLabel(tr("Max HP scheme"));
     max_hp_scheme_ComboBox = new QComboBox;
@@ -308,25 +277,16 @@ QWidget *ServerDialog::createAdvancedTab() {
     connect(max_hp_scheme_ComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setMaxHpSchemeBox()));
 
     basara_checkbox = new QCheckBox(tr("Enable Basara"));
-#ifdef QT_NO_DEBUG
-    basara_checkbox->setEnabled(false);
-    basara_checkbox->setChecked(false);
-    basara_checkbox->setToolTip(tr("Temp Disabled"));
-#else
     basara_checkbox->setChecked(Config.EnableBasara);
 #endif
+
     updateButtonEnablility(mode_group->checkedButton());
     connect(mode_group, SIGNAL(buttonClicked(QAbstractButton *)), this, SLOT(updateButtonEnablility(QAbstractButton *)));
 
+#ifdef QT_DEBUG
     hegemony_checkbox = new QCheckBox(tr("Enable Hegemony"));
-#ifdef QT_NO_DEBUG
-    hegemony_checkbox->setEnabled(false);
-    hegemony_checkbox->setChecked(false);
-    hegemony_checkbox->setToolTip(tr("Temp Disabled"));
-#else
     hegemony_checkbox->setChecked(Config.EnableBasara && Config.EnableHegemony);
     hegemony_checkbox->setEnabled(basara_checkbox->isChecked());
-#endif
     connect(basara_checkbox, SIGNAL(toggled(bool)), hegemony_checkbox, SLOT(setChecked(bool)));
     connect(basara_checkbox, SIGNAL(toggled(bool)), hegemony_checkbox, SLOT(setEnabled(bool)));
 
@@ -339,6 +299,7 @@ QWidget *ServerDialog::createAdvancedTab() {
     hegemony_maxshown_spinbox = new QSpinBox;
     hegemony_maxshown_spinbox->setRange(1, 11);
     hegemony_maxshown_spinbox->setValue(Config.value("HegemonyMaxShown", 2).toInt());
+#endif
 
     address_edit = new QLineEdit;
     address_edit->setText(Config.Address);
@@ -360,8 +321,9 @@ QWidget *ServerDialog::createAdvancedTab() {
     layout->addWidget(free_choose_checkbox);
     layout->addLayout(HLay(free_assign_checkbox, free_assign_self_checkbox));
     layout->addLayout(HLay(pile_swapping_label, pile_swapping_spinbox));
-    layout->addLayout(HLay(without_lordskill_checkbox, sp_convert_checkbox));
-    layout->addLayout(HLay(new QLabel(tr("Upperlimit for general")), maxchoice_spinbox));
+    layout->addWidget(without_lordskill_checkbox);
+    //layout->addLayout(HLay(without_lordskill_checkbox, sp_convert_checkbox));
+    /*layout->addLayout(HLay(new QLabel(tr("Upperlimit for general")), maxchoice_spinbox));
     layout->addLayout(HLay(lord_maxchoice_label, lord_maxchoice_spinbox));
     layout->addLayout(HLay(new QLabel(tr("Upperlimit for non-lord")), nonlord_maxchoice_spinbox));
     layout->addWidget(second_general_checkbox);
@@ -371,7 +333,7 @@ QWidget *ServerDialog::createAdvancedTab() {
     layout->addLayout(HLay(basara_checkbox, hegemony_checkbox));
     layout->addLayout(HLay(hegemony_maxchoice_label, hegemony_maxchoice_spinbox));
     layout->addLayout(HLay(hegemony_maxshown_label, hegemony_maxshown_spinbox));
-    layout->addWidget(same_checkbox);
+    layout->addWidget(same_checkbox);*/
     layout->addLayout(HLay(new QLabel(tr("Address")), address_edit));
     layout->addWidget(detect_button);
     layout->addLayout(HLay(new QLabel(tr("Port")), port_edit));
@@ -380,6 +342,7 @@ QWidget *ServerDialog::createAdvancedTab() {
     QWidget *widget = new QWidget;
     widget->setLayout(layout);
 
+#ifdef QT_DEBUG
     max_hp_label->setVisible(Config.Enable2ndGeneral);
     connect(second_general_checkbox, SIGNAL(toggled(bool)), max_hp_label, SLOT(setVisible(bool)));
     max_hp_scheme_ComboBox->setVisible(Config.Enable2ndGeneral);
@@ -405,6 +368,7 @@ QWidget *ServerDialog::createAdvancedTab() {
     connect(hegemony_checkbox, SIGNAL(toggled(bool)), hegemony_maxshown_label, SLOT(setVisible(bool)));
     hegemony_maxshown_spinbox->setVisible(Config.EnableHegemony);
     connect(hegemony_checkbox, SIGNAL(toggled(bool)), hegemony_maxshown_spinbox, SLOT(setVisible(bool)));
+#endif
 
     return widget;
 }
@@ -478,6 +442,7 @@ QWidget *ServerDialog::createMiscTab() {
 
 void ServerDialog::updateButtonEnablility(QAbstractButton *button) {
     if (!button) return;
+#ifdef QT_DEBUG
     if (button->objectName().contains("scenario")
         || button->objectName().contains("mini")
         || button->objectName().contains("1v1")
@@ -485,15 +450,16 @@ void ServerDialog::updateButtonEnablility(QAbstractButton *button) {
         basara_checkbox->setChecked(false);
         basara_checkbox->setEnabled(false);
     } else {
-#ifdef QT_DEBUG
         basara_checkbox->setEnabled(true);
-#endif
     }
+#endif
 
     if (button->objectName().contains("mini")) {
         mini_scene_button->setEnabled(true);
+#ifdef QT_DEBUG
         second_general_checkbox->setChecked(false);
         second_general_checkbox->setEnabled(false);
+#endif
     } else {
 #ifdef QT_DEBUG
         second_general_checkbox->setEnabled(true);
@@ -1151,6 +1117,7 @@ int ServerDialog::config() {
     Config.FreeAssignSelf = Config.EnableCheat && free_assign_self_checkbox->isChecked() && free_assign_checkbox->isEnabled();
     Config.ForbidSIMC = forbid_same_ip_checkbox->isChecked();
     Config.DisableChat = disable_chat_checkbox->isChecked();
+#ifdef QT_DEBUG
     Config.Enable2ndGeneral = second_general_checkbox->isChecked();
     Config.EnableSame = same_checkbox->isChecked();
     Config.EnableBasara = basara_checkbox->isChecked() && basara_checkbox->isEnabled();
@@ -1163,6 +1130,7 @@ int ServerDialog::config() {
         Config.Scheme0Subtraction = 3;
         Config.PreventAwakenBelow3 = prevent_awaken_below3_checkbox->isChecked();
     }
+#endif
     Config.Address = address_edit->text();
     Config.CountDownSeconds = game_start_spinbox->value();
     Config.NullificationCountDown = nullification_spinbox->value();
@@ -1202,12 +1170,15 @@ int ServerDialog::config() {
     Config.setValue("FreeAssignSelf", Config.FreeAssignSelf);
     Config.setValue("PileSwappingLimitation", pile_swapping_spinbox->value());
     Config.setValue("WithoutLordskill", without_lordskill_checkbox->isChecked());
+#ifdef QT_DEBUG
     Config.setValue("EnableSPConvert", sp_convert_checkbox->isChecked());
     Config.setValue("MaxChoice", maxchoice_spinbox->value());
     Config.setValue("LordMaxChoice", lord_maxchoice_spinbox->value());
     Config.setValue("NonLordMaxChoice", nonlord_maxchoice_spinbox->value());
+#endif
     Config.setValue("ForbidSIMC", Config.ForbidSIMC);
     Config.setValue("DisableChat", Config.DisableChat);
+#ifdef QT_DEBUG
     Config.setValue("Enable2ndGeneral", Config.Enable2ndGeneral);
     Config.setValue("EnableSame", Config.EnableSame);
     Config.setValue("EnableBasara", Config.EnableBasara);
@@ -1217,6 +1188,7 @@ int ServerDialog::config() {
     Config.setValue("MaxHpScheme", Config.MaxHpScheme);
     Config.setValue("Scheme0Subtraction", Config.Scheme0Subtraction);
     Config.setValue("PreventAwakenBelow3", Config.PreventAwakenBelow3);
+#endif
     Config.setValue("CountDownSeconds", game_start_spinbox->value());
     Config.setValue("NullificationCountDown", nullification_spinbox->value());
     Config.setValue("EnableMinimizeDialog", Config.EnableMinimizeDialog);

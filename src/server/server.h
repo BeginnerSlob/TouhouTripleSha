@@ -99,13 +99,16 @@ private:
     QLabel *pile_swapping_label;
     QSpinBox *pile_swapping_spinbox;
     QCheckBox *without_lordskill_checkbox;
+#ifdef QT_DEBUG
     QCheckBox *sp_convert_checkbox;
     QSpinBox *maxchoice_spinbox;
     QLabel *lord_maxchoice_label;
     QSpinBox *lord_maxchoice_spinbox;
     QSpinBox *nonlord_maxchoice_spinbox;
+#endif
     QCheckBox *forbid_same_ip_checkbox;
     QCheckBox *disable_chat_checkbox;
+#ifdef QT_DEBUG
     QCheckBox *second_general_checkbox;
     QCheckBox *same_checkbox;
     QCheckBox *basara_checkbox;
@@ -119,6 +122,7 @@ private:
     QLabel *scheme0_subtraction_label;
     QSpinBox *scheme0_subtraction_spinbox;
     QCheckBox *prevent_awaken_below3_checkbox;
+#endif
     QComboBox *scenario_ComboBox;
     QComboBox *mini_scene_ComboBox;
     QPushButton *mini_scene_button;
