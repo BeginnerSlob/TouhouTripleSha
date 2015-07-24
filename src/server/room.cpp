@@ -2401,7 +2401,7 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign) {
             existed << player->getGeneralName();
     }
 
-    QList<int> max_choice, touhou_num;
+    QList<int> max_choice;
     if (getMode() == "03_1v1v1") {
         for (int i = 0; i < to_assign.length(); ++i) {
             max_choice << 9;
@@ -2409,16 +2409,12 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign) {
         }
     } else {
         foreach (ServerPlayer *p, to_assign) {
-            if (p->getRole() == "loyalist") {
+            if (p->getRole() == "loyalist")
                 max_choice << 10;
-                touhou_num << 2;
-            } else if (p->getRole() == "rebel") {
-                max_choice << 6;
-                touhou_num << 1;
-            } else if (p->getRole() == "renegade") {
+            else if (p->getRole() == "rebel")
+                max_choice << 8;
+            else if (p->getRole() == "renegade")
                 max_choice << 12;
-                touhou_num << 2;
-            }
         }
     }
     int total = Sanguosha->getGeneralCount();
@@ -2431,14 +2427,13 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign) {
         player->clearSelected();
         int index = to_assign.indexOf(player);
         int choice_count = qMin(max_choice.at(index), max_available);
-        int num = touhou_num.at(index);
         for (int i = 0; i < choice_count; i++) {
             QString choice;
             forever {
                 choice = player->findReasonable(choices, true);
                 if (choice.isEmpty())
                     break;
-                if (i >= num)
+                if (i >= 2)
                     break;
                 else {
                     const General *general = Sanguosha->getGeneral(choice);
