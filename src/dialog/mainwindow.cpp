@@ -495,7 +495,18 @@ void MainWindow::setBackgroundBrush(bool centerAsOrigin) {
             brush.setTransform(transform);
             scene->setBackgroundBrush(brush);
         } else {
-            QPixmap pixmap("image/system/backdrop/tableBg.jpg");
+            QString pic = "image/system/backdrop/tableBg.jpg";
+            if (ServerInfo.GameMode == "chunxue")
+                pic = "image/system/backdrop/chunxue.jpg";
+            else if (ServerInfo.GameMode == "couple")
+                pic = "image/system/backdrop/couple.jpg";
+            else if (ServerInfo.GameMode == "02_1v1")
+                pic = "image/system/backdrop/KOF.jpg";
+            else if (ServerInfo.GameMode == "jianniang")
+                pic = "image/system/backdrop/jianniang.jpg";
+            else if (ServerInfo.GameMode == "04_1v3")
+                pic = "image/system/backdrop/hulao.jpg";
+            QPixmap pixmap(pic);
             QBrush brush(pixmap);
             qreal sx = (qreal)(width() - 217) / qreal(pixmap.width());
             qreal sy = (qreal)(height() - 170) / qreal(pixmap.height());
