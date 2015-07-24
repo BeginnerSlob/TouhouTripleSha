@@ -35,8 +35,6 @@ CardOverview::CardOverview(QWidget *parent)
         ui->getCardButton->hide();
 
     ui->cardDescriptionBox->setProperty("description", true);
-    ui->malePlayButton->hide();
-    ui->femalePlayButton->hide();
     ui->playAudioEffectButton->hide();
 }
 
@@ -52,15 +50,7 @@ void CardOverview::loadFromAll() {
         ui->tableWidget->setCurrentItem(ui->tableWidget->item(0, 0));
 
         const Card *card = Sanguosha->getEngineCard(0);
-        if (card->getTypeId() == Card::TypeEquip) {
-            ui->playAudioEffectButton->show();
-            ui->malePlayButton->hide();
-            ui->femalePlayButton->hide();
-        } else {
-            ui->playAudioEffectButton->hide();
-            ui->malePlayButton->show();
-            ui->femalePlayButton->show();
-        }
+        ui->playAudioEffectButton->show();
     }
 }
 
@@ -74,15 +64,7 @@ void CardOverview::loadFromList(const QList<const Card *> &list) {
         ui->tableWidget->setCurrentItem(ui->tableWidget->item(0, 0));
 
         const Card *card = list.first();
-        if (card->getTypeId() == Card::TypeEquip) {
-            ui->playAudioEffectButton->show();
-            ui->malePlayButton->hide();
-            ui->femalePlayButton->hide();
-        } else {
-            ui->playAudioEffectButton->hide();
-            ui->malePlayButton->show();
-            ui->femalePlayButton->show();
-        }
+        ui->playAudioEffectButton->show();
     }
 }
 
@@ -124,16 +106,7 @@ void CardOverview::on_tableWidget_itemSelectionChanged() {
     ui->cardLabel->setPixmap(pixmap_path);
 
     ui->cardDescriptionBox->setText(card->getDescription());
-
-    if (card->getTypeId() == Card::TypeEquip) {
-        ui->playAudioEffectButton->show();
-        ui->malePlayButton->hide();
-        ui->femalePlayButton->hide();
-    } else {
-        ui->playAudioEffectButton->hide();
-        ui->malePlayButton->show();
-        ui->femalePlayButton->show();
-    }
+    ui->playAudioEffectButton->show();
 }
 
 void CardOverview::askCard() {
@@ -155,24 +128,6 @@ void CardOverview::on_tableWidget_itemDoubleClicked(QTableWidgetItem *) {
     if (Self) askCard();
 }
 
-void CardOverview::on_malePlayButton_clicked() {
-    int row = ui->tableWidget->currentRow();
-    if (row >= 0) {
-        int card_id = ui->tableWidget->item(row, 0)->data(Qt::UserRole).toInt();
-        const Card *card = Sanguosha->getEngineCard(card_id);
-        Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath(card->objectName(), true), false);
-    }
-}
-
-void CardOverview::on_femalePlayButton_clicked() {
-    int row = ui->tableWidget->currentRow();
-    if (row >= 0) {
-        int card_id = ui->tableWidget->item(row, 0)->data(Qt::UserRole).toInt();
-        const Card *card = Sanguosha->getEngineCard(card_id);
-        Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath(card->objectName(), false), false);
-    }
-}
-
 void CardOverview::on_playAudioEffectButton_clicked() {
     int row = ui->tableWidget->currentRow();
     if (row >= 0) {
@@ -186,7 +141,8 @@ void CardOverview::on_playAudioEffectButton_clicked() {
             if (!QFile::exists(fileName))
                 fileName = G_ROOM_SKIN.getPlayerAudioEffectPath(card->getCommonEffectName(), QString("common"), -1);
             Sanguosha->playAudioEffect(fileName, false);
-        }
+        } else
+            Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath(card->objectName(), false), false);
     }
 }
 
