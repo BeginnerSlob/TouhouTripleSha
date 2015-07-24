@@ -227,14 +227,13 @@ void MainWindow::checkVersion(const QString &server_version, const QString &serv
 
     client->disconnectFromHost();
 
-    static QString link = "http://pan.baidu.com/share/link?shareid=396750&uk=1442992357";
     QString text = tr("Server version is %1, client version is %2 <br/>").arg(server_version).arg(client_version);
     if (server_version > client_version)
         text.append(tr("Your client version is older than the server's, please update it <br/>"));
     else
         text.append(tr("The server version is older than your client version, please ask the server to update<br/>"));
 
-    text.append(tr("Download link : <a href='%1'>%1</a> <br/>").arg(link));
+    text.append(tr("QQ Group: %1").arg(221093508));
     QMessageBox::warning(this, tr("Warning"), text);
 }
 
