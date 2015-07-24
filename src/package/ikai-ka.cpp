@@ -4637,8 +4637,10 @@ void IkQiansheCard::onEffect(const CardEffectStruct &effect) const{
     }
     if (!moves.isEmpty())
         room->moveCardsAtomic(moves, true);
-    if (subcardsLength() > dummy->subcardsLength())
+    if (subcardsLength() > dummy->subcardsLength()) {
+        room->broadcastSkillInvoke("ikqianshe", 3);
         room->damage(DamageStruct("ikqianshe", effect.from, effect.to));
+    }
     delete dummy;
 }
 
@@ -4660,6 +4662,10 @@ public:
         Card *card = new IkQiansheCard;
         card->addSubcards(cards);
         return card;
+    }
+
+    virtual int getEffectIndex(const ServerPlayer *, const Card *) const{
+        return qrand() % 2 + 1;
     }
 };
 
@@ -4701,6 +4707,7 @@ void IkDaoleiCard::onEffect(const CardEffectStruct &effect) const{
                 obtain << id;
         }
         if (!obtain.isEmpty()) {
+            room->broadcastSkillInvoke("ikdaolei", 3);
             Card *dummy = new DummyCard(obtain);
             room->obtainCard(effect.from, dummy, false);
             delete dummy;
@@ -4723,6 +4730,10 @@ public:
         Card *card = new IkDaoleiCard;
         card->addSubcard(originalCard);
         return card;
+    }
+
+    virtual int getEffectIndex(const ServerPlayer *, const Card *) const{
+        return qrand() % 2 + 1;
     }
 };
 

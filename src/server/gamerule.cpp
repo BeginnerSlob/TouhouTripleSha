@@ -215,6 +215,10 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
                     room->doNotify(card_use.from, QSanProtocol::S_COMMAND_ENABLE_SURRENDER, Json::Value(true));
                 }
 
+                if (card_use.card->isKindOf("Peach")) {
+                    if (card_use.to.isEmpty() || card_use.to.contains(card_use.from))
+                        room->setCardFlag(card_use.card, "PeachSelf");
+                }
                 card_use.from->broadcastSkillInvoke(card_use.card);
                 if (!card_use.card->getSkillName().isNull() && card_use.card->getSkillName(true) == card_use.card->getSkillName(false)
                     && card_use.m_isOwnerUse && card_use.from->hasSkill(card_use.card->getSkillName()))
