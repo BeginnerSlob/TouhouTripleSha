@@ -2280,7 +2280,7 @@ TouhouYukiPackage::TouhouYukiPackage()
     related_skills.insertMulti("therchong", "#therchong-record");
     yuki001->addSkill(new ThChundu);
 
-    General *yuki002 = new General(this, "yuki002", "yuki", 3);
+    General *yuki002 = new General(this, "yuki002", "yuki");
     yuki002->addSkill(new ThZuishang);
     yuki002->addSkill(new ThXugu);
     yuki002->addSkill(new SlashNoDistanceLimitSkill("thxugu"));
