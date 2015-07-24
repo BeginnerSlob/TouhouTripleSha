@@ -841,9 +841,6 @@ QGroupBox *ServerDialog::createGameModeBox() {
     QVBoxLayout *scenarioModesLayout = new QVBoxLayout(mode_box);
     QGroupBox *customModes = new QGroupBox(tr("Custom modes"), mode_box);
     QVBoxLayout *customModesLayout = new QVBoxLayout(mode_box);
-    
-    Q_UNUSED(basaraModesLayout);
-    Q_UNUSED(customModesLayout);
 
     // normal modes
     QMap<QString, QString> modes = Sanguosha->getAvailableModes();
@@ -909,6 +906,14 @@ QGroupBox *ServerDialog::createGameModeBox() {
             button->setChecked(true);
     }
 
+    //basara modes
+    QRadioButton *basara = new QRadioButton(tr("Thanks for wating"), basaraModes);
+    basara->setObjectName("basara");
+    mode_group->addButton(basara);
+    basaraModesLayout->addWidget(basara);
+    basaraModes->setLayout(basaraModesLayout);
+    basara->setEnabled(false);
+
     //mini scenes
     QRadioButton *mini_scenes = new QRadioButton(tr("Mini Scenes"));
     mini_scenes->setObjectName("mini");
@@ -929,19 +934,22 @@ QGroupBox *ServerDialog::createGameModeBox() {
         if (name == Config.GameMode) index = i - 1;
     }
 
-    if (index >= 0) {
+    /*if (index >= 0) {
         mini_scene_ComboBox->setCurrentIndex(index);
         mini_scenes->setChecked(true);
     } else if (Config.GameMode == "custom_scenario")
+        mini_scenes->setChecked(true);*/
+
+    if (Config.GameMode == "custom_scenario")
         mini_scenes->setChecked(true);
 
     mini_scene_button = new QPushButton(tr("Custom Mini Scene"));
-    connect(mini_scene_button, SIGNAL(clicked()), this, SLOT(doCustomAssign()));
+    connect(mini_scenes, SIGNAL(clicked()), this, SLOT(doCustomAssign()));
 
-    mini_scene_button->setEnabled(mode_group->checkedButton() ?
-                                      mode_group->checkedButton()->objectName() == "mini" :
-                                      false);
+    mini_scene_button->setEnabled(mode_group->checkedButton() && mode_group->checkedButton()->objectName() == "mini");
 
+    customModesLayout->addWidget(mini_scenes);
+    customModes->setLayout(customModesLayout);
     //item_list << HLay(scenario_button, scenario_ComboBox);
     //item_list << HLay(mini_scenes, mini_scene_ComboBox);
     //item_list << HLay(mini_scenes, mini_scene_button);
@@ -1175,9 +1183,9 @@ int ServerDialog::config() {
         if (objname == "scenario")
             Config.GameMode = scenario_ComboBox->itemData(scenario_ComboBox->currentIndex()).toString();
         else if (objname == "mini") {
-            if (mini_scene_ComboBox->isEnabled())
+            /*if (mini_scene_ComboBox->isEnabled())
                 Config.GameMode = mini_scene_ComboBox->itemData(mini_scene_ComboBox->currentIndex()).toString();
-            else
+            else*/
                 Config.GameMode = "custom_scenario";
         } else
             Config.GameMode = objname;
