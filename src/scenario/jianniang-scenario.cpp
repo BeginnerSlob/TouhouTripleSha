@@ -1487,10 +1487,11 @@ public:
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         room->sendCompulsoryTriggerLog(player, objectName());
-        room->broadcastSkillInvoke(objectName());
-        if (triggerEvent == EventPhaseStart)
+        if (triggerEvent == EventPhaseStart) {
+            room->broadcastSkillInvoke(objectName(), 3);
             player->loseAllMarks("@qianhang");
-        else {
+        } else {
+            room->broadcastSkillInvoke(objectName(), qrand() % 2 + 1);
             CardEffectStruct effect = data.value<CardEffectStruct>();
             effect.nullified = true;
             data = QVariant::fromValue(effect);
@@ -1560,10 +1561,8 @@ public:
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
         if (triggerEvent == EventPhaseChanging)
             room->askForUseCard(ask_who, "@@jntaoxi", "@jntaoxi", -1, Card::MethodNone);
-        else if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
-            room->broadcastSkillInvoke(objectName());
+        else if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player)))
             return true;
-        }
         return false;
     }
 

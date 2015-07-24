@@ -15,5 +15,20 @@
 	"playerAudioEffect-effects-default": "audio/effects/%1.ogg",
 
 	"playerAudioEffect-male-default": "audio/card/female/%1.ogg",
-	"playerAudioEffect-female-default": "audio/card/female/%1.ogg"
+	"playerAudioEffect-female-default": "audio/card/female/%1.ogg",
+
+	"playerAudioEffect-male-slash": ["audio/card/female/slash1.ogg", "audio/card/female/slash2.ogg", "audio/card/female/slash3.ogg", "audio/card/female/slash4.ogg", "audio/card/female/slash5.ogg"],
+	"playerAudioEffect-female-slash": ["audio/card/female/slash1.ogg", "audio/card/female/slash2.ogg", "audio/card/female/slash3.ogg", "audio/card/female/slash4.ogg", "audio/card/female/slash5.ogg"],
+	"playerAudioEffect-male-fire_slash": ["audio/card/female/fire_slash1.ogg", "audio/card/female/fire_slash2.ogg"],
+	"playerAudioEffect-female-fire_slash": ["audio/card/female/fire_slash1.ogg", "audio/card/female/fire_slash2.ogg"],
+	"playerAudioEffect-male-thunder_slash": ["audio/card/female/thunder_slash1.ogg", "audio/card/female/thunder_slash2.ogg"],
+	"playerAudioEffect-female-thunder_slash": ["audio/card/female/thunder_slash1.ogg", "audio/card/female/thunder_slash2.ogg"],
+	"playerAudioEffect-male-jink": ["audio/card/female/jink1.ogg", "audio/card/female/jink2.ogg", "audio/card/female/jink3.ogg", "audio/card/female/jink4.ogg"],
+	"playerAudioEffect-female-jink": ["audio/card/female/jink1.ogg", "audio/card/female/jink2.ogg", "audio/card/female/jink3.ogg", "audio/card/female/jink4.ogg"],
+	"playerAudioEffect-male-peach": ["audio/card/female/peach1.ogg", "audio/card/female/peach2.ogg", "audio/card/female/peach3.ogg", "audio/card/female/peach4.ogg"],
+	"playerAudioEffect-female-peach": ["audio/card/female/peach1.ogg", "audio/card/female/peach2.ogg", "audio/card/female/peach3.ogg", "audio/card/female/peach4.ogg"],
+	"playerAudioEffect-male-analeptic": ["audio/card/female/analeptic1.ogg", "audio/card/female/analeptic2.ogg", "audio/card/female/analeptic3.ogg", "audio/card/female/analeptic4.ogg"],
+	"playerAudioEffect-female-analeptic": ["audio/card/female/analeptic1.ogg", "audio/card/female/analeptic2.ogg", "audio/card/female/analeptic3.ogg", "audio/card/female/analeptic4.ogg"],
+	"playerAudioEffect-male-nullification": ["audio/card/female/nullification1.ogg", "audio/card/female/nullification2.ogg", "audio/card/female/nullification3.ogg"],
+	"playerAudioEffect-female-nullification": ["audio/card/female/nullification1.ogg", "audio/card/female/nullification2.ogg", "audio/card/female/nullification3.ogg"]
 }

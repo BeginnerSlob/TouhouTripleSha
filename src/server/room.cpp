@@ -1096,6 +1096,14 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
     sendLog(log);
     thread->delay(500);
 
+    if (trick->isKindOf("ExNihilo")
+        || trick->isKindOf("AmazingGrace")
+        || trick->isKindOf("GodSalvation")
+        || trick->isKindOf("Nullification")
+        || trick->isKindOf("LureTiger"))
+        setCardFlag(card, "Nullification2");
+    else if (trick->isKindOf("DelayedTrick"))
+        setCardFlag(card, "Nullification3");
     useCard(CardUseStruct(card, repliedPlayer, QList<ServerPlayer *>()));
     QVariant nullifionEffectData = QVariant::fromValue(card);
     if (thread->trigger(NullificationEffect, this, repliedPlayer, nullifionEffectData))
