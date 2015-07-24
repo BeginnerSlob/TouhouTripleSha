@@ -3932,137 +3932,137 @@ P = 你自己, R = 你所在的房间</translation>
 <context>
     <name>StartScene</name>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="120"/>
+        <location filename="../../src/ui/startscene.cpp" line="113"/>
         <source>Your LAN address: %1, this address is available only for hosts that in the same LAN</source>
         <translation>你的局域网地址: %1, 这个地址仅对处于同于同一局域网的用户可用</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="122"/>
+        <location filename="../../src/ui/startscene.cpp" line="115"/>
         <source>Your loopback address %1, this address is available only for your host</source>
         <translation>你的回环地址是 %1，这个地址仅对你的本机有效</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="124"/>
+        <location filename="../../src/ui/startscene.cpp" line="117"/>
         <source>Your Hamachi address: %1, the address is available for users that joined the same Hamachi network</source>
         <translation>你的 Hamachi 地址为 %1， 这个地址对加入了同一网络的 Hamachi 用户有效</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="126"/>
+        <location filename="../../src/ui/startscene.cpp" line="119"/>
         <source>Your other address: %1, if this is a public IP, that will be available for all cases</source>
         <translation>你的其他地址：%1，如果这是一个公网 IP，那么对所有用户都有效</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="129"/>
+        <location filename="../../src/ui/startscene.cpp" line="122"/>
         <source>Binding port number is %1</source>
         <translation>绑定的端口号: %1</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="130"/>
+        <location filename="../../src/ui/startscene.cpp" line="123"/>
         <source>Game mode is %1</source>
         <translation>游戏模式为 %1</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="131"/>
+        <location filename="../../src/ui/startscene.cpp" line="124"/>
         <source>Player count is %1</source>
         <translation>玩家人数为 %1</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="135"/>
+        <location filename="../../src/ui/startscene.cpp" line="128"/>
         <source>Cheat is enabled</source>
         <translation>作弊功能已启用</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="135"/>
+        <location filename="../../src/ui/startscene.cpp" line="128"/>
         <source>Cheat is disabled</source>
         <translation>作弊功能未启用</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="137"/>
+        <location filename="../../src/ui/startscene.cpp" line="130"/>
         <source>Free choose is enabled</source>
         <translation>自由选将已启用</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="137"/>
+        <location filename="../../src/ui/startscene.cpp" line="130"/>
         <source>Free choose is disabled</source>
         <translation>自由选将未启用</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="142"/>
+        <location filename="../../src/ui/startscene.cpp" line="135"/>
         <source>Sum - %1</source>
         <translation>和减%1</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="143"/>
+        <location filename="../../src/ui/startscene.cpp" line="136"/>
         <source>Minimum</source>
         <translation>较小值</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="144"/>
+        <location filename="../../src/ui/startscene.cpp" line="137"/>
         <source>Maximum</source>
         <translation>较大值</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="145"/>
+        <location filename="../../src/ui/startscene.cpp" line="138"/>
         <source>Average</source>
         <translation>平均值</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="147"/>
+        <location filename="../../src/ui/startscene.cpp" line="140"/>
         <source>Secondary general is enabled, max hp scheme is %1</source>
         <translation>双将模式已启用，体力上限分配方案是 %1</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="149"/>
+        <location filename="../../src/ui/startscene.cpp" line="142"/>
         <source>Seconardary general is disabled</source>
         <translation>双将模式未启用</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="152"/>
+        <location filename="../../src/ui/startscene.cpp" line="145"/>
         <source>Same Mode is enabled</source>
         <translation>同将模式已启用</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="153"/>
+        <location filename="../../src/ui/startscene.cpp" line="146"/>
         <source>Same Mode is disabled</source>
         <translation>同将模式未启用</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="155"/>
+        <location filename="../../src/ui/startscene.cpp" line="148"/>
         <source>Basara Mode is enabled</source>
         <translation>暗将模式已启用</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="156"/>
+        <location filename="../../src/ui/startscene.cpp" line="149"/>
         <source>Basara Mode is disabled</source>
         <translation>暗将模式未启用</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="158"/>
+        <location filename="../../src/ui/startscene.cpp" line="151"/>
         <source>Hegemony Mode is enabled</source>
         <translation>国战模式已启用</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="159"/>
+        <location filename="../../src/ui/startscene.cpp" line="152"/>
         <source>Hegemony Mode is disabled</source>
         <translation>国战模式未启用</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="162"/>
+        <location filename="../../src/ui/startscene.cpp" line="155"/>
         <source>This server is AI enabled, AI delay is %1 milliseconds</source>
         <translation>服务器启用了 AI，AI 的延迟是 %1 毫秒</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="164"/>
+        <location filename="../../src/ui/startscene.cpp" line="157"/>
         <source>This server is AI disabled</source>
         <translation>此服务器尚未启用 AI</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="133"/>
+        <location filename="../../src/ui/startscene.cpp" line="126"/>
         <source>There is no time limit</source>
         <translation>没有时间限制</translation>
     </message>
     <message>
-        <location filename="../../src/ui/startscene.cpp" line="134"/>
+        <location filename="../../src/ui/startscene.cpp" line="127"/>
         <source>Operation timeout is %1 seconds</source>
         <translation>操作时间是 %1 秒</translation>
     </message>
