@@ -805,7 +805,6 @@ ThZhouhuaCard::ThZhouhuaCard(){
 void ThZhouhuaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
     room->removePlayerMark(source, "@zhouhua");
     room->addPlayerMark(source, "@zhouhuaused");
-    //room->broadcastInvoke("animate", "lightbox:$kunyi");
 
     QStringList choices;
     if (source->isWounded())

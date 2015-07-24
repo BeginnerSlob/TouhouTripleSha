@@ -3996,7 +3996,7 @@ public:
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
-        if (PhaseChangeSkill::triggerable(target) && target->getPhase() == Player::Start) {
+        if (PhaseChangeSkill::triggerable(target) && target->getPhase() == Player::Start && target->getMark("@qingshe") == 0) {
             if (target->isWounded() && target->getMark("ikciyu_" + target->objectName()) > 0)
                 return true;
             foreach (const Player *p, target->getAliveSiblings()) {
