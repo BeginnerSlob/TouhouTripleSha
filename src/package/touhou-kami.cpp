@@ -769,25 +769,27 @@ public:
             player->addToPile("faces", dummy);
             delete dummy;
         } else if (move.to_place == Player::PlaceSpecial) {
-            QList<int> card_ids = player->getPile("faces");
-            QList<int> to_discard;
-            if (card_ids.size() == 2) {
-                to_discard = card_ids;
-            } else {
-                room->fillAG(card_ids);
-                int id1 = room->askForAG(player, card_ids, false, objectName());
-                card_ids.removeOne(id1);
-                to_discard << id1;
-                room->takeAG(player, id1, false);
-                int id2 = room->askForAG(player, card_ids, false, objectName());
-                to_discard << id2;
-                room->clearAG();
-            }
-            DummyCard *dummy = new DummyCard(to_discard);
-            CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
-            room->throwCard(dummy, reason, NULL);
-            delete dummy;
-            room->loseHp(player);
+            do {
+                QList<int> card_ids = player->getPile("faces");
+                QList<int> to_discard;
+                if (card_ids.size() == 2) {
+                    to_discard = card_ids;
+                } else {
+                    room->fillAG(card_ids);
+                    int id1 = room->askForAG(player, card_ids, false, objectName());
+                    card_ids.removeOne(id1);
+                    to_discard << id1;
+                    room->takeAG(player, id1, false);
+                    int id2 = room->askForAG(player, card_ids, false, objectName());
+                    to_discard << id2;
+                    room->clearAG();
+                }
+                DummyCard *dummy = new DummyCard(to_discard);
+                CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
+                room->throwCard(dummy, reason, NULL);
+                delete dummy;
+                room->loseHp(player);
+            } while (player->isAlive() && player->getPile("faces").size() > 1);
         }
         return false;
     }
