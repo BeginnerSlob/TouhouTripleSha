@@ -146,27 +146,32 @@
         <translation>包</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/cardoverview.ui" line="119"/>
+        <location filename="../../src/dialog/cardoverview.ui" line="102"/>
+        <source>Illustrator</source>
+        <translation>插画</translation>
+    </message>
+    <message>
+        <location filename="../../src/dialog/cardoverview.ui" line="167"/>
         <source>Play audio effect</source>
         <translation>音效</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/cardoverview.ui" line="132"/>
+        <location filename="../../src/dialog/cardoverview.ui" line="180"/>
         <source>Get this card</source>
         <translation>获得卡牌</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/cardoverview.cpp" line="92"/>
+        <location filename="../../src/dialog/cardoverview.cpp" line="95"/>
         <source>This is an Lua extension</source>
         <translation>该包为Lua扩展包</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/cardoverview.cpp" line="120"/>
+        <location filename="../../src/dialog/cardoverview.cpp" line="132"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/cardoverview.cpp" line="120"/>
+        <location filename="../../src/dialog/cardoverview.cpp" line="132"/>
         <source>These packages don&apos;t contain this card</source>
         <translation>此牌所在卡牌包已禁用</translation>
     </message>

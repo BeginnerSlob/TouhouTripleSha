@@ -36,6 +36,7 @@ CardOverview::CardOverview(QWidget *parent)
 
     ui->cardDescriptionBox->setProperty("description", true);
     ui->playAudioEffectButton->hide();
+    ui->illustratorLineEdit->setText(Sanguosha->translate("DefaultIllustrator"));
 }
 
 void CardOverview::loadFromAll() {
@@ -51,6 +52,7 @@ void CardOverview::loadFromAll() {
 
         const Card *card = Sanguosha->getEngineCard(0);
         ui->playAudioEffectButton->show();
+        ui->illustratorLineEdit->setText(getIllustratorInfo(card->objectName()));
     }
 }
 
@@ -65,6 +67,7 @@ void CardOverview::loadFromList(const QList<const Card *> &list) {
 
         const Card *card = list.first();
         ui->playAudioEffectButton->show();
+        ui->illustratorLineEdit->setText(getIllustratorInfo(card->objectName()));
     }
 }
 
@@ -94,6 +97,14 @@ void CardOverview::addCard(int i, const Card *card) {
     ui->tableWidget->setItem(i, 5, package_item);
 }
 
+QString CardOverview::getIllustratorInfo(const QString &card_name) {
+    QString illustrator_text = Sanguosha->translate("illustrator:" + card_name);
+    if (!illustrator_text.startsWith("illustrator:"))
+        return illustrator_text;
+    else
+        return Sanguosha->translate("DefaultIllustrator");
+}
+
 CardOverview::~CardOverview() {
     delete ui;
 }
@@ -107,6 +118,7 @@ void CardOverview::on_tableWidget_itemSelectionChanged() {
 
     ui->cardDescriptionBox->setText(card->getDescription());
     ui->playAudioEffectButton->show();
+    ui->illustratorLineEdit->setText(getIllustratorInfo(card->objectName()));
 }
 
 void CardOverview::askCard() {
