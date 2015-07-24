@@ -16,13 +16,6 @@ StartScene::StartScene()
     logo->moveBy(0, -Config.Rect.height() / 4.8);
     addItem(logo);
 
-    //the website URL
-    QFont website_font(Config.SmallFont);
-    website_font.setStyle(QFont::StyleItalic);
-    QGraphicsSimpleTextItem *website_text = addSimpleText("http://qsanguosha.org", website_font);
-    website_text->setBrush(Qt::white);
-    website_text->setPos(Config.Rect.width() / 2 - website_text->boundingRect().width(),
-                         Config.Rect.height() / 2 - website_text->boundingRect().height());
     server_log = NULL;
 }
 
