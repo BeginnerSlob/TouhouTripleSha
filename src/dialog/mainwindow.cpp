@@ -466,7 +466,7 @@ void MainWindow::on_actionAbout_triggered() {
     content.append(tr("Source code: <a href='%1' style = \"color:#0072c1; \">%1</a> <br/>").arg(project_url));
     content.append(tr("Tieba: TouhouTripleSha Ba"));
 
-    Window *window = new Window(tr("About QSanguosha"), QSize(420, 470));
+    Window *window = new Window(tr("About QSanguosha"), QSize(420, 570));
     scene->addItem(window);
     window->setZValue(32766);
 
