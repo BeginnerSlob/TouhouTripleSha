@@ -136,6 +136,14 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
             }
             room->setTag("FirstRound", true);
             bool kof_mode = room->getMode() == "02_1v1" && Config.value("1v1/Rule", "2013").toString() != "Classical";
+            int scroll_id = -1;
+            if (isNormalGameMode(room->getMode())) {
+                if (room->getLord()) {
+                    scroll_id = room->getCardFromPile("scroll");
+                    if (scroll_id != -1)
+                        room->moveCardTo(Sanguosha->getCard(scroll_id), room->getLord(), Player::PlaceTable, true);
+                }
+            }
             QList<int> n_list;
             foreach (ServerPlayer *p, room->getPlayers()) {
                 int n = kof_mode ? p->getMaxHp() : 4;
@@ -152,13 +160,8 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
                 room->getThread()->trigger(AfterDrawInitialCards, room, p, num_data);
                 i++;
             }
-            if (isNormalGameMode(room->getMode())) {
-                if (room->getLord()) {
-                    int id = room->getCardFromPile("scroll");
-                    if (id != -1)
-                        room->moveCardTo(Sanguosha->getCard(id), room->getLord(), Player::PlaceHand, true);
-                }
-            }
+            if (scroll_id != -1)
+                room->moveCardTo(Sanguosha->getCard(scroll_id), room->getLord(), Player::PlaceHand, true);
         }
         return false;
     }
