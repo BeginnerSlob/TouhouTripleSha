@@ -48,8 +48,7 @@ return {
 	["tsuki004"]="因幡帝",--月 - 幻 - 3血
 	["designer:tsuki004"]="幻桜落",
 	["illustrator:tsuki004"]="すばち",
-	["cv:tsuki004"]="蓦言",
-	["~tsuki004"]="笨蛋笨...啊！",
+	["cv:tsuki004"]="暂无",
 	["thkaiyun"]="开运",
 	[":thkaiyun"]="在一名角色的判定牌生效前，你可以弃置一张牌，然后观看牌堆顶的两张牌，将其中一张牌代替判定牌，然后获得另一张牌。",
 	["@thkaiyun"]=CommonTranslationTable["@askforretrial"],
@@ -84,8 +83,7 @@ return {
 	["tsuki007"]="红美铃",--月 - 空 - 4血
 	["designer:tsuki007"]="零度雨",
 	["illustrator:tsuki007"]="十誤一会",
-	["cv:tsuki007"]="向晚",
-	["~tsuki007"]="对不起...大小姐...",
+	["cv:tsuki007"]="暂无",
 	["thcunjing"]="寸刭",
 	[":thcunjing"]="若你的装备区没有武器牌，当你使用的【杀】被【闪】抵消时，你可以弃置一张牌，则此【杀】依然造成伤害。",
 	["@thcunjing"]="你可以弃置一张牌发动“寸刭”",
@@ -97,8 +95,7 @@ return {
 	["tsuki008"]="十六夜咲夜",--月 - 空 - 4血
 	["designer:tsuki008"]="scorpio",
 	["illustrator:tsuki008"]="小D",
-	["cv:tsuki008"]="向晚",
-	["~tsuki008"]="真是...精彩...",
+	["cv:tsuki008"]="暂无",
 	["thqishu"]="奇术",
 	[":thqishu"]="其他角色的回合结束后，若你的人物牌背面朝上，你可将你的人物牌翻面并获得1枚“时计”标记，然后进行一个额外的回合。",
 	["thshiting"]="时停",
