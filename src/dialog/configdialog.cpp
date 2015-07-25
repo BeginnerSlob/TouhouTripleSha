@@ -146,8 +146,7 @@ void ConfigDialog::saveConfig() {
             Audio::stopBackgroundMusic();
             Audio::playBackgroundMusic(newMusicPath, true);
         }
-    }
-    else {
+    } else {
         if (Config.EnableBgMusic && NULL != RoomSceneInstance
             && RoomSceneInstance->isGameStarted() && !Audio::isBackgroundMusicPlaying()) {
             Audio::playBackgroundMusic(currentMusicPath, true);

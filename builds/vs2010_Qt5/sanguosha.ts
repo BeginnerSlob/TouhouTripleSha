@@ -653,12 +653,12 @@
         <translation>图片 (*.png *.bmp *.jpg)</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="186"/>
+        <location filename="../../src/dialog/configdialog.cpp" line="185"/>
         <source>Select a background music</source>
         <translation>请选择背景音乐文件</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/configdialog.cpp" line="188"/>
+        <location filename="../../src/dialog/configdialog.cpp" line="187"/>
         <source>Audio files (*.wav *.mp3 *.ogg)</source>
         <translation>音频 (*.wav *.mp3 *.ogg)</translation>
     </message>
@@ -2737,7 +2737,7 @@
         <location filename="../../src/ui/roomscene.cpp" line="3168"/>
         <location filename="../../src/ui/roomscene.cpp" line="3178"/>
         <location filename="../../src/ui/roomscene.cpp" line="3193"/>
-        <location filename="../../src/ui/roomscene.cpp" line="3989"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3993"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -2763,7 +2763,7 @@
     </message>
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="332"/>
-        <location filename="../../src/ui/roomscene.cpp" line="4514"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4518"/>
         <source>Add robots</source>
         <translation>添加电脑</translation>
     </message>
@@ -2784,7 +2784,7 @@
     </message>
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="375"/>
-        <location filename="../../src/ui/roomscene.cpp" line="4358"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4362"/>
         <source>pindian</source>
         <translation>拼点</translation>
     </message>
@@ -2971,7 +2971,7 @@
         <translation>下一场景</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="4517"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4521"/>
         <source>%1 robots</source>
         <translation>%1 名电脑</translation>
     </message>
@@ -3125,27 +3125,27 @@
         <translation>&lt;font color=&apos;%1&apos;&gt;────────游戏开始────────&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3976"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3980"/>
         <source>Server information</source>
         <translation>服务器信息</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3989"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3993"/>
         <source>You can only initiate a surrender poll at your play phase!</source>
         <translation>只有在你的出牌阶段才能请求投降！</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3994"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3998"/>
         <source>Surrender</source>
         <translation>投降</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3994"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3998"/>
         <source>Are you sure to surrender ?</source>
         <translation>你真的要投降吗？</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="4276"/>
+        <location filename="../../src/ui/roomscene.cpp" line="4280"/>
         <source>Complete</source>
         <translation>完成</translation>
     </message>

@@ -282,8 +282,7 @@ void Audio::playBackgroundMusic(const QString &fileNames, bool random/* = false*
     if (NULL != System) {
         if (!m_customBackgroundMusicFileName.isEmpty()) {
             backgroundMusicPlayer.play(m_customBackgroundMusicFileName, random);
-        }
-        else {
+        } else {
             backgroundMusicPlayer.play(fileNames, random);
         }
     }

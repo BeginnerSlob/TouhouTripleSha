@@ -3653,6 +3653,10 @@ void RoomScene::onGameStart() {
     if (Config.EnableBgMusic) {
         // start playing background music
         QString bgmusic_path = Config.value("BackgroundMusic", Config.m_defaultMusicPath).toString();
+        if (ServerInfo.GameMode == "jianniang") {
+            Audio::resetCustomBackgroundMusicFileName();
+            bgmusic_path = "audio/bgm/kencore.ogg";
+        }
         Audio::playBackgroundMusic(bgmusic_path, true);
     }
 #endif
