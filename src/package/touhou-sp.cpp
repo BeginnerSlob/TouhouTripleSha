@@ -1296,22 +1296,22 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
         CardUseStruct use = data.value<CardUseStruct>();
-        room->setPlayerMark(player, "thshushu", use.card->getNumber());
-        const Card *card = room->askForUseCard(player, "@@thshushu", "@thshushu", -1, Card::MethodNone);
-        room->setPlayerMark(player, "thshushu", 0);
+        room->setPlayerMark(ask_who, "thshushu", use.card->getNumber());
+        const Card *card = room->askForUseCard(ask_who, "@@thshushu", "@thshushu", -1, Card::MethodNone);
+        room->setPlayerMark(ask_who, "thshushu", 0);
         if (card)
-            player->tag["ThShushuCard"] = QVariant::fromValue(card);
+            ask_who->tag["ThShushuCard"] = QVariant::fromValue(card);
         return card;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        const Card *card = player->tag["ThShushuCard"].value<const Card *>();
-        player->tag.remove("ThShushuCard");
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
+        const Card *card = ask_who->tag["ThShushuCard"].value<const Card *>();
+        ask_who->tag.remove("ThShushuCard");
         if (card) {
             CardUseStruct use = data.value<CardUseStruct>();
-            room->obtainCard(player, use.card);
+            room->obtainCard(ask_who, use.card);
             Card *new_card = Sanguosha->cloneCard(use.card->getClassName());
             new_card->addSubcards(card->getSubcards());
             new_card->setSkillName(objectName());
