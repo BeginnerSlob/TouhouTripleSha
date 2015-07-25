@@ -464,9 +464,7 @@ void MainWindow::on_actionAbout_triggered() {
 
     QString project_url = "https://github.com/BeginnerSlob/TouhouTripleSha";
     content.append(tr("Source code: <a href='%1' style = \"color:#0072c1; \">%1</a> <br/>").arg(project_url));
-
-    QString forum_url = "http://qsanguosha.org";
-    content.append(tr("Forum: <a href='%1' style = \"color:#0072c1; \">%1</a> <br/>").arg(forum_url));
+    content.append(tr("Tieba: TouhouTripleSha Ba"));
 
     Window *window = new Window(tr("About QSanguosha"), QSize(420, 470));
     scene->addItem(window);
