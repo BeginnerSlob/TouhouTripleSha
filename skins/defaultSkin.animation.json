@@ -31,7 +31,7 @@
    "effects/indulgence", "effects/supply_shortage",
    "effects/lightning", "effects/drowning",
    "effects/known_both", "effects/burning_camps",
-   "effects/lure_tiger"],
+   "effects/lure_tiger", "effects/purple_song"],
 
 "huashen": [
 7000,
