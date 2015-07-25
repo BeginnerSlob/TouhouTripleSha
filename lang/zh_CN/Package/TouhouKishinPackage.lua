@@ -7,14 +7,11 @@ return {
 	["kishin001"] = "鬼人正邪",--风 - 空 - 4血
 	["designer:kishin001"] = "狐耳魔师",
 	["illustrator:kishin001"] = "ひそな",
-	["cv:kishin001"] = "向晚",
-	["~kishin001"] = "善哉善哉...无上甚深圆满正等觉...",
+	["cv:kishin001"] = "暂无",
 	["thluanshen"] = "乱神",
 	[":thluanshen"] = "出牌阶段限一次，若你的手牌数不小于体力值，你可以展示至少一张手牌并让一名其他角色选择一项：弃置你展示的牌并弃置等量的牌；或获得你展示的牌，然后将手牌补至等同于其体力上限的张数并将其人物牌翻面。",
 	["thluanshen:discard"] = "弃置其展示的牌",
 	["thluanshen:turnover"] = "获得其展示的牌",
-	["$thluanshen1"] = "休怪我做金刚怒目！",
-	["$thluanshen2"] = "大胆！",
 	
 	["#kishin002"] = "柳下的辘轳首",
 	["kishin002"] = "赤蛮奇",--花 - 空 - 4血
