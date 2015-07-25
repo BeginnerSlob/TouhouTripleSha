@@ -1920,29 +1920,29 @@ public:
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("GodSalvation") || use.card->isKindOf("AmazingGrace"))
                 foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
-                    if (owner != player && owner->isWounded())
+                    if (owner != player)
                         skill_list.insert(owner, QStringList(objectName()));
         } else if (triggerEvent == HpRecover && player->hasFlag("Global_Dying") && player->getHp() >= 1) {
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
-                if (owner != player && owner->isWounded())
+                if (owner != player)
                     skill_list.insert(owner, QStringList(objectName()));
         } else if (triggerEvent == Damaged) {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.nature == DamageStruct::Fire)
                 foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
-                    if (owner != player && owner->isWounded())
+                    if (owner != player)
                         skill_list.insert(owner, QStringList(objectName()));
         } else if (triggerEvent == CardResponded) {
             CardResponseStruct resp = data.value<CardResponseStruct>();
             if (resp.m_card->isKindOf("Jink") && resp.m_card->getSkillName() == "eight_diagram")
                 foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
-                    if (owner != player && owner->isWounded())
+                    if (owner != player)
                         skill_list.insert(owner, QStringList(objectName()));
         } else if (triggerEvent == DamageCaused) {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.card && damage.card->isKindOf("Slash") && damage.to->isKongcheng())
                 foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
-                    if (owner != player && owner->isWounded())
+                    if (owner != player)
                         skill_list.insert(owner, QStringList(objectName()));
         }
         return skill_list;
@@ -1951,24 +1951,25 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
         if (ask_who->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
-            room->recover(ask_who, RecoverStruct(ask_who));
             return true;
         }
         return false;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
-        QStringList choices;
-        choices << "draw";
-        if (ask_who->canDiscard(player, "he"))
-            choices << "throw";
-        QString choice = room->askForChoice(ask_who, objectName(), choices.join("+"));
-        if (choice == "throw") {
-            int card_id = room->askForCardChosen(ask_who, player, "he", objectName(), false, Card::MethodDiscard);
-            room->throwCard(card_id, player, ask_who);
-        } else
-            ask_who->drawCards(1, objectName());
-
+        room->recover(ask_who, RecoverStruct(ask_who));
+        if (ask_who->askForSkillInvoke("thwunan_draw_or_discard", "yes")) {
+            QStringList choices;
+            choices << "draw";
+            if (ask_who->canDiscard(player, "he"))
+                choices << "throw";
+            QString choice = room->askForChoice(ask_who, objectName(), choices.join("+"));
+            if (choice == "throw") {
+                int card_id = room->askForCardChosen(ask_who, player, "he", objectName(), false, Card::MethodDiscard);
+                room->throwCard(card_id, player, ask_who);
+            } else
+                ask_who->drawCards(1, objectName());
+        }
         return false;
     }
 };
