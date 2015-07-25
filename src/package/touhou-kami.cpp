@@ -1962,7 +1962,7 @@ public:
         choices << "draw";
         if (ask_who->canDiscard(player, "he"))
             choices << "throw";
-        QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+        QString choice = room->askForChoice(ask_who, objectName(), choices.join("+"));
         if (choice == "throw") {
             int card_id = room->askForCardChosen(ask_who, player, "he", objectName(), false, Card::MethodDiscard);
             room->throwCard(card_id, player, ask_who);
