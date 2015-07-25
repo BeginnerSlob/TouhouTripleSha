@@ -152,6 +152,13 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
                 room->getThread()->trigger(AfterDrawInitialCards, room, p, num_data);
                 i++;
             }
+            if (isNormalGameMode(room->getMode())) {
+                if (room->getLord()) {
+                    int id = room->getCardFromPile("scroll");
+                    if (id != -1)
+                        room->moveCardTo(Sanguosha->getCard(id), room->getLord(), Player::PlaceHand, true);
+                }
+            }
         }
         return false;
     }

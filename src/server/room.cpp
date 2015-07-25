@@ -1122,6 +1122,22 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
     effect.to = repliedPlayer;
     if (card->isCancelable(effect))
         result = !_askForNullification(card, repliedPlayer, to, !positive, aiHelper);
+    if (result) {
+        if (card && card->getSkillName() == "jade") {
+            bool ask_jade = false;
+            foreach (ServerPlayer *p, getAlivePlayers()) {
+                if (p->getMark("cardEffect_" + trick->toString()) > 0) {
+                    ask_jade = true;
+                    break;
+                }
+            }
+            if (ask_jade) {
+                setPlayerProperty(repliedPlayer, "jade_trick", trick->toString());
+                askForUseCard(repliedPlayer, "@@jade", "@jade", -1, Card::MethodNone);
+                setPlayerProperty(repliedPlayer, "jade_trick", QVariant());
+            }
+        }
+    }
     if (card->isVirtualCard())
         delete card;
     return result;
@@ -2403,10 +2419,8 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign) {
 
     QList<int> max_choice;
     if (getMode() == "03_1v1v1") {
-        for (int i = 0; i < to_assign.length(); ++i) {
+        for (int i = 0; i < to_assign.length(); ++i)
             max_choice << 9;
-            touhou_num << 0;
-        }
     } else {
         foreach (ServerPlayer *p, to_assign) {
             if (p->getRole() == "loyalist")
@@ -2433,7 +2447,7 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign) {
                 choice = player->findReasonable(choices, true);
                 if (choice.isEmpty())
                     break;
-                if (i >= 2)
+                if (i >= (getMode() == "03_1v1v1" ? 0 : 2))
                     break;
                 else {
                     const General *general = Sanguosha->getGeneral(choice);

@@ -675,16 +675,23 @@ void Card::onUse(Room *room, const CardUseStruct &use) const{
 void Card::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     QStringList nullified_list = room->getTag("CardUseNullifiedList").toStringList();
     bool all_nullified = nullified_list.contains("_ALL_TARGETS");
+    foreach (ServerPlayer *target, targets)
+        room->addPlayerMark(target, "cardEffect_" + toString());
     foreach (ServerPlayer *target, targets) {
+        room->removePlayerMark(target, "cardEffect_" + toString());
+        bool null_heg = target->getMark("cardNullifyHeg_" + toString()) > 0;
+
         CardEffectStruct effect;
         effect.card = this;
         effect.from = source;
         effect.to = target;
         effect.multiple = (targets.length() > 1);
-        effect.nullified = (all_nullified || nullified_list.contains(target->objectName()));
+        effect.nullified = null_heg || (all_nullified || nullified_list.contains(target->objectName()));
 
         room->cardEffect(effect);
     }
+    foreach (ServerPlayer *p, room->getAlivePlayers())
+        room->setPlayerMark(p, "cardEffect_" + toString(), 0);
 
     if (room->getCardPlace(getEffectiveId()) == Player::PlaceTable) {
         CardMoveReason reason(CardMoveReason::S_REASON_USE, source->objectName(), QString(), this->getSkillName(), QString());
