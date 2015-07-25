@@ -2405,7 +2405,6 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign) {
     if (getMode() == "03_1v1v1") {
         for (int i = 0; i < to_assign.length(); ++i) {
             max_choice << 9;
-            touhou_num << 0;
         }
     } else {
         foreach (ServerPlayer *p, to_assign) {
