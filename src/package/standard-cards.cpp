@@ -1420,6 +1420,54 @@ public:
 
 // EX cards
 
+PurpleSong::PurpleSong(Suit suit, int number)
+    : DelayedTrick(suit, number)
+{
+    setObjectName("purple_song");
+
+    judge.pattern = ".|diamond";
+    judge.good = false;
+    judge.negative = false;
+    judge.reason = objectName();
+}
+
+bool PurpleSong::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && !to_select->containsTrick(objectName()) && to_select != Self;
+}
+
+void PurpleSong::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    Q_ASSERT(targets.length() == 1);
+    room->setEmotion(targets.first(), "effects/purple_song");
+    DelayedTrick::use(room, source, targets);
+}
+
+void PurpleSong::takeEffect(ServerPlayer *target) const{
+    target->skip(Player::Discard);
+    target->getRoom()->addPlayerMark(target, "zilianshengyong");
+}
+
+class PurpleSongSkill: public TriggerSkill {
+public:
+    PurpleSongSkill(): TriggerSkill("purple_song") {
+        events << EventPhaseStart;
+        global = true;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player->getMark("zilianshengyong") == 0)
+            return QStringList();
+        if (player->getPhase() == Player::NotActive) {
+            while (player->getMark("zilianshengyong") > 0) {
+                room->removePlayerMark(player, "zilianshengyong");
+                player->drawCards(2);
+            }
+        }
+
+        return QStringList();
+    }
+};
+
 class IceSwordSkill: public WeaponSkill {
 public:
     IceSwordSkill(): WeaponSkill("ice_sword") {
@@ -1929,6 +1977,93 @@ void BurningCamps::onEffect(const CardEffectStruct &effect) const {
     effect.to->getRoom()->damage(DamageStruct(this, effect.from, effect.to, 1, DamageStruct::Fire)); 
 }
 
+class ThMengxuan: public TriggerSkill {
+public:
+    ThMengxuan(): TriggerSkill("thmengxuan") {
+        events << Damaged;
+        frequency = Frequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        QStringList list;
+        if (TriggerSkill::triggerable(player)) {
+            DamageStruct damage = data.value<DamageStruct>();
+            for (int i = 0; i < damage.damage; ++i)
+                list << objectName();
+        }
+        return list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        player->drawCards(1, objectName());
+        return false;
+    }
+};
+
+ScrollCard::ScrollCard() {
+    target_fixed = true;
+}
+
+void ScrollCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    room->acquireSkill(source, "thmengxuan");
+    room->setPlayerMark(source, "scroll", 1);
+    if (source->getTreasure() && source->canDiscard(source, source->getTreasure()->getEffectiveId()))
+        room->throwCard(source->getTreasure(), source);
+}
+
+class ScrollSkill: public ZeroCardViewAsSkill {
+public:
+    ScrollSkill(): ZeroCardViewAsSkill("scroll") {
+    }
+
+    virtual const Card *viewAs() const{
+        return new ScrollCard;
+    }
+};
+
+class ScrollTriggerSkill: public TreasureSkill {
+public:
+    ScrollTriggerSkill(): TreasureSkill("scroll_trigger") {
+        events << EventPhaseStart;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return target && target->isAlive() && target->getMark("scroll") > 0 && target->getPhase() == Player::RoundStart;
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        room->setPlayerMark(player, "scroll", 0);
+        room->detachSkillFromPlayer(player, "thmengxuan");
+        return false;
+    }
+};
+
+class ScrollProhibit : public ProhibitSkill {
+public:
+    ScrollProhibit() : ProhibitSkill("#scroll") {
+    }
+
+    virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const{
+        return to->hasTreasure("scroll") && card->isKindOf("DelayedTrick");
+    }
+};
+
+Scroll::Scroll(Suit suit, int number)
+    : Treasure(suit, number)
+{
+    setObjectName("scroll");
+}
+
 Drowning::Drowning(Suit suit, int number)
     : AOE(suit, number)
 {
@@ -2026,6 +2161,66 @@ void KnownBoth::onEffect(const CardEffectStruct &effect) const {
     room->sendLog(log, room->getOtherPlayers(effect.from));
 
     room->showAllCards(effect.to, effect.from);
+}
+
+JadeCard::JadeCard() {
+}
+
+bool JadeCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return to_select->getMark("cardEffect_" + Self->property("jade_trick").toString()) > 0;
+}
+
+void JadeCard::onEffect(const CardEffectStruct &effect) const{
+    effect.from->getRoom()->addPlayerMark(effect.to, "cardNullifyHeg_" + effect.from->property("jade_trick").toString());
+}
+
+class JadeSkill: public OneCardViewAsSkill {
+public:
+    JadeSkill(): OneCardViewAsSkill("jade") {
+        filter_pattern = ".|red|.|hand";
+        response_or_use = true;
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        if (Sanguosha->getCurrentCardUsePattern() != "nullification")
+            return false;
+        else
+            return OneCardViewAsSkill::viewFilter(selected, to_select);
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (Sanguosha->getCurrentCardUsePattern() != "nullification") {
+            if (cards.isEmpty())
+                return new JadeCard;
+        } else
+            return OneCardViewAsSkill::viewAs(cards);
+        return NULL;
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        Nullification *null = new Nullification(originalCard->getSuit(), originalCard->getNumber());
+        null->addSubcard(originalCard);
+        null->setSkillName("jade");
+        return null;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return false;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
+        return pattern == "@@jade" || pattern == "nullification";
+    }
+
+    virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
+        return player->isAlive();
+    }
+};
+
+Jade::Jade(Suit suit, int number)
+    : Treasure(suit, number)
+{
+    setObjectName("jade");
 }
 
 StandardCardPackage::StandardCardPackage()
@@ -2177,7 +2372,11 @@ StandardExCardPackage::StandardExCardPackage()
     : Package("standard_ex_cards", Package::CardPack)
 {
     QList<Card *> cards;
-    cards << new IceSword(Card::Spade, 2)
+    cards << new Slash(Card::Spade, 1)
+          << new PurpleSong(Card::Heart, 1)
+          << new Slash(Card::Club, 1)
+          << new Jink(Card::Diamond, 1)
+          << new IceSword(Card::Spade, 2)
           << new IronArmor(Card::Heart, 2)
           << new RenwangShield(Card::Club, 2)
           << new LureTiger(Card::Diamond, 2)
@@ -2189,6 +2388,10 @@ StandardExCardPackage::StandardExCardPackage()
           << new Jink(Card::Heart, 6)
           << new BurningCamps(Card::Club, 6)
           << new Slash(Card::Diamond, 6)
+          << new Scroll()
+          << new Peach(Card::Heart, 7)
+          << new Slash(Card::Club, 7)
+          << new Jink(Card::Diamond, 7)
           << new KnownBoth(Card::Spade, 8)
           << new Peach(Card::Heart, 8)
           << new Slash(Card::Club, 8)
@@ -2200,9 +2403,14 @@ StandardExCardPackage::StandardExCardPackage()
           << new Analeptic(Card::Spade, 12)
           << new Lightning(Card::Heart, 12)
           << new Drowning()
-          << new Nullification(Card::Diamond, 12);
+          << new Nullification(Card::Diamond, 12)
+          << new Jade()
+          << new FireSlash(Card::Heart, 13)
+          << new ThunderSlash(Card::Club, 13)
+          << new PurpleSong(Card::Diamond, 13);
 
     skills << new FakeMoveSkill("drowning")
+           << new PurpleSongSkill
            << new IceSwordSkill
            << new IronArmorSkill
            << new RenwangShieldSkill
@@ -2210,12 +2418,19 @@ StandardExCardPackage::StandardExCardPackage()
     related_skills.insertMulti("lure_tiger", "#lure_tiger");
     skills << new MoonSpearSkill
            << new BreastplateSkill
-           << new WoodenOxSkill << new WoodenOxTriggerSkill;
+           << new WoodenOxSkill << new WoodenOxTriggerSkill
+           << new ThMengxuan
+           << new ScrollSkill
+           << new ScrollTriggerSkill << new ScrollProhibit;
+    related_skills.insertMulti("scroll_trigger", "#scroll");
+    skills << new JadeSkill;
 
     foreach (Card *card, cards)
         card->setParent(this);
 
     addMetaObject<WoodenOxCard>();
+    addMetaObject<ScrollCard>();
+    addMetaObject<JadeCard>();
 }
 
 ADD_PACKAGE(StandardCard)

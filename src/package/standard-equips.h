@@ -87,15 +87,6 @@ public:
     Q_INVOKABLE RenwangShield(Card::Suit suit, int number);
 };
 
-class WoodenOxCard: public SkillCard {
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE WoodenOxCard();
-
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-};
-
 class MoonSpear: public Weapon {
     Q_OBJECT
 
@@ -110,6 +101,15 @@ public:
     Q_INVOKABLE Breastplate(Card::Suit suit, int number);
 };
 
+class WoodenOxCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE WoodenOxCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 class WoodenOx: public Treasure {
     Q_OBJECT
 
@@ -117,6 +117,39 @@ public:
     Q_INVOKABLE WoodenOx(Card::Suit suit = Diamond, int number = 4);
 
     virtual void onUninstall(ServerPlayer *player) const;
+};
+
+class ScrollCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ScrollCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class Scroll: public Treasure {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE Scroll(Card::Suit suit = Spade, int number = 7);
+};
+
+class JadeCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE JadeCard();
+    
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class Jade: public Treasure {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE Jade(Card::Suit suit = Spade, int number = 13);
 };
 
 class StandardCardPackage: public Package {
