@@ -2315,7 +2315,7 @@ public:
                     ikwushuang_tag << to->objectName();
                 ask_who->tag["IkWushuang_" + use.card->toString()] = ikwushuang_tag;
             } else {
-                room->sendCompulsoryTriggerLog(use.from, objectName());
+                room->sendCompulsoryTriggerLog(ask_who, objectName());
                 room->broadcastSkillInvoke(objectName());
 
                 ask_who->tag["IkWushuang_" + use.card->toString()] = QStringList(use.from->objectName());

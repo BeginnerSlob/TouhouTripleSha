@@ -301,7 +301,7 @@ public:
     IkMopan(): OneCardViewAsSkill("ikmopan") {
         response_or_use = true;
         filter_pattern = ".|red|.|hand";
-        response_pattern = "peach+analeptic",
+        response_pattern = "peach+analeptic";
     }
 
     virtual const Card *viewAs(const Card *originalCard) const {
