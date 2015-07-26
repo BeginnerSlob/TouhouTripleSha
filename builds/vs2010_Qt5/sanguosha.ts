@@ -1471,7 +1471,7 @@
     </message>
     <message>
         <location filename="../../src/dialog/generaloverview.ui" line="257"/>
-        <location filename="../../src/dialog/generaloverview.cpp" line="639"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="640"/>
         <source>Search...</source>
         <translation>搜索...</translation>
     </message>
@@ -1481,8 +1481,8 @@
         <translation>配音</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="519"/>
-        <location filename="../../src/dialog/generaloverview.cpp" line="527"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="520"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="528"/>
         <source>Official</source>
         <translation>官方</translation>
     </message>
@@ -1492,48 +1492,54 @@
         <translation>配音</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="305"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="304"/>
         <source>Male</source>
         <translation>空属性</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="305"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="304"/>
         <source>Female</source>
         <translation>幻属性</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="305"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="304"/>
         <source>NoGender</source>
         <translation>无性别</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="322"/>
-        <location filename="../../src/dialog/generaloverview.cpp" line="335"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="321"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="336"/>
         <source>This general is hidden</source>
         <translation>该人物被隐藏， 不会出现在选将列表中</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="351"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="329"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="331"/>
+        <source>This general is a lord</source>
+        <translation>该人物是君主人物</translation>
+    </message>
+    <message>
+        <location filename="../../src/dialog/generaloverview.cpp" line="352"/>
         <source>This is an Lua extension</source>
         <translation>该包为Lua扩展包</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="465"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="466"/>
         <source>Copy lines</source>
         <translation>复制台词</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="507"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="508"/>
         <source>Death</source>
         <translation>阵亡</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="635"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="636"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../../src/dialog/generaloverview.cpp" line="635"/>
+        <location filename="../../src/dialog/generaloverview.cpp" line="636"/>
         <source>No generals are found</source>
         <translation>未找到符合要求的人物</translation>
     </message>
@@ -2014,7 +2020,7 @@
     <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="467"/>
         <source>Tieba: TouhouTripleSha Ba</source>
-        <translation type="unfinished">贴吧: 东方绮符剧吧</translation>
+        <translation>贴吧: 东方绮符剧吧</translation>
     </message>
     <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="469"/>
