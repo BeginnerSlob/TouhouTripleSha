@@ -301,17 +301,7 @@ public:
     IkMopan(): OneCardViewAsSkill("ikmopan") {
         response_or_use = true;
         filter_pattern = ".|red|.|hand";
-    }
-
-    virtual bool isEnabledAtPlay(const Player *) const {
-        return false;
-    }
-
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const {
-        if (pattern != "peach")
-            return false;
-        QString str = player->property("currentdying").toString();
-        return player->objectName() == str;
+        response_pattern = "peach+analeptic",
     }
 
     virtual const Card *viewAs(const Card *originalCard) const {
