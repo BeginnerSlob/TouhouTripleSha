@@ -5256,6 +5256,8 @@ class IkLanhuanRecord: public TriggerSkill {
 public:
     IkLanhuanRecord(): TriggerSkill("#iklanhuan-record") {
         events << CardFinished << TurnStart;
+        global = true;
+        frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{

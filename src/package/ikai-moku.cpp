@@ -3146,6 +3146,7 @@ class IkJizhouRecord : public TriggerSkill {
 public:
     IkJizhouRecord() : TriggerSkill("#ikjizhou-record") {
         events << CardsMoveOneTime;
+        global = true;
         frequency = Compulsory;
     }
 
