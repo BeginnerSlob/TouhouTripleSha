@@ -1893,7 +1893,7 @@ ThFeihuCard::ThFeihuCard() {
 }
 
 bool ThFeihuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select->getHp() <= Self->getHp() && (Self->getHp() <= 2 || to_select != Self);
+    return targets.isEmpty() && to_select->getHp() <= Self->getHp() && (Self->getLostHp() > 2 || to_select != Self);
 }
 
 void ThFeihuCard::onEffect(const CardEffectStruct &effect) const{
