@@ -5239,6 +5239,8 @@ class IkNicuRecord: public TriggerSkill {
 public:
     IkNicuRecord(): TriggerSkill("#iknicu-record") {
         events << TargetSpecified << EventPhaseStart;
+        global = true;
+        frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{

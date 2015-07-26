@@ -2491,6 +2491,8 @@ class IkLianxiaoRecord: public TriggerSkill {
 public:
     IkLianxiaoRecord(): TriggerSkill("#iklianxiao-record") {
         events << CardFinished << EventPhaseChanging;
+        global = true;
+        frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
@@ -4064,6 +4066,7 @@ class IkQimuRecord: public TriggerSkill {
 public:
     IkQimuRecord(): TriggerSkill("#ikqimu-record") {
         events << PreCardUsed << CardResponded;
+        global = true;
         frequency = Compulsory;
     }
 
@@ -4381,6 +4384,7 @@ class IkWuyuRecord : public TriggerSkill {
 public:
     IkWuyuRecord() : TriggerSkill("#ikwuyu-record") {
         events << CardsMoveOneTime;
+        global = true;
         frequency = Compulsory;
     }
 
@@ -4500,6 +4504,8 @@ class IkHuwuRecord: public TriggerSkill {
 public:
     IkHuwuRecord(): TriggerSkill("#ikhuwu-record") {
         events << DamageCaused << EventPhaseChanging;
+        global = true;
+        frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
@@ -4564,6 +4570,8 @@ class IkMosuRecord: public TriggerSkill {
 public:
     IkMosuRecord(): TriggerSkill("#ikmosu-record") {
         events << DamageInflicted << EventPhaseChanging;
+        global = true;
+        frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
