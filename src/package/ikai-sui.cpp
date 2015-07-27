@@ -3430,7 +3430,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *player) const{
         return TriggerSkill::triggerable(player)
-            && player->getPhase() == Player::Finish
+            && player->getPhase() == Player::Discard
             && !player->isNude();
     }
 
