@@ -1915,11 +1915,11 @@ bool ThGuixuCard::targetFilter(const QList<const Player *> &targets, const Playe
                 return true;
         }
     }
-    foreach (const Card *c, to_select->getEquips()) {
-        const EquipCard *equip = qobject_cast<const EquipCard *>(c);
+    for (int i = 0; i < S_EQUIP_AREA_LENGTH; ++i) {
+        const EquipCard *equip = to_select->getEquip(i);
         if (equip) {
             foreach (const Player *p, to_select->getAliveSiblings()) {
-                if (!p->getEquip(equip->location()))
+                if (!p->getEquip(i))
                     return true;
             }
         }
@@ -2006,8 +2006,11 @@ public:
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == PreCardUsed) {
-            if (player == room->getCurrent() && player->getPhase() != Player::NotActive)
-                player->tag["ThGuixuRecord"] = QVariant::fromValue(data.value<CardUseStruct>().card);
+            if (player == room->getCurrent() && player->getPhase() != Player::NotActive) {
+                const Card *card = data.value<CardUseStruct>().card;
+                if (card->getTypeId() != Card::TypeSkill)
+                    player->tag["ThGuixuRecord"] = QVariant::fromValue(data.value<CardUseStruct>().card);
+            }
         } else if (triggerEvent == EventPhaseChanging) {
             if (data.value<PhaseChangeStruct>().to == Player::NotActive)
                 player->tag.remove("ThGuixuRecord");
