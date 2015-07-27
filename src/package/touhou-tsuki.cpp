@@ -26,7 +26,7 @@ public:
             for (int i = 0; i < damage.damage; i++)
                 skills << objectName();
         } else if (triggerEvent == BeforeCardsMove) {
-            if (player != room->getCurrent() || player->getPhase() != Player::NotActive)
+            if (player != room->getCurrent() || player->getPhase() == Player::NotActive)
                 return skills;
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.from && move.from->isAlive() && move.to_place == Player::DiscardPile
