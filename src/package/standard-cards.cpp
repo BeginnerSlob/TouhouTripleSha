@@ -1460,7 +1460,7 @@ public:
         if (player->getPhase() == Player::NotActive) {
             while (player->getMark("zilianshengyong") > 0) {
                 room->removePlayerMark(player, "zilianshengyong");
-                player->drawCards(2);
+                player->drawCards(2, objectName());
             }
         }
 
@@ -2081,7 +2081,7 @@ void Drowning::onEffect(const CardEffectStruct &effect) const{
     QStringList choices;
     if (effect.from->canDiscard(effect.to, "e"))
         choices << "throw";
-    if (effect.from->canDiscard(effect.to, "h") && effect.to->getHandcardNum() > 2)
+    if (effect.from->canDiscard(effect.to, "h") && effect.to->getHandcardNum() >= 2)
         choices << "discard";
     choices << "damage";
     QString choice = room->askForChoice(effect.to, objectName(), choices.join("+"), QVariant::fromValue(effect));
