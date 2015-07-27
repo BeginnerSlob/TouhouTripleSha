@@ -414,13 +414,14 @@ public:
         TriggerList skill_list;
         if (triggerEvent == TargetConfirming) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("Slash"))
+            if (use.card->isKindOf("Slash")) {
                 foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
                     if (p == room->getCurrent() && p->getPhase() != Player::NotActive)
                         continue;
                     if (p->inMyAttackRange(player) || p == player)
                         skill_list.insert(p, QStringList(objectName()));
                 }
+            }
         } else if (triggerEvent == BeforeCardsMove) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
@@ -437,9 +438,9 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
         if (triggerEvent == TargetConfirming) {
-            if (ask_who->askForSkillInvoke(objectName())) {
+            if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
                 room->broadcastSkillInvoke(objectName());
                 if (!room->askForCard(ask_who, "^BasicCard", "@thzhancao")) {
                     room->loseHp(ask_who);
