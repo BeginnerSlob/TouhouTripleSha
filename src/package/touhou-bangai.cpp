@@ -174,7 +174,7 @@ public:
 class ThMiqi: public TriggerSkill {
 public:
     ThMiqi(): TriggerSkill("thmiqi") {
-        events << EventPhaseChanging;
+        events << EventPhaseStart;
         view_as_skill = new ThMiqiVS;
     }
 
