@@ -1452,7 +1452,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        room->sendCompulsoryTriggerLog(player, objectName());
+        room->sendCompulsoryTriggerLog(player, "ikshangshishu");
         room->broadcastSkillInvoke("ikshangshishu", 3);
         room->askForDiscard(player, objectName(), 1, 1, false, true, "@ikshangshishu-discard");
         return false;
