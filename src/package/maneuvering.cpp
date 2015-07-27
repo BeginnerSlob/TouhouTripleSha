@@ -157,19 +157,19 @@ public:
         if (!ArmorSkill::triggerable(player)) return QStringList();
         if (triggerEvent == SlashEffected) {
             SlashEffectStruct effect = data.value<SlashEffectStruct>();
-            if (effect.from->hasSkill("ikkongni"))
+            if (effect.from && effect.from->hasSkill("ikkongni"))
                 return QStringList();
             if (effect.nature == DamageStruct::Normal)
                 return QStringList(objectName());
         } else if (triggerEvent == CardEffected) {
             CardEffectStruct effect = data.value<CardEffectStruct>();
-            if (effect.from->hasSkill("ikkongni"))
+            if (effect.from && effect.from->hasSkill("ikkongni"))
                 return QStringList();
             if (effect.card->isKindOf("SavageAssault") || effect.card->isKindOf("ArcheryAttack") || effect.card->isKindOf("Drowning"))
                 return QStringList(objectName());
         } else if (triggerEvent == DamageInflicted) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.from->hasSkill("ikkongni"))
+            if (damage.from && damage.from->hasSkill("ikkongni"))
                 return QStringList();
             if (damage.nature == DamageStruct::Fire)
                 return QStringList(objectName());
@@ -236,7 +236,7 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == DamageInflicted) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.from->hasSkill("ikkongni"))
+            if (damage.from && damage.from->hasSkill("ikkongni"))
                 return QStringList();
             if (ArmorSkill::triggerable(player) && damage.damage > 1)
                 return QStringList(objectName());

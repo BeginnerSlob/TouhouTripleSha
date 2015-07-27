@@ -1534,7 +1534,9 @@ public:
     virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (!ArmorSkill::triggerable(player)) return QStringList();
         SlashEffectStruct effect = data.value<SlashEffectStruct>();
-        if (effect.from->getMark("Equips_of_Others_Nullified_to_You") > 0 || effect.from->hasSkill("ikkongni")) return QStringList();
+        if (!effect.from
+            || effect.from->getMark("Equips_of_Others_Nullified_to_You") > 0
+            || effect.from->hasSkill("ikkongni")) return QStringList();
         if (effect.slash->isBlack()) return QStringList(objectName());
         return QStringList();
     }
