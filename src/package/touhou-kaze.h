@@ -143,13 +143,22 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class ThMaihuoShowCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThMaihuoShowCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 class ThMaihuoCard: public SkillCard{
     Q_OBJECT
 
 public:
     Q_INVOKABLE ThMaihuoCard();
 
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
 class ThSangzhiCard: public SkillCard{
