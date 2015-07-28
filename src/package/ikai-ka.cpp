@@ -841,6 +841,19 @@ public:
     }
 };
 
+class IkFengXingClear: public TriggerSkill {
+public:
+    IkFengXingClear(): TriggerSkill("#ikfengxing-clear") {
+        events << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (data.value<PhaseChangeStruct>().to == Player::NotActive)
+            room->setPlayerMark(player, "ikfengxing", 0);
+        return QStringList();
+    }
+};
+
 class IkQizhong: public TriggerSkill {
 public:
     IkQizhong(): TriggerSkill("ikqizhong") {
@@ -4792,7 +4805,9 @@ IkaiKaPackage::IkaiKaPackage()
     General *bloom032 = new General(this, "bloom032", "hana");
     bloom032->addSkill(new IkFengxing);
     bloom032->addSkill(new IkFengxingDistance);
+    bloom032->addSkill(new IkFengxingClear);
     related_skills.insertMulti("ikfengxing", "#ikfengxing");
+    related_skills.insertMulti("ikfengxing", "#ikfengxing-clear");
 
     General *bloom034 = new General(this, "bloom034", "hana");
     bloom034->addSkill(new IkQizhong);
