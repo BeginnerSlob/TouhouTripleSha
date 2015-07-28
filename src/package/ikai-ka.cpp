@@ -841,9 +841,9 @@ public:
     }
 };
 
-class IkFengXingClear: public TriggerSkill {
+class IkFengxingClear: public TriggerSkill {
 public:
-    IkFengXingClear(): TriggerSkill("#ikfengxing-clear") {
+    IkFengxingClear(): TriggerSkill("#ikfengxing-clear") {
         events << EventPhaseChanging;
     }
 
