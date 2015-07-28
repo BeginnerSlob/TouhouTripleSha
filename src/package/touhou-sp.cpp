@@ -1910,7 +1910,7 @@ void ThFeihuCard::onEffect(const CardEffectStruct &effect) const{
             int card_id = room->askForCardChosen(effect.from, effect.to, "he", "thfeihu", false, Card::MethodDiscard);
             room->throwCard(card_id, effect.to, effect.from);
         }
-		room->recover(effect.to, RecoverStruct(effect.from));
+        room->recover(effect.to, RecoverStruct(effect.from));
     } else {
         room->damage(DamageStruct("thfeihu", effect.from, effect.to));
         if (effect.to->isAlive()) {
