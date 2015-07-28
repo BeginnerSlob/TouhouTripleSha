@@ -1892,7 +1892,10 @@ public:
 
         ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName());
         QStringList skill;
-        skill << "thshenbao" << "thyuhuo";
+        if (!target->hasSkill("thshenbao"))
+            skill << "thshenbao";
+        if (!target->hasSkill("thyuhuo"))
+            skill << "thyuhuo";
         room->handleAcquireDetachSkills(target, skill);
 
         int n = 0;
