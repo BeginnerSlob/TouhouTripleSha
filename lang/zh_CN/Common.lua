@@ -13,6 +13,8 @@ CommonTranslationTable = {
 	["wakeskill"] = "觉醒技，",
 	["lordskill"] = "君主技，",
 	["oppphskill"] = "出牌阶段限一次，",
+	["lianwuskill"] = "连舞技，",
+	["onlyskill"] = "专属技，",
 
 	["Pairs"] = "双将",
 	["XMode"] = "血战到底",
