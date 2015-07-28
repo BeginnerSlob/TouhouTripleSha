@@ -214,7 +214,7 @@ public:
         } else if (room->getCardPlace(judge.card->getEffectiveId()) == Player::PlaceJudge)
             player->obtainCard(judge.card);
 
-        return true;
+        return false;
     }
 };
 
@@ -242,8 +242,7 @@ public:
     }
 
     virtual bool triggerable(const ServerPlayer *player) const{
-        return DrawCardsSkill::triggerable(player)
-               && player->hasFlag("ThJilanwenInvoke");
+        return player && player->isAlive() && player->hasFlag("ThJilanwenInvoke");
     }
 
     virtual int getDrawNum(ServerPlayer *player, int n) const{
