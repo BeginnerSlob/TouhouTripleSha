@@ -2036,7 +2036,7 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer* &) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const{
         DamageStruct damage = data.value<DamageStruct>();
         room->addPlayerMark(damage.from, "ikkuanglu", damage.damage);
         return false;
