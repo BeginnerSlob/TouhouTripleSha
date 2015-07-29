@@ -53,6 +53,7 @@ public:
             }
         case GameOverJudge: {
                 if (player->isLord()) {
+                    room->setPlayerMark(player, "@single", 1);
                     scenario->marryAll(room);
                 } else if (player->isMale()) {
                     ServerPlayer *loyalist = NULL;
@@ -63,10 +64,35 @@ public:
                         }
                     }
                     ServerPlayer *widow = scenario->getSpouse(player);
-                    if (widow && widow->isAlive() && widow->isFemale() && room->getLord()->isAlive() && loyalist == NULL)
-                        scenario->remarry(room->getLord(), widow);
+                    if (widow && widow->isAlive() && widow->isFemale()) {
+                        if (room->getLord()->isAlive() && loyalist == NULL)
+                            scenario->remarry(room->getLord(), widow);
+                        else
+                            room->setPlayerMark(widow, "@single", 1);
+                    }
                 } else if (player->getRoleEnum() == Player::Loyalist) {
                     room->setPlayerProperty(player, "role", "renegade");
+
+                    QMap<QString, QStringList> map = scenario->getMap(false);
+                    QStringList husbands = map[player->getGeneralName()];
+                    if (!husbands.isEmpty()) {
+                        foreach (QString husband, husbands) {
+                            ServerPlayer *p = room->findPlayer(husband, true);
+                            if (p) {
+                                scenario->setSpouse(player, p);
+                                LogMessage log;
+                                log.type = "#Divorse";
+                                log.from = room->getLord();
+                                log.to << player;
+                                room->sendLog(log);
+                                LogMessage log2;
+                                log.type = "#Marry";
+                                log.from = p;
+                                log.to << player;
+                                room->sendLog(log);
+                            }
+                        }
+                    }
 
                     QList<ServerPlayer *> players = room->getAllPlayers();
                     QList<ServerPlayer *> widows;
@@ -75,10 +101,12 @@ public:
                             widows << player;
                     }
 
-                    ServerPlayer *new_wife = room->askForPlayerChosen(room->getLord(), widows, "remarry");
-                    if (new_wife) {
-                        scenario->remarry(room->getLord(), new_wife);
-                    }
+                    if (!widows.isEmpty()) {
+                        ServerPlayer *new_wife = room->askForPlayerChosen(room->getLord(), widows, "remarry");
+                        if (new_wife)
+                            scenario->remarry(room->getLord(), new_wife);
+                    } else
+                        room->setPlayerMark(room->getLord(), "@single", 1);
                 }
 
                 QList<ServerPlayer *> players = room->getAlivePlayers();
@@ -172,10 +200,14 @@ void CoupleScenario::marryAll(Room *room) const{
 }
 
 void CoupleScenario::setSpouse(ServerPlayer *player, ServerPlayer *spouse) const{
-    if (spouse)
+    if (spouse) {
         player->tag["spouse"] = QVariant::fromValue(spouse);
-    else
+        if (player->isAlive())
+            player->getRoom()->setPlayerMark(player, "@single", 0);
+    } else {
         player->tag.remove("spouse");
+        player->getRoom()->setPlayerMark(player, "@single", 1);
+    }
 }
 
 void CoupleScenario::marry(ServerPlayer *husband, ServerPlayer *wife) const{
@@ -202,16 +234,6 @@ void CoupleScenario::remarry(ServerPlayer *enkemann, ServerPlayer *widow) const{
     log.from = widow;
     log.to << ex_husband;
     room->sendLog(log);
-
-    ServerPlayer *ex_wife = getSpouse(enkemann);
-    if (ex_wife) {
-        setSpouse(ex_wife, NULL);
-        LogMessage log;
-        log.type = "#Divorse";
-        log.from = enkemann;
-        log.to << ex_wife;
-        room->sendLog(log);
-    }
 
     marry(enkemann, widow);
     room->setPlayerProperty(widow, "role", "loyalist");
