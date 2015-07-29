@@ -1216,11 +1216,11 @@ class IkZuiyan: public TriggerSkill {
 public:
     IkZuiyan(): TriggerSkill("ikzuiyan") {
         events << EventPhaseStart;
+        owner_only_skill = true;
     }
 
     virtual bool triggerable(const ServerPlayer *player) const{
-        return TriggerSkill::triggerable(player) && player->hasSkill("ikguoshang")
-            && player->getPhase() == Player::Play;
+        return TriggerSkill::triggerable(player) && player->getPhase() == Player::Play;
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
@@ -3711,7 +3711,7 @@ public:
 
     virtual bool viewFilter(const Card *to_select) const{
         ServerPlayer *owner = Sanguosha->currentRoom()->getCardOwner(to_select->getEffectiveId());
-        if (!owner || !owner->hasSkill("thyanmeng"))
+        if (!owner)
             return false;
         return to_select->isKindOf("Jink");
     }

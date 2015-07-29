@@ -559,6 +559,7 @@ public:
     ThKuangmo(): TriggerSkill("thkuangmo") {
         events << Damage;
         frequency = Compulsory;
+        owner_only_skill = true;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
@@ -566,7 +567,7 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.card && damage.card->isKindOf("Slash"))
             return skill;
-        if (!TriggerSkill::triggerable(player) || !player->hasSkill("thgugao"))
+        if (!TriggerSkill::triggerable(player))
             return skill;
         for (int i = 0; i < damage.damage; i++)
             skill << objectName();
@@ -674,11 +675,12 @@ public:
     ThFenlang(): TriggerSkill("thfenlang") {
         events << HpChanged;
         frequency = Compulsory;
+        owner_only_skill = true;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         QStringList skills;
-        if (!TriggerSkill::triggerable(player) || !player->hasSkill("thyouli") || !data.canConvert<DamageStruct>()) return skills;
+        if (!TriggerSkill::triggerable(player) || !data.canConvert<DamageStruct>()) return skills;
         DamageStruct damage = data.value<DamageStruct>();
         for (int i = 0; i < damage.damage; i++)
             skills << objectName();
@@ -1040,11 +1042,12 @@ class ThFanhun: public TriggerSkill{
 public:
     ThFanhun(): TriggerSkill("thfanhun") {
         events << AskForPeaches;
+        owner_only_skill = true;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         DyingStruct dying_data = data.value<DyingStruct>();
-        if (!TriggerSkill::triggerable(player) || !player->hasSkill("thmanxiao") || dying_data.who != player) return QStringList();
+        if (!TriggerSkill::triggerable(player) || dying_data.who != player) return QStringList();
         if (player->isDead() || player->getHp() > 0) return QStringList();
         return QStringList(objectName());
     }
@@ -1076,10 +1079,11 @@ class ThYoushang: public TriggerSkill{
 public:
     ThYoushang(): TriggerSkill("thyoushang") {
         events << DamageCaused;
+        owner_only_skill = true;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        if (!TriggerSkill::triggerable(player) || !player->hasSkill("thmanxiao")) return QStringList();
+        if (!TriggerSkill::triggerable(player)) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.card && damage.card->getSuit() != Card::Spade && !damage.chain && !damage.transfer)
             return QStringList(objectName());
@@ -2106,10 +2110,11 @@ class ThSisui: public TriggerSkill {
 public:
     ThSisui(): TriggerSkill("thsisui") {
         events << EventPhaseStart;
+        owner_only_skill = true;
     }
 
     virtual bool triggerable(const ServerPlayer *player) const {
-        if (TriggerSkill::triggerable(player) && player->hasSkill("thsanling") && player->getPhase() == Player::Start)
+        if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Start)
             foreach (ServerPlayer *p, player->getRoom()->getAllPlayers())
                 if (p != player && !p->isKongcheng())
                     return true;

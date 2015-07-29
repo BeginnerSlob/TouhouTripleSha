@@ -222,6 +222,7 @@ public:
     IkJingnie(): TriggerSkill("ikjingnie") {
         events << GameStart;
         frequency = Compulsory;
+        owner_only_skill = true;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
@@ -412,6 +413,7 @@ public:
     IkHuoshou(): TriggerSkill("ikhuoshou") {
         events << TargetSpecified << ConfirmDamage;
         frequency = Compulsory;
+        owner_only_skill = true;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer* &ask_who) const{
@@ -419,7 +421,7 @@ public:
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("SavageAssault"))
                 foreach (ServerPlayer *menghuo, room->findPlayersBySkillName(objectName()))
-                    if (menghuo && menghuo != use.from && menghuo->hasSkill("ikzailuan")) {
+                    if (menghuo && menghuo != use.from) {
                         ask_who = menghuo;
                         return QStringList(objectName());
                     }
@@ -584,6 +586,7 @@ public:
     IkYouxing(): TriggerSkill("ikyouxing") {
         events << EventPhaseChanging;
         view_as_skill = new IkYouxingViewAsSkill;
+        owner_only_skill = true;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *liushan, QVariant &data, ServerPlayer* &) const{
@@ -4178,6 +4181,7 @@ public:
                 const General *general = Sanguosha->getGeneral(general_name);
                 foreach (const Skill *skill, general->getVisibleSkillList()) {
                     if (skill->isLordSkill()
+                        || skill->isOwnerOnlySkill()
                         || skill->getFrequency() == Skill::Limited
                         || skill->getFrequency() == Skill::Wake)
                         continue;
@@ -4306,10 +4310,11 @@ class IkLingqi: public MasochismSkill {
 public:
     IkLingqi(): MasochismSkill("iklingqi") {
         frequency = Frequent;
+        owner_only_skill = true;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *zuoci, QVariant &data, ServerPlayer* &) const {
-        if (!MasochismSkill::triggerable(zuoci) || !zuoci->hasSkill("ikhuanshen"))
+        if (!MasochismSkill::triggerable(zuoci))
             return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
         QStringList skills;
