@@ -983,6 +983,8 @@ public:
     explicit Skill(const char *name, Frequency frequent = NotFrequent);
     bool isLordSkill() const;
     bool isAttachedLordSkill() const;
+    virtual bool shouldBeVisible(const Player *Self) const; // usually for attached skill
+    bool isOwnerOnlySkill() const;
     QString getDescription() const;
     bool isVisible() const;
 

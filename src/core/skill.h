@@ -28,6 +28,7 @@ public:
     bool isLordSkill() const;
     bool isAttachedLordSkill() const;
     virtual bool shouldBeVisible(const Player *Self) const; // usually for attached skill
+    bool isOwnerOnlySkill() const;
     QString getDescription() const;
     QString getNotice(int index) const;
     bool isVisible() const;
@@ -46,6 +47,7 @@ protected:
     QString limit_mark;
     QString default_choice;
     bool attached_lord_skill;
+    bool owner_only_skill;
 
 private:
     bool lord_skill;

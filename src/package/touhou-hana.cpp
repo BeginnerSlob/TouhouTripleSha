@@ -1632,6 +1632,7 @@ public:
     ThHouzhi(): TriggerSkill("thhouzhi") {
         frequency = Compulsory;
         events << EventPhaseStart << DamageInflicted;
+        owner_only_skill = true;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
@@ -1639,7 +1640,7 @@ public:
             return QStringList();
         if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Finish && player->getMark("@jianren") > 0)
             return QStringList(objectName());
-        if (triggerEvent == DamageInflicted && player->hasSkill("thshayu"))
+        if (triggerEvent == DamageInflicted)
             return QStringList(objectName());
         return QStringList();
     }

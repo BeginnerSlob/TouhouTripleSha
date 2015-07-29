@@ -1983,13 +1983,16 @@ class ThDongxi: public TriggerSkill {
 public:
     ThDongxi(): TriggerSkill("thdongxi") {
         events << EventPhaseStart;
+        owner_only_skill = true;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
-        if (player->getPhase() == Player::Start && TriggerSkill::triggerable(player) && player->hasSkill("thsangzhi")) {
+        if (player->getPhase() == Player::Start && TriggerSkill::triggerable(player)) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player))
                 foreach (const Skill *skill, p->getVisibleSkillList()) {
-                    if (skill->isLordSkill() || skill->isAttachedLordSkill()
+                    if (skill->isLordSkill()
+                        || skill->isAttachedLordSkill()
+                        || skill->isOwnerOnlySkill()
                         || skill->getFrequency() == Skill::Limited
                         || skill->getFrequency() == Skill::Wake)
                         continue;

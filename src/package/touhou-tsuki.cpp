@@ -492,10 +492,11 @@ class ThShouye: public TriggerSkill {
 public:
     ThShouye(): TriggerSkill("thshouye") {
         events << DrawNCards << EventPhaseChanging;
+        owner_only_skill = true;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (triggerEvent == DrawNCards && TriggerSkill::triggerable(player) && player->hasSkill("thxushi")) {
+        if (triggerEvent == DrawNCards && TriggerSkill::triggerable(player)) {
             if (data.toInt() > 0)
                 return QStringList(objectName());
         } else if (triggerEvent == EventPhaseChanging) {
