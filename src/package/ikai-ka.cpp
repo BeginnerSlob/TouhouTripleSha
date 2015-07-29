@@ -3731,10 +3731,11 @@ public:
         events << BeforeCardsMove;
         view_as_skill = new IkMoshanFilter;
         frequency = Compulsory;
+        owner_only_skill = true;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (TriggerSkill::triggerable(player) && player->hasSkill("thyanmeng") && !player->hasFlag("ikmoshan")) {
+        if (TriggerSkill::triggerable(player) && !player->hasFlag("ikmoshan")) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.from != player)
                 return QStringList();
