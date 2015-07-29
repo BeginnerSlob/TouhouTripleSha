@@ -140,6 +140,7 @@ public:
     bool hasSkills(const QString &skill_name, bool include_lose = false) const;
     bool hasInnateSkill(const QString &skill_name) const;
     bool hasLordSkill(const QString &skill_name, bool include_lose = false) const;
+    bool hasOwnerOnlySkill(bool include_lose = false) const;
     virtual QString getGameMode() const = 0;
 
     void setEquip(WrappedCard *equip);

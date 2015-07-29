@@ -543,6 +543,7 @@ public:
         events << GameStart << BeforeCardsMove;
         frequency = Compulsory;
         view_as_skill = new ThSilianFilterSkill;
+        owner_only_skill = true;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {

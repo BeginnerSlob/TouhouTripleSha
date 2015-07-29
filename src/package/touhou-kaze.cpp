@@ -575,7 +575,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const {
-        if (player->getWeapon() || player->hasSkill("thsilian"))
+        if (player->getWeapon() || player->hasOwnerOnlySkill(true))
             return false;
         if (player->hasWeapon("spear")) {
             const ViewAsSkill *spear_skill = Sanguosha->getViewAsSkill("spear");
@@ -588,7 +588,7 @@ public:
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const {
-        if (player->getWeapon() || player->hasSkill("thsilian"))
+        if (player->getWeapon() || player->hasOwnerOnlySkill(true))
             return false;
         if (player->hasWeapon("spear")) {
             const ViewAsSkill *spear_skill = Sanguosha->getViewAsSkill("spear");
@@ -636,6 +636,7 @@ void ThMicaiCard::onEffect(const CardEffectStruct &effect) const {
 class ThMicai: public ZeroCardViewAsSkill {
 public:
     ThMicai(): ZeroCardViewAsSkill("thmicai") {
+        owner_only_skill = true;
     }
 
     virtual const Card *viewAs() const{
@@ -643,7 +644,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("ThMicaiCard") && player->hasSkill("thqiaogong");
+        return !player->hasUsed("ThMicaiCard");
     }
 };
 
@@ -691,19 +692,20 @@ bool ThQiaogongCard::targetFilter(const QList<const Player *> &targets, const Pl
     if (!targets.isEmpty() || !to_select->hasEquip())
         return false;
 
-    Suit suit = Sanguosha->getCard(getEffectiveId())->getSuit();
-    foreach (const Card *cd, to_select->getEquips())
-        if (!getSubcards().contains(cd->getEffectiveId()) && cd->getSuit() == suit)
+    Color color = Sanguosha->getCard(getEffectiveId())->getColor()();
+    foreach (const Card *cd, to_select->getEquips()) {
+        if (!getSubcards().contains(cd->getEffectiveId()) && cd->getColor() == color)
             return true;
+    }
 
     return false;
 }
 
 void ThQiaogongCard::onEffect(const CardEffectStruct &effect) const {
     QList<int> disabled_ids;
-    Suit suit = Sanguosha->getCard(getEffectiveId())->getSuit();
+    Color color = Sanguosha->getCard(getEffectiveId())->getColor()();
     foreach (const Card *cd, effect.to->getEquips())
-        if (cd->getSuit() != suit)
+        if (cd->getColor() != color)
             disabled_ids << cd->getEffectiveId();
 
     Room *room = effect.from->getRoom();
@@ -720,10 +722,9 @@ public:
         if (Self->isJilei(to_select)) return false;
         if (selected.isEmpty())
             return true;
-        else if (selected.length() == 1) {
-            const Card *card = selected.first();
-            return to_select->getSuit() == card->getSuit();
-        } else
+        else if (selected.length() == 1)
+            return to_select->sameColorWith(selected.first());
+        else
             return false;
     }
 
