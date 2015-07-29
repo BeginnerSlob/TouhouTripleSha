@@ -169,7 +169,7 @@ int Player::getAttackRange(bool include_weapon) const{
             weapon_range = 3;
         else {
             WrappedCard *wp = weapon;
-            if (!wp && !hasSkill("thsilian") && getMark("@micai") > 0) {
+            if (!wp && !hasOwnerOnlySkill(true) && getMark("@micai") > 0) {
                 foreach (const Player *p, getAliveSiblings()) {
                     if (p->getMark("thmicaisource") > 0) {
                         wp = p->weapon;
@@ -435,6 +435,14 @@ bool Player::hasLordSkill(const QString &skill_name, bool include_lose) const{
     return false;
 }
 
+bool Player::hasOwnerOnlySkill(bool include_lose) const{
+    foreach (const Skill *skill, getVisibleSkills(include_lose)) {
+        if (skill->isOwnerOnlySkill())
+            return true;
+    }
+    return false;
+}
+
 void Player::acquireSkill(const QString &skill_name) {
     acquired_skills.append(skill_name);
 }
@@ -600,7 +608,7 @@ bool Player::hasWeapon(const QString &weapon_name) const {
     }
 
     WrappedCard *wp = weapon;
-    if (!wp && !hasSkill("thsilian") && getMark("@micai") > 0) {
+    if (!wp && !hasOwnerOnlySkill(true) && getMark("@micai") > 0) {
         foreach (const Player *p, getAliveSiblings()) {
             if (p->getMark("thmicaisource") > 0) {
                 wp = p->weapon;
@@ -647,7 +655,7 @@ bool Player::hasArmorEffect(const QString &armor_name) const{
     }
 
     WrappedCard *am = armor;
-    if (!am && !hasSkill("ikjingnie") && getMark("@micai") > 0) {
+    if (!am && !hasOwnerOnlySkill(true) && getMark("@micai") > 0) {
         foreach (const Player *p, getAliveSiblings()) {
             if (p->getMark("thmicaisource") > 0) {
                 am = p->armor;
