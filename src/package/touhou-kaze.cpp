@@ -692,7 +692,7 @@ bool ThQiaogongCard::targetFilter(const QList<const Player *> &targets, const Pl
     if (!targets.isEmpty() || !to_select->hasEquip())
         return false;
 
-    Color color = Sanguosha->getCard(getEffectiveId())->getColor()();
+    Color color = Sanguosha->getCard(getEffectiveId())->getColor();
     foreach (const Card *cd, to_select->getEquips()) {
         if (!getSubcards().contains(cd->getEffectiveId()) && cd->getColor() == color)
             return true;
@@ -703,7 +703,7 @@ bool ThQiaogongCard::targetFilter(const QList<const Player *> &targets, const Pl
 
 void ThQiaogongCard::onEffect(const CardEffectStruct &effect) const {
     QList<int> disabled_ids;
-    Color color = Sanguosha->getCard(getEffectiveId())->getColor()();
+    Color color = Sanguosha->getCard(getEffectiveId())->getColor();
     foreach (const Card *cd, effect.to->getEquips())
         if (cd->getColor() != color)
             disabled_ids << cd->getEffectiveId();
