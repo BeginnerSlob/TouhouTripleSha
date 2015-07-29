@@ -1480,7 +1480,7 @@ public:
             return QStringList(objectName());
         else if (triggerEvent == EventLoseSkill && data.toString() == objectName()) {
             QStringList detach;
-            detach << "-ikbiyue" << "-thjifeng" << "-ikchenhong" << "-thjibu";
+            detach << "-ikbiyue" << "-thfeiying" << "-ikchenhong" << "-thjifeng";
             room->handleAcquireDetachSkills(player, detach, true);
         } else if (triggerEvent == EventAcquireSkill && data.toString() == objectName()) {
             if (!player->getPile("thrangdengpile").isEmpty()) {
@@ -1494,7 +1494,7 @@ public:
                         break;
                                        }
                     case Card::Spade : {
-                        skill_name = "thjifeng";
+                        skill_name = "thfeiying";
                         break;
                                        }
                     case Card::Diamond : {
@@ -1502,7 +1502,7 @@ public:
                         break;
                                        }
                     case Card::Club : {
-                        skill_name = "thjibu";
+                        skill_name = "thjifeng";
                         break;
                                        }
                     default : {
@@ -1526,7 +1526,7 @@ public:
                         break;
                                        }
                     case Card::Spade : {
-                        skill_name = "thjifeng";
+                        skill_name = "thfeiying";
                         break;
                                        }
                     case Card::Diamond : {
@@ -1534,7 +1534,7 @@ public:
                         break;
                                        }
                     case Card::Club : {
-                        skill_name = "thjibu";
+                        skill_name = "thjifeng";
                         break;
                                        }
                     default : {
@@ -1587,7 +1587,7 @@ ThBaihunCard::ThBaihunCard() {
 void ThBaihunCard::onEffect(const CardEffectStruct &effect) const {
     Room *room = effect.from->getRoom();
     effect.from->clearOnePrivatePile("thrangdengpile");
-    room->handleAcquireDetachSkills(effect.from, "-ikbiyue|-thjifeng|-ikchenhong|-thjibu", true);
+    room->handleAcquireDetachSkills(effect.from, "-ikbiyue|-thfeiying|-ikchenhong|-thjifeng", true);
     room->killPlayer(effect.to);
 }
 
