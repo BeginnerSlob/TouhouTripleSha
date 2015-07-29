@@ -1695,7 +1695,7 @@ public:
         const Card *card = room->askForExchange(player, objectName(), 998, 1, false, "@thtianqi:" + target->objectName(), true);
         if (card) {
             LogMessage log;
-            log.type = "$ChoosePlayerWithSkill";
+            log.type = "#ChoosePlayerWithSkill";
             log.from = player;
             log.to << target;
             log.arg = objectName();
