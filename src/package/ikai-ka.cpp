@@ -4614,6 +4614,70 @@ public:
     }
 };
 
+IkSuyiCard::IkSuyiCard() {
+}
+
+void IkSuyiCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    QStringList choices;
+    choices << "draw";
+    if (effect.to->canDiscard(effect.to, "h"))
+        choices << "discard";
+    QString choice = room->askForChoice(effect.from, "iksuyi", choices.join("+"));
+    if (choice == "discard")
+        room->askForDiscard(effect.to, "iksuyi", 1, 1);
+    else
+        effect.to->drawCards(1, "iksuyi");
+}
+
+class IkSuyi: public ZeroCardViewAsSkill {
+public:
+    IkSuyi(): ZeroCardViewAsSkill("iksuyi") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkSuyiCard");
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkSuyiCard;
+    }
+};
+
+class IkYihui: public TriggerSkill {
+public:
+    IkYihui(): TriggerSkill("ikyihui") {
+        events << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!player || player->isAlive() || !player->hasSkill(objectName()))
+            return QStringList();
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who != player)
+            return QStringList();
+        return QStringList(objectName());
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@ikyihui", true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["IkYihuiTarget"] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        ServerPlayer *target = player->tag["IkYihuiTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkYihuiTarget");
+        if (target)
+            room->handleAcquireDetachSkills(target, "iksuyi|ikyihui");
+        return false;
+    }
+};
+
 IkQiansheCard::IkQiansheCard() {
     will_throw = false;
 }
@@ -4972,6 +5036,10 @@ IkaiKaPackage::IkaiKaPackage()
     luna053->addSkill(new IkMosuRecord);
     related_skills.insertMulti("ikmosu", "#ikmosu-record");
 
+    General *luna054 = new General(this, "luna054", "tsuki");
+    luna054->addSkill(new IkSuyi);
+    luna054->addSkill(new IkYihui);
+
     General *luna055 = new General(this, "luna055", "tsuki", 3);
     luna055->addSkill(new IkQianshe);
     luna055->addSkill(new IkDaolei);
@@ -4997,6 +5065,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkLianwuCard>();
     addMetaObject<IkLianwuDrawCard>();
     addMetaObject<IkXiekeCard>();
+    addMetaObject<IkSuyiCard>();
     addMetaObject<IkQiansheCard>();
     addMetaObject<IkDaoleiCard>();
 

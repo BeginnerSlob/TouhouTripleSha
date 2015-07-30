@@ -287,6 +287,14 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
+class IkSuyiCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkSuyiCard();
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class IkQiansheCard: public SkillCard {
     Q_OBJECT
 
