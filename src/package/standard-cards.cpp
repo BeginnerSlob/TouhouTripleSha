@@ -2210,12 +2210,40 @@ public:
         return false;
     }
 
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
-        return pattern == "@@jade" || pattern == "nullification";
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+        return pattern == "@@jade" || (pattern == "nullification" && player->getMark("jade_use") < 2);
     }
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
-        return player->isAlive();
+        return player->isAlive() && player->getMark("jade_use") < 2;
+    }
+};
+
+class JadeRecordSkill: public TreasureSkill {
+public:
+    JadeRecordSkill(): TreasureSkill("jade_record") {
+        events << PreCardUsed << EventPhaseChanging;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    room->setPlayerMark(p, "jade", 0);
+            }
+        } else {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card && use.card->isKindOf("Nullification") && use.card->getSkillName() == "jade")
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        room->addPlayerMark(player, "jade_use");
+        return false;
     }
 };
 
@@ -2425,7 +2453,7 @@ StandardExCardPackage::StandardExCardPackage()
            << new ScrollSkill
            << new ScrollTriggerSkill << new ScrollProhibit;
     related_skills.insertMulti("scroll_trigger", "#scroll");
-    skills << new JadeSkill;
+    skills << new JadeSkill << new JadeRecordSkill;
 
     foreach (Card *card, cards)
         card->setParent(this);
