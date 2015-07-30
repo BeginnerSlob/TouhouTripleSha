@@ -1846,7 +1846,7 @@ public:
         frequency = Frequent;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Play) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->hasFlag("ThTianqueInvoke"))
@@ -1907,7 +1907,7 @@ public:
 ThGuixuCard::ThGuixuCard() {
 }
 
-bool ThGuixuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool ThGuixuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
     if (!targets.isEmpty())
         return false;
     foreach (const Card *c, to_select->getJudgingArea()) {
@@ -2023,7 +2023,7 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         room->askForUseCard(player, "@@thguixu", "@thguixu", -1, Card::MethodNone);
         return false;
     }

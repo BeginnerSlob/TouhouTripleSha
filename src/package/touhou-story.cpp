@@ -9,7 +9,7 @@
 ThChayinCard::ThChayinCard() {
 }
 
-bool ThChayinCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool ThChayinCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
     if (!targets.isEmpty())
         return false;
     Suit suit = Sanguosha->getCard(subcards.first())->getSuit();
@@ -81,7 +81,7 @@ public:
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (!TriggerSkill::triggerable(player))
             return QStringList();
         if (triggerEvent == DamageInflicted) {
@@ -297,7 +297,7 @@ public:
         return to_select->getSuit() == selected.first()->getSuit();
     }
 
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const {
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const {
         return pattern == "slash";
     }
 

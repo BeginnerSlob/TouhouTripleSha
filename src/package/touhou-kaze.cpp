@@ -225,7 +225,7 @@ public:
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (player != NULL){
             JudgeStruct *judge = data.value<JudgeStruct *>();
             if (judge->reason == "thjilanwen")
@@ -1887,7 +1887,7 @@ ThMaihuoShowCard::ThMaihuoShowCard(){
     m_skillName = "thmaihuov";
 }
 
-void ThMaihuoShowCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+void ThMaihuoShowCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
     foreach (int id, subcards)
         room->showCard(source, id);
     source->drawCards(subcardsLength(), "thmaihuo");

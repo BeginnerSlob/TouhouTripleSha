@@ -1454,7 +1454,7 @@ public:
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
         if (player->getMark("zilianshengyong") == 0)
             return QStringList();
         if (player->getPhase() == Player::NotActive) {
@@ -1986,7 +1986,7 @@ public:
         frequency = Frequent;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         QStringList list;
         if (TriggerSkill::triggerable(player)) {
             DamageStruct damage = data.value<DamageStruct>();
@@ -2043,7 +2043,7 @@ public:
         return target && target->isAlive() && target->getMark("scroll") > 0 && target->getPhase() == Player::RoundStart;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
         room->setPlayerMark(player, "scroll", 0);
         room->detachSkillFromPlayer(player, "thmengxuan");
         return false;
@@ -2168,7 +2168,7 @@ void KnownBoth::onEffect(const CardEffectStruct &effect) const {
 JadeCard::JadeCard() {
 }
 
-bool JadeCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool JadeCard::targetFilter(const QList<const Player *> &, const Player *to_select, const Player *Self) const{
     return to_select->getMark("cardEffect_" + Self->property("jade_trick").toString()) > 0;
 }
 
@@ -2206,7 +2206,7 @@ public:
         return null;
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const{
+    virtual bool isEnabledAtPlay(const Player *) const{
         return false;
     }
 
