@@ -100,7 +100,7 @@ public:
         frequency = Wake;
     }
 
-    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const {
         TriggerList skill_list;
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
         if (change.to == Player::NotActive) {
@@ -178,7 +178,7 @@ public:
         events << CardsMoveOneTime;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (player && player->isAlive() && player->hasLordSkill(objectName()) && player->canDiscard(player, "h")) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.from && move.from != player && move.from->getKingdom() == "yuki"
@@ -200,7 +200,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         DummyCard *dummy = new DummyCard(move.card_ids);
         player->obtainCard(dummy);
@@ -592,7 +592,7 @@ ThYuanqiCard::ThYuanqiCard() {
     handling_method = MethodNone;
 }
 
-void ThYuanqiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+void ThYuanqiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
     room->showCard(source, getEffectiveId());
     QList<int> card_ids = room->getNCards(1, false);
     CardMoveReason reason(CardMoveReason::S_REASON_TURNOVER, source->objectName(), "thyuanqi", QString());
@@ -648,7 +648,7 @@ bool ThDunjiaCard::targetFilter(const QList<const Player *> &targets, const Play
     return chai && chai->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, chai);
 }
 
-const Card *ThDunjiaCard::validate(CardUseStruct &card_use) const{
+const Card *ThDunjiaCard::validate(CardUseStruct &) const{
     Card *chai = Sanguosha->cloneCard("dismantlement");
     chai->addSubcards(subcards);
     chai->setSkillName("thdunjia");
@@ -1807,7 +1807,7 @@ ThKujieCard::ThKujieCard() {
     mute = true;
 }
 
-bool ThKujieCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool ThKujieCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
     return targets.isEmpty() && to_select->hasSkill("thkujie") && !to_select->hasFlag("ThKujieInvoked");
 }
 
