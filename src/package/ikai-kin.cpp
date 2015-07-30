@@ -4399,6 +4399,99 @@ public:
     }
 };
 
+IkFansuiCard::IkFansuiCard() {
+}
+
+bool IkFansuiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && !to_select->isNude() && to_select != Self;
+}
+
+void IkFansuiCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    QStringList choices;
+    if (effect.to->hasEquip())
+        choices << "equip";
+    if (effect.to->canDiscard(effect.to, "he"))
+        choices << "discard";
+    QString choice = room->askForChoice(effect.to, "ikfansui", choices.join("+"));
+    if (choice == "equip") {
+        DummyCard *dummy = new DummyCard;
+        dummy->addSubcards(effect.to->getEquips());
+        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.to->objectName(), effect.from->objectName(), "ikfansui", QString());
+        room->obtainCard(effect.from, dummy, reason);
+        delete dummy;
+        room->detachSkillFromPlayer(effect.from, "ikfansui");
+        room->loseHp(effect.to);
+    } else
+        room->askForDiscard(effect.to, "ikfansui", 1, 1, false, true);
+}
+
+class IkFansui: public ZeroCardViewAsSkill {
+public:
+    IkFansui(): ZeroCardViewAsSkill("ikfansui") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("IkFansuiCard");
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkFansuiCard;
+    }
+};
+
+IkShenchiCard::IkShenchiCard() {
+}
+
+bool IkShenchiCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *Self) const{
+    int n = Self->hasSkill("ikfansui") ? Self->getHp() : Self->getMaxHp();
+    return targets.length() < n;
+}
+
+void IkShenchiCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    effect.to->drawCards(1, "ikshenchi");
+    if (!effect.to->isNude()) {
+        const Card *card = room->askForCard(effect.to, "..!", "@ikshenchi-put", QVariant(), MethodNone);
+        if (!card) {
+            QList<const Card *> cards = effect.to->getCards("he");
+            card = cards.at(qrand() % cards.length());
+        }
+        if (card) {
+            CardMoveReason reason(CardMoveReason::S_REASON_PUT, effect.to->objectName(), "ikshenchi", QString());
+            room->moveCardTo(card, effect.to, NULL, Player::DrawPile, reason);
+        }
+    }
+}
+
+class IkShenchiVS: public ZeroCardViewAsSkill {
+public:
+    IkShenchiVS(): ZeroCardViewAsSkill("ikshenchi") {
+        response_pattern = "@@ikshenchi";
+    }
+
+    virtual const Card *viewAs() const{
+        return new IkShenchiCard;
+    }
+};
+
+class IkShenchi: public TriggerSkill {
+public:
+    IkShenchi(): TriggerSkill("ikshenchi") {
+        events << EventPhaseStart;
+        view_as_skill = new IkShenchiVS;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return TriggerSkill::triggerable(target)
+            && target->getPhase() == Player::Finish;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        return room->askForUseCard(player, "@@ikshenchi", "@ikshenchi");
+    }
+};
+
 IkLvdongCard::IkLvdongCard() {
 }
 
@@ -5726,6 +5819,10 @@ IkaiKinPackage::IkaiKinPackage()
     General *snow041 = new General(this, "snow041", "yuki");
     snow041->addSkill(new IkYoudan);
 
+    General *snow058 = new General(this, "snow058", "yuki");
+    snow058->addSkill(new IkFansui);
+    snow058->addSkill(new IkShenchi);
+
     General *luna010 = new General(this, "luna010", "tsuki");
     luna010->addSkill(new IkLvdong);
     luna010->addSkill(new IkGuozai);
@@ -5801,6 +5898,8 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkShenxingCard>();
     addMetaObject<IkXiangzhaoCard>();
     addMetaObject<IkYoudanCard>();
+    addMetaObject<IkFansuiCard>();
+    addMetaObject<IkShenchiCard>();
     addMetaObject<IkLvdongCard>();
     addMetaObject<IkMingceCard>();
     addMetaObject<IkFenshiCard>();
