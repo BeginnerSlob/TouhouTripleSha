@@ -2423,7 +2423,7 @@ TouhouTsukiPackage::TouhouTsukiPackage()
     tsuki006->addSkill(new ThKuaiqing);
     tsuki006->addSkill(new ThYuhuo);
 
-    General *tsuki007 = new General(this, "tsuki007", "tsuki");
+    General *tsuki007 = new General(this, "tsuki007", "tsuki", 3);
     tsuki007->addSkill(new ThCunjing);
     tsuki007->addSkill(new ThLianhua);
 
