@@ -918,18 +918,27 @@ public:
 class IkQingjian: public TriggerSkill {
 public:
     IkQingjian(): TriggerSkill("ikqingjian") {
-        events << CardsMoveOneTime;
+        events << CardsMoveOneTime << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(player)) return QStringList();
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (!room->getTag("FirstRound").toBool() && player->getPhase() != Player::Draw
-            && move.to == player && move.to_place == Player::PlaceHand) {
-            QList<int> ids;
-            foreach (int id, move.card_ids)
-                if (room->getCardOwner(id) == player && room->getCardPlace(id) == Player::PlaceHand)
-                    return QStringList(objectName());
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    room->setPlayerMark(p, objectName(), 0);
+            }
+        } else if (TriggerSkill::triggerable(player) && player->getMark(objectName()) == 0) {
+            ServerPlayer *current = room->getCurrent();
+            if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
+                CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+                if (!room->getTag("FirstRound").toBool() && player->getPhase() != Player::Draw
+                    && move.to == player && move.to_place == Player::PlaceHand) {
+                    QList<int> ids;
+                    foreach (int id, move.card_ids)
+                        if (room->getCardOwner(id) == player && room->getCardPlace(id) == Player::PlaceHand)
+                            return QStringList(objectName());
+                }
+            }
         }
         return QStringList();
     }
@@ -958,6 +967,7 @@ public:
             return false;
         while (room->askForYiji(player, ids, objectName(), false, false, true, -1,
                                 QList<ServerPlayer *>(), CardMoveReason(), "@ikqingjian-distribute", false)) {
+            room->addPlayerMark(player, objectName());
             room->notifySkillInvoked(player, objectName());
             if (player->isDead()) return false;
         }
