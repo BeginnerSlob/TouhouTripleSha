@@ -1749,6 +1749,75 @@ public:
     }
 };
 
+class IkSangjue: public ZeroCardViewAsSkill {
+public:
+    IkSangjue(): ZeroCardViewAsSkill("iksangjue") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *p) const{
+        return !p->isKongcheng() && p->getPhase() == Player::Play;
+    }
+
+    virtual const Card *viewAs() const{
+        Duel *duel = new Duel(Card::SuitToBeDecided, -1);
+        duel->addSubcards(Self->getHandcards());
+        duel->setSkillName(objectName());
+        return duel;
+    }
+};
+
+class IkSangjueTrigger: public TriggerSkill {
+public:
+    IkSangjueTrigger(): TriggerSkill("#iksangjue") {
+        events << PreDamageDone << CardFinished;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == PreDamageDone) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card && damage.card->isKindOf("Duel") && damage.card->getSkillName() == "iksangjue")
+                room->setPlayerFlag(player, "iksangjue_" + damage.card->toString());
+        } else {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card && use.card->isKindOf("Duel") && use.card->getSkillName() == "iksangjue")
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, "iksangjue");
+        CardUseStruct use = data.value<CardUseStruct>();
+        QList<ServerPlayer *> list;
+        if (player->isAlive())
+            list << player;
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            if (p->hasFlag("iksangjue_" + use.card->toString()))
+                list << p;
+        }
+        room->sortByActionOrder(list);
+        room->drawCards(list, 1, "iksangjue");
+        int n = list.count(player);
+        if (n > 1 || (n > 0 && player->hasFlag("IkSangjueDraw"))) {
+            room->setPlayerFlag(player, "IkSangjueDisabled");
+        } else if (n > 0)
+            room->setPlayerFlag(player, "IkSangjueDraw");
+
+        return false;
+    }
+};
+
+class IkSangjueInvalidity: public InvaliditySkill {
+public:
+    IkSangjueInvalidity(): InvaliditySkill("#iksangjue-inv") {
+    }
+
+    virtual bool isSkillValid(const Player *player, const Skill *skill) const{
+        return skill->objectName() != "iksangjue" || !player->hasFlag("IkSangjueDisabled");
+    }
+};
+
 class IkShihua: public TriggerSkill {
 public:
     IkShihua(): TriggerSkill("ikshihua") {
@@ -5771,6 +5840,13 @@ IkaiKinPackage::IkaiKinPackage()
     General *wind055 = new General(this, "wind055", "kaze");
     wind055->addSkill(new IkShengyong);
     wind055->addSkill(new IkShizhi);
+
+    General *wind056 = new General(this, "wind056", "kaze");
+    wind056->addSkill(new IkSangjue);
+    wind056->addSkill(new IkSangjueTrigger);
+    wind056->addSkill(new IkSangjueInvalidity);
+    related_skills.insertMulti("iksangjue", "#iksangjue");
+    related_skills.insertMulti("iksangjue", "#iksangjue-inv");
 
     General *bloom016 = new General(this, "bloom016", "hana", 3);
     bloom016->addSkill(new IkShihua);
