@@ -1668,6 +1668,87 @@ public:
     }
 };
 
+IkShengyongCard::IkShengyongCard() {
+    will_throw = false;
+    handling_method = MethodNone;
+}
+
+bool IkShengyongCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
+}
+
+void IkShengyongCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    const Card *card = room->askForCardShow(effect.to, effect.from, "ikshengyong");
+    if (!card)
+        card = effect.to->getRandomHandCard();
+    const Card *originalCard = Sanguosha->getCard(getEffectiveId());
+    if (!originalCard)
+        originalCard = effect.from->getRandomHandCard();
+    if (card) {
+        room->showCard(effect.from, originalCard->getId());
+        room->showCard(effect.to, card->getId());
+        if (originalCard->isKindOf("Slash") && !card->isKindOf("Jink")) {
+            room->throwCard(originalCard, effect.from);
+            room->damage(DamageStruct("ikshengyong", effect.from, effect.to));
+        } else if (!originalCard->isKindOf("Slash") && card->isKindOf("Jink")) {
+            room->throwCard(originalCard, effect.from);
+            int card_id = room->askForCardChosen(effect.from, effect.to, "he", "ikshengyong", false, MethodNone);
+            room->obtainCard(effect.from, card_id);
+        }
+    }
+}
+
+class IkShengyong: public OneCardViewAsSkill {
+public:
+    IkShengyong(): OneCardViewAsSkill("ikshengyong") {
+        filter_pattern = ".|.|.|hand";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        IkShengyongCard *card = new IkShengyongCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+};
+
+class IkShizhiFilter: public FilterSkill {
+public:
+    IkShizhiFilter(): FilterSkill("ikshizhi") {
+    }
+
+    virtual bool viewFilter(const Card *to_select) const{
+        ServerPlayer *owner = Sanguosha->currentRoom()->getCardOwner(to_select->getEffectiveId());
+        return owner && owner->getHp() == 1 && to_select->isKindOf("Jink");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        Slash *slash = new Slash(originalCard->getSuit(), originalCard->getNumber());
+        slash->setSkillName(objectName());
+        WrappedCard *card = Sanguosha->getWrappedCard(originalCard->getId());
+        card->takeOver(slash);
+        return card;
+    }
+};
+
+class IkShizhi: public TriggerSkill {
+public:
+    IkShizhi(): TriggerSkill("ikshizhi") {
+        frequency = Compulsory;
+        events << HpChanged;
+        view_as_skill = new IkShizhiFilter;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const {
+        Room *room = target->getRoom();
+        if (TriggerSkill::triggerable(target)) {
+            ServerPlayer *target2 = room->findPlayer(target->objectName());
+            room->filterCards(target2, target2->getCards("he"), true);
+        }
+        return false;
+    }
+};
+
 class IkShihua: public TriggerSkill {
 public:
     IkShihua(): TriggerSkill("ikshihua") {
@@ -5687,6 +5768,10 @@ IkaiKinPackage::IkaiKinPackage()
     related_skills.insertMulti("ikshensha", "#ikshensha-target");
     related_skills.insertMulti("ikshensha", "#ikshensha-dist");
 
+    General *wind055 = new General(this, "wind055", "kaze");
+    wind055->addSkill(new IkShengyong);
+    wind055->addSkill(new IkShizhi);
+
     General *bloom016 = new General(this, "bloom016", "hana", 3);
     bloom016->addSkill(new IkShihua);
     bloom016->addSkill(new IkJiushi);
@@ -5883,6 +5968,7 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkXianyuCard>();
     addMetaObject<IkXianyuSlashCard>();
     addMetaObject<IkQizhiCard>();
+    addMetaObject<IkShengyongCard>();
     addMetaObject<IkJiushiCard>();
     addMetaObject<IkZhuyiCard>();
     addMetaObject<IkMiceCard>();
