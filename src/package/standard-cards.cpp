@@ -2111,6 +2111,13 @@ void Drowning::onEffect(const CardEffectStruct &effect) const{
         room->damage(DamageStruct(this, effect.from->isAlive() ? effect.from : NULL, effect.to));
 }
 
+class DrowningFakeMoveSkill: public FakeMoveSkill {
+public:
+    DrowningFakeMoveSkill(): FakeMoveSkill("drowning") {
+        global = true;
+    }
+};
+
 KnownBoth::KnownBoth(Card::Suit suit, int number)
     : SingleTargetTrick(suit, number)
 {
@@ -2439,7 +2446,7 @@ StandardExCardPackage::StandardExCardPackage()
           << new ThunderSlash(Card::Club, 13)
           << new PurpleSong(Card::Diamond, 13);
 
-    skills << new FakeMoveSkill("drowning")
+    skills << new DrowningFakeMoveSkill
            << new PurpleSongSkill
            << new IceSwordSkill
            << new IronArmorSkill
