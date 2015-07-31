@@ -1922,10 +1922,11 @@ public:
                                                                 true, 
                                                                 true);
                 if (target) {
-                    room->takeAG(target, id);
                     QList<int> _id;
                     _id << id;
                     move.removeCardIds(_id);
+                    room->takeAG(target, id, false);
+                    room->obtainCard(target, id);
                 } else {
                     room->takeAG(NULL, id, false);
                     LogMessage log;
