@@ -200,7 +200,7 @@ return {
 	["thshenyou:losehp"]="你可以令此【杀】对目标角色即将造成的伤害视为失去体力",
 	
 	["#tsuki017"]="海与山的境界",
-	["tsuki017"]="绵月丰姬",--月 - 空 - 4血
+	["tsuki017"]="绵月丰姬",--月 - 空 - 3血
 	["designer:tsuki017"]="鼓腚刀",
 	["illustrator:tsuki017"]="藍·Hallelujah",
 	["cv:tsuki017"]="暂无",
