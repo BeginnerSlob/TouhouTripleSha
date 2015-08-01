@@ -966,6 +966,7 @@ bool ThMimengCard::targetFixed() const {
     Card *new_card = Sanguosha->cloneCard(card->objectName(), oc->getSuit(), oc->getNumber());
     new_card->addSubcard(oc);
     new_card->setSkillName("thmimeng");
+    new_card->setCanRecast(false);
     return new_card && new_card->targetFixed();
 }
 
@@ -989,6 +990,7 @@ bool ThMimengCard::targetFilter(const QList<const Player *> &targets, const Play
     Card *new_card = Sanguosha->cloneCard(card->objectName(), oc->getSuit(), oc->getNumber());
     new_card->addSubcard(oc);
     new_card->setSkillName("thmimeng");
+    new_card->setCanRecast(false);
     return new_card && new_card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, new_card, targets);
 }
 
@@ -1012,6 +1014,7 @@ bool ThMimengCard::targetsFeasible(const QList<const Player *> &targets, const P
     Card *new_card = Sanguosha->cloneCard(card->objectName(), oc->getSuit(), oc->getNumber());
     new_card->addSubcard(oc);
     new_card->setSkillName("thmimeng");
+    new_card->setCanRecast(false);
     return new_card && new_card->targetsFeasible(targets, Self);
 }
 
