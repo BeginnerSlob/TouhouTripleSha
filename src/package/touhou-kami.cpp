@@ -1780,6 +1780,7 @@ bool ThLingyunCard::targetFilter(const QList<const Player *> &targets, const Pla
     QString card_name = Self->tag.value("thlingyun").value<const Card *>()->objectName();
     Card *card = Sanguosha->cloneCard(card_name, NoSuit, 0);
     card->setSkillName("thlingyun");
+    card->setCanRecast(false);
     return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
 }
 
@@ -1788,6 +1789,7 @@ bool ThLingyunCard::targetFixed() const{
     QString card_name = Self->tag.value("thlingyun").value<const Card *>()->objectName();
     Card *card = Sanguosha->cloneCard(card_name, NoSuit, 0);
     card->setSkillName("thlingyun");
+    card->setCanRecast(false);
     return card && card->targetFixed();
 }
 
@@ -1796,6 +1798,7 @@ bool ThLingyunCard::targetsFeasible(const QList<const Player *> &targets, const 
     QString card_name = Self->tag.value("thlingyun").value<const Card *>()->objectName();
     Card *card = Sanguosha->cloneCard(card_name, NoSuit, 0);
     card->setSkillName("thlingyun");
+    card->setCanRecast(false);
     return card && card->targetsFeasible(targets, Self);
 }
 
