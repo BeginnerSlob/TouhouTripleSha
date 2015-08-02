@@ -524,7 +524,7 @@ public:
             bool do_anim = false;
             foreach (ServerPlayer *p, use.to.toSet()) {
                 if (p->getMark("Equips_of_Others_Nullified_to_You") == 0 && !p->hasSkill("ikkongni")) {
-                    do_anim = (p->getArmor() && p->hasArmorEffect(p->getArmor()->objectName())) || p->hasSkill("ikjingnie");
+                    do_anim = (p->getArmor() && p->hasArmorEffect(p->getArmor()->objectName())) || p->hasSkill("ikjingnie") || p->hasSkill("iklinglong");
                     p->addQinggangTag(use.card);
                 }
             }
@@ -770,6 +770,13 @@ public:
                 log.arg = "eight_diagram";
                 room->sendLog(log);
                 room->notifySkillInvoked(player, "ikjingnie");
+            } else if (!player->getArmor() && player->hasSkill("iklinglong")) {
+                LogMessage log;
+                log.type = "#InvokeSkill";
+                log.from = player;
+                log.arg = "eight_diagram";
+                room->sendLog(log);
+                room->notifySkillInvoked(player, "iklinglong");
             }
             return true;
         }
