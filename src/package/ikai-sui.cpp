@@ -1583,6 +1583,164 @@ public:
     }
 };
 
+IkYuzhiCard::IkYuzhiCard()
+{
+    target_fixed = true;
+}
+
+void IkYuzhiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+{
+    int n = subcardsLength() * 2;
+    QList<int> card_ids = room->getNCards(n, false);
+    CardMoveReason reason1(CardMoveReason::S_REASON_TURNOVER, source->objectName(), "ikyuzhi", QString());
+    CardsMoveStruct move(card_ids, NULL, Player::PlaceTable, reason1);
+    room->moveCardsAtomic(move, true);
+    room->getThread()->delay();
+    room->getThread()->delay();
+    
+    DummyCard get;
+    DummyCard thro;
+
+    foreach (int id, card_ids) {
+        if (Sanguosha->getCard(id)->isKindOf("TrickCard"))
+            get.addSubcard(id);
+        else
+            thro.addSubcard(id);
+    }
+
+    if (get.subcardsLength() > 0)
+        source->obtainCard(&get);
+
+    if (thro.subcardsLength() > 0) {
+        CardMoveReason reason2(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), "ikyuzhi", QString());
+        room->throwCard(&thro, reason2, NULL);
+    }
+}
+
+class IkYuzhiVS : public ViewAsSkill
+{
+public:
+    IkYuzhiVS() : ViewAsSkill("ikyuzhi")
+    {
+        response_pattern = "@@ikyuzhi";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const
+    {
+        return to_select->isKindOf("EquipCard") && !Self->isJilei(to_select);
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        if (cards.length() == 0)
+            return NULL;
+
+        IkYuzhiCard *jq = new IkYuzhiCard;
+        jq->addSubcards(cards);
+        return jq;
+    }
+};
+
+class IkYuzhi : public TriggerSkill
+{
+public:
+    IkYuzhi() : TriggerSkill("ikyuzhi")
+    {
+        events << EventPhaseStart;
+        view_as_skill = new IkYuzhiVS;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return TriggerSkill::triggerable(target)
+            && target->getPhase() == Player::Play;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (!player->canDiscard(player, "he"))
+            return false;
+
+        return room->askForUseCard(player, "@@ikyuzhi", "@ikyuzhi", -1, Card::MethodDiscard);
+    }
+};
+
+class IkLinglong : public TriggerSkill
+{
+public:
+    IkLinglong() : TriggerSkill("iklinglong")
+    {
+        events << GameStart << EventAcquireSkill;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        if (triggerEvent == GameStart) {
+            if (player) return QStringList();
+            const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(Sanguosha->getSkill("eight_diagram"));
+            room->getThread()->addTriggerSkill(trigger_skill);
+        } else if (data.toString() == objectName()) {
+            const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(Sanguosha->getSkill("eight_diagram"));
+            room->getThread()->addTriggerSkill(trigger_skill);
+        }
+        return QStringList();
+    }
+};
+
+class IkLinglongMax : public MaxCardsSkill
+{
+public:
+    IkLinglongMax() : MaxCardsSkill("#iklinglong-horse")
+    {
+    }
+
+    virtual int getExtra(const Player *target) const
+    {
+        if (target->hasSkill("iklinglong") && !target->getDefensiveHorse() && !target->getOffensiveHorse())
+            return 1;
+        return 0;
+    }
+};
+
+class IkLinglongTreasure : public TriggerSkill
+{
+public:
+    IkLinglongTreasure() : TriggerSkill("#iklinglong-treasure")
+    {
+        events << GameStart << EventAcquireSkill << EventLoseSkill << CardsMoveOneTime;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (triggerEvent == EventLoseSkill && data.toString() == "iklinglong") {
+            room->handleAcquireDetachSkills(player, "-thjizhi", true);
+            player->setMark("iklinglong_thjizhi", 0);
+        } else if ((triggerEvent == EventAcquireSkill && data.toString() == "iklinglong") || (triggerEvent == GameStart && TriggerSkill::triggerable(player))) {
+            if (player->getTreasure() == NULL) {
+                room->notifySkillInvoked(player, objectName());
+                room->handleAcquireDetachSkills(player, "thjizhi");
+                player->setMark("iklinglong_thjizhi", 1);
+            }
+        } else if (triggerEvent == CardsMoveOneTime && player->isAlive() && player->hasSkill("iklinglong", true)) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from == player && move.from_places.contains(Player::PlaceEquip)) {
+                if (!player->getTreasure() && player->getMark("iklinglong_thjizhi") == 0) {
+                    room->notifySkillInvoked(player, objectName());
+                    room->handleAcquireDetachSkills(player, "thjizhi");
+                    player->setMark("iklinglong_thjizhi", 1);
+                }
+            } else if (move.to == player && move.to_place == Player::PlaceEquip) {
+                if (player->getTreasure() && player->getMark("iklinglong_thjizhi") == 1) {
+                    room->handleAcquireDetachSkills(player, "-thjizhi", true);
+                    player->setMark("iklinglong_thjizhi", 0);
+                }
+            }
+        }
+        return QStringList();
+    }
+};
+
 class IkBashou: public TriggerSkill {
 public:
     IkBashou(): TriggerSkill("ikbashou") {
@@ -5796,6 +5954,14 @@ IkaiSuiPackage::IkaiSuiPackage()
     related_skills.insertMulti("ikjueche", "#ikjueche-inv");
     wind053->addSkill(new IkHewu);
 
+    General *wind054 = new General(this, "wind054", "kaze", 3);
+    wind054->addSkill(new IkYuzhi);
+    wind054->addSkill(new IkLinglong);
+    wind054->addSkill(new IkLinglongMax);
+    wind054->addSkill(new IkLinglongTreasure);
+    related_skills.insertMulti("iklinglong", "#iklinglong-horse");
+    related_skills.insertMulti("iklinglong", "#iklinglong-treasure");
+
     General *bloom023 = new General(this, "bloom023", "hana");
     bloom023->addSkill(new IkBashou);
 
@@ -5984,6 +6150,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkDuanmengCard>();
     addMetaObject<IkFanzhongCard>();
     addMetaObject<IkWujietiyaCard>();
+    addMetaObject<IkYuzhiCard>();
     addMetaObject<IkXinbanCard>();
     addMetaObject<IkHuyinCard>();
     addMetaObject<IkShenyuCard>();

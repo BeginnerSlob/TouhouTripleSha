@@ -220,14 +220,17 @@ public:
 class IkJingnie: public TriggerSkill {
 public:
     IkJingnie(): TriggerSkill("ikjingnie") {
-        events << GameStart;
+        events << GameStart << EventAcquireSkill;
         frequency = Compulsory;
         owner_only_skill = true;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (triggerEvent == GameStart) {
             if (player) return QStringList();
+            const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(Sanguosha->getSkill("eight_diagram"));
+            room->getThread()->addTriggerSkill(trigger_skill);
+        } else if (data.toString() == objectName()) {
             const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(Sanguosha->getSkill("eight_diagram"));
             room->getThread()->addTriggerSkill(trigger_skill);
         }

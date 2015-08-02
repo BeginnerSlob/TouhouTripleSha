@@ -650,6 +650,8 @@ bool Player::hasArmorEffect(const QString &armor_name) const{
     if (armor == NULL && alive) {
         if (armor_name == "eight_diagram" && hasSkill("ikjingnie"))
             return true;
+        if (armor_name == "eight_diagram" && hasSkill("iklinglong"))
+            return true;
         if (armor_name == "vine" && hasSkill("bossmanjia"))
             return true;
     }
