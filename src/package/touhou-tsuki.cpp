@@ -32,7 +32,8 @@ public:
             if (move.from && move.from->isAlive() && move.to_place == Player::DiscardPile
                 && (move.from_places.contains(Player::PlaceHand)
                     || move.from_places.contains(Player::PlaceEquip)
-                    || move.from_places.contains(Player::PlaceJudge))) {
+                    || move.from_places.contains(Player::PlaceJudge)
+                    || move.from_places.contains(Player::PlaceTable))) {
 				foreach (int id, move.card_ids) {
 					const Card *card = Sanguosha->getCard(id);
 					if (card->getTypeId() == Card::TypeBasic && card->isRed())
