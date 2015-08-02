@@ -5954,7 +5954,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     related_skills.insertMulti("ikjueche", "#ikjueche-inv");
     wind053->addSkill(new IkHewu);
 
-    General *wind054 = new General(this, "wind054", "kaze", 3);
+    General *wind054 = new General(this, "wind054", "kaze", 3, false);
     wind054->addSkill(new IkYuzhi);
     wind054->addSkill(new IkLinglong);
     wind054->addSkill(new IkLinglongMax);
