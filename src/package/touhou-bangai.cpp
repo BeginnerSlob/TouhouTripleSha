@@ -68,10 +68,8 @@ public:
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == EventPhaseChanging) {
-            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
-                foreach (ServerPlayer *p, room->getAlivePlayers())
-                    p->setMark(objectName(), 0);
-            }
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive)
+                player->setMark(objectName(), 0);
             return QStringList();
         }
         if (TriggerSkill::triggerable(player)
