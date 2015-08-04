@@ -1818,6 +1818,151 @@ public:
     }
 };
 
+class IkGanbi : public TriggerSkill
+{
+public:
+    IkGanbi() : TriggerSkill("ikganbi")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *target, QVariant &) const
+    {
+        TriggerList list;
+        if (target && target->isAlive() && target->getPhase() == Player::Finish) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (target == p)
+                    continue;
+                if (target->getHandcardNum() == p->getHandcardNum())
+                    list.insert(p, QStringList(objectName()));
+            }
+        }
+        return list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(target))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *ask_who) const
+    {
+        QList<ServerPlayer *> l;
+        l << ask_who << target;
+        room->sortByActionOrder(l);
+        room->drawCards(l, 1, objectName());
+
+        return false;
+    }
+};
+
+IkHuitaoCard::IkHuitaoCard()
+{
+    will_throw = false;
+    can_recast = true;
+    handling_method = Card::MethodRecast;
+    target_fixed = true;
+}
+
+void IkHuitaoCard::onUse(Room *room, const CardUseStruct &card_use) const
+{
+    ServerPlayer *xiahou = card_use.from;
+
+    CardMoveReason reason(CardMoveReason::S_REASON_RECAST, xiahou->objectName());
+    reason.m_skillName = this->getSkillName();
+    room->moveCardTo(this, xiahou, NULL, Player::DiscardPile, reason);
+    xiahou->broadcastSkillInvoke("@recast");
+
+    int id = card_use.card->getSubcards().first();
+
+    LogMessage log;
+    log.type = "#UseCard_Recast";
+    log.from = xiahou;
+    log.card_str = QString::number(id);
+    room->sendLog(log);
+
+    xiahou->drawCards(1, "recast");
+
+    xiahou->addMark("ikhuitao");
+}
+
+class IkHuitaoVS : public OneCardViewAsSkill
+{
+public:
+    IkHuitaoVS() : OneCardViewAsSkill("ikhuitao")
+    {
+        filter_pattern = "Slash";
+    }
+
+    const Card *viewAs(const Card *originalCard) const
+    {
+        if (Self->isCardLimited(originalCard, Card::MethodRecast))
+            return NULL;
+
+        IkHuitaoCard *recast = new IkHuitaoCard;
+        recast->addSubcard(originalCard);
+        return recast;
+    }
+
+    bool isEnabledAtPlay(const Player *player) const
+    {
+        Slash *s = new Slash(Card::NoSuit, 0);
+        s->deleteLater();
+        return !player->isCardLimited(s, Card::MethodRecast);
+    }
+};
+
+class IkHuitao : public TriggerSkill
+{
+public:
+    IkHuitao() : TriggerSkill("ikhuitao")
+    {
+        view_as_skill = new IkHuitaoVS;
+        events << EventPhaseEnd << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const
+    {
+        if (triggerEvent == EventPhaseChanging)
+            player->setMark("ikhuitao", 0);
+        else if (player->getPhase() == Player::Play && player->getMark("ikhuitao") >= 2) {
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (p->isMale())
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        QList<ServerPlayer *> malelist;
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            if (p->isMale())
+                malelist << p;
+        }
+        ServerPlayer *male = room->askForPlayerChosen(player, malelist, objectName(), "@ikhuitao", true, true);
+        if (male) {
+            player->tag["IkHuitaoTarget"] = QVariant::fromValue(male);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        ServerPlayer *male = player->tag["IkHuitaoTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkHuitaoTarget");
+        if (male)
+            male->drawCards(2, objectName());
+        return false;
+    }
+};
+
 class IkShihua: public TriggerSkill {
 public:
     IkShihua(): TriggerSkill("ikshihua") {
@@ -6105,6 +6250,10 @@ IkaiKinPackage::IkaiKinPackage()
     related_skills.insertMulti("iksangjue", "#iksangjue");
     related_skills.insertMulti("iksangjue", "#iksangjue-inv");
 
+    General *wind058 = new General(this, "wind058", "kaze", 3, false);
+    wind058->addSkill(new IkGanbi);
+    wind058->addSkill(new IkHuitao);
+
     General *bloom016 = new General(this, "bloom016", "hana", 3);
     bloom016->addSkill(new IkShihua);
     bloom016->addSkill(new IkJiushi);
@@ -6305,6 +6454,7 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkXianyuSlashCard>();
     addMetaObject<IkQizhiCard>();
     addMetaObject<IkShengyongCard>();
+    addMetaObject<IkHuitaoCard>();
     addMetaObject<IkJiushiCard>();
     addMetaObject<IkZhuyiCard>();
     addMetaObject<IkMiceCard>();
