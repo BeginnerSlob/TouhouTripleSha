@@ -3368,6 +3368,399 @@ public:
     }
 };
 
+IkQimoDialog::IkQimoDialog() : ThMimengDialog("ikqimo", true, false)
+{
+
+}
+
+IkQimoDialog *IkQimoDialog::getInstance()
+{
+    static IkQimoDialog *instance;
+    if (instance == NULL || instance->objectName() != "ikqimo")
+        instance = new IkQimoDialog;
+
+    return instance;
+}
+
+bool IkQimoDialog::isButtonEnabled(const QString &button_name) const
+{
+    const Card *c = map[button_name];
+    QString classname = c->getClassName();
+    if (c->isKindOf("Slash"))
+        classname = "Slash";
+
+    bool r = Self->getMark("IkQimo_" + classname) == 0;
+    if (!r)
+        return false;
+
+    return ThMimengDialog::isButtonEnabled(button_name);
+}
+
+IkQimoCard::IkQimoCard()
+{
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+bool IkQimoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        const Card *card = NULL;
+        if (!user_string.isEmpty())
+            card = Sanguosha->cloneCard(user_string.split("+").first());
+        return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
+    }
+
+    const Card *_card = Self->tag.value("ikqimo").value<const Card *>();
+    if (_card == NULL)
+        return false;
+
+    Card *card = Sanguosha->cloneCard(_card->objectName(), Card::NoSuit, 0);
+    card->setCanRecast(false);
+    card->deleteLater();
+    return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
+}
+
+bool IkQimoCard::targetFixed() const
+{
+    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        const Card *card = NULL;
+        if (!user_string.isEmpty())
+            card = Sanguosha->cloneCard(user_string.split("+").first());
+        return card && card->targetFixed();
+    }
+
+    const Card *_card = Self->tag.value("ikqimo").value<const Card *>();
+    if (_card == NULL)
+        return false;
+
+    Card *card = Sanguosha->cloneCard(_card->objectName(), Card::NoSuit, 0);
+    card->setCanRecast(false);
+    card->deleteLater();
+    return card && card->targetFixed();
+}
+
+bool IkQimoCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
+{
+    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        const Card *card = NULL;
+        if (!user_string.isEmpty())
+            card = Sanguosha->cloneCard(user_string.split("+").first());
+        return card && card->targetsFeasible(targets, Self);
+    }
+
+    const Card *_card = Self->tag.value("ikqimo").value<const Card *>();
+    if (_card == NULL)
+        return false;
+
+    Card *card = Sanguosha->cloneCard(_card->objectName(), Card::NoSuit, 0);
+    card->setCanRecast(false);
+    card->deleteLater();
+    return card && card->targetsFeasible(targets, Self);
+}
+
+const Card *IkQimoCard::validate(CardUseStruct &card_use) const
+{
+    ServerPlayer *zhongyao = card_use.from;
+    Room *room = zhongyao->getRoom();
+
+    QString to_guhuo = user_string;
+    if (user_string == "slash" && Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        QStringList guhuo_list;
+        guhuo_list << "slash";
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
+            guhuo_list = QStringList() << "normal_slash" << "thunder_slash" << "fire_slash";
+        to_guhuo = room->askForChoice(zhongyao, "ikqimo_slash", guhuo_list.join("+"));
+    }
+
+    room->moveCardTo(this, NULL, Player::DrawPile, true);
+
+    QString user_str;
+    if (to_guhuo == "normal_slash")
+        user_str = "slash";
+    else
+        user_str = to_guhuo;
+
+    Card *c = Sanguosha->cloneCard(user_str, Card::NoSuit, 0);
+
+    QString classname;
+    if (c->isKindOf("Slash"))
+        classname = "Slash";
+    else
+        classname = c->getClassName();
+
+    room->setPlayerMark(zhongyao, "IkQimo_" + classname, 1);
+
+    QStringList ikqimoList = zhongyao->tag.value("ikqimoClassName").toStringList();
+    ikqimoList << classname;
+    zhongyao->tag["ikqimoClassName"] = ikqimoList;
+
+    c->setSkillName("ikqimo");
+    c->deleteLater();
+    return c;
+}
+
+const Card *IkQimoCard::validateInResponse(ServerPlayer *zhongyao) const
+{
+    Room *room = zhongyao->getRoom();
+
+    QString to_guhuo = user_string;
+    if (user_string == "peach+analeptic") {
+        bool can_use_peach = zhongyao->getMark("IkQimo_Peach") == 0;
+        bool can_use_analeptic = zhongyao->getMark("IkQimo_Analeptic") == 0;
+        QStringList guhuo_list;
+        if (can_use_peach)
+            guhuo_list << "peach";
+        if (can_use_analeptic && !ServerInfo.Extensions.contains("!maneuvering"))
+            guhuo_list << "analeptic";
+        to_guhuo = room->askForChoice(zhongyao, "ikqimo_saveself", guhuo_list.join("+"));
+    } else if (user_string == "slash") {
+        QStringList guhuo_list;
+        guhuo_list << "slash";
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
+            guhuo_list = QStringList() << "normal_slash" << "thunder_slash" << "fire_slash";
+        to_guhuo = room->askForChoice(zhongyao, "ikqimo_slash", guhuo_list.join("+"));
+    } else
+        to_guhuo = user_string;
+
+    room->moveCardTo(this, NULL, Player::DrawPile, true);
+
+    QString user_str;
+    if (to_guhuo == "normal_slash")
+        user_str = "slash";
+    else
+        user_str = to_guhuo;
+
+    Card *c = Sanguosha->cloneCard(user_str, Card::NoSuit, 0);
+
+    QString classname;
+    if (c->isKindOf("Slash"))
+        classname = "Slash";
+    else
+        classname = c->getClassName();
+
+    room->setPlayerMark(zhongyao, "IkQimo_" + classname, 1);
+
+    QStringList ikqimoList = zhongyao->tag.value("ikqimoClassName").toStringList();
+    ikqimoList << classname;
+    zhongyao->tag["ikqimoClassName"] = ikqimoList;
+
+    c->setSkillName("ikqimo");
+    c->deleteLater();
+    return c;
+
+}
+
+class IkQimoVS : public OneCardViewAsSkill
+{
+public:
+    IkQimoVS() : OneCardViewAsSkill("ikqimo")
+    {
+        filter_pattern = "^BasicCard|black";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        QString pattern;
+        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) {
+            const Card *c = Self->tag["ikqimo"].value<const Card *>();
+            if (c == NULL || Self->getMark("IkQimo_" + (c->isKindOf("Slash") ? "Slash" : c->getClassName())) > 0)
+                return NULL;
+
+            pattern = c->objectName();
+        } else {
+            pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+            if (pattern == "peach+analeptic" && Self->getMark("Global_PreventPeach") > 0)
+                pattern = "analeptic";
+
+            // check if it can use
+            bool can_use = false;
+            QStringList p = pattern.split("+");
+            foreach (const QString &x, p) {
+                const Card *c = Sanguosha->cloneCard(x);
+                QString us = c->getClassName();
+                if (c->isKindOf("Slash"))
+                    us = "Slash";
+
+                if (Self->getMark("IkQimo_" + us) == 0)
+                    can_use = true;
+
+                delete c;
+                if (can_use)
+                    break;
+            }
+
+            if (!can_use)
+                return NULL;
+        }
+
+        IkQimoCard *hm = new IkQimoCard;
+        hm->setUserString(pattern);
+        hm->addSubcard(originalCard);
+
+        return hm;
+        
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        QList<const Player *> sib = player->getAliveSiblings();
+        if (player->isAlive())
+            sib << player;
+
+        bool noround = true;
+
+        foreach (const Player *p, sib) {
+            if (p->getPhase() != Player::NotActive) {
+                noround = false;
+                break;
+            }
+        }
+
+        return true; // for DIY!!!!!!!
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
+    {
+        QList<const Player *> sib = player->getAliveSiblings();
+        if (player->isAlive())
+            sib << player;
+
+        bool noround = true;
+
+        foreach (const Player *p, sib) {
+            if (p->getPhase() != Player::NotActive) {
+                noround = false;
+                break;
+            }
+        }
+
+        if (noround)
+            return false;
+
+        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
+            return false;
+
+#define IKQIMO_CAN_USE(x) (player->getMark("IkQimo_" #x) == 0)
+
+        if (pattern == "slash")
+            return IKQIMO_CAN_USE(Slash);
+        else if (pattern == "peach")
+            return IKQIMO_CAN_USE(Peach) && player->getMark("Global_PreventPeach") == 0;
+        else if (pattern.contains("analeptic"))
+            return IKQIMO_CAN_USE(Peach) || IKQIMO_CAN_USE(Analeptic);
+        else if (pattern == "jink")
+            return IKQIMO_CAN_USE(Jink);
+
+#undef IKQIMO_CAN_USE
+
+        return false;
+    }
+};
+
+class IkQimo : public TriggerSkill
+{
+public:
+    IkQimo() : TriggerSkill("ikqimo")
+    {
+        view_as_skill = new IkQimoVS;
+        events << EventPhaseChanging;
+    }
+
+    virtual QDialog *getDialog() const
+    {
+        return IkQimoDialog::getInstance();
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer* &) const
+    {
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (change.to != Player::NotActive)
+            return QStringList();
+
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            QStringList sl = p->tag.value("ikqimoClassName").toStringList();
+            foreach (const QString &t, sl)
+                room->setPlayerMark(p, "IkQimo_" + t, 0);
+            
+            p->tag["ikqimoClassName"] = QStringList();
+        }
+        
+        return QStringList();
+    }
+};
+
+class IkXinzuo : public TriggerSkill
+{
+public:
+    IkXinzuo() : TriggerSkill("ikxinzuo")
+    {
+        events << TargetSpecified;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        TriggerList list;
+        if (room->getTag("ikxinzuo").toBool())
+            return list;
+        if (player->isDead() || player->getPhase() != Player::Play)
+            return list;
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card && use.card->getTypeId() != Card::TypeSkill && use.card->getSuit() == Card::Spade && !use.to.isEmpty()) {
+            foreach (ServerPlayer *zhongyao, room->findPlayersBySkillName(objectName())) {
+                if (player != zhongyao)
+                    list.insert(zhongyao, QStringList(objectName()));
+            }
+        };
+        return list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const
+    {
+        ServerPlayer *p = room->askForPlayerChosen(ask_who, data.value<CardUseStruct>().to, objectName(), "@ikxinzuo", true, true);
+        if (p) {
+            ask_who->tag["IkXinzuoTarget"] = QVariant::fromValue(p);
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        ServerPlayer *p = ask_who->tag["IkXinzuoTarget"].value<ServerPlayer *>();
+        ask_who->tag.remove("IkXinzuoTarget");
+        if (p)
+            p->drawCards(1, objectName());
+        return false;
+    }
+};
+
+class IkXinzuoRecord : public TriggerSkill
+{
+public:
+    IkXinzuoRecord() : TriggerSkill("#ikxinzuo")
+    {
+        events << PreDamageDone << EventPhaseChanging;
+        global = true;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer* &) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            room->setTag("ikxinzuo", false);
+        } else {
+            ServerPlayer *current = room->getCurrent();
+            if (current && current->isAlive() && current->getPhase() == Player::Play)
+                room->setTag("ikxinzuo", true);
+        }
+
+        return QStringList();
+    }
+};
+
 class IkNilan: public TriggerSkill {
 public:
     IkNilan(): TriggerSkill("iknilan") {
@@ -6322,6 +6715,12 @@ IkaiKinPackage::IkaiKinPackage()
     bloom039->addSkill(new IkXinjueSlash);
     related_skills.insertMulti("ikxinjue", "#ikxinjue");
 
+    General *bloom055 = new General(this, "bloom055", "hana", 3);
+    bloom055->addSkill(new IkQimo);
+    bloom055->addSkill(new IkXinzuo);
+    bloom055->addSkill(new IkXinzuoRecord);
+    related_skills.insertMulti("ikxinzuo", "#ikxinzuo");
+
     General *snow016 = new General(this, "snow016", "yuki");
     snow016->addSkill(new IkNilan);
     snow016->addSkill(new SlashNoDistanceLimitSkill("iknilan"));
@@ -6460,6 +6859,7 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkMiceCard>();
     addMetaObject<IkBingyanCard>();
     addMetaObject<IkDingpinCard>();
+    addMetaObject<IkQimoCard>();
     addMetaObject<IkGuanjuCard>();
     addMetaObject<IkXiaozuiCard>();
     addMetaObject<IkXiaozuiPeachCard>();

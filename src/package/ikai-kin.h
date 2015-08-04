@@ -4,6 +4,7 @@
 #include "package.h"
 #include "card.h"
 #include "skill.h"
+#include "touhou-hana.h"
 
 class IkaiKinPackage : public Package{
     Q_OBJECT
@@ -164,6 +165,31 @@ public:
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class IkQimoDialog : public ThMimengDialog
+{
+    Q_OBJECT
+
+public:
+    static IkQimoDialog *getInstance();
+
+protected:
+    explicit IkQimoDialog();
+    virtual bool isButtonEnabled(const QString &button_name) const;
+};
+
+class IkQimoCard : public SkillCard
+{
+    Q_OBJECT 
+
+public:
+    Q_INVOKABLE IkQimoCard();
+    virtual bool targetFixed() const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
+    virtual const Card *validate(CardUseStruct &cardUse) const;
+    virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
 class IkGuanjuCard: public SkillCard {
