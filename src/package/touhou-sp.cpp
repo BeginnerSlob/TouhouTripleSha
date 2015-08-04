@@ -1603,7 +1603,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasFlag("Global_ThXuyouFailed") && Slash::IsAvailable(player);
+        return !player->hasFlag("ThXuyou") && !player->hasFlag("Global_ThXuyouFailed") && Slash::IsAvailable(player);
     }
 
     virtual const Card *viewAs() const{
@@ -1631,6 +1631,7 @@ public:
 
             player->setFlags("-ThXuyouUse");
             room->setCardFlag(data.value<CardUseStruct>().card, "thxuyou_slash");
+            room->setPlayerFlag(player, "ThXuyou");
         } else if (triggerEvent == CardFinished) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card && use.card->hasFlag("thxuyou_slash") && !use.card->hasFlag("ThXuyouDamage")) {
