@@ -3006,6 +3006,163 @@ public:
     }
 };
 
+class IkChenqing : public TriggerSkill
+{
+public:
+    IkChenqing() : TriggerSkill("ikchenqing")
+    {
+        events << AskForPeaches;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (TriggerSkill::triggerable(player)) {
+            DyingStruct dying = data.value<DyingStruct>();
+            if (dying.who->isAlive() && dying.who->getHp() < 1) {
+                if (dying.who == player || room->alivePlayerCount() > 3)
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        DyingStruct dying = data.value<DyingStruct>();
+        QList<ServerPlayer *> players = room->getOtherPlayers(player);
+        players.removeAll(dying.who);
+        ServerPlayer *target = room->askForPlayerChosen(player, players, objectName(), "@ikchenqing", true, true);
+        if (target) {
+            player->tag["IkChenqingTarget"] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        ServerPlayer *target = player->tag["IkChenqingTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkChenqingTarget");
+        if (target) {
+            target->drawCards(4, objectName());
+            if (!target->isNude()) {
+                const Card *card = room->askForExchange(target, "ikchenqing", 4, 4, true, "@ikchenqing-discard");
+                if (!card) {
+                    DummyCard *dummy = new DummyCard;
+                    QList<const Card *> cards = target->getCards("he");
+                    dummy->addSubcards(cards.mid(0, 4));
+                    card = dummy;
+                }
+                QSet<Card::Suit> suit;
+                foreach (int id, card->getSubcards()) {
+                    const Card *c = Sanguosha->getCard(id);
+                    if (!c)
+                        continue;
+                    suit << c->getSuit();
+                }
+                room->throwCard(card, target);
+                delete card;
+
+                DyingStruct dying = data.value<DyingStruct>();
+                if (suit.count() == 4 && room->getCurrentDyingPlayer() == dying.who) {
+                    Peach *peach = new Peach(Card::NoSuit, 0);
+                    peach->setSkillName("_ikchenqing");
+                    room->useCard(CardUseStruct(peach, target, dying.who));
+                }
+            }
+        }
+        return false;
+    }
+};
+
+class IkMojingViewAsSkill : public OneCardViewAsSkill
+{
+public:
+    IkMojingViewAsSkill() : OneCardViewAsSkill("ikmojing")
+    {
+        filter_pattern = ".|.|.|hand";
+        response_or_use = true;
+        response_pattern = "@@ikmojing";
+    }
+
+    const Card *viewAs(const Card *originalCard) const
+    {
+        const Card *ori = Self->tag[objectName()].value<const Card *>();
+        if (ori == NULL) return NULL;
+        Card *a = Sanguosha->cloneCard(ori->objectName());
+        a->addSubcard(originalCard);
+        a->setSkillName(objectName());
+        return a;
+    }
+};
+
+class IkMojing : public TriggerSkill
+{
+public:
+    IkMojing() : TriggerSkill("ikmojing")
+    {
+        view_as_skill = new IkMojingViewAsSkill;
+        events << EventPhaseStart << PreCardUsed << EventPhaseChanging;
+    }
+
+    virtual QDialog *getDialog() const
+    {
+        return ThMimengDialog::getInstance(objectName(), true, true, false);
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                player->tag.remove("ikmojing_basic");
+                player->tag.remove("ikmojing_trick");
+            }
+        } else if (triggerEvent == PreCardUsed) {
+            if (player->getPhase() == Player::Play) {
+                CardUseStruct use = data.value<CardUseStruct>();
+                if (use.card->isKindOf("BasicCard")) {
+                    QStringList list = player->tag["ikmojing_basic"].toStringList();
+                    list << use.card->objectName();
+                    player->tag["ikmojing_basic"] = list;
+                } else if (use.card->isNDTrick()) {
+                    QStringList list = player->tag["ikmojing_trick"].toStringList();
+                    list << use.card->objectName();
+                    player->tag["ikmojing_trick"] = list;
+                }
+            }
+        } else if (triggerEvent == EventPhaseStart && TriggerSkill::triggerable(player) && player->getPhase() == Player::Finish) {
+            QStringList b_list = player->tag["ikmojing_basic"].toStringList();
+            QStringList t_list = player->tag["ikmojing_trick"].toStringList();
+            if (!b_list.isEmpty() || !t_list.isEmpty())
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        QStringList b_list = player->tag["ikmojing_basic"].toStringList();
+        QStringList t_list = player->tag["ikmojing_trick"].toStringList();
+        try {
+            if (!t_list.isEmpty()) {
+                room->setPlayerProperty(player, "allowed_thmimeng_dialog_buttons", t_list.join("+"));
+                room->askForUseCard(player, "@@ikmojing", "@ikmojing_ask_first");
+            }
+            if (!b_list.isEmpty()) {
+                room->setPlayerProperty(player, "allowed_thmimeng_dialog_buttons", b_list.join("+"));
+                room->askForUseCard(player, "@@ikmojing", "@ikmojing_ask_second");
+            }
+        }
+        catch (TriggerEvent e) {
+            if (e == TurnBroken || e == StageChange) {
+                room->setPlayerProperty(player, "allowed_thmimeng_dialog_buttons", QString());
+            }
+            throw e;
+        }
+        return false;
+    }
+};
+
 IkFenxunCard::IkFenxunCard() {
 }
 
@@ -6102,6 +6259,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     bloom051->addSkill(new IkZhiyu);
     bloom051->addSkill(new IkZhiyuTargetMod);
     related_skills.insertMulti("ikzhiyu", "#ikzhiyu-tar");
+
+    General *bloom058 = new General(this, "bloom058", "hana", 3, false);
+    bloom058->addSkill(new IkChenqing);
+    bloom058->addSkill(new IkMojing);
 
     General *snow022 = new General(this, "snow022", "yuki");
     snow022->addSkill(new Skill("ikxindu", Skill::NotCompulsory));
