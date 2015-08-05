@@ -799,13 +799,21 @@ ThMimengDialog::ThMimengDialog(const QString &object, bool left, bool right, boo
 
 bool ThMimengDialog::isButtonEnabled(const QString &button_name) const{
     const Card *card = map[button_name];
+    QString allowings = Self->property("allowed_thmimeng_dialog_buttons").toString();
     QStringList ban_list;
     if (object_name == "thmimeng")
         ban_list << "ExNihilo" << "AmazingGrace" << "Snatch" << "GodSalvation" << "ArcheryAttack"
                  << "Drowning" << "BurningCamps" << "LureTiger" << "KnownBoth";
     if (object_name == "ikxieke" && Self->aliveCount() == 2)
         ban_list << "Jink" << "Analeptic" << "Peach";
-    return !ban_list.contains(card->getClassName()) && !Self->isCardLimited(card, Card::MethodUse, true) && card->isAvailable(Self);
+    if (allowings.isEmpty())
+        return !ban_list.contains(card->getClassName()) && !Self->isCardLimited(card, Card::MethodUse, true) && card->isAvailable(Self);
+    else {
+        if (!allowings.split("+").contains(card->objectName())) // for IkMojing
+            return false;
+        else
+            return !ban_list.contains(card->getClassName()) && !Self->isCardLimited(card, Card::MethodUse, true) && card->isAvailable(Self);
+    }
 }
 
 void ThMimengDialog::popup() {
