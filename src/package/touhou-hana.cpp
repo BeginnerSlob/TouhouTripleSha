@@ -1944,7 +1944,8 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
+        room->setPlayerProperty(ask_who, "thleishi", player->objectName());
         room->askForUseCard(ask_who, "@@thleishi", "@thleishi", -1, Card::MethodDiscard);
         return false;
     }
