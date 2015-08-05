@@ -818,6 +818,7 @@ bool ThMimengDialog::isButtonEnabled(const QString &button_name) const{
 
 void ThMimengDialog::popup() {
     if (play_only && Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
+        Self->tag.remove(object_name);
         emit onButtonClick();
         return;
     }
@@ -830,6 +831,7 @@ void ThMimengDialog::popup() {
         button->setEnabled(enabled);
     }
     if (!has_enabled_button) {
+        Self->tag.remove(object_name);
         emit onButtonClick();
         return;
     }
