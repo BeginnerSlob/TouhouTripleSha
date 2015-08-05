@@ -1656,7 +1656,7 @@ public:
             && target->getPhase() == Player::Play;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         if (!player->canDiscard(player, "he"))
             return false;
@@ -4119,7 +4119,7 @@ public:
 
     virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
         TriggerList skill_list;
-        if (player && player->isAlive() && player == room->getCurrent() && player->getPhase() != Player::NotActive) {
+        if (player && player->isAlive() && player == room->getCurrent() && player->getPhase() == Player::Play) {
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
                 skill_list.insert(p, QStringList(objectName()));
         }
@@ -4248,6 +4248,92 @@ public:
             return -1;
         else
             return 0;
+    }
+};
+
+IkHuangpoCard::IkHuangpoCard()
+{
+}
+
+bool IkHuangpoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const
+{
+    return targets.isEmpty() && !to_select->isAllNude();
+}
+
+void IkHuangpoCard::onEffect(const CardEffectStruct &effect) const
+{
+    Room *room = effect.from->getRoom();
+    int id = room->askForCardChosen(effect.from, effect.to, "hej", "ikhuangpo");
+    if (id != -1) {
+        effect.from->addToPile("ikhuangpopile", id);
+        QVariantList list = effect.to->tag["IkHuangpoIds"].toList();
+        list << id;
+        effect.to->tag["IkHuangpoIds"] = list;
+    }
+}
+
+class IkHuangpo: public ZeroCardViewAsSkill
+{
+public:
+    IkHuangpo(): ZeroCardViewAsSkill("ikhuangpo")
+    {
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new IkHuangpoCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return player->usedTimes("IkHuangpoCard") < 2;
+    }
+};
+
+class IkHuangpoReturn: public TriggerSkill
+{
+public:
+    IkHuangpoReturn(): TriggerSkill("#ikhuangpo")
+    {
+        events << EventPhaseStart;
+        frequency = Compulsory;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        TriggerList list;
+        if (player && player->isAlive() && player->getPhase() == Player::Finish && !player->getPile("ikhuangpopile").isEmpty()) {
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                foreach (QVariant _id, p->tag["IkHuangpoIds"].toList()) {
+                    bool ok = false;
+                    int id = _id.toInt(&ok);
+                    if (ok && player->getPile("ikhuangpopile").contains(id)) {
+                        list.insert(p, QStringList(objectName()));
+                        break;
+                    }
+                }
+            }
+        }
+        return list;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        QList<int> ids;
+        QVariantList list = ask_who->tag["IkHuangpoIds"].toList();
+        QVariantList list_new;
+        foreach (QVariant _id, list) {
+            bool ok = false;
+            int id = _id.toInt(&ok);
+            if (ok && player->getPile("ikhuangpopile").contains(id))
+                ids << id;
+            else
+                list_new << id;
+        }
+        ask_who->tag["IkHuangpoIds"] = list_new;
+        DummyCard dummy(ids);
+        ask_who->obtainCard(&dummy);
+        return false;
     }
 };
 
@@ -6060,6 +6146,11 @@ IkaiSuiPackage::IkaiSuiPackage()
     snow053->addSkill(new IkQingshe);
     snow053->addRelateSkill("ikbingling");
 
+    General *snow055 = new General(this, "snow055", "yuki");
+    snow055->addSkill(new IkHuangpo);
+    snow055->addSkill(new IkHuangpoReturn);
+    related_skills.insertMulti("ikhuangpo", "#ikhuangpo");
+
     General *luna017 = new General(this, "luna017", "tsuki");
     luna017->addSkill(new IkChenyan);
     luna017->addSkill(new IkMoliao);
@@ -6166,6 +6257,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkLingtongCard>();
     addMetaObject<IkLunkeCard>();
     addMetaObject<IkYaoyinCard>();
+    addMetaObject<IkHuangpoCard>();
     addMetaObject<IkBinglingCard>();
     addMetaObject<IkZhangeCard>();
     addMetaObject<IkFeishanCard>();
