@@ -377,6 +377,10 @@ bool IronChain::targetsFeasible(const QList<const Player *> &targets, const Play
             rec = false;
             break;
         }
+        if (Self->getPile("iklingxun").contains(id)) {
+            rec = false;
+            break;
+        }
         // Coupling of ThBaochui
         if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play) {
             foreach (const Player *p, Self->getAliveSiblings())

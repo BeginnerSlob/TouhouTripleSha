@@ -528,6 +528,7 @@ void Dashboard::selectAll() {
 void Dashboard::selectCards(const QString &pattern) {
     if (pattern == ".") {
         retractPileCards("wooden_ox");
+        retractPileCards("iklingxun");
         if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
             retractPileCards("thbaochuipile");
     }
@@ -920,6 +921,7 @@ void Dashboard::disableAllCards() {
 void Dashboard::enableCards() {
     m_mutexEnableCards.lock();
     expandPileCards("wooden_ox");
+    expandPileCards("iklingxun");
     if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
         expandPileCards("thbaochuipile");
     foreach (CardItem *card_item, m_handCards)
@@ -948,10 +950,12 @@ void Dashboard::startPending(const ViewAsSkill *skill) {
     }
     if (expand) {
         expandPileCards("wooden_ox");
+        expandPileCards("iklingxun");
         if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
             expandPileCards("thbaochuipile");
     } else {
         retractPileCards("wooden_ox");
+        retractPileCards("iklingxun");
         if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
             retractPileCards("thbaochuipile");
         if (skill && skill->inherits("ViewAsSkill") && !skill->getExpandPile().isEmpty())
@@ -979,6 +983,7 @@ void Dashboard::stopPending() {
     view_as_skill = NULL;
     pending_card = NULL;
     retractPileCards("wooden_ox");
+    retractPileCards("iklingxun");
     if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
         retractPileCards("thbaochuipile");
     emit card_selected(NULL);

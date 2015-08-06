@@ -3885,6 +3885,67 @@ public:
     }
 };
 
+class IkLingxun: public TriggerSkill
+{
+public:
+    IkLingxun(): TriggerSkill("iklingxun")
+    {
+        events << TargetSpecified;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (TriggerSkill::triggerable(player) && !player->hasFlag("IkLingxunUsed")) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->getTypeId() != Card::TypeSkill) {
+                if (use.to.length() == 1 && use.to.first() != player && !use.to.first()->isKongcheng())
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(data.value<CardUseStruct>().to.first()))) {
+            player->setFlags("IkLingxunUsed");
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        int id = room->askForCardChosen(player, data.value<CardUseStruct>().to.first(), "h", objectName());
+        player->addToPile(objectName(), id);
+        return false;
+    }
+};
+
+class IkLingxunTrigger: public PhaseChangeSkill
+{
+public:
+    IkLingxunTrigger(): PhaseChangeSkill("#iklingxun")
+    {
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *player) const
+    {
+        return player && player->isAlive() && !player->getPile("iklingxun").isEmpty() && player->getPhase() == Player::Finish;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const
+    {
+        Room *room = player->getRoom();
+        room->sendCompulsoryTriggerLog(player, "iklingxun");
+        player->clearOnePrivatePile("iklingxun");
+        room->loseHp(player);
+        return false;
+    }
+};
+
 class IkNilan: public TriggerSkill {
 public:
     IkNilan(): TriggerSkill("iknilan") {
@@ -6850,6 +6911,11 @@ IkaiKinPackage::IkaiKinPackage()
     bloom056->addSkill(new IkPingwei);
     bloom056->addSkill(new IkPingweiRecord);
     related_skills.insertMulti("ikpingwei", "#ikpingwei");
+
+    General *bloom057 = new General(this, "bloom057", "hana", 3);
+    bloom057->addSkill(new IkLingxun);
+    bloom057->addSkill(new IkLingxunTrigger);
+    related_skills.insertMulti("iklingxun", "#iklingxun");
 
     General *snow016 = new General(this, "snow016", "yuki");
     snow016->addSkill(new IkNilan);

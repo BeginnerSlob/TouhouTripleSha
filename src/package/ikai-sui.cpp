@@ -1318,6 +1318,8 @@ public:
                 return false;
             if (Self->getPile("wooden_ox").contains(card->getEffectiveId()))
                 return false;
+            if (Self->getPile("iklingxun").contains(card->getEffectiveId()))
+                return false;
             if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play) {
                 foreach (const Player *p, Self->getAliveSiblings()) {
                     if (p->getPile("thbaochuipile").contains(card->getEffectiveId()))
