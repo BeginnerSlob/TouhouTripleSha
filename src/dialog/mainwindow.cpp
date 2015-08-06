@@ -499,6 +499,8 @@ void MainWindow::setBackgroundBrush(bool centerAsOrigin) {
                 pic = "image/system/backdrop/couple.jpg";
             else if (ServerInfo.GameMode == "02_1v1")
                 pic = "image/system/backdrop/KOF.jpg";
+            else if (ServerInfo.GameMode == "03_1v1v1")
+                pic = "image/system/backdrop/tripod.jpg";
             else if (ServerInfo.GameMode == "jianniang")
                 pic = "image/system/backdrop/jianniang.jpg";
             else if (ServerInfo.GameMode == "04_1v3")
