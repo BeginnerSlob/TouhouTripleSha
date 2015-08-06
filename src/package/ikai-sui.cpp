@@ -3089,10 +3089,13 @@ public:
     {
         const Card *ori = Self->tag[objectName()].value<const Card *>();
         if (ori == NULL) return NULL;
-        Card *a = Sanguosha->cloneCard(ori->objectName());
-        a->addSubcard(originalCard);
-        a->setSkillName(objectName());
-        return a;
+        if (Self->property("allowed_thmimeng_dialog_buttons").toString().split("+").contains(ori->objectName())) {
+            Card *a = Sanguosha->cloneCard(ori->objectName());
+            a->addSubcard(originalCard);
+            a->setSkillName(objectName());
+            return a;
+        }
+        return NULL;
     }
 };
 
@@ -3110,7 +3113,7 @@ public:
         return ThMimengDialog::getInstance(objectName(), true, true, false);
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
         if (triggerEvent == EventPhaseChanging) {
             if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
@@ -3139,7 +3142,7 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         QStringList b_list = player->tag["ikmojing_basic"].toStringList();
         QStringList t_list = player->tag["ikmojing_trick"].toStringList();
