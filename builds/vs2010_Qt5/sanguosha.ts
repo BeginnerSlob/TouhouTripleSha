@@ -1432,7 +1432,7 @@
     <message>
         <location filename="../../src/dialog/generaloverview.ui" line="68"/>
         <source>MaxHP</source>
-        <translation>体力上限</translation>
+        <translation>体力</translation>
     </message>
     <message>
         <location filename="../../src/dialog/generaloverview.ui" line="73"/>
