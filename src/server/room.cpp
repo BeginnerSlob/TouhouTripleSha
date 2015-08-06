@@ -5599,8 +5599,11 @@ bool Room::askForYiji(ServerPlayer *guojia, QList<int> &cards, const QString &sk
         sendLog(log);
 
         const Skill *skill = Sanguosha->getSkill(skill_name);
-        if (skill)
-            broadcastSkillInvoke(skill_name, skill->getEffectIndex(target, dummy_card));
+        if (skill) {
+            int index = skill->getEffectIndex(target, dummy_card);
+            if (index != 0)
+                broadcastSkillInvoke(skill_name, index);
+        }
         notifySkillInvoked(guojia, skill_name);
     }
 
