@@ -325,9 +325,9 @@ void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool 
         name_item->setTextAlignment(Qt::AlignCenter);
         name_item->setData(Qt::UserRole, general_name);
         if (general->isLord()) {
-            nickname_item->setBackgroundColor(QColor(251, 216, 96));
+            nickname_item->setBackgroundColor(QColor(238, 238, 135));
             nickname_item->setToolTip(tr("This general is a lord"));
-            name_item->setBackgroundColor(QColor(251, 216, 96));
+            name_item->setBackgroundColor(QColor(238, 238, 135));
             name_item->setToolTip(tr("This general is a lord"));
         }
 
@@ -360,11 +360,11 @@ void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool 
         ui->tableWidget->setItem(i, 5, package_item);
     }
 
-    ui->tableWidget->setColumnWidth(0, 80);
-    ui->tableWidget->setColumnWidth(1, 95);
+    ui->tableWidget->setColumnWidth(0, 120);
+    ui->tableWidget->setColumnWidth(1, 120);
     ui->tableWidget->setColumnWidth(2, 40);
-    ui->tableWidget->setColumnWidth(3, 50);
-    ui->tableWidget->setColumnWidth(4, 60);
+    ui->tableWidget->setColumnWidth(3, 55);
+    ui->tableWidget->setColumnWidth(4, 45);
     ui->tableWidget->setColumnWidth(5, 85);
 
     ui->tableWidget->setCurrentItem(ui->tableWidget->item(0, 0));
