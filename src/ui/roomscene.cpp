@@ -2277,6 +2277,7 @@ void RoomScene::useSelectedCard() {
         dashboard->stopPending();
     else {
         dashboard->retractPileCards("wooden_ox");
+        dashboard->retractPileCards("iklingxun");
         if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
             dashboard->retractPileCards("thbaochuipile");
     }
