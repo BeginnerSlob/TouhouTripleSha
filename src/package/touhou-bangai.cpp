@@ -60,42 +60,63 @@ public:
     }
 };
 
-class ThShoujuan: public TriggerSkill {
+class ThShoujuan: public PhaseChangeSkill
+{
 public:
-    ThShoujuan(): TriggerSkill("thshoujuan") {
-        events << CardsMoveOneTime << EventPhaseChanging;
+    ThShoujuan(): PhaseChangeSkill("thshoujuan")
+    {
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (triggerEvent == EventPhaseChanging) {
-            if (data.value<PhaseChangeStruct>().to == Player::NotActive)
-                player->setMark(objectName(), 0);
-            return QStringList();
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return PhaseChangeSkill::triggerable(target)
+            && target->getPhase() == Player::Play;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
         }
-        if (TriggerSkill::triggerable(player)
-            && player == room->getCurrent() && player->getPhase() != Player::NotActive
-            && player->getMark(objectName()) < 3) {
+        return false;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const
+    {
+        player->drawCards(2, objectName());
+        player->setFlags("ThShoujuanUsed");
+        return false;
+    }
+};
+
+class ThShoujuanTrigger: public TriggerSkill {
+public:
+    ThShoujuanTrigger(): TriggerSkill("#thshoujuan") {
+        events << CardsMoveOneTime;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player && player->isAlive() && player->hasFlag("ThShoujuanUsed")) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.from && move.from != player
+            if (move.from && move.from != player && !player->isNude()
                 && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip)))
                 return QStringList(objectName());
         }
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (player->askForSkillInvoke(objectName(), QVariant::fromValue((ServerPlayer *)move.from))) {
-            room->broadcastSkillInvoke(objectName());
-            player->addMark(objectName());
-            return true;
+        const Card *card = room->askForCard(player, "..!", "@thshoujuan:" + move.from->objectName(), QVariant(), Card::MethodNone);
+        if (!card) {
+            QList<const Card *> cards = player->getCards("he");
+            qShuffle(cards);
+            card = cards.first();
         }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const {
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        ((ServerPlayer *)move.from)->drawCards(2, objectName());
+        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, player->objectName(), move.from->objectName(), "thshoujuan", QString());
+        room->obtainCard((ServerPlayer *)move.from, card, reason, false);
         return false;
     }
 };
@@ -1181,6 +1202,8 @@ TouhouBangaiPackage::TouhouBangaiPackage()
 
     General *bangai002 = new General(this, "bangai002", "hana", 3);
     bangai002->addSkill(new ThShoujuan);
+    bangai002->addSkill(new ThShoujuanTrigger);
+    related_skills.insertMulti("thshoujuan", "#thshoujuan");
     bangai002->addSkill(new ThMiqi);
     bangai002->addSkill(new FakeMoveSkill("thmiqi"));
     related_skills.insertMulti("thmiqi", "#thmiqi-fake-move");
