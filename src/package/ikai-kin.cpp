@@ -6915,8 +6915,8 @@ IkaiKinPackage::IkaiKinPackage()
     General *snow041 = new General(this, "snow041", "yuki");
     snow041->addSkill(new IkYoudan);
 
-    General *snow057 = new General(this, "snow057", "yuki");
-    snow057->addSkill(new IkWuxiang);
+    General *snow056 = new General(this, "snow056", "yuki");
+    snow056->addSkill(new IkWuxiang);
 
     General *snow058 = new General(this, "snow058", "yuki");
     snow058->addSkill(new IkFansui);
