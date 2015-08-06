@@ -708,7 +708,10 @@ QList<CardItem *> PlayerCardContainer::removeEquips(const QList<int> &cardIds) {
     return result;
 }
 
-void PlayerCardContainer::startHuaShen(QString generalName, QString skillName) {
+void PlayerCardContainer::startHuaShen(QString generalName, QString skillName)
+{
+    if (m_player == NULL)
+        return;
     _m_huashenGeneralName = generalName;
     _m_huashenSkillName = skillName;
     //Q_ASSERT(m_player->hasSkill("ikhuanshen"));
