@@ -597,8 +597,8 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         DamageStruct damage = data.value<DamageStruct>();
-        if (!damage.from->isKongcheng())
-            room->obtainCard(player, room->askForCardChosen(player, damage.from, "h", objectName()), false);
+        if (!damage.from->isNude())
+            room->obtainCard(player, room->askForCardChosen(player, damage.from, "he", objectName()), false);
 
         QStringList sources = damage.from->tag["ThMengsheng"].toStringList();
         sources << player->objectName();
@@ -672,7 +672,7 @@ public:
         TriggerList skill_list;
         if (player->getPhase() == Player::Discard) {
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
-                if (owner->canDiscard(owner, "h") && owner->inMyAttackRange(player))
+                if (owner->canDiscard(owner, "he") && owner->inMyAttackRange(player))
                     skill_list.insert(owner, QStringList(objectName()));
             }
         }
@@ -680,7 +680,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
-        if (room->askForCard(ask_who, ".", "@thqixiang", data, objectName())) {
+        if (room->askForCard(ask_who, "..", "@thqixiang", data, objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
