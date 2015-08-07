@@ -1710,6 +1710,11 @@ public:
         card->addSubcard(originalCard);
         return card;
     }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->isKongcheng() && !player->hasUsed("IkShengyongCard");
+    }
 };
 
 class IkShizhiFilter: public FilterSkill {
