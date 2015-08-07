@@ -180,7 +180,7 @@ return {
 	["#sp015"] = "梦游仙境",
 	["sp015"] = "SP爱丽丝•玛嘉特洛伊德",--雪 - 空 - 3血
 	["&sp015"] = "SP爱丽丝",
-	["designer:sp015"] = "三国kill",
+	["designer:sp015"] = "三国KILL",
 	["illustrator:sp015"] = "シエラ",
 	["cv:sp015"] = "暂无",
 	["thouji"] = "偶祭",

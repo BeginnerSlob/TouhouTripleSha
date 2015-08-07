@@ -1801,7 +1801,8 @@ public:
         if (TriggerSkill::triggerable(player)) {
             if (room->getCurrent() == player && player->getPhase() != Player::NotActive) {
                 CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-                if (move.from && move.from_places.contains(Player::PlaceEquip))
+                if (move.from && move.from_places.contains(Player::PlaceEquip)
+                    && move.reason.m_reason != CardMoveReason::S_REASON_CHANGE_EQUIP)
                     skills << objectName();
                 if (move.to && move.to_place == Player::PlaceEquip)
                     skills << objectName();
