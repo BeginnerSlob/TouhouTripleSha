@@ -123,8 +123,6 @@ public:
 
         room->addPlayerMark(player, "@erchong");
 
-        room->askForDiscard(player, objectName(), 2, 2, false, true);
-
         if (room->changeMaxHpForAwakenSkill(player)) {
             room->acquireSkill(player, "thhuanfa");
             room->acquireSkill(player, "ikzhuji");
