@@ -2153,6 +2153,7 @@ const Card *IkShidaoCard::validateInResponse(ServerPlayer *wenyang) const{
 class IkShidao: public ViewAsSkill {
 public:
     IkShidao(): ViewAsSkill("ikshidao") {
+        owner_only_skill = true;
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
