@@ -4143,7 +4143,7 @@ public:
 
         static QSet<QString> banned;
         if (banned.isEmpty())
-            banned << "zuoci";
+            banned << "luna009" << "snow034";
 
         return (all - banned - huashen_set - room_set).toList();
     }
