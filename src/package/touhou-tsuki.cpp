@@ -1946,8 +1946,8 @@ void ThGuixuCard::use(Room *room, ServerPlayer *zhanghe, QList<ServerPlayer *> &
         if (disable)
             disabled_ids << c->getEffectiveId();
     }
-    foreach (const Card *c, from->getEquips()) {
-        const EquipCard *equip = qobject_cast<const EquipCard *>(c);
+    for (int i = 0; i < S_EQUIP_AREA_LENGTH; ++i) {
+        const EquipCard *equip = from->getEquip(i);
         if (equip) {
             bool disable = true;
             foreach (const Player *p, from->getAliveSiblings()) {
@@ -1957,7 +1957,7 @@ void ThGuixuCard::use(Room *room, ServerPlayer *zhanghe, QList<ServerPlayer *> &
                 }
             }
             if (disable)
-                disabled_ids << c->getEffectiveId();
+                disabled_ids << equip->getEffectiveId();
         }
     }
     int card_id = room->askForCardChosen(zhanghe, from , "ej", "thguixu", false, MethodNone, disabled_ids);
