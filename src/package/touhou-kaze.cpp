@@ -209,9 +209,9 @@ public:
 
                 if (card_id != -1)
                     room->obtainCard(player, card_id);
-            } else if (room->getCardPlace(judge.card->getEffectiveId()) == Player::PlaceJudge)
+            } else
                 player->obtainCard(judge.card);
-        } else if (room->getCardPlace(judge.card->getEffectiveId()) == Player::PlaceJudge)
+        } else
             player->obtainCard(judge.card);
 
         return false;
@@ -248,7 +248,7 @@ public:
     virtual int getDrawNum(ServerPlayer *player, int n) const{
         Room *room = player->getRoom();
         player->setFlags("-ThJilanwenInvoke");
-        room->sendCompulsoryTriggerLog(player, objectName());
+        room->sendCompulsoryTriggerLog(player, "thjilanwen");
 
         return n - 1;
     }
