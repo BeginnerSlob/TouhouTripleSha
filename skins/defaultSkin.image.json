@@ -1,9 +1,9 @@
 {
 "progressBar": [[0, "image/system/controls/progress-0.png"], [100, "image/system/controls/progress-100.png"]],
 "votesNum-default": "image/system/number/%1.png",
-"photoMainFrame": "image/system/photo-back.png",
-"photoHandCardNum-default": "image/system/handcard%1.png",
-"photoHandCardNum-default2": "image/system/handcard1.png",
+"photoMainFrame": "image/fullskin/system/photo-back.png",
+"photoHandCardNum-default": "image/fullskin/system/handcard/%1.png",
+"photoHandCardNum-default2": "image/fullskin/system/handcard/qun.png",
 "photoFaceTurnedMask": "image/generals/small/faceturned.png",
 "photoBlankGeneral": "image/generals/small/blank.png",
 "photoChain": "image/system/chain.png",
@@ -21,8 +21,8 @@
 "dashboardLeftFrame": "image/system/dashboard-equip.png", 
 "dashboardRightFrame": "image/system/dashboard-avatar.png",
 "dashboardMiddleFrame": "image/system/dashboard-hand.png",
-"dashboardHandCardNum-default": "image/system/handcard%1.png",
-"dashboardHandCardNum-default2": "image/system/handcard1.png",
+"dashboardHandCardNum-default": "image/fullskin/system/handcard/%1.png",
+"dashboardHandCardNum-default2": "image/fullskin/system/handcard/qun.png",
 "dashboardFaceTurnedMask": "image/generals/big/faceturned.png",
 "dashboardBlankGeneral": "image/generals/small/blank.png",
 "dashboardChain": ["image/system/chain.png", [0, 0, 134, 19]],
@@ -34,12 +34,12 @@
 "dashboardPhase5": "image/system/phase/discard.png",
 "dashboardPhase6": "image/system/phase/finish.png",
 "dashboardFrameWhenSelected": "image/system/frame/dashboardSelected.png",
-"magatamasBg0": "image/system/magatamas/bg1.png",
-"magatamasBg1": "image/system/magatamas/bg1.png",
-"magatamasBg2": "image/system/magatamas/bg2.png",
-"magatamasBg3": "image/system/magatamas/bg3.png",
-"magatamasBg4": "image/system/magatamas/bg4.png",
-"magatamasBg5": "image/system/magatamas/bg5.png",
+"magatamasBg0": "image/fullskin/system/magatamas/bg1.png",
+"magatamasBg1": "image/fullskin/system/magatamas/bg1.png",
+"magatamasBg2": "image/fullskin/system/magatamas/bg2.png",
+"magatamasBg3": "image/fullskin/system/magatamas/bg3.png",
+"magatamasBg4": "image/fullskin/system/magatamas/bg4.png",
+"magatamasBg5": "image/fullskin/system/magatamas/bg5.png",
 "magatamas0": "image/system/magatamas/0.png",
 "magatamas1": "image/system/magatamas/1.png",
 "magatamas2": "image/system/magatamas/2.png",
@@ -54,11 +54,11 @@
 
 // general default directories
 "playerGeneralIcon-default-0": ["image/generals/avatar/%1.png", [71, 28, 134, 134], [40, 40]],
-"playerGeneralIcon-default-1": ["image/generals/avatar/%1.png", [28, 46, 220, 132], [148, 89]],
+"playerGeneralIcon-default-1": ["image/fullskin/generals/full/%1.png", [0, 0, 250, 311], [155, 193]],
 "playerGeneralIcon-default-2": ["image/generals/avatar/%1.png", [63, 44, 154, 154]],
-"playerGeneralIcon-default-4": ["image/generals/avatar/%1.png", [71, 28, 134, 134], [51, 51]], //small avatar for photo
+"playerGeneralIcon-default-4": ["image/fullskin/generals/full/%1.png", [70, 0, 124, 289], [77, 179]], //small avatar for photo
 "playerGeneralIcon-default-5": ["image/generals/avatar/%1.png", [71, 28, 134, 134], [70, 70]],  //small avatar for dashboard
-"playerGeneralIcon-default-6": ["image/generals/avatar/%1.png", [8, 46, 220, 132], [148, 89]],  //primary avatar for photo
+"playerGeneralIcon-default-6": ["image/fullskin/generals/full/%1.png", [65, 0, 250, 311], [155, 193]],  //primary avatar for photo
 "playerGeneralIcon-default-7": ["image/generals/avatar/%1.png", [71, 28, 134, 134]],  //primary avatar for dashboard
 "playerGeneralIcon-default-8": ["image/generals/avatar/%1.png", [16, 49, 244, 100], [122, 50]],  //avatar for KOF mode
 
@@ -184,7 +184,14 @@
 "generalCardBack": "image/system/unknown.png",
 
 // equips
-"photoEquip-default": "image/small-equips/%1.png",
+"photoEquip-default": "image/fullskin/small-equips/%1.png",
+"photoEquip-chitu": "image/fullskin/small-equips/offensivehorse.png",
+"photoEquip-dayuan": "image/fullskin/small-equips/offensivehorse.png",
+"photoEquip-zixing": "image/fullskin/small-equips/offensivehorse.png",
+"photoEquip-dilu": "image/fullskin/small-equips/defensivehorse.png",
+"photoEquip-jueying": "image/fullskin/small-equips/defensivehorse.png",
+"photoEquip-hualiu": "image/fullskin/small-equips/defensivehorse.png",
+"photoEquip-zhuahuangfeidian": "image/fullskin/small-equips/defensivehorse.png",
 "dashboardEquip-default": "image/equips/%1.png",
 
 // kingdoms
