@@ -2472,7 +2472,7 @@ TouhouTsukiPackage::TouhouTsukiPackage()
     General *tsuki016 = new General(this, "tsuki016", "tsuki");
     tsuki016->addSkill(new ThShenyou);
 
-    General *tsuki017 = new General(this, "tsuki017", "tsuki");
+    General *tsuki017 = new General(this, "tsuki017", "tsuki", 3);
     tsuki017->addSkill(new ThTianque);
     tsuki017->addSkill(new ThTianqueRecord);
     related_skills.insertMulti("thtianque", "#thtianque");
