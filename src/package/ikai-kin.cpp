@@ -6917,7 +6917,7 @@ IkaiKinPackage::IkaiKinPackage()
     bloom056->addSkill(new IkPingweiRecord);
     related_skills.insertMulti("ikpingwei", "#ikpingwei");
 
-    General *bloom057 = new General(this, "bloom057", "hana", 3);
+    General *bloom057 = new General(this, "bloom057", "hana");
     bloom057->addSkill(new IkLingxun);
     bloom057->addSkill(new IkLingxunTrigger);
     related_skills.insertMulti("iklingxun", "#iklingxun");
