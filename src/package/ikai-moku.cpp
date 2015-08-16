@@ -4195,6 +4195,7 @@ public:
 
             foreach (const Skill *skill, general->getVisibleSkillList()) {
                 if (skill->isLordSkill()
+                    || skill->isOwnerOnlySkill()
                     || skill->getFrequency() == Skill::Limited
                     || skill->getFrequency() == Skill::Wake)
                     continue;
