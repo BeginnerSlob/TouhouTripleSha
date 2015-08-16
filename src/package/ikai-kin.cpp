@@ -6337,7 +6337,7 @@ public:
 class IkLianzhuang: public TriggerSkill {
 public:
     IkLianzhuang(): TriggerSkill("iklianzhuang") {
-        events << CardUsed << CardResponded << EventPhaseChanging;
+        events << CardUsed << CardResponded;
         frequency = Frequent;
     }
 
@@ -6351,17 +6351,8 @@ public:
                 if (resp.m_isUse)
                     card = resp.m_card;
             }
-            if (!card || card->getTypeId() == Card::TypeSkill) return QStringList();
-            int suit = player->getMark("IkLianzhuangSuit"), number = player->getMark("IkLianzhuangNumber");
-            player->setMark("IkLianzhuangSuit", int(card->getSuit()) > 3 ? 0 : (int(card->getSuit()) + 1));
-            player->setMark("IkLianzhuangNumber", card->getNumber());
-            if (TriggerSkill::triggerable(player)
-                && ((suit > 0 && int(card->getSuit()) + 1 == suit)
-                    || (number > 0 && card->getNumber() == number)))
+            if (card && TriggerSkill::triggerable(player) && card->hasFlag("iklianzhuang_invoke"))
                 return QStringList(objectName());
-        } else if (triggerEvent == EventPhaseChanging) {
-            player->setMark("IkLianzhuangSuit", 0);
-            player->setMark("IkLianzhuangNumber", 0);
         }
         return QStringList();
     }
@@ -6376,6 +6367,55 @@ public:
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         player->drawCards(1, objectName());
+        return false;
+    }
+};
+
+class IkLianzhuangRecord: public TriggerSkill
+{
+public:
+    IkLianzhuangRecord(): TriggerSkill("#iklianzhuang")
+    {
+        events << PreCardUsed << PreCardResponded << EventPhaseChanging;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            player->setMark("IkLianzhuangSuit", 0);
+            player->setMark("IkLianzhuangNumber", 0);
+        } else if (player->getPhase() == Player::Play) {
+            const Card *card = NULL;
+            if (triggerEvent == PreCardUsed)
+                card = data.value<CardUseStruct>().card;
+            else if (triggerEvent == PreCardResponded) {
+                CardResponseStruct resp = data.value<CardResponseStruct>();
+                if (resp.m_isUse)
+                    card = resp.m_card;
+            }
+            if (!card || card->getTypeId() == Card::TypeSkill)
+                return QStringList();
+            return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        const Card *card = NULL;
+        if (triggerEvent == PreCardUsed)
+            card = data.value<CardUseStruct>().card;
+        else if (triggerEvent == PreCardResponded) {
+            CardResponseStruct resp = data.value<CardResponseStruct>();
+            if (resp.m_isUse)
+                card = resp.m_card;
+        }
+        int suit = player->getMark("IkLianzhuangSuit"), number = player->getMark("IkLianzhuangNumber");
+        player->setMark("IkLianzhuangSuit", int(card->getSuit()) > 3 ? 0 : (int(card->getSuit()) + 1));
+        player->setMark("IkLianzhuangNumber", card->getNumber());
+        if ((suit > 0 && int(card->getSuit()) + 1 == suit)
+            || (number > 0 && card->getNumber() == number))
+            card->setFlags("iklianzhuang_invoke");
         return false;
     }
 };
@@ -7030,6 +7070,8 @@ IkaiKinPackage::IkaiKinPackage()
 
     General *luna038 = new General(this, "luna038", "tsuki", 3);
     luna038->addSkill(new IkLianzhuang);
+    luna038->addSkill(new IkLianzhuangRecord);
+    related_skills.insertMulti("iklianzhuang", "#iklianzhuang-record");
     luna038->addSkill(new IkGuijing);
     luna038->addSkill(new IkGuijingRecord);
     related_skills.insertMulti("ikguijing", "#ikguijing-record");
