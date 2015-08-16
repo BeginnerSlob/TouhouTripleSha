@@ -2245,7 +2245,7 @@ public:
         if (triggerEvent == EventPhaseChanging) {
             if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
                 foreach (ServerPlayer *p, room->getAlivePlayers())
-                    room->setPlayerMark(p, "jade", 0);
+                    room->setPlayerMark(p, "jade_use", 0);
             }
         } else {
             CardUseStruct use = data.value<CardUseStruct>();
