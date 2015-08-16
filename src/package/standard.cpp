@@ -61,6 +61,14 @@ void EquipCard::onUse(Room *room, const CardUseStruct &card_use) const{
     if (use.to.isEmpty())
         use.to << player;
 
+    LogMessage log;
+    log.from = card_use.from;
+    if (!card_use.card->targetFixed() || card_use.to.length() > 1 || !card_use.to.contains(card_use.from))
+        log.to = card_use.to;
+    log.type = "#UseCard";
+    log.card_str = card_use.card->toString();
+    room->sendLog(log);
+
     QVariant data = QVariant::fromValue(use);
     RoomThread *thread = room->getThread();
     thread->trigger(PreCardUsed, room, player, data);
