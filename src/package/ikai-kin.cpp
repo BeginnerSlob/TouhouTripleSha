@@ -5583,18 +5583,20 @@ bool IkShenchiCard::targetFilter(const QList<const Player *> &targets, const Pla
     return targets.length() < n;
 }
 
-void IkShenchiCard::onEffect(const CardEffectStruct &effect) const{
-    Room *room = effect.from->getRoom();
-    effect.to->drawCards(1, "ikshenchi");
-    if (!effect.to->isNude()) {
-        const Card *card = room->askForCard(effect.to, "..!", "@ikshenchi-put", QVariant(), MethodNone);
-        if (!card) {
-            QList<const Card *> cards = effect.to->getCards("he");
-            card = cards.at(qrand() % cards.length());
-        }
-        if (card) {
-            CardMoveReason reason(CardMoveReason::S_REASON_PUT, effect.to->objectName(), "ikshenchi", QString());
-            room->moveCardTo(card, effect.to, NULL, Player::DrawPile, reason);
+void IkShenchiCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const{
+    room->sortByActionOrder(targets);
+    room->drawCards(targets, 1, "ikshenchi");
+    foreach (ServerPlayer *p, targets) {
+        if (!p->isNude()) {
+            const Card *card = room->askForCard(p, "..!", "@ikshenchi-put", QVariant(), MethodNone);
+            if (!card) {
+                QList<const Card *> cards = p->getCards("he");
+                card = cards.at(qrand() % cards.length());
+            }
+            if (card) {
+                CardMoveReason reason(CardMoveReason::S_REASON_PUT, p->objectName(), "ikshenchi", QString());
+                room->moveCardTo(card, p, NULL, Player::DrawPile, reason);
+            }
         }
     }
 }
