@@ -1053,9 +1053,10 @@ void ThWangdaoCard::onEffect(const CardEffectStruct &effect) const {
     room->showCard(effect.from, id);
     const Card *slash = NULL;
     if (effect.to->canSlash(effect.from)) {
-        room->setPlayerCardLimitation(effect.to, "use", "Slash|^" + original->getSuitString(), false);
+        QString pattern = "Slash|^" + original->getSuitString();
+        room->setPlayerCardLimitation(effect.to, "use", pattern, false);
         slash = room->askForUseSlashTo(effect.to, effect.from, "@thwangdao:" + effect.from->objectName(), false);
-        room->removePlayerCardLimitation(effect.to, "use", "Slash|^black$0");
+        room->removePlayerCardLimitation(effect.to, "use", pattern + "$0");
     }
     if (!slash) {
         effect.to->obtainCard(this);
