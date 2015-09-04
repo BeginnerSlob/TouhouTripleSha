@@ -3021,7 +3021,7 @@ public:
         if (TriggerSkill::triggerable(player)) {
             DyingStruct dying = data.value<DyingStruct>();
             if (dying.who->isAlive() && dying.who->getHp() < 1) {
-                if (dying.who == player || room->alivePlayerCount() > 3)
+                if (dying.who == player || room->alivePlayerCount() > 2)
                     return QStringList(objectName());
             }
         }
