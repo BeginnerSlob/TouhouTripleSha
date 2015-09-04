@@ -1102,7 +1102,7 @@ const ProhibitSkill *Engine::isProhibited(const Player *from, const Player *to, 
         return NULL;
     //===================================
     // for ThXuyou ======================
-    if (card->isKindOf("Slash") && from && from->hasSkill("thxuyou"))
+    if (card->isKindOf("Slash") && from && from->hasFlag("ThXuyouUse"))
         return NULL;
     //===================================
     // for JnXianmao ====================
