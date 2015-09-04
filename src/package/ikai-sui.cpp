@@ -4164,7 +4164,7 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         QList<ServerPlayer *> chenglais;
         foreach (ServerPlayer *p, room->getAlivePlayers()) {
             if (p->hasSkill(objectName()))
@@ -4183,7 +4183,7 @@ public:
                 log.arg = objectName();
                 room->sendLog(log);
 
-                effect(NonTrigger, room, player, QVariant(), chenglai);
+                effect(NonTrigger, room, player, data, chenglai);
                 chenglais.removeOne(chenglai);
             } else
                 break;

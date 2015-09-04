@@ -12,28 +12,35 @@
 #include "server.h"
 #include "audio.h"
 
-#if defined(WIN32) && defined(VS2010)
-#include "breakpad/client/windows/handler/exception_handler.h"
+#ifdef USE_BREAKPAD
+#include <client/windows/handler/exception_handler.h>
+#include <QProcess>
 
 using namespace google_breakpad;
 
-static bool callback(const wchar_t *dump_path, const wchar_t *id,
-                     void *, EXCEPTION_POINTERS *,
-                     MDRawAssertionInfo *,
-                     bool succeeded) {
-    if (succeeded)
-        qWarning("Dump file created in %s, dump guid is %ws\n", dump_path, id);
-    else
-        qWarning("Dump failed\n");
+static bool callback(const wchar_t *, const wchar_t *id, void *, EXCEPTION_POINTERS *, MDRawAssertionInfo *, bool succeeded)
+{
+    if (succeeded && QFile::exists("QSanSMTPClient.exe")) {
+        char ID[16000];
+        memset(ID, 0, sizeof(ID));
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4996)
+#endif
+        wcstombs(ID, id, wcslen(id));
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+        QProcess *process = new QProcess(qApp);
+        QStringList args;
+        args << QString(ID) + ".dmp";
+        process->start("QSanSMTPClient", args);
+    }
     return succeeded;
 }
+#endif
 
 int main(int argc, char *argv[]) {
-    ExceptionHandler eh(L"./dmp", NULL, callback, NULL,
-                        ExceptionHandler::HANDLER_ALL);
-#else
-int main(int argc, char *argv[]) {
-#endif
     if (argc > 1 && strcmp(argv[1], "-server") == 0) {
         new QCoreApplication(argc, argv);
     } else {
@@ -41,10 +48,54 @@ int main(int argc, char *argv[]) {
         QCoreApplication::addLibraryPath(QCoreApplication::applicationDirPath() + "/plugins");
     }
 
+#ifdef USE_BREAKPAD
+    showSplashMessage(QSplashScreen::tr("Loading BreakPad..."));
+    ExceptionHandler eh(L"./dmp", NULL, callback, NULL, ExceptionHandler::HANDLER_ALL);
+#endif
+
 #ifdef Q_OS_MAC
 #ifdef QT_NO_DEBUG
+    showSplashMessage(QSplashScreen::tr("Setting game path..."));
     QDir::setCurrent(qApp->applicationDirPath());
 #endif
+#endif
+
+#ifdef Q_OS_LINUX
+    QDir dir(QString("lua"));
+    if (dir.exists() && (dir.exists(QString("config.lua")))) {
+        // things look good and use current dir
+    } else {
+#ifndef Q_OS_ANDROID
+        QDir::setCurrent(qApp->applicationFilePath().replace("games", "share"));
+#else
+        bool found = false;
+        QDir storageDir("/storage");
+        QStringList sdcards = storageDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+        foreach (const QString &sdcard, sdcards) {
+            QDir root(QString("/storage/%1/Android/data/org.qsgsrara.qsanguosha").arg(sdcard));
+            if (root.exists("lua/config.lua")) {
+                QDir::setCurrent(root.absolutePath());
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            QDir root("/sdcard/Android/data/org.qsgsrara.qsanguosha");
+            if (root.exists("lua/config.lua")) {
+                QDir::setCurrent(root.absolutePath());
+                found = true;
+            }
+        }
+
+
+        if (!found) {
+            QString m = QObject::tr("Game data not found, please download QSanguosha-For-Hegemony PC version, and put the files and folders into /sdcard/Android/data/org.qsgsrara.qsanguosha");
+            puts(m.toLatin1().constData());
+
+            return -2;
+        }
+#endif
+    }
 #endif
 
     // initialize random seed for later use
@@ -76,11 +127,13 @@ int main(int argc, char *argv[]) {
         return qApp->exec();
     }
 
-    QFile file("qss/sanguosha.qss");
-    if (file.open(QIODevice::ReadOnly)) {
-        QTextStream stream(&file);
-        qApp->setStyleSheet(stream.readAll());
+#ifdef Q_OS_WIN
+    QFile winFile("qss/sanguosha.qss");
+    if (winFile.open(QIODevice::ReadOnly)) {
+        QTextStream winStream(&winFile);
+        qApp->setStyleSheet(winStream.readAll());
     }
+#endif
 
 #ifdef AUDIO_SUPPORT
     Audio::init();

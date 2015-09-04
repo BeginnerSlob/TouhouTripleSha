@@ -394,7 +394,7 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *player) const{
         room->doLightbox("$ZaiMiGui_" + general_name, 4000);
 
         LogMessage log;
@@ -417,7 +417,7 @@ public:
         if (!wake.isEmpty() && player->getMark("@" + wake) == 0) {
             const TriggerSkill *skill = Sanguosha->getTriggerSkill("th" + wake);
             if (skill)
-                skill->effect(NonTrigger, room, player, QVariant(), player);
+                skill->effect(NonTrigger, room, player, data, player);
         }
 
         room->detachSkillFromPlayer(player, objectName(), true);
