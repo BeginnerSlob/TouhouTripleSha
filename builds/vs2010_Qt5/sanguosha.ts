@@ -2383,6 +2383,11 @@
         <source>Lua script error</source>
         <translation>Lua 脚本错误</translation>
     </message>
+    <message>
+        <location filename="../../src/main.cpp" line="92"/>
+        <source>Game data not found, please download QSanguosha-For-Hegemony PC version, and put the files and folders into /sdcard/Android/data/org.qsgsrara.qsanguosha</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QSanSelectableItem</name>
@@ -2395,6 +2400,19 @@
         <location filename="../../src/ui/qsan-selectable-item.cpp" line="33"/>
         <source>Warning</source>
         <translation>警告</translation>
+    </message>
+</context>
+<context>
+    <name>QSplashScreen</name>
+    <message>
+        <location filename="../../src/main.cpp" line="52"/>
+        <source>Loading BreakPad...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/main.cpp" line="58"/>
+        <source>Setting game path...</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

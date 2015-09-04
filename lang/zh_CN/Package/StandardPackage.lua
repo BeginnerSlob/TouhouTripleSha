@@ -193,7 +193,7 @@ local t = {
 	[":drowning"] = "锦囊牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：所有其他角色<br /><b>效果</b>：每名目标角色需选择一项：1.令你弃置其装备区的一张牌；2.令你弃置其两张手牌；3.受到由你造成的1点伤害。",
 	["illustrator:drowning"] = "kaze",
 	["drowning:throw"] = "令其弃置装备区的一张牌",
-	["drowning:discard"] = "令其弃置两张手牌",
+	["drowning:discard"] = "令其弃置你两张手牌",
 	["drowning:damage"] = "受到1点伤害",
 
 	["known_both"] = "幽瞳占略",
