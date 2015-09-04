@@ -3790,13 +3790,13 @@ public:
                             use.to << p;
                             if (use.card->isKindOf("Collateral")) {
                                 QList<ServerPlayer *> victims;
-                                foreach (ServerPlayer *p2, room->getOtherPlayers(target)) {
-                                    if (target->canSlash(p2))
+                                foreach (ServerPlayer *p2, room->getOtherPlayers(p)) {
+                                    if (p->canSlash(p2))
                                         victims << p2;
                                 }
                                 if (!victims.isEmpty()) {
-                                    collateral_victim = room->askForPlayerChosen(use.from, victims, "iksheji_collateral", "@iksheji-collateral:" + target->objectName());
-                                    target->tag["collateralVictim"] = QVariant::fromValue(collateral_victim);
+                                    ServerPlayer *collateral_victim = room->askForPlayerChosen(use.from, victims, "iksheji_collateral", "@iksheji-collateral:" + p->objectName());
+                                    p->tag["collateralVictim"] = QVariant::fromValue(collateral_victim);
 
                                     LogMessage log;
                                     log.type = "#CollateralSlash";
