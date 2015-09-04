@@ -3924,7 +3924,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
-        if (TriggerSkill::triggerable(player) && !player->hasFlag("IkLingxunUsed")) {
+        if (TriggerSkill::triggerable(player) && !player->hasFlag("IkLingxunUsed") && player->getPhase() == Player::Play) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->getTypeId() != Card::TypeSkill) {
                 if (use.to.length() == 1 && use.to.first() != player && !use.to.first()->isKongcheng())
