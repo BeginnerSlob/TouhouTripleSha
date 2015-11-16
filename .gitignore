@@ -26,7 +26,7 @@ Bin/
 /lib/breakpad.lib
 /builds/*/ipch
 /builds/*/QSanguosha.sdf
-/builds/*/QSanguosha.suo
+/builds/*/QSanguosha.*suo
 /builds/*/*.user
 /builds/*/*.opensdf
 /sanguosha.ts
