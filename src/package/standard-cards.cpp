@@ -31,7 +31,7 @@ bool Slash::IsAvailable(const Player *player, const Card *slash, bool considerSp
                 ids << slash->getEffectiveId();
             }
         }
-        bool has_weapon = (player->hasWeapon("crossbow") || player->hasWeapon("vscrossbow")) && ids.contains(player->getWeapon()->getEffectiveId());
+        bool has_weapon = (player->hasWeapon("crossbow") || player->hasWeapon("vscrossbow")) && (player->getWeapon() && ids.contains(player->getWeapon()->getEffectiveId()));
         if ((!has_weapon && player->hasWeapon("crossbow")) || player->canSlashWithoutCrossbow(THIS_SLASH))
             return true;
         int used = player->getSlashCount();
