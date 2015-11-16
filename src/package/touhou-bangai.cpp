@@ -93,16 +93,20 @@ public:
 class ThShoujuanTrigger: public TriggerSkill {
 public:
     ThShoujuanTrigger(): TriggerSkill("#thshoujuan") {
-        events << CardsMoveOneTime;
+        events << CardsMoveOneTime << EventPhaseChanging;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (player && player->isAlive() && player->hasFlag("ThShoujuanUsed")) {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.from && move.from != player && !player->isNude()
-                && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip)))
-                return QStringList(objectName());
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            player->setFlags("-ThShoujuanUsed");
+        } else {
+            if (player && player->isAlive() && player->hasFlag("ThShoujuanUsed")) {
+                CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+                if (move.from && move.from != player && !player->isNude()
+                    && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip)))
+                    return QStringList(objectName());
+            }
         }
         return QStringList();
     }
@@ -1122,7 +1126,7 @@ bool ThSixiangCard::targetFilter(const QList<const Player *> &targets, const Pla
 }
 
 void ThSixiangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-	room->addPlayerMark(source, "thsixiang");
+    room->addPlayerMark(source, "thsixiang");
     Card::Suit suit = Sanguosha->getCard(getEffectiveId())->getSuit();
     ServerPlayer *target = NULL;
     if (!targets.isEmpty())
