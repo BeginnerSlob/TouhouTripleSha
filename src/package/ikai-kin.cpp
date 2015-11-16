@@ -3818,11 +3818,12 @@ public:
                 }
             }
         } else if (triggerEvent == EventPhaseChanging) {
-            if (data.value<PhaseChangeStruct>().to == Player::NotActive && player->getMark("@sheji") > 0) {
-                room->setPlayerMark(player, "@sheji", 0);
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
                 foreach (ServerPlayer *p, room->getPlayers()) {
-                    if (player->getMark("iksheji_" + p->objectName()) > 0)
+                    if (p->getMark("@sheji") > 0) {
+                        room->setPlayerMark(p, "@sheji", 0);
                         player->setMark("iksheji_" + p->objectName(), 0);
+                    }
                 }
             }
         } else if (player && player->isAlive() && player->getPhase() == Player::Play && !player->isKongcheng()) {
@@ -3849,7 +3850,7 @@ public:
         if (success) {
             ServerPlayer *target = room->askForPlayerChosen(ask_who, room->getAlivePlayers(), objectName());
             player->addMark("iksheji_" + target->objectName());
-            room->addPlayerMark(player, "@sheji");
+            room->addPlayerMark(target, "@sheji");
         }
         return false;
     }
