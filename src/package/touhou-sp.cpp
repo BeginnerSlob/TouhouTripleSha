@@ -1431,22 +1431,27 @@ const Card *ThYingshiCard::validate(CardUseStruct &card_use) const {
     return NULL;
 }
 
-class ThYingshiViewAsSkill: public ZeroCardViewAsSkill {
+class ThYingshiViewAsSkill: public ZeroCardViewAsSkill
+{
 public:
-    ThYingshiViewAsSkill(): ZeroCardViewAsSkill("thyingshi") {
+    ThYingshiViewAsSkill(): ZeroCardViewAsSkill("thyingshi")
+    {
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const {
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
         int n = player->usedTimes("ThYingshiCard");
         if (n >= 3 || player->hasFlag("Global_ThYingshiFailed"))
             return false;
-        foreach (const Player *p, player->getAliveSiblings())
-            if (player->distanceTo(p) == n + 1 && player->canSlash(p))
+        foreach (const Player *p, player->getAliveSiblings()) {
+            if (player->distanceTo(p) == n + 1 && player->canSlash(p, false))
                 return true;
+        }
         return false;
     }
 
-    virtual const Card *viewAs() const {
+    virtual const Card *viewAs() const
+    {
         return new ThYingshiCard;
     }
 };
