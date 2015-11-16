@@ -4167,12 +4167,12 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         DamageStruct damage = data.value<DamageStruct>();
-		damage.to->turnOver();
-		QString choice = room->askForChoice(player, objectName(), "drawHp+drawlossHp");
+        damage.to->turnOver();
+        QString choice = room->askForChoice(player, objectName(), "drawHp+drawlossHp");
         int x = damage.to->getHp();
         if (choice == "drawlossHp")
             x = damage.to->getLostHp();
-		damage.to->drawCards(x, objectName());
+        damage.to->drawCards(x, objectName());
 
         return false;
     }

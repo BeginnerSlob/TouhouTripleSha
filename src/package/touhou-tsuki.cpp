@@ -34,12 +34,12 @@ public:
                     || move.from_places.contains(Player::PlaceEquip)
                     || move.from_places.contains(Player::PlaceJudge)
                     || move.from_places.contains(Player::PlaceTable))) {
-				foreach (int id, move.card_ids) {
-					const Card *card = Sanguosha->getCard(id);
-					if (card->getTypeId() == Card::TypeBasic && card->isRed())
-						skills << objectName();
-				}
-			}
+                foreach (int id, move.card_ids) {
+                    const Card *card = Sanguosha->getCard(id);
+                    if (card->getTypeId() == Card::TypeBasic && card->isRed())
+                        skills << objectName();
+                }
+            }
         }
 
         return skills;

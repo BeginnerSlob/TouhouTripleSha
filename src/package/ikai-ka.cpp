@@ -3162,7 +3162,7 @@ public:
 };
 
 IkLihunCard::IkLihunCard() {
-	will_throw = false;
+    will_throw = false;
     handling_method = MethodNone;
 }
 
@@ -3177,25 +3177,25 @@ void IkLihunCard::onEffect(const CardEffectStruct &effect) const{
                           effect.to->objectName(), "iklihun", QString());
     room->obtainCard(effect.to, dummy_card, reason, false);
     delete dummy_card;
-	if (!effect.to->isKongcheng()) {
-		const Card *dummy = room->askForExchange(effect.to, "iklihun", 998, 1, false, "@iklihun-showcard", false);
+    if (!effect.to->isKongcheng()) {
+        const Card *dummy = room->askForExchange(effect.to, "iklihun", 998, 1, false, "@iklihun-showcard", false);
         if (!dummy)
             dummy = new DummyCard(QList<int>() << effect.to->getRandomHandCardId());
         foreach (int id, dummy->getSubcards())
             room->showCard(effect.to, id);
         QString choice = room->askForChoice(effect.from, "iklihun", "showcard+noshowcard");
-		if (choice == "showcard") {
-			room->obtainCard(effect.from, dummy);
-		} else {
+        if (choice == "showcard") {
+            room->obtainCard(effect.from, dummy);
+        } else {
             QList<int> ids = effect.to->handCards();
             foreach (int id, dummy->getSubcards())
                 ids.removeOne(id);
             DummyCard *dummy2 = new DummyCard(ids);
-			room->obtainCard(effect.from, dummy2, false);
+            room->obtainCard(effect.from, dummy2, false);
             delete dummy2;
-		}
-		delete dummy;
-	}
+        }
+        delete dummy;
+    }
 }
 
 class IkLihun: public ZeroCardViewAsSkill {
@@ -3204,7 +3204,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-		return !player->isKongcheng() && !player->hasUsed("IkLihunCard");
+        return !player->isKongcheng() && !player->hasUsed("IkLihunCard");
     }
 
     virtual const Card *viewAs() const{
@@ -5218,7 +5218,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkLinghuiCard>();
     addMetaObject<IkXiaowuCard>();
     addMetaObject<IkHuanlueCard>();
-	addMetaObject<IkLihunCard>();
+    addMetaObject<IkLihunCard>();
     addMetaObject<IkQisiCard>();
     addMetaObject<IkManwuCard>();
     addMetaObject<IkXianlvCard>();
