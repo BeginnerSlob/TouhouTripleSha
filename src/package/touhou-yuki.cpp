@@ -750,7 +750,7 @@ public:
 class ThChouce: public TriggerSkill {
 public:
     ThChouce(): TriggerSkill("thchouce"){
-        events << PreCardUsed << CardResponded << EventPhaseChanging;
+        events << PreCardUsed << PreCardResponded << EventPhaseChanging;
         view_as_skill = new ThChouceViewAsSkill;
     }
 
@@ -764,14 +764,14 @@ public:
                 room->setPlayerMark(player, "choucecount", 0);
                 room->setPlayerFlag(player, "-ThChouce_failed");
             }
-        } else if (triggerEvent == PreCardUsed || triggerEvent == CardResponded) {
+        } else if (triggerEvent == PreCardUsed || triggerEvent == PreCardResponded) {
             if (player->getPhase() != Player::Play)
                 return skills;
             const Card *usecard = NULL;
             if (triggerEvent == PreCardUsed) {
                 CardUseStruct use = data.value<CardUseStruct>();
                 usecard = use.card;
-            } else if (triggerEvent == CardResponded) {
+            } else if (triggerEvent == PreCardResponded) {
                 CardResponseStruct resp = data.value<CardResponseStruct>();
                 if (resp.m_isUse)
                     usecard = resp.m_card;
@@ -780,6 +780,19 @@ public:
                 return skills;
 
             if (usecard->isKindOf("Jink") || usecard->isKindOf("Nullification")) {
+                room->setPlayerFlag(player, "ThChouce_failed");
+                room->setPlayerMark(player, "ThChouce", usecard->getNumber());
+                return skills;
+            }
+
+            bool handcard = true;
+            foreach (int id, usecard->getSubcards()) {
+                if (!player->handCards().contains(id)) {
+                    handcard = false;
+                    break;
+                }
+            }
+            if (!handcard) {
                 room->setPlayerFlag(player, "ThChouce_failed");
                 room->setPlayerMark(player, "ThChouce", usecard->getNumber());
                 return skills;
@@ -820,7 +833,7 @@ public:
         if (triggerEvent == PreCardUsed) {
             CardUseStruct use = data.value<CardUseStruct>();
             usecard = use.card;
-        } else if (triggerEvent == CardResponded) {
+        } else if (triggerEvent == PreCardResponded) {
             CardResponseStruct resp = data.value<CardResponseStruct>();
             if (resp.m_isUse)
                 usecard = resp.m_card;
@@ -882,7 +895,7 @@ public:
             log.arg = objectName();
             log.card_str = QString::number(use.card->getEffectiveId());
             room->sendLog(log);
-        } else if (triggerEvent == CardResponded) {
+        } else if (triggerEvent == PreCardResponded) {
             CardResponseStruct resp = data.value<CardResponseStruct>();
             resp.m_who = target;
             data = QVariant::fromValue(resp);
