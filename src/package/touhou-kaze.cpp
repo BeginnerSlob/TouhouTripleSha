@@ -2012,6 +2012,7 @@ public:
             QStringList skills;
             foreach (const Skill *skill, p->getVisibleSkillList()) {
                 if (skill->isLordSkill() || skill->isAttachedLordSkill()
+                    || skill->isOwnerOnlySkill()
                     || skill->getFrequency() == Skill::Limited
                     || skill->getFrequency() == Skill::Wake)
                     continue;
