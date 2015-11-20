@@ -1674,6 +1674,7 @@ public:
     {
         events << GameStart << EventAcquireSkill;
         frequency = Compulsory;
+        owner_only_skill = true;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
@@ -1728,7 +1729,7 @@ public:
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.from == player && move.from_places.contains(Player::PlaceEquip)) {
                 if (!player->getTreasure() && player->getMark("iklinglong_thjizhi") == 0) {
-                    room->notifySkillInvoked(player, objectName());
+                    room->notifySkillInvoked(player, "iklinglong");
                     room->handleAcquireDetachSkills(player, "thjizhi");
                     player->setMark("iklinglong_thjizhi", 1);
                 }
@@ -3013,16 +3014,21 @@ class IkChenqing : public TriggerSkill
 public:
     IkChenqing() : TriggerSkill("ikchenqing")
     {
-        events << AskForPeaches;
+        events << AskForPeaches << EventPhaseStart;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
-        if (TriggerSkill::triggerable(player)) {
-            DyingStruct dying = data.value<DyingStruct>();
-            if (dying.who->isAlive() && dying.who->getHp() < 1) {
-                if (dying.who == player || room->alivePlayerCount() > 2)
-                    return QStringList(objectName());
+        if (triggerEvent == EventPhaseStart) {
+            if (player->getPhase() == Player::RoundStart)
+                player->setMark(objectName(), 0);
+        } else {
+            if (TriggerSkill::triggerable(player) && player->getMark(objectName()) == 0) {
+                DyingStruct dying = data.value<DyingStruct>();
+                if (dying.who->isAlive() && dying.who->getHp() < 1) {
+                    if (dying.who == player || room->alivePlayerCount() > 2)
+                        return QStringList(objectName());
+                }
             }
         }
         return QStringList();
@@ -3046,6 +3052,7 @@ public:
         ServerPlayer *target = player->tag["IkChenqingTarget"].value<ServerPlayer *>();
         player->tag.remove("IkChenqingTarget");
         if (target) {
+            player->addMark(objectName());
             target->drawCards(4, objectName());
             if (!target->isNude()) {
                 const Card *card = room->askForExchange(target, "ikchenqing", 4, 4, true, "@ikchenqing-discard");
@@ -3112,33 +3119,26 @@ public:
 
     virtual QDialog *getDialog() const
     {
-        return ThMimengDialog::getInstance(objectName(), true, true, false);
+        return ThMimengDialog::getInstance(objectName(), true, true, false, false, true);
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
         if (triggerEvent == EventPhaseChanging) {
-            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
-                player->tag.remove("ikmojing_basic");
-                player->tag.remove("ikmojing_trick");
-            }
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive)
+                player->tag.remove("ikmojing_list");
         } else if (triggerEvent == PreCardUsed) {
             if (player->getPhase() == Player::Play) {
                 CardUseStruct use = data.value<CardUseStruct>();
-                if (use.card->isKindOf("BasicCard")) {
-                    QStringList list = player->tag["ikmojing_basic"].toStringList();
+                if (use.card->getTypeId() != Card::TypeEquip && use.card->getTypeId() != Card::TypeSkill) {
+                    QStringList list = player->tag["ikmojing_list"].toStringList();
                     list << use.card->objectName();
-                    player->tag["ikmojing_basic"] = list;
-                } else if (use.card->isNDTrick()) {
-                    QStringList list = player->tag["ikmojing_trick"].toStringList();
-                    list << use.card->objectName();
-                    player->tag["ikmojing_trick"] = list;
+                    player->tag["ikmojing_list"] = list;
                 }
             }
         } else if (triggerEvent == EventPhaseStart && TriggerSkill::triggerable(player) && player->getPhase() == Player::Finish) {
-            QStringList b_list = player->tag["ikmojing_basic"].toStringList();
-            QStringList t_list = player->tag["ikmojing_trick"].toStringList();
-            if (!b_list.isEmpty() || !t_list.isEmpty())
+            QStringList list = player->tag["ikmojing_list"].toStringList();
+            if (!list.isEmpty())
                 return QStringList(objectName());
         }
         return QStringList();
@@ -3146,16 +3146,18 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        QStringList b_list = player->tag["ikmojing_basic"].toStringList();
-        QStringList t_list = player->tag["ikmojing_trick"].toStringList();
+        QStringList list = player->tag["ikmojing_list"].toStringList();
         try {
-            if (!t_list.isEmpty()) {
-                room->setPlayerProperty(player, "allowed_thmimeng_dialog_buttons", t_list.join("+"));
-                room->askForUseCard(player, "@@ikmojing", "@ikmojing_ask_first");
-            }
-            if (!b_list.isEmpty()) {
-                room->setPlayerProperty(player, "allowed_thmimeng_dialog_buttons", b_list.join("+"));
-                room->askForUseCard(player, "@@ikmojing", "@ikmojing_ask_second");
+            if (!list.isEmpty()) {
+                room->setPlayerProperty(player, "allowed_thmimeng_dialog_buttons", list.join("+"));
+                const Card *card = room->askForUseCard(player, "@@ikmojing", "@ikmojing_ask_first");
+                if (card) {
+                    list.removeAll(card->objectName());
+                    if (!list.isEmpty()) {
+                        room->setPlayerProperty(player, "allowed_thmimeng_dialog_buttons", list.join("+"));
+                        room->askForUseCard(player, "@@ikmojing", "@ikmojing_ask_second");
+                    }
+                }
             }
         }
         catch (TriggerEvent e) {

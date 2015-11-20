@@ -657,8 +657,8 @@ public:
     ThMengshengInvalidity(): InvaliditySkill("#thmengsheng-inv") {
     }
 
-    virtual bool isSkillValid(const Player *player, const Skill *) const{
-        return player->getMark("@mengsheng") == 0;
+    virtual bool isSkillValid(const Player *player, const Skill *skill) const{
+        return skill->isOwnerOnlySkill() || player->getMark("@mengsheng") == 0;
     }
 };
 
