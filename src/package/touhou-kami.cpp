@@ -1760,7 +1760,7 @@ void ThLingyunDialog::popup() {
             map.insert(card, c);
         }
     }
-
+    Self->tag.remove("thlingyun");
     exec();
 }
 
