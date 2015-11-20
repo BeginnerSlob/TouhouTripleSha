@@ -30,10 +30,6 @@ Bin/
 /builds/*/*.user
 /builds/*/*.opensdf
 /sanguosha.ts
-/image/system/button/promptbox
-/image/system/button/back2.png
-/image/system/button/back.png
-/image/system/button/back_shade.png
 /extensions
 card_intention.txt
 ai.html
