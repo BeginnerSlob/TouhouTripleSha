@@ -3997,28 +3997,38 @@ public:
 class IkLunyao: public TriggerSkill {
 public:
     IkLunyao(): TriggerSkill("iklunyao") {
-        events << BeforeCardsMove;
+        events << BeforeCardsMove << EventPhaseChanging;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(player))
-            return QStringList();
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (move.from != player)
-            return QStringList();
-        if ((move.to && move.to != player && move.to_place == Player::PlaceHand)
-            || ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD
-                && move.reason.m_playerId != player->objectName()))
-            foreach (Player::Place place, move.from_places)
-                if (place == Player::PlaceHand || place == Player::PlaceEquip)
-                    return QStringList(objectName());
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    p->setMark(objectName(), 0);
+            }
+        } else {
+            if (!TriggerSkill::triggerable(player) || player->getMark(objectName()) >= 3)
+                return QStringList();
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from != player)
+                return QStringList();
+            if ((move.to && move.to != player && move.to_place == Player::PlaceHand)
+                || ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD
+                && move.reason.m_playerId != QString() && move.reason.m_playerId != player->objectName())) {
+                foreach (Player::Place place, move.from_places) {
+                    if (place == Player::PlaceHand || place == Player::PlaceEquip)
+                        return QStringList(objectName());
+                }
+            }
+        }
         return QStringList();
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         room->sendCompulsoryTriggerLog(player, objectName());
         room->broadcastSkillInvoke(objectName());
+        player->addMark(objectName());
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         QList<int> ids;
         int i = 0;
@@ -5133,7 +5143,7 @@ IkaiKaPackage::IkaiKaPackage()
     luna032->addSkill(new IkJichang);
     luna032->addSkill(new IkManwu);
 
-    General *luna033 = new General(this, "luna033", "tsuki");
+    General *luna033 = new General(this, "luna033", "tsuki", 3);
     luna033->addSkill(new IkXianlv);
 
     General *luna036 = new General(this, "luna036", "tsuki");

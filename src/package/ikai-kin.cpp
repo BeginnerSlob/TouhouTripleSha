@@ -390,7 +390,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return TriggerSkill::triggerable(target)
-            && target->getPhase() == Player::RoundStart;
+            && target->getPhase() == Player::Start;
     }
 
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *liaohua, QVariant &) const{
@@ -421,7 +421,7 @@ public:
                 thread->trigger(EventPhaseProceeding, room, liaohua);
             thread->trigger(EventPhaseEnd, room, liaohua);
 
-            liaohua->setPhase(Player::RoundStart);
+            liaohua->setPhase(Player::Start);
             room->broadcastProperty(liaohua, "phase");
         }
 
@@ -4707,15 +4707,17 @@ public:
         if (damage.from && damage.from->getWeapon()) {
             room->broadcastSkillInvoke(objectName());
             QStringList choices;
-            if (target->canDiscard(damage.from, damage.from->getWeapon()->getId()))
-                choices << "throw";
-            choices << "obtain";
+            choices << "throw";
+            if (damage.from->getWeapon())
+                choices << "obtain";
             QString choice = room->askForChoice(target, objectName(), choices.join("+"));
-            if (choice == "throw") {
-                room->throwCard(damage.from->getWeapon(), damage.from, target);
-                target->drawCards(1, objectName());
-            } else
+            if (choice == "obtain")
                 target->obtainCard(damage.from->getWeapon());
+            else {
+                target->drawCards(1, objectName());
+                if (damage.from->getWeapon() && target->canDiscard(damage.from, damage.from->getWeapon()->getEffectiveId()))
+                    room->throwCard(damage.from->getWeapon(), damage.from, target);
+            }
         }
     }
 };
