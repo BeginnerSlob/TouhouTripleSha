@@ -594,7 +594,7 @@ return {
 	["#luna052"] = "大食的空母",
 	["luna052"] = "赤城",--月 - 空 - 4血
 	["designer:luna052"] = "伴剑一生",
-	["illustrator:luna052"]="King.c",
+	["illustrator:luna052"]="colis",
 	["ikhuisuo"] = "彗索",
 	[":ikhuisuo"] = "锁定技，你计算与体力值小于你的角色的距离时，无视除该角色外的其他角色及场上的坐骑牌。",
 	["ikcangliu"] = "苍流",
