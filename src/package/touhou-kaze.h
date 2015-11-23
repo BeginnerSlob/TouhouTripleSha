@@ -91,8 +91,6 @@ class ThKunyiCard: public SkillCard{
 
 public:
     Q_INVOKABLE ThKunyiCard();
-
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
@@ -120,6 +118,16 @@ class ThDasuiCard: public SkillCard{
 
 public:
     Q_INVOKABLE ThDasuiCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThSuilunCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThSuilunCard();
 
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };

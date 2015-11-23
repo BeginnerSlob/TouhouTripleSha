@@ -276,7 +276,7 @@ public:
                         continue;
                     }
                     const Card *card = Sanguosha->getCard(id);
-                    if (card->isKindOf("Jink") || card->isKindOf("Nullification"))
+                    if ((card->getTypeId() == Card::TypeBasic && !card->isKindOf("Slash")) || card->isKindOf("Nullification"))
                         return QStringList(objectName());
                     ++index;
                 }

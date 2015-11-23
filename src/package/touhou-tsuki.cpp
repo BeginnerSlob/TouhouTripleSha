@@ -250,11 +250,15 @@ void ThJinguoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
         if (dummy->subcardsLength() > 0)
             source->obtainCard(dummy, false);
         dummy->deleteLater();
-        if (target->isWounded()) {
-            RecoverStruct recover;
-            recover.who = source;
-            room->recover(target, recover);
-        }
+        QStringList choices;
+        if (target->isWounded())
+            choices << "recover";
+        choices << "draw";
+        QString choice = room->askForChoice(target, "thjinguo", choices.join("+"));
+        if (choice == "recover")
+            room->recover(target, RecoverStruct(source));
+        else
+            target->drawCards(1, "thjinguo");
     }
 }
 
@@ -325,7 +329,7 @@ public:
         return TriggerSkill::triggerable(player)
             && player->getPhase() == Player::Start
             && player->getMark("@lianmi") <= 0
-            && player->getEquips().length() >= player->getHp();
+            && player->getEquips().length() > player->getHp();
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {

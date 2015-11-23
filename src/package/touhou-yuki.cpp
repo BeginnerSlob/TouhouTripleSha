@@ -2071,7 +2071,7 @@ public:
         room->judge(judge);
 
         if (judge.isGood())
-            player->loseAllMarks("@nishui");
+            player->loseMark("@nishui", qMin(2, player->getMark("@nishui")));
         else if (judge.card->isBlack())
             player->gainMark("@nishui");
 

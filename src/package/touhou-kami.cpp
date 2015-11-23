@@ -1276,7 +1276,7 @@ public:
 class ThKuangli: public TriggerSkill{
 public:
     ThKuangli(): TriggerSkill("thkuangli") {
-        events << TurnedOver << ChainStateChanged;
+        events << TurnedOver;
         frequency = Frequent;
     }
 
@@ -1967,19 +1967,20 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
-        room->recover(ask_who, RecoverStruct(ask_who));
-        if (ask_who->askForSkillInvoke("thwunan_draw_or_discard", "yes")) {
-            QStringList choices;
-            choices << "draw";
-            if (ask_who->canDiscard(player, "he"))
-                choices << "throw";
-            QString choice = room->askForChoice(ask_who, objectName(), choices.join("+"));
-            if (choice == "throw") {
-                int card_id = room->askForCardChosen(ask_who, player, "he", objectName(), false, Card::MethodDiscard);
-                room->throwCard(card_id, player, ask_who);
-            } else
-                ask_who->drawCards(1, objectName());
-        }
+        QStringList choices;
+        if (ask_who->isWounded())
+            choices << "recover";
+        choices << "draw";
+        if (ask_who->canDiscard(player, "he"))
+            choices << "throw";
+        QString choice = room->askForChoice(ask_who, objectName(), choices.join("+"));
+        if (choice == "throw") {
+            int card_id = room->askForCardChosen(ask_who, player, "he", objectName(), false, Card::MethodDiscard);
+            room->throwCard(card_id, player, ask_who);
+        } else if (choice == "recover") {
+            room->recover(ask_who, RecoverStruct(ask_who));
+        } else
+            ask_who->drawCards(1, objectName());
         return false;
     }
 };
