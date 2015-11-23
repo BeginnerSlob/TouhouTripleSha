@@ -1679,9 +1679,9 @@ public:
     }
 };
 
-class ThTianqi: public TriggerSkill {
+class ThHuanghu: public TriggerSkill {
 public:
-    ThTianqi(): TriggerSkill("thtianqi") {
+    ThHuanghu(): TriggerSkill("thhuanghu") {
         events << CardResponded;
     }
 
@@ -1698,7 +1698,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         ServerPlayer *target = data.value<CardResponseStruct>().m_who;
-        const Card *card = room->askForExchange(player, objectName(), 998, 1, false, "@thtianqi:" + target->objectName(), true);
+        const Card *card = room->askForExchange(player, objectName(), 998, 1, false, "@thhuanghu:" + target->objectName(), true);
         if (card) {
             LogMessage log;
             log.type = "#ChoosePlayerWithSkill";
@@ -1707,7 +1707,7 @@ public:
             log.arg = objectName();
             room->sendLog(log);
             room->throwCard(card, player);
-            player->tag["ThTianqiNum"] = card->subcardsLength();
+            player->tag["ThHuanghuNum"] = card->subcardsLength();
             room->broadcastSkillInvoke(objectName());
             delete card;
             return true;
@@ -1716,8 +1716,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        int n = player->tag["ThTianqiNum"].toInt();
-        player->tag.remove("ThTianqiNum");
+        int n = player->tag["ThHuanghuNum"].toInt();
+        player->tag.remove("ThHuanghuNum");
         if (n > 0) {
             ServerPlayer *target = data.value<CardResponseStruct>().m_who;
             if (target->canDiscard(target, "h"))
@@ -2015,7 +2015,7 @@ TouhouSPPackage::TouhouSPPackage()
     related_skills.insertMulti("thxuyou", "#thxuyou");
 
     General *sp014 = new General(this, "sp014", "hana", 3);
-    sp014->addSkill(new ThTianqi);
+    sp014->addSkill(new ThHuanghu);
     sp014->addSkill(new ThLinyao);
     sp014->addSkill(new ThFeijing);
 

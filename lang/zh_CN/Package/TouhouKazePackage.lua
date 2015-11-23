@@ -189,10 +189,12 @@ return {
 	["kudaopile"]="叶",
 	["thsuilun"]="岁轮",
 	[":thsuilun"]="回合结束后，你可以弃置一张手牌并弃置两张不同花色的“叶”，然后进行一个额外的回合。",
+	["@thsuilun"]="你可以发动“岁轮”",
+	["~thsuilun"]="选择一张手牌→选择两张不同花色的“叶”→点击确定",
 	
 	["#kaze015"]="华狱的轮祸",
 	["kaze015"]="火焰猫燐",--风 - 空 - 4血
-	["designer:kaze015"]="幻桜落 | Codeby:Ellis&Slob",
+	["designer:kaze015"]="幻桜落",
 	["illustrator:kaze015"]="繭咲悠",
 	["cv:kaze015"]="暂无",
 	["thransang"]="燃丧",

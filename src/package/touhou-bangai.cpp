@@ -1205,7 +1205,7 @@ TouhouBangaiPackage::TouhouBangaiPackage()
     General *bangai001 = new General(this, "bangai001", "kaze");
     bangai001->addSkill(new ThBianfang);
 
-    General *bangai002 = new General(this, "bangai002", "hana", 3);
+    General *bangai002 = new General(this, "bangai002", "hana");
     bangai002->addSkill(new ThShoujuan);
     bangai002->addSkill(new ThShoujuanTrigger);
     related_skills.insertMulti("thshoujuan", "#thshoujuan");
