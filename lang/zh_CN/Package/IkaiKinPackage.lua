@@ -170,7 +170,7 @@ return {
 	["#wind058"] = "苍色的神话",
 	["wind058"] = "园田海未",--风 - 幻 - 3血
 	["designer:wind058"] = "淬毒",
-	["illustrator:wind058"]="77gl",
+	["illustrator:wind058"]="しがらき",
 	["ikganbi"] = "绀碧",
 	[":ikganbi"] = "其他角色的结束阶段开始时，若你的手牌数与其相等，你可以与其各摸一张牌。",
 	["ikhuitao"] = "廻涛",
