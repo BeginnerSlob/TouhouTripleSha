@@ -96,8 +96,6 @@ ShowOrPindianSkill::ShowOrPindianSkill()
 }
 
 bool ShowOrPindianSkill::matchPattern(const Player *player, const Card *card) const{
-    if (card->hasFlag("Global_DisabledPindian"))
-        return false;
     return pattern && pattern->match(player, card);
 }
 

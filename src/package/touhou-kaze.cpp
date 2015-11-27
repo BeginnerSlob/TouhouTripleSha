@@ -149,10 +149,49 @@ public:
     }
 };
 
-class ThHuadi: public TriggerSkill{
+class ThHuadi : public TriggerSkill
+{
 public:
-    ThHuadi(): TriggerSkill("thhuadi$") {
-            // ServerPlayer::pindian
+    ThHuadi() : TriggerSkill("thhuadi$")
+    {
+        events << CardsMoveOneTime;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (player && player->isAlive() && player->hasLordSkill(objectName())) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from == player && move.from_places.contains(Player::PlaceHand)) {
+                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                    if (p->getKingdom() == "kaze" && !p->isKongcheng())
+                        return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (p->getKingdom() == "kaze" && !p->isKongcheng()) {
+                const Card *card = room->askForCard(p, ".", "@thhuadi:" + player->objectName(), QVariant(), Card::MethodNone, player);
+                if (card) {
+                    room->broadcastSkillInvoke(objectName());
+                    room->notifySkillInvoked(player, objectName());
+                    LogMessage log;
+                    log.type = "#InvokeOthersSkill";
+                    log.from = p;
+                    log.to << player;
+                    log.arg = objectName();
+                    room->sendLog(log);
+
+                    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, p->objectName(), player->objectName(), objectName(), QString());
+                    room->obtainCard(player, card, reason, false);
+                }
+            }
+        }
+        return false;
     }
 };
 
@@ -1932,7 +1971,19 @@ public:
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        return selected.length() < 3 && !to_select->isEquipped() && to_select->getSuit() == Self->getMark("thmaihuo") - 1;
+        if (!to_select->isEquipped())
+            return false;
+        if (selected.isEmpty())
+            return true;
+        else if (selected.length() < 3) {
+            Card::Suit suit = to_select->getSuit();
+            foreach (const Card *c, selected) {
+                if (suit == c->getSuit())
+                    return false;
+            }
+            return true;
+        }
+        return false;
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
@@ -1948,10 +1999,7 @@ ThMaihuoCard::ThMaihuoCard() {
 
 void ThMaihuoCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
-    Suit suit = Sanguosha->getCard(subcards.first())->getSuit();
-    room->setPlayerMark(effect.to, "thmaihuo", suit + 1);
-    room->askForUseCard(effect.to, "@@thmaihuov", "@thmaihuov:::" + Suit2String(suit), -1, MethodNone);
-    room->setPlayerMark(effect.to, "thmaihuo", 0);
+    room->askForUseCard(effect.to, "@@thmaihuov", "@thmaihuov", -1, MethodNone);
 }
 
 class ThMaihuo: public OneCardViewAsSkill {
