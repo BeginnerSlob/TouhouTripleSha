@@ -9,6 +9,7 @@
 #include "client.h"
 #include "engine.h"
 #include "general.h"
+#include "touhou-hana.h"
 
 class ThJianmo: public TriggerSkill {
 public:
@@ -482,40 +483,53 @@ public:
     }
 };
 
-ThMojiCard::ThMojiCard() {
+ThMojiCard::ThMojiCard()
+{
     will_throw = false;
 }
 
-bool ThMojiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
-        Card *card = Sanguosha->cloneCard(user_string, NoSuit, 0);
-        card->deleteLater();
+bool ThMojiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = NULL;
+        if (!user_string.isEmpty())
+            card = Sanguosha->cloneCard(user_string.split("+").first());
         return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
+    } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+        return false;
     }
-    Card *card = Sanguosha->cloneCard("slash", NoSuit, 0);
-    card->deleteLater();
+
+    const Card *card = Self->tag.value("thmoji").value<const Card *>();
     return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
 }
 
-bool ThMojiCard::targetFixed() const{
-    if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
-        Card *card = Sanguosha->cloneCard(user_string, NoSuit, 0);
-        card->deleteLater();
+bool ThMojiCard::targetFixed() const
+{
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        const Card *card = NULL;
+        if (!user_string.isEmpty())
+            card = Sanguosha->cloneCard(user_string.split("+").first());
         return card && card->targetFixed();
+    } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+        return true;
     }
-    Card *card = Sanguosha->cloneCard("slash", NoSuit, 0);
-    card->deleteLater();
+
+    const Card *card = Self->tag.value("thmoji").value<const Card *>();
     return card && card->targetFixed();
 }
 
-bool ThMojiCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-    if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
-        Card *card = Sanguosha->cloneCard(user_string, NoSuit, 0);
-        card->deleteLater();
+bool ThMojiCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
+{
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = NULL;
+        if (!user_string.isEmpty())
+            card = Sanguosha->cloneCard(user_string.split("+").first());
         return card && card->targetsFeasible(targets, Self);
+    } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+        return false;
     }
-    Card *card = Sanguosha->cloneCard("slash", NoSuit, 0);
-    card->deleteLater();
+
+    const Card *card = Self->tag.value("thmoji").value<const Card *>();
     return card && card->targetsFeasible(targets, Self);
 }
 
@@ -525,9 +539,18 @@ const Card *ThMojiCard::validate(CardUseStruct &card_use) const{
     CardMoveReason reason(CardMoveReason::S_REASON_PUT, user->objectName(), "thmoji", QString());
     room->moveCardTo(this, NULL, Player::DrawPile, reason, false);
 
-    Card *use_card = Sanguosha->cloneCard(user_string, NoSuit, 0);
+    QString to_ikshidao = user_string;
+    if (user_string == "slash"
+        && Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        QStringList ikshidao_list;
+        ikshidao_list << "slash";
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
+            ikshidao_list << "thunder_slash" << "fire_slash";
+        to_ikshidao = room->askForChoice(user, "thmoji_slash", ikshidao_list.join("+"));
+    }
+
+    Card *use_card = Sanguosha->cloneCard(to_ikshidao);
     use_card->setSkillName("thmoji");
-    use_card->deleteLater();
     return use_card;
 }
 
@@ -536,15 +559,37 @@ const Card *ThMojiCard::validateInResponse(ServerPlayer *user) const{
     CardMoveReason reason(CardMoveReason::S_REASON_PUT, user->objectName(), "thmoji", QString());
     room->moveCardTo(this, NULL, Player::DrawPile, reason, false);
 
-    Card *use_card = Sanguosha->cloneCard(user_string, NoSuit, 0);
+    QString to_ikshidao;
+    if (user_string == "peach+analeptic") {
+        QStringList ikshidao_list;
+        ikshidao_list << "peach";
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
+            ikshidao_list << "analeptic";
+        to_ikshidao = room->askForChoice(user, "thmoji_saveself", ikshidao_list.join("+"));
+    } else if (user_string == "slash") {
+        QStringList ikshidao_list;
+        ikshidao_list << "slash";
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
+            ikshidao_list << "thunder_slash" << "fire_slash";
+        to_ikshidao = room->askForChoice(user, "thmoji_slash", ikshidao_list.join("+"));
+    } else
+        to_ikshidao = user_string;
+
+    Card *use_card = Sanguosha->cloneCard(to_ikshidao);
     use_card->setSkillName("thmoji");
-    use_card->deleteLater();
     return use_card;
 }
 
-class ThMoji: public ViewAsSkill {
+class ThMoji: public ViewAsSkill
+{
 public:
-    ThMoji(): ViewAsSkill("thmoji") {
+    ThMoji(): ViewAsSkill("thmoji")
+    {
+    }
+
+    virtual QDialog *getDialog() const
+    {
+        return ThMimengDialog::getInstance("thmoji", true, false);
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
@@ -556,31 +601,50 @@ public:
         return true;
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return Slash::IsAvailable(player) && player->getHp() > 0 && player->getHandcardNum() >= qMin(player->getHp(), 2);
-    }
-
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        if (player->getHp() <= 0 || player->getHandcardNum() < qMin(player->getHp(), 2))
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        int n = player->getHp() > 1 ? 2 : 1;
+        if (player->getHandcardNum() < n)
             return false;
-        return pattern == "slash" || pattern == "jink";
+        return true;
     }
 
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if (cards.length() != qMin(2, Self->getHp()))
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
+    {
+        int n = player->getHp() > 1 ? 2 : 1;
+        if (player->getHandcardNum() < n)
+            return false;
+        if (pattern == "peach")
+            return player->getMark("Global_PreventPeach") == 0;
+        if (pattern == "slash" || pattern.contains("analeptic") || pattern == "jink")
+            return true;
+        return false;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        int n = Self->getHp() > 1 ? 2 : 1;
+        if (cards.length() != n)
             return NULL;
 
-        if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
+        if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+            ThMojiCard *tianyan_card = new ThMojiCard;
+            QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+            if (pattern == "peach+analeptic" && Self->getMark("Global_PreventPeach") > 0)
+                pattern = "analeptic";
+            tianyan_card->setUserString(pattern);
+            tianyan_card->addSubcards(cards);
+            return tianyan_card;
+        }
+
+        const Card *c = Self->tag["thmoji"].value<const Card *>();
+        if (c) {
             ThMojiCard *card = new ThMojiCard;
-            card->setUserString(Sanguosha->getCurrentCardUsePattern());
+            card->setUserString(c->objectName());
             card->addSubcards(cards);
             return card;
         }
-
-        ThMojiCard *card = new ThMojiCard;
-        card->setUserString("slash");
-        card->addSubcards(cards);
-        return card;
+        return NULL;
     }
 };
 
@@ -1960,13 +2024,12 @@ public:
 
     virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         TriggerList skill_list;
-        if (!data.canConvert<DamageStruct>()) return skill_list;
+        if (!data.canConvert<DamageStruct>())
+            return skill_list;
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.damage >= 2) {
-            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
-                if (p != player && p->getMark(objectName()) < 1)
-                    skill_list.insert(p, QStringList(objectName()));
-        }
+        foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+            if (p != player && player->getHp() + damage.damage <= p->getHp())
+                skill_list.insert(p, QStringList(objectName()));
         return skill_list;
     }
 
@@ -1982,7 +2045,6 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
         DamageStruct damage = data.value<DamageStruct>();
-        //room->addPlayerMark(ask_who, objectName());
         room->recover(player, RecoverStruct(ask_who, NULL, damage.damage));
         damage.to = ask_who;
         room->damage(damage);
@@ -2098,8 +2160,8 @@ ThLingdieCard::ThLingdieCard() {
 
 void ThLingdieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *target = targets.first();
-    if (Sanguosha->getCard(subcards.first())->getSuit() == Heart)
-        room->addPlayerHistory(source, "ThLingdieCard", -1);
+    if (Sanguosha->getCard(subcards.first())->getSuit() != Heart)
+        room->setPlayerFlag(source, "ThLingdieDisabled");
     CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), QString());
     room->obtainCard(target, this, reason);
     QList<ServerPlayer *> victims;
@@ -2123,20 +2185,37 @@ void ThLingdieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
         target->drawCards(1, "thlingdie");
 }
 
-class ThLingdie: public OneCardViewAsSkill {
+class ThLingdieVS: public OneCardViewAsSkill {
 public:
-    ThLingdie(): OneCardViewAsSkill("thlingdie") {
+    ThLingdieVS(): OneCardViewAsSkill("thlingdie") {
         filter_pattern = ".|.|.|hand";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("ThLingdieCard");
+        return !player->hasFlag("ThLingdieDisabled") && player->usedTimes("ThLingdieCard") < 3;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
         ThLingdieCard *card = new ThLingdieCard;
         card->addSubcard(originalCard);
         return card;
+    }
+};
+
+class ThLingdie : public TriggerSkill
+{
+public:
+    ThLingdie() : TriggerSkill("thlingdie")
+    {
+        events << EventPhaseChanging;
+        view_as_skill = new ThLingdieVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const
+    {
+        if (player->hasFlag("ThLingdieDisabled"))
+            room->setPlayerFlag(player, "-ThLingdieDisabled");
+        return QStringList();
     }
 };
 

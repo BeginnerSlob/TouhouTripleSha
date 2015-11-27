@@ -105,24 +105,78 @@ public:
     }
 };
 
-class ThGuanjia: public TriggerSkill {
+class ThGuanjia : public TriggerSkill
+{
 public:
-    ThGuanjia(): TriggerSkill("thguanjia") {
-        events << TargetSpecified << CardFinished;
+    ThGuanjia() : TriggerSkill("thguanjia")
+    {
+        events << CardUsed << JinkEffect << NullificationEffect;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room* room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        if (!TriggerSkill::triggerable(player)) return QStringList();
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (triggerEvent == TargetSpecified)
-            foreach (ServerPlayer *p, room->getOtherPlayers(player))
-                room->addPlayerMark(p, "Armor_Nullified");
-        else
-            foreach (ServerPlayer *p, room->getOtherPlayers(player))
-                room->removePlayerMark(p, "Armor_Nullified");
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const
+    {
+        if (!player->isChained() || player->getMark(objectName()) > 1)
+            return QStringList();
+        if (triggerEvent == CardUsed) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->getTypeId() == Card::TypeSkill)
+                return QStringList();
+        }
+        ServerPlayer *current = room->getCurrent();
+        if (!current || current->isDead() || current->getPhase() == Player::NotActive)
+            return QStringList();
+        if (current != player && TriggerSkill::triggerable(current)) {
+            ask_who = current;
+            return QStringList(objectName());
+        }
 
         return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const
+    {
+        if (triggerEvent == JinkEffect || triggerEvent == NullificationEffect) {
+            room->sendCompulsoryTriggerLog(ask_who, objectName());
+            return true;
+        }
+
+        CardUseStruct use = data.value<CardUseStruct>();
+        room->sendCompulsoryTriggerLog(ask_who, objectName());
+        use.nullified_list << "_ALL_TARGETS";
+        return false;
+    }
+};
+
+class ThGuanjiaRecord : public TriggerSkill
+{
+public:
+    ThGuanjiaRecord() : TriggerSkill("#thguanjia")
+    {
+        events << CardUsed << EventPhaseChanging;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer* &) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    p->setMark("thguanjia", 0);
+            }
+        } else {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->getTypeId() != Card::TypeSkill)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        player->addMark("thguanjia");
+        return false;
     }
 };
 
@@ -1952,6 +2006,8 @@ TouhouSPPackage::TouhouSPPackage()
     sp002->addSkill(new ThNichang);
     sp002->addSkill(new Skill("thqimen", Skill::Compulsory));
     sp002->addSkill(new ThGuanjia);
+    sp002->addSkill(new ThGuanjiaRecord);
+    related_skills.insertMulti("thguanjia", "#thguanjia");
 
     General *sp003 = new General(this, "sp003", "yuki", 3);
     sp003->addSkill(new ThShenshi);

@@ -346,13 +346,55 @@ public:
     }
 };
 
-class ThKuangqi: public TriggerSkill {
+ThKuangqiCard::ThKuangqiCard()
+{
+    target_fixed = true;
+}
+
+void ThKuangqiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+{
+    if (subcards.isEmpty())
+        room->loseHp(source);
+}
+
+class ThKuangqiVS : public ViewAsSkill
+{
 public:
-    ThKuangqi(): TriggerSkill("thkuangqi") {
-        events << DamageCaused;
+    ThKuangqiVS() : ViewAsSkill("thkuangqi")
+    {
+        response_pattern = "@@thkuangqi";
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
+    {
+        return selected.isEmpty() && !Self->isJilei(to_select)
+            && (to_select->getTypeId() == Card::TypeEquip || to_select->isKindOf("Peach") || to_select->isKindOf("Analeptic"));
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        if (cards.isEmpty())
+            return new ThKuangqiCard;
+        if (cards.length() == 1) {
+            ThKuangqiCard *card = new ThKuangqiCard;
+            card->addSubcards(cards);
+            return card;
+        }
+        return NULL;
+    }
+};
+
+class ThKuangqi: public TriggerSkill
+{
+public:
+    ThKuangqi() : TriggerSkill("thkuangqi")
+    {
+        events << DamageCaused;
+        view_as_skill = new ThKuangqiVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
         if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Play)
             return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
@@ -362,15 +404,14 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        if (room->askForCard(player, "Peach,Analeptic,EquipCard", "@thkuangqi", data, objectName())) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
-        return false;
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        DamageStruct damage = data.value<DamageStruct>();
+        return room->askForUseCard(player, "@@thkuangqi", "@thkuangqi:" + damage.to->objectName(), -1, Card::MethodDiscard);
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
         DamageStruct damage = data.value<DamageStruct>();
         LogMessage log;
         log.type = "#ThKuangqi";
@@ -2494,6 +2535,7 @@ TouhouTsukiPackage::TouhouTsukiPackage()
 
     addMetaObject<ThYejunCard>();
     addMetaObject<ThJinguoCard>();
+    addMetaObject<ThKuangqiCard>();
     addMetaObject<ThXushiCard>();
     addMetaObject<ThLianhuaCard>();
     addMetaObject<ThShennaoCard>();

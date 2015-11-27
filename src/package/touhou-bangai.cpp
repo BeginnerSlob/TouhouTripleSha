@@ -1101,50 +1101,45 @@ public:
     }
 };
 
-ThSixiangCard::ThSixiangCard(){
+ThSixiangCard::ThSixiangCard()
+{
 }
 
-bool ThSixiangCard::targetFixed() const {
-    return Sanguosha->getCard(getEffectiveId())->getSuit() == Card::Spade;
-}
-
-bool ThSixiangCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
-    if(Sanguosha->getCard(getEffectiveId())->getSuit() != Card::Spade)
-        return targets.size() == 1;
-    else
-        return targets.isEmpty();
-}
-
-bool ThSixiangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool ThSixiangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
     Card::Suit suit = Sanguosha->getCard(getEffectiveId())->getSuit();
     if (suit == Card::Spade)
-        return false;
-    else if(suit == Card::Diamond)
-        return targets.isEmpty() && Self->canDiscard(to_select, "hej") && to_select != Self;
+        return targets.isEmpty() && to_select->isWounded();
+    else if (suit == Card::Diamond)
+        return targets.size() < 2 && Self->canDiscard(to_select, "hej") && to_select != Self;
     else
         return targets.isEmpty() && to_select != Self;
 }
 
-void ThSixiangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    room->addPlayerMark(source, "thsixiang");
+void ThSixiangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
     Card::Suit suit = Sanguosha->getCard(getEffectiveId())->getSuit();
     ServerPlayer *target = NULL;
     if (!targets.isEmpty())
         target = targets.first();
 
-    if(suit == Card::Spade) {
-        if (source->isWounded())
-            room->recover(source, RecoverStruct(source, this));
-    } else if(suit == Card::Heart) {
-        target->drawCards(1);
-        target->turnOver();
-    } else if(suit == Card::Club) {
+    if (suit == Card::Spade)
+        room->recover(source, RecoverStruct(source, this));
+    else if (suit == Card::Diamond) {
+        QList<CardsMoveStruct> moves;
+        foreach (ServerPlayer *p, targets) {
+            int card_id = room->askForCardChosen(source, p, "hej", "thsixiang", false, MethodDiscard);
+            CardMoveReason reason(CardMoveReason::S_REASON_DISMANTLE, source->objectName(), room->getCardPlace(card_id) == Player::PlaceDelayedTrick ? QString() : p->objectName(), "thsixiang", QString());
+            moves << CardsMoveStruct(card_id, NULL, Player::DiscardPile, reason);
+        }
+        room->moveCardsAtomic(moves, true);
+    } else if (suit == Card::Club)
         target->drawCards(2);
-        if (!target->isNude())
-            room->askForDiscard(target, "thsixiang", 1, 1, false, true);
-    } else if(suit == Card::Diamond) {
-        int card_id = room->askForCardChosen(source, target, "hej", "thsixiang");
-        room->throwCard(card_id, room->getCardPlace(card_id) == Player::PlaceDelayedTrick ? NULL : target, source);
+    else if (suit == Card::Heart) {
+        target->drawCards(1);
+        if (target->canDiscard(target, "h"))
+            room->askForDiscard(target, "thsixiang", 1, 1);
+        target->turnOver();
     }
 }
 
@@ -1170,32 +1165,6 @@ public:
             return card;
         } else
             return NULL;
-    }
-};
-
-class ThSixiangDraw: public TriggerSkill {
-public:
-    ThSixiangDraw(): TriggerSkill("#thsixiang-draw") {
-        events << EventPhaseChanging << EventPhaseStart;
-        frequency = Compulsory;
-        global = true;
-    }
-
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive) {
-                if (player->getMark("thsixiang") > 0)
-                    room->setPlayerMark(player, "thsixiang", 0);
-            }
-        } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Finish && player->getMark("thsixiang") > 1)
-            return QStringList(objectName());
-        return QStringList();
-    }
-
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        player->drawCards(player->getMark("thsixiang") - 1, "thsixiang");
-        return false;
     }
 };
 
@@ -1257,8 +1226,6 @@ TouhouBangaiPackage::TouhouBangaiPackage()
 
     General *bangai012 = new General(this, "bangai012", "tsuki");
     bangai012->addSkill(new ThSixiang);
-    bangai012->addSkill(new ThSixiangDraw);
-    related_skills.insertMulti("thsixiang", "#thsixiang-draw");
 
     addMetaObject<ThMiqiCard>();
     addMetaObject<ThXumeiCard>();

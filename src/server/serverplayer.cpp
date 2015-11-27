@@ -532,75 +532,15 @@ bool ServerPlayer::pindian(ServerPlayer *target, const QString &reason, const Ca
     room->sendLog(log);
 
     const Card *card2 = NULL;
-    PindianStruct prepindian;
-    prepindian.from = this;
-    prepindian.to = target;
-    prepindian.reason = reason;
-    PindianStruct *prepindian_star = &prepindian;
-    QVariant huadiData = QVariant::fromValue(prepindian_star);
-    if (card1 == NULL && hasLordSkill("thhuadi")) {
-        QList<ServerPlayer *> lieges = room->getLieges("kaze", this);
-        foreach (ServerPlayer *p, lieges) {
-            if (p->isKongcheng() || (p->getHandcardNum() == 1 && p == target))
-                lieges.removeOne(p);
-        }
-        if (!lieges.isEmpty() && askForSkillInvoke("thhuadi", huadiData)) {
-            foreach (ServerPlayer *p, lieges) {
-                const Card *cd = room->askForCard(p, ".", "@thhuadi-pindiancard:" + objectName(), huadiData, Card::MethodNone, this);
-                if (cd) {
-                    card1 = cd;
-                    room->setCardFlag(cd, "Global_DisabledPindian");
-                    break;
-                }
-            }
-        }
-    }
 
-    if (card2 == NULL && target->hasLordSkill("thhuadi")) {
-        QList<ServerPlayer *> lieges = room->getLieges("kaze", target);
-        foreach (ServerPlayer *p, lieges) {
-            if (p->isKongcheng()) {
-                lieges.removeOne(p);
-                continue;
-            }
-            bool has_card = false;
-            foreach (const Card *cd, p->getHandcards()) {
-                if (!cd->hasFlag("Global_DisabledPindian") && (!card1 || cd->getEffectiveId() != card1->getEffectiveId())) {
-                    has_card = true;
-                    break;
-                }
-            }
-            if (!has_card)
-                lieges.removeOne(p);
-        }
-        if (!lieges.isEmpty() && target->askForSkillInvoke("thhuadi", huadiData)) {
-            foreach (ServerPlayer *p, lieges) {
-                const Card *cd = room->askForCard(p, ".", "@thhuadi-pindiancard:" + target->objectName(), huadiData, Card::MethodPindian, target);
-                if (cd) {
-                    card2 = cd;
-                    room->setCardFlag(cd, "Global_DisabledPindian");
-                    break;
-                }
-            }
-        }
-    }
-
-    if (card1 == NULL && card2 == NULL) {
+    if (card1 == NULL) {
         QList<const Card *> cards = room->askForPindianRace(this, target, reason);
         card1 = cards.first();
         card2 = cards.last();
-    } else if (card1 == NULL) {
-        card1 = room->askForPindian(this, this, target, reason);
-    } else if (card2 == NULL) {
+    } else
         card2 = room->askForPindian(target, this, target, reason);
-    }
 
     if (card1 == NULL || card2 == NULL) return false;
-
-    if (card1->hasFlag("Global_DisabledPindian"))
-        room->setCardFlag(card1, "-Global_DisabledPindian");
-    if (card2->hasFlag("Global_DisabledPindian"))
-        room->setCardFlag(card2, "-Global_DisabledPindian");
 
     if (card1->isVirtualCard()) {
         int card_id = card1->getEffectiveId();
