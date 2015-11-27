@@ -72,7 +72,7 @@ return {
 	["#wind014"] = "宙回之零",
 	["wind014"] = "楯山文乃",--风 - 空 - 3血
 	["designer:wind014"] = "游卡桌游",
-	["illustrator:wind014"]="霜月えり",
+	["illustrator:wind014"]="V-hu_愁音",
 	["ikchihu"] = "赤帍",
 	[":ikchihu"] = "锁定技，当其他角色使用【杀】指定你为目标时，需额外弃置一张基本牌，否则该【杀】对你无效。",
 	["@ikchihu-discard"] = "你须再弃置一张基本牌使此【杀】生效",
