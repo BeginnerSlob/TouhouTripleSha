@@ -134,9 +134,16 @@ public:
         ServerPlayer *target = player->tag["IkShushenTarget"].value<ServerPlayer *>();
         player->tag.remove("IkShushenTarget");
         if (target) {
-            target->drawCards(1, objectName());
-            target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName());
-            target->drawCards(1, objectName());
+            QList<ServerPlayer *> targets;
+            targets << target;
+            if (target != player)
+                targets << player;
+            room->sortByActionOrder(targets);
+            room->drawCards(targets, 2, objectName());
+            foreach (ServerPlayer *p, targets) {
+                if (p->canDiscard(p, "he"))
+                    room->askForDiscard(p, objectName(), 1, 1, false, true);
+            }
         }
         return false;
     }
@@ -3181,6 +3188,8 @@ void IkFenxunCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
     effect.from->tag["IkFenxunTarget"] = QVariant::fromValue(effect.to);
     room->setPlayerFlag(effect.to, "ikfenxun_target");
+    if (Sanguosha->getCard(subcards.first())->getTypeId() == TypeBasic)
+        effect.from->setFlags("IkFenxunSlash");
 }
 
 class IkFenxunViewAsSkill: public OneCardViewAsSkill {
@@ -3204,28 +3213,64 @@ public:
 class IkFenxun: public TriggerSkill {
 public:
     IkFenxun(): TriggerSkill("ikfenxun") {
-        events << EventPhaseChanging << Death;
+        events << EventPhaseChanging << Death << PreCardUsed << CardsMoveOneTime;
         view_as_skill = new IkFenxunViewAsSkill;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *dingfeng, QVariant &data, ServerPlayer* &) const{
-        if (!dingfeng->tag["IkFenxunTarget"].value<ServerPlayer *>())
-            return QStringList();
-        if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to != Player::NotActive)
+        if (triggerEvent == EventPhaseChanging || triggerEvent == Death) {
+            if (!dingfeng->tag["IkFenxunTarget"].value<ServerPlayer *>())
                 return QStringList();
-        } else if (triggerEvent == Death) {
-            DeathStruct death = data.value<DeathStruct>();
-            if (death.who != dingfeng)
-                return QStringList();
-        }
-        ServerPlayer *target = dingfeng->tag["IkFenxunTarget"].value<ServerPlayer *>();
-        dingfeng->tag.remove("IkFenxunTarget");
-        if (target) {
-            room->setPlayerFlag(target, "-ikfenxun_target");
+            if (triggerEvent == EventPhaseChanging) {
+                PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+                if (change.to != Player::NotActive)
+                    return QStringList();
+            } else if (triggerEvent == Death) {
+                DeathStruct death = data.value<DeathStruct>();
+                if (death.who != dingfeng)
+                    return QStringList();
+            }
+            ServerPlayer *target = dingfeng->tag["IkFenxunTarget"].value<ServerPlayer *>();
+            dingfeng->tag.remove("IkFenxunTarget");
+            if (target) {
+                room->setPlayerFlag(target, "-ikfenxun_target");
+            }
+        } else {
+            if (triggerEvent == PreCardUsed) {
+                CardUseStruct use = data.value<CardUseStruct>();
+                if (use.card->isKindOf("Slash") && dingfeng->hasFlag("IkFenxunSlash")) {
+                    dingfeng->setFlags("-IkFenxunSlash");
+                    use.card->setFlags("ikfenxun");
+                }
+            } else {
+                CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+                if (move.to_place == Player::DiscardPile && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_USE) {
+                    const Card *card = move.reason.m_extraData.value<const Card *>();
+                    if (card->isKindOf("Slash") && card->hasFlag("ikfenxun"))
+                        return QStringList(objectName());
+                }
+            }
         }
         return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *dingfeng, QVariant &, ServerPlayer *) const
+    {
+        if (dingfeng->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *dingfeng, QVariant &data, ServerPlayer *) const
+    {
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        const Card *card = move.reason.m_extraData.value<const Card *>();
+        dingfeng->obtainCard(card);
+        move.removeCardIds(move.card_ids);
+        data = QVariant::fromValue(move);
+        return false;
     }
 };
 

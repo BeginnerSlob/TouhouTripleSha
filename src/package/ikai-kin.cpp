@@ -1590,7 +1590,7 @@ public:
             int mark_num = player->getMark("ikshensha");
             int num = triggerEvent == EventAcquireSkill ? (mark_num >= 6 ? mark_num : 1) : 0;
             room->setPlayerMark(player, "@shensha" + QString::number(qMin(6, mark_num)), num);
-        } else if (triggerEvent == EventPhaseStart && TriggerSkill::triggerable(player) && player->getPhase() == Player::Finish) {
+        } else if (triggerEvent == EventPhaseStart && TriggerSkill::triggerable(player) && player->getPhase() == Player::Discard) {
             bool all_adj = true;
             bool has_wounded = player->isWounded();
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
@@ -1614,6 +1614,7 @@ public:
                 if (p->isWounded())
                     ++n;
             }
+            room->sendCompulsoryTriggerLog(player, objectName());
             player->drawCards(qMin(n, 4), objectName());
             return false;
         }
@@ -2169,7 +2170,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
-        if (ask_who->canDiscard(ask_who, "he") && room->askForCard(ask_who, "EquipCard", "@ikpiaohu:" + player->objectName(), data, objectName())) {
+        if (ask_who->canDiscard(ask_who, "he") && room->askForCard(ask_who, "^BasicCard", "@ikpiaohu:" + player->objectName(), data, objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         } else if (!player->isChained() && !ask_who->isChained() && ask_who->askForSkillInvoke(objectName(), "chain:" + player->objectName())) {
