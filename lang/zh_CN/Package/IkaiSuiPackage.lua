@@ -502,6 +502,7 @@ return {
 
 	["#luna024"] = "迅舞的人神兵",
 	["luna024"] = "KOS-MOS",--月 - 空 - 4血
+	--thjibu
 	["designer:luna024"] = "嘉言懿行",
 	["illustrator:luna024"]="RA",
 	["iklongya"] = "龙犽",
