@@ -2528,12 +2528,15 @@ public:
         events << EventPhaseEnd;
     }
 
-    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
         TriggerList skill_list;
-        if (player->getPhase() != Player::Play) return skill_list;
-        foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
-            if (owner->getMark(objectName()) == 0 && owner->distanceTo(player) == 1)
+        if (player->getPhase() != Player::Play)
+            return skill_list;
+        foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
+            if (owner->getMark(objectName()) == 0 && (owner->inMyAttackRange(player) || owner == player))
                 skill_list.insert(owner, QStringList(objectName()));
+        }
         return skill_list;
     }
 
@@ -2566,9 +2569,10 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == CardFinished && player->isAlive() && player->getPhase() == Player::Play) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->getTypeId() != Card::TypeSkill)
+            if (use.card->getTypeId() != Card::TypeSkill) {
                 foreach (ServerPlayer *p, use.to)
                     p->setMark("iklianxiao", 1);
+            }
         } else if (triggerEvent == EventPhaseChanging) {
             foreach (ServerPlayer *p, room->getAlivePlayers())
                 p->setMark("iklianxiao", 0);
@@ -4245,53 +4249,68 @@ public:
     }
 };
 
-class IkShuluo: public TriggerSkill {
+class IkShuluo : public TriggerSkill
+{
 public:
-    IkShuluo(): TriggerSkill("ikshuluo") {
-        events << Damage;
+    IkShuluo(): TriggerSkill("ikshuluo")
+    {
+        events << Damaged;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (player->isDead() || player->getCardCount() < 2)
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const
+    {
+        if (player->isDead() || player->getMark("@shuling") == 0)
             return QStringList();
         ServerPlayer *p = room->findPlayerBySkillName(objectName());
         if (!p)
             return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
-        if (player == damage.to || damage.to->getMark("@shuling") == 0)
+        if (!damage.from || damage.from->isDead() || player == damage.from)
             return QStringList();
+        ask_who = damage.from;
         return QStringList(objectName());
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        if (player->hasSkill(objectName())) {
-            if (player->askForSkillInvoke(objectName())) {
-                room->broadcastSkillInvoke(objectName());
-                return true;
-            }
-        } else {
-            const Card *dummy = room->askForExchange(player, objectName(), 2, 2, true, "@ikshuluo", true);
-            if (dummy && dummy->subcardsLength() > 0) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName())) {
+            if (!ask_who->hasSkill(objectName())) {
                 LogMessage log;
-                log.type = "$DiscardCardWithSkill";
-                log.from = player;
-                log.card_str = IntList2StringList(dummy->getSubcards()).join("+");
+                log.type = "#InvokeOthersSkill";
+                log.from = ask_who;
+                log.to << room->findPlayerBySkillName(objectName());
                 log.arg = objectName();
                 room->sendLog(log);
-                CardMoveReason reason(CardMoveReason::S_REASON_THROW, player->objectName());
-                room->moveCardTo(dummy, NULL, Player::DiscardPile, reason, true);
-                delete dummy;
-                room->broadcastSkillInvoke(objectName());
-                return true;
             }
+            room->broadcastSkillInvoke(objectName());
+            return true;
         }
+
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        DamageStruct damage = data.value<DamageStruct>();
-        room->setPlayerMark(damage.to, "@shuling", 0);
-        player->gainMark("@shuling");
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        room->setPlayerMark(player, "@shuling", 0);
+        ask_who->gainMark("@shuling");
+        if (!ask_who->hasSkill(objectName()) && player->canDiscard(ask_who, "he")) {
+            room->setPlayerFlag(ask_who, "ikshuluo_InTempMoving");
+            int first_id = room->askForCardChosen(player, ask_who, "he", "ikshuluo", false, Card::MethodDiscard);
+            Player::Place original_place = room->getCardPlace(first_id);
+            DummyCard *dummy = new DummyCard;
+            dummy->addSubcard(first_id);
+            ask_who->addToPile("#ikshuluo", dummy, false);
+            if (player->canDiscard(ask_who, "he")) {
+                int second_id = room->askForCardChosen(player, ask_who, "he", "ikshuluo", false, Card::MethodDiscard);
+                dummy->addSubcard(second_id);
+            }
+
+            //move the first card back temporarily
+            room->moveCardTo(Sanguosha->getCard(first_id), ask_who, original_place, false);
+            room->setPlayerFlag(ask_who, "-ikshuluo_InTempMoving");
+            room->throwCard(dummy, ask_who, player);
+            delete dummy;
+        }
         return false;
     }
 };
@@ -5225,6 +5244,8 @@ IkaiKaPackage::IkaiKaPackage()
     General *luna047 = new General(this, "luna047", "tsuki");
     luna047->addSkill(new IkYuanji);
     luna047->addSkill(new IkShuluo);
+    luna047->addSkill(new FakeMoveSkill("ikshuluo"));
+    related_skills.insertMulti("ikshuluo", "#ikshuluo-fake-move");
 
     General *luna048 = new General(this, "luna048", "tsuki");
     luna048->addSkill(new IkZhiwang);
