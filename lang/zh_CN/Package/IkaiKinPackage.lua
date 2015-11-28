@@ -480,7 +480,7 @@ return {
 	[":ikyinzhai"] = "每当你造成一次伤害后，若没有角色处于濒死状态，你可以摸一张牌。若如此做，终止所有的结算，且当前回合结束。",
 	
 	["#snow037"] = "自称的血族真祖",
-	["snow037"] = "羽濑川小鸠",--雪 - 幻 - 3血
+	["snow037"] = "羽濑川小鸠",--雪 - 幻 - 4血
 	["designer:snow037"] = "CatCat44",
 	["illustrator:snow037"]="桜沢いづみ",
 	["ikjiaoshi"] = "矫誓",
@@ -489,7 +489,7 @@ return {
 	["@ikjiaoshi-collateral"] = "请选择【断灵御剑】 %src 使用【杀】的目标",
 	["@ikjiaoshi-give"] = "请交给 %src 一张牌成为此牌的使用者，否则你成为此牌的目标",
 	["iklinghuang"] = "灵煌",
-	[":iklinghuang"] = "每当你受到一名空属性角色造成的伤害时，你可以弃置一张装备牌，令此伤害-1。",
+	[":iklinghuang"] = "每当你受到一名其他角色造成的伤害时，你可以弃置一张装备牌，令此伤害-1。",
 	["@iklinghuang"] = "你可以弃置一张装备牌发动“灵煌”令此伤害-1",
 	["#IkLinghuang"] = "%from 发动了“<font color=\"yellow\"><b>灵煌</b></font>”，伤害从 %arg 点减少至 %arg2 点",
 
