@@ -447,7 +447,7 @@ return {
 	["designer:luna020"] = "游卡桌游",
 	["illustrator:luna020"]="カントク",
 	["ikzhizhai"] = "纸砦",
-	[":ikzhizhai"] = "锁定技，每当你受到伤害时，伤害来源须令此伤害-1或令你选择一项：展示其全部的手牌；或弃置其一张牌。",
+	[":ikzhizhai"] = "锁定技，每当你受到伤害时，伤害来源须选择一项：令此伤害-1；或展示其全部的手牌并交给你一张牌。",
 	["ikzhizhai:show"] = "展示其全部的手牌",
 	["ikzhizhai:discard"] = "弃置其一张牌",
 	["ikzhizhai_decrease:yes"] = "你可以令此伤害-1，或点“取消”令 %src 选择一项：<br/>1. 展示你全部的手牌<br/>2. 其弃置你一张牌",
