@@ -96,6 +96,58 @@ public:
     }
 };
 
+IkHuanghunCard::IkHuanghunCard()
+{
+    will_throw = false;
+    can_recast = true;
+    handling_method = Card::MethodRecast;
+    target_fixed = true;
+}
+
+void IkHuanghunCard::onUse(Room *room, const CardUseStruct &card_use) const
+{
+    ServerPlayer *player = card_use.from;
+
+    CardMoveReason reason(CardMoveReason::S_REASON_RECAST, player->objectName());
+    reason.m_skillName = this->getSkillName();
+    room->moveCardTo(this, player, NULL, Player::DiscardPile, reason);
+    player->broadcastSkillInvoke("@recast");
+
+    int id = card_use.card->getSubcards().first();
+
+    LogMessage log;
+    log.type = "#UseCard_Recast";
+    log.from = player;
+    log.card_str = QString::number(id);
+    room->sendLog(log);
+
+    player->drawCards(1, "recast");
+}
+
+class IkHuanghun : public OneCardViewAsSkill
+{
+public:
+    IkHuanghun() : OneCardViewAsSkill("ikhuanghun")
+    {
+        filter_pattern = "TrickCard";
+    }
+
+    const Card *viewAs(const Card *originalCard) const
+    {
+        if (Self->isCardLimited(originalCard, Card::MethodRecast))
+            return NULL;
+
+        IkHuanghunCard *recast = new IkHuanghunCard;
+        recast->addSubcard(originalCard);
+        return recast;
+    }
+
+    bool isEnabledAtPlay(const Player *player) const
+    {
+        return true;
+    }
+};
+
 class IkKuanggu: public TriggerSkill {
 public:
     IkKuanggu(): TriggerSkill("ikkuanggu") {
@@ -4810,9 +4862,13 @@ public:
             room->judge(judge);
 
             if (judge.isBad()) {
-                room->damage(DamageStruct(objectName(), zhangjiao, target, 1, DamageStruct::Thunder));
-                if (zhangjiao->isWounded())
-                    room->recover(zhangjiao, RecoverStruct(zhangjiao));
+                if (judge.card->getSuit() == Card::Spade)
+                    room->damage(DamageStruct(objectName(), zhangjiao, target, 2, DamageStruct::Thunder));
+                else if (judge.card->getSuit() == Card::Club) {
+                    room->damage(DamageStruct(objectName(), zhangjiao, target, 1, DamageStruct::Thunder));
+                    if (zhangjiao->isWounded())
+                        room->recover(zhangjiao, RecoverStruct(zhangjiao));
+                }
             }
         }
 
@@ -4908,7 +4964,7 @@ class IkYujiViewAsSkill: public OneCardViewAsSkill {
 public:
     IkYujiViewAsSkill(): OneCardViewAsSkill("ikyujiv") {
         attached_lord_skill = true;
-        filter_pattern = "Jink#.|black|.|hand";
+        filter_pattern = "Jink,EightDiagram";
     }
 
     virtual bool shouldBeVisible(const Player *player) const{
@@ -5146,10 +5202,10 @@ IkaiMokuPackage::IkaiMokuPackage()
     :Package("ikai-moku")
 {
     General *wind008 = new General(this, "wind008", "kaze");
-    wind008->addSkill("thxiagong");
     wind008->addSkill(new IkLiegong);
     wind008->addSkill(new IkLiegongClear);
     related_skills.insertMulti("ikliegong", "#ikliegong-clear");
+    wind008->addSkill(new IkHuanghun);
 
     General *wind009 = new General(this, "wind009", "kaze");
     wind009->addSkill(new IkKuanggu);
@@ -5359,6 +5415,7 @@ IkaiMokuPackage::IkaiMokuPackage()
     luna029->addSkill(new IkTianwu);
     related_skills.insertMulti("ikzhuohuo", "#@mailun-2");
 
+    addMetaObject<IkHuanghunCard>();
     addMetaObject<IkTiaoxinCard>();
     addMetaObject<IkYouxingCard>();
     addMetaObject<IkLiefengCard>();

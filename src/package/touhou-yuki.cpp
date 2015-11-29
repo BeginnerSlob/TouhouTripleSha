@@ -731,6 +731,7 @@ const Card *ThChouceCard::validate(CardUseStruct &card_use) const{
 class ThChouceViewAsSkill: public OneCardViewAsSkill {
 public:
     ThChouceViewAsSkill(): OneCardViewAsSkill("thchouce") {
+        response_or_use = true;
     }
 
     virtual bool isEnabledAtPlay(const Player *) const {
@@ -791,19 +792,6 @@ public:
                 return skills;
 
             if (usecard->isKindOf("Jink") || usecard->isKindOf("Nullification")) {
-                room->setPlayerFlag(player, "ThChouce_failed");
-                room->setPlayerMark(player, "ThChouce", usecard->getNumber());
-                return skills;
-            }
-
-            bool handcard = true;
-            foreach (int id, usecard->getSubcards()) {
-                if (!player->handCards().contains(id)) {
-                    handcard = false;
-                    break;
-                }
-            }
-            if (!handcard) {
                 room->setPlayerFlag(player, "ThChouce_failed");
                 room->setPlayerMark(player, "ThChouce", usecard->getNumber());
                 return skills;

@@ -4669,14 +4669,17 @@ public:
     }
 };
 
-class IkZhizhai: public TriggerSkill {
+class IkZhizhai : public TriggerSkill
+{
 public:
-    IkZhizhai(): TriggerSkill("ikzhizhai") {
+    IkZhizhai() : TriggerSkill("ikzhizhai")
+    {
         events << DamageInflicted;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
         if (!TriggerSkill::triggerable(player)) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.from && damage.from->isAlive())
@@ -4684,18 +4687,27 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
         room->broadcastSkillInvoke(objectName());
-        room->sendCompulsoryTriggerLog(player, objectName(), true);
+        room->sendCompulsoryTriggerLog(player, objectName());
 
         DamageStruct damage = data.value<DamageStruct>();
         QStringList choices;
-        if (!damage.from->isKongcheng())
+        choices << "reduce";
+        if (!damage.from->isNude())
             choices << "show";
-        if (player->canDiscard(damage.from, "he"))
-            choices << "discard";
-        bool reduce = choices.isEmpty();
-        if (reduce || room->askForSkillInvoke(damage.from, "ikzhizhai_decrease", "yes:" + player->objectName())) {
+        if (room->askForChoice(damage.from, objectName(), choices.join("+")) == "show") {
+            if (!damage.from->isKongcheng())
+                room->showAllCards(damage.from);
+            const Card *card = room->askForCard(damage.from, "..!", "@ikzhizhai", QVariant(), Card::MethodNone);
+            if (!card) {
+                QList<const Card *> cards = damage.from->getCards("he");
+                card = cards.at(qrand() % cards.length());
+            }
+            CardMoveReason reason(CardMoveReason::S_REASON_GIVE, damage.from->objectName(), player->objectName(), objectName(), QString());
+            room->obtainCard(player, card, reason);
+        } else {
             LogMessage log;
             log.type = "#IkZhizhai";
             log.from = player;
@@ -4706,13 +4718,6 @@ public:
             if (damage.damage < 1)
                 return true;
             data = QVariant::fromValue(damage);
-        } else {
-            if (room->askForChoice(player, objectName(), choices.join("+")) == "show")
-                room->showAllCards(damage.from);
-            else {
-                int card_id = room->askForCardChosen(player, damage.from, "he", objectName(), false, Card::MethodDiscard);
-                room->throwCard(card_id, damage.from, player);
-            }
         }
 
         return false;
@@ -6395,6 +6400,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     luna023->addSkill(new IkShunqie);
 
     General *luna024 = new General(this, "luna024", "tsuki");
+    luna024->addSkill("thjibu");
     luna024->addSkill(new IkLongya);
     luna024->addSkill(new IkLongyaMiss);
     related_skills.insertMulti("iklongya", "#iklongya-miss");

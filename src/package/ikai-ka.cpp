@@ -186,8 +186,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *player) const {
         return TriggerSkill::triggerable(player)
-            && player->getPhase() == Player::Draw
-            && player->getHandcardNum() < player->getMaxHp();
+            && player->getPhase() == Player::Draw;
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
@@ -434,10 +433,46 @@ public:
     }
 };
 
+IkHualanCard::IkHualanCard()
+{
+    will_throw = false;
+    handling_method = MethodNone;
+}
+
+void IkHualanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
+    room->moveCardTo(this, NULL, Player::DrawPile, false);
+}
+
+class IkHualanVS : public ViewAsSkill
+{
+public:
+    IkHualanVS() : ViewAsSkill("ikhualan")
+    {
+        response_pattern = "@@ikhualan";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
+    {
+        return selected.size() < 3 && !to_select->isEquipped();
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        if (cards.isEmpty())
+            return NULL;
+
+        IkHualanCard *card = new IkHualanCard;
+        card->addSubcards(cards);
+        return card;
+    }
+};
+
 class IkHualan: public TriggerSkill {
 public:
     IkHualan(): TriggerSkill("ikhualan") {
         events << EventPhaseStart << EventPhaseChanging;
+        view_as_skill = new IkHualanVS;
     }
 
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
@@ -459,22 +494,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
-        const Card *card = room->askForCard(ask_who, ".", "@ikhualan", QVariant(), Card::MethodNone);
-        if (card) {
-            LogMessage log;
-            log.type = "#InvokeSkill";
-            log.from = ask_who;
-            log.arg = objectName();
-            room->sendLog(log);
-            room->notifySkillInvoked(ask_who, objectName());
-            room->broadcastSkillInvoke(objectName());
-
-            CardMoveReason reason(CardMoveReason::S_REASON_PUT, ask_who->objectName(), objectName(), QString());
-            room->moveCardTo(card, NULL, Player::DrawPile, reason);
-
-            return true;
-        }
-        return false;
+        return room->askForUseCard(ask_who, "@@ikhualan", "@ikhualan", -1, Card::MethodNone);
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
@@ -755,7 +775,7 @@ public:
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.card && damage.card->hasFlag("ikelu_slash")) {
                 room->setCardFlag(damage.card, "-ikelu_slash");
-                room->setPlayerCardLimitation(player, "use", "Slash", true);
+                room->setPlayerCardLimitation(player, "use", "Slash,Duel", true);
             }
         } else if (triggerEvent == CardFinished && !player->hasFlag("Global_ProcessBroken")) {
             CardUseStruct use = data.value<CardUseStruct>();
@@ -5292,6 +5312,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkJilunCard>();
     addMetaObject<IkKangjinCard>();
     addMetaObject<IkHunkaoCard>();
+    addMetaObject<IkHualanCard>();
     addMetaObject<IkHuangshiCard>();
     addMetaObject<IkJimuCard>();
     addMetaObject<IkDengpoCard>();
