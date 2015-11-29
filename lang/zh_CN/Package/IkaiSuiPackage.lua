@@ -490,7 +490,7 @@ return {
 	["designer:luna023"] = "游卡桌游",
 	["illustrator:luna023"]="茨乃",
 	["ikshunqie"] = "瞬切",
-	[":ikshunqie"] = "每当你对其他角色造成一次伤害后，你可以将受到该伤害的角色的装备区里的一张牌置于你的装备区里；或弃置这张牌。",
+	[":ikshunqie"] = "每当你对其他角色造成一次伤害后，你可以获得受到该伤害的角色的装备区里的一张牌。",
 	["ikshunqie:move"] = "将此装备移动到自己的装备区",
 	["ikshunqie:throw"] = "弃置此装备",
 	["ikshunqie_equip"] = "瞬切",
