@@ -12,6 +12,15 @@ public:
     IkaiMokuPackage();
 };
 
+class IkHuanghunCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkHuanghunCard();
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+};
+
 class IkTiaoxinCard: public SkillCard {
     Q_OBJECT
 

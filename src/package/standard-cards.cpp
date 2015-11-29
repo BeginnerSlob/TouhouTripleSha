@@ -102,6 +102,7 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
             QVariant data = QVariant::fromValue(use);
             if (player->hasSkill("iklingpao")) {
                 FireSlash *fire_slash = new FireSlash(getSuit(), getNumber());
+                fire_slash->setFlags(use.card->getFlags());
                 if (!isVirtualCard() || subcardsLength() > 0)
                     fire_slash->addSubcard(this);
                 fire_slash->setSkillName("iklingpao");
@@ -122,6 +123,7 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
             }
             if (use.card->objectName() == "slash" && player->hasSkill("ikhuangzhen")) {
                 ThunderSlash *thunder_slash = new ThunderSlash(getSuit(), getNumber());
+                thunder_slash->setFlags(use.card->getFlags());
                 if (!isVirtualCard() || subcardsLength() > 0)
                     thunder_slash->addSubcard(this);
                 thunder_slash->setSkillName("ikhuangzhen");
@@ -142,6 +144,7 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
             }
             if (use.card->objectName() == "slash" && player->hasWeapon("fan")) {
                 FireSlash *fire_slash = new FireSlash(getSuit(), getNumber());
+                fire_slash->setFlags(use.card->getFlags());
                 if (!isVirtualCard() || subcardsLength() > 0)
                     fire_slash->addSubcard(this);
                 fire_slash->setSkillName("fan");
