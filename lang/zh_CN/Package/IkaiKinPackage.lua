@@ -109,6 +109,7 @@ return {
 	["illustrator:wind031"]="TEL-O",
 	["ikmoguang"] = "末广",
 	[":ikmoguang"] = "出牌阶段开始时，你可以摸一张牌，然后弃置一张手牌，最后指定一名你与其距离为1的角色，该角色不能使用或打出与你弃置的牌颜色相同的手牌，直到回合结束。",
+	["@ikmoguang"] = "请弃置一张手牌",
 	["#IkMoguang"] = "由于“<font color=\"yellow\"><b>末广</b></font>”效果，%from 本回合不能使用或打出 %arg 手牌",
 
 	["#wind032"] = "真祖的白姬",
