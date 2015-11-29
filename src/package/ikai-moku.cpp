@@ -127,7 +127,7 @@ void IkHuanghunCard::onUse(Room *room, const CardUseStruct &card_use) const
 class IkHuanghun : public OneCardViewAsSkill
 {
 public:
-    IkHuanghun() : OneCardViewAsSkill("ikhuitao")
+    IkHuanghun() : OneCardViewAsSkill("ikhuanghun")
     {
         filter_pattern = "TrickCard";
     }
