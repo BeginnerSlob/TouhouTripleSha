@@ -148,9 +148,9 @@ return {
 	["ikqihun_slash:obtain"] = "你可以获得 %src 的全部手牌，视为其使用一张【杀】",
 
 	["#bloom048"] = "琉璃之歌",
-	["bloom048"] = "天海春香",--花 - 空 - 4血
+	["bloom048"] = "神崎兰子",--花 - 空 - 4血
 	["designer:bloom048"] = "公谨大嘟嘟",
-	["illustrator:bloom048"]="yae",
+	["illustrator:bloom048"]="ダンミル",
 	["ikdiebei"] = "楪呗",
 	[":ikdiebei"] = "锁定技，准备阶段开始时，若你的手牌数不等于你的体力值，你摸两张牌，否则，你须失去1点体力，且你的手牌上限+1，直到回合结束。",
 

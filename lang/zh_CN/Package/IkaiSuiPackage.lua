@@ -201,7 +201,7 @@ return {
 	["#bloom040"] = "邪娇之恋",
 	["bloom040"] = "我妻由乃",--花 - 空 - 4血
 	["designer:bloom040"] = "游卡桌游",
-	["illustrator:bloom040"]="TONS'",
+	["illustrator:bloom040"]="ちょこ庵",
 	["iktianzuo"] = "天座",
 	[":iktianzuo"] = "锁定技，一名其他角色死亡时，你不执行奖惩，然后须摸三张牌。",
 	["ikshenji"] = "神记",
