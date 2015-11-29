@@ -2245,45 +2245,56 @@ public:
     }
 };
 
-ThLiuzhenCard::ThLiuzhenCard() {
+ThLiuzhenCard::ThLiuzhenCard()
+{
     handling_method = MethodNone;
 }
 
-bool ThLiuzhenCard::targetFilter(const QList<const Player *> &, const Player *to_select, const Player *player) const{
-    return !to_select->hasFlag("liuzhenold") && to_select != player;
+bool ThLiuzhenCard::targetFilter(const QList<const Player *> &, const Player *to_select, const Player *player) const
+{
+    const Card *slash = player->tag["thliuzhen_carduse"].value<const Card *>();
+    return !to_select->hasFlag("liuzhenold") && player->canSlash(to_select, slash, false);
 }
 
-void ThLiuzhenCard::onEffect(const CardEffectStruct &effect) const {
+void ThLiuzhenCard::onEffect(const CardEffectStruct &effect) const
+{
     Room *room = effect.from->getRoom();
     room->setPlayerFlag(effect.to, "liuzhennew");
 }
 
-class ThLiuzhenViewAsSkill: public ZeroCardViewAsSkill {
+class ThLiuzhenViewAsSkill : public ZeroCardViewAsSkill
+{
 public:
-    ThLiuzhenViewAsSkill(): ZeroCardViewAsSkill("thliuzhen") {
+    ThLiuzhenViewAsSkill() : ZeroCardViewAsSkill("thliuzhen")
+    {
         response_pattern = "@@thliuzhen";
     }
 
-    virtual const Card *viewAs() const {
+    virtual const Card *viewAs() const
+    {
         return new ThLiuzhenCard;
     }
 };
 
-class ThLiuzhen: public TriggerSkill{
+class ThLiuzhen : public TriggerSkill
+{
 public:
-    ThLiuzhen(): TriggerSkill("thliuzhen") {
+    ThLiuzhen() : TriggerSkill("thliuzhen")
+    {
         events << TargetSpecified << BeforeCardsMove << SlashMissed;
         view_as_skill = new ThLiuzhenViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
         if (!TriggerSkill::triggerable(player)) return QStringList();
         if (triggerEvent == TargetSpecified && player->getPhase() == Player::Play) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("Slash") && !player->hasUsed("ThLiuzhenCard")) {
-                foreach (ServerPlayer *p, room->getOtherPlayers(player))
-                    if (player->inMyAttackRange(p) && !use.to.contains(p))
+                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                    if (player->canSlash(p, use.card, false) && !use.to.contains(p))
                         return QStringList(objectName());
+                }
             }
         } else if (triggerEvent == SlashMissed) {
             SlashEffectStruct effect = data.value<SlashEffectStruct>();
