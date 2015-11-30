@@ -268,7 +268,7 @@ return {
 	["#snow051"] = "九狱的大妖",
 	["snow051"] = "羽衣狐",--雪 - 空 - 3血
 	["designer:snow051"] = "GODLASTER",
-	["illustrator:snow051"]="KD",
+	["illustrator:snow051"]="松竜",
 	["ikwanmi"] = "万祢",
 	[":ikwanmi"] = "游戏开始后，每当你的区域内置入一次牌时，你可以将这些牌当一张无视距离且不计入每阶段次数限制的基本牌使用，每回合限两次。",
 	["ikwanmi_invoke:invoke"] = "你的 %arg 置入了新的牌，是否发动“万祢”",
@@ -437,7 +437,7 @@ return {
 	["#luna054"] = "解消的人形",
 	["luna054"] = "艾拉",--月 - 空 - 4血
 	["designer:luna054"] = "Virgopaladin",
-	["illustrator:luna054"]="遠坂あさぎ",
+	["illustrator:luna054"]="ゆゆ",
 	["iksuyi"] = "塑忆",
 	[":iksuyi"] = "出牌阶段限一次，你可以选择一名其他角色并选择一项：令该角色摸一张牌；或令该角色弃置一张手牌。",
 	["iksuyi:draw"] = "令该角色摸一张牌",
