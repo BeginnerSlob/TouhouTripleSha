@@ -144,37 +144,66 @@ IkJilunCard::IkJilunCard() {
 }
 
 bool IkJilunCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select->hasEquip() && Self->inMyAttackRange(to_select);
+    return targets.isEmpty() && Self->canDiscard(to_select, "e") && Self->inMyAttackRange(to_select);
 }
 
 void IkJilunCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
-    if (effect.to->hasEquip()) {
-        int card_id = room->askForCardChosen(effect.to, effect.to, "e", "ikjilun");
-        room->obtainCard(effect.to, card_id);
+    if (effect.from->canDiscard(effect.to, "e")) {
+        int card_id = room->askForCardChosen(effect.from, effect.to, "e", "ikjilun", false, MethodDiscard);
+        room->throwCard(card_id, effect.to, effect.from);
+        Slash *slash = new Slash(NoSuit, 0);
+        slash->setSkillName("_ikjilun");
+        room->setPlayerFlag(effect.to, "ikjilun");
+        if (effect.from->canSlash(effect.to, slash) && !effect.from->isCardLimited(slash, Card::MethodUse))
+            room->useCard(CardUseStruct(slash, effect.from, effect.to), false);
+        else
+            delete slash;
+        if (effect.to->hasFlag("ikjilun") && room->getCardPlace(card_id) == Player::DiscardPile) {
+            room->sendCompulsoryTriggerLog(effect.from, "ikjilun");
+            room->obtainCard(effect.to, card_id);
+        }
     }
-    Slash *slash = new Slash(NoSuit, 0);
-    slash->setSkillName("_ikjilun");
-    if (effect.from->canSlash(effect.to, slash) && !effect.from->isCardLimited(slash, Card::MethodUse))
-        room->useCard(CardUseStruct(slash, effect.from, effect.to), false);
-    else
-        delete slash;
 }
 
-class IkJilun: public OneCardViewAsSkill {
+class IkJilunVS : public OneCardViewAsSkill
+{
 public:
-    IkJilun(): OneCardViewAsSkill("ikjilun") {
+    IkJilunVS() : OneCardViewAsSkill("ikjilun")
+    {
         filter_pattern = ".|black|.|hand!";
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const{
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
         IkJilunCard *card = new IkJilunCard;
         card->addSubcard(originalCard);
         return card;
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const{
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
         return !player->hasUsed("IkJilunCard") && player->canDiscard(player, "h");
+    }
+};
+
+class IkJilun : public TriggerSkill
+{
+public:
+    IkJilun() : TriggerSkill("ikjilun")
+    {
+        view_as_skill = new IkJilunVS;
+        events << PreDamageDone;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (player->hasFlag(objectName())) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card && damage.card->isKindOf("Slash") && damage.card->getSkillName() == objectName())
+                room->setPlayerFlag(player, "-ikjilun");
+        }
+        return QStringList();
     }
 };
 
@@ -439,7 +468,7 @@ IkHualanCard::IkHualanCard()
     handling_method = MethodNone;
 }
 
-void IkHualanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+void IkHualanCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &) const
 {
     room->moveCardTo(this, NULL, Player::DrawPile, false);
 }
@@ -1224,8 +1253,8 @@ public:
         room->sendCompulsoryTriggerLog(ask_who, objectName());
         room->broadcastSkillInvoke(objectName());
         room->setPlayerMark(player, "drank", 0);
-        if (!player->isNude()) {
-            int card_id = room->askForCardChosen(ask_who, player, "he", objectName());
+        if (!player->isKongcheng()) {
+            int card_id = room->askForCardChosen(ask_who, player, "h", objectName());
             room->obtainCard(ask_who, card_id, false);
         }
         return false;
@@ -3845,13 +3874,14 @@ public:
         room->obtainCard(target, player->getArmor(), reason);
         player->setFlags("-ikmoshan");
         QList<ServerPlayer *> victims;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-            if (player->canDiscard(p, "he"))
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (!p->isNude())
                 victims << p;
+        }
         if (!victims.isEmpty()) {
             ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName());
-            int id = room->askForCardChosen(player, victim, "he", objectName(), false, Card::MethodDiscard);
-            room->throwCard(id, victim, player);
+            int id = room->askForCardChosen(player, victim, "he", objectName());
+            room->obtainCard(player, id, false);
         }
         return false;
     }
@@ -4291,7 +4321,7 @@ public:
         return QStringList(objectName());
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
     {
         if (ask_who->askForSkillInvoke(objectName())) {
             if (!ask_who->hasSkill(objectName())) {
@@ -4309,7 +4339,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
         room->setPlayerMark(player, "@shuling", 0);
         ask_who->gainMark("@shuling");
@@ -5245,7 +5275,7 @@ IkaiKaPackage::IkaiKaPackage()
     related_skills.insertMulti("iklianwu", "#iklianwu-dist");
     related_skills.insertMulti("iklianwu", "#iklianwu-tar");
 
-    General *luna037 = new General(this, "luna037", "tsuki", 5);
+    General *luna037 = new General(this, "luna037", "tsuki");
     luna037->addSkill(new IkMoshan);
     luna037->addSkill("thyanmeng");
 

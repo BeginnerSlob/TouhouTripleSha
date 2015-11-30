@@ -115,7 +115,7 @@ return {
 	["illustrator:wind050"]="カントク",
 	["ikwujietiya"] = "舞节",
 	[":ikwujietiya"] = "出牌阶段限一次，你可以弃置一张牌，然后令一名其他角色选择一项：将一张牌置于你的人物牌上；或弃置两张牌。当你人物牌上有牌时，你可以将红色牌当【闪】、黑色牌当【三粒天滴】使用或打出。准备阶段开始时，你须获得你人物牌上的全部的牌。",
-	["@ikwujietiya-put"] = "请将一张牌置于 %src 的人物牌上，或点“取消”令 %src 弃置你的一张牌",
+	["@ikwujietiya-put"] = "请将一张牌置于 %src 的人物牌上，或点“取消”弃置两张牌",
 	["ikwujietiyapile"] = "舞节",
 
 	["#wind052"] = "野春菊的别离",
@@ -309,6 +309,8 @@ return {
 	["illustrator:snow025"]="poはるのいぶきkiki",
 	["ikhongrou"] = "弘柔",
 	[":ikhongrou"] = "准备或结束阶段开始时，你可弃置一张手牌并令一至两名其他角色各摸一张牌。",
+	["@ikhongrou"] = "你可以发动“弘柔”",
+	["~ikhongrou"] = "选择一张手牌→选择一至两名其他角色→点击确定",
 	["ikhuaxiao"] = "花咲",
 	[":ikhuaxiao"] = "你的回合外，当你的红色牌因使用、打出或弃置而置入弃牌堆时，你可以令一名角色摸一张牌。",
 	["@ikhuaxiao"] = "你可以发动“花咲”",
@@ -493,14 +495,6 @@ return {
 	["illustrator:luna023"]="茨乃",
 	["ikshunqie"] = "瞬切",
 	[":ikshunqie"] = "每当你对其他角色造成一次伤害后，你可以获得受到该伤害的角色的装备区里的一张牌。",
-	["ikshunqie:move"] = "将此装备移动到自己的装备区",
-	["ikshunqie:throw"] = "弃置此装备",
-	["ikshunqie_equip"] = "瞬切",
-	["ikshunqie_equip:0"] = "武器牌",
-	["ikshunqie_equip:1"] = "防具牌",
-	["ikshunqie_equip:2"] = "+1坐骑",
-	["ikshunqie_equip:3"] = "-1坐骑",
-	["ikshunqie_equip:4"] = "宝物牌",
 
 	["#luna024"] = "迅舞的人神兵",
 	["luna024"] = "KOS-MOS",--月 - 空 - 4血

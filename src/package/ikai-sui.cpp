@@ -1296,7 +1296,7 @@ bool IkWujietiyaCard::targetFilter(const QList<const Player *> &targets, const P
 
 void IkWujietiyaCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
-    bool can_discard = effect.from->canDiscard(effect.to, "he");
+    bool can_discard = effect.to->canDiscard(effect.to, "he");
     QString pattern = "..";
     if (!can_discard)
         pattern += "!";
@@ -1307,10 +1307,8 @@ void IkWujietiyaCard::onEffect(const CardEffectStruct &effect) const{
     }
     if (card)
         effect.from->addToPile("ikwujietiyapile", card);
-    else if (can_discard) {
-        int card_id = room->askForCardChosen(effect.from, effect.to, "he", "ikwujietiya", false, MethodDiscard);
-        room->throwCard(card_id, effect.to, effect.from);
-    }
+    else if (can_discard)
+        room->askForDiscard(effect.to, "ikwujietiya", 2, 2, false, true);
 }
 
 class IkWujietiyaViewAsSkill: public OneCardViewAsSkill {
@@ -2548,6 +2546,7 @@ public:
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             ask_who->addMark("iklingxue_discard", move.card_ids.length());
         } else if (triggerEvent == EventPhaseChanging) {
+            int n = qMin(player->getMark("@lingxue"), 2);
             room->setPlayerMark(player, "@lingxue", 0);
             LogMessage log;
             log.type = "#IkLingxueDraw";
@@ -2556,11 +2555,22 @@ public:
             log.arg = "iklingxue";
             log.arg2 = QString::number(player->getMark("iklingxue_discard"));
             room->sendLog(log);
-            if (player->isNude() || room->askForChoice(ask_who, "iklingxue", "obtain+draw") == "draw") {
-                ask_who->drawCards(1, "iklingxue");
-            } else {
-                int id = room->askForCardChosen(ask_who, player, "he", "iklingxue", false, Card::MethodNone);
-                room->obtainCard(ask_who, id, false);
+            QStringList choices;
+            if (!player->isNude())
+                choices << "obtain";
+            choices << "draw";
+            for (int i = 0; i < n; ++i) {
+                QString choice = room->askForChoice(ask_who, "iklingxue", choices.join("+"));
+                if (choice == "obtain") {
+                    int id = room->askForCardChosen(ask_who, player, "he", "iklingxue", false, Card::MethodNone);
+                    room->obtainCard(ask_who, id, false);
+                } else
+                    ask_who->drawCards(1, "iklingxue");
+                choices.removeOne(choice);
+                if (player->isNude())
+                    choices.removeOne("obtain");
+                if (choices.isEmpty())
+                    break;
             }
             player->setMark("iklingxue_discard", 0);
         }
@@ -3263,7 +3273,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *dingfeng, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *dingfeng, QVariant &data, ServerPlayer *) const
     {
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         const Card *card = move.reason.m_extraData.value<const Card *>();
@@ -3331,10 +3341,13 @@ void IkHongrouCard::onEffect(const CardEffectStruct &effect) const{
    effect.to->drawCards(1, "ikhongrou");
 }
 
-class IkHongrou: public OneCardViewAsSkill {
+class IkHongrouVS : public OneCardViewAsSkill
+{
 public:
-    IkHongrou(): OneCardViewAsSkill("ikhongrou") {
-        filter_pattern = ".!";
+    IkHongrouVS() : OneCardViewAsSkill("ikhongrou")
+    {
+        filter_pattern = ".|.|.|hand!";
+        response_pattern = "@@ikhongrou";
     }
 
     virtual const Card *viewAs(const Card *originalcard) const{
@@ -3342,9 +3355,30 @@ public:
         first->addSubcard(originalcard->getId());
         return first;
     }
+};
 
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->canDiscard(player, "he") && !player->hasUsed("IkHongrouCard");
+class IkHongrou : public PhaseChangeSkill
+{
+public:
+    IkHongrou() : PhaseChangeSkill("ikhongrou")
+    {
+        view_as_skill = new IkHongrouVS;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return PhaseChangeSkill::triggerable(target)
+            && (target->getPhase() == Player::Start || target->getPhase() == Player::Finish);
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        return room->askForUseCard(player, "@@ikhongrou", "@ikhongrou", -1, Card::MethodDiscard);
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *) const
+    {
+        return false;
     }
 };
 
@@ -5049,16 +5083,12 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *panfeng, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(panfeng)) return QStringList();
+        if (!TriggerSkill::triggerable(panfeng))
+            return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
         ServerPlayer *target = damage.to;
-        if (target->hasEquip() && !target->hasFlag("Global_DebutFlag") && panfeng != target) {
-            for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
-                if (!target->getEquip(i)) continue;
-                if (panfeng->canDiscard(target, target->getEquip(i)->getEffectiveId()) || panfeng->getEquip(i) == NULL)
-                    return QStringList(objectName());
-            }
-        }
+        if (target->hasEquip() && !target->hasFlag("Global_DebutFlag") && panfeng != target)
+            return QStringList(objectName());
         return QStringList();
     }
 
@@ -5073,30 +5103,8 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *panfeng, QVariant &data, ServerPlayer *) const{
         DamageStruct damage = data.value<DamageStruct>();
         ServerPlayer *target = damage.to;
-        QStringList equiplist;
-        for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
-            if (!target->getEquip(i)) continue;
-            if (panfeng->canDiscard(target, target->getEquip(i)->getEffectiveId()) || panfeng->getEquip(i) == NULL)
-                equiplist << QString::number(i);
-        }
-        if (equiplist.isEmpty())
-            return false;
-        int equip_index = room->askForChoice(panfeng, "ikshunqie_equip", equiplist.join("+"), QVariant::fromValue(target)).toInt();
-        const Card *card = target->getEquip(equip_index);
-        int card_id = card->getEffectiveId();
-
-        QStringList choicelist;
-        if (equip_index > -1 && panfeng->getEquip(equip_index) == NULL)
-            choicelist << "move";
-        if (panfeng->canDiscard(target, card_id))
-            choicelist << "throw";
-
-        QString choice = room->askForChoice(panfeng, "ikshunqie", choicelist.join("+"));
-
-        if (choice == "move")
-            room->moveCardTo(card, panfeng, Player::PlaceEquip);
-        else
-            room->throwCard(card, target, panfeng);
+        int id = room->askForCardChosen(panfeng, target, "e", objectName());
+        room->obtainCard(panfeng, id);
 
         return false;
     }

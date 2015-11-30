@@ -30,7 +30,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        int n = qMin(4, (room->alivePlayerCount() + 1) / 2);
+        int n = qMin(5, room->alivePlayerCount());
         QList<int> card_ids = room->getNCards(n, false);
         QList<int> copy = card_ids;
         CardMoveReason reason(CardMoveReason::S_REASON_TURNOVER, player->objectName(), objectName(), QString());
@@ -2332,47 +2332,43 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        QStringList choices;
-        choices << "modify";
-        //===========================
-        QStringList lord_skills;
-        lord_skills << "ikxinqi" << "ikhuanwei" << "ikjiyuan" << "ikyuji"
-                    << "thhuadi" << "iksongwei" << "thchundu" << "ikwuhua";
-
-        foreach (QString lord_skill, lord_skills)
-            foreach (ServerPlayer *owner, room->findPlayersBySkillName(lord_skill))
-                if (owner->hasLordSkill(lord_skill)) {
-                    lord_skills.removeOne(lord_skill);
-                    break;
-                }
-
-        if (!lord_skills.isEmpty())
-            choices << "obtain";
-        //===========================
-
-        QString choice = room->askForChoice(player, objectName(), choices.join("+"));
-
-        if (choice == "modify") {
-            ServerPlayer *to_modify = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName());
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "@thzhizun", true);
+        if (target) {
             QStringList kingdomList = Sanguosha->getKingdoms();
             kingdomList.removeOne("kami");
-            QString old_kingdom = to_modify->getKingdom();
+            QString old_kingdom = target->getKingdom();
             kingdomList.removeOne(old_kingdom);
             if (kingdomList.isEmpty()) return false;
             QString kingdom = room->askForChoice(player, objectName(), kingdomList.join("+"));
-            room->setPlayerProperty(to_modify, "kingdom", kingdom);
+            room->setPlayerProperty(target, "kingdom", kingdom);
 
             LogMessage log;
             log.type = "#ChangeKingdom";
             log.from = player;
-            log.to << to_modify;
+            log.to << target;
             log.arg = old_kingdom;
             log.arg2 = kingdom;
             room->sendLog(log);
-        } else if (choice == "obtain") {
+        }
+
+        QStringList lord_skills;
+        lord_skills << "ikxinqi" << "ikhuanwei" << "ikjiyuan" << "ikyuji"
+                    << "thhuadi" << "iksongwei" << "thchundu" << "ikwuhua";
+
+        foreach (QString lord_skill, lord_skills) {
+            foreach (ServerPlayer *owner, room->findPlayersBySkillName(lord_skill)) {
+                if (owner->hasLordSkill(lord_skill)) {
+                    lord_skills.removeOne(lord_skill);
+                    break;
+                }
+            }
+        }
+
+        if (!lord_skills.isEmpty()) {
+            lord_skills << "cancel";
             QString skill_name = room->askForChoice(player, objectName(), lord_skills.join("+"));
 
-            if (!skill_name.isEmpty()) {
+            if (skill_name != "cancel") {
                 const Skill *skill = Sanguosha->getSkill(skill_name);
                 room->acquireSkill(player, skill);
             }
