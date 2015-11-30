@@ -1633,15 +1633,21 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *lvmeng, QVariant &, ServerPlayer *) const{
         if (lvmeng->askForSkillInvoke(objectName())) {
-            if (lvmeng->getHandcardNum() > lvmeng->getMaxCards())
-                room->broadcastSkillInvoke(objectName());
+            room->broadcastSkillInvoke(objectName());
             return true;
         }
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *lvmeng, QVariant &, ServerPlayer *) const{
-        lvmeng->skip(Player::Discard);
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *lvmeng, QVariant &, ServerPlayer *) const{
+        QStringList choices;
+        choices << "draw";
+        if (!lvmeng->isSkipped(Player::Discard))
+            choices << "skip";
+        if (room->askForChoice(lvmeng, objectName(), choices.join("+")) == "skip")
+            lvmeng->skip(Player::Discard);
+        else
+            lvmeng->drawCards(1, objectName());
         return false;
     }
 };

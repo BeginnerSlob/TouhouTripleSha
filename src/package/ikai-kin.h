@@ -72,11 +72,11 @@ public:
     virtual const Card *validate(CardUseStruct &cardUse) const;
 };
 
-class IkShengyongCard: public SkillCard {
+class IkZangyuCard: public SkillCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE IkShengyongCard();
+    Q_INVOKABLE IkZangyuCard();
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
@@ -290,12 +290,12 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkWuxiangCard: public SkillCard
+class IkMolingCard: public SkillCard
 {
     Q_OBJECT 
 
 public:
-    Q_INVOKABLE IkWuxiangCard();
+    Q_INVOKABLE IkMolingCard();
 
     virtual bool targetFixed() const;
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;

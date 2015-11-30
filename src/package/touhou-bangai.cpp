@@ -8,14 +8,17 @@
 #include "maneuvering.h"
 #include "standard-equips.h"
 
-class ThBianfang: public TriggerSkill {
+class ThBianfang : public TriggerSkill
+{
 public:
-    ThBianfang(): TriggerSkill("thbianfang") {
+    ThBianfang() : TriggerSkill("thbianfang")
+    {
         events << Damage << Damaged;
         frequency = Frequent;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
         if (TriggerSkill::triggerable(player)) {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.card && damage.card->isKindOf("Slash") && damage.from != damage.to)
@@ -24,25 +27,24 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        if (!player->askForSkillInvoke(objectName()))
-            return false;
-        room->broadcastSkillInvoke(objectName());
-        return true;
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        int n = qMax(1, player->getLostHp());
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        DamageStruct damage = data.value<DamageStruct>();
 
+        int n = qMax(1, player->getLostHp());
         for (int i = 0; i < n; ++i) {
             JudgeStruct judge;
-            DamageStruct damage = data.value<DamageStruct>();
-            if (damage.card->getSuit() > Card::Diamond)
-                judge.good = false;
-            else {
-                judge.pattern = ".|" + damage.card->getSuitString();
-                judge.good = true;
-            }
+            judge.pattern = ".|red";
+            judge.good = true;
             judge.reason = objectName();
             judge.who = player;
             room->judge(judge);

@@ -398,17 +398,25 @@ public:
 class ThWanling: public TriggerSkill {
 public:
     ThWanling(): TriggerSkill("thwanling") {
-        events << BeforeCardsMove;
+        events << BeforeCardsMove << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (!TriggerSkill::triggerable(player) || player == move.from || !move.from) return QStringList();
-        if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
-            && move.reason.m_reason == CardMoveReason::S_REASON_USE) {
-            const Card *card = move.reason.m_extraData.value<const Card *>();
-            if (card && card->isRed() && (card->isKindOf("Slash") || card->isNDTrick()))
-                return QStringList(objectName());
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    p->setMark(objectName(), 0);
+            }
+        } else {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (!TriggerSkill::triggerable(player) || player == move.from || !move.from || player->getMark(objectName()) >= 3)
+                return QStringList();
+            if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
+                && move.reason.m_reason == CardMoveReason::S_REASON_USE) {
+                const Card *card = move.reason.m_extraData.value<const Card *>();
+                if (card && card->isRed() && (card->isKindOf("Slash") || card->isNDTrick()))
+                    return QStringList(objectName());
+            }
         }
         return QStringList();
     }
@@ -422,6 +430,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        player->addMark(objectName());
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (player->canDiscard(player, "he") && room->askForCard(player,
                                                                  "..",
