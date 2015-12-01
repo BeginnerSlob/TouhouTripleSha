@@ -3315,6 +3315,10 @@ public:
             invoke = true;
             including_horse = true;
         }
+        if (from->hasSkill("ikyixiang") && to->hasFlag("ikyixiang")) {
+            invoke = true;
+            including_horse = true;
+        }
         if (invoke) {
             int x = from->originalRightDistanceTo(to);
             int y = from->aliveCount(false) - x;
@@ -4580,6 +4584,36 @@ public:
     }
 };
 
+class IkYixiang : public TriggerSkill
+{
+public:
+    IkYixiang() : TriggerSkill("ikyixiang")
+    {
+        events << EventPhaseChanging << CardsMoveOneTime;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    room->setPlayerFlag(p, "-ikyixiang");
+            }
+        } else {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (player == move.from) {
+                if (move.from_places.contains(Player::PlaceHand) && move.is_last_handcard) {
+                    ServerPlayer *current = room->getCurrent();
+                    if (current && current->isAlive() && current->getPhase() != Player::NotActive)
+                        room->setPlayerFlag((ServerPlayer *)move.from, "ikyixiang");
+                }
+            }
+        }
+        return QStringList(objectName());
+    }
+};
+
 IkChenyan::IkChenyan(): TriggerSkill("ikchenyan") {
     events << DrawNCards << EventPhaseStart;
     frequency = Compulsory;
@@ -4653,7 +4687,7 @@ public:
         room->sendCompulsoryTriggerLog(player, objectName());
         DamageStruct damage = data.value<DamageStruct>();
         damage.damage = 1;
-        data = QVariant::fromValue(data);
+        data = QVariant::fromValue(damage);
         return false;
     }
 };
