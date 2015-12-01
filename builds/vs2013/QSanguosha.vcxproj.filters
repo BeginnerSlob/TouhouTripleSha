@@ -474,15 +474,6 @@
     <ClCompile Include="Release\moc_touhou-kaze.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\package\touhou-kishin.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug\moc_touhou-kishin.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_touhou-kishin.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\package\touhou-sp.cpp">
       <Filter>package</Filter>
     </ClCompile>
@@ -960,6 +951,15 @@
     <ClCompile Include="Release\moc_jianniang-scenario.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\package\touhou-shin.cpp">
+      <Filter>package</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_touhou-shin.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_touhou-shin.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\src\client\aux-skills.h">
@@ -1104,9 +1104,6 @@
       <Filter>package</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\touhou-kaze.h">
-      <Filter>package</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\src\package\touhou-kishin.h">
       <Filter>package</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\touhou-sp.h">
@@ -1264,6 +1261,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\src\scenario\jianniang-scenario.h">
       <Filter>scenario</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\package\touhou-shin.h">
+      <Filter>package</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

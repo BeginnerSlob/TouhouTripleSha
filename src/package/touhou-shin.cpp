@@ -1,4 +1,4 @@
-#include "touhou-kishin.h"
+#include "touhou-shin.h"
 
 #include "general.h"
 #include "skill.h"
@@ -833,51 +833,172 @@ public:
     }
 };
 
-TouhouKishinPackage::TouhouKishinPackage()
-    :Package("touhou-kishin")
+class ThWangyu : public TriggerSkill
 {
-    General *kishin001 = new General(this, "kishin001", "kaze");
-    kishin001->addSkill(new ThLuanshen);
+public:
+    ThWangyu() : TriggerSkill("thwangyu")
+    {
+        events << Damage;
+    }
 
-    General *kishin002 = new General(this, "kishin002", "hana");
-    kishin002->addSkill(new ThFeiman);
-    kishin002->addSkill(new ThGuaiqi);
-    kishin002->addSkill(new ThGuaiqiRecord);
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.card && damage.card->isKindOf("Slash") && room->getCardPlace(damage.card->getEffectiveId()) == Player::PlaceTable) {
+            if (TriggerSkill::triggerable(player)) {
+                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                    if (p->getHandcardNum() <= p->getMaxHp())
+                        return QStringList(objectName());
+                }
+            } else {
+                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                    if (p->getHandcardNum() <= p->getMaxHp())
+                        return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
+    };
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        QList<ServerPlayer *> targets;
+        if (TriggerSkill::triggerable(player)) {
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (p->getHandcardNum() <= p->getMaxHp())
+                    targets << p;
+            }
+        } else {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p->getHandcardNum() <= p->getMaxHp())
+                    targets << p;
+            }
+        }
+        if (!targets.isEmpty()) {
+            ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thwangyu", true, player->hasSkill(objectName()));
+            if (target) {
+                room->broadcastSkillInvoke(objectName());
+                if (!player->hasSkill(objectName())) {
+                    room->notifySkillInvoked(target, objectName());
+                    LogMessage log;
+                    log.type = "#InvokeOthersSkill";
+                    log.from = player;
+                    log.to << target;
+                    log.arg = objectName();
+                    room->sendLog(log);
+                }
+                player->tag["ThWangyuTarget"] = QVariant::fromValue(target);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        ServerPlayer *target = player->tag["ThWangyuTarget"].value<ServerPlayer *>();
+        player->tag.remove("ThWangyuTarget");
+        if (target) {
+            DamageStruct damage = data.value<DamageStruct>();
+            target->obtainCard(damage.card);
+        }
+        return false;
+    }
+};
+
+class ThGuangshi : public TriggerSkill
+{
+public:
+    ThGuangshi() : TriggerSkill("thguangshi")
+    {
+        events << Damaged;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (!player->canDiscard(player, "he") || !room->askForCard(player, "..", "@thguangshi"))
+            player->drawCards(1, objectName());
+        if (!player->isKongcheng()) {
+            room->showAllCards(player);
+            int red = 0, black = 0;
+            foreach (const Card *c, player->getHandcards()) {
+                if (c->isRed())
+                    ++red;
+                else if (c->isBlack())
+                    ++black;
+            }
+            if (red > black)
+                player->drawCards(1, objectName());
+            else if (black > red) {
+                DamageStruct damage = data.value<DamageStruct>();
+                if (damage.from && player->canDiscard(damage.from, "he")) {
+                    int id = room->askForCardChosen(player, damage.from, "he", objectName(), false, Card::MethodDiscard);
+                    room->throwCard(id, damage.from, player);
+                }
+            }
+        }
+        return false;
+    }
+};
+
+TouhouShinPackage::TouhouShinPackage()
+    :Package("touhou-shin")
+{
+    General *shin001 = new General(this, "shin001", "kaze");
+    shin001->addSkill(new ThLuanshen);
+
+    General *shin002 = new General(this, "shin002", "hana");
+    shin002->addSkill(new ThFeiman);
+    shin002->addSkill(new ThGuaiqi);
+    shin002->addSkill(new ThGuaiqiRecord);
     related_skills.insertMulti("thguaiqi", "#thguaiqi-record");
 
-    General *kishin003 = new General(this, "kishin003", "yuki", 2);
-    kishin003->addSkill(new ThJingtao);
-    kishin003->addSkill(new ThZongni);
-    kishin003->addSkill(new ThZongniDiscard);
+    General *shin003 = new General(this, "shin003", "yuki", 2);
+    shin003->addSkill(new ThJingtao);
+    shin003->addSkill(new ThZongni);
+    shin003->addSkill(new ThZongniDiscard);
     related_skills.insertMulti("thzongni", "#thzongni");
 
-    General *kishin004 = new General(this, "kishin004", "tsuki");
-    kishin004->addSkill(new ThLanzou);
-    kishin004->addSkill(new ThLanzouSecond);
+    General *shin004 = new General(this, "shin004", "tsuki");
+    shin004->addSkill(new ThLanzou);
+    shin004->addSkill(new ThLanzouSecond);
     related_skills.insertMulti("thlanzou", "#thlanzou");
 
-    General *kishin005 = new General(this, "kishin005", "kaze", 3, false);
-    kishin005->addSkill(new ThXinqi);
-    kishin005->addSkill(new ThNengwu);
-    kishin005->addSkill(new ThNengwuClear);
+    General *shin005 = new General(this, "shin005", "kaze", 3, false);
+    shin005->addSkill(new ThXinqi);
+    shin005->addSkill(new ThNengwu);
+    shin005->addSkill(new ThNengwuClear);
     related_skills.insertMulti("thnengwu", "#thnengwu-clear");
 
-    General *kishin006 = new General(this, "kishin006", "hana", 3);
-    kishin006->addSkill(new ThBaochui);
-    kishin006->addSkill(new ThBaochuiReturn);
+    General *shin006 = new General(this, "shin006", "hana", 3);
+    shin006->addSkill(new ThBaochui);
+    shin006->addSkill(new ThBaochuiReturn);
     related_skills.insertMulti("thbaochui", "#thbaochui-return");
-    kishin006->addSkill(new ThYishi);
-    kishin006->addSkill(new ThYishiNullified);
+    shin006->addSkill(new ThYishi);
+    shin006->addSkill(new ThYishiNullified);
     related_skills.insertMulti("thyishi", "#thyishi");
 
-    General *kishin007 = new General(this, "kishin007", "yuki");
-    kishin007->addSkill(new ThMoju);
-    kishin007->addSkill(new ThMojuMaxCardsSkill);
+    General *shin007 = new General(this, "shin007", "yuki");
+    shin007->addSkill(new ThMoju);
+    shin007->addSkill(new ThMojuMaxCardsSkill);
     related_skills.insertMulti("thmoju", "#thmoju");
 
-    General *kishin008 = new General(this, "kishin008", "tsuki");
-    kishin008->addSkill(new ThLianying);
-    kishin008->addSkill(new ThYuanxiao);
+    General *shin008 = new General(this, "shin008", "tsuki");
+    shin008->addSkill(new ThLianying);
+    shin008->addSkill(new ThYuanxiao);
+
+    General *shin010 = new General(this, "shin010", "hana", 3);
+    shin010->addSkill(new ThWangyu);
+    shin010->addSkill(new ThGuangshi);
 
     addMetaObject<ThLuanshenCard>();
     addMetaObject<ThLianyingCard>();
@@ -885,4 +1006,4 @@ TouhouKishinPackage::TouhouKishinPackage()
     skills << new ThBaochuiRecord;
 }
 
-ADD_PACKAGE(TouhouKishin)
+ADD_PACKAGE(TouhouShin)

@@ -40,7 +40,7 @@ config = {
 		"TouhouHana",
 		"TouhouYuki",
 		"TouhouTsuki",
-		"TouhouKishin",
+		"TouhouShin",
 		"TouhouSP",
 		"TouhouBangai",
 		"TouhouKami",
