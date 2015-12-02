@@ -950,6 +950,120 @@ public:
     }
 };
 
+class ThYuancui : public PhaseChangeSkill
+{
+public:
+    ThYuancui() : PhaseChangeSkill("thyuancui")
+    {
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return PhaseChangeSkill::triggerable(target) && target->getPhase() == Player::Start;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const
+    {
+        Room *room = player->getRoom();
+        room->sendCompulsoryTriggerLog(player, objectName());
+        if (player->isWounded())
+            room->recover(player, RecoverStruct(player));
+        else
+            room->loseHp(player);
+        return false;
+    }
+};
+
+class ThHuikuang : public TriggerSkill
+{
+public:
+    ThHuikuang() : TriggerSkill("thhuikuang")
+    {
+        events << HpLost << HpRecover;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *r, ServerPlayer *p, QVariant &, ServerPlayer* &) const
+    {
+        if (TriggerSkill::triggerable(p)) {
+            if (e == HpLost)
+                return QStringList(objectName());
+            else if (e == HpRecover) {
+                if (p->canDiscard(p, "he"))
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    };
+
+    virtual bool cost(TriggerEvent e, Room *r, ServerPlayer *p, QVariant &, ServerPlayer *) const
+    {
+        if (e == HpLost) {
+            if (p->askForSkillInvoke(objectName())) {
+                r->broadcastSkillInvoke(objectName());
+                return true;
+            }
+        } else if (e == HpRecover) {
+            const Card *card = r->askForExchange(p, objectName(), 2, 2, true, "@thhuikuang", true);
+            if (card) {
+                r->broadcastSkillInvoke(objectName());
+                p->tag["ThHuikuangCard"] = QVariant::fromValue(card);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent e, Room *r, ServerPlayer *p, QVariant &, ServerPlayer *) const
+    {
+        if (e == HpLost) {
+            QList<int> cards = r->getNCards(2, false);
+            CardMoveReason reason(CardMoveReason::S_REASON_DRAW, p->objectName(), objectName(), QString());
+            CardsMoveStruct move(cards, p, Player::PlaceHand, reason);
+            r->moveCardsAtomic(move, false);
+            if (p->askForSkillInvoke(objectName(), "show")) {
+                r->showCard(p, cards.first());
+                r->showCard(p, cards.last());
+                const Card *card1 = Sanguosha->getCard(cards.first());
+                const Card *card2 = Sanguosha->getCard(cards.last());
+                if (card1->sameColorWith(card2)) {
+                    SavageAssault *sa = new SavageAssault(Card::NoSuit, 0);
+                    sa->setSkillName("_thhuikuang");
+                    if (sa->isAvailable(p) && !p->isCardLimited(sa, Card::MethodUse))
+                        r->useCard(CardUseStruct(sa, p, QList<ServerPlayer *>()));
+                    else
+                        delete sa;
+                }
+            }
+        } else if (e == HpRecover) {
+            const Card *card = p->tag["ThHuikuangCard"].value<const Card *>();
+            p->tag.remove("ThHuikuangCard");
+            if (card) {
+                QList<int> cards = card->getSubcards();
+                LogMessage log;
+                log.type = "$DiscardCardWithSkill";
+                log.from = p;
+                log.arg = objectName();
+                log.card_str = IntList2StringList(cards).join("+");
+                r->sendLog(log);
+                r->throwCard(card, p);
+                delete card;
+                const Card *card1 = Sanguosha->getCard(cards.first());
+                const Card *card2 = Sanguosha->getCard(cards.last());
+                if (card1->sameColorWith(card2)) {
+                    SavageAssault *sa = new SavageAssault(Card::NoSuit, 0);
+                    sa->setSkillName("_thhuikuang");
+                    if (sa->isAvailable(p) && !p->isCardLimited(sa, Card::MethodUse) && p->askForSkillInvoke(objectName(), "use"))
+                        r->useCard(CardUseStruct(sa, p, QList<ServerPlayer *>()));
+                    else
+                        delete sa;
+                }
+            }
+        }
+        return false;
+    }
+};
+
 TouhouShinPackage::TouhouShinPackage()
     :Package("touhou-shin")
 {
@@ -999,6 +1113,10 @@ TouhouShinPackage::TouhouShinPackage()
     General *shin010 = new General(this, "shin010", "hana", 3);
     shin010->addSkill(new ThWangyu);
     shin010->addSkill(new ThGuangshi);
+
+    General *shin016 = new General(this, "shin016", "tsuki", 4, false);
+    shin016->addSkill(new ThYuancui);
+    shin016->addSkill(new ThHuikuang);
 
     addMetaObject<ThLuanshenCard>();
     addMetaObject<ThLianyingCard>();
