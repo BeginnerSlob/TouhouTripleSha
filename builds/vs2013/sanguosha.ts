@@ -148,7 +148,7 @@
     <message>
         <location filename="../../src/dialog/cardoverview.ui" line="102"/>
         <source>Illustrator</source>
-        <translation type="unfinished">插画</translation>
+        <translation>插画</translation>
     </message>
     <message>
         <location filename="../../src/dialog/cardoverview.ui" line="167"/>
@@ -159,14 +159,6 @@
         <location filename="../../src/dialog/cardoverview.ui" line="180"/>
         <source>Get this card</source>
         <translation>获得卡牌</translation>
-    </message>
-    <message>
-        <source>Play (male)</source>
-        <translation type="vanished">空属性配音</translation>
-    </message>
-    <message>
-        <source>Play (female)</source>
-        <translation type="vanished">幻属性配音</translation>
     </message>
     <message>
         <location filename="../../src/dialog/cardoverview.cpp" line="95"/>
@@ -199,7 +191,7 @@
     <message>
         <location filename="../../src/dialog/choosegeneraldialog.cpp" line="188"/>
         <source>The lord has chosen %1. Your seat is %2. %3</source>
-        <translation>主公选择了 %1，你处于 %2号位，%3</translation>
+        <translation>君主选择了 %1，你处于 %2号位，%3</translation>
     </message>
     <message>
         <location filename="../../src/dialog/choosegeneraldialog.cpp" line="214"/>
@@ -219,7 +211,7 @@
         <source>
  wait for the lord player choosing general, please</source>
         <translation>
-请等待主公选择人物</translation>
+请等待君主选择人物</translation>
     </message>
     <message>
         <location filename="../../src/client/client.cpp" line="772"/>
@@ -761,12 +753,12 @@
         <location filename="../../src/dialog/customassigndialog.cpp" line="205"/>
         <location filename="../../src/dialog/customassigndialog.cpp" line="213"/>
         <source>Lord</source>
-        <translation>主公</translation>
+        <translation>君主</translation>
     </message>
     <message>
         <location filename="../../src/dialog/customassigndialog.cpp" line="74"/>
         <source>Loyalist</source>
-        <translation>忠臣</translation>
+        <translation>司祝</translation>
     </message>
     <message>
         <location filename="../../src/dialog/customassigndialog.cpp" line="75"/>
@@ -774,7 +766,7 @@
         <location filename="../../src/dialog/customassigndialog.cpp" line="206"/>
         <location filename="../../src/dialog/customassigndialog.cpp" line="214"/>
         <source>Renegade</source>
-        <translation>内奸</translation>
+        <translation>黑幕</translation>
     </message>
     <message>
         <location filename="../../src/dialog/customassigndialog.cpp" line="76"/>
@@ -782,7 +774,7 @@
         <location filename="../../src/dialog/customassigndialog.cpp" line="207"/>
         <location filename="../../src/dialog/customassigndialog.cpp" line="215"/>
         <source>Rebel</source>
-        <translation>反贼</translation>
+        <translation>异端</translation>
     </message>
     <message>
         <location filename="../../src/dialog/customassigndialog.cpp" line="87"/>
@@ -1060,7 +1052,7 @@
     <message>
         <location filename="../../src/dialog/customassigndialog.cpp" line="1367"/>
         <source>Two many lords in the game</source>
-        <translation>主公设置过多</translation>
+        <translation>君主设置过多</translation>
     </message>
     <message>
         <location filename="../../src/dialog/customassigndialog.cpp" line="1375"/>
@@ -1286,25 +1278,9 @@
 <context>
     <name>Engine</name>
     <message>
-        <source>2 players</source>
-        <translation type="vanished">2 人局</translation>
-    </message>
-    <message>
-        <source>2 players (KOF style)</source>
-        <translation type="vanished">2 人局 [KOF模式]</translation>
-    </message>
-    <message>
-        <source>3 players</source>
-        <translation type="vanished">3 人局</translation>
-    </message>
-    <message>
         <location filename="../../src/core/engine.cpp" line="105"/>
         <source>4 players</source>
         <translation>4 人局</translation>
-    </message>
-    <message>
-        <source>4 players (Hulao Pass)</source>
-        <translation type="vanished">4 人局 [虎牢关1v3]</translation>
     </message>
     <message>
         <location filename="../../src/core/engine.cpp" line="107"/>
@@ -1317,31 +1293,19 @@
         <translation>6 人局</translation>
     </message>
     <message>
-        <source>6 players (2 renegades)</source>
-        <translation type="vanished">6 人局 [双内奸]</translation>
-    </message>
-    <message>
-        <source>6 players (3v3)</source>
-        <translation type="vanished">6 人局 [3v3]</translation>
-    </message>
-    <message>
-        <source>6 players (XMode)</source>
-        <translation type="vanished">6 人局 [血战到底]</translation>
-    </message>
-    <message>
         <location filename="../../src/core/engine.cpp" line="102"/>
         <source>2 players [KOF style]</source>
-        <translation type="unfinished"></translation>
+        <translation>2 人局 [擂台对决]</translation>
     </message>
     <message>
         <location filename="../../src/core/engine.cpp" line="104"/>
         <source>3 players [Tripod]</source>
-        <translation type="unfinished"></translation>
+        <translation>3 人局 [杀上保下]</translation>
     </message>
     <message>
         <location filename="../../src/core/engine.cpp" line="106"/>
         <source>4 players [Hulao Pass]</source>
-        <translation type="unfinished"></translation>
+        <translation>4 人局 [魔王试炼]</translation>
     </message>
     <message>
         <location filename="../../src/core/engine.cpp" line="112"/>
@@ -1356,11 +1320,7 @@
     <message>
         <location filename="../../src/core/engine.cpp" line="114"/>
         <source>8 players (2 renegades)</source>
-        <translation>8 人局 [双内奸]</translation>
-    </message>
-    <message>
-        <source>8 players (0 renegade)</source>
-        <translation type="vanished">8 人局 [无内奸]</translation>
+        <translation>8 人局 [双黑幕]</translation>
     </message>
     <message>
         <location filename="../../src/core/engine.cpp" line="116"/>
@@ -1375,11 +1335,7 @@
     <message>
         <location filename="../../src/core/engine.cpp" line="118"/>
         <source>10 players (1 renegade)</source>
-        <translation>10 人局 [单内奸]</translation>
-    </message>
-    <message>
-        <source>10 players (0 renegade)</source>
-        <translation type="vanished">10 人局 [无内奸]</translation>
+        <translation>10 人局 [单黑幕]</translation>
     </message>
     <message>
         <location filename="../../src/core/engine.cpp" line="168"/>
@@ -1476,7 +1432,7 @@
     <message>
         <location filename="../../src/dialog/generaloverview.ui" line="68"/>
         <source>MaxHP</source>
-        <translation>体力上限</translation>
+        <translation>体力</translation>
     </message>
     <message>
         <location filename="../../src/dialog/generaloverview.ui" line="73"/>
@@ -1560,7 +1516,7 @@
         <location filename="../../src/dialog/generaloverview.cpp" line="329"/>
         <location filename="../../src/dialog/generaloverview.cpp" line="331"/>
         <source>This general is a lord</source>
-        <translation type="unfinished"></translation>
+        <translation>该人物是君主人物</translation>
     </message>
     <message>
         <location filename="../../src/dialog/generaloverview.cpp" line="352"/>
@@ -1853,7 +1809,7 @@
     <message>
         <location filename="../../src/dialog/mainwindow.ui" line="252"/>
         <source>Scenario overview</source>
-        <translation>剧情一览</translation>
+        <translation>模式一览</translation>
     </message>
     <message>
         <location filename="../../src/dialog/mainwindow.ui" line="260"/>
@@ -1938,7 +1894,7 @@
     <message>
         <location filename="../../src/dialog/mainwindow.ui" line="344"/>
         <source>Never nullify my trick</source>
-        <translation>不无懈自己的单体锦囊</translation>
+        <translation>不对自己的指向性锦囊询问【三粒天滴】</translation>
     </message>
     <message>
         <location filename="../../src/dialog/mainwindow.ui" line="357"/>
@@ -2040,10 +1996,6 @@
         <translation>服务器的版本低于你的客户端版本，请要求服务器去更新 &lt;br/&gt;</translation>
     </message>
     <message>
-        <source>Download link : &lt;a href=&apos;%1&apos;&gt;%1&lt;/a&gt; &lt;br/&gt;</source>
-        <translation type="vanished">下载链接: &lt;a href=&apos;%1&apos;&gt;%1&lt;/a&gt; &lt;br/&gt;</translation>
-    </message>
-    <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="258"/>
         <source>Select a replay file</source>
         <translation>选择一个重放文件</translation>
@@ -2068,7 +2020,7 @@
     <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="467"/>
         <source>Tieba: TouhouTripleSha Ba</source>
-        <translation type="unfinished"></translation>
+        <translation>贴吧: 东方绮符剧吧</translation>
     </message>
     <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="469"/>
@@ -2088,12 +2040,12 @@
     <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="596"/>
         <source> (no renegade)</source>
-        <translation> (无内奸)</translation>
+        <translation> (无黑幕)</translation>
     </message>
     <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="600"/>
         <source> (single renegade)</source>
-        <translation> (单内奸)</translation>
+        <translation> (单黑幕)</translation>
     </message>
     <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="725"/>
@@ -2265,10 +2217,6 @@
         <translation>当前版本: %1 %2 (%3)&lt;br/&gt;</translation>
     </message>
     <message>
-        <source>Forum: &lt;a href=&apos;%1&apos; style = &quot;color:#0072c1; &quot;&gt;%1&lt;/a&gt; &lt;br/&gt;</source>
-        <translation type="vanished">论坛: &lt;a href=&apos;%1&apos; style = &quot;color:#0072c1; &quot;&gt;%1&lt;/a&gt; &lt;br/&gt;</translation>
-    </message>
-    <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="870"/>
         <location filename="../../src/dialog/mainwindow.cpp" line="894"/>
         <source>Current versionn %1 &lt;br/&gt;</source>
@@ -2282,7 +2230,7 @@
     <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="236"/>
         <source>QQ Group: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>QQ群号：%1</translation>
     </message>
     <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="442"/>
@@ -2302,27 +2250,27 @@
     <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="574"/>
         <source>Lord</source>
-        <translation>主公</translation>
+        <translation>君主</translation>
     </message>
     <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="574"/>
         <source>Loyalist</source>
-        <translation>忠臣</translation>
+        <translation>司祝</translation>
     </message>
     <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="574"/>
         <source>Rebel</source>
-        <translation>反贼</translation>
+        <translation>异端</translation>
     </message>
     <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="574"/>
         <source>Renegade</source>
-        <translation>内奸</translation>
+        <translation>黑幕</translation>
     </message>
     <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="592"/>
         <source> (double renegade)</source>
-        <translation> (双内奸)</translation>
+        <translation> (双黑幕)</translation>
     </message>
     <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="564"/>
@@ -2685,22 +2633,22 @@
     <message>
         <location filename="../../src/dialog/roleassigndialog.cpp" line="55"/>
         <source>Lord</source>
-        <translation>主公</translation>
+        <translation>君主</translation>
     </message>
     <message>
         <location filename="../../src/dialog/roleassigndialog.cpp" line="56"/>
         <source>Loyalist</source>
-        <translation>忠臣</translation>
+        <translation>司祝</translation>
     </message>
     <message>
         <location filename="../../src/dialog/roleassigndialog.cpp" line="57"/>
         <source>Renegade</source>
-        <translation>内奸</translation>
+        <translation>黑幕</translation>
     </message>
     <message>
         <location filename="../../src/dialog/roleassigndialog.cpp" line="58"/>
         <source>Rebel</source>
-        <translation>反贼</translation>
+        <translation>异端</translation>
     </message>
     <message>
         <location filename="../../src/dialog/roleassigndialog.cpp" line="60"/>
@@ -2731,7 +2679,7 @@
     <message>
         <location filename="../../src/dialog/roleassigndialog.cpp" line="114"/>
         <source>The first assigned role must be lord!</source>
-        <translation>1号位必须是主公!</translation>
+        <translation>1号位必须是君主!</translation>
     </message>
     <message>
         <location filename="../../src/dialog/roleassigndialog.cpp" line="131"/>
@@ -3241,7 +3189,7 @@
     <message>
         <location filename="../../src/dialog/scenario-overview.cpp" line="14"/>
         <source>Scenario overview</source>
-        <translation>剧情一览</translation>
+        <translation>模式一览</translation>
     </message>
 </context>
 <context>
@@ -3396,7 +3344,7 @@ P = 你自己, R = 你所在的房间</translation>
     <message>
         <location filename="../../src/server/server.cpp" line="223"/>
         <source>Without Lordskill</source>
-        <translation>主公无主公技</translation>
+        <translation>君主无君主技</translation>
     </message>
     <message>
         <location filename="../../src/server/server.cpp" line="227"/>
@@ -3404,13 +3352,9 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>同技能SP替换</translation>
     </message>
     <message>
-        <source>Temp Disabled</source>
-        <translation type="vanished">暂时禁用</translation>
-    </message>
-    <message>
         <location filename="../../src/server/server.cpp" line="235"/>
         <source>-1 means that all lords are available</source>
-        <translation>-1表示所有默认主公均会出现在选将列表中</translation>
+        <translation>-1表示所有默认君主均会出现在选将列表中</translation>
     </message>
     <message>
         <location filename="../../src/server/server.cpp" line="255"/>
@@ -3455,47 +3399,52 @@ P = 你自己, R = 你所在的房间</translation>
     <message>
         <location filename="../../src/server/server.cpp" line="793"/>
         <source>Role modes [Standard]</source>
-        <translation type="unfinished"></translation>
+        <translation>身份模式 [经典]</translation>
     </message>
     <message>
         <location filename="../../src/server/server.cpp" line="795"/>
         <source>Role modes [Other]</source>
-        <translation type="unfinished"></translation>
+        <translation>身份模式 [其他]</translation>
     </message>
     <message>
         <location filename="../../src/server/server.cpp" line="797"/>
         <source>Role modes [Special]</source>
-        <translation type="unfinished"></translation>
+        <translation>身份模式 [特殊]</translation>
     </message>
     <message>
         <location filename="../../src/server/server.cpp" line="800"/>
         <source>Special modes</source>
-        <translation type="unfinished"></translation>
+        <translation>特殊模式</translation>
     </message>
     <message>
         <location filename="../../src/server/server.cpp" line="802"/>
         <source>Basara modes</source>
-        <translation type="unfinished"></translation>
+        <translation>暗将模式</translation>
     </message>
     <message>
         <location filename="../../src/server/server.cpp" line="804"/>
         <source>Story modes</source>
-        <translation type="unfinished"></translation>
+        <translation>剧情模式</translation>
     </message>
     <message>
         <location filename="../../src/server/server.cpp" line="806"/>
         <source>Scenario modes</source>
-        <translation type="unfinished"></translation>
+        <translation>场景模式</translation>
     </message>
     <message>
         <location filename="../../src/server/server.cpp" line="808"/>
         <source>Custom modes</source>
-        <translation type="unfinished"></translation>
+        <translation>自定义模式</translation>
     </message>
     <message>
         <location filename="../../src/server/server.cpp" line="876"/>
         <source>Thanks for wating</source>
-        <translation type="unfinished"></translation>
+        <translation>敬请期待</translation>
+    </message>
+    <message>
+        <location filename="../../src/server/server.cpp" line="912"/>
+        <source>Custom Mini Scene</source>
+        <translation>自定义小型场景</translation>
     </message>
     <message>
         <location filename="../../src/server/server.cpp" line="953"/>
@@ -3515,11 +3464,7 @@ P = 你自己, R = 你所在的房间</translation>
     <message>
         <location filename="../../src/server/server.cpp" line="234"/>
         <source>Upperlimit for lord</source>
-        <translation>主公选择上限（主公选将）</translation>
-    </message>
-    <message>
-        <source>Upperlimit for non-lord</source>
-        <translation type="vanished">非主公选择上限（主公选将）</translation>
+        <translation>君主选择上限（君主选将）</translation>
     </message>
     <message>
         <location filename="../../src/server/server.cpp" line="293"/>
@@ -3606,10 +3551,6 @@ P = 你自己, R = 你所在的房间</translation>
         <translation>血战到底模式选项</translation>
     </message>
     <message>
-        <source>Scenario mode</source>
-        <translation type="vanished">剧情模式</translation>
-    </message>
-    <message>
         <location filename="../../src/server/server.cpp" line="43"/>
         <source>Basic</source>
         <translation>基本</translation>
@@ -3638,10 +3579,6 @@ P = 你自己, R = 你所在的房间</translation>
         <location filename="../../src/server/server.cpp" line="263"/>
         <source>Average</source>
         <translation>平均值</translation>
-    </message>
-    <message>
-        <source>Upperlimit for general</source>
-        <translation type="vanished">选将上限</translation>
     </message>
     <message>
         <location filename="../../src/server/server.cpp" line="258"/>
@@ -3714,11 +3651,6 @@ P = 你自己, R = 你所在的房间</translation>
         <location filename="../../src/server/server.cpp" line="718"/>
         <source>Classical</source>
         <translation>经典</translation>
-    </message>
-    <message>
-        <location filename="../../src/server/server.cpp" line="912"/>
-        <source>Custom Mini Scene</source>
-        <translation>自定义小型场景</translation>
     </message>
     <message>
         <location filename="../../src/server/server.cpp" line="884"/>
