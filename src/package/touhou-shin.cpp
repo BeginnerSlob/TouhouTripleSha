@@ -894,7 +894,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         ServerPlayer *target = player->tag["ThWangyuTarget"].value<ServerPlayer *>();
         player->tag.remove("ThWangyuTarget");
