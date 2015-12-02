@@ -171,7 +171,7 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
             if (p->getKingdom() == "kaze" && !p->isKongcheng()) {

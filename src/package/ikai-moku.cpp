@@ -142,7 +142,7 @@ public:
         return recast;
     }
 
-    bool isEnabledAtPlay(const Player *player) const
+    bool isEnabledAtPlay(const Player *) const
     {
         return true;
     }

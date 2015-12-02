@@ -555,7 +555,7 @@ public:
     {
     }
 
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *) const{
         int n = qMin(2, Self->getHp());
         if (selected.length() >= n)
             return false;

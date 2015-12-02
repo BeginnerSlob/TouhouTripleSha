@@ -564,7 +564,7 @@ public:
         events << DamageComplete << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const {
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const {
         DamageStruct damage = data.value<DamageStruct>();
         if (triggerEvent == EventPhaseChanging) {
             player->setMark(objectName(), 0);
@@ -578,7 +578,7 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -1688,7 +1688,7 @@ ThDujiaCard::ThDujiaCard() {
     target_fixed = true;
 }
 
-void ThDujiaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+void ThDujiaCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const{
     source->gainMark("@jianren");
     if (source->isAlive())
         source->drawCards(3, "thdujia");
