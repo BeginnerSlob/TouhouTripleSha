@@ -564,11 +564,12 @@ public:
         events << DamageComplete << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const {
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const
+    {
         DamageStruct damage = data.value<DamageStruct>();
-        if (triggerEvent == EventPhaseChanging) {
+        if (triggerEvent == EventPhaseChanging)
             player->setMark(objectName(), 0);
-        } else if (TriggerSkill::triggerable(damage.from)
+        else if (TriggerSkill::triggerable(damage.from)
             && damage.from->getPhase() == Player::Play
             && damage.from->getMark(objectName()) < 2) {
             ask_who = damage.from;
@@ -578,15 +579,18 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        if (player->askForSkillInvoke(objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
+        
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
         ask_who->addMark(objectName());
         JudgeStruct judge;
         judge.pattern = ".|heart";
