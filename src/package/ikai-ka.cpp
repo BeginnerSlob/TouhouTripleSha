@@ -3365,6 +3365,194 @@ public:
     }
 };
 
+class IkTianzuo : public TriggerSkill
+{
+public:
+    IkTianzuo() : TriggerSkill("iktianzuo")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual bool triggerable(const ServerPlayer *p) const
+    {
+        return TriggerSkill::triggerable(p) && p->getPhase() == Player::Discard;
+    }
+
+    virtual bool cost(TriggerEvent, Room *r, ServerPlayer *p, QVariant &, ServerPlayer *) const
+    {
+        if (p->askForSkillInvoke(objectName())) {
+            r->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *r, ServerPlayer *p, QVariant &, ServerPlayer *) const
+    {
+        if (r->askForChoice(p, objectName(), "draw1+draw2") == "draw1")
+            p->drawCards(1, objectName());
+        else
+            p->drawCards(2, objectName());
+        r->setPlayerFlag(p, "iktianzuo");
+        return false;
+    }
+};
+
+class IkTianzuoRecord : public TriggerSkill
+{
+public:
+    IkTianzuoRecord() : TriggerSkill("#iktianzuo-record")
+    {
+        events << CardsMoveOneTime << EventPhaseChanging;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *, ServerPlayer *p, QVariant &d, ServerPlayer* &) const
+    {
+        if (e == EventPhaseChanging)
+            p->tag.remove("IkTianzuo");
+        else if (e == CardsMoveOneTime) {
+            if (p->getPhase() == Player::Discard) {
+                CardsMoveOneTimeStruct move = d.value<CardsMoveOneTimeStruct>();
+                if (move.from == p && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip))
+                    && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *p, QVariant &d, ServerPlayer *) const
+    {
+        QVariantList list = p->tag["IkTianzuo"].toList();
+        CardsMoveOneTimeStruct move = d.value<CardsMoveOneTimeStruct>();
+        list += IntList2VariantList(move.card_ids);
+        p->tag["IkTianzuo"] = QVariant::fromValue(list);
+        return false;
+    }
+};
+
+class IkTianzuoRecover : public TriggerSkill
+{
+public:
+    IkTianzuoRecover() : TriggerSkill("#iktianzuo")
+    {
+        events << EventPhaseEnd;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *r, ServerPlayer *p, QVariant &, ServerPlayer* &) const
+    {
+        if (p && p->isAlive() && p->hasFlag("iktianzuo") && p->getPhase() == Player::Discard) {
+            QVariantList list = p->tag["IkTianzuo"].toList();
+            if (list.isEmpty())
+                return QStringList();
+            foreach (ServerPlayer *sp, r->getAlivePlayers()) {
+                if (sp->isWounded() && sp->getHp() < list.length() && p->tag["IkYewu"].value<ServerPlayer *>() != sp)
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *r, ServerPlayer *p, QVariant &, ServerPlayer *) const
+    {
+        r->sendCompulsoryTriggerLog(p, "iktianzuo");
+        foreach (ServerPlayer *sp, r->getAllPlayers()) {
+            QVariantList list = p->tag["IkTianzuo"].toList();
+            if (sp->isWounded() && sp->getHp() < list.length() && p->tag["IkYewu"].value<ServerPlayer *>() != sp)
+                r->recover(sp, RecoverStruct(p));
+        }
+        return false;
+    }
+};
+
+class IkYewu : public TriggerSkill
+{
+public:
+    IkYewu() : TriggerSkill("ikyewu")
+    {
+        events << EventPhaseStart << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *, ServerPlayer *p, QVariant &d, ServerPlayer* &) const
+    {
+        if (e == Death && !p->tag["IkYewu"].isNull()) {
+            DeathStruct death = d.value<DeathStruct>();
+            if (p->tag["IkYewu"].value<ServerPlayer *>() == death.who)
+                p->tag.remove("IkYewu");
+        } else if (e == EventPhaseStart) {
+            if (TriggerSkill::triggerable(p) && p->tag["IkYewu"].isNull() && p->getPhase() == Player::Finish) {
+                QVariantList list = p->tag["IkYewuCards"].toList();
+                if (!list.isEmpty())
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *r, ServerPlayer *p, QVariant &, ServerPlayer *) const
+    {
+        ServerPlayer *target = r->askForPlayerChosen(p, r->getOtherPlayers(p), objectName(), "@ikyewu", true, true);
+        if (target) {
+            r->broadcastSkillInvoke(objectName());
+            p->tag["IkYewuTarget"] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *p, QVariant &, ServerPlayer *) const
+    {
+        ServerPlayer *target = p->tag["IkYewuTarget"].value<ServerPlayer *>();
+        p->tag.remove("IkYewuTarget");
+        if (target) {
+            DummyCard *dummy = new DummyCard(VariantList2IntList(p->tag["IkYewuCards"].toList()));
+            target->obtainCard(dummy);
+            p->tag["IkYewu"] = QVariant::fromValue(target);
+            delete target;
+        }
+        return false;
+    }
+};
+
+class IkYewuRecord : public TriggerSkill
+{
+public:
+    IkYewuRecord() : TriggerSkill("#ikyewu")
+    {
+        events << CardsMoveOneTime << EventPhaseChanging;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *, ServerPlayer *p, QVariant &d, ServerPlayer* &) const
+    {
+        if (e == EventPhaseChanging) {
+            if (d.value<PhaseChangeStruct>().to == Player::NotActive)
+                p->tag.remove("IkYewuCards");
+        } else if (e == CardsMoveOneTime) {
+            if (p->getPhase() == Player::Discard) {
+                CardsMoveOneTimeStruct move = d.value<CardsMoveOneTimeStruct>();
+                if (move.from == p && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip))
+                    && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *p, QVariant &d, ServerPlayer *) const
+    {
+        QVariantList list = p->tag["IkYewuCards"].toList();
+        CardsMoveOneTimeStruct move = d.value<CardsMoveOneTimeStruct>();
+        list += IntList2VariantList(move.card_ids);
+        p->tag["IkYewuCards"] = QVariant::fromValue(list);
+        return false;
+    }
+};
+
 class IkLingcu: public TriggerSkill {
 public:
     IkLingcu(): TriggerSkill("iklingcu") {
@@ -5303,6 +5491,16 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *snow054 = new General(this, "snow054", "yuki", 4);
     snow054->addSkill(new IkLihun);
+
+    General *snow057 = new General(this, "snow057", "yuki", 3);
+    snow057->addSkill(new IkTianzuo);
+    snow057->addSkill(new IkTianzuoRecord);
+    snow057->addSkill(new IkTianzuoRecover);
+    related_skills.insertMulti("iktianzuo", "#iktianzuo-record");
+    related_skills.insertMulti("iktianzuo", "#iktianzuo");
+    snow057->addSkill(new IkYewu);
+    snow057->addSkill(new IkYewuRecord);
+    related_skills.insertMulti("ikyewu", "#ikyewu");
 
     General *luna030 = new General(this, "luna030", "tsuki");
     luna030->addSkill(new IkLingcu);

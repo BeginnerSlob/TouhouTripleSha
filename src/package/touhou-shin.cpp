@@ -983,7 +983,7 @@ public:
         events << HpLost << HpRecover;
     }
 
-    virtual QStringList triggerable(TriggerEvent e, Room *r, ServerPlayer *p, QVariant &, ServerPlayer* &) const
+    virtual QStringList triggerable(TriggerEvent e, Room *, ServerPlayer *p, QVariant &, ServerPlayer* &) const
     {
         if (TriggerSkill::triggerable(p)) {
             if (e == HpLost)
