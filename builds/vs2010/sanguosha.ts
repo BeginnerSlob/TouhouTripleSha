@@ -2318,7 +2318,7 @@
 <context>
     <name>Player</name>
     <message>
-        <location filename="../../src/core/player.cpp" line="1024"/>
+        <location filename="../../src/core/player.cpp" line="1022"/>
         <source>No skills</source>
         <translation>无技能</translation>
     </message>
@@ -3234,7 +3234,7 @@ P = 你自己, R = 你所在的房间</translation>
 <context>
     <name>SelectSuitDialog</name>
     <message>
-        <location filename="../../src/package/ikai-ka.cpp" line="331"/>
+        <location filename="../../src/package/ikai-ka.cpp" line="359"/>
         <source>Please choose a suit</source>
         <translation>请选择一种花色</translation>
     </message>
