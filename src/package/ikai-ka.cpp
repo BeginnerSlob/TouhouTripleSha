@@ -839,6 +839,53 @@ public:
     }
 };
 
+class IkYinchou : public TriggerSkill
+{
+public:
+    IkYinchou() : TriggerSkill("ikyinchou")
+    {
+        events << CardFinished;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *p, QVariant &d, ServerPlayer* &) const
+    {
+        if (TriggerSkill::triggerable(p) && !p->isKongcheng()) {
+            CardUseStruct use = d.value<CardUseStruct>();
+            if (use.card && use.card->getTypeId() == Card::TypeBasic) {
+                QStringList names;
+                foreach (const Card *c, p->getHandcards()) {
+                    QString name = c->objectName();
+                    if (name.contains("slash"))
+                        name = "slash";
+                    if (!names.contains(name))
+                        names << name;
+                    else
+                        return QStringList();
+                }
+                return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *r, ServerPlayer *p, QVariant &, ServerPlayer *) const
+    {
+        if (p->askForSkillInvoke(objectName())) {
+            r->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *r, ServerPlayer *p, QVariant &, ServerPlayer *) const
+    {
+        if (!p->isKongcheng())
+            r->showAllCards(p);
+        p->drawCards(1, objectName());
+        return false;
+    }
+};
+
 class IkFengxing: public TriggerSkill {
 public:
     IkFengxing(): TriggerSkill("ikfengxing") {
@@ -5148,6 +5195,9 @@ IkaiKaPackage::IkaiKaPackage()
     General *wind051 = new General(this, "wind051", "kaze");
     wind051->addSkill(new IkElu);
     wind051->addRelateSkill("iktanyan");
+
+    General *wind057 = new General(this, "wind057", "kaze");
+    wind057->addSkill(new IkYinchou);
 
     General *bloom032 = new General(this, "bloom032", "hana");
     bloom032->addSkill(new IkFengxing);
