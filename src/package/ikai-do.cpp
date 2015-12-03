@@ -2730,81 +2730,21 @@ public:
     }
 };
 
-class IkBenyin: public TriggerSkill {
+class IkBenyin : public OneCardViewAsSkill
+{
 public:
-    IkBenyin(): TriggerSkill("ikbenyin") {
-        events << Damage;
+    IkBenyin() : OneCardViewAsSkill("ikbenyin")
+    {
+        filter_pattern = "BasicCard|red";
+        response_or_use = true;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(player)) return QStringList();
-        DamageStruct damage = data.value<DamageStruct>();
-        if (damage.to->isAlive() && damage.card && damage.card->isKindOf("Slash") && damage.card->isBlack()
-            && (player->canDiscard(damage.to, "e") || damage.to->getEquip(2) || damage.to->getEquip(3)))
-            return QStringList(objectName());
-        return QStringList();
-    }
-
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        DamageStruct damage = data.value<DamageStruct>();
-        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(damage.to))) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        DamageStruct damage = data.value<DamageStruct>();
-        QList<int> disabled_ids;
-        for (int i = 0; i < 5; i++) {
-            if (i == 2 || i == 3) continue;
-            const Card *card = damage.to->getEquip(i);
-            int id = -1;
-            if (card)
-                id = card->getEffectiveId();
-            if (id != -1 && !player->canDiscard(damage.to, id))
-                disabled_ids << id;
-        }
-        int card_id = room->askForCardChosen(player, damage.to, "e", objectName(), false, Card::MethodNone, disabled_ids);
-        if ((damage.to->getEquip(2) && card_id == damage.to->getEquip(2)->getEffectiveId())
-            || (damage.to->getEquip(3) && card_id == damage.to->getEquip(3)->getEffectiveId()))
-            room->obtainCard(player, card_id);
-        else
-            room->throwCard(card_id, damage.to, player);
-        return false;
-    }
-};
-
-class IkGuizhi: public TriggerSkill {
-public:
-    IkGuizhi(): TriggerSkill("ikguizhi") {
-        events << Dying;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(player)) return QStringList();
-        DyingStruct dying = data.value<DyingStruct>();
-        if (dying.who == player || dying.who->isDead() || dying.who->getHp() > 0)
-            return QStringList();
-        if (player->getHp() > 1)
-            return QStringList(objectName());
-        return QStringList();
-    }
-
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        if (room->askForCard(player, "..", "@ikguizhi", data, objectName())) {
-            room->loseHp(player);
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        ServerPlayer *target = data.value<DyingStruct>().who;
-        room->recover(target, RecoverStruct(player));
-        return true;
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        PurpleSong *ps = new PurpleSong(originalCard->getSuit(), originalCard->getNumber());
+        ps->addSubcard(originalCard);
+        ps->setSkillName(objectName());
+        return ps;
     }
 };
 
@@ -3095,7 +3035,6 @@ IkaiDoPackage::IkaiDoPackage()
     luna018->addSkill(new IkZhujiEffect);
     related_skills.insertMulti("ikzhuji", "#ikzhuji-effect");
     luna018->addSkill(new IkBenyin);
-    luna018->addSkill(new IkGuizhi);
 
     General *luna034 = new General(this, "luna034", "tsuki");
     luna034->addSkill(new IkGuijiao);
