@@ -1021,7 +1021,7 @@ public:
             CardMoveReason reason(CardMoveReason::S_REASON_DRAW, p->objectName(), objectName(), QString());
             CardsMoveStruct move(cards, p, Player::PlaceHand, reason);
             r->moveCardsAtomic(move, false);
-            if (p->askForSkillInvoke(objectName(), "show")) {
+            if (p->askForSkillInvoke("thhuikuang_sa", "show")) {
                 r->showCard(p, cards.first());
                 r->showCard(p, cards.last());
                 const Card *card1 = Sanguosha->getCard(cards.first());
@@ -1053,7 +1053,7 @@ public:
                 if (card1->sameColorWith(card2)) {
                     SavageAssault *sa = new SavageAssault(Card::NoSuit, 0);
                     sa->setSkillName("_thhuikuang");
-                    if (sa->isAvailable(p) && !p->isCardLimited(sa, Card::MethodUse) && p->askForSkillInvoke(objectName(), "use"))
+                    if (sa->isAvailable(p) && !p->isCardLimited(sa, Card::MethodUse) && p->askForSkillInvoke("thhuikuang_sa", "use"))
                         r->useCard(CardUseStruct(sa, p, QList<ServerPlayer *>()));
                     else
                         delete sa;
