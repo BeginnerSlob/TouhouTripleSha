@@ -36,7 +36,7 @@ return {
 	["#thjihui-fengyu"] = "极辉（风雨）",
 	["#thjihui-huangsha"] = "极辉（黄砂）",
 	["thjihuiv"]="极辉（昙天）",
-	[":thjihuiv"]="你可将红桃花色的【闪】当【桃】使用。",
+	[":thjihuiv"]="你可将方块花色的【闪】当【桃】使用。",
 	["#thjihui-nongwu"] = "极辉（浓雾）",
 	
 	["#kami003"]="混沌的巫女",
