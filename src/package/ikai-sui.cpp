@@ -2096,9 +2096,9 @@ public:
     }
 };
 
-class IkTianzuo: public TriggerSkill {
+class IkTianzuoyounai: public TriggerSkill {
 public:
-    IkTianzuo(): TriggerSkill("iktianzuo") {
+    IkTianzuoyounai(): TriggerSkill("iktianzuoyounai") {
         events << Death;
         frequency = Compulsory;
     }
@@ -6324,7 +6324,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     related_skills.insert("ikshenyu", "#ikshenyu");
 
     General *bloom040 = new General(this, "bloom040", "hana");
-    bloom040->addSkill(new IkTianzuo);
+    bloom040->addSkill(new IkTianzuoyounai);
     bloom040->addSkill(new IkShenji);
     bloom040->addSkill(new IkKuanglu);
     bloom040->addSkill(new IkKuangluRecord);
