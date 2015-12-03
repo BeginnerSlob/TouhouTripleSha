@@ -1126,7 +1126,7 @@ void ThSixiangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
         target = targets.first();
 
     if (suit == Card::Spade)
-        room->recover(source, RecoverStruct(source, this));
+        room->recover(target, RecoverStruct(source, this));
     else if (suit == Card::Diamond) {
         QList<CardsMoveStruct> moves;
         foreach (ServerPlayer *p, targets) {
