@@ -950,6 +950,141 @@ public:
     }
 };
 
+class ThSunwu : public TriggerSkill
+{
+public:
+    ThSunwu() : TriggerSkill("thsunwu")
+    {
+        events << CardsMoveOneTime;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *r, ServerPlayer *p, QVariant &d, ServerPlayer* &) const
+    {
+        if (TriggerSkill::triggerable(p) && p->getPile("thsunwupile").isEmpty()) {
+            CardsMoveOneTimeStruct move = d.value<CardsMoveOneTimeStruct>();
+            if (move.to_place == Player::DiscardPile) {
+                foreach (int id, move.card_ids) {
+                    const Card *c = Sanguosha->getCard(id);
+                    if (c->isKindOf("Weapon") || c->isKindOf("Armor"))
+                        return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *r, ServerPlayer *p, QVariant &, ServerPlayer *) const
+    {
+        if (p->askForSkillInvoke(objectName())) {
+            r->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *r, ServerPlayer *p, QVariant &d, ServerPlayer *) const
+    {
+        CardsMoveOneTimeStruct move = d.value<CardsMoveOneTimeStruct>();
+        QList<int> equips, not_equips;
+        foreach (int id, move.card_ids) {
+            const Card *c = Sanguosha->getCard(id);
+            if (c->isKindOf("Weapon") || c->isKindOf("Armor"))
+                equips << id;
+            else
+                not_equips << id;
+        }
+        if (!equips.isEmpty()) {
+            if (equips.length() == 1) {
+                p->addToPile("thsunwupile", equips);
+                move.removeCardIds(equips);
+                d = QVariant::fromValue(move);
+            } else {
+                r->fillAG(move.card_ids, NULL, not_equips);
+                int id = r->askForAG(p, equips, false, objectName());
+                r->clearAG();
+                p->addToPile("thsunwupile", id);
+                equips.clear();
+                equips << id;
+                move.removeCardIds(equips);
+                d = QVariant::fromValue(move);
+            }
+        }
+        return false;
+    }
+};
+
+ThLiaoganCard::ThLiaoganCard()
+{
+}
+
+bool ThLiaoganCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const
+{
+    return targets.isEmpty();
+}
+
+void ThLiaoganCard::onEffect(const CardEffectStruct &effect) const
+{
+    DummyCard *dummy = new DummyCard(effect.from->getPile("thsunwupile"));
+    effect.to->obtainCard(dummy);
+    delete dummy;
+    effect.from->addMark("thliaogan_" + effect.to->objectName());
+    QStringList list;
+    if (!effect.to->hasSkill("thxiagong"))
+        list << "thxiagong";
+    if (!effect.to->hasSkill("ikjingnie"))
+        list << "ikjingnie";
+    if (!list.isEmpty())
+        effect.to->getRoom()->handleAcquireDetachSkills(effect.to, list);
+}
+
+class ThLiaoganVS : public ZeroCardViewAsSkill
+{
+public:
+    ThLiaoganVS() : ZeroCardViewAsSkill("thliaogan")
+    {
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new ThLiaoganCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->getPile("thsunwupile").isEmpty();
+    }
+};
+
+class ThLiaogan : public TriggerSkill
+{
+public:
+    ThLiaogan() : TriggerSkill("thliaogan")
+    {
+        events << EventPhaseStart << Death;
+        view_as_skill = new ThLiaoganVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (triggerEvent == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player)
+                return QStringList();
+        }
+        if ((triggerEvent == EventPhaseStart && player->getPhase() == Player::RoundStart) || triggerEvent == Death) {
+            QList<ServerPlayer *> players = room->getAllPlayers();
+            foreach (ServerPlayer *p, players) {
+                if (player->getMark("thliaogan_" + p->objectName())) {
+                    player->setMark("thliaogan_" + p->objectName(), 0);
+                    room->handleAcquireDetachSkills(p, "-thxiagong|-ikjingnie", true);
+                }
+            }
+        }
+
+        return QStringList();
+    }
+};
+
 class ThYuancui : public PhaseChangeSkill
 {
 public:
@@ -1114,12 +1249,17 @@ TouhouShinPackage::TouhouShinPackage()
     shin010->addSkill(new ThWangyu);
     shin010->addSkill(new ThGuangshi);
 
+    General *shin011 = new General(this, "shin011", "hana", 4, false);
+    shin011->addSkill(new ThSunwu);
+    shin011->addSkill(new ThLiaogan);
+
     General *shin016 = new General(this, "shin016", "tsuki", 4, false);
     shin016->addSkill(new ThYuancui);
     shin016->addSkill(new ThHuikuang);
 
     addMetaObject<ThLuanshenCard>();
     addMetaObject<ThLianyingCard>();
+    addMetaObject<ThLiaoganCard>();
 
     skills << new ThBaochuiRecord;
 }
