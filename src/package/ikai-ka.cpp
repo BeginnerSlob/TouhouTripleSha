@@ -3511,7 +3511,7 @@ public:
             DummyCard *dummy = new DummyCard(VariantList2IntList(p->tag["IkYewuCards"].toList()));
             target->obtainCard(dummy);
             p->tag["IkYewu"] = QVariant::fromValue(target);
-            delete target;
+            delete dummy;
         }
         return false;
     }
