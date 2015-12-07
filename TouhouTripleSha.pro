@@ -98,7 +98,7 @@ SOURCES += \
     src/package/touhou-hana.cpp \
     src/package/touhou-kami.cpp \
     src/package/touhou-kaze.cpp \
-    src/package/touhou-kishin.cpp \
+    src/package/touhou-shin.cpp \
     src/package/touhou-sp.cpp \
     src/package/touhou-tsuki.cpp \
     src/package/touhou-yuki.cpp \
@@ -210,7 +210,7 @@ HEADERS += \
     src/package/touhou-hana.h \
     src/package/touhou-kami.h \
     src/package/touhou-kaze.h \
-    src/package/touhou-kishin.h \
+    src/package/touhou-shin.h \
     src/package/touhou-sp.h \
     src/package/touhou-tsuki.h \
     src/package/touhou-yuki.h \
@@ -512,10 +512,10 @@ CONFIG(opengl){
     DEFINES += USING_OPENGL
 }
 
-TRANSLATIONS += builds/vs2010_Qt5/sanguosha.ts
+TRANSLATIONS += builds/vs2013/sanguosha.ts
 
 !build_pass{
-    system("lrelease $$_PRO_FILE_PWD_/builds/vs2010_Qt5/sanguosha.ts -qm $$_PRO_FILE_PWD_/sanguosha.qm")
+    system("lrelease $$_PRO_FILE_PWD_/builds/vs2013/sanguosha.ts -qm $$_PRO_FILE_PWD_/sanguosha.qm")
 
     SWIG_bin = "swig"
     contains(QMAKE_HOST.os, "Windows"): SWIG_bin = "$$_PRO_FILE_PWD_/tools/swig/swig.exe"
@@ -525,7 +525,7 @@ TRANSLATIONS += builds/vs2010_Qt5/sanguosha.ts
 
 OTHER_FILES += \
     sanguosha.qss \
-    builds/vs2010_Qt5/sanguosha.ts
+    builds/vs2013/sanguosha.ts
 
 CONFIG(debug, debug|release): LIBS += -lfreetype_D
 else:LIBS += -lfreetype
