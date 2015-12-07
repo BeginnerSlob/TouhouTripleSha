@@ -100,7 +100,7 @@ return {
 	["#hana008"]="独臂有角的仙人",
 	["hana008"]="茨木华扇",--花 - 空 - 3血
 	["designer:hana008"]="桃花僧",
-	["illustrator:hana008"]="えふぇ",
+	["illustrator:hana008"]="DomotoLain",
 	["cv:hana008"]="暂无",
 	["thquanshan"]="劝善",
 	[":thquanshan"]="出牌阶段限一次，你可以令一名有手牌的其他角色将至少一张手牌交给另一名除你以外的角色，若这些牌均为同一类别，你摸一张牌。",
