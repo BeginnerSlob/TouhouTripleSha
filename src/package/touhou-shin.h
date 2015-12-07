@@ -29,6 +29,14 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class ThMumiCard: public SkillCard{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThMumiCard();
+    virtual const Card *validateInResponse(ServerPlayer *user) const;
+};
+
 class ThLiaoganCard : public SkillCard
 {
     Q_OBJECT

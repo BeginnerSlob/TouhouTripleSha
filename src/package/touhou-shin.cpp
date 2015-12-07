@@ -833,6 +833,153 @@ public:
     }
 };
 
+class ThWuyi : public TriggerSkill
+{
+public:
+    ThWuyi() : TriggerSkill("thwuyi")
+    {
+        events << EventPhaseStart << CardsMoveOneTime << EventPhaseChanging << TargetSpecified;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *r, ServerPlayer *p, QVariant &d, ServerPlayer *&) const
+    {
+        if (e == EventPhaseChanging) {
+            if (d.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *sp, r->getAlivePlayers()) {
+                    r->setPlayerFlag(sp, "-ThWuyiBasic");
+                    r->setPlayerFlag(sp, "-ThWuyiTrick");
+                    r->setPlayerFlag(sp, "-ThWuyiEquip");
+                }
+            }
+        } else if (e == CardsMoveOneTime) {
+            CardsMoveOneTimeStruct move = d.value<CardsMoveOneTimeStruct>();
+            if (move.from && move.from->isAlive() && move.from == p
+                    && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
+                for (int i = 0; i < move.card_ids.length(); ++i) {
+                    if (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip) {
+                        const Card *c = Sanguosha->getCard(move.card_ids[i]);
+                        if (c->getTypeId() == Card::TypeBasic)
+                            r->setPlayerFlag(p, "ThWuyiBasic");
+                        else if (c->getTypeId() == Card::TypeEquip)
+                            r->setPlayerFlag(p, "ThWuyiEquip");
+                        else if (c->getTypeId() == Card::TypeTrick)
+                            r->setPlayerFlag(p, "ThWuyiTrick");
+                    }
+                }
+            }
+        } else if (e == TargetSpecified) {
+            CardUseStruct use = d.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash") && use.card->getSkillName() == objectName()
+                    && p->hasFlag("ThWuyiEquip"))
+                return QStringList(objectName());
+        } else if (e == EventPhaseStart) {
+            if (TriggerSkill::triggerable(p) && p->hasFlag("ThWuyiBasic")) {
+                foreach (ServerPlayer *sp, r->getAlivePlayers()) {
+                    if (p->canSlash(sp, false))
+                        return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (triggerEvent == TargetSpecified)
+            return true;
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            if (player->canSlash(p, false))
+                targets << p;
+        }
+        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thwuyi", true);
+        if (target) {
+            player->tag["ThWuyiTarget"] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (triggerEvent == TargetSpecified) {
+            room->sendCompulsoryTriggerLog(player, objectName());
+            room->broadcastSkillInvoke(objectName());
+            CardUseStruct use = data.value<CardUseStruct>();
+            foreach (ServerPlayer *p, use.to.toSet())
+                p->addQinggangTag(use.card);
+        }
+        ServerPlayer *target = player->tag["ThWuyiTarget"].value<ServerPlayer *>();
+        player->tag.remove("ThWuyiTarget");
+        if (target) {
+            Slash *slash = new Slash(Card::NoSuit, 0);
+            slash->setSkillName(objectName());
+            room->useCard(CardUseStruct(slash, player, target));
+        }
+        return false;
+    }
+};
+
+class ThWuyiTargetMod : public TargetModSkill
+{
+public:
+    ThWuyiTargetMod() : TargetModSkill("#thwuyi-tar")
+    {
+    }
+
+    virtual int getExtraTargetNum(const Player *from, const Card *card) const
+    {
+        if (from->hasFlag("ThWuyiTrick") && card->getSkillName() == "thwuyi")
+            return 1;
+        return 0;
+    }
+};
+
+ThMumiCard::ThMumiCard()
+{
+    will_throw = true;
+    target_fixed = true;
+}
+
+const Card *ThMumiCard::validateInResponse(ServerPlayer *user) const
+{
+    user->getRoom()->throwCard(this, user);
+    Jink *jink = new Jink(Card::NoSuit, 0);
+    jink->setSkillName("thmumi");
+    return jink;
+}
+
+class ThMumi : public ViewAsSkill
+{
+public:
+    ThMumi() : ViewAsSkill("thmumi")
+    {
+        response_pattern = "jink";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
+    {
+        return selected.length() < 2 && !Self->isJilei(to_select);
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        if (cards.length() != 2)
+            return NULL;
+        Jink *jink = new Jink(Card::NoSuit, 0);
+        jink->setSkillName(objectName());
+        jink->deleteLater();
+        Card::HandlingMethod method = Card::MethodUse;
+        if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY)
+            method = Card::MethodResponse;
+        if (Self->isCardLimited(jink, method))
+            return NULL;
+        ThMumiCard *card = new ThMumiCard;
+        card->addSubcards(cards);
+        return card;
+    }
+};
+
 class ThWangyu : public TriggerSkill
 {
 public:
@@ -958,7 +1105,7 @@ public:
         events << CardsMoveOneTime;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *r, ServerPlayer *p, QVariant &d, ServerPlayer* &) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *p, QVariant &d, ServerPlayer* &) const
     {
         if (TriggerSkill::triggerable(p) && p->getPile("thsunwupile").isEmpty()) {
             CardsMoveOneTimeStruct move = d.value<CardsMoveOneTimeStruct>();
@@ -1245,6 +1392,14 @@ TouhouShinPackage::TouhouShinPackage()
     shin008->addSkill(new ThLianying);
     shin008->addSkill(new ThYuanxiao);
 
+    General *shin009 = new General(this, "shin009", "kaze", 3, false);
+    shin009->addSkill(new ThWuyi);
+    shin009->addSkill(new ThWuyiTargetMod);
+    shin009->addSkill(new SlashNoDistanceLimitSkill("thwuyi"));
+    related_skills.insertMulti("thwuyi", "#thwuyi-tar");
+    related_skills.insertMulti("thwuyi", "#thwuyi-slash-ndl");
+    shin009->addSkill(new ThMumi);
+
     General *shin010 = new General(this, "shin010", "hana", 3);
     shin010->addSkill(new ThWangyu);
     shin010->addSkill(new ThGuangshi);
@@ -1259,6 +1414,7 @@ TouhouShinPackage::TouhouShinPackage()
 
     addMetaObject<ThLuanshenCard>();
     addMetaObject<ThLianyingCard>();
+    addMetaObject<ThMumiCard>();
     addMetaObject<ThLiaoganCard>();
 
     skills << new ThBaochuiRecord;
