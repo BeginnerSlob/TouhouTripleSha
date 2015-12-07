@@ -49,13 +49,13 @@ int main(int argc, char *argv[]) {
     }
 
 #ifdef USE_BREAKPAD
-    showSplashMessage(QSplashScreen::tr("Loading BreakPad..."));
+    //showSplashMessage(QSplashScreen::tr("Loading BreakPad..."));
     ExceptionHandler eh(L"./dmp", NULL, callback, NULL, ExceptionHandler::HANDLER_ALL);
 #endif
 
 #ifdef Q_OS_MAC
 #ifdef QT_NO_DEBUG
-    showSplashMessage(QSplashScreen::tr("Setting game path..."));
+    //showSplashMessage(QSplashScreen::tr("Setting game path..."));
     QDir::setCurrent(qApp->applicationDirPath());
 #endif
 #endif
