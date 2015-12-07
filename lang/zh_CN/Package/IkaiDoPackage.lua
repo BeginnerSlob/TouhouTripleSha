@@ -38,7 +38,7 @@ return {
 	["#wind004"] = "病弱的先知",
 	["wind004"] = "园城寺怜",--风 - 空 - 3血
 	["designer:wind004"] = "游卡桌游",
-	["illustrator:wind004"]="フカヒレ",
+	["illustrator:wind004"]="逸見",
 	["ikyuxi"] = "预悉",
 	[":ikyuxi"] = "准备阶段开始时，你可以观看牌堆顶的X张牌（X为存活角色的数量，且至多为5），将其中任意数量的牌以任意顺序置于牌堆顶，其余以任意顺序置于牌堆底。",
 	["ikjingyou"] = "静幽",
@@ -156,7 +156,7 @@ return {
 	["#bloom042"] = "链心的娇叶",
 	["bloom042"] = "稻叶姬子",--花 - 空 - 3血
 	["designer:bloom042"] = "游卡桌游",
-	["illustrator:bloom042"]="nyanya",
+	["illustrator:bloom042"]="一葉モカ",
 	["ikxunxun"] = "恂恂",
 	[":ikxunxun"] = "摸牌阶段开始时，你可以放弃摸牌，改为观看牌堆顶的四张牌并获得其中的两张牌，然后将其余的牌以任意顺序置于牌堆底。",
 	["ikwangxi"] = "忘隙",

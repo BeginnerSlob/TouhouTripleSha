@@ -111,7 +111,7 @@ return {
 	["#bangai010"] = "禁书的评者",
 	["bangai010"] = "本居小铃",--花 - 幻 - 3血
 	["designer:bangai010"] = "xyzbilliu",
-	["illustrator:bangai010"] = "湧々ごろり",
+	["illustrator:bangai010"] = "藤原",
 	["cv:bangai010"] = "暂无",
 	["thguijuan"] = "诡卷",
 	[":thguijuan"] = "出牌阶段，你可以摸一张牌，然后展示之并选择一项：使用此牌，或失去1点体力。若你以此法使用了一张【杀】或装备牌，你不可以发动“诡卷”，直到回合结束。",
