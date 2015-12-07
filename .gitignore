@@ -37,3 +37,5 @@ ai.html
 /Qt*.dll
 /psd
 fmod.log
+/imageformats
+/platforms
