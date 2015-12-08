@@ -572,9 +572,9 @@ return {
 	["luna050"] = "雷&电",--月 - 空 - 4血
 	["designer:luna050"] = "游卡桌游",
 	["illustrator:luna050"]="60枚",
-	["ikleimai"] = "雷脉",
-	[":ikleimai"] = "每当一名角色对人物牌竖置的角色造成雷电伤害时，你可以令伤害来源进行一次判定，若为黑色，令此伤害+1；若为红色，伤害来源获得此判定牌。",
-	["#IkLeimai"]="%from 发动了“<font color=\"yellow\"><b>雷脉</b></font>”，%to 造成的伤害由 %arg 上升到了 %arg2",
+	["iktingmai"] = "霆脉",
+	[":iktingmai"] = "每当一名角色对人物牌竖置的角色造成雷电伤害时，你可以令伤害来源进行一次判定，若为黑色，令此伤害+1；若为红色，伤害来源获得此判定牌。",
+	["#Iktingmai"]="%from 发动了“<font color=\"yellow\"><b>霆脉</b></font>”，%to 造成的伤害由 %arg 上升到了 %arg2",
 	["ikhuangzhen"] = "荒震",
 	[":ikhuangzhen"] = "你可以将【杀】当具雷电伤害的【杀】使用。",
 
