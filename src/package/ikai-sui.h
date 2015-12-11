@@ -109,16 +109,6 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkWujietiyaCard: public SkillCard {
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE IkWujietiyaCard();
-
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual void onEffect(const CardEffectStruct &effect) const;
-};
-
 class IkYuzhiCard : public SkillCard
 {
     Q_OBJECT
