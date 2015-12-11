@@ -1232,6 +1232,118 @@ public:
     }
 };
 
+ThMuyuCard::ThMuyuCard() {
+}
+
+bool ThMuyuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && !to_select->isNude() && to_select != Self;
+}
+
+void ThMuyuCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    bool can_discard = effect.to->canDiscard(effect.to, "he");
+    QString pattern = "..";
+    if (!can_discard)
+        pattern += "!";
+    const Card *card = room->askForCard(effect.to, pattern, "@thmuyu-put:" + effect.from->objectName(), QVariant(), MethodNone);
+    if (!card && !can_discard) {
+        QList<const Card *> cards = effect.to->getCards("he");
+        card = cards.at(qrand() % cards.length());
+    }
+    if (card)
+        effect.from->addToPile("thmuyupile", card);
+    else if (can_discard)
+        room->askForDiscard(effect.to, "thmuyu", 2, 2, false, true);
+}
+
+class ThMuyuViewAsSkill: public OneCardViewAsSkill {
+public:
+    ThMuyuViewAsSkill(): OneCardViewAsSkill("thmuyu") {
+        response_or_use = true;
+    }
+
+    virtual bool viewFilter(const Card *card) const{
+        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) {
+            if (Self->isJilei(card))
+                return false;
+            if (Self->getPile("wooden_ox").contains(card->getEffectiveId()))
+                return false;
+            if (Self->getPile("iklingxun").contains(card->getEffectiveId()))
+                return false;
+            if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play) {
+                foreach (const Player *p, Self->getAliveSiblings()) {
+                    if (p->getPile("thbaochuipile").contains(card->getEffectiveId()))
+                        return false;
+                }
+            }
+            return true;
+        }
+        QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+        if (pattern == "jink")
+            return card->isRed();
+        else if (pattern == "nullification")
+            return card->isBlack();
+        return false;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->canDiscard(player, "he") && !player->hasUsed("ThmuyuCard");
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+        if (player->getPile("thmuyupile").isEmpty())
+            return false;
+        return  pattern == "jink" || pattern == "nullification";
+    }
+
+    virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
+        return !player->getPile("thmuyupile").isEmpty();
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) {
+            ThMuyuCard *first = new ThMuyuCard;
+            first->addSubcard(originalCard);
+            return first;
+        }
+        if (originalCard->isRed()) {
+            Jink *jink = new Jink(originalCard->getSuit(), originalCard->getNumber());
+            jink->addSubcard(originalCard);
+            jink->setSkillName(objectName());
+            return jink;
+        }
+        if (originalCard->isBlack()) {
+            Nullification *nullification = new Nullification(originalCard->getSuit(), originalCard->getNumber());
+            nullification->addSubcard(originalCard);
+            nullification->setSkillName(objectName());
+            return nullification;
+        }
+        return NULL;
+    }
+};
+
+class ThMuyu: public PhaseChangeSkill {
+public:
+    ThMuyu(): PhaseChangeSkill("thmuyu") {
+        view_as_skill = new ThMuyuViewAsSkill;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const{
+        return PhaseChangeSkill::triggerable(target)
+            && target->getPhase() == Player::Start
+            && !target->getPile("thmuyupile").isEmpty();
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        room->sendCompulsoryTriggerLog(player, objectName());
+        DummyCard *dummy = new DummyCard(player->getPile("thmuyupile"));
+        player->obtainCard(dummy);
+        delete dummy;
+        return false;
+    }
+};
+
 class ThYuancui : public PhaseChangeSkill
 {
 public:
@@ -1404,9 +1516,12 @@ TouhouShinPackage::TouhouShinPackage()
     shin010->addSkill(new ThWangyu);
     shin010->addSkill(new ThGuangshi);
 
-    General *shin011 = new General(this, "shin011", "hana", 4, false);
+    General *shin011 = new General(this, "shin011", "yuki", 4, false);
     shin011->addSkill(new ThSunwu);
     shin011->addSkill(new ThLiaogan);
+
+    General *shin014 = new General(this, "shin011", "hana");
+    shin014->addSkill(new ThMuyu);
 
     General *shin016 = new General(this, "shin016", "tsuki", 4, false);
     shin016->addSkill(new ThYuancui);
@@ -1416,6 +1531,7 @@ TouhouShinPackage::TouhouShinPackage()
     addMetaObject<ThLianyingCard>();
     addMetaObject<ThMumiCard>();
     addMetaObject<ThLiaoganCard>();
+    addMetaObject<ThMuyuCard>();
 
     skills << new ThBaochuiRecord;
 }
