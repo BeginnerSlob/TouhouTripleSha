@@ -1306,6 +1306,23 @@ void Dismantlement::onEffect(const CardEffectStruct &effect) const{
         room->damage(DamageStruct("thdunjia", effect.from, effect.to));
     }
     // -------------------------
+    // for ThJianyue -----------
+    if (getSkillName() == "thjianyue") {
+        QStringList choices;
+        if (effect.to->isAlive() && room->getCardPlace(card_id) == Player::DiscardPile)
+            choices << "obtain";
+        choices << "skip";
+        QString choice = room->askForChoice(effect.from, "thjianyue", choices.join("+"));
+        if (choice == "obtain") {
+            room->obtainCard(effect.to, card_id);
+            QVariantList list = effect.to->tag["ThJianyue"].toList();
+            list << card_id;
+            effect.to->tag["ThJianyue"] = QVariant::fromValue(list);
+            room->setPlayerCardLimitation(effect.to, "use,response", QString::number(card_id), false);
+        } else
+            room->setPlayerFlag(effect.from, "ThJianyueSkip");
+    }
+    // -------------------------
 }
 
 Indulgence::Indulgence(Suit suit, int number)

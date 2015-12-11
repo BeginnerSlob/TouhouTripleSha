@@ -1238,6 +1238,71 @@ public:
     }
 };
 
+class ThJianyueVS : public ZeroCardViewAsSkill
+{
+public:
+    ThJianyueVS() : ZeroCardViewAsSkill("thjianyue")
+    {
+        response_pattern = "@@thjianyue";
+    }
+
+    virtual const Card *viewAs() const
+    {
+        Dismantlement *d = new Dismantlement(Card::NoSuit, 0);
+        d->setSkillName(objectName());
+        return d;
+    }
+};
+
+class ThJianyue : public TriggerSkill
+{
+public:
+    ThJianyue() : TriggerSkill("thjianyue")
+    {
+        events << EventPhaseStart << EventPhaseChanging;
+        // Dismantlement::onEffect
+        view_as_skill = new ThJianyueVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *r, ServerPlayer *p, QVariant &d, ServerPlayer *&) const
+    {
+        if (e == EventPhaseChanging) {
+            if (d.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *sp, r->getAlivePlayers()) {
+                    QVariantList list = sp->tag["ThJianyue"].toList();
+                    if (!list.isEmpty()) {
+                        foreach (QVariant data, list) {
+                            bool ok = false;
+                            int id = data.toInt(&ok);
+                            if (ok)
+                                r->removePlayerCardLimitation(sp, "use,response", QString("%1$0").arg(id));
+                        }
+                        sp->tag.remove("ThJianyue");
+                    }
+                }
+            }
+        } else {
+            if (TriggerSkill::triggerable(p) && (p->getPhase() == Player::Draw || p->getPhase() == Player::Play))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        return room->askForUseCard(player, "@@thjianyue", "@thjianyue");
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->hasFlag("ThJianyueSkip")) {
+            room->setPlayerFlag(player, "-ThJianyueSkip");
+            return true;
+        }
+        return false;
+    }
+};
+
 ThMuyuCard::ThMuyuCard() {
 }
 
@@ -1525,6 +1590,9 @@ TouhouShinPackage::TouhouShinPackage()
     General *shin011 = new General(this, "shin011", "yuki", 4, false);
     shin011->addSkill(new ThSunwu);
     shin011->addSkill(new ThLiaogan);
+
+    General *shin012 = new General(this, "shin012", "tsuki");
+    shin012->addSkill(new ThJianyue);
 
     General *shin014 = new General(this, "shin014", "hana");
     shin014->addSkill(new ThMuyu);
