@@ -1520,7 +1520,7 @@ TouhouShinPackage::TouhouShinPackage()
     shin011->addSkill(new ThSunwu);
     shin011->addSkill(new ThLiaogan);
 
-    General *shin014 = new General(this, "shin011", "hana");
+    General *shin014 = new General(this, "shin014", "hana");
     shin014->addSkill(new ThMuyu);
 
     General *shin016 = new General(this, "shin016", "tsuki", 4, false);
