@@ -841,8 +841,9 @@ public:
         events << EventPhaseStart << CardsMoveOneTime << EventPhaseChanging << TargetSpecified;
     }
 
-    virtual QStringList triggerable(TriggerEvent e, Room *r, ServerPlayer *p, QVariant &d, ServerPlayer *&) const
+    virtual TriggerList triggerable(TriggerEvent e, Room *r, ServerPlayer *p, QVariant &d) const
     {
+        TriggerList tl;
         if (e == EventPhaseChanging) {
             if (d.value<PhaseChangeStruct>().to == Player::NotActive) {
                 foreach (ServerPlayer *sp, r->getAlivePlayers()) {
@@ -871,50 +872,55 @@ public:
             CardUseStruct use = d.value<CardUseStruct>();
             if (use.card->isKindOf("Slash") && use.card->getSkillName() == objectName()
                     && p->hasFlag("ThWuyiEquip"))
-                return QStringList(objectName());
+                tl.insert(p, QStringList(objectName()));
         } else if (e == EventPhaseStart) {
-            if (TriggerSkill::triggerable(p) && p->hasFlag("ThWuyiBasic")) {
-                foreach (ServerPlayer *sp, r->getAlivePlayers()) {
-                    if (p->canSlash(sp, false))
-                        return QStringList(objectName());
+            if (p->getPhase() == Player::Finish) {
+                foreach (ServerPlayer *owner, r->findPlayersBySkillName(objectName())) {
+                    if (owner->hasFlag("ThWuyiBasic")) {
+                        foreach (ServerPlayer *sp, r->getOtherPlayers(owner)) {
+                            if (owner->canSlash(sp, false))
+                                tl.insert(owner, QStringList(objectName()));
+                        }
+                    }
                 }
             }
         }
-        return QStringList();
+        return tl;
     }
 
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
     {
         if (triggerEvent == TargetSpecified)
             return true;
         QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *p, room->getAlivePlayers()) {
-            if (player->canSlash(p, false))
+        foreach (ServerPlayer *p, room->getOtherPlayers(ask_who)) {
+            if (ask_who->canSlash(p, false))
                 targets << p;
         }
-        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thwuyi", true);
+        ServerPlayer *target = room->askForPlayerChosen(ask_who, targets, objectName(), "@thwuyi", true);
         if (target) {
-            player->tag["ThWuyiTarget"] = QVariant::fromValue(target);
+            ask_who->tag["ThWuyiTarget"] = QVariant::fromValue(target);
             return true;
         }
         return false;
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const
     {
         if (triggerEvent == TargetSpecified) {
-            room->sendCompulsoryTriggerLog(player, objectName());
+            room->sendCompulsoryTriggerLog(ask_who, objectName());
             room->broadcastSkillInvoke(objectName());
             CardUseStruct use = data.value<CardUseStruct>();
             foreach (ServerPlayer *p, use.to.toSet())
                 p->addQinggangTag(use.card);
-        }
-        ServerPlayer *target = player->tag["ThWuyiTarget"].value<ServerPlayer *>();
-        player->tag.remove("ThWuyiTarget");
-        if (target) {
-            Slash *slash = new Slash(Card::NoSuit, 0);
-            slash->setSkillName(objectName());
-            room->useCard(CardUseStruct(slash, player, target));
+        } else {
+            ServerPlayer *target = ask_who->tag["ThWuyiTarget"].value<ServerPlayer *>();
+            ask_who->tag.remove("ThWuyiTarget");
+            if (target) {
+                Slash *slash = new Slash(Card::NoSuit, 0);
+                slash->setSkillName(objectName());
+                room->useCard(CardUseStruct(slash, ask_who, target));
+            }
         }
         return false;
     }
