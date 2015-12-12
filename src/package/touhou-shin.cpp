@@ -1415,6 +1415,181 @@ public:
     }
 };
 
+ThNihuiCard::ThNihuiCard()
+{
+    target_fixed = true;
+}
+
+void ThNihuiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+{
+    source->drawCards(3, "thnihui");
+    room->askForDiscard(source, "thnihui", 1, 1, false, true);
+    room->setPlayerMark(source, "thnihui", 1);
+    Json::Value args;
+    args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+}
+
+class ThNihui : public ZeroCardViewAsSkill
+{
+public:
+    ThNihui() : ZeroCardViewAsSkill("thnihui")
+    {
+    }
+
+    virtual const Card *viewAs() const {
+        return new ThNihuiCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("ThNihuiCard") && !player->hasUsed("ThNihuiEditCard");
+    }
+};
+
+ThNihuiEditCard::ThNihuiEditCard()
+{
+    m_skillName = "thnihui-edit";
+    target_fixed = true;
+}
+
+void ThNihuiEditCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+{
+    source->drawCards(1, "thnihui");
+    room->setPlayerMark(source, "thnihui", 0);
+    Json::Value args;
+    args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+}
+
+class ThNihuiEdit : public ViewAsSkill
+{
+public:
+    ThNihuiEdit() : ViewAsSkill("thnihui-edit")
+    {
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
+    {
+        return selected.length() < 3 && !Self->isJilei(to_select);
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        if (cards.length() == 3) {
+            Card *card = new ThNihuiEditCard;
+            card->addSubcards(cards);
+            return card;
+        }
+        return NULL;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("ThNihuiCard") && !player->hasUsed("ThNihuiEditCard");
+    }
+};
+
+class ThNihuiInvalidity: public InvaliditySkill {
+public:
+    ThNihuiInvalidity(): InvaliditySkill("#thnihui-inv") {
+    }
+
+    virtual bool isSkillValid(const Player *player, const Skill *skill) const{
+        if (player->getMark("thnihui") != 0)
+            return skill->objectName() != "thnihui";
+        else
+            return skill->objectName() != "thnihui-edit";
+    }
+};
+
+class ThTanguan : public TriggerSkill
+{
+public:
+    ThTanguan() : TriggerSkill("thtanguan")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual bool triggerable(const ServerPlayer *player) const
+    {
+        foreach (const Player *p, player->getAliveSiblings()) {
+            if (!p->isKongcheng())
+                return TriggerSkill::triggerable(player) && !player->isKongcheng()
+                        && player->getPhase() == Player::Finish;
+        }
+        return false;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (!p->isKongcheng())
+                targets << p;
+        }
+        if (!targets.isEmpty()) {
+            ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thtanguan", true, true);
+            if (target) {
+                room->broadcastSkillInvoke(objectName());
+                player->tag["ThTanguan"] = QVariant::fromValue(target);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        ServerPlayer *target = player->tag["ThTanguan"].value<ServerPlayer *>();
+        player->tag.remove("ThTanguan");
+        if (target)
+            player->pindian(target, "thtanguan");
+        return false;
+    }
+};
+
+class ThTanguanTrigger : public TriggerSkill
+{
+public:
+    ThTanguanTrigger() : TriggerSkill("#thtanguan")
+    {
+        events << Pindian;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        PindianStruct *pindian = data.value<PindianStruct *>();
+        if (pindian->reason == "thtanguan") {
+            return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        PindianStruct *pindian = data.value<PindianStruct *>();
+        ServerPlayer *target = pindian->to;
+        const Card *card1 = pindian->from_card;
+        const Card *card2 = pindian->to_card;
+        QList<CardsMoveStruct> moves;
+        CardMoveReason reason1(CardMoveReason::S_REASON_GOTBACK, target->objectName(), "thtanguan", QString());
+        CardMoveReason reason2(CardMoveReason::S_REASON_GOTBACK, player->objectName(), "thtanguan", QString());
+        CardsMoveStruct move1(card1->getEffectiveId(), target, Player::PlaceHand, reason1);
+        CardsMoveStruct move2(card2->getEffectiveId(), player, Player::PlaceHand, reason2);
+        moves << move1 << move2;
+        room->moveCardsAtomic(moves, true);
+        if (card1->isRed() && card1->sameColorWith(card2) && player->isWounded()) {
+            if (player->askForSkillInvoke("thtanguan", "recover"))
+                room->recover(player, RecoverStruct(player));
+        } else if (card1->isBlack() && card1->sameColorWith(card2)) {
+            if (player->askForSkillInvoke("thtanguan", "draw:" + target->objectName()))
+                target->drawCards(2, "thtanguan");
+        }
+        return false;
+    }
+};
+
 class ThYuancui : public PhaseChangeSkill
 {
 public:
@@ -1597,6 +1772,15 @@ TouhouShinPackage::TouhouShinPackage()
     General *shin014 = new General(this, "shin014", "hana");
     shin014->addSkill(new ThMuyu);
 
+    General *shin015 = new General(this, "shin015", "yuki", 3);
+    shin015->addSkill(new ThNihui);
+    shin015->addSkill(new ThNihuiEdit);
+    shin015->addSkill(new ThNihuiInvalidity);
+    related_skills.insertMulti("thnihui", "#thnihui-inv");
+    shin015->addSkill(new ThTanguan);
+    shin015->addSkill(new ThTanguanTrigger);
+    related_skills.insertMulti("thtanguan", "#thtanguan");
+
     General *shin016 = new General(this, "shin016", "tsuki", 4, false);
     shin016->addSkill(new ThYuancui);
     shin016->addSkill(new ThHuikuang);
@@ -1606,6 +1790,8 @@ TouhouShinPackage::TouhouShinPackage()
     addMetaObject<ThMumiCard>();
     addMetaObject<ThLiaoganCard>();
     addMetaObject<ThMuyuCard>();
+    addMetaObject<ThNihuiCard>();
+    addMetaObject<ThNihuiEditCard>();
 
     skills << new ThBaochuiRecord;
 }
