@@ -4,14 +4,16 @@
 #include "package.h"
 #include "card.h"
 
-class TouhouShinPackage : public Package{
+class TouhouShinPackage : public Package
+{
     Q_OBJECT
 
 public:
     TouhouShinPackage();
 };
 
-class ThLuanshenCard: public SkillCard{
+class ThLuanshenCard: public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -20,7 +22,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThLianyingCard: public SkillCard{
+class ThLianyingCard: public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -29,7 +32,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThMumiCard: public SkillCard{
+class ThMumiCard: public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -48,7 +52,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class ThMuyuCard: public SkillCard {
+class ThMuyuCard: public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -56,6 +61,26 @@ public:
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class ThNihuiCard: public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThNihuiCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThNihuiEditCard: public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThNihuiEditCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
 #endif // TOUHOUSHIN_H
