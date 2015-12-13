@@ -772,6 +772,102 @@ public:
     }
 };
 
+IkDongzhaoCard::IkDongzhaoCard()
+{
+}
+
+void IkDongzhaoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
+    room->loseHp(source);
+    if (source->isAlive())
+        SkillCard::use(room, source, targets);
+}
+
+void IkDongzhaoCard::onEffect(const CardEffectStruct &effect) const
+{
+    effect.from->setFlags("IkDongzhaoExtra");
+    effect.from->tag["IkDongzhao"] = QVariant::fromValue(effect.to);
+    effect.to->setFlags("IkDongzhaoUse");
+}
+
+class IkDongzhao : public ZeroCardViewAsSkill
+{
+public:
+    IkDongzhao() : ZeroCardViewAsSkill("ikdongzhao")
+    {
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new IkDongzhaoCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("IkDongzhaoCard");
+    }
+};
+
+class IkDongzhaoTrigger : public TriggerSkill
+{
+public:
+    IkDongzhaoTrigger() : TriggerSkill("#ikdongzhao")
+    {
+        events << PreCardUsed << EventPhaseChanging << JinkEffect << NullificationEffect;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *r, ServerPlayer *p, QVariant &d, ServerPlayer *&) const
+    {
+        if (e == EventPhaseChanging) {
+            p->setFlags("-IkDongzhaoExtra");
+            p->tag.remove("IkDongzhao");
+            foreach (ServerPlayer *sp, r->getOtherPlayers(p))
+                sp->setFlags("-IkDongzhaoUse");
+        } else if (e == JinkEffect || e == NullificationEffect) {
+            if (p->hasFlag("IkDongzhaoExtra")) {
+                p->setFlags("-IkDongzhaoExtra");
+                p->tag.remove("IkDongzhao");
+            }
+            if (p->hasFlag("IkDongzhaoUse")) {
+                if (r->getCurrent())
+                    r->sendCompulsoryTriggerLog(r->getCurrent(), "ikdongzhao");
+                p->setFlags("-IkDongzhaoUse");
+                return QStringList(objectName());
+            }
+        } else {
+            CardUseStruct use = d.value<CardUseStruct>();
+            if (use.card->getTypeId() != Card::TypeSkill) {
+                if (p->hasFlag("IkDongzhaoExtra") && (use.card->isNDTrick() || use.card->getTypeId() == Card::TypeBasic)) {
+                    r->sendCompulsoryTriggerLog(p, "ikdongzhao");
+                    p->setFlags("-IkDongzhaoExtra");
+                    ServerPlayer *extra = p->tag["IkDongzhao"].value<ServerPlayer *>();
+                    p->tag.remove("IkDongzhao");
+                    if (extra && extra->isAlive() && !use.to.contains(extra)) {
+                        use.to << extra;
+                        r->sortByActionOrder(use.to);
+                        d = QVariant::fromValue(use);
+                    }
+                }
+                if (p->hasFlag("IkDongzhaoUse")) {
+                    if (r->getCurrent())
+                        r->sendCompulsoryTriggerLog(r->getCurrent(), "ikdongzhao");
+                    p->setFlags("-IkDongzhaoUse");
+                    use.nullified_list << "_ALL_TARGETS";
+                    d = QVariant::fromValue(use);
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *) const
+    {
+        return true;
+    }
+};
+
 class IkElu: public TriggerSkill {
 public:
     IkElu(): TriggerSkill("ikelu") {
@@ -5380,6 +5476,11 @@ IkaiKaPackage::IkaiKaPackage()
     General *wind048 = new General(this, "wind048", "kaze");
     wind048->addSkill(new IkXizi);
 
+    General *wind050 = new General(this, "wind050", "kaze");
+    wind050->addSkill(new IkDongzhao);
+    wind050->addSkill(new IkDongzhaoTrigger);
+    related_skills.insertMulti("ikdongzhao", "#ikdongzhao");
+
     General *wind051 = new General(this, "wind051", "kaze");
     wind051->addSkill(new IkElu);
     wind051->addRelateSkill("iktanyan");
@@ -5592,6 +5693,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkHunkaoCard>();
     addMetaObject<IkHualanCard>();
     addMetaObject<IkHuangshiCard>();
+    addMetaObject<IkDongzhaoCard>();
     addMetaObject<IkJimuCard>();
     addMetaObject<IkDengpoCard>();
     addMetaObject<IkQihunCard>();
