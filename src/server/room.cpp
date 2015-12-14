@@ -1815,6 +1815,8 @@ void Room::swapPile() {
     qShuffle(*m_drawPile);
     foreach (int card_id, *m_drawPile)
         setCardMapping(card_id, NULL, Player::DrawPile);
+
+    thread->trigger(AfterSwapPile, this, NULL);
 }
 
 ServerPlayer *Room::findPlayer(const QString &general_name, bool include_dead) const{

@@ -510,6 +510,7 @@ enum TriggerEvent {
 
     StageChange, // For hulao pass only
     FetchDrawPileCard, // For miniscenarios only
+    AfterSwapPile,
     ActionedReset, // For 3v3 only
     Debut, // For 1v1 only
 
