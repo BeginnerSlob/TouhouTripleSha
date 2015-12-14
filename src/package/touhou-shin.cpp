@@ -1557,7 +1557,7 @@ public:
         events << Pindian;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *&) const
     {
         PindianStruct *pindian = data.value<PindianStruct *>();
         if (pindian->reason == "thtanguan") {
