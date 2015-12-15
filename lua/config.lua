@@ -15,6 +15,7 @@ config = {
 		kaze = "#4DB873",
 		tsuki = "#8A807A",
 		kami = "#96943D",
+		rei = "#DB8EEB",
 	},
 
 	skill_type_colors = {
