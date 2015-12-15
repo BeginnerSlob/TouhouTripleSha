@@ -44,6 +44,7 @@ config = {
 		"TouhouSP",
 		"TouhouBangai",
 		"TouhouKami",
+		"TenshiReihou",
 		"IkaiDo",
 		"IkaiMoku",
 		"IkaiSui",
