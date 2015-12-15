@@ -121,7 +121,8 @@ SOURCES += \
     src/breakpad/common/convert_UTF.c \
     src/jsoncpp/src/json_reader.cpp \
     src/jsoncpp/src/json_value.cpp \
-    src/jsoncpp/src/json_writer.cpp
+    src/jsoncpp/src/json_writer.cpp \
+    src/package/tenshi-reihou.cpp
 
 HEADERS += \
     src/client/aux-skills.h \
@@ -241,7 +242,8 @@ HEADERS += \
     src/jsoncpp/include/json/value.h \
     src/jsoncpp/include/json/writer.h \
     src/jsoncpp/src/json_batchallocator.h \
-    src/jsoncpp/src/json_tool.h
+    src/jsoncpp/src/json_tool.h \
+    src/package/tenshi-reihou.h
 
 FORMS += \
     src/dialog/cardoverview.ui \
