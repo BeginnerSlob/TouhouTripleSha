@@ -1303,6 +1303,171 @@ public:
     }
 };
 
+class ThHuanjian : public TriggerSkill
+{
+public:
+    ThHuanjian() : TriggerSkill("thhuanjian")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        TriggerList list;
+        if (player->getPhase() == Player::RoundStart && !player->isKongcheng()) {
+            foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
+                if (owner != player && !owner->isKongcheng())
+                    list.insert(owner, QStringList(objectName()));
+            }
+        }
+        return list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        const Card *card1 = room->askForCard(player, ".!", "@thhuanjian-ask:" + ask_who->objectName(), QVariant(), Card::MethodNone);
+        if (!card1)
+            card1 = player->getRandomHandCard();
+        const Card *card2 = room->askForCard(ask_who, ".!", "@thhuanjian-self", QVariant(), Card::MethodNone);
+        if (!card2)
+            card2 = ask_who->getRandomHandCard();
+        ask_who->addToPile("thhuanjianpile", card1);
+        ask_who->addToPile("thhuanjianpile", card2);
+        return false;
+    }
+};
+
+class ThHuanjianReturn : public TriggerSkill
+{
+public:
+    ThHuanjianReturn() : TriggerSkill("#thhuanjian")
+    {
+        events << EventPhaseChanging;
+        frequency = Compulsory;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        TriggerList list;
+        if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (p != player && !p->getPile("thhuanjianpile").isEmpty())
+                    list.insert(p, QStringList(objectName()));
+            }
+        }
+        return list;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        room->sendCompulsoryTriggerLog(ask_who, "thhuanjian");
+        room->broadcastSkillInvoke("thhuanjian");
+        QList<int> card_ids = ask_who->getPile("thhuanjianpile");
+        room->fillAG(card_ids);
+        int card_id = room->askForAG(ask_who, card_ids, false, "thhuanjian");
+        card_ids.removeOne(card_id);
+        room->takeAG(ask_who, card_id, false);
+        room->obtainCard(ask_who, card_id);
+        if (!card_ids.isEmpty()) {
+            card_id = room->askForAG(player, card_ids, false, "thhuanjian");
+            room->takeAG(player, card_id, false);
+            room->obtainCard(player, card_id);
+        }
+        room->clearAG();
+        return false;
+    }
+};
+
+class ThShenmi : public ViewAsSkill
+{
+public:
+    ThShenmi() : ViewAsSkill("thshenmi")
+    {
+        expand_pile = "thhuanjianpile";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
+    {
+        if (!Self->getPile("thhuanjianpile").contains(to_select->getId()))
+            return false;
+        QString pattern = Sanguosha->getCurrentCardUsePattern();
+        if (pattern == "jink")
+            return selected.isEmpty() || to_select->sameColorWith(selected.first());
+        if (pattern == "nullification")
+            return selected.isEmpty() || !to_select->sameColorWith(selected.first());
+        return false;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        if (cards.length() == 2) {
+            if (cards.first()->sameColorWith(cards.last())) {
+                Jink *jink = new Jink(Card::SuitToBeDecided, -1);
+                jink->addSubcards(cards);
+                jink->setSkillName(objectName());
+                return jink;
+            } else {
+                Nullification *null = new Nullification(Card::SuitToBeDecided, -1);
+                null->addSubcards(cards);
+                null->setSkillName(objectName());
+                return null;
+            }
+        }
+        return NULL;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *) const
+    {
+        return false;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
+    {
+        QList<int> ids = player->getPile("thhuanjianpile");
+        if (!ids.isEmpty()) {
+            const Card *first = Sanguosha->getCard(ids.takeFirst());
+            if (!ids.isEmpty()) {
+                foreach (int id, ids) {
+                    if (first->sameColorWith(Sanguosha->getCard(id))) {
+                        if (pattern == "jink")
+                            return true;
+                        continue;
+                    } else {
+                        if (pattern == "nullification")
+                            return true;
+                        continue;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    virtual bool isEnabledAtNullification(const ServerPlayer *player) const
+    {
+        QList<int> ids = player->getPile("thhuanjianpile");
+        if (!ids.isEmpty()) {
+            const Card *first = Sanguosha->getCard(ids.takeFirst());
+            if (!ids.isEmpty()) {
+                foreach (int id, ids) {
+                    if (!first->sameColorWith(Sanguosha->getCard(id)))
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
+};
+
 ThMuyuCard::ThMuyuCard() {
 }
 
@@ -1768,6 +1933,12 @@ TouhouShinPackage::TouhouShinPackage()
 
     General *shin012 = new General(this, "shin012", "tsuki");
     shin012->addSkill(new ThJianyue);
+
+    General *shin013 = new General(this, "shin013", "kaze");
+    shin013->addSkill(new ThHuanjian);
+    shin013->addSkill(new ThHuanjianReturn);
+    related_skills.insertMulti("thhuanjian", "#thhuanjian");
+    shin013->addSkill(new ThShenmi);
 
     General *shin014 = new General(this, "shin014", "hana");
     shin014->addSkill(new ThMuyu);
