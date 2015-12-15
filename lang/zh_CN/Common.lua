@@ -112,6 +112,7 @@ CommonTranslationTable = {
 	["yuki"] = "雪",
 	["tsuki"] = "月",
 	["kami"] = "神",
+	["rei"] = "灵",
 	["te"] = "特",
 
 	["#Murder"] = "%to【%arg】死亡，伤害来源为 %from",
