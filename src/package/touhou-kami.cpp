@@ -231,46 +231,35 @@ class ThXianming : public TriggerSkill
 public:
     ThXianming() : TriggerSkill("thxianming")
     {
-        events << CardsMoveOneTime << BeforeCardsMove;
+        events << BeforeCardsMove;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
-        QStringList list;
         if (TriggerSkill::triggerable(player)) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (triggerEvent == CardsMoveOneTime) {
-                if (move.from == player && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
-                    foreach (int id, move.card_ids) {
-                        if (Sanguosha->getCard(id)->getTypeId() == Card::TypeEquip)
-                            list << objectName();
-                    }
-                }
-            } else {
-                if (move.to == player && move.to_place == Player::PlaceEquip)
-                    list << objectName();
-            }
+            if (move.to == player && move.to_place == Player::PlaceEquip)
+                return QStringList(objectName());
         }
-        return list;
+        return QStringList();
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         room->sendCompulsoryTriggerLog(player, objectName());
         room->broadcastSkillInvoke(objectName());
-        if (triggerEvent == CardsMoveOneTime) {
-            ThTianbao *tianbao = new ThTianbao();
-            tianbao->deleteLater();
-            tianbao->effect(triggerEvent, room, player, data, player);
-        } else {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            DummyCard *dummy = new DummyCard(move.card_ids);
-            room->throwCard(dummy, player);
-            delete dummy;
-            move.removeCardIds(move.card_ids);
-            data = QVariant::fromValue(move);
-        }
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        QList<CardsMoveStruct> moves;
+        CardMoveReason reason(CardMoveReason::S_REASON_THROW, player->objectName(), objectName(), QString());
+        foreach (int id, move.card_ids)
+            moves << CardsMoveStruct(id, NULL, Player::DiscardPile, reason);
+        move.removeCardIds(move.card_ids);
+        data = QVariant::fromValue(move);
+        room->moveCardsAtomic(moves, true);
+        ThTianbao *tianbao = new ThTianbao();
+        tianbao->deleteLater();
+        tianbao->effect(triggerEvent, room, player, data, player);
         return false;
     }
 };
