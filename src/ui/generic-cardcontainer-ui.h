@@ -77,7 +77,7 @@ public:
     virtual void killPlayer();
     virtual void revivePlayer();
     virtual QGraphicsItem *getMouseClickReceiver() = 0;
-    virtual void startHuaShen(QString generalName, QString skillName);
+    virtual void startHuaShen(QString generalName, QString skillName, bool changeName);
     virtual void stopHuaShen();
     virtual void updateAvatarTooltip();
 
@@ -222,9 +222,14 @@ protected:
 
     // animations
     QAbstractAnimation *_m_huashenAnimation;
+    QAbstractAnimation *_m_huashenNameAnimation;
+    QAbstractAnimation *_m_huashenOldNameAnimation;
     QGraphicsItem *_m_huashenItem;
+    QGraphicsItem *_m_huashenNameItem;
+    QGraphicsItem *_m_huashenOldNameItem;
     QString _m_huashenGeneralName;
     QString _m_huashenSkillName;
+    bool _m_huashenChangeName;
 
     QParallelAnimationGroup *_blurEffect;
 
