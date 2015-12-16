@@ -4275,6 +4275,7 @@ public:
         arg[1] = QSanProtocol::Utils::toJsonString(zuoci->objectName());
         arg[2] = QSanProtocol::Utils::toJsonString(general->objectName());
         arg[3] = QSanProtocol::Utils::toJsonString(skill_name);
+        arg[4] = true;
         room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
 
         zuoci->tag["IkHuanshenSkill"] = skill_name;

@@ -657,7 +657,7 @@ bool QSanRoomSkin::_loadAnimationConfig(const Json::Value &) {
 }
 
 QAbstractAnimation *QSanRoomSkin::createHuaShenAnimation(QPixmap &huashenAvatar, QPoint topLeft, QGraphicsItem *parent,
-                                                         QGraphicsItem *&huashenAvatarCreated) const{
+                                                         QGraphicsItem *&huashenAvatarCreated, bool anti) const{
     QLabel *avatar = new QLabel;
     avatar->setStyleSheet("QLabel { background-color: transparent; }");
     avatar->setPixmap(huashenAvatar);
@@ -667,7 +667,7 @@ QAbstractAnimation *QSanRoomSkin::createHuaShenAnimation(QPixmap &huashenAvatar,
 
     QPropertyAnimation *animation = new QPropertyAnimation(widget, "opacity");
     animation->setLoopCount(2000);
-    Json::Value huashenConfig = _m_animationConfig["huashen"];
+    Json::Value huashenConfig = _m_animationConfig[anti ? "anti-huashen" : "huashen"];
     int duration;
     if (tryParse(huashenConfig[0], duration) && huashenConfig[1].isArray()) {
         animation->setDuration(duration);

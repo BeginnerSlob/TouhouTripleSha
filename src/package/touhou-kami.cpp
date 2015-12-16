@@ -212,6 +212,7 @@ public:
             arg[1] = QSanProtocol::Utils::toJsonString(player->objectName());
             arg[2] = QSanProtocol::Utils::toJsonString(reihou->objectName());
             arg[3] = QSanProtocol::Utils::toJsonString(QString());
+            arg[4] = true;
             room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
 
             player->tag["Reihou"] = reihou->objectName();

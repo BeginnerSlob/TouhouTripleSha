@@ -415,8 +415,9 @@ void RoomScene::handleGameEvent(const Json::Value &arg) {
             ClientPlayer *player = ClientInstance->getPlayer(arg[1].asCString());
             QString huashenGeneral = arg[2].asCString();
             QString huashenSkill = arg[3].asCString();
+            bool changeName = arg[4].asBool();
             PlayerCardContainer *container = (PlayerCardContainer *)_getGenericCardContainer(Player::PlaceHand, player);
-            container->startHuaShen(huashenGeneral, huashenSkill);
+            container->startHuaShen(huashenGeneral, huashenSkill, changeName);
             break;
         }
     case S_GAME_EVENT_PLAY_EFFECT: {

@@ -13,6 +13,7 @@
    "effects/damage/thunder",
    "effects/hplost",
    "effects/revive",
+   "effects/wake",
    // equip
    "effects/armor",
    "effects/armor_silver_lion",
@@ -36,6 +37,11 @@
 "huashen": [
 7000,
 [[0, 1], [0.4, 1], [0.47, 0], [0.53, 0], [0.6, 1], [1, 1]]
+],
+
+"anti-huashen": [
+7000,
+[[0, 0], [0.4, 0], [0.47, 1], [0.53, 1], [0.6, 0], [1, 0]]
 ]
 
 }

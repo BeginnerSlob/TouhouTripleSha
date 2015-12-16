@@ -287,7 +287,7 @@ public:
 
     // Animations
     QAbstractAnimation *createHuaShenAnimation(QPixmap &huashenAvatar, QPoint topLeft, QGraphicsItem *parent,
-                                               QGraphicsItem *&huashenItemCreated) const;
+                                               QGraphicsItem *&huashenItemCreated, bool anti = false) const;
 
     // static consts
     // main keys

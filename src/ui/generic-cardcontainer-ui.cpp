@@ -463,7 +463,7 @@ void PlayerCardContainer::repaintAll() {
     updateDelayedTricks();
 
     if (_m_huashenAnimation != NULL)
-        startHuaShen(_m_huashenGeneralName, _m_huashenSkillName);
+        startHuaShen(_m_huashenGeneralName, _m_huashenSkillName, _m_huashenChangeName);
 
     _paintPixmap(_m_faceTurnedIcon, _m_layout->m_avatarArea, QSanRoomSkin::S_SKIN_KEY_FACETURNEDMASK,
                  _getAvatarParent());
@@ -708,39 +708,60 @@ QList<CardItem *> PlayerCardContainer::removeEquips(const QList<int> &cardIds) {
     return result;
 }
 
-void PlayerCardContainer::startHuaShen(QString generalName, QString skillName)
+void PlayerCardContainer::startHuaShen(QString generalName, QString skillName, bool changeName)
 {
     if (m_player == NULL)
         return;
     _m_huashenGeneralName = generalName;
     _m_huashenSkillName = skillName;
+    _m_huashenChangeName = changeName;
     //Q_ASSERT(m_player->hasSkill("ikhuanshen"));
 
-    bool second_zuoci = m_player && m_player->getGeneralName() != "luna009" && m_player->getGeneral2Name() == "luna009";
+    /*bool second_zuoci = m_player && m_player->getGeneralName() != "luna009" && m_player->getGeneral2Name() == "luna009";
     int avatarSize = second_zuoci ? _m_layout->m_smallAvatarSize :
                                     (m_player->getGeneral2() ? _m_layout->m_primaryAvatarSize :
-                                                               _m_layout->m_avatarSize);
+                                                               _m_layout->m_avatarSize);*/
+    int avatarSize = _m_layout->m_avatarSize;
     QPixmap pixmap = G_ROOM_SKIN.getGeneralPixmap(generalName, (QSanRoomSkin::GeneralIconSize)avatarSize);
 
-    QRect animRect = second_zuoci ? _m_layout->m_smallAvatarArea : _m_layout->m_avatarArea;
+    //QRect animRect = second_zuoci ? _m_layout->m_smallAvatarArea : _m_layout->m_avatarArea;
+    QRect animRect = _m_layout->m_avatarArea;
     if (pixmap.size() != animRect.size())
         pixmap = pixmap.scaled(animRect.size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-    if (second_zuoci)
-        pixmap = paintByMask(pixmap);
+    /*if (second_zuoci)
+        pixmap = paintByMask(pixmap);*/
 
     stopHuaShen();
     if (m_player->getGeneral() && m_player->getGeneral()->objectName() != generalName) {
         _m_huashenAnimation = G_ROOM_SKIN.createHuaShenAnimation(pixmap, animRect.topLeft(), _getAvatarParent(), _m_huashenItem);
         _m_huashenAnimation->start();
+        if (changeName) {
+            QPixmap name_pixmap = _getPixmap(QSanRoomSkin::S_SKIN_KEY_AVATARNAME, generalName);
+            QRect name_rect = _m_layout->m_avatarNameArea;
+            if (name_pixmap.size() != name_rect.size())
+                name_pixmap = name_pixmap.scaled(name_rect.size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            _m_huashenNameAnimation = G_ROOM_SKIN.createHuaShenAnimation(name_pixmap, name_rect.topLeft(), _getAvatarParent(), _m_huashenNameItem);
+            _m_huashenNameAnimation->start();
+            QPixmap oldname_pixmap = _getPixmap(QSanRoomSkin::S_SKIN_KEY_AVATARNAME, m_player->getGeneral()->objectName());
+            if (oldname_pixmap.size() != name_rect.size())
+                oldname_pixmap = oldname_pixmap.scaled(name_rect.size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            _m_huashenOldNameAnimation = G_ROOM_SKIN.createHuaShenAnimation(oldname_pixmap, name_rect.topLeft(), _getAvatarParent(),
+                                                                            _m_huashenOldNameItem, true);
+            _m_huashenOldNameAnimation->start();
+            _m_avatarNameItem->hide();
+        }
         _paintPixmap(_m_extraSkillBg, _m_layout->m_extraSkillArea, QSanRoomSkin::S_SKIN_KEY_EXTRA_SKILL_BG, _getAvatarParent());
         if (!skillName.isEmpty())
             _m_extraSkillBg->show();
+        else
+            _m_extraSkillBg->hide();
         _m_layout->m_extraSkillFont.paintText(_m_extraSkillText, _m_layout->m_extraSkillTextArea, Qt::AlignCenter,
                                               Sanguosha->translate(skillName).left(2));
         if (!skillName.isEmpty()) {
             _m_extraSkillText->show();
             _m_extraSkillBg->setToolTip(Sanguosha->getSkill(skillName)->getDescription());
-        }
+        } else
+            _m_extraSkillText->hide();
     }
     _adjustComponentZValues();
 }
@@ -749,9 +770,22 @@ void PlayerCardContainer::stopHuaShen() {
     if (_m_huashenAnimation != NULL) {
         _m_huashenAnimation->stop();
         _m_huashenAnimation->deleteLater();
+        if (_m_huashenChangeName) {
+            _m_huashenNameAnimation->stop();
+            _m_huashenNameAnimation->deleteLater();
+            _m_huashenOldNameAnimation->stop();
+            _m_huashenOldNameAnimation->deleteLater();
+            _m_avatarNameItem->show();
+        }
         delete _m_huashenItem;
+        delete _m_huashenNameItem;
+        delete _m_huashenOldNameItem;
         _m_huashenAnimation = NULL;
+        _m_huashenNameAnimation = NULL;
+        _m_huashenOldNameAnimation = NULL;
         _m_huashenItem = NULL;
+        _m_huashenNameItem = NULL;
+        _m_huashenOldNameItem = NULL;
         _clearPixmap(_m_extraSkillBg);
         _clearPixmap(_m_extraSkillText);
     }
@@ -791,7 +825,11 @@ PlayerCardContainer::PlayerCardContainer() {
         _m_equipLabel[i] = NULL;
     }
     _m_huashenItem = NULL;
+    _m_huashenNameItem = NULL;
+    _m_huashenOldNameItem = NULL;
     _m_huashenAnimation = NULL;
+    _m_huashenNameAnimation = NULL;
+    _m_huashenOldNameAnimation = NULL;
     _m_extraSkillBg = NULL;
     _m_extraSkillText = NULL;
 
@@ -865,6 +903,10 @@ void PlayerCardContainer::_adjustComponentZValues(bool killed) {
     _layUnder(_m_saveMeIcon);
     _layUnder(_m_phaseIcon);
     _layUnder(_m_smallAvatarNameItem);
+    if (!killed && _m_huashenChangeName) {
+        _layUnder(_m_huashenNameItem);
+        _layUnder(_m_huashenOldNameItem);
+    }
     _layUnder(_m_avatarNameItem);
     _layUnder(_m_kingdomIcon);
     _layUnder(_m_kingdomColorMaskIcon);

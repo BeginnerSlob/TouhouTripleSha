@@ -2118,6 +2118,7 @@ public:
                     arg[1] = QSanProtocol::Utils::toJsonString(player->objectName());
                     arg[2] = QSanProtocol::Utils::toJsonString(target->getGeneral()->objectName());
                     arg[3] = QSanProtocol::Utils::toJsonString(choice);
+                    arg[4] = false;
                     room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
 
                     return true;
@@ -2155,6 +2156,7 @@ public:
             arg[1] = QSanProtocol::Utils::toJsonString(player->objectName());
             arg[2] = QSanProtocol::Utils::toJsonString(player->getGeneral()->objectName());
             arg[3] = QSanProtocol::Utils::toJsonString(QString());
+            arg[4] = false;
             room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
 
             player->tag["ThDongxiLast"] = name;
