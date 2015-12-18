@@ -1375,7 +1375,7 @@ public:
         if (card) {
             CardUseStruct use = data.value<CardUseStruct>();
             room->obtainCard(ask_who, use.card);
-            Card *new_card = Sanguosha->cloneCard(use.card->getClassName());
+            Card *new_card = Sanguosha->cloneCard(use.card->getClassName(), use.card->getSuit(), use.card->getNumber(), use.card->getFlags());
             new_card->addSubcards(card->getSubcards());
             new_card->setSkillName(objectName());
             new_card->deleteLater();
