@@ -2154,6 +2154,107 @@ public:
     }
 };
 
+IkDuanniCard::IkDuanniCard()
+{
+}
+
+bool IkDuanniCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    return targets.isEmpty() && !to_select->isAllNude() && to_select->inMyAttackRange(Self);
+}
+
+void IkDuanniCard::onEffect(const CardEffectStruct &effect) const
+{
+    Room *room = effect.from->getRoom();
+    int card_id = room->askForCardChosen(effect.from, effect.to, "hej", "ikduanni");
+    Slash *slash = new Slash(SuitToBeDecided, -1);
+    slash->addSubcard(card_id);
+    slash->setSkillName("_ikduanni");
+    QList<ServerPlayer *> extras;
+    foreach (ServerPlayer *p, room->getOtherPlayers(effect.to)) {
+        if (p == effect.from)
+            continue;
+        if (effect.to->canSlash(p, slash, false))
+            extras << p;
+    }
+    QList<ServerPlayer *> targets;
+    targets << effect.from;
+    if (effect.to->getHp() > effect.from->getHp() && !extras.isEmpty()) {
+        ServerPlayer *extra = room->askForPlayerChosen(effect.from, extras, "ikduanni", "@slash_extra_targets", true);
+        targets << extra;
+    }
+    room->sortByActionOrder(targets);
+    room->useCard(CardUseStruct(slash, effect.to, targets));
+}
+
+class IkDuanni : public ZeroCardViewAsSkill {
+public:
+    IkDuanni() : ZeroCardViewAsSkill("ikduanni")
+    {
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new IkDuanniCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("IkDuanniCard");
+    }
+};
+
+class IkZhangyi : public TriggerSkill {
+public:
+    IkZhangyi() : TriggerSkill("ikzhangyi")
+    {
+        events << TargetConfirming;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *p, QVariant &d, ServerPlayer *&) const
+    {
+        if (TriggerSkill::triggerable(p)) {
+            CardUseStruct use = d.value<CardUseStruct>();
+            if (use.from && !use.from->isKongcheng() && use.to.contains(p) && use.card->isKindOf("Slash"))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(use.from))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        LogMessage log;
+        log.type = "$IkLingtongView";
+        log.from = player;
+        log.to << use.from;
+        log.arg = "iklingtong:handcards";
+        room->sendLog(log, room->getOtherPlayers(player));
+
+        LogMessage log2;
+        log2.type = "$ViewAllCards";
+        log2.from = player;
+        log2.to << use.from;
+        log2.card_str = IntList2StringList(use.from->handCards()).join("+");
+        room->sendLog(log2, player);
+
+        int id = room->askForCardChosen(player, use.from, "h", objectName(), true, Card::MethodDiscard);
+        room->throwCard(id, use.from, player);
+        use.from->drawCards(1, objectName());
+        return false;
+    }
+};
+
 class IkLingyun: public TriggerSkill {
 public:
     IkLingyun(): TriggerSkill("iklingyun") {
@@ -5684,6 +5785,10 @@ IkaiKaPackage::IkaiKaPackage()
     General *bloom053 = new General(this, "bloom053", "hana");
     bloom053->addSkill(new IkMingshi);
 
+    General *bloom054 = new General(this, "bloom054", "hana", 3);
+    bloom054->addSkill(new IkDuanni);
+    bloom054->addSkill(new IkZhangyi);
+
     General *snow031 = new General(this, "snow031", "yuki", 3);
     snow031->addSkill(new IkLingyun);
     snow031->addSkill(new IkMiyao);
@@ -5847,6 +5952,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkDengpoCard>();
     addMetaObject<IkQihunCard>();
     addMetaObject<IkLingchaCard>();
+    addMetaObject<IkDuanniCard>();
     addMetaObject<IkShidaoCard>();
     addMetaObject<IkMingwangCard>();
     addMetaObject<IkLinghuiCard>();
