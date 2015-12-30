@@ -2979,16 +2979,7 @@ public:
         log.from = damage.from;
         log.arg = choice;
         room->sendLog(log);
-        const Card *hand = room->askForCard(player, QString(".|^%1!").arg(choice), "@iksaoxiao", data, Card::MethodNone);
-        if (!hand) {
-            QList<const Card *> cans;
-            foreach (const Card *cd, player->getHandcards()) {
-                if (cd->getSuitString() != choice)
-                    cans << cd;
-            }
-            if (!cans.isEmpty())
-                hand = cans.at(qrand() % cans.length());
-        }
+        const Card *hand = room->askForCard(player, ".|^" + choice, "@iksaoxiao", data, Card::MethodNone);
         if (!hand)
             return false;
         room->showCard(player, hand->getEffectiveId());
