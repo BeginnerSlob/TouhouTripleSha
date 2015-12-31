@@ -928,45 +928,143 @@ void MainWindow::on_actionAbout_GPLv3_triggered() {
 void MainWindow::checkUpdate()
 {
     static QNetworkAccessManager *qnam = new QNetworkAccessManager(this);
-    reply = qnam->get(QNetworkRequest(QUrl("http://ver.qsanguosha.org/UpdateInfoForTouhouTripleSha")));
+    reply = qnam->get(QNetworkRequest(QUrl("http://ver.qsanguosha.org/TTStest/UpdateInfoForTouhouTripleSha")));
     connect(reply, SIGNAL(finished()), this, SLOT(httpFinished()));
 }
 
 void MainWindow::httpFinished()
 {
-    QString newVersionNumber, updateDate;
+    QString newVersionNumber(), updateDate(), downloadUrl();
     bool has_new_version = false;
     while (!reply->atEnd()) {
         QString line = reply->readLine();
         line.remove('\n');
 
-        QStringList texts = line.split(':', QString::SkipEmptyParts);
+        QStringList texts1 = line.split('=', QString::SkipEmptyParts);
+        QStringList texts2 = line.split(':', QString::SkipEmptyParts);
 
-        if(texts.size() != 2)
-            return;
-
-        QString key = texts.at(0);
-        QString value = texts.at(1);
-        if ("VersionNumber" == key) {
-            if (Sanguosha->getVersionNumber() < value) {
-                setWindowTitle(tr("New Version Available") + "  " + windowTitle());
-                has_new_version = true;
-                newVersionNumber = value;
+        if (texts1.size() == 2) {
+            QString key = texts1.at(0);
+            QString value = texts1.at(1);
+            if (key == "VersionNumber") {
+                if (Sanguosha->getVersionNumber() < value) {
+                    setWindowTitle(tr("New Version Available") + "  " + windowTitle());
+                    has_new_version = true;
+                    newVersionNumber = value;
+                }
+            } else if (key == "UpdateDate") {
+                updateDate = value;
+            } else if (key == "url") {
+                downloadUrl = value;
             }
-        } else if ("UpdateDate" == key) {
-            updateDate = value;
+        } else if (texts2.size() == 2) {
+            QString key = texts2.at(0);
+            QString value = texts2.at(1);
+            if (key == "VersionNumber") {
+                if (Sanguosha->getVersionNumber() < value) {
+                    setWindowTitle(tr("New Version Available") + "  " + windowTitle());
+                    has_new_version = true;
+                    newVersionNumber = value;
+                }
+            } else if (key == "UpdateDate") {
+                updateDate = value;
+            }
         }
     }
     if (has_new_version) {
-        QMessageBox::warning(this, tr("New Version Available"),
-                             tr("There is a new version for TouhouTripleSha<br/> \
-                                 The version number is %1<br/> \
-                                 Update date is %2<br/> \
-                                 Please download it in our QQ Group<br/> \
-                                 The Group number is 221093508<br/> \
-                                 Hope you enjoy this game").arg(newVersionNumber).arg(updateDate),
-                             QMessageBox::Ok, QMessageBox::Ok);
+        if (downloadUrl.isEmpty()) {
+            QMessageBox::warning(this, tr("New Version Available"),
+                                 tr("There is a new version for TouhouTripleSha<br/> \
+                                     The version number is %1<br/> \
+                                     Update date is %2<br/> \
+                                     Please download it in our QQ Group<br/> \
+                                     The Group number is 221093508<br/> \
+                                     Hope you enjoy this game").arg(newVersionNumber).arg(updateDate),
+                                 QMessageBox::Ok, QMessageBox::Ok);
+        } else {
+            if (QMessageBox::question(this, tr("New Version Available"),
+                                      tr("There is a new version for TouhouTripleSha<br/>"
+                                         "The version number is %1<br/>"
+                                         "Update date is %2<br/>"
+                                         "Would you wanna download now?").arg(newVersionNumber).arg(updateDate))
+                    == QMessageBox::Yes)
+                downloadNew(downloadUrl);
+        }
     }
     reply->deleteLater();
     reply = NULL;
+}
+
+void MainWindow::downloadNew(QString url)
+{
+    QUrl url2(url);
+    QFileInfo fileInfo(url2.path());
+    QString fileName = fileInfo.fileName();
+    if (fileName.isEmpty())
+       fileName = "index.html";
+    fileName.prepend("update/");
+    if (QFile::exists(fileName)) {
+        if (QMessageBox::question(this, tr("Download New Version"),
+                                  tr("There already exists a file called %1 in "
+                                     "the current directory. Overwrite?").arg(fileName),
+                                  QMessageBox::Yes | QMessageBox::No, QMessageBox::No)
+                == QMessageBox::No)
+            return;
+        QFile::remove(fileName);
+    }
+
+    file = new QFile(fileName);
+    if (!file->open(QIODevice::WriteOnly)) {
+        QMessageBox::information(this, tr("Download New Version"),
+                                 tr("Unable to save the file %1: %2.")
+                                 .arg(fileName).arg(file->errorString()));
+        delete file;
+        file = NULL;
+        return;
+    }
+
+    static QNetworkAccessManager *qnam2 = new QNetworkAccessManager(this);
+    reply2 = qnam2->get(QNetworkRequest(url2));
+    connect(reply2, SIGNAL(finished()), this, SLOT(httpFinished2()));
+    connect(reply2, SIGNAL(readyRead()), this, SLOT(httpReadyRead2()));
+}
+
+void MainWindow::httpFinished2()
+{
+    file->flush();
+    file->close();
+
+    QVariant redirectionTarget = reply2->attribute(QNetworkRequest::RedirectionTargetAttribute);
+    if (reply2->error()) {
+        file->remove();
+        QMessageBox::information(this, tr("Download New Version"),
+                                 tr("Download failed: %1.")
+                                 .arg(reply2->errorString()));
+    } else if (!redirectionTarget.isNull()) {
+        QMessageBox::warning(this, tr("Download New Version"),
+                             tr("Redirect Error!"));
+        return;
+    } else {
+        /*QString fileName = QFileInfo(QUrl(urlLineEdit->text()).path()).fileName();
+        statusLabel->setText(tr("Downloaded %1 to current directory.").arg(fileName));
+        downloadButton->setEnabled(true);*/
+        QMessageBox::warning(this, tr("Download New Version"),
+                             tr("Download Finish!<br/>"
+                                "Please close this window and unpack the file under update\\ yourself to current folder"));
+    }
+
+    reply->deleteLater();
+    reply = NULL;
+    delete file;
+    file = NULL;
+}
+
+void MainWindow::httpReadyRead2()
+{
+    // this slot gets called every time the QNetworkReply has new data.
+    // We read all of its new data and write it into the file.
+    // That way we use less RAM than when reading it at the finished()
+    // signal of the QNetworkReply
+    if (file)
+        file->write(reply2->readAll());
 }
