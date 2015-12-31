@@ -11,6 +11,7 @@
 #include <QCheckBox>
 #include <QSpinBox>
 #include <QNetworkReply>
+#include <QFile>
 
 namespace Ui {
     class MainWindow;
@@ -52,6 +53,7 @@ public:
     ~MainWindow();
     void setBackgroundBrush(bool center_as_origin);
     void checkUpdate();
+    void downloadNew(QString url);
 
 protected:
     virtual void closeEvent(QCloseEvent *);
@@ -66,6 +68,8 @@ private:
 
     Server *server;
     QNetworkReply *reply;
+    QNetworkReply *reply2;
+    QFile *file;
 
     void restoreFromConfig();
 
@@ -105,6 +109,8 @@ private slots:
     void on_actionView_ban_list_triggered();
 
     void httpFinished();
+    void httpFinished2();
+    void httpReadyRead2();
 };
 
 #endif
