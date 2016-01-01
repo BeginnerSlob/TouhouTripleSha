@@ -934,7 +934,7 @@ void MainWindow::checkUpdate()
 
 void MainWindow::httpFinished()
 {
-    QString newVersionNumber(), updateDate(), downloadUrl();
+    QString newVersionNumber, updateDate, downloadUrl;
     bool has_new_version = false;
     while (!reply->atEnd()) {
         QString line = reply->readLine();
