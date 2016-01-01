@@ -2785,8 +2785,8 @@ bool Room::speakCommand(ServerPlayer *player, const Json::Value &arg) {
                                    doNotify(player, S_COMMAND_SPEAK, nbbody);\
                                }
     bool broadcast = true;
+    QString sentence = QString::fromUtf8(QByteArray::fromBase64(toQString(arg.asString()).toLatin1()));
     if (player && Config.EnableCheat) {
-        QString sentence = QString::fromUtf8(QByteArray::fromBase64(toQString(arg.asString()).toLatin1()));
         if (sentence == ".BroadcastRoles") {
             _NO_BROADCAST_SPEAKING
             foreach (ServerPlayer *p, m_alivePlayers)
@@ -2920,6 +2920,10 @@ bool Room::speakCommand(ServerPlayer *player, const Json::Value &arg) {
         body[0] = toJsonString(player->objectName());
         body[1] = arg;
         doBroadcastNotify(S_COMMAND_SPEAK, body);
+    }
+    if (sentence.startsWith("/roll")) {
+        QString str = QString::number(qrand() % 100 + 1).toUtf8().toBase64();
+        speakCommand(player, str);
     }
     return true;
 #undef _NO_BROADCAST_SPEAKING
