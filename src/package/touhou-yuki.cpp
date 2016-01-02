@@ -1615,7 +1615,7 @@ public:
                 qiebaoMove.reason = reason;
                 qiebaoMove.card_ids = card_ids;
                 exchangeMove.push_back(qiebaoMove);
-                room->moveCardsAtomic(exchangeMove, false);
+                room->moveCardsAtomic(exchangeMove, true);
             }
         }
 
@@ -1631,7 +1631,8 @@ public:
 
             bool invoke = false;
             foreach (ServerPlayer *to, use.to) {
-                if (to == use.from) continue;
+                if (to == use.from)
+                    continue;
                 invoke = true;
                 break;
             }
@@ -1646,10 +1647,10 @@ public:
                 return skill_list;
 
             if (move.to_place == Player::PlaceHand) {
-                QList<int> qiebaolist;
-                for (int i = 0; i < move.card_ids.size(); i++){
+                for (int i = 0; i < move.card_ids.size(); i++) {
                     if (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip) {
                         skill_list.insert(player, QStringList(objectName()));
+                        break;
                     }
                 }
             }
@@ -1666,10 +1667,11 @@ public:
             else
                 card_ids = use.card->getSubcards();
             if (doQiebao(room, ask_who, card_ids, false)) {
-                foreach (ServerPlayer *p, use.to)
+                foreach (ServerPlayer *p, use.to) {
                     if (p != use.from)
                         use.nullified_list << p->objectName();
-                data = QVariant::fromValue(objectName());
+                }
+                data = QVariant::fromValue(use);
             }
         } else if (triggerEvent == BeforeCardsMove) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
