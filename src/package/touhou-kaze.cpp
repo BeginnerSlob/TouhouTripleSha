@@ -412,11 +412,13 @@ public:
         judge.who = damage.to;
 
         room->judge(judge);
-        if(judge.isBad())
-            if(player->canDiscard(damage.to, "he")) {
+        if (judge.isBad()) {
+            if (player->canDiscard(damage.to, "he")
+                    && player->askForSkillInvoke("thwangshou_discard", "yes:" + damage.to->objectName())) {
                 int card_id = room->askForCardChosen(player, damage.to, "he", objectName(), false, Card::MethodDiscard);
                 room->throwCard(card_id, damage.to, player);
             }
+        }
 
         return false;
     }
