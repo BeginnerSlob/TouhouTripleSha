@@ -3,7 +3,6 @@
 # -------------------------------------------------
 TARGET = TouhouTripleSha
 QT += network widgets
-!winrt:QT += declarative
 TEMPLATE = app
 CONFIG += audio
 
@@ -514,10 +513,10 @@ CONFIG(opengl){
     DEFINES += USING_OPENGL
 }
 
-TRANSLATIONS += builds/vs2013/sanguosha.ts
+TRANSLATIONS += builds/sanguosha.ts
 
 !build_pass{
-    system("lrelease $$_PRO_FILE_PWD_/builds/vs2013/sanguosha.ts -qm $$_PRO_FILE_PWD_/sanguosha.qm")
+    system("lrelease $$_PRO_FILE_PWD_/builds/sanguosha.ts -qm $$_PRO_FILE_PWD_/sanguosha.qm")
 
     SWIG_bin = "swig"
     contains(QMAKE_HOST.os, "Windows"): SWIG_bin = "$$_PRO_FILE_PWD_/tools/swig/swig.exe"
@@ -526,8 +525,7 @@ TRANSLATIONS += builds/vs2013/sanguosha.ts
 }
 
 OTHER_FILES += \
-    sanguosha.qss \
-    builds/vs2013/sanguosha.ts
+    sanguosha.qss
 
 CONFIG(debug, debug|release): LIBS += -lfreetype_D
 else:LIBS += -lfreetype
