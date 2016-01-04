@@ -29,6 +29,7 @@ Bin/
 /builds/*/QSanguosha.*suo
 /builds/*/*.user
 /builds/*/*.opensdf
+/builds/*/*/
 /sanguosha.ts
 /extensions
 card_intention.txt
