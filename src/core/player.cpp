@@ -845,7 +845,10 @@ QStringList Player::getMarkNames() const{
 
 bool Player::canSlash(const Player *other, const Card *slash, bool distance_limit,
                       int rangefix, const QList<const Player *> &others) const{
-    if (other == this || !other->isAlive())
+    if (!other->isAlive())
+        return false;
+
+    if (!hasFlag("IkXiashanUse") && !hasFlag("ThXuyouUse") && other == this)
         return false;
 
     Slash *newslash = new Slash(Card::NoSuit, 0);
