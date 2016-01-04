@@ -348,7 +348,16 @@ public:
 
 ThKuangqiCard::ThKuangqiCard()
 {
-    target_fixed = true;
+}
+
+bool ThKuangqiCard::targetFilter(const QList<const Player *> &, const Player *, const Player *) const
+{
+    return false;
+}
+
+bool ThKuangqiCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const
+{
+    return targets.isEmpty();
 }
 
 void ThKuangqiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
