@@ -1783,7 +1783,7 @@ public:
         player->tag.remove("ThHuanghuNum");
         if (n > 0) {
             ServerPlayer *target = data.value<CardResponseStruct>().m_who;
-            if (target->canDiscard(target, "h"))
+            if (target->canDiscard(target, "he"))
                 room->askForDiscard(target, objectName(), n, n, false, true);
         }
         return false;
