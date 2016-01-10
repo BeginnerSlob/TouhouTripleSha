@@ -1,7 +1,5 @@
 -- translation for IkaiTsuchiPackage
 
--- translation for IkaiTsuchiPackage
-
 return {
 	["ikai-do"] = "异世界的土产",
 
