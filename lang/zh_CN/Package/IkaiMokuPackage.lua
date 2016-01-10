@@ -455,7 +455,7 @@ return {
 	["@ikhuiyao"] = "你可以弃置一张牌发动“辉耀”",
 	["ikqihuang"] = "淒煌",
 	[":ikqihuang"] = "锁定技，当你死亡时，你令杀死你的角色失去所有的人物技能。",
-	["#IkQihuangLoseSkills"] = "%from 的“%arg”被触发， %to 失去所有武将技能",
+	["#IkQihuangLoseSkills"] = "%from 的“%arg”被触发， %to 失去所有人物技能",
 	["@qihuang"] = "淒煌",
 
 	["#luna014"] = "超电磁炮",
