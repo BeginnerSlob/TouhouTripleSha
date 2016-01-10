@@ -822,6 +822,10 @@ void ChunxueScenario::onTagSet(Room *room, const QString &key) const{
         if (chen)
             room->acquireSkill(chen, "cxxianlin");
 
+        ServerPlayer *yaomeng = room->findPlayer("yuki003");
+        if (yaomeng)
+            room->acquireSkill(yaomeng, "cxyongjie");
+
         foreach (ServerPlayer *p, room->getAlivePlayers()) {
             if (p->getRole() == "rebel" || p->getGeneralName() == "yuki004")
                 room->acquireSkill(p, "cxchunzui_" + p->getGeneralName());
