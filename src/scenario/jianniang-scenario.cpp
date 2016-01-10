@@ -744,7 +744,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const{
         foreach (const Player *p, target->getAliveSiblings()) {
-            if (p->getHp() <= target->getHp())
+            if (p->getHp() < target->getHp())
                 return false;
         }
         return PhaseChangeSkill::triggerable(target)
@@ -1466,7 +1466,7 @@ public:
             }
         } else {
             CardEffectStruct effect = data.value<CardEffectStruct>();
-            if (player && player->isAlive() && player->getMark("@qianhang") > 0) {
+            if (player && player->isAlive() && player->getMark("@qianhang") > 0 && effect.to != effect.from) {
                 if (effect.card && !((effect.card->isKindOf("AOE") && !effect.card->isKindOf("BurningCamps"))
                                      || effect.card->isKindOf("GlobalEffect")))
                     return QStringList(objectName());
