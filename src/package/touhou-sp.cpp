@@ -1869,10 +1869,14 @@ public:
         if (TriggerSkill::triggerable(player)) {
             if (room->getCurrent() == player && player->getPhase() != Player::NotActive) {
                 CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-                if (move.from && move.from_places.contains(Player::PlaceEquip)
-                    && move.reason.m_reason != CardMoveReason::S_REASON_CHANGE_EQUIP)
+                if (move.from && move.from->isAlive()
+                        && (move.from == player || player->inMyAttackRange(move.from))
+                        && move.from_places.contains(Player::PlaceEquip)
+                        && move.reason.m_reason != CardMoveReason::S_REASON_CHANGE_EQUIP)
                     skills << objectName();
-                if (move.to && move.to_place == Player::PlaceEquip)
+                if (move.to && move.to->isAlive()
+                        && (move.to == player || player->inMyAttackRange(move.to))
+                        && move.to_place == Player::PlaceEquip)
                     skills << objectName();
             }
         }
@@ -1945,7 +1949,7 @@ void ThJingyuanspCard::onEffect(const CardEffectStruct &effect) const{
 class ThJingyuansp: public OneCardViewAsSkill {
 public:
     ThJingyuansp(): OneCardViewAsSkill("thjingyuansp") {
-        filter_pattern = "BasicCard!";
+        filter_pattern = "BasicCard|red!";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
