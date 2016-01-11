@@ -928,7 +928,7 @@ void MainWindow::on_actionAbout_GPLv3_triggered() {
 void MainWindow::checkUpdate()
 {
     static QNetworkAccessManager *qnam = new QNetworkAccessManager(this);
-    reply = qnam->get(QNetworkRequest(QUrl("http://ver.qsanguosha.org/TTStest/UpdateInfoForTouhouTripleSha")));
+    reply = qnam->get(QNetworkRequest(QUrl("http://ver.qsanguosha.org/UpdateInfoForTouhouTripleSha")));
     connect(reply, SIGNAL(finished()), this, SLOT(httpFinished()));
 }
 
