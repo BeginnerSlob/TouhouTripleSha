@@ -4316,7 +4316,7 @@ public:
 
     virtual void onGameStart(ServerPlayer *zuoci) const{
         zuoci->getRoom()->notifySkillInvoked(zuoci, "ikhuanshen");
-        IkHuanshen::AcquireGenerals(zuoci, 2);
+        IkHuanshen::AcquireGenerals(zuoci, 3);
         IkHuanshen::SelectSkill(zuoci);
     }
 };
