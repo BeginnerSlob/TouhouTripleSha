@@ -118,6 +118,7 @@ public:
         QRect m_boundingRect;
         QRect m_focusFrameArea;
         QRect m_handCardArea;
+        QRect m_genderArea;
 
         // equips
         QRect m_equipAreas[S_EQUIP_AREA_LENGTH];
@@ -233,7 +234,7 @@ public:
         QRect m_cardAvatarArea;
         QRect m_cardFrameArea;
         QSanShadowTextFont m_cardFootnoteFont;
-        QSanShadowTextFont m_hpFont[6];
+        QSanShadowTextFont m_hpFont[5];
         int m_hpExtraSpaceHolder;
 
         // dialogs
@@ -312,6 +313,7 @@ public:
     static const char *S_SKIN_KEY_RIGHTFRAME;
     static const char *S_SKIN_KEY_MIDDLEFRAME;
     static const char *S_SKIN_KEY_HANDCARDNUM;
+    static const char *S_SKIN_KEY_GENDER;
     static const char *S_SKIN_KEY_AVATARNAME;
     static const char *S_SKIN_KEY_FACETURNEDMASK;
     static const char *S_SKIN_KEY_BLANK_GENERAL;
