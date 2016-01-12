@@ -290,12 +290,12 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkMolingCard: public SkillCard
+class IkGuimoCard: public SkillCard
 {
     Q_OBJECT 
 
 public:
-    Q_INVOKABLE IkMolingCard();
+    Q_INVOKABLE IkGuimoCard();
 
     virtual bool targetFixed() const;
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
