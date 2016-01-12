@@ -86,7 +86,7 @@ return {
 	["#shin008"] = "月下的独狼",
 	["shin008"] = "今泉影狼",--月 - 空 - 4血
 	["designer:shin008"] = "军师祭酒",
-	["illustrator:shin008"] = "susu",
+	["illustrator:shin008"] = "いちやん",
 	["cv:shin008"] = "暂无",
 	["thlianying"] = "莲影",
 	[":thlianying"] = "出牌阶段限一次，你可以弃置两张牌，若如此做，你获得技能“赤莲”和“疾步”，直到回合结束。",

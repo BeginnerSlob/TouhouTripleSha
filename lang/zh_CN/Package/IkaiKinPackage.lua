@@ -44,7 +44,7 @@ return {
 	["wind019"] = "阿露菲米",--风 - 空 - 4血
 	--thxiagong
 	["designer:wind019"] = "凌天翼",
-	["illustrator:wind019"] = "Grune",
+	["illustrator:wind019"] = "蒼月しのぶ",
 	["ikwanhun"] = "剜魂",
 	[":ikwanhun"] = "每当你使用【杀】或【碎月绮斗】对距离2以内的目标角色造成伤害时，你可进行一次判定，若不为红桃，你防止此伤害，改为令其减少1点体力上限。",
 	
@@ -147,7 +147,7 @@ return {
 	["#wind039"] = "根源之始",
 	["wind039"] = "两仪式",--风 - 空 - 4血
 	["designer:wind039"] = "沸治·克里夫",
-	["illustrator:wind039"] = "フカヒレ",
+	["illustrator:wind039"] = "曽我誠",
 	["ikshensha"] = "神杀",
 	[":ikshensha"] = "锁定技，你每于回合内使用一次牌后，你计算与其他角色的距离便减少1，直到回合结束。你的回合内，若你与所有其他角色的距离均为1，你无视其他角色的防具，你使用的【杀】可以额外指定一个目标，且弃牌阶段开始时，你摸X张牌（X为已受伤的角色数且至多为4）。",
 
@@ -289,7 +289,7 @@ return {
 	["#bloom031"] = "箱型的恐祸",
 	["bloom031"] = "菲娅•库布里克",--花 - 幻 - 3血
 	["designer:bloom031"] = "游卡桌游",
-	["illustrator:bloom031"] = "和泉つばす",
+	["illustrator:bloom031"] = "さそりがため",
 	["ikfangsheng"] = "方圣",
 	[":ikfangsheng"] = "结束阶段开始时，若你已受伤，你可以摸一至X张牌，然后将等量的手牌依次交给一名其他角色（X为你已损失的体力值）。",
 	["ikfangsheng_draw"] = "方圣摸牌数",
@@ -575,7 +575,7 @@ return {
 	["#luna015"] = "原野日和之春",
 	["luna015"] = "小牧爱佳",--月 - 空 - 3血
 	["designer:luna015"] = "点点",
-	["illustrator:luna015"] = "こもりけい",
+	["illustrator:luna015"] = "みつみ美里",
 	["iktianjing"] = "恬静",
 	[":iktianjing"] = "锁定技，你的手牌上限+X（X为场上的势力数）。",
 	["ikdanbo"] = "澹泊",

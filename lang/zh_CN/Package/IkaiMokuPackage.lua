@@ -73,7 +73,7 @@ return {
 	["#wind014"] = "宙回之零",
 	["wind014"] = "楯山文乃",--风 - 空 - 3血
 	["designer:wind014"] = "游卡桌游",
-	["illustrator:wind014"] = "V-hu_愁音",
+	["illustrator:wind014"] = "ひろ",
 	["ikchihu"] = "赤帍",
 	[":ikchihu"] = "锁定技，当其他角色使用【杀】指定你为目标时，需额外弃置一张基本牌，否则该【杀】对你无效。",
 	["@ikchihu-discard"] = "你须再弃置一张基本牌使此【杀】生效",
@@ -161,7 +161,7 @@ return {
 	["#bloom010"] = "汲血的死徒",
 	["bloom010"] = "弓塚五月",--花 - 空 - 4血
 	["designer:bloom010"] = "游卡桌游",
-	["illustrator:bloom010"] = "白森ゆせ",
+	["illustrator:bloom010"] = "赤毛のUN",
 	["ikkujie"] = "枯界",
 	[":ikkujie"] = "出牌阶段，你可以将一张黑色非锦囊牌当【枯羽华庭】使用；你可以对距离2以内的一名其他角色使用【枯羽华庭】。",
 

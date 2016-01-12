@@ -39,7 +39,7 @@ return {
 	["#bangai004"] = "星耀的使役魔",
 	["bangai004"] = "小恶魔",--月 - 幻 - 3血
 	["designer:bangai004"] = "TH3EE",
-	["illustrator:bangai004"] = "konomi",
+	["illustrator:bangai004"] = "むぎちゃ",
 	["cv:bangai004"] = "暂无",
 	["thzhongjie"] = "忠节",
 	[":thzhongjie"] = "每当你受到一次伤害后，你可以展示一名角色的所有手牌，每少一种类型的牌，其摸一张牌。",

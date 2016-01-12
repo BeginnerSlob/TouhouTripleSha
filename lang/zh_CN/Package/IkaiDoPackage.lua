@@ -36,7 +36,7 @@ return {
 	["#wind004"] = "病弱的先知",
 	["wind004"] = "园城寺怜",--风 - 空 - 3血
 	["designer:wind004"] = "游卡桌游",
-	["illustrator:wind004"] = "逸見",
+	["illustrator:wind004"] = "小林立",
 	["ikyuxi"] = "预悉",
 	[":ikyuxi"] = "准备阶段开始时，你可以观看牌堆顶的X张牌（X为存活角色的数量，且至多为5），将其中任意数量的牌以任意顺序置于牌堆顶，其余以任意顺序置于牌堆底。",
 	["ikjingyou"] = "静幽",
@@ -262,7 +262,7 @@ return {
 	["#luna002"] = "坚强的心之光",
 	["luna002"] = "坂上智代",--月 - 空 - 4血
 	["designer:luna002"] = "游卡桌游",
-	["illustrator:luna002"] = "かろりー",
+	["illustrator:luna002"] = "木子翔",
 	["ikwushuang"] = "无双",
 	[":ikwushuang"] = "锁定技，当你使用【杀】指定一名角色为目标后，该角色需连续使用两张【闪】才能抵消；与你进行【碎月绮斗】的角色每次需连续打出两张【杀】。",
 	["@ikwushuang-slash-1"] = "%src 对你【碎月绮斗】，你须连续打出两张【杀】",
@@ -282,7 +282,7 @@ return {
 	["#luna006"] = "森之轮回",
 	["luna006"] = "艾露露",--月 - 空 - 3血
 	["designer:luna006"] = "游卡桌游",
-	["illustrator:luna006"] = "天夢森流彩",
+	["illustrator:luna006"] = "Somjeu",
 	["ikhuichun"] = "回春",
 	[":ikhuichun"] = "你的回合外，你可以将一张红色牌当【桃】使用。",
 	["ikqingnang"] = "青囊",

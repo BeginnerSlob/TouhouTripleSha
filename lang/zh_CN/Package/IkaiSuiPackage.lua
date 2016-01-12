@@ -80,7 +80,7 @@ return {
 	["wind044"] = "伊莉亚斯菲尔•冯•爱因兹贝伦",--风 - 幻 - 3血
 	["&wind044"] = "伊莉亚斯菲尔",
 	["designer:wind044"] = "游卡桌游",
-	["illustrator:wind044"]="かえで",
+	["illustrator:wind044"]="志麻しのじ",
 	["ikmoqi"] = "魔器",
 	[":ikmoqi"] = "限定技，准备阶段开始时或出牌阶段，你可摸两张牌，若如此做，结束阶段开始时，你摸两张牌。",
 	["#ikmoqi"] = "魔器（后续结算）",
@@ -341,7 +341,7 @@ return {
 	["#snow043"] = "高天的剑巫",
 	["snow043"] = "姬柊雪菜",--雪 - 空 - 4血
 	["designer:snow043"] = "游卡桌游",
-	["illustrator:snow043"]="Nardack",
+	["illustrator:snow043"]="マニャ子",
 	["iklingtong"] = "灵瞳",
 	[":iklingtong"] = "出牌阶段限一次，你可以令一名其他角色观看你的手牌，然后你选择一项：观看其手牌，然后你可以弃置其中一张黑色牌；或观看其身份牌。",
 	["iklingtong:handcards"] = "手牌",
