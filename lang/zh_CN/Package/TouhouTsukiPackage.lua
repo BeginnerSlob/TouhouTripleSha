@@ -182,7 +182,7 @@ return {
 	["tsuki015"] = "帕秋莉•诺蕾姬",--月 - 幻 - 3血
 	["&tsuki015"] = "帕秋莉",
 	["designer:tsuki015"] = "幻桜落",
-	["illustrator:tsuki015"] = "忘川の泉眼",
+	["illustrator:tsuki015"] = "kino",
 	["cv:tsuki015"] = "暂无",
 	["thanbing"] = "暗病",
 	[":thanbing"] = "锁定技，你的手牌上限始终-1，且若你于出牌阶段未使用过锦囊牌，你跳过此回合的弃牌阶段。",
