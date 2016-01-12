@@ -33,12 +33,11 @@
         ["Arial", [15, 15, -2], 80, [233, 34, 34, 255], 2, 10, [0, 0], [20, 20, 20, 155]],
         ["Arial", [15, 15, -2], 80, [233, 116, 34, 255], 2, 10, [0, 0], [20, 20, 20, 155]],
         ["Arial", [15, 15, -2], 80, [195, 195, 34, 255], 2, 10, [0, 0], [20, 20, 20, 155]],
-        ["Arial", [15, 15, -2], 80, [141, 195, 34, 255], 2, 10, [0, 0], [20, 20, 20, 155]],
         ["Arial", [15, 15, -2], 80, [66, 174, 34, 255], 2, 10, [0, 0], [20, 20, 20, 155]]
     ],
     // I realized that some MOD might need a wider background area than the foreground magatamas in order
     // to draw certain effect. The following factor specifies the number of invisible magatama to be appended. 
-    "hpExtraSpaceHolder": 1
+    "hpExtraSpaceHolder": 2
 },
 "room":
 {
@@ -66,6 +65,7 @@
     "canvasArea": [0, 0, 157, 195],
     "handCardNumIconArea": [-6, 101, 30, 20],
     "handCardFont": ["Arial", [12, 12, -1], 20, [255, 255, 255, 255], 1, 30, [0, 0], [20, 20, 20, 200]],
+    "genderIconArea": [133, 101, 30, 20],
     "equipAreas": [[1, 120, 150, 21], [1, 134, 150, 21], [1, 148, 150, 21], [1, 162, 150, 21], [1, 176, 150, 21]],
     "equipImageArea": [0, 1, 140, 19],
     "equipSuitArea": [117, 2, 21, 17],
@@ -98,7 +98,7 @@
     "magatamaSize": [18, 17],
     "magatamaImageArea": [2, 2, 14, 17],
     "magatamasBgVisible": true,
-    "magatamasAnchor": ["bottomRight", [156, 208]],
+    "magatamasAnchor": ["bottomRight", [156, 225]],
     "cardMoveArea": [-15, 35, 200, 130],
     "phaseArea": [25, 190, 140, 12],
     "onlineStatusArea": [122, 24, 30, 25],
@@ -131,6 +131,7 @@
     "floatingAreaHeight": 50,
     "handCardNumIconArea": [-109, 149, 30, 20],
     "handCardFont": ["Arial", [12, 12, -1], 20, [255, 255, 255, 255], 1, 30, [0, 0], [20, 20, 20, 200]],
+    "genderIconArea": [-109, 1, 30, 20],
     "equipAreas": [[7, 42, 149, 25], [7, 67, 149, 25], [7, 92, 149, 25], [7, 117, 149, 25], [7, 142, 149, 25]],
     "equipBorderPos": [-6, -6],
     "equipSelectedOffset": [10, 0],

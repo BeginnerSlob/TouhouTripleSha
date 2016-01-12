@@ -37,6 +37,7 @@ const char *QSanRoomSkin::S_SKIN_KEY_LEFTFRAME = "%1LeftFrame";
 const char *QSanRoomSkin::S_SKIN_KEY_RIGHTFRAME = "%1RightFrame";
 const char *QSanRoomSkin::S_SKIN_KEY_MIDDLEFRAME = "%1MiddleFrame";
 const char *QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM = "%1HandCardNum-%2";
+const char *QSanRoomSkin::S_SKIN_KEY_GENDER = "%1Gender-%2";
 const char *QSanRoomSkin::S_SKIN_KEY_AVATARNAME = "avatarName-%1";
 const char *QSanRoomSkin::S_SKIN_KEY_FACETURNEDMASK = "%1FaceTurnedMask";
 const char *QSanRoomSkin::S_SKIN_KEY_BLANK_GENERAL = "%1BlankGeneral";
@@ -773,6 +774,7 @@ bool QSanRoomSkin::_loadLayoutConfig(const Json::Value &layoutConfig) {
 
         tryParse(playerConfig["normalHeight"], layout->m_normalHeight);
         tryParse(playerConfig["handCardNumIconArea"], layout->m_handCardArea);
+        tryParse(playerConfig["genderIconArea"], layout->m_genderArea);
         for (int j = 0; j < S_EQUIP_AREA_LENGTH; j++)
             tryParse(playerConfig["equipAreas"][j], layout->m_equipAreas[j]);
         tryParse(playerConfig["equipImageArea"], layout->m_equipImageArea);

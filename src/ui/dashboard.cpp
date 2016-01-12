@@ -461,7 +461,7 @@ void Dashboard::highlightEquip(QString skillName, bool highlight) {
         if (_m_equipCards[i]->getCard()->objectName() == skillName)
             break;
     }
-    if (i != 5)
+    if (i != S_EQUIP_AREA_LENGTH)
         _setEquipBorderAnimation(i, highlight);
 }
 
