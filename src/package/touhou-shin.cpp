@@ -1934,7 +1934,7 @@ TouhouShinPackage::TouhouShinPackage()
     General *shin012 = new General(this, "shin012", "tsuki");
     shin012->addSkill(new ThJianyue);
 
-    General *shin013 = new General(this, "shin013", "kaze");
+    General *shin013 = new General(this, "shin013", "kaze", 3);
     shin013->addSkill(new ThHuanjian);
     shin013->addSkill(new ThHuanjianReturn);
     related_skills.insertMulti("thhuanjian", "#thhuanjian");
