@@ -4003,6 +4003,7 @@ public:
                     ServerPlayer *s = sunluyu.value<ServerPlayer *>();
                     room->removeAttackRangePair(player, s);
                 }
+                room->setPlayerMark(player, "@linbu", 0);
                 room->detachSkillFromPlayer(player, "#iklinbu", false, true);
                 room->filterCards(player, player->getCards("he"), true);
             }
@@ -4027,6 +4028,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *owner) const{
+        room->addPlayerMark(player, "@linbu", 1);
         if (!player->hasSkill("#iklinbu", true)) {
             room->acquireSkill(player, "#iklinbu", false);
             room->filterCards(player, player->getCards("he"), false);
