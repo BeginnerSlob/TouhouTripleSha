@@ -273,11 +273,11 @@ return {
 
 	["#snow011"] = "司穰的贤狼",
 	["snow011"] = "赫萝",--雪 - 幻 - 3血
-    ["designer:snow011"] = "游卡桌游",
+	["designer:snow011"] = "游卡桌游",
 	["illustrator:snow011"] = "RYO",
-    ["ikzhihui"] = "知惠",
+	["ikzhihui"] = "知惠",
 	[":ikzhihui"] = "每当你受到伤害时，你可弃置一张红桃手牌并将此伤害转移给一名其他角色，若如此做，该角色在伤害结算后摸X张牌（X为该角色已损失的体力值）。",
-    ["#ikzhihui"] = "知惠（摸牌）",
+	["#ikzhihui"] = "知惠（摸牌）",
 	["@ikzhihui-card"] = "请选择“知惠”的目标",
 	["~ikzhihui"] = "选择一张<font color=\"red\">♥</font>手牌→选择一名其他角色→点击确定",
 	["ikchiqiu"] = "赤秋",
