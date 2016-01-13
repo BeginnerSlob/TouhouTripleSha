@@ -158,7 +158,7 @@ QString General::getSkillDescription(bool include_name) const{
                                                                          .arg(objectName().toUpper())
                                                                          .arg(Sanguosha->translate(objectName()));
         for (int i = 0; i < max_hp; i++)
-            name.prepend("<img src='image/system/magatamas/5.png' height = 12/>");
+            name.prepend("<img src='image/system/magatamas/4.png' height = 12/>");
         name.prepend(QString("<img src='image/kingdom/icon/%1.png'/>    ").arg(kingdom));
         name.append("<br/> <br/>");
         description.prepend(name);

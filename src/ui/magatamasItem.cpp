@@ -56,7 +56,7 @@ void MagatamasBoxItem::setIconSize(QSize size) {
 }
 
 QRectF MagatamasBoxItem::boundingRect() const{
-    int buckets = qMin(m_maxHp, 5) + G_COMMON_LAYOUT.m_hpExtraSpaceHolder;
+    int buckets = qMin(m_maxHp, 4) + G_COMMON_LAYOUT.m_hpExtraSpaceHolder;
     if (m_orientation == Qt::Horizontal)
         return QRectF(0, 0, buckets * m_iconSize.width(), m_iconSize.height());
     else
@@ -126,11 +126,11 @@ void MagatamasBoxItem::_doHpChangeAnimation(int newHp) {
     }
     for (int i = qMax(newHp, mHp - 10); i < mHp; i++) {
         Sprite *aniMaga = new Sprite;
-        aniMaga->setPixmap(_icons[qBound(0, i, 5)]);
+        aniMaga->setPixmap(_icons[qBound(0, i, 4)]);
         aniMaga->setParentItem(this);
         aniMaga->setOffset(QPoint(-(width - m_imageArea.left()) / 2, -(height - m_imageArea.top()) / 2));
 
-        int pos = m_maxHp > 5 ? 0 : i;
+        int pos = m_maxHp > 4 ? 0 : i;
         aniMaga->setPos(QPoint(xStep * pos - aniMaga->offset().x(), yStep * pos - aniMaga->offset().y()));
 
         QPropertyAnimation *fade = new QPropertyAnimation(aniMaga, "opacity");
@@ -154,8 +154,8 @@ void MagatamasBoxItem::_doHpChangeAnimation(int newHp) {
 
 void MagatamasBoxItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
     if (m_maxHp <= 0) return;
-    int imageIndex = qBound(0, m_hp, 5);
-    if (m_hp == m_maxHp) imageIndex = 5;
+    int imageIndex = qBound(0, m_hp, 4);
+    if (m_hp == m_maxHp) imageIndex = 4;
 
     int xStep, yStep;
     if (this->m_orientation == Qt::Horizontal) {
@@ -172,12 +172,12 @@ void MagatamasBoxItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
             painter->translate(m_iconSize.width(), 0);
             painter->rotate(90);
         }
-        painter->drawPixmap(0, 0, _bgImages[qMin(m_maxHp, 5)]);
+        painter->drawPixmap(0, 0, _bgImages[qMin(m_maxHp, 4)]);
         if (this->m_orientation == Qt::Vertical)
             painter->restore();
     }
 
-    if (m_maxHp <= 5) {
+    if (m_maxHp <= 4) {
         int i;
         for (i = 0; i < m_hp; i++) {
             QRect rect(xStep * i, yStep * i, m_imageArea.width(), m_imageArea.height());

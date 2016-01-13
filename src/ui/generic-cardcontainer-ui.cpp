@@ -202,18 +202,23 @@ void PlayerCardContainer::updateAvatar() {
         const General *general = m_player->getGeneral();
         if (general != NULL) {
             QString kingdom = m_player->getKingdom();
-            QString gender = general->getGender() == General::Male ? "1" : "2";
+            QString gender = general->isMale() ? "male" : "female";
             _paintPixmap(_m_kingdomIcon, _m_layout->m_kingdomIconArea,
                          G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_KINGDOM_ICON, kingdom), _getAvatarParent());
             _paintPixmap(_m_kingdomColorMaskIcon, _m_layout->m_kingdomMaskArea,
                          G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_KINGDOM_COLOR_MASK, kingdom), _getAvatarParent());
             _paintPixmap(_m_handCardBg, _m_layout->m_handCardArea,
                          _getPixmap(QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM, kingdom), _getAvatarParent());
+            _paintPixmap(_m_genderBg, _m_layout->m_genderArea,
+                         _getPixmap(QSanRoomSkin::S_SKIN_KEY_GENDER, gender), _getAvatarParent());
             _paintPixmap(_m_avatarNameItem, _m_layout->m_avatarNameArea,
                          _getPixmap(QSanRoomSkin::S_SKIN_KEY_AVATARNAME, general->objectName()), _getAvatarParent());
         } else {
             _paintPixmap(_m_handCardBg, _m_layout->m_handCardArea,
                          _getPixmap(QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM, QString(QSanRoomSkin::S_SKIN_KEY_DEFAULT_SECOND)),
+                         _getAvatarParent());
+            _paintPixmap(_m_genderBg, _m_layout->m_genderArea,
+                         _getPixmap(QSanRoomSkin::S_SKIN_KEY_GENDER, QString(QSanRoomSkin::S_SKIN_KEY_DEFAULT_SECOND)),
                          _getAvatarParent());
         }
     } else {
@@ -223,6 +228,9 @@ void PlayerCardContainer::updateAvatar() {
         _clearPixmap(_m_kingdomIcon);
         _paintPixmap(_m_handCardBg, _m_layout->m_handCardArea,
                      _getPixmap(QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM, QString(QSanRoomSkin::S_SKIN_KEY_DEFAULT_SECOND)),
+                     _getAvatarParent());
+        _paintPixmap(_m_genderBg, _m_layout->m_genderArea,
+                     _getPixmap(QSanRoomSkin::S_SKIN_KEY_GENDER, QString(QSanRoomSkin::S_SKIN_KEY_DEFAULT_SECOND)),
                      _getAvatarParent());
         _m_avatarArea->setToolTip(QString());
     }
@@ -813,6 +821,7 @@ PlayerCardContainer::PlayerCardContainer() {
     _m_screenNameItem = NULL;
     _m_chainIcon = _m_faceTurnedIcon = NULL;
     _m_handCardBg = _m_handCardNumText = NULL;
+    _m_genderBg = NULL;
     _m_kingdomColorMaskIcon = _m_deathIcon = NULL;
     _m_actionIcon = NULL;
     _m_kingdomIcon = NULL;
@@ -823,7 +832,7 @@ PlayerCardContainer::PlayerCardContainer() {
     m_player = NULL;
     _m_selectedFrame = NULL;
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
         _m_equipCards[i] = NULL;
         _m_equipRegions[i] = NULL;
         _m_equipAnim[i] = NULL;
@@ -901,6 +910,7 @@ void PlayerCardContainer::_adjustComponentZValues(bool killed) {
     _layUnder(_m_progressBarItem);
     _layUnder(_m_roleComboBox);
     _layUnder(_m_chainIcon);
+    _layUnder(_m_genderBg);
     _layUnder(_m_hpBox);
     _layUnder(_m_handCardNumText);
     _layUnder(_m_handCardBg);
@@ -916,7 +926,7 @@ void PlayerCardContainer::_adjustComponentZValues(bool killed) {
     _layUnder(_m_kingdomIcon);
     _layUnder(_m_kingdomColorMaskIcon);
     _layUnder(_m_screenNameItem);
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++)
         _layUnder(_m_equipRegions[i]);
     _layUnder(_m_selectedFrame);
     _layUnder(_m_extraSkillText);

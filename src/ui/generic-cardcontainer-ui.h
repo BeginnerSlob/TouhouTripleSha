@@ -172,6 +172,7 @@ protected:
     QGraphicsPixmapItem *_m_screenNameItem;
     QGraphicsPixmapItem *_m_chainIcon, *_m_faceTurnedIcon;
     QGraphicsPixmapItem *_m_handCardBg, *_m_handCardNumText;
+    QGraphicsPixmapItem *_m_genderBg;
     QGraphicsPixmapItem *_m_kingdomColorMaskIcon;
     QGraphicsPixmapItem *_m_deathIcon;
     QGraphicsPixmapItem *_m_actionIcon;
