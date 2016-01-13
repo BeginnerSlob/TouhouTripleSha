@@ -17,6 +17,7 @@ QSanguosha.pro.user*
 etc/customScenes/custom_scenario.txt
 *.dylib
 QSanguosha.exe
+TouhouTripleSha.exe
 /tools/
 builds/*/Win32/
 builds/*/Win32/
