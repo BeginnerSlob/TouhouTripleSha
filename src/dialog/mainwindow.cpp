@@ -94,6 +94,7 @@ MainWindow::MainWindow(QWidget *parent)
             Audio::setBackgroundMusicVolume(Config.BGMVolume);
         }
     }
+    Audio::setEffectVolume(Config.EffectVolume);
 
 #endif
 
