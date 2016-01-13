@@ -5548,7 +5548,7 @@ public:
                 skills << "ikhunkao";
             } else
                 return false;
-            if (player->getMark("@zhonggui")) {
+            if (player->getMark("@zhonggui") && skills.last() != "ikchenqing") {
                 QStringList choices;
                 foreach (const Skill *skill, player->getVisibleSkillList(false)) {
                     if (!skill->isOwnerOnlySkill())
