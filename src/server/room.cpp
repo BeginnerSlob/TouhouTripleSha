@@ -3155,7 +3155,7 @@ void Room::loseMaxHp(ServerPlayer *victim, int lose) {
 bool Room::changeMaxHpForAwakenSkill(ServerPlayer *player, int magnitude) {
     //addPlayerMark(player, "@waked");
     //int n = player->getMark("@waked");
-    doLightbox("anim=effects/wake", 4000);
+    setEmotion(player, "effects/wake");
     if (magnitude < 0) {
         /*if (Config.Enable2ndGeneral && player->getGeneral() && player->getGeneral2()
             && Config.MaxHpScheme > 0 && Config.PreventAwakenBelow3

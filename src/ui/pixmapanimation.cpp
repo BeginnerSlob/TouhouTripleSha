@@ -143,9 +143,7 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
                         pma->boundingRect().height() * 0.1);
             pma->setScale(0.8);
         } else if (emotion == "effects/wake") {
-            pma->moveBy(-pma->boundingRect().width() * 0.05,
-                        -pma->boundingRect().height() * 0.05);
-            pma->setScale(1.1);
+            pma->moveBy(0, -pma->boundingRect().width() * 0.05);
         }
 /*
         else if (emotion == "effects/amazing_grace") {
