@@ -229,11 +229,11 @@ public:
     virtual const Card *validate(CardUseStruct &card_use) const;
 };
 
-class IkHuanlueCard: public SkillCard {
+class IkHuanlveCard: public SkillCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE IkHuanlueCard();
+    Q_INVOKABLE IkHuanlveCard();
 
     virtual bool targetFixed() const;
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
