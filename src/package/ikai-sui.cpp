@@ -2115,9 +2115,9 @@ public:
     }
 };
 
-class IkBihua: public TriggerSkill {
+class IkBenhua: public TriggerSkill {
 public:
-    IkBihua(): TriggerSkill("ikbihua") {
+    IkBenhua(): TriggerSkill("ikbenhua") {
         events << TargetConfirmed;
     }
 
@@ -2145,7 +2145,7 @@ public:
                 if (!player->isNude() && player != to) {
                     const Card *card = NULL;
                     if (player->getCardCount() > 1) {
-                        card = room->askForCard(player, "..!", "@ikbihua-give:" + to->objectName(), data, Card::MethodNone);
+                        card = room->askForCard(player, "..!", "@ikbenhua-give:" + to->objectName(), data, Card::MethodNone);
                         if (!card)
                             card = player->getCards("he").at(qrand() % player->getCardCount());
                     } else {
@@ -2155,7 +2155,7 @@ public:
                     to->obtainCard(card);
                     if (card->getTypeId() == Card::TypeEquip && room->getCardOwner(card->getEffectiveId()) == to
                         && !to->isLocked(card))
-                        if (room->askForSkillInvoke(to, "ikbihua_use", "use"))
+                        if (room->askForSkillInvoke(to, "ikbenhua_use", "use"))
                             room->useCard(CardUseStruct(card, to, to));
                 }
                 player->drawCards(1, objectName());
@@ -5870,9 +5870,9 @@ public:
     }
 };
 
-class IkYishi: public TriggerSkill {
+class IkPianxiang: public TriggerSkill {
 public:
-    IkYishi(): TriggerSkill("ikyishi") {
+    IkPianxiang(): TriggerSkill("ikpianxiang") {
         events << TargetConfirmed;
     }
 
@@ -6224,7 +6224,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     related_skills.insert("ikkuanglu", "#ikkuanglu");
 
     General *bloom041 = new General(this, "bloom041", "hana");
-    bloom041->addSkill(new IkBihua);
+    bloom041->addSkill(new IkBenhua);
 
     General *bloom043 = new General(this, "bloom043", "hana");
     bloom043->addSkill(new IkHongfa);
@@ -6373,7 +6373,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     luna044->addSkill(new IkMingzhen);
     luna044->addSkill(new IkMingzhenInvalidity);
     related_skills.insertMulti("ikmingzhen", "#ikmingzhen-inv");
-    luna044->addSkill(new IkYishi);
+    luna044->addSkill(new IkPianxiang);
 
     General *luna050 = new General(this, "luna050", "tsuki");
     luna050->addSkill(new IkTingmai);

@@ -3335,37 +3335,37 @@ public:
     }
 };
 
-IkHuanlueCard::IkHuanlueCard() {
+IkHuanlveCard::IkHuanlveCard() {
     will_throw = false;
 }
 
-bool IkHuanlueCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    const Card *card = Self->tag.value("ikhuanlue").value<const Card *>();
+bool IkHuanlveCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    const Card *card = Self->tag.value("ikhuanlve").value<const Card *>();
     Card *mutable_card = const_cast<Card *>(card);
     if (mutable_card)
         mutable_card->addSubcards(this->subcards);
     return mutable_card && mutable_card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, mutable_card, targets);
 }
 
-bool IkHuanlueCard::targetFixed() const{
-    const Card *card = Self->tag.value("ikhuanlue").value<const Card *>();
+bool IkHuanlveCard::targetFixed() const{
+    const Card *card = Self->tag.value("ikhuanlve").value<const Card *>();
     Card *mutable_card = const_cast<Card *>(card);
     if (mutable_card)
         mutable_card->addSubcards(this->subcards);
     return mutable_card && mutable_card->targetFixed();
 }
 
-bool IkHuanlueCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-    const Card *card = Self->tag.value("ikhuanlue").value<const Card *>();
+bool IkHuanlveCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    const Card *card = Self->tag.value("ikhuanlve").value<const Card *>();
     Card *mutable_card = const_cast<Card *>(card);
     if (mutable_card)
         mutable_card->addSubcards(this->subcards);
     return mutable_card && mutable_card->targetsFeasible(targets, Self);
 }
 
-const Card *IkHuanlueCard::validate(CardUseStruct &card_use) const{
+const Card *IkHuanlveCard::validate(CardUseStruct &card_use) const{
     Card *use_card = Sanguosha->cloneCard(user_string);
-    use_card->setSkillName("ikhuanlue");
+    use_card->setSkillName("ikhuanlve");
     use_card->addSubcards(this->subcards);
     bool available = true;
     foreach (ServerPlayer *to, card_use.to)
@@ -3385,14 +3385,14 @@ const Card *IkHuanlueCard::validate(CardUseStruct &card_use) const{
     }
     Room *room = card_use.from->getRoom();
     if (all_tricks)
-        room->setPlayerFlag(card_use.from, "IkHuanlueTrick");
-    room->addPlayerMark(card_use.from, "IkHuanlueTimes");
+        room->setPlayerFlag(card_use.from, "IkHuanlveTrick");
+    room->addPlayerMark(card_use.from, "IkHuanlveTimes");
     return use_card;
 }
 
-const Card *IkHuanlueCard::validateInResponse(ServerPlayer *user) const{
+const Card *IkHuanlveCard::validateInResponse(ServerPlayer *user) const{
     Card *use_card = Sanguosha->cloneCard(user_string);
-    use_card->setSkillName("ikhuanlue");
+    use_card->setSkillName("ikhuanlve");
     use_card->addSubcards(this->subcards);
     use_card->deleteLater();
 
@@ -3405,19 +3405,19 @@ const Card *IkHuanlueCard::validateInResponse(ServerPlayer *user) const{
     }
     Room *room = user->getRoom();
     if (all_tricks)
-        room->setPlayerFlag(user, "IkHuanlueTrick");
-    room->addPlayerMark(user, "IkHuanlueTimes");
+        room->setPlayerFlag(user, "IkHuanlveTrick");
+    room->addPlayerMark(user, "IkHuanlveTimes");
     return use_card;
 }
 
-class IkHuanlue: public ViewAsSkill {
+class IkHuanlve: public ViewAsSkill {
 public:
-    IkHuanlue(): ViewAsSkill("ikhuanlue") {
+    IkHuanlve(): ViewAsSkill("ikhuanlve") {
         response_or_use = true;
     }
 
     virtual QDialog *getDialog() const{
-        return ThMimengDialog::getInstance("ikhuanlue", false);
+        return ThMimengDialog::getInstance("ikhuanlve", false);
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
@@ -3433,15 +3433,15 @@ public:
             return NULL;
 
         if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
-            IkHuanlueCard *card = new IkHuanlueCard;
+            IkHuanlveCard *card = new IkHuanlveCard;
             card->setUserString(Sanguosha->getCurrentCardUsePattern());
             card->addSubcards(cards);
             return card;
         }
 
-        const Card *c = Self->tag.value("ikhuanlue").value<const Card *>();
+        const Card *c = Self->tag.value("ikhuanlve").value<const Card *>();
         if (c) {
-            IkHuanlueCard *card = new IkHuanlueCard;
+            IkHuanlveCard *card = new IkHuanlveCard;
             card->setUserString(c->objectName());
             card->addSubcards(cards);
             return card;
@@ -3450,18 +3450,18 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getPhase() == Player::Play && player->getMark("IkHuanlueTimes") < 2;
+        return player->getPhase() == Player::Play && player->getMark("IkHuanlveTimes") < 2;
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        if (player->getPhase() != Player::Play || player->getMark("IkHuanlueTimes") >= 2) return false;
+        if (player->getPhase() != Player::Play || player->getMark("IkHuanlveTimes") >= 2) return false;
         if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
             return false;
         return pattern == "nullification";
     }
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
-        return player->getPhase() == Player::Play && player->getMark("IkHuanlueTimes") < 2;
+        return player->getPhase() == Player::Play && player->getMark("IkHuanlveTimes") < 2;
     }
 
     virtual int getEffectIndex(const ServerPlayer *, const Card *) const{
@@ -3469,18 +3469,18 @@ public:
     }
 };
 
-class IkHuanlueTrigger: public TriggerSkill {
+class IkHuanlveTrigger: public TriggerSkill {
 public:
-    IkHuanlueTrigger(): TriggerSkill("#ikhuanlue") {
+    IkHuanlveTrigger(): TriggerSkill("#ikhuanlve") {
         events << EventPhaseStart << EventPhaseChanging;
         frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
         if (triggerEvent == EventPhaseChanging)
-            room->setPlayerMark(player, "IkHuanlueTimes", 0);
+            room->setPlayerMark(player, "IkHuanlveTimes", 0);
         else if (triggerEvent == EventPhaseStart) {
-            if (player->isAlive() && player->hasFlag("IkHuanlueTrick") && player->getPhase() == Player::Finish)
+            if (player->isAlive() && player->hasFlag("IkHuanlveTrick") && player->getPhase() == Player::Finish)
                 return QStringList(objectName());
         }
         return QStringList();
@@ -5823,8 +5823,8 @@ IkaiKaPackage::IkaiKaPackage()
     snow051->addSkill(new IkGuichan);
 
     General *snow052 = new General(this, "snow052", "yuki", 3, false);
-    snow052->addSkill(new IkHuanlue);
-    snow052->addSkill(new IkHuanlueTrigger);
+    snow052->addSkill(new IkHuanlve);
+    snow052->addSkill(new IkHuanlveTrigger);
     related_skills.insertMulti("ikhualue", "#ikhualue");
     snow052->addSkill(new IkMuguang);
     snow052->addRelateSkill("thjizhi");
@@ -5948,7 +5948,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkMingwangCard>();
     addMetaObject<IkLinghuiCard>();
     addMetaObject<IkXiaowuCard>();
-    addMetaObject<IkHuanlueCard>();
+    addMetaObject<IkHuanlveCard>();
     addMetaObject<IkLihunCard>();
     addMetaObject<IkQisiCard>();
     addMetaObject<IkManwuCard>();

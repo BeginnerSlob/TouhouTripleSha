@@ -1158,14 +1158,14 @@ public:
     }
 };
 
-ThCannueCard::ThCannueCard() {
+ThCannveCard::ThCannveCard() {
     will_throw = false;
     handling_method = MethodNone;
 }
 
-void ThCannueCard::onEffect(const CardEffectStruct &effect) const {
+void ThCannveCard::onEffect(const CardEffectStruct &effect) const {
     Room *room = effect.from->getRoom();
-    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "thcannue", QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "thcannve", QString());
     room->obtainCard(effect.to, this, reason);
     QList<ServerPlayer *> targets;
     foreach (ServerPlayer *p, room->getOtherPlayers(effect.to))
@@ -1173,7 +1173,7 @@ void ThCannueCard::onEffect(const CardEffectStruct &effect) const {
             targets << p;
 
     if (!targets.isEmpty()) {
-        ServerPlayer *target = room->askForPlayerChosen(effect.from, targets, "thcannue");
+        ServerPlayer *target = room->askForPlayerChosen(effect.from, targets, "thcannve");
 
         LogMessage log;
         log.type = "#CollateralSlash";
@@ -1181,7 +1181,7 @@ void ThCannueCard::onEffect(const CardEffectStruct &effect) const {
         log.to << target;
         room->sendLog(log);
 
-        if (room->askForUseSlashTo(effect.to, target, "@thcannue-slash:" + target->objectName()))
+        if (room->askForUseSlashTo(effect.to, target, "@thcannve-slash:" + target->objectName()))
             return ;
     }
 
@@ -1189,26 +1189,26 @@ void ThCannueCard::onEffect(const CardEffectStruct &effect) const {
     if (!effect.to->isNude())
         choices << "get";
     choices << "hit";
-    QString choice = room->askForChoice(effect.from, "thcannue", choices.join("+"), QVariant::fromValue(effect.to));
+    QString choice = room->askForChoice(effect.from, "thcannve", choices.join("+"), QVariant::fromValue(effect.to));
     if (choice == "get") {
-        int card_id = room->askForCardChosen(effect.from, effect.to, "he", "thcannue");
+        int card_id = room->askForCardChosen(effect.from, effect.to, "he", "thcannve");
         room->obtainCard(effect.from, card_id, false);
     } else
-        room->damage(DamageStruct("thcannue", effect.from, effect.to));
+        room->damage(DamageStruct("thcannve", effect.from, effect.to));
 };
 
-class ThCannue: public OneCardViewAsSkill {
+class ThCannve: public OneCardViewAsSkill {
 public:
-    ThCannue(): OneCardViewAsSkill("thcannue") {
+    ThCannve(): OneCardViewAsSkill("thcannve") {
         filter_pattern = ".|diamond";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("ThCannueCard");
+        return !player->hasUsed("ThCannveCard");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
-        ThCannueCard *card = new ThCannueCard;
+        ThCannveCard *card = new ThCannveCard;
         card->addSubcard(originalCard);
         return card;
     }
@@ -2432,7 +2432,7 @@ TouhouKazePackage::TouhouKazePackage()
     kaze009->addSkill(new ThKunyi);
 
     General *kaze010 = new General(this, "kaze010", "kaze", 3);
-    kaze010->addSkill(new ThCannue);
+    kaze010->addSkill(new ThCannve);
     kaze010->addSkill(new ThSibao);
 
     General *kaze011 = new General(this, "kaze011", "kaze");
@@ -2483,7 +2483,7 @@ TouhouKazePackage::TouhouKazePackage()
     addMetaObject<ThQianyiCard>();
     addMetaObject<ThHuosuiCard>();
     addMetaObject<ThKunyiCard>();
-    addMetaObject<ThCannueCard>();
+    addMetaObject<ThCannveCard>();
     addMetaObject<ThGelongCard>();
     addMetaObject<ThDasuiCard>();
     addMetaObject<ThSuilunCard>();
