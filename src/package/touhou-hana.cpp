@@ -570,8 +570,10 @@ public:
         if (triggerEvent == EventPhaseChanging)
             player->setMark(objectName(), 0);
         else if (TriggerSkill::triggerable(damage.from)
-            && damage.from->getPhase() == Player::Play
-            && damage.from->getMark(objectName()) < 2) {
+                 && damage.from->getPhase() == Player::Play
+                 && !player->isChained()
+                 && damage.nature == DamageStruct::Thunder
+                 && damage.from->getMark(objectName()) < 2) {
             ask_who = damage.from;
             return QStringList(objectName());
         }
