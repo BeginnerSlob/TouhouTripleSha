@@ -5870,9 +5870,9 @@ public:
     }
 };
 
-class IkYishi: public TriggerSkill {
+class IkPianxiang: public TriggerSkill {
 public:
-    IkYishi(): TriggerSkill("ikyishi") {
+    IkPianxiang(): TriggerSkill("ikpianxiang") {
         events << TargetConfirmed;
     }
 
@@ -6373,7 +6373,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     luna044->addSkill(new IkMingzhen);
     luna044->addSkill(new IkMingzhenInvalidity);
     related_skills.insertMulti("ikmingzhen", "#ikmingzhen-inv");
-    luna044->addSkill(new IkYishi);
+    luna044->addSkill(new IkPianxiang);
 
     General *luna050 = new General(this, "luna050", "tsuki");
     luna050->addSkill(new IkTingmai);
