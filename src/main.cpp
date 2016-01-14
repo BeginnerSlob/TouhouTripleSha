@@ -45,7 +45,9 @@ int main(int argc, char *argv[]) {
         new QCoreApplication(argc, argv);
     } else {
         new QApplication(argc, argv);
+#ifndef Q_OS_ANDROID
         QCoreApplication::addLibraryPath(QCoreApplication::applicationDirPath() + "/plugins");
+#endif
     }
 
 #ifdef USE_BREAKPAD
@@ -72,7 +74,7 @@ int main(int argc, char *argv[]) {
         QDir storageDir("/storage");
         QStringList sdcards = storageDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
         foreach (const QString &sdcard, sdcards) {
-            QDir root(QString("/storage/%1/Android/data/org.qsgsrara.qsanguosha").arg(sdcard));
+            QDir root(QString("/storage/%1/Android/data/org.slob.TouhouTripleSha").arg(sdcard));
             if (root.exists("lua/config.lua")) {
                 QDir::setCurrent(root.absolutePath());
                 found = true;
@@ -80,7 +82,7 @@ int main(int argc, char *argv[]) {
             }
         }
         if (!found) {
-            QDir root("/sdcard/Android/data/org.qsgsrara.qsanguosha");
+            QDir root("/sdcard/Android/data/org.slob.TouhouTripleSha");
             if (root.exists("lua/config.lua")) {
                 QDir::setCurrent(root.absolutePath());
                 found = true;
@@ -89,7 +91,7 @@ int main(int argc, char *argv[]) {
 
 
         if (!found) {
-            QString m = QObject::tr("Game data not found, please download QSanguosha-For-Hegemony PC version, and put the files and folders into /sdcard/Android/data/org.qsgsrara.qsanguosha");
+            QString m = QObject::tr("Game data not found, please download TouhouTripleSha PC version, and put the files and folders into /sdcard/Android/data/org.slob.TouhouTripleSha");
             puts(m.toLatin1().constData());
 
             return -2;

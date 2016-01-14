@@ -2601,7 +2601,7 @@ void Room::run() {
                 names.removeOne(gen_name.mid(1));
             } else if (gen_name.startsWith("package:")) {
                 QString pack_name = gen_name.mid(8);
-                const Package *pack = Sanguosha->findChild<const Package *>(pack_name);
+                const Package *pack = Sanguosha->getPackage(pack_name);
                 if (pack) {
                     foreach (const General *general, pack->findChildren<const General *>()) {
                         if (general->isTotallyHidden())

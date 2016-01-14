@@ -23,8 +23,8 @@ void RoomThread1v1::run() {
     int total_num = rule != "Classical" ? 12 : 10;
 
     if (!Config.value("1v1/UsingExtension", false).toBool()) {
-        const Package *stdpack = Sanguosha->findChild<const Package *>("standard");
-        const Package *windpack = Sanguosha->findChild<const Package *>("wind");
+        const Package *stdpack = Sanguosha->getPackage("standard");
+        const Package *windpack = Sanguosha->getPackage("wind");
 
         QStringList candidates;
         if (rule == "Classical") {

@@ -41,6 +41,8 @@ public:
     int getMiniSceneCounts();
 
     void addPackage(Package *package);
+    const QList<const Package *> &getPackages() const;
+    const Package *getPackage(const QString &package_name) const;
     void addBanPackage(const QString &package_name);
     QStringList getBanPackages() const;
     Card *cloneCard(const Card *card) const;
@@ -77,6 +79,7 @@ public:
     void addPackage(const QString &name);
 
     const General *getGeneral(const QString &name) const;
+    QList<const General *> getGeneralList() const;
     int getGeneralCount(bool include_banned = false, const QString &kingdom = QString()) const;
     const Skill *getSkill(const QString &skill_name) const;
     const Skill *getSkill(const EquipCard *card) const;
@@ -148,6 +151,7 @@ private:
     QList<const InvaliditySkill *> invalidity_skills;
     QList<const TriggerSkill *> global_trigger_skills;
 
+    QList<const Package *> packages;
     QList<Card *> cards;
     QStringList lord_list;
     QSet<QString> ban_package;

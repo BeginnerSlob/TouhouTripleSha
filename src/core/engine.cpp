@@ -214,9 +214,12 @@ QList<const TriggerSkill *> Engine::getGlobalTriggerSkills() const{
 }
 
 void Engine::addPackage(Package *package) {
-    if (findChild<const Package *>(package->objectName()))
-        return;
+    foreach (const Package *p, packages) {
+        if (p->objectName() == package->objectName())
+            return;
+    }
 
+    packages << package;
     package->setParent(this);
     sp_convert_pairs.unite(package->getConvertPairs());
     patterns.unite(package->getPatterns());
@@ -290,6 +293,20 @@ void Engine::addPackage(Package *package) {
     QList<const QMetaObject *> metas = package->getMetaObjects();
     foreach (const QMetaObject *meta, metas)
         metaobjects.insert(meta->className(), meta);
+}
+
+const QList<const Package *> &Engine::getPackages() const {
+    return packages;
+}
+
+const Package *Engine::getPackage(const QString &package_name) const
+{
+    foreach (const Package *package, packages) {
+        if (package->objectName() == package_name)
+            return package;
+    }
+
+    return NULL;
 }
 
 void Engine::addBanPackage(const QString &package_name) {
@@ -371,6 +388,11 @@ const Skill *Engine::getMainSkill(const QString &skill_name) const{
 
 const General *Engine::getGeneral(const QString &name) const{
     return generals.value(name, NULL);
+}
+
+QList<const General *> Engine::getGeneralList() const
+{
+    return generals.values();
 }
 
 int Engine::getGeneralCount(bool include_banned, const QString &kingdom) const{
@@ -618,7 +640,7 @@ QString Engine::getMODName() const{
 
 QStringList Engine::getExtensions() const{
     QStringList extensions;
-    QList<const Package *> packages = findChildren<const Package *>();
+    //QList<const Package *> packages = findChildren<const Package *>();
     foreach (const Package *package, packages) {
         if (package->inherits("Scenario"))
             continue;
