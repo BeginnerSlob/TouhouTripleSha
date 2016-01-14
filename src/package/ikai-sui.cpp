@@ -1720,16 +1720,16 @@ void IkXinbanCard::onEffect(const CardEffectStruct &effect) const{
     room->sendLog(log);
 
     if (card->isKindOf("Weapon")) {
-      QList<ServerPlayer *> targets;
-      foreach (ServerPlayer *p, room->getAllPlayers()) {
-          if ((effect.to == p || effect.to->inMyAttackRange(p)) && caohong->canDiscard(p, "hej"))
-              targets << p;
-      }
-      if (!targets.isEmpty()) {
-          ServerPlayer *to_dismantle = room->askForPlayerChosen(caohong, targets, "ikxinban", "@ikxinban-discard:" + effect.to->objectName());
-          int card_id = room->askForCardChosen(caohong, to_dismantle, "hej", "ikxinban", false, Card::MethodDiscard);
-          room->throwCard(Sanguosha->getCard(card_id), to_dismantle, caohong);
-      }
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
+            if ((effect.to == p || effect.to->inMyAttackRange(p)) && caohong->canDiscard(p, "hej"))
+                targets << p;
+        }
+        if (!targets.isEmpty()) {
+            ServerPlayer *to_dismantle = room->askForPlayerChosen(caohong, targets, "ikxinban", "@ikxinban-discard:" + effect.to->objectName());
+            int card_id = room->askForCardChosen(caohong, to_dismantle, "hej", "ikxinban", false, Card::MethodDiscard);
+            room->throwCard(Sanguosha->getCard(card_id), to_dismantle, caohong);
+        }
     } else if (card->isKindOf("Armor")) {
         effect.to->drawCards(2, "ikxinban");
     } else if (card->isKindOf("Horse")) {

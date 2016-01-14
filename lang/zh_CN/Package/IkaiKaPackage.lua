@@ -430,7 +430,7 @@ return {
 	
 	["#luna048"] = "幻银的月华",
 	["luna048"] = "月野兔",--月 - 空 - 4血
-    ["designer:luna048"] = "沸治·克里夫",
+	["designer:luna048"] = "沸治·克里夫",
 	["illustrator:luna048"] = "Nardack",
 	["ikzhiwang"] = "织望",
 	[":ikzhiwang"] = "锁定技，出牌阶段开始时，你须视为无视合法性对你或你攻击范围内的一名角色使用一张不计入使用限制的【杀】。",
