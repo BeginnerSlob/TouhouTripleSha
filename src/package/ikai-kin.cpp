@@ -205,7 +205,7 @@ void IkXinchaoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
 
     if (!left.isEmpty())
         room->askForGuanxing(source, left, Room::GuanxingUpOnly);
- }
+}
 
 class IkXinchao: public ZeroCardViewAsSkill {
 public:
