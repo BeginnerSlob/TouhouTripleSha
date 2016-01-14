@@ -202,7 +202,7 @@ public:
                 skills << "-" + skill->objectName();
             player->tag.remove("Reihou");
         }
-        const Package *reihoupack = Sanguosha->findChild<const Package *>("tenshi-reihou");
+        const Package *reihoupack = Sanguosha->getPackage("tenshi-reihou");
         if (reihoupack) {
             QList<const General *> reihous = reihoupack->findChildren<const General *>();
             const General *reihou = reihous.at(qrand() % reihous.length());

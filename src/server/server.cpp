@@ -107,7 +107,7 @@ QWidget *ServerDialog::createPackageTab() {
     int i = 0, j = 0;
     int row = 0, column = 0;
     foreach (QString extension, extensions) {
-        const Package *package = Sanguosha->findChild<const Package *>(extension);
+        const Package *package = Sanguosha->getPackage(extension);
         if (package == NULL)
             continue;
 
@@ -1011,7 +1011,7 @@ Select3v3GeneralDialog::Select3v3GeneralDialog(QDialog *parent)
 }
 
 void Select3v3GeneralDialog::fillTabWidget() {
-    QList<const Package *> packages = Sanguosha->findChildren<const Package *>();
+    QList<const Package *> packages = Sanguosha->getPackages();
     foreach (const Package *package, packages) {
         if (package->getType() == Package::GeneralPack) {
             QListWidget *list = new QListWidget;

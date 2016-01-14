@@ -22,7 +22,7 @@ void ConnectionDialog::hideAvatarList() {
 void ConnectionDialog::showAvatarList() {
     if (ui->avatarList->isVisible()) return;
     ui->avatarList->clear();
-    QList<const General *> generals = Sanguosha->findChildren<const General *>();
+    QList<const General *> generals = Sanguosha->getGeneralList();
     foreach (const General *general, generals) {
         QIcon icon(G_ROOM_SKIN.getGeneralPixmap(general->objectName(), QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE));
         QListWidgetItem *item = new QListWidgetItem(icon, QString(), ui->avatarList);

@@ -48,7 +48,7 @@ bool ServerInfoStruct::parse(const QStringList &str) {
         NullificationCountDown = str.at(3).toInt();
 
         QStringList ban_packages = str.at(4).split("+");
-        QList<const Package *> packages = Sanguosha->findChildren<const Package *>();
+        QList<const Package *> packages = Sanguosha->getPackages();
         foreach (const Package *package, packages) {
             if (package->inherits("Scenario"))
                 continue;

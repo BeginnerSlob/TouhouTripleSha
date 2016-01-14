@@ -151,7 +151,7 @@ QWidget *GeneralSearch::createInfoTab() {
 
     i = 0;
     foreach (QString extension, extensions) {
-        const Package *package = Sanguosha->findChild<const Package *>(extension);
+        const Package *package = Sanguosha->getPackage(extension);
         if (package == NULL || package->getType() != Package::GeneralPack)
             continue;
         QCheckBox *checkbox = new QCheckBox;
