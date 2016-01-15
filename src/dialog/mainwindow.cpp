@@ -948,12 +948,12 @@ void MainWindow::httpFinished()
             QString key = texts1.at(0);
             QString value = texts1.at(1);
             if (key == "VersionNumber") {
-                if (Sanguosha->getVersionNumber() < value) {
-                    setWindowTitle(tr("New Version Available") + "  " + windowTitle());
+                if (Sanguosha->getVersionNumber() < value)
                     has_new_version = true;
-                    newVersionNumber = value;
-                }
+                newVersionNumber = value;
             } else if (key == "UpdateDate") {
+                if (Sanguosha->getMODName() < value.right(4))
+                    has_new_version = true;
                 updateDate = value;
             } else if (key == "url") {
                 downloadUrl = value;
@@ -962,17 +962,18 @@ void MainWindow::httpFinished()
             QString key = texts2.at(0);
             QString value = texts2.at(1);
             if (key == "VersionNumber") {
-                if (Sanguosha->getVersionNumber() < value) {
-                    setWindowTitle(tr("New Version Available") + "  " + windowTitle());
+                if (Sanguosha->getVersionNumber() < value)
                     has_new_version = true;
-                    newVersionNumber = value;
-                }
+                newVersionNumber = value;
             } else if (key == "UpdateDate") {
+                if (Sanguosha->getMODName() < value.right(4))
+                    has_new_version = true;
                 updateDate = value;
             }
         }
     }
     if (has_new_version) {
+        setWindowTitle(tr("New Version Available") + "  " + windowTitle());
         if (downloadUrl.isEmpty()) {
             QMessageBox::warning(this, tr("New Version Available"),
                                  tr("There is a new version for TouhouTripleSha<br/> \
@@ -988,8 +989,15 @@ void MainWindow::httpFinished()
                                          "The version number is %1<br/>"
                                          "Update date is %2<br/>"
                                          "Would you wanna download now?").arg(newVersionNumber).arg(updateDate))
-                    == QMessageBox::Yes)
+                    == QMessageBox::Yes) {
+                QMessageBox::warning(this, tr("Tips"),
+                                     tr("The new version will be downloading<br/>"
+                                        "it may takes sereval minutes if the update is big<br/>"
+                                        "you can do any thing you want but DO NOT close the game<br/>"
+                                        "otherwise the download will be canceled<br/>"
+                                        "we will call a pop-up window if the download is finished."));
                 downloadNew(downloadUrl);
+            }
         }
     }
     reply->deleteLater();
