@@ -214,10 +214,8 @@ QList<const TriggerSkill *> Engine::getGlobalTriggerSkills() const{
 }
 
 void Engine::addPackage(Package *package) {
-    foreach (const Package *p, packages) {
-        if (p->objectName() == package->objectName())
-            return;
-    }
+    if (packages.contains(package))
+        return;
 
     packages << package;
     package->setParent(this);
@@ -283,6 +281,7 @@ void Engine::addPackage(Package *package) {
             addSkills(QList<const Skill *>() << skill);
             general->addSkill(skill->objectName());
         }
+        general_names << general->objectName();
         generals.insert(general->objectName(), general);
         if (isGeneralHidden(general->objectName())) continue;
         if ((general->isLord() && !removed_default_lords.contains(general->objectName()))
@@ -392,7 +391,12 @@ const General *Engine::getGeneral(const QString &name) const{
 
 QList<const General *> Engine::getGeneralList() const
 {
-    return generals.values();
+    static QList<const General *> _generals;
+    if (_generals.isEmpty()) {
+        foreach (QString name, general_names)
+            _generals << generals.value(name);
+    }
+    return _generals;
 }
 
 int Engine::getGeneralCount(bool include_banned, const QString &kingdom) const{
