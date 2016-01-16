@@ -2255,6 +2255,155 @@ public:
     }
 };
 
+class IkSheji: public TriggerSkill
+{
+public:
+    IkSheji(): TriggerSkill("iksheji")
+    {
+        events << EventPhaseStart << PreCardUsed << EventPhaseChanging;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        TriggerList list;
+        if (triggerEvent == PreCardUsed) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->getTypeId() == Card::TypeBasic || use.card->isNDTrick()) {
+                if (use.from->getMark("@sheji") > 0) {
+                    foreach (ServerPlayer *p, room->getAllPlayers()) {
+                        if (use.to.contains(p))
+                            continue;
+                        if (use.from->isProhibited(p, use.card))
+                            continue;
+                        if (use.from->getMark("iksheji_" + p->objectName()) > 0) {
+                            use.to << p;
+                            if (use.card->isKindOf("Collateral")) {
+                                QList<ServerPlayer *> victims;
+                                foreach (ServerPlayer *p2, room->getOtherPlayers(p)) {
+                                    if (p->canSlash(p2))
+                                        victims << p2;
+                                }
+                                if (!victims.isEmpty()) {
+                                    ServerPlayer *collateral_victim = room->askForPlayerChosen(use.from, victims, "iksheji_collateral", "@iksheji-collateral:" + p->objectName());
+                                    p->tag["collateralVictim"] = QVariant::fromValue(collateral_victim);
+
+                                    LogMessage log;
+                                    log.type = "#CollateralSlash";
+                                    log.from = player;
+                                    log.to << collateral_victim;
+                                    room->sendLog(log);
+                                    room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, p->objectName(), collateral_victim->objectName());
+                                } else {
+                                    LogMessage log;
+                                    log.type = "#CollateralNoSlash";
+                                    log.from = p;
+                                    room->sendLog(log);
+                                }
+                            }
+                        }
+                    }
+                    room->sortByActionOrder(use.to);
+                    data = QVariant::fromValue(use);
+                }
+            }
+        } else if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getPlayers()) {
+                    if (p->getMark("@sheji") > 0) {
+                        room->setPlayerMark(p, "@sheji", 0);
+                        player->setMark("iksheji_" + p->objectName(), 0);
+                    }
+                }
+            }
+        } else if (player && player->isAlive() && player->getPhase() == Player::Play && !player->isKongcheng()) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p != player && !p->isKongcheng())
+                    list.insert(p, QStringList(objectName()));
+            }
+        }
+        return list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        bool success = ask_who->pindian(player, objectName());
+        if (success) {
+            ServerPlayer *target = room->askForPlayerChosen(ask_who, room->getAlivePlayers(), objectName());
+            player->addMark("iksheji_" + target->objectName());
+            room->addPlayerMark(target, "@sheji");
+        }
+        return false;
+    }
+};
+
+class IkPingwei: public TriggerSkill
+{
+public:
+    IkPingwei(): TriggerSkill("ikpingwei")
+    {
+        events << EventPhaseStart;
+        frequency = Compulsory;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        TriggerList list;
+        if (player && player->isAlive() && player->getPhase() == Player::Finish) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p != player && player->getMark("ikpingwei") > p->getHp())
+                    list.insert(p, QStringList(objectName()));
+            }
+        }
+        return list;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        room->sendCompulsoryTriggerLog(ask_who, objectName());
+        ask_who->drawCards(1, objectName());
+        return false;
+    }
+};
+
+class IkPingweiRecord: public TriggerSkill
+{
+public:
+    IkPingweiRecord(): TriggerSkill("#ikpingwei")
+    {
+        events << CardUsed << EventPhaseChanging;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive)
+                player->setMark("ikpingwei", 0);
+        } else if (player && player->isAlive() && player == room->getCurrent() && player->getPhase() != Player::NotActive) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (!use.to.isEmpty() && use.card->getTypeId() != Card::TypeSkill)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        player->addMark("ikpingwei", data.value<CardUseStruct>().to.length());
+        return false;
+    }
+};
+
 class IkLingyun: public TriggerSkill {
 public:
     IkLingyun(): TriggerSkill("iklingyun") {
@@ -5779,6 +5928,12 @@ IkaiKaPackage::IkaiKaPackage()
     General *bloom054 = new General(this, "bloom054", "hana", 3);
     bloom054->addSkill(new IkDuanni);
     bloom054->addSkill(new IkZhangyi);
+
+    General *bloom056 = new General(this, "bloom056", "hana", 3);
+    bloom056->addSkill(new IkSheji);
+    bloom056->addSkill(new IkPingwei);
+    bloom056->addSkill(new IkPingweiRecord);
+    related_skills.insertMulti("ikpingwei", "#ikpingwei");
 
     General *snow031 = new General(this, "snow031", "yuki", 3);
     snow031->addSkill(new IkLingyun);
