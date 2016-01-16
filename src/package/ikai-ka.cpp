@@ -2359,7 +2359,7 @@ public:
         TriggerList list;
         if (player && player->isAlive() && player->getPhase() == Player::Finish) {
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
-                if (p != player && player->getMark("ikpingwei") > p->getHp())
+                if (p != player && player->tag["IkPingwei"].toStringList().toSet().size() > p->getHp())
                     list.insert(p, QStringList(objectName()));
             }
         }
@@ -2388,7 +2388,7 @@ public:
     {
         if (triggerEvent == EventPhaseChanging) {
             if (data.value<PhaseChangeStruct>().to == Player::NotActive)
-                player->setMark("ikpingwei", 0);
+                player->tag.remove("IkPingwei");
         } else if (player && player->isAlive() && player == room->getCurrent() && player->getPhase() != Player::NotActive) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (!use.to.isEmpty() && use.card->getTypeId() != Card::TypeSkill)
@@ -2399,7 +2399,10 @@ public:
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        player->addMark("ikpingwei", data.value<CardUseStruct>().to.length());
+        QSet<QString> targets = player->tag["IkPingwei"].toStringList().toSet();
+        foreach (ServerPlayer *p, data.value<CardUseStruct>().to)
+            targets << p->objectName();
+        player->tag["IkPingwei"] = QVariant::fromValue(targets.toList());
         return false;
     }
 };
