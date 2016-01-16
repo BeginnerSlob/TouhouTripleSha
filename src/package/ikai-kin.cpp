@@ -5037,7 +5037,7 @@ bool IkXiangzhaoCard::targetsFeasible(const QList<const Player *> &targets, cons
         else if (c->getColor() != color)
             return targets.isEmpty();
     }
-    return targets.length() <= Self->getHandcardNum();
+    return !targets.isEmpty() && targets.length() <= Self->getHandcardNum();
 }
 
 bool IkXiangzhaoCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *Self) const{
