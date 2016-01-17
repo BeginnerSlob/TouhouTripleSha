@@ -974,7 +974,8 @@ public:
         if (player->isDead())
             return false;
 
-        room->recover(player, RecoverStruct(player, NULL, 1 - player->getHp()));
+        if (player->getHp() < 1)
+            room->recover(player, RecoverStruct(player, NULL, 1 - player->getHp()));
         if (player->isChained())
             room->setPlayerProperty(player, "chained", false);
         if (!player->faceUp())
