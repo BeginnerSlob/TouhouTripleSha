@@ -6301,6 +6301,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     snow055->addSkill(new IkHuangpo);
     snow055->addSkill(new IkHuangpoReturn);
     related_skills.insertMulti("ikhuangpo", "#ikhuangpo");
+    snow055->addSkill(new IkYixiang);
 
     General *luna017 = new General(this, "luna017", "tsuki");
     luna017->addSkill(new IkChenyan);
