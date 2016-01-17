@@ -159,7 +159,8 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
-        if (player && player->isAlive() && player->hasLordSkill(objectName())) {
+        if (player && player->isAlive() && player->hasLordSkill(objectName())
+                && player->getPhase() == Player::NotActive) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.from == player && move.from_places.contains(Player::PlaceHand)) {
                 foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
