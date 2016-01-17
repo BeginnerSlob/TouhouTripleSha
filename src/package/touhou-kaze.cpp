@@ -1974,7 +1974,7 @@ public:
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        if (!to_select->isEquipped())
+        if (to_select->isEquipped())
             return false;
         if (selected.isEmpty())
             return true;
