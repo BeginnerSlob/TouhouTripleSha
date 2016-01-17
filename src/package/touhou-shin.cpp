@@ -1111,14 +1111,14 @@ public:
         events << CardsMoveOneTime;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *p, QVariant &d, ServerPlayer* &) const
+    virtual QStringList triggerable(TriggerEvent, Room *r, ServerPlayer *p, QVariant &d, ServerPlayer* &) const
     {
         if (TriggerSkill::triggerable(p) && p->getPile("thsunwupile").isEmpty()) {
             CardsMoveOneTimeStruct move = d.value<CardsMoveOneTimeStruct>();
             if (move.to_place == Player::DiscardPile) {
                 foreach (int id, move.card_ids) {
                     const Card *c = Sanguosha->getCard(id);
-                    if (c->isKindOf("Weapon") || c->isKindOf("Armor"))
+                    if (r->getCardPlace(id) == Player::DiscardPile && (c->isKindOf("Weapon") || c->isKindOf("Armor")))
                         return QStringList(objectName());
                 }
             }
@@ -1141,7 +1141,7 @@ public:
         QList<int> equips, not_equips;
         foreach (int id, move.card_ids) {
             const Card *c = Sanguosha->getCard(id);
-            if (c->isKindOf("Weapon") || c->isKindOf("Armor"))
+            if (r->getCardPlace(id) == Player::DiscardPile && (c->isKindOf("Weapon") || c->isKindOf("Armor")))
                 equips << id;
             else
                 not_equips << id;
@@ -1149,17 +1149,11 @@ public:
         if (!equips.isEmpty()) {
             if (equips.length() == 1) {
                 p->addToPile("thsunwupile", equips);
-                move.removeCardIds(equips);
-                d = QVariant::fromValue(move);
             } else {
                 r->fillAG(move.card_ids, NULL, not_equips);
                 int id = r->askForAG(p, equips, false, objectName());
                 r->clearAG();
                 p->addToPile("thsunwupile", id);
-                equips.clear();
-                equips << id;
-                move.removeCardIds(equips);
-                d = QVariant::fromValue(move);
             }
         }
         return false;
