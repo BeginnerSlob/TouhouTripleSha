@@ -3839,7 +3839,7 @@ public:
 
         if (target) {
             int card_id = room->askForCardChosen(player, target, "ej", objectName(), false, Card::MethodDiscard);
-            room->throwCard(card_id, player, room->getCardPlace(card_id) == Player::PlaceDelayedTrick ? NULL : target);
+            room->throwCard(card_id, room->getCardPlace(card_id) == Player::PlaceDelayedTrick ? NULL : target, player);
         } else
             player->drawCards(1, objectName());
 
