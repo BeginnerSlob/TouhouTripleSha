@@ -135,8 +135,13 @@ void MainWindow::restoreFromConfig() {
         setWindowState(window_state);
 
     QFont font;
-    if (Config.UIFont != font)
-        QApplication::setFont(Config.UIFont, "QTextEdit");
+    if (Config.UIFont != font) {
+        font = Config.AppFont;
+#ifdef Q_OS_ANDROID
+        font = QFont("DroidSansFallback", 6);
+#endif
+        QApplication::setFont(font, "QTextEdit");
+    }
 
     ui->actionEnable_Hotkey->setChecked(Config.EnableHotKey);
     ui->actionNever_nullify_my_trick->setChecked(Config.NeverNullifyMyTrick);
