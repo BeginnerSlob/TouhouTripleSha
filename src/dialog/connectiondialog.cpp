@@ -1,5 +1,9 @@
 #include "connectiondialog.h"
+#ifdef Q_OS_ANDROID
+#include "ui_connectiondialog_android.h"
+#else
 #include "ui_connectiondialog.h"
+#endif
 #include "settings.h"
 #include "engine.h"
 #include "detector.h"
@@ -38,9 +42,12 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
 
     ui->nameLineEdit->setText(Config.UserName);
     ui->nameLineEdit->setMaxLength(8);
-
+#ifdef Q_OS_ANDROID
+    ui->nameLineEdit->setText(Config.HostAddress);
+#else
     ui->hostComboBox->addItems(Config.HistoryIPs);
     ui->hostComboBox->lineEdit()->setText(Config.HostAddress);
+#endif
 
     ui->connectButton->setFocus();
 
@@ -68,7 +75,11 @@ void ConnectionDialog::on_connectButton_clicked() {
     }
 
     Config.UserName = username;
+#ifdef Q_OS_ANDROID
+    Config.HostAddress = ui->hostLineEdit->text();
+#else
     Config.HostAddress = ui->hostComboBox->lineEdit()->text();
+#endif
 
     Config.setValue("UserName", Config.UserName);
     Config.setValue("HostAddress", Config.HostAddress);
@@ -104,8 +115,12 @@ void ConnectionDialog::on_avatarList_itemDoubleClicked(QListWidgetItem *item) {
 }
 
 void ConnectionDialog::on_clearHistoryButton_clicked() {
+#ifdef Q_OS_ANDROID
+    ui->hostLineEdit->clear();
+#else
     ui->hostComboBox->clear();
     ui->hostComboBox->lineEdit()->clear();
+#endif
 
     Config.HistoryIPs.clear();
     Config.remove("HistoryIPs");
@@ -113,8 +128,13 @@ void ConnectionDialog::on_clearHistoryButton_clicked() {
 
 void ConnectionDialog::on_detectLANButton_clicked() {
     UdpDetectorDialog *detector_dialog = new UdpDetectorDialog(this);
+#ifdef Q_OS_ANDROID
+    connect(detector_dialog, SIGNAL(address_chosen(QString)),
+            ui->hostLineEdit, SLOT(setText(QString)));
+#else
     connect(detector_dialog, SIGNAL(address_chosen(QString)),
             ui->hostComboBox->lineEdit(), SLOT(setText(QString)));
+#endif
 
     detector_dialog->exec();
 }

@@ -927,7 +927,11 @@ const QSanRoomSkin &QSanSkinScheme::getRoomSkin() const{
 
 QSanSkinFactory &QSanSkinFactory::getInstance() {
     if (_sm_singleton == NULL)
+#ifdef Q_OS_WIN
         _sm_singleton = new QSanSkinFactory("skins/skinList.json");
+#else
+        _sm_singleton = new QSanSkinFactory("skins/skinListAlt.json");
+#endif
     return *_sm_singleton;
 }
 

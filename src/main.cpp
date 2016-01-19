@@ -112,7 +112,12 @@ int main(int argc, char *argv[]) {
 
     Sanguosha = new Engine;
     Config.init();
-    qApp->setFont(Config.AppFont);
+    QFont appFont = Config.AppFont;
+#ifdef Q_OS_ANDROID
+    appFont = QFont("DroidSansFallback", 6);
+#endif
+    qApp->setFont(appFont);
+
     BanPair::loadBanPairs();
 
     if (qApp->arguments().contains("-server")) {

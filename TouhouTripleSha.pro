@@ -247,17 +247,25 @@ HEADERS += \
 FORMS += \
     src/dialog/cardoverview.ui \
     src/dialog/configdialog.ui \
-    src/dialog/connectiondialog.ui \
     src/dialog/generaloverview.ui
 
 win32 {
-    FORMS += src/dialog/mainwindow.ui
+    FORMS += \
+	src/dialog/mainwindow.ui \
+	src/dialog/connectiondialog.ui
 }
 else: linux {
     FORMS += src/dialog/mainwindow.ui
+    android {
+	FORMS += src/dialog/connectiondialog_android.ui
+    } else {
+	FORMS += src/dialog/connectiondialog.ui
+    }
 }
 else {
-    FORMS += src/dialog/mainwindow_nonwin.ui
+    FORMS += \
+	src/dialog/mainwindow_nonwin.ui
+	src/dialog/connectiondialog.ui
 }
 
 INCLUDEPATH += include

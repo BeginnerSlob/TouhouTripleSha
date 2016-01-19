@@ -11,6 +11,7 @@
 #include <QFocusEvent>
 #include <QParallelAnimationGroup>
 #include <QPropertyAnimation>
+#include <QToolTip>
 
 void CardItem::_initialize() {
     setFlag(QGraphicsItem::ItemIsMovable);
@@ -32,6 +33,8 @@ CardItem::CardItem(const Card *card) {
     m_isShiny = (qrand() <= ((RAND_MAX + 1) / 4096));
     setCard(card);
     setAcceptHoverEvents(true);
+    holdTimer = new QTimer(this);
+    connect(holdTimer, SIGNAL(timeout()), this, SLOT(showToolTip()));
 }
 
 CardItem::CardItem(const QString &general_name) {
@@ -41,6 +44,8 @@ CardItem::CardItem(const QString &general_name) {
     m_isShiny = false;
     m_currentAnimation = NULL;
     m_opacityAtHome = 1.0;
+    holdTimer = new QTimer(this);
+    connect(holdTimer, SIGNAL(timeout()), this, SLOT(showToolTip()));
 }
 
 QRectF CardItem::boundingRect() const{
@@ -194,11 +199,15 @@ const int CardItem::_S_CLICK_JITTER_TOLERANCE = 1600;
 const int CardItem::_S_MOVE_JITTER_TOLERANCE = 200;
 
 void CardItem::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) {
+    holdTimer->start(1000);
     if (frozen) return;
     _m_lastMousePressScenePos = mapToParent(mouseEvent->pos());
 }
 
 void CardItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent) {
+    if (holdTimer->isActive())
+        holdTimer->stop();
+    QToolTip::hideText();
     if (frozen) return;
 
     QPointF totalMove = mapToParent(mouseEvent->pos()) - _m_lastMousePressScenePos;
@@ -217,6 +226,9 @@ void CardItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent) {
     QPointF newPos = mapToParent(mouseEvent->pos());
     QPointF totalMove = newPos - _m_lastMousePressScenePos;
     if (totalMove.x() * totalMove.x() + totalMove.y() * totalMove.y() >= _S_CLICK_JITTER_TOLERANCE) {
+        if (holdTimer->isActive())
+            holdTimer->stop();
+        QToolTip::hideText();
         QPointF down_pos = mouseEvent->buttonDownPos(Qt::LeftButton);
         setPos(newPos - this->transform().map(down_pos));
     }
@@ -270,6 +282,11 @@ void CardItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
         painter->setBrush(painter_brush);
         painter->drawRect(G_COMMON_LAYOUT.m_cardMainArea);
     }
+}
+
+void CardItem::showToolTip()
+{
+    QToolTip::showText(QPoint((int)pos().x(), (int)pos().y()), toolTip());
 }
 
 void CardItem::setFootnote(const QString &desc) {
