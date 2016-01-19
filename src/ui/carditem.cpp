@@ -30,7 +30,10 @@ void CardItem::_initialize() {
 
 CardItem::CardItem(const Card *card) {
     _initialize();
-    m_isShiny = (qrand() <= ((RAND_MAX + 1) / 4096));
+    int shiny = qrand() % 0x10000;
+    for (int i = 0; i < 3; ++i)
+        shiny ^= qrand() % 0x10000;
+    m_isShiny = shiny <= 0b111;
     setCard(card);
     setAcceptHoverEvents(true);
     holdTimer = new QTimer(this);
