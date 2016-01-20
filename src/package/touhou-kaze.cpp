@@ -2061,8 +2061,6 @@ public:
     }
 };
 
-#include "jsonutils.h"
-
 class ThDongxi: public TriggerSkill {
 public:
     ThDongxi(): TriggerSkill("thdongxi") {
@@ -2116,13 +2114,13 @@ public:
                     QString choice = room->askForChoice(player, objectName(), choices.join("+"));
                     player->tag["ThDongxi"] = QVariant::fromValue(choice);
 
-                    Json::Value arg(Json::arrayValue);
-                    arg[0] = (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
-                    arg[1] = QSanProtocol::Utils::toJsonString(player->objectName());
-                    arg[2] = QSanProtocol::Utils::toJsonString(target->getGeneral()->objectName());
-                    arg[3] = QSanProtocol::Utils::toJsonString(choice);
-                    arg[4] = false;
-                    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
+                    JsonArray args;
+                    args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
+                    args << player->objectName();
+                    args << target->getGeneral()->objectName();
+                    args << choice;
+                    args << false;
+                    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 
                     return true;
                 }
@@ -2154,13 +2152,13 @@ public:
             player->tag.remove("ThDongxi");
             room->detachSkillFromPlayer(player, name, false, true);
 
-            Json::Value arg(Json::arrayValue);
-            arg[0] = (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
-            arg[1] = QSanProtocol::Utils::toJsonString(player->objectName());
-            arg[2] = QSanProtocol::Utils::toJsonString(player->getGeneral()->objectName());
-            arg[3] = QSanProtocol::Utils::toJsonString(QString());
-            arg[4] = false;
-            room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
+            JsonArray args;
+            args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
+            args << player->objectName();
+            args << player->getGeneral()->objectName();
+            args << QString();
+            args << false;
+            room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 
             player->tag["ThDongxiLast"] = name;
         }
@@ -2176,8 +2174,8 @@ void ThSangzhiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
     room->setPlayerMark(targets.first(), "@sangzhi", 1);
     foreach (ServerPlayer *pl, room->getAllPlayers())
         room->filterCards(pl, pl->getCards("he"), true);
-    Json::Value args;
-    args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+    JsonArray args;
+    args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
     room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
     source->tag["ThSangzhiUsed"] = true;
 }
@@ -2227,8 +2225,8 @@ public:
 
                 foreach (ServerPlayer *pl, room->getAllPlayers())
                     room->filterCards(pl, pl->getCards("he"), false);
-                Json::Value args;
-                args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                JsonArray args;
+                args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
                 room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
             }
 

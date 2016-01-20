@@ -45,8 +45,8 @@ public:
 
                     foreach (ServerPlayer *pl, room->getAllPlayers())
                         room->filterCards(pl, pl->getCards("he"), true);
-                    Json::Value args;
-                    args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                    JsonArray args;
+                    args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
                     room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
                 }
 
@@ -88,8 +88,8 @@ public:
 
             foreach (ServerPlayer *p, room->getAllPlayers())
                 room->filterCards(p, p->getCards("he"), false);
-            Json::Value args;
-            args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+            JsonArray args;
+            args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
             room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
         }
         return QStringList();
@@ -2534,7 +2534,6 @@ bool IkYijingCard::targetsFeasible(const QList<const Player *> &targets, const P
     return targets.length() == 2;
 }
 
-#include "jsonutils.h"
 void IkYijingCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const{
     ServerPlayer *a = targets.at(0);
     ServerPlayer *b = targets.at(1);
@@ -2546,9 +2545,11 @@ void IkYijingCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &target
 
     try {
         foreach (ServerPlayer *p, room->getAlivePlayers()) {
-            if (p != a && p != b)
-                room->doNotify(p, QSanProtocol::S_COMMAND_EXCHANGE_KNOWN_CARDS,
-                               QSanProtocol::Utils::toJsonArray(a->objectName(), b->objectName()));
+            if (p != a && p != b) {
+                JsonArray args;
+                args << a->objectName() << b->objectName();
+                room->doNotify(p, QSanProtocol::S_COMMAND_EXCHANGE_KNOWN_CARDS, args);
+            }
         }
         QList<CardsMoveStruct> exchangeMove;
         CardsMoveStruct move1(a->handCards(), b, Player::PlaceHand,
@@ -4270,13 +4271,13 @@ public:
         if (zuoci->getGender() != general->getGender())
             zuoci->setGender(general->getGender());
 
-        Json::Value arg(Json::arrayValue);
-        arg[0] = (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
-        arg[1] = QSanProtocol::Utils::toJsonString(zuoci->objectName());
-        arg[2] = QSanProtocol::Utils::toJsonString(general->objectName());
-        arg[3] = QSanProtocol::Utils::toJsonString(skill_name);
-        arg[4] = true;
-        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
+        JsonArray args;
+        args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
+        args << zuoci->objectName();
+        args << general->objectName();
+        args << skill_name;
+        args << true;
+        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 
         zuoci->tag["IkHuanshenSkill"] = skill_name;
         if (!skill_name.isEmpty())

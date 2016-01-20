@@ -207,8 +207,8 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
         foreach (ServerPlayer *p, use.to) {
             if (!use.from->inMyAttackRange(p)) {
                 room->setPlayerFlag(use.from, "ikxiashan_ikyipao");
-                Json::Value args;
-                args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                JsonArray args;
+                args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
                 room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
                 break;
             }
@@ -2185,7 +2185,6 @@ void KnownBoth::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
     }
 }
 
-#include "jsonutils.h"
 void KnownBoth::onEffect(const CardEffectStruct &effect) const {
     Room *room = effect.to->getRoom();
 

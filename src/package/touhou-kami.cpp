@@ -8,7 +8,6 @@
 #include "clientplayer.h"
 #include "client.h"
 #include "engine.h"
-#include "jsonutils.h"
 
 class ThKexing: public TriggerSkill{
 public:
@@ -207,13 +206,13 @@ public:
             QList<const General *> reihous = reihoupack->findChildren<const General *>();
             const General *reihou = reihous.at(qrand() % reihous.length());
 
-            Json::Value arg(Json::arrayValue);
-            arg[0] = (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
-            arg[1] = QSanProtocol::Utils::toJsonString(player->objectName());
-            arg[2] = QSanProtocol::Utils::toJsonString(reihou->objectName());
-            arg[3] = QSanProtocol::Utils::toJsonString(QString());
-            arg[4] = true;
-            room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, arg);
+            JsonArray args;
+            args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
+            args << player->objectName();
+            args << reihou->objectName();
+            args << QString();
+            args << true;
+            room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 
             player->tag["Reihou"] = reihou->objectName();
             foreach (const Skill *skill, reihou->getVisibleSkillList())
@@ -2422,8 +2421,8 @@ void ThJiefuCard::onEffect(const CardEffectStruct &effect) const {
 
     foreach (ServerPlayer *pl, room->getAllPlayers())
         room->filterCards(pl, pl->getCards("he"), true);
-    Json::Value args;
-    args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+    JsonArray args;
+    args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
     room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 }
 
@@ -2466,8 +2465,8 @@ public:
                 room->setPlayerFlag(p, "-thjiefu_null");
                 foreach (ServerPlayer *pl, room->getAllPlayers())
                     room->filterCards(pl, pl->getCards("he"), false);
-                Json::Value args;
-                args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                JsonArray args;
+                args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
                 room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
             }
         return QStringList();

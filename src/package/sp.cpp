@@ -228,7 +228,6 @@ public:
     }
 };
 
-#include "jsonutils.h"
 ShefuCard::ShefuCard() {
     will_throw = false;
     target_fixed = true;
@@ -238,11 +237,11 @@ void ShefuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) c
     QString mark = "Shefu_" + user_string;
     source->setMark(mark, this->getEffectiveId() + 1);
 
-    Json::Value arg(Json::arrayValue);
-    arg[0] = QSanProtocol::Utils::toJsonString(source->objectName());
-    arg[1] = QSanProtocol::Utils::toJsonString(mark);
-    arg[2] = this->getEffectiveId() + 1;
-    room->doNotify(source, QSanProtocol::S_COMMAND_SET_MARK, arg);
+    JsonArray args;
+    args << source->objectName();
+    args << mark;
+    args << this->getEffectiveId() + 1;
+    room->doNotify(source, QSanProtocol::S_COMMAND_SET_MARK, args);
 
     source->addToPile("ambush", this, false);
 

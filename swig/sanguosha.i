@@ -515,7 +515,7 @@ struct CardUseStruct {
     CardUseStruct(const Card *card, ServerPlayer *from, ServerPlayer *target, bool isOwnerUse = true);
     bool isValid(const char *pattern) const;
     void parse(const char *str, Room *room);
-    bool tryParse(const Json::Value &, Room *room);
+    bool tryParse(const QVariant &, Room *room);
 
     const Card *card;
     ServerPlayer *from;
@@ -912,7 +912,7 @@ public:
     QStringList getExtensions() const;
     QStringList getKingdoms() const;
     QColor getKingdomColor(const char *kingdom) const;
-    QStringList getSetupString() const;
+    QString getSetupString() const;
 
     QMap<QString, QString> getAvailableModes() const;
     QString getModeName(const char *mode) const;

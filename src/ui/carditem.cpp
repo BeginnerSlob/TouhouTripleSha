@@ -33,7 +33,7 @@ CardItem::CardItem(const Card *card) {
     int shiny = qrand() % 0x10000;
     for (int i = 0; i < 3; ++i)
         shiny ^= qrand() % 0x10000;
-    m_isShiny = shiny <= 0b111;
+    m_isShiny = shiny <= 5;
     setCard(card);
     setAcceptHoverEvents(true);
     holdTimer = new QTimer(this);

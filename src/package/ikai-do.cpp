@@ -435,8 +435,8 @@ public:
 
                     foreach (ServerPlayer *pl, room->getAllPlayers())
                         room->filterCards(pl, pl->getCards("he"), true);
-                    Json::Value args;
-                    args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                    JsonArray args;
+                    args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
                     room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
                 }
 
@@ -495,8 +495,8 @@ public:
 
             foreach (ServerPlayer *p, room->getAllPlayers())
                 room->filterCards(p, p->getCards("he"), false);
-            Json::Value args;
-            args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+            JsonArray args;
+            args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
             room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
         }
         return QStringList();

@@ -1443,8 +1443,8 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == GameStart) {
             if (player == NULL) {
-                Json::Value args;
-                args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                JsonArray args;
+                args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
                 room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
             }
         } else if (TriggerSkill::triggerable(player) && player->getMark("@hewu") == 0) {
@@ -1466,8 +1466,8 @@ public:
 
         room->addPlayerMark(player, "@hewu");
 
-        Json::Value args;
-        args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+        JsonArray args;
+        args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
         room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 
         if (room->changeMaxHpForAwakenSkill(player)) {
@@ -2655,8 +2655,8 @@ void IkZhiyuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &)
     if (choice == "basic") {
         room->setPlayerFlag(source, "IkZhiyu1");
         // update Dialog
-        Json::Value args;
-        args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+        JsonArray args;
+        args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
         room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
     } else if (choice == "trick") {
         source->drawCards(2, "ikzhiyu");
@@ -2862,8 +2862,8 @@ public:
             if (data.value<PhaseChangeStruct>().to == Player::NotActive && player->hasFlag("IkZhiyu1")) {
                 room->setPlayerFlag(player, "-IkZhiyu1");
                 // update Dialog
-                Json::Value args;
-                args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                JsonArray args;
+                args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
                 room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
             }
             return QStringList();
@@ -3458,7 +3458,6 @@ public:
     }
 };
 
-#include "jsonutils.h"
 class IkTianyan: public TriggerSkill {
 public:
     IkTianyan(): TriggerSkill("iktianyan") {
@@ -3514,11 +3513,11 @@ public:
         room->broadcastSkillInvoke("iktianyan");
         room->notifySkillInvoked(player, "iktianyan");
         if (enabled.isEmpty()) {
-            Json::Value arg(Json::arrayValue);
-            arg[0] = QSanProtocol::Utils::toJsonString(".");
-            arg[1] = false;
-            arg[2] = QSanProtocol::Utils::toJsonArray(ids);
-            room->doNotify(player, QSanProtocol::S_COMMAND_SHOW_ALL_CARDS, arg);
+            JsonArray args;
+            args << ".";
+            args << false;
+            args << JsonUtils::toJsonArray(ids);
+            room->doNotify(player, QSanProtocol::S_COMMAND_SHOW_ALL_CARDS, args);
         } else {
             room->fillAG(ids, player, disabled);
             int id = room->askForAG(player, enabled, true, "iktianyan");
@@ -3533,7 +3532,7 @@ public:
         QList<int> &drawPile = room->getDrawPile();
         for (int i = ids.length() - 1; i >= 0; i--)
             drawPile.prepend(ids.at(i));
-        room->doBroadcastNotify(QSanProtocol::S_COMMAND_UPDATE_PILE, Json::Value(drawPile.length()));
+        room->doBroadcastNotify(QSanProtocol::S_COMMAND_UPDATE_PILE, QVariant(drawPile.length()));
         if (result == -1)
             room->setPlayerFlag(player, "Global_IkTianyanFailed");
         else {
@@ -3844,10 +3843,10 @@ void IkLingtongCard::onEffect(const CardEffectStruct &effect) const{
         CardMoveReason reason(CardMoveReason::S_REASON_DISMANTLE, effect.from->objectName(), QString(), "iklingtong", QString());
         room->throwCard(Sanguosha->getCard(card_id), reason, effect.to, effect.from);
     } else if (choice == "role") {
-        Json::Value arg(Json::arrayValue);
-        arg[0] = QSanProtocol::Utils::toJsonString(player->objectName());
-        arg[1] = QSanProtocol::Utils::toJsonString(player->getRole());
-        room->doNotify(effect.from, QSanProtocol::S_COMMAND_SET_EMOTION, arg);
+        JsonArray args;
+        args << player->objectName();
+        args << player->getRole();
+        room->doNotify(effect.from, QSanProtocol::S_COMMAND_SET_EMOTION, args);
 
         LogMessage log;
         log.type = "$ViewRole";
