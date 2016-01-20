@@ -1584,8 +1584,8 @@ void ThNihuiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &)
     source->drawCards(3, "thnihui");
     room->askForDiscard(source, "thnihui", 1, 1, false, true);
     room->setPlayerMark(source, "thnihui", 1);
-    Json::Value args;
-    args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+    JsonArray args;
+    args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
     room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 }
 
@@ -1616,8 +1616,8 @@ void ThNihuiEditCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *
 {
     source->drawCards(1, "thnihui");
     room->setPlayerMark(source, "thnihui", 0);
-    Json::Value args;
-    args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+    JsonArray args;
+    args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
     room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 }
 

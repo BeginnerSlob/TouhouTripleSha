@@ -58,7 +58,7 @@ public:
     QColor getKingdomColor(const QString &kingdom) const;
     QMap<QString, QColor> getSkillTypeColorMap() const;
     QStringList getChattingEasyTexts() const;
-    QStringList getSetupString() const;
+    QString getSetupString() const;
 
     QMap<QString, QString> getAvailableModes() const;
     QString getModeName(const QString &mode) const;

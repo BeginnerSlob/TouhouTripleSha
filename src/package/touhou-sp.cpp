@@ -507,7 +507,6 @@ public:
     }
 };
 
-#include "jsonutils.h"
 class ThModao: public PhaseChangeSkill {
 public:
     ThModao(): PhaseChangeSkill("thmodao") {
@@ -570,7 +569,7 @@ public:
                 foreach (ServerPlayer *p, room->getAlivePlayers()) {
                     if (p != player && p != target)
                         room->doNotify(p, QSanProtocol::S_COMMAND_EXCHANGE_KNOWN_CARDS,
-                                       QSanProtocol::Utils::toJsonArray(player->objectName(), target->objectName()));
+                                       JsonArray() << player->objectName() << target->objectName());
                 }
                 QList<CardsMoveStruct> exchangeMove;
                 CardsMoveStruct move1(player->handCards(), target, Player::PlaceHand,
@@ -670,8 +669,8 @@ public:
         room->setPlayerMark(damage.from, "@mengsheng", 1);
         foreach (ServerPlayer *pl, room->getAllPlayers())
             room->filterCards(pl, pl->getCards("he"), true);
-        Json::Value args;
-        args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+        JsonArray args;
+        args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
         room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
         if (player == room->getCurrent() && player->getPhase() != Player::NotActive)
             room->setPlayerFlag(player, "thmengsheng");
@@ -705,8 +704,8 @@ public:
                     room->setPlayerMark(p, "@mengsheng", 0);
                     foreach (ServerPlayer *pl, room->getAllPlayers())
                         room->filterCards(pl, pl->getCards("he"), false);
-                    Json::Value args;
-                    args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                    JsonArray args;
+                    args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
                     room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
                 }
                 p->tag["ThMengsheng"] = QVariant::fromValue(sources);

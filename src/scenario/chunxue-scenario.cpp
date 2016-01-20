@@ -809,8 +809,8 @@ void ChunxueScenario::onTagSet(Room *room, const QString &key) const{
         if (lord) {
             room->detachSkillFromPlayer(lord, "cxlinli_lord", true);
             room->setPlayerMark(lord, "ChunXueWu", 0);
-            Json::Value args;
-            args[0] = QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+            JsonArray args;
+            args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
             room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 
             room->detachSkillFromPlayer(lord, "cxwangwo", true);

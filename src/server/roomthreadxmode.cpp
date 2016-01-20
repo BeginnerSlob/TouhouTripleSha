@@ -3,12 +3,11 @@
 #include "engine.h"
 #include "settings.h"
 #include "generalselector.h"
-#include "jsonutils.h"
 
 #include <QDateTime>
 
 using namespace QSanProtocol;
-using namespace QSanProtocol::Utils;
+using namespace JsonUtils;
 
 RoomThreadXMode::RoomThreadXMode(Room *room)
     : room(room)
@@ -110,8 +109,9 @@ void RoomThreadXMode::startArrange(QList<ServerPlayer *> &players, QList<QString
 
     for (int i = 0; i < online.length(); i++) {
         ServerPlayer *player = online.at(i);
-        Json::Value clientReply = player->getClientReply();
-        if (player->m_isClientResponseReady && clientReply.isArray() && clientReply.size() == 3) {
+        QVariant clientReply = player->getClientReply();
+        JsonArray arr = clientReply.value<JsonArray>();
+        if (player->m_isClientResponseReady && arr.size() == 3) {
             QStringList arranged;
             tryParse(clientReply, arranged);
             arrange(player, arranged);
