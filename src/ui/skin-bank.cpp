@@ -753,7 +753,7 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout_config)
              _m_commonLayout.m_bubbleChatBoxShowAreaSize);
     _m_commonLayout.m_cardFootnoteFont.tryParse(config["cardFootnoteFont"]);
     JsonArray magatamaFont = config["magatamaFont"].value<JsonArray>();
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < 5; i++)
         _m_commonLayout.m_hpFont[i].tryParse(magatamaFont[i]);
 
     config = layoutConfig[S_SKIN_KEY_ROOM].value<JsonObject>();

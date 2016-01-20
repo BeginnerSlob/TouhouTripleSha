@@ -4954,7 +4954,7 @@ ServerPlayer *Room::askForPlayerChosen(ServerPlayer *player, const QList<ServerP
         JsonArray req_targets;
         foreach (ServerPlayer *target, targets)
             req_targets << target->objectName();
-        req << req_targets;
+        req << QVariant(req_targets);
         req << skillName;
         req << prompt;
         req << optional;

@@ -68,7 +68,7 @@ bool ServerInfoStruct::parse(const QString &str)
             Extensions << package_name;
         }
 
-        QString flags = str.at(6);
+        QString flags = texts.at(6);
 
         RandomSeat = flags.contains("R");
         EnableCheat = flags.contains("C");
