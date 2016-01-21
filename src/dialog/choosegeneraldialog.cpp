@@ -15,6 +15,9 @@
 #include <QRadioButton>
 #include <QCheckBox>
 #include <QTabWidget>
+#ifdef Q_OS_ANDROID
+#include <QToolTip>
+#endif
 
 using namespace QSanProtocol;
 
@@ -36,6 +39,25 @@ OptionButton::OptionButton(QString icon_path, const QString &caption, QWidget *p
         setFont(font);
     }
 }
+
+#ifdef Q_OS_ANDROID
+void OptionButton::mousePressEvent(QMouseEvent *event)
+{
+    if (rect().contains(event->pos()))
+        QToolTip::showText(event->globalPos() + QPoint(2, 5), toolTip());
+}
+
+void OptionButton::mouseMoveEvent(QMouseEvent *event)
+{
+    if (!rect().contains(event->pos()))
+        QToolTip::hideText();
+}
+
+void OptionButton::mouseReleaseEvent(QMouseEvent *)
+{
+    QToolTip::hideText();
+}
+#endif
 
 void OptionButton::mouseDoubleClickEvent(QMouseEvent *) {
     emit double_clicked();
@@ -130,8 +152,14 @@ ChooseGeneralDialog::ChooseGeneralDialog(const QStringList &general_names, QWidg
         if (lord_name.size() && !ServerInfo.EnableHegemony && !no_icon) {
             const General *lord = Sanguosha->getGeneral(lord_name);
 
+#ifndef Q_OS_ANDROID
             QLabel *label = new QLabel;
             label->setPixmap(G_ROOM_SKIN.getGeneralPixmap(lord->objectName(), icon_type));
+#else
+            OptionButton *label = new OptionButton(QString(), lord->getTranslatedName());
+            label->setIcon(QIcon(G_ROOM_SKIN.getGeneralPixmap(lord->objectName(), icon_type)));
+            label->setIconSize(icon_size);
+#endif
             label->setToolTip(lord->getSkillDescription(true));
             layout->addWidget(label);
         }
@@ -146,8 +174,14 @@ ChooseGeneralDialog::ChooseGeneralDialog(const QStringList &general_names, QWidg
         if (lord_name.size() && !ServerInfo.EnableHegemony && !no_icon) {
             const General *lord = Sanguosha->getGeneral(lord_name);
 
+#ifndef Q_OS_ANDROID
             QLabel *label = new QLabel;
             label->setPixmap(G_ROOM_SKIN.getCardMainPixmap(lord->objectName()));
+#else
+            OptionButton *label = new OptionButton(QString(), lord->getTranslatedName());
+            label->setIcon(QIcon(G_ROOM_SKIN.getCardMainPixmap(lord->objectName())));
+            label->setIconSize(G_COMMON_LAYOUT.m_chooseGeneralBoxSparseIconSize);
+#endif
             label->setToolTip(lord->getSkillDescription(true));
             lord_layout->addWidget(label);
         }

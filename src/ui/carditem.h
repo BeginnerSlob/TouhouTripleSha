@@ -81,9 +81,6 @@ protected:
     virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *);
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-public slots:
-    void showToolTip();
-
 private:
     int m_cardId;
     QString _m_avatarName;
@@ -91,7 +88,6 @@ private:
     QPointF _m_lastMousePressScenePos;
     bool auto_back, frozen;
     bool m_isShiny;
-    QTimer *holdTimer;
 
 signals:
     void toggle_discards();

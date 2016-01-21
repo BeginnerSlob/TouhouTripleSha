@@ -34,6 +34,9 @@ struct RoomLayout;
 #include <QHBoxLayout>
 #include <QMutex>
 #include <QStack>
+#ifdef Q_OS_ANDROID
+#include <QToolTip>
+#endif
 
 class ScriptExecutor: public QDialog {
     Q_OBJECT
@@ -189,6 +192,10 @@ public slots:
     void doAddRobotAction();
     void fillRobots();
 
+#ifdef Q_OS_ANDROID
+    void onPressHoldTimeOut();
+#endif
+
 protected:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
@@ -277,6 +284,12 @@ private:
     KOFOrderBox *enemy_box, *self_box;
     QPointF m_tableCenterPos;
     ReplayerControlBar *m_replayControl;
+
+#ifdef Q_OS_ANDROID
+    QTimer *_m_holdTimer;
+    QGraphicsItem *_m_currentHoldItem;
+    QPointF _m_lastMousePress;
+#endif
 
     struct _MoveCardsClassifier {
         inline _MoveCardsClassifier(const CardsMoveStruct &move) { m_card_ids = move.card_ids; }
