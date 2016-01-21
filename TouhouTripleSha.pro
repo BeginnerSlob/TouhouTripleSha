@@ -67,7 +67,7 @@ SOURCES += \
     src/util/nativesocket.cpp \
     src/util/recorder.cpp \
     swig/sanguosha_wrap.cxx \
-    src/core/jsonutils.cpp \
+    src/core/json.cpp \
     src/core/room-state.cpp \
     src/core/wrapped-card.cpp \
     src/dialog/choosegeneraldialog.cpp \
@@ -118,9 +118,6 @@ SOURCES += \
     src/scenario/chunxue-scenario.cpp \
     src/scenario/jianniang-scenario.cpp \
     src/breakpad/common/convert_UTF.c \
-    src/jsoncpp/src/json_reader.cpp \
-    src/jsoncpp/src/json_value.cpp \
-    src/jsoncpp/src/json_writer.cpp \
     src/package/tenshi-reihou.cpp
 
 HEADERS += \
@@ -182,7 +179,7 @@ HEADERS += \
     src/util/nativesocket.h \
     src/util/recorder.h \
     src/util/socket.h \
-    src/core/jsonutils.h \
+    src/core/json.h \
     src/core/room-state.h \
     src/core/wrapped-card.h \
     src/dialog/choosegeneraldialog.h \
@@ -231,17 +228,6 @@ HEADERS += \
     src/package/touhou-story.h \
     src/scenario/chunxue-scenario.h \
     src/scenario/jianniang-scenario.h \
-    src/jsoncpp/include/json/assertions.h \
-    src/jsoncpp/include/json/autolink.h \
-    src/jsoncpp/include/json/config.h \
-    src/jsoncpp/include/json/features.h \
-    src/jsoncpp/include/json/forwards.h \
-    src/jsoncpp/include/json/json.h \
-    src/jsoncpp/include/json/reader.h \
-    src/jsoncpp/include/json/value.h \
-    src/jsoncpp/include/json/writer.h \
-    src/jsoncpp/src/json_batchallocator.h \
-    src/jsoncpp/src/json_tool.h \
     src/package/tenshi-reihou.h
 
 FORMS += \
@@ -542,5 +528,3 @@ INCLUDEPATH += $$_PRO_FILE_PWD_/include/freetype
 DEPENDPATH += $$_PRO_FILE_PWD_/include/freetype
 
 ANDROID_PACKAGE_SOURCE_DIR = $$_PRO_FILE_PWD_/resource/android
-
-INCLUDEPATH += $$_PRO_FILE_PWD_/src/jsoncpp/include
