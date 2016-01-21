@@ -111,9 +111,6 @@
     <ClCompile Include="Release\moc_general.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\core\jsonutils.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\core\lua-wrapper.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -969,6 +966,9 @@
     <ClCompile Include="Release\moc_tenshi-reihou.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\core\json.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\src\client\aux-skills.h">
@@ -1323,9 +1323,6 @@
     <ClInclude Include="GeneratedFiles\ui_mainwindow.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\core\jsonutils.h">
-      <Filter>core</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\core\protocol.h">
       <Filter>core</Filter>
     </ClInclude>
@@ -1355,6 +1352,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\ui\skin-bank.h">
       <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\core\json.h">
+      <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
