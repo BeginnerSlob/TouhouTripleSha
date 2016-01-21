@@ -32,30 +32,24 @@ time_t ServerInfoStruct::getCommandTimeout(QSanProtocol::CommandType command, QS
 
 bool ServerInfoStruct::parse(const QString &str)
 {
-    QRegExp rx("(.*):(@?\\w+):(\\d+):(\\d+):([+\\w]*):([RCFSTBHAMN123a-r]*)");
-    if (!rx.exactMatch(str)) {
-        qWarning("%s", qPrintable("Setup string error!"));
-        return false;
-    }
-
-    QStringList texts = rx.capturedTexts();
+    QStringList texts = str.split(":");
     if (texts.isEmpty()) {
         DuringGame = false;
     } else {
         DuringGame = true;
 
-        QString server_name = texts.at(1);
+        QString server_name = texts.at(0);
         Name = QString::fromUtf8(QByteArray::fromBase64(server_name.toLatin1()));
 
-        GameMode = texts.at(2);
+        GameMode = texts.at(1);
         if (GameMode.startsWith("02_1v1") || GameMode.startsWith("06_3v3")) {
             GameRuleMode = GameMode.mid(6);
             GameMode = GameMode.mid(0, 6);
         }
-        OperationTimeout = texts.at(3).toInt();
-        NullificationCountDown = texts.at(4).toInt();
+        OperationTimeout = texts.at(2).toInt();
+        NullificationCountDown = texts.at(3).toInt();
 
-        QStringList ban_packages = texts.at(5).split("+");
+        QStringList ban_packages = texts.at(4).split("+");
         QList<const Package *> packages = Sanguosha->getPackages();
         foreach (const Package *package, packages) {
             if (package->inherits("Scenario"))
@@ -68,7 +62,7 @@ bool ServerInfoStruct::parse(const QString &str)
             Extensions << package_name;
         }
 
-        QString flags = texts.at(6);
+        QString flags = texts.at(5);
 
         RandomSeat = flags.contains("R");
         EnableCheat = flags.contains("C");
