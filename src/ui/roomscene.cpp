@@ -389,6 +389,13 @@ RoomScene::RoomScene(QMainWindow *main_window)
 
     _m_isInDragAndUseMode = false;
     _m_superDragStarted = false;
+
+#ifdef Q_OS_ANDROID
+    _m_holdTimer = new QTimer(this);
+    _m_currentHoldItem = NULL;
+    _m_lastMousePress = QPointF();
+    connect(_m_holdTimer, SIGNAL(timeout()), this, SLOT(onPressHoldTimeOut()));
+#endif
 }
 
 RoomScene::~RoomScene() {
@@ -1073,10 +1080,23 @@ void RoomScene::arrangeSeats(const QList<const ClientPlayer *> &seats) {
 }
 
 void RoomScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+#ifdef Q_OS_ANDROID
+    QGraphicsItem *item = itemAt(event->scenePos(), QTransform());
+    _m_currentHoldItem = item;
+    if (item) {
+        _m_lastMousePress = event->scenePos();
+        _m_holdTimer->start(1000);
+    }
+#endif
     QGraphicsScene::mousePressEvent(event);
 }
 
 void RoomScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+#ifdef Q_OS_ANDROID
+    if (_m_holdTimer->isActive())
+        _m_holdTimer->stop();
+    QToolTip::hideText();
+#endif
     QGraphicsScene::mouseReleaseEvent(event);
 
     if (_m_isInDragAndUseMode) {
@@ -1094,7 +1114,16 @@ void RoomScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     }
 }
 
-void RoomScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+void RoomScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+#ifdef Q_OS_ANDROID
+    QPointF totalMove = event->scenePos() - _m_lastMousePress;
+    if (totalMove.x() * totalMove.x() + totalMove.y() * totalMove.y() >= 1600) {
+        if (_m_holdTimer->isActive())
+            _m_holdTimer->stop();
+        QToolTip::hideText();
+    }
+#endif
     QGraphicsScene::mouseMoveEvent(event);
 
     if (!Config.EnableSuperDrag)
@@ -4551,6 +4580,14 @@ void RoomScene::fillRobots() {
     int left = Sanguosha->getPlayerCount(ServerInfo.GameMode) - ClientInstance->getPlayers().length();
     ClientInstance->addRobot(left);
 }
+
+#ifdef Q_OS_ANDROID
+void RoomScene::onPressHoldTimeOut()
+{
+    QPointF qptf = _m_lastMousePress;
+    QToolTip::showText(QPoint(int(qptf.x() + 2), int(qptf.y() + 50)), _m_currentHoldItem->toolTip());
+}
+#endif
 
 void RoomScene::updateVolumeConfig() {
     if (!game_started) return;

@@ -19,6 +19,11 @@ public:
     //virtual QSize sizeHint() const{ return iconSize(); }
 
 protected:
+#ifdef Q_OS_ANDROID
+    virtual void mousePressEvent(QMouseEvent *);
+    virtual void mouseMoveEvent(QMouseEvent *);
+    virtual void mouseReleaseEvent(QMouseEvent *);
+#endif
     virtual void mouseDoubleClickEvent(QMouseEvent *);
 
 signals:
