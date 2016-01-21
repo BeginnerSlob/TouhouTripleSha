@@ -234,168 +234,168 @@
     <message>
         <location filename="../src/client/client.cpp" line="802"/>
         <source>The argument (%1) of command %2 does not conform the format %3</source>
-        <translation type="unfinished"></translation>
+        <translation>命令 %2 的参数 (%1) 不符合其格式 %3</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="804"/>
         <source>Command format warning</source>
-        <translation type="unfinished"></translation>
+        <translation>命令格式警告</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="844"/>
         <source>&lt;br/&gt; &lt;b&gt;Notice&lt;/b&gt;: %1&lt;br/&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;br/&gt; &lt;b&gt;操作提示&lt;/b&gt;: %1&lt;br/&gt;</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="875"/>
         <source>Do you want to invoke skill [%1] ?</source>
-        <translation type="unfinished"></translation>
+        <translation>你想发动技能“%1”吗?</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="879"/>
         <source>Do you want to invoke skill [%1] to %2 ?</source>
-        <translation type="unfinished"></translation>
+        <translation>你想对 %2 发动技能“%1”吗?</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="902"/>
         <source>%1 initiated a vote for disadvataged side to claim capitulation. Click &quot;OK&quot; to surrender or &quot;Cancel&quot; to resist.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 要求所有人表决是否投降。 点【确定】表示你要投降，点【取消】拒绝向其他玩家投降。</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="905"/>
         <source>&lt;br/&gt; &lt;b&gt;Notice&lt;/b&gt;: if all people on your side decides to surrender. You&apos;ll lose this game.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;br/&gt; &lt;b&gt;警告&lt;/b&gt;: 如果你所在阵营里包括你在内的所有玩家表示投降，游戏将以你失败为结果立即结束。</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="916"/>
         <source>Do you want to use the luck card?</source>
-        <translation type="unfinished"></translation>
+        <translation>你想使用手气卡吗？</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="953"/>
         <source>Do you want to use nullification to trick card %1 from %2?</source>
-        <translation type="unfinished"></translation>
+        <translation>是否对 %2 的 %1 使用【三粒天滴】？</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="957"/>
         <source>%1 used trick card %2 to %3 &lt;br&gt;Do you want to use nullification?</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 对 %3 使用锦囊【%2】 &lt;br&gt;是否使用【三粒天滴】？</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1115"/>
         <source>Draw pile: &lt;b&gt;%1&lt;/b&gt;, discard pile: &lt;b&gt;%2&lt;/b&gt;, swap times: &lt;b&gt;%3&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>摸牌堆:&lt;b&gt;%1&lt;/b&gt;,弃牌堆:&lt;b&gt;%2&lt;/b&gt;,洗牌次数:&lt;b&gt;%3&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1125"/>
         <source>Discard string is not well formatted!</source>
-        <translation type="unfinished"></translation>
+        <translation>弃牌字符串没有格式化好！</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1140"/>
         <source>Please discard %1 card(s), include equip</source>
-        <translation type="unfinished"></translation>
+        <translation>请弃置 %1 张牌（包括装备区的牌）</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1142"/>
         <source>Please discard %1 card(s), only hand cards is allowed</source>
-        <translation type="unfinished"></translation>
+        <translation>请弃置 %1 张手牌</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1145"/>
         <source>%1 %2 cards(s) are required at least</source>
-        <translation type="unfinished"></translation>
+        <translation>你至少需要弃置 %1 张%2牌</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1145"/>
         <source>hand</source>
-        <translation type="unfinished"></translation>
+        <translation>手</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1167"/>
         <source>Exchange string is not well formatted!</source>
-        <translation type="unfinished"></translation>
+        <translation>交换字符串没有格式化好！</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1182"/>
         <source>Please give %1 cards to exchange</source>
-        <translation type="unfinished"></translation>
+        <translation>请选择用于交换的 %1 张手牌</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1278"/>
         <source>Game is over now</source>
-        <translation type="unfinished"></translation>
+        <translation>游戏已经结束</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1280"/>
         <source>Invalid signup string</source>
-        <translation type="unfinished"></translation>
+        <translation>无效的登录字符串</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1282"/>
         <source>Your level is not enough</source>
-        <translation type="unfinished"></translation>
+        <translation>你的等级不够</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1284"/>
         <source>Unknown warning: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>未知警告: %1</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1457"/>
         <source>You are dying, please provide %1 peach(es)(or analeptic) to save yourself</source>
-        <translation type="unfinished"></translation>
+        <translation>你处于濒死状态，请提供 %1 个【桃】（或【酒】）来自救</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1461"/>
         <source>%1 is dying, please provide %2 peach(es) to save him</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 处于濒死状态，请提供 %2 个【桃】来挽救该角色</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1492"/>
         <source>%1 request you to show one hand card</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 要求你展示一张手牌</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1614"/>
         <source>Please play a card for pindian</source>
-        <translation type="unfinished"></translation>
+        <translation>请出一张卡牌用于拼点</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1617"/>
         <source>%1 ask for you to play a card to pindian</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 要求你出一张卡牌用于拼点</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1641"/>
         <source>Please distribute %1 cards %2 as you wish</source>
-        <translation type="unfinished"></translation>
+        <translation>请将 %1 张牌任意分配给任意数量的%2角色</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1643"/>
         <source>to another player</source>
-        <translation type="unfinished"></translation>
+        <translation>其他</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1677"/>
         <location filename="../src/client/client.cpp" line="1681"/>
         <source>&lt;br/&gt; &lt;b&gt;Source&lt;/b&gt;: %1&lt;br/&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;br/&gt; &lt;b&gt;技能来源&lt;/b&gt;: %1&lt;br/&gt;</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1679"/>
         <source>Please choose a player</source>
-        <translation type="unfinished"></translation>
+        <translation>请选择一名角色</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1741"/>
         <source>&lt;font color=&apos;red&apos;&gt;System: %1&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;font color=&apos;red&apos;&gt;系统: %1&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../src/client/client.cpp" line="1758"/>
         <source>&lt;font color=&apos;%1&apos;&gt;[%2] said: %3 &lt;/font&gt;</source>
-        <translation type="unfinished">&lt;font color=&apos;%1&apos;&gt;[%2] 说: %3 &lt;/font&gt;</translation>
+        <translation>&lt;font color=&apos;%1&apos;&gt;[%2] 说: %3 &lt;/font&gt;</translation>
     </message>
 </context>
 <context>
@@ -668,51 +668,62 @@
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="17"/>
         <location filename="../src/dialog/connectiondialog.ui" line="29"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="17"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="29"/>
         <source>Connection setup</source>
         <translation>连接设置</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="76"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="76"/>
         <source>Change avatar</source>
         <translation>修改头像</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="41"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="41"/>
         <source>Avatar:</source>
         <translation>头像:</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="135"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="135"/>
         <source>Host:</source>
         <translation>主机:</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="118"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="118"/>
         <source>Name:</source>
         <translation>名称:</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="102"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="102"/>
         <source>Clear history</source>
         <translation>清除历史记录</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="89"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="89"/>
         <source>Detect LAN ...</source>
         <translation>探测局域网 ...</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="194"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="190"/>
         <source>Connect</source>
         <translation>连接</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="207"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="203"/>
         <source>Reconnection</source>
         <translation>断线重连</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="181"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="177"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -2436,7 +2447,7 @@
     <message>
         <location filename="../src/main.cpp" line="94"/>
         <source>Game data not found, please download TouhouTripleSha PC version, and put the files and folders into /sdcard/Android/data/org.slob.TouhouTripleSha</source>
-        <translation type="unfinished"></translation>
+        <translation>游戏数据未找到，请下载东方绮符剧电脑版，然后将所有文件放到 /sdcard/Android/data/org.slob.TouhouTripleSha</translation>
     </message>
 </context>
 <context>
@@ -3739,146 +3750,146 @@ P = 你自己, R = 你所在的房间</translation>
 <context>
     <name>ServerInfoWidget</name>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="125"/>
+        <location filename="../src/client/clientstruct.cpp" line="119"/>
         <source>Server name</source>
         <translation>服务器名</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="126"/>
+        <location filename="../src/client/clientstruct.cpp" line="120"/>
         <source>Address</source>
         <translation>地址</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="127"/>
+        <location filename="../src/client/clientstruct.cpp" line="121"/>
         <source>Port</source>
         <translation>端口</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="128"/>
+        <location filename="../src/client/clientstruct.cpp" line="122"/>
         <source>Game mode</source>
         <translation>游戏模式</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="129"/>
+        <location filename="../src/client/clientstruct.cpp" line="123"/>
         <source>Player count</source>
         <translation>玩家人数</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="130"/>
+        <location filename="../src/client/clientstruct.cpp" line="124"/>
         <source>2nd general mode</source>
         <translation>双将模式</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="131"/>
+        <location filename="../src/client/clientstruct.cpp" line="125"/>
         <source>Same Mode</source>
         <translation>同将模式</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="132"/>
+        <location filename="../src/client/clientstruct.cpp" line="126"/>
         <source>Basara Mode</source>
         <translation>暗将模式</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="133"/>
+        <location filename="../src/client/clientstruct.cpp" line="127"/>
         <source>Hegemony Mode</source>
         <translation>国战模式</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="134"/>
+        <location filename="../src/client/clientstruct.cpp" line="128"/>
         <source>Max HP scheme</source>
         <translation>体力上限分配方案</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="135"/>
+        <location filename="../src/client/clientstruct.cpp" line="129"/>
         <source>Random seat</source>
         <translation>随机座位</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="136"/>
+        <location filename="../src/client/clientstruct.cpp" line="130"/>
         <source>Enable cheat</source>
         <translation>作弊功能</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="138"/>
+        <location filename="../src/client/clientstruct.cpp" line="132"/>
         <source>Enable AI</source>
         <translation>AI 功能</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="144"/>
+        <location filename="../src/client/clientstruct.cpp" line="138"/>
         <source>Lack</source>
         <translation>缺人</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="158"/>
-        <location filename="../src/client/clientstruct.cpp" line="159"/>
-        <location filename="../src/client/clientstruct.cpp" line="160"/>
-        <location filename="../src/client/clientstruct.cpp" line="161"/>
-        <location filename="../src/client/clientstruct.cpp" line="175"/>
-        <location filename="../src/client/clientstruct.cpp" line="176"/>
-        <location filename="../src/client/clientstruct.cpp" line="177"/>
-        <location filename="../src/client/clientstruct.cpp" line="178"/>
+        <location filename="../src/client/clientstruct.cpp" line="152"/>
+        <location filename="../src/client/clientstruct.cpp" line="153"/>
+        <location filename="../src/client/clientstruct.cpp" line="154"/>
+        <location filename="../src/client/clientstruct.cpp" line="155"/>
+        <location filename="../src/client/clientstruct.cpp" line="169"/>
+        <location filename="../src/client/clientstruct.cpp" line="170"/>
+        <location filename="../src/client/clientstruct.cpp" line="171"/>
+        <location filename="../src/client/clientstruct.cpp" line="172"/>
         <source>Enabled</source>
         <translation>启用</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="158"/>
-        <location filename="../src/client/clientstruct.cpp" line="159"/>
-        <location filename="../src/client/clientstruct.cpp" line="160"/>
-        <location filename="../src/client/clientstruct.cpp" line="161"/>
-        <location filename="../src/client/clientstruct.cpp" line="175"/>
-        <location filename="../src/client/clientstruct.cpp" line="176"/>
-        <location filename="../src/client/clientstruct.cpp" line="177"/>
-        <location filename="../src/client/clientstruct.cpp" line="178"/>
+        <location filename="../src/client/clientstruct.cpp" line="152"/>
+        <location filename="../src/client/clientstruct.cpp" line="153"/>
+        <location filename="../src/client/clientstruct.cpp" line="154"/>
+        <location filename="../src/client/clientstruct.cpp" line="155"/>
+        <location filename="../src/client/clientstruct.cpp" line="169"/>
+        <location filename="../src/client/clientstruct.cpp" line="170"/>
+        <location filename="../src/client/clientstruct.cpp" line="171"/>
+        <location filename="../src/client/clientstruct.cpp" line="172"/>
         <source>Disabled</source>
         <translation>未启用</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="137"/>
+        <location filename="../src/client/clientstruct.cpp" line="131"/>
         <source>Free choose</source>
         <translation>自由选将</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="165"/>
+        <location filename="../src/client/clientstruct.cpp" line="159"/>
         <source>Sum - %1</source>
         <translation>和减%1</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="166"/>
+        <location filename="../src/client/clientstruct.cpp" line="160"/>
         <source>Minimum</source>
         <translation>较小值</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="167"/>
+        <location filename="../src/client/clientstruct.cpp" line="161"/>
         <source>Maximum</source>
         <translation>较大值</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="168"/>
+        <location filename="../src/client/clientstruct.cpp" line="162"/>
         <source>Average</source>
         <translation>平均值</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="171"/>
+        <location filename="../src/client/clientstruct.cpp" line="165"/>
         <source>2nd general is disabled</source>
         <translation>双将未启用</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="181"/>
+        <location filename="../src/client/clientstruct.cpp" line="175"/>
         <source>No limit</source>
         <translation>没有限制</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="183"/>
+        <location filename="../src/client/clientstruct.cpp" line="177"/>
         <source>%1 seconds</source>
         <translation>%1 秒</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="139"/>
+        <location filename="../src/client/clientstruct.cpp" line="133"/>
         <source>Operation time</source>
         <translation>操作时间</translation>
     </message>
     <message>
-        <location filename="../src/client/clientstruct.cpp" line="140"/>
+        <location filename="../src/client/clientstruct.cpp" line="134"/>
         <source>Extension packages</source>
         <translation>扩展包</translation>
     </message>
