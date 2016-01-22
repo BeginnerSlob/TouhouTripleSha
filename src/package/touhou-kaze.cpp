@@ -196,19 +196,23 @@ public:
     }
 };
 
-class ThJilanwen:public TriggerSkill{
+class ThJilanwen : public TriggerSkill
+{
 public:
-    ThJilanwen():TriggerSkill("thjilanwen") {
+    ThJilanwen(): TriggerSkill("thjilanwen")
+    {
         events << EventPhaseStart;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const
+    {
         if (player && player->getPhase() == Player::Draw && TriggerSkill::triggerable(player))
             return QStringList(objectName());
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         if (player->askForSkillInvoke(objectName())) {
             player->setFlags("ThJilanwenInvoke");
             room->broadcastSkillInvoke(objectName());
@@ -218,7 +222,8 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         JudgeStruct judge;
         judge.play_animation = false;
         judge.reason = objectName();
@@ -228,12 +233,14 @@ public:
 
         Card::Suit suit = (Card::Suit)judge.pattern.toInt();
         QList<ServerPlayer *> targets;
-        foreach(ServerPlayer *p, room->getAllPlayers())
-            foreach (const Card *card, p->getCards("ej"))
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
+            foreach (const Card *card, p->getCards("ej")) {
                 if (card->getSuit() != suit) {
                     targets << p;
                     break;
                 }
+            }
+        }
 
         if (!targets.isEmpty()) {
             player->tag["ThJilanwenJudge"] = QVariant::fromValue(&judge); //for AI
