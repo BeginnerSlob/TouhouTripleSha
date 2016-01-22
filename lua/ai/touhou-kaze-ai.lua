@@ -148,6 +148,7 @@ sgs.ai_skill_cardask["@thhuadi"] = function(self, data, pattern, target)
 	return "."
 end
 
+--疾岚：摸牌阶段开始时，你可以少摸一张牌，然后进行一次判定，你选择一项：获得此判定牌；或获得场上的一张与此判定牌花色不同的牌。
 sgs.ai_skill_invoke.thjilanwen = function(self, data)
 	for _, target in sgs.qlist(self.room:getAllPlayers()) do
 		if self:isFriend(target) then
@@ -159,11 +160,14 @@ sgs.ai_skill_invoke.thjilanwen = function(self, data)
 			end
 		end
 		if self:isEnemy(target) then
-			if target:hasSkills("ikyindie+ikguiyue") and target:getPhase() == sgs.Player_NotActive then return false end
-			if not target:getEquips():isEmpty() then
+			if target:hasSkills("ikyindie+ikguiyue") and target:getPhase() == sgs.Player_NotActive then continue end
+			if target:containsTrick("purple_song") then
+				return true
+			end
+			if target:hasEquip() then
 				return true
 			else
-				return false
+				continue
 			end
 		end
 	end
@@ -202,6 +206,11 @@ sgs.ai_skill_playerchosen.thjilanwen = function(self, targets)
 		if p:hasSkills("ikyindie+ikguiyue") and p:getPhase() == sgs.Player_NotActive then
 			continue
 		end
+		for _, cd in sgs.qlist(p:getJudgingArea()) do
+			if cd:isKindOf("PurpleSong") then
+				return p
+			end
+		end
 		local equips = sgs.IntList()
 		for _, cd in sgs.qlist(p:getEquips()) do
 			equips:append(cd:getEffectiveId())
@@ -217,6 +226,8 @@ sgs.ai_skill_playerchosen.thjilanwen = function(self, targets)
 	end
 	return nil
 end
+
+sgs.ai_choicemade_filter.cardChosen.thjilanwen = sgs.ai_choicemade_filter.cardChosen.snatch
 
 local thnianke_skill = {}
 thnianke_skill.name = "thnianke"

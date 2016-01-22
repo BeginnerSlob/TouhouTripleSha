@@ -2587,16 +2587,21 @@ function SmartAI:askForCardChosen(who, flags, reason, method)
 
 		if flags:match("j") then
 			local tricks = who:getCards("j")
-			local lightning, yanxiao
+			local lightning, yanxiao, purple_song
 			for _, trick in sgs.qlist(tricks) do
 				if trick:isKindOf("Lightning") and (not isDiscard or self.player:canDiscard(who, trick:getId())) then
 					lightning = trick:getId()
 				elseif trick:isKindOf("YanxiaoCard") and (not isDiscard or self.player:canDiscard(who, trick:getId())) then
 					yanxiao = trick:getId()
+				elseif trick:isKindOf("PurpleSong") and (not isDiscard or self.player:canDiscard(who, trick:getId())) then
+					purple_song = trick:getId()
 				end
 			end
 			if self:hasWizard(self.enemies, true) and lightning then
 				return lightning
+			end
+			if purple_song then
+				return purple_song
 			end
 			if yanxiao then
 				return yanxiao

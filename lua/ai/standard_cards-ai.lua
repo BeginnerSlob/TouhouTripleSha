@@ -2093,6 +2093,22 @@ function SmartAI:useCardSnatchOrDismantlement(card, use)
 				end
 			end
 		end
+		for _, enemy in ipairs(enemies) do
+			if enemy:containsTrick("purple_song") and not enemy:containsTrick("YanxiaoCard")
+				and self:hasTrickEffective(card, enemy) then
+				local cardchosen
+				tricks = enemy:getJudgingArea()
+				for _, trick in sgs.qlist(tricks) do
+					if trick:isKindOf("PurpleSong") and (not isDiscard or self.player:canDiscard(enemy, trick:getId())) then
+						cardchosen = trick:getEffectiveId()
+						break
+					end
+				end
+				if cardchosen then
+					if addTarget(enemy, cardchosen) then return end
+				end
+			end
+		end
 	end
 
 	local hasLion, target
