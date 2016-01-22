@@ -1,3 +1,4 @@
+-- 祉迹：弃牌阶段结束时，若你于此阶段弃置了两张或更多的手牌，你可以回复1点体力或摸两张牌。
 sgs.ai_skill_choice.thzhiji = function(self, choices, data)
 	if (self:isWeak() or self:needKongcheng(self.player, true)) and string.find(choices, "recover") then
 		return "recover"
@@ -6,33 +7,32 @@ sgs.ai_skill_choice.thzhiji = function(self, choices, data)
 	end
 end
 
-local thjiyi_skill = {}
-thjiyi_skill.name = "thjiyi"
-table.insert(sgs.ai_skills, thjiyi_skill)
-thjiyi_skill.getTurnUseCard = function(self)
-	if not self.player:hasUsed("ThJiyiCard") then
-		return sgs.Card_Parse("@ThJiyiCard=.")
-	end
-end
+--祭仪：出牌阶段限一次，你可令一名其他角色选择一项：展示一张锦囊牌并摸一张牌；或交给你一张牌。
+thjiyitarget = nil
+getThJiyiTarget = function(self)
+	thjiyitarget = nil
 
-sgs.ai_skill_use_func.ThJiyiCard = function(card, use, self)
+	self:sort(self.enemies, "defense")
 	for _, p in ipairs(self.enemies) do
 		if not p:isKongcheng() and self:isWeak(p) and getKnownCard(p, self.player, "TrickCard") == 0 then
-			use.card = sgs.Card_Parse("@ThJiyiCard=.")
-			if use.to then
-				use.to:append(p)
-			end
+			thjiyitarget = p
 			return
 		end
 	end --weak enemy
 
+	self:sort(self.friends_noself, "handcard")
+	for _, p in ipairs(self.friends_noself) do
+		if self:needKongcheng(p, true) and not self:isWeak(p) and p:getHandcardNum() == 1 then
+			thjiyitarget = p
+			return
+		end
+	end --friend need kongcheng
+
+	self:sort(self.friends_noself, "defense")
 	for _, p in ipairs(self.friends_noself) do
 		if not p:isKongcheng() and p:getPile("wooden_ox"):isEmpty() and getKnownCard(p, self.player, "TrickCard") > 0 then
-			if not self:needKongcheng(self.player, true) then
-				use.card = sgs.Card_Parse("@ThJiyiCard=.")
-				if use.to then
-					use.to:append(p)
-				end
+			if not self:needKongcheng(p, true) then
+				thjiyitarget = p
 				return
 			end
 		end
@@ -40,35 +40,30 @@ sgs.ai_skill_use_func.ThJiyiCard = function(card, use, self)
 
 	for _, p in ipairs(self.enemies) do
 		if not p:isKongcheng() and getKnownCard(p, self.player, "TrickCard") == 0 then
-			use.card = sgs.Card_Parse("@ThJiyiCard=.")
-			if use.to then
-				use.to:append(p)
-			end
+			thjiyitarget = p
 			return
 		end
 	end --enemys
 end
 
-sgs.ai_cardshow.thjiyi = function(self, requestor)
-	local trick = nil
-	local cards = sgs.QList2Table(self.player:getHandcards())
-	for _, cd in ipairs(cards) do
-		if cd:isKindOf("TrickCard") then
-			trick = cd
-			break
-		end
+local thjiyi_skill = {}
+thjiyi_skill.name = "thjiyi"
+table.insert(sgs.ai_skills, thjiyi_skill)
+thjiyi_skill.getTurnUseCard = function(self)
+	getThJiyiTarget(self)
+	if thjiyitarget and not self.player:hasUsed("ThJiyiCard") then
+		return sgs.Card_Parse("@ThJiyiCard=.")
 	end
-	if trick then
-		return trick
+end
+
+sgs.ai_skill_use_func.ThJiyiCard = function(card, use, self)
+	use.card = card
+	if use.to then
+		use.to:append(thjiyitarget)
 	end
-	self:sortByKeepValue(cards)
-	return cards[1]
 end
 
 sgs.ai_skill_cardask["@thjiyi"] = function(self, data, pattern, target)
-	if self:isFriend(target) then
-		return "."
-	end
 	local cards = sgs.QList2Table(self.player:getHandcards())
 	self:sortByKeepValue(cards)
 	for _, cd in ipairs(cards) do
@@ -79,15 +74,20 @@ sgs.ai_skill_cardask["@thjiyi"] = function(self, data, pattern, target)
 	return "."
 end
 
+sgs.ai_skill_cardask["@thjiyigive"] = function(self, data, pattern, target)
+	local cards = sgs.QList2Table(self.player:getCards("he"))
+	self:sortByKeepValue(cards)
+	return "$"..cards[1]:getEffectiveId()
+end
+
 sgs.ai_card_intention.ThJiyiCard = function(self, card, from, to)
 	if getKnownCard(to[1], from, "TrickCard") > 0 then
 		sgs.updateIntention(from, to[1], -50)
 		return
 	end
-	sgs.updateIntention(from, to[1], 50)
 end
 
---【华袛】ai
+--[[【华袛】ai
 table.insert(sgs.ai_global_flags, "thhuadisource")
 --now we have information of pindian,but how to parse it?
 function parsePindianReason(pindian)
@@ -135,11 +135,18 @@ sgs.ai_choicemade_filter.cardResponded["@thhuadi-pindiancard"] = function(self, 
 			end
 		end
 	end
+end]]
+
+
+--华袛：君主技，当你于回合外失去一次手牌后，其他风势力角色可以各交给你一张手牌。
+sgs.ai_skill_cardask["@thhuadi"] = function(self, data, pattern, target)
+	if self:isFriend(target) and not self:isWeak(self.player) and not self:isKongcheng() then
+		local cards = sgs.QList2Table(self.player:getHandcards())
+		self:sortByKeepValue(cards, true)
+		return "$"..cards[1]:getEffectiveId()
+	end
+	return "."
 end
-
-
-
-
 
 sgs.ai_skill_invoke.thjilanwen = function(self, data)
 	for _, target in sgs.qlist(self.room:getAllPlayers()) do
