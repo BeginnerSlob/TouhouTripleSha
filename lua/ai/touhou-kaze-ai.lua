@@ -229,6 +229,7 @@ end
 
 sgs.ai_choicemade_filter.cardChosen.thjilanwen = sgs.ai_choicemade_filter.cardChosen.snatch
 
+--念刻：出牌阶段限一次，你可以交给一名其他角色一张【闪】，然后展示该角色一张手牌，若该牌为红色，你与该角色各摸一张牌。
 local thnianke_skill = {}
 thnianke_skill.name = "thnianke"
 table.insert(sgs.ai_skills, thnianke_skill)
@@ -236,12 +237,9 @@ thnianke_skill.getTurnUseCard = function(self)
 	if self.player:hasUsed("ThNiankeCard") then
 		return nil
 	end
-	local cards = self.player:getCards("h")
-	cards = sgs.QList2Table(cards)
+	local cards = sgs.QList2Table(self.player:getCards("h"))
 
 	local card
-
-	self:sortByUseValue(cards, true)
 
 	for _, acard in ipairs(cards) do
 		if acard:isKindOf("Jink") then
@@ -254,17 +252,13 @@ thnianke_skill.getTurnUseCard = function(self)
 		return nil
 	end
 
-	local card_id = card:getEffectiveId()
-	local card_str = "@ThNiankeCard=" .. card_id
-	local skillcard = sgs.Card_Parse(card_str)
-
-	assert(skillcard)
-	return skillcard
+	return sgs.Card_Parse("@ThNiankeCard="..card:getEffectiveId())
 end
 
 sgs.ai_skill_use_func.ThNiankeCard = function(card, use, self)
 	local targets_red = {}
 	local targets = {}
+	self:sort(self.friends_noself, "defense")
 	for _, friend in ipairs(self.friends_noself) do
 		if (friend:isKongcheng() and not self:needKongcheng(friend, true)) or getKnownCard(friend, self.player, "red") == friend:getHandcardNum() then
 			table.insert(targets_red, friend)
@@ -274,13 +268,13 @@ sgs.ai_skill_use_func.ThNiankeCard = function(card, use, self)
 	end
 	if #targets_red > 0 then
 		use.card = card
-		self:sort(targets_red, "defense")
 		if use.to then
 			use.to:append(targets_red[1])
 		end
+		return
 	end
 	if self:getCardsNum("Jink", "h") <= 1 then
-		return "."
+		return
 	end
 	if #targets > 0 then
 		use.card = card
@@ -293,9 +287,12 @@ end
 
 sgs.ai_card_intention.ThNiankeCard = -80
 
+--极岚：每当你受到1点伤害后，可令一名角色弃置X张牌（X为该角色已损失的体力值，且至少为1）。
 sgs.ai_skill_playerchosen.thjilan = function(self, targets)
 	for _, p in ipairs(self.friends) do
-		if p:getArmor() and self:needToThrowArmor(p) and p:canDiscard(p, p:getArmor():getEffectiveId()) and p:getLostHp() <= 1 then
+		if p:getArmor() and self:needToThrowArmor(p) and p:canDiscard(p, p:getArmor():getEffectiveId())
+		   and (p:getLostHp() <= 1 or p:getCards("he"):length() < 1
+				or (p:getLostHp() == 2 and getKnownCard(p, self.player, "Peach") == 0 and p:getCards("he"):length() > 2)) then
 			return p
 		end
 	end
@@ -315,14 +312,30 @@ sgs.ai_skill_playerchosen.thjilan = function(self, targets)
 	return enemies[1]
 end
 
-sgs.ai_skill_invoke.thwangshou = function(self, data)
-	local target = data:toPlayer()
-	if self:isFriend(target) then
-		return (target:hasSkill("ikcangyou") and not target:getEquips():isEmpty()) or self:needToThrowArmor(target)
+sgs.ai_playerchosen_intention.thjilan = function(self, from, to)
+	if to:getArmor() and self:needToThrowArmor(to) and to:canDiscard(to, to:getArmor():getEffectiveId())
+	   and (to:getLostHp() <= 1 or to:getCards("he"):length() < 1
+			or (p:getLostHp() == 2 and getKnownCard(p, self.player, "Peach") == 0 and p:getCards("he"):length() > 2)) then
+		sgs.updateIntention(from, to, -50)
+	else
+		sgs.updateIntention(from, to, 50)
 	end
-	return self:isEnemy(target)
 end
 
+--王手：每当你对其他角色造成一次伤害后，可以令其进行一次判定，若结果为黑色，你可以弃置其一张牌。
+sgs.ai_skill_invoke.thwangshou = true
+
+sgs.ai_skill_invoke.thwangshou_discard = function(self, data)
+	local target = findPlayerByObjectName(self.room, data:toString():split(":")[2])
+	if target and self:isFriend(target) then
+		return (target:hasSkill("ikcangyou") and target:hasEquip()) or self:needToThrowArmor(target)
+	end
+	return target and self:isEnemy(target)
+end
+
+sgs.ai_choicemade_filter.cardChosen.thwangshou = sgs.ai_choicemade_filter.cardChosen.snatch
+
+--栴叶：你的回合外，当其他角色的判定牌为红色且生效后，你可以弃置一张牌，视为你对其使用一张无视距离的【杀】。
 sgs.ai_skill_cardask["@thzhanye"] = function(self, data, pattern, target)
 	if self.player:isNude() then
 		return "."
