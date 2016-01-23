@@ -42,7 +42,40 @@ end
 --default: discard card
 -- since the enemy can make huaji opportunity, this player should not use card at first
 
-
+--【彼岸】ai
+sgs.ai_skill_cardask["@thbian"] = function(self, data)
+	local dying = self.player:getRoom():getCurrentDyingPlayer()
+	if self:isEnemy(dying) then
+		local tricks={}
+		for _,c in sgs.qlist(self.player:getCards("h")) do
+			if c:isKindOf("TrickCard")  then
+				table.insert(tricks,c)
+			end
+		end
+		if #tricks==0 then return "." end
+		self:sortByKeepValue(tricks)
+		return "$" .. tricks[1]:getId()
+	end
+	return "."
+end
+--【归航】ai
+sgs.ai_skill_invoke.thguihang = function(self,data)
+	local dying = self.player:getRoom():getCurrentDyingPlayer()
+	if dying:isKongcheng() then return false end
+	if self:isEnemy(dying) then return false end
+	local hasred = false
+	if  dying==self.player then
+		for _,c in sgs.qlist(self.player:getCards("h")) do
+			if c:isRed() then
+				hasred = true
+				break
+			end
+		end
+	end
+	if dying~=self.player or hasred then return true end
+	return true
+end
+--给自己展示红牌ai不会写
 --【血兰】ai
 sgs.ai_skill_cardask["@thxuelan"] = function(self, data)
 	local peach_effect = data:toCardEffect()
