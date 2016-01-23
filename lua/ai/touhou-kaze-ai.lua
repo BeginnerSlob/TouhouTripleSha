@@ -360,29 +360,21 @@ sgs.ai_skill_cardask["@thzhanye"] = function(self, data, pattern, target)
 	return "."
 end
 
+--厄难：出牌阶段限一次，你可减少1点体力上限，并令你或你攻击范围内的一名角色失去1点体力。
 local thenan_skill = {}
 thenan_skill.name = "thenan"
 table.insert(sgs.ai_skills, thenan_skill)
 thenan_skill.getTurnUseCard = function(self)
-	if self.player:hasUsed("ThEnanCard") then
-		return nil
+	if not self.player:hasUsed("ThEnanCard") then
+		return sgs.Card_Parse("@ThEnanCard=.")
 	end
-
-	local skillcard = sgs.Card_Parse("@ThEnanCard=.")
-	assert(skillcard)
-	return skillcard
+	return nil
 end
 
 sgs.ai_skill_use_func.ThEnanCard = function(card, use, self)
-	if self.player:getHandcardNum() <= 1 and self.player:getHp() == 1 and self.player:getMaxHp() > 4 and self:getCardsNum({"Peach", "Analeptic"}, "h") > 0 then
-		use.card = card
-		if use.to then
-			use.to:append(self.player)
-		end
-		return
-	end
+	self:sort(self.enemies, "defense")
 	for _, enemy in ipairs(self.enemies) do
-		if self.player:inMyAttackRange(enemy) and self:isWeak(enemy) then
+		if self.player:getMaxHp() > 1 and self.player:inMyAttackRange(enemy) and self:isWeak(enemy) then
 			use.card = card
 			if use.to then
 				use.to:append(enemy)
@@ -390,11 +382,27 @@ sgs.ai_skill_use_func.ThEnanCard = function(card, use, self)
 			return
 		end
 	end
-	return "."	
+	for _, enemy in ipairs(self.enemies) do
+		if self.player:getMaxHp() > 1 and self.player:inMyAttackRange(enemy) then
+			use.card = card
+			if use.to then
+				use.to:append(enemy)
+			end
+			return
+		end
+	end
+	if self.player:getHandcardNum() <= 1 and self.player:getHp() == 1 and (self.player:getMaxHp() == 2 or self:getCardsNum("Peach", "h") > 0 or self:getCardsNum("Analeptic", "h") > 0) then
+		use.card = card
+		if use.to then
+			use.to:append(self.player)
+		end
+		return
+	end
 end
 
 sgs.ai_card_intention.ThEnanCard = 80
 
+--悲运：当你进入濒死状态时，你可以亮出牌堆顶的4-X张牌（X为你的体力上限，且最多为3）；你可以将其中全部的红色非锦囊牌置入弃牌堆，并回复1点体力；你还可以将其中全部的黑色非锦囊牌置入弃牌堆，并增加1点体力上限；然后你可以获得其余的牌。
 sgs.ai_skill_choice.thbeiyun = function(self, choices, data)
 	if string.find(choices, "get") then
 		return "get"
@@ -404,14 +412,14 @@ sgs.ai_skill_choice.thbeiyun = function(self, choices, data)
 	for _, id in sgs.qlist(beiyun_ids) do
 		local card = sgs.Sanguosha:getCard(id)
 		if card:isRed() then
-			if not red and card:getSuit() == sgs.Card_Diamond then
+			if not red and card:getTypeId() ~= sgs.Card_TypeTrick then
 				red = true
 			end
 			if card:isKindOf("Peach") or card:isKindOf("Analeptic") then
 				not_red = true
 			end
 		elseif card:isBlack() then
-			if not black then
+			if not black and card:getTypeId() ~= sgs.Card_TypeTrick then
 				black = true
 			end
 			if card:isKindOf("Peach") or card:isKindOf("Analeptic") then
@@ -422,14 +430,13 @@ sgs.ai_skill_choice.thbeiyun = function(self, choices, data)
 	if not not_red and red then
 		return "red"
 	end
-	if self:getCardsNum({"Peach", "Analeptic"}, "h") >= 1 - self.player:getHp() then -- i'm safe
+	if (self:getCardsNum("Peach", "h") + self:getCardsNum("Analeptic", "h")) >= 1 - self.player:getHp() then -- i'm safe
 		return black and "black" or "cancel"
 	else
 		return not not_black and black and "black" or "cancel"
 	end
 	return "cancel"
 end
-
 
 --thmicai @to_do
 --[[ thqiaogong -future @to_do_future
