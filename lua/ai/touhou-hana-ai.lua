@@ -136,7 +136,7 @@ sgs.ai_skill_use_func.ThWujianCard = function(card, use, self)
 		card = cards[1]
 	end
 	if card == 0 then return end
-	use.card = card
+	use.card = sgs.Card_Parse("@ThWujianCard=" .. card:getId())
 	self.player:speak(3)
 	if use.to then---这里这里
 		self.player:speak(4)
