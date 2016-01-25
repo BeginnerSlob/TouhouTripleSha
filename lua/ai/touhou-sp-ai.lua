@@ -260,7 +260,6 @@ function thjingyuansp_inMyAttackRange(from, target, equip)
 end
 
 sgs.ai_skill_use_func.ThJingyuanspCard = function(card, use, self)
-	self.player:speak(1)
 	local targets = {}
 	self:sort(self.friends, "defense")
 	self.friends = sgs.reverse(self.friends)
@@ -303,15 +302,11 @@ sgs.ai_skill_use_func.ThJingyuanspCard = function(card, use, self)
 			break
 		end
 	end
-	self.player:speak(2)
 	if #targets ~= 0 then
-		self.player:speak(3)
 		use.card = card
 		if use.to then
-			self.player:speak(4)
 			use.to:append(targets[1])
 			if #targets > 1 then
-				self.player:speak(5)
 				use.to:append(targets[2])
 			end
 		end
