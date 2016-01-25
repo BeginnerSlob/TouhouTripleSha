@@ -136,7 +136,7 @@ sgs.ai_choicemade_filter.skillInvoke.thmodao = function(self, player, promptlist
 	local target = player:getTag("ThModaoTarget"):toPlayer()
 	if target then
 		local flag =  promptlist[#promptlist] 
-		local diff =  target:getCards(flag):length() -  source:getCards(flag):length() 
+		local diff =  target:getCards(flag):length() - player:getCards(flag):length() 
 		local friendly
 		if flag == "e" then
 			if not target:hasSkills(sgs.lose_equip_skill) then
@@ -219,3 +219,153 @@ sgs.ai_skill_use["@@thfengling"] = function(self, prompt)
 	end
 	return "."
 end
+
+--偶祭：每当你或你攻击范围内的一名角色的装备区于你的回合内改变时，你可以选择一项：弃置一名其他角色的一张手牌；或摸一张牌。
+sgs.ai_skill_invoke.thouji = true
+
+sgs.ai_skill_playerchosen.thouji = function(self, targets)
+	local target = self:findPlayerToDiscard("h", false, true, targets)
+	if target and self:isEnemy(target) and ((target:getHandcardNum() == 1 and not self:needKongcheng(target, true)) or (target:getHandcardNum() == 2 and getKnownCard(target, self.player, "Peach") > 0)) then
+		return target
+	end
+	return nil
+end
+
+sgs.ai_playerchosen_intention.thouji = 30
+
+--镜缘：出牌阶段限一次，你可以弃置一张红色基本牌，然后令装备区里有牌的一至两名角色各选择一项：将其装备区里的一张牌交给除其以外的一名角色；或令你获得其一张手牌。
+local thjingyuansp_skill = {}
+thjingyuansp_skill.name = "thjingyuansp"
+table.insert(sgs.ai_skills, thjingyuansp_skill)
+thjingyuansp_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThJingyuanspCard") or not self.player:canDiscard(self.player, "h") then return end
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	self:sortByUseValue(cards)
+	for _, c in ipairs(cards) do
+		if c:isRed() and c:getTypeId() == sgs.Card_TypeBasic then
+			return sgs.Card_Parse("@ThJingyuanspCard=" .. c:getId())
+		end
+	end
+end
+
+function thjingyuansp_inMyAttackRange(from, target, equip)
+	if from:objectName() == target:objectName() then
+		return true
+	end
+	local fix = 0
+	if equip:isKindOf("DefensiveHorse") then
+		fix = fix - 1
+	end
+	return from:inMyAttackRange(target, fix)
+end
+
+sgs.ai_skill_use_func.ThJingyuanspCard = function(card, use, self)
+	self.player:speak(1)
+	local targets = {}
+	self:sort(self.friends, "defense")
+	self.friends = sgs.reverse(self.friends)
+	for _, p in ipairs(self.friends) do
+		if not p:hasEquip() and self:isWeak(p) then
+			continue
+		end
+		for _, c in sgs.qlist(p:getEquips()) do
+			if thjingyuansp_inMyAttackRange(self.player, p, c) then
+				table.insert(targets, p)
+				break
+			end
+		end
+	end
+	self:sort(self.enemies, "defense")
+	for _, p in ipairs(self.enemies) do
+		if not p:hasEquip() then
+			continue
+		end
+		if self.player:inMyAttackRange(p) then
+			table.insert(targets, p)
+			break
+		end
+	end
+	for _, p in ipairs(self.enemies) do
+		if not p:hasEquip() then
+			continue
+		end
+		if table.contains(targets, p) then
+			table.insert(targets, p)
+			break
+		end
+	end
+	for _, p in ipairs(self.friends) do
+		if not p:hasEquip() and self:isWeak(p) then
+			continue
+		end
+		if table.contains(targets, p) then
+			table.insert(targets, p)
+			break
+		end
+	end
+	self.player:speak(2)
+	if #targets ~= 0 then
+		self.player:speak(3)
+		use.card = card
+		if use.to then
+			self.player:speak(4)
+			use.to:append(targets[1])
+			if #targets > 1 then
+				self.player:speak(5)
+				use.to:append(targets[2])
+			end
+		end
+		return
+	end
+	use.card = nil
+end
+
+sgs.ai_skill_cardask["@thjingyuansp"] = function(self, data, pattern, target)
+	if self:isFriend(target) then
+		return sgs.ai_skill_cardask["@thjingyuansp-give"]
+	else
+		if self.player:getEquips():length() == 1 and self.player:getArmor() then
+			return "."
+		else
+			local cards = sgs.QList2Table(self.player:getCards("e"))
+			self:sortByKeepValue(cards)
+			for _, cd in ipairs(cards) do
+				if thjingyuansp_inMyAttackRange(target, self.player, cd) then
+					continue
+				else
+					return "$" .. cd:getEffectiveId()
+				end
+			end
+		end
+	end
+	return "."
+end
+
+sgs.ai_skill_cardask["@thjingyuansp-give"] = function(self, data, pattern, target)
+	local cards = sgs.QList2Table(self.player:getCards("e"))
+	self:sortByKeepValue(cards)
+	for _, cd in ipairs(cards) do
+		if thjingyuansp_inMyAttackRange(target, self.player, cd) then
+			if self:isFriend(target) then
+				return "$" .. cd:getEffectiveId()
+			else
+				continue
+			end
+		end
+	end
+	return "$" .. cards[1]:getEffectiveId()
+end
+
+sgs.ai_skill_playerchosen.thjingyuansp = function(self, targets)
+	local ailisis = self.room:findPlayersBySkillName("thjingyuansp")
+	for _, ailisi in sgs.qlist(ailisis) do
+		if self:isFriend(ailisi) and targets:contains(ailisi) and ailisi:getPhase() == sgs.Player_Play then
+			return ailisi
+		end
+	end
+	local card = self.player:getTag("ThJingyuanspCard"):toCard()
+	local _, target = self:getCardNeedPlayer({card}, self.friends_noself, false)
+	return target
+end
+
+sgs.ai_playerchosen_intention.thjingyuansp = -30
