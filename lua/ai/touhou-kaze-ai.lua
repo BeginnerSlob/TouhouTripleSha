@@ -87,57 +87,6 @@ sgs.ai_card_intention.ThJiyiCard = function(self, card, from, to)
 	end
 end
 
---[[【华袛】ai
-table.insert(sgs.ai_global_flags, "thhuadisource")
---now we have information of pindian,but how to parse it?
-function parsePindianReason(pindian)
-	local need_win=true
-	return need_win
-end
-sgs.ai_skill_invoke.thhuadi =  function(self,data)
-	if sgs.thhuadisource then return false end
-	local need_win = parsePindianReason(data:toPindian()) 
-	if need_win and self:getMaxCard()<10 then
-		return true
-	elseif not need_win and self:getMinCard()>6 then
-		return true
-	end
-	return false
-end
-sgs.ai_choicemade_filter.skillInvoke.thhuadi = function(self, player, promptlist)
-	if promptlist[#promptlist] == "yes" then
-		sgs.thhuadisource = player
-	end
-end
-sgs.ai_skill_cardask["@thhuadi-pindiancard"] = function(self, data)
-	if not sgs.thhuadisource then return  "." end
-	local pindian=data:toPindian()
-	if self:isFriend(sgs.thhuadisource) then
-		if parsePindianReason(pindian) then
-			local max_card =self:getMaxCard()
-			if max_card then return   "$" .. max_card:getId() end
-		else
-			local min_card =self:getMinCard()
-			if min_card then return "$" .. min_card:getId() end
-		end
-	end
-	return  "." 
-end
-sgs.ai_choicemade_filter.cardResponded["@thhuadi-pindiancard"] = function(self, player, promptlist)
-	if promptlist[#promptlist] ~= "_nil_" then
-		sgs.updateIntention(player, sgs.thhuadisource, -80)
-		sgs.thhuadisource = nil
-	elseif sgs.thhuadisource then
-		local lieges = player:getRoom():getLieges("hana", sgs.thhuadisource)
-		if lieges and not lieges:isEmpty() then
-			if player:objectName() == lieges:last():objectName() then
-				sgs.thhuadisource = nil
-			end
-		end
-	end
-end]]
-
-
 --华袛：君主技，当你于回合外失去一次手牌后，其他风势力角色可以各交给你一张手牌。
 sgs.ai_skill_cardask["@thhuadi"] = function(self, data, pattern, target)
 	if self:isFriend(target) and not self:isWeak(self.player) and not self:isKongcheng() then
@@ -438,24 +387,218 @@ sgs.ai_skill_choice.thbeiyun = function(self, choices, data)
 	return "cancel"
 end
 
---thmicai @to_do
---[[ thqiaogong -future @to_do_future
-local thqiaogong = {}
-thqiaogong.name = "thqiaogong"
-table.insert(sgs.ai_skills, thqiaogong)
-thqiaogong.getTurnUseCard = function(self)
-	if self.player:hasUsed("ThQiaogong") then
+--迷彩：专属技，出牌阶段限一次，你可以指定一名其他角色，当该角色的装备区没有武器牌且没有拥有专属技时，视为装备着你装备区的武器牌；当该角色的装备区没有防具牌且没有拥有专属技时，视为装备着你装备区的防具牌，直到你的下一个回合开始。
+local thmicai_skill = {}
+thmicai_skill.name = "thmicai"
+table.insert(sgs.ai_skills, thmicai_skill)
+thmicai_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThMicaiCard") then
 		return nil
 	end
 
-	local skillcard = sgs.Card_Parse("@ThQiaogong=.")
-	assert(skillcard)
-	return skillcard
+	return sgs.Card_Parse("@ThMicaiCard=.")
 end
 
-sgs.ai_skill_use_func.ThQiaogong = function(card, use, self)
+sgs.ai_skill_use_func.ThMicaiCard = function(card, use, self)
+	local lord = self.room:getLord()
+	if self:isFriend(lord) and not self.player:isLord() and self:isWeak(lord) and self.player:getArmor() and not self.player:getArmor():isKindOf("Vine") then
+		use.card = card
+		if use.to then
+			use.to:append(p)
+			return
+		end
+	end
+	if self.player:getArmor() then
+		self:sort(self.friends_noself, "defense")
+		for _, p in ipairs(self.friends_noself) do
+			if not p:getArmor() and not self:hasEightDiagramEffect() then
+				use.card = card
+				if use.to then
+					use.to:append(p)
+					return
+				end
+			end
+		end
+	end
+	if self.player:getWeapon() then
+		self:sort(self.friends_noself, "handcard")
+		self.friends_noself = sgs.reverse(self.friends_noself)
+		for _, p in ipairs(self.friends_noself) do
+			if not p:getWeapon() then
+				use.card = card
+				if use.to then
+					use.to:append(p)
+					return
+				end
+			end
+		end
+	end
+	use.card = card
+	if use.to and #self.friends_noself > 0 then
+		local target = self.friends_noself[math.random(1, #self.friends_noself)]
+		use.to:append(target)
+		return
+	end
+	use.card = nil
+end
+
+sgs.ai_card_intention.ThMicaiCard = -5
+
+function sgs.ai_cardsview.thmicaiv(self, class_name, player)
+	if player:hasWeapon("spear") and class_name == "Slash" then
+		return cardsView_spear(self, player, "spear")
+	end
+end
+
+sgs.ai_view_as.thmicaiv = function(card, player, card_place)
+	if player:hasWeapon("fan") then
+		local suit = card:getSuitString()
+		local number = card:getNumberString()
+		local card_id = card:getEffectiveId()
+		if sgs.Sanguosha:getCurrentCardUseReason() ~= sgs.CardUseStruct_CARD_USE_REASON_RESPONSE
+			and card_place ~= sgs.Player_PlaceSpecial and card:objectName() == "slash" then
+			return ("fire_slash:fan[%s:%s]=%d"):format(suit, number, card_id)
+		end
+	end
+end
+
+local thmicaiv_skill = {}
+thmicaiv_skill.name = "spear"
+table.insert(sgs.ai_skills, thmicaiv_skill)
+thmicaiv_skill.getTurnUseCard = function(self, inclusive)
+	if player:hasWeapon("spear") then
+		return turnUse_spear(self, inclusive, "spear")
+	elseif player:hasWeapon("fan") then
+		local cards = self.player:getCards("h")
+		for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+			cards:prepend(sgs.Sanguosha:getCard(id))
+		end
+		cards = sgs.QList2Table(cards)
+		local slash_card
 	
-end]]
+		for _, card in ipairs(cards) do
+			if card:isKindOf("Slash") and not (card:isKindOf("FireSlash") or card:isKindOf("ThunderSlash")) then
+				slash_card = card
+				break
+			end
+		end
+	
+		if not slash_card then return nil end
+		local suit = slash_card:getSuitString()
+		local number = slash_card:getNumberString()
+		local card_id = slash_card:getEffectiveId()
+		local card_str = ("fire_slash:fan[%s:%s]=%d"):format(suit, number, card_id)
+		local fireslash = sgs.Card_Parse(card_str)
+		assert(fireslash)
+	
+		return fireslash
+	end
+end
+
+--巧工：出牌阶段限一次，你可以弃置两张相同颜色的牌，并获得场上的一张该颜色的装备牌。
+local thqiaogong_skill = {}
+thqiaogong_skill.name = "thqiaogong"
+table.insert(sgs.ai_skills, thqiaogong_skill)
+thqiaogong_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThQiaogongCard") then
+		return nil
+	end
+
+	return sgs.Card_Parse("@ThQiaogongCard=.")
+end
+
+sgs.ai_skill_use_func.ThQiaogongCard = function(card, use, self)
+	if self.player:getArmor() and self:needToThrowArmor(self.player) then
+		local suit = self.player:getArmor():getSuit()
+		local card_id1 = self.player:getArmor():getEffectiveId()
+		local can_use = {}
+		local cards = self.player:getCards("he")
+		for _, cd in sgs.qlist(cards) do
+			if cd:getSuit() == suit and cd:getId() ~= card_id1 and not isCard("Peach", cd, self.player) and not isCard("ExNihilo", cd, self.player) then
+				table.insert(can_use, cd)
+			end
+		end
+		if #can_use >= 1 then
+			self:sort(self.enemies, "defense")
+			for _, p in ipairs(self.enemies) do
+				if p:hasEquip() then
+					for _, cd in sgs.qlist(p:getEquips()) do
+						if cd:getSuit() == suit then
+							local card_id2 = can_use[1]:getEffectiveId()
+
+							local card_str = ("@ThQiaogong=%d+%d"):format(card_id1, card_id2)
+							use.card = sgs.Card_Parse(card_str)
+							if use.to then
+								use.to:append(p)
+								return
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+	for _, p in ipairs(self.friends_noself) do
+		if p:getArmor() and self:needToThrowArmor(p) then
+			local suit = p:getArmor():getSuit()
+			local target_id = p:getArmor():getId()
+			local can_use = {}
+			local cards = self.player:getCards("he")
+			for _, cd in sgs.qlist(cards) do
+				if cd:getSuit() == suit and cd:getId() ~= target_id and not isCard("Peach", cd, self.player) and not isCard("ExNihilo", cd, self.player) then
+					table.insert(can_use, cd)
+				end
+			end
+			if #can_use >= 2 then
+				self:sortByKeepValue(can_use)
+
+				local card_id1 = can_use[1]:getEffectiveId()
+				local card_id2 = can_use[2]:getEffectiveId()
+
+				local card_str = ("@ThQiaogong=%d+%d"):format(card_id1, card_id2)
+				use.card = sgs.Card_Parse(card_str)
+				if use.to then
+					use.to:append(p)
+					return
+				end
+			end
+		end
+	end
+	if self:getOverflow() > 0 then
+		self:sort(self.enemies, "defense")
+		for _, p in ipairs(self.enemies) do
+			if p:hasEquip() then
+				for _, cd in sgs.qlist(p:getEquips()) do
+					local suit = cd:getSuit()
+					local target_id = cd:getId()
+					local can_use = {}
+					local cards = self.player:getCards("he")
+					for _, c in sgs.qlist(cards) do
+						if c:getSuit() == suit and c:getId() ~= target_id and not isCard("Peach", c, self.player) and not isCard("ExNihilo", c, self.player) then
+							table.insert(can_use, c)
+						end
+					end
+					if #can_use >= 2 then
+						self:sortByKeepValue(can_use)
+		
+						local card_id1 = can_use[1]:getEffectiveId()
+						local card_id2 = can_use[2]:getEffectiveId()
+		
+						local card_str = ("@ThQiaogong=%d+%d"):format(card_id1, card_id2)
+						use.card = sgs.Card_Parse(card_str)
+						if use.to then
+							use.to:append(p)
+							return
+						end
+					end
+				end
+			end
+		end
+	end
+	use.card = nil
+end
+
+sgs.ai_choicemade_filter.cardChosen.thqiaogong = sgs.ai_choicemade_filter.cardChosen.snatch
 
 local thzhouhua_skill = {}
 thzhouhua_skill.name = "thzhouhua"
