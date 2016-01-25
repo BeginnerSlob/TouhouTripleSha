@@ -2815,9 +2815,12 @@ function SmartAI:hasHeavySlashDamage(from, slash, to, return_value)
 	local fireSlash = slash and (slash:isKindOf("FireSlash")
 								or (slash:objectName() == "slash" and (from:hasWeapon("fan") or (from:hasSkill("lihuo") and not self:isWeak(from)))))
 	if (slash and slash:hasFlag("drank")) then
-		dmg = dmg + 1
+		dmg = dmg + slash:getTag("drank"):toInt()
 	elseif from:getMark("drank") > 0 then
 		dmg = dmg + from:getMark("drank")
+	end
+	if (slash and slash:getSkillName() == "thhuaimie") then
+		dmg = dmg + 1
 	end
 	if not from:hasSkill("ikxuwu") then
 		if from:hasFlag("nosluoyi") then dmg = dmg + 1 end

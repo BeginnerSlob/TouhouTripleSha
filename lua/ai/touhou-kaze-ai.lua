@@ -595,6 +595,54 @@ end
 sgs.ai_choicemade_filter.cardChosen.thqiaogong = sgs.ai_choicemade_filter.cardChosen.snatch
 
 --鬼狱：当你使用【杀】对目标角色造成一次伤害后，你可以令该角色获得此【杀】，然后你选择一项：在结算后，令此【杀】不计入使用限制；或弃置一名其他角色的一张牌。
+sgs.ai_skill_invoke.thguiyu = function(self, data)
+	local damage = data:toDamage()
+	local target = damage.to
+	local slash = damage.card:getEffectiveId()
+	if self:isFriend(target) and not self:needKongcheng(target, true) then
+		return true
+	end
+	if self:isEnemy(target) and (self:needKongcheng(target, true) or self:willSkipPlayPhase(target)) then
+		return true
+	end
+	if self:isEnemy(target) and not isCard("Jink", slash, target) and not isCard("Peach", slash, target) and not isCard("Analeptic", slash, target) then
+		return true
+	end
+	return false
+end
+
+sgs.ai_skill_playerchosen.thguiyu = function(self, targets)
+	if self:getCardsNum("Slash") > 0 then
+		return nil
+	end
+	return self:findPlayerToDiscard("he", false, true, targets)
+end
+
+sgs.ai_choicemade_filter.cardChosen.thguiyu = sgs.ai_choicemade_filter.cardChosen.snatch
+
+--酎华：限定技，出牌阶段，若存活角色数不大于游戏开始时的一半，你可以回复1点体力或摸两张牌，然后获得技能“坏灭”（锁定技，你的黑色锦囊牌均视为【杀】，且造成的伤害+1。）。
+local thzhouhua_skill = {}
+thzhouhua_skill.name = "thzhouhua"
+table.insert(sgs.ai_skills, thzhouhua_skill)
+thzhouhua_skill.getTurnUseCard = function(self)
+    local alive = self.room:alivePlayerCount()
+    local all = self.room:getPlayers():length()
+    if alive <= all / 2 and self.player:getMark("@zhouhua") > 0 then
+		return sgs.Card_Parse("@ThZhouhuaCard=.")
+	end
+end
+
+sgs.ai_skill_use_func.ThZhouhuaCard = function(card, use, self)
+	use.card = card
+end
+
+sgs.ai_skill_choice.thzhouhua = function(self, choice)
+	if self.player:getHp() < self.player:getMaxHp() - 1 then return "recover" end
+	return "draw"
+end
+
+--坏灭：锁定技，你的黑色锦囊牌均视为【杀】，且造成的伤害+1。
+--SmartAI:hasHeavySlashDamage
 
 --[[local thzhouhua_skill = {}
 thzhouhua_skill.name = "thzhouhua"
