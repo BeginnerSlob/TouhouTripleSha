@@ -405,8 +405,8 @@ sgs.ai_skill_use_func.ThMicaiCard = function(card, use, self)
 		use.card = card
 		if use.to then
 			use.to:append(p)
-			return
 		end
+		return
 	end
 	if self.player:getArmor() then
 		self:sort(self.friends_noself, "defense")
@@ -415,8 +415,8 @@ sgs.ai_skill_use_func.ThMicaiCard = function(card, use, self)
 				use.card = card
 				if use.to then
 					use.to:append(p)
-					return
 				end
+				return
 			end
 		end
 	end
@@ -428,16 +428,10 @@ sgs.ai_skill_use_func.ThMicaiCard = function(card, use, self)
 				use.card = card
 				if use.to then
 					use.to:append(p)
-					return
 				end
+				return
 			end
 		end
-	end
-	use.card = card
-	if use.to and #self.friends_noself > 0 then
-		local target = self.friends_noself[math.random(1, #self.friends_noself)]
-		use.to:append(target)
-		return
 	end
 	use.card = nil
 end
@@ -530,8 +524,8 @@ sgs.ai_skill_use_func.ThQiaogongCard = function(card, use, self)
 							use.card = sgs.Card_Parse(card_str)
 							if use.to then
 								use.to:append(p)
-								return
 							end
+							return
 						end
 					end
 				end
@@ -559,8 +553,8 @@ sgs.ai_skill_use_func.ThQiaogongCard = function(card, use, self)
 				use.card = sgs.Card_Parse(card_str)
 				if use.to then
 					use.to:append(p)
-					return
 				end
+				return
 			end
 		end
 	end
@@ -588,8 +582,8 @@ sgs.ai_skill_use_func.ThQiaogongCard = function(card, use, self)
 						use.card = sgs.Card_Parse(card_str)
 						if use.to then
 							use.to:append(p)
-							return
 						end
+						return
 					end
 				end
 			end
@@ -693,7 +687,7 @@ sgs.ai_skill_choice.thshenzhou = function(self, choices, data)
 				 equip = 0,
 				 trick = 0}
 	for _, id in sgs.qlist(card_ids) do
-		local card = sgs.Sanguosha:getCard(card_ids)
+		local card = sgs.Sanguosha:getCard(id)
 		if card:isKindOf("Peach") then
 			has_peach = true
 		end

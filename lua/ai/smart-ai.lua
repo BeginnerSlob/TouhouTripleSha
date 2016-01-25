@@ -5100,7 +5100,7 @@ end
 
 function SmartAI:useEquipCard(card, use)
 	if not card then global_room:writeToConsole(debug.traceback()) return end
-	if self.player:hasSkills("kofxiaoji|xiaoji") and self:evaluateArmor(card) > -5 then
+	if self.player:hasSkills("kofxiaoji|xiaoji|thouji") and self:evaluateArmor(card) > -5 then
 		use.card = card
 		return
 	end

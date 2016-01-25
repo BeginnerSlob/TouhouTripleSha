@@ -1861,6 +1861,7 @@ class ThOuji: public TriggerSkill {
 public:
     ThOuji(): TriggerSkill("thouji") {
         events << CardsMoveOneTime;
+        frequency = Frequent;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
@@ -1922,12 +1923,14 @@ void ThJingyuanspCard::onEffect(const CardEffectStruct &effect) const{
     if (effect.from == effect.to || effect.to->isKongcheng()) {
         pattern += "!";
         prompt += "-give";
-    } else
-        prompt += QString(":%1").arg(effect.from->objectName());
+    }
+    prompt += QString(":%1").arg(effect.from->objectName());
     const Card *card = room->askForCard(effect.to, pattern, prompt, QVariant(), Card::MethodNone);
     CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.to->objectName(), "thjingyuansp", QString());
     if (card) {
+        effect.to->tag["ThJingyuanspCard"] = QVariant::fromValue(card); // for AI
         ServerPlayer *target = room->askForPlayerChosen(effect.to, room->getOtherPlayers(effect.to), "thjingyuansp");
+        effect.to->tag.remove("ThJingyuanspCard");
         reason.m_targetId = target->objectName();
         room->obtainCard(target, card, reason);
     } else if (pattern.endsWith("!")) {
