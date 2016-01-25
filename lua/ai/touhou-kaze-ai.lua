@@ -460,9 +460,9 @@ local thmicaiv_skill = {}
 thmicaiv_skill.name = "spear"
 table.insert(sgs.ai_skills, thmicaiv_skill)
 thmicaiv_skill.getTurnUseCard = function(self, inclusive)
-	if player:hasWeapon("spear") then
+	if self.player:hasWeapon("spear") then
 		return turnUse_spear(self, inclusive, "spear")
-	elseif player:hasWeapon("fan") then
+	elseif self.player:hasWeapon("fan") then
 		local cards = self.player:getCards("h")
 		for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
 			cards:prepend(sgs.Sanguosha:getCard(id))
@@ -594,7 +594,9 @@ end
 
 sgs.ai_choicemade_filter.cardChosen.thqiaogong = sgs.ai_choicemade_filter.cardChosen.snatch
 
-local thzhouhua_skill = {}
+--鬼狱：当你使用【杀】对目标角色造成一次伤害后，你可以令该角色获得此【杀】，然后你选择一项：在结算后，令此【杀】不计入使用限制；或弃置一名其他角色的一张牌。
+
+--[[local thzhouhua_skill = {}
 thzhouhua_skill.name = "thzhouhua"
 table.insert(sgs.ai_skills, thzhouhua_skill)
 thzhouhua_skill.getTurnUseCard = function(self, inclusive)
@@ -676,7 +678,7 @@ function sgs.ai_cardsview.thzhouhuav(self, class_name, player)
 	end
 end
 
-sgs.ai_skill_playerchosen["@thxugu"] = sgs.ai_skill_playerchosen.zero_card_as_slash
+sgs.ai_skill_playerchosen["@thxugu"] = sgs.ai_skill_playerchosen.zero_card_as_slash]]
 
 sgs.thshenzhou_current = false
 
