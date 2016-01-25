@@ -47,7 +47,7 @@ sgs.ai_skill_cardask["@thbian"] = function(self, data)
 	local dying = self.player:getRoom():getCurrentDyingPlayer()
 	if self:isEnemy(dying) then
 		local tricks={}
-		for _,c in sgs.qlist(self.player:getCards("h")) do
+		for _,c in sgs.qlist(self.player:getHandcards()) do
 			if c:isKindOf("TrickCard")  then
 				table.insert(tricks,c)
 			end
@@ -65,7 +65,7 @@ sgs.ai_skill_invoke.thguihang = function(self,data)
 	if self:isEnemy(dying) then return false end
 	local hasred = false
 	if  dying==self.player then
-		for _,c in sgs.qlist(self.player:getCards("h")) do
+		for _,c in sgs.qlist(self.player:getHandcards()) do
 			if c:isRed() then
 				hasred = true
 				break
@@ -73,9 +73,79 @@ sgs.ai_skill_invoke.thguihang = function(self,data)
 		end
 	end
 	if dying~=self.player or hasred then return true end
-	return true
+	return false
 end
---给自己展示红牌ai不会写
+sgs.ai_cardshow.thguihang = function(self, requestor)
+	local reds={}
+	for _,c in sgs.qlist(self.player:getHandcards()) do
+		if c:isRed() then
+			table.insert(reds,c)
+		end
+	end
+	if #reds==0 then return "." end
+	self:sortByKeepValue(reds)
+	return reds[1]
+end
+--【无间】ai
+local thwujian_skill = {}
+thwujian_skill.name = "thwujian"
+table.insert(sgs.ai_skills, thwujian_skill)
+thwujian_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThWujianCard") then return nil end
+	if self.player:isKongcheng() then return nil end
+	return sgs.Card_Parse("@ThWujianCard=.")
+end
+sgs.ai_skill_use_func.ThWujianCard = function(card, use, self)
+	local targets = sgs.SPlayerList()
+	local friends = sgs.SPlayerList()
+	friends:append(self.player)
+	for _,p in sgs.qlist(self.room:getOtherPlayers(self.player))do
+		if self:isFriend(p) then
+			friends:append(p)
+        elseif self.player:inMyAttackRange(p) then
+            targets:append(p)
+        end
+    end
+	if targets:length()==0 then return end
+	local target = 0
+	local max_danger = 0
+	for _,p in sgs.qlist(targets)do
+		local current_danger = 0
+		for _,f in sgs.qlist(friends)do
+			if p:distanceTo(f)== p:getAttackRange() then
+				if (f:getHp()<=2 or f:getHandcardNum()>=1) then current_danger=current_danger+2 end
+				current_danger=current_danger+1
+			end
+        end
+        if current_danger > max_danger then
+			max_danger = current_danger
+            target = p
+        end
+    end
+	if target == 0 then return end
+	local card = 0 ,cards
+	if self.player:getHandcardNum()> self.player:getMaxHp() then
+		cards = self.player:getHandcards()
+		cards = sgs.QList2Table(cards)
+		self:sortByKeepValue(cards)
+		card = cards[1]
+	elseif max_danger>=3 then
+		cards = self.player:getCards("he")
+		cards = sgs.QList2Table(cards)
+		self:sortByKeepValue(cards)
+		card = cards[1]
+	end
+	if card == 0 then return end
+	use.card = card
+	self.player:speak(3)
+	if use.to then---这里这里
+		self.player:speak(4)
+		use.to:append(target)
+	end
+	return
+end
+sgs.ai_card_intention.ThWujianCard = 30
+
 --【血兰】ai
 sgs.ai_skill_cardask["@thxuelan"] = function(self, data)
 	local peach_effect = data:toCardEffect()
