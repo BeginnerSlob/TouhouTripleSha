@@ -123,23 +123,21 @@ sgs.ai_skill_use_func.ThWujianCard = function(card, use, self)
         end
     end
 	if target == 0 then return end
-	local card = 0 ,cards
+	local c = 0 ,cards
 	if self.player:getHandcardNum()> self.player:getMaxHp() then
 		cards = self.player:getHandcards()
 		cards = sgs.QList2Table(cards)
 		self:sortByKeepValue(cards)
-		card = cards[1]
+		c = cards[1]
 	elseif max_danger>=3 then
 		cards = self.player:getCards("he")
 		cards = sgs.QList2Table(cards)
 		self:sortByKeepValue(cards)
-		card = cards[1]
+		c = cards[1]
 	end
-	if card == 0 then return end
-	use.card = sgs.Card_Parse("@ThWujianCard=" .. card:getId())
-	self.player:speak(3)
-	if use.to then---这里这里
-		self.player:speak(4)
+	if c == 0 then return end
+	use.card = sgs.Card_Parse("@ThWujianCard=" .. c:getId())
+	if use.to then
 		use.to:append(target)
 	end
 	return
