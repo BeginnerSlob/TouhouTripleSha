@@ -5,7 +5,7 @@ sgs.ai_skill_cardask["@thkaiyun"] = function(self, data)
 	if self:needRetrial(judge) then
 		local to_discard=self:askForDiscard("thkaiyun", 1, 1, false, true)
 		if #to_discard>0 then
-			return "$" .. to_discard[1]:getId()
+			return "$" .. to_discard[1]
 		end
 	end
 	return "."

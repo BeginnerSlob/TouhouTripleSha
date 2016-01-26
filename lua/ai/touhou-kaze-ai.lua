@@ -436,8 +436,6 @@ sgs.ai_skill_use_func.ThMicaiCard = function(card, use, self)
 	use.card = nil
 end
 
-sgs.ai_card_intention.ThMicaiCard = -5
-
 function sgs.ai_cardsview.thmicaiv(self, class_name, player)
 	if player:hasWeapon("spear") and class_name == "Slash" then
 		return cardsView_spear(self, player, "spear")
@@ -488,6 +486,8 @@ thmicaiv_skill.getTurnUseCard = function(self, inclusive)
 		return fireslash
 	end
 end
+
+sgs.ai_card_intention.ThMicaiCard = -5
 
 --巧工：出牌阶段限一次，你可以弃置两张相同颜色的牌，并获得场上的一张该颜色的装备牌。
 local thqiaogong_skill = {}
@@ -728,8 +728,9 @@ end
 
 sgs.ai_skill_playerchosen["@thxugu"] = sgs.ai_skill_playerchosen.zero_card_as_slash]]
 
+--神粥：每当你的人物牌翻至正面朝上时，或受到1点伤害后，你可以从牌堆顶亮出X张牌（X为存活角色的数量，且至多为5），将其中一种类别的牌交给一名角色，并将其余的置入弃牌堆。
+sgs.ai_skill_invoke.thshenzhou = true
 sgs.thshenzhou_current = false
-
 sgs.ai_skill_choice.thshenzhou = function(self, choices, data)
 	local card_ids = data:toIntList()
 	local has_peach = false
@@ -801,35 +802,42 @@ end
 
 sgs.ai_playerchosen_intention.thshenzhou = -80
 
+--天流：锁定技，摸牌阶段开始时，你须放弃摸牌，改为进行一次判定：若结果为红桃，你摸三张牌；若结果为方块，你摸两张牌；若结果为梅花，你摸一张牌。
+--无
+
+--乾仪：限定技，出牌阶段，你可以将你的人物牌翻面，并令一名角色回复1点体力或摸两张牌。
 local thqianyi_skill = {}
 thqianyi_skill.name = "thqianyi"
 table.insert(sgs.ai_skills, thqianyi_skill)
 thqianyi_skill.getTurnUseCard = function(self)
 	if self.player:getMark("@qianyi") <= 0 then return end
-	local lord = self.room:getLord()
-	if self.role ~= "rebel" and lord and self:isWeak(lord) then
-		return sgs.Card_Parse("@ThQianyiCard=.")
-	end
-	if not self.player:faceUp() then
-		return sgs.Card_Parse("@ThQianyiCard=.")
-	end
-	for _, p in ipairs(self.friends) do
-		if self:isWeak(p) or sgs.getDefense(p) < 2 then
-			return sgs.Card_Parse("@ThQianyiCard=.")
-		end
-	end
+	return sgs.Card_Parse("@ThQianyiCard=.")
 end
 
 sgs.ai_skill_use_func.ThQianyiCard = function(card, use, self)
-	use.card = card
-	if use.to then
-		local lord = self.room:getLord()
-		if self.role ~= "rebel" and lord and self:isWeak(lord) then
-			use.to:append(lord)
+	if self:isWeak(self.player) then
+		use.card = card
+		if use.to then
+			use.to:append(self.player)
+		end
+		return
+	end
+	self:sort(self.friends, "defense")
+	if not self.player:faceUp() then
+		use.card = card
+		if use.to then
+			use.to:append(self.friends[1])
+		end
+		return
+	end
+	for _, p in ipairs(self.friends) do
+		if self:isWeak(p) then
+			use.card = card
+			if use.to then
+				use.to:append(p)
+			end
 			return
 		end
-		self:sort(self.friends)
-		use.to:append(self.friends[1])
 	end
 end
 
@@ -837,11 +845,11 @@ sgs.ai_skill_choice.thqianyi = function(self, choices, data)
 	local player = data:toPlayer()
 	if not player:isWounded() then
 		return "draw"
-	elseif  self:willSkipPlayPhase(player)  then
+	elseif self:willSkipPlayPhase(player) then
 		return "recover"
 	elseif player:hasSkills(sgs.cardneed_skill) and not self:isWeak(player) then
 		return "draw"
-	elseif self:isWeak(player) and player:hasSkills(sgs.masochism_skill) then
+	elseif self:isWeak(player) or player:hasSkills(sgs.masochism_skill) then
 		return "recover"
 	end
 	return math.random(1, 2) == 1 and "draw" or "recover"
