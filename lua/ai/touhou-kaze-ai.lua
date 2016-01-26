@@ -858,6 +858,7 @@ end
 sgs.ai_use_priority.ThQianyiCard = -5
 sgs.ai_card_intention.ThQianyiCard = -150
 
+--祸祟：出牌阶段限一次，你可以弃置一张手牌并选择你攻击范围内的一名角色，该角色需打出一张【闪】，否则你摸一张牌，或对该角色使用一张不计入使用限制的【杀】。
 local thhuosui_skill = {}
 thhuosui_skill.name = "thhuosui"
 table.insert(sgs.ai_skills, thhuosui_skill)
@@ -865,15 +866,9 @@ thhuosui_skill.getTurnUseCard = function(self)
 	if self.player:hasUsed("ThHuosuiCard") then return end
 	local cards = self.player:getCards("h")
 	cards = sgs.QList2Table(cards)
-
 	self:sortByUseValue(cards, true)
 
-	local card_id = cards[1]:getEffectiveId()
-	local card_str = "@ThHuosuiCard=" .. card_id
-	local skillcard = sgs.Card_Parse(card_str)
-
-	assert(skillcard)
-	return skillcard
+	return sgs.Card_Parse("@ThHuosuiCard=" .. cards[1]:getEffectiveId())
 end
 
 sgs.ai_skill_use_func.ThHuosuiCard = function(card, use, self)
@@ -884,6 +879,15 @@ sgs.ai_skill_use_func.ThHuosuiCard = function(card, use, self)
 			use.card = card
 			if use.to then
 				use.to:append(enemy)
+			end
+			return
+		end
+	end
+	for _, friend in ipairs(self.friends_noself) do
+		if self.player:inMyAttackRange(friend) then
+			use.card = card
+			if use.to then
+				use.to:append(friend)
 			end
 			return
 		end
@@ -913,34 +917,33 @@ sgs.ai_skill_cardask["@thhuosui-slash"] = function(self, data, pattern, target)
 		local nature = sgs.DamageStruct_Normal
 		if slash:isKindOf("FireSlash") then nature = sgs.DamageStruct_Fire
 		elseif slash:isKindOf("ThunderSlash") then nature = sgs.DamageStruct_Thunder end
-		if self:isEnemy(target2) and self:slashIsEffective(slash, target2) and self:canAttack(target2, self.player, nature)
-			and not self:getDamagedEffects(target2, self.player, true) and not self:findLeijiTarget(target2, 50, self.player) then
+		if self:isEnemy(target) and self:slashIsEffective(slash, target) and self:canAttack(target, self.player, nature)
+			and not self:getDamagedEffects(target, self.player, true) and not self:findLeijiTarget(target, 50, self.player) then
 			return slash:toString()
 		end
 	end
 	return "."
 end
 
-sgs.ai_use_priority.ThHuosuiCard = sgs.ai_use_priority.Slash + 1
+sgs.ai_use_priority.ThHuosuiCard = sgs.ai_use_priority.Slash + 0.3
 
+--天滴：当你成为【杀】的目标时，你可以摸一张牌。
+sgs.ai_skill_invoke.thtiandi = true
+
+--坤仪：限定技，出牌阶段，你可以将你的人物牌翻面，并对一名其他角色造成1点伤害。
 local thkunyi_skill = {}
 thkunyi_skill.name = "thkunyi"
 table.insert(sgs.ai_skills, thkunyi_skill)
 thkunyi_skill.getTurnUseCard = function(self)
 	if self.player:getMark("@kunyi") <= 0 then return end
-	self:sort(self.enemies, "defense")
-	for _, p in ipairs(self.enemies) do
-		if (not self.player:faceUp() or p:getHp() == 1) and self.player:inMyAttackRange(p) and self:damageIsEffective(p, nil, self.player) then
-			return sgs.Card_Parse("@ThKunyiCard=.")
-		end
-	end
+	return sgs.Card_Parse("@ThKunyiCard=.")
 end
 
 sgs.ai_skill_use_func.ThKunyiCard = function(card, use, self)
-	if self.player:faceUp() then
+	if not self.player:faceUp() then
 		local in_range = {}
 		for _, enemy in ipairs(self.enemies) do
-			if self.player:inMyAttackRange(enemy) and self:damageIsEffective(enemy, nil, self.player) then
+			if self:damageIsEffective(enemy, nil, self.player) then
 				table.insert(in_range, enemy)
 			end
 		end
@@ -955,7 +958,7 @@ sgs.ai_skill_use_func.ThKunyiCard = function(card, use, self)
 	else
 		self:sort(self.enemies, "defense")
 		for _, p in ipairs(self.enemies) do
-			if p:getHp() == 1 and self.player:inMyAttackRange(p) and self:damageIsEffective(p, nil, self.player) then
+			if (self:isWeak(self.player) or self:isWeak(p)) and self:damageIsEffective(p, nil, self.player) then
 				use.card = card
 				if use.to then
 					use.to:append(p)
