@@ -182,24 +182,132 @@ end
 sgs.ai_playerchosen_intention.thxinwang = -30	
 --【霆舞】ai
 sgs.ai_skill_invoke.thtingwu = function(self,data)
-	local target=self.player:getTag("ThTingwuTarget"):toPlayer()
-	if self:isEnemy(target) then
-		if not self:getDamagedEffects(target, self.player,nil) then	
-			return true
-		elseif self:isGoodChainTarget(target, self.player, sgs.DamageStruct_Thunder, 1, nil) then
-			return true
+	local boom = false
+	local down, up
+	for _,p in sgs.qlist(self.room:getOtherPlayers(self.player))do
+		if p:getMark("ThTingwuMedium") > 0 then
+			down = self.room:findPlayer(p:getNextAlive():objectName())
+			up = self.room:findPlayer(p:getLastAlive():objectName())
+			break
 		end
 	end
-	
-	return false
-end
-sgs.ai_choicemade_filter.skillInvoke.thtingwu = function(self, player, promptlist)
-	local target=player:getTag("ThTingwuTarget"):toPlayer()
-	if target then
-		if promptlist[#promptlist] == "yes" then
-			sgs.updateIntention(player, target, 20)
-		end	
+	if down:isChained() or up:isChained() then
+		local cfriend,cenemy
+		for _, p in sgs.qlist(self.room:getAllPlayers()) do
+			if not p:isChained() then continue end
+			if self:isEnemy(p) and not (p:hasSkill("ikmuguang") and not p:isKongcheng()) then 
+				cenemy=cenemy+1 
+			elseif self:isFriend(p) then
+				if p:hasSkill("ikmuguang") and not p:isKongcheng()then
+					cfriend=cfriend+2
+				elseif p:hasSkill("thmingling") then
+					cfriend=cfriend-2
+				else
+					cfriend=cfriend+1
+				end
+			end
+		end
+		if cfriend < cenemy then boom = true end
 	end
+	local target
+	if boom then
+		if self:isFriend(up) and self:isFriend(down) then
+			if up:isChained() or (up:hasSkill("ikmuguang") and not up:isKongcheng() and up:isWounded()) then
+				target = up
+			elseif down:isChained() or(down:hasSkill("ikmuguang") and not down:isKongcheng() and down:isWounded()) then
+				target = down 
+			end
+		elseif self:isEnemy(up) and self:isEnemy(down) then 
+			if up:hasSkill("ikmuguang") and not up:isKongcheng() then
+				target = down
+			elseif down:hasSkill("ikmuguang") and not down:isKongcheng() then
+				target = up
+			else
+				if up:getHp()>down:getHp() then
+					if up:isChained() then
+						target = up
+					else
+						target = down
+					end
+				else
+					if down:isChained() then
+						target = down
+					else
+						target = up
+					end
+				end
+			end
+		elseif self:isEnemy(up) then
+			if up:hasSkill("ikmuguang") and not up:isKongcheng() then 
+				if down:isChained() then
+					target = down
+				else 
+					return false
+				end
+			else
+				target = up
+			end
+		elseif self:isEnemy(down) then
+			if down:hasSkill("ikmuguang") and not down:isKongcheng() then 
+				if up:isChained() then
+					target = up
+				else 
+					return false
+				end
+			else
+				target = down
+			end
+		end
+	else
+		if self:isFriend(up) and self:isFriend(down) then
+			if up:hasSkill("ikmuguang") and not up:isKongcheng() and up:isWounded() then
+				target = up
+			elseif down:hasSkill("ikmuguang") and not down:isKongcheng() and down:isWounded() then
+				target = down
+			end
+		end
+		if up:isChained() and down:isChained() then return false end
+		if self:isEnemy(up) and self:isEnemy(down) then 
+			if up:hasSkill("ikmuguang") and not up:isKongcheng() then
+				target = down
+			elseif down:hasSkill("ikmuguang") and not down:isKongcheng() then
+				target = up
+			else
+				if up:getHp()>down:getHp() then
+					if down:isChained() then
+						target = up
+					else
+						target = down
+					end
+				else
+					if up:isChained() then
+						target = down
+					else
+						target = up
+					end
+				end
+			end
+		elseif self:isEnemy(up) then
+			if up:hasSkill("ikmuguang") and not up:isKongcheng() then return false end
+			target = up
+		elseif self:isEnemy(down) then
+			if down:hasSkill("ikmuguang") and not down:isKongcheng() then return false end
+			target = down
+		end
+		if target:isChained() and self:isEnemy(target) then return false end
+	end
+	self.room:setPlayerMark(target, "thtingwu_target", 1)
+	return true
+end
+sgs.ai_skill_playerchosen.thtingwu = function(self, targets)
+	local targetlist = sgs.QList2Table(targets)
+	for _, target in ipairs(targetlist) do
+		if target:getMark("thtingwu_target") > 0 then 
+			self.room:setPlayerMark(target, "thtingwu_target", 0)
+			return target
+		end
+	end
+	return nil
 end
 --【羽裳】ai
 sgs.ai_cardneed.ThYuchang = function(to, card, self)

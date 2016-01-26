@@ -564,7 +564,7 @@ public:
         events << DamageComplete << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const
     {
         DamageStruct damage = data.value<DamageStruct>();
         if (triggerEvent == EventPhaseChanging)
@@ -574,6 +574,7 @@ public:
                  && !player->isChained()
                  && damage.nature == DamageStruct::Thunder
                  && damage.from->getMark(objectName()) < 2) {
+			room->setPlayerMark(player, "ThTingwuMedium", 1);// forAI
             ask_who = damage.from;
             return QStringList(objectName());
         }
@@ -581,13 +582,14 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
         if (ask_who->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
+			room->setPlayerMark(player, "ThTingwuMedium", 0);
             return true;
         }
-        
+		room->setPlayerMark(player, "ThTingwuMedium", 0);
         return false;
     }
 
