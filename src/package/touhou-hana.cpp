@@ -574,7 +574,6 @@ public:
                  && !player->isChained()
                  && damage.nature == DamageStruct::Thunder
                  && damage.from->getMark(objectName()) < 2) {
-			room->setPlayerMark(player, "ThTingwuMedium", 1);// forAI
             ask_who = damage.from;
             return QStringList(objectName());
         }
@@ -584,12 +583,13 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
+        room->setPlayerMark(player, "ThTingwuMedium", 1); // for AI
         if (ask_who->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
-			room->setPlayerMark(player, "ThTingwuMedium", 0);
+            room->setPlayerMark(player, "ThTingwuMedium", 0);
             return true;
         }
-		room->setPlayerMark(player, "ThTingwuMedium", 0);
+        room->setPlayerMark(player, "ThTingwuMedium", 0);
         return false;
     }
 
