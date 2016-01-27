@@ -767,7 +767,7 @@ function SmartAI:cardNeed(card)
 	end
 	if card:isKindOf("Slash") and (self:getCardsNum("Slash") > 0) then return 4 end
 	if card:isKindOf("Crossbow") and self.player:hasSkills("luoshen|yongsi|noskurou|keji|wusheng|wushen") then return 20 end
-	if card:isKindOf("Axe") and self.player:hasSkills("luoyi|nosluoyi|jiushi|jiuchi|pojun") then return 15 end
+	if card:isKindOf("Axe") and self.player:hasSkills("luoyi|nosluoyi|jiushi|jiuchi|pojun|thsibao") then return 15 end
 	if card:isKindOf("Weapon") and (not self.player:getWeapon()) and (self:getCardsNum("Slash") > 1) then return 6 end
 	if card:isKindOf("Nullification") and self:getCardsNum("Nullification") == 0 then
 		if self:willSkipPlayPhase() or self:willSkipDrawPhase() then return 10 end
@@ -4360,6 +4360,8 @@ function getCardsNum(class_name, player, from)
 			return num + spadewine + (player:getHandcardNum() - shownum) / 3
 		elseif player:hasSkill("jiushi") then
 			return num + 1
+		elseif player:hasSkill("thsibao") then
+			return num + equipcard + (player:getHandcardNum() - shownum) * 0.5
 		else
 			return num
 		end
@@ -4733,7 +4735,7 @@ function SmartAI:getAoeValueTo(card, to, from)
 		value = value + 10
 		if to:hasSkill("juxiang") and not card:isVirtualCard() then value = value + 20 end
 		if to:hasSkill("danlao") and self.player:aliveCount() > 2 then value = value + 20 end
-	        if to:hasSkill("thzuibu") and self:isFriend(from,to)  then value = value + 20 end
+		if to:hasSkill("thzuibu") and self:isFriend(from,to)  then value = value + 20 end
 	end
 	return value
 end

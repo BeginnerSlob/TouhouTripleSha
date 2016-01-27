@@ -186,7 +186,7 @@ function SmartAI:shouldUseAnaleptic(target, slash)
 	if not sgs.isJinkAvailable(self.player, target, slash) then return true end
 	if self.player:hasWeapon("axe") and self.player:getCards("he"):length() > 4 then return true end
 	if target:hasFlag("dahe") then return true end
-        if self.player:hasSkill("thzuishang") then return true end
+	if self.player:hasSkill("thzuishang") then return true end
 	if ((self.player:hasSkill("roulin") and target:isFemale()) or (self.player:isFemale() and target:hasSkill("roulin"))) or self.player:hasSkill("wushuang") then
 		if getKnownCard(target, self.player, "Jink", true, "he") >= 2 then return false end
 		return getCardsNum("Jink", target, self.player) < 2
