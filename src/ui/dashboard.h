@@ -151,6 +151,9 @@ protected:
     bool _addCardItems(QList<CardItem *> &card_items, const CardsMoveStruct &moveInfo);
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent);
+#ifdef Q_OS_ANDROID
+    virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent);
+#endif
     void _addHandCard(CardItem *card_item, bool prepend = false, const QString &footnote = QString());
     void _adjustCards();
     void _adjustCards(const QList<CardItem *> &list, int y);
