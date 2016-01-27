@@ -572,6 +572,15 @@ void Dashboard::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent) {
     }
 }
 
+#ifdef Q_OS_ANDROID
+void Dashboard::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
+{
+    PlayerCardContainer::mouseDoubleClickEvent(mouseEvent);
+    if (_m_rightFrame->isUnderMouse() && RoomSceneInstance)
+        RoomSceneInstance->chooseSkillButton();
+}
+
+#endif
 void Dashboard::_onEquipSelectChanged() {
     QSanSkillButton *btn = qobject_cast<QSanSkillButton *>(sender());
     if (btn) {

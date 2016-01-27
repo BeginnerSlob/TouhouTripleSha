@@ -141,6 +141,9 @@ public:
 
     inline Dashboard *getDashboard() { return dashboard; }
 
+    // for Android privat->public
+    void chooseSkillButton();
+
     bool m_skillButtonSank;
     ShefuAskState m_ShefuAskState;
 
@@ -306,7 +309,6 @@ private:
 
     void useCard(const Card *card);
     void fillTable(QTableWidget *table, const QList<const ClientPlayer *> &players);
-    void chooseSkillButton();
 
     void selectTarget(int order, bool multiple);
     void selectNextTarget(bool multiple);
