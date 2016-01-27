@@ -625,9 +625,9 @@ local thzhouhua_skill = {}
 thzhouhua_skill.name = "thzhouhua"
 table.insert(sgs.ai_skills, thzhouhua_skill)
 thzhouhua_skill.getTurnUseCard = function(self)
-    local alive = self.room:alivePlayerCount()
-    local all = self.room:getPlayers():length()
-    if alive <= all / 2 and self.player:getMark("@zhouhua") > 0 then
+	local alive = self.room:alivePlayerCount()
+	local all = self.room:getPlayers():length()
+	if alive <= all / 2 and self.player:getMark("@zhouhua") > 0 then
 		return sgs.Card_Parse("@ThZhouhuaCard=.")
 	end
 end
@@ -720,8 +720,8 @@ function sgs.ai_cardsview.thzhouhuav(self, class_name, player)
 	if class_name == "Analeptic" then
 		local obj_name = player:property("zhouhua_source"):toString()
 		local splayer = self.room:findPlayer(obj_name)
-        if splayer and splayer:hasSkill("thzhouhua") then
-            return cardsView_thzhouhua(self, player)
+		if splayer and splayer:hasSkill("thzhouhua") then
+			return cardsView_thzhouhua(self, player)
 		end
 	end
 end
@@ -971,11 +971,12 @@ end
 
 sgs.ai_card_intention.ThKunyiCard = 80
 
-local thcannue_skill = {}
-thcannue_skill.name = "thcannue"
-table.insert(sgs.ai_skills, thcannue_skill)
-thcannue_skill.getTurnUseCard = function(self)
-	if self.player:hasUsed("ThCannueCard") then return end
+--残虐：出牌阶段限一次，你可以将一张方块牌交给一名其他角色，该角色需对另一名由你指定的角色使用一张【杀】；否则你可以获得其一张牌，或对其造成1点伤害。
+local thcannve_skill = {}
+thcannve_skill.name = "thcannve"
+table.insert(sgs.ai_skills, thcannve_skill)
+thcannve_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThCannveCard") then return end
 	local cards = self.player:getCards("h")
 	cards = sgs.QList2Table(cards)
 
@@ -991,24 +992,24 @@ thcannue_skill.getTurnUseCard = function(self)
 
 	if not card then return end
 	local card_id = card:getEffectiveId()
-	local card_str = "@ThCannueCard=" .. card_id
+	local card_str = "@ThCannveCard=" .. card_id
 	local skillcard = sgs.Card_Parse(card_str)
 
 	assert(skillcard)
 	return skillcard
 end
 
-sgs.thcannue_slash_target = nil
+sgs.thcannve_slash_target = nil
 
-sgs.ai_skill_use_func.ThCannueCard = function(card, use, self)
-	sgs.thcannue_slash_target = nil
+sgs.ai_skill_use_func.ThCannveCard = function(card, use, self)
+	sgs.thcannve_slash_target = nil
 	local original_card = sgs.Sanguosha:getCard(card:getEffectiveId())
 	if original_card:isKindOf("Slash") then
 		self:sort(self.enemies, "defense")
 		for _, enemy in ipairs(self.enemies) do
 			for _, friend in ipairs(self.friends_noself) do
 				if friend:canSlash(enemy, original_card) then
-					sgs.thcannue_slash_target = enemy
+					sgs.thcannve_slash_target = enemy
 					use.card = card
 					if use.to then
 						use.to:append(friend)
@@ -1024,7 +1025,7 @@ sgs.ai_skill_use_func.ThCannueCard = function(card, use, self)
 			if getKnownCard(friend, self.player, "Slash") > 0 then
 				for _, enemy in ipairs(self.enemies) do
 					if friend:canSlash(enemy) then
-						sgs.thcannue_slash_target = enemy
+						sgs.thcannve_slash_target = enemy
 						use.card = card
 						if use.to then
 							use.to:append(friend)
@@ -1052,7 +1053,7 @@ sgs.ai_skill_use_func.ThCannueCard = function(card, use, self)
 				end
 				if #in_range > 0 then
 					self:sort(in_range, "defense")
-					sgs.thcannue_slash_target = in_range[1]
+					sgs.thcannve_slash_target = in_range[1]
 				end
 				use.card = card
 				if use.to then
@@ -1064,9 +1065,9 @@ sgs.ai_skill_use_func.ThCannueCard = function(card, use, self)
 	end
 end
 
-sgs.ai_skill_playerchosen.thcannue = function(self, targets)
-	if sgs.thcannue_slash_target and targets:contains(sgs.thcannue_slash_target) then
-		return sgs.thcannue_slash_target
+sgs.ai_skill_playerchosen.thcannve = function(self, targets)
+	if sgs.thcannve_slash_target and targets:contains(sgs.thcannve_slash_target) then
+		return sgs.thcannve_slash_target
 	end
 	local enemies = {}
 	for _, p in sgs.qlist(targets) do
@@ -1081,20 +1082,55 @@ sgs.ai_skill_playerchosen.thcannue = function(self, targets)
 	return targets:at(math.random(0, targets:length() - 1))
 end
 
-sgs.ai_skill_choice.thcannue = function(self, choices, data)
+sgs.ai_skill_cardask["@thcannve-slash"] = function(self, data, pattern, target)
+	for _, slash in ipairs(self:getCards("Slash")) do
+		if self:isFriend(target) and self:slashIsEffective(slash, target) then
+			if self:findLeijiTarget(target, 50, self.player) then return slash:toString() end
+			if self:getDamagedEffects(target, self.player, true) then return slash:toString() end
+		end
+
+		if self:isFriend(target) and not self:slashIsEffective(slash, target) then
+			return slash:toString()
+		end
+
+		if self:isEnemy(target) and self:slashIsEffective(slash, target) 
+			and not self:getDamagedEffects(target, self.player, true) and not self:findLeijiTarget(target, 50, self.player) then
+			return slash:toString()
+		end
+	end
+	for _, slash in ipairs(self:getCards("Slash")) do
+		if self:isFriend(target) then
+			if (target:getHp() > 2 or getCardsNum("Jink", target, self.player) > 1) and not target:isLord() then
+				return slash:toString()
+			end
+			if self:needToLoseHp(target, self.player, true) then
+				return slash:toString()
+			end
+		end
+	end
+	return "."
+end
+
+sgs.ai_skill_choice.thcannve = function(self, choices, data)
 	local target = data:toPlayer()
 	if self:isFriend(target) and self:needToThrowArmor(target) and target:getArmor() then
 		return string.find(choices, "get") and "get" or "hit"
-	elseif self:isEnemy(target) and self:isWeak(target) then
+	elseif self:isFriend(target) and not self:damageIsEffective(target, nil, self.player) then
+		return "hit"
+	elseif self:isEnemy(target) and not self:damageIsEffective(target, nil, self.player) then
+		return string.find(choices, "get") and "get" or "hit"
+	elseif self:isEnemy(target) and self:isWeak(target) and self:damageIsEffective(target, nil, self.player) then
 		return "hit"
 	end
 	local choice_list = choices:split("+")
-	return math.random(0, 1) == 0 and choice_list[#choice_list] or choice_list[1]
+	return choice_list[math.random(1, #choice_list)]
 end
 
-sgs.ai_use_priority.ThCannueCard = sgs.ai_use_priority.Slash + 0.1
-sgs.ai_playerchosen_intention.thcannue = 30
+sgs.ai_use_priority.ThCannveCard = sgs.ai_use_priority.Slash + 0.1
+sgs.ai_playerchosen_intention.thcannve = 30
+sgs.ai_choicemade_filter.cardChosen.thcannve = sgs.ai_choicemade_filter.cardChosen.snatch
 
+--肆暴：你可将一张装备牌或延时类锦囊牌当【酒】使用。
 thsibao_skill = {}
 thsibao_skill.name = "thsibao"
 table.insert(sgs.ai_skills, thsibao_skill)
@@ -1107,7 +1143,7 @@ thsibao_skill.getTurnUseCard = function(self)
 
 	local card
 
-	self:sortByKeepValue(cards, true)
+	self:sortByUseValue(cards, true)
 
 	for _, acard in ipairs(cards) do
 		if acard:isKindOf("EquipCard") then
@@ -1573,7 +1609,7 @@ thyanxing_skill.getTurnUseCard = function(self)
 				for _, to in sgs.qlist(dummy_use.to) do
 					if self:isEnemy(to) and 
 					(getCardsNum("Jink", to, self.player) < 1 
-					or sgs.card_lack[to:objectName()]["Jink"] == 1 or self:isWeak(to))  then    
+					or sgs.card_lack[to:objectName()]["Jink"] == 1 or self:isWeak(to))  then	
 						willHit = true
 						break
 					end
@@ -1620,10 +1656,10 @@ end
 
 --【埋火】ai
 sgs.string2suit = {
-        spade = 0 ,
-        club = 1 ,
-        heart = 2 ,
-        diamond = 3
+		spade = 0 ,
+		club = 1 ,
+		heart = 2 ,
+		diamond = 3
 }
 local countKnownSuits = function(target)
 	local suits = {}
@@ -1640,13 +1676,13 @@ local countKnownSuits = function(target)
 	
 	for _,c in pairs(knowncards)do
 		local suit = c:getSuitString()
-        if not suits[suit] then suits[suit] = 1 end
-        suits[suit] = suits[suit] + 1
+		if not suits[suit] then suits[suit] = 1 end
+		suits[suit] = suits[suit] + 1
 	end
 	local maxsuit = knowncards[1]:getSuitString()
-    for s, n in pairs(suits) do
-        if n > suits[maxsuit] then maxsuit = s end
-    end
+	for s, n in pairs(suits) do
+		if n > suits[maxsuit] then maxsuit = s end
+	end
 
 		return math.min(suits[maxsuit],3),sgs.string2suit[maxsuit] 
 end
@@ -1691,14 +1727,14 @@ end
 sgs.ai_use_priority.ThMaihuoCard =sgs.ai_use_priority.Peach +0.2
 sgs.ai_card_intention.ThMaihuoCard = -70
 sgs.ai_skill_suit.thmaihuo = function(self)
-    local target= self.player:getTag("thmaihuo_target"):toPlayer()
+	local target= self.player:getTag("thmaihuo_target"):toPlayer()
 	if target then
 		local num, suit = countKnownSuits(target)
 		if suit then
 			return suit
 		end
 	end
-    return  sgs.Card_Heart
+	return  sgs.Card_Heart
 end
 
 --【无念】ai

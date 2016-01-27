@@ -69,71 +69,71 @@ end
 --黑幕的存在使得carduse本身就有变化。。。。比如可以故意作死地去决斗敌人。。。反正会转移使用者当一个离间。。。
 -- 一般ai使用决斗不会这么做,这个功能需要改usecard的底层ai本身 = =
 sgs.ai_skill_playerchosen.thheimu = function(self, targets)
-    local cardUse = self.player:getTag("ThHeimuCardUse"):toCardUse()
-    local isRed = cardUse.card:isRed()
-    
-    --case1  灵压敌人
-    local goodLingyaCard = "god_salvation|amazing_grace|iron_chain" 
-    --|slash|thunder_slash|fire_slash
-    local isGoodLingyaCard =  goodLingyaCard:match(cardUse.card:objectName())
-    if self.player:hasSkill("thlingya") and isGoodLingyaCard and isRed then
-        if #self.enemies > 0 then
-            self:sort(self.enemies, "defense")
-            return self.enemies[1]
-        end
-    end
-    
-    --case2 助队友收反或使主公杀忠掉牌
-    local isDamageCard =  sgs.dynamic_value.damage_card[cardUse.card:getClassName()]
-    if isDamageCard then
-        local lord = self.room:getLord()
-        if self:isFriend(lord) then
-            local weakRebel 
-            for _,p in sgs.qlist(cardUse.to) do
-                if p:getHp()<=1 and self:isEnemy(p) then
-                    weakRebel  = p
-                    continue
-                end
-            end
-            if weakRebel  then
-                for _, p in sgs.qlist(targets) do
-                    if self:isFriend(p) and p:hasSkills(sgs.cardneed_skill) then
-                        if (cardUse.card:isKindOf("TrickCard") and self:hasTrickEffective(cardUse.card, weakRebel, p)) 
-                        or (cardUse.card:isKindOf("Slash") and self:slashIsEffective(cardUse.card, weakRebel, p)) then
-                            return p
-                        end
-                    end
-                end
-            end
-        else
-            local weakLoyalist
-            for _,p in sgs.qlist(cardUse.to) do
-                if p:getHp()<=1 and self:isEnemy(p) then
-                    weakLoyalist  = p
-                    continue
-                end
-            end
-            if weakLoyalist then
-                for _, p in sgs.qlist(targets) do
-                    if p:isLord(p) then
-                        if (cardUse.card:isKindOf("TrickCard") and self:hasTrickEffective(cardUse.card, weakLoyalist, p)) 
-                        or (cardUse.card:isKindOf("Slash") and self:slashIsEffective(cardUse.card, weakLoyalist, p)) then
-                            return p
-                        end
-                    end
-                end
-            end
-        end
-    end
-    --case3  一般灵压 针对队友
-    if isRed() and self.player:hasSkill("thlingya")  then
-        for _, p in sgs.qlist(targets) do
-            if self:isFriend(p) then
-                return p
-            end
-        end
-    end
-    return nil
+	local cardUse = self.player:getTag("ThHeimuCardUse"):toCardUse()
+	local isRed = cardUse.card:isRed()
+	
+	--case1  灵压敌人
+	local goodLingyaCard = "god_salvation|amazing_grace|iron_chain" 
+	--|slash|thunder_slash|fire_slash
+	local isGoodLingyaCard =  goodLingyaCard:match(cardUse.card:objectName())
+	if self.player:hasSkill("thlingya") and isGoodLingyaCard and isRed then
+		if #self.enemies > 0 then
+			self:sort(self.enemies, "defense")
+			return self.enemies[1]
+		end
+	end
+	
+	--case2 助队友收反或使主公杀忠掉牌
+	local isDamageCard =  sgs.dynamic_value.damage_card[cardUse.card:getClassName()]
+	if isDamageCard then
+		local lord = self.room:getLord()
+		if self:isFriend(lord) then
+			local weakRebel 
+			for _,p in sgs.qlist(cardUse.to) do
+				if p:getHp()<=1 and self:isEnemy(p) then
+					weakRebel  = p
+					continue
+				end
+			end
+			if weakRebel  then
+				for _, p in sgs.qlist(targets) do
+					if self:isFriend(p) and p:hasSkills(sgs.cardneed_skill) then
+						if (cardUse.card:isKindOf("TrickCard") and self:hasTrickEffective(cardUse.card, weakRebel, p)) 
+						or (cardUse.card:isKindOf("Slash") and self:slashIsEffective(cardUse.card, weakRebel, p)) then
+							return p
+						end
+					end
+				end
+			end
+		else
+			local weakLoyalist
+			for _,p in sgs.qlist(cardUse.to) do
+				if p:getHp()<=1 and self:isEnemy(p) then
+					weakLoyalist  = p
+					continue
+				end
+			end
+			if weakLoyalist then
+				for _, p in sgs.qlist(targets) do
+					if p:isLord(p) then
+						if (cardUse.card:isKindOf("TrickCard") and self:hasTrickEffective(cardUse.card, weakLoyalist, p)) 
+						or (cardUse.card:isKindOf("Slash") and self:slashIsEffective(cardUse.card, weakLoyalist, p)) then
+							return p
+						end
+					end
+				end
+			end
+		end
+	end
+	--case3  一般灵压 针对队友
+	if isRed() and self.player:hasSkill("thlingya")  then
+		for _, p in sgs.qlist(targets) do
+			if self:isFriend(p) then
+				return p
+			end
+		end
+	end
+	return nil
 end
 
 
