@@ -1180,15 +1180,13 @@ function sgs.ai_cardneed.thsibao(to, card, self)
 	return card:isKindOf("EquipCard") and getKnownCard(to, self.player, "EquipCard", nil, "he") < 2
 end
 
+--罔擒：当人物牌横置的其他角色使用或打出一张红色牌时，若你的人物牌背面朝上，你可以将你的人物牌翻至正面朝上，然后将该角色的人物牌翻面，并重置之。
 sgs.ai_skill_invoke.thwangqin = function(self, data)
 	local target = data:toPlayer()
 	if self:isFriend(target) and not target:faceUp() then
 		return true
 	end
-	if self:isEnemy(target) and target:faceUp() then
-		return true
-	end
-	return false
+	return target:faceUp()
 end
 
 sgs.ai_choicemade_filter.skillInvoke.thwangqin = function(self, player, promptlist)
@@ -1202,6 +1200,7 @@ sgs.ai_choicemade_filter.skillInvoke.thwangqin = function(self, player, promptli
 	end
 end
 
+--伏索：准备阶段开始时，你可以将你的人物牌翻面，然后将一名其他角色的人物牌横置，若如此做，结束阶段开始时，你须选择一项：弃置一张非基本牌，或失去1点体力。
 sgs.ai_skill_playerchosen.thfusuo = function(self, targets)
 	if self.player:getHp() + self:getCardsNum("Peach") <= 2 then
 		return nil
@@ -1216,21 +1215,36 @@ sgs.ai_skill_playerchosen.thfusuo = function(self, targets)
 			return enemy
 		end
 	end
+	if not self.player:faceUp() then
+		for _, enemy in ipairs(self.enemies) do
+			if targets:contains(enemy) then
+				return enemy
+			end
+		end
+	end
 	return nil
+end
+
+sgs.ai_skill_cardask["@thfusuo"] = function(self, data, pattern, target)
+	local cards = sgs.QList2Table(self:getCards("he"))
+	self:sortByKeepValue(cards)
+	for _, c in ipairs(cards) do
+		if c:getTypeId() ~= sgs.Card_TypeBasic then
+			return "$" .. c:getId()
+		end
+	end
+	return "."
 end
 
 sgs.ai_playerchosen_intention.thfusuo = 40
 
---[[sgs.ai_skill_cardask["@thfusuo"] = function(self, data, pattern, target)
-	return "."
-end]]
-
+--葛笼：出牌阶段限一次，你可以与一名其他角色拼点：若你赢，你须交给该角色一张手牌，或失去1点体力；若你没赢，你须对该角色造成1点伤害，或获得其一张牌。
 local thgelong_skill = {}
 thgelong_skill.name = "thgelong"
 table.insert(sgs.ai_skills, thgelong_skill)
 thgelong_skill.getTurnUseCard = function(self)
-	if not self.player:hasUsed("ThGelongCard") and not self.player:isKongcheng()
-		then return sgs.Card_Parse("@ThGelongCard=.")
+	if not self.player:hasUsed("ThGelongCard") and not self.player:isKongcheng() then
+		return sgs.Card_Parse("@ThGelongCard=.")
 	end
 end
 
@@ -1240,11 +1254,8 @@ sgs.ai_skill_use_func.ThGelongCard = function(card, use, self)
 	if not min_card then return end
 	local min_point = min_card:getNumber()
 
-	local zhugeliang = self.room:findPlayerBySkillName("ikjingyou")
-
 	sgs.ai_use_priority.ThGelongCard = 7.2
 	self:sort(self.enemies)
-	self.enemies = sgs.reverse(self.enemies)
 	for _, enemy in ipairs(self.enemies) do
 		if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
 			local enemy_min_card = self:getMinCard(enemy)
@@ -1288,17 +1299,18 @@ sgs.ai_card_intention.ThGelongCard = 30
 sgs.ai_use_value.ThGelongCard = 8.5
 
 sgs.ai_skill_cardask["@thgelonggive"] = function(self, data, pattern, target)
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	self:sortByUseValue(cards, true)
 	if self:isFriend(target) then
-		return
+		return "$" .. cards[1]:getId()
 	end
 	if self:getCardsNum("Peach") > 0 then
 		return "."
 	end
-	local cards = self.player:getHandcards()
 	self:sortByUseValue(cards)
 	for _, card in sgs.qlist(cards) do
 		if not (isCard("Peach", card, self.player) or (isCard("ExNihilo", card, self.player) and self.player:getPhase() == sgs.Player_Play)) then
-			return card:getEffectiveId()
+			return "$" .. card:getEffectiveId()
 		end
 	end
 	return "."
@@ -1312,26 +1324,23 @@ sgs.ai_skill_choice.thgelong = function(self, choices, data)
 	if self:isFriend(target) and self:needToThrowArmor(target) and target:getArmor() then
 		return "get"
 	end
+	if self:isFriend(target) and not self:damageIsEffective(target, nil, self.player) then
+		return "damage"
+	end
+	if self:isFriend(target) and target:getHp() > 2 then
+		return "damage"
+	end
 	return self:damageIsEffective(target, nil, self.player) and "damage" or (string.find(choices, "get") and "get" or "damage")
 end
 
-sgs.ai_skill_playerchosen["@thyuanzhou"] = function(self, targets)
-	local ps = sgs.QList2Table(targets)
-	self:sort(ps, "defense")
-	for _, p in ipairs(ps) do
-		if self:isFriend(p) and not p:getJudgingArea():isEmpty() then
-			return p
-		end
-	end
-	for _, p in ipairs(ps) do
-		if self:isEnemy(p) then
-			return p
-		end
-	end
-	return nil
-end
-sgs.ai_choicemade_filter.cardChosen.thyuanzhou = sgs.ai_choicemade_filter.cardChosen.dismantlement
+sgs.ai_choicemade_filter.cardChosen.thgelong = sgs.ai_choicemade_filter.cardChosen.snatch
 
+--怨咒：结束阶段开始时，若你的手牌数是全场最少的（或之一），你可以弃置场上手牌数最多的一名角色的区域内的一张牌。
+sgs.ai_skill_playerchosen["@thyuanzhou"] = function(self, targets)
+	return self:findPlayerToDiscard("ej", true, true, targets)
+end
+
+sgs.ai_choicemade_filter.cardChosen.thyuanzhou = sgs.ai_choicemade_filter.cardChosen.dismantlement
 
 local thdasui_skill = {}
 thdasui_skill.name = "thdasui"
