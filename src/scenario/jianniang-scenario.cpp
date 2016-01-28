@@ -1559,9 +1559,9 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
         player->loseAllMarks("@qianhang");
         if (player->getHandcardNum() > ask_who->getHandcardNum())
-            room->askForUseCard(ask_who, "@@ikqianshe", "@ikqianshe", -1, Card::MethodNone);
+            room->askForUseCard(ask_who, "@@ikqianshe", "@ikqianshe:" + player->objectName(), -1, Card::MethodNone);
         else if (player->getHandcardNum() < ask_who->getHandcardNum())
-            room->askForUseCard(ask_who, "@@ikdaolei", "@ikdaolei", -1, Card::MethodNone);
+            room->askForUseCard(ask_who, "@@ikdaolei", "@ikdaolei:" + player->objectName(), -1, Card::MethodNone);
         return false;
     }
 };

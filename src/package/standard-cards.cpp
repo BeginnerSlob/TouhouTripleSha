@@ -805,7 +805,7 @@ public:
 
         bool good = judge.isGood();
 
-        if (player->hasSkill("jnjicha") && player->getHp() > 1) {
+        if (player->hasSkill("jnjicha") && player->getHp() > 1 && player->getArmor() && player->getArmor()->isRed()) {
             room->sendCompulsoryTriggerLog(player, "jnjicha");
             room->broadcastSkillInvoke("jnjicha", 1);
             good = true;
