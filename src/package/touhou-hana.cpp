@@ -564,7 +564,7 @@ public:
         events << DamageComplete << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const
     {
         DamageStruct damage = data.value<DamageStruct>();
         if (triggerEvent == EventPhaseChanging)
