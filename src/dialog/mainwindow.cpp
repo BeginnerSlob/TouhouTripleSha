@@ -934,7 +934,7 @@ void MainWindow::on_actionAbout_GPLv3_triggered() {
 void MainWindow::checkUpdate()
 {
     static QNetworkAccessManager *qnam = new QNetworkAccessManager(this);
-    reply = qnam->get(QNetworkRequest(QUrl("file:///d:/1.txt")));
+    reply = qnam->get(QNetworkRequest(QUrl("http://ver.qsanguosha.org/UpdateInfoForTouhouTripleSha")));
     connect(reply, SIGNAL(finished()), this, SLOT(httpFinished()));
 }
 
@@ -1062,10 +1062,11 @@ void MainWindow::httpFinished2()
         /*QString fileName = QFileInfo(QUrl(urlLineEdit->text()).path()).fileName();
         statusLabel->setText(tr("Downloaded %1 to current directory.").arg(fileName));
         downloadButton->setEnabled(true);*/
-        QMessageBox::warning(this, tr("Download New Version"),
+        if (QMessageBox::question(this, tr("Download New Version"),
                              tr("Download Finish!<br/>"
-                                "Please close this window and unpack the file under update\\ yourself to current folder"));
-		system("taskkill /f /IM qsanguosha.exe&7za x update/1.zip -aoa");
+                                "Do you want to update now?"))
+                                ==QMessageBox::Yes)
+                                system("taskkill /f /IM qsanguosha.exe&7za x update/1.zip -aoa");
     }
 
     reply->deleteLater();
