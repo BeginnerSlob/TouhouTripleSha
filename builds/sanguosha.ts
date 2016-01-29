@@ -668,51 +668,62 @@
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="17"/>
         <location filename="../src/dialog/connectiondialog.ui" line="29"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="17"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="29"/>
         <source>Connection setup</source>
         <translation>连接设置</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="76"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="76"/>
         <source>Change avatar</source>
         <translation>修改头像</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="41"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="41"/>
         <source>Avatar:</source>
         <translation>头像:</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="135"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="135"/>
         <source>Host:</source>
         <translation>主机:</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="118"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="118"/>
         <source>Name:</source>
         <translation>名称:</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="102"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="102"/>
         <source>Clear history</source>
         <translation>清除历史记录</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="89"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="89"/>
         <source>Detect LAN ...</source>
         <translation>探测局域网 ...</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="194"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="190"/>
         <source>Connect</source>
         <translation>连接</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="207"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="203"/>
         <source>Reconnection</source>
         <translation>断线重连</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog.ui" line="181"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="177"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -2223,6 +2234,7 @@
         <location filename="../src/dialog/mainwindow.cpp" line="1054"/>
         <location filename="../src/dialog/mainwindow.cpp" line="1058"/>
         <location filename="../src/dialog/mainwindow.cpp" line="1065"/>
+        <location filename="../src/dialog/mainwindow.cpp" line="1072"/>
         <source>Download New Version</source>
         <translation>下载新版本</translation>
     </message>
@@ -2248,8 +2260,13 @@
     </message>
     <message>
         <location filename="../src/dialog/mainwindow.cpp" line="1066"/>
-        <source>Download Finish!&lt;br/&gt;Do you want to update now?</source>
-        <translation type="unfinished">下载完成！&lt;br/&gt;是否立即更新？</translation>
+        <source>Download Finish!&lt;br/&gt;Do you want to update now?&lt;br/&gt;Tips: The game will restart after finish update</source>
+        <translation>下载完成！是否立即更新？&lt;br/&gt;&lt;br/&gt;提示：程序将在更新完成后自动重启</translation>
+    </message>
+    <message>
+        <location filename="../src/dialog/mainwindow.cpp" line="1073"/>
+        <source>The update package has been saved at update/ folder</source>
+        <translation>更新包已保存在 update\ 文件夹下</translation>
     </message>
     <message>
         <location filename="../src/dialog/mainwindow.cpp" line="668"/>

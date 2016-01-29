@@ -1063,10 +1063,14 @@ void MainWindow::httpFinished2()
         statusLabel->setText(tr("Downloaded %1 to current directory.").arg(fileName));
         downloadButton->setEnabled(true);*/
         if (QMessageBox::question(this, tr("Download New Version"),
-                             tr("Download Finish!<br/>"
-                                "Do you want to update now?"))
-                                ==QMessageBox::Yes)
-                                system("taskkill /f /IM qsanguosha.exe&7za x update/1.zip -aoa");
+                                  tr("Download Finish!<br/>"
+                                     "Do you want to update now?<br/>"
+                                     "Tips: The game will restart after finish update"))
+                == QMessageBox::Yes)
+            system("taskkill /f /IM qsanguosha.exe&7za x update/1.zip -aoa&start touhoutriplesha");
+        else
+            QMessageBox::warning(this, tr("Download New Version"),
+                                 tr("The update package has been saved at update/ folder"));
     }
 
     reply->deleteLater();
