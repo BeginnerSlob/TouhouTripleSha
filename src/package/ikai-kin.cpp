@@ -6424,95 +6424,87 @@ public:
     }
 };
 
-IkSulingDamageCard::IkSulingDamageCard() {
+IkSulingDamageCard::IkSulingDamageCard()
+{
     mute = true;
 }
 
-void IkSulingDamageCard::onUse(Room *room, const CardUseStruct &card_use) const{
-    CardUseStruct use = card_use;
-    QVariant data = QVariant::fromValue(use);
-    RoomThread *thread = room->getThread();
-
-    thread->trigger(PreCardUsed, room, use.from, data);
-    use = data.value<CardUseStruct>();
-    thread->trigger(CardUsed, room, use.from, data);
-    use = data.value<CardUseStruct>();
-    thread->trigger(CardFinished, room, use.from, data);
+bool IkSulingDamageCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
+{
+    return !targets.isEmpty() && targets.length() <= Self->getMark("iksuling");
 }
 
-bool IkSulingDamageCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-    return targets.length() == Self->getMark("iksuling");
-}
-
-bool IkSulingDamageCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkSulingDamageCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
     return targets.length() < Self->getMark("iksuling") && Self->inMyAttackRange(to_select);
 }
 
-void IkSulingDamageCard::onEffect(const CardEffectStruct &effect) const{
+void IkSulingDamageCard::onEffect(const CardEffectStruct &effect) const
+{
     effect.from->getRoom()->damage(DamageStruct("iksuling", effect.from, effect.to));
 }
 
-IkSulingCard::IkSulingCard() {
+IkSulingCard::IkSulingCard()
+{
 }
 
-bool IkSulingCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select != Self;
-}
-
-void IkSulingCard::onEffect(const CardEffectStruct &effect) const{
+void IkSulingCard::onEffect(const CardEffectStruct &effect) const
+{
     Room *room = effect.from->getRoom();
     room->removePlayerMark(effect.from, "@suling");
     room->addPlayerMark(effect.from, "@sulingused");
 
-    int len = 0;
+    int len = effect.from->getEquips().length();
     DummyCard *dummy = new DummyCard;
-    foreach (const Card *c, effect.from->getEquips()) {
+    foreach (const Card *c, effect.from->getEquips())
         dummy->addSubcard(c);
-        len++;
-    }
     room->setPlayerMark(effect.to, "iksuling", len);
     effect.to->obtainCard(dummy);
     delete dummy;
 
-    bool rec = true;
-    int count = 0;
+    QList<ServerPlayer *> victims;
     foreach (ServerPlayer *p, room->getOtherPlayers(effect.to)) {
-        if (effect.to->inMyAttackRange(p)) {
-            count++;
-            if (count >= len) {
-                rec = false;
-                break;
-            }
-        }
+        if (effect.to->inMyAttackRange(p))
+            victims << p;
     }
 
-    if ((rec || !room->askForUseCard(effect.to, "@iksuling", "@iksuling-damage:::" + QString::number(len)))
-        && effect.from->isWounded())
+    bool damage = !victims.isEmpty() && room->askForUseCard(effect.to, "@@iksuling", "@iksuling-damage:::" + QString::number(len));
+    if (damage)
+        return;
+    if (effect.from->isWounded())
         room->recover(effect.from, RecoverStruct(effect.to, NULL, len));
+    else if (!victims.isEmpty()) {
+        ServerPlayer *victim = victims.at(qrand() % victims.length());
+        room->damage(DamageStruct("iksuling", effect.to, victim));
+    }
 }
 
-class IkSuling: public ZeroCardViewAsSkill {
+class IkSuling: public ZeroCardViewAsSkill
+{
 public:
-    IkSuling(): ZeroCardViewAsSkill("iksuling") {
+    IkSuling(): ZeroCardViewAsSkill("iksuling")
+    {
         frequency = Skill::Limited;
         limit_mark = "@suling";
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const{
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
         return player->getMark("@suling") > 0 && player->getEquips().length() > 0;
     }
 
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
-        return pattern == "@iksuling";
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
+    {
+        return pattern == "@@iksuling";
     }
 
-    virtual const Card *viewAs() const{
+    virtual const Card *viewAs() const
+    {
         QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
-        if (pattern == "@iksuling") {
+        if (pattern == "@@iksuling")
             return new IkSulingDamageCard;
-        } else {
+        else
             return new IkSulingCard;
-        }
     }
 };
 
@@ -6990,8 +6982,8 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkLvdongCard>();
     addMetaObject<IkMingceCard>();
     addMetaObject<IkFenshiCard>();
-    addMetaObject<IkSulingCard>();
     addMetaObject<IkSulingDamageCard>();
+    addMetaObject<IkSulingCard>();
     addMetaObject<IkYusuoCard>();
     addMetaObject<IkBengyanCard>();
 
