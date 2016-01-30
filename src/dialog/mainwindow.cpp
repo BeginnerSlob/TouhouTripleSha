@@ -1013,7 +1013,7 @@ void MainWindow::downloadNew(QString url)
 {
     QUrl url2(url);
     QFileInfo fileInfo(url2.path());
-    QString fileName = fileInfo.fileName();
+    fileName = fileInfo.fileName();
     if (fileName.isEmpty())
        fileName = "index.html";
     fileName.prepend("update/");
@@ -1059,16 +1059,14 @@ void MainWindow::httpFinished2()
                              tr("Redirect Error!"));
         return;
     } else {
-        /*QString fileName = QFileInfo(QUrl(urlLineEdit->text()).path()).fileName();
-        statusLabel->setText(tr("Downloaded %1 to current directory.").arg(fileName));
-        downloadButton->setEnabled(true);*/
         if (QMessageBox::question(this, tr("Download New Version"),
                                   tr("Download Finish!<br/>"
                                      "Do you want to update now?<br/>"
                                      "Tips: The game will restart after finish update"))
-                == QMessageBox::Yes)
-            system("taskkill /f /IM qsanguosha.exe&7za x update/1.zip -aoa&start touhoutriplesha");
-        else
+                == QMessageBox::Yes) {
+            QString system_str = QString("taskkill /f /IM qsanguosha.exe&7za x %1 -aoa&start touhoutriplesha").arg(fileName);
+            system(system_str.toLatin1().data());
+        } else
             QMessageBox::warning(this, tr("Download New Version"),
                                  tr("The update package has been saved at update/ folder"));
     }

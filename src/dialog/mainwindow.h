@@ -70,6 +70,7 @@ private:
     QNetworkReply *reply;
     QNetworkReply *reply2;
     QFile *file;
+    QString fileName;
 
     void restoreFromConfig();
 
