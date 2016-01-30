@@ -1064,7 +1064,7 @@ void MainWindow::httpFinished2()
                                      "Do you want to update now?<br/>"
                                      "Tips: The game will restart after finish update"))
                 == QMessageBox::Yes) {
-            QString system_str = QString("taskkill /f /IM qsanguosha.exe&7za x %1 -aoa&start touhoutriplesha").arg(fileName);
+            QString system_str = QString("taskkill /f /IM touhoutriplesha.exe&7za x %1 -aoa&start touhoutriplesha").arg(fileName);
             system(system_str.toLatin1().data());
         } else
             QMessageBox::warning(this, tr("Download New Version"),
