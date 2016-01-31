@@ -465,6 +465,7 @@ public:
 IkHualanCard::IkHualanCard()
 {
     will_throw = false;
+    target_fixed = true;
     handling_method = MethodNone;
 }
 
