@@ -977,6 +977,14 @@ bool HulaoPassMode::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer 
                     n_list << data.toInt();
                 }
                 room->drawCards(room->getPlayers(), n_list);
+                if (Config.EnableLuckCard)
+                    room->askForLuckCard();
+                int i = 0;
+                foreach (ServerPlayer *p, room->getPlayers()) {
+                    QVariant num_data = n_list.at(i);
+                    room->getThread()->trigger(AfterDrawInitialCards, room, p, num_data);
+                    ++i;
+                }
                 return false;
             }
             break;
