@@ -144,6 +144,7 @@ public:
         CardUseStruct use = data.value<CardUseStruct>();
         room->sendCompulsoryTriggerLog(ask_who, objectName());
         use.nullified_list << "_ALL_TARGETS";
+        data = QVariant::fromValue(use);
         return false;
     }
 };
