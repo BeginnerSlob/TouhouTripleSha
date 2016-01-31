@@ -736,7 +736,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer* &) const {
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.card && damage.card->getSkillName() == objectName())
+        if (damage.card && damage.card->getSkillName() == "thxihua")
             return QStringList(objectName());
         return QStringList();
     }
