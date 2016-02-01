@@ -39,9 +39,15 @@ ServerDialog::ServerDialog(QWidget *parent)
     setWindowTitle(tr("Start server"));
 
     QTabWidget *tab_widget = new QTabWidget;
+#ifdef Q_OS_ANDROID
+    tab_widget->addTab(createGameModeTab(), tr("Game mode"));
+#endif
     tab_widget->addTab(createBasicTab(), tr("Basic"));
     tab_widget->addTab(createPackageTab(), tr("Game Pacakge Selection"));
     tab_widget->addTab(createAdvancedTab(), tr("Advanced"));
+#ifdef Q_OS_ANDROID
+    tab_widget->addTab(createAiTab(), tr("AI"));
+#endif
     tab_widget->addTab(createMiscTab(), tr("Miscellaneous"));
 
     QVBoxLayout *layout = new QVBoxLayout;
@@ -52,7 +58,8 @@ ServerDialog::ServerDialog(QWidget *parent)
     setMinimumWidth(300);
 }
 
-QWidget *ServerDialog::createBasicTab() {
+QWidget *ServerDialog::createBasicTab()
+{
     server_name_edit = new QLineEdit;
     server_name_edit->setText(Config.ServerName);
 
@@ -64,6 +71,16 @@ QWidget *ServerDialog::createBasicTab() {
     nolimit_checkbox = new QCheckBox(tr("No limit"));
     nolimit_checkbox->setChecked(Config.OperationNoLimit);
     connect(nolimit_checkbox, SIGNAL(toggled(bool)), timeout_spinbox, SLOT(setDisabled(bool)));
+#ifdef Q_OS_ANDROID
+    pile_swapping_label = new QLabel(tr("Pile-swapping limitation"));
+    pile_swapping_label->setToolTip(tr("-1 means no limitations"));
+    pile_swapping_spinbox = new QSpinBox;
+    pile_swapping_spinbox->setRange(-1, 15);
+    pile_swapping_spinbox->setValue(Config.value("PileSwappingLimitation", 5).toInt());
+
+    without_lordskill_checkbox = new QCheckBox(tr("Without Lordskill"));
+    without_lordskill_checkbox->setChecked(Config.value("WithoutLordskill", false).toBool());
+#endif
 
     // add 1v1 banlist edit button
     QPushButton *edit_button = new QPushButton(tr("Banlist ..."));
@@ -77,14 +94,32 @@ QWidget *ServerDialog::createBasicTab() {
     lay->addWidget(nolimit_checkbox);
     lay->addWidget(edit_button);
     form_layout->addRow(tr("Operation timeout"), lay);
+#ifdef Q_OS_ANDROID
+    form_layout->addRow(HLay(pile_swapping_label, pile_swapping_spinbox));
+    form_layout->addWidget(without_lordskill_checkbox);
+#else
     form_layout->addRow(createGameModeBox());
+#endif
 
     QWidget *widget = new QWidget;
     widget->setLayout(form_layout);
     return widget;
 }
 
-QWidget *ServerDialog::createPackageTab() {
+#ifdef Q_OS_ANDROID
+QWidget *ServerDialog::createGameModeTab()
+{
+    QFormLayout *form_layout = new QFormLayout;
+    form_layout->addRow(createGameModeBox());
+
+    QWidget *widget = new QWidget;
+    widget->setLayout(form_layout);
+    return widget;
+}
+#endif
+
+QWidget *ServerDialog::createPackageTab()
+{
     disable_lua_checkbox = new QCheckBox(tr("Disable Lua"));
     disable_lua_checkbox->setChecked(Config.DisableLua);
     disable_lua_checkbox->setToolTip(tr("The setting takes effect after reboot"));
@@ -213,6 +248,7 @@ QWidget *ServerDialog::createAdvancedTab() {
     connect(enable_cheat_checkbox, SIGNAL(toggled(bool)), free_assign_self_checkbox, SLOT(setVisible(bool)));
     connect(free_assign_checkbox, SIGNAL(toggled(bool)), free_assign_self_checkbox, SLOT(setEnabled(bool)));
 
+#ifndef Q_OS_ANDROID
     pile_swapping_label = new QLabel(tr("Pile-swapping limitation"));
     pile_swapping_label->setToolTip(tr("-1 means no limitations"));
     pile_swapping_spinbox = new QSpinBox;
@@ -221,6 +257,7 @@ QWidget *ServerDialog::createAdvancedTab() {
 
     without_lordskill_checkbox = new QCheckBox(tr("Without Lordskill"));
     without_lordskill_checkbox->setChecked(Config.value("WithoutLordskill", false).toBool());
+#endif
 
 #ifdef QT_DEBUG
     sp_convert_checkbox = new QCheckBox(tr("Enable SP Convert"));
@@ -319,8 +356,10 @@ QWidget *ServerDialog::createAdvancedTab() {
     layout->addWidget(enable_cheat_checkbox);
     layout->addWidget(free_choose_checkbox);
     layout->addLayout(HLay(free_assign_checkbox, free_assign_self_checkbox));
+#ifndef Q_OS_ANDROID
     layout->addLayout(HLay(pile_swapping_label, pile_swapping_spinbox));
     layout->addWidget(without_lordskill_checkbox);
+#endif
     //layout->addLayout(HLay(without_lordskill_checkbox, sp_convert_checkbox));
     /*layout->addLayout(HLay(new QLabel(tr("Upperlimit for general")), maxchoice_spinbox));
     layout->addLayout(HLay(lord_maxchoice_label, lord_maxchoice_spinbox));
@@ -391,7 +430,7 @@ QWidget *ServerDialog::createMiscTab() {
 
     luck_card_checkbox = new QCheckBox(tr("Enable the luck card"));
     luck_card_checkbox->setChecked(Config.EnableLuckCard);
-
+#ifndef Q_OS_ANDROID
     QGroupBox *ai_groupbox = new QGroupBox(tr("Artificial intelligence"));
     ai_groupbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
@@ -424,6 +463,7 @@ QWidget *ServerDialog::createMiscTab() {
     layout->addLayout(HLay(new QLabel(tr("AI delay After Death")), ai_delay_ad_spinbox));
 
     ai_groupbox->setLayout(layout);
+#endif
 
     QVBoxLayout *tablayout = new QVBoxLayout;
     tablayout->addLayout(HLay(new QLabel(tr("Game start count down")), game_start_spinbox));
@@ -431,13 +471,52 @@ QWidget *ServerDialog::createMiscTab() {
     tablayout->addWidget(minimize_dialog_checkbox);
     tablayout->addWidget(surrender_at_death_checkbox);
     tablayout->addWidget(luck_card_checkbox);
+#ifndef Q_OS_ANDROID
     tablayout->addWidget(ai_groupbox);
+#endif
     tablayout->addStretch();
 
     QWidget *widget = new QWidget;
     widget->setLayout(tablayout);
     return widget;
 }
+
+#ifdef Q_OS_ANDROID
+QWidget *ServerDialog::createAiTab()
+{
+    QVBoxLayout *layout = new QVBoxLayout;
+
+    ai_enable_checkbox = new QCheckBox(tr("Enable AI"));
+    ai_enable_checkbox->setChecked(Config.EnableAI);
+    ai_enable_checkbox->setEnabled(false); // Force to enable AI for disabling it causes crashes!!
+
+    ai_delay_spinbox = new QSpinBox;
+    ai_delay_spinbox->setMinimum(0);
+    ai_delay_spinbox->setMaximum(5000);
+    ai_delay_spinbox->setValue(Config.OriginAIDelay);
+    ai_delay_spinbox->setSuffix(tr(" millisecond"));
+
+    ai_delay_altered_checkbox = new QCheckBox(tr("Alter AI Delay After Death"));
+    ai_delay_altered_checkbox->setChecked(Config.AlterAIDelayAD);
+
+    ai_delay_ad_spinbox = new QSpinBox;
+    ai_delay_ad_spinbox->setMinimum(0);
+    ai_delay_ad_spinbox->setMaximum(5000);
+    ai_delay_ad_spinbox->setValue(Config.AIDelayAD);
+    ai_delay_ad_spinbox->setSuffix(tr(" millisecond"));
+    ai_delay_ad_spinbox->setEnabled(ai_delay_altered_checkbox->isChecked());
+    connect(ai_delay_altered_checkbox, SIGNAL(toggled(bool)), ai_delay_ad_spinbox, SLOT(setEnabled(bool)));
+
+    layout->addWidget(ai_enable_checkbox);
+    layout->addLayout(HLay(new QLabel(tr("AI delay")), ai_delay_spinbox));
+    layout->addWidget(ai_delay_altered_checkbox);
+    layout->addLayout(HLay(new QLabel(tr("AI delay After Death")), ai_delay_ad_spinbox));
+
+    QWidget *widget = new QWidget;
+    widget->setLayout(layout);
+    return widget;
+}
+#endif
 
 void ServerDialog::updateButtonEnablility(QAbstractButton *button) {
     if (!button) return;
