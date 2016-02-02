@@ -22,6 +22,7 @@
 #include <QApplication>
 #include <QHostInfo>
 #include <QAction>
+#include <qscrollarea.h>
 
 using namespace QSanProtocol;
 using namespace JsonUtils;
@@ -49,13 +50,20 @@ ServerDialog::ServerDialog(QWidget *parent)
     tab_widget->addTab(createAiTab(), tr("AI"));
 #endif
     tab_widget->addTab(createMiscTab(), tr("Miscellaneous"));
-
     QVBoxLayout *layout = new QVBoxLayout;
+#ifdef Q_OS_ANDROID
+    QScrollArea* scrollArea = new QScrollArea(this);
+    scrollArea->setWidget(tab_widget);
+    scrollArea->setAlignment(Qt::AlignLeft);
+    layout->addWidget(scrollArea);
+#else
     layout->addWidget(tab_widget);
+#endif
     layout->addLayout(createButtonLayout());
     setLayout(layout);
-
-    setMinimumWidth(300);
+#ifdef Q_OS_ANDROID
+    setMinimumSize(720,360);
+#endif
 }
 
 QWidget *ServerDialog::createBasicTab()
