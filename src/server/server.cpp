@@ -63,6 +63,8 @@ ServerDialog::ServerDialog(QWidget *parent)
     setLayout(layout);
 #ifdef Q_OS_ANDROID
     setMinimumSize(720,360);
+#else
+    setMinimumWidth(300);
 #endif
 }
 
