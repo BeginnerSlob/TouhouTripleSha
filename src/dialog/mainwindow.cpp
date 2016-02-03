@@ -941,6 +941,7 @@ void MainWindow::checkUpdate()
 void MainWindow::httpFinished()
 {
     QString newVersionNumber, updateDate, downloadUrl;
+    QStringList avaliableVersion;
     bool has_new_version = false;
     while (!reply->atEnd()) {
         QString line = reply->readLine();
@@ -962,6 +963,8 @@ void MainWindow::httpFinished()
                 updateDate = value;
             } else if (key == "url") {
                 downloadUrl = value;
+            } else if (key == "avaliable") {
+                avaliableVersion << value.split("|");
             }
         } else if (texts2.size() == 2) {
             QString key = texts2.at(0);
@@ -979,7 +982,7 @@ void MainWindow::httpFinished()
     }
     if (has_new_version) {
         setWindowTitle(tr("New Version Available") + "  " + windowTitle());
-        if (downloadUrl.isEmpty()) {
+        if (downloadUrl.isEmpty() || (!avaliableVersion.contains(Sanguosha->getVersionNumber()))) {
             QMessageBox::warning(this, tr("New Version Available"),
                                  tr("There is a new version for TouhouTripleSha<br/> \
                                      The version number is %1<br/> \
