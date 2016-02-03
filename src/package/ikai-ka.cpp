@@ -2270,42 +2270,40 @@ public:
         if (triggerEvent == PreCardUsed) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->getTypeId() == Card::TypeBasic || use.card->isNDTrick()) {
-                if (use.from->getMark("@sheji") > 0) {
-                    foreach (ServerPlayer *p, room->getAllPlayers()) {
-                        if (use.to.contains(p))
-                            continue;
-                        if (use.from->isProhibited(p, use.card))
-                            continue;
-                        if (use.from->getMark("iksheji_" + p->objectName()) > 0) {
-                            use.to << p;
-                            if (use.card->isKindOf("Collateral")) {
-                                QList<ServerPlayer *> victims;
-                                foreach (ServerPlayer *p2, room->getOtherPlayers(p)) {
-                                    if (p->canSlash(p2))
-                                        victims << p2;
-                                }
-                                if (!victims.isEmpty()) {
-                                    ServerPlayer *collateral_victim = room->askForPlayerChosen(use.from, victims, "iksheji_collateral", "@iksheji-collateral:" + p->objectName());
-                                    p->tag["collateralVictim"] = QVariant::fromValue(collateral_victim);
+                foreach (ServerPlayer *p, room->getAllPlayers()) {
+                    if (use.to.contains(p))
+                        continue;
+                    if (use.from->isProhibited(p, use.card))
+                        continue;
+                    if (use.from->getMark("iksheji_" + p->objectName()) > 0) {
+                        use.to << p;
+                        if (use.card->isKindOf("Collateral")) {
+                            QList<ServerPlayer *> victims;
+                            foreach (ServerPlayer *p2, room->getOtherPlayers(p)) {
+                                if (p->canSlash(p2))
+                                    victims << p2;
+                            }
+                            if (!victims.isEmpty()) {
+                                ServerPlayer *collateral_victim = room->askForPlayerChosen(use.from, victims, "iksheji_collateral", "@iksheji-collateral:" + p->objectName());
+                                p->tag["collateralVictim"] = QVariant::fromValue(collateral_victim);
 
-                                    LogMessage log;
-                                    log.type = "#CollateralSlash";
-                                    log.from = player;
-                                    log.to << collateral_victim;
-                                    room->sendLog(log);
-                                    room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, p->objectName(), collateral_victim->objectName());
-                                } else {
-                                    LogMessage log;
-                                    log.type = "#CollateralNoSlash";
-                                    log.from = p;
-                                    room->sendLog(log);
-                                }
+                                LogMessage log;
+                                log.type = "#CollateralSlash";
+                                log.from = player;
+                                log.to << collateral_victim;
+                                room->sendLog(log);
+                                room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, p->objectName(), collateral_victim->objectName());
+                            } else {
+                                LogMessage log;
+                                log.type = "#CollateralNoSlash";
+                                log.from = p;
+                                room->sendLog(log);
                             }
                         }
                     }
-                    room->sortByActionOrder(use.to);
-                    data = QVariant::fromValue(use);
                 }
+                room->sortByActionOrder(use.to);
+                data = QVariant::fromValue(use);
             }
         } else if (triggerEvent == EventPhaseChanging) {
             if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
