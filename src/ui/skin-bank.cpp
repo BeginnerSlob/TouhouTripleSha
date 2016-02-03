@@ -753,7 +753,7 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout_config)
              _m_commonLayout.m_bubbleChatBoxShowAreaSize);
     _m_commonLayout.m_cardFootnoteFont.tryParse(config["cardFootnoteFont"]);
     JsonArray magatamaFont = config["magatamaFont"].value<JsonArray>();
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 5 && i < magatamaFont.size(); i++)
         _m_commonLayout.m_hpFont[i].tryParse(magatamaFont[i]);
 
     config = layoutConfig[S_SKIN_KEY_ROOM].value<JsonObject>();
@@ -789,7 +789,7 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout_config)
         tryParse(playerConfig["handCardNumIconArea"], layout->m_handCardArea);
         tryParse(playerConfig["genderIconArea"], layout->m_genderArea);
         JsonArray equipAreas = playerConfig["equipAreas"].value<JsonArray>();
-        for (int j = 0; j < S_EQUIP_AREA_LENGTH; j++)
+        for (int j = 0; j < S_EQUIP_AREA_LENGTH && j < equipAreas.size(); j++)
             tryParse(equipAreas[j], layout->m_equipAreas[j]);
         tryParse(playerConfig["equipImageArea"], layout->m_equipImageArea);
         tryParse(playerConfig["equipSuitArea"], layout->m_equipSuitArea);
@@ -901,11 +901,14 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout_config)
         if (tryParse(config["height"], height))
             _m_dashboardLayout.m_skillButtonsSize[i].setHeight(height);
         int width = 0;
-        if (tryParse(configWidth[i], width))
+        if (i < configWidth.size() && tryParse(configWidth[i], width))
             _m_dashboardLayout.m_skillButtonsSize[i].setWidth(width);
-        tryParse(configTextArea[i], _m_dashboardLayout.m_skillTextArea[i]);
-        tryParse(configTextAreaDown[i], _m_dashboardLayout.m_skillTextAreaDown[i]);
-        _m_dashboardLayout.m_skillTextFonts[i].tryParse(configTextFont[i]);
+        if (i < configTextArea.size())
+            tryParse(configTextArea[i], _m_dashboardLayout.m_skillTextArea[i]);
+        if (i < configTextAreaDown.size())
+            tryParse(configTextAreaDown[i], _m_dashboardLayout.m_skillTextAreaDown[i]);
+        if (i < configTextFont.size())
+            _m_dashboardLayout.m_skillTextFonts[i].tryParse(configTextFont[i]);
     }
     for (int i = 0; i < QSanInvokeSkillButton::S_NUM_SKILL_TYPES; i++) {
         QString key;
@@ -922,7 +925,7 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout_config)
         }
 
         JsonArray subconfig = config[key].value<JsonArray>();
-        for (int j = 0; j < 4; j++) {
+        for (int j = 0; j < 4 && j < subconfig.size(); j++) {
             int index = i * 4 + j;
             JsonArray _config = subconfig[j].value<JsonArray>();
             if (_config.size() < 2)
