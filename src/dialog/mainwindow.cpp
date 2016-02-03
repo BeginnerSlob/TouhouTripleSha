@@ -28,6 +28,10 @@
 #include <QSystemTrayIcon>
 #include <QUrl>
 
+#ifdef Q_OS_WIN
+#include "Windows.h"
+#endif
+
 class FitView: public QGraphicsView {
 public:
     FitView(QGraphicsScene *scene): QGraphicsView(scene) {
@@ -1062,14 +1066,21 @@ void MainWindow::httpFinished2()
                              tr("Redirect Error!"));
         return;
     } else {
+#ifdef Q_OS_WIN
         if (QMessageBox::question(this, tr("Download New Version"),
                                   tr("Download Finish!<br/>"
                                      "Do you want to update now?<br/>"
                                      "Tips: The game will restart after finish update"))
                 == QMessageBox::Yes) {
-            QString system_str = QString("taskkill /f /IM touhoutriplesha.exe&7za x %1 -aoa&del %1&start touhoutriplesha").arg(fileName.replace("/", "\\"));
-            system(system_str.toLatin1().data());
+            QStringList cmd_lists;
+            cmd_lists << "taskkill /f /IM touhoutriplesha.exe";
+            cmd_lists << "7za x " + fileName + " -aoa";
+            cmd_lists << "del " + fileName.replace("/", "\\");
+            cmd_lists << "start touhoutriplesha";
+            QString system_str = "cmd /c " + cmd_lists.join("&");
+            WinExec(system_str.toLatin1().data(), SW_HIDE);
         } else
+#endif
             QMessageBox::warning(this, tr("Download New Version"),
                                  tr("The update package has been saved at update/ folder"));
     }
