@@ -22,7 +22,7 @@
 #include <QApplication>
 #include <QHostInfo>
 #include <QAction>
-#include <qscrollarea.h>
+#include <QScrollArea>
 
 using namespace QSanProtocol;
 using namespace JsonUtils;
