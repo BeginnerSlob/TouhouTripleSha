@@ -1277,6 +1277,9 @@
     <CustomBuild Include="..\..\src\package\tenshi-reihou.h">
       <Filter>package</Filter>
     </CustomBuild>
+    <CustomBuild Include="..\..\src\dialog\connectiondialog_android.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\resource\icon.rc" />
@@ -1355,6 +1358,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\core\json.h">
       <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_connectiondialog_android.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
