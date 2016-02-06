@@ -6934,7 +6934,7 @@ IkaiKinPackage::IkaiKinPackage()
     General *luna038 = new General(this, "luna038", "tsuki", 3);
     luna038->addSkill(new IkLianzhuang);
     luna038->addSkill(new IkLianzhuangRecord);
-    related_skills.insertMulti("iklianzhuang", "#iklianzhuang-record");
+    related_skills.insertMulti("iklianzhuang", "#iklianzhuang");
     luna038->addSkill(new IkGuijing);
     luna038->addSkill(new IkGuijingRecord);
     related_skills.insertMulti("ikguijing", "#ikguijing-record");
