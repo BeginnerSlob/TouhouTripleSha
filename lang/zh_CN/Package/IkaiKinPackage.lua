@@ -153,6 +153,7 @@ return {
 
 	["#wind055"] = "鲜血的战少女",
 	["wind055"] = "夏缇雅•布拉德弗伦",--风 - 空 - 4血
+	["&wind055"] = "夏缇雅",
 	["designer:wind055"] = "桃花僧",
 	["illustrator:wind055"] = "迷途羊",
 	["ikzangyu"] = "葬谕",
@@ -288,6 +289,7 @@ return {
 
 	["#bloom031"] = "箱型的恐祸",
 	["bloom031"] = "菲娅•库布里克",--花 - 幻 - 3血
+	["&bloom031"] = "菲娅",
 	["designer:bloom031"] = "游卡桌游",
 	["illustrator:bloom031"] = "さそりがため",
 	["ikfangsheng"] = "方圣",
