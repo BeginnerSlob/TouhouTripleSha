@@ -195,6 +195,7 @@ return {
 
 	["#bloom054"] = "死灵书的精灵",
 	["bloom054"] = "艾尔•阿吉芙",--花 - 空 - 3血
+	["&bloom054"] = "艾尔",
 	["designer:bloom054"] = "隔夜星河",
 	["illustrator:bloom054"] = "童彦頁カﾉﾚピス・con",
 	["ikduanni"] = "断逆",
@@ -325,6 +326,7 @@ return {
 
 	["#snow054"] = "圣歌的修女",
 	["snow054"] = "艾丝玛丽亚•亨德里克",--雪 - 空 - 4血
+	["&snow054"] = "艾丝玛丽亚",
 	["designer:snow054"] = "多一些空白",
 	["illustrator:snow054"] = "Nardack",
 	["iklihun"] = "礼魂",
