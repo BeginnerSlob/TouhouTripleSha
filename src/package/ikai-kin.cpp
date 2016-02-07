@@ -1182,6 +1182,7 @@ public:
                     room->setPlayerFlag(victim, "IkMoguangTarget");
                     room->addPlayerMark(victim, QString("@moguang_%1").arg(color));
                     room->setPlayerCardLimitation(victim, "use,response", pattern, false);
+                    player->tag["ikmoguang"] = color;
 
                     LogMessage log;
                     log.type = "#IkMoguang";
