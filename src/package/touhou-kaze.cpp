@@ -1262,17 +1262,14 @@ public:
             return skill_list;
         if (player->isChained() && card->getTypeId() != Card::TypeSkill && card->isRed())
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
-                if (!owner->faceUp())
+                if (owner!= player && !owner->faceUp())
                     skill_list.insert(owner, QStringList(objectName()));
 
         return skill_list;
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
-        ask_who->tag["ThWangqinData"] = QVariant::fromValue(player); // for AI
-        bool invoke = ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player));
-        ask_who->tag.remove("ThWangqinData"); 
-        if (invoke) {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -1491,10 +1488,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
-        ask_who->tag["ThDasuiData"] = QVariant::fromValue(player); // for AI
-        bool invoke = ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player));
-        ask_who->tag.remove("ThDasuiData");
-        if (invoke) {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -1586,10 +1580,11 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        move.reason.m_extraData.value<const Card *>()->setFlags("-thfuli");
+        const Card *card = move.reason.m_extraData.value<const Card *>();
         player->setFlags("-fuli_target");
-        if (player->askForSkillInvoke(objectName())) {
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(card))) {
             room->broadcastSkillInvoke(objectName());
+            card->setFlags("-thfuli");
             return true;
         }
         return false;
