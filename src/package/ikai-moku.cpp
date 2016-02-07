@@ -3758,18 +3758,21 @@ public:
     }
 };
 
-IkXuzhaoCard::IkXuzhaoCard() {
+IkXuzhaoCard::IkXuzhaoCard()
+{
     will_throw = false;
 }
 
-bool IkXuzhaoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkXuzhaoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
     LureTiger *lure_tiger = new LureTiger(SuitToBeDecided, -1);
     lure_tiger->addSubcards(subcards);
     lure_tiger->deleteLater();
-    return lure_tiger->targetFilter(targets, to_select, Self);
+    return lure_tiger->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, lure_tiger);
 }
 
-const Card *IkXuzhaoCard::validate(CardUseStruct &use) const{
+const Card *IkXuzhaoCard::validate(CardUseStruct &use) const
+{
     Room *room = use.from->getRoom();
     room->loseHp(use.from);
     if (use.from->isDead())
@@ -3780,14 +3783,17 @@ const Card *IkXuzhaoCard::validate(CardUseStruct &use) const{
     return lure_tiger;
 }
 
-class IkXuzhao: public OneCardViewAsSkill {
+class IkXuzhao: public OneCardViewAsSkill
+{
 public:
-    IkXuzhao(): OneCardViewAsSkill("ikxuzhao") {
+    IkXuzhao(): OneCardViewAsSkill("ikxuzhao")
+    {
         filter_pattern = ".|.|.|hand";
         response_or_use = true;
     }
 
-    virtual const Card *viewAs(const Card *card) const{
+    virtual const Card *viewAs(const Card *card) const
+    {
         LureTiger *lure_tiger = new LureTiger(Card::SuitToBeDecided, -1);
         lure_tiger->addSubcard(card);
         lure_tiger->setSkillName(objectName());
@@ -3798,6 +3804,11 @@ public:
             return skill;
         }
         return NULL;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("IkXuzhaoCard");
     }
 };
 
