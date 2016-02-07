@@ -1177,10 +1177,10 @@ public:
                 }
                 if (!to_choose.isEmpty()) {
                     ServerPlayer *victim = room->askForPlayerChosen(player, to_choose, objectName());
-                    QString pattern = QString(".|%1|.|hand$0").arg(color);
+                    QString pattern = QString(".|%1|.|hand").arg(color);
 
                     room->setPlayerFlag(victim, "IkMoguangTarget");
-                    room->addPlayerMark(victim, QString("@moguang_%1").arg(pattern));
+                    room->addPlayerMark(victim, QString("@moguang_%1").arg(color));
                     room->setPlayerCardLimitation(victim, "use,response", pattern, false);
 
                     LogMessage log;
