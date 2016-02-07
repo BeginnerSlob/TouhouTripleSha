@@ -1605,15 +1605,15 @@ public:
 class ThKudao: public TriggerSkill {
 public:
     ThKudao(): TriggerSkill("thkudao") {
-        events << TargetConfirmed << CardUsed << CardResponded;
+        events << TargetSpecified << CardUsed << CardResponded;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (!TriggerSkill::triggerable(player)) return QStringList();
         ServerPlayer *target = NULL;
-        if (triggerEvent == TargetConfirmed) {
+        if (triggerEvent == TargetSpecified) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.from == player && use.card->isRed() && use.to.length() == 1 && !use.to.contains(player))
+            if (use.card->getTypeId() != Card::TypeSkill && use.card->isRed() && use.to.length() == 1)
                 target = use.to.first();
         } else if (triggerEvent == CardUsed) {
             CardUseStruct use = data.value<CardUseStruct>();
@@ -1685,7 +1685,7 @@ public:
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
     {
         if (selected.isEmpty())
-            return Self->getHandcards().contains(to_select);
+            return Self->getHandcards().contains(to_select) && !Self->isJilei(to_select);
         else if (selected.length() == 1)
             return Self->getPile("kudaopile").contains(to_select->getId());
         else if (selected.length() == 2)

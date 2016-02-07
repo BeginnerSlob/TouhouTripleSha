@@ -1434,10 +1434,14 @@ sgs.ai_skill_invoke.thfuli = function(self, data)
 	return false
 end
 
+--枯道：每当你使用红色牌指定一名其他角色为唯一目标后，或使用或打出红色基本牌响应其他角色的牌后，你可以将该角色的一张牌面朝上置于你的人物牌上，称为“叶”。
 sgs.ai_skill_invoke.thkudao = function(self, data)
 	local target = data:toPlayer()
 	if self:isFriend(target) then
-		if (target:hasSkill("ikcangyou") and not target:getEquips():isEmpty()) or self:needToThrowArmor(target) then
+		if (target:hasSkill("ikcangyou") and target:hasEquip()) or self:needToThrowArmor(target) then
+			return true
+		end
+		if self:needKongcheng(target) and target:getHandcardNum() == 1 then
 			return true
 		end
 	end
@@ -1447,7 +1451,49 @@ sgs.ai_skill_invoke.thkudao = function(self, data)
 	end
 end
 
-sgs.ai_skill_invoke.thsuilun = true
+sgs.ai_choicemade_filter.cardChosen.thgelong = sgs.ai_choicemade_filter.cardChosen.snatch
+
+--岁轮：回合结束后，你可以弃置两张不同花色的“叶”并弃置一张手牌，然后进行一个额外的回合。
+sgs.ai_skill_use["@@thsuilun"] = function(self, prompt, method)
+	local int_table = {}
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	self:sortByUseValue(cards)
+	if #cards == 0 then
+		return "."
+	end
+	for _, c in ipairs(cards) do
+		if not self.player:isJilei(c) then
+			table.insert(int_table, tostring(c:getId()))
+			break
+		end
+	end
+	if #int_table == 0 then
+		return "."
+	end
+	local first, second = -1, -1
+	for _, id in sgs.qlist(self.player:getPile("kudaopile")) do
+		first = id
+		for _, id2 in sgs.qlist(self.player:getPile("kudaopile")) do
+			if id2 == id then
+				continue
+			end
+			if sgs.Sanguosha:getCard(id):getSuit() == sgs.Sanguosha:getCard(id2):getSuit() then
+				continue
+			end
+			second = id2
+			break
+		end
+		if first > -1 and second > -1 and first ~= second then
+			table.insert(int_table, tostring(first))
+			table.insert(int_table, tostring(second))
+			break
+		end
+	end
+	if #int_table == 3 then
+		return ("@ThSuilunCard=%s"):format(table.concat(int_table, "+"))
+	end
+	return "."
+end
 
 local thransang_skill = {}
 thransang_skill.name = "thransang"
