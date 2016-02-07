@@ -514,26 +514,37 @@ DoubleSword::DoubleSword(Suit suit, int number)
     setObjectName("double_sword");
 }
 
-class QinggangSwordSkill: public WeaponSkill {
+class QinggangSwordSkill: public WeaponSkill
+{
 public:
-    QinggangSwordSkill(): WeaponSkill("qinggang_sword") {
+    QinggangSwordSkill(): WeaponSkill("qinggang_sword")
+    {
         events << TargetSpecified;
         frequency = Compulsory;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("Slash")) {
-            bool do_anim = false;
-            foreach (ServerPlayer *p, use.to.toSet()) {
-                if (p->getMark("Equips_of_Others_Nullified_to_You") == 0 && !p->hasSkill("ikkongni")) {
-                    do_anim = (p->getArmor() && p->hasArmorEffect(p->getArmor()->objectName())) || p->hasSkill("ikjingnie") || p->hasSkill("iklinglong");
-                    p->addQinggangTag(use.card);
-                }
-            }
-            if (do_anim)
-                room->setEmotion(use.from, "effects/weapon");
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (WeaponSkill::triggerable(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash"))
+                return QStringList(objectName());
         }
+        return QStringList();
+    }
+
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        bool do_anim = false;
+        foreach (ServerPlayer *p, use.to.toSet()) {
+            if (p->getMark("Equips_of_Others_Nullified_to_You") == 0 && !p->hasSkill("ikkongni")) {
+                do_anim = (p->getArmor() && p->hasArmorEffect(p->getArmor()->objectName())) || p->hasSkill("ikjingnie") || p->hasSkill("iklinglong");
+                p->addQinggangTag(use.card);
+            }
+        }
+        if (do_anim)
+            room->setEmotion(player, "effects/weapon");
         return false;
     }
 };
