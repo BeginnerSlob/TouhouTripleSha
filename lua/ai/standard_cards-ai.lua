@@ -326,11 +326,7 @@ function SmartAI:slashIsEffective(slash, to, from, ignore_armor)
 	if not to then self.room:writeToConsole(debug.traceback()) return false end
 	slash = slash or sgs.Sanguosha:cloneCard("slash")
 	from = from or self.player
-	--check【无念】
-	if to:hasSkill("thwunian") 
-	and from:getMaxHp() ~=1 and not from:isWounded() then
-		return false
-	end
+
 	if not ignore_armor and from:objectName() == self.player:objectName() then
 		if self.moukui_effect then
 			ignore_armor = true
@@ -356,6 +352,7 @@ function SmartAI:slashIsEffective(slash, to, from, ignore_armor)
 			return false
 		end
 	end
+	if to:hasSkill("thwunian") and from:getMaxHp() ~= 1 and not from:isWounded() then return false end
 	if to:getMark("@late") > 0 then return false end
 
 	local natures = {
@@ -1810,7 +1807,9 @@ end
 function SmartAI:useCardExNihilo(card, use)
 	local xiahou = self.room:findPlayerBySkillName("yanyu")
 	if xiahou and self:isEnemy(xiahou) and xiahou:getMark("YanyuDiscard2") > 0 then return end
-
+	if not self:hasTrickEffective(card, self.player, self.player) then
+		return
+	end
 	use.card = card
 end
 
