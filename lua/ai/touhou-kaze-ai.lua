@@ -1495,18 +1495,23 @@ sgs.ai_skill_use["@@thsuilun"] = function(self, prompt, method)
 	return "."
 end
 
+--燃丧：出牌阶段限一次，你可以与一名其他角色拼点：若你赢，你获得技能“焰轮”直到回合结束（你可以将一张红色手牌当【灼狱业焰】使用；你使用【灼狱业焰】时可以弃置与目标角色所展示的手牌颜色相同的手牌；你每使用【灼狱业焰】造成一次伤害后，可以摸一张牌。）；若你没赢，你不能使用黑色锦囊牌直到回合结束。
 local thransang_skill = {}
 thransang_skill.name = "thransang"
 table.insert(sgs.ai_skills, thransang_skill)
 thransang_skill.getTurnUseCard = function(self)
-	if not self.player:hasUsed("ThRansangCard") and not self.player:isKongcheng()
-		then return sgs.Card_Parse("@ThRansangCard=.")
+	if not self.player:hasUsed("ThRansangCard") and not self.player:isKongcheng() then
+		return sgs.Card_Parse("@ThRansangCard=.")
 	end
 end
 
 sgs.ai_skill_use_func.ThRansangCard = function(card, use, self)
 	local trick_num = 0
-	for _, card in sgs.qlist(self.player:getHandcards()) do
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	for _, c in sgs.qlist(self.player:getPile("wooden_ox")) do
+		table.insert(cards, sgs.Sanguosha:getCard(c))
+	end
+	for _, card in ipairs(cards) do
 		if card:isNDTrick() and not card:isKindOf("Nullification") then trick_num = trick_num + 1 end
 	end
 	self:sort(self.enemies, "handcard")
@@ -1514,7 +1519,7 @@ sgs.ai_skill_use_func.ThRansangCard = function(card, use, self)
 	local max_point = max_card:getNumber()
 
 	for _, enemy in ipairs(self.enemies) do
-		if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+		if not (self:needKongcheng(enemy) and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
 			local enemy_max_card = self:getMaxCard(enemy)
 			local enemy_max_point = enemy_max_card and enemy_max_card:getNumber() or 100
 			if max_point > enemy_max_point then
@@ -1528,7 +1533,7 @@ sgs.ai_skill_use_func.ThRansangCard = function(card, use, self)
 		end
 	end
 	for _, enemy in ipairs(self.enemies) do
-		if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+		if not (self:needKongcheng(enemy) and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
 			if max_point >= 10 then
 				self.thransang_card = max_card:getEffectiveId()
 				use.card = card
@@ -1584,9 +1589,11 @@ sgs.ai_skill_use_func.ThRansangCard = function(card, use, self)
 	end
 
 	if trick_num == 0 and not self:isValuableCard(max_card) then
+		local hands = sgs.QList2Table(self.player:getHandcards())
+		self:sortByKeepValue(hands)
 		for _, enemy in ipairs(self.enemies) do
-			if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() and self:hasLoseHandcardEffective(enemy) then
-				self.thransang_card = max_card:getEffectiveId()
+			if not (self:needKongcheng(enemy) and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() and self:hasLoseHandcardEffective(enemy) then
+				self.thransang_card = hands[1]:getEffectiveId()
 				use.card = card
 				if use.to then
 					use.to:append(enemy)
@@ -1602,6 +1609,7 @@ sgs.ai_card_intention.ThRansangCard = 0
 sgs.ai_cardneed.thransang = sgs.ai_cardneed.bignumber
 sgs.ai_use_priority.ThDasuiCard = sgs.ai_use_priority.FireAttack + 0.1
 
+--焰轮：你可以将一张红色手牌当【灼狱业焰】使用；你使用【灼狱业焰】时可以弃置与目标角色所展示的手牌颜色相同的手牌；你每使用【灼狱业焰】造成一次伤害后，可以摸一张牌。
 sgs.ai_skill_invoke.thyanlun = true
 
 local thyanlun_skill = {}

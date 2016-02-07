@@ -126,7 +126,7 @@ sgs.ai_skill_playerchosen.thheimu = function(self, targets)
 		end
 	end
 	--case3  一般灵压 针对队友
-	if isRed() and self.player:hasSkill("thlingya")  then
+	if isRed and self.player:hasSkill("thlingya")  then
 		for _, p in sgs.qlist(targets) do
 			if self:isFriend(p) then
 				return p
