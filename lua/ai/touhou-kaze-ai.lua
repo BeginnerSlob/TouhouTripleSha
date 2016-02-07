@@ -1191,11 +1191,13 @@ end
 
 sgs.ai_choicemade_filter.skillInvoke.thwangqin = function(self, player, promptlist)
 	if promptlist[#promptlist] == "yes" then
-		local target = player:getTag("ThWangqinData"):toPlayer()
-		if target:faceUp() then
-			sgs.updateIntention(player, target, 50)
-		else
-			sgs.updateIntention(player, target, -50)
+		local target = findPlayerByObjectName(self.room, promptlist[#promptlist - 1])
+		if target  then
+			if target:faceUp() then
+				sgs.updateIntention(player, target, 50)
+			else
+				sgs.updateIntention(player, target, -50)
+			end
 		end
 	end
 end
@@ -1226,7 +1228,7 @@ sgs.ai_skill_playerchosen.thfusuo = function(self, targets)
 end
 
 sgs.ai_skill_cardask["@thfusuo"] = function(self, data, pattern, target)
-	local cards = sgs.QList2Table(self:getCards("he"))
+	local cards = sgs.QList2Table(self.player:getCards("he"))
 	self:sortByKeepValue(cards)
 	for _, c in ipairs(cards) do
 		if c:getTypeId() ~= sgs.Card_TypeBasic then
@@ -1342,18 +1344,20 @@ end
 
 sgs.ai_choicemade_filter.cardChosen.thyuanzhou = sgs.ai_choicemade_filter.cardChosen.dismantlement
 
+--大岁：出牌阶段限一次，你可以将一至三张手牌面朝上置于你的人物牌上，称为“穗”。其他角色的出牌阶段开始时，你可以令该角色选择一张“穗”并获得之。
 local thdasui_skill = {}
 thdasui_skill.name = "thdasui"
 table.insert(sgs.ai_skills, thdasui_skill)
 thdasui_skill.getTurnUseCard = function(self)
-	if self.player:hasUsed("ThDasuiCard") then return nil end
+	if self.player:hasUsed("ThDasuiCard") then
+		return nil
+	end
 	if self:getOverflow() < 1 then
 		return
 	end
-	local cards = self.player:getHandcards()
-	cards = sgs.QList2Table(cards)
+	local cards = sgs.QList2Table(self.player:getHandcards())
 	self:sortByKeepValue(cards)
-	local n = math.min(self:getOverflow(), 2)
+	local n = math.min(self:getOverflow(), 3)
 	local int_table = {}
 	for i = 1, n, 1 do
 		table.insert(int_table, tostring(cards[i]:getId()))
@@ -1376,11 +1380,14 @@ end
 
 sgs.ai_choicemade_filter.skillInvoke.thdasui = function(self, player, promptlist)
 	if promptlist[#promptlist] == "yes" then
-		local target = player:getTag("ThDasuiData"):toPlayer()
-		sgs.updateIntention(player, target, -30)
+		local target = findPlayerByObjectName(self.room, promptlist[#promptlist - 1])
+		if target then
+			sgs.updateIntention(player, target, -30)
+		end
 	end
 end
 
+--丰稔：锁定技，准备阶段开始时，你须选择一项：弃置全部且至少两张的“穗”并回复1点体力；或获得全部的“穗”。
 sgs.ai_skill_choice.thfengren = function(self, choices, data)
 	local ids = self.player:getPile("dasuipile")
 	if ids:length() == 2 then
@@ -1391,7 +1398,40 @@ sgs.ai_skill_choice.thfengren = function(self, choices, data)
 		end
 		return self.player:isWounded() and "recover" or "obtain"
 	end
-	return "obtain"
+	if self:willSkipDrawPhase(self.player) then
+		return "obtain"
+	end
+	return self:isWeak(self.player) and string.find(chocies, "recover") and "recover" or "obtain"
+end
+
+--扶犁：若你人物牌上的牌数小于三张，其他角色对你使用的牌在结算后置入弃牌堆时，你可以将其作为“穗”置于你的人物牌上，每回合限一次。
+sgs.ai_skill_invoke.thfuli = function(self, data)
+	local card = data:toCard()
+	local ids = sgs.IntList()
+	if card:isVirtualCard() then
+		ids = card:getSubcards()
+	else
+		ids:append(card:getEffectiveId())
+	end
+	if ids:length() + self.player:getPile("dasuipile"):length() > 3 then
+		return true
+	end
+	local slash = self:getCardsNum("Slash", "h")
+	if slash == 0 then
+		for _, id in sgs.qlist(self.player:getPile("dasuipile")) do
+			if sgs.Sanguosha:getCard(id):isKindOf("Slash") then
+				slash = 1
+				break
+			end
+		end
+	end
+	for _, id in sgs.qlist(ids) do
+		if sgs.Sanguosha:getCard(id):isKindOf("Slash") and slash > 0 then
+			continue
+		end
+		return true
+	end
+	return false
 end
 
 sgs.ai_skill_invoke.thkudao = function(self, data)
