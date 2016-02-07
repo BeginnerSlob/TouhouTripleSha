@@ -401,6 +401,7 @@ return {
 
 	["#snow055"] = "乐园追放",
 	["snow055"] = "安吉拉•巴尔扎克",--雪 - 空 - 4血
+	["&snow055"] = "安吉拉",
 	["designer:snow055"] = "LXRivers",
 	["illustrator:snow055"]="カントク",
 	["ikhuangpo"] = "荒破",
