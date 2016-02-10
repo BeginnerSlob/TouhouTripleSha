@@ -253,6 +253,7 @@ function sgs.getDefenseSlash(player, self)
 
 	if player:containsTrick("indulgence") and not player:containsTrick("YanxiaoCard") then defense = defense - 0.15 end
 	if player:containsTrick("supply_shortage") and not player:containsTrick("YanxiaoCard") then defense = defense - 0.15 end
+	if player:containsTrick("purple_song") and not player:containsTrick("YanxiaoCard") then defense = defense + 0.3 end
 
 	if (attacker:hasSkill("roulin") and player:isFemale()) or (attacker:isFemale() and player:hasSkill("roulin")) then
 		defense = defense - 0.4
@@ -2853,7 +2854,7 @@ sgs.ai_skill_askforag.amazing_grace = function(self, card_ids)
 	end
 	if (not friendNeedPeach and peach) or peachnum > 1 then return peach end
 
-	local exnihilo, jink, analeptic, nullification, snatch, dismantlement, indulgence
+	local exnihilo, jink, analeptic, nullification, snatch, dismantlement, indulgence, purple_song
 	for _, card in ipairs(cards) do
 		if isCard("ExNihilo", card, self.player) then
 			if not nextPlayerCanUse or (not self:willSkipPlayPhase() and (self.player:hasSkills("nosjizhi|jizhi|zhiheng|nosrende|rende") or not nextAlive:hasSkills("nosjizhi|jizhi|zhiheng"))) then
@@ -2871,6 +2872,8 @@ sgs.ai_skill_askforag.amazing_grace = function(self, card_ids)
 			dismantlement = card
 		elseif isCard("Indulgence", card, self.player) then
 			indulgence = card:getEffectiveId()
+		elseif isCard("PurpleSong", card, self.player) then
+			purple_song = card:getEffectiveId()
 		end
 	end
 
@@ -2893,6 +2896,7 @@ sgs.ai_skill_askforag.amazing_grace = function(self, card_ids)
 			return jink or analeptic
 		end
 		if indulgence then return indulgence end
+		if purple_song then return purple_song end
 	else
 		local CP = self.room:getCurrent()
 		local possible_attack = 0
@@ -2904,7 +2908,7 @@ sgs.ai_skill_askforag.amazing_grace = function(self, card_ids)
 		if possible_attack > self:getCardsNum("Jink") and self:getCardsNum("Jink") <= 2 and sgs.getDefenseSlash(self.player, self) <= 2 then
 			if jink or analeptic or exnihilo then return jink or analeptic or exnihilo end
 		else
-			if exnihilo or indulgence then return exnihilo or indulgence end
+			if exnihilo or indulgence or purple_song then return exnihilo or indulgence or purple_song end
 		end
 	end
 
@@ -3243,6 +3247,68 @@ sgs.ai_skill_askforag.amazing_grace = function(self, card_ids)
 
 	return cards[1]:getEffectiveId()
 end
+
+function SmartAI:useCardPurpleSong(card, use)
+	local friends = {}
+	if #self.friends_noself ~= 0 then
+		friends = self:exclude(self.friends_noself, card)
+	end
+	if #friends == 0 then return end
+
+	local zhanghe = self.room:findPlayerBySkillName("qiaobian")
+	local zhanghe_seat = zhanghe and zhanghe:faceUp() and not self:isFriend(zhanghe) and zhanghe:getSeat() or 0
+
+	local getvalue = function(friend)
+		if zhanghe_seat > 0 and (self:playerGetRound(zhanghe) <= self:playerGetRound(friend) or not friend:faceUp()) then
+			return -100
+		end
+
+		local value = friend:getHandcardNum() - friend:getHp()
+
+		if friend:hasSkills("noslijian|lijian|fanjian|nosfanjian|dimeng|jijiu|jieyin|anxu|yongsi|zhiheng|manjuan|nosrende|rende|qixi|jixi") then value = value + 10 end
+		if friend:hasSkills("qice|nosguose|guose|duanliang|nosjujian|luoshen|nosjizhi|jizhi|jilve|wansha|mingce") then value = value + 5 end
+		if friend:hasSkills("guzheng|luoying|yinling|gongxin|shenfen|ganlu|duoshi") then value = value + 3 end
+		if self:isWeak(friend) then value = value + 3 end
+		if friend:isLord() then value = value + 3 end
+
+		if self:objectiveLevel(friend) < 3 then value = value - 10 end
+		if not friend:faceUp() then value = value - 10 end
+		if friend:hasSkills("keji|shensu") then value = value - friend:getHandcardNum() end
+		if friend:hasSkills("guanxing|xiuluo") then value = value - 5 end
+		if friend:hasSkills("lirang") then value = value - 5 end
+		if friend:hasSkills("tuxi|nostuxi|noszhenlie|guanxing|qinyin|zongshi|tiandu") then value = value - 3 end
+		if self:needBear(friend) then value = value - 20 end
+		value = value + (self.room:alivePlayerCount() - self:playerGetRound(friend)) / 2
+		return value
+	end
+
+	local cmp = function(a, b)
+		return getvalue(a) > getvalue(b)
+	end
+
+	table.sort(friends, cmp)
+
+	local target = friends[1]
+	if not target then
+		self.room:writeToConsole("no Target!")
+	end
+	if not target:inherits("ServerPlayer") then
+		self.room:writeToConsole("not ServerPlayer!")
+		if target:inherits("Player") then
+			self.room:writeToConsole("is Player!")
+		end
+	end
+	if getvalue(target) > -100 then
+		use.card = card
+		if use.to then use.to:append(target) end
+		return
+	end
+end
+
+sgs.ai_use_value.PurpleSong = 10
+sgs.ai_use_priority.PurpleSong = 0.6
+sgs.ai_keep_value.PurpleSong = 3
+sgs.ai_card_intention.PurpleSong = -80
 
 local wooden_ox_skill = {}
 wooden_ox_skill.name = "wooden_ox"
