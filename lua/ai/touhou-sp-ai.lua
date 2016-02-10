@@ -288,16 +288,16 @@ sgs.ai_skill_use_func.ThJingyuanspCard = function(card, use, self)
 		if not p:hasEquip() then
 			continue
 		end
-		if table.contains(targets, p) then
+		if not table.contains(targets, p) then
 			table.insert(targets, p)
 			break
 		end
 	end
 	for _, p in ipairs(self.friends) do
-		if not p:hasEquip() and self:isWeak(p) then
+		if not p:hasEquip() or self:isWeak(p) then
 			continue
 		end
-		if table.contains(targets, p) then
+		if not table.contains(targets, p) then
 			table.insert(targets, p)
 			break
 		end
