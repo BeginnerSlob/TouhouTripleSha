@@ -2302,7 +2302,7 @@ sgs.ai_choicemade_filter.cardChosen.snatch = function(self, player, promptlist)
 		local intention = 70
 		if place == sgs.Player_PlaceDelayedTrick then
 			if not card:isKindOf("Disaster") then intention = -intention else intention = 0 end
-			if card:isKindOf("YanxiaoCard") then intention = -intention end
+			if card:isKindOf("PurpleSong") or card:isKindOf("YanxiaoCard") then intention = -intention end
 		elseif place == sgs.Player_PlaceEquip then
 			if card:isKindOf("Armor") and self:evaluateArmor(card, to) <= -2 then intention = 0 end
 			if card:isKindOf("SilverLion") then
