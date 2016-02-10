@@ -4896,7 +4896,7 @@ function SmartAI:hasTrickEffective(card, to, from)
 	if self.room:isProhibited(from, to, card) then return false end
 	if to:getMark("@late") > 0 and not card:isKindOf("DelayedTrick") then return false end
 	if to:getPile("dream"):length() > 0 and to:isLocked(card) then return false end
-	if to:hasSkill("thwunian") and from:getMaxHp() ~= 1 and not from:isWounded() then return false end
+	if to:hasSkill("thwunian") and from:getMaxHp() ~= 1 and not from:isWounded() and not card:isKindOf("DelayedTrick") then return false end
 	if to:hasSkills("ikmitu|hongyan") and card:isKindOf("Lightning") then return false end
 
 	if (from:hasSkill("ikmitu") or to:hasSkill("ikmitu")) and not from:hasSkill("ikxuwu") then
