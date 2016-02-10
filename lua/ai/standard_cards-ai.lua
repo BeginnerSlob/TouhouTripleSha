@@ -388,6 +388,7 @@ function SmartAI:slashIsEffective(slash, to, from, ignore_armor)
 					and not (skillname == "hongyan" or skillname == "jinjiu" or skillname == "wushen" or skillname == "guhuo" or skillname == "nosguhuo")
 	if not from:hasWeapon("qinggang_sword") and not ignore_armor then
 		if to:hasArmorEffect("renwang_shield") and slash:isBlack() then return false end
+		if to:hasArmorEffect("iron_armor") and slash:isRed() then return false end
 		if to:hasArmorEffect("vine")
 			and not (nature ~= sgs.DamageStruct_Normal or (not changed and (from:hasWeapon("fan") or (from:hasSkill("lihuo") and not self:isWeak(from))))) then
 			return false
@@ -1452,6 +1453,10 @@ function sgs.ai_armor_value.renwang_shield()
 	return 4.5
 end
 
+function sgs.ai_armor_value.iron_armor()
+	return 4.5
+end
+
 function sgs.ai_armor_value.silver_lion(player, self)
 	if self:hasWizard(self:getEnemies(player), true) then
 		for _, player in sgs.qlist(self.room:getAlivePlayers()) do
@@ -1476,6 +1481,7 @@ sgs.ai_use_priority.Axe = 2.688
 sgs.ai_use_priority.Crossbow = 2.63
 sgs.ai_use_priority.EightDiagram = 0.8
 sgs.ai_use_priority.RenwangShield = 0.7
+sgs.ai_use_priority.IronArmor = 0.75
 sgs.ai_use_priority.DefensiveHorse = 2.75
 
 sgs.dynamic_value.damage_card.ArcheryAttack = true

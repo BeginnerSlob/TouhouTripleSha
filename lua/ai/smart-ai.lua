@@ -86,7 +86,7 @@ end
 function setInitialTables()
 	sgs.current_mode_players = { lord = 0, loyalist = 0, rebel = 0, renegade = 0 }
 	sgs.ai_type_name = { "Skill", "Basic", "Trick", "Equip" }
-	sgs.lose_equip_skill = "kofxiaoji|xiaoji|xuanfeng|nosxuanfeng"
+	sgs.lose_equip_skill = "kofxiaoji|xiaoji|xuanfeng|nosxuanfeng|thouji"
 	sgs.need_kongcheng = "lianying|noslianying|ikjingyou|sijian"
 	sgs.masochism_skill = "nosyiji|yiji|jieming|fankui|nosfankui|nosenyuan|ganglie|vsganglie|nosganglie|enyuan|fangzhu|guixin|langgu|quanji|fenyong|chengxiang|noschengxiang".. 
 						  "thshenzhou"
@@ -5097,7 +5097,8 @@ function SmartAI:getSameEquip(card, player)
 	if card:isKindOf("Weapon") then return player:getWeapon()
 	elseif card:isKindOf("Armor") then return player:getArmor()
 	elseif card:isKindOf("DefensiveHorse") then return player:getDefensiveHorse()
-	elseif card:isKindOf("OffensiveHorse") then return player:getOffensiveHorse() end
+	elseif card:isKindOf("OffensiveHorse") then return player:getOffensiveHorse()
+	elseif card:isKindOf("Treasure") then return player:getTreasure() end
 end
 
 function SmartAI:useEquipCard(card, use)
