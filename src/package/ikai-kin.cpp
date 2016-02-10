@@ -4553,20 +4553,18 @@ public:
 
     virtual void onDamaged(ServerPlayer *target, const DamageStruct &damage) const{
         Room *room = target->getRoom();
-        if (damage.from && damage.from->getWeapon()) {
-            room->broadcastSkillInvoke(objectName());
-            QStringList choices;
-            choices << "throw";
-            if (damage.from->getWeapon())
-                choices << "obtain";
-            QString choice = room->askForChoice(target, objectName(), choices.join("+"));
-            if (choice == "obtain")
-                target->obtainCard(damage.from->getWeapon());
-            else {
-                target->drawCards(1, objectName());
-                if (damage.from->getWeapon() && target->canDiscard(damage.from, damage.from->getWeapon()->getEffectiveId()))
-                    room->throwCard(damage.from->getWeapon(), damage.from, target);
-            }
+        room->broadcastSkillInvoke(objectName());
+        QStringList choices;
+        choices << "throw";
+        if (damage.from && damage.from->getWeapon())
+            choices << "obtain";
+        QString choice = room->askForChoice(target, objectName(), choices.join("+"));
+        if (choice == "obtain")
+            target->obtainCard(damage.from->getWeapon());
+        else {
+            target->drawCards(1, objectName());
+            if (damage.from && damage.from->getWeapon() && target->canDiscard(damage.from, damage.from->getWeapon()->getEffectiveId()))
+                room->throwCard(damage.from->getWeapon(), damage.from, target);
         }
     }
 };
