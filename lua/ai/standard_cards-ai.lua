@@ -1838,6 +1838,8 @@ sgs.dynamic_value.benefit.ExNihilo = true
 function SmartAI:getDangerousCard(who)
 	local weapon = who:getWeapon()
 	local armor = who:getArmor()
+	local treasure = who:getTreasure()
+	if treasure and treasure:isKindOf("Scroll") and who:getHandcardNum() >= 3 then return treasure:getEffectiveId() end
 	if weapon and weapon:isKindOf("Spear") and who:getHandcardNum() >= 3 and who:hasSkill("paoxiao") then return weapon:getEffectiveId() end
 	if weapon and weapon:isKindOf("Axe") and who:hasSkills("luoyi|nosluoyi|pojun|jiushi|jiuchi|jie||jieyuan") then return weapon:getEffectiveId() end
 	if armor and armor:isKindOf("EightDiagram") and who:hasSkills("leiji|nosleiji") then return armor:getEffectiveId() end
@@ -3592,6 +3594,47 @@ sgs.ai_use_priority.KnownBoth = 9.1
 sgs.ai_use_value.KnownBoth = 5.5
 sgs.ai_keep_value.KnownBoth = 3.33
 
+local wooden_ox_skill = {}
+wooden_ox_skill.name = "wooden_ox"
+table.insert(sgs.ai_skills, wooden_ox_skill)
+wooden_ox_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("WoodenOxCard") or self.player:isKongcheng() or not self.player:hasTreasure("wooden_ox") then return end
+	self.wooden_ox_assist = nil
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	self:sortByUseValue(cards, true)
+	local card, friend = self:getCardNeedPlayer(cards)
+	if card and friend and friend:objectName() ~= self.player:objectName() and (self:getOverflow() > 0 or self:isWeak(friend)) then
+		self.wooden_ox_assist = friend
+		return sgs.Card_Parse("@WoodenOxCard=" .. card:getEffectiveId())
+	end
+	if self:getOverflow() > 0 or (self:needKongcheng() and #cards == 1) then
+		return sgs.Card_Parse("@WoodenOxCard=" .. cards[1]:getEffectiveId())
+	end
+end
+
+sgs.ai_skill_use_func.WoodenOxCard = function(card, use, self)
+	use.card = card
+end
+
+sgs.ai_skill_playerchosen.wooden_ox = function(self, targets)
+	if self.wooden_ox_assist then return self.wooden_ox_assist end
+	if self.player:hasSkill("yongsi") then
+		local kingdoms = {}
+		for _, p in sgs.qlist(self.room:getAlivePlayers()) do
+			local kingdom = p:getKingdom()
+			if not table.contains(kingdoms, kingdom) then table.insert(kingdoms, kingdom) end
+		end
+		if self.player:getCardCount(true) <= #kingdoms then
+			self:sort(self.friends_noself)
+			for _, friend in ipairs(self.friends_noself) do
+				if not friend:getTreasure() then return friend end
+			end
+		end
+	end
+end
+
+sgs.ai_playerchosen_intention.wooden_ox = -60
+
 function SmartAI:useCardBurningCamps(card, use)
 	if not card:isAvailable(self.player) then return end
 
@@ -3713,43 +3756,33 @@ sgs.ai_use_priority.BurningCamps = 4.7
 sgs.ai_keep_value.BurningCamps = 3.38
 sgs.ai_card_intention.BurningCamps = 10
 
-local wooden_ox_skill = {}
-wooden_ox_skill.name = "wooden_ox"
-table.insert(sgs.ai_skills, wooden_ox_skill)
-wooden_ox_skill.getTurnUseCard = function(self)
-	if self.player:hasUsed("WoodenOxCard") or self.player:isKongcheng() or not self.player:hasTreasure("wooden_ox") then return end
-	self.wooden_ox_assist = nil
+local scroll_skill = {}
+scroll_skill.name = "scroll"
+table.insert(sgs.ai_skills, scroll_skill)
+scroll_skill.getTurnUseCard = function(self)
+	-- change treasure
 	local cards = sgs.QList2Table(self.player:getHandcards())
-	self:sortByUseValue(cards, true)
-	local card, friend = self:getCardNeedPlayer(cards)
-	if card and friend and friend:objectName() ~= self.player:objectName() and (self:getOverflow() > 0 or self:isWeak(friend)) then
-		self.wooden_ox_assist = friend
-		return sgs.Card_Parse("@WoodenOxCard=" .. card:getEffectiveId())
+	for _, c in sgs.qlist(self.player:getPile("wooden_ox")) do
+		table.insert(cards, sgs.Sanguosha:getCard(c))
 	end
-	if self:getOverflow() > 0 or (self:needKongcheng() and #cards == 1) then
-		return sgs.Card_Parse("@WoodenOxCard=" .. cards[1]:getEffectiveId())
+	local other_treasure = self:getCardId("Treasure", self.player, cards)
+	if other_treasure then
+		return sgs.Card_Parse("@ScrollCard=.")
+	end
+	
+	-- friend wooden_ox
+	for _, p in ipairs(self.friends_noself) do
+		if p:hasTreasure("wooden_ox") then
+			return sgs.Card_Parse("@ScrollCard=.")
+		end
+	end
+
+	if self.player:hasSkill("thhouzhi") then return end
+	if self:isKongcheng() or self:isWeak() then
+		return sgs.Card_Parse("@ScrollCard=.")
 	end
 end
 
-sgs.ai_skill_use_func.WoodenOxCard = function(card, use, self)
+sgs.ai_skill_use_func.ScrollCard = function(card, use, self)
 	use.card = card
 end
-
-sgs.ai_skill_playerchosen.wooden_ox = function(self, targets)
-	if self.wooden_ox_assist then return self.wooden_ox_assist end
-	if self.player:hasSkill("yongsi") then
-		local kingdoms = {}
-		for _, p in sgs.qlist(self.room:getAlivePlayers()) do
-			local kingdom = p:getKingdom()
-			if not table.contains(kingdoms, kingdom) then table.insert(kingdoms, kingdom) end
-		end
-		if self.player:getCardCount(true) <= #kingdoms then
-			self:sort(self.friends_noself)
-			for _, friend in ipairs(self.friends_noself) do
-				if not friend:getTreasure() then return friend end
-			end
-		end
-	end
-end
-
-sgs.ai_playerchosen_intention.wooden_ox = -60
