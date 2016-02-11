@@ -2228,7 +2228,7 @@ function SmartAI:askForNullification(trick, from, to, positive)
 	if (trick:isKindOf("Duel") or trick:isKindOf("FireAttack") or trick:isKindOf("Drowning") or trick:isKindOf("AOE")) and self:needToLoseHp(to, from) and self:isFriend(to) then
 		return nil
 	end
-	if trick:isKindOf("Drowning") and self:needToThrowArmor(to) and self:isFriend(to) then return nil end
+	if trick:isKindOf("Drowning") and self:needToThrowArmor(to) and to:getEquips():length() == 1 and self:isFriend(to) then return nil end
 
 	local callback = sgs.ai_nullification[trick:getClassName()]
 	if type(callback) == "function" then
@@ -4574,7 +4574,7 @@ function SmartAI:aoeIsEffective(card, to, source)
 	local players = self.room:getAlivePlayers()
 	players = sgs.QList2Table(players)
 
-	if to:hasArmorEffect("vine") then
+	if to:hasArmorEffect("vine") and not card:isKindOf("BurningCamps") then
 		return false
 	end
 	if self.room:isProhibited(self.player, to, card) then
@@ -4623,6 +4623,14 @@ function SmartAI:canAvoidAOE(card)
 	end
 	if card:isKindOf("ArcheryAttack") then
 		if self:getCardsNum("Jink") > 0 or (self:hasEightDiagramEffect() and self.player:getHp() > 1) then
+			return true
+		end
+	end
+	if card:isKindOf("BurningCamps") then
+		return self.player:hasArmorEffect("iron_armor")
+	end
+	if card:isKindOf("Drowning") then
+		if self.player:getHandcardNum() > 1 or self.player:hasEquip() then
 			return true
 		end
 	end
@@ -4688,9 +4696,9 @@ function SmartAI:getAoeValueTo(card, to, from)
 		local slash = sgs.cloneCard("slash")
 		local isLimited = (card:isKindOf("ArcheryAttack") and to:isCardLimited(jink, sgs.Card_MethodResponse))
 							or (card:isKindOf("ArcheryAttack") and to:isCardLimited(jink, sgs.Card_MethodResponse))
-		if (card:isKindOf("SavageAssault") and sgs.card_lack[to:objectName()]["Slash"] == 1)
+		if (card:isKindOf("Drowning") and to:getHandcardNum() <= 2 and not to:hasEquip()) or ((card:isKindOf("SavageAssault") and sgs.card_lack[to:objectName()]["Slash"] == 1)
 			or (card:isKindOf("ArcheryAttack") and sgs.card_lack[to:objectName()]["Jink"] == 1)
-			or sj_num < 1 or isLimited then
+			or (not card:isKindOf("Drowning") and (sj_num < 1 or isLimited))) then
 			value = -70
 		else
 			value = -50
@@ -4713,6 +4721,18 @@ function SmartAI:getAoeValueTo(card, to, from)
 				elseif self:getFinalRetrial(to) == 1 then
 					value = value + 10
 				end
+			end
+		end
+		
+		if card:isKindOf("Drowning") then
+			if to:hasSkills(sgs.lose_equip_skill) and from:canDiscard(to, "e") then
+				value = value + 50
+			end
+			if self:needToThrowArmor(to) and (to:getEquips() == 1 or self:isFriend(to)) then
+				value = value + 20
+			end
+			if self:needKongcheng(to, true) and to:getHandcardNum() == 2 then
+				value = value + 20
 			end
 		end
 
@@ -4762,11 +4782,12 @@ function SmartAI:getAoeValueTo(card, to, from)
 				end
 			end
 		end
+
+		if to:hasSkill("thzuibu") and self:isFriend(from,to) then value = value + 20 end
 	else
 		value = value + 10
 		if to:hasSkill("juxiang") and not card:isVirtualCard() then value = value + 20 end
 		if to:hasSkill("danlao") and self.player:aliveCount() > 2 then value = value + 20 end
-		if to:hasSkill("thzuibu") and self:isFriend(from,to)  then value = value + 20 end
 	end
 	return value
 end
@@ -4836,7 +4857,7 @@ function SmartAI:getAoeValue(card, player)
 					if lord:isKongcheng() then good = good + 150 - lord:getHp() * 50 end
 				end
 			else
-				bad = bad + (lord:getHp() == 1 and 2013 or 250)
+				bad = bad + (lord:getHp() == 1 and 2016 or 250)
 			end
 		end
 	end
@@ -4966,11 +4987,11 @@ function SmartAI:useTrickCard(card, use)
 	if not card then global_room:writeToConsole(debug.traceback()) return end
 	if self:needBear() and not ("amazing_grace|ex_nihilo|snatch|iron_chain|collateral|lure_tiger|known_both"):match(card:objectName()) then return end
 	if self.player:hasSkill("wumou") and self.player:getMark("@wrath") < 7 then
-		if not (card:isKindOf("AOE") or card:isKindOf("DelayedTrick") or card:isKindOf("IronChain") or card:isKindOf("Drowning"))
+		if not (card:isKindOf("AOE") or card:isKindOf("DelayedTrick") or card:isKindOf("IronChain"))
 			and not (card:isKindOf("Duel") and self.player:getMark("@wrath") > 0) then return end
 	end
 	if self:needRende() and not card:isKindOf("ExNihilo") then return end
-	if card:isKindOf("AOE") then
+	if card:isKindOf("AOE") and not card:isKindOf("BurningCamps") then
 		local others = self.room:getOtherPlayers(self.player)
 		others = sgs.QList2Table(others)
 		local avail = #others
@@ -4997,6 +5018,7 @@ function SmartAI:useTrickCard(card, use)
 			if self.player:isLord() and sgs.turncount < 2 and card:isKindOf("ArcheryAttack") and self:getOverflow() < 1 then return end
 			if self.role == "loyalist" and sgs.turncount < 2 and card:isKindOf("ArcheryAttack") then return end
 			if self.role == "rebel" and sgs.turncount < 2 and card:isKindOf("SavageAssault") then return end
+			if sgs.turncount < 2 and card:isKindOf("Drowning") then return end
 		end
 
 		local good = self:getAoeValue(card)
