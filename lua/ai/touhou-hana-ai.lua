@@ -1,46 +1,47 @@
---【花祭】ai
+--花祭：在你的回合，当其他角色使用一张基本牌或非延时类锦囊牌时，你可弃置一张黑色牌，则该角色需弃置一张与其之前使用的牌名称相同的牌，否则该牌无效。
 sgs.ai_skill_cardask["@thhuajiuse"] = function(self, data)
-	local target = self.player:getTag("thhuajiTarget"):toPlayer()
-	if not self:isEnemy(target) then return "." end
-	local keepSlash =  self:slashIsAvailable() and self:getCardsNum("Slash")<=1 
-	local blacks={}
+	local target = data:toPlayer()
+	if not self:isEnemy(target) then
+		return "."
+	end
+	local keepSlash = self:slashIsAvailable() and self:getCardsNum("Slash") <= 1 
+	local blacks = {}
 	local cards = sgs.QList2Table(self.player:getCards("he"))
 	--目的是把红杀排在前面
-	self:sortByKeepValue(cards,true)
-	for _,c in pairs(cards) do
-		if not c:isBlack()  then 
+	self:sortByKeepValue(cards, true)
+	for _, c in pairs(cards) do
+		if not c:isBlack() then 
 			if c:isKindOf("Slash") then
-				keepSlash =false
+				keepSlash = false
 			end
 			continue 
 		end
 		if c:isKindOf("Slash") and keepSlash then
-			keepSlash =false
+			keepSlash = false
 			continue 
 		end
 		if c:isKindOf("AOE") then
 			local dummy_use = { isDummy = true, to = sgs.SPlayerList() }
 			self:useTrickCard(c, dummy_use)
-			if  dummy_use.card then 
+			if dummy_use.card then
 				continue
 			end
 		end
-		table.insert(blacks,c)
+		table.insert(blacks, c)
 	end
-	if #blacks==0 then return "." end
+	if #blacks == 0 then return "." end
 	self:sortByKeepValue(blacks)
 	return "$" .. blacks[1]:getId()
 end
+
 sgs.ai_choicemade_filter.cardResponded["@thhuajiuse"] = function(self, player, promptlist)
 	if promptlist[#promptlist] ~= "_nil_" then
-		local target =player:getTag("thhuajiTarget"):toPlayer()
-		if not target then return end	
-		sgs.updateIntention(player, target, 80)
+		local target = player:getTag("ThHuajiTarget"):toPlayer()
+		if target then
+			sgs.updateIntention(player, target, 80)
+		end
 	end
 end
---sgs.ai_skill_cardask["@thhuaji"] = function(self, data)
---default: discard card
--- since the enemy can make huaji opportunity, this player should not use card at first
 
 --【彼岸】ai
 sgs.ai_skill_cardask["@thbian"] = function(self, data)
