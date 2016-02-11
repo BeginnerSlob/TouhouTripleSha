@@ -1834,7 +1834,7 @@ function SmartAI:getDangerousCard(who)
 	if weapon and weapon:isKindOf("Spear") and who:getHandcardNum() >= 3 and who:hasSkill("paoxiao") then return weapon:getEffectiveId() end
 	if weapon and weapon:isKindOf("Axe") and who:hasSkills("luoyi|nosluoyi|pojun|jiushi|jiuchi|jie||jieyuan") then return weapon:getEffectiveId() end
 	if armor and armor:isKindOf("EightDiagram") and who:hasSkills("leiji|nosleiji") then return armor:getEffectiveId() end
-	if weapon and (weapon:isKindOf("SPMoonSpear") or weapon:isKindOf("MoonSpear")) and who:hasSkills("guidao|longdan|guicai|nosguicai|jilve|huanshi|qingguo|kanpo") then return weapon:getEffectiveId() end
+	if weapon and weapon:isKindOf("MoonSpear") and who:hasSkills("guidao|longdan|guicai|nosguicai|jilve|huanshi|qingguo|kanpo") then return weapon:getEffectiveId() end
 	if weapon and who:hasSkill("liegong") and sgs.weapon_range[weapon:getClassName()] >= who:getHp() - 1 then return weapon:getEffectiveId() end
 
 	if self:isFriend(who) then return end
@@ -3532,6 +3532,58 @@ end
 sgs.ai_use_value.LureTiger = 5
 sgs.ai_use_priority.LureTiger = 4.9
 sgs.ai_keep_value.LureTiger = 3.22
+
+sgs.ai_skill_playerchosen.moon_spear = function(self, targets)
+	targets = sgs.QList2Table(targets)
+	self:sort(targets, "defense")
+	for _, target in ipairs(targets) do
+		if self:isEnemy(target) and self:damageIsEffective(target) and sgs.isGoodTarget(target, targets, self) then
+			return target
+		end
+	end
+	return nil
+end
+
+sgs.ai_playerchosen_intention.moon_spear = 80
+
+sgs.weapon_range.MoonSpear = 3
+sgs.ai_use_priority.MoonSpear = 2.635
+
+function SmartAI:useCardKnownBoth(KnownBoth, use)
+	if not KnownBoth:isAvailable(self.player) then return false end
+	local targets = sgs.PlayerList()
+	local total_num = 1 + sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_ExtraTarget, self.player, KnownBoth)
+
+	self:sort(self.enemies, "handcard")
+	sgs.reverse(self.enemies)
+	for _, enemy in ipairs(self.enemies) do
+		if KnownBoth:targetFilter(targets, enemy, self.player) and enemy:getHandcardNum() - self:getKnownNum(enemy, self.player) > 3 and not targets:contains(enemy)
+				and self:hasTrickEffective(KnownBoth, enemy, self.player) then
+			use.card = KnownBoth
+			targets:append(enemy)
+			if use.to then use.to:append(enemy) end
+		end
+	end
+	if total_num > targets:length() then
+		self:sort(self.friends_noself, "handcard")
+		self.friends_noself = sgs.reverse(self.friends_noself)
+		for _, friend in ipairs(self.friends_noself) do
+			if self:getKnownNum(friend, self.player) ~= friend:getHandcardNum() and card:targetFilter(targets, friend, self.player) and not targets:contains(friend)
+					and self:hasTrickEffective(KnownBoth, friend, self.player) then
+				targets:append(friend)
+				if use.to then use.to:append(friend) end
+			end
+		end
+	end
+end
+
+sgs.ai_nullification.KnownBoth = function(self, card, from, to, positive)
+	return false
+end
+
+sgs.ai_use_priority.KnownBoth = 9.1
+sgs.ai_use_value.KnownBoth = 5.5
+sgs.ai_keep_value.KnownBoth = 3.33
 
 local wooden_ox_skill = {}
 wooden_ox_skill.name = "wooden_ox"
