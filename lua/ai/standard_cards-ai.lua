@@ -1494,6 +1494,9 @@ sgs.ai_use_priority.DefensiveHorse = 2.75
 sgs.dynamic_value.damage_card.ArcheryAttack = true
 sgs.dynamic_value.damage_card.SavageAssault = true
 
+sgs.ai_use_value.Drowning = 3.7
+sgs.ai_use_priority.Drowning = 3.5
+sgs.ai_keep_value.Drowning = 3.63
 sgs.ai_use_value.ArcheryAttack = 3.8
 sgs.ai_use_priority.ArcheryAttack = 3.5
 sgs.ai_keep_value.ArcheryAttack = 3.38
@@ -3601,7 +3604,7 @@ function SmartAI:useCardKnownBoth(KnownBoth, use)
 		self:sort(self.friends_noself, "handcard")
 		self.friends_noself = sgs.reverse(self.friends_noself)
 		for _, friend in ipairs(self.friends_noself) do
-			if self:getKnownNum(friend, self.player) ~= friend:getHandcardNum() and card:targetFilter(targets, friend, self.player) and not targets:contains(friend)
+			if getKnownNum(friend) ~= friend:getHandcardNum() and KnownBoth:targetFilter(targets, friend, self.player) and not targets:contains(friend)
 					and self:hasTrickEffective(KnownBoth, friend, self.player) then
 				targets:append(friend)
 				if use.to then use.to:append(friend) end
