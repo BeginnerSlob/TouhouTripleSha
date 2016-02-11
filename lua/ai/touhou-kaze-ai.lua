@@ -1710,6 +1710,9 @@ thyanxing_skill.getTurnUseCard = function(self)
 				card = sgs.cloneCard("fire_slash")
 				card:addSubcard(c)
 			end
+			if not self:slashIsAvailable(self.player, card) then
+				continue
+			end
 			local dummy_use = { isDummy = true , to = sgs.SPlayerList() }
 			self:useBasicCard(card, dummy_use)
 			if dummy_use.card and dummy_use.to:length() > 0 then
@@ -1744,7 +1747,7 @@ sgs.ai_skill_choice.thyanxing = function(self, choices)
 	return "maxhp"
 end
 
-sgs.ai_use_priority.ThYanxingCard =sgs.ai_use_priority.Slash + 0.2
+sgs.ai_use_priority.ThYanxingCard = sgs.ai_use_priority.Slash + 0.2
 
 sgs.thyanxing_keep_value = { 
 	NatureSlash = 6.4,
