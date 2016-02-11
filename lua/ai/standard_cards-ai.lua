@@ -1499,6 +1499,8 @@ sgs.ai_use_priority.RenwangShield = 0.7
 sgs.ai_use_priority.IronArmor = 0.82
 sgs.ai_use_priority.Breastplate = 0.9
 sgs.ai_use_priority.DefensiveHorse = 2.75
+sgs.ai_use_priority.Scroll = 8
+sgs.ai_use_priority.Jade = 6
 
 sgs.dynamic_value.damage_card.ArcheryAttack = true
 sgs.dynamic_value.damage_card.SavageAssault = true
@@ -1851,7 +1853,7 @@ function SmartAI:getDangerousCard(who)
 	local weapon = who:getWeapon()
 	local armor = who:getArmor()
 	local treasure = who:getTreasure()
-	if treasure and treasure:isKindOf("Scroll") and who:getHandcardNum() >= 3 then return treasure:getEffectiveId() end
+	if treasure and treasure:isKindOf("Jade") and who:getHandcardNum() >= 3 then return treasure:getEffectiveId() end
 	if weapon and weapon:isKindOf("Spear") and who:getHandcardNum() >= 3 and who:hasSkill("paoxiao") then return weapon:getEffectiveId() end
 	if weapon and weapon:isKindOf("Axe") and who:hasSkills("luoyi|nosluoyi|pojun|jiushi|jiuchi|jie||jieyuan") then return weapon:getEffectiveId() end
 	if armor and armor:isKindOf("EightDiagram") and who:hasSkills("leiji|nosleiji") then return armor:getEffectiveId() end
@@ -1904,6 +1906,9 @@ function SmartAI:getValuableCard(who)
 
 	if treasure then
 		if treasure:isKindOf("WoodenOx") and who:getPile("wooden_ox"):length() > 1 then
+			return treasure:getEffectiveId()
+		end
+		if treasure:isKindOf("Jade") then
 			return treasure:getEffectiveId()
 		end
 	end
@@ -3653,7 +3658,7 @@ sgs.ai_skill_use_func.WoodenOxCard = function(card, use, self)
 end
 
 sgs.ai_skill_playerchosen.wooden_ox = function(self, targets)
-	if self.wooden_ox_assist then return self.wooden_ox_assist end
+	if self.wooden_ox_assist and not self.wooden_ox_assist:getTreasure() then return self.wooden_ox_assist end
 	if self.player:hasSkill("yongsi") then
 		local kingdoms = {}
 		for _, p in sgs.qlist(self.room:getAlivePlayers()) do
@@ -3680,7 +3685,7 @@ function SmartAI:useCardBurningCamps(card, use)
 
 	local shouldUse = 0
 	for i = 0 , players:length() - 1, 1 do
-		player = findPlayerByObjectName(players:at(i):objectName())
+		player = self.room:findPlayer(players:at(i):objectName())
 		if not self:hasTrickEffective(card, player, self.player) then
 			continue
 		end
@@ -3835,7 +3840,7 @@ sgs.ai_skill_choice.drowning = function(self, choices, data)
 			and (self.player:getEquips():length() == 1 or (sgs.ai_role[self.player:objectName()] ~= "neutral" and self:isFriend(effect.from))) then
 		return "throw"
 	end
-	if self:hasSkills(sgs.lose_equip_skill) and string.find(choices, "throw") then
+	if self.player:hasSkills(sgs.lose_equip_skill) and string.find(choices, "throw") then
 		return "throw"
 	end
 
@@ -3858,3 +3863,52 @@ sgs.ai_skill_choice.drowning = function(self, choices, data)
 end
 
 sgs.ai_choicemade_filter.cardChosen.drowning = sgs.ai_choicemade_filter.cardChosen.snatch
+
+sgs.ai_view_as.jade = function(card, player, card_place)
+	local suit = card:getSuitString()
+	local number = card:getNumberString()
+	local card_id = card:getEffectiveId()
+	if card_place == sgs.Player_PlaceHand then
+		if card:isRed() and player:getMark("jade_use") < 2 then
+			return ("nullification:jade[%s:%s]=%d"):format(suit, number, card_id)
+		end
+	end
+end
+
+sgs.ai_skill_use["@@jade"] = function(self, prompt)
+	local card_str = sgs.GetProperty(self.player, "jade_trick"):toString()
+	local trick = sgs.Card_Parse(card_str)
+	local target_table = {}
+	if trick then
+		for _, p in sgs.qlist(self.room:getAlivePlayers()) do
+			if p:getMark("cardEffect_" .. card_str) > 0 then
+				if self:askForNullification(trick, nil, p, true, true) then
+					table.insert(target_table, p:objectName())
+				end
+			end
+		end
+	end
+	if #target_table > 0 then
+		return "@JadeCard=.->" .. table.concat(target_table, "+")
+	end
+end
+
+sgs.ai_cardneed.jade = function(to, card, self)
+	return card:isRed()
+end
+
+sgs.jade_suit_value = {
+	heart = 3.9,
+	diamond = 3.9
+}
+
+sgs.ai_card_intention.JadeCard = function(self, card, from, tos)
+	local cardx = sgs.Card_Parse(sgs.GetProperty(from, "jade_trick"):toString())
+	if not cardx then return end
+	local intention = (cardx:isKindOf("AOE") and -50 or 50)
+	for _, to in ipairs(tos) do
+		if to:hasSkill("danlao") or not self:hasTrickEffective(cardx, to, from) then continue end
+		if cardx:isKindOf("GodSalvation") and not to:isWounded() then continue end
+		sgs.updateIntention(from, to, intention)
+	end
+end
