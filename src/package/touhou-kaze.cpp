@@ -2273,7 +2273,9 @@ void ThXinhuaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
             victims << p;
         }
         if (!victims.isEmpty()) {
+            source->tag["ThXinhuaLord"] = QVariant::fromValue(target); // for AI
             ServerPlayer *victim = room->askForPlayerChosen(source, victims, "thxinhua");
+            source->tag.remove("ThXinhuaLord");
 
             LogMessage log;
             log.type = "$IkLingtongView";

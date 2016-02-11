@@ -1338,7 +1338,7 @@ end
 sgs.ai_choicemade_filter.cardChosen.thgelong = sgs.ai_choicemade_filter.cardChosen.snatch
 
 --怨咒：结束阶段开始时，若你的手牌数是全场最少的（或之一），你可以弃置场上手牌数最多的一名角色的区域内的一张牌。
-sgs.ai_skill_playerchosen["@thyuanzhou"] = function(self, targets)
+sgs.ai_skill_playerchosen.thyuanzhou = function(self, targets)
 	return self:findPlayerToDiscard("ej", true, true, targets)
 end
 
@@ -1739,7 +1739,7 @@ sgs.ai_skill_use_func.ThYanxingCard = function(card, use, self)
 end
 
 sgs.ai_skill_choice.thyanxing = function(self, choices)
-	if self.player:getLostHp() >=2 then
+	if self.player:getLostHp() >= 2 then
 		return "maxhp"
 	else
 		return "hp"
@@ -1829,6 +1829,60 @@ sgs.ai_card_intention.ThMaihuoCard = -70
 --smart-ai hasTrickEffective
 --standardcards-ai slashIsEffective
 
+--洞悉：专属技，准备阶段开始时，你可以获得场上的一名其他角色的一项技能（你不可以获得君主技、限定技、觉醒技、专属技，或你上回合因“洞悉”而获得的技能），直到你的下一个回合开始。
+sgs.thdongxi_best = "thdujia|thhongdao"
+sgs.thdongxi_wrost = "thwuwu|thzuishang|thzhanshi|thchuhui|thhuanzai|thzongni|thyishi|thshenmi|thjiuzhang|thyanmeng|thjingyuan|thlunyu|thyouya|thmanxiao|" ..
+						"thsanling|ikzaiqi|ikjinlian|ikqiyao|ikliefeng|ikmiaowu|ikyindie|ikrenjia|ikhuapan|ikbenghuai|ikhuanshen|ikwumou|ikchouhai|ikguiming" ..
+						"ikjueche|ikxuewu|ikshakuang|ikbengshang|ikguozai|ikxinshang|ikyunjue|ikguoshang|ikqihun|ikyuanji|ikshuluo|ikzhuxue|"
+sgs.thdongxi = ""
+sgs.ai_skill_playerchosen.thdongxi = function(self, targets)
+	local thdongxi_list = {}
+	for _, p in sgs.qlist(targets) do
+		for _, skill in sgs.qlist(p:getVisibleSkillList()) do
+			if skill:isLordSkill() or skill:isAttachedLordSkill() or skill:isOwnerOnlySkill()
+					or skill:getFrequency() == sgs.Skill_Limited or skill:getFrequency() == sgs.Skill_Wake then
+				continue
+			end
+			if skill:objectName() == self.player:getTag("ThDongxiLast"):toString() then
+				continue
+			end
+			if not self.player:hasSkill(skill:objectName()) then
+				table.insert(thdongxi_list, skill:objectName())
+			end
+		end
+	end
+	local thdongxi_targets = {}
+	for _, s in ipairs(thdongxi_list) do
+		if sgs.thdongxi_best:match(s) then
+			table.insert(thdongxi_targets, s)
+		end
+	end
+	if #thdongxi_targets > 0 then
+		sgs.thdongxi = thdongxi_targets[math.random(1, #thdongxi_targets)]
+		return self.room:findPlayerBySkillName(sgs.thdongxi)
+	end
+	for _, s in ipairs(thdongxi_list) do
+		if sgs.thdongxi_wrost:match(s) then
+			continue
+		end
+		table.insert(thdongxi_targets, s)
+	end
+	if #thdongxi_targets > 0 then
+		sgs.thdongxi = thdongxi_targets[math.random(1, #thdongxi_targets)]
+		return self.room:findPlayerBySkillName(sgs.thdongxi)
+	end
+	return nil
+end
+
+sgs.ai_skill_choice.thdongxi = function(self, choices)
+	if string.find(choices, sgs.thdongxi) then
+		return sgs.thdongxi
+	end
+	choices = choices.split("+")
+	return choices[math.random(1, #choices)]
+end
+
+--丧志：出牌阶段限一次，你可以弃置一张【桃】或装备牌，然后令一名其他角色的全部的人物技能无效，直到回合结束。
 local thsangzhi_skill = {}
 thsangzhi_skill.name = "thsangzhi"
 table.insert(sgs.ai_skills, thsangzhi_skill)
@@ -1846,10 +1900,33 @@ thsangzhi_skill.getTurnUseCard = function(self)
 end
 
 sgs.ai_skill_use_func.ThSangzhiCard = function(card, use, self)
-	-- todo
+	local dummy_use = {isDummy = true, to = sgs.SPlayerList()}
+	local slash = sgs.cloneCard("Slash")
+	self:useBasicCard(slash, dummy_use)
+	if (dummy_use.card and dummy_use.to:length() > 0) then
+		for _, p in sgs.qlist(dummy_use.to) do
+			if self.player:isFriend(p) then continue end
+			local skill_table = sgs.masochism_skill:split("|")
+			for _, skill_name in ipairs(skill_table) do
+				if (p:hasSkill(skill_name)) then
+					use.card = card
+					if use.to then
+						use.to:append(p)
+					end
+					return
+				end
+			end
+		end
+	end
+
 	return
 end
 
+sgs.ai_use_value.ThSangzhiCard = 6
+sgs.ai_use_priority.ThSangzhiCard = sgs.ai_use_priority.Slash + 0.1
+sgs.ai_card_intention.ThSangzhiCard = 100
+
+--心华：君主技，其他风势力角色的出牌阶段限一次，该角色可以交给你一张武器牌，然后令你观看一名其他角色的手牌。
 local thxinhuav_skill = {}
 thxinhuav_skill.name = "thxinhuav"
 table.insert(sgs.ai_skills, thxinhuav_skill)
@@ -1896,11 +1973,26 @@ sgs.ai_skill_use_func.ThXinhuaCard = function(card, use, self)
 
 	if #targets > 0 then
 		use.card = card
-		self:sort(targets, "defense")
 		if use.to then
+			self:sort(targets, "defense")
 			use.to:append(targets[1])
 		end
 	end
 end
 
+sgs.ai_skill_playerchosen.thxinhua = function(self, targets)
+	local from = self.player:getTag("ThXinhuaLord"):toPlayer()
+	targets = sgs.QList2Table(targets)
+	self:sort(targets, "handcard")
+	sgs.reverse(targets)
+	for _, t in ipairs(targets) do
+		if getKnownCard(t, from, "red|black") == t:getHandcardNum() then
+			continue
+		end
+		return t
+	end
+	return targets[math.random(1, #targets)]
+end
+
 sgs.ai_card_intention.ThXinhuaCard = -50
+sgs.ai_playerchosen_intention.thxinhua = 10
