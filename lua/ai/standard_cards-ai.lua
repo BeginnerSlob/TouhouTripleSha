@@ -1464,6 +1464,14 @@ function sgs.ai_armor_value.iron_armor(player, self)
 	return 4.5
 end
 
+function sgs.ai_armor_value.breastplate(player, self)
+	if player:getHp() >= 3 then
+		return 2
+	else
+		return 5.5
+	end
+end
+
 function sgs.ai_armor_value.silver_lion(player, self)
 	if self:hasWizard(self:getEnemies(player), true) then
 		for _, player in sgs.qlist(self.room:getAlivePlayers()) do
@@ -1489,6 +1497,7 @@ sgs.ai_use_priority.Crossbow = 2.63
 sgs.ai_use_priority.EightDiagram = 0.8
 sgs.ai_use_priority.RenwangShield = 0.7
 sgs.ai_use_priority.IronArmor = 0.82
+sgs.ai_use_priority.Breastplate = 0.9
 sgs.ai_use_priority.DefensiveHorse = 2.75
 
 sgs.dynamic_value.damage_card.ArcheryAttack = true
@@ -3814,3 +3823,38 @@ end
 sgs.ai_skill_use_func.ScrollCard = function(card, use, self)
 	use.card = card
 end
+
+sgs.ai_skill_invoke.breastplate = true
+
+sgs.ai_skill_choice.drowning = function(self, choices, data)
+	local effect = data:toCardEffect()
+	if self:needKongcheng(self.player, true) and self.player:getHandcardNum() == 2 and string.find(choices, "discard") then
+		return "discard"
+	end
+	if self:needToThrowArmor(self.player) and string.find(choices, "throw")
+			and (self.player:getEquips():length() == 1 or (sgs.ai_role[self.player:objectName()] ~= "neutral" and self:isFriend(effect.from))) then
+		return "throw"
+	end
+	if self:hasSkills(sgs.lose_equip_skill) and string.find(choices, "throw") then
+		return "throw"
+	end
+
+	if not self:damageIsEffective(nil, nil, effect.from) then return "damage" end
+	if self:getDamagedEffects(self.player, effect.from) or self:needToLoseHp(self.player, effect.from) then return "damage" end
+	if self.player:hasSkill("ikmitu") and not effect.from:hasSkill("ikxuwu") then return "damage" end
+	if effect.from:hasSkill("ikmitu") and not effect.from:hasSkill("ikxuwu") then return "damage" end
+	if self.player:getMark("@fenyong") > 0 and not effect.from:hasSkill("ikxuwu") then return "damage" end
+
+	local peaches = self:getCardsNum("Peach")
+	if self.player:getHp() < 3 then
+		peaches = peaches + self:getCardsNum("Analeptic")
+	end
+	if peaches / self.player:getHandcardNum() > 0.75 and string.find(choices, "discard") then
+		return "discard"
+	end
+	if self:isWeak(self.player) then
+		return string.find(choices, "discard") and "discard" or (string.find(choices, "throw") and "throw" or "damage")
+	end
+end
+
+sgs.ai_choicemade_filter.cardChosen.drowning = sgs.ai_choicemade_filter.cardChosen.snatch
