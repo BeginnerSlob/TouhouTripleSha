@@ -11,13 +11,16 @@
 #include "general.h"
 #include "card.h"
 
-class ThHuaji: public TriggerSkill {
+class ThHuaji: public TriggerSkill
+{
 public:
-    ThHuaji(): TriggerSkill("thhuaji") {
+    ThHuaji(): TriggerSkill("thhuaji")
+    {
         events << CardUsed << CardResponded << NullificationEffect;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const {
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const
+    {
         if (triggerEvent == CardUsed) {
             CardUseStruct use = data.value<CardUseStruct>();
             ServerPlayer *current = room->getCurrent();
@@ -44,16 +47,15 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
-        //if (data.canConvert<CardUseStruct>())
-        //    ask_who->tag["thhuajiTarget"] = QVariant::fromValue(data.value<CardUseStruct>().from);
-        //else if (data.canConvert<CardResponseStruct>())
-        //    ask_who->tag["thhuajiTarget"] = QVariant::fromValue(player);
-        ask_who->tag["thhuajiTarget"] = QVariant::fromValue(player);
-        if (room->askForCard(ask_who, ".|black", "@thhuajiuse", data, objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        ask_Who->tag["ThHuajiTarget"] = QVariant::fromValue(player);
+        if (room->askForCard(ask_who, ".|black", "@thhuajiuse", QVariant::fromValue(player), objectName())) {
+            ask_Who->tag.remove("ThHuajiTarget");
             room->broadcastSkillInvoke(objectName());
             return true;
         }
+        ask_Who->tag.remove("ThHuajiTarget");
         return false;
     }
 
