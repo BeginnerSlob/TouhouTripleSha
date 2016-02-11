@@ -2,21 +2,21 @@ function SmartAI:useCardThunderSlash(...)
 	self:useCardSlash(...)
 end
 
-sgs.ai_card_intention.ThunderSlash = sgs.ai_card_intention.Slash
+sgs.ai_card_intention.ThunderSlash = sgs.ai_card_intention.Slash + 0.01
 
 sgs.ai_use_value.ThunderSlash = 4.55
 sgs.ai_keep_value.ThunderSlash = 3.63
-sgs.ai_use_priority.ThunderSlash = 2.3
+sgs.ai_use_priority.ThunderSlash = 2.41
 
 function SmartAI:useCardFireSlash(...)
 	self:useCardSlash(...)
 end
 
-sgs.ai_card_intention.FireSlash = sgs.ai_card_intention.Slash
+sgs.ai_card_intention.FireSlash = sgs.ai_card_intention.Slash + 0.01
 
 sgs.ai_use_value.FireSlash = 4.6
 sgs.ai_keep_value.FireSlash = 3.66
-sgs.ai_use_priority.FireSlash = 2.3
+sgs.ai_use_priority.FireSlash = 2.41
 
 sgs.weapon_range.Fan = 4
 sgs.ai_use_priority.Fan = 2.655

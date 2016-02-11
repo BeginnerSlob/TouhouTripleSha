@@ -3355,7 +3355,11 @@ function SmartAI:useCardLureTiger(LureTiger, use)
 		end
 		if first then
 			use.card = LureTiger
-			if use.to then use.to = sgs.PlayerList2SPlayerList(players) end
+			if use.to then
+				for _, p in sgs.qlist(players) do
+					use.to:append(self.room:findPlayer(p:objectName()))
+				end
+			end
 			return
 		end
 	end
@@ -3378,7 +3382,11 @@ function SmartAI:useCardLureTiger(LureTiger, use)
 		if players:length() > 0 then
 			sgs.ai_use_priority.LureTiger = sgs.ai_use_priority.ArcheryAttack + 0.2
 			use.card = LureTiger
-			if use.to then use.to = sgs.PlayerList2SPlayerList(players) end
+			if use.to then
+				for _, p in sgs.qlist(players) do
+					use.to:append(self.room:findPlayer(p:objectName()))
+				end
+			end
 			return
 		end
 	end
@@ -3401,7 +3409,11 @@ function SmartAI:useCardLureTiger(LureTiger, use)
 		if players:length() > 0 then
 			sgs.ai_use_priority.LureTiger = sgs.ai_use_priority.SavageAssault + 0.2
 			use.card = LureTiger
-			if use.to then use.to = sgs.PlayerList2SPlayerList(players) end
+			if use.to then
+				for _, p in sgs.qlist(players) do
+					use.to:append(self.room:findPlayer(p:objectName()))
+				end
+			end
 			return
 		end
 	end
@@ -3433,7 +3445,11 @@ function SmartAI:useCardLureTiger(LureTiger, use)
 		if players:length() > 0 then
 			sgs.ai_use_priority.LureTiger = sgs.ai_use_priority.Drowning + 0.2
 			use.card = LureTiger
-			if use.to then use.to = sgs.PlayerList2SPlayerList(players) end
+			if use.to then
+				for _, p in sgs.qlist(players) do
+					use.to:append(self.room:findPlayer(p:objectName()))
+				end
+			end
 			return
 		end
 	end
@@ -3493,7 +3509,11 @@ function SmartAI:useCardLureTiger(LureTiger, use)
 					if sps then
 						sgs.ai_use_priority.LureTiger = 3
 						use.card = LureTiger
-						if use.to then use.to = sgs.PlayerList2SPlayerList(sps) end
+						if use.to then
+							for _, p in sgs.qlist(sps) do
+								use.to:append(self.room:findPlayer(p:objectName()))
+							end
+						end
 						return
 					end
 				end
@@ -3515,7 +3535,11 @@ function SmartAI:useCardLureTiger(LureTiger, use)
 		if players:length() > 0 then
 			sgs.ai_use_priority.LureTiger = sgs.ai_use_priority.GodSalvation + 0.1
 			use.card = LureTiger
-			if use.to then use.to = sgs.PlayerList2SPlayerList(players) end
+			if use.to then
+				for _, p in sgs.qlist(players) do
+					use.to:append(self.room:findPlayer(p:objectName()))
+				end
+			end
 			return
 		end
 	end
@@ -3566,7 +3590,7 @@ function SmartAI:useCardKnownBoth(KnownBoth, use)
 	self:sort(self.enemies, "handcard")
 	sgs.reverse(self.enemies)
 	for _, enemy in ipairs(self.enemies) do
-		if KnownBoth:targetFilter(targets, enemy, self.player) and enemy:getHandcardNum() - self:getKnownNum(enemy, self.player) > 3 and not targets:contains(enemy)
+		if KnownBoth:targetFilter(targets, enemy, self.player) and enemy:getHandcardNum() - getKnownNum(enemy) > 3 and not targets:contains(enemy)
 				and self:hasTrickEffective(KnownBoth, enemy, self.player) then
 			use.card = KnownBoth
 			targets:append(enemy)
@@ -3675,8 +3699,9 @@ sgs.ai_nullification.BurningCamps = function(self, card, from, to, positive, kee
 	local targets = sgs.SPlayerList()
 	local players = sgs.SPlayerList()
 	for _, q in sgs.qlist(self.room:getAlivePlayers()) do
-		if q:getMark("cardEffect_" + card:toString()) > 0 then
-		targets:append(q)
+		if q:getMark("cardEffect_" .. card:toString()) > 0 then
+			targets:append(q)
+		end
 	end
 	if positive then
 		if from:objectName() == self.player:objectName() then return false end
@@ -3702,7 +3727,7 @@ sgs.ai_nullification.BurningCamps = function(self, card, from, to, positive, kee
 		end
 		if #chained + #friends > 2 or dangerous then return true, #friends <= 1 end
 		if keep then return false end
-		if self:isFriendWith(to) and self:isEnemy(from) then return true, #friends <= 1 end
+		if self:isFriend(to) and self:isEnemy(from) then return true, #friends <= 1 end
 	else
 		if not self:isFriend(from) then return false end
 		local chained = {}
@@ -3765,8 +3790,8 @@ scroll_skill.getTurnUseCard = function(self)
 	for _, c in sgs.qlist(self.player:getPile("wooden_ox")) do
 		table.insert(cards, sgs.Sanguosha:getCard(c))
 	end
-	local other_treasure = self:getCardId("Treasure", self.player, cards)
-	if other_treasure then
+	local other_treasure = self:getCard("Treasure", self.player)
+	if other_treasure and (self.player:getTreasure() and self.player:getTreasure():getId() ~= other_treasure:getId()) then
 		return sgs.Card_Parse("@ScrollCard=.")
 	end
 	
@@ -3778,7 +3803,7 @@ scroll_skill.getTurnUseCard = function(self)
 	end
 
 	if self.player:hasSkill("thhouzhi") then return end
-	if self:isKongcheng() or self:isWeak() then
+	if self.player:isKongcheng() or self:isWeak(self.player) then
 		return sgs.Card_Parse("@ScrollCard=.")
 	end
 end
