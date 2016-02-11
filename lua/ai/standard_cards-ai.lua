@@ -1453,7 +1453,14 @@ function sgs.ai_armor_value.renwang_shield()
 	return 4.5
 end
 
-function sgs.ai_armor_value.iron_armor()
+function sgs.ai_armor_value.iron_armor(player, self)
+	if self:isWeak(player) then
+		for _, p in sgs.qlist(self.room:getOtherPlayers(player)) do
+			if p:hasSkill("huoji") and self:isEnemy(p) then
+				return 7
+			end
+		end
+	end
 	return 4.5
 end
 
@@ -1481,7 +1488,7 @@ sgs.ai_use_priority.Axe = 2.688
 sgs.ai_use_priority.Crossbow = 2.63
 sgs.ai_use_priority.EightDiagram = 0.8
 sgs.ai_use_priority.RenwangShield = 0.7
-sgs.ai_use_priority.IronArmor = 0.75
+sgs.ai_use_priority.IronArmor = 0.82
 sgs.ai_use_priority.DefensiveHorse = 2.75
 
 sgs.dynamic_value.damage_card.ArcheryAttack = true
@@ -3584,6 +3591,127 @@ end
 sgs.ai_use_priority.KnownBoth = 9.1
 sgs.ai_use_value.KnownBoth = 5.5
 sgs.ai_keep_value.KnownBoth = 3.33
+
+function SmartAI:useCardBurningCamps(card, use)
+	if not card:isAvailable(self.player) then return end
+
+	local player = self.room:findPlayer(self.player:getNextAlive():objectName())
+	local players = player:getFormation()
+	if players:isEmpty() then return end
+
+	local shouldUse = 0
+	for i = 0 , players:length() - 1, 1 do
+		player = findPlayerByObjectName(players:at(i):objectName())
+		if not self:hasTrickEffective(card, player, self.player) then
+			continue
+		end
+		if self:isFriend(player) then
+			shouldUse = shouldUse - 1.5
+		end
+		local damage = {}
+		damage.from = self.player
+		damage.to = player
+		damage.nature = sgs.DamageStruct_Fire
+		damage.damage = 1
+		if self:damageIsEffective_(damage) then
+			if player:isChained() and self:isGoodChainTarget(damage.to, damage.from, damage.nature, damage.damage, card) then
+				shouldUse = shouldUse + 2
+			elseif self:objectiveLevel(player) > 3 then
+				shouldUse = shouldUse + 1
+			else
+				shouldUse = shouldUse - 0.5
+			end
+		end
+	end
+	if shouldUse > 0 then
+		use.card = card
+	end
+end
+
+sgs.ai_nullification.BurningCamps = function(self, card, from, to, positive, keep)
+	local targets = sgs.SPlayerList()
+	local players = sgs.SPlayerList()
+	for _, q in sgs.qlist(self.room:getAlivePlayers()) do
+		if q:getMark("cardEffect_" + card:toString()) > 0 then
+		targets:append(q)
+	end
+	if positive then
+		if from:objectName() == self.player:objectName() then return false end
+		local chained = {}
+		local dangerous
+		if self:damageIsEffective(to, sgs.DamageStruct_Fire) and to:isChained() and not from:hasShownSkill("ikxuwu") then
+			for _, p in sgs.qlist(self.room:getOtherPlayers(to)) do
+				if not self:isGoodChainTarget(to, p, sgs.DamageStruct_Fire) and self:damageIsEffective(p, sgs.DamageStruct_Fire) and self:isFriend(p) then
+					table.insert(chained, p)
+					if self:isWeak(p) then dangerous = true end
+				end
+			end
+		end
+		if to:hasArmorEffect("vine") and #chained > 0 then dangerous = true end
+		local friends = {}
+		if self:isFriend(to) then
+			for _, p in sgs.qlist(targets) do
+				if self:damageIsEffective(p, sgs.DamageStruct_Fire) then
+					table.insert(friends, p)
+					if self:isWeak(p) or p:hasArmorEffect("vine") then dangerous = true end
+				end
+			end
+		end
+		if #chained + #friends > 2 or dangerous then return true, #friends <= 1 end
+		if keep then return false end
+		if self:isFriendWith(to) and self:isEnemy(from) then return true, #friends <= 1 end
+	else
+		if not self:isFriend(from) then return false end
+		local chained = {}
+		local dangerous
+		local enemies = {}
+		local good
+		if self:damageIsEffective(to, sgs.DamageStruct_Fire) and to:isChained() and not from:hasShownSkill("ikxuwu") then
+			for _, p in sgs.qlist(self.room:getOtherPlayers(to)) do
+				if not self:isGoodChainTarget(to, p, sgs.DamageStruct_Fire) and self:damageIsEffective(p, sgs.DamageStruct_Fire) and self:isFriend(p) then
+					table.insert(chained, p)
+					if self:isWeak(p) then dangerous = true end
+				end
+				if not self:isGoodChainTarget(to, p, sgs.DamageStruct_Fire) and self:damageIsEffective(p, sgs.DamageStruct_Fire) and self:isEnemy(p) then
+					table.insert(enemies, p)
+					if self:isWeak(p) then good = true end
+				end
+			end
+		end
+		if to:hasArmorEffect("vine") and #chained > 0 then dangerous = true end
+		if to:hasArmorEffect("vine") and #enemies > 0 then good = true end
+		local friends = {}
+		if self:isFriend(to) then
+			for _, p in sgs.qlist(targets) do
+				if self:damageIsEffective(p, sgs.DamageStruct_Fire) then
+					table.insert(friends, p)
+					if self:isWeak(p) or p:hasArmorEffect("vine") then dangerous = true end
+				end
+			end
+		end
+		if self:isEnemy(to) then
+			for _, p in sgs.qlist(targets) do
+				if self:damageIsEffective(p, sgs.DamageStruct_Fire) then
+					if self:isWeak(p) or p:hasArmorEffect("vine") then good = true end
+				end
+			end
+		end
+		if #chained + #friends > 2 or dangerous then return false end
+		if keep then
+			local nulltype = card:isKindOf("Nullification") and card:getSkillName() == "jade"
+			if nulltype and targets:length() > 1 then good = true end
+			if good then keep = false end
+		end
+		if keep then return false end
+		if self:isFriend(from) and self:isEnemy(to) then return true, true end
+	end
+	return
+end
+
+sgs.ai_use_value.BurningCamps = 7.1
+sgs.ai_use_priority.BurningCamps = 4.7
+sgs.ai_keep_value.BurningCamps = 3.38
+sgs.ai_card_intention.BurningCamps = 10
 
 local wooden_ox_skill = {}
 wooden_ox_skill.name = "wooden_ox"

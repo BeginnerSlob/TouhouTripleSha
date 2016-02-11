@@ -3823,10 +3823,22 @@ function SmartAI:getRetrialCardId(cards, judge, self_card)
 	end
 end
 
-function SmartAI:damageIsEffective(player, nature, source)
-	player = player or self.player
-	source = source or self.room:getCurrent()
-	nature = nature or sgs.DamageStruct_Normal
+
+function SmartAI:damageIsEffective(to, nature, from)
+	local damageStruct = {}
+	damageStruct.to = to or self.player
+	damageStruct.from = from or self.room:getCurrent()
+	damageStruct.nature = nature or sgs.DamageStruct_Normal
+	return self:damageIsEffective_(damageStruct)
+end
+
+function SmartAI:damageIsEffective_(damageStruct)
+	if type(damageStruct) ~= "table" and type(damageStruct) ~= "DamageStruct" and type(damageStruct) ~= "userdata" then self.room:writeToConsole(debug.traceback()) return end
+	if not damageStruct.to then self.room:writeToConsole(debug.traceback()) return end
+	local player = damageStruct.to
+	local nature = damageStruct.nature or sgs.DamageStruct_Normal
+	local damage = damageStruct.damage or 1
+	local source = damageStruct.from
 
 	if source:hasSkill("ikxuwu") then return true end
 
@@ -3834,8 +3846,16 @@ function SmartAI:damageIsEffective(player, nature, source)
 	if player:getMark("@fog") > 0 and nature ~= sgs.DamageStruct_Thunder then return false end
 	if player:hasSkill("shixin") and nature == sgs.DamageStruct_Fire then return false end
 	local equipsToDec = source:objectName() == self.player:objectName() and self.equipsToDec or 0
-	if player:hasSkill("mingshi") and source:getEquips():length() - equipsToDec <= math.min(2, player:getEquips():length()) then return false end
+	if player:hasSkill("mingshi") and source:getEquips():length() - equipsToDec <= math.min(2, player:getEquips():length()) then
+		damage = damage - 1
+		if damage < 1 then return false end
+	end
 	if player:hasSkill("thzuibu") and self:isFriend(player, source) then
+		damage = damage - 1
+		if damage < 1 then return false end
+	end
+	if to:hasArmorEffect("breastplate") and to:getArmor() and to:canDiscard(to, to:getArmor():getId())
+			and (damage > to:getHp() or (to:getHp() > 0 and damage == to:getHp())) then
 		return false
 	end
 	if player:hasSkill("yuce") and not player:isKongcheng() and player:getHp() > 1 then
