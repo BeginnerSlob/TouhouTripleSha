@@ -2,7 +2,7 @@ function SmartAI:useCardThunderSlash(...)
 	self:useCardSlash(...)
 end
 
-sgs.ai_card_intention.ThunderSlash = sgs.ai_card_intention.Slash + 0.01
+sgs.ai_card_intention.ThunderSlash = sgs.ai_card_intention.Slash
 
 sgs.ai_use_value.ThunderSlash = 4.55
 sgs.ai_keep_value.ThunderSlash = 3.63
@@ -12,7 +12,7 @@ function SmartAI:useCardFireSlash(...)
 	self:useCardSlash(...)
 end
 
-sgs.ai_card_intention.FireSlash = sgs.ai_card_intention.Slash + 0.01
+sgs.ai_card_intention.FireSlash = sgs.ai_card_intention.Slash
 
 sgs.ai_use_value.FireSlash = 4.6
 sgs.ai_keep_value.FireSlash = 3.66
