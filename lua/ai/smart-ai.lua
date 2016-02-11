@@ -2194,17 +2194,23 @@ function SmartAI:askForDiscard(reason, discard_num, min_num, optional, include_e
 	return to_discard
 end
 
-function SmartAI:askForNullification(trick, from, to, positive)
+function SmartAI:askForNullification(trick, from, to, positive, isHeg)
 	local null_card
 	null_card = self:getCardId("Nullification")
 	local null_num = self:getCardsNum("Nullification")
 	local menghuo = self.room:findPlayerBySkillName("huoshou")
 
-	if null_card then null_card = sgs.Card_Parse(null_card) else return nil end
-	if self.player:isLocked(null_card) then return nil end
+	if null_card then
+		null_card = sgs.Card_Parse(null_card)
+	elseif isHeg then
+		null_card = sgs.cloneCard("nullification")
+	else
+		return nil
+	end
+	if self.player:isLocked(null_card) and not isHeg then return nil end
 	if (from and from:isDead()) or (to and to:isDead()) then return nil end
-	if self:needBear() then return nil end
-	if self.player:hasSkill("wumou") then
+	if self:needBear() and not isHeg then return nil end
+	if self.player:hasSkill("wumou") and not isHeg then
 		if self.player:getMark("@wrath") == 0 and (self:isWeak() or self.player:isLord()) then return nil end
 		if to:objectName() == self.player:objectName() and not self:isWeak() and (trick:isKindOf("AOE") or trick:isKindOf("Duel") or trick:isKindOf("FireAttack")) then
 			return
@@ -5230,10 +5236,11 @@ function SmartAI:useEquipCard(card, use)
 			use.card = scroll
 			return
 		end
-		if card:isKindOf("WoodenOx") then
+		if card:isKindOf("WoodenOx") or card:isKindOf("Jade") then
 			local zhanghe = self.room:findPlayerBySkillName("qiaobian")
 			local wuguotai = self.room:findPlayerBySkillName("ganlu")
 			if (zhanghe and self:isEnemy(zhanghe)) or (wuguotai and self:isEnemy(wuguotai)) then return end
+			if self.player:getTreasure() then return end
 			use.card = card
 		end
 		return
