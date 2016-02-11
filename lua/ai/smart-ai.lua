@@ -2246,6 +2246,10 @@ function SmartAI:askForNullification(trick, from, to, positive)
 			if self:isEnemy(from) then return null_card end
 			if self:isFriend(to) and to:isNude() then return nil end
 		end
+		if ("snatch|dismantlement"):match(trick:objectName()) and to:containsTrick("purple_song") then
+			if self:isFriend(from) then return null_card end
+			if self:isEnemy(to) and to:isNude() then return nil end
+		end
 		if trick:isKindOf("Duel") and (trick:getSkillName() == "lijian" or trick:getSkillName() == "liyu") and (self:isFriend(to) or (self:isFriend(from) and to:hasSkill("wuhun"))) then
 			if to:getHp() == 1 and sgs.ai_role[to:objectName()] == "rebel" and from and sgs.ai_role[from:objectName()] == "rebel" then return end
 			return null_card
@@ -2353,6 +2357,13 @@ function SmartAI:askForNullification(trick, from, to, positive)
 		end
 		if from then
 			if self:isEnemy(to) then
+				if trick:isKindOf("PurpleSong") and not to:isSkipped(sgs.Player_Discard) then
+					if to:getPile("incantation"):length() > 0 then
+						local card = sgs.Sanguosha:getCard(to:getPile("incantation"):first())
+						if card:getSuit() == sgs.Card_Diamond and not to:hasSkill("ikmohua") then return nil end
+					end
+					return null_card
+				end
 				if trick:isKindOf("GodSalvation") and self:isWeak(to) then
 					return null_card
 				end
@@ -4933,7 +4944,7 @@ end
 
 function SmartAI:useTrickCard(card, use)
 	if not card then global_room:writeToConsole(debug.traceback()) return end
-	if self:needBear() and not ("amazing_grace|ex_nihilo|snatch|iron_chain|collateral"):match(card:objectName()) then return end
+	if self:needBear() and not ("amazing_grace|ex_nihilo|snatch|iron_chain|collateral|lure_tiger|known_both"):match(card:objectName()) then return end
 	if self.player:hasSkill("wumou") and self.player:getMark("@wrath") < 7 then
 		if not (card:isKindOf("AOE") or card:isKindOf("DelayedTrick") or card:isKindOf("IronChain") or card:isKindOf("Drowning"))
 			and not (card:isKindOf("Duel") and self.player:getMark("@wrath") > 0) then return end
