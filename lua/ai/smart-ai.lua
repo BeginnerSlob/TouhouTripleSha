@@ -5159,6 +5159,7 @@ function SmartAI:useEquipCard(card, use)
 			or (self.player:hasSkill("guose") and not self.player:hasUsed("GuoseCard") and (card:getSuit() == sgs.Card_Diamond or same:getSuit() == sgs.Card_Diamond))
 			or (self.player:hasSkill("jijiu") and (card:isRed() or same:isRed()))
 			or (self.player:hasSkill("guidao") and same:isBlack() and card:isRed())
+			or same:isKindOf("Treasure")
 			or isfriend_zzzh then return end
 	end
 	local canUseSlash = self:getCardId("Slash") and self:slashIsAvailable(self.player)
@@ -5202,12 +5203,18 @@ function SmartAI:useEquipCard(card, use)
 		if self:evaluateArmor(card) > self:evaluateArmor() or (isfriend_zzzh == false and self:getOverflow() > 0) then use.card = card end
 		return
 	elseif card:isKindOf("Treasure") then
+		local scroll = self:getCard("Scroll")
+		if scroll and (not card:isKindOf("Scroll") or not self.player:getTreasure()) then
+			use.card = scroll
+			return
+		end
 		if card:isKindOf("WoodenOx") then
 			local zhanghe = self.room:findPlayerBySkillName("qiaobian")
 			local wuguotai = self.room:findPlayerBySkillName("ganlu")
 			if (zhanghe and self:isEnemy(zhanghe)) or (wuguotai and self:isEnemy(wuguotai)) then return end
 			use.card = card
 		end
+		return
 	elseif self:needBear() then return
 	elseif card:isKindOf("OffensiveHorse") then
 		if (self.player:hasSkill("nosrende") or (self.player:hasSkill("rende") and not self.player:hasUsed("RendeCard"))) then
