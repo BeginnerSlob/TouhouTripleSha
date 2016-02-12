@@ -623,47 +623,54 @@ sgs.ai_skill_invoke.thxiangang = function(self, data)
 	return not self:isGoodChainTarget(self.player, damage.from, damage.nature, damage.damage, damage.card)
 end
 
---【断罪】ai
+--断罪：出牌阶段限一次，你可以展示一名其他角色的一张手牌，若为【杀】，视为你对该角色使用一张【碎月绮斗】，此【碎月绮斗】不能被【三粒天滴】响应；若为【闪】或【桃】，视为你对该角色使用一张无视距离且不计入使用限制的【杀】。
 local thduanzui_skill = {}
 thduanzui_skill.name = "thduanzui"
 table.insert(sgs.ai_skills, thduanzui_skill)
 thduanzui_skill.getTurnUseCard = function(self)
-	if self.player:hasUsed("ThDuanzuiCard") then return nil end
-	if #self.enemies ==0 then return nil end
+	if self.player:hasUsed("ThDuanzuiCard") then return end
 	return sgs.Card_Parse("@ThDuanzuiCard=.")
 end
 
 sgs.ai_skill_use_func.ThDuanzuiCard = function(card, use, self)
-	local slashCount=getCardsNum("Slash", self.player, self.player)
-	local duel_targets={}
-	local slash_targets={}
-	for _,p in pairs(self.enemies) do
-		local num=p:getHandcardNum()
-		if getKnownCard(p, self.player, "Slash",  false, "h")>= num/2 then
-			table.insert(duel_targets,p)
+	local slashCount = self:getCardsNum("Slash")
+	local duel_targets = {}
+	local slash_targets = {}
+	for _, p in pairs(self.enemies) do
+		local num = p:getHandcardNum()
+		if num == 0 then
+			continue
 		end
-		if getKnownCard(p, self.player, "Jink",  false, "h")>= num/2 then
-			table.insert(slash_targets,p)
+		if getKnownCard(p, self.player, "Slash", false, "h") >= num/2 then
+			table.insert(duel_targets, p)
+		end
+		if getKnownCard(p, self.player, "Jink", false, "h") + getKnownCard(p, self.player, "Peach", false, "h") >= num/2 then
+			table.insert(slash_targets, p)
 		end
 	end
 	local target
-	if #duel_targets>0 then
+	if #duel_targets > 0 then
 		self:sort(duel_targets, "handcard")
 		for _, p in pairs(duel_targets) do
-			if slashCount >= getCardsNum("Slash", p, self.player) and not p:isKongcheng() then
-				target =p
-				break
+			if slashCount >= getCardsNum("Slash", p, self.player) then
+				use.card = card
+				if use.to then
+					use.to:append(p)
+				end
+				return
 			end
 		end
 	end
-	if not target and #slash_targets>0 then
+	if not target and #slash_targets > 0 then
 		self:sort(slash_targets, "defenseSlash")
 		for _, p in pairs(slash_targets) do
-			local slash = sgs.Sanguosha:cloneCard("slash")
-			if not self:slashProhibit(slash,p,self.player) and not p:isKongcheng() then
-				--sgs.isGoodTarget(p, self.enemies, self)
-				target = p
-				break
+			local slash = sgs.cloneCard("slash")
+			if not self:slashProhibit(slash, p, self.player) then
+				use.card = card
+				if use.to then
+					use.to:append(p)
+				end
+				return
 			end
 		end
 	end
@@ -671,17 +678,18 @@ sgs.ai_skill_use_func.ThDuanzuiCard = function(card, use, self)
 		self:sort(self.enemies, "handcard")
 		for _, p in pairs(self.enemies) do
 			if not p:isKongcheng() then
-				target = self.enemies[1]
+				use.card = card
+				if use.to then
+					use.to:append(p)
+				end
+				return
 			end
 		end
 	end
-	use.card = card
-	if use.to then
-		use.to:append(target)
-		if use.to:length() > 0 then return end
-	end
 end
+
 sgs.ai_card_intention.ThDuanzuiCard = 50
+sgs.ai_use_priority.ThDuanzuiCard = sgs.ai_use_priority.Slash + 0.2
 
 --【芽吹】ai
 sgs.ai_skill_use["@@thyachui"] = function(self, prompt)
