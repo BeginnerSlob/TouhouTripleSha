@@ -553,6 +553,76 @@ sgs.ai_skill_invoke.thanyun = function(self, data)
 	return not self.player:isKongcheng()
 end
 
+--劝善：出牌阶段限一次，你可以令一名有手牌的其他角色将至少一张手牌交给另一名除你以外的角色，若这些牌均为同一类别，你摸一张牌。
+local thquanshan_skill = {}
+thquanshan_skill.name = "thquanshan"
+table.insert(sgs.ai_skills, thquanshan_skill)
+thquanshan_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThQuanshanCard") then return end
+	if self.player:aliveCount() < 3 then return end
+	return sgs.Card_Parse("@ThQuanshanCard=.")
+end
+
+sgs.ai_skill_use_func.ThQuanshanCard = function(card, use, self)
+	if #self.enemies == 1 and not self.enemies[1]:isKongcheng() then
+		use.card = card
+		if use.to then
+			use.to:append(self.enemies[1])
+		end
+		return
+	end
+	if #self.friends_noself == 1 then
+		return
+	end
+	self:sort(self.friends_noself, "handcard")
+	self.friends_noself = sgs.reverse(self.friends_noself)
+	for _, p in ipairs(self.friends_noself) do
+		if not p:isKongcheng() then
+			use.card = card
+			if use.to then
+				use.to:append(p)
+			end
+			return
+		end
+	end
+end
+
+sgs.ai_skill_use["@@thquanshangive!"] = function(self, prompt)
+	local cards = self.player:getHandcards()
+	cards = sgs.QList2Table(cards)
+	local f_table = {}
+	for _, p in ipairs(self.friends_noself) do
+		if p:hasFlag("thquanshan") then
+			continue
+		end
+		table.insert(f_table, p)
+	end
+	if #f_table == 0 then
+		f_table = nil
+	end
+	local card, friend = self:getCardNeedPlayer(cards, f_table)
+	if card and friend then
+		return "@ThQuanshanGiveCard=" .. card:getEffectiveId() .. "->" .. friend:objectName()
+	end
+	self:sortByKeepValue(cards)
+	f_table = {}
+	for _, p in ipairs(sgs.QList2Table(self.room:getOtherPlayers(self.player))) do
+		if p:hasFlag("thquanshan") then
+			continue
+		end
+		table.insert(f_table, p)
+	end
+	self:sort(f_table, "defense")
+	f_table = sgs.reverse(f_table)
+	return "@ThQuanshanGiveCard=" .. cards[1]:getEffectiveId() .. "->" .. f_table[1]:objectName()
+end
+
+--仙罡：每当你受到伤害时，可以进行一次判定，若结果为梅花，防止此伤害。
+sgs.ai_skill_invoke.thxiangang = function(self, data)
+	local damage = data:toDamage()
+	return not self:isGoodChainTarget(self.player, damage.from, damage.nature, damage.damage, damage.card)
+end
+
 --【断罪】ai
 local thduanzui_skill = {}
 thduanzui_skill.name = "thduanzui"

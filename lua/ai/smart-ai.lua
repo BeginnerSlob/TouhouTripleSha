@@ -2917,7 +2917,7 @@ function SmartAI:getCardNeedPlayer(cards, friends_table, handcard)
 			or (player:isLord() and self:isWeak(player) and self:getEnemyNumBySeat(self.player, player) >= 1) then
 			exclude = false
 		end
-		if self:objectiveLevel(player) <= -2 and not (handcard and hasManjuanEffect(player)) and not exclude then
+		if player:isAlive() and self:objectiveLevel(player) <= -2 and not (handcard and hasManjuanEffect(player)) and not exclude then
 			table.insert(friends, player)
 		end
 	end

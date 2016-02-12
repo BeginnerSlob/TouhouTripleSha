@@ -2010,7 +2010,7 @@ sgs.ai_skill_playerchosen.thxinhua = function(self, targets)
 	local from = self.player:getTag("ThXinhuaLord"):toPlayer()
 	targets = sgs.QList2Table(targets)
 	self:sort(targets, "handcard")
-	sgs.reverse(targets)
+	targets = sgs.reverse(targets)
 	for _, t in ipairs(targets) do
 		if getKnownCard(t, from, "red|black") == t:getHandcardNum() then
 			continue
