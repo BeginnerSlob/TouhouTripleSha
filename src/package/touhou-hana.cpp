@@ -47,15 +47,12 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
     {
-        ask_who->tag["ThHuajiTarget"] = QVariant::fromValue(player);
-        if (room->askForCard(ask_who, ".|black", "@thhuajiuse", QVariant::fromValue(player), objectName())) {
-            ask_who->tag.remove("ThHuajiTarget");
+        if (room->askForCard(ask_who, ".|black", "@thhuajiuse:" + player->objectName(), data, objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
-        ask_who->tag.remove("ThHuajiTarget");
         return false;
     }
 
@@ -283,8 +280,8 @@ public:
         return QStringList(objectName());
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        if (player->askForSkillInvoke(objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        if (player->askForSkillInvoke(objectName(), data)) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
