@@ -47,7 +47,7 @@ sgs.ai_skill_invoke.thlingya = true
 sgs.ai_skill_choice.thlingya = function(self, choices, data)	
 	local yukari = self.player:getTag("ThLingyaSource"):toPlayer()
 	if yukari and choices:match("discard") then 
-		if self:isFriend(yukari) and  self:hasSkills(sgs.lose_equip_skill) then
+		if self:isFriend(yukari) and self.player:hasSkills(sgs.lose_equip_skill) then
 			return "discard"
 		elseif self:isEnemy(yukari) then
 			local LetDiscard = false

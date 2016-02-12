@@ -618,6 +618,9 @@ function SmartAI:adjustUsePriority(card, v)
 		if card:isKindOf("NatureSlash") then
 			if self.slashAvail == 1 then
 				v = v + 0.05
+				if self.player:hasSkill("thheyu") then
+					v = v + 0.1
+				end
 				if card:isKindOf("FireSlash") then
 					for _, enemy in ipairs(self.enemies) do
 						if enemy:hasArmorEffect("vine") or enemy:getMark("@liefeng") > 0 then v = v + 0.07 break end
@@ -625,6 +628,9 @@ function SmartAI:adjustUsePriority(card, v)
 				elseif card:isKindOf("ThunderSlash") then
 					for _, enemy in ipairs(self.enemies) do
 						if enemy:getMark("@fog") > 0 then v = v + 0.06 break end
+					end
+					if self.player:hasSkill("thtingwu") then
+						v = v + 0.02
 					end
 				end
 			else
@@ -3010,7 +3016,7 @@ function SmartAI:getCardNeedPlayer(cards, friends_table, handcard)
 			for _, enemy in ipairs(self.enemies) do
 				if enemy:hasWeapon("guding_blade")
 					and (enemy:canSlash(self.player)
-					or self.player:hasSkills("shensu|jiangchi|tianyi|wushen|nosgongqi")) then
+					or self.player:hasSkills("shensu|jiangchi|tianyi|wushen|thyuchang|nosgongqi")) then
 					return
 				end
 				if enemy:canSlash(self.player) and enemy:hasSkill("nosqianxi") and enemy:distanceTo(self.player) == 1 then return end
@@ -3026,7 +3032,7 @@ function SmartAI:getCardNeedPlayer(cards, friends_table, handcard)
 			for _, enemy in ipairs(self.enemies) do
 				if enemy:hasWeapon("guding_blade")
 					and (enemy:canSlash(self.player)
-					or self.player:hasSkills("shensu|jiangchi|tianyi|wushen|nosgongqi")) then
+					or self.player:hasSkills("shensu|jiangchi|tianyi|wushen|thyuchang|nosgongqi")) then
 					return
 				end
 				if enemy:canSlash(self.player) and enemy:hasSkill("nosqianxi") and enemy:distanceTo(self.player) == 1 then return end

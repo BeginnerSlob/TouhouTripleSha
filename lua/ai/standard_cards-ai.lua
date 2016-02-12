@@ -3877,7 +3877,7 @@ sgs.ai_view_as.jade = function(card, player, card_place)
 end
 
 sgs.ai_skill_use["@@jade"] = function(self, prompt)
-	local card_str = sgs.GetProperty(self.player, "jade_trick"):toString()
+	local card_str = sgs.GetProperty(self.player, "jade_trick")
 	local trick = sgs.Card_Parse(card_str)
 	local target_table = {}
 	if trick then
