@@ -484,6 +484,75 @@ end
 
 sgs.ai_card_intention.ThXihuaCard = 20
 
+--迷蒙：你可以将你最后一张手牌当一张基本牌、【碎月绮斗】、【灼狱业焰】、【百鬼夜行】、【断灵御剑】、【赤雾锁魂】、【心网密葬】或【三粒天滴】使用或打出。
+local thmimeng_skill = {}
+thmimeng_skill.name = "thmimeng"
+table.insert(sgs.ai_skills, thmimeng_skill)
+thmimeng_skill.getTurnUseCard = function(self)
+	if self.player:getHandcardNum() ~= 1 then
+		return nil
+	end
+	local card = self.player:getHandcards():first()
+	if card:isKindOf("Peach") then
+		for _, p in pairs(self.friends) do
+			if self:isWeak(p) then
+				return nil
+			end
+		end
+	end
+	local choices = {}
+
+	local thmimeng = "slash|peach|duel|savage_assault|archery_attack|collateral|iron_chain|dismantlement"
+	local thmimengs = thmimeng:split("|")
+	for i = 1, #thmimengs do
+		local forbiden = thmimengs[i]
+		forbid = sgs.cloneCard(forbiden, card:getSuit(), card:getNumber())
+		if not self.player:isCardLimited(forbid, sgs.Card_MethodUse, true) and forbid:isAvailable(self.player) then
+			table.insert(choices, thmimengs[i])
+		end
+	end
+	local suit = card:getSuitString()
+    local number = card:getNumberString()
+    local card_id = card:getEffectiveId()
+
+	local uses = {}
+	for _, str in ipairs(choices) do
+		table.insert(uses, sgs.cloneCard(str, card:getSuit(), card:getNumber()))
+	end
+	if #uses > 0 then
+		self:sortByUseValue(uses, true)
+		return sgs.Card_Parse((uses[1]:objectName() .. ":thmimeng[%s:%s]=%d"):format(suit, number, card_id))
+	end
+end
+
+function sgs.ai_cardsview_valuable.thmimeng(self, class_name, player)
+	if player:getHandcardNum() ~= 1 then
+		return nil
+	end
+	local acard = player:getCards("h"):first()
+	local suit = acard:getSuitString()
+	local number = acard:getNumberString()
+    local card_id = acard:getEffectiveId()
+
+	if class_name == "Peach" then
+		return ("peach:thmimeng[%s:%s]=%d"):format(suit, number, card_id)
+	end
+	if class_name == "Jink" then
+		return ("jink:thmimeng[%s:%s]=%d"):format(suit, number, card_id)
+	end
+	if class_name == "Slash" then
+		return ("slash:thmimeng[%s:%s]=%d"):format(suit, number, card_id)
+	end
+	if class_name == "Nullification" then
+		return ("nullification:thmimeng[%s:%s]=%d"):format(suit, number, card_id)
+	end
+end
+
+--暗云：摸牌阶段开始时，你可以放弃摸牌，若如此做，此回合的结束阶段开始时，你摸两张牌。
+sgs.ai_skill_invoke.thanyun = function(self, data)
+	return not self.player:isKongcheng()
+end
+
 --【断罪】ai
 local thduanzui_skill = {}
 thduanzui_skill.name = "thduanzui"
@@ -543,7 +612,6 @@ sgs.ai_skill_use_func.ThDuanzuiCard = function(card, use, self)
 	end
 end
 sgs.ai_card_intention.ThDuanzuiCard = 50
-
 
 --【芽吹】ai
 sgs.ai_skill_use["@@thyachui"] = function(self, prompt)
