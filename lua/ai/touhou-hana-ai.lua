@@ -96,6 +96,9 @@ sgs.ai_skill_playerchosen.thmopao = function(self, targets)
 	self:sort(targetlist, "hp")
 	local victims = {}
 	for _, target in ipairs(targetlist) do
+		if self.isFriend(target) and self:isGoodChainTarget(target, self.player, sgs.DamageStruct_Fire, 1) then
+			return target
+		end
 		if self:isEnemy(target) and self:damageIsEffective(target, sgs.DamageStruct_Fire, self.player) then
 			table.insert(victims, target)
 		end
@@ -106,16 +109,22 @@ sgs.ai_skill_playerchosen.thmopao = function(self, targets)
 				return target
 			end
 		end
+		return nil
 	end
 	for _, p in ipairs(victims) do
 		if p:isKongcheng() and self:needKongcheng(p, true) then
 			return p
 		end
-		if p:hasArmorEffect("vine") or p:getMark("@liefeng") > 0 then
+		if self:isGoodChainTarget(p, self.player, sgs.DamageStruct_Fire, 1) then
 			return p
 		end
 	end
 	return victims[1]
+end
+
+function sgs.ai_cardneed.thmopao(to, card, self)
+	return (isCard("Jink", card, to) and getKnownCard(to, self, "Jink", true) == 0)
+			or (card:isKindOf("EightDiagram") and not (self:hasEightDiagramEffect(to) or getKnownCard(to, self, "EightDiagram", false) > 0))
 end
 
 --【彼岸】ai

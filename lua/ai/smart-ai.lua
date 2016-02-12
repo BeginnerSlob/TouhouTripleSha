@@ -243,6 +243,7 @@ function sgs.getDefense(player)
 	if hasEightDiagram then
 		defense = defense + 1.3
 		if player:hasSkill("tiandu") then defense = defense + 0.6 end
+		if player:hasSkill("thmopao") then defense = defense + 0.4 end
 		if player:hasSkill("leiji") then defense = defense + 0.4 end
 		if player:hasSkill("nosleiji") then defense = defense + 0.4 end
 		if player:hasSkill("noszhenlie") then defense = defense + 0.2 end

@@ -47,7 +47,7 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
         ask_who->tag["ThHuajiTarget"] = QVariant::fromValue(player);
         if (room->askForCard(ask_who, ".|black", "@thhuajiuse", QVariant::fromValue(player), objectName())) {

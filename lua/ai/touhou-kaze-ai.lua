@@ -1915,7 +1915,7 @@ sgs.ai_skill_use_func.ThSangzhiCard = function(card, use, self)
 	self:useBasicCard(slash, dummy_use)
 	if (dummy_use.card and dummy_use.to:length() > 0) then
 		for _, p in sgs.qlist(dummy_use.to) do
-			if self.player:isFriend(p) then continue end
+			if self:isFriend(p) then continue end
 			local skill_table = sgs.masochism_skill:split("|")
 			for _, skill_name in ipairs(skill_table) do
 				if (p:hasSkill(skill_name)) then
