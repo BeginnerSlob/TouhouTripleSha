@@ -87,6 +87,16 @@ sgs.ai_card_intention.ThJiyiCard = function(self, card, from, to)
 	end
 end
 
+--裔祀：君主技，觉醒技，准备阶段开始时，若你的体力值为1，你须回复1点体力，增加1点体力上限，并获得技能“华祗”。
+sgs.ai_need_damaged.thyisi = function(self, attacker, player)
+	if player:hasLordSkill("thyisi") and player:getMark("@yisi") == 0 and not player:hasSkill("chanyuan")
+		and self:getEnemyNumBySeat(self.room:getCurrent(), player, player, true) < player:getHp()
+		and (player:getHp() > 2 or (player:getHp() == 2 and player:faceUp())) then
+		return true
+	end
+	return false
+end
+
 --华袛：君主技，当你于回合外失去一次手牌后，其他风势力角色可以各交给你一张手牌。
 sgs.ai_skill_cardask["@thhuadi"] = function(self, data, pattern, target)
 	if self:isFriend(target) and not self:isWeak(self.player) and not self:isKongcheng() then

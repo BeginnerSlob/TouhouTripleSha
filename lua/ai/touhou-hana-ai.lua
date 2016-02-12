@@ -43,6 +43,81 @@ sgs.ai_choicemade_filter.cardResponded["@thhuajiuse"] = function(self, player, p
 	end
 end
 
+--借物：出牌阶段限一次，你可获得一名你攻击范围内的角色的一张牌，视为该角色对你使用一张无视距离的【杀】，且此【杀】无视你的防具。
+local thjiewu_skill = {}
+thjiewu_skill.name = "thjiewu"
+table.insert(sgs.ai_skills, thjiewu_skill)
+thjiewu_skill.getTurnUseCard = function(self)
+	if not self.player:hasUsed("ThJiewuCard") then
+		return sgs.Card_Parse("@ThJiewuCard=.")
+	end
+end
+
+sgs.ai_skill_use_func.ThJiewuCard = function(card, use, self)
+	sgs.ai_use_priority.ThJiewuCard = 4
+	local targets = {}
+	for _, enemy in ipairs(self.enemies) do
+		if self.player:inMyAttackRange(enemy)
+				and (self.player:getHp() > 2
+					or self:getCardsNum("Jink") > 0
+					or self:findLeijiTarget(self.player, 50, enemy)
+					or not enemy:canSlash(self.player, false))
+				and not enemy:isNude() then
+			table.insert(targets, enemy)
+		end
+	end
+
+	if #targets == 0 then return end
+
+	sgs.ai_use_priority.ThJiewuCard = 8
+	use.card = card
+	if use.to then
+		self:sort(targets, "defenseSlash")
+		use.to:append(targets[1])
+	end
+end
+
+sgs.ai_card_intention.ThJiewuCard = 80
+sgs.ai_use_priority.ThJiewuCard = 4
+
+--根性：觉醒技，准备阶段开始时，若你的体力值为1，你须回复1点体力或摸两张牌，然后减少1点体力上限并获得技能“魔炮”。
+sgs.ai_need_damaged.thgenxing = function(self, attacker, player)
+	if player:hasSkill("thgenxing") and player:getMark("@genxing") == 0 and not player:hasSkill("chanyuan")
+		and self:getEnemyNumBySeat(self.room:getCurrent(), player, player, true) < player:getHp()
+		and (player:getHp() > 2 or (player:getHp() == 2 and player:faceUp())) then
+		return true
+	end
+	return false
+end
+
+--魔炮：每当你使用或打出一张【闪】时，你可以令一名其他角色摸一张牌，然后你对其造成1点火焰伤害。
+sgs.ai_skill_playerchosen.thmopao = function(self, targets)
+	local targetlist = sgs.QList2Table(targets)
+	self:sort(targetlist, "hp")
+	local victims = {}
+	for _, target in ipairs(targetlist) do
+		if self:isEnemy(target) and self:damageIsEffective(target, sgs.DamageStruct_Fire, self.player) then
+			table.insert(victims, target)
+		end
+	end
+	if #victims == 0 then
+		for _, target in ipairs(targetlist) do
+			if self:isFriend(target) and not self:damageIsEffective(target, sgs.DamageStruct_Fire, self.player) then
+				return target
+			end
+		end
+	end
+	for _, p in ipairs(victims) do
+		if p:isKongcheng() and self:needKongcheng(p, true) then
+			return p
+		end
+		if p:hasArmorEffect("vine") or p:getMark("@liefeng") > 0 then
+			return p
+		end
+	end
+	return victims[1]
+end
+
 --【彼岸】ai
 sgs.ai_skill_cardask["@thbian"] = function(self, data)
 	local dying = self.player:getRoom():getCurrentDyingPlayer()
