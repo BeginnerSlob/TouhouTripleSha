@@ -271,42 +271,64 @@ end
 
 sgs.ai_card_intention.ThWujianCard = 30
 
---【血兰】ai
-sgs.ai_skill_cardask["@thxuelan"] = function(self, data)
-	local peach_effect = data:toCardEffect()
-	if not self:isEnemy(peach_effect.to) then return "." end
-	local reds={}
-	for _,c in sgs.qlist(self.player:getCards("he")) do
-		if c:isRed()  then
+--血兰：你可以弃置一张红色牌并抵消一张【桃】对一名角色的效果，然后若该角色的体力上限不大于其游戏开始时的体力上限，则该角色须增加1点体力上限。
+sgs.ai_skill_cardask["@thxuelan"] = function(self, data, pattern, target)
+	if not self:isEnemy(target) then return "." end
+	local reds = {}
+	for _, c in sgs.qlist(self.player:getCards("he")) do
+		if c:isRed() then
 			table.insert(reds,c)
 		end
 	end
-	if #reds==0 then return "." end
+	if #reds == 0 then return "." end
 	self:sortByKeepValue(reds)
 	return "$" .. reds[1]:getId()
 end
+
 sgs.ai_cardneed.thxuelan = function(to, card, self)
 	return card:isRed()
 end
+
 sgs.thxuelan_suit_value = {
 	heart = 4.8,
 	diamond = 4.6
 }
---血兰的仇恨ai需要技能代码提供Target
---sgs.ai_choicemade_filter.cardResponded["@thxuelan"] = function(self, player, promptlist)
 
---【心妄】ai
-sgs.ai_skill_invoke.thxinwang = true
+sgs.ai_choicemade_filter.cardResponded["@thxuelan"] = function(self, player, promptlist)
+	if promptlist[#promptlist] ~= "_nil_" then
+		local target = self.room:findPlayer(promptlist[#promptlist - 1])
+		if target then
+			sgs.updateIntention(player, target, 75)
+		end
+	end
+end
+
+--心妄：你的回合外，每当你使用、打出一张红桃牌时，或因弃置而失去一张红桃牌后，你可以摸一张牌或令一名其他角色回复1点体力。
 sgs.ai_skill_playerchosen.thxinwang = function(self, targets)
 	local arr1, arr2 = self:getWoundedFriend()
 	local target = nil
-	if #arr1 > 0 and (self:isWeak(arr1[1]) or self:getOverflow() >= 1) and arr1[1]:getHp() < getBestHp(arr1[1]) then target = arr1[1] end
-	if target then
-		return target
+	if #arr1 > 0 then
+		for i = 1, #arr1 do
+			if (self:isWeak(arr1[i]) or self:getOverflow() >= 1) and arr1[i]:getHp() < getBestHp(arr1[i]) and targets:contains(arr1[i]) then
+				target = arr1[i]
+				break
+			end
+		end
 	end
-	return nil
+	return target
 end
-sgs.ai_playerchosen_intention.thxinwang = -30	
+
+sgs.ai_playerchosen_intention.thxinwang = -40
+
+--绝毒：锁定技，杀死你的角色获得技能“崩坏”。
+function sgs.ai_slash_prohibit.thjuedu(self, from, to)
+	if from:hasSkill("ikxuwu") or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
+	if from:hasFlag("IkJieyouUsed") then return false end
+	if from:hasSkill("ikbenghuai") then return false end
+	if self:isFriend(to, from) and self:isWeak(to) then return true end
+	return self:isWeak(to) and from:getHp() > 2
+end
+
 --【霆舞】ai
 sgs.ai_skill_invoke.thtingwu = function(self,data)
 	local boom = false
