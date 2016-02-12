@@ -49,13 +49,13 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
     {
-        ask_Who->tag["ThHuajiTarget"] = QVariant::fromValue(player);
+        ask_who->tag["ThHuajiTarget"] = QVariant::fromValue(player);
         if (room->askForCard(ask_who, ".|black", "@thhuajiuse", QVariant::fromValue(player), objectName())) {
-            ask_Who->tag.remove("ThHuajiTarget");
+            ask_who->tag.remove("ThHuajiTarget");
             room->broadcastSkillInvoke(objectName());
             return true;
         }
-        ask_Who->tag.remove("ThHuajiTarget");
+        ask_who->tag.remove("ThHuajiTarget");
         return false;
     }
 
