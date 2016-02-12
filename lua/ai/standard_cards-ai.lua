@@ -3724,7 +3724,7 @@ sgs.ai_nullification.BurningCamps = function(self, card, from, to, positive, kee
 		if from:objectName() == self.player:objectName() then return false end
 		local chained = {}
 		local dangerous
-		if self:damageIsEffective(to, sgs.DamageStruct_Fire) and to:isChained() and not from:hasShownSkill("ikxuwu") then
+		if self:damageIsEffective(to, sgs.DamageStruct_Fire) and to:isChained() and not from:hasSkill("ikxuwu") then
 			for _, p in sgs.qlist(self.room:getOtherPlayers(to)) do
 				if not self:isGoodChainTarget(to, p, sgs.DamageStruct_Fire) and self:damageIsEffective(p, sgs.DamageStruct_Fire) and self:isFriend(p) then
 					table.insert(chained, p)
@@ -3751,7 +3751,7 @@ sgs.ai_nullification.BurningCamps = function(self, card, from, to, positive, kee
 		local dangerous
 		local enemies = {}
 		local good
-		if self:damageIsEffective(to, sgs.DamageStruct_Fire) and to:isChained() and not from:hasShownSkill("ikxuwu") then
+		if self:damageIsEffective(to, sgs.DamageStruct_Fire) and to:isChained() and not from:hasSkill("ikxuwu") then
 			for _, p in sgs.qlist(self.room:getOtherPlayers(to)) do
 				if not self:isGoodChainTarget(to, p, sgs.DamageStruct_Fire) and self:damageIsEffective(p, sgs.DamageStruct_Fire) and self:isFriend(p) then
 					table.insert(chained, p)
