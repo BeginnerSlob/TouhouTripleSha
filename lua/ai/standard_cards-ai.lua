@@ -3860,6 +3860,7 @@ sgs.ai_skill_choice.drowning = function(self, choices, data)
 	if self:isWeak(self.player) then
 		return string.find(choices, "discard") and "discard" or (string.find(choices, "throw") and "throw" or "damage")
 	end
+	return string.find(choices, "throw") and "throw" or "damage"
 end
 
 sgs.ai_choicemade_filter.cardChosen.drowning = sgs.ai_choicemade_filter.cardChosen.snatch
