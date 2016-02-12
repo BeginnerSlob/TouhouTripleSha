@@ -1225,8 +1225,6 @@ void ThQuanshanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *>
     ServerPlayer *target = targets.first();
     room->setPlayerFlag(source, "thquanshan");
     bool used = room->askForUseCard(target, "@@thquanshangive!", "@thquanshan", -1, MethodNone);
-    room->setPlayerFlag(source, "-thquanshan");
-
     if (!used) {
         QList<ServerPlayer *>beggars = room->getOtherPlayers(target);
         beggars.removeOne(source);
@@ -1244,6 +1242,7 @@ void ThQuanshanCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *>
         quanshan_card->use(room, target, targets);
         delete quanshan_card;
     }
+    room->setPlayerFlag(source, "-thquanshan");
 }
 
 class ThQuanshan: public ZeroCardViewAsSkill {
@@ -1267,8 +1266,8 @@ public:
         frequency = Frequent;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        if (player->askForSkillInvoke(objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        if (player->askForSkillInvoke(objectName(), data)) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
