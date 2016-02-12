@@ -329,142 +329,160 @@ function sgs.ai_slash_prohibit.thjuedu(self, from, to)
 	return self:isWeak(to) and from:getHp() > 2
 end
 
---【霆舞】ai
-sgs.ai_skill_invoke.thtingwu = function(self,data)
-	local boom = false
-	local down, up
-	for _,p in sgs.qlist(self.room:getOtherPlayers(self.player))do
-		if p:getMark("ThTingwuMedium") > 0 then
-			down = self.room:findPlayer(p:getNextAlive():objectName())
-			up = self.room:findPlayer(p:getLastAlive():objectName())
-			break
+--霆舞：出牌阶段限两次，每当你对一名人物牌竖置的其他角色造成雷电伤害，在伤害结算后，你可以进行一次判定，若结果不为红桃，你选择对该角色的上家或下家造成1点雷电伤害。
+sgs.thtingwu_target = nil
+
+sgs.ai_skill_invoke.thtingwu = function(self, data)
+	sgs.thtingwu_target = nil
+	local who = data:toDamage().to
+	local up = self.room:findPlayer(who:getLastAlive():objectName())
+	local down = self.room:findPlayer(who:getNextAlive():objectName())
+	local targets = { up, down }
+	self:sort(targets, "defense")
+	for _, p in ipairs(targets) do
+		if self:isGoodChainTarget(p, self.player, sgs.DamageStruct_Thunder, 1) then
+			sgs.thtingwu_target = p
+			return true
 		end
 	end
-	if down:isChained() or up:isChained() then
-		local cfriend,cenemy
-		for _, p in sgs.qlist(self.room:getAllPlayers()) do
-			if not p:isChained() then continue end
-			if self:isEnemy(p) and not (p:hasSkill("ikmuguang") and not p:isKongcheng()) then 
-				cenemy=cenemy+1 
-			elseif self:isFriend(p) then
-				if p:hasSkill("ikmuguang") and not p:isKongcheng()then
-					cfriend=cfriend+2
-				elseif p:hasSkill("thmingling") then
-					cfriend=cfriend-2
-				else
-					cfriend=cfriend+1
-				end
-			end
+	for _, p in ipairs(targets) do
+		if self:isEnemy(p) and self:damageIsEffective(p, sgs.DamageStruct_Thunder, self.player) then
+			sgs.thtingwu_target = p
+			return true
 		end
-		if cfriend < cenemy then boom = true end
 	end
-	local target
-	if boom then
-		if self:isFriend(up) and self:isFriend(down) then
-			if up:isChained() or (up:hasSkill("ikmuguang") and not up:isKongcheng() and up:isWounded()) then
-				target = up
-			elseif down:isChained() or(down:hasSkill("ikmuguang") and not down:isKongcheng() and down:isWounded()) then
-				target = down 
-			end
-		elseif self:isEnemy(up) and self:isEnemy(down) then 
-			if up:hasSkill("ikmuguang") and not up:isKongcheng() then
-				target = down
-			elseif down:hasSkill("ikmuguang") and not down:isKongcheng() then
-				target = up
-			else
-				if up:getHp()>down:getHp() then
-					if up:isChained() then
-						target = up
-					else
-						target = down
-					end
-				else
-					if down:isChained() then
-						target = down
-					else
-						target = up
-					end
-				end
-			end
-		elseif self:isEnemy(up) then
-			if up:hasSkill("ikmuguang") and not up:isKongcheng() then 
-				if down:isChained() then
-					target = down
-				else 
-					return false
-				end
-			else
-				target = up
-			end
-		elseif self:isEnemy(down) then
-			if down:hasSkill("ikmuguang") and not down:isKongcheng() then 
-				if up:isChained() then
-					target = up
-				else 
-					return false
-				end
-			else
-				target = down
-			end
+	for _, p in ipairs(targets) do
+		if not self:damageIsEffective(p, sgs.DamageStruct_Thunder, self.player) then
+			sgs.thtingwu_target = p
+			return true
 		end
-	else
-		if self:isFriend(up) and self:isFriend(down) then
-			if up:hasSkill("ikmuguang") and not up:isKongcheng() and up:isWounded() then
-				target = up
-			elseif down:hasSkill("ikmuguang") and not down:isKongcheng() and down:isWounded() then
-				target = down
-			end
-		end
-		if up:isChained() and down:isChained() then return false end
-		if self:isEnemy(up) and self:isEnemy(down) then 
-			if up:hasSkill("ikmuguang") and not up:isKongcheng() then
-				target = down
-			elseif down:hasSkill("ikmuguang") and not down:isKongcheng() then
-				target = up
-			else
-				if up:getHp()>down:getHp() then
-					if down:isChained() then
-						target = up
-					else
-						target = down
-					end
-				else
-					if up:isChained() then
-						target = down
-					else
-						target = up
-					end
-				end
-			end
-		elseif self:isEnemy(up) then
-			if up:hasSkill("ikmuguang") and not up:isKongcheng() then return false end
-			target = up
-		elseif self:isEnemy(down) then
-			if down:hasSkill("ikmuguang") and not down:isKongcheng() then return false end
-			target = down
-		end
-		if target:isChained() and self:isEnemy(target) then return false end
 	end
-	self.room:setPlayerMark(target, "thtingwu_target", 1)
-	return true
+	return false
 end
+
 sgs.ai_skill_playerchosen.thtingwu = function(self, targets)
-	local targetlist = sgs.QList2Table(targets)
-	for _, target in ipairs(targetlist) do
-		if target:getMark("thtingwu_target") > 0 then 
-			self.room:setPlayerMark(target, "thtingwu_target", 0)
-			return target
-		end
-	end
-	return nil
+	if sgs.thtingwu_target and targets:contains(sgs.thtingwu_target) then return sgs.thtingwu_target end
+	return targets:at(math.random(0, 1))
 end
---【羽裳】ai
-sgs.ai_cardneed.ThYuchang = function(to, card, self)
-	if not self:willSkipPlayPhase(to) and getCardsNum("Slash", to, self.player) <2 then
-		return card:isKindOf("Slash") and card:getSuit()==sgs.Card_Club
+
+sgs.ai_playerchosen_intention.thjilan = function(self, from, to)
+	if self:damageIsEffective(to, sgs.DamageStruct_Thunder, from) then
+		sgs.updateIntention(from, to, -50)
 	end
 end
 
+--羽裳：锁定技，你使用具雷电伤害的【杀】时无距离限制；你的梅花【杀】均视为具雷电伤害的【杀】。
+sgs.ai_cardneed.thyuchang = function(to, card, self)
+	if not self:willSkipPlayPhase(to) and getCardsNum("Slash", to, self.player) < 1 then
+		return card:isKindOf("Slash") and card:getSuit() == sgs.Card_Club
+	end
+end
+
+--戏画：出牌阶段限一次，你可以将一张手牌面朝下置于你的人物牌上，称为“戏”，视为对一名其他角色使用一张无视距离且不计入使用限制的【杀】或【碎月绮斗】。此【杀】或【碎月绮斗】即将造成伤害时，亮出“戏”，若不为【杀】，防止此伤害；否则你弃置其一张手牌。在结算后，将“戏”置入弃牌堆。
+local thxihua_skill = {}
+thxihua_skill.name = "thxihua"
+table.insert(sgs.ai_skills, thxihua_skill)
+thxihua_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThXihuaCard") then return end
+	if self.player:isKongcheng() then return end
+	return sgs.Card_Parse("@ThXihuaCard=.")
+end
+
+sgs.thxihua_choice = ""
+
+sgs.ai_skill_use_func.ThXihuaCard = function(card, use, self)
+	sgs.thxihua_choice = ""
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	self:sortByKeepValue(cards)
+	local not_slash, slash
+	for _, c in ipairs(cards) do
+		if c:isKindOf("Slash") then
+			slash = c
+			break
+		end
+		if not not_slash and not c:isKindOf("Slash") then
+			not_slash = c
+		end
+		if slash and not_slash then
+			break
+		end
+	end
+	if not (not_slash or slash) then use.card = nil end
+	if slash and self:getCardsNum("Slash") > self.slashAvail then
+		self:sort(self.enemies, "defense")
+		local duel = sgs.cloneCard("duel")
+		for _, p in ipairs(self.enemies) do
+			if self:hasTrickEffective(duel, p, self.player) and sgs.card_lack[p:objectName()]["Slash"] == 1 then
+				sgs.thxihua_choice = "duel"
+				use.card = sgs.Card_Parse("@ThXihuaCard=" .. slash:getEffectiveId())
+				if use.to then
+					use.to:append(p)
+				end
+				return
+			end
+		end
+		local aslash = sgs.cloneCard("slash")
+		for _, p in ipairs(self.enemies) do
+			if self.player:canSlash(p, aslash, false) and self:slashIsEffective(aslash, p) then
+				sgs.thxihua_choice = "slash"
+				use.card = sgs.Card_Parse("@ThXihuaCard=" .. slash:getEffectiveId())
+				if use.to then
+					use.to:append(p)
+				end
+				return
+			end
+		end
+	elseif slash then
+		self:sort(self.enemies, "defenseSlash")
+		local aslash = sgs.cloneCard("slash")
+		for _, p in ipairs(self.enemies) do
+			if self.player:canSlash(p, aslash, false) and self:slashIsEffective(aslash, p) then
+				sgs.thxihua_choice = "slash"
+				use.card = sgs.Card_Parse("@ThXihuaCard=" .. slash:getEffectiveId())
+				if use.to then
+					use.to:append(p)
+				end
+				return
+			end
+		end
+	elseif not_slash and self:getOverflow() > 0 then
+		self:sort(self.enemies, "handcard")
+		local aslash = sgs.cloneCard("slash")
+		for _, p in ipairs(self.enemies) do
+			if self.player:canSlash(p, aslash, false) and self:slashIsEffective(aslash, p) then
+				sgs.thxihua_choice = ""
+				use.card = sgs.Card_Parse("@ThXihuaCard=" .. not_slash:getEffectiveId())
+				if use.to then
+					use.to:append(p)
+				end
+				return
+			end
+		end
+	end
+	use.card = nil
+end
+
+sgs.ai_skill_choice.thxihua = function(self, choices, data)
+	if string.find(choices, sgs.thxihua_choice) then return sgs.thxihua_choice end
+	local target = data:toPlayer()
+	local duel = sgs.cloneCard("duel")
+	if self:hasTrickEffective(duel, target, self.player) and sgs.card_lack[target:objectName()]["Slash"] == 1 and string.find(choices, "duel") then
+		return "duel"
+	end
+	local aslash = sgs.cloneCard("slash")
+	if self.player:canSlash(target, aslash, false) and self:slashIsEffective(aslash, target) and sgs.card_lack[target:objectName()]["Jink"] == 1 and string.find(choices, "slash") then
+		return "slash"
+	end
+	if self:getCardsNum("Slash") - getCardsNum("Slash", target, self.player) > 2 and string.find(choices, "duel") then
+		return "duel"
+	end
+	if self.player:canSlash(target, aslash, false) and self:slashIsEffective(aslash, target) and getCardsNum("Jink", target, self.player) < 2 and string.find(choices, "slash") then
+		return "slash"
+	end
+	return math.random(1, 3) == 1 and string.find(choices, "slash") and "slash" or (string.find(choices, "duel") and "duel" or "slash")
+end
+
+sgs.ai_card_intention.ThXihuaCard = 20
 
 --【断罪】ai
 local thduanzui_skill = {}

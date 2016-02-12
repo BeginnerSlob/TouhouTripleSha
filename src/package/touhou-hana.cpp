@@ -580,15 +580,12 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const
     {
-        room->setPlayerMark(player, "ThTingwuMedium", 1); // for AI
-        if (ask_who->askForSkillInvoke(objectName())) {
+        if (ask_who->askForSkillInvoke(objectName(), data)) {
             room->broadcastSkillInvoke(objectName());
-            room->setPlayerMark(player, "ThTingwuMedium", 0);
             return true;
         }
-        room->setPlayerMark(player, "ThTingwuMedium", 0);
         return false;
     }
 
@@ -684,7 +681,7 @@ void ThXihuaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
         choices << "duel";
 
     if (!choices.isEmpty()) {
-        QString choice = room->askForChoice(source, "thxihua", choices.join("+"));
+        QString choice = room->askForChoice(source, "thxihua", choices.join("+"), QVariant::fromValue(target));
         if (choice == "slash") {
             CardUseStruct use;
             use.from = source;
