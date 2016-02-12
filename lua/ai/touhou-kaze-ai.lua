@@ -1,4 +1,6 @@
 -- 祉迹：弃牌阶段结束时，若你于此阶段弃置了两张或更多的手牌，你可以回复1点体力或摸两张牌。
+sgs.ai_skill_invoke.thzhiji = true
+
 sgs.ai_skill_choice.thzhiji = function(self, choices, data)
 	if (self:isWeak() or self:needKongcheng(self.player, true)) and string.find(choices, "recover") then
 		return "recover"
@@ -1202,11 +1204,20 @@ end
 sgs.ai_choicemade_filter.skillInvoke.thwangqin = function(self, player, promptlist)
 	if promptlist[#promptlist] == "yes" then
 		local target = findPlayerByObjectName(self.room, promptlist[#promptlist - 1])
-		if target  then
+		if target then
 			if target:faceUp() then
 				sgs.updateIntention(player, target, 50)
 			else
 				sgs.updateIntention(player, target, -50)
+			end
+		end
+	elseif promptlist[#promptlist] == "no" then
+		local target = findPlayerByObjectName(self.room, promptlist[#promptlist - 1])
+		if target then
+			if target:faceUp() then
+				sgs.updateIntention(player, target, -50)
+			else
+				sgs.updateIntention(player, target, 50)
 			end
 		end
 	end
@@ -1393,6 +1404,11 @@ sgs.ai_choicemade_filter.skillInvoke.thdasui = function(self, player, promptlist
 		local target = findPlayerByObjectName(self.room, promptlist[#promptlist - 1])
 		if target then
 			sgs.updateIntention(player, target, -30)
+		end
+	elseif promptlist[#promptlist] == "no" then
+		local target = findPlayerByObjectName(self.room, promptlist[#promptlist - 1])
+		if target then
+			sgs.updateIntention(player, target, 10)
 		end
 	end
 end

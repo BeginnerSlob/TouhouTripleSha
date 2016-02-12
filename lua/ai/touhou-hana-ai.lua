@@ -1,6 +1,5 @@
 --花祭：在你的回合，当其他角色使用一张基本牌或非延时类锦囊牌时，你可弃置一张黑色牌，则该角色需弃置一张与其之前使用的牌名称相同的牌，否则该牌无效。
-sgs.ai_skill_cardask["@thhuajiuse"] = function(self, data)
-	local target = data:toPlayer()
+sgs.ai_skill_cardask["@thhuajiuse"] = function(self, data, pattern, target)
 	if not self:isEnemy(target) then
 		return "."
 	end
@@ -36,7 +35,7 @@ end
 
 sgs.ai_choicemade_filter.cardResponded["@thhuajiuse"] = function(self, player, promptlist)
 	if promptlist[#promptlist] ~= "_nil_" then
-		local target = player:getTag("ThHuajiTarget"):toPlayer()
+		local target = self.room:findPlayer(promptlist[#promptlist - 1])
 		if target then
 			sgs.updateIntention(player, target, 80)
 		end
@@ -127,79 +126,133 @@ function sgs.ai_cardneed.thmopao(to, card, self)
 			or (card:isKindOf("EightDiagram") and not (self:hasEightDiagramEffect(to) or getKnownCard(to, self, "EightDiagram", false) > 0))
 end
 
---【彼岸】ai
-sgs.ai_skill_cardask["@thbian"] = function(self, data)
-	local dying = self.player:getRoom():getCurrentDyingPlayer()
-	if self:isEnemy(dying) then
-		local tricks={}
+--彼岸：当一名处于濒死状态的角色成为【桃】的目标时，你可弃置一张锦囊牌，令此【桃】对其无效。
+sgs.ai_skill_cardask["@thbian"] = function(self, data, pattern, target)
+	if self:isEnemy(target) then
+		local tricks= {}
 		for _,c in sgs.qlist(self.player:getHandcards()) do
 			if c:isKindOf("TrickCard")  then
 				table.insert(tricks,c)
 			end
 		end
-		if #tricks==0 then return "." end
+		if #tricks == 0 then return "." end
 		self:sortByKeepValue(tricks)
 		return "$" .. tricks[1]:getId()
 	end
 	return "."
 end
---【归航】ai
-sgs.ai_skill_invoke.thguihang = function(self,data)
-	local dying = self.player:getRoom():getCurrentDyingPlayer()
-	if dying:isKongcheng() then return false end
-	if self:isEnemy(dying) then return false end
-	local hasred = false
-	if  dying==self.player then
-		for _,c in sgs.qlist(self.player:getHandcards()) do
-			if c:isRed() then
-				hasred = true
-				break
+
+sgs.ai_choicemade_filter.cardResponded["@thbian"] = function(self, player, promptlist)
+	if promptlist[#promptlist] ~= "_nil_" then
+		local target = self.room:findPlayer(promptlist[#promptlist - 1])
+		if target then
+			sgs.updateIntention(player, target, 100)
+		end
+	end
+end
+
+--归航：当一名角色进入濒死状态时，你可展示其一张手牌，若为红色，该角色须弃置之并回复1点体力。
+sgs.ai_skill_invoke.thguihang = function(self, data)
+	local dying = data:toDying()
+	local isFriend = false
+	local allBlack = true
+	if dying.who:isKongcheng() then return false end
+
+	isFriend = not self:isEnemy(dying.who)
+	if not sgs.GetConfig("EnableHegemony", false) and self.role == "renegade"
+		and not (dying.who:isLord() or dying.who:objectName() == self.player:objectName())
+		and not (self.room:getMode() == "couple" and dying.who:getGeneralName() == "sunjian")
+		and (sgs.current_mode_players["loyalist"] + 1 == sgs.current_mode_players["rebel"]
+				or sgs.current_mode_players["loyalist"] == sgs.current_mode_players["rebel"]
+				or self.room:getCurrent():objectName() == self.player:objectName()) then
+		isFriend = false
+	end
+
+	local knownNum = 0
+	local cards = dying.who:getHandcards()
+	for _, card in sgs.qlist(cards) do
+		local flag = string.format("%s_%s_%s","visible", self.player:objectName(), dying.who:objectName())
+		if dying.who:objectName() == self.player:objectName() or card:hasFlag("visible") or card:hasFlag(flag) then
+			knownNum = knownNum + 1
+			if not card:isRed() then allBlack = false end
+		end
+	end
+	if knownNum < dying.who:getHandcardNum() then allBlack = false end
+
+	return isFriend and not allBlack
+end
+
+sgs.ai_cardshow.thguihang = function(self, requestor)
+	assert(self.player:objectName() == requestor:objectName())
+
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	self:sortByKeepValue(cards)
+	for _, card in ipairs(cards) do
+		if card:isRed() then
+			return card
+		end
+	end
+
+	return cards[1]
+end
+
+sgs.ai_choicemade_filter.skillInvoke.thguihang = function(self, player, promptlist)
+	local dying = self.room:getCurrentDyingPlayer()
+	if promptlist[#promptlist] == "yes" then
+		if dying and dying:objectName() ~= self.player:objectName() then sgs.updateIntention(player, dying, -80) end
+	elseif promptlist[#promptlist] == "no" then
+		if not dying or dying:isKongcheng() or dying:objectName() == self.player:objectName() then return end
+		local allBlack = true
+		local knownNum = 0
+		local cards = dying:getHandcards()
+		for _, card in sgs.qlist(cards) do
+			local flag = string.format("%s_%s_%s","visible", player:objectName(), dying:objectName())
+			if card:hasFlag("visible") or card:hasFlag(flag) then
+				knownNum = knownNum + 1
+				if not card:isRed() then allBlack = false end
 			end
 		end
+		if knownNum < dying:getHandcardNum() then allBlack = false end
+		if not allBlack then sgs.updateIntention(player, dying, 80) end
 	end
-	if dying~=self.player or hasred then return true end
-	return false
 end
-sgs.ai_cardshow.thguihang = function(self, requestor)
-	local reds={}
-	for _,c in sgs.qlist(self.player:getHandcards()) do
-		if c:isRed() then
-			table.insert(reds,c)
-		end
-	end
-	if #reds==0 then return "." end
-	self:sortByKeepValue(reds)
-	return reds[1]
-end
---【无间】ai
+
+--无间：出牌阶段限一次，你可弃置一张牌并指定你攻击范围内的一名角色，直到你的下回合开始，该角色计算与除其以外的角色的距离时，始终+1。
 local thwujian_skill = {}
 thwujian_skill.name = "thwujian"
 table.insert(sgs.ai_skills, thwujian_skill)
 thwujian_skill.getTurnUseCard = function(self)
-	if self.player:hasUsed("ThWujianCard") then return nil end
-	if self.player:isKongcheng() then return nil end
-	return sgs.Card_Parse("@ThWujianCard=.")
+	if self.player:hasUsed("ThWujianCard") then return end
+	local cards = sgs.QList2Table(self.player:getCards("he"))
+	self:sortByKeepValue(cards)
+	return sgs.Card_Parse("@ThWujianCard=" .. cards[1]:getEffectiveId())
 end
+
 sgs.ai_skill_use_func.ThWujianCard = function(card, use, self)
-	local targets = sgs.SPlayerList()
-	local friends = sgs.SPlayerList()
-	friends:append(self.player)
-	for _,p in sgs.qlist(self.room:getOtherPlayers(self.player))do
-		if self:isFriend(p) then
-			friends:append(p)
-		elseif self.player:inMyAttackRange(p) then
-			targets:append(p)
+	local rangefix = 0
+	if self.player:getWeapon() and self.player:getWeapon():getId() == card:getSubcards():first() then
+		rangefix = rangefix + sgs.weapon_range[sgs.Sanguosha:getCard(self.player:getWeapon()):getClassName()] - self.player:getAttackRange(false)
+	end
+	if self.player:getOffensiveHorse() and self.player:getOffensiveHorse():getId() == card:getSubcards():first() then
+		rangefix = rangefix + 1
+	end
+	local targets = {}
+	for _, p in ipairs(self.enemies) do
+		if self.player:inMyAttackRange(p, rangefix) then
+			table.insert(targets, p)
 		end
 	end
-	if targets:length()==0 then return end
-	local target = 0
+	if #targets == 0 then return end
+	local target
 	local max_danger = 0
-	for _,p in sgs.qlist(targets)do
+	for _, p in sgs.qlist(targets) do
 		local current_danger = 0
-		for _,f in sgs.qlist(friends)do
-			if p:distanceTo(f)== p:getAttackRange() then
-				if (f:getHp()<=2 or f:getHandcardNum()>=1) then current_danger=current_danger+2 end
-				current_danger=current_danger+1
+		for _, f in ipairs(sgs.friends) do
+			if p:distanceTo(f) == p:getAttackRange() then
+				if self.isWeak(f) then
+					current_danger = current_danger + 2
+				end
+				current_danger = current_danger + 1
 			end
 		end
 		if current_danger > max_danger then
@@ -207,26 +260,15 @@ sgs.ai_skill_use_func.ThWujianCard = function(card, use, self)
 			target = p
 		end
 	end
-	if target == 0 then return end
-	local c = 0 ,cards
-	if self.player:getHandcardNum()> self.player:getMaxHp() then
-		cards = self.player:getHandcards()
-		cards = sgs.QList2Table(cards)
-		self:sortByKeepValue(cards)
-		c = cards[1]
-	elseif max_danger>=3 then
-		cards = self.player:getCards("he")
-		cards = sgs.QList2Table(cards)
-		self:sortByKeepValue(cards)
-		c = cards[1]
+	if target and (max_danger >= 3 or self:getOverflow() > 0) then
+		use.card = card
+		if use.to then
+			use.to:append(target)
+		end
+		return
 	end
-	if c == 0 then return end
-	use.card = sgs.Card_Parse("@ThWujianCard=" .. c:getId())
-	if use.to then
-		use.to:append(target)
-	end
-	return
 end
+
 sgs.ai_card_intention.ThWujianCard = 30
 
 --【血兰】ai
