@@ -174,7 +174,7 @@ sgs.ai_skill_invoke.thguihang = function(self, data)
 		local flag = string.format("%s_%s_%s","visible", self.player:objectName(), dying.who:objectName())
 		if dying.who:objectName() == self.player:objectName() or card:hasFlag("visible") or card:hasFlag(flag) then
 			knownNum = knownNum + 1
-			if not card:isRed() then allBlack = false end
+			if card:isRed() then allBlack = false end
 		end
 	end
 	if knownNum < dying.who:getHandcardNum() then allBlack = false end
@@ -209,7 +209,7 @@ sgs.ai_choicemade_filter.skillInvoke.thguihang = function(self, player, promptli
 			local flag = string.format("%s_%s_%s","visible", player:objectName(), dying:objectName())
 			if card:hasFlag("visible") or card:hasFlag(flag) then
 				knownNum = knownNum + 1
-				if not card:isRed() then allBlack = false end
+				if card:isRed() then allBlack = false end
 			end
 		end
 		if knownNum < dying:getHandcardNum() then allBlack = false end
@@ -245,9 +245,9 @@ sgs.ai_skill_use_func.ThWujianCard = function(card, use, self)
 	if #targets == 0 then return end
 	local target
 	local max_danger = 0
-	for _, p in sgs.qlist(targets) do
+	for _, p in ipairs(targets) do
 		local current_danger = 0
-		for _, f in ipairs(sgs.friends) do
+		for _, f in ipairs(self.friends) do
 			if p:distanceTo(f) == p:getAttackRange() then
 				if self.isWeak(f) then
 					current_danger = current_danger + 2
@@ -672,7 +672,7 @@ end
 sgs.ai_skill_use["@@thliuzhen"] = function(self, prompt)
 	local targetNames={}
 	local card = self.player:getTag("thliuzhen_carduse"):toCardUse().card
-	for _,p in sgs.qlist(self.enemies) do
+	for _,p in ipairs(self.enemies) do
 		if p:hasFlag("liuzhenold") then continue end
 		if (getCardsNum("Jink", p, self.player) < 1 
 				or sgs.card_lack[p:objectName()]["Jink"] == 1 )
