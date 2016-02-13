@@ -795,51 +795,44 @@ end
 --萤灯：每当你需要使用或打出一张【闪】时，你可以摸一张牌，然后弃置一张牌。
 sgs.ai_skill_invoke.thyingdeng = true
 
---【芽吹】ai
+--芽吹：摸牌阶段开始时，你可放弃摸牌，改为将一至X张红色手牌交给一名其他角色，然后摸等量的牌（X为该角色已损失的体力值）。
 sgs.ai_skill_use["@@thyachui"] = function(self, prompt)
-	
-	if #self.friends_noself == 0  then return "." end
-	local redcards ={}
-	for _,c in sgs.qlist(self.player:getHandcards()) do
+	if #self.friends_noself == 0 then return "." end
+	local redcards = {}
+	for _, c in sgs.qlist(self.player:getHandcards()) do
 		if c:isRed() then
-			table.insert(redcards,c)
+			table.insert(redcards, c)
 		end
 	end
+
+	if #redcards == 0 then return "." end
 	
-	
-	if #redcards==0 then return "." end
-	
-	--SmartAI:findPlayerToDraw(include_self, drawnum)
-	--芽吹目标有限制条件，所以这个函数并不好用
-	
-	self:sort(self.friends_noself,"handcard")
-	local targets={}
+	self:sort(self.friends_noself, "handcard")
+	local targets = {}
 	for _, p in ipairs(self.friends_noself) do
-		if p:getLostHp() <= #redcards then
+		if p:isWounded() and p:getLostHp() <= #redcards then
 			table.insert(targets,p)
 		end
 	end
+	if #targets == 0 then return "." end
+
 	local compare_func = function(a, b)
 		return a:getLostHp() > b:getLostHp() 
 	end
-	
-	if #targets >=1 then
-		table.sort(targets, compare_func)
-		self:sortByUseValue(redcards)
-		local cardIds = {}
-		for var = 1, targets[1]:getLostHp() , 1 do
-			table.insert(cardIds,redcards[var]:getId())
-		end		
-		return "@ThYachuiCard=".. table.concat(cardIds, "+") .."->" .. targets[1]:objectName()
-	end
-	return "."	 
+
+	table.sort(targets, compare_func)
+	self:sortByUseValue(redcards)
+	local cardIds = {}
+	for var = 1, targets[1]:getLostHp() do
+		table.insert(cardIds, redcards[var]:getId())
+	end		
+	return "@ThYachuiCard=" .. table.concat(cardIds, "+") .. "->" .. targets[1]:objectName()
 end
+
 sgs.ai_card_intention.ThYachuiCard = -80
 
-
---【春痕】ai
+--春痕：每当一名其他角色因弃置而失去牌时，若其中有方块牌，你可以摸一张牌。
 sgs.ai_skill_invoke.thchunhen = true
-
 
 function SmartAI:ChainDamage(damage,from, to)
 	local x=0
