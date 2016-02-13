@@ -3540,20 +3540,26 @@ end
 
 function SmartAI:getOverflow(player)
 	player = player or self.player
-	local kingdom_num = 0
+	local discard_num = 0
+	local discard_handcard_num = 0
 	if player:hasSkill("yongsi") and player:getPhase() <= sgs.Player_Discard and not (player:hasSkill("keji") and not player:hasFlag("KejiSlashInPlayPhase")) then
 		local kingdoms = {}
 		for _, ap in sgs.qlist(self.room:getAlivePlayers()) do
 			if not kingdoms[ap:getKingdom()] then
 				kingdoms[ap:getKingdom()] = true
-				kingdom_num = kingdom_num + 1
+				discard_num = discard_num + 1
 			end
 		end
 	end
 
-	if kingdom_num > 0 then
-		if player:getCardCount() <= kingdom_num then return player:getHandcardNum() end
-		local MaxHandCards = math.min(player:getHp(), player:getCardCount() - kingdom_num)
+	if player:hasSkill("thwuwu") then
+		discard_handcard_num = discard_handcard_num + 1
+	end
+	if discard_num > 0 or discard_handcard_num > 0 then
+		if player:getCardCount() <= discard_num or player:getHandcardNum() <= discard_handcard_num then
+			return player:getHandcardNum()
+		end
+		local MaxHandCards = math.min(player:getHp(), player:getCardCount() - discard_num, player:getHandcardNum() - discard_handcard_num)
 		return player:getHandcardNum() - MaxHandCards
 	end
 	return player:getHandcardNum() - player:getHp()

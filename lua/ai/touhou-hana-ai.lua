@@ -1184,51 +1184,151 @@ sgs.ai_choicemade_filter.skillChoice.thshengzhi = function(self, player, promptl
 	end
 end
 
---【六震】ai
-sgs.ai_skill_use["@@thliuzhen"] = function(self, prompt)
-	local targetNames={}
-	local card = self.player:getTag("thliuzhen_carduse"):toCardUse().card
-	for _,p in ipairs(self.enemies) do
-		if p:hasFlag("liuzhenold") then continue end
-		if (getCardsNum("Jink", p, self.player) < 1 
-				or sgs.card_lack[p:objectName()]["Jink"] == 1 )
-			and not self:slashProhibit(card, p, self.player)then
-			table.insert(targetNames,p:objectName())
-		end
+--诏谕：一名角色的准备阶段开始时，你可以将一张牌置于牌堆顶。然后若其判定区有牌或装备区有武器牌，你可以从牌堆底摸一张牌。
+sgs.ai_skill_cardask["@thzhaoyu"] = function(self, data, pattern, target)
+	if target:objectName() == self.player:objectName() and target:getHandcardNum() == 1 and target:getLostHp() >= 3
+			and target:hasSkill("thrudao") and target:getMark("@rudao") == 0 then
+		return "$" .. target:getRandomHandCardId()
 	end
-	
-	if #targetNames>0 then
-		return "@ThLiuzhenCard=.->" .. table.concat(targetNames, "+")
+	if target:getJudgingArea():isEmpty() and not target:getWeapon() then
+		return "."
 	end
-	return "."
-end
---liuzhen intention = slash intention?
-
-
---【天禅】ai
-function sgs.ai_cardsview_valuable.thtianchanv(self, class_name, player)
-	local spades={}
-	if class_name == "Peach" then
-		local dying = player:getRoom():getCurrentDyingPlayer()
-		if not dying or not dying:hasLordSkill("thtianchan") or self.player:getKingdom() ~="hana"
-			or dying:objectName() == player:objectName() then 
-			return nil 
+	local cards = sgs.QList2Table(self.player:getCards("he"))
+	if #cards == 0 then
+		return "."
+	end
+	self:sortByKeepValue(cards)
+	if not target:getJudgingArea():isEmpty() then
+		local trick = target:getJudgingArea():last()
+		local expp = ""
+		if trick:isKindOf("Indulgence") then
+			expp = ".|heart"
+		elseif trick:isKindOf("SupplyShortage") then
+			expp = ".|club"
+		elseif trick:isKindOf("PurpleSong") then
+			expp = ".|^diamond"
 		end
-		if self:isFriend(dying, player) then 
-			local cards=player:getCards("h")
-			for _,c in sgs.qlist(cards) do
-				if c:getSuit()==sgs.Card_Spade then
-					table.insert(spades,c)
+		for _, c in ipairs(cards) do
+			if (self:isFriend(target) and sgs.Sanguosha:matchExpPattern(expp, target, c)) or (self:isEnemy(target) and not sgs.Sanguosha:matchExpPattern(expp, target, c)) then
+				return "$" .. c:getEffectiveId()
+			end
+		end
+	elseif target:getWeapon() then
+		self:sortByUseValue(cards)
+		if self:needToThrowArmor(self.player) then
+			return "$" .. self.player:getArmor():getEffectiveId()
+		elseif self:isFriend(target) then
+			for _, c in ipairs(cards) do
+				if sgs.ais[target:objectName()]:cardNeed(c) > self:cardNeed(c) then
+					return "$" .. c:getEffectiveId()
 				end
 			end
 		end
 	end
-	if #spades>0 then
-		local suit =spades[1]:getSuitString()
-		local number = spades[1]:getNumberString()
-		local card_id = spades[1]:getEffectiveId()	
-		return ("peach:thtianchan[%s:%s]=%d"):format(suit, number, card_id) 
-	else
-		return nil
+	return "."
+end
+
+sgs.ai_skill_invoke.thzhaoyu_draw = true
+
+sgs.ai_choicemade_filter.cardResponded["@thzhaoyu"] = function(self, player, promptlist)
+	if promptlist[#promptlist] ~= "_nil_" then
+		local target = self.room:findPlayer(promptlist[#promptlist - 1])
+		if target then
+			if not target:getJudgingArea():isEmpty() then
+				local card = sgs.Card_Parse(string.sub(promptlist[#promptlist], 2, -2))
+				if card then
+					local trick = target:getJudgingArea():last()
+					local expp = ""
+					if trick:isKindOf("Indulgence") then
+						expp = ".|heart"
+					elseif trick:isKindOf("SupplyShortage") then
+						expp = ".|club"
+					elseif trick:isKindOf("PurpleSong") then
+						expp = ".|^diamond"
+					end
+					if sgs.Sanguosha:matchExpPattern(expp, target, card) then
+						sgs.updateIntention(player, target, -50)
+					else
+						sgs.updateIntention(player, target, 20)
+					end
+				end
+			end
+		end
 	end
+end
+
+--无忤：锁定技，弃牌阶段开始时，你须弃置一张手牌。
+--smart-ai.lua SmartAI:getOverflow
+
+--入道：觉醒技，准备阶段开始时，若你没有手牌，你须摸两张牌，然后减少3点体力上限，并失去技能“无忤”。
+--无
+
+--六震：出牌阶段限一次，当你使用【杀】指定目标后，可以选择至少一名不为该【杀】目标的其他角色，该【杀】在结算后置入弃牌堆时，你无视距离对你所选的角色使用，其中每有一名角色使用【闪】抵消了该【杀】的效果，你须弃置一张牌或失去1点体力。
+sgs.ai_skill_use["@@thliuzhen"] = function(self, prompt)
+	local targetNames = {}
+	local card = self.player:getTag("thliuzhen_carduse"):toCardUse().card
+	self:sort(self.enemies, "defenseSlash")
+	local n = self:getOverflow()
+	local extra = 0
+	for _, p in ipairs(self.enemies) do
+		if p:hasFlag("liuzhenold") then continue end
+		if (getCardsNum("Jink", p, self.player) < 1 or sgs.card_lack[p:objectName()]["Jink"] == 1)
+				and not self:slashProhibit(card, p, self.player) then
+			table.insert(targetNames, p:objectName())
+		elseif not self:slashProhibit(card, p, self.player) and extra <= n / 2 then
+			extra = extra + 1
+			table.insert(targetNames, p:objectName())
+		end
+	end
+
+	if #targetNames > 0 then
+		return "@ThLiuzhenCard=.->" .. table.concat(targetNames, "+")
+	end
+	return "."
+end
+
+sgs.ai_skill_discard.thliuzhen = function(self, discard_num, min_num, optional, include_equip)
+	if self:getOverflow() > 0 then
+		local ret = self:askForDiscard("", 1, 1, false, true)
+		if #ret ~= 0 then
+			if isCard("Peach", ret[1], self.player) then
+				return {}
+			else
+				return ret
+			end
+		else
+			return {}
+		end
+	end
+	return self:isWeak(self.player) and self:askForDiscard("", 1, 1, false, true) or {}
+end
+
+sgs.ai_card_intention.ThLiuzhenCard = sgs.ai_card_intention.Slash
+
+--天禅：君主技，当你处于濒死状态时，其他花势力的角色可以将黑桃牌当【桃】使用。
+function sgs.ai_cardsview_valuable.thtianchanv(self, class_name, player)
+	local spades = {}
+	if class_name == "Peach" then
+		local dying = player:getRoom():getCurrentDyingPlayer()
+		if not dying or not dying:hasLordSkill("thtianchan") or self.player:getKingdom() ~= "hana"
+				or dying:objectName() == player:objectName() then
+			return nil
+		end
+		if self:isFriend(dying, player) then
+			local cards = player:getCards("h")
+			for _, c in sgs.qlist(cards) do
+				if c:getSuit() == sgs.Card_Spade then
+					table.insert(spades, c)
+				end
+			end
+		end
+	end
+	if #spades > 0 then
+		self:sortByUseValue(spades)
+		local suit = spades[1]:getSuitString()
+		local number = spades[1]:getNumberString()
+		local card_id = spades[1]:getEffectiveId()
+		return ("peach:thtianchanv[%s:%s]=%d"):format(suit, number, card_id)
+	end
+	return nil
 end

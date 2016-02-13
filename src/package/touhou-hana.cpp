@@ -2173,8 +2173,8 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
-        const Card *card = room->askForCard(ask_who, "..", "@thzhaoyu", data, Card::MethodNone);
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+        const Card *card = room->askForCard(ask_who, "..", "@thzhaoyu:" + player->objectName(), data, Card::MethodNone);
         if (card) {
             LogMessage log;
             log.type = "#InvokeSkill";
@@ -2274,7 +2274,7 @@ ThLiuzhenCard::ThLiuzhenCard()
 
 bool ThLiuzhenCard::targetFilter(const QList<const Player *> &, const Player *to_select, const Player *player) const
 {
-    const Card *slash = player->tag["thliuzhen_carduse"].value<const Card *>();
+    const Card *slash = player->tag["thliuzhen_carduse"].value<CardUseStruct>().card;
     return !to_select->hasFlag("liuzhenold") && player->canSlash(to_select, slash, false);
 }
 
@@ -2345,11 +2345,10 @@ public:
             //tag for ai
             player->tag["thliuzhen_carduse"] = data;
             if (room->askForUseCard(player, "@@thliuzhen", "@thliuzhen", -1, Card::MethodNone)) {
-                player->tag.remove("thliuzhen_carduse");
                 room->setCardFlag(use.card, "thliuzhen");
                 player->tag["thliuzhen_user"] = true;
             }
-
+            player->tag.remove("thliuzhen_carduse");
             foreach (ServerPlayer *tar, use.to)
                 room->setPlayerFlag(tar, "-liuzhenold");
             return false;
@@ -2431,7 +2430,7 @@ public:
     virtual const Card *viewAs(const Card *originalCard) const {
         Peach *card = new Peach(originalCard->getSuit(), originalCard->getNumber());
         card->addSubcard(originalCard);
-        card->setSkillName("thtianchan");
+        card->setSkillName(objectName());
         return card;
     }
 };
