@@ -617,6 +617,8 @@ sgs.ai_skill_use["@@thquanshangive!"] = function(self, prompt)
 	return "@ThQuanshanGiveCard=" .. cards[1]:getEffectiveId() .. "->" .. f_table[1]:objectName()
 end
 
+sgs.ai_card_intention.ThQuanshanGiveCard = -20
+
 --仙罡：每当你受到伤害时，可以进行一次判定，若结果为梅花，防止此伤害。
 sgs.ai_skill_invoke.thxiangang = function(self, data)
 	local damage = data:toDamage()
@@ -690,6 +692,108 @@ end
 
 sgs.ai_card_intention.ThDuanzuiCard = 50
 sgs.ai_use_priority.ThDuanzuiCard = sgs.ai_use_priority.Slash + 0.2
+
+--蛰隐：每当一名角色使用一张非延时类锦囊牌时，你可以弃置一张手牌，并令该角色选择一项：令该牌无效，然后获得之并摸一张牌；或弃置一张牌。然后该角色不可以使用锦囊牌直到回合结束。
+sgs.ai_skill_cardask["@thzheyin"] = function(self, data, pattern, target)
+	local dis = sgs.QList2Table(self.player:getHandcards())
+	if #dis == 0 then
+		return "."
+	end
+	self:sortByKeepValue(dis)
+	dis = dis[1]
+	if data:toCard() then
+		if self:isEnemy(target) then
+			return "$" .. dis:getEffectiveId()
+		end
+	else
+		local use = data:toCardUse()
+		if (self:willSkipPlayPhase() and self:getOverflow() > 0) or self:getOverflow() > 2 then
+			if self:isFriend(target) and (use.card:isKindOf("LureTiger") or use.card:isKindOf("KnownBoth")) and getKnownCard(target, self.player, "TrickCard", true) == 0 then
+				return "$" .. dis:getEffectiveId()
+			elseif self:isEnemy(target) and (use.card:isKindOf("AOE") or use.card:isKindOf("Duel") or use.card:isKindOf("Snatch")) then
+				return "$" .. dis:getEffectiveId()
+			end
+		end
+		if self:isEnemy(target) and (getKnownCard(target, self.player, "TrickCard", true) > 0 or use.card:isKindOf("ExNihilo") or use.card:getSkillName() == "jade") then
+			return "$" .. dis:getEffectiveId()
+		end
+	end
+	return "."
+end
+
+sgs.ai_choicemade_filter.cardResponded["@thzheyin"] = function(self, player, promptlist)
+	if promptlist[#promptlist] ~= "_nil_" then
+		local target = self.room:findPlayer(promptlist[#promptlist - 1])
+		if target and getKnownCard(target, player, "TrickCard", true) > 0 then
+			sgs.updateIntention(player, target, 40)
+		end
+	end
+end
+
+sgs.ai_skill_cardask["@thzheyin-discard"] = function(self, data, pattern, target)
+	if target and self:isFriend(target) then return "." end
+	if not self.player:canDiscard(self.player, "he") then return "." end
+	local card = data:toCard()
+	if not card then
+		card = data:toCardUse().card
+	end
+	if not card then
+		return "."
+	end
+	if card:isKindOf("ExNihilo") or card:getSkillName() == "jade" or self:getCardsNum("TrickCard", "he") > 0 or self:getOverflow() >= 1
+		or ((self:needKongcheng() or not self:hasLoseHandcardEffective()) and self.player:getHandcardNum() > 0)
+		or (self.player:hasSkills(sgs.lose_equip_skill) and self.player:hasEquip())
+		or self:needToThrowArmor() then
+
+		local hcards = {}
+		for _, c in sgs.qlist(self.player:getHandcards()) do
+			if not (isCard("Slash", c, self.player) and self:hasCrossbowEffect()) then table.insert(hcards, c) end
+		end
+		self:sortByKeepValue(hcards)
+		local cards
+		local hand, armor, def, off = 0, 0, 0, 0
+		if self:needToThrowArmor() then
+			cards = self.player:getArmor():getEffectiveId()
+		end
+		if not cards and (self.player:hasSkills(sgs.need_kongcheng) or not self:hasLoseHandcardEffective()) and self.player:getHandcardNum() > 0 then
+			cards = hcards[1]:getEffectiveId()
+		end
+		if not cards and self.player:hasSkills(sgs.lose_equip_skill) then
+			if not cards and self.player:getOffensiveHorse() then
+				cards = self.player:getOffensiveHorse():getEffectiveId()
+			end
+			if not cards and self.player:getArmor() then
+				cards = self.player:getArmor():getEffectiveId()
+			end
+			if not cards and self.player:getDefensiveHorse() then
+				cards = self.player:getDefensiveHorse():getEffectiveId()
+			end
+		end
+		if not cards and self.player:getHandcardNum() > 1 then
+			cards = hcards[1]:getEffectiveId()
+		end
+		if not cards and self.player:getOffensiveHorse() then
+			cards = self.player:getOffensiveHorse():getEffectiveId()
+		end
+		if not cards and self.player:getHandcardNum() > 0 then
+			cards = hcards[1]:getEffectiveId()
+		end
+		if not cards and self.player:getArmor() then
+			cards = self.player:getArmor():getEffectiveId()
+		end
+		if not cards and self.player:getDefensiveHorse() then
+			cards = self.player:getDefensiveHorse():getEffectiveId()
+		end
+
+		if cards then
+			return "$" .. cards
+		end
+	end
+	return "."
+end
+
+--萤灯：每当你需要使用或打出一张【闪】时，你可以摸一张牌，然后弃置一张牌。
+sgs.ai_skill_invoke.thyingdeng = true
 
 --【芽吹】ai
 sgs.ai_skill_use["@@thyachui"] = function(self, prompt)
