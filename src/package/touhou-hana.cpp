@@ -1745,7 +1745,9 @@ void ThXianfaCard::onEffect(const CardEffectStruct &effect) const {
     if (subcards.isEmpty())
         room->loseHp(effect.from);
 
-    QString choice = room->askForChoice(effect.from, "thxianfa", "start+judge+draw+discard+finish");
+    effect.from->tag["ThXianfaTarget"] = QVariant::fromValue(effect.to);
+    QString choice = room->askForChoice(effect.from, "thxianfa", "start+judge+draw+discard+finish", QVariant::fromValue(effect.to));
+    effect.from->tag.remove("ThXianfaTarget");
     LogMessage log;
     log.type = "#ThXianfaChoose";
     log.from = effect.from;
