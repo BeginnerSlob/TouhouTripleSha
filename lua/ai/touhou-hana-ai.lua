@@ -913,6 +913,116 @@ end
 
 sgs.ai_use_priority.ThDujiaCard = 6.8
 
+--仙法：出牌阶段限一次，你可以失去1点体力或弃置一张牌，然后选择一名角色，并选择一个除出牌阶段外的阶段。若如此做，该角色于你此回合的弃牌阶段后额外进行一个该阶段。
+local thxianfa_skill = {}
+thxianfa_skill.name = "thxianfa"
+table.insert(sgs.ai_skills, thxianfa_skill)
+thxianfa_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThXianfaCard") then return end
+	return sgs.Card_Parse("@ThXianfaCard=.")
+end
+
+sgs.ai_skill_use_func.ThXianfaCard = function(card, use, self)
+	sgs.thxianfa_combo = {}
+	-- dongmo
+	local leidi = self.room:findPlayersBySkillName("thdongmo")
+	for _, p in sgs.qlist(leidi) do
+		if self:isFriend(leidi) and leidi:isWounded() and not leidi:faceUp() then
+			sgs.thxianfa_combo[leidi:objectName()] = "finish"
+		end
+	end
+
+	-- shiting
+	local shiliu = self.room:findPlayersBySkillName("thshiting")
+	for _, p in sgs.qlist(shiliu) do
+		if self:isFriend(shiliu) and shiliu:faceUp() then
+			sgs.thxianfa_combo[shiliu:objectName()] = "start"
+		end
+	end
+	
+	-- chenyan
+	local you = self.room:findPlayersBySkillName("ikchenyan")
+	for _, p in sgs.qlist(you) do
+		if self:isEnemy(you) and not you:isKongcheng() then
+			sgs.thxianfa_combo[you:objectName()] = "discard"
+		end
+	end
+	
+	if #sgs.thxianfa_combo ~= 0 then
+		local targets = {}
+		for p, _ in pairs(sgs.thxianfa_combo) do
+			table.insert(targets, self.room:findPlayer(p))
+		end
+		local cards = sgs.QList2Table(self.player:getCards("he"))
+		if #cards == 0 then
+			if self.player:getHp() > 1 then
+				use.card = card
+				if use.to then
+					use.to:append(targets[math.random(1, #targets)])
+				end
+			end
+		else
+			self:sortByKeepValue(cards)
+			use.card = sgs.Card_Parse("@ThXianfaCard=" .. cards[1]:getEffectiveId())
+			if use.to then
+				use.to:append(targets[math.random(1, #targets)])
+			end
+		end
+		return
+	end
+
+	--wake
+	if self.player:getHandcardNum() == 1 and self.player:isWounded() and self.player:hasSkill("thwendao") and self.player:getMark("@wendao") == 0 then
+		local h_card = self:getHandcards():first()
+		if not h_card:isKindOf("Peach") then
+			sgs.thxianfa_combo[self.player:objectName()] = "start"
+			use.card = sgs.Card_Parse("@ThXianfaCard=" .. h_card:getEffectiveId())
+			if use.to then
+				use.to:append(self.player)
+			end
+			return
+		end
+	end
+	
+	--draw
+	self:sort(self.friends, "defense")
+	local cards = sgs.QList2Table(self.player:getCards("he"))
+	self:sortByKeepValue(cards)
+	if #cards ~= 0 then
+		sgs.thxianfa_combo[self.friends[1]:objectName()] = "draw"
+		use.card = sgs.Card_Parse("@ThXianfaCard=" .. cards[1]:getEffectiveId())
+		if use.to then
+			use.to:append(self.friends[1])
+		end
+		return
+	end
+end
+
+sgs.ai_skill_choice.thxianfa = function(self, choices, data)
+	local target = data:toPlayer()
+	if sgs.thxianfa_combo[target:objectName()] then
+		return sgs.thxianfa_combo[target:objectName()]
+	end
+	return self:isFriend(target) and "draw" or "discard"
+end
+
+sgs.ai_choicemade_filter.skillChoice.thxianfa = function(self, player, promptlist)
+	local target = player:getTag("ThXianfaTarget"):toPlayer()
+	if target then
+		if promptlist[#promptlist] == "discard" then
+			sgs.updateIntention(player, target, 50)
+		else
+			sgs.updateIntention(player, target, -30)
+		end
+	end
+end
+
+--问道：觉醒技，准备阶段开始时，若你没有手牌，你须回复1点体力或摸两张牌，然后减少1点体力上限，并获得技能“迷途”。
+sgs.ai_skill_choice.thwendao = function(self, choice)
+	if self.player:getHp() < 2 and self.player:getLostHp() > 1 and string.find(choice, "recover") then return "recover" end
+	return "draw"
+end
+
 function SmartAI:ChainDamage(damage,from, to)
 	local x=0
 	local y=0
