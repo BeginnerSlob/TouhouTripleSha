@@ -1598,7 +1598,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *player) const {
-        QString choice = room->askForChoice(player, objectName(), "BasicCard+EquipCard+TrickCard");
+        QString choice = room->askForChoice(player, objectName(), "BasicCard+EquipCard+TrickCard", QVariant::fromValue(target));
 
         LogMessage log;
         log.type = "#ThGuaitan";

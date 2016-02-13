@@ -834,6 +834,85 @@ sgs.ai_card_intention.ThYachuiCard = -80
 --春痕：每当一名其他角色因弃置而失去牌时，若其中有方块牌，你可以摸一张牌。
 sgs.ai_skill_invoke.thchunhen = true
 
+--遐攻:若你的装备区没有武器牌，你可以对与你距离2以内的角色使用【杀】。
+--无
+
+--怪谈：每当你造成伤害，在结算后，你可以选择一种牌的类别，受到伤害的角色不能使用或打出该类别的牌，直到其再次受到一次伤害后，或其下一个回合的回合结束。
+sgs.ai_skill_invoke.thguaitan = function(self, data)
+	local target = data:toPlayer()
+	return self:isEnemy(target)
+end
+
+sgs.ai_skill_choice.thguaitan = function(self, choices, data)
+	local target = data:toPlayer()
+	local knownNum = 0
+	local cards = target:getHandcards()
+	local t = {}
+	t.basic = 0
+	t.trick = 0
+	t.equip = 0
+	for _, card in sgs.qlist(cards) do
+		local flag = string.format("%s_%s_%s","visible", self.player:objectName(), target:objectName())
+		if target:objectName() == self.player:objectName() or card:hasFlag("visible") or card:hasFlag(flag) then
+			knownNum = knownNum + 1
+			t[card:getType()] = t[card:getType()] + 1
+		end
+	end
+	if knownNum < target:getHandcardNum() or t["basic"] ~= 0 then
+		return "BasicCard"
+	end
+	return t.trick >= t.equip and "TrickCard" or "EquipCard"
+end
+
+sgs.ai_need_damaged.thguaitan = function(self, attacker, player)
+	if player:getMark("@guaitan_basic") > 0 and player:getHp() > 2 then
+		return true
+	end
+	return false
+end
+
+sgs.ai_choicemade_filter.skillInvoke.thguaitan = function(self, player, promptlist)
+	if promptlist[#promptlist] == "yes" then
+		local target = findPlayerByObjectName(self.room, promptlist[#promptlist - 1])
+		if target then
+			sgs.updateIntention(player, target, 50)
+		end
+	end
+end
+
+--后知：锁定技，专属技，每当你受到伤害时，你防止之，然后获得等量的“坚韧”标记。结束阶段开始时，你弃置全部该标记并失去等量体力。
+--smart-ai.lua SmartAI:getDamagedEffects
+
+--歃愈：锁定技，每当你于出牌阶段造成一次伤害后，你须弃置1枚“坚韧”标记。
+sgs.ai_cardneed.thshayu = function(to, card, self)
+	if not self:willSkipPlayPhase(to) and to:getMark("@jianren") > 0 then
+		return card:isKindOf("AOE")
+	end
+end
+
+--毒稼：出牌阶段限一次，你可以弃置一张基本牌，并获得1枚“坚韧”标记，然后摸三张牌。
+local thdujia_skill = {}
+thdujia_skill.name = "thdujia"
+table.insert(sgs.ai_skills, thdujia_skill)
+thdujia_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThDujiaCard") then return end
+	local n = self.player:hasSkill("thhouzhi") and self.player:getMark("@jianren") + 2 or 0
+	if not self:getCard("AOE") and self.player:getHp() <= n then return end
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	self:sortByUseValue(cards)
+	for _, c in ipairs(cards) do
+		if c:getTypeId() == sgs.Card_TypeBasic then
+			return sgs.Card_Parse("@ThDujiaCard=" .. c:getEffectiveId())
+		end
+	end
+end
+
+sgs.ai_skill_use_func.ThDujiaCard = function(card, use, self)
+	use.card = card
+end
+
+sgs.ai_use_priority.ThDujiaCard = 6.8
+
 function SmartAI:ChainDamage(damage,from, to)
 	local x=0
 	local y=0

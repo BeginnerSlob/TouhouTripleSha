@@ -3900,6 +3900,7 @@ function SmartAI:getDamagedEffects(player, damage_from, isSlash)
 	local attacker = damage_from or self.room:getCurrent()
 
 	if attacker:hasSkill("ikxuwu") then return false end
+	if player:hasSkill("thhouzhi") then return false end
 	if isSlash then
 		if attacker:hasSkill("nosqianxi") and attacker:distanceTo(player) == 1 and not self:isFriend(player, attacker) then
 			return false
