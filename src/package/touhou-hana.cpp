@@ -2120,10 +2120,8 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
-        if (room->askForUseCard(ask_who, "@@thshengzhi", "@thshengzhi", -1, Card::MethodDiscard))
-            return true;
-        return false;
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
+        return room->askForUseCard(ask_who, "@@thshengzhi", "@thshengzhi:" + player->objectName(), -1, Card::MethodDiscard);
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
@@ -2136,7 +2134,7 @@ public:
                 choices << player->getPhaseString(phase);
         }
         if (choices.isEmpty()) return false;
-        QString choice = room->askForChoice(ask_who, objectName(), choices.join("+"));
+        QString choice = room->askForChoice(ask_who, objectName(), choices.join("+"), QVariant::fromValue(player));
 
         QMap<QString, Player::Phase> phase_map;
         phase_map.insert("start", Player::Start);

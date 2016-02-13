@@ -1100,6 +1100,90 @@ sgs.ai_skill_playerchosen.thshanling = function(self, targets)
 	return victims[1]
 end
 
+--尸解：每当你回复1点体力后，可以从牌堆顶亮出一张牌置于你的人物牌上，称为“皿”。你可以将一张“皿”当【三粒天滴】使用。
+sgs.ai_skill_invoke.thshijie = true
+
+sgs.ai_view_as.thshijie = function(card, player, card_place)
+	local suit = card:getSuitString()
+	local number = card:getNumberString()
+	local card_id = card:getEffectiveId()
+	if card_place == sgs.Player_PlaceSpecial then
+		if player:getPile("shijiepile"):contains(card_id) then
+			return ("nullification:thshijie[%s:%s]=%d"):format(suit, number, card_id)
+		end
+	end
+end
+
+--圣贽：其他角色的回合开始时，你可弃置一张黑色手牌或“皿”并令该角色跳过此回合的一个阶段。若以此法跳过摸牌阶段，你失去1点体力；若以此法跳过出牌阶段，该角色回复1点体力。
+sgs.thshengzhi_choice = ""
+
+sgs.ai_skill_use["@@thshengzhi"] = function(self, prompt, method)
+	local target = self.room:findPlayer(prompt:split(":")[2])
+	if not target then
+		return "."
+	end
+	local card
+	if not self.player:getPile("shijiepile"):isEmpty() then
+		card = self.player:getPile("shijiepile"):first()
+	elseif self.player:canDiscard(self.player, "h") then
+		local cards = sgs.QList2Table(self.player:getHandcards())
+		self:sortByKeepValue(cards)
+		for _, c in ipairs(cards) do
+			if c:isBlack() then
+				card = c:getEffectiveId()
+			end
+		end
+	end
+	if not card then return "." end
+
+	if self:isEnemy(target) then
+		if not self:willSkipPlayPhase(target) then
+			local n = self:getOverflow(target)
+			if not self:willSkipDrawPhase(target) then
+				n = n + 2
+			end
+			if not target:isSkipped(sgs.Player_Discard) then
+				if n > 4 or (n > 2 and not target:isWounded()) then
+					sgs.thshengzhi_choice = "play"
+					return "@ThShengzhiCard=" .. card
+				end
+			end
+		end
+		if not self:willSkipDrawPhase(target) then
+			if self.player:getHp() > 2 and (self:isWeak(target) or target:isKongcheng()) then
+				sgs.thshengzhi_choice = "draw"
+				return "@ThShengzhiCard=" .. card
+			end
+		end
+	end
+	return "."
+end
+
+sgs.ai_skill_choice.thshengzhi = function(self, choices, data)
+	if string.find(choices, sgs.thshengzhi_choice) then return sgs.thshengzhi_choice end
+	local target = data:toPlayer()
+	if self:isFriend(target) and string.find(choices, "discard") then
+		return "discard"
+	elseif self:isEnemy(target) and not target:isWounded() and string.find(choices, "play") then
+		return "play"
+	elseif self:isEnemy(target) and not self:isWeak(self.player) and string.find(choices, "draw") then
+		return "draw"
+	end
+	choices = choices:split("+")
+	return choices[math.random(1, #choices)]
+end
+
+sgs.ai_choicemade_filter.skillChoice.thshengzhi = function(self, player, promptlist)
+	local target = self.room:getCurrent()
+	if target then
+		if promptlist[#promptlist] == "discard" then
+			sgs.updateIntention(player, target, -50)
+		elseif promptlist[#promptlist] == "play" or promptlist[#promptlist] == "draw" then
+			sgs.updateIntention(player, target, 30)
+		end
+	end
+end
+
 --【六震】ai
 sgs.ai_skill_use["@@thliuzhen"] = function(self, prompt)
 	local targetNames={}
