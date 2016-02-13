@@ -1345,10 +1345,29 @@ public:
     }
 };
 
+class ThZheyinVS: public OneCardViewAsSkill
+{
+public:
+    ThZheyinVS(): OneCardViewAsSkill("thzheyin")
+    {
+        response_pattern = "@@thzheyin";
+        filter_pattern = ".!";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        DummyCard *dummy = new DummyCard;
+        dummy->addSubcard(originalCard);
+        dummy->setSkillName(objectName());
+        return dummy;
+    }
+};
+
 class ThZheyin: public TriggerSkill {
 public:
     ThZheyin(): TriggerSkill("thzheyin") {
         events << CardUsed << NullificationEffect << EventPhaseChanging;
+        view_as_skill = new ThZheyinVS;
     }
 
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
@@ -1387,12 +1406,12 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
         room->setPlayerCardLimitation(player, "use", "TrickCard", false);
         room->setPlayerFlag(player, "ThZheyin");
 
         if (!player->canDiscard(player, "he")
-            || !room->askForDiscard(player, objectName(), 1, 1, true, true, "@thzheyin-discard")) {
+                || !room->askForCard(player, "@@thzheyin", "@thzheyin-discard:" + ask_who->objectName(), data, objectName())) {
             if (triggerEvent == CardUsed) {
                 CardUseStruct use = data.value<CardUseStruct>();
                 use.nullified_list << "_ALL_TARGETS";
