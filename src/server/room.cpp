@@ -1137,7 +1137,9 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
             }
             if (ask_jade) {
                 setPlayerProperty(repliedPlayer, "jade_trick", trick->toString());
+                setPlayerProperty(repliedPlayer, "jade_trick_from", QVariant::fromValue(from));
                 askForUseCard(repliedPlayer, "@@jade", "@jade", -1, Card::MethodNone);
+                setPlayerProperty(repliedPlayer, "jade_trick_from", QVariant());
                 setPlayerProperty(repliedPlayer, "jade_trick", QVariant());
             }
         }

@@ -3882,12 +3882,13 @@ end
 
 sgs.ai_skill_use["@@jade"] = function(self, prompt)
 	local card_str = sgs.GetProperty(self.player, "jade_trick")
+	local from = sgs.GetProperty(self.player, "jade_trick_from"):toPlayer()
 	local trick = sgs.Card_Parse(card_str)
 	local target_table = {}
 	if trick then
 		for _, p in sgs.qlist(self.room:getAlivePlayers()) do
 			if p:getMark("cardEffect_" .. card_str) > 0 then
-				if self:askForNullification(trick, nil, p, true, true) then
+				if self:askForNullification(trick, from, p, true, true) then
 					table.insert(target_table, p:objectName())
 				end
 			end
