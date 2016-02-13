@@ -3833,7 +3833,7 @@ sgs.ai_skill_invoke.breastplate = true
 
 sgs.ai_skill_choice.drowning = function(self, choices, data)
 	local effect = data:toCardEffect()
-	if self:needKongcheng(self.player, true) and self.player:getHandcardNum() == 2 and string.find(choices, "discard") then
+	if self:needKongcheng(self.player) and self.player:getHandcardNum() == 2 and string.find(choices, "discard") then
 		return "discard"
 	end
 	if self:needToThrowArmor(self.player) and string.find(choices, "throw")
@@ -3854,8 +3854,12 @@ sgs.ai_skill_choice.drowning = function(self, choices, data)
 	if self.player:getHp() < 3 then
 		peaches = peaches + self:getCardsNum("Analeptic")
 	end
-	if peaches / self.player:getHandcardNum() > 0.75 and string.find(choices, "discard") then
-		return "discard"
+	if peaches / self.player:getHandcardNum() < 0.25 then
+		if string.find(choices, "discard") then
+			return "discard"
+		end
+	elseif peaches > 0 then
+		return "damage"
 	end
 	if self:isWeak(self.player) then
 		return string.find(choices, "discard") and "discard" or (string.find(choices, "throw") and "throw" or "damage")

@@ -95,7 +95,7 @@ sgs.ai_skill_playerchosen.thmopao = function(self, targets)
 	self:sort(targetlist, "hp")
 	local victims = {}
 	for _, target in ipairs(targetlist) do
-		if self.isFriend(target) and self:isGoodChainTarget(target, self.player, sgs.DamageStruct_Fire, 1) then
+		if self:isFriend(target) and target:isChained() and self:isGoodChainTarget(target, self.player, sgs.DamageStruct_Fire, 1) then
 			return target
 		end
 		if self:isEnemy(target) and self:damageIsEffective(target, sgs.DamageStruct_Fire, self.player) then
@@ -340,7 +340,7 @@ sgs.ai_skill_invoke.thtingwu = function(self, data)
 	local targets = { up, down }
 	self:sort(targets, "defense")
 	for _, p in ipairs(targets) do
-		if self:isGoodChainTarget(p, self.player, sgs.DamageStruct_Thunder, 1) then
+		if p:isChained() and self:isGoodChainTarget(p, self.player, sgs.DamageStruct_Thunder, 1) then
 			sgs.thtingwu_target = p
 			return true
 		end
@@ -365,7 +365,7 @@ sgs.ai_skill_playerchosen.thtingwu = function(self, targets)
 	return targets:at(math.random(0, 1))
 end
 
-sgs.ai_playerchosen_intention.thjilan = function(self, from, to)
+sgs.ai_playerchosen_intention.thtingwu = function(self, from, to)
 	if self:damageIsEffective(to, sgs.DamageStruct_Thunder, from) then
 		sgs.updateIntention(from, to, -50)
 	end
@@ -622,7 +622,7 @@ sgs.ai_card_intention.ThQuanshanGiveCard = -20
 --仙罡：每当你受到伤害时，可以进行一次判定，若结果为梅花，防止此伤害。
 sgs.ai_skill_invoke.thxiangang = function(self, data)
 	local damage = data:toDamage()
-	return not self:isGoodChainTarget(self.player, damage.from, damage.nature, damage.damage, damage.card)
+	return not self:isChained() or not self:isGoodChainTarget(self.player, damage.from, damage.nature, damage.damage, damage.card)
 end
 
 --断罪：出牌阶段限一次，你可以展示一名其他角色的一张手牌，若为【杀】，视为你对该角色使用一张【碎月绮斗】，此【碎月绮斗】不能被【三粒天滴】响应；若为【闪】或【桃】，视为你对该角色使用一张无视距离且不计入使用限制的【杀】。
@@ -1023,122 +1023,82 @@ sgs.ai_skill_choice.thwendao = function(self, choice)
 	return "draw"
 end
 
-function SmartAI:ChainDamage(damage,from, to)
-	local x=0
-	local y=0
-	if self:isFriend(to) then
-		y= damage
+--雷矢：每当你对一名角色造成伤害，在结算后，若其体力值不大于1，你可以弃置一张牌并对该角色与之距离最近的另一名角色造成1点雷电伤害。
+sgs.ai_skill_use["@@thleishi"] = function(self, prompt, method)
+	local victim = self.room:findPlayer(sgs.GetProperty(self.player, "thleishi"))
+	if not victim then
+		return "."
 	end
-	if self:isEnemy(to) then
-		x= damage
+	if not self.player:canDiscard(self.player, "he") then
+		return "."
 	end
-	if not to:isChained() then
-		return x,y
-	end
-
-	--开始传导铁锁
-	local tos = sgs.SPlayerList()
-	for _,p in sgs.qlist(self.room:getOtherPlayers(to)) do
-		if p:isChained() then
-			tos:append(p)
-		end
-	end
-	if not tos:isEmpty() then
-		self.room:sortByActionOrder(tos)
-		for _,p  in sgs.qlist(tos) do
-			if self:isFriend(p) and self:damageIsEffective(p, sgs.DamageStruct_Thunder, from) then
-				y=y + damage
-			end
-			if self:isEnemy(p) and self:damageIsEffective(p, sgs.DamageStruct_Thunder, from) then
-				x=x + damage
-			end
-		end
-	end
-	return x,y
-end
-function SmartAI:getThunderAttackTargets(targets,consider_chain)
-	consider_chain = consider_chain or true
-	local enemies = {}
-	--local friends = {}
-	local weakers = {}
-	for _, p in sgs.qlist(targets) do
-		if self:damageIsEffective(p, sgs.DamageStruct_Thunder, self.player)  then
-			local x,y=0,0 
-			if consider_chain then
-				x , y =  self:ChainDamage(1,self.player, p)
-			end
-			if x >= y then
-				--if self:isFriend(p) and self:getDamagedEffects(p, self.player, false) then
-				--	table.insert(friends,p)
-				--end
-				if	 self:isEnemy(p) and not self:getDamagedEffects(p, self.player, false) then
-					table.insert(enemies,p)
-					if self.player:hasSkill("thleishi") and p:getHp() == 1 and self:getLeishiTarget(p) then
-						table.insert(weakers,p)
-					end
-				end
-			end
-		end
-	end
-	return enemies, weakers
-end
---其实还需要一个预估伤害的函数 记得绮符剧里有属性免疫还是属性伤害加深神马的
-
-function SmartAI:getLeishiTarget(victim)
-	local  minDis = 998; 
+	local minDis = 998
 	local targets = sgs.SPlayerList()
-	for _,p in sgs.qlist(self.room:getOtherPlayers(victim))do
-		local dis = victim:distanceTo(p); 
-		if (dis == -1) then
-			continue end
-		if (targets:isEmpty() or dis == minDis)  then
-			targets:append(p)  
-			minDis = victim:distanceTo(p)
-		 elseif (dis < minDis) then
+	for _, p in sgs.qlist(self.room:getOtherPlayers(victim)) do
+		local dis = victim:distanceTo(p)
+		if dis == -1 then
+			continue
+		end
+		if targets:isEmpty() or dis == minDis then
+			targets:append(p)
+			minDis = dis
+		elseif dis < minDis then
 			targets= sgs.SPlayerList()
 			targets:append(p)
-			 minDis = victim:distanceTo(p)
+			minDis = dis
 		end
 	end
-	for _,p in sgs.qlist(targets)do
-		if self:isEnemy(p) and self:damageIsEffective(p, sgs.DamageStruct_Thunder, self.player) 
-		then
-			return true
+	if targets:isEmpty() then
+		return "."
+	end
+	local target
+	local enemies = {}
+	for _, p in sgs.qlist(targets) do
+		if p:isChained() and self:isGoodChainTarget(p, self.player, sgs.DamageStruct_Thunder, 1) then
+			target = p
+			break
+		end
+		local damageStruct = {}
+		damageStruct.from = self.player
+		damageStruct.to = p
+		damageStruct.nature = sgs.DamageStruct_Thunder
+		damageStruct.damage = 1
+		if self:isEnemy(p) and self:damageIsEffective_(damageStruct) then
+			table.insert(enemies, p)
 		end
 	end
-	return false
-end
-
---【雷矢】ai
-sgs.ai_skill_playerchosen.thleishi = function(self, targets)
-	local enemies, weakers = self:getThunderAttackTargets(targets,false)
-	if #weakers>0 then
-		return weakers[1]
+	if not target and #enemies == 0 then
+		return "."
 	end
-	if #enemies>0 then
+	if not target then
 		self:sort(enemies, "hp")
-		return enemies[1]
+		target = enemies[1]
 	end
-	return nil
+	local cards = sgs.QList2Table(self.player:getCards("he"))
+	self:sortByKeepValue(cards)
+	return "@ThLeishiCard=" .. cards[1]:getEffectiveId() .. "->" .. target:objectName()
 end
 
---【闪灵】ai
+--闪灵：准备阶段开始时，若你的体力值是全场最少的（或之一），你可以对你攻击范围内的一名角色造成1点雷电伤害。
 sgs.ai_skill_playerchosen.thshanling = function(self, targets)
-	local enemies, weakers = self:getThunderAttackTargets(targets)
-	if #weakers>0 then
-		return weakers[1]
+	local targetlist = sgs.QList2Table(targets)
+	self:sort(targetlist, "hp")
+	local victims = {}
+	for _, target in ipairs(targetlist) do
+		if self:isEnemy(target) and self:damageIsEffective(target, sgs.DamageStruct_Thunder, self.player) then
+			table.insert(victims, target)
+		end
 	end
-	if #enemies>0 then
-		self:sort(enemies, "hp")
-		return enemies[1]
+	if #victims == 0 then
+		return nil
 	end
-	return nil
+	for _, p in ipairs(victims) do
+		if self:isGoodChainTarget(p, self.player, sgs.DamageStruct_Thunder, 1) then
+			return p
+		end
+	end
+	return victims[1]
 end
---目前没有playerchosen仇恨,由伤害仇恨代替
---其实可以加入主动为卖血队友提供伤害
---不过由于ai里damage事件应该会导致直接增加仇恨。 
---需要smart-ai里设置no intention damage 
-
 
 --【六震】ai
 sgs.ai_skill_use["@@thliuzhen"] = function(self, prompt)
