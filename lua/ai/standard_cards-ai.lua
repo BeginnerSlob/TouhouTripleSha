@@ -467,10 +467,15 @@ function SmartAI:useCardSlash(card, use)
 	if not use.isDummy and not self:slashIsAvailable(self.player, card) then return end
 
 	local basicnum = 0
+	local notpeaches = 0
 	local cards = self.player:getCards("he")
 	cards = sgs.QList2Table(cards)
 	for _, acard in ipairs(cards) do
-		if acard:getTypeId() == sgs.Card_TypeBasic and not acard:isKindOf("Peach") then basicnum = basicnum + 1 end
+		if acard:isKindOf("Peach") then
+			continue
+		end
+		if acard:getTypeId() == sgs.Card_TypeBasic then basicnum = basicnum + 1 end
+		notpeaches = notpeaches + 1
 	end
 	local no_distance = sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_DistanceLimit, self.player, card) > 50
 						or self.player:hasFlag("slashNoDistanceLimit")
@@ -550,6 +555,7 @@ function SmartAI:useCardSlash(card, use)
 			and self:objectiveLevel(target) > 3
 			and self:slashIsEffective(card, target, self.player, use_wuqian)
 			and not (target:hasSkill("xiangle") and basicnum < 2)
+			and not (self.player:hasFlag("jianmoinvoke") and notpeaches < 2)
 			and not canliuli
 			and not (not self:isWeak(target) and #self.enemies > 1 and #self.friends > 1 and self.player:hasSkill("keji")
 			and self:getOverflow() > 0 and not self:hasCrossbowEffect()) then
@@ -3882,7 +3888,7 @@ end
 
 sgs.ai_skill_use["@@jade"] = function(self, prompt)
 	local card_str = sgs.GetProperty(self.player, "jade_trick")
-	local from = sgs.GetProperty(self.player, "jade_trick_from"):toPlayer()
+	local from = self.room:findPlayer(sgs.GetProperty(self.player, "jade_trick_from"))
 	local trick = sgs.Card_Parse(card_str)
 	local target_table = {}
 	if trick then

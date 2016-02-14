@@ -33,8 +33,8 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
-        if (ask_who->askForSkillInvoke(objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -85,7 +85,7 @@ public:
         log.arg2 = use.card->objectName();
         room->sendLog(log);
 
-        if (!room->askForDiscard(player, objectName(), 1, 1, true, true, "@thjianmo"))
+        if (!room->askForDiscard(player, "thjianmo", 1, 1, true, true, "@thjianmo"))
             use.nullified_list << "_ALL_TARGETS";
         data = QVariant::fromValue(use);
 
@@ -357,7 +357,7 @@ public:
         ServerPlayer *victim = player->tag["ThXuguTarget"].value<ServerPlayer *>();
         player->tag.remove("ThXuguTarget");
         if (victim) {
-            if (!room->askForUseCard(victim, "analeptic", "@thxugu-use", -1, Card::MethodUse, false)) {
+            if (!room->askForUseCard(victim, "analeptic", "@thxugu-use:" + player->objectName(), -1, Card::MethodUse, false)) {
                 player->setFlags("ThXuguFailed");
                 if (player->canSlash(victim, false)) {
                     Slash *slash = new Slash(Card::NoSuit, 0);
