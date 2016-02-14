@@ -1,27 +1,179 @@
---【萃梦】ai
-sgs.ai_skill_invoke.thcuimeng = function(self, data)
- 	--等待同步替换二张， 张宝 等的技能
-	--[[if self:willSkipPlayPhase() then
-		local erzhang = self.room:findPlayerBySkillName("guzheng")
-		if erzhang and self:isEnemy(erzhang) then return false end
-		if self.player:getPile("incantation"):length() > 0 then
-			local card = sgs.Sanguosha:getCard(self.player:getPile("incantation"):first())
-			if not self.player:getJudgingArea():isEmpty() and not self.player:containsTrick("YanxiaoCard") and not self:hasWizard(self.enemies, true) then
-				local trick = self.player:getJudgingArea():last()
-				if trick:isKindOf("Indulgence") then
-					if card:getSuit() == sgs.Card_Heart or (self.player:hasSkill("hongyan") and card:getSuit() == sgs.Card_Spade) then return false end
-				elseif trick:isKindOf("SupplyShortage") then
-					if card:getSuit() == sgs.Card_Club then return false end
+--缄魔：其他角色的出牌阶段开始时，若其手牌数不小于体力上限，你可令其选择一项：摸一张牌，且此阶段不能使用或打出【杀】；或此阶段使用【杀】时需弃置一张牌，否则此【杀】无效。
+sgs.ai_skill_invoke.thjianmo = function(self, data)
+	local target = data:toPlayer()
+	if self:isEnemy(target) then
+		return true
+	end
+	return false
+end
+
+sgs.ai_skill_choice.thjianmo = function(self, choices)
+	if self:getCardsNum("Slash") < 1 then
+		return "jian"
+	end
+	if self:getOverflow() < -1 then
+		return "jian"
+	end
+	return "mo"
+end
+
+sgs.ai_skill_discard.thjianmo = function(self, discard_num, min_num, optional, include_equip)
+	self.room:writeToConsole("---")
+	local ret = self:askForDiscard("", 1, 1, false, true)
+	if #ret ~= 0 then
+		self.room:writeToConsole(ret[1])
+		if isCard("Peach", ret[1], self.player) then
+			self.room:writeToConsole("peach")
+			return {}
+		else
+			self.room:writeToConsole("not peach")
+			return ret
+		end
+	else
+		self.room:writeToConsole("no ret")
+		return {}
+	end
+	self.room:writeToConsole("---")
+end
+
+sgs.ai_choicemade_filter.skillInvoke.thjianmo = function(self, player, promptlist)
+	if promptlist[#promptlist] == "yes" then
+		local target = self.room:findPlayer(promptlist[#promptlist - 1])
+		if target then
+			sgs.updateIntention(player, target, 30)
+		end
+	end
+end
+
+--二重:觉醒技，若你回合外的两个连续的回合内，当前回合角色均未使用【杀】，且第二个回合的回合结束时，若你已受伤，你须减少1点体力上限，并获得技能“幻法”和“祝祭”。
+--无
+
+--春度：君主技，每当其他雪势力角色使用的红桃基本牌结算后置入弃牌堆时，你可弃置一张手牌获得之。
+sgs.ai_skill_cardask["@thchundu"] = function(self, data, pattern)
+	local card = data:toMoveOneTime().reason.m_extraData:toCard()
+	if card then
+		local h_cards = sgs.QList2Table(self.player:getHandcards())
+		self:sortByKeepValue(h_cards)
+		if self:getKeepValue(card) > self:getKeepValue(h_cards[1]) then
+			return "$" .. h_cards[1]
+		end
+	end
+	return "."
+end
+
+--醉觞：你的回合内，所有角色可以将两张牌当【酒】使用（你的回合内，所有角色使用的【酒】不计入使用限制）。
+local thzuishang_skill = {}
+thzuishang_skill.name = "thzuishang"
+table.insert(sgs.ai_skills, thzuishang_skill)
+thzuishang_skill.getTurnUseCard = function(self, inclusive)
+	local cards = self.player:getCards("he")
+	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+		cards:prepend(sgs.Sanguosha:getCard(id))
+	end
+	cards = sgs.QList2Table(cards)
+	for _, acard in ipairs(cards) do
+		if isCard("Analeptic", acard, self.player) then return end
+	end
+	self:sortByUseValue(cards)
+	local newcards = {}
+	local has_slash = false
+	for _, card in ipairs(cards) do
+		if self:getCardsNum("Slash") == 1 and isCard("Slash", card, self.player) then
+			continue
+		end
+		if self:getCardsNum("Slash") == 2 and isCard("Slash", card, self.player) and has_slash then
+			continue
+		end
+		if not isCard("Analeptic", card, self.player) and not isCard("Peach", card, self.player) and not (isCard("ExNihilo", card, self.player) and self.player:getPhase() == sgs.Player_Play) then
+			if isCard("Slash", card, self.player) then
+				has_slash = true
+			end
+			table.insert(newcards, card)
+		end
+	end
+	if #newcards <= self.player:getHp() - 1 and self.player:getHp() <= 4 and self:needKongcheng()
+		and not (self.player:hasSkill("ikshengtian") and self.player:getMark("@shengtian") == 0) then return end
+	if #newcards < 2 then return end
+
+	local card_id1 = newcards[1]:getEffectiveId()
+	local card_id2 = newcards[2]:getEffectiveId()
+
+	local card_str = ("analeptic:%s[%s:%s]=%d+%d"):format("thzuishang", "to_be_decided", 0, card_id1, card_id2)
+	local analeptic = sgs.Card_Parse(card_str)
+	return analeptic
+end
+
+function cardsView_thzuishang(self, player)
+	local cards = player:getCards("he")
+	for _, id in sgs.qlist(player:getPile("wooden_ox")) do
+		cards:prepend(sgs.Sanguosha:getCard(id))
+	end
+	cards = sgs.QList2Table(cards)
+	for _, acard in ipairs(cards) do
+		if isCard("Analeptic", acard, player) then return end
+	end
+	local newcards = {}
+	for _, card in ipairs(cards) do
+		if not isCard("Analeptic", card, player) and not isCard("Peach", card, player) and not (isCard("ExNihilo", card, player) and player:getPhase() == sgs.Player_Play) then
+			table.insert(newcards, card)
+		end
+	end
+	if #newcards < 2 then return end
+	sgs.ais[player:objectName()]:sortByKeepValue(newcards)
+	
+	local card_id1 = newcards[1]:getEffectiveId()
+	local card_id2 = newcards[2]:getEffectiveId()
+	
+	local card_str = ("analeptic:%s[%s:%s]=%d+%d"):format("thzuishang", "to_be_decided", 0, card_id1, card_id2)
+	return card_str
+end
+
+function sgs.ai_cardsview.thzuishang(self, class_name, player)
+	if class_name == "Analeptic" and player:getPhase() ~= sgs.Player_NotActive then
+		return cardsView_thzuishang(self, player)
+	end
+end
+
+function sgs.ai_cardsview.thzuishangv(self, class_name, player)
+	if class_name == "Analeptic" then
+		local obj_name = player:property("zhouhua_source"):toString()
+		local splayer = self.room:findPlayer(obj_name)
+		if splayer and splayer:hasSkill("thzuishang") then
+			return cardsView_thzhouhua(self, player)
+		end
+	end
+end
+
+sgs.ai_skill_playerchosen.thxugu = sgs.ai_skill_playerchosen.zero_card_as_slash
+
+sgs.ai_skill_use.analeptic = function(self, prompt, method)
+	local list = prompt:split(":")
+	local from = self.room:findPlayer(list[#list])
+	if not from then
+		return "."
+	end
+	if self:getCardsNum("Jink") > 1 then
+		return "."
+	end
+	if self:getCardsNum("Jink") > 0 and not from:canSlash(self.player) then
+		return "."
+	end
+	if getCardsNum("Slash", from, self.player) > 1 and from:canSlash(self.player) then
+		local analeptic = self:getCardId("Analeptic")
+		if analeptic then
+			local card = sgs.Card_Parse(analeptic)
+			for _, id in sgs.qlist(card:getSubcards()) do
+				if isCard("Jink", id, self.player) then
+					return "."
 				end
 			end
-			local zhangbao = self.room:findPlayerBySkillName("yingbing")
-			if zhangbao and self:isEnemy(zhangbao) and not zhangbao:hasSkill("manjuan")
-				and (card:isRed() or (self.player:hasSkill("hongyan") and card:getSuit() == sgs.Card_Spade)) then return false end
+			return analeptic
 		end
- 	end
-	]]
- 	return true
+	end
+	return "."
 end
+
+sgs.ai_playerchosen_intention.thxugu = 50
 
 --【遁甲】ai
 sgs.ai_skill_invoke.thdunjia = true

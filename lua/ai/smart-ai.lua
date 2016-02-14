@@ -5298,10 +5298,15 @@ function SmartAI:damageMinusHp(self, enemy, type)
 		local analepticpowerup = 0
 		local effectivefireattacknum = 0
 		local basicnum = 0
+		local notpeaches = 0
 		local cards = self.player:getCards("he")
 		cards = sgs.QList2Table(cards)
 		for _, acard in ipairs(cards) do
-			if acard:getTypeId() == sgs.Card_TypeBasic and not acard:isKindOf("Peach") then basicnum = basicnum + 1 end
+			if acard:isKindOf("Peach") then
+				continue
+			end
+			if acard:getTypeId() == sgs.Card_TypeBasic then basicnum = basicnum + 1 end
+			notpeaches = notpeaches + 1
 		end
 		for _, acard in ipairs(cards) do
 			if ((acard:isKindOf("Duel") or acard:isKindOf("SavageAssault") or acard:isKindOf("ArcheryAttack") or acard:isKindOf("FireAttack"))
@@ -5317,7 +5322,7 @@ function SmartAI:damageMinusHp(self, enemy, type)
 				trick_effectivenum = trick_effectivenum + 1
 			elseif acard:isKindOf("Slash") and self:slashIsEffective(acard, enemy) and (slash_damagenum == 0 or self:hasCrossbowEffect())
 				and self.player:inMyAttackRange(enemy) then
-				if not (enemy:hasSkill("xiangle") and basicnum < 2) then
+				if not (enemy:hasSkill("xiangle") and basicnum < 2) and not (self.player:hasFlag("jianmoinvoke") and notpeaches < 2) then
 					slash_damagenum = slash_damagenum + 1
 				end
 				if self:getCardsNum("Analeptic") > 0 and analepticpowerup == 0
