@@ -175,6 +175,61 @@ end
 
 sgs.ai_playerchosen_intention.thxugu = 50
 
+--慈航：当你使用的【杀】被目标角色的【闪】抵消时，你可以选择一项，以令此【杀】依然造成伤害：弃置等同于目标角色已损失的体力值数量的牌（不足则全弃）；或令目标角色摸等同于其体力值数量的牌（至多摸五张）。
+sgs.thcihang_choice = ""
+
+sgs.ai_skill_invoke.thcihang = function(self, data)
+	local effect = data:toSlashEffect()
+	local target = effect.to
+	if self:isFriend(target) then
+		if target:getHp() > 2 and not self:hasHeavySlashDamage(target, effect.slash) then
+			sgs.thcihang_choice = "draw"
+			return true
+		end
+		return false
+	elseif self:isEnemy(target) then
+		if not self:slashIsEffective(effect.slash, target, self.player) then
+			return false
+		end
+		if self:willSkipPlayPhase(target) then
+			sgs.thcihang_choice = "draw"
+			return true
+		end
+		local losthp = target:getLostHp()
+		if losthp < 2 or self.player:getCardCount() < 2 then
+			sgs.thcihang_choice = "discard"
+			return true
+		end
+		local hp = target:getHp()
+		if hp < 2 or (hp < 4 and self:hasHeavySlashDamage(target, effect.slash)) then
+			sgs.thcihang_choice = "draw"
+			return true
+		end
+	end
+	return false
+end
+
+sgs.ai_skill_choice.thcihang = function(self, choices, data)
+	if sgs.thcihang_choice ~= "" then
+		return sgs.thcihang_choice
+	end
+	local target = data:toPlayer()
+	if self:isFriend(target) then
+		return "draw"
+	end
+	return math.random(1, 3) == 1 and "discard" or "draw"
+end
+
+sgs.ai_choicemade_filter.skillChoice.thcihang = function(self, player, promptlist)
+	local effect = player:getTag("ThCihangData"):toSlashEffect()
+	local target = effect.to
+	if target then
+		if promptlist[#promptlist] == "discard" then
+			sgs.updateIntention(player, target, 50)
+		end
+	end
+end
+
 --【遁甲】ai
 sgs.ai_skill_invoke.thdunjia = true
 sgs.ai_skill_choice.thdunjia = function(self, choices, data)	

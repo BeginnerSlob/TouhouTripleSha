@@ -376,8 +376,8 @@ public:
         events << SlashMissed;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        if (player->askForSkillInvoke(objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        if (player->askForSkillInvoke(objectName(), data)) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -386,15 +386,17 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         SlashEffectStruct effect = data.value<SlashEffectStruct>();
-        if (room->askForChoice(player, objectName(), "discard+draw") == "discard") {
+        player->tag["ThCihangData"] = data; // for AI
+        if (room->askForChoice(player, objectName(), "discard+draw", QVariant::fromValue(effect.to)) == "discard") {
             int x = effect.to->getLostHp();
-            if (x != 0)
+            if (x > 0)
                 room->askForDiscard(player, objectName(), x, x, false, true);
         } else {
-            int x = qMin(qMax(effect.to->getHp(), 0), 5);
-            if (x != 0)
+            int x = qMin(effect.to->getHp(), 5);
+            if (x > 0)
                 effect.to->drawCards(x);
         }
+        player->tag.remove("ThCihangData");
 
         room->slashResult(effect, NULL);
 
