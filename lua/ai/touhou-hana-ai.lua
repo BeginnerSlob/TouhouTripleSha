@@ -1228,7 +1228,9 @@ sgs.ai_skill_cardask["@thzhaoyu"] = function(self, data, pattern, target)
 	return "."
 end
 
-sgs.ai_skill_invoke.thzhaoyu_draw = true
+sgs.ai_skill_invoke.thzhaoyu_draw = function(self)
+	return self.player:objectName() ~= self.room:getCurrent():objectName() or not self.player:isKongcheng()
+end
 
 sgs.ai_choicemade_filter.cardResponded["@thzhaoyu"] = function(self, player, promptlist)
 	if promptlist[#promptlist] ~= "_nil_" then

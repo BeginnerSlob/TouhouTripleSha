@@ -101,7 +101,7 @@ QString Card::getNumberString() const{
 }
 
 Card::Suit Card::getSuit() const{
-    if (m_skillName == "ikshidao" || m_skillName == "_jnhuoji")
+    if (m_skillName == "ikshidao" || m_skillName == "_jnhuoji" | m_skillName == "_thmoji")
         return NoSuit;
     if (m_suit != NoSuit && m_suit != SuitToBeDecided)
         return m_suit;
