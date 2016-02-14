@@ -18,22 +18,17 @@ sgs.ai_skill_choice.thjianmo = function(self, choices)
 end
 
 sgs.ai_skill_discard.thjianmo = function(self, discard_num, min_num, optional, include_equip)
-	self.room:writeToConsole("---")
 	local ret = self:askForDiscard("", 1, 1, false, true)
 	if #ret ~= 0 then
 		self.room:writeToConsole(ret[1])
 		if isCard("Peach", ret[1], self.player) then
-			self.room:writeToConsole("peach")
 			return {}
 		else
-			self.room:writeToConsole("not peach")
 			return ret
 		end
 	else
-		self.room:writeToConsole("no ret")
 		return {}
 	end
-	self.room:writeToConsole("---")
 end
 
 sgs.ai_choicemade_filter.skillInvoke.thjianmo = function(self, player, promptlist)
