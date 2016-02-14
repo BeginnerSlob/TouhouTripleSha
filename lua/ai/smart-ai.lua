@@ -2261,8 +2261,8 @@ function SmartAI:askForNullification(trick, from, to, positive, isHeg)
 			if self:isFriend(to) and to:isNude() then return nil end
 		end
 		if ("snatch|dismantlement"):match(trick:objectName()) and to:containsTrick("purple_song") then
-			if self:isFriend(from) then return null_card end
 			if self:isEnemy(to) and to:isNude() then return nil end
+			if self:isEnemy(from) then return null_card end
 		end
 		if trick:isKindOf("Duel") and (trick:getSkillName() == "lijian" or trick:getSkillName() == "liyu") and (self:isFriend(to) or (self:isFriend(from) and to:hasSkill("wuhun"))) then
 			if to:getHp() == 1 and sgs.ai_role[to:objectName()] == "rebel" and from and sgs.ai_role[from:objectName()] == "rebel" then return end
@@ -2368,16 +2368,15 @@ function SmartAI:askForNullification(trick, from, to, positive, isHeg)
 					end
 				end
 			end
+		elseif trick:isKindOf("PurpleSong") and not to:isSkipped(sgs.Player_Discard) then
+			if to:getPile("incantation"):length() > 0 then
+				local card = sgs.Sanguosha:getCard(to:getPile("incantation"):first())
+				if card:getSuit() == sgs.Card_Diamond then return nil end
+			end
+			return null_card
 		end
 		if from then
 			if self:isEnemy(to) then
-				if trick:isKindOf("PurpleSong") and not to:isSkipped(sgs.Player_Discard) then
-					if to:getPile("incantation"):length() > 0 then
-						local card = sgs.Sanguosha:getCard(to:getPile("incantation"):first())
-						if card:getSuit() == sgs.Card_Diamond and not to:hasSkill("ikmohua") then return nil end
-					end
-					return null_card
-				end
 				if trick:isKindOf("GodSalvation") and self:isWeak(to) then
 					return null_card
 				end

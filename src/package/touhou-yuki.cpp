@@ -440,7 +440,9 @@ public:
 
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
         if (triggerEvent == TargetConfirming) {
+            ask_who->tag["ThZhancaoData"] = data; // for AI
             if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+                ask_who->tag.remove("ThZhancaoData");
                 room->broadcastSkillInvoke(objectName());
                 if (!room->askForCard(ask_who, "^BasicCard", "@thzhancao")) {
                     room->loseHp(ask_who);
@@ -458,6 +460,7 @@ public:
                 }
                 return true;
             }
+            ask_who->tag.remove("ThZhancaoData");
         } else if (triggerEvent == BeforeCardsMove) {
             ask_who->tag["thzhancao_user"] = false;
             return true;
