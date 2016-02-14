@@ -20,7 +20,6 @@ end
 sgs.ai_skill_discard.thjianmo = function(self, discard_num, min_num, optional, include_equip)
 	local ret = self:askForDiscard("", 1, 1, false, true)
 	if #ret ~= 0 then
-		self.room:writeToConsole(ret[1])
 		if isCard("Peach", ret[1], self.player) then
 			return {}
 		else
@@ -496,25 +495,54 @@ end
 
 sgs.ai_playerchosen_intention.thyuanqi = -30
 
---【遁甲】ai
-sgs.ai_skill_invoke.thdunjia = true
-sgs.ai_skill_choice.thdunjia = function(self, choices, data)	
-	local target = self.player:getTag("ThDunjiaTarget"):toPlayer()
-	if not target or not self:isEnemy(target) then return "draw" end
-	if choices:match("discard") then
-		local x = math.abs(self.player:getEquips():length()- target:getEquips():length())
-		if target:getCards("he"):length() >= x then
-			return "discard"
-		end
-		-- 目前无脑拆
-		--其实判断最好加入对于敌人装备值得衡量和自身需要过牌的考虑，而不是无脑发动 = =
-		--高阶ai aoe时需要队友会卖血
+--遁甲：出牌阶段限三次，你可以将一张【杀】当【心网密葬】使用；若该角色被此牌所弃置的牌为【闪】，你对其造成1点伤害。
+local thdunjia_skill = {}
+thdunjia_skill.name = "thdunjia"
+table.insert(sgs.ai_skills, thdunjia_skill)
+thdunjia_skill.getTurnUseCard = function(self, inclusive)
+	local cards = self.player:getCards("he")
+	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
-	return "draw"
-end
---sgs.ai_skill_cardchosen.thdunjia = function(self, who, flags)
---交给smart-ai的askForCardChosen去选择,应该没有特别要注意的
+	cards = sgs.QList2Table(cards)
 
+	local slash_card
+	self:sortByUseValue(cards, true)
+
+	for _, card in ipairs(cards) do
+		if card:isKindOf("Slash") and ((self:getUseValue(card) < sgs.ai_use_value.Dismantlement) or inclusive or self:getOverflow() > 0) then
+			local shouldUse = true
+
+			local dummy_use = { isDummy = true }
+			if self:getCardsNum("Slash") == 1 then
+				self:useBasicCard(card, dummy_use)
+				if dummy_use.card then shouldUse = false end
+			end
+
+			if shouldUse then
+				slash_card = card
+				break
+			end
+
+		end
+	end
+
+	if slash_card then
+		local suit = slash_card:getSuitString()
+		local number = slash_card:getNumberString()
+		local card_id = slash_card:getEffectiveId()
+		local card_str = ("dismantlement:thdunjia[%s:%s]=%d"):format(suit, number, card_id)
+		local dismantlement = sgs.Card_Parse(card_str)
+
+		assert(dismantlement)
+
+		return dismantlement
+	end
+end
+
+function sgs.ai_cardneed.thdunjia(to, card, self)
+	return card:isKindOf("Slash") and getKnownCard(to, self.player, "Slash", nil, "he") < 3
+end
 
 sgs.ai_skill_invoke.thlingya = true
 sgs.ai_skill_choice.thlingya = function(self, choices, data)	
