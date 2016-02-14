@@ -225,6 +225,90 @@ sgs.ai_choicemade_filter.skillChoice.thcihang = function(self, player, promptlis
 	end
 end
 
+--战操：你的回合外，当你或你的攻击范围内的一名角色成为【杀】的目标时，你可选择一项使该【杀】对其无效：失去1点体力，且该【杀】在结算后置入弃牌堆时，你获得之；或弃置一张非基本牌。
+sgs.ai_skill_invoke.thzhancao = function(self, data)
+	sgs.thzhancao_throw = nil
+	local target = data:toPlayer()
+	if self:isFriend(target) then
+		local use = self.player:getTag("ThZhancaoData"):toCardUse()
+		local slash = use.card
+		local need_lost = 0
+		if not slash:hasFlag("thzhancao") then
+			if slash:isVirtualCard() then
+				for _, id in sgs.qlist(slash:getSubcards()) do
+					if isCard("Peach", id, self.player) then
+						need_lost = 1
+						break
+					end
+				end
+			elseif isCard("Peach", slash, self.player) then
+				need_lost = 1
+			end
+			if need_lost > 0 and (self:getHp() > 1 or self:getCardsNum({ "Peach", "Analeptic" }) >= 1) then
+				sgs.thzhancao_throw = nil
+				return true
+			end
+		else
+			need_lost = -1
+		end
+
+		local not_basics = {}
+		for _, c in sgs.qlist(self.player:getCards("he")) do
+			if c:isKindOf("EquipCard") or c:isKindOf("TrickCard") then
+				table.insert(not_basics, c)
+			end
+		end
+		if #not_basics > 0 then
+			self:sortByKeepValue(not_basics)
+			sgs.thzhancao_throw = not_basics[1]:getEffectiveId()
+		end
+		if sgs.thzhancao_throw and isCard("Peach", sgs.thzhancao_throw, self.player) then
+			sgs.thzhancao_throw = nil
+		end
+		if self:isWeak(target) and not self:isWeak(self.player) then
+			return true
+		end
+		if sgs.getDefense(target) < sgs.getDefense(self.player) then
+			if not slash:hasFlag("thzhancao") and self:getCardsNum("Slash") < 1 and self.player:getHp() > 2 then
+				sgs.thzhancao_throw = nil
+				return true
+			end
+			return true
+		end
+		if self:getOverflow() > 0 and sgs.thzhancao_throw then
+			return true
+		end
+	end
+	return false
+end
+
+sgs.ai_skill_cardask["@thzhancao"] = function(self, data, pattern)
+	if sgs.thzhancao_throw then
+		return "$" .. sgs.thzhancao_throw
+	else
+		return "."
+	end
+end
+
+sgs.ai_cardneed.thzhancao = function(to, card, self)
+	return card:getTypeId() ~= sgs.Card_TypeBasic
+end
+
+sgs.ai_choicemade_filter.skillInvoke.thzhancao = function(self, player, promptlist)
+	if promptlist[#promptlist] == "yes" then
+		local target = self.room:findPlayer(promptlist[#promptlist - 1])
+		if target then
+			sgs.updateIntention(player, target, -50)
+		end
+	end
+end
+
+sgs.thzhancao_keep_value = {
+	Weapon = 6,
+	EquipCard = 5,
+	TrickCard = 5,
+}
+
 --【遁甲】ai
 sgs.ai_skill_invoke.thdunjia = true
 sgs.ai_skill_choice.thdunjia = function(self, choices, data)	

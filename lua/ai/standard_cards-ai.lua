@@ -3915,7 +3915,7 @@ sgs.jade_suit_value = {
 }
 
 sgs.ai_card_intention.JadeCard = function(self, card, from, tos)
-	local cardx = sgs.Card_Parse(sgs.GetProperty(from, "jade_trick"):toString())
+	local cardx = sgs.Card_Parse(sgs.GetProperty(from, "jade_trick"))
 	if not cardx then return end
 	local intention = (cardx:isKindOf("AOE") and -50 or 50)
 	for _, to in ipairs(tos) do
