@@ -1963,7 +1963,27 @@ function SmartAI:filterEvent(triggerEvent, player, data)
 
 			if place == sgs.Player_DrawPile
 				or (move.to_place == sgs.Player_DrawPile and not (from and tonumber(from:property("zongxuan_move"):toString()) == card_id)) then
-				self.top_draw_pile_id = nil
+				self.top_draw_pile_zongxuan_id = nil
+			end
+
+			if move.to_place == sgs.Player_DrawPile and reason.m_skillName == "thmoji" and reason.m_reason == sgs.CardMoveReason_S_REASON_PUT
+					and self.room:getDrawPile():contains(card_id) then
+				if not sgs.draw_pile_thmoji[from:objectName()] then
+					sgs.draw_pile_thmoji[from:objectName()] = {}
+				end
+				table.contains(sgs.draw_pile_thmoji[from:objectName()], card_id)
+			end
+
+			if place == sgs.Player_DrawPile then
+				for thmoji_owner, t in pairs(sgs.draw_pile_thmoji) do
+					if table.contains(t, card_id) then
+						table.removeOne(sgs.draw_pile_thmoji[thmoji_owner], card_id)
+						if to and move.to_place == sgs.Player_PlaceHand then
+							local flag = string.format("%s_%s_%s", "visible", thmoji_owner, to:objectName())
+							card:setFlags(flag)
+						end
+					end
+				end
 			end
 
 			if move.to_place == sgs.Player_PlaceHand and to and player:objectName() == to:objectName() then

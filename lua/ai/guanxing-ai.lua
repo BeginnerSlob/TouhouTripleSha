@@ -1,9 +1,7 @@
 sgs.ai_judgestring = {
 	indulgence = "heart",
-	diamond = "heart",
 	supply_shortage = "club",
-	spade = "club",
-	club = "club",
+	purple_song = "spade|heart|club",
 	lightning = "spade",
 }
 
@@ -78,7 +76,7 @@ local function GuanXing(self, cards)
 			for index, for_judge in ipairs(bottom) do
 				local suit = for_judge:getSuitString()
 				if self.player:hasSkill("hongyan") and suit == "spade" then suit = "heart" end
-				if judge_str == suit then
+				if judge_str:match(suit) then
 					table.insert(up, for_judge)
 					table.remove(bottom, index)
 					judged_list[judge_count] = 1
@@ -259,7 +257,7 @@ local function GuanXing(self, cards)
 					local suit = for_judge:getSuitString()
 					local number = for_judge:getNumber()
 					if next_player:hasSkill("hongyan") and suit == "spade" then suit = "heart" end
-					if judge_str == suit then
+					if judge_str:match(suit) then
 						table.insert(next_judge, for_judge)
 						table.remove(bottom, index)
 						nextplayer_has_judged = true
@@ -279,7 +277,7 @@ local function GuanXing(self, cards)
 					local suit = for_judge:getSuitString()
 					local number = for_judge:getNumber()
 					if next_player:hasSkill("hongyan") and suit== "spade" then suit = "heart" end
-					if judge_str ~= suit then
+					if not judge_str:match(suit) then
 						table.insert(next_judge, for_judge)
 						table.remove(bottom, index)
 						nextplayer_has_judged = true
@@ -507,7 +505,7 @@ local function XinZhan(self, cards)
 	local up, bottom = {}, {}
 	local judged_list = {}
 	local hasJudge = false
-	local next_player = self.player:getNextAlive()
+	local next_player = self.room:findPlayer(self.room:getCurrent():getNextAlive():objectName())
 	local judge = next_player:getCards("j")
 	judge = sgs.QList2Table(judge)
 	judge = sgs.reverse(judge)
@@ -519,12 +517,12 @@ local function XinZhan(self, cards)
 		local judge_str = sgs.ai_judgestring[need_judge:objectName()] or sgs.ai_judgestring[need_judge:getSuitString()]
 
 		for _, for_judge in ipairs(bottom) do
-			if judge_str == "spade" and not lightning_flag then
+			if judge_str:match("spade") and not lightning_flag then
 				has_lightning = need_judge
 				if for_judge:getNumber() >= 2 and for_judge:getNumber() <= 9 then lightning_flag = true end
 			end
 			if self:isFriend(next_player) then
-				if judge_str == for_judge:getSuitString() then
+				if judge_str:match(for_judge:getSuitString()) then
 					if not lightning_flag then
 						table.insert(up, for_judge)
 						table.remove(bottom, index)
@@ -534,8 +532,8 @@ local function XinZhan(self, cards)
 					end
 				end
 			else
-				if judge_str ~= for_judge:getSuitString() or
-					(judge_str == for_judge:getSuitString() and judge_str == "spade" and lightning_flag) then
+				if not judge_str:match(for_judge:getSuitString()) or
+					(judge_str:match(for_judge:getSuitString()) and judge_str:match("spade") and lightning_flag) then
 					table.insert(up, for_judge)
 					table.remove(bottom, index)
 					judged_list[judge_count] = 1

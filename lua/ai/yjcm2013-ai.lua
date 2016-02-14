@@ -717,7 +717,7 @@ end
 -- @todo: DanShou AI
 
 sgs.ai_skill_use["@@zongxuan"] = function(self, prompt)
-	if self.top_draw_pile_id or self.player:getPhase() >= sgs.Player_Finish then return "." end
+	if self.top_draw_pile_zongxuan_id or self.player:getPhase() >= sgs.Player_Finish then return "." end
 	local list = self.player:property("zongxuan"):toString():split("+")
 	local valuable
 	for _, id in ipairs(list) do
@@ -728,7 +728,7 @@ sgs.ai_skill_use["@@zongxuan"] = function(self, prompt)
 				if not (card:isKindOf("Armor") and not friend:getArmor() and friend:hasSkills("bazhen|yizhong|bossmanjia"))
 					and (not self:getSameEquip(card, friend) or card:isKindOf("DefensiveHorse") or card:isKindOf("OffensiveHorse")
 						or (card:isKindOf("Weapon") and self:evaluateWeapon(card) > self:evaluateWeapon(friend:getWeapon()) - 1)) then
-					self.top_draw_pile_id = card_id
+					self.top_draw_pile_zongxuan_id = card_id
 					return "@ZongxuanCard=" .. card_id
 				end
 			end
@@ -737,7 +737,7 @@ sgs.ai_skill_use["@@zongxuan"] = function(self, prompt)
 		end
 	end
 	if valuable then
-		self.top_draw_pile_id = valuable
+		self.top_draw_pile_zongxuan_id = valuable
 		return "@ZongxuanCard=" .. valuable
 	end
 	return "."
@@ -745,9 +745,9 @@ end
 
 sgs.ai_skill_playerchosen.zhiyan = function(self, targets)
 	local id = self.room:getDrawPile():first()
-	if self.top_draw_pile_id and self.top_draw_pile_id ~= id then self.top_draw_pile_id = nil end
-	if self.top_draw_pile_id then
-		local card = sgs.Sanguosha:getCard(self.top_draw_pile_id)
+	if self.top_draw_pile_zongxuan_id and self.top_draw_pile_zongxuan_id ~= id then self.top_draw_pile_zongxuan_id = nil end
+	if self.top_draw_pile_zongxuan_id then
+		local card = sgs.Sanguosha:getCard(self.top_draw_pile_zongxuan_id)
 		if card:isKindOf("EquipCard") then
 			self:sort(self.friends, "hp")
 			for _, friend in ipairs(self.friends) do
