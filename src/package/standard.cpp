@@ -49,6 +49,8 @@ Card::CardType EquipCard::getTypeId() const{
 }
 
 bool EquipCard::isAvailable(const Player *player) const{
+    if (player->hasFlag("ThChouceUse"))
+        return Card::isAvailable(player);
     return !player->isProhibited(player, this) && Card::isAvailable(player);
 }
 
@@ -56,6 +58,21 @@ void EquipCard::onUse(Room *room, const CardUseStruct &card_use) const{
     CardUseStruct use = card_use;
     WrappedCard *wrapped = Sanguosha->getWrappedCard(this->getEffectiveId());
     use.card = wrapped;
+
+    if (use.from->hasFlag("ThChouceUse")) {
+        room->setPlayerFlag(use.from, "-ThChouceUse");
+        int n = use.from->getMark("ThChouce");
+        if (n > 0)
+            room->removePlayerCardLimitation(use.from, "use", QString("^SkillCard|.|1~%1$0").arg(n));
+
+        LogMessage log;
+        log.type = "#InvokeSkill";
+        log.from = use.from;
+        log.arg = "thchouce";
+        room->sendLog(log);
+
+        use.card->setFlags("thchouce_use");
+    }
 
     ServerPlayer *player = use.from;
     if (use.to.isEmpty())
@@ -164,7 +181,7 @@ void GlobalEffect::onUse(Room *room, const CardUseStruct &card_use) const{
 }
 
 bool GlobalEffect::isAvailable(const Player *player) const{
-    bool canUse = false;
+    bool canUse = player->hasFlag("ThChouceUse");
     QList<const Player *> players = player->getAliveSiblings();
     players << player;
     foreach (const Player *p, players) {
@@ -183,7 +200,7 @@ QString AOE::getSubtype() const{
 }
 
 bool AOE::isAvailable(const Player *player) const{
-    bool canUse = false;
+    bool canUse = player->hasFlag("ThChouceUse");
     QList<const Player *> players = player->getAliveSiblings();
     foreach (const Player *p, players) {
         if (player->isProhibited(p, this))
@@ -231,7 +248,9 @@ QString SingleTargetTrick::getSubtype() const{
     return "single_target_trick";
 }
 
-bool SingleTargetTrick::targetFilter(const QList<const Player *> &, const Player *, const Player *) const{
+bool SingleTargetTrick::targetFilter(const QList<const Player *> &targets, const Player *, const Player *Self) const{
+    if (Self->hasFlag("ThChouceUse"))
+        return targets.isEmpty();
     return true;
 }
 
@@ -381,6 +400,8 @@ Weapon::Weapon(Suit suit, int number, int range)
 }
 
 bool Weapon::isAvailable(const Player *player) const{
+    if (player->hasFlag("ThChouceUse"))
+        return !player->isCardLimited(this, Card::MethodUse) && EquipCard::isAvailable(player);
     if (player->getGameMode() == "04_1v3" && !player->isLord() && !player->isCardLimited(this, Card::MethodRecast))
         return true;
     return !player->isCardLimited(this, Card::MethodUse) && EquipCard::isAvailable(player);

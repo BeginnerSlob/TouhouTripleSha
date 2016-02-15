@@ -702,92 +702,113 @@ public:
 };
 
 ThChouceCard::ThChouceCard() {
-    will_throw = false;
+    target_fixed = true;
 }
 
-bool ThChouceCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const {
-    const Card *card = Sanguosha->getCard(getSubcards().first());
-    if (!card)
-        return false;
-    if (card->isKindOf("Collateral"))
-        return targets.isEmpty()
-            || (targets.length() == 1 && targets.first()->canSlash(to_select));
-    else
-        return targets.isEmpty();
+const Card *ThChouceCard::validate(CardUseStruct &card_use) const
+{
+    ServerPlayer *player = card_use.from;
+    Room *room = player->getRoom();
+    const Card *new_card = NULL;
+    room->setPlayerFlag(player, "ThChouceUse");
+    int n = player->getMark("ThChouce");
+    if (n > 0)
+        room->setPlayerCardLimitation(player, "use", QString("^SkillCard|.|1~%1").arg(n), false);
+    CardUseStruct::CardUseReason reason = Sanguosha->getCurrentCardUseReason();
+    if (reason == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        room->setPlayerFlag(player, "ThChouce_Response_Use");
+        new_card = room->askForUseCard(player, user_string, "@thchouce");
+        room->setPlayerFlag(player, "-ThChouce_Response_Use");
+    } else if (reason == CardUseStruct::CARD_USE_REASON_PLAY) {
+        CardUseStruct new_card_use;
+        room->activate(player, new_card_use);
+        new_card = new_card_use.card;
+        if (new_card != NULL)
+            room->useCard(new_card_use, true);
+    }
+    if (!new_card) {
+        if (n > 0)
+            room->removePlayerCardLimitation(player, "use", QString("^SkillCard|.|1~%1$0").arg(n));
+        room->setPlayerFlag(player, "Global_ThChouceFailed");
+        room->setPlayerFlag(player, "-ThChouceUse");
+        return NULL;
+    }
+    return this;
 }
 
-bool ThChouceCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const {
-    const Card *card = Sanguosha->getCard(getSubcards().first());
-    if (!card)
-        return false;
-    if (card->isKindOf("Collateral")) {
-        if (targets.length() == 2)
-            return true;
-        else if (targets.length() == 1) {
-            const Player *target = targets.first();
-            foreach (const Player *p, target->getAliveSiblings())
-                if (target->canSlash(p))
-                    return false;
-            return true;
-        } else
-            return false;
-    } else
-        return targets.length() == 1;
+const Card *ThChouceCard::validateInResponse(ServerPlayer *player) const
+{
+    Room *room = player->getRoom();
+    const Card *new_card = NULL;
+    room->setPlayerFlag(player, "ThChouceUse");
+    int n = player->getMark("ThChouce");
+    if (n > 0)
+        room->setPlayerCardLimitation(player, "use", QString("^SkillCard|.|1~%1").arg(n), false);
+    CardUseStruct::CardUseReason reason = Sanguosha->getCurrentCardUseReason();
+    if (reason == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        room->setPlayerFlag(player, "ThChouce_Response_Use");
+        new_card = room->askForUseCard(player, user_string, "@thchouce");
+        room->setPlayerFlag(player, "-ThChouce_Response_Use");
+    } else if (reason == CardUseStruct::CARD_USE_REASON_PLAY) {
+        CardUseStruct new_card_use;
+        room->activate(player, new_card_use);
+        new_card = new_card_use.card;
+        if (new_card != NULL)
+            room->useCard(new_card_use, true);
+    }
+    if (!new_card) {
+        if (n > 0)
+            room->removePlayerCardLimitation(player, "use", QString("^SkillCard|.|1~%1$0").arg(n));
+        room->setPlayerFlag(player, "Global_ThChouceFailed");
+        room->setPlayerFlag(player, "-ThChouceUse");
+        return NULL;
+    }
+    return this;
 }
 
-const Card *ThChouceCard::validate(CardUseStruct &card_use) const{
-    Card *use_card = Sanguosha->cloneCard(Sanguosha->getCard(subcards.first())->objectName());
-    use_card->addSubcards(subcards);
-    use_card->setSkillName("thchouce");
-    Room *room = card_use.from->getRoom();
-
-    room->setPlayerMark(card_use.from, "ThChouce", use_card->getNumber());
-    card_use.from->addMark("choucecount");
-
-    return use_card;
-}
-
-class ThChouceViewAsSkill: public OneCardViewAsSkill {
+class ThChouce: public ZeroCardViewAsSkill
+{
 public:
-    ThChouceViewAsSkill(): OneCardViewAsSkill("thchouce") {
-        response_or_use = true;
+    ThChouce(): ZeroCardViewAsSkill("thchouce")
+    {
     }
 
-    virtual bool isEnabledAtPlay(const Player *) const {
-        return true;
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return player->getMark("ThChouce") < 13
+                && !player->hasFlag("Global_ThChouceFailed")
+                && !player->hasFlag("ThChouceUse");
     }
 
-    virtual bool viewFilter(const Card* to_select) const{
-        if (to_select->getNumber() <= Self->getMark("ThChouce"))
-            return false;
-
-        if (to_select->isKindOf("Slash") || to_select->isKindOf("Analeptic"))
-            return to_select->isAvailable(Self);
-        else
-            return !Self->isCardLimited(to_select, Card::MethodUse, true)
-                && !to_select->isKindOf("Horse")
-                && !to_select->isKindOf("Jink")
-                && !to_select->isKindOf("Nullification")
-                && !to_select->isEquipped();
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
+    {
+        if (pattern == "slash" || pattern == "peach" || pattern.contains("analeptic"))
+            return player->getPhase() == Player::Play
+                    && Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE
+                    && player->getMark("ThChouce") < 13
+                    && !player->hasFlag("Global_ThChouceFailed")
+                    && !player->hasFlag("ThChouceUse");
+        return false;
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const{
+    virtual const Card *viewAs() const
+    {
         ThChouceCard *card = new ThChouceCard;
-        card->addSubcard(originalCard);
+        if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
+            card->setUserString(Sanguosha->getCurrentCardUsePattern());
         return card;
     }
 };
 
-class ThChouce: public TriggerSkill {
+class ThChouceRecord: public TriggerSkill {
 public:
-    ThChouce(): TriggerSkill("thchouce"){
+    ThChouceRecord(): TriggerSkill("#thchouce"){
         events << PreCardUsed << PreCardResponded << EventPhaseChanging;
-        view_as_skill = new ThChouceViewAsSkill;
+        global = true;
+        frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        QStringList skills;
-        if (!TriggerSkill::triggerable(player)) return skills;
         if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to == Player::Play) {
@@ -797,7 +818,7 @@ public:
             }
         } else if (triggerEvent == PreCardUsed || triggerEvent == PreCardResponded) {
             if (player->getPhase() != Player::Play)
-                return skills;
+                return QStringList();
             const Card *usecard = NULL;
             if (triggerEvent == PreCardUsed) {
                 CardUseStruct use = data.value<CardUseStruct>();
@@ -807,46 +828,14 @@ public:
                 if (resp.m_isUse)
                     usecard = resp.m_card;
             }
-            if (!usecard || usecard->getTypeId() == Card::TypeSkill || usecard->getSkillName() == objectName())
-                return skills;
-
-            if (usecard->isKindOf("Jink") || usecard->isKindOf("Nullification")) {
-                room->setPlayerFlag(player, "ThChouce_failed");
-                room->setPlayerMark(player, "ThChouce", usecard->getNumber());
-                return skills;
-            }
-
-            int precardnum = player->getMark("ThChouce"); //the cardnumber store of thchouce
-            if (usecard->getNumber() > precardnum) {
-                if (usecard->isKindOf("Collateral")) {
-                    foreach (ServerPlayer *p, room->getAlivePlayers())
-                        if (!player->isProhibited(p, usecard)) {
-                            foreach(ServerPlayer *target, room->getOtherPlayers(p))
-                                if (p->inMyAttackRange(target)) {
-                                    skills << objectName();
-                                    break;
-                                }
-                            if (!skills.isEmpty())
-                                break;
-                        }
-                } else {
-                    foreach (ServerPlayer *p, room->getAlivePlayers())
-                        if (!player->isProhibited(p, usecard)) {
-                            skills << objectName();
-                            break;
-                        }
-                }
-            } else if (usecard->toString() != player->tag["ThChouceCard"].toString()){
-                room->setPlayerFlag(player, "ThChouce_failed");
-                room->setPlayerMark(player, "ThChouce", usecard->getNumber());
-            }
+            if (usecard && usecard->getTypeId() != Card::TypeSkill)
+                return QStringList(objectName());
         }
 
-        return skills;
+        return QStringList();
     }
 
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        QList<ServerPlayer *> targets;
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         const Card *usecard = NULL;
         if (triggerEvent == PreCardUsed) {
             CardUseStruct use = data.value<CardUseStruct>();
@@ -856,78 +845,11 @@ public:
             if (resp.m_isUse)
                 usecard = resp.m_card;
         }
-        if (!usecard) return false;
-        foreach (ServerPlayer *p, room->getAlivePlayers())
-            if (!player->isProhibited(p, usecard))
-                targets << p;
         room->setPlayerMark(player, "ThChouce", usecard->getNumber());
-        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thchouce", true);
-        player->tag["ThChouceCard"] = usecard->toString();
-        if (target) {
-            room->broadcastSkillInvoke(objectName());
-            room->notifySkillInvoked(player, objectName());
-            player->tag["ThChouceTarget"] = QVariant::fromValue(target);
-            return true;
-        } else
+        if (!usecard->hasFlag("thchouce_use"))
             room->setPlayerFlag(player, "ThChouce_failed");
-
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        ServerPlayer *target = player->tag["ThChouceTarget"].value<ServerPlayer *>();
-        if (!target) return false;
-        if (triggerEvent == PreCardUsed) {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("Collateral")) {
-                foreach (ServerPlayer *killer, use.to)
-                    killer->tag.remove("collateralVictim");
-            }
-            use.to.clear();
-            use.to << target;
-            if (use.card->isKindOf("Collateral")) {
-                foreach (ServerPlayer *killer, use.to) {
-                    QList<ServerPlayer *> victims;
-                    foreach (ServerPlayer *p, room->getOtherPlayers(killer))
-                        if (killer->inMyAttackRange(p))
-                            victims << p;
-                    Q_ASSERT(!victims.isEmpty());
-                    ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName(), "thchouce-slash:" + killer->objectName());
-                    killer->tag["collateralVictim"] = QVariant::fromValue(victim);
-
-                    LogMessage log;
-                    log.type = "#CollateralSlash";
-                    log.from = player;
-                    log.to << victim;
-                    room->sendLog(log);
-
-                    room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, killer->objectName(), victim->objectName());
-                }
-            }
-            data = QVariant::fromValue(use);
-
-            LogMessage log;
-            log.type = "$ThChouce";
-            log.from = player;
-            log.to = use.to;
-            log.arg = objectName();
-            log.card_str = QString::number(use.card->getEffectiveId());
-            room->sendLog(log);
-        } else if (triggerEvent == PreCardResponded) {
-            CardResponseStruct resp = data.value<CardResponseStruct>();
-            resp.m_who = target;
-            data = QVariant::fromValue(resp);
-
-            LogMessage log;
-            log.type = "$ThChouce";
-            log.from = player;
-            log.to << resp.m_who;
-            log.arg = objectName();
-            log.card_str = QString::number(resp.m_card->getEffectiveId());
-            room->sendLog(log);
-        }
-
-        room->addPlayerMark(player, "choucecount"); //the count of thchouce
+        else
+            room->addPlayerMark(player, "choucecount");
         return false;
     }
 };
@@ -2348,6 +2270,8 @@ TouhouYukiPackage::TouhouYukiPackage()
 
     General *yuki007 = new General(this, "yuki007", "yuki", 3);
     yuki007->addSkill(new ThChouce);
+    yuki007->addSkill(new ThChouceRecord);
+    related_skills.insertMulti("thchouce", "#thchouce");
     yuki007->addSkill(new ThZhanshi);
     yuki007->addSkill(new ThZhanshiClear);
     related_skills.insertMulti("thzhanshi", "#thzhanshi-clear");

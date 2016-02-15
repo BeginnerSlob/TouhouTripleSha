@@ -51,9 +51,8 @@ class ThChouceCard: public SkillCard{
 public:
     Q_INVOKABLE ThChouceCard();
 
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
     virtual const Card *validate(CardUseStruct &card_use) const;
+    virtual const Card *validateInResponse(ServerPlayer *player) const;
 };
 
 class ThBingpuCard: public SkillCard{

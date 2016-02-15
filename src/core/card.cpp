@@ -570,17 +570,25 @@ bool Card::targetFixed() const{
     if (Self && Self->hasFlag("JnXianmaoUsed"))
         return false;
     // ====================
+    if (Self && Self->hasFlag("ThChouceUse") && !isKindOf("SkillCard"))
+        return false;
     return target_fixed;
 }
 
-bool Card::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
+bool Card::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
+{
+    if (Self->hasFlag("ThChouceUse") && !isKindOf("SkillCard"))
+        return targets.length() == 1;
     if (targetFixed())
         return true;
     else
         return !targets.isEmpty();
 }
 
-bool Card::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool Card::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    if (Self->hasFlag("ThChouceUse") && !isKindOf("SkillCard"))
+        return targets.isEmpty();
     return targets.isEmpty() && to_select != Self;
 }
 
@@ -604,6 +612,21 @@ void Card::doPreAction(Room *, const CardUseStruct &) const{
 void Card::onUse(Room *room, const CardUseStruct &use) const{
     CardUseStruct card_use = use;
 
+    if (use.from->hasFlag("ThChouceUse") && !isKindOf("SkillCard")) {
+        room->setPlayerFlag(use.from, "-ThChouceUse");
+        int n = use.from->getMark("ThChouce");
+        if (n > 0)
+            room->removePlayerCardLimitation(use.from, "use", QString("^SkillCard|.|1~%1$0").arg(n));
+
+        LogMessage log;
+        log.type = "#InvokeSkill";
+        log.from = use.from;
+        log.arg = "thchouce";
+        room->sendLog(log);
+
+        use.card->setFlags("thchouce_use");
+    }
+
     room->sortByActionOrder(card_use.to);
 
     QList<ServerPlayer *> targets = card_use.to;
@@ -618,13 +641,15 @@ void Card::onUse(Room *room, const CardUseStruct &use) const{
     thread->trigger(PreCardUsed, room, card_use.from, data);
     card_use = data.value<CardUseStruct>();
 
-    LogMessage log;
-    log.from = card_use.from;
-    if (!card_use.card->targetFixed() || card_use.to.length() > 1 || !card_use.to.contains(card_use.from))
-        log.to = card_use.to;
-    log.type = "#UseCard";
-    log.card_str = card_use.card->toString(hidden);
-    room->sendLog(log);
+    if (!card_use.card->isKindOf("ThChouceCard")) {
+        LogMessage log;
+        log.from = card_use.from;
+        if (!card_use.card->targetFixed() || card_use.to.length() > 1 || !card_use.to.contains(card_use.from))
+            log.to = card_use.to;
+        log.type = "#UseCard";
+        log.card_str = card_use.card->toString(hidden);
+        room->sendLog(log);
+    }
 
     if (card_use.card->isKindOf("Collateral")) { // put it here for I don't wanna repeat these codes in Card::onUse
         ServerPlayer *victim = card_use.to.first()->tag["collateralVictim"].value<ServerPlayer *>();
@@ -727,7 +752,10 @@ void Card::clearSubcards() {
     subcards.clear();
 }
 
-bool Card::isAvailable(const Player *player) const{
+bool Card::isAvailable(const Player *player) const
+{
+    if (player->hasFlag("ThChouceUse") && !isKindOf("SkillCard"))
+        return !player->isCardLimited(this, Card::MethodUse);
     return !player->isCardLimited(this, handling_method)
            || (can_recast && !player->isCardLimited(this, Card::MethodRecast));
 }
