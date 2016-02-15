@@ -217,6 +217,8 @@ class Disaster: public DelayedTrick {
 
 public:
     Disaster(Card::Suit suit, int number);
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
     virtual bool isAvailable(const Player *player) const;
 };

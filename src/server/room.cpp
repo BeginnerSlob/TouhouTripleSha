@@ -4285,7 +4285,7 @@ void Room::activate(ServerPlayer *player, CardUseStruct &card_use) {
 
         qint64 diff = Config.AIDelay - timer.elapsed();
         if (diff > 0) thread->delay(diff);
-    }  else {
+    } else {
         bool success = doRequest(player, S_COMMAND_PLAY_CARD, player->objectName(), true);
         QVariant clientReply = player->getClientReply();
 

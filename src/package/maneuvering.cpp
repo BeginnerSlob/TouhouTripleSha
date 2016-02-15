@@ -309,12 +309,16 @@ FireAttack::FireAttack(Card::Suit suit, int number)
     setObjectName("fire_attack");
 }
 
-bool FireAttack::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool FireAttack::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    if (Self->hasFlag("ThChouceUse"))
+        return targets.isEmpty();
     int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
     return targets.length() < total_num && !to_select->isKongcheng() && (to_select != Self || !Self->isLastHandCard(this, true));
 }
 
-void FireAttack::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+void FireAttack::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
     foreach (ServerPlayer *p, targets)
         room->setEmotion(p, "effects/fire_attack");
     SingleTargetTrick::use(room, source, targets);
@@ -360,13 +364,18 @@ QString IronChain::getSubtype() const{
     return "damage_spread";
 }
 
-bool IronChain::targetFilter(const QList<const Player *> &targets, const Player *, const Player *Self) const{
+bool IronChain::targetFilter(const QList<const Player *> &targets, const Player *, const Player *Self) const
+{
+    if (Self->hasFlag("ThChouceUse"))
+        return !Self->isCardLimited(this, Card::MethodUse);
     int total_num = 2 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
     return targets.length() < total_num && !Self->isCardLimited(this, Card::MethodUse);
 }
 
-bool IronChain::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) && can_recast;
+bool IronChain::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
+{
+    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY)
+            && can_recast && !Self->hasFlag("ThChouceUse");
     QList<int> sub;
     if (isVirtualCard())
         sub = subcards;
@@ -394,6 +403,8 @@ bool IronChain::targetsFeasible(const QList<const Player *> &targets, const Play
 
     if (rec && Self->isCardLimited(this, Card::MethodUse))
         return targets.length() == 0;
+    if (Self->hasFlag("ThChouceUse"))
+        return targets.length() == 1;
     int total_num = 2 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
     if (!rec)
         return targets.length() > 0 && targets.length() <= total_num;
@@ -401,7 +412,8 @@ bool IronChain::targetsFeasible(const QList<const Player *> &targets, const Play
         return targets.length() <= total_num;
 }
 
-void IronChain::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+void IronChain::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
     if (!targets.isEmpty()) {
         foreach (ServerPlayer *p, targets)
             room->setEmotion(p, "effects/iron_chain");
@@ -409,7 +421,8 @@ void IronChain::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
     TrickCard::use(room, source, targets);
 }
 
-void IronChain::onUse(Room *room, const CardUseStruct &card_use) const{
+void IronChain::onUse(Room *room, const CardUseStruct &card_use) const
+{
     if (card_use.to.isEmpty()) {
         CardMoveReason reason(CardMoveReason::S_REASON_RECAST, card_use.from->objectName());
         reason.m_skillName = this->getSkillName();
@@ -431,7 +444,8 @@ void IronChain::onUse(Room *room, const CardUseStruct &card_use) const{
         TrickCard::onUse(room, card_use);
 }
 
-void IronChain::onEffect(const CardEffectStruct &effect) const{
+void IronChain::onEffect(const CardEffectStruct &effect) const
+{
     effect.to->setChained(!effect.to->isChained());
 
     Room *room = effect.to->getRoom();
@@ -456,7 +470,10 @@ void SupplyShortage::use(Room *room, ServerPlayer *source, QList<ServerPlayer *>
     DelayedTrick::use(room, source, targets);
 }
 
-bool SupplyShortage::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool SupplyShortage::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    if (Self->hasFlag("ThChouceUse"))
+        return targets.isEmpty() && !to_select->containsTrick(objectName());
     if (!targets.isEmpty() || to_select->containsTrick(objectName()) || to_select == Self)
         return false;
 
