@@ -787,7 +787,8 @@ public:
                     && Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE
                     && player->getMark("ThChouce") < 13
                     && !player->hasFlag("Global_ThChouceFailed")
-                    && !player->hasFlag("ThChouceUse");
+                    && !player->hasFlag("ThChouceUse")
+                    && !player->hasFlag("ThChouce_Response_Use");
         return false;
     }
 
