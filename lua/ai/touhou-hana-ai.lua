@@ -1290,7 +1290,7 @@ sgs.ai_skill_use["@@thliuzhen"] = function(self, prompt)
 end
 
 sgs.ai_skill_discard.thliuzhen = function(self, discard_num, min_num, optional, include_equip)
-	if self:getOverflow() > 0 then
+	if self:getOverflow() >= 0 then
 		local ret = self:askForDiscard("", 1, 1, false, true)
 		if #ret ~= 0 then
 			if isCard("Peach", ret[1], self.player) then
