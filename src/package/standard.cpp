@@ -265,6 +265,21 @@ void DelayedTrick::onUse(Room *room, const CardUseStruct &card_use) const{
     WrappedCard *wrapped = Sanguosha->getWrappedCard(this->getEffectiveId());
     use.card = wrapped;
 
+    if (use.from->hasFlag("ThChouceUse")) {
+        room->setPlayerFlag(use.from, "-ThChouceUse");
+        int n = use.from->getMark("ThChouce");
+        if (n > 0)
+            room->removePlayerCardLimitation(use.from, "use", QString("^SkillCard|.|1~%1$0").arg(n));
+
+        LogMessage log;
+        log.type = "#InvokeSkill";
+        log.from = use.from;
+        log.arg = "thchouce";
+        room->sendLog(log);
+
+        use.card->setFlags("thchouce_use");
+    }
+
     QVariant data = QVariant::fromValue(use);
     RoomThread *thread = room->getThread();
     thread->trigger(PreCardUsed, room, use.from, data);
