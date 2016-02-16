@@ -357,6 +357,8 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
 
                 if (peach == NULL)
                     break;
+                if (peach->isKindOf("ThChouceCard"))
+                    continue;
                 room->useCard(CardUseStruct(peach, player, dying.who));
             }
             break;

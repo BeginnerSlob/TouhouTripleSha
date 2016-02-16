@@ -701,7 +701,8 @@ public:
     }
 };
 
-ThChouceCard::ThChouceCard() {
+ThChouceCard::ThChouceCard()
+{
     target_fixed = true;
 }
 
@@ -715,11 +716,9 @@ const Card *ThChouceCard::validate(CardUseStruct &card_use) const
     if (n > 0)
         room->setPlayerCardLimitation(player, "use", QString("^SkillCard|.|1~%1").arg(n), false);
     CardUseStruct::CardUseReason reason = Sanguosha->getCurrentCardUseReason();
-    if (reason == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
-        room->setPlayerFlag(player, "ThChouce_Response_Use");
+    if (reason == CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
         new_card = room->askForUseCard(player, user_string, "@thchouce");
-        room->setPlayerFlag(player, "-ThChouce_Response_Use");
-    } else if (reason == CardUseStruct::CARD_USE_REASON_PLAY) {
+    else if (reason == CardUseStruct::CARD_USE_REASON_PLAY) {
         CardUseStruct new_card_use;
         room->activate(player, new_card_use);
         new_card = new_card_use.card;
@@ -745,11 +744,9 @@ const Card *ThChouceCard::validateInResponse(ServerPlayer *player) const
     if (n > 0)
         room->setPlayerCardLimitation(player, "use", QString("^SkillCard|.|1~%1").arg(n), false);
     CardUseStruct::CardUseReason reason = Sanguosha->getCurrentCardUseReason();
-    if (reason == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
-        room->setPlayerFlag(player, "ThChouce_Response_Use");
+    if (reason == CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
         new_card = room->askForUseCard(player, user_string, "@thchouce");
-        room->setPlayerFlag(player, "-ThChouce_Response_Use");
-    } else if (reason == CardUseStruct::CARD_USE_REASON_PLAY) {
+    else if (reason == CardUseStruct::CARD_USE_REASON_PLAY) {
         CardUseStruct new_card_use;
         room->activate(player, new_card_use);
         new_card = new_card_use.card;
@@ -787,8 +784,7 @@ public:
                     && Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE
                     && player->getMark("ThChouce") < 13
                     && !player->hasFlag("Global_ThChouceFailed")
-                    && !player->hasFlag("ThChouceUse")
-                    && !player->hasFlag("ThChouce_Response_Use");
+                    && !player->hasFlag("ThChouceUse");
         return false;
     }
 
