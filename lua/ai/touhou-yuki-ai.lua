@@ -544,6 +544,99 @@ function sgs.ai_cardneed.thdunjia(to, card, self)
 	return card:isKindOf("Slash") and getKnownCard(to, self.player, "Slash", nil, "he") < 3
 end
 
+--筹策:你于出牌阶段使用的第一张牌，或点数比你此阶段使用的前一张牌大的牌，可以无视合法性指定一名角色为目标。
+--maneuvering-ai.lua SmartAI:searchForAnaleptic
+--maneuvering-ai.lua SmartAI:useCardIronChain
+--smart-ai.lua SmartAI:sortByDynamicUsePriority
+--smart-ai.lua SmartAI:sortByUsePriority
+--smart-ai.lua SmartAI:willUsePeachTo
+--smart-ai.lua SmartAI:getDistanceLimit
+--smart-ai.lua SmartAI:useTrickCard
+--smart-ai.lua SmartAI:useEquipCard
+--standard_cards-ai.lua SmartAI:useCardSlash
+--standard_cards-ai.lua sgs.ai_skill_use.slash
+--standard_cards-ai.lua SmartAI:useCardPeach
+--standard_cards-ai.lua SmartAI:useCardAmazingGrace
+--standard_cards-ai.lua SmartAI:useCardGodSalvation
+--standard_cards-ai.lua SmartAI:useCardExNihilo
+--standard_cards-ai.lua SmartAI:useCardSnatchOrDismantlement
+--standard_cards-ai.lua SmartAI:useCardCollateral
+--standard_cards-ai.lua SmartAI:useCardLightning
+--standard_cards-ai.lua SmartAI:useCardPurpleSong
+--standard_cards-ai.lua SmartAI:useCardKnownBoth
+--standard_cards-ai.lua SmartAI:useCardBurningCamps
+local thchouce_skill = {}
+thchouce_skill.name = "thchouce"
+table.insert(sgs.ai_skills, thchouce_skill)
+thchouce_skill.getTurnUseCard = function(self, inclusive)
+	if self.player:hasFlag("Global_ThChouceFailed") or self.player:getMark("ThChouce") > 12 or self.player:hasFlag("ThChouceUse") then return end
+	return sgs.Card_Parse("@ThChouceCard=.")
+end
+
+sgs.ai_skill_use_func.ThChouceCard = function(card, use, self)
+	use.card = card
+end
+
+sgs.ai_skill_use.peach = function(self, prompt)
+	local use = { isDummy = true, to = sgs.SPlayerList() }
+	local peach_str = self:getCardId("Peach")
+	local peach
+	if peach_str then
+		peach = sgs.Card_Parse(peach_str)
+	end
+	if peach then
+		self:useCardPeach(peach, use)
+		if use.card and not use.to:isEmpty() then
+			return peach:toString() .. "->" .. use.to:first():objectName()
+		end
+	end
+	return "."
+end
+
+sgs.ai_skill_use["peach+analeptic"] = function(self, prompt)
+	local use = { isDummy = true, to = sgs.SPlayerList() }
+	local peach_str = self:getCardId("Peach")
+	local peach
+	if peach_str then
+		peach = sgs.Card_Parse(peach_str)
+	end
+	local analeptic_str = self:getCardId("Analeptic")
+	local analeptic
+	if analeptic_str then
+		analeptic = sgs.Card_Parse(analeptic_str)
+	end
+	if peach and analeptic and peach:getNumber() < analeptic:getNumber() then
+		self:useCardPeach(peach, use)
+		if use.card and not use.to:isEmpty() then
+			return peach:toString() .. "->" .. use.to:first():objectName()
+		end
+	elseif peach and analeptic then
+		self:useCardPeach(analeptic, use)
+		if use.card and not use.to:isEmpty() then
+			return analeptic:toString() .. "->" .. use.to:first():objectName()
+		end
+	elseif peach then
+		self:useCardPeach(peach, use)
+		if use.card and not use.to:isEmpty() then
+			return peach:toString() .. "->" .. use.to:first():objectName()
+		end
+	elseif analeptic then
+		self:useCardPeach(peach, use)
+		if use.card and not use.to:isEmpty() then
+			return peach:toString() .. "->" .. use.to:first():objectName()
+		end
+	end
+	return "."
+end
+
+sgs.ai_use_priority.ThChouceCard = 10000
+
+--占筮：锁定技，出牌阶段结束时，若你于此阶段使用的牌不少于三张，且全部发动了“筹策”，你在此回合结束后进行一个额外的回合，且于额外回合的回合开始时获得技能“幻葬”直到回合结束。
+--无
+
+--幻葬：锁定技，出牌阶段结束时，你进行一次判定，若结果为黑色，你失去1点体力。
+--无
+
 sgs.ai_skill_invoke.thlingya = true
 sgs.ai_skill_choice.thlingya = function(self, choices, data)	
 	local yukari = self.player:getTag("ThLingyaSource"):toPlayer()

@@ -902,6 +902,21 @@ function SmartAI:sortByUsePriority(cards, player)
 		local value1 = self:getUsePriority(a)
 		local value2 = self:getUsePriority(b)
 
+		-- for thchouce
+		if self.player and self.player:hasFlag("ThChouceUse") and self.player:getPhase() == sgs.Player_Play then
+			if a:getNumber() < b:getNumber() then
+				return true
+			elseif a:getNumber() == b:getNumber() then
+				return value1 > value2
+			else
+				return false
+			end
+			if global_room then
+				global_room:writeToConsole("ThChouce Sort Failed!")
+			end
+			return false
+		end
+
 		if value1 ~= value2 then
 			return value1 > value2
 		else
@@ -916,6 +931,29 @@ function SmartAI:sortByDynamicUsePriority(cards)
 	local compare_func = function(a, b)
 		local value1 = self:getDynamicUsePriority(a)
 		local value2 = self:getDynamicUsePriority(b)
+
+		-- for thchouce
+		if self.player and self.player:hasFlag("ThChouceUse") and self.player:getPhase() == sgs.Player_Play then
+			if a and a:getTypeId() == sgs.Card_TypeSkill and b and b:getTypeId() == sgs.Card_TypeSkill then
+				return value1 > value2
+			elseif a and a:getTypeId() ~= sgs.Card_TypeSkill and b and b:getTypeId() == sgs.Card_TypeSkill then
+				return true
+			elseif a and a:getTypeId() == sgs.Card_TypeSkill and b and b:getTypeId() ~= sgs.Card_TypeSkill then
+				return false
+			else
+				if a:getNumber() < b:getNumber() then
+					return true
+				elseif a:getNumber() == b:getNumber() then
+					return value1 > value2
+				else
+					return false
+				end
+			end
+			if global_room then
+				global_room:writeToConsole("ThChouce Sort Failed!")
+			end
+			return false
+		end
 
 		if value1 ~= value2 then
 			return value1 > value2
@@ -3341,6 +3379,14 @@ function SmartAI:ableToSave(saver, dying)
 end
 
 function SmartAI:willUsePeachTo(dying)
+	if self.player:getPhase() == sgs.Player_Play and self.player:getMark("ThChouce") < 13
+			and not self.player:hasFlag("Global_ThChouceFailed") and not self.player:hasFlag("ThChouceUse") then
+		local pattern = "peach"
+		if self.player:objectName() == dying:objectName() then
+			pattern = "peach+analeptic"
+		end
+		return "@ThChouceCard=.:" .. pattern
+	end
 	local card_str
 	local forbid = sgs.cloneCard("peach")
 	if self.player:isLocked(forbid) or dying:isLocked(forbid) then return "." end
@@ -4679,7 +4725,7 @@ end
 
 function SmartAI:getDistanceLimit(card, from)
 	from = from or self.player
-	if (card:isKindOf("Snatch") or card:isKindOf("SupplyShortage")) and card:getSkillName() ~= "qiaoshui" then
+	if not from:hasFlag("ThChouceUse") and (card:isKindOf("Snatch") or card:isKindOf("SupplyShortage")) and card:getSkillName() ~= "qiaoshui" then
 		return 1 + sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_DistanceLimit, from, card)
 	end
 end
@@ -5034,6 +5080,19 @@ function SmartAI:useTrickCard(card, use)
 	if card:isKindOf("AOE") and not card:isKindOf("BurningCamps") then
 		local others = self.room:getOtherPlayers(self.player)
 		others = sgs.QList2Table(others)
+		if self.player:hasFlag("ThChouce") then
+			local compareByValue = function(a, b)
+				local value1 = self:getAoeValueTo(card, a, self.player)
+				local value2 = self:getAoeValueTo(card, b, self.player)
+				return value1 > value2
+			end
+			table.sort(others, compareByValue)
+			use.card = card
+			if use.to then
+				use.to:append(others[1])
+			end
+			return
+		end
 		local avail = #others
 		local avail_friends = 0
 		for _, other in ipairs(others) do
@@ -5229,6 +5288,28 @@ function SmartAI:useEquipCard(card, use)
 	if use.card then return end
 	if card:isKindOf("Weapon") then
 		if self:needBear() then return end
+		if self.player:hasFlag("ThChouceUse") then
+			local targets = {}
+			if same then
+				targets = self.friends_noself
+			else
+				targets = self.friends
+			end
+			if #targets > 0 then
+				self:sort(targets, "handcard")
+				targets = sgs.reverse(targets)
+				for _, p in ipairs(targets) do
+					if self:getSameEquip(card, p) then
+						continue
+					end
+					use.card = card
+					if use.to then
+						use.to:append(p)
+					end
+					return
+				end
+			end
+		end
 		if same and self.player:hasSkill("qiangxi") and not self.player:hasUsed("QiangxiCard") then
 			local dummy_use = { isDummy = true }
 			self:useSkillCard(sgs.Card_Parse("@QiangxiCard=" .. same:getEffectiveId()), dummy_use)
@@ -5250,6 +5331,27 @@ function SmartAI:useEquipCard(card, use)
 		end
 	elseif card:isKindOf("Armor") then
 		if self:needBear() and self.player:getLostHp() == 0 then return end
+		if self.player:hasFlag("ThChouceUse") then
+			local targets = {}
+			if same then
+				targets = self.friends_noself
+			else
+				targets = self.friends
+			end
+			if #targets > 0 then
+				self:sort(targets, "defense")
+				for _, p in ipairs(targets) do
+					if self:getSameEquip(card, p) then
+						continue
+					end
+					use.card = card
+					if use.to then
+						use.to:append(p)
+					end
+					return
+				end
+			end
+		end
 		local lion = self:getCard("SilverLion")
 		if lion and self.player:isWounded() and not self.player:hasArmorEffect("silver_lion") and not card:isKindOf("SilverLion")
 			and not (not self.player:getArmor() and (self.player:hasSkills("bazhen|yizhong")
@@ -5265,6 +5367,28 @@ function SmartAI:useEquipCard(card, use)
 		if self:evaluateArmor(card) > self:evaluateArmor() or (isfriend_zzzh == false and self:getOverflow() > 0) then use.card = card end
 		return
 	elseif card:isKindOf("Treasure") then
+		if self.player:hasFlag("ThChouceUse") then
+			local targets = {}
+			if same then
+				targets = self.friends_noself
+			else
+				targets = self.friends
+			end
+			if #targets > 0 then
+				self:sort(targets, "hp")
+				targets = sgs.reverse(targets)
+				for _, p in ipairs(targets) do
+					if self:getSameEquip(card, p) then
+						continue
+					end
+					use.card = card
+					if use.to then
+						use.to:append(p)
+					end
+					return
+				end
+			end
+		end
 		local scroll = self:getCard("Scroll")
 		if scroll and (not card:isKindOf("Scroll") or not self.player:getTreasure()) then
 			use.card = scroll
@@ -5279,6 +5403,27 @@ function SmartAI:useEquipCard(card, use)
 		end
 		return
 	elseif self:needBear() then return
+	elseif self.player:hasFlag("ThChouceUse") then
+		local targets = {}
+		if same then
+			targets = self.friends_noself
+		else
+			targets = self.friends
+		end
+		if #targets > 0 then
+			self:sort(targets)
+			for _, p in ipairs(targets) do
+				if self:getSameEquip(card, p) then
+					continue
+				end
+				use.card = card
+				if use.to then
+					use.to:append(p)
+				end
+				return
+			end
+		end
+		return
 	elseif card:isKindOf("OffensiveHorse") then
 		if (self.player:hasSkill("nosrende") or (self.player:hasSkill("rende") and not self.player:hasUsed("RendeCard"))) then
 			for _, friend in ipairs(self.friends_noself) do
@@ -5570,13 +5715,14 @@ function SmartAI:findPlayerToDiscard(flags, include_self, isDiscard, players, re
 	end
 end
 
-function SmartAI:findPlayerToDraw(include_self, drawnum)
+function SmartAI:findPlayerToDraw(include_self, drawnum, TrickCard)
 	drawnum = drawnum or 1
 	local players = sgs.QList2Table(include_self and self.room:getAllPlayers() or self.room:getOtherPlayers(self.player))
 	local friends = {}
 	for _, player in ipairs(players) do
 		if self:isFriend(player) and not hasManjuanEffect(player)
-			and not (player:hasSkill("ikjingyou") and player:isKongcheng() and drawnum <= 2) then
+			and not (player:hasSkill("ikjingyou") and player:isKongcheng() and drawnum <= 2)
+			and (not TrickCard or self:hasTrickEffective(TrickCard, player, self.player)) then
 			table.insert(friends, player)
 		end
 	end
