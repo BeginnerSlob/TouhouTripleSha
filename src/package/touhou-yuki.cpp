@@ -1530,8 +1530,8 @@ public:
         events << CardUsed << BeforeCardsMove;
     }
 
-    bool doQiebao(Room *room, ServerPlayer *player, QList<int> card_ids, bool discard) const {
-        const Card *card = room->askForCard(player, "slash", "@thqiebao", QVariant(), objectName());
+    bool doQiebao(Room *room, ServerPlayer *player, QList<int> card_ids, bool discard, QVariant &data) const {
+        const Card *card = room->askForCard(player, "slash", "@thqiebao", data, objectName());
         if (!card)
             return false;
 
@@ -1603,7 +1603,7 @@ public:
                 card_ids << use.card->getEffectiveId();
             else
                 card_ids = use.card->getSubcards();
-            if (doQiebao(room, ask_who, card_ids, false)) {
+            if (doQiebao(room, ask_who, card_ids, false, data)) {
                 foreach (ServerPlayer *p, use.to) {
                     if (p != use.from)
                         use.nullified_list << p->objectName();
@@ -1618,7 +1618,7 @@ public:
                 if (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip)
                     qiebaolist << card_id;
             }
-            if (!qiebaolist.isEmpty() && doQiebao(room, ask_who, qiebaolist, true)) {
+            if (!qiebaolist.isEmpty() && doQiebao(room, ask_who, qiebaolist, true, data)) {
                 move.removeCardIds(qiebaolist);
                 data = QVariant::fromValue(move);
             }
