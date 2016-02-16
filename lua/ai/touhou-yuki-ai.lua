@@ -680,63 +680,64 @@ end
 
 sgs.ai_choicemade_filter.cardChosen.thchuiji = sgs.ai_choicemade_filter.cardChosen.snatch
 
+--灵压：每当其他角色于你的回合使用红色牌，在结算后你可以令其选择一项：令你摸一张牌；或令你弃置其一张牌。
 sgs.ai_skill_invoke.thlingya = true
+
 sgs.ai_skill_choice.thlingya = function(self, choices, data)	
-	local yukari = self.player:getTag("ThLingyaSource"):toPlayer()
-	if yukari and choices:match("discard") then 
-		if self:isFriend(yukari) and self.player:hasSkills(sgs.lose_equip_skill) then
-			return "discard"
-		elseif self:isEnemy(yukari) then
+	local yukari = data:toPlayer()
+	if yukari and string.find(choices, "discard") then
+		if self:isEnemy(yukari) then
 			local LetDiscard = false
-			--高级ai 应该对letdiscard做更详细的评估
-			if not yukari:canDiscard(self.player,"h") and self:hasSkills(sgs.lose_equip_skill) then
+			if not yukari:canDiscard(self.player, "h") and self.player:hasSkills(sgs.lose_equip_skill) then
 				LetDiscard  = true
-			elseif  self:needKongcheng(p) and self:getHandcardNum()==1  then 
-				if not yukari:canDiscard(self.player,"e") or self:hasSkills(sgs.lose_equip_skill) then
-					LetDiscard  = true
-				end
 			end
-			if LetDiscard then  return "discard" end
+			if self:needKongcheng(p) and self:getHandcardNum() == 1 and not yukari:canDiscard(self.player, "e") then
+				LetDiscard  = true
+			end
+			if self.player:hasSkills(sgs.lose_equip_skill) and self:needKongcheng(p) and self:getHandcardNum() == 1 then
+				LetDiscard  = true
+			end
+			if LetDiscard then return "discard" end
+		elseif self.player:hasSkills(sgs.lose_equip_skill) and self.player:canDiscard(self.player, "e") then
+			return "discard"
 		end
 	end
 	return "letdraw"
 end
 
-
---黑幕的存在使得carduse本身就有变化。。。。比如可以故意作死地去决斗敌人。。。反正会转移使用者当一个离间。。。
--- 一般ai使用决斗不会这么做,这个功能需要改usecard的底层ai本身 = =
+--黑幕：出牌阶段限一次，当你使用一张牌指定目标时，你可以令一名其他角色成为此牌的使用者。
 sgs.ai_skill_playerchosen.thheimu = function(self, targets)
 	local cardUse = self.player:getTag("ThHeimuCardUse"):toCardUse()
-	local isRed = cardUse.card:isRed()
-	
-	--case1  灵压敌人
-	local goodLingyaCard = "god_salvation|amazing_grace|iron_chain" 
-	--|slash|thunder_slash|fire_slash
-	local isGoodLingyaCard =  goodLingyaCard:match(cardUse.card:objectName())
+	local card = cardUse.card
+	local isRed = card:isRed()
+
+	--case1 灵压敌人
+	local goodLingyaCard = "god_salvation|amazing_grace|iron_chain|peach|analeptic"
+	local isGoodLingyaCard = card:isKindOf("EquipCard") or card:isKindOf("DelayedTrick") or goodLingyaCard:match(card:objectName())
 	if self.player:hasSkill("thlingya") and isGoodLingyaCard and isRed then
 		if #self.enemies > 0 then
 			self:sort(self.enemies, "defense")
 			return self.enemies[1]
 		end
 	end
-	
+
 	--case2 助队友收反或使主公杀忠掉牌
-	local isDamageCard =  sgs.dynamic_value.damage_card[cardUse.card:getClassName()]
+	local isDamageCard = not card:isKindOf("FireAttack") and sgs.dynamic_value.damage_card[card:getClassName()]
 	if isDamageCard then
 		local lord = self.room:getLord()
 		if self:isFriend(lord) then
-			local weakRebel 
-			for _,p in sgs.qlist(cardUse.to) do
-				if p:getHp()<=1 and self:isEnemy(p) then
-					weakRebel  = p
-					continue
+			local weakRebel
+			for _, p in sgs.qlist(cardUse.to) do
+				if p:getHp() <= 1 and self:isEnemy(p) then
+					weakRebel = p
+					break
 				end
 			end
-			if weakRebel  then
+			if weakRebel then
 				for _, p in sgs.qlist(targets) do
 					if self:isFriend(p) and p:hasSkills(sgs.cardneed_skill) then
-						if (cardUse.card:isKindOf("TrickCard") and self:hasTrickEffective(cardUse.card, weakRebel, p)) 
-						or (cardUse.card:isKindOf("Slash") and self:slashIsEffective(cardUse.card, weakRebel, p)) then
+						if (card:isKindOf("TrickCard") and self:hasTrickEffective(card, weakRebel, p))
+								or (card:isKindOf("Slash") and self:slashIsEffective(card, weakRebel, p)) then
 							return p
 						end
 					end
@@ -745,25 +746,24 @@ sgs.ai_skill_playerchosen.thheimu = function(self, targets)
 		else
 			local weakLoyalist
 			for _,p in sgs.qlist(cardUse.to) do
-				if p:getHp()<=1 and self:isEnemy(p) then
-					weakLoyalist  = p
-					continue
+				if p:getHp() <= 1 and self:isEnemy(p) then
+					weakLoyalist = p
+					break
 				end
 			end
 			if weakLoyalist then
-				for _, p in sgs.qlist(targets) do
-					if p:isLord(p) then
-						if (cardUse.card:isKindOf("TrickCard") and self:hasTrickEffective(cardUse.card, weakLoyalist, p)) 
-						or (cardUse.card:isKindOf("Slash") and self:slashIsEffective(cardUse.card, weakLoyalist, p)) then
-							return p
-						end
+				if targets:contains(lord) then
+					if (card:isKindOf("TrickCard") and self:hasTrickEffective(card, weakLoyalist, lord))
+							or (card:isKindOf("Slash") and self:slashIsEffective(card, weakLoyalist, lord)) then
+						return lord
 					end
 				end
 			end
 		end
 	end
+
 	--case3  一般灵压 针对队友
-	if isRed and self.player:hasSkill("thlingya")  then
+	if isRed and self.player:hasSkill("thlingya") then
 		for _, p in sgs.qlist(targets) do
 			if self:isFriend(p) then
 				return p
@@ -773,7 +773,68 @@ sgs.ai_skill_playerchosen.thheimu = function(self, targets)
 	return nil
 end
 
+--寒魄：锁定技，防止你对其他角色造成的火焰伤害，防止你受到的火焰伤害。
+--smart-ai.lua SmartAI:damageIsEffective
 
+--争冠：每当一名其他角色跳过摸牌阶段后，你可以摸两张牌；每当一名其他角色跳过出牌阶段后，你可以无视距离对一名其他角色使用一张【杀】。
+sgs.ai_skill_invoke.thzhengguan = true
+
+--氷瀑：限定技，出牌阶段，你可以令所有其他有牌的角色做出选择：打出一张【闪】，或令你依次弃置其两张牌。
+local thbingpu_skill = {}
+thbingpu_skill.name = "thbingpu"
+table.insert(sgs.ai_skills, thbingpu_skill)
+thbingpu_skill.getTurnUseCard = function(self)
+	if self.player:getMark("@bingpu") <= 0 then return end
+	local good, bad = 0, 0
+	local lord = self.room:getLord()
+	if self.role ~= "rebel" and lord and self:isWeak(lord) then return end
+	for _, player in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+		if player:isNude() then
+			continue
+		end
+		if self:isWeak(player) then
+			if self:isFriend(player) then bad = bad + 1
+			else good = good + 1
+			end
+		end
+	end
+	if good == 0 then return end
+
+	for _, player in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+		if player:isNude() then
+			continue
+		end
+		local hp = math.max(player:getHp(), 1)
+		if getCardsNum("Analeptic", player, self.player) > 0 then
+			if self:isFriend(player) then good = good + 1.0 / hp
+			else bad = bad + 1.0 / hp
+			end
+		end
+
+		local has_jink = (getCardsNum("Jink", player, self.player) > 0)
+		if not has_jink then
+			if self:isFriend(player) then good = good + 1
+			else bad = bad + 1
+			end
+		end
+
+		if getCardsNum("Jink", player) == 0 then
+			local lost_value = player:getCardCount()
+			local hp = math.max(player:getHp(), 1)
+			if self:isFriend(player) then bad = bad + lost_value / hp
+			else good = good + lost_value / hp
+			end
+		end
+	end
+
+	if good > bad + 1 then return sgs.Card_Parse("@ThBingpuCard=.") end
+end
+
+sgs.ai_skill_use_func.ThBingpuCard = function(card, use, self)
+	use.card = card
+end
+
+sgs.ai_use_priority.ThBingpuCard = sgs.ai_use_priority.Slash + 0.09
 
 --【冬末】ai
 sgs.ai_skill_use["@@thdongmo"] = function(self, prompt)

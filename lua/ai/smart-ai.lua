@@ -3930,6 +3930,7 @@ function SmartAI:damageIsEffective_(damageStruct)
 	if player:getMark("@fenyong") > 0 then return false end
 	if player:getMark("@fog") > 0 and nature ~= sgs.DamageStruct_Thunder then return false end
 	if player:hasSkill("shixin") and nature == sgs.DamageStruct_Fire then return false end
+	if (player:hasSkill("thhanpo") or source:hasSkill("thhanpo")) and nature == sgs.DamageStruct_Fire then return false end
 	local equipsToDec = source:objectName() == self.player:objectName() and self.equipsToDec or 0
 	if player:hasSkill("mingshi") and source:getEquips():length() - equipsToDec <= math.min(2, player:getEquips():length()) then
 		damage = damage - 1
@@ -5038,9 +5039,7 @@ function SmartAI:hasTrickEffective(card, to, from)
 	if to:hasSkills("ikmitu|hongyan") and card:isKindOf("Lightning") then return false end
 
 	if (from:hasSkill("ikmitu") or to:hasSkill("ikmitu")) and not from:hasSkill("ikxuwu") then
-		if card:isKindOf("TrickCard") and
-			(card:isKindOf("Duel") or card:isKindOf("FireAttack") or card:isKindOf("Drowning")
-			or card:isKindOf("ArcheryAttack") or card:isKindOf("SavageAssault")) then
+		if card:isKindOf("TrickCard") and sgs.dynamic_value.damage_card[card:getClassName()] then
 			return false
 		end
 	end

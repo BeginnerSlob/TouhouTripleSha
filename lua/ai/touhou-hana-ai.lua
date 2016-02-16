@@ -973,7 +973,7 @@ sgs.ai_skill_use_func.ThXianfaCard = function(card, use, self)
 
 	--wake
 	if self.player:getHandcardNum() == 1 and self.player:isWounded() and self.player:hasSkill("thwendao") and self.player:getMark("@wendao") == 0 then
-		local h_card = self:getHandcards():first()
+		local h_card = self.player:getHandcards():first()
 		if not h_card:isKindOf("Peach") then
 			sgs.thxianfa_combo[self.player:objectName()] = "start"
 			use.card = sgs.Card_Parse("@ThXianfaCard=" .. h_card:getEffectiveId())
