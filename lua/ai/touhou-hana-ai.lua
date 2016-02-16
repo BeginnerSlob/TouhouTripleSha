@@ -1093,7 +1093,7 @@ sgs.ai_skill_playerchosen.thshanling = function(self, targets)
 		return nil
 	end
 	for _, p in ipairs(victims) do
-		if self:isGoodChainTarget(p, self.player, sgs.DamageStruct_Thunder, 1) then
+		if p:isChained() and self:isGoodChainTarget(p, self.player, sgs.DamageStruct_Thunder, 1) then
 			return p
 		end
 	end

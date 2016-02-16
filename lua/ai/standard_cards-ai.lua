@@ -480,9 +480,11 @@ function SmartAI:useCardSlash(card, use)
 	local no_distance = sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_DistanceLimit, self.player, card) > 50
 						or self.player:hasFlag("slashNoDistanceLimit")
 						or card:getSkillName() == "qiaoshui"
+						or self.player:hasFlag("ThChouceUse")
 	self.slash_targets = 1 + sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_ExtraTarget, self.player, card)
 	if use.isDummy and use.extra_target then self.slash_targets = self.slash_targets + use.extra_target end
 	if self.player:hasSkill("duanbing") then self.slash_targets = self.slash_targets + 1 end
+	if self.player:hasFlag("ThChouceUse") then self.slash_targets = 1 end
 
 	local rangefix = 0
 	if card:isVirtualCard() then
@@ -669,7 +671,7 @@ end
 sgs.ai_skill_use.slash = function(self, prompt)
 	local parsedPrompt = prompt:split(":")
 	local callback = sgs.ai_skill_cardask[parsedPrompt[1]] -- for askForUseSlashTo
-	if self.player:hasFlag("slashTargetFixToOne") and type(callback) == "function" then
+	if self.player:hasFlag("slashTargetFixToOne") and type(callback) == "function" and not self.player:hasFlag("ThChouceUse") then
 		local slash
 		local target
 		for _, player in sgs.qlist(self.room:getOtherPlayers(self.player)) do
@@ -915,6 +917,17 @@ sgs.ai_keep_value.Slash = 3.6
 sgs.ai_use_priority.Slash = 2.4
 
 function SmartAI:useCardPeach(card, use)
+	if self.player:hasFlag("ThChouceUse") then
+		self:sort(self.friends, "defense")
+		for _, p in ipairs(self.friends) do
+			if p:isWounded() then
+				use.card = card
+				if use.to then
+					use.to:append(p)
+				end
+			end
+		end
+	end
 	local mustusepeach = false
 	if not self.player:isWounded() then return end
 	if self.player:hasSkill("longhun") and not self.player:isLord()
@@ -1577,6 +1590,16 @@ sgs.ai_keep_value.Nullification = 3.8
 sgs.ai_use_value.Nullification = 8
 
 function SmartAI:useCardAmazingGrace(card, use)
+	if self.player:hasFlag("ThChouceUse") then
+		use.card = card
+		if use.to then
+			local target = self:findPlayerToDraw(true, 1, card)
+			if target then
+				use.to:append(target)
+			end
+		end
+		return
+	end
 	if (self.role == "lord" or self.role == "loyalist") and sgs.turncount <= 2 and self.player:getSeat() <= 3 and self.player:aliveCount() > 5 then return end
 	local value = 1
 	local suf, coeff = 0.8, 0.8
@@ -1682,6 +1705,28 @@ function SmartAI:willUseGodSalvation(card)
 end
 
 function SmartAI:useCardGodSalvation(card, use)
+	if self.player:hasFlag("ThChouceUse") then
+		self:sort(self.friends, "defense")
+		for _, p in ipairs(self.friends) do
+			if p:isWounded() and self:hasTrickEffective(card, p, self.player) then
+				use.card = card
+				if use.to then
+					use.to:append(p)
+				end
+				return
+			end
+		end
+		for _, p in ipairs(self.enemies) do
+			if not p:isWounded() or not self:hasTrickEffective(card, p, self.player) then
+				use.card = card
+				if use.to then
+					use.to:append(p)
+				end
+				return
+			end
+		end
+		return
+	end
 	if self:willUseGodSalvation(card) then
 		use.card = card
 	end
@@ -1841,6 +1886,15 @@ end
 function SmartAI:useCardExNihilo(card, use)
 	local xiahou = self.room:findPlayerBySkillName("yanyu")
 	if xiahou and self:isEnemy(xiahou) and xiahou:getMark("YanyuDiscard2") > 0 then return end
+	if self.player:hasFlag("ThChouceUse") then
+		local target = self:findPlayerToDraw(true, 2, card)
+		if target then
+			use.card = card
+			if use.to then
+				use.to:append(target)
+			end
+		end
+	end
 	if not self:hasTrickEffective(card, self.player, self.player) then
 		return
 	end
@@ -2004,6 +2058,7 @@ function SmartAI:useCardSnatchOrDismantlement(card, use)
 
 	local targets = {}
 	local targets_num = isYinling and 1 or (1 + sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_ExtraTarget, self.player, card))
+	if self.player:hasFlag("ThChouceUse") then targets_num = 1 end
 	local lx = self.room:findPlayerBySkillName("huangen")
 
 	local addTarget = function(player, cardid)
@@ -2437,7 +2492,7 @@ function SmartAI:useCardCollateral(card, use)
 			and self:hasTrickEffective(card, enemy)
 			and not enemy:hasSkills(sgs.lose_equip_skill)
 			and self:objectiveLevel(enemy) >= 0
-			and enemy:getWeapon() then
+			and (self.player:hasFlag("ThChouceUse") or enemy:getWeapon()) then
 
 			for _, enemy2 in ipairs(toList) do
 				if enemy:canSlash(enemy2) and self:objectiveLevel(enemy2) > 3 and enemy:objectName() ~= enemy2:objectName() then
@@ -2491,7 +2546,7 @@ function SmartAI:useCardCollateral(card, use)
 
 	for _, friend in ipairs(fromList) do
 		if (not use.current_targets or not table.contains(use.current_targets, friend:objectName()))
-			and friend:getWeapon() and (getKnownCard(friend, self.player, "Slash", true, "he") > 0 or (getCardsNum("Slash", friend, self.player) > 1 and friend:getHandcardNum() >= 4))
+			and (self.player:hasFlag("ThChouceUse") or (friend:getWeapon() and (getKnownCard(friend, self.player, "Slash", true, "he") > 0 or (getCardsNum("Slash", friend, self.player) > 1 and friend:getHandcardNum() >= 4))))
 			and self:hasTrickEffective(card, friend)
 			and self:objectiveLevel(friend) < 0 then
 
@@ -2787,6 +2842,18 @@ function SmartAI:willUseLightning(card)
 end
 
 function SmartAI:useCardLightning(card, use)
+	if self.player:hasFlag("ThChouce") then
+		self:sort(self.enemies)
+		for _, p in ipairs(self.enemies) do
+			if not p:containsTrick("lightning") then
+				use.card = card
+				if use.to then
+					use.to:append(p)
+				end
+				return
+			end
+		end
+	end
 	if self:willUseLightning(card) then
 		use.card = card
 	end
@@ -3288,6 +3355,9 @@ end
 
 function SmartAI:useCardPurpleSong(card, use)
 	local friends = {}
+	if self.player:hasFlag("ThChouceUse") then
+		table.insert(friends, self.player)
+	end
 	if #self.friends_noself ~= 0 then
 		friends = self:exclude(self.friends_noself, card)
 	end
@@ -3609,6 +3679,7 @@ function SmartAI:useCardKnownBoth(KnownBoth, use)
 	if not KnownBoth:isAvailable(self.player) then return false end
 	local targets = sgs.PlayerList()
 	local total_num = 1 + sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_ExtraTarget, self.player, KnownBoth)
+	if self.player:hasFlag("ThChouceUse") then total_num = 1 end
 
 	self:sort(self.enemies, "handcard")
 	sgs.reverse(self.enemies)
@@ -3684,6 +3755,35 @@ sgs.ai_playerchosen_intention.wooden_ox = -60
 
 function SmartAI:useCardBurningCamps(card, use)
 	if not card:isAvailable(self.player) then return end
+	if self.player:hasFlag("ThChouceUse") then
+		local targetlist = sgs.QList2Table(self.player:getAllPlayers())
+		self:sort(targetlist, "hp")
+		local victims = {}
+		for _, target in ipairs(targetlist) do
+			if self:isEnemy(target) and self:damageIsEffective(target, sgs.DamageStruct_Fire, self.player) and self:hasTrickEffective(card, target, self.player) then
+				table.insert(victims, target)
+			end
+		end
+		local to = nil
+		if #victims ~= 0 then
+			for _, p in ipairs(victims) do
+				if p:isChained() and self:isGoodChainTarget(p, self.player, sgs.DamageStruct_Thunder, 1) then
+					to = p
+					break
+				end
+			end
+			if not to then
+				to = victim[1]
+			end
+		end
+		if to then
+			use.card = card
+			if use.to then
+				use.to:append(to)
+			end
+		end
+		return
+	end
 
 	local player = self.room:findPlayer(self.player:getNextAlive():objectName())
 	local players = player:getFormation()

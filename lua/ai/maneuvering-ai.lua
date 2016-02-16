@@ -125,6 +125,11 @@ function SmartAI:searchForAnaleptic(use, enemy, slash)
 
 	local analeptic = self:getCard("Analeptic")
 	if not analeptic then return nil end
+	if self.player:hasFlag("ThChouceUse") then
+		if analeptic:getNumber() >= slash:getNumber() then
+			return nil
+		end
+	end
 
 	local analepticAvail = 1 + sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_Residue, self.player, analeptic)
 	local slashAvail = 0
@@ -468,6 +473,9 @@ function SmartAI:useCardIronChain(card, use)
 						or (self:getCardId("FireAttack") and self.player:getHandcardNum() > 2))
 
 	local targets_num = 2 + sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_ExtraTarget, self.player, card)
+	if self.player:hasFlag("ThChouceUse") then
+		targets_num = 1
+	end
 	if #friendtargets > 1 then
 		if use.to then
 			for _, friend in ipairs(friendtargets) do
