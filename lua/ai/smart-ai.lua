@@ -3379,7 +3379,7 @@ function SmartAI:ableToSave(saver, dying)
 end
 
 function SmartAI:willUsePeachTo(dying)
-	if self.player:getPhase() == sgs.Player_Play and self.player:getMark("ThChouce") < 13
+	if self.player:hasSkill("thchouce") and self.player:getPhase() == sgs.Player_Play and self.player:getMark("ThChouce") < 13
 			and not self.player:hasFlag("Global_ThChouceFailed") and not self.player:hasFlag("ThChouceUse") then
 		local pattern = "peach"
 		if self.player:objectName() == dying:objectName() then

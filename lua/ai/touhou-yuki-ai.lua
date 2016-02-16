@@ -637,6 +637,49 @@ sgs.ai_use_priority.ThChouceCard = 10000
 --幻葬：锁定技，出牌阶段结束时，你进行一次判定，若结果为黑色，你失去1点体力。
 --无
 
+--紫云：锁定技，你不能成为【玄海仙鸣】或【枯羽华庭】的目标。
+--无
+
+--垂迹：弃牌阶段结束时，若你于此阶段弃置了两张或更多的手牌，或每当你于回合外失去牌时，你可进行一次判定，若为红色，令一名角色回复1点体力；若为黑色，弃置一名其他角色的一张牌。
+sgs.ai_skill_invoke.thchuiji = function(self, data)
+	for _, p in ipairs(self.friends) do
+		if p:isWounded() then
+			return true
+		end
+	end
+	for _, p in sgs.qlist(self.room:getAlivePlayers()) do
+		if p:isWounded() then
+			return false
+		end
+	end
+	return true
+end
+
+sgs.ai_skill_playerchosen.thchuiji = function(self, targets)
+	local str = self.player:getTag("ThChuijiTarget"):toString()
+	if str == "recover" then
+		targets = sgs.QList2Table(targets)
+		self:sort(targets, "defense")
+		for _, p in ipairs(targets) do
+			if self:isFriend(p) then
+				return p
+			end
+		end
+		return targets[#targets]
+	elseif str == "discard" then
+		return self:findPlayerToDiscard("he", false, true, targets)
+	end
+end
+
+sgs.ai_playerchosen_intention.thchuiji = function(self, from, to)
+	local str = from:getTag("ThChuijiTarget"):toString()
+	if str == "recover" then
+		sgs.updateIntention(from, to, -50)
+	end
+end
+
+sgs.ai_choicemade_filter.cardChosen.thchuiji = sgs.ai_choicemade_filter.cardChosen.snatch
+
 sgs.ai_skill_invoke.thlingya = true
 sgs.ai_skill_choice.thlingya = function(self, choices, data)	
 	local yukari = self.player:getTag("ThLingyaSource"):toPlayer()
