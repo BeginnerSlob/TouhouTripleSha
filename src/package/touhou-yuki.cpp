@@ -867,7 +867,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *) const {
         room->sendCompulsoryTriggerLog(target, objectName());
-        target->addMark("thhuanzang_remove");
+        target->addMark("thzhanshi");
         target->gainAnExtraTurn();
         return false;
     }
@@ -880,14 +880,14 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer* &) const {
-        if (triggerEvent == EventPhaseStart && target->getPhase() == Player::RoundStart && target->getMark("thhuanzang_remove") > 0) {
+        if (triggerEvent == EventPhaseStart && target->getPhase() == Player::RoundStart && target->getMark("thzhanshi") > 0) {
+            target->removeMark("thzhanshi");
+            target->addMark("thhuanzang");
             room->acquireSkill(target, "thhuanzang");
-        } else if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive && target->hasSkill("thhuanzang")) {
-                if (target->getMark("thhuanzang_remove") > 0)
-                    room->detachSkillFromPlayer(target, "thhuanzang", false, true);
-                target->setMark("thhuanzang_remove", 0);
+        } else if (triggerEvent == EventPhaseChanging && target->getMark("thhuanzang") > 0) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                target->removeMark("thhuanzang");
+                room->detachSkillFromPlayer(target, "thhuanzang", false, true);
             }
         }
         return QStringList();
@@ -989,6 +989,7 @@ public:
             if (targets.isEmpty())
                 return false;
 
+            player->tag["ThChuijiTarget"] = "recover";
             ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
             RecoverStruct recover;
             recover.who = player;
@@ -1002,6 +1003,7 @@ public:
             if (targets.isEmpty())
                 return false;
 
+            player->tag["ThChuijiTarget"] = "discard";
             ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
             int card_id = room->askForCardChosen(player, target, "he", objectName(), false, Card::MethodDiscard);
             room->throwCard(card_id, target, player);
