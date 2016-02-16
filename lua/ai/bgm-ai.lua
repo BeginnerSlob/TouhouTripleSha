@@ -122,7 +122,7 @@ sgs.ai_skill_use_func.LihunCard = function(card, use, self)
 			local slash = self:getCard("Slash") or sgs.cloneCard("slash")
 			for _, enemy in ipairs(self.enemies) do
 				if enemy:isMale() and self:slashIsEffective(slash, enemy) and self.player:distanceTo(enemy) == 1
-					and not enemy:hasSkills("fenyong|zhichi|fankui|nosfankui|ganglie|vsganglie|nosganglie|enyuan|nosenyuan|langgu|guixin|kongcheng")
+					and not enemy:hasSkills("fenyong|zhichi|fankui|nosfankui|ganglie|vsganglie|nosganglie|enyuan|thfusheng|langgu|guixin|kongcheng")
 					and self:getCardsNum("Slash") + getKnownCard(enemy, self.player, "Slash") >= 3 then
 					target = enemy
 					break
@@ -414,7 +414,7 @@ sgs.ai_skill_use_func.TanhuCard = function(card, use, self)
 			return
 		end
 		for _, enemy in ipairs(self.enemies) do
-			if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() and not enemy:hasSkills("tuntian+zaoxian") then
+			if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() and not enemy:hasSkills("ikyindie+ikguiyue") then
 				self.tanhu_card = cards[1]:getId()
 				use.card = sgs.Card_Parse("@TanhuCard=.")
 				if use.to then use.to:append(enemy) end
@@ -483,7 +483,7 @@ local function will_discard_zhaolie(self, nobasic)
 	if not spliubei or not spliubei:isAlive() then return true end
 	if not self:damageIsEffective(self.player, sgs.DamageStruct_Normal, spliubei) then return false end
 	local damage_num = nobasic
-	if nobasic > 0 and not spliubei:hasSkill("jueqing") then
+	if nobasic > 0 and not spliubei:hasSkill("ikxuwu") then
 		if self.player:hasSkill("tianxiang") then
 			local dmgStr = { damage = damage_num, nature = sgs.DamageStruct_Normal }
 			local willTianxiang = sgs.ai_skill_use["@@tianxiang"](self, dmgStr, sgs.Card_MethodDiscard)
@@ -494,7 +494,7 @@ local function will_discard_zhaolie(self, nobasic)
 		end
 		if self:hasSilverLionEffect() and damage_num > 1 then damage_num = 1 end
 	end
-	if not spliubei:hasSkill("jueqing") and self.player:hasSkill("wuhun") and self.role == "rebel" then
+	if not spliubei:hasSkill("ikxuwu") and self.player:hasSkill("wuhun") and self.role == "rebel" then
 		local mark = 0
 		local spmark = spliubei:isLord() and spliubei:getMark("@nightmare") or 0
 		for _, ap in sgs.qlist(self.room:getOtherPlayers(spliubei)) do
@@ -575,7 +575,7 @@ local function player_chosen_shichou(self, targets)
 		if self:isEnemy(target) then return target end
 	end
 	for _, target in ipairs(targets) do
-		if target:hasSkills("zaiqi|nosenyuan|kuanggu|kofkuanggu|enyuan|shushen") and target:getHp() >= 2 then
+		if target:hasSkills("zaiqi|thfusheng|kuanggu|kofkuanggu|enyuan|shushen") and target:getHp() >= 2 then
 			return target
 		end
 	end
@@ -911,8 +911,8 @@ sgs.ai_skill_invoke.fenyong = function(self, data)
 end
 
 function sgs.ai_slash_prohibit.fenyong(self, from, to)
-	if from:hasSkill("jueqing") or (from:hasSkill("nosqianxi") and from:distanceTo(to) == 1) then return false end
-	if from:hasFlag("NosJiefanUsed") then return false end
+	if from:hasSkill("ikxuwu") or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
+	if from:hasFlag("IkJieyouUsed") then return false end
 	return to:getMark("@fenyong") > 0 and to:hasSkill("fenyong")
 end
 
@@ -925,7 +925,7 @@ sgs.ai_skill_choice.xuehen = function(self, choices)
 			and not (current:hasSkills(sgs.lose_equip_skill) and current:getHandcardNum() < n) then
 			return "discard"
 		end
-		if current:hasSkills("jijiu|tuntian+zaoxian|beige") and n >= 2 and current:getCardCount() >= 2 then return "discard" end
+		if current:hasSkills("jijiu|ikyindie+ikguiyue|beige") and n >= 2 and current:getCardCount() >= 2 then return "discard" end
 	end
 	self:sort(self.enemies, "defenseSlash")
 	for _, enemy in ipairs(self.enemies) do

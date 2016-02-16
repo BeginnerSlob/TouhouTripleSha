@@ -31,8 +31,8 @@ function SmartAI:getWuhunRevengeTargets()
 end
 
 function sgs.ai_slash_prohibit.wuhun(self, from, to)
-	if from:hasSkill("jueqing") then return false end
-	if from:hasFlag("NosJiefanUsed") then return false end
+	if from:hasSkill("ikxuwu") then return false end
+	if from:hasFlag("IkJieyouUsed") then return false end
 	local damageNum = self:hasHeavySlashDamage(from, nil, to, true)
 
 	local maxfriendmark = 0
@@ -57,7 +57,7 @@ end
 function SmartAI:cantbeHurt(player, from, damageNum)
 	from = from or self.player
 	damageNum = damageNum or 1
-	if from:hasSkill("jueqing") then return false end
+	if from:hasSkill("ikxuwu") then return false end
 	local maxfriendmark = 0
 	local maxenemymark = 0
 	local dyingfriend = 0
@@ -176,7 +176,7 @@ sgs.ai_skill_askforag.gongxin = function(self, card_ids)
 	end
 	valuable = peach or ex_nihilo or jink or nullification or slash or card_ids[1]
 
-	if self:isEnemy(target) and target:hasSkill("tuntian") then
+	if self:isEnemy(target) and target:hasSkill("ikyindie") then
 		local zhangjiao = self.room:findPlayerBySkillName("guidao")
 		if zhangjiao and self:isFriend(zhangjiao, target) and self:canRetrial(zhangjiao, target) and self:isValuableCard(card, zhangjiao) then
 			self.gongxinchoice = "discard"
@@ -697,7 +697,7 @@ function SmartAI:getGuixinValue(player)
 				elseif i == 3 then value = 0.25
 				end
 				if player:hasSkills(sgs.lose_equip_skill) then value = value + 0.1 end
-				if player:hasSkills("tuntian+zaoxian") then value = value + 0.1 end
+				if player:hasSkills("ikyindie+ikguiyue") then value = value + 0.1 end
 				return value
 			end
 		end
@@ -707,7 +707,7 @@ function SmartAI:getGuixinValue(player)
 		else
 			local index = player:hasSkills("jijiu|qingnang|leiji|nosleiji|jieyin|beige|kanpo|liuli|qiaobian|zhiheng|guidao|longhun|xuanfeng|tianxiang|noslijian|lijian") and 0.5 or 0.4
 			local value = 0.2 - index / (player:getHandcardNum() + 1)
-			if player:hasSkills("tuntian+zaoxian") then value = value + 0.1 end
+			if player:hasSkills("ikyindie+ikguiyue") then value = value + 0.1 end
 			return value
 		end
 	end
@@ -800,7 +800,7 @@ function SmartAI:getSaveNum(isFriend)
 					num = num + self:getSuitNum("diamond", true, player)
 					num = num + player:getHandcardNum() * 0.4
 				end
-				if player:hasSkill("nosjiefan") and getCardsNum("Slash", player, self.player) > 0 then
+				if player:hasSkill("ikjieyou") and getCardsNum("Slash", player, self.player) > 0 then
 					if self:isFriend(player) or self:getCardsNum("Jink") == 0 then num = num + getCardsNum("Slash", player, self.player) end
 				end
 				num = num + getCardsNum("Peach", player, self.player)
@@ -842,7 +842,7 @@ local function getShenfenUseValueOfHECards(self, to)
 		if jwfy and self:isFriend(jwfy, to) and (not self:isWeak(jwfy) or jwfy:getHp() > 1) then hcard = hcard - 0.9 end
 	end
 	value_h = (hcard > 4) and 16 / hcard or hcard
-	if to:hasSkills("tuntian+zaoxian") then value = value * 0.95 end
+	if to:hasSkills("ikyindie+ikguiyue") then value = value * 0.95 end
 	if (to:hasSkill("kongcheng") or (to:hasSkill("zhiji") and to:getHp() > 2 and to:getMark("zhiji") == 0)) and not to:isKongcheng() then value_h = value_h * 0.7 end
 	if to:hasSkills("jijiu|qingnang|leiji|nosleiji|jieyin|beige|kanpo|liuli|qiaobian|zhiheng|guidao|longhun|xuanfeng|tianxiang|noslijian|lijian") then value_h = value_h * 0.95 end
 	value = value + value_h

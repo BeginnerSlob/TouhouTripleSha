@@ -451,7 +451,7 @@ sgs.ai_skill_use_func.HuangtianCard = function(card, use, self)
 					for _, enemy in ipairs(targets) do
 						local c_number = enemy:hasSkill("yingyang") and math.max(card_number + 3, 13) or card_number
 						if max_number > c_number
-							and self.player:canSlash(enemy, nil, false) and not enemy:hasSkills("tuntian+zaoxian") and self:hasLoseHandcardEffective(enemy)
+							and self.player:canSlash(enemy, nil, false) and not enemy:hasSkills("ikyindie+ikguiyue") and self:hasLoseHandcardEffective(enemy)
 							and (self.player:hasSkill("tianyi") or self:canAttack(enemy, self.player)) then
 							use.card = card
 							enemy:setFlags("AI_HuangtianPindian")
@@ -588,8 +588,8 @@ sgs.ai_card_intention.TianxiangCard = function(self, card, from, tos)
 end
 
 function sgs.ai_slash_prohibit.tianxiang(self, from, to)
-	if from:hasSkill("jueqing") or (from:hasSkill("nosqianxi") and from:distanceTo(to) == 1) then return false end
-	if from:hasFlag("NosJiefanUsed") then return false end
+	if from:hasSkill("ikxuwu") or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
+	if from:hasFlag("IkJieyouUsed") then return false end
 	if self:isFriend(to, from) then return false end
 	return self:cantbeHurt(to, from)
 end

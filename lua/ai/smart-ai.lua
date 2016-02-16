@@ -88,14 +88,14 @@ function setInitialTables()
 	sgs.ai_type_name = { "Skill", "Basic", "Trick", "Equip" }
 	sgs.lose_equip_skill = "kofxiaoji|xiaoji|xuanfeng|nosxuanfeng"
 	sgs.need_kongcheng = "lianying|noslianying|ikjingyou|sijian"
-	sgs.masochism_skill = "nosyiji|yiji|jieming|fankui|nosfankui|nosenyuan|ganglie|vsganglie|nosganglie|enyuan|fangzhu|guixin|langgu|quanji|fenyong|chengxiang|noschengxiang|" .. 
+	sgs.masochism_skill = "nosyiji|yiji|jieming|fankui|nosfankui|thfusheng|ganglie|vsganglie|nosganglie|enyuan|fangzhu|guixin|langgu|quanji|fenyong|chengxiang|noschengxiang|" .. 
 						  "thshenzhou"
 	sgs.wizard_skill = "guicai|nosguicai|guidao|jilve|tiandu|noszhenlie|huanshi"
 	sgs.wizard_harm_skill = "guicai|nosguicai|guidao|jilve|huanshi"
 	sgs.priority_skill = "dimeng|haoshi|qingnang|nosjizhi|jizhi|guzheng|qixi|jieyin|nosguose|guose|duanliang|jujian|fanjian|nosfanjian|noslijian|lijian|" ..
 							"manjuan|lihun|tuxi|nostuxi|qiaobian|yongsi|zhiheng|luoshen|nosrende|rende|mingce|wansha|gongxin|jilve|" ..
 							"anxu|qice|yinling|qingcheng|zhaoxin"
-	sgs.save_skill = "jijiu|buyi|nosjiefan|chunlao|longhun"
+	sgs.save_skill = "jijiu|buyi|ikjieyou|chunlao|longhun"
 	sgs.exclusive_skill = "huilei|duanchang|enyuan|wuhun|zhuiyi|buqu|nosbuqu|nosyiji|yiji|ganglie|vsganglie|nosganglie|guixin|jieming|nosmiji|" ..
 							"thjuedu"
 	sgs.cardneed_skill = "paoxiao|tianyi|xianzhen|shuangxiong|nosjizhi|jizhi|noseguose|guose|duanliang|qixi|qingnang|yinling|nosluoyi|guhuo|nosguhuo|kanpo|" ..
@@ -251,7 +251,7 @@ function sgs.getDefense(player)
 		if player:hasSkill("hongyan") then defense = defense + 0.2 end
 	end
 
-	if player:hasSkills("tuntian+zaoxian") and player:getMark("yijue") == 0 then defense = defense + player:getHandcardNum() * 0.4 end
+	if player:hasSkills("ikyindie+ikguiyue") and player:getMark("yijue") == 0 then defense = defense + player:getHandcardNum() * 0.4 end
 	if player:hasSkill("aocai") and player:getPhase() == sgs.Player_NotActive then defense = defense + 0.3 end
 	if not attacker or (attacker and not attacker:hasSkill("ikxuwu")) then
 		local m = sgs.masochism_skill:split("|")
@@ -378,7 +378,7 @@ function SmartAI:assignKeep(start)
 			end
 		end
 		for _, enemy in ipairs(self.enemies) do
-			if enemy:hasSkill("nosqianxi") and enemy:distanceTo(self.player) == 1 then
+			if enemy:hasSkill("ikwanhun") and enemy:distanceTo(self.player) == 1 then
 				self.keepdata.Jink = 6
 			end
 		end
@@ -2730,7 +2730,7 @@ function sgs.ai_skill_cardask.nullfilter(self, data, pattern, target)
 	if self.player:isDead() then return "." end
 	if target and self:needDeath() then return "." end
 	if target and target:hasSkill("ikxuwu") and not self:needToLoseHp() then return end
-	if effect and target and target:hasSkill("nosqianxi") and target:distanceTo(self.player) == 1 then return end
+	if effect and target and target:hasSkill("ikwanhun") and target:distanceTo(self.player) == 1 then return end
 	if target and sgs.ai_role[target:objectName()] == "rebel"
 		and self.role == "rebel" and sgs.do_not_save_targets and table.contains(sgs.do_not_save_targets, player) then return "." end
 	if not self:damageIsEffective(nil, damage_nature, target) then return "." end
@@ -3076,7 +3076,7 @@ function SmartAI:getCardNeedPlayer(cards, friends_table, handcard)
 					or self.player:hasSkills("shensu|jiangchi|tianyi|wushen|thyuchang|nosgongqi")) then
 					return
 				end
-				if enemy:canSlash(self.player) and enemy:hasSkill("nosqianxi") and enemy:distanceTo(self.player) == 1 then return end
+				if enemy:canSlash(self.player) and enemy:hasSkill("ikwanhun") and enemy:distanceTo(self.player) == 1 then return end
 			end
 		end
 	end
@@ -3092,7 +3092,7 @@ function SmartAI:getCardNeedPlayer(cards, friends_table, handcard)
 					or self.player:hasSkills("shensu|jiangchi|tianyi|wushen|thyuchang|nosgongqi")) then
 					return
 				end
-				if enemy:canSlash(self.player) and enemy:hasSkill("nosqianxi") and enemy:distanceTo(self.player) == 1 then return end
+				if enemy:canSlash(self.player) and enemy:hasSkill("ikwanhun") and enemy:distanceTo(self.player) == 1 then return end
 			end
 		end
 	end
@@ -3370,11 +3370,11 @@ function SmartAI:ableToSave(saver, dying)
 	local current = self.room:getCurrent()
 	if current and current:getPhase() ~= sgs.Player_NotActive and current:hasSkill("wansha")
 		and current:objectName() ~= saver:objectName() and current:objectName() ~= dying:objectName()
-		and not saver:hasSkills("jiuzhu|chunlao|nosjiefan|nosrenxin") then
+		and not saver:hasSkills("jiuzhu|chunlao|ikjieyou|nosrenxin") then
 		return false
 	end
 	local peach = sgs.cloneCard("peach", sgs.Card_NoSuitRed, 0)
-	if saver:isCardLimited(peach, sgs.Card_MethodUse, true) and not saver:hasSkills("jiuzhu|chunlao|nosjiefan|nosrenxin") then return false end
+	if saver:isCardLimited(peach, sgs.Card_MethodUse, true) and not saver:hasSkills("jiuzhu|chunlao|ikjieyou|nosrenxin") then return false end
 	return true
 end
 
@@ -3793,7 +3793,7 @@ function SmartAI:needRetrial(judge)
 		if target and target:isKongcheng() and not self:hasEightDiagramEffect(target) and not self.player:hasSkill("guidao") then return false end
 	end
 
-	if reason == "tuntian" then
+	if reason == "ikyindie" then
 		if not who:hasSkill("jixi") then return false end
 	end
 
@@ -3823,7 +3823,7 @@ function SmartAI:dontRespondPeachInJudge(judge)
 
 	if not judge then self.room:writeToConsole(debug.traceback()) end
 
-	if judge.reason == "tuntian" and judge.who:getMark("zaoxian") == 0 and judge.who:getPile("field"):length() < 2 then return true
+	if judge.reason == "ikyindie" and judge.who:getMark("ikguiyue") == 0 and judge.who:getPile("field"):length() < 2 then return true
 	elseif (judge.reason == "eight_diagram" or judge.reason == "bazhen") and self:isFriend(judge.who) and not self:isWeak(judge.who) then return true
 	elseif judge.reason == "nosmiji" and judge.who:getLostHp() == 1 then return true
 	elseif judge.reason == "nostieji" then
@@ -3974,7 +3974,7 @@ function SmartAI:getDamagedEffects(player, damage_from, isSlash)
 	if attacker:hasSkill("ikxuwu") then return false end
 	if player:hasSkill("thhouzhi") then return false end
 	if isSlash then
-		if attacker:hasSkill("nosqianxi") and attacker:distanceTo(player) == 1 and not self:isFriend(player, attacker) then
+		if attacker:hasSkill("ikwanhun") and attacker:distanceTo(player) == 1 and not self:isFriend(player, attacker) then
 			return false
 		end
 		if attacker:hasWeapon("ice_sword") and player:getCards("he"):length() > 1 and not self:isFriend(player, attacker) then
@@ -5557,7 +5557,7 @@ function SmartAI:doNotDiscard(to, flags, conservative, n, reason)
 	end
 	if conservative and not good_enemy then conservative = false end
 	conservative = conservative or (sgs.turncount <= 2 and self.room:alivePlayerCount() > 2)
-	if to:hasSkills("tuntian+zaoxian") and to:getPhase() == sgs.Player_NotActive and (conservative or (good_enemy and #self.enemies > 1)) then return true end
+	if to:hasSkills("ikyindie+ikguiyue") and to:getPhase() == sgs.Player_NotActive and (conservative or (good_enemy and #self.enemies > 1)) then return true end
 
 	if flags == "nil" then
 		if to:hasSkill("lirang") and #self.enemies > 1 then return true end
@@ -5668,7 +5668,7 @@ function SmartAI:findPlayerToDiscard(flags, include_self, isDiscard, players, re
 		for _, enemy in ipairs(enemies) do
 			local cards = sgs.QList2Table(enemy:getHandcards())
 			local flag = string.format("%s_%s_%s","visible", self.player:objectName(), enemy:objectName())
-			if #cards <= 2 and not enemy:isKongcheng() and not (enemy:hasSkills("tuntian+zaoxian") and enemy:getPhase() == sgs.Player_NotActive) then
+			if #cards <= 2 and not enemy:isKongcheng() and not (enemy:hasSkills("ikyindie+ikguiyue") and enemy:getPhase() == sgs.Player_NotActive) then
 				for _, cc in ipairs(cards) do
 					if (cc:hasFlag("visible") or cc:hasFlag(flag)) and (cc:isKindOf("Peach") or cc:isKindOf("Analeptic")) and (not isDiscard or self.player:canDiscard(enemy, cc:getId())) then
 						table.insert(player_table, enemy)
@@ -5795,7 +5795,7 @@ function SmartAI:needToLoseHp(to, from, isSlash, passive)
 	from = from or self.room:getCurrent()
 	to = to or self.player
 	if isSlash and not from:hasSkill("ikxuwu") then
-		if from:hasSkill("nosqianxi") and from:distanceTo(to) == 1 then
+		if from:hasSkill("ikwanhun") and from:distanceTo(to) == 1 then
 			return false
 		end
 		if from:hasWeapon("ice_sword") and to:getCards("he"):length() > 1 and not self:isFriend(from, to) then

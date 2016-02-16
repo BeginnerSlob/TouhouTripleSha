@@ -110,10 +110,10 @@ end
 function sgs.ai_skill_invoke.zhenlie(self, data)
 	local use = data:toCardUse()
 	if not use.from or use.from:isDead() then return false end
-	if self.role == "rebel" and sgs.evaluatePlayerRole(use.from) == "rebel" and not use.from:hasSkill("jueqing")
+	if self.role == "rebel" and sgs.evaluatePlayerRole(use.from) == "rebel" and not use.from:hasSkill("ikxuwu")
 		and self.player:getHp() == 1 and self:getAllPeachNum() < 1 then return false end
 
-	if self:isEnemy(use.from) or (self:isFriend(use.from) and self.role == "loyalist" and not use.from:hasSkill("jueqing") and use.from:isLord() and self.player:getHp() == 1) then
+	if self:isEnemy(use.from) or (self:isFriend(use.from) and self.role == "loyalist" and not use.from:hasSkill("ikxuwu") and use.from:isLord() and self.player:getHp() == 1) then
 		if use.card:isKindOf("Slash") then
 			if not self:slashIsEffective(use.card, self.player, use.from) then return false end
 			if self:hasHeavySlashDamage(use.from, use.card, self.player) then return true end
@@ -132,9 +132,9 @@ function sgs.ai_skill_invoke.zhenlie(self, data)
 				or (use.from:hasSkill("dahe") and self.player:hasFlag("dahe") and not hasHeart) then
 
 				if use.card:isKindOf("NatureSlash") and self.player:isChained() and not self:isGoodChainTarget(self.player, use.from, nil, nil, use.card) then return true end
-				if use.from:hasSkill("nosqianxi") and use.from:distanceTo(self.player) == 1 then return true end
-				if self:isFriend(use.from) and self.role == "loyalist" and not use.from:hasSkill("jueqing") and use.from:isLord() and self.player:getHp() == 1 then return true end
-				if (not (self.player:hasSkills(sgs.masochism_skill) or (self.player:hasSkill("tianxiang") and self:hasSuit("heart"))) or use.from:hasSkill("jueqing"))
+				if use.from:hasSkill("ikwanhun") and use.from:distanceTo(self.player) == 1 then return true end
+				if self:isFriend(use.from) and self.role == "loyalist" and not use.from:hasSkill("ikxuwu") and use.from:isLord() and self.player:getHp() == 1 then return true end
+				if (not (self.player:hasSkills(sgs.masochism_skill) or (self.player:hasSkill("tianxiang") and self:hasSuit("heart"))) or use.from:hasSkill("ikxuwu"))
 					and not self:doNotDiscard(use.from) then
 					return true
 				end
@@ -157,9 +157,9 @@ function sgs.ai_skill_invoke.zhenlie(self, data)
 			if not self:hasTrickEffective(use.card, self.player, from) or table.contains(use.nullified_list, self.player:objectName()) then return false end
 			if not self:damageIsEffective(self.player, sgs.DamageStruct_Normal, from) then return false end
 			if sj_num == 0 and friend_null <= 0 then
-				if self:isEnemy(from) and from:hasSkill("jueqing") then return not self:doNotDiscard(from) end
-				if self:isFriend(from) and self.role == "loyalist" and from:isLord() and self.player:getHp() == 1 and not from:hasSkill("jueqing") then return true end
-				if (not (self.player:hasSkills(sgs.masochism_skill) or (self.player:hasSkill("tianxiang") and self:hasSuit("heart"))) or use.from:hasSkill("jueqing"))
+				if self:isEnemy(from) and from:hasSkill("ikxuwu") then return not self:doNotDiscard(from) end
+				if self:isFriend(from) and self.role == "loyalist" and from:isLord() and self.player:getHp() == 1 and not from:hasSkill("ikxuwu") then return true end
+				if (not (self.player:hasSkills(sgs.masochism_skill) or (self.player:hasSkill("tianxiang") and self:hasSuit("heart"))) or use.from:hasSkill("ikxuwu"))
 					and not self:doNotDiscard(use.from) then
 					return true
 				end
@@ -494,7 +494,7 @@ sgs.ai_skill_use_func.AnxuCard = function(card, use, self)
 
 	local enemies = {}
 	for _, enemy in ipairs(self.enemies) do
-		if not enemy:hasSkills("tuntian+zaoxian") and not (enemy:isKongcheng() or (enemy:getHandcardNum() <= 1 and self:needKongcheng(enemy))) then
+		if not enemy:hasSkills("ikyindie+ikguiyue") and not (enemy:isKongcheng() or (enemy:getHandcardNum() <= 1 and self:needKongcheng(enemy))) then
 			table.insert(enemies, enemy)
 		end
 	end
@@ -898,7 +898,7 @@ qice_skill.getTurnUseCard = function(self)
 			local newqice = aoenames[i]
 			aoe = sgs.cloneCard(newqice)
 			if self:getAoeValue(aoe) > -5 and caocao and self:isFriend(caocao) and caocao:getHp() > 1 and not self:willSkipPlayPhase(caocao)
-				and not self.player:hasSkill("jueqing") and self:aoeIsEffective(aoe, caocao, self.player) then
+				and not self.player:hasSkill("ikxuwu") and self:aoeIsEffective(aoe, caocao, self.player) then
 				local parsed_card = sgs.Card_Parse("@QiceCard=" .. table.concat(allcard, "+") .. ":" .. newqice)
 				return parsed_card
 			end
