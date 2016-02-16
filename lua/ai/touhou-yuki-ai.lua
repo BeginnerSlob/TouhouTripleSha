@@ -1061,35 +1061,19 @@ sgs.ai_cardneed.thhuanfa = function(to, card)
 	return card:getSuit() == sgs.Card_Heart
 end
 
---【骚葬】ai
---要确保弃牌发动技能，ai都是不用牌不舒服斯基的主
---这个属于修改基础用牌ai 暂时不弄了。。。
+--骚葬：弃牌阶段结束时，你每于此阶段弃置了一种类别的牌，你可以依次弃置一名其他角色的一张手牌。
 sgs.ai_skill_playerchosen.thsaozang = function(self, targets)
-	--self:sort(self.enemies, "defense")
-	if #self.enemies>0 then
-		self:sort(self.enemies, "handcard")
-		for _,p in pairs (self.enemies) do
-			if not self.player:canDiscard(p, "h") then
-				continue
-			elseif self:needKongcheng(p) and p:getHandcardNum()==1 then
-				continue
-			else
-				return p
-			end
-		end
-	end
-	return nil
+	return self:findPlayerToDiscard("h", false, true, targets)
 end
---【骚葬】的仇恨：比起playerchosen，可能cardchosen更精确
-sgs.ai_choicemade_filter.cardChosen.thsaozang = sgs.ai_choicemade_filter.cardChosen.dismantlement
 
---【絮曲】ai
+sgs.ai_choicemade_filter.cardChosen.thsaozang = sgs.ai_choicemade_filter.cardChosen.snatch
+
+--絮曲：你的回合外，当你失去手牌时，你可以令一名其他角色摸一张牌。
 sgs.ai_skill_playerchosen.thxuqu = function(self, targets)
-	local target = self:findPlayerToDraw(false, 1)
-	if target then return target end
-	return nil
+	return self:findPlayerToDraw(false, 1)
 end
-sgs.ai_playerchosen_intention.thxuqu = -30
+
+sgs.ai_playerchosen_intention.thxuqu = -20
 
 --【苦戒】ai
 local thkujiev_skill = {}
