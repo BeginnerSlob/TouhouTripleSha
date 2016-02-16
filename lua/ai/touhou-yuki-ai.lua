@@ -1075,6 +1075,101 @@ end
 
 sgs.ai_playerchosen_intention.thxuqu = -20
 
+--窃宝：一名角色对另一名角色使用【桃】时，你可以弃置一张【杀】并令此【桃】对目标角色无效，若此【杀】为红色，你获得该【桃】；一名角色获得另一名角色的牌时，你可弃置一张【杀】，若此【杀】为红色，你获得这些牌，否则置入弃牌堆。
+sgs.ai_skill_cardask["@thqiebao"] = function(self, data, pattern)
+	local use = data:toCardUse()
+	local move = data:toMoveOneTime()
+	local ids = sgs.IntList()
+	local need_use = false
+	local must_red = false
+	if use.card then
+		if use.card:isVirtualCard() then
+			ids = use.card:getSubcards()
+		else
+			ids:append(use.card:getId())
+		end
+		if use.from and not self:isEnemy(use.from) then return "." end
+		local good = 0
+		local bad = 0
+		for _, p in sgs.qlist(use.to) do
+			if self:isFriend(p) then
+				bad = bad + 1
+				if self:isWeak(p) then
+					bad = bad + 2
+				end
+			elseif self:isEnemy(p) then
+				good = good + 1
+				if self:isWeak(p) then
+					good = good + 1
+				end
+			end
+		end
+		if good > bad then
+			need_use = true
+		else
+			for _, id in sgs.qlist(ids) do
+				if isCard("Peach", id, self.player) then
+					good = good + 1
+				end
+			end
+			if good > bad then
+				must_red = true
+			end
+		end
+	elseif move.card_ids and not move.card_ids:isEmpty() then
+		ids = move.card_ids
+		if move.card_ids:isEmpty() then return "." end
+		if move.to and not self:isEnemy(move.to) and move.from and not self:isFriend(move.from) then return "." end
+		if ids:length() > 1 and self:isEnemy(move.to) then
+			need_use = true
+		elseif ids:length() > 1 and move.from and self:isFriend(move.from) and move.to and not self:isFriend(move.to) then
+			must_red = true
+		else
+			local peach = 0
+			for i = 0, ids:length() - 1 do
+				if move.open:at(i) and isCard("Peach", ids:at(i), self.player) then
+					peach = peach + 1
+				end
+			end
+			if peach > 0 then
+				must_red = true
+			end
+		end
+	end
+	if not need_use and not must_red then return "." end
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	self:sortByKeepValue(cards)
+	local slash, red_slash
+	for _, c in ipairs(cards) do
+		if c:isKindOf("Slash") then
+			if not slash then
+				slash = c
+			end
+			if c:isRed() then
+				red_slash = c
+				break
+			end
+		end
+	end
+	if must_red and red_slash then
+		return "$" .. red_slash:getEffectiveId()
+	end
+	if need_use and slash then
+		return "$" .. slash:getEffectiveId()
+	end
+	return "."
+end
+
+sgs.thqiebao_keep_value = {
+	Slash = 5.8
+	ThunderSlash = 5.75
+	FireSlash = 5.85
+}
+
+sgs.ai_cardneed.thqiebao = function(to, card)
+	return card:isKindOf("Slash")
+end
+
 --【苦戒】ai
 local thkujiev_skill = {}
 thkujiev_skill.name = "thkujiev"
