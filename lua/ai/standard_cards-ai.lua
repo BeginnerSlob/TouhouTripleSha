@@ -669,6 +669,10 @@ function SmartAI:useCardSlash(card, use)
 end
 
 sgs.ai_skill_use.slash = function(self, prompt)
+	if self.player:hasSkill("thchouce") and self.player:getPhase() == sgs.Player_Play and self.player:getMark("ThChouce") < 13
+			and not self.player:hasFlag("Global_ThChouceFailed") and not self.player:hasFlag("ThChouceUse") then
+		return "@ThChouceCard=.:slash"
+	end
 	local parsedPrompt = prompt:split(":")
 	local callback = sgs.ai_skill_cardask[parsedPrompt[1]] -- for askForUseSlashTo
 	if self.player:hasFlag("slashTargetFixToOne") and type(callback) == "function" and not self.player:hasFlag("ThChouceUse") then
@@ -702,7 +706,9 @@ sgs.ai_skill_use.slash = function(self, prompt)
 	local slashes = self:getCards("Slash")
 	self:sort(self.enemies, "defenseSlash")
 	for _, slash in ipairs(slashes) do
-		local no_distance = sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_DistanceLimit, self.player, slash) > 50 or self.player:hasFlag("slashNoDistanceLimit")
+		local no_distance = sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_DistanceLimit, self.player, slash) > 50
+							or self.player:hasFlag("slashNoDistanceLimit")
+							or self.player:hasFlag("ThChouceUse")
 		for _, friend in ipairs(self.friends_noself) do
 			local slash_prohibit = false
 			slash_prohibit = self:slashProhibit(card, friend)
@@ -712,7 +718,7 @@ sgs.ai_skill_use.slash = function(self, prompt)
 				and (self:findLeijiTarget(friend, 50, self.player)
 					or (friend:isLord() and self.player:hasSkill("guagu") and friend:getLostHp() >= 1 and getCardsNum("Jink", friend, self.player) == 0)
 					or (friend:hasSkill("jieming") and self.player:hasSkill("nosrende") and (huatuo and self:isFriend(huatuo))))
-				and not (self.player:hasFlag("slashTargetFix") and not friend:hasFlag("SlashAssignee"))
+				and (not (self.player:hasFlag("slashTargetFix") and not friend:hasFlag("SlashAssignee")) or self.player:hasFlag("ThChouceUse"))
 				and not (slash:isKindOf("XiansiSlashCard") and friend:getPile("counter"):length() < 2) then
 
 				useslash = slash
@@ -727,7 +733,7 @@ sgs.ai_skill_use.slash = function(self, prompt)
 			for _, enemy in ipairs(self.enemies) do
 				if self.player:canSlash(enemy, slash, not no_distance) and not self:slashProhibit(slash, enemy)
 					and self:slashIsEffective(slash, enemy) and sgs.isGoodTarget(enemy, self.enemies, self)
-					and not (self.player:hasFlag("slashTargetFix") and not enemy:hasFlag("SlashAssignee")) then
+					and (not (self.player:hasFlag("slashTargetFix") and not enemy:hasFlag("SlashAssignee")) or self.player:hasFlag("ThChouceUse")) then
 
 					useslash = slash
 					target = enemy
@@ -1523,6 +1529,7 @@ sgs.ai_use_priority.Jade = 6
 
 sgs.dynamic_value.damage_card.ArcheryAttack = true
 sgs.dynamic_value.damage_card.SavageAssault = true
+sgs.dynamic_value.damage_card.Drowning = true
 
 sgs.ai_use_value.Drowning = 3.7
 sgs.ai_use_priority.Drowning = 3.5
@@ -3903,6 +3910,7 @@ sgs.ai_use_value.BurningCamps = 7.1
 sgs.ai_use_priority.BurningCamps = 4.7
 sgs.ai_keep_value.BurningCamps = 3.38
 sgs.ai_card_intention.BurningCamps = 10
+sgs.dynamic_value.damage_card.BurningCamps = true
 
 local scroll_skill = {}
 scroll_skill.name = "scroll"

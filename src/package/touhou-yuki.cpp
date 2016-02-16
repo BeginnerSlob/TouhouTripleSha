@@ -1067,11 +1067,8 @@ public:
         choices << "letdraw";
         if (ask_who->canDiscard(player, "he"))
             choices << "discard";
-        
-        player->tag["ThLingyaSource"] = QVariant::fromValue(ask_who);
-        QString choice = room->askForChoice(player, objectName(), choices.join("+"));
-        player->tag.remove("ThLingyaSource");
-        
+
+        QString choice = room->askForChoice(player, objectName(), choices.join("+"), QVariant::fromValue(ask_who));
         if (choice == "discard") {
             int card_id = room->askForCardChosen(ask_who, player, "he", objectName(), false, Card::MethodDiscard);
             room->throwCard(card_id, player, ask_who);
