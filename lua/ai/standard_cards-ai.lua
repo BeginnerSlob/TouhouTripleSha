@@ -133,7 +133,7 @@ function sgs.getDefenseSlash(player, self)
 		if player:hasSkills("guicai|nosguicai") or player:hasSkill("huanshi") then defense = defense + 0.3 end
 	end
 
-	if player:hasSkills("tuntian+zaoxian") and getCardsNum("Jink", player) > 0 and player:getMark("yijue") == 0 then defense = defense + 1.5 end
+	if player:hasSkills("ikyindie+ikguiyue") and getCardsNum("Jink", player) > 0 and player:getMark("yijue") == 0 then defense = defense + 1.5 end
 	if player:hasSkill("aocai") and player:getPhase() == sgs.Player_NotActive then defense = defense + 0.5 end
 	if player:hasSkill("wanrong") and not hasManjuanEffect(player) then defense = defense + 0.5 end
 
@@ -817,7 +817,7 @@ end
 
 sgs.ai_card_intention.Slash = function(self, card, from, tos)
 	if sgs.ai_collateral then sgs.ai_collateral = false return end
-	if card:hasFlag("nosjiefan-slash") or card:getSkillName() == "mizhao" then return end
+	if card:hasFlag("ikjieyou-slash") or card:getSkillName() == "mizhao" then return end
 	for _, to in ipairs(tos) do
 		if table.contains(sgs.ai_leiji_effect, to) then
 			table.removeOne(sgs.ai_leiji_effect, to)
@@ -852,7 +852,7 @@ sgs.ai_skill_cardask["slash-jink"] = function(self, data, pattern, target)
 		slash = sgs.cloneCard("slash")
 	end
 	local cards = sgs.QList2Table(self.player:getHandcards())
-	if (not target or self:isFriend(target)) and slash:hasFlag("nosjiefan-slash") then return "." end
+	if (not target or self:isFriend(target)) and slash:hasFlag("ikjieyou-slash") then return "." end
 	if sgs.ai_skill_cardask.nullfilter(self, data, pattern, target) then return "." end
 	--if not target then self.room:writeToConsole(debug.traceback()) end
 	if not target then return getJink() end
@@ -881,13 +881,13 @@ sgs.ai_skill_cardask["slash-jink"] = function(self, data, pattern, target)
 		end
 		if self.player:getHandcardNum() == 1 and self:needKongcheng() then return getJink() end
 		if not self:hasLoseHandcardEffective() and not self.player:isKongcheng() then return getJink() end
-		if target:hasSkill("mengjin") and not (target:hasSkill("nosqianxi") and target:distanceTo(self.player) == 1) then
+		if target:hasSkill("mengjin") and not (target:hasSkill("ikwanhun") and target:distanceTo(self.player) == 1) then
 			if self:doNotDiscard(self.player, "he", true) then return getJink() end
 			if self.player:getCards("he"):length() == 1 and not self.player:getArmor() then return getJink() end
 			if self.player:hasSkills("jijiu|qingnang") and self.player:getCards("he"):length() > 1 then return "." end
 			if self:canUseJieyuanDecrease(target) then return "." end
 			if (self:getCardsNum("Peach") > 0 or (self:getCardsNum("Analeptic") > 0 and self:isWeak()))
-				and not self.player:hasSkills("tuntian+zaoxian") and not self:willSkipPlayPhase() then
+				and not self.player:hasSkills("ikyindie+ikguiyue") and not self:willSkipPlayPhase() then
 				return "."
 			end
 		end
@@ -895,7 +895,7 @@ sgs.ai_skill_cardask["slash-jink"] = function(self, data, pattern, target)
 			and (target:getPhase() < sgs.Player_Play or (self:slashIsAvailable(target) and target:canSlash(self.player))) then
 			return "."
 		end
-		if not (target:hasSkill("nosqianxi") and target:distanceTo(self.player) == 1) then
+		if not (target:hasSkill("ikwanhun") and target:distanceTo(self.player) == 1) then
 			if target:hasWeapon("axe") then
 				if target:hasSkills(sgs.lose_equip_skill) and target:getEquips():length() > 1 and target:getCards("he"):length() > 2 then return "." end
 				if target:getHandcardNum() - target:getHp() > 2 and not self:isWeak() and self:getOverflow() <= 0 then return "." end
@@ -1146,7 +1146,7 @@ sgs.ai_skill_invoke.ice_sword = function(self, data)
 		if target:getArmor() and self:evaluateArmor(target:getArmor(), target) > 3 and not (target:hasArmorEffect("silver_lion") and target:isWounded()) then
 			return true
 		end
-		if target:hasSkills("tuntian+zaoxian") and target:getPhase() == sgs.Player_NotActive then return false end
+		if target:hasSkills("ikyindie+ikguiyue") and target:getPhase() == sgs.Player_NotActive then return false end
 		if target:hasSkills(sgs.need_kongcheng) then return false end
 		if target:getCards("he"):length() < 4 and target:getCards("he"):length() > 1 then return true end
 		return false
@@ -1420,7 +1420,7 @@ end
 
 sgs.ai_skill_invoke.eight_diagram = function(self, data)
 	local dying = 0
-	local handang = self.room:findPlayerBySkillName("nosjiefan")
+	local handang = self.room:findPlayerBySkillName("ikjieyou")
 	for _, aplayer in sgs.qlist(self.room:getAlivePlayers()) do
 		if aplayer:getHp() < 1 and not aplayer:hasSkill("nosbuqu") then dying = 1 break end
 	end
@@ -2017,7 +2017,7 @@ function SmartAI:getValuableCard(who)
 	end
 
 	if offhorse then
-		if who:hasSkills("nosqianxi|kuanggu|duanbing|qianxi") then
+		if who:hasSkills("ikwanhun|kuanggu|duanbing|qianxi") then
 			return offhorse:getEffectiveId()
 		end
 	end
@@ -2123,7 +2123,7 @@ function SmartAI:useCardSnatchOrDismantlement(card, use)
 		enemies = self:exclude(enemies, card)
 		local temp = {}
 		for _, enemy in ipairs(enemies) do
-			if enemy:hasSkill("tuntian+guidao") and enemy:hasSkills("zaoxian|jixi|ziliang|leiji|nosleiji") then continue end
+			if enemy:hasSkill("ikyindie+guidao") and enemy:hasSkills("ikguiyue|jixi|ziliang|leiji|nosleiji") then continue end
 			if self:hasTrickEffective(card, enemy) or isYinling then
 				table.insert(temp, enemy)
 			end
@@ -2135,7 +2135,7 @@ function SmartAI:useCardSnatchOrDismantlement(card, use)
 		enemies = self:exclude(self.enemies, card)
 		local temp = {}
 		for _, enemy in ipairs(enemies) do
-			if enemy:hasSkill("tuntian+guidao") and enemy:hasSkills("zaoxian|jixi|ziliang|leiji|nosleiji") then continue end
+			if enemy:hasSkill("ikyindie+guidao") and enemy:hasSkills("ikguiyue|jixi|ziliang|leiji|nosleiji") then continue end
 			if self:hasTrickEffective(card, enemy) or isYinling then
 				table.insert(temp, enemy)
 			end

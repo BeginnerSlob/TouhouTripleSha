@@ -242,15 +242,15 @@ sgs.ai_skill_use["@@xiansi"] = function(self, prompt)
 	local zhugeliang = self.room:findPlayerBySkillName("kongcheng")
 	local luxun = self.room:findPlayerBySkillName("lianying")
 	local nosluxun = self.room:findPlayerBySkillName("noslianying")
-	local dengai = self.room:findPlayerBySkillName("tuntian")
+	local dengai = self.room:findPlayerBySkillName("ikyindie")
 	local jiangwei = self.room:findPlayerBySkillName("zhiji")
 
 	if jiangwei and self:isFriend(jiangwei) and jiangwei:getMark("zhiji") == 0 and jiangwei:getHandcardNum()== 1
 		and self:getEnemyNumBySeat(self.player, jiangwei) <= (jiangwei:getHp() >= 3 and 1 or 0) then
 		if add_player(jiangwei, 1) == rest_num then return "@XiansiCard=.->" .. table.concat(targets, "+") end
 	end
-	if dengai and dengai:hasSkill("zaoxian") and self:isFriend(dengai) and (not self:isWeak(dengai) or self:getEnemyNumBySeat(self.player, dengai) == 0)
-		and dengai:getMark("zaoxian") == 0 and dengai:getPile("field"):length() == 2 and add_player(dengai, 1) == rest_num then
+	if dengai and dengai:hasSkill("ikguiyue") and self:isFriend(dengai) and (not self:isWeak(dengai) or self:getEnemyNumBySeat(self.player, dengai) == 0)
+		and dengai:getMark("ikguiyue") == 0 and dengai:getPile("field"):length() == 2 and add_player(dengai, 1) == rest_num then
 		return "@XiansiCard=.->" .. table.concat(targets, "+")
 	end
 
@@ -318,7 +318,7 @@ sgs.ai_card_intention.XiansiCard = function(self, card, from, tos)
 	end
 	if from:getState() == "online" then
 		for _, to in ipairs(tos) do
-			if (to:hasSkills("kongcheng|zhiji|lianying|noslianying") and to:getHandcardNum() == 1) or to:hasSkills("tuntian+zaoxian") then
+			if (to:hasSkills("kongcheng|zhiji|lianying|noslianying") and to:getHandcardNum() == 1) or to:hasSkills("ikyindie+ikguiyue") then
 			else
 				sgs.updateIntention(from, to, 80)
 			end

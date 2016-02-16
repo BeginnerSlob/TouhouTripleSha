@@ -47,7 +47,7 @@ sgs.ai_skill_use_func.QuhuCard = function(card, use, self)
 		end
 		if use_quhu then
 			for _, enemy in ipairs(self.enemies) do
-				if not enemy:isKongcheng() and self.player:getHp() < enemy:getHp() and not enemy:hasSkill("jueqing") then
+				if not enemy:isKongcheng() and self.player:getHp() < enemy:getHp() and not enemy:hasSkill("ikxuwu") then
 					local cards = self.player:getHandcards()
 					cards = sgs.QList2Table(cards)
 					self:sortByUseValue(cards, true)
@@ -356,7 +356,7 @@ sgs.ai_skill_use_func.TianyiCard = function(card, use, self)
 	if isCard("Slash", max_card, self.player) then slashcount = slashcount - 1 end
 	if self.player:hasSkill("kongcheng") and self.player:getHandcardNum() == 1 then
 		for _, enemy in ipairs(self.enemies) do
-			if not enemy:isKongcheng() and self:hasLoseHandcardEffective(enemy) and not (enemy:hasSkills("tuntian+zaoxian") and enemy:getHandcardNum() > 2) then
+			if not enemy:isKongcheng() and self:hasLoseHandcardEffective(enemy) and not (enemy:hasSkills("ikyindie+ikguiyue") and enemy:getHandcardNum() > 2) then
 				sgs.ai_use_priority.TianyiCard = 1.2
 				self.tianyi_card = max_card:getId()
 				use.card = sgs.Card_Parse("@TianyiCard=.")
@@ -453,7 +453,7 @@ sgs.ai_skill_use_func.TianyiCard = function(card, use, self)
 	if self:getOverflow() > 0 then
 		for _, enemy in ipairs(self.enemies) do
 			if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng()
-				and not enemy:hasSkills("tuntian+zaoxian") and self:hasLoseHandcardEffective(enemy) then
+				and not enemy:hasSkills("ikyindie+ikguiyue") and self:hasLoseHandcardEffective(enemy) then
 				self.tianyi_card = cards[1]:getId()
 				use.card = sgs.Card_Parse("@TianyiCard=.")
 				if use.to then use.to:append(enemy) end

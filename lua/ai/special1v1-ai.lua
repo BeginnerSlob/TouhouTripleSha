@@ -1,5 +1,5 @@
 function SmartAI:useCardDrowning(card, use)
-	if self.player:hasSkill("noswuyan") or (self.player:hasSkill("wuyan") and not self.player:hasSkill("jueqing")) then return end
+	if self.player:hasSkill("noswuyan") or (self.player:hasSkill("wuyan") and not self.player:hasSkill("ikxuwu")) then return end
 	self:sort(self.enemies)
 	local targets, equip_enemy = {}, {}
 	for _, enemy in ipairs(self.enemies) do
@@ -94,7 +94,7 @@ sgs.ai_playerchosen_intention.koftuxi = function(self, from, to)
 		return
 	end
 	if from:getState() == "online" then
-		if (to:hasSkills("kongcheng|zhiji|lianying") and to:getHandcardNum() == 1) or to:hasSkills("tuntian+zaoxian") then
+		if (to:hasSkills("kongcheng|zhiji|lianying") and to:getHandcardNum() == 1) or to:hasSkills("ikyindie+ikguiyue") then
 		else
 			sgs.updateIntention(from, to, 80)
 		end

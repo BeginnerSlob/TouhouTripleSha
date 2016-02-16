@@ -253,7 +253,7 @@ local function can_be_selected_as_target_xueji(self, card, who)
 	-- validation of strategy
 	if self:cantbeHurt(who) or not self:damageIsEffective(who) then return false end
 	if self:isEnemy(who) then
-		if not self.player:hasSkill("jueqing") then
+		if not self.player:hasSkill("ikxuwu") then
 			if who:hasSkill("guixin") and (self.room:getAliveCount() >= 4 or not who:faceUp()) and not who:hasSkill("manjuan") then return false end
 			if self.player:getHp() == 1 and ((who:hasSkills("vsganglie|nosganglie") and self.player:getHandcardNum() <= 2) or who:hasSkill("ganglie")) then return false end
 			if who:hasSkill("jieming") then
@@ -275,7 +275,7 @@ local function can_be_selected_as_target_xueji(self, card, who)
 		end
 		return true
 	elseif self:isFriend(who) then
-		if who:hasSkill("nosyiji") and not self.player:hasSkill("jueqing") then
+		if who:hasSkill("nosyiji") and not self.player:hasSkill("ikxuwu") then
 			local huatuo = self.room:findPlayerBySkillName("jijiu")
 			if (huatuo and self:isFriend(huatuo) and huatuo:getHandcardNum() >= 3 and huatuo ~= self.player)
 				or (who:getLostHp() == 0 and who:getMaxHp() >= 3) then
@@ -333,7 +333,7 @@ sgs.ai_card_intention.XuejiCard = function(self, card, from, tos)
 	local huatuo = self.room:findPlayerBySkillName("jijiu")
 	for _, to in ipairs(tos) do
 		local intention = 60
-		if to:hasSkill("nosyiji") and not from:hasSkill("jueqing") then
+		if to:hasSkill("nosyiji") and not from:hasSkill("ikxuwu") then
 			if (huatuo and self:isFriend(huatuo) and huatuo:getHandcardNum() >= 3 and huatuo:objectName() ~= from:objectName()) then
 				intention = -30
 			end
@@ -887,8 +887,8 @@ function getNextJudgeReason(self, player)
 	end
 	if player:hasSkill("qianxi") then return "qianxi" end
 	if player:hasSkill("nosmiji") and player:getLostHp() > 0 then return "nosmiji" end
-	if player:hasSkill("tuntian") then return "tuntian" end
-	if player:hasSkill("nosqianxi") then return "nosqianxi" end
+	if player:hasSkill("ikyindie") then return "ikyindie" end
+	if player:hasSkill("ikwanhun") then return "ikwanhun" end
 end
 
 local zhoufu_skill = {}
@@ -947,7 +947,7 @@ sgs.ai_skill_use_func.ZhoufuCard = function(card, use, self)
 						return
 					end
 				end
-			elseif reason == "nosqianxi" or reason == "tuntian" then
+			elseif reason == "ikwanhun" or reason == "ikyindie" then
 				for _, card in ipairs(cards) do
 					if (card:getSuit() ~= sgs.Card_Heart and not (card:getSuit() == sgs.Card_Spade and friend:hasSkill("hongyan")))
 						and (friend:hasSkill("tiandu") or not self:isValuableCard(card)) then
@@ -1015,7 +1015,7 @@ sgs.ai_skill_use_func.ZhoufuCard = function(card, use, self)
 						return
 					end
 				end
-			elseif reason == "nosqianxi" or reason == "tuntian" then
+			elseif reason == "ikwanhun" or reason == "ikyindie" then
 				for _, card in ipairs(cards) do
 					if (card:getSuit() == sgs.Card_Heart or (card:getSuit() == sgs.Card_Spade and enemy:hasSkill("hongyan")))
 						and not self:isValuableCard(card) then
@@ -1130,7 +1130,7 @@ local function getKangkaiCard(self, target, data)
 	end
 	if #off_horse > 0 then return off_horse[1]:getEffectiveId() end
 	if self.player:getOffensiveHorse()
-		and ((self.player:getWeapon() and not self.player:getWeapon():isKindOf("Crossbow")) or self.player:hasSkills("tannang|mashu|tuntian")) then
+		and ((self.player:getWeapon() and not self.player:getWeapon():isKindOf("Crossbow")) or self.player:hasSkills("tannang|mashu|ikyindie")) then
 		return self.player:getOffensiveHorse():getEffectiveId()
 	end
 end

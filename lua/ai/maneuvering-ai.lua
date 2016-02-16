@@ -180,7 +180,7 @@ function SmartAI:shouldUseAnaleptic(target, slash)
 	end
 
 	if target:hasSkills(sgs.masochism_skill .. "|longhun|buqu|nosbuqu|" .. sgs.recover_skill)
-		and self.player:hasSkill("nosqianxi") and self.player:distanceTo(target) == 1 then
+		and self.player:hasSkill("ikwanhun") and self.player:distanceTo(target) == 1 then
 		return false
 	end
 	if not self:isFriend(target) then

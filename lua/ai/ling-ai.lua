@@ -18,7 +18,7 @@ sgs.ai_skill_invoke.yishi = function(self, data)
 		if target:getEquips():isEmpty() and (target:getHandcardNum() == 1 and (target:hasSkills(sgs.need_kongcheng) or not self:hasLoseHandcardEffective(target))) then
 			return false
 		end
-		if (target:hasSkills("tuntian+zaoxian") and target:getPhase() == sgs.Player_NotActive)
+		if (target:hasSkills("ikyindie+ikguiyue") and target:getPhase() == sgs.Player_NotActive)
 			or (target:isKongcheng() and target:hasSkills(sgs.lose_equip_skill)) then
 			return false
 		end
