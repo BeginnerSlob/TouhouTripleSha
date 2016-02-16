@@ -836,49 +836,48 @@ end
 
 sgs.ai_use_priority.ThBingpuCard = sgs.ai_use_priority.Slash + 0.09
 
---【冬末】ai
+--冬末：结束阶段开始时，你可以指定一至X名其他角色（X为你已损失的体力值），你和这些角色将各自的人物牌翻面，并各摸一张牌。
 sgs.ai_skill_use["@@thdongmo"] = function(self, prompt)
-	local targetNames={}
-	--need a sort method... 
-	for _,p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
-		if (self:isFriend(p) and not p:faceUp()) 
-		or (self:isEnemy(p) and  p:faceUp()) then
-			table.insert(targetNames,p:objectName())
+	local targets = {}
+	local players = sgs.QList2Table(self.room:getOtherPlayers(self.player))
+	self:sort(players, "threat")
+	for _, p in ipairs(players) do
+		if (self:isFriend(p) and p:faceUp() == p:hasSkill("thshiting"))
+				or (self:isEnemy(p) and p:faceUp() ~= p:hasSkill("thshiting")) then
+			table.insert(targets, p:objectName())
 		end
-		if #targetNames>=self.player:getLostHp() then
+		if #targets >= self.player:getLostHp() then
 			break
 		end
 	end
-	if #targetNames ==0 then 
-		return "."	 
-	elseif #targetNames < self.player:getLostHp() then
-		local can=false
+	if #targets == 0 then
+		return "."
+	elseif self.player:getLostHp() - #targets > 1 then
+		local can = false
 		if not self.player:faceUp() then
-			can =true
-		elseif self.player:getLostHp() -#targetNames<2 then
-			can =true
+			can = true
 		end
 		if can then
-			return "@ThDongmoCard=.->" .. table.concat(targetNames, "+")
+			return "@ThDongmoCard=.->" .. table.concat(targets, "+")
 		end
 	else
-		return "@ThDongmoCard=.->" .. table.concat(targetNames, "+")
+		return "@ThDongmoCard=.->" .. table.concat(targets, "+")
 	end
 	return "."
 end
+
 sgs.ai_card_intention.ThDongmoCard = function(self, card, from, tos)
-	for _,to in pairs (tos) do
-		if to:faceUp() then
-			sgs.updateIntention(from, to, 50)
+	for _, to in ipairs(tos) do
+		if to:faceUp() ~= to:hasSkill("thshiting") then
+			sgs.updateIntention(from, to, 60)
 		else
-			sgs.updateIntention(from, to, -50)	
+			sgs.updateIntention(from, to, -80)
 		end
 	end
 end
 
---【凛寒】ai
+--凛寒：当你使用或者打出一张【闪】时，你可以摸一张牌。
 sgs.ai_skill_invoke.thlinhan = true
-
 
 --【骚葬】ai
 --要确保弃牌发动技能，ai都是不用牌不舒服斯基的主

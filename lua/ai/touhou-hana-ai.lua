@@ -249,7 +249,7 @@ sgs.ai_skill_use_func.ThWujianCard = function(card, use, self)
 		local current_danger = 0
 		for _, f in ipairs(self.friends) do
 			if p:distanceTo(f) == p:getAttackRange() then
-				if self.isWeak(f) then
+				if self:isWeak(f) then
 					current_danger = current_danger + 2
 				end
 				current_danger = current_danger + 1
