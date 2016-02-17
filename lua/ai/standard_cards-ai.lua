@@ -3374,6 +3374,10 @@ function SmartAI:useCardPurpleSong(card, use)
 	local zhanghe_seat = zhanghe and zhanghe:faceUp() and not self:isFriend(zhanghe) and zhanghe:getSeat() or 0
 
 	local getvalue = function(friend)
+		if friend:containsTrick("pueple_song") or friend:containsTrick("YanxiaoCard") then
+			return -100
+		end
+
 		if zhanghe_seat > 0 and (self:playerGetRound(zhanghe) <= self:playerGetRound(friend) or not friend:faceUp()) then
 			return -100
 		end

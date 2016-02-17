@@ -1647,7 +1647,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(QString::number((int)change.to)))) {
+        if (player->askForSkillInvoke(objectName(), QString::number((int)change.to))) {
             room->broadcastSkillInvoke(objectName());
             player->skip(change.to, true);
             return true;
@@ -1682,7 +1682,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(QString::number((int)change.from)))) {
+        if (player->askForSkillInvoke(objectName(), QString::number((int)change.from))) {
             room->setPlayerFlag(player, objectName() + QString::number((int)change.from));
             player->loseMark("@fadeng");
             room->broadcastSkillInvoke(objectName());
@@ -1786,7 +1786,7 @@ class ThKujieViewAsSkill: public OneCardViewAsSkill{
 public:
     ThKujieViewAsSkill(): OneCardViewAsSkill("thkujiev") {
         attached_lord_skill = true;
-        filter_pattern = "BasicCard|red";
+        filter_pattern = "BasicCard|red!";
     }
 
     virtual bool shouldBeVisible(const Player *) const{
@@ -1871,20 +1871,25 @@ public:
 
     virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const {
         TriggerList skill_list;
-        if (player->getPhase() == Player::NotActive)
-            foreach (ServerPlayer *p, room->getAllPlayers())
-                if (p->getMark("kujie-invoke") > 0 && p->isWounded())
-                    skill_list.insert(p, QStringList(objectName()));
-                else if (!p->isWounded())
-                    room->setPlayerMark(p, "kujie-invoke", 0);
+        if (player->getPhase() == Player::NotActive) {
+            foreach (ServerPlayer *p, room->getAllPlayers()) {
+                if (p->getMark("kujie-invoke") > 0) {
+                    QStringList skills;
+                    for (int i = 0; i < p->getMark("kujie-invoke"); ++i)
+                        skills << objectName();
+                    skill_list.insert(p, skills);
+                }
+            }
+        }
         return skill_list;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
-        room->setPlayerMark(ask_who, "kujie-invoke", 0);
+        room->removePlayerMark(ask_who, "kujie-invoke");
         room->sendCompulsoryTriggerLog(ask_who, "thkujie");
-        room->recover(ask_who, RecoverStruct(ask_who, NULL, 2));
-        ServerPlayer *target = room->askForPlayerChosen(ask_who, room->getAlivePlayers(), objectName());
+        if (ask_who->isWounded())
+            room->recover(ask_who, RecoverStruct(ask_who, NULL, 2));
+        ServerPlayer *target = room->askForPlayerChosen(ask_who, room->getAlivePlayers(), "thkujie");
         target->drawCards(1, "thkujie");
         return false;
     }
@@ -1907,10 +1912,10 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
-        ask_who->tag["thyinbiDamage"] = data;
-        if (ask_who->askForSkillInvoke(objectName(), data)) {
-            ask_who->tag.remove("thyinbiDamage");
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+        ask_who->tag["ThYinbiDamage"] = data;
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            ask_who->tag.remove("ThYinbiDamage");
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -2135,7 +2140,7 @@ void ThFuyueCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
         room->setPlayerFlag(target, "ThFuyueInvoked");
         room->broadcastSkillInvoke("thfuyue");
         room->notifySkillInvoked(target, "thfuyue");
-        if (room->askForChoice(target, "thfuyuev", "accept+reject") == "accept") {
+        if (room->askForChoice(target, "thfuyue", "accept+reject") == "accept") {
             bool win = source->pindian(target, "thfuyue");
             if (!win) {
                 RecoverStruct recover;

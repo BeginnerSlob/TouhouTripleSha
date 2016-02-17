@@ -627,6 +627,9 @@ function SmartAI:adjustUsePriority(card, v)
 					end
 				elseif card:isKindOf("ThunderSlash") then
 					for _, enemy in ipairs(self.enemies) do
+						if enemy:hasSkill("thmingling") then v = v + 0.07 break end
+					end
+					for _, enemy in ipairs(self.enemies) do
 						if enemy:getMark("@fog") > 0 then v = v + 0.06 break end
 					end
 					if self.player:hasSkill("thtingwu") then
@@ -2187,6 +2190,13 @@ function SmartAI:askForSkillInvoke(skill_name, data)
 end
 
 function SmartAI:askForChoice(skill_name, choices, data)
+	if skill_name == "TriggerOrder" then
+		local t = choices:split("+")
+		if table.contains(t, "trigger_none") then
+			table.removeOne(t, "trigger_none")
+		end
+		return t[math.random(1, #t)]
+	end
 	local choice = sgs.ai_skill_choice[skill_name]
 	if type(choice) == "string" then
 		return choice
@@ -3594,7 +3604,7 @@ function SmartAI:activate(use)
 			local type = card:getTypeId()
 			self["use" .. sgs.ai_type_name[type + 1] .. "Card"](self, card, use)
 
-			if use:isValid(nil) then
+			if use.isDummy or use:isValid(nil) then
 				self.toUse = nil
 				return
 			end
@@ -3931,6 +3941,7 @@ function SmartAI:damageIsEffective_(damageStruct)
 	if player:getMark("@fog") > 0 and nature ~= sgs.DamageStruct_Thunder then return false end
 	if player:hasSkill("shixin") and nature == sgs.DamageStruct_Fire then return false end
 	if (player:hasSkill("thhanpo") or source:hasSkill("thhanpo")) and nature == sgs.DamageStruct_Fire then return false end
+	if player:hasSkill("thmingling") and nature == sgs.DamageStruct_Fire then return false end
 	local equipsToDec = source:objectName() == self.player:objectName() and self.equipsToDec or 0
 	if player:hasSkill("mingshi") and source:getEquips():length() - equipsToDec <= math.min(2, player:getEquips():length()) then
 		damage = damage - 1
@@ -5847,6 +5858,7 @@ dofile "lua/ai/mountain-ai.lua"
 dofile "lua/ai/god-ai.lua"
 dofile "lua/ai/yjcm2013-ai.lua"
 dofile "lua/ai/bgm-ai.lua"
+dofile "lua/ai/nostalgia-ai.lua"
 
 local loaded = "standard|standard_cards|maneuvering"
 

@@ -1161,8 +1161,8 @@ sgs.ai_skill_cardask["@thqiebao"] = function(self, data, pattern)
 end
 
 sgs.thqiebao_keep_value = {
-	Slash = 5.8
-	ThunderSlash = 5.75
+	Slash = 5.8,
+	ThunderSlash = 5.75,
 	FireSlash = 5.85
 }
 
@@ -1170,40 +1170,103 @@ sgs.ai_cardneed.thqiebao = function(to, card)
 	return card:isKindOf("Slash")
 end
 
---【苦戒】ai
+--灵塔:你可以选择一至两项：1.跳过你此回合的摸牌阶段；2.跳过你此回合的出牌阶段。你每选择一项，获得1枚“法灯”标记。
+sgs.ai_skill_invoke.thlingta = function(self, data)
+	local phase = tonumber(data:toString())
+	if phase == sgs.Player_Draw then
+		if self:willSkipPlayPhase() and self:getOverflow() >= 0 then
+			return true
+		end
+	elseif phase == sgs.Player_Play then
+		if self:getOverflow() <= 0 then
+			return true
+		end
+		local dummyUse = { isDummy = true }
+		self:activate(dummyUse)
+		if not dummyUse.card then
+			return true
+		end
+	end
+end
+
+--威光：你可以选择一至四项：1.跳过你此回合的判定阶段；2.跳过你此回合的弃牌阶段；3.在你此回合的摸牌阶段后额外进行一个摸牌阶段；4.在你此回合的出牌阶段后额外进行一个出牌阶段。你每选择一项，须先弃置1枚“法灯”标记，每项每回合限一次。
+sgs.ai_skill_invoke.thweiguang = function(self, data)
+	local phase = tonumber(data:toString())
+	if phase == sgs.Player_Judge then
+		local lightning = self.player:containsTrick("lightning") and 1 or 0
+		local purple_song = self.player:containsTrick("purple_song") and 1 or 0
+		if lightning + purple_song == self.player:getCards("j"):length() then
+			if lightning > 0 and self:hasWizard(self.friends) and not self:hasWizard(self.enemies, true) then
+				return false
+			end
+			if lightning == 0 then
+				return false
+		    end
+			return self:hasWizard(self.enemies, true) or self.player:getMark("@fadeng") > 1
+		end
+	elseif phase == sgs.Player_Draw then
+		if not self:willSkipPlayPhase() and self:getOverflow() < 0 then
+			return true
+		end
+	elseif phase == sgs.Player_Play then
+		if self:getOverflow() <= 0 then
+			return false
+		end
+		local dummyUse = { isDummy = true }
+		self:activate(dummyUse)
+		if not dummyUse.card then
+			return false
+		end
+		return true
+	elseif phase == sgs.Player_Discard then
+		if self:getOverflow() > 1 then
+			return true
+		elseif self:getOverflow() == 1 then
+			return self.player:getMark("@fadeng") > 2
+		end
+		return false
+	end
+end
+
+--初辉：锁定技，游戏开始时，你获得1枚“法灯”标记。
+--无
+
+--苦戒：其他角色的出牌阶段限一次，该角色可以弃置一张红色基本牌，然后令你失去1点体力，若如此做，此回合结束后，你回复2点体力，并令一名角色摸一张牌。
 local thkujiev_skill = {}
 thkujiev_skill.name = "thkujiev"
 table.insert(sgs.ai_skills, thkujiev_skill)
 thkujiev_skill.getTurnUseCard = function(self)
 	if self.player:hasFlag("ForbidThKujie") then return nil end
-	local reds={}
+	local reds = {}
 	for _,c in sgs.qlist(self.player:getCards("he")) do
 		if c:isRed() and c:isKindOf("BasicCard") then
 			table.insert(reds,c)
 		end
 	end
-	if #reds==0 then return nil end
+	if #reds == 0 then return nil end
 	self:sortByKeepValue(reds)
 	return sgs.Card_Parse("@ThKujieCard=" .. reds[1]:getEffectiveId())
 end
+
 sgs.ai_skill_use_func.ThKujieCard = function(card, use, self)
-	local targets ={}
-	for _,p in sgs.qlist(self.room:findPlayersBySkillName("thkujie")) do
-		if  self.player:inMyAttackRange(p) and not p:hasFlag("ThKujieInvoked") then
-			table.insert(targets,p)
+	local targets = {}
+	for _, p in sgs.qlist(self.room:findPlayersBySkillName("thkujie")) do
+		if not p:hasFlag("ThKujieInvoked") then
+			table.insert(targets, p)
 		end
 	end
-	if #targets==0 then return nil end
+	if #targets == 0 then return nil end
 	self:sort(targets, "hp")
-	local good_target 
-	for _,p in pairs (targets) do
-		if self:isEnemy(p) then
-			if p:getHp()==1 and self:getAllPeachNum(p)<=0 then
-				good_target = p
-				break
-			end
-		elseif self:isFriend(p) then
-			if p:isWounded() and p:getHp()>1 then
+	local good_target
+	for _, p in ipairs(targets) do
+		if self:isFriend(p) and (p:isWounded() or self:getOverflow() > 0) and p:getHp() > 1 then
+			good_target = p
+			break
+		end
+	end
+	if not good_target then
+		for _, p in ipairs(targets) do
+			if self:isEnemy(p) and p:getHp() == 1 and self:getAllPeachNum(p) <= 0 then
 				good_target = p
 				break
 			end
@@ -1213,13 +1276,20 @@ sgs.ai_skill_use_func.ThKujieCard = function(card, use, self)
 		use.card = card
 		if use.to then
 			use.to:append(good_target)
-			return
 		end
+		return
 	end
 end
+
+sgs.ai_skill_playerchosen.thkujie = function(self, targets)
+	return self:findPlayerToDraw(true, 1)
+end
+
+sgs.ai_use_priority.ThKujieCard = -1
+
 sgs.ai_card_intention.ThKujieCard = function(self, card, from, tos)
-	for _, to in pairs(tos) do
-		if to:getHp()<=1 then
+	for _, to in ipairs(tos) do
+		if to:getHp() <= 1 then
 			sgs.updateIntention(from, to, 80)
 		else
 			sgs.updateIntention(from, to, -20)
@@ -1227,200 +1297,228 @@ sgs.ai_card_intention.ThKujieCard = function(self, card, from, tos)
 	end
 end
 
---【廕庇】ai
+sgs.ai_playerchosen_intention.thkujie = -20
+
+--廕庇：当一名体力值不大于你的其他角色因伤害而扣减体力后，你可以令其回复等量的体力，然后伤害来源对你造成等量的同属性伤害。
 sgs.ai_skill_invoke.thyinbi = function(self, data)
-	local damage = data:toDamage()
-	if self:isFriend(damage.to) then
-		if damage.to:getLostHp() >= damage.damage and  self.player:getHp() > damage.damage then
-			local isSlash 
-			if damage.card and damage.card:isKindOf("Slash") then
-				isSlash= true
+	local damage = self.player:getTag("ThYinbiDamage"):toDamage()
+	local target = data:toPlayer()
+	if self:isFriend(target) then
+		if target:getLostHp() >= damage.damage then
+			damage.to = self.player
+			if not self:damageIsEffective_(damage) then
+				return true
 			end
-			return not self:needToLoseHp(damage.to, damage.from, isSlash, true)
+			return self.player:getHp() > damage.damage + 1 or (self.player:getHp() >= damage.damage and self:isWeak(target))
 		end
 	end
 	return false
 end
+
 sgs.ai_choicemade_filter.skillInvoke.thyinbi = function(self, player, promptlist)
-	local to=player:getTag("thyinbiDamage"):toDamage().to
+	local to = player:getTag("ThYinbiDamage"):toDamage().to
 	if to and promptlist[#promptlist] == "yes" then
 		sgs.updateIntention(player, to, -80)
 	end
 end
 
+--溟灵：锁定技，防止你受到的火焰伤害，你每次受到的雷电伤害+1。
+--maneuvering-ai.lua SmartAI:isGoodChainTarget
+--smart-ai.lua SmartAI:adjustUsePriority
+--smart-ai.lua SmartAI:damageIsEffective
 
-
-
---【灵蝶】ai
-local function countKnownCards(target)
-		local count=0
-		for _, card in sgs.qlist(target:getHandcards()) do
-			--flag的情况其实可以不要。。。
-			local flag = string.format("%s_%s_%s", "visible", global_room:getCurrent():objectName(), target:objectName())
-			if  card:hasFlag("visible") or card:hasFlag(flag) then	
-				count=count+1
-			end
-		end
-		return count
-	end
-local lingdieCompare_func = function(a, b)
-	return	countKnownCards(a)>countKnownCards(b)
+--船殇：出牌阶段限一次，你可以令你攻击范围内的一名角色获得1枚“溺水”标记，若其已拥有该标记，你失去1点体力。其他角色每拥有1枚该标记，其手牌上限便-1。其他角色的结束阶段开始时，若其拥有1枚或更多的“溺水”标记，须进行一次判定，若为红桃，弃置2枚该标记；若为黑色，获得1枚该标记。
+local thchuanshang_skill = {}
+thchuanshang_skill.name = "thchuanshang"
+table.insert(sgs.ai_skills, thchuanshang_skill)
+thchuanshang_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThChuanshangCard") then return end
+	if #self.enemies == 0 then return end
+	return sgs.Card_Parse("@ThChuanshangCard=.")
 end
-	
+
+sgs.ai_skill_use_func.ThChuanshangCard = function(card, use, self)
+	local targets = {}
+	for _, p in ipairs(self.enemies) do
+		if self.player:inMyAttackRange(p) then
+			table.insert(targets, p)
+		end
+	end
+	if #targets == 0 then return end
+	local chuanshangComp = function(a, b)
+		local x = a:getMark("@nishui")
+		local y = b:getMark("@nishui")
+		if x ~= y then
+			return x < y
+		else
+			return a:getHp() < b:getHp()
+		end
+	end
+	table.sort(targets, chuanshangComp)
+	if targets[1]:getMark("@nishui") == 0 then
+		use.card = card
+		if use.to then
+			use.to:append(targets[1])
+		end
+		return
+	end
+	if self.player:getHp() <= 3 then return end
+	self:sort(targets, "threat")
+	for _, p in ipairs(targets) do
+		if p:getMark("@nishui") > 2 and p:getMaxCards() > 0 then
+			use.card = card
+			if use.to then
+				use.to:append(targets[1])
+			end
+			return
+		end
+	end
+end
+
+sgs.ai_use_priority.ThChuanshangCard = 0.01
+sgs.ai_card_intention.ThChuanshangCard = 60
+
+--灵蝶：出牌阶段限三次，你可以将一张手牌交给一名其他角色，然后令该角色观看由其选择的另一名角色的手牌；或摸一张牌。若你以此法交给的手牌不为红桃，你此阶段不可以再发动“灵蝶”。
 local thlingdie_skill = {}
 thlingdie_skill.name = "thlingdie"
 table.insert(sgs.ai_skills, thlingdie_skill)
 thlingdie_skill.getTurnUseCard = function(self)
-	if self.player:hasUsed("ThLingdieCard") then return nil end
-	if #self.friends_noself ==0 then return nil end
-	local cards =sgs.QList2Table(self.player:getCards("he"))
-	if #cards==0 then return nil end
-	
-	--没补牌技能时，防御太虚
-	if not self.player:hasSkill("thwushou") and #cards <3 then
-	--sgs.getDefense(self.player, gameProcess)
-		return nil 
-	end
-
-	self:sortByKeepValue(cards)
-	return sgs.Card_Parse("@ThLingdieCard=" .. cards[1]:getEffectiveId())
-	--目前敌友都可以属于看牌目标，也就不预先检测目标了
+	if self.player:hasFlag("ThLingdieDisabled") then return nil end
+	if self.player:usedTimes("ThLingdieCard") >= 3 then return nil end
+	if self.player:isNude() then return nil end
+	return sgs.Card_Parse("@ThLingdieCard=.")
 end
-sgs.ai_skill_use_func.ThLingdieCard = function(card, use, self)
 
-	local good_enemy
-	if #self.enemies>0 then
-		table.sort(self.enemies, lingdieCompare_func)
-		good_enemy=self.enemies[1]
-	end
-	local good_friend
-	if good_enemy then
-		for _,p in pairs (self.friends_noself) do
-			--考虑急火？ canslash？
-			if p:inMyAttackRange(good_enemy)  then
-				good_friend =p
-				break
+sgs.ai_skill_use_func.ThLingdieCard = function(card, use, self)
+	if self.player:usedTimes("ThLingdieCard") < 2 then
+		local card_ids = {}
+		for _, c in sgs.qlist(self.player:getHandcards()) do
+			if c:getSuit() == sgs.Card_Heart then
+				table.insert(card_ids, c:getId())
 			end
-		
+		end
+		if #card_ids > 0 then
+			local target, cardId = sgs.ai_skill_askforyiji.nosyiji(self, card_ids)
+			if target and target:objectName() ~= self.player:objectName() and cardId and cardId > -1 then
+				use.card = sgs.Card_Parse("@ThLingdieCard=" .. cardId)
+				if use.to then
+					use.to:append(target)
+				end
+				return
+			end
 		end
 	end
-	use.card = card
-	if use.to then
-		if good_friend then
-			use.to:append(good_friend)
-		else
-			use.to:append(self.friends_noself[math.random(1,#self.friends_noself)])
+	local target, cardId = sgs.ai_skill_askforyiji.nosyiji(self, sgs.QList2Table(self.player:handCards()))
+	if target and target:objectName() ~= self.player:objectName() and cardId and cardId > -1 then
+		use.card = sgs.Card_Parse("@ThLingdieCard=" .. cardId)
+		if use.to then
+			use.to:append(target)
 		end
 		return
 	end
 end
-sgs.ai_card_intention.ThLingdieCard = -50
+
 sgs.ai_skill_playerchosen.thlingdie = function(self, targets)
-	if #self.enemies>0 then
-		table.sort(self.enemies, lingdieCompare_func)
-		good_enemy=self.enemies[1]
-	end
-	if good_enemy and not good_enemy:isKongcheng() then
-		return good_enemy
-	end
-	return targets:first()
+	return nil
 end
-sgs.ai_playerchosen_intention.thlingdie =function(self, from, to)
-	if not self:isFriend(from,to) then
-		sgs.updateIntention(from, to, 20)
-	end
-end
---灵蝶优先度应该很低。。。
 
---【无寿】ai
+sgs.ai_use_priority.ThLingdieCard = -10
+sgs.ai_card_intention.ThLingdieCard = -50
+sgs.ai_playerchosen_intention.thlingdie = 10
+
+--无寿：每当你受到一次伤害后，你可以将你的手牌补至四张。
+sgs.ai_skill_invoke.thwushou = true
+
 sgs.ai_need_damaged.thwushou = function(self, attacker, player)
-	--卖血条件：体力值大于1，且能补3张以上
-	if attacker and attacker:hasSkill("ikxuwu") then return false end
-	local num = 4 - player:getHp()
-	return num >= 2
+	return player:getHp() > 1 and player:getHandcardNum() < 2
 end
 
---【浮月】ai
+--浮月：君主技，其他雪势力角色的出牌阶段限一次，若你的体力值为1，可以与你拼点，若该角色没有赢，你回复1点体力。你可以拒绝此拼点。
 local thfuyuev_skill = {}
 thfuyuev_skill.name = "thfuyuev"
 table.insert(sgs.ai_skills, thfuyuev_skill)
 thfuyuev_skill.getTurnUseCard = function(self)
-	if self.player:getKingdom()~="yuki" then return nil end
-	if self.player:isKongcheng() or self:needBear()  or self.player:hasFlag("ForbidThFuyue") then return nil end
+	if self.player:getKingdom() ~= "yuki" then return nil end
+	if self.player:isKongcheng() or self:needBear() or self.player:hasFlag("ForbidThFuyue") then return nil end
 	return sgs.Card_Parse("@ThFuyueCard=.")
 end
+
 sgs.ai_skill_use_func.ThFuyueCard = function(card, use, self)
-	local lord
+	local lords = {}
 	for _, player in sgs.qlist(self.room:getOtherPlayers(self.player)) do
-		if player:hasLordSkill("thfuyue") and not player:isKongcheng() 
-		and not player:hasFlag("ThFuyueInvoked") and player:isWounded()
-		then
-			lord=player
+		if player:hasLordSkill("thfuyue") and not player:isKongcheng() and not player:hasFlag("ThFuyueInvoked")
+				and player:getHp() == 1 and player:isWounded() then
+			table.insert(lords, player)
+		end
+	end
+	if #lords == 0 then return end
+	local max_card, min_card = self:getMaxCard(), self:getMinCard()
+	local max_num = self.player:hasSkill("yingyang") and math.min(max_card:getNumber() + 3, 13) or max_card:getNumber()
+	local min_num = self.player:hasSkill("yingyang") and math.max(1, min_card:getNumber() - 3) or min_card:getNumber()
+	self:sort(lords, "defense")
+	for _, lord in ipairs(lords) do
+		local need_use = false
+		local lord_max_card, lord_min_card = self:getMaxCard(lord), self:getMinCard(lord)
+		local lord_max_num, lord_min_num = (lord_max_card and lord_max_card:getNumber() or 0), (lord_min_card and lord_min_card:getNumber() or 14)
+		if lord_max_card and lord:hasSkill("yingyang") then lord_max_num = math.min(lord_max_num + 3, 13) end
+		if lord_min_card and lord:hasSkill("yingyang") then lord_min_num = math.max(1, lord_min_num - 3) end
+
+		if self:isEnemy(lord) and max_num > 10 and max_num > lord_max_num then
+			if isCard("Jink", max_card, self.player) and self:getCardsNum("Jink") == 1 then return end
+			if isCard("Peach", max_card, self.player) or isCard("Analeptic", max_card, self.player) then return end
+			self.thfuyue_card = max_card:getEffectiveId()
+			need_use = true
+		end
+
+		if self:isFriend(lord) and ((lord_max_num > 0 and min_num <= lord_max_num) or min_num < 7) then
+			if isCard("Jink", min_card, self.player) and self:getCardsNum("Jink") == 1 then return end
+			self.thfuyue_card = min_card:getEffectiveId()
+			need_use = true
+		end
+
+		if need_use then
+			use.card = card
+			if use.to then
+				use.to:append(lord)
+			end
+			return
+		end
+	end
+end
+
+sgs.ai_skill_choice.thfuyue = function(self, choices)
+	local who = self.room:getCurrent()
+	local cards = self.player:getHandcards()
+	local has_large_number, all_small_number = false, true
+	for _, c in sgs.qlist(cards) do
+		if c:getNumber() > 11 then
+			has_large_number = true
 			break
 		end
 	end
-	if not lord then return nil end
-	
-	--暂时不考虑反贼获利
-	if self:isEnemy(lord)  then
-		return nil
-	end
-	
-	
-	
-	
-	local cards = self.player:getHandcards()
-	local max_num = 0, max_card
-	local min_num = 14, min_card
-		for _, hcard in sgs.qlist(cards) do
-			if hcard:isKindOf("Peach") then continue end
-			if hcard:getNumber() > max_num then
-				max_num = hcard:getNumber()
-				max_card = hcard
-			end
-
-			if hcard:getNumber() <= min_num then
-				if hcard:getNumber() == min_num then
-					if min_card and self:getKeepValue(hcard) > self:getKeepValue(min_card) then
-						min_num = hcard:getNumber()
-						min_card = hcard
-					end
-				else
-					min_num = hcard:getNumber()
-					min_card = hcard
-				end
-			end
-		end
-	if not min_card then return nil end
-	
-	--很大概率主公赢不了
-	if min_card:getNumber()>=12 then return nil end
-	if min_card:getNumber()>9 and lord:getHandcardNum()<=4 then
-		local lord_card = self:getMaxCard(lord)
-		if not lord_card or lord_card:getNumber() < min_card:getNumber() then
-			return nil
+	for _, c in sgs.qlist(cards) do
+		if c:getNumber() > 4 then
+			all_small_number = false
+			break
 		end
 	end
-	if self:isFriend(lord) then
-		self.thfuyue_card = min_card:getEffectiveId()
-		use.card = card
-		if use.to then use.to:append(lord) end
-		return
+	if all_small_number or (self:isEnemy(who) and not has_large_number) then
+		return "reject"
+	else
+		return "accept"
 	end
-end
---响应拼点者的应对
-function sgs.ai_skill_pindian.thfuyue(minusecard, self, requestor, maxcard)
-	return self:getMaxCard()
 end
 
 sgs.ai_choicemade_filter.pindian.thfuyue = function(self, from, promptlist)
 	local number = sgs.Sanguosha:getCard(tonumber(promptlist[4])):getNumber()
 	local lord = findPlayerByObjectName(self.room, promptlist[5])
 	if not lord then return end
-	
-	if number < 6 then sgs.updateIntention(from, lord, -60)
-	elseif number > 8 and lord:getHandcardNum()<=4 and self:isEnemy(lord,from) then 
-	--反贼拼点？
-		sgs.updateIntention(from, lord, 60) 
+	local lord_max_card = self:getMaxCard(lord)
+	if lord_max_card and lord_max_card:getNumber() >= number then sgs.updateIntention(from, lord, -60)
+	elseif lord_max_card and lord_max_card:getNumber() < number then sgs.updateIntention(from, lord, 60)
+	elseif number < 6 then sgs.updateIntention(from, lord, -60)
+	elseif number > 8 then sgs.updateIntention(from, lord, 60)
 	end
 end
+
+sgs.ai_use_priority.ThFuyueCard = 0
