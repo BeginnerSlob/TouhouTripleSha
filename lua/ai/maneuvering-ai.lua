@@ -315,7 +315,7 @@ function SmartAI:isGoodChainPartner(player)
 end
 
 function SmartAI:isGoodChainTarget(who, source, nature, damagecount, card)
-	if not who:isChained() then return not self:isFriend(who) end
+	if not who:isChained() or who:hasSkill("thhouzhi") then return not self:isFriend(who) end
 	source = source or self.player
 	if source:hasSkill("ikxuwu") then return not self:isFriend(who) end
 	damagecount = damagecount or 1
@@ -341,6 +341,8 @@ function SmartAI:isGoodChainTarget(who, source, nature, damagecount, card)
 	elseif nature == sgs.DamageStruct_Fire then
 		if who:hasArmorEffect("vine") then damagecount = damagecount + 1 end
 		if who:getMark("@liefeng") > 0 then damagecount = damagecount + 1 end
+	elseif nature == sgs.DamageStruct_Thunder then
+		if who:hasSkill("thmingling") then damagecount = damagecount + 1 end
 	end
 	if self:hasSilverLionEffect(who) then damagecount = 1 end
 	local kills, killlord, the_enemy = 0
@@ -354,6 +356,8 @@ function SmartAI:isGoodChainTarget(who, source, nature, damagecount, card)
 		if dmg and nature == sgs.DamageStruct_Fire then
 			if target:hasArmorEffect("vine") then dmg = dmg + 1 end
 			if target:getMark("@liefeng") > 0 then dmg = dmg + 1 end
+		elseif dmg and nature == sgs.DamageStruct_Thunder then
+			if target:hasSkill("thmingling") then dmg = dmg + 1 end
 		end
 		if self:cantbeHurt(target, source, damagecount) then newvalue = newvalue - 100 end
 		if damagecount + (dmg or 0) >= target:getHp() then
