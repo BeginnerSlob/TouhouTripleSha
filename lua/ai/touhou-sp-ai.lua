@@ -317,7 +317,7 @@ end
 
 sgs.ai_skill_cardask["@thjingyuansp"] = function(self, data, pattern, target)
 	if self:isFriend(target) then
-		return sgs.ai_skill_cardask["@thjingyuansp-give"]
+		return sgs.ai_skill_cardask["@thjingyuansp-give"](self, data, pattern, target)
 	else
 		if self.player:getEquips():length() == 1 and self.player:getArmor() then
 			return "."
@@ -360,7 +360,7 @@ sgs.ai_skill_playerchosen.thjingyuansp = function(self, targets)
 	end
 	local card = self.player:getTag("ThJingyuanspCard"):toCard()
 	local _, target = self:getCardNeedPlayer({card}, self.friends_noself, false)
-	return target
+	return self.friends_noself[1]
 end
 
 sgs.ai_playerchosen_intention.thjingyuansp = -30

@@ -100,6 +100,117 @@ sgs.ai_skill_use_func.ThYejunCard = function(card, use, self)
 end
 
 --禁果：出牌阶段限一次，你可以选择一项：1. 弃置一张红桃手牌并获得一名其他角色的两张牌（不足则全部获得），然后该角色选择回复1点体力；或摸一张牌；2. 获得技能“血呓”直到回合结束。
+local thjinguo_skill = {}
+thjinguo_skill.name = "thjinguo"
+table.insert(sgs.ai_skills, thjinguo_skill)
+thjinguo_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThJinguoCard") then return nil end
+	return sgs.Card_Parse("@ThJinguoCard=.")
+end
+
+sgs.ai_skill_use_func.ThJinguoCard = function(card, use, self)
+	local hearts = {}
+	for _, c in sgs.qlist(self.player:getHandcards()) do
+		if c:getSuit() == sgs.Card_Heart then
+			table.insert(hearts, c)
+		end
+	end
+	if #hearts > 0 then
+		self:sortByKeepValue(hearts)
+		if not isCard("Peach", hearts[1], self.player) then
+			local str = "@ThJinguoCard=" .. hearts[1]:getEffectiveId()
+			self:sort(self.enemies, "defense")
+			for _, p in ipairs(self.enemies) do
+				if not p:isWounded() and not p:isNude() then
+					use.card = sgs.Card_Parse(str)
+					if use.to then
+						use.to:append(p)
+					end
+					return
+				end
+			end
+		end
+	end
+	use.card = card
+end
+
+sgs.ai_skill_choice.thjinguo = function(self, choices)
+	if string.find(choices, "recover") then
+		return "recover"
+	else
+		return "draw"
+	end
+end
+
+sgs.ai_use_priority.ThJinguoCard = 10
+sgs.ai_card_intention.ThJinguoCard = 30
+
+--血呓：你可以将红桃非锦囊牌当【春雪幻梦】使用。
+local thxueyi_skill = {}
+thxueyi_skill.name = "thxueyi"
+table.insert(sgs.ai_skills, thxueyi_skill)
+thxueyi_skill.getTurnUseCard = function(self, inclusive)
+	local cards = self.player:getCards("he")
+	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+		local c = sgs.Sanguosha:getCard(id)
+		cards:prepend(c)
+	end
+	cards = sgs.QList2Table(cards)
+
+	local card
+	self:sortByUseValue(cards, true)
+	local has_weapon, has_armor = false, false
+
+	for _, acard in ipairs(cards) do
+		if acard:isKindOf("Weapon") and not (acard:getSuit() == sgs.Card_Heart) then has_weapon = true end
+	end
+
+	for _, acard in ipairs(cards) do
+		if acard:isKindOf("Armor") and not (acard:getSuit() == sgs.Card_Heart) then has_armor = true end
+	end
+
+	for _, acard in ipairs(cards) do
+		if acard:getSuit() == sgs.Card_Heart and acard:getTypeId() ~= sgs.Card_TypeTrick and ((self:getUseValue(acard) < sgs.ai_use_value.Indulgence) or inclusive) then
+			local shouldUse = true
+
+			if acard:isKindOf("Armor") then
+				if not self.player:getArmor() then shouldUse = false
+				elseif self.player:hasEquip(acard) and not has_armor and self:evaluateArmor() > 0 then shouldUse = false
+				end
+			end
+
+			if acard:isKindOf("Weapon") then
+				if not self.player:getWeapon() then shouldUse = false
+				elseif self.player:hasEquip(acard) and not has_weapon then shouldUse = false
+				end
+			end
+
+			if shouldUse then
+				card = acard
+				break
+			end
+		end
+	end
+
+	if not card then return nil end
+	local number = card:getNumberString()
+	local card_id = card:getEffectiveId()
+	local card_str = ("indulgence:thxueyi[heart:%s]=%d"):format(number, card_id)
+	local indulgence = sgs.Card_Parse(card_str)
+	assert(indulgence)
+	return indulgence
+end
+
+function sgs.ai_cardneed.thjinguo(to, card)
+	return card:getSuit() == sgs.Card_Heart
+end
+
+sgs.thjinguo_suit_value = {
+	heart = 3.9
+}
+
+--恋迷：觉醒技，准备阶段开始时，若你装备区里的牌的数量大于你的体力值，你须减少1点体力上限，然后获得技能“狂骨”。
+--无
 
 --【开运】ai
 sgs.ai_skill_cardask["@thkaiyun"] = function(self, data)
