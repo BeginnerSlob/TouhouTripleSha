@@ -41,12 +41,13 @@ public:
                 }
             }
         }
-
         return skills;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        player->tag["ThSuomingData"] = data; // for AI
         ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "@thsuoming", true, true);
+        player->tag.remove("ThSuomingData");
         if (target) {
             room->broadcastSkillInvoke(objectName());
             player->tag["ThSuomingTarget"] = QVariant::fromValue(target);

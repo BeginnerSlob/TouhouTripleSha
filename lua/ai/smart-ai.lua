@@ -9,7 +9,7 @@ math.randomseed(tostring(os.time()):reverse():sub(1, 6))
 -- SmartAI is the base class for all other specialized AI classes
 SmartAI = (require "middleclass").class("SmartAI")
 
-version = "TouhouTripleSha AI 20150725 (V0.012)"
+version = "TouhouTripleSha AI 20160217 (V0.04)"
 -- original_version = "QSanguosha AI 20140901 (V1.414213562 Alpha)"
 --- this function is only function that exposed to the host program
 --- and it clones an AI instance by general name
@@ -5054,6 +5054,8 @@ function SmartAI:hasTrickEffective(card, to, from)
 			return false
 		end
 	end
+	
+	if to:hasSkill("thchiwu") and to:isChained() and card:isKindOf("Duel") then return false end
 
 	local nature = sgs.DamageStruct_Normal
 	if card:isKindOf("FireAttack") then nature = sgs.DamageStruct_Fire end

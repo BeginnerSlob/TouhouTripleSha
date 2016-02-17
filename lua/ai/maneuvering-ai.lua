@@ -307,8 +307,19 @@ end
 
 function SmartAI:isGoodChainPartner(player)
 	player = player or self.player
-	if hasBuquEffect(player) or (self.player:hasSkill("niepan") and self.player:getMark("@nirvana") > 0) or self:needToLoseHp(player)
-		or self:getDamagedEffects(player) or (player:hasSkill("fuli") and player:getMark("@laoji") > 0) then
+	if hasBuquEffect(player) then
+		return true
+	end
+	if self.player:hasSkill("niepan") and self.player:getMark("@nirvana") > 0 then
+		return true
+	end
+	if player:hasSkill("fuli") and player:getMark("@laoji") > 0 then
+		return true
+	end
+	if (not self:isWeak(player) or player:getHandcardNum() < 2) and player:hasSkill("thchiwu") then
+		return true
+	end
+	if self:needToLoseHp(player) or self:getDamagedEffects(player) then
 		return true
 	end
 	return false
@@ -452,6 +463,8 @@ function SmartAI:useCardIronChain(card, use)
 			else
 				table.insert(friendtargets2, friend)
 			end
+		elseif not friend:isChained() and friend:hasSkill("thchiwu") and self:isGoodChainPartner(friend) then
+			table.insert(friendtargets, friend)
 		else
 			table.insert(otherfriends, friend)
 		end
@@ -460,6 +473,9 @@ function SmartAI:useCardIronChain(card, use)
 	if not (liuxie and self:isEnemy(liuxie)) then
 		self:sort(self.enemies, "defense")
 		for _, enemy in ipairs(self.enemies) do
+			if not enemy:isChained() and enemy:hasSkill("thchiwu") and self:isGoodChainPartner(enemy) then
+				continue
+			end
 			if (not use.current_targets or not table.contains(use.current_targets, enemy:objectName()))
 				and not enemy:isChained() and not self.room:isProhibited(self.player, enemy, card) and not enemy:hasSkill("ikhongcai")
 				and self:hasTrickEffective(card, enemy) and self:objectiveLevel(enemy) > 3
