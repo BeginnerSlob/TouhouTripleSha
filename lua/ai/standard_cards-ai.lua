@@ -353,6 +353,7 @@ function SmartAI:slashIsEffective(slash, to, from, ignore_armor)
 			return false
 		end
 	end
+	if to:hasSkill("thchiwu") and to:isChained() and slash:objectName() == "slash" then return false end
 	if to:hasSkill("thwunian") and from:getMaxHp() ~= 1 and not from:isWounded() then return false end
 	if to:getMark("@late") > 0 then return false end
 
