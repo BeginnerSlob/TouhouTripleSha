@@ -1311,7 +1311,8 @@ function sgs.ai_skill_suit.nosfanjian(self)
 		end
 	end
 	local return_suit = maxsuit or suit
-	if self.player:hasSkill("hongyan") and return_suit == sgs.Card_Spade then return sgs.Card_Heart end
+	if self.player:hasSkill("hongyan") and return_suit == sgs.Card_Spade then return sgs.Card_Heart
+	elseif not self.player:hasSkill("ikchiqiu") and self.player:hasSkill("thanyue") and return_suit == sgs.Card_Heart then return sgs.Card_Spade end
 	return return_suit
 end
 

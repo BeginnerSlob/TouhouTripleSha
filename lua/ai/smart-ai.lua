@@ -248,7 +248,8 @@ function sgs.getDefense(player)
 		if player:hasSkill("leiji") then defense = defense + 0.4 end
 		if player:hasSkill("nosleiji") then defense = defense + 0.4 end
 		if player:hasSkill("noszhenlie") then defense = defense + 0.2 end
-		if player:hasSkill("hongyan") then defense = defense + 0.2 end
+		if player:hasSkill("hongyan") then defense = defense + 0.2
+		elseif player:hasSkill("thanyue") then defense = defense - 0.2 end
 	end
 
 	if player:hasSkills("ikyindie+ikguiyue") and player:getMark("yijue") == 0 then defense = defense + player:getHandcardNum() * 0.4 end
@@ -2272,7 +2273,10 @@ end
 
 function SmartAI:askForNullification(trick, from, to, positive, isHeg)
 	local null_card
+	local null_struct = { m_trick = trick, m_from = from, m_to = to, m_positive = positive }
+	self.ask_for_nullification = null_struct
 	null_card = self:getCardId("Nullification")
+	self.ask_for_nullification = {}
 	local null_num = self:getCardsNum("Nullification")
 	local menghuo = self.room:findPlayerBySkillName("huoshou")
 
@@ -3743,6 +3747,8 @@ function SmartAI:needRetrial(judge)
 	end
 
 	if reason == "indulgence" then
+		if who:hasSkill("thanyue") then return false end
+
 		if who:isSkipped(sgs.Player_Draw) and who:isKongcheng() then
 			if (who:hasSkill("shenfen") and who:getMark("@wrath") >= 6)
 				or (who:hasSkills("noskurou|kurou+zhaxiang") and who:getHp() >= 3)
@@ -3862,6 +3868,9 @@ function SmartAI:getRetrialCardId(cards, judge, self_card)
 		local card_x = sgs.Sanguosha:getEngineCard(card:getEffectiveId())
 		if who:hasSkill("hongyan") and card_x:getSuit() == sgs.Card_Spade then
 			card_x = sgs.cloneCard(card_x:objectName(), sgs.Card_Heart, card:getNumber())
+		end
+		if not who:hasSkill("hongyan") and who:hasSkill("thanyue") and card_x:getSuit() == sgs.Card_Heart then
+			card_x = sgs.cloneCard(card_x:objectName(), sgs.Card_Spade, card:getNumber())
 		end
 		if who:hasSkill("thjiuzhang") and card_x:getNumber() > 9 then
 			card_x = sgs.cloneCard(card_x:objectName(), card_x:getSuit(), 9)
@@ -4499,6 +4508,8 @@ function getCardsNum(class_name, player, from)
 			return num + blacknull+(player:getHandcardNum() - shownum) / 2
 		elseif player:hasSkill("yanzheng") then
 			return num + equipnull
+		elseif player:hasSkill("thshennao") then
+			return num + player:getHandcardNum() + player:getHp() * 2 - 1
 		else
 			return num
 		end

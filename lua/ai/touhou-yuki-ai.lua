@@ -326,18 +326,14 @@ function SmartAI:getMojiCards(player, n, toCard)
 	local ret = {}
 	if toCard == "Slash" then
 		for i = 1, #cards do
-			if not isCard("Slash", cards[i], player) then
-				table.insert(ret, cards[i]:getEffectiveId())
-			end
+			table.insert(ret, cards[i]:getEffectiveId())
 			if #ret == n then
 				return ret
 			end
 		end
 	elseif toCard == "Jink" then
 		for i = 1, #cards do
-			if not isCard("Jink", cards[i], player) then
-				table.insert(ret, cards[i]:getEffectiveId())
-			end
+			table.insert(ret, cards[i]:getEffectiveId())
 			if #ret == n then
 				return ret
 			end
@@ -350,6 +346,7 @@ local thmoji_skill = {}
 thmoji_skill.name = "thmoji"
 table.insert(sgs.ai_skills, thmoji_skill)
 thmoji_skill.getTurnUseCard = function(self)
+	if not self:slashIsAvailable(self.player) then return end
 	local n = self.player:getHp()
 	if n < 1 then
 		return nil
@@ -373,7 +370,7 @@ sgs.ai_skill_use_func.ThMojiCard = function(card, use, self)
 		slash:addSubcard(id)
 	end
 	slash:setSkillName("_thmoji")
-	local s_use = { to = sgs.SPlayerList() }
+	local s_use = { isDummy = true, to = sgs.SPlayerList() }
 	self:useCardSlash(slash, s_use)
 	if s_use.card and not s_use.to:isEmpty() then
 		use.card = card

@@ -479,3 +479,186 @@ end
 
 --幻在：锁定技，结束阶段开始时，你须弃置全部的“时计”标记。
 --无
+
+--神脑：若你的手牌数不小于体力值，你可以将一张手牌当【三粒天滴】使用；若你的手牌数小于体力值，你可以失去1点体力并摸一张牌，视为使用了一张【三粒天滴】。
+function sgs.ai_cardsview_valuable.thshennao(self, class_name, player)
+	if class_name ~= "Nullification" then
+		return nil
+	end
+	if player:getHandcardNum() >= player:getHp() then
+		return nil
+	end
+	local null = self.ask_for_nullification
+	if player:getHp() > 1 or (null.m_to:objectName() == player:objectName() and sgs.dynamic_value.damage_card[null.m_trick:getClassName()]) then
+		return "@ThShennaoCard=."
+	end
+	return nil
+end
+
+sgs.ai_view_as.thshennao = function(card, player, card_place)
+	local suit = card:getSuitString()
+	local number = card:getNumberString()
+	local card_id = card:getEffectiveId()
+	if card_place == sgs.Player_PlaceHand then
+		if player:getHandcardNum() > player:getHp() and not (player:getHp() == 1 and card:isKindOf("Jink")) then
+			return ("nullification:thshennao[%s:%s]=%d"):format(suit, number, card_id)
+		end
+	end
+end
+
+--妙药：每当你使用或打出一张【闪】时，若你的体力值为1，你可以回复1点体力。
+sgs.ai_skill_invoke.thmiaoyao = true
+
+sgs.ai_cardneed.thmiaoyao = function(to, card)
+	return to:getHp() == 1 and card:isKindOf("Jink")
+end
+
+--黑棺：出牌阶段限一次，你可以交给一名其他角色一张黑色手牌，则你不能成为其使用的【杀】的目标；或获得一名其他角色的一张手牌，则该角色不能成为【杀】的目标。效果持续到你的下回合开始。
+thheiguan_skill = {}
+thheiguan_skill.name = "thheiguan"
+table.insert(sgs.ai_skills, thheiguan_skill)
+thheiguan_skill.getTurnUseCard = function(self)
+	if #self.friends_noself + #self.enemies == 0 then return end
+	if self.player:hasUsed("ThHeiguanCard") then return end
+	return sgs.Card_Parse("@ThHeiguanCard=.")
+end
+
+sgs.ai_skill_use_func.ThHeiguanCard = function(card, use, self)
+	self:sort(self.friends_noself, "defense")
+	for _, p in ipairs(self.friends_noself) do
+		if not p:isKongcheng() then
+			use.card = card
+			if use.to then
+				use.to:append(p)
+			end
+			return
+		end
+	end
+	if #self.enemies + #self.friends_noself == 0 then return end
+	local cards = {}
+	for _, c in sgs.qlist(self.player:getHandcards()) do
+		if c:isBlack() then
+			table.insert(cards, c)
+		end
+	end
+	if #cards == 0 then return end
+	self:sortByKeepValue(cards)
+	self:sort(self.enemies, "defense")
+	self.enemies = sgs.reverse(self.enemies)
+	for _, p in sgs.qlist(self.enemies) do
+		if p:canSlash(self.player) then
+			for _, c in ipairs(cards) do
+				if not isCard("Peach", c, p) and not isCard("Analeptic", c, p) and not isCard("Jink", c, p) and not isCard("ExNihilo", c, p) then
+					use.card = sgs.Card_Parse("@ThHeiguanCard=" .. c:getEffectiveId())
+					if use.to then
+						use.to:append(p)
+					end
+					return
+				end
+			end
+		end
+	end
+	self:sort(self.friends_noself, "defense")
+	for _, p in sgs.qlist(self.friends_noself) do
+		for _, c in ipairs(cards) do
+			if isCard("Peach", c, p) or isCard("Analeptic", c, p) or isCard("Jink", c, p) or isCard("ExNihilo", c, p) then
+				use.card = sgs.Card_Parse("@ThHeiguanCard=" .. c:getEffectiveId())
+				if use.to then
+					use.to:append(p)
+				end
+				return
+			end
+		end
+	end
+end
+
+sgs.ai_card_intention.ThHeiguanCard = function(self, card, from, tos)
+	if card:getSubcards():isEmpty() then
+		for _, to in ipairs(tos) do
+			sgs.updateIntention(from, to, -30)
+		end
+	end
+end
+
+--暗月：锁定技，若你没有拥有技能“赤秋”，你的红桃牌均视为黑桃牌。
+--无
+
+--宵咏：每当你的体力发生变化时，你可以进行一次判定，若不为红桃，你摸一张牌。
+sgs.ai_skill_invoke.thxiaoyong = true
+
+--栞谣：出牌阶段限一次，若你的手牌数不小于你的体力值，你可以展示全部手牌：若均为不同花色，你令一名体力值不小于你的角色失去1点体力；若均为相同花色，你获得一名其他角色的一张牌。
+thkanyao_skill = {}
+thkanyao_skill.name = "thkanyao"
+table.insert(sgs.ai_skills, thkanyao_skill)
+thkanyao_skill.getTurnUseCard = function(self)
+	if self.player:getHandcardNum() < self.player:getHp() then return end
+	if self.player:hasUsed("ThKanyaoCard") then return end
+	local suits = {}
+	for _, c in sgs.qlist(self.player:getHandcards()) do
+		if not table.contains(suits, c:getSuitString()) then
+			table.insert(suits, c:getSuitString())
+		end
+	end
+	if #suits == 1 or #suits == self.player:getHandcardNum() then
+		return sgs.Card_Parse("@ThKanyaoCard=.")
+	end
+end
+
+sgs.ai_skill_use_func.ThKanyaoCard = function(card, use, self)
+	local suits = {}
+	for _, c in sgs.qlist(self.player:getHandcards()) do
+		if not table.contains(suits, c:getSuitString()) then
+			table.insert(suits, c:getSuitString())
+		end
+	end
+	if #suits == 1 then
+		local enemy = self:findPlayerToDiscard("he", false, false)
+		if not enemy:isNude() then
+			use.card = card
+			return
+		end
+	else
+		for _, p in ipairs(self.enemies) do
+			if p:getHp() >= self.player:getHp() then
+				use.card = card
+				return
+			end
+		end
+	end
+end
+
+sgs.ai_skill_playerchosen.thkanyao = function(self, targets)
+	local suits = {}
+	for _, c in sgs.qlist(self.player:getHandcards()) do
+		if not table.contains(suits, c:getSuitString()) then
+			table.insert(suits, c:getSuitString())
+		end
+	end
+	if #suits == 1 then
+		local enemy = self:findPlayerToDiscard("he", false, false)
+		assert(enemy)
+		return enemy
+	else
+		self:sort(self.enemies, "hp")
+		for _, p in ipairs(self.enemies) do
+			if p:getHp() >= self.player:getHp() then
+				return p
+			end
+		end
+	end
+end
+
+sgs.ai_playerchosen_intention.thkanyao = function(self, from, to)
+	local suits = {}
+	for _, c in sgs.qlist(from:getHandcards()) do
+		if not table.contains(suits, c:getSuitString()) then
+			table.insert(suits, c:getSuitString())
+		end
+	end
+	if #suits ~= 1 then
+		sgs.updateIntention(from, to, 50)
+	end
+end
+
+sgs.ai_use_priority.ThKanyaoCard = 20
+sgs.ai_choicemade_filter.cardChosen.thkanyao = sgs.ai_choicemade_filter.cardChosen.snatch

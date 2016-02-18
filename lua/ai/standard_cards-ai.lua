@@ -386,7 +386,7 @@ function SmartAI:slashIsEffective(slash, to, from, ignore_armor)
 
 	local skillname = slash:getSkillName()
 	local changed = not cloned and slash:isVirtualCard() and slash:subcardsLength() > 0
-					and not (skillname == "hongyan" or skillname == "jinjiu" or skillname == "wushen" or skillname == "guhuo" or skillname == "nosguhuo")
+					and not (skillname == "hongyan" or skillname == "thanyue" or skillname == "jinjiu" or skillname == "wushen" or skillname == "guhuo" or skillname == "nosguhuo")
 	if not from:hasWeapon("qinggang_sword") and not ignore_armor then
 		if to:hasArmorEffect("renwang_shield") and slash:isBlack() then return false end
 		if to:hasArmorEffect("iron_armor") and slash:isRed() then return false end
