@@ -421,7 +421,7 @@ thyuanqi_skill.getTurnUseCard = function(self)
 
 	if not self.player:isWounded() then
 		if knowFirstCard(self.player, self.room) then
-			local first = sgs.QList2Table(self.room:getDrawPile():first())
+			local first = sgs.Sanguosha:getCard(self.room:getDrawPile():first())
 			local cards = {}
 			for _, c in sgs.qlist(self.player:getCards("he")) do
 				if c:sameColorWith(fisrt) then
@@ -448,7 +448,7 @@ thyuanqi_skill.getTurnUseCard = function(self)
 		end
 	else
 		if knowFirstCard(self.player, self.room) then
-			local first = sgs.QList2Table(self.room:getDrawPile():first())
+			local first = sgs.Sanguosha:getCard(self.room:getDrawPile():first())
 			local cards = {}
 			for _, c in sgs.qlist(self.player:getCards("he")) do
 				if c:sameColorWith(fisrt) then
