@@ -45,9 +45,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        player->tag["ThSuomingData"] = data; // for AI
         ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "@thsuoming", true, true);
-        player->tag.remove("ThSuomingData");
         if (target) {
             room->broadcastSkillInvoke(objectName());
             player->tag["ThSuomingTarget"] = QVariant::fromValue(target);
@@ -417,7 +415,10 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         DamageStruct damage = data.value<DamageStruct>();
-        return room->askForUseCard(player, "@@thkuangqi", "@thkuangqi:" + damage.to->objectName(), -1, Card::MethodDiscard);
+        player->tag["ThKuangqiData"] = data;
+        bool ret = room->askForUseCard(player, "@@thkuangqi", "@thkuangqi:" + damage.to->objectName(), -1, Card::MethodDiscard);
+        player->tag.remove("ThKuangqiData");
+        return ret;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
@@ -472,10 +473,10 @@ public:
         int card_id = room->askForAG(player, card_ids, false, objectName());
         player->tag.remove("ThKaiyunJudge");
         card_ids.removeOne(card_id);
+        room->retrial(Sanguosha->getCard(card_id), player, judge, objectName());
+        room->takeAG(player, card_ids.first(), true, QList<ServerPlayer *>() << player);
         room->clearAG(player);
-        room->retrial(Sanguosha->getEngineCard(card_id), player, judge, objectName());
 
-        room->obtainCard(player, card_ids.first(), false);
         return false;
     }
 };
@@ -514,9 +515,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         DamageStruct damage = data.value<DamageStruct>();
-        player->tag["ThJiaotuTarget"] = QVariant::fromValue(damage.from);
         if (player->askForSkillInvoke(objectName(), QVariant::fromValue(damage.from))) {
-            player->tag.remove("ThJiaotuTarget");
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -761,8 +760,7 @@ public:
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
         CardEffectStruct effect = data.value<CardEffectStruct>();
         if (effect.from && effect.from->hasSkill(objectName()) && effect.from->isAlive()
-            && !player->isWounded())
-        {
+                && !player->isWounded()) {
             room->notifySkillInvoked(effect.from, objectName());
             return true;
         }
@@ -790,7 +788,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         player->tag["ThYuhuoDamage"] = data;
-        if (player->askForSkillInvoke(objectName(), data)) {
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(data.value<DamageStruct>().from))) {
             player->tag.remove("ThYuhuoDamage");
             room->broadcastSkillInvoke(objectName());
             return true;

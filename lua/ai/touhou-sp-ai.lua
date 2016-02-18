@@ -63,7 +63,7 @@ end
 sgs.ai_choicemade_filter.cardResponded["@thwanling"] = function(self, player, promptlist)
 	if promptlist[#promptlist] == "_nil_" then
 		local target =player:getTag("thwanling_target"):toPlayer()
-		if not target then return end	
+		if not target then return end
 		sgs.updateIntention(player, target, -80)
 	end
 end
