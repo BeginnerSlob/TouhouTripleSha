@@ -264,13 +264,13 @@ function sgs.ai_cardneed.guicai(to, card, self)
 	for _, player in sgs.qlist(self.room:getAllPlayers()) do
 		if self:getFinalRetrial(to) == 1 then
 			if player:containsTrick("lightning") and not player:containsTrick("YanxiaoCard") then
-				return card:getSuit() == sgs.Card_Spade and card:getNumber() >= 2 and card:getNumber() <= 9 and not self.player:hasSkills("hongyan|wuyan")
+				return card:getSuit() == sgs.Card_Spade and card:getNumber() >= 2 and card:getNumber() <= 9 and not player:hasSkills("hongyan|wuyan")
 			end
 			if self:isFriend(player) and self:willSkipDrawPhase(player) then
 				return card:getSuit() == sgs.Card_Club
 			end
 			if self:isFriend(player) and self:willSkipPlayPhase(player) then
-				return card:getSuit() == sgs.Card_Heart
+				return card:getSuit() == sgs.Card_Heart and (not player:hasSkill("thanyue") or player:hasSkill("ikchiqiu"))
 			end
 		end
 	end
@@ -2104,6 +2104,14 @@ sgs.ai_skill_use_func.FanjianCard = function(card, use, self)
 					return
 				end
 			end
+		elseif friend:hasSkill("thanyue") then
+			for _, card in ipairs(cards) do
+				if self:getUseValue(card) < 6 and card:getSuit() == sgs.Card_Heart then
+					use.card = sgs.Card_Parse("@FanjianCard=" .. card:getEffectiveId())
+					if use.to then use.to:append(friend) end
+					return
+				end
+			end
 		end
 		if friend:hasSkill("zhaxiang") and not self:isWeak(friend) and not (friend:getHp() == 2 and friend:hasSkill("chanyuan")) then
 			for _, card in ipairs(cards) do
@@ -2121,6 +2129,8 @@ sgs.ai_card_intention.FanjianCard = function(self, card, from, tos)
 	local to = tos[1]
 	if to:hasSkill("zhaxiang") then
 	elseif card:getSuit() == sgs.Card_Spade and to:hasSkill("hongyan") then
+		sgs.updateIntention(from, to, -10)
+	elseif card:getSuit() == sgs.Card_Heart and not to:hasSkill("hongyan") and to:hasSkill("thanyue") then
 		sgs.updateIntention(from, to, -10)
 	else
 		sgs.updateIntention(from, to, 60)

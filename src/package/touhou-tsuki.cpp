@@ -1277,7 +1277,7 @@ void ThKanyaoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
             }
         }
     }
-};
+}
 
 class ThKanyao: public ZeroCardViewAsSkill {
 public:
