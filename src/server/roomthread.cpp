@@ -215,8 +215,10 @@ void RoomThread::actionHulaoPass(ServerPlayer *shenlvbu, QList<ServerPlayer *> l
                         QString extraTurnPlayer = extraTurnList.takeFirst();
                         room->setTag("ExtraTurnList", QVariant::fromValue(extraTurnList));
                         ServerPlayer *next = room->findPlayer(extraTurnPlayer);
+                        room->setTag("NormalNext", QVariant::fromValue(regular_next));
                         room->setCurrent(next);
                         trigger(TurnStart, room, next);
+                        room->removeTag("NormalNext");
                     } else
                         room->removeTag("ExtraTurnList");
                 }
@@ -243,8 +245,10 @@ void RoomThread::actionHulaoPass(ServerPlayer *shenlvbu, QList<ServerPlayer *> l
                         QString extraTurnPlayer = extraTurnList.takeFirst();
                         room->setTag("ExtraTurnList", QVariant::fromValue(extraTurnList));
                         ServerPlayer *next = room->findPlayer(extraTurnPlayer);
+                        room->setTag("NormalNext", QVariant::fromValue(regular_next));
                         room->setCurrent(next);
                         trigger(TurnStart, room, next);
+                        room->removeTag("NormalNext");
                     } else
                         room->removeTag("ExtraTurnList");
                 }
@@ -258,6 +262,7 @@ void RoomThread::actionHulaoPass(ServerPlayer *shenlvbu, QList<ServerPlayer *> l
             stage = 2;
             trigger(triggerEvent, room, NULL);
             room->removeTag("ExtraTurnList");
+            room->removeTag("NormalNext");
             foreach (ServerPlayer *player, room->getPlayers()) {
                 if (player != shenlvbu) {
                     if (player->hasFlag("actioned"))
@@ -301,8 +306,10 @@ void RoomThread::_handleTurnBrokenHulaoPass(ServerPlayer *shenlvbu, QList<Server
                 QString extraTurnPlayer = extraTurnList.takeFirst();
                 room->setTag("ExtraTurnList", QVariant::fromValue(extraTurnList));
                 ServerPlayer *next = room->findPlayer(extraTurnPlayer);
+                room->setTag("NormalNext", QVariant::fromValue(regular_next));
                 room->setCurrent(next);
                 trigger(TurnStart, room, next);
+                room->removeTag("NormalNext");
             } else
                 room->removeTag("ExtraTurnList");
         }
@@ -329,8 +336,10 @@ void RoomThread::actionNormal(GameRule *game_rule) {
                     QString extraTurnPlayer = extraTurnList.takeFirst();
                     room->setTag("ExtraTurnList", QVariant::fromValue(extraTurnList));
                     ServerPlayer *next = room->findPlayer(extraTurnPlayer);
+                    room->setTag("NormalNext", QVariant::fromValue(regular_next));
                     room->setCurrent(next);
                     trigger(TurnStart, room, next);
+                    room->removeTag("NormalNext");
                 } else
                     room->removeTag("ExtraTurnList");
             }
@@ -363,8 +372,10 @@ void RoomThread::_handleTurnBrokenNormal(GameRule *game_rule) {
                 QString extraTurnPlayer = extraTurnList.takeFirst();
                 room->setTag("ExtraTurnList", QVariant::fromValue(extraTurnList));
                 ServerPlayer *next = room->findPlayer(extraTurnPlayer);
+                room->setTag("NormalNext", QVariant::fromValue(regular_next));
                 room->setCurrent(next);
                 trigger(TurnStart, room, next);
+                room->removeTag("NormalNext");
             } else
                 room->removeTag("ExtraTurnList");
         }

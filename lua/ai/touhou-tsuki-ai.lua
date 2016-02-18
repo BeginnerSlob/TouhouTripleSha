@@ -440,3 +440,42 @@ sgs.ai_skill_playerchosen.thlianhua = function(self, targets)
 end
 
 sgs.ai_playerchosen_intention.tyshouye = -20
+
+--奇术：其他角色的回合结束后，若你的人物牌背面朝上，你可将你的人物牌翻面并获得1枚“时计”标记，然后进行一个额外的回合。
+sgs.ai_skill_invoke.thqishu = function(self, data)
+	if self:isWeak() then
+		return true
+	end
+	local n_p 
+	local extra_list = self.room:getTag("ExtraTurnList"):toStringList()
+	if not extra_list or #extra_list == 0 then
+		local p = self.room:getTag("NormalNext"):toPlayer()
+		if p then
+			n_p = p
+		else
+			n_p = self.room:findPlayer(self.room:getCurrent():getNextAlive(1, false):objectName())
+		end
+	else
+		n_p = self.room:findPlayer(extra_list[1])
+	end
+	if n_p then
+		if n_p:objectName() == self.player:objectName() then
+			return true
+		elseif n_p:hasSkill("thxianfa") and self:isFriend(n_p) then
+			return true
+		elseif n_p:hasSkill("thdongmo") then
+			return true
+		end
+	end
+	if self.room:findPlayerBySkillName("ikbisuo") then
+		return true
+	end
+end
+
+--时停：准备阶段开始时，若你没有“时计”标记，你可以将你的人物牌翻面并将你的手牌补至三张，然后跳过你此回合的判定阶段、摸牌阶段、出牌阶段和弃牌阶段。
+sgs.ai_skill_invoke.thshiting = function(self, data)
+	return not (self:isWeak() and self.player:getHandcardNum() >= 3)
+end
+
+--幻在：锁定技，结束阶段开始时，你须弃置全部的“时计”标记。
+--无
