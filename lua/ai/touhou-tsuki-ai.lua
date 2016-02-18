@@ -373,3 +373,70 @@ sgs.ai_choicemade_filter.skillInvoke.thyuhuo = function(self, player, promptlist
 	end
 end
 
+--寸刭：若你的装备区没有武器牌，当你使用的【杀】被【闪】抵消时，你可以弃置一张牌，则此【杀】依然造成伤害。
+--smart-ai.lua SmartAI:useEquipCard
+sgs.ai_skill_cardask["@thcunjing"] = function(self, data, pattern, target)
+	if self:isEnemy(target) then
+		local ret = self:askForDiscard("", 1, 1, false, true)
+		if #ret > 0 then
+			if isCard("Peach", ret[1], self.player) then return "." end
+			return "$" .. ret[1]:getEffectiveId()
+		end
+	end
+	return "."
+end
+
+sgs.ai_choicemade_filter.cardResponded["@thcunjing"] = function(self, player, promptlist)
+	if promptlist[#promptlist] ~= "_nil_" then
+		local target = self.room:findPlayer(promptlist[#promptlist - 1])
+		if target then
+			sgs.updateIntention(player, target, 50)
+		end
+	end
+end
+
+--莲华：出牌阶段，你可弃置一张装备牌，然后观看牌堆顶的一张牌并将其交给一名角色。
+thlianhua_skill = {}
+thlianhua_skill.name = "thlianhua"
+table.insert(sgs.ai_skills, thlianhua_skill)
+thlianhua_skill.getTurnUseCard = function(self)
+	local weapons = {}
+	local equips = {}
+	local card = nil
+	if self:needToThrowArmor() then
+		card = self.player:getArmor()
+	else
+		for _, c in sgs.qlist(self.player:getCards("he")) do
+			if c:isKindOf("Weapon") then
+				table.insert(weapons, c)
+			elseif c:isKindOf("EquipCard") then
+				table.insert(equips, c)
+			end
+		end
+		if #weapons + #equips == 0 then return end
+		if #weapons > 0 then
+			self:sortByKeepValue(weapons)
+			card = weapons[1]
+		else
+			self:sortByKeepValue(equips)
+			card = equips[1]
+		end
+	end
+	if self:getCardId("Slash") and self:slashIsAvailable() and card:getEffectiveId() == self:getWeapon():getEffectiveId() then return end
+	return sgs.Card_Parse("@ThLianhuaCard=" .. card:getEffectiveId())
+end
+
+sgs.ai_skill_use_func.ThLianhuaCard = function(card, use, self)
+	use.card = card
+end
+
+sgs.ai_skill_playerchosen.thlianhua = function(self, targets)
+	local card_ids = sgs.QList2Table(self.player:getTag("ThLianhuaIds"):toIntList())
+	local target, cardId = sgs.ai_skill_askforyiji.nosyiji(self, card_ids)
+	if target and cardId and cardId > -1 then
+		return target
+	end
+	return self.player
+end
+
+sgs.ai_playerchosen_intention.tyshouye = -20

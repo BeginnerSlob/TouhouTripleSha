@@ -823,7 +823,8 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        if (room->askForCard(player, "..", "@thcunjing", data, objectName())) {
+        SlashEffectStruct effect = data.value<SlashEffectStruct>();
+        if (room->askForCard(player, "..", "@thcunjing:" + effect.to->objectName(), data, objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -850,7 +851,9 @@ ThLianhuaCard::ThLianhuaCard() {
 void ThLianhuaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const {
     QList<int> pile_ids = room->getNCards(1, false);
     room->fillAG(pile_ids, source);
-    ServerPlayer *target = room->askForPlayerChosen(source, room->getAllPlayers(), objectName());
+    source->tag["ThLianhuaIds"] = QVariant::fromValue(IntList2VariantList(pile_ids)); // for AI
+    ServerPlayer *target = room->askForPlayerChosen(source, room->getAllPlayers(), "thlianhua");
+    source->tag.remove("ThLianhuaIds");
     room->clearAG(source);
 
     DummyCard *dummy = new DummyCard(pile_ids);

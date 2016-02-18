@@ -5338,6 +5338,14 @@ function SmartAI:useEquipCard(card, use)
 		if (self.player:hasSkill("zhiheng") or self.player:hasSkill("jilve") and self.player:getMark("@bear") > 0)
 			and not self.player:hasUsed("ZhihengCard") and self.player:getWeapon() and not card:isKindOf("Crossbow") then return end
 		if not self:needKongcheng() and self.player:getHandcardNum() <= self.player:getHp() - 2 then return end
+		if not self.player:getWeapon() and self.player:hasSkill("thcunjing") and canUseSlash then
+			local use = { isDummy = true }
+			local slash = self:getCardId("Slash")
+			self:useCardSlash(slash, use)
+			if use.card then
+				return
+			end
+		end
 		if not self.player:getWeapon() or self:evaluateWeapon(card) > self:evaluateWeapon(self.player:getWeapon()) then
 			use.card = card
 		end
