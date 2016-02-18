@@ -25,7 +25,7 @@ end
 --锁命：每当你受到1点伤害后或一名角色的红色基本牌于你的回合内置入弃牌堆时，你可以指定一名角色，横置或重置其人物牌。
 sgs.ai_skill_playerchosen.thsuoming = function(self, targets)
 	local could_choose = {}
-	local damage = self.player:getTag("ThSuomingData"):toDamage()
+	local damage = self.player:getTag("CurrentDamageStruct"):toDamage()
 	if damage.to then
 		local all_players = self.room:getAllPlayers()
 		local index = 0
@@ -212,72 +212,119 @@ sgs.thjinguo_suit_value = {
 --恋迷：觉醒技，准备阶段开始时，若你装备区里的牌的数量大于你的体力值，你须减少1点体力上限，然后获得技能“狂骨”。
 --无
 
---【开运】ai
+--狂气：出牌阶段，当你使用【杀】或【碎月绮斗】对目标角色造成伤害时，你可以选择一项：弃置一张【桃】、【酒】或装备牌；或失去1点体力。若如此做，则此伤害+1。
+sgs.ai_skill_use["@@thkuangqi"] = function(self, prompt, method)
+	local damage = self.player:getTag("ThKuangqiData"):toDamage()
+	if not damage.to then return "." end
+	if self:isEnemy(damage.to) then
+		local dis = {}
+		for _, c in sgs.qlist(self.player:getCards("he")) do
+			if c:isKindOf("Peach") or c:isKindOf("Analeptic") or c:isKindOf("EquipCard") then
+				table.insert(dis, c)
+			end
+		end
+		local card_str = "."
+		if #dis > 0 then
+			self:sortByKeepValue(dis)
+			if not (isCard("Peach", dis[1], self.player) and self.player:isWeak()) then
+				card_str = tostring(dis[1]:getEffectiveId())
+			end
+		end
+		if damage.card:isKindOf("Slash") then
+			if not self:slashIsEffective(damage.card, damage.to, self.player) then
+				return "."
+			end
+		else
+			if not self:hasTrickEffective(damage.card, damage.to, self.player) then
+				return "."
+			end
+		end
+		if card_str == "." then
+			if not (self:isWeak(damage.to) and self.player:getHp() > 2 and damage.damage < damage.to:getHp())
+					and self:isWeak() and self:getCardsNum("Peach") < 2 then
+				return "."
+			end
+		end
+		return "@ThKuangqiCard=" .. card_str
+	end
+	return "."
+end
+
+sgs.ai_choicemade_filter.cardUsed.thkuangqi = function(self, player, carduse)
+	if carduse.card:isKindOf("ThKuangqiCard") then
+		local damage = player:getTag("ThKuangqiData"):toDamage()
+		if damage.to then
+			sgs.updateIntention(player, damage.to, 60)
+		end
+	end
+end
+
+--开运：在一名角色的判定牌生效前，你可以弃置一张牌，然后观看牌堆顶的两张牌，将其中一张牌代替判定牌，然后获得另一张牌。
 sgs.ai_skill_cardask["@thkaiyun"] = function(self, data)
 	if self.player:isNude() then return "." end
+	local all_cards = self.player:getCards("he")
 	local judge = data:toJudge()
 	if self:needRetrial(judge) then
-		local to_discard=self:askForDiscard("thkaiyun", 1, 1, false, true)
-		if #to_discard>0 then
+		local to_discard = self:askForDiscard("thkaiyun", 1, 1, false, true)
+		if #to_discard > 0 then
 			return "$" .. to_discard[1]
 		end
 	end
 	return "."
 end
+
 sgs.ai_skill_askforag.thkaiyun = function(self, card_ids)
-	--技能代码需要有对应tag
 	local judge = self.player:getTag("ThKaiyunJudge"):toJudge()
-	local kaiyun={}
-	local kaiyun1={}
-	local kaiyun2={}
+	local kaiyun = {}
+	local kaiyun1 = {}
+	local kaiyun2 = {}
 	
-	judge.card = sgs.Sanguosha:getCard(card_ids[1])
-	table.insert(kaiyun1,judge.card)
-	table.insert(kaiyun,judge.card)
-	local id1=self:getRetrialCardId(kaiyun1, judge)
+	local judge_card = sgs.Sanguosha:getCard(card_ids[1])
+	table.insert(kaiyun1, judge_card)
+	table.insert(kaiyun, judge_card)
+	local id1 = self:getRetrialCardId(kaiyun1, judge)
 	
-	judge.card = sgs.Sanguosha:getCard(card_ids[2])
-	table.insert(kaiyun2,judge.card)
-	table.insert(kaiyun,judge.card)
-	local id2=self:getRetrialCardId(kaiyun2, judge)
-	
-	--id==-1 说明预设的判定不符合利益
-	if id1==id2 or (id1~=-1 and  id2~=-1) then
-		--此时拿哪一张改判都一样
+	judge_card = sgs.Sanguosha:getCard(card_ids[2])
+	table.insert(kaiyun2, judge_card)
+	table.insert(kaiyun, judge_card)
+	local id2 = self:getRetrialCardId(kaiyun2, judge)
+
+	if id1 == id2 or (id1 ~= -1 and id2 ~= -1)then
 		self:sortByKeepValue(kaiyun)
 		return kaiyun[1]:getId()
-	elseif id1==-1 then
-		return card_ids[1]
-	elseif id2==-1 then
+	elseif id1 == -1 then
 		return card_ids[2]
+	elseif id2 == -1 then
+		return card_ids[1]
 	end
-	return card_ids[1]
+	return card_ids[math.random(#card_ids)]
 end
 
---【狡兔】ai
-sgs.ai_skill_invoke.thjiaotu =function(self,data)
+--狡兔：每当你受到1点伤害后，可以令伤害来源进行一次判定，若结果不为红桃，该角色获得技能“无谋”直到该角色的下一个回合的回合结束。
+sgs.ai_skill_invoke.thjiaotu =function(self, data)
 	local target = data:toPlayer()
-	return  self:isEnemy(target) 
+	return self:isEnemy(target)
 end
+
 sgs.ai_choicemade_filter.skillInvoke.thjiaotu = function(self, player, promptlist)
-	--技能代码需要一个tag
-	local target = player:getTag("ThJiaotuTarget"):toPlayer()
+	local target = self.room:findPlayer(promptlist[#promptlist - 1])
 	if target and promptlist[#promptlist] == "yes" then
 		sgs.updateIntention(player, target, 60)
 	end
 end
 
-
---【授业】ai
+--授业：专属技，摸牌阶段摸牌时，你可以少摸一张牌并指定一名其他角色，若如此做，此回合结束时，该角色须进行一个额外的摸牌阶段。
 sgs.ai_skill_playerchosen.thshouye = function(self, targets)
 	if self:isWeak(self.player) and not self:willSkipPlayPhase() then return nil end
-	local target =self:findPlayerToDraw(false, 2)--it could be 3 (for instance:yingzi)
-	if target then return target end
-	return nil
+	local target = self:findPlayerToDraw(false, 2)
+	return target
 end
+
 sgs.ai_playerchosen_intention.tyshouye = -60
---【虚史】ai
+
+--虚史:你的回合外，当你需要使用或打出一张【杀】或【闪】时，你可从牌堆顶亮出一张牌，若此牌为基本牌，你获得这张牌，否则将其置入弃牌堆。
 sgs.ai_skill_invoke.thxushi = true
+
 function sgs.ai_cardsview_valuable.thxushi(self, class_name, player)
 	if class_name == "Slash" then
 		if player:getPhase() ~= sgs.Player_NotActive or player:hasFlag("Global_ThXushiFailed") then
@@ -289,52 +336,40 @@ function sgs.ai_cardsview_valuable.thxushi(self, class_name, player)
 	end
 end
 
---【凤翔】ai
+--凤翔：每当有一名角色的人物牌被横置或重置时，你可以摸一张牌，每回合限四次。
 sgs.ai_skill_invoke.thfengxiang = true
---【浴火】ai
-sgs.ai_skill_invoke.thyuhuo = function(self,data)
-	local damage = data:toDamage()
-	local target=damage.from
+
+--快晴：锁定技，你使用的非延时类锦囊牌对其他未受伤的角色的效果不可以被【三粒天滴】抵消。
+--无
+
+--浴火：限定技，当你受到一次伤害时，你可以转移此伤害给造成伤害的来源，然后该角色将其人物牌翻面。
+sgs.ai_skill_invoke.thyuhuo = function(self, data)
+	local damage = player:getTag("ThYuhuoDamage"):toDamage()
+	local target = damage.from
+	damage.to = target
 	if self:isEnemy(target) then
-		local score=0
-		--masochism
-		if not (damage.damage<=1 and self:getDamagedEffects(target, self.player)) then
-			score=score+1
+		local score = 0
+		if self:damageIsEffective_(damage) then
+			score = score + 1
 		end
-		if (damage.damage>2) then
-			score=score+1
+		if damage.damage > 2 then
+			score = score + 1
 		end
 		if target:faceUp() then
-			score=score+1
+			score = score + 1
 		end
-		if self.player:getHp()-damage.damage<=0 then
-			score=score+2
+		if self.player:getHp() - damage.damage <= 0 then
+			score = score + 2
 		end
-		return score>=2
+		return score > 1
 	end
 	return false
 end
+
 sgs.ai_choicemade_filter.skillInvoke.thyuhuo = function(self, player, promptlist)
-	local from=player:getTag("ThYuhuoDamage"):toDamage().from
-	if from and promptlist[#promptlist] == "yes" and from:getLostHp()>0 then
+	local from = self.room:findPlayer(promptlist[#promptlist - 1])
+	if from and promptlist[#promptlist] == "yes" and from:faceUp() then
 		sgs.updateIntention(player, from, 60)
 	end
 end
-sgs.ai_need_damaged.thyuhuo = function(self, attacker, player)
-	if player:getMark("@yuhuo") == 0  then return false end
-	if not attacker or attacker:hasSkill("thwunian") then return false end
-	if  self:isEnemy(attacker,player) then
-		if not self:getDamagedEffects(attacker,player) and attacker:faceUp() then
-			return true
-		end
-	end
-	return false
-end
-sgs.ai_slash_prohibit.thyuhuo = function(self, from, to, card)
-	local callback=sgs.ai_need_damaged["thyuhuo"]
-	if callback then
-		return  callback(self, from, to)
-	end
-	return false
-end
---need bulid trick_prohibit or damage_prohibit in smart-ai and standardcards-ai
+

@@ -243,7 +243,7 @@ sgs.ai_skill_invoke.thzhancao = function(self, data)
 			elseif isCard("Peach", slash, self.player) then
 				need_lost = 1
 			end
-			if need_lost > 0 and (self:getHp() > 1 or self:getCardsNum({ "Peach", "Analeptic" }) >= 1) then
+			if need_lost > 0 and (self.player:getHp() > 1 or self:getCardsNum({ "Peach", "Analeptic" }) >= 1) then
 				sgs.thzhancao_throw = nil
 				return true
 			end
@@ -421,7 +421,7 @@ thyuanqi_skill.getTurnUseCard = function(self)
 
 	if not self.player:isWounded() then
 		if knowFirstCard(self.player, self.room) then
-			local first = sgs.Sanguosha(self.room:getDrawPile():first())
+			local first = sgs.QList2Table(self.room:getDrawPile():first())
 			local cards = {}
 			for _, c in sgs.qlist(self.player:getCards("he")) do
 				if c:sameColorWith(fisrt) then
@@ -448,7 +448,7 @@ thyuanqi_skill.getTurnUseCard = function(self)
 		end
 	else
 		if knowFirstCard(self.player, self.room) then
-			local first = sgs.Sanguosha(self.room:getDrawPile():first())
+			local first = sgs.QList2Table(self.room:getDrawPile():first())
 			local cards = {}
 			for _, c in sgs.qlist(self.player:getCards("he")) do
 				if c:sameColorWith(fisrt) then
@@ -1301,7 +1301,7 @@ sgs.ai_playerchosen_intention.thkujie = -20
 
 --廕庇：当一名体力值不大于你的其他角色因伤害而扣减体力后，你可以令其回复等量的体力，然后伤害来源对你造成等量的同属性伤害。
 sgs.ai_skill_invoke.thyinbi = function(self, data)
-	local damage = self.player:getTag("ThYinbiDamage"):toDamage()
+	local damage = self.player:getTag("CurrentDamageStruct"):toDamage()
 	local target = data:toPlayer()
 	if self:isFriend(target) then
 		if target:getLostHp() >= damage.damage then
@@ -1316,7 +1316,7 @@ sgs.ai_skill_invoke.thyinbi = function(self, data)
 end
 
 sgs.ai_choicemade_filter.skillInvoke.thyinbi = function(self, player, promptlist)
-	local to = player:getTag("ThYinbiDamage"):toDamage().to
+	local to = player:getTag("CurrentDamageStruct"):toDamage().to
 	if to and promptlist[#promptlist] == "yes" then
 		sgs.updateIntention(player, to, -80)
 	end
