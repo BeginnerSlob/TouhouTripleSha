@@ -195,25 +195,18 @@ local thnianke_skill = {}
 thnianke_skill.name = "thnianke"
 table.insert(sgs.ai_skills, thnianke_skill)
 thnianke_skill.getTurnUseCard = function(self)
-	if self.player:hasUsed("ThNiankeCard") then
-		return nil
-	end
-	local cards = sgs.QList2Table(self.player:getCards("h"))
-
+	if self.player:hasUsed("ThNiankeCard") then return end
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	self:sortByKeepValue(cards)
 	local card
-
 	for _, acard in ipairs(cards) do
 		if acard:isKindOf("Jink") then
 			card = acard
 			break
 		end
 	end
-
-	if not card then
-		return nil
-	end
-
-	return sgs.Card_Parse("@ThNiankeCard="..card:getEffectiveId())
+	if not card then return end
+	return sgs.Card_Parse("@ThNiankeCard=" .. card:getEffectiveId())
 end
 
 sgs.ai_skill_use_func.ThNiankeCard = function(card, use, self)
@@ -234,12 +227,11 @@ sgs.ai_skill_use_func.ThNiankeCard = function(card, use, self)
 		end
 		return
 	end
-	if self:getCardsNum("Jink", "h") <= 1 then
+	if self:getCardsNum("Jink") <= 1 and self:isWeak() then
 		return
 	end
 	if #targets > 0 then
 		use.card = card
-		self:sort(targets, "defense")
 		if use.to then
 			use.to:append(targets[1])
 		end
@@ -1437,7 +1429,7 @@ sgs.ai_skill_use["@@thsuilun"] = function(self, prompt, method)
 	return "."
 end
 
---燃丧：出牌阶段限一次，你可以与一名其他角色拼点：若你赢，你获得技能“焰轮”直到回合结束（你可以将一张红色手牌当【灼狱业焰】使用；你使用【灼狱业焰】时可以弃置与目标角色所展示的手牌颜色相同的手牌；你每使用【灼狱业焰】造成一次伤害后，可以摸一张牌。）；若你没赢，你不能使用黑色锦囊牌直到回合结束。
+--燃丧：出牌阶段限一次，你可以与一名其他角色拼点：若你赢，你获得技能“焰轮”直到回合结束；若你没赢，你不能使用黑色锦囊牌直到回合结束。
 local thransang_skill = {}
 thransang_skill.name = "thransang"
 table.insert(sgs.ai_skills, thransang_skill)
@@ -1547,9 +1539,36 @@ sgs.ai_skill_use_func.ThRansangCard = function(card, use, self)
 	return
 end
 
-sgs.ai_card_intention.ThRansangCard = 0
-sgs.ai_cardneed.thransang = sgs.ai_cardneed.bignumber
-sgs.ai_use_priority.ThDasuiCard = sgs.ai_use_priority.FireAttack + 0.1
+function sgs.ai_skill_pindian.thransang(minusecard, self, requestor)
+	if requestor:getHandcardNum() == 1 then
+		local cards = sgs.QList2Table(self.player:getHandcards())
+		self:sortByKeepValue(cards)
+		return cards[1]
+	end
+	local maxcard = self:getMaxCard()
+	return self:isFriend(requestor) and self:getMinCard() or (maxcard:getNumber() < 6 and minusecard or maxcard)
+end
+
+sgs.ai_cardneed.thransang = function(to, card, self)
+	local cards = to:getHandcards()
+	local has_big = false
+	for _, c in sgs.qlist(cards) do
+		local flag = string.format("%s_%s_%s", "visible", self.room:getCurrent():objectName(), to:objectName())
+		if c:hasFlag("visible") or c:hasFlag(flag) then
+			if c:getNumber() > 10 then
+				has_big = true
+				break
+			end
+		end
+	end
+	if not has_big then
+		return card:getNumber() > 10
+	else
+		return card:isRed()
+	end
+end
+
+sgs.ai_use_priority.ThRansangCard = sgs.ai_use_priority.FireAttack + 0.1
 
 --焰轮：你可以将一张红色手牌当【灼狱业焰】使用；你使用【灼狱业焰】时可以弃置与目标角色所展示的手牌颜色相同的手牌；你每使用【灼狱业焰】造成一次伤害后，可以摸一张牌。
 sgs.ai_skill_invoke.thyanlun = true

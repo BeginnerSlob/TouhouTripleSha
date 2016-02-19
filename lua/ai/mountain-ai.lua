@@ -947,7 +947,7 @@ function sgs.ai_cardneed.beige(to, card)
 end
 
 function sgs.ai_slash_prohibit.duanchang(self, from, to)
-	if from:hasSkill("ikxuwu") or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
+	if from:hasSkill("ikxuwu") or from:getMark("thshenyou") > 0 or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
 	if from:hasFlag("IkJieyouUsed") then return false end
 	if to:getHp() > 1 or #(self:getEnemies(from)) == 1 then return false end
 	if from:getMaxHp() == 3 and from:getArmor() and from:getDefensiveHorse() then return false end
@@ -970,6 +970,7 @@ function sgs.ai_skill_choice.huashen(self, choices, data, xiaode_choice)
 		if not xiaode_choice and self.player:getHp() < 1 and str:matchOne("nosbuqu") then return "nosbuqu" end
 		if (self.player:getHandcardNum() >= self.player:getHp() and self.player:getHandcardNum() < 10 and not self:isWeak()) or self.player:isSkipped(sgs.Player_Play) then
 			if str:matchOne("keji") then return "keji" end
+			if str:matchOne("thanbing") then return "thanbing" end
 		end
 		if self.player:getHandcardNum() > 4 then
 			for _, askill in ipairs(("shuangxiong|duwu|nosfuhun|tianyi|xianzhen|qiaoshui|paoxiao|luanji|huoji|qixi|" ..
@@ -1045,7 +1046,7 @@ function sgs.ai_skill_choice.huashen(self, choices, data, xiaode_choice)
 								"fuluan|yanyu|qingyi|huoshui|zhoufu|bifa|xinzhan|jieyuan|duanbing|fenxun|guidao|guicai|nosguicai|noszhenlie|" ..
 								"noskurou|wansha|lianpo|botu|qiluan|xiaode|qingjian|yicong|zhenwei|heyi|nosshangshi|shangshi|lianying|noslianying|tianyi|" ..
 								"xianzhen|qiaoshui|nosjuece|sijian|chunlao|zongshi|keji|paoxiao|kuiwei|yuanhu|huyuan|nosjushou|fenming|huoji|roulin|lihuo|" ..
-								"kofxiaoji|xiaoji|xuanfeng|nosxuanfeng|jiushi|shushen|longyin|shoucheng|qicai|dangxian|tannang|mashu|nosqicai|" ..
+								"kofxiaoji|xiaoji|xuanfeng|nosxuanfeng|jiushi|shushen|longyin|shoucheng|qicai|dangxian|tannang|mashu|thjizhi|" ..
 								"hongyan|zongxuan|nosmieji|suishi|qinyin|tianfu|jinjiu|yicheng|jushou|gongao|nosguixin|yinbing|shenfen"):split("|")) do
 			if askill == "yinghun" and not self.player:isWounded() then continue end
 			if askill == "hengzheng" and (self.room:alivePlayerCount() <= 3 or self.player:getHp() > 1 or not self.player:isKongcheng()) then continue end

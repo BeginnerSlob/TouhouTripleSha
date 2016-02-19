@@ -311,57 +311,39 @@ sgs.thzhancao_keep_value = {
 --墨迹：当你需要使用或打出一张【杀】或【闪】时，你可以将等同于你体力值数量的牌以任意顺序置于牌堆顶（至多两张），视为你使用或打出一张【杀】或【闪】。
 sgs.draw_pile_thmoji = {} --for GlobalRecord
 
-function SmartAI:getMojiCards(player, n, toCard)
-	local cards = player:getCards("he")
-	cards = sgs.QList2Table(cards)
-	self:sortByKeepValue(cards)
-	if #cards < n then
-		return {}
-	end
-	for _, c in ipairs(cards) do
-		if isCard(toCard, c, player) then
-			return {}
-		end
-	end
-	local ret = {}
-	if toCard == "Slash" then
-		for i = 1, #cards do
-			table.insert(ret, cards[i]:getEffectiveId())
-			if #ret == n then
-				return ret
-			end
-		end
-	elseif toCard == "Jink" then
-		for i = 1, #cards do
-			table.insert(ret, cards[i]:getEffectiveId())
-			if #ret == n then
-				return ret
-			end
-		end
-	end
-	return {}
-end
-
 local thmoji_skill = {}
 thmoji_skill.name = "thmoji"
 table.insert(sgs.ai_skills, thmoji_skill)
 thmoji_skill.getTurnUseCard = function(self)
-	if not self:slashIsAvailable(self.player) then return end
-	local n = self.player:getHp()
-	if n < 1 then
-		return nil
+	local cards = self.player:getCards("he")
+	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
-	n = math.min(2, n)
-	local cards = self:getMojiCards(self.player, n, "Slash")
-	if #cards == n then
-		local up, _ = self:askForGuanxing(cards, sgs.Room_GuanxingUpOnly)
-		if #up == n then
-			up = sgs.reverse(up)
-			local card_str = "@ThMojiCard=" .. table.concat(up, "+") .. ":slash"
-			return sgs.Card_Parse(card_str)
-		end
+	cards = sgs.QList2Table(cards)
+	for _, acard in ipairs(cards) do
+		if isCard("Slash", acard, self.player) then return end
 	end
-	return nil
+
+	cards = sgs.QList2Table(self.player:getCards("he"))
+	local newcards = {}
+	for _, card in ipairs(cards) do
+		if not isCard("Slash", card, self.player) and not isCard("Peach", card, self.player) and not (isCard("ExNihilo", card, self.player) and self.player:getPhase() == sgs.Player_Play) then table.insert(newcards, card) end
+	end
+	if #newcards <= self.player:getHp() - 1 and self.player:getHp() <= 4 and not self:hasHeavySlashDamage(self.player)
+		and not self.player:hasSkills(sgs.need_kongcheng .. "paoxiao|shangshi|noshangshi")
+		and not (self.player:hasSkill("zhiji") and self.player:getMark("zhiji") == 0) then return end
+	local n = math.min(2, self.player:getHp())
+	if n < 1 or #newcards < n then return end
+	
+	local id_str = tostring(newcards[1]:getEffectiveId())
+
+	if n ~= 1 then
+		id_str = id_str .. "+" .. tostring(newcards[2]:getEffectiveId())
+	end
+
+	local slash = sgs.Card_Parse(("@ThMojiCard=%s:slash"):format(id_str))
+
+	return slash
 end
 
 sgs.ai_skill_use_func.ThMojiCard = function(card, use, self)
@@ -370,6 +352,7 @@ sgs.ai_skill_use_func.ThMojiCard = function(card, use, self)
 		slash:addSubcard(id)
 	end
 	slash:setSkillName("_thmoji")
+	if not self:slashIsAvailable(self.player, slash) then return end
 	local s_use = { isDummy = true, to = sgs.SPlayerList() }
 	self:useCardSlash(slash, s_use)
 	if s_use.card and not s_use.to:isEmpty() then
@@ -380,24 +363,36 @@ sgs.ai_skill_use_func.ThMojiCard = function(card, use, self)
 	end
 end
 
-sgs.ai_cardsview_valuable.thmoji = function(self, class_name, player)
+sgs.ai_cardsview.thmoji = function(self, class_name, player)
 	if not ("Slash|Jink"):match(class_name) then
 		return nil
 	end
-	local n = player:getHp()
-	if n < 1 then
-		return nil
+	local cards = self.player:getCards("he")
+	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
-	n = math.min(2, n)
-	local cards = self:getMojiCards(player, n, class_name)
-	if #cards == n then
-		local up, _ = self:askForGuanxing(cards, sgs.Room_GuanxingUpOnly)
-		if #up == n then
-			up = sgs.reverse(up)
-			local card_str = "@ThMojiCard=" .. table.concat(up, "+") .. ":" .. string.lower(class_name)
-			return card_str
-		end
+	cards = sgs.QList2Table(cards)
+	for _, acard in ipairs(cards) do
+		if isCard(class_name, acard, self.player) then return end
 	end
+
+	cards = sgs.QList2Table(self.player:getCards("he"))
+	local newcards = {}
+	for _, card in ipairs(cards) do
+		if not isCard(class_name, card, player) and not isCard("Peach", card, player) and not (isCard("ExNihilo", card, player) and player:getPhase() == sgs.Player_Play) then table.insert(newcards, card) end
+	end
+	local n = math.min(2, player:getHp())
+	if n < 1 or #newcards < n then return end
+
+	sgs.ais[player:objectName()]:sortByKeepValue(newcards)
+
+	local id_str = tostring(newcards[1]:getEffectiveId())
+	if n ~= 1 then
+		id_str = id_str .. "+" .. tostring(newcards[2]:getEffectiveId())
+	end
+
+	local card_str = "@ThMojiCard=" .. id_str .. ":" .. string.lower(class_name)
+	return card_str
 end
 
 sgs.ai_use_priority.ThMojiCard = sgs.ai_use_priority.Slash - 0.01
@@ -428,7 +423,7 @@ thyuanqi_skill.getTurnUseCard = function(self)
 			if #cards == 0 then
 				return
 			end
-			local card, target = self:getCardNeedPlayer(cards, self.friends_noself, false)
+			local card, target = self:getCardNeedPlayer(cards, self.friends, false)
 			if card and target then
 				sgs.thyuanqi_target = target
 				return sgs.Card_Parse("@ThYuanqiCard=" .. card:getEffectiveId())
@@ -479,7 +474,7 @@ sgs.ai_skill_playerchosen.thyuanqi = function(self, targets)
 	for _, id in sgs.qlist(int_list) do
 		table.insert(cards, sgs.Sanguosha:getCard(id))
 	end
-	local _, target = self:getCardNeedPlayer(cards, self.friends_noself, false)
+	local _, target = self:getCardNeedPlayer(cards, self.friends, false)
 	if target and targets:contains(target) then return target end
 	self:sort(self.friends_noself, "handcard")
 	for _, p in ipairs(self.friends_noself) do
@@ -893,7 +888,7 @@ sgs.ai_skill_cardask["@thfusheng-heart"] = function(self, data)
 end
 
 function sgs.ai_slash_prohibit.thfusheng(self, from, to, card)
-	if from:hasSkill("ikxuwu") or (from:hasSkill("ikwanhun") and from:distanceTo(to) > 0 and from:distanceTo(to) < 2) then return false end
+	if from:hasSkill("ikxuwu") or from:getMark("thshenyou") > 0 or (from:hasSkill("ikwanhun") and from:distanceTo(to) > 0 and from:distanceTo(to) < 2) then return false end
 	if from:hasFlag("IkJieyouUsed") then return false end
 	if self:needToLoseHp(from) then return false end
 	if from:getHp() > 3 then return false end

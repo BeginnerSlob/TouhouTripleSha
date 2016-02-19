@@ -31,7 +31,7 @@ function SmartAI:getWuhunRevengeTargets()
 end
 
 function sgs.ai_slash_prohibit.wuhun(self, from, to)
-	if from:hasSkill("ikxuwu") then return false end
+	if from:hasSkill("ikxuwu") or from:getMark("thshenyou") > 0 then return false end
 	if from:hasFlag("IkJieyouUsed") then return false end
 	local damageNum = self:hasHeavySlashDamage(from, nil, to, true)
 

@@ -256,7 +256,7 @@ function SmartAI:useCardSupplyShortage(card, use)
 
 		if self:objectiveLevel(enemy) < 3 then value = value - 10 end
 		if not enemy:faceUp() then value = value - 10 end
-		if enemy:hasSkills("keji|shensu|qingyi") then value = value - enemy:getHandcardNum() end
+		if enemy:hasSkills("keji|shensu|qingyi|thanbing") then value = value - enemy:getHandcardNum() end
 		if enemy:hasSkills("guanxing|xiuluo|tiandu|guidao|noszhenlie") then value = value - 5 end
 		if self:needKongcheng(enemy) then value = value - 1 end
 		if enemy:getMark("@kuiwei") > 0 then value = value - 2 end
@@ -328,7 +328,7 @@ end
 function SmartAI:isGoodChainTarget(who, source, nature, damagecount, card)
 	if not who:isChained() or who:hasSkill("thhouzhi") then return not self:isFriend(who) end
 	source = source or self.player
-	if source:hasSkill("ikxuwu") then return not self:isFriend(who) end
+	if source:hasSkill("ikxuwu") or source:getMark("thshenyou") then return not self:isFriend(who) end
 	damagecount = damagecount or 1
 
 	--[[ if not sgs.GetConfig("EnableHegemony", false) then
@@ -440,7 +440,10 @@ end
 
 
 function SmartAI:useCardIronChain(card, use)
-	local needTarget = ((use.isDummy and not use.canRecast) or card:getSkillName() == "guhuo" or card:getSkillName() == "nosguhuo" or card:getSkillName() == "qice")
+	local needTarget = ((use.isDummy and not use.canRecast) or card:getSkillName() == "guhuo"
+															or card:getSkillName() == "nosguhuo"
+															or card:getSkillName() == "qice"
+															or card:getSkillName() == "thhuilve")
 	use.card = card
 	if not needTarget then
 		if self.player:isLocked(card) then return end

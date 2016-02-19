@@ -301,7 +301,7 @@ end
 
 function sgs.ai_slash_prohibit.ganglie(self, from, to)
 	if self:isFriend(from, to) then return false end
-	if from:hasSkill("ikxuwu") or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
+	if from:hasSkill("ikxuwu") or from:getMark("thshenyou") > 0 or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
 	if from:hasFlag("IkJieyouUsed") then return false end
 	return self:isWeak(from)
 end
@@ -633,7 +633,7 @@ function SmartAI:willSkipPlayPhase(player, no_null)
 		if (max_card and player_max_card and max_number > player_max_number) or max_number >= 12 then return true end
 	end
 
-	if self.player:containsTrick("YanxiaoCard") or self.player:hasSkill("keji") or (self.player:hasSkill("qiaobian") and not self.player:isKongcheng()) then return false end
+	if self.player:containsTrick("YanxiaoCard") or self.player:hasSkills("keji|thanbing") or (self.player:hasSkill("qiaobian") and not self.player:isKongcheng()) then return false end
 	local friend_null, friend_snatch_dismantlement = 0, 0
 	if self.player:getPhase() == sgs.Player_Play and self.player:objectName() ~= player:objectName() and self:isFriend(player) then
 		for _, hcard in sgs.qlist(self.player:getCards("he")) do

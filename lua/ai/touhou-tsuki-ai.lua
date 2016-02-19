@@ -1,31 +1,31 @@
 function SmartAI:findPlayerToChain(targets)
-	self:sort(self.friends, "defense")
-	for _, friend in ipairs(self.friends) do
-		if not table.contains(targets, friend) then continue end
-		if friend:isChained() and not self:isGoodChainPartner(friend) then
-			return friend
-		elseif not friend:isChained() and friend:hasSkill("thchiwu") and self:isGoodChainPartner(friend) then
-			return friend
+	targets = sgs.QList2Table(targets)
+	local getChainTarget = function(players_table)
+		self:sort(self.friends, "defense")
+		for _, friend in ipairs(self.friends) do
+			if not table.contains(players_table, friend) then continue end
+			if friend:isChained() and not self:isGoodChainPartner(friend) then
+				return friend
+			elseif not friend:isChained() and friend:hasSkill("thchiwu") and self:isGoodChainPartner(friend) then
+				return friend
+			end
 		end
+		self:sort(self.enemies, "defense")
+		for _, enemy in ipairs(self.enemies) do
+			if not table.contains(players_table, enemy) then continue end
+			if not enemy:isChained() and enemy:hasSkill("thchiwu") and self:isGoodChainPartner(enemy) then
+				continue
+			end
+			if not enemy:isChained() and self:objectiveLevel(enemy) > 3
+				and not self:getDamagedEffects(enemy) and not self:needToLoseHp(enemy) and sgs.isGoodTarget(enemy, self.enemies, self) then
+				return enemy
+			end
+		end
+		return nil
 	end
-	self:sort(self.enemies, "defense")
-	for _, enemy in ipairs(self.enemies) do
-		if not table.contains(targets, enemy) then continue end
-		if not enemy:isChained() and enemy:hasSkill("thchiwu") and self:isGoodChainPartner(enemy) then
-			continue
-		end
-		if not enemy:isChained() and self:objectiveLevel(enemy) > 3
-			and not self:getDamagedEffects(enemy) and not self:needToLoseHp(enemy) and sgs.isGoodTarget(enemy, self.enemies, self) then
-			return enemy
-		end
-	end
-	return nil
-end
 
---锁命：每当你受到1点伤害后或一名角色的红色基本牌于你的回合内置入弃牌堆时，你可以指定一名角色，横置或重置其人物牌。
-sgs.ai_skill_playerchosen.thsuoming = function(self, targets)
 	local could_choose = {}
-	local damage = self.player:getTag("CurrentDamageStruct"):toDamage()
+	local damage = self.room:getTag("CurrentDamageStruct"):toDamage()
 	if damage.to then
 		local all_players = self.room:getAllPlayers()
 		local index = 0
@@ -45,12 +45,17 @@ sgs.ai_skill_playerchosen.thsuoming = function(self, targets)
 		end
 	end
 	if #could_choose > 0 then
-		local to_chain = self:findPlayerToChain(could_choose)
+		local to_chain = getChainTarget(could_choose)
 		if to_chain then
 			return to_chain
 		end
 	end
-	return self:findPlayerToChain(sgs.QList2Table(targets))
+	return getChainTarget(targets)
+end
+
+--锁命：每当你受到1点伤害后或一名角色的红色基本牌于你的回合内置入弃牌堆时，你可以指定一名角色，横置或重置其人物牌。
+sgs.ai_skill_playerchosen.thsuoming = function(self, targets)
+	return self:findPlayerToChain(targets)
 end
 
 --赤雾：锁定技，当你的人物牌横置时，普通【杀】和【碎月绮斗】对你无效。
@@ -344,7 +349,7 @@ sgs.ai_skill_invoke.thfengxiang = true
 
 --浴火：限定技，当你受到一次伤害时，你可以转移此伤害给造成伤害的来源，然后该角色将其人物牌翻面。
 sgs.ai_skill_invoke.thyuhuo = function(self, data)
-	local damage = player:getTag("ThYuhuoDamage"):toDamage()
+	local damage = self.player:getTag("ThYuhuoDamage"):toDamage()
 	local target = damage.from
 	damage.to = target
 	if self:isEnemy(target) then
@@ -662,3 +667,305 @@ end
 
 sgs.ai_use_priority.ThKanyaoCard = 20
 sgs.ai_choicemade_filter.cardChosen.thkanyao = sgs.ai_choicemade_filter.cardChosen.snatch
+
+--折辉：锁定技，每当你受到一次伤害后，你防止你受到的伤害，直到回合结束。且此回合的结束阶段开始时，你须弃置当前回合角色的一张牌；或视为对一名其他角色使用一张无视距离的【杀】。
+function sgs.ai_slash_prohibit.thzhehui(self, from, to)
+	if from:hasSkill("ikxuwu") or from:getMark("thshenyou") > 0 or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
+	if from:hasFlag("IkJieyouUsed") then return false end
+	return to:getMark("zhehui") > 0 and to:hasSkill("thzhehui")
+end
+
+sgs.ai_skill_choice.thzhehui = function(self, choices)
+	local n = self.player:getLostHp()
+	local current = self.room:getCurrent()
+	self:sort(self.enemies, "defenseSlash")
+	for _, enemy in ipairs(self.enemies) do
+		local def = sgs.getDefenseSlash(enemy, self)
+		local slash = sgs.cloneCard("slash")
+		local eff = self:slashIsEffective(slash, enemy) and sgs.isGoodTarget(enemy, self.enemies, self)
+
+		if self.player:canSlash(enemy, nil, false) and not self:slashProhibit(nil, enemy) and eff and def < 5 then
+			self.thzhehui_target = enemy
+			return "slash"
+		end
+	end
+	if self:isEnemy(current) then
+		for _, enemy in ipairs(self.enemies) do
+			local slash = sgs.cloneCard("slash")
+			local eff = self:slashIsEffective(slash, enemy)
+
+			if self.player:canSlash(enemy, nil, false) and not self:slashProhibit(nil, enemy) and self:hasHeavySlashDamage(self.player, slash, enemy) then
+				self.thzhehui_target = enemy
+				return "slash"
+			end
+		end
+		local armor = current:getArmor()
+		if armor and self:evaluateArmor(armor, current) >= 3 and not self:doNotDiscard(current, "e") then return "discard" end
+	end
+	if self:isFriend(current) then
+		if n == 1 and self:needToThrowArmor(current) then return "discard" end
+		for _, enemy in ipairs(self.enemies) do
+			local slash = sgs.cloneCard("slash")
+			local eff = self:slashIsEffective(slash, enemy)
+
+			if self.player:canSlash(enemy, nil, false) and not self:slashProhibit(nil, enemy) then
+				self.thzhehui_target = enemy
+				return "slash"
+			end
+		end
+		return "slash"
+	end
+	return "discard"
+end
+
+sgs.ai_skill_playerchosen.thzhehui = function(self, targets)
+	local to = self.thzhehui_target
+	if to then 
+		self.thzhehui_target = nil
+		return to
+	end
+	to = sgs.ai_skill_playerchosen.zero_card_as_slash(self, targets)
+	return to or targets[1]
+end
+
+sgs.ai_choicemade_filter.cardChosen.thzhehui = sgs.ai_choicemade_filter.cardChosen.snatch
+
+--沉寂：你的回合外，每当失去牌时，你可以将一名角色的人物牌横置或者重置。
+sgs.ai_skill_playerchosen.thchenji = function(self, targets)
+	return self:findPlayerToChain(targets)
+end
+
+--狂想：当人物牌横置的角色被选择为基本牌或非延时类锦囊牌的目标后，若你不为其目标，你可无视合法性成为该牌的目标；当你被选择为基本牌或非延时类锦囊牌的目标后，你可令所有人物牌横置的不为其目标的角色都无视合法性成为该牌的目标。在结算后，将这些角色的人物牌重置。
+sgs.ai_skill_invoke.thkuangxiang = function(self, data)
+	local use = data:toCardUse()
+	if use.from and use.to:isEmpty() then
+		use.to:append(use.from)
+	end
+	for _, p in sgs.qlist(use.to) do
+		if p:isChained() and not use.to:contains(self.player) then
+			if (use.card:isKindOf("Peach") and self.player:isWounded()) or use.card:isKindOf("ExNihilo") then
+				return true
+			end
+			local current = self.room:getCurrent()
+			if current and current:isAlive() and current:getPhase() < sgs.Player_Play and self:isEnemy(current) and current:canSlash(self.player, nil, false) then
+				if use.card:isKindOf("LureTiger") then
+					return true
+				end
+			end
+			break
+		end
+	end
+	if use.to:contains(self.player) then
+		local targets = {}
+		for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+			if not use.to:contains(p) and p:isChained() then
+				table.insert(targets, p)
+			end
+		end
+		local good, bad = 0, 0
+		for _, p in ipairs(targets) do
+			local value = 0.2
+			if not use.card:isKindOf("FireAttack") and sgs.dynamic_value.damage_card[use.card:getClassName()] then
+				if use.card:isKindOf("Slash") and not self:slashIsEffective(use.card, p, use.from) then
+				elseif use.card:isKindOf("TrickCard") and not self:hasTrickEffective(use.card, p, use.from, true) then
+				else
+					value = value - 1
+					if self:isWeak(p) then
+						value = value - 0.5
+					end
+				end
+			elseif use.card:isKindOf("Dismantlement") then
+				if not self:hasTrickEffective(use.card, p, use.from, true) then
+				elseif p:isAllNude() then
+				else
+					if self:isFriend(use.from, p) and self:needToThrowArmor(p) then
+						value = value + 1
+					elseif self:needKongcheng(p) and p:getHandcardNum() == 1 and (self:isFriend(use.from, p) or p:getCards("hej"):length() == 1) then
+						value = value + 0.3
+					elseif (p:containsTrick("indulgence") or p:containsTrick("supply_shortage")) and (self:isFriend(use.from, p) or p:isNude()) then
+						value = value + 0.5
+					else
+						value = value - 0.5
+						if self:isWeak(p) then
+							value = value - 0.3
+						end
+					end
+				end
+			elseif use.card:isKindOf("Peach") or use.card:isKindOf("ExNihilo") then
+				if use.card:isKindOf("Peach") and not p:isWounded() then
+				elseif use.card:isKindOf("ExNihilo") and not self:hasTrickEffective(use.card, p, use.from, true) then
+				else
+					value = value + 1
+					if self:isWeak(p) then
+						value = value + 0.3
+					end
+				end
+			end
+			if self:isFriend(p) then
+				good = good + value
+			elseif self:isEnemy(p) then
+				bad = bad + value
+			end
+		end
+		return good - bad > 1
+	end
+	return false
+end
+
+--恶戏：结束阶段开始时，你可以弃置一张手牌并选择两名有手牌的角色，这两名角色须同时展示一张手牌：若这两张牌点数不同，你获得其中一张牌，所展示的牌点数大的角色获得另一张牌；若点数相同，你须在此回合结束后进行一个额外的回合，且此额外的回合内你不可以发动“恶戏”。
+sgs.ai_skill_use["@@thexi"] = function(self, prompt, method)
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	self:sortByKeepValue(cards)
+	for _, c in ipairs(cards) do
+		if not self:isValuableCard(c) then
+			local targets = {}
+			for _, c2 in ipairs(cards) do
+				if c2:getEffectiveId() == c:getEffectiveId() then continue end
+				if c2:getNumber() == 13 then
+					table.insert(targets, self.player:objectName())
+					break
+				end
+			end
+			self:sort(self.enemies, "handcard")
+			for _, p in ipairs(self.enemies) do
+				if not p:isKongcheng() then
+					table.insert(targets, p:objectName())
+					if #targets > 1 then
+						return "@ThExiCard=" .. c:getEffectiveId() .. "->" .. table.concat(targets, "+")
+					end
+				end
+			end
+		end
+	end			
+end
+
+sgs.ai_cardshow.thexi = function(self, requestor)
+	if self.player:objectName() == requestor:objectName() then
+		return self:getMaxCard()
+	elseif self:isFriend(requestor) then
+		local a, b = self:getCardNeedPlayer(nil, { requestor })
+		return a
+	else
+		local cards = sgs.QList2Table(self.player:getHandcards())
+		self:sortByKeepValue(cards)
+		return cards[1]
+	end
+	return self.player:getRandomHandCard()
+end
+
+--星露：当你进入濒死状态时，你可以与一名其他角色拼点：若你赢，你回复1点体力。
+sgs.ai_skill_playerchosen.thxinglu = function(self, targets)
+	local max_card = self:getMaxCard()
+	if isCard("Peach", max_card, self.player) or isCard("Analeptic", max_card, self.player) then return nil end
+	local max_point = max_card:getNumber()
+
+	self:sort(self.enemies, "handcard")
+	for _, enemy in ipairs(self.enemies) do
+		if not (self:needKongcheng(enemy) and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+			local enemy_max_card = self:getMaxCard(enemy)
+			local enemy_max_point = enemy_max_card and enemy_max_card:getNumber() or 100
+			if max_point > enemy_max_point then
+				self.thxinglu_card = max_card:getEffectiveId()
+				return enemy
+			end
+		end
+	end
+	for _, enemy in ipairs(self.enemies) do
+		if not (self:needKongcheng(enemy) and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+			if max_point >= 10 then
+				self.thxinglu_card = max_card:getEffectiveId()
+				return enemy
+			end
+		end
+	end
+
+	self:sort(self.friends_noself, "handcard")
+	for index = #self.friends_noself, 1, -1 do
+		local friend = self.friends_noself[index]
+		if not friend:isKongcheng() then
+			local friend_min_card = self:getMinCard(friend)
+			local friend_min_point = friend_min_card and friend_min_card:getNumber() or 100
+			if max_point > friend_min_point then
+				self.thxinglu_card = max_card:getEffectiveId()
+				return friend
+			end
+		end
+	end
+
+	local zhugeliang = self.room:findPlayerBySkillName("ikjingyou")
+	if zhugeliang and self:isFriend(zhugeliang) and zhugeliang:getHandcardNum() == 1 and zhugeliang:objectName() ~= self.player:objectName() then
+		if max_point >= 7 then
+			self.thxinglu_card = max_card:getEffectiveId()
+			return zhugeliang
+		end
+	end
+
+	for index = #self.friends_noself, 1, -1 do
+		local friend = self.friends_noself[index]
+		if not friend:isKongcheng() then
+			if max_point >= 7 then
+				self.thxinglu_card = max_card:getEffectiveId()
+				return friend
+			end
+		end
+	end
+
+	return nil
+end
+
+function sgs.ai_skill_pindian.thxinglu(minusecard, self, requestor)
+	if requestor:getHandcardNum() == 1 then
+		local cards = sgs.QList2Table(self.player:getHandcards())
+		self:sortByKeepValue(cards)
+		return cards[1]
+	end
+	local maxcard = self:getMaxCard()
+	return self:isFriend(requestor) and self:getMinCard() or (maxcard:getNumber() < 6 and minusecard or maxcard)
+end
+
+sgs.ai_cardneed.thxinglu = sgs.ai_cardneed.bignumber
+
+--暗病：锁定技，你的手牌上限始终-1，且若你于出牌阶段未使用过锦囊牌，你跳过此回合的弃牌阶段。
+--smart-ai.lua SmartAI:useTrickCard
+
+--慧略：出牌阶段，若你此阶段使用的上一张非延时类锦囊牌是非转化的，你可以将一张相同花色的手牌当此牌使用。
+--smart-ai.lua SmartAI:getUseValue
+local thhuilve_skill = {}
+thhuilve_skill.name = "thhuilve"
+table.insert(sgs.ai_skills, thhuilve_skill)
+thhuilve_skill.getTurnUseCard = function(self)
+	local cards = self.player:getCards("h")
+	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+		cards:prepend(sgs.Sanguosha:getCard(id))
+	end
+	cards = sgs.QList2Table(cards)
+	self:sortByUseValue(cards, true)
+	local huilve_table = sgs.GetProperty(self.player, "thhuilve"):split("+")
+	if #huilve_table ~= 2 then return end
+	local asuit = tonumber(huilve_table[2])
+	local trick = sgs.cloneCard(huilve_table[1], asuit)
+	if not trick:isAvailable(self.player) then return end
+
+	local acard
+	for _, card in ipairs(cards) do
+		if card:getSuit() == asuit then
+			acard = card
+			break
+		end
+	end
+
+	if not acard then return nil end
+	local suit = acard:getSuitString()
+	local number = acard:getNumberString()
+	local card_id = acard:getEffectiveId()
+	local card_str = ("%s:thhuilve[%s:%s]=%d"):format(huilve_table[1], suit, number, card_id)
+	local trick = sgs.Card_Parse(card_str)
+	assert(trick)
+
+	return trick
+end
+
+--疾智：锁定技，你使用锦囊牌时无距离限制。
+--无
+
+--神佑：摸牌阶段开始时，你可以放弃摸牌，改为选择一名其他角色，且若其手牌数不小于你，你摸一张牌；然后你可以获得其区域内的一张牌，你还可以对其使用一张无视距离的【杀】，且你可以令此【杀】即将造成的伤害视为失去体力。
