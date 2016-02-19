@@ -340,7 +340,7 @@ sgs.ai_skill_invoke.nosdanshou = function(self, data)
 					return dmg_val >= 1.5
 				end
 			end
-			if damage.to:hasSkills(sgs.masochism_skill .. "|zhichi|zhiyu|fenyong") then return self:isEnemy(damage.to) end
+			if damage.to:hasSkills(sgs.masochism_skill .. "|zhichi|zhiyu|thzhehui") then return self:isEnemy(damage.to) end
 			return true
 		end
 	elseif phase > sgs.Player_Play and phase ~= sgs.Player_NotActive then
@@ -911,7 +911,7 @@ end
 
 function sgs.ai_slash_prohibit.nosganglie(self, from, to)
 	if self:isFriend(from, to) then return false end
-	if from:hasSkill("ikxuwu") or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
+	if from:hasSkill("ikxuwu") or from:getMark("thshenyou") > 0 or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
 	if from:hasFlag("IkJieyouUsed") then return false end
 	return from:getHandcardNum() + from:getHp() < 4
 end

@@ -208,7 +208,7 @@ end
 
 function sgs.ai_slash_prohibit.vsganglie(self, from, to)
 	if self:isFriend(from, to) then return false end
-	if from:hasSkill("ikxuwu") or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
+	if from:hasSkill("ikxuwu") or from:getMark("thshenyou") > 0 or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
 	if from:hasFlag("IkJieyouUsed") then return false end
 	if #(self:getEnemies(from)) > 1 then
 		for _, p in ipairs(self:getFriends(from)) do

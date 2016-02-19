@@ -231,7 +231,7 @@ end
 sgs.ai_skill_use_func.ThWujianCard = function(card, use, self)
 	local rangefix = 0
 	if self.player:getWeapon() and self.player:getWeapon():getId() == card:getSubcards():first() then
-		rangefix = rangefix + sgs.weapon_range[sgs.Sanguosha:getCard(self.player:getWeapon()):getClassName()] - self.player:getAttackRange(false)
+		rangefix = rangefix + sgs.weapon_range[self.player:getWeapon():getClassName()] - self.player:getAttackRange(false)
 	end
 	if self.player:getOffensiveHorse() and self.player:getOffensiveHorse():getId() == card:getSubcards():first() then
 		rangefix = rangefix + 1
@@ -322,7 +322,7 @@ sgs.ai_playerchosen_intention.thxinwang = -40
 
 --绝毒：锁定技，杀死你的角色获得技能“崩坏”。
 function sgs.ai_slash_prohibit.thjuedu(self, from, to)
-	if from:hasSkill("ikxuwu") or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
+	if from:hasSkill("ikxuwu") or from:getMark("thshenyou") > 0 or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
 	if from:hasFlag("IkJieyouUsed") then return false end
 	if from:hasSkill("ikbenghuai") then return false end
 	if self:isFriend(to, from) and self:isWeak(to) then return true end

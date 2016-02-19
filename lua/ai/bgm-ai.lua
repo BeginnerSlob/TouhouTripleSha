@@ -122,7 +122,7 @@ sgs.ai_skill_use_func.LihunCard = function(card, use, self)
 			local slash = self:getCard("Slash") or sgs.cloneCard("slash")
 			for _, enemy in ipairs(self.enemies) do
 				if enemy:isMale() and self:slashIsEffective(slash, enemy) and self.player:distanceTo(enemy) == 1
-					and not enemy:hasSkills("fenyong|zhichi|fankui|nosfankui|ganglie|vsganglie|nosganglie|enyuan|thfusheng|langgu|guixin|kongcheng")
+					and not enemy:hasSkills("thzhehui|zhichi|fankui|nosfankui|ganglie|vsganglie|nosganglie|enyuan|thfusheng|langgu|guixin|kongcheng")
 					and self:getCardsNum("Slash") + getKnownCard(enemy, self.player, "Slash") >= 3 then
 					target = enemy
 					break
@@ -885,96 +885,6 @@ sgs.yinling_suit_value = {
 	spade = 3.9,
 	club = 3.9
 }
-
-sgs.ai_skill_invoke.fenyong = function(self, data)
-	self.fenyong_choice = nil
-	if sgs.turncount <= 1 and #self.enemies == 0 then return end
-
-	local current = self.room:getCurrent()
-	if not current or current:getPhase() >= sgs.Player_Finish then return true end
-	if self:isFriend(current) then
-		self:sort(self.enemies, "defenseSlash")
-		for _, enemy in ipairs(self.enemies) do
-			local def = sgs.getDefenseSlash(enemy, self)
-			local slash = sgs.cloneCard("slash")
-			local eff = self:slashIsEffective(slash, enemy) and sgs.isGoodTarget(enemy, self.enemies, self)
-
-			if self.player:canSlash(enemy, nil, false) and not self:slashProhibit(nil, enemy) and eff and def < 5 then
-				return true
-			end
-			if self.player:getLostHp() == 1 and self:needToThrowArmor(current) then return true end
-		end
-		return false
-	end
-
-	return true
-end
-
-function sgs.ai_slash_prohibit.fenyong(self, from, to)
-	if from:hasSkill("ikxuwu") or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
-	if from:hasFlag("IkJieyouUsed") then return false end
-	return to:getMark("@fenyong") > 0 and to:hasSkill("fenyong")
-end
-
-sgs.ai_skill_choice.xuehen = function(self, choices)
-	if self.fenyong_choice then return self.fenyong_choice end
-	local n = self.player:getLostHp()
-	local current = self.room:getCurrent()
-	if self:isEnemy(current) then
-		if n >= 3 and current:getCardCount() >= 3 and not (self:needKongcheng(current) and current:getCards("e"):length() < 3)
-			and not (current:hasSkills(sgs.lose_equip_skill) and current:getHandcardNum() < n) then
-			return "discard"
-		end
-		if current:hasSkills("jijiu|ikyindie+ikguiyue|beige") and n >= 2 and current:getCardCount() >= 2 then return "discard" end
-	end
-	self:sort(self.enemies, "defenseSlash")
-	for _, enemy in ipairs(self.enemies) do
-		local def = sgs.getDefenseSlash(enemy, self)
-		local slash = sgs.cloneCard("slash")
-		local eff = self:slashIsEffective(slash, enemy) and sgs.isGoodTarget(enemy, self.enemies, self)
-
-		if self.player:canSlash(enemy, nil, false) and not self:slashProhibit(nil, enemy) and eff and def < 5 then
-			self.xuehentarget = enemy
-			return "slash"
-		end
-	end
-	if self:isEnemy(current) then
-		for _, enemy in ipairs(self.enemies) do
-			local slash = sgs.cloneCard("slash")
-			local eff = self:slashIsEffective(slash, enemy)
-
-			if self.player:canSlash(enemy, nil, false) and not self:slashProhibit(nil, enemy) and self:hasHeavySlashDamage(self.player, slash, enemy) then
-				self.xuehentarget = enemy
-				return "slash"
-			end
-		end
-		local armor = current:getArmor()
-		if armor and self:evaluateArmor(armor, current) >= 3 and not self:doNotDiscard(current, "e") then return "discard" end
-	end
-	if self:isFriend(current) then
-		if n == 1 and self:needToThrowArmor(current) then return "discard" end
-		for _, enemy in ipairs(self.enemies) do
-			local slash = sgs.cloneCard("slash")
-			local eff = self:slashIsEffective(slash, enemy)
-
-			if self.player:canSlash(enemy, nil, false) and not self:slashProhibit(nil, enemy) then
-				self.xuehentarget = enemy
-				return "slash"
-			end
-		end
-	end
-	return "discard"
-end
-
-sgs.ai_skill_playerchosen.xuehen = function(self, targets)
-	local to = self.xuehentarget
-	if to then 
-		self.xuehentarget = nil
-		return to
-	end
-	to = sgs.ai_skill_playerchosen.zero_card_as_slash(self, targets)
-	return to or targets[1]
-end
 
 --AI for DIY generals
 sgs.ai_skill_use["@@zhaoxin"] = function(self, prompt)

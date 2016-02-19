@@ -44,7 +44,7 @@ public:
         return skills;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "@thsuoming", true, true);
         if (target) {
             room->broadcastSkillInvoke(objectName());
@@ -1434,8 +1434,8 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
-        if (ask_who->askForSkillInvoke(objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
+        if (ask_who->askForSkillInvoke(objectName(), data)) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -1606,10 +1606,12 @@ void ThExiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
             target = targets[1];
         }
 
+        QList<int> card_ids;
+        card_ids << cards[0]->getId() << cards[1]->getId();
         if (target == source) {
             source->obtainCard(big);
             source->obtainCard(small);
-        } else if (room->askForChoice(source, "thexi", "big+small") == "big") {
+        } else if (room->askForChoice(source, "thexi", "big+small", QVariant::fromValue(IntList2VariantList(card_ids))) == "big") {
             source->obtainCard(big);
             target->obtainCard(small);
         } else {
