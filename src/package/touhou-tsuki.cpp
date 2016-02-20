@@ -1843,25 +1843,27 @@ public:
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
         if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Draw && TriggerSkill::triggerable(player)) {
-            foreach (ServerPlayer *p, room->getOtherPlayers(player))
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (!p->isAllNude())
                     return QStringList(objectName());
+            }
         } else if (triggerEvent == Predamage) {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.card && damage.card->isKindOf("Slash")
-                && player->getMark(objectName()) > 0)
+                    && player->getMark(objectName()) > 0)
                 return QStringList(objectName());
         }
 
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         if (triggerEvent == EventPhaseStart) {
             QList<ServerPlayer *> targets;
-            foreach (ServerPlayer *p, room->getOtherPlayers(player))
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (!p->isAllNude())
                     targets << p;
+            }
             ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thshenyou-invoke", true, true);
             if (target) {
                 room->broadcastSkillInvoke(objectName());
@@ -1869,8 +1871,10 @@ public:
                 return true;
             }
         } else if (triggerEvent == Predamage) {
-            if (player->askForSkillInvoke(objectName(), "losehp"))
-                return true;
+            player->tag["ThShenyouDamage"] = data;
+            bool invoke = player->askForSkillInvoke(objectName(), "losehp");
+            player->tag.remove("ThShenyouDamage");
+            return invoke;
         }
         return false;
     }
@@ -2039,7 +2043,9 @@ void ThGuixuCard::use(Room *room, ServerPlayer *zhanghe, QList<ServerPlayer *> &
         }
     }
 
+    zhanghe->tag["ThGuixuTarget"] = QVariant::fromValue(from); // for AI
     ServerPlayer *to = room->askForPlayerChosen(zhanghe, tos, "thguixu", "@thguixu-to:::" + card->objectName());
+    zhanghe->tag.remove("ThGuixuTarget");
     if (to)
         room->moveCardTo(card, from, to, place,
                          CardMoveReason(CardMoveReason::S_REASON_TRANSFER,
@@ -2131,8 +2137,8 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        if (!room->askForCard(player, ".|black", "@thyongye", QVariant(), objectName())) return false;
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        if (!room->askForCard(player, ".|black", "@thyongye", data, objectName())) return false;
         room->broadcastSkillInvoke(objectName());
         return true;
     }
@@ -2271,7 +2277,7 @@ public:
 
         QString choice = "";
         if (!choices.isEmpty())
-            choice = room->askForChoice(player, objectName(), choices.join("+"));
+            choice = room->askForChoice(player, objectName(), choices.join("+"), QVariant::fromValue(IntList2VariantList(card_ids)));
         DummyCard *dummy = new DummyCard;
         if (choice == "red") {
             dummy->addSubcards(red_to_get);

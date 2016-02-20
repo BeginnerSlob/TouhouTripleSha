@@ -1611,7 +1611,9 @@ function SmartAI:useCardAmazingGrace(card, use)
 	if (self.role == "lord" or self.role == "loyalist") and sgs.turncount <= 2 and self.player:getSeat() <= 3 and self.player:aliveCount() > 5 then return end
 	local value = 1
 	local suf, coeff = 0.8, 0.8
-	if (self:needKongcheng() and self.player:getHandcardNum() == 1) or self.player:hasSkills("nosjizhi|jizhi") then
+	if (self:needKongcheng() and self.player:getHandcardNum() == 1)
+			or self.player:hasSkills("nosjizhi|jizhi")
+			or (self.player:hasSkill("thtianque") and self.player:getMark("thtianque_trick") == 0 and self.player:getPhase() == sgs.Player_Play) then
 		suf = 0.6
 		coeff = 0.6
 	end
@@ -1655,6 +1657,7 @@ function SmartAI:willUseGodSalvation(card)
 	end
 
 	if self.player:hasSkill("nosjizhi") then good = good + 6 end
+	if self.player:hasSkill("thtianque") and self.player:getMark("thtianque_trick") == 0 and self.player:getPhase() == sgs.Player_Play then good = good + 5 end 
 	if self.player:hasSkill("jizhi") then good = good + 4 end
 	if (self.player:hasSkill("kongcheng") and self.player:getHandcardNum() == 1) or not self:hasLoseHandcardEffective() then good = good + 5 end
 
@@ -3768,7 +3771,7 @@ sgs.ai_playerchosen_intention.wooden_ox = -60
 function SmartAI:useCardBurningCamps(card, use)
 	if not card:isAvailable(self.player) then return end
 	if self.player:hasFlag("ThChouceUse") then
-		local targetlist = sgs.QList2Table(self.player:getAllPlayers())
+		local targetlist = sgs.QList2Table(self.room:getAllPlayers())
 		self:sort(targetlist, "hp")
 		local victims = {}
 		for _, target in ipairs(targetlist) do
@@ -3779,7 +3782,7 @@ function SmartAI:useCardBurningCamps(card, use)
 		local to = nil
 		if #victims ~= 0 then
 			for _, p in ipairs(victims) do
-				if p:isChained() and self:isGoodChainTarget(p, self.player, sgs.DamageStruct_Thunder, 1) then
+				if p:isChained() and self:isGoodChainTarget(p, self.player, sgs.DamageStruct_Fire, 1) then
 					to = p
 					break
 				end

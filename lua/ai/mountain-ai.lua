@@ -5,7 +5,7 @@ local function card_for_qiaobian(self, who, return_prompt)
 		if not judges:isEmpty() then
 			for _, judge in sgs.qlist(judges) do
 				card = sgs.Sanguosha:getCard(judge:getEffectiveId())
-				if not judge:isKindOf("YanxiaoCard") then
+				if not judge:isKindOf("YanxiaoCard") and not judge:isKindOf("puepleSong") then
 					for _, enemy in ipairs(self.enemies) do
 						if not enemy:containsTrick(judge:objectName()) and not enemy:containsTrick("YanxiaoCard")
 							and not self.room:isProhibited(self.player, enemy, judge)
@@ -21,21 +21,28 @@ local function card_for_qiaobian(self, who, return_prompt)
 
 		local equips = who:getCards("e")
 		local weak = false
-		if not target and not equips:isEmpty() and who:hasSkills(sgs.lose_equip_skill) then
-			for _, equip in sgs.qlist(equips) do
-				if equip:isKindOf("OffensiveHorse") then card = equip break
-				elseif equip:isKindOf("Weapon") then card = equip break
-				elseif equip:isKindOf("DefensiveHorse") and not self:isWeak(who) then
-					card = equip
-					break
-				elseif equip:isKindOf("Armor") and (not self:isWeak(who) or self:needToThrowArmor(who)) then
-					card = equip
-					break
+		if not target and not equips:isEmpty() and (who:hasSkills(sgs.lose_equip_skill) or self:needToThrowArmor(who)) then
+			if self:needToThrowArmor(who) then
+				card = who:getArmor()
+			else
+				for _, equip in sgs.qlist(equips) do
+					if equip:isKindOf("OffensiveHorse") then card = equip break
+					elseif equip:isKindOf("Weapon") then card = equip break
+					elseif equip:isKindOf("DefensiveHorse") and not self:isWeak(who) then
+						card = equip
+						break
+					elseif equip:isKindOf("Armor") and (not self:isWeak(who) or self:needToThrowArmor(who)) then
+						card = equip
+						break
+					else
+						card = equip
+						break
+					end
 				end
 			end
 
 			if card then
-				if card:isKindOf("Armor") or card:isKindOf("DefensiveHorse") then
+				if card:isKindOf("Armor") or card:isKindOf("DefensiveHorse") or card:isKindOf("WoodenOx") then
 					self:sort(self.friends, "defense")
 				else
 					self:sort(self.friends, "handcard")
@@ -58,9 +65,9 @@ local function card_for_qiaobian(self, who, return_prompt)
 		end
 	else
 		local judges = who:getJudgingArea()
-		if who:containsTrick("YanxiaoCard") then
+		if who:containsTrick("YanxiaoCard") or who:containsTrick("purple_song") then
 			for _, judge in sgs.qlist(judges) do
-				if judge:isKindOf("YanxiaoCard") then
+				if judge:isKindOf("YanxiaoCard") or judge:isKindOf("PurpleSong")then
 					card = sgs.Sanguosha:getCard(judge:getEffectiveId())
 					for _, friend in ipairs(self.friends) do
 						if not friend:containsTrick(judge:objectName()) and not self.room:isProhibited(self.player, friend, judge)
@@ -273,13 +280,13 @@ sgs.ai_skill_use["@@qiaobian"] = function(self, prompt)
 		end
 
 		for _, enemy in ipairs(self.enemies) do
-			if not enemy:getCards("j"):isEmpty() and enemy:containsTrick("YanxiaoCard") and card_for_qiaobian(self, enemy, ".") then
+			if not enemy:getCards("j"):isEmpty() and card_for_qiaobian(self, enemy, ".") then
 				return "@QiaobianCard=.->" .. enemy:objectName()
 			end
 		end
 
 		for _, friend in ipairs(self.friends_noself) do
-			if not friend:getCards("e"):isEmpty() and friend:hasSkills(sgs.lose_equip_skill) and card_for_qiaobian(self, friend, ".") then
+			if not friend:getCards("e"):isEmpty() and card_for_qiaobian(self, friend, ".") then
 				return "@QiaobianCard=.->" .. friend:objectName()
 			end
 			if not friend:getArmor() then has_armor = false end
