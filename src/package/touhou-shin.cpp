@@ -21,7 +21,7 @@ void ThLuanshenCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *>
     if (target->canDiscard(target, "he") && target->getCardCount() >= subcardsLength())
         choices << "discard";
     choices << "turnover";
-    QString choice = room->askForChoice(target, "thluanshen", choices.join("+"));
+    QString choice = room->askForChoice(target, "thluanshen", choices.join("+"), QVariant::fromValue(IntList2VariantList(subcards)));
     if (choice == "discard") {
         room->throwCard(this, source, target);
         room->askForDiscard(target, "thluanshen", subcardsLength(), subcardsLength(), false, true);

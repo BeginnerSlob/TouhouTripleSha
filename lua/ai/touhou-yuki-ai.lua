@@ -834,8 +834,8 @@ sgs.ai_skill_use["@@thdongmo"] = function(self, prompt)
 	local players = sgs.QList2Table(self.room:getOtherPlayers(self.player))
 	self:sort(players, "threat")
 	for _, p in ipairs(players) do
-		if (self:isFriend(p) and p:faceUp() == p:hasSkill("thshiting"))
-				or (self:isEnemy(p) and p:faceUp() ~= p:hasSkill("thshiting")) then
+		if (self:isFriend(p) and not self:toTurnOver(p, 1))
+				or (self:isEnemy(p) and self:toTurnOver(p, 1)) then
 			table.insert(targets, p:objectName())
 		end
 		if #targets >= self.player:getLostHp() then
@@ -845,11 +845,7 @@ sgs.ai_skill_use["@@thdongmo"] = function(self, prompt)
 	if #targets == 0 then
 		return "."
 	elseif self.player:getLostHp() - #targets > 1 then
-		local can = false
-		if not self.player:faceUp() then
-			can = true
-		end
-		if can then
+		if not self:toTurnOver(p, 1) then
 			return "@ThDongmoCard=.->" .. table.concat(targets, "+")
 		end
 	else
@@ -860,7 +856,7 @@ end
 
 sgs.ai_card_intention.ThDongmoCard = function(self, card, from, tos)
 	for _, to in ipairs(tos) do
-		if to:faceUp() ~= to:hasSkill("thshiting") then
+		if self:toTurnOver(p, 1) then
 			sgs.updateIntention(from, to, 60)
 		else
 			sgs.updateIntention(from, to, -80)
