@@ -3643,17 +3643,26 @@ function SmartAI:getOverflow(player)
 		end
 	end
 
-	if player:hasSkill("thwuwu") then
+	if player:hasFlag("shenbaoused") and player:getPhase() <= sgs.Player_Discard
+			and not (player:hasSkill("keji") and not player:hasFlag("KejiSlashInPlayPhase"))
+			and not (player:hasSkill("thanbing") and not player:hasFlag("ThAnbingTrickInPlayPhase")) then
+		discard_num = discard_num + player:getAttackRange()
+	end
+
+	if player:hasSkill("thwuwu") and player:getPhase() <= sgs.Player_Discard
+			and not (player:hasSkill("keji") and not player:hasFlag("KejiSlashInPlayPhase"))
+			and not (player:hasSkill("thanbing") and not player:hasFlag("ThAnbingTrickInPlayPhase")) then
 		discard_handcard_num = discard_handcard_num + 1
 	end
+
 	if discard_num > 0 or discard_handcard_num > 0 then
 		if player:getCardCount() <= discard_num or player:getHandcardNum() <= discard_handcard_num then
 			return player:getHandcardNum()
 		end
-		local MaxHandCards = math.min(player:getHp(), player:getCardCount() - discard_num, player:getHandcardNum() - discard_handcard_num)
+		local MaxHandCards = math.min(player:getMaxCards(), player:getCardCount() - discard_num, player:getHandcardNum() - discard_handcard_num)
 		return player:getHandcardNum() - MaxHandCards
 	end
-	return player:getHandcardNum() - player:getHp()
+	return player:getHandcardNum() - player:getMaxCards()
 end
 
 function SmartAI:isWeak(player)
