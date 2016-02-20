@@ -430,7 +430,7 @@ thlianhua_skill.getTurnUseCard = function(self)
 			card = equips[1]
 		end
 	end
-	if self:getCardId("Slash") and self:slashIsAvailable() and card:getEffectiveId() == self:getWeapon():getEffectiveId() then return end
+	if self.player:getWeapon() and self:getCardId("Slash") and self:slashIsAvailable() and card:getEffectiveId() == self.player:getWeapon():getEffectiveId() then return end
 	return sgs.Card_Parse("@ThLianhuaCard=" .. card:getEffectiveId())
 end
 
