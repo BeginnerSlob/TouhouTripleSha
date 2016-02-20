@@ -1129,11 +1129,23 @@ void ThSixiangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
         room->recover(target, RecoverStruct(source, this));
     else if (suit == Card::Diamond) {
         QList<CardsMoveStruct> moves;
+        QMap<ServerPlayer *, int> match;
         foreach (ServerPlayer *p, targets) {
             int card_id = room->askForCardChosen(source, p, "hej", "thsixiang", false, MethodDiscard);
             CardMoveReason reason(CardMoveReason::S_REASON_DISMANTLE, source->objectName(), room->getCardPlace(card_id) == Player::PlaceDelayedTrick ? QString() : p->objectName(), "thsixiang", QString());
             moves << CardsMoveStruct(card_id, NULL, Player::DiscardPile, reason);
+            match.insert(p, card_id);
         }
+
+        foreach (ServerPlayer *p, match.keys()) {
+            LogMessage log;
+            log.type = "$DiscardCardByOther";
+            log.from = source;
+            log.to << p;
+            log.card_str = QString::number(match[p]);
+            room->sendLog(log);
+        }
+
         room->moveCardsAtomic(moves, true);
     } else if (suit == Card::Club)
         target->drawCards(2);
