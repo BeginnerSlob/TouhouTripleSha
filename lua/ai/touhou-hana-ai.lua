@@ -622,7 +622,7 @@ sgs.ai_card_intention.ThQuanshanGiveCard = -20
 --仙罡：每当你受到伤害时，可以进行一次判定，若结果为梅花，防止此伤害。
 sgs.ai_skill_invoke.thxiangang = function(self, data)
 	local damage = data:toDamage()
-	return not self:isChained() or not self:isGoodChainTarget(self.player, damage.from, damage.nature, damage.damage, damage.card)
+	return not self.player:isChained() or not self:isGoodChainTarget(self.player, damage.from, damage.nature, damage.damage, damage.card)
 end
 
 --断罪：出牌阶段限一次，你可以展示一名其他角色的一张手牌，若为【杀】，视为你对该角色使用一张【碎月绮斗】，此【碎月绮斗】不能被【三粒天滴】响应；若为【闪】或【桃】，视为你对该角色使用一张无视距离且不计入使用限制的【杀】。

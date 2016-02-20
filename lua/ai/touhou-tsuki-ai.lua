@@ -1427,7 +1427,7 @@ sgs.ai_skill_use_func.ThShenbaoCard = function(card, use, self)
 		for _, p in ipairs(self.enemies) do
 			if p:isNude() then continue end
 			for _, s in ipairs(slashs) do
-				if self.player:hasWeapon("guding_blade") and self.player:canSlash(p, s) and self:slashIsEffective(s, p, self.player, true) and p:getCardCount() == n then
+				if self.player:hasWeapon("guding_blade") and self.player:canSlash(p, s) and self:slashIsAvailable(self.player, s) and self:slashIsEffective(s, p, self.player, true) and p:getCardCount() == n then
 					use.card = card
 					if use.to then
 						use.to:append(p)
@@ -1436,13 +1436,11 @@ sgs.ai_skill_use_func.ThShenbaoCard = function(card, use, self)
 				end
 			end
 		end
-	end
-	if #slashs > 0 then
 		if n >= 2 then
 			for _, p in ipairs(self.enemies) do
 				if p:isNude() then continue end
 				for _, s in ipairs(slashs) do
-					if self.player:canSlash(p, s) and self:slashIsEffective(s, p, self.player, true) and p:getCardCount() > n then
+					if self.player:canSlash(p, s) and self:slashIsEffective(s, p, self.player, true) and self:slashIsAvailable(self.player, s) and p:getCardCount() > n then
 						use.card = card
 						if use.to then
 							use.to:append(p)
@@ -1466,6 +1464,8 @@ sgs.ai_skill_use_func.ThShenbaoCard = function(card, use, self)
 		end
 	end
 end
+
+sgs.ai_use_priority.ThShenbaoCard = sgs.ai_use_priority.Slash + 0.2
 
 --云隠：君主技，每当其他月势力角色使用【杀】造成一次伤害后，可以进行一次判定，若为黑色，将场上的一张武器牌移动至你的手牌。
 sgs.ai_skill_invoke.thyunyin = function(self, data)
