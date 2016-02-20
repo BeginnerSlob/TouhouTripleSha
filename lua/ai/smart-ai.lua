@@ -567,6 +567,7 @@ function SmartAI:getUseValue(card)
 		if card:getSkillName() == "shuangxiong" then v = 6 end
 		if card:isKindOf("Duel") then v = v + self:getCardsNum("Slash") * 2 end
 		if self.player:hasSkill("nosjizhi") then v = v + 4 end
+		if self.player:hasSkill("thtianque") and self.player:getMark("thqianque_trick") == 0 and self.player:getPhase() == sgs.Player_Play then v = v + 4 end
 		if self.player:hasSkill("jizhi") then v = v + 3 end
 		if self.player:hasSkill("wumou") and card:isNDTrick() and not card:isKindOf("AOE") then
 			if not (card:isKindOf("Duel") and self.player:hasUsed("WuqianCard")) then v = 1 end
@@ -592,11 +593,19 @@ function SmartAI:getUsePriority(card)
 		elseif card:isKindOf("OffensiveHorse") and not self.player:getOffensiveHorse() then v = 5.5
 		end
 		return v
+	elseif card:isKindOf("TrickCard") then
+		if self.player:hasSkill("thguixu") and not (self.player:hasSkills("jizhi|nosjizhi")
+													or (self.player:getPhase() == sgs.Player_Play
+														and self.player:hasSkill("thtianque")
+														and self.player:getMark("thtianque_trick") == 0)) then
+			v = v - 6
+		end
 	end
 
-	v = sgs.ai_use_priority[class_name] or 0
 	if class_name == "LuaSkillCard" and card:isKindOf("LuaSkillCard") then
-		v = sgs.ai_use_priority[card:objectName()] or 0
+		v = v + sgs.ai_use_priority[card:objectName()] or 0
+	else
+		v = v + (sgs.ai_use_priority[class_name] or 0)
 	end
 	return self:adjustUsePriority(card, v)
 end
@@ -4956,7 +4965,8 @@ function SmartAI:getAoeValue(card, player)
 	end
 
 	if isEffective_F == 0 and isEffective_E == 0 then
-		return attacker:hasSkills("jizhi|nosjizhi") and 10 or -100
+		return (attacker:hasSkills("jizhi|nosjizhi")
+				or (attacker:hasSkill("thtianque") and attacker:getMark("thqianque_trick") == 0 and attacker:getPhase() == sgs.Player_Play)) and 10 or -100
 	elseif isEffective_E == 0 then
 		return -100
 	end
@@ -5010,6 +5020,10 @@ function SmartAI:getAoeValue(card, player)
 
 	local forbid_start = true
 	if attacker:hasSkills("nosjizhi|jizhi") then
+		forbid_start = false
+		good = good + 51
+	end
+	if attacker:hasSkill("thtianque") and attacker:getMark("thqianque_trick") == 0 and attacker:getPhase() == sgs.Player_Play then
 		forbid_start = false
 		good = good + 51
 	end
@@ -5315,6 +5329,7 @@ end
 
 function SmartAI:useEquipCard(card, use)
 	if not card then global_room:writeToConsole(debug.traceback()) return end
+	if self.player:isCardLimited(card, sgs.Card_MethodUse) then return end
 	if self.player:hasSkills("kofxiaoji|xiaoji|thouji") and self:evaluateArmor(card) > -5 then
 		use.card = card
 		return
@@ -5324,6 +5339,10 @@ function SmartAI:useEquipCard(card, use)
 		return
 	end
 	if self.player:getHandcardNum() == 1 and self:needKongcheng() and self:evaluateArmor(card) > -5 then
+		use.card = card
+		return
+	end
+	if self.player:hasSkill("thtianque") and self.player:getMark("thtianque_equip") == 0 and self.player:getPhase() == sgs.Player_Play and self:evaluateArmor(card) > -5 then
 		use.card = card
 		return
 	end
@@ -5702,6 +5721,12 @@ function SmartAI:findPlayerToDiscard(flags, include_self, isDiscard, players, re
 		end
 		for _, enemy in ipairs(enemies) do
 			if enemy:containsTrick("lightning") and self:hasWizard(enemies, true) and (not isDiscard or self.player:canDiscard(enemy, "j")) then table.insert(player_table, enemy) end
+		end
+		for _, enemy in ipairs(enemies) do
+			if enemy:containsTrick("purple_song") and not enemy:containsTrick("YanxiaoCard")
+					and (not isDiscard or self.player:canDiscard(enemy, "j")) then
+				table.insert(player_table, enemy)
+			end
 		end
 	end
 

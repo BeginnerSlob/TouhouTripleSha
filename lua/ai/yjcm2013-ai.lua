@@ -544,7 +544,7 @@ sgs.ai_skill_choice.qiaoshui = function(self, choices, data)
 			end
 		end
 	elseif use.card:isKindOf("ExNihilo") then
-		local friend = self:findPlayerToDraw(false, 2)
+		local friend = self:findPlayerToDraw(false, 2, use.card)
 		if friend then
 			self.qiaoshui_extra_target = friend
 			return "add"

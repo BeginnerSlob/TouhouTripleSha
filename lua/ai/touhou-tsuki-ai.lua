@@ -40,6 +40,9 @@ function SmartAI:findPlayerToChain(targets)
 				if all_players:at(i):objectName() == damage.to:objectName() then
 					continue
 				end
+				if not table.contains(targets, all_players:at(i)) then
+					continue
+				end
 				table.insert(could_choose, all_players:at(i))
 			end
 		end
@@ -965,7 +968,536 @@ thhuilve_skill.getTurnUseCard = function(self)
 	return trick
 end
 
+function sgs.ai_cardneed.thhuilve(to, card)
+	return card:isNDTrick() and sgs.dynamic_value.damage_card[card:getClassName()]
+end
+
 --疾智：锁定技，你使用锦囊牌时无距离限制。
 --无
 
 --神佑：摸牌阶段开始时，你可以放弃摸牌，改为选择一名其他角色，且若其手牌数不小于你，你摸一张牌；然后你可以获得其区域内的一张牌，你还可以对其使用一张无视距离的【杀】，且你可以令此【杀】即将造成的伤害视为失去体力。
+sgs.ai_skill_playerchosen.thshenyou = function(self, targets)
+	local targets = self:findPlayerToDiscard("hej", false, false, nil, true)
+	if targets and #targets > 0 and self:isFriend(targets[1]) then
+		return targets[1]
+	end
+	local slashs = self:getCards("Slash")
+	if #slashs > 0 then
+		for _, p in ipairs(targets) do
+			if p:getHandcardNum() >= self.player:getHandcardNum() and self:isEnemy(p) then
+				local yes = false
+				self.player:addMark("thshenyou")
+				for _, s in ipairs(slashs) do
+					if self.player:canSlash(p, s, false) and not self:slashProhibit(s, p, self.player) then
+						yes = true
+						break
+					end
+				end
+				self.player:removeMark("thshenyou")
+				if yes then
+					return p
+				end
+			end
+		end
+		for _, p in ipairs(targets) do
+			if self:isEnemy(p) then
+				local yes = false
+				self.player:addMark("thshenyou")
+				for _, s in ipairs(slashs) do
+					if not self.player:canSlash(p, s) and self.player:canSlash(p, s, false) and not self:slashProhibit(s, p, self.player) then
+						yes = true
+						break
+					end
+				end
+				self.player:removeMark("thshenyou")
+				if yes then
+					return p
+				end
+			end
+		end
+	end
+	for _, p in ipairs(targets) do
+		if p:getHandcardNum() >= self.player:getHandcardNum() and self:isEnemy(p) then
+			self.player:addMark("thshenyou")
+			local yes = self.player:canSlash(p, nil, false) and not self:slashProhibit(nil, p, self.player)
+			self.player:removeMark("thshenyou")
+			if yes then
+				return p
+			end
+		end
+	end
+	for _, p in ipairs(targets) do
+		if p:getHandcardNum() >= self.player:getHandcardNum() and self:isEnemy(p) then
+			return p
+		end
+	end
+	return nil
+end
+
+sgs.ai_skill_invoke.thshenyou = function(self, data)
+	local damage = self.player:getTag("ThShenyouDamage"):toDamage()
+	if damage and damage.to then
+		if self:isEnemy(damage.to) then
+			if self:slashProhibit(damage.card, damage.to, self.player) or damage.to:hasSkills(sgs.masochism_skill) then
+				return true
+			end
+			return math.random(1, 3) ~= 1
+		end
+		return false
+	end
+	return true
+end
+
+sgs.ai_choicemade_filter.cardChosen.thshenyou = sgs.ai_choicemade_filter.cardChosen.snatch
+
+sgs.ai_choicemade_filter.skillInvoke.thshenyou = function(self, player, promptlist)
+	local damage = self.player:getTag("ThShenyouDamage"):toDamage()
+	if damage and damage.to and promptlist[#promptlist] == "yes" then
+		if self:slashProhibit(damage.card, damage.to, self.player) or damage.to:hasSkills(sgs.masochism_skill) then
+			sgs.updateIntention(player, damage.to, 40)
+		end
+	end
+end
+
+--天阙：每当你于出牌阶段使用一张牌时，若与你此阶段已使用的牌类别均不同，你摸一张牌。
+sgs.ai_skill_invoke.thtianque = true
+
+--归墟：结束阶段开始时，若你此回合使用的最后一张牌是锦囊牌，你可以将场上的一张牌移动到另一名角色的区域内的相应位置。
+local function card_for_thguixu(self, who, return_prompt)
+	local card, target
+	if self:isFriend(who) then
+		local judges = who:getJudgingArea()
+		if not judges:isEmpty() then
+			for _, judge in sgs.qlist(judges) do
+				card = sgs.Sanguosha:getCard(judge:getEffectiveId())
+				if not judge:isKindOf("YanxiaoCard") and not judge:isKindOf("puepleSong") then
+					for _, enemy in ipairs(self.enemies) do
+						if not enemy:containsTrick(judge:objectName()) and not enemy:containsTrick("YanxiaoCard")
+							and not self.room:isProhibited(self.player, enemy, judge)
+							and not (enemy:hasSkills("hongyan|wuyan") and judge:isKindOf("Lightning")) then
+							target = enemy
+							break
+						end
+					end
+					if target then break end
+				end
+			end
+		end
+
+		local equips = who:getCards("e")
+		local weak = false
+		if not target and not equips:isEmpty() and (who:hasSkills(sgs.lose_equip_skill) or self:needToThrowArmor(who)) then
+			if self:needToThrowArmor(who) then
+				card = who:getArmor()
+			else
+				for _, equip in sgs.qlist(equips) do
+					if equip:isKindOf("OffensiveHorse") then card = equip break
+					elseif equip:isKindOf("Weapon") then card = equip break
+					elseif equip:isKindOf("DefensiveHorse") and not self:isWeak(who) then
+						card = equip
+						break
+					elseif equip:isKindOf("Armor") and (not self:isWeak(who) or self:needToThrowArmor(who)) then
+						card = equip
+						break
+					else
+						card = equip
+						break
+					end
+				end
+			end
+
+			if card then
+				if card:isKindOf("Armor") or card:isKindOf("DefensiveHorse") or card:isKindOf("WoodenOx") then
+					self:sort(self.friends, "defense")
+				else
+					self:sort(self.friends, "handcard")
+					self.friends = sgs.reverse(self.friends)
+				end
+				for _, friend in ipairs(self.friends) do
+					if not self:getSameEquip(card, friend) and friend:objectName() ~= who:objectName()
+						and friend:hasSkills(sgs.need_equip_skill .. "|" .. sgs.lose_equip_skill) then
+						target = friend
+						break
+					end
+				end
+				for _, friend in ipairs(self.friends) do
+					if not self:getSameEquip(card, friend) and friend:objectName() ~= who:objectName() then
+						target = friend
+						break
+					end
+				end
+			end
+		end
+	else
+		local judges = who:getJudgingArea()
+		if who:containsTrick("YanxiaoCard") or who:containsTrick("purple_song") then
+			for _, judge in sgs.qlist(judges) do
+				if judge:isKindOf("YanxiaoCard") or judge:isKindOf("PurpleSong")then
+					card = sgs.Sanguosha:getCard(judge:getEffectiveId())
+					for _, friend in ipairs(self.friends) do
+						if not friend:containsTrick(judge:objectName()) and not self.room:isProhibited(self.player, friend, judge)
+							and not friend:getJudgingArea():isEmpty() then
+							target = friend
+							break
+						end
+					end
+					if target then break end
+					for _, friend in ipairs(self.friends) do
+						if not friend:containsTrick(judge:objectName()) and not self.room:isProhibited(self.player, friend, judge) then
+							target = friend
+							break
+						end
+					end
+					if target then break end
+				end
+			end
+		end
+
+		if card == nil or target == nil then
+			if not who:hasEquip() or (who:hasSkills(sgs.lose_equip_skill) and not who:getTreasure()) then return nil end
+			local card_id = self:askForCardChosen(who, "e", "dummy")
+			if who:hasEquip(sgs.Sanguosha:getCard(card_id)) then card = sgs.Sanguosha:getCard(card_id) end
+			if card then
+				if card:isKindOf("Armor") or card:isKindOf("DefensiveHorse") or card:isKindOf("WoodenOx") then
+					self:sort(self.friends, "defense")
+				else
+					self:sort(self.friends, "handcard")
+					self.friends = sgs.reverse(self.friends)
+				end
+				for _, friend in ipairs(self.friends) do
+					if not self:getSameEquip(card, friend) and friend:objectName() ~= who:objectName() and friend:hasSkills(sgs.lose_equip_skill .. "|shensu") then
+						target = friend
+						break
+					end
+				end
+				if not target then
+					for _, friend in ipairs(self.friends) do
+						if not self:getSameEquip(card, friend) and friend:objectName() ~= who:objectName() then
+							target = friend
+							break
+						end
+					end
+				end
+			end
+		end
+	end
+
+	if return_prompt == "card" then return card
+	elseif return_prompt == "target" then return target
+	else
+		return (card and target)
+	end
+end
+
+sgs.ai_skill_use["@@thguixu"] = function(self, prompt)
+	self:sort(self.enemies, "hp")
+	local has_armor = true
+	local judge
+	for _, friend in ipairs(self.friends) do
+		if not friend:getCards("j"):isEmpty() and card_for_thguixu(self, friend, ".") then
+			return "@ThGuixuCard=.->" .. friend:objectName()
+		end
+	end
+
+	for _, enemy in ipairs(self.enemies) do
+		if not enemy:getCards("j"):isEmpty() and card_for_thguixu(self, enemy, ".") then
+			return "@ThGuixuCard=.->" .. enemy:objectName()
+		end
+	end
+
+	for _, friend in ipairs(self.friends_noself) do
+		if not friend:getCards("e"):isEmpty() and card_for_thguixu(self, friend, ".") then
+			return "@ThGuixuCard=.->" .. friend:objectName()
+		end
+		if not friend:getArmor() then has_armor = false end
+	end
+
+	local targets = {}
+	for _, enemy in ipairs(self.enemies) do
+		if card_for_thguixu(self, enemy, ".") then
+			table.insert(targets, enemy)
+		end
+	end
+
+	if #targets > 0 then
+		self:sort(targets, "defense")
+		return "@ThGuixuCard=.->" .. targets[#targets]:objectName()
+	end
+
+	return "."
+end
+
+sgs.ai_skill_cardchosen.thguixu = function(self, who, flags)
+	return card_for_thguixu(self, who, "card")
+end
+
+sgs.ai_skill_playerchosen.thguixu = function(self, targets)
+	local who = self.player:getTag("ThGuixuTarget"):toPlayer()
+	if who then
+		if not card_for_thguixu(self, who, "target") then self.room:writeToConsole("NULL") end
+		return card_for_thguixu(self, who, "target")
+	end
+end
+
+--永夜：出牌阶段，当你使用一张非延时类锦囊牌时，你可以弃置一张黑色牌并为该牌多或少指定一个目标。
+sgs.ai_skill_cardask["@thyongye"] = function(self, data, pattern)
+	local cards = {}
+	for _, c in sgs.qlist(self.player:getCards("he")) do
+		if c:isBlack() then
+			table.insert(cards, c)
+		end
+	end
+	if #cards == 0 then return "." end
+	self:sortByUseValue(cards, true)
+	if not self:isValuableCard(cards[1]) then
+		local ret = sgs.ai_skill_choice.thyongye(self, "", data)
+		if ret ~= "" then
+			return "$" .. cards[1]:getEffectiveId()
+		end
+	end
+	return "."
+end
+
+sgs.ai_skill_choice.thyongye = function(self, choices, data)
+	self.thyongye_extra_target = nil
+	self.thyongye_remove_target = nil
+	local use = data:toCardUse()
+	if use.card:isKindOf("Collateral") then
+		local dummy_use = { isDummy = true, to = sgs.SPlayerList(), current_targets = {} }
+		for _, p in sgs.qlist(use.to) do
+			table.insert(dummy_use.current_targets, p:objectName())
+		end
+		self:useCardCollateral(use.card, dummy_use)
+		if dummy_use.card and dummy_use.to:length() == 2 then
+			local first = dummy_use.to:at(0):objectName()
+			local second = dummy_use.to:at(1):objectName()
+			self.thyongye_collateral = { first, second }
+			return "add"
+		else
+			self.thyongye_collateral = nil
+		end
+	elseif use.card:isKindOf("ExNihilo") then
+		local friend = self:findPlayerToDraw(false, 2, use.card)
+		if friend then
+			self.thyongye_extra_target = friend
+			return "add"
+		end
+	elseif use.card:isKindOf("GodSalvation") then
+		self:sort(self.enemies, "hp")
+		for _, enemy in ipairs(self.enemies) do
+			if enemy:isWounded() and self:hasTrickEffective(use.card, enemy, self.player) then
+				self.thyongye_remove_target = enemy
+				return "remove"
+			end
+		end
+	elseif use.card:isKindOf("AmazingGrace") then
+		self:sort(self.enemies)
+		for _, enemy in ipairs(self.enemies) do
+			if self:hasTrickEffective(use.card, enemy, self.player) and not hasManjuanEffect(enemy)
+				and not self:needKongcheng(enemy, true) then
+				self.thyongye_remove_target = enemy
+				return "remove"
+			end
+		end
+	elseif use.card:isKindOf("AOE") then
+		self:sort(self.friends_noself)
+		local lord = self.room:getLord()
+		if lord and lord:objectName() ~= self.player:objectName() and self:isFriend(lord) and self:isWeak(lord) then
+			self.thyongye_remove_target = lord
+			return "remove"
+		end
+		for _, friend in ipairs(self.friends_noself) do
+			if self:hasTrickEffective(use.card, friend, self.player) then
+				self.thyongye_remove_target = friend
+				return "remove"
+			end
+		end
+	elseif use.card:isKindOf("Snatch") or use.card:isKindOf("Dismantlement") then
+		local dummy_use = { isDummy = true, to = sgs.SPlayerList(), current_targets = {} }
+		for _, p in sgs.qlist(use.to) do
+			table.insert(dummy_use.current_targets, p:objectName())
+		end
+		self:useCardSnatchOrDismantlement(use.card, dummy_use)
+		if dummy_use.card and dummy_use.to:length() > 0 then
+			self.thyongye_extra_target = dummy_use.to:first()
+			return "add"
+		end
+	elseif use.card:isKindOf("Duel") then
+		local dummy_use = { isDummy = true, to = sgs.SPlayerList(), current_targets = {} }
+		for _, p in sgs.qlist(use.to) do
+			table.insert(dummy_use.current_targets, p:objectName())
+		end
+		self:useCardByClassName(use.card, dummy_use)
+		if dummy_use.card and dummy_use.to:length() > 0 then
+			self.thyongye_extra_target = dummy_use.to:first()
+			return "add"
+		end
+	end
+	if choices == "" then
+		return ""
+	end
+	self.room:writeToConsole("ThYongye Target Error!")
+	return ""
+end
+
+sgs.ai_skill_playerchosen.thyongye = function(self, targets)
+	if not self.thyongye_extra_target and not self.thyongye_remove_target then self.room:writeToConsole("ThYongye player chosen error!!") end
+	return self.thyongye_extra_target or self.thyongye_remove_target
+end
+
+sgs.ai_skill_use["@@thyongye!"] = function(self, prompt) -- extra target for Collateral
+	if not self.thyongye_collateral then self.room:writeToConsole("ThYongye player chosen error!!") end
+	return "@ExtraCollateralCard=.->" .. self.thyongye_collateral[1] .. "+" .. self.thyongye_collateral[2]
+end
+
+--世明：摸牌阶段开始时，你可以放弃摸牌，改为从牌堆顶亮出四张牌，你获得其中的红色牌或者点数不大于9的牌，将其余的牌置入弃牌堆。
+sgs.ai_skill_invoke.thshiming = true
+
+sgs.ai_skill_choice.thshiming = function(self, choices, data)
+	t = choices:split("+")
+	if #t == 1 then
+		return t[1]
+	end
+	local red, nine = {}, {}
+	local ids = data:toIntList()
+	for _, id in sgs.qlist(ids) do
+		local c = sgs.Sanguosha:getCard(id)
+		if c:isRed() then
+			table.insert(red, c)
+		end
+		if c:getNumber() <= 9 then
+			table.insert(nine, c)
+		end
+	end
+	if #red ~= 0 and #nine == 0 then
+		return "red"
+	elseif #red == 0 and #nine ~= 0 then
+		return "nine"
+	else
+		local red_slash, nine_slash
+		local slash = self:getCard("Slash")
+		if slash then
+			red_slash, nine_slash = true, true
+		end
+		local red_n, nine_n = 0, 0
+		for _, c in ipairs(red) do
+			if c:isKindOf("Slash") then
+				if not red_slash then
+					red_n = red_n + 1
+					red_slash = true
+				end
+				continue
+			end
+			red_n = red_n + 1
+		end
+		for _, c in ipairs(nine) do
+			if c:isKindOf("Slash") then
+				if not nine_slash then
+					nine_n = nine_n + 1
+					nine_slash = true
+				end
+				continue
+			end
+			nine_n = nine_n + 1
+		end
+		if red_n > nine_n then
+			return "red"
+		elseif nine_n > red_n then
+			return "nine"
+		else
+			return #red > #nine and "red" or (#nine > #red and "nine" or "red")
+		end
+	end
+end
+
+--神宝：限定技，出牌阶段，你可以从一名其他角色的区域获得等同于你攻击范围数量的牌（至多获得三张，不足则全部获得），若如此做，结束阶段开始时，你须弃置等同于你攻击范围数量的牌（不足则全弃）。
+thshenbao_skill = {}
+thshenbao_skill.name = "thshenbao"
+table.insert(sgs.ai_skills, thshenbao_skill)
+thshenbao_skill.getTurnUseCard = function(self)
+	if self.player:getMark("@shenbao") > 0 then
+		return sgs.Card_Parse("@ThShenbaoCard=.")
+	end
+end
+
+sgs.ai_skill_use_func.ThShenbaoCard = function(card, use, self)
+	local n = math.min(self.player:getAttackRange(), 3)
+	local slashs = self:getCards("Slash")
+	if #slashs > 0 then
+		for _, p in ipairs(self.enemies) do
+			if p:isNude() then continue end
+			for _, s in ipairs(slashs) do
+				if self.player:hasWeapon("guding_blade") and self.player:canSlash(p, s) and self:slashIsEffective(s, p, self.player, true) and p:getCardCount() == n then
+					use.card = card
+					if use.to then
+						use.to:append(p)
+					end
+					return
+				end
+			end
+		end
+	end
+	if #slashs > 0 then
+		if n >= 2 then
+			for _, p in ipairs(self.enemies) do
+				if p:isNude() then continue end
+				for _, s in ipairs(slashs) do
+					if self.player:canSlash(p, s) and self:slashIsEffective(s, p, self.player, true) and p:getCardCount() > n then
+						use.card = card
+						if use.to then
+							use.to:append(p)
+						end
+						return
+					end
+				end
+			end
+		end
+	end
+	if self:isWeak() then
+		for _, p in ipairs(self.enemies) do
+			if p:isNude() then continue end
+			if getCardsNum("Peach", p, self.player) >= 1 and p:getCardCount() <= n then
+				use.card = card
+				if use.to then
+					use.to:append(p)
+				end
+				return
+			end
+		end
+	end
+end
+
+--云隠：君主技，每当其他月势力角色使用【杀】造成一次伤害后，可以进行一次判定，若为黑色，将场上的一张武器牌移动至你的手牌。
+sgs.ai_skill_invoke.thyunyin = function(self, data)
+	if self:isFriend(data:toPlayer()) then
+		for _, p in ipairs(self.enemies) do
+			if p:getWeapon() then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+sgs.ai_skill_playerchosen.thyunyin = function(self, targets)
+	self:sort(self.enemies, "handcard")
+	self.enemies = sgs.reverse(self.enemies)
+	for _, p in ipairs(self.enemies) do
+		if p:getWeapon() then
+			return p
+		end
+	end
+	for _, p in sgs.qlist(targets) do
+		if not self:isFriend(p) then
+			return p
+		end
+	end
+	return targets:at(math.random(0, targets:length() - 1))
+end
+
+sgs.ai_choicemade_filter.skillInvoke.thyinbi = function(self, player, promptlist)
+	local to = self.room:findPlayer(promptlist[#promptlist - 1])
+	if to and promptlist[#promptlist] == "yes" then
+		sgs.updateIntention(player, to, -50)
+	end
+end
