@@ -12,6 +12,7 @@
 #include <QSpinBox>
 #include <QNetworkReply>
 #include <QFile>
+#include <QProgressBar>
 
 namespace Ui {
     class MainWindow;
@@ -71,6 +72,7 @@ private:
     QNetworkReply *reply2;
     QFile *file;
     QString fileName;
+    QWidget *updateWindow;
 
     void restoreFromConfig();
 
@@ -112,6 +114,27 @@ private slots:
     void httpFinished();
     void httpFinished2();
     void httpReadyRead2();
+};
+
+class UpdateDialog: public QFrame
+{
+    Q_OBJECT
+public:
+    UpdateDialog(QWidget *parent = 0);
+
+protected:
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void paintEvent(QPaintEvent *event);
+
+public slots:
+    void updateDataReadProgress2(qint64 bytesRead, qint64 totalBytes);
+
+private:
+    QPoint m_CurrentPos;
+    QPixmap m_Pixmap;
+    QLayout *mainLayout;
+    QProgressBar *progressBar;
 };
 
 #endif
