@@ -339,3 +339,79 @@ sgs.ai_choicemade_filter.skillInvoke.thlanzou = function(self, player, promptlis
 		end
 	end
 end
+
+--心绮：锁定技，当其他角色使用黑色非延时类锦囊牌指定你为目标时，需令你摸一张牌，且若其有手牌需令你观看之，否则该锦囊牌对你无效。
+sgs.ai_skill_choice.thxinqi = function(self, choices, data)
+	local effect = data:toCardUse()
+	local target = self.player:getTag("ThXinqiTarget"):toPlayer()
+	if (effect.card:isKindOf("GodSalvation") and self.player:isWounded()) or effect.card:isKindOf("ExNihilo") then
+		return self:isFriend(target) and "show" or "cancel"
+	elseif effect.card:isKindOf("AmazingGrace") then
+		return self:isFriend(target) and "show" or "cancel"
+	else
+		return self:isFriend(target) and "cancel" or "show"
+	end
+end
+
+--能舞：其他角色的准备阶段开始时，若你有手牌，你可以令该角色选择其一张手牌，然后你选择一种牌的类别并亮出该牌：若为你所选的类别，该角色须失去1点体力；否则你须弃置一张牌。该角色不可以使用其他的牌，直到该角色因使用、打出或弃置而失去这张手牌或回合结束。
+sgs.ai_skill_invoke.thnengwu = function(self, data)
+	local target = data:toPlayer()
+	if self:isEnemy(target) then
+		local ret = self:askForDiscard("thnengwu", 1, 1, false, true)
+		if #ret == 1 and not self:isValuableCard(sgs.Sanguosha:getCard(ret[1])) then
+			return true
+		end
+	end
+	return false
+end
+
+sgs.ai_cardshow.thnengwu = function(self, requestor)
+	local flag = string.format("%s_%s_%s", "visible", requestor:objectName(), self.player:objectName())
+	local rets = {}
+	for _, c in sgs.qlist(self.player:getHandcards()) do
+		if not c:isAvailable(self.player) then continue end
+		if c:hasFlag("visible") or c:hasFlag(flag) then
+			table.insert(rets, c)
+		else
+			table.insert(rets, c)
+			table.insert(rets, c)
+		end
+	end
+	if #rets == 0 then
+		return self.player:getRandomHandCard()
+	end
+	return rets[math.random(1, #rets)]
+end
+
+sgs.ai_skill_choice.thnengwu = function(self, choices, data)
+	local target = data:toPlayer()
+	local types = {}
+	local flag = string.format("%s_%s_%s", "visible", self.player:objectName(), target:objectName())
+	for _, c in sgs.qlist(target:getHandcards()) do
+		if not c:isAvailable(target) then continue end
+		if c:hasFlag("visible") or c:hasFlag(flag) then
+			table.insert(types, c:getType())
+			table.insert(types, c:getType())
+			table.insert(types, c:getType())
+		else
+			table.insert(types, "basic")
+			table.insert(types, "equip")
+			table.insert(types, "trick")
+		end
+	end
+	if #types == 0 then
+		table.insert(types, "basic")
+		table.insert(types, "equip")
+		table.insert(types, "trick")
+	end
+	return types[math.random(1, #types)]
+end
+
+sgs.ai_choicemade_filter.skillInvoke.thnengwu = function(self, player, promptlist)
+	local to = self.room:findPlayer(promptlist[#promptlist - 1])
+	if to then
+		if promptlist[#promptlist] == "yes" then
+			sgs.updateIntention(player, to, 50)
+		end
+	end
+end

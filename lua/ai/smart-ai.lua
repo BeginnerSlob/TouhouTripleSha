@@ -4731,6 +4731,10 @@ function SmartAI:aoeIsEffective(card, to, source)
 	if to:hasSkill("danlao") and #players > 2 then
 		return false
 	end
+	
+	if card:isBlack() and to:hasSkill("thxinqi") and self:isFriend(to) then
+		return false
+	end
 
 	local liuxie = self.room:findPlayerBySkillName("huangen")
 	if liuxie and self:isFriend(to, liuxie) and #players > 2 and liuxie:getHp() > 1 then
@@ -4917,6 +4921,7 @@ function SmartAI:getAoeValueTo(card, to, from)
 	else
 		value = value + 10
 		if to:hasSkill("juxiang") and not card:isVirtualCard() then value = value + 20 end
+		if card:isBlack() and to:hasSkill("thxinqi") and self:isFriend(to) then value = value + 20 end
 		if to:hasSkill("danlao") and self.player:aliveCount() > 2 then value = value + 20 end
 	end
 	return value
