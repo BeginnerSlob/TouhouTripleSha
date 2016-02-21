@@ -666,64 +666,64 @@
 <context>
     <name>ConnectionDialog</name>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="17"/>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="29"/>
         <location filename="../src/dialog/connectiondialog.ui" line="17"/>
         <location filename="../src/dialog/connectiondialog.ui" line="29"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="17"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="29"/>
         <source>Connection setup</source>
         <translation>连接设置</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="76"/>
         <location filename="../src/dialog/connectiondialog.ui" line="76"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="76"/>
         <source>Change avatar</source>
         <translation>修改头像</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="41"/>
         <location filename="../src/dialog/connectiondialog.ui" line="41"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="41"/>
         <source>Avatar:</source>
         <translation>头像:</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="135"/>
         <location filename="../src/dialog/connectiondialog.ui" line="135"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="135"/>
         <source>Host:</source>
         <translation>主机:</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="118"/>
         <location filename="../src/dialog/connectiondialog.ui" line="118"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="118"/>
         <source>Name:</source>
         <translation>名称:</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="102"/>
         <location filename="../src/dialog/connectiondialog.ui" line="102"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="102"/>
         <source>Clear history</source>
         <translation>清除历史记录</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="89"/>
         <location filename="../src/dialog/connectiondialog.ui" line="89"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="89"/>
         <source>Detect LAN ...</source>
         <translation>探测局域网 ...</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="190"/>
         <location filename="../src/dialog/connectiondialog.ui" line="194"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="190"/>
         <source>Connect</source>
         <translation>连接</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="203"/>
         <location filename="../src/dialog/connectiondialog.ui" line="207"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="203"/>
         <source>Reconnection</source>
         <translation>断线重连</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="177"/>
         <location filename="../src/dialog/connectiondialog.ui" line="181"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="177"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -1152,47 +1152,47 @@
 <context>
     <name>Dashboard</name>
     <message>
-        <location filename="../src/ui/dashboard.cpp" line="101"/>
+        <location filename="../src/ui/dashboard.cpp" line="154"/>
         <source>Trusting ...</source>
         <translation>托管中 ...</translation>
     </message>
     <message>
-        <location filename="../src/ui/dashboard.cpp" line="810"/>
+        <location filename="../src/ui/dashboard.cpp" line="863"/>
         <source>Sort handcards</source>
         <translation>整理手牌</translation>
     </message>
     <message>
-        <location filename="../src/ui/dashboard.cpp" line="812"/>
+        <location filename="../src/ui/dashboard.cpp" line="865"/>
         <source>Sort by type</source>
         <translation>按类型排序</translation>
     </message>
     <message>
-        <location filename="../src/ui/dashboard.cpp" line="815"/>
+        <location filename="../src/ui/dashboard.cpp" line="868"/>
         <source>Sort by suit</source>
         <translation>按花色排序</translation>
     </message>
     <message>
-        <location filename="../src/ui/dashboard.cpp" line="818"/>
+        <location filename="../src/ui/dashboard.cpp" line="871"/>
         <source>Sort by number</source>
         <translation>按点数排序</translation>
     </message>
     <message>
-        <location filename="../src/ui/dashboard.cpp" line="879"/>
+        <location filename="../src/ui/dashboard.cpp" line="932"/>
         <source>Shefu</source>
         <translation>设伏</translation>
     </message>
     <message>
-        <location filename="../src/ui/dashboard.cpp" line="894"/>
+        <location filename="../src/ui/dashboard.cpp" line="947"/>
         <source>Shefu Ask All</source>
         <translation>所有牌均询问</translation>
     </message>
     <message>
-        <location filename="../src/ui/dashboard.cpp" line="899"/>
+        <location filename="../src/ui/dashboard.cpp" line="952"/>
         <source>Shefu Ask Necessary</source>
         <translation>只询问被记录的牌</translation>
     </message>
     <message>
-        <location filename="../src/ui/dashboard.cpp" line="904"/>
+        <location filename="../src/ui/dashboard.cpp" line="957"/>
         <source>Shefu Ask None</source>
         <translation>所有牌均不询问</translation>
     </message>
@@ -2229,44 +2229,44 @@
         <translation>新版本即将开始下载，这可能需要几分钟的时间&lt;br/&gt;下载期间请勿关闭游戏窗口，否则会导致下载中断&lt;br/&gt;下载完成后会有弹窗提示，请耐心等候</translation>
     </message>
     <message>
-        <location filename="../src/dialog/mainwindow.cpp" line="1028"/>
-        <location filename="../src/dialog/mainwindow.cpp" line="1039"/>
-        <location filename="../src/dialog/mainwindow.cpp" line="1061"/>
-        <location filename="../src/dialog/mainwindow.cpp" line="1065"/>
-        <location filename="../src/dialog/mainwindow.cpp" line="1070"/>
-        <location filename="../src/dialog/mainwindow.cpp" line="1084"/>
+        <location filename="../src/dialog/mainwindow.cpp" line="1027"/>
+        <location filename="../src/dialog/mainwindow.cpp" line="1038"/>
+        <location filename="../src/dialog/mainwindow.cpp" line="1062"/>
+        <location filename="../src/dialog/mainwindow.cpp" line="1066"/>
+        <location filename="../src/dialog/mainwindow.cpp" line="1071"/>
+        <location filename="../src/dialog/mainwindow.cpp" line="1085"/>
         <source>Download New Version</source>
         <translation>下载新版本</translation>
     </message>
     <message>
-        <location filename="../src/dialog/mainwindow.cpp" line="1029"/>
+        <location filename="../src/dialog/mainwindow.cpp" line="1028"/>
         <source>There already exists a file called %1 in the current directory. Overwrite?</source>
         <translation>以下文件已存在 %1 。是否覆盖？</translation>
     </message>
     <message>
-        <location filename="../src/dialog/mainwindow.cpp" line="1040"/>
+        <location filename="../src/dialog/mainwindow.cpp" line="1039"/>
         <source>Unable to save the file %1: %2.</source>
         <translation>无法保存文件 %1 :&lt;br/&gt;%2.</translation>
     </message>
     <message>
-        <location filename="../src/dialog/mainwindow.cpp" line="1062"/>
+        <location filename="../src/dialog/mainwindow.cpp" line="1063"/>
         <source>Download failed: %1.</source>
         <translation>下载失败： &lt;br/&gt;%1.</translation>
     </message>
     <message>
-        <location filename="../src/dialog/mainwindow.cpp" line="1066"/>
+        <location filename="../src/dialog/mainwindow.cpp" line="1067"/>
         <source>Redirect Error!</source>
         <translation>重定向错误！</translation>
     </message>
     <message>
-        <location filename="../src/dialog/mainwindow.cpp" line="1071"/>
+        <location filename="../src/dialog/mainwindow.cpp" line="1072"/>
         <source>Download Finish!&lt;br/&gt;Do you want to update now?&lt;br/&gt;Tips: The game will restart after finish update</source>
         <translation>下载完成！是否立即更新？&lt;br/&gt;&lt;br/&gt;提示：程序将在更新完成后自动重启</translation>
     </message>
     <message>
-        <location filename="../src/dialog/mainwindow.cpp" line="1085"/>
-        <source>The update package has been saved at update/ folder</source>
-        <translation>更新包已保存在 update\ 文件夹下</translation>
+        <location filename="../src/dialog/mainwindow.cpp" line="1086"/>
+        <source>The update package has been saved at root folder</source>
+        <translation>更新包已保存至游戏根目录</translation>
     </message>
     <message>
         <location filename="../src/dialog/mainwindow.cpp" line="672"/>
@@ -2734,59 +2734,59 @@
 <context>
     <name>Room</name>
     <message>
-        <location filename="../src/server/room.cpp" line="2134"/>
+        <location filename="../src/server/room.cpp" line="2136"/>
         <source>disconnected</source>
         <translation>断开</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="2364"/>
+        <location filename="../src/server/room.cpp" line="2366"/>
         <source>Computer %1</source>
         <translation>电脑 %1</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="2157"/>
+        <location filename="../src/server/room.cpp" line="2159"/>
         <source>&lt;font color=#000000&gt;Player &lt;b&gt;%1&lt;/b&gt; left the game&lt;/font&gt;</source>
         <translation>&lt;font color=#000000&gt;玩家 %1 离开了游戏&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="2369"/>
+        <location filename="../src/server/room.cpp" line="2371"/>
         <source>Hello, I&apos;m a robot</source>
         <translation>大家好，我是一个机器人</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="2412"/>
+        <location filename="../src/server/room.cpp" line="2414"/>
         <source>&lt;font color=#EEB422&gt;Player &lt;b&gt;%1&lt;/b&gt; joined the game&lt;/font&gt;</source>
         <translation>&lt;font color=#EEB422&gt;玩家 &lt;b&gt;%1&lt;/b&gt; 加入了游戏&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="2942"/>
+        <location filename="../src/server/room.cpp" line="2944"/>
         <source>Unable to parse player</source>
         <translation>不可分析的玩家</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="2944"/>
+        <location filename="../src/server/room.cpp" line="2946"/>
         <source>Server is not waiting for reply from %1</source>
         <translation>服务器无法获取 %1 的响应</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="2946"/>
+        <location filename="../src/server/room.cpp" line="2948"/>
         <source>Reply command should be %1 instead of %2</source>
         <translation>应答指令应为 %1 而不是 %2</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="2949"/>
+        <location filename="../src/server/room.cpp" line="2951"/>
         <source>Reply serial should be %1 instead of %2</source>
         <translation>玩家序号应为 %1 而不是 %2</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="4308"/>
+        <location filename="../src/server/room.cpp" line="4310"/>
         <source>Card cannot be parsed:
  %1</source>
         <translation>卡牌字符串无法解析:
 %1</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="5675"/>
+        <location filename="../src/server/room.cpp" line="5677"/>
         <source>&lt;font color=#EEB422&gt;The network delay of player &lt;b&gt;%1&lt;/b&gt; is %2 milliseconds.&lt;/font&gt;</source>
         <translation>&lt;font color=#EEB422&gt;玩家 &lt;b&gt;%1&lt;/b&gt; 的网络延迟为 %2 毫秒&lt;/font&gt;</translation>
     </message>

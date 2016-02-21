@@ -1022,8 +1022,7 @@ void MainWindow::downloadNew(QString url)
     QFileInfo fileInfo(url2.path());
     fileName = fileInfo.fileName();
     if (fileName.isEmpty())
-       fileName = "index.html";
-    fileName.prepend("update/");
+        fileName = "index.html";
     if (QFile::exists(fileName)) {
         if (QMessageBox::question(this, tr("Download New Version"),
                                   tr("There already exists a file called %1 in "
@@ -1044,10 +1043,16 @@ void MainWindow::downloadNew(QString url)
         return;
     }
 
+    updateWindow = new UpdateDialog(this);
+    updateWindow->move(width() - 110, 30);
+    updateWindow->setStyleSheet("border:1px solid gray; background-color: rgba(208, 127, 108, 100)");
+    updateWindow->show();
+
     static QNetworkAccessManager *qnam2 = new QNetworkAccessManager(this);
     reply2 = qnam2->get(QNetworkRequest(url2));
     connect(reply2, SIGNAL(finished()), this, SLOT(httpFinished2()));
     connect(reply2, SIGNAL(readyRead()), this, SLOT(httpReadyRead2()));
+    connect(reply2, SIGNAL(downloadProgress(qint64,qint64)), updateWindow, SLOT(updateDataReadProgress2(qint64,qint64)));
 }
 
 void MainWindow::httpFinished2()
@@ -1075,14 +1080,14 @@ void MainWindow::httpFinished2()
             QStringList cmd_lists;
             cmd_lists << "taskkill /f /IM touhoutriplesha.exe";
             cmd_lists << "7za x " + fileName + " -aoa";
-            cmd_lists << "del " + fileName.replace("/", "\\");
+            cmd_lists << "del " + fileName;
             cmd_lists << "start touhoutriplesha";
             QString system_str = "cmd /c " + cmd_lists.join("&");
             WinExec(system_str.toLatin1().data(), SW_HIDE);
         } else
 #endif
             QMessageBox::warning(this, tr("Download New Version"),
-                                 tr("The update package has been saved at update/ folder"));
+                                 tr("The update package has been saved at root folder"));
     }
 
     reply->deleteLater();
@@ -1099,4 +1104,42 @@ void MainWindow::httpReadyRead2()
     // signal of the QNetworkReply
     if (file)
         file->write(reply2->readAll());
+}
+
+UpdateDialog::UpdateDialog(QWidget *parent)
+    : QFrame(parent, Qt::FramelessWindowHint)
+{
+    setWindowTitle("Update");
+    progressBar = new QProgressBar(this);
+    mainLayout = new QVBoxLayout(this);
+    mainLayout->addWidget(progressBar);
+    this->setLayout(mainLayout);
+}
+
+void UpdateDialog::mousePressEvent(QMouseEvent *event)
+{
+    if(event->button() == Qt::LeftButton)
+    {
+        m_CurrentPos = event->globalPos() - frameGeometry().topLeft();
+        event->accept();
+    }
+}
+
+void UpdateDialog::mouseMoveEvent(QMouseEvent *event)
+{
+    if (event->buttons() && Qt::LeftButton)
+    {
+        move(event->globalPos() - m_CurrentPos);
+        event->accept();
+    }
+}
+
+void UpdateDialog::paintEvent(QPaintEvent *)
+{
+}
+
+void UpdateDialog::updateDataReadProgress2(qint64 bytesRead, qint64 totalBytes)
+{
+    progressBar->setMaximum(totalBytes);
+    progressBar->setValue(bytesRead);
 }
