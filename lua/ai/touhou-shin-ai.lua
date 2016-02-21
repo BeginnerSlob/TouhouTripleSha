@@ -114,3 +114,147 @@ sgs.ai_card_intention.ThLuanshenCard = function(self, card, from, tos)
 end
 
 sgs.ai_use_priority.ThLuanshenCard = -10
+
+--飞蛮：出牌阶段开始时，你可以对一名其他角色造成1点伤害，然后令其选择一项：对其攻击范围内的一名角色造成一点火焰伤害，或获得场上的一张牌。
+sgs.ai_skill_playerchosen.thfeiman = function(self, targets)
+	local isGoodThFeimanTarget = function(player)
+		if self:isFriend(player) and not (self:isWeak(player) and self:damageIsEffective(player, sgs.DamageStruct_Normal, self.player)) then
+			for _, p in sgs.qlist(self.room:getOtherPlayers(player)) do
+				if not player:inMyAttackRange(p) then continue end
+				if self:isEnemy(p) and self:damageIsEffective(p, sgs.DamageStruct_Fire, player) then
+					return true
+				end
+				if p:isChained() and self:isGoodChainTarget(p, self.player, sgs.DamageStruct_Fire, 1) then
+					return true
+				end
+			end
+		elseif self:isEnemy(player) and self:damageIsEffective(player, sgs.DamageStruct_Normal, self.player) then
+			if player:getHp() == 1 and self:getAllPeachNum(player) < 1 then
+				local weak_friend = nil
+				for _, p in sgs.qlist(self.room:getOtherPlayers(player)) do
+					if not player:inMyAttackRange(p) then continue end
+					if self:isFriend(p) and self:isWeak(p) then
+						weak_friend = p
+						break
+					end
+				end
+				if not weak_friend or self:getAllPeachNum(weak_friend) >= 1 then
+					return true
+				end
+			end
+			for _, p in sgs.qlist(self.room:getOtherPlayers(player)) do
+				if not player:inMyAttackRange(p) then continue end
+				if self:isFriend(p) and self:damageIsEffective(p, sgs.DamageStruct_Fire, player) then
+					return false
+				end
+				if p:isChained() and not self:isGoodChainTarget(p, self.player, sgs.DamageStruct_Fire, 1) then
+					return false
+				end
+			end
+			return true
+		end
+		return false
+	end
+
+	local targetlist = sgs.QList2Table(targets)
+	self:sort(targetlist, "hp")
+	local victims, seconds = {}, {}
+	for _, target in ipairs(targetlist) do
+		if self:isEnemy(target) and isGoodThFeimanTarget(target) then
+			table.insert(victims, target)
+		end
+		if self:isFriend(target) and isGoodThFeimanTarget(target) then
+			table.insert(seconds, target)
+		end
+	end
+	if #victims + #seconds == 0 then
+		return nil
+	end
+	if #victims > 0 then
+		return victims[1]
+	else
+		return seconds[1]
+	end
+	return nil
+end
+
+sgs.ai_skill_choice.thfeiman = function(self, choices)
+	for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+		if not self.player:inMyAttackRange(p) then continue end
+		if self:isEnemy(p) and self:damageIsEffective(p, sgs.DamageStruct_Fire, self.player) and self:isWeak(p) and self:isGoodChainTarget(p, self.player, sgs.DamageStruct_Fire, 1) then
+			return "damage"
+		end
+	end
+	local targets = self:findPlayerToDiscard("ej", true, false, nil, true)
+	local has_e = false
+	for _, p in ipairs(targets) do
+		if self:isEnemy(p) then
+			has_e = true
+			break
+		end
+	end
+	if has_e and self:isFriend(targets[1]) then
+		return "obtain"
+	end
+	for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+		if not self.player:inMyAttackRange(p) then continue end
+		if self:isEnemy(p) and self:damageIsEffective(p, sgs.DamageStruct_Fire, self.player) then
+			return "damage"
+		end
+	end
+	return string.find(choices, "obtain") and "obtain" or "damage"
+end
+
+sgs.ai_skill_playerchosen.thfeiman_damage = function(self, targets)
+	local targets_list = sgs.QList2Table(targets)
+	self:sort(targets_list, "hp")
+	for _, p in ipairs(targets_list) do
+		if self:isEnemy(p) and self:damageIsEffective(p, sgs.DamageStruct_Fire, self.player) and self:isWeak(p) and self:isGoodChainTarget(p, self.player, sgs.DamageStruct_Fire, 1) then
+			return p
+		end
+	end
+	for _, p in ipairs(targets_list) do
+		if self:isEnemy(p) and self:damageIsEffective(p, sgs.DamageStruct_Fire, self.player) then
+			return p
+		end
+	end
+	for _, p in ipairs(targets_list) do
+		if self:isFriend(p) and p:isChained() and self:isGoodChainTarget(p, self.player, sgs.DamageStruct_Fire, 1) then
+			return p
+		end
+	end
+	for _, p in ipairs(targets_list) do
+		if not self:damageIsEffective(p, sgs.DamageStruct_Fire, self.player) then
+			return p
+		end
+	end
+	for _, p in ipairs(targets_list) do
+		if p:hasSkills(sgs.masochism_skill) then
+			return p
+		end
+	end
+	return targets_list[#targets_list]
+end
+
+sgs.ai_skill_playerchosen.thfeiman_obtain = function(self, targets)
+	return self:findPlayerToDiscard("ej", true, false, targets, true)
+end
+
+sgs.ai_choicemade_filter.cardChosen.thfeiman = sgs.ai_choicemade_filter.cardChosen.snatch
+
+--怪奇：一名角色的出牌阶段结束时，若其此阶段内至少有一名角色受到了2点或更多的伤害，你可以令当前回合的角色摸一张牌。
+sgs.ai_skill_invoke.thguaiqi = function(self, data)
+	local target = data:toPlayer()
+	return self:isFriend(target)
+end
+
+sgs.ai_choicemade_filter.skillInvoke.thguaiqi = function(self, player, promptlist)
+	local to = self.room:findPlayer(promptlist[#promptlist - 1])
+	if to then
+		if promptlist[#promptlist] == "yes" then
+			sgs.updateIntention(player, to, -20)
+		else
+			sgs.updateIntention(player, to, 5)
+		end
+	end
+end

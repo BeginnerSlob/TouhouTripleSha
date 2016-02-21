@@ -856,6 +856,38 @@ sgs.ai_cardshow.thexi = function(self, requestor)
 	return self.player:getRandomHandCard()
 end
 
+sgs.ai_skill_choice.thexi = function(self, choices, data)
+	local ids = data:toIntList()
+	local cards, targets = {}, {}
+	for _, id in sgs.qlist(ids) do
+		local c = sgs.Sanguosha:getCard(id)
+		local p = self.room:getCardOwner(id)
+		table.insert(cards, c)
+		table.insert(targets, p)
+	end
+	local big = nil
+	if cards[1]:getNumber() > cards[2]:getNumber() then
+		big = targets[1]
+	else
+		big = targets[2]
+	end
+	if self:isFriend(big) then
+		self:sortByUseValue(cards)
+		if cards[2]:getNumber() > cards[1]:getNumber() then
+			return "big"
+		else
+			return "small"
+		end
+	else
+		self:sortByKeepValue(cards)
+		if cards[2]:getNumber() > cards[1]:getNumber() then
+			return "big"
+		else
+			return "small"
+		end
+	end
+end
+
 --星露：当你进入濒死状态时，你可以与一名其他角色拼点：若你赢，你回复1点体力。
 sgs.ai_skill_playerchosen.thxinglu = function(self, targets)
 	local max_card = self:getMaxCard()

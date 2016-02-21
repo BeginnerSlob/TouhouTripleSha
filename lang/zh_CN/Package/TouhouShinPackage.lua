@@ -23,6 +23,8 @@ return {
 	["@thfeiman"] = "你可以发动“飞蛮”",
 	["thfeiman:damage"] = "对攻击范围内的一名角色造成1点火焰伤害",
 	["thfeiman:obtain"] = "获得场上的一张牌",
+	["thfeiman-damage"] = "飞蛮",
+	["thfeiman-obtain"] = "飞蛮",
 	["thguaiqi"] = "怪奇",
 	[":thguaiqi"] = "一名角色的出牌阶段结束时，若其此阶段内至少有一名角色受到了2点或更多的伤害，你可以令当前回合的角色摸一张牌。",
 	
