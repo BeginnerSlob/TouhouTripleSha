@@ -49,7 +49,7 @@ sgs.ai_skill_cardask["@thchundu"] = function(self, data, pattern)
 		local h_cards = sgs.QList2Table(self.player:getHandcards())
 		self:sortByKeepValue(h_cards)
 		if self:getKeepValue(card) > self:getKeepValue(h_cards[1]) then
-			return "$" .. h_cards[1]
+			return "$" .. h_cards[1]:getEffectiveId()
 		end
 	end
 	return "."

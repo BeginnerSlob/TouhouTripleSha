@@ -87,7 +87,7 @@ function setInitialTables()
 	sgs.current_mode_players = { lord = 0, loyalist = 0, rebel = 0, renegade = 0 }
 	sgs.ai_type_name = { "Skill", "Basic", "Trick", "Equip" }
 	sgs.lose_equip_skill = "kofxiaoji|xiaoji|xuanfeng|nosxuanfeng"
-	sgs.need_kongcheng = "lianying|noslianying|ikjingyou|sijian"
+	sgs.need_kongcheng = "lianying|noslianying|ikjingyou|sijian|thjingtao"
 	sgs.masochism_skill = "nosyiji|yiji|jieming|fankui|nosfankui|thfusheng|ganglie|vsganglie|nosganglie|enyuan|fangzhu|guixin|langgu|quanji|thzhehui|chengxiang|noschengxiang|" .. 
 						  "thshenzhou"
 	sgs.wizard_skill = "guicai|nosguicai|guidao|jilve|tiandu|noszhenlie|huanshi"
@@ -1843,7 +1843,7 @@ function SmartAI:filterEvent(triggerEvent, player, data)
 				local xunyu = self.room:findPlayerBySkillName("quhu")
 				intention = 80
 				from = xunyu
-			elseif from and (from:hasFlag("ShenfenUsing") or from:hasFlag("FenchengUsing")) or damage.reason == "zhendu" then
+			elseif from and (from:hasFlag("ShenfenUsing") or from:hasFlag("FenchengUsing")) or damage.reason == "zhendu" or damage.reason == "thfeiman" then
 				intention = 0
 			else
 				intention = 100

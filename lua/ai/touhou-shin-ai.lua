@@ -258,3 +258,63 @@ sgs.ai_choicemade_filter.skillInvoke.thguaiqi = function(self, player, promptlis
 		end
 	end
 end
+
+--惊涛：每当你失去最后的手牌时，你可以摸两张牌。
+sgs.ai_skill_invoke.thjingtao = true
+
+--纵溺：你回合内的摸牌阶段开始时，你可以将此阶段视为出牌阶段，若如此做，此阶段结束时，你须弃置至少一张手牌。
+sgs.ai_skill_invoke.thzongni = function(self, data)
+	local use = { isDummy = true }
+	self:activate(use)
+	if use.card then
+		return true
+	end
+end
+
+sgs.ai_skill_discard.thzongni = function(self)
+	local handcards = sgs.QList2Table(self.player:getHandcards())
+	local peach_num, slash_num = 0, 0
+	local to_discard = {}
+	for _, c in ipairs(handcards) do
+		if self.player:isCardLimited(c, sgs.Card_MethodUse) then
+			table.insert(to_discard, c:getEffectiveId())
+			continue
+		end
+		if c:isKindOf("Peach") then
+			if peach_num < self.player:getLostHp() then
+				peach_num = peach_num + 1
+			else
+				table.insert(to_discard, c:getEffectiveId())
+			end
+			continue
+		end
+		if c:isKindOf("Slash") then
+			if slash_num < (self:hasCrossbowEffect() and 888 or 1) then
+				local use = { isDummy = true }
+				self:useCardSlash(c, use)
+				if use.card then
+					slash_num = slash_num + 1
+					break
+				else
+					table.insert(to_discard, c:getEffectiveId())
+				end
+			else
+				table.insert(to_discard, c:getEffectiveId())
+			end
+			continue
+		end
+
+		local use = { isDummy = true }
+		local typeId = c:getTypeId()
+		self["use" .. sgs.ai_type_name[typeId + 1] .. "Card"](self, c, use)
+
+		if not use.card then
+			table.insert(to_discard, c:getEffectiveId())
+		end
+	end
+	if #to_discard == 0 then
+		return self:askForDiscard("thzongni", 1, 1, false, false)
+	else
+		return to_discard
+	end
+end
