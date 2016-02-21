@@ -294,7 +294,6 @@ sgs.ai_skill_discard.thzongni = function(self)
 				self:useCardSlash(c, use)
 				if use.card then
 					slash_num = slash_num + 1
-					break
 				else
 					table.insert(to_discard, c:getEffectiveId())
 				end
@@ -316,5 +315,27 @@ sgs.ai_skill_discard.thzongni = function(self)
 		return self:askForDiscard("thzongni", 1, 1, false, false)
 	else
 		return to_discard
+	end
+end
+
+--岚奏：每当你弃置一次牌时，若其中有非【杀】基本牌或【三粒天滴】，你可以令一名其他角色摸一张牌；每当其他角色弃置一次牌时，若其中有非【杀】基本牌或【三粒天滴】，该角色可以令你摸一张牌。
+sgs.ai_skill_playerchosen.thlanzou = function(self, targets)
+	return self:findPlayerToDraw(false, 1)
+end
+
+sgs.ai_skill_invoke.thlanzou = function(self, data)
+	local target = data:toPlayer()
+	return self:isFriend(target)
+end
+
+sgs.ai_playerchosen_intention.thlanzou = -20
+sgs.ai_choicemade_filter.skillInvoke.thlanzou = function(self, player, promptlist)
+	local to = self.room:findPlayer(promptlist[#promptlist - 1])
+	if to then
+		if promptlist[#promptlist] == "yes" then
+			sgs.updateIntention(player, to, -20)
+		else
+			sgs.updateIntention(player, to, 5)
+		end
 	end
 end
