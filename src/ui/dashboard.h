@@ -19,6 +19,9 @@
 #include <QLineEdit>
 #include <QMutex>
 #include <QPropertyAnimation>
+#ifdef Q_OS_WIN
+class QWinTaskbarButton;
+#endif
 
 
 class Dashboard: public PlayerCardContainer {
@@ -43,6 +46,7 @@ public:
     void hideControlButtons();
     void showControlButtons();
     virtual void showProgressBar(QSanProtocol::Countdown countdown);
+    virtual void hideProgressBar();
 
     QSanSkillButton *removeSkillButton(const QString &skillName);
     QSanSkillButton *addSkillButton(const QString &skillName);
@@ -128,6 +132,9 @@ public slots:
     void selectAll();
     void selectCards(const QString &pattern);
     void controlNullificationButton(bool show);
+#ifdef Q_OS_WIN
+    void updateTimedProgressBar(time_t val, time_t max);
+#endif
 
 protected:
     void _createExtraButtons();
@@ -212,6 +219,9 @@ protected:
 
     QMenu *_m_sort_menu;
     QMenu *_m_shefu_menu;
+#ifdef Q_OS_WIN
+    QWinTaskbarButton *taskbarButton;
+#endif
 
 protected slots:
     virtual void _onEquipSelectChanged();
