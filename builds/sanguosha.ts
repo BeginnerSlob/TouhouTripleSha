@@ -2231,10 +2231,10 @@
     <message>
         <location filename="../src/dialog/mainwindow.cpp" line="1027"/>
         <location filename="../src/dialog/mainwindow.cpp" line="1038"/>
-        <location filename="../src/dialog/mainwindow.cpp" line="1062"/>
         <location filename="../src/dialog/mainwindow.cpp" line="1066"/>
-        <location filename="../src/dialog/mainwindow.cpp" line="1071"/>
-        <location filename="../src/dialog/mainwindow.cpp" line="1085"/>
+        <location filename="../src/dialog/mainwindow.cpp" line="1070"/>
+        <location filename="../src/dialog/mainwindow.cpp" line="1075"/>
+        <location filename="../src/dialog/mainwindow.cpp" line="1089"/>
         <source>Download New Version</source>
         <translation>下载新版本</translation>
     </message>
@@ -2249,22 +2249,22 @@
         <translation>无法保存文件 %1 :&lt;br/&gt;%2.</translation>
     </message>
     <message>
-        <location filename="../src/dialog/mainwindow.cpp" line="1063"/>
+        <location filename="../src/dialog/mainwindow.cpp" line="1067"/>
         <source>Download failed: %1.</source>
         <translation>下载失败： &lt;br/&gt;%1.</translation>
     </message>
     <message>
-        <location filename="../src/dialog/mainwindow.cpp" line="1067"/>
+        <location filename="../src/dialog/mainwindow.cpp" line="1071"/>
         <source>Redirect Error!</source>
         <translation>重定向错误！</translation>
     </message>
     <message>
-        <location filename="../src/dialog/mainwindow.cpp" line="1072"/>
+        <location filename="../src/dialog/mainwindow.cpp" line="1076"/>
         <source>Download Finish!&lt;br/&gt;Do you want to update now?&lt;br/&gt;Tips: The game will restart after finish update</source>
         <translation>下载完成！是否立即更新？&lt;br/&gt;&lt;br/&gt;提示：程序将在更新完成后自动重启</translation>
     </message>
     <message>
-        <location filename="../src/dialog/mainwindow.cpp" line="1086"/>
+        <location filename="../src/dialog/mainwindow.cpp" line="1090"/>
         <source>The update package has been saved at root folder</source>
         <translation>更新包已保存至游戏根目录</translation>
     </message>
