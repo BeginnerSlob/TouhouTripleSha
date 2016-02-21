@@ -11,6 +11,9 @@ function SmartAI:toTurnOver(player, n, reason)
 			return false
 		end
 	end
+	if player:faceUp() and player:hasSkill("thshiting") then
+		return false
+	end
 	if reason and reason == "fangzhu" and player:getHp() == 1 and sgs.ai_AOE_data then
 		local use = sgs.ai_AOE_data:toCardUse()
 		if use.to:contains(player) and self:aoeIsEffective(use.card, player)
@@ -26,7 +29,10 @@ function SmartAI:toTurnOver(player, n, reason)
 	if n > 1 and player:hasSkill("jijiu") and not hasManjuanEffect(player) then
 		return false
 	end
-	if not player:faceUp() and not player:hasFlag("ShenfenUsing") and not player:hasFlag("GuixinUsing") then
+	if not player:faceUp() and not (player:hasSkill("thshiting") or player:hasFlag("ShenfenUsing") or player:hasFlag("GuixinUsing")) then
+		return false
+	end
+	if player:hasSkill("thshenzhou") then
 		return false
 	end
 	if (player:hasSkills("jushou|nosjushou|kuiwei") and player:getPhase() <= sgs.Player_Finish)

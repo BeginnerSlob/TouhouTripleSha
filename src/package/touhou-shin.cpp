@@ -102,10 +102,10 @@ public:
 
             QString choice = room->askForChoice(target, objectName(), choices.join("+"));
             if (choice == "damage") {
-                ServerPlayer *victim = room->askForPlayerChosen(target, victims, objectName());
+                ServerPlayer *victim = room->askForPlayerChosen(target, victims, "thfeiman-damage");
                 room->damage(DamageStruct(objectName(), target, victim, 1, DamageStruct::Fire));
             } else if (choice == "obtain") {
-                ServerPlayer *to_get = room->askForPlayerChosen(target, to_gets, objectName());
+                ServerPlayer *to_get = room->askForPlayerChosen(target, to_gets, "thfeiman-obtain");
                 int card_id = room->askForCardChosen(target, to_get, "ej", objectName());
                 room->obtainCard(target, card_id);
             }
