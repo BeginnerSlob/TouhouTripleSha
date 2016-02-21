@@ -3366,11 +3366,11 @@ end
 
 function SmartAI:useCardPurpleSong(card, use)
 	local friends = {}
-	if self.player:hasFlag("ThChouceUse") then
-		table.insert(friends, self.player)
-	end
 	if #self.friends_noself ~= 0 then
 		friends = self:exclude(self.friends_noself, card)
+	end
+	if self.player:hasFlag("ThChouceUse") then
+		table.insert(friends, self.player)
 	end
 	if #friends == 0 then return end
 
@@ -3378,7 +3378,7 @@ function SmartAI:useCardPurpleSong(card, use)
 	local zhanghe_seat = zhanghe and zhanghe:faceUp() and not self:isFriend(zhanghe) and zhanghe:getSeat() or 0
 
 	local getvalue = function(friend)
-		if friend:containsTrick("pueple_song") or friend:containsTrick("YanxiaoCard") then
+		if friend:containsTrick("purple_song") or friend:containsTrick("YanxiaoCard") then
 			return -100
 		end
 
