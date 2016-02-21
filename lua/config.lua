@@ -4,7 +4,7 @@
 config = {
 	version = "v8.5a",
 	version_name = "东方绮符剧",
-	mod_name = "0214",
+	mod_name = "0221",
 	big_font = 56,
 	small_font = 27,
 	tiny_font = 18,
