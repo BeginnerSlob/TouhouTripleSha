@@ -387,7 +387,10 @@ public:
 
         ask_who->drawCards(1);
         if (player->isKongcheng()) return false;
-        if (room->askForChoice(player, objectName(), "show+cancel") == "show") {
+        player->tag["ThXinqiTarget"] = QVariant::fromValue(ask_who);
+        QString choice = room->askForChoice(player, objectName(), "show+cancel", data);
+        player->tag.remove("ThXinqiTarget");
+        if (choice == "show") {
             LogMessage log;
             log.type = "$IkLingtongView";
             log.from = ask_who;
@@ -434,7 +437,7 @@ public:
         if (!card || card->getEffectiveId() == -1)
             card = player->getRandomHandCard();
 
-        QString choice = room->askForChoice(ask_who, objectName(), "basic+equip+trick");
+        QString choice = room->askForChoice(ask_who, objectName(), "basic+equip+trick", QVariant::fromValue(player));
 
         LogMessage log;
         log.type = "#ThNengwu";

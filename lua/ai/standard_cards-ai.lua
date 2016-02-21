@@ -1679,6 +1679,7 @@ function SmartAI:willUseGodSalvation(card)
 				end
 			elseif friend:hasSkill("danlao") then good = good + 5
 			end
+			if card:isBlack() and friend:hasSkill("thxinqi") then good = good + 5 end
 		end
 	end
 
@@ -1702,6 +1703,7 @@ function SmartAI:willUseGodSalvation(card)
 				end
 			elseif enemy:hasSkill("danlao") then bad = bad + 5
 			end
+			if card:isBlack() and enemy:hasSkill("thxinqi") then bad = bad + 5 end
 		end
 	end
 
