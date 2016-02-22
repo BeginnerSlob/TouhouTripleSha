@@ -216,7 +216,7 @@ function sgs.getDefenseSlash(player, self)
 		defense = defense - 0.4
 	end
 
-	if player:getHandcardNum() == 0 and player:getPile("wooden_ox"):isEmpty() and hujiaJink == 0 and not player:hasSkill("kongcheng") then
+	if player:getHandcardNum() == 0 and getWoodenOxPile(player):isEmpty() and hujiaJink == 0 and not player:hasSkill("kongcheng") then
 		if player:getHp() <= 1 then defense = defense - 2.5 end
 		if player:getHp() == 2 then defense = defense - 1.5 end
 		if not hasEightDiagram then defense = defense - 2 end
@@ -355,6 +355,7 @@ function SmartAI:slashIsEffective(slash, to, from, ignore_armor)
 	end
 	if to:hasSkill("thchiwu") and to:isChained() and slash:objectName() == "slash" then return false end
 	if to:hasSkill("thwunian") and from:getMaxHp() ~= 1 and not from:isWounded() then return false end
+	if self:isThYishiCard(slash, to) then return false end
 	if to:getMark("@late") > 0 then return false end
 
 	local natures = {
@@ -1281,7 +1282,7 @@ end
 
 function cardsView_spear(self, player, skill_name)
 	local cards = player:getCards("he")
-	for _, id in sgs.qlist(player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(player)) do
 		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	cards = sgs.QList2Table(cards)
@@ -1291,7 +1292,7 @@ function cardsView_spear(self, player, skill_name)
 		end
 	end
 	local cards = player:getCards("h")
-	for _, id in sgs.qlist(player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(player)) do
 		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	cards = sgs.QList2Table(cards)
@@ -1317,7 +1318,7 @@ end
 
 function turnUse_spear(self, inclusive, skill_name)
 	local cards = self.player:getCards("he")
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	cards = sgs.QList2Table(cards)
@@ -1978,7 +1979,7 @@ function SmartAI:getValuableCard(who)
 	end
 
 	if treasure then
-		if treasure:isKindOf("WoodenOx") and who:getPile("wooden_ox"):length() > 1 then
+		if treasure:isKindOf("WoodenOx") and getWoodenOxPile(who):length() > 1 then
 			return treasure:getEffectiveId()
 		end
 		if treasure:isKindOf("Jade") then
@@ -3928,7 +3929,7 @@ table.insert(sgs.ai_skills, scroll_skill)
 scroll_skill.getTurnUseCard = function(self)
 	-- change treasure
 	local cards = sgs.QList2Table(self.player:getHandcards())
-	for _, c in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, c in sgs.qlist(getWoodenOxPile(self.player)) do
 		table.insert(cards, sgs.Sanguosha:getCard(c))
 	end
 	local other_treasure = self:getCard("Treasure", self.player)

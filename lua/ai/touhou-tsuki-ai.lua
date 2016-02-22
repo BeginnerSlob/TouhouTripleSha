@@ -159,7 +159,7 @@ thxueyi_skill.name = "thxueyi"
 table.insert(sgs.ai_skills, thxueyi_skill)
 thxueyi_skill.getTurnUseCard = function(self, inclusive)
 	local cards = self.player:getCards("he")
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		local c = sgs.Sanguosha:getCard(id)
 		cards:prepend(c)
 	end
@@ -970,7 +970,7 @@ thhuilve_skill.name = "thhuilve"
 table.insert(sgs.ai_skills, thhuilve_skill)
 thhuilve_skill.getTurnUseCard = function(self)
 	local cards = self.player:getCards("h")
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	cards = sgs.QList2Table(cards)

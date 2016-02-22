@@ -415,3 +415,59 @@ sgs.ai_choicemade_filter.skillInvoke.thnengwu = function(self, player, promptlis
 		end
 	end
 end
+
+--宝锤：其他角色的出牌阶段开始时，若你有手牌，你可令其交给你一张手牌，然后你将全部的手牌置于你的人物牌上，若如此做，该角色可于此出牌阶段将你人物牌上的牌如手牌般使用或打出，且此出牌阶段结束时，你获得你人物牌上全部的牌，并摸一张牌。
+sgs.ai_skill_invoke.thbaochui = function(self, data)
+	local target = data:toPlayer()
+	if self:isFriend(target) then
+		return true
+	end
+	for _, c in sgs.qlist(self.player:getHandcards()) do
+		if c:isAvailable(target) then
+			return false
+		end
+	end
+	return true
+end
+
+sgs.ai_skill_cardask["@thbaochui"] = function(self, data, pattern, target)
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	if self:isFriend(target) then
+		self:sortByKeepValue(cards, true)
+		return "$" .. cards[1]:getEffectiveId()
+	else
+		self:sortByUsePriority(cards)
+		return "$" .. cards[1]:getEffectiveId()
+	end
+end
+
+sgs.ai_choicemade_filter.skillInvoke.thbaochui = function(self, player, promptlist)
+	local to = self.room:findPlayer(promptlist[#promptlist - 1])
+	if to then
+		if promptlist[#promptlist] == "yes" then
+			for _, c in sgs.qlist(player:getHandcards()) do
+				if c:isAvailable(to) then
+					sgs.updateIntention(player, to, -50)
+					break
+				end
+			end
+		end
+	end
+end
+
+--倚势：锁定技，你人物牌上的牌对你无效。
+--无
+function SmartAI:isThYishiCard(card, from)
+	if not card:isVirtualCard() then
+		return from:getPile("thbaochuipile"):contains(card:getEffectiveId())
+	else
+		local ids = sgs.QList2Table(card:getSubcards())
+		if #ids == 1 then
+			local acard = sgs.Sanguosha:getCard(ids[1])
+			if acard:getClassName() == card:getClassName() and from:getPile("thbaochuipile"):contains(ids[1]) then
+				return true
+			end
+		end
+	end
+	return false
+end

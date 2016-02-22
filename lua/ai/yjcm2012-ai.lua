@@ -683,7 +683,7 @@ table.insert(sgs.ai_skills, lihuo_skill)
 lihuo_skill.getTurnUseCard = function(self)
 	if self:isWeak() then return nil end
 	local cards = self.player:getCards("h")
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	cards = sgs.QList2Table(cards)

@@ -217,7 +217,7 @@ end
 sgs.ai_skill_cardask["@guidao-card"] = function(self, data)
 	local judge = data:toJudge()
 	local all_cards = self.player:getCards("he")
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		all_cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	if all_cards:isEmpty() then return "." end
