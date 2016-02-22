@@ -5443,10 +5443,20 @@ function SmartAI:useEquipCard(card, use)
 		end
 		if self.player:hasFlag("shenbaoused") then
 			local now_range = self.player:getWeapon() and sgs.weapon_range[self.player:getWeapon():getClassName()] or 1
-			if sgs.weapon_range[card:getClassName()] > now_range then
-				return
-			else
+			if sgs.weapon_range[card:getClassName()] < now_range then
 				use.card = card
+				return
+			elseif sgs.weapon_range[card:getClassName()] > now_range then
+				return
+			end
+		end
+		if self.player:hasSkill("thmoju") then
+			local now_range = self.player:getWeapon() and sgs.weapon_range[self.player:getWeapon():getClassName()] or 1
+			if sgs.weapon_range[card:getClassName()] > now_range and sgs.weapon_range[card:getClassName()] > 2 then
+				use.card = card
+				return
+			elseif now_range > 2 and sgs.weapon_range[card:getClassName()] <= 2 then
+				return
 			end
 		end
 		if not self.player:getWeapon() or self:evaluateWeapon(card) > self:evaluateWeapon(self.player:getWeapon()) then
