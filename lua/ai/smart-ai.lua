@@ -3988,10 +3988,6 @@ function SmartAI:damageIsEffective_(damageStruct)
 		damage = damage - 1
 		if damage < 1 then return false end
 	end
-	if player:hasArmorEffect("breastplate") and player:getArmor() and player:canDiscard(player, player:getArmor():getId())
-			and (damage > player:getHp() or (player:getHp() > 0 and damage == player:getHp())) then
-		return false
-	end
 	if player:hasSkill("yuce") and not player:isKongcheng() and player:getHp() > 1 then
 		if self:isFriend(player, source) then return false
 		else

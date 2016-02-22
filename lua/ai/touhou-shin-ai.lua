@@ -578,3 +578,30 @@ sgs.ai_choicemade_filter.skillInvoke.thyuanxiao = function(self, player, promptl
 		end
 	end
 end
+
+--寤呓：一名角色的结束阶段开始时，若你此回合内因弃置而置入弃牌堆的牌中有基本牌，你可以视为使用一张无视距离的【杀】；若这些牌中也有装备牌，则此【杀】无视目标角色装备区的装备牌；若这些牌中也有锦囊牌，则此【杀】可以额外指定一名目标。
+sgs.ai_skill_playerchosen.thwuyi = sgs.ai_skill_playerchosen.zero_card_as_slash
+
+--苜迷：当你需要使用或打出一张【闪】时，可以弃置两张牌，视为使用或打出一张【闪】。
+sgs.ai_skill_use["@@thmumi"] = function(self, prompt, method)
+	for _, c in sgs.qlist(self.player:getCards("he")) do
+		if isCard("Jink", c, self.player) then
+			return "."
+		end
+	end
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
+		if isCard("Jink", id, self.player) then
+			return "."
+		end
+	end
+	local to_dis = {}
+	for _, c in sgs.qlist(self.player:getCards("he")) do
+		if not self:isValuableCard(c) then
+			table.insert(to_dis, tostring(c:getEffectiveId()))
+			if #to_dis == 2 then
+				return "@ThMumiCard=" .. table.concat(to_dis, "+")
+			end
+		end
+	end
+	return "."
+end

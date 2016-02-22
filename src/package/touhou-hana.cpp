@@ -1351,7 +1351,7 @@ public:
     ThZheyinVS(): OneCardViewAsSkill("thzheyin")
     {
         response_pattern = "@@thzheyin";
-        filter_pattern = ".!";
+        filter_pattern = ".|.|.|hand!";
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
@@ -1399,7 +1399,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
-        if (room->askForCard(ask_who, ".", "@thzheyin:" + player->objectName(), data, objectName())) {
+        if (room->askForCard(ask_who, "@@thzheyin", "@thzheyin:" + player->objectName(), data, objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -1411,7 +1411,7 @@ public:
         room->setPlayerFlag(player, "ThZheyin");
 
         if (!player->canDiscard(player, "he")
-                || !room->askForCard(player, "@@thzheyin", "@thzheyin-discard:" + ask_who->objectName(), data, objectName())) {
+                || !room->askForCard(player, "..", "@thzheyin-discard:" + ask_who->objectName(), data, objectName())) {
             if (triggerEvent == CardUsed) {
                 CardUseStruct use = data.value<CardUseStruct>();
                 use.nullified_list << "_ALL_TARGETS";
