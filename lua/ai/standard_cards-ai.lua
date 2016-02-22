@@ -500,6 +500,9 @@ function SmartAI:useCardSlash(card, use)
 			rangefix = rangefix + 1
 		end
 	end
+	if card:getSkillName() == "thlianying" then
+		rangefix = rangefix - 1
+	end
 
 	local function canAppendTarget(target)
 		if use.to:contains(target) then return false end
