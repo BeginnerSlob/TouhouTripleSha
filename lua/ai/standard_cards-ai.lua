@@ -425,6 +425,7 @@ function sgs.isJinkAvailable(from, to, slash, judge_considered)
 	return (not judge_considered and from:hasSkills("tieji|nostieji"))
 			or (from:hasSkill("liegong") and from:getPhase() == sgs.Player_Play
 				and (to:getHandcardNum() <= from:getAttackRange() or to:getHandcardNum() >= from:getHp()))
+			or (from:hasSkill("thmoju") and from:getArmor())
 			or (from:hasSkill("kofliegong") and from:getPhase() == sgs.Player_Play and to:getHandcardNum() >= from:getHp())
 			or (from:hasFlag("ZhaxiangInvoked") and slash and slash:isRed())
 end
@@ -1933,6 +1934,8 @@ function SmartAI:getDangerousCard(who)
 	if armor and armor:isKindOf("EightDiagram") and who:hasSkills("leiji|nosleiji") then return armor:getEffectiveId() end
 	if weapon and weapon:isKindOf("MoonSpear") and who:hasSkills("guidao|longdan|guicai|nosguicai|jilve|huanshi|qingguo|kanpo") then return weapon:getEffectiveId() end
 	if weapon and who:hasSkill("liegong") and sgs.weapon_range[weapon:getClassName()] >= who:getHp() - 1 then return weapon:getEffectiveId() end
+	if weapon and who:hasSkill("thmoju") and sgs.weapon_range[weapon:getClassName()] > 2 then return weapon:getEffectiveId() end
+	if armor and who:hasSkill("thmoju") then return armor:getEffectiveId() end
 
 	if self:isFriend(who) then return end
 	if weapon and weapon:isKindOf("Crossbow") and getCardsNum("Slash", who, self.player) > 1 then

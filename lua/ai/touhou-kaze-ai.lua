@@ -1308,13 +1308,12 @@ sgs.ai_skill_invoke.thdasui = function(self, data)
 end
 
 sgs.ai_choicemade_filter.skillInvoke.thdasui = function(self, player, promptlist)
+	local target = findPlayerByObjectName(self.room, promptlist[#promptlist - 1])
 	if promptlist[#promptlist] == "yes" then
-		local target = findPlayerByObjectName(self.room, promptlist[#promptlist - 1])
 		if target then
 			sgs.updateIntention(player, target, -30)
 		end
 	elseif promptlist[#promptlist] == "no" then
-		local target = findPlayerByObjectName(self.room, promptlist[#promptlist - 1])
 		if target then
 			sgs.updateIntention(player, target, 10)
 		end
