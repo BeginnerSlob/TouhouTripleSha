@@ -947,24 +947,15 @@ public:
 
 ThMumiCard::ThMumiCard()
 {
-    will_throw = true;
     target_fixed = true;
 }
 
-const Card *ThMumiCard::validateInResponse(ServerPlayer *user) const
-{
-    user->getRoom()->throwCard(this, user);
-    Jink *jink = new Jink(Card::NoSuit, 0);
-    jink->setSkillName("thmumi");
-    return jink;
-}
-
-class ThMumi : public ViewAsSkill
+class ThMumiVS : public ViewAsSkill
 {
 public:
-    ThMumi() : ViewAsSkill("thmumi")
+    ThMumiVS(): ViewAsSkill("thmumi")
     {
-        response_pattern = "jink";
+        response_pattern = "@@thmumi";
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
@@ -976,17 +967,42 @@ public:
     {
         if (cards.length() != 2)
             return NULL;
-        Jink *jink = new Jink(Card::NoSuit, 0);
-        jink->setSkillName(objectName());
-        jink->deleteLater();
-        Card::HandlingMethod method = Card::MethodUse;
-        if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY)
-            method = Card::MethodResponse;
-        if (Self->isCardLimited(jink, method))
-            return NULL;
+
         ThMumiCard *card = new ThMumiCard;
         card->addSubcards(cards);
         return card;
+    }
+};
+
+class ThMumi : public TriggerSkill
+{
+public:
+    ThMumi(): TriggerSkill("thmumi")
+    {
+        events << CardAsked;
+        view_as_skill = new ThMumiVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (!TriggerSkill::triggerable(player) || !player->canDiscard(player, "he")) return QStringList();
+        QString asked = data.toStringList().first();
+        if (asked == "jink") return QStringList(objectName());
+
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        return room->askForUseCard(player, "@@thmumi", "@thmumi", -1, Card::MethodDiscard);
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const
+    {
+        Jink *jink = new Jink(Card::NoSuit, 0);
+        jink->setSkillName("_thmumi");
+        room->provide(jink);
+        return true;
     }
 };
 

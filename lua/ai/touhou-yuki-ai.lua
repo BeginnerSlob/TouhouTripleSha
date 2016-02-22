@@ -138,6 +138,7 @@ function sgs.ai_cardsview.thzuishangv(self, class_name, player)
 	end
 end
 
+--湑酤：出牌阶段，每当你使用一张【酒】，在结算后，你可以选择一名其他角色，该角色需使用一张【酒】；否则你“湑酤”无效，直到回合结束，且视为你对其使用一张无视距离且不计入使用限制的【杀】。
 sgs.ai_skill_playerchosen.thxugu = sgs.ai_skill_playerchosen.zero_card_as_slash
 
 sgs.ai_skill_use.analeptic = function(self, prompt, method)

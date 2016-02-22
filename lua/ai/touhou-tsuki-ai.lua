@@ -879,7 +879,7 @@ sgs.ai_skill_choice.thexi = function(self, choices, data)
 			return "small"
 		end
 	else
-		self:sortByKeepValue(cards)
+		self:sortByKeepValue(cards, false, true)
 		if cards[2]:getNumber() > cards[1]:getNumber() then
 			return "big"
 		else
