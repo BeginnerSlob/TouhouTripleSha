@@ -142,7 +142,7 @@ nosgongqi_skill.name = "nosgongqi"
 table.insert(sgs.ai_skills, nosgongqi_skill)
 nosgongqi_skill.getTurnUseCard = function(self, inclusive)
 	local cards = self.player:getCards("he")
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	cards = sgs.QList2Table(cards)
@@ -830,7 +830,7 @@ sgs.ai_skill_cardask["@nosguicai-card"] = function(self, data)
 	if self.room:getMode():find("_mini_46") and not judge:isGood() then return "$" .. self.player:handCards():first() end
 	if self:needRetrial(judge) then
 		local cards = sgs.QList2Table(self.player:getHandcards())
-		for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+		for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 			cards:prepend(sgs.Sanguosha:getCard(id))
 		end
 		local card_id = self:getRetrialCardId(cards, judge)
@@ -1330,7 +1330,7 @@ nosguose_skill.name = "nosguose"
 table.insert(sgs.ai_skills, nosguose_skill)
 nosguose_skill.getTurnUseCard = function(self, inclusive)
 	local cards = self.player:getCards("he")
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		local c = sgs.Sanguosha:getCard(id)
 		cards:prepend(c)
 	end

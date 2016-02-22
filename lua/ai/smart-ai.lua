@@ -232,7 +232,7 @@ function sgs.getDefense(player)
 	if not current_player then return sgs.getValue(player) end
 
 	local handcard = (player:getMark("yijue") > 0) and 0 or player:getHandcardNum()
-	local defense = math.min(player:getHp() * 2 + handcard + player:getPile("wooden_ox"):length(), player:getHp() * 3)
+	local defense = math.min(player:getHp() * 2 + handcard + getWoodenOxPile(player):length(), player:getHp() * 3)
 	local attacker = global_room:getCurrent()
 	local hasEightDiagram = false
 	if player:hasArmorEffect("eight_diagram") then
@@ -666,15 +666,22 @@ function SmartAI:adjustUsePriority(card, v)
 	v = v + (13 - card:getNumber()) / 1000
 	if self.player:getPhase() == sgs.Player_Play and self.player:hasSkill("botu") and card:getSuit() <= 3
 		and bit32.band(self.player:getMark("botu"), bit32.lshift(1, card:getSuit())) == 0 then v = v + 0.05 end
-	if not self.player:getPile("wooden_ox"):isEmpty() then
+	if not getWoodenOxPile(self.player):isEmpty() then
+		local add = 0
 		local id_table = {}
 		if not card:isVirtualCard() then id_table = { card:getEffectiveId() }
 		else id_table = sgs.QList2Table(card:getSubcards()) end
 		for _, id in ipairs(id_table) do
 			if self.player:getPile("wooden_ox"):contains(id) then
-				v = v + 0.05
-				break
+				add = add + 0.05
+			elseif self.player:getPile("iklingxun"):contains(id) then
+				add = add + 0.15
+			elseif getWoodenOxPile(self.player):contains(id) then
+				add = add - 0.1
 			end
+		end
+		if add ~= 0 and #id_table ~= 0 then
+			v = v + add / #id_table
 		end
 	end
 	return v
@@ -3554,7 +3561,7 @@ end
 
 function SmartAI:getTurnUse()
 	local cards = self.player:getHandcards()
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	cards = sgs.QList2Table(cards)
@@ -4056,14 +4063,16 @@ function sgs.getPlayerSkillList(player)
 	return skills
 end
 
-function sgs.getCardPlace(room, card)
+function sgs.getCardPlace(room, card, player)
 	local id = card:getEffectiveId()
 	local card_place = room:getCardPlace(id)
 	if card_place == sgs.Player_PlaceSpecial then
-		local player = room:getCardOwner(id)
-		if player then
-			local pile_name = player:getPileName(id)
+		local owner = room:getCardOwner(id)
+		if owner then
+			local pile_name = owner:getPileName(id)
 			if pile_name == "wooden_ox" then return sgs.Player_PlaceHand end
+			if pile_name == "thbaochuipile" and player:hasFlag("thbaochui") and player:getPhase() == sgs.Player_Player then return sgs.Player_PlaceHand end
+			if pile_name == "iklingxun" then return sgs.Player_PlaceHand end
 		end
 	end
 	return card_place
@@ -4129,7 +4138,7 @@ function isCard(class_name, card, player)
 		local place
 		local id = card:getEffectiveId()
 		if global_room:getCardOwner(id) == nil or global_room:getCardOwner(id):objectName() ~= player:objectName() then place = sgs.Player_PlaceHand
-		else place = sgs.getCardPlace(global_room, card) end
+		else place = sgs.getCardPlace(global_room, card, player) end
 		if getSkillViewCard(card, class_name, player, place) then return true end
 		if player:hasSkill("wushen") and card:getSuit() == sgs.Card_Heart and class_name == "Slash" then return true end
 		if player:hasSkill("jinjiu") and card:isKindOf("Analeptic") and class_name == "Slash" then return true end
@@ -4227,7 +4236,7 @@ function getKnownNum(player)
 		return 0
 	else
 		local cards = player:getHandcards()
-		for _, id in sgs.qlist(player:getPile("wooden_ox")) do
+		for _, id in sgs.qlist(getWoodenOxPile(player)) do
 			cards:prepend(sgs.Sanguosha:getCard(id))
 		end
 		local known = 0
@@ -4249,7 +4258,7 @@ function getKnownCard(player, from, class_name, viewas, flags)
 	player = findPlayerByObjectName(global_room, player:objectName())
 	local cards = player:getCards(flags)
 	if flags:match("h") then
-		for _, id in sgs.qlist(player:getPile("wooden_ox")) do
+		for _, id in sgs.qlist(getWoodenOxPile(player)) do
 			cards:prepend(sgs.Sanguosha:getCard(id))
 		end
 	end
@@ -4296,7 +4305,7 @@ function SmartAI:getCardId(class_name, player, acard)
 
 	for _, card in ipairs(cards) do
 		local viewas, cardid
-		local card_place = sgs.getCardPlace(self.room, card)
+		local card_place = sgs.getCardPlace(self.room, card, player)
 		viewas = getSkillViewCard(card, class_name, player, card_place)
 		if viewas then table.insert(viewArr, viewas) end
 		if card:isKindOf(class_name) and not prohibitUseDirectly(card, player) and card_place ~= sgs.Player_PlaceSpecial then
@@ -4336,7 +4345,7 @@ function SmartAI:getCards(class_name, flag)
 			end
 		end
 	elseif flag:match("h") then
-		for _, id in sgs.qlist(player:getPile("wooden_ox")) do
+		for _, id in sgs.qlist(getWoodenOxPile(player)) do
 			all_cards:prepend(sgs.Sanguosha:getCard(id))
 		end
 	end
@@ -4351,7 +4360,7 @@ function SmartAI:getCards(class_name, flag)
 	end
 
 	for _, card in sgs.qlist(all_cards) do
-		card_place = sgs.getCardPlace(room, card)
+		card_place = sgs.getCardPlace(room, card, self.player)
 
 		if card:hasFlag("AI_Using") then
 		elseif class_name == "." and card_place ~= sgs.Player_PlaceSpecial then table.insert(cards, card)
@@ -4377,7 +4386,7 @@ end
 function getCardsNum(class_name, player, from)
 	if not player then global_room:writeToConsole(debug.traceback()) end
 	local cards = sgs.QList2Table(player:getHandcards())
-	for _, id in sgs.qlist(player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(player)) do
 		table.insert(cards, 1, sgs.Sanguosha:getCard(id))
 	end
 
@@ -4698,6 +4707,10 @@ function SmartAI:aoeIsEffective(card, to, source)
 	source = source or self.player
 
 	if source:hasSkill("ikmitu") and not source:hasSkill("ikxuwu") then
+		return false
+	end
+	
+	if self:isThYishiCard(card, to) then
 		return false
 	end
 
@@ -5090,6 +5103,7 @@ function SmartAI:hasTrickEffective(card, to, from, no_prohibit)
 	if to:getPile("dream"):length() > 0 and to:isLocked(card) then return false end
 	if to:hasSkill("thwunian") and from:getMaxHp() ~= 1 and not from:isWounded() and not card:isKindOf("DelayedTrick") then return false end
 	if to:hasSkills("ikmitu|hongyan") and card:isKindOf("Lightning") then return false end
+	if self:isThYishiCard(card, to) then return false end
 
 	if (from:hasSkill("ikmitu") or to:hasSkill("ikmitu")) and not from:hasSkill("ikxuwu") then
 		if card:isKindOf("TrickCard") and sgs.dynamic_value.damage_card[card:getClassName()] then
@@ -5136,7 +5150,7 @@ function SmartAI:useTrickCard(card, use)
 		end
 		local value = 0
 		local cards = self.player:getHandcards()
-		for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+		for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 			cards:prepend(sgs.Sanguosha:getCard(id))
 		end
 		cards = sgs.QList2Table(cards)
@@ -5945,6 +5959,24 @@ function SmartAI:needToLoseHp(to, from, isSlash, passive)
 	end
 
 	return to:getHp() > n
+end
+
+function getWoodenOxPile(player)
+	local cards = sgs.IntList()
+	if player:hasFlag("thbaochui") and player:getPhase() == sgs.Player_Play then
+		for _, p in sgs.qlist(global_room:getOtherPlayers(player)) do
+			for _, id in sgs.qlist(p:getPile("thbaochuipile")) do
+				cards:append(id)
+			end
+		end
+	end
+	for _, id in sgs.qlist(player:getPile("wooden_ox")) do
+		cards:append(id)
+	end
+	for _, id in sgs.qlist(player:getPile("iklingxun")) do
+		cards:append(id)
+	end
+	return cards
 end
 
 dofile "lua/ai/debug-ai.lua"

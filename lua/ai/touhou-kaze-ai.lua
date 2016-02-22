@@ -32,7 +32,7 @@ getThJiyiTarget = function(self)
 
 	self:sort(self.friends_noself, "defense")
 	for _, p in ipairs(self.friends_noself) do
-		if not p:isKongcheng() and p:getPile("wooden_ox"):isEmpty() and getKnownCard(p, self.player, "TrickCard") > 0 then
+		if not p:isKongcheng() and getWoodenOxPile(p):isEmpty() and getKnownCard(p, self.player, "TrickCard") > 0 then
 			if not self:needKongcheng(p, true) then
 				thjiyitarget = p
 				return
@@ -466,7 +466,7 @@ thmicaiv_skill.getTurnUseCard = function(self, inclusive)
 		return turnUse_spear(self, inclusive, "spear")
 	elseif self.player:hasWeapon("fan") then
 		local cards = self.player:getCards("h")
-		for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+		for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 			cards:prepend(sgs.Sanguosha:getCard(id))
 		end
 		cards = sgs.QList2Table(cards)
@@ -1056,7 +1056,7 @@ thsibao_skill.name = "thsibao"
 table.insert(sgs.ai_skills, thsibao_skill)
 thsibao_skill.getTurnUseCard = function(self)
 	local cards = self.player:getCards("he")
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	cards = sgs.QList2Table(cards)
@@ -1442,7 +1442,7 @@ end
 sgs.ai_skill_use_func.ThRansangCard = function(card, use, self)
 	local trick_num = 0
 	local cards = sgs.QList2Table(self.player:getHandcards())
-	for _, c in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, c in sgs.qlist(getWoodenOxPile(self.player)) do
 		table.insert(cards, sgs.Sanguosha:getCard(c))
 	end
 	for _, card in ipairs(cards) do
@@ -1578,7 +1578,7 @@ thyanlun_skill.name = "thyanlun"
 table.insert(sgs.ai_skills, thyanlun_skill)
 thyanlun_skill.getTurnUseCard = function(self)
 	local cards = self.player:getCards("h")
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	cards = sgs.QList2Table(cards)
@@ -1657,7 +1657,7 @@ thyanxing_skill.getTurnUseCard = function(self)
 	--ignore ironchain effect and slash friend who is chained
 	local willHit = false
 	local cards = self.player:getCards("h")
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	cards = sgs.QList2Table(cards)

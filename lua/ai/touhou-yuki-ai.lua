@@ -61,7 +61,7 @@ thzuishang_skill.name = "thzuishang"
 table.insert(sgs.ai_skills, thzuishang_skill)
 thzuishang_skill.getTurnUseCard = function(self, inclusive)
 	local cards = self.player:getCards("he")
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	cards = sgs.QList2Table(cards)
@@ -99,7 +99,7 @@ end
 
 function cardsView_thzuishang(self, player)
 	local cards = player:getCards("he")
-	for _, id in sgs.qlist(player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(player)) do
 		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	cards = sgs.QList2Table(cards)
@@ -316,7 +316,7 @@ thmoji_skill.name = "thmoji"
 table.insert(sgs.ai_skills, thmoji_skill)
 thmoji_skill.getTurnUseCard = function(self)
 	local cards = self.player:getCards("he")
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	cards = sgs.QList2Table(cards)
@@ -368,7 +368,7 @@ sgs.ai_cardsview.thmoji = function(self, class_name, player)
 		return nil
 	end
 	local cards = self.player:getCards("he")
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	cards = sgs.QList2Table(cards)
@@ -493,7 +493,7 @@ thdunjia_skill.name = "thdunjia"
 table.insert(sgs.ai_skills, thdunjia_skill)
 thdunjia_skill.getTurnUseCard = function(self, inclusive)
 	local cards = self.player:getCards("he")
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	cards = sgs.QList2Table(cards)

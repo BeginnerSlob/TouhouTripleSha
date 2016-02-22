@@ -248,7 +248,7 @@ sgs.ai_skill_cardask["@guicai-card"] = function(self, data)
 	if self.room:getMode():find("_mini_46") and not judge:isGood() then return "$" .. self.player:handCards():first() end
 	if self:needRetrial(judge) then
 		local cards = sgs.QList2Table(self.player:getHandcards())
-		for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+		for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 			cards:prepend(sgs.Sanguosha:getCard(id))
 		end
 		local card_id = self:getRetrialCardId(cards, judge)
@@ -1111,7 +1111,7 @@ wusheng_skill.name = "wusheng"
 table.insert(sgs.ai_skills, wusheng_skill)
 wusheng_skill.getTurnUseCard = function(self, inclusive)
 	local cards = self.player:getCards("he")
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	cards = sgs.QList2Table(cards)
@@ -1334,7 +1334,7 @@ longdan_skill.name = "longdan"
 table.insert(sgs.ai_skills, longdan_skill)
 longdan_skill.getTurnUseCard = function(self)
 	local cards = self.player:getCards("h")
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	cards = sgs.QList2Table(cards)
@@ -1751,7 +1751,7 @@ qixi_skill.name = "qixi"
 table.insert(sgs.ai_skills, qixi_skill)
 qixi_skill.getTurnUseCard = function(self, inclusive)
 	local cards = self.player:getCards("he")
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		cards:prepend(sgs.Sanguosha:getCard(id))
 	end
 	cards = sgs.QList2Table(cards)
@@ -2240,7 +2240,7 @@ table.insert(sgs.ai_skills, guose_skill)
 guose_skill.getTurnUseCard = function(self, inclusive)
 	if self.player:hasUsed("GuoseCard") then return end
 	local cards = self.player:getCards("he")
-	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		local c = sgs.Sanguosha:getCard(id)
 		cards:prepend(c)
 	end

@@ -956,7 +956,7 @@ table.insert(sgs.ai_skills, longhun_skill)
 longhun_skill.getTurnUseCard = function(self)
 	if self.player:getHp() > 1 then return end
 	local cards = sgs.QList2Table(self.player:getCards("he"))
-	for _, id in sgs.qlist(player:getPile("wooden_ox")) do
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		table.insert(cards, 1, sgs.Sanguosha:getCard(id))
 	end
 	self:sortByUseValue(cards, true)
