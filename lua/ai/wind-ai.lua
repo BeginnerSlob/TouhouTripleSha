@@ -302,6 +302,9 @@ function SmartAI:findLeijiTarget(player, leiji_value, slasher, latest_version)
 			and self:isEnemy(player, slasher) and player:getHandcardNum() >= slasher:getHp() then
 			return nil
 		end
+		if slasher:hasSkill("thmoju") and slasher:getArmor() then
+			return nil
+		end
 		if not latest_version then
 			if not self:hasSuit("spade", true, player) and player:getHandcardNum() < 3 then return nil end
 		else

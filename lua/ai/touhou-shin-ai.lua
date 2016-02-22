@@ -478,3 +478,103 @@ function sgs.ai_cardneed.thmoju(to, card, self)
 			or (card:isKindOf("Weapon") and sgs.weapon_range[weapon:getClassName()] > 2)
 			or (card:isKindOf("Armor") and getKnownCard(to, self.player, "Armor", true) == 0)
 end
+
+--莲影：出牌阶段限一次，你可以弃置两张牌，若如此做，你获得技能“赤莲”和“疾步”，直到回合结束。
+local thlianying_skill = {}
+thlianying_skill.name = "thlianying"
+table.insert(sgs.ai_skills, thlianying_skill)
+thlianying_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThLianyingCard") then return end
+	if self.player:getCardCount() < 2 then return end
+	return sgs.Card_Parse("@ThLianyingCard=.")
+end
+
+sgs.ai_skill_use_func.ThLianyingCard = function(card, use, self)
+	local canUseSlash = self:slashIsAvailable()
+	if canUseSlash then
+		local must_use = false
+		local slash = sgs.cloneCard("slash")
+		local use = { isDummy = true }
+		self:useCardSlash(slash, use)
+		if not use.card then
+			slash:setSkillName("thlianying")
+			self:useCardSlash(slash, use)
+			if not use.card then
+				return
+			else
+				must_use = true
+			end
+		end
+		if self:getOverflow() > 0 or must_use then
+			local cards = sgs.QList2Table(self.player:getCards("he"))
+			self:sortByKeepValue(cards)
+			if #cards < 3 then
+				return
+			end
+			local c1, c2 = nil, nil
+			for i, c in ipairs(cards) do
+				if not self:isValuableCard(c) then
+					local slash = false
+					for n = #cards, i, -1 do
+						if n == i then continue end
+						if isCard("Slash", cards[n], self.player) or cards[n]:isRed() then
+							slash = true
+							break
+						end
+					end
+					if slash then
+						if c1 then
+							c2 = c
+							break
+						else
+							c1 = c
+						end
+					end
+				end
+			end
+			if c1 and c2 then
+				use.card = sgs.Card_Parse(("@ThLianyingCard=%d+%d"):format(c1:getEffectiveId(), c2:getEffectiveId()))
+				return
+			end
+		end
+	elseif self:getOverflow() > 1 then
+		local cards = sgs.QList2Table(self.player:getCards("he"))
+		self:sortByKeepValue(cards)
+		local c1, c2 = nil, nil
+		for _, c in ipairs(cards) do
+			if not self:isValuableCard(c) then
+				if c1 then
+					c2 = c
+					break
+				else
+					c1 = c
+				end
+			end
+		end
+		if c1 and c2 then
+			use.card = sgs.Card_Parse(("@ThLianyingCard=%d+%d"):format(c1:getEffectiveId(), c2:getEffectiveId()))
+			return
+		end
+	end
+end
+
+sgs.ai_use_priority.ThLianyingCard = sgs.ai_use_priority.Slash + 0.1
+
+--远哮：每当你使用【杀】指定一名目标角色后，若该角色的手牌数大于你，你可以获得其一张手牌并展示之，若此牌为红色，其不能使用【闪】抵消此【杀】。
+sgs.ai_skill_invoke.thyuanxiao = function(self, data)
+	local target = data:toPlayer()
+	if not self:isFriend(target) then
+		return not (self:needKongcheng(target) and target:getHandcardNum() == 1)
+	end
+end
+
+sgs.ai_choicemade_filter.skillInvoke.thyuanxiao = function(self, player, promptlist)
+	local target = findPlayerByObjectName(self.room, promptlist[#promptlist - 1])
+	if target then
+		if promptlist[#promptlist] == "yes" then
+			sgs.updateIntention(player, target, 60)
+		else
+			sgs.updateIntention(player, target, -40)
+		end
+	end
+end
