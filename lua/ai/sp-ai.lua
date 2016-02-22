@@ -1045,7 +1045,7 @@ sgs.ai_skill_use_func.ZhoufuCard = function(card, use, self)
 			friend = p
 			break
 		end
-		if getKnownCard(p, self.player, "SupplySortage", true, "he") > 0 then
+		if getKnownCard(p, self.player, "SupplyShortage", true, "he") > 0 then
 			has_supplyshortage = true
 			friend = p
 			break
