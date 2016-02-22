@@ -471,3 +471,10 @@ function SmartAI:isThYishiCard(card, from)
 	end
 	return false
 end
+
+--魔具：锁定技，摸牌阶段，若你的装备区有武器牌，你摸牌的数量改为你攻击范围的数量（至少摸两张）；出牌阶段，当你使用【杀】指定一名角色为目标后，若你的装备区有防具牌，此【杀】不可以被【闪】响应；你的装备区每有一张坐骑牌，你的手牌上限便+1。
+function sgs.ai_cardneed.thmoju(to, card, self)
+	return (isCard("Slash", card, to) and getKnownCard(to, self.player, "Slash", true) == 0)
+			or (card:isKindOf("Weapon") and sgs.weapon_range[weapon:getClassName()] > 2)
+			or (card:isKindOf("Armor") and getKnownCard(to, self.player, "Armor", true) == 0)
+end

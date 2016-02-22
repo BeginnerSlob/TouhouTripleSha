@@ -1102,7 +1102,7 @@ local function card_for_thguixu(self, who, return_prompt)
 		if not judges:isEmpty() then
 			for _, judge in sgs.qlist(judges) do
 				card = sgs.Sanguosha:getCard(judge:getEffectiveId())
-				if not judge:isKindOf("YanxiaoCard") and not judge:isKindOf("puepleSong") then
+				if not judge:isKindOf("YanxiaoCard") and not judge:isKindOf("PurpleSong") then
 					for _, enemy in ipairs(self.enemies) do
 						if not enemy:containsTrick(judge:objectName()) and not enemy:containsTrick("YanxiaoCard")
 							and not self.room:isProhibited(self.player, enemy, judge)
