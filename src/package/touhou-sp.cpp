@@ -154,7 +154,7 @@ class ThGuanjiaRecord : public TriggerSkill
 public:
     ThGuanjiaRecord() : TriggerSkill("#thguanjia")
     {
-        events << CardUsed << EventPhaseChanging;
+        events << PreCardUsed << CardResponded << EventPhaseChanging;
         frequency = Compulsory;
         global = true;
     }
@@ -166,6 +166,10 @@ public:
                 foreach (ServerPlayer *p, room->getAlivePlayers())
                     p->setMark("thguanjia", 0);
             }
+        } else if (triggerEvent == CardResponded) {
+            CardResponseStruct resp = data.value<CardResponseStruct>();
+            if (resp.m_isUse && resp.m_card->getTypeId() != Card::TypeSkill)
+                return QStringList(objectName());
         } else {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->getTypeId() != Card::TypeSkill)

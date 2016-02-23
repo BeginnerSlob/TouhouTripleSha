@@ -3418,7 +3418,7 @@ function SmartAI:willUsePeachTo(dying)
 		end
 		return "@ThChouceCard=.:" .. pattern
 	end
-	local card_str
+	local card_str = {}
 	local forbid = sgs.cloneCard("peach")
 	if self.player:isLocked(forbid) or dying:isLocked(forbid) then return "." end
 	if self.player:objectName() == dying:objectName() and not self:needDeath(dying) then
@@ -3510,10 +3510,10 @@ function SmartAI:willUsePeachTo(dying)
 			if not same then return "." end
 		end
 		if self.player:objectName() == dying:objectName() then
-			card_str = self:getCardId("Analeptic")
-			if not card_str then card_str = self:getCardId("Peach") end
+			card_str = self:getCards("Analeptic")
+			table.insertTable(card_str, self:getCards("Peach"))
 		elseif dying:isLord() then
-			card_str = self:getCardId("Peach")
+			card_str = self:getCards("Peach")
 		elseif self:doNotSave(dying) then return "."
 		else
 			for _, friend in ipairs(self.friends_noself) do
@@ -3523,13 +3523,13 @@ function SmartAI:willUsePeachTo(dying)
 				if enemy:getHp() == 1 and enemy:isLord() and not enemy:hasSkill("buqu") and self.player:getRole() == "renegade" then weaklord = weaklord + 1 end
 			end
 			if weaklord < 1 or self:getAllPeachNum() > 1 then
-				card_str = self:getCardId("Peach")
+				card_str = self:getCards("Peach")
 			end
 		end
 	else
 		if not sgs.GetConfig("EnableHegemony", false) and self.role == "renegade" and self.room:getMode() ~= "couple"
 			and dying:isLord() and self.room:alivePlayerCount() > 2 then
-			card_str = self:getCardId("Peach")
+			card_str = self:getCards("Peach")
 		end
 		if dying:hasSkill("wuhun") then
 			local lord = self.room:getLord()
@@ -3541,17 +3541,21 @@ function SmartAI:willUsePeachTo(dying)
 			if table.contains(revengeTargets, lord) then
 				local finalRetrial, wizard = self:getFinalRetrial(self.room:getCurrent(), "wuhun")
 				if finalRetrial == 0 or finalRetrial == 2 then
-					card_str = self:getCardId("Peach")
+					card_str = self:getCards("Peach")
 				elseif finalRetrial == 1 then
 					local flag = wizard:hasSkill("huanshi") and "he" or "h"
 					if getKnownCard(wizard, self.player, "Peach|GodSalvation", false, flag) > 0 then return "." end
-					card_str = self:getCardId("Peach")
+					card_str = self:getCards("Peach")
 				end
 			end
 		end
 	end
-	if not card_str then return nil end
-	return card_str
+	if #card_str == 0 then return "." end
+	for _, c in ipairs(card_str) do
+		if self:isThYishiCard(c, dying) then continue end
+		return c:toString()
+	end
+	return "."
 end
 
 function SmartAI:askForSinglePeach(dying)
