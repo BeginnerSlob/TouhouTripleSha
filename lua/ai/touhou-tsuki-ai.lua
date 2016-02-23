@@ -553,7 +553,7 @@ sgs.ai_skill_use_func.ThHeiguanCard = function(card, use, self)
 	self:sortByKeepValue(cards)
 	self:sort(self.enemies, "defense")
 	self.enemies = sgs.reverse(self.enemies)
-	for _, p in sgs.qlist(self.enemies) do
+	for _, p in ipairs(self.enemies) do
 		if p:canSlash(self.player) then
 			for _, c in ipairs(cards) do
 				if not isCard("Peach", c, p) and not isCard("Analeptic", c, p) and not isCard("Jink", c, p) and not isCard("ExNihilo", c, p) then

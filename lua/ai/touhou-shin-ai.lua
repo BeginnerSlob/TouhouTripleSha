@@ -674,3 +674,63 @@ sgs.ai_skill_cardask["@thguangshi"] = function(self, data)
 end
 
 sgs.ai_choicemade_filter.cardChosen.thguangshi = sgs.ai_choicemade_filter.cardChosen.snatch
+
+--隼武：当一张武器牌或防具牌置入弃牌堆时，若你的人物牌上没有牌，你可以将之置于你的人物牌上。
+sgs.ai_skill_invoke.thsunwu = true
+
+--僚感：出牌阶段，你可以令一名角色获得你的人物牌上的牌。若如此做，该角色视为拥有技能“遐攻”和“净涅”，直到你的下个回合开始。
+local thliaogan_skill = {}
+thliaogan_skill.name = "thliaogan"
+table.insert(sgs.ai_skills, thliaogan_skill)
+thliaogan_skill.getTurnUseCard = function(self)
+	if self.player:getPile("thsunwupile"):isEmpty() then return end
+	return sgs.Card_Parse("@ThLiaoganCard=.")
+end
+
+sgs.ai_skill_use_func.ThLiaoganCard = function(card, use, self)
+	local isGoodThLiaoganTarget = function(target, equip)
+		local same = self:getSameEquip(equip, target)
+		if not same then
+			if (not target:getWeapon() and not target:hasSkill("thxiagong")) or (not target:getArmor() and not target:hasSkill("ikjingnie")) then
+				return true
+			end
+		end
+		return target:isWounded() and (equip:isKindOf("SilverLion") or same:isKindOf("SilverLion"))
+	end
+	local euqip = sgs.Sanguosha:getCard(self.player:getPile("thsunwupile"):first())
+	local same = self:getSameEquip(euqip)
+	if same and isGoodThLiaoganTarget(self.player, euqip) then
+		use.card = card
+		if use.to then
+			use.to:append(self.player)
+		end
+		return
+	end
+	if euqip:isKindOf("Weapon") then
+		self:sort(self.friends, "handcard")
+		self.friends = sgs.reverse(self.friends)
+		for _, p in ipairs(self.friends) do
+			if isGoodThLiaoganTarget(p, euqip) then
+				use.card = card
+				if use.to then
+					use.to:append(p)
+				end
+				return
+			end
+		end
+	else
+		self:sort(self.friends, "defense")
+		for _, p in ipairs(self.friends) do
+			if isGoodThLiaoganTarget(p, euqip) then
+				use.card = card
+				if use.to then
+					use.to:append(p)
+				end
+				return
+			end
+		end
+	end
+end
+
+sgs.ai_use_priority.ThLiaoganCard = 9
+sgs.ai_card_intention.ThLiaoganCard = -50
