@@ -1344,7 +1344,7 @@ void Dismantlement::onEffect(const CardEffectStruct &effect) const
         if (effect.to->isAlive() && room->getCardPlace(card_id) == Player::DiscardPile)
             choices << "obtain";
         choices << "skip";
-        QString choice = room->askForChoice(effect.from, "thjianyue", choices.join("+"));
+        QString choice = room->askForChoice(effect.from, "thjianyue", choices.join("+"), QVariant::fromValue(effect.to));
         if (choice == "obtain") {
             room->obtainCard(effect.to, card_id);
             QVariantList list = effect.to->tag["ThJianyue"].toList();

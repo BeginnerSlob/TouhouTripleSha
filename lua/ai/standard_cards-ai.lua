@@ -937,6 +937,7 @@ function SmartAI:useCardPeach(card, use)
 				if use.to then
 					use.to:append(p)
 				end
+				return
 			end
 		end
 	end

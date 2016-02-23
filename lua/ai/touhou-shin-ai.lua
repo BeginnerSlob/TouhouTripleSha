@@ -734,3 +734,40 @@ end
 
 sgs.ai_use_priority.ThLiaoganCard = 9
 sgs.ai_card_intention.ThLiaoganCard = -50
+
+--戋月：摸牌阶段或出牌阶段开始时，你可以视为使用一张【心网密葬】，该牌生效后，你可以选择一项：令目标角色获得被弃置的牌，且其此回合不能使用或打出该牌；或结束当前阶段。
+sgs.ai_skill_use["@@thjianyue"] = function(self, prompt, method)
+	local dismantlement = sgs.cloneCard("dismantlement")
+	dismantlement:setSkillName("thjianyue")
+	local use = { isDummy = true, to = sgs.SPlayerList() }
+	self:useCardSnatchOrDismantlement(dismantlement, use)
+	if use.card and not use.to:isEmpty() then
+		local str = {}
+		for _, p in sgs.qlist(use.to) do
+			table.insert(str, p:objectName())
+		end
+		return "dismantlement:thjianyue[no_suit:0]=.->" .. table.concat(str, "+")
+	end
+	return "."
+end
+
+sgs.ai_skill_choice.thjianyue = function(self, choices, data)
+	local target = data:toPlayer()
+	if self:isFriend(target) and string.find(choices, "obtain") then
+		return "obtain"
+	end
+	if self:isEnemy(target) then
+		if self.player:getPhase() == sgs.Player_Draw and self:getOverflow() >= 0 then
+			if self.player:isSkipped(sgs.Player_Play) then
+				return "skip"
+			end
+		elseif self.player:getPhase() == sgs.Player_Play then
+			local use = { isDummy = true }
+			self:activate(use)
+			if not use.card then
+				return "skip"
+			end
+		end
+	end
+	return "obtain"
+end
