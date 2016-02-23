@@ -605,3 +605,72 @@ sgs.ai_skill_use["@@thmumi"] = function(self, prompt, method)
 	end
 	return "."
 end
+
+--妄狱：每当你使用【杀】造成一次伤害后，你可以将此【杀】交给一名手牌数不大于体力上限的其他角色；每当其他角色使用【杀】造成一次伤害后，若你的手牌数不大于体力上限，其可以将此【杀】交给你。
+sgs.ai_skill_playerchosen.thwangyu = function(self, targets)
+	local damage = self.player:getTag("ThWangyuSlash"):toDamage()
+	local card = damage.card
+	local cards = {}
+	if card:isVirtualCard() then
+		for _, id in sgs.qlist(card:getSubcards()) do
+			table.insert(cards, sgs.Sanguosha:getCard(id))
+		end
+	else
+		cards = { card }
+	end
+	if #cards == 0 then return nil end
+	local _, target = self:getCardNeedPlayer(cards, sgs.QList2Table(targets), false)
+	return target
+end
+
+sgs.ai_playerchosen_intention.thwangyu = -40
+
+--光蚀：每当你受到一次伤害后，你可以摸或弃置一张牌，然后展示你全部的手牌，若红色牌数大于黑色牌，你摸一张牌；若黑色牌数大于红色牌，你弃置伤害来源一张牌。
+sgs.ai_skill_invoke.thguangshi = function(self, data)
+	local damage = data:toDamage()
+	if not damage.from or self:isEnemy(damage.from) then
+		return true
+	else
+		local red, black = 0, 0
+		for _, c in sgs.qlist(self.player:getHandcards()) do
+			if c:isRed() then
+				red = red + 1
+			elseif c:isBlack() then
+				black = black + 1
+			end
+		end
+		if red > black + 1 then
+			return true
+		elseif red == black then
+			return true
+		end
+	end
+	return false
+end
+
+sgs.ai_skill_cardask["@thguangshi"] = function(self, data)
+	local red, black = 0, 0
+	for _, c in sgs.qlist(self.player:getHandcards()) do
+		if c:isRed() then
+			red = red + 1
+		elseif c:isBlack() then
+			black = black + 1
+		end
+	end
+	if math.abs(red - black) >= 2 then return "." end
+	local damage = data:toDamage()
+	if damage.from and self:isFriend(damage.from) then
+		if red == black then
+			local cards = sgs.QList2Table(self.player:getHandcards())
+			self:sortByKeepValue(cards)
+			for _, c in ipairs(cards) do
+				if c:isBlack() then
+					return "$" .. c:getEffectiveId()
+				end
+			end
+		end
+	end
+	return "."
+end
+
+sgs.ai_choicemade_filter.cardChosen.thguangshi = sgs.ai_choicemade_filter.cardChosen.snatch

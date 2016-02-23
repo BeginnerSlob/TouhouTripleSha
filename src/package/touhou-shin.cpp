@@ -992,7 +992,7 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         return room->askForUseCard(player, "@@thmumi", "@thmumi", -1, Card::MethodDiscard);
     }
@@ -1031,9 +1031,9 @@ public:
             }
         }
         return QStringList();
-    };
+    }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         QList<ServerPlayer *> targets;
         if (TriggerSkill::triggerable(player)) {
@@ -1048,7 +1048,9 @@ public:
             }
         }
         if (!targets.isEmpty()) {
+            player->tag["ThWangyuSlash"] = data;
             ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thwangyu", true, player->hasSkill(objectName()));
+            player->tag.remove("ThWangyuSlash");
             if (target) {
                 room->broadcastSkillInvoke(objectName());
                 if (!player->hasSkill(objectName())) {
@@ -1087,9 +1089,9 @@ public:
         events << Damaged;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        if (player->askForSkillInvoke(objectName())) {
+        if (player->askForSkillInvoke(objectName(), data)) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -1098,7 +1100,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        if (!player->canDiscard(player, "he") || !room->askForCard(player, "..", "@thguangshi"))
+        if (!player->canDiscard(player, "he") || !room->askForCard(player, "..", "@thguangshi", data))
             player->drawCards(1, objectName());
         if (!player->isKongcheng()) {
             room->showAllCards(player);
