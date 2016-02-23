@@ -771,3 +771,107 @@ sgs.ai_skill_choice.thjianyue = function(self, choices, data)
 	end
 	return "obtain"
 end
+
+--幻鉴：一名其他角色的回合开始时，若你和其皆有手牌，你可以令其与你各将一张手牌面朝上置于你的人物牌上；此回合结束时，你获得你人物牌上的一张牌，然后该角色获得另一张牌。
+sgs.ai_skill_invoke.thhuanjian = function(self, data)
+	local target = data:toPlayer()
+	local use = nil
+	for _, c in sgs.qlist(self.player:getHandcards()) do
+		if self:isValuableCard(c) then continue end
+		use = c
+		break
+	end
+	if not use then return false end
+	if self:isEnemy(target) then
+		return true
+	else
+		return self:getOverflow(target) > 0
+	end
+	return false
+end
+
+sgs.ai_skill_cardask["@thhuanjian-ask"] = function(self)
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	self:sortByUseValue(cards, true)
+	return cards[1]
+end
+
+sgs.ai_skill_cardask["@thhuanjian-self"] = function(self)
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	self:sortByKeepValue(cards)
+	return cards[1]
+end
+
+--深秘：你可以将你人物牌上颜色相同的两张牌当【闪】使用或打出；或将你人物牌上颜色不同的两张牌当【三粒天滴】使用。
+sgs.ai_cardsview_valuable.thshenmi = function(self, class_name, player)
+	local ids = player:getPile("thhuanjianpile")
+	if ids:length() < 2 then return nil end
+	local card1 = sgs.Sanguosha:getCard(ids:first())
+	local card2 = sgs.Sanguosha:getCard(ids:last())
+	if card1:sameColorWith(card2) then
+		if class_name == "Jink" then
+			return ("jink:thshenmi[to_be_decided:0]=%d+%d"):format(ids:first(), ids:last())
+		end
+	else
+		if class_name == "Nullification" then
+			return ("nullification:thshenmi[to_be_decided:0]=%d+%d"):format(ids:first(), ids:last())
+		end
+	end
+	return nil
+end
+
+--暮狱：出牌阶段限一次，你可以弃置一张牌，然后令一名其他角色选择一项：将一张牌置于你的人物牌上；或弃置两张牌。当你人物牌上有牌时，你可以将红色牌当【闪】、黑色牌当【三粒天滴】使用或打出。准备阶段开始时，你须获得你人物牌上的全部的牌。
+local thmuyu_skill = {}
+thmuyu_skill.name = "thmuyu"
+table.insert(sgs.ai_skills, thmuyu_skill)
+thmuyu_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThMuyuCard") or not self.player:canDiscard(self.player, "h") then return end
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	self:sortByKeepValue(cards)
+	return sgs.Card_Parse("@ThMuyuCard=" .. cards[1]:getEffectiveId())
+end
+
+sgs.ai_skill_use_func.ThMuyuCard = function(card, use, self)
+	local target = self:findPlayerToDiscard("he", false, true)
+	if target then
+		use.card = card
+		if use.to then
+			use.to:append(target)
+		end
+	end
+end
+
+sgs.ai_skill_cardask["@thmuyu-put"] = function(self, data, pattern, target)
+	local cards = sgs.QList2Table(self.player:getCards("he"))
+	self:sortByKeepValue(cards)
+	if pattern == "..!" or self:isFriend(target) then
+		return "$" .. cards[1]:getEffectiveId()
+	end
+	local ret = self:askForDiscard("", 2, 2, false, true)
+	if #ret == 2 then
+		for _, id in ipairs(ret) do
+			if self:isValuableCard(sgs.Sanguosha:getCard(id)) then
+				return "$" .. cards[1]:getEffectiveId()
+			end
+		end
+		return "."
+	end
+	return "$" .. cards[1]:getEffectiveId()
+end
+
+sgs.ai_view_as.thmuyu = function(card, player, card_place, class_name)
+	if not player:getPile("thmuyupile"):isEmpty() then
+		if card_place == sgs.Player_PlaceHand or card_place == sgs.Player_PlaceEquip then
+			local suit = card:getSuitString()
+			local point = card:getNumber()
+			local id = card:getEffectiveId()
+			if class_name == "Jink" and card:isRed() then
+				return string.format("jink:thmuyu[%s:%d]=%d", suit, point, id)
+			elseif class_name == "Nullification" and card:isBlack() then
+				return string.format("nullification:thmuyu[%s:%d]=%d", suit, point, id)
+			end
+		end
+	end
+end
+
+sgs.ai_use_priority.ThMuyuCard = 6

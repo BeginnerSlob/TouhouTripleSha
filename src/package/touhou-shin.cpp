@@ -1339,9 +1339,9 @@ public:
         return list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
-        if (ask_who->askForSkillInvoke(objectName())) {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -1493,7 +1493,7 @@ bool ThMuyuCard::targetFilter(const QList<const Player *> &targets, const Player
 
 void ThMuyuCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
-    bool can_discard = effect.to->canDiscard(effect.to, "he");
+    bool can_discard = effect.to->canDiscard(effect.to, "he") && effect.to->getCardCount() > 1;
     QString pattern = "..";
     if (!can_discard)
         pattern += "!";
