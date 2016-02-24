@@ -1010,3 +1010,56 @@ sgs.ai_skill_invoke.thtanguan = function(self, data)
 	end
 	return false
 end
+
+--爰粹：锁定技，准备阶段开始时，若你未受伤，你失去1点体力；否则，你回复1点体力。
+--无
+
+--秽狂：每当你失去体力时，你可以摸两张牌；每当你回复体力时，你可以弃置两张牌。你可以展示你以此法摸或弃置的牌，若颜色相同，视为你使用一张【百鬼夜行】。
+sgs.ai_skill_invoke.thhuikuang = true
+
+sgs.ai_skill_discard.thhuikuang = function(self)
+	local sa = sgs.cloneCard("savage_assault")
+	local use = { isDummy = true }
+	self:useTrickCard(sa, use)
+	if not use.card then return {} end
+	local ret = self:askForDiscard("", 1, 1, false, true)
+	if #ret == 1 then
+		local c = sgs.Sanguosha:getCard(ret[1])
+		if not self:isValuableCard(c) then
+			local pattern = ".|"
+			if c:isRed() then
+				pattern = pattern .. "red"
+			else
+				pattern = pattern .. "black"
+			end
+			local ret2 = self:askForDiscard("", 2, 2, false, true, pattern)
+			if #ret2 == 2 then
+				if not self:isValuableCard(sgs.Sanguosha:getCard(ret2[2])) then
+					return ret2
+				end
+			end
+		end
+	end
+	return {}
+end
+
+sgs.ai_skill_invoke.thhuikuang_sa = function(self, data)
+	local str = data:toString()
+	local sa = sgs.cloneCard("savage_assault")
+	local use = { isDummy = true }
+	self:useTrickCard(sa, use)
+	if not use.card then return false end
+	if str == "use" then
+		return true
+	elseif str == "show" then
+		local cards = self.player:getHandcards()
+		local n = cards:length()
+		if n < 2 then return false end
+		local a = cards:at(n - 1)
+		local b = cards:at(n - 2)
+		if a:sameColorWith(b) then
+			return true
+		end
+	end
+	return false
+end
