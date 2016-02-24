@@ -232,7 +232,7 @@ local function GuanXing(self, cards)
 	for _, p in sgs.qlist(global_room:getOtherPlayers(self.player)) do
 		if p:faceUp() then next_player = p break end
 	end
-	next_player = next_player or self.player:faceUp() and self.player or self.player:getNextAlive()
+	next_player = next_player or self.player:faceUp() and self.player or self.player:getNextAlive(1, false)
 	judge = sgs.QList2Table(next_player:getJudgingArea())
 	judge = sgs.reverse(judge)
 	if has_lightning and not next_player:containsTrick("lightning") then table.insert(judge, 1, has_lightning) end
@@ -510,7 +510,7 @@ local function XinZhan(self, cards)
 	local up, bottom = {}, {}
 	local judged_list = {}
 	local hasJudge = false
-	local next_player = self.room:findPlayer(self.room:getCurrent():getNextAlive():objectName())
+	local next_player = self.room:findPlayer(self.room:getCurrent():getNextAlive(1, false):objectName())
 	local judge = next_player:getCards("j")
 	judge = sgs.QList2Table(judge)
 	judge = sgs.reverse(judge)

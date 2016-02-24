@@ -879,7 +879,7 @@ sgs.ai_skill_choice.thexi = function(self, choices, data)
 			return "small"
 		end
 	else
-		self:sortByKeepValue(cards, false, true)
+		self:sortByKeepValue(cards, false, sgs.QList2Table(self.player:getHandcards()))
 		if cards[2]:getNumber() > cards[1]:getNumber() then
 			return "big"
 		else

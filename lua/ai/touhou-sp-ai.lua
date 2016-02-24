@@ -104,6 +104,66 @@ end
 
 sgs.ai_playerchosen_intention.thjiefan = -20
 
+--创史：你可抵消其他角色使用的一张【心网密葬】、【断灵御剑】或【碎月绮斗】对你或你攻击范围内的一名角色的效果，视为锦囊牌的使用者对你使用了一张无视距离且不计入使用限制的【杀】。
+sgs.ai_skill_invoke.thchuangshi = function(self, data)
+	local effect = self.player:getTag("ThChuangshiData"):toCardEffect()
+	if effect.from and self:isEnemy(effect.from) then
+		local canSlash = effect.from:canSlash(self.player, nil, false)
+		if not canSlash then
+			return true
+		else
+			local num = self:getCardsNum("Jink", "he", false)
+			if num >= 1 then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+sgs.ai_choicemade_filter.skillInvoke.thchuangshi = function(self, player, promptlist)
+	local effect = player:getTag("ThChuangshiData"):toCardEffect()
+	if effect.from and promptlist[#promptlist] == "yes" then
+		sgs.updateIntention(player, effect.from, 50)
+	end
+end
+
+--高天：每当你需要使用或打出一张【闪】时，你可以观看牌堆顶的X张牌（X为存活角色的数量，且至多为4），你可以弃置一张牌并获得其中一张相同颜色的牌，然后将其余的牌以任意顺序置于牌堆顶或置入弃牌堆。
+sgs.ai_skill_invoke.thgaotian = true
+
+sgs.ai_skill_cardask["@gaotian-discard"] = function(self, data, pattern)
+	if self.player:isNude() then return "." end
+	local ids = data:toIntList()
+	local cards = sgs.QList2Table(self.player:getCards("he"))
+	local cs, reds, blacks = {}, {}, {}
+	for _, id in sgs.qlist(ids) do
+		local c = sgs.Sanguosha:getCard(id)
+		table.insert(cs, c)
+		if c:isRed() then
+			table.insert(reds, c)
+		else
+			table.insert(blacks, c)
+		end
+	end
+	self:sortByKeepValue(cards)
+	local i = 1
+	local useless = cards[1]
+	while (useless:isRed() and #reds == 0) or (useless:isBlack() and #blacks == 0) do
+		i = i + 1
+		if i > #cards then return "." end
+		useless = cards[i]
+	end
+	table.insert(cs, useless)
+	self:sortByKeepValue(cs, true, cards)
+	if cs[1] == useless then return "." end
+	return "$" .. useless:getEffectiveId()
+end
+
+sgs.ai_skill_askforag.thgaotian = function(self, card_ids)
+	if not self.player:hasFlag("ThGaotianSecond") then return end
+	return -1
+end
+
 --【万灵】ai
 sgs.ai_skill_invoke.thwanling = function(self,data)
 	local move = data:toMoveOneTime()
