@@ -2304,6 +2304,14 @@ function SmartAI:askForNullification(trick, from, to, positive, isHeg)
 	else
 		return nil
 	end
+	if not isHeg and self.player:isChained() and self.player:getMark("thguanjia") == 0 then
+		local current = self.room:getCurrent()
+		if current and current:isAlive() and current:getPhase() ~= sgs.Player_NotActive and current:hasSkill("thguanjia") then
+			if #self:getCards("Nullification") <= 1 then
+				return nil
+			end
+		end
+	end
 	if self.player:isLocked(null_card) and not isHeg then return nil end
 	if (from and from:isDead()) or (to and to:isDead()) then return nil end
 	if self:needBear() and not isHeg then return nil end
@@ -3556,9 +3564,20 @@ function SmartAI:willUsePeachTo(dying)
 		end
 	end
 	if #card_str == 0 then return "." end
+	local ava_list = {}
 	for _, c in ipairs(card_str) do
 		if self:isThYishiCard(c, dying) then continue end
-		return c:toString()
+		table.insert(ava_list, c:toString())
+	end
+	local n = 1
+	if self.player:isChained() and self.player:getMark("thguanjia") == 0 then
+		local current = self.room:getCurrent()
+		if current and current:isAlive() and current:getPhase() ~= sgs.Player_NotActive and current:hasSkill("thguanjia") then
+			n = n + 1
+		end
+	end
+	if #ava_list >= n then
+		return ava_list[1]
 	end
 	return "."
 end

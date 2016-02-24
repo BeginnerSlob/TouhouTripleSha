@@ -68,6 +68,20 @@ end
 --霁风：锁定技，你的手牌上限+1。
 --无
 
+--霓裳：准备阶段开始时，你可以将一名其他角色的人物牌横置或者重置。
+sgs.ai_skill_playerchosen.thnichang = function(self, targets)
+	return self:findPlayerToChain(targets)
+end
+
+--奇门：锁定技，当你计算与人物牌横置的角色的距离、人物牌横置的角色计算与你的距离时，无视你们之外的其他角色。
+--无
+
+--贯甲：锁定技，人物牌横置的其他角色于你的回合内使用的第一张牌无效。
+--smart-ai.lua SmartAI:askForNullification
+--smart-ai.lua SmartAI:willUsePeachTo
+--standard-ai.lua sgs.ai_skill_cardask["@multi-jink-start"]
+--standard_cards-ai.lua sgs.ai_skill_cardask["slash-jink"]
+
 --【万灵】ai
 sgs.ai_skill_invoke.thwanling = function(self,data)
 	local move = data:toMoveOneTime()

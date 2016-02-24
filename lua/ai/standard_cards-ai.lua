@@ -861,6 +861,16 @@ sgs.ai_skill_cardask["slash-jink"] = function(self, data, pattern, target)
 	if (not target or self:isFriend(target)) and slash:hasFlag("ikjieyou-slash") then return "." end
 	if sgs.ai_skill_cardask.nullfilter(self, data, pattern, target) then return "." end
 	--if not target then self.room:writeToConsole(debug.traceback()) end
+	--for  Thguanjia
+	if self.player:isChained() and self.player:getMark("thguanjia") == 0 and not self.player:hasFlag("AIGlobal_ThGuanjia") then
+		local current = self.room:getCurrent()
+		if current and current:isAlive() and current:getPhase() ~= sgs.Player_NotActive and current:hasSkill("thguanjia") then
+			self.room:setPlayerFlag(self.player, "AIGlobal_ThGuanjia")
+			local ret = sgs.ai_skill_cardask["@multi-jink-start"](self, data, pattern, target, nil, 2)
+			self.room:setPlayerFlag(self.player, "-AIGlobal_ThGuanjia")
+			return ret
+		end
+	end
 	if not target then return getJink() end
 	if not self:hasHeavySlashDamage(target, slash, self.player) and self:getDamagedEffects(self.player, target, slash) then return "." end
 	if slash:isKindOf("NatureSlash") and self.player:isChained() and self:isGoodChainTarget(self.player, target, nil, nil, slash) then return "." end

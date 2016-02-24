@@ -695,7 +695,7 @@ sgs.ai_skill_use_func.ThLiaoganCard = function(card, use, self)
 				return true
 			end
 		end
-		return target:isWounded() and (equip:isKindOf("SilverLion") or same:isKindOf("SilverLion"))
+		return target:isWounded() and (equip:isKindOf("SilverLion") or (same and same:isKindOf("SilverLion")))
 	end
 	local euqip = sgs.Sanguosha:getCard(self.player:getPile("thsunwupile"):first())
 	local same = self:getSameEquip(euqip)
