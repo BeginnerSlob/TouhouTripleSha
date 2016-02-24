@@ -294,11 +294,14 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
+        ask_who->tag["ThChuangshiData"] = data;
         if (ask_who->askForSkillInvoke(objectName())) {
+            ask_who->tag.remove("ThChuangshiData");
             room->broadcastSkillInvoke(objectName());
             return true;
         }
+        ask_who->tag.remove("ThChuangshiData");
         return false;
     }
 
@@ -353,7 +356,7 @@ public:
             pattern = ".|black";
         else if (blacks.isEmpty())
             pattern = ".|red";
-        const Card *card = room->askForCard(player, pattern, "@gaotian-discard", data, objectName());
+        const Card *card = room->askForCard(player, pattern, "@gaotian-discard", QVariant::fromValue(IntList2VariantList(card_ids)), objectName());
         if (card) {
             int card_id = -1;
             if (card->isBlack()) {
@@ -380,7 +383,9 @@ public:
         QList<ServerPlayer *> p_list;
         p_list << player;
         while (!card_ids.isEmpty()) {
+            room->setPlayerFlag(player, "ThGaotianSecond");
             int card_id = room->askForAG(player, card_ids, true, objectName());
+            room->setPlayerFlag(player, "-ThGaotianSecond");
             if (card_id != -1) {
                 room->takeAG(NULL, card_id, false, p_list);
                 card_ids.removeOne(card_id);
