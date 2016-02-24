@@ -339,7 +339,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         int n = qMin(4, room->alivePlayerCount());
         QList<int> card_ids = room->getNCards(n, false);
 
@@ -576,7 +576,9 @@ public:
                 if (qAbs(target->getCards(flag).length() - player->getCards(flag).length()) <= player->getLostHp() + 1)
                     choices << flag;
             }
-            QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+            player->tag["ThModaoData"] = QVariant::fromValue(target); // for AI
+            QString choice = room->askForChoice(player, objectName(), choices.join("+"), QVariant::fromValue(target));
+            player->tag.remove("ThModaoData");
             if (choice == "h") {
                 foreach (ServerPlayer *p, room->getAlivePlayers()) {
                     if (p != player && p != target)
@@ -661,8 +663,8 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        if (player->askForSkillInvoke(objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(data.value<DamageStruct>().from))) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -753,8 +755,8 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
-        if (room->askForCard(ask_who, "..", "@thqixiang", data, objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
+        if (room->askForCard(ask_who, "..", "@thqixiang", QVariant::fromValue(player), objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -766,7 +768,7 @@ public:
         choices << "draw";
         if (!player->isKongcheng())
             choices << "discard";
-        QString choice = room->askForChoice(ask_who, objectName(), choices.join("+"));
+        QString choice = room->askForChoice(ask_who, objectName(), choices.join("+"), QVariant::fromValue(player));
         if (choice == "discard")
             room->askForDiscard(player, objectName(), 1, 1);
         else

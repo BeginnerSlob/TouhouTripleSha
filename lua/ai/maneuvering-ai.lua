@@ -444,6 +444,20 @@ function SmartAI:useCardIronChain(card, use)
 															or card:getSkillName() == "nosguhuo"
 															or card:getSkillName() == "qice"
 															or card:getSkillName() == "thhuilve")
+	if not needTarget then
+		local subs = {}
+		if card:isVirtualCard() then
+			subs = sgs.QList2Table(card:getSubcards())
+		else
+			subs = { card:getEffectiveId() }
+		end
+		for _, id in ipairs(subs) do
+			if getWoodenOxPile(self.player):contains(id) then
+				needTarget = true
+				break
+			end
+		end
+	end
 	use.card = card
 	if not needTarget then
 		if self.player:isLocked(card) then return end

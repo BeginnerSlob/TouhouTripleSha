@@ -164,154 +164,159 @@ sgs.ai_skill_askforag.thgaotian = function(self, card_ids)
 	return -1
 end
 
---【万灵】ai
-sgs.ai_skill_invoke.thwanling = function(self,data)
+--万灵：其他角色使用的红色【杀】或红色非延时类锦囊牌，在结算后置入弃牌堆时，你可以选择一项：令该角色摸一张牌；或弃置一张牌并获得该角色所使用的牌，每回合限三次。
+sgs.ai_skill_invoke.thwanling = function(self, data)
 	local move = data:toMoveOneTime()
-	local target
-	local card =move.m_extraData
-	for _,p in sgs.qlist(self.room:getOtherPlayers(self.player))do
-		if p:objectName()==move.from:objectName() then
-			target=p
-			break
-		end
-	end
+	local target = self.room:findPlayer(move.from:objectName())
+	local card = move.reason.m_extraData:toCard()
+
 	if target and card then
 		if self:isFriend(target) then
 			return true
 		else
 			if not self.player:canDiscard(self.player, "he") then return false end
-			local cards = self:askForDiscard("thwanling", 1, 1, false, true)
-			table.insert(cards,card)
+			local ret = self:askForDiscard("thwanling", 1, 1, false, true)
+			local cards = { sgs.Sanguosha:getCard(ret[1]) }
+			if self:isValuableCard(cards[1]) then return false end
+			table.insert(cards, card)
 			self:sortByUseValue(cards)
-			if cards[1]:getEffectiveId()<0 or move.card_ids:contains(cards[1]:getEffectiveId())  then
-				return false
-			else
+			if card:toString() == cards[1]:toString() then
 				return true
 			end
 		end
 	end
 	return false
 end
-sgs.ai_skill_cardask["@thwanling"] = function(self, data)
+
+sgs.ai_skill_cardask["@thwanling"] = function(self, data, pattern, target)
 	local move = data:toMoveOneTime()
-	local target
-	local card =move.m_extraData
-	for _,p in sgs.qlist(self.room:getOtherPlayers(self.player))do
-		if p:objectName()==move.from:objectName() then
-			target=p
-			break
-		end
-	end
-	-- for ai intention
-	local ai_data=sgs.QVariant()
-	ai_data:setValue(target)
-	self.player:setTag("thwanling_target",ai_data)
+	local card = move.reason.m_extraData:toCard()
 	
 	if not self:isFriend(target) then
-		local to_discard=self:askForDiscard("thwanling", 1, 1, false, true)
-		return "$" .. to_discard[1]:getId()
+		local to_discard = self:askForDiscard("thwanling", 1, 1, false, true)
+		return "$" .. to_discard[1]
 	elseif card then
-		local optional_discard=self:askForDiscard("thwanling", 1, 1, true, true)
-		if #optional_discard>0 then
+		local optional_discard = self:askForDiscard("thwanling", 1, 1, false, true)
+		if #optional_discard > 0 then
 			local need_obtain
 			if card:isKindOf("Slash") then
-				need_obtain = getCardsNum("Slash", self.player, self.pplayer)<1
+				need_obtain = self:getCardsNum("Slash") < 1
 			elseif card:isKindOf("AOE") then
-				need_obtain=self:getAoeValue(card, self.player)>0
+				need_obtain = self:getAoeValue(card) > 0
+			elseif self:isValuableCard(card) then
+				need_obtain = true
 			end
 			if need_obtain then
-				return "$" .. optional_discard[1]:getId()
+				return "$" .. optional_discard[1]
 			end
 		end
 	end
 	return "."
 end
+
 sgs.ai_choicemade_filter.cardResponded["@thwanling"] = function(self, player, promptlist)
 	if promptlist[#promptlist] == "_nil_" then
-		local target =player:getTag("thwanling_target"):toPlayer()
+		local target = self.room:findPlayer(promptlist[#promptlist - 1])
 		if not target then return end
-		sgs.updateIntention(player, target, -80)
+		sgs.updateIntention(player, target, -40)
 	end
 end
 
---【醉步】ai
+--醉步：每当你受到伤害时，伤害来源可以令你摸一张牌，然后令此伤害-1，每回合限三次。
+--smart-ai.lua  SmartAI:damageIsEffective 
+--smart-ai.lua  SmartAI:getAoeValueTo
 sgs.ai_skill_invoke.thzuibu = function(self,data)
 	local target = data:toPlayer()
 	return self:isFriend(target)
 end
---smart-ai  damageIsEffective  getAoeValueTo
 
---【魔盗】ai
---送关键牌给队友什么的高级手法。。。不考虑
---其实还需要一个排序函数 不过懒了
-local parseTargetForModao = function(self,source,target)
+sgs.ai_choicemade_filter.skillInvoke.thzuibu = function(self, player, promptlist)
+	local target = self.room:findPlayer(promptlist[#promptlist - 1])
+	if target and promptlist[#promptlist] == "yes" then
+		sgs.updateIntention(player, target, -60)
+	end
+end
+
+--魔盗：摸牌阶段开始时，你可以放弃摸牌，并选择你攻击范围内的一名角色，若你与其的一个相同区域内的牌数差不大于X+1，交换你们该区域的所有牌，然后你与该角色各摸一张牌（X为你已损失的体力值）。
+local parseTargetForModao = function(self, source, target)
 	local flag = "h"
 	local diff = 0
-	 local isGood = false
-	local handDiff = target:getCards("h"):length() -  source:getCards("h"):length() 
-	local equipDiff = target:getCards("e"):length() -  source:getCards("e"):length() 
-	local judgeDiff = target:getCards("j"):length() -  source:getCards("j"):length() 
+	local isGood = false
+	local handDiff = target:getCards("h"):length() - source:getCards("h"):length()
+	local equipDiff = target:getCards("e"):length() - source:getCards("e"):length()
+	local judgeDiff = target:getCards("j"):length() - source:getCards("j"):length()
 	local standardMax = source:getLostHp() + 1
-	if self:isFriend(source,target) then
-		if  target:hasSkills(sgs.lose_equip_skill)  then
-			diff = equipDiff
-			flag = "e"
-			isGood = true
+	if self:isFriend(source, target) then
+		if judgeDiff > 0 and judgeDiff <= standardMax and (target:containsTrick("indulgence") or target:containsTrick("supply_shortage")) then
+			return true, "j", 1
 		end
-		--闪电比较复杂 暂时不管了
-		if handDiff > 0 and math.abs(handDiff) <= standardMax and  (target:containsTrick("indulgence") or target:containsTrick("supply_shortage") ) then
-			diff = judgeDiff
-			flag = "j"
-			isGood = true
+		if equipDiff ~= 0 and math.abs(equipDiff) <= standardMax and (target:hasSkills(sgs.lose_equip_skill) or self:needToThrowArmor(target)) then
+			return true, "e", 3
 		end
 	else
-		if equipDiff > 0 and math.abs(equipDiff) <= standardMax and not target:hasSkills(sgs.lose_equip_skill) then
-			diff = equipDiff
-			flag = "e"
-			isGood = true
+		local value = 0
+		if target:containsTrick("indulgence") then
+			value = value - 1
 		end
-		if handDiff > 0 and math.abs(handDiff) <= standardMax then
-			isGood = true
-			if diff > 0  then
-				if diff < handDiff then
-					diff = handDiff
-					flag = "h"
-				end
-			else
-				diff = handDiff
-				flag = "h"
-			end
+		if target:containsTrick("supply_shortage") then
+			value = value - 1
+		end
+		if target:containsTrick("purple_song") then
+			value = value + 1
+		end
+		if judgeDiff > 0 and judgeDiff <= standardMax and value > 0 then
+			return true, "j", 2
+		end
+		if equipDiff > handDiff and handDiff > 0 and equipDiff <= standardMax and not target:hasSkills(sgs.lose_equip_skill) then
+			return true, "e", equipDiff
+		end
+		if handDiff > 0 and handDiff <= standardMax then
+			return true, "h", handDiff
 		end
 	end
-	return isGood,flag,diff
+	return false, "h", 0
 end
+
 sgs.ai_skill_playerchosen.thmodao = function(self, targets)
-	for _,p in sgs.qlist(targets)do
-		if parseTargetForModao(self,self.player, p) then
-			return p
+	self.room:sortByActionOrder(targets)
+	local maxdiff = 0
+	local target = nil
+	for _, p in sgs.qlist(targets) do
+		local g, _, d = parseTargetForModao(self, self.player, p)
+		if g and d > maxdiff then
+			maxdiff = d
+			target = p
 		end
 	end
-	return nil
+	return target
 end
-sgs.ai_skill_choice.thmodao= function(self, choices, data)	
-	local target = self.player:getTag("ThModaoTarget"):toPlayer()
-	local isGood,flag =  parseTargetForModao(self,self.player, target)
+
+sgs.ai_skill_choice.thmodao = function(self, choices, data)	
+	local target = data:toPlayer()
+	local _, flag = parseTargetForModao(self, self.player, target)
 	return flag
 end
-sgs.ai_choicemade_filter.skillInvoke.thmodao = function(self, player, promptlist)
-	local target = player:getTag("ThModaoTarget"):toPlayer()
+
+sgs.ai_choicemade_filter.skillChoice.thmodao = function(self, player, promptlist)
+	local target = player:getTag("ThModaoData"):toPlayer()
 	if target then
 		local flag =  promptlist[#promptlist] 
 		local diff =  target:getCards(flag):length() - player:getCards(flag):length() 
 		local friendly
 		if flag == "e" then
-			if not target:hasSkills(sgs.lose_equip_skill) then
-				friendly = diff < 0
+			if not target:hasSkills(sgs.lose_equip_skill) and not self:needToThrowArmor(target) then
+				friendly = diff <= 0
 			else
 				friendly = true
 			end
-		elseif flag == "j" or flag == "h" then
-			friendly = diff < 0
+		elseif flag == "h" then
+			friendly = diff <= 0
+		elseif flag == "j" then
+			if target:containsTrick("indulgence") or target:containsTrick("supply_shortage") then
+				friendly = true
+			else
+				friendly = false
+			end
 		end
 		if friendly then
 			sgs.updateIntention(player, target, -50)
@@ -321,7 +326,57 @@ sgs.ai_choicemade_filter.skillInvoke.thmodao = function(self, player, promptlist
 	end
 end
 
+--梦生：每当你受到一次伤害后，你可以获得伤害来源的一张牌，然后令该角色的非专属技无效，直到你的下一个回合的回合结束。
+sgs.ai_skill_invoke.thmengsheng = function(self,data)
+	local target = data:toPlayer()
+	return not self:isFriend(target)
+end
 
+sgs.ai_choicemade_filter.skillInvoke.thmengsheng = function(self, player, promptlist)
+	local target = self.room:findPlayer(promptlist[#promptlist - 1])
+	if target and promptlist[#promptlist] == "yes" then
+		sgs.updateIntention(player, target, 50)
+	end
+end
+
+--绮想：你攻击范围内的一名角色的弃牌阶段结束时，你可以弃置一张牌，令其摸一张牌或弃置一张手牌。
+sgs.ai_skill_cardask["@thqixiang"] = function(self, data, pattern)
+	local target = data:toPlayer()
+	if self:isEnemy(target) and not target:canDiscard(target, "h") then return "." end
+	if not self:isEnemy(target) and not self:isFriend(target) then return "." end
+	local ret = self:askForDiscard("thqixiang", 1, 1, false, true)
+	if #ret > 0 then
+		local c = sgs.Sanguosha:getCard(ret[1])
+		if not self:isValuableCard(c) then
+			return "$" .. ret[1]
+		end
+	end
+	return "."
+end
+
+sgs.ai_skill_choice.thqixiang = function(self, choices, data)	
+	local target = data:toPlayer()
+	return self:isFriend(target) and "draw" or "discard"
+end
+
+sgs.ai_choicemade_filter.skillChoice.thqixiang = function(self, player, promptlist)
+	local str = promptlist[#promptlist]
+	local target = nil
+	for _, p in sgs.qlist(self.room:getAlivePlayers()) do
+		if p:getPhase() == sgs.Player_Discard then
+			target = p
+			break
+		end
+	end
+	if target then
+		if str == "draw" then
+			sgs.updateIntention(player, target, -40)
+		else
+			sgs.updateIntention(player, target, 40)
+		end
+	end
+end
+	
 --如何更好的获取和为9的集合？？
 function SmartAI:findTableByPlusValue(cards, neednumber, plus, pointer,need_cards)
 		if neednumber == 0 and plus == 9 then 
