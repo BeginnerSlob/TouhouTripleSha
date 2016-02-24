@@ -2723,6 +2723,16 @@ end
 
 sgs.ai_skill_cardask["@multi-jink-start"] = function(self, data, pattern, target, target2, arg)
 	local rest_num = tonumber(arg)
+	--for  Thguanjia
+	if self.player:isChained() and self.player:getMark("thguanjia") == 0 and not self.player:hasFlag("AIGlobal_ThGuanjia") then
+		local current = self.room:getCurrent()
+		if current and current:isAlive() and current:getPhase() ~= sgs.Player_NotActive and current:hasSkill("thguanjia") then
+			self.room:setPlayerFlag(self.player, "AIGlobal_ThGuanjia")
+			local ret = sgs.ai_skill_cardask["@multi-jink-start"](self, data, pattern, target, nil, rest_num + 1)
+			self.room:setPlayerFlag(self.player, "-AIGlobal_ThGuanjia")
+			return ret
+		end
+	end
 	if rest_num == 1 then return sgs.ai_skill_cardask["slash-jink"](self, data, pattern, target) end
 	if sgs.ai_skill_cardask.nullfilter(self, data, pattern, target) then return "." end
 	if self:canUseJieyuanDecrease(target) then return "." end
