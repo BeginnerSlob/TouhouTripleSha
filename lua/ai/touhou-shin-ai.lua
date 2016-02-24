@@ -875,3 +875,138 @@ sgs.ai_view_as.thmuyu = function(card, player, card_place, class_name)
 end
 
 sgs.ai_use_priority.ThMuyuCard = 6
+
+--逆秽：出牌阶段限一次，你可以摸三张牌，然后弃置一张牌。若如此做，交换此技能描述中的“摸”与“弃置”。
+local thnihui_skill = {}
+thnihui_skill.name = "thnihui"
+table.insert(sgs.ai_skills, thnihui_skill)
+thnihui_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThNihuiCard") or self.player:hasUsed("ThNihuiEditCard") then return end
+	return sgs.Card_Parse("@ThNihuiCard=.")
+end
+
+sgs.ai_skill_use_func.ThNihuiCard = function(card, use, self)
+	use.card = card
+end
+
+sgs.ai_use_priority.ThNihuiCard = 6.8
+
+local thnihui_edit_skill = {}
+thnihui_edit_skill.name = "thnihui-edit"
+table.insert(sgs.ai_skills, thnihui_edit_skill)
+thnihui_edit_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThNihuiCard") or self.player:hasUsed("ThNihuiEditCard") then return end
+	local cards = {}
+	for _, c in sgs.qlist(self.player:getCards("he")) do
+		if not self:isValuableCard(c) then
+			table.insert(cards, c)
+		end
+	end
+	if #cards < 3 then return end
+	self:sortByKeepValue(cards)
+	return sgs.Card_Parse(("@ThNihuiEditCard=%d+%d+%d"):format(cards[1]:getEffectiveId(), cards[2]:getEffectiveId(), cards[3]:getEffectiveId()))
+end
+
+sgs.ai_skill_use_func.ThNihuiEditCard = function(card, use, self)
+	use.card = card
+end
+
+sgs.ai_use_priority.ThNihuiEditCard = -6.8
+
+--弹冠：结束阶段开始时，你可以与一名其他角色拼点，然后你们获得对方拼点的牌。若这两张牌皆为红色，你可以回复1点体力；若皆为黑色，你可以令该角色摸两张牌。
+sgs.ai_skill_playerchosen.thtanguan = function(self, targets)
+	self:sort(self.enemies, "handcard")
+	for _, p in ipairs(self.enemies) do
+		if self:isWeak(p) and p:getHandcardNum() == 1 and not p:getHandcards():first():hasFlag("visible") then
+			for _, c in sgs.qlist(self.player:getHandcards()) do
+				if self:isValuableCard(c, p) then continue end
+				self.thtanguan_card = c:getEffectiveId()
+				return p
+			end
+		end
+	end
+	if #self.friends_noself == 0 then return nil end
+	if self.player:isWounded() then
+		for _, c in sgs.qlist(self.player:getHandcards()) do
+			if c:isRed() then
+				self:sort(self.friends_noself, "handcard")
+				self.friends_noself = sgs.reverse(self.friends_noself)
+				for _, p in ipairs(self.friends_noself) do
+					if p:isKongcheng() then continue end
+					local flag = ("%s_%s_%s"):format("visible", self.player:objectName(), p:objectName())
+					for _, cc in sgs.qlist(p:getHandcards()) do
+						if cc:isRed() and (cc:hasFlag("visible") or cc:hasFlag(flag)) then
+							self.thtanguan_card = c:getEffectiveId()
+							return p
+						end
+					end
+				end
+				if not self.friends_noself[1]:isKongcheng() then
+					self.thtanguan_card = c:getEffectiveId()
+					return self.friends_noself[1]
+				end
+				break
+			end
+		end
+	end
+	for _, c in sgs.qlist(self.player:getHandcards()) do
+		if c:isBlack() then
+			self:sort(self.friends_noself, "handcard")
+			for _, p in ipairs(self.friends_noself) do
+				if p:isKongcheng() then continue end
+				local flag = ("%s_%s_%s"):format("visible", self.player:objectName(), p:objectName())
+				for _, cc in sgs.qlist(p:getHandcards()) do
+					if cc:isBlack() and (cc:hasFlag("visible") or cc:hasFlag(flag)) then
+						self.thtanguan_card = c:getEffectiveId()
+						return p
+					end
+				end
+			end
+			if not self.friends_noself[#self.friends_noself]:isKongcheng() then
+				self.thtanguan_card = c:getEffectiveId()
+				return self.friends_noself[#self.friends_noself]
+			end
+			break
+		end
+	end
+	return nil
+end
+
+sgs.ai_skill_pindian.thtanguan = function(minusecard, self, requestor, maxcard, mincard)
+	if self.player:getHandcardNum() == 1 then
+		return self.player:getHandcards():first()
+	end
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	self:sortByKeepValue(cards)
+	local black, red = nil, nil
+	for _, c in ipairs(cards) do
+		if not black and c:isBlack() then
+			black = c
+		elseif not red and c:isRed() then
+			red = c
+		end
+	end
+	if self:isFriend(requestor) then
+		if requestor:isWounded() then
+			return red or black or cards[#cards]
+		else
+			return black or cards[#cards]
+		end
+	else
+		return black or minusecard
+	end
+end
+
+sgs.ai_skill_invoke.thtanguan = function(self, data)
+	local str = data:toString()
+	if str == "recover" then
+		return true
+	else
+		local p_list = str:split(":")
+		local target = self.room:findPlayer(p_list[#p_list])
+		if target then
+			return self:isFriend(target)
+		end
+	end
+	return false
+end
