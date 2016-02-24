@@ -645,7 +645,7 @@ void ThYuanqiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
             room->recover(source, RecoverStruct(source));
         }
     } else
-        room->moveCardTo(card2, NULL, Player::DrawPile, true);
+        room->returnToTopDrawPile(card_ids);
 }
 
 class ThYuanqi: public OneCardViewAsSkill {

@@ -474,8 +474,9 @@ public:
         player->tag.remove("ThKaiyunJudge");
         card_ids.removeOne(card_id);
         room->retrial(Sanguosha->getCard(card_id), player, judge, objectName());
-        room->takeAG(player, card_ids.first(), true, QList<ServerPlayer *>() << player);
         room->clearAG(player);
+        room->returnToTopDrawPile(card_ids);
+        room->obtainCard(player, card_ids.first(), false);
 
         return false;
     }

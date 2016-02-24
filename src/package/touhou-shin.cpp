@@ -1815,7 +1815,7 @@ public:
             }
         }
         return QStringList();
-    };
+    }
 
     virtual bool cost(TriggerEvent e, Room *r, ServerPlayer *p, QVariant &, ServerPlayer *) const
     {
