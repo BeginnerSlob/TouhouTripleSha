@@ -2548,7 +2548,11 @@ function SmartAI:askForNullification(trick, from, to, positive, isHeg)
 				end
 			end
 		else
-			if self:isEnemy(to) and (sgs.evaluatePlayerRole(to) ~= "neutral" or sgs.isRolePredictable()) then return null_card else return end
+			if self:isEnemy(to) and not trick:isKindOf("PurpleSong") and (sgs.evaluatePlayerRole(to) ~= "neutral" or sgs.isRolePredictable()) then
+				return null_card
+			else
+				return
+			end
 		end
 	end
 end

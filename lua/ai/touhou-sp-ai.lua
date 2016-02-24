@@ -1,3 +1,73 @@
+--凡识：若你的手牌数不小于体力值，你可将一张红色手牌在你的回合内当【杀】，或在你的回合外当【闪】或【桃】使用或者打出。
+local thfanshi_skill = {}
+thfanshi_skill.name = "thfanshi"
+table.insert(sgs.ai_skills, thfanshi_skill)
+thfanshi_skill.getTurnUseCard = function(self)
+	if self.player:getHandcardNum() < self.player:getHp() then return end
+	local cards = self.player:getCards("h")
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
+		cards:prepend(sgs.Sanguosha:getCard(id))
+	end
+	cards = sgs.QList2Table(cards)
+
+	local red_card
+
+	self:sortByUseValue(cards, true)
+
+	for _, card in ipairs(cards) do
+		if card:isRed() and not self:isValuableCard(card) then
+			red_card = card
+			break
+		end
+	end
+
+	if not red_card then return nil end
+	local suit = red_card:getSuitString()
+	local number = red_card:getNumberString()
+	local card_id = red_card:getEffectiveId()
+	local card_str = ("slash:thfanshi[%s:%s]=%d"):format(suit, number, card_id)
+	local slash = sgs.Card_Parse(card_str)
+	assert(slash)
+
+	return slash
+end
+
+sgs.ai_cardsview.thfanshi = function(self, class_name, player)
+	if self.player:getHandcardNum() < self.player:getHp() then return nil end
+	if self.player:getPhase() == sgs.Player_NotActive and (class_name ~= "Peach" and class_name ~= "Jink") then return nil end
+	if self.player:getPhase() ~= sgs.Player_NotActive and class_name ~= "Slash" then return nil end
+	local cards = player:getCards("h")
+	for _, id in sgs.qlist(getWoodenOxPile(player)) do
+		cards:prepend(sgs.Sanguosha:getCard(id))
+	end
+	cards = sgs.QList2Table(cards)
+
+	sgs.ais[player:objectName()]:sortByKeepValue(cards)
+
+	local red_card = nil
+	for _, card in ipairs(cards) do
+		if card:isRed() and not self:isValuableCard(card, player) then
+			red_card = card
+			break
+		end
+	end
+	if not red_card then return nil end
+	local suit = red_card:getSuitString()
+	local number = red_card:getNumberString()
+	local card_id = red_card:getEffectiveId()
+	if class_name == "Jink" then
+		return ("jink:thfanshi[%s:%s]=%d"):format(suit, number, card_id)
+	elseif class_name == "Peach" then
+		return ("peach:thfanshi[%s:%s]=%d"):format(suit, number, card_id)
+	elseif class_name == "Slash" then
+		return ("slash:thfanshi[%s:%s]=%d"):format(suit, number, card_id)
+	end
+	return nil
+end
+
+--霁风：锁定技，你的手牌上限+1。
+--无
+
 --【万灵】ai
 sgs.ai_skill_invoke.thwanling = function(self,data)
 	local move = data:toMoveOneTime()
