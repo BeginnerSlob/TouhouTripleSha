@@ -210,7 +210,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
-        if (room->askForCard(ask_who, "..", "@shenshi:" + player->objectName(), data, objectName())) {
+        if (room->askForCard(ask_who, "..", "@thshenshi:" + player->objectName(), data, objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -256,7 +256,9 @@ public:
 
         const Card *card = Sanguosha->getCard(id);
         if (card->isKindOf("BasicCard")) {
+            player->tag["ThJiefanId"] = id;
             ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName());
+            player->tag.remove("ThJiefanId");
             room->obtainCard(target, card);
         } else {
             CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, player->objectName(), objectName(), QString());

@@ -82,6 +82,28 @@ end
 --standard-ai.lua sgs.ai_skill_cardask["@multi-jink-start"]
 --standard_cards-ai.lua sgs.ai_skill_cardask["slash-jink"]
 
+--神事：每当一名角色跳过一个阶段后，你可以弃置一张牌并令其回复1点体力，每回合限一次。
+sgs.ai_skill_cardask["@thshenshi"] = function(self, data, pattern, target)
+	if self:isFriend(target) and target:isWounded() then
+		local ret = self:askForDiscard("", 1, 1, false, true)
+		if #ret == 1 then
+			return "$" .. ret[1]
+		end
+	end
+	return "."
+end
+
+--解烦：准备阶段开始时，你可以亮出牌堆顶的一张牌，若为基本牌，将其交给一名角色，否则将其置入弃牌堆。你可以重复此流程，直到亮出的牌为非基本牌为止。
+sgs.ai_skill_invoke.thjiefan = true
+
+sgs.ai_skill_playerchosen.thjiefan = function(self, targets)
+	local ids = { self.player:getTag("ThJiefanId"):toInt() }
+	local target, _ = sgs.ai_skill_askforyiji.nosyiji(self, ids)
+	return target or self.player
+end
+
+sgs.ai_playerchosen_intention.thjiefan = -20
+
 --【万灵】ai
 sgs.ai_skill_invoke.thwanling = function(self,data)
 	local move = data:toMoveOneTime()
