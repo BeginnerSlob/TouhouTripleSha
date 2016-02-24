@@ -497,7 +497,7 @@ function sgs.ai_cardsview_valuable.thshennao(self, class_name, player)
 		return nil
 	end
 	local null = self.ask_for_nullification
-	if player:getHp() > 1 or (null.m_to:objectName() == player:objectName() and sgs.dynamic_value.damage_card[null.m_trick:getClassName()]) then
+	if player:getHp() > 1 or (null.m_to and null.m_to:objectName() == player:objectName() and sgs.dynamic_value.damage_card[null.m_trick:getClassName()]) then
 		return "@ThShennaoCard=."
 	end
 	return nil

@@ -1303,7 +1303,9 @@ function cardsView_spear(self, player, skill_name)
 	cards = sgs.QList2Table(cards)
 	local newcards = {}
 	for _, card in ipairs(cards) do
-		if not isCard("Slash", card, player) and not isCard("Peach", card, player) and not (isCard("ExNihilo", card, player) and player:getPhase() == sgs.Player_Play) then table.insert(newcards, card) end
+		if not isCard("Slash", card, player) and not isCard("Peach", card, player) and not (isCard("ExNihilo", card, player) and player:getPhase() == sgs.Player_Play) then
+			table.insert(newcards, card)
+		end
 	end
 	if #newcards < 2 then return end
 	sgs.ais[player:objectName()]:sortByKeepValue(newcards)
