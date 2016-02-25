@@ -327,7 +327,7 @@ sgs.ai_choicemade_filter.skillChoice.thmodao = function(self, player, promptlist
 end
 
 --梦生：每当你受到一次伤害后，你可以获得伤害来源的一张牌，然后令该角色的非专属技无效，直到你的下一个回合的回合结束。
-sgs.ai_skill_invoke.thmengsheng = function(self,data)
+sgs.ai_skill_invoke.thmengsheng = function(self, data)
 	local target = data:toPlayer()
 	return not self:isFriend(target)
 end
@@ -354,7 +354,7 @@ sgs.ai_skill_cardask["@thqixiang"] = function(self, data, pattern)
 	return "."
 end
 
-sgs.ai_skill_choice.thqixiang = function(self, choices, data)	
+sgs.ai_skill_choice.thqixiang = function(self, choices, data)
 	local target = data:toPlayer()
 	return self:isFriend(target) and "draw" or "discard"
 end
@@ -376,7 +376,72 @@ sgs.ai_choicemade_filter.skillChoice.thqixiang = function(self, player, promptli
 		end
 	end
 end
-	
+
+--幻胧：出牌阶段开始时，你可以选择一至三项：你于此回合内：1.攻击范围+1；2.出牌阶段可以额外使用一张【杀】；3.可以将两张手牌当【杀】使用或打出。你每选择一项，你的手牌上限便-1，直到回合结束。
+local findThHuanlongResult = function(self)
+	local player = self.player
+	local choices = {}
+	if not player:hasFlag("thhuanlong1") then
+		table.insert(choices, "thhuanlong1")
+	end
+	if not player:hasFlag("thhuanlong2") then
+		table.insert(choices, "thhuanlong2")
+	end
+	if not player:hasFlag("thhuanlong") then
+		table.insert(choices, "thhuanlong3")
+	end
+	if #choices == 0 then return "cancel" end
+	local slash = sgs.cloneCard("slash")
+	local use = { isDummy = true }
+	self:useCardSlash(slash, use)
+	if self:getCardsNum("Slash") == 0 and use.card and player:getHandcardNum() > 1 and table.contains(choices, "thhuanlong3") then
+		return "thhuanlong3"
+	elseif self:getCardsNum("Slash") > 1 and use.card and table.contains(choices, "thhuanlong2") then
+		return "thhuanlong2"
+	elseif not use.card and self:getCardsNum("Slash") > 0 and table.contains(choices, "thhuanlong1") then
+		slash:setSkillName("thhuanlong")
+		self:useCardSlash(slash, use)
+		if use.card then
+			return "thhuanlong1"
+		end
+	end
+	local n = self:getOverflow()
+	if n < 0 then
+		if self:getCardsNum("Slash") > 1 and table.contains(choices, "thhuanlong2") then
+			return "thhuanlong2"
+		elseif self:getCardsNum("Slash") == 0 and table.contains(choices, "thhuanlong3") then
+			return "thhuanlong3"
+		elseif table.contains(choices, "thhuanlong1") then
+			return "thhuanlong1"
+		end
+	end
+	return "cancel"
+end
+
+sgs.ai_skill_invoke.thhuanlong = function(self, data)
+	local ret = findThHuanlongResult(self)
+	return ret ~= "cancel"
+end
+
+sgs.ai_skill_choice.thhuanlong = function(self, choices, data)
+	return findThHuanlongResult(self)
+end
+
+local thhuanlong_skill = {}
+thhuanlong_skill.name = "thhuanlong"
+table.insert(sgs.ai_skills, thhuanlong_skill)
+thhuanlong_skill.getTurnUseCard = function(self, inclusive)
+	if self.player:hasFlag("thhuanlong") then
+		return turnUse_spear(self, inclusive, "thhuanlong")
+	end
+end
+
+function sgs.ai_cardsview.spear(self, class_name, player)
+	if class_name == "Slash" and player:hasFlag("thhuanlong") then
+		return cardsView_spear(self, player, "thhuanlong")
+	end
+end
+
 --如何更好的获取和为9的集合？？
 function SmartAI:findTableByPlusValue(cards, neednumber, plus, pointer,need_cards)
 		if neednumber == 0 and plus == 9 then 

@@ -502,6 +502,8 @@ function SmartAI:useCardSlash(card, use)
 	end
 	if card:getSkillName() == "thlianying" then
 		rangefix = rangefix - 1
+	elseif card:getSkillName() == "thhuanlong" then
+		rangefix = rangefix - 1
 	end
 
 	local function canAppendTarget(target)
