@@ -170,15 +170,15 @@ thxueyi_skill.getTurnUseCard = function(self, inclusive)
 	local has_weapon, has_armor = false, false
 
 	for _, acard in ipairs(cards) do
-		if acard:isKindOf("Weapon") and not (acard:getSuit() == sgs.Card_Heart) then has_weapon = true end
+		if acard:isKindOf("Weapon") and acard:getSuit() ~= sgs.Card_Heart then has_weapon = true end
 	end
 
 	for _, acard in ipairs(cards) do
-		if acard:isKindOf("Armor") and not (acard:getSuit() == sgs.Card_Heart) then has_armor = true end
+		if acard:isKindOf("Armor") and acard:getSuit() ~= sgs.Card_Heart then has_armor = true end
 	end
 
 	for _, acard in ipairs(cards) do
-		if acard:getSuit() == sgs.Card_Heart and acard:getTypeId() ~= sgs.Card_TypeTrick and ((self:getUseValue(acard) < sgs.ai_use_value.Indulgence) or inclusive) then
+		if acard:getSuit() == sgs.Card_Heart and ((self:getUseValue(acard) < sgs.ai_use_value.Indulgence) or inclusive) then
 			local shouldUse = true
 
 			if acard:isKindOf("Armor") then
