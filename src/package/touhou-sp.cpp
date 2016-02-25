@@ -1115,7 +1115,9 @@ void ThXuezhongCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *>
     dummy->clearSubcards();
     if (!spade.isEmpty()) {
         dummy->addSubcards(spade);
-        ServerPlayer *target = room->askForPlayerChosen(source, room->getOtherPlayers(source), objectName());
+        source->tag["ThXuezhongData"] = QVariant::fromValue(dummy);
+        ServerPlayer *target = room->askForPlayerChosen(source, room->getOtherPlayers(source), "thxuezhong");
+        source->tag.remove("ThXuezhongData");
         target->obtainCard(dummy);
         if (target->getHandcardNum() > source->getHandcardNum())
             target->turnOver();
