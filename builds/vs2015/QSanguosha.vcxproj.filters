@@ -819,9 +819,6 @@
     <ClCompile Include="Release\moc_indicatoritem.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ui\magatamasItem.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
     <ClCompile Include="Debug\moc_magatamasitem.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
@@ -968,6 +965,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\core\json.cpp">
       <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\magatamasitem.cpp">
+      <Filter>ui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
