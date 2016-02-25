@@ -178,7 +178,7 @@ thxueyi_skill.getTurnUseCard = function(self, inclusive)
 	end
 
 	for _, acard in ipairs(cards) do
-		if acard:getSuit() == sgs.Card_Heart and ((self:getUseValue(acard) < sgs.ai_use_value.Indulgence) or inclusive) then
+		if acard:getSuit() == sgs.Card_Heart and not acard:isKindOf("TrickCard") and ((self:getUseValue(acard) < sgs.ai_use_value.Indulgence) or inclusive) then
 			local shouldUse = true
 
 			if acard:isKindOf("Armor") then
