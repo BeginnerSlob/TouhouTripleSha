@@ -436,11 +436,130 @@ thhuanlong_skill.getTurnUseCard = function(self, inclusive)
 	end
 end
 
-function sgs.ai_cardsview.spear(self, class_name, player)
+function sgs.ai_cardsview.thhuanlong(self, class_name, player)
 	if class_name == "Slash" and player:hasFlag("thhuanlong") then
 		return cardsView_spear(self, player, "thhuanlong")
 	end
 end
+
+--赤樱：你的回合外，每当你需要使用一张基本牌时，你可以展示当前回合角色的一张手牌，你可以使用之。若你以此法展示的牌花色为梅花，你可以将此牌当任意基本牌使用，每回合限一次。
+sgs.ai_skill_invoke.thchiying = function(self, data)
+	local target = self.room:getCurrent()
+	if not self:isFriend(target) or self:getCardsNum("Jink") < 1 then
+		local flag = ("%s_%s_%s"):format("visible", self.player:objectName(), target:objectName())
+		for _, c in sgs.qlist(target:getHandcards()) do
+			if (c:hasFlag("visible") or c:hasFlag(flag)) and not c:isKindOf("Jink") and c:getSuit() ~= sgs.Card_Club then
+				continue
+			end
+			return true
+		end
+	end
+	return false
+end
+
+function sgs.ai_cardsview_valuable.thchiying(self, class_name, player)
+	if string.find(class_name, "Slash") or class_name == "Jink" or class_name == "Peach" or class_name == "Analeptic" then
+		if player:hasFlag("thchiying") or player:hasFlag("Global_ThChiyingFailed") then
+			return nil
+		end
+		if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
+			local target = self.room:getCurrent()
+			if not target:isKongcheng() and (not self:isFriend(target, player) or getCardsNum(class_name, self.player) < 1) then
+				local all_not = true
+				local flag = ("%s_%s_%s"):format("visible", player:objectName(), target:objectName())
+				for _, c in sgs.qlist(target:getHandcards()) do
+					if (c:hasFlag("visible") or c:hasFlag(flag)) and not c:isKindOf(class_name) and c:getSuit() ~= sgs.Card_Club then
+						continue
+					end
+					all_not = false
+				end
+				if not all_not then
+					local obj_name = string.lower(class_name)
+					if class_name == "FireSlash" then
+						obj_name = "fire_slash"
+					elseif class_name == "ThunderSlash" then
+						obj_name = "thunder_slash"
+					end
+					return "@ThChiyingCard=.:" .. obj_name
+				end
+			end
+		end
+	end
+	return nil
+end
+
+sgs.ai_skill_invoke.thchiying_use = function(self, data)
+	return true
+end
+
+--血塚：出牌阶段限一次，你可以弃置至少一张梅花牌，并从牌堆顶亮出等量的牌，然后你获得其中的非黑桃牌，再将其余的牌交给一名其他角色，若此时该角色的手牌数大于你，其将其人物牌翻面。
+local thxuezhong_skill = {}
+thxuezhong_skill.name = "thxuezhong"
+table.insert(sgs.ai_skills, thxuezhong_skill)
+thxuezhong_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThXuezhongCard") then return nil end
+	if #self.enemies == 0 or #self.friends_noself == 0 then return nil end
+	local clubs = {}
+	for _, c in sgs.qlist(self.player:getCards("he")) do
+		if c:getSuit() == sgs.Card_Club and not self:isValuableCard(c) then
+			table.insert(clubs, c:getEffectiveId())
+		end
+	end
+	if #clubs == 0 then return nil end
+	return sgs.Card_Parse("@ThXuezhongCard=" .. table.concat(clubs, "+"))
+end
+
+sgs.ai_skill_use_func.ThXuezhongCard = function(card, use, self)
+	use.card = card
+end
+
+sgs.ai_skill_playerchosen.thxuezhong = function(self, targets)
+	local dummy = self.player:getTag("ThXuezhongData"):toCard()
+	local ids = dummy:getSubcards()
+	local n = ids:length()
+	self:sort(self.enemies)
+	self:sort(self.friends_noself)
+	for _, enemy in ipairs(self.enemies) do
+		if n <= 2 and enemy:getHandcardNum() + n > self.player:getHandcardNum() and self:toTurnOver(enemy, 0, "thxuezhong") then
+			local no_value = true
+			for _, id in sgs.qlist(ids) do
+				local c = sgs.Sanguosha:getCard(id)
+				if self:isValuableCard(c, enemy) then
+					no_value = false
+					break
+				end
+			end
+			if no_value then
+				return enemy
+			end
+		end
+	end
+	for _, friend in ipairs(self.friends_noself) do
+		if friend:getHandcardNum() + n <= self.player:getHandcardNum() or n >= 3 then
+			return friend
+		end
+	end
+	for _, enemy in ipairs(self.enemies) do
+		if enemy:getHandcardNum() + n > self.player:getHandcardNum() and self:toTurnOver(enemy, 0, "thxuezhong") then
+			return enemy
+		end
+	end
+	return targets:at(math.random(0, targets:length() - 1))
+end
+
+sgs.ai_playerchosen_intention.thxuezhong = function(self, from, to)
+	local dummy = from:getTag("ThXuezhongData"):toCard()
+	if dummy then
+		local ids = dummy:getSubcards()
+		local n = ids:length()
+		if to:getHandcardNum() + n > from:getHandcardNum() then
+			sgs.updateIntention(from, to, 40)
+		else
+			sgs.updateIntention(from, to, -40)
+		end
+	end
+end
+
 
 --如何更好的获取和为9的集合？？
 function SmartAI:findTableByPlusValue(cards, neednumber, plus, pointer,need_cards)

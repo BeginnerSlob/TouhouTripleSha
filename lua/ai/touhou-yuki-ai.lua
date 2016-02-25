@@ -1227,9 +1227,9 @@ table.insert(sgs.ai_skills, thkujiev_skill)
 thkujiev_skill.getTurnUseCard = function(self)
 	if self.player:hasFlag("ForbidThKujie") then return nil end
 	local reds = {}
-	for _,c in sgs.qlist(self.player:getCards("he")) do
+	for _, c in sgs.qlist(self.player:getCards("he")) do
 		if c:isRed() and c:isKindOf("BasicCard") then
-			table.insert(reds,c)
+			table.insert(reds, c)
 		end
 	end
 	if #reds == 0 then return nil end
