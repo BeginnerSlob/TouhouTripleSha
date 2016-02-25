@@ -423,7 +423,7 @@
     <ClCompile Include="..\..\src\ui\dashboard.cpp" />
     <ClCompile Include="..\..\src\ui\generic-cardcontainer-ui.cpp" />
     <ClCompile Include="..\..\src\ui\indicatoritem.cpp" />
-    <ClCompile Include="..\..\src\ui\magatamasItem.cpp" />
+    <ClCompile Include="..\..\src\ui\magatamasitem.cpp" />
     <ClCompile Include="..\..\src\ui\photo.cpp" />
     <ClCompile Include="..\..\src\ui\pixmapanimation.cpp" />
     <ClCompile Include="..\..\src\ui\qsan-selectable-item.cpp" />
