@@ -819,12 +819,6 @@
     <ClCompile Include="Release\moc_indicatoritem.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="Debug\moc_magatamasitem.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_magatamasitem.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ui\photo.cpp">
       <Filter>ui</Filter>
     </ClCompile>
@@ -966,8 +960,14 @@
     <ClCompile Include="..\..\src\core\json.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ui\magatamasitem.cpp">
+    <ClCompile Include="..\..\src\ui\magatamas-item.cpp">
       <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_magatamas-item.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_magatamas-item.cpp">
+      <Filter>Generated Files\Release</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1229,9 +1229,6 @@
     <CustomBuild Include="..\..\src\ui\indicatoritem.h">
       <Filter>ui</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\src\ui\magatamasitem.h">
-      <Filter>ui</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\src\ui\photo.h">
       <Filter>ui</Filter>
     </CustomBuild>
@@ -1279,6 +1276,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\src\dialog\connectiondialog_android.ui">
       <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\ui\magatamas-item.h">
+      <Filter>ui</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

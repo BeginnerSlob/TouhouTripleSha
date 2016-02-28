@@ -819,13 +819,13 @@
     <ClCompile Include="Release\moc_indicatoritem.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ui\magatamasItem.cpp">
+    <ClCompile Include="..\..\src\ui\magatamas-item.cpp">
       <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="Debug\moc_magatamasitem.cpp">
+    <ClCompile Include="Debug\moc_magatamas-item.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="Release\moc_magatamasitem.cpp">
+    <ClCompile Include="Release\moc_magatamas-item.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ui\photo.cpp">
@@ -1229,7 +1229,7 @@
     <CustomBuild Include="..\..\src\ui\indicatoritem.h">
       <Filter>ui</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\src\ui\magatamasitem.h">
+    <CustomBuild Include="..\..\src\ui\magatamas-item.h">
       <Filter>ui</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\ui\photo.h">
