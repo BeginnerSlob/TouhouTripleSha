@@ -54,7 +54,7 @@ SOURCES += \
     src/ui/clientlogbox.cpp \
     src/ui/dashboard.cpp \
     src/ui/indicatoritem.cpp \
-    src/ui/magatamasitem.cpp \
+    src/ui/magatamas-item.cpp \
     src/ui/photo.cpp \
     src/ui/pixmapanimation.cpp \
     src/ui/qsanbutton.cpp \
@@ -166,7 +166,7 @@ HEADERS += \
     src/ui/clientlogbox.h \
     src/ui/dashboard.h \
     src/ui/indicatoritem.h \
-    src/ui/magatamasitem.h \
+    src/ui/magatamas-item.h \
     src/ui/photo.h \
     src/ui/pixmapanimation.h \
     src/ui/qsanbutton.h \

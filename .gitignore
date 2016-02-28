@@ -23,8 +23,9 @@ builds/*/Win32/
 builds/*/Win32/
 Bin/
 /lib/lua.lib
-/lib/jsoncpp.lib
 /lib/breakpad.lib
+/lib/lua.pdb
+/lib/breakpad.pdb
 /builds/*/ipch
 /builds/*/QSanguosha.sdf
 /builds/*/QSanguosha.*suo
