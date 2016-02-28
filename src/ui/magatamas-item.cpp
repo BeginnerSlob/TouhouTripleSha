@@ -1,4 +1,4 @@
-#include "magatamasitem.h"
+#include "magatamas-item.h"
 #include <QPropertyAnimation>
 #include <QParallelAnimationGroup>
 
