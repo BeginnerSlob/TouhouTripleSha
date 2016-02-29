@@ -251,7 +251,7 @@ else: linux {
 }
 else {
     FORMS += \
-	src/dialog/mainwindow.ui
+	src/dialog/mainwindow.ui \
 	src/dialog/connectiondialog.ui
 }
 
