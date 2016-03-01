@@ -264,7 +264,7 @@ function sgs.ai_cardneed.guicai(to, card, self)
 	for _, player in sgs.qlist(self.room:getAllPlayers()) do
 		if self:getFinalRetrial(to) == 1 then
 			if player:containsTrick("lightning") and not player:containsTrick("YanxiaoCard") then
-				return card:getSuit() == sgs.Card_Spade and card:getNumber() >= 2 and card:getNumber() <= 9 and not player:hasSkills("hongyan|wuyan")
+				return card:getSuit() == sgs.Card_Spade and card:getNumber() >= 2 and (card:getNumber() <= 9 or player:hasSkill("thjiuzhang")) and not player:hasSkills("hongyan|wuyan")
 			end
 			if self:isFriend(player) and self:willSkipDrawPhase(player) then
 				return card:getSuit() == sgs.Card_Club

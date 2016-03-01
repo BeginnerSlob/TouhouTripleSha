@@ -4174,14 +4174,6 @@ function isCard(class_name, card, player)
 	return false
 end
 
-function SmartAI:getRealNumber(card,player) 
-	player = player or self.player
-	if player:hasSkill("thjiuzhang") and card:getNumber()>9 then
-		return 9
-	end
-	return card:getNumber()
-end
-
 function SmartAI:getMaxCard(player, cards)
 	player = player or self.player
 	if player:isKongcheng() then return nil end
