@@ -238,21 +238,21 @@ FORMS += \
 
 win32 {
     FORMS += \
-	src/dialog/mainwindow.ui \
-	src/dialog/connectiondialog.ui
+    src/dialog/mainwindow.ui \
+    src/dialog/connectiondialog.ui
 }
 else: linux {
     FORMS += src/dialog/mainwindow.ui
     android {
-	FORMS += src/dialog/connectiondialog_android.ui
+    FORMS += src/dialog/connectiondialog_android.ui
     } else {
-	FORMS += src/dialog/connectiondialog.ui
+    FORMS += src/dialog/connectiondialog.ui
     }
 }
 else {
     FORMS += \
-	src/dialog/mainwindow.ui \
-	src/dialog/connectiondialog.ui
+    src/dialog/mainwindow.ui \
+    src/dialog/connectiondialog.ui
 }
 
 INCLUDEPATH += include
