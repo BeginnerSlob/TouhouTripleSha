@@ -259,7 +259,7 @@ sgs.ai_skill_askforag.gongxin = function(self, card_ids)
 	if target:hasSkill("hongyan") and hasLightning and self:isEnemy(nextAlive) and not (nextAlive:hasSkill("qiaobian") and nextAlive:getHandcardNum() > 0) then
 		for _, id in ipairs(card_ids) do
 			local card = sgs.Sanguosha:getEngineCard(id)
-			if card:getSuit() == sgs.Card_Spade and card:getNumber() >= 2 and card:getNumber() <= 9 then
+			if card:getSuit() == sgs.Card_Spade and card:getNumber() >= 2 and (card:getNumber() <= 9 or nextAlive:hasSkill("thjiuzhang")) then
 				self.gongxinchoice = "put"
 				return id
 			end

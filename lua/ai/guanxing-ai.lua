@@ -96,7 +96,7 @@ local function GuanXing(self, cards)
 				local cardSuit = for_judge:getSuitString()
 				if self.player:hasSkill("hongyan") and cardSuit == "spade" then cardSuit = "heart"
 				elseif not self.player:hasSkill("ikchiqiu") and self.player:hasSkill("thanyue") and cardSuit == "heart" then cardSuit = "spade" end
-				if not (for_judge:getNumber() >= 2 and cardNumber <= 9 and cardSuit == "spade") then
+				if not (for_judge:getNumber() >= 2 and (cardNumber <= 9 or self.player:hasSkill("thjiuzhang")) and cardSuit == "spade") then
 					local i = lightning_index > #up and 1 or lightning_index
 					table.insert(up, i , for_judge)
 					table.remove(bottom, index)
@@ -301,7 +301,7 @@ local function GuanXing(self, cards)
 			local cardSuit = for_judge:getSuitString()
 			if next_player:hasSkill("hongyan") and cardSuit == "spade" then cardSuit = "heart"
 			elseif not next_player:hasSkill("ikchiqiu") and next_player:hasSkill("thanyue") and suit == "heart" then suit = "spade" end
-			if self:isFriend(next_player) and not (for_judge:getNumber() >= 2 and cardNumber <= 9 and cardSuit == "spade")
+			if self:isFriend(next_player) and not (for_judge:getNumber() >= 2 and (cardNumber <= 9 and next_player:hasSkill("thjiuzhang")) and cardSuit == "spade")
 				or not self:isFriend(next_player) and for_judge:getNumber() >= 2 and cardNumber <= 9 and cardSuit == "spade" then
 				local i = lightning_index > #next_judge and 1 or lightning_index
 				table.insert(next_judge, i , for_judge)

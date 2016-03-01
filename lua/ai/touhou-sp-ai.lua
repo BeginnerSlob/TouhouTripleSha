@@ -618,66 +618,71 @@ end
 
 sgs.ai_playerchosen_intention.thyupan = -100
 
---如何更好的获取和为9的集合？？
-function SmartAI:findTableByPlusValue(cards, neednumber, plus, pointer,need_cards)
-		if neednumber == 0 and plus == 9 then 
-			return true
-		end
-		if  pointer > #cards then
-			return false 
-		end
-		for i = pointer, #cards, 1 do
-			if self:getRealNumber(cards[i]) <= neednumber then
-				if self:findTableByPlusValue(cards, 9-plus-self:getRealNumber(cards[i]), plus+self:getRealNumber(cards[i]),i+1,need_cards) then
-					table.insert(need_cards,cards[i]:getId())
-					return true
-				end
+--九章：锁定技，你的点数为10~K的牌均视为点数为9的牌。
+--无
+
+--数术：每当你距离2以内的一名角色成为一张除【绯想镜诗】外的基本牌或非延时类锦囊牌的目标时，你可以用任意张点数的和与之相同的牌替换之。
+--todo_Slob
+
+--封凌：限定技，当你进入濒死状态时，你可以摸五张牌，然后你可以重复以下流程：弃置任意张点数和为9的牌，然后回复1点体力。
+function SmartAI:findTableByPlusValue(cards, neednumber, plus, pointer, need_cards, player)
+	if neednumber == 0 and plus == 9 then
+		return true
+	end
+	if pointer > #cards then
+		return false
+	end
+	for i = pointer, #cards do
+		if isCard("Peach", cards[i], player) then continue end
+		if cards[i]:getNumber() <= neednumber then
+			if self:findTableByPlusValue(cards, 9 - plus - cards[i]:getNumber(), plus + cards[i]:getNumber(), i+1, need_cards, player) then
+				table.insert(need_cards, cards[i]:getId())
+				return true
 			end
 		end
-		if neednumber == 0 and plus == 9 then 
-			return true
-		else
-			return false 
-		end 
 	end
---【数术】ai
---不清楚收益，暂时不写 = =
+	if neednumber == 0 and plus == 9 then
+		return true
+	else
+		return false 
+	end
+end
 
---【封凌】ai
 sgs.ai_skill_invoke.thfengling = function(self,data)
 	return true
 end
+
 sgs.ai_skill_use["@@thfengling"] = function(self, prompt)
 	local cards = sgs.QList2Table(self.player:getCards("he"))
 	if #cards == 0 then return "." end 
 	self:sortByKeepValue(cards)
-	
 
 	local function numberCompareFunc(card1,card2)
-		return self:getRealNumber(card2) > self:getRealNumber(card1)
+		return card2:getNumber() > card1:getNumber()
 	end
-	--按从大到小排序 同点数则按keepvalue
-	local function bubbleSort(cards,numberCompareFunc)  
+
+	local function bubbleSort(cards, numberCompareFunc)
 		local len = #cards 
-		local i = len  
-		while i > 0 do  
-			j=1  
-			while j< len do  
-				if numberCompareFunc(cards[j],cards[j+1]) then  
-					cards[j],cards[j+1] = cards[j+1],cards[j]  
-				end  
-				j = j + 1  
-			end  
-			i = i - 1  
-		end  
-	end 
+		local i = len
+		while i > 0 do
+			local j = 1
+			while j < len do
+				if numberCompareFunc(cards[j], cards[j+1]) then
+					cards[j], cards[j+1] = cards[j+1], cards[j]
+				end
+				j = j + 1
+			end
+			i = i - 1
+		end
+	end
+
 	bubbleSort(cards,numberCompareFunc)
-	
-	local need_cards ={}
-	local find9  = self:findTableByPlusValue(cards, 9, 0, 1,need_cards)
-	
+
+	local need_cards = {}
+	local find9 = self:findTableByPlusValue(cards, 9, 0, 1, need_cards, player)
+
 	if find9 and #need_cards > 0 then
-		return "@ThFenglingCard="..  table.concat(need_cards, "+")
+		return "@ThFenglingCard=" .. table.concat(need_cards, "+")
 	end
 	return "."
 end
