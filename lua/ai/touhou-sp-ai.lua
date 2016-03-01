@@ -687,6 +687,30 @@ sgs.ai_skill_use["@@thfengling"] = function(self, prompt)
 	return "."
 end
 
+--影弑：出牌阶段限三次，你可以对一名你与其距离为X的角色使用一张不计入使用限制的【杀】（X为你此阶段发动“影弑”的次数+1）。
+local thyingshi_skill = {}
+thyingshi_skill.name = "thyingshi"
+table.insert(sgs.ai_skills, thyingshi_skill)
+thyingshi_skill.getTurnUseCard = function(self)
+	if self.player:usedTimes("ThYingshiCard") >= 3 or self.player:hasFlag("Global_ThYingshiFailed") then return end
+	return sgs.Card_Parse("@ThYingshiCard=.")
+end
+
+sgs.ai_skill_use_func.ThYingshiCard = function(card, use, self)
+	use.card = card
+end
+
+--葬魂：每当你使用【杀】造成伤害后，你可以摸一张牌，然后你计算与其他角色的距离+1，直到回合结束。
+sgs.ai_skill_invoke.thouji = function(self)
+	local slash = sgs.cloneCard("slash")
+	slash:setSkillName("thzanghun")
+	local use = { isDummy = true }
+	self:useCardSlash(slash, use)
+	if use.card then
+		return true
+	end
+end
+
 --偶祭：每当你或你攻击范围内的一名角色的装备区于你的回合内改变时，你可以选择一项：弃置一名其他角色的一张手牌；或摸一张牌。
 sgs.ai_skill_invoke.thouji = true
 
