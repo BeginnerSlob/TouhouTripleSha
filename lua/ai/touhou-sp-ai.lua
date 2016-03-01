@@ -560,6 +560,63 @@ sgs.ai_playerchosen_intention.thxuezhong = function(self, from, to)
 	end
 end
 
+--轮皿：出牌阶段限三次，你可以弃置一张牌然后摸一张牌。
+local thlunmin_skill = {}
+thlunmin_skill.name = "thlunmin"
+table.insert(sgs.ai_skills, thlunmin_skill)
+thlunmin_skill.getTurnUseCard = function(self)
+	if self.player:usedTimes("ThLunminCard") >= 3 then return nil end
+	if not self.player:canDiscard(self.player, "he") then return nil end
+	local cards = sgs.QList2Table(self.player:getCards("he"))
+	self:sortByUseValue(cards, true)
+	local arr1, arr2 = self:getWoundedFriend(false, true)
+	if #arr1 + #arr2 > 0 then
+		local need_suit = {}
+		if self.player:hasSkill("thyupan") then
+			for i = 0, 3 do
+				if bit32.band(self.player:getMark("thyupan"), bit32.lshift(1, i)) == 0 then
+					table.insert(need_suit, i)
+				end
+			end
+		end
+		if (#need_suit <= 2 and #arr1 > 0) or #need_suit <= 1 then
+			for _, c in ipairs(cards) do
+				if table.contains(need_suit, c:getSuit()) and not self:isValuableCard(c) then
+					return sgs.Card_Parse("@ThLunminCard=" .. c:getEffectiveId())
+				end
+			end
+		end
+	end
+	if not self:isValuableCard(cards[1]) then
+		return sgs.Card_Parse("@ThLunminCard=" .. cards[1]:getEffectiveId())
+	end
+end
+
+sgs.ai_skill_use_func.ThLunminCard = function(card, use, self)
+	use.card = card
+end
+
+--雨磐：结束阶段开始时，若你于本回合使用或弃置牌的花色数为四种，你可以令一名角色回复1点体力。
+sgs.ai_skill_playerchosen.thyupan = function(self, targets)
+	local arr1, arr2 = self:getWoundedFriend(false, true)
+	local target = nil
+
+	for _, p in ipairs(arr1) do
+		if self:isWeak(p) and p:getHp() < getBestHp(p) and targets:contains(p) then
+			return p
+		end
+	end
+
+	for _, p in ipairs(arr2) do
+		if targets:contains(p) then
+			return p
+		end
+	end
+
+	return nil
+end
+
+sgs.ai_playerchosen_intention.thyupan = -100
 
 --如何更好的获取和为9的集合？？
 function SmartAI:findTableByPlusValue(cards, neednumber, plus, pointer,need_cards)

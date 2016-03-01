@@ -857,7 +857,7 @@ end
 
 sgs.ai_card_intention.ThDongmoCard = function(self, card, from, tos)
 	for _, to in ipairs(tos) do
-		if self:toTurnOver(p, 1) then
+		if self:toTurnOver(to, 1) then
 			sgs.updateIntention(from, to, 60)
 		else
 			sgs.updateIntention(from, to, -80)
