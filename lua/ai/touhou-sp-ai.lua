@@ -700,8 +700,10 @@ sgs.ai_skill_use_func.ThYingshiCard = function(card, use, self)
 	use.card = card
 end
 
+sgs.ai_use_priority.ThYingshiCard = sgs.ai_use_priority.ThChouceCard + 0.1
+
 --葬魂：每当你使用【杀】造成伤害后，你可以摸一张牌，然后你计算与其他角色的距离+1，直到回合结束。
-sgs.ai_skill_invoke.thouji = function(self)
+sgs.ai_skill_invoke.thzanghun = function(self)
 	local slash = sgs.cloneCard("slash")
 	slash:setSkillName("thzanghun")
 	local use = { isDummy = true }

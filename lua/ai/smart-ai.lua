@@ -4183,7 +4183,7 @@ function SmartAI:getMaxCard(player, cards)
 	for _, card in ipairs(cards) do
 		local flag = string.format("%s_%s_%s", "visible", self.player:objectName(), player:objectName())
 		if (player:objectName() == self.player:objectName() and not self:isValuableCard(card)) or card:hasFlag("visible") or card:hasFlag(flag) then
-			local point = self:getRealNumber(card,player) 
+			local point = card:getNumber()
 			if point > max_point then
 				max_point = point
 				max_card = card
@@ -4192,7 +4192,7 @@ function SmartAI:getMaxCard(player, cards)
 	end
 	if player:objectName() == self.player:objectName() and not max_card then
 		for _, card in ipairs(cards) do
-			local point = self:getRealNumber(card,player) 
+			local point = card:getNumber()
 			if point > max_point then
 				max_point = point
 				max_card = card
@@ -4204,14 +4204,14 @@ function SmartAI:getMaxCard(player, cards)
 
 	if (player:hasSkills("tianyi|dahe|xianzhen") or self.player:hasFlag("AI_XiechanUsing")) and max_point > 0 then
 		for _, card in ipairs(cards) do
-			if self:getRealNumber(card,player) == max_point and not isCard("Slash", card, player) then
+			if card:getNumber() == max_point and not isCard("Slash", card, player) then
 				return card
 			end
 		end
 	end
 	if player:hasSkill("qiaoshui") and max_point > 0 then
 		for _, card in ipairs(cards) do
-			if self:getRealNumber(card,player) == max_point and not card:isNDTrick() then
+			if card:getNumber() == max_point and not card:isNDTrick() then
 				return card
 			end
 		end
@@ -4232,7 +4232,7 @@ function SmartAI:getMinCard(player)
 	for _, card in sgs.qlist(cards) do
 		local flag = string.format("%s_%s_%s", "visible", global_room:getCurrent():objectName(), player:objectName())
 		if player:objectName() == self.player:objectName() or card:hasFlag("visible") or card:hasFlag(flag) then
-			local point = self:getRealNumber(card, player)
+			local point = card:getNumber()
 			if point < min_point then
 				min_point = point
 				min_card = card
