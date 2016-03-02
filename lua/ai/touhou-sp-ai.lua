@@ -201,7 +201,7 @@ sgs.ai_skill_cardask["@thwanling"] = function(self, data, pattern, target)
 			local need_obtain
 			if card:isKindOf("Slash") then
 				need_obtain = self:getCardsNum("Slash") < 1
-			elseif card:isKindOf("AOE") then
+			elseif card:isKindOf("AOE") and not c:isKindOf("BurningCamps") then
 				need_obtain = self:getAoeValue(card) > 0
 			elseif self:isValuableCard(card) then
 				need_obtain = true
@@ -622,11 +622,8 @@ sgs.ai_playerchosen_intention.thyupan = -100
 --无
 
 --数术：每当你距离2以内的一名角色成为一张除【绯想镜诗】外的基本牌或非延时类锦囊牌的目标时，你可以用任意张点数的和与之相同的牌替换之。
---todo_Slob
-
---封凌：限定技，当你进入濒死状态时，你可以摸五张牌，然后你可以重复以下流程：弃置任意张点数和为9的牌，然后回复1点体力。
 function SmartAI:findTableByPlusValue(cards, neednumber, plus, pointer, need_cards, player)
-	if neednumber == 0 and plus == 9 then
+	if neednumber == 0 then
 		return true
 	end
 	if pointer > #cards then
@@ -635,19 +632,59 @@ function SmartAI:findTableByPlusValue(cards, neednumber, plus, pointer, need_car
 	for i = pointer, #cards do
 		if isCard("Peach", cards[i], player) then continue end
 		if cards[i]:getNumber() <= neednumber then
-			if self:findTableByPlusValue(cards, 9 - plus - cards[i]:getNumber(), plus + cards[i]:getNumber(), i+1, need_cards, player) then
+			if self:findTableByPlusValue(cards, neednumber - cards[i]:getNumber(), plus + cards[i]:getNumber(), i + 1, need_cards, player) then
 				table.insert(need_cards, cards[i]:getId())
 				return true
 			end
 		end
 	end
-	if neednumber == 0 and plus == 9 then
+	if neednumber == 0 then
 		return true
 	else
 		return false 
 	end
 end
 
+sgs.ai_skill_use["@@thshushu"] = function(self, prompt, method)
+	local use = self.player:getTag("ThShushuData"):toCardUse()
+	local card = use.card
+	local ids = {}
+	if card:isVirtualCard() then
+		ids = sgs.QList2Table(card:getSubcards())
+	else
+		ids = { card:getEffectiveId() }
+	end
+	local need_obtain = false
+	for _, id in ipairs(ids) do
+		local c = sgs.Sanguosha:getCard(id)
+		if c:isKindOf("Slash") then
+			need_obtain = self:getCardsNum("Slash") < 1
+		elseif c:isKindOf("AOE") and not c:isKindOf("BurningCamps") then
+			need_obtain = self:getAoeValue(c) > 0
+		elseif self:isValuableCard(c) then
+			need_obtain = true
+		end
+	end
+	if need_obtain then
+		local n = card:getNumber()
+		local need_cards = {}
+		local cards = sgs.QList2Table(self.player:getCards("he"))
+		self:sortByUseValue(cards, true)
+		local findn = self:findTableByPlusValue(cards, n, 0, 1, need_cards, self.player)
+		if findn and #need_cards > 0 then
+			for _, id in ipairs(need_cards) do
+				local c = sgs.Sanguosha:getCard(id)
+				if self:isValuableCard(c) then
+					return "."
+				end
+			end
+			return "@ThShushuCard=" .. table.concat(need_cards, "+")
+		end
+	end
+	return "."
+end
+
+--封凌：限定技，当你进入濒死状态时，你可以摸五张牌，然后你可以重复以下流程：弃置任意张点数和为9的牌，然后回复1点体力。
 sgs.ai_skill_invoke.thfengling = function(self,data)
 	return true
 end
@@ -679,7 +716,7 @@ sgs.ai_skill_use["@@thfengling"] = function(self, prompt)
 	bubbleSort(cards,numberCompareFunc)
 
 	local need_cards = {}
-	local find9 = self:findTableByPlusValue(cards, 9, 0, 1, need_cards, player)
+	local find9 = self:findTableByPlusValue(cards, 9, 0, 1, need_cards, self.player)
 
 	if find9 and #need_cards > 0 then
 		return "@ThFenglingCard=" .. table.concat(need_cards, "+")
