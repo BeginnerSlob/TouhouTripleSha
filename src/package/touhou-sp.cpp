@@ -1377,7 +1377,9 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
         CardUseStruct use = data.value<CardUseStruct>();
         room->setPlayerMark(ask_who, "thshushu", use.card->getNumber());
+        ask_who->tag["ThShushuData"] = data;
         const Card *card = room->askForUseCard(ask_who, "@@thshushu", "@thshushu", -1, Card::MethodNone);
+        ask_who->tag.remove("ThShushuData");
         room->setPlayerMark(ask_who, "thshushu", 0);
         if (card)
             ask_who->tag["ThShushuCard"] = QVariant::fromValue(card);
