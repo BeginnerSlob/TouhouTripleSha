@@ -763,6 +763,10 @@ const Card *ThChouceCard::validateInResponse(ServerPlayer *player) const
     return this;
 }
 
+void ThChouceCard::onUse(Room *, const CardUseStruct &) const{
+    // do nothing
+}
+
 class ThChouce: public ZeroCardViewAsSkill
 {
 public:

@@ -673,6 +673,7 @@ sgs.ai_choicemade_filter.cardChosen.thkanyao = sgs.ai_choicemade_filter.cardChos
 
 --折辉：锁定技，每当你受到一次伤害后，你防止你受到的伤害，直到回合结束。且此回合的结束阶段开始时，你须弃置当前回合角色的一张牌；或视为对一名其他角色使用一张无视距离的【杀】。
 function sgs.ai_slash_prohibit.thzhehui(self, from, to)
+	if not to:hasSkill("thzhehui") then return false end
 	if from:hasSkill("ikxuwu") or from:getMark("thshenyou") > 0 or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
 	if from:hasFlag("IkJieyouUsed") then return false end
 	return to:getMark("zhehui") > 0 and to:hasSkill("thzhehui")

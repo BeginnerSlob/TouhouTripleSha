@@ -563,6 +563,7 @@ sgs.ai_skill_cardask["@nosqiuyuan-give"] = function(self, data, pattern, target)
 end
 
 function sgs.ai_slash_prohibit.nosqiuyuan(self, from, to)
+	if not to:hasSkill("nosqiuyuan") then return false end
 	if self:isFriend(to, from) then return false end
 	if from:hasFlag("IkJieyouUsed") then return false end
 	for _, friend in ipairs(self:getFriendsNoself(from)) do
@@ -910,6 +911,7 @@ sgs.ai_skill_discard.nosganglie = function(self, discard_num, min_num, optional,
 end
 
 function sgs.ai_slash_prohibit.nosganglie(self, from, to)
+	if not to:hasSkill("nosganglie") then return false end
 	if self:isFriend(from, to) then return false end
 	if from:hasSkill("ikxuwu") or from:getMark("thshenyou") > 0 or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
 	if from:hasFlag("IkJieyouUsed") then return false end
@@ -1487,6 +1489,7 @@ end
 sgs.ai_playerchosen_intention.nosleiji = sgs.ai_playerchosen_intention.leiji
 
 function sgs.ai_slash_prohibit.nosleiji(self, from, to, card)
+	if not to:hasSkill("nosleiji") then return false end
 	if self:isFriend(to, from) then return false end
 	if (to:hasFlag("QianxiTarget") or to:getMark("yijue") > 0) and (not self:hasEightDiagramEffect(to) or self.player:hasWeapon("qinggang_sword")) then return false end
 	if not sgs.isJinkAvailable(from, to, card, to:hasSkill("guidao")) then return false end

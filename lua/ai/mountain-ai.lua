@@ -327,6 +327,7 @@ sgs.ai_skill_invoke.ikyindie = function(self, data)
 end
 
 sgs.ai_slash_prohibit.ikyindie = function(self, from, to, card)
+	if not to:hasSkill("ikyindie") then return false end
 	if self:isFriend(to, from) or not to:hasSkill("ikguiyue") then return false end
 	local enemies = self:getEnemies(to)
 	local good_enemy = false
@@ -408,6 +409,7 @@ sgs.ai_skill_cardask["@xiangle-discard"] = function(self, data)
 end
 
 function sgs.ai_slash_prohibit.xiangle(self, from, to)
+	if not to:hasSkill("xiangle") then return false end
 	if self:isFriend(to, from) then return false end
 	local slash_num, analeptic_num, jink_num
 	if from:objectName() == self.player:objectName() then
@@ -954,6 +956,7 @@ function sgs.ai_cardneed.beige(to, card)
 end
 
 function sgs.ai_slash_prohibit.duanchang(self, from, to)
+	if not to:hasSkill("duanchang") then return false end
 	if from:hasSkill("ikxuwu") or from:getMark("thshenyou") > 0 or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
 	if from:hasFlag("IkJieyouUsed") then return false end
 	if to:getHp() > 1 or #(self:getEnemies(from)) == 1 then return false end

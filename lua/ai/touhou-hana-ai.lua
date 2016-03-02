@@ -322,6 +322,7 @@ sgs.ai_playerchosen_intention.thxinwang = -40
 
 --绝毒：锁定技，杀死你的角色获得技能“崩坏”。
 function sgs.ai_slash_prohibit.thjuedu(self, from, to)
+	if not to:hasSkill("thjuedu") then return false end
 	if from:hasSkill("ikxuwu") or from:getMark("thshenyou") > 0 or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
 	if from:hasFlag("IkJieyouUsed") then return false end
 	if from:hasSkill("ikbenghuai") then return false end

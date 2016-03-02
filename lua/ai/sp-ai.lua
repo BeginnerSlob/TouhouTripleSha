@@ -1,15 +1,3 @@
-function sgs.ai_slash_prohibit.weidi(self, from, to, card)
-	if to:isLord() then return false end
-	local lord = self.room:getLord()
-	if not lord then return false end
-	for _, askill in sgs.qlist(lord:getVisibleSkillList()) do
-		if askill:objectName() ~= "weidi" and askill:isLordSkill() then
-			local filter = sgs.ai_slash_prohibit[askill:objectName()]
-			if type(filter) == "function" and filter(self, from, to, card) then return true end
-		end
-	end
-end
-
 sgs.ai_skill_use["@jijiang"] = function(self, prompt)
 	if self.player:hasFlag("Global_JijiangFailed") then return "." end
 	local card = sgs.Card_Parse("@JijiangCard=.")
