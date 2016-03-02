@@ -622,7 +622,7 @@ sgs.ai_skill_use["peach+analeptic"] = function(self, prompt)
 	return "."
 end
 
-sgs.ai_use_priority.ThChouceCard = 10000
+sgs.ai_use_priority.ThChouceCard = 1000
 
 --占筮：锁定技，出牌阶段结束时，若你于此阶段使用的牌不少于三张，且全部发动了“筹策”，你在此回合结束后进行一个额外的回合，且于额外回合的回合开始时获得技能“幻葬”直到回合结束。
 --无
