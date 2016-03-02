@@ -54,6 +54,7 @@ public:
 
     virtual const Card *validate(CardUseStruct &card_use) const;
     virtual const Card *validateInResponse(ServerPlayer *player) const;
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
 class ThBingpuCard: public SkillCard{

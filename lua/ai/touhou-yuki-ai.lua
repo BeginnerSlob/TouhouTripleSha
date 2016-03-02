@@ -885,6 +885,7 @@ sgs.ai_skill_cardask["@thfusheng-heart"] = function(self, data)
 end
 
 function sgs.ai_slash_prohibit.thfusheng(self, from, to, card)
+	if not to:hasSkill("thfusheng") then return false end
 	if from:hasSkill("ikxuwu") or from:getMark("thshenyou") > 0 or (from:hasSkill("ikwanhun") and from:distanceTo(to) > 0 and from:distanceTo(to) < 2) then return false end
 	if from:hasFlag("IkJieyouUsed") then return false end
 	if self:needToLoseHp(from) then return false end

@@ -207,6 +207,7 @@ sgs.ai_skill_discard.vsganglie = function(self, discard_num, min_num, optional, 
 end
 
 function sgs.ai_slash_prohibit.vsganglie(self, from, to)
+	if not to:hasSkill("vsganglie") then return false end
 	if self:isFriend(from, to) then return false end
 	if from:hasSkill("ikxuwu") or from:getMark("thshenyou") > 0 or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
 	if from:hasFlag("IkJieyouUsed") then return false end

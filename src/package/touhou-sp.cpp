@@ -1776,7 +1776,9 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         ServerPlayer *target = data.value<CardResponseStruct>().m_who;
+        player->tag["ThHuanghuTarget"] = QVariant::fromValue(target);
         const Card *card = room->askForExchange(player, objectName(), 998, 1, false, "@thhuanghu:" + target->objectName(), true);
+        player->tag.remove("ThHuanghuTarget");
         if (card) {
             LogMessage log;
             log.type = "#ChoosePlayerWithSkill";
@@ -1825,8 +1827,11 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
-        if (ask_who->askForSkillInvoke(objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        ask_who->tag["ThLinyaoTarget"] = QVariant::fromValue(player);
+        bool invoke = ask_who->askForSkillInvoke(objectName());
+        ask_who->tag.remove("ThLinyaoTarget");
+        if (invoke) {
             ask_who->turnOver();
             room->broadcastSkillInvoke(objectName());
             return true;

@@ -93,6 +93,7 @@ sgs.ai_choicemade_filter.skillInvoke.hujia = function(self, player, promptlist)
 end
 
 function sgs.ai_slash_prohibit.hujia(self, from, to)
+	if not to:hasLordSkill("hujia") then return false end
 	if self:isFriend(to, from) then return false end
 	local guojia = self.room:findPlayerBySkillName("tiandu")
 	if guojia and guojia:getKingdom() == "wei" and self:isFriend(to, guojia) then return sgs.ai_slash_prohibit.tiandu(self, from, guojia) end
@@ -300,6 +301,7 @@ sgs.ai_need_damaged.ganglie = function(self, attacker, player)
 end
 
 function sgs.ai_slash_prohibit.ganglie(self, from, to)
+	if not to:hasSkill("ganglie") then return false end
 	if self:isFriend(from, to) then return false end
 	if from:hasSkill("ikxuwu") or from:getMark("thshenyou") > 0 or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
 	if from:hasFlag("IkJieyouUsed") then return false end
@@ -549,6 +551,7 @@ sgs.luoyi_keep_value = {
 }
 
 sgs.ai_skill_invoke.tiandu = function(self, data)
+	if not to:hasSkill("tiandu") then return false end
 	return not self:needKongcheng(self.player, true)
 end
 
@@ -2473,6 +2476,7 @@ sgs.ai_card_intention.LiuliCard = function(self, card, from, to)
 end
 
 function sgs.ai_slash_prohibit.liuli(self, from, to, card)
+	if not to:hasSkill("liuli") then return false end
 	if self:isFriend(to, from) then return false end
 	if from:hasFlag("IkJieyouUsed") then return false end
 	if to:isNude() then return false end

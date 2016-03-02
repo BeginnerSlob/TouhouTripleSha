@@ -28,6 +28,7 @@ sgs.ai_choicemade_filter.skillInvoke.chongzhen = function(self, player, promptli
 end
 
 sgs.ai_slash_prohibit.chongzhen = function(self, from, to, card)
+	if not to:hasSkill("chongzhen") then return false end
 	if self:isFriend(to, from) then return false end
 	if not sgs.isJinkAvailable(from, to, card) then return false end
 	if to:hasSkill("longdan") and to:getHandcardNum() >= 3 and from:getHandcardNum() > 1 then return true end

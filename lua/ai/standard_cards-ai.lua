@@ -282,8 +282,7 @@ function SmartAI:slashProhibit(card, enemy, from)
 	local nature = sgs.DamageStruct_Normal
 	if card:isKindOf("FireSlash") then nature = sgs.DamageStruct_Fire
 	elseif card:isKindOf("ThunderSlash") then nature = sgs.DamageStruct_Thunder end
-	for _, askill in ipairs(sgs.getPlayerSkillList(enemy)) do
-		local filter = sgs.ai_slash_prohibit[askill:objectName()]
+	for _, filter in pairs(sgs.ai_slash_prohibit) do
 		if filter and type(filter) == "function" and filter(self, from, enemy, card) then return true end
 	end
 

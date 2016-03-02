@@ -700,7 +700,7 @@ sgs.ai_skill_use_func.ThYingshiCard = function(card, use, self)
 	use.card = card
 end
 
-sgs.ai_use_priority.ThYingshiCard = sgs.ai_use_priority.ThChouceCard + 0.1
+sgs.ai_use_priority.ThYingshiCard = sgs.ai_use_priority.Slash + 0.1
 
 --葬魂：每当你使用【杀】造成伤害后，你可以摸一张牌，然后你计算与其他角色的距离+1，直到回合结束。
 sgs.ai_skill_invoke.thzanghun = function(self)
@@ -712,6 +712,98 @@ sgs.ai_skill_invoke.thzanghun = function(self)
 		return true
 	end
 end
+
+--抑梦：每当一名其他角色对你或与你相邻的角色造成一次伤害后，你可以获得该角色的一张牌，然后令其摸一张牌。
+sgs.ai_skill_invoke.thyimeng = function(self, data)
+	local target = data:toPlayer()
+	if target and self:isEnemy(target) then
+		if target:hasSkills(sgs.lose_equip_skill) and target:isKongcheng() then
+			return false
+		end
+		if self:needKongcheng(target) and not self:needKongcheng(target, true) and target:getHandcardNum() == 1 and not target:hasEquip() then
+			return false
+		end
+	end
+	return true
+end
+
+--虚遊：出牌阶段限一次，你使用【杀】时可以无视合法性指定一名角色为目标，若该【杀】没有造成伤害，你依次弃置所有与你相邻的角色的一张牌；当该【杀】造成一次伤害后，你摸一张牌。
+local thxuyou_skill = {}
+thxuyou_skill.name = "thxuyou"
+table.insert(sgs.ai_skills, thxuyou_skill)
+thxuyou_skill.getTurnUseCard = function(self)
+	local slash = self:getCard("Slash")
+	if slash and self:slashIsAvailable(self.player, slash) then
+		if not self.player:hasFlag("ThXuyou") and not self.player:hasFlag("Global_ThXuyouFailed") then
+			return sgs.Card_Parse("@ThXuyouCard=.")
+		end
+	end
+end
+
+sgs.ai_skill_use_func.ThXuyouCard = function(card, use, self)
+	use.card = card
+end
+
+sgs.ai_use_priority.ThXuyouCard = sgs.ai_use_priority.Slash + 0.1
+sgs.ai_choicemade_filter.cardChosen.thxuyou = sgs.ai_choicemade_filter.cardChosen.snatch
+
+--徨笏：每当你使用或打出一张【闪】响应一名其他角色对你使用的牌时，你可以弃置至少一张手牌，然后令该角色弃置等量的牌。
+sgs.ai_skill_discard.thhuanghu = function(self, discard_num, min_num, optional, include_equip, pattern)
+	if discard_num == 998 and min_num == 1 then
+		local target = self.player:getTag("ThHuanghuTarget"):toPlayer()
+		local n = 0
+		if self:isFriend(target) then
+			if self:needToThrowArmor(target)
+					or (target:hasSkills(sgs.lose_equip_skill) and target:hasEquip())
+					or (self:needKongcheng(target) and target:getHandcardNum() == 1) then
+				n = 1
+			else
+				return {}
+			end
+		else
+			n = target:getCardCount()
+		end
+		local ret = self:askForDiscard("", n, 1, false, false)
+		if #ret then
+			local ret2 = {}
+			for _, id in ipairs(ret) do
+				if isCard("Peach", id, self.player) then
+					return ret2
+				else
+					table.insert(ret2, id)
+				end
+			end
+			return ret2
+		end
+	else
+		return self:askForDiscard("", discard_num, min_num, optional, include_equip, pattern)
+	end
+	return {}
+end
+
+--凛要：每当一名其他角色需要使用或打出一张【闪】时，若你的人物牌背面朝上，你可以将你的人物牌翻面，视为该角色使用或打出了一张【闪】。
+sgs.ai_skill_invoke.thlinyao = function(self, data)
+	local target = self.player:getTag("ThLinyaoTarget"):toPlayer()
+	if self:isFriend(target) then
+		return true
+	end
+	return false
+end
+
+sgs.ai_slash_prohibit.thlinyao = function(self, from, to, card)
+	if self:isFriend(to, from) then return false end
+	if not sgs.isJinkAvailable(from, to, card) then return false end
+	local linyaos = self.room:findPlayersBySkillName("thlinyao")
+	for _, p in sgs.qlist(linyaos) do
+		if self:isFriend(to, linyao) and not linyao:faceUp() then
+			return true
+		end
+	end
+	return false
+end
+
+--绯镜：每当你失去最后的手牌时，你可将手牌补至等同于你体力上限的张数，然后将你的人物牌翻面。
+sgs.ai_skill_invoke.thfeijing = true
 
 --偶祭：每当你或你攻击范围内的一名角色的装备区于你的回合内改变时，你可以选择一项：弃置一名其他角色的一张手牌；或摸一张牌。
 sgs.ai_skill_invoke.thouji = true
