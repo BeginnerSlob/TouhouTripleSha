@@ -945,7 +945,158 @@ sgs.ai_skill_playerchosen.thjingyuansp = function(self, targets)
 	end
 	local card = self.player:getTag("ThJingyuanspCard"):toCard()
 	local _, target = self:getCardNeedPlayer({card}, self.friends_noself, false)
+	if target then
+		return target
+	end
 	return self.friends_noself[1]
 end
 
 sgs.ai_playerchosen_intention.thjingyuansp = -30
+
+--绯护：出牌阶段限一次，你可以选择一名体力值不大于你的角色并选择一项：弃置其一张牌，然后令该角色回复1点体力；或对其造成1点伤害，然后令该角色回复1点体力，并摸一张牌。若你已损失的体力值不大于2，你发动“绯护”不可以选择你为目标。
+local thfeihu_skill = {}
+thfeihu_skill.name = "thfeihu"
+table.insert(sgs.ai_skills, thfeihu_skill)
+thfeihu_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThFeihuCard") then return end
+	return sgs.Card_Parse("@ThFeihuCard=.")
+end
+
+sgs.ai_skill_use_func.ThFeihuCard = function(card, use, self)
+	local players = sgs.QList2Table(self.room:getAlivePlayers())
+	local friends = {}
+	local enemies = {}
+	for _, p in ipairs(players) do
+		if self.player:objectName() == p:objectName() and p:getLostHp() <= 2 then
+			continue
+		end
+		if p:getHp() > self.player:getHp() then
+			continue
+		end
+		if self:isFriend(p) then
+			if not self:damageIsEffective(p, nil, self.player)
+					or (self:needToThrowArmor(p) and (not p:hasArmorEffect("silver_lion") or p:getLostHp() > 1))
+					or (p:hasSkills(sgs.lose_equip_skill) and p:hasEquip())
+					or (self:needKongcheng(p, true) and p:getHandcardNum() == 1)
+					or (self:getOverflow(p) > 1 and p:isWounded())
+					or (p:getHp() > 1 and p:hasSkills(sgs.masochism_skill)) then
+				table.insert(friends, p)
+			end
+		elseif self:isEnemy(p) then
+			if not self:doNotDiscard(p, "he") then
+				table.insert(enemies, p)
+			end
+		end
+	end
+	if #friends > 0 then
+		self:sort(friends, "hp")
+		use.card = card
+		if use.to then
+			use.to:append(friends[1])
+		end
+		return
+	end
+	if #enemies > 0 then
+		self:sort(enemies, "losthp")
+		for _, p in ipairs(enemies) do
+			if not p:isWounded() then
+				use.card = card
+				if use.to then
+					use.to:append(p)
+				end
+				return
+			end
+		end
+		self:sort(enemies, "hp")
+		for _, p in ipairs(enemies) do
+			if p:getHp() == 1 and self:getAllPeachNum(p) <= 0 then
+				use.card = card
+				if use.to then
+					use.to:append(p)
+				end
+				return
+			end
+		end
+	end
+	self:sort(self.friends, "defense")
+	for _, p in ipairs(self.friends) do
+		if self.player:objectName() == p:objectName() and p:getLostHp() <= 2 then
+			continue
+		end
+		if p:getHp() > self.player:getHp() then
+			continue
+		end
+		if p:isWounded() and self.player:canDiscard(p, "he") then
+			use.card = card
+			if use.to then
+				use.to:append(p)
+			end
+			return
+		end
+		if p:getHp() > 1 then
+			use.card = card
+			if use.to then
+				use.to:append(p)
+			end
+			return
+		end
+	end
+end
+
+sgs.ai_skill_choice.thfeihu = function(self, choices, data)
+	local target = data:toPlayer()
+	if self:isFriend(target) then
+		if not self:damageIsEffective(target, nil, self.player) then
+			return "damage"
+		end
+		if self:needToThrowArmor(target) and (not target:hasArmorEffect("silver_lion") or target:getLostHp() > 1) and string.find(choices, "recover") then
+			return "recover"
+		end
+		if target:hasSkills(sgs.lose_equip_skill) and target:hasEquip() and string.find(choices, "recover") then
+			return "recover"
+		end
+		if self:needKongcheng(target, true) and target:getHandcardNum() == 1 and string.find(choices, "recover") then
+			return "recover"
+		end
+		if self:getOverflow(target) > 1 and target:isWounded() and string.find(choices, "recover") then
+			return "recover"
+		end
+		if target:getHp() > 1 and target:hasSkills(sgs.masochism_skill) then
+			return "damage"
+		end
+		if target:isWounded() and self.player:canDiscard(target, "he") and string.find(choices, "recover") then
+			return "recover"
+		end
+		if target:getHp() > 1 then
+			return "damage"
+		end
+	elseif self:isEnemy(target) then
+		if not target:isWounded() and string.find(choices, "recover") then
+			return "recover"
+		end
+	end
+	return "damage"
+end
+
+sgs.ai_skill_cardchosen.thfeihu = function(self, who, flags, method)
+	local card_id = self:askForCardChosen(who, flags, "", method)
+	if self:isFriend(who) then
+		if who:getLostHp() == 1 and who:getArmor() and who:getArmor():getEffectiveId() == card_id then
+			if who:hasArmorEffect("silver_lion") then
+				return self:askForCardChosen(who, "h", "", method)
+			end
+		end
+	elseif self:isEnemy(who) then
+		if who:getLostHp() == 1 and self:needToThrowArmor(who) and who:hasArmorEffect("silver_lion") then
+			return who:getArmor():getEffectiveId()
+		end
+	end
+	return card_id
+end
+
+sgs.ai_card_intention.ThFeihuCard = function(self, card, from, tos)
+	for _, to in ipairs(tos) do
+		if not to:isWounded() then continue end
+		sgs.updateIntention(from, to, -50)
+	end
+end

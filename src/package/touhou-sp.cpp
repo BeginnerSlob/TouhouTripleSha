@@ -1999,7 +1999,7 @@ void ThFeihuCard::onEffect(const CardEffectStruct &effect) const{
     if (effect.from->canDiscard(effect.to, "he"))
         choices << "recover";
     choices << "damage";
-    QString choice = room->askForChoice(effect.from, "thfeihu", choices.join("+"));
+    QString choice = room->askForChoice(effect.from, "thfeihu", choices.join("+"), QVariant::fromValue(effect.to));
     if (choice == "recover") {
         if (effect.from == effect.to)
             room->askForDiscard(effect.to, "thfeihu", 1, 1, false, true);
