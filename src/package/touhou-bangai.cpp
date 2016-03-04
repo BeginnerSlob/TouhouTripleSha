@@ -249,8 +249,8 @@ public:
         return QStringList(objectName());
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        if (player->askForSkillInvoke(objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        if (player->askForSkillInvoke(objectName(), data)) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -275,7 +275,9 @@ public:
                     targets << p;
             if (targets.isEmpty())
                 return false;
+            player->tag["ThZhiyueSlash"] = QVariant::fromValue(use.card);
             ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
+            player->tag.remove("ThZhiyueSlash");
             use.to << target;
 
             LogMessage log;
@@ -310,11 +312,12 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         CardUseStruct use = data.value<CardUseStruct>();
-        foreach (ServerPlayer *p, use.to)
+        foreach (ServerPlayer *p, use.to) {
             if (player->canDiscard(p, "he")) {
-                int card_id = room->askForCardChosen(player, p, "he", objectName(), false, Card::MethodDiscard);
+                int card_id = room->askForCardChosen(player, p, "he", "thzhiyue", false, Card::MethodDiscard);
                 room->throwCard(card_id, p, player);
             }
+        }
         return false;
     }
 };

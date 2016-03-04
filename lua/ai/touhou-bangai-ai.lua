@@ -61,3 +61,51 @@ sgs.ai_skill_use["@@thmiqi"] = function(self, prompt, method)
 end
 
 sgs.ai_choicemade_filter.cardChosen.thmiqi = sgs.ai_choicemade_filter.cardChosen.snatch
+
+--疾步：锁定技，当你计算与其他角色的距离时，始终-1。
+--无
+
+--织月：当你使用【杀】时，可以进行一次判定，若为黑色，额外指定一个目标；若为红色，此【杀】指定目标后，弃置目标角色一张牌。
+sgs.ai_skill_invoke.thzhiyue = function(self, data)
+	local use = data:toCardUse()
+	for _, p in sgs.qlist(use.to) do
+		if self:isFriend(p) and self.player:canDiscard(p, "he") and not self:needToThrowArmor(p) then
+			return false
+		end
+	end
+	for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+		if self:isEmeny(p) and self.player:canSlash(p, use.card) and not use.to:contains(p) then
+			return true
+		end
+	end
+	return false
+end
+
+sgs.ai_skill_playerchosen.thzhiyue = function(self, targets)
+	local slash = self.player:getTag("ThZhiyueSlash"):toCard()
+	targets = sgs.QList2Table(targets)
+	self:sort(targets, "defenseSlash")
+	for _, target in ipairs(targets) do
+		if self:isEnemy(target) and not self:slashProhibit(slash, target) and sgs.isGoodTarget(target, targets, self) and self:slashIsEffective(slash, target) then
+			return target
+		end
+	end
+	for _, target in ipairs(targets) do
+		if self:isEnemy(target) then
+			return target
+		end
+	end
+	for _, target in ipairs(targets) do
+		if self:isFriend(target) and not self:slashIsEffective(slash, target) then
+			return target
+		end
+	end
+	return targets[#targets]
+end
+
+sgs.ai_playerchosen_intention.thzhiyue = function(self, from, to)
+	local tos = sgs.SPlayerList()
+	tos:append(to)
+	local slash = from:getTag("ThZhiyueSlash"):toCard()
+	sgs.ai_card_intention.Slash(self, slash, from, tos)
+end

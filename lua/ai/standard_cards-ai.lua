@@ -772,7 +772,7 @@ sgs.ai_skill_playerchosen.slash_extra_targets = function(self, targets)
 	targets = sgs.QList2Table(targets)
 	self:sort(targets, "defenseSlash")
 	for _, target in ipairs(targets) do
-		if self:isEnemy(target) and not self:slashProhibit(slash, target) and sgs.isGoodTarget(target, targetlist, self) and self:slashIsEffective(slash, target) then
+		if self:isEnemy(target) and not self:slashProhibit(slash, target) and sgs.isGoodTarget(target, targets, self) and self:slashIsEffective(slash, target) then
 			return target
 		end
 	end

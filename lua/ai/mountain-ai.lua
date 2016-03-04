@@ -1056,7 +1056,7 @@ function sgs.ai_skill_choice.huashen(self, choices, data, xiaode_choice)
 								"fuluan|yanyu|qingyi|huoshui|zhoufu|bifa|xinzhan|jieyuan|duanbing|fenxun|guidao|guicai|nosguicai|noszhenlie|" ..
 								"noskurou|wansha|lianpo|botu|qiluan|xiaode|qingjian|yicong|zhenwei|heyi|nosshangshi|shangshi|lianying|noslianying|tianyi|" ..
 								"xianzhen|qiaoshui|nosjuece|sijian|chunlao|zongshi|keji|paoxiao|kuiwei|yuanhu|huyuan|nosjushou|fenming|huoji|roulin|lihuo|" ..
-								"kofxiaoji|xiaoji|xuanfeng|nosxuanfeng|jiushi|shushen|longyin|shoucheng|qicai|dangxian|tannang|mashu|thjizhi|" ..
+								"kofxiaoji|xiaoji|xuanfeng|nosxuanfeng|jiushi|shushen|longyin|shoucheng|qicai|dangxian|tannang|thjibu|thjizhi|" ..
 								"hongyan|zongxuan|nosmieji|suishi|qinyin|tianfu|jinjiu|yicheng|jushou|gongao|nosguixin|yinbing|shenfen"):split("|")) do
 			if askill == "yinghun" and not self.player:isWounded() then continue end
 			if askill == "hengzheng" and (self.room:alivePlayerCount() <= 3 or self.player:getHp() > 1 or not self.player:isKongcheng()) then continue end

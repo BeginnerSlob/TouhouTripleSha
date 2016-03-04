@@ -280,7 +280,7 @@ sgs.ai_skill_choice.chuanxin_lose = function(self, choices, data)
 	for _, skill in sgs.qlist(self.player:getVisibleSkillList()) do
 		if skill:isLordSkill() then return skill:objectName() end
 	end
-	for _, skill in ipairs(("guixiu|suishi|weidi|xinsheng|huoshou|lianpo|hongyan|mashu|ikxuwu|yicong|tannang|feiying"):split("|")) do
+	for _, skill in ipairs(("guixiu|suishi|weidi|xinsheng|huoshou|lianpo|hongyan|thjibu|ikxuwu|yicong|tannang|feiying"):split("|")) do
 		if self.player:hasSkill(skill) then return skill end
 	end
  end
