@@ -111,81 +111,18 @@ end
 
 --疾岚：摸牌阶段开始时，你可以少摸一张牌，然后进行一次判定，你选择一项：获得此判定牌；或获得场上的一张与此判定牌花色不同的牌。
 sgs.ai_skill_invoke.thjilanwen = function(self, data)
-	for _, target in sgs.qlist(self.room:getAllPlayers()) do
-		if self:isFriend(target) then
-			if (target:hasSkill("ikcangyou") and not target:getEquips():isEmpty()) or self:needToThrowArmor(target) then
-				return true
-			end
-			if target:containsTrick("indulgence") or target:containsTrick("supply_shortage") then
-				return true
-			end
-		end
-		if self:isEnemy(target) then
-			if target:hasSkills("ikyindie+ikguiyue") and target:getPhase() == sgs.Player_NotActive then continue end
-			if target:containsTrick("purple_song") then
-				return true
-			end
-			if target:hasEquip() then
-				return true
-			else
-				continue
-			end
-		end
+	if self:findPlayerToDiscard("ej", true, false) then
+		return true
 	end
-	return true
+	return false
 end
 
 sgs.ai_skill_playerchosen.thjilanwen = function(self, targets)
 	local judge = self.player:getTag("ThJilanwenJudge"):toJudge()
 	local suit = tonumber(judge.pattern)
-	for _, p in ipairs(self.friends_noself) do
-		if not targets:contains(p) then
-			continue
-		end
-		if p:hasSkill("ikcangyou") then
-			for _, cd in sgs.qlist(p:getEquips()) do
-				if cd:getSuit() ~= suit then
-					return p
-				end
-			end
-		end
-		if self:needToThrowArmor(p) then
-			if p:getArmor() and p:getArmor():getSuit() ~= suit then
-				return p
-			end
-		end
-		for _, cd in sgs.qlist(p:getJudgingArea()) do
-			if cd:isKindOf("Indulgence") or cd:isKindOf("SupplyShortage") then
-				return p
-			end
-		end
-	end
-	for _, p in ipairs(self.enemies) do
-		if not targets:contains(p) then
-			continue
-		end
-		if p:hasSkills("ikyindie+ikguiyue") and p:getPhase() == sgs.Player_NotActive then
-			continue
-		end
-		for _, cd in sgs.qlist(p:getJudgingArea()) do
-			if cd:isKindOf("PurpleSong") then
-				return p
-			end
-		end
-		local equips = sgs.IntList()
-		for _, cd in sgs.qlist(p:getEquips()) do
-			equips:append(cd:getEffectiveId())
-		end
-		if p:getArmor() and self:needToThrowArmor(p) then
-			equips:removeOne(p:getArmor():getEffectiveId())
-		end
-		for _, id in sgs.qlist(equips) do
-			if sgs.Sanguosha:getCard(id):getSuit() ~= suit then
-				return p
-			end
-		end
-	end
-	return nil
+	local suitstr = sgs.Card_Suit2String(suit)
+	local pattern = ".|^" .. suitstr
+	return self:findPlayerToDiscard("ej", true, false, targets, false, pattern)
 end
 
 sgs.ai_choicemade_filter.cardChosen.thjilanwen = sgs.ai_choicemade_filter.cardChosen.snatch
