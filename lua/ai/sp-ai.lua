@@ -1118,7 +1118,7 @@ local function getKangkaiCard(self, target, data)
 	end
 	if #off_horse > 0 then return off_horse[1]:getEffectiveId() end
 	if self.player:getOffensiveHorse()
-		and ((self.player:getWeapon() and not self.player:getWeapon():isKindOf("Crossbow")) or self.player:hasSkills("tannang|mashu|ikyindie")) then
+		and ((self.player:getWeapon() and not self.player:getWeapon():isKindOf("Crossbow")) or self.player:hasSkills("tannang|thjibu|ikyindie")) then
 		return self.player:getOffensiveHorse():getEffectiveId()
 	end
 end
