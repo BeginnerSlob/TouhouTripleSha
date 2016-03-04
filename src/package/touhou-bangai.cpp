@@ -172,7 +172,7 @@ void ThMiqiCard::discard(ServerPlayer *source, ServerPlayer *target, int num) co
     for (int i = 0; i < num; i++) {
         if (!source->canDiscard(target, "ej"))
             break;
-        card_ids << room->askForCardChosen(source, target, "ej", objectName(), false, Card::MethodDiscard);
+        card_ids << room->askForCardChosen(source, target, "ej", "thmiqi", false, Card::MethodDiscard);
         original_places << room->getCardPlace(card_ids[i]);
         dummy->addSubcard(card_ids[i]);
         source->addToPile("#thmiqi", card_ids[i], false);
