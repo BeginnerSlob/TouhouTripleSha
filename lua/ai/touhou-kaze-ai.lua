@@ -988,7 +988,7 @@ sgs.ai_playerchosen_intention.thcannve = 30
 sgs.ai_choicemade_filter.cardChosen.thcannve = sgs.ai_choicemade_filter.cardChosen.snatch
 
 --肆暴：你可将一张装备牌或延时类锦囊牌当【酒】使用。
-thsibao_skill = {}
+local thsibao_skill = {}
 thsibao_skill.name = "thsibao"
 table.insert(sgs.ai_skills, thsibao_skill)
 thsibao_skill.getTurnUseCard = function(self)
@@ -1660,7 +1660,7 @@ end
 local thmaihuo_skill = {}
 thmaihuo_skill.name = "thmaihuo"
 table.insert(sgs.ai_skills, thmaihuo_skill)
-function thmaihuo_skill.getTurnUseCard(self)
+thmaihuo_skill.getTurnUseCard = function(self)
 	if self.player:hasUsed("ThMaihuoCard") then
 		return
 	end
