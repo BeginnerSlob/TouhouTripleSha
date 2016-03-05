@@ -404,7 +404,7 @@ sgs.ai_choicemade_filter.cardResponded["@thcunjing"] = function(self, player, pr
 end
 
 --莲华：出牌阶段，你可弃置一张装备牌，然后观看牌堆顶的一张牌并将其交给一名角色。
-thlianhua_skill = {}
+local thlianhua_skill = {}
 thlianhua_skill.name = "thlianhua"
 table.insert(sgs.ai_skills, thlianhua_skill)
 thlianhua_skill.getTurnUseCard = function(self)
@@ -522,7 +522,7 @@ sgs.ai_cardneed.thmiaoyao = function(to, card)
 end
 
 --黑棺：出牌阶段限一次，你可以交给一名其他角色一张黑色手牌，则你不能成为其使用的【杀】的目标；或获得一名其他角色的一张手牌，则该角色不能成为【杀】的目标。效果持续到你的下回合开始。
-thheiguan_skill = {}
+local thheiguan_skill = {}
 thheiguan_skill.name = "thheiguan"
 table.insert(sgs.ai_skills, thheiguan_skill)
 thheiguan_skill.getTurnUseCard = function(self)
@@ -595,7 +595,7 @@ end
 sgs.ai_skill_invoke.thxiaoyong = true
 
 --栞谣：出牌阶段限一次，若你的手牌数不小于你的体力值，你可以展示全部手牌：若均为不同花色，你令一名体力值不小于你的角色失去1点体力；若均为相同花色，你获得一名其他角色的一张牌。
-thkanyao_skill = {}
+local thkanyao_skill = {}
 thkanyao_skill.name = "thkanyao"
 table.insert(sgs.ai_skills, thkanyao_skill)
 thkanyao_skill.getTurnUseCard = function(self)
@@ -1444,7 +1444,7 @@ sgs.ai_skill_choice.thshiming = function(self, choices, data)
 end
 
 --神宝：限定技，出牌阶段，你可以从一名其他角色的区域获得等同于你攻击范围数量的牌（至多获得三张，不足则全部获得），若如此做，结束阶段开始时，你须弃置等同于你攻击范围数量的牌（不足则全弃）。
-thshenbao_skill = {}
+local thshenbao_skill = {}
 thshenbao_skill.name = "thshenbao"
 table.insert(sgs.ai_skills, thshenbao_skill)
 thshenbao_skill.getTurnUseCard = function(self)

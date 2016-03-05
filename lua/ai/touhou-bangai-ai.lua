@@ -154,7 +154,7 @@ end
 sgs.ai_playerchosen_intention.thzhongjie = -20
 
 --虚魅：出牌阶段限一次，你可以弃置一张基本牌并亮出牌堆顶的三张牌，然后令一名角色获得其中一种类别的牌，将其余的牌置入弃牌堆。若如此做，该角色不能使用或打出该类别的牌，直到回合结束。
-thxumei_skill = {}
+local thxumei_skill = {}
 thxumei_skill.name = "thxumei"
 table.insert(sgs.ai_skills, thxumei_skill)
 thxumei_skill.getTurnUseCard = function(self)
@@ -237,4 +237,39 @@ sgs.ai_skill_cardask["@thxijing"] = function(self, data)
 end
 
 --梦违：结束阶段开始时，若你的手牌小于两张，你可以将手牌补至两张；其他角色的准备阶段开始时，若你没有手牌，你可以摸一张牌。
+--无
+
+--死镰：锁定技，专属技，你的武器牌均视为【杀】；你获得即将进入你装备区的武器牌；若你的装备区没有武器牌，你视为装备着【离魂之镰】。
+--无
+
+--灵战：每当你使用【杀】对目标角色造成一次伤害后，你可以进行一次判定，将非红桃的判定牌置于你的人物牌上称为“幻”，你可以将一张“幻”当【杀】使用或者打出。
+sgs.ai_skill_invoke.thlingzhan = true
+
+local thlingzhan_skill = {}
+thlingzhan_skill.name = "thlingzhan"
+table.insert(sgs.ai_skills, thlingzhan_skill)
+thlingzhan_skill.getTurnUseCard = function(self)
+	if self.player:getPile("lingzhanpile"):isEmpty() then
+		return
+	end
+	for i = 0, self.player:getPile("lingzhanpile"):length() - 1 do
+		local slash = sgs.Sanguosha:getCard(self.player:getPile("lingzhanpile"):at(i))
+		local slash_str = ("slash:thlingzhan[%s:%s]=%d"):format(slash:getSuitString(), slash:getNumberString(), self.player:getPile("lingzhanpile"):at(i))
+		local lingzhanslash = sgs.Card_Parse(slash_str)
+		if self:slashIsAvailable(self.player, lingzhanslash) then
+			return lingzhanslash
+		end
+	end
+end
+
+sgs.ai_view_as.thlingzhan = function(card, player, card_place)
+	local suit = card:getSuitString()
+	local number = card:getNumberString()
+	local card_id = card:getEffectiveId()
+	if card_place == sgs.Player_PlaceSpecial and player:getPileName(card_id) == "lingzhanpile" then
+		return ("slash:thlingzhan[%s:%s]=%d"):format(suit, number, card_id)
+	end
+end
+
+--衍梦：锁定技，其他角色不能令你的人物技能无效或失去。
 --无
