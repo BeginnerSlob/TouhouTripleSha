@@ -116,7 +116,6 @@ int main(int argc, char *argv[]) {
 #ifdef Q_OS_ANDROID
     appFont = QFont("DroidSansFallback", 6);
 #endif
-    qApp->setFont(appFont);
 
     BanPair::loadBanPairs();
 
@@ -132,7 +131,8 @@ int main(int argc, char *argv[]) {
         }
 
         return qApp->exec();
-    }
+    } else
+        qApp->setFont(appFont);
 
 #ifdef Q_OS_WIN
     QFile winFile("qss/sanguosha.qss");
