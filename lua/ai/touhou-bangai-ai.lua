@@ -273,3 +273,77 @@ end
 
 --衍梦：锁定技，其他角色不能令你的人物技能无效或失去。
 --无
+
+--琴韶：弃牌阶段开始时，若你的手牌数大于体力值，你可以令一名其他角色摸X张牌；若你的手牌数小于体力值，你可以摸X张牌（X为你的手牌数与体力值之差）。
+sgs.ai_skill_playerchosen.thqinshao = function(self, targets)
+	local n = self.player:getHandcardNum() - self.player:getHp()
+	return self:findPlayerToDraw(false, n)
+end
+	
+sgs.ai_skill_invoke.thqinshao = true
+
+sgs.ai_skill_playerchosen.thqinshao = -40
+
+--星屑：出牌阶段限一次，你可以弃置一张手牌，然后将一名角色装备区内的全部牌置于你的人物牌上，此回合结束时，令其依次获得并使用这些牌。
+local thxingxie_skill = {}
+thxingxie_skill.name = "thxingxie"
+table.insert(sgs.ai_skills, thxingxie_skill)
+thxingxie_skill.getTurnUseCard = function(self)
+	if self.player:canDiscard(self.player, "h") and not self.player:hasUsed("ThXingxieCard") then
+		local cards = sgs.QList2Table(self.player:getHandcards())
+		self:sortByUseValue(cards, true)
+		for _, c in ipairs(cards) do
+			if not self:isValuableCard(c) then
+				return sgs.Card_Parse("@ThXingxieCard=" .. c:getEffectiveId())
+			end
+		end
+	end
+end
+
+sgs.ai_skill_use_func.ThXingxieCard = function(card, use, self)
+	local slash = self:getCard("Slash")
+	if slash and self:slashIsAvailable(self.player, slash) then
+		local dummy_use = { isDummy = true, to = sgs.SPlayerList() }
+		self:useCardSlash(slash, dummy_use)
+		if dummy_use.card then
+			for _, p in sgs.qlist(dummy_use.to) do
+				if self:isEnemy(p) and p:getArmor() and not self:needToThrowArmor(p) then
+					use.card = card
+					if use.to then
+						use.to:append(p)
+					end
+					return
+				end
+			end
+		end
+	end
+	for _, p in ipairs(self.friends) do
+		if p:hasArmorEffect("silver_lion") and p:getArmor() and p:isWounded() then
+			use.card = card
+			if use.to then
+				use.to:append(p)
+			end
+			return
+		end
+	end
+	for _, p in ipairs(self.enemies) do
+		if p:hasTreasure("wooden_ox") and p:getPile("wooden_ox"):length() > 0 then
+			use.card = card
+			if use.to then
+				use.to:append(p)
+			end
+			return
+		end
+	end
+end
+
+sgs.ai_use_priority.ThXingxieCard = sgs.ai_use_priority.Slash + 0.1
+
+sgs.ai_card_intention.ThXingxieCard = function(self, card, from, tos)
+	for _, to in ipairs(tos) do
+		if to:hasArmorEffect("silver_lion") and to:getArmor() and to:isWounded() then
+		else
+			sgs.updateIntention(from, to, 30)
+		end
+	end
+end
