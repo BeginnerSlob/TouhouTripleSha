@@ -133,7 +133,7 @@ function sgs.ai_cardsview.thzuishangv(self, class_name, player)
 		local obj_name = player:property("zhouhua_source"):toString()
 		local splayer = self.room:findPlayer(obj_name)
 		if splayer and splayer:hasSkill("thzuishang") then
-			return cardsView_thzhouhua(self, player)
+			return cardsView_thzuishang(self, player)
 		end
 	end
 end
@@ -912,7 +912,7 @@ sgs.ai_need_damaged.thfusheng = function(self, attacker, player)
 end
 
 --幻法：出牌阶段限一次，你可以将一张红桃手牌交给一名其他角色，然后你获得该角色的一张牌并将该牌交给除该角色外的一名角色。
-thhuanfa_skill = {}
+local thhuanfa_skill = {}
 thhuanfa_skill.name = "thhuanfa"
 table.insert(sgs.ai_skills, thhuanfa_skill)
 thhuanfa_skill.getTurnUseCard = function(self)
