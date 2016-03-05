@@ -487,14 +487,14 @@ public:
                 && room->getCardPlace(id) == Player::DiscardPile) {
                 const Card *c = Sanguosha->getEngineCard(id);
                 QString prompt = "@thxijing:" + c->getSuitString()
-                                              + ":" + QString::number(c->getNumber())
+                                              + ":" + c->getNumberString()
                                               + ":" + c->objectName();
                 QString pattern = ".";
                 if (c->isBlack())
                     pattern = ".black";
                 else if (c->isRed())
                     pattern = ".red";
-                const Card *card = room->askForCard(player, pattern, prompt, QVariant(), Card::MethodNone);
+                const Card *card = room->askForCard(player, pattern, prompt, QVariant::fromValue(c), Card::MethodNone);
 
                 if (card) {
                     room->setPlayerFlag(player, "thxijing_using");

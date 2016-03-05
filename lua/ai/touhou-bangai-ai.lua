@@ -216,3 +216,25 @@ sgs.ai_skill_playerchosen.thxumei = function(self, targets)
 end
 
 sgs.ai_use_priority.ThXumeiCard = -2
+
+--隙境：你的回合外，每当你的非装备牌进入弃牌堆后，你可以用一张相同颜色的手牌替换之。
+sgs.ai_skill_cardask["@thxijing"] = function(self, data)
+	local card = data:toCard()
+	if card then
+		local h_cards = sgs.QList2Table(self.player:getHandcards())
+		self:sortByKeepValue(h_cards)
+		for _, c in ipairs(h_cards) do
+			if c:sameColorWith(card) then
+				if self:getKeepValue(card, false) > self:getKeepValue(c) then
+					return "$" .. c:getEffectiveId()
+				end
+			end
+		end
+	else
+		self.room:writeToConsole("no Card!")
+	end
+	return "."
+end
+
+--梦违：结束阶段开始时，若你的手牌小于两张，你可以将手牌补至两张；其他角色的准备阶段开始时，若你没有手牌，你可以摸一张牌。
+--无
