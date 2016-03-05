@@ -109,3 +109,110 @@ sgs.ai_playerchosen_intention.thzhiyue = function(self, from, to)
 	local slash = from:getTag("ThZhiyueSlash"):toCard()
 	sgs.ai_card_intention.Slash(self, slash, from, tos)
 end
+
+--忠节：每当你受到一次伤害后，你可以展示一名角色的所有手牌，每少一种类型的牌，其摸一张牌。
+sgs.ai_skill_playerchosen.thzhongjie = function(self, targets)
+	local getKnownTypeNum = function(target)
+		local types = {}
+		local unknown = 0
+		local flag = ("%s_%s_%s"):format("visible", self.player:objectName(), target:objectName())
+		for _, c in sgs.qlist(target:getHandcards()) do
+			if self.player:objectName() == target:objectName() or c:hasFlag("visible") or c:hasFlag(flag) then
+				if not table.contains(types, c:getType()) then
+					table.insert(types, c:getType())
+				end
+				continue
+			else
+				unknown = unknown + 1
+			end
+		end
+		return #types, unknown
+	end
+	local thzhongjie_comp = function(a, b)
+		local a1, a2 = getKnownTypeNum(a)
+		local b1, b2 = getKnownTypeNum(b)
+		if a1 ~= b1 then
+			return a2 < b2
+		else
+			return a1 < b1
+		end
+	end
+	local friends = {}
+	for _, p in sgs.qlist(targets) do
+		if self:isFriend(p) then
+			local n = getKnownTypeNum(p)
+			if n ~= 3 then
+				table.insert(friends, p)
+			end
+		end
+	end
+	if #friends == 0 then return nil end
+	table.sort(friends, thzhongjie_comp)
+	return friends[1]
+end
+
+sgs.ai_playerchosen_intention.thzhongjie = -20
+
+--虚魅：出牌阶段限一次，你可以弃置一张基本牌并亮出牌堆顶的三张牌，然后令一名角色获得其中一种类别的牌，将其余的牌置入弃牌堆。若如此做，该角色不能使用或打出该类别的牌，直到回合结束。
+thxumei_skill = {}
+thxumei_skill.name = "thxumei"
+table.insert(sgs.ai_skills, thxumei_skill)
+thxumei_skill.getTurnUseCard = function(self)
+	if self.player:canDiscard(self.player, "h") and not self.player:hasUsed("ThXumeiCard") then
+		local cards = sgs.QList2Table(self.player:getHandcards())
+		self:sortByUseValue(cards, true)
+		for _, c in ipairs(cards) do
+			if c:isKindOf("BasicCard") and not self:isValuableCard(c) then
+				return sgs.Card_Parse("@ThXumeiCard=" .. c:getEffectiveId())
+			end
+		end
+	end
+end
+
+sgs.ai_skill_use_func.ThXumeiCard = function(card, use, self)
+	use.card = card
+end
+
+sgs.ai_skill_choice.thxumei = function(self, choices, data)
+	sgs.thxumei_target = nil
+	local ids = data:toIntList()
+	local choice_map = {}
+	for _, id in sgs.qlist(ids) do
+		local c = sgs.Sanguosha:getCard(id)
+		local str = c:getType()
+		if str == "skill" then continue end
+		if not choice_map[str] then choice_map[str] = {} end
+		table.insert(choice_map[str], c)
+	end
+	for _, id in sgs.qlist(ids) do
+		local c = sgs.Sanguosha:getCard(id)
+		self:sort(self.friends_noself, "defense")
+		for _, p in ipairs(self.friends_noself) do
+			if isCard("Peach", c, p) then
+				sgs.thxumei_target = p
+				return c:getType()
+			end
+		end
+	end
+	if #choice_map < 3 then
+		for str, t in pairs(choice_map) do
+			if #t > 1 then
+				return str
+			end
+		end
+	end
+	local target, cardId = sgs.ai_skill_askforyiji.nosyiji(self, sgs.QList2Table(ids))
+	sgs.thxumei_target = target
+	return sgs.Sanguosha:getCard(cardId):getType()
+end
+
+sgs.ai_skill_playerchosen.thxumei = function(self, targets)
+	if sgs.thxumei_target then
+		return sgs.thxumei_target
+	end
+	local dummy = self.player:getTag("ThXumeiDummy"):toCard()
+	local target, _ = sgs.ai_skill_askforyiji.nosyiji(self, sgs.QList2Table(dummy:getSubcards()))
+	return target or self.player
+end
+
+sgs.ai_use_priority.ThXumeiCard = -2

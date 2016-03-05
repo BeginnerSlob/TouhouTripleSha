@@ -372,7 +372,7 @@ ThXumeiCard::ThXumeiCard() {
 }
 
 void ThXumeiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    QList<int> card_ids = room->getNCards(3);
+    QList<int> card_ids = room->getNCards(3, false);
     CardMoveReason reason(CardMoveReason::S_REASON_TURNOVER, source->objectName(), "thxumei", QString());
     room->moveCardsAtomic(CardsMoveStruct(card_ids, NULL, Player::PlaceTable, reason), true);
     QStringList choices;
@@ -385,21 +385,24 @@ void ThXumeiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &)
         choices << str;
     }
     QString type = room->askForChoice(source, "thxumei", choices.join("+"), QVariant::fromValue(IntList2VariantList(card_ids)));
-    ServerPlayer *target = room->askForPlayerChosen(source, room->getAllPlayers(), "thxumei", QString(), false, true);
-    CardMoveReason reason2(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), "thxumei", QString());
     DummyCard *dummy = new DummyCard;
     dummy->deleteLater();
-    foreach(int id, card_ids) {
-        if(Sanguosha->getCard(id)->getType() == type) {
+    foreach (int id, card_ids) {
+        if (Sanguosha->getCard(id)->getType() == type) {
             card_ids.removeOne(id);
             dummy->addSubcard(id);
         }
     }
+    source->tag["ThXumeiDummy"] = QVariant::fromValue(dummy);
+    ServerPlayer *target = room->askForPlayerChosen(source, room->getAllPlayers(), "thxumei");
+    source->tag.remove("ThXumeiDummy");
     room->obtainCard(target, dummy);
-    dummy->clearSubcards();
-    dummy->addSubcards(card_ids);
-    if (dummy->subcardsLength() > 0)
+    CardMoveReason reason2(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), "thxumei", QString());
+    if (card_ids.length() > 0) {
+        dummy->clearSubcards();
+        dummy->addSubcards(card_ids);
         room->throwCard(dummy, reason2, NULL);
+    }
 
     type[0] = type[0].toUpper();
     type += "Card";
