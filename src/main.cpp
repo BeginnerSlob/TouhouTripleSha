@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
     } else
         qApp->setFont(appFont);
 
-#ifdef Q_OS_WIN
+#if (defined Q_OS_WIN) || (defined Q_OS_Mac) || (defined Q_OS_LINUX)
     QFile winFile("qss/sanguosha.qss");
     if (winFile.open(QIODevice::ReadOnly)) {
         QTextStream winStream(&winFile);
