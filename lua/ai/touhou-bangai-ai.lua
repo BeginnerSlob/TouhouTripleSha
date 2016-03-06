@@ -347,3 +347,111 @@ sgs.ai_card_intention.ThXingxieCard = function(self, card, from, tos)
 		end
 	end
 end
+
+--羽帛：出牌阶段限一次，你可以弃置一张黑色手牌并将一至两名角色的人物牌横置。
+local thyubo_skill = {}
+thyubo_skill.name = "thyubo"
+table.insert(sgs.ai_skills, thyubo_skill)
+thyubo_skill.getTurnUseCard = function(self)
+	if self.player:canDiscard(self.player, "h") and not self.player:hasUsed("ThYuboCard") then
+		local cards = sgs.QList2Table(self.player:getHandcards())
+		self:sortByUseValue(cards, true)
+		for _, c in ipairs(cards) do
+			if c:isBlack() and not self:isValuableCard(c) then
+				return sgs.Card_Parse("@ThYuboCard=" .. c:getEffectiveId())
+			end
+		end
+	end
+end
+
+sgs.ai_skill_use_func.ThYuboCard = function(card, use, self)
+	local victims = self.room:getAlivePlayers()
+	local target1 = self:findPlayerToChain(victims, true)
+	if target1 then
+		use.card = card
+		if use.to then
+			use.to:append(target1)
+			victims:removeOne(target1)
+			local target2 = self:findPlayerToChain(victims, true)
+			if target2 then
+				use.to:append(target2)
+			end
+		end
+	end
+end
+
+sgs.ai_card_intention.ThYuboCard = 60
+sgs.ai_use_priority.ThYuboCard = 5
+
+--穹法：人物牌横置的角色的结束阶段开始时，你可以令其选择一项：弃置由你指定的另一名角色的一张牌或令你摸一张牌。然后其重置其人物牌。
+sgs.ai_skill_invoke.thqiongfa = function(self, data)
+	local target = data:toPlayer()
+	if self:isFriend(target) and not self:isGoodChainPartner(target) then
+		return true
+	elseif not self:isFriend(target) and self:isGoodChainPartner(target) then
+		return true
+	end
+	return false
+end
+
+sgs.ai_skill_playerchosen.thqiongfa = function(self, targets)
+	local current = nil
+	for _, p in sgs.qlist(self.room:getAlivePlayers()) do
+		if p:getPhase() == sgs.Player_Finish then
+			current = target
+			break
+		end
+	end
+	if not current then
+		self.room:writeToConsole("No Qiongfa Source!")
+		current = self.player
+	end
+	if self.player:objectName() == current:objectName() then
+		local victim = self:findPlayerToDiscard("he", true, true, self.room:getOtherPlayers(current), false)
+		if victim then
+			local card_id = self:askForCardChosen(victim, "he", "thqiongfa", sgs.Card_MethodDiscard)
+			if victim:hasEquip(sgs.Sanguosha:getCard(card_id)) or victim:getCardCount() < 3 then
+				return victim
+			end
+		end
+		return nil
+	end
+	if self:isFriend(current) then
+		local vcitim = self:findPlayerToDiscard("he", true, true, self.room:getOtherPlayers(current), false)
+		if victim then
+			return victim
+		else
+			return targets:at(math.random(0, targets:length() - 1))
+		end
+	else
+		self:sort(self.enemies, "handcard")
+		for _, p in ipairs(self.enemies) do
+			if not self:needToThrowArmor(p) and not (self:needKongcheng(p) and p:getHandcardNum() == 1) then
+				return p
+			end
+		end
+		return targets:at(math.random(0, targets:length() - 1))
+	end
+end
+
+sgs.ai_skill_choice.thqiongfa = function(self, choices, data)
+	local source = self.player:getTag("ThQiongfaSource"):toPlayer()
+	local target = data:toPlayer()
+	if self:isFriend(source) and not self:isEmeny(target) then
+		return "cancel"
+	end
+	if self:isEmeny(source) and self:isFriend(target) then
+		if self:getOverflow(target) > 1 then
+			return "discard"
+		end
+		return "cancel"
+	end
+	if self:isFriend(source) and self:isEmeny(target) then
+		local card_id = self:askForCardChosen(target, "he", "thqiongfa", sgs.Card_MethodDiscard)
+		if target:hasEquip(sgs.Sanguosha:getCard(card_id)) or victim:getCardCount() < 3 then
+			return "discard"
+		end
+		return "cancel"
+	end
+	return not self:isEnemy(source) and "cancel" or "discard"
+end
