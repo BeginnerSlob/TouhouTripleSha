@@ -863,8 +863,8 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
-        if (ask_who->askForSkillInvoke(objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -894,7 +894,13 @@ public:
                 room->sendLog(log);
             }
 
-            if (victim && room->askForChoice(player, objectName(), "discard+cancel") == "discard") {
+            QString choice = "cancel";
+            if (victim) {
+                player->tag["ThQiongfaSource"] = QVariant::fromValue(ask_who); // for AI
+                choice = room->askForChoice(player, objectName(), "discard+cancel", QVariant::fromValue(victim));
+                player->tag.remove("ThQiongfaSource");
+            }
+            if (choice == "discard") {
                 int card_id = room->askForCardChosen(player, victim, "he", objectName(), false, Card::MethodDiscard);
                 room->throwCard(card_id, victim, player);
             } else

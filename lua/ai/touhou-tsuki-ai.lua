@@ -1,10 +1,11 @@
-function SmartAI:findPlayerToChain(targets)
+function SmartAI:findPlayerToChain(targets, chain_only)
+	if targets:isEmpty() then return nil end
 	targets = sgs.QList2Table(targets)
 	local getChainTarget = function(players_table)
 		self:sort(self.friends, "defense")
 		for _, friend in ipairs(self.friends) do
 			if not table.contains(players_table, friend) then continue end
-			if friend:isChained() and not self:isGoodChainPartner(friend) then
+			if friend:isChained() and not self:isGoodChainPartner(friend) and not chain_only then
 				return friend
 			elseif not friend:isChained() and friend:hasSkill("thchiwu") and self:isGoodChainPartner(friend) then
 				return friend
