@@ -482,6 +482,8 @@ function SmartAI:useCardIronChain(card, use)
 			end
 		elseif not friend:isChained() and friend:hasSkill("thchiwu") and self:isGoodChainPartner(friend) then
 			table.insert(friendtargets, friend)
+		elseif not friend:isChained() and self:isGoodThQiongfaTarget(friend) then
+			table.insert(friendtargets, friend)
 		else
 			table.insert(otherfriends, friend)
 		end
@@ -491,6 +493,9 @@ function SmartAI:useCardIronChain(card, use)
 		self:sort(self.enemies, "defense")
 		for _, enemy in ipairs(self.enemies) do
 			if not enemy:isChained() and enemy:hasSkill("thchiwu") and self:isGoodChainPartner(enemy) then
+				continue
+			end
+			if not enemy:isChained() and self:isGoodThQiongfaTarget(enemy) then
 				continue
 			end
 			if (not use.current_targets or not table.contains(use.current_targets, enemy:objectName()))
@@ -598,6 +603,8 @@ sgs.ai_card_intention.IronChain = function(self, card, from, tos)
 			local enemy = true
 			if to:hasSkill("ikhongcai") and #tos > 1 then enemy = false end
 			if liuxie and liuxie:getHp() >= 1 and #tos > 1 and self:isFriend(to, liuxie) then enemy = false end
+			if to:hasSkill("thchiwu") and self:isGoodChainPartner(to) then enemy = false end
+			if self:isGoodThQiongfaTarget(to) then enemy = false end
 			sgs.updateIntention(from, to, enemy and 60 or -30)
 		else
 			sgs.updateIntention(from, to, -60)
