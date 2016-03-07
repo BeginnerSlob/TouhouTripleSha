@@ -5451,7 +5451,7 @@ function SmartAI:useEquipCard(card, use)
 		if not self:needKongcheng() and self.player:getHandcardNum() <= self.player:getHp() - 2 then return end
 		if not self.player:getWeapon() and self.player:hasSkill("thcunjing") and canUseSlash then
 			local use = { isDummy = true }
-			local slash = self:getCardId("Slash")
+			local slash = self:getCard("Slash")
 			self:useCardSlash(slash, use)
 			if use.card then
 				return

@@ -25,7 +25,7 @@ end
 
 sgs.ai_skill_cardask["@thshoujuan"] = function(self, data, pattern, target)
 	local cards = sgs.QList2Table(self.player:getCards("he"))
-	self:sortByKeepValue(cards)
+	self:sortByUseValue(cards, false)
 	if self:isFriend(target) then
 		local card, _ = self:getCardNeedPlayer(cards, { target }, false)
 		if card then
@@ -389,7 +389,7 @@ function SmartAI:isGoodThQiongfaTarget(target)
 	if current:getPhase() >= sgs.Player_Finish then
 		current = self.room:findPlayer(current:getNextAlive(1, false):objectName())
 	end
-	local lingxians = self:findPlayersBySkillName("thqiongfa")
+	local lingxians = self.room:findPlayersBySkillName("thqiongfa")
 	local has_lingxian = false
 	for _, s in sgs.qlist(lingxians) do
 		if self:isFriend(s, current) then
@@ -476,4 +476,17 @@ sgs.ai_skill_choice.thqiongfa = function(self, choices, data)
 		return "cancel"
 	end
 	return not self:isEnemy(source) and "cancel" or "discard"
+end
+
+--威德：摸牌阶段摸牌时，你可以放弃摸牌，改为观看牌堆顶的两张牌并交给一名角色，然后若该角色不为你且你已受伤，你可以获得一名其他角色的一张手牌。
+sgs.ai_skill_invoke.thweide = true
+
+sgs.ai_skill_playerchosen.thweide = function(self, targets)
+	local ids = self.player:getTag("ThWeide"):toIntList()
+	if not ids or ids:isEmpty() then
+		return self:findPlayerToDiscard("h", false, false) or targets:at(math.random(0, targets:length() - 1))
+	else
+		local target, _ = sgs.ai_skill_askforyiji.nosyiji(self, sgs.QList2Table(ids))
+		return target or self.player
+	end
 end
