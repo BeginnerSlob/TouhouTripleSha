@@ -1061,12 +1061,14 @@ public:
     }
 };
 
-ThWangdaoCard::ThWangdaoCard() {
+ThWangdaoCard::ThWangdaoCard()
+{
     will_throw = false;
     handling_method = MethodNone;
 }
 
-void ThWangdaoCard::onEffect(const CardEffectStruct &effect) const {
+void ThWangdaoCard::onEffect(const CardEffectStruct &effect) const
+{
     Room *room = effect.from->getRoom();
     int id = getEffectiveId();
     const Card *original = Sanguosha->getCard(id);
@@ -1080,7 +1082,7 @@ void ThWangdaoCard::onEffect(const CardEffectStruct &effect) const {
     }
     if (!slash) {
         effect.to->obtainCard(this);
-        if (effect.from->canDiscard(effect.to, "he") && room->askForChoice(effect.from, "thwangdao", "discard+lose") == "discard") {
+        if (effect.from->canDiscard(effect.to, "he") && room->askForChoice(effect.from, "thwangdao", "discard+lose", QVariant::fromValue(effect.to)) == "discard") {
             room->setPlayerFlag(effect.to, "thwangdao_InTempMoving");
             DummyCard *dummy = new DummyCard;
             QList<int> card_ids;
@@ -1104,13 +1106,16 @@ void ThWangdaoCard::onEffect(const CardEffectStruct &effect) const {
     }
 }
 
-class ThWangdao: public OneCardViewAsSkill {
+class ThWangdao: public OneCardViewAsSkill
+{
 public:
-    ThWangdao(): OneCardViewAsSkill("thwangdao") {
+    ThWangdao(): OneCardViewAsSkill("thwangdao")
+    {
         filter_pattern = "Peach";
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const{
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
         ThWangdaoCard *card = new ThWangdaoCard;
         card->addSubcard(originalCard);
         return card;
