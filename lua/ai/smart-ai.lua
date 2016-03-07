@@ -2840,6 +2840,19 @@ function SmartAI:askForUseCard(pattern, prompt, method)
 	local use_func = sgs.ai_skill_use[pattern]
 	if use_func then
 		return use_func(self, prompt, method) or "."
+	elseif tonumber(pattern) then
+		local card = sgs.Sanguosha:getCard(pattern)
+		local type = card:getTypeId()
+		local use = { to = sgs.SPlayerList() }
+		self["use" .. sgs.ai_type_name[type + 1] .. "Card"](self, card, use)
+		if not use.to:isEmpty() then
+			local str = use.to:first():objectName()
+			use.to:removeOne(use.to:first())
+			for _, p in sgs.qlist(use.to) do
+				str = str .. "+" .. p:objectName()
+			end
+			return card:toString() .. "->" .. str
+		end
 	else
 		return "."
 	end
