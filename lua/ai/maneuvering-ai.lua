@@ -474,7 +474,8 @@ function SmartAI:useCardIronChain(card, use)
 	self:sort(self.friends, "defense")
 	for _, friend in ipairs(self.friends) do
 		if use.current_targets and table.contains(use.current_targets, friend:objectName()) then continue end
-		if friend:isChained() and not self:isGoodChainPartner(friend) and self:hasTrickEffective(card, friend) and not friend:hasSkill("ikhongcai") then
+		if friend:isChained() and not self:isGoodChainPartner(friend) and self:hasTrickEffective(card, friend)
+				and not self:isGoodThQiongfaTarget(friend) and not friend:hasSkill("ikhongcai") then
 			if friend:containsTrick("lightning") then
 				table.insert(friendtargets, friend)
 			else

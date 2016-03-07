@@ -599,7 +599,6 @@ end
 --雨磐：结束阶段开始时，若你于本回合使用或弃置牌的花色数为四种，你可以令一名角色回复1点体力。
 sgs.ai_skill_playerchosen.thyupan = function(self, targets)
 	local arr1, arr2 = self:getWoundedFriend(false, true)
-	local target = nil
 
 	for _, p in ipairs(arr1) do
 		if self:isWeak(p) and p:getHp() < getBestHp(p) and targets:contains(p) then
