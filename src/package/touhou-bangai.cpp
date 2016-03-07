@@ -939,7 +939,9 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         QList<int> card_ids = room->getNCards(2, false);
         room->fillAG(card_ids, player);
+        player->tag["ThWeide"] = QVariant::fromValue(IntList2VariantList(card_ids));
         ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName());
+        player->tag.remove("ThWeide");
         room->clearAG(player);
         room->moveCardsAtomic(CardsMoveStruct(card_ids,
                                               target,
