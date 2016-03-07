@@ -74,7 +74,7 @@ sgs.ai_skill_invoke.thzhiyue = function(self, data)
 		end
 	end
 	for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
-		if self:isEmeny(p) and self.player:canSlash(p, use.card) and not use.to:contains(p) then
+		if self:isEnemy(p) and self.player:canSlash(p, use.card) and not use.to:contains(p) then
 			return true
 		end
 	end
@@ -383,6 +383,28 @@ end
 sgs.ai_card_intention.ThYuboCard = 60
 sgs.ai_use_priority.ThYuboCard = 5
 
+function SmartAI:isGoodThQiongfaTarget(target)
+	local current = self.room:getCurrent()
+	if not current then return false end
+	if current:getPhase() >= sgs.Player_Finish then
+		current = self.room:findPlayer(current:getNextAlive(1, false):objectName())
+	end
+	local lingxians = self:findPlayersBySkillName("thqiongfa")
+	local has_lingxian = false
+	for _, s in sgs.qlist(lingxians) do
+		if self:isFriend(s, current) then
+			has_lingxian = true
+			break
+		end
+	end
+	if not has_lingxian then return false end
+	if target:objectName() == current:objectName() then return true end
+	if self:getEnemyNumBySeat(current, target, nil, true) == 0 then
+		return true
+	end
+	return false
+end
+
 --穹法：人物牌横置的角色的结束阶段开始时，你可以令其选择一项：弃置由你指定的另一名角色的一张牌或令你摸一张牌。然后其重置其人物牌。
 sgs.ai_skill_invoke.thqiongfa = function(self, data)
 	local target = data:toPlayer()
@@ -437,16 +459,16 @@ end
 sgs.ai_skill_choice.thqiongfa = function(self, choices, data)
 	local source = self.player:getTag("ThQiongfaSource"):toPlayer()
 	local target = data:toPlayer()
-	if self:isFriend(source) and not self:isEmeny(target) then
+	if self:isFriend(source) and not self:isEnemy(target) then
 		return "cancel"
 	end
-	if self:isEmeny(source) and self:isFriend(target) then
+	if self:isEnemy(source) and self:isFriend(target) then
 		if self:getOverflow(target) > 1 then
 			return "discard"
 		end
 		return "cancel"
 	end
-	if self:isFriend(source) and self:isEmeny(target) then
+	if self:isFriend(source) and self:isEnemy(target) then
 		local card_id = self:askForCardChosen(target, "he", "thqiongfa", sgs.Card_MethodDiscard)
 		if target:hasEquip(sgs.Sanguosha:getCard(card_id)) or victim:getCardCount() < 3 then
 			return "discard"

@@ -9,12 +9,17 @@ function SmartAI:findPlayerToChain(targets, chain_only)
 				return friend
 			elseif not friend:isChained() and friend:hasSkill("thchiwu") and self:isGoodChainPartner(friend) then
 				return friend
+			elseif not friend:isChained() and self:isGoodThQiongfaTarget(friend) then
+				return friend
 			end
 		end
 		self:sort(self.enemies, "defense")
 		for _, enemy in ipairs(self.enemies) do
 			if not table.contains(players_table, enemy) then continue end
 			if not enemy:isChained() and enemy:hasSkill("thchiwu") and self:isGoodChainPartner(enemy) then
+				continue
+			end
+			if not enemy:isChained() and self:isGoodThQiongfaTarget(enemy) then
 				continue
 			end
 			if not enemy:isChained() and self:objectiveLevel(enemy) > 3
