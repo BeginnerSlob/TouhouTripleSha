@@ -5,7 +5,7 @@ function SmartAI:findPlayerToChain(targets, chain_only)
 		self:sort(self.friends, "defense")
 		for _, friend in ipairs(self.friends) do
 			if not table.contains(players_table, friend) then continue end
-			if friend:isChained() and not self:isGoodChainPartner(friend) and not chain_only then
+			if friend:isChained() and not self:isGoodChainPartner(friend) and not self:isGoodThQiongfaTarget(friend) and not chain_only then
 				return friend
 			elseif not friend:isChained() and friend:hasSkill("thchiwu") and self:isGoodChainPartner(friend) then
 				return friend

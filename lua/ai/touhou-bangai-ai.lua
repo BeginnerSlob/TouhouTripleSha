@@ -420,7 +420,7 @@ sgs.ai_skill_playerchosen.thqiongfa = function(self, targets)
 	local current = nil
 	for _, p in sgs.qlist(self.room:getAlivePlayers()) do
 		if p:getPhase() == sgs.Player_Finish then
-			current = target
+			current = p
 			break
 		end
 	end
@@ -596,3 +596,123 @@ sgs.ai_skill_choice.thwangdao = function(self, choices, data)
 end
 
 sgs.ai_card_intention.ThWangdaoCard = 50
+
+--四象：出牌阶段，你可以选择一项：1. 弃置两张黑桃牌并令一名角色回复1点体力。2. 弃置两张方块牌并弃置至多两名其他角色区域的各一张牌；3. 弃置两张梅花牌并令一名其他角色摸两张牌；4. 弃置两张红桃牌并令一名其他角色摸一张牌，然后弃置一张手牌，最后该角色将其人物牌翻面。
+local thsixiang_skill = {}
+thsixiang_skill.name = "thsixiang"
+table.insert(sgs.ai_skills, thsixiang_skill)
+thsixiang_skill.getTurnUseCard = function(self)
+	if self.player:canDiscard(self.player, "he") and self.player:getCardCount() > 1 then
+		return sgs.Card_Parse("@ThSixiangCard=.")
+	end
+end
+
+sgs.ai_skill_use_func.ThSixiangCard = function(card, use, self)
+	local function getSiXiangTarget(str)
+		local to = sgs.SPlayerList()
+		if str == "spade" then
+			local arr1, arr2 = self:getWoundedFriend(false, true)
+			for _, p in ipairs(arr1) do
+				if self:isWeak(p) and p:getHp() < getBestHp(p) then
+					to:append(p)
+					return to
+				end
+			end
+			for _, p in ipairs(arr2) do
+				to:append(p)
+				return to
+			end
+			return nil
+		elseif str == "heart" then
+			self:sort(self.friends_noself, "defense")
+			for _, friend in ipairs(self.friends_noself) do
+				if not self:toTurnOver(friend, 1) then
+					to:append(friend)
+					return to
+				end
+			end
+			self:sort(self.enemies, "hp")
+			for _, enemy in ipairs(self.enemies) do
+				if self:toTurnOver(enemy, 1) then
+					to:append(enemy)
+					return to
+				end
+			end
+			return nil
+		elseif str == "club" then
+			local target = self:findPlayerToDraw(false, 2)
+			if target then
+				to:append(target)
+				return to
+			end
+			return nil
+		elseif str == "diamond" then
+			local targets = self:findPlayerToDiscard("hej", false, true, nil, true)
+			for _, target in ipairs(targets) do
+				if not to:contains(target) then
+					to:append(target)
+					if to:length() == 2 then
+						return to
+					end
+				end
+			end
+			if not to:isEmpty() then
+				if to:length() == 1 then
+					if self:isFriend(to:first()) or self:getOverflow() > 0 then
+						return to
+					else
+						return nil
+					end
+				else
+					return to
+				end
+			else
+				return nil
+			end
+		end
+		return nil
+	end
+
+	local can_use = {}
+	local cards = sgs.QList2Table(self.player:getCards("he"))
+	self:sortByUseValue(cards, true)
+	for _, c in ipairs(cards) do
+		if can_use[c:getSuitString()] then continue end
+		if self:isValuableCard(c) then continue end
+		for _, c2 in ipairs(cards) do
+			if c:getEffectiveId() == c2:getEffectiveId() then continue end
+			if self:isValuableCard(c2) then continue end
+			if c2:getSuit() == c:getSuit() then
+				can_use[c:getSuitString()] = c:getEffectiveId() .. "+" .. c2:getEffectiveId()
+			end
+		end
+	end
+	for str, ids in pairs(can_use) do
+		local to = getSiXiangTarget(str)
+		if to then
+			use.card = sgs.Card_Parse("@ThSixiangCard=" .. ids)
+			if use.to then
+				use.to = to
+			end
+			return
+		end
+	end
+end
+
+sgs.ai_card_intention.ThSixiangCard = function(self, card, from, tos)
+	local str = sgs.Sanguosha:getCard(card:getSubcards():first()):getSuitString()
+	for _, to in ipairs(tos) do
+		if str == "spade" then
+			sgs.updateIntention(from, to, -80)
+		elseif str == "heart" then
+			if self:toTurnOver(to, 1) then
+				sgs.updateIntention(from, to, 80)
+			end
+		elseif str == "club" then
+			sgs.updateIntention(from, to, -80)
+		end
+	end
+end
+
+sgs.ai_use_priority.ThSixiangCard = 5
+sgs.ai_choicemade_filter.cardChosen.thsixiang = sgs.ai_choicemade_filter.cardChosen.snatch
