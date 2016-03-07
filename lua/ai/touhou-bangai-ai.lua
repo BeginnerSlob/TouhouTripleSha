@@ -528,3 +528,71 @@ sgs.ai_skill_cardask["@thzhayou"] = function(self, _, __, target)
 	end
 	return sgs.ai_skill_use.slash(self, "thzhayou")
 end
+
+--辉轮：锁定技，你的黑色【杀】均视为【桃】；你的红色【桃】均视为【杀】。
+--smart-ai.lua isCard
+
+--妄道：出牌阶段，你可以选择一名其他角色并展示一张【桃】，该角色须选择一项：对你使用一张花色相同的无视距离的【杀】；或获得此牌，然后令你选择弃置其两张牌或令其失去1点体力。
+local thwangdao_skill = {}
+thwangdao_skill.name = "thwangdao"
+table.insert(sgs.ai_skills, thwangdao_skill)
+thwangdao_skill.getTurnUseCard = function(self)
+	if #self.enemies > 0 and #self:getCards("Peach") > 0 and (#self:getCards("Peach") > 1 or self:getOverflow() > 0) then
+		return sgs.Card_Parse("@ThWangdaoCard=.")
+	end
+end
+
+sgs.ai_skill_use_func.ThWangdaoCard = function(card, use, self)
+	self:sort(self.enemies, "defense")
+	local peaches = self:getCards("Peach")
+	self:sortByUseValue(peaches, true)
+	for _, p in ipairs(self.enemies) do
+		for _, peach in ipairs(peaches) do
+			if isCard("Peach", peach, p) then continue end
+			local suit = peach:getSuit()
+			local flag = ("%s_%s_%s"):format("visible", self.player:objectName(), p:objectName())
+			local cards = p:getCards("he")
+			for _, id in sgs.qlist(getWoodenOxPile(p)) do
+				cards:prepend(sgs.Sanguosha:getCard(id))
+			end
+			local has_slash = false
+			for _, c in sgs.qlist(cards) do
+				if c:hasFlag("visible") or c:hasFlag(flag) then
+					if c:getSuit() == suit and isCard("Slash", c, p) and p:canSlash(self.player, c, false) then
+						has_slash = true
+						break
+					end
+				end
+			end
+			if has_slash then
+				continue
+			end
+			use.card = sgs.Card_Parse("@ThWangdaoCard=" .. peach:getEffectiveId())
+			if use.to then
+				use.to:append(p)
+			end
+			return
+		end
+	end
+end
+
+sgs.ai_skill_choice.thwangdao = function(self, choices, data)
+	local target = data:toPlayer()
+	if self:isFriend(target) then
+		if self:isWeak(target) then return "discard" end
+		if target:getLostHp() < 1 then return "lose" end
+		return "discard"
+	else
+		if self:isWeak(target) then return "lose" end
+		if target:hasSkill("lirang") and #self:getFriendsNoSelf(target) > 0 then return "lose" end
+		if target:getArmor() and self:evaluateArmor(target:getArmor(), target) > 3 and not (target:hasArmorEffect("silver_lion") and target:isWounded()) then
+			return "discard"
+		end
+		if target:hasSkills("ikyindie+ikguiyue") and target:getPhase() == sgs.Player_NotActive then return "lose" end
+		if target:hasSkills(sgs.need_kongcheng) then return "lose" end
+		if target:getCards("he"):length() < 4 and target:getCards("he"):length() > 1 then return "discard" end
+		return "lose"
+	end
+end
+
+sgs.ai_card_intention.ThWangdaoCard = 50
