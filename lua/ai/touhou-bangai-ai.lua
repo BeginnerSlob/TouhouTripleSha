@@ -490,3 +490,41 @@ sgs.ai_skill_playerchosen.thweide = function(self, targets)
 		return target or self.player
 	end
 end
+
+sgs.ai_playerchosen_intention.thweide = function(self, from, to)
+	local ids = from:getTag("ThWeide"):toIntList()
+	if ids and not ids:isEmpty() then
+		sgs.updateIntention(from, to, -30)
+	end
+end
+
+--诡卷：出牌阶段，你可以摸一张牌，然后展示之并选择一项：使用此牌，或失去1点体力。若你以此法使用了一张【杀】或装备牌，你不可以发动“诡卷”，直到回合结束。
+local thguijuan_skill = {}
+thguijuan_skill.name = "thguijuan"
+table.insert(sgs.ai_skills, thguijuan_skill)
+thguijuan_skill.getTurnUseCard = function(self)
+	if not self.player:hasFlag("ForbidThGuijuan") then
+		if self:getCardsNum("Peach") >= 1 or (self.player:getHp() <= 1 and self:getCardsNum("Analeptic") >= 1) or self.player:getHp() > 2 then
+			return sgs.Card_Parse("@ThGuijuanCard=.")
+		end
+	end
+end
+
+sgs.ai_skill_use_func.ThGuijuanCard = function(card, use, self)
+	use.card = card
+end
+
+sgs.ai_use_priority.ThGuijuanCard = 8
+
+--诈诱：当其他角色使用的【杀】被你的【闪】抵消后，你可以摸一张牌，然后令该角色选择一项：对你使用一张无视距离的【杀】，或受到你对其造成的1点伤害。
+sgs.ai_skill_invoke.thzhayou = function(self, data)
+	local effect = data:toSlashEffect()
+	return self:isEnemy(effect.from) or not self:damageIsEffective(effect.from, nil, self.player)
+end
+
+sgs.ai_skill_cardask["@thzhayou"] = function(self, _, __, target)
+	if self:isFriend(target) and not self:damageIsEffective(self.player, nil, target) then
+		return "."
+	end
+	return sgs.ai_skill_use.slash(self, "thzhayou")
+end
