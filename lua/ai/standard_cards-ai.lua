@@ -1932,6 +1932,9 @@ function SmartAI:useCardExNihilo(card, use)
 	if not self:hasTrickEffective(card, self.player, self.player) then
 		return
 	end
+	if self:doNotDraw(self.player, 2, card) then
+		return
+	end
 	use.card = card
 end
 
