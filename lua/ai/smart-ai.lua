@@ -5953,14 +5953,24 @@ end
 function SmartAI:findPlayerToDraw(include_self, drawnum, TrickCard)
 	drawnum = drawnum or 1
 	local players = sgs.QList2Table(include_self and self.room:getAllPlayers() or self.room:getOtherPlayers(self.player))
-	local friends = {}
+	local friends, enemies = {}, {}
 	for _, player in ipairs(players) do
 		if self:isFriend(player) and not hasManjuanEffect(player)
 			and not (player:hasSkill("ikjingyou") and player:isKongcheng() and drawnum <= 2)
-			and (not TrickCard or self:hasTrickEffective(TrickCard, player, self.player)) then
+			and (not TrickCard or self:hasTrickEffective(TrickCard, player, self.player))
+			and not doNotDraw(player, drawnum, TrickCard) then
 			table.insert(friends, player)
 		end
+		if self:isEnemy(player) and doNotDraw(player, drawnum, TrickCard) then
+			table.insert(enemies, player)
+		end
 	end
+
+	if #enemies > 0 then
+		self:sort(enemies, "hp")
+		return enemies[1]
+	end
+
 	if #friends == 0 then return end
 
 	self:sort(friends, "defense")

@@ -241,3 +241,113 @@ end
 
 --皇仪：觉醒技，“千狱”发动后，准备阶段开始时，若你的体力上限大于4点，你须减少至4点，并摸等同于减少数量的牌，然后回复1点体力，并失去技能“狂魔”。
 --无
+
+--肃狐：摸牌阶段开始时，你可放弃摸牌，改为将牌堆顶的一张牌面朝上置于你的人物牌上，称为“面”，然后进行一个额外的出牌阶段。
+sgs.ai_skill_invoke.thsuhu = function(self, data)
+	return not (self.player:getPile("faces"):length() > 0 and self.player:getHp() == 1 and self:getAllPeachNum() == 0 and self:getCardsNum("Analeptic") == 0)
+end
+
+--忿狼：锁定技，专属技，每当你因受到伤害而扣减1点体力后，回复1点体力并摸两张牌。
+--无
+
+--乐狮：出牌阶段限一次，你可以选择一种牌的类别并摸两张牌，视为你此阶段没有使用过此类别的牌。
+getLeshiString = function(self)
+	if self.player:hasSkill("thjingyuan") then
+		local cards = self.player:getHandcards()
+		for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
+			cards:prepend(sgs.Sanguosha:getCard(id))
+		end
+		cards = sgs.QList2Table(cards)
+	
+		local turnUse = {}
+		local slashAvail = self.slashAvail
+		for _, skill in ipairs(sgs.ai_skills) do
+			if self.player:hasSkill(skill.name) or (skill.name == "shuangxiong" and self.player:hasFlag("shuangxiong")) then
+				local skill_card = skill.getTurnUseCard(self, #cards == 0)
+				if skill_card then table.insert(cards, skill_card) end
+			end
+		end
+		self:sortByUseValue(cards)
+
+		for _, card in ipairs(cards) do
+			local dummy_use = { isDummy = true }
+
+			local typeId = card:getTypeId()
+			self["use" .. sgs.ai_type_name[typeId + 1] .. "Card"](self, card, dummy_use)
+
+			if dummy_use.card then
+				if dummy_use.card:isKindOf("Slash") then
+					if slashAvail > 0 then
+						slashAvail = slashAvail - 1
+						table.insert(turnUse, dummy_use.card)
+					elseif dummy_use.card:hasFlag("AIGlobal_KillOff") then table.insert(turnUse, dummy_use.card) end
+				else
+					table.insert(turnUse, dummy_use.card)
+				end
+			end
+		end
+
+		type_table = { basic = "BasicCard", trick = "TrickCard", equip = "EquipCard" }
+		for _, card in ipairs(turnUse) do
+			if card:isKindOf("SkillCard") then
+				continue
+			end
+			local use = { isDummy = true }
+			local typeId = card:getTypeId()
+			self["use" .. sgs.ai_type_name[typeId + 1] .. "Card"](self, card, use)
+			if not use.card then continue end
+			if self.player:hasFlag("thjingyuan_" .. type_table[card:getType()]) then
+				return type_table[card:getType()]
+			end
+		end
+		for _, str in pairs(type_table) do
+			if self.player:hasFlag("thjingyuan_" .. str) then
+				return str
+			end
+		end
+		return "BasicCard"
+	else
+		return "BasicCard"
+	end
+end
+
+local thleshi_skill = {}
+thleshi_skill.name = "thleshi"
+table.insert(sgs.ai_skills, thleshi_skill)
+thleshi_skill.getTurnUseCard = function(self)
+	if not self.player:hasUsed("ThLeshiCard") and not self:doNotDraw() then
+		return sgs.Card_Parse("@ThLeshiCard=.")
+	end
+end
+
+sgs.ai_skill_use_func.ThLeshiCard = function(card, use, self)
+	use.card = card
+end
+
+sgs.ai_skill_choice.thleshi = function(self, choices, data)
+	return getLeshiString(self)
+end
+
+--忧狸：锁定技，你的手牌上限始终为4。每当你的手牌数变化后，若大于四张，须将多余的作为“面”置于你的人物牌上。每当你的“面”的数量不小于两张时，须弃置两张“面”并失去1点体力。
+function SmartAI:doNotDraw(target, num, TrickCard)
+	target = target or self.player
+	num = num or 2
+	if TrickCard then
+		if TrickCard:isVirtualCard() then
+			for _, id in sgs.qlist(TrickCard:getSubcards()) do
+				if target:handCards():contains(id) then
+					num = num - 1
+				end
+			end
+		else
+			if target:handCards():contains(TrickCard:getEffectiveId()) then
+				num = num - 1
+			end
+		end
+	end
+	if target:hasSkill("thyouli") then return target:getHandcardNum() + num > 4 end
+	return false
+end
+
+--惊猿：锁定技，出牌阶段，每种类别的牌你只能使用一张。
+--无
