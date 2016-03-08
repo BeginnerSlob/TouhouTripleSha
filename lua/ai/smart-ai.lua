@@ -4186,11 +4186,15 @@ function isCard(class_name, card, player)
 		if player:hasSkill("jinjiu") and card:isKindOf("Analeptic") and class_name == "Slash" then return true end
 		if player:hasSkill("thhuilun") and card:isKindOf("Slash") and card:isBlack() and class_name == "Peach" then return true end
 		if player:hasSkill("thhuilun") and card:isKindOf("Peach") and card:isRed() and class_name == "Slash" then return true end
+		if player:hasSkill("thhuanjun") and card:isKindOf("Jink") and card:getSuit() == sgs.Card_Diamond and class_name == "Duel" then return true end
+		if player:hasSkill("thhuanjun") and card:isKindOf("Armor") and class_name == "Analeptic" then return true end
 	else
 		if player:hasSkill("wushen") and card:getSuit() == sgs.Card_Heart and class_name ~= "Slash" then return false end
 		if player:hasSkill("jinjiu") and class_name == "Analeptic" then return false end
 		if player:hasSkill("thhuilun") and card:isKindOf("Slash") and card:isBlack() and class_name ~= "Peach" then return false end
 		if player:hasSkill("thhuilun") and card:isKindOf("Peach") and card:isRed() and class_name ~= "Slash" then return false end
+		if player:hasSkill("thhuanjun") and card:isKindOf("Jink") and card:getSuit() == sgs.Card_Diamond and class_name ~= "Duel" then return false end
+		if player:hasSkill("thhuanjun") and card:isKindOf("Armor") and class_name ~= "Analeptic" then return false end
 		if not prohibitUseDirectly(card, player) then return true end
 	end
 	return false
@@ -5991,6 +5995,7 @@ function getBestHp(player)
 
 	if player:hasSkills("renjie+baiyin") and player:getMark("baiyin") == 0 then return (player:getMaxHp() - 1) end
 	if player:hasSkills("quanji+zili") and player:getMark("zili") == 0 then return (player:getMaxHp() - 1) end
+	if player:hasSkill("thwudao") then return player:getMaxHp() / 2 end
 	return player:getMaxHp()
 end
 
