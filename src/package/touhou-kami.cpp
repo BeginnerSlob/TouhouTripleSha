@@ -94,7 +94,9 @@ void ThShenfengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *>
     if (victims.isEmpty())
         return;
 
+    source->tag["ThShenfengTarget"] = QVariant::fromValue(target);
     ServerPlayer *victim = room->askForPlayerChosen(source, victims, "thshenfeng");
+    source->tag.remove("ThShenfengTarget");
 
     if (!victim)
         victim = victims.first();
