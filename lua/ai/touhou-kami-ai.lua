@@ -170,3 +170,74 @@ sgs.ai_skill_invoke.thkaihai = true
 
 --幻君：锁定技，你的方块【闪】均视为【碎月绮斗】，你手牌中的防具牌均视为【酒】，你获得即将进入你装备区的防具牌。
 --smart-ai.lua isCard
+
+--孤高：出牌阶段限一次，你可以与一名其他角色拼点，赢的角色对没有赢的角色造成1点伤害；“千狱”发动后，防止你因没有赢而受到的伤害；“皇仪”发动后，若你赢，视为你此阶段没有发动“孤高”。
+local thgugao_skill = {}
+thgugao_skill.name = "thgugao"
+table.insert(sgs.ai_skills, thgugao_skill)
+thgugao_skill.getTurnUseCard = function(self)
+	if not self.player:hasUsed("ThGugaoCard") and not self.player:isKongcheng() then
+		return sgs.Card_Parse("@ThGugaoCard=.")
+	end
+end
+
+sgs.ai_skill_use_func.ThGugaoCard = function(card, use, self)
+	self:sort(self.enemies, "handcard")
+	local max_card = self:getMaxCard()
+	if not max_card then return end
+	local max_point = max_card:getNumber()
+
+	self:sort(self.enemies)
+	for _, enemy in ipairs(self.enemies) do
+		if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+			local enemy_max_card = self:getMaxCard(enemy)
+			local enemy_max_point = enemy_max_card and enemy_max_card:getNumber() or 14
+			if max_point > enemy_max_point then
+				self.thgugao_card = max_card:getId()
+				use.card = card
+				if use.to then
+					use.to:append(enemy)
+				end
+				return
+			end
+		end
+	end
+	for _, enemy in ipairs(self.enemies) do
+		if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+			if max_point >= 10 then
+				self.thgugao_card = max_card:getId()
+				use.card = card
+				if use.to then
+					use.to:append(enemy)
+				end
+				return
+			end
+		end
+	end
+end
+
+function sgs.ai_skill_pindian.thgugao(minusecard, self, requestor)
+	if requestor:getHandcardNum() == 1 then
+		local cards = sgs.QList2Table(self.player:getHandcards())
+		self:sortByKeepValue(cards)
+		return cards[1]
+	end
+	return self:getMaxCard()
+end
+
+sgs.ai_cardneed.thgugao = sgs.ai_cardneed.bignumber
+
+sgs.ai_use_priority.ThGugaoCard = 7.2
+sgs.ai_card_intention.ThGugaoCard = 60
+sgs.ai_use_value.ThGugaoCard = 8.5
+
+--千狱：觉醒技，一名角色的回合结束后，若你的体力值为1，你须将体力上限减少至1点，并获得技能“狂魔”，然后进行一个额外的回合。
+--无
+
+--狂魔：锁定技，专属技，每当你对一名角色造成除【杀】以外的1点伤害后，你增加1点体力上限，然后回复1点体力。
+sgs.ai_cardneed.thkuangmo = function(to, card, self)
+	return not card:isKindOf("Slash") and sgs.dynamic_value.damage_card[card:getClassName()]
+end
+
+--皇仪：觉醒技，“千狱”发动后，准备阶段开始时，若你的体力上限大于4点，你须减少至4点，并摸等同于减少数量的牌，然后回复1点体力，并失去技能“狂魔”。
+--无
