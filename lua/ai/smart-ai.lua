@@ -4955,6 +4955,10 @@ function SmartAI:getAoeValueTo(card, to, from)
 				end
 			end
 
+			if from:hasSkill("thkuangmo") then
+				value = value + 20
+			end
+
 			if to:getHp() > 1 then
 				if to:hasSkill("quanji") then value = value + 10 end
 				if to:hasSkill("langgu") and self:isEnemy(to, from) then value = value - 15 end

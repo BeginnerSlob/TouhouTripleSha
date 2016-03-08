@@ -1122,7 +1122,6 @@ sgs.ai_skill_use_func.ThGelongCard = function(card, use, self)
 	if not min_card then return end
 	local min_point = min_card:getNumber()
 
-	sgs.ai_use_priority.ThGelongCard = 7.2
 	self:sort(self.enemies)
 	for _, enemy in ipairs(self.enemies) do
 		if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
@@ -1137,7 +1136,7 @@ sgs.ai_skill_use_func.ThGelongCard = function(card, use, self)
 		end
 	end
 	for _, enemy in ipairs(self.enemies) do
-		if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+		if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
 			if min_point <= 4 then
 				self.thgelong_card = min_card:getId()
 				use.card = sgs.Card_Parse("@ThGelongCard=.")
@@ -1163,6 +1162,7 @@ sgs.ai_cardneed.thgelong = function(to, card, self)
 	end
 end
 
+sgs.ai_use_priority.ThGelongCard = 7.2
 sgs.ai_card_intention.ThGelongCard = 30
 sgs.ai_use_value.ThGelongCard = 8.5
 
