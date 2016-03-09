@@ -393,7 +393,7 @@ void ThXumeiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &)
             dummy->addSubcard(id);
         }
     }
-    source->tag["ThXumeiDummy"] = QVariant::fromValue(dummy);
+    source->tag["ThXumeiDummy"] = QVariant::fromValue(IntList2VariantList(dummy->getSubcards()));
     ServerPlayer *target = room->askForPlayerChosen(source, room->getAllPlayers(), "thxumei");
     source->tag.remove("ThXumeiDummy");
     room->obtainCard(target, dummy);

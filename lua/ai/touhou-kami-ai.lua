@@ -648,3 +648,174 @@ sgs.ai_card_intention.ThYouyaCard = 50
 
 --满咲：锁定技，你每拥有1枚“桜咲”标记，你的手牌上限便+1。当你拥有4枚“桜咲”标记时，你立即死亡。
 --无
+
+--尽戮：出牌阶段限一次，你可以弃置一张手牌并指定一名其他角色，获得其全部的牌。此出牌阶段结束时，你须交给该角色等同于其体力值数量的牌，且结束阶段开始时将你的人物牌翻面。
+local thjinlu_skill = {}
+thjinlu_skill.name = "thjinlu"
+table.insert(sgs.ai_skills, thjinlu_skill)
+thjinlu_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThJinluCard") or self.player:isNude() then return end
+	local card_id
+	local cards = self.player:getHandcards()
+	cards = sgs.QList2Table(cards)
+	self:sortByKeepValue(cards)
+	local lightning = self:getCard("Lightning")
+
+	if self:needToThrowArmor() then
+		card_id = self.player:getArmor():getId()
+	elseif self.player:getHandcardNum() > self.player:getHp() then
+		if lightning and not self:willUseLightning(lightning) then
+			card_id = lightning:getEffectiveId()
+		else
+			for _, acard in ipairs(cards) do
+				if (acard:isKindOf("BasicCard") or acard:isKindOf("EquipCard") or acard:isKindOf("AmazingGrace"))
+					and not acard:isKindOf("Peach") then
+					card_id = acard:getEffectiveId()
+					break
+				end
+			end
+		end
+	end
+	if not card_id then
+		if lightning and not self:willUseLightning(lightning) then
+			card_id = lightning:getEffectiveId()
+		else
+			for _, acard in ipairs(cards) do
+				if (acard:isKindOf("BasicCard") or acard:isKindOf("EquipCard") or acard:isKindOf("AmazingGrace"))
+					and not acard:isKindOf("Peach") then
+					card_id = acard:getEffectiveId()
+					break
+				end
+			end
+		end
+	end
+	if not card_id then
+		return nil
+	else
+		return sgs.Card_Parse("@ThJinluCard=" .. card_id)
+	end
+end
+
+sgs.ai_skill_use_func.ThJinluCard = function(card, use, self)
+	local cards = self.player:getHandcards()
+	cards = sgs.QList2Table(cards)
+
+	if not self.player:hasUsed("ThJinluCard") then
+		self:sort(self.enemies, "cardcount")
+		self.enemies = sgs.reverse(self.enemies)
+		local target
+		for _, enemy in ipairs(self.enemies) do
+			if not enemy:isNude() and not enemy:hasSkill("ikjingyou") then
+				if (self:needKongcheng(enemy) and not enemy:isKongcheng() and self:damageMinusHp(self, enemy, 1) > 0)
+					or (enemy:getHp() < 3 and self:damageMinusHp(self, enemy, 0) > 0 and enemy:getCardCount() > 0)
+					or (enemy:getCardCount() >= enemy:getHp() and enemy:getHp() > 2 and self:damageMinusHp(self, enemy, 0) >= -1)
+					or (enemy:getCardCount() - enemy:getHp() > 2) then
+					target = enemy
+					break
+				end
+			end
+		end
+		if not self.player:faceUp() and not target then
+			for _, enemy in ipairs(self.enemies) do
+				if not enemy:isNude() then
+					if enemy:getCardCount() >= enemy:getHp() then
+						target = enemy
+						break
+					end
+				end
+			end
+		end
+
+		if not target and (self:hasCrossbowEffect() or self:getCardsNum("Crossbow") > 0) then
+			local slash = self:getCard("Slash") or sgs.cloneCard("slash")
+			for _, enemy in ipairs(self.enemies) do
+				if self:slashIsEffective(slash, enemy) and self.player:distanceTo(enemy) == 1
+					and not enemy:hasSkills("thzhehui|ikzhichi|fankui|nosfankui|ganglie|vsganglie|nosganglie|enyuan|thfusheng|langgu|guixin|ikjingyou")
+					and self:getCardsNum("Slash") + getKnownCard(enemy, self.player, "Slash") >= 3 then
+					target = enemy
+					break
+				end
+			end
+		end
+
+		if target then
+			use.card = card
+			if use.to then use.to:append(target) end
+		end
+	end
+end
+
+function SmartAI:isThJinluTarget(player, drawCardNum)
+	player = player or self.player
+	drawCardNum = drawCardNum or 1
+	if type(player) == "table" then
+		if #player == 0 then return false end
+		for _, ap in ipairs(player) do
+			if self:isThJinluTarget(ap, drawCardNum) then return true end
+		end
+		return false
+	end
+
+	local handCardNum = player:getHandcardNum() + drawCardNum
+
+	local sb_diaochan = self.room:findPlayerBySkillName("thjinlu")
+	local thjinlu = sb_diaochan and not sb_diaochan:hasUsed("ThJinluCard") and not self:isFriend(sb_diaochan)
+
+	if not thjinlu then return false end
+
+	if sb_diaochan:getPhase() == sgs.Player_Play then
+		if (handCardNum - player:getHp() >= 2)
+			or (handCardNum > 0 and handCardNum - player:getHp() >= -1 and not sb_diaochan:faceUp()) then
+			return true
+		end
+	else
+		if sb_diaochan:faceUp() and not self:willSkipPlayPhase(sb_diaochan)
+			and self:playerGetRound(player) > self:playerGetRound(sb_diaochan) and handCardNum >= player:getHp() + 2 then
+			return true
+		end
+	end
+
+	return false
+end
+
+sgs.ai_skill_discard.thjinlu = function(self, discard_num, min_num, optional, include_equip)
+	local to_discard = {}
+
+	local cards = sgs.QList2Table(self.player:getCards("he"))
+	self:sortByKeepValue(cards)
+	local card_ids = {}
+	for _, card in ipairs(cards) do
+		table.insert(card_ids, card:getEffectiveId())
+	end
+
+	local temp = table.copyFrom(card_ids)
+	for i = 1, #temp, 1 do
+		local card = sgs.Sanguosha:getCard(temp[i])
+		if self.player:getArmor() and temp[i] == self.player:getArmor():getEffectiveId() and self:needToThrowArmor() then
+			table.insert(to_discard, temp[i])
+			table.removeOne(card_ids, temp[i])
+			if #to_discard == discard_num then
+				return to_discard
+			end
+		end
+	end
+
+	temp = table.copyFrom(card_ids)
+
+	for i = 1, #card_ids, 1 do
+		local card = sgs.Sanguosha:getCard(card_ids[i])
+		table.insert(to_discard, card_ids[i])
+		if #to_discard == discard_num then
+			return to_discard
+		end
+	end
+
+	if #to_discard < discard_num then return {} end
+end
+
+sgs.ai_use_value.ThJinluCard = 8.5
+sgs.ai_use_priority.ThJinluCard = 6
+sgs.ai_card_intention.ThJinluCard = 80
+
+--狂戾：每当你的人物牌翻面时，你可以摸一张牌。
+--thicket-ai.lua toTurnOver

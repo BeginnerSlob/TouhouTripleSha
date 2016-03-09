@@ -561,7 +561,7 @@ end
 
 sgs.ai_skill_invoke.yiji = function(self)
 	local sb_diaochan = self.room:getCurrent()
-	if sb_diaochan and sb_diaochan:hasSkill("lihun") and not sb_diaochan:hasUsed("LihunCard") and not self:isFriend(sb_diaochan) and sb_diaochan:getPhase() == sgs.Player_Play then
+	if sb_diaochan and sb_diaochan:hasSkill("thjinlu") and not sb_diaochan:hasUsed("ThJinluCard") and not self:isFriend(sb_diaochan) and sb_diaochan:getPhase() == sgs.Player_Play then
 		return #self.friends_noself > 0
 	end
 	return true

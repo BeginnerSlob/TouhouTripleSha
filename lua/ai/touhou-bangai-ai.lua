@@ -104,10 +104,8 @@ sgs.ai_skill_playerchosen.thzhiyue = function(self, targets)
 end
 
 sgs.ai_playerchosen_intention.thzhiyue = function(self, from, to)
-	local tos = sgs.SPlayerList()
-	tos:append(to)
 	local slash = from:getTag("ThZhiyueSlash"):toCard()
-	sgs.ai_card_intention.Slash(self, slash, from, tos)
+	sgs.ai_card_intention.Slash(self, slash, from, { to })
 end
 
 --忠节：每当你受到一次伤害后，你可以展示一名角色的所有手牌，每少一种类型的牌，其摸一张牌。
@@ -216,8 +214,8 @@ sgs.ai_skill_playerchosen.thxumei = function(self, targets)
 	if sgs.thxumei_target then
 		return sgs.thxumei_target
 	end
-	local dummy = self.player:getTag("ThXumeiDummy"):toCard()
-	local target, _ = sgs.ai_skill_askforyiji.nosyiji(self, sgs.QList2Table(dummy:getSubcards()))
+	local ids = self.player:getTag("ThXumeiDummy"):toIntList()
+	local target, _ = sgs.ai_skill_askforyiji.nosyiji(self, sgs.QList2Table(ids))
 	return target or self.player
 end
 

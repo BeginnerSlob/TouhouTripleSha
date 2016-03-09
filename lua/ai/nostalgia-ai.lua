@@ -340,7 +340,7 @@ sgs.ai_skill_invoke.nosdanshou = function(self, data)
 					return dmg_val >= 1.5
 				end
 			end
-			if damage.to:hasSkills(sgs.masochism_skill .. "|zhichi|zhiyu|thzhehui") then return self:isEnemy(damage.to) end
+			if damage.to:hasSkills(sgs.masochism_skill .. "|ikzhichi|zhiyu|thzhehui") then return self:isEnemy(damage.to) end
 			return true
 		end
 	elseif phase > sgs.Player_Play and phase ~= sgs.Player_NotActive then
@@ -975,12 +975,12 @@ sgs.nosluoyi_keep_value = sgs.luoyi_keep_value
 
 sgs.ai_skill_invoke.nosyiji = function(self)
 	local sb_diaochan = self.room:getCurrent()
-	if sb_diaochan and sb_diaochan:hasSkill("lihun") and not sb_diaochan:hasUsed("LihunCard") and not self:isFriend(sb_diaochan) and sb_diaochan:getPhase() == sgs.Player_Play then
+	if sb_diaochan and sb_diaochan:hasSkill("thjinlu") and not sb_diaochan:hasUsed("ThJinluCard") and not self:isFriend(sb_diaochan) and sb_diaochan:getPhase() == sgs.Player_Play then
 		local invoke
 		for _, friend in ipairs(self.friends) do
 			if (not friend:isMale() or (friend:getHandcardNum() < friend:getHp() + 1 and sb_diaochan:faceUp())
 				or (friend:getHandcardNum() < friend:getHp() - 2 and not sb_diaochan:faceUp())) and not self:needKongcheng(friend, true)
-				and not self:isLihunTarget(friend) then
+				and not self:isThJinluTarget(friend) then
 				invoke = true
 				break
 			end
@@ -1008,7 +1008,7 @@ sgs.ai_skill_askforyiji.nosyiji = function(self, card_ids)
 		local insert = true
 		if insert and hasManjuanEffect(friend) then insert = false end
 		if insert and Shenfen_user and friend:objectName() ~= Shenfen_user:objectName() and friend:getHandcardNum() < 4 then insert = false end
-		if insert and self:isLihunTarget(friend) then insert = false end
+		if insert and self:isThJinluTarget(friend) then insert = false end
 		if insert then table.insert(available_friends, friend) end
 	end
 
@@ -1435,7 +1435,7 @@ sgs.ai_card_intention.QingnangCard = -100
 sgs.dynamic_value.benefit.QingnangCard = true
 
 function sgs.ai_skill_invoke.nosjushou(self, data)
-	local sbdiaochan = self.room:findPlayerBySkillName("lihun")
+	local sbdiaochan = self.room:findPlayerBySkillName("thjinlu")
 	if sbdiaochan and sbdiaochan:faceUp() and not self:willSkipPlayPhase(sbdiaochan)
 		and (self:isEnemy(sbdiaochan) or (sgs.turncount <= 1 and sgs.evaluatePlayerRole(sbdiaochan) == "neutral")) then return false end
 	if not self.player:faceUp() then return true end

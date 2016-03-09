@@ -326,7 +326,7 @@ sgs.ai_skill_askforyiji.lirang = function(self, card_ids)
 			if not another or not self:isFriend(another) then insert = false end
 		end
 		if insert and Shenfen_user and friend:objectName() ~= Shenfen_user:objectName() and friend:getHandcardNum() < 4 then insert = false end
-		if insert and self:isLihunTarget(friend) then insert = false end
+		if insert and self:isThJinluTarget(friend) then insert = false end
 		if insert then table.insert(available_friends, friend) end
 	end
 
@@ -592,7 +592,7 @@ sgs.ai_skill_use_func.QingchengCard = function(card, use, self)
 			for _, askill in ipairs(("noswuyan|wuyan|weimu|kanpo|liuli|nosyiji|yiji|jieming|ganglie|vsganglie|nosganglie|fankui|nosfankui|fangzhu|jianxiong|" ..
 									"nosjianxiong|enyuan|thfusheng|qingguo|longdan|xiangle|qingjian|renwang|jiang|yanzheng|tianming|yizhong|bazhen|" ..
 									"jijiu|beige|longhun|buyi|gushou|mingzhe|yajiao|huangen|danlao|qianxun|nosqianxun|juxiang|huoshou|anxian|thzhehui|" ..
-									"zhichi|jilei|feiying|yicong|wusheng|wushuang|xuanfeng|nosxuanfeng|luoying|xiaoguo|guhuo|nosguhuo|guidao|guicai|" ..
+									"ikzhichi|jilei|feiying|yicong|wusheng|wushuang|xuanfeng|nosxuanfeng|luoying|xiaoguo|guhuo|nosguhuo|guidao|guicai|" ..
 									"nosguicai|shangshi|lianying|noslianying|sijian|kofxiaoji|xiaoji|kofqingguo|mingshi|zhiyu|hongyan|tiandu|lirang|" ..
 									"guzheng|xingshang|shushen|langgu|guixin|nosshangshi|tianxiang|leiji|nosleiji"):split("|")) do
 				if enemy:hasSkill(askill, true) and enemy:getMark("Qingcheng" .. askill) == 0 then
