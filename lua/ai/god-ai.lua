@@ -717,10 +717,10 @@ end
 
 sgs.ai_skill_invoke.guixin = function(self, data)
 	local damage = data:toDamage()
-	local diaochan = self.room:findPlayerBySkillName("lihun")
-	local lihun_eff = (diaochan and self:isEnemy(diaochan))
+	local diaochan = self.room:findPlayerBySkillName("thjinlu")
+	local thjinlu_eff = (diaochan and self:isEnemy(diaochan))
 	local manjuan_eff = hasManjuanEffect(self.player)
-	if lihun_eff and not manjuan_eff then return false end
+	if thjinlu_eff and not manjuan_eff then return false end
 	if not self.player:faceUp() then return true
 	else
 		if manjuan_eff then return false end
@@ -735,12 +735,12 @@ end
 
 sgs.ai_need_damaged.guixin = function(self, attacker, player)
 	if self.room:alivePlayerCount() <= 3 or player:hasSkill("manjuan") then return false end
-	local diaochan = self.room:findPlayerBySkillName("lihun")
+	local diaochan = self.room:findPlayerBySkillName("thjinlu")
 	local drawcards = 0
 	for _, aplayer in sgs.qlist(self.room:getOtherPlayers(player)) do
 		if aplayer:getCards("hej"):length() > 0 then drawcards = drawcards + 1 end
 	end
-	return not self:isLihunTarget(player, drawcards)
+	return not self:isThJinluTarget(player, drawcards)
 end
 
 sgs.ai_skill_choice.wumou = function(self, choices)

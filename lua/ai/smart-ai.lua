@@ -93,7 +93,7 @@ function setInitialTables()
 	sgs.wizard_skill = "guicai|nosguicai|guidao|jilve|tiandu|noszhenlie|huanshi"
 	sgs.wizard_harm_skill = "guicai|nosguicai|guidao|jilve|huanshi"
 	sgs.priority_skill = "dimeng|haoshi|qingnang|nosjizhi|jizhi|guzheng|qixi|jieyin|nosguose|guose|duanliang|jujian|fanjian|nosfanjian|noslijian|lijian|" ..
-							"manjuan|lihun|tuxi|nostuxi|qiaobian|yongsi|zhiheng|luoshen|nosrende|rende|mingce|wansha|gongxin|jilve|" ..
+							"manjuan|thjinlu|tuxi|nostuxi|qiaobian|yongsi|zhiheng|luoshen|nosrende|rende|mingce|wansha|gongxin|jilve|" ..
 							"anxu|qice|yinling|qingcheng|zhaoxin"
 	sgs.save_skill = "jijiu|buyi|ikjieyou|chunlao|longhun"
 	sgs.exclusive_skill = "huilei|duanchang|enyuan|wuhun|zhuiyi|buqu|nosbuqu|nosyiji|yiji|ganglie|vsganglie|nosganglie|guixin|jieming|nosmiji|" ..
@@ -837,6 +837,16 @@ sgs.ai_compare_funcs = {
 	handcard = function(a, b)
 		local c1 = a:getHandcardNum()
 		local c2 = b:getHandcardNum()
+		if c1 == c2 then
+			return sgs.ai_compare_funcs.defense(a, b)
+		else
+			return c1 < c2
+		end
+	end,
+
+	cardcount = function(a, b)
+		local c1 = a:getCardCount()
+		local c2 = b:getCardCount()
 		if c1 == c2 then
 			return sgs.ai_compare_funcs.defense(a, b)
 		else
@@ -2991,6 +3001,14 @@ function SmartAI:needKongcheng(player, need_keep)
 	if not self:hasLoseHandcardEffective(player) and not player:isKongcheng() then return true end
 	if player:hasSkill("zhiji") and player:getMark("zhiji") == 0 then return true end
 	if player:hasSkill("shude") and player:getPhase() == sgs.Player_Play then return true end
+	if player:getPhase() == sgs.Player_NotActive then
+		local jwfys = self.room:findPlayersBySkillName("ikyongji")
+		for _, p in sgs.qlist(jwfys) do
+			if p:getMark("ikyongji") < 3 and self:isFriend(p, player) then
+				return true
+			end
+		end
+	end
 	return player:hasSkills(sgs.need_kongcheng)
 end
 
@@ -3824,7 +3842,7 @@ function SmartAI:needRetrial(judge)
 			if (who:hasSkill("shenfen") and who:getMark("@wrath") >= 6)
 				or (who:hasSkills("noskurou|kurou+zhaxiang") and who:getHp() >= 3)
 				or (who:hasSkill("jixi") and who:getPile("field"):length() > 2)
-				or (who:hasSkill("lihun") and self:isLihunTarget(self:getEnemies(who), 0))
+				or (who:hasSkill("thjinlu") and self:isThJinluTarget(self:getEnemies(who), 0))
 				or (who:hasSkill("xiongyi") and who:getMark("@arise") > 0) then
 				if self:isFriend(who) then
 					return not good
@@ -5681,7 +5699,7 @@ function SmartAI:damageMinusHp(self, enemy, type)
 						analepticpowerup = analepticpowerup + 1
 				end
 				if self.player:hasWeapon("guding_blade")
-					and (enemy:isKongcheng() or (self.player:hasSkill("lihun") and enemy:isMale() and not enemy:hasSkill("ikjingyou")))
+					and (enemy:isKongcheng() or (self.player:hasSkill("thjinlu") and enemy:isMale() and not enemy:hasSkill("ikjingyou")))
 					and not self:hasSilverLionEffect(enemy) then
 					slash_damagenum = slash_damagenum + 1
 				end

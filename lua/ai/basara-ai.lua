@@ -12,7 +12,7 @@ function askForShowGeneral(self, choices)
 	if triggerEvent == sgs.DamageInflicted then
 		local damage = data:toDamage()
 		for _, player in ipairs(players) do
-			if damage and player:hasSkills(sgs.masochism_skill .. "|zhichi|zhiyu|thzhehui") and not self:isFriend(damage.from, damage.to) then return "yes" end
+			if damage and player:hasSkills(sgs.masochism_skill .. "|ikzhichi|zhiyu|thzhehui") and not self:isFriend(damage.from, damage.to) then return "yes" end
 			if damage and damage.damage > self.player:getHp() + self:getAllPeachNum() then return "yes" end
 		end
 	elseif triggerEvent == sgs.CardEffected then

@@ -807,7 +807,7 @@ end
 sgs.ai_cardneed.zhijian = sgs.ai_cardneed.equip
 
 sgs.ai_skill_invoke.guzheng = function(self, data)
-	if self:isLihunTarget(self.player, data:toInt() - 1) then return false end
+	if self:isThJinluTarget(self.player, data:toInt() - 1) then return false end
 	local player = self.room:getCurrent()
 	local invoke = (self:isFriend(player) and not self:needKongcheng(player, true))
 					or (not self.player:hasSkill("manjuan") and (data:toInt() >= 3 or (data:toInt() == 2 and not player:hasSkills(sgs.cardneed_skill))))
@@ -1123,7 +1123,7 @@ function sgs.ai_skill_choice.huashen(self, choices, data, xiaode_choice)
 			if str:matchOne(askill) then return askill end
 		end
 
-		for _, askill in ipairs(("huangen|jianxiong|nosjianxiong|jiang|nosqianxun|qianxun|danlao|juxiang|huoshou|zhichi|" ..
+		for _, askill in ipairs(("huangen|jianxiong|nosjianxiong|jiang|nosqianxun|qianxun|danlao|juxiang|huoshou|ikzhichi|" ..
 								"lirang|qingjian|yicong|wusheng|wushuang|tianxiang|leiji|nosleiji|guhuo|nosguhuo|nosshangshi|shangshi|" ..
 								"zhiyu|guidao|guicai|nosguicai|chunlao|jijiu|buyi|nosrenxin|lianying|noslianying|shoucheng|shenxian|sijian|tianming|" ..
 								"jieyuan|yanyu|zhendu|xiaoguo|tianfu|shushen|niaoxiang|zhenlie|tiandu|yingyang|noszhenlie"):split("|")) do
