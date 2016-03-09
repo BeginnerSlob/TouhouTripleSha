@@ -1226,13 +1226,21 @@ sgs.ai_skill_invoke.juedi = true
 
 sgs.ai_skill_playerchosen.juedi = function(self, targets)
 	local ids = self.player:getPile("yinbing")
-	local friends = self:getWoundedFriend()
-	for _, friend in ipairs(friends) do
+	local friend = nil
+	while not friend do
+		friend = self:findPlayerToRecover(1, targets)
 		if friend:getHp() <= self.player:getHp()
 			and not (self:needKongcheng(friend, true) and not self:isWeak(friend)) and not (hasManjuanEffect(friend) and ids:length() > 2) then
 			return friend
+		else
+			targets:removeOne(friend)
+			friend = nil
+			if targets:isEmpty() then
+				break
+			end
 		end
 	end
+
 	if ids:length() == 1 then
 		local id = ids:first()
 		local card = sgs.Sanguosha:getCard(id)

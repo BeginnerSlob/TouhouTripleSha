@@ -819,3 +819,94 @@ sgs.ai_card_intention.ThJinluCard = 80
 
 --狂戾：每当你的人物牌翻面时，你可以摸一张牌。
 --thicket-ai.lua toTurnOver
+
+--愈心：摸牌阶段开始时，你可以放弃摸牌，改为从牌堆顶亮出两张牌并获得之，若这两张牌均为红色，你可以指定一名角色并令其回复1点体力。
+sgs.ai_skill_invoke.thyuxin = function(self, data)
+	local target = self:findPlayerToRecover()
+	if target then
+		return true
+	end
+	return false
+end
+
+sgs.ai_skill_playerchosen.thyuxin = function(self, targets)
+	return self:findPlayerToRecover(1, targets)
+end
+
+sgs.ai_playerchosen_intention.thyuxin = -100
+
+--疮心：出牌阶段开始时，你可弃置X张牌，然后选择X项：1. 获得技能“灵视”，直到回合结束2. 获得技能“闭月”，直到回合结束
+sgs.ai_skill_use["@@thchuangxin"] = function(self, prompt, method)
+	local ret1 = self:askForDiscard("thchuangxin", 1, 1, false, true)
+	if #ret1 == 1 then
+		local id1 = ret1[1]
+		local card1 = sgs.Sanguosha:getCard(id1)
+		if not self:isValuableCard(card1) then
+			local type = card1:getTypeId()
+			local use = { isDummy = true }
+			self["use" .. sgs.ai_type_name[type + 1] .. "Card"](self, card1, use)
+			if not use.card then
+				local ret2 = self:askForDiscard("thchuangxin", 2, 2, false, true)
+				if #ret2 == 2 then
+					local id2 = ret2[2]
+					local card2 = sgs.Sanguosha:getCard(id2)
+					if not self:isValuableCard(card2) then
+						local type = card2:getTypeId()
+						local use = { isDummy = true }
+						self["use" .. sgs.ai_type_name[type + 1] .. "Card"](self, card2, use)
+						if not use.card then
+							return "@ThChuangxinCard=" .. table.concat(ret2, "+")
+						end
+					end
+				end
+				return "@ThChuangxinCard=" .. id1
+			end
+		end
+	end
+	return "."
+end
+
+sgs.ai_skill_choice.thchuangxin = function(self, choices, data)
+	if not self.player:hasSkill("ikbiyue") then
+		return "ikbiyue"
+	end
+	return "iklingshi"
+end
+
+--天心：你的回合开始时，你可弃置X张牌，然后选择X项：1. 获得技能“预悉”，直到回合结束2. 获得技能“天妒”，直到回合结束
+sgs.ai_skill_use["@@thtianxin"] = function(self, prompt, method)
+	local ret1 = self:askForDiscard("thtianxin", 1, 1, false, true)
+	if #ret1 == 1 then
+		local id1 = ret1[1]
+		local card1 = sgs.Sanguosha:getCard(id1)
+		if not self:isValuableCard(card1) then
+			local type = card1:getTypeId()
+			local use = { isDummy = true }
+			self["use" .. sgs.ai_type_name[type + 1] .. "Card"](self, card1, use)
+			if not use.card then
+				local ret2 = self:askForDiscard("thtianxin", 2, 2, false, true)
+				if #ret2 == 2 then
+					local id2 = ret2[2]
+					local card2 = sgs.Sanguosha:getCard(id2)
+					if not self:isValuableCard(card2) then
+						local type = card2:getTypeId()
+						local use = { isDummy = true }
+						self["use" .. sgs.ai_type_name[type + 1] .. "Card"](self, card2, use)
+						if not use.card then
+							return "@ThTianxinCard=" .. table.concat(ret2, "+")
+						end
+					end
+				end
+				return "@ThTianxinCard=" .. id1
+			end
+		end
+	end
+	return "."
+end
+
+sgs.ai_skill_choice.thtianxin = function(self, choices, data)
+	if not self.player:hasSkill("ikyuxi") then
+		return "ikyuxi"
+	end
+	return "iktiandu"
+end

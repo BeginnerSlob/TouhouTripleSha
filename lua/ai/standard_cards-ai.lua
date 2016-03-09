@@ -541,8 +541,11 @@ function SmartAI:useCardSlash(card, use)
 	self:sort(self.enemies, "defenseSlash")
 	for _, enemy in ipairs(self.enemies) do
 		if not self:slashProhibit(card, enemy) and sgs.isGoodTarget(enemy, self.enemies, self, true) and not self:hasLiyuEffect(enemy, card) then
-			if not self:getDamagedEffects(enemy, self.player, true) and not self:hasQiuyuanEffect(self.player, enemy) then table.insert(targets, enemy)
-			else table.insert(forbidden, enemy) end
+			if not self:getDamagedEffects(enemy, self.player, true) and not self:hasQiuyuanEffect(self.player, enemy) and not (enemy:hasSkill("thwudao") and self:needToLoseHp(enemy)) then
+				table.insert(targets, enemy)
+			else
+				table.insert(forbidden, enemy)
+			end
 		end
 	end
 	if #targets == 0 and #forbidden > 0 then targets = forbidden end

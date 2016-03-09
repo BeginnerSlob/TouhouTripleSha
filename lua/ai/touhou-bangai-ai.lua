@@ -615,15 +615,9 @@ sgs.ai_skill_use_func.ThSixiangCard = function(card, use, self)
 	local function getSiXiangTarget(str)
 		local to = sgs.SPlayerList()
 		if str == "spade" then
-			local arr1, arr2 = self:getWoundedFriend(false, true)
-			for _, p in ipairs(arr1) do
-				if self:isWeak(p) and p:getHp() < getBestHp(p) then
-					to:append(p)
-					return to
-				end
-			end
-			for _, p in ipairs(arr2) do
-				to:append(p)
+			local target = self:findPlayerToRecover()
+			if target then
+				to:append(target)
 				return to
 			end
 			return nil

@@ -1407,25 +1407,14 @@ qingnang_skill.getTurnUseCard = function(self)
 end
 
 sgs.ai_skill_use_func.QingnangCard = function(card, use, self)
-	local arr1, arr2 = self:getWoundedFriend(false, true)
-	local target = nil
+	local target = self:findPlayerToRecover()
 
-	if #arr1 > 0 and (self:isWeak(arr1[1]) or self:getOverflow() >= 1) and arr1[1]:getHp() < getBestHp(arr1[1]) then target = arr1[1] end
-	if target then
+	if target and (self:isWeak(target) or self:getOverflow() >= 1) then
 		use.card = card
 		if use.to then
 			use.to:append(target)
 		end
 		return
-	end
-	if self:getOverflow() > 0 and #arr2 > 0 then
-		for _, friend in ipairs(arr2) do
-			if not friend:hasSkills("hunzi|longhun") then
-				use.card = card
-				if use.to then use.to:append(friend) end
-				return
-			end
-		end
 	end
 end
 
