@@ -394,7 +394,7 @@ sgs.ai_skill_cardask["@thcunjing"] = function(self, data, pattern, target)
 		local ret = self:askForDiscard("", 1, 1, false, true)
 		if #ret > 0 then
 			if isCard("Peach", ret[1], self.player) then return "." end
-			return "$" .. ret[1]:getEffectiveId()
+			return "$" .. ret[1]
 		end
 	end
 	return "."

@@ -897,9 +897,10 @@ public:
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             foreach (int id, move.card_ids) {
                 const Card *card = Sanguosha->getEngineCard(id);
-                if (player->askForSkillInvoke(objectName(), QString("prompt:::%1:%2\\%3").arg(card->objectName())
-                                                                                         .arg(card->getSuitString() + "_char")
-                                                                                         .arg(card->getNumberString()))) {
+                if (player->askForSkillInvoke(objectName(), QString("prompt:%1::%2:%3\\%4").arg(id)
+                                                                                           .arg(card->objectName())
+                                                                                           .arg(card->getSuitString() + "_char")
+                                                                                           .arg(card->getNumberString()))) {
                     player->tag["ThLunyuCard"] = QVariant::fromValue(card);
                     room->broadcastSkillInvoke(objectName());
                     return true;

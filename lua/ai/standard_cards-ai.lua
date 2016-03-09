@@ -1918,8 +1918,10 @@ sgs.ai_skill_cardask["duel-slash"] = function(self, data, pattern, target)
 end
 
 function SmartAI:useCardExNihilo(card, use)
-	local xiahou = self.room:findPlayerBySkillName("yanyu")
-	if xiahou and self:isEnemy(xiahou) and xiahou:getMark("YanyuDiscard2") > 0 then return end
+	sgs.ai_use_priority.ExNihilo = 9.3
+	if self.player:hasFlag("thpanghunInvoke") and self.player:hasFlag("thjingwuInvoke") and not self.player:hasFlag("thlunyuInvoke") then
+		sgs.ai_use_priority.ExNihilo = 4
+	end
 	if self.player:hasFlag("ThChouceUse") then
 		local target = self:findPlayerToDraw(true, 2, card)
 		if target then
@@ -2070,7 +2072,7 @@ function SmartAI:getValuableCard(who)
 		end
 	end
 
-	if treasure then
+	if treasure and not treasure:isKindOf("Scroll") then
 		return treasure:getEffectiveId()
 	end
 

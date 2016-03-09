@@ -351,3 +351,218 @@ end
 
 --惊猿：锁定技，出牌阶段，每种类别的牌你只能使用一张。
 --无
+
+--[[ By:名和行年
+1 发动连舟的情况
+a 己方人物持有明属性杀或鸟扇
+b 敌方人物持有使用优先度和使用评分较高的装备
+c 场上存在被兵高手牌被乐队友，自己没有黑锦囊但有黑杀
+d 自己有顺手牵羊或黑杀但卡距离
+2 发动筹谋的情况
+a 未发动连舟时，视为与持有一张过拆同等的使用优先度发动
+b 发动连舟且有黑杀时
+c 发动连舟，且对方存在关键装备
+3 发动三略的情况
+a 一张使用优先度和使用评分高的锦囊满足触发三略条件且手中持有铁索
+b 距离足够的武器、木牛满足触发三略
+c 桃、酒在持有评分和使用评分都较高时触发三略
+]]
+
+--彷魂：摸牌阶段结束时，你可以弃置一张牌，然后你计算与所有其他角色的距离始终为1，且你的【杀】均视为【赤雾锁魂】，直到回合结束。
+sgs.ai_skill_invoke.thpanghun = function(self, data)
+	for _, p in ipairs(self.friends_noself) do
+		if getCardsNum("NatureSlash", p, self.player) > 0 or getCardsNum("Fan", p, self.player) > 0 then
+			return true
+		end
+	end
+	for _, p in ipairs(self.enemies) do
+		if self:getDangerousCard(p) or self:getValuableCard(p) then
+			return true
+		end
+	end
+	local black_trick = false
+	for _, c in sgs.qlist(self.player:getHandcards()) do
+		if c:isKindOf("TrickCard") and c:isBlack() then
+			black_trick = true
+			break
+		end
+	end
+	if not black_trick then
+		for _, c in sgs.qlist(self.player:getHandcards()) do
+			if c:isKindOf("Slash") and c:isBlack() then
+				black_trick = true
+				break
+			end
+		end
+		if black_trick then
+			for _, p in ipairs(self.friends) do
+				if (p:containsTrick("indulgence") and p:getOverflow() > 0) or p:containsTrick("supply_shortage") then
+					return true
+				end
+			end
+		end
+	end
+	local snatch = self:getCard("Snatch")
+	if snatch then
+		snatch = sgs.cloneCard("snatch")
+		local use = { isDummy = true }
+		self:useCardSnatchOrDismantlement(snatch, use)
+		if not use.card then
+			snatch:setSkillName("thpanghun")
+			self:useCardSnatchOrDismantlement(snatch, use)
+			if use.card then
+				return true
+			end
+		end
+	end
+	local slash = self:getCard("Slash")
+	if slash then
+		slash = sgs.cloneCard("slash")
+		local use = { isDummy = true }
+		self:useCardSlash(slash, use)
+		if not use.card then
+			return true
+		end
+	end
+	return false
+end
+
+sgs.ai_skill_cardask["@thpanghun"] = function(self, data, pattern)
+	if sgs.ai_skill_invoke.thpanghun(self, data) then
+		local ret = self:askForDiscard("thpanghun", 1, 1, true, false)
+		if self:isValuableCard(sgs.Sanguosha:getCard(ret[1])) then
+			return "."
+		end
+		return "$" .. ret[1]
+	end
+	return "."
+end
+
+--镜悟：出牌阶段限一次，你可以展示一张黑色锦囊牌，然后弃置场上的一张牌。
+local thjingwu_skill = {}
+thjingwu_skill.name = "thjingwu"
+table.insert(sgs.ai_skills, thjingwu_skill)
+thjingwu_skill.getTurnUseCard = function(self)
+	if not self.player:hasUsed("ThJingwuCard") then
+		for _, c in sgs.qlist(self.player:getHandcards()) do
+			if c:isKindOf("TrickCard") and c:isBlack() then
+				return sgs.Card_Parse("@ThJingwuCard=" .. c:getEffectiveId())
+			end
+		end
+	end
+end
+
+sgs.ai_skill_use_func.ThJingwuCard = function(card, use, self)
+	local target = self:findPlayerToDiscard("ej", true, true, nil)
+	if not target then return end
+	use.card = card
+	if use.to then
+		use.to:append(target)
+	end
+end
+
+sgs.ai_use_priority.ThJingwuCard = 9.5
+sgs.ai_use_value.ThJingwuCard = sgs.ai_use_priority.Dismantlement
+sgs.ai_choicemade_filter.cardChosen.thjingwu = sgs.ai_choicemade_filter.cardChosen.snatch
+
+--轮狱：连舞技，当一张你不为其使用的目标（或之一）的牌置入弃牌堆时，你将这张牌置于牌堆顶，然后此阶段结束时你从牌堆底摸一张牌。
+sgs.ai_skill_invoke.thlunyu = function(self, data)
+	local str = data:toString()
+	local str_t = str:split(":")
+	local id = str_t[2]
+	local card = sgs.Sanguosha:getEngineCard(id)
+	local nextAlive = self.player
+	repeat
+		nextAlive = self.room:findPlayer(nextAlive:getNextAlive(1, false):objectName())
+		if nextAlive:objectName() == self.player:objectName() then
+			if not nextAlive:faceUp() then
+				nextAlive = self.room:findPlayer(nextAlive:getNextAlive(1, false):objectName())
+			end
+			break
+		end
+	until nextAlive:faceUp()
+
+	local willUseExNihilo, willRecast
+	if self:getCardsNum("ExNihilo") > 0 then
+		local ex_nihilo = self:getCard("ExNihilo")
+		if ex_nihilo then
+			local dummy_use = { isDummy = true }
+			self:useTrickCard(ex_nihilo, dummy_use)
+			if dummy_use.card then willUseExNihilo = true end
+		end
+	end
+	if self:getCardsNum("IronChain") > 0 then
+		local iron_chain = self:getCard("IronChain")
+		if iron_chain then
+			local dummy_use = { to = sgs.SPlayerList(), isDummy = true, canRecast = true }
+			self:useTrickCard(iron_chain, dummy_use)
+			if dummy_use.card and dummy_use.to:isEmpty() then willRecast = true end
+		end
+	end
+	if (willUseExNihilo or willRecast) and self.player:getPhase() == sgs.Player_Play then
+		if card:isKindOf("Peach") then
+			return true
+		end
+		if card:isKindOf("TrickCard") or card:isKindOf("Indulgence") or card:isKindOf("SupplyShortage") then
+			local dummy_use = { isDummy = true }
+			self:useTrickCard(card, dummy_use)
+			if dummy_use.card then
+				return true
+			end
+		end
+		if card:isKindOf("Jink") and self:getCardsNum("Jink") == 0 then
+			return true
+		end
+		if card:isKindOf("Nullification") and self:getCardsNum("Nullification") == 0 then
+			return true
+		end
+		if card:isKindOf("Slash") and self:slashIsAvailable() then
+			local dummy_use = { isDummy = true }
+			self:useBasicCard(card, dummy_use)
+			if dummy_use.card then
+				return true
+			end
+		end
+	end
+
+	local hasLightning, hasIndulgence, hasSupplyShortage, hasPurpleSong
+	local tricks = nextAlive:getJudgingArea()
+	if not tricks:isEmpty() and not nextAlive:containsTrick("YanxiaoCard") then
+		local trick = tricks:at(tricks:length() - 1)
+		if self:hasTrickEffective(trick, nextAlive) then
+			if trick:isKindOf("Lightning") then hasLightning = true
+			elseif trick:isKindOf("Indulgence") then hasIndulgence = true
+			elseif trick:isKindOf("SupplyShortage") then hasSupplyShortage = true
+			elseif trick:isKindOf("PurpleSong") then hasSupplyShortage = true
+			end
+		end
+	end
+
+	if nextAlive:hasSkill("luoshen") then
+		return self:isEnemy(nextAlive) == card:isRed()
+	end
+	if nextAlive:hasSkill("yinghun") then
+		return self:isFriend(nextAlive)
+	end
+	if hasLightning and not (nextAlive:hasSkill("qiaobian") and nextAlive:getHandcardNum() > 0) then
+		if self:isEnemy(nextAlive) == ((card:getSuit() == sgs.Card_Spade or (card:getSuit() == sgs.Card_Haert and not nextAlive:hasSkill("ikchiqiu") and nextAlive:hasSkill("thanyue"))) and card:getNumber() >= 2 and (card:getNumber() <= 9 or nextAlive:hasSkill("thjiuzhang"))) then
+			return true
+		end
+	end
+	if hasIndulgence then
+		if self:isFriend(nextAlive) == (card:getSuit() == sgs.Card_Heart or (card:getSuit() == sgs.Card_Spade and nextAlive:hasSkill("ikchiqiu"))) then
+			return true
+		end
+	end
+	if hasSupplyShortage and not (nextAlive:hasSkill("qiaobian") and nextAlive:getHandcardNum() > 0) then
+		if self:isFriend(nextAlive) == (card:getSuit() == sgs.Card_Club or (card:getSuit() == sgs.Card_Diamond and nextAlive:hasSkill("ikmohua"))) then
+			return true
+		end
+	end
+	if hasPurpleSong then
+		if self:isEnemy(nextAlive) == (card:getSuit() == sgs.Card_Diamond and nextAlive:hasSkill("ikmohua")) then
+			return true
+		end
+	end
+	return false
+end
