@@ -460,6 +460,9 @@ function SmartAI:useCardIronChain(card, use)
 	end
 	use.card = card
 	if not needTarget then
+		if self.player:hasFlag("thpanghunInvoke") and self.player:hasFlag("thjingwuInvoke") and not self.player:hasFlag("thlunyuInvoke") then
+			sgs.ai_use_priority.IronChain = 4
+		end
 		if self.player:isLocked(card) then return end
 		if #self.enemies == 1 and #(self:getChainedFriends()) <= 1 then return end
 		if self:needBear() then return end
@@ -595,6 +598,11 @@ function SmartAI:useCardIronChain(card, use)
 	end
 	if use.to then assert(use.to:length() < targets_num + 1) end
 	if needTarget and use.to and use.to:isEmpty() then use.card = nil end
+	if use.to and use.to:isEmpty() then
+		if self.player:hasFlag("thpanghunInvoke") and self.player:hasFlag("thjingwuInvoke") and not self.player:hasFlag("thlunyuInvoke") then
+			sgs.ai_use_priority.IronChain = 4
+		end
+	end
 end
 
 sgs.ai_card_intention.IronChain = function(self, card, from, tos)
