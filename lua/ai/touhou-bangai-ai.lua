@@ -202,8 +202,14 @@ sgs.ai_skill_choice.thxumei = function(self, choices, data)
 		end
 	end
 	local target, cardId = sgs.ai_skill_askforyiji.nosyiji(self, sgs.QList2Table(ids))
-	sgs.thxumei_target = target
-	return sgs.Sanguosha:getCard(cardId):getType()
+	if target and cardId then
+		sgs.thxumei_target = target
+		return sgs.Sanguosha:getCard(cardId):getType()
+	else
+		sgs.thxumei_target = self.player
+		choices = choices:split("+")
+		return choices[math.random(1, #choices)]
+	end
 end
 
 sgs.ai_skill_playerchosen.thxumei = function(self, targets)

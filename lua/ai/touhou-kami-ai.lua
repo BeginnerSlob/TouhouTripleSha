@@ -429,7 +429,7 @@ end
 
 sgs.ai_skill_cardask["@thpanghun"] = function(self, data, pattern)
 	if sgs.ai_skill_invoke.thpanghun(self, data) then
-		local ret = self:askForDiscard("thpanghun", 1, 1, true, false)
+		local ret = self:askForDiscard("thpanghun", 1, 1, false, true)
 		if self:isValuableCard(sgs.Sanguosha:getCard(ret[1])) then
 			return "."
 		end
@@ -566,3 +566,80 @@ sgs.ai_skill_invoke.thlunyu = function(self, data)
 	end
 	return false
 end
+
+--返魂：专属技，当你处于濒死状态时，你可获得1枚“桜咲”标记且体力回复至1点，然后将你的人物牌翻至正面朝上并重置之。
+sgs.ai_skill_invoke.thfanhun = function(self, data)
+	local dying = data:toDying()
+	local damage = dying.damage
+	return self.player:getMark("@yingxiao") < 3 or not self.player:hasSkill("thmanxiao")
+		or not damage or not damage.from or self.player:getRole() ~= "rebel" or not self:isFriend(damage.from)
+end
+
+--诱殇：专属技，每当你的非黑桃牌对目标角色造成伤害时，你可以防止此伤害，并令该角色减少1点体力上限，然后获得1枚“桜咲”标记。
+sgs.ai_skill_invoke.thyoushang = function(self, data)
+	local damage = data:toDamage()
+	if self:isFriend(damage.to) then
+		return false
+	elseif self:isEnemy(damage.to) then
+		if damage.damage > 1 then return false end
+		if damage.to:isWounded() then return false end
+		if (self.player:getMark("@yingxiao") < 3 or not self.player:hasSkill("thmanxiao")) and self:objectiveLevel(damage.to) > 3 then
+			return true
+		end
+		if self.player:getMark("@yingxiao") == 3 and #self.friends_noself > 0
+				and self:isWeak() and self:getAllPeachNum() == 0 and self:getCardsNum("Analeptic") == 0
+				and self:objectiveLevel(damage.to) == 5 then
+			return true
+		end
+	end
+	return false
+end
+
+sgs.ai_choicemade_filter.skillInvoke.thyoushang = function(self, player, promptlist)
+	if promptlist[#promptlist] == "yes" then
+		local target = player:getTag("ThYoushangData"):toDamage().to
+		if target then
+			sgs.updateIntention(player, target, 120)
+		end
+	end
+end
+
+--幽雅：每当你受到伤害时，你可以弃置一张牌并令一至X名角色选择一项：打出一张【闪】；或令你获得其一张牌。（X为你的“桜咲”标记的数量）
+sgs.ai_skill_use["@@thyouya"] = function(self, prompt, method)
+	local ret = self:askForDiscard("thyouya", 1, 1, false, true)
+	if self:isValuableCard(sgs.Sanguosha:getCard(ret[1])) then
+		return "."
+	end
+	card_str = "@ThYouyaCard=" .. ret[1]
+	local to_table = {}
+	self:sort(self.enemies, "defense")
+	for _, enemy in ipairs(self.enemies) do
+		if not enemy:isNude() and (getCardsNum("Jink", enemy, self.player) < 1 or sgs.card_lack[enemy:objectName()]["Jink"] == 1) then
+			table.insert(to_table, enemy:objectName())
+			if #to_table >= self.player:getMark("@yingxiao") then
+				return card_str .. "->" .. table.concat(to_table, "+")
+			end
+		end
+	end
+	for _, enemy in ipairs(self.enemies) do
+		if not enemy:isNude() and not table.contains(to_table, enemy:objectName()) then
+			table.insert(to_table, enemy:objectName())
+			if #to_table >= self.player:getMark("@yingxiao") then
+				return card_str .. "->" .. table.concat(to_table, "+")
+			end
+		end
+	end
+	return "."
+end
+
+sgs.ai_skill_cardask["@thyouya-jink"] = function(self, data, pattern, target)
+	if not self.player:isNude() and not self:isFriend(target) then
+		return self:getCardId("Jink")
+	end
+	return "."
+end
+
+sgs.ai_card_intention.ThYouyaCard = 50
+
+--满咲：锁定技，你每拥有1枚“桜咲”标记，你的手牌上限便+1。当你拥有4枚“桜咲”标记时，你立即死亡。
+--无

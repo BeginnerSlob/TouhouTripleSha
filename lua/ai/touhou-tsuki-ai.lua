@@ -1080,6 +1080,9 @@ sgs.ai_skill_invoke.thshenyou = function(self, data)
 			if self:slashProhibit(damage.card, damage.to, self.player) or damage.to:hasSkills(sgs.masochism_skill) then
 				return true
 			end
+			if damage.nature ~= sgs.DamageStruct_Normal and damage.to:isChained() and self:isGoodChainTarget(damage.to, self.player, damage.nature, damage.damage) then
+				return false
+			end
 			return math.random(1, 3) ~= 1
 		end
 		return false
