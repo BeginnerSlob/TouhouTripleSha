@@ -5964,10 +5964,10 @@ function SmartAI:findPlayerToDraw(include_self, drawnum, TrickCard)
 		if self:isFriend(player) and not hasManjuanEffect(player)
 			and not (player:hasSkill("ikjingyou") and player:isKongcheng() and drawnum <= 2)
 			and (not TrickCard or self:hasTrickEffective(TrickCard, player, self.player))
-			and not doNotDraw(player, drawnum, TrickCard) then
+			and not self:doNotDraw(player, drawnum, TrickCard) then
 			table.insert(friends, player)
 		end
-		if self:isEnemy(player) and doNotDraw(player, drawnum, TrickCard) then
+		if self:isEnemy(player) and self:doNotDraw(player, drawnum, TrickCard) then
 			table.insert(enemies, player)
 		end
 	end

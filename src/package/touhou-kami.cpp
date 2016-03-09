@@ -948,29 +948,34 @@ public:
     }
 };
 
-class ThFanhun: public TriggerSkill{
+class ThFanhun: public TriggerSkill
+{
 public:
-    ThFanhun(): TriggerSkill("thfanhun") {
+    ThFanhun(): TriggerSkill("thfanhun")
+    {
         events << AskForPeaches;
         owner_only_skill = true;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
         DyingStruct dying_data = data.value<DyingStruct>();
         if (!TriggerSkill::triggerable(player) || dying_data.who != player) return QStringList();
         if (player->isDead() || player->getHp() > 0) return QStringList();
         return QStringList(objectName());
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        if (player->askForSkillInvoke(objectName(), data)){
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName(), data)) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         player->gainMark("@yingxiao");
 
         if (player->isDead())
@@ -986,14 +991,17 @@ public:
     }
 };
 
-class ThYoushang: public TriggerSkill{
+class ThYoushang: public TriggerSkill
+{
 public:
-    ThYoushang(): TriggerSkill("thyoushang") {
+    ThYoushang(): TriggerSkill("thyoushang")
+    {
         events << DamageCaused;
         owner_only_skill = true;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
         if (!TriggerSkill::triggerable(player)) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.card && damage.card->getSuit() != Card::Spade && !damage.chain && !damage.transfer)
@@ -1001,8 +1009,12 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
-        if (player->askForSkillInvoke(objectName(), data)){
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        player->tag["ThYoushangData"] = QVariant::fromValue(data);
+        bool invoke = player->askForSkillInvoke(objectName(), data);
+        player->tag.remove("ThYoushangData");
+        if (invoke) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
