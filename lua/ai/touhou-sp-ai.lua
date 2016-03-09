@@ -569,8 +569,8 @@ thlunmin_skill.getTurnUseCard = function(self)
 	if not self.player:canDiscard(self.player, "he") then return nil end
 	local cards = sgs.QList2Table(self.player:getCards("he"))
 	self:sortByUseValue(cards, true)
-	local arr1, arr2 = self:getWoundedFriend(false, true)
-	if #arr1 + #arr2 > 0 then
+	local need_recover = self:findPlayerToRecover()
+	if need_recover then
 		local need_suit = {}
 		if self.player:hasSkill("thyupan") then
 			for i = 0, 3 do
@@ -598,21 +598,7 @@ end
 
 --雨磐：结束阶段开始时，若你于本回合使用或弃置牌的花色数为四种，你可以令一名角色回复1点体力。
 sgs.ai_skill_playerchosen.thyupan = function(self, targets)
-	local arr1, arr2 = self:getWoundedFriend(false, true)
-
-	for _, p in ipairs(arr1) do
-		if self:isWeak(p) and p:getHp() < getBestHp(p) and targets:contains(p) then
-			return p
-		end
-	end
-
-	for _, p in ipairs(arr2) do
-		if targets:contains(p) then
-			return p
-		end
-	end
-
-	return nil
+	return self:findPlayerToRecover(1, targets)
 end
 
 sgs.ai_playerchosen_intention.thyupan = -100

@@ -1283,7 +1283,7 @@ void ThChuangxinCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *
         room->acquireSkill(source, choice);
     } else
         room->handleAcquireDetachSkills(source, "iklingshi|ikbiyue");
-};
+}
 
 class ThChuangxinViewAsSkill :public ViewAsSkill {
 public:

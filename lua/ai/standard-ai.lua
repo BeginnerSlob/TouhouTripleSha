@@ -2578,21 +2578,20 @@ function SmartAI:getWoundedFriend(maleOnly, include_self)
 end
 
 sgs.ai_skill_use_func.JieyinCard = function(card, use, self)
-	local arr1, arr2 = self:getWoundedFriend(true)
-	table.removeOne(arr1, self.player)
-	table.removeOne(arr2, self.player)
+	local targets = self.room:getOtherPlayers(self.player)
 	local target = nil
-
-	repeat
-		if #arr1 > 0 and (self:isWeak(arr1[1]) or self:isWeak() or self:getOverflow() >= 1) then
-			target = arr1[1]
+	while not target do
+		target = self:findPlayerToRecover(1, target, true)
+		if self:isWeak(target) or self:isWeak() or self:getOverflow() >= 1 then
 			break
+		else
+			targets:removeOne(target)
+			target = nil
+			if targets:isEmpty() then
+				break
+			end
 		end
-		if #arr2 > 0 and self:isWeak() then
-			target = arr2[1]
-			break
-		end
-	until true
+	end
 
 	if not target and self:isWeak() and self:getOverflow() >= 2 and (self.role == "lord" or self.role == "renegade") then
 		local others = self.room:getOtherPlayers(self.player)

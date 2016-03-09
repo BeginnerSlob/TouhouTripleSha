@@ -2855,9 +2855,9 @@ function SmartAI:askForUseCard(pattern, prompt, method)
 		return use_func(self, prompt, method) or "."
 	elseif tonumber(pattern) then
 		local card = sgs.Sanguosha:getCard(pattern)
-		local type = card:getTypeId()
+		local typeId = card:getTypeId()
 		local use = { to = sgs.SPlayerList() }
-		self["use" .. sgs.ai_type_name[type + 1] .. "Card"](self, card, use)
+		self["use" .. sgs.ai_type_name[typeId + 1] .. "Card"](self, card, use)
 		if not use.to:isEmpty() then
 			local str = use.to:first():objectName()
 			use.to:removeOne(use.to:first())
@@ -6014,6 +6014,52 @@ function SmartAI:findPlayerToDraw(include_self, drawnum, TrickCard)
 	for _, friend in ipairs(friends) do
 		if not self:needKongcheng(friend) and not self:willSkipPlayPhase(friend) then
 			return friend
+		end
+	end
+	return nil
+end
+
+function SmartAI:findPlayerToRecover(num, targets, maleOnly)
+	num = num or 1
+	if not targets then
+		targets = self.room:getAlivePlayers()
+	end
+	local first_aid, friends, enemies = {}, {}, {}
+	local arr1, arr2 = self:getWoundedFriend(maleOnly, true)
+	for _, p in ipairs(arr1) do
+		if targets:contains(p) then
+			table.insert(first_aid, p)
+		end
+	end
+	for _, p in ipairs(arr2) do
+		if targets:contains(p) then
+			table.insert(friends, p)
+		end
+	end
+	for _, p in sgs.qlist(targets) do
+		if self:isEnemy(p) and (not maleOnly or p:isMale()) then
+			table.insert(enemies, p)
+		end
+	end
+
+	for _, p in ipairs(first_aid) do
+		if p:isWounded() and self:isWeak(p) and p:getLostHp() >= num then
+			return p
+		end
+	end
+	for _, p in ipairs(first_aid) do
+		if p:isWounded() then
+			return p
+		end
+	end
+	for _, p in ipairs(enemies) do
+		if self:needToLoseHp(p) and p:isWounded() and p:hasSkill("thwudao") then
+			return p
+		end
+	end
+	for _, p in ipairs(friends) do
+		if p:isWounded() and not p:hasSkill("thwudao") then
+			return p
 		end
 	end
 	return nil

@@ -166,12 +166,39 @@ local function GuanXing(self, cards)
 			end
 		end
 	end
-
+	if self.player:hasSkill("thyuxin") and self:findPlayerToRecover() then
+		drawCards = 2
+	end
 	local drawCards_copy = drawCards
 	if willSkipDrawPhase then drawCards = 0 end
 
 	if #bottom > 0 and drawCards > 0 then
-		if self.player:hasSkill("zhaolie") then
+		if self.player:hasSkill("thyuxin") and self:findPlayerToRecover() then
+			local reds, others = {}, {}
+			for _, gcard in ipairs(bottom) do
+				if gcard:isRed() then
+					table.insert(reds, gcard)
+				else
+					table.insert(others, gcard)
+				end
+			end
+			bottom = {}
+			local rednum = 0
+			for _, red in ipairs(reds) do
+				if rednum < 2 then
+					table.insert(up, red)
+					rednum = rednum + 1
+				else
+					table.insert(bottom, red)
+				end
+			end
+			for _, other in ipairs(others) do
+				table.insert(bottom, other)
+			end
+			up = getBackToId(self, up)
+			bottom = getBackToId(self, bottom)
+			return up, bottom
+		elseif self.player:hasSkill("zhaolie") then
 			local targets = sgs.SPlayerList()
 			for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
 				if self.player:inMyAttackRange(p) then targets:append(p) end

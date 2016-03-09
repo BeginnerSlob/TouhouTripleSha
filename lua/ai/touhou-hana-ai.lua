@@ -305,20 +305,10 @@ end
 
 --心妄：你的回合外，每当你使用、打出一张红桃牌时，或因弃置而失去一张红桃牌后，你可以摸一张牌或令一名其他角色回复1点体力。
 sgs.ai_skill_playerchosen.thxinwang = function(self, targets)
-	local arr1, arr2 = self:getWoundedFriend()
-	local target = nil
-	if #arr1 > 0 then
-		for i = 1, #arr1 do
-			if (self:isWeak(arr1[i]) or self:getOverflow() >= 1) and arr1[i]:getHp() < getBestHp(arr1[i]) and targets:contains(arr1[i]) then
-				target = arr1[i]
-				break
-			end
-		end
-	end
-	return target
+	return self:findPlayerToRecover(1, targets)
 end
 
-sgs.ai_playerchosen_intention.thxinwang = -40
+sgs.ai_playerchosen_intention.thxinwang = -100
 
 --绝毒：锁定技，杀死你的角色获得技能“崩坏”。
 function sgs.ai_slash_prohibit.thjuedu(self, from, to)
