@@ -352,22 +352,6 @@ end
 --惊猿：锁定技，出牌阶段，每种类别的牌你只能使用一张。
 --无
 
---[[ By:名和行年
-1 发动连舟的情况
-a 己方人物持有明属性杀或鸟扇
-b 敌方人物持有使用优先度和使用评分较高的装备
-c 场上存在被兵高手牌被乐队友，自己没有黑锦囊但有黑杀
-d 自己有顺手牵羊或黑杀但卡距离
-2 发动筹谋的情况
-a 未发动连舟时，视为与持有一张过拆同等的使用优先度发动
-b 发动连舟且有黑杀时
-c 发动连舟，且对方存在关键装备
-3 发动三略的情况
-a 一张使用优先度和使用评分高的锦囊满足触发三略条件且手中持有铁索
-b 距离足够的武器、木牛满足触发三略
-c 桃、酒在持有评分和使用评分都较高时触发三略
-]]
-
 --彷魂：摸牌阶段结束时，你可以弃置一张牌，然后你计算与所有其他角色的距离始终为1，且你的【杀】均视为【赤雾锁魂】，直到回合结束。
 sgs.ai_skill_invoke.thpanghun = function(self, data)
 	for _, p in ipairs(self.friends_noself) do
@@ -837,76 +821,148 @@ sgs.ai_playerchosen_intention.thyuxin = -100
 
 --疮心：出牌阶段开始时，你可弃置X张牌，然后选择X项：1. 获得技能“灵视”，直到回合结束2. 获得技能“闭月”，直到回合结束
 sgs.ai_skill_use["@@thchuangxin"] = function(self, prompt, method)
+	local needGongxin = false
+	local useBiyueValue, useGongxinValue = false, false
+	if self:isWeak() then
+		useBiyueValue = true
+	end
+	for _, p in ipairs(self.enemies) do
+		local flag = ("%s_%s_%s"):format("visible", self.player:objectName(), p:objectName())
+		local has_peach = false
+		for _, c in sgs.qlist(p:getHandcards()) do
+			if c:hasFlag("visible") or c:hasFlag(flag) then
+				if isCard("Peach", c, p) and c:getSuit() == sgs.Card_Heart then
+					has_peach = true
+					break
+				end
+			end
+		end
+		if has_peach then
+			needGongxin = true
+			useGongxinValue = true
+			break
+		end
+	end
+	if self.player:getHandcardNum() > 3 then
+		needGongxin = true
+	end
+	local needNum = 1
+	if needGongxin then
+		needNum = needNum + 1
+	end
+	local valueNum = 0
+	if useBiyueValue then
+		valueNum = valueNum + 1
+	end
+	if useGongxinValue then
+		valueNum = valueNum + 1
+	end
+	if needNum < valueNum then
+		self.room:writeToConsole("ThChuangxin F**k Dog!!!")
+		needNum = valueNum
+	end
+	local use_cards = {}
 	local ret1 = self:askForDiscard("thchuangxin", 1, 1, false, true)
 	if #ret1 == 1 then
 		local id1 = ret1[1]
 		local card1 = sgs.Sanguosha:getCard(id1)
-		if not self:isValuableCard(card1) then
+		if valueNum > 0 and not isCard("Peach", card1, self.player) then
+			table.insert(use_cards, id1)
+		elseif not self:isValuableCard(card1) then
 			local type = card1:getTypeId()
 			local use = { isDummy = true }
 			self["use" .. sgs.ai_type_name[type + 1] .. "Card"](self, card1, use)
 			if not use.card then
-				local ret2 = self:askForDiscard("thchuangxin", 2, 2, false, true)
-				if #ret2 == 2 then
-					local id2 = ret2[2]
-					local card2 = sgs.Sanguosha:getCard(id2)
-					if not self:isValuableCard(card2) then
-						local type = card2:getTypeId()
-						local use = { isDummy = true }
-						self["use" .. sgs.ai_type_name[type + 1] .. "Card"](self, card2, use)
-						if not use.card then
-							return "@ThChuangxinCard=" .. table.concat(ret2, "+")
-						end
-					end
-				end
-				return "@ThChuangxinCard=" .. id1
+				table.insert(use_cards, id1)
 			end
 		end
+		if #use_cards == 1 and needNum > 1 then
+			local ret2 = self:askForDiscard("thchuangxin", 2, 2, false, true)
+			if #ret2 == 2 then
+				local id2 = ret2[2]
+				local card2 = sgs.Sanguosha:getCard(id2)
+				if valueNum > 1 and not isCard("Peach", card2, self.player) then
+					table.insert(use_cards, id2)
+				elseif not self:isValuableCard(card2) then
+					local type = card2:getTypeId()
+					local use = { isDummy = true }
+					self["use" .. sgs.ai_type_name[type + 1] .. "Card"](self, card2, use)
+					if not use.card then
+						table.insert(use_cards, id2)
+					end
+				end
+			end
+		end
+	end
+	if #use_cards > 0 then
+		if #use_cards == 1 then
+			sgs.thchuangxin_choice = "ikbiyue"
+			if not useBiyueValue and useGongxinValue then
+				sgs.thchuangxin_choice = "iklingshi"
+			end
+		end
+		return "@ThChuangxinCard=" .. table.concat(use_cards, "+")
 	end
 	return "."
 end
 
 sgs.ai_skill_choice.thchuangxin = function(self, choices, data)
-	if not self.player:hasSkill("ikbiyue") then
-		return "ikbiyue"
-	end
-	return "iklingshi"
+	return sgs.thchuangxin_choice
 end
 
 --天心：你的回合开始时，你可弃置X张牌，然后选择X项：1. 获得技能“预悉”，直到回合结束2. 获得技能“天妒”，直到回合结束
 sgs.ai_skill_use["@@thtianxin"] = function(self, prompt, method)
+	local needGuanxing, needTiandu = false
+	if self.player:containsTrick("indulgence") or self.player:containsTrick("supply_shortage") or self.player:containsTrick("lightning") then
+		needGuanxing = true
+	end
+	if self.player:containsTrick("supply_shortage") and self.player:getJudgingArea():length() > 1 then
+		needTiandu = true
+	end
+	if self:getOverflow() > 0 then
+		needGuanxing = true
+	end
+	local weak = self:findPlayerToRecover()
+	if weak and self:isFriend(weak) and self.player:getHandcardNum() > 1 then
+		needGuanxing = true
+	end
+	local needNum = 0
+	if needGuanxing then
+		needNum = needNum + 1
+	end
+	if needTiandu then
+		needNum = needNum + 1
+	end
+	if needNum == 0 then return "." end
+	local use_cards = {}
 	local ret1 = self:askForDiscard("thtianxin", 1, 1, false, true)
 	if #ret1 == 1 then
 		local id1 = ret1[1]
-		local card1 = sgs.Sanguosha:getCard(id1)
-		if not self:isValuableCard(card1) then
-			local type = card1:getTypeId()
-			local use = { isDummy = true }
-			self["use" .. sgs.ai_type_name[type + 1] .. "Card"](self, card1, use)
-			if not use.card then
-				local ret2 = self:askForDiscard("thtianxin", 2, 2, false, true)
-				if #ret2 == 2 then
-					local id2 = ret2[2]
-					local card2 = sgs.Sanguosha:getCard(id2)
-					if not self:isValuableCard(card2) then
-						local type = card2:getTypeId()
-						local use = { isDummy = true }
-						self["use" .. sgs.ai_type_name[type + 1] .. "Card"](self, card2, use)
-						if not use.card then
-							return "@ThTianxinCard=" .. table.concat(ret2, "+")
-						end
-					end
+		if not isCard("Peach", id1, self.player) or self:willSkipPlayPhase() then
+			table.insert(use_cards, id1)
+		end
+		if #use_cards == 1 and needNum > 1 then
+			local ret2 = self:askForDiscard("thtianxin", 2, 2, false, true)
+			if #ret2 == 2 then
+				local id2 = ret2[2]
+				if not isCard("Peach", id2, self.player) or self:willSkipPlayPhase() then
+					table.insert(use_cards, id2)
 				end
-				return "@ThTianxinCard=" .. id1
 			end
 		end
+	end
+	if #use_cards > 0 then
+		if #use_cards == 1 then
+			sgs.thtianxin_choice = "ikyuxi"
+			if not needGuanxing and needTiandu then
+				sgs.thtianxin_choice = "iktiandu"
+			end
+		end
+		return "@ThTianxinCard=" .. table.concat(use_cards, "+")
 	end
 	return "."
 end
 
 sgs.ai_skill_choice.thtianxin = function(self, choices, data)
-	if not self.player:hasSkill("ikyuxi") then
-		return "ikyuxi"
-	end
-	return "iktiandu"
+	return sgs.thtianxin_choice
 end
