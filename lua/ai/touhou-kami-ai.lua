@@ -571,8 +571,13 @@ end
 sgs.ai_skill_invoke.thfanhun = function(self, data)
 	local dying = data:toDying()
 	local damage = dying.damage
-	return self.player:getMark("@yingxiao") < 3 or not self.player:hasSkill("thmanxiao")
-		or not damage or not damage.from or self.player:getRole() ~= "rebel" or not self:isFriend(damage.from)
+	if self.player:getMark("@yingxiao") < 3 or not self.player:hasSkill("thmanxiao") then
+		return true
+	end
+	if self:getAllPeachNum() == 0 and self:getCardsNum("Analeptic") == 0 then
+		return not (damage and damage.from and self.player:getRole() == "rebel" and self:isFriend(damage.from))
+	end
+	return false
 end
 
 --诱殇：专属技，每当你的非黑桃牌对目标角色造成伤害时，你可以防止此伤害，并令该角色减少1点体力上限，然后获得1枚“桜咲”标记。
