@@ -966,3 +966,86 @@ end
 sgs.ai_skill_choice.thtianxin = function(self, choices, data)
 	return sgs.thtianxin_choice
 end
+
+--禳灯：锁定技，出牌阶段开始时，你须选择一项：依次将至多三张与你人物牌上的任何一张牌点数都不相同的手牌面朝上置于你的人物牌上，称为“灯”；或弃置一张手牌。你的人物牌上每有一种花色的“灯”，你获得相应的技能：红桃“闭月”；黑桃“飞影”；方块“沉红”；梅花“霁风”。
+sgs.ai_skill_cardask["@thrangdeng"] = function(self, data, pattern, target, target2, arg, arg2)
+	local has_suits, has_num = {}, {}
+	for _, id in sgs.qlist(self.player:getPile("thrangdengpile")) do
+		local c = sgs.Sanguosha:getCard(id)
+		if not table.contains(has_suits, c:getSuit()) then
+			table.insert(has_suits, c:getSuit())
+		end
+		table.insert(has_num, c:getNumber())
+	end
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	self:sortByUseValue(cards, true)
+	if #has_suits < 4 then
+		for _, c in ipairs(cards) do
+			if not table.contains(has_suits, c:getSuit()) and not table.contains(has_num, c:getNumber()) then
+				return "$" .. c:getEffectiveId()
+			end
+		end
+	end
+	for _, c in ipairs(cards) do
+		if not table.contains(has_num, c:getNumber()) then
+			if #has_num + (4 - arg) >= 13 or arg == 1 or not self:isValuableCard(c) then
+				return "$" .. c:getEffectiveId()
+			end
+		end
+	end
+	return "."
+end
+
+sgs.ai_cardneed.thrangdeng = function(to, card)
+	local has_suits, has_num = {}, {}
+	for _, id in sgs.qlist(to:getPile("thrangdengpile")) do
+		local c = sgs.Sanguosha:getCard(id)
+		if not table.contains(has_suits, c:getSuit()) then
+			table.insert(has_suits, c:getSuit())
+		end
+		table.insert(has_num, c:getNumber())
+	end
+	return not table.contains(has_suits, card:getSuit()) and not table.contains(has_num, card:getNumber())
+end
+
+--拜魂：出牌阶段，你可以将十三张“灯”置入弃牌堆，然后令一名其他角色立即死亡。
+local thbaihun_skill = {}
+thbaihun_skill.name = "thbaihun"
+table.insert(sgs.ai_skills, thbaihun_skill)
+thbaihun_skill.getTurnUseCard = function(self)
+	if self.player:getPile("thrangdengpile"):length() >= 13 then
+		return sgs.Card_Parse("@ThBaihunCard=.")
+	end
+end
+
+sgs.ai_skill_use_func.ThBaihunCard = function(card, use, self)
+	if self.player:getRole() == "rebel" then
+		use.card = card
+		if use.to then
+			use.to:append(self.room:getLord())
+		end
+		return
+	end
+	self:sort(self.enemies, "defense")
+	self.enemies = sgs.reverse(self.enemies)
+	for _, p in ipairs(self.enemies) do
+		if self:objectiveLevel(p) == 5 then
+			use.card = card
+			if use.to then
+				use.to:append(p)
+			end
+			return
+		end
+	end
+end
+
+sgs.ai_cardneed.thbaihun = function(to, card)
+	local has_num = {}
+	for _, id in sgs.qlist(to:getPile("thrangdengpile")) do
+		local c = sgs.Sanguosha:getCard(id)
+		table.insert(has_num, c:getNumber())
+	end
+	return not table.contains(has_num, card:getNumber()) and #has_num > 9
+end
+
+sgs.ai_card_intention.ThBaihunCard = 998
