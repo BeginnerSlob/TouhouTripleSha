@@ -579,7 +579,7 @@ thlunmin_skill.getTurnUseCard = function(self)
 				end
 			end
 		end
-		if (#need_suit <= 2 and #arr1 > 0) or #need_suit <= 1 then
+		if (#need_suit <= 2 and self:isFriend(need_recover) and self:isWeak(need_recover)) or #need_suit <= 1 then
 			for _, c in ipairs(cards) do
 				if table.contains(need_suit, c:getSuit()) and not self:isValuableCard(c) then
 					return sgs.Card_Parse("@ThLunminCard=" .. c:getEffectiveId())

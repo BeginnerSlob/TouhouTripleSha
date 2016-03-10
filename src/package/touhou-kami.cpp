@@ -1490,7 +1490,7 @@ public:
             const Card *card = NULL;
             if (!numbers.isEmpty()) {
                 QString pattern = ".|.|" + numbers.join(",") + "|hand";
-                card = room->askForCard(player, pattern, "@thrangdeng", data, Card::MethodNone);
+                card = room->askForCard(player, pattern, "@thrangdeng:::" + QString::number(i), data, Card::MethodNone);
             }
             if (!card) {
                 if (i == 0)
