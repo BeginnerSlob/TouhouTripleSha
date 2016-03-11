@@ -99,7 +99,7 @@ function setInitialTables()
 	sgs.exclusive_skill = "huilei|duanchang|enyuan|wuhun|zhuiyi|buqu|nosbuqu|nosyiji|yiji|ganglie|vsganglie|nosganglie|guixin|jieming|nosmiji|" ..
 							"thjuedu"
 	sgs.cardneed_skill = "paoxiao|tianyi|xianzhen|shuangxiong|nosjizhi|jizhi|noseguose|guose|duanliang|qixi|qingnang|yinling|nosluoyi|guhuo|nosguhuo|kanpo|" ..
-							"jieyin|renjie|zhiheng|nosrende|rende|nosjujian|guicai|nosguicai|guidao|longhun|luanji|qiaobian|beige|jieyuan|" ..
+							"jieyin|renjie|zhiheng|nosrende|rende|nosjujian|guicai|nosguicai|guidao|longhun|luanji|qiaobian|beige|thluli|" ..
 							"mingce|nosfuhun|lirang|xuanfeng|xinzhan|dangxian|bifa|xiaoguo"..
 							"thzhanye|thqiaogong|thguiyu"
 	sgs.drawpeach_skill = "tuxi|nostuxi|qiaobian"
@@ -1785,9 +1785,9 @@ function SmartAI:filterEvent(triggerEvent, player, data)
 					callback(self, player, promptlist)
 				end
 			end
-			if data:toString() == "skillInvoke:fenxin:yes" then
+			if data:toString() == "skillInvoke:thguihuan:yes" then
 				for _, aplayer in sgs.qlist(self.room:getAllPlayers()) do
-					if aplayer:hasFlag("FenxinTarget") then
+					if aplayer:hasFlag("ThGuihuanTarget") then
 						local temp_table = sgs.role_evaluation[player:objectName()]
 						sgs.role_evaluation[player:objectName()] = sgs.role_evaluation[aplayer:objectName()]
 						sgs.role_evaluation[aplayer:objectName()] = temp_table
@@ -2997,8 +2997,8 @@ function SmartAI:hasHeavySlashDamage(from, slash, to, return_value)
 
 		if (to:hasArmorEffect("vine") or to:getMark("@liefeng") > 0) and fireSlash then dmg = dmg + 1 end
 		if from:hasWeapon("guding_blade") and slash and to:isKongcheng() then dmg = dmg + 1 end
-		if from:hasSkill("jieyuan") and to:getHp() >= from:getHp() and from:getHandcardNum() >= 3 and not is_friend then dmg = dmg + 1 end
-		if to:hasSkill("jieyuan") and from:getHp() >= to:getHp()
+		if from:hasSkill("thluli") and to:getHp() >= from:getHp() and from:getHandcardNum() >= 3 and not is_friend then dmg = dmg + 1 end
+		if to:hasSkill("thluli") and from:getHp() >= to:getHp()
 			and (to:getHandcardNum() > 3 or getKnownCard(to, self.player, "red") > 0) and not is_friend then dmg = dmg - 1 end
 	end
 	if to:hasSkill("thbingzhang") and to:getCardCount() > 2 then dmg = 0 end

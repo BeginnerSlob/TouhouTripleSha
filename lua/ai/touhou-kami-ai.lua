@@ -1315,3 +1315,51 @@ sgs.ai_skill_askforyiji.thsisui = sgs.ai_skill_askforyiji.nosyiji
 
 --湛樱：锁定技，你始终跳过你的摸牌阶段；你的手牌上限+4。
 --standard-ai.lua SmartAI:willSkipDrawPhase
+
+--陆离：当你对体力值不小于你的一名其他角色造成伤害，或一名体力值不小于你的其他角色对你造成伤害时，你可以弃置一张黑色手牌令你造成的伤害+1；或弃置一张红色手牌令你受到的伤害-1。
+sgs.ai_skill_cardask["@thluli-increase"] = function(self, data)
+	local damage = data:toDamage()
+	local target = damage.to
+	if self:isFriend(target) then return "." end
+	if self:hasSilverLionEffect(target) then return "." end
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	self:sortByKeepValue(cards)
+	for _, card in ipairs(cards) do
+		if card:isBlack() then return "$" .. card:getEffectiveId() end
+	end
+	return "."
+end
+
+sgs.ai_skill_cardask["@thluli-decrease"] = function(self, data)
+	local damage = data:toDamage()
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	self:sortByKeepValue(cards)
+	if damage.card and damage.card:isKindOf("Slash") then
+		if self:hasHeavySlashDamage(damage.from, damage.card, self.player) then
+			for _, card in ipairs(cards) do
+				if card:isRed() then return "$" .. card:getEffectiveId() end
+			end
+		end
+	end
+	if self:getDamagedEffects(self.player, damage.from) and damage.damage <= 1 then return "." end
+	if self:needToLoseHp(self.player, damage.from) and damage.damage <= 1 then return "." end
+	for _, card in ipairs(cards) do
+		if card:isRed() then return "$" .. card:getEffectiveId() end
+	end
+	return "."
+end
+
+function sgs.ai_cardneed.thluli(to, card)
+	return to:getHandcardNum() < 4 and (to:getHp() >= 3 or card:isRed())
+end
+
+--诡幻：限定技，若你的身份不是君主，当你杀死一名身份不是君主的其他角色，在其翻开身份牌之前，你可以与该角色交换身份牌。
+sgs.ai_skill_invoke.thguihuan = function(self, data)
+	local target = data:toPlayer()
+	local target_role = sgs.evaluatePlayerRole(target)
+	local self_role = self.player:getRole()
+	if target_role == "renegade" or target_role == "neutral" then return false end
+	local process = sgs.gameProcess(self.room)
+	return (target_role == "rebel" and self.role ~= "rebel" and process:match("rebel"))
+			or (target_role == "loyalist" and self.role ~= "loyalist" and process:match("loyal"))
+end
