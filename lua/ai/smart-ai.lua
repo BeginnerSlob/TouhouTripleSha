@@ -4038,7 +4038,7 @@ function SmartAI:damageIsEffective(to, nature, from)
 	return self:damageIsEffective_(damageStruct)
 end
 
-function SmartAI:damageIsEffective_(damageStruct)
+function SmartAI:damageIsEffective_(damageStruct, return_num)
 	if type(damageStruct) ~= "table" and type(damageStruct) ~= "DamageStruct" and type(damageStruct) ~= "userdata" then self.room:writeToConsole(debug.traceback()) return end
 	if not damageStruct.to then self.room:writeToConsole(debug.traceback()) return end
 	local player = damageStruct.to or self.player
@@ -4046,13 +4046,15 @@ function SmartAI:damageIsEffective_(damageStruct)
 	local damage = damageStruct.damage or 1
 	local source = damageStruct.from or self.room:getCurrent()
 
-	if source:hasSkill("ikxuwu") then return true end
+	if source:hasSkill("ikxuwu") then return not return_num or damage end
 
 	if player:getMark("zhehui") > 0 then return false end
+	if player:getMark("thhuanxiang") > 0 then return false end
 	if player:getMark("@fog") > 0 and nature ~= sgs.DamageStruct_Thunder then return false end
 	if player:hasSkill("shixin") and nature == sgs.DamageStruct_Fire then return false end
 	if (player:hasSkill("thhanpo") or source:hasSkill("thhanpo")) and nature == sgs.DamageStruct_Fire then return false end
 	if player:hasSkill("thmingling") and nature == sgs.DamageStruct_Fire then return false end
+	if player:hasSkill("thmingling") and nature == sgs.DamageStruct_Thunder then damage = damage + 1 end
 	local equipsToDec = source:objectName() == self.player:objectName() and self.equipsToDec or 0
 	if player:hasSkill("mingshi") and source:getEquips():length() - equipsToDec <= math.min(2, player:getEquips():length()) then
 		damage = damage - 1
@@ -4083,7 +4085,7 @@ function SmartAI:damageIsEffective_(damageStruct)
 		end
 	end
 
-	return true
+	return not return_num or damage
 end
 
 function SmartAI:getDamagedEffects(player, damage_from, isSlash)
@@ -5676,52 +5678,52 @@ function SmartAI:useEquipCard(card, use)
 end
 
 function SmartAI:damageMinusHp(self, enemy, type)
-		local trick_effectivenum = 0
-		local slash_damagenum = 0
-		local analepticpowerup = 0
-		local effectivefireattacknum = 0
-		local basicnum = 0
-		local notpeaches = 0
-		local cards = self.player:getCards("he")
-		cards = sgs.QList2Table(cards)
-		for _, acard in ipairs(cards) do
-			if acard:isKindOf("Peach") then
-				continue
-			end
-			if acard:getTypeId() == sgs.Card_TypeBasic then basicnum = basicnum + 1 end
-			notpeaches = notpeaches + 1
+	local trick_effectivenum = 0
+	local slash_damagenum = 0
+	local analepticpowerup = 0
+	local effectivefireattacknum = 0
+	local basicnum = 0
+	local notpeaches = 0
+	local cards = self.player:getCards("he")
+	cards = sgs.QList2Table(cards)
+	for _, acard in ipairs(cards) do
+		if acard:isKindOf("Peach") then
+			continue
 		end
-		for _, acard in ipairs(cards) do
-			if ((acard:isKindOf("Duel") or acard:isKindOf("SavageAssault") or acard:isKindOf("ArcheryAttack") or acard:isKindOf("FireAttack"))
-			and not self.room:isProhibited(self.player, enemy, acard))
-			or ((acard:isKindOf("SavageAssault") or acard:isKindOf("ArcheryAttack")) and self:aoeIsEffective(acard, enemy)) then
-				if acard:isKindOf("FireAttack") then
-					if not enemy:isKongcheng() then
-					effectivefireattacknum = effectivefireattacknum + 1
-					else
-					trick_effectivenum = trick_effectivenum -1
-					end
-				end
-				trick_effectivenum = trick_effectivenum + 1
-			elseif acard:isKindOf("Slash") and self:slashIsEffective(acard, enemy) and (slash_damagenum == 0 or self:hasCrossbowEffect())
-				and self.player:inMyAttackRange(enemy) then
-				if not (enemy:hasSkill("xiangle") and basicnum < 2) and not (self.player:hasFlag("jianmoinvoke") and notpeaches < 2) then
-					slash_damagenum = slash_damagenum + 1
-				end
-				if self:getCardsNum("Analeptic") > 0 and analepticpowerup == 0
-					and not (self:hasSilverLionEffect(enemy) or self:hasEightDiagramEffect(enemy)) then
-						slash_damagenum = slash_damagenum + 1
-						analepticpowerup = analepticpowerup + 1
-				end
-				if self.player:hasWeapon("guding_blade")
-					and (enemy:isKongcheng() or (self.player:hasSkill("thjinlu") and enemy:isMale() and not enemy:hasSkill("ikjingyou")))
-					and not self:hasSilverLionEffect(enemy) then
-					slash_damagenum = slash_damagenum + 1
+		if acard:getTypeId() == sgs.Card_TypeBasic then basicnum = basicnum + 1 end
+		notpeaches = notpeaches + 1
+	end
+	for _, acard in ipairs(cards) do
+		if ((acard:isKindOf("Duel") or acard:isKindOf("SavageAssault") or acard:isKindOf("ArcheryAttack") or acard:isKindOf("FireAttack"))
+		and not self.room:isProhibited(self.player, enemy, acard))
+		or ((acard:isKindOf("SavageAssault") or acard:isKindOf("ArcheryAttack")) and self:aoeIsEffective(acard, enemy)) then
+			if acard:isKindOf("FireAttack") then
+				if not enemy:isKongcheng() then
+				effectivefireattacknum = effectivefireattacknum + 1
+				else
+				trick_effectivenum = trick_effectivenum -1
 				end
 			end
+			trick_effectivenum = trick_effectivenum + 1
+		elseif acard:isKindOf("Slash") and self:slashIsEffective(acard, enemy) and (slash_damagenum == 0 or self:hasCrossbowEffect())
+			and self.player:inMyAttackRange(enemy) then
+			if not (enemy:hasSkill("xiangle") and basicnum < 2) and not (self.player:hasFlag("jianmoinvoke") and notpeaches < 2) then
+				slash_damagenum = slash_damagenum + 1
+			end
+			if self:getCardsNum("Analeptic") > 0 and analepticpowerup == 0
+				and not (self:hasSilverLionEffect(enemy) or self:hasEightDiagramEffect(enemy)) then
+					slash_damagenum = slash_damagenum + 1
+					analepticpowerup = analepticpowerup + 1
+			end
+			if self.player:hasWeapon("guding_blade")
+				and (enemy:isKongcheng() or (self.player:hasSkill("thjinlu") and enemy:isMale() and not enemy:hasSkill("ikjingyou")))
+				and not self:hasSilverLionEffect(enemy) then
+				slash_damagenum = slash_damagenum + 1
+			end
 		end
-		if type == 0 then return (trick_effectivenum + slash_damagenum - effectivefireattacknum - enemy:getHp())
-		else return (trick_effectivenum + slash_damagenum - enemy:getHp()) end
+	end
+	if type == 0 then return (trick_effectivenum + slash_damagenum - effectivefireattacknum - enemy:getHp())
+	else return (trick_effectivenum + slash_damagenum - enemy:getHp()) end
 	return -10
 end
 

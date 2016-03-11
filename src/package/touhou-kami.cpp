@@ -2344,7 +2344,6 @@ public:
             room->broadcastSkillInvoke(objectName());
             room->removePlayerMark(player, "@lijian");
             room->addPlayerMark(player, "@lijianused");
-            room->addPlayerMark(player, objectName());
             return true;
         }
         return false;
@@ -2361,7 +2360,7 @@ public:
         pattern[0] = pattern[0].toUpper();
         pattern.prepend(".");
         foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-            const Card *card = room->askForCard(p, pattern, "@thlijian-give", QVariant(), Card::MethodNone);
+            const Card *card = room->askForCard(p, pattern, "@thlijian-give:" + player->objectName(), QVariant(), Card::MethodNone);
             if (card) {
                 CardMoveReason reason(CardMoveReason::S_REASON_GIVE, p->objectName(), player->objectName(), objectName(), QString());
                 room->obtainCard(player, card, reason);
@@ -2527,11 +2526,11 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         if (player->getMark(objectName()) > 0) {
             room->broadcastSkillInvoke(objectName());
             room->sendCompulsoryTriggerLog(player, objectName());
-        } else if (player->askForSkillInvoke(objectName())) {
+        } else if (player->askForSkillInvoke(objectName(), data)) {
             room->removePlayerMark(player, "@huanxiang");
             room->addPlayerMark(player, "@huanxiangused");
             room->broadcastSkillInvoke(objectName());

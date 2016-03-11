@@ -1493,3 +1493,143 @@ end
 
 --飞影：锁定技，当其他角色计算与你的距离时，始终+1。
 --无
+
+--离剑：限定技，准备阶段开始时，你可以展示一张手牌，所有其他角色须依次选择一项：交给你一张与此牌类型相同的牌；或受到你对其造成的1点伤害。
+sgs.ai_skill_invoke.thlijian = function(self, data)
+	local good, bad = 0, 0
+	local lord = self.room:getLord()
+	if self.role ~= "rebel" and lord and self:isWeak(lord) and self.player:objectName() ~= lord:objectName() then return false end
+	for _, player in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+		if self:isWeak(player) then
+			if self:isFriend(player) then bad = bad + 1
+			else good = good + 1
+			end
+		end
+	end
+	if good == 0 then return end
+
+	for _, player in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+		local hp = math.max(player:getHp(), 1)
+		if self:isFriend(player) then good = good + 1.0 / hp
+		else bad = bad + 1.0 / hp
+		end
+
+		if self:isFriend(player) then good = good + math.max(getCardsNum("Peach", player, self.player), 1)
+		else bad = bad + math.max(getCardsNum("Peach", player, self.player), 1)
+		end
+	end
+
+	if good > bad then return true end
+end
+
+sgs.ai_skill_cardask["@thlijian-give"] = function(self, data, pattern, target)
+	local pattern_map = {
+		[".Basic"] = "basic",
+		[".Equip"] = "equip",
+		[".Trick"] = "trick"
+	}
+	
+	local card_type = pattern_map[pattern]
+	local cards = sgs.QList2Table(self.player:getCards("he"))
+	if self:isFriend(target) then
+		self:sortByUseValue(cards)
+		for _, c in ipairs(cards) do
+			if c:getType() == card_type then
+				return "$" .. card:getEffectiveId()
+			end
+		end
+	else
+		self:sortByKeepValue(cards)
+		for _, c in ipairs(cards) do
+			if c:getType() == card_type and not self:isValuableCard(c, target) then
+				return "$" .. card:getEffectiveId()
+			end
+		end
+	end
+end
+
+--死枪：限定技，出牌阶段，你可以选择一名其他角色，令其不能使用或打出牌，直到回合结束。
+local thsiqiang_skill = {}
+thsiqiang_skill.name = "thsiqiang"
+table.insert(sgs.ai_skills, thsiqiang_skill)
+thsiqiang_skill.getTurnUseCard = function(self)
+	if self.player:getMark("@siqiang") > 0 then
+		self:sortEnemies(self.enemies)
+		for _, enemy in ipairs(self.enemies) do
+			if self:objectiveLevel(enemy) > 3 and not enemy:isKongcheng() and self:damageMinusHp(self, enemy, 0) >= 0 then
+				return sgs.Card_Parse("@ThSiqiangCard=.")
+			end
+		end
+	end
+end
+
+sgs.ai_skill_use_func.ThSiqiangCard = function(card, use, self)
+	self:sortEnemies(self.enemies)
+	for _, enemy in ipairs(self.enemies) do
+		if self:objectiveLevel(enemy) > 3 and not enemy:isKongcheng() and self:damageMinusHp(self, enemy, 0) >= 0 then
+			use.card = card
+			if use.to then
+				use.to:append(enemy)
+			end
+			return
+		end
+	end
+end
+
+sgs.ai_use_priority.ThSiqiangCard = 8
+sgs.ai_card_intention.ThSiqiangCard = 100
+
+--戒符：限定技，出牌阶段，你可弃置一名其他角色装备区的所有牌，然后令其全部的人物技能无效，直到回合结束。
+local thjiefu_skill = {}
+thjiefu_skill.name = "thjiefu"
+table.insert(sgs.ai_skills, thjiefu_skill)
+thjiefu_skill.getTurnUseCard = function(self)
+	if self.player:getMark("@jiefu") > 0 then
+		local target = self.player:getTag("ThSiqiangTarget"):toPlayer()
+		if target and (target:getArmor() and not self:needToThrowArmor(target) or target:hasSkills(sgs.masochism_skill)) then
+			return sgs.Card_Parse("@ThJiefuCard=.")
+		end
+		if not self.player:hasSkill("thsiqiang") or self.player:getMark("@siqiang") == 0 then
+			self:sortEnemies(self.enemies)
+			for _, enemy in ipairs(self.enemies) do
+				if self:objectiveLevel(enemy) > 3 and (target:getArmor() and not self:needToThrowArmor(target)) then
+					return sgs.Card_Parse("@ThJiefuCard=.")
+				end
+			end
+		end
+	end
+end
+
+sgs.ai_skill_use_func.ThJiefuCard = function(card, use, self)
+	local target = self.player:getTag("ThSiqiangTarget"):toPlayer()
+	if target and (target:getArmor() and not self:needToThrowArmor(target) or target:hasSkills(sgs.masochism_skill)) then
+		use.card = card
+		if use.to then
+			use.to:append(target)
+		end
+		return
+	end
+	if not self.player:hasSkill("thsiqiang") or self.player:getMark("@siqiang") == 0 then
+		self:sortEnemies(self.enemies)
+		for _, enemy in ipairs(self.enemies) do
+			if self:objectiveLevel(enemy) > 3 and (enemy:getArmor() and not self:needToThrowArmor(enemy)) then
+				use.card = card
+				if use.to then
+					use.to:append(enemy)
+				end
+				return
+			end
+		end
+	end
+end
+
+sgs.ai_use_priority.ThJiefuCard = 7.8
+sgs.ai_card_intention.ThJiefuCard = 60
+
+--幻乡：限定技，当你受到伤害结算开始时，你可以防止此伤害，且将你的体力回复至3点；然后你不能成为其他角色的牌的目标，且每当你受到伤害结算开始时，防止该伤害，直到你的下回合开始。
+sgs.ai_skill_invoke.thhuanxiang = function(self, data)
+	local damage = data:toDamage()
+	if self:damageIsEffective_(damage, true) >= self.player:getHp() then
+		return true
+	end
+end
