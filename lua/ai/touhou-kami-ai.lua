@@ -1049,3 +1049,205 @@ sgs.ai_cardneed.thbaihun = function(to, card)
 end
 
 sgs.ai_card_intention.ThBaihunCard = 998
+
+--虚境：你的回合外，每当你成为以下牌的目标后，你可以失去一项人物技能并摸一张牌，然后令此牌的使用者获得相应技能，直到你的下一个回合结束：1.黑色非延时类锦囊牌-“幻葬”和“暗月”；2.你的【桃】或【酒】-“霁风”和“隙境”。
+sgs.ai_skill_invoke.thxujing = function(self, data)
+	local has_useless_skill = false
+	for _, skill in sgs.qlist(self.player:getVisibleSkillList()) do
+		if skill:isAttachedLordSkill() or skill:objectName() == "thxujing" or skill:objectName() == "thlingyun" then
+			continue
+		end
+		if skill:objectName() == "thzhaoai" then
+			if #self.friends_noself == 0 and #self.enemies == self.player:aliveCount() - 1 then
+				has_useless_skill = true
+				break
+			else
+				continue
+			end
+		end
+		has_useless_skill = true
+		break
+	end
+	if not has_useless_skill then
+		return false
+	end
+	local target = data:toCardUse().from
+	if target:objectName() == self.player:objectName() then
+		return has_useless_skill
+	end
+	if not target or target:isDead() or self:isEnemy(target) then
+		return has_useless_skill
+	end
+	return false
+end
+
+sgs.ai_skill_choice.thxujing = function(self, choices, data)
+	local skills = {}
+	local discard_zhaoai = false
+	for _, skill in sgs.qlist(self.player:getVisibleSkillList()) do
+		if skill:isAttachedLordSkill() or skill:objectName() == "thxujing" or skill:objectName() == "thlingyun" then
+			continue
+		end
+		if skill:objectName() == "thzhaoai" then
+			if #self.friends_noself == 0 and #self.enemies == self.player:aliveCount() - 1 then
+				discard_zhaoai = true
+			else
+				continue
+			end
+		end
+		table.insert(skills, skill:objectName())
+	end
+	if #skills > 0 then
+		return table.contains(skills, "thsanling") and "thsanling" or skills[math.random(1, #skills)]
+	end
+	if discard_zhaoai then
+		return "thzhaoai"
+	end
+	self.room:writeToConsole("ThXujing No Skill!")
+end
+
+sgs.ai_choicemade_filter.skillInvoke.thxujing = function(self, player, promptlist)
+	local has_useless_skill = false
+	for _, skill in sgs.qlist(player:getVisibleSkillList()) do
+		if skill:isAttachedLordSkill() or skill:objectName() == "thxujing" or skill:objectName() == "thlingyun" then
+			continue
+		end
+		if skill:objectName() == "thzhaoai" then
+			if #self:getFriendsNoself(player) == 0 and #self:getEnemies(player) == player:aliveCount() - 1 then
+				has_useless_skill = true
+				break
+			else
+				continue
+			end
+		end
+		has_useless_skill = true
+		break
+	end
+	local target = player:getTag("ThXujingTarget"):toCardUse().from
+	local invoke = (promptlist[#promptlist] == "yes")
+	if invoke then
+		if target and target:isAlive() and player:objectName() ~= target:objectName() then
+			local intention = has_useless_skill and 40 or 100
+			sgs.updateIntention(player, target, intention)
+		end
+	else
+		if target and target:isAlive() and player:objectName() ~= target:objectName() then
+			local intention = has_useless_skill and -20 or 0
+			sgs.updateIntention(player, target, intention)
+		end
+	end
+end
+
+--灵殒：出牌阶段，若你不拥有相应技能，你可以弃置一张牌，并获得该技能，视为使用以下一张牌：1.【绯想镜诗】－“崩坏”；2.【碎月绮斗】－“散灵”；3.【妙手探云】－“心殇”；4.【赤雾锁魂】－“禁恋”。
+local thlingyun_skill = {}
+thlingyun_skill.name = "thlingyun"
+table.insert(sgs.ai_skills, thlingyun_skill)
+thlingyun_skill.getTurnUseCard = function(self)
+	if not self.player:canDiscard(self.player, "he") then return end
+	local cards = sgs.QList2Table(self.player:getCards("he"))
+	self:sortByUseValue(cards, true)
+	for _, c in ipairs(cards) do
+		return sgs.Card_Parse("@ThLingyunCard=" .. c:getEffectiveId())
+	end
+end
+
+sgs.ai_skill_use_func.ThLingyunCard = function(card, use, self)
+	local original_card = sgs.Sanguosha:getCard(card:getEffectiveId())
+	--ex_nihilo
+	if not self.player:hasSkill("ikbenghuai") and self:getUseValue(original_card) < sgs.ai_use_value.ExNihilo then
+		local ex_nihilo = sgs.cloneCard("ex_nihilo")
+		ex_nihilo:setSkillName("_thlingyun")
+		if ex_nihilo:isAvailable(self.player) and not self.player:isCardLimited(ex_nihilo, sgs.Card_MethodUse) then
+			local dummy_use = { isDummy = true, to = sgs.SPlayerList() }
+			self:useCardExNihilo(ex_nihilo, dummy_use)
+			if dummy_use.card then
+				use.card = sgs.Card_Parse("@ThLingyunCard=" .. original_card:getEffectiveId() .. ":ex_nihilo")
+				if use.to then
+					use.to = dummy_use.to
+				end
+				return
+			end
+		end
+	end
+	--iron_chain
+	if not self.player:hasSkill("ikjinlian") and self:getUseValue(original_card) < sgs.ai_use_value.IronChain then
+		local iron_chain = sgs.cloneCard("iron_chain")
+		iron_chain:setSkillName("_thlingyun")
+		if iron_chain:isAvailable(self.player) and not self.player:isCardLimited(iron_chain, sgs.Card_MethodUse) then
+			local dummy_use = { isDummy = true, to = sgs.SPlayerList() }
+			self:useCardIronChain(iron_chain, dummy_use)
+			if dummy_use.card then
+				use.card = sgs.Card_Parse("@ThLingyunCard=" .. original_card:getEffectiveId() .. ":iron_chain")
+				if use.to then
+					use.to = dummy_use.to
+				end
+				return
+			end
+		end
+	end
+	--snatch
+	if not self.player:hasSkill("ikxinshang") and self:getUseValue(original_card) < sgs.ai_use_value.Snatch then
+		local snatch = sgs.cloneCard("snatch")
+		snatch:setSkillName("_thlingyun")
+		if snatch:isAvailable(self.player) and not self.player:isCardLimited(snatch, sgs.Card_MethodUse) then
+			local dummy_use = { isDummy = true, to = sgs.SPlayerList() }
+			self:useCardSnatchOrDismantlement(snatch, dummy_use)
+			if dummy_use.card then
+				use.card = sgs.Card_Parse("@ThLingyunCard=" .. original_card:getEffectiveId() .. ":snatch")
+				if use.to then
+					use.to = dummy_use.to
+				end
+				return
+			end
+		end
+	end
+	--duel
+	local n = 0
+	for _, skill in sgs.qlist(self.player:getVisibleSkillList()) do
+		if skill:isAttachedLordSkill() then continue end
+		n = n + 1
+	end
+	if not self.player:hasSkill("thsanling") and n >= 5 and #self.friends_noself > 0 then
+		local duel = sgs.cloneCard("duel")
+		duel:setSkillName("_thlingyun")
+		if duel:isAvailable(self.player) and not self.player:isCardLimited(duel, sgs.Card_MethodUse) then
+			local dummy_use = { isDummy = true, to = sgs.SPlayerList() }
+			self:useCardDuel(duel, dummy_use)
+			if dummy_use.card then
+				use.card = sgs.Card_Parse("@ThLingyunCard=" .. original_card:getEffectiveId() .. ":duel")
+				if use.to then
+					use.to = dummy_use.to
+				end
+				return
+			end
+		end
+	end
+end
+
+--朝霭：锁定技，你死亡时，令一名其他角色获得技能“神宝”和“浴火”，并摸X张牌（X为你的技能数量）。
+sgs.ai_skill_playerchosen.thzhaoai = function(self, targets)
+	if #self.friends_noself == 0 then return nil end
+	self:sort(self.friends_noself, "defense")
+	for _, p in ipairs(self.friends_noself) do
+		if self:objectiveLevel(p) <= -2 then
+			if not p:hasSkills("thshenbao+thyuhuo") then
+				return p
+			end
+		end
+	end
+	for _, p in ipairs(self.friends_noself) do
+		if self:objectiveLevel(p) <= -2 then
+			if not p:hasSkill("thshenbao") or not p:hasSkill("thyuhuo") then
+				return p
+			end
+		end
+	end
+	for _, p in ipairs(self.friends_noself) do
+		if self:objectiveLevel(p) <= -2 then
+			return p
+		end
+	end
+	return self.friends_noself[1]
+end
+
+sgs.ai_playerchosen_intention.thzhaoai = -150

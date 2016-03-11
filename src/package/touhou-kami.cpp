@@ -1528,13 +1528,16 @@ public:
     }
 };
 
-class ThXujing: public TriggerSkill {
+class ThXujing: public TriggerSkill
+{
 public:
-    ThXujing(): TriggerSkill("thxujing") {
+    ThXujing(): TriggerSkill("thxujing")
+    {
         events << TargetConfirmed;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
         if (!TriggerSkill::triggerable(player))
             return QStringList();
         if (room->getCurrent() == player && player->getPhase() != Player::NotActive)
@@ -1549,8 +1552,12 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        if (player->askForSkillInvoke(objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        player->tag["ThXujingTarget"] = QVariant::fromValue(data);
+        bool invoke = player->askForSkillInvoke(objectName(), data);
+        player->tag.remove("ThXujingTarget");
+        if (invoke) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
