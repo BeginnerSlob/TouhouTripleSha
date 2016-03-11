@@ -2272,7 +2272,7 @@ public:
             QString old_kingdom = target->getKingdom();
             kingdomList.removeOne(old_kingdom);
             if (kingdomList.isEmpty()) return false;
-            QString kingdom = room->askForChoice(player, objectName(), kingdomList.join("+"));
+            QString kingdom = room->askForChoice(player, "thzhizun_kingdom", kingdomList.join("+"), QVariant::fromValue(target));
             room->setPlayerProperty(target, "kingdom", kingdom);
 
             LogMessage log;
@@ -2299,7 +2299,7 @@ public:
 
         if (!lord_skills.isEmpty()) {
             lord_skills << "cancel";
-            QString skill_name = room->askForChoice(player, objectName(), lord_skills.join("+"));
+            QString skill_name = room->askForChoice(player, "thzhizun_lordskills", lord_skills.join("+"));
 
             if (skill_name != "cancel") {
                 const Skill *skill = Sanguosha->getSkill(skill_name);

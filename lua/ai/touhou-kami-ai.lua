@@ -1363,3 +1363,133 @@ sgs.ai_skill_invoke.thguihuan = function(self, data)
 	return (target_role == "rebel" and self.role ~= "rebel" and process:match("rebel"))
 			or (target_role == "loyalist" and self.role ~= "loyalist" and process:match("loyal"))
 end
+
+--至尊：准备阶段和结束阶段开始时，你可以改变一名其他角色的势力属性，然后可以获得一项技能（你只能以此法获得“心契”、“唤卫”、“济援”、“御姬”、“华袛”、“颂威”、“春度”或“舞华”，且无法获得场上其他存活角色拥有的以上技能）。
+sgs.ai_skill_invoke.thzhizun = true
+
+sgs.thzhizun_kingdoms_map = {
+	["thfeizhan"] = "hana",
+	["thchundu"] = "yuki",
+	["thhuadi"] = "kaze",
+	["thtianchan"] = "hana",
+	["thfuyue"] = "yuki",
+	["ikjiyuan"] = "yuki",
+	["ikwuhua"] = "tsuki",
+	["ikyuji"] = "tsuki",
+	["iksongwei"] = "hana",
+	["ikhuanwei"] = "hana",
+	["ikxinqi"] = "kaze",
+	["ikbiansheng"] = "yuki",
+	["thxinhua"] = "kaze",
+	["thyejun"] = "tsuki",
+	["thyunyin"] = "tsuki"
+}
+
+local function findPlayerForModifyKingdom(self, players)
+	if players and not players:isEmpty() then
+		for _, player in sgs.qlist(players) do
+			if player:hasSkill("huashen") then continue end
+			local good_table, bad_table = {}, {}
+			for _, lord in sgs.qlist(self.room:getOtherPlayers(player)) do
+				if self:isFriend(lord) then
+					for skill, kingdom in pairs(sgs.thzhizun_kingdoms_map) do
+						if lord:hasLordSkill(skill) then
+							table.insert(good_table, kingdom)
+						end
+					end
+				else
+					for skill, kingdom in pairs(sgs.thzhizun_kingdoms_map) do
+						if lord:hasLordSkill(skill) and (skill == "thfeizhan" or skill == "thchundu") then
+							table.insert(bad_table, kingdom)
+						end
+					end
+				end
+			end
+			if self:isFriend(player) and table.contains(good_table, player:getKingdom()) then
+				continue
+			end
+			if not self:isFriend(player) and not table.contains(bad_table, player:getKingdom()) then
+				continue
+			end
+			return player
+		end
+		for _, player in sgs.qlist(players) do
+			if player:hasLordSkill("thfeizhan") then
+				for _, liege in sgs.qlist(self.room:getOtherPlayers(player)) do
+					local isGood = self:isFriend(player)
+					local goodKingdom = liege:getKingdom() == "hana"
+					if isGood ~= goodKingdom then
+						return liege
+					end
+				end
+			end
+		end
+		for _, player in sgs.qlist(players) do
+			if player:hasLordSkill("thchundu") then
+				for _, liege in sgs.qlist(self.room:getOtherPlayers(player)) do
+					local isGood = self:isFriend(player)
+					local goodKingdom = liege:getKingdom() == "yuki"
+					if isGood ~= goodKingdom then
+						return liege
+					end
+				end
+			end
+		end
+	end
+	return nil
+end
+
+local function chooseKingdomForPlayer(self, to_modify)
+	for _, lord in sgs.qlist(self.room:getOtherPlayers(to_modify)) do
+		if self:isFriend(lord) then
+			for skill, kingdom in pairs(sgs.thzhizun_kingdoms_map) do
+				if lord:hasLordSkill(skill) and to_modify:getKingdom() ~= kingdom then
+					return kingdom
+				end
+			end
+		end
+	end
+	for _, lord in sgs.qlist(self.room:getOtherPlayers(to_modify)) do
+		local enabled_kingdoms = { "kaze", "hana", "yuki", "tsuki" }
+		table.removeOne(enabled_kingdoms, to_modify:getKingdom())
+		for skill, kingdom in pairs(sgs.thzhizun_kingdoms_map) do
+			if lord:hasLordSkill(skill)
+					and (self:isFriend(to_modify, lord) or skill == "thfeizhan" or skill == "thchundu")
+					and table.contains(enabled_kingdoms, kingdom) then
+				table.removeOne(enabled_kingdoms, kingdom)
+			end
+		end
+		if #enabled_kingdoms == 0 then
+			self.room:writeToConsole("Error ThZhizun Kingdom Target!")
+			return
+		end
+		for _, lord in ipairs(self.friends) do
+			for skill, kingdom in pairs(sgs.thzhizun_kingdoms_map) do
+				if lord:hasLordSkill(skill) and table.contains(enabled_kingdoms, kingdom) then
+					return kingdom
+				end
+			end
+		end
+		return enabled_kingdoms[math.random(1, #enabled_kingdoms)]
+	end
+end
+
+sgs.ai_skill_choice.thzhizun_kingdom = function(self, choices, data)
+	local to_modify = data:toPlayer()
+	return chooseKingdomForPlayer(self, to_modify)
+end
+
+sgs.ai_skill_choice.thzhizun_lordskills = function(self, choices)
+	if choices:match("thfeizhan") and not self.room:getLieges("hana", self.player):isEmpty() then return "thfeizhan" end
+	if choices:match("thchundu") and not self.room:getLieges("yuki", self.player):isEmpty() then return "thchundu" end
+	return choices:split("+")[1]
+end
+
+sgs.ai_skill_playerchosen.thzhizun = function(self, players)
+	if players and not players:isEmpty() then
+		return findPlayerForModifyKingdom(self, players)
+	end
+end
+
+--飞影：锁定技，当其他角色计算与你的距离时，始终+1。
+--无
