@@ -1018,7 +1018,7 @@ sgs.ai_skill_askforyiji.nosyiji = function(self, card_ids)
 	end
 	local id = card_ids[1]
 
-	local card, friend = self:getCardNeedPlayer(cards)
+	local card, friend = self:getCardNeedPlayer(cards, self.friends)
 	if card and friend and table.contains(available_friends, friend) then return friend, card:getId() end
 	if #available_friends > 0 then
 		self:sort(available_friends, "handcard")

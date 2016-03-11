@@ -569,7 +569,7 @@ function SmartAI:getUseValue(card)
 		if self.player:hasSkill("nosjizhi") then v = v + 4 end
 		if self.player:hasSkill("thtianque") and self.player:getMark("thqianque_trick") == 0 and self.player:getPhase() == sgs.Player_Play then v = v + 4 end
 		if self.player:hasSkill("jizhi") then v = v + 3 end
-		if self.player:hasSkill("wumou") and card:isNDTrick() and not card:isKindOf("AOE") then
+		if self.player:hasSkill("ikwumou") and card:isNDTrick() and not card:isKindOf("AOE") then
 			if not (card:isKindOf("Duel") and self.player:hasUsed("WuqianCard")) then v = 1 end
 		end
 	end
@@ -2272,7 +2272,8 @@ function SmartAI:askForDiscard(reason, discard_num, min_num, optional, include_e
 		if sgs.Sanguosha:matchExpPattern(pattern, self.player, c) then table.insert(cards, c) end
 	end
 	self:sortByKeepValue(cards)
-	local to_discard, temp = {}, {}
+	local to_discard, temp, never = {}, {}, {}
+	local hands = {}
 
 	local least = min_num
 	if discard_num - min_num > 1 then
@@ -2283,6 +2284,11 @@ function SmartAI:askForDiscard(reason, discard_num, min_num, optional, include_e
 			place = self.room:getCardPlace(card:getEffectiveId())
 			if self.player:hasSkills(sgs.lose_equip_skill) and place == sgs.Player_PlaceEquip then
 				table.insert(temp, card:getEffectiveId())
+				if self.player:handCards():contains(card:getEffectiveId()) then
+					table.insert(hands, card:getEffectiveId())
+				end
+			elseif self.player:handCards():contains(card:getEffectiveId()) and #hands == self.player:getHandcardNum() - 1 then
+				table.insert(never, card:getEffectiveId())
 			elseif self:getKeepValue(card) >= 4.1 then
 				table.insert(temp, card:getEffectiveId())
 			else
@@ -2293,6 +2299,12 @@ function SmartAI:askForDiscard(reason, discard_num, min_num, optional, include_e
 	end
 	if #to_discard < discard_num then
 		for _, id in ipairs(temp) do
+			table.insert(to_discard, id)
+			if #to_discard == discard_num then return to_discard end
+		end
+	end
+	if #to_discard < discard_num then
+		for _, id in ipairs(never) do
 			table.insert(to_discard, id)
 			if #to_discard == discard_num then return to_discard end
 		end
@@ -2327,7 +2339,7 @@ function SmartAI:askForNullification(trick, from, to, positive, isHeg)
 	if self.player:isLocked(null_card) and not isHeg then return nil end
 	if (from and from:isDead()) or (to and to:isDead()) then return nil end
 	if self:needBear() and not isHeg then return nil end
-	if self.player:hasSkill("wumou") and not isHeg then
+	if self.player:hasSkill("ikwumou") and not isHeg then
 		if self.player:getMark("@wrath") == 0 and (self:isWeak() or self.player:isLord()) then return nil end
 		if to:objectName() == self.player:objectName() and not self:isWeak() and (trick:isKindOf("AOE") or trick:isKindOf("Duel") or trick:isKindOf("FireAttack")) then
 			return
@@ -2454,7 +2466,7 @@ function SmartAI:askForNullification(trick, from, to, positive, isHeg)
 					if self.player:hasSkills("jieming|nosyiji|yiji|guixin")
 						and (self.player:getHp() > 1 or self:getCardsNum("Peach") > 0 or self:getCardsNum("Analeptic") > 0) then
 						return nil
-					elseif not self:canAvoidAOE(trick) and not (self.player:hasSkill("wumou") and sgs.ai_skill_choice.wumou(self) == "losehp") then
+					elseif not self:canAvoidAOE(trick) and not (self.player:hasSkill("ikwumou") and sgs.ai_skill_choice.ikwumou(self) == "losehp") then
 						return null_card
 					end
 				end
@@ -2796,7 +2808,7 @@ function sgs.ai_skill_cardask.nullfilter(self, data, pattern, target)
 	if self:getDamagedEffects(self.player, target) or self:needToLoseHp(self.player, target) then return "." end
 	if self:needBear() and self.player:getLostHp() == 0 then return "." end
 	if self.player:hasSkill("zili") and not self.player:hasSkill("paiyi") and self.player:getLostHp() < 2 then return "." end
-	if self.player:hasSkill("wumou") and self.player:getMark("@wrath") < 7 and self.player:getHp() > 2 then return "." end
+	if self.player:hasSkill("ikwumou") and self.player:getMark("@wrath") < 7 and self.player:getHp() > 2 then return "." end
 	if self.player:hasSkill("tianxiang") then
 		local dmgStr = { damage = 1, nature = damage_nature }
 		local willTianxiang = sgs.ai_skill_use["@@tianxiang"](self, dmgStr, sgs.Card_MethodDiscard)
@@ -2989,6 +3001,7 @@ function SmartAI:hasHeavySlashDamage(from, slash, to, return_value)
 		if to:hasSkill("jieyuan") and from:getHp() >= to:getHp()
 			and (to:getHandcardNum() > 3 or getKnownCard(to, self.player, "red") > 0) and not is_friend then dmg = dmg - 1 end
 	end
+	if to:hasSkill("thbingzhang") and to:getCardCount() > 2 then dmg = 0 end
 	if return_value then return dmg end
 	return dmg > 1
 end
@@ -4206,6 +4219,7 @@ function isCard(class_name, card, player)
 		if player:hasSkill("thhuilun") and card:isKindOf("Peach") and card:isRed() and class_name == "Slash" then return true end
 		if player:hasSkill("thhuanjun") and card:isKindOf("Jink") and card:getSuit() == sgs.Card_Diamond and class_name == "Duel" then return true end
 		if player:hasSkill("thhuanjun") and card:isKindOf("Armor") and class_name == "Analeptic" then return true end
+		if player:hasSkill("thjiwu") and card:isKindOf("Peach") and card:isKindOf("Analeptic") and class_name == "Jink" then return true end
 	else
 		if player:hasSkill("wushen") and card:getSuit() == sgs.Card_Heart and class_name ~= "Slash" then return false end
 		if player:hasSkill("jinjiu") and class_name == "Analeptic" then return false end
@@ -4213,6 +4227,7 @@ function isCard(class_name, card, player)
 		if player:hasSkill("thhuilun") and card:isKindOf("Peach") and card:isRed() and class_name ~= "Slash" then return false end
 		if player:hasSkill("thhuanjun") and card:isKindOf("Jink") and card:getSuit() == sgs.Card_Diamond and class_name ~= "Duel" then return false end
 		if player:hasSkill("thhuanjun") and card:isKindOf("Armor") and class_name ~= "Analeptic" then return false end
+		if player:hasSkill("thjiwu") and card:isKindOf("Peach") and card:isKindOf("Analeptic") and class_name ~= "Jink" then return false end
 		if not prohibitUseDirectly(card, player) then return true end
 	end
 	return false
@@ -5127,7 +5142,7 @@ function SmartAI:getAoeValue(card, player)
 	if attacker:hasSkills("shenfen+kuangbao") then
 		forbid_start = false
 		good = good + 3 * enemy_number
-		if not attacker:hasSkill("wumou") then
+		if not attacker:hasSkill("ikwumou") then
 			good = good + 3 * enemy_number
 		end
 		if self.player:getMark("@wrath") > 0 then
@@ -5211,7 +5226,7 @@ end
 function SmartAI:useTrickCard(card, use)
 	if not card then global_room:writeToConsole(debug.traceback()) return end
 	if self:needBear() and not ("amazing_grace|ex_nihilo|snatch|iron_chain|collateral|lure_tiger|known_both"):match(card:objectName()) then return end
-	if self.player:hasSkill("wumou") and self.player:getMark("@wrath") < 7 then
+	if self.player:hasSkill("ikwumou") and self.player:getMark("@wrath") < 7 then
 		if not (card:isKindOf("AOE") or card:isKindOf("DelayedTrick") or card:isKindOf("IronChain"))
 			and not (card:isKindOf("Duel") and self.player:getMark("@wrath") > 0) then return end
 	end
