@@ -1251,3 +1251,67 @@ sgs.ai_skill_playerchosen.thzhaoai = function(self, targets)
 end
 
 sgs.ai_playerchosen_intention.thzhaoai = -150
+
+--五难：每当一名其他角色：1. 使用一张【神惠雨降】或【竹曲谜宝】时2. 于濒死状态回复体力后，若其体力值不小于13. 受到一次火焰伤害后4. 发动【净琉璃镜】使用或打出一张【闪】时5. 使用【杀】对没有手牌的角色造成伤害时你可以选择一项：回复1点体力；或摸一张牌；或弃置该角色的一张牌。
+sgs.ai_skill_invoke.thwunan = true
+
+sgs.ai_skill_choice.thwunan = function(self, choices, data)
+	if self:isWeak() and self.player:isWounded() then
+		return "recover"
+	end
+	local target = data:toPlayer()
+	local players = sgs.SPlayerList()
+	players:append(target)
+	if target and target:isAlive() and self:isEnemy(target) then
+		if target:getHandcardNum() < 3 and self:findPlayerToDiscard("he", true, true, players) then
+			return "discard"
+		end
+	elseif target and target:isAlive() and self:isFriend(target) then
+		if self:findPlayerToDiscard("he", true, true, players) then
+			return "discard"
+		end
+	end
+	if self.player:isWounded() then
+		return "recover"
+	end
+	if target then
+		if (self:getOverflow(target) <= 0 and self.player:canDiscard(target, "h")) or (target:hasEquip() and self.player:canDiscard(target, "e")) then
+			return "discard"
+		end
+	end
+	return "draw"
+end
+
+sgs.ai_choicemade_filter.cardChosen.thwunan = sgs.ai_choicemade_filter.cardChosen.snatch
+
+--散灵：锁定技，一名角色的回合结束后，若你没有手牌，你立即死亡。
+sgs.ai_cardneed.thsanling = function(to, card, self)
+	return not self:needDeath(to) and self:getOverflow(to) < 0
+end
+
+--氷障：每当你受到伤害结算开始时或即将失去体力时，你可以弃置两张牌，然后防止此伤害或此次失去体力。
+sgs.ai_skill_use["@@thbingzhang"] = function(self, prompt, method)
+	local ret = self:askForDiscard("thbingzhang", 2, 2, false, true)
+	if #ret ~= 2 then
+		return "."
+	end
+	if self.player:getCardCount() == 2 then
+		local card1 = sgs.Sanguosha:getCard(ret[1])
+		local card2 = sgs.Sanguosha:getCard(ret[2])
+		if not card1:isKindOf("Jink") and not card2:isKindOf("Jink") then
+			return "."
+		end
+	end
+	return "@ThBingzhangCard=" .. table.concat(ret, "+")
+end
+
+--极武：锁定技，你的【桃】和【酒】均视为【闪】。你的回合外，每当你的【闪】、【桃】或【酒】置入弃牌堆或其他角色每获得你的一张手牌时，你摸一张牌。
+--smart-ai.lua isCard
+
+--祀祟：专属技，准备阶段开始时，你可以令所有其他角色各弃置一张手牌，你从弃牌堆获得这些牌中的至多三张牌，然后你可以依次交给一名其他角色。
+sgs.ai_skill_invoke.thsisui = true
+
+sgs.ai_skill_askforyiji.thsisui = sgs.ai_skill_askforyiji.nosyiji
+
+--湛樱：锁定技，你始终跳过你的摸牌阶段；你的手牌上限+4。
+--standard-ai.lua SmartAI:willSkipDrawPhase

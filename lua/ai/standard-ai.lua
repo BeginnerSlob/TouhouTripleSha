@@ -662,7 +662,8 @@ end
 
 function SmartAI:willSkipDrawPhase(player, no_null)
 	local player = player or self.player
-	if player:isSkipped(sgs.Player_Draw) then return false end
+	if player:isSkipped(sgs.Player_Draw) then return true end
+	if player:hasSkill("thzhanying") then return true end
 	if self.player:containsTrick("YanxiaoCard") or (self.player:hasSkill("qiaobian") and not self.player:isKongcheng()) then return false end
 	local friend_null, friend_snatch_dismantlement = 0, 0
 	if self.player:getPhase() == sgs.Player_Play and self.player:objectName() ~= player:objectName() and self:isFriend(player) then
@@ -2831,7 +2832,7 @@ function SmartAI:hasLiyuEffect(target, slash)
 		and not self:needToLoseHp(target, self.player, true) and not self:getDamagedEffects(target, self.player, true) then return false end
 	if slash:hasFlag("AIGlobal_KillOff") or (target:getHp() == 1 and self:isWeak(target) and self:getSaveNum() < 1) then return false end
 
-	if self.player:hasSkill("wumou") and self.player:getMark("@wrath") == 0 and (self:isWeak() or not self.player:hasSkill("zhaxiang")) then return true end
+	if self.player:hasSkill("ikwumou") and self.player:getMark("@wrath") == 0 and (self:isWeak() or not self.player:hasSkill("zhaxiang")) then return true end
 	if self.player:hasSkills("jizhi|nosjizhi") or (self.player:hasSkill("jilve") and self.player:getMark("@bear") > 0) then return false end
 	if not string.startsWith(self.room:getMode(), "06_") and not sgs.GetConfig("EnableHegemony", false) and self.role ~= "rebel" then
 		for _, friend in ipairs(self.friends_noself) do

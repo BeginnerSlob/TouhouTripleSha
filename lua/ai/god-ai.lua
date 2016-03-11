@@ -113,9 +113,19 @@ function SmartAI:needDeath(player)
 			if self:isEnemy(player, aplayer) then
 				if mark > maxenemymark then maxenemymark = mark end
 			end
-			if maxfriendmark > maxenemymark then return false
-			elseif maxenemymark == 0 then return false
-			else return true end
+			if maxfriendmark <= maxenemymark and maxenemymark ~= 0 then
+				return true
+			end
+		end
+	end
+	if player:hasSkill("thzhaoai") and #self:getFriendsNoself(player) > 0 then
+		local n = 0
+		for _, skill in sgs.qlist(player:getVisibleSkillList()) do
+			if skill:isAttachedLordSkill() then continue end
+			n = n + 1
+		end
+		if n > 5 or (#self:getEnemies(player) == 1 and #self:getFriends(player) + #self:getEnemies(player) == player:aliveCount() and n > 3) then
+			return true
 		end
 	end
 	return false
@@ -743,7 +753,7 @@ sgs.ai_need_damaged.guixin = function(self, attacker, player)
 	return not self:isThJinluTarget(player, drawcards)
 end
 
-sgs.ai_skill_choice.wumou = function(self, choices)
+sgs.ai_skill_choice.ikwumou = function(self, choices)
 	if self.player:hasSkill("zhaxiang") and not self:isWeak() and not (self.player:hasSkill("chanyuan") and self.player:getHp() == 2) then return "losehp" end
 	if self.player:getMark("@wrath") > 6 then return "discard" end
 	if self.player:getHp() + self:getCardsNum("Peach") > 3 then

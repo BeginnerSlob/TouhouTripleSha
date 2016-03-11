@@ -11,7 +11,7 @@ function SmartAI:useCardDrowning(card, use)
 			end
 		end
 	end
-	if not (self.player:hasSkill("wumou") and self.player:getMark("@wrath") < 7) then
+	if not (self.player:hasSkill("ikwumou") and self.player:getMark("@wrath") < 7) then
 		if #equip_enemy > 0 then
 			local function cmp(a, b)
 				return a:getEquips():length() >= b:getEquips():length()

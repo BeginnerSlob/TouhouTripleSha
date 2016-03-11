@@ -816,7 +816,7 @@ sgs.ai_slash_prohibit.thlinyao = function(self, from, to, card)
 	if self:isFriend(to, from) then return false end
 	if not sgs.isJinkAvailable(from, to, card) then return false end
 	local linyaos = self.room:findPlayersBySkillName("thlinyao")
-	for _, p in sgs.qlist(linyaos) do
+	for _, linyao in sgs.qlist(linyaos) do
 		if self:isFriend(to, linyao) and not linyao:faceUp() then
 			return true
 		end
