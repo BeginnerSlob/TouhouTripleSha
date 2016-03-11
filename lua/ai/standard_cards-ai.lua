@@ -907,7 +907,7 @@ sgs.ai_skill_cardask["slash-jink"] = function(self, data, pattern, target)
 			if self:doNotDiscard(self.player, "he", true) then return getJink() end
 			if self.player:getCards("he"):length() == 1 and not self.player:getArmor() then return getJink() end
 			if self.player:hasSkills("jijiu|qingnang") and self.player:getCards("he"):length() > 1 then return "." end
-			if self:canUseJieyuanDecrease(target) then return "." end
+			if self:canUseThLuliDecrease(target) then return "." end
 			if (self:getCardsNum("Peach") > 0 or (self:getCardsNum("Analeptic") > 0 and self:isWeak()))
 				and not self.player:hasSkills("ikyindie+ikguiyue") and not self:willSkipPlayPhase() then
 				return "."
@@ -929,7 +929,7 @@ sgs.ai_skill_cardask["slash-jink"] = function(self, data, pattern, target)
 					or (self.player:getHp() == 1 and #self.friends_noself == 0) then
 				elseif ((self:getCardsNum("Jink") <= getCardsNum("Slash", target, self.player) or self.player:hasSkill("qingnang")) and self.player:getHp() > 1)
 					or (self.player:hasSkill("jijiu") and self:getSuitNum("red", true) > 0)
-					or self:canUseJieyuanDecrease(target) then
+					or self:canUseThLuliDecrease(target) then
 					return "."
 				end
 			end
@@ -1957,7 +1957,7 @@ function SmartAI:getDangerousCard(who)
 	local treasure = who:getTreasure()
 	if treasure and treasure:isKindOf("Jade") and who:getHandcardNum() >= 3 then return treasure:getEffectiveId() end
 	if weapon and weapon:isKindOf("Spear") and who:getHandcardNum() >= 3 and who:hasSkill("paoxiao") then return weapon:getEffectiveId() end
-	if weapon and weapon:isKindOf("Axe") and who:hasSkills("luoyi|nosluoyi|pojun|jiushi|jiuchi|jie||jieyuan") then return weapon:getEffectiveId() end
+	if weapon and weapon:isKindOf("Axe") and who:hasSkills("luoyi|nosluoyi|pojun|jiushi|jiuchi|jie|thluli") then return weapon:getEffectiveId() end
 	if armor and armor:isKindOf("EightDiagram") and who:hasSkills("leiji|nosleiji") then return armor:getEffectiveId() end
 	if weapon and weapon:isKindOf("MoonSpear") and who:hasSkills("guidao|longdan|guicai|nosguicai|jilve|huanshi|qingguo|kanpo") then return weapon:getEffectiveId() end
 	if weapon and who:hasSkill("liegong") and sgs.weapon_range[weapon:getClassName()] >= who:getHp() - 1 then return weapon:getEffectiveId() end

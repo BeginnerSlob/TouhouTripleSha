@@ -2223,8 +2223,11 @@ public:
         return QStringList(objectName());
     }
 
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
-        if (ask_who->askForSkillInvoke(objectName())) {
+    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
+        room->setPlayerFlag(player, "ThGuihuanTarget");
+        bool invoke = ask_who->askForSkillInvoke(objectName());
+        room->setPlayerFlag(player, "-ThGuihuanTarget");
+        if (invoke) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
