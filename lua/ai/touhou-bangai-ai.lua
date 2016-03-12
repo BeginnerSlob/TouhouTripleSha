@@ -526,11 +526,25 @@ sgs.ai_skill_invoke.thzhayou = function(self, data)
 	return self:isEnemy(effect.from) or not self:damageIsEffective(effect.from, nil, self.player)
 end
 
-sgs.ai_skill_cardask["@thzhayou"] = function(self, _, __, target)
+sgs.ai_skill_cardask["@thzhayou"] = function(self, data, pattern, target, target2)
 	if self:isFriend(target) and not self:damageIsEffective(self.player, nil, target) then
 		return "."
 	end
-	return sgs.ai_skill_use.slash(self, "thzhayou")
+	for _, slash in ipairs(self:getCards("Slash")) do
+		if self:isFriend(target2) and self:slashIsEffective(slash, target2) then
+			if self:findLeijiTarget(target2, 50, self.player) then return slash:toString() end
+			if self:getDamagedEffects(target2, self.player, true) then return slash:toString() end
+		end
+
+		local nature = sgs.DamageStruct_Normal
+		if slash:isKindOf("FireSlash") then nature = sgs.DamageStruct_Fire
+		elseif slash:isKindOf("ThunderSlash") then nature = sgs.DamageStruct_Thunder end
+		if self:isEnemy(target2) and self:slashIsEffective(slash, target2) and self:canAttack(target2, self.player, nature)
+			and not self:getDamagedEffects(target2, self.player, true) and not self:findLeijiTarget(target2, 50, self.player) then
+			return slash:toString()
+		end
+	end
+	return "."
 end
 
 --辉轮：锁定技，你的黑色【杀】均视为【桃】；你的红色【桃】均视为【杀】。
