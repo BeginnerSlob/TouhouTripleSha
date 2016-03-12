@@ -99,7 +99,7 @@ function setInitialTables()
 	sgs.save_skill = "jijiu|buyi|ikjieyou|chunlao|longhun"
 	sgs.exclusive_skill = "huilei|duanchang|enyuan|wuhun|zhuiyi|buqu|nosbuqu|nosyiji|yiji|ganglie|vsganglie|nosganglie|guixin|jieming|nosmiji|" ..
 							"thjuedu"
-	sgs.cardneed_skill = "paoxiao|tianyi|xianzhen|shuangxiong|nosjizhi|jizhi|noseguose|guose|duanliang|qixi|qingnang|yinling|nosluoyi|guhuo|nosguhuo|kanpo|" ..
+	sgs.cardneed_skill = "ikyipao|tianyi|xianzhen|shuangxiong|nosjizhi|jizhi|noseguose|guose|duanliang|qixi|qingnang|yinling|nosluoyi|guhuo|nosguhuo|kanpo|" ..
 							"jieyin|renjie|zhiheng|nosrende|ikshenai|nosjujian|guicai|nosguicai|guidao|longhun|luanji|qiaobian|beige|thluli|" ..
 							"mingce|nosfuhun|lirang|xuanfeng|xinzhan|dangxian|bifa|xiaoguo"..
 							"thzhanye|thqiaogong|thguiyu"
@@ -554,7 +554,7 @@ function SmartAI:getUseValue(card)
 		if card:isKindOf("Slash") then
 			if self.player:hasFlag("TianyiSuccess") or self.player:hasFlag("JiangchiInvoke")
 				or self:hasHeavySlashDamage(self.player, card) then v = 8.7 end
-			if self.player:hasWeapon("Crossbow") or self.player:hasSkill("paoxiao") then v = v + 4 end
+			if self.player:hasWeapon("Crossbow") or self.player:hasSkill("ikyipao") then v = v + 4 end
 			if card:getSkillName() == "longdan" and self.player:hasSkill("chongzhen") then v = v + 1 end
 			if card:getSkillName() == "fuhun" then v = v + (self.player:getPhase() == sgs.Player_Play and 1 or -1) end
 		elseif card:isKindOf("Jink") then
@@ -3212,7 +3212,7 @@ function SmartAI:getCardNeedPlayer(cards, friends_table, handcard)
 
 	--Crossbow
 	for _, friend in ipairs(friends) do
-		if friend:hasSkills("longdan|ikchilian|keji") and not friend:hasSkill("paoxiao") and friend:getHandcardNum() >= 2 then
+		if friend:hasSkills("longdan|ikchilian|keji") and not friend:hasSkill("ikyipao") and friend:getHandcardNum() >= 2 then
 			for _, hcard in ipairs(cards) do
 				if hcard:isKindOf("Crossbow") then
 					return hcard, friend
@@ -4489,6 +4489,7 @@ function getCardsNum(class_name, player, from)
 	local diamondcard = 0
 	local clubcard = 0
 	local slashjink = 0
+	local shijiuanal = 0
 
 	for _, card in ipairs(cards) do
 		local flag = nil
@@ -4540,6 +4541,9 @@ function getCardsNum(class_name, player, from)
 			if card:getSuit() == sgs.Card_Club then
 				clubcard = clubcard + 1
 			end
+			if card:isKindOf("Weapon") or card:isNDTrick() then
+				shijiuanal = shijiuanal + 1
+			end
 		end
 	end
 	local ecards = player:getCards("e")
@@ -4563,6 +4567,9 @@ function getCardsNum(class_name, player, from)
 		end
 		if card:getSuit() == sgs.Card_Club then
 			clubcard = clubcard + 1
+		end
+		if card:isKindOf("Weapon") then
+			shijiuanal = shijiuanal + 1
 		end
 	end
 
@@ -4613,6 +4620,8 @@ function getCardsNum(class_name, player, from)
 			return num + 1
 		elseif player:hasSkill("thsibao") then
 			return num + equipcard + (player:getHandcardNum() - shownum) * 0.5
+		elseif player:hasSkill("ikshijiu") then
+			return num + shijiuanal + (player:getHandcardNum() - shownum) * 0.3
 		else
 			return num
 		end
@@ -5349,7 +5358,7 @@ end
 
 function SmartAI:hasCrossbowEffect(player)
 	player = player or self.player
-	return player:hasWeapon("Crossbow") or player:hasSkill("paoxiao")
+	return player:hasWeapon("Crossbow") or player:hasSkill("ikyipao")
 end
 
 function SmartAI:hasSilverLionEffect(player)
@@ -5392,7 +5401,7 @@ function SmartAI:evaluateWeapon(card, player, enemy)
 	local slash_num = player:objectName() == self.player:objectName() and self:getCardsNum("Slash") or getCardsNum("Slash", player, self.player)
 	local analeptic_num = player:objectName() == self.player:objectName() and self:getCardsNum("Analeptic") or getCardsNum("Analeptic", player, self.player)
 	local peach_num = player:objectName() == self.player:objectName() and self:getCardsNum("Peach") or getCardsNum("Peach", player, self.player)
-	if card:isKindOf("Crossbow") and not player:hasSkill("paoxiao") and deltaSelfThreat ~= 0 then
+	if card:isKindOf("Crossbow") and not player:hasSkill("ikyipao") and deltaSelfThreat ~= 0 then
 		deltaSelfThreat = deltaSelfThreat + slash_num * 3 - 2
 		if player:hasSkill("noskurou") then deltaSelfThreat = deltaSelfThreat + peach_num + analeptic_num + self.player:getHp() end
 		if player:getWeapon() and not self:hasCrossbowEffect(player) and not player:canSlashWithoutCrossbow() and slash_num > 0 then
@@ -5527,7 +5536,7 @@ function SmartAI:useEquipCard(card, use)
 				if not friend:getWeapon() then return end
 			end
 		end
-		if self.player:hasSkills("paoxiao|nosfuhun") and card:isKindOf("Crossbow") then return end
+		if self.player:hasSkills("ikyipao|nosfuhun") and card:isKindOf("Crossbow") then return end
 		if not use.to and not self:needKongcheng() and not self.player:hasSkills(sgs.lose_equip_skill) and self:getOverflow() <= (canUseSlash and self.slashAvail or 0)
 			and not canUseSlash and not card:isKindOf("Crossbow") and not card:isKindOf("VSCrossbow") then return end
 		if (self.player:hasSkill("zhiheng") or self.player:hasSkill("jilve") and self.player:getMark("@bear") > 0)

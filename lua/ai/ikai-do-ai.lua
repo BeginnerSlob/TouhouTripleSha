@@ -328,3 +328,55 @@ end
 
 --真红：锁定技，你使用红桃【杀】时无距离限制；你使用方块【杀】指定一名角色为目标后，无视其防具。
 --standard_cards-ai.lua SmartAI:slashIsEffective
+
+--翼咆：出牌阶段，你可以使用任意数量的【杀】。
+--无
+
+--酾酒：你可以将一张武器牌或非延时类锦囊牌当【酒】使用。
+ikshijiu_skill = {}
+ikshijiu_skill.name = "ikshijiu"
+table.insert(sgs.ai_skills, ikshijiu_skill)
+ikshijiu_skill.getTurnUseCard = function(self)
+	local cards = self.player:getCards("he")
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
+		cards:prepend(sgs.Sanguosha:getCard(id))
+	end
+	cards = sgs.QList2Table(cards)
+
+	local card
+
+	self:sortByUseValue(cards, true)
+
+	for _, acard in ipairs(cards) do
+		if acard:isNDTrick() or acard:isKindOf("Weapon") then
+			card = acard
+			break
+		end
+	end
+
+	if not card then return nil end
+	local number = card:getNumberString()
+	local card_id = card:getEffectiveId()
+	local card_str = ("analeptic:ikshijiu[spade:%s]=%d"):format(number, card_id)
+	local analeptic = sgs.Card_Parse(card_str)
+
+	if sgs.Analeptic_IsAvailable(self.player, analeptic) then
+		assert(analeptic)
+		return analeptic
+	end
+end
+
+sgs.ai_view_as.ikshijiu = function(card, player, card_place)
+	local suit = card:getSuitString()
+	local number = card:getNumberString()
+	local card_id = card:getEffectiveId()
+	if card_place == sgs.Player_PlaceHand or card_place == sgs.Player_PlaceEquip then
+		if card:isNDTrick() or card:isKindOf("Weapon") then
+			return ("analeptic:ikshijiu[%s:%s]=%d"):format(suit, number, card_id)
+		end
+	end
+end
+
+function sgs.ai_cardneed.ikshijiu(to, card, self)
+	return (card:isNDTrick() or card:isKindOf("Weapon")) and getCardsNum("Analeptic", to, self.player) < 2
+end
