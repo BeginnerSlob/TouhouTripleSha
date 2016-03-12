@@ -61,7 +61,7 @@ fan_skill.getTurnUseCard = function(self)
 	local slash_card
 
 	for _, card in ipairs(cards) do
-		if card:isKindOf("Slash") and not (card:isKindOf("FireSlash") or card:isKindOf("ThunderSlash")) then
+		if card:objectName() == "slash" then
 			slash_card = card
 			break
 		end
@@ -96,7 +96,7 @@ function sgs.ai_armor_value.vine(player, self, virtual)
 
 	for _, enemy in sgs.qlist(self.room:getOtherPlayers(player)) do
 		if not self:isFriend(enemy, player) then
-			if (enemy:canSlash(player) and (enemy:hasWeapon("fan") or enemy:hasSkill("lihuo"))) or enemy:hasSkills("huoji|longhun") then return -2 end
+			if (enemy:canSlash(player) and (enemy:hasWeapon("fan") or enemy:hasSkill("lihuo") or enemy:hasSkill("ikchilian"))) or enemy:hasSkills("huoji|longhun") then return -2 end
 			if enemy:hasSkill("yeyan") and enemy:getMark("@flame") > 0 then return -2 end
 			if enemy:hasSkills("bossguihuo|bosslianyu") then return -2 end
 			if getKnownCard(enemy, self.player, "FireSlash|FireAttack|Fan") >= 1 then return -2 end
@@ -166,7 +166,7 @@ end
 function SmartAI:shouldUseAnaleptic(target, slash)
 	if sgs.turncount <= 1 and self.role == "renegade" and sgs.isLordHealthy() and self:getOverflow() < 2 then return false end
 	if self:hasSilverLionEffect(target)
-		and not ((self.player:hasWeapon("qinggang_sword") and target:hasArmorEffect("silver_lion")) 
+		and not (((self.player:hasWeapon("qinggang_sword") or (self.player:hasSkill("ikzhenhong") and slash:getSuit() == sgs.Card_Diamond)) and target:hasArmorEffect("silver_lion")) 
 				or self.player:hasSkill("ikxuwu")) then
 		return false
 	end

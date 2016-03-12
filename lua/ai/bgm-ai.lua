@@ -372,10 +372,10 @@ local function will_invoke_shichou(self)
 	local players = self.room:getOtherPlayers(self.player)
 	local shenguanyu = self.room:findPlayerBySkillName("wuhun")
 	if shenguanyu ~= nil then
-		if shenguanyu:getKingdom() == "shu" then return true end
+		if shenguanyu:getKingdom() == "kaze" then return true end
 	end
 	for _, player in sgs.qlist(players) do
-		if player:getKingdom() == "shu" then shu = shu + 1 end
+		if player:getKingdom() == "kaze" then shu = shu + 1 end
 	end
 	if first and shu > 1 then return false end
 	return true
@@ -413,7 +413,7 @@ sgs.ai_skill_use["@@shichou"] = function(self, prompt)
 		if #to_discard == 2 then
 			local shu_generals = sgs.SPlayerList()
 			for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
-				if p:getKingdom() == "shu" then shu_generals:append(p) end
+				if p:getKingdom() == "kaze" then shu_generals:append(p) end
 			end
 			if shu_generals:length() == 0 then return "." end
 			local target = player_chosen_shichou(self, shu_generals)
@@ -918,20 +918,20 @@ sgs.ai_skill_invoke.hantong_acquire = function(self, data)
 	if skill == "hujia" and not self.player:hasSkill("hujia") then
 		local can_invoke = false
 		for _, friend in ipairs(self.friends_noself) do
-			if friend:getKingdom() == "wei" and getCardsNum("Jink", friend, self.player) > 0 then can_invoke = true end
+			if friend:getKingdom() == "hana" and getCardsNum("Jink", friend, self.player) > 0 then can_invoke = true end
 		end
 		if can_invoke then
 			local origin_data = self.player:getTag("HantongOriginData")
 			return sgs.ai_skill_invoke.hujia(self, origin_data)
 		end
-	elseif skill == "jijiang" and not self.player:hasSkill("jijiang") then
+	elseif skill == "ikxinqi" and not self.player:hasSkill("ikxinqi") then
 		local can_invoke = false
 		for _, friend in ipairs(self.friends_noself) do
-			if friend:getKingdom() == "shu" and getCardsNum("Slash", friend, self.player) > 0 then can_invoke = true end
+			if friend:getKingdom() == "kaze" and getCardsNum("Slash", friend, self.player) > 0 then can_invoke = true end
 		end
 		if can_invoke then
 			local origin_data = self.player:getTag("HantongOriginData")
-			return sgs.ai_skill_invoke.jijiang(self, origin_data)
+			return sgs.ai_skill_invoke.ikxinqi(self, origin_data)
 		end
 	elseif skill == "jiuyuan" and not self.player:hasSkill("jiuyuan") then
 		return true
@@ -939,7 +939,7 @@ sgs.ai_skill_invoke.hantong_acquire = function(self, data)
 		local maxcards = self.player:getMaxCards()
 		local can_invoke = false
 		for _, player in sgs.qlist(self.room:getOtherPlayers(self.player)) do
-			if player:getKingdom() == "qun" then can_invoke = true end
+			if player:getKingdom() == "tsuki" then can_invoke = true end
 		end
 		if can_invoke then return self.player:getHandcardNum() > maxcards end
 	end
@@ -950,29 +950,29 @@ local hantong_skill = {}
 hantong_skill.name = "hantong"
 table.insert(sgs.ai_skills, hantong_skill)
 hantong_skill.getTurnUseCard = function(self)
-	if self.player:hasLordSkill("jijiang") or self.player:getPile("edict"):isEmpty() or not self:slashIsAvailable() then return end
+	if self.player:hasLordSkill("ikxinqi") or self.player:getPile("edict"):isEmpty() or not self:slashIsAvailable() then return end
 	local can_invoke = false
 	for _, friend in ipairs(self.friends_noself) do
-		if friend:getKingdom() == "shu" and getCardsNum("Slash", friend, self.player) > 0 then can_invoke = true end
+		if friend:getKingdom() == "kaze" and getCardsNum("Slash", friend, self.player) > 0 then can_invoke = true end
 	end
 	if not can_invoke then return end
 	return sgs.Card_Parse("@HantongCard=.")
 end
 
 sgs.ai_skill_use_func.HantongCard = function(card, use, self)
-	local jcard = sgs.Card_Parse("@JijiangCard=.")
+	local jcard = sgs.Card_Parse("@IkXinqiCard=.")
 	local dummy_use = { isDummy = true }
 	self:useSkillCard(jcard, dummy_use)
 	if dummy_use.card then use.card = card end
 end
 
-sgs.ai_use_value.HantongCard = sgs.ai_use_value.JijiangCard
-sgs.ai_use_priority.HantongCard = sgs.ai_use_priority.JijiangCard
-sgs.ai_card_intention.HantongCard = sgs.ai_card_intention.JijiangCard
+sgs.ai_use_value.HantongCard = sgs.ai_use_value.IkXinqiCard
+sgs.ai_use_priority.HantongCard = sgs.ai_use_priority.IkXinqiCard
+sgs.ai_card_intention.HantongCard = sgs.ai_card_intention.IkXinqiCard
 
 function sgs.ai_cardsview_valuable.hantong(self, class_name, player)
-	if class_name == "Slash" and player:getPile("edict"):length() > 0 and not player:hasSkill("jijiang") then
-		local ret = sgs.ai_cardsview_valuable.jijiang(self, class_name, player, false)
+	if class_name == "Slash" and player:getPile("edict"):length() > 0 and not player:hasSkill("ikxinqi") then
+		local ret = sgs.ai_cardsview_valuable.ikxinqi(self, class_name, player, false)
 		if ret then return "@HantongCard=." end
 	end
 end

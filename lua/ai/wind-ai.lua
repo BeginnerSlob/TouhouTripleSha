@@ -359,7 +359,7 @@ sgs.ai_playerchosen_intention.leiji = 80
 function sgs.ai_slash_prohibit.leiji(self, from, to, card)
 	if not to:hasSkill("leiji") then return false end
 	if self:isFriend(to, from) then return false end
-	if (to:hasFlag("QianxiTarget") or to:getMark("yijue") > 0) and (not self:hasEightDiagramEffect(to) or self.player:hasWeapon("qinggang_sword")) then return false end
+	if (to:hasFlag("QianxiTarget") or to:getMark("yijue") > 0) and (not self:hasEightDiagramEffect(to) or self.player:hasWeapon("qinggang_sword") or (self.player:hasSkill("ikzhenhong") and card:getSuit() == sgs.Card_Diamond)) then return false end
 	if not sgs.isJinkAvailable(from, to, card, to:hasSkill("guidao")) then return false end
 	if from:getRole() == "rebel" and to:isLord() then
 		local other_rebel
@@ -388,7 +388,7 @@ huangtianv_skill.name = "huangtianv"
 table.insert(sgs.ai_skills, huangtianv_skill)
 huangtianv_skill.getTurnUseCard = function(self)
 	if self.player:hasFlag("ForbidHuangtian") then return nil end
-	if self.player:getKingdom() ~= "qun" then return nil end
+	if self.player:getKingdom() ~= "tsuki" then return nil end
 
 	local cards = self.player:getCards("h")
 	cards = sgs.QList2Table(cards)
@@ -551,7 +551,7 @@ sgs.ai_skill_use["@@tianxiang"] = function(self, data, method)
 					and (friend:hasSkills("nosyiji|yiji|buqu|nosbuqu|shuangxiong|zaiqi|yinghun|jianxiong|nosjianxiong|fangzhu")
 						or self:getDamagedEffects(friend, dmg.from or self.room:getCurrent())
 						or self:needToLoseHp(friend)
-						or (friend:getHandcardNum() < 3 and (friend:hasSkill("nosrende") or (friend:hasSkill("rende") and not friend:hasUsed("RendeCard"))))) then
+						or (friend:getHandcardNum() < 3 and (friend:hasSkill("nosrende") or (friend:hasSkill("ikshenai") and not friend:hasUsed("IkShenaiCard"))))) then
 				return "@TianxiangCard=" .. card_id .. "->" .. friend:objectName()
 				elseif dmg.card and dmg.card:getTypeId() == sgs.Card_TypeTrick and friend:hasSkill("wuyan") and friend:getLostHp() > 1 then
 					return "@TianxiangCard=" .. card_id .. "->" .. friend:objectName()
@@ -585,7 +585,7 @@ sgs.ai_card_intention.TianxiangCard = function(self, card, from, tos)
 	local to = tos[1]
 	if self:getDamagedEffects(to) or self:needToLoseHp(to) or hasBuquEffect(to)
 		or (to:getHp() >= 2 and to:hasSkills("nosyiji|yiji|shuangxiong|zaiqi|yinghun|jianxiong|nosjianxiong|fangzhu"))
-		or (to:getHandcardNum() < 3 and (to:hasSkill("nosrende") or (to:hasSkill("rende") and not to:hasUsed("RendeCard")))) then
+		or (to:getHandcardNum() < 3 and (to:hasSkill("nosrende") or (to:hasSkill("ikshenai") and not to:hasUsed("IkShenaiCard")))) then
 		return
 	end
 	sgs.updateIntention(from, to, 10)

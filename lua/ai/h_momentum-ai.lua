@@ -253,7 +253,7 @@ sgs.ai_skill_choice.chuanxin_lose = function(self, choices, data)
 	if self.player:hasSkills("tianfu+kanpo") then return "kanpo" end
 	if self.player:hasSkills("fuhun|nosfuhun") then
 		if choices:matchOne("paoxiao") then return "paoxiao" end
-		if choices:matchOne("wusheng") then return "wusheng" end
+		if choices:matchOne("ikchilian") then return "ikchilian" end
 	end
 	if self.player:hasSkill("luoyan") and self.player:getPile("xingwu"):length() > 0 then
 		if choices:matchOne("tianxiang") then return "tianxiang" end

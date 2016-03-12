@@ -133,7 +133,7 @@ if sgs.GetConfig("EnableHegemony", false) then
 			if kingdom == "god" then kingdom = sgs.ai_explicit[aplayer:objectName()] end
 			if kingdom then plieges[kingdom] = (plieges[kingdom] or 0) + 1 end
 		end
-		local kingdoms = { "wei", "wu", "shu", "qun" }
+		local kingdoms = { "hana", "yuki", "kaze", "tsuki" }
 		local max_kingdom = 0
 		for _, akingdom in ipairs(kingdoms) do
 			if (plieges[akingdom] or 0) > max_kingdom then max_kingdom = plieges[akingdom] end
@@ -190,7 +190,7 @@ if sgs.GetConfig("EnableHegemony", false) then
 
 	sgs.updateIntention = function(player, to, intention)
 		intention = -intention
-		local kingdoms = { "wei", "wu", "shu", "qun" }
+		local kingdoms = { "hana", "yuki", "kaze", "tsuki" }
 		if player:getKingdom() ~= "god" then
 			for _, akingdom in ipairs(kingdoms) do
 				sgs.ai_loyalty[akingdom][player:objectName()] = -160
@@ -263,10 +263,10 @@ if sgs.GetConfig("EnableHegemony", false) then
 	SmartAI.printAll = function(self, player, intention)
 		local name = player:objectName()
 		self.room:writeToConsole(self:getHegGeneralName(player) .. math.floor(intention * 10) / 10
-								.. " R" .. math.floor((sgs.ai_loyalty["shu"][name] or 0) * 10) / 10
-								.. " G" .. math.floor((sgs.ai_loyalty["wu"][name] or 0) * 10) / 10
-								.. " B" .. math.floor((sgs.ai_loyalty["wei"][name] or 0) * 10) / 10
-								.. " Q" .. math.floor((sgs.ai_loyalty["qun"][name] or 0) * 10) / 10
+								.. " R" .. math.floor((sgs.ai_loyalty["kaze"][name] or 0) * 10) / 10
+								.. " G" .. math.floor((sgs.ai_loyalty["yuki"][name] or 0) * 10) / 10
+								.. " B" .. math.floor((sgs.ai_loyalty["hana"][name] or 0) * 10) / 10
+								.. " Q" .. math.floor((sgs.ai_loyalty["tsuki"][name] or 0) * 10) / 10
 								.. " E" .. (sgs.ai_explicit[name] or "nil"))
 	end
 end

@@ -695,7 +695,7 @@ function SmartAI:getValuableCardForGuanxing(cards)
 		if not self.player:hasSkills("yizhong|bazhen|bossmanjia") and self.player:hasSkills("tiandu|leiji|nosleiji|noszhenlie|gushou|hongyan") then
 			return eightdiagram
 		end
-		if self.role == "loyalist" and self.player:getKingdom() == "wei" and not self.player:hasSkill("bazhen") and lord and lord:hasLordSkill("hujia") then
+		if self.role == "loyalist" and self.player:getKingdom() == "hana" and not self.player:hasSkill("bazhen") and lord and lord:hasLordSkill("hujia") then
 			return eightdiagram
 		end
 		if sgs.ai_armor_value.eight_diagram(self.player, self) >= 5 then return eightdiagram end
@@ -785,7 +785,7 @@ function SmartAI:getValuableCardForGuanxing(cards)
 			if self.player:hasSkill("guixin") and self.room:alivePlayerCount() >= 6 and (self.player:getHp() > 1 or self:getCardsNum("Peach") > 0) then
 				return crossbow
 			end
-			if self.player:hasSkill("nosrende|rende") then
+			if self.player:hasSkill("nosrende|ikshenai") then
 				for _, friend in ipairs(self.friends_noself) do
 					if getCardsNum("Slash", friend, self.player) > 1 then
 						return crossbow
@@ -795,7 +795,7 @@ function SmartAI:getValuableCardForGuanxing(cards)
 		end
 
 		if halberd then
-			if self.player:hasSkills("nosrende|rende") and self:findFriendsByType(sgs.Friend_Draw) then return halberd end
+			if self.player:hasSkills("nosrende|ikshenai") and self:findFriendsByType(sgs.Friend_Draw) then return halberd end
 			if self:getCardsNum("Slash") == 1 and self.player:getHandcardNum() == 1 then return halberd end
 		end
 

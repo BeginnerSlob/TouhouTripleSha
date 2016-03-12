@@ -1271,7 +1271,7 @@ sgs.ai_skill_choice.thfengren = function(self, choices, data)
 	if self:willSkipDrawPhase(self.player) then
 		return "obtain"
 	end
-	return self:isWeak(self.player) and string.find(chocies, "recover") and "recover" or "obtain"
+	return self:isWeak(self.player) and string.find(choices, "recover") and "recover" or "obtain"
 end
 
 --扶犁：若你人物牌上的牌数小于三张，其他角色对你使用的牌在结算后置入弃牌堆时，你可以将其作为“穗”置于你的人物牌上，每回合限一次。
