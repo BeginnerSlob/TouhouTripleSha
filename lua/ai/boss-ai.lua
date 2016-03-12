@@ -79,7 +79,7 @@ end
 sgs.ai_skill_invoke.bossqiangzheng = function(self, data)
 	local value = 0
 	for _, enemy in ipairs(self.enemies) do
-		if enemy:getHandcardNum() == 1 and (enemy:hasSkill("kongcheng") or (enemy:hasSkill("zhiji") and enemy:getMark("zhiji") == 0)) then
+		if enemy:getHandcardNum() == 1 and (enemy:hasSkill("ikjingyou") or (enemy:hasSkill("zhiji") and enemy:getMark("zhiji") == 0)) then
 			value = value + 1
 		end
 	end

@@ -380,3 +380,66 @@ end
 function sgs.ai_cardneed.ikshijiu(to, card, self)
 	return (card:isNDTrick() or card:isKindOf("Weapon")) and getCardsNum("Analeptic", to, self.player) < 2
 end
+
+--预悉：准备阶段开始时，你可以观看牌堆顶的X张牌（X为存活角色的数量，且至多为5），将其中任意数量的牌以任意顺序置于牌堆顶，其余以任意顺序置于牌堆底。
+dofile "lua/ai/guanxing-ai.lua"
+
+sgs.ai_skill_invoke.ikyuxi = true
+
+--静幽：锁定技，若你没有手牌，你不能成为【杀】或者【碎月绮斗】的目标。
+--无
+
+--御风：每当你使用【杀】指定一名角色为目标后，你可以令该角色的非锁定技无效，直到回合结束，然后你进行一次判定，令其选择一项：不能使用【闪】响应此【杀】；或弃置与判定结果花色相同的一张牌。
+sgs.ai_skill_invoke.ikyufeng = function(self, data)
+	local target = data:toPlayer()
+	return not self:isFriend(target)
+end
+
+sgs.ai_skill_cardask["@ikyufeng-discard"] = function(self, data, pattern)
+	local suit = pattern:split("|")[2]
+	local use = data:toCardUse()
+	if self:needToThrowArmor() and self.player:getArmor():getSuitString() == suit then return "$" .. self.player:getArmor():getEffectiveId() end
+	if not self:slashIsEffective(use.card, self.player, use.from)
+		or (not self:hasHeavySlashDamage(use.from, use.card, self.player)
+			and (self:getDamagedEffects(self.player, use.from, true) or self:needToLoseHp(self.player, use.from, true))) then return "." end
+	if not self:hasHeavySlashDamage(use.from, use.card, self.player) and self:getCardsNum("Peach") > 0 then return "." end
+	if self:getCardsNum("Jink") == 0 or not sgs.isJinkAvailable(use.from, self.player, use.card, true) then return "." end
+
+	local equip_index = { 3, 0, 2, 4, 1 }
+	if self.player:hasSkills(sgs.lose_equip_skill) then
+		for _, i in ipairs(equip_index) do
+			if i == 4 then break end
+			if self.player:getEquip(i) and self.player:getEquip(i):getSuitString() == suit then return "$" .. self.player:getEquip(i):getEffectiveId() end
+		end
+	end
+
+	local jiangqin = self.room:findPlayerBySkillName("niaoxiang")
+	local need_double_jink = use.from:hasSkill("wushuang")
+							or (use.from:hasSkill("roulin") and self.player:isFemale())
+							or (self.player:hasSkill("roulin") and use.from:isFemale())
+							or (jiangqin and jiangqin:isAdjacentTo(self.player) and use.from:isAdjacentTo(self.player) and self:isEnemy(jiangqin))
+
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	self:sortByKeepValue(cards)
+	for _, card in ipairs(cards) do
+		if card:getSuitString() ~= suit or (not self:isWeak() and (self:getKeepValue(card) > 8 or self:isValuableCard(card)))
+			or (isCard("Jink", card, self.player) and self:getCardsNum("Jink") - 1 < (need_double_jink and 2 or 1)) then continue end
+		return "$" .. card:getEffectiveId()
+	end
+
+	for _, i in ipairs(equip_index) do
+		if self.player:getEquip(i) and self.player:getEquip(i):getSuitString() == suit then
+			if not (i == 1 and self:evaluateArmor() > 3)
+				and not (i == 4 and self.player:getTreasure():isKindOf("WoodenOx") and self.player:getPile("wooden_ox"):length() >= 3) then
+				return "$" .. self.player:getEquip(i):getEffectiveId()
+			end
+		end
+	end
+end
+
+sgs.ai_choicemade_filter.skillInvoke.ikyufeng = function(self, player, promptlist)
+	if promptlist[#promptlist] == "yes" then
+		local target = findPlayerByObjectName(self.room, promptlist[#promptlist - 1])
+		if target then sgs.updateIntention(player, target, 50) end
+	end
+end

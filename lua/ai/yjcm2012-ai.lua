@@ -486,7 +486,7 @@ sgs.ai_skill_use_func.AnxuCard = function(card, use, self)
 	end
 	local need_kongcheng_friend
 	for _, friend in ipairs(friends) do
-		if friend:getHandcardNum() == 1 and (friend:hasSkill("kongcheng") or (friend:hasSkill("zhiji") and friend:getMark("zhiji") == 0 and friend:getHp() >= 3)) then
+		if friend:getHandcardNum() == 1 and (friend:hasSkill("ikjingyou") or (friend:hasSkill("zhiji") and friend:getMark("zhiji") == 0 and friend:getHp() >= 3)) then
 			need_kongcheng_friend = friend
 			break
 		end
@@ -507,7 +507,7 @@ sgs.ai_skill_use_func.AnxuCard = function(card, use, self)
 		if enemy:getHandcardNum() >= 2 and enemy:hasSkills(sgs.cardneed_skill) then
 			if not prior_enemy then prior_enemy = enemy end
 		end
-		if enemy:hasSkill("kongcheng") and enemy:isKongcheng() then
+		if enemy:hasSkill("ikjingyou") and enemy:isKongcheng() then
 			if not kongcheng_enemy then kongcheng_enemy = enemy end
 		end
 		if enemy:hasSkill("manjuan") then
@@ -629,7 +629,7 @@ sgs.ai_card_intention.AnxuCard = function(self, card, from, to)
 	end
 	local intention = -50
 	local kc_enemy = false
-	if less:hasSkill("manjuan") or (less:hasSkill("kongcheng") and less:isKongcheng()) then
+	if less:hasSkill("manjuan") or (less:hasSkill("ikjingyou") and less:isKongcheng()) then
 		kc_enemy = true
 		intention = 80
 	else
