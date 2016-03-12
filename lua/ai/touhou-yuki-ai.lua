@@ -331,7 +331,7 @@ thmoji_skill.getTurnUseCard = function(self)
 		if not isCard("Slash", card, self.player) and not isCard("Peach", card, self.player) and not (isCard("ExNihilo", card, self.player) and self.player:getPhase() == sgs.Player_Play) then table.insert(newcards, card) end
 	end
 	if #newcards <= self.player:getHp() - 1 and self.player:getHp() <= 4 and not self:hasHeavySlashDamage(self.player)
-		and not self.player:hasSkills(sgs.need_kongcheng .. "paoxiao|shangshi|noshangshi")
+		and not self.player:hasSkills(sgs.need_kongcheng .. "ikyipao|shangshi|noshangshi")
 		and not (self.player:hasSkill("zhiji") and self.player:getMark("zhiji") == 0) then return end
 	local n = math.min(2, self.player:getHp())
 	if n < 1 or #newcards < n then return end

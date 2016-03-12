@@ -246,13 +246,13 @@ sgs.ai_skill_choice.chuanxin_lose = function(self, choices, data)
 	if self.player:hasSkill("yingbing") and not self.player:hasSkill("zhoufu", true) then return "yingbing" end
 	if self.player:hasSkill("juedi") and not self.player:hasSkill("yinbing", true) then return "juedi" end
 	if self.player:hasSkill("kurou") and not self.player:hasSkill("zhaxiang", true) then return "kurou" end
-	if self.player:hasSkills("paoxiao+huxiao") then return "huxiao" end
+	if self.player:hasSkills("ikyipao+huxiao") then return "huxiao" end
 	if self.player:hasSkills("fankui+duodao|nosfankui+duodao") then return "duodao" end
 	if self.player:hasSkills("jilve+wansha") then return "wansha" end
 	if self.player:hasSkills("wuqian+wushuang") then return "wushuang" end
 	if self.player:hasSkills("tianfu+kanpo") then return "kanpo" end
 	if self.player:hasSkills("fuhun|nosfuhun") then
-		if choices:matchOne("paoxiao") then return "paoxiao" end
+		if choices:matchOne("ikyipao") then return "ikyipao" end
 		if choices:matchOne("ikchilian") then return "ikchilian" end
 	end
 	if self.player:hasSkill("luoyan") and self.player:getPile("xingwu"):length() > 0 then
@@ -260,7 +260,7 @@ sgs.ai_skill_choice.chuanxin_lose = function(self, choices, data)
 		if choices:matchOne("liuli") then return "liuli" end
 	end
 	if self.player:hasSkill("baobian") then
-		for _, skill in ipairs(("paoxiao|shensu|tiaoxin"):split("|")) do
+		for _, skill in ipairs(("ikyipao|shensu|tiaoxin"):split("|")) do
 			if self.player:hasSkill(skill) then return skill end
 		end
 	end

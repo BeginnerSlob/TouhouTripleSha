@@ -7,7 +7,7 @@ sgs.ai_skill_choice.jianxiong = function(self, choices, data)
 			return (dummy.card and dummy.card:isKindOf("Lightning")) and "obtain" or "draw"
 		elseif card:isKindOf("Slash") then
 			if self:getCardsNum("Slash") >= 1
-				and ((not self.player:hasSkills("paoxiao|xianzhen") and not self.player:hasWeapon("crossbow") and not self.player:hasWeapon("vs_crossbow"))
+				and ((not self.player:hasSkills("ikyipao|xianzhen") and not self.player:hasWeapon("crossbow") and not self.player:hasWeapon("vs_crossbow"))
 					or self:willSkipPlayPhase()) then
 				return "draw"
 			end
@@ -864,7 +864,7 @@ sgs.ai_choicemade_filter.skillChoice.yijue = function(self, player, promptlist)
 	sgs.updateIntention(player, target, intention)
 end
 
-function sgs.ai_cardneed.paoxiao(to, card, self)
+function sgs.ai_cardneed.ikyipao(to, card, self)
 	local cards = to:getHandcards()
 	local has_weapon = to:getWeapon() and not to:getWeapon():isKindOf("Crossbow")
 	local slash_num = 0
@@ -884,7 +884,7 @@ function sgs.ai_cardneed.paoxiao(to, card, self)
 	end
 end
 
-sgs.paoxiao_keep_value = {
+sgs.ikyipao_keep_value = {
 	Peach = 6,
 	Analeptic = 5.8,
 	Jink = 5.7,

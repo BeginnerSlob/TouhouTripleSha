@@ -1365,7 +1365,7 @@ function turnUse_spear(self, inclusive, skill_name)
 		if not isCard("Slash", card, self.player) and not isCard("Peach", card, self.player) and not (isCard("ExNihilo", card, self.player) and self.player:getPhase() == sgs.Player_Play) then table.insert(newcards, card) end
 	end
 	if #newcards <= self.player:getHp() - 1 and self.player:getHp() <= 4 and not self:hasHeavySlashDamage(self.player)
-		and not self.player:hasSkills("kongcheng|lianying|noslianying|paoxiao|shangshi|noshangshi")
+		and not self.player:hasSkills("kongcheng|lianying|noslianying|ikyipao|shangshi|noshangshi")
 		and not (self.player:hasSkill("zhiji") and self.player:getMark("zhiji") == 0) then return end
 	if #newcards < 2 then return end
 
@@ -1962,7 +1962,7 @@ function SmartAI:getDangerousCard(who)
 	local armor = who:getArmor()
 	local treasure = who:getTreasure()
 	if treasure and treasure:isKindOf("Jade") and who:getHandcardNum() >= 3 then return treasure:getEffectiveId() end
-	if weapon and weapon:isKindOf("Spear") and who:getHandcardNum() >= 3 and who:hasSkill("paoxiao") then return weapon:getEffectiveId() end
+	if weapon and weapon:isKindOf("Spear") and who:getHandcardNum() >= 3 and who:hasSkill("ikyipao") then return weapon:getEffectiveId() end
 	if weapon and weapon:isKindOf("Axe") and who:hasSkills("luoyi|nosluoyi|pojun|jiushi|jiuchi|jie|thluli") then return weapon:getEffectiveId() end
 	if armor and armor:isKindOf("EightDiagram") and who:hasSkills("leiji|nosleiji") then return armor:getEffectiveId() end
 	if weapon and weapon:isKindOf("MoonSpear") and who:hasSkills("guidao|longdan|guicai|nosguicai|jilve|huanshi|qingguo|kanpo") then return weapon:getEffectiveId() end
@@ -2515,7 +2515,7 @@ function SmartAI:useCardCollateral(card, use)
 		end
 	end
 
-	needCrossbow = needCrossbow and self:getCardsNum("Slash") > 2 and not self.player:hasSkill("paoxiao")
+	needCrossbow = needCrossbow and self:getCardsNum("Slash") > 2 and not self.player:hasSkill("ikyipao")
 
 	if needCrossbow then
 		for i = #fromList, 1, -1 do
