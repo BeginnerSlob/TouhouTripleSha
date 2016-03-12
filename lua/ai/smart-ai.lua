@@ -4195,8 +4195,8 @@ local function getSkillViewCard(card, class_name, player, card_place)
 				if skill_card_str then
 					if type(skill_card_str) == "table" then
 						for _, sub_str in ipairs(skill_card_str) do
-							local skill_card = sgs.Card_Parse(skill_card_str)
-							if skill_card:isKindOf(class_name) and not player:isCardLimited(skill_card, skill_card:getHandlingMethod()) then return skill_card_str end
+							local skill_card = sgs.Card_Parse(sub_str)
+							if skill_card:isKindOf(class_name) and not player:isCardLimited(skill_card, skill_card:getHandlingMethod()) then return sub_str end
 						end
 					else
 						local skill_card = sgs.Card_Parse(skill_card_str)
