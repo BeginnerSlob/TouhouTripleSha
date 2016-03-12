@@ -1605,7 +1605,7 @@ thjiefu_skill.getTurnUseCard = function(self)
 		if not self.player:hasSkill("thsiqiang") or self.player:getMark("@siqiang") == 0 then
 			self:sortEnemies(self.enemies)
 			for _, enemy in ipairs(self.enemies) do
-				if self:objectiveLevel(enemy) > 3 and (target:getArmor() and not self:needToThrowArmor(target)) then
+				if self:objectiveLevel(enemy) > 3 and (enemy:getArmor() and not self:needToThrowArmor(enemy)) then
 					return sgs.Card_Parse("@ThJiefuCard=.")
 				end
 			end
