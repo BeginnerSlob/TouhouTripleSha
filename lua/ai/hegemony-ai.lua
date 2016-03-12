@@ -592,7 +592,7 @@ sgs.ai_skill_use_func.QingchengCard = function(card, use, self)
 			for _, askill in ipairs(("noswuyan|wuyan|weimu|kanpo|liuli|nosyiji|yiji|jieming|ganglie|vsganglie|nosganglie|fankui|nosfankui|fangzhu|jianxiong|" ..
 									"nosjianxiong|enyuan|thfusheng|qingguo|longdan|xiangle|qingjian|renwang|jiang|yanzheng|tianming|yizhong|bazhen|" ..
 									"jijiu|beige|longhun|buyi|gushou|mingzhe|yajiao|huangen|danlao|qianxun|nosqianxun|juxiang|huoshou|anxian|thzhehui|" ..
-									"ikzhichi|jilei|thfeiying|yicong|wusheng|wushuang|xuanfeng|nosxuanfeng|luoying|xiaoguo|guhuo|nosguhuo|guidao|guicai|" ..
+									"ikzhichi|jilei|thfeiying|yicong|ikchilian|wushuang|xuanfeng|nosxuanfeng|luoying|xiaoguo|guhuo|nosguhuo|guidao|guicai|" ..
 									"nosguicai|shangshi|lianying|noslianying|sijian|kofxiaoji|xiaoji|kofqingguo|mingshi|zhiyu|hongyan|tiandu|lirang|" ..
 									"guzheng|xingshang|shushen|langgu|guixin|nosshangshi|tianxiang|leiji|nosleiji"):split("|")) do
 				if enemy:hasSkill(askill, true) and enemy:getMark("Qingcheng" .. askill) == 0 then

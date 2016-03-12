@@ -609,7 +609,7 @@ local zhiba_pindian_skill = {}
 zhiba_pindian_skill.name = "zhiba_pindian"
 table.insert(sgs.ai_skills, zhiba_pindian_skill)
 zhiba_pindian_skill.getTurnUseCard = function(self)
-	if self.player:isKongcheng() or self:needBear() or self:getOverflow() <= 0 or self.player:getKingdom() ~= "wu"
+	if self.player:isKongcheng() or self:needBear() or self:getOverflow() <= 0 or self.player:getKingdom() ~= "yuki"
 		or self.player:hasFlag("ForbidZhiba") then return end
 	return sgs.Card_Parse("@ZhibaCard=.")
 end
@@ -988,7 +988,7 @@ function sgs.ai_skill_choice.huashen(self, choices, data, xiaode_choice)
 				if str:matchOne(askill) then return askill end
 			end
 			if self:findFriendsByType(sgs.Friend_Draw) then
-				for _, askill in ipairs(("nosrende|rende|lirang"):split("|")) do
+				for _, askill in ipairs(("nosrende|ikshenai|lirang"):split("|")) do
 					if str:matchOne(askill) then return askill end
 				end
 			end
@@ -998,7 +998,7 @@ function sgs.ai_skill_choice.huashen(self, choices, data, xiaode_choice)
 			if str:matchOne("qingnang") then return "qingnang" end
 			if str:matchOne("jieyin") and self:findFriendsByType(sgs.Friend_MaleWounded) then return "jieyin" end
 			if str:matchOne("nosrende") and self:findFriendsByType(sgs.Friend_Draw) then return "nosrende" end
-			if str:matchOne("rende") and self:findFriendsByType(sgs.Friend_Draw) then return "rende" end
+			if str:matchOne("ikshenai") and self:findFriendsByType(sgs.Friend_Draw) then return "ikshenai" end
 			for _, askill in ipairs(("juejing|nosmiji|nosshangshi|shangshi|kuiwei|nosjushou|zaiqi|kuanggu|kofkuanggu"):split("|")) do
 				if str:matchOne(askill) then return askill end
 			end
@@ -1014,7 +1014,7 @@ function sgs.ai_skill_choice.huashen(self, choices, data, xiaode_choice)
 			if str:matchOne("qingnang") then return "qingnang" end
 			if str:matchOne("jieyin") and self:findFriendsByType(sgs.Friend_MaleWounded) then return "jieyin" end
 			if str:matchOne("nosrende") and self:findFriendsByType(sgs.Friend_Draw) then return "nosrende" end
-			if str:matchOne("rende") and self:findFriendsByType(sgs.Friend_Draw) then return "rende" end
+			if str:matchOne("ikshenai") and self:findFriendsByType(sgs.Friend_Draw) then return "ikshenai" end
 			for _, askill in ipairs(("juejing|nosmiji"):split("|")) do
 				if str:matchOne(askill) then return askill end
 			end
@@ -1042,7 +1042,7 @@ function sgs.ai_skill_choice.huashen(self, choices, data, xiaode_choice)
 		end
 
 		if self:findFriendsByType(sgs.Friend_Draw) then
-			for _, askill in ipairs(("nosrende|rende|anxu|mingce"):split("|")) do
+			for _, askill in ipairs(("nosrende|ikshenai|anxu|mingce"):split("|")) do
 				if str:matchOne(askill) then return askill end
 			end
 		end
@@ -1051,7 +1051,7 @@ function sgs.ai_skill_choice.huashen(self, choices, data, xiaode_choice)
 								"tiaoxin|zhaolie|chuanxin|fengshi|nostieji|moukui|liegong|mengjin|tieji|kofliegong|wushuang|niaoxiang|" ..
 								"juejing|nosfuhun|ikwanhun|yanxiao|guhuo|nosguhuo|xuanhuo|thhuanfa|qiangxi|huangen|nosjujian|lieren|pojun|" ..
 								"yishi|nosdanshou|chuli|yinling|qixi|puji|iklingshi|shangyi|duoshi|nosjizhi|jizhi|zhaoxin|gongqi|qiangwu|jingce|shengxi|" ..
-								"wangxi|luoyi|nosluoyi|jie|anjian|jiangchi|wusheng|longdan|ikxuwu|xueji|duwu|yinghun|longhun|jiuchi|qingcheng|" ..
+								"wangxi|luoyi|nosluoyi|jie|anjian|jiangchi|ikchilian|longdan|ikxuwu|xueji|duwu|yinghun|longhun|jiuchi|qingcheng|" ..
 								"shuangren|kuangfu|qiaomeng|nosgongqi|wushen|lianhuan|duanxie|qianxi|jujian|shensu|luanji|zhijian|shuangxiong|" ..
 								"fuluan|yanyu|qingyi|huoshui|zhoufu|bifa|xinzhan|thluli|duanbing|fenxun|guidao|guicai|nosguicai|noszhenlie|" ..
 								"noskurou|wansha|lianpo|botu|qiluan|xiaode|qingjian|yicong|zhenwei|heyi|nosshangshi|shangshi|lianying|noslianying|tianyi|" ..
@@ -1124,7 +1124,7 @@ function sgs.ai_skill_choice.huashen(self, choices, data, xiaode_choice)
 		end
 
 		for _, askill in ipairs(("huangen|jianxiong|nosjianxiong|jiang|nosqianxun|qianxun|danlao|juxiang|huoshou|ikzhichi|" ..
-								"lirang|qingjian|yicong|wusheng|wushuang|tianxiang|leiji|nosleiji|guhuo|nosguhuo|nosshangshi|shangshi|" ..
+								"lirang|qingjian|yicong|ikchilian|wushuang|tianxiang|leiji|nosleiji|guhuo|nosguhuo|nosshangshi|shangshi|" ..
 								"zhiyu|guidao|guicai|nosguicai|chunlao|jijiu|buyi|nosrenxin|lianying|noslianying|shoucheng|shenxian|sijian|tianming|" ..
 								"thluli|yanyu|zhendu|xiaoguo|tianfu|shushen|niaoxiang|zhenlie|tiandu|yingyang|noszhenlie"):split("|")) do
 			if askill == "chunlao" and self.player:getPile("wine"):isEmpty() then continue end

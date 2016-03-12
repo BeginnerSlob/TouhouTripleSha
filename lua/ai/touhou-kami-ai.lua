@@ -167,6 +167,13 @@ sgs.ai_skill_invoke.thkaihai = true
 
 --巫道：锁定技，游戏开始时，你失去4点体力。准备阶段开始时，你失去或回复体力至X点（X为你已损失的体力值）。
 --smart-ai.lua getBestHp
+function sgs.ai_slash_prohibit.thwudao(self, from, to, card)
+	if not to:hasSkill("thwudao") then return false end
+	if self:isFriend(to, from) then return false end
+	if from:hasFlag("IkJieyouUsed") then return false end
+	if to:getHp() > getBestHp(to) then return true end
+	return false
+end
 
 --幻君：锁定技，你的方块【闪】均视为【碎月绮斗】，你手牌中的防具牌均视为【酒】，你获得即将进入你装备区的防具牌。
 --smart-ai.lua isCard
@@ -264,7 +271,13 @@ getLeshiString = function(self)
 		for _, skill in ipairs(sgs.ai_skills) do
 			if self.player:hasSkill(skill.name) or (skill.name == "shuangxiong" and self.player:hasFlag("shuangxiong")) then
 				local skill_card = skill.getTurnUseCard(self, #cards == 0)
-				if skill_card then table.insert(cards, skill_card) end
+				if skill_card then
+					if type(skill_card) == "table" then
+						table.insertTable(cards, skill_card)
+					else
+						table.insert(cards, skill_card)
+					end
+				end
 			end
 		end
 		self:sortByUseValue(cards)

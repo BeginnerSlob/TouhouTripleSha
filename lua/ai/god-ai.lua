@@ -590,7 +590,7 @@ sgs.ai_skill_use["@@kuangfeng"] = function(self, prompt)
 	local friendly_fire
 	for _, friend in ipairs(self.friends_noself) do
 		if friend:getMark("@gale") == 0 and self:damageIsEffective(friend, sgs.DamageStruct_Fire) and friend:faceUp() and not self:willSkipPlayPhase(friend)
-			and (friend:hasSkill("huoji") or friend:hasWeapon("fan") or (friend:hasSkill("yeyan") and friend:getMark("@flame") > 0)) then
+			and (friend:hasSkill("huoji") or friend:hasWeapon("fan") or friend:hasSkill("thmopao") or friend:hasSkill("ikchilian") or (friend:hasSkill("yeyan") and friend:getMark("@flame") > 0)) then
 			friendly_fire = true
 			break
 		end
@@ -942,7 +942,7 @@ sgs.ai_skill_use_func.ShenfenCard = function(card, use, self)
 		end
 		if not help_friend then benefit = benefit - 0.5 end
 	end
-	if self.player:getKingdom() == "qun" then
+	if self.player:getKingdom() == "tsuki" then
 		for _, player in sgs.qlist(self.room:getOtherPlayers(self.player)) do
 			if player:hasLordSkill("baonue") and self:isFriend(player) then
 				benefit = benefit + 0.2 * self.room:alivePlayerCount()

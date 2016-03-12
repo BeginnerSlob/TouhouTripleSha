@@ -1102,8 +1102,8 @@ sgs.ai_skill_use_func.NosRendeCard = function(card, use, self)
 		end
 
 		if friend:objectName() == self.player:objectName() or not self.player:getHandcards():contains(card) then continue end
-		local canJijiang = self.player:hasLordSkill("jijiang") and friend:getKingdom() == "shu"
-		if card:isAvailable(self.player) and ((card:isKindOf("Slash") and not canJijiang) or card:isKindOf("Duel") or card:isKindOf("Snatch") or card:isKindOf("Dismantlement")) then
+		local canIkXinqi = self.player:hasLordSkill("ikxinqi") and friend:getKingdom() == "kaze"
+		if card:isAvailable(self.player) and ((card:isKindOf("Slash") and not canIkXinqi) or card:isKindOf("Duel") or card:isKindOf("Snatch") or card:isKindOf("Dismantlement")) then
 			local dummy_use = { isDummy = true, to = sgs.SPlayerList() }
 			local cardtype = card:getTypeId()
 			self["use" .. sgs.ai_type_name[cardtype + 1] .. "Card"](self, card, dummy_use)
@@ -1157,10 +1157,10 @@ sgs.ai_skill_use_func.NosRendeCard = function(card, use, self)
 	end
 end
 
-sgs.ai_use_value.NosRendeCard = sgs.ai_use_value.RendeCard
-sgs.ai_use_priority.NosRendeCard = sgs.ai_use_priority.RendeCard
+sgs.ai_use_value.NosRendeCard = sgs.ai_use_value.IkShenaiCard
+sgs.ai_use_priority.NosRendeCard = sgs.ai_use_priority.IkShenaiCard
 
-sgs.ai_card_intention.NosRendeCard = sgs.ai_card_intention.RendeCard
+sgs.ai_card_intention.NosRendeCard = sgs.ai_card_intention.IkShenaiCard
 
 sgs.dynamic_value.benefit.NosRendeCard = true
 
@@ -1174,7 +1174,7 @@ sgs.ai_skill_invoke.nostieji = function(self, data)
 	if target:hasArmorEffect("eight_diagram") and not self.player:hasWeapon("qinggang_sword") then return true end
 	if target:hasLordSkill("hujia") then
 		for _, p in ipairs(self.enemies) do
-			if p:getKingdom() == "wei" and (p:hasArmorEffect("eight_diagram") or p:getHandcardNum() > 0) then return true end
+			if p:getKingdom() == "hana" and (p:hasArmorEffect("eight_diagram") or p:getHandcardNum() > 0) then return true end
 		end
 	end
 	if target:hasSkill("longhun") and target:getHp() == 1 and self:hasSuit("club", true, target) then return true end
@@ -1533,7 +1533,7 @@ sgs.ai_skill_choice.nosguhuo = function(self, choices)
 	local questioner
 	for _, friend in ipairs(self.friends) do
 		if friend:getHp() == self.friends[#self.friends]:getHp() then
-			if friend:hasSkills("nosrende|rende|kuanggu|kofkuanggu|zaiqi|buqu|nosbuqu|yinghun|longhun|xueji|baobian") then
+			if friend:hasSkills("nosrende|ikshenai|kuanggu|kofkuanggu|zaiqi|buqu|nosbuqu|yinghun|longhun|xueji|baobian") then
 				questioner = friend
 				break
 			end
