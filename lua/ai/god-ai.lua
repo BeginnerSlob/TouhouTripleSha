@@ -854,7 +854,7 @@ local function getShenfenUseValueOfHECards(self, to)
 	end
 	value_h = (hcard > 4) and 16 / hcard or hcard
 	if to:hasSkills("ikyindie+ikguiyue") then value = value * 0.95 end
-	if (to:hasSkill("kongcheng") or (to:hasSkill("zhiji") and to:getHp() > 2 and to:getMark("zhiji") == 0)) and not to:isKongcheng() then value_h = value_h * 0.7 end
+	if (to:hasSkill("ikjingyou") or (to:hasSkill("zhiji") and to:getHp() > 2 and to:getMark("zhiji") == 0)) and not to:isKongcheng() then value_h = value_h * 0.7 end
 	if to:hasSkills("jijiu|qingnang|leiji|nosleiji|jieyin|beige|kanpo|liuli|qiaobian|zhiheng|guidao|longhun|xuanfeng|tianxiang|noslijian|lijian") then value_h = value_h * 0.95 end
 	value = value + value_h
 
@@ -1046,7 +1046,7 @@ jilve_skill.getTurnUseCard = function(self)
 	if not wanshadone and not self.player:hasSkill("wansha") then
 		self:sort(self.enemies, "hp")
 		for _, enemy in ipairs(self.enemies) do
-			if not (enemy:hasSkill("kongcheng") and enemy:isKongcheng()) and self:isWeak(enemy) and self:damageMinusHp(self, enemy, 1) > 0
+			if not (enemy:hasSkill("ikjingyou") and enemy:isKongcheng()) and self:isWeak(enemy) and self:damageMinusHp(self, enemy, 1) > 0
 				and #self.enemies > 1 then
 				sgs.ai_skill_choice.jilve = "wansha"
 				sgs.ai_use_priority.JilveCard = 8
@@ -1064,7 +1064,7 @@ jilve_skill.getTurnUseCard = function(self)
 	elseif not wanshadone and not self.player:hasSkill("wansha") then
 		self:sort(self.enemies, "hp")
 		for _, enemy in ipairs(self.enemies) do
-			if not (enemy:hasSkill("kongcheng") and enemy:isKongcheng()) and self:isWeak(enemy) and self:damageMinusHp(self, enemy, 1) > 0
+			if not (enemy:hasSkill("ikjingyou") and enemy:isKongcheng()) and self:isWeak(enemy) and self:damageMinusHp(self, enemy, 1) > 0
 				and #self.enemies > 1 then
 				sgs.ai_skill_choice.jilve = "wansha"
 				sgs.ai_use_priority.JilveCard = 8

@@ -58,7 +58,7 @@ local function yuanhu_validate(self, equip_type, is_handcard)
 		if equip_type == "Armor" then self:sort(targets, "handcard") end
 		if is_SilverLion then
 			for _, enemy in ipairs(self.enemies) do
-				if enemy:hasSkill("kongcheng") and enemy:isKongcheng() then
+				if enemy:hasSkill("ikjingyou") and enemy:isKongcheng() then
 					local seat_diff = enemy:getSeat() - self.player:getSeat()
 					local alive_count = self.room:alivePlayerCount()
 					if seat_diff < 0 then seat_diff = seat_diff + alive_count end
@@ -182,7 +182,7 @@ sgs.ai_skill_playerchosen.yuanhu = function(self, targets)
 end
 
 sgs.ai_card_intention.YuanhuCard = function(self, card, from, to)
-	if to[1]:hasSkills("bazhen|yizhong|bossmanjia") or (to[1]:hasSkill("kongcheng") and to[1]:isKongcheng()) then
+	if to[1]:hasSkills("bazhen|yizhong|bossmanjia") or (to[1]:hasSkill("ikjingyou") and to[1]:isKongcheng()) then
 		if sgs.Sanguosha:getCard(card:getEffectiveId()):isKindOf("SilverLion") then
 			sgs.updateIntention(from, to[1], 10)
 			return
@@ -400,7 +400,7 @@ sgs.ai_skill_use_func.SongciCard = function(card, use, self)
 	self:sort(self.friends, "handcard")
 	for _, friend in ipairs(self.friends) do
 		if friend:getMark("songci" .. self.player:objectName()) == 0 and friend:getHandcardNum() < friend:getHp() and not (friend:hasSkill("manjuan") and self.room:getCurrent() ~= friend) then
-			if not (friend:hasSkill("kongcheng") and friend:isKongcheng()) then
+			if not (friend:hasSkill("ikjingyou") and friend:isKongcheng()) then
 				use.card = sgs.Card_Parse("@SongciCard=.")
 				if use.to then use.to:append(friend) end
 				return

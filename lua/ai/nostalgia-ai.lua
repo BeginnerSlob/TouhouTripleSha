@@ -529,7 +529,7 @@ sgs.ai_skill_playerchosen.nosqiuyuan = function(self, targets)
 	self:sort(targetlist, "handcard")
 	local enemy
 	for _, p in ipairs(targetlist) do
-		if self:isEnemy(p) and not (p:getHandcardNum() == 1 and (p:hasSkill("kongcheng") or (p:hasSkill("zhiji") and p:getMark("zhiji") == 0))) then
+		if self:isEnemy(p) and not (p:getHandcardNum() == 1 and (p:hasSkill("ikjingyou") or (p:hasSkill("zhiji") and p:getMark("zhiji") == 0))) then
 			if p:hasSkills(sgs.cardneed_skill) then return p
 			elseif not enemy and not self:canLiuli(p, self.friends_noself) then enemy = p end
 		end
@@ -539,7 +539,7 @@ sgs.ai_skill_playerchosen.nosqiuyuan = function(self, targets)
 	local friend
 	for _, p in ipairs(targetlist) do
 		if self:isFriend(p) then
-			if (p:hasSkill("kongcheng") and p:getHandcardNum() == 1) or (p:getCardCount() >= 2 and self:canLiuli(p, self.enemies)) then return p
+			if (p:hasSkill("ikjingyou") and p:getHandcardNum() == 1) or (p:getCardCount() >= 2 and self:canLiuli(p, self.enemies)) then return p
 			elseif not friend and getCardsNum("Jink", p, player) >= 1 then friend = p end
 		end
 	end
@@ -567,7 +567,7 @@ function sgs.ai_slash_prohibit.nosqiuyuan(self, from, to)
 	if self:isFriend(to, from) then return false end
 	if from:hasFlag("IkJieyouUsed") then return false end
 	for _, friend in ipairs(self:getFriendsNoself(from)) do
-		if not to:isKongcheng() and not (to:getHandcardNum() == 1 and (to:hasSkill("kongcheng") or (to:hasSkill("zhiji") and to:getMark("zhiji") == 0))) then return true end
+		if not to:isKongcheng() and not (to:getHandcardNum() == 1 and (to:hasSkill("ikjingyou") or (to:hasSkill("zhiji") and to:getMark("zhiji") == 0))) then return true end
 	end
 end
 
@@ -614,7 +614,7 @@ end
 sgs.ai_skill_invoke.nosquanji = function(self, data)
 	local current = self.room:getCurrent()
 	if self:isFriend(current) then
-		if current:hasSkill("zhiji") and not current:hasSkill("guanxing") and current:getHandcardNum() == 1 then
+		if current:hasSkill("zhiji") and not current:hasSkill("ikyuxi") and current:getHandcardNum() == 1 then
 			self.nosquanji_card = self:getMinCard(self.player):getId()
 			return true
 		end
@@ -765,7 +765,7 @@ sgs.ai_skill_playerchosen.nospaiyi = function(self, targets)
 	targets = sgs.QList2Table(targets)
 	self:sort(targets, "defense")
 	for _, target in ipairs(targets) do
-		if self:isEnemy(target) and target:hasSkill("zhiji") and not target:hasSkill("guanxing") and target:getHandcardNum() == 0 then
+		if self:isEnemy(target) and target:hasSkill("zhiji") and not target:hasSkill("ikyuxi") and target:getHandcardNum() == 0 then
 			sgs.nosPaiyiTarget = target
 			sgs.nosPaiyiCard = nil
 			return target
@@ -1602,7 +1602,7 @@ nosguhuo_skill.getTurnUseCard = function(self)
 		if self:isWeak(enemy) then
 			enemy_is_weak = true
 		end
-		if enemy:hasSkill("kongcheng") and enemy:isKongcheng() then
+		if enemy:hasSkill("ikjingyou") and enemy:isKongcheng() then
 			zgl_kongcheng = true
 		end
 	end

@@ -360,7 +360,7 @@ end
 
 sgs.ai_playerchosen_intention.sijian = function(self, from, to)
 	local intention = 80
-	if (to:hasSkill("kongcheng") and to:getHandcardNum() == 1) or self:needToThrowArmor(to) then
+	if (to:hasSkill("ikjingyou") and to:getHandcardNum() == 1) or self:needToThrowArmor(to) then
 		intention = 0
 	end
 	sgs.updateIntention(from, to, intention)
@@ -392,7 +392,7 @@ sgs.ai_skill_use["@@shuangren"] = function(self, prompt)
 
 	if dummy_use.card then
 		for _, enemy in ipairs(self.enemies) do
-			if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+			if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
 				local enemy_max_card = self:getMaxCard(enemy)
 				local enemy_max_point = enemy_max_card and enemy_max_card:getNumber() or 100
 				if enemy_max_card and enemy:hasSkill("yingyang") then enemy_max_point = math.min(enemy_max_point + 3, 13) end
@@ -403,7 +403,7 @@ sgs.ai_skill_use["@@shuangren"] = function(self, prompt)
 			end
 		end
 		for _, enemy in ipairs(self.enemies) do
-			if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+			if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
 				if max_point >= 10 then
 					self.shuangren_card = max_card:getEffectiveId()
 					return "@ShuangrenCard=.->" .. enemy:objectName()
@@ -425,7 +425,7 @@ sgs.ai_skill_use["@@shuangren"] = function(self, prompt)
 			end
 		end
 
-		local zhugeliang = self.room:findPlayerBySkillName("kongcheng")
+		local zhugeliang = self.room:findPlayerBySkillName("ikjingyou")
 		if zhugeliang and self:isFriend(zhugeliang) and zhugeliang:getHandcardNum() == 1 and zhugeliang:objectName() ~= self.player:objectName() then
 			if max_point >= 7 then
 				self.shuangren_card = max_card:getEffectiveId()

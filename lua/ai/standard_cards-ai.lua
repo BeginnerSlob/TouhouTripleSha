@@ -216,7 +216,7 @@ function sgs.getDefenseSlash(player, self)
 		defense = defense - 0.4
 	end
 
-	if player:getHandcardNum() == 0 and getWoodenOxPile(player):isEmpty() and hujiaJink == 0 and not player:hasSkill("kongcheng") then
+	if player:getHandcardNum() == 0 and getWoodenOxPile(player):isEmpty() and hujiaJink == 0 and not player:hasSkill("ikjingyou") then
 		if player:getHp() <= 1 then defense = defense - 2.5 end
 		if player:getHp() == 2 then defense = defense - 1.5 end
 		if not hasEightDiagram then defense = defense - 2 end
@@ -427,7 +427,7 @@ function SmartAI:slashIsAvailable(player, slash)
 end
 
 function sgs.isJinkAvailable(from, to, slash, judge_considered)
-	return (not judge_considered and from:hasSkills("tieji|nostieji"))
+	return (not judge_considered and from:hasSkills("ikyufeng|nostieji"))
 			or (from:hasSkill("liegong") and from:getPhase() == sgs.Player_Play
 				and (to:getHandcardNum() <= from:getAttackRange() or to:getHandcardNum() >= from:getHp()))
 			or (from:hasSkill("thmoju") and from:getArmor())
@@ -1365,7 +1365,7 @@ function turnUse_spear(self, inclusive, skill_name)
 		if not isCard("Slash", card, self.player) and not isCard("Peach", card, self.player) and not (isCard("ExNihilo", card, self.player) and self.player:getPhase() == sgs.Player_Play) then table.insert(newcards, card) end
 	end
 	if #newcards <= self.player:getHp() - 1 and self.player:getHp() <= 4 and not self:hasHeavySlashDamage(self.player)
-		and not self.player:hasSkills("kongcheng|lianying|noslianying|ikyipao|shangshi|noshangshi")
+		and not self.player:hasSkills("ikjingyou|lianying|noslianying|ikyipao|shangshi|noshangshi")
 		and not (self.player:hasSkill("zhiji") and self.player:getMark("zhiji") == 0) then return end
 	if #newcards < 2 then return end
 
@@ -1689,7 +1689,7 @@ function SmartAI:willUseGodSalvation(card)
 	if self.player:hasSkill("nosjizhi") then good = good + 6 end
 	if self.player:hasSkill("thtianque") and self.player:getMark("thtianque_trick") == 0 and self.player:getPhase() == sgs.Player_Play then good = good + 5 end 
 	if self.player:hasSkill("jizhi") then good = good + 4 end
-	if (self.player:hasSkill("kongcheng") and self.player:getHandcardNum() == 1) or not self:hasLoseHandcardEffective() then good = good + 5 end
+	if (self.player:hasSkill("ikjingyou") and self.player:getHandcardNum() == 1) or not self:hasLoseHandcardEffective() then good = good + 5 end
 
 	for _, friend in ipairs(self.friends) do
 		good = good + 10 * getCardsNum("Nullification", friend, self.player)
@@ -1978,7 +1978,7 @@ function SmartAI:getDangerousCard(who)
 	end
 	if weapon and weapon:isKindOf("GudingBlade") and not who:hasSkill("ikxuwu") and getCardsNum("Slash", who, self.player) > 0 then
 		for _, friend in ipairs(self:getEnemies(who)) do
-			if who:canSlash(friend) and friend:isKongcheng() and not friend:hasSkills("kongcheng|tianming") then
+			if who:canSlash(friend) and friend:isKongcheng() and not friend:hasSkills("ikjingyou|tianming") then
 				return weapon:getEffectiveId()
 			end
 		end
@@ -2190,7 +2190,7 @@ function SmartAI:useCardSnatchOrDismantlement(card, use)
 		if self:slashIsAvailable() and not (not isYinling and enemy:hasSkill("qianxun")) then
 			for _, slash in ipairs(self:getCards("Slash")) do
 				if not self:slashProhibit(slash, enemy) and enemy:getHandcardNum() == 1 and enemy:getHp() == 1 and self:hasLoseHandcardEffective(enemy)
-					and self:objectiveLevel(enemy) > 3 and not self:cantbeHurt(enemy) and not enemy:hasSkills("kongcheng|tianming") and self.player:canSlash(enemy, slash)
+					and self:objectiveLevel(enemy) > 3 and not self:cantbeHurt(enemy) and not enemy:hasSkills("ikjingyou|tianming") and self.player:canSlash(enemy, slash)
 					and (not enemy:isChained() or self:isGoodChainTarget(enemy, nil, nil, nil, slash))
 					and (not self:hasEightDiagramEffect(enemy) or self.player:hasWeapon("qinggang_sword")) then
 					if addTarget(enemy, enemy:getHandcards():first():getEffectiveId()) then return end
@@ -2804,9 +2804,9 @@ function SmartAI:useCardIndulgence(card, use)
 		if self:objectiveLevel(enemy) < 3 then value = value -10 end
 		if not enemy:faceUp() then value = value -10 end
 		if enemy:hasSkills("keji|shensu") then value = value - enemy:getHandcardNum() end
-		if enemy:hasSkills("guanxing|xiuluo") then value = value - 5 end
+		if enemy:hasSkills("ikyuxi|xiuluo") then value = value - 5 end
 		if enemy:hasSkills("lirang") then value = value - 5 end
-		if enemy:hasSkills("tuxi|nostuxi|noszhenlie|guanxing|qinyin|zongshi|tiandu|thzhiji|thchuiji") then value = value - 3 end
+		if enemy:hasSkills("tuxi|nostuxi|noszhenlie|ikyuxi|qinyin|zongshi|tiandu|thzhiji|thchuiji") then value = value - 3 end
 		if self:needBear(enemy) then value = value - 20 end
 		if not sgs.isGoodTarget(enemy, self.enemies, self) then value = value - 1 end
 		if getKnownCard(enemy, self.player, "Dismantlement", true) > 0 then value = value + 2 end
@@ -2854,7 +2854,7 @@ function SmartAI:willUseLightning(card)
 			if aplayer:hasSkill("hongyan") then hashy = true break end
 		end
 		for _, aplayer in ipairs(self.enemies) do
-			if aplayer:hasSkill("guanxing") or (aplayer:hasSkill("iklingshi") and hashy)
+			if aplayer:hasSkill("ikyuxi") or (aplayer:hasSkill("iklingshi") and hashy)
 			or aplayer:hasSkill("xinzhan") then
 				if self:isFriend(self.room:findPlayer(aplayer:getNextAlive():objectName())) then return true end
 			end
@@ -3173,7 +3173,7 @@ sgs.ai_skill_askforag.amazing_grace = function(self, card_ids)
 					hit_num = hit_num + 1
 					if getCardsNum("Jink", enemy, self.player) < 1
 						or enemy:isKongcheng() 
-						or self.player:hasSkills("tieji|nostieji|liegong|kofliegong|wushuang|dahe|qianxi")
+						or self.player:hasSkills("ikyufeng|nostieji|liegong|kofliegong|wushuang|dahe|qianxi")
 						or self.player:hasSkill("roulin") and enemy:isFemale()
 						or (self.player:hasWeapon("axe") or self:getCardsNum("Axe") > 0) and self.player:getCards("he"):length() > 4 then
 						return analeptic
@@ -3436,9 +3436,9 @@ function SmartAI:useCardPurpleSong(card, use)
 		if self:objectiveLevel(friend) < 3 then value = value - 10 end
 		if not friend:faceUp() then value = value - 10 end
 		if friend:hasSkills("keji|shensu|thanbing") then value = value - friend:getHandcardNum() end
-		if friend:hasSkills("guanxing|xiuluo") then value = value - 5 end
+		if friend:hasSkills("ikyuxi|xiuluo") then value = value - 5 end
 		if friend:hasSkills("lirang") then value = value - 5 end
-		if friend:hasSkills("tuxi|nostuxi|noszhenlie|guanxing|qinyin|zongshi|tiandu|thzhiji|thchuiji") then value = value - 3 end
+		if friend:hasSkills("tuxi|nostuxi|noszhenlie|ikyuxi|qinyin|zongshi|tiandu|thzhiji|thchuiji") then value = value - 3 end
 		if self:needBear(friend) then value = value - 20 end
 		value = value + (self.room:alivePlayerCount() - self:playerGetRound(friend)) / 2
 		return value

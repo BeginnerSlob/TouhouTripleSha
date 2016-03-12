@@ -354,7 +354,7 @@ sgs.ai_skill_use_func.TianyiCard = function(card, use, self)
 	if self.player:hasSkill("yingyang") then max_point = math.min(max_point + 3, 13) end
 	local slashcount = self:getCardsNum("Slash")
 	if isCard("Slash", max_card, self.player) then slashcount = slashcount - 1 end
-	if self.player:hasSkill("kongcheng") and self.player:getHandcardNum() == 1 then
+	if self.player:hasSkill("ikjingyou") and self.player:getHandcardNum() == 1 then
 		for _, enemy in ipairs(self.enemies) do
 			if not enemy:isKongcheng() and self:hasLoseHandcardEffective(enemy) and not (enemy:hasSkills("ikyindie+ikguiyue") and enemy:getHandcardNum() > 2) then
 				sgs.ai_use_priority.TianyiCard = 1.2
@@ -378,7 +378,7 @@ sgs.ai_skill_use_func.TianyiCard = function(card, use, self)
 		end
 	end
 
-	local zhugeliang = self.room:findPlayerBySkillName("kongcheng")
+	local zhugeliang = self.room:findPlayerBySkillName("ikjingyou")
 
 	local slash = self:getCard("Slash")
 	local dummy_use = { isDummy = true, extra_target = 1, to = sgs.SPlayerList() }
@@ -389,7 +389,7 @@ sgs.ai_skill_use_func.TianyiCard = function(card, use, self)
 	sgs.ai_use_priority.TianyiCard = (slashcount >= 1 and dummy_use.card) and 7.2 or 1.2
 	if slashcount >= 1 and dummy_use.card then
 		for _, enemy in ipairs(self.enemies) do
-			if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+			if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
 				local enemy_max_card = self:getMaxCard(enemy)
 				local enemy_max_point = enemy_max_card and enemy_max_card:getNumber() or 100
 				if enemy_max_card and enemy:hasSkill("yingyang") then enemy_max_point = math.min(enemy_max_point + 3, 13) end
@@ -402,7 +402,7 @@ sgs.ai_skill_use_func.TianyiCard = function(card, use, self)
 			end
 		end
 		for _, enemy in ipairs(self.enemies) do
-			if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+			if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
 				if max_point >= 10 then
 					self.tianyi_card = max_card:getId()
 					use.card = sgs.Card_Parse("@TianyiCard=.")
@@ -452,7 +452,7 @@ sgs.ai_skill_use_func.TianyiCard = function(card, use, self)
 
 	if self:getOverflow() > 0 then
 		for _, enemy in ipairs(self.enemies) do
-			if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng()
+			if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng()
 				and not enemy:hasSkills("ikyindie+ikguiyue") and self:hasLoseHandcardEffective(enemy) then
 				self.tianyi_card = cards[1]:getId()
 				use.card = sgs.Card_Parse("@TianyiCard=.")

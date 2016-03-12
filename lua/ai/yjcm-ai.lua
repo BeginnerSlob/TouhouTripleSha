@@ -177,13 +177,13 @@ function sgs.ai_slash_prohibit.enyuan(self, from, to)
 	if from:hasSkill("ikxuwu") or from:getMark("thshenyou") > 0 or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
 	if from:hasFlag("IkJieyouUsed") then return false end
 	local num = from:getHandcardNum()
-	if num >= 3 or self:getLeastHandcardNum(from) > 1 or (from:hasSkill("kongcheng") and num == 2) then return false end
+	if num >= 3 or self:getLeastHandcardNum(from) > 1 or (from:hasSkill("ikjingyou") and num == 2) then return false end
 	return true
 end
 
 sgs.ai_need_damaged.enyuan = function(self, attacker, player)
 	if attacker and self:isEnemy(attacker, player) and self:isWeak(attacker)
-		and attacker:getHandcardNum() < 3 and not attacker:hasSkills("lianying|noslianying|kongcheng")
+		and attacker:getHandcardNum() < 3 and not attacker:hasSkills("lianying|noslianying|ikjingyou")
 		and not self:needToLoseHp(attacker) then
 		return true
 	end
@@ -326,7 +326,7 @@ end
 
 sgs.ai_playerchosen_intention.xuanfeng = function(self, from, to)
 	local intention = 80
-	if (to:hasSkill("kongcheng") and to:getHandcardNum() == 1) or self:needToThrowArmor(to) then
+	if (to:hasSkill("ikjingyou") and to:getHandcardNum() == 1) or self:needToThrowArmor(to) then
 		intention = 0
 	end
 	sgs.updateIntention(from, to, intention)
@@ -683,7 +683,7 @@ sgs.ai_skill_use_func.XianzhenCard = function(card, use, self)
 		local dummy_use = { isDummy = true }
 		self:useBasicCard(slash, dummy_use)
 		for _, enemy in ipairs(self.enemies) do
-			if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() and self:canAttack(enemy, self.player)
+			if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() and self:canAttack(enemy, self.player)
 				and not self:canLiuli(enemy, self.friends_noself) and not self:findLeijiTarget(enemy, 50, self.player) then
 				local enemy_max_card = self:getMaxCard(enemy)
 				local enemy_max_point = enemy_max_card and enemy_max_card:getNumber() or 100
@@ -697,7 +697,7 @@ sgs.ai_skill_use_func.XianzhenCard = function(card, use, self)
 			end
 		end
 		for _, enemy in ipairs(self.enemies) do
-			if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() and self:canAttack(enemy, self.player)
+			if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() and self:canAttack(enemy, self.player)
 				and not self:canLiuli(enemy, self.friends_noself) and not self:findLeijiTarget(enemy, 50, self.player) then
 				if max_point >= 10 then
 					self.xianzhen_card = max_card:getId()
@@ -712,7 +712,7 @@ sgs.ai_skill_use_func.XianzhenCard = function(card, use, self)
 	self:sortByUseValue(cards, true)
 	if (self:getUseValue(cards[1]) < 6 and self:getKeepValue(cards[1]) < 6) or self:getOverflow() > 0 then
 		for _, enemy in ipairs(self.enemies) do
-			if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() and not enemy:hasSkills("ikyindie+ikguiyue") then
+			if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() and not enemy:hasSkills("ikyindie+ikguiyue") then
 				self.xianzhen_card = cards[1]:getId()
 				use.card = sgs.Card_Parse("@XianzhenCard=.")
 				if use.to then use.to:append(enemy) end

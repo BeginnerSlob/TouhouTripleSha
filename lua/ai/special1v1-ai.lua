@@ -94,7 +94,7 @@ sgs.ai_playerchosen_intention.koftuxi = function(self, from, to)
 		return
 	end
 	if from:getState() == "online" then
-		if (to:hasSkills("kongcheng|zhiji|lianying") and to:getHandcardNum() == 1) or to:hasSkills("ikyindie+ikguiyue") then
+		if (to:hasSkills("ikjingyou|zhiji|lianying") and to:getHandcardNum() == 1) or to:hasSkills("ikyindie+ikguiyue") then
 		else
 			sgs.updateIntention(from, to, 80)
 		end
@@ -127,7 +127,7 @@ sgs.ai_skill_use_func.XiechanCard = function(card, use, self)
 	self:useCardDuel(duel, dummy_use)
 	if not dummy_use.card or not dummy_use.card:isKindOf("Duel") then return end
 	for _, enemy in sgs.qlist(dummy_use.to) do
-		if not enemy:isKongcheng() and not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) then
+		if not enemy:isKongcheng() and not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) then
 			local enemy_max_card = self:getMaxCard(enemy)
 			local enemy_max_point = enemy_max_card and enemy_max_card:getNumber() or 100
 			if enemy_max_card and enemy:hasSkill("yingyang") then enemy_max_point = math.max(enemy_max_point + 3, 13) end
@@ -304,7 +304,7 @@ sgs.ai_skill_use_func.MouzhuCard = function(card, use, self)
 		elseif enemy:getHandcardNum() > 0 then
 			if not self:slashIsEffective(slash_nosuit, self.player, nil, enemy) and self:getCardsNum("Slash") > getCardsNum("Slash", enemy, self.player) and not second then
 				second = enemy
-			elseif not enemy:hasSkills("wushuang|mengjin|tieji|nostieji")
+			elseif not enemy:hasSkills("wushuang|mengjin|ikyufeng|nostieji")
 				and not ((enemy:hasSkill("roulin") or enemy:hasWeapon("double_sword")) and enemy:getGender() ~= self.player:getGender()) then
 
 				if enemy:getHandcardNum() == 1 and slash and not third and self.player:inMyAttackRange(enemy)

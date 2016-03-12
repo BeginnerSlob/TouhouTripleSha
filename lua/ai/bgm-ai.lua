@@ -119,7 +119,7 @@ sgs.ai_skill_use_func.DaheCard = function(card, use, self)
 	local max_point = max_card:getNumber()
 	local slashcount = self:getCardsNum("Slash")
 	if max_card:isKindOf("Slash") then slashcount = slashcount - 1 end
-	if self.player:hasSkill("kongcheng") and self.player:getHandcardNum() == 1 then
+	if self.player:hasSkill("ikjingyou") and self.player:getHandcardNum() == 1 then
 		for _, enemy in ipairs(self.enemies) do
 			if not enemy:isKongcheng() then
 				self.dahe_card = max_card:getId()
@@ -136,7 +136,7 @@ sgs.ai_skill_use_func.DaheCard = function(card, use, self)
 		local dummy_use = { isDummy = true }
 		self:useBasicCard(slash, dummy_use)
 		for _, enemy in ipairs(self.enemies) do
-			if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1 and enemy:getHp() > self.player:getHp())
+			if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1 and enemy:getHp() > self.player:getHp())
 				and not enemy:isKongcheng() and self.player:canSlash(enemy) then
 				local enemy_max_card = self:getMaxCard(enemy)
 				local enemy_number = enemy_max_card and enemy_max_card:getNumber() or 0
@@ -167,7 +167,7 @@ sgs.ai_skill_playerchosen.dahe = function(self, targets)
 	targets = sgs.QList2Table(targets)
 	self:sort(targets, "defense")
 	for _, target in ipairs(targets) do
-		if target:hasSkill("kongcheng") and target:isKongcheng()
+		if target:hasSkill("ikjingyou") and target:isKongcheng()
 			and target:hasFlag("dahe") then
 			return target
 		end
@@ -201,7 +201,7 @@ sgs.ai_skill_use_func.TanhuCard = function(card, use, self)
 	local slashcount = self:getCardsNum("Slash")
 	if max_card:isKindOf("Slash") then slashcount = slashcount - 1 end
 	if not ptarget:isKongcheng() and slashcount > 0 and self.player:canSlash(ptarget, nil, false)
-		and not (ptarget:hasSkill("kongcheng") and ptarget:getHandcardNum() == 1) then
+		and not (ptarget:hasSkill("ikjingyou") and ptarget:getHandcardNum() == 1) then
 		self.tanhu_card = max_card:getEffectiveId()
 		use.card = sgs.Card_Parse("@TanhuCard=.")
 		if use.to then use.to:append(ptarget) end
@@ -239,7 +239,7 @@ sgs.ai_skill_use_func.TanhuCard = function(card, use, self)
 			return
 		end
 		for _, enemy in ipairs(self.enemies) do
-			if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() and not enemy:hasSkills("ikyindie+ikguiyue") then
+			if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() and not enemy:hasSkills("ikyindie+ikguiyue") then
 				self.tanhu_card = cards[1]:getId()
 				use.card = sgs.Card_Parse("@TanhuCard=.")
 				if use.to then use.to:append(enemy) end
