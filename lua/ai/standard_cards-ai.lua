@@ -1002,11 +1002,11 @@ function SmartAI:useCardPeach(card, use)
 		if self.player:getHandcardNum() < 3
 			and (enemy:hasSkills(sgs.drawpeach_skill) or getCardsNum("Dismantlement", enemy, self.player) >= 1
 				or (not self.player:hasSkills("qianxun|nosqianxun") and enemy:hasSkill("jixi") and enemy:getPile("field"):length() > 0
-					and (enemy:distanceTo(self.player, 1) == 1 or enemy:hasSkills("qicai|thjizhi")))
+					and (enemy:distanceTo(self.player, 1) == 1 or enemy:hasSkill("thjizhi")))
 				or (((enemy:hasSkill("qixi") and not self.player:hasSkill("weimu")) or enemy:hasSkill("yinling"))
 					and getKnownCard(enemy, self.player, "black", nil, "he") >= 1)
 				or (not self.player:hasSkills("qianxun|nosqianxun") and getCardsNum("Snatch", enemy, self.player) >= 1
-					and (enemy:distanceTo(self.player) == 1 or enemy:hasSkills("qicai|thjizhi")))
+					and (enemy:distanceTo(self.player) == 1 or enemy:hasSkill("thjizhi")))
 				or (enemy:hasSkill("tiaoxin") and (self.player:inMyAttackRange(enemy) and self:getCardsNum("Slash") < 1)
 					or not self.player:canSlash(enemy))) then
 			mustusepeach = true
@@ -1141,7 +1141,7 @@ sgs.ai_skill_cardask["double-sword-card"] = function(self, data, pattern, target
 			or (card:isKindOf("Jink") and self:getCardsNum("Jink") > 2)
 			or card:isKindOf("Disaster")
 			or (card:isKindOf("EquipCard") and not self.player:hasSkills(sgs.lose_equip_skill))
-			or (not self.player:hasSkills("nosjizhi|jizhi") and (card:isKindOf("Collateral") or card:isKindOf("GodSalvation")
+			or (not self.player:hasSkills("ikhuiquan|jizhi") and (card:isKindOf("Collateral") or card:isKindOf("GodSalvation")
 															or card:isKindOf("FireAttack") or card:isKindOf("IronChain") or card:isKindOf("AmazingGrace"))) then
 			return "$" .. card:getEffectiveId()
 		end
@@ -1642,7 +1642,7 @@ function SmartAI:useCardAmazingGrace(card, use)
 	local value = 1
 	local suf, coeff = 0.8, 0.8
 	if (self:needKongcheng() and self.player:getHandcardNum() == 1)
-			or self.player:hasSkills("nosjizhi|jizhi")
+			or self.player:hasSkills("ikhuiquan|jizhi")
 			or (self.player:hasSkill("thtianque") and self.player:getMark("thtianque_trick") == 0 and self.player:getPhase() == sgs.Player_Play) then
 		suf = 0.6
 		coeff = 0.6
@@ -1686,7 +1686,7 @@ function SmartAI:willUseGodSalvation(card)
 		end
 	end
 
-	if self.player:hasSkill("nosjizhi") then good = good + 6 end
+	if self.player:hasSkill("ikhuiquan") then good = good + 6 end
 	if self.player:hasSkill("thtianque") and self.player:getMark("thtianque_trick") == 0 and self.player:getPhase() == sgs.Player_Play then good = good + 5 end 
 	if self.player:hasSkill("jizhi") then good = good + 4 end
 	if (self.player:hasSkill("ikjingyou") and self.player:getHandcardNum() == 1) or not self:hasLoseHandcardEffective() then good = good + 5 end
@@ -1744,7 +1744,7 @@ function SmartAI:willUseGodSalvation(card)
 		end
 	end
 
-	return (good - bad > 2 and wounded_friend > 0)  or (wounded_friend == 0 and wounded_enemy == 0 and self.player:hasSkills("nosjizhi|jizhi"))
+	return (good - bad > 2 and wounded_friend > 0)  or (wounded_friend == 0 and wounded_enemy == 0 and self.player:hasSkills("ikhuiquan|jizhi"))
 end
 
 function SmartAI:useCardGodSalvation(card, use)
@@ -2796,7 +2796,7 @@ function SmartAI:useCardIndulgence(card, use)
 		local value = enemy:getHandcardNum() - enemy:getHp()
 
 		if enemy:hasSkills("noslijian|lijian|fanjian|nosfanjian|dimeng|jijiu|jieyin|anxu|yongsi|zhiheng|manjuan|nosrende|ikshenai|qixi|jixi") then value = value + 10 end
-		if enemy:hasSkills("qice|nosguose|guose|duanliang|nosjujian|luoshen|nosjizhi|jizhi|jilve|wansha|mingce") then value = value + 5 end
+		if enemy:hasSkills("qice|nosguose|guose|duanliang|nosjujian|luoshen|ikhuiquan|jizhi|jilve|wansha|mingce") then value = value + 5 end
 		if enemy:hasSkills("guzheng|luoying|yinling|iklingshi|shenfen|ganlu|duoshi") then value = value + 3 end
 		if self:isWeak(enemy) then value = value + 3 end
 		if enemy:isLord() then value = value + 3 end
@@ -3012,7 +3012,7 @@ sgs.ai_skill_askforag.amazing_grace = function(self, card_ids)
 	local exnihilo, jink, analeptic, nullification, snatch, dismantlement, indulgence, purple_song
 	for _, card in ipairs(cards) do
 		if isCard("ExNihilo", card, self.player) then
-			if not nextPlayerCanUse or (not self:willSkipPlayPhase() and (self.player:hasSkills("nosjizhi|jizhi|zhiheng|nosrende|ikshenai") or not nextAlive:hasSkills("nosjizhi|jizhi|zhiheng"))) then
+			if not nextPlayerCanUse or (not self:willSkipPlayPhase() and (self.player:hasSkills("ikhuiquan|jizhi|zhiheng|nosrende|ikshenai") or not nextAlive:hasSkills("ikhuiquan|jizhi|zhiheng"))) then
 				exnihilo = card:getEffectiveId()
 			end
 		elseif isCard("Jink", card, self.player) then
@@ -3428,7 +3428,7 @@ function SmartAI:useCardPurpleSong(card, use)
 		local value = friend:getHandcardNum() - friend:getHp()
 
 		if friend:hasSkills("noslijian|lijian|fanjian|nosfanjian|dimeng|jijiu|jieyin|anxu|yongsi|zhiheng|manjuan|nosrende|ikshenai|qixi|jixi") then value = value + 10 end
-		if friend:hasSkills("qice|nosguose|guose|duanliang|nosjujian|luoshen|nosjizhi|jizhi|jilve|wansha|mingce") then value = value + 5 end
+		if friend:hasSkills("qice|nosguose|guose|duanliang|nosjujian|luoshen|ikhuiquan|jizhi|jilve|wansha|mingce") then value = value + 5 end
 		if friend:hasSkills("guzheng|luoying|yinling|iklingshi|shenfen|ganlu|duoshi") then value = value + 3 end
 		if self:isWeak(friend) then value = value + 3 end
 		if friend:isLord() then value = value + 3 end
@@ -3731,6 +3731,7 @@ sgs.ai_use_priority.MoonSpear = 2.635
 
 function SmartAI:useCardKnownBoth(KnownBoth, use)
 	if not KnownBoth:isAvailable(self.player) then return false end
+	sgs.ai_use_priority.KnownBoth = 9.1
 	local targets = sgs.PlayerList()
 	local total_num = 1 + sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_ExtraTarget, self.player, KnownBoth)
 	if self.player:hasFlag("ThChouceUse") then total_num = 1 end
@@ -3745,9 +3746,17 @@ function SmartAI:useCardKnownBoth(KnownBoth, use)
 			if use.to then use.to:append(enemy) end
 		end
 	end
-	if total_num > targets:length() then
-		self:sort(self.friends_noself, "handcard")
-		self.friends_noself = sgs.reverse(self.friends_noself)
+	for _, enemy in ipairs(self.enemies) do
+		if KnownBoth:targetFilter(targets, enemy, self.player) and enemy:getHandcardNum() - getKnownNum(enemy) > 0 and not targets:contains(enemy)
+				and self:hasTrickEffective(KnownBoth, enemy, self.player) then
+			use.card = KnownBoth
+			targets:append(enemy)
+			if use.to then use.to:append(enemy) end
+		end
+	end
+	self:sort(self.friends_noself, "handcard")
+	self.friends_noself = sgs.reverse(self.friends_noself)
+	if use.card then
 		for _, friend in ipairs(self.friends_noself) do
 			if getKnownNum(friend) ~= friend:getHandcardNum() and KnownBoth:targetFilter(targets, friend, self.player) and not targets:contains(friend)
 					and self:hasTrickEffective(KnownBoth, friend, self.player) then
@@ -3756,13 +3765,24 @@ function SmartAI:useCardKnownBoth(KnownBoth, use)
 			end
 		end
 	end
+	if self.player:objectName() == self.room:getCurrent():objectName() then
+		for _, player in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+			if KnownBoth:targetFilter(targets, player, self.player) and self:hasTrickEffective(KnownBoth, player, self.player) then
+				sgs.ai_use_priority.KnownBoth = 0.3
+				use.card = KnownBoth
+				targets:append(player)
+				if use.to then
+					use.to:append(player)
+				end
+				return
+			end
+		end
+	end
 end
 
 sgs.ai_nullification.KnownBoth = function(self, card, from, to, positive)
 	return false
 end
-
-sgs.ai_use_priority.KnownBoth = 9.1
 sgs.ai_use_value.KnownBoth = 5.5
 sgs.ai_keep_value.KnownBoth = 3.33
 

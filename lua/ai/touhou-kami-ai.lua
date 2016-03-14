@@ -1548,14 +1548,14 @@ sgs.ai_skill_cardask["@thlijian-give"] = function(self, data, pattern, target)
 		self:sortByUseValue(cards)
 		for _, c in ipairs(cards) do
 			if c:getType() == card_type then
-				return "$" .. card:getEffectiveId()
+				return "$" .. c:getEffectiveId()
 			end
 		end
 	else
 		self:sortByKeepValue(cards)
 		for _, c in ipairs(cards) do
 			if c:getType() == card_type and not self:isValuableCard(c, target) then
-				return "$" .. card:getEffectiveId()
+				return "$" .. c:getEffectiveId()
 			end
 		end
 	end
