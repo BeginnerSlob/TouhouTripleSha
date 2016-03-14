@@ -1511,7 +1511,7 @@ end
 sgs.ai_skill_invoke.thlijian = function(self, data)
 	local good, bad = 0, 0
 	local lord = self.room:getLord()
-	if self.role ~= "rebel" and lord and self:isWeak(lord) and self.player:objectName() ~= lord:objectName() then return false end
+	if self.role ~= "rebel" and self:isWeak(lord) and self.player:objectName() ~= lord:objectName() then return false end
 	for _, player in sgs.qlist(self.room:getOtherPlayers(self.player)) do
 		if self:isWeak(player) then
 			if self:isFriend(player) then bad = bad + 1
@@ -1519,7 +1519,7 @@ sgs.ai_skill_invoke.thlijian = function(self, data)
 			end
 		end
 	end
-	if good == 0 then return end
+	if good == 0 then return false end
 
 	for _, player in sgs.qlist(self.room:getOtherPlayers(self.player)) do
 		local hp = math.max(player:getHp(), 1)
