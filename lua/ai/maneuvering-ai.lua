@@ -807,7 +807,7 @@ function SmartAI:useCardFireAttack(fire_attack, use)
 	end
 
 	if ((suitnum == 2 and lack.diamond == false) or suitnum <= 1)
-		and self:getOverflow() <= (self.player:hasSkills("jizhi|nosjizhi") and -2 or 0)
+		and self:getOverflow() <= (self.player:hasSkills("jizhi|ikhuiquan") and -2 or 0)
 		and #targets == 0 then return end
 
 	for _, enemy in ipairs(enemies) do

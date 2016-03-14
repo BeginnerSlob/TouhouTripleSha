@@ -443,3 +443,147 @@ sgs.ai_choicemade_filter.skillInvoke.ikyufeng = function(self, player, promptlis
 		if target then sgs.updateIntention(player, target, 50) end
 	end
 end
+
+--慧泉：当你使用一张锦囊牌时，你可以摸一张牌。
+sgs.ai_skill_invoke.ikhuiquan = true
+
+function sgs.ai_cardneed.ikhuiquan(to, card)
+	return card:isKindOf("TrickCard")
+end
+
+sgs.ikhuiquan_keep_value = {
+	Peach = 6,
+	Analeptic = 5.9,
+	Jink = 5.8,
+	ExNihilo = 5.7,
+	Snatch = 5.7,
+	Dismantlement = 5.6,
+	Indulgence = 5.6,
+	SupplyShortage = 5.6,
+	PurpleSong = 5.6,
+	IronChain = 5.5,
+	SavageAssault = 5.4,
+	Duel = 5.3,
+	ArcheryAttack = 5.2,
+	Drowning = 5.2,
+	AmazingGrace = 5.1,
+	Collateral = 5,
+	LureTiger = 4.9,
+	KnownBoth = 4.9,
+	FireAttack = 4.9,
+	BurningCamps = 4.5
+}
+
+--弧顾：锁定技，其他角色不能弃置你装备区的武器牌或防具牌。
+--无
+
+--暴殴：其他角色的结束阶段开始时，若该角色于此回合内造成过伤害，你可以对其使用一张无视距离的【杀】。
+sgs.ai_skill_cardask["@ikbaoou-slash"] = function(self, data, pattern, target, target2)
+	for _, slash in ipairs(self:getCards("Slash")) do
+		if self:isFriend(target2) and self:slashIsEffective(slash, target2) then
+			if self:findLeijiTarget(target2, 50, self.player) then return slash:toString() end
+			if self:getDamagedEffects(target2, self.player, true) then return slash:toString() end
+		end
+
+		local nature = sgs.DamageStruct_Normal
+		if slash:isKindOf("FireSlash") then nature = sgs.DamageStruct_Fire
+		elseif slash:isKindOf("ThunderSlash") then nature = sgs.DamageStruct_Thunder end
+		if self:isEnemy(target2) and self:slashIsEffective(slash, target2) and self:canAttack(target2, self.player, nature)
+			and not self:getDamagedEffects(target2, self.player, true) and not self:findLeijiTarget(target2, 50, self.player) then
+			return slash:toString()
+		end
+	end
+	return "."
+end
+
+--夜华：觉醒技，当你造成伤害后，若你已受伤，你须减少1点体力上限，然后获得技能“星雨”。
+--无
+
+--星雨：出牌阶段限一次，你可以选择一种牌的类别或颜色，然后亮出牌堆顶的一张牌，若此牌不为该类别或颜色，你重复此流程。你令一名角色获得最后亮出的牌，然后将其余的牌置入弃牌堆。
+local ikxingyu_skill = {}
+ikxingyu_skill.name = "ikxingyu"
+table.insert(sgs.ai_skills, ikxingyu_skill)
+ikxingyu_skill.getTurnUseCard = function(self)
+	if not self.player:hasUsed("IkXingyuCard") then return sgs.Card_Parse("@IkXingyuCard=.") end
+end
+
+sgs.ai_skill_use_func.IkXingyuCard = function(card, use, self)
+	self.ikxingyu_choice = nil
+	self.ikxingyu_enemy = nil
+	sgs.ai_use_priority.IkXingyuCard = 9.5
+	self:sort(self.friends)
+	local use_card
+	for _, friend in ipairs(self.friends) do
+		if not hasManjuanEffect(friend) and not self:needKongcheng(friend, true) then
+			if self:isWeak(friend) then self.ikxingyu_choice = "basic" end
+			use_card = true
+		end
+	end
+	if use_card then
+		use.card = card
+		return
+	end
+
+	sgs.ai_use_priority.IkXingyuCard = 0.5
+	for _, enemy in ipairs(self.enemies) do
+		if not hasManjuanEffect(enemy) and self:needKongcheng(enemy, true) then
+			self.ikxingyu_choice = "equip"
+			self.ikxingyu_enemy = enemy
+			use.card = card
+			return
+		end
+	end
+end
+
+sgs.ai_use_priority.IkXingyuCard = 9.5
+
+sgs.ai_skill_choice.ikxingyu = function(self, choices)
+	if self.ikxingyu_choice then return self.ikxingyu_choice end
+	for _, friend in ipairs(self.friends) do
+		if not hasManjuanEffect(friend) and not self:needKongcheng(friend, true) then
+			if friend:getHandcardNum() < 3 and friend:getEquips():length() < 2 then return "equip" end
+		end
+	end
+	for _, friend in ipairs(self.friends) do
+		if not hasManjuanEffect(friend) and not self:needKongcheng(friend, true) then
+			if friend:hasSkills("jizhi|ikhuiquan|jilve") then return "trick" end
+		end
+	end
+	local rand = math.random(0, 100)
+	if rand > 60 then return "trick"
+	elseif rand > 35 then return "red"
+	elseif rand > 10 then return "equip"
+	elseif rand > 2 then return "basic"
+	else return "black"
+	end
+end
+
+sgs.ai_skill_playerchosen.ikxingyu = function(self, targets)
+	if self.ikxingyu_enemy then return self.ikxingyu_enemy end
+
+	local id = self.player:getMark("ikxingyu")
+	local card = sgs.Sanguosha:getCard(id)
+	local cards = { card }
+	local c, friend = self:getCardNeedPlayer(cards, self.friends)
+	if friend then return friend end
+
+	self:sort(self.friends)
+	for _, friend in ipairs(self.friends) do
+		if self:isValuableCard(card, friend) and not hasManjuanEffect(friend) and not self:needKongcheng(friend, true) then return friend end
+	end
+	for _, friend in ipairs(self.friends) do
+		if self:isWeak(friend) and not hasManjuanEffect(friend) and not self:needKongcheng(friend, true) then return friend end
+	end
+	local trash = card:isKindOf("EquipCard") or card:isKindOf("Disaster") or card:isKindOf("GodSalvation") or card:isKindOf("AmazingGrace") or card:isKindOf("Slash")
+	if trash then
+		for _, enemy in ipairs(self.enemies) do
+			if self:doNotDraw(enemy, 1) and not hasManjuanEffect(enemy) and not isCard("Peach", card, enemy) and not isCard("Analeptic", card, enemy) then return enemy end
+		end
+		for _, enemy in ipairs(self.enemies) do
+			if enemy:getPhase() > sgs.Player_Play and self:needKongcheng(enemy, true) and not hasManjuanEffect(enemy) then return enemy end
+		end
+	end
+	for _, friend in ipairs(self.friends) do
+		if not hasManjuanEffect(friend) and not self:needKongcheng(friend, true) then return friend end
+	end
+end

@@ -93,13 +93,13 @@ function setInitialTables()
 						  "thshenzhou"
 	sgs.wizard_skill = "guicai|nosguicai|guidao|jilve|tiandu|noszhenlie|huanshi"
 	sgs.wizard_harm_skill = "guicai|nosguicai|guidao|jilve|huanshi"
-	sgs.priority_skill = "dimeng|haoshi|qingnang|nosjizhi|jizhi|guzheng|qixi|jieyin|nosguose|guose|duanliang|jujian|fanjian|nosfanjian|noslijian|lijian|" ..
+	sgs.priority_skill = "dimeng|haoshi|qingnang|ikhuiquan|jizhi|guzheng|qixi|jieyin|nosguose|guose|duanliang|jujian|fanjian|nosfanjian|noslijian|lijian|" ..
 							"manjuan|thjinlu|tuxi|nostuxi|qiaobian|yongsi|zhiheng|luoshen|nosrende|ikshenai|mingce|wansha|iklingshi|jilve|" ..
 							"anxu|qice|yinling|qingcheng|zhaoxin"
 	sgs.save_skill = "jijiu|buyi|ikjieyou|chunlao|longhun"
 	sgs.exclusive_skill = "huilei|duanchang|enyuan|wuhun|zhuiyi|buqu|nosbuqu|nosyiji|yiji|ganglie|vsganglie|nosganglie|guixin|jieming|nosmiji|" ..
 							"thjuedu"
-	sgs.cardneed_skill = "ikyipao|tianyi|xianzhen|shuangxiong|nosjizhi|jizhi|noseguose|guose|duanliang|qixi|qingnang|yinling|nosluoyi|guhuo|nosguhuo|kanpo|" ..
+	sgs.cardneed_skill = "ikyipao|tianyi|xianzhen|shuangxiong|ikhuiquan|jizhi|noseguose|guose|duanliang|qixi|qingnang|yinling|nosluoyi|guhuo|nosguhuo|kanpo|" ..
 							"jieyin|renjie|zhiheng|nosrende|ikshenai|nosjujian|guicai|nosguicai|guidao|longhun|luanji|qiaobian|beige|thluli|" ..
 							"mingce|nosfuhun|lirang|xuanfeng|xinzhan|dangxian|bifa|xiaoguo"..
 							"thzhanye|thqiaogong|thguiyu"
@@ -567,7 +567,7 @@ function SmartAI:getUseValue(card)
 		if self.player:getWeapon() and not self.player:hasSkills(sgs.lose_equip_skill) and card:isKindOf("Collateral") then v = 2 end
 		if card:getSkillName() == "shuangxiong" then v = 6 end
 		if card:isKindOf("Duel") then v = v + self:getCardsNum("Slash") * 2 end
-		if self.player:hasSkill("nosjizhi") then v = v + 4 end
+		if self.player:hasSkill("ikhuiquan") then v = v + 4 end
 		if self.player:hasSkill("thtianque") and self.player:getMark("thqianque_trick") == 0 and self.player:getPhase() == sgs.Player_Play then v = v + 4 end
 		if self.player:hasSkill("jizhi") then v = v + 3 end
 		if self.player:hasSkill("ikwumou") and card:isNDTrick() and not card:isKindOf("AOE") then
@@ -595,7 +595,7 @@ function SmartAI:getUsePriority(card)
 		end
 		return v
 	elseif card:isKindOf("TrickCard") then
-		if self.player:hasSkill("thguixu") and not (self.player:hasSkills("jizhi|nosjizhi")
+		if self.player:hasSkill("thguixu") and not (self.player:hasSkills("jizhi|ikhuiquan")
 													or (self.player:getPhase() == sgs.Player_Play
 														and self.player:hasSkill("thtianque")
 														and self.player:getMark("thtianque_trick") == 0)) then
@@ -2524,7 +2524,7 @@ function SmartAI:askForNullification(trick, from, to, positive, isHeg)
 						end
 						if peach_num == 0 and not self:willSkipPlayPhase(NP) then
 							if exnihilo_num > 0 then
-								if NP:hasSkills("nosjizhi|jizhi|nosrende|zhiheng")
+								if NP:hasSkills("ikhuiquan|jizhi|nosrende|zhiheng")
 									or (NP:hasSkill("ikshenai") and not NP:hasUsed("IkShenaiCard"))
 									or (NP:hasSkill("jilve") and NP:getMark("@bear") > 0) then return null_card end
 							else
@@ -5100,7 +5100,7 @@ function SmartAI:getAoeValue(card, player)
 	end
 
 	if isEffective_F == 0 and isEffective_E == 0 then
-		return (attacker:hasSkills("jizhi|nosjizhi")
+		return (attacker:hasSkills("jizhi|ikhuiquan")
 				or (attacker:hasSkill("thtianque") and attacker:getMark("thqianque_trick") == 0 and attacker:getPhase() == sgs.Player_Play)) and 10 or -100
 	elseif isEffective_E == 0 then
 		return -100
@@ -5154,7 +5154,7 @@ function SmartAI:getAoeValue(card, player)
 	end
 
 	local forbid_start = true
-	if attacker:hasSkills("nosjizhi|jizhi") then
+	if attacker:hasSkills("ikhuiquan|jizhi") then
 		forbid_start = false
 		good = good + 51
 	end

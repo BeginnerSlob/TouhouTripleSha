@@ -1195,12 +1195,6 @@ sgs.ai_choicemade_filter.skillInvoke.nostieji = function(self, player, promptlis
 	end
 end
 
-function sgs.ai_cardneed.nosjizhi(to, card)
-	return card:isNDTrick()
-end
-
-sgs.nosjizhi_keep_value = sgs.jizhi_keep_value
-
 local noskurou_skill = {}
 noskurou_skill.name = "noskurou"
 table.insert(sgs.ai_skills, noskurou_skill)
