@@ -546,7 +546,7 @@ function SmartAI:getUseValue(card)
 		if self.player:hasSkill("noskurou") and card:isKindOf("Crossbow") then return 9 end
 		if self.player:hasSkills("bazhen|yizhong|bossmanjia") and card:isKindOf("Armor") then v = 2 end
 		if self.role == "loyalist" and self.player:getKingdom() == "hana" and not self.player:hasSkills("bazhen|yizhong|bossmanjia")
-			and self.room:getLord() and self.room:getLord():hasLordSkill("hujia") and card:isKindOf("EightDiagram") then
+			and self.room:getLord() and self.room:getLord():hasLordSkill("ikhuanwei") and card:isKindOf("EightDiagram") then
 			v = 9
 		end
 		if self.player:hasSkills(sgs.lose_equip_skill) then return 10 end
@@ -4667,7 +4667,7 @@ function SmartAI:getCardsNum(class_name, flag, selfonly)
 
 	if selfonly then return n end
 	if class_name == "Jink" then
-		if player:hasLordSkill("hujia") then
+		if player:hasLordSkill("ikhuanwei") then
 			local lieges = self.room:getLieges("hana", player)
 			for _, liege in sgs.qlist(lieges) do
 				if self:isFriend(liege, player) then
@@ -5068,7 +5068,7 @@ function SmartAI:getAoeValue(card, player)
 		end
 		if card:isKindOf("SavageAssault") and lord:hasLordSkill("ikxinqi") and self.player:getKingdom() == "kaze"
 			and self:getCardsNum("Slash") > slash_num then return true end
-		if card:isKindOf("ArcheryAttack") and lord:hasLordSkill("hujia") and self.player:getKingdom() == "hana"
+		if card:isKindOf("ArcheryAttack") and lord:hasLordSkill("ikhuanwei") and self.player:getKingdom() == "hana"
 			and self:getCardsNum("Jink") > jink_num then return true end
 		if self:getCardsNum("Peach") > peach_num then return true end
 

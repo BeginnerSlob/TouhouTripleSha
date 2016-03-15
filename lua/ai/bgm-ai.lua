@@ -915,14 +915,14 @@ sgs.ai_skill_invoke.hantong = true
 
 sgs.ai_skill_invoke.hantong_acquire = function(self, data)
 	local skill = data:toString()
-	if skill == "hujia" and not self.player:hasSkill("hujia") then
+	if skill == "ikhuanwei" and not self.player:hasSkill("ikhuanwei") then
 		local can_invoke = false
 		for _, friend in ipairs(self.friends_noself) do
 			if friend:getKingdom() == "hana" and getCardsNum("Jink", friend, self.player) > 0 then can_invoke = true end
 		end
 		if can_invoke then
 			local origin_data = self.player:getTag("HantongOriginData")
-			return sgs.ai_skill_invoke.hujia(self, origin_data)
+			return sgs.ai_skill_invoke.ikhuanwei(self, origin_data)
 		end
 	elseif skill == "ikxinqi" and not self.player:hasSkill("ikxinqi") then
 		local can_invoke = false

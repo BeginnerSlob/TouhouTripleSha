@@ -587,3 +587,98 @@ sgs.ai_skill_playerchosen.ikxingyu = function(self, targets)
 		if not hasManjuanEffect(friend) and not self:needKongcheng(friend, true) then return friend end
 	end
 end
+
+--娇蛮：每当你受到一次伤害后，你可以将对你造成伤害的牌交给除伤害来源外的一名角色。
+sgs.ai_skill_playerchosen.ikjiaoman = function(self, targets)
+	local damage = self.room:getTag("CurrentDamageStruct"):toDamage()
+	local card = damage.card
+	local cards = { card }
+	local friends = {}
+	for _, p in sgs.qlist(targets) do
+		if self:isFriend(p) then
+			table.insert(friends, p)
+		end
+	end
+	local _, friend = self:getCardNeedPlayer(cards, friends)
+	if friend then return friend end
+	if targets:contains(self.player) and not self:needKongcheng(self.player, true) then return self.player end
+	if #friends > 0 then
+		self:sort(friends)
+		return friends[1]
+	end
+	return nil
+end
+
+--唤卫：君主技，当你需要使用或打出一张【闪】时，你可以令其他花势力角色打出一张【闪】（视为由你使用或打出）。
+table.insert(sgs.ai_global_flags, "ikhuanweisource")
+
+sgs.ai_skill_invoke.ikhuanwei = function(self, data)
+	local asked = data:toStringList()
+	local prompt = asked[2]
+	if self:askForCard("jink", prompt, 1) == "." then return false end
+
+	local cards = self.player:getHandcards()
+	if sgs.ikhuanweisource then return false end
+	for _, friend in ipairs(self.friends_noself) do
+		if friend:getKingdom() == "hana" and self:hasEightDiagramEffect(friend) then return true end
+	end
+
+	local current = self.room:getCurrent()
+	if self:isFriend(current) and current:getKingdom() == "hana" and self:getOverflow(current) > 2 then
+		return true
+	end
+
+	for _, card in sgs.qlist(cards) do
+		if isCard("Jink", card, self.player) then
+			return false
+		end
+	end
+	local lieges = self.room:getLieges("hana", self.player)
+	if lieges:isEmpty() then return end
+	local has_friend = false
+	for _, p in sgs.qlist(lieges) do
+		if not self:isEnemy(p) then
+			has_friend = true
+			break
+		end
+	end
+	return has_friend
+end
+
+sgs.ai_choicemade_filter.skillInvoke.ikhuanwei = function(self, player, promptlist)
+	if promptlist[#promptlist] == "yes" then
+		sgs.ikhuanweisource = player
+	end
+end
+
+function sgs.ai_slash_prohibit.ikhuanwei(self, from, to)
+	if not to:hasLordSkill("ikhuanwei") then return false end
+	if self:isFriend(to, from) then return false end
+	local guojia = self.room:findPlayerBySkillName("tiandu")
+	if guojia and guojia:getKingdom() == "hana" and self:isFriend(to, guojia) then return sgs.ai_slash_prohibit.tiandu(self, from, guojia) end
+end
+
+sgs.ai_choicemade_filter.cardResponded["@ikhuanwei-jink"] = function(self, player, promptlist)
+	if promptlist[#promptlist] ~= "_nil_" then
+		sgs.updateIntention(player, sgs.ikhuanweisource, -80)
+		sgs.ikhuanweisource = nil
+	elseif sgs.ikhuanweisource then
+		if self:isFriend(player, sgs.ikhuanweisource) then sgs.card_lack[player:objectName()]["Jink"] = 1 end
+		if player:objectName() == self.room:getLieges("hana", sgs.ikhuanweisource):last():objectName() then sgs.ikhuanweisource = nil end
+	end
+end
+
+sgs.ai_skill_cardask["@ikhuanwei-jink"] = function(self)
+	if not self:isFriend(sgs.ikhuanweisource) then return "." end
+	if self:needBear() then return "." end
+	local bgm_zhangfei = self.room:findPlayerBySkillName("dahe")
+	if bgm_zhangfei and bgm_zhangfei:isAlive() and sgs.ikhuanweisource:hasFlag("dahe") then
+		for _, card in ipairs(self:getCards("Jink")) do
+			if card:getSuit() == sgs.Card_Heart then
+				return card:toString()
+			end
+		end
+		return "."
+	end
+	return self:getCardId("Jink") or "."
+end
