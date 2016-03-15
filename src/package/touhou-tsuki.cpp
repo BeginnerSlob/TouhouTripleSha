@@ -2371,7 +2371,7 @@ public:
     virtual bool triggerable(const ServerPlayer *target) const {
         return TriggerSkill::triggerable(target)
             && target->hasFlag("shenbaoused")
-            && !target->isKongcheng()
+            && target->canDiscard(target, "he")
             && target->getPhase() == Player::Finish;
     }
 
