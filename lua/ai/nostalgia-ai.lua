@@ -1172,7 +1172,7 @@ sgs.ai_skill_invoke.nostieji = function(self, data)
 	if zj and self:isEnemy(zj) and self:canRetrial(zj) then return false end
 
 	if target:hasArmorEffect("eight_diagram") and not self.player:hasWeapon("qinggang_sword") then return true end
-	if target:hasLordSkill("hujia") then
+	if target:hasLordSkill("ikhuanwei") then
 		for _, p in ipairs(self.enemies) do
 			if p:getKingdom() == "hana" and (p:hasArmorEffect("eight_diagram") or p:getHandcardNum() > 0) then return true end
 		end

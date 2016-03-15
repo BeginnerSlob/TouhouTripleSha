@@ -137,16 +137,16 @@ function sgs.getDefenseSlash(player, self)
 	if player:hasSkill("aocai") and player:getPhase() == sgs.Player_NotActive then defense = defense + 0.5 end
 	if player:hasSkill("wanrong") and not hasManjuanEffect(player) then defense = defense + 0.5 end
 
-	local hujiaJink = 0
-	if player:hasLordSkill("hujia") then
+	local ikhuanweiJink = 0
+	if player:hasLordSkill("ikhuanwei") then
 		local lieges = global_room:getLieges("hana", player)
 		for _, liege in sgs.qlist(lieges) do
 			if sgs.compareRoleEvaluation(liege, "rebel", "loyalist") == sgs.compareRoleEvaluation(player, "rebel", "loyalist") then
-				hujiaJink = hujiaJink + getCardsNum("Jink", liege)
-				if liege:hasArmorEffect("eight_diagram") or liege:hasArmorEffect("bazhen") then hujiaJink = hujiaJink + 0.8 end
+				ikhuanweiJink = ikhuanweiJink + getCardsNum("Jink", liege)
+				if liege:hasArmorEffect("eight_diagram") or liege:hasArmorEffect("bazhen") then ikhuanweiJink = ikhuanweiJink + 0.8 end
 			end
 		end
-		defense = defense + hujiaJink
+		defense = defense + ikhuanweiJink
 	end
 
 	if attacker and attacker:objectName() ~= player:objectName() and attacker:canSlashWithoutCrossbow() then
@@ -161,7 +161,7 @@ function sgs.getDefenseSlash(player, self)
 								or (jiangqin and jiangqin:isAdjacentTo(player) and attacker:isAdjacentTo(player) and self and self:isEnemy(jiangqin))
 		if need_double_jink and getKnownCard(player, nil, "Jink", true, "he") < 2
 			and getCardsNum("Jink", player) < 1.5
-			and (not player:hasLordSkill("hujia") or hujiaJink < 2) then
+			and (not player:hasLordSkill("ikhuanwei") or ikhuanweiJink < 2) then
 			defense = 0
 		end
 
@@ -216,7 +216,7 @@ function sgs.getDefenseSlash(player, self)
 		defense = defense - 0.4
 	end
 
-	if player:getHandcardNum() == 0 and getWoodenOxPile(player):isEmpty() and hujiaJink == 0 and not player:hasSkill("ikjingyou") then
+	if player:getHandcardNum() == 0 and getWoodenOxPile(player):isEmpty() and ikhuanweiJink == 0 and not player:hasSkill("ikjingyou") then
 		if player:getHp() <= 1 then defense = defense - 2.5 end
 		if player:getHp() == 2 then defense = defense - 1.5 end
 		if not hasEightDiagram then defense = defense - 2 end
@@ -1467,7 +1467,7 @@ sgs.ai_skill_invoke.eight_diagram = function(self, data)
 	if self.player:hasFlag("dahe") then
 		if self.player:hasSkills("tiandu|leiji|nosleiji") and not heart_jink then return true else return false end
 	end
-	if sgs.hujiasource and (not self:isFriend(sgs.hujiasource) or sgs.hujiasource:hasFlag("dahe")) then return false end
+	if sgs.ikhuanweisource and (not self:isFriend(sgs.ikhuanweisource) or sgs.ikhuanweisource:hasFlag("dahe")) then return false end
 	if self:needKongcheng(self.player, true) and self.player:getHandcardNum() == 1 then
 		local card = self.player:getHandcards():first()
 		if isCard("Jink", card, self.player) and not self.player:isLocked(card) then return false end
@@ -1498,7 +1498,7 @@ function sgs.ai_armor_value.eight_diagram(player, self)
 		return 6
 	end
 
-	if self.role == "loyalist" and self.player:getKingdom() == "hana" and not self.player:hasSkills("bazhen|yizhong|bossmanjia") and self.room:getLord() and self.room:getLord():hasLordSkill("hujia") then
+	if self.role == "loyalist" and self.player:getKingdom() == "hana" and not self.player:hasSkills("bazhen|yizhong|bossmanjia") and self.room:getLord() and self.room:getLord():hasLordSkill("ikhuanwei") then
 		return 5
 	end
 
@@ -2009,7 +2009,7 @@ function SmartAI:getValuableCard(who)
 
 	if armor then
 		local lord = self.room:getLord()
-		if lord and self:isFriend(who, lord) and lord:hasLordSkill("hujia") and who:getKingdom() == "hana" and armor:isKindOf("EightDiagram") then
+		if lord and self:isFriend(who, lord) and lord:hasLordSkill("ikhuanwei") and who:getKingdom() == "hana" and armor:isKindOf("EightDiagram") then
 			return armor:getEffectiveId()
 		end
 	end
@@ -3107,7 +3107,7 @@ sgs.ai_skill_askforag.amazing_grace = function(self, card_ids)
 				return eightdiagram
 			end
 			if self.role == "loyalist" and self.player:getKingdom() == "hana"
-				and lord and lord:hasLordSkill("hujia") and ((lord:objectName() ~= nextAlive:objectName() and nextPlayerIsEnemy) or lord:getArmor()) then
+				and lord and lord:hasLordSkill("ikhuanwei") and ((lord:objectName() ~= nextAlive:objectName() and nextPlayerIsEnemy) or lord:getArmor()) then
 				return eightdiagram
 			end
 			if sgs.ai_armor_value.eight_diagram(self.player, self) >= 5 then return eightdiagram end

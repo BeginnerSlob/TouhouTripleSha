@@ -695,7 +695,7 @@ function SmartAI:getValuableCardForGuanxing(cards)
 		if not self.player:hasSkills("yizhong|bazhen|bossmanjia") and self.player:hasSkills("tiandu|leiji|nosleiji|noszhenlie|gushou|hongyan") then
 			return eightdiagram
 		end
-		if self.role == "loyalist" and self.player:getKingdom() == "hana" and not self.player:hasSkill("bazhen") and lord and lord:hasLordSkill("hujia") then
+		if self.role == "loyalist" and self.player:getKingdom() == "hana" and not self.player:hasSkill("bazhen") and lord and lord:hasLordSkill("ikhuanwei") then
 			return eightdiagram
 		end
 		if sgs.ai_armor_value.eight_diagram(self.player, self) >= 5 then return eightdiagram end
