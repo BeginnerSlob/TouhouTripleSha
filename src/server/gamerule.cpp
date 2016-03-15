@@ -974,8 +974,6 @@ bool HulaoPassMode::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer 
                     else
                         n = p->getSeat() + 1;
                     QVariant data = n;
-                    if (p->getGeneral()->getKingdom() == "kami")
-                        room->setPlayerProperty(p, "kingdom", room->askForKingdom(p));
                     room->getThread()->trigger(DrawInitialCards, room, p, data);
                     n_list << data.toInt();
                 }
