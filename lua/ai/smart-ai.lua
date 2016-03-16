@@ -89,21 +89,21 @@ function setInitialTables()
 	sgs.ai_type_name = { "Skill", "Basic", "Trick", "Equip" }
 	sgs.lose_equip_skill = "kofxiaoji|xiaoji|xuanfeng|nosxuanfeng"
 	sgs.need_kongcheng = "lianying|noslianying|ikjingyou|sijian|thjingtao|thfeijing|thkaihai"
-	sgs.masochism_skill = "nosyiji|yiji|jieming|ikhuanji|nosfankui|thfusheng|ikaoli|vsganglie|nosganglie|enyuan|fangzhu|guixin|langgu|quanji|thzhehui|chengxiang|noschengxiang|" .. 
+	sgs.masochism_skill = "ikyumeng|yiji|jieming|ikhuanji|nosfankui|thfusheng|ikaoli|vsganglie|nosganglie|enyuan|fangzhu|guixin|langgu|quanji|thzhehui|chengxiang|noschengxiang|" .. 
 						  "thshenzhou"
 	sgs.wizard_skill = "iktiansuo|nosguicai|guidao|jilve|tiandu|noszhenlie|huanshi"
 	sgs.wizard_harm_skill = "iktiansuo|nosguicai|guidao|jilve|huanshi"
 	sgs.priority_skill = "dimeng|haoshi|qingnang|ikhuiquan|jizhi|guzheng|qixi|jieyin|nosguose|guose|duanliang|jujian|fanjian|nosfanjian|noslijian|lijian|" ..
-							"manjuan|thjinlu|tuxi|nostuxi|qiaobian|yongsi|zhiheng|luoshen|nosrende|ikshenai|mingce|wansha|iklingshi|jilve|" ..
+							"manjuan|thjinlu|ikchibao|nostuxi|qiaobian|yongsi|zhiheng|ikmengyang|nosrende|ikshenai|mingce|wansha|iklingshi|jilve|" ..
 							"anxu|qice|yinling|qingcheng|zhaoxin"
 	sgs.save_skill = "jijiu|buyi|ikjieyou|chunlao|longhun"
-	sgs.exclusive_skill = "huilei|duanchang|enyuan|wuhun|zhuiyi|buqu|nosbuqu|nosyiji|yiji|ikaoli|vsganglie|nosganglie|guixin|jieming|nosmiji|" ..
+	sgs.exclusive_skill = "huilei|duanchang|enyuan|wuhun|zhuiyi|buqu|nosbuqu|ikyumeng|yiji|ikaoli|vsganglie|nosganglie|guixin|jieming|nosmiji|" ..
 							"thjuedu"
 	sgs.cardneed_skill = "ikyipao|tianyi|xianzhen|shuangxiong|ikhuiquan|jizhi|noseguose|guose|duanliang|qixi|qingnang|yinling|nosluoyi|guhuo|nosguhuo|kanpo|" ..
 							"jieyin|renjie|zhiheng|nosrende|ikshenai|nosjujian|iktiansuo|nosguicai|guidao|longhun|luanji|qiaobian|beige|thluli|" ..
 							"mingce|nosfuhun|lirang|xuanfeng|xinzhan|dangxian|bifa|xiaoguo"..
 							"thzhanye|thqiaogong|thguiyu"
-	sgs.drawpeach_skill = "tuxi|nostuxi|qiaobian"
+	sgs.drawpeach_skill = "ikchibao|nostuxi|qiaobian"
 	sgs.recover_skill = "nosrende|ikshenai|kuanggu|kofkuanggu|zaiqi|jieyin|qingnang|shenzhi"
 	sgs.use_lion_skill = "longhun|duanliang|qixi|guidao|noslijian|lijian|jujian|nosjujian|zhiheng|mingce|yongsi|fenxun|gongqi|" ..
 							"yinling|jilve|qingcheng|diyyicong"
@@ -263,7 +263,7 @@ function sgs.getDefense(player)
 			end
 		end
 		if player:hasSkill("jieming") then defense = defense + 3 end
-		if player:hasSkill("nosyiji") then defense = defense + 3 end
+		if player:hasSkill("ikyumeng") then defense = defense + 3 end
 		if player:hasSkill("yiji") then defense = defense + 3 end
 		if player:hasSkill("guixin") then defense = defense + 4 end
 		if player:hasSkill("yuce") then defense = defense + 2 end
@@ -796,8 +796,8 @@ function SmartAI:cardNeed(card)
 		if self.player:getHp() < 2 then return 10 end
 	end
 	if card:isKindOf("Slash") and (self:getCardsNum("Slash") > 0) then return 4 end
-	if card:isKindOf("Crossbow") and self.player:hasSkills("luoshen|yongsi|noskurou|keji|ikchilian|wushen|thanbing") then return 20 end
-	if card:isKindOf("Axe") and self.player:hasSkills("luoyi|nosluoyi|jiushi|jiuchi|pojun|thsibao") then return 15 end
+	if card:isKindOf("Crossbow") and self.player:hasSkills("ikmengyang|yongsi|noskurou|keji|ikchilian|wushen|thanbing") then return 20 end
+	if card:isKindOf("Axe") and self.player:hasSkills("ikluoyi|nosluoyi|jiushi|jiuchi|pojun|thsibao") then return 15 end
 	if card:isKindOf("Weapon") and (not self.player:getWeapon()) and (self:getCardsNum("Slash") > 1) then return 6 end
 	if card:isKindOf("Nullification") and self:getCardsNum("Nullification") == 0 then
 		if self:willSkipPlayPhase() or self:willSkipDrawPhase() then return 10 end
@@ -2434,7 +2434,7 @@ function SmartAI:askForNullification(trick, from, to, positive, isHeg)
 					end
 					if to:getHp() - to:getHandcardNum() >= 2 then return nil end
 					if to:hasSkill("nostuxi") and to:getHp() > 2 then return nil end
-					if to:hasSkill("tuxi") and to:getHp() > 2 then
+					if to:hasSkill("ikchibao") and to:getHp() > 2 then
 						local count = 0
 						for _, enemy in ipairs(#self:getEnemies(to)) do
 							if enemy:getHandcardNum() >= to:getHandcardNum() then count = count + 1 end
@@ -2464,7 +2464,7 @@ function SmartAI:askForNullification(trick, from, to, positive, isHeg)
 					return nil
 				end
 				if self.player:objectName() == to:objectName() then
-					if self.player:hasSkills("jieming|nosyiji|yiji|guixin")
+					if self.player:hasSkills("jieming|ikyumeng|yiji|guixin")
 						and (self.player:getHp() > 1 or self:getCardsNum("Peach") > 0 or self:getCardsNum("Analeptic") > 0) then
 						return nil
 					elseif not self:canAvoidAOE(trick) and not (self.player:hasSkill("ikwumou") and sgs.ai_skill_choice.ikwumou(self) == "losehp") then
@@ -2989,7 +2989,7 @@ function SmartAI:hasHeavySlashDamage(from, slash, to, return_value)
 	end
 	if not from:hasSkill("ikxuwu") and from:getMark("thshenyou") == 0 then
 		if from:hasFlag("nosluoyi") then dmg = dmg + 1 end
-		if from:getMark("@luoyi") > 0 then dmg = dmg + 1 end
+		if from:getMark("ikluoyi") > 0 then dmg = dmg + 1 end
 		if slash and from:hasSkill("jie") and slash:isRed() then dmg = dmg + 1 end
 		if from:hasSkill("anjian") and not to:inMyAttackRange(from) then dmg = dmg + 1 end
 
@@ -3866,7 +3866,7 @@ function SmartAI:needRetrial(judge)
 		if self:isFriend(who) then
 			if who:getHp() - who:getHandcardNum() >= 2 and self:getOverflow() <= 0 then return false end
 			if who:hasSkill("nostuxi") and who:getHp() > 2 and self:getOverflow() <= 0 then return false end
-			if who:hasSkill("tuxi") and who:getHp() > 2 and self:getOverflow() <= 0 then
+			if who:hasSkill("ikchibao") and who:getHp() > 2 and self:getOverflow() <= 0 then
 				local count = 0
 				for _, enemy in ipairs(#self:getEnemies(who)) do
 					if enemy:getHandcardNum() >= who:getHandcardNum() then count = count + 1 end
@@ -3888,7 +3888,7 @@ function SmartAI:needRetrial(judge)
 		end
 	end
 
-	if reason == "luoshen" then
+	if reason == "ikmengyang" then
 		if self:isFriend(who) then
 			if who:getHandcardNum() > 30 then return false end
 			if self:hasCrossbowEffect(who) or getKnownCard(who, self.player, "Crossbow", false) > 0 then return not judge:isGood() end
@@ -4590,7 +4590,7 @@ function getCardsNum(class_name, player, from)
 		end
 		return slashnum
 	elseif class_name == "Jink" then
-		if player:hasSkill("qingguo") then
+		if player:hasSkill("ikzhongyan") then
 			return blackcard + num + (player:getHandcardNum() - shownum) * 0.85
 		elseif player:hasSkill("longdan") then
 			return slashjink + (player:getHandcardNum() - shownum) * 0.72

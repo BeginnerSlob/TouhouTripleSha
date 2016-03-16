@@ -253,7 +253,7 @@ local function GuanXing(self, cards)
 	end
 
 	local pos = 1
-	local luoshen_flag = false
+	local ikmengyang_flag = false
 	local next_judge = {}
 	local next_player
 	for _, p in sgs.qlist(global_room:getOtherPlayers(self.player)) do
@@ -274,7 +274,7 @@ local function GuanXing(self, cards)
 		for index, for_judge in ipairs(bottom) do
 			if judge[pos]:isKindOf("Lightning") then lightning_index = pos break end
 			if self:isFriend(next_player) then
-				if next_player:hasSkill("luoshen") then
+				if next_player:hasSkill("ikmengyang") then
 					if for_judge:isBlack() then
 						table.insert(next_judge, for_judge)
 						table.remove(bottom, index)
@@ -296,12 +296,12 @@ local function GuanXing(self, cards)
 					end
 				end
 			else
-				if next_player:hasSkill("luoshen") and for_judge:isRed() and not luoshen_flag then
+				if next_player:hasSkill("ikmengyang") and for_judge:isRed() and not ikmengyang_flag then
 					table.insert(next_judge, for_judge)
 					table.remove(bottom, index)
 					nextplayer_has_judged = true
 					judged_list[pos] = 1
-					luoshen_flag = true
+					ikmengyang_flag = true
 					break
 				else
 					local suit = for_judge:getSuitString()

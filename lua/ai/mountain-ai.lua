@@ -149,7 +149,7 @@ sgs.ai_skill_discard.qiaobian = function(self, discard_num, min_num, optional, i
 	for i = 1, #cards, 1 do
 		local isPeach = cards[i]:isKindOf("Peach")
 		if isPeach then
-			local stealer = self.room:findPlayerBySkillName("nostuxi") or self.room:findPlayerBySkillName("tuxi")
+			local stealer = self.room:findPlayerBySkillName("nostuxi") or self.room:findPlayerBySkillName("ikchibao")
 			if stealer and self:isEnemy(stealer)
 				and self.player:getHandcardNum() <= 2 and (stealer:hasSkill("nostuxi") or self.player:getHandcardNum() - 1 >= stealer:getHandcardNum())
 				and not self:willSkipDrawPhase(stealer) then
@@ -170,7 +170,7 @@ sgs.ai_skill_discard.qiaobian = function(self, discard_num, min_num, optional, i
 			return to_discard
 		elseif self.player:containsTrick("supply_shortage") then
 			if self.player:getHp() > self.player:getHandcardNum() then return to_discard end
-			local targets = self:getTuxiTargets("nostuxi", true)
+			local targets = self:getIkChibaoTargets("nostuxi", true)
 			if #targets == 2 then
 				return to_discard
 			end
@@ -185,7 +185,7 @@ sgs.ai_skill_discard.qiaobian = function(self, discard_num, min_num, optional, i
 	elseif current_phase == sgs.Player_Draw and not self.player:isSkipped(sgs.Player_Draw) then
 		self.qiaobian_draw_targets = {}
 		if self.player:hasSkill("nostuxi") and not self:willSkipDrawPhase() then return {} end
-		if self.player:hasSkill("tuxi") and not self:willSkipDrawPhase() then
+		if self.player:hasSkill("ikchibao") and not self:willSkipDrawPhase() then
 			local count = 0
 			for _, enemy in ipairs(self.enemies) do
 				if enemy:getHandcardNum() >= self.player:getHandcardNum() then count = count + 1 end
@@ -194,7 +194,7 @@ sgs.ai_skill_discard.qiaobian = function(self, discard_num, min_num, optional, i
 		end
 		local cardstr = sgs.ai_skill_use["@@nostuxi"](self, "@nostuxi")
 		if cardstr:match("->") then
-			local targets = self:getTuxiTargets("nostuxi", true)
+			local targets = self:getIkChibaoTargets("nostuxi", true)
 			if #targets == 2 then
 				local t1, t2 = findPlayerByObjectName(self.room, targets[1]), findPlayerByObjectName(self.room, targets[2])
 				table.insert(self.qiaobian_draw_targets, t1:objectName())
@@ -984,7 +984,7 @@ function sgs.ai_skill_choice.huashen(self, choices, data, xiaode_choice)
 		end
 		if self.player:getHandcardNum() > 4 then
 			for _, askill in ipairs(("shuangxiong|duwu|nosfuhun|tianyi|xianzhen|qiaoshui|ikyipao|luanji|huoji|qixi|" ..
-									"duanliang|nosguose|guose|luoyi|nosluoyi|dangxian|fuluan|longyin"):split("|")) do
+									"duanliang|nosguose|guose|ikluoyi|nosluoyi|dangxian|fuluan|longyin"):split("|")) do
 				if str:matchOne(askill) then return askill end
 			end
 			if self:findFriendsByType(sgs.Friend_Draw) then
@@ -1036,7 +1036,7 @@ function sgs.ai_skill_choice.huashen(self, choices, data, xiaode_choice)
 
 		if self.player:getWeapon() and str:matchOne("qiangxi") then return "qiangxi" end
 
-		for _, askill in ipairs(("manjuan|xiansi|tuxi|nostuxi|dimeng|haoshi|ikyuxi|zhiheng|qiaobian|qice|tanhu|noslijian|lijian|shelie|xunxun|luoshen|" ..
+		for _, askill in ipairs(("manjuan|xiansi|ikchibao|nostuxi|dimeng|haoshi|ikyuxi|zhiheng|qiaobian|qice|tanhu|noslijian|lijian|shelie|ikxunxun|ikmengyang|" ..
 								"yongsi|dujin|shude|zhiyan|biyue|yingzi|nosyingzi|qingnang"):split("|")) do
 			if str:matchOne(askill) then return askill end
 		end
@@ -1051,7 +1051,7 @@ function sgs.ai_skill_choice.huashen(self, choices, data, xiaode_choice)
 								"tiaoxin|zhaolie|chuanxin|fengshi|nostieji|moukui|liegong|mengjin|ikyufeng|kofliegong|wushuang|niaoxiang|" ..
 								"juejing|nosfuhun|ikwanhun|yanxiao|guhuo|nosguhuo|xuanhuo|thhuanfa|qiangxi|huangen|nosjujian|lieren|pojun|" ..
 								"yishi|nosdanshou|chuli|yinling|qixi|puji|iklingshi|shangyi|duoshi|ikhuiquan|jizhi|zhaoxin|gongqi|qiangwu|jingce|shengxi|" ..
-								"wangxi|luoyi|nosluoyi|jie|anjian|jiangchi|ikchilian|longdan|ikxuwu|xueji|duwu|yinghun|longhun|jiuchi|qingcheng|" ..
+								"ikwangxi|ikluoyi|nosluoyi|jie|anjian|jiangchi|ikchilian|longdan|ikxuwu|xueji|duwu|yinghun|longhun|jiuchi|qingcheng|" ..
 								"shuangren|kuangfu|qiaomeng|nosgongqi|wushen|lianhuan|duanxie|qianxi|jujian|shensu|luanji|zhijian|shuangxiong|" ..
 								"fuluan|yanyu|qingyi|huoshui|zhoufu|bifa|xinzhan|thluli|duanbing|fenxun|guidao|iktiansuo|nosguicai|noszhenlie|" ..
 								"noskurou|wansha|lianpo|botu|qiluan|xiaode|ikqingjian|yicong|zhenwei|heyi|nosshangshi|shangshi|lianying|noslianying|tianyi|" ..
@@ -1078,7 +1078,7 @@ function sgs.ai_skill_choice.huashen(self, choices, data, xiaode_choice)
 
 		if self:getAllPeachNum() > 0 or self.player:getHp() > 1 or not self:isWeak() then
 			if str:matchOne("guixin") and self.room:alivePlayerCount() > 3 then return "guixin" end
-			if str:matchOne("nosyiji") then return "nosyiji" end
+			if str:matchOne("ikyumeng") then return "ikyumeng" end
 			if str:matchOne("yiji") then return "yiji" end
 			if str:matchOne("yuce") and not self.player:isKongcheng() then return "yuce" end
 			for _, askill in ipairs(("ikhuanji|nosfankui|jieming|chengxiang|noschengxiang|ikaoli|vsganglie|nosganglie|enyuan|fangzhu|thfusheng|duodao|langgu"):split("|")) do
@@ -1112,14 +1112,14 @@ function sgs.ai_skill_choice.huashen(self, choices, data, xiaode_choice)
 			end
 		end
 
-		for _, askill in ipairs(("noswuyan|wuyan|weimu|mingshi|qianhuan|guzheng|luoying|aocai|kanpo|liuli|beige|qingguo|mingzhe|yajiao|" ..
+		for _, askill in ipairs(("noswuyan|wuyan|weimu|mingshi|qianhuan|guzheng|luoying|aocai|kanpo|liuli|beige|ikzhongyan|mingzhe|yajiao|" ..
 								"yicheng|xiangle|renwang|thfeiying|longdan"):split("|")) do
 			if str:matchOne(askill) then return askill end
 		end
 		if str:matchOne("kofqingguo") and not self.player:getEquips():isEmpty() then return "kofqingguo" end
 
-		for _, askill in ipairs(("nosyiji|yiji|yuce|ikhuanji|nosfankui|jieming|chengxiang|noschengxiang|ikaoli|vsganglie|nosganglie|enyuan|fangzhu|thfusheng|" ..
-								"wangxi|hengjiang|duodao|langgu"):split("|")) do
+		for _, askill in ipairs(("ikyumeng|yiji|yuce|ikhuanji|nosfankui|jieming|chengxiang|noschengxiang|ikaoli|vsganglie|nosganglie|enyuan|fangzhu|thfusheng|" ..
+								"ikwangxi|hengjiang|duodao|langgu"):split("|")) do
 			if str:matchOne(askill) then return askill end
 		end
 

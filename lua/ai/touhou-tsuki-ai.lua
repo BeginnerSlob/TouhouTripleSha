@@ -446,7 +446,7 @@ end
 
 sgs.ai_skill_playerchosen.thlianhua = function(self, targets)
 	local card_ids = sgs.QList2Table(self.player:getTag("ThLianhuaIds"):toIntList())
-	local target, cardId = sgs.ai_skill_askforyiji.nosyiji(self, card_ids)
+	local target, cardId = sgs.ai_skill_askforyiji.ikyumeng(self, card_ids)
 	if target and cardId and cardId > -1 then
 		return target
 	end

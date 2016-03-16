@@ -41,7 +41,7 @@ function sgs.isGoodHp(player)
 end
 
 function sgs.isGoodTarget(player, targets, self, isSlash)
-	local arr = { "jieming", "nosyiji", "yiji", "guixin", "fangzhu", "vsganglie", "nosmiji" }
+	local arr = { "jieming", "ikyumeng", "yiji", "guixin", "fangzhu", "vsganglie", "nosmiji" }
 	local m_skill = false
 	local attacker = global_room:getCurrent()
 
@@ -62,7 +62,7 @@ function sgs.isGoodTarget(player, targets, self, isSlash)
 			if masochism == "nosmiji" and player:isWounded() then m_skill = false
 			elseif attacker and (attacker:hasSkill("ikxuwu") or attacker:getMark("thshenyou") > 0) then m_skill = false
 			elseif masochism == "jieming" and self and self:getJiemingChaofeng(player) > -4 then m_skill = false
-			elseif masochism == "nosyiji" and self and not self:findFriendsByType(sgs.Friend_Draw, player) then m_skill = false
+			elseif masochism == "ikyumeng" and self and not self:findFriendsByType(sgs.Friend_Draw, player) then m_skill = false
 			else
 				m_skill = true
 				break
@@ -120,10 +120,10 @@ function sgs.getDefenseSlash(player, self)
 
 	if player:getMark("yijue") > 0 then
 		defense = 0
-	elseif player:getMark("@qianxi_red") > 0 and (not player:hasSkill("qingguo") and not (player:hasSkill("longhun") and player:getHp() == 1)) then
+	elseif player:getMark("@qianxi_red") > 0 and (not player:hasSkill("ikzhongyan") and not (player:hasSkill("longhun") and player:getHp() == 1)) then
 		defense = 0
 	elseif player:getMark("@qianxi_black") > 0 then
-		if player:hasSkill("qingguo") then defense = defense / 2 end
+		if player:hasSkill("ikzhongyan") then defense = defense / 2 end
 		if player:hasSkill("longhun") and player:getHp() == 1 then defense = defense * 3 / 4 end
 	end
 
@@ -190,7 +190,7 @@ function sgs.getDefenseSlash(player, self)
 		end
 		if attacker:getWeapon() and player:hasSkill("duodao") and player:canDiscard(player, "he") then defense = defense + 1 end
 		if player:hasSkill("jieming") then defense = defense + 3 end
-		if player:hasSkill("nosyiji") then defense = defense + 3 end
+		if player:hasSkill("ikyumeng") then defense = defense + 3 end
 		if player:hasSkill("yiji") then defense = defense + 3 end
 		if player:hasSkill("guixin") then defense = defense + 4 end
 		if player:hasSkill("yuce") then defense = defense + 1 end
@@ -1286,7 +1286,7 @@ function sgs.ai_slash_weaponfilter.axe(self, to, player)
 end
 
 function sgs.ai_weapon_value.axe(self, enemy, player)
-	if player:hasSkills("jiushi|jiuchi|luoyi|nosluoyi|pojun") then return 6 end
+	if player:hasSkills("jiushi|jiuchi|ikluoyi|nosluoyi|pojun") then return 6 end
 	if enemy and enemy:getHp() < 3 then return 6 - enemy:getHp() end
 	if enemy and self:getOverflow() > 0 then return 3.1 end
 end
@@ -1963,9 +1963,9 @@ function SmartAI:getDangerousCard(who)
 	local treasure = who:getTreasure()
 	if treasure and treasure:isKindOf("Jade") and who:getHandcardNum() >= 3 then return treasure:getEffectiveId() end
 	if weapon and weapon:isKindOf("Spear") and who:getHandcardNum() >= 3 and who:hasSkill("ikyipao") then return weapon:getEffectiveId() end
-	if weapon and weapon:isKindOf("Axe") and who:hasSkills("luoyi|nosluoyi|pojun|jiushi|jiuchi|jie|thluli") then return weapon:getEffectiveId() end
+	if weapon and weapon:isKindOf("Axe") and who:hasSkills("ikluoyi|nosluoyi|pojun|jiushi|jiuchi|jie|thluli") then return weapon:getEffectiveId() end
 	if armor and armor:isKindOf("EightDiagram") and who:hasSkills("leiji|nosleiji") then return armor:getEffectiveId() end
-	if weapon and weapon:isKindOf("MoonSpear") and who:hasSkills("guidao|longdan|iktiansuo|nosguicai|jilve|huanshi|qingguo|kanpo") then return weapon:getEffectiveId() end
+	if weapon and weapon:isKindOf("MoonSpear") and who:hasSkills("guidao|longdan|iktiansuo|nosguicai|jilve|huanshi|ikzhongyan|kanpo") then return weapon:getEffectiveId() end
 	if weapon and who:hasSkill("liegong") and sgs.weapon_range[weapon:getClassName()] >= who:getHp() - 1 then return weapon:getEffectiveId() end
 	if weapon and who:hasSkill("thmoju") and sgs.weapon_range[weapon:getClassName()] > 2 then return weapon:getEffectiveId() end
 	if armor and who:hasSkill("thmoju") then return armor:getEffectiveId() end
@@ -2796,7 +2796,7 @@ function SmartAI:useCardIndulgence(card, use)
 		local value = enemy:getHandcardNum() - enemy:getHp()
 
 		if enemy:hasSkills("noslijian|lijian|fanjian|nosfanjian|dimeng|jijiu|jieyin|anxu|yongsi|zhiheng|manjuan|nosrende|ikshenai|qixi|jixi") then value = value + 10 end
-		if enemy:hasSkills("qice|nosguose|guose|duanliang|nosjujian|luoshen|ikhuiquan|jizhi|jilve|wansha|mingce") then value = value + 5 end
+		if enemy:hasSkills("qice|nosguose|guose|duanliang|nosjujian|ikmengyang|ikhuiquan|jizhi|jilve|wansha|mingce") then value = value + 5 end
 		if enemy:hasSkills("guzheng|luoying|yinling|iklingshi|shenfen|ganlu|duoshi") then value = value + 3 end
 		if self:isWeak(enemy) then value = value + 3 end
 		if enemy:isLord() then value = value + 3 end
@@ -2806,7 +2806,7 @@ function SmartAI:useCardIndulgence(card, use)
 		if enemy:hasSkills("keji|shensu") then value = value - enemy:getHandcardNum() end
 		if enemy:hasSkills("ikyuxi|xiuluo") then value = value - 5 end
 		if enemy:hasSkills("lirang") then value = value - 5 end
-		if enemy:hasSkills("tuxi|nostuxi|noszhenlie|ikyuxi|qinyin|zongshi|tiandu|thzhiji|thchuiji") then value = value - 3 end
+		if enemy:hasSkills("ikchibao|nostuxi|noszhenlie|ikyuxi|qinyin|zongshi|tiandu|thzhiji|thchuiji") then value = value - 3 end
 		if self:needBear(enemy) then value = value - 20 end
 		if not sgs.isGoodTarget(enemy, self.enemies, self) then value = value - 1 end
 		if getKnownCard(enemy, self.player, "Dismantlement", true) > 0 then value = value + 2 end
@@ -3194,7 +3194,7 @@ sgs.ai_skill_askforag.amazing_grace = function(self, card_ids)
 
 		if crossbow then
 			if self:getCardsNum("Slash") > 1 or self.player:hasSkills("noskurou|keji") 
-				or (self.player:hasSkills("luoshen|yongsi|luoying|guzheng") and not selfIsCurrent and self.room:alivePlayerCount() >= 4) then
+				or (self.player:hasSkills("ikmengyang|yongsi|luoying|guzheng") and not selfIsCurrent and self.room:alivePlayerCount() >= 4) then
 				return crossbow
 			end
 			if self.player:hasSkill("guixin") and self.room:alivePlayerCount() >= 6 and (self.player:getHp() > 1 or self:getCardsNum("Peach") > 0) then
@@ -3215,7 +3215,7 @@ sgs.ai_skill_askforag.amazing_grace = function(self, card_ids)
 					if enemy:hasSkill("chunlao") and enemy:getPile("wine"):length() > 1 then canSave = true end
 					if enemy:hasSkill("noskurou") then huanggai = enemy end
 					if enemy:hasSkill("keji") then return crossbow end
-					if enemy:hasSkills("luoshen|yongsi|guzheng") then return crossbow end
+					if enemy:hasSkills("ikmengyang|yongsi|guzheng") then return crossbow end
 					if enemy:hasSkill("luoying") and sgs.Sanguosha:getCard(crossbow):getSuit() ~= sgs.Card_Club then return crossbow end
 				end
 				if huanggai and (huanggai:getHp() > 2 or canSave) then return crossbow end
@@ -3428,7 +3428,7 @@ function SmartAI:useCardPurpleSong(card, use)
 		local value = friend:getHandcardNum() - friend:getHp()
 
 		if friend:hasSkills("noslijian|lijian|fanjian|nosfanjian|dimeng|jijiu|jieyin|anxu|yongsi|zhiheng|manjuan|nosrende|ikshenai|qixi|jixi") then value = value + 10 end
-		if friend:hasSkills("qice|nosguose|guose|duanliang|nosjujian|luoshen|ikhuiquan|jizhi|jilve|wansha|mingce") then value = value + 5 end
+		if friend:hasSkills("qice|nosguose|guose|duanliang|nosjujian|ikmengyang|ikhuiquan|jizhi|jilve|wansha|mingce") then value = value + 5 end
 		if friend:hasSkills("guzheng|luoying|yinling|iklingshi|shenfen|ganlu|duoshi") then value = value + 3 end
 		if self:isWeak(friend) then value = value + 3 end
 		if friend:isLord() then value = value + 3 end
@@ -3438,7 +3438,7 @@ function SmartAI:useCardPurpleSong(card, use)
 		if friend:hasSkills("keji|shensu|thanbing") then value = value - friend:getHandcardNum() end
 		if friend:hasSkills("ikyuxi|xiuluo") then value = value - 5 end
 		if friend:hasSkills("lirang") then value = value - 5 end
-		if friend:hasSkills("tuxi|nostuxi|noszhenlie|ikyuxi|qinyin|zongshi|tiandu|thzhiji|thchuiji") then value = value - 3 end
+		if friend:hasSkills("ikchibao|nostuxi|noszhenlie|ikyuxi|qinyin|zongshi|tiandu|thzhiji|thchuiji") then value = value - 3 end
 		if self:needBear(friend) then value = value - 20 end
 		value = value + (self.room:alivePlayerCount() - self:playerGetRound(friend)) / 2
 		return value
