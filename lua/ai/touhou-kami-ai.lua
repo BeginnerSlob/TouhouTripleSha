@@ -727,7 +727,7 @@ sgs.ai_skill_use_func.ThJinluCard = function(card, use, self)
 			local slash = self:getCard("Slash") or sgs.cloneCard("slash")
 			for _, enemy in ipairs(self.enemies) do
 				if self:slashIsEffective(slash, enemy) and self.player:distanceTo(enemy) == 1
-					and not enemy:hasSkills("thzhehui|ikzhichi|fankui|nosfankui|ganglie|vsganglie|nosganglie|enyuan|thfusheng|langgu|guixin|ikjingyou")
+					and not enemy:hasSkills("thzhehui|ikzhichi|ikhuanji|nosfankui|ikaoli|vsganglie|nosganglie|enyuan|thfusheng|langgu|guixin|ikjingyou")
 					and self:getCardsNum("Slash") + getKnownCard(enemy, self.player, "Slash") >= 3 then
 					target = enemy
 					break

@@ -819,11 +819,11 @@ sgs.ai_skill_invoke.nosjianxiong = function(self, data)
 	return not self:needKongcheng(self.player, true)
 end
 
-sgs.ai_skill_invoke.nosfankui = sgs.ai_skill_invoke.fankui
-sgs.ai_skill_cardchosen.nosfankui = sgs.ai_skill_cardchosen.fankui
-sgs.ai_need_damaged.nosfankui = sgs.ai_need_damaged.fankui
-sgs.ai_choicemade_filter.skillInvoke.nosfankui = sgs.ai_choicemade_filter.skillInvoke.fankui
-sgs.ai_choicemade_filter.cardChosen.nosfankui = sgs.ai_choicemade_filter.cardChosen.fankui
+sgs.ai_skill_invoke.nosfankui = sgs.ai_skill_invoke.ikhuanji
+sgs.ai_skill_cardchosen.nosfankui = sgs.ai_skill_cardchosen.ikhuanji
+sgs.ai_need_damaged.nosfankui = sgs.ai_need_damaged.ikhuanji
+sgs.ai_choicemade_filter.skillInvoke.nosfankui = sgs.ai_choicemade_filter.skillInvoke.ikhuanji
+sgs.ai_choicemade_filter.cardChosen.nosfankui = sgs.ai_choicemade_filter.cardChosen.ikhuanji
 
 sgs.ai_skill_cardask["@nosguicai-card"] = function(self, data)
 	local judge = data:toJudge()
@@ -843,8 +843,8 @@ sgs.ai_skill_cardask["@nosguicai-card"] = function(self, data)
 	return "."
 end
 
-sgs.ai_cardneed.nosguicai = sgs.ai_cardneed.guicai
-sgs.nosguicai_suit_value = sgs.guicai_suit_value
+sgs.ai_cardneed.nosguicai = sgs.ai_cardneed.iktiansuo
+sgs.nosguicai_suit_value = sgs.iktiansuo_suit_value
 
 sgs.ai_skill_invoke.nosganglie = function(self, data)
 	local mode = self.room:getMode()
@@ -1484,7 +1484,7 @@ function sgs.ai_slash_prohibit.nosleiji(self, from, to, card)
 				break
 			end
 		end
-		if not other_rebel and ((from:getHp() >= 4 and (getCardsNum("Peach", from, to) > 0 or from:hasSkills("ganglie|nosganglie|vsganglie"))) or from:hasSkill("hongyan")) then
+		if not other_rebel and ((from:getHp() >= 4 and (getCardsNum("Peach", from, to) > 0 or from:hasSkills("ikaoli|nosganglie|vsganglie"))) or from:hasSkill("hongyan")) then
 			return false
 		end
 	end

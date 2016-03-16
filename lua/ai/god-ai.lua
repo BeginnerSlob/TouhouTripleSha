@@ -915,7 +915,7 @@ sgs.ai_skill_use_func.ShenfenCard = function(card, use, self)
 					value_d = value_d * 0.9
 				end
 			end
-			if player:hasSkill("fankui") then value_d = value_d * 0.8 end
+			if player:hasSkill("ikhuanji") then value_d = value_d * 0.8 end
 			if player:hasSkill("nosfankui") then value_d = value_d * 0.8 end
 			if player:hasSkill("guixin") then
 				if not player:faceUp() then
