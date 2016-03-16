@@ -1000,7 +1000,7 @@ function SmartAI:getIkChibaoTargets(reason, isDummy)
 
 	for i = 1, #self.enemies, 1 do
 		local p = self.enemies[i]
-		if p:hasSkills("jijiu|qingnang|xinzhan|leiji|jieyin|beige|kanpo|liuli|qiaobian|zhiheng|guidao|longhun|xuanfeng|tianxiang|noslijian|lijian") then
+		if p:hasSkills("jijiu|qingnang|xinzhan|leiji|jieyin|beige|kanpo|liuli|qiaobian|ikzhiheng|guidao|longhun|xuanfeng|tianxiang|noslijian|lijian") then
 			if add_player(p) == upperlimit then return targets end
 		end
 	end
@@ -1286,5 +1286,296 @@ sgs.ai_choicemade_filter.skillInvoke.ikwangxi = function(self, player, promptlis
 		if self:needKongcheng(target, true) then sgs.updateIntention(player, target, 10)
 		elseif not hasManjuanEffect(target) and player:getState() == "robot" then sgs.updateIntention(player, target, -60)
 		end
+	end
+end
+
+--制衡：出牌阶段限一次，你可以弃置一至X张牌，然后摸等量的牌（X为你的体力上限）。
+local ikzhiheng_skill = {}
+ikzhiheng_skill.name = "ikzhiheng"
+table.insert(sgs.ai_skills, ikzhiheng_skill)
+ikzhiheng_skill.getTurnUseCard = function(self)
+	if not self.player:hasUsed("IkZhihengCard") then
+		return sgs.Card_Parse("@IkZhihengCard=.")
+	end
+end
+
+sgs.ai_skill_use_func.IkZhihengCard = function(card, use, self)
+	local unpreferedCards = {}
+	local cards = sgs.QList2Table(self.player:getHandcards())
+
+	if self.player:getHp() < 3 then
+		local zcards = self.player:getCards("he")
+		local use_slash, keep_jink, keep_analeptic, keep_weapon = false, false, false
+		for _, zcard in sgs.qlist(zcards) do
+			if not isCard("Peach", zcard, self.player) and not isCard("ExNihilo", zcard, self.player) then
+				local shouldUse = true
+				if isCard("Slash", zcard, self.player) and not use_slash then
+					local dummy_use = { isDummy = true, to = sgs.SPlayerList() }
+					self:useBasicCard(zcard, dummy_use)
+					if dummy_use.card then
+						if keep_slash then shouldUse = false end
+						if dummy_use.to then
+							for _, p in sgs.qlist(dummy_use.to) do
+								if p:getHp() <= 1 then
+									shouldUse = false
+									if self.player:distanceTo(p) > 1 then keep_weapon = self.player:getWeapon() end
+									break
+								end
+							end
+							if dummy_use.to:length() > 1 then shouldUse = false end
+						end
+						if not self:isWeak() then shouldUse = false end
+						if not shouldUse then use_slash = true end
+					end
+				end
+				if zcard:getTypeId() == sgs.Card_TypeTrick then
+					local dummy_use = { isDummy = true }
+					self:useTrickCard(zcard, dummy_use)
+					if dummy_use.card then shouldUse = false end
+				end
+				if zcard:getTypeId() == sgs.Card_TypeEquip and not self.player:hasEquip(zcard) then
+					local dummy_use = { isDummy = true }
+					self:useEquipCard(zcard, dummy_use)
+					if dummy_use.card then shouldUse = false end
+					if keep_weapon and zcard:getEffectiveId() == keep_weapon:getEffectiveId() then shouldUse = false end
+				end
+				if self.player:hasEquip(zcard) and zcard:isKindOf("Armor") and not self:needToThrowArmor() then shouldUse = false end
+				if self.player:hasTreasure(zcard:objectName()) then shouldUse = false end
+				if isCard("Jink", zcard, self.player) and not keep_jink then
+					keep_jink = true
+					shouldUse = false
+				end
+				if self.player:getHp() == 1 and isCard("Analeptic", zcard, self.player) and not keep_analeptic then
+					keep_analeptic = true
+					shouldUse = false
+				end
+				if shouldUse then table.insert(unpreferedCards, zcard:getId()) end
+			end
+		end
+	end
+
+	if #unpreferedCards == 0 then
+		local use_slash_num = 0
+		self:sortByKeepValue(cards)
+		for _, card in ipairs(cards) do
+			if card:isKindOf("Slash") then
+				local will_use = false
+				if use_slash_num <= sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_Residue, self.player, card) then
+					local dummy_use = { isDummy = true }
+					self:useBasicCard(card, dummy_use)
+					if dummy_use.card then
+						will_use = true
+						use_slash_num = use_slash_num + 1
+					end
+				end
+				if not will_use then table.insert(unpreferedCards, card:getId()) end
+			end
+		end
+
+		local num = self:getCardsNum("Jink") - 1
+		if self.player:getArmor() then num = num + 1 end
+		if num > 0 then
+			for _, card in ipairs(cards) do
+				if card:isKindOf("Jink") and num > 0 then
+					table.insert(unpreferedCards, card:getId())
+					num = num - 1
+				end
+			end
+		end
+		for _, card in ipairs(cards) do
+			if (card:isKindOf("Weapon") and self.player:getHandcardNum() < 3) or card:isKindOf("OffensiveHorse")
+				or self:getSameEquip(card, self.player) or card:isKindOf("Lightning") then
+				table.insert(unpreferedCards, card:getId())
+			end
+		end
+
+		if self.player:getWeapon() and self.player:getHandcardNum() < 3 then
+			table.insert(unpreferedCards, self.player:getWeapon():getId())
+		end
+
+		if self:needToThrowArmor() then
+			table.insert(unpreferedCards, self.player:getArmor():getId())
+		end
+
+		if self.player:getOffensiveHorse() and self.player:getWeapon() then
+			table.insert(unpreferedCards, self.player:getOffensiveHorse():getId())
+		end
+
+		for _, card in ipairs(cards) do
+			if card:isNDTrick() then
+				local dummy_use = { isDummy = true }
+				self:useTrickCard(card, dummy_use)
+				if not dummy_use.card then table.insert(unpreferedCards, card:getId()) end
+			end
+		end
+	end
+
+	local use_cards = {}
+	for index = #unpreferedCards, 1, -1 do
+		if not self.player:isJilei(sgs.Sanguosha:getCard(unpreferedCards[index])) then table.insert(use_cards, unpreferedCards[index]) end
+	end
+
+	if #use_cards > 0 then	
+		local n = self.player:getMaxHp()
+		local subcards = {}
+		for i = 1, #use_cards do
+			table.insert(subcards, use_cards[i])
+			if #subcards == n then
+				break
+			end
+		end
+		use.card = sgs.Card_Parse("@IkZhihengCard=" .. table.concat(subcards, "+"))
+		return
+	end
+end
+
+sgs.ai_use_value.IkZhihengCard = 9
+sgs.ai_use_priority.IkZhihengCard = 2.61
+sgs.dynamic_value.benefit.IkZhihengCard = true
+
+function sgs.ai_cardneed.ikzhiheng(to, card)
+	return not card:isKindOf("Jink")
+end
+
+--济援：君主技，锁定技，其他雪势力角色使用的【桃】指定你为目标后，回复的体力+1。
+--无
+
+--窥破：出牌阶段，你可以将一张黑色牌当【心网密葬】使用。
+local ikkuipo_skill = {}
+ikkuipo_skill.name = "ikkuipo"
+table.insert(sgs.ai_skills, ikkuipo_skill)
+ikkuipo_skill.getTurnUseCard = function(self, inclusive)
+	local cards = self.player:getCards("he")
+	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
+		cards:prepend(sgs.Sanguosha:getCard(id))
+	end
+	cards = sgs.QList2Table(cards)
+
+	local black_card
+	self:sortByUseValue(cards, true)
+	local has_weapon = false
+
+	for _, card in ipairs(cards) do
+		if card:isKindOf("Weapon") and card:isBlack() then has_weapon = true end
+	end
+
+	for _, card in ipairs(cards) do
+		if card:isBlack() and ((self:getUseValue(card) < sgs.ai_use_value.Dismantlement) or inclusive or self:getOverflow() > 0) then
+			local shouldUse = true
+			if card:isKindOf("Armor") then
+				if not self.player:getArmor() then shouldUse = false
+				elseif self.player:hasEquip(card) and not self:needToThrowArmor() then shouldUse = false
+				end
+			end
+
+			if card:isKindOf("Weapon") then
+				if not self.player:getWeapon() then shouldUse = false
+				elseif self.player:hasEquip(card) and not has_weapon then shouldUse = false
+				end
+			end
+
+			if card:isKindOf("Slash") then
+				local dummy_use = { isDummy = true }
+				if self:getCardsNum("Slash") == 1 then
+					self:useBasicCard(card, dummy_use)
+					if dummy_use.card then shouldUse = false end
+				end
+			end
+
+			if self:getUseValue(card) > sgs.ai_use_value.Dismantlement and card:isKindOf("TrickCard") then
+				local dummy_use = { isDummy = true }
+				self:useTrickCard(card, dummy_use)
+				if dummy_use.card then shouldUse = false end
+			end
+
+			if shouldUse then
+				black_card = card
+				break
+			end
+
+		end
+	end
+
+	if black_card then
+		local suit = black_card:getSuitString()
+		local number = black_card:getNumberString()
+		local card_id = black_card:getEffectiveId()
+		local card_str = ("dismantlement:ikkuipo[%s:%s]=%d"):format(suit, number, card_id)
+		local dismantlement = sgs.Card_Parse(card_str)
+
+		assert(dismantlement)
+
+		return dismantlement
+	end
+end
+
+sgs.ikkuipo_suit_value = {
+	spade = 3.9,
+	club = 3.9
+}
+
+function sgs.ai_cardneed.ikkuipo(to, card)
+	return card:isBlack()
+end
+
+--诡思：限定技，当一名角色使用锦囊牌指定至少两名角色为目标时，你可以令此牌对其中的至少一名角色无效。
+local function getIkGuisiValue(self, who, card, from)
+	if not self:hasTrickEffective(card, who, from) then return 0 end
+	if card:isKindOf("AOE") then
+		if not self:isFriend(who) then return 0 end
+		local value = self:getAoeValueTo(card, who, from)
+		if value < 0 then return -value / 30 end
+	elseif card:isKindOf("GodSalvation") then
+		if not self:isEnemy(who) or not who:isWounded() or who:getHp() >= getBestHp(who) then return 0 end
+		if self:isWeak(who) then return 1.2 end
+		if who:hasSkills(sgs.masochism_skill) then return 1.0 end
+		return 0.9
+	elseif card:isKindOf("AmazingGrace") then
+		if not self:isEnemy(who) or hasManjuanEffect(who) then return 0 end
+		local v = 1.2
+		local p = self.room:getCurrent()
+		while p:objectName() ~= who:objectName() do
+			v = v * 0.9
+			p = p:getNextAlive()
+		end
+		return v
+	end
+	return 0
+end
+
+sgs.ai_skill_use["@@ikguisi"] = function(self, prompt)
+	local liuxie = self.room:findPlayerBySkillName("huangen")
+	if liuxie and self:isFriend(liuxie) and not self:isWeak(liuxie) then return "." end
+
+	local card = self.player:getTag("ikguisi"):toCardUse().card
+	local from = self.player:getTag("ikguisi"):toCardUse().from
+
+	local players = sgs.QList2Table(self.room:getAllPlayers())
+	self:sort(players, "defense")
+	local target_table = {}
+	local targetslist = self.player:property("ikguisi_targets"):toString():split("+")
+	local value = 0
+	for _, player in ipairs(players) do
+		if not player:hasSkill("danlao") and table.contains(targetslist, player:objectName()) then
+			local val = getIkGuisiValue(self, player, card, from)
+			if val > 0 then
+				value = value + val
+				table.insert(target_table, player:objectName())
+			end
+		end
+	end
+	if #target_table == 0 or value / (self.room:alivePlayerCount() - 1) < 0.55 then return "." end
+	return "@IkGuisiCard=.->" .. table.concat(target_table, "+")
+end
+
+sgs.ai_card_intention.IkGuisiCard = function(self, card, from, tos)
+	local cardx = self.player:getTag("ikguisi"):toCardUse().card
+	local from = self.player:getTag("ikguisi"):toCardUse().from
+	if not cardx then return end
+	local intention = (cardx:isKindOf("AOE") and -50 or 50)
+	for _, to in ipairs(tos) do
+		if to:hasSkill("danlao") or not self:hasTrickEffective(cardx, to, from) then continue end
+		if cardx:isKindOf("GodSalvation") and not to:isWounded() then continue end
+		sgs.updateIntention(from, to, intention)
 	end
 end

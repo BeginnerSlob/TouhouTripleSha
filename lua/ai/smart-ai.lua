@@ -93,19 +93,19 @@ function setInitialTables()
 						  "thshenzhou"
 	sgs.wizard_skill = "iktiansuo|nosguicai|guidao|jilve|tiandu|noszhenlie|huanshi"
 	sgs.wizard_harm_skill = "iktiansuo|nosguicai|guidao|jilve|huanshi"
-	sgs.priority_skill = "dimeng|haoshi|qingnang|ikhuiquan|jizhi|guzheng|qixi|jieyin|nosguose|guose|duanliang|jujian|fanjian|nosfanjian|noslijian|lijian|" ..
-							"manjuan|thjinlu|ikchibao|nostuxi|qiaobian|yongsi|zhiheng|ikmengyang|nosrende|ikshenai|mingce|wansha|iklingshi|jilve|" ..
+	sgs.priority_skill = "dimeng|haoshi|qingnang|ikhuiquan|jizhi|guzheng|ikkuipo|jieyin|nosguose|guose|duanliang|jujian|fanjian|nosfanjian|noslijian|lijian|" ..
+							"manjuan|thjinlu|ikchibao|nostuxi|qiaobian|yongsi|ikzhiheng|ikmengyang|nosrende|ikshenai|mingce|wansha|iklingshi|jilve|" ..
 							"anxu|qice|yinling|qingcheng|zhaoxin"
 	sgs.save_skill = "jijiu|buyi|ikjieyou|chunlao|longhun"
 	sgs.exclusive_skill = "huilei|duanchang|enyuan|wuhun|zhuiyi|buqu|nosbuqu|ikyumeng|yiji|ikaoli|vsganglie|nosganglie|guixin|jieming|nosmiji|" ..
 							"thjuedu"
-	sgs.cardneed_skill = "ikyipao|tianyi|xianzhen|shuangxiong|ikhuiquan|jizhi|noseguose|guose|duanliang|qixi|qingnang|yinling|nosluoyi|guhuo|nosguhuo|kanpo|" ..
-							"jieyin|renjie|zhiheng|nosrende|ikshenai|nosjujian|iktiansuo|nosguicai|guidao|longhun|luanji|qiaobian|beige|thluli|" ..
+	sgs.cardneed_skill = "ikyipao|tianyi|xianzhen|shuangxiong|ikhuiquan|jizhi|noseguose|guose|duanliang|ikkuipo|qingnang|yinling|nosluoyi|guhuo|nosguhuo|kanpo|" ..
+							"jieyin|renjie|ikzhiheng|nosrende|ikshenai|nosjujian|iktiansuo|nosguicai|guidao|longhun|luanji|qiaobian|beige|thluli|" ..
 							"mingce|nosfuhun|lirang|xuanfeng|xinzhan|dangxian|bifa|xiaoguo"..
 							"thzhanye|thqiaogong|thguiyu"
 	sgs.drawpeach_skill = "ikchibao|nostuxi|qiaobian"
 	sgs.recover_skill = "nosrende|ikshenai|kuanggu|kofkuanggu|zaiqi|jieyin|qingnang|shenzhi"
-	sgs.use_lion_skill = "longhun|duanliang|qixi|guidao|noslijian|lijian|jujian|nosjujian|zhiheng|mingce|yongsi|fenxun|gongqi|" ..
+	sgs.use_lion_skill = "longhun|duanliang|ikkuipo|guidao|noslijian|lijian|jujian|nosjujian|ikzhiheng|mingce|yongsi|fenxun|gongqi|" ..
 							"yinling|jilve|qingcheng|diyyicong"
 	sgs.need_equip_skill = "shensu|mingce|jujian|beige|yuanhu|huyuan|gongqi|nosgongqi|yanzheng|qingcheng|longhun"
 
@@ -2524,7 +2524,7 @@ function SmartAI:askForNullification(trick, from, to, positive, isHeg)
 						end
 						if peach_num == 0 and not self:willSkipPlayPhase(NP) then
 							if exnihilo_num > 0 then
-								if NP:hasSkills("ikhuiquan|jizhi|nosrende|zhiheng")
+								if NP:hasSkills("ikhuiquan|jizhi|nosrende|ikzhiheng")
 									or (NP:hasSkill("ikshenai") and not NP:hasUsed("IkShenaiCard"))
 									or (NP:hasSkill("jilve") and NP:getMark("@bear") > 0) then return null_card end
 							else
@@ -5426,7 +5426,7 @@ function SmartAI:evaluateWeapon(card, player, enemy)
 	end
 
 	if player:hasSkill("jijiu") and card:isRed() then deltaSelfThreat = deltaSelfThreat + 0.5 end
-	if player:hasSkills("qixi|guidao") and card:isBlack() then deltaSelfThreat = deltaSelfThreat + 0.5 end
+	if player:hasSkills("ikkuipo|guidao") and card:isBlack() then deltaSelfThreat = deltaSelfThreat + 0.5 end
 
 	return deltaSelfThreat, inAttackRange
 end
@@ -5446,7 +5446,7 @@ function SmartAI:evaluateArmor(card, player)
 	end
 	if not ecard then return value end
 	if player:hasSkill("jijiu") and ecard:isRed() then value = value + 0.5 end
-	if player:hasSkills("qixi|guidao") and ecard:isBlack() then value = value + 0.5 end
+	if player:hasSkills("ikkuipo|guidao") and ecard:isBlack() then value = value + 0.5 end
 	local callback = sgs.ai_armor_value[ecard:objectName()]
 	if type(callback) == "function" then
 		return value + (callback(player, self) or 0)
@@ -5491,7 +5491,7 @@ function SmartAI:useEquipCard(card, use)
 			or (self.player:hasSkill("nosrende") and self:findFriendsByType(sgs.Friend_Draw))
 			or (self.player:hasSkill("ikshenai") and not self.player:hasUsed("IkShenaiCard") and self:findFriendsByType(sgs.Friend_Draw))
 			or (self.player:hasSkills("yongsi|renjie") and self:getOverflow() < 2)
-			or (self.player:hasSkills("qixi|duanliang|yinling") and (card:isBlack() or same:isBlack()))
+			or (self.player:hasSkills("ikkuipo|duanliang|yinling") and (card:isBlack() or same:isBlack()))
 			or (self.player:hasSkills("nosguose|longhun") and (card:getSuit() == sgs.Card_Diamond or same:getSuit() == sgs.Card_Diamond))
 			or (self.player:hasSkill("guose") and not self.player:hasUsed("GuoseCard") and (card:getSuit() == sgs.Card_Diamond or same:getSuit() == sgs.Card_Diamond))
 			or (self.player:hasSkill("jijiu") and (card:isRed() or same:isRed()))
@@ -5539,8 +5539,8 @@ function SmartAI:useEquipCard(card, use)
 		if self.player:hasSkills("ikyipao|nosfuhun") and card:isKindOf("Crossbow") then return end
 		if not use.to and not self:needKongcheng() and not self.player:hasSkills(sgs.lose_equip_skill) and self:getOverflow() <= (canUseSlash and self.slashAvail or 0)
 			and not canUseSlash and not card:isKindOf("Crossbow") and not card:isKindOf("VSCrossbow") then return end
-		if (self.player:hasSkill("zhiheng") or self.player:hasSkill("jilve") and self.player:getMark("@bear") > 0)
-			and not self.player:hasUsed("ZhihengCard") and self.player:getWeapon() and not card:isKindOf("Crossbow") then return end
+		if (self.player:hasSkill("ikzhiheng") or self.player:hasSkill("jilve") and self.player:getMark("@bear") > 0)
+			and not self.player:hasUsed("IkZhihengCard") and self.player:getWeapon() and not card:isKindOf("Crossbow") then return end
 		if not self:needKongcheng() and self.player:getHandcardNum() <= self.player:getHp() - 2 then return end
 		if not self.player:getWeapon() and self.player:hasSkill("thcunjing") and canUseSlash then
 			local use = { isDummy = true }

@@ -499,7 +499,7 @@ sgs.ai_skill_invoke.fangquan = function(self, data)
 	self:sort(self.friends_noself, "handcard")
 	self.friends_noself = sgs.reverse(self.friends_noself)
 	for _, target in ipairs(self.friends_noself) do
-		if not target:hasSkill("dawu") and target:hasSkills("yongsi|zhiheng|" .. sgs.priority_skill .. "|shensu")
+		if not target:hasSkill("dawu") and target:hasSkills("yongsi|ikzhiheng|" .. sgs.priority_skill .. "|shensu")
 			and (not self:willSkipPlayPhase(target) or target:hasSkill("shensu")) then
 			self.fangquan_card_str = "@FangquanCard=" .. to_discard .. "->" .. target:objectName()
 			return true
@@ -983,7 +983,7 @@ function sgs.ai_skill_choice.huashen(self, choices, data, xiaode_choice)
 			if str:matchOne("thanbing") then return "thanbing" end
 		end
 		if self.player:getHandcardNum() > 4 then
-			for _, askill in ipairs(("shuangxiong|duwu|nosfuhun|tianyi|xianzhen|qiaoshui|ikyipao|luanji|huoji|qixi|" ..
+			for _, askill in ipairs(("shuangxiong|duwu|nosfuhun|tianyi|xianzhen|qiaoshui|ikyipao|luanji|huoji|ikkuipo|" ..
 									"duanliang|nosguose|guose|ikluoyi|nosluoyi|dangxian|fuluan|longyin"):split("|")) do
 				if str:matchOne(askill) then return askill end
 			end
@@ -1036,7 +1036,7 @@ function sgs.ai_skill_choice.huashen(self, choices, data, xiaode_choice)
 
 		if self.player:getWeapon() and str:matchOne("qiangxi") then return "qiangxi" end
 
-		for _, askill in ipairs(("manjuan|xiansi|ikchibao|nostuxi|dimeng|haoshi|ikyuxi|zhiheng|qiaobian|qice|tanhu|noslijian|lijian|shelie|ikxunxun|ikmengyang|" ..
+		for _, askill in ipairs(("manjuan|xiansi|ikchibao|nostuxi|dimeng|haoshi|ikyuxi|ikzhiheng|qiaobian|qice|tanhu|noslijian|lijian|shelie|ikxunxun|ikmengyang|" ..
 								"yongsi|dujin|shude|zhiyan|biyue|yingzi|nosyingzi|qingnang"):split("|")) do
 			if str:matchOne(askill) then return askill end
 		end
@@ -1050,7 +1050,7 @@ function sgs.ai_skill_choice.huashen(self, choices, data, xiaode_choice)
 		for _, askill in ipairs(("hongyuan|fangquan|mizhao|quhu|fanjian|nosfanjian|junxing|hengzheng|duanliang|nosguose|guose|baobian|ganlu|" ..
 								"tiaoxin|zhaolie|chuanxin|fengshi|nostieji|moukui|liegong|mengjin|ikyufeng|kofliegong|wushuang|niaoxiang|" ..
 								"juejing|nosfuhun|ikwanhun|yanxiao|guhuo|nosguhuo|xuanhuo|thhuanfa|qiangxi|huangen|nosjujian|lieren|pojun|" ..
-								"yishi|nosdanshou|chuli|yinling|qixi|puji|iklingshi|shangyi|duoshi|ikhuiquan|jizhi|zhaoxin|gongqi|qiangwu|jingce|shengxi|" ..
+								"yishi|nosdanshou|chuli|yinling|ikkuipo|puji|iklingshi|shangyi|duoshi|ikhuiquan|jizhi|zhaoxin|gongqi|qiangwu|jingce|shengxi|" ..
 								"ikwangxi|ikluoyi|nosluoyi|jie|anjian|jiangchi|ikchilian|longdan|ikxuwu|xueji|duwu|yinghun|longhun|jiuchi|qingcheng|" ..
 								"shuangren|kuangfu|qiaomeng|nosgongqi|wushen|lianhuan|duanxie|qianxi|jujian|shensu|luanji|zhijian|shuangxiong|" ..
 								"fuluan|yanyu|qingyi|huoshui|zhoufu|bifa|xinzhan|thluli|duanbing|fenxun|guidao|iktiansuo|nosguicai|noszhenlie|" ..

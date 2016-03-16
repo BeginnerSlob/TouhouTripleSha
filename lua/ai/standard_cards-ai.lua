@@ -1003,7 +1003,7 @@ function SmartAI:useCardPeach(card, use)
 			and (enemy:hasSkills(sgs.drawpeach_skill) or getCardsNum("Dismantlement", enemy, self.player) >= 1
 				or (not self.player:hasSkills("qianxun|nosqianxun") and enemy:hasSkill("jixi") and enemy:getPile("field"):length() > 0
 					and (enemy:distanceTo(self.player, 1) == 1 or enemy:hasSkill("thjizhi")))
-				or (((enemy:hasSkill("qixi") and not self.player:hasSkill("weimu")) or enemy:hasSkill("yinling"))
+				or (((enemy:hasSkill("ikkuipo") and not self.player:hasSkill("weimu")) or enemy:hasSkill("yinling"))
 					and getKnownCard(enemy, self.player, "black", nil, "he") >= 1)
 				or (not self.player:hasSkills("qianxun|nosqianxun") and getCardsNum("Snatch", enemy, self.player) >= 1
 					and (enemy:distanceTo(self.player) == 1 or enemy:hasSkill("thjizhi")))
@@ -2032,7 +2032,7 @@ function SmartAI:getValuableCard(who)
 	local equips = sgs.QList2Table(who:getEquips())
 	for _, equip in ipairs(equips) do
 		if who:hasSkills("longhun|nosguose|guose|yanxiao") and equip:getSuit() ~= sgs.Card_Diamond then return equip:getEffectiveId() end
-		if who:hasSkills("qixi|yinling|guidao|duanliang") and equip:isBlack() then return equip:getEffectiveId() end
+		if who:hasSkills("ikkuipo|yinling|guidao|duanliang") and equip:isBlack() then return equip:getEffectiveId() end
 		if who:hasSkill("jijiu|ikchilian|xueji|nosfuhun") and equip:isRed() then return equip:getEffectiveId() end
 		if who:hasSkill("baobian") and who:getHp() <= 2 then return  equip:getEffectiveId() end
 		if who:hasSkills(sgs.need_equip_skill) and not who:hasSkills(sgs.lose_equip_skill) then return equip:getEffectiveId() end
@@ -2795,7 +2795,7 @@ function SmartAI:useCardIndulgence(card, use)
 
 		local value = enemy:getHandcardNum() - enemy:getHp()
 
-		if enemy:hasSkills("noslijian|lijian|fanjian|nosfanjian|dimeng|jijiu|jieyin|anxu|yongsi|zhiheng|manjuan|nosrende|ikshenai|qixi|jixi") then value = value + 10 end
+		if enemy:hasSkills("noslijian|lijian|fanjian|nosfanjian|dimeng|jijiu|jieyin|anxu|yongsi|ikzhiheng|manjuan|nosrende|ikshenai|ikkuipo|jixi") then value = value + 10 end
 		if enemy:hasSkills("qice|nosguose|guose|duanliang|nosjujian|ikmengyang|ikhuiquan|jizhi|jilve|wansha|mingce") then value = value + 5 end
 		if enemy:hasSkills("guzheng|luoying|yinling|iklingshi|shenfen|ganlu|duoshi") then value = value + 3 end
 		if self:isWeak(enemy) then value = value + 3 end
@@ -3012,7 +3012,7 @@ sgs.ai_skill_askforag.amazing_grace = function(self, card_ids)
 	local exnihilo, jink, analeptic, nullification, snatch, dismantlement, indulgence, purple_song
 	for _, card in ipairs(cards) do
 		if isCard("ExNihilo", card, self.player) then
-			if not nextPlayerCanUse or (not self:willSkipPlayPhase() and (self.player:hasSkills("ikhuiquan|jizhi|zhiheng|nosrende|ikshenai") or not nextAlive:hasSkills("ikhuiquan|jizhi|zhiheng"))) then
+			if not nextPlayerCanUse or (not self:willSkipPlayPhase() and (self.player:hasSkills("ikhuiquan|jizhi|ikzhiheng|nosrende|ikshenai") or not nextAlive:hasSkills("ikhuiquan|jizhi|ikzhiheng"))) then
 				exnihilo = card:getEffectiveId()
 			end
 		elseif isCard("Jink", card, self.player) then
@@ -3427,7 +3427,7 @@ function SmartAI:useCardPurpleSong(card, use)
 
 		local value = friend:getHandcardNum() - friend:getHp()
 
-		if friend:hasSkills("noslijian|lijian|fanjian|nosfanjian|dimeng|jijiu|jieyin|anxu|yongsi|zhiheng|manjuan|nosrende|ikshenai|qixi|jixi") then value = value + 10 end
+		if friend:hasSkills("noslijian|lijian|fanjian|nosfanjian|dimeng|jijiu|jieyin|anxu|yongsi|ikzhiheng|manjuan|nosrende|ikshenai|ikkuipo|jixi") then value = value + 10 end
 		if friend:hasSkills("qice|nosguose|guose|duanliang|nosjujian|ikmengyang|ikhuiquan|jizhi|jilve|wansha|mingce") then value = value + 5 end
 		if friend:hasSkills("guzheng|luoying|yinling|iklingshi|shenfen|ganlu|duoshi") then value = value + 3 end
 		if self:isWeak(friend) then value = value + 3 end
