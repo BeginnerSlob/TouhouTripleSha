@@ -259,7 +259,7 @@ sgs.ai_skill_askforag.iklingshi = function(self, card_ids)
 		end
 	end
 
-	if self:isEnemy(nextAlive) and nextAlive:hasSkill("luoshen") and valuable then
+	if self:isEnemy(nextAlive) and nextAlive:hasSkill("ikmengyang") and valuable then
 		self.iklingshichoice = "put"
 		return valuable
 	end
@@ -294,8 +294,8 @@ sgs.ai_skill_askforag.iklingshi = function(self, card_ids)
 	end
 
 	if self:isFriend(nextAlive) and not self:willSkipDrawPhase(nextAlive) and not self:willSkipPlayPhase(nextAlive)
-		and not nextAlive:hasSkill("luoshen")
-		and not nextAlive:hasSkills("tuxi|nostuxi") and not (nextAlive:hasSkill("qiaobian") and nextAlive:getHandcardNum() > 0) then
+		and not nextAlive:hasSkill("ikmengyang")
+		and not nextAlive:hasSkills("ikchibao|nostuxi") and not (nextAlive:hasSkill("qiaobian") and nextAlive:getHandcardNum() > 0) then
 		if (peach and valuable == peach) or (ex_nihilo and valuable == ex_nihilo) then
 			self.iklingshichoice = "put"
 			return valuable

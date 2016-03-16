@@ -622,7 +622,7 @@ sgs.ai_skill_invoke.nosquanji = function(self, data)
 		if self.player:getHandcardNum() <= 1 and not self:needKongcheng(self.player) then return "." end
 		local invoke = false
 		if current:hasSkill("yinghun") and current:getLostHp() > 2 then invoke = true end
-		if current:hasSkill("luoshen") and not self:isWeak() then invoke = true end
+		if current:hasSkill("ikmengyang") and not self:isWeak() then invoke = true end
 		if current:hasSkill("baiyin") and not current:hasSkill("jilve") and current:getMark("@bear") >= 4 then invoke = true end
 		if current:hasSkill("ikguiyue") and not current:hasSkill("jixi") and current:getPile("field"):length() >= 3 then invoke = true end
 		if current:hasSkill("zili") and not current:hasSkill("paiyi") and current:getPile("power"):length() >= 3 then invoke = true end
@@ -746,7 +746,7 @@ sgs.ai_skill_playerchosen.nospaiyi = function(self, targets)
 
 		local enemies = self.enemies
 		for _, enemy in ipairs(enemies) do
-			if (enemy:hasSkills("yongsi|haoshi|tuxi|nostuxi") or (enemy:hasSkill("zaiqi") and enemy:getLostHp() > 1))
+			if (enemy:hasSkills("yongsi|haoshi|ikchibao|nostuxi") or (enemy:hasSkill("zaiqi") and enemy:getLostHp() > 1))
 				and not enemy:containsTrick("supply_shortage") and enemy:faceUp() and self:objectiveLevel(enemy) > 3 then
 				sgs.nosPaiyiTarget = enemy
 				sgs.nosPaiyiCard = nil
@@ -932,12 +932,12 @@ sgs.ai_choicemade_filter.skillInvoke.nosganglie = function(self, player, promptl
 end
 
 sgs.ai_skill_use["@@nostuxi"] = function(self, prompt)
-	local targets = self:getTuxiTargets("nostuxi")
+	local targets = self:getIkChibaoTargets("nostuxi")
 	if #targets > 0 then return "@NosTuxiCard=.->" .. table.concat(targets, "+") end
 	return "."
 end
 
-sgs.ai_card_intention.NosTuxiCard = sgs.ai_card_intention.TuxiCard
+sgs.ai_card_intention.NosTuxiCard = sgs.ai_card_intention.IkChibaoCard
 
 sgs.ai_skill_invoke.nosluoyi = function(self, data)
 	if self.player:isSkipped(sgs.Player_Play) then return false end
@@ -970,85 +970,8 @@ sgs.ai_skill_invoke.nosluoyi = function(self, data)
 	return slashtarget + dueltarget > 0
 end
 
-sgs.ai_cardneed.nosluoyi = sgs.ai_cardneed.luoyi
-sgs.nosluoyi_keep_value = sgs.luoyi_keep_value
-
-sgs.ai_skill_invoke.nosyiji = function(self)
-	local sb_diaochan = self.room:getCurrent()
-	if sb_diaochan and sb_diaochan:hasSkill("thjinlu") and not sb_diaochan:hasUsed("ThJinluCard") and not self:isFriend(sb_diaochan) and sb_diaochan:getPhase() == sgs.Player_Play then
-		local invoke
-		for _, friend in ipairs(self.friends) do
-			if (not friend:isMale() or (friend:getHandcardNum() < friend:getHp() + 1 and sb_diaochan:faceUp())
-				or (friend:getHandcardNum() < friend:getHp() - 2 and not sb_diaochan:faceUp())) and not self:needKongcheng(friend, true)
-				and not self:isThJinluTarget(friend) then
-				invoke = true
-				break
-			end
-		end
-		return invoke
-	end
-	return true
-end
-
-sgs.ai_skill_askforyiji.nosyiji = function(self, card_ids)
-	local Shenfen_user
-	for _, player in sgs.qlist(self.room:getAllPlayers()) do
-		if player:hasFlag("ShenfenUsing") then
-			Shenfen_user = player
-			break
-		end
-	end
-
-	if self.player:getHandcardNum() <= 2 and not Shenfen_user then
-		return nil, -1
-	end
-
-	local available_friends = {}
-	for _, friend in ipairs(self.friends) do
-		local insert = true
-		if insert and hasManjuanEffect(friend) then insert = false end
-		if insert and Shenfen_user and friend:objectName() ~= Shenfen_user:objectName() and friend:getHandcardNum() < 4 then insert = false end
-		if insert and self:isThJinluTarget(friend) then insert = false end
-		if insert then table.insert(available_friends, friend) end
-	end
-
-	local cards = {}
-	for _, card_id in ipairs(card_ids) do
-		table.insert(cards, sgs.Sanguosha:getCard(card_id))
-	end
-	local id = card_ids[1]
-
-	local card, friend = self:getCardNeedPlayer(cards, self.friends)
-	if card and friend and table.contains(available_friends, friend) then return friend, card:getId() end
-	if #available_friends > 0 then
-		self:sort(available_friends, "handcard")
-		if Shenfen_user and table.contains(available_friends, Shenfen_user) then
-			return Shenfen_user, id
-		end
-		for _, afriend in ipairs(available_friends) do
-			if not self:needKongcheng(afriend, true) then
-				return afriend, id
-			end
-		end
-	end
-	return nil, -1
-end
-
-sgs.ai_need_damaged.nosyiji = function(self, attacker, player)
-	local need_card = false
-	local current = self.room:getCurrent()
-	if current:hasWeapon("Crossbow") or current:hasSkill("ikyipao") or current:hasFlag("shuangxiong") then need_card = true end
-	if current:hasSkills("jieyin|jijiu") and self:getOverflow(current) <= 0 then need_card = true end
-	if self:isFriend(current, player) and need_card then return true end
-
-	local friends = self:getFriends(player)
-	self:sort(friends, "hp")
-
-	if #friends > 0 and friends[1]:objectName() == player:objectName() and self:isWeak(player) and getCardsNum("Peach", player, attacker) == 0 then return false end
-	if #friends > 1 and self:isWeak(friends[2]) then return true end
-
-	return player:getHp() > 2 and sgs.turncount > 2 and #friends > 1
-end
+sgs.ai_cardneed.nosluoyi = sgs.ai_cardneed.ikluoyi
+sgs.nosluoyi_keep_value = sgs.ikluoyi_keep_value
 
 local noslijian_skill = {}
 noslijian_skill.name = "noslijian"

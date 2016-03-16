@@ -1388,7 +1388,7 @@ sgs.ai_skill_use_func.ThLingdieCard = function(card, use, self)
 			end
 		end
 		if #card_ids > 0 then
-			local target, cardId = sgs.ai_skill_askforyiji.nosyiji(self, card_ids)
+			local target, cardId = sgs.ai_skill_askforyiji.ikyumeng(self, card_ids)
 			if target and target:objectName() ~= self.player:objectName() and cardId and cardId > -1 then
 				use.card = sgs.Card_Parse("@ThLingdieCard=" .. cardId)
 				if use.to then
@@ -1398,7 +1398,7 @@ sgs.ai_skill_use_func.ThLingdieCard = function(card, use, self)
 			end
 		end
 	end
-	local target, cardId = sgs.ai_skill_askforyiji.nosyiji(self, sgs.QList2Table(self.player:handCards()))
+	local target, cardId = sgs.ai_skill_askforyiji.ikyumeng(self, sgs.QList2Table(self.player:handCards()))
 	if target and target:objectName() ~= self.player:objectName() and cardId and cardId > -1 then
 		use.card = sgs.Card_Parse("@ThLingdieCard=" .. cardId)
 		if use.to then

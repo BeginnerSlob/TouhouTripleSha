@@ -98,7 +98,7 @@ sgs.ai_skill_invoke.thjiefan = true
 
 sgs.ai_skill_playerchosen.thjiefan = function(self, targets)
 	local ids = { self.player:getTag("ThJiefanId"):toInt() }
-	local target, _ = sgs.ai_skill_askforyiji.nosyiji(self, ids)
+	local target, _ = sgs.ai_skill_askforyiji.ikyumeng(self, ids)
 	return target or self.player
 end
 

@@ -77,7 +77,7 @@ sgs.ai_skill_choice.drowning = function(self, choices, data)
 end
 
 sgs.ai_skill_playerchosen.koftuxi = function(self, targets)
-	local targetstr = self:getTuxiTargets("koftuxi", true)
+	local targetstr = self:getIkChibaoTargets("koftuxi", true)
 	if #targetstr > 0 then
 		local target = findPlayerByObjectName(self.room, targetstr[1])
 		return target
@@ -99,7 +99,7 @@ sgs.ai_playerchosen_intention.koftuxi = function(self, from, to)
 			sgs.updateIntention(from, to, 80)
 		end
 	else
-		local intention = from:hasFlag("AI_TuxiToFriend_" .. to:objectName()) and -5 or 80
+		local intention = from:hasFlag("AI_IkChibaoToFriend_" .. to:objectName()) and -5 or 80
 		sgs.updateIntention(from, to, intention)
 	end
 end

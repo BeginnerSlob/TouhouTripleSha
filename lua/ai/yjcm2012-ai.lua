@@ -38,7 +38,7 @@ sgs.ai_skill_playerchosen.qianxi = function(self, targets)
 		self:sort(enemies, "defense")
 		if not isRed then
 			for _, enemy in ipairs(enemies) do
-				if enemy:hasSkill("qingguo") and self:slashIsEffective(slash, enemy) then return enemy end
+				if enemy:hasSkill("ikzhongyan") and self:slashIsEffective(slash, enemy) then return enemy end
 			end
 			for _, enemy in ipairs(enemies) do
 				if enemy:hasSkill("kanpo") then return enemy end

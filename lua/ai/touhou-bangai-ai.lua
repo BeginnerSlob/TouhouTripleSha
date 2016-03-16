@@ -199,7 +199,7 @@ sgs.ai_skill_choice.thxumei = function(self, choices, data)
 			end
 		end
 	end
-	local target, cardId = sgs.ai_skill_askforyiji.nosyiji(self, sgs.QList2Table(ids))
+	local target, cardId = sgs.ai_skill_askforyiji.ikyumeng(self, sgs.QList2Table(ids))
 	if target and cardId then
 		sgs.thxumei_target = target
 		return sgs.Sanguosha:getCard(cardId):getType()
@@ -215,7 +215,7 @@ sgs.ai_skill_playerchosen.thxumei = function(self, targets)
 		return sgs.thxumei_target
 	end
 	local ids = self.player:getTag("ThXumeiDummy"):toIntList()
-	local target, _ = sgs.ai_skill_askforyiji.nosyiji(self, sgs.QList2Table(ids))
+	local target, _ = sgs.ai_skill_askforyiji.ikyumeng(self, sgs.QList2Table(ids))
 	return target or self.player
 end
 
@@ -490,7 +490,7 @@ sgs.ai_skill_playerchosen.thweide = function(self, targets)
 	if not ids or ids:isEmpty() then
 		return self:findPlayerToDiscard("h", false, false) or targets:at(math.random(0, targets:length() - 1))
 	else
-		local target, _ = sgs.ai_skill_askforyiji.nosyiji(self, sgs.QList2Table(ids))
+		local target, _ = sgs.ai_skill_askforyiji.ikyumeng(self, sgs.QList2Table(ids))
 		return target or self.player
 	end
 end

@@ -254,7 +254,7 @@ local function can_be_selected_as_target_xueji(self, card, who)
 					if not enemy:faceUp() then return false end
 				end
 			end
-			if who:hasSkill("nosyiji") then
+			if who:hasSkill("ikyumeng") then
 				local huatuo = self.room:findPlayerBySkillName("jijiu")
 				if huatuo and self:isEnemy(huatuo) and huatuo:getHandcardNum() >= 3 then
 					return false
@@ -263,7 +263,7 @@ local function can_be_selected_as_target_xueji(self, card, who)
 		end
 		return true
 	elseif self:isFriend(who) then
-		if who:hasSkill("nosyiji") and not self.player:hasSkill("ikxuwu") then
+		if who:hasSkill("ikyumeng") and not self.player:hasSkill("ikxuwu") then
 			local huatuo = self.room:findPlayerBySkillName("jijiu")
 			if (huatuo and self:isFriend(huatuo) and huatuo:getHandcardNum() >= 3 and huatuo ~= self.player)
 				or (who:getLostHp() == 0 and who:getMaxHp() >= 3) then
@@ -321,7 +321,7 @@ sgs.ai_card_intention.XuejiCard = function(self, card, from, tos)
 	local huatuo = self.room:findPlayerBySkillName("jijiu")
 	for _, to in ipairs(tos) do
 		local intention = 60
-		if to:hasSkill("nosyiji") and not from:hasSkill("ikxuwu") then
+		if to:hasSkill("ikyumeng") and not from:hasSkill("ikxuwu") then
 			if (huatuo and self:isFriend(huatuo) and huatuo:getHandcardNum() >= 3 and huatuo:objectName() ~= from:objectName()) then
 				intention = -30
 			end
@@ -869,7 +869,7 @@ function getNextJudgeReason(self, player)
 			else return end
 		end
 	end
-	if self:isFriend(player) and player:hasSkill("luoshen") then return "luoshen" end
+	if self:isFriend(player) and player:hasSkill("ikmengyang") then return "ikmengyang" end
 	if not player:getJudgingArea():isEmpty() and not player:containsTrick("YanxiaoCard") then
 		return player:getJudgingArea():last():objectName()
 	end
@@ -899,7 +899,7 @@ sgs.ai_skill_use_func.ZhoufuCard = function(card, use, self)
 		if friend:getPile("incantation"):length() > 0 then continue end
 		local reason = getNextJudgeReason(self, friend)
 		if reason then
-			if reason == "luoshen" then
+			if reason == "ikmengyang" then
 				zhenji = friend
 			elseif reason == "indulgence" then
 				for _, card in ipairs(cards) do

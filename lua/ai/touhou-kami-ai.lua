@@ -535,7 +535,7 @@ sgs.ai_skill_invoke.thlunyu = function(self, data)
 		end
 	end
 
-	if nextAlive:hasSkill("luoshen") then
+	if nextAlive:hasSkill("ikmengyang") then
 		return self:isEnemy(nextAlive) == card:isRed()
 	end
 	if nextAlive:hasSkill("yinghun") then
@@ -1324,7 +1324,7 @@ end
 --祀祟：专属技，准备阶段开始时，你可以令所有其他角色各弃置一张手牌，你从弃牌堆获得这些牌中的至多三张牌，然后你可以依次交给一名其他角色。
 sgs.ai_skill_invoke.thsisui = true
 
-sgs.ai_skill_askforyiji.thsisui = sgs.ai_skill_askforyiji.nosyiji
+sgs.ai_skill_askforyiji.thsisui = sgs.ai_skill_askforyiji.ikyumeng
 
 --湛樱：锁定技，你始终跳过你的摸牌阶段；你的手牌上限+4。
 --standard-ai.lua SmartAI:willSkipDrawPhase
