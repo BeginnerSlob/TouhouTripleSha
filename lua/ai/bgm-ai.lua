@@ -933,7 +933,7 @@ sgs.ai_skill_invoke.hantong_acquire = function(self, data)
 			local origin_data = self.player:getTag("HantongOriginData")
 			return sgs.ai_skill_invoke.ikxinqi(self, origin_data)
 		end
-	elseif skill == "jiuyuan" and not self.player:hasSkill("jiuyuan") then
+	elseif skill == "ikjiyuan" and not self.player:hasSkill("ikjiyuan") then
 		return true
 	elseif skill == "xueyi" and not self.player:hasSkill("xueyi") then
 		local maxcards = self.player:getMaxCards()

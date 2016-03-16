@@ -679,7 +679,7 @@ function SmartAI:getGuixinValue(player)
 		if self:needKongcheng(player) and player:getHandcardNum() == 1 then return 0 end
 		if not self:hasLoseHandcardEffective() then return 0.1
 		else
-			local index = player:hasSkills("jijiu|qingnang|leiji|nosleiji|jieyin|beige|kanpo|liuli|qiaobian|zhiheng|guidao|longhun|xuanfeng|tianxiang|noslijian|lijian") and 0.7 or 0.6
+			local index = player:hasSkills("jijiu|qingnang|leiji|nosleiji|jieyin|beige|kanpo|liuli|qiaobian|ikzhiheng|guidao|longhun|xuanfeng|tianxiang|noslijian|lijian") and 0.7 or 0.6
 			local value = 0.2 + index / (player:getHandcardNum() + 1)
 			if self:doNotDiscard(player, "h", true) then value = value - 0.1 end
 			return value
@@ -716,7 +716,7 @@ function SmartAI:getGuixinValue(player)
 		elseif self:needKongcheng(player) and player:getHandcardNum() == 1 then return 0.3 end
 		if not self:hasLoseHandcardEffective() then return 0.2
 		else
-			local index = player:hasSkills("jijiu|qingnang|leiji|nosleiji|jieyin|beige|kanpo|liuli|qiaobian|zhiheng|guidao|longhun|xuanfeng|tianxiang|noslijian|lijian") and 0.5 or 0.4
+			local index = player:hasSkills("jijiu|qingnang|leiji|nosleiji|jieyin|beige|kanpo|liuli|qiaobian|ikzhiheng|guidao|longhun|xuanfeng|tianxiang|noslijian|lijian") and 0.5 or 0.4
 			local value = 0.2 - index / (player:getHandcardNum() + 1)
 			if player:hasSkills("ikyindie+ikguiyue") then value = value + 0.1 end
 			return value
@@ -855,7 +855,7 @@ local function getShenfenUseValueOfHECards(self, to)
 	value_h = (hcard > 4) and 16 / hcard or hcard
 	if to:hasSkills("ikyindie+ikguiyue") then value = value * 0.95 end
 	if (to:hasSkill("ikjingyou") or (to:hasSkill("zhiji") and to:getHp() > 2 and to:getMark("zhiji") == 0)) and not to:isKongcheng() then value_h = value_h * 0.7 end
-	if to:hasSkills("jijiu|qingnang|leiji|nosleiji|jieyin|beige|kanpo|liuli|qiaobian|zhiheng|guidao|longhun|xuanfeng|tianxiang|noslijian|lijian") then value_h = value_h * 0.95 end
+	if to:hasSkills("jijiu|qingnang|leiji|nosleiji|jieyin|beige|kanpo|liuli|qiaobian|ikzhiheng|guidao|longhun|xuanfeng|tianxiang|noslijian|lijian") then value_h = value_h * 0.95 end
 	value = value + value_h
 
 	-- value of equips
@@ -1055,9 +1055,9 @@ jilve_skill.getTurnUseCard = function(self)
 		end
 	end
 	if not self.player:hasFlag("JilveZhiheng") then
-		sgs.ai_skill_choice.jilve = "zhiheng"
-		sgs.ai_use_priority.JilveCard = sgs.ai_use_priority.ZhihengCard
-		local card = sgs.Card_Parse("@ZhihengCard=.")
+		sgs.ai_skill_choice.jilve = "ikzhiheng"
+		sgs.ai_use_priority.JilveCard = sgs.ai_use_priority.IkZhihengCard
+		local card = sgs.Card_Parse("@IkZhihengCard=.")
 		local dummy_use = { isDummy = true }
 		self:useSkillCard(card, dummy_use)
 		if dummy_use.card then return sgs.Card_Parse("@JilveCard=.") end
@@ -1078,8 +1078,8 @@ sgs.ai_skill_use_func.JilveCard = function(card, use, self)
 	use.card = card
 end
 
-sgs.ai_skill_use["@zhiheng"] = function(self, prompt)
-	local card = sgs.Card_Parse("@ZhihengCard=.")
+sgs.ai_skill_use["@ikzhiheng"] = function(self, prompt)
+	local card = sgs.Card_Parse("@IkZhihengCard=.")
 	local dummy_use = { isDummy = true }
 	self:useSkillCard(card, dummy_use)
 	if dummy_use.card then return (dummy_use.card):toString() .. "->." end
