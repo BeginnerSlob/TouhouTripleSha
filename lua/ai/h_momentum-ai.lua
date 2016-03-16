@@ -247,7 +247,7 @@ sgs.ai_skill_choice.chuanxin_lose = function(self, choices, data)
 	if self.player:hasSkill("juedi") and not self.player:hasSkill("yinbing", true) then return "juedi" end
 	if self.player:hasSkill("kurou") and not self.player:hasSkill("zhaxiang", true) then return "kurou" end
 	if self.player:hasSkills("ikyipao+huxiao") then return "huxiao" end
-	if self.player:hasSkills("fankui+duodao|nosfankui+duodao") then return "duodao" end
+	if self.player:hasSkills("ikhuanji+duodao|nosfankui+duodao") then return "duodao" end
 	if self.player:hasSkills("jilve+wansha") then return "wansha" end
 	if self.player:hasSkills("wuqian+wushuang") then return "wushuang" end
 	if self.player:hasSkills("tianfu+kanpo") then return "kanpo" end

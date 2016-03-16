@@ -182,7 +182,7 @@ sgs.ai_skill_playerchosen.vsganglie = function(self, targets)
 end
 
 sgs.ai_playerchosen_intention.vsganglie = function(self, from, to)
-	if sgs.ai_ganglie_effect and sgs.ai_ganglie_effect == string.format("%s_%s_%d", from:objectName(), to:objectName(), sgs.turncount) then
+	if sgs.ai_nosganglie_effect and sgs.ai_nosganglie_effect == string.format("%s_%s_%d", from:objectName(), to:objectName(), sgs.turncount) then
 		sgs.updateIntention(from, to, -10)
 	elseif from:getState() == "online" then
 		if not from:hasSkill("ikxuwu") and self:getDamagedEffects(to, from) then return end

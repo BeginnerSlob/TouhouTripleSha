@@ -89,18 +89,18 @@ function setInitialTables()
 	sgs.ai_type_name = { "Skill", "Basic", "Trick", "Equip" }
 	sgs.lose_equip_skill = "kofxiaoji|xiaoji|xuanfeng|nosxuanfeng"
 	sgs.need_kongcheng = "lianying|noslianying|ikjingyou|sijian|thjingtao|thfeijing|thkaihai"
-	sgs.masochism_skill = "nosyiji|yiji|jieming|fankui|nosfankui|thfusheng|ganglie|vsganglie|nosganglie|enyuan|fangzhu|guixin|langgu|quanji|thzhehui|chengxiang|noschengxiang|" .. 
+	sgs.masochism_skill = "nosyiji|yiji|jieming|ikhuanji|nosfankui|thfusheng|ikaoli|vsganglie|nosganglie|enyuan|fangzhu|guixin|langgu|quanji|thzhehui|chengxiang|noschengxiang|" .. 
 						  "thshenzhou"
-	sgs.wizard_skill = "guicai|nosguicai|guidao|jilve|tiandu|noszhenlie|huanshi"
-	sgs.wizard_harm_skill = "guicai|nosguicai|guidao|jilve|huanshi"
+	sgs.wizard_skill = "iktiansuo|nosguicai|guidao|jilve|tiandu|noszhenlie|huanshi"
+	sgs.wizard_harm_skill = "iktiansuo|nosguicai|guidao|jilve|huanshi"
 	sgs.priority_skill = "dimeng|haoshi|qingnang|ikhuiquan|jizhi|guzheng|qixi|jieyin|nosguose|guose|duanliang|jujian|fanjian|nosfanjian|noslijian|lijian|" ..
 							"manjuan|thjinlu|tuxi|nostuxi|qiaobian|yongsi|zhiheng|luoshen|nosrende|ikshenai|mingce|wansha|iklingshi|jilve|" ..
 							"anxu|qice|yinling|qingcheng|zhaoxin"
 	sgs.save_skill = "jijiu|buyi|ikjieyou|chunlao|longhun"
-	sgs.exclusive_skill = "huilei|duanchang|enyuan|wuhun|zhuiyi|buqu|nosbuqu|nosyiji|yiji|ganglie|vsganglie|nosganglie|guixin|jieming|nosmiji|" ..
+	sgs.exclusive_skill = "huilei|duanchang|enyuan|wuhun|zhuiyi|buqu|nosbuqu|nosyiji|yiji|ikaoli|vsganglie|nosganglie|guixin|jieming|nosmiji|" ..
 							"thjuedu"
 	sgs.cardneed_skill = "ikyipao|tianyi|xianzhen|shuangxiong|ikhuiquan|jizhi|noseguose|guose|duanliang|qixi|qingnang|yinling|nosluoyi|guhuo|nosguhuo|kanpo|" ..
-							"jieyin|renjie|zhiheng|nosrende|ikshenai|nosjujian|guicai|nosguicai|guidao|longhun|luanji|qiaobian|beige|thluli|" ..
+							"jieyin|renjie|zhiheng|nosrende|ikshenai|nosjujian|iktiansuo|nosguicai|guidao|longhun|luanji|qiaobian|beige|thluli|" ..
 							"mingce|nosfuhun|lirang|xuanfeng|xinzhan|dangxian|bifa|xiaoguo"..
 							"thzhanye|thqiaogong|thguiyu"
 	sgs.drawpeach_skill = "tuxi|nostuxi|qiaobian"
@@ -3786,9 +3786,9 @@ function SmartAI:canRetrial(player, to_retrial, reason)
 		local h_num = (player:getMark("yijue") > 0) and 0 or player:getHandcardNum()
 		if blackequipnum + h_num then return true end
 	end
-	if player:hasSkill("guicai") and not player:getEquips():isEmpty() then return true end
+	if player:hasSkill("iktiansuo") and not player:getEquips():isEmpty() then return true end
 	if player:getMark("yijue") == 0 then return false end
-	if player:hasSkills("guicai|nosguicai") and player:getHandcardNum() > 0 then return true end
+	if player:hasSkills("iktiansuo|nosguicai") and player:getHandcardNum() > 0 then return true end
 	if player:hasSkill("huanshi") and not player:isNude()
 		and (not string.startsWith(self.room:getMode(), "06_") or self:isFriend(to_retrial, player)) then return true end
 	if player:hasSkill("jilve") and (player:getHandcardNum() > 0 and player:getMark("@bear") > 0) then return true end
@@ -5812,6 +5812,9 @@ function SmartAI:doNotDiscard(to, flags, conservative, n, reason)
 		if flags:match("e") then
 			if to:hasSkills("jieyin+xiaoji") and to:getDefensiveHorse() then return false end
 			if to:hasSkills("jieyin+xiaoji") and to:getArmor() and not to:getArmor():isKindOf("SilverLion") then return false end
+		end
+		if flags:match("j") then
+			if to:getJudgingArea():length() > 1 or to:containsTrick("pueple_song") then return false end
 		end
 		if flags == "h" or (flags == "he" and not to:hasEquip()) then
 			if to:isKongcheng() or not self.player:canDiscard(to, "h") then return true end

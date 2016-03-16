@@ -682,3 +682,226 @@ sgs.ai_skill_cardask["@ikhuanwei-jink"] = function(self)
 	end
 	return self:getCardId("Jink") or "."
 end
+
+--天锁：每当一名角色的判定牌生效前，你可以打出一张牌代替之。
+sgs.ai_skill_cardask["@iktiansuo-card"] = function(self, data)
+	local judge = data:toJudge()
+
+	if self.room:getMode():find("_mini_46") and not judge:isGood() then return "$" .. self.player:handCards():first() end
+	if self:needRetrial(judge) then
+		local cards = sgs.QList2Table(self.player:getCards("he"))
+		for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
+			cards:prepend(sgs.Sanguosha:getCard(id))
+		end
+		local card_id = self:getRetrialCardId(cards, judge)
+		if card_id ~= -1 then
+			return "$" .. card_id
+		end
+	end
+
+	return "."
+end
+
+function sgs.ai_cardneed.iktiansuo(to, card, self)
+	for _, player in sgs.qlist(self.room:getAllPlayers()) do
+		if self:getFinalRetrial(to) == 1 then
+			if player:containsTrick("lightning") and not player:containsTrick("YanxiaoCard") then
+				return card:getSuit() == sgs.Card_Spade and card:getNumber() >= 2 and (card:getNumber() <= 9 or player:hasSkill("thjiuzhang")) and not player:hasSkills("hongyan|wuyan")
+			end
+			if self:isFriend(player) and self:willSkipDrawPhase(player) then
+				return card:getSuit() == sgs.Card_Club
+			end
+			if self:isFriend(player) and self:willSkipPlayPhase(player) then
+				return card:getSuit() == sgs.Card_Heart and (not player:hasSkill("thanyue") or player:hasSkill("ikchiqiu"))
+			end
+		end
+	end
+end
+
+sgs.iktiansuo_suit_value = {
+	heart = 3.9,
+	club = 3.9,
+	spade = 3.5
+}
+
+--幻姬：每当你受到1点伤害后，你可以获得伤害来源区域内的一张牌。
+sgs.ai_skill_invoke.ikhuanji = function(self, data)
+	local target = data:toPlayer()
+	if sgs.ai_need_damaged.ikhuanji(self, target, self.player) then return true end
+
+	if self:isFriend(target) then
+		if self:getOverflow(target) > 2 then return true end
+		return (target:hasSkills(sgs.lose_equip_skill) and target:hasEquip()) or self:needToThrowArmor(target) or (target:containsTrick("indulgence") or target:containsTrick("supply_shortage"))
+	end
+	if self:isEnemy(target) then				---ikhuanji without zhugeliang and luxun
+		if target:containsTrick("purple_song") then return true end
+		if target:hasSkills("ikyindie+ikguiyue") and target:getPhase() == sgs.Player_NotActive then return false end
+		if (self:needKongcheng(target) or self:getLeastHandcardNum(target) == 1) and target:getHandcardNum() == 1 then
+			if target:hasEquip() then
+				return true
+			else
+				return false
+			end
+		end
+	end
+	return true
+end
+
+sgs.ai_skill_cardchosen.ikhuanji = function(self, who, flags)
+	local suit = sgs.ai_need_damaged.ikhuanji(self, who, self.player)
+	if not suit then return nil end
+
+	local cards = sgs.QList2Table(who:getEquips())
+	local handcards = sgs.QList2Table(who:getHandcards())
+	if #handcards == 1 and handcards[1]:hasFlag("visible") then table.insert(cards, handcards[1]) end
+
+	for i = 1, #cards, 1 do
+		if (cards[i]:getSuit() == suit and suit ~= sgs.Card_Spade)
+			or (cards[i]:getSuit() == suit and suit == sgs.Card_Spade and cards[i]:getNumber() >= 2 and cards[i]:getNumber() <= 9) then
+			return cards[i]:getEffectiveId()
+		end
+	end
+	return nil
+end
+
+sgs.ai_need_damaged.ikhuanji = function(self, attacker, player)
+	if not attacker or not player:hasSkills("iktiansuo|nosguicai") then return false end
+	local need_retrial = function(splayer)
+		local alive_num = self.room:alivePlayerCount()
+		return alive_num + splayer:getSeat() % alive_num > self.room:getCurrent():getSeat()
+				and splayer:getSeat() < alive_num + self.player:getSeat() % alive_num
+	end
+	local retrial_card ={ ["spade"] = false, ["heart"] = false, ["club"] = false, ["diamond"] = false }
+	local attacker_card ={ ["spade"] = nil, ["heart"]= nil, ["club"] = nil, ["diamond"] = nil }
+
+	local handcards = sgs.QList2Table(player:getHandcards())
+	for i = 1, #handcards, 1 do
+		local flag = string.format("%s_%s_%s", "visible", attacker:objectName(), player:objectName())
+		if player:objectName() == self.player:objectName() or handcards[i]:hasFlag("visible") or handcards[i]:hasFlag(flag) then
+			if handcards[i]:getSuit() == sgs.Card_Spade and handcards[i]:getNumber() >= 2 and handcards[i]:getNumber() <= 9 then
+				retrial_card.spade = true
+			end
+			if handcards[i]:getSuit() == sgs.Card_Heart then
+				retrial_card.heart = true
+			end
+			if handcards[i]:getSuit() == sgs.Card_Club then
+				retrial_card.club = true
+			end
+			if handcards[i]:getSuit() == sgs.Card_Diamond then
+				retrial_card.diamond = true
+			end
+		end
+	end
+
+	local cards = sgs.QList2Table(attacker:getEquips())
+	local handcards = sgs.QList2Table(attacker:getHandcards())
+	if #handcards == 1 and handcards[1]:hasFlag("visible") then table.insert(cards, handcards[1]) end
+
+	for i = 1, #cards, 1 do
+		if cards[i]:getSuit() == sgs.Card_Spade and cards[i]:getNumber() >= 2 and cards[i]:getNumber() <= 9 then
+			attacker_card.spade = sgs.Card_Spade
+		end
+		if cards[i]:getSuit() == sgs.Card_Heart then
+			attacker_card.heart = sgs.Card_Heart
+		end
+		if cards[i]:getSuit() == sgs.Card_Club then
+			attacker_card.club = sgs.Card_Club
+		end
+		if cards[i]:getSuit() == sgs.Card_Diamond then
+			attacker_card.diamond = sgs.Card_Diamond
+		end
+	end
+
+	local players = self.room:getOtherPlayers(player)
+	for _, p in sgs.qlist(players) do
+		if p:containsTrick("lightning") and self:getFinalRetrial(p) == 1 and need_retrial(p) then
+			if not retrial_card.spade and attacker_card.spade then return attacker_card.spade end
+		end
+
+		if self:isFriend(p, player) and not p:containsTrick("YanxiaoCard") and not p:hasSkill("qiaobian") then
+			if p:containsTrick("indulgence") and self:getFinalRetrial(p) == 1 and need_retrial(p) and p:getHandcardNum() >= p:getHp() then
+				if not retrial_card.heart and attacker_card.heart then return attacker_card.heart end
+			end
+			if p:containsTrick("supply_shortage") and self:getFinalRetrial(p) == 1 and need_retrial(p) and p:hasSkill("yongsi") then
+				if not retrial_card.club and attacker_card.club then return attacker_card.club end
+			end
+		end
+
+		if self:isEnemy(p, player) and not p:containsTrick("YanxiaoCard") and not p:hasSkill("qiaobian") then
+			if p:containsTrick("purple_song") and self:getFinalRetrial(p) == 1 and need_retrial(p) then
+				if not retrial_card.diamond and attacker_card.diamond then return attacker_card.diamond end
+			end
+		end
+	end
+	return false
+end
+
+sgs.ai_choicemade_filter.skillInvoke.ikhuanji = function(self, player, promptlist)
+	local damage = self.room:getTag("CurrentDamageStruct"):toDamage()
+	if damage.from and damage.to and promptlist[#promptlist] ~= "yes" then
+		if not self:doNotDiscard(damage.from, "hej") then
+			sgs.updateIntention(damage.to, damage.from, -40)
+		end
+	end
+end
+
+sgs.ai_choicemade_filter.cardChosen.ikhuanji = function(self, player, promptlist)
+	local damage = self.room:getTag("CurrentDamageStruct"):toDamage()
+	if damage.from and damage.to then
+		local id = tonumber(promptlist[3])
+		local place = self.room:getCardPlace(id)
+		if sgs.ai_need_damaged.ikhuanji(self, damage.from, damage.to) then
+		elseif damage.from:getArmor() and self:needToThrowArmor(damage.from) and id == damage.from:getArmor():getEffectiveId() then
+		elseif self:getOverflow(damage.from) > 2 or (damage.from:hasSkills(sgs.lose_equip_skill) and place == sgs.Player_PlaceEquip) then
+		elseif place == sgs.Player_PlaceDelayedTrick then
+			sgs.ai_choicemade_filter.cardChosen.snatch(self, player, promptlist)
+		else
+			sgs.updateIntention(damage.to, damage.from, 60)
+		end
+	end
+end
+
+--傲戾：每当你受到1点伤害后，可以进行一次判定，若结果为红色，你对伤害来源造成1点伤害；若结果为黑色，你弃置其区域内的一张牌。
+sgs.ai_skill_invoke.ikaoli = function(self, data)
+	local damage = data:toDamage()
+	if not damage.from then
+		local zhangjiao = self.room:findPlayerBySkillName("guidao")
+		return zhangjiao and self:isFriend(zhangjiao) and not zhangjiao:isNude()
+	end
+	return not self:isFriend(damage.from) and self:canAttack(damage.from) and (damage.from:isNude() or not self:doNotDiscard(damage.from, "hej"))
+end
+
+sgs.ai_need_damaged.ikaoli = function(self, attacker, player)
+	if not attacker then return false end
+	if self:isEnemy(attacker) and self:isWeak(attacker) and sgs.isGoodTarget(attacker, self:getEnemies(attacker), self) then
+		return true
+	end
+	return false
+end
+
+function sgs.ai_slash_prohibit.ikaoli(self, from, to)
+	if not to:hasSkill("ikaoli") then return false end
+	if self:isFriend(from, to) then return false end
+	if from:hasSkill("ikxuwu") or from:getMark("thshenyou") > 0 or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
+	if from:hasFlag("IkJieyouUsed") then return false end
+	return self:isWeak(from)
+end
+
+sgs.ai_choicemade_filter.skillInvoke.ikaoli = function(self, player, promptlist)
+	local damage = self.room:getTag("CurrentDamageStruct"):toDamage()
+	if damage.from and damage.to then
+		if promptlist[#promptlist] == "yes" then
+			if not self:getDamagedEffects(damage.from, player) and not self:needToLoseHp(damage.from, player)
+				and (damage.from:isNude() or not self:doNotDiscard(damage.from, "he")) then
+				sgs.updateIntention(damage.to, damage.from, 40)
+			end
+		elseif self:canAttack(damage.from) then
+			sgs.updateIntention(damage.to, damage.from, -40)
+		end
+	end
+end
+
+--清俭：当你于摸牌阶段外获得牌时，你可以将其中至少一张牌交给至少一名其他角色，每回合限一次。
+sgs.ai_skill_askforyiji.ikqingjian = function(self, card_ids)
+	return sgs.ai_skill_askforyiji.nosyiji(self, card_ids)
+end
