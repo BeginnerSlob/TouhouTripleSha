@@ -61,7 +61,7 @@ fan_skill.getTurnUseCard = function(self)
 	local slash_card
 
 	for _, card in ipairs(cards) do
-		if card:isKindOf("Slash") and not (card:isKindOf("FireSlash") or card:isKindOf("ThunderSlash")) then
+		if card:objectName() == "slash" then
 			slash_card = card
 			break
 		end
@@ -96,7 +96,7 @@ function sgs.ai_armor_value.vine(player, self, virtual)
 
 	for _, enemy in sgs.qlist(self.room:getOtherPlayers(player)) do
 		if not self:isFriend(enemy, player) then
-			if (enemy:canSlash(player) and (enemy:hasWeapon("fan") or enemy:hasSkill("lihuo"))) or enemy:hasSkills("huoji|longhun") then return -2 end
+			if (enemy:canSlash(player) and (enemy:hasWeapon("fan") or enemy:hasSkill("lihuo") or enemy:hasSkill("ikchilian"))) or enemy:hasSkills("huoji|longhun") then return -2 end
 			if enemy:hasSkill("yeyan") and enemy:getMark("@flame") > 0 then return -2 end
 			if enemy:hasSkills("bossguihuo|bosslianyu") then return -2 end
 			if getKnownCard(enemy, self.player, "FireSlash|FireAttack|Fan") >= 1 then return -2 end
@@ -166,7 +166,7 @@ end
 function SmartAI:shouldUseAnaleptic(target, slash)
 	if sgs.turncount <= 1 and self.role == "renegade" and sgs.isLordHealthy() and self:getOverflow() < 2 then return false end
 	if self:hasSilverLionEffect(target)
-		and not ((self.player:hasWeapon("qinggang_sword") and target:hasArmorEffect("silver_lion")) 
+		and not (((self.player:hasWeapon("qinggang_sword") or (self.player:hasSkill("ikzhenhong") and slash:getSuit() == sgs.Card_Diamond)) and target:hasArmorEffect("silver_lion")) 
 				or self.player:hasSkill("ikxuwu")) then
 		return false
 	end
@@ -241,7 +241,7 @@ function SmartAI:useCardSupplyShortage(card, use)
 
 		local value = 0 - enemy:getHandcardNum()
 
-		if enemy:hasSkills("yongsi|haoshi|tuxi|nostuxi|noslijian|lijian|fanjian|nosfanjian|dimeng|jijiu|jieyin|beige")
+		if enemy:hasSkills("yongsi|haoshi|ikchibao|nostuxi|noslijian|lijian|fanjian|nosfanjian|dimeng|jijiu|jieyin|beige")
 			or (enemy:hasSkill("zaiqi") and enemy:getLostHp() > 1) then
 			value = value + 10
 		end
@@ -257,7 +257,7 @@ function SmartAI:useCardSupplyShortage(card, use)
 		if self:objectiveLevel(enemy) < 3 then value = value - 10 end
 		if not enemy:faceUp() then value = value - 10 end
 		if enemy:hasSkills("keji|shensu|qingyi|thanbing") then value = value - enemy:getHandcardNum() end
-		if enemy:hasSkills("guanxing|xiuluo|tiandu|guidao|noszhenlie") then value = value - 5 end
+		if enemy:hasSkills("ikyuxi|xiuluo|tiandu|guidao|noszhenlie") then value = value - 5 end
 		if self:needKongcheng(enemy) then value = value - 1 end
 		if enemy:getMark("@kuiwei") > 0 then value = value - 2 end
 		if not sgs.isGoodTarget(enemy, self.enemies, self) then value = value - 1 end
@@ -376,7 +376,7 @@ function SmartAI:isGoodChainTarget(who, source, nature, damagecount, card)
 			if target:isLord() and not self:isEnemy(target) then killlord = true end
 			if self:isEnemy(target) then kills = kills + 1 end
 		else
-			if self:isEnemy(target) and ((source:getHandcardNum() < 2 and target:hasSkill("nosganglie")) or target:hasSkill("ganglie")) and source:getHp() == 1
+			if self:isEnemy(target) and ((source:getHandcardNum() < 2 and target:hasSkill("nosganglie")) or target:hasSkill("ikaoli")) and source:getHp() == 1
 				and self:damageIsEffective(source, nil, target) and peach_num < 1 then newvalue = newvalue - 100 end
 			if target:hasSkill("vsganglie") then
 				local can
@@ -460,11 +460,14 @@ function SmartAI:useCardIronChain(card, use)
 	end
 	use.card = card
 	if not needTarget then
+		if self.player:hasFlag("thpanghunInvoke") and self.player:hasFlag("thjingwuInvoke") and not self.player:hasFlag("thlunyuInvoke") then
+			sgs.ai_use_priority.IronChain = 4
+		end
 		if self.player:isLocked(card) then return end
 		if #self.enemies == 1 and #(self:getChainedFriends()) <= 1 then return end
 		if self:needBear() then return end
 		if self:getOverflow() <= 0 and self.player:hasSkill("manjuan") then return end
-		if self.player:hasSkill("wumou") and self.player:getMark("@wrath") < 7 then return end
+		if self.player:hasSkill("ikwumou") and self.player:getMark("@wrath") < 7 then return end
 	end
 	local friendtargets, friendtargets2 = {}, {}
 	local otherfriends = {}
@@ -474,13 +477,16 @@ function SmartAI:useCardIronChain(card, use)
 	self:sort(self.friends, "defense")
 	for _, friend in ipairs(self.friends) do
 		if use.current_targets and table.contains(use.current_targets, friend:objectName()) then continue end
-		if friend:isChained() and not self:isGoodChainPartner(friend) and self:hasTrickEffective(card, friend) and not friend:hasSkill("ikhongcai") then
+		if friend:isChained() and not self:isGoodChainPartner(friend) and self:hasTrickEffective(card, friend)
+				and not self:isGoodThQiongfaTarget(friend) and not friend:hasSkill("ikhongcai") then
 			if friend:containsTrick("lightning") then
 				table.insert(friendtargets, friend)
 			else
 				table.insert(friendtargets2, friend)
 			end
 		elseif not friend:isChained() and friend:hasSkill("thchiwu") and self:isGoodChainPartner(friend) then
+			table.insert(friendtargets, friend)
+		elseif not friend:isChained() and self:isGoodThQiongfaTarget(friend) then
 			table.insert(friendtargets, friend)
 		else
 			table.insert(otherfriends, friend)
@@ -491,6 +497,9 @@ function SmartAI:useCardIronChain(card, use)
 		self:sort(self.enemies, "defense")
 		for _, enemy in ipairs(self.enemies) do
 			if not enemy:isChained() and enemy:hasSkill("thchiwu") and self:isGoodChainPartner(enemy) then
+				continue
+			end
+			if not enemy:isChained() and self:isGoodThQiongfaTarget(enemy) then
 				continue
 			end
 			if (not use.current_targets or not table.contains(use.current_targets, enemy:objectName()))
@@ -589,6 +598,11 @@ function SmartAI:useCardIronChain(card, use)
 	end
 	if use.to then assert(use.to:length() < targets_num + 1) end
 	if needTarget and use.to and use.to:isEmpty() then use.card = nil end
+	if use.to and use.to:isEmpty() then
+		if self.player:hasFlag("thpanghunInvoke") and self.player:hasFlag("thjingwuInvoke") and not self.player:hasFlag("thlunyuInvoke") then
+			sgs.ai_use_priority.IronChain = 4
+		end
+	end
 end
 
 sgs.ai_card_intention.IronChain = function(self, card, from, tos)
@@ -598,6 +612,8 @@ sgs.ai_card_intention.IronChain = function(self, card, from, tos)
 			local enemy = true
 			if to:hasSkill("ikhongcai") and #tos > 1 then enemy = false end
 			if liuxie and liuxie:getHp() >= 1 and #tos > 1 and self:isFriend(to, liuxie) then enemy = false end
+			if to:hasSkill("thchiwu") and self:isGoodChainPartner(to) then enemy = false end
+			if self:isGoodThQiongfaTarget(to) then enemy = false end
 			sgs.updateIntention(from, to, enemy and 60 or -30)
 		else
 			sgs.updateIntention(from, to, -60)
@@ -791,7 +807,7 @@ function SmartAI:useCardFireAttack(fire_attack, use)
 	end
 
 	if ((suitnum == 2 and lack.diamond == false) or suitnum <= 1)
-		and self:getOverflow() <= (self.player:hasSkills("jizhi|nosjizhi") and -2 or 0)
+		and self:getOverflow() <= (self.player:hasSkills("jizhi|ikhuiquan") and -2 or 0)
 		and #targets == 0 then return end
 
 	for _, enemy in ipairs(enemies) do

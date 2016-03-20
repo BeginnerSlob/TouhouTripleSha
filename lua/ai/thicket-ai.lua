@@ -3,6 +3,12 @@ sgs.ai_skill_invoke.xingshang = true
 function SmartAI:toTurnOver(player, n, reason)
 	if not player then global_room:writeToConsole(debug.traceback()) return end
 	n = n or 0
+	if player:hasSkill("thkuangli") then
+		n = n + 1
+	end
+	if n > 2 and not self:isFriend() then
+		return false
+	end
 	if self:isEnemy(player) then
 		local manchong = self.room:findPlayerBySkillName("junxing")
 		if manchong and self:isFriend(player, manchong) and self:playerGetRound(manchong) < self:playerGetRound(player)
@@ -26,6 +32,9 @@ function SmartAI:toTurnOver(player, n, reason)
 		and (not player:hasUsed("ShenfenCard") and player:getMark("@wrath") >= 6 or player:hasFlag("ShenfenUsing")) then
 		return false
 	end
+	if player:faceUp() and (player:getPhase() == sgs.Player_Play and player:hasUsed("ThJinluCard") or player:hasFlag("ThJinluUsed")) then
+		return false
+	end
 	if n > 1 and player:hasSkill("jijiu") and not hasManjuanEffect(player) then
 		return false
 	end
@@ -36,7 +45,7 @@ function SmartAI:toTurnOver(player, n, reason)
 		return false
 	end
 	if (player:hasSkills("jushou|nosjushou|kuiwei") and player:getPhase() <= sgs.Player_Finish)
-		or (player:hasSkill("lihun") and not player:hasUsed("LihunCard") and player:faceUp() and player:getPhase() == sgs.Player_Play) then
+		or (player:hasSkill("thjinlu") and not player:hasUsed("ThJinluCard") and player:faceUp() and player:getPhase() == sgs.Player_Play) then
 		return false
 	end
 	return true
@@ -166,7 +175,7 @@ sgs.duanliang_suit_value = {
 
 sgs.ai_skill_invoke.zaiqi = function(self, data)
 	local lostHp = 2
-	if self.player:hasSkills("rende|nosrende") and #self.friends_noself > 0 and not self:willSkipPlayPhase() then lostHp = 3 end
+	if self.player:hasSkills("ikshenai|nosrende") and #self.friends_noself > 0 and not self:willSkipPlayPhase() then lostHp = 3 end
 	return self.player:getLostHp() >= lostHp
 end
 

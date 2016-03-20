@@ -1,12 +1,15 @@
-function SmartAI:findPlayerToChain(targets)
+function SmartAI:findPlayerToChain(targets, chain_only)
+	if targets:isEmpty() then return nil end
 	targets = sgs.QList2Table(targets)
 	local getChainTarget = function(players_table)
 		self:sort(self.friends, "defense")
 		for _, friend in ipairs(self.friends) do
 			if not table.contains(players_table, friend) then continue end
-			if friend:isChained() and not self:isGoodChainPartner(friend) then
+			if friend:isChained() and not self:isGoodChainPartner(friend) and not self:isGoodThQiongfaTarget(friend) and not chain_only then
 				return friend
 			elseif not friend:isChained() and friend:hasSkill("thchiwu") and self:isGoodChainPartner(friend) then
+				return friend
+			elseif not friend:isChained() and self:isGoodThQiongfaTarget(friend) then
 				return friend
 			end
 		end
@@ -14,6 +17,9 @@ function SmartAI:findPlayerToChain(targets)
 		for _, enemy in ipairs(self.enemies) do
 			if not table.contains(players_table, enemy) then continue end
 			if not enemy:isChained() and enemy:hasSkill("thchiwu") and self:isGoodChainPartner(enemy) then
+				continue
+			end
+			if not enemy:isChained() and self:isGoodThQiongfaTarget(enemy) then
 				continue
 			end
 			if not enemy:isChained() and self:objectiveLevel(enemy) > 3
@@ -388,7 +394,7 @@ sgs.ai_skill_cardask["@thcunjing"] = function(self, data, pattern, target)
 		local ret = self:askForDiscard("", 1, 1, false, true)
 		if #ret > 0 then
 			if isCard("Peach", ret[1], self.player) then return "." end
-			return "$" .. ret[1]:getEffectiveId()
+			return "$" .. ret[1]
 		end
 	end
 	return "."
@@ -404,7 +410,7 @@ sgs.ai_choicemade_filter.cardResponded["@thcunjing"] = function(self, player, pr
 end
 
 --莲华：出牌阶段，你可弃置一张装备牌，然后观看牌堆顶的一张牌并将其交给一名角色。
-thlianhua_skill = {}
+local thlianhua_skill = {}
 thlianhua_skill.name = "thlianhua"
 table.insert(sgs.ai_skills, thlianhua_skill)
 thlianhua_skill.getTurnUseCard = function(self)
@@ -440,7 +446,7 @@ end
 
 sgs.ai_skill_playerchosen.thlianhua = function(self, targets)
 	local card_ids = sgs.QList2Table(self.player:getTag("ThLianhuaIds"):toIntList())
-	local target, cardId = sgs.ai_skill_askforyiji.nosyiji(self, card_ids)
+	local target, cardId = sgs.ai_skill_askforyiji.ikyumeng(self, card_ids)
 	if target and cardId and cardId > -1 then
 		return target
 	end
@@ -522,7 +528,7 @@ sgs.ai_cardneed.thmiaoyao = function(to, card)
 end
 
 --黑棺：出牌阶段限一次，你可以交给一名其他角色一张黑色手牌，则你不能成为其使用的【杀】的目标；或获得一名其他角色的一张手牌，则该角色不能成为【杀】的目标。效果持续到你的下回合开始。
-thheiguan_skill = {}
+local thheiguan_skill = {}
 thheiguan_skill.name = "thheiguan"
 table.insert(sgs.ai_skills, thheiguan_skill)
 thheiguan_skill.getTurnUseCard = function(self)
@@ -595,7 +601,7 @@ end
 sgs.ai_skill_invoke.thxiaoyong = true
 
 --栞谣：出牌阶段限一次，若你的手牌数不小于你的体力值，你可以展示全部手牌：若均为不同花色，你令一名体力值不小于你的角色失去1点体力；若均为相同花色，你获得一名其他角色的一张牌。
-thkanyao_skill = {}
+local thkanyao_skill = {}
 thkanyao_skill.name = "thkanyao"
 table.insert(sgs.ai_skills, thkanyao_skill)
 thkanyao_skill.getTurnUseCard = function(self)
@@ -1074,6 +1080,9 @@ sgs.ai_skill_invoke.thshenyou = function(self, data)
 			if self:slashProhibit(damage.card, damage.to, self.player) or damage.to:hasSkills(sgs.masochism_skill) then
 				return true
 			end
+			if damage.nature ~= sgs.DamageStruct_Normal and damage.to:isChained() and self:isGoodChainTarget(damage.to, self.player, damage.nature, damage.damage) then
+				return false
+			end
 			return math.random(1, 3) ~= 1
 		end
 		return false
@@ -1444,7 +1453,7 @@ sgs.ai_skill_choice.thshiming = function(self, choices, data)
 end
 
 --神宝：限定技，出牌阶段，你可以从一名其他角色的区域获得等同于你攻击范围数量的牌（至多获得三张，不足则全部获得），若如此做，结束阶段开始时，你须弃置等同于你攻击范围数量的牌（不足则全弃）。
-thshenbao_skill = {}
+local thshenbao_skill = {}
 thshenbao_skill.name = "thshenbao"
 table.insert(sgs.ai_skills, thshenbao_skill)
 thshenbao_skill.getTurnUseCard = function(self)

@@ -199,7 +199,7 @@ sgs.ai_skill_invoke.chuanxin = function(self, data)
 			if not skill:isAttachedLordSkill() then count = count + 1 end
 		end
 		if count > 1 then
-			for _, skill in ipairs(("benghuai|shiyong|yaowu|wumou|chanyuan|jinjiu|tongji|liyu"):split("|")) do
+			for _, skill in ipairs(("benghuai|shiyong|yaowu|ikwumou|chanyuan|jinjiu|tongji|liyu"):split("|")) do
 				if to:hasSkill(skill) then
 					if self:isFriend(to) then return true
 					elseif (skill == "benghuai" or skill == "shiyong") and to:getMaxHp() <= 3 then return true
@@ -225,7 +225,7 @@ sgs.ai_skill_invoke.chuanxin = function(self, data)
 end
 
 sgs.ai_skill_choice.chuanxin = function(self, choices, data)
-	if self.player:hasSkills("benghuai|shiyong|yaowu|wumou|chanyuan|jinjiu|tongji|liyu") then return "detach" end
+	if self.player:hasSkills("benghuai|shiyong|yaowu|ikwumou|chanyuan|jinjiu|tongji|liyu") then return "detach" end
 	if self:needToLoseHp(self.player) or self:needToThrowArmor() or self.player:getEquips():length() <= 2 or self.player:hasSkills(sgs.lose_equip_skill) then
 		return "throw"
 	end
@@ -233,7 +233,7 @@ sgs.ai_skill_choice.chuanxin = function(self, choices, data)
 end
 
 sgs.ai_skill_choice.chuanxin_lose = function(self, choices, data)
-	for _, skill in ipairs(("benghuai|shiyong|yaowu|wumou|chanyuan|jinjiu|tongji|liyu|huwei|pianyi|xiaoxi"):split("|")) do
+	for _, skill in ipairs(("benghuai|shiyong|yaowu|ikwumou|chanyuan|jinjiu|tongji|liyu|huwei|pianyi|xiaoxi"):split("|")) do
 		if self.player:hasSkill(skill) then return skill end
 	end
 	for _, skill in sgs.qlist(self.player:getVisibleSkillList()) do
@@ -246,21 +246,21 @@ sgs.ai_skill_choice.chuanxin_lose = function(self, choices, data)
 	if self.player:hasSkill("yingbing") and not self.player:hasSkill("zhoufu", true) then return "yingbing" end
 	if self.player:hasSkill("juedi") and not self.player:hasSkill("yinbing", true) then return "juedi" end
 	if self.player:hasSkill("kurou") and not self.player:hasSkill("zhaxiang", true) then return "kurou" end
-	if self.player:hasSkills("paoxiao+huxiao") then return "huxiao" end
-	if self.player:hasSkills("fankui+duodao|nosfankui+duodao") then return "duodao" end
+	if self.player:hasSkills("ikyipao+huxiao") then return "huxiao" end
+	if self.player:hasSkills("ikhuanji+duodao|nosfankui+duodao") then return "duodao" end
 	if self.player:hasSkills("jilve+wansha") then return "wansha" end
 	if self.player:hasSkills("wuqian+wushuang") then return "wushuang" end
 	if self.player:hasSkills("tianfu+kanpo") then return "kanpo" end
 	if self.player:hasSkills("fuhun|nosfuhun") then
-		if choices:matchOne("paoxiao") then return "paoxiao" end
-		if choices:matchOne("wusheng") then return "wusheng" end
+		if choices:matchOne("ikyipao") then return "ikyipao" end
+		if choices:matchOne("ikchilian") then return "ikchilian" end
 	end
 	if self.player:hasSkill("luoyan") and self.player:getPile("xingwu"):length() > 0 then
 		if choices:matchOne("tianxiang") then return "tianxiang" end
 		if choices:matchOne("liuli") then return "liuli" end
 	end
 	if self.player:hasSkill("baobian") then
-		for _, skill in ipairs(("paoxiao|shensu|tiaoxin"):split("|")) do
+		for _, skill in ipairs(("ikyipao|shensu|tiaoxin"):split("|")) do
 			if self.player:hasSkill(skill) then return skill end
 		end
 	end
@@ -280,7 +280,7 @@ sgs.ai_skill_choice.chuanxin_lose = function(self, choices, data)
 	for _, skill in sgs.qlist(self.player:getVisibleSkillList()) do
 		if skill:isLordSkill() then return skill:objectName() end
 	end
-	for _, skill in ipairs(("guixiu|suishi|weidi|xinsheng|huoshou|lianpo|hongyan|thjibu|ikxuwu|yicong|tannang|feiying"):split("|")) do
+	for _, skill in ipairs(("guixiu|suishi|weidi|xinsheng|huoshou|lianpo|hongyan|thjibu|ikxuwu|yicong|tannang|thfeiying"):split("|")) do
 		if self.player:hasSkill(skill) then return skill end
 	end
  end

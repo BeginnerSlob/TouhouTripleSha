@@ -48,7 +48,7 @@ sgs.ai_skill_cardask["@thchundu"] = function(self, data, pattern)
 	if card then
 		local h_cards = sgs.QList2Table(self.player:getHandcards())
 		self:sortByKeepValue(h_cards)
-		if self:getKeepValue(card) > self:getKeepValue(h_cards[1]) then
+		if self:getKeepValue(card, false) > self:getKeepValue(h_cards[1]) then
 			return "$" .. h_cards[1]:getEffectiveId()
 		end
 	end
@@ -133,7 +133,7 @@ function sgs.ai_cardsview.thzuishangv(self, class_name, player)
 		local obj_name = player:property("zhouhua_source"):toString()
 		local splayer = self.room:findPlayer(obj_name)
 		if splayer and splayer:hasSkill("thzuishang") then
-			return cardsView_thzhouhua(self, player)
+			return cardsView_thzuishang(self, player)
 		end
 	end
 end
@@ -331,7 +331,7 @@ thmoji_skill.getTurnUseCard = function(self)
 		if not isCard("Slash", card, self.player) and not isCard("Peach", card, self.player) and not (isCard("ExNihilo", card, self.player) and self.player:getPhase() == sgs.Player_Play) then table.insert(newcards, card) end
 	end
 	if #newcards <= self.player:getHp() - 1 and self.player:getHp() <= 4 and not self:hasHeavySlashDamage(self.player)
-		and not self.player:hasSkills(sgs.need_kongcheng .. "paoxiao|shangshi|noshangshi")
+		and not self.player:hasSkills(sgs.need_kongcheng .. "ikyipao|shangshi|noshangshi")
 		and not (self.player:hasSkill("zhiji") and self.player:getMark("zhiji") == 0) then return end
 	local n = math.min(2, self.player:getHp())
 	if n < 1 or #newcards < n then return end
@@ -912,7 +912,7 @@ sgs.ai_need_damaged.thfusheng = function(self, attacker, player)
 end
 
 --幻法：出牌阶段限一次，你可以将一张红桃手牌交给一名其他角色，然后你获得该角色的一张牌并将该牌交给除该角色外的一名角色。
-thhuanfa_skill = {}
+local thhuanfa_skill = {}
 thhuanfa_skill.name = "thhuanfa"
 table.insert(sgs.ai_skills, thhuanfa_skill)
 thhuanfa_skill.getTurnUseCard = function(self)
@@ -1388,7 +1388,7 @@ sgs.ai_skill_use_func.ThLingdieCard = function(card, use, self)
 			end
 		end
 		if #card_ids > 0 then
-			local target, cardId = sgs.ai_skill_askforyiji.nosyiji(self, card_ids)
+			local target, cardId = sgs.ai_skill_askforyiji.ikyumeng(self, card_ids)
 			if target and target:objectName() ~= self.player:objectName() and cardId and cardId > -1 then
 				use.card = sgs.Card_Parse("@ThLingdieCard=" .. cardId)
 				if use.to then
@@ -1398,7 +1398,7 @@ sgs.ai_skill_use_func.ThLingdieCard = function(card, use, self)
 			end
 		end
 	end
-	local target, cardId = sgs.ai_skill_askforyiji.nosyiji(self, sgs.QList2Table(self.player:handCards()))
+	local target, cardId = sgs.ai_skill_askforyiji.ikyumeng(self, sgs.QList2Table(self.player:handCards()))
 	if target and target:objectName() ~= self.player:objectName() and cardId and cardId > -1 then
 		use.card = sgs.Card_Parse("@ThLingdieCard=" .. cardId)
 		if use.to then

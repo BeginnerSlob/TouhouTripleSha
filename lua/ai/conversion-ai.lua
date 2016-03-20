@@ -67,7 +67,7 @@ sgs.ai_skill_invoke.cv_sunshangxiang = function(self, data)
 			sgs.ai_skill_choice.cv_sunshangxiang = "sp_sunshangxiang"
 			return true
 		end
-	elseif lord:getKingdom() == "shu" then
+	elseif lord:getKingdom() == "kaze" then
 		sgs.ai_skill_choice.cv_sunshangxiang = "sp_sunshangxiang"
 		return true
 	end
@@ -82,7 +82,7 @@ sgs.ai_skill_invoke.cv_caiwenji = function(self, data)
 	if lord and not self.player:getGeneral2Name() == "caiwenji" and lord:hasLordSkill("xueyi") then
 		return not self:isFriend(lord)
 	end
-	return lord:getKingdom() == "wei"
+	return lord:getKingdom() == "hana"
 end
 
 sgs.ai_skill_invoke.cv_pangde = sgs.ai_skill_invoke.cv_caiwenji
@@ -92,8 +92,8 @@ sgs.ai_skill_invoke.cv_nos_machao = function(self, data)
 	local lord = self.room:getLord()
 	if lord and not self.player:getGeneral2Name() == "nos_machao"
 		and ((lord:hasLordSkill("xueyi") and self:isFriend(lord))
-			or (self.player:getKingdom() == "shu" and lord:hasLordSkill("shichou") and not self:isFriend(lord))
-			or (lord:getKingdom() == "qun" and not lord:hasLordSkill("xueyi"))) then
+			or (self.player:getKingdom() == "kaze" and lord:hasLordSkill("shichou") and not self:isFriend(lord))
+			or (lord:getKingdom() == "tsuki" and not lord:hasLordSkill("xueyi"))) then
 		sgs.ai_skill_choice.cv_nos_machao = "sp_machao"
 		return true
 	end
