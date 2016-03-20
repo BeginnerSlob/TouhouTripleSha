@@ -372,7 +372,7 @@ ThXumeiCard::ThXumeiCard() {
 }
 
 void ThXumeiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    QList<int> card_ids = room->getNCards(3);
+    QList<int> card_ids = room->getNCards(3, false);
     CardMoveReason reason(CardMoveReason::S_REASON_TURNOVER, source->objectName(), "thxumei", QString());
     room->moveCardsAtomic(CardsMoveStruct(card_ids, NULL, Player::PlaceTable, reason), true);
     QStringList choices;
@@ -385,21 +385,24 @@ void ThXumeiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &)
         choices << str;
     }
     QString type = room->askForChoice(source, "thxumei", choices.join("+"), QVariant::fromValue(IntList2VariantList(card_ids)));
-    ServerPlayer *target = room->askForPlayerChosen(source, room->getAllPlayers(), "thxumei", QString(), false, true);
-    CardMoveReason reason2(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), "thxumei", QString());
     DummyCard *dummy = new DummyCard;
     dummy->deleteLater();
-    foreach(int id, card_ids) {
-        if(Sanguosha->getCard(id)->getType() == type) {
+    foreach (int id, card_ids) {
+        if (Sanguosha->getCard(id)->getType() == type) {
             card_ids.removeOne(id);
             dummy->addSubcard(id);
         }
     }
+    source->tag["ThXumeiDummy"] = QVariant::fromValue(IntList2VariantList(dummy->getSubcards()));
+    ServerPlayer *target = room->askForPlayerChosen(source, room->getAllPlayers(), "thxumei");
+    source->tag.remove("ThXumeiDummy");
     room->obtainCard(target, dummy);
-    dummy->clearSubcards();
-    dummy->addSubcards(card_ids);
-    if (dummy->subcardsLength() > 0)
+    CardMoveReason reason2(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), "thxumei", QString());
+    if (card_ids.length() > 0) {
+        dummy->clearSubcards();
+        dummy->addSubcards(card_ids);
         room->throwCard(dummy, reason2, NULL);
+    }
 
     type[0] = type[0].toUpper();
     type += "Card";
@@ -484,14 +487,14 @@ public:
                 && room->getCardPlace(id) == Player::DiscardPile) {
                 const Card *c = Sanguosha->getEngineCard(id);
                 QString prompt = "@thxijing:" + c->getSuitString()
-                                              + ":" + QString::number(c->getNumber())
+                                              + ":" + c->getNumberString()
                                               + ":" + c->objectName();
                 QString pattern = ".";
                 if (c->isBlack())
                     pattern = ".black";
                 else if (c->isRed())
                     pattern = ".red";
-                const Card *card = room->askForCard(player, pattern, prompt, QVariant(), Card::MethodNone);
+                const Card *card = room->askForCard(player, pattern, prompt, QVariant::fromValue(c), Card::MethodNone);
 
                 if (card) {
                     room->setPlayerFlag(player, "thxijing_using");
@@ -860,8 +863,8 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
-        if (ask_who->askForSkillInvoke(objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -891,7 +894,13 @@ public:
                 room->sendLog(log);
             }
 
-            if (victim && room->askForChoice(player, objectName(), "discard+cancel") == "discard") {
+            QString choice = "cancel";
+            if (victim) {
+                player->tag["ThQiongfaSource"] = QVariant::fromValue(ask_who); // for AI
+                choice = room->askForChoice(player, objectName(), "discard+cancel", QVariant::fromValue(victim));
+                player->tag.remove("ThQiongfaSource");
+            }
+            if (choice == "discard") {
                 int card_id = room->askForCardChosen(player, victim, "he", objectName(), false, Card::MethodDiscard);
                 room->throwCard(card_id, victim, player);
             } else
@@ -930,7 +939,9 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         QList<int> card_ids = room->getNCards(2, false);
         room->fillAG(card_ids, player);
+        player->tag["ThWeide"] = QVariant::fromValue(IntList2VariantList(card_ids));
         ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName());
+        player->tag.remove("ThWeide");
         room->clearAG(player);
         room->moveCardsAtomic(CardsMoveStruct(card_ids,
                                               target,
@@ -1007,8 +1018,8 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
-        if (ask_who->askForSkillInvoke(objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
+        if (ask_who->askForSkillInvoke(objectName(), data)) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -1050,12 +1061,14 @@ public:
     }
 };
 
-ThWangdaoCard::ThWangdaoCard() {
+ThWangdaoCard::ThWangdaoCard()
+{
     will_throw = false;
     handling_method = MethodNone;
 }
 
-void ThWangdaoCard::onEffect(const CardEffectStruct &effect) const {
+void ThWangdaoCard::onEffect(const CardEffectStruct &effect) const
+{
     Room *room = effect.from->getRoom();
     int id = getEffectiveId();
     const Card *original = Sanguosha->getCard(id);
@@ -1069,7 +1082,7 @@ void ThWangdaoCard::onEffect(const CardEffectStruct &effect) const {
     }
     if (!slash) {
         effect.to->obtainCard(this);
-        if (effect.from->canDiscard(effect.to, "he") && room->askForChoice(effect.from, "thwangdao", "discard+lose") == "discard") {
+        if (effect.from->canDiscard(effect.to, "he") && room->askForChoice(effect.from, "thwangdao", "discard+lose", QVariant::fromValue(effect.to)) == "discard") {
             room->setPlayerFlag(effect.to, "thwangdao_InTempMoving");
             DummyCard *dummy = new DummyCard;
             QList<int> card_ids;
@@ -1093,13 +1106,16 @@ void ThWangdaoCard::onEffect(const CardEffectStruct &effect) const {
     }
 }
 
-class ThWangdao: public OneCardViewAsSkill {
+class ThWangdao: public OneCardViewAsSkill
+{
 public:
-    ThWangdao(): OneCardViewAsSkill("thwangdao") {
+    ThWangdao(): OneCardViewAsSkill("thwangdao")
+    {
         filter_pattern = "Peach";
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const{
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
         ThWangdaoCard *card = new ThWangdaoCard;
         card->addSubcard(originalCard);
         return card;

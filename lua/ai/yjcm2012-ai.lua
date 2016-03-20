@@ -38,7 +38,7 @@ sgs.ai_skill_playerchosen.qianxi = function(self, targets)
 		self:sort(enemies, "defense")
 		if not isRed then
 			for _, enemy in ipairs(enemies) do
-				if enemy:hasSkill("qingguo") and self:slashIsEffective(slash, enemy) then return enemy end
+				if enemy:hasSkill("ikzhongyan") and self:slashIsEffective(slash, enemy) then return enemy end
 			end
 			for _, enemy in ipairs(enemies) do
 				if enemy:hasSkill("kanpo") then return enemy end
@@ -77,7 +77,7 @@ sgs.ai_skill_invoke.zishou = function(self, data)
 	local can_save_card_num = self.player:getMaxCards() - self.player:getHandcardNum()
 
 	if self.player:getHp() <= 2 and self.player:getHp() < getBestHp(self.player) then chance_value = chance_value + 1 end
-	if self.player:hasSkills("nosrende|rende") and self:findFriendsByType(sgs.Friend_Draw) then chance_value = chance_value - 1 end
+	if self.player:hasSkills("nosrende|ikshenai") and self:findFriendsByType(sgs.Friend_Draw) then chance_value = chance_value - 1 end
 	if self.player:hasSkill("qingnang") then
 		for _, friend in ipairs(self.friends) do
 			if friend:isWounded() then chance_value = chance_value - 1 break end
@@ -201,7 +201,7 @@ end
 sgs.ai_skill_invoke.miji = function(self, data)
 	if #self.friends_noself == 0 then return false end
 	for _, friend in ipairs(self.friends_noself) do
-		if not friend:hasSkill("manjuan") and not self:isLihunTarget(friend) then return true end
+		if not friend:hasSkill("manjuan") and not self:isThJinluTarget(friend) then return true end
 	end
 	return false
 end
@@ -209,7 +209,7 @@ end
 sgs.ai_skill_askforyiji.miji = function(self, card_ids)
 	local available_friends = {}
 	for _, friend in ipairs(self.friends_noself) do
-		if not friend:hasSkill("manjuan") and not self:isLihunTarget(friend) then table.insert(available_friends, friend) end
+		if not friend:hasSkill("manjuan") and not self:isThJinluTarget(friend) then table.insert(available_friends, friend) end
 	end
 
 	local toGive, allcards = {}, {}
@@ -486,7 +486,7 @@ sgs.ai_skill_use_func.AnxuCard = function(card, use, self)
 	end
 	local need_kongcheng_friend
 	for _, friend in ipairs(friends) do
-		if friend:getHandcardNum() == 1 and (friend:hasSkill("kongcheng") or (friend:hasSkill("zhiji") and friend:getMark("zhiji") == 0 and friend:getHp() >= 3)) then
+		if friend:getHandcardNum() == 1 and (friend:hasSkill("ikjingyou") or (friend:hasSkill("zhiji") and friend:getMark("zhiji") == 0 and friend:getHp() >= 3)) then
 			need_kongcheng_friend = friend
 			break
 		end
@@ -507,7 +507,7 @@ sgs.ai_skill_use_func.AnxuCard = function(card, use, self)
 		if enemy:getHandcardNum() >= 2 and enemy:hasSkills(sgs.cardneed_skill) then
 			if not prior_enemy then prior_enemy = enemy end
 		end
-		if enemy:hasSkill("kongcheng") and enemy:isKongcheng() then
+		if enemy:hasSkill("ikjingyou") and enemy:isKongcheng() then
 			if not kongcheng_enemy then kongcheng_enemy = enemy end
 		end
 		if enemy:hasSkill("manjuan") then
@@ -629,7 +629,7 @@ sgs.ai_card_intention.AnxuCard = function(self, card, from, to)
 	end
 	local intention = -50
 	local kc_enemy = false
-	if less:hasSkill("manjuan") or (less:hasSkill("kongcheng") and less:isKongcheng()) then
+	if less:hasSkill("manjuan") or (less:hasSkill("ikjingyou") and less:isKongcheng()) then
 		kc_enemy = true
 		intention = 80
 	else

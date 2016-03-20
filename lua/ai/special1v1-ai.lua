@@ -11,7 +11,7 @@ function SmartAI:useCardDrowning(card, use)
 			end
 		end
 	end
-	if not (self.player:hasSkill("wumou") and self.player:getMark("@wrath") < 7) then
+	if not (self.player:hasSkill("ikwumou") and self.player:getMark("@wrath") < 7) then
 		if #equip_enemy > 0 then
 			local function cmp(a, b)
 				return a:getEquips():length() >= b:getEquips():length()
@@ -77,7 +77,7 @@ sgs.ai_skill_choice.drowning = function(self, choices, data)
 end
 
 sgs.ai_skill_playerchosen.koftuxi = function(self, targets)
-	local targetstr = self:getTuxiTargets("koftuxi", true)
+	local targetstr = self:getIkChibaoTargets("koftuxi", true)
 	if #targetstr > 0 then
 		local target = findPlayerByObjectName(self.room, targetstr[1])
 		return target
@@ -94,12 +94,12 @@ sgs.ai_playerchosen_intention.koftuxi = function(self, from, to)
 		return
 	end
 	if from:getState() == "online" then
-		if (to:hasSkills("kongcheng|zhiji|lianying") and to:getHandcardNum() == 1) or to:hasSkills("ikyindie+ikguiyue") then
+		if (to:hasSkills("ikjingyou|zhiji|lianying") and to:getHandcardNum() == 1) or to:hasSkills("ikyindie+ikguiyue") then
 		else
 			sgs.updateIntention(from, to, 80)
 		end
 	else
-		local intention = from:hasFlag("AI_TuxiToFriend_" .. to:objectName()) and -5 or 80
+		local intention = from:hasFlag("AI_IkChibaoToFriend_" .. to:objectName()) and -5 or 80
 		sgs.updateIntention(from, to, intention)
 	end
 end
@@ -127,7 +127,7 @@ sgs.ai_skill_use_func.XiechanCard = function(card, use, self)
 	self:useCardDuel(duel, dummy_use)
 	if not dummy_use.card or not dummy_use.card:isKindOf("Duel") then return end
 	for _, enemy in sgs.qlist(dummy_use.to) do
-		if not enemy:isKongcheng() and not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) then
+		if not enemy:isKongcheng() and not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) then
 			local enemy_max_card = self:getMaxCard(enemy)
 			local enemy_max_point = enemy_max_card and enemy_max_card:getNumber() or 100
 			if enemy_max_card and enemy:hasSkill("yingyang") then enemy_max_point = math.max(enemy_max_point + 3, 13) end
@@ -304,7 +304,7 @@ sgs.ai_skill_use_func.MouzhuCard = function(card, use, self)
 		elseif enemy:getHandcardNum() > 0 then
 			if not self:slashIsEffective(slash_nosuit, self.player, nil, enemy) and self:getCardsNum("Slash") > getCardsNum("Slash", enemy, self.player) and not second then
 				second = enemy
-			elseif not enemy:hasSkills("wushuang|mengjin|tieji|nostieji")
+			elseif not enemy:hasSkills("wushuang|mengjin|ikyufeng|nostieji")
 				and not ((enemy:hasSkill("roulin") or enemy:hasWeapon("double_sword")) and enemy:getGender() ~= self.player:getGender()) then
 
 				if enemy:getHandcardNum() == 1 and slash and not third and self.player:inMyAttackRange(enemy)

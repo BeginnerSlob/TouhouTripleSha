@@ -58,7 +58,7 @@ local function yuanhu_validate(self, equip_type, is_handcard)
 		if equip_type == "Armor" then self:sort(targets, "handcard") end
 		if is_SilverLion then
 			for _, enemy in ipairs(self.enemies) do
-				if enemy:hasSkill("kongcheng") and enemy:isKongcheng() then
+				if enemy:hasSkill("ikjingyou") and enemy:isKongcheng() then
 					local seat_diff = enemy:getSeat() - self.player:getSeat()
 					local alive_count = self.room:alivePlayerCount()
 					if seat_diff < 0 then seat_diff = seat_diff + alive_count end
@@ -182,7 +182,7 @@ sgs.ai_skill_playerchosen.yuanhu = function(self, targets)
 end
 
 sgs.ai_card_intention.YuanhuCard = function(self, card, from, to)
-	if to[1]:hasSkills("bazhen|yizhong|bossmanjia") or (to[1]:hasSkill("kongcheng") and to[1]:isKongcheng()) then
+	if to[1]:hasSkills("bazhen|yizhong|bossmanjia") or (to[1]:hasSkill("ikjingyou") and to[1]:isKongcheng()) then
 		if sgs.Sanguosha:getCard(card:getEffectiveId()):isKindOf("SilverLion") then
 			sgs.updateIntention(from, to[1], 10)
 			return
@@ -243,7 +243,7 @@ local function can_be_selected_as_target_xueji(self, card, who)
 	if self:isEnemy(who) then
 		if not self.player:hasSkill("ikxuwu") then
 			if who:hasSkill("guixin") and (self.room:getAliveCount() >= 4 or not who:faceUp()) and not who:hasSkill("manjuan") then return false end
-			if self.player:getHp() == 1 and ((who:hasSkills("vsganglie|nosganglie") and self.player:getHandcardNum() <= 2) or who:hasSkill("ganglie")) then return false end
+			if self.player:getHp() == 1 and ((who:hasSkills("vsganglie|nosganglie") and self.player:getHandcardNum() <= 2) or who:hasSkill("ikaoli")) then return false end
 			if who:hasSkill("jieming") then
 				for _, enemy in ipairs(self.enemies) do
 					if enemy:getHandcardNum() <= enemy:getMaxHp() - 2 and not enemy:hasSkill("manjuan") then return false end
@@ -254,7 +254,7 @@ local function can_be_selected_as_target_xueji(self, card, who)
 					if not enemy:faceUp() then return false end
 				end
 			end
-			if who:hasSkill("nosyiji") then
+			if who:hasSkill("ikyumeng") then
 				local huatuo = self.room:findPlayerBySkillName("jijiu")
 				if huatuo and self:isEnemy(huatuo) and huatuo:getHandcardNum() >= 3 then
 					return false
@@ -263,7 +263,7 @@ local function can_be_selected_as_target_xueji(self, card, who)
 		end
 		return true
 	elseif self:isFriend(who) then
-		if who:hasSkill("nosyiji") and not self.player:hasSkill("ikxuwu") then
+		if who:hasSkill("ikyumeng") and not self.player:hasSkill("ikxuwu") then
 			local huatuo = self.room:findPlayerBySkillName("jijiu")
 			if (huatuo and self:isFriend(huatuo) and huatuo:getHandcardNum() >= 3 and huatuo ~= self.player)
 				or (who:getLostHp() == 0 and who:getMaxHp() >= 3) then
@@ -321,7 +321,7 @@ sgs.ai_card_intention.XuejiCard = function(self, card, from, tos)
 	local huatuo = self.room:findPlayerBySkillName("jijiu")
 	for _, to in ipairs(tos) do
 		local intention = 60
-		if to:hasSkill("nosyiji") and not from:hasSkill("ikxuwu") then
+		if to:hasSkill("ikyumeng") and not from:hasSkill("ikxuwu") then
 			if (huatuo and self:isFriend(huatuo) and huatuo:getHandcardNum() >= 3 and huatuo:objectName() ~= from:objectName()) then
 				intention = -30
 			end
@@ -400,7 +400,7 @@ sgs.ai_skill_use_func.SongciCard = function(card, use, self)
 	self:sort(self.friends, "handcard")
 	for _, friend in ipairs(self.friends) do
 		if friend:getMark("songci" .. self.player:objectName()) == 0 and friend:getHandcardNum() < friend:getHp() and not (friend:hasSkill("manjuan") and self.room:getCurrent() ~= friend) then
-			if not (friend:hasSkill("kongcheng") and friend:isKongcheng()) then
+			if not (friend:hasSkill("ikjingyou") and friend:isKongcheng()) then
 				use.card = sgs.Card_Parse("@SongciCard=.")
 				if use.to then use.to:append(friend) end
 				return
@@ -861,7 +861,7 @@ sgs.ai_card_intention.DuwuCard = 80
 
 function getNextJudgeReason(self, player)
 	if self:playerGetRound(player) > 2 then
-		if player:hasSkills("ganglie|nosganglie|vsganglie") then return end
+		if player:hasSkills("ikaoli|nosganglie|vsganglie") then return end
 		local caiwenji = self.room:findPlayerBySkillName("beige")
 		if caiwenji and caiwenji:canDiscard(caiwenji, "he") and self:isFriend(caiwenji, player) then return end
 		if player:hasArmorEffect("eight_diagram") or player:hasSkill("bazhen") then
@@ -869,7 +869,7 @@ function getNextJudgeReason(self, player)
 			else return end
 		end
 	end
-	if self:isFriend(player) and player:hasSkill("luoshen") then return "luoshen" end
+	if self:isFriend(player) and player:hasSkill("ikmengyang") then return "ikmengyang" end
 	if not player:getJudgingArea():isEmpty() and not player:containsTrick("YanxiaoCard") then
 		return player:getJudgingArea():last():objectName()
 	end
@@ -899,7 +899,7 @@ sgs.ai_skill_use_func.ZhoufuCard = function(card, use, self)
 		if friend:getPile("incantation"):length() > 0 then continue end
 		local reason = getNextJudgeReason(self, friend)
 		if reason then
-			if reason == "luoshen" then
+			if reason == "ikmengyang" then
 				zhenji = friend
 			elseif reason == "indulgence" then
 				for _, card in ipairs(cards) do
@@ -1226,13 +1226,21 @@ sgs.ai_skill_invoke.juedi = true
 
 sgs.ai_skill_playerchosen.juedi = function(self, targets)
 	local ids = self.player:getPile("yinbing")
-	local friends = self:getWoundedFriend()
-	for _, friend in ipairs(friends) do
+	local friend = nil
+	while not friend do
+		friend = self:findPlayerToRecover(1, targets)
 		if friend:getHp() <= self.player:getHp()
 			and not (self:needKongcheng(friend, true) and not self:isWeak(friend)) and not (hasManjuanEffect(friend) and ids:length() > 2) then
 			return friend
+		else
+			targets:removeOne(friend)
+			friend = nil
+			if targets:isEmpty() then
+				break
+			end
 		end
 	end
+
 	if ids:length() == 1 then
 		local id = ids:first()
 		local card = sgs.Sanguosha:getCard(id)

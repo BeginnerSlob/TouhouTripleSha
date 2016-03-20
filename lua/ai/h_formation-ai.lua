@@ -358,7 +358,7 @@ local function will_discard_zhendu(self)
 			local slash = sgs.cloneCard("slash")
 			local trend = 3
 			if current:hasWeapon("axe") then trend = trend - 1
-			elseif current:hasSkills("liegong|kofliegong|tieji|nostieji|wushuang|niaoxiang") then trend = trend - 0.4 end
+			elseif current:hasSkills("liegong|kofliegong|ikyufeng|nostieji|wushuang|niaoxiang") then trend = trend - 0.4 end
 			for _, enemy in ipairs(self.enemies) do
 				if current:canSlash(enemy) and not self:slashProhibit(slash, enemy, current)
 					and self:slashIsEffective(slash, enemy, current) and sgs.isGoodTarget(enemy, self.enemies, self, true) then

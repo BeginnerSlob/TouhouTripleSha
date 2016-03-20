@@ -326,7 +326,7 @@ sgs.ai_skill_askforyiji.lirang = function(self, card_ids)
 			if not another or not self:isFriend(another) then insert = false end
 		end
 		if insert and Shenfen_user and friend:objectName() ~= Shenfen_user:objectName() and friend:getHandcardNum() < 4 then insert = false end
-		if insert and self:isLihunTarget(friend) then insert = false end
+		if insert and self:isThJinluTarget(friend) then insert = false end
 		if insert then table.insert(available_friends, friend) end
 	end
 
@@ -360,7 +360,7 @@ end
 
 sgs.ai_playerchosen_intention.sijian = function(self, from, to)
 	local intention = 80
-	if (to:hasSkill("kongcheng") and to:getHandcardNum() == 1) or self:needToThrowArmor(to) then
+	if (to:hasSkill("ikjingyou") and to:getHandcardNum() == 1) or self:needToThrowArmor(to) then
 		intention = 0
 	end
 	sgs.updateIntention(from, to, intention)
@@ -392,7 +392,7 @@ sgs.ai_skill_use["@@shuangren"] = function(self, prompt)
 
 	if dummy_use.card then
 		for _, enemy in ipairs(self.enemies) do
-			if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+			if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
 				local enemy_max_card = self:getMaxCard(enemy)
 				local enemy_max_point = enemy_max_card and enemy_max_card:getNumber() or 100
 				if enemy_max_card and enemy:hasSkill("yingyang") then enemy_max_point = math.min(enemy_max_point + 3, 13) end
@@ -403,7 +403,7 @@ sgs.ai_skill_use["@@shuangren"] = function(self, prompt)
 			end
 		end
 		for _, enemy in ipairs(self.enemies) do
-			if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+			if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
 				if max_point >= 10 then
 					self.shuangren_card = max_card:getEffectiveId()
 					return "@ShuangrenCard=.->" .. enemy:objectName()
@@ -425,7 +425,7 @@ sgs.ai_skill_use["@@shuangren"] = function(self, prompt)
 			end
 		end
 
-		local zhugeliang = self.room:findPlayerBySkillName("kongcheng")
+		local zhugeliang = self.room:findPlayerBySkillName("ikjingyou")
 		if zhugeliang and self:isFriend(zhugeliang) and zhugeliang:getHandcardNum() == 1 and zhugeliang:objectName() ~= self.player:objectName() then
 			if max_point >= 7 then
 				self.shuangren_card = max_card:getEffectiveId()
@@ -589,10 +589,10 @@ sgs.ai_skill_use_func.QingchengCard = function(card, use, self)
 				end
 				if target then break end
 			end
-			for _, askill in ipairs(("noswuyan|wuyan|weimu|kanpo|liuli|nosyiji|yiji|jieming|ganglie|vsganglie|nosganglie|fankui|nosfankui|fangzhu|jianxiong|" ..
-									"nosjianxiong|enyuan|thfusheng|qingguo|longdan|xiangle|qingjian|renwang|jiang|yanzheng|tianming|yizhong|bazhen|" ..
+			for _, askill in ipairs(("noswuyan|wuyan|weimu|kanpo|liuli|ikyumeng|yiji|jieming|ikaoli|vsganglie|nosganglie|ikhuanji|nosfankui|fangzhu|jianxiong|" ..
+									"nosjianxiong|enyuan|thfusheng|ikzhongyan|longdan|xiangle|ikqingjian|renwang|jiang|yanzheng|tianming|yizhong|bazhen|" ..
 									"jijiu|beige|longhun|buyi|gushou|mingzhe|yajiao|huangen|danlao|qianxun|nosqianxun|juxiang|huoshou|anxian|thzhehui|" ..
-									"zhichi|jilei|feiying|yicong|wusheng|wushuang|xuanfeng|nosxuanfeng|luoying|xiaoguo|guhuo|nosguhuo|guidao|guicai|" ..
+									"ikzhichi|jilei|thfeiying|yicong|ikchilian|wushuang|xuanfeng|nosxuanfeng|luoying|xiaoguo|guhuo|nosguhuo|guidao|iktiansuo|" ..
 									"nosguicai|shangshi|lianying|noslianying|sijian|kofxiaoji|xiaoji|kofqingguo|mingshi|zhiyu|hongyan|tiandu|lirang|" ..
 									"guzheng|xingshang|shushen|langgu|guixin|nosshangshi|tianxiang|leiji|nosleiji"):split("|")) do
 				if enemy:hasSkill(askill, true) and enemy:getMark("Qingcheng" .. askill) == 0 then

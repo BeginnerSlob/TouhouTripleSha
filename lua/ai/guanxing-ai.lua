@@ -166,12 +166,39 @@ local function GuanXing(self, cards)
 			end
 		end
 	end
-
+	if self.player:hasSkill("thyuxin") and self:findPlayerToRecover() then
+		drawCards = 2
+	end
 	local drawCards_copy = drawCards
 	if willSkipDrawPhase then drawCards = 0 end
 
 	if #bottom > 0 and drawCards > 0 then
-		if self.player:hasSkill("zhaolie") then
+		if self.player:hasSkill("thyuxin") and self:findPlayerToRecover() then
+			local reds, others = {}, {}
+			for _, gcard in ipairs(bottom) do
+				if gcard:isRed() then
+					table.insert(reds, gcard)
+				else
+					table.insert(others, gcard)
+				end
+			end
+			bottom = {}
+			local rednum = 0
+			for _, red in ipairs(reds) do
+				if rednum < 2 then
+					table.insert(up, red)
+					rednum = rednum + 1
+				else
+					table.insert(bottom, red)
+				end
+			end
+			for _, other in ipairs(others) do
+				table.insert(bottom, other)
+			end
+			up = getBackToId(self, up)
+			bottom = getBackToId(self, bottom)
+			return up, bottom
+		elseif self.player:hasSkill("zhaolie") then
 			local targets = sgs.SPlayerList()
 			for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
 				if self.player:inMyAttackRange(p) then targets:append(p) end
@@ -226,7 +253,7 @@ local function GuanXing(self, cards)
 	end
 
 	local pos = 1
-	local luoshen_flag = false
+	local ikmengyang_flag = false
 	local next_judge = {}
 	local next_player
 	for _, p in sgs.qlist(global_room:getOtherPlayers(self.player)) do
@@ -247,7 +274,7 @@ local function GuanXing(self, cards)
 		for index, for_judge in ipairs(bottom) do
 			if judge[pos]:isKindOf("Lightning") then lightning_index = pos break end
 			if self:isFriend(next_player) then
-				if next_player:hasSkill("luoshen") then
+				if next_player:hasSkill("ikmengyang") then
 					if for_judge:isBlack() then
 						table.insert(next_judge, for_judge)
 						table.remove(bottom, index)
@@ -269,12 +296,12 @@ local function GuanXing(self, cards)
 					end
 				end
 			else
-				if next_player:hasSkill("luoshen") and for_judge:isRed() and not luoshen_flag then
+				if next_player:hasSkill("ikmengyang") and for_judge:isRed() and not ikmengyang_flag then
 					table.insert(next_judge, for_judge)
 					table.remove(bottom, index)
 					nextplayer_has_judged = true
 					judged_list[pos] = 1
-					luoshen_flag = true
+					ikmengyang_flag = true
 					break
 				else
 					local suit = for_judge:getSuitString()
@@ -668,7 +695,7 @@ function SmartAI:getValuableCardForGuanxing(cards)
 		if not self.player:hasSkills("yizhong|bazhen|bossmanjia") and self.player:hasSkills("tiandu|leiji|nosleiji|noszhenlie|gushou|hongyan") then
 			return eightdiagram
 		end
-		if self.role == "loyalist" and self.player:getKingdom() == "wei" and not self.player:hasSkill("bazhen") and lord and lord:hasLordSkill("hujia") then
+		if self.role == "loyalist" and self.player:getKingdom() == "hana" and not self.player:hasSkill("bazhen") and lord and lord:hasLordSkill("ikhuanwei") then
 			return eightdiagram
 		end
 		if sgs.ai_armor_value.eight_diagram(self.player, self) >= 5 then return eightdiagram end
@@ -683,7 +710,7 @@ function SmartAI:getValuableCardForGuanxing(cards)
 			if aplayer:containsTrick("lightning") then
 				lightning = true
 			end
-			if aplayer:hasSkills("guicai|nosguicai|guidao") and self:isEnemy(aplayer) then
+			if aplayer:hasSkills("iktiansuo|nosguicai|guidao") and self:isEnemy(aplayer) then
 				canRetrial = true
 			end
 		end
@@ -758,7 +785,7 @@ function SmartAI:getValuableCardForGuanxing(cards)
 			if self.player:hasSkill("guixin") and self.room:alivePlayerCount() >= 6 and (self.player:getHp() > 1 or self:getCardsNum("Peach") > 0) then
 				return crossbow
 			end
-			if self.player:hasSkill("nosrende|rende") then
+			if self.player:hasSkill("nosrende|ikshenai") then
 				for _, friend in ipairs(self.friends_noself) do
 					if getCardsNum("Slash", friend, self.player) > 1 then
 						return crossbow
@@ -768,14 +795,14 @@ function SmartAI:getValuableCardForGuanxing(cards)
 		end
 
 		if halberd then
-			if self.player:hasSkills("nosrende|rende") and self:findFriendsByType(sgs.Friend_Draw) then return halberd end
+			if self.player:hasSkills("nosrende|ikshenai") and self:findFriendsByType(sgs.Friend_Draw) then return halberd end
 			if self:getCardsNum("Slash") == 1 and self.player:getHandcardNum() == 1 then return halberd end
 		end
 
 		if gudingdao then
 			local range_fix = current_range - 2
 			for _, enemy in ipairs(self.enemies) do
-				if self.player:canSlash(enemy, slash, true, range_fix) and not enemy:hasSkills("tianming|kongcheng")
+				if self.player:canSlash(enemy, slash, true, range_fix) and not enemy:hasSkills("tianming|ikjingyou")
 					and (enemy:isKongcheng() or enemy:getHandcardNum() == 1 and	((self:getCardsNum("Dismantlement") > 0 or (self:getCardsNum("Snatch") > 0 and self.player:distanceTo(enemy) == 1)))) then
 					return gudingdao
 				end

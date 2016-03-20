@@ -988,7 +988,7 @@ sgs.ai_playerchosen_intention.thcannve = 30
 sgs.ai_choicemade_filter.cardChosen.thcannve = sgs.ai_choicemade_filter.cardChosen.snatch
 
 --肆暴：你可将一张装备牌或延时类锦囊牌当【酒】使用。
-thsibao_skill = {}
+local thsibao_skill = {}
 thsibao_skill.name = "thsibao"
 table.insert(sgs.ai_skills, thsibao_skill)
 thsibao_skill.getTurnUseCard = function(self)
@@ -1122,7 +1122,6 @@ sgs.ai_skill_use_func.ThGelongCard = function(card, use, self)
 	if not min_card then return end
 	local min_point = min_card:getNumber()
 
-	sgs.ai_use_priority.ThGelongCard = 7.2
 	self:sort(self.enemies)
 	for _, enemy in ipairs(self.enemies) do
 		if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
@@ -1137,7 +1136,7 @@ sgs.ai_skill_use_func.ThGelongCard = function(card, use, self)
 		end
 	end
 	for _, enemy in ipairs(self.enemies) do
-		if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+		if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
 			if min_point <= 4 then
 				self.thgelong_card = min_card:getId()
 				use.card = sgs.Card_Parse("@ThGelongCard=.")
@@ -1163,6 +1162,7 @@ sgs.ai_cardneed.thgelong = function(to, card, self)
 	end
 end
 
+sgs.ai_use_priority.ThGelongCard = 7.2
 sgs.ai_card_intention.ThGelongCard = 30
 sgs.ai_use_value.ThGelongCard = 8.5
 
@@ -1271,7 +1271,7 @@ sgs.ai_skill_choice.thfengren = function(self, choices, data)
 	if self:willSkipDrawPhase(self.player) then
 		return "obtain"
 	end
-	return self:isWeak(self.player) and string.find(chocies, "recover") and "recover" or "obtain"
+	return self:isWeak(self.player) and string.find(choices, "recover") and "recover" or "obtain"
 end
 
 --扶犁：若你人物牌上的牌数小于三张，其他角色对你使用的牌在结算后置入弃牌堆时，你可以将其作为“穗”置于你的人物牌上，每回合限一次。
@@ -1660,7 +1660,7 @@ end
 local thmaihuo_skill = {}
 thmaihuo_skill.name = "thmaihuo"
 table.insert(sgs.ai_skills, thmaihuo_skill)
-function thmaihuo_skill.getTurnUseCard(self)
+thmaihuo_skill.getTurnUseCard = function(self)
 	if self.player:hasUsed("ThMaihuoCard") then
 		return
 	end

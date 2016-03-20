@@ -98,7 +98,7 @@ sgs.ai_skill_invoke.thjiefan = true
 
 sgs.ai_skill_playerchosen.thjiefan = function(self, targets)
 	local ids = { self.player:getTag("ThJiefanId"):toInt() }
-	local target, _ = sgs.ai_skill_askforyiji.nosyiji(self, ids)
+	local target, _ = sgs.ai_skill_askforyiji.ikyumeng(self, ids)
 	return target or self.player
 end
 
@@ -569,8 +569,8 @@ thlunmin_skill.getTurnUseCard = function(self)
 	if not self.player:canDiscard(self.player, "he") then return nil end
 	local cards = sgs.QList2Table(self.player:getCards("he"))
 	self:sortByUseValue(cards, true)
-	local arr1, arr2 = self:getWoundedFriend(false, true)
-	if #arr1 + #arr2 > 0 then
+	local need_recover = self:findPlayerToRecover()
+	if need_recover then
 		local need_suit = {}
 		if self.player:hasSkill("thyupan") then
 			for i = 0, 3 do
@@ -579,7 +579,7 @@ thlunmin_skill.getTurnUseCard = function(self)
 				end
 			end
 		end
-		if (#need_suit <= 2 and #arr1 > 0) or #need_suit <= 1 then
+		if (#need_suit <= 2 and self:isFriend(need_recover) and self:isWeak(need_recover)) or #need_suit <= 1 then
 			for _, c in ipairs(cards) do
 				if table.contains(need_suit, c:getSuit()) and not self:isValuableCard(c) then
 					return sgs.Card_Parse("@ThLunminCard=" .. c:getEffectiveId())
@@ -598,22 +598,7 @@ end
 
 --雨磐：结束阶段开始时，若你于本回合使用或弃置牌的花色数为四种，你可以令一名角色回复1点体力。
 sgs.ai_skill_playerchosen.thyupan = function(self, targets)
-	local arr1, arr2 = self:getWoundedFriend(false, true)
-	local target = nil
-
-	for _, p in ipairs(arr1) do
-		if self:isWeak(p) and p:getHp() < getBestHp(p) and targets:contains(p) then
-			return p
-		end
-	end
-
-	for _, p in ipairs(arr2) do
-		if targets:contains(p) then
-			return p
-		end
-	end
-
-	return nil
+	return self:findPlayerToRecover(1, targets)
 end
 
 sgs.ai_playerchosen_intention.thyupan = -100
@@ -831,7 +816,7 @@ sgs.ai_slash_prohibit.thlinyao = function(self, from, to, card)
 	if self:isFriend(to, from) then return false end
 	if not sgs.isJinkAvailable(from, to, card) then return false end
 	local linyaos = self.room:findPlayersBySkillName("thlinyao")
-	for _, p in sgs.qlist(linyaos) do
+	for _, linyao in sgs.qlist(linyaos) do
 		if self:isFriend(to, linyao) and not linyao:faceUp() then
 			return true
 		end

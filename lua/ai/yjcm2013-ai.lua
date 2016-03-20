@@ -239,7 +239,7 @@ sgs.ai_skill_use["@@xiansi"] = function(self, prompt)
 		if add_player(lord) == rest_num then return "@XiansiCard=.->" .. table.concat(targets, "+") end
 	end
 
-	local zhugeliang = self.room:findPlayerBySkillName("kongcheng")
+	local zhugeliang = self.room:findPlayerBySkillName("ikjingyou")
 	local luxun = self.room:findPlayerBySkillName("lianying")
 	local nosluxun = self.room:findPlayerBySkillName("noslianying")
 	local dengai = self.room:findPlayerBySkillName("ikyindie")
@@ -318,7 +318,7 @@ sgs.ai_card_intention.XiansiCard = function(self, card, from, tos)
 	end
 	if from:getState() == "online" then
 		for _, to in ipairs(tos) do
-			if (to:hasSkills("kongcheng|zhiji|lianying|noslianying") and to:getHandcardNum() == 1) or to:hasSkills("ikyindie+ikguiyue") then
+			if (to:hasSkills("ikjingyou|zhiji|lianying|noslianying") and to:getHandcardNum() == 1) or to:hasSkills("ikyindie+ikguiyue") then
 			else
 				sgs.updateIntention(from, to, 80)
 			end
@@ -454,7 +454,7 @@ sgs.ai_skill_use["@@qiaoshui"] = function(self, prompt)
 	if self.player:hasSkill("yingyang") then max_point = math.min(max_point + 3, 13) end
 
 	for _, enemy in ipairs(self.enemies) do
-		if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+		if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
 			local enemy_max_card = self:getMaxCard(enemy)
 			local enemy_max_point = enemy_max_card and enemy_max_card:getNumber() or 100
 			if enemy_max_card and enemy:hasSkill("yingyang") then enemy_max_point = math.min(enemy_max_point + 3, 13) end
@@ -465,7 +465,7 @@ sgs.ai_skill_use["@@qiaoshui"] = function(self, prompt)
 		end
 	end
 	for _, enemy in ipairs(self.enemies) do
-		if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
+		if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() then
 			if max_point >= 10 then
 				self.qiaoshui_card = max_card:getEffectiveId()
 				return "@QiaoshuiCard=.->" .. enemy:objectName()
@@ -487,7 +487,7 @@ sgs.ai_skill_use["@@qiaoshui"] = function(self, prompt)
 		end
 	end
 
-	local zhugeliang = self.room:findPlayerBySkillName("kongcheng")
+	local zhugeliang = self.room:findPlayerBySkillName("ikjingyou")
 	if zhugeliang and self:isFriend(zhugeliang) and zhugeliang:getHandcardNum() == 1 and zhugeliang:objectName() ~= self.player:objectName() then
 		if max_point >= 7 then
 			self.qiaoshui_card = max_card:getEffectiveId()
@@ -507,7 +507,7 @@ sgs.ai_skill_use["@@qiaoshui"] = function(self, prompt)
 
 	if trick_num == 0 or (trick_num <= 2 and self.player:hasSkill("zongshih")) and not self:isValuableCard(max_card) then
 		for _, enemy in ipairs(self.enemies) do
-			if not (enemy:hasSkill("kongcheng") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() and self:hasLoseHandcardEffective(enemy) then
+			if not (enemy:hasSkill("ikjingyou") and enemy:getHandcardNum() == 1) and not enemy:isKongcheng() and self:hasLoseHandcardEffective(enemy) then
 				self.qiaoshui_card = max_card:getEffectiveId()
 				return "@QiaoshuiCard=.->" .. enemy:objectName()
 			end
@@ -664,7 +664,7 @@ sgs.ai_skill_cardask["@duodao-get"] = function(self, data)
 	if not damage.from or not damage.from:getWeapon() then
 		if self:needToThrowArmor() then
 			return "$" .. self.player:getArmor():getEffectiveId()
-		elseif self.player:getHandcardNum() == 1 and (self.player:hasSkill("kongcheng") or (self.player:hasSkill("zhiji") and self.player:getMark("zhiji") == 0)) then
+		elseif self.player:getHandcardNum() == 1 and (self.player:hasSkill("ikjingyou") or (self.player:hasSkill("zhiji") and self.player:getMark("zhiji") == 0)) then
 			return "$" .. self.player:handCards():first()
 		end
 	else
@@ -700,7 +700,7 @@ sgs.ai_skill_cardask["@duodao-get"] = function(self, data)
 					if self:needToThrowArmor() and not self.player:isJilei(self.player:getArmor()) then
 						return "$" .. self.player:getArmor():getEffectiveId()
 					elseif self.player:getHandcardNum() == 1
-							and (self.player:hasSkill("kongcheng") or (self.player:hasSkill("zhiji") and self.player:getMark("zhiji") == 0))
+							and (self.player:hasSkill("ikjingyou") or (self.player:hasSkill("zhiji") and self.player:getMark("zhiji") == 0))
 							and not self.player:isJilei(self.player:getHandcards():first()) then
 						return "$" .. self.player:handCards():first()
 					end
