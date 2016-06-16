@@ -1585,8 +1585,10 @@ public:
             QString name = data.toString();
             if (name != objectName()) return QStringList();
             int mark_num = player->getMark("ikshensha");
-            int num = triggerEvent == EventAcquireSkill ? (mark_num >= 6 ? mark_num : 1) : 0;
-            room->setPlayerMark(player, "@shensha" + QString::number(qMin(6, mark_num)), num);
+            if (mark_num > 0) {
+                int num = triggerEvent == EventAcquireSkill ? (mark_num >= 6 ? mark_num : 1) : 0;
+                room->setPlayerMark(player, "@shensha" + QString::number(qMin(6, mark_num)), num);
+            }
         } else if (triggerEvent == EventPhaseStart && TriggerSkill::triggerable(player) && player->getPhase() == Player::Discard) {
             bool all_adj = true;
             bool has_wounded = player->isWounded();
