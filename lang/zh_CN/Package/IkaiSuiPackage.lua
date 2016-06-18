@@ -143,8 +143,8 @@ return {
 	["@ikyuzhi"] = "你可以发动“羽织”",
 	["~ikyuzhi"] = "选择任意张装备牌→点击确定",
 	["iklinglong"] = "玲珑",
-	["#iklinglong-treasure"] = "玲珑",
 	[":iklinglong"] = "锁定技，专属技，若你的装备区没有防具牌，视为你装备着【净琉璃镜】；若你的装备区没有坐骑牌，你的手牌上限+1；若你的装备区没有宝物牌，你视为拥有技能“疾智”。",
+	["#iklinglong-treasure"] = "玲珑",
 
 --bloom
 	["#bloom023"] = "死者行军",
