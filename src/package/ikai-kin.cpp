@@ -1146,7 +1146,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return TriggerSkill::triggerable(target)
-            && target->getPhase() == Player::Draw;
+            && target->getPhase() == Player::Play;
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
