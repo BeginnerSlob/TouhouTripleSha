@@ -460,7 +460,9 @@ void RoomScene::handleGameEvent(const QVariant &arg) {
 
             // stop huashen animation
             PlayerCardContainer *container = (PlayerCardContainer *)_getGenericCardContainer(Player::PlaceHand, player);
-            if (!player->hasSkill("ikhuanshen"))
+            if (skill_name == "ikhuanshen" || skill_name == "thtianbao" || skill_name == "thdongxi")
+                container->stopHuaShen();
+            else if (!player->hasSkill("ikhuanshen") && !player->hasSkill("thtianbao") && !player->hasSkill("thdongxi"))
                 container->stopHuaShen();
             container->updateAvatarTooltip();
             break;
