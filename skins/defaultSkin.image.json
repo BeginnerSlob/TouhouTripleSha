@@ -64,7 +64,7 @@
 "playerGeneralIcon-default-5": ["image/generals/avatar/%1.png", [71, 28, 134, 134], [70, 70]],  //small avatar for dashboard
 "playerGeneralIcon-default-6": ["image/fullskin/generals/full/%1.png", [65, 0, 250, 311], [155, 193]],  //primary avatar for photo
 "playerGeneralIcon-default-7": ["image/generals/avatar/%1.png", [71, 28, 134, 134]],  //primary avatar for dashboard
-"playerGeneralIcon-default-8": ["image/generals/avatar/%1.png", [16, 49, 244, 100], [122, 50]],  //avatar for KOF mode
+"playerGeneralIcon-default-8": ["image/fullskin/generals/full/%1.png", [3, 50, 244, 100], [122, 50]],  //avatar for KOF mode
 
 "generalCircleImage-0": "image/generals/double-general/circle-photo.png",
 "generalCircleImage-1": "image/generals/double-general/circle-dashboard.png",
