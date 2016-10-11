@@ -213,7 +213,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("IkXinchaoCard") && player->getHandcardNum() > player->getHp();
+        return !player->hasUsed("IkXinchaoCard");
     }
 
     virtual const Card *viewAs() const{
