@@ -2110,7 +2110,7 @@ public:
 
     virtual int getFixed(const Player *target) const{
         if (target->hasFlag("IkKuangluInvoke"))
-            return target->getMark("ikkuanglu");
+            return qMin(target->getMark("ikkuanglu"), 4);
         return -1;
     }
 };
