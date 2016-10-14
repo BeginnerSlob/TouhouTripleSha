@@ -4333,7 +4333,7 @@ IkBinglingCard::IkBinglingCard() {
 }
 
 bool IkBinglingCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
-    return targets.isEmpty() && to_select->canDiscard(to_select, "hej");
+    return targets.isEmpty() && to_select->canDiscard(to_select, "hej") && to_select != Self;
 }
 
 void IkBinglingCard::onEffect(const CardEffectStruct &effect) const{
