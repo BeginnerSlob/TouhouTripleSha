@@ -1498,7 +1498,7 @@ const Card *ThYingshiCard::validate(CardUseStruct &card_use) const {
     }
 
     player->setFlags("ThYingshiUse");
-    bool use = room->askForUseSlashTo(player, targets, "@thyingshi:::" + QString::number(n));
+    bool use = room->askForUseSlashTo(player, targets, "@thyingshi:::" + QString::number(n), false, true);
     if (!use) {
         player->setFlags("-ThYingshiUse");
         room->setPlayerFlag(player, "Global_ThYingshiFailed");
