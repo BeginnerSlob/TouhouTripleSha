@@ -3150,7 +3150,7 @@ public:
                 CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
                 if (move.to_place == Player::DiscardPile && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_USE) {
                     const Card *card = move.reason.m_extraData.value<const Card *>();
-                    if (card->isKindOf("Slash") && card->hasFlag("ikfenxun"))
+                    if (card->isKindOf("Slash") && card->hasFlag("ikfenxun") && dingfeng->hasSkill(objectName()))
                         return QStringList(objectName());
                 }
             }
