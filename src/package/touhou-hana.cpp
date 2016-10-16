@@ -1407,8 +1407,10 @@ public:
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
-        room->setPlayerCardLimitation(player, "use", "TrickCard", false);
-        room->setPlayerFlag(player, "ThZheyin");
+        if (!player->hasFlag("ThZheyin")) {
+            room->setPlayerCardLimitation(player, "use", "TrickCard", false);
+            room->setPlayerFlag(player, "ThZheyin");
+        }
 
         if (!player->canDiscard(player, "he")
                 || !room->askForCard(player, "..", "@thzheyin-discard:" + ask_who->objectName(), data, objectName())) {
