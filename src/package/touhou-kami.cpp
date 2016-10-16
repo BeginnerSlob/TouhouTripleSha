@@ -621,7 +621,7 @@ void ThLeshiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &)
     if (source->hasFlag("thjingyuan_" + choice)) {
         room->setPlayerFlag(source, "-thjingyuan_" + choice);
         room->removePlayerCardLimitation(source, "use", choice + "$1");
-	}
+    }
     if (choice == "BasicCard") {
         room->addPlayerHistory(source, "Slash", 0);
         room->addPlayerHistory(source, "FireSlash", 0);
