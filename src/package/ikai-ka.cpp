@@ -3328,6 +3328,7 @@ public:
                 player->setFlags("-IkWanmiUsed");
                 player->addMark(objectName());
             }
+            return QStringList();
         }
         if (triggerEvent == EventPhaseChanging) {
             if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
