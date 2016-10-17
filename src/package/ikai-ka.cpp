@@ -3318,11 +3318,17 @@ public:
 class IkWanmi: public TriggerSkill {
 public:
     IkWanmi(): TriggerSkill("ikwanmi") {
-        events << CardsMoveOneTime << EventPhaseChanging;
+        events << CardsMoveOneTime << EventPhaseChanging << PreCardUsed;
         view_as_skill = new IkWanmiViewAsSkill;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == PreCardUsed) {
+            if (player->hasFlag("IkWanmiUsed")) {
+                player->setFlags("-IkWanmiUsed");
+                player->addMark(objectName());
+            }
+        }
         if (triggerEvent == EventPhaseChanging) {
             if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
                 foreach (ServerPlayer *p, room->getAlivePlayers())
@@ -3427,8 +3433,9 @@ public:
         use_card->addSubcards(ids);
         use_card->setSkillName(objectName());
         room->setPlayerProperty(player, "ikwanmi_card", use_card->toString());
-        if (room->askForUseCard(player, "@@ikwanmi", "@ikwanmi", -1, Card::MethodUse, false))
-            player->addMark(objectName());
+        player->setFlags("IkWanmiUsed");
+        if (!room->askForUseCard(player, "@@ikwanmi", "@ikwanmi", -1, Card::MethodUse, false))
+            player->setFlags("-IkWanmiUsed");
         delete use_card;
         room->setPlayerProperty(player, "ikwanmi_card", QVariant());
         return false;
