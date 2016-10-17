@@ -951,8 +951,10 @@ public:
                 ids << id;
         }
         if (room->askForYiji(player, ids, objectName(), false, true, true, -1,
-                             QList<ServerPlayer *>(), CardMoveReason(), "@ikqingjian-distribute", true))
+            QList<ServerPlayer *>(), CardMoveReason(), "@ikqingjian-distribute", true)) {
+            room->addPlayerMark(player, objectName());
             return true;
+        }
         return false;
     }
 
@@ -967,7 +969,6 @@ public:
             return false;
         while (room->askForYiji(player, ids, objectName(), false, false, true, -1,
                                 QList<ServerPlayer *>(), CardMoveReason(), "@ikqingjian-distribute", false)) {
-            room->addPlayerMark(player, objectName());
             room->notifySkillInvoked(player, objectName());
             if (player->isDead()) return false;
         }
