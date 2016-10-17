@@ -5789,12 +5789,24 @@ public:
 class IkMingzhen: public TriggerSkill {
 public:
     IkMingzhen(): TriggerSkill("ikmingzhen") {
-        events << DamageCaused << EventPhaseStart;
+        events << DamageCaused << EventPhaseStart << Death;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == EventPhaseStart) {
             if (player->getPhase() == Player::Play) {
+                foreach (ServerPlayer *p, room->getAllPlayers()) {
+                    if (p->getMark("mingzhen_" + player->objectName()) > 0) {
+                        room->removePlayerMark(p, "@mingzhen", p->getMark("mingzhen_" + player->objectName()));
+                        room->setPlayerMark(p, "mingzhen_" + player->objectName(), 0);
+                    }
+                }
+            }
+            return QStringList();
+        }
+        if (triggerEvent == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who == player) {
                 foreach (ServerPlayer *p, room->getAllPlayers()) {
                     if (p->getMark("mingzhen_" + player->objectName()) > 0) {
                         room->removePlayerMark(p, "@mingzhen", p->getMark("mingzhen_" + player->objectName()));
