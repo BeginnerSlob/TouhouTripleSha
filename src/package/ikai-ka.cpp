@@ -5990,7 +5990,7 @@ IkaiKaPackage::IkaiKaPackage()
     General *snow052 = new General(this, "snow052", "yuki", 3, false);
     snow052->addSkill(new IkHuanlve);
     snow052->addSkill(new IkHuanlveTrigger);
-    related_skills.insertMulti("ikhualue", "#ikhualue");
+    related_skills.insertMulti("ikhuanlve", "#ikhuanlve");
     snow052->addSkill(new IkMuguang);
     snow052->addRelateSkill("thjizhi");
     snow052->addRelateSkill("ikchilian");
