@@ -2407,7 +2407,7 @@ TouhouKazePackage::TouhouKazePackage()
     kaze004->addSkill(new ThWangshou);
     kaze004->addSkill(new ThZhanye);
     kaze004->addSkill(new SlashNoDistanceLimitSkill("thzhanye"));
-    related_skills.insertMulti("thzhanye", "#thzhanye-ndl");
+    related_skills.insertMulti("thzhanye", "#thzhanye-slash-ndl");
 
     General *kaze005 = new General(this, "kaze005", "kaze", 3, false);
     kaze005->addSkill(new ThEnan);
