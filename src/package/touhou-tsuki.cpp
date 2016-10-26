@@ -533,12 +533,13 @@ public:
         judge.who = damage.from;
         room->judge(judge);
 
-        if (judge.isBad() && damage.from->getMark("@jiaotu") <= 0) {
+        if (judge.isBad()) {
             if (room->getCurrent() == damage.from && damage.from->getPhase() != Player::NotActive)
                 room->setPlayerFlag(damage.from, objectName());
-
-            room->addPlayerMark(damage.from, "@jiaotu");
-            room->acquireSkill(damage.from, "ikwumou");
+            if (damage.from->getMark("@jiaotu") <= 0){
+                room->addPlayerMark(damage.from, "@jiaotu");
+                room->acquireSkill(damage.from, "ikwumou");
+            }
         }
         return false;
     }
