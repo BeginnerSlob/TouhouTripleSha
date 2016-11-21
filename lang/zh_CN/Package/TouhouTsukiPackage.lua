@@ -193,7 +193,7 @@ return {
 	
 	["#tsuki016"] = "神灵依凭的月姬",
 	["tsuki016"] = "绵月依姬",--月 - 空 - 4血
-	["designer:tsuki016"] = "天妒のPAD",
+	["designer:tsuki016"] = "妒天のPAD",
 	["illustrator:tsuki016"] = "六羽田トモエ",
 	["cv:tsuki016"] = "暂无",
 	["thshenyou"] = "神佑",
