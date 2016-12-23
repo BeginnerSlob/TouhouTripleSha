@@ -408,7 +408,7 @@ return {
 	["designer:snow021"] = "ByArt",
 	["illustrator:snow021"] = "Kyurin",
 	["ikjieyou"] = "解忧",
-	[":ikjieyou"] = "当一名角色进入濒死状态时，你可以对当前回合的角色使用一张无视距且不计入使用限制的【杀】，此【杀】造成伤害时，你防止此伤害，视为对该濒死角色使用了一张【桃】。",
+	[":ikjieyou"] = "当一名角色进入濒死状态时，你可以对当前回合的角色使用一张无视距离且不计入使用限制的【杀】，此【杀】造成伤害时，你防止此伤害，视为对该濒死角色使用了一张【桃】。",
 	["ikjieyou-slash"] = "你可以对当前回合角色使用一张无视距离的【杀】发动“解忧”",
 	["#IkJieyouPrevent"] = "%from 的“<font color=\"yellow\"><b>解忧</b></font>”效果被触发，防止了对 %to 的伤害",
 	["#IkJieyouNull1"] = "%from 已经脱离濒死状态，“<font color=\"yellow\"><b>解忧</b></font>”第二项效果无法执行",
