@@ -2816,7 +2816,7 @@ public:
 
     virtual int getFixed(const Player *target) const{
         int len = target->getPile("iksushengpile").length();
-        if (len > 0)
+        if (target->hasSkill(objectName()) && len > 0)
             return len;
         else
             return -1;
