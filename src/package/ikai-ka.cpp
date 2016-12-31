@@ -1048,10 +1048,7 @@ public:
     }
 
     virtual int getCorrect(const Player *from, const Player *) const{
-        if (!from->hasSkill(objectName()))
-            return 0;
-        else
-            return qMax(from->getMark("ikfengxing") - 2, 0);
+        return qMax(from->getMark("ikfengxing") - 2, 0);
     }
 };
 
@@ -4395,7 +4392,7 @@ public:
     }
 
     virtual int getCorrect(const Player *from, const Player *) const{
-        if (from->hasSkill(objectName()) && from->hasFlag("iklianwu2"))
+        if (from->hasFlag("iklianwu2"))
             return -qMax(1, from->getLostHp());
         else
             return 0;

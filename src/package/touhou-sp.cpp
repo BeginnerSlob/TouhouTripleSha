@@ -1608,10 +1608,7 @@ public:
     }
 
     virtual int getCorrect(const Player *from, const Player *) const {
-        if (!from->hasSkill(objectName()))
-            return 0;
-        else
-            return from->getMark("thzanghun");
+        return from->getMark("thzanghun");
     }
 };
 
