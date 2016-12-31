@@ -2109,7 +2109,7 @@ public:
     }
 
     virtual int getFixed(const Player *target) const{
-        if (target->hasSkill(objectName()) && target->hasFlag("IkKuangluInvoke"))
+        if (target->hasFlag("IkKuangluInvoke"))
             return qMin(target->getMark("ikkuanglu"), 4);
         return -1;
     }
@@ -4386,7 +4386,7 @@ public:
     }
 
     virtual int getExtra(const Player *target) const{
-        if (target->hasSkill(objectName()) && target->hasFlag("IkBingling"))
+        if (target->hasFlag("IkBingling"))
             return -1;
         else
             return 0;
