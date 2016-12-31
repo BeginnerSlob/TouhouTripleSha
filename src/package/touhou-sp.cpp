@@ -883,8 +883,6 @@ public:
     }
 
     virtual int getExtra(const Player *target) const {
-        if (!target->hasSkill(objectName()))
-            return 0;
         int delta = 0;
         if (target->hasFlag("thhuanlong1"))
             --delta;
