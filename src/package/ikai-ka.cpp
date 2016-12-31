@@ -1186,7 +1186,7 @@ public:
     }
 
     virtual int getExtra(const Player *target) const{
-        if (target->hasFlag("ikduduan"))
+        if (target->hasSkill(objectName()) && target->hasFlag("ikduduan"))
             return -2;
         else
             return 0;
@@ -1656,7 +1656,7 @@ public:
     }
 
     virtual int getExtra(const Player *target) const{
-        if (target->hasFlag("ikdiebei"))
+        if (target->hasSkill(objectName()) && target->hasFlag("ikdiebei"))
             return 1;
         else
             return 0;
