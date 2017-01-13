@@ -415,12 +415,12 @@ public:
 
         JudgeStruct judge;
         judge.pattern = ".|black";
-        judge.good = false;
+        judge.good = true;
         judge.reason = objectName();
         judge.who = damage.to;
 
         room->judge(judge);
-        if (judge.isBad()) {
+        if (judge.isGood()) {
             if (player->canDiscard(damage.to, "he")
                     && player->askForSkillInvoke("thwangshou_discard", "yes:" + damage.to->objectName())) {
                 int card_id = room->askForCardChosen(player, damage.to, "he", objectName(), false, Card::MethodDiscard);
