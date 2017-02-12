@@ -1051,7 +1051,7 @@ public:
         ServerPlayer *current = room->getCurrent();
         CardUseStruct use = data.value<CardUseStruct>();
         if (TriggerSkill::triggerable(current) && current->getPhase() != Player::NotActive
-            && use.card->isRed() && player != current) {
+            && use.card->isRed() && use.card->getTypeId() != Card::TypeSkill && player != current) {
             ask_who = current;
             return QStringList(objectName());
         }
