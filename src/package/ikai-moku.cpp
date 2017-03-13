@@ -4830,7 +4830,7 @@ public:
                 }
                 room->handleAcquireDetachSkills(death.damage->from, detachList);
                 if (death.damage->from->isAlive())
-                    death.damage->from->gainMark("@qihuang");
+                    death.damage->from->addMark("@qihuang");
             }
         }
 
