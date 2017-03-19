@@ -770,7 +770,7 @@ const Card *IkXianyuSlashCard::validate(CardUseStruct &cardUse) const{
 
     QList<ServerPlayer *> targets = cardUse.to;
     foreach (ServerPlayer *target, targets) {
-        if (!source->canSlash(target, slash))
+        if (!source->canSlash(target, slash, false))
             cardUse.to.removeOne(target);
     }
     if (cardUse.to.length() > 0)
