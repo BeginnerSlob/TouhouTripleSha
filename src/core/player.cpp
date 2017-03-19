@@ -755,6 +755,7 @@ bool Player::canDiscard(const Player *to, const QString &flags) const{
     static QChar equip_flag('e');
     static QChar judging_flag('j');
 
+    if (this->isDead() || to->isDead() ) return false;
     if (flags.contains(handcard_flag) && !to->isKongcheng()) return true;
     if (flags.contains(judging_flag) && !to->getJudgingArea().isEmpty()) return true;
     if (flags.contains(equip_flag)) {
@@ -765,6 +766,7 @@ bool Player::canDiscard(const Player *to, const QString &flags) const{
 }
 
 bool Player::canDiscard(const Player *to, int card_id) const{
+    if (this->isDead() || to->isDead() ) return false;
     if (to->hasSkill("ikhugu") && this != to) {
         if ((to->getWeapon() && card_id == to->getWeapon()->getEffectiveId())
             || (to->getArmor() && card_id == to->getArmor()->getEffectiveId()))
