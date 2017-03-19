@@ -5907,7 +5907,7 @@ public:
         if (!TriggerSkill::triggerable(player)) return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (player == room->getCurrent() && player->getPhase() != Player::NotActive && move.from
-            && move.from_places.contains(Player::PlaceHand) && move.from->getHandcardNum() <= 1)
+            && move.from_places.contains(Player::PlaceHand) && move.from->getHandcardNum() <= 1 && move.from->isAlive())
             return QStringList(objectName());
         return QStringList();
     }
