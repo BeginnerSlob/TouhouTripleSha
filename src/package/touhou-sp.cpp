@@ -1714,7 +1714,7 @@ public:
             log.arg = "thxuyou";
             room->sendLog(log);
 
-            player->setFlags("-ThXuyouUse");
+            room->setPlayerFlag(player, "-ThXuyouUse");
             room->setCardFlag(data.value<CardUseStruct>().card, "thxuyou_slash");
             room->setPlayerFlag(player, "ThXuyou");
         } else if (triggerEvent == CardFinished) {
