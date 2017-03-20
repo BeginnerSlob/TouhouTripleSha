@@ -2081,7 +2081,7 @@ public:
                         || skill->getFrequency() == Skill::Limited
                         || skill->getFrequency() == Skill::Wake)
                         continue;
-                    if (skill->objectName() == player->tag.value("ThDongxiLast").toString())
+                    if (player->tag.value("ThDongxiLast").toStringList().contains(skill->objectName()))
                         continue;
                     return QStringList(objectName());
                 }
@@ -2100,7 +2100,7 @@ public:
                     || skill->getFrequency() == Skill::Limited
                     || skill->getFrequency() == Skill::Wake)
                     continue;
-                if (skill->objectName() == player->tag.value("ThDongxiLast").toString())
+                if (player->tag.value("ThDongxiLast").toStringList().contains(skill->objectName()))
                     continue;
                 if (!player->hasSkill(skill->objectName()))
                     skills << skill->objectName();
@@ -2115,7 +2115,9 @@ public:
                 QStringList choices = skill_list.value(target, QStringList());
                 if (!choices.isEmpty()) {
                     QString choice = room->askForChoice(player, objectName(), choices.join("+"));
-                    player->tag["ThDongxi"] = QVariant::fromValue(choice);
+                    QStringList list = player->tag.value("ThDongxi").toStringList();
+                    list << choice;
+                    player->tag["ThDongxi"] = QVariant::fromValue(list);
 
                     JsonArray args;
                     args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
@@ -2135,7 +2137,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        room->acquireSkill(player, player->tag["ThDongxi"].toString());
+        room->acquireSkill(player, player->tag["ThDongxi"].toStringList().last());
         return false;
     }
 };
@@ -2148,12 +2150,13 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
-        if (player->getPhase() == Player::NotActive && !player->tag.value("ThDongxiLast").toString().isEmpty()) {
+        if (player->getPhase() == Player::NotActive && !player->tag.value("ThDongxiLast").toStringList().isEmpty()) {
             player->tag.remove("ThDongxiLast");
-        } else if (player->getPhase() == Player::RoundStart && !player->tag.value("ThDongxi").toString().isEmpty()) {
-            QString name = player->tag.value("ThDongxi").toString();
+        } else if (player->getPhase() == Player::RoundStart && !player->tag.value("ThDongxi").toStringList().isEmpty()) {
+            QStringList names = player->tag.value("ThDongxi").toStringList();
             player->tag.remove("ThDongxi");
-            room->detachSkillFromPlayer(player, name, false, true);
+            foreach (QString name, names)
+                room->detachSkillFromPlayer(player, name, false, true);
 
             JsonArray args;
             args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
@@ -2163,7 +2166,7 @@ public:
             args << false;
             room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 
-            player->tag["ThDongxiLast"] = name;
+            player->tag["ThDongxiLast"] = QVariant::fromValue(names);
         }
 
         return QStringList();
