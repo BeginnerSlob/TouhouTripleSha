@@ -1698,6 +1698,13 @@ public:
     virtual const Card *viewAs(const QList<const Card *> &cards) const
     {
         if (cards.size() == 3) {
+            int hand = 0;
+            foreach (const Card *card, cards) {
+                if (Self->getHandcards().contains(card))
+                    ++hand;
+            }
+            if (hand != 1)
+                return NULL;
             ThSuilunCard *card = new ThSuilunCard;
             card->addSubcards(cards);
             return card;
