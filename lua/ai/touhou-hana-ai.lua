@@ -801,8 +801,8 @@ sgs.ai_skill_use["@@thyachui"] = function(self, prompt)
 	self:sort(self.friends_noself, "handcard")
 	local targets = {}
 	for _, p in ipairs(self.friends_noself) do
-		if p:isWounded() and p:getLostHp() <= #redcards then
-			table.insert(targets,p)
+		if p:isAlive() and p:isWounded() and p:getLostHp() <= #redcards then
+			table.insert(targets, p)
 		end
 	end
 	if #targets == 0 then return "." end
