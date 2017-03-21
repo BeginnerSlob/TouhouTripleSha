@@ -1081,18 +1081,22 @@ public:
     }
 };
 
-class IkJuejing: public DrawCardsSkill {
+class IkJuejing: public DrawCardsSkill
+{
 public:
-    IkJuejing(): DrawCardsSkill("ikjuejing") {
+    IkJuejing(): DrawCardsSkill("ikjuejing")
+    {
         frequency = Compulsory;
     }
 
-    virtual bool triggerable(const ServerPlayer *player) const {
+    virtual bool triggerable(const ServerPlayer *player) const
+    {
         return DrawCardsSkill::triggerable(player)
             && player->isWounded();
     }
 
-    virtual int getDrawNum(ServerPlayer *player, int n) const{
+    virtual int getDrawNum(ServerPlayer *player, int n) const
+    {
         Room *room = player->getRoom();
         room->notifySkillInvoked(player, objectName());
         room->broadcastSkillInvoke(objectName());
@@ -1107,12 +1111,15 @@ public:
     }
 };
 
-class IkJuejingKeep: public MaxCardsSkill {
+class IkJuejingKeep: public MaxCardsSkill
+{
 public:
-    IkJuejingKeep(): MaxCardsSkill("#ikjuejing-keep") {
+    IkJuejingKeep(): MaxCardsSkill("#ikjuejing-keep")
+    {
     }
 
-    virtual int getExtra(const Player *target) const{
+    virtual int getExtra(const Player *target) const
+    {
         if (target->hasSkill("ikjuejing"))
             return 2;
         else
@@ -1120,22 +1127,26 @@ public:
     }
 };
 
-IkZhihun::IkZhihun(): ViewAsSkill("ikzhihun") {
+IkZhihun::IkZhihun(): ViewAsSkill("ikzhihun")
+{
     response_or_use = true;
 }
 
-bool IkZhihun::isEnabledAtResponse(const Player *player, const QString &pattern) const{
+bool IkZhihun::isEnabledAtResponse(const Player *player, const QString &pattern) const
+{
     return pattern == "slash"
            || pattern == "jink"
            || (pattern.contains("peach") && player->getMark("Global_PreventPeach") == 0)
            || pattern == "nullification";
 }
 
-bool IkZhihun::isEnabledAtPlay(const Player *player) const{
+bool IkZhihun::isEnabledAtPlay(const Player *player) const
+{
     return player->isWounded() || Slash::IsAvailable(player);
 }
 
-bool IkZhihun::viewFilter(const QList<const Card *> &selected, const Card *card) const{
+bool IkZhihun::viewFilter(const QList<const Card *> &selected, const Card *card) const
+{
     int n = qMax(1, Self->getHp());
 
     if (selected.length() >= n || card->hasFlag("using"))
@@ -1178,7 +1189,8 @@ bool IkZhihun::viewFilter(const QList<const Card *> &selected, const Card *card)
     return false;
 }
 
-const Card *IkZhihun::viewAs(const QList<const Card *> &cards) const{
+const Card *IkZhihun::viewAs(const QList<const Card *> &cards) const
+{
     int n = getEffHp(Self);
 
     if (cards.length() != n)
@@ -1216,20 +1228,18 @@ const Card *IkZhihun::viewAs(const QList<const Card *> &cards) const{
     return new_card;
 }
 
-int IkZhihun::getEffectIndex(const ServerPlayer *player, const Card *card) const{
+int IkZhihun::getEffectIndex(const ServerPlayer *player, const Card *card) const
+{
     return static_cast<int>(player->getRoom()->getCard(card->getSubcards().first())->getSuit()) + 1;
 }
 
-bool IkZhihun::isEnabledAtNullification(const ServerPlayer *player) const{
-    int n = getEffHp(player), count = 0;
-    foreach (const Card *card, player->getHandcards() + player->getEquips()) {
-        if (card->getSuit() == Card::Diamond) count++;
-        if (count >= n) return true;
-    }
-    return false;
+bool IkZhihun::isEnabledAtNullification(const ServerPlayer *) const
+{
+    return true;
 }
 
-int IkZhihun::getEffHp(const Player *zhaoyun) const{
+int IkZhihun::getEffHp(const Player *zhaoyun) const
+{
     return qMax(1, zhaoyun->getHp());
 }
 
