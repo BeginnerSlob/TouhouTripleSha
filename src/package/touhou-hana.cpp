@@ -793,7 +793,7 @@ ThMimengDialog::ThMimengDialog(const QString &object, bool left, bool right, boo
     connect(group, SIGNAL(buttonClicked(QAbstractButton *)), this, SLOT(selectCard(QAbstractButton *)));
 }
 
-bool ThMimengDialog::isButtonEnabled(const QString &button_name) const{
+bool ThMimengDialog::isButtonEnabled(const QString &button_name, bool is_play) const{
     const Card *card = map[button_name];
     QString allowings = Self->property("allowed_thmimeng_dialog_buttons").toString();
     QStringList ban_list;
@@ -802,13 +802,14 @@ bool ThMimengDialog::isButtonEnabled(const QString &button_name) const{
                  << "Drowning" << "BurningCamps" << "LureTiger" << "KnownBoth";
     if (object_name == "ikxieke" && Self->aliveCount() == 2)
         ban_list << "Jink" << "Analeptic" << "Peach";
+    Card::HandlingMethod method = is_play ? Card::MethodResponse : Card::MethodUse;
     if (allowings.isEmpty())
-        return !ban_list.contains(card->getClassName()) && !Self->isCardLimited(card, Card::MethodUse, true) && card->isAvailable(Self);
+        return !ban_list.contains(card->getClassName()) && !Self->isCardLimited(card, method, true) && card->isAvailable(Self);
     else {
         if (!allowings.split("+").contains(card->objectName())) // for IkMojing
             return false;
         else
-            return !ban_list.contains(card->getClassName()) && !Self->isCardLimited(card, Card::MethodUse, true) && card->isAvailable(Self);
+            return !ban_list.contains(card->getClassName()) && !Self->isCardLimited(card, method, true) && card->isAvailable(Self);
     }
 }
 
@@ -818,10 +819,11 @@ void ThMimengDialog::popup() {
         emit onButtonClick();
         return;
     }
+    bool is_play = Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE;
 
     bool has_enabled_button = false;
     foreach (QAbstractButton *button, group->buttons()) {
-        bool enabled = isButtonEnabled(button->objectName());
+        bool enabled = isButtonEnabled(button->objectName(), is_play);
         if (enabled)
             has_enabled_button = true;
         button->setEnabled(enabled);
