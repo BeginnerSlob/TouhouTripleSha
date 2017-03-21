@@ -4973,7 +4973,7 @@ public:
 
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         TriggerList skill_list;
-        if (triggerEvent == HpChanged) {
+        if (triggerEvent == HpChanged && player->isAlive()) {
             if (!data.isNull() && !data.canConvert<RecoverStruct>()) {
                 int n = 0;
                 bool ok = false;
