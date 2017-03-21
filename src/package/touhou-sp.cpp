@@ -1393,11 +1393,15 @@ public:
         ask_who->tag.remove("ThShushuCard");
         if (card) {
             CardUseStruct use = data.value<CardUseStruct>();
+            bool is_int = false;
+            int drank = use.card->tag["drank"].toInt(&is_int);
             room->obtainCard(ask_who, use.card);
             Card *new_card = Sanguosha->cloneCard(use.card->getClassName(), use.card->getSuit(), use.card->getNumber(), use.card->getFlags());
             new_card->addSubcards(card->getSubcards());
             new_card->setSkillName(objectName());
-            new_card->deleteLater();
+            delete use.card;
+            if (is_int && drank > 0)
+                new_card->setTag("drank", drank);
             use.card = new_card;
             data = QVariant::fromValue(use);
         }
