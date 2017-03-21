@@ -642,8 +642,10 @@ public:
                 exchangeMove.push_back(move2);
                 room->moveCardsAtomic(exchangeMove, false);
             }
-            player->drawCards(1);
-            target->drawCards(1);
+            QList<ServerPlayer *> targets;
+            targets << player << target;
+            room->sortByActionOrder(targets);
+            room->drawCards(targets, 1, objectName());
             return true;
         }
         return false;

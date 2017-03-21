@@ -3536,7 +3536,6 @@ void Room::drawCards(QList<ServerPlayer *> players, int n, const QString &reason
 }
 
 void Room::drawCards(QList<ServerPlayer *> players, QList<int> n_list, const QString &reason) {
-    QList<CardsMoveStruct> moves;
     int index = -1, len = n_list.length();
     Q_ASSERT(len >= 1);
     foreach (ServerPlayer *player, players) {
@@ -3552,9 +3551,8 @@ void Room::drawCards(QList<ServerPlayer *> players, QList<int> n_list, const QSt
         move.to = player;
         move.to_place = Player::PlaceHand;
         move.reason = CardMoveReason(CardMoveReason::S_REASON_DRAW, player->objectName(), reason, QString());
-        moves.append(move);
+        moveCardsAtomic(move, false);
     }
-    moveCardsAtomic(moves, false);
 }
 
 void Room::throwCard(const Card *card, ServerPlayer *who, ServerPlayer *thrower) {
