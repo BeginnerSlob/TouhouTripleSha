@@ -4134,11 +4134,15 @@ IkXiaozuiPeachCard::IkXiaozuiPeachCard() {
 void IkXiaozuiPeachCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &) const{
     ServerPlayer *who = room->getCurrentDyingPlayer();
     if (!who) return;
+    Peach *peach = new Peach(Card::NoSuit, 0);
+    peach->setSkillName("_ikxiaozui");
+    if (who->isProhibited(who, peach) || who->isCardLimited(peach, MethodUse)) {
+        delete peach;
+        return;
+    }
 
     CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "ikxiaozui", QString());
     room->throwCard(this, reason, NULL);
-    Peach *peach = new Peach(Card::NoSuit, 0);
-    peach->setSkillName("_ikxiaozui");
     room->useCard(CardUseStruct(peach, who, who, false));
 }
 
@@ -4378,6 +4382,16 @@ public:
         } else {
             Peach *peach = new Peach(Card::NoSuit, 0);
             peach->setSkillName("_ikjieyou");
+            ServerPlayer *current = room->getCurrent();
+            if (current && current->isAlive() && current->getPhase() != Player::NotActive
+                    && current != handang && target != handang && current->hasSkill("iksishideng")) {
+                delete peach;
+                return true;
+            }
+            if (!handang->isCardLimited(peach, Card::MethodUse) && Sanguosha->isProhibited(handang, target, peach)) {
+                delete peach;
+                return true;
+            }
             room->useCard(CardUseStruct(peach, handang, target));
         }
         return true;

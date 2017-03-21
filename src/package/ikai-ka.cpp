@@ -3590,6 +3590,15 @@ public:
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
         if (cards.length() != 2)
             return NULL;
+        bool trick = false;
+        foreach (const Card *card, cards) {
+            if (card->isKindOf("TrickCard")) {
+                trick = true;
+                break;
+            }
+        }
+        if (!trick)
+            return NULL;
 
         if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
             IkHuanlveCard *card = new IkHuanlveCard;
