@@ -2481,10 +2481,18 @@ public:
         }
         if (triggerEvent == Death) {
             DeathStruct death = data.value<DeathStruct>();
-            if (death.who != player)
+            if (death.who->hasFlag("thjiefu_null")) {
+                room->setPlayerFlag(death.who, "-thjiefu_null");
+                foreach (ServerPlayer *pl, room->getAllPlayers())
+                    room->filterCards(pl, pl->getCards("he"), false);
+                JsonArray args;
+                args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+            }
+            if (death.who != player || player != room->getCurrent())
                 return QStringList();
         }
-        foreach (ServerPlayer *p, room->getAllPlayers())
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (p->hasFlag("thjiefu_null")) {
                 room->setPlayerFlag(p, "-thjiefu_null");
                 foreach (ServerPlayer *pl, room->getAllPlayers())
@@ -2493,6 +2501,7 @@ public:
                 args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
                 room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
             }
+        }
         return QStringList();
     }
 };
