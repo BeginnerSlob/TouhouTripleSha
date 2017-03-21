@@ -2607,7 +2607,8 @@ function SmartAI:getCardRandomly(who, flags)
 	return card:getEffectiveId()
 end
 
-function SmartAI:askForCardChosen(who, flags, reason, method)
+function SmartAI:askForCardChosen(who, flags, reason, method, pattern)
+	pattern = pattern or "."
 	local isDiscard = (method == sgs.Card_MethodDiscard)
 	local cardchosen = sgs.ai_skill_cardchosen[string.gsub(reason, "%-", "_")]
 	local card
@@ -2656,7 +2657,13 @@ function SmartAI:askForCardChosen(who, flags, reason, method)
 
 	if self:isFriend(who) then
 		if flags:match("j") and not who:containsTrick("YanxiaoCard") and not who:hasSkill("qiaobian") then
-			local tricks = who:getCards("j")
+			local tricks = sgs.CardList()
+			for _, c in sgs.qlist(who:getCards("j")) do
+				if sgs.Sanguosha:matchExpPattern(pattern, self.player, c) then
+					tricks:append(c)
+				end
+			end
+			
 			local lightning, indulgence, supply_shortage
 			for _, trick in sgs.qlist(tricks) do
 				if trick:isKindOf("Lightning") and (not isDiscard or self.player:canDiscard(who, trick:getId())) then
@@ -2686,37 +2693,66 @@ function SmartAI:askForCardChosen(who, flags, reason, method)
 		end
 
 		if flags:match("e") then
-			if who:getArmor() and self:needToThrowArmor(who) and (not isDiscard or self.player:canDiscard(who, who:getArmor():getEffectiveId())) then
+			if who:getArmor() and self:needToThrowArmor(who) and (not isDiscard or self.player:canDiscard(who, who:getArmor():getEffectiveId()))
+					and sgs.Sanguosha:matchExpPattern(pattern, self.player, who:getArmor()) then
 				return who:getArmor():getEffectiveId()
 			end
-			if who:getArmor() and self:evaluateArmor(who:getArmor(), who) < -5 and (not isDiscard or self.player:canDiscard(who, who:getArmor():getEffectiveId())) then
+			if who:getArmor() and self:evaluateArmor(who:getArmor(), who) < -5 and (not isDiscard or self.player:canDiscard(who, who:getArmor():getEffectiveId()))
+					and sgs.Sanguosha:matchExpPattern(pattern, self.player, who:getArmor()) then
 				return who:getArmor():getEffectiveId()
 			end
 			if who:hasSkills(sgs.lose_equip_skill) and self:isWeak(who) then
-				if who:getWeapon() and (not isDiscard or self.player:canDiscard(who, who:getWeapon():getEffectiveId())) then return who:getWeapon():getEffectiveId() end
-				if who:getOffensiveHorse() and (not isDiscard or self.player:canDiscard(who, who:getOffensiveHorse():getEffectiveId())) then return who:getOffensiveHorse():getEffectiveId() end
+				if who:getWeapon() and (not isDiscard or self.player:canDiscard(who, who:getWeapon():getEffectiveId()))
+						and sgs.Sanguosha:matchExpPattern(pattern, self.player, who:getWeapon()) then
+					return who:getWeapon():getEffectiveId()
+				end
+				if who:getOffensiveHorse() and (not isDiscard or self.player:canDiscard(who, who:getOffensiveHorse():getEffectiveId()))
+						and sgs.Sanguosha:matchExpPattern(pattern, self.player, who:getOffensiveHorse()) then
+					return who:getOffensiveHorse():getEffectiveId()
+				end
 			end
 		end
 	else
 		local dangerous = self:getDangerousCard(who)
+		if dangerous and not sgs.Sanguosha:matchExpPattern(pattern, self.player, sgs.Sanguosha:getCard(dangerous)) then
+			dangerous = nil
+		end
 		if flags:match("e") and dangerous and (not isDiscard or self.player:canDiscard(who, dangerous)) then return dangerous end
-		if flags:match("e") and who:getTreasure() and who:getPile("wooden_ox"):length() > 1 and (not isDiscard or self.player:canDiscard(who, who:getTreasure():getId())) then
+		if flags:match("e") and who:getTreasure() and who:getPile("wooden_ox"):length() > 1
+				and (not isDiscard or self.player:canDiscard(who, who:getTreasure():getId()))
+				and sgs.Sanguosha:matchExpPattern(pattern, self.player, who:getTreasure()) then
 			return who:getTreasure():getId()
 		end
 		if flags:match("e") and who:getArmor() and who:hasArmorEffect("eight_diagram") and not self:needToThrowArmor(who)
-			and (not isDiscard or self.player:canDiscard(who, who:getArmor():getId())) then return who:getArmor():getId() end
+				and (not isDiscard or self.player:canDiscard(who, who:getArmor():getId()))
+				and sgs.Sanguosha:matchExpPattern(pattern, self.player, who:getArmor()) then
+			return who:getArmor():getId()
+		end
 		if flags:match("e") and who:hasSkills("jijiu|beige|mingce|weimu|qingcheng") and not self:doNotDiscard(who, "e", false, 1, reason) then
-			if who:getDefensiveHorse() and (not isDiscard or self.player:canDiscard(who, who:getDefensiveHorse():getEffectiveId())) then return who:getDefensiveHorse():getEffectiveId() end
-			if who:getArmor() and not self:needToThrowArmor(who) and (not isDiscard or self.player:canDiscard(who, who:getArmor():getEffectiveId())) then return who:getArmor():getEffectiveId() end
-			if who:getOffensiveHorse() and (not who:hasSkill("jijiu") or who:getOffensiveHorse():isRed()) and (not isDiscard or self.player:canDiscard(who, who:getOffensiveHorse():getEffectiveId())) then
+			if who:getDefensiveHorse() and (not isDiscard or self.player:canDiscard(who, who:getDefensiveHorse():getEffectiveId()))
+					and sgs.Sanguosha:matchExpPattern(pattern, self.player, who:getDefensiveHorse()) then
+				return who:getDefensiveHorse():getEffectiveId()
+			end
+			if who:getArmor() and not self:needToThrowArmor(who) and (not isDiscard or self.player:canDiscard(who, who:getArmor():getEffectiveId()))
+					and sgs.Sanguosha:matchExpPattern(pattern, self.player, who:getArmor()) then
+				return who:getArmor():getEffectiveId()
+			end
+			if who:getOffensiveHorse() and (not who:hasSkill("jijiu") or who:getOffensiveHorse():isRed())
+					and (not isDiscard or self.player:canDiscard(who, who:getOffensiveHorse():getEffectiveId()))
+					and sgs.Sanguosha:matchExpPattern(pattern, self.player, who:getOffensiveHorse()) then
 				return who:getOffensiveHorse():getEffectiveId()
 			end
-			if who:getWeapon() and (not who:hasSkill("jijiu") or who:getWeapon():isRed()) and (not isDiscard or self.player:canDiscard(who, who:getWeapon():getEffectiveId())) then
+			if who:getWeapon() and (not who:hasSkill("jijiu") or who:getWeapon():isRed())
+					and (not isDiscard or self.player:canDiscard(who, who:getWeapon():getEffectiveId()))
+					and sgs.Sanguosha:matchExpPattern(pattern, self.player, who:getWeapon()) then
 				return who:getWeapon():getEffectiveId()
 			end
 		end
 		if flags:match("e") then
 			local valuable = self:getValuableCard(who)
+			if valuable and not sgs.Sanguosha:matchExpPattern(pattern, self.player, sgs.Sanguosha:getCard(valuable)) then
+				valuable = nil
+			end
 			if valuable and (not isDiscard or self.player:canDiscard(who, valuable)) then
 				return valuable
 			end
@@ -2738,7 +2774,12 @@ function SmartAI:askForCardChosen(who, flags, reason, method)
 		end
 
 		if flags:match("j") then
-			local tricks = who:getCards("j")
+			local tricks = sgs.CardList()
+			for _, c in sgs.qlist(who:getCards("j")) do
+				if sgs.Sanguosha:matchExpPattern(pattern, self.player, c) then
+					tricks:append(c)
+				end
+			end
 			local lightning, yanxiao, purple_song
 			for _, trick in sgs.qlist(tricks) do
 				if trick:isKindOf("Lightning") and (not isDiscard or self.player:canDiscard(who, trick:getId())) then
@@ -2768,13 +2809,23 @@ function SmartAI:askForCardChosen(who, flags, reason, method)
 
 		if flags:match("e") and not self:doNotDiscard(who, "e") then
 			local def, arm, off, weap = who:getDefensiveHorse(), who:getArmor(), who:getOffensiveHorse(), who:getWeapon()
-			if def and (not isDiscard or self.player:canDiscard(who, def:getEffectiveId())) then return def:getEffectiveId() end
+			if def and (not isDiscard or self.player:canDiscard(who, def:getEffectiveId()))
+					and sgs.Sanguosha:matchExpPattern(pattern, self.player, def) then
+				return def:getEffectiveId()
+			end
 			if arm and not self:needToThrowArmor(who) and (not isDiscard or self.player:canDiscard(who, arm:getEffectiveId()))
-				and not (self.moukui_effect and self.moukui_effect:isKindOf("FireSlash") and arm:isKindOf("Vine") and not self.player:hasSkill("ikxuwu")) then
+					and not (self.moukui_effect and self.moukui_effect:isKindOf("FireSlash") and arm:isKindOf("Vine") and not self.player:hasSkill("ikxuwu"))
+					and sgs.Sanguosha:matchExpPattern(pattern, self.player, arm) then
 				return arm:getEffectiveId()
 			end
-			if off and (not isDiscard or self.player:canDiscard(who, off:getEffectiveId())) then return off:getEffectiveId() end
-			if weap and (not isDiscard or self.player:canDiscard(who, weap:getEffectiveId())) then return weap:getEffectiveId() end
+			if off and (not isDiscard or self.player:canDiscard(who, off:getEffectiveId()))
+					and sgs.Sanguosha:matchExpPattern(pattern, self.player, off) then
+				return off:getEffectiveId()
+			end
+			if weap and (not isDiscard or self.player:canDiscard(who, weap:getEffectiveId()))
+					and sgs.Sanguosha:matchExpPattern(pattern, self.player, weap) then
+				return weap:getEffectiveId()
+			end
 		end
 
 		if flags:match("h") then
