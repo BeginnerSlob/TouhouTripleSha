@@ -117,6 +117,7 @@ bool MiniSceneRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer 
             general = this->players[i]["general2"];
             if (!general.isEmpty() && general != "select") all.removeOne(general);
         }
+        QList<int> draw_num;
         for (int j = 0; j < players.length(); j++) {
             int i = int_list[j];
             ServerPlayer *sp = players.at(j);
@@ -253,8 +254,19 @@ bool MiniSceneRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer 
             str = this->players[i]["draw"];
             if (str == QString()) str = "4";
             room->setTag("FirstRound", true);
-            room->drawCards(sp, str.toInt());
+            QVariant data = str.toInt();
+            room->getThread()->trigger(DrawInitialCards, room, sp, data);
+            int n = data.toInt();
+            room->drawCards(sp, data.toInt());
+            draw_num << n;
             room->setTag("FirstRound", false);
+        }
+
+        for (int j = 0; j < players.length(); j++) {
+            int i = int_list[j];
+            ServerPlayer *sp = players.at(j);
+            QVariant data = draw_num[i];
+            room->getThread()->trigger(AfterDrawInitialCards, room, sp, data);
         }
 
         room->setTag("WaitForPlayer", QVariant(true));
