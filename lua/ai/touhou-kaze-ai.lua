@@ -125,6 +125,14 @@ sgs.ai_skill_playerchosen.thjilanwen = function(self, targets)
 	return self:findPlayerToDiscard("ej", true, false, targets, false, pattern)
 end
 
+sgs.ai_skill_cardchosen.thjilanwen = function(self, who, flags, method)
+	local judge = self.player:getTag("ThJilanwenJudge"):toJudge()
+	local suit = tonumber(judge.pattern)
+	local suitstr = sgs.Card_Suit2String(suit)
+	local pattern = ".|^" .. suitstr
+	return self:askForCardChosen(who, flags, reason, method, pattern)
+end
+
 sgs.ai_choicemade_filter.cardChosen.thjilanwen = sgs.ai_choicemade_filter.cardChosen.snatch
 
 --念刻：出牌阶段限一次，你可以交给一名其他角色一张【闪】，然后展示该角色一张手牌，若该牌为红色，你与该角色各摸一张牌。
