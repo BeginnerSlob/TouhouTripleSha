@@ -583,8 +583,6 @@ public:
             if (!current || (current->getPhase() != Player::Play && current->getPhase() != Player::Discard)) return skill_list;
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.to_place == Player::DiscardPile) {
-                QList<int> ids, disabled;
-                QList<int> all_ids = move.card_ids;
                 foreach (int id, move.card_ids) {
                     const Card *card = Sanguosha->getCard(id);
                     if (!card->isKindOf("Slash") && !card->isKindOf("Jink")) continue;
@@ -635,7 +633,8 @@ public:
             else
                 disabled << id;
         }
-        if (ids.isEmpty()) return false;
+        if (ids.isEmpty())
+            return false;
         while (!ids.isEmpty()) {
             room->fillAG(all_ids, player, disabled);
             bool only = (all_ids.length() == 1);
@@ -657,8 +656,6 @@ public:
                 Player::Place place = move.from_places.at(move.card_ids.indexOf(card_id));
                 QList<int> _card_id;
                 _card_id << card_id;
-                move.removeCardIds(_card_id);
-                data = QVariant::fromValue(move);
                 ids.removeOne(card_id);
                 disabled << card_id;
                 foreach (int id, ids) {
@@ -678,6 +675,11 @@ public:
                     room->sendLog(log);
                 }
                 room->obtainCard(target, card, move.reason);
+                if (room->getCardPlace(card_id) != move.from_places.at(move.card_ids.indexOf(card_id))
+                        || room->getCardOwner(card_id) != move.from) {
+                    move.removeCardIds(_card_id);
+                    data = QVariant::fromValue(move);
+                }
             } else
                 break;
         }
