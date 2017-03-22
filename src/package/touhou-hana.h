@@ -64,7 +64,7 @@ public slots:
 protected:
     explicit ThMimengDialog(const QString &object, bool left = true, bool right = true,
                             bool play_only = true, bool slash_combined = false, bool delayed_tricks = false);
-    virtual bool isButtonEnabled(const QString &button_name, bool is_play = false) const;
+    virtual bool isButtonEnabled(const QString &button_name) const;
 
     QHash<QString, const Card *> map;
 
