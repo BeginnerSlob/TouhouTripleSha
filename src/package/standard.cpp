@@ -356,13 +356,14 @@ void DelayedTrick::onNullified(ServerPlayer *target) const{
     Room *room = target->getRoom();
     RoomThread *thread = room->getThread();
     if (movable) {
-        QList<ServerPlayer *> players = room->getOtherPlayers(target);
-        players << target;
+        ServerPlayer *player = room->findPlayer(target->getNextAlive()->objectName());
         ServerPlayer *p = NULL;
 
-        foreach (ServerPlayer *player, players) {
-            if (player->containsTrick(objectName()))
+        do {
+            if (player->containsTrick(objectName())) {
+                player = room->findPlayer(player->getNextAlive()->objectName());
                 continue;
+            }
 
             const ProhibitSkill *skill = room->isProhibited(target, player, this);
             if (skill) {
@@ -376,30 +377,32 @@ void DelayedTrick::onNullified(ServerPlayer *target) const{
 
                     room->broadcastSkillInvoke(skill->objectName());
                 }
+                player = room->findPlayer(player->getNextAlive()->objectName());
                 continue;
             }
 
             CardMoveReason reason(CardMoveReason::S_REASON_TRANSFER, target->objectName(), QString(), this->getSkillName(), QString());
             room->moveCardTo(this, target, player, Player::PlaceDelayedTrick, reason, true);
 
-            if (target == player) break;
+            if (player != target) {
+                CardUseStruct use;
+                use.from = NULL;
+                use.to << player;
+                use.card = this;
+                QVariant data = QVariant::fromValue(use);
+                thread->trigger(TargetConfirming, room, player, data);
+                CardUseStruct new_use = data.value<CardUseStruct>();
+                if (new_use.to.isEmpty()) {
+                    p = player;
+                    break;
+                }
 
-            CardUseStruct use;
-            use.from = NULL;
-            use.to << player;
-            use.card = this;
-            QVariant data = QVariant::fromValue(use);
-            thread->trigger(TargetConfirming, room, player, data);
-            CardUseStruct new_use = data.value<CardUseStruct>();
-            if (new_use.to.isEmpty()) {
-                p = player;
-                break;
+                foreach (ServerPlayer *p, room->getAllPlayers())
+                    thread->trigger(TargetConfirmed, room, p, data);
             }
-
-            foreach (ServerPlayer *p, room->getAllPlayers())
-                thread->trigger(TargetConfirmed, room, p, data);
             break;
-        }
+        } while (player != target);
+
         if (p)
             onNullified(p);
     } else {
