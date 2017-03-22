@@ -2987,8 +2987,12 @@ public:
                 if (suit.count() == 4 && room->getCurrentDyingPlayer() == dying.who) {
                     Peach *peach = new Peach(Card::NoSuit, 0);
                     peach->setSkillName("_ikchenqing");
-                    if (target->hasFlag("Global_PreventPeach")
-                            || target->isCardLimited(peach, Card::MethodUse)
+                    bool jiaxu = false;
+                    ServerPlayer *current = room->getCurrent();
+                    if (current && current->isAlive() && current->getPhase() != Player::NotActive
+                            && current->hasSkill("iksishideng") && current != target && dying.who != target)
+                        jiaxu = true;
+                    if (jiaxu || target->isCardLimited(peach, Card::MethodUse)
                             || target->isProhibited(dying.who, peach)) {
                         delete peach;
                         return false;

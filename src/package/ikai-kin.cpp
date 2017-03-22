@@ -4129,6 +4129,7 @@ IkXiaozuiPeachCard::IkXiaozuiPeachCard() {
     mute = true;
     target_fixed = true;
     will_throw = false;
+    handling_method = Card::MethodNone;
 }
 
 void IkXiaozuiPeachCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &) const{
