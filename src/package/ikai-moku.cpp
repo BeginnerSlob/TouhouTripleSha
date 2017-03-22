@@ -4666,16 +4666,21 @@ const Card *IkGuihuoCard::validateInResponse(ServerPlayer *yuji) const{
         return NULL;
 }
 
-class IkGuihuo: public OneCardViewAsSkill {
+class IkGuihuo: public OneCardViewAsSkill
+{
 public:
-    IkGuihuo(): OneCardViewAsSkill("ikguihuo") {
+    IkGuihuo(): OneCardViewAsSkill("ikguihuo")
+    {
         filter_pattern = ".|.|.|hand";
         response_or_use = true;
     }
 
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        if (player->isKongcheng() || pattern.startsWith(".") || pattern.startsWith("@")) return false;
-        if (pattern == "peach" && player->hasFlag("Global_PreventPeach")) return false;
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
+    {
+        if (player->isKongcheng() || pattern.startsWith(".") || pattern.startsWith("@"))
+            return false;
+        if (pattern == "peach" && player->hasFlag("Global_PreventPeach"))
+            return false;
         for (int i = 0; i < pattern.length(); i++) {
             QChar ch = pattern[i];
             if (ch.isUpper() || ch.isDigit()) return false; // This is an extremely dirty hack!! For we need to prevent patterns like 'BasicCard'
@@ -4683,13 +4688,26 @@ public:
         return true;
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const{
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
         return !player->isKongcheng();
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const{
-        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE
-            || Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        CardUseStruct::CardUseReason reason = Sanguosha->currentRoomState()->getCurrentCardUseReason();
+        if (reason == CardUseStruct::CARD_USE_REASON_RESPONSE
+                || reason == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+            QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+            if (pattern.contains("+"))
+                pattern = pattern.split("+").first();
+            const Card *c = Sanguosha->cloneCard(pattern);
+            Card::HandlingMethod method = reason == CardUseStruct::CARD_USE_REASON_RESPONSE ? Card::MethodResponse : Card::MethodUse;
+            if (Self->isCardLimited(c, method)) {
+                delete c;
+                return NULL;
+            }
+
             IkGuihuoCard *card = new IkGuihuoCard;
             card->setUserString(Sanguosha->currentRoomState()->getCurrentCardUsePattern());
             card->addSubcard(originalCard);
