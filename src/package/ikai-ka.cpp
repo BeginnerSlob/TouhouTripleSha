@@ -3455,6 +3455,13 @@ public:
         else
             return 0;
     }
+
+    virtual int getResidueNum(const Player *, const Card *card) const{
+        if (card->getSkillName() == "ikwanmi")
+            return 1000;
+        else
+            return 0;
+    }
 };
 
 class IkGuichan: public TriggerSkill {
