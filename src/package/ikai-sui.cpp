@@ -656,6 +656,8 @@ public:
                 Player::Place place = move.from_places.at(move.card_ids.indexOf(card_id));
                 QList<int> _card_id;
                 _card_id << card_id;
+                move.removeCardIds(_card_id);
+                data = QVariant::fromValue(move);
                 ids.removeOne(card_id);
                 disabled << card_id;
                 foreach (int id, ids) {
@@ -675,11 +677,6 @@ public:
                     room->sendLog(log);
                 }
                 room->obtainCard(target, card, move.reason);
-                if (room->getCardPlace(card_id) != move.from_places.at(move.card_ids.indexOf(card_id))
-                        || room->getCardOwner(card_id) != move.from) {
-                    move.removeCardIds(_card_id);
-                    data = QVariant::fromValue(move);
-                }
             } else
                 break;
         }
