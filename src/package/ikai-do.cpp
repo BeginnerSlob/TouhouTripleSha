@@ -2517,7 +2517,7 @@ public:
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        return pattern.contains("peach") && !player->hasFlag("Global_PreventPeach")
+        return pattern.contains("peach") && player->getMark("Global_PreventPeach") == 0
                 && player->getPhase() == Player::NotActive && player->canDiscard(player, "he");
     }
 

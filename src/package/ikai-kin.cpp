@@ -4124,7 +4124,8 @@ void IkXiaozuiCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) c
     source->addToPile("ikxiaozuipile", this);
 }
 
-IkXiaozuiPeachCard::IkXiaozuiPeachCard() {
+IkXiaozuiPeachCard::IkXiaozuiPeachCard()
+{
     m_skillName = "ikxiaozui";
     mute = true;
     target_fixed = true;
@@ -4132,19 +4133,23 @@ IkXiaozuiPeachCard::IkXiaozuiPeachCard() {
     handling_method = Card::MethodNone;
 }
 
-void IkXiaozuiPeachCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &) const{
+const Card *IkXiaozuiPeachCard::validateInResponse(ServerPlayer *user) const
+{
+    Room *room = user->getRoom();
     ServerPlayer *who = room->getCurrentDyingPlayer();
-    if (!who) return;
+    if (!who)
+        return NULL;
     Peach *peach = new Peach(Card::NoSuit, 0);
     peach->setSkillName("_ikxiaozui");
     if (who->isProhibited(who, peach) || who->isCardLimited(peach, MethodUse)) {
         delete peach;
-        return;
+        return NULL;
     }
 
     CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "ikxiaozui", QString());
     room->throwCard(this, reason, NULL);
     room->useCard(CardUseStruct(peach, who, who, false));
+    return NULL;
 }
 
 class IkXiaozuiViewAsSkill: public ViewAsSkill {

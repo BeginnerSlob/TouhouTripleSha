@@ -1578,7 +1578,7 @@ const Card *Room::askForSinglePeach(ServerPlayer *player, ServerPlayer *dying) {
         card = Card::Parse(clientReply[0].toString());
     }
 
-    if (card && player->isCardLimited(card, Card::MethodUse))
+    if (card && player->isCardLimited(card, card->getHandlingMethod()))
         card = NULL;
     if (card != NULL)
         card = card->validateInResponse(player);
@@ -1593,7 +1593,7 @@ const Card *Room::askForSinglePeach(ServerPlayer *player, ServerPlayer *dying) {
                                                             .arg(card->toString()));
         thread->trigger(ChoiceMade, this, player, decisionData);
         result = card;
-    } else
+    } else if (dying->isAlive() && dying->getHp() < 1)
         result = askForSinglePeach(player, dying);
     return result;
 }

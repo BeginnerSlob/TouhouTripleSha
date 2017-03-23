@@ -219,7 +219,7 @@ class IkXiaozuiPeachCard: public SkillCard {
 public:
     Q_INVOKABLE IkXiaozuiPeachCard();
 
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+    virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
 class IkAnxuCard: public SkillCard {
