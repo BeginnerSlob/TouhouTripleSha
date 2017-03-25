@@ -106,7 +106,7 @@ public:
             if (player && player->isAlive() && player->hasFlag("ThShoujuanUsed")) {
                 CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
                 if (move.from && move.from != player && !player->isNude()
-                    && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip)))
+                    && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip)) && move.from->isAlive())
                     return QStringList(objectName());
             }
         }
