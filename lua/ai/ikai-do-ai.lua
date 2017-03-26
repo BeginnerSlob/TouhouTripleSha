@@ -64,10 +64,39 @@ sgs.ai_skill_use_func.IkShenaiCard = function(card, use, self)
 	use.card = card
 end
 
+sgs.ai_skill_askforyiji.ikshenai = function(self, card_ids)
+	if self.player:getHandcardNum() <= 2 then
+		return nil, -1
+	end
+
+	local available_friends = {}
+	for _, friend in ipairs(self.friends_noself) do
+		if not hasManjuanEffect(friend) and not self:isThJinluTarget(friend) then
+			table.insert(available_friends, friend)
+		end
+	end
+
+	local cards = {}
+	for _, card_id in ipairs(card_ids) do
+		table.insert(cards, sgs.Sanguosha:getCard(card_id))
+	end
+	local id = card_ids[1]
+
+	local card, friend = self:getCardNeedPlayer(cards, self.friends_noself)
+	if card and friend and table.contains(available_friends, friend) then return friend, card:getId() end
+	if #available_friends > 0 then
+		self:sort(available_friends, "handcard")
+		for _, afriend in ipairs(available_friends) do
+			if not self:needKongcheng(afriend, true) then
+				return afriend, id
+			end
+		end
+	end
+	return nil, -1
+end
+
 sgs.ai_use_value.IkShenaiCard = 8.5
 sgs.ai_use_priority.IkShenaiCard = 8.8
-
-sgs.ai_skill_askforyiji.ikshenai = sgs.ai_skill_askforyiji.ikyumeng
 
 --心契：君主技，当你需要使用或打出一张【杀】时，你可以令其他风势力角色打出一张【杀】（视为由你使用或打出）。
 table.insert(sgs.ai_global_flags, "ikxinqisource")
