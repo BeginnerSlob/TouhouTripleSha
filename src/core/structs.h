@@ -28,6 +28,7 @@ struct DamageStruct {
     int damage;
     Nature nature;
     bool chain;
+    bool trigger_chain;
     bool transfer;
     bool by_user;
     QString reason;

@@ -3341,7 +3341,6 @@ void Room::damage(const DamageStruct &data) {
     }
     catch (TriggerEvent triggerEvent) {
         if (triggerEvent == StageChange || triggerEvent == TurnBroken) {
-            removeTag("is_chained");
             removeTag("CurrentDamageStruct");
             m_damageStack.clear();
         }
