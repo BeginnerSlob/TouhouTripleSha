@@ -3316,6 +3316,8 @@ void Room::damage(const DamageStruct &data) {
             REMOVE_QINGGANG_TAG
             thread->trigger(DamageDone, this, damage_data.to, qdata);
 
+            damage_data = qdata.value<DamageStruct>();
+
             if (damage_data.from && !damage_data.from->hasFlag("Global_DebutFlag"))
                 thread->trigger(Damage, this, damage_data.from, qdata);
 
