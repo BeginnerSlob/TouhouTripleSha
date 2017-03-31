@@ -396,12 +396,13 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.from && !damage.from->isAlive())
                 damage.from = NULL;
-            data = QVariant::fromValue(damage);
 
             // Chain ==========
             if (damage.nature != DamageStruct::Normal && player->isChained() && !damage.chain)
                 damage.trigger_chain = true;
             // ================
+
+            data = QVariant::fromValue(damage);
 
             LogMessage log;
 
