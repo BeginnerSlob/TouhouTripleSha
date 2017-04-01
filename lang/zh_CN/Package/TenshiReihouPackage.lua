@@ -22,6 +22,8 @@ return {
 	["cv:reihou002"] = "暂无",
 	["rhruyi"] = "如意",
 	[":rhruyi"] = "你可以弃置此灵宝牌，视为使用了任意一张基本牌或非延时锦囊牌。",
+	["rhruyi_skill_saveself"] = "如意自救",
+	["rhruyi_skill_slash"] = "如意出杀",
 
 	["#reihou003"] = "暂无",
 	["reihou003"] = "山河社稷图",--灵 - 空 - 4血
