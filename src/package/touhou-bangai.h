@@ -4,13 +4,6 @@
 #include "package.h"
 #include "card.h"
 
-class TouhouBangaiPackage : public Package{
-    Q_OBJECT
-
-public:
-    TouhouBangaiPackage();
-};
-
 class ThMiqiCard: public SkillCard{
     Q_OBJECT
 
@@ -80,6 +73,13 @@ public:
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class TouhouBangaiPackage : public Package{
+    Q_OBJECT
+
+public:
+    TouhouBangaiPackage();
 };
 
 #endif // TOUHOUBANGAI_H
