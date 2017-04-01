@@ -227,44 +227,6 @@ public:
     }
 };
 
-class ThXianming : public TriggerSkill
-{
-public:
-    ThXianming() : TriggerSkill("thxianming")
-    {
-        events << BeforeCardsMove;
-        frequency = Compulsory;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
-    {
-        if (TriggerSkill::triggerable(player)) {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.to == player && move.to_place == Player::PlaceEquip)
-                return QStringList(objectName());
-        }
-        return QStringList();
-    }
-
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
-    {
-        room->sendCompulsoryTriggerLog(player, objectName());
-        room->broadcastSkillInvoke(objectName());
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        QList<CardsMoveStruct> moves;
-        CardMoveReason reason(CardMoveReason::S_REASON_THROW, player->objectName(), objectName(), QString());
-        foreach (int id, move.card_ids)
-            moves << CardsMoveStruct(id, NULL, Player::DiscardPile, reason);
-        move.removeCardIds(move.card_ids);
-        data = QVariant::fromValue(move);
-        room->moveCardsAtomic(moves, true);
-        ThTianbao *tianbao = new ThTianbao();
-        tianbao->deleteLater();
-        tianbao->effect(triggerEvent, room, player, data, player);
-        return false;
-    }
-};
-
 class ThWudao: public TriggerSkill {
 public:
     ThWudao():TriggerSkill("thwudao") {
@@ -2577,7 +2539,6 @@ TouhouKamiPackage::TouhouKamiPackage()
 
     General *kami002 = new General(this, "kami002", "kami", 4, true, true);
     kami002->addSkill(new ThTianbao);
-    kami002->addSkill(new ThXianming);
     kami002->addSkill("thyanmeng");
 
     General *kami003 = new General(this, "kami003", "kami", 8);

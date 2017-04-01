@@ -2,8 +2,20 @@
 #define TENSHIREIHOU_H
 
 #include "package.h"
+#include "card.h"
 
-class TenshiReihouPackage : public Package{
+class RhDuanlongCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    RhDuanlongCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class TenshiReihouPackage : public Package
+{
     Q_OBJECT
 
 public:
