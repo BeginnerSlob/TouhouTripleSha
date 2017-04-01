@@ -21,7 +21,7 @@ void RhDuanlongCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *>
     JsonArray args;
     args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
     args << source->objectName();
-    args << source->objectName();
+    args << source->getGeneralName();
     args << QString();
     args << true;
     room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
@@ -101,6 +101,58 @@ public:
     }
 };
 
+class RhPohuang : public TriggerSkill
+{
+public:
+    RhPohuang() : TriggerSkill("rhpohuang")
+    {
+        events << Damaged;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (TriggerSkill::triggerable(player)) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.from && damage.from->isAlive() && player->canSlash(damage.from, false))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        DamageStruct damage = data.value<DamageStruct>();
+        const Card *card = room->askForUseSlashTo(player, damage.from, "@rhpohuang:" + damage.from->objectName(), false);
+        if (!card) {
+            QStringList skills;
+            QString old = player->tag["Reihou"].toString();
+            if (Sanguosha->getGeneral(old)) {
+                foreach (const Skill *skill, Sanguosha->getGeneral(old)->getVisibleSkillList())
+                    skills << "-" + skill->objectName();
+                player->tag.remove("Reihou");
+            }
+            JsonArray args;
+            args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
+            args << player->objectName();
+            args << source->getGeneralName();
+            args << QString();
+            args << true;
+            room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+            room->handleAcquireDetachSkills(player, skills, true);
+
+            Card *slash = new Slash(Card::NoSuit, 0);
+            slash->setSkillName("_rhpohuang");
+            if (!player->canSlash(damage.from, slash, false)) {
+                delete slash;
+                return false;
+            }
+            room->useCard(CardUseStruct(slash, player, damage.from));
+        }
+        return false;
+    }
+};
+
 class RhFangcun : public OneCardViewAsSkill
 {
 public:
@@ -139,11 +191,11 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou001->addSkill(new RhDuanlong);
     reihou001->addSkill(new FakeMoveSkill("rhduanlong"));
     related_skills.insertMulti("rhduanlong", "#rhduanlong-fake-move");
-    //reihou001->addSkill(new RhPohuang);
+    reihou001->addSkill(new RhPohuang);
 
-    General *reihou005 = new General(this, "reihou005", "rei", 4, true, true);
+    /*General *reihou005 = new General(this, "reihou005", "rei", 4, true, true);
     reihou005->addSkill(new RhFangcun);
-    reihou005->addSkill(new RhHuifu);
+    reihou005->addSkill(new RhHuifu);*/
 
     addMetaObject<RhDuanlongCard>();
 }
