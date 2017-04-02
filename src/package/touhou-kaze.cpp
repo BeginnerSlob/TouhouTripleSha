@@ -311,13 +311,15 @@ void ThNiankeCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     ServerPlayer *target = targets.first();
     CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "thnianke", QString());
     room->obtainCard(target, this, reason);
-    int card_id = room->askForCardChosen(source, target, "h", "thnianke");
-    room->showCard(target, card_id);
-    if (Sanguosha->getCard(card_id)->isRed()) {
-        QList<ServerPlayer *> players;
-        players << source << target;
-        room->sortByActionOrder(players);
-        room->drawCards(players, 1, "thnianke");
+    if (!target->isKongcheng()) {
+        int card_id = room->askForCardChosen(source, target, "h", "thnianke");
+        room->showCard(target, card_id);
+        if (Sanguosha->getCard(card_id)->isRed()) {
+            QList<ServerPlayer *> players;
+            players << source << target;
+            room->sortByActionOrder(players);
+            room->drawCards(players, 1, "thnianke");
+        }
     }
 }
 
