@@ -523,7 +523,7 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         QMap<QString, QStringList> name_map;
         name_map["basic"] = QStringList();
@@ -570,9 +570,56 @@ public:
             break;
         }
 
+        LogMessage log;
+        log.type = "#RhHuanjing";
+        log.from = player;
+        log.arg = obj_n;
+        room->sendLog(log);
         room->setPlayerProperty(player, "rhhuanjing", obj_n);
 
         return false;
+    }
+};
+
+class RhLvcao : public ProhibitSkill
+{
+public:
+    RhLvcao() : ProhibitSkill("rhlvcao")
+    {
+    }
+
+    virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &) const
+    {
+        return from->getPhase() != Player::NotActive && to->hasSkill(objectName())
+                && card->isKindOf("TrickCard") && card->isBlack();
+    }
+};
+
+class RhLvcaoTargetMod : public TargetModSkill
+{
+public:
+    RhLvcaoTargetMod() : TargetModSkill("#rhlvcao")
+    {
+        pattern = "TrickCard";
+    }
+
+    virtual int getDistanceLimit(const Player *from, const Card *) const
+    {
+        bool find_skill = false;
+        if (from->hasSkill("rhlvcao"))
+            find_skill = true;
+        else {
+            QList<const Player *> players = from->getAliveSiblings();
+            foreach (const Player *p, players) {
+                if (p->hasSkill("rhlvcao")) {
+                    find_skill = true;
+                    break;
+                }
+            }
+        }
+        if (find_skill && from->getPhase() != Player::NotActive)
+            return 1000;
+        return 0;
     }
 };
 
@@ -621,6 +668,11 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou003 = new General(this, "reihou003", "rei", 4, true, true);
     reihou003->addSkill(new RhHuanjing);
+
+    General *reihou004 = new General(this, "reihou004", "rei", 4, true, true);
+    reihou004->addSkill(new RhLvcao);
+    reihou004->addSkill(new RhLvcaoTargetMod);
+    related_skills.insertMulti("rhlvcao", "#rhlvcao");
 
     /*General *reihou005 = new General(this, "reihou005", "rei", 4, true, true);
     reihou005->addSkill(new RhFangcun);
