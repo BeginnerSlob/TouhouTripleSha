@@ -310,7 +310,8 @@ public:
     {
     }
 
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const {
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
+    {
         if (pattern.startsWith(".") || pattern.startsWith("@")) return false;
         if (pattern == "peach" && player->getMark("Global_PreventPeach") > 0) return false;
         for (int i = 0; i < pattern.length(); i++) {
@@ -320,7 +321,8 @@ public:
         return true;
     }
 
-    virtual const Card *viewAs() const {
+    virtual const Card *viewAs() const
+    {
         if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE
             || Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
             RhRuyiCard *card = new RhRuyiCard;
@@ -337,12 +339,240 @@ public:
             return NULL;
     }
 
-    virtual QDialog *getDialog() const {
+    virtual QDialog *getDialog() const
+    {
         return ThMimengDialog::getInstance("rhruyi");
     }
 
-    virtual bool isEnabledAtNullification(const ServerPlayer *) const {
+    virtual bool isEnabledAtNullification(const ServerPlayer *) const
+    {
         return true;
+    }
+};
+
+RhHuanjingCard::RhHuanjingCard()
+{
+    mute = true;
+}
+
+bool RhHuanjingCard::targetFixed() const
+{
+    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = Sanguosha->cloneCard(Self->property("rhhuanjing").toString());
+        card->setSkillName("rhhuanjing");
+        card->addSubcard(this);
+        card->deleteLater();
+        return card && card->targetFixed();
+    } else if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+        return true;
+    }
+
+    Card *new_card = Sanguosha->cloneCard(Self->property("rhhuanjing").toString());
+    new_card->setSkillName("rhhuanjing");
+    new_card->addSubcard(this);
+    new_card->setCanRecast(false);
+    new_card->deleteLater();
+    return new_card && new_card->targetFixed();
+}
+
+bool RhHuanjingCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = Sanguosha->cloneCard(Self->property("rhhuanjing").toString());
+        card->setSkillName("rhhuanjing");
+        card->addSubcard(this);
+        card->deleteLater();
+        return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
+    } else if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+        return false;
+    }
+
+    Card *new_card = Sanguosha->cloneCard(Self->property("rhhuanjing").toString());
+    new_card->setSkillName("rhhuanjing");
+    new_card->addSubcard(this);
+    new_card->setCanRecast(false);
+    new_card->deleteLater();
+    return new_card && new_card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, new_card, targets);
+}
+
+bool RhHuanjingCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
+{
+    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = Sanguosha->cloneCard(Self->property("rhhuanjing").toString());
+        card->setSkillName("rhhuanjing");
+        card->addSubcard(this);
+        card->deleteLater();
+        return card && card->targetsFeasible(targets, Self);
+    } else if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+        return true;
+    }
+
+    Card *new_card = Sanguosha->cloneCard(Self->property("rhhuanjing").toString());
+    new_card->setSkillName("rhhuanjing");
+    new_card->addSubcard(this);
+    new_card->setCanRecast(false);
+    new_card->deleteLater();
+    return new_card && new_card->targetsFeasible(targets, Self);
+}
+
+const Card *RhHuanjingCard::validate(CardUseStruct &card_use) const
+{
+    ServerPlayer *user = card_use.from;
+    Room *room = user->getRoom();
+
+    CardMoveReason reason(CardMoveReason::S_REASON_THROW, user->objectName(), "rhhuanjing", QString());
+    room->throwCard(this, reason, user);
+
+    room->addPlayerMark(user, "rhhuanjing");
+
+    Card *use_card = Sanguosha->cloneCard(user->property("rhhuanjing").toString());
+    use_card->setSkillName("rhhuanjing");
+    use_card->deleteLater();
+    return use_card;
+}
+
+const Card *RhHuanjingCard::validateInResponse(ServerPlayer *user) const
+{
+    Room *room = user->getRoom();
+
+    CardMoveReason reason(CardMoveReason::S_REASON_THROW, user->objectName(), "rhhuanjing", QString());
+    room->throwCard(this, reason, user);
+
+    room->addPlayerMark(user, "rhhuanjing");
+
+    Card *use_card = Sanguosha->cloneCard(user->property("rhhuanjing").toString());
+    use_card->setSkillName("rhhuanjing");
+    use_card->deleteLater();
+    return use_card;
+}
+
+class RhHuanjingVS : public OneCardViewAsSkill
+{
+public:
+    RhHuanjingVS() : OneCardViewAsSkill("rhhuanjing")
+    {
+        filter_pattern = ".|spade!";
+    }
+
+    virtual Card *viewAs(const Card *originalCard) const
+    {
+        Card *card = new RhHuanjingCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        if (player->getMark("rhhuanjing") > 0)
+            return false;
+        if (!player->canDiscard(player, "he"))
+            return false;
+        QString obj = player->property("rhhuanjing").toString();
+        if (obj.isEmpty())
+            return false;
+        const Card *card = Sanguosha->cloneCard(obj);
+        return card->isAvailable(player);
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
+    {
+        if (player->getMark("rhhuanjing") > 0)
+            return false;
+        if (!player->canDiscard(player, "he"))
+            return false;
+        QString obj = player->property("rhhuanjing").toString();
+        if (obj.isEmpty())
+            return false;
+        return pattern.contains(obj);
+    }
+
+    virtual bool isEnabledAtNullification(const ServerPlayer *player) const
+    {
+        if (player->getMark("rhhuanjing") > 0)
+            return false;
+        if (!player->canDiscard(player, "he"))
+            return false;
+        QString obj = player->property("rhhuanjing").toString();
+        return obj == "nullification";
+    }
+};
+
+class RhHuanjing : public TriggerSkill
+{
+public:
+    RhHuanjing() : TriggerSkill("rhhuanjing")
+    {
+        events << EventAcquireSkill << EventLoseSkill << EventPhaseChanging;
+        view_as_skill = new RhHuanjingVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    room->setPlayerMark(p, objectName(), 0);
+            }
+        } else if (data.toString() == objectName()) {
+            if (triggerEvent == EventLoseSkill)
+                room->setPlayerProperty(player, "rhhuanjing", QVariant());
+            else
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        QMap<QString, QStringList> name_map;
+        name_map["basic"] = QStringList();
+        name_map["single_target_trick"] = QStringList();
+        name_map["other_trick"] = QStringList();
+
+        QList<const Card *> cards = Sanguosha->findChildren<const Card *>();
+        foreach (const Card *card, cards) {
+            QString obj_name = card->objectName();
+            if (obj_name.endsWith("slash"))
+                obj_name = "slash";
+            if (card->getType() == "basic") {
+                if (!name_map["basic"].contains(obj_name))
+                    name_map["basic"] << obj_name;
+            } else if (card->isKindOf("SingleTargetTrick")) {
+                if (!name_map["single_target_trick"].contains(obj_name))
+                    name_map["single_target_trick"] << obj_name;
+            } else if (card->isNDTrick()) {
+                if (!name_map["other_trick"].contains(obj_name))
+                    name_map["other_trick"] << obj_name;
+            }
+        }
+        if (name_map["basic"].isEmpty())
+            name_map.remove("basic");
+        else
+            name_map["basic"] << "cancel";
+        if (name_map["single_target_trick"].isEmpty())
+            name_map.remove("single_target_trick");
+        else
+            name_map["single_target_trick"] << "cancel";
+        if (name_map["other_trick"].isEmpty())
+            name_map.remove("other_trick");
+        else
+            name_map["other_trick"] << "cancel";
+
+        room->sendCompulsoryTriggerLog(player, objectName());
+
+        QString obj_n = "cancel";
+        while (true) {
+            QString type = room->askForChoice(player, objectName(), name_map.keys().join("+"));
+            obj_n = room->askForChoice(player, objectName(), name_map[type].join("+"));
+            if (obj_n == "cancel")
+                continue;
+            break;
+        }
+
+        room->setPlayerProperty(player, "rhhuanjing", obj_n);
+
+        return false;
     }
 };
 
@@ -389,12 +619,16 @@ TenshiReihouPackage::TenshiReihouPackage()
     General *reihou002 = new General(this, "reihou002", "rei", 4, true, true);
     reihou002->addSkill(new RhRuyi);
 
+    General *reihou003 = new General(this, "reihou003", "rei", 4, true, true);
+    reihou003->addSkill(new RhHuanjing);
+
     /*General *reihou005 = new General(this, "reihou005", "rei", 4, true, true);
     reihou005->addSkill(new RhFangcun);
     reihou005->addSkill(new RhHuifu);*/
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
+    addMetaObject<RhHuanjingCard>();
 }
 
 ADD_PACKAGE(TenshiReihou)
