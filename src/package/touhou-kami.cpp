@@ -203,6 +203,8 @@ public:
                 skills << "-" + skill->objectName();
             player->tag.remove("Reihou");
         }
+        room->handleAcquireDetachSkills(player, skills, true);
+        skills.clear();
         const Package *reihoupack = Sanguosha->getPackage("tenshi-reihou");
         if (reihoupack) {
             QList<const General *> reihous = reihoupack->findChildren<const General *>();
@@ -219,8 +221,6 @@ public:
             player->tag["Reihou"] = reihou->objectName();
             foreach (const Skill *skill, reihou->getVisibleSkillList())
                 skills << skill->objectName();
-            if (reihou->objectName() == old)
-                return false;
         }
         room->handleAcquireDetachSkills(player, skills, true);
         return false;
