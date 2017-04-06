@@ -2151,9 +2151,11 @@ public:
     }
 };
 
-class ThDongxiClear: public TriggerSkill {
+class ThDongxiClear: public TriggerSkill
+{
 public:
-    ThDongxiClear(): TriggerSkill("#thdongxi-clear") {
+    ThDongxiClear(): TriggerSkill("#thdongxi-clear")
+    {
         events << EventPhaseStart;
         frequency = Compulsory;
     }
@@ -2182,7 +2184,8 @@ public:
     }
 };
 
-ThSangzhiCard::ThSangzhiCard() {
+ThSangzhiCard::ThSangzhiCard()
+{
 }
 
 void ThSangzhiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const {

@@ -1203,7 +1203,7 @@ void ThLiaoganCard::onEffect(const CardEffectStruct &effect) const
     if (!effect.to->hasSkill("ikjingnie"))
         list << "ikjingnie";
     if (!list.isEmpty())
-        effect.to->getRoom()->handleAcquireDetachSkills(effect.to, list);
+        effect.to->getRoom()->handleAcquireDetachSkills(effect.to, list, true, true);
 }
 
 class ThLiaoganVS : public ZeroCardViewAsSkill
@@ -1245,7 +1245,7 @@ public:
             foreach (ServerPlayer *p, players) {
                 if (player->getMark("thliaogan_" + p->objectName())) {
                     player->setMark("thliaogan_" + p->objectName(), 0);
-                    room->handleAcquireDetachSkills(p, "-thxiagong|-ikjingnie", true);
+                    room->handleAcquireDetachSkills(p, "-thxiagong|-ikjingnie", true, true);
                 }
             }
         }

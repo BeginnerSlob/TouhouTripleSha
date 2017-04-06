@@ -365,7 +365,7 @@ public:
                 QStringList detachList;
                 foreach (QString skill_name, xiewang_skills)
                     detachList.append("-" + skill_name);
-                room->handleAcquireDetachSkills(player, detachList);
+                room->handleAcquireDetachSkills(player, detachList, true, true);
                 player->tag["IkXiewangSkills"] = QVariant();
             }
             return QStringList();
@@ -381,7 +381,7 @@ public:
         IkXiewangChange(room, player, 2, "thkuangqi");
         IkXiewangChange(room, player, 3, "iktiaoxin");
         if (!acquired_skills.isEmpty() || !detached_skills.isEmpty())
-            room->handleAcquireDetachSkills(player, acquired_skills + detached_skills);
+            room->handleAcquireDetachSkills(player, acquired_skills + detached_skills, true, true);
         return QStringList();
     }
 
@@ -1609,12 +1609,12 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
         if (triggerEvent == EventLoseSkill && data.toString() == "iklinglong") {
-            room->handleAcquireDetachSkills(player, "-thjizhi", true);
+            room->handleAcquireDetachSkills(player, "-thjizhi", true, true);
             player->setMark("iklinglong_thjizhi", 0);
         } else if ((triggerEvent == EventAcquireSkill && data.toString() == "iklinglong") || (triggerEvent == GameStart && TriggerSkill::triggerable(player))) {
             if (player->getTreasure() == NULL) {
                 room->notifySkillInvoked(player, objectName());
-                room->handleAcquireDetachSkills(player, "thjizhi");
+                room->handleAcquireDetachSkills(player, "thjizhi", true, true);
                 player->setMark("iklinglong_thjizhi", 1);
             }
         } else if (triggerEvent == CardsMoveOneTime && player->isAlive() && player->hasSkill("iklinglong", true)) {
@@ -1622,12 +1622,12 @@ public:
             if (move.from == player && move.from_places.contains(Player::PlaceEquip)) {
                 if (!player->getTreasure() && player->getMark("iklinglong_thjizhi") == 0) {
                     room->notifySkillInvoked(player, "iklinglong");
-                    room->handleAcquireDetachSkills(player, "thjizhi");
+                    room->handleAcquireDetachSkills(player, "thjizhi", true, true);
                     player->setMark("iklinglong_thjizhi", 1);
                 }
             } else if (move.to == player && move.to_place == Player::PlaceEquip) {
                 if (player->getTreasure() && player->getMark("iklinglong_thjizhi") == 1) {
-                    room->handleAcquireDetachSkills(player, "-thjizhi", true);
+                    room->handleAcquireDetachSkills(player, "-thjizhi", true, true);
                     player->setMark("iklinglong_thjizhi", 0);
                 }
             }
@@ -3431,19 +3431,19 @@ public:
         } else if (triggerEvent == EventAcquireSkill && data.toString() == objectName()) {
             if (!player->getPile("ikqiwupile").isEmpty()) {
                 room->notifySkillInvoked(player, objectName());
-                room->handleAcquireDetachSkills(player, "ikzhihui|ikxuanhuo");
+                room->handleAcquireDetachSkills(player, "ikzhihui|ikxuanhuo", true, true);
             }
         } else if (triggerEvent == CardsMoveOneTime && player->isAlive() && player->hasSkill(objectName(), true)) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.to == player && move.to_place == Player::PlaceSpecial && move.to_pile_name == "ikqiwupile") {
                 if (player->getPile("ikqiwupile").length() == 1) {
                     room->notifySkillInvoked(player, objectName());
-                    room->handleAcquireDetachSkills(player, "ikzhihui|ikxuanhuo");
+                    room->handleAcquireDetachSkills(player, "ikzhihui|ikxuanhuo", true, true);
                 }
             } else if (move.from == player && move.from_places.contains(Player::PlaceSpecial)
                        && move.from_pile_names.contains("ikqiwupile")) {
                 if (player->getPile("ikqiwupile").isEmpty())
-                    room->handleAcquireDetachSkills(player, "-ikzhihui|-ikxuanhuo", true);
+                    room->handleAcquireDetachSkills(player, "-ikzhihui|-ikxuanhuo", true, true);
             }
         }
         return QStringList();

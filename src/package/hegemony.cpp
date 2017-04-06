@@ -87,7 +87,7 @@ void QingchengCard::onUse(Room *room, const CardUseStruct &use) const{
     room->sendLog(log);
 
     QStringList skill_list;
-    foreach (const Skill *skill, to->getVisibleSkillList()) {
+    foreach (const Skill *skill, to->getVisibleSkillList(false, true)) {
         if (!skill_list.contains(skill->objectName()) && !skill->isAttachedLordSkill()) {
             skill_list << skill->objectName();
         }

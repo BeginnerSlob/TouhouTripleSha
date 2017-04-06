@@ -2173,7 +2173,7 @@ void RoomScene::updateSkillButtons(bool isPrepare) {
         if (Self->getGeneral2())
             skill_list << Self->getGeneral2()->getVisibleSkillList();
     } else {
-        skill_list = Self->getVisibleSkillList();
+        skill_list = Self->getVisibleSkillList(false, true);
     }
     foreach (const Skill *skill, skill_list) {
         if (skill->objectName().endsWith("-edit")) {

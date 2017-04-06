@@ -506,7 +506,7 @@ bool ServerPlayer::hasNullification() const{
                     return true;
     }
 
-    foreach (const Skill *skill, getVisibleSkillList(true)) {
+    foreach (const Skill *skill, getVisibleSkillList(true, true)) {
         if (!hasSkill(skill->objectName())) continue;
         if (skill->inherits("ViewAsSkill")) {
             const ViewAsSkill *vsskill = qobject_cast<const ViewAsSkill *>(skill);
@@ -1075,7 +1075,7 @@ void ServerPlayer::marshal(ServerPlayer *player) const{
         //}
     }
 
-    foreach(const Skill *skill, getVisibleSkillList(true)) {
+    foreach(const Skill *skill, getVisibleSkillList(true, true)) {
         QString skill_name = skill->objectName();
         JsonArray args1;
         args1 << S_GAME_EVENT_ACQUIRE_SKILL;
