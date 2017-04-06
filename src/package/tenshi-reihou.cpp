@@ -816,30 +816,69 @@ public:
     }
 };
 
-/*class RhXuesha : public TriggerSkill
+class RhXuesha : public TriggerSkill
 {
 public:
     RhXuesha() : TriggerSkill("rhxuesha")
     {
-        events << DamageInflicted << TargetSpecified << EventPhaseChanging;
+        events << DamageInflicted << TargetSpecified;
         frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == DamageInflicted) {
-
-        } else if (triggerEvent == TargetSpecified) {
-            if (player && player->isAlive() && player->getMark("iklingshili") > 0) {
-                CardUseStruct use = data.value<CardUseStruct>();
-                if (!use.card->isKindOf("Slash") || !use.card->isRed())
-                    return QStringList();
+            if (TriggerSkill::triggerable(player) && player->getMark("ikguijing") > 1 && player->isWounded())
                 return QStringList(objectName());
-            }
+        } else if (triggerEvent == TargetSpecified) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (!use.card->isKindOf("Slash") || !use.card->isRed())
+                return QStringList();
+            return QStringList(objectName());
         }
         return QStringList();
     }
 
-};*/
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (triggerEvent == DamageInflicted) {
+            room->sendCompulsoryTriggerLog(player, objectName());
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        } else {
+            room->sendCompulsoryTriggerLog(player, objectName());
+
+            CardUseStruct use = data.value<CardUseStruct>();
+            QVariantList jink_list = player->tag["Jink_" + use.card->toString()].toList();
+            int index = 0;
+            foreach (ServerPlayer *p, use.to) {
+                LogMessage log;
+                log.type = "#NoJink";
+                log.from = p;
+                room->sendLog(log);
+                jink_list.replace(index, QVariant(0));
+                index++;
+            }
+            player->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
+            return false;
+        }
+    }
+};
+
+class RhXueshaTargetMod : public TargetModSkill
+{
+public:
+    RhXueshaTargetMod() : TargetModSkill("#rhxuesha")
+    {
+        pattern = "Slash|black";
+    }
+
+    virtual int getDistanceLimit(const Player *from, const Card *) const
+    {
+        if (from->hasSkill("rhxuesha"))
+            return 1000;
+        return 0;
+    }
+};
 
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
@@ -870,7 +909,9 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou006->addSkill(new RhPujiu);
 
     General *reihou007 = new General(this, "reihou007", "rei", 4, true, true);
-    //reihou007->addSkill(new RhXuesha);
+    reihou007->addSkill(new RhXuesha);
+    reihou007->addSkill(new RhXueshaTargetMod);
+    related_skills.insertMulti("rhxuesha", "#rhxuesha");
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
