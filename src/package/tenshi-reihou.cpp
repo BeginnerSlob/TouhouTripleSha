@@ -693,6 +693,114 @@ public:
     }
 };
 
+RhPujiuCard::RhPujiuCard()
+{
+    handling_method = MethodUse;
+    mute = true;
+}
+
+bool RhPujiuCard::targetFixed() const
+{
+    Card *peach = Sanguosha->cloneCard("peach");
+    peach->setSkillName("rhpujiu");
+    peach->addSubcard(this);
+    peach->deleteLater();
+    return peach && peach->targetFixed();
+}
+
+bool RhPujiuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    Card *peach = Sanguosha->cloneCard("peach");
+    peach->setSkillName("rhpujiu");
+    peach->addSubcard(this);
+    peach->deleteLater();
+    return peach && peach->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, peach, targets);
+}
+
+bool RhPujiuCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
+{
+    Card *peach = Sanguosha->cloneCard("peach");
+    peach->setSkillName("rhpujiu");
+    peach->addSubcard(this);
+    peach->deleteLater();
+    return peach && peach->targetsFeasible(targets, Self);
+}
+
+const Card *RhPujiuCard::validate(CardUseStruct &) const
+{
+    Card *peach = Sanguosha->cloneCard("peach");
+    peach->setSkillName("rhpujiu");
+    peach->addSubcard(this);
+    return peach;
+}
+
+const Card *RhPujiuCard::validateInResponse(ServerPlayer *) const
+{
+    Card *peach = Sanguosha->cloneCard("peach");
+    peach->setSkillName("rhpujiu");
+    peach->addSubcard(this);
+    return peach;
+}
+
+class RhPujiuVS : public OneCardViewAsSkill
+{
+public:
+    RhPujiuVS() : OneCardViewAsSkill("rhpujiu")
+    {
+        filter_pattern = ".|.|.|hand";
+        response_or_use = true;
+    }
+
+    virtual Card *viewAs(const Card *originalCard) const
+    {
+        Card *card = new RhPujiuCard();
+        card->addSubcard(originalCard);
+        return card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        Card *peach = new Peach(Card::NoSuit, 0);
+        peach->setSkillName(objectName());
+        return peach->isAvailable(player);
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
+    {
+        return pattern.contains("peach") && player->getMark("Global_PreventPeach") == 0;
+    }
+};
+
+class RhPujiu : public TriggerSkill
+{
+public:
+    RhPujiu() : TriggerSkill("rhpujiu")
+    {
+        events << CardUsed;
+        frequency = NotCompulsory;
+        view_as_skill = new RhPujiuVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&ask_who) const
+    {
+        if (TriggerSkill::triggerable(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Peach") && use.card->getSkillName() == objectName()
+                    && player->usedTimes("RhPujiuCard") == player->getHp())
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->removeReihouCard(player);
+        player->throwAllHandCards();
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -718,9 +826,13 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou005->addSkill(new RhLiufuGet);
     related_skills.insertMulti("rhliufu", "#rhliufu");
 
+    General *reihou006 = new General(this, "reihou006", "rei", 4, true, true);
+    reihou006->addSkill(new RhPujiu);
+
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
     addMetaObject<RhHuanjingCard>();
+    addMetaObject<RhPujiuCard>();
 }
 
 ADD_PACKAGE(TenshiReihou)
