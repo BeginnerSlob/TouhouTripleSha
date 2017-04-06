@@ -1463,7 +1463,7 @@ void Client::askForSinglePeach(const QVariant &arg)
     }
     if (Self->getMark("Global_PreventPeach") > 0) {
         bool has_skill = false;
-        foreach (const Skill *skill, Self->getVisibleSkillList(true)) {
+        foreach (const Skill *skill, Self->getVisibleSkillList(true, true)) {
             const ViewAsSkill *view_as_skill = ViewAsSkill::parseViewAsSkill(skill);
             if (view_as_skill && view_as_skill->isAvailable(Self, CardUseStruct::CARD_USE_REASON_RESPONSE_USE, pattern.join("+"))) {
                 has_skill = true;

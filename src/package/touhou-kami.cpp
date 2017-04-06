@@ -180,6 +180,7 @@ public:
     ThTianbao() : TriggerSkill("thtianbao") {
         events << EventPhaseStart;
         frequency = Compulsory;
+        owner_only_skill = true;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const
@@ -196,15 +197,9 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
+        room->removeReihouCard(player);
+
         QStringList skills;
-        QString old = player->tag["Reihou"].toString();
-        if (Sanguosha->getGeneral(old)) {
-            foreach (const Skill *skill, Sanguosha->getGeneral(old)->getVisibleSkillList())
-                skills << "-" + skill->objectName();
-            player->tag.remove("Reihou");
-        }
-        room->handleAcquireDetachSkills(player, skills, true);
-        skills.clear();
         const Package *reihoupack = Sanguosha->getPackage("tenshi-reihou");
         if (reihoupack) {
             QList<const General *> reihous = reihoupack->findChildren<const General *>();
@@ -222,7 +217,7 @@ public:
             foreach (const Skill *skill, reihou->getVisibleSkillList())
                 skills << skill->objectName();
         }
-        room->handleAcquireDetachSkills(player, skills, true);
+        room->handleAcquireDetachSkills(player, skills, true, true);
         return false;
     }
 };

@@ -131,8 +131,8 @@ public:
 
     bool isLord() const;
 
-    void acquireSkill(const QString &skill_name);
-    void detachSkill(const QString &skill_name);
+    void acquireSkill(const QString &skill_name, const bool &is_extra = false);
+    void detachSkill(const QString &skill_name, const bool &is_extra = false);
     void detachAllSkills();
     virtual void addSkill(const QString &skill_name);
     virtual void loseSkill(const QString &skill_name);
@@ -209,12 +209,13 @@ public:
     int getSlashCount() const;
 
     bool hasEquipSkill(const QString &skill_name) const;
-    QSet<const TriggerSkill *> getTriggerSkills() const;
-    QSet<const Skill *> getSkills(bool include_equip = false, bool visible_only = true) const;
-    QList<const Skill *> getSkillList(bool include_equip = false, bool visible_only = true) const;
-    QSet<const Skill *> getVisibleSkills(bool include_equip = false) const;
-    QList<const Skill *> getVisibleSkillList(bool include_equip = false) const;
+    QSet<const TriggerSkill *> getTriggerSkills(bool include_extra = true) const;
+    QSet<const Skill *> getSkills(bool include_equip = false, bool visible_only = true, bool include_extra = false) const;
+    QList<const Skill *> getSkillList(bool include_equip = false, bool visible_only = true, bool include_extra = false) const;
+    QSet<const Skill *> getVisibleSkills(bool include_equip = false, bool include_extra = false) const;
+    QList<const Skill *> getVisibleSkillList(bool include_equip = false, bool include_extra = false) const;
     QStringList getAcquiredSkills() const;
+    QStringList getExtraSkills() const;
     QString getSkillDescription() const;
 
     virtual bool isProhibited(const Player *to, const Card *card, const QList<const Player *> &others = QList<const Player *>()) const;
@@ -257,6 +258,7 @@ protected:
     QMap<QString, QList<int> > piles;
     QMap<QString, QStringList> pile_open;
     QStringList acquired_skills;
+    QStringList extra_skills;
     QStringList skills;
     QHash<QString, int> history;
     QSet<QString> flags;

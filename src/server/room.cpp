@@ -551,10 +551,16 @@ void Room::attachSkillToPlayer(ServerPlayer *player, const QString &skill_name) 
     doNotify(player, S_COMMAND_ATTACH_SKILL, QVariant(skill_name));
 }
 
-void Room::detachSkillFromPlayer(ServerPlayer *player, const QString &skill_name, bool is_equip, bool acquire_only) {
+void Room::detachSkillFromPlayer(ServerPlayer *player, const QString &skill_name,
+                                 bool is_equip, bool acquire_only, bool extra_only) {
     if (!player->hasSkill(skill_name, true)) return;
 
-    if (player->getAcquiredSkills().contains(skill_name))
+    if (extra_only) {
+        if (player->getExtraSkills().contains(skill_name))
+            player->detachSkill(skill_name, true);
+        else
+            return;
+    } else if (player->getAcquiredSkills().contains(skill_name))
         player->detachSkill(skill_name);
     else if (!acquire_only)
         player->loseSkill(skill_name);
@@ -587,7 +593,9 @@ void Room::detachSkillFromPlayer(ServerPlayer *player, const QString &skill_name
     }
 }
 
-void Room::handleAcquireDetachSkills(ServerPlayer *player, const QStringList &skill_names, bool acquire_only) {
+void Room::handleAcquireDetachSkills(ServerPlayer *player, const QStringList &skill_names,
+                                     bool acquire_only, bool extra_only)
+{
     if (skill_names.isEmpty()) return;
     QList<bool> isLost;
     QStringList triggerList;
@@ -595,7 +603,12 @@ void Room::handleAcquireDetachSkills(ServerPlayer *player, const QStringList &sk
         if (skill_name.startsWith("-")) {
             QString actual_skill = skill_name.mid(1);
             if (!player->hasSkill(actual_skill, true)) continue;
-            if (player->getAcquiredSkills().contains(actual_skill))
+            if (extra_only) {
+                if (player->getExtraSkills().contains(actual_skill))
+                    player->detachSkill(actual_skill, true);
+                else
+                    continue;
+            } else if (player->getAcquiredSkills().contains(actual_skill))
                 player->detachSkill(actual_skill);
             else if (!acquire_only)
                 player->loseSkill(actual_skill);
@@ -627,8 +640,14 @@ void Room::handleAcquireDetachSkills(ServerPlayer *player, const QStringList &sk
             const Skill *skill = Sanguosha->getSkill(skill_name);
             if (!skill) continue;
             bool acquired = false;
-            if (player->getAcquiredSkills().contains(skill_name)) acquired = true;
-            player->acquireSkill(skill_name);
+            if (extra_only) {
+                if (player->getExtraSkills().contains(skill_name))
+                    acquired = true;
+            } else {
+                if (player->getAcquiredSkills().contains(skill_name))
+                    acquired = true;
+            }
+            player->acquireSkill(skill_name, extra_only);
             if (acquired) continue;
 
             if (skill->inherits("TriggerSkill")) {
@@ -663,8 +682,9 @@ void Room::handleAcquireDetachSkills(ServerPlayer *player, const QStringList &sk
     }
 }
 
-void Room::handleAcquireDetachSkills(ServerPlayer *player, const QString &skill_names, bool acquire_only) {
-    handleAcquireDetachSkills(player, skill_names.split("|"), acquire_only);
+void Room::handleAcquireDetachSkills(ServerPlayer *player, const QString &skill_names,
+                                     bool acquire_only, bool extra_only) {
+    handleAcquireDetachSkills(player, skill_names.split("|"), acquire_only, extra_only);
 }
 
 bool Room::doRequest(ServerPlayer *player, QSanProtocol::CommandType command, const QVariant &arg, bool wait) {
@@ -834,7 +854,8 @@ void Room::removeReihouCard(ServerPlayer *player)
         foreach (const Skill *skill, Sanguosha->getGeneral(old)->getVisibleSkillList())
             skills << "-" + skill->objectName();
         player->tag.remove("Reihou");
-    }
+    } else
+        return;
     JsonArray args;
     args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
     args << player->objectName();
@@ -842,7 +863,7 @@ void Room::removeReihouCard(ServerPlayer *player)
     args << QString();
     args << true;
     doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
-    handleAcquireDetachSkills(player, skills, true);
+    handleAcquireDetachSkills(player, skills, true, true);
 }
 
 void Room::broadcastInvoke(const char *method, const QString &arg, ServerPlayer *except) {
@@ -4159,7 +4180,7 @@ void Room::filterCards(ServerPlayer *player, QList<const Card *> cards, bool ref
     for (int i = 0; i < cards.size(); i++)
         cardChanged.append(false);
 
-    QSet<const Skill *> skills = player->getSkills(false, false);
+    QSet<const Skill *> skills = player->getSkills(false, false, true);
     QList<const FilterSkill *> filterSkills;
 
     foreach (const Skill *skill, skills) {
@@ -4220,11 +4241,17 @@ void Room::filterCards(ServerPlayer *player, QList<const Card *> cards, bool ref
     }
 }
 
-void Room::acquireSkill(ServerPlayer *player, const Skill *skill, bool open) {
+void Room::acquireSkill(ServerPlayer *player, const Skill *skill, bool open, bool extra) {
     QString skill_name = skill->objectName();
     bool acquired = false;
-    if (player->getAcquiredSkills().contains(skill_name)) acquired = true;
-    player->acquireSkill(skill_name);
+    if (extra) {
+        if (player->getExtraSkills().contains(skill_name))
+            acquired = true;
+    } else {
+        if (player->getAcquiredSkills().contains(skill_name))
+            acquired = true;
+    }
+    player->acquireSkill(skill_name, extra);
     if (acquired) return;
 
     if (skill->inherits("TriggerSkill")) {

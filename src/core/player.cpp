@@ -376,7 +376,8 @@ bool Player::hasSkill(const QString &skill_name, bool include_lose) const{
         }
     }
     return skills.contains(skill_name)
-           || acquired_skills.contains(skill_name);
+            || acquired_skills.contains(skill_name)
+            || extra_skills.contains(skill_name);
 }
 
 bool Player::hasSkills(const QString &skill_name, bool include_lose) const{
@@ -417,7 +418,7 @@ bool Player::hasLordSkill(const QString &skill_name, bool include_lose) const{
     if (!hasSkill(skill_name, include_lose))
         return false;
 
-    if (acquired_skills.contains(skill_name))
+    if (acquired_skills.contains(skill_name) || extra_skills.contains(skill_name))
         return true;
 
     QString mode = getGameMode();
@@ -441,16 +442,25 @@ bool Player::hasOwnerOnlySkill(bool include_lose) const{
     return false;
 }
 
-void Player::acquireSkill(const QString &skill_name) {
-    acquired_skills.append(skill_name);
+void Player::acquireSkill(const QString &skill_name, const bool &is_extra)
+{
+    if (!is_extra)
+        acquired_skills.append(skill_name);
+    else
+        extra_skills.append(skill_name);
 }
 
-void Player::detachSkill(const QString &skill_name) {
-    acquired_skills.removeOne(skill_name);
+void Player::detachSkill(const QString &skill_name, const bool &is_extra)
+{
+    if (!is_extra)
+        acquired_skills.removeOne(skill_name);
+    else
+        extra_skills.removeOne(skill_name);
 }
 
 void Player::detachAllSkills() {
     acquired_skills.clear();
+    extra_skills.clear();
 }
 
 void Player::addSkill(const QString &skill_name) {
@@ -958,9 +968,11 @@ bool Player::hasEquipSkill(const QString &skill_name) const{
     return false;
 }
 
-QSet<const TriggerSkill *> Player::getTriggerSkills() const{
+QSet<const TriggerSkill *> Player::getTriggerSkills(bool include_extra) const{
     QSet<const TriggerSkill *> skillList;
     QStringList skill_list = skills + acquired_skills;
+    if (include_extra)
+        skill_list += extra_skills;
     foreach (QString skill_name, skill_list.toSet()) {
         const TriggerSkill *skill = Sanguosha->getTriggerSkill(skill_name);
         if (skill && !hasEquipSkill(skill->objectName()))
@@ -970,13 +982,17 @@ QSet<const TriggerSkill *> Player::getTriggerSkills() const{
     return skillList;
 }
 
-QSet<const Skill *> Player::getSkills(bool include_equip, bool visible_only) const{
-    return getSkillList(include_equip, visible_only).toSet();
+QSet<const Skill *> Player::getSkills(bool include_equip, bool visible_only, bool include_extra) const
+{
+    return getSkillList(include_equip, visible_only, include_extra).toSet();
 }
 
-QList<const Skill *> Player::getSkillList(bool include_equip, bool visible_only) const{
+QList<const Skill *> Player::getSkillList(bool include_equip, bool visible_only, bool include_extra) const
+{
     QList<const Skill *> skillList;
     QStringList skill_list = skills + acquired_skills;
+    if (include_extra)
+        skill_list += extra_skills;
     foreach (QString skill_name, skill_list) {
         const Skill *skill = Sanguosha->getSkill(skill_name);
         if (skill && !skillList.contains(skill)
@@ -988,21 +1004,27 @@ QList<const Skill *> Player::getSkillList(bool include_equip, bool visible_only)
     return skillList;
 }
 
-QSet<const Skill *> Player::getVisibleSkills(bool include_equip) const{
-    return getVisibleSkillList(include_equip).toSet();
+QSet<const Skill *> Player::getVisibleSkills(bool include_equip, bool include_extra) const{
+    return getVisibleSkillList(include_equip, include_extra).toSet();
 }
 
-QList<const Skill *> Player::getVisibleSkillList(bool include_equip) const{
-    return getSkillList(include_equip, true);
+QList<const Skill *> Player::getVisibleSkillList(bool include_equip, bool include_extra) const{
+    return getSkillList(include_equip, true, include_extra);
 }
 
-QStringList Player::getAcquiredSkills() const{
+QStringList Player::getAcquiredSkills() const
+{
     return acquired_skills;
+}
+
+QStringList Player::getExtraSkills() const
+{
+    return extra_skills;
 }
 
 QString Player::getSkillDescription() const{
     QString description = QString();
-    QList<const Skill *> skill_list = getVisibleSkillList();
+    QList<const Skill *> skill_list = getVisibleSkillList(false, true);
     QList<const Skill *> basara_list;
     if (getGeneralName() == "anjiang" || getGeneral2Name() == "anjiang") {
         QString basara = property("basara_generals").toString();
@@ -1145,6 +1167,7 @@ void Player::copyFrom(Player *p) {
     b->marks            = QMap<QString, int>(a->marks);
     b->piles            = QMap<QString, QList<int> >(a->piles);
     b->acquired_skills  = QStringList(a->acquired_skills);
+    b->extra_skills     = QStringList(a->extra_skills);
     b->flags            = QSet<QString>(a->flags);
     b->history          = QHash<QString, int>(a->history);
     b->m_gender         = a->m_gender;
