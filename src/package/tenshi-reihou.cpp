@@ -264,6 +264,8 @@ public:
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
     {
+        if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
+            return false;
         if (pattern.startsWith(".") || pattern.startsWith("@")) return false;
         if (pattern == "peach" && player->getMark("Global_PreventPeach") > 0) return false;
         for (int i = 0; i < pattern.length(); i++) {
@@ -275,8 +277,9 @@ public:
 
     virtual const Card *viewAs() const
     {
-        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE
-            || Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE)
+            return NULL;
+        if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
             RhRuyiCard *card = new RhRuyiCard;
             card->setUserString(Sanguosha->currentRoomState()->getCurrentCardUsePattern());
             return card;
@@ -428,6 +431,8 @@ public:
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
     {
+        if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
+            return false;
         if (player->getMark("rhhuanjing") > 0)
             return false;
         if (!player->canDiscard(player, "he"))
@@ -634,7 +639,7 @@ public:
             }
             if (!choices.contains("cancel"))
                 choices << "cancel";
-            room->askForChoice(player, objectName(), choices.join("+"), data);
+            choice = room->askForChoice(player, objectName(), choices.join("+"), data);
         }
         return false;
     }
@@ -726,16 +731,23 @@ bool RhPujiuCard::targetsFeasible(const QList<const Player *> &targets, const Pl
     return peach && peach->targetsFeasible(targets, Self);
 }
 
-const Card *RhPujiuCard::validate(CardUseStruct &) const
+const Card *RhPujiuCard::validate(CardUseStruct &use) const
 {
+    ServerPlayer *user = use.from;
+    Room *room = user->getRoom();
+    room->addPlayerMark(user, "rhpujiu");
+
     Card *peach = Sanguosha->cloneCard("peach");
     peach->setSkillName("rhpujiu");
     peach->addSubcard(this);
     return peach;
 }
 
-const Card *RhPujiuCard::validateInResponse(ServerPlayer *) const
+const Card *RhPujiuCard::validateInResponse(ServerPlayer *user) const
 {
+    Room *room = user->getRoom();
+    room->addPlayerMark(user, "rhpujiu");
+
     Card *peach = Sanguosha->cloneCard("peach");
     peach->setSkillName("rhpujiu");
     peach->addSubcard(this);
@@ -776,17 +788,20 @@ class RhPujiu : public TriggerSkill
 public:
     RhPujiu() : TriggerSkill("rhpujiu")
     {
-        events << CardUsed;
+        events << CardUsed << EventLoseSkill;
         frequency = NotCompulsory;
         view_as_skill = new RhPujiuVS;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&ask_who) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
-        if (TriggerSkill::triggerable(player)) {
+        if (triggerEvent == EventLoseSkill) {
+            if (data.toString() == "rhpujiu")
+                room->setPlayerMark(player, "rhpujiu", 0);
+        } else if (TriggerSkill::triggerable(player)) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("Peach") && use.card->getSkillName() == objectName()
-                    && player->usedTimes("RhPujiuCard") == player->getHp())
+                    && player->getMark("rhpujiu") == player->getHp())
                 return QStringList(objectName());
         }
         return QStringList();
@@ -800,6 +815,31 @@ public:
         return false;
     }
 };
+
+/*class RhXuesha : public TriggerSkill
+{
+public:
+    RhXuesha() : TriggerSkill("rhxuesha")
+    {
+        events << DamageInflicted << TargetSpecified << EventPhaseChanging;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (triggerEvent == DamageInflicted) {
+
+        } else if (triggerEvent == TargetSpecified) {
+            if (player && player->isAlive() && player->getMark("iklingshili") > 0) {
+                CardUseStruct use = data.value<CardUseStruct>();
+                if (!use.card->isKindOf("Slash") || !use.card->isRed())
+                    return QStringList();
+                return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+};*/
 
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
@@ -828,6 +868,9 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou006 = new General(this, "reihou006", "rei", 4, true, true);
     reihou006->addSkill(new RhPujiu);
+
+    General *reihou007 = new General(this, "reihou007", "rei", 4, true, true);
+    //reihou007->addSkill(new RhXuesha);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
