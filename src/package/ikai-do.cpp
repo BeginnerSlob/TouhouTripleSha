@@ -2633,6 +2633,7 @@ class IkLingshiliRedSlash: public TriggerSkill {
 public:
     IkLingshiliRedSlash(): TriggerSkill("#iklingshili") {
         events << TargetSpecified;
+        frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
