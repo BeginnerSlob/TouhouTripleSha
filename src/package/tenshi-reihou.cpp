@@ -12,21 +12,7 @@ RhDuanlongCard::RhDuanlongCard()
 
 void RhDuanlongCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
-    QStringList skills;
-    QString old = source->tag["Reihou"].toString();
-    if (Sanguosha->getGeneral(old)) {
-        foreach (const Skill *skill, Sanguosha->getGeneral(old)->getVisibleSkillList())
-            skills << "-" + skill->objectName();
-        source->tag.remove("Reihou");
-    }
-    JsonArray args;
-    args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
-    args << source->objectName();
-    args << source->getGeneralName();
-    args << QString();
-    args << true;
-    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
-    room->handleAcquireDetachSkills(source, skills, true);
+    room->removeReihouCard(source);
 }
 
 class RhDuanlongVS : public ZeroCardViewAsSkill
@@ -120,27 +106,21 @@ public:
         return QStringList();
     }
 
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        room->sendCompulsoryTriggerLog(player, objectName());
         DamageStruct damage = data.value<DamageStruct>();
         const Card *card = room->askForUseSlashTo(player, damage.from, "@rhpohuang:" + damage.from->objectName(), false);
         if (!card) {
-            QStringList skills;
-            QString old = player->tag["Reihou"].toString();
-            if (Sanguosha->getGeneral(old)) {
-                foreach (const Skill *skill, Sanguosha->getGeneral(old)->getVisibleSkillList())
-                    skills << "-" + skill->objectName();
-                player->tag.remove("Reihou");
-            }
-            JsonArray args;
-            args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
-            args << player->objectName();
-            args << player->getGeneralName();
-            args << QString();
-            args << true;
-            room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
-            room->handleAcquireDetachSkills(player, skills, true);
+            room->removeReihouCard(player);
 
             Card *slash = new Slash(Card::NoSuit, 0);
             slash->setSkillName("_rhpohuang");
@@ -227,21 +207,7 @@ const Card *RhRuyiCard::validate(CardUseStruct &card_use) const
     ServerPlayer *rhruyi_general = card_use.from;
     Room *room = rhruyi_general->getRoom();
 
-    QStringList skills;
-    QString old = rhruyi_general->tag["Reihou"].toString();
-    if (Sanguosha->getGeneral(old)) {
-        foreach (const Skill *skill, Sanguosha->getGeneral(old)->getVisibleSkillList())
-            skills << "-" + skill->objectName();
-        rhruyi_general->tag.remove("Reihou");
-    }
-    JsonArray args;
-    args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
-    args << rhruyi_general->objectName();
-    args << rhruyi_general->getGeneralName();
-    args << QString();
-    args << true;
-    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
-    room->handleAcquireDetachSkills(rhruyi_general, skills, true);
+    room->removeReihouCard(rhruyi_general);
 
     QString to_use = user_string;
 
@@ -264,21 +230,7 @@ const Card *RhRuyiCard::validateInResponse(ServerPlayer *user) const
 {
     Room *room = user->getRoom();
 
-    QStringList skills;
-    QString old = user->tag["Reihou"].toString();
-    if (Sanguosha->getGeneral(old)) {
-        foreach (const Skill *skill, Sanguosha->getGeneral(old)->getVisibleSkillList())
-            skills << "-" + skill->objectName();
-        user->tag.remove("Reihou");
-    }
-    JsonArray args;
-    args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
-    args << user->objectName();
-    args << user->getGeneralName();
-    args << QString();
-    args << true;
-    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
-    room->handleAcquireDetachSkills(user, skills, true);
+    room->removeReihouCard(user);
 
     QString to_use;
     if (user_string == "peach+analeptic") {
@@ -623,36 +575,123 @@ public:
     }
 };
 
-/*class RhFangcun : public OneCardViewAsSkill
+class RhLiufu : public TriggerSkill
 {
 public:
-    RhFangcun() : OneCardViewAsSkill("rhfangcun")
+    RhLiufu() : TriggerSkill("rhliufu")
     {
-        filter_pattern = "^TrickCard|black";
-        response_or_use = true;
+        events << TargetConfirmed;
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
-        Dismantlement *dis = new Dismantlement(originalCard->getSuit(), originalCard->getNumber());
-        dis->addSubcard(originalCard);
-        dis->setSkillName(objectName());
-        return dis;
+        if (TriggerSkill::triggerable(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if ((use.card->isKindOf("BasicCard") || use.card->isNDTrick())
+                    && use.to.contains(player))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        room->removeReihouCard(player);
+
+        QString choice;
+        QStringList choices;
+        choices << "null" << "give";
+        choice = room->askForChoice(player, objectName(), choices.join("+"), data);
+        while (choice != "cancel") {
+            choices.removeOne(choice);
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (choice == "null") {
+                LogMessage log;
+                log.type = "#RhLiufu1";
+                log.from = player;
+                log.arg = use.card->objectName();
+                room->sendLog(log);
+
+                use.nullified_list << player->objectName();
+                data = QVariant::fromValue(use);
+            } else if (choice == "give") {
+                LogMessage log;
+                log.type = "#RhLiufu2";
+                log.from = player;
+                room->sendLog(log);
+
+                room->setCardFlag(use.card, "rhliufu");
+                use.card->tag["rhliufu"] = QVariant::fromValue(player);
+            }
+            if (!choices.contains("cancel"))
+                choices << "cancel";
+            room->askForChoice(player, objectName(), choices.join("+"), data);
+        }
+        return false;
     }
 };
 
-class RhHuifu : public ProhibitSkill
+class RhLiufuGet : public TriggerSkill
 {
 public:
-    RhHuifu() : ProhibitSkill("rhhuifu")
+    RhLiufuGet() : TriggerSkill("#rhliufu")
     {
+        events << BeforeCardsMove;
+        frequency = Compulsory;
     }
 
-    virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *&) const
     {
-        return to->hasSkill(objectName()) && (card->isKindOf("Dismantlement") || card->isKindOf("Snatch"));
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        const Card *card = move.reason.m_extraData.value<const Card *>();
+        if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
+                && card->hasFlag("rhliufu")) {
+            foreach (int id, move.card_ids) {
+                if (card->getSubcards().contains(id))
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
     }
-};*/
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const
+    {
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        const Card *card = move.reason.m_extraData.value<const Card *>();
+        ServerPlayer *player = card->tag["rhliufu"].value<ServerPlayer *>();
+        card->tag.remove("rhliufu");
+        room->setCardFlag(card, "-rhliufu");
+        room->sendCompulsoryTriggerLog(player, "rhliufu");
+        QList<int> ids;
+        for (int i = 0; i < move.card_ids.length(); ++i) {
+            int id = move.card_ids[i];
+            if (card->getSubcards().contains(id)
+                    && move.from_places[i] == Player::PlaceTable && move.to_place == Player::DiscardPile)
+                ids << id;
+        }
+        if (!ids.isEmpty()) {
+            move.removeCardIds(ids);
+            ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), "rhliufu", "@rhliufu", false, true);
+            DummyCard dummy(ids);
+            CardMoveReason reason(CardMoveReason::S_REASON_GIVE,
+                                  player->objectName(),
+                                  target->objectName(),
+                                  "rhliufu",
+                                  QString());
+            room->obtainCard(target, &dummy, reason);
+        }
+        return false;
+    }
+};
 
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
@@ -674,9 +713,10 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou004->addSkill(new RhLvcaoTargetMod);
     related_skills.insertMulti("rhlvcao", "#rhlvcao");
 
-    /*General *reihou005 = new General(this, "reihou005", "rei", 4, true, true);
-    reihou005->addSkill(new RhFangcun);
-    reihou005->addSkill(new RhHuifu);*/
+    General *reihou005 = new General(this, "reihou005", "rei", 4, true, true);
+    reihou005->addSkill(new RhLiufu);
+    reihou005->addSkill(new RhLiufuGet);
+    related_skills.insertMulti("rhliufu", "#rhliufu");
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();

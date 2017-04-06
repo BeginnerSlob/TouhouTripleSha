@@ -1916,8 +1916,8 @@ void IkXunyuyouliCard::onEffect(const CardEffectStruct &effect) const{
     QStringList choices;
     if (!effect.to->hasSkill("thfeiying"))
         choices << "thfeiying";
-    if (!effect.to->hasSkill("rhhuifu"))
-        choices << "rhhuifu";
+    if (!effect.to->hasSkill("ikhuifu"))
+        choices << "ikhuifu";
     if (!effect.to->hasSkill("ikzhichi"))
         choices << "ikzhichi";
     if (choices.isEmpty())
@@ -1986,6 +1986,19 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         room->askForUseCard(player, "@@ikxunyuyouli", "@ikxunyuyouli");
         return false;
+    }
+};
+
+class IkHuifu : public ProhibitSkill
+{
+public:
+    IkHuifu() : ProhibitSkill("ikhuifu")
+    {
+    }
+
+    virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const
+    {
+        return to->hasSkill(objectName()) && (card->isKindOf("Dismantlement") || card->isKindOf("Snatch"));
     }
 };
 
