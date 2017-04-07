@@ -880,6 +880,101 @@ public:
     }
 };
 
+class RhZhenyao : public TriggerSkill
+{
+public:
+    RhZhenyao() : TriggerSkill("rhzhenyao")
+    {
+        events << TargetSpecified << TargetConfirmed << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    room->setPlayerMark(p, objectName(), 0);
+            }
+        } else if (triggerEvent == TargetSpecified) {
+            if (TriggerSkill::triggerable(player) && player->getMark(objectName()) == 0) {
+                CardUseStruct use = data.value<CardUseStruct>();
+                if (use.card->isKindOf("Slash"))
+                    return QStringList(objectName());
+            }
+        } else if (triggerEvent == TargetConfirmed) {
+            if (TriggerSkill::triggerable(player) && player->getMark(objectName()) == 0) {
+                CardUseStruct use = data.value<CardUseStruct>();
+                if (use.to.contains(player) && use.card->isKindOf("Slash"))
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            room->addPlayerMark(player, objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        JudgeStruct judge;
+        judge.pattern = ".|black";
+        judge.good = true;
+        judge.reason = objectName();
+        judge.who = player;
+        room->judge(judge);
+
+        if (judge.isBad())
+            return false;
+
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (triggerEvent == TargetSpecified) {
+            QVariantList jink_list = player->tag["Jink_" + use.card->toString()].toList();
+            int index = 0;
+            foreach (ServerPlayer *p, use.to) {
+                LogMessage log;
+                log.type = "#NoJink";
+                log.from = p;
+                room->sendLog(log);
+                jink_list.replace(index, QVariant(0));
+                index++;
+            }
+            player->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
+        } else if (triggerEvent == TargetConfirmed) {
+            player->addZhenyaoTag(use.card);
+        }
+        return false;
+    }
+};
+
+class RhZhenyaoPrevent : public TriggerSkill
+{
+public:
+    RhZhenyaoPrevent(): TriggerSkill("#rhzhenyao")
+    {
+        events << DamageForseen << PreHpLost;
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *player) const
+    {
+        return !player->tag["RhZhenyao"].toStringList().isEmpty();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, "rhzhenyao");
+        room->broadcastSkillInvoke(objectName());
+        return true;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -912,6 +1007,11 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou007->addSkill(new RhXuesha);
     reihou007->addSkill(new RhXueshaTargetMod);
     related_skills.insertMulti("rhxuesha", "#rhxuesha");
+
+    General *reihou008 = new General(this, "reihou008", "rei", 4, true, true);
+    reihou008->addSkill(new RhZhenyao);
+    reihou008->addSkill(new RhZhenyaoPrevent);
+    related_skills.insertMulti("rhzhenyao", "#rhzhenyao");
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
