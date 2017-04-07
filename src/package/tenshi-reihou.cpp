@@ -1074,6 +1074,70 @@ public:
     }
 };
 
+class RhBaiming : public TriggerSkill
+{
+public:
+    RhBaiming() : TriggerSkill("rhbaiming")
+    {
+        events << EventAcquireSkill << EventLoseSkill << Damaged;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (triggerEvent == Damaged) {
+            if (player->isAlive()) {
+                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                    if (p->tag[objectName()].toString() == player->objectName())
+                        skill_list.insert(p, QStringList(objectName()));
+                }
+            }
+        } else if (data.toString() == objectName()) {
+            if (triggerEvent == EventLoseSkill)
+                player->tag.remove(objectName());
+            else
+                skill_list.insert(player, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        if (triggerEvent == EventAcquireSkill)
+            return true;
+
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        if (triggerEvent == EventAcquireSkill) {
+            ServerPlayer *target = room->askForPlayerChosen(ask_who, room->getOtherPlayers(ask_who), objectName(), "@rhbaiming");
+            room->broadcastSkillInvoke(objectName());
+            ask_who->tag[objectName()] = target->objectName();
+            return false;
+        }
+
+        if (ask_who->canDiscard(ask_who, "he"))
+            room->askForDiscard(ask_who, objectName(), 1, 1);
+
+        if (!player->isNude()) {
+            if (ask_who->canDiscard(player, "he")) {
+                int card_id = room->askForCardChosen(ask_who, player, "he", objectName(), false, Card::MethodDiscard);
+                room->throwCard(card_id, player, ask_who);
+            }
+        } else
+            room->loseHp(player);
+
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -1115,6 +1179,9 @@ TenshiReihouPackage::TenshiReihouPackage()
     General *reihou009 = new General(this, "reihou009", "rei", 4, true, true);
     reihou009->addSkill(new RhGaiming);
     reihou009->addSkill(new RhXusheng);
+
+    General *reihou010 = new General(this, "reihou010", "rei", 4, true, true);
+    reihou010->addSkill(new RhBaiming);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
