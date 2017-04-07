@@ -59,6 +59,17 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
+class RhGaimingCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE RhGaimingCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class TenshiReihouPackage : public Package
 {
     Q_OBJECT
