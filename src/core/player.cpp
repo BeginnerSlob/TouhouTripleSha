@@ -1158,6 +1158,17 @@ void Player::removeQinggangTag(const Card *card) {
         qinggang.removeOne(card->toString());
         this->tag["Qinggang"] = qinggang;
     }
+    QStringList zhenyao = this->tag["RhZhenyao"].toStringList();
+    if (!zhenyao.isEmpty()) {
+        zhenyao.removeOne(card->toString());
+        this->tag["RhZhenyao"] = zhenyao;
+    }
+}
+
+void Player::addZhenyaoTag(const Card *card) {
+    QStringList zhenyao = this->tag["RhZhenyao"].toStringList();
+    zhenyao.append(card->toString());
+    this->tag["RhZhenyao"] = QVariant::fromValue(zhenyao);
 }
 
 void Player::copyFrom(Player *p) {

@@ -233,6 +233,7 @@ public:
     // just for convenience
     void addQinggangTag(const Card *card);
     void removeQinggangTag(const Card *card);
+    void addZhenyaoTag(const Card *card);
 
     void copyFrom(Player *p);
 
