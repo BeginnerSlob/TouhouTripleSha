@@ -975,6 +975,105 @@ public:
     }
 };
 
+RhGaimingCard::RhGaimingCard()
+{
+}
+
+bool RhGaimingCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    if (!targets.isEmpty())
+        return false;
+    QList<const Player *> players = Self->getAliveSiblings();
+    players << Self;
+    int max = -1000, min = 1000;
+    foreach (const Player *p, players) {
+        if (max < p->getHp())
+            max = p->getHp();
+        if (min > p->getHp())
+            min = p->getHp();
+    }
+    return to_select->getHp() == max || (to_select->getHp() == min && to_select->isWounded());
+}
+
+void RhGaimingCard::onEffect(const CardEffectStruct &effect) const
+{
+    QStringList choices;
+    Room *room = effect.from->getRoom();
+    QList<ServerPlayer *> players = room->getAlivePlayers();
+    int max = -1000, min = 1000;
+    foreach (ServerPlayer *p, players) {
+        if (max < p->getHp())
+            max = p->getHp();
+        if (min > p->getHp())
+            min = p->getHp();
+    }
+    if (effect.to->getHp() == max)
+        choices << "lose";
+    if (effect.to->getHp() == min && effect.to->isWounded())
+        choices << "recover";
+    QString choice = choices.first();
+    if (choices.length() != 1)
+        choice = room->askForChoice(effect.from, "rhgaiming", choices.join("+"), QVariant::fromValue(effect));
+    if (choice == "lose")
+        room->loseHp(effect.to);
+    else if (choice == "recover")
+        room->recover(effect.to, RecoverStruct(effect.from));
+}
+
+class RhGaiming : public ZeroCardViewAsSkill
+{
+public:
+    RhGaiming() : ZeroCardViewAsSkill("rhgaiming")
+    {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("RhGaimingCard");
+    }
+
+    virtual Card *viewAs() const
+    {
+        return new RhGaimingCard;
+    }
+};
+
+class RhXusheng : public TriggerSkill
+{
+public:
+    RhXusheng() : TriggerSkill("rhxusheng")
+    {
+        events << Dying;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        DyingStruct dying = data.value<DyingStruct>();
+        if (dying.who->getHp() > 0 || dying.who->isDead())
+            return QStringList();
+        return QStringList(objectName());
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName(), data)) {
+            room->broadcastSkillInvoke(objectName());
+            room->removeReihouCard(player);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        DyingStruct dying = data.value<DyingStruct>();
+        room->recover(dying.who, RecoverStruct(player, NULL, 1 - dying.who->getHp()));
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -1013,10 +1112,15 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou008->addSkill(new RhZhenyaoPrevent);
     related_skills.insertMulti("rhzhenyao", "#rhzhenyao");
 
+    General *reihou009 = new General(this, "reihou009", "rei", 4, true, true);
+    reihou009->addSkill(new RhGaiming);
+    reihou009->addSkill(new RhXusheng);
+
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
     addMetaObject<RhHuanjingCard>();
     addMetaObject<RhPujiuCard>();
+    addMetaObject<RhGaimingCard>();
 }
 
 ADD_PACKAGE(TenshiReihou)

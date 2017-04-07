@@ -263,13 +263,16 @@ public:
     }
 };
 
-class ThGuihang:public TriggerSkill{
+class ThGuihang : public TriggerSkill
+{
 public:
-    ThGuihang():TriggerSkill("thguihang"){
+    ThGuihang() : TriggerSkill("thguihang")
+    {
         events << Dying;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
         if (!TriggerSkill::triggerable(player)) return QStringList();
         DyingStruct dying = data.value<DyingStruct>();
         if (dying.who->getHp() > 0 || dying.who->isDead())
@@ -280,16 +283,17 @@ public:
         return QStringList(objectName());
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
         if (player->askForSkillInvoke(objectName(), data)) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
-
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
         DyingStruct dying = data.value<DyingStruct>();
         int card_id;
         if (player == dying.who)
