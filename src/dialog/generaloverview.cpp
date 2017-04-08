@@ -534,7 +534,7 @@ void GeneralOverview::on_tableWidget_itemSelectionChanged() {
     } else {
         ui->illustratorLabel->setText(tr("Illustrator"));
     }
-    ui->illustratorLineEdit->setText(getIllustratorInfo(general->objectName()));
+    ui->illustratorLineEdit->setText(source);
 
     button_layout->addStretch();
     ui->skillTextEdit->append(general->getSkillDescription(true));
