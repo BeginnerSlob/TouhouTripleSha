@@ -121,14 +121,14 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         const Card *card = room->askForUseSlashTo(player, damage.from, "@rhpohuang:" + damage.from->objectName(), false);
         if (!card) {
-            room->removeReihouCard(player);
-
             Card *slash = new Slash(Card::NoSuit, 0);
             slash->setSkillName("_rhpohuang");
             if (!player->canSlash(damage.from, slash, false)) {
                 delete slash;
                 return false;
             }
+
+            room->removeReihouCard(player);
             room->useCard(CardUseStruct(slash, player, damage.from));
         }
         return false;
@@ -829,7 +829,7 @@ public:
         if (triggerEvent == DamageInflicted) {
             if (TriggerSkill::triggerable(player) && player->getMark("ikguijing") > 0 && player->isWounded())
                 return QStringList(objectName());
-        } else if (triggerEvent == TargetSpecified) {
+        } else if (triggerEvent == TargetSpecified && TriggerSkill::triggerable(player)) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (!use.card->isKindOf("Slash") || !use.card->isRed())
                 return QStringList();
