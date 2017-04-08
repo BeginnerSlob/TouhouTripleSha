@@ -1082,9 +1082,9 @@ public:
         events << EventAcquireSkill << EventLoseSkill << Damaged;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
-        QMap<ServerPlayer *, QStringList> skill_list;
+        TriggerList skill_list;
         if (triggerEvent == Damaged) {
             if (player->isAlive()) {
                 foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
@@ -1295,9 +1295,9 @@ public:
         events << EventAcquireSkill << EventLoseSkill << CardUsed;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
-        QMap<ServerPlayer *, QStringList> skill_list;
+        TriggerList skill_list;
         if (triggerEvent == CardUsed) {
             CardUseStruct use = data.value<CardUseStruct>();
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
@@ -1365,6 +1365,47 @@ public:
     }
 };
 
+class RhSanmei : public TriggerSkill
+{
+public:
+    RhSanmei() : TriggerSkill("rhsanmei")
+    {
+        events << ConfirmDamage << DamageInflicted;
+        frequency = Compulsory;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        TriggerList skill_list;
+        DamageStruct damage = data.value<DamageStruct>();
+        if (triggerEvent == ConfirmDamage) {
+            if (damage.card && damage.card->getTypeId() != Card::TypeSkill
+                    && damage.card->isRed() && damage.nature != DamageStruct::Fire) {
+                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+        } else {
+            if (TriggerSkill::triggerable(player) && damage.nature == DamageStruct::Fire)
+                skill_list.insert(player, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const
+    {
+        room->sendCompulsoryTriggerLog(ask_who, objectName());
+        room->broadcastSkillInvoke(objectName());
+        if (triggerEvent == ConfirmDamage) {
+            DamageStruct damage = data.value<DamageStruct>();
+            damage.nature = DamageStruct::Fire;
+            data = QVariant::fromValue(damage);
+        } else
+            return true;
+
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -1425,6 +1466,9 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou013 = new General(this, "reihou013", "rei", 4, true, true);
     reihou013->addSkill(new RhChunyin);
+
+    General *reihou014 = new General(this, "reihou014", "rei", 4, true, true);
+    reihou014->addSkill(new RhSanmei);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
