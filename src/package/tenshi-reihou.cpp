@@ -1545,6 +1545,38 @@ public:
     }
 };
 
+class RhMangti : public OneCardViewAsSkill
+{
+public:
+    RhMangti() : OneCardViewAsSkill("rhmangti")
+    {
+        response_or_use = true;
+        filter_pattern = ".|club";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        Dismantlement *dis = new Dismantlement(Card::SuitToBeDecided, -1);
+        dis->addSubcard(originalCard);
+        dis->setSkillName(objectName());
+        return dis;
+    }
+};
+
+class RhLingwei : public ProhibitSkill
+{
+public:
+    RhLingwei() : ProhibitSkill("rhlingwei")
+    {
+        frequency = NotCompulsory;
+    }
+
+    virtual bool isProhibited(const Player *, const Player *, const Card *card, const QList<const Player *> &) const
+    {
+        return card->isKindOf("Dismantlement") || card->isKindOf("Snatch");
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -1614,6 +1646,13 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou016 = new General(this, "reihou016", "rei", 4, true, true);
     reihou016->addSkill(new RhGuozao);
+
+    /*General *reihou017 = new General(this, "reihou017", "rei", 4, true, true);
+    reihou017->addSkill(new RhShenguang);*/
+
+    General *reihou018 = new General(this, "reihou018", "rei", 4, true, true);
+    reihou018->addSkill(new RhMangti);
+    reihou018->addSkill(new RhLingwei);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();

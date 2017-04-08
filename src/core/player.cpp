@@ -197,12 +197,15 @@ int Player::getAttackRange(bool include_weapon) const{
     return qMax(original_range, weapon_range) + extra_range;
 }
 
-bool Player::inMyAttackRange(const Player *other, int distance_fix) const{
-    if (distanceTo(other, distance_fix) == -1)
-        return false;
+bool Player::inMyAttackRange(const Player *other, int distance_fix) const
+{
     if (this == other)
         return false;
+    if (distanceTo(other, distance_fix) == -1)
+        return false;
     if (attack_range_pair.contains(other))
+        return true;
+    if (hasSkill("rhmangti") && other->getHandcardNum() < 2)
         return true;
     return distanceTo(other, distance_fix) <= getAttackRange();
 }
