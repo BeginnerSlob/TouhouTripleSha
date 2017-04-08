@@ -1172,6 +1172,10 @@ public:
         f_slash->setSkillName(objectName());
         return f_slash;
     }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return Slash::IsAvailable(player);
+    }
 };
 
 class RhZhengyang : public TriggerSkill
@@ -1406,6 +1410,92 @@ public:
     }
 };
 
+RhXuanrenCard::RhXuanrenCard()
+{
+}
+
+bool RhXuanrenCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    if (!targets.isEmpty())
+        return false;
+    QString obj_name = Self->property("rhxuanren").toString();
+    const Player *to = NULL;
+    if (Self->objectName() == obj_name)
+        to = Self;
+    else {
+        foreach (const Player *p, Self->getAliveSiblings()) {
+            if (p->objectName() == obj_name) {
+                to = p;
+                break;
+            }
+        }
+    }
+    if (!to)
+        return false;
+    return to->distanceTo(to_select) == 1;
+}
+
+void RhXuanrenCard::onEffect(const CardEffectStruct &effect) const
+{
+    effect.from->getRoom()->damage(DamageStruct("rhxuanren", effect.from, effect.to));
+}
+
+class RhXuanrenVS : public OneCardViewAsSkill
+{
+public:
+    RhXuanrenVS() : OneCardViewAsSkill("rhxuanren")
+    {
+        filter_pattern = ".|.|.|hand!";
+        response_pattern = "@@rhxuanren";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        Card *card = new RhXuanrenCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+};
+
+class RhXuanren : public TriggerSkill
+{
+public:
+    RhXuanren() : TriggerSkill("rhxuanren")
+    {
+        events << Damaged;
+        view_as_skill = new RhXuanrenVS;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        TriggerList skill_list;
+        if (player->isAlive()) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card && damage.card->isKindOf("Slash")) {
+                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                    if (p->canDiscard(p, "h")) {
+                        foreach (ServerPlayer *victim, room->getOtherPlayers(p)) {
+                            if (player->distanceTo(victim) == 1) {
+                                skill_list.insert(p, QStringList(objectName()));
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        room->setPlayerProperty(ask_who, "rhxuanren", player->objectName());
+        room->askForUseCard(ask_who, "@@rhxuanren", "@rhxuanren", -1, Card::MethodDiscard);
+        room->setPlayerProperty(ask_who, "rhxuanren", QVariant());
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -1470,11 +1560,15 @@ TenshiReihouPackage::TenshiReihouPackage()
     General *reihou014 = new General(this, "reihou014", "rei", 4, true, true);
     reihou014->addSkill(new RhSanmei);
 
+    General *reihou015 = new General(this, "reihou015", "rei", 4, true, true);
+    reihou015->addSkill(new RhXuanren);
+
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
     addMetaObject<RhHuanjingCard>();
     addMetaObject<RhPujiuCard>();
     addMetaObject<RhGaimingCard>();
+    addMetaObject<RhXuanrenCard>();
 }
 
 ADD_PACKAGE(TenshiReihou)
