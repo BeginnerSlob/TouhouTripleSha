@@ -742,14 +742,17 @@ public:
     }
 };
 
-class ThKuaiqing: public TriggerSkill {
+class ThKuaiqing : public TriggerSkill
+{
 public:
-    ThKuaiqing(): TriggerSkill("thkuaiqing") {
+    ThKuaiqing() : TriggerSkill("thkuaiqing")
+    {
         events << TrickCardCanceling;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer* &ask_who) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer* &ask_who) const
+    {
         CardEffectStruct effect = data.value<CardEffectStruct>();
         if (effect.from && effect.from->isAlive() && effect.from->hasSkill(objectName())
             && !effect.to->isWounded() && effect.from != effect.to) {
@@ -759,7 +762,8 @@ public:
         return QStringList();
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
         CardEffectStruct effect = data.value<CardEffectStruct>();
         if (effect.from && effect.from->hasSkill(objectName()) && effect.from->isAlive()
                 && !player->isWounded()) {
