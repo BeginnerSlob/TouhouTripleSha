@@ -4850,7 +4850,7 @@ public:
                 room->broadcastSkillInvoke(objectName());
                 room->notifySkillInvoked(player, objectName());
 
-                QList<const Skill *> skills = death.damage->from->getVisibleSkillList();
+                QList<const Skill *> skills = death.damage->from->getVisibleSkillList(false, true);
                 QStringList detachList;
                 foreach (const Skill *skill, skills) {
                     if (!skill->inherits("SPConvertSkill") && !skill->isAttachedLordSkill())

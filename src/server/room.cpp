@@ -562,6 +562,8 @@ void Room::detachSkillFromPlayer(ServerPlayer *player, const QString &skill_name
             return;
     } else if (player->getAcquiredSkills().contains(skill_name))
         player->detachSkill(skill_name);
+    else if (player->getExtraSkills().contains(skill_name))
+        player->detachSkill(skill_name, true);
     else if (!acquire_only)
         player->loseSkill(skill_name);
     else
@@ -610,6 +612,8 @@ void Room::handleAcquireDetachSkills(ServerPlayer *player, const QStringList &sk
                     continue;
             } else if (player->getAcquiredSkills().contains(actual_skill))
                 player->detachSkill(actual_skill);
+            else if (player->getExtraSkills().contains(skill_name))
+                player->detachSkill(skill_name, true);
             else if (!acquire_only)
                 player->loseSkill(actual_skill);
             else
