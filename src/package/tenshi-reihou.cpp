@@ -4,6 +4,7 @@
 #include "standard.h"
 #include "engine.h"
 #include "client.h"
+#include "maneuvering.h"
 
 RhDuanlongCard::RhDuanlongCard()
 {
@@ -754,10 +755,10 @@ const Card *RhPujiuCard::validateInResponse(ServerPlayer *user) const
     return peach;
 }
 
-class RhPujiuVS : public OneCardViewAsSkill
+class RhPujiu : public OneCardViewAsSkill
 {
 public:
-    RhPujiuVS() : OneCardViewAsSkill("rhpujiu")
+    RhPujiu() : OneCardViewAsSkill("rhpujiu")
     {
         filter_pattern = ".|.|.|hand";
         response_or_use = true;
@@ -783,14 +784,13 @@ public:
     }
 };
 
-class RhPujiu : public TriggerSkill
+class RhPujiuTrigger : public TriggerSkill
 {
 public:
-    RhPujiu() : TriggerSkill("rhpujiu")
+    RhPujiuTrigger() : TriggerSkill("#rhpujiu")
     {
         events << CardUsed << EventLoseSkill;
-        frequency = NotCompulsory;
-        view_as_skill = new RhPujiuVS;
+        frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
@@ -827,7 +827,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == DamageInflicted) {
-            if (TriggerSkill::triggerable(player) && player->getMark("ikguijing") > 1 && player->isWounded())
+            if (TriggerSkill::triggerable(player) && player->getMark("ikguijing") > 0 && player->isWounded())
                 return QStringList(objectName());
         } else if (triggerEvent == TargetSpecified) {
             CardUseStruct use = data.value<CardUseStruct>();
@@ -1101,7 +1101,7 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
         if (triggerEvent == EventAcquireSkill)
             return true;
@@ -1114,7 +1114,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
         if (triggerEvent == EventAcquireSkill) {
             ServerPlayer *target = room->askForPlayerChosen(ask_who, room->getOtherPlayers(ask_who), objectName(), "@rhbaiming");
@@ -1135,6 +1135,155 @@ public:
             room->loseHp(player);
 
         return false;
+    }
+};
+
+class RhChengfeng : public OneCardViewAsSkill
+{
+public:
+    RhChengfeng() : OneCardViewAsSkill("rhchengfeng") {
+        filter_pattern = "Slash|black";
+        response_or_use = true;
+        response_pattern = "jink";
+    }
+
+    virtual Card *viewAs(const Card *originalCard) const
+    {
+        Jink *jink = new Jink(originalCard->getSuit(), originalCard->getNumber());
+        jink->addSubcard(originalCard);
+        jink->setSkillName(objectName());
+        return jink;
+    }
+};
+
+class RhYuhuo : public OneCardViewAsSkill
+{
+public:
+    RhYuhuo() : OneCardViewAsSkill("rhyuhuo") {
+        filter_pattern = "BasicCard|red";
+        response_or_use = true;
+        response_pattern = "slash";
+    }
+
+    virtual Card *viewAs(const Card *originalCard) const
+    {
+        FireSlash *f_slash = new FireSlash(originalCard->getSuit(), originalCard->getNumber());
+        f_slash->addSubcard(originalCard);
+        f_slash->setSkillName(objectName());
+        return f_slash;
+    }
+};
+
+class RhZhengyang : public TriggerSkill
+{
+public:
+    RhZhengyang() : TriggerSkill("rhzhengyang")
+    {
+        events << EventAcquireSkill << EventLoseSkill << TargetSpecified;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (triggerEvent == TargetSpecified) {
+            if (TriggerSkill::triggerable(player) && !player->getPile("rhzhengyangpile").isEmpty()) {
+                CardUseStruct use = data.value<CardUseStruct>();
+                if (use.card->isKindOf("Slash")
+                        && use.card->getSuit() == Sanguosha->getEngineCard(player->getPile("rhzhengyangpile").first())->getSuit()) {
+                    return QStringList(objectName());
+                }
+            }
+        } else if (data.toString() == objectName()) {
+            if (triggerEvent == EventAcquireSkill && !player->isKongcheng())
+                return QStringList(objectName());
+            if (triggerEvent == EventLoseSkill && !player->getPile("rhzhengyangpile").isEmpty())
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (triggerEvent == EventAcquireSkill) {
+            const Card *card = room->askForCard(player, ".", "@rhzhengyang", QVariant(), Card::MethodNone);
+            if (card) {
+                player->tag["RhZhengyangCard"] = QVariant::fromValue(card);
+                room->sendCompulsoryTriggerLog(player, objectName());
+                room->broadcastSkillInvoke(objectName());
+                return true;
+            }
+        } else {
+            room->sendCompulsoryTriggerLog(player, objectName());
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (triggerEvent == EventAcquireSkill) {
+            const Card *card = player->tag["RhZhengyangCard"].value<const Card *>();
+            player->tag.remove("RhZhengyangCard");
+            player->addToPile("rhzhengyangpile", card);
+        } else if (triggerEvent == EventLoseSkill) {
+            room->obtainCard(player, player->getPile("rhzhengyangpile").first());
+        } else if (triggerEvent == TargetSpecified) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            QVariantList jink_list = player->tag["Jink_" + use.card->toString()].toList();
+            int index = 0;
+            foreach (ServerPlayer *p, use.to) {
+                LogMessage log;
+                log.type = "#NoJink";
+                log.from = p;
+                room->sendLog(log);
+                jink_list.replace(index, QVariant(0));
+                index++;
+            }
+            player->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
+        }
+        return false;
+    }
+};
+
+class RhZhengyangTrigger : public TriggerSkill
+{
+public:
+    RhZhengyangTrigger() : TriggerSkill("#rhzhengyang")
+    {
+         events << TrickCardCanceling;
+         frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer* &ask_who) const{
+        CardEffectStruct effect = data.value<CardEffectStruct>();
+        if (effect.from && effect.from->isAlive()
+                && effect.from->hasSkill("rhzhengyang")
+                && !effect.from->getPile("rhzhengyangpile").isEmpty()) {
+            if (effect.card->getSuit() == Sanguosha->getEngineCard(effect.from->getPile("rhzhengyangpile").first())->getSuit()) {
+                ask_who = effect.from;
+                return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
+        room->notifySkillInvoked(ask_who, objectName());
+        return true;
+    }
+};
+
+class RhZhengyangProhibit : public ProhibitSkill
+{
+public:
+    RhZhengyangProhibit() : ProhibitSkill("#rhzhengyang-prohibit")
+    {
+    }
+
+    virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const
+    {
+        return to->hasSkill("rhzhengyang") && !to->getPile("rhzhengyangpile").isEmpty()
+                && card->getSuit() == Sanguosha->getEngineCard(to->getPile("rhzhengyangpile").first())->getSuit();
     }
 };
 
@@ -1165,6 +1314,8 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou006 = new General(this, "reihou006", "rei", 4, true, true);
     reihou006->addSkill(new RhPujiu);
+    reihou006->addSkill(new RhPujiuTrigger);
+    related_skills.insertMulti("rhpujiu", "#rhpujiu");
 
     General *reihou007 = new General(this, "reihou007", "rei", 4, true, true);
     reihou007->addSkill(new RhXuesha);
@@ -1182,6 +1333,17 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou010 = new General(this, "reihou010", "rei", 4, true, true);
     reihou010->addSkill(new RhBaiming);
+
+    General *reihou011 = new General(this, "reihou011", "rei", 4, true, true);
+    reihou011->addSkill(new RhChengfeng);
+    reihou011->addSkill(new RhYuhuo);
+
+    General *reihou012 = new General(this, "reihou012", "rei", 4, true, true);
+    reihou012->addSkill(new RhZhengyang);
+    reihou012->addSkill(new RhZhengyangTrigger);
+    reihou012->addSkill(new RhZhengyangProhibit);
+    related_skills.insertMulti("rhzhengyang", "#rhzhengyang");
+    related_skills.insertMulti("rhzhengyang", "#rhzhengyang-prohibit");
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
