@@ -1287,6 +1287,84 @@ public:
     }
 };
 
+class RhChunyin : public TriggerSkill
+{
+public:
+    RhChunyin() : TriggerSkill("rhchunyin")
+    {
+        events << EventAcquireSkill << EventLoseSkill << CardUsed;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (triggerEvent == CardUsed) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p->getPile("rhchunyinpile").isEmpty())
+                    continue;
+                Card::Suit suit = Sanguosha->getEngineCard(p->getPile("rhchunyinpile").first())->getSuit();
+                if (use.card->getSuit() == suit)
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+        } else if (data.toString() == objectName())
+            skill_list.insert(player, QStringList(objectName()));
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        if (triggerEvent == EventAcquireSkill) {
+            const Card *card = room->askForCard(player, ".", "@rhchunyin", QVariant(), Card::MethodNone);
+            if (card) {
+                player->tag["RhChunyinCard"] = QVariant::fromValue(card);
+                room->sendCompulsoryTriggerLog(player, objectName());
+                room->broadcastSkillInvoke(objectName());
+                return true;
+            }
+        } else if (triggerEvent == CardUsed) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.from == ask_who) {
+                ServerPlayer *target = room->askForPlayerChosen(ask_who, room->getOtherPlayers(ask_who), objectName(), "@rhchunyin-draw", true, true);
+                if (target) {
+                    room->broadcastSkillInvoke(objectName());
+                    ask_who->tag["RhChunyinTarget"] = QVariant::fromValue(target);
+                    return true;
+                }
+            } else if (ask_who->askForSkillInvoke(objectName())) {
+                room->broadcastSkillInvoke(objectName());
+                return true;
+            }
+        } else {
+            room->sendCompulsoryTriggerLog(player, objectName());
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        if (triggerEvent == EventAcquireSkill) {
+            const Card *card = player->tag["RhChunyinCard"].value<const Card *>();
+            player->tag.remove("RhChunyinCard");
+            player->addToPile("rhchunyinpile", card);
+        } else if (triggerEvent == EventLoseSkill) {
+            room->obtainCard(player, player->getPile("rhchunyinpile").first());
+        } else if (triggerEvent == CardUsed) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.from == ask_who) {
+                ServerPlayer *target = player->tag["RhChunyinTarget"].value<ServerPlayer *>();
+                player->tag.remove("RhChunyinTarget");
+                if (target)
+                    room->drawCards(target, 1, objectName());
+            } else
+                room->drawCards(ask_who, 1, objectName());
+        }
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -1344,6 +1422,9 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou012->addSkill(new RhZhengyangProhibit);
     related_skills.insertMulti("rhzhengyang", "#rhzhengyang");
     related_skills.insertMulti("rhzhengyang", "#rhzhengyang-prohibit");
+
+    General *reihou013 = new General(this, "reihou013", "rei", 4, true, true);
+    reihou013->addSkill(new RhChunyin);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
