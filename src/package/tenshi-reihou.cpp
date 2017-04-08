@@ -1496,6 +1496,55 @@ public:
     }
 };
 
+class RhGuozao : public TriggerSkill
+{
+public:
+    RhGuozao() : TriggerSkill("rhguozao")
+    {
+        events << EventLoseSkill << EventAcquireSkill;
+        frequency = NotCompulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *&) const
+    {
+        if (data.toString() == objectName())
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+        if (triggerEvent == EventAcquireSkill) {
+            room->setPlayerProperty(player, "maxhp", player->getMaxHp() + 1);
+
+            LogMessage log;
+            log.type = "#GainMaxHp";
+            log.from = player;
+            log.arg = "1";
+            room->sendLog(log);
+
+            if (player->isWounded()) {
+                room->recover(player, RecoverStruct(player));
+            } else {
+                LogMessage log2;
+                log2.type = "#GetHp";
+                log2.from = player;
+                log2.arg = QString::number(player->getHp());
+                log2.arg2 = QString::number(player->getMaxHp());
+                room->sendLog(log2);
+            }
+        } else {
+            bool draw = !player->isWounded();
+            room->loseMaxHp(player);
+            if (draw)
+                player->drawCards(1, objectName());
+        }
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -1562,6 +1611,9 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou015 = new General(this, "reihou015", "rei", 4, true, true);
     reihou015->addSkill(new RhXuanren);
+
+    General *reihou016 = new General(this, "reihou016", "rei", 4, true, true);
+    reihou016->addSkill(new RhGuozao);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
