@@ -1577,6 +1577,45 @@ public:
     }
 };
 
+class RhWangzhong : public TriggerSkill
+{
+public:
+    RhWangzhong() : TriggerSkill("rhwangzhong")
+    {
+        events << EventPhaseEnd;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        TriggerList skill_list;
+        if (player->getPhase() == Player::Play) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p->getHandcardNum() < p->getMaxHp())
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        ask_who->drawCards(1, objectName());
+        if (!ask_who->canSlash(player, false)
+                || !room->askForUseSlashTo(ask_who, player, "@rhwangzhong", false))
+            room->loseHp(ask_who);
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -1653,6 +1692,9 @@ TenshiReihouPackage::TenshiReihouPackage()
     General *reihou018 = new General(this, "reihou018", "rei", 4, true, true);
     reihou018->addSkill(new RhMangti);
     reihou018->addSkill(new RhLingwei);
+
+    General *reihou019 = new General(this, "reihou019", "rei", 4, true, true);
+    reihou019->addSkill(new RhWangzhong);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
