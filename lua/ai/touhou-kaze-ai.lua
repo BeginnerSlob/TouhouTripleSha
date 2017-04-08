@@ -100,7 +100,7 @@ sgs.ai_need_damaged.thyisi = function(self, attacker, player)
 end
 
 --华袛：君主技，当你于回合外失去一次手牌后，其他风势力角色可以各交给你一张手牌。
-sgs.ai_skill_cardask["@thhuadi"] = function(self, data, pattern, target)
+sgs.ai_skill_cardask["@thhuazhi"] = function(self, data, pattern, target)
 	if self:isFriend(target) and not self:isWeak(self.player) and not self:isKongcheng() then
 		local cards = sgs.QList2Table(self.player:getHandcards())
 		self:sortByKeepValue(cards, true)

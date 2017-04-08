@@ -142,17 +142,17 @@ public:
             room->recover(player, RecoverStruct(player));
         if (room->changeMaxHpForAwakenSkill(player, 1)) {
             if (player->isLord())
-                room->acquireSkill(player, "thhuadi");
+                room->acquireSkill(player, "thhuazhi");
         }
 
         return false;
     }
 };
 
-class ThHuadi : public TriggerSkill
+class ThHuazhi : public TriggerSkill
 {
 public:
-    ThHuadi() : TriggerSkill("thhuadi$")
+    ThHuazhi() : TriggerSkill("thhuazhi$")
     {
         events << CardsMoveOneTime;
     }
@@ -176,7 +176,7 @@ public:
     {
         foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
             if (p->getKingdom() == "kaze" && !p->isKongcheng()) {
-                const Card *card = room->askForCard(p, ".", "@thhuadi:" + player->objectName(), QVariant(), Card::MethodNone, player);
+                const Card *card = room->askForCard(p, ".", "@thhuazhi:" + player->objectName(), QVariant(), Card::MethodNone, player);
                 if (card) {
                     room->broadcastSkillInvoke(objectName());
                     room->notifySkillInvoked(player, objectName());
@@ -2406,7 +2406,7 @@ TouhouKazePackage::TouhouKazePackage()
     related_skills.insertMulti("thzhiji", "#thzhiji");
     kaze001->addSkill(new ThJiyi);
     kaze001->addSkill(new ThYisi);
-    kaze001->addRelateSkill("thhuadi");
+    kaze001->addRelateSkill("thhuazhi");
 
     General *kaze002 = new General(this, "kaze002", "kaze");
     kaze002->addSkill(new ThJilanwen);
@@ -2513,7 +2513,7 @@ TouhouKazePackage::TouhouKazePackage()
     addMetaObject<ThSangzhiCard>();
     addMetaObject<ThXinhuaCard>();
 
-    skills << new ThHuadi << new ThMicaiGivenSkill << new ThHuaimie << new ThHuaimieTrigger
+    skills << new ThHuazhi << new ThMicaiGivenSkill << new ThHuaimie << new ThHuaimieTrigger
            << new ThYanlun << new ThHeyu << new ThMaihuoShow << new ThXinhuaViewAsSkill;
     related_skills.insertMulti("thhuaimie", "#thhuaimie");
 }
