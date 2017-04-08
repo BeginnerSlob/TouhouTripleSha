@@ -527,6 +527,13 @@ void GeneralOverview::on_tableWidget_itemSelectionChanged() {
     else
         ui->cvLineEdit->setText(tr("Official"));
 
+    QString source = getIllustratorInfo(general->objectName());
+    if (source.startsWith("[source]")) {
+        source = source.mid(8);
+        ui->illustratorLabel->setText(tr("References"));
+    } else {
+        ui->illustratorLabel->setText(tr("Illustrator"));
+    }
     ui->illustratorLineEdit->setText(getIllustratorInfo(general->objectName()));
 
     button_layout->addStretch();
