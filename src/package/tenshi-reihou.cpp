@@ -1545,6 +1545,70 @@ public:
     }
 };
 
+class RhShenguang : public TriggerSkill
+{
+public:
+    RhShenguang() : TriggerSkill("rhshenguang")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        TriggerList skill_list;
+        if (player->getPhase() == Player::Draw) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+                skill_list.insert(p, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        room->removeReihouCard(ask_who);
+
+        QList<int> card_ids = room->getNCards(room->getAllPlayers().length());
+        room->fillAG(card_ids);
+
+        try {
+            foreach (ServerPlayer *p, room->getAllPlayers()) {
+                if (p->canSlash(player, false) && room->askForUseSlashTo(p, player, "@rhshenguang:" + player->objectName(), false)) {
+                    int card_id = room->askForAG(p, card_ids, false, objectName());
+                    card_ids.removeOne(card_id);
+                    room->takeAG(p, card_id);
+                }
+            }
+            clearRestCards(room, ask_who, card_ids);
+            return false;
+        }
+        catch (TriggerEvent triggerEvent) {
+            if (triggerEvent == TurnBroken || triggerEvent == StageChange)
+                clearRestCards(room, ask_who, card_ids);
+            throw triggerEvent;
+        }
+    }
+
+    void clearRestCards(Room *room, ServerPlayer *player, const QList<int> &card_ids) const
+    {
+        room->clearAG();
+        if (card_ids.isEmpty())
+            return;
+        DummyCard *dummy = new DummyCard(card_ids);
+        CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, player->objectName(), objectName(), QString());
+        room->throwCard(dummy, reason, NULL);
+        delete dummy;
+    }
+};
+
 class RhMangti : public OneCardViewAsSkill
 {
 public:
@@ -1610,7 +1674,7 @@ public:
     {
         ask_who->drawCards(1, objectName());
         if (!ask_who->canSlash(player, false)
-                || !room->askForUseSlashTo(ask_who, player, "@rhwangzhong", false))
+                || !room->askForUseSlashTo(ask_who, player, "@rhwangzhong:" + player->objectName(), false))
             room->loseHp(ask_who);
         return false;
     }
@@ -1619,7 +1683,7 @@ public:
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
-    General *reihou001 = new General(this, "reihou001", "rei", 4, true, true);
+    /*General *reihou001 = new General(this, "reihou001", "rei", 4, true, true);
     reihou001->addSkill(new RhDuanlong);
     reihou001->addSkill(new FakeMoveSkill("rhduanlong"));
     related_skills.insertMulti("rhduanlong", "#rhduanlong-fake-move");
@@ -1684,17 +1748,17 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou015->addSkill(new RhXuanren);
 
     General *reihou016 = new General(this, "reihou016", "rei", 4, true, true);
-    reihou016->addSkill(new RhGuozao);
+    reihou016->addSkill(new RhGuozao);*/
 
-    /*General *reihou017 = new General(this, "reihou017", "rei", 4, true, true);
-    reihou017->addSkill(new RhShenguang);*/
+    General *reihou017 = new General(this, "reihou017", "rei", 4, true, true);
+    reihou017->addSkill(new RhShenguang);
 
-    General *reihou018 = new General(this, "reihou018", "rei", 4, true, true);
+    /*General *reihou018 = new General(this, "reihou018", "rei", 4, true, true);
     reihou018->addSkill(new RhMangti);
     reihou018->addSkill(new RhLingwei);
 
     General *reihou019 = new General(this, "reihou019", "rei", 4, true, true);
-    reihou019->addSkill(new RhWangzhong);
+    reihou019->addSkill(new RhWangzhong);*/
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
