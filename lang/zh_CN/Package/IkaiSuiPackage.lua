@@ -7,7 +7,7 @@ return {
 	["#wind005"] = "心界之猫",
 	["wind005"] = "奈可",--风 - 空 - 3血
 	["designer:wind005"] = "Danny",
-	["illustrator:wind005"]="emily",
+	["illustrator:wind005"] = "emily",
 	["ikhuahuan"] = "化幻",
 	[":ikhuahuan"] = "你可以将【杀】当【闪】，【闪】当【杀】使用或者打出。",
 	["ikqizhou"] = "绮咒",
@@ -16,7 +16,7 @@ return {
 	["#wind022"] = "融心的绮念",
 	["wind022"] = "姬路瑞希",--风 - 幻 - 3血
 	["designer:wind022"] = "游卡桌游",
-	["illustrator:wind022"]="きみしま青",
+	["illustrator:wind022"] = "きみしま青",
 	["ikshushen"] = "淑慎",
 	[":ikshushen"] = "每当你回复1点体力后，你可以令包括你在内的至多两名角色各摸两张牌，然后各弃置一张牌。",
 	["@ikshushen"] = "你可以发动“淑慎”<br /><br />操作提示：只选择除你外的另一名角色，若选择自己，则只对你发动",
@@ -27,7 +27,7 @@ return {
 	["wind023"] = "玲•海华兹",--风 - 幻 - 3血
 	["&wind023"] = "玲",
 	["designer:wind023"] = "韩旭",
-	["illustrator:wind023"]="Saru",
+	["illustrator:wind023"] = "Saru",
 	["ikxielun"] = "血轮",
 	[":ikxielun"] = "阶段技。你可弃置一张红色牌，并对你攻击范围内的一至X名角色各造成1点伤害，然后这些角色各摸一张牌（X为你已损失的体力值）。“九命”发动后，你发动“血轮”时无攻击范围限制。",
 	["ikcanyue"] = "残月",
@@ -40,7 +40,7 @@ return {
 	["#wind024"] = "中二病患者",
 	["wind024"] = "小鸟遊六花",--风 - 空 - 4血
 	["designer:wind024"] = "游卡桌游",
-	["illustrator:wind024"]="スカイ",
+	["illustrator:wind024"] = "スカイ",
 	["ikxiewang"] = "邪王",
 	[":ikxiewang"] = "若你的体力值不大于3，你可发动“挑衅”；若你的体力值不大于2，你可发动“狂气”；若你的体力值不大于1，你可发动“神佑”。",
 	["ikshengzun"] = "圣尊",
@@ -50,7 +50,7 @@ return {
 	["wind040"] = "莉西娅•德•诺维斯•尤莉",--风 - 幻 - 3血
 	["&wind040"] = "莉西娅",
 	["designer:wind040"] = "仲达与孔明",
-	["illustrator:wind040"]="ratise",
+	["illustrator:wind040"] = "ratise",
 	["ikyanyu"] = "燕语",
 	[":ikyanyu"] = "一名角色的出牌阶段开始时，你可以弃置一张【杀】或【闪】，若如此做，每当一张【杀】或【闪】于此回合的出牌阶段或弃牌阶段内置入弃牌堆时，你可以令一名角色获得之（每回合只能以此法获得至多三张牌）。",
 	["@ikyanyu-discard"] = "你可以弃置一张【杀】或【闪】发动“燕语”",
@@ -59,7 +59,7 @@ return {
 	["#wind041"] = "巧月之灵",
 	["wind041"] = "夜夜",--风 - 幻 - 3血
 	["designer:wind041"] = "游卡桌游",
-	["illustrator:wind041"]="NAbyssor",
+	["illustrator:wind041"] = "NAbyssor",
 	["ikwuyue"] = "舞月",
 	[":ikwuyue"] = "你的回合外，每当一名其他角色因弃置而失去牌时，若其中有基本牌，你可以摸一张牌，然后若你的手牌数大于三，你须弃置一张牌。",
 	["ikjuechong"] = "绝冲",
@@ -68,7 +68,7 @@ return {
 	["#wind043"] = "梦色之扉",
 	["wind043"] = "矢泽妮可",--风 - 空 - 3血
 	["designer:wind043"] = "游卡桌游",
-	["illustrator:wind043"]="ゆらん",
+	["illustrator:wind043"] = "ゆらん",
 	["ikxinhui"] = "心辉",
 	[":ikxinhui"] = "出牌阶段结束时，若你于此阶段没有造成伤害，你可以选择两名角色，然后令其各摸一张牌。",
 	["@ikxinhui"] = "你可以发动“心辉”",
@@ -80,7 +80,7 @@ return {
 	["wind044"] = "伊莉亚斯菲尔•冯•爱因兹贝伦",--风 - 幻 - 3血
 	["&wind044"] = "伊莉亚斯菲尔",
 	["designer:wind044"] = "游卡桌游",
-	["illustrator:wind044"]="志麻しのじ",
+	["illustrator:wind044"] = "志麻しのじ",
 	["ikmoqi"] = "魔器",
 	[":ikmoqi"] = "限定技。准备阶段开始时或出牌阶段，你可摸两张牌，若如此做，结束阶段开始时，你摸两张牌。",
 	["#ikmoqi"] = "魔器（后续结算）",
@@ -92,7 +92,7 @@ return {
 	["#wind046"] = "幻梦的死徒",
 	["wind046"] = "丹生谷森夏",--风 - 空 - 3血
 	["designer:wind046"] = "韩旭",
-	["illustrator:wind046"]="コダマユウヤ",
+	["illustrator:wind046"] = "コダマユウヤ",
 	["ikjingmu"] = "境穆",
 	[":ikjingmu"] = "每当其他角色打出的【杀】在结算后置入弃牌堆时，你可以获得之。",
 	["ikduanmeng"] = "断梦",
@@ -101,7 +101,7 @@ return {
 	["#wind049"] = "虚势的妖鬼",
 	["wind049"] = "白鬼院凛凛蝶",--风 - 空 - 3血
 	["designer:wind049"] = "点点",
-	["illustrator:wind049"]="ゆき",
+	["illustrator:wind049"] = "ゆき",
 	["ikfanzhong"] = "反塚",
 	[":ikfanzhong"] = "阶段技。你可以弃置一张牌并指定一名体力值最多（或之一）的角色，你对其造成1点伤害。",
 	["ikyuanyuan"] = "元缘",
@@ -111,7 +111,7 @@ return {
 	["#wind052"] = "野春菊的别离",
 	["wind052"] = "曙",--风 - 空 - 5血
 	["designer:wind052"] = "凌天翼",
-	["illustrator:wind052"]="画野朗",
+	["illustrator:wind052"] = "画野朗",
 	["ikshangshishu"] = "殇蚀",
 	[":ikshangshishu"] = "摸牌阶段开始时，你可放弃摸牌，改为摸X张牌（X为已受伤的角色数），若如此做，当你于此回合内使用基本牌或锦囊牌时，你弃置一张牌。",
 	["#ikshangshishu"] = "殇蚀（弃牌）",
@@ -125,7 +125,7 @@ return {
 	["wind053"] = "莎缇莱萨•艾露•布丽姬",--风 - 空 - 4血
 	["&wind053"] = "莎缇莱萨",
 	["designer:wind053"] = "精精神神",
-	["illustrator:wind053"]="雛咲",
+	["illustrator:wind053"] = "雛咲",
 	["ikjueche"] = "决彻",
 	[":ikjueche"] = "锁定技。结束阶段开始时，你失去1点体力，然后摸两张牌。",
 	["ikjueche-edit"] = "决彻",
@@ -137,7 +137,7 @@ return {
 	["#wind054"] = "云端之旅",
 	["wind054"] = "苏暖暖",--风 - 幻 - 3血
 	["designer:wind054"] = "韩旭",
-	["illustrator:wind054"]="Wait",
+	["illustrator:wind054"] = "Wait",
 	["ikyuzhi"] = "羽织",
 	[":ikyuzhi"] = "出牌阶段开始时，你可以弃置任意张装备牌，然后亮出牌堆顶两倍数量的牌，你获得其中的锦囊牌，将其余的牌置入弃牌堆。",
 	["@ikyuzhi"] = "你可以发动“羽织”",
@@ -150,7 +150,7 @@ return {
 	["#bloom023"] = "死者行军",
 	["bloom023"] = "黑瞳",--花 - 空 - 4血
 	["designer:bloom023"] = "游卡桌游",
-	["illustrator:bloom023"]="Spark",
+	["illustrator:bloom023"] = "Spark",
 	["ikbashou"] = "八狩",
 	[":ikbashou"] = "其他角色的结束阶段开始时，你可以弃置一张基本牌，若如此做，该角色需弃置一张非基本牌，否则受到你对其造成的1点伤害。",
 	["@ikbashou"] = "你可以弃置一张基本牌发动“八狩”",
@@ -159,7 +159,7 @@ return {
 	["#bloom024"] = "高贵的赤蔷薇",
 	["bloom024"] = "真红",--花 - 空 - 4血
 	["designer:bloom024"] = "游卡桌游",
-	["illustrator:bloom024"]="NAbyssor",
+	["illustrator:bloom024"] = "NAbyssor",
 	["ikxinban"] = "心绊",
 	[":ikxinban"] = "阶段技。你可以将一张装备牌置于一名角色的装备区内，然后若该牌为武器牌，弃置该角色或该角色攻击范围内的一名角色区域内的一张牌；若为防具牌，该角色摸两张牌；若为坐骑牌，该角色回复1点体力。",
 	["@ikxinban-discard"] = "请选择 %src 或 %src 攻击范围内的一名角色",
@@ -167,7 +167,7 @@ return {
 	["#bloom028"] = "清越的音雨",
 	["bloom028"] = "坂井和奏",--花 - 空 - 3血
 	["designer:bloom028"] = "KayaK",
-	["illustrator:bloom028"]="Hiten",
+	["illustrator:bloom028"] = "Hiten",
 	["ikhuyin"] = "弧音",
 	[":ikhuyin"] = "阶段技。你可以选择一名其他角色，然后将一张牌面朝上置于你的人物牌上。当该角色使用、打出或弃置与你人物牌上的牌类别相同的牌时，其失去1点体力并获得你人物牌上的牌。准备阶段开始时，你须获得你人物牌上的牌。",
 	["@huyin_basic"] = "弧音（基本牌）",
@@ -181,7 +181,7 @@ return {
 	["#bloom033"] = "孤园的幸存者",
 	["bloom033"] = "若狭悠里",--花 - 空 - 4血
 	["designer:bloom033"] = "游卡桌游",
-	["illustrator:bloom033"]="遠坂あさぎ",
+	["illustrator:bloom033"] = "遠坂あさぎ",
 	["ikxunyuyouli"] = "巡御",
 	[":ikxunyuyouli"] = "你的回合结束时，你可以选择至多X名其他角色，你依次为每名角色由“飞影”、“灵卫”或“智迟”中选择一项技能并令其获得之，直到你的下一个回合开始（X为存活角色数量的一半-1，向下取整）。",
 	["@ikxunyuyouli"] = "你可以发动“巡御”",
@@ -190,19 +190,19 @@ return {
 	["#bloom040"] = "邪娇之恋",
 	["bloom040"] = "我妻由乃",--花 - 空 - 4血
 	["designer:bloom040"] = "游卡桌游",
-	["illustrator:bloom040"]="ちょこ庵",
+	["illustrator:bloom040"] = "ちょこ庵",
 	["iktianzuoyounai"] = "天座",
 	[":iktianzuoyounai"] = "锁定技。一名其他角色死亡时，你不执行奖惩，然后须摸三张牌。",
 	["ikshenji"] = "神记",
-	[":ikshenji"] ="限定技。准备阶段开始时，你可以摸三张牌，然后将你判定区里的全部牌置入弃牌堆。",
+	[":ikshenji"] = "限定技。准备阶段开始时，你可以摸三张牌，然后将你判定区里的全部牌置入弃牌堆。",
 	["ikkuanglu"] = "狂戮",
-	[":ikkuanglu"] ="出牌阶段开始时，若你已受伤，你可以摸一张牌，若如此做，你的手牌上限为X，直到回合结束（X为你此回合造成的伤害点数，且至多为4）。",
+	[":ikkuanglu"] = "出牌阶段开始时，若你已受伤，你可以摸一张牌，若如此做，你的手牌上限为X，直到回合结束（X为你此回合造成的伤害点数，且至多为4）。",
 
 	["#bloom041"] = "日露的军神",
 	["bloom041"] = "米卡莎•阿克曼",--花 - 空 - 4血
 	["&bloom041"] = "米卡莎",
 	["designer:bloom041"] = "Virgopaladin",
-	["illustrator:bloom041"]="刃天",
+	["illustrator:bloom041"] = "刃天",
 	["ikbenhua"] = "贲华",
 	[":ikbenhua"] = "每当一名角色成为【杀】的目标后，若你与该角色的距离不大于1，你可以将一张牌交给该角色并令其展示之，若为装备牌，其可使用之，然后你摸一张牌。",
 	["@ikbenhua-give"] = "请交给 %src 一张牌",
@@ -211,7 +211,7 @@ return {
 	["#bloom043"] = "奇迹的虹光",
 	["bloom043"] = "春野遥",--花 - 空 - 4血
 	["designer:bloom043"] = "游卡桌游",
-	["illustrator:bloom043"]="マナカッコワライ",
+	["illustrator:bloom043"] = "マナカッコワライ",
 	["ikhongfa"] = "虹法",
 	[":ikhongfa"] = "弃牌阶段开始时，你可以将一张装备牌置于一名角色的装备区里，然后你弃置该角色与之距离为2的一名角色区域内的一张牌。",
 	["@ikhongfa-equip"] = "你可以发动“虹法”",
@@ -225,7 +225,7 @@ return {
 	["#bloom044"] = "绯冰之梦",
 	["bloom044"] = "雪之下雪乃",--花 - 空 - 4血
 	["designer:bloom044"] = "游卡桌游",
-	["illustrator:bloom044"]="深崎暮人",
+	["illustrator:bloom044"] = "深崎暮人",
 	["iklingxue"] = "淩雪",
 	[":iklingxue"] = "每当你受到1点伤害后，你可以令当前回合角色手牌上限-1，直到回合结束。然后若该角色于此回合的弃牌阶段没有弃置牌，你于回合结束时，可以选择X项：获得当前回合角色的一张牌；或摸一张牌（X为你此回合发动“淩雪”的次数，且至多为2）。",
 	["#IkLingxueDraw"] = "%from 于弃牌阶段内弃置了 %arg2 张牌，触发 %to 的“%arg”效果",
@@ -235,7 +235,7 @@ return {
 	["#bloom046"] = "血坏的御使",
 	["bloom046"] = "初濑伊纲",--花 - 空 - 5血
 	["designer:bloom046"] = "韩旭",
-	["illustrator:bloom046"]="雨美すずめ",
+	["illustrator:bloom046"] = "雨美すずめ",
 	["ikgonghu"] = "功狐",
 	[":ikgonghu"] = "锁定技。每当一名角色死亡时，你增加1点体力上限，然后回复1点体力。",
 	["ikxuewu"] = "血舞",
@@ -246,7 +246,7 @@ return {
 	["#bloom050"] = "楚魅的忍姬",
 	["bloom050"] = "见当加奈美",--花 - 空 - 4血
 	["designer:bloom050"] = "韩旭",
-	["illustrator:bloom050"]="魚介",
+	["illustrator:bloom050"] = "魚介",
 	["ikqingwei"] = "青卫",
 	[":ikqingwei"] = "每当一名其他角色成为【杀】或黑色锦囊牌的唯一目标时，若该角色的体力值小于你，你可以弃置一张牌并选择一项：令此牌无效，并将之置于你的人物牌上，然后于此回合结束时，令此牌的使用者获得之；或摸一张牌，然后将此牌的目标转移为你。",
 	["@ikqingwei"] = "你可以发动“青卫”",
@@ -257,7 +257,7 @@ return {
 	["#bloom051"] = "凛熠的铳姬",
 	["bloom051"] = "千斗五十铃",--花 - 空 - 4血
 	["designer:bloom051"] = "游卡桌游",
-	["illustrator:bloom051"]="なかじまゆか",
+	["illustrator:bloom051"] = "なかじまゆか",
 	["ikzhiyu"] = "织煜",
 	[":ikzhiyu"] = "阶段技。你可以失去1点体力，然后选择一项，直到回合结束：<br />1. 你可将一张基本牌当任意基本牌使用或打出；<br />2. 你摸两张牌，且你使用的锦囊牌无距离限制；<br />3. 你摸一张牌，并弃置一张装备牌，然后你使用【杀】指定目标后，你可以弃置其两张牌。",
 	["ikzhiyu:basic"] = "可将一张基本牌当任意基本牌使用或打出",
@@ -270,7 +270,7 @@ return {
 	["#bloom058"] = "娇柔的猫姬",
 	["bloom058"] = "乾纱凪",--花 - 幻 - 3血
 	["designer:bloom058"] = "韩旭",
-	["illustrator:bloom058"]="和泉つばす",
+	["illustrator:bloom058"] = "和泉つばす",
 	["ikchenqing"] = "陈情",
 	[":ikchenqing"] = "当一名角色处于濒死状态时，你可以选择另一名其他角色，令该角色摸四张牌，然后其弃置四张牌，若其弃置的四张牌花色各不同，其视为对濒死角色使用【桃】。然后你不可以发动“陈情”，直到你的下回合开始。",
 	["@ikchenqing"] = "你可以发动“陈情”",
@@ -285,7 +285,7 @@ return {
 	["#snow022"] = "影中的妖刀",
 	["snow022"] = "忍野忍",--雪 - 空 - 4血
 	["designer:snow022"] = "游卡桌游",
-	["illustrator:snow022"]="ぎわ",
+	["illustrator:snow022"] = "ぎわ",
 	["ikxindu"] = "心渡",
 	[":ikxindu"] = "你使用【杀】时，可以额外指定一名距离为1的角色为目标。",
 	["ikfenxun"] = "奋迅",
@@ -294,7 +294,7 @@ return {
 	["#snow025"] = "喜翠之光",
 	["snow025"] = "松前绪花",--雪 - 空 - 3血
 	["designer:snow025"] = "韩旭",
-	["illustrator:snow025"]="poはるのいぶきkiki",
+	["illustrator:snow025"] = "poはるのいぶきkiki",
 	["ikhongrou"] = "弘柔",
 	[":ikhongrou"] = "准备或结束阶段开始时，你可弃置一张手牌并令一至两名其他角色各摸一张牌。",
 	["@ikhongrou"] = "你可以发动“弘柔”",
@@ -306,7 +306,7 @@ return {
 	["#snow032"] = "神眷之舞",
 	["snow032"] = "柊镜",--雪 - 幻 - 3血
 	["designer:snow032"] = "韩旭",
-	["illustrator:snow032"]="みずしま",
+	["illustrator:snow032"] = "みずしま",
 	["ikqiwu"] = "祈舞",
 	[":ikqiwu"] = "弃牌阶段开始时，你可以将一张手牌面朝上置于你的人物牌上，称为“祈”。当你拥有三张“祈”时，须全部弃置之，并对一名空属性角色造成2点伤害，然后弃置其装备区的所有牌。",
 	["ikqiwupile"] = "祈",
@@ -318,7 +318,7 @@ return {
 	["#snow033"] = "第五本源行者",
 	["snow033"] = "苍崎青子",--雪 - 空 - 3血
 	["designer:snow033"] = "韩旭",
-	["illustrator:snow033"]="saitom",
+	["illustrator:snow033"] = "saitom",
 	["iktianyan"] = "天衍",
 	[":iktianyan"] = "你的回合外，当你需要使用或打出一张基本牌时，你可以观看牌堆顶的两张牌。若其中有此名称的牌，你可以使用或打出之。",
 	["#IkTianyanUse"] = "%from 发动 %arg 使用/打出了牌堆顶的第 %arg2 张牌",
@@ -328,7 +328,7 @@ return {
 	["#snow040"] = "最古的魔女",
 	["snow040"] = "赛托希梅雅",--雪 - 空 - 4血
 	["designer:snow040"] = "红莲的焰神",
-	["illustrator:snow040"]="榎宮祐",
+	["illustrator:snow040"] = "榎宮祐",
 	["iklingzhou"] = "令咒",
 	[":iklingzhou"] = "弃牌阶段开始时，你可以将至少一张牌置于人物牌上，称为“咒”；每当你受到【碎月绮斗】或【杀】造成的伤害后，你须获得一张“咒”。",
 	["#iklingzhou"] = "令咒（获得）",
@@ -342,7 +342,7 @@ return {
 	["#snow043"] = "高天的剑巫",
 	["snow043"] = "姬柊雪菜",--雪 - 空 - 4血
 	["designer:snow043"] = "游卡桌游",
-	["illustrator:snow043"]="マニャ子",
+	["illustrator:snow043"] = "マニャ子",
 	["iklingtong"] = "灵瞳",
 	[":iklingtong"] = "阶段技。你可以令一名其他角色观看你的手牌，然后你选择一项：观看其手牌，然后你可以弃置其中一张黑色牌；或观看其身份牌。",
 	["iklingtong:handcards"] = "手牌",
@@ -354,7 +354,7 @@ return {
 	["#snow044"] = "禁书目录",
 	["snow044"] = "茵蒂克丝",--雪 - 空 - 4血
 	["designer:snow044"] = "游卡桌游",
-	["illustrator:snow044"]="NEO草野",
+	["illustrator:snow044"] = "NEO草野",
 	["iklunke"] = "轮刻",
 	[":iklunke"] = "阶段技。你可以选择一名人物牌没有横置的其他角色，然后横置该角色和你的人物牌。",
 	["ikcangmie"] = "苍灭",
@@ -363,7 +363,7 @@ return {
 	["#snow047"] = "鎏金的欠片",
 	["snow047"] = "九条可怜",--雪 - 幻 - 3血
 	["designer:snow047"] = "桃花僧",
-	["illustrator:snow047"]="しらたま",
+	["illustrator:snow047"] = "しらたま",
 	["iklinbu"] = "凛步",
 	[":iklinbu"] = "一名其他角色的出牌阶段开始时，若你不在其攻击范围内，你可以令该角色的锦囊牌均视为【杀】直到回合结束。若如此做，视为你在其攻击范围内直到回合结束。",
 	["ikmumu"] = "穆穆",
@@ -375,7 +375,7 @@ return {
 	["#snow050"] = "邪猥的睡魔",
 	["snow050"] = "成濑万里亚",--雪 - 空 - 3血
 	["designer:snow050"] = "韩旭",
-	["illustrator:snow050"]="大熊猫介",
+	["illustrator:snow050"] = "大熊猫介",
 	["ikyanhuo"] = "艳惑",
 	[":ikyanhuo"] = "一名角色的准备阶段开始时，若其手牌数不大于1，其可以摸一张牌，并将全部的手牌交给你，然后你须交给其等量的牌。",
 	["@ikyanhuo-to"] = "你可以选择发动“艳惑”的目标",
@@ -386,7 +386,7 @@ return {
 	["#snow053"] = "寒天的隐者",
 	["snow053"] = "四糸乃",--雪 - 幻 - 3血
 	["designer:snow053"] = "韩旭",
-	["illustrator:snow053"]="茶みらい",
+	["illustrator:snow053"] = "茶みらい",
 	["ikciyu"] = "慈雨",
 	[":ikciyu"] = "每当一名角色于其出牌阶段内回复体力时，你可选择一项：摸一张牌；或令该角色摸两张牌。",
 	["ikciyu:draw"] = "摸一张牌",
@@ -396,15 +396,15 @@ return {
 	["#IkQingsheWake"] = "%from 触发“%arg”觉醒",
 	["ikbingling"] = "氷泠",
 	[":ikbingling"] = "阶段技。你可以令一名其他角色弃置其一个区域里的所有牌并摸等量的牌，若如此做，你的手牌上限-1，直到回合结束。",
-	["ikbingling:h"]="手牌",
-	["ikbingling:e"]="装备区",
-	["ikbingling:j"]="判定区",
+	["ikbingling:h"] = "手牌",
+	["ikbingling:e"] = "装备区",
+	["ikbingling:j"] = "判定区",
 
 	["#snow055"] = "乐园追放",
 	["snow055"] = "安吉拉•巴尔扎克",--雪 - 空 - 4血
 	["&snow055"] = "安吉拉",
 	["designer:snow055"] = "LXRivers",
-	["illustrator:snow055"]="カントク",
+	["illustrator:snow055"] = "カントク",
 	["ikhuangpo"] = "荒破",
 	[":ikhuangpo"] = "出牌阶段限两次，你可以将一名角色区域内的一张牌面朝上置于你的人物牌上。结束阶段开始时，这些角色获得其以此法置于你人物牌上的牌。",
 	["#ikhuangpo"] = "荒破（拿牌）",
@@ -417,7 +417,7 @@ return {
 	["luna017"] = "优克里伍德•海尔赛兹",--月 - 空 - 4血
 	["&luna017"] = "优克里伍德",
 	["designer:luna017"] = "韩旭",
-	["illustrator:luna017"]="さくら小春",
+	["illustrator:luna017"] = "さくら小春",
 	["ikchenyan"] = "谶言",
 	[":ikchenyan"] = "锁定技。摸牌阶段摸牌时，你额外摸X张牌；弃牌阶段开始时，你须弃置X+1张牌（X为场上的势力数，且至少为2）。",
 	["#IkChenyanGood"] = "%from 的“%arg2”被触发，额外摸了 %arg 张牌",
@@ -431,14 +431,14 @@ return {
 	["luna019"] = "大和",--月 - 空 - 4血
 	--thxiagong
 	["designer:luna019"] = "游卡桌游",
-	["illustrator:luna019"]="KD",
+	["illustrator:luna019"] = "KD",
 	["ikzhange"] = "战歌",
 	[":ikzhange"] = "限定技。出牌阶段，若存活角色的数量大于五，你可以令一至三名角色各摸三张牌；否则你可以令一至两名角色各摸三张牌；若只有你摸牌，你回复1点体力。",
 
 	["#luna020"] = "风的私语",
 	["luna020"] = "汐宫栞",--月 - 空 - 3血
 	["designer:luna020"] = "游卡桌游",
-	["illustrator:luna020"]="カントク",
+	["illustrator:luna020"] = "カントク",
 	["ikzhizhai"] = "纸砦",
 	[":ikzhizhai"] = "锁定技。每当你受到伤害时，伤害来源须选择一项：令此伤害-1；或展示其全部的手牌并交给你一张牌。",
 	["ikzhizhai:reduce"] = "令此伤害-1",
@@ -453,7 +453,7 @@ return {
 	["luna021"] = "亚里亚•福尔摩斯•神崎",--月 - 空 - 4血
 	["&luna021"] = "亚里亚",
 	["designer:luna021"] = "游卡桌游",
-	["illustrator:luna021"]="NAbyssor",
+	["illustrator:luna021"] = "NAbyssor",
 	["ikcunyang"] = "刌扬",
 	[":ikcunyang"] = "每当你的拼点牌亮出后，你可以令此牌的点数于此次拼点中+3或-3（最大为K，最小为A）。",
 	["ikcunyang:up"] = "点数+3（最大为K）",
@@ -469,7 +469,7 @@ return {
 	["luna022"] = "卡恰•伊卡捷琳娜•库拉耶",--月 - 空 - 4血
 	["&luna022"] = "卡恰",
 	["designer:luna022"] = "游卡桌游",
-	["illustrator:luna022"]="こんもり",
+	["illustrator:luna022"] = "こんもり",
 	["iktianfa"] = "天罚",
 	[":iktianfa"] = "每当你的手牌数变化后，若小于X，你可以弃置一名其他角色的一张牌（X为你已损失的体力值且至少为1）。",
 	["iktianfa-invoke"] = "你可以发动“天罚”<br/> <b>操作提示</b>: 选择一名有牌的其他角色→点击确定<br/>",
@@ -481,7 +481,7 @@ return {
 	["&luna023"] = "夏洛特",
 	--thjibu
 	["designer:luna023"] = "游卡桌游",
-	["illustrator:luna023"]="茨乃",
+	["illustrator:luna023"] = "茨乃",
 	["ikshunqie"] = "瞬切",
 	[":ikshunqie"] = "每当你对其他角色造成一次伤害后，你可以获得受到该伤害的角色的装备区里的一张牌。",
 
@@ -489,7 +489,7 @@ return {
 	["luna024"] = "KOS-MOS",--月 - 空 - 4血
 	--thjibu
 	["designer:luna024"] = "嘉言懿行",
-	["illustrator:luna024"]="RA",
+	["illustrator:luna024"] = "RA",
 	["iklongya"] = "龙犽",
 	[":iklongya"] = "当你使用【杀】指定一名角色为目标后，你可以选择一项：摸一张牌，或弃置其一张牌。若如此做，此【杀】被【闪】抵消时，该角色须弃置你的一张牌。",
 	["#iklongya-miss"] = "龙犽（后续结算）",
@@ -499,7 +499,7 @@ return {
 	["#luna025"] = "独我之意",
 	["luna025"] = "食蜂操祈",--月 - 空 - 3血
 	["designer:luna025"] = "韩旭",
-	["illustrator:luna025"]="みつ",
+	["illustrator:luna025"] = "みつ",
 	["ikhengmou"] = "衡谋",
 	[":ikhengmou"] = "当你成为【杀】的目标时，你可以弃置两张牌（不足则全弃，无牌则不弃），然后摸两张牌。若此时全场体力值最多的角色仅有一名且不是你，该角色也可以如此做。",
 	["ikxincao"] = "心操",
@@ -509,7 +509,7 @@ return {
 	["#luna026"] = "娇辣的邻人",
 	["luna026"] = "三日月夜空",--月 - 空 - 3血
 	["designer:luna026"] = "韩旭",
-	["illustrator:luna026"]="はたち",
+	["illustrator:luna026"] = "はたち",
 	["ikkouzhu"] = "口诛",
 	[":ikkouzhu"] = "结束阶段开始时，若你的人物牌上没有牌，你可以将一张手牌面朝下置于你的人物牌上，称为“言”，并指定一名其他角色（该角色在亮出“言”前死亡时，须将“言”置入弃牌堆）。该角色的回合开始时，其亮出“言”并选择一项：交给你一张与此牌类别相同的手牌并获得此牌；或将此牌置入弃牌堆，然后失去1点体力。",
 	["ikkouzhupile"] = "言",
@@ -523,7 +523,7 @@ return {
 	["#luna035"] = "咒蛇之囮",
 	["luna035"] = "千石抚子",--月 - 空 - 4血
 	["designer:luna035"] = "游卡桌游",
-	["illustrator:luna035"]="えふぇ",
+	["illustrator:luna035"] = "えふぇ",
 	["iksheqie"] = "蛇切",
 	[":iksheqie"] = "阶段技。你可以令一名你攻击范围内的角色交给你一张手牌。然后若你的手牌数大于该角色，视为该角色选择对你使用一张无视距离的【杀】或【碎月绮斗】。",
 	["iksheqie:slash"] = "视为使用一张无视距离的【杀】",
@@ -536,7 +536,7 @@ return {
 	["#luna040"] = "染咒的斗兔",
 	["luna040"] = "蓝原延珠",--月 - 空 - 3血
 	["designer:luna040"] = "游卡桌游",
-	["illustrator:luna040"]="古都はいぢ",
+	["illustrator:luna040"] = "古都はいぢ",
 	["ikhongta"] = "虹踏",
 	[":ikhongta"] = "锁定技。每当一名角色使用一张武器牌或坐骑牌后，若你在其攻击范围内，你摸一张牌。",
 	["iknicu"] = "逆蹴",
@@ -547,7 +547,7 @@ return {
 	["#luna043"] = "狂气的夜魇",
 	["luna043"] = "时崎狂三",--月 - 幻 - 3血
 	["designer:luna043"] = "游卡桌游",
-	["illustrator:luna043"]="果冻dog～",
+	["illustrator:luna043"] = "果冻dog～",
 	["ikzhoudu"] = "宙毒",
 	[":ikzhoudu"] = "一名其他角色的出牌阶段开始时，你可以弃置一张手牌：视为该角色使用一张计入使用限制的【酒】，然后你对其造成1点伤害。",
 	["@ikzhoudu-discard"] = "你可以弃置一张手牌发动“宙毒”",
@@ -559,7 +559,7 @@ return {
 	["#luna044"] = "破击之猫",
 	["luna044"] = "黑羽宁子",--月 - 空 - 4血
 	["designer:luna044"] = "游卡桌游",
-	["illustrator:luna044"]="雛咲",
+	["illustrator:luna044"] = "雛咲",
 	["ikmingzhen"] = "铭振",
 	[":ikmingzhen"] = "每当你使用【杀】或【碎月绮斗】对目标角色造成伤害时，你可以令其选择一项并防止此伤害：1.令你无效其全部的人物技能，直到你的下一个出牌阶段开始时；2.弃置装备区的所有牌（至少一张），并失去1点体力。",
 	["ikmingzhen:null"] = "无效全部的人物技能",
@@ -570,17 +570,17 @@ return {
 	["#luna050"] = "未明的闪击使",
 	["luna050"] = "雷＆电",--月 - 空 - 4血
 	["designer:luna050"] = "游卡桌游",
-	["illustrator:luna050"]="60枚",
+	["illustrator:luna050"] = "60枚",
 	["iktingmai"] = "霆脉",
 	[":iktingmai"] = "每当一名角色对人物牌竖置的角色造成雷电伤害时，你可以令伤害来源进行一次判定，若为黑色，令此伤害+1；若为红色，伤害来源获得此判定牌。",
-	["#IkTingmai"]="%from 发动了“<font color=\"yellow\"><b>霆脉</b></font>”，%to 造成的伤害由 %arg 上升到了 %arg2",
+	["#IkTingmai"] = "%from 发动了“<font color=\"yellow\"><b>霆脉</b></font>”，%to 造成的伤害由 %arg 上升到了 %arg2",
 	["ikhuangzhen"] = "荒震",
 	[":ikhuangzhen"] = "你可以将【杀】当具雷电伤害的【杀】使用。",
 
 	["#luna052"] = "大食的空母",
 	["luna052"] = "赤城",--月 - 空 - 4血
 	["designer:luna052"] = "伴剑一生",
-	["illustrator:luna052"]="colis",
+	["illustrator:luna052"] = "colis",
 	["ikhuisuo"] = "彗索",
 	[":ikhuisuo"] = "锁定技。你计算与体力值小于你的角色的距离时，无视除该角色外的其他角色及场上的坐骑牌。",
 	["ikcangliu"] = "苍流",
