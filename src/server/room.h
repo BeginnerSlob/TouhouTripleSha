@@ -247,7 +247,7 @@ public:
     void filterCards(ServerPlayer *player, QList<const Card *> cards, bool refilter);
 
     void acquireSkill(ServerPlayer *player, const Skill *skill, bool open = true, bool extra = false);
-    void acquireSkill(ServerPlayer *player, const QString &skill_name, bool open = true);
+    void acquireSkill(ServerPlayer *player, const QString &skill_name, bool open = true, bool extra = false);
     void adjustSeats();
     void swapPile();
     inline QList<int> getDiscardPile() { return *m_discardPile; }

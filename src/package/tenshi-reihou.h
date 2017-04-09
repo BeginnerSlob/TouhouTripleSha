@@ -81,6 +81,47 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+#include <QDialog>
+#include <QButtonGroup>
+#include <QVBoxLayout>
+class RhHaoqiangDialog: public QDialog
+{
+    Q_OBJECT
+
+public:
+    static RhHaoqiangDialog *getInstance();
+
+public slots:
+    void popup();
+    void selectCard(QAbstractButton *button);
+
+private:
+    explicit RhHaoqiangDialog();
+
+    QButtonGroup *group;
+    QVBoxLayout *button_layout;
+
+    QHash<QString, const Card *> map;
+
+signals:
+    void onButtonClick();
+};
+
+class RhHaoqiangCard: public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE RhHaoqiangCard();
+
+    virtual bool targetFixed() const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
+
+    virtual const Card *validate(CardUseStruct &card_use) const;
+    virtual const Card *validateInResponse(ServerPlayer *user) const;
+};
+
 class TenshiReihouPackage : public Package
 {
     Q_OBJECT
