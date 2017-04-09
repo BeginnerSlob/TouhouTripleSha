@@ -8,14 +8,18 @@
 #include "settings.h"
 #include "ai.h"
 
-class IkLiegong: public TriggerSkill {
+class IkLiegong : public TriggerSkill
+{
 public:
-    IkLiegong(): TriggerSkill("ikliegong") {
+    IkLiegong() : TriggerSkill("ikliegong")
+    {
         events << TargetSpecified;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(player)) return QStringList();
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
         CardUseStruct use = data.value<CardUseStruct>();
         if (player != use.from || player->getPhase() != Player::Play || !use.card->isKindOf("Slash"))
             return QStringList();
@@ -27,7 +31,8 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
         CardUseStruct use = data.value<CardUseStruct>();
         QVariantList jink_list = player->tag["Jink_" + use.card->toString()].toList();
         int index = 0;
