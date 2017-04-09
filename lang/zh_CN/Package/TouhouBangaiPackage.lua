@@ -53,10 +53,10 @@ return {
 	["designer:bangai005"] = "雷神之魂",
 	["illustrator:bangai005"] = "十誤一会",
 	["cv:bangai005"] = "暂无",
-	["thxijing"] = "隙境", 
+	["thxijing"] = "隙境",
 	[":thxijing"] = "你的回合外，每当你的非装备牌进入弃牌堆后，你可以用一张相同颜色的手牌替换之。",
 	["@thxijing"] = "你可以用一张相同颜色的手牌替换 %src%dest 的 %arg",
-	["thmengwei"] = "梦违", 
+	["thmengwei"] = "梦违",
 	[":thmengwei"] = "结束阶段开始时，若你的手牌小于两张，你可以将手牌补至两张；其他角色的准备阶段开始时，若你没有手牌，你可以摸一张牌。",
 	
 	["#bangai006"] = "幻梦的林檎",
