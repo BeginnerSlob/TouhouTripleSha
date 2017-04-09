@@ -1680,6 +1680,103 @@ public:
     }
 };
 
+class RhCuigu : public TriggerSkill
+{
+public:
+    RhCuigu() : TriggerSkill("rhcuigu")
+    {
+        events << TargetSpecified << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    if (p->getMark(objectName()) > 0) {
+                        room->setPlayerMark(p, objectName(), 0);
+                        room->removePlayerCardLimitation(p, "use", "Peach$0");
+                    }
+                }
+            }
+        } else if (TriggerSkill::triggerable(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (player->getPhase() == Player::Play && use.card->isKindOf("Slash") && !use.to.isEmpty())
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        foreach (ServerPlayer *p, use.to) {
+            if (player->askForSkillInvoke(objectName(), QVariant::fromValue(p))) {
+                room->broadcastSkillInvoke(objectName());
+
+                room->removeReihouCard(player);
+                room->setPlayerCardLimitation(p, "use", "Peach", false);
+                room->addPlayerMark(p, objectName());
+                LogMessage log;
+                log.type = "#RhCuigu";
+                log.from = p;
+                log.arg = "peach";
+                room->sendLog(log);
+                break;
+            }
+        }
+        return false;
+    }
+};
+
+class RhCuiguProhibit : public ProhibitSkill
+{
+public:
+    RhCuiguProhibit() : ProhibitSkill("#rhcuigu") {
+    }
+
+    virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const
+    {
+        return to->getMark("rhcuigu") > 0 && card->isKindOf("Peach");
+    }
+};
+
+class RhLinghai : public TriggerSkill
+{
+public:
+    RhLinghai() : TriggerSkill("rhlinghai")
+    {
+        events << DamageInflicted;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        TriggerList skill_list;
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.damage >= player->getHp()) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+                skill_list.insert(p, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            room->removeReihouCard(ask_who);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *) const
+    {
+        return true;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -1761,7 +1858,10 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou019->addSkill(new RhWangzhong);
 
     General *reihou020 = new General(this, "reihou020", "rei", 4, true, true);
-    reihou020->addSkill(new RhWangzhong);
+    reihou020->addSkill(new RhCuigu);
+    reihou020->addSkill(new RhCuiguProhibit);
+    related_skills.insertMulti("rhcuigu", "#rhcuigu");
+    reihou020->addSkill(new RhLinghai);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
