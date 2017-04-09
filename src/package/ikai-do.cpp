@@ -164,7 +164,8 @@ public:
     }
 };
 
-IkChilianDialog *IkChilianDialog::getInstance() {
+IkChilianDialog *IkChilianDialog::getInstance()
+{
     static IkChilianDialog *instance;
     if (instance == NULL)
         instance = new IkChilianDialog();
@@ -172,7 +173,8 @@ IkChilianDialog *IkChilianDialog::getInstance() {
     return instance;
 }
 
-IkChilianDialog::IkChilianDialog() {
+IkChilianDialog::IkChilianDialog()
+{
     setObjectName("ikchilian");
     setWindowTitle(Sanguosha->translate("ikchilian"));
     group = new QButtonGroup(this);
@@ -182,7 +184,8 @@ IkChilianDialog::IkChilianDialog() {
     connect(group, SIGNAL(buttonClicked(QAbstractButton *)), this, SLOT(selectCard(QAbstractButton *)));
 }
 
-void IkChilianDialog::popup() {
+void IkChilianDialog::popup()
+{
     foreach (QAbstractButton *button, group->buttons()) {
         button_layout->removeWidget(button);
         group->removeButton(button);
@@ -216,32 +219,39 @@ void IkChilianDialog::popup() {
     exec();
 }
 
-void IkChilianDialog::selectCard(QAbstractButton *button) {
+void IkChilianDialog::selectCard(QAbstractButton *button)
+{
     const Card *card = map.value(button->objectName());
     Self->tag["ikchilian"] = QVariant::fromValue(card);
     emit onButtonClick();
     accept();
 }
 
-class IkChilian: public OneCardViewAsSkill {
+class IkChilian : public OneCardViewAsSkill
+{
 public:
-    IkChilian(): OneCardViewAsSkill("ikchilian") {
+    IkChilian() : OneCardViewAsSkill("ikchilian")
+    {
         response_or_use = true;
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const{
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
         return Slash::IsAvailable(player);
     }
 
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
+    {
         return pattern == "slash";
     }
 
-    virtual QDialog *getDialog() const{
+    virtual QDialog *getDialog() const
+    {
         return IkChilianDialog::getInstance();
     }
 
-    virtual bool viewFilter(const Card *card) const{
+    virtual bool viewFilter(const Card *card) const
+    {
         if (!card->isRed())
             return false;
 
@@ -257,18 +267,21 @@ public:
         return true;
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const{
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
         const Card *c = Self->tag.value("ikchilian").value<const Card *>();
         if (c) {
             Card *card = Sanguosha->cloneCard(c);
             card->addSubcard(originalCard);
             card->setSkillName(objectName());
             return card;
-        } else
-            return NULL;
+        }
+
+        return NULL;
     }
 
-    virtual int getEffectIndex(const ServerPlayer *target, const Card *) const{
+    virtual int getEffectIndex(const ServerPlayer *target, const Card *) const
+    {
         if (target->getGeneralName() == "snow052")
             return qrand() % 2 + 1;
         return 0;

@@ -4284,9 +4284,10 @@ void Room::acquireSkill(ServerPlayer *player, const Skill *skill, bool open, boo
     }
 }
 
-void Room::acquireSkill(ServerPlayer *player, const QString &skill_name, bool open) {
+void Room::acquireSkill(ServerPlayer *player, const QString &skill_name, bool open, bool extra) {
     const Skill *skill = Sanguosha->getSkill(skill_name);
-    if (skill) acquireSkill(player, skill, open);
+    if (skill)
+        acquireSkill(player, skill, open, extra);
 }
 
 void Room::setTag(const QString &key, const QVariant &value) {

@@ -1777,6 +1777,289 @@ public:
     }
 };
 
+RhHaoqiangDialog *RhHaoqiangDialog::getInstance()
+{
+    static RhHaoqiangDialog *instance;
+    if (instance == NULL)
+        instance = new RhHaoqiangDialog();
+
+    return instance;
+}
+
+RhHaoqiangDialog::RhHaoqiangDialog()
+{
+    setObjectName("rhhaoqiang");
+    setWindowTitle(Sanguosha->translate("rhhaoqiang"));
+    group = new QButtonGroup(this);
+
+    button_layout = new QVBoxLayout;
+    setLayout(button_layout);
+    connect(group, SIGNAL(buttonClicked(QAbstractButton *)), this, SLOT(selectCard(QAbstractButton *)));
+}
+
+void RhHaoqiangDialog::popup()
+{
+    if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
+        Self->tag.remove("rhhaoqiang");
+        emit onButtonClick();
+        return;
+    }
+
+    foreach (QAbstractButton *button, group->buttons()) {
+        button_layout->removeWidget(button);
+        group->removeButton(button);
+        delete button;
+    }
+
+    QStringList card_names;
+    card_names << "slash" << "duel";
+
+    foreach (QString card_name, card_names) {
+        QCommandLinkButton *button = new QCommandLinkButton;
+        button->setText(Sanguosha->translate(card_name));
+        button->setObjectName(card_name);
+        group->addButton(button);
+
+        bool can = true;
+        const Card *c = Sanguosha->cloneCard(card_name);
+        if (Self->isCardLimited(c, Card::MethodUse) || !c->isAvailable(Self))
+            can = false;
+        delete c;
+        button->setEnabled(can);
+        button_layout->addWidget(button);
+
+        if (!map.contains(card_name)) {
+            Card *c = Sanguosha->cloneCard(card_name);
+            c->setParent(this);
+            map.insert(card_name, c);
+        }
+    }
+
+    exec();
+}
+
+void RhHaoqiangDialog::selectCard(QAbstractButton *button)
+{
+    const Card *card = map.value(button->objectName());
+    Self->tag["rhhaoqiang"] = QVariant::fromValue(card);
+    emit onButtonClick();
+    accept();
+}
+
+RhHaoqiangCard::RhHaoqiangCard()
+{
+    mute = true;
+}
+
+bool RhHaoqiangCard::targetFixed() const
+{
+    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = Sanguosha->cloneCard(user_string);
+        card->setSkillName("rhhaoqiang");
+        card->addSubcard(this);
+        card->deleteLater();
+        return card && card->targetFixed();
+    } else if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+        return true;
+    }
+
+    Card *new_card = Sanguosha->cloneCard(user_string);
+    new_card->setSkillName("rhhaoqiang");
+    new_card->addSubcard(this);
+    new_card->deleteLater();
+    return new_card && new_card->targetFixed();
+}
+
+bool RhHaoqiangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = Sanguosha->cloneCard(user_string);
+        card->setSkillName("rhhaoqiang");
+        card->addSubcard(this);
+        card->deleteLater();
+        return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
+    } else if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+        return false;
+    }
+
+    Card *new_card = Sanguosha->cloneCard(user_string);
+    new_card->setSkillName("rhhaoqiang");
+    new_card->addSubcard(this);
+    new_card->deleteLater();
+    return new_card && new_card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, new_card, targets);
+}
+
+bool RhHaoqiangCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
+{
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = Sanguosha->cloneCard(user_string);
+        card->setSkillName("rhhaoqiang");
+        card->addSubcard(this);
+        card->deleteLater();
+        return card && card->targetsFeasible(targets, Self);
+    } else if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+        return true;
+    }
+
+    Card *new_card = Sanguosha->cloneCard(user_string);
+    new_card->setSkillName("rhhaoqiang");
+    new_card->addSubcard(this);
+    new_card->deleteLater();
+    return new_card && new_card->targetsFeasible(targets, Self);
+}
+
+const Card *RhHaoqiangCard::validate(CardUseStruct &card_use) const
+{
+    ServerPlayer *user = card_use.from;
+    Room *room = user->getRoom();
+
+    room->addPlayerMark(user, "rhhaoqiang");
+
+    Card *use_card = Sanguosha->cloneCard(user_string);
+    use_card->setSkillName("rhhaoqiang");
+    use_card->addSubcard(this);
+    use_card->deleteLater();
+    return use_card;
+}
+
+const Card *RhHaoqiangCard::validateInResponse(ServerPlayer *user) const
+{
+    Room *room = user->getRoom();
+
+    room->addPlayerMark(user, "rhhaoqiang");
+
+    Card *use_card = Sanguosha->cloneCard(user_string);
+    use_card->setSkillName("rhhaoqiang");
+    use_card->addSubcard(this);
+    use_card->deleteLater();
+    return use_card;
+}
+
+class RhHaoqiangVS : public OneCardViewAsSkill
+{
+public:
+    RhHaoqiangVS() : OneCardViewAsSkill("rhhaoqiang")
+    {
+        filter_pattern = "TrickCard";
+        response_pattern = "slash";
+        response_or_use = true;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        if (player->getMark(objectName()) > 0)
+            return false;
+        Slash *slash = new Slash(Card::SuitToBeDecided, -1);
+        slash->setSkillName(objectName());
+        slash->deleteLater();
+        Duel *duel = new Duel(Card::SuitToBeDecided, -1);
+        duel->setSkillName(objectName());
+        duel->deleteLater();
+        return slash->isAvailable(player) || duel->isAvailable(player);
+    }
+
+    virtual QDialog *getDialog() const
+    {
+        return RhHaoqiangDialog::getInstance();
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
+            RhHaoqiangCard *card = new RhHaoqiangCard();
+            card->addSubcard(originalCard);
+            card->setUserString("slash");
+            return card;
+        }
+
+        const Card *c = Self->tag.value("rhhaoqiang").value<const Card *>();
+        if (c) {
+            RhHaoqiangCard *card = new RhHaoqiangCard();
+            card->addSubcard(originalCard);
+            card->setUserString(c->objectName());
+            return card;
+        }
+
+        return NULL;
+    }
+};
+
+class RhHaoqiang : public TriggerSkill
+{
+public:
+    RhHaoqiang() : TriggerSkill("rhhaoqiang")
+    {
+        events << EventPhaseChanging;
+        view_as_skill = new RhHaoqiangVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *&) const
+    {
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (change.to == Player::NotActive) {
+            foreach (ServerPlayer *p, room->getAlivePlayers())
+                room->setPlayerMark(p, objectName(), 0);
+        }
+        return QStringList();
+    }
+};
+
+class RhLiedan : public TriggerSkill
+{
+public:
+    RhLiedan() : TriggerSkill("rhliedan")
+    {
+        events << Damaged << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    if (p->getMark(objectName()) > 0) {
+                        room->setPlayerMark(p, objectName(), 0);
+                        room->detachSkillFromPlayer(p, "ikwushuang", false, true);
+                    }
+                }
+            }
+        } else {
+            if (TriggerSkill::triggerable(player) && player->canDiscard(player, "h"))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (room->askForCard(player, ".", "@rhliedan", data, objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (!player->hasSkill("ikwushuang")) {
+            room->addPlayerMark(player, objectName());
+            room->acquireSkill(player, "ikwushuang");
+        }
+
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.from) {
+            Duel *duel = new Duel(Card::NoSuit, 0);
+            duel->setSkillName(objectName());
+            if (!player->isCardLimited(duel, Card::MethodUse) && !player->isProhibited(damage.from, duel))
+                room->useCard(CardUseStruct(duel, player, damage.from));
+            else
+                delete duel;
+        }
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -1863,12 +2146,17 @@ TenshiReihouPackage::TenshiReihouPackage()
     related_skills.insertMulti("rhcuigu", "#rhcuigu");
     reihou020->addSkill(new RhLinghai);
 
+    General *reihou021 = new General(this, "reihou021", "rei", 4, true, true);
+    reihou021->addSkill(new RhHaoqiang);
+    reihou021->addSkill(new RhLiedan);
+
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
     addMetaObject<RhHuanjingCard>();
     addMetaObject<RhPujiuCard>();
     addMetaObject<RhGaimingCard>();
     addMetaObject<RhXuanrenCard>();
+    addMetaObject<RhHaoqiangCard>();
 }
 
 ADD_PACKAGE(TenshiReihou)
