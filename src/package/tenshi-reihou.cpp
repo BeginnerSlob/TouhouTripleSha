@@ -1635,9 +1635,9 @@ public:
         frequency = NotCompulsory;
     }
 
-    virtual bool isProhibited(const Player *, const Player *, const Card *card, const QList<const Player *> &) const
+    virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const
     {
-        return card->isKindOf("Dismantlement") || card->isKindOf("Snatch");
+        return to->hasSkill(objectName()) && (card->isKindOf("Dismantlement") || card->isKindOf("Snatch"));
     }
 };
 
@@ -1683,7 +1683,7 @@ public:
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
-    /*General *reihou001 = new General(this, "reihou001", "rei", 4, true, true);
+    General *reihou001 = new General(this, "reihou001", "rei", 4, true, true);
     reihou001->addSkill(new RhDuanlong);
     reihou001->addSkill(new FakeMoveSkill("rhduanlong"));
     related_skills.insertMulti("rhduanlong", "#rhduanlong-fake-move");
@@ -1748,17 +1748,20 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou015->addSkill(new RhXuanren);
 
     General *reihou016 = new General(this, "reihou016", "rei", 4, true, true);
-    reihou016->addSkill(new RhGuozao);*/
+    reihou016->addSkill(new RhGuozao);
 
     General *reihou017 = new General(this, "reihou017", "rei", 4, true, true);
     reihou017->addSkill(new RhShenguang);
 
-    /*General *reihou018 = new General(this, "reihou018", "rei", 4, true, true);
+    General *reihou018 = new General(this, "reihou018", "rei", 4, true, true);
     reihou018->addSkill(new RhMangti);
     reihou018->addSkill(new RhLingwei);
 
     General *reihou019 = new General(this, "reihou019", "rei", 4, true, true);
-    reihou019->addSkill(new RhWangzhong);*/
+    reihou019->addSkill(new RhWangzhong);
+
+    General *reihou020 = new General(this, "reihou020", "rei", 4, true, true);
+    reihou020->addSkill(new RhWangzhong);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
