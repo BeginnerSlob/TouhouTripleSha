@@ -1958,11 +1958,6 @@ public:
         return slash->isAvailable(player) || duel->isAvailable(player);
     }
 
-    virtual QDialog *getDialog() const
-    {
-        return RhHaoqiangDialog::getInstance();
-    }
-
     virtual const Card *viewAs(const Card *originalCard) const
     {
         if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
@@ -1991,6 +1986,11 @@ public:
     {
         events << EventPhaseChanging;
         view_as_skill = new RhHaoqiangVS;
+    }
+
+    virtual QDialog *getDialog() const
+    {
+        return RhHaoqiangDialog::getInstance();
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *&) const
