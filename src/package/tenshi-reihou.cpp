@@ -2073,6 +2073,135 @@ public:
     }
 };
 
+RhYarenCard::RhYarenCard()
+{
+}
+
+bool RhYarenCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    return targets.isEmpty() && to_select != Self && !to_select->isKongcheng();
+}
+
+void RhYarenCard::onEffect(const CardEffectStruct &effect) const
+{
+    Room *room = effect.from->getRoom();
+    room->addPlayerMark(effect.from, "rhyaren");
+    if (effect.from->pindian(effect.to, "rhyaren", NULL)) {
+        effect.from->tag["RhYarenTarget"] = QVariant::fromValue(effect.to);
+        room->setFixedDistance(effect.from, effect.to, 1);
+    } else {
+        if (effect.to->isWounded() && effect.from->askForSkillInvoke("rhyaren_recover", "yes"))
+            room->recover(effect.to, RecoverStruct(effect.from));
+    }
+}
+
+class RhYarenViewAsSkill : public ZeroCardViewAsSkill
+{
+public:
+    RhYarenViewAsSkill() : ZeroCardViewAsSkill("rhyaren")
+    {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("RhYarenCard") && !player->isKongcheng();
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new RhYarenCard;
+    }
+};
+
+class RhYaren : public TriggerSkill
+{
+public:
+    RhYaren() : TriggerSkill("rhyaren")
+    {
+        events << EventPhaseChanging << Death << EventLoseSkill;
+        view_as_skill = new RhYarenViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *gaoshun, QVariant &data, ServerPlayer* &) const
+    {
+        if (triggerEvent == EventLoseSkill) {
+            if (data.toString() == objectName())
+                room->setPlayerMark(gaoshun, "rhyaren", 0);
+            return QStringList();
+        }
+        if (!gaoshun || !gaoshun->tag["RhYarenTarget"].value<ServerPlayer *>())
+            return QStringList();
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to != Player::NotActive)
+                return QStringList();
+        }
+        ServerPlayer *target = gaoshun->tag["RhYarenTarget"].value<ServerPlayer *>();
+        if (triggerEvent == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != gaoshun) {
+                if (death.who == target) {
+                    room->removeFixedDistance(gaoshun, target, 1);
+                    gaoshun->tag.remove("RhYarenTarget");
+                }
+                return QStringList();
+            }
+        }
+        if (target) {
+            room->removeFixedDistance(gaoshun, target, 1);
+            gaoshun->tag.remove("RhYarenTarget");
+        }
+        return QStringList();
+    }
+};
+
+class RhShixiang : public TriggerSkill
+{
+public:
+    RhShixiang() : TriggerSkill("rhshixiang")
+    {
+        events << EventPhaseStart << EventPhaseChanging;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        TriggerList skill_list;
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive && player->getMark("rhshixiang") > 0) {
+                room->setPlayerMark(player, "rhshixiang", 0);
+                room->detachSkillFromPlayer(player, "rhyaren", false, true);
+            }
+        } else if (player->getPhase() == Player::RoundStart) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p == player)
+                    continue;
+                if (p->getMark("rhyaren") > 0)
+                    continue;
+                skill_list.insert(p, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke("rhshixiang", QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            room->removeReihouCard(ask_who);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->acquireSkill(player, "rhyaren");
+        room->addPlayerMark(player, "rhshixiang");
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -2162,6 +2291,10 @@ TenshiReihouPackage::TenshiReihouPackage()
     General *reihou021 = new General(this, "reihou021", "rei", 4, true, true);
     reihou021->addSkill(new RhHaoqiang);
     reihou021->addSkill(new RhLiedan);
+
+    General *reihou022 = new General(this, "reihou022", "rei", 4, true, true);
+    reihou022->addSkill(new RhYaren);
+    reihou022->addSkill(new RhShixiang);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
