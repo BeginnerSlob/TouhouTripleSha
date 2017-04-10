@@ -885,7 +885,7 @@ class RhZhenyao : public TriggerSkill
 public:
     RhZhenyao() : TriggerSkill("rhzhenyao")
     {
-        events << TargetSpecified << TargetConfirmed << EventPhaseChanging;
+        events << TargetSpecified << TargetConfirmed << EventPhaseChanging << FinishJudge;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
@@ -906,6 +906,13 @@ public:
                 CardUseStruct use = data.value<CardUseStruct>();
                 if (use.to.contains(player) && use.card->isKindOf("Slash"))
                     return QStringList(objectName());
+            }
+        } else if (triggerEvent == FinishJudge) {
+            if (player->hasFlag("rhzhenyao")) {
+                player->setFlags("-rhzhenyao");
+                CardUseStruct use = player->tag["RhZhenyaoUse"].value<CardUseStruct>();
+                player->tag.remove("RhZhenyaoUse");
+                player->addZhenyaoTag(use.card);
             }
         }
         return QStringList();
@@ -928,7 +935,15 @@ public:
         judge.good = true;
         judge.reason = objectName();
         judge.who = player;
+        if (triggerEvent == TargetConfirmed) {
+            player->setFlags("rhzhenyao");
+            player->tag["RhZhenyaoUse"] = data;
+        }
         room->judge(judge);
+        if (triggerEvent == TargetConfirmed && player->hasFlag("rhzhenyao")) {
+            player->setFlags("-rhzhenyao");
+            player->tag.remove("RhZhenyaoDamage");
+        }
 
         if (judge.isBad())
             return false;
@@ -946,8 +961,6 @@ public:
                 index++;
             }
             player->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
-        } else if (triggerEvent == TargetConfirmed) {
-            player->addZhenyaoTag(use.card);
         }
         return false;
     }
