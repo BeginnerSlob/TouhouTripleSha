@@ -974,7 +974,7 @@ QGroupBox *ServerDialog::createGameModeBox() {
     mode_group->addButton(mini_scenes);
 
     mini_scene_ComboBox = new QComboBox;
-    int index = -1;
+    //int index = -1;
     int stage = qMin(Sanguosha->getMiniSceneCounts(), Config.value("MiniSceneStage", 1).toInt());
 
     for (int i = 1; i <= stage; i++) {
@@ -985,7 +985,7 @@ QGroupBox *ServerDialog::createGameModeBox() {
         QString text = tr("%1 (%2 persons)").arg(scenario_name).arg(count);
         mini_scene_ComboBox->addItem(text, name);
 
-        if (name == Config.GameMode) index = i - 1;
+        //if (name == Config.GameMode) index = i - 1;
     }
 
     /*if (index >= 0) {
