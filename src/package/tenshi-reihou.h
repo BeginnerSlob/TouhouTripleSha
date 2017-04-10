@@ -133,6 +133,16 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class RhYinrenCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE RhYinrenCard();
+
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class TenshiReihouPackage : public Package
 {
     Q_OBJECT
