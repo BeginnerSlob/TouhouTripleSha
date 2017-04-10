@@ -5525,14 +5525,17 @@ public:
     }
 };
 
-IkLvdongCard::IkLvdongCard() {
+IkLvdongCard::IkLvdongCard()
+{
 }
 
-bool IkLvdongCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkLvdongCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
     return targets.isEmpty() && to_select != Self && !to_select->isKongcheng();
 }
 
-void IkLvdongCard::onEffect(const CardEffectStruct &effect) const{
+void IkLvdongCard::onEffect(const CardEffectStruct &effect) const
+{
     Room *room = effect.from->getRoom();
     if (effect.from->pindian(effect.to, "iklvdong", NULL)) {
         ServerPlayer *target = effect.to;
@@ -5550,28 +5553,34 @@ void IkLvdongCard::onEffect(const CardEffectStruct &effect) const{
     }
 }
 
-class IkLvdongViewAsSkill: public ZeroCardViewAsSkill {
+class IkLvdongViewAsSkill: public ZeroCardViewAsSkill
+{
 public:
-    IkLvdongViewAsSkill(): ZeroCardViewAsSkill("iklvdong") {
+    IkLvdongViewAsSkill(): ZeroCardViewAsSkill("iklvdong")
+    {
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const{
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
         return !player->hasUsed("IkLvdongCard") && !player->isKongcheng();
     }
 
-    virtual const Card *viewAs() const{
+    virtual const Card *viewAs() const
+    {
         return new IkLvdongCard;
     }
 };
 
-class IkLvdong: public TriggerSkill {
+class IkLvdong : public TriggerSkill {
 public:
-    IkLvdong(): TriggerSkill("iklvdong") {
+    IkLvdong() : TriggerSkill("iklvdong")
+    {
         events << EventPhaseChanging << Death;
         view_as_skill = new IkLvdongViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *gaoshun, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *gaoshun, QVariant &data, ServerPlayer *&) const
+    {
         if (!gaoshun || !gaoshun->tag["IkLvdongTarget"].value<ServerPlayer *>()) return QStringList();
         if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
@@ -5603,16 +5612,20 @@ public:
     }
 };
 
-class IkGuozai: public FilterSkill {
+class IkGuozai : public FilterSkill
+{
 public:
-    IkGuozai(): FilterSkill("ikguozai") {
+    IkGuozai() : FilterSkill("ikguozai")
+    {
     }
 
-    virtual bool viewFilter(const Card *to_select) const{
+    virtual bool viewFilter(const Card *to_select) const
+    {
         return to_select->objectName() == "analeptic";
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const{
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
         Slash *slash = new Slash(originalCard->getSuit(), originalCard->getNumber());
         slash->setSkillName(objectName());
         WrappedCard *card = Sanguosha->getWrappedCard(originalCard->getId());

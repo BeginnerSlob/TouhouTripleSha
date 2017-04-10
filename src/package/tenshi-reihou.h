@@ -122,6 +122,17 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
+class RhYarenCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE RhYarenCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class TenshiReihouPackage : public Package
 {
     Q_OBJECT
