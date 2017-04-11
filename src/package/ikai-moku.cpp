@@ -3127,13 +3127,16 @@ public:
     }
 };
 
-class IkJizhou: public TriggerSkill {
+class IkJizhou : public TriggerSkill
+{
 public:
-    IkJizhou(): TriggerSkill("ikjizhou") {
+    IkJizhou() : TriggerSkill("ikjizhou")
+    {
         events << EventPhaseEnd << EventPhaseChanging;
     }
 
-    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
         TriggerList skill_list;
         if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
@@ -3158,7 +3161,8 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *erzhang) const {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *erzhang) const
+    {
         if (erzhang->askForSkillInvoke(objectName())){
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -3166,7 +3170,8 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *erzhang) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *erzhang) const
+    {
         QVariantList ikjizhou_cardsToGet = erzhang->tag["IkJizhouToGet"].toList();
         QVariantList ikjizhou_cardsOther = erzhang->tag["IkJizhouOther"].toList();
         erzhang->tag.remove("IkJizhouToGet");
@@ -3206,16 +3211,20 @@ public:
     }
 };
 
-class IkJizhouRecord : public TriggerSkill {
+class IkJizhouRecord : public TriggerSkill
+{
 public:
-    IkJizhouRecord() : TriggerSkill("#ikjizhou-record") {
+    IkJizhouRecord() : TriggerSkill("#ikjizhou-record")
+    {
         events << CardsMoveOneTime;
         global = true;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *erzhang, QVariant &data, ServerPlayer * &) const{
-        if (!erzhang || !erzhang->isAlive() || !erzhang->hasSkill("ikjizhou")) return QStringList();
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *erzhang, QVariant &data, ServerPlayer * &) const
+    {
+        if (!erzhang || !erzhang->isAlive() || !erzhang->hasSkill("ikjizhou"))
+            return QStringList();
         ServerPlayer *current = room->getCurrent();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
 
@@ -3245,7 +3254,8 @@ public:
     }
 };
 
-static bool CompareBySuit(int card1, int card2) {
+static bool CompareBySuit(int card1, int card2)
+{
     const Card *c1 = Sanguosha->getCard(card1);
     const Card *c2 = Sanguosha->getCard(card2);
 

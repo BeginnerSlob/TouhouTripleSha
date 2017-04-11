@@ -2396,6 +2396,78 @@ public:
     }
 };
 
+class RhSanglv : public TriggerSkill
+{
+public:
+    RhSanglv() : TriggerSkill("rhsanglv")
+    {
+        events << PreDamageDone << CardsMoveOneTime << EventPhaseEnd;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        TriggerList skill_list;
+        if (triggerEvent == PreDamageDone) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.from && damage.from->getPhase() == Player::Play && !damage.from->hasFlag("RhSanglvDamageInPlayPhase"))
+                damage.from->setFlags("RhSanglvDamageInPlayPhase");
+        } else if (triggerEvent == CardsMoveOneTime) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from == player && player->getPhase() == Player::Discard) {
+                if ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
+                    foreach (int id, move.card_ids) {
+                        if (Sanguosha->getCard(id)->isKindOf("Slash")) {
+                            player->setFlags("RhSanglvDiscardSlash");
+                        }
+                    }
+                }
+            }
+        } else if (triggerEvent == EventPhaseEnd) {
+            if (player->getPhase() == Player::Discard
+                    && !player->hasFlag("RhSanglvDamageInPlayPhase")
+                    && player->hasFlag("RhSanglvDiscardSlash")) {
+                Slash *slash = new Slash(Card::NoSuit, 0);
+                slash->setSkillName("_rhsanglv");
+                slash->deleteLater();
+                if (!player->isCardLimited(slash, Card::MethodUse)) {
+                    foreach (ServerPlayer *target, room->getAlivePlayers()) {
+                        if (player->canSlash(target, slash)) {
+                            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+                                skill_list.insert(p, QStringList(objectName()));
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        Slash *slash = new Slash(Card::NoSuit, 0);
+        slash->setSkillName("_rhsanglv");
+        slash->deleteLater();
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *target, room->getAlivePlayers()) {
+            if (player->canSlash(target, slash))
+                targets << target;
+        }
+        ServerPlayer *victim = room->askForPlayerChosen(player, targets, objectName(), "@dummy-slash");
+        room->useCard(CardUseStruct(slash, player, victim));
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -2503,6 +2575,9 @@ TenshiReihouPackage::TenshiReihouPackage()
     General *reihou024 = new General(this, "reihou024", "rei", 4, true, true);
     reihou024->addSkill(new RhYiqie);
     reihou024->addSkill(new RhYaozhang);
+
+    General *reihou025 = new General(this, "reihou025", "rei", 4, true, true);
+    reihou025->addSkill(new RhSanglv);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
