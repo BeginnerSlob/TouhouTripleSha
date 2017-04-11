@@ -2328,6 +2328,74 @@ public:
     }
 };
 
+class RhYiqie : public TriggerSkill
+{
+public:
+    RhYiqie() : TriggerSkill("rhyiqie")
+    {
+        events << TargetSpecified;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (player != use.from || !use.card->isKindOf("Slash"))
+            return QStringList();
+        foreach (ServerPlayer *p, use.to) {
+            if (p->canDiscard(p, "e"))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        foreach (ServerPlayer *p, use.to) {
+            if (p->canDiscard(p, "e") && player->askForSkillInvoke(objectName(), QVariant::fromValue(p))) {
+                room->broadcastSkillInvoke(objectName());
+                int card_id = room->askForCardChosen(p, p, "e", objectName(), false, Card::MethodDiscard);
+                room->throwCard(card_id, p);
+            }
+        }
+        return false;
+    }
+};
+
+class RhYaozhang : public TriggerSkill
+{
+public:
+    RhYaozhang() : TriggerSkill("rhyaozhang")
+    {
+        events << TargetConfirmed;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("Slash") && use.to.contains(player))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (!use.from || use.from->isDead()
+                || !room->askForCard(use.from, ".Equip", "@rhyaozhang:" + player->objectName())) {
+            use.nullified_list << player->objectName();
+            data = QVariant::fromValue(player);
+        }
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -2431,6 +2499,10 @@ TenshiReihouPackage::TenshiReihouPackage()
     related_skills.insertMulti("rhyinren", "#rhyinren");
     related_skills.insertMulti("rhyinren", "#rhyinren-slash-ndl");
     reihou023->addSkill(new RhYeming);
+
+    General *reihou024 = new General(this, "reihou024", "rei", 4, true, true);
+    reihou024->addSkill(new RhYiqie);
+    reihou024->addSkill(new RhYaozhang);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
