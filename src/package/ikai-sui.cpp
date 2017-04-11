@@ -4067,14 +4067,17 @@ public:
     }
 };
 
-class IkMumu: public TriggerSkill {
+class IkMumu : public TriggerSkill
+{
 public:
-    IkMumu(): TriggerSkill("ikmumu") {
+    IkMumu() : TriggerSkill("ikmumu")
+    {
         events << PreDamageDone << EventPhaseStart;
         frequency = Frequent;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
         if (triggerEvent == EventPhaseStart) {
             if (player->hasFlag("IkMumuDamageInPlayPhase"))
                 return QStringList();
@@ -4094,7 +4097,8 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         QList<ServerPlayer *> victims;
         foreach (ServerPlayer *p, room->getAlivePlayers()) {
             if (p->getWeapon() && player->canDiscard(p, p->getWeapon()->getEffectiveId())) {
@@ -4113,7 +4117,8 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         ServerPlayer *victim = player->tag["IkMumuTarget"].value<ServerPlayer *>();
         player->tag.remove("IkMumuTarget");
         if (victim) {
