@@ -2468,6 +2468,68 @@ public:
     }
 };
 
+class RhWuyin : public TriggerSkill
+{
+public:
+    RhWuyin() : TriggerSkill("rhwuyin")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        TriggerList skill_list;
+        if (player->getPhase() == Player::Play) {
+            LureTiger *lt = new LureTiger(Card::NoSuit, 0);
+            lt->setSkillName("_rhwuyin");
+            lt->deleteLater();
+            if (!player->isCardLimited(lt, Card::MethodUse)) {
+                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                    if (!player->isProhibited(p, lt)) {
+                        foreach (ServerPlayer *o, room->findPlayersBySkillName(objectName()))
+                            skill_list.insert(o, QStringList(objectName()));
+                    }
+                }
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        LureTiger *lt = new LureTiger(Card::NoSuit, 0);
+        lt->setSkillName("_rhwuyin");
+        lt->deleteLater();
+        QList<ServerPlayer *> victims;
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (!player->isProhibited(p, lt)) {
+                victims << p;
+            }
+        }
+        if (!victims.isEmpty()) {
+            ServerPlayer *victim = room->askForPlayerChosen(ask_who, victims, objectName(), "@rhwuyin", true, true);
+            if (victim) {
+                room->broadcastSkillInvoke(objectName());
+                ask_who->tag["RhWuyinTarget"] = QVariant::fromValue(victim);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        ServerPlayer *target = ask_who->tag["RhWuyinTarget"].value<ServerPlayer *>();
+        ask_who->tag.remove("RhWuyinTarget");
+        if (target) {
+            LureTiger *lt = new LureTiger(Card::NoSuit, 0);
+            lt->setSkillName("_rhwuyin");
+            room->useCard(CardUseStruct(lt, player, target));
+        }
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -2578,6 +2640,9 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou025 = new General(this, "reihou025", "rei", 4, true, true);
     reihou025->addSkill(new RhSanglv);
+
+    General *reihou026 = new General(this, "reihou026", "rei", 4, true, true);
+    reihou026->addSkill(new RhWuyin);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
