@@ -2083,7 +2083,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
         if (player->getPhase() == Player::Start && TriggerSkill::triggerable(player)) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player))
-                foreach (const Skill *skill, p->getVisibleSkillList()) {
+                foreach (const Skill *skill, p->getGeneral()->getVisibleSkillList()) {
                     if (skill->isLordSkill()
                         || skill->isAttachedLordSkill()
                         || skill->isOwnerOnlySkill()
@@ -2103,7 +2103,7 @@ public:
         TriggerList skill_list;
         foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
             QStringList skills;
-            foreach (const Skill *skill, p->getVisibleSkillList()) {
+            foreach (const Skill *skill, p->getGeneral()->getVisibleSkillList()) {
                 if (skill->isLordSkill() || skill->isAttachedLordSkill()
                     || skill->isOwnerOnlySkill()
                     || skill->getFrequency() == Skill::Limited
