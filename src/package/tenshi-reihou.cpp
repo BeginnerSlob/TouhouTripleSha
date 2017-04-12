@@ -1130,7 +1130,7 @@ public:
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
         if (triggerEvent == EventAcquireSkill) {
-            ServerPlayer *target = room->askForPlayerChosen(ask_who, room->getOtherPlayers(ask_who), objectName(), "@rhbaiming");
+            ServerPlayer *target = room->askForPlayerChosen(ask_who, room->getOtherPlayers(ask_who), objectName(), "@rhbaiming", false, true);
             room->broadcastSkillInvoke(objectName());
             ask_who->tag[objectName()] = target->objectName();
             return false;
@@ -2530,6 +2530,54 @@ public:
     }
 };
 
+class RhChanling : public TriggerSkill
+{
+public:
+    RhChanling() : TriggerSkill("rhchanling")
+    {
+        events << Damaged;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        TriggerList skill_list;
+        if (player && player->isAlive()) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p->distanceTo(player) != -1 && p->distanceTo(player) <= 1) {
+                    skill_list.insert(p, QStringList(objectName()));
+                }
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        int n = data.value<DamageStruct>().damage;
+        ask_who->drawCards(n, objectName());
+        if (ask_who->getHandcardNum() >= n) {
+            const Card *dummy = room->askForExchange(player, objectName(), n, n, false,
+                                                    QString("@rhchanling:%1::%2").arg(player->objectName()).arg(n), true);
+            if (dummy) {
+                CardMoveReason reason(CardMoveReason::S_REASON_GIVE, ask_who->objectName(),
+                                      player->objectName(), objectName(), QString());
+                room->obtainCard(player, dummy, reason, false);
+                delete dummy;
+            }
+        }
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -2643,6 +2691,9 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou026 = new General(this, "reihou026", "rei", 4, true, true);
     reihou026->addSkill(new RhWuyin);
+
+    General *reihou027 = new General(this, "reihou027", "rei", 4, true, true);
+    reihou027->addSkill(new RhChanling);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
