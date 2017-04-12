@@ -2578,6 +2578,52 @@ public:
     }
 };
 
+class RhShendai : public TriggerSkill
+{
+public:
+    RhShendai(): TriggerSkill("rhshendai")
+    {
+        events << BeforeCardsMove;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.from && move.from->isAlive() && move.from_places.contains(Player::PlaceHand)
+                && ((move.reason.m_reason == CardMoveReason::S_REASON_DISMANTLE
+                     && move.reason.m_playerId != move.reason.m_targetId)
+                    || (move.to && move.to != move.from && move.to_place == Player::PlaceHand
+                        && move.reason.m_reason != CardMoveReason::S_REASON_GIVE
+                        && move.reason.m_reason != CardMoveReason::S_REASON_SWAP)))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        move.from->setFlags("RhShendaiMoveFrom"); // For AI
+        bool invoke = player->askForSkillInvoke(objectName(), data);
+        move.from->setFlags("-RhShendaiMoveFrom");
+        if (invoke) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        room->removeReihouCard(player);
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        move.removeCardIds(move.card_ids);
+        data = QVariant::fromValue(move);
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -2694,6 +2740,9 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou027 = new General(this, "reihou027", "rei", 4, true, true);
     reihou027->addSkill(new RhChanling);
+
+    General *reihou028 = new General(this, "reihou028", "rei", 4, true, true);
+    reihou028->addSkill(new RhShendai);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
