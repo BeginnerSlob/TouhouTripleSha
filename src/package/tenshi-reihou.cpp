@@ -2937,6 +2937,77 @@ public:
     }
 };
 
+class RhYuning : public TriggerSkill
+{
+public:
+    RhYuning() : TriggerSkill("rhyuning")
+    {
+        events << EventAcquireSkill << EventLoseSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (data.toString() == objectName()) {
+            if (triggerEvent == EventLoseSkill) {
+                ServerPlayer *p = player->tag[objectName()].value<ServerPlayer *>();
+                player->tag.remove(objectName());
+                if (p)
+                    room->setPlayerMark(p, objectName(), 0);
+            } else
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@rhyuning", true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag[objectName()] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        ServerPlayer *p = player->tag[objectName()].value<ServerPlayer *>();
+        if (p)
+            room->setPlayerMark(p, objectName(), 1);
+        return false;
+    }
+};
+
+class RhYuningRecover : public TriggerSkill
+{
+public:
+    RhYuningRecover() : TriggerSkill("#rhyuning")
+    {
+        events << Damaged;
+        frequency = Compulsory;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        TriggerList skill_list;
+        if (player->isAlive()) {
+            foreach (ServerPlayer *p, room->getAllPlayers()) {
+                if (p->isAlive() && p->getMark("rhyuning") > 0 && p->isWounded())
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        room->sendCompulsoryTriggerLog(ask_who, objectName());
+        room->recover(ask_who, RecoverStruct(ask_who));
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -3072,6 +3143,11 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou033 = new General(this, "reihou033", "rei", 4, true, true);
     reihou033->addSkill(new RhNieji);
+
+    General *reihou034 = new General(this, "reihou034", "rei", 4, true, true);
+    reihou034->addSkill(new RhYuning);
+    reihou034->addSkill(new RhYuningRecover);
+    related_skills.insertMulti("rhyuning", "#rhyuning");
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
