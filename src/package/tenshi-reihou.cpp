@@ -2624,6 +2624,67 @@ public:
     }
 };
 
+class RhJiyu : public TriggerSkill
+{
+public:
+    RhJiyu() : TriggerSkill("rhjiyu") {
+        events << EventPhaseChanging << CardFinished << PreDamageDone;
+        frequency = Frequent;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        TriggerList skill_list;
+        if (triggerEvent == CardFinished) {
+            ServerPlayer *current = room->getCurrent();
+            if (current == player && player->isAlive() && player->getPhase() != Player::NotActive) {
+                CardUseStruct use = data.value<CardUseStruct>();
+                if (use.card->getTypeId() != Card::TypeSkill) {
+                    foreach (ServerPlayer *p, use.to)
+                        p->setMark("rhjiyu_use", 1);
+                }
+            }
+        } else if (triggerEvent == PreDamageDone) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.from && damage.from->isAlive()) {
+                ServerPlayer *current = room->getCurrent();
+                if (damage.from == current) {
+                    player->setMark("rhjiyu_damage", 1);
+                }
+            }
+        } else if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::RoundStart) {
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    p->setMark("rhjiyu_use", 0);
+                    p->setMark("rhjiyu_damage", 0);
+                }
+            } else if (change.to == Player::NotActive) {
+                foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
+                    if (owner->getMark("rhjiyu_use") > 0 && owner->getMark("rhjiyu_damage") == 0)
+                        skill_list.insert(owner, QStringList(objectName()));
+                }
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        ask_who->drawCards(1, objectName());
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -2743,6 +2804,9 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou028 = new General(this, "reihou028", "rei", 4, true, true);
     reihou028->addSkill(new RhShendai);
+
+    General *reihou029 = new General(this, "reihou029", "rei", 4, true, true);
+    reihou029->addSkill(new RhJiyu);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
