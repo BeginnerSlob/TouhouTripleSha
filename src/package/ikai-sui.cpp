@@ -5670,29 +5670,34 @@ public:
     }
 };
 
-class IkZhoudu: public TriggerSkill {
+class IkZhoudu : public TriggerSkill
+{
 public:
-    IkZhoudu(): TriggerSkill("ikzhoudu") {
+    IkZhoudu() : TriggerSkill("ikzhoudu")
+    {
         events << EventPhaseStart;
     }
 
-    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
         TriggerList skill_list;
         if (player->getPhase() != Player::Play)
             return skill_list;
         foreach (ServerPlayer *hetaihou, room->findPlayersBySkillName(objectName())) {
-            if (!hetaihou->isAlive() || !hetaihou->canDiscard(hetaihou, "h") || hetaihou == player)
+            if (!hetaihou->canDiscard(hetaihou, "h") || hetaihou == player)
                 continue;
             skill_list.insert(hetaihou, QStringList(objectName()));
         }
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *hetaihou) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *hetaihou) const
+    {
         return room->askForCard(hetaihou, ".", "@ikzhoudu-discard", QVariant(), objectName());
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *hetaihou) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *hetaihou) const
+    {
         Analeptic *analeptic = new Analeptic(Card::NoSuit, 0);
         analeptic->setSkillName("_ikzhoudu");
         room->useCard(CardUseStruct(analeptic, player, QList<ServerPlayer *>()), true);
