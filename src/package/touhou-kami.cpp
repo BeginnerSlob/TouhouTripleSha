@@ -2532,7 +2532,7 @@ TouhouKamiPackage::TouhouKamiPackage()
     kami001->addSkill(new ThShenfeng);
     kami001->addSkill(new ThKaihai);
 
-    General *kami002 = new General(this, "kami002", "kami", 4, true, true);
+    General *kami002 = new General(this, "kami002", "kami", 4);
     kami002->addSkill(new ThTianbao);
     kami002->addSkill("thyanmeng");
 
