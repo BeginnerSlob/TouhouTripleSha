@@ -2752,7 +2752,7 @@ public:
         events << Damaged;
     }
 
-    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
     {
         TriggerList skill_list;
         if (player->isAlive()) {
@@ -2779,6 +2779,120 @@ public:
         room->throwCard(card_id, player, ask_who);
         return false;
     }
+};
+
+class RhDangmo: public TriggerSkill
+{
+public:
+    RhDangmo(): TriggerSkill("rhdangmo")
+    {
+        events << TargetSpecified << EventPhaseChanging << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (triggerEvent == TargetSpecified) {
+            if (TriggerSkill::triggerable(player)) {
+                CardUseStruct use = data.value<CardUseStruct>();
+                if (use.card->isKindOf("Slash"))
+                    return QStringList(objectName());
+            }
+            return QStringList();
+        }
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to != Player::NotActive)
+                return QStringList();
+        } else if (triggerEvent == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player || player != room->getCurrent())
+                return QStringList();
+        }
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
+            if (p->getMark("rhdangmo") == 0)
+                continue;
+            room->removePlayerMark(p, "@skill_invalidity", p->getMark("rhdangmo"));
+            p->setMark("rhdangmo", 0);
+
+            foreach (ServerPlayer *pl, room->getAllPlayers())
+                room->filterCards(pl, pl->getCards("he"), false);
+            JsonArray args;
+            args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+            room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        QList<ServerPlayer *> tos;
+        foreach (ServerPlayer *p, use.to) {
+            if (!player->isAlive())
+                break;
+            if (!p->isAlive())
+                continue;
+            if (player->askForSkillInvoke(objectName(), QVariant::fromValue(p))) {
+                room->broadcastSkillInvoke(objectName());
+                if (!tos.contains(p)) {
+                    p->addMark("rhdangmo");
+                    room->addPlayerMark(p, "@skill_invalidity");
+                    tos << p;
+
+                    foreach (ServerPlayer *pl, room->getAllPlayers())
+                        room->filterCards(pl, pl->getCards("he"), true);
+                    JsonArray args;
+                    args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+                }
+            }
+        }
+        return false;
+    }
+};
+
+class RhBumo : public TriggerSkill
+{
+public:
+    RhBumo() : TriggerSkill("rhbumo")
+    {
+        events << CardsMoveOneTime;
+        frequency = Frequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (!TriggerSkill::triggerable(player)
+                || (room->getCurrent() == player && player->getPhase() != Player::NotActive))
+            return QStringList();
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.from == player && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip))
+                && !(move.to == player && (move.to_place == Player::PlaceHand || move.to_place == Player::PlaceEquip)))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName(), data)) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        int n = 0;
+        for (int i = 0; i < move.card_ids.length(); ++i) {
+            if (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip)
+                ++n;
+        }
+        player->drawCards(n, objectName());
+        return false;
+    }
+
 };
 
 TenshiReihouPackage::TenshiReihouPackage()
@@ -2909,6 +3023,10 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou031 = new General(this, "reihou031", "rei", 4, true, true);
     reihou031->addSkill(new RhPihuai);
+
+    General *reihou032 = new General(this, "reihou032", "rei", 4, true, true);
+    reihou032->addSkill(new RhDangmo);
+    reihou032->addSkill(new RhBumo);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
