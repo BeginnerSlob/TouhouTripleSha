@@ -3133,6 +3133,7 @@ bool Room::useCard(const CardUseStruct &use, bool add_history) {
 
             foreach (ServerPlayer *p, m_alivePlayers) {
                 p->tag.remove("Qinggang");
+                p->tag.remove("RhZhenyao");
 
                 foreach (QString flag, p->getFlagList()) {
                     if (flag == "Global_GongxinOperator")
