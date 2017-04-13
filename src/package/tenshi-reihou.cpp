@@ -2685,6 +2685,65 @@ public:
     }
 };
 
+class RhFuyin : public TriggerSkill
+{
+public:
+    RhFuyin() : TriggerSkill("rhfuyin")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        TriggerList skill_list;
+        if (player->getPhase() == Player::Play) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+                skill_list.insert(p, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            room->removeReihouCard(ask_who);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        Peach *peach = new Peach(Card::NoSuit, 0);
+        peach->setSkillName("_rhfuyin");
+        Analeptic *analeptic = new Analeptic(Card::NoSuit, 0);
+        analeptic->setSkillName("_rhfuyin");
+        QStringList choices;
+        if (peach->isAvailable(player))
+            choices << "peach";
+        if (analeptic->isAvailable(player))
+            choices << "analeptic";
+        if (choices.isEmpty()) {
+            delete peach;
+            delete analeptic;
+            return false;
+        }
+        QString choice = choices.first();
+        if (choices.length() != 1) {
+            choice = room->askForChoice(player, objectName(), choices.join("+"));
+        }
+        if (choice == "peach") {
+            delete analeptic;
+            room->useCard(CardUseStruct(peach, player, QList<ServerPlayer *>()));
+        } else if (choice == "analeptic") {
+            delete peach;
+            room->useCard(CardUseStruct(analeptic, player, QList<ServerPlayer *>()), true);
+        }
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -2807,6 +2866,9 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou029 = new General(this, "reihou029", "rei", 4, true, true);
     reihou029->addSkill(new RhJiyu);
+
+    General *reihou030 = new General(this, "reihou030", "rei", 4, true, true);
+    reihou030->addSkill(new RhFuyin);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
