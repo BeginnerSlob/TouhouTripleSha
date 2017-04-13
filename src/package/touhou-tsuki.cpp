@@ -1299,38 +1299,40 @@ public:
     }
 };
 
-class ThZhehui: public TriggerSkill {
+class ThZhehui : public TriggerSkill
+{
 public:
-    ThZhehui(): TriggerSkill("thzhehui") {
-        events << Damaged << DamageInflicted << EventPhaseStart << EventLoseSkill;
+    ThZhehui() : TriggerSkill("thzhehui")
+    {
+        events << Damaged << DamageInflicted << EventPhaseStart << EventPhaseChanging;
         frequency = Compulsory;
     }
 
-    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
         TriggerList skill_list;
-        if (triggerEvent == EventLoseSkill) {
-            if (player->getMark("zhehui") > 0 && data.toString() == objectName())
-                room->setPlayerMark(player, "zhehui", 0);
-            return skill_list;
-        } else if (triggerEvent == Damaged && TriggerSkill::triggerable(player) && player->getMark("zhehui") < 1) {
+        if (triggerEvent == Damaged && TriggerSkill::triggerable(player) && player->getMark("zhehui") < 1) {
             skill_list.insert(player, QStringList(objectName()));
-        } else if (triggerEvent == DamageInflicted && TriggerSkill::triggerable(player) && player->getMark("zhehui") > 0) {
+        } else if (triggerEvent == DamageInflicted && player->isAlive() && player->getMark("zhehui") > 0) {
             skill_list.insert(player, QStringList(objectName()));
-        } else if (triggerEvent == EventPhaseStart) {
-            if (player->getPhase() == Player::NotActive) {
-                foreach (ServerPlayer *p, room->getAllPlayers())
+        } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Finish) {
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (p->getMark("zhehui") > 0)
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+        } else if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
                     room->setPlayerMark(p, "zhehui", 0);
-            } else if (player->getPhase() == Player::Finish) {
-                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
-                    if (p->getMark("zhehui") > 0)
-                        skill_list.insert(p, QStringList(objectName()));
                 }
             }
         }
         return skill_list;
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
         if (triggerEvent == Damaged) {
             room->setPlayerMark(ask_who, "zhehui", 1);
         } else if (triggerEvent == DamageInflicted) {
