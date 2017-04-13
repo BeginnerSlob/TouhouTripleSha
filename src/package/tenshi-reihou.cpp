@@ -2892,7 +2892,49 @@ public:
         player->drawCards(n, objectName());
         return false;
     }
+};
 
+class RhNieji : public TriggerSkill
+{
+public:
+    RhNieji() : TriggerSkill("rhnieji")
+    {
+        events << Dying;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        DyingStruct dying = data.value<DyingStruct>();
+        if (dying.who->getHp() > 0 || dying.who->isDead())
+            return QStringList();
+        return QStringList(objectName());
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName(), data)) {
+            room->broadcastSkillInvoke(objectName());
+            room->removeReihouCard(player);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        DyingStruct dying = data.value<DyingStruct>();
+
+        if (!player->faceUp())
+            player->turnOver();
+
+        if (player->isChained())
+            room->setPlayerProperty(player, "chained", false);
+
+        room->recover(dying.who, RecoverStruct(player, NULL, 1 - dying.who->getHp()));
+        return false;
+    }
 };
 
 TenshiReihouPackage::TenshiReihouPackage()
@@ -3027,6 +3069,9 @@ TenshiReihouPackage::TenshiReihouPackage()
     General *reihou032 = new General(this, "reihou032", "rei", 4, true, true);
     reihou032->addSkill(new RhDangmo);
     reihou032->addSkill(new RhBumo);
+
+    General *reihou033 = new General(this, "reihou033", "rei", 4, true, true);
+    reihou033->addSkill(new RhNieji);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
