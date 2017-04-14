@@ -2884,14 +2884,17 @@ public:
     }
 };
 
-class IkHeyi: public TriggerSkill {
+class IkHeyi : public TriggerSkill
+{
 public:
-    IkHeyi(): TriggerSkill("ikheyi") {
+    IkHeyi() : TriggerSkill("ikheyi")
+    {
         events << TargetSpecified << TargetConfirmed;
         frequency = Frequent;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *sunce, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *sunce, QVariant &data, ServerPlayer* &) const
+    {
         if (!TriggerSkill::triggerable(sunce)) return QStringList();
         CardUseStruct use = data.value<CardUseStruct>();
         if (triggerEvent == TargetSpecified || (triggerEvent == TargetConfirmed && use.to.contains(sunce)))
@@ -2900,7 +2903,8 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *sunce, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *sunce, QVariant &, ServerPlayer *) const
+    {
         if (sunce->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -2908,7 +2912,8 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *sunce, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *sunce, QVariant &, ServerPlayer *) const
+    {
         sunce->drawCards(1, objectName());
         return false;
     }
