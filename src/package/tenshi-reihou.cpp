@@ -624,7 +624,8 @@ public:
                 LogMessage log;
                 log.type = "#RhLiufu1";
                 log.from = player;
-                log.arg = use.card->objectName();
+                log.arg = "1";
+                log.arg2 = use.card->objectName();
                 room->sendLog(log);
 
                 use.nullified_list << player->objectName();
@@ -633,6 +634,7 @@ public:
                 LogMessage log;
                 log.type = "#RhLiufu2";
                 log.from = player;
+                log.arg = "2";
                 room->sendLog(log);
 
                 room->setCardFlag(use.card, "rhliufu");
@@ -686,6 +688,7 @@ public:
         }
         if (!ids.isEmpty()) {
             move.removeCardIds(ids);
+            data = QVariant::fromValue(move);
             ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), "rhliufu", "@rhliufu", false, true);
             DummyCard dummy(ids);
             CardMoveReason reason(CardMoveReason::S_REASON_GIVE,
@@ -3008,6 +3011,153 @@ public:
     }
 };
 
+RhHuayuCard::RhHuayuCard()
+{
+}
+
+bool RhHuayuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    if (!targets.isEmpty()) {
+        return false;
+    }
+    QList<const DelayedTrick *> cards = Sanguosha->findChildren<const DelayedTrick *>();
+    foreach (const Card *c, cards) {
+        if (c->isKindOf("DelayedTrick")) {
+            Card *trick = Sanguosha->cloneCard(c->objectName());
+            trick->addSubcard(this);
+            trick->setSkillName("rhhuayu");
+            if (Self->isCardLimited(trick, MethodUse, true)) {
+                delete trick;
+                continue;
+            }
+            if (trick->isKindOf("Lightning")) {
+                delete trick;
+                return false;
+            }
+            bool can_use = trick->targetFilter(targets, to_select, Self);
+            delete trick;
+            if (can_use)
+                return true;
+        }
+    }
+    return false;
+}
+
+bool RhHuayuCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
+{
+    if (targets.length() == 0) {
+        Card *trick = Sanguosha->cloneCard("lightning");
+        trick->addSubcard(this);
+        trick->setSkillName("rhhuayu");
+        bool can_use = !Self->containsTrick("lightning") && !Self->isProhibited(Self, trick);
+        delete trick;
+        return can_use;
+    }
+    if (targets.length() == 1) {
+        QList<const DelayedTrick *> cards = Sanguosha->findChildren<const DelayedTrick *>();
+        foreach (const Card *c, cards) {
+            if (c->isKindOf("DelayedTrick") && !c->isKindOf("Lightning")) {
+                Card *trick = Sanguosha->cloneCard(c->objectName());
+                trick->addSubcard(this);
+                trick->setSkillName("rhhuayu");
+                bool can_use = trick->targetsFeasible(targets, Self);
+                delete trick;
+                if (can_use)
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
+const Card *RhHuayuCard::validate(CardUseStruct &card_use) const
+{
+    Room *room = card_use.from->getRoom();
+    if (card_use.to.isEmpty()) {
+        Lightning *lightning = new Lightning(SuitToBeDecided, -1);
+        lightning->addSubcard(this);
+        lightning->setSkillName("rhhuayu");
+        room->addPlayerMark(card_use.from, "rhhuayu");
+        return lightning;
+    }
+    QStringList choices;
+    ServerPlayer *target = card_use.to.first();
+    QList<const DelayedTrick *> cards = Sanguosha->findChildren<const DelayedTrick *>();
+    foreach (const Card *c, cards) {
+        if (!c->isKindOf("Lightning")
+                && !choices.contains(c->objectName())
+                && !target->containsTrick(c->objectName())) {
+            Card *trick = Sanguosha->cloneCard(c->objectName());
+            trick->addSubcard(this);
+            trick->setSkillName("rhhuayu");
+            bool is_prohibit = card_use.from->isProhibited(target, trick);
+            delete trick;
+            if (!is_prohibit)
+                choices << c->objectName();
+        }
+    }
+    Q_ASSERT(!choices.isEmpty());
+    QString choice = room->askForChoice(card_use.from, "rhhuayu", choices.join("+"));
+    Card *trick = Sanguosha->cloneCard(choice);
+    trick->addSubcard(this);
+    trick->setSkillName("rhhuayu");
+    room->addPlayerMark(card_use.from, "rhhuayu");
+    return trick;
+}
+
+class RhHuayuVS : public OneCardViewAsSkill
+{
+public:
+    RhHuayuVS() : OneCardViewAsSkill("rhhuayu")
+    {
+        response_pattern = "@@rhhuayu";
+        filter_pattern = ".|.|.|hand";
+        response_or_use = true;
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        Card *card = new RhHuayuCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+};
+
+class RhHuayu : public TriggerSkill
+{
+public:
+    RhHuayu() : TriggerSkill("rhhuayu")
+    {
+        events << TargetSpecified << TargetConfirmed << EventPhaseChanging;
+        view_as_skill = new RhHuayuVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    room->setPlayerMark(p, objectName(), 0);
+            }
+            return QStringList();
+        }
+        if (!TriggerSkill::triggerable(player) || player->getMark(objectName()) > 0)
+            return QStringList();
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (triggerEvent == TargetSpecified || (triggerEvent == TargetConfirmed && use.to.contains(player))) {
+            if (use.card->getTypeId() != Card::TypeSkill)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        return room->askForUseCard(player, "@@rhhuayu", "@rhhuayu");
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -3149,6 +3299,9 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou034->addSkill(new RhYuningRecover);
     related_skills.insertMulti("rhyuning", "#rhyuning");
 
+    General *reihou035 = new General(this, "reihou035", "rei", 4, true, true);
+    reihou035->addSkill(new RhHuayu);
+
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
     addMetaObject<RhHuanjingCard>();
@@ -3156,6 +3309,9 @@ TenshiReihouPackage::TenshiReihouPackage()
     addMetaObject<RhGaimingCard>();
     addMetaObject<RhXuanrenCard>();
     addMetaObject<RhHaoqiangCard>();
+    addMetaObject<RhYarenCard>();
+    addMetaObject<RhYinrenCard>();
+    addMetaObject<RhHuayuCard>();
 }
 
 ADD_PACKAGE(TenshiReihou)

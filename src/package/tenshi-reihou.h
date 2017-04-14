@@ -143,6 +143,19 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class RhHuayuCard: public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE RhHuayuCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
+
+    virtual const Card *validate(CardUseStruct &card_use) const;
+};
+
 class TenshiReihouPackage : public Package
 {
     Q_OBJECT
