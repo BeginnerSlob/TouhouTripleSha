@@ -53,8 +53,8 @@ return {
 	["#rhliufu"] = "流払（获得）",
 	["rhliufu:null"] = "令此牌对你无效",
 	["rhliufu:give"] = "在此牌结算后将之交给一名角色",
-	["#RhLiufu1"] = "%from 选择了第 <b><font color=\'yellow\'>1</b></font> 项，【%arg】对其无效",
-	["#RhLiufu2"] = "%from 选择了第 <b><font color=\'yellow\'>2</b></font> 项，其可在此牌结算结束后将之交给一名角色",
+	["#RhLiufu1"] = "%from 选择了第 <font color=\'yellow\'><b>1</b></font> 项，【%arg】对其无效",
+	["#RhLiufu2"] = "%from 选择了第 <font color=\'yellow\'><b>2</b></font> 项，其可在此牌结算结束后将之交给一名角色",
 
 	["#reihou006"] = "接引西方极乐",
 	["reihou006"] = "十二品莲台",--灵 - 空 - 4血
