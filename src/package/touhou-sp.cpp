@@ -1560,13 +1560,16 @@ public:
     }
 };
 
-class ThZanghun: public TriggerSkill {
+class ThZanghun : public TriggerSkill
+{
 public:
-    ThZanghun(): TriggerSkill("thzanghun") {
+    ThZanghun() : TriggerSkill("thzanghun")
+    {
         events << Damage;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
         if (!TriggerSkill::triggerable(player)) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.card->isKindOf("Slash"))
@@ -1574,7 +1577,8 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -1582,37 +1586,44 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         player->drawCards(1);
-        room->addPlayerMark(player, "thzanghun");
+        room->addPlayerMark(player, "@gallop");
         return false;
     }
 };
 
-class ThZanghunClear: public TriggerSkill {
+class ThZanghunClear : public TriggerSkill
+{
 public:
-    ThZanghunClear(): TriggerSkill("#thzanghun-clear") {
+    ThZanghunClear() : TriggerSkill("#thzanghun-clear")
+    {
         events << EventPhaseChanging;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        if (!player || player->getMark("thzanghun") == 0) return QStringList();
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (!player || player->getMark("@gallop") == 0) return QStringList();
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
         if (change.to != Player::NotActive)
             return QStringList();
-        room->setPlayerMark(player, "thzanghun", 0);
+        room->setPlayerMark(player, "@gallop", 0);
         return QStringList();
     }
 };
 
-class ThZanghunDistance: public DistanceSkill {
+class ThZanghunDistance : public DistanceSkill
+{
 public:
-    ThZanghunDistance(): DistanceSkill("#thzanghun-distance") {
+    ThZanghunDistance() : DistanceSkill("#thzanghun-distance")
+    {
     }
 
-    virtual int getCorrect(const Player *from, const Player *) const {
-        return from->getMark("thzanghun");
+    virtual int getCorrect(const Player *from, const Player *) const
+    {
+        return from->getMark("@gallop");
     }
 };
 
