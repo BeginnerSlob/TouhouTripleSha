@@ -4421,7 +4421,7 @@ void IkHuangpoCard::onEffect(const CardEffectStruct &effect) const
     Room *room = effect.from->getRoom();
     int id = room->askForCardChosen(effect.from, effect.to, "hej", "ikhuangpo");
     if (id != -1) {
-        effect.from->addToPile("ikhuangpopile", id);
+        effect.from->addToPile("flap", id);
         QVariantList list = effect.to->tag["IkHuangpoIds"].toList();
         list << id;
         effect.to->tag["IkHuangpoIds"] = list;
@@ -4458,12 +4458,12 @@ public:
     virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
     {
         TriggerList list;
-        if (player && player->isAlive() && player->getPhase() == Player::Finish && !player->getPile("ikhuangpopile").isEmpty()) {
+        if (player && player->isAlive() && player->getPhase() == Player::Finish && !player->getPile("flap").isEmpty()) {
             foreach (ServerPlayer *p, room->getAlivePlayers()) {
                 foreach (QVariant _id, p->tag["IkHuangpoIds"].toList()) {
                     bool ok = false;
                     int id = _id.toInt(&ok);
-                    if (ok && player->getPile("ikhuangpopile").contains(id)) {
+                    if (ok && player->getPile("flap").contains(id)) {
                         list.insert(p, QStringList(objectName()));
                         break;
                     }
@@ -4481,7 +4481,7 @@ public:
         foreach (QVariant _id, list) {
             bool ok = false;
             int id = _id.toInt(&ok);
-            if (ok && player->getPile("ikhuangpopile").contains(id))
+            if (ok && player->getPile("flap").contains(id))
                 ids << id;
             else
                 list_new << id;
