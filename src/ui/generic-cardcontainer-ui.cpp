@@ -620,16 +620,19 @@ QPixmap PlayerCardContainer::_getEquipPixmap(const EquipCard *equip) {
     QRect pointArea = _m_layout->m_equipPointArea;
     if (equip->isKindOf("Horse"))
         pointArea = _m_layout->m_horsePointArea;
+    QString numberString = realCard->getNumberString();
+    if (numberString == "10")
+        numberString = "X";
     if (realCard->isRed()) {
         _m_layout->m_equipPointFontRed.paintText(&painter,
                                                  pointArea,
                                                  Qt::AlignLeft | Qt::AlignVCenter,
-                                                 realCard->getNumberString());
+                                                 numberString);
     } else {
         _m_layout->m_equipPointFontBlack.paintText(&painter,
                                                    pointArea,
                                                    Qt::AlignLeft | Qt::AlignVCenter,
-                                                   realCard->getNumberString());
+                                                   numberString);
     }
     return equipIcon;
 }
