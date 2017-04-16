@@ -141,7 +141,7 @@ return {
 	["#bloom045"] = "鸣露的策士",
 	["bloom045"] = "新子憧",--花 - 幻 - 4血
 	["designer:bloom045"] = "aisu9",
-	["illustrator:bloom036"] = "NAbyssor",
+	["illustrator:bloom045"] = "NAbyssor",
 	["ikdengpo"] = "登破",
 	[":ikdengpo"] = "阶段技。你可以弃置X张牌并令一名牌数不少于X的其他角色弃置等量的牌（至多弃置四张），若如此做，此阶段结束时，你与其各摸X张牌。若你以此法弃置了你装备区的最后一张牌，你无视与该角色的距离，直到回合结束。",
 
