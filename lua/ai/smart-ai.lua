@@ -634,7 +634,7 @@ function SmartAI:adjustUsePriority(card, v)
 				end
 				if card:isKindOf("FireSlash") then
 					for _, enemy in ipairs(self.enemies) do
-						if enemy:hasArmorEffect("vine") or enemy:getMark("@liefeng") > 0 then v = v + 0.07 break end
+						if enemy:hasArmorEffect("vine") or enemy:getMark("@gale") > 0 then v = v + 0.07 break end
 					end
 				elseif card:isKindOf("ThunderSlash") then
 					for _, enemy in ipairs(self.enemies) do
@@ -2410,7 +2410,7 @@ function SmartAI:askForNullification(trick, from, to, positive, isHeg)
 						if from:getHandcardNum() > 2
 							or self:isWeak(to)
 							or to:hasArmorEffect("vine")
-							or to:getMark("@liefeng") > 0
+							or to:getMark("@gale") > 0
 							or to:isChained() and not self:isGoodChainTarget(to, from, sgs.DamageStruct_Fire, nil, trick) then
 							return null_card
 						end
@@ -2550,7 +2550,7 @@ function SmartAI:askForNullification(trick, from, to, positive, isHeg)
 					end
 					if fa_card then
 						for _, friend in ipairs(self.friends) do
-							if (friend:hasArmorEffect("vine") or friend:getMark("@liefeng") > 0) and not to:hasSkill("ikxuwu")
+							if (friend:hasArmorEffect("vine") or friend:getMark("@gale") > 0) and not to:hasSkill("ikxuwu")
 								and self:hasTrickEffective(fa_card, friend, to) and to:getHandcardNum() > 2 then
 								return null_card
 							end
@@ -3047,7 +3047,7 @@ function SmartAI:hasHeavySlashDamage(from, slash, to, return_value)
 		local guanyu = self.room:findPlayerBySkillName("zhongyi")
 		if guanyu and guanyu:getPile("loyal"):length() > 0 and self:isFriend(guanyu, from) and not is_friend then dmg = dmg + 1 end
 
-		if (to:hasArmorEffect("vine") or to:getMark("@liefeng") > 0) and fireSlash then dmg = dmg + 1 end
+		if (to:hasArmorEffect("vine") or to:getMark("@gale") > 0) and fireSlash then dmg = dmg + 1 end
 		if from:hasWeapon("guding_blade") and slash and to:isKongcheng() then dmg = dmg + 1 end
 		if from:hasSkill("thluli") and to:getHp() >= from:getHp() and from:getHandcardNum() >= 3 and not is_friend then dmg = dmg + 1 end
 		if to:hasSkill("thluli") and from:getHp() >= to:getHp()
@@ -4098,7 +4098,7 @@ function SmartAI:damageIsEffective_(damageStruct, return_num)
 
 	if source:hasSkill("ikxuwu") then return not return_num or damage end
 
-	if player:getMark("zhehui") > 0 then return false end
+	if player:getMark("@shine") > 0 then return false end
 	if player:getMark("thhuanxiang") > 0 then return false end
 	if player:getMark("@fog") > 0 and nature ~= sgs.DamageStruct_Thunder then return false end
 	if player:hasSkill("shixin") and nature == sgs.DamageStruct_Fire then return false end
@@ -4193,7 +4193,7 @@ function sgs.getCardPlace(room, card, player)
 		if owner then
 			local pile_name = owner:getPileName(id)
 			if pile_name == "wooden_ox" then return sgs.Player_PlaceHand end
-			if pile_name == "thbaochuipile" and player:hasFlag("thbaochui") and player:getPhase() == sgs.Player_Player then return sgs.Player_PlaceHand end
+			if pile_name == "currency" and player:hasFlag("thbaochui") and player:getPhase() == sgs.Player_Player then return sgs.Player_PlaceHand end
 			if pile_name == "iklingxun" then return sgs.Player_PlaceHand end
 		end
 	end
@@ -5080,7 +5080,7 @@ function SmartAI:getAoeValueTo(card, to, from)
 					if card:isVirtualCard() then v = math.max(to:hasSkill("jianxiong") and 1 or 0, card:subcardsLength()) * 10 end
 					value = value + v
 				end
-				if to:hasSkill("thzhehui") and to:getMark("zhehui") == 0 then
+				if to:hasSkill("thzhehui") and to:getMark("@shine") == 0 then
 					value = value + 30
 				end
 				if to:hasSkill("shenfen") and to:hasSkill("kuangbao") then
@@ -5779,7 +5779,7 @@ function SmartAI:damageMinusHp(self, enemy, type)
 			trick_effectivenum = trick_effectivenum + 1
 		elseif acard:isKindOf("Slash") and self:slashIsEffective(acard, enemy) and (slash_damagenum == 0 or self:hasCrossbowEffect())
 			and self.player:inMyAttackRange(enemy) then
-			if not (enemy:hasSkill("xiangle") and basicnum < 2) and not (self.player:hasFlag("jianmoinvoke") and notpeaches < 2) then
+			if not (enemy:hasSkill("xiangle") and basicnum < 2) and not (self.player:getMark("@tie") > 0 and notpeaches < 2) then
 				slash_damagenum = slash_damagenum + 1
 			end
 			if self:getCardsNum("Analeptic") > 0 and analepticpowerup == 0
@@ -6244,7 +6244,7 @@ function getWoodenOxPile(player)
 	local cards = sgs.IntList()
 	if player:hasFlag("thbaochui") and player:getPhase() == sgs.Player_Play then
 		for _, p in sgs.qlist(global_room:getOtherPlayers(player)) do
-			for _, id in sgs.qlist(p:getPile("thbaochuipile")) do
+			for _, id in sgs.qlist(p:getPile("currency")) do
 				cards:append(id)
 			end
 		end

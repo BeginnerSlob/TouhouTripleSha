@@ -575,7 +575,7 @@ function SmartAI:useCardSlash(card, use)
 			and self:objectiveLevel(target) > 3
 			and self:slashIsEffective(card, target, self.player, use_wuqian)
 			and not (target:hasSkill("xiangle") and basicnum < 2)
-			and not (self.player:hasFlag("jianmoinvoke") and notpeaches < 2)
+			and not (self.player:getMark("@tie") > 0 and notpeaches < 2)
 			and not canliuli
 			and not (not self:isWeak(target) and #self.enemies > 1 and #self.friends > 1 and self.player:hasSkill("keji")
 			and self:getOverflow() > 0 and not self:hasCrossbowEffect()) then
@@ -1588,7 +1588,7 @@ sgs.ai_skill_cardask.aoe = function(self, data, pattern, target, name)
 
 	if self.player:hasSkill("ikmitu") and not attacker:hasSkill("ikxuwu") then return "." end
 	if attacker:hasSkill("ikmitu") and not attacker:hasSkill("ikxuwu") then return "." end
-	if self.player:getMark("zhehui") > 0 and not attacker:hasSkill("ikxuwu") then return "." end
+	if self.player:getMark("@shine") > 0 and not attacker:hasSkill("ikxuwu") then return "." end
 
 	if not attacker:hasSkill("ikxuwu") and self.player:hasSkills("jianxiong|nosjianxiong") and (self.player:getHp() > 1 or self:getAllPeachNum() > 0)
 		and not self:willSkipPlayPhase() then
@@ -4029,7 +4029,7 @@ sgs.ai_skill_choice.drowning = function(self, choices, data)
 	if self:getDamagedEffects(self.player, effect.from) or self:needToLoseHp(self.player, effect.from) then return "damage" end
 	if self.player:hasSkill("ikmitu") and not effect.from:hasSkill("ikxuwu") then return "damage" end
 	if effect.from:hasSkill("ikmitu") and not effect.from:hasSkill("ikxuwu") then return "damage" end
-	if self.player:getMark("zhehui") > 0 and not effect.from:hasSkill("ikxuwu") then return "damage" end
+	if self.player:getMark("@shine") > 0 and not effect.from:hasSkill("ikxuwu") then return "damage" end
 
 	local peaches = self:getCardsNum("Peach")
 	if self.player:getHp() < 3 then

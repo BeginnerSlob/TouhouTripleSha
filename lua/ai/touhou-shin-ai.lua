@@ -459,12 +459,12 @@ end
 --无
 function SmartAI:isThYishiCard(card, from)
 	if not card:isVirtualCard() then
-		return from:getPile("thbaochuipile"):contains(card:getEffectiveId())
+		return from:getPile("currency"):contains(card:getEffectiveId())
 	else
 		local ids = sgs.QList2Table(card:getSubcards())
 		if #ids == 1 then
 			local acard = sgs.Sanguosha:getCard(ids[1])
-			if acard:getClassName() == card:getClassName() and from:getPile("thbaochuipile"):contains(ids[1]) then
+			if acard:getClassName() == card:getClassName() and from:getPile("currency"):contains(ids[1]) then
 				return true
 			end
 		end

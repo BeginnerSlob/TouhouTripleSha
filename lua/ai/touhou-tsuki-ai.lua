@@ -682,7 +682,7 @@ function sgs.ai_slash_prohibit.thzhehui(self, from, to)
 	if not to:hasSkill("thzhehui") then return false end
 	if from:hasSkill("ikxuwu") or from:getMark("thshenyou") > 0 or (from:hasSkill("ikwanhun") and from:distanceTo(to) == 1) then return false end
 	if from:hasFlag("IkJieyouUsed") then return false end
-	return to:getMark("zhehui") > 0 and to:hasSkill("thzhehui")
+	return to:getMark("@shine") > 0 and to:hasSkill("thzhehui")
 end
 
 sgs.ai_skill_choice.thzhehui = function(self, choices)
