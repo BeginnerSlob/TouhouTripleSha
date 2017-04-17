@@ -19,9 +19,12 @@ public:
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
         TriggerList skill_list;
         if (triggerEvent == EventPhaseChanging) {
-            if (player->hasFlag("jianmoinvoke"))
-                room->setPlayerFlag(player, "-jianmoinvoke");
-            room->removePlayerCardLimitation(player, "use,response", "Slash$0");
+            if (player->getMark("@tie") > 0)
+                room->setPlayerMark(player, "@tie", 0);
+            if (player->getMark("jianmouse")) {
+                room->removePlayerMark(player, "jianmouse");
+                room->removePlayerCardLimitation(player, "use,response", "Slash$0");
+            }
         } else if (triggerEvent == EventPhaseStart) {
             if (player->getPhase() != Player::Play || player->getHandcardNum() < player->getMaxHp())
                 return skill_list;
@@ -49,6 +52,7 @@ public:
             log.arg = "1";
             room->sendLog(log);
             player->drawCards(1);
+            room->addPlayerMark(player, "jianmouse");
             room->setPlayerCardLimitation(player, "use,response", "Slash", false);
         } else {
             LogMessage log;
@@ -56,7 +60,7 @@ public:
             log.from = player;
             log.arg = "2";
             room->sendLog(log);
-            room->setPlayerFlag(player, "jianmoinvoke");
+            room->addPlayerMark(player, "@tie");
         }
         return false;
     }
@@ -71,7 +75,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("Slash") && player->hasFlag("jianmoinvoke"))
+        if (use.card->isKindOf("Slash") && player->getMark("@tie"))
             return QStringList(objectName());
         return QStringList();
     }

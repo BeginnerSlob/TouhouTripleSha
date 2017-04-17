@@ -916,6 +916,7 @@ public:
                 CardUseStruct use = player->tag["RhZhenyaoUse"].value<CardUseStruct>();
                 player->tag.remove("RhZhenyaoUse");
                 player->addZhenyaoTag(use.card);
+                room->addPlayerMark(player, "@repression");
             }
         }
         return QStringList();
@@ -945,7 +946,7 @@ public:
         room->judge(judge);
         if (triggerEvent == TargetConfirmed && player->hasFlag("rhzhenyao")) {
             player->setFlags("-rhzhenyao");
-            player->tag.remove("RhZhenyaoDamage");
+            player->tag.remove("RhZhenyaoUse");
         }
 
         if (judge.isBad())
@@ -980,7 +981,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *player) const
     {
-        return !player->tag["RhZhenyao"].toStringList().isEmpty();
+        return player->getMark("@repression") > 0;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
@@ -1109,9 +1110,12 @@ public:
                 }
             }
         } else if (data.toString() == objectName()) {
-            if (triggerEvent == EventLoseSkill)
+            if (triggerEvent == EventLoseSkill) {
+                QString obj = player->tag[objectName()].toString();
                 player->tag.remove(objectName());
-            else
+                if (room->findPlayer(obj))
+                    room->setPlayerMark(room->findPlayer(obj), "@filth", 0);
+            } else
                 skill_list.insert(player, QStringList(objectName()));
         }
         return skill_list;
@@ -1136,6 +1140,7 @@ public:
             ServerPlayer *target = room->askForPlayerChosen(ask_who, room->getOtherPlayers(ask_who), objectName(), "@rhbaiming", false, true);
             room->broadcastSkillInvoke(objectName());
             ask_who->tag[objectName()] = target->objectName();
+            room->addPlayerMark(target, "@filth");
             return false;
         }
 

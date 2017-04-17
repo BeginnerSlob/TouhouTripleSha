@@ -169,7 +169,7 @@ int Player::getAttackRange(bool include_weapon) const{
             weapon_range = 3;
         else {
             WrappedCard *wp = weapon;
-            if (!wp && !hasOwnerOnlySkill(true) && getMark("@micai") > 0) {
+            if (!wp && !hasOwnerOnlySkill(true) && getMark("@technology") > 0) {
                 foreach (const Player *p, getAliveSiblings()) {
                     if (p->getMark("thmicaisource") > 0) {
                         wp = p->weapon;
@@ -619,7 +619,7 @@ bool Player::hasWeapon(const QString &weapon_name) const {
     }
 
     WrappedCard *wp = weapon;
-    if (!wp && !hasOwnerOnlySkill(true) && getMark("@micai") > 0) {
+    if (!wp && !hasOwnerOnlySkill(true) && getMark("@technology") > 0) {
         foreach (const Player *p, getAliveSiblings()) {
             if (p->getMark("thmicaisource") > 0) {
                 wp = p->weapon;
@@ -668,7 +668,7 @@ bool Player::hasArmorEffect(const QString &armor_name) const{
     }
 
     WrappedCard *am = armor;
-    if (!am && !hasOwnerOnlySkill(true) && getMark("@micai") > 0) {
+    if (!am && !hasOwnerOnlySkill(true) && getMark("@technology") > 0) {
         foreach (const Player *p, getAliveSiblings()) {
             if (p->getMark("thmicaisource") > 0) {
                 am = p->armor;

@@ -3969,7 +3969,7 @@ public:
             judge.reason = objectName();
             room->judge(judge);
 
-            player->addToPile(objectName(), judge.card);
+            player->addToPile("cluster", judge.card);
             Card::Suit suit = judge.card->getSuit();
             if (suits.contains(suit)) {
                 suits << suit;
@@ -3991,7 +3991,7 @@ public:
             slash->setSkillName("_iklingcu");
             room->useCard(CardUseStruct(slash, player, target));
         }
-        player->clearOnePrivatePile(objectName());
+        player->clearOnePrivatePile("cluster");
         return false;
     }
 };
@@ -5675,7 +5675,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        player->gainMark("@zhuxue");
+        player->gainMark("@blood");
         return false;
     }
 };
@@ -5694,13 +5694,13 @@ public:
     {
         TriggerList list;
         if (e == EventMarksGot && TriggerSkill::triggerable(p)) {
-            if (d.toString() == "@zhuxue" && (p->getMark("@zhuxue") == 1
-                                              || p->getMark("@zhuxue") == 4
-                                              || p->getMark("@zhuxue") == 7))
+            if (d.toString() == "@blood" && (p->getMark("@blood") == 1
+                                             || p->getMark("@blood") == 4
+                                             || p->getMark("@blood") == 7))
                 list.insert(p, QStringList(objectName()));
         } else if (e == AfterSwapPile) {
             foreach (ServerPlayer *sp, r->findPlayersBySkillName(objectName())) {
-                if (sp->getMark("@zhuxue") > 0)
+                if (sp->getMark("@blood") > 0)
                     list.insert(sp, QStringList(objectName()));
             }
         }
@@ -5710,7 +5710,7 @@ public:
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
         if (triggerEvent == EventMarksGot) {
-            int n = player->getMark("@zhuxue");
+            int n = player->getMark("@blood");
             QStringList skills = player->tag["IkSheluoSkills"].toStringList();
             if (n == 1 && !player->hasSkill("ikchenqing")) {
                 room->acquireSkill(player, "ikchenqing");
@@ -5738,7 +5738,7 @@ public:
             }
             player->tag["IkSheluoSkills"] = QVariant::fromValue(skills);
         } else {
-            ask_who->loseAllMarks("@zhuxue");
+            ask_who->loseAllMarks("@blood");
             QStringList losts;
             foreach (QString skill, ask_who->tag["IkSheluoSkills"].toStringList())
                 losts << "-" + skill;

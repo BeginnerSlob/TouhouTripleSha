@@ -501,7 +501,7 @@ bool ServerPlayer::hasNullification() const{
     // Coupling of ThBaochui
     if (hasFlag("thbaochui") && getPhase() == Player::Play) {
         foreach (ServerPlayer *p, room->getAllPlayers())
-            foreach (int id, p->getPile("thbaochuipile"))
+            foreach (int id, p->getPile("currency"))
                 if (Sanguosha->getCard(id)->objectName() == "nullification")
                     return true;
     }

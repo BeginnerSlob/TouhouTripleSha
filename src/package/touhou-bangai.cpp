@@ -759,7 +759,7 @@ bool ThXingxieCard::targetFilter(const QList<const Player *> &targets, const Pla
 void ThXingxieCard::onEffect(const CardEffectStruct &effect) const{
     DummyCard *dummy = new DummyCard;
     dummy->addSubcards(effect.to->getEquips());
-    effect.from->addToPile("thxingxiepile", dummy);
+    effect.from->addToPile("spark", dummy);
     effect.to->setFlags("ThXingxieTarget");
     delete dummy;
 }
@@ -794,8 +794,8 @@ public:
             foreach (ServerPlayer *p, room->getAllPlayers()) {
                 if (p->hasFlag("ThXingxieTarget")) {
                     p->setFlags("-ThXingxieTarget");
-                    if (!player->getPile("thxingxiepile").isEmpty()) {
-                        QList<int> card_ids = player->getPile("thxingxiepile");
+                    if (!player->getPile("spark").isEmpty()) {
+                        QList<int> card_ids = player->getPile("spark");
                         foreach (int id, card_ids) {
                             room->obtainCard(p, id);
                             if (room->getCardOwner(id) != p)

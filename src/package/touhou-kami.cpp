@@ -1363,10 +1363,10 @@ public:
             detach << "-ikbiyue" << "-thfeiying" << "-ikchenhong" << "-thjifeng";
             room->handleAcquireDetachSkills(player, detach, true);
         } else if (triggerEvent == EventAcquireSkill && data.toString() == objectName()) {
-            if (!player->getPile("thrangdengpile").isEmpty()) {
+            if (!player->getPile("lantern").isEmpty()) {
                 room->notifySkillInvoked(player, objectName());
                 QStringList attach;
-                foreach (int id, player->getPile("thrangdengpile")) {
+                foreach (int id, player->getPile("lantern")) {
                     QString skill_name;
                     switch (Sanguosha->getCard(id)->getSuit()) {
                     case Card::Heart : {
@@ -1396,7 +1396,7 @@ public:
             }
         } else if (triggerEvent == CardsMoveOneTime && player->isAlive() && player->hasSkill(objectName(), true)) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.to == player && move.to_place == Player::PlaceSpecial && move.to_pile_name == "thrangdengpile") {
+            if (move.to == player && move.to_place == Player::PlaceSpecial && move.to_pile_name == "lantern") {
                 QStringList skills;
                 foreach (int id, move.card_ids) {
                     QString skill_name = "";
@@ -1439,7 +1439,7 @@ public:
             QStringList numbers;
             for (int num = 1; num <= 13; num++)
                 numbers << QString::number(num);
-            foreach (int id, player->getPile("thrangdengpile")) {
+            foreach (int id, player->getPile("lantern")) {
                 QString num = QString::number(Sanguosha->getCard(id)->getNumber());
                 if (numbers.contains(num))
                     numbers.removeAll(num);
@@ -1454,7 +1454,7 @@ public:
                     room->askForDiscard(player, objectName(), 1, 1);
                 break;
             } else
-                player->addToPile("thrangdengpile", card);
+                player->addToPile("lantern", card);
         }
 
         return false;
@@ -1466,7 +1466,7 @@ ThBaihunCard::ThBaihunCard() {
 
 void ThBaihunCard::onEffect(const CardEffectStruct &effect) const {
     Room *room = effect.from->getRoom();
-    effect.from->clearOnePrivatePile("thrangdengpile");
+    effect.from->clearOnePrivatePile("lantern");
     room->handleAcquireDetachSkills(effect.from, "-ikbiyue|-thfeiying|-ikchenhong|-thjifeng", true);
     room->killPlayer(effect.to);
 }
@@ -1477,7 +1477,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getPile("thrangdengpile").length() >= 13;
+        return player->getPile("lantern").length() >= 13;
     }
 
     virtual const Card *viewAs() const{
