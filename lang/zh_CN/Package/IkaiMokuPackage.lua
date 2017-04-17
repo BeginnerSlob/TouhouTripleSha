@@ -116,7 +116,7 @@ return {
 	["#IkLiefengPower"] = "“<font color=\"yellow\"><b>烈风</b></font>”效果被触发，%from 的火焰伤害从 %arg 点增加至 %arg2 点",
 	["ikmiaowu"] = "渺雾",
 	[":ikmiaowu"] = "结束阶段开始时，你可以弃置X张“曜”，并选择X名角色，若如此做，每当这些角色受到的非雷电伤害结算开始时，防止此伤害，直到你的下回合开始。",
-	["@frog"] = "雾",
+	["@fog"] = "雾",
 	["@ikmiaowu-card"] = "你可以发动“渺雾”",
 	["~ikmiaowu"] = "选择若干名角色→点击确定→然后在窗口中选择相应数量的牌",
 	["#IkMiaowuProtect"] = "%from 的“<font color=\"yellow\"><b>渺雾</b></font>”效果被触发，防止了 %arg 点伤害[%arg2]",

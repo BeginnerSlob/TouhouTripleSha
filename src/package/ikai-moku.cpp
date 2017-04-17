@@ -992,7 +992,7 @@ void IkMiaowuCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &targ
     source->tag["IkMiaowu_user"] = true;
 
     foreach (ServerPlayer *target, targets)
-        target->gainMark("@frog");
+        target->gainMark("@fog");
 }
 
 class IkMiaowuViewAsSkill: public ZeroCardViewAsSkill {
@@ -1033,7 +1033,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (player->getMark("@frog") > 0) {
+        if (player->getMark("@fog") > 0) {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.nature != DamageStruct::Thunder)
                 return QStringList(objectName());
@@ -1079,7 +1079,7 @@ public:
             return QStringList();
         QList<ServerPlayer *> players = room->getAllPlayers();
         foreach (ServerPlayer *player, players)
-            player->loseAllMarks("@frog");
+            player->loseAllMarks("@fog");
         player->tag.remove("IkMiaowu_user");
 
         return QStringList();

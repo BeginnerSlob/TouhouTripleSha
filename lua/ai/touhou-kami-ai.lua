@@ -983,7 +983,7 @@ end
 --禳灯：锁定技，出牌阶段开始时，你须选择一项：依次将至多三张与你人物牌上的任何一张牌点数都不相同的手牌面朝上置于你的人物牌上，称为“灯”；或弃置一张手牌。你的人物牌上每有一种花色的“灯”，你获得相应的技能：红桃“闭月”；黑桃“飞影”；方块“沉红”；梅花“霁风”。
 sgs.ai_skill_cardask["@thrangdeng"] = function(self, data, pattern, target, target2, arg, arg2)
 	local has_suits, has_num = {}, {}
-	for _, id in sgs.qlist(self.player:getPile("thrangdengpile")) do
+	for _, id in sgs.qlist(self.player:getPile("lantern")) do
 		local c = sgs.Sanguosha:getCard(id)
 		if not table.contains(has_suits, c:getSuit()) then
 			table.insert(has_suits, c:getSuit())
@@ -1011,7 +1011,7 @@ end
 
 sgs.ai_cardneed.thrangdeng = function(to, card)
 	local has_suits, has_num = {}, {}
-	for _, id in sgs.qlist(to:getPile("thrangdengpile")) do
+	for _, id in sgs.qlist(to:getPile("lantern")) do
 		local c = sgs.Sanguosha:getCard(id)
 		if not table.contains(has_suits, c:getSuit()) then
 			table.insert(has_suits, c:getSuit())
@@ -1026,7 +1026,7 @@ local thbaihun_skill = {}
 thbaihun_skill.name = "thbaihun"
 table.insert(sgs.ai_skills, thbaihun_skill)
 thbaihun_skill.getTurnUseCard = function(self)
-	if self.player:getPile("thrangdengpile"):length() >= 13 then
+	if self.player:getPile("lantern"):length() >= 13 then
 		return sgs.Card_Parse("@ThBaihunCard=.")
 	end
 end
@@ -1054,7 +1054,7 @@ end
 
 sgs.ai_cardneed.thbaihun = function(to, card)
 	local has_num = {}
-	for _, id in sgs.qlist(to:getPile("thrangdengpile")) do
+	for _, id in sgs.qlist(to:getPile("lantern")) do
 		local c = sgs.Sanguosha:getCard(id)
 		table.insert(has_num, c:getNumber())
 	end
