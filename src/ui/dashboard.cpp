@@ -583,7 +583,7 @@ void Dashboard::selectCards(const QString &pattern) {
         retractPileCards("wooden_ox");
         retractPileCards("iklingxun");
         if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
-            retractPileCards("thbaochuipile");
+            retractPileCards("currency");
     }
     if (view_as_skill) {
         unselectAll();
@@ -985,7 +985,7 @@ void Dashboard::enableCards() {
     expandPileCards("wooden_ox");
     expandPileCards("iklingxun");
     if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
-        expandPileCards("thbaochuipile");
+        expandPileCards("currency");
     foreach (CardItem *card_item, m_handCards)
         card_item->setEnabled(card_item->getCard()->isAvailable(Self));
     m_mutexEnableCards.unlock();
@@ -1014,12 +1014,12 @@ void Dashboard::startPending(const ViewAsSkill *skill) {
         expandPileCards("wooden_ox");
         expandPileCards("iklingxun");
         if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
-            expandPileCards("thbaochuipile");
+            expandPileCards("currency");
     } else {
         retractPileCards("wooden_ox");
         retractPileCards("iklingxun");
         if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
-            retractPileCards("thbaochuipile");
+            retractPileCards("currency");
         if (skill && skill->inherits("ViewAsSkill") && !skill->getExpandPile().isEmpty())
             expandPileCards(skill->getExpandPile());
     }
@@ -1047,7 +1047,7 @@ void Dashboard::stopPending() {
     retractPileCards("wooden_ox");
     retractPileCards("iklingxun");
     if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
-        retractPileCards("thbaochuipile");
+        retractPileCards("currency");
     emit card_selected(NULL);
 
     foreach (CardItem *item, m_handCards) {
@@ -1074,7 +1074,7 @@ void Dashboard::expandPileCards(const QString &pile_name) {
     if (_m_pile_expanded.contains(pile_name)) return;
     _m_pile_expanded << pile_name;
     QList<int> pile = Self->getPile(pile_name);
-    if (pile_name == "thbaochuipile")
+    if (pile_name == "currency")
         foreach (const Player *p, Self->getAliveSiblings())
             pile += p->getPile(pile_name);
     if (pile.isEmpty()) return;
@@ -1094,7 +1094,7 @@ void Dashboard::retractPileCards(const QString &pile_name) {
     if (!_m_pile_expanded.contains(pile_name)) return;
     _m_pile_expanded.removeOne(pile_name);
     QList<int> pile = Self->getPile(pile_name);
-    if (pile_name == "thbaochuipile")
+    if (pile_name == "currency")
         foreach (const Player *p, Self->getAliveSiblings())
             pile += p->getPile(pile_name);
     if (pile.isEmpty()) return;

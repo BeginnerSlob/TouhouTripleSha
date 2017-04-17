@@ -885,7 +885,7 @@ bool IkLiefengCard::targetFilter(const QList<const Player *> &targets, const Pla
 void IkLiefengCard::onEffect(const CardEffectStruct &effect) const{
     IkQiyao::DiscardStar(effect.from, 1, "ikliefeng");
     effect.from->tag["IkLiefeng_user"] = true;
-    effect.to->gainMark("@liefeng");
+    effect.to->gainMark("@gale");
 }
 
 class IkLiefengViewAsSkill: public ZeroCardViewAsSkill {
@@ -926,7 +926,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (player->getMark("@liefeng") > 0) {
+        if (player->getMark("@gale") > 0) {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.nature == DamageStruct::Fire)
                 return QStringList(objectName());
@@ -971,7 +971,7 @@ public:
             return QStringList();
         QList<ServerPlayer *> players = room->getAllPlayers();
         foreach (ServerPlayer *player, players)
-            player->loseAllMarks("@liefeng");
+            player->loseAllMarks("@gale");
         player->tag.remove("IkLiefeng_user");
 
         return QStringList();
@@ -992,7 +992,7 @@ void IkMiaowuCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &targ
     source->tag["IkMiaowu_user"] = true;
 
     foreach (ServerPlayer *target, targets)
-        target->gainMark("@miaowu");
+        target->gainMark("@frog");
 }
 
 class IkMiaowuViewAsSkill: public ZeroCardViewAsSkill {
@@ -1033,7 +1033,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (player->getMark("@miaowu") > 0) {
+        if (player->getMark("@frog") > 0) {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.nature != DamageStruct::Thunder)
                 return QStringList(objectName());
@@ -1079,7 +1079,7 @@ public:
             return QStringList();
         QList<ServerPlayer *> players = room->getAllPlayers();
         foreach (ServerPlayer *player, players)
-            player->loseAllMarks("@miaowu");
+            player->loseAllMarks("@frog");
         player->tag.remove("IkMiaowu_user");
 
         return QStringList();
@@ -2807,13 +2807,13 @@ public:
         int id = room->drawCard();
         int num = Sanguosha->getCard(id)->getNumber();
         bool duplicate = false;
-        foreach (int card_id, zhoutai->getPile("iksushengpile")) {
+        foreach (int card_id, zhoutai->getPile("flower")) {
             if (Sanguosha->getCard(card_id)->getNumber() == num) {
                 duplicate = true;
                 break;
             }
         }
-        zhoutai->addToPile("iksushengpile", id);
+        zhoutai->addToPile("flower", id);
         if (duplicate) {
             CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
             room->throwCard(Sanguosha->getCard(id), reason, NULL);
@@ -2830,7 +2830,7 @@ public:
     }
 
     virtual int getFixed(const Player *target) const{
-        int len = target->getPile("iksushengpile").length();
+        int len = target->getPile("flower").length();
         if (target->hasSkill(objectName()) && len > 0)
             return len;
         else

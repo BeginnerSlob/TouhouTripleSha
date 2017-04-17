@@ -1754,19 +1754,22 @@ public:
     }
 };
 
-IkHuyinCard::IkHuyinCard() {
+IkHuyinCard::IkHuyinCard()
+{
     will_throw = false;
     handling_method = Card::MethodNone;
 }
 
-void IkHuyinCard::onEffect(const CardEffectStruct &effect) const{
-    effect.from->addToPile("ikhuyinpile", this);
+void IkHuyinCard::onEffect(const CardEffectStruct &effect) const
+{
+    effect.from->addToPile("rhythm", this);
     Room *room = effect.from->getRoom();
-    room->addPlayerMark(effect.to, "@huyin");
+    room->addPlayerMark(effect.to, "@arc");
     room->addPlayerMark(effect.to, "huyin_" + effect.from->objectName());
 }
 
-class IkHuyin: public OneCardViewAsSkill {
+class IkHuyin: public OneCardViewAsSkill
+{
 public:
     IkHuyin(): OneCardViewAsSkill("ikhuyin") {
         filter_pattern = ".";
@@ -1817,7 +1820,7 @@ public:
         if (!type_list.isEmpty()) {
             foreach (ServerPlayer *p, room->getAllPlayers()) {
                 if (player->getMark("huyin_" + p->objectName()) > 0) {
-                    foreach (int id, p->getPile("ikhuyinpile")) {
+                    foreach (int id, p->getPile("rhythm")) {
                         if (type_list.contains(Sanguosha->getCard(id)->getType())) {
                             skill_list.insert(p, QStringList(objectName()));
                             break;
@@ -1833,9 +1836,9 @@ public:
         room->sendCompulsoryTriggerLog(ask_who, objectName());
 
         room->removePlayerMark(player, "huyin_" + ask_who->objectName());
-        room->removePlayerMark(player, "@huyin");
+        room->removePlayerMark(player, "@arc");
 
-        DummyCard *dummy = new DummyCard(ask_who->getPile("ikhuyinpile"));
+        DummyCard *dummy = new DummyCard(ask_who->getPile("rhythm"));
         player->obtainCard(dummy);
         delete dummy;
         room->loseHp(player);
@@ -1851,14 +1854,14 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer* &) const{
-        if (triggerEvent == EventPhaseStart && target->getPhase() == Player::RoundStart && !target->getPile("ikhuyinpile").isEmpty()) {
-            DummyCard *dummy = new DummyCard(target->getPile("ikhuyinpile"));
+        if (triggerEvent == EventPhaseStart && target->getPhase() == Player::RoundStart && !target->getPile("rhythm").isEmpty()) {
+            DummyCard *dummy = new DummyCard(target->getPile("rhythm"));
             target->obtainCard(dummy);
             delete dummy;
             foreach (ServerPlayer *p, room->getAlivePlayers()) {
                 if (p->getMark("huyin_" + target->objectName()) > 0) {
                     int n = p->getMark("huyin_" + target->objectName());
-                    room->removePlayerMark(p, "@huyin", n);
+                    room->removePlayerMark(p, "@arc", n);
                     room->setPlayerMark(p, "huyin_" + target->objectName(), 0);
                 }
             }

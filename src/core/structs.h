@@ -459,7 +459,7 @@ enum TriggerEvent {
 
     ConfirmDamage,    // confirm the damage's count and damage's nature
     Predamage,        // trigger the certain skill -- ikxuwu
-    DamageForseen,    // the first event in a damage -- ikliefeng dawu
+    DamageForseen,    // the first event in a damage -- ikliefeng ikmiaowu
     DamageCaused,     // the moment for -- ikmoguang..
     DamageInflicted,  // the moment for -- ikzhihui..
     PreDamageDone,    // before reducing Hp

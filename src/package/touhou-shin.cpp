@@ -560,7 +560,7 @@ public:
         CardMoveReason reason(CardMoveReason::S_REASON_GIVE, player->objectName(),
                               ask_who->objectName(), objectName(), QString());
         room->obtainCard(ask_who, card, reason, false);
-        ask_who->addToPile("thbaochuipile", ask_who->handCards());
+        ask_who->addToPile("currency", ask_who->handCards());
         room->setPlayerFlag(player, "thbaochui");
         return false;
     }
@@ -577,14 +577,14 @@ public:
         TriggerList skill_list;
         if (player->hasFlag("thbaochui") && player->getPhase() == Player::Play)
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                if (p->getPile("thbaochuipile").isEmpty()) continue;
+                if (p->getPile("currency").isEmpty()) continue;
                 skill_list.insert(p, QStringList(objectName()));
             }
         return skill_list;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
-        DummyCard *dummy = new DummyCard(ask_who->getPile("thbaochuipile"));
+        DummyCard *dummy = new DummyCard(ask_who->getPile("currency"));
         CardMoveReason reason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE, ask_who->objectName(), "thbaochui", QString());
         room->obtainCard(ask_who, dummy, reason, true);
         delete dummy;
@@ -609,7 +609,7 @@ public:
         if (reason == CardMoveReason::S_REASON_USE
             || reason == CardMoveReason::S_REASON_RESPONSE) {
             for (int i = 0; i < move.card_ids.size(); i++)
-                if (move.from_pile_names[i] == "thbaochuipile")
+                if (move.from_pile_names[i] == "currency")
                     return QStringList(objectName());
         }
 
@@ -620,7 +620,7 @@ public:
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         int count = 0;
         for (int i = 0; i < move.card_ids.size(); i++)
-            if (move.from_pile_names[i] == "thbaochuipile")
+            if (move.from_pile_names[i] == "currency")
                 count++;
         if (count > 0) {
             LogMessage log;
@@ -671,7 +671,7 @@ public:
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         int reason = move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON;
         if (reason == CardMoveReason::S_REASON_USE && move.from_places.contains(Player::PlaceSpecial)
-                                                   && move.from_pile_names.contains("thbaochuipile")) {
+                                                   && move.from_pile_names.contains("currency")) {
             const Card *card = move.reason.m_extraData.value<const Card *>();
             if (!card) return QStringList();
             if (!card->isVirtualCard() || (card->subcardsLength() == 1
@@ -1524,7 +1524,7 @@ public:
                 return false;
             if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play) {
                 foreach (const Player *p, Self->getAliveSiblings()) {
-                    if (p->getPile("thbaochuipile").contains(card->getEffectiveId()))
+                    if (p->getPile("currency").contains(card->getEffectiveId()))
                         return false;
                 }
             }
