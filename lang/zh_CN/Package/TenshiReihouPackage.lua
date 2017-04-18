@@ -76,7 +76,7 @@ return {
 	["#reihou008"] = "如意金箍",
 	["reihou008"] = "定海神珍铁",--灵 - 空 - 4血
 	["designer:reihou008"] = "名和行年",
-	["illustrator:reihou008"] = "[source]《信長の野望ON》タマヨリビメ",
+	["illustrator:reihou008"] = "ms06s",
 	["cv:reihou008"] = "暂无",
 	["rhzhenyao"] = "镇妖",
 	[":rhzhenyao"] = "当你使用【杀】指定目标后/成为【杀】的目标后，你可以判定，若结果为黑色，此【杀】不是【闪】的合法目标/你于此【杀】结算完毕之前拥有“定”标记〈当你受到的伤害结算开始时/失去体力前，你防止此伤害/终止此失去体力结算〉。每回合限一次。",
@@ -115,7 +115,7 @@ return {
 	["rhyuhuo"] = "驭火",
 	[":rhyuhuo"] = "你可以将一张红色基本牌当火【杀】使用或打出。",
 
-	["#reihou012"] = "殒身成刃",
+	["#reihou012"] = "玄离之阳",
 	["reihou012"] = "干将",--灵 - 空 - 4血
 	["designer:reihou012"] = "名和行年",
 	["illustrator:reihou012"] = "ms06s",
@@ -126,7 +126,7 @@ return {
 	["rhzhengyangpile"] = "阳",
 	["@rhzhengyang"] = "你可以发动“正阳”将一张手牌置于人物牌上",
 
-	["#reihou013"] = "炼血铸兵",
+	["#reihou013"] = "白水之阴",
 	["reihou013"] = "莫邪",--灵 - 空 - 4血
 	["designer:reihou013"] = "名和行年",
 	["illustrator:reihou013"] = "ms06s",
@@ -246,7 +246,7 @@ return {
 	["@rhyaozhang"] = "%src 发动了“妖障”，请弃置一张装备牌，否则此【杀】对其无效",
 
 	["#reihou025"] = "狂言舞事",
-	["reihou025"] = "般若禅面",--灵 - 空 - 4血
+	["reihou025"] = "般若鬼面",--灵 - 空 - 4血
 	["designer:reihou025"] = "名和行年",
 	["illustrator:reihou025"] = "ms06s",
 	["cv:reihou025"] = "暂无",
@@ -456,7 +456,7 @@ return {
 	["#reihou049"] = "张悬京极萤",
 	["reihou049"] = "银箔押兔耳前立兜",--灵 - 空 - 4血
 	["designer:reihou049"] = "名和行年",
-	["illustrator:reihou049"] = "[source]《信長の野望ON》アカルヒメ",
+	["illustrator:reihou049"] = "ms06s",
 	["cv:reihou049"] = "暂无",
 	["rhqiaozou"] = "巧奏",
 	[":rhqiaozou"] = "当当前回合角色使用的牌结算结束后，你可以请求该角色将一张红色手牌当此牌使用。每回合限一次。",
