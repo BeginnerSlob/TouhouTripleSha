@@ -664,7 +664,7 @@ public:
         if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
                 && card->hasFlag("rhliufu")) {
             foreach (int id, move.card_ids) {
-                if (card->getSubcards().contains(id))
+                if (card->getSubcards().contains(id) || card->getEffectiveId() == id)
                     return QStringList(objectName());
             }
         }
@@ -682,7 +682,7 @@ public:
         QList<int> ids;
         for (int i = 0; i < move.card_ids.length(); ++i) {
             int id = move.card_ids[i];
-            if (card->getSubcards().contains(id)
+            if ((card->getSubcards().contains(id) || card->getEffectiveId() == id)
                     && move.from_places[i] == Player::PlaceTable && move.to_place == Player::DiscardPile)
                 ids << id;
         }
@@ -3163,6 +3163,115 @@ public:
     }
 };
 
+class RhJianuo : public TriggerSkill
+{
+public:
+    RhJianuo() : TriggerSkill("rhjianuo")
+    {
+        events << EventPhaseStart << BeforeCardsMove << EventPhaseChanging;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        TriggerList skill_list;
+        if (triggerEvent == EventPhaseStart) {
+            if (player->getPhase() == Player::Play) {
+                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                    skill_list.insert(p, QStringList(objectName()));
+                }
+            }
+        } else if (triggerEvent == BeforeCardsMove) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from && player->tag[objectName()].toString() == move.from->objectName()) {
+                if ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD
+                        && move.to_place == Player::DiscardPile)
+                    skill_list.insert(player, QStringList(objectName()));
+            }
+        } else if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    QString obj = p->tag[objectName()].toString();
+                    if (!obj.isEmpty()) {
+                        p->tag.remove(objectName());
+                        if (room->findPlayer(obj))
+                            room->removePlayerMark(room->findPlayer(obj), "@charm");
+                    }
+                }
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (triggerEvent == EventPhaseStart) {
+            if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+                room->broadcastSkillInvoke(objectName());
+                room->removeReihouCard(ask_who);
+                return true;
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        if (triggerEvent == EventPhaseStart) {
+            ask_who->tag[objectName()] = player->objectName();
+            room->addPlayerMark(player, "@charm");
+        }
+
+        if (triggerEvent == BeforeCardsMove) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+
+            QList<int> all_ids = move.card_ids, ids = move.card_ids;
+            QList<int> disabled;
+            while (!ids.isEmpty()) {
+                room->fillAG(all_ids, player, disabled);
+                bool only = (all_ids.length() == 1);
+                int card_id = -1;
+                if (only)
+                    card_id = ids.first();
+                else
+                    card_id = room->askForAG(player, ids, true, objectName());
+                room->clearAG(player);
+                if (card_id == -1) break;
+                const Card *card = Sanguosha->getCard(card_id);
+                ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers((ServerPlayer *)move.from), objectName(),
+                                                                QString("@ikyanyu-give:::%1:%2\\%3")
+                                                                .arg(card->objectName())
+                                                                .arg(card->getSuitString() + "_char")
+                                                                .arg(card->getNumberString()),
+                                                                only, true);
+                if (target) {
+                    Player::Place place = move.from_places.at(move.card_ids.indexOf(card_id));
+                    QList<int> _card_id;
+                    _card_id << card_id;
+                    move.removeCardIds(_card_id);
+                    data = QVariant::fromValue(move);
+                    ids.removeOne(card_id);
+                    disabled << card_id;
+                    if (move.from && move.from->objectName() == target->objectName() && place != Player::PlaceTable) {
+                        // just indicate which card she chose...
+                        LogMessage log;
+                        log.type = "$MoveCard";
+                        log.from = target;
+                        log.to << target;
+                        log.card_str = QString::number(card_id);
+                        room->sendLog(log);
+                    }
+                    room->obtainCard(target, card, move.reason);
+                } else
+                    break;
+            }
+        }
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -3306,6 +3415,9 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou035 = new General(this, "reihou035", "rei", 4, true, true);
     reihou035->addSkill(new RhYousheng);
+
+    General *reihou036 = new General(this, "reihou036", "rei", 4, true, true);
+    reihou036->addSkill(new RhJianuo);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
