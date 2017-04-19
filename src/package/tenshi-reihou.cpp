@@ -3272,6 +3272,104 @@ public:
     }
 };
 
+RhYizhiCard::RhYizhiCard()
+{
+}
+
+bool RhYizhiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const
+{
+    if (targets.length() >= 2) {
+        return false;
+    }
+    if (targets.isEmpty())
+        return to_select->hasEquip();
+    if (!targets.first()->hasEquip())
+        return false;
+    foreach (const Card *card, targets.first()->getEquips()) {
+        const EquipCard *equip = qobject_cast<const EquipCard *>(card->getRealCard());
+        EquipCard::Location location = equip->location();
+        if (!to_select->getEquip(location))
+            return true;
+    }
+    return false;
+}
+
+bool RhYizhiCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const
+{
+    if (targets.length() == 2) {
+        if (!targets.first()->hasEquip())
+            return false;
+        foreach (const Card *card, targets.first()->getEquips()) {
+            const EquipCard *equip = qobject_cast<const EquipCard *>(card->getRealCard());
+            EquipCard::Location location = equip->location();
+            if (!targets.last()->getEquip(location))
+                return true;
+        }
+    }
+    return false;
+}
+
+void RhYizhiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
+    QList<int> disabled_ids;
+    bool can = false;
+    foreach (const Card *card, targets.first()->getEquips()) {
+        const EquipCard *equip = qobject_cast<const EquipCard *>(card->getRealCard());
+        EquipCard::Location location = equip->location();
+        if (targets.last()->getEquip(location))
+            disabled_ids << card->getEffectiveId();
+    }
+
+    room->loseHp(source);
+
+    int id = room->askForCardChosen(source, targets.first(), "e", "rhyizhi", false, MethodNone, disabled_ids);
+    CardMoveReason reason(CardMoveReason::S_REASON_PUT, source->objectName(), targets.last()->objectName(), "rhyizhi", QString());
+    CardsMoveStruct move(id, targets.last(), Player::PlaceEquip, reason);
+    room->moveCardsAtomic(move, true);
+}
+
+class RhYizhi : public ZeroCardViewAsSkill
+{
+public:
+    RhYizhi() : ZeroCardViewAsSkill("rhyizhi")
+    {
+        response_pattern = "@@rhyizhi";
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new RhYizhiCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return player->getHp() > 0;
+    }
+};
+
+class RhGuozhu : public TriggerSkill
+{
+public:
+    RhGuozhu() : TriggerSkill("rhguozhu")
+    {
+        events << Damaged;
+        frequency = Frequent;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->isWounded() && player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            room->recover(player, RecoverStruct(player));
+        }
+
+        if (player->getHp() > 0)
+            room->askForUseCard(player, "@@rhyizhi", "@rhyizhi", -1, Card::MethodNone);
+
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -3419,6 +3517,10 @@ TenshiReihouPackage::TenshiReihouPackage()
     General *reihou036 = new General(this, "reihou036", "rei", 4, true, true);
     reihou036->addSkill(new RhJianuo);
 
+    General *reihou037 = new General(this, "reihou037", "rei", 4, true, true);
+    reihou037->addSkill(new RhYizhi);
+    reihou037->addSkill(new RhGuozhu);
+
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
     addMetaObject<RhHuanjieCard>();
@@ -3429,6 +3531,7 @@ TenshiReihouPackage::TenshiReihouPackage()
     addMetaObject<RhYarenCard>();
     addMetaObject<RhYinrenCard>();
     addMetaObject<RhYoushengCard>();
+    addMetaObject<RhYizhiCard>();
 }
 
 ADD_PACKAGE(TenshiReihou)
