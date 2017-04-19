@@ -29,12 +29,12 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
-class RhHuanjingCard: public SkillCard
+class RhHuanjieCard: public SkillCard
 {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE RhHuanjingCard();
+    Q_INVOKABLE RhHuanjieCard();
 
     virtual bool targetFixed() const;
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
@@ -143,12 +143,12 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class RhHuayuCard: public SkillCard
+class RhYoushengCard: public SkillCard
 {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE RhHuayuCard();
+    Q_INVOKABLE RhYoushengCard();
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;

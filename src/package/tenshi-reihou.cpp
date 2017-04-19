@@ -306,16 +306,16 @@ public:
     }
 };
 
-RhHuanjingCard::RhHuanjingCard()
+RhHuanjieCard::RhHuanjieCard()
 {
     mute = true;
 }
 
-bool RhHuanjingCard::targetFixed() const
+bool RhHuanjieCard::targetFixed() const
 {
     if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
-        Card *card = Sanguosha->cloneCard(Self->property("rhhuanjing").toString());
-        card->setSkillName("rhhuanjing");
+        Card *card = Sanguosha->cloneCard(Self->property("rhhuanjie").toString());
+        card->setSkillName("rhhuanjie");
         card->addSubcard(this);
         card->deleteLater();
         return card && card->targetFixed();
@@ -323,19 +323,19 @@ bool RhHuanjingCard::targetFixed() const
         return true;
     }
 
-    Card *new_card = Sanguosha->cloneCard(Self->property("rhhuanjing").toString());
-    new_card->setSkillName("rhhuanjing");
+    Card *new_card = Sanguosha->cloneCard(Self->property("rhhuanjie").toString());
+    new_card->setSkillName("rhhuanjie");
     new_card->addSubcard(this);
     new_card->setCanRecast(false);
     new_card->deleteLater();
     return new_card && new_card->targetFixed();
 }
 
-bool RhHuanjingCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+bool RhHuanjieCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
     if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
-        Card *card = Sanguosha->cloneCard(Self->property("rhhuanjing").toString());
-        card->setSkillName("rhhuanjing");
+        Card *card = Sanguosha->cloneCard(Self->property("rhhuanjie").toString());
+        card->setSkillName("rhhuanjie");
         card->addSubcard(this);
         card->deleteLater();
         return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
@@ -343,19 +343,19 @@ bool RhHuanjingCard::targetFilter(const QList<const Player *> &targets, const Pl
         return false;
     }
 
-    Card *new_card = Sanguosha->cloneCard(Self->property("rhhuanjing").toString());
-    new_card->setSkillName("rhhuanjing");
+    Card *new_card = Sanguosha->cloneCard(Self->property("rhhuanjie").toString());
+    new_card->setSkillName("rhhuanjie");
     new_card->addSubcard(this);
     new_card->setCanRecast(false);
     new_card->deleteLater();
     return new_card && new_card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, new_card, targets);
 }
 
-bool RhHuanjingCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
+bool RhHuanjieCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
 {
     if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
-        Card *card = Sanguosha->cloneCard(Self->property("rhhuanjing").toString());
-        card->setSkillName("rhhuanjing");
+        Card *card = Sanguosha->cloneCard(Self->property("rhhuanjie").toString());
+        card->setSkillName("rhhuanjie");
         card->addSubcard(this);
         card->deleteLater();
         return card && card->targetsFeasible(targets, Self);
@@ -363,67 +363,67 @@ bool RhHuanjingCard::targetsFeasible(const QList<const Player *> &targets, const
         return true;
     }
 
-    Card *new_card = Sanguosha->cloneCard(Self->property("rhhuanjing").toString());
-    new_card->setSkillName("rhhuanjing");
+    Card *new_card = Sanguosha->cloneCard(Self->property("rhhuanjie").toString());
+    new_card->setSkillName("rhhuanjie");
     new_card->addSubcard(this);
     new_card->setCanRecast(false);
     new_card->deleteLater();
     return new_card && new_card->targetsFeasible(targets, Self);
 }
 
-const Card *RhHuanjingCard::validate(CardUseStruct &card_use) const
+const Card *RhHuanjieCard::validate(CardUseStruct &card_use) const
 {
     ServerPlayer *user = card_use.from;
     Room *room = user->getRoom();
 
-    CardMoveReason reason(CardMoveReason::S_REASON_THROW, user->objectName(), "rhhuanjing", QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_THROW, user->objectName(), "rhhuanjie", QString());
     room->throwCard(this, reason, user);
 
-    room->addPlayerMark(user, "rhhuanjing");
+    room->addPlayerMark(user, "rhhuanjie");
 
-    Card *use_card = Sanguosha->cloneCard(user->property("rhhuanjing").toString());
-    use_card->setSkillName("rhhuanjing");
+    Card *use_card = Sanguosha->cloneCard(user->property("rhhuanjie").toString());
+    use_card->setSkillName("rhhuanjie");
     use_card->deleteLater();
     return use_card;
 }
 
-const Card *RhHuanjingCard::validateInResponse(ServerPlayer *user) const
+const Card *RhHuanjieCard::validateInResponse(ServerPlayer *user) const
 {
     Room *room = user->getRoom();
 
-    CardMoveReason reason(CardMoveReason::S_REASON_THROW, user->objectName(), "rhhuanjing", QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_THROW, user->objectName(), "rhhuanjie", QString());
     room->throwCard(this, reason, user);
 
-    room->addPlayerMark(user, "rhhuanjing");
+    room->addPlayerMark(user, "rhhuanjie");
 
-    Card *use_card = Sanguosha->cloneCard(user->property("rhhuanjing").toString());
-    use_card->setSkillName("rhhuanjing");
+    Card *use_card = Sanguosha->cloneCard(user->property("rhhuanjie").toString());
+    use_card->setSkillName("rhhuanjie");
     use_card->deleteLater();
     return use_card;
 }
 
-class RhHuanjingVS : public OneCardViewAsSkill
+class RhHuanjieVS : public OneCardViewAsSkill
 {
 public:
-    RhHuanjingVS() : OneCardViewAsSkill("rhhuanjing")
+    RhHuanjieVS() : OneCardViewAsSkill("rhhuanjie")
     {
         filter_pattern = ".|spade!";
     }
 
     virtual Card *viewAs(const Card *originalCard) const
     {
-        Card *card = new RhHuanjingCard;
+        Card *card = new RhHuanjieCard;
         card->addSubcard(originalCard);
         return card;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        if (player->getMark("rhhuanjing") > 0)
+        if (player->getMark("rhhuanjie") > 0)
             return false;
         if (!player->canDiscard(player, "he"))
             return false;
-        QString obj = player->property("rhhuanjing").toString();
+        QString obj = player->property("rhhuanjie").toString();
         if (obj.isEmpty())
             return false;
         const Card *card = Sanguosha->cloneCard(obj);
@@ -434,11 +434,11 @@ public:
     {
         if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
             return false;
-        if (player->getMark("rhhuanjing") > 0)
+        if (player->getMark("rhhuanjie") > 0)
             return false;
         if (!player->canDiscard(player, "he"))
             return false;
-        QString obj = player->property("rhhuanjing").toString();
+        QString obj = player->property("rhhuanjie").toString();
         if (obj.isEmpty())
             return false;
         return pattern.contains(obj);
@@ -446,22 +446,22 @@ public:
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const
     {
-        if (player->getMark("rhhuanjing") > 0)
+        if (player->getMark("rhhuanjie") > 0)
             return false;
         if (!player->canDiscard(player, "he"))
             return false;
-        QString obj = player->property("rhhuanjing").toString();
+        QString obj = player->property("rhhuanjie").toString();
         return obj == "nullification";
     }
 };
 
-class RhHuanjing : public TriggerSkill
+class RhHuanjie : public TriggerSkill
 {
 public:
-    RhHuanjing() : TriggerSkill("rhhuanjing")
+    RhHuanjie() : TriggerSkill("rhhuanjie")
     {
         events << EventAcquireSkill << EventLoseSkill << EventPhaseChanging;
-        view_as_skill = new RhHuanjingVS;
+        view_as_skill = new RhHuanjieVS;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
@@ -474,7 +474,7 @@ public:
             }
         } else if (data.toString() == objectName()) {
             if (triggerEvent == EventLoseSkill)
-                room->setPlayerProperty(player, "rhhuanjing", QVariant());
+                room->setPlayerProperty(player, "rhhuanjie", QVariant());
             else
                 return QStringList(objectName());
         }
@@ -529,20 +529,20 @@ public:
         }
 
         LogMessage log;
-        log.type = "#RhHuanjing";
+        log.type = "#RhHuanjie";
         log.from = player;
         log.arg = obj_n;
         room->sendLog(log);
-        room->setPlayerProperty(player, "rhhuanjing", obj_n);
+        room->setPlayerProperty(player, "rhhuanjie", obj_n);
 
         return false;
     }
 };
 
-class RhLvcao : public ProhibitSkill
+class RhHonghuang : public ProhibitSkill
 {
 public:
-    RhLvcao() : ProhibitSkill("rhlvcao")
+    RhHonghuang() : ProhibitSkill("rhhonghuang")
     {
     }
 
@@ -553,10 +553,10 @@ public:
     }
 };
 
-class RhLvcaoTargetMod : public TargetModSkill
+class RhHonghuangTargetMod : public TargetModSkill
 {
 public:
-    RhLvcaoTargetMod() : TargetModSkill("#rhlvcao")
+    RhHonghuangTargetMod() : TargetModSkill("#rhhonghuang")
     {
         pattern = "TrickCard";
     }
@@ -564,12 +564,12 @@ public:
     virtual int getDistanceLimit(const Player *from, const Card *) const
     {
         bool find_skill = false;
-        if (from->hasSkill("rhlvcao"))
+        if (from->hasSkill("rhhonghuang"))
             find_skill = true;
         else {
             QList<const Player *> players = from->getAliveSiblings();
             foreach (const Player *p, players) {
-                if (p->hasSkill("rhlvcao")) {
+                if (p->hasSkill("rhhonghuang")) {
                     find_skill = true;
                     break;
                 }
@@ -2693,10 +2693,10 @@ public:
     }
 };
 
-class RhFuyin : public TriggerSkill
+class RhJinbei : public TriggerSkill
 {
 public:
-    RhFuyin() : TriggerSkill("rhfuyin")
+    RhJinbei() : TriggerSkill("rhjinbei")
     {
         events << EventPhaseStart;
     }
@@ -2724,9 +2724,9 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         Peach *peach = new Peach(Card::NoSuit, 0);
-        peach->setSkillName("_rhfuyin");
+        peach->setSkillName("_rhjinbei");
         Analeptic *analeptic = new Analeptic(Card::NoSuit, 0);
-        analeptic->setSkillName("_rhfuyin");
+        analeptic->setSkillName("_rhjinbei");
         QStringList choices;
         if (peach->isAvailable(player))
             choices << "peach";
@@ -2945,10 +2945,10 @@ public:
     }
 };
 
-class RhYuning : public TriggerSkill
+class RhShenluo : public TriggerSkill
 {
 public:
-    RhYuning() : TriggerSkill("rhyuning")
+    RhShenluo() : TriggerSkill("rhshenluo")
     {
         events << EventAcquireSkill << EventLoseSkill;
     }
@@ -2969,7 +2969,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@rhyuning", true, true);
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@rhshenluo", true, true);
         if (target) {
             room->broadcastSkillInvoke(objectName());
             player->tag[objectName()] = QVariant::fromValue(target);
@@ -2987,10 +2987,10 @@ public:
     }
 };
 
-class RhYuningRecover : public TriggerSkill
+class RhShenluoRecover : public TriggerSkill
 {
 public:
-    RhYuningRecover() : TriggerSkill("#rhyuning")
+    RhShenluoRecover() : TriggerSkill("#rhshenluo")
     {
         events << Damaged;
         frequency = Compulsory;
@@ -3001,7 +3001,7 @@ public:
         TriggerList skill_list;
         if (player->isAlive()) {
             foreach (ServerPlayer *p, room->getAllPlayers()) {
-                if (p->isAlive() && p->getMark("rhyuning") > 0 && p->isWounded())
+                if (p->isAlive() && p->getMark("rhshenluo") > 0 && p->isWounded())
                     skill_list.insert(p, QStringList(objectName()));
             }
         }
@@ -3016,11 +3016,11 @@ public:
     }
 };
 
-RhHuayuCard::RhHuayuCard()
+RhYoushengCard::RhYoushengCard()
 {
 }
 
-bool RhHuayuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+bool RhYoushengCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
     if (!targets.isEmpty()) {
         return false;
@@ -3030,7 +3030,7 @@ bool RhHuayuCard::targetFilter(const QList<const Player *> &targets, const Playe
         if (c->isKindOf("DelayedTrick")) {
             Card *trick = Sanguosha->cloneCard(c->objectName());
             trick->addSubcard(this);
-            trick->setSkillName("rhhuayu");
+            trick->setSkillName("rhyousheng");
             if (Self->isCardLimited(trick, MethodUse, true)) {
                 delete trick;
                 continue;
@@ -3048,12 +3048,12 @@ bool RhHuayuCard::targetFilter(const QList<const Player *> &targets, const Playe
     return false;
 }
 
-bool RhHuayuCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
+bool RhYoushengCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
 {
     if (targets.length() == 0) {
         Card *trick = Sanguosha->cloneCard("lightning");
         trick->addSubcard(this);
-        trick->setSkillName("rhhuayu");
+        trick->setSkillName("rhyousheng");
         bool can_use = !Self->containsTrick("lightning") && !Self->isProhibited(Self, trick);
         delete trick;
         return can_use;
@@ -3064,7 +3064,7 @@ bool RhHuayuCard::targetsFeasible(const QList<const Player *> &targets, const Pl
             if (c->isKindOf("DelayedTrick") && !c->isKindOf("Lightning")) {
                 Card *trick = Sanguosha->cloneCard(c->objectName());
                 trick->addSubcard(this);
-                trick->setSkillName("rhhuayu");
+                trick->setSkillName("rhyousheng");
                 bool can_use = trick->targetsFeasible(targets, Self);
                 delete trick;
                 if (can_use)
@@ -3075,14 +3075,14 @@ bool RhHuayuCard::targetsFeasible(const QList<const Player *> &targets, const Pl
     return false;
 }
 
-const Card *RhHuayuCard::validate(CardUseStruct &card_use) const
+const Card *RhYoushengCard::validate(CardUseStruct &card_use) const
 {
     Room *room = card_use.from->getRoom();
     if (card_use.to.isEmpty()) {
         Lightning *lightning = new Lightning(SuitToBeDecided, -1);
         lightning->addSubcard(this);
-        lightning->setSkillName("rhhuayu");
-        room->addPlayerMark(card_use.from, "rhhuayu");
+        lightning->setSkillName("rhyousheng");
+        room->addPlayerMark(card_use.from, "rhyousheng");
         return lightning;
     }
     QStringList choices;
@@ -3094,7 +3094,7 @@ const Card *RhHuayuCard::validate(CardUseStruct &card_use) const
                 && !target->containsTrick(c->objectName())) {
             Card *trick = Sanguosha->cloneCard(c->objectName());
             trick->addSubcard(this);
-            trick->setSkillName("rhhuayu");
+            trick->setSkillName("rhyousheng");
             bool is_prohibit = card_use.from->isProhibited(target, trick);
             delete trick;
             if (!is_prohibit)
@@ -3102,39 +3102,39 @@ const Card *RhHuayuCard::validate(CardUseStruct &card_use) const
         }
     }
     Q_ASSERT(!choices.isEmpty());
-    QString choice = room->askForChoice(card_use.from, "rhhuayu", choices.join("+"));
+    QString choice = room->askForChoice(card_use.from, "rhyousheng", choices.join("+"));
     Card *trick = Sanguosha->cloneCard(choice);
     trick->addSubcard(this);
-    trick->setSkillName("rhhuayu");
-    room->addPlayerMark(card_use.from, "rhhuayu");
+    trick->setSkillName("rhyousheng");
+    room->addPlayerMark(card_use.from, "rhyousheng");
     return trick;
 }
 
-class RhHuayuVS : public OneCardViewAsSkill
+class RhYoushengVS : public OneCardViewAsSkill
 {
 public:
-    RhHuayuVS() : OneCardViewAsSkill("rhhuayu")
+    RhYoushengVS() : OneCardViewAsSkill("rhyousheng")
     {
-        response_pattern = "@@rhhuayu";
+        response_pattern = "@@rhyousheng";
         filter_pattern = ".|.|.|hand";
         response_or_use = true;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
     {
-        Card *card = new RhHuayuCard;
+        Card *card = new RhYoushengCard;
         card->addSubcard(originalCard);
         return card;
     }
 };
 
-class RhHuayu : public TriggerSkill
+class RhYousheng : public TriggerSkill
 {
 public:
-    RhHuayu() : TriggerSkill("rhhuayu")
+    RhYousheng() : TriggerSkill("rhyousheng")
     {
         events << TargetSpecified << TargetConfirmed << EventPhaseChanging;
-        view_as_skill = new RhHuayuVS;
+        view_as_skill = new RhYoushengVS;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
@@ -3159,7 +3159,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        return room->askForUseCard(player, "@@rhhuayu", "@rhhuayu");
+        return room->askForUseCard(player, "@@rhyousheng", "@rhyousheng");
     }
 };
 
@@ -3178,12 +3178,12 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou002->addSkill(new RhRuyi);
 
     General *reihou003 = new General(this, "reihou003", "rei", 4, true, true);
-    reihou003->addSkill(new RhHuanjing);
+    reihou003->addSkill(new RhHuanjie);
 
     General *reihou004 = new General(this, "reihou004", "rei", 4, true, true);
-    reihou004->addSkill(new RhLvcao);
-    reihou004->addSkill(new RhLvcaoTargetMod);
-    related_skills.insertMulti("rhlvcao", "#rhlvcao");
+    reihou004->addSkill(new RhHonghuang);
+    reihou004->addSkill(new RhHonghuangTargetMod);
+    related_skills.insertMulti("rhhonghuang", "#rhhonghuang");
 
     General *reihou005 = new General(this, "reihou005", "rei", 4, true, true);
     reihou005->addSkill(new RhLiufu);
@@ -3287,7 +3287,7 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou029->addSkill(new RhJiyu);
 
     General *reihou030 = new General(this, "reihou030", "rei", 4, true, true);
-    reihou030->addSkill(new RhFuyin);
+    reihou030->addSkill(new RhJinbei);
 
     General *reihou031 = new General(this, "reihou031", "rei", 4, true, true);
     reihou031->addSkill(new RhPihuai);
@@ -3300,23 +3300,23 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou033->addSkill(new RhNieji);
 
     General *reihou034 = new General(this, "reihou034", "rei", 4, true, true);
-    reihou034->addSkill(new RhYuning);
-    reihou034->addSkill(new RhYuningRecover);
-    related_skills.insertMulti("rhyuning", "#rhyuning");
+    reihou034->addSkill(new RhShenluo);
+    reihou034->addSkill(new RhShenluoRecover);
+    related_skills.insertMulti("rhshenluo", "#rhshenluo");
 
     General *reihou035 = new General(this, "reihou035", "rei", 4, true, true);
-    reihou035->addSkill(new RhHuayu);
+    reihou035->addSkill(new RhYousheng);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
-    addMetaObject<RhHuanjingCard>();
+    addMetaObject<RhHuanjieCard>();
     addMetaObject<RhPujiuCard>();
     addMetaObject<RhGaimingCard>();
     addMetaObject<RhXuanrenCard>();
     addMetaObject<RhHaoqiangCard>();
     addMetaObject<RhYarenCard>();
     addMetaObject<RhYinrenCard>();
-    addMetaObject<RhHuayuCard>();
+    addMetaObject<RhYoushengCard>();
 }
 
 ADD_PACKAGE(TenshiReihou)
