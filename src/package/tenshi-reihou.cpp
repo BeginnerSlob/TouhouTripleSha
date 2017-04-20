@@ -3312,7 +3312,6 @@ bool RhYizhiCard::targetsFeasible(const QList<const Player *> &targets, const Pl
 void RhYizhiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
     QList<int> disabled_ids;
-    bool can = false;
     foreach (const Card *card, targets.first()->getEquips()) {
         const EquipCard *equip = qobject_cast<const EquipCard *>(card->getRealCard());
         EquipCard::Location location = equip->location();
@@ -3366,6 +3365,148 @@ public:
         if (player->getHp() > 0)
             room->askForUseCard(player, "@@rhyizhi", "@rhyizhi", -1, Card::MethodNone);
 
+        return false;
+    }
+};
+
+RhShiguangCard::RhShiguangCard()
+{
+    m_skillName = "rhshiguangv";
+    target_fixed = true;
+}
+
+void RhShiguangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+{
+    source->loseMark("@time");
+    source->drawCards(1, "rhshiguang");
+    room->addPlayerMark(source, "rhshiguang");
+}
+
+class RhShiguangGivenSkill : public ZeroCardViewAsSkill
+{
+public:
+    RhShiguangGivenSkill() : ZeroCardViewAsSkill("rhshiguangv")
+    {
+        attached_lord_skill = true;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return player->getMark("@time") > 0;
+    }
+
+    virtual bool shouldBeVisible(const Player *player) const
+    {
+        return player && player->getMark("@time") > 0;
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new RhShiguangCard;
+    }
+};
+
+class RhShiguang : public TriggerSkill
+{
+public:
+    RhShiguang() : TriggerSkill("rhshiguang")
+    {
+        events << EventAcquireSkill << EventLoseSkill << EventPhaseChanging;
+        frequency = NotCompulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *&) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    room->setPlayerMark(p, objectName(), 0);
+            }
+            return QStringList();
+        }
+
+        if (data.toString() == objectName()) {
+            if (triggerEvent == EventAcquireSkill)
+                return QStringList(objectName());
+            else {
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    if (p->getMark("@time") > 0)
+                        return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+        if (triggerEvent == EventAcquireSkill) {
+            player->gainMark("@time", 4);
+            foreach (ServerPlayer *p, room->getAlivePlayers())
+                room->attachSkillToPlayer(p, "rhshiguangv");
+        } else {
+            foreach (ServerPlayer *p, room->getAllPlayers()) {
+                room->detachSkillFromPlayer(p, "rhshiguangv", true);
+                if (p->getMark("@time") > 0)
+                    p->loseAllMarks("@time");
+            }
+        }
+        return false;
+    }
+};
+
+class RhShiguangMaxCards : public MaxCardsSkill
+{
+public:
+    RhShiguangMaxCards() : MaxCardsSkill("#rhshiguang") {
+    }
+
+    virtual int getExtra(const Player *target) const
+    {
+        return -target->getMark("rhshiguang");
+    }
+};
+
+class RhKuili : public TriggerSkill
+{
+public:
+    RhKuili() : TriggerSkill("rhkuili")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        TriggerList skill_list;
+        if (player->getPhase() == Player::RoundStart) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p->getMark("@time") > 0)
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        QStringList choices;
+        for (int i = 1; i <= ask_who->getMark("@time"); ++i)
+            choices << QString::number(i);
+        QString choice = room->askForChoice(ask_who, objectName(), choices.join("+"));
+        int n = choice.toInt();
+        ask_who->loseMark("@time", n);
+        player->gainMark("@time", n);
         return false;
     }
 };
@@ -3521,6 +3662,12 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou037->addSkill(new RhYizhi);
     reihou037->addSkill(new RhGuozhu);
 
+    General *reihou038 = new General(this, "reihou038", "rei", 4, true, true);
+    reihou038->addSkill(new RhShiguang);
+    reihou038->addSkill(new RhShiguangMaxCards);
+    related_skills.insertMulti("rhshiguang", "#rhshiguang");
+    reihou038->addSkill(new RhKuili);
+
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
     addMetaObject<RhHuanjieCard>();
@@ -3532,6 +3679,9 @@ TenshiReihouPackage::TenshiReihouPackage()
     addMetaObject<RhYinrenCard>();
     addMetaObject<RhYoushengCard>();
     addMetaObject<RhYizhiCard>();
+    addMetaObject<RhShiguangCard>();
+
+    skills << new RhShiguangGivenSkill;
 }
 
 ADD_PACKAGE(TenshiReihou)

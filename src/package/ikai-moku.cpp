@@ -4993,14 +4993,16 @@ public:
     }
 };
 
-IkYujiCard::IkYujiCard() {
+IkYujiCard::IkYujiCard()
+{
     will_throw = false;
     handling_method = Card::MethodNone;
     m_skillName = "ikyujiv";
     mute = true;
 }
 
-void IkYujiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+void IkYujiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
     ServerPlayer *zhangjiao = targets.first();
     if (zhangjiao->hasLordSkill("ikyuji")) {
         room->setPlayerFlag(zhangjiao, "IkYujiInvoked");
@@ -5021,27 +5023,33 @@ void IkYujiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &ta
     }
 }
 
-bool IkYujiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkYujiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
     return targets.isEmpty() && to_select->hasLordSkill("ikyuji")
            && to_select != Self && !to_select->hasFlag("IkYujiInvoked");
 }
 
-class IkYujiViewAsSkill: public OneCardViewAsSkill {
+class IkYujiViewAsSkill : public OneCardViewAsSkill
+{
 public:
-    IkYujiViewAsSkill(): OneCardViewAsSkill("ikyujiv") {
+    IkYujiViewAsSkill() : OneCardViewAsSkill("ikyujiv")
+    {
         attached_lord_skill = true;
         filter_pattern = "Jink,EightDiagram";
     }
 
-    virtual bool shouldBeVisible(const Player *player) const{
+    virtual bool shouldBeVisible(const Player *player) const
+    {
         return player && player->getKingdom() == "tsuki";
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const{
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
         return shouldBeVisible(player) && !player->hasFlag("ForbidIkYuji");
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const{
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
         IkYujiCard *card = new IkYujiCard;
         card->addSubcard(originalCard);
 
@@ -5049,13 +5057,16 @@ public:
     }
 };
 
-class IkYuji: public TriggerSkill {
+class IkYuji: public TriggerSkill
+{
 public:
-    IkYuji(): TriggerSkill("ikyuji$") {
+    IkYuji(): TriggerSkill("ikyuji$")
+    {
         events << GameStart << EventAcquireSkill << EventLoseSkill << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
         if (!player) return QStringList();
         if ((triggerEvent == GameStart && player->isLord())
             || (triggerEvent == EventAcquireSkill && data.toString() == "ikyuji")) {
