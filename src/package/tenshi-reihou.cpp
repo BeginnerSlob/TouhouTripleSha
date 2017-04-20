@@ -3511,6 +3511,73 @@ public:
     }
 };
 
+RhChenshengCard::RhChenshengCard()
+{
+    target_fixed = true;
+}
+
+const Card *RhChenshengCard::validate(CardUseStruct &card_use) const
+{
+    ServerPlayer *target = card_use.from;
+    Room *room = target->getRoom();
+    room->removeReihouCard(target);
+    Card *card = new Drowning(NoSuit, 0);
+    card->setSkillName("_rhchensheng");
+    return card;
+}
+
+class RhChenshengVS : public ZeroCardViewAsSkill
+{
+public:
+    RhChenshengVS() : ZeroCardViewAsSkill("rhchensheng")
+    {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        Card *card = new Drowning(Card::NoSuit, 0);
+        card->setSkillName("_rhchensheng");
+        card->deleteLater();
+        return card->isAvailable(player);
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new RhChenshengCard;
+    }
+};
+
+class RhChensheng : public TriggerSkill
+{
+public:
+    RhChensheng() : TriggerSkill("rhchensheng")
+    {
+        events << Damaged;
+        view_as_skill = new RhChenshengVS;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            room->removeReihouCard(player);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        Card *card = new Drowning(Card::NoSuit, 0);
+        card->setSkillName("_rhchensheng");
+        if (card->isAvailable(player))
+            room->useCard(CardUseStruct(card, player, QList<ServerPlayer *>()));
+        else
+            delete card;
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -3668,6 +3735,9 @@ TenshiReihouPackage::TenshiReihouPackage()
     related_skills.insertMulti("rhshiguang", "#rhshiguang");
     reihou038->addSkill(new RhKuili);
 
+    General *reihou039 = new General(this, "reihou039", "rei", 4, true, true);
+    reihou039->addSkill(new RhChensheng);
+
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
     addMetaObject<RhHuanjieCard>();
@@ -3680,6 +3750,7 @@ TenshiReihouPackage::TenshiReihouPackage()
     addMetaObject<RhYoushengCard>();
     addMetaObject<RhYizhiCard>();
     addMetaObject<RhShiguangCard>();
+    addMetaObject<RhChenshengCard>();
 
     skills << new RhShiguangGivenSkill;
 }
