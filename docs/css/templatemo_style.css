@@ -55,6 +55,32 @@ h3 {
 .portfolioshow	{ display: block; }
 /* .container	{ position: absolute; } */
 
+.aaa {
+	color: #00F;
+	}
+
+.bbb {
+	position: absolute;
+	top: 40px;
+	left: 65px;
+	font-size: 14px;
+	color: #ffffff
+	}
+	
+.ccc {
+	position: absolute;
+	top: 375px;
+	left: 65px;
+	font-size: 14px;
+	}
+	
+.ddd {
+	position: absolute;
+	top: 210px;
+	left: 65px;
+	font-size: 14px;
+	}
+
 .templatemo_link ,.templatemo_linkservice,.templatemo_linkcontact { 
 	font-size: 2em; color: #ffffff;
 	width: 95%;
@@ -84,14 +110,14 @@ h3 {
 }
 
 .templatemo_mainservice	{
-	background: #9d1c5c;
+	background: #993333;
 	text-align: center;
 	width: 100%;
 	float: left;
 }
 
 .templatemo_mainportfolio {
-	background: #993333;
+	background: #9d1c5c;
 	text-align: center;
 	width: 100%;
 }
@@ -116,7 +142,7 @@ h3 {
 
 .templatemo_insideportfolio	 h2 { color: #ffffff; }
 .templatemo_insideportfolio	{
-	background: #9d1c5c;
+	background: #993333;
 	width: 100%;
 	padding: 0px;
 	color: #ffffff;
@@ -364,3 +390,4 @@ h2.resp-accordion	{ color: #ffffff; }
 	.templatemo_leftgap_about .templatemo_link { height: 142px; line-height: 142px; padding: 0px; }
 	.templatemo_linkservice, .templatemo_linkcontact { height: 145px; line-height: 145px; padding: 0px; }
 }
+
