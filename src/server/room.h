@@ -177,7 +177,7 @@ public:
     bool doNotify(ServerPlayer *player, int command, const char *arg);
     bool doBroadcastNotify(int command, const char *arg);
     bool doBroadcastNotify(const QList<ServerPlayer *> &players, int command, const char *arg);
-    void removeReihouCard(ServerPlayer *player);
+    void removeReihouCard(ServerPlayer *player, bool isYaodao = false);
 
     // Ask a server player to wait for the client response. Call is blocking until client replies or server times out,
     // whichever is earlier.

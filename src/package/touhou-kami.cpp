@@ -202,8 +202,9 @@ public:
         QStringList skills;
         const Package *reihoupack = Sanguosha->getPackage("tenshi-reihou");
         if (reihoupack) {
-            QList<const General *> reihous = reihoupack->findChildren<const General *>();
-            const General *reihou = reihous.at(qrand() % reihous.length());
+            /*QList<const General *> reihous = reihoupack->findChildren<const General *>();
+            const General *reihou = reihous.at(qrand() % reihous.length());*/
+            const General *reihou = Sanguosha->getGeneral("reihou042");
 
             JsonArray args;
             args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
