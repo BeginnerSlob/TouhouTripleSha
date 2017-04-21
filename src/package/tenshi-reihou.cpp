@@ -2572,9 +2572,9 @@ public:
     {
         int n = data.value<DamageStruct>().damage;
         ask_who->drawCards(n, objectName());
-        if (ask_who->getHandcardNum() >= n) {
-            const Card *dummy = room->askForExchange(player, objectName(), n, n, false,
-                                                    QString("@rhchanling:%1::%2").arg(player->objectName()).arg(n), true);
+        if (ask_who->getHandcardNum() >= n && ask_who != player) {
+            const Card *dummy = room->askForExchange(ask_who, objectName(), n, n, false,
+                                                     QString("@rhchanling:%1::%2").arg(player->objectName()).arg(n), true);
             if (dummy) {
                 CardMoveReason reason(CardMoveReason::S_REASON_GIVE, ask_who->objectName(),
                                       player->objectName(), objectName(), QString());
