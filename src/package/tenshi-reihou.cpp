@@ -3578,6 +3578,74 @@ public:
     }
 };
 
+class RhXinmo : public TriggerSkill
+{
+public:
+    RhXinmo() : TriggerSkill("rhxinmo")
+    {
+        events << CardsMoveOneTime << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    room->setPlayerMark(p, objectName(), 0);
+            }
+        }
+
+        QStringList skills;
+        if (TriggerSkill::triggerable(player) && player->getMark(objectName()) == 0) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from == player && (move.from_places.contains(Player::PlaceHand)
+                                        || move.from_places.contains(Player::PlaceEquip))) {
+                if (move.to != player || (move.to_place != Player::PlaceHand
+                                          && move.to_place != Player::PlaceEquip)) {
+                    int index = 0;
+                    foreach (int id, move.card_ids) {
+                        if (move.from_places[index] == Player::PlaceHand || move.from_places[index] == Player::PlaceEquip) {
+                            if (Sanguosha->getCard(id)->isRed())
+                                skills << objectName();
+                        }
+                        ++index;
+                    }
+                }
+            }
+        }
+        return skills;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "@rhxinmo", true, true);
+        if (target) {
+            player->tag["RhXinmoTarget"] = QVariant::fromValue(target);
+            room->broadcastSkillInvoke(objectName());
+            room->addPlayerMark(player, objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        ServerPlayer *target = player->tag["RhXinmoTarget"].value<ServerPlayer *>();
+        player->tag.remove("RhXinmoTarget");
+        if (target) {
+            target->drawCards(1, objectName());
+
+            if (!player->faceUp())
+                player->turnOver();
+
+            if (player->isChained())
+                room->setPlayerProperty(player, "chained", false);
+        }
+
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -3737,6 +3805,9 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou039 = new General(this, "reihou039", "rei", 4, true, true);
     reihou039->addSkill(new RhChensheng);
+
+    General *reihou040 = new General(this, "reihou040", "rei", 4, true, true);
+    reihou040->addSkill(new RhXinmo);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
