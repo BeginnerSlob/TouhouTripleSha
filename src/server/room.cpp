@@ -854,23 +854,27 @@ bool Room::doBroadcastNotify(int command, const char *arg)
     return doBroadcastNotify(m_players, command, arg);
 }
 
-void Room::removeReihouCard(ServerPlayer *player)
+void Room::removeReihouCard(ServerPlayer *player, bool isYaodao)
 {
     QStringList skills;
-    QString old = player->tag["Reihou"].toString();
+    QString old = player->tag["Reihou2"].toString();
+    if (!isYaodao)
+        old = player->tag["Reihou"].toString();
     if (Sanguosha->getGeneral(old)) {
         foreach (const Skill *skill, Sanguosha->getGeneral(old)->getVisibleSkillList())
             skills << "-" + skill->objectName();
-        player->tag.remove("Reihou");
+        player->tag.remove(isYaodao ? "Reihou2" : "Reihou");
     } else
         return;
-    JsonArray args;
-    args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
-    args << player->objectName();
-    args << player->getGeneralName();
-    args << QString();
-    args << true;
-    doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+    if (!isYaodao) {
+        JsonArray args;
+        args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
+        args << player->objectName();
+        args << player->getGeneralName();
+        args << QString();
+        args << true;
+        doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+    }
     handleAcquireDetachSkills(player, skills, true, true);
 }
 

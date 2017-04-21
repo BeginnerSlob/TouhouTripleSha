@@ -3714,6 +3714,85 @@ public:
     }
 };
 
+class RhYaodao : public TriggerSkill
+{
+public:
+    RhYaodao() : TriggerSkill("rhyaodao")
+    {
+        events << EventAcquireSkill << EventLoseSkill;
+        frequency = NotCompulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (data.toString() == objectName()) {
+            if (triggerEvent == EventAcquireSkill) {
+                return QStringList(objectName());
+            } else if (triggerEvent == EventLoseSkill) {
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    if (!p->tag["Reihou2"].toString().isEmpty()) {
+                        return QStringList(objectName());
+                    }
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (triggerEvent == EventLoseSkill) {
+            room->sendCompulsoryTriggerLog(player, objectName());
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "@rhyaodao", true, true);
+        if (target) {
+            player->tag["RhYaodaoTarget"] = QVariant::fromValue(target);
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (triggerEvent == EventLoseSkill) {
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (!p->tag["Reihou2"].toString().isEmpty())
+                    room->removeReihouCard(p, true);
+            }
+            return false;
+        }
+
+        ServerPlayer *target = player->tag["RhYaodaoTarget"].value<ServerPlayer *>();
+        player->tag.remove("RhYaodaoTarget");
+        if (target) {
+            QStringList skills;
+            const Package *reihoupack = Sanguosha->getPackage("tenshi-reihou");
+            if (reihoupack) {
+                QList<const General *> reihous = reihoupack->findChildren<const General *>();
+                const General *reihou = reihous.at(qrand() % reihous.length());
+                while (reihou->objectName() == "reihou042")
+                    reihou = reihous.at(qrand() % reihous.length());
+
+                LogMessage log;
+                log.type = "#RhYaodao";
+                log.from = target;
+                log.arg = reihou->objectName();
+                room->sendLog(log);
+
+                target->tag["Reihou2"] = reihou->objectName();
+                foreach (const Skill *skill, reihou->getVisibleSkillList())
+                    skills << skill->objectName();
+            }
+            room->handleAcquireDetachSkills(player, skills, true, true);
+        }
+        return true;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -3881,6 +3960,9 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou041->addSkill(new RhFuyu);
     reihou041->addSkill(new RhFuyuDistance);
     related_skills.insertMulti("rhfuyu", "#rhfuyu");
+
+    General *reihou042 = new General(this, "reihou042", "rei", 4, true, true);
+    reihou042->addSkill(new RhYaodao);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
