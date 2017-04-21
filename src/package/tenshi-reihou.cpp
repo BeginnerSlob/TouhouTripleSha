@@ -3000,7 +3000,7 @@ public:
     {
         TriggerList skill_list;
         if (player->isAlive()) {
-            foreach (ServerPlayer *p, room->getAllPlayers()) {
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (p->isAlive() && p->getMark("rhshenluo") > 0 && p->isWounded())
                     skill_list.insert(p, QStringList(objectName()));
             }
