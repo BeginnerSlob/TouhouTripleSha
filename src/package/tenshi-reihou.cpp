@@ -3646,6 +3646,74 @@ public:
     }
 };
 
+class RhFuyu : public TriggerSkill
+{
+public:
+    RhFuyu() : TriggerSkill("rhfuyu")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        TriggerList skill_list;
+        if (player->getPhase() == Player::Play) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+                skill_list.insert(p, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        QStringList choices;
+        choices << "reduce" << "increase";
+        QString choice = room->askForChoice(ask_who, objectName(), choices.join("+"));
+        LogMessage log;
+        log.type = "#RhFuyu";
+        log.from = ask_who;
+        log.to << player;
+        if (choice == "reduce") {
+            room->setPlayerFlag(player, "RhFuyuReduce");
+            log.arg = "1";
+            log.arg2 = "+1";
+        } else if (choice == "increase") {
+            room->setPlayerFlag(player, "RhFuyuIncrease");
+            log.arg = "2";
+            log.arg2 = "-1";
+        }
+        room->sendLog(log);
+        return false;
+    }
+};
+
+class RhFuyuDistance : public DistanceSkill
+{
+public:
+    RhFuyuDistance() : DistanceSkill("#rhfuyu")
+    {
+    }
+
+    virtual int getCorrect(const Player *from, const Player *) const
+    {
+        int correct = 0;
+        if (from->hasFlag("RhFuyuReduce"))
+            --correct;
+        if (from->hasFlag("RhFuyuIncrease"))
+            ++correct;
+        return correct;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -3808,6 +3876,11 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou040 = new General(this, "reihou040", "rei", 4, true, true);
     reihou040->addSkill(new RhXinmo);
+
+    General *reihou041 = new General(this, "reihou041", "rei", 4, true, true);
+    reihou041->addSkill(new RhFuyu);
+    reihou041->addSkill(new RhFuyuDistance);
+    related_skills.insertMulti("rhfuyu", "#rhfuyu");
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
