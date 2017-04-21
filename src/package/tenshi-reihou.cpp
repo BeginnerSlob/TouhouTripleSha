@@ -3723,7 +3723,7 @@ public:
         frequency = NotCompulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *&) const
     {
         if (data.toString() == objectName()) {
             if (triggerEvent == EventAcquireSkill) {
@@ -3790,6 +3790,24 @@ public:
             room->handleAcquireDetachSkills(player, skills, true, true);
         }
         return true;
+    }
+};
+
+class RhChuilu : public OneCardViewAsSkill
+{
+public:
+    RhChuilu() : OneCardViewAsSkill("rhchuilu")
+    {
+        filter_pattern = ".|red";
+        response_or_use = true;
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        Card *card = new Peach(originalCard->getSuit(), originalCard->getNumber());
+        card->setSkillName(objectName());
+        card->addSubcard(originalCard);
+        return card;
     }
 };
 
@@ -3963,6 +3981,9 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou042 = new General(this, "reihou042", "rei", 4, true, true);
     reihou042->addSkill(new RhYaodao);
+
+    General *reihou043 = new General(this, "reihou043", "rei", 4, true, true);
+    reihou043->addSkill(new RhChuilu);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();

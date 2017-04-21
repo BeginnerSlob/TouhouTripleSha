@@ -446,13 +446,44 @@ bool Jink::isAvailable(const Player *) const{
     return false;
 }
 
-Peach::Peach(Suit suit, int number): BasicCard(suit, number) {
+Peach::Peach(Suit suit, int number)
+    : BasicCard(suit, number)
+{
     setObjectName("peach");
     target_fixed = true;
 }
 
-QString Peach::getSubtype() const{
+QString Peach::getSubtype() const
+{
     return "recover_card";
+}
+
+bool Peach::targetFixed() const
+{
+    if (Self && Self->hasSkill("rhchuilu"))
+        return false;
+    return BasicCard::targetFixed();
+}
+
+bool Peach::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    if (Self && Self->hasSkill("rhchuilu")) {
+        int num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
+        if (targets.length() >= num)
+            return false;
+        if (!to_select->isWounded())
+            return false;
+        return true;
+    }
+    return BasicCard::targetFilter(targets, to_select, Self);
+}
+
+bool Peach::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
+{
+    if (Self && Self->hasSkill("rhchuilu")) {
+        return !targets.isEmpty() || Self->isWounded();
+    }
+    return Peach::targetsFeasible(targets, Self);
 }
 
 void Peach::onUse(Room *room, const CardUseStruct &card_use) const{
@@ -469,7 +500,7 @@ void Peach::onEffect(const CardEffectStruct &effect) const{
 }
 
 bool Peach::isAvailable(const Player *player) const{
-    if (player->hasFlag("ThChouceUse"))
+    if (player->hasFlag("ThChouceUse") || player->hasSkill("rhchuilu"))
         return BasicCard::isAvailable(player);
     return player->isWounded() && !player->isProhibited(player, this) && BasicCard::isAvailable(player);
 }
