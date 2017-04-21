@@ -202,9 +202,8 @@ public:
         QStringList skills;
         const Package *reihoupack = Sanguosha->getPackage("tenshi-reihou");
         if (reihoupack) {
-            /*QList<const General *> reihous = reihoupack->findChildren<const General *>();
-            const General *reihou = reihous.at(qrand() % reihous.length());*/
-            const General *reihou = Sanguosha->getGeneral("reihou042");
+            QList<const General *> reihous = reihoupack->findChildren<const General *>();
+            const General *reihou = reihous.at(qrand() % reihous.length());
 
             JsonArray args;
             args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
@@ -770,8 +769,8 @@ public:
         Room *room = Sanguosha->currentRoom();
         ServerPlayer *owner = room->getCardOwner(to_select->getEffectiveId());
         if (owner && owner->hasFlag("thpanghunInvoke"))
-            return to_select->isKindOf("Slash"); 
-        return false; 
+            return to_select->isKindOf("Slash");
+        return false;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
