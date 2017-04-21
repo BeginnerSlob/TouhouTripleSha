@@ -48,6 +48,8 @@ h3 {
 	text-align: center; 
 	font-size: 2em;
 	}
+	
+aaa {color:#0F3}
 
 .clear	{ clear: both; }
 .content { display: none; height: auto; }
@@ -300,7 +302,7 @@ h2.resp-accordion	{ color: #ffffff; }
 	.logocontainer	{ width: 750px; padding: 0px 15px; margin: 0 auto; }
 	.templatemo_insideportfolio	{ height: 398px; }
 	.templatemo_link, .templatemo_linkservice, .templatemo_linkcontact 	{ height: 189px; line-height: 189px; padding: 0px; }
-	.templatemo_link2 	{ line-height: 37px; padding-top: 40px;}
+	.templatemo_link2 	{ line-height: 39px; padding-top: 42px;}
 }
 
 @media(min-width:992px) {
