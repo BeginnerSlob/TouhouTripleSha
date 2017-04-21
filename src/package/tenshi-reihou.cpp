@@ -2934,11 +2934,11 @@ public:
     {
         DyingStruct dying = data.value<DyingStruct>();
 
-        if (!player->faceUp())
-            player->turnOver();
+        if (!dying.who->faceUp())
+            dying.who->turnOver();
 
-        if (player->isChained())
-            room->setPlayerProperty(player, "chained", false);
+        if (dying.who->isChained())
+            room->setPlayerProperty(dying.who, "chained", false);
 
         room->recover(dying.who, RecoverStruct(player, NULL, 1 - dying.who->getHp()));
         return false;
