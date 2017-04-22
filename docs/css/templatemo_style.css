@@ -48,8 +48,6 @@ h3 {
 	text-align: center; 
 	font-size: 2em;
 	}
-	
-aaa {color:#0F3}
 
 .clear	{ clear: both; }
 .content { display: none; height: auto; }
@@ -59,7 +57,6 @@ aaa {color:#0F3}
 
 .templatemo_link ,.templatemo_linkservice,.templatemo_linkcontact { 
 	font-size: 2em; color: #ffffff;
-	width: 95%;
 }
 
 .templatemo_link1 { 
