@@ -3926,6 +3926,129 @@ public:
     }
 };
 
+RhXiaozhangCard::RhXiaozhangCard()
+{
+    will_throw = false;
+    target_fixed = true;
+    handling_method = MethodNone;
+}
+
+void RhXiaozhangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+{
+    LogMessage log;
+    log.type = "$MoveCard";
+    log.from = source;
+    log.to << source;
+    log.card_str = IntList2StringList(getSubcards()).join("+");
+    room->sendLog(log);
+    room->obtainCard(source, this);
+}
+
+class RhXiaozhangVS : public ViewAsSkill
+{
+public:
+    RhXiaozhangVS() : ViewAsSkill("rhxiaozhang")
+    {
+        response_pattern = "@@rhxiaozhang";
+        expand_pile = "soil";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
+    {
+        return selected.length() < 2 && Self->getPile("soil").contains(to_select->getEffectiveId());
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        if (!cards.isEmpty()) {
+            Card *card = new RhXiaozhangCard;
+            card->addSubcards(cards);
+            return card;
+        }
+        return NULL;
+    }
+};
+
+class RhXiaozhang : public TriggerSkill
+{
+public:
+    RhXiaozhang() : TriggerSkill("rhxiaozhang")
+    {
+        events << EventAcquireSkill << EventLoseSkill;
+        frequency = NotCompulsory;
+        view_as_skill = new RhXiaozhangVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (data.toString() == objectName()) {
+            if (triggerEvent == EventLoseSkill && player->getPile("soil").isEmpty())
+                return QStringList();
+            return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+        if (triggerEvent == EventAcquireSkill)
+            player->addToPile("soil", room->getNCards(room->alivePlayerCount()));
+        else if (triggerEvent == EventLoseSkill) {
+            room->askForUseCard(player, "@@rhxiaozhang", "@rhxiaozhang-get", -1, Card::MethodNone);
+            player->clearOnePrivatePile("soil");
+        }
+        return false;
+    }
+};
+
+class RhXiaozhangTrigger : public TriggerSkill
+{
+public:
+    RhXiaozhangTrigger() : TriggerSkill("#rhxiaozhang")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        TriggerList skill_list;
+        if (player->getPhase() == Player::Finish && player->isAlive() && player->canDiscard(player, "he")) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName("rhxiaozhang")) {
+                if (!p->getPile("soil").isEmpty())
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        if (room->askForCard(player, "..", "@rhxiaozhang:" + ask_who->objectName(), data, "rhxiaozhang")) {
+            LogMessage log;
+            log.type = "#InvokeOthersSkill";
+            log.from = player;
+            log.to << ask_who;
+            log.arg = "rhxiaozhang";
+            room->sendLog(log);
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        QList<int> ids = ask_who->getPile("soil");
+        room->fillAG(ids, player);
+        int id = room->askForAG(player, ids, false, "rhxiaozhang");
+        room->clearAG(player);
+        room->obtainCard(player, id);
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -4105,6 +4228,11 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou044->addSkill(new RhXianmingClear);
     related_skills.insertMulti("rhxianming", "#rhxianming");
 
+    General *reihou045 = new General(this, "reihou045", "rei", 4, true, true);
+    reihou045->addSkill(new RhXiaozhang);
+    reihou045->addSkill(new RhXiaozhangTrigger);
+    related_skills.insertMulti("rhxiaozhang", "#rhxiaozhang");
+
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
     addMetaObject<RhHuanjieCard>();
@@ -4119,6 +4247,7 @@ TenshiReihouPackage::TenshiReihouPackage()
     addMetaObject<RhShiguangCard>();
     addMetaObject<RhChenshengCard>();
     addMetaObject<RhXianmingCard>();
+    addMetaObject<RhXiaozhangCard>();
 
     skills << new RhShiguangGivenSkill;
 }
