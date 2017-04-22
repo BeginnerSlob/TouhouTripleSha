@@ -857,9 +857,11 @@ bool Room::doBroadcastNotify(int command, const char *arg)
 void Room::removeReihouCard(ServerPlayer *player, bool isYaodao)
 {
     QStringList skills;
-    QString old = player->tag["Reihou2"].toString();
-    if (!isYaodao)
-        old = player->tag["Reihou"].toString();
+    QString old = player->tag["Reihou"].toString();
+    if (old.isEmpty())
+        isYaodao = true;
+    if (isYaodao)
+        old = player->tag["Reihou2"].toString();
     if (Sanguosha->getGeneral(old)) {
         foreach (const Skill *skill, Sanguosha->getGeneral(old)->getVisibleSkillList())
             skills << "-" + skill->objectName();
