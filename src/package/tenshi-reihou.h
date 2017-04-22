@@ -196,6 +196,15 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class RhXiaozhangCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE RhXiaozhangCard();
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 class TenshiReihouPackage : public Package
 {
     Q_OBJECT
