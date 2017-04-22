@@ -987,7 +987,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         room->sendCompulsoryTriggerLog(player, "rhzhenyao");
-        room->broadcastSkillInvoke(objectName());
+        room->broadcastSkillInvoke("rhzhenyao");
         return true;
     }
 };
@@ -3309,8 +3309,11 @@ bool RhYizhiCard::targetsFeasible(const QList<const Player *> &targets, const Pl
     return false;
 }
 
-void RhYizhiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+void RhYizhiCard::onUse(Room *room, const CardUseStruct &card_use)
 {
+    QList<ServerPlayer *> targets = card_use.to;
+    ServerPlayer *source = card_use.from;
+
     QList<int> disabled_ids;
     foreach (const Card *card, targets.first()->getEquips()) {
         const EquipCard *equip = qobject_cast<const EquipCard *>(card->getRealCard());
@@ -4049,6 +4052,120 @@ public:
     }
 };
 
+class RhFapo : public TriggerSkill
+{
+public:
+    RhFapo() : TriggerSkill("rhfapo")
+    {
+        events << PreCardUsed << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            room->setPlayerMark(player, objectName(), 0);
+            return QStringList();
+        }
+
+        if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Play
+                && player->getMark(objectName()) == 0) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card && use.card->isKindOf("Slash")) {
+                QMap<ServerPlayer *, int> hands;
+                foreach (int id, use.card->getSubcards()) {
+                    ServerPlayer *owner = room->getCardOwner(id);
+                    if (owner && room->getCardPlace(id) == Player::PlaceHand) {
+                        if (hands[owner])
+                            ++ hands[owner];
+                        else
+                            hands[owner] = 1;
+                    }
+                }
+                int num = player->getHandcardNum();
+                if (hands[player])
+                    num -= hands[player];
+                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                    if (use.to.contains(p) || !player->canSlash(p, use.card))
+                        continue;
+                    int hand = p->getHandcardNum();
+                    if (hands[p])
+                        hand -= hands[p];
+                    if (num < hand)
+                        return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        QList<ServerPlayer *> victims;
+        CardUseStruct use = data.value<CardUseStruct>();
+        QMap<ServerPlayer *, int> hands;
+        foreach (int id, use.card->getSubcards()) {
+            ServerPlayer *owner = room->getCardOwner(id);
+            if (owner && room->getCardPlace(id) == Player::PlaceHand) {
+                if (hands[owner])
+                    ++ hands[owner];
+                else
+                    hands[owner] = 1;
+            }
+        }
+        int num = player->getHandcardNum();
+        if (hands[player])
+            num -= hands[player];
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (use.to.contains(p) || !player->canSlash(p, use.card))
+                continue;
+            int hand = p->getHandcardNum();
+            if (hands[p])
+                hand -= hands[p];
+            if (num < hand)
+                victims << p;
+        }
+
+        while (!victims.isEmpty()) {
+            ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName(), "@rhfapo", true, true);
+            if (victim) {
+                room->broadcastSkillInvoke(objectName());
+                LogMessage log;
+                log.type = "#BecomeTarget";
+                log.from = victim;
+                log.card_str = use.card->toString();
+                room->sendLog(log);
+
+                room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), victim->objectName());
+                use.to << victim;
+                room->sortByActionOrder(use.to);
+                data = QVariant::fromValue(use);
+                victims.removeOne(victim);
+                room->addPlayerMark(player, objectName());
+            } else
+                break;
+        }
+
+        return false;
+    }
+};
+
+class RhHujuan : public TriggerSkill
+{
+public:
+    RhHujuan() : TriggerSkill("rhhujuan")
+    {
+        events << DamageForseen << PreHpLost;
+        frequency = Compulsory;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+        return true;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
@@ -4232,6 +4349,10 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou045->addSkill(new RhXiaozhang);
     reihou045->addSkill(new RhXiaozhangTrigger);
     related_skills.insertMulti("rhxiaozhang", "#rhxiaozhang");
+
+    General *reihou046 = new General(this, "reihou046", "rei", 4, true, true);
+    reihou046->addSkill(new RhFapo);
+    reihou046->addSkill(new RhHujuan);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
