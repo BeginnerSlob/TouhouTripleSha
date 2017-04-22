@@ -1098,25 +1098,31 @@ public:
     }
 };
 
-class IkHuanglun: public TriggerSkill {
+class IkHuanglun : public TriggerSkill
+{
 public:
-    IkHuanglun(): TriggerSkill("ikhuanglun") {
+    IkHuanglun() : TriggerSkill("ikhuanglun")
+    {
         events << CardUsed;
     }
 
-    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
         TriggerList skill_list;
         if (player->getPhase() == Player::Play) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("Slash"))
-                foreach (ServerPlayer *guanping, room->findPlayersBySkillName(objectName()))
+            if (use.card->isKindOf("Slash")) {
+                foreach (ServerPlayer *guanping, room->findPlayersBySkillName(objectName())) {
                     if (guanping->canDiscard(guanping, "he"))
                         skill_list.insert(guanping, QStringList(objectName()));
+                }
+            }
         }
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *guanping) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *guanping) const
+    {
         if (room->askForCard(guanping, "..", "@ikhuanglun", data, objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -1124,7 +1130,8 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *guanping) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *guanping) const
+    {
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.m_addHistory) {
             room->addPlayerHistory(player, use.card->getClassName(), -1);

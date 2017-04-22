@@ -187,6 +187,15 @@ public:
     virtual const Card *validate(CardUseStruct &card_use) const;
 };
 
+class RhXianmingCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE RhXianmingCard();
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 class TenshiReihouPackage : public Package
 {
     Q_OBJECT
