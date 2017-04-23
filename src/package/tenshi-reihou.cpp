@@ -4349,10 +4349,92 @@ public:
     }
 };
 
+class RhQiaozouVS : public OneCardViewAsSkill
+{
+public:
+    RhQiaozouVS() : OneCardViewAsSkill("rhqiaozou")
+    {
+        filter_pattern = ".|red|.|hand";
+        response_or_use = true;
+        response_pattern = "@@rhqiaozou";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        QString obj_name = Self->property("rhqiaozou").toString();
+        Card *card = Sanguosha->cloneCard(obj_name);
+        if (card) {
+            card->addSubcard(originalCard);
+            card->setSkillName(objectName());
+            return card;
+        }
+        return NULL;
+    }
+};
+
+class RhQiaozou : public TriggerSkill
+{
+public:
+    RhQiaozou() : TriggerSkill("rhqiaozou")
+    {
+        events << CardFinished << EventPhaseChanging;
+        view_as_skill = new RhQiaozouVS;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        TriggerList skill_list;
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    room->setPlayerMark(p, objectName(), 0);
+            }
+        } else {
+            if (player->isAlive() && room->getCurrent() && room->getCurrent() == player && player->getPhase() != Player::NotActive) {
+                CardUseStruct use = data.value<CardUseStruct>();
+                if (use.card->getTypeId() != Card::TypeSkill) {
+                    Card *card = Sanguosha->cloneCard(use.card);
+                    card->deleteLater();
+                    if (card->isAvailable(player)) {
+                        foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                            if (p->getMark(objectName()) > 0)
+                                continue;
+                            skill_list.insert(p, QStringList(objectName()));
+                        }
+                    }
+                }
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            room->addPlayerMark(ask_who, objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        room->setPlayerProperty(player, "rhqiaozou", use.card->objectName());
+        room->askForUseCard(player, "@@rhqiaozou",
+                            QString("@rhqiaozou:%1::%2")
+                            .arg(ask_who->objectName())
+                            .arg(use.card->objectName()));
+        room->setPlayerProperty(player, "rhqiaozou", QVariant());
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
-    General *reihou001 = new General(this, "reihou001", "rei", 4, true, true);
+    /*General *reihou001 = new General(this, "reihou001", "rei", 4, true, true);
     reihou001->addSkill(new RhDuanlong);
     reihou001->addSkill(new FakeMoveSkill("rhduanlong"));
     related_skills.insertMulti("rhduanlong", "#rhduanlong-fake-move");
@@ -4543,7 +4625,10 @@ TenshiReihouPackage::TenshiReihouPackage()
     General *reihou048 = new General(this, "reihou048", "rei", 4, true, true);
     reihou048->addSkill(new RhZhangchi);
     reihou048->addSkill(new RhZhangchiProhibit);
-    related_skills.insertMulti("rhzhangchi", "#rhzhangchi");
+    related_skills.insertMulti("rhzhangchi", "#rhzhangchi");*/
+
+    General *reihou049 = new General(this, "reihou049", "rei", 4, true, true);
+    reihou049->addSkill(new RhQiaozou);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
