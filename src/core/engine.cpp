@@ -1132,6 +1132,10 @@ const ProhibitSkill *Engine::isProhibited(const Player *from, const Player *to, 
     if (from && from->hasFlag("JnXianmaoUsed") && to->hasFlag("JnXianmaoTarget"))
         return NULL;
     //===================================
+    // for RhZhangchi ===================
+    if (from && to && from->isAdjacentTo(to) && from->getMark("@knot"))
+        return NULL;
+    //===================================
     foreach (const ProhibitSkill *skill, prohibit_skills) {
         if (skill->isProhibited(from, to, card, others))
             return skill;

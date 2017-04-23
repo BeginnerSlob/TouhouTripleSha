@@ -573,6 +573,10 @@ bool Card::targetFixed() const{
     if (Self && Self->hasFlag("JnXianmaoUsed"))
         return false;
     // ====================
+    // for RhZhangchi =====
+    if (Self && Self->hasFlag("RhZhangchiUsed"))
+        return false;
+    // ====================
     if (Self && Self->hasFlag("ThChouceUse") && !isKindOf("SkillCard"))
         return false;
     return target_fixed;
@@ -600,6 +604,13 @@ bool Card::targetFilter(const QList<const Player *> &targets, const Player *to_s
     // for JnXianmao ======
     if (Self->hasFlag("JnXianmaoUsed")) {
         bool canSelect = targets.isEmpty() && to_select->hasFlag("JnXianmaoTarget");
+        maxVotes = canSelect ? 1 : 0;
+        return canSelect;
+    }
+    // ====================
+    // for RhZhangchi =====
+    if (Self->hasFlag("RhZhangchiUsed")) {
+        bool canSelect = targets.isEmpty() && to_select->isAdjacentTo(Self);
         maxVotes = canSelect ? 1 : 0;
         return canSelect;
     }
