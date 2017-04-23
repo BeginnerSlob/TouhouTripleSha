@@ -6,7 +6,7 @@ return {
 	["#bangai001"] = "大空之弦",
 	["bangai001"] = "宇佐见莲子",--风 - 空 - 4血
 	["designer:bangai001"] = "幻桜落",
-	["illustrator:bangai001"] = "安威拓郎",
+	["illustrator:bangai001"] = "DomotoLain",
 	["cv:bangai001"] = "暂无",
 	["thbianfang"] = "辨方",
 	[":thbianfang"] = "每当你使用【杀】对一名其他角色造成一次伤害后，或一名其他角色使用一张【杀】对你造成一次伤害后，你可以进行X次判定，每有一张判定牌为红色，你便可以获得该角色的一张牌（X为你已损失的体力值，且至少为1）。",
@@ -14,7 +14,7 @@ return {
 	["#bangai002"] = "戾血的妖灵",
 	["bangai002"] = "朱鹭子",--花 - 空 - 4血
 	["designer:bangai002"] = "淬毒",
-	["illustrator:bangai002"] = "DClockwork",
+	["illustrator:bangai002"] = "ぴよ吉",
 	["cv:bangai002"] = "暂无",
 	["thshoujuan"] = "授卷",
 	[":thshoujuan"] = "出牌阶段开始时，你可以摸两张牌，若如此做，此阶段内每当一名其他角色失去牌时，你须交给其一张牌。",
@@ -28,7 +28,7 @@ return {
 	["#bangai003"] = "胧望的幻灵",
 	["bangai003"] = "大妖精",--雪 - 空 - 4血
 	["designer:bangai003"] = "桃花僧",
-	["illustrator:bangai003"] = "蓮芽しい",
+	["illustrator:bangai003"] = "TID",
 	["cv:bangai003"] = "暂无",
 	["thjibu"] = "疾步",
 	[":thjibu"] = "锁定技。当你计算与其他角色的距离时，始终-1。",
@@ -76,7 +76,7 @@ return {
 	["#bangai007"] = "荒城的苍影",
 	["bangai007"] = "冴月麟",--雪 - 空 - 4血
 	["designer:bangai007"] = "幻桜落",
-	["illustrator:bangai007"] = "ForgottenGirlRin",
+	["illustrator:bangai007"] = "kaze",
 	["cv:bangai007"] = "暂无",
 	["thqinshao"] = "琴韶",
 	[":thqinshao"] = "弃牌阶段开始时，若你的手牌数大于体力值，你可以令一名其他角色摸X张牌；若你的手牌数小于体力值，你可以摸X张牌（X为你的手牌数与体力值之差）。",
