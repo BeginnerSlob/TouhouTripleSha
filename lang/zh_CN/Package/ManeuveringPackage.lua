@@ -1,7 +1,7 @@
 -- translation for ManeuveringPackage
 
 return {
-	["maneuvering"] = "军争篇",
+	["maneuvering"] = "军争包",
 
 	["fire_slash"] = "火杀",
 	[":fire_slash"] = "基本牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：攻击范围内的一名角色<br /><b>效果</b>：对目标角色造成1点火焰伤害。",
