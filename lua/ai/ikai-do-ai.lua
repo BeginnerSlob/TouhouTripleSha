@@ -1604,7 +1604,7 @@ sgs.ai_card_intention.IkGuisiCard = function(self, card, from, tos)
 	local intention = (cardx:isKindOf("AOE") and -50 or 50)
 	for _, to in ipairs(tos) do
 		if to:hasSkill("danlao") or not self:hasTrickEffective(cardx, to, from) then continue end
-		if cardx:isKindOf("GodSalvation") and not to:isWounded() then continue end
+		if cardx:isKindOf("GodSalvation") and not (to:isWounded() or to:isChained()) then continue end
 		sgs.updateIntention(from, to, intention)
 	end
 end

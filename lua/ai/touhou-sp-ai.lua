@@ -68,15 +68,15 @@ end
 --霁风：锁定技，你的手牌上限+1。
 --无
 
---霓裳：准备阶段开始时，你可以将一名其他角色的人物牌横置或者重置。
-sgs.ai_skill_playerchosen.thnichang = function(self, targets)
+--空锁：准备阶段开始时，你可以选择一名其他角色▶你选择一项：1.令其将人物牌横置；2.令其将人物牌重置。
+sgs.ai_skill_playerchosen.thkongsuo = function(self, targets)
 	return self:findPlayerToChain(targets)
 end
 
---奇门：锁定技，当你计算与人物牌横置的角色的距离、人物牌横置的角色计算与你的距离时，无视你们之外的其他角色。
+--鬼门：锁定技。其他角色不计入你/另一名处于连环状态的其他角色到另一名处于连环状态的其他角色/你的距离的计算。
 --无
 
---贯甲：锁定技，人物牌横置的其他角色于你的回合内使用的第一张牌无效。
+--六壬：锁定技。当处于连环状态的其他角色于你的回合内使用第一张牌时，你令此牌对所有目标无效。
 --smart-ai.lua SmartAI:askForNullification
 --smart-ai.lua SmartAI:willUsePeachTo
 --standard-ai.lua sgs.ai_skill_cardask["@multi-jink-start"]
@@ -442,8 +442,8 @@ function sgs.ai_cardsview.thhuanlong(self, class_name, player)
 	end
 end
 
---赤樱：你的回合外，每当你需要使用一张基本牌时，你可以展示当前回合角色的一张手牌，你可以使用之。若你以此法展示的牌花色为梅花，你可以将此牌当任意基本牌使用，每回合限一次。
-sgs.ai_skill_invoke.thchiying = function(self, data)
+--御渡：当你于回合外需要使用基本牌时，你可以展示当前回合角色的一张手牌▶若此牌：为♣，你可以将之当任意基本牌使用；不为♣，你可以使用之。每回合限一次。
+sgs.ai_skill_invoke.thyudu = function(self, data)
 	local target = self.room:getCurrent()
 	if not self:isFriend(target) or self:getCardsNum("Jink") < 1 then
 		local flag = ("%s_%s_%s"):format("visible", self.player:objectName(), target:objectName())
@@ -457,9 +457,9 @@ sgs.ai_skill_invoke.thchiying = function(self, data)
 	return false
 end
 
-function sgs.ai_cardsview_valuable.thchiying(self, class_name, player)
+function sgs.ai_cardsview_valuable.thyudu(self, class_name, player)
 	if string.find(class_name, "Slash") or class_name == "Jink" or class_name == "Peach" or class_name == "Analeptic" then
-		if player:hasFlag("thchiying") or player:hasFlag("Global_ThChiyingFailed") then
+		if player:hasFlag("thyudu") or player:hasFlag("Global_ThYuduFailed") then
 			return nil
 		end
 		if sgs.Sanguosha:getCurrentCardUseReason() == sgs.CardUseStruct_CARD_USE_REASON_RESPONSE_USE then
@@ -480,7 +480,7 @@ function sgs.ai_cardsview_valuable.thchiying(self, class_name, player)
 					elseif class_name == "ThunderSlash" then
 						obj_name = "thunder_slash"
 					end
-					return "@ThChiyingCard=.:" .. obj_name
+					return "@ThYuduCard=.:" .. obj_name
 				end
 			end
 		end
@@ -488,16 +488,16 @@ function sgs.ai_cardsview_valuable.thchiying(self, class_name, player)
 	return nil
 end
 
-sgs.ai_skill_invoke.thchiying_use = function(self, data)
+sgs.ai_skill_invoke.thyudu_use = function(self, data)
 	return true
 end
 
---血塚：出牌阶段限一次，你可以弃置至少一张梅花牌，并从牌堆顶亮出等量的牌，然后你获得其中的非黑桃牌，再将其余的牌交给一名其他角色，若此时该角色的手牌数大于你，其将其人物牌翻面。
-local thxuezhong_skill = {}
-thxuezhong_skill.name = "thxuezhong"
-table.insert(sgs.ai_skills, thxuezhong_skill)
-thxuezhong_skill.getTurnUseCard = function(self)
-	if self.player:hasUsed("ThXuezhongCard") then return nil end
+--血塚：阶段技。你可以弃置至少一张♣牌，亮出牌堆顶等量的牌，你获取其中所有的非♠牌，然后将其余的牌交给一名其他角色，若如此做且若该角色手牌多于你，其将人物牌翻面。
+local thzhaoguo_skill = {}
+thzhaoguo_skill.name = "thzhaoguo"
+table.insert(sgs.ai_skills, thzhaoguo_skill)
+thzhaoguo_skill.getTurnUseCard = function(self)
+	if self.player:hasUsed("ThZhaoguoCard") then return nil end
 	if #self.enemies == 0 or #self.friends_noself == 0 then return nil end
 	local clubs = {}
 	for _, c in sgs.qlist(self.player:getCards("he")) do
@@ -506,21 +506,21 @@ thxuezhong_skill.getTurnUseCard = function(self)
 		end
 	end
 	if #clubs == 0 then return nil end
-	return sgs.Card_Parse("@ThXuezhongCard=" .. table.concat(clubs, "+"))
+	return sgs.Card_Parse("@ThZhaoguoCard=" .. table.concat(clubs, "+"))
 end
 
-sgs.ai_skill_use_func.ThXuezhongCard = function(card, use, self)
+sgs.ai_skill_use_func.ThZhaoguoCard = function(card, use, self)
 	use.card = card
 end
 
-sgs.ai_skill_playerchosen.thxuezhong = function(self, targets)
-	local dummy = self.player:getTag("ThXuezhongData"):toCard()
+sgs.ai_skill_playerchosen.thzhaoguo = function(self, targets)
+	local dummy = self.player:getTag("ThZhaoguoData"):toCard()
 	local ids = dummy:getSubcards()
 	local n = ids:length()
 	self:sort(self.enemies)
 	self:sort(self.friends_noself)
 	for _, enemy in ipairs(self.enemies) do
-		if n <= 2 and enemy:getHandcardNum() + n > self.player:getHandcardNum() and self:toTurnOver(enemy, 0, "thxuezhong") then
+		if n <= 2 and enemy:getHandcardNum() + n > self.player:getHandcardNum() and self:toTurnOver(enemy, 0, "thzhaoguo") then
 			local no_value = true
 			for _, id in sgs.qlist(ids) do
 				local c = sgs.Sanguosha:getCard(id)
@@ -540,15 +540,15 @@ sgs.ai_skill_playerchosen.thxuezhong = function(self, targets)
 		end
 	end
 	for _, enemy in ipairs(self.enemies) do
-		if enemy:getHandcardNum() + n > self.player:getHandcardNum() and self:toTurnOver(enemy, 0, "thxuezhong") then
+		if enemy:getHandcardNum() + n > self.player:getHandcardNum() and self:toTurnOver(enemy, 0, "thzhaoguo") then
 			return enemy
 		end
 	end
 	return targets:at(math.random(0, targets:length() - 1))
 end
 
-sgs.ai_playerchosen_intention.thxuezhong = function(self, from, to)
-	local dummy = from:getTag("ThXuezhongData"):toCard()
+sgs.ai_playerchosen_intention.thzhaoguo = function(self, from, to)
+	local dummy = from:getTag("ThZhaoguoData"):toCard()
 	if dummy then
 		local ids = dummy:getSubcards()
 		local n = ids:length()

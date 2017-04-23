@@ -2329,9 +2329,9 @@ function SmartAI:askForNullification(trick, from, to, positive, isHeg)
 	else
 		return nil
 	end
-	if not isHeg and self.player:isChained() and self.player:getMark("thguanjia") == 0 then
+	if not isHeg and self.player:isChained() and self.player:getMark("thliuren") == 0 then
 		local current = self.room:getCurrent()
-		if current and current:isAlive() and current:getPhase() ~= sgs.Player_NotActive and current:hasSkill("thguanjia") then
+		if current and current:isAlive() and current:getPhase() ~= sgs.Player_NotActive and current:hasSkill("thliuren") then
 			if #self:getCards("Nullification") <= 1 then
 				return nil
 			end
@@ -3666,9 +3666,9 @@ function SmartAI:willUsePeachTo(dying)
 		table.insert(ava_list, c:toString())
 	end
 	local n = 1
-	if self.player:isChained() and self.player:getMark("thguanjia") == 0 then
+	if self.player:isChained() and self.player:getMark("thliuren") == 0 then
 		local current = self.room:getCurrent()
-		if current and current:isAlive() and current:getPhase() ~= sgs.Player_NotActive and current:hasSkill("thguanjia") then
+		if current and current:isAlive() and current:getPhase() ~= sgs.Player_NotActive and current:hasSkill("thliuren") then
 			n = n + 1
 		end
 	end
