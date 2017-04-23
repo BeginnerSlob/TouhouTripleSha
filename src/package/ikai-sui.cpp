@@ -3210,8 +3210,8 @@ public:
             invoke = true;
             including_horse = true;
         }
-        if ((from->hasSkill("thqimen") && to->isChained())
-            || (to->hasSkill("thqimen") && from->isChained()))
+        if ((from->hasSkill("thguimen") && to->isChained())
+            || (to->hasSkill("thguimen") && from->isChained()))
             invoke = true;
         if (from->hasFlag("ikelu_" + to->objectName())) {
             invoke = true;

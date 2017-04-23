@@ -301,6 +301,7 @@ SilverLion::SilverLion(Suit suit, int number)
 void SilverLion::onUninstall(ServerPlayer *player) const{
     if (player->isAlive() && player->hasArmorEffect(objectName()))
         player->setFlags("SilverLionRecover");
+    Armor::onUninstall(player);
 }
 
 FireAttack::FireAttack(Card::Suit suit, int number)
@@ -333,16 +334,19 @@ void FireAttack::onEffect(const CardEffectStruct &effect) const{
     room->showCard(effect.to, card->getEffectiveId());
 
     QString suit_str = card->getSuitString();
-    QString pattern = QString(".%1").arg(suit_str.at(0).toUpper());
+    QString pattern = QString(".|%1").arg(suit_str);
     QString prompt = QString("@fire-attack:%1::%2").arg(effect.to->objectName()).arg(suit_str);
     if (effect.from->hasSkill("thyanlun")) {
         QString color_str = card->isRed() ? "red" : "black";
-        pattern = QString(".%1").arg(color_str);
+        pattern = QString(".|%1").arg(color_str);
         prompt = QString("@fire-attackex:%1::%2").arg(effect.to->objectName()).arg(color_str);
         room->notifySkillInvoked(effect.from, "thyanlun");
     }
     if (effect.from->isAlive()) {
-        const Card *card_to_throw = room->askForCard(effect.from, pattern, prompt);
+        QString name = card->getClassName();
+        if (name.endsWith("Slash"))
+            name = "Slash";
+        const Card *card_to_throw = room->askForCard(effect.from, pattern + "#" + name, prompt);
         if (card_to_throw)
             room->damage(DamageStruct(this, effect.from, effect.to, 1, DamageStruct::Fire));
         else

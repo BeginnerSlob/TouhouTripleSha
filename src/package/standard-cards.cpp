@@ -938,22 +938,27 @@ GodSalvation::GodSalvation(Suit suit, int number)
     setObjectName("god_salvation");
 }
 
-bool GodSalvation::isCancelable(const CardEffectStruct &effect) const{
-    return effect.to->isWounded() && TrickCard::isCancelable(effect);
+bool GodSalvation::isCancelable(const CardEffectStruct &effect) const
+{
+    return (effect.to->isWounded() || effect.to->isChained()) && TrickCard::isCancelable(effect);
 }
 
-void GodSalvation::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+void GodSalvation::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
     foreach (ServerPlayer *p, targets) {
-        if (p->isWounded())
+        if (p->isWounded() || p->isChained())
             room->setEmotion(p, "effects/god_salvation");
     }
     GlobalEffect::use(room, source, targets);
 }
 
-void GodSalvation::onEffect(const CardEffectStruct &effect) const{
+void GodSalvation::onEffect(const CardEffectStruct &effect) const
+{
     Room *room = effect.to->getRoom();
     if (effect.to->isWounded())
         room->recover(effect.to, RecoverStruct(effect.from, this));
+    if (effect.to->isChained())
+        room->setPlayerProperty(effect.to, "chained", QVariant::fromValue(false));
 }
 
 SavageAssault::SavageAssault(Suit suit, int number)
@@ -2389,39 +2394,24 @@ void JadeCard::onEffect(const CardEffectStruct &effect) const
     effect.from->getRoom()->addPlayerMark(effect.to, "cardNullifyHeg_" + effect.from->property("jade_trick").toString());
 }
 
-class JadeSkill: public OneCardViewAsSkill
+class JadeSkill : public ZeroCardViewAsSkill
 {
 public:
-    JadeSkill(): OneCardViewAsSkill("jade")
+    JadeSkill() : ZeroCardViewAsSkill("jade")
     {
-        filter_pattern = ".|red|.|hand";
-        response_or_use = true;
     }
 
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
+    virtual const Card *viewAs() const
     {
         if (Sanguosha->getCurrentCardUsePattern() != "nullification")
-            return false;
-        else
-            return OneCardViewAsSkill::viewFilter(selected, to_select);
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const
-    {
-        if (Sanguosha->getCurrentCardUsePattern() != "nullification") {
-            if (cards.isEmpty())
-                return new JadeCard;
-        } else
-            return OneCardViewAsSkill::viewAs(cards);
-        return NULL;
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const
-    {
-        Nullification *null = new Nullification(originalCard->getSuit(), originalCard->getNumber());
-        null->addSubcard(originalCard);
-        null->setSkillName("jade");
-        return null;
+            return new JadeCard;
+        else {
+            Nullification *null = new Nullification(Card::SuitToBeDecided, -1);
+            if (Self->getTreasure() && Self->getTreasure()->objectName() == objectName())
+                null->addSubcard(Self->getTreasure());
+            null->setSkillName("jade");
+            return null;
+        }
     }
 
     virtual bool isEnabledAtPlay(const Player *) const
@@ -2431,43 +2421,53 @@ public:
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
     {
-        return pattern == "@@jade" || (pattern == "nullification" && player->getMark("jade_use") < 2);
+        return pattern == "@@jade" || (pattern == "nullification" && player->hasTreasure(objectName()));
     }
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const
     {
-        return player->isAlive() && player->getMark("jade_use") < 2;
+        return player->isAlive() && player->hasTreasure(objectName());
     }
 };
 
-class JadeRecordSkill: public TreasureSkill
+class JadeTriggerSkill : public TreasureSkill
 {
 public:
-    JadeRecordSkill(): TreasureSkill("jade_record")
+    JadeTriggerSkill() : TreasureSkill("jade_trigger")
     {
-        events << PreCardUsed << EventPhaseChanging;
+        events << CardsMoveOneTime;
         frequency = Compulsory;
         global = true;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer* &) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
-        if (triggerEvent == EventPhaseChanging) {
-            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
-                foreach (ServerPlayer *p, room->getAlivePlayers())
-                    room->setPlayerMark(p, "jade_use", 0);
+        if (player->hasFlag("JadeDraw")) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from != player || !move.from_places.contains(Player::PlaceEquip))
+                return QStringList();
+            for (int i = 0; i < move.card_ids.size(); ++ i) {
+                if (move.from_places[i] != Player::PlaceEquip)
+                    continue;
+                const Card *card = Sanguosha->getEngineCard(move.card_ids[i]);
+                if (card->objectName() == "jade")
+                    return QStringList(objectName());
             }
-        } else {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card && use.card->isKindOf("Nullification") && use.card->getSkillName() == "jade")
-                return QStringList(objectName());
         }
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        room->addPlayerMark(player, "jade_use");
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        player->setFlags("-JadeDraw");
+        for (int i = 0; i < move.card_ids.size(); ++ i) {
+            if (move.from_places[i] != Player::PlaceEquip) continue;
+            const Card *card = Sanguosha->getEngineCard(move.card_ids[i]);
+            if (card->objectName() == "jade")
+                player->drawCards(1, "jade");
+        }
+
         return false;
     }
 };
@@ -2476,6 +2476,13 @@ Jade::Jade(Suit suit, int number)
     : Treasure(suit, number)
 {
     setObjectName("jade");
+}
+
+void Jade::onUninstall(ServerPlayer *player) const
+{
+    if (player->isAlive() && player->hasTreasure(objectName()))
+        player->setFlags("JadeDraw");
+    Treasure::onUninstall(player);
 }
 
 StandardCardPackage::StandardCardPackage()
@@ -2678,7 +2685,7 @@ StandardExCardPackage::StandardExCardPackage()
            << new ScrollSkill
            << new ScrollTriggerSkill << new ScrollProhibit;
     related_skills.insertMulti("scroll_trigger", "#scroll");
-    skills << new JadeSkill << new JadeRecordSkill;
+    skills << new JadeSkill << new JadeTriggerSkill;
 
     foreach (Card *card, cards)
         card->setParent(this);
