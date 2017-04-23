@@ -4166,10 +4166,52 @@ public:
     }
 };
 
+class RhDanshen : public TriggerSkill
+{
+public:
+    RhDanshen() : TriggerSkill("rhdanshen")
+    {
+        events << Damage;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        TriggerList skill_list;
+        if (player->isAlive()) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.to->isAlive() && damage.to->getHp() < player->getHp()) {
+                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            ask_who->drawCards(1, objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        if (ask_who != player && !ask_who->isNude()) {
+            const Card *card = room->askForCard(ask_who, "..", "@rhdanshen:" + player->objectName(), data, Card::MethodNone);
+            CardMoveReason reason(CardMoveReason::S_REASON_GIVE, ask_who->objectName(), player->objectName(), objectName(), QString());
+            room->obtainCard(player, card, reason, false);
+        }
+        return false;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
-    General *reihou001 = new General(this, "reihou001", "rei", 4, true, true);
+    /*General *reihou001 = new General(this, "reihou001", "rei", 4, true, true);
     reihou001->addSkill(new RhDuanlong);
     reihou001->addSkill(new FakeMoveSkill("rhduanlong"));
     related_skills.insertMulti("rhduanlong", "#rhduanlong-fake-move");
@@ -4352,7 +4394,10 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou046 = new General(this, "reihou046", "rei", 4, true, true);
     reihou046->addSkill(new RhFapo);
-    reihou046->addSkill(new RhHujuan);
+    reihou046->addSkill(new RhHujuan);*/
+
+    General *reihou047 = new General(this, "reihou047", "rei", 4, true, true);
+    reihou047->addSkill(new RhDanshen);
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
