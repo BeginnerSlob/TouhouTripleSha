@@ -76,7 +76,7 @@ return {
 	["#sp007"] = "七色莲华之蝶",
 	["sp007"] = "SP博丽灵梦",--雪 - 空 - 3血
 	["designer:sp007"] = "幻桜落",
-	["illustrator:sp007"] = "Samail",
+	["illustrator:sp007"] = "望月椎那",
 	["cv:sp007"] = "暂无",
 	["thmengsheng"] = "梦生",
 	[":thmengsheng"] = "每当你受到一次伤害后，你可以获得伤害来源的一张牌，然后令该角色的非专属技无效，直到你的下一个回合的回合结束。",
@@ -126,7 +126,7 @@ return {
 	["#sp011"] = "算术教室",
 	["sp011"] = "SP琪露诺",--雪 - 空 - 4血
 	["designer:sp011"] = "ECauchy",
-	["illustrator:sp011"] = "cuteg",
+	["illustrator:sp011"] = "Spark621",
 	["cv:sp011"] = "暂无",
 	["thjiuzhang"] = "九章",
 	[":thjiuzhang"] = "锁定技。你的点数为10~K的牌均视为点数为9的牌。",
@@ -156,7 +156,7 @@ return {
 	["#sp013"] = "空想上的绮华",
 	["sp013"] = "SP古明地恋",--风 - 幻 - 3血
 	["designer:sp013"] = "五月Fy",
-	["illustrator:sp013"] = "tecoyuke",
+	["illustrator:sp013"] = "いづる",
 	["cv:sp013"] = "暂无",
 	["thyimeng"] = "抑梦",
 	[":thyimeng"] = "每当一名其他角色对你或与你相邻的角色造成一次伤害后，你可以获得该角色的一张牌，然后令其摸一张牌。",
