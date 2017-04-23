@@ -1,7 +1,7 @@
 -- translation for StandardPackage
 
 local t = {
-	["standard_cards"] = "标准版",
+	["standard_cards"] = "标准包",
 
 	["slash"] = "杀",
 	[":slash"] = "基本牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：攻击范围内的一名其他角色<br /><b>效果</b>：对目标角色造成1点伤害。",
@@ -33,11 +33,11 @@ local t = {
 	["illustrator:qinggang_sword"] = "寒极",
 	[":qinggang_sword"] = "装备牌·武器<br /><b>攻击范围</b>：２<br /><b>武器技能</b>：锁定技，当你使用【杀】指定一名角色为目标后，无视其防具。",
 
-	["blade"] = "离魂之镰",
+	["blade"] = "离魂幽镰",
 	["illustrator:blade"] = "寒极",
 	[":blade"] = "装备牌·武器<br /><b>攻击范围</b>：３<br /><b>武器技能</b>：当你使用的【杀】被【闪】抵消时，你可以对相同的目标再使用一张【杀】。",
-	["blade-slash"] = "你可以发动【离魂之镰】再对 %src 使用一张【杀】",
-	["#BladeUse"] = "%from 对 %to 发动了【<font color=\"yellow\"><b>离魂之镰</b></font>】效果",
+	["blade-slash"] = "你可以发动【离魂幽镰】再对 %src 使用一张【杀】",
+	["#BladeUse"] = "%from 对 %to 发动了【<font color=\"yellow\"><b>离魂幽镰</b></font>】效果",
 
 	["spear"] = "虹法贤书",
 	[":spear"] = "装备牌·武器<br /><b>攻击范围</b>：３<br /><b>武器技能</b>：你可以将两张手牌当【杀】使用或打出。",
@@ -135,7 +135,7 @@ local t = {
 
 
 
-	["standard_ex_cards"] = "标准版EX",
+	["standard_ex_cards"] = "幻想包",
 
 	["purple_song"] = "紫莲圣咏",
 	[":purple_song"] = "延时锦囊牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：一名其他角色<br /><b>效果</b>：将此牌面朝上置于目标角色的判定区内。目标角色的判定阶段，该角色进行一次判定，若结果不为方块，目标角色跳过此回合的弃牌阶段并于回合结束后摸两张牌。使用结算结束后，将此牌置入弃牌堆。",
