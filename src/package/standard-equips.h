@@ -150,6 +150,8 @@ class Jade: public Treasure {
 
 public:
     Q_INVOKABLE Jade(Card::Suit suit = Spade, int number = 13);
+
+    virtual void onUninstall(ServerPlayer *player) const;
 };
 
 class StandardCardPackage: public Package {

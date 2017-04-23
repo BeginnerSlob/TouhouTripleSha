@@ -1180,7 +1180,7 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
     CardEffectStruct effect;
     effect.card = card;
     effect.to = repliedPlayer;
-    if (card->isCancelable(effect))
+    if (card->getSkillName() != "jade" && card->isCancelable(effect))
         result = !_askForNullification(card, repliedPlayer, to, !positive, aiHelper);
     if (result) {
         if (card && card->getSkillName() == "jade") {

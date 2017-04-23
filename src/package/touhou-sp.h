@@ -12,11 +12,11 @@ public:
     TouhouSPPackage();
 };
 
-class ThChiyingCard: public SkillCard {
+class ThYuduCard: public SkillCard {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE ThChiyingCard();
+    Q_INVOKABLE ThYuduCard();
 
     virtual bool targetFixed() const;
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
@@ -26,11 +26,11 @@ public:
     virtual const Card *validate(CardUseStruct &cardUse) const;
 };
 
-class ThXuezhongCard: public SkillCard{
+class ThZhaoguoCard: public SkillCard{
     Q_OBJECT
 
 public:
-    Q_INVOKABLE ThXuezhongCard();
+    Q_INVOKABLE ThZhaoguoCard();
 
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
