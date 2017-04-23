@@ -873,13 +873,13 @@ sgs.ai_skill_cardask["slash-jink"] = function(self, data, pattern, target)
 	if (not target or self:isFriend(target)) and slash:hasFlag("ikjieyou-slash") then return "." end
 	if sgs.ai_skill_cardask.nullfilter(self, data, pattern, target) then return "." end
 	--if not target then self.room:writeToConsole(debug.traceback()) end
-	--for  Thguanjia
-	if self.player:isChained() and self.player:getMark("thguanjia") == 0 and not self.player:hasFlag("AIGlobal_ThGuanjia") then
+	--for  ThLiuren
+	if self.player:isChained() and self.player:getMark("thliuren") == 0 and not self.player:hasFlag("AIGlobal_ThLiuren") then
 		local current = self.room:getCurrent()
-		if current and current:isAlive() and current:getPhase() ~= sgs.Player_NotActive and current:hasSkill("thguanjia") then
-			self.room:setPlayerFlag(self.player, "AIGlobal_ThGuanjia")
+		if current and current:isAlive() and current:getPhase() ~= sgs.Player_NotActive and current:hasSkill("thliuren") then
+			self.room:setPlayerFlag(self.player, "AIGlobal_ThLiuren")
 			local ret = sgs.ai_skill_cardask["@multi-jink-start"](self, data, pattern, target, nil, 2)
-			self.room:setPlayerFlag(self.player, "-AIGlobal_ThGuanjia")
+			self.room:setPlayerFlag(self.player, "-AIGlobal_ThLiuren")
 			return ret
 		end
 	end
@@ -1676,6 +1676,8 @@ function SmartAI:willUseGodSalvation(card)
 	local good, bad = 0, 0
 	local wounded_friend = 0
 	local wounded_enemy = 0
+	local chained_friend = 0
+	local chained_enemy = 0
 
 	local liuxie = self.room:findPlayerBySkillName("huangen")
 	if liuxie then
@@ -1694,6 +1696,7 @@ function SmartAI:willUseGodSalvation(card)
 	for _, friend in ipairs(self.friends) do
 		good = good + 10 * getCardsNum("Nullification", friend, self.player)
 		if self:hasTrickEffective(card, friend, self.player) then
+			local danlao = false
 			if friend:isWounded() then
 				wounded_friend = wounded_friend + 1
 				good = good + 10
@@ -1707,7 +1710,23 @@ function SmartAI:willUseGodSalvation(card)
 				else
 					if friend:isLord() then good = good + 5 end
 				end
-			elseif friend:hasSkill("danlao") then good = good + 5
+			else
+				danlao = true
+			end
+			if friend:isChained() then
+				if self:isGoodChainPartner(friend) then
+					chained_friend = chained_friend - 1
+					good = good - 5
+				else
+					chained_friend = chained_friend + 1
+					good = good + 5
+				end
+			else
+				danlao = true
+			end
+			if danlao and friend:hasSkill("danlao") then
+					good = good + 5
+				end
 			end
 			if card:isBlack() and friend:hasSkill("thxinqi") then good = good + 5 end
 		end
@@ -1716,6 +1735,7 @@ function SmartAI:willUseGodSalvation(card)
 	for _, enemy in ipairs(self.enemies) do
 		bad = bad + 10 * getCardsNum("Nullification", enemy, self.player)
 		if self:hasTrickEffective(card, enemy, self.player) then
+			local danlao = false
 			if enemy:isWounded() then
 				wounded_enemy = wounded_enemy + 1
 				bad = bad + 10
@@ -1731,7 +1751,22 @@ function SmartAI:willUseGodSalvation(card)
 				else
 					if enemy:isLord() then bad = bad + 5 end
 				end
-			elseif enemy:hasSkill("danlao") then bad = bad + 5
+			else
+				danlao = true
+			end
+			if enemy:isChained() then
+				if self:isGoodChainTarget(enemy) then
+					chained_enemy = chained_enemy + 1
+					bad = bad + 10
+				else
+					chained_enemy = chained_enemy - 1
+					bad = bad + 5
+				end
+			else
+				danlao = true
+			end
+			if danlao and enemy:hasSkill("danlao") then
+				bad = bad + 5
 			end
 			if card:isBlack() and enemy:hasSkill("thxinqi") then bad = bad + 5 end
 		end
@@ -1744,7 +1779,7 @@ function SmartAI:willUseGodSalvation(card)
 		end
 	end
 
-	return (good - bad > 2 and wounded_friend > 0)  or (wounded_friend == 0 and wounded_enemy == 0 and self.player:hasSkills("ikhuiquan|jizhi"))
+	return (good - bad > 2 and wounded_friend > 0) or (good - bad > 5 and chained_friend > 0) or (wounded_friend == 0 and wounded_enemy == 0 and self.player:hasSkills("ikhuiquan|jizhi"))
 end
 
 function SmartAI:useCardGodSalvation(card, use)
@@ -4054,10 +4089,8 @@ sgs.ai_view_as.jade = function(card, player, card_place)
 	local suit = card:getSuitString()
 	local number = card:getNumberString()
 	local card_id = card:getEffectiveId()
-	if card_place == sgs.Player_PlaceHand then
-		if card:isRed() and player:getMark("jade_use") < 2 then
-			return ("nullification:jade[%s:%s]=%d"):format(suit, number, card_id)
-		end
+	if card_place == sgs.Player_PlaceEquip and player:getTreasure() and player:getTreasure():getEffectiveId() == card_id then
+		return ("nullification:jade[%s:%s]=%d"):format(suit, number, card_id)
 	end
 end
 
@@ -4080,22 +4113,13 @@ sgs.ai_skill_use["@@jade"] = function(self, prompt)
 	end
 end
 
-sgs.ai_cardneed.jade = function(to, card, self)
-	return card:isRed()
-end
-
-sgs.jade_suit_value = {
-	heart = 3.9,
-	diamond = 3.9
-}
-
 sgs.ai_card_intention.JadeCard = function(self, card, from, tos)
 	local cardx = sgs.Card_Parse(sgs.GetProperty(from, "jade_trick"))
 	if not cardx then return end
 	local intention = (cardx:isKindOf("AOE") and -50 or 50)
 	for _, to in ipairs(tos) do
 		if to:hasSkill("danlao") or not self:hasTrickEffective(cardx, to, from) then continue end
-		if cardx:isKindOf("GodSalvation") and not to:isWounded() then continue end
+		if cardx:isKindOf("GodSalvation") and not (to:isWounded() or to:isChained()) then continue end
 		sgs.updateIntention(from, to, intention)
 	end
 end

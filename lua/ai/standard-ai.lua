@@ -1407,13 +1407,13 @@ end
 
 sgs.ai_skill_cardask["@multi-jink-start"] = function(self, data, pattern, target, target2, arg)
 	local rest_num = tonumber(arg)
-	--for  Thguanjia
-	if self.player:isChained() and self.player:getMark("thguanjia") == 0 and not self.player:hasFlag("AIGlobal_ThGuanjia") then
+	--for  ThLiuren
+	if self.player:isChained() and self.player:getMark("thliuren") == 0 and not self.player:hasFlag("AIGlobal_ThLiuren") then
 		local current = self.room:getCurrent()
-		if current and current:isAlive() and current:getPhase() ~= sgs.Player_NotActive and current:hasSkill("thguanjia") then
-			self.room:setPlayerFlag(self.player, "AIGlobal_ThGuanjia")
+		if current and current:isAlive() and current:getPhase() ~= sgs.Player_NotActive and current:hasSkill("thliuren") then
+			self.room:setPlayerFlag(self.player, "AIGlobal_ThLiuren")
 			local ret = sgs.ai_skill_cardask["@multi-jink-start"](self, data, pattern, target, nil, rest_num + 1)
-			self.room:setPlayerFlag(self.player, "-AIGlobal_ThGuanjia")
+			self.room:setPlayerFlag(self.player, "-AIGlobal_ThLiuren")
 			return ret
 		end
 	end
