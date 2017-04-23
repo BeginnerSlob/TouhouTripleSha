@@ -205,6 +205,18 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class RhZhangchiCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE RhZhangchiCard();
+
+    virtual const Card *validate(CardUseStruct &card_use) const;
+    virtual const Card *validateInResponse(ServerPlayer *user) const;
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+};
+
 class TenshiReihouPackage : public Package
 {
     Q_OBJECT

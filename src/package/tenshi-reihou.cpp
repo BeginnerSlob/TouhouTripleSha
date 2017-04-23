@@ -4208,10 +4208,151 @@ public:
     }
 };
 
+class RhZhangchi : public TriggerSkill
+{
+public:
+    RhZhangchi() : TriggerSkill("rhzhangchi")
+    {
+        events << EventAcquireSkill << EventLoseSkill << ChoiceMade;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (triggerEvent == ChoiceMade) {
+            if (player->hasFlag("RhZhangchiUsed") && data.canConvert<CardUseStruct>()) {
+                room->broadcastSkillInvoke(objectName());
+                room->notifySkillInvoked(player, objectName());
+
+                LogMessage log;
+                log.type = "#InvokeSkill";
+                log.from = player;
+                log.arg = objectName();
+                room->sendLog(log);
+
+                room->setPlayerFlag(player, "-RhZhangchiUsed");
+            }
+            return QStringList();
+        }
+
+        if (data.toString() == objectName()) {
+            if (triggerEvent == EventLoseSkill) {
+                ServerPlayer *p = player->tag[objectName()].value<ServerPlayer *>();
+                player->tag.remove(objectName());
+                if (p) {
+                    room->setPlayerMark(p, "@knot", 0);
+                    room->detachSkillFromPlayer(p, "rhzhangchiv", true);
+                }
+            } else
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "@rhzhangchi", true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag[objectName()] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        ServerPlayer *p = player->tag[objectName()].value<ServerPlayer *>();
+        if (p) {
+            room->setPlayerMark(p, "@knot", 1);
+            room->attachSkillToPlayer(p, "rhzhangchiv");
+        }
+        return false;
+    }
+};
+
+class RhZhangchiProhibit : public ProhibitSkill
+{
+public:
+    RhZhangchiProhibit() : ProhibitSkill("#rhzhangchi")
+    {
+        frequency = NotCompulsory;
+    }
+
+    virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &) const
+    {
+        return to->getMark("@knot") && to->isAdjacentTo(from) && card->getTypeId() != Card::TypeSkill;
+    }
+};
+
+RhZhangchiCard::RhZhangchiCard()
+{
+    target_fixed = true;
+    mute = true;
+    m_skillName = "rhzhangchiv";
+}
+
+const Card *RhZhangchiCard::validate(CardUseStruct &card_use) const{
+    ServerPlayer *player = card_use.from;
+    Room *room = player->getRoom();
+    Sanguosha->currentRoomState()->setCurrentCardUseReason(CardUseStruct::CARD_USE_REASON_PLAY); // for slash
+    QString pattern = "^Jink+^Nullification";
+    if (!Slash::IsAvailable(player))
+        pattern.append("+^Slash");
+    if (!Analeptic::IsAvailable(player))
+        pattern.append("+^Analeptic");
+    room->setPlayerFlag(player, "RhZhangchiUsed");
+    bool use = room->askForUseCard(player, pattern, "@rhzhangchi-use");
+    if (!use) {
+        room->setPlayerFlag(player, "Global_RhZhangchiFailed");
+        room->setPlayerFlag(player, "-RhZhangchiUsed");
+        return NULL;
+    }
+    return this;
+}
+
+const Card *RhZhangchiCard::validateInResponse(ServerPlayer *player) const{
+    Room *room = player->getRoom();
+    Sanguosha->currentRoomState()->setCurrentCardUseReason(CardUseStruct::CARD_USE_REASON_PLAY); // for slash
+    QString pattern = "^Jink+^Nullification";
+    if (!Slash::IsAvailable(player))
+        pattern.append("+^Slash");
+    if (!Analeptic::IsAvailable(player))
+        pattern.append("+^Analeptic");
+    room->setPlayerFlag(player, "RhZhangchiUsed");
+    bool use = room->askForUseCard(player, pattern, "@rhzhangchi-use");
+    if (!use) {
+        room->setPlayerFlag(player, "Global_RhZhangchiFailed");
+        room->setPlayerFlag(player, "-RhZhangchiUsed");
+        return NULL;
+    }
+    return this;
+}
+
+void RhZhangchiCard::onUse(Room *, const CardUseStruct &) const{
+    // do nothing
+}
+
+class RhZhangchiVS : public ZeroCardViewAsSkill
+{
+public:
+    RhZhangchiVS() : ZeroCardViewAsSkill("rhzhangchiv")
+    {
+        attached_lord_skill = true;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->getMark("@knot") > 0 && !player->hasFlag("Global_RhZhangchiFailed");
+    }
+
+    virtual const Card *viewAs() const{
+        return new RhZhangchiCard;
+    }
+};
+
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
-    /*General *reihou001 = new General(this, "reihou001", "rei", 4, true, true);
+    General *reihou001 = new General(this, "reihou001", "rei", 4, true, true);
     reihou001->addSkill(new RhDuanlong);
     reihou001->addSkill(new FakeMoveSkill("rhduanlong"));
     related_skills.insertMulti("rhduanlong", "#rhduanlong-fake-move");
@@ -4394,10 +4535,15 @@ TenshiReihouPackage::TenshiReihouPackage()
 
     General *reihou046 = new General(this, "reihou046", "rei", 4, true, true);
     reihou046->addSkill(new RhFapo);
-    reihou046->addSkill(new RhHujuan);*/
+    reihou046->addSkill(new RhHujuan);
 
     General *reihou047 = new General(this, "reihou047", "rei", 4, true, true);
     reihou047->addSkill(new RhDanshen);
+
+    General *reihou048 = new General(this, "reihou048", "rei", 4, true, true);
+    reihou048->addSkill(new RhZhangchi);
+    reihou048->addSkill(new RhZhangchiProhibit);
+    related_skills.insertMulti("rhzhangchi", "#rhzhangchi");
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();
@@ -4414,8 +4560,9 @@ TenshiReihouPackage::TenshiReihouPackage()
     addMetaObject<RhChenshengCard>();
     addMetaObject<RhXianmingCard>();
     addMetaObject<RhXiaozhangCard>();
+    addMetaObject<RhZhangchiCard>();
 
-    skills << new RhShiguangGivenSkill;
+    skills << new RhShiguangGivenSkill << new RhZhangchiVS;
 }
 
 ADD_PACKAGE(TenshiReihou)
