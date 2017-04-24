@@ -2400,8 +2400,10 @@ void Room::processClientPacket(const QString &request) {
     }
 }
 
-bool Room::addRobotCommand(ServerPlayer *player, const QVariant &arg) {
-    if ((player && !player->isOwner()) || !isNumber(arg)) return false;
+bool Room::addRobotCommand(ServerPlayer *player, const QVariant &arg)
+{
+    if ((player && !player->isOwner()) || !isNumber(arg))
+        return false;
 
     int n = 0;
     foreach (ServerPlayer *player, m_players) {
@@ -2410,8 +2412,12 @@ bool Room::addRobotCommand(ServerPlayer *player, const QVariant &arg) {
     }
 
     int add_num = arg.toInt();
+    if (add_num == -1)
+        add_num = player_count - m_players.length();
+
     for (int i = 0; i < add_num; i++) {
-        if (isFull()) return false;
+        if (isFull())
+            return false;
         ServerPlayer *robot = new ServerPlayer(this);
         robot->setState("robot");
 

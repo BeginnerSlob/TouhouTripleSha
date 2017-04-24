@@ -71,6 +71,10 @@ public:
     void onPlayerReplyGuanxing(const QList<int> &up_cards, const QList<int> &down_cards);
     void onPlayerAssignRole(const QList<QString> &names, const QList<QString> &roles);
     QList<const ClientPlayer *> getPlayers() const;
+    inline int getPlayerCount() const
+    {
+        return player_count;
+    }
     void speakToServer(const QString &text);
     ClientPlayer *getPlayer(const QString &name);
     bool save(const QString &filename) const;
@@ -234,6 +238,7 @@ private:
     QHash<QSanProtocol::CommandType, CallBack> m_interactions;
     QHash<QSanProtocol::CommandType, CallBack> m_callbacks;
     QList<const ClientPlayer *> players;
+    int player_count;
     QStringList ban_packages;
     Recorder *recorder;
     Replayer *replayer;

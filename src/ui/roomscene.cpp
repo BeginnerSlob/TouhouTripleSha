@@ -1354,10 +1354,8 @@ void RoomScene::keyReleaseEvent(QKeyEvent *event) {
             if (control_is_down) {
                 if (add_robot && add_robot->isVisible())
                     ClientInstance->addRobot(1);
-            } else if (start_game && start_game->isVisible()) {
-                int left = Sanguosha->getPlayerCount(ServerInfo.GameMode) - ClientInstance->getPlayers().length();
-                ClientInstance->addRobot(left);
-            }
+            } else if (start_game && start_game->isVisible())
+                ClientInstance->addRobot(-1);
             break;
         }
     case Qt::Key_F12: {
@@ -4549,8 +4547,9 @@ void RoomScene::pause() {
     ClientInstance->notifyServer(S_COMMAND_PAUSE, !paused);
 }
 
-void RoomScene::addRobot() {
-    int left = Sanguosha->getPlayerCount(ServerInfo.GameMode) - ClientInstance->getPlayers().length();
+void RoomScene::addRobot()
+{
+    int left = Sanguosha->getPlayerCount(ServerInfo.GameMode) - ClientInstance->getPlayerCount();
     if (left == 1) {
         ClientInstance->addRobot(1);
     } else {
@@ -4578,9 +4577,9 @@ void RoomScene::doAddRobotAction() {
     ClientInstance->addRobot(num);
 }
 
-void RoomScene::fillRobots() {
-    int left = Sanguosha->getPlayerCount(ServerInfo.GameMode) - ClientInstance->getPlayers().length();
-    ClientInstance->addRobot(left);
+void RoomScene::fillRobots()
+{
+    ClientInstance->addRobot(-1);
 }
 
 #ifdef Q_OS_ANDROID
