@@ -1267,7 +1267,7 @@ end
 
 --丰稔：锁定技，准备阶段开始时，你须选择一项：弃置全部且至少两张的“穗”并回复1点体力；或获得全部的“穗”。
 sgs.ai_skill_choice.thfengren = function(self, choices, data)
-	local ids = self.player:getPile("dasuipile")
+	local ids = self.player:getPile("tassel")
 	if ids:length() == 2 then
 		for _, id in sgs.qlist(ids) do
 			if sgs.Sanguosha:getCard(id):isKindOf("Peach") then
@@ -1291,12 +1291,12 @@ sgs.ai_skill_invoke.thfuli = function(self, data)
 	else
 		ids:append(card:getEffectiveId())
 	end
-	if ids:length() + self.player:getPile("dasuipile"):length() > 3 then
+	if ids:length() + self.player:getPile("tassel"):length() > 3 then
 		return true
 	end
 	local slash = self:getCardsNum("Slash", "h")
 	if slash == 0 then
-		for _, id in sgs.qlist(self.player:getPile("dasuipile")) do
+		for _, id in sgs.qlist(self.player:getPile("tassel")) do
 			if sgs.Sanguosha:getCard(id):isKindOf("Slash") then
 				slash = 1
 				break
@@ -1349,9 +1349,9 @@ sgs.ai_skill_use["@@thsuilun"] = function(self, prompt, method)
 		return "."
 	end
 	local first, second = -1, -1
-	for _, id in sgs.qlist(self.player:getPile("kudaopile")) do
+	for _, id in sgs.qlist(self.player:getPile("leaf")) do
 		first = id
-		for _, id2 in sgs.qlist(self.player:getPile("kudaopile")) do
+		for _, id2 in sgs.qlist(self.player:getPile("leaf")) do
 			if id2 == id then
 				continue
 			end

@@ -1465,7 +1465,7 @@ ThDasuiCard::ThDasuiCard() {
 }
 
 void ThDasuiCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const {
-    source->addToPile("dasuipile", this);
+    source->addToPile("tassel", this);
 }
 
 class ThDasuiViewAsSkill: public ViewAsSkill {
@@ -1503,7 +1503,7 @@ public:
         TriggerList skill_list;
         if (player->getPhase() != Player::Play) return skill_list;
         foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
-            if (owner == player || owner->getPile("dasuipile").isEmpty())
+            if (owner == player || owner->getPile("tassel").isEmpty())
                 continue;
             skill_list.insert(owner, QStringList(objectName()));
         }
@@ -1519,7 +1519,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
-        QList<int> card_ids = ask_who->getPile("dasuipile");
+        QList<int> card_ids = ask_who->getPile("tassel");
         if (card_ids.isEmpty()) return false;
         room->fillAG(card_ids);
         int card_id = room->askForAG(player, card_ids, true, objectName());
@@ -1539,14 +1539,14 @@ public:
 
     virtual bool triggerable(const ServerPlayer *player) const {
         if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Start)
-            return !player->getPile("dasuipile").isEmpty();
+            return !player->getPile("tassel").isEmpty();
         return false;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         room->sendCompulsoryTriggerLog(player, objectName());
         
-        QList<int> card_ids = player->getPile("dasuipile");
+        QList<int> card_ids = player->getPile("tassel");
         DummyCard *dummy = new DummyCard(card_ids);
         QStringList choices;
         if (card_ids.length() >= 2 && player->isWounded())
@@ -1587,7 +1587,7 @@ public:
                     use.card->setFlags("thfuli");
                 }
             } else if (triggerEvent == BeforeCardsMove && player->hasFlag("fuli_target")
-                && player->getPile("dasuipile").length() < 3) {
+                && player->getPile("tassel").length() < 3) {
                 CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
                 if ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_USE
                     && move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
@@ -1617,7 +1617,7 @@ public:
         player->addMark(objectName());
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
 
-        player->addToPile("dasuipile", move.card_ids);
+        player->addToPile("tassel", move.card_ids);
         move.removeCardIds(move.card_ids);
         data = QVariant::fromValue(move);
 
@@ -1680,7 +1680,7 @@ public:
         player->tag.remove("ThKudaoTarget");
         if (target) {
             int card_id = room->askForCardChosen(player, target, "he", objectName());
-            player->addToPile("kudaopile", card_id, true);
+            player->addToPile("leaf", card_id, true);
         }
         return false;
     }
@@ -1702,7 +1702,7 @@ public:
     ThSulunViewAsSkill() : ViewAsSkill("thsuilun")
     {
         response_pattern = "@@thsuilun";
-        expand_pile = "kudaopile";
+        expand_pile = "leaf";
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
@@ -1710,9 +1710,9 @@ public:
         if (selected.isEmpty())
             return Self->getHandcards().contains(to_select) && !Self->isJilei(to_select);
         else if (selected.length() == 1)
-            return Self->getPile("kudaopile").contains(to_select->getId());
+            return Self->getPile("leaf").contains(to_select->getId());
         else if (selected.length() == 2)
-            return Self->getPile("kudaopile").contains(to_select->getId()) && to_select->getSuit() != selected.at(1)->getSuit();
+            return Self->getPile("leaf").contains(to_select->getId()) && to_select->getSuit() != selected.at(1)->getSuit();
         else
             return false;
     }
@@ -1745,7 +1745,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
         if (!TriggerSkill::triggerable(player)) return QStringList();
         if (player->getPhase() == Player::NotActive) {
-            if (player->getPile("kudaopile").length() > 1)
+            if (player->getPile("leaf").length() > 1)
                 return QStringList(objectName());
         }
         return QStringList();
