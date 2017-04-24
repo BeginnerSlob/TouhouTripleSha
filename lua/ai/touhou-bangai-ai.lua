@@ -474,7 +474,7 @@ sgs.ai_skill_choice.thqiongfa = function(self, choices, data)
 	end
 	if self:isFriend(source) and self:isEnemy(target) then
 		local card_id = self:askForCardChosen(target, "he", "thqiongfa", sgs.Card_MethodDiscard)
-		if target:hasEquip(sgs.Sanguosha:getCard(card_id)) or victim:getCardCount() < 3 then
+		if target:hasEquip(sgs.Sanguosha:getCard(card_id)) or target:getCardCount() < 3 then
 			return "discard"
 		end
 		return "cancel"

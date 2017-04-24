@@ -460,6 +460,8 @@ QString Peach::getSubtype() const
 
 bool Peach::targetFixed() const
 {
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
+        return BasicCard::targetFixed();
     if (Self && Self->hasSkill("rhchuilu"))
         return false;
     return BasicCard::targetFixed();
