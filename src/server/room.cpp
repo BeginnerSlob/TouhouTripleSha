@@ -3849,7 +3849,8 @@ void Room::moveCardsAtomic(CardsMoveStruct cards_move, bool forceMoveVisible) {
     moveCardsAtomic(cards_moves, forceMoveVisible);
 }
 
-void Room::moveCardsAtomic(QList<CardsMoveStruct> cards_moves, bool forceMoveVisible) {
+void Room::moveCardsAtomic(QList<CardsMoveStruct> cards_moves, bool forceMoveVisible)
+{
     cards_moves = _breakDownCardMoves(cards_moves);
 
     QList<CardsMoveOneTimeStruct> moveOneTimes = _mergeMoves(cards_moves);
@@ -3861,9 +3862,14 @@ void Room::moveCardsAtomic(QList<CardsMoveStruct> cards_moves, bool forceMoveVis
                 continue;
             }
             QVariant data = QVariant::fromValue(moveOneTime);
+            QList<int> original = moveOneTime.card_ids;
             thread->trigger(BeforeCardsMove, this, player, data);
             moveOneTime = data.value<CardsMoveOneTimeStruct>();
             moveOneTimes[i] = moveOneTime;
+            if (moveOneTime.card_ids != original) {
+                if (moveOneTime.to_place == Player::PlaceSpecial && !moveOneTime.to_pile_name.isEmpty())
+                    ((ServerPlayer *)moveOneTime.to)->updatePile(moveOneTime.to_pile_name, original, moveOneTime.card_ids);
+            }
             i++;
         }
     }
