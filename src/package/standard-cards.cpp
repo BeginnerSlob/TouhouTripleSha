@@ -485,7 +485,7 @@ bool Peach::targetsFeasible(const QList<const Player *> &targets, const Player *
     if (Self && Self->hasSkill("rhchuilu")) {
         return !targets.isEmpty() || Self->isWounded();
     }
-    return Peach::targetsFeasible(targets, Self);
+    return BasicCard::targetsFeasible(targets, Self);
 }
 
 void Peach::onUse(Room *room, const CardUseStruct &card_use) const{
