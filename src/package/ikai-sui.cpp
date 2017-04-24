@@ -677,6 +677,17 @@ public:
                     room->sendLog(log);
                 }
                 room->obtainCard(target, card, move.reason);
+                foreach (int id, ids) {
+                    if (!move.card_ids.contains(id)) {
+                        ids.removeOne(id);
+                        disabled << id;
+                        continue;
+                    }
+                    if (room->getCardPlace(id) != move.from_places.at(move.card_ids.indexOf(id))) {
+                        ids.removeOne(id);
+                        disabled << id;
+                    }
+                }
             } else
                 break;
         }
