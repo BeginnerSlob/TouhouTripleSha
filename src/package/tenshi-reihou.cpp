@@ -4397,7 +4397,7 @@ public:
         } else {
             if (player->isAlive() && room->getCurrent() && room->getCurrent() == player && player->getPhase() != Player::NotActive) {
                 CardUseStruct use = data.value<CardUseStruct>();
-                if (use.card->getTypeId() != Card::TypeSkill) {
+                if (use.card->getTypeId() != Card::TypeSkill && use.card->getTypeId() != Card::TypeEquip) {
                     Card *card = Sanguosha->cloneCard(use.card);
                     card->deleteLater();
                     if (card->isAvailable(player)) {
