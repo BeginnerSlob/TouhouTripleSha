@@ -26,8 +26,8 @@ Client *ClientInstance = NULL;
 
 Client::Client(QObject *parent, const QString &filename)
     : QObject(parent), m_isDiscardActionRefusable(true),
-      status(NotActive), alive_count(1), swap_pile(0),
-      _m_roomState(true)
+      status(NotActive), alive_count(1), swap_pile(0), _m_roomState(true),
+      player_count(1) // Self is not included!! Be care!!!
 {
     ClientInstance = this;
     m_isGameOver = false;
@@ -346,7 +346,8 @@ void Client::addPlayer(const QVariant &player_info)
     player->setProperty("avatar", avatar);
 
     players << player;
-    alive_count++;
+    ++alive_count;
+    ++player_count;
     emit player_added(player);
 }
 
@@ -366,6 +367,7 @@ void Client::removePlayer(const QVariant &player_name) {
     if (player) {
         player->setParent(NULL);
         --alive_count;
+        --player_count;
         emit player_removed(name);
     }
 }
@@ -502,7 +504,8 @@ void Client::requestCheatChangeGeneral(const QString &name, bool isSecondaryHero
     requestServer(S_COMMAND_CHEAT, cheatArg);
 }
 
-void Client::addRobot(int num) {
+void Client::addRobot(int num)
+{
     notifyServer(S_COMMAND_ADD_ROBOT, num);
 }
 
