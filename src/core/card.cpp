@@ -717,6 +717,8 @@ void Card::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets)
     foreach (ServerPlayer *target, targets) {
         room->removePlayerMark(target, "cardEffect_" + toString());
         bool null_heg = target->getMark("cardNullifyHeg_" + toString()) > 0;
+        if (null_heg)
+            room->removePlayerMark(target, "cardNullifyHeg_" + toString());
 
         CardEffectStruct effect;
         effect.card = this;
