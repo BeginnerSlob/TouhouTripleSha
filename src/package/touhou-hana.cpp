@@ -108,21 +108,23 @@ public:
     }
 };
 
-ThJiewuCard::ThJiewuCard() {
+ThJiewuCard::ThJiewuCard()
+{
 }
 
-bool ThJiewuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const {
+bool ThJiewuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
     return targets.isEmpty() && !to_select->isNude() && Self->inMyAttackRange(to_select);
 }
 
-void ThJiewuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const {
+void ThJiewuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
     ServerPlayer *target = targets.first();
     int card_id = room->askForCardChosen(source, target, "he", "thjiewu");
     room->obtainCard(source, card_id, false);
     Slash *slash = new Slash(NoSuit, 0);
     slash->setSkillName("_thjiewu");
     if (target->canSlash(source, slash, false)) {
-        source->addQinggangTag(slash);
         CardUseStruct use;
         use.card = slash;
         use.from = target;
@@ -132,19 +134,49 @@ void ThJiewuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
         delete slash;
 }
 
-class ThJiewu: public ZeroCardViewAsSkill {
+class ThJiewu : public ZeroCardViewAsSkill
+{
 public:
-    ThJiewu(): ZeroCardViewAsSkill("thjiewu") {
+    ThJiewu() : ZeroCardViewAsSkill("thjiewu")
+    {
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const {
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
         return !player->hasUsed("ThJiewuCard");
     }
 
-    virtual const Card *viewAs() const {
+    virtual const Card *viewAs() const
+    {
         return new ThJiewuCard;
     }
 };
+
+class ThJiewuTrigger : public TriggerSkill
+{
+public:
+    ThJiewuTrigger() : TriggerSkill("#thjiewu")
+    {
+        events << TargetSpecified;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (player && player->isAlive() && use.card->isKindOf("Slash") && use.card->getSkillName(false) == "_thjiewu")
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        room->sendCompulsoryTriggerLog(player, "thjiewu");
+        CardUseStruct use = data.value<CardUseStruct>();
+        foreach (ServerPlayer *p, use.to.toSet())
+            p->addQinggangTag(use.card);
+        return false;
+    }
+};
+
 
 class ThGenxing: public TriggerSkill {
 public:
@@ -2498,7 +2530,9 @@ TouhouHanaPackage::TouhouHanaPackage()
 
     General *hana002 = new General(this, "hana002", "hana");
     hana002->addSkill(new ThJiewu);
+    hana002->addSkill(new ThJiewuTrigger);
     hana002->addSkill(new SlashNoDistanceLimitSkill("thjiewu"));
+    related_skills.insertMulti("thjiewu", "#thjiewu");
     related_skills.insertMulti("thjiewu", "#thjiewu-slash-ndl");
     hana002->addSkill(new ThGenxing);
     hana002->addRelateSkill("thmopao");

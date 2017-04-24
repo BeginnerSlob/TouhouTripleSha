@@ -3164,12 +3164,14 @@ public:
     }
 };
 
-IkXiaowuCard::IkXiaowuCard() {
+IkXiaowuCard::IkXiaowuCard()
+{
     target_fixed = true;
     will_throw = false;
 }
 
-const Card *IkXiaowuCard::validate(CardUseStruct &card_use) const{
+const Card *IkXiaowuCard::validate(CardUseStruct &card_use) const
+{
     const Card *card = Sanguosha->getCard(getEffectiveId());
     QString cardname;
     if(card->isRed())
@@ -3184,14 +3186,17 @@ const Card *IkXiaowuCard::validate(CardUseStruct &card_use) const{
     return newcard;
 }
 
-class IkXiaowuViewAsSkill: public OneCardViewAsSkill {
+class IkXiaowuViewAsSkill: public OneCardViewAsSkill
+{
 public:
-    IkXiaowuViewAsSkill(): OneCardViewAsSkill("ikxiaowu") {
+    IkXiaowuViewAsSkill(): OneCardViewAsSkill("ikxiaowu")
+    {
         filter_pattern = ".|diamond#^TrickCard|black";
         response_or_use = true;
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const {
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
         if (player->hasUsed("IkXiaowuCard")) return false;
         bool can_le = true, can_bing = true;
         if (!player->containsTrick("indulgence")) {
@@ -3213,7 +3218,8 @@ public:
         return can_le || can_bing;
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const {
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
         QString cardname;
         if(originalCard->isRed())
             cardname = "indulgence";
@@ -3231,14 +3237,17 @@ public:
     }
 };
 
-class IkXiaowu: public TriggerSkill {
+class IkXiaowu : public TriggerSkill
+{
 public:
-    IkXiaowu(): TriggerSkill("ikxiaowu") {
+    IkXiaowu() : TriggerSkill("ikxiaowu")
+    {
         events << EventPhaseChanging << Death;
         view_as_skill = new IkXiaowuViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
         if (player != NULL && player->tag["IkXiaowuTarget"].value<ServerPlayer *>() != NULL) {
             if (triggerEvent == EventPhaseChanging) {
                 PhaseChangeStruct change = data.value<PhaseChangeStruct>();
@@ -3265,21 +3274,35 @@ public:
     }
 };
 
-class IkXiaowuSlash: public TriggerSkill {
+class IkXiaowuSlash: public TriggerSkill
+{
 public:
-    IkXiaowuSlash(): TriggerSkill("#ikxiaowu") {
-        events << CardFinished;
+    IkXiaowuSlash(): TriggerSkill("#ikxiaowu")
+    {
+        events << CardFinished << TargetSpecified;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer* &) const {
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
         CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->getSkillName(false) == "ikxiaowu")
+        if (triggerEvent == TargetSpecified) {
+            if (player && player->isAlive() && use.card->isKindOf("Slash") && use.card->getSkillName(false) == "_ikxiaowu")
+                return QStringList(objectName());
+        } else if (use.card->getSkillName(false) == "ikxiaowu")
             return QStringList(objectName());
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (triggerEvent == TargetSpecified) {
+            room->sendCompulsoryTriggerLog(player, "ikxiaowu");
+            CardUseStruct use = data.value<CardUseStruct>();
+            foreach (ServerPlayer *p, use.to.toSet())
+                p->addQinggangTag(use.card);
+            return false;
+        }
         player->drawCards(1);
 
         ServerPlayer *victim = room->askForPlayerChosen(player, room->getOtherPlayers(player), "ikxiaowu");
@@ -3292,7 +3315,6 @@ public:
             use.card = slash;
             use.from = player;
             use.to << victim;
-            victim->addQinggangTag(slash);
             room->useCard(use, false);
         } else
             delete slash;

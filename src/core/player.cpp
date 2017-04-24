@@ -1158,12 +1158,12 @@ void Player::addQinggangTag(const Card *card) {
 void Player::removeQinggangTag(const Card *card) {
     QStringList qinggang = this->tag["Qinggang"].toStringList();
     if (!qinggang.isEmpty()) {
-        qinggang.removeOne(card->toString());
+        qinggang.removeAll(card->toString());
         this->tag["Qinggang"] = qinggang;
     }
     QStringList zhenyao = this->tag["RhZhenyao"].toStringList();
     if (!zhenyao.isEmpty()) {
-        zhenyao.removeOne(card->toString());
+        zhenyao.removeAll(card->toString());
         this->tag["RhZhenyao"] = zhenyao;
     }
 }
