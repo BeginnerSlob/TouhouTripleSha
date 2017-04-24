@@ -859,7 +859,8 @@ public:
         } else if (e == CardsMoveOneTime) {
             CardsMoveOneTimeStruct move = d.value<CardsMoveOneTimeStruct>();
             if (move.from && move.from->isAlive() && move.from == p
-                    && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
+                    && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD
+                    && move.to_place == Player::DiscardPile) {
                 for (int i = 0; i < move.card_ids.length(); ++i) {
                     if (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip) {
                         const Card *c = Sanguosha->getCard(move.card_ids[i]);
