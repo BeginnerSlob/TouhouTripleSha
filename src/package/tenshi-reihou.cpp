@@ -3812,6 +3812,11 @@ public:
         card->addSubcard(originalCard);
         return card;
     }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
+    {
+        return pattern.contains("peach");
+    }
 };
 
 RhXianmingCard::RhXianmingCard()
@@ -3862,7 +3867,7 @@ public:
                 if (!player->isKongcheng())
                     skill_list.insert(player, QStringList(objectName()));
             }
-        } else if (triggerEvent == TargetSpecified) {
+        } else if (triggerEvent == TargetSpecified && player->getPhase() == Player::Play) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("Slash")) {
                 foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
@@ -4434,7 +4439,7 @@ public:
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
-    /*General *reihou001 = new General(this, "reihou001", "rei", 4, true, true);
+    General *reihou001 = new General(this, "reihou001", "rei", 4, true, true);
     reihou001->addSkill(new RhDuanlong);
     reihou001->addSkill(new FakeMoveSkill("rhduanlong"));
     related_skills.insertMulti("rhduanlong", "#rhduanlong-fake-move");
@@ -4625,7 +4630,7 @@ TenshiReihouPackage::TenshiReihouPackage()
     General *reihou048 = new General(this, "reihou048", "rei", 4, true, true);
     reihou048->addSkill(new RhZhangchi);
     reihou048->addSkill(new RhZhangchiProhibit);
-    related_skills.insertMulti("rhzhangchi", "#rhzhangchi");*/
+    related_skills.insertMulti("rhzhangchi", "#rhzhangchi");
 
     General *reihou049 = new General(this, "reihou049", "rei", 4, true, true);
     reihou049->addSkill(new RhQiaozou);
