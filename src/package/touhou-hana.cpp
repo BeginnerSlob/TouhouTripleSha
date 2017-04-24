@@ -593,9 +593,11 @@ public:
     }
 };
 
-class ThTingwu: public TriggerSkill {
+class ThTingwu: public TriggerSkill
+{
 public:
-    ThTingwu(): TriggerSkill("thtingwu") {
+    ThTingwu(): TriggerSkill("thtingwu")
+    {
         events << DamageComplete << EventPhaseChanging;
     }
 
@@ -635,9 +637,10 @@ public:
         judge.who = ask_who;
         room->judge(judge);
 
-        if (judge.isGood()) {
+        if (judge.isGood() && player->isAlive() && !player->isRemoved()) {
             QList<ServerPlayer *> targets;
-            targets << room->findPlayer(player->getLastAlive()->objectName()) << room->findPlayer(player->getNextAlive()->objectName());
+            targets << room->findPlayer(player->getLastAlive(1, false)->objectName())
+                    << room->findPlayer(player->getNextAlive(1, false)->objectName());
             if (!targets.isEmpty()) {
                 ServerPlayer *target = room->askForPlayerChosen(ask_who, targets, objectName());
                 room->damage(DamageStruct(objectName(), ask_who, target, 1, DamageStruct::Thunder));
