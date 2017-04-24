@@ -638,7 +638,7 @@ public:
                 room->sendLog(log);
 
                 room->setCardFlag(use.card, "rhliufu");
-                use.card->tag["rhliufu"] = QVariant::fromValue(player);
+                room->setTag("rhliufu_" + use.card->toString(), QVariant::fromValue(player));
             }
             if (!choices.contains("cancel"))
                 choices << "cancel";
@@ -675,8 +675,8 @@ public:
     {
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         const Card *card = move.reason.m_extraData.value<const Card *>();
-        ServerPlayer *player = card->tag["rhliufu"].value<ServerPlayer *>();
-        card->tag.remove("rhliufu");
+        ServerPlayer *player = room->getTag("rhliufu_" + card->toString()).value<ServerPlayer *>();
+        room->removeTag("rhliufu_" + card->toString());
         room->setCardFlag(card, "-rhliufu");
         room->sendCompulsoryTriggerLog(player, "rhliufu");
         QList<int> ids;
