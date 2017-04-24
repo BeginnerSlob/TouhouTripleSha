@@ -1225,6 +1225,14 @@ void ServerPlayer::exchangeFreelyFromPrivatePile(const QString &skill_name, cons
     delete dummy;
 }
 
+void ServerPlayer::updatePile(const QString &pile_name, QList<int> remove, QList<int> append)
+{
+    foreach (int id, remove)
+        piles[pile_name].removeOne(id);
+    foreach (int id, append)
+        piles[pile_name].append(id);
+}
+
 #include "gamerule.h"
 void ServerPlayer::gainAnExtraTurn() {
     QStringList extraTurnList;
