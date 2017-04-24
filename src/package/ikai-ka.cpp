@@ -1065,14 +1065,17 @@ public:
     }
 };
 
-class IkQizhong: public TriggerSkill {
+class IkQizhong: public TriggerSkill
+{
 public:
-    IkQizhong(): TriggerSkill("ikqizhong") {
-        events << CardUsed << EventPhaseChanging << PreCardUsed;
+    IkQizhong(): TriggerSkill("ikqizhong")
+    {
+        events << CardUsed << EventPhaseChanging << PreCardUsed << CardResponded << PreCardResponded;
         frequency = Frequent;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
         if (triggerEvent == EventPhaseChanging)
             player->tag.remove("IkQizhongCard");
         else if (triggerEvent == PreCardUsed) {
@@ -1083,15 +1086,33 @@ public:
                     room->setCardFlag(this_card, "IkQizhongInvoke");
                 player->tag["IkQizhongCard"] = QVariant::fromValue(this_card);
             }
+        } else if (triggerEvent == PreCardResponded) {
+            CardResponseStruct resp = data.value<CardResponseStruct>();
+            if (resp.m_isUse) {
+                const Card *this_card = resp.m_card;
+                if (this_card && this_card->getTypeId() != Card::TypeSkill) {
+                    const Card *last_card = player->tag["IkQizhongCard"].value<const Card *>();
+                    if (last_card && !this_card->sameColorWith(last_card))
+                        room->setCardFlag(this_card, "IkQizhongInvoke");
+                    player->tag["IkQizhongCard"] = QVariant::fromValue(this_card);
+                }
+            }
         } else if (triggerEvent == CardUsed && player->getPhase() == Player::Play && TriggerSkill::triggerable(player)) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->hasFlag("IkQizhongInvoke"))
                 return QStringList(objectName());
+        } else if (triggerEvent == CardResponded && player->getPhase() == Player::Play && TriggerSkill::triggerable(player)) {
+            CardResponseStruct resp = data.value<CardResponseStruct>();
+            if (resp.m_isUse) {
+                if (resp.m_card->hasFlag("IkQizhongInvoke"))
+                    return QStringList(objectName());
+            }
         }
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -1099,8 +1120,20 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        CardUseStruct use = data.value<CardUseStruct>();
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        const Card *use_card = NULL;
+        if (triggerEvent == CardResponded) {
+            CardResponseStruct resp = data.value<CardResponseStruct>();
+            if (resp.m_isUse)
+                use_card = resp.m_card;
+        } else if (triggerEvent == CardResponded) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            use_card = use.card;
+        }
+        Q_ASSERT(use_card);
+        if (!use_card)
+            return false;
         QList<int> ids = room->getNCards(1, false);
         CardsMoveStruct move(ids, player, Player::PlaceTable,
                              CardMoveReason(CardMoveReason::S_REASON_TURNOVER, player->objectName(), objectName(), QString()));
@@ -1108,13 +1141,13 @@ public:
 
         int id = ids.first();
         const Card *card = Sanguosha->getCard(id);
-        if (card->getColor() != use.card->getColor()) {
+        if (card->getColor() != use_card->getColor()) {
             CardMoveReason reason(CardMoveReason::S_REASON_DRAW, player->objectName(), objectName(), QString());
             room->obtainCard(player, card, reason);
         } else {
             const Card *card_ex = NULL;
             if (!player->isNude())
-                card_ex = room->askForCard(player, QString("^%1|.|.|hand").arg(use.card->getEffectiveId()),
+                card_ex = room->askForCard(player, QString("^%1|.|.|hand").arg(use_card->getEffectiveId()),
                                            "@ikqizhong-exchange:::" + card->objectName(),
                                            QVariant::fromValue(card), Card::MethodNone);
             if (card_ex) {
