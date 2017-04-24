@@ -2745,7 +2745,7 @@ void RoomScene::onSkillActivated() {
         cancel_button->setEnabled(true);
 
         const Card *card = dashboard->pendingCard();
-        if (card && card->targetFixed() && card->isAvailable(Self)) {
+        if (card && card->targetFixed() && card->isAvailable(Self) && card->getSkillName() != "rhruyi") {
             useSelectedCard();
         } else if (skill->inherits("OneCardViewAsSkill") && !skill->getDialog() && Config.EnableIntellectualSelection)
             dashboard->selectOnlyCard(ClientInstance->getStatus() == Client::Playing);
