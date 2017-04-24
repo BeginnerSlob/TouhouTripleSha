@@ -62,7 +62,7 @@ return {
 	["#tsuki005"] = "知识与历史的半兽",
 	["tsuki005"] = "上白泽慧音",--月 - 空 - 3血
 	["designer:tsuki005"] = "梁山丶呼延灼",
-	["illustrator:tsuki005"] = "十誤一会",
+	["illustrator:tsuki005"] = "にしもん",
 	["cv:tsuki005"] = "暂无",
 	["thshouye"] = "授业",
 	[":thshouye"] = "专属技。摸牌阶段摸牌时，你可以少摸一张牌并指定一名其他角色，若如此做，此回合结束时，该角色须进行一个额外的摸牌阶段。",
@@ -131,7 +131,7 @@ return {
 	["tsuki011"] = "米斯蒂娅•萝蕾莱",--月 - 空 - 3血
 	["&tsuki011"] = "米斯蒂娅",
 	["designer:tsuki011"] = "殇の腥",
-	["illustrator:tsuki011"] = "水佾",
+	["illustrator:tsuki011"] = "飛鳥士郎",
 	["cv:tsuki011"] = "暂无",
 	["thxiaoyong"] = "宵咏",
 	[":thxiaoyong"] = "每当你的体力发生变化时，你可以进行一次判定，若不为红桃，你摸一张牌。",
@@ -206,7 +206,7 @@ return {
 	["#tsuki017"] = "海与山的境界",
 	["tsuki017"] = "绵月丰姬",--月 - 空 - 3血
 	["designer:tsuki017"] = "鼓腚刀",
-	["illustrator:tsuki017"] = "叶山",
+	["illustrator:tsuki017"] = "時雨",
 	["cv:tsuki017"] = "暂无",
 	["thtianque"] = "天阙",
 	[":thtianque"] = "每当你于出牌阶段使用一张牌时，若与你此阶段已使用的牌类别均不同，你摸一张牌。",

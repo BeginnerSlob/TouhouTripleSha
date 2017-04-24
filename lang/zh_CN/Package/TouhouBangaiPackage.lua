@@ -39,7 +39,7 @@ return {
 	["#bangai004"] = "星耀的使役魔",
 	["bangai004"] = "小恶魔",--月 - 幻 - 3血
 	["designer:bangai004"] = "TH3EE",
-	["illustrator:bangai004"] = "むぎちゃ",
+	["illustrator:bangai004"] = "夏希",
 	["cv:bangai004"] = "暂无",
 	["thzhongjie"] = "忠节",
 	[":thzhongjie"] = "每当你受到一次伤害后，你可以展示一名角色的所有手牌，每少一种类别的牌，其摸一张牌。",
@@ -123,7 +123,7 @@ return {
 	["#bangai011"] = "神话的黄昏",
 	["bangai011"] = "神绮",--雪 - 空 - 3血
 	["designer:bangai011"] = "沸治·克里夫",
-	["illustrator:bangai011"] = "湿布満",
+	["illustrator:bangai011"] = "会帆",
 	["cv:bangai011"] = "暂无",
 	["thhuilun"] = "辉轮",
 	[":thhuilun"] = "锁定技。你的黑色【杀】均视为【桃】；你的红色【桃】均视为【杀】。",
