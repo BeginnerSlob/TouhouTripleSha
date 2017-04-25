@@ -53,6 +53,7 @@ return {
 	["#rhliufu"] = "流払（获得）",
 	["rhliufu:null"] = "令此牌对你无效",
 	["rhliufu:give"] = "在此牌结算后将之交给一名角色",
+	["@rhliufu"] = "请将此牌交给一名角色",
 	["#RhLiufu1"] = "%from 选择了第 %arg 项，【%arg2】对其无效",
 	["#RhLiufu2"] = "%from 选择了第 %arg 项，其可在此牌结算结束后将之交给一名角色",
 
