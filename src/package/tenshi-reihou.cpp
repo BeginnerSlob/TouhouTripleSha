@@ -3039,7 +3039,7 @@ bool RhYoushengCard::targetFilter(const QList<const Player *> &targets, const Pl
                 delete trick;
                 return false;
             }
-            bool can_use = trick->targetFilter(targets, to_select, Self);
+            bool can_use = trick->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, trick);
             delete trick;
             if (can_use)
                 return true;
