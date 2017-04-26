@@ -102,7 +102,7 @@ void MyPixmapItem::initFaceBoardPos() {
 void MyPixmapItem::initEasyTextPos() {
     const int start_x = 5, start_y = 5;
     int y;
-    int icon_w = 210, icon_h = 12;
+    int icon_w = 303, icon_h = 12;
     int y_offset = 10;
 
     // only 10 text QList <QRect> easytextPos;
