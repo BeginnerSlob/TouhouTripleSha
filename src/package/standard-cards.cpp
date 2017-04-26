@@ -482,6 +482,8 @@ bool Peach::targetFilter(const QList<const Player *> &targets, const Player *to_
 
 bool Peach::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
 {
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
+        return BasicCard::targetsFeasible(targets, Self);
     if (Self && Self->hasSkill("rhchuilu")) {
         return !targets.isEmpty() || Self->isWounded();
     }
