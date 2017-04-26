@@ -2228,6 +2228,7 @@ void RhYinrenCard::onEffect(const CardEffectStruct &effect) const
                           QString());
     Room *room = effect.from->getRoom();
     room->obtainCard(effect.to, this, reason, false);
+    room->addPlayerMark(effect.from, "rhyinren");
 
     Slash *slash = new Slash(NoSuit, 0);
     slash->setSkillName("_rhyinren");
@@ -2280,7 +2281,7 @@ public:
                 room->setPlayerMark(player, "rhyinren", 0);
         } else {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("RhYinrenCard") && player->getMark("rhyinren") == 1)
+            if (use.card->isKindOf("RhYinrenCard") && player->getMark("rhyinren") == 2)
                 return QStringList(objectName());
         }
         return QStringList();
