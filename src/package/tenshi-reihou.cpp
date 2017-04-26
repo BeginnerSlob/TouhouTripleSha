@@ -913,10 +913,13 @@ public:
         } else if (triggerEvent == FinishJudge) {
             if (player->hasFlag("rhzhenyao")) {
                 player->setFlags("-rhzhenyao");
-                CardUseStruct use = player->tag["RhZhenyaoUse"].value<CardUseStruct>();
-                player->tag.remove("RhZhenyaoUse");
-                player->addZhenyaoTag(use.card);
-                room->addPlayerMark(player, "@repression");
+                JudgeStruct *judge = data.value<JudgeStruct *>();
+                if (judge->card->isBlack()) {
+                    CardUseStruct use = player->tag["RhZhenyaoUse"].value<CardUseStruct>();
+                    player->tag.remove("RhZhenyaoUse");
+                    player->addZhenyaoTag(use.card);
+                    room->addPlayerMark(player, "@repression");
+                }
             }
         }
         return QStringList();
@@ -2765,7 +2768,9 @@ public:
         TriggerList skill_list;
         if (player->isAlive()) {
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
-                if (p->canDiscard(player, "h"))
+                if (p == player)
+                    continue;
+                if (p->canDiscard(player, "h") && !p->inMyAttackRange(player))
                     skill_list.insert(p, QStringList(objectName()));
             }
         }
@@ -3790,7 +3795,7 @@ public:
                 foreach (const Skill *skill, reihou->getVisibleSkillList())
                     skills << skill->objectName();
             }
-            room->handleAcquireDetachSkills(player, skills, true, true);
+            room->handleAcquireDetachSkills(target, skills, true, true);
         }
         return true;
     }
