@@ -4533,7 +4533,7 @@ public:
                 }
             }
         }
-        return QStringList(objectName());
+        return QStringList();
     }
 };
 
