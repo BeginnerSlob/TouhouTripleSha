@@ -87,6 +87,7 @@ SOURCES += \
     src/package/ikai-sui.cpp \
     src/package/ling.cpp \
     src/package/maneuvering.cpp \
+    src/package/fantasy.cpp \
     src/package/nostalgia.cpp \
     src/package/sp.cpp \
     src/package/special1v1.cpp \
@@ -199,6 +200,7 @@ HEADERS += \
     src/package/ikai-sui.h \
     src/package/ling.h \
     src/package/maneuvering.h \
+    src/package/fantasy.h \
     src/package/nostalgia.h \
     src/package/sp.h \
     src/package/special1v1.h \

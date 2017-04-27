@@ -8,6 +8,7 @@
 #include "maneuvering.h"
 #include "client.h"
 #include "touhou-hana.h"
+#include "fantasy.h"
 
 IkZhijuCard::IkZhijuCard() {
 }

@@ -691,7 +691,7 @@ public:
                 room->acquireSkill(chen, "cxxuqu");
 
                 ServerPlayer *lingmeng = room->findPlayer("yuki001");
-                room->installEquip(lingmeng, "chitu");
+                room->installEquip(lingmeng, "chanayakongxue");
                 room->acquireSkill(lingmeng, "cxlinli");
 
                 ServerPlayer *molisha = room->findPlayer("hana002");

@@ -30,8 +30,8 @@ config = {
 
 	package_names = {
 		"StandardCard",
-		"StandardExCard",
 		"Maneuvering",
+		"Fantasy",
 		--"GreenHandCard",
 		--"New3v3Card",
 		--"New3v3_2013Card",

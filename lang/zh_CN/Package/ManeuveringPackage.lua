@@ -48,6 +48,6 @@ return {
 	[":supply_shortage"] = "延时锦囊牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：你与之距离为1的一名其他角色<br /><b>效果</b>：将此牌面朝上置于目标角色的判定区内。目标角色的判定阶段，该角色进行一次判定，若结果不为草花，目标角色跳过此回合的摸牌阶段。使用结算结束后，将此牌置入弃牌堆。",
 	["illustrator:supply_shortage"] = "昼間行燈",
 
-	["hualiu"] = "天磐舟",
-	["illustrator:hualiu"] = "寒极",
+	["tianpanzhou"] = "天磐舟",
+	["illustrator:tianpanzhou"] = "寒极",
 }

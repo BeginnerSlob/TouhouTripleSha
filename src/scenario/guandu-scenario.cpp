@@ -166,18 +166,18 @@ public:
         case GameStart: {
                 player = room->getLord();
                 room->installEquip(player, "renwang_shield");
-                room->installEquip(player, "hualiu");
+                room->installEquip(player, "tianpanzhou");
 
                 ServerPlayer *caocao = room->findPlayer("caocao");
                 room->installEquip(caocao, "qinggang_sword");
-                room->installEquip(caocao, "zhuahuangfeidian");
+                room->installEquip(caocao, "kunshentianye");
 
                 ServerPlayer *liubei = room->findPlayer("liubei");
                 room->installEquip(liubei, "double_sword");
 
                 ServerPlayer *guanyu = room->findPlayer("guanyu");
                 room->installEquip(guanyu, "blade");
-                room->installEquip(guanyu, "chitu");
+                room->installEquip(guanyu, "chanayakongxue");
                 room->acquireSkill(guanyu, "zhanshuangxiong");
 
 
