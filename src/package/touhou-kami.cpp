@@ -731,8 +731,10 @@ public:
                 return QStringList(objectName());
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive && player->hasFlag("thpanghunInvoke")) {
-                room->setPlayerFlag(player, "-thpanghunInvoke");
+            if (change.to == Player::NotActive && player->getMark("@stitch") > 0) {
+                room->setPlayerMark(player, "@stitch", 0);
+                foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                    room->removeFixedDistance(player, p, 1);
                 room->filterCards(player, player->getCards("he"), true);
                 foreach (ServerPlayer *p, room->getOtherPlayers(player))
                     room->removeFixedDistance(player, p, 1);
@@ -751,7 +753,9 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        room->setPlayerFlag(player, "thpanghunInvoke");
+        room->addPlayerMark(player, "@stitch");
+        foreach (ServerPlayer *p, room->getOtherPlayers(player))
+            room->setFixedDistance(player, p, 1);
         room->filterCards(player, player->getCards("he"), false);
         QList<ServerPlayer *> players = room->getOtherPlayers(player);
         foreach (ServerPlayer *p, players)
@@ -768,7 +772,7 @@ public:
     virtual bool viewFilter(const Card *to_select) const{
         Room *room = Sanguosha->currentRoom();
         ServerPlayer *owner = room->getCardOwner(to_select->getEffectiveId());
-        if (owner && owner->hasFlag("thpanghunInvoke"))
+        if (owner && owner->getMark("@stitch") > 0)
             return to_select->isKindOf("Slash");
         return false;
     }
@@ -831,7 +835,7 @@ public:
             return skill_list;
         }
         if (triggerEvent == BeforeCardsMove && TriggerSkill::triggerable(player)) {
-            if (!player->hasFlag("thpanghunInvoke") || !player->hasFlag("thjingwuInvoke") || player->hasFlag("thlunyuInvoke"))
+            if (player->getMark("@stitch") == 0 || !player->hasFlag("thjingwuInvoke") || player->hasFlag("thlunyuInvoke"))
                 return skill_list;
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.card_ids.isEmpty() || move.to_place != Player::DiscardPile)

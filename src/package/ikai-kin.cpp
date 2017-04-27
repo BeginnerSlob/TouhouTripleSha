@@ -6160,14 +6160,31 @@ public:
     }
 };
 
-class IkRongxin: public TriggerSkill {
+class IkRongxin : public TriggerSkill
+{
 public:
-    IkRongxin(): TriggerSkill("ikrongxin") {
-        events << EventPhaseStart;
+    IkRongxin() : TriggerSkill("ikrongxin")
+    {
+        events << EventPhaseStart << EventPhaseChanging;
     }
 
-    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
         TriggerList skill_list;
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                if (player->getMark(objectName()) > 0) {
+                    room->setPlayerMark(player, objectName(), 0);
+                    foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                        while (player->getMark("ikrongxin_" + p->objectName()) > 0) {
+                            room->removePlayerMark(player, "ikrongxin_" + p->objectName());
+                            room->removeFixedDistance(player, p, 1);
+                        }
+                    }
+                }
+            }
+            return skill_list;
+        }
         if (player->getPhase() != Player::RoundStart || player->isKongcheng())
             return skill_list;
         foreach (ServerPlayer *fuhuanghou, room->findPlayersBySkillName(objectName())) {
@@ -6178,7 +6195,8 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *fuhuanghou) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *fuhuanghou) const
+    {
         if (fuhuanghou->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -6186,11 +6204,15 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *fuhuanghou) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *fuhuanghou) const
+    {
         if (fuhuanghou->pindian(player, objectName(), NULL)) {
             player->skip(Player::Play);
-        } else
-            room->setPlayerFlag(player, "ikrongxin_" + fuhuanghou->objectName());
+        } else {
+            room->setFixedDistance(player, fuhuanghou, 1);
+            room->addPlayerMark(player, objectName());
+            room->addPlayerMark(player, "ikrongxin_" + fuhuanghou->objectName());
+        }
         return false;
     }
 };
