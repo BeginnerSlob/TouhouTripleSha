@@ -5,6 +5,7 @@
 #include "engine.h"
 #include "client.h"
 #include "maneuvering.h"
+#include "fantasy.h"
 
 RhDuanlongCard::RhDuanlongCard()
 {

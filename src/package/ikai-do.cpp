@@ -2,10 +2,10 @@
 
 #include "general.h"
 #include "skill.h"
-#include "standard.h"
 #include "engine.h"
 #include "client.h"
 #include "maneuvering.h"
+#include "fantasy.h"
 
 IkShenaiCard::IkShenaiCard() {
     target_fixed = true;

@@ -7,6 +7,7 @@
 #include "client.h"
 #include "settings.h"
 #include "ai.h"
+#include "fantasy.h"
 
 class IkLiegong : public TriggerSkill
 {

@@ -5,6 +5,7 @@
 #include "client.h"
 #include "engine.h"
 #include "maneuvering.h"
+#include "fantasy.h"
 
 ThChayinCard::ThChayinCard() {
 }
