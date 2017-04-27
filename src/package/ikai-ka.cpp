@@ -891,7 +891,7 @@ public:
 class IkElu: public TriggerSkill {
 public:
     IkElu(): TriggerSkill("ikelu") {
-        events << PreCardUsed << PreDamageDone << EventPhaseStart << CardFinished << ChoiceMade;
+        events << PreCardUsed << PreDamageDone << EventPhaseStart << CardFinished << ChoiceMade << EventPhaseChanging;
     }
 
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
@@ -929,7 +929,9 @@ public:
                 ServerPlayer *current = room->getCurrent();
                 if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
                     room->broadcastSkillInvoke(objectName(), 3);
-                    room->setPlayerFlag(current, "ikelu_" + player->objectName());
+                    room->addPlayerMark(current, "ikelu_" + player->objectName());
+                    room->addPlayerMark(current, objectName());
+                    room->setFixedDistance(current, player, 1);
                 }
             }
         } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Play) {
@@ -938,6 +940,18 @@ public:
                     continue;
                 if (owner->canSlash(player, false))
                     skill_list.insert(owner, QStringList(objectName()));
+            }
+        } else if (triggerEvent == EventPhaseChanging && data.value<PhaseChangeStruct>().to == Player::NotActive) {
+            if (player->getMark(objectName()) > 0) {
+                room->setPlayerMark(player, objectName(), 0);
+                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                    if (player->getMark("ikelu_" + p->objectName()) > 0) {
+                        while (player->getMark("ikelu_" + p->objectName()) > 0) {
+                            room->removePlayerMark(player, "ikelu_" + p->objectName());
+                            room->removeFixedDistance(player, p, 1);
+                        }
+                    }
+                }
             }
         }
         return skill_list;
@@ -1236,7 +1250,8 @@ void IkJimuCard::onEffect(const CardEffectStruct &effect) const{
     room->broadcastSkillInvoke("ikjimu", 1);
     room->removePlayerMark(effect.from, "@jimu");
     room->addPlayerMark(effect.from, "@jimuused");
-    effect.to->gainMark("@qinghuo");
+    effect.to->gainMark("@speed");
+    room->setFixedDistance(effect.from, effect.to, 1);
 }
 
 class IkJimuViewAsSkill: public ZeroCardViewAsSkill {
@@ -1268,9 +1283,9 @@ public:
             if (!use.card || !use.card->isBlack() || !use.card->isKindOf("Slash"))
                 return QStringList();
             foreach (ServerPlayer *to, use.to)
-                if (to->getMark("@qinghuo") > 0)
+                if (to->getMark("@speed") > 0)
                     return QStringList(objectName());
-        } else if (triggerEvent == Death && player->getMark("@qinghuo") > 0) {
+        } else if (triggerEvent == Death && player->getMark("@speed") > 0) {
             DeathStruct death = data.value<DeathStruct>();
             if (death.who == player) {
                 ServerPlayer *owner = room->findPlayerBySkillName(objectName());
@@ -1302,7 +1317,7 @@ public:
         if (triggerEvent == CardFinished && target) {
             ServerPlayer *victim = NULL;
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                if (p->getMark("@qinghuo") > 0) {
+                if (p->getMark("@speed") > 0) {
                     victim = p;
                     break;
                 }
@@ -1315,7 +1330,8 @@ public:
             if (!use)
                 player->drawCards(1, objectName());
         } else if (triggerEvent == Death && target) {
-            target->gainMark("@qinghuo");
+            target->gainMark("@speed");
+            room->setFixedDistance(player, target, 1);
         }
         return false;
     }
@@ -1336,7 +1352,7 @@ public:
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.card->isKindOf("Slash") || use.card->isKindOf("Snatch") || use.card->isKindOf("SupplyShortage")) {
-            if (use.from->hasSkill("ikjimu") && use.to.length() == 1 && use.to.first()->getMark("@qinghuo") > 0)
+            if (use.from->hasSkill("ikjimu") && use.to.length() == 1 && use.to.first()->getMark("@speed") > 0)
                 room->broadcastSkillInvoke("ikjimu", qrand() % 2 + 2);
         }
         return false;

@@ -3114,7 +3114,7 @@ bool IkFenxunCard::targetFilter(const QList<const Player *> &targets, const Play
 void IkFenxunCard::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
     effect.from->tag["IkFenxunTarget"] = QVariant::fromValue(effect.to);
-    room->setPlayerFlag(effect.to, "ikfenxun_target");
+    room->setFixedDistance(effect.from, effect.to, 1);
     if (Sanguosha->getCard(subcards.first())->getTypeId() == TypeBasic)
         effect.from->setFlags("IkFenxunSlash");
 }
@@ -3159,9 +3159,8 @@ public:
             }
             ServerPlayer *target = dingfeng->tag["IkFenxunTarget"].value<ServerPlayer *>();
             dingfeng->tag.remove("IkFenxunTarget");
-            if (target) {
-                room->setPlayerFlag(target, "-ikfenxun_target");
-            }
+            if (target)
+                room->removeFixedDistance(dingfeng, target, 1);
         } else {
             if (triggerEvent == PreCardUsed) {
                 CardUseStruct use = data.value<CardUseStruct>();
@@ -3209,29 +3208,6 @@ public:
     virtual int getCorrect(const Player *from, const Player *to) const {
         int n = 0;
         bool invoke = false, including_horse = false;
-        if (from->hasSkill("ikfenxun") && to->hasFlag("ikfenxun_target")) {
-            invoke = true;
-            including_horse = true;
-        }
-        if (from->hasFlag("ikrongxin_" + to->objectName())) {
-            invoke = true;
-            including_horse = true;
-        }
-        if (from->hasSkill("ikjimu") && to->getMark("@qinghuo") > 0) {
-            invoke = true;
-            including_horse = true;
-        }
-        if ((from->hasSkill("thguimen") && to->isChained())
-            || (to->hasSkill("thguimen") && from->isChained()))
-            invoke = true;
-        if (from->hasFlag("ikelu_" + to->objectName())) {
-            invoke = true;
-            including_horse = true;
-        }
-        if (from->hasSkill("ikhuisuo") && to->getHp() < from->getHp()) {
-            invoke = true;
-            including_horse = true;
-        }
         if (from->hasSkill("ikyixiang") && to->hasFlag("ikyixiang")) {
             invoke = true;
             including_horse = true;
@@ -4520,16 +4496,26 @@ public:
     {
         if (triggerEvent == EventPhaseChanging) {
             if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
-                foreach (ServerPlayer *p, room->getAlivePlayers())
-                    room->setPlayerFlag(p, "-ikyixiang");
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    if (!p->tag["IkYixiangTargets"].toStringList().isEmpty()) {
+                        QStringList targets = p->tag["IkYixiangTargets"].toStringList();
+                        p->tag.remove("IkYixiangTargets");
+                        foreach (QString target, targets)
+                            room->removeFixedDistance(p, room->findPlayer(target), 1);
+                    }
+                }
             }
         } else {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (player == move.from) {
+            if (TriggerSkill::triggerable(player) && player == move.from) {
                 if (move.from_places.contains(Player::PlaceHand) && move.is_last_handcard) {
                     ServerPlayer *current = room->getCurrent();
-                    if (current && current->isAlive() && current->getPhase() != Player::NotActive)
-                        room->setPlayerFlag((ServerPlayer *)move.from, "ikyixiang");
+                    if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
+                        QStringList targets = player->tag["IkYixiangTargets"].toStringList();
+                        targets << move.from->objectName();
+                        player->tag["IkYixiangTargets"] = QVariant::fromValue(targets);
+                        room->setFixedDistance(player, move.from, 1);
+                    }
                 }
             }
         }
