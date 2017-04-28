@@ -3285,9 +3285,8 @@ RhYizhiCard::RhYizhiCard()
 
 bool RhYizhiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const
 {
-    if (targets.length() >= 2) {
+    if (targets.length() >= 2)
         return false;
-    }
     if (targets.isEmpty())
         return to_select->hasEquip();
     if (!targets.first()->hasEquip())
@@ -3316,7 +3315,7 @@ bool RhYizhiCard::targetsFeasible(const QList<const Player *> &targets, const Pl
     return false;
 }
 
-void RhYizhiCard::onUse(Room *room, const CardUseStruct &card_use)
+void RhYizhiCard::onUse(Room *room, const CardUseStruct &card_use) const
 {
     QList<ServerPlayer *> targets = card_use.to;
     ServerPlayer *source = card_use.from;
