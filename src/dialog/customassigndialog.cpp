@@ -1117,7 +1117,8 @@ void CustomAssignDialog::checkEndedByPileBox(bool toggled) {
 
 void CustomAssignDialog::load() {
     QString filename;
-    if (sender()->objectName() == "default_load") filename = "etc/customScenes/custom_scenario.txt";
+    if (sender()->objectName() == "default_load")
+        filename = "etc/customScenes/custom_scenario.txt";
     else filename = QFileDialog::getOpenFileName(this,
                                                  tr("Open mini scenario settings"),
                                                  "etc/customScenes",
@@ -1157,6 +1158,11 @@ void CustomAssignDialog::load() {
         mark_icons.at(i)->hide();
 
     QTextStream in(&file);
+    if (in.atEnd()) {
+        QMessageBox::warning(this, tr("Warning"), tr("Data is unreadable"));
+        file.close();
+        return;
+    }
     int numPlayer = 0;
     QMap<QString, int> role_index;
     role_index["lord+loyalist"] = 0;
