@@ -559,7 +559,8 @@ void ServerDialog::updateButtonEnablility(QAbstractButton *button) {
 void BanlistDialog::switchTo(int item) {
     this->item = item;
     list = lists.at(item);
-    if (add2nd) add2nd->setVisible((list->objectName() == "Pairs"));
+    if (add2nd)
+        add2nd->setVisible((list->objectName() == "Pairs"));
 }
 
 BanlistDialog::BanlistDialog(QWidget *parent, bool view)
@@ -653,7 +654,8 @@ void BanlistDialog::addGeneral(const QString &name) {
         item->setData(Qt::UserRole, QVariant::fromValue(name));
         list->addItem(item);
     } else if (list->objectName() == "Cards") {
-        if (banned_items["Cards"].contains(name)) return;
+        if (banned_items["Cards"].contains(name))
+            return;
         banned_items["Cards"].append(name);
         QListWidgetItem *item = new QListWidgetItem(name);
         item->setData(Qt::UserRole, QVariant::fromValue(name));
