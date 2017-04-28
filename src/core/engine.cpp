@@ -1012,6 +1012,11 @@ QList<int> Engine::getRandomCards() const{
         QStringList banned_patterns = Config.value("Banlist/Cards").toStringList();
         bool removed = false;
         foreach (QString banned_pattern, banned_patterns) {
+            if (banned_pattern.startsWith("KOF_Only,")) {
+                banned_pattern.mid(9);
+                if (Config.GameMode != "02_1v1")
+                    continue;
+            }
             if (matchExpPattern(banned_pattern, NULL, card)) {
                 removed = true;
                 break;
