@@ -5700,7 +5700,8 @@ public:
     {
         Analeptic *analeptic = new Analeptic(Card::NoSuit, 0);
         analeptic->setSkillName("_ikzhoudu");
-        room->useCard(CardUseStruct(analeptic, player, QList<ServerPlayer *>()), true);
+        if (analeptic->isAvailable(player))
+            room->useCard(CardUseStruct(analeptic, player, QList<ServerPlayer *>()), true);
         if (player->isAlive())
             room->damage(DamageStruct(objectName(), hetaihou, player));
 
