@@ -4024,6 +4024,7 @@ public:
     RhXiaozhangTrigger() : TriggerSkill("#rhxiaozhang")
     {
         events << EventPhaseStart;
+        global = true;
     }
 
     virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
