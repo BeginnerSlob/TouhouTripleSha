@@ -58,6 +58,7 @@ void EquipCard::onUse(Room *room, const CardUseStruct &card_use) const{
     CardUseStruct use = card_use;
     WrappedCard *wrapped = Sanguosha->getWrappedCard(this->getEffectiveId());
     use.card = wrapped;
+    room->setCardFlag(this, "using");
 
     if (use.from->hasFlag("ThChouceUse")) {
         room->setPlayerFlag(use.from, "-ThChouceUse");
@@ -100,6 +101,7 @@ void EquipCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
         CardMoveReason reason(CardMoveReason::S_REASON_USE, source->objectName(), QString(), this->getSkillName(), QString());
         reason.m_extraData = QVariant::fromValue((const Card *)this);
         room->moveCardTo(this, room->getCardOwner(getEffectiveId()), NULL, Player::DiscardPile, reason, true);
+        room->setCardFlag(this, "-using");
     }
     int equipped_id = Card::S_UNKNOWN_CARD_ID;
     ServerPlayer *target = targets.first();
@@ -123,6 +125,7 @@ void EquipCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
     room->sendLog(log);
 
     room->moveCardsAtomic(exchangeMove, true);
+    setFlags("-using");
 }
 
 void EquipCard::onInstall(ServerPlayer *player) const{
