@@ -3046,7 +3046,7 @@ bool RhYoushengCard::targetFilter(const QList<const Player *> &targets, const Pl
             }
             if (trick->isKindOf("Lightning")) {
                 delete trick;
-                return false;
+                continue;
             }
             bool can_use = trick->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, trick);
             delete trick;
