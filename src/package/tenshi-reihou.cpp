@@ -663,7 +663,7 @@ public:
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         const Card *card = move.reason.m_extraData.value<const Card *>();
         if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
-                && card->hasFlag("rhliufu")) {
+                && card && card->hasFlag("rhliufu")) {
             foreach (int id, move.card_ids) {
                 if (card->getSubcards().contains(id) || card->getEffectiveId() == id)
                     return QStringList(objectName());
@@ -677,27 +677,29 @@ public:
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         const Card *card = move.reason.m_extraData.value<const Card *>();
         ServerPlayer *player = room->getTag("rhliufu_" + card->toString()).value<ServerPlayer *>();
-        room->removeTag("rhliufu_" + card->toString());
-        room->setCardFlag(card, "-rhliufu");
-        room->sendCompulsoryTriggerLog(player, "rhliufu");
-        QList<int> ids;
-        for (int i = 0; i < move.card_ids.length(); ++i) {
-            int id = move.card_ids[i];
-            if ((card->getSubcards().contains(id) || card->getEffectiveId() == id)
-                    && move.from_places[i] == Player::PlaceTable && move.to_place == Player::DiscardPile)
-                ids << id;
-        }
-        if (!ids.isEmpty()) {
-            move.removeCardIds(ids);
-            data = QVariant::fromValue(move);
-            ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), "rhliufu", "@rhliufu", false, true);
-            DummyCard dummy(ids);
-            CardMoveReason reason(CardMoveReason::S_REASON_GIVE,
-                                  player->objectName(),
-                                  target->objectName(),
-                                  "rhliufu",
-                                  QString());
-            room->obtainCard(target, &dummy, reason);
+        if (card) {
+            room->removeTag("rhliufu_" + card->toString());
+            room->setCardFlag(card, "-rhliufu");
+            room->sendCompulsoryTriggerLog(player, "rhliufu");
+            QList<int> ids;
+            for (int i = 0; i < move.card_ids.length(); ++i) {
+                int id = move.card_ids[i];
+                if ((card->getSubcards().contains(id) || card->getEffectiveId() == id)
+                        && move.from_places[i] == Player::PlaceTable && move.to_place == Player::DiscardPile)
+                    ids << id;
+            }
+            if (!ids.isEmpty()) {
+                move.removeCardIds(ids);
+                data = QVariant::fromValue(move);
+                ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), "rhliufu", "@rhliufu", false, true);
+                DummyCard dummy(ids);
+                CardMoveReason reason(CardMoveReason::S_REASON_GIVE,
+                                      player->objectName(),
+                                      target->objectName(),
+                                      "rhliufu",
+                                      QString());
+                room->obtainCard(target, &dummy, reason);
+            }
         }
         return false;
     }
