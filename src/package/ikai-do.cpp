@@ -1122,7 +1122,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         player->skip(Player::Draw, true);
-        room->setPlayerMark(player, "ikluoyi", 1);
+        room->setPlayerMark(player, "@nude", 1);
 
         QList<int> ids = room->getNCards(3, false);
         CardsMoveStruct move(ids, player, Player::PlaceTable,
@@ -1163,7 +1163,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *xuchu, QVariant &data, ServerPlayer* &) const{
-        if (!xuchu || xuchu->getMark("ikluoyi") == 0 || xuchu->isDead()) return QStringList();
+        if (!xuchu || xuchu->getMark("@nude") == 0 || xuchu->isDead()) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.chain || damage.transfer) return QStringList();
         const Card *reason = damage.card;
@@ -1195,8 +1195,8 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
-        if (player != NULL && player->isAlive() && player->getPhase() == Player::RoundStart && player->getMark("ikluoyi") > 0)
-            room->setPlayerMark(player, "ikluoyi", 0);
+        if (player != NULL && player->isAlive() && player->getPhase() == Player::RoundStart && player->getMark("@nude") > 0)
+            room->setPlayerMark(player, "@nude", 0);
         return QStringList();
     }
 };

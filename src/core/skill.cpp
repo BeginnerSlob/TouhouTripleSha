@@ -241,7 +241,7 @@ bool OneCardViewAsSkill::viewFilter(const Card *to_select) const{
             if (Self->isJilei(to_select)) return false;
             pat.chop(1);
         } else if (response_or_use && pat.contains("hand")) {
-            pat.replace("hand", "hand,wooden_ox,iklingxun,currency");
+            pat.replace("hand", "hand,wooden_ox,pokemon,currency");
         }
         ExpPattern pattern(pat);
         return pattern.match(Self, to_select);

@@ -1099,7 +1099,7 @@ sgs.ai_view_as.thshijie = function(card, player, card_place)
 	local number = card:getNumberString()
 	local card_id = card:getEffectiveId()
 	if card_place == sgs.Player_PlaceSpecial then
-		if player:getPile("shijiepile"):contains(card_id) then
+		if player:getPile("utensil"):contains(card_id) then
 			return ("nullification:thshijie[%s:%s]=%d"):format(suit, number, card_id)
 		end
 	end
@@ -1114,8 +1114,8 @@ sgs.ai_skill_use["@@thshengzhi"] = function(self, prompt, method)
 		return "."
 	end
 	local card
-	if not self.player:getPile("shijiepile"):isEmpty() then
-		card = self.player:getPile("shijiepile"):first()
+	if not self.player:getPile("utensil"):isEmpty() then
+		card = self.player:getPile("utensil"):first()
 	elseif self.player:canDiscard(self.player, "h") then
 		local cards = sgs.QList2Table(self.player:getHandcards())
 		self:sortByKeepValue(cards)

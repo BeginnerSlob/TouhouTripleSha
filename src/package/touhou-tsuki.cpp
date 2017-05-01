@@ -907,7 +907,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
         ask_who->turnOver();
-        ask_who->gainMark("@shiji");
+        ask_who->gainMark("@moment");
         ask_who->gainAnExtraTurn();
         return false;
     }
@@ -922,7 +922,7 @@ public:
     virtual bool triggerable(const ServerPlayer *player) const {
         return TriggerSkill::triggerable(player)
             && player->getPhase() == Player::Start
-            && player->getMark("@shiji") <= 0;
+            && player->getMark("@moment") <= 0;
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
@@ -956,13 +956,13 @@ public:
     virtual bool triggerable(const ServerPlayer *player) const {
         return TriggerSkill::triggerable(player)
             && player->getPhase() == Player::Finish
-            && player->getMark("@shiji") > 0;
+            && player->getMark("@moment") > 0;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         room->broadcastSkillInvoke(objectName());
         room->sendCompulsoryTriggerLog(player, objectName());
-        player->loseAllMarks("@shiji");
+        player->loseAllMarks("@moment");
         return false;
     }
 };

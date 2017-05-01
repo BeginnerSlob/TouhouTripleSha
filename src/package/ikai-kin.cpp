@@ -2304,7 +2304,7 @@ public:
                 card_id = card->getEffectiveId();
                 delete card;
             }
-            zhonghui->addToPile("ikbengshangpile", card_id);
+            zhonghui->addToPile("death", card_id);
         }
     }
 };
@@ -2316,7 +2316,7 @@ public:
 
     virtual int getExtra(const Player *target) const{
         if (target->hasSkill("ikbengshang"))
-            return target->getPile("ikbengshangpile").length();
+            return target->getPile("death").length();
         else
             return 0;
     }
@@ -2332,7 +2332,7 @@ public:
         return PhaseChangeSkill::triggerable(target)
                && target->getPhase() == Player::Start
                && target->getMark("@anhun") == 0
-               && target->getPile("ikbengshangpile").length() >= 3;
+               && target->getPile("death").length() >= 3;
     }
 
     virtual bool onPhaseChange(ServerPlayer *zhonghui) const{
@@ -2342,7 +2342,7 @@ public:
         LogMessage log;
         log.type = "#IkAnhunWake";
         log.from = zhonghui;
-        log.arg = QString::number(zhonghui->getPile("ikbengshangpile").length());
+        log.arg = QString::number(zhonghui->getPile("death").length());
         log.arg2 = objectName();
         room->sendLog(log);
 
@@ -2380,12 +2380,12 @@ void IkZhuyiCard::onEffect(const CardEffectStruct &effect) const{
 class IkZhuyi: public OneCardViewAsSkill {
 public:
     IkZhuyi(): OneCardViewAsSkill("ikzhuyi") {
-        filter_pattern = ".|.|.|ikbengshangpile";
-        expand_pile = "ikbengshangpile";
+        filter_pattern = ".|.|.|death";
+        expand_pile = "death";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->getPile("ikbengshangpile").isEmpty() && !player->hasUsed("IkZhuyiCard");
+        return !player->getPile("death").isEmpty() && !player->hasUsed("IkZhuyiCard");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
@@ -3821,14 +3821,14 @@ public:
 
     virtual bool triggerable(const ServerPlayer *player) const
     {
-        return player && player->isAlive() && !player->getPile("iklingxun").isEmpty() && player->getPhase() == Player::Finish;
+        return player && player->isAlive() && !player->getPile("pokemon").isEmpty() && player->getPhase() == Player::Finish;
     }
 
     virtual bool onPhaseChange(ServerPlayer *player) const
     {
         Room *room = player->getRoom();
         room->sendCompulsoryTriggerLog(player, "iklingxun");
-        player->clearOnePrivatePile("iklingxun");
+        player->clearOnePrivatePile("pokemon");
         room->loseHp(player);
         return false;
     }
