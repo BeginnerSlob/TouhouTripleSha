@@ -5779,7 +5779,7 @@ function SmartAI:damageMinusHp(self, enemy, type)
 			trick_effectivenum = trick_effectivenum + 1
 		elseif acard:isKindOf("Slash") and self:slashIsEffective(acard, enemy) and (slash_damagenum == 0 or self:hasCrossbowEffect())
 			and self.player:inMyAttackRange(enemy) then
-			if not (enemy:hasSkill("xiangle") and basicnum < 2) and not (self.player:getMark("@tie") > 0 and notpeaches < 2) then
+			if not (enemy:hasSkill("xiangle") and basicnum < 2) and not (self.player:getMark("@imprison") > 0 and notpeaches < 2) then
 				slash_damagenum = slash_damagenum + 1
 			end
 			if self:getCardsNum("Analeptic") > 0 and analepticpowerup == 0

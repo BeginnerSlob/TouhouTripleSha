@@ -2772,13 +2772,13 @@ public:
     virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
         TriggerList skill_list;
         if (player->getPhase() == Player::Start) {
-            if (player->getMark("@ejiao") > 0) {
+            if (player->getMark("@wayward") > 0) {
                 foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
                     skill_list.insert(owner, QStringList(objectName()));
             } else {
                 bool can_invoke = true;
                 foreach (ServerPlayer *p, room->getAlivePlayers())
-                    if (p->getMark("@ejiao") > 0) {
+                    if (p->getMark("@wayward") > 0) {
                         can_invoke = false;
                         break;
                     }
@@ -2790,7 +2790,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
-        if (player->getMark("@ejiao") > 0) {
+        if (player->getMark("@wayward") > 0) {
             if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
                 room->broadcastSkillInvoke(objectName());
                 return true;
@@ -2807,14 +2807,14 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
-        if (player->getMark("@ejiao") > 0) {
+        if (player->getMark("@wayward") > 0) {
             ask_who->drawCards(1, objectName());
             room->setPlayerFlag(player, "IkGuijiaoDecMaxCards");
         } else {
             ServerPlayer *target = ask_who->tag["ThGuijiaoTarget"].value<ServerPlayer *>();
             ask_who->tag.remove("ThGuijiaoTarget");
             if (target)
-                target->gainMark("@ejiao");
+                target->gainMark("@wayward");
         }
         return false;
     }

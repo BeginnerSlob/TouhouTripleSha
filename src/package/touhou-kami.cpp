@@ -513,7 +513,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        player->addToPile("faces", room->drawCard());
+        player->addToPile("mask", room->drawCard());
         player->setPhase(Player::Play);
         room->broadcastProperty(player, "phase");
         RoomThread *thread = room->getThread();
@@ -615,7 +615,7 @@ public:
         if (move.to != player) return QStringList();
         if (move.to_place == Player::PlaceHand && player->getHandcardNum() > 4)
             return QStringList(objectName());
-        else if (move.to_place == Player::PlaceSpecial && player->getPile("faces").length() >= 2)
+        else if (move.to_place == Player::PlaceSpecial && player->getPile("mask").length() >= 2)
             return QStringList(objectName());
         return QStringList();
     }
@@ -634,11 +634,11 @@ public:
                 card_ids = card_ids.mid(0, n);
                 dummy = new DummyCard(card_ids);
             }
-            player->addToPile("faces", dummy);
+            player->addToPile("mask", dummy);
             delete dummy;
         } else if (move.to_place == Player::PlaceSpecial) {
             do {
-                QList<int> card_ids = player->getPile("faces");
+                QList<int> card_ids = player->getPile("mask");
                 QList<int> to_discard;
                 if (card_ids.size() == 2) {
                     to_discard = card_ids;
@@ -657,7 +657,7 @@ public:
                 room->throwCard(dummy, reason, NULL);
                 delete dummy;
                 room->loseHp(player);
-            } while (player->isAlive() && player->getPile("faces").size() > 1);
+            } while (player->isAlive() && player->getPile("mask").size() > 1);
         }
         return false;
     }

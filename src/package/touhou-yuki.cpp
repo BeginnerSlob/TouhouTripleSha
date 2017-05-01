@@ -19,8 +19,8 @@ public:
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
         TriggerList skill_list;
         if (triggerEvent == EventPhaseChanging) {
-            if (player->getMark("@tie") > 0)
-                room->setPlayerMark(player, "@tie", 0);
+            if (player->getMark("@imprison") > 0)
+                room->setPlayerMark(player, "@imprison", 0);
             if (player->getMark("jianmouse")) {
                 room->removePlayerMark(player, "jianmouse");
                 room->removePlayerCardLimitation(player, "use,response", "Slash$0");
@@ -60,7 +60,7 @@ public:
             log.from = player;
             log.arg = "2";
             room->sendLog(log);
-            room->addPlayerMark(player, "@tie");
+            room->addPlayerMark(player, "@imprison");
         }
         return false;
     }
@@ -75,7 +75,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("Slash") && player->getMark("@tie"))
+        if (use.card->isKindOf("Slash") && player->getMark("@imprison"))
             return QStringList(objectName());
         return QStringList();
     }
