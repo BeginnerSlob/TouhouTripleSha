@@ -101,8 +101,8 @@ public:
         ServerPlayer *target = player->tag["IkYingqiTarget"].value<ServerPlayer *>();
         player->tag.remove("IkYingqiTarget");
         if (target) {
-            room->addPlayerMark(player, "@yingqi");
-            room->addPlayerMark(target, "@yingqi");
+            room->addPlayerMark(player, "@arrangement");
+            room->addPlayerMark(target, "@arrangement");
         }
         return false;
     }
@@ -115,7 +115,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        if (player->getMark("@yingqi") == 0)
+        if (player->getMark("@arrangement") == 0)
             return QStringList();
         if (triggerEvent == EventPhaseEnd)
             if (player->getPhase() != Player::Play)
@@ -127,16 +127,16 @@ public:
         }
         ServerPlayer *current = room->getCurrent();
         if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
-            while (player->getMark("@yingqi") > 0) {
+            while (player->getMark("@arrangement") > 0) {
                 if (player->getHandcardNum() >= player->getHp())
                     break;
-                room->removePlayerMark(player, "@yingqi");
+                room->removePlayerMark(player, "@arrangement");
                 player->drawCards(1, "ikyingqi");
                 if (current->isDead())
                     break;
             }
         }
-        room->setPlayerMark(player, "@yingqi", 0);
+        room->setPlayerMark(player, "@arrangement", 0);
         return QStringList();
     }
 };
@@ -5281,29 +5281,29 @@ public:
         room->sendCompulsoryTriggerLog(player, objectName());
         room->broadcastSkillInvoke(objectName());
 
-        int n = 0;
         if (player->hasFlag("IkKezhanDamage"))
-            ++n;
+            room->addPlayerMark(player, "@lookup");
         if (!player->isKongcheng()) {
             const Card *card = room->askForCard(player, "Slash|black|.|hand", "@ikkezhan", QVariant(), Card::MethodNone);
             if (card) {
                 room->showCard(player, card->getEffectiveId());
                 if (card->isKindOf("Slash"))
-                    ++n;
+                    room->addPlayerMark(player, "@lookup");
             }
         }
         foreach (ServerPlayer *p, room->getPlayers()) {
             if (p->isDead() && p->getRole() == "renegade") {
-                ++n;
+                room->addPlayerMark(player, "@lookup");
                 break;
             }
         }
 
-        if (n != 0)
-            player->drawCards(n, objectName());
+        if (player->getMark("@lookup") > 0)
+            player->drawCards(player->getMark("@lookup"), objectName());
         else
             room->loseHp(player);
-        
+
+        room->setPlayerMark(player, "@lookup", 0);
         return false;
     }
 };

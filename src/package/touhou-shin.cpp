@@ -1504,7 +1504,7 @@ void ThMuyuCard::onEffect(const CardEffectStruct &effect) const{
         card = cards.at(qrand() % cards.length());
     }
     if (card)
-        effect.from->addToPile("thmuyupile", card);
+        effect.from->addToPile("prison", card);
     else if (can_discard)
         room->askForDiscard(effect.to, "thmuyu", 2, 2, false, true);
 }
@@ -1544,13 +1544,13 @@ public:
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        if (player->getPile("thmuyupile").isEmpty())
+        if (player->getPile("prison").isEmpty())
             return false;
         return  pattern == "jink" || pattern == "nullification";
     }
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
-        return !player->getPile("thmuyupile").isEmpty();
+        return !player->getPile("prison").isEmpty();
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
@@ -1584,13 +1584,13 @@ public:
     virtual bool triggerable(const ServerPlayer *target) const{
         return PhaseChangeSkill::triggerable(target)
             && target->getPhase() == Player::Start
-            && !target->getPile("thmuyupile").isEmpty();
+            && !target->getPile("prison").isEmpty();
     }
 
     virtual bool onPhaseChange(ServerPlayer *player) const{
         Room *room = player->getRoom();
         room->sendCompulsoryTriggerLog(player, objectName());
-        DummyCard *dummy = new DummyCard(player->getPile("thmuyupile"));
+        DummyCard *dummy = new DummyCard(player->getPile("prison"));
         player->obtainCard(dummy);
         delete dummy;
         return false;

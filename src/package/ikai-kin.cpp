@@ -627,7 +627,7 @@ bool IkXianyuCard::targetFilter(const QList<const Player *> &targets, const Play
 void IkXianyuCard::onEffect(const CardEffectStruct &effect) const{
     if (effect.to->isNude()) return;
     int id = effect.from->getRoom()->askForCardChosen(effect.from, effect.to, "he", "ikxianyu");
-    effect.from->addToPile("ikxianyupile", id);
+    effect.from->addToPile("flaw", id);
 }
 
 class IkXianyuViewAsSkill: public ZeroCardViewAsSkill {
@@ -721,7 +721,7 @@ IkXianyuSlashCard::IkXianyuSlashCard() {
 bool IkXianyuSlashCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     Slash *slash = new Slash(Card::SuitToBeDecided, -1);
     if (targets.isEmpty()) {
-        bool filter = to_select->hasSkill("ikxianyu") && to_select->getPile("ikxianyupile").length() >= 2
+        bool filter = to_select->hasSkill("ikxianyu") && to_select->getPile("flaw").length() >= 2
                       && slash->targetFilter(QList<const Player *>(), to_select, Self);
         delete slash;
         return filter;
@@ -737,18 +737,18 @@ bool IkXianyuSlashCard::targetFilter(const QList<const Player *> &targets, const
 const Card *IkXianyuSlashCard::validate(CardUseStruct &cardUse) const{
     Room *room = cardUse.from->getRoom();
     ServerPlayer *liufeng = cardUse.to.first();
-    if (liufeng->getPile("ikxianyupile").length() < 2) return NULL;
+    if (liufeng->getPile("flaw").length() < 2) return NULL;
     ServerPlayer *source = cardUse.from;
 
     DummyCard *dummy = new DummyCard;
-    if (liufeng->getPile("ikxianyupile").length() == 2) {
-        dummy->addSubcard(liufeng->getPile("ikxianyupile").first());
-        dummy->addSubcard(liufeng->getPile("ikxianyupile").last());
+    if (liufeng->getPile("flaw").length() == 2) {
+        dummy->addSubcard(liufeng->getPile("flaw").first());
+        dummy->addSubcard(liufeng->getPile("flaw").last());
     } else {
         int ai_delay = Config.AIDelay;
         Config.AIDelay = 0;
 
-        QList<int> ids = liufeng->getPile("ikxianyupile");
+        QList<int> ids = liufeng->getPile("flaw");
         for (int i = 0; i < 2; i++) {
             room->fillAG(ids, source);
             int id = room->askForAG(source, ids, false, "ikxuanyu");
@@ -805,7 +805,7 @@ private:
     static bool canSlashLiufeng(const Player *player) {
         Slash *slash = new Slash(Card::SuitToBeDecided, -1);
         foreach (const Player *p, player->getAliveSiblings()) {
-            if (p->hasSkill("ikxianyu") && p->getPile("ikxianyupile").length() > 1) {
+            if (p->hasSkill("ikxianyu") && p->getPile("flaw").length() > 1) {
                 if (slash->targetFilter(QList<const Player *>(), p, player)) {
                     delete slash;
                     return true;

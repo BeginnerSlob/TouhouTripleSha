@@ -280,7 +280,7 @@ public:
         log.arg = "MoRanYing";
         room->sendLog(log);
 
-        player->loseAllMarks("@yingxiao");
+        player->loseAllMarks("@bloom");
         room->acquireSkill(player, "thfuyue");
         room->setTag("MoRanYing", true);
         return false;
@@ -492,7 +492,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return TriggerSkill::triggerable(target)
-            && target->getMark("@yingxiao") == 1;
+            && target->getMark("@bloom") == 1;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
@@ -522,7 +522,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return TriggerSkill::triggerable(target)
-            && target->getMark("@yingxiao") == 2;
+            && target->getMark("@bloom") == 2;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
@@ -552,7 +552,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return TriggerSkill::triggerable(target)
-            && target->getMark("@yingxiao") == 3;
+            && target->getMark("@bloom") == 3;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{

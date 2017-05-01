@@ -937,7 +937,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        player->gainMark("@yingxiao");
+        player->gainMark("@bloom");
 
         if (player->isDead())
             return false;
@@ -985,7 +985,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         DamageStruct damage = data.value<DamageStruct>();
         room->loseMaxHp(damage.to);
-        player->gainMark("@yingxiao");
+        player->gainMark("@bloom");
         return true;
     }
 };
@@ -994,7 +994,7 @@ ThYouyaCard::ThYouyaCard() {
 }
 
 bool ThYouyaCard::targetFilter(const QList<const Player *> &selected, const Player *, const Player *) const {
-    return selected.length() < Self->getMark("@yingxiao");
+    return selected.length() < Self->getMark("@bloom");
 }
 
 void ThYouyaCard::onEffect(const CardEffectStruct &effect) const{
@@ -1030,7 +1030,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const {
         return TriggerSkill::triggerable(target)
-            && target->getMark("@yingxiao") > 0
+            && target->getMark("@bloom") > 0
             && target->canDiscard(target, "he");
     }
 
@@ -1049,7 +1049,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return TriggerSkill::triggerable(target)
-            && target->getMark("@yingxiao") >= 4;
+            && target->getMark("@bloom") >= 4;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
@@ -1067,7 +1067,7 @@ public:
 
     virtual int getExtra(const Player *target) const{
         if (target->hasSkill("thmanxiao"))
-            return target->getMark("@yingxiao");
+            return target->getMark("@bloom");
         else
             return 0;
     }
