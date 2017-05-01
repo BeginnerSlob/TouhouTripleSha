@@ -1166,6 +1166,7 @@ IkDuanmengCard::IkDuanmengCard() {
 void IkDuanmengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
     QString kingdom = room->askForKingdom(source);
     room->setPlayerMark(source, "ikduanmeng_" + kingdom, 1);
+    room->addPlayerMark(source, "@dream");
 }
 
 class IkDuanmengViewAsSkill: public OneCardViewAsSkill {
@@ -1206,8 +1207,10 @@ public:
             if (player->getPhase() == Player::RoundStart) {
                 foreach (QString kingdom, Sanguosha->getKingdoms()) {
                     QString markname = "ikduanmeng_" + kingdom;
-                    if (player->getMark(markname) > 0)
+                    if (player->getMark(markname) > 0) {
+                        room->removePlayerMark(player, "@dream", player->getMark(markname));
                         room->setPlayerMark(player, markname, 0);
+                    }
                 }
             }
         }
@@ -2413,7 +2416,7 @@ public:
     virtual void onDamaged(ServerPlayer *target, const DamageStruct &) const{
         Room *room = target->getRoom();
         ServerPlayer *current = room->getCurrent();
-        room->addPlayerMark(current, "@lingxue");
+        room->addPlayerMark(current, "@blizzard");
         current->setFlags("lingxue_" + target->objectName());
     }
 };
@@ -2429,7 +2432,7 @@ public:
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         TriggerList skill_list;
         if (triggerEvent == TurnStart) {
-            room->setPlayerMark(player, "@lingxue", 0);
+            room->setPlayerMark(player, "@blizzard", 0);
             player->setMark("iklingxue_discard", 0);
         } else if (triggerEvent == CardsMoveOneTime) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
@@ -2453,8 +2456,8 @@ public:
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             ask_who->addMark("iklingxue_discard", move.card_ids.length());
         } else if (triggerEvent == EventPhaseChanging) {
-            int n = qMin(player->getMark("@lingxue"), 2);
-            room->setPlayerMark(player, "@lingxue", 0);
+            int n = qMin(player->getMark("@blizzard"), 2);
+            room->setPlayerMark(player, "@blizzard", 0);
             LogMessage log;
             log.type = "#IkLingxueDraw";
             log.from = player;
@@ -2491,7 +2494,7 @@ public:
     }
 
     virtual int getExtra(const Player *target) const{
-        return -target->getMark("@lingxue");
+        return -target->getMark("@blizzard");
     }
 };
 
@@ -3342,8 +3345,8 @@ public:
             }
         } else if (triggerEvent == CardsMoveOneTime) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.to == player && move.to_place == Player::PlaceSpecial && player->getPile("ikqiwupile").length() >= 3) {
-                player->clearOnePrivatePile("ikqiwupile");
+            if (move.to == player && move.to_place == Player::PlaceSpecial && player->getPile("step").length() >= 3) {
+                player->clearOnePrivatePile("step");
                 QList<ServerPlayer *> males;
                 foreach (ServerPlayer *p, room->getAlivePlayers()) {
                     if (p->isMale())
@@ -3390,7 +3393,7 @@ public:
         const Card *card = player->tag["IkQiwuCard"].value<const Card *>();
         player->tag.remove("IkQiwuCard");
         if (card)
-            player->addToPile("ikqiwupile", card);
+            player->addToPile("step", card);
         return false;
     }
 };
@@ -3406,20 +3409,20 @@ public:
         if (triggerEvent == EventLoseSkill && data.toString() == objectName()) {
             room->handleAcquireDetachSkills(player, "-ikzhihui|-ikxuanhuo", true);
         } else if (triggerEvent == EventAcquireSkill && data.toString() == objectName()) {
-            if (!player->getPile("ikqiwupile").isEmpty()) {
+            if (!player->getPile("step").isEmpty()) {
                 room->notifySkillInvoked(player, objectName());
                 room->handleAcquireDetachSkills(player, "ikzhihui|ikxuanhuo", true, true);
             }
         } else if (triggerEvent == CardsMoveOneTime && player->isAlive() && player->hasSkill(objectName(), true)) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.to == player && move.to_place == Player::PlaceSpecial && move.to_pile_name == "ikqiwupile") {
-                if (player->getPile("ikqiwupile").length() == 1) {
+            if (move.to == player && move.to_place == Player::PlaceSpecial && move.to_pile_name == "step") {
+                if (player->getPile("step").length() == 1) {
                     room->notifySkillInvoked(player, objectName());
                     room->handleAcquireDetachSkills(player, "ikzhihui|ikxuanhuo", true, true);
                 }
             } else if (move.from == player && move.from_places.contains(Player::PlaceSpecial)
-                       && move.from_pile_names.contains("ikqiwupile")) {
-                if (player->getPile("ikqiwupile").isEmpty())
+                       && move.from_pile_names.contains("step")) {
+                if (player->getPile("step").isEmpty())
                     room->handleAcquireDetachSkills(player, "-ikzhihui|-ikxuanhuo", true, true);
             }
         }
@@ -4284,10 +4287,10 @@ public:
         QString choice = room->askForChoice(ask_who, objectName(), "draw+letdraw");
         if (choice == "draw") {
             ask_who->drawCards(1, objectName());
-            room->setPlayerMark(ask_who, "ikciyu_" + ask_who->objectName(), 1);
+            ask_who->gainMark("@forgive");
         } else {
             player->drawCards(2, objectName());
-            room->setPlayerMark(player, "ikciyu_" + ask_who->objectName(), 1);
+            player->gainMark("@forgive");
         }
         return false;
     }
@@ -4301,10 +4304,10 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const{
         if (PhaseChangeSkill::triggerable(target) && target->getPhase() == Player::Start && target->getMark("@qingshe") == 0) {
-            if (target->isWounded() && target->getMark("ikciyu_" + target->objectName()) > 0)
+            if (target->isWounded() && target->getMark("@forgive") > 0)
                 return true;
             foreach (const Player *p, target->getAliveSiblings()) {
-                if (p->isWounded() && p->getMark("ikciyu_" + target->objectName()) > 0)
+                if (p->isWounded() && p->getMark("@forgive") > 0)
                     return true;
             }
         }

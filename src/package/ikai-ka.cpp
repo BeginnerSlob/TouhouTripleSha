@@ -3625,7 +3625,7 @@ const Card *IkHuanlveCard::validate(CardUseStruct &card_use) const{
     }
     Room *room = card_use.from->getRoom();
     if (all_tricks)
-        room->setPlayerFlag(card_use.from, "IkHuanlveTrick");
+        card_use.from->gainMark("@thought", 1);
     room->addPlayerMark(card_use.from, "IkHuanlveTimes");
     return use_card;
 }
@@ -3645,7 +3645,7 @@ const Card *IkHuanlveCard::validateInResponse(ServerPlayer *user) const{
     }
     Room *room = user->getRoom();
     if (all_tricks)
-        room->setPlayerFlag(user, "IkHuanlveTrick");
+        user->gainMark("@thought", 1);
     room->addPlayerMark(user, "IkHuanlveTimes");
     return use_card;
 }
@@ -3729,13 +3729,16 @@ public:
         if (triggerEvent == EventPhaseChanging)
             room->setPlayerMark(player, "IkHuanlveTimes", 0);
         else if (triggerEvent == EventPhaseStart) {
-            if (player->isAlive() && player->hasFlag("IkHuanlveTrick") && player->getPhase() == Player::Finish)
+            if (player->isAlive() && player->getMark("@thought") > 0 && player->getPhase() == Player::Finish)
                 return QStringList(objectName());
         }
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, "thhuanlve");
+        player->loseMark("@thought");
         player->drawCards(2, objectName());
         return false;
     }
@@ -4934,15 +4937,15 @@ public:
             DeathStruct death = data.value<DeathStruct>();
             if (death.who == player && player->isDead() && player->hasSkill(objectName(), true))
                 return QStringList(objectName());
-            if (TriggerSkill::triggerable(player) && death.who->getMark("@shuling") > 0)
+            if (TriggerSkill::triggerable(player) && death.who->getMark("@canal") > 0)
                 return QStringList(objectName());
             return QStringList();
         }
         if (triggerEvent == GameStart && TriggerSkill::triggerable(player))
             return QStringList(objectName());
-        else if (triggerEvent == DrawNCards && player->getMark("@shuling") > 0)
+        else if (triggerEvent == DrawNCards && player->getMark("@canal") > 0)
             return QStringList(objectName());
-        else if (triggerEvent == PreCardUsed && player->getMark("@shuling") > 0
+        else if (triggerEvent == PreCardUsed && player->getMark("@canal") > 0
                  && player->getPhase() == Player::Play && !player->hasFlag("shuling_slash")) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("Slash"))
@@ -4957,19 +4960,19 @@ public:
             if (death.who == player) {
                 room->sendCompulsoryTriggerLog(player, objectName());
                 foreach (ServerPlayer *p, room->getAllPlayers()) {
-                    if (p->getMark("@shuling") > 0)
-                        p->loseAllMarks("@shuling");
+                    if (p->getMark("@canal") > 0)
+                        p->loseAllMarks("@canal");
                 }
-                if (player->getMark("@shuling") > 0)
-                    player->loseAllMarks("@shuling");
+                if (player->getMark("@canal") > 0)
+                    player->loseAllMarks("@canal");
             } else {
                 room->sendCompulsoryTriggerLog(player, objectName());
-                player->gainMark("@shuling");
-                death.who->loseAllMarks("@shuling");
+                player->gainMark("@canal");
+                death.who->loseAllMarks("@canal");
             }
         } else if (triggerEvent == GameStart) {
             room->sendCompulsoryTriggerLog(player, objectName());
-            player->gainMark("@shuling");
+            player->gainMark("@canal");
         } else if (triggerEvent == DrawNCards) {
             ServerPlayer *target = room->findPlayerBySkillName(objectName());
             if (target)
@@ -4999,7 +5002,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const
     {
-        if (player->isDead() || player->getMark("@shuling") == 0)
+        if (player->isDead() || player->getMark("@canal") == 0)
             return QStringList();
         ServerPlayer *p = room->findPlayerBySkillName(objectName());
         if (!p)
@@ -5031,8 +5034,8 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
-        room->setPlayerMark(player, "@shuling", 0);
-        ask_who->gainMark("@shuling");
+        room->setPlayerMark(player, "@canal", 0);
+        ask_who->gainMark("@canal");
         if (!ask_who->hasSkill(objectName()) && player->canDiscard(ask_who, "he")) {
             room->setPlayerFlag(ask_who, "ikshuluo_InTempMoving");
             int first_id = room->askForCardChosen(player, ask_who, "he", "ikshuluo", false, Card::MethodDiscard);
@@ -5657,7 +5660,7 @@ public:
         TriggerList skill_list;
         if (triggerEvent == TargetConfirming) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card && use.card->isKindOf("Slash") && player->getMark("@yuanshou") > 0) {
+            if (use.card && use.card->isKindOf("Slash") && player->getMark("@protect") > 0) {
                 foreach (ServerPlayer *p, room->getAllPlayers()) {
                     if (player->getMark("yuanshou_" + p->objectName()) > 0)
                         skill_list.insert(p, QStringList(objectName()));
@@ -5668,10 +5671,10 @@ public:
                 ServerPlayer *target = player->tag["IkYuanshouTarget"].value<ServerPlayer *>();
                 player->tag.remove("IkYuanshouTarget");
                 room->setPlayerMark(player, "yuanshou_" + player->objectName(), 0);
-                room->removePlayerMark(player, "@yuanshou");
+                room->removePlayerMark(player, "@protect");
                 if (target) {
                     room->setPlayerMark(target, "yuanshou_" + player->objectName(), 0);
-                    room->removePlayerMark(target, "@yuanshou");
+                    room->removePlayerMark(target, "@protect");
                 }
             } else if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Start)
                 skill_list.insert(player, QStringList(objectName()));
@@ -5698,10 +5701,10 @@ public:
         if (triggerEvent == EventPhaseStart) {
             ServerPlayer *target = player->tag["IkYuanshouTarget"].value<ServerPlayer *>();
             room->addPlayerMark(player, "yuanshou_" + player->objectName());
-            room->addPlayerMark(player, "@yuanshou");
+            room->addPlayerMark(player, "@protect");
             if (target) {
                 room->addPlayerMark(target, "yuanshou_" + player->objectName());
-                room->addPlayerMark(target, "@yuanshou");
+                room->addPlayerMark(target, "@protect");
             }
         } else {
             if (!room->askForCard(ask_who, "..", "@ikyuanshou-discard", QVariant(), Card::MethodDiscard))

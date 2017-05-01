@@ -675,7 +675,7 @@ function SmartAI:adjustUsePriority(card, v)
 		for _, id in ipairs(id_table) do
 			if self.player:getPile("wooden_ox"):contains(id) then
 				add = add + 0.05
-			elseif self.player:getPile("iklingxun"):contains(id) then
+			elseif self.player:getPile("pokemon"):contains(id) then
 				add = add + 0.15
 			elseif getWoodenOxPile(self.player):contains(id) then
 				add = add - 0.1
@@ -3040,7 +3040,7 @@ function SmartAI:hasHeavySlashDamage(from, slash, to, return_value)
 	end
 	if not from:hasSkill("ikxuwu") and from:getMark("thshenyou") == 0 then
 		if from:hasFlag("nosluoyi") then dmg = dmg + 1 end
-		if from:getMark("ikluoyi") > 0 then dmg = dmg + 1 end
+		if from:getMark("@nude") > 0 then dmg = dmg + 1 end
 		if slash and from:hasSkill("jie") and slash:isRed() then dmg = dmg + 1 end
 		if from:hasSkill("anjian") and not to:inMyAttackRange(from) then dmg = dmg + 1 end
 
@@ -4194,7 +4194,7 @@ function sgs.getCardPlace(room, card, player)
 			local pile_name = owner:getPileName(id)
 			if pile_name == "wooden_ox" then return sgs.Player_PlaceHand end
 			if pile_name == "currency" and player:hasFlag("thbaochui") and player:getPhase() == sgs.Player_Player then return sgs.Player_PlaceHand end
-			if pile_name == "iklingxun" then return sgs.Player_PlaceHand end
+			if pile_name == "pokemon" then return sgs.Player_PlaceHand end
 		end
 	end
 	return card_place
@@ -6252,7 +6252,7 @@ function getWoodenOxPile(player)
 	for _, id in sgs.qlist(player:getPile("wooden_ox")) do
 		cards:append(id)
 	end
-	for _, id in sgs.qlist(player:getPile("iklingxun")) do
+	for _, id in sgs.qlist(player:getPile("pokemon")) do
 		cards:append(id)
 	end
 	return cards

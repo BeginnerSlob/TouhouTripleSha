@@ -683,7 +683,7 @@ local thliaogan_skill = {}
 thliaogan_skill.name = "thliaogan"
 table.insert(sgs.ai_skills, thliaogan_skill)
 thliaogan_skill.getTurnUseCard = function(self)
-	if self.player:getPile("thsunwupile"):isEmpty() then return end
+	if self.player:getPile("frost"):isEmpty() then return end
 	return sgs.Card_Parse("@ThLiaoganCard=.")
 end
 
@@ -697,7 +697,7 @@ sgs.ai_skill_use_func.ThLiaoganCard = function(card, use, self)
 		end
 		return target:isWounded() and (equip:isKindOf("SilverLion") or (same and same:isKindOf("SilverLion")))
 	end
-	local euqip = sgs.Sanguosha:getCard(self.player:getPile("thsunwupile"):first())
+	local euqip = sgs.Sanguosha:getCard(self.player:getPile("frost"):first())
 	local same = self:getSameEquip(euqip)
 	if same and isGoodThLiaoganTarget(self.player, euqip) then
 		use.card = card

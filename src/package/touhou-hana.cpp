@@ -2052,7 +2052,7 @@ public:
 class ThShijieViewAsSkill: public OneCardViewAsSkill {
 public:
     ThShijieViewAsSkill(): OneCardViewAsSkill("thshijie") {
-        expand_pile = "shijiepile";
+        expand_pile = "utensil";
     }
 
     virtual bool isEnabledAtPlay(const Player *) const{
@@ -2060,7 +2060,7 @@ public:
     }
 
     virtual bool viewFilter(const Card *to_select) const{
-        return Self->getPile("shijiepile").contains(to_select->getEffectiveId());
+        return Self->getPile("utensil").contains(to_select->getEffectiveId());
     }
 
     virtual const Card *viewAs(const Card *o_card) const{
@@ -2071,11 +2071,11 @@ public:
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
-        return pattern == "nullification" && !player->getPile("shijiepile").isEmpty();
+        return pattern == "nullification" && !player->getPile("utensil").isEmpty();
     }
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
-        return !player->getPile("shijiepile").isEmpty();
+        return !player->getPile("utensil").isEmpty();
     }
 };
 
@@ -2104,7 +2104,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        player->addToPile("shijiepile", room->drawCard(), true);
+        player->addToPile("utensil", room->drawCard(), true);
         return false;
     }
 };
@@ -2117,8 +2117,8 @@ class ThShengzhiViewAsSkill: public OneCardViewAsSkill {
 public:
     ThShengzhiViewAsSkill(): OneCardViewAsSkill("thshengzhi") {
         response_pattern = "@@thshengzhi";
-        filter_pattern = ".|.|.|shijiepile#.|black|.|hand";
-        expand_pile = "shijiepile";
+        filter_pattern = ".|.|.|utensil#.|black|.|hand";
+        expand_pile = "utensil";
     }
 
     virtual const Card *viewAs(const Card *originalCard) const {
@@ -2154,7 +2154,7 @@ public:
         foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
             if (owner == player)
                 continue;
-            if (owner->isKongcheng() && owner->getPile("shijiepile").isEmpty())
+            if (owner->isKongcheng() && owner->getPile("utensil").isEmpty())
                 continue;
             skill_list.insert(owner, QStringList(objectName()));
         }

@@ -390,7 +390,7 @@ bool IronChain::targetsFeasible(const QList<const Player *> &targets, const Play
             rec = false;
             break;
         }
-        if (Self->getPile("iklingxun").contains(id)) {
+        if (Self->getPile("pokemon").contains(id)) {
             rec = false;
             break;
         }

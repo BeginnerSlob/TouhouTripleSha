@@ -1136,7 +1136,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *r, ServerPlayer *p, QVariant &d, ServerPlayer* &) const
     {
-        if (TriggerSkill::triggerable(p) && p->getPile("thsunwupile").isEmpty()) {
+        if (TriggerSkill::triggerable(p) && p->getPile("frost").isEmpty()) {
             CardsMoveOneTimeStruct move = d.value<CardsMoveOneTimeStruct>();
             if (move.to_place == Player::DiscardPile) {
                 foreach (int id, move.card_ids) {
@@ -1171,12 +1171,12 @@ public:
         }
         if (!equips.isEmpty()) {
             if (equips.length() == 1) {
-                p->addToPile("thsunwupile", equips);
+                p->addToPile("frost", equips);
             } else {
                 r->fillAG(move.card_ids, NULL, not_equips);
                 int id = r->askForAG(p, equips, false, objectName());
                 r->clearAG();
-                p->addToPile("thsunwupile", id);
+                p->addToPile("frost", id);
             }
         }
         return false;
@@ -1194,7 +1194,7 @@ bool ThLiaoganCard::targetFilter(const QList<const Player *> &targets, const Pla
 
 void ThLiaoganCard::onEffect(const CardEffectStruct &effect) const
 {
-    DummyCard *dummy = new DummyCard(effect.from->getPile("thsunwupile"));
+    DummyCard *dummy = new DummyCard(effect.from->getPile("frost"));
     effect.to->obtainCard(dummy);
     delete dummy;
     effect.from->addMark("thliaogan_" + effect.to->objectName());
@@ -1221,7 +1221,7 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return !player->getPile("thsunwupile").isEmpty();
+        return !player->getPile("frost").isEmpty();
     }
 };
 
@@ -1521,7 +1521,7 @@ public:
                 return false;
             if (Self->getPile("wooden_ox").contains(card->getEffectiveId()))
                 return false;
-            if (Self->getPile("iklingxun").contains(card->getEffectiveId()))
+            if (Self->getPile("pokemon").contains(card->getEffectiveId()))
                 return false;
             if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play) {
                 foreach (const Player *p, Self->getAliveSiblings()) {

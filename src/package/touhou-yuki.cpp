@@ -1664,7 +1664,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        player->gainMark("@fadeng");
+        player->gainMark("@bright");
         return false;
     }
 };
@@ -1676,7 +1676,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        if (!TriggerSkill::triggerable(player) || player->getMark("@fadeng") <= 0)
+        if (!TriggerSkill::triggerable(player) || player->getMark("@bright") <= 0)
             return QStringList();
 
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
@@ -1692,7 +1692,7 @@ public:
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
         if (player->askForSkillInvoke(objectName(), QString::number((int)change.from))) {
             room->setPlayerFlag(player, objectName() + QString::number((int)change.from));
-            player->loseMark("@fadeng");
+            player->loseMark("@bright");
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -1715,7 +1715,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
-        if (!TriggerSkill::triggerable(player) || player->getMark("@fadeng") <= 0)
+        if (!TriggerSkill::triggerable(player) || player->getMark("@bright") <= 0)
             return QStringList();
 
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
@@ -1731,7 +1731,7 @@ public:
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
         if (player->askForSkillInvoke("thweiguang", QVariant::fromValue(QString::number((int)change.to)))) {
             room->setPlayerFlag(player, "thweiguang" + QString::number((int)change.to));
-            player->loseMark("@fadeng");
+            player->loseMark("@bright");
             room->broadcastSkillInvoke("thweiguang");
             return true;
         }
@@ -1754,7 +1754,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         room->sendCompulsoryTriggerLog(player, objectName());
-        player->gainMark("@fadeng");
+        player->gainMark("@bright");
         return false;
     }
 };
@@ -1973,8 +1973,8 @@ bool ThChuanshangCard::targetFilter(const QList<const Player *> &targets, const 
 
 void ThChuanshangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const {
     ServerPlayer *target = targets.first();
-    target->gainMark("@nishui");
-    if (target->getMark("@nishui") > 1) // trick
+    target->gainMark("@drowning");
+    if (target->getMark("@drowning") > 1) // trick
         room->loseHp(source);
 }
 
@@ -2000,7 +2000,7 @@ public:
     }
 
     virtual bool triggerable(const ServerPlayer *target) const{
-        return target && target->isAlive() && target->getPhase() == Player::Finish && target->getMark("@nishui") > 0;
+        return target && target->isAlive() && target->getPhase() == Player::Finish && target->getMark("@drowning") > 0;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
@@ -2018,9 +2018,9 @@ public:
         room->judge(judge);
 
         if (judge.isGood())
-            player->loseMark("@nishui", qMin(2, player->getMark("@nishui")));
+            player->loseMark("@drowning", qMin(2, player->getMark("@drowning")));
         else if (judge.card->isBlack())
-            player->gainMark("@nishui");
+            player->gainMark("@drowning");
 
         return false;
     }
@@ -2032,8 +2032,8 @@ public:
     }
 
     virtual int getExtra(const Player *target) const{
-        if (target->getMark("@nishui") > 0)
-            return -target->getMark("@nishui");
+        if (target->getMark("@drowning") > 0)
+            return -target->getMark("@drowning");
         else
             return 0;
     }

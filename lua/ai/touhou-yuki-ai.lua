@@ -1192,7 +1192,7 @@ sgs.ai_skill_invoke.thweiguang = function(self, data)
 			if lightning == 0 then
 				return false
 		    end
-			return self:hasWizard(self.enemies, true) or self.player:getMark("@fadeng") > 1
+			return self:hasWizard(self.enemies, true) or self.player:getMark("@bright") > 1
 		end
 	elseif phase == sgs.Player_Draw then
 		if not self:willSkipPlayPhase() and self:getOverflow() < 0 then
@@ -1212,7 +1212,7 @@ sgs.ai_skill_invoke.thweiguang = function(self, data)
 		if self:getOverflow() > 1 then
 			return true
 		elseif self:getOverflow() == 1 then
-			return self.player:getMark("@fadeng") > 2
+			return self.player:getMark("@bright") > 2
 		end
 		return false
 	end
@@ -1336,8 +1336,8 @@ sgs.ai_skill_use_func.ThChuanshangCard = function(card, use, self)
 	end
 	if #targets == 0 then return end
 	local chuanshangComp = function(a, b)
-		local x = a:getMark("@nishui")
-		local y = b:getMark("@nishui")
+		local x = a:getMark("@drowning")
+		local y = b:getMark("@drowning")
 		if x ~= y then
 			return x < y
 		else
@@ -1345,7 +1345,7 @@ sgs.ai_skill_use_func.ThChuanshangCard = function(card, use, self)
 		end
 	end
 	table.sort(targets, chuanshangComp)
-	if targets[1]:getMark("@nishui") == 0 then
+	if targets[1]:getMark("@drowning") == 0 then
 		use.card = card
 		if use.to then
 			use.to:append(targets[1])
@@ -1355,7 +1355,7 @@ sgs.ai_skill_use_func.ThChuanshangCard = function(card, use, self)
 	if self.player:getHp() <= 3 then return end
 	self:sort(targets, "threat")
 	for _, p in ipairs(targets) do
-		if p:getMark("@nishui") > 2 and p:getMaxCards() > 0 then
+		if p:getMark("@drowning") > 2 and p:getMaxCards() > 0 then
 			use.card = card
 			if use.to then
 				use.to:append(targets[1])
