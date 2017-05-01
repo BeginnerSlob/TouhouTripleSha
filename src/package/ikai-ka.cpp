@@ -2394,10 +2394,10 @@ public:
     }
 };
 
-class IkPingwei: public TriggerSkill
+class IkPingwei : public TriggerSkill
 {
 public:
-    IkPingwei(): TriggerSkill("ikpingwei")
+    IkPingwei() : TriggerSkill("ikpingwei")
     {
         events << EventPhaseStart;
         frequency = Compulsory;
@@ -2423,17 +2423,17 @@ public:
     }
 };
 
-class IkPingweiRecord: public TriggerSkill
+class IkPingweiRecord : public TriggerSkill
 {
 public:
-    IkPingweiRecord(): TriggerSkill("#ikpingwei")
+    IkPingweiRecord() : TriggerSkill("#ikpingwei")
     {
         events << CardUsed << EventPhaseChanging;
         frequency = Compulsory;
         global = true;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         if (triggerEvent == EventPhaseChanging) {
             if (data.value<PhaseChangeStruct>().to == Player::NotActive)
