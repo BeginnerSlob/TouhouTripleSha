@@ -2176,7 +2176,7 @@ public:
             DamageStruct damage = data.value<DamageStruct>();
             n = damage.damage;
         }
-        player->gainMark("@tianjia", n);
+        player->gainMark("@fetter", n);
         return false;
     }
 };
@@ -2191,7 +2191,7 @@ public:
         return PhaseChangeSkill::triggerable(target)
                && target->getPhase() == Player::Start
                && target->getMark("@tiangai") == 0
-               && target->getMark("@tianjia") >= 4;
+               && target->getMark("@fetter") >= 4;
     }
 
     virtual bool onPhaseChange(ServerPlayer *shensimayi) const{
@@ -2202,7 +2202,7 @@ public:
         LogMessage log;
         log.type = "#IkTiangaiWake";
         log.from = shensimayi;
-        log.arg = QString::number(shensimayi->getMark("@tianjia"));
+        log.arg = QString::number(shensimayi->getMark("@fetter"));
         room->sendLog(log);
 
         room->setPlayerMark(shensimayi, "@tiangai", 1);
@@ -2220,7 +2220,7 @@ IkJilveCard::IkJilveCard() {
 
 void IkJilveCard::onUse(Room *room, const CardUseStruct &card_use) const{
     ServerPlayer *shensimayi = card_use.from;
-    shensimayi->loseMark("@tianjia");
+    shensimayi->loseMark("@fetter");
 
     room->setPlayerFlag(shensimayi, "IkJilve");
     room->acquireSkill(shensimayi, "iksishideng");
@@ -2232,7 +2232,7 @@ public: // iksishideng
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("IkJilveCard") && player->getMark("@tianjia") > 0;
+        return !player->hasUsed("IkJilveCard") && player->getMark("@fetter") > 0;
     }
 
     virtual const Card *viewAs() const{
@@ -2250,7 +2250,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(player) || player->getMark("@tianjia") == 0)
+        if (!TriggerSkill::triggerable(player) || player->getMark("@fetter") == 0)
             return QStringList();
         if (triggerEvent == CardUsed) {
             CardUseStruct use = data.value<CardUseStruct>();
@@ -2289,7 +2289,7 @@ public:
                 log.arg = objectName();
                 room->sendLog(log);
 
-                player->loseMark("@tianjia");
+                player->loseMark("@fetter");
                 return true;
             }
         } else if (triggerEvent == EventPhaseStart) {
@@ -2301,7 +2301,7 @@ public:
                 log.arg = objectName();
                 room->sendLog(log);
 
-                player->loseMark("@tianjia");
+                player->loseMark("@fetter");
                 return true;
             }
         } else if (triggerEvent == CardsMoveOneTime) {
@@ -2329,7 +2329,7 @@ public:
                         log.arg = objectName();
                         room->sendLog(log);
 
-                        player->loseMark("@tianjia");
+                        player->loseMark("@fetter");
                         room->setPlayerFlag(player, "thxijing_using");
                         CardMoveReason reason(CardMoveReason::S_REASON_PUT,
                                               player->objectName(),
