@@ -393,7 +393,11 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         SlashEffectStruct effect = data.value<SlashEffectStruct>();
         player->tag["ThCihangData"] = data; // for AI
-        if (room->askForChoice(player, objectName(), "discard+draw", QVariant::fromValue(effect.to)) == "discard") {
+        QStringList choices;
+        if (player->canDiscard(player, "he"))
+            choices << "discard";
+        choices << "draw";
+        if (room->askForChoice(player, objectName(), choices.join("+"), QVariant::fromValue(effect.to)) == "discard") {
             int x = effect.to->getLostHp();
             if (x > 0)
                 room->askForDiscard(player, objectName(), x, x, false, true);
