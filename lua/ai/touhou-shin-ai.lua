@@ -860,7 +860,7 @@ sgs.ai_skill_cardask["@thmuyu-put"] = function(self, data, pattern, target)
 end
 
 sgs.ai_view_as.thmuyu = function(card, player, card_place, class_name)
-	if not player:getPile("thmuyupile"):isEmpty() then
+	if not player:getPile("prison"):isEmpty() then
 		if card_place == sgs.Player_PlaceHand or card_place == sgs.Player_PlaceEquip then
 			local suit = card:getSuitString()
 			local point = card:getNumber()

@@ -253,12 +253,12 @@ local thlingzhan_skill = {}
 thlingzhan_skill.name = "thlingzhan"
 table.insert(sgs.ai_skills, thlingzhan_skill)
 thlingzhan_skill.getTurnUseCard = function(self)
-	if self.player:getPile("lingzhanpile"):isEmpty() then
+	if self.player:getPile("nightmare"):isEmpty() then
 		return
 	end
-	for i = 0, self.player:getPile("lingzhanpile"):length() - 1 do
-		local slash = sgs.Sanguosha:getCard(self.player:getPile("lingzhanpile"):at(i))
-		local slash_str = ("slash:thlingzhan[%s:%s]=%d"):format(slash:getSuitString(), slash:getNumberString(), self.player:getPile("lingzhanpile"):at(i))
+	for i = 0, self.player:getPile("nightmare"):length() - 1 do
+		local slash = sgs.Sanguosha:getCard(self.player:getPile("nightmare"):at(i))
+		local slash_str = ("slash:thlingzhan[%s:%s]=%d"):format(slash:getSuitString(), slash:getNumberString(), self.player:getPile("nightmare"):at(i))
 		local lingzhanslash = sgs.Card_Parse(slash_str)
 		if self:slashIsAvailable(self.player, lingzhanslash) then
 			return lingzhanslash
@@ -270,7 +270,7 @@ sgs.ai_view_as.thlingzhan = function(card, player, card_place)
 	local suit = card:getSuitString()
 	local number = card:getNumberString()
 	local card_id = card:getEffectiveId()
-	if card_place == sgs.Player_PlaceSpecial and player:getPileName(card_id) == "lingzhanpile" then
+	if card_place == sgs.Player_PlaceSpecial and player:getPileName(card_id) == "nightmare" then
 		return ("slash:thlingzhan[%s:%s]=%d"):format(suit, number, card_id)
 	end
 end

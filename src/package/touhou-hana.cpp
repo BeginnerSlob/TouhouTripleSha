@@ -366,7 +366,7 @@ bool ThWujianCard::targetFilter(const QList<const Player *> &targets, const Play
 }
 
 void ThWujianCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    room->addPlayerMark(targets.first(), "@wujian");
+    room->addPlayerMark(targets.first(), "@gap");
     source->tag["ThWujianUsed"] = true;
 }
 
@@ -409,7 +409,7 @@ public:
                 return QStringList();
             QList<ServerPlayer *> players = room->getAllPlayers();
             foreach (ServerPlayer *player, players)
-                room->setPlayerMark(player, "@wujian", 0);
+                room->setPlayerMark(player, "@gap", 0);
             player->tag.remove("ThWujianUsed");
         }
 
@@ -423,7 +423,7 @@ public:
     }
 
     virtual int getCorrect(const Player *from, const Player *) const{
-        return from->getMark("@wujian");
+        return from->getMark("@gap");
     }
 };
 
@@ -704,7 +704,7 @@ bool ThXihuaCard::targetFilter(const QList<const Player *> &targets, const Playe
 }
 
 void ThXihuaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    source->addToPile("xihuapile", this, false);
+    source->addToPile("joke", this, false);
     ServerPlayer *target = targets[0];
     QStringList choices;
     Slash *slash = new Slash(NoSuit, 0);
@@ -736,7 +736,7 @@ void ThXihuaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
         }
     }
 
-    source->clearOnePrivatePile("xihuapile");
+    source->clearOnePrivatePile("joke");
 }
 
 class ThXihua: public OneCardViewAsSkill
@@ -780,12 +780,12 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         int id = -1;
         ServerPlayer *owner, *victim;
-        if (damage.from && !damage.from->getPile("xihuapile").isEmpty()) {
-            id = damage.from->getPile("xihuapile").first();
+        if (damage.from && !damage.from->getPile("joke").isEmpty()) {
+            id = damage.from->getPile("joke").first();
             owner = damage.from;
             victim = damage.to;
-        } else if (damage.to && !damage.to->getPile("xihuapile").isEmpty()) {
-            id = damage.to->getPile("xihuapile").first();
+        } else if (damage.to && !damage.to->getPile("joke").isEmpty()) {
+            id = damage.to->getPile("joke").first();
             owner = damage.to;
             victim = damage.from;
         }

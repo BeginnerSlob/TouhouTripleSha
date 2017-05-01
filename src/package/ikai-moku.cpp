@@ -1565,7 +1565,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return (TriggerSkill::triggerable(target) && target->getPhase() == Player::Finish)
-            || (target->getMark("@zhaihun") > 0 && target->getPhase() == Player::Draw);
+            || (target->getMark("@geek") > 0 && target->getPhase() == Player::Draw);
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *caoren, QVariant &, ServerPlayer *) const{
@@ -1584,9 +1584,9 @@ public:
             int n = getWeaponCount(caoren);
             caoren->drawCards(n + 2, objectName());
             caoren->turnOver();
-            room->setPlayerMark(caoren, "@zhaihun", 1);
+            room->setPlayerMark(caoren, "@geek", 1);
         } else {
-            room->removePlayerMark(caoren, "@zhaihun");
+            room->removePlayerMark(caoren, "@geek");
             int n = getWeaponCount(caoren);
             if (n > 0) {
                 LogMessage log;
@@ -1913,7 +1913,7 @@ public:
 
     virtual bool effect(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         JudgeStruct *judge = data.value<JudgeStruct *>();
-        player->addToPile("ikyindiepile", judge->card->getEffectiveId());
+        player->addToPile("secret", judge->card->getEffectiveId());
 
         return false;
     }
@@ -1926,7 +1926,7 @@ public:
 
     virtual int getCorrect(const Player *from, const Player *) const{
         if (from->hasSkill("ikyindie"))
-            return -from->getPile("ikyindiepile").length();
+            return -from->getPile("secret").length();
         else
             return 0;
     }
@@ -1942,7 +1942,7 @@ public:
         return PhaseChangeSkill::triggerable(target)
                && target->getPhase() == Player::Start
                && target->getMark("@guiyue") == 0
-               && target->getPile("ikyindiepile").length() >= 3;
+               && target->getPile("secret").length() >= 3;
     }
 
     virtual bool onPhaseChange(ServerPlayer *dengai) const{
@@ -1952,7 +1952,7 @@ public:
         LogMessage log;
         log.type = "#IkGuiyueWake";
         log.from = dengai;
-        log.arg = QString::number(dengai->getPile("ikyindiepile").length());
+        log.arg = QString::number(dengai->getPile("secret").length());
         log.arg2 = objectName();
         room->sendLog(log);
 
@@ -1969,15 +1969,15 @@ public:
 class IkHuanwu: public OneCardViewAsSkill {
 public:
     IkHuanwu(): OneCardViewAsSkill("ikhuanwu") {
-        expand_pile = "ikyindiepile";
+        expand_pile = "secret";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->getPile("ikyindiepile").isEmpty();
+        return !player->getPile("secret").isEmpty();
     }
 
     virtual bool viewFilter(const Card *to_select) const{
-        return Self->getPile("ikyindiepile").contains(to_select->getEffectiveId());
+        return Self->getPile("secret").contains(to_select->getEffectiveId());
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{

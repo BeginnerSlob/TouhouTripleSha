@@ -818,7 +818,7 @@ public:
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to == Player::Play) {
                 room->setPlayerMark(player, "ThChouce", 0);
-                room->setPlayerMark(player, "choucecount", 0);
+                room->setPlayerMark(player, "@augury", 0);
                 room->setPlayerFlag(player, "-ThChouce_failed");
             }
         } else if (triggerEvent == PreCardUsed || triggerEvent == PreCardResponded) {
@@ -854,7 +854,7 @@ public:
         if (!usecard->hasFlag("thchouce_use"))
             room->setPlayerFlag(player, "ThChouce_failed");
         else
-            room->addPlayerMark(player, "choucecount");
+            room->addPlayerMark(player, "@augury");
         return false;
     }
 };
@@ -870,7 +870,7 @@ public:
         return TriggerSkill::triggerable(target)
                && target->getPhase() == Player::Play
                && !target->hasFlag("ThChouce_failed")
-               && target->getMark("choucecount") >= 3;
+               && target->getMark("@augury") >= 3;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *) const {

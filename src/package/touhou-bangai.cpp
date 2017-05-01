@@ -621,8 +621,8 @@ public:
 class ThLingzhanViewAsSkill: public OneCardViewAsSkill {
 public:
     ThLingzhanViewAsSkill(): OneCardViewAsSkill("thlingzhan") {
-        expand_pile = "lingzhanpile";
-        filter_pattern = ".|.|.|lingzhanpile";
+        expand_pile = "nightmare";
+        filter_pattern = ".|.|.|nightmare";
     }
 
     virtual const Card *viewAs(const Card *originalCard) const {
@@ -633,11 +633,11 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const {
-        return !player->getPile("lingzhanpile").isEmpty() && Slash::IsAvailable(player, NULL);
+        return !player->getPile("nightmare").isEmpty() && Slash::IsAvailable(player, NULL);
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const {
-        return !player->getPile("lingzhanpile").isEmpty() && pattern == "slash";
+        return !player->getPile("nightmare").isEmpty() && pattern == "slash";
     }
 };
 
@@ -699,7 +699,7 @@ public:
 
     virtual bool effect(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         JudgeStruct *judge = data.value<JudgeStruct *>();
-        player->addToPile("lingzhanpile", judge->card);
+        player->addToPile("nightmare", judge->card);
 
         return false;
     }

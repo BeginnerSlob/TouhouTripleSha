@@ -568,7 +568,7 @@ end
 sgs.ai_skill_invoke.thfanhun = function(self, data)
 	local dying = data:toDying()
 	local damage = dying.damage
-	if self.player:getMark("@yingxiao") < 3 or not self.player:hasSkill("thmanxiao") then
+	if self.player:getMark("@bloom") < 3 or not self.player:hasSkill("thmanxiao") then
 		return true
 	end
 	if self:getAllPeachNum() == 0 and self:getCardsNum("Analeptic") == 0 then
@@ -585,10 +585,10 @@ sgs.ai_skill_invoke.thyoushang = function(self, data)
 	elseif self:isEnemy(damage.to) then
 		if damage.damage > 1 then return false end
 		if damage.to:isWounded() then return false end
-		if (self.player:getMark("@yingxiao") < 3 or not self.player:hasSkill("thmanxiao")) and self:objectiveLevel(damage.to) > 3 then
+		if (self.player:getMark("@bloom") < 3 or not self.player:hasSkill("thmanxiao")) and self:objectiveLevel(damage.to) > 3 then
 			return true
 		end
-		if self.player:getMark("@yingxiao") == 3 and #self.friends_noself > 0
+		if self.player:getMark("@bloom") == 3 and #self.friends_noself > 0
 				and self:isWeak() and self:getAllPeachNum() == 0 and self:getCardsNum("Analeptic") == 0
 				and self:objectiveLevel(damage.to) == 5 then
 			return true
@@ -618,7 +618,7 @@ sgs.ai_skill_use["@@thyouya"] = function(self, prompt, method)
 	for _, enemy in ipairs(self.enemies) do
 		if not enemy:isNude() and (getCardsNum("Jink", enemy, self.player) < 1 or sgs.card_lack[enemy:objectName()]["Jink"] == 1) then
 			table.insert(to_table, enemy:objectName())
-			if #to_table >= self.player:getMark("@yingxiao") then
+			if #to_table >= self.player:getMark("@bloom") then
 				return card_str .. "->" .. table.concat(to_table, "+")
 			end
 		end
@@ -626,7 +626,7 @@ sgs.ai_skill_use["@@thyouya"] = function(self, prompt, method)
 	for _, enemy in ipairs(self.enemies) do
 		if not enemy:isNude() and not table.contains(to_table, enemy:objectName()) then
 			table.insert(to_table, enemy:objectName())
-			if #to_table >= self.player:getMark("@yingxiao") then
+			if #to_table >= self.player:getMark("@bloom") then
 				return card_str .. "->" .. table.concat(to_table, "+")
 			end
 		end

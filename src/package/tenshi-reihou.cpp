@@ -1216,17 +1216,17 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         if (triggerEvent == TargetSpecified) {
-            if (TriggerSkill::triggerable(player) && !player->getPile("rhzhengyangpile").isEmpty()) {
+            if (TriggerSkill::triggerable(player) && !player->getPile("yang").isEmpty()) {
                 CardUseStruct use = data.value<CardUseStruct>();
                 if (use.card->isKindOf("Slash")
-                        && use.card->getSuit() == Sanguosha->getEngineCard(player->getPile("rhzhengyangpile").first())->getSuit()) {
+                        && use.card->getSuit() == Sanguosha->getEngineCard(player->getPile("yang").first())->getSuit()) {
                     return QStringList(objectName());
                 }
             }
         } else if (data.toString() == objectName()) {
             if (triggerEvent == EventAcquireSkill && !player->isKongcheng())
                 return QStringList(objectName());
-            if (triggerEvent == EventLoseSkill && !player->getPile("rhzhengyangpile").isEmpty())
+            if (triggerEvent == EventLoseSkill && !player->getPile("yang").isEmpty())
                 return QStringList(objectName());
         }
         return QStringList();
@@ -1255,9 +1255,9 @@ public:
         if (triggerEvent == EventAcquireSkill) {
             const Card *card = player->tag["RhZhengyangCard"].value<const Card *>();
             player->tag.remove("RhZhengyangCard");
-            player->addToPile("rhzhengyangpile", card);
+            player->addToPile("yang", card);
         } else if (triggerEvent == EventLoseSkill) {
-            room->obtainCard(player, player->getPile("rhzhengyangpile").first());
+            room->obtainCard(player, player->getPile("yang").first());
         } else if (triggerEvent == TargetSpecified) {
             CardUseStruct use = data.value<CardUseStruct>();
             QVariantList jink_list = player->tag["Jink_" + use.card->toString()].toList();
@@ -1289,8 +1289,8 @@ public:
         CardEffectStruct effect = data.value<CardEffectStruct>();
         if (effect.from && effect.from->isAlive()
                 && effect.from->hasSkill("rhzhengyang")
-                && !effect.from->getPile("rhzhengyangpile").isEmpty()) {
-            if (effect.card->getSuit() == Sanguosha->getEngineCard(effect.from->getPile("rhzhengyangpile").first())->getSuit()) {
+                && !effect.from->getPile("yang").isEmpty()) {
+            if (effect.card->getSuit() == Sanguosha->getEngineCard(effect.from->getPile("yang").first())->getSuit()) {
                 ask_who = effect.from;
                 return QStringList(objectName());
             }
@@ -1313,8 +1313,8 @@ public:
 
     virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const
     {
-        return to->hasSkill("rhzhengyang") && !to->getPile("rhzhengyangpile").isEmpty()
-                && card->getSuit() == Sanguosha->getEngineCard(to->getPile("rhzhengyangpile").first())->getSuit();
+        return to->hasSkill("rhzhengyang") && !to->getPile("yang").isEmpty()
+                && card->getSuit() == Sanguosha->getEngineCard(to->getPile("yang").first())->getSuit();
     }
 };
 
@@ -1332,9 +1332,9 @@ public:
         if (triggerEvent == CardUsed) {
             CardUseStruct use = data.value<CardUseStruct>();
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
-                if (p->getPile("rhchunyinpile").isEmpty())
+                if (p->getPile("yin").isEmpty())
                     continue;
-                Card::Suit suit = Sanguosha->getEngineCard(p->getPile("rhchunyinpile").first())->getSuit();
+                Card::Suit suit = Sanguosha->getEngineCard(p->getPile("yin").first())->getSuit();
                 if (use.card->getSuit() == suit)
                     skill_list.insert(p, QStringList(objectName()));
             }
@@ -1379,9 +1379,9 @@ public:
         if (triggerEvent == EventAcquireSkill) {
             const Card *card = player->tag["RhChunyinCard"].value<const Card *>();
             player->tag.remove("RhChunyinCard");
-            player->addToPile("rhchunyinpile", card);
+            player->addToPile("yin", card);
         } else if (triggerEvent == EventLoseSkill) {
-            room->obtainCard(player, player->getPile("rhchunyinpile").first());
+            room->obtainCard(player, player->getPile("yin").first());
         } else if (triggerEvent == CardUsed) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.from == ask_who) {
