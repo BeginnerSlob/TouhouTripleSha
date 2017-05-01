@@ -109,7 +109,7 @@ public:
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
         if (change.to == Player::NotActive) {
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
-                if (p->isWounded() && p->getMark("erchong_count") >= 2 && p->getMark("@erchong") <= 0)
+                if (p->isWounded() && p->getMark("@layer") >= 2 && p->getMark("@erchong") <= 0)
                     skill_list.insert(p, QStringList(objectName()));
             }
         }
@@ -139,7 +139,7 @@ public:
 class ThErchongRecord: public TriggerSkill {
 public:
     ThErchongRecord(): TriggerSkill("#therchong-record") {
-        events << PreCardUsed << EventPhaseChanging;
+        events << PreCardUsed << EventPhaseChanging << EventPhaseStart;
         frequency = Compulsory;
         global = true;
     }
@@ -157,19 +157,21 @@ public:
             if (change.to == Player::NotActive) {
                 if (player->hasFlag("ThErchongSlash")) {
                     foreach (ServerPlayer *p, room->getAlivePlayers())
-                        room->setPlayerMark(p, "erchong_count", 0);
+                        room->setPlayerMark(p, "@layer", 0);
                 } else {
                     return QStringList(objectName());
                 }
             }
-        }
+        } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::RoundStart)
+            room->setPlayerMark(player, "@layer", 0);
         return QStringList();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        room->setPlayerMark(player, "erchong_count", 0);
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-            room->addPlayerMark(p, "erchong_count");
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (player->hasSkill("erchong", true) && player->getMark("@erchong") == 0)
+                room->addPlayerMark(p, "@layer");
+        }
         return false;
     }
 };

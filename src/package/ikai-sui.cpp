@@ -2611,7 +2611,7 @@ public:
             else
                 card_ids = use.card->getSubcards();
             if (!card_ids.isEmpty()) {
-                owner->addToPile("ikqingweipile", use.card);
+                owner->addToPile("percussion", use.card);
                 if (use.from) {
                     QVariantList ikqingwei_cards = use.from->tag["ikqingwei_cards"].toList();
                     ikqingwei_cards << IntList2VariantList(card_ids);
@@ -3698,7 +3698,7 @@ IkLingzhouCard::IkLingzhouCard() {
 }
 
 void IkLingzhouCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    source->addToPile("iklingzhoupile", this);
+    source->addToPile("summon", this);
 }
 
 class IkLingzhouViewAsSkill: public ViewAsSkill {
@@ -3747,7 +3747,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(player) || player->getPile("iklingzhoupile").isEmpty()) return QStringList();
+        if (!TriggerSkill::triggerable(player) || player->getPile("summon").isEmpty()) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel")))
             return QStringList(objectName());
@@ -3757,7 +3757,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         room->sendCompulsoryTriggerLog(player, "iklingzhou");
 
-        QList<int> ids = player->getPile("iklingzhoupile");
+        QList<int> ids = player->getPile("summon");
         room->fillAG(ids, player);
         int id = room->askForAG(player, ids, false, objectName());
         room->clearAG(player);
@@ -3774,7 +3774,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const{
         return PhaseChangeSkill::triggerable(target) && target->getPhase() == Player::Start
-               && !target->getPile("iklingzhoupile").isEmpty();
+               && !target->getPile("summon").isEmpty();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
@@ -3796,13 +3796,13 @@ public:
         if (!playerlist.isEmpty())
             to_give = room->askForPlayerChosen(target, playerlist, objectName(), "@ikmoqizhou", true);
         if (to_give) {
-            DummyCard *dummy = new DummyCard(target->getPile("iklingzhoupile"));
+            DummyCard *dummy = new DummyCard(target->getPile("summon"));
             room->obtainCard(to_give, dummy);
             delete dummy;
             room->recover(to_give, RecoverStruct(target));
         } else {
-            int len = target->getPile("iklingzhoupile").length();
-            target->clearOnePrivatePile("iklingzhoupile");
+            int len = target->getPile("summon").length();
+            target->clearOnePrivatePile("summon");
             if (target->isAlive())
                 room->drawCards(target, len, objectName());
         }

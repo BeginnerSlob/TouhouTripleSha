@@ -3014,15 +3014,17 @@ public:
             room->setPlayerMark(player, objectName(), 0);
         } else if (triggerEvent == CardResponded) {
             CardResponseStruct resp = data.value<CardResponseStruct>();
-            if (resp.m_isUse && resp.m_card->isKindOf("Jink"))
+            if (resp.m_isUse && resp.m_card->isKindOf("Jink")) {
                 foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
                     if (p == player || (room->getCurrent() == p && p->getPhase() != Player::NotActive))
                         skill_list.insert(p, QStringList(objectName()));
+                }
             }
         } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Play) {
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
-                if (p == player) continue;
-                if (p->getPile(objectName()).length() > 0)
+                if (p == player)
+                    continue;
+                if (p->getPile("symbol").length() > 0)
                     skill_list.insert(p, QStringList(objectName()));
             }
         }
@@ -3043,10 +3045,10 @@ public:
             CardsMoveStruct move(ids, ask_who, Player::PlaceTable,
                                  CardMoveReason(CardMoveReason::S_REASON_TURNOVER, ask_who->objectName(), objectName(), QString()));
             room->moveCardsAtomic(move, true);
-            ask_who->addToPile(objectName(), ids);
+            ask_who->addToPile("symbol", ids);
         } else {
-            room->fillAG(ask_who->getPile(objectName()), ask_who);
-            int id = room->askForAG(ask_who, ask_who->getPile(objectName()), false, objectName());
+            room->fillAG(ask_who->getPile("symbol"), ask_who);
+            int id = room->askForAG(ask_who, ask_who->getPile("symbol"), false, objectName());
             room->clearAG(ask_who);
             room->throwCard(id, NULL);
             room->addPlayerMark(player, objectName());
@@ -4133,7 +4135,7 @@ IkXiaozuiCard::IkXiaozuiCard() {
 }
 
 void IkXiaozuiCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    source->addToPile("ikxiaozuipile", this);
+    source->addToPile("crime", this);
 }
 
 IkXiaozuiPeachCard::IkXiaozuiPeachCard()
@@ -4167,7 +4169,7 @@ const Card *IkXiaozuiPeachCard::validateInResponse(ServerPlayer *user) const
 class IkXiaozuiViewAsSkill: public ViewAsSkill {
 public:
     IkXiaozuiViewAsSkill(): ViewAsSkill("ikxiaozui") {
-        expand_pile = "ikxiaozuipile";
+        expand_pile = "crime";
     }
 
     virtual bool isEnabledAtPlay(const Player *) const{
@@ -4176,7 +4178,7 @@ public:
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
         return pattern == "@@ikxiaozui"
-               || (pattern.contains("peach") && !player->getPile("ikxiaozuipile").isEmpty());
+               || (pattern.contains("peach") && !player->getPile("crime").isEmpty());
     }
 
     virtual bool viewFilter(const QList<const Card *> &cards, const Card *to_select) const{
@@ -4184,7 +4186,7 @@ public:
         if (pattern == "@@ikxiaozui")
             return to_select->isKindOf("Slash");
         else
-            return cards.isEmpty() && Self->getPile("ikxiaozuipile").contains(to_select->getEffectiveId());
+            return cards.isEmpty() && Self->getPile("crime").contains(to_select->getEffectiveId());
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
@@ -4217,7 +4219,7 @@ public:
         return TriggerSkill::triggerable(player)
             && player->getPhase() == Player::Discard
             && !player->isKongcheng()
-            && player->getPile("ikxiaozuipile").isEmpty();
+            && player->getPile("crime").isEmpty();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *chengpu, QVariant &, ServerPlayer *) const{
