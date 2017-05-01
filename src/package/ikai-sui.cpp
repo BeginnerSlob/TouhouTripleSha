@@ -5270,7 +5270,7 @@ void IkKouzhuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     QStringList list = target->tag["IkKouzhuSource"].toStringList();
     list << source->objectName();
     target->tag["IkKouzhuSource"] = QVariant::fromValue(list);
-    source->addToPile("ikkouzhupile", this, false);
+    source->addToPile("satire", this, false);
     room->addPlayerMark(target, "@kouzhu");
 }
 
@@ -5299,7 +5299,7 @@ public:
         return TriggerSkill::triggerable(target)
             && target->getPhase() == Player::Finish
             && !target->isKongcheng()
-            && target->getPile("ikkouzhupile").isEmpty();
+            && target->getPile("satire").isEmpty();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
@@ -5331,7 +5331,7 @@ public:
         }
         room->sortByActionOrder(chenlins);
         foreach (ServerPlayer *chenlin, chenlins) {
-            int card_id = chenlin->getPile("ikkouzhupile").first();
+            int card_id = chenlin->getPile("satire").first();
             room->showCard(chenlin, card_id);
             const Card *cd = Sanguosha->getCard(card_id);
             QString pattern;
@@ -5375,7 +5375,7 @@ public:
                 foreach (QString objname, objnames) {
                     ServerPlayer *chenlin = room->findPlayer(objname);
                     if (chenlin)
-                        chenlin->clearOnePrivatePile("ikkouzhupile");
+                        chenlin->clearOnePrivatePile("satire");
                 }
             }
         }

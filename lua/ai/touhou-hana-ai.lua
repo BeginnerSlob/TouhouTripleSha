@@ -876,7 +876,7 @@ end
 
 --歃愈：锁定技，每当你于出牌阶段造成一次伤害后，你须弃置1枚“坚韧”标记。
 sgs.ai_cardneed.thshayu = function(to, card, self)
-	if not self:willSkipPlayPhase(to) and to:getMark("@jianren") > 0 then
+	if not self:willSkipPlayPhase(to) and to:getMark("@stiff") > 0 then
 		return card:isKindOf("AOE")
 	end
 end
@@ -887,7 +887,7 @@ thdujia_skill.name = "thdujia"
 table.insert(sgs.ai_skills, thdujia_skill)
 thdujia_skill.getTurnUseCard = function(self)
 	if self.player:hasUsed("ThDujiaCard") then return end
-	local n = self.player:hasSkill("thhouzhi") and self.player:getMark("@jianren") + 2 or 0
+	local n = self.player:hasSkill("thhouzhi") and self.player:getMark("@stiff") + 2 or 0
 	if not self:getCard("AOE") and self.player:getHp() <= n then return end
 	local cards = sgs.QList2Table(self.player:getHandcards())
 	self:sortByUseValue(cards)

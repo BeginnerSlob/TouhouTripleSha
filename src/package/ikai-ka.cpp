@@ -2408,7 +2408,9 @@ public:
         TriggerList list;
         if (player && player->isAlive() && player->getPhase() == Player::Finish) {
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
-                if (p != player && player->tag["IkPingwei"].toStringList().toSet().size() > p->getHp())
+                if (p == player)
+                    continue;
+                if (player->tag["IkPingwei"].toStringList().toSet().size() > p->getHp())
                     list.insert(p, QStringList(objectName()));
             }
         }
@@ -2448,10 +2450,10 @@ public:
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        QSet<QString> targets = player->tag["IkPingwei"].toStringList().toSet();
+        QStringList targets = player->tag["IkPingwei"].toStringList();
         foreach (ServerPlayer *p, data.value<CardUseStruct>().to)
             targets << p->objectName();
-        player->tag["IkPingwei"] = QVariant::fromValue(targets.toList());
+        player->tag["IkPingwei"] = QVariant::fromValue(targets);
         return false;
     }
 };

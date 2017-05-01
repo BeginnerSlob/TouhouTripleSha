@@ -1703,7 +1703,7 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
         if (!TriggerSkill::triggerable(player))
             return QStringList();
-        if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Finish && player->getMark("@jianren") > 0)
+        if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Finish && player->getMark("@stiff") > 0)
             return QStringList(objectName());
         if (triggerEvent == DamageInflicted)
             return QStringList(objectName());
@@ -1714,13 +1714,13 @@ public:
         room->broadcastSkillInvoke(objectName());
         room->sendCompulsoryTriggerLog(player, objectName());
         if (triggerEvent == EventPhaseStart) {
-            int n = player->getMark("@jianren");
-            player->loseAllMarks("@jianren");
+            int n = player->getMark("@stiff");
+            player->loseAllMarks("@stiff");
             room->loseHp(player, n);
             return false;
         } else {
             DamageStruct damage = data.value<DamageStruct>();
-            player->gainMark("@jianren", damage.damage);
+            player->gainMark("@stiff", damage.damage);
             return true;
         }
     }
@@ -1735,14 +1735,14 @@ public:
     virtual bool triggerable(const ServerPlayer *player) const {
         return TriggerSkill::triggerable(player)
                && player->getPhase() == Player::Play
-               && player->getMark("@jianren") > 0;
+               && player->getMark("@stiff") > 0;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         room->broadcastSkillInvoke(objectName());
         room->sendCompulsoryTriggerLog(player, objectName());
 
-        player->loseMark("@jianren");
+        player->loseMark("@stiff");
         return false;
     }
 };
@@ -1752,7 +1752,7 @@ ThDujiaCard::ThDujiaCard() {
 }
 
 void ThDujiaCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    source->gainMark("@jianren");
+    source->gainMark("@stiff");
     if (source->isAlive())
         source->drawCards(3, "thdujia");
 }

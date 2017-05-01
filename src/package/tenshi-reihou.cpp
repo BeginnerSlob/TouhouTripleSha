@@ -2991,7 +2991,7 @@ public:
     {
         ServerPlayer *p = player->tag[objectName()].value<ServerPlayer *>();
         if (p)
-            room->setPlayerMark(p, objectName(), 1);
+            room->setPlayerMark(p, "@constellation", 1);
         return false;
     }
 };
@@ -3010,7 +3010,7 @@ public:
         TriggerList skill_list;
         if (player->isAlive()) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                if (p->isAlive() && p->getMark("rhshenluo") > 0 && p->isWounded())
+                if (p->isAlive() && p->getMark("@constellation") > 0 && p->isWounded())
                     skill_list.insert(p, QStringList(objectName()));
             }
         }
