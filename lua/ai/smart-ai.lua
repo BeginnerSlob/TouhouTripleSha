@@ -4099,7 +4099,7 @@ function SmartAI:damageIsEffective_(damageStruct, return_num)
 	if source:hasSkill("ikxuwu") then return not return_num or damage end
 
 	if player:getMark("@shine") > 0 then return false end
-	if player:getMark("thhuanxiang") > 0 then return false end
+	if player:getMark("@quiet") > 0 then return false end
 	if player:getMark("@fog") > 0 and nature ~= sgs.DamageStruct_Thunder then return false end
 	if player:hasSkill("shixin") and nature == sgs.DamageStruct_Fire then return false end
 	if (player:hasSkill("thhanpo") or source:hasSkill("thhanpo")) and nature == sgs.DamageStruct_Fire then return false end

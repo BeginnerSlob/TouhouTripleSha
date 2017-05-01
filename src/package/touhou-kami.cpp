@@ -2477,54 +2477,77 @@ public:
     }
 };
 
-class ThHuanxiang: public TriggerSkill {
+class ThHuanxiang : public TriggerSkill
+{
 public:
-    ThHuanxiang(): TriggerSkill("thhuanxiang") {
-        events << EventPhaseStart << DamageForseen;
+    ThHuanxiang() : TriggerSkill("thhuanxiang")
+    {
+        events << EventPhaseStart;
         frequency = Limited;
         limit_mark = "@huanxiang";
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (triggerEvent == EventPhaseStart && player->getPhase() == Player::RoundStart && player->getMark(objectName()) > 0) {
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
+    {
+        if (triggerEvent == EventPhaseStart && player->getPhase() == Player::RoundStart && player->getMark("@quiet") > 0)
             room->removePlayerMark(player, objectName());
-        } else if (triggerEvent == DamageForseen) {
-            DamageStruct damage = data.value<DamageStruct>();
-            if ((TriggerSkill::triggerable(player) && player->getMark("@huanxiang") > 0) || player->getMark(objectName()) > 0)
+        else if (triggerEvent == DamageForseen) {
+            if (TriggerSkill::triggerable(player) && player->getMark("@huanxiang") > 0)
                 return QStringList(objectName());
         }
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        if (player->getMark(objectName()) > 0) {
-            room->broadcastSkillInvoke(objectName());
-            room->sendCompulsoryTriggerLog(player, objectName());
-        } else if (player->askForSkillInvoke(objectName(), data)) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName(), data)) {
             room->removePlayerMark(player, "@huanxiang");
             room->addPlayerMark(player, "@huanxiangused");
             room->broadcastSkillInvoke(objectName());
-        } else return false;
-        return true;
+            return true;
+        }
+        return false;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        if (player->getMark(objectName()) == 0) {
-            if (player->isWounded() && player->getHp() < 3)
-                room->recover(player, RecoverStruct(player, NULL, 3 - player->getHp()));
-            room->addPlayerMark(player, objectName());
-        }
+        if (player->isWounded() && player->getHp() < 3)
+            room->recover(player, RecoverStruct(player, NULL, 3 - player->getHp()));
+        room->addPlayerMark(player, "@quiet");
         return true;
     }
 };
 
-class ThHuanxiangProhibit: public ProhibitSkill {
+class ThHuanxiangPrevent : public TriggerSkill
+{
 public:
-    ThHuanxiangProhibit(): ProhibitSkill("#thhuanxiang-prohibit") {
+    ThHuanxiangPrevent() : TriggerSkill("#thhuanxiang-prevent")
+    {
+        events << DamageForseen;
+        frequency = NotCompulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return target && target->getMark("@quiet") > 0;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->broadcastSkillInvoke("thhuanxiang");
+        room->sendCompulsoryTriggerLog(player, "thhuanxiang");
+        return true;
+    }
+};
+
+class ThHuanxiangProhibit : public ProhibitSkill
+{
+public:
+    ThHuanxiangProhibit() : ProhibitSkill("#thhuanxiang-prohibit")
+    {
     }
 
     virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const{
-        return to->getMark("thhuanxiang") > 0 && card->getTypeId() != Card::TypeSkill;
+        return to->getMark("@quiet") > 0 && card->getTypeId() != Card::TypeSkill;
     }
 };
 
@@ -2623,7 +2646,9 @@ TouhouKamiPackage::TouhouKamiPackage()
     kami016->addSkill(new ThJiefuInvalidity);
     related_skills.insertMulti("thjiefu", "#thjiefu-inv");
     kami016->addSkill(new ThHuanxiang);
+    kami016->addSkill(new ThHuanxiangPrevent);
     kami016->addSkill(new ThHuanxiangProhibit);
+    related_skills.insertMulti("thhuanxiang", "#thhuanxiang-prevent");
     related_skills.insertMulti("thhuanxiang", "#thhuanxiang-prohibit");
 
     addMetaObject<ThShenfengCard>();

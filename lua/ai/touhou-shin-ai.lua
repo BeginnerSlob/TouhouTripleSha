@@ -804,7 +804,7 @@ end
 
 --深秘：你可以将你人物牌上颜色相同的两张牌当【闪】使用或打出；或将你人物牌上颜色不同的两张牌当【三粒天滴】使用。
 sgs.ai_cardsview_valuable.thshenmi = function(self, class_name, player)
-	local ids = player:getPile("thhuanjianpile")
+	local ids = player:getPile("mirror")
 	if ids:length() < 2 then return nil end
 	local card1 = sgs.Sanguosha:getCard(ids:first())
 	local card2 = sgs.Sanguosha:getCard(ids:last())
