@@ -15,7 +15,7 @@ return {
 	["thjianmo:mo"] = "此阶段使用【杀】时需弃置一张牌，否则此【杀】无效。",
 	["#thjianmochoose1"] = "%from 选择了第 %arg 项，此阶段无法使用或打出【<font color=yellow><b>杀</b></font>】",
 	["#thjianmochoose2"] = "%from 选择了第 %arg 项，此阶段使用【<font color=yellow><b>杀</b></font>】时须弃一张牌",
-	["@tie"] = "缚",
+	["@imprison"] = "缚",
 	["#ThJianmo"] = "受“%arg”影响，%from 需弃置一张牌，否则此【%arg2】无效",
 	["@thjianmo"] = "请弃置一张牌使该【杀】生效",
 	["therchong"] = "二重",

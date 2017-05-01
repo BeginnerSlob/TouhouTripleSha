@@ -1357,8 +1357,8 @@ public:
         const Card *card2 = room->askForCard(ask_who, ".!", "@thhuanjian-self", QVariant(), Card::MethodNone);
         if (!card2)
             card2 = ask_who->getRandomHandCard();
-        ask_who->addToPile("mirror", card1);
-        ask_who->addToPile("mirror", card2);
+        ask_who->addToPile("note", card1);
+        ask_who->addToPile("note", card2);
         return false;
     }
 };
@@ -1377,7 +1377,7 @@ public:
         TriggerList list;
         if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
             foreach (ServerPlayer *p, room->getAlivePlayers()) {
-                if (p != player && !p->getPile("mirror").isEmpty())
+                if (p != player && !p->getPile("note").isEmpty())
                     list.insert(p, QStringList(objectName()));
             }
         }
@@ -1388,7 +1388,7 @@ public:
     {
         room->sendCompulsoryTriggerLog(ask_who, "thhuanjian");
         room->broadcastSkillInvoke("thhuanjian");
-        QList<int> card_ids = ask_who->getPile("mirror");
+        QList<int> card_ids = ask_who->getPile("note");
         room->fillAG(card_ids);
         int card_id = room->askForAG(ask_who, card_ids, false, "thhuanjian");
         card_ids.removeOne(card_id);
@@ -1409,12 +1409,12 @@ class ThShenmi : public ViewAsSkill
 public:
     ThShenmi() : ViewAsSkill("thshenmi")
     {
-        expand_pile = "mirror";
+        expand_pile = "note";
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
     {
-        if (!Self->getPile("mirror").contains(to_select->getId()))
+        if (!Self->getPile("note").contains(to_select->getId()))
             return false;
         QString pattern = Sanguosha->getCurrentCardUsePattern();
         if (pattern == "jink")
@@ -1449,7 +1449,7 @@ public:
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
     {
-        QList<int> ids = player->getPile("mirror");
+        QList<int> ids = player->getPile("note");
         if (!ids.isEmpty()) {
             const Card *first = Sanguosha->getCard(ids.takeFirst());
             if (!ids.isEmpty()) {
@@ -1471,7 +1471,7 @@ public:
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const
     {
-        QList<int> ids = player->getPile("mirror");
+        QList<int> ids = player->getPile("note");
         if (!ids.isEmpty()) {
             const Card *first = Sanguosha->getCard(ids.takeFirst());
             if (!ids.isEmpty()) {

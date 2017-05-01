@@ -167,7 +167,7 @@ public:
 
         AnchoredRect m_phaseArea;
 
-        // private pile (e.g. 7 stars, buqu)
+        // private pile (e.g. 7 luminary, buqu)
         QPoint m_privatePileStartPos;
         QPoint m_privatePileStep;
         QSize m_privatePileButtonSize;

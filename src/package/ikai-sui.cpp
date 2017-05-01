@@ -2611,7 +2611,7 @@ public:
             else
                 card_ids = use.card->getSubcards();
             if (!card_ids.isEmpty()) {
-                owner->addToPile("percussion", use.card);
+                owner->addToPile("endure", use.card);
                 if (use.from) {
                     QVariantList ikqingwei_cards = use.from->tag["ikqingwei_cards"].toList();
                     ikqingwei_cards << IntList2VariantList(card_ids);

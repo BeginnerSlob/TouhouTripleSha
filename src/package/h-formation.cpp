@@ -24,10 +24,10 @@ public:
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         foreach (ServerPlayer *dengai, room->getAllPlayers()) {
             if (!TriggerSkill::triggerable(dengai) || !player->isAlive()) break;
-            if (dengai->getPile("secret").isEmpty()) continue;
+            if (dengai->getPile("assassinate").isEmpty()) continue;
             if (!room->askForSkillInvoke(dengai, objectName(), data)) continue;
-            room->fillAG(dengai->getPile("secret"), dengai);
-            int id = room->askForAG(dengai, dengai->getPile("secret"), false, objectName());
+            room->fillAG(dengai->getPile("assassinate"), dengai);
+            int id = room->askForAG(dengai, dengai->getPile("assassinate"), false, objectName());
             room->clearAG(dengai);
             if (player == dengai) {
                 LogMessage log;
