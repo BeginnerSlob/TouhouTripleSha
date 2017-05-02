@@ -4161,7 +4161,7 @@ Error message and password prompt
             &quot;module-type&quot;: &quot;command&quot;
         },
         &quot;$:/core/modules/config.js&quot;: {
-            &quot;text&quot;: &quot;/*\\\ntitle: $:/core/modules/config.js\ntype: application/javascript\nmodule-type: config\n\nCore configuration constants\n\n\\*/\n(function(){\n\n/*jslint node: true, browser: true */\n/*global $tw: false */\n\&quot;use strict\&quot;;\n\nexports.preferences = {};\n\nexports.preferences.notificationDuration = 3 * 1000;\nexports.preferences.jsonSpaces = 4;\n\nexports.textPrimitives = {\n\tupperLetter: \&quot;[A-Z\\u00c0-\\u00d6\\u00d8-\\u00de\\u0150\\u0170]\&quot;,\n\tlowerLetter: \&quot;[a-z\\u00df-\\u00f6\\u00f8-\\u00ff\\u0151\\u0171]\&quot;,\n\tanyLetter:   \&quot;[A-Za-z0-9\\u00c0-\\u00d6\\u00d8-\\u00de\\u00df-\\u00f6\\u00f8-\\u00ff\\u0150\\u0170\\u0151\\u0171]\&quot;,\n\tblockPrefixLetters:\t\&quot;[A-Za-z0-9-_\\u00c0-\\u00d6\\u00d8-\\u00de\\u00df-\\u00f6\\u00f8-\\u00ff\\u0150\\u0170\\u0151\\u0171]\&quot;\n};\n\nexports.textPrimitives.unWikiLink = \&quot;~\&quot;;\nexports.textPrimitives.wikiLink = exports.textPrimitives.upperLetter + \&quot;+\&quot; +\n\texports.textPrimitives.lowerLetter + \&quot;+\&quot; +\n\texports.textPrimitives.upperLetter +\n\texports.textPrimitives.anyLetter + \&quot;*\&quot;;\n\nexports.htmlEntities = {quot:34, amp:38, apos:39, lt:60, gt:62, nbsp:160, iexcl:161, cent:162, pound:163, curren:164, yen:165, brvbar:166, sect:167, uml:168, copy:169, ordf:170, laquo:171, not:172, shy:173, reg:174, macr:175, deg:176, plusmn:177, sup2:178, sup3:179, acute:180, micro:181, para:182, middot:183, cedil:184, sup1:185, ordm:186, raquo:187, frac14:188, frac12:189, frac34:190, iquest:191, Agrave:192, Aacute:193, Acirc:194, Atilde:195, Auml:196, Aring:197, AElig:198, Ccedil:199, Egrave:200, Eacute:201, Ecirc:202, Euml:203, Igrave:204, Iacute:205, Icirc:206, Iuml:207, ETH:208, Ntilde:209, Ograve:210, Oacute:211, Ocirc:212, Otilde:213, Ouml:214, times:215, Oslash:216, Ugrave:217, Uacute:218, Ucirc:219, Uuml:220, Yacute:221, THORN:222, szlig:223, agrave:224, aacute:225, acirc:226, atilde:227, auml:228, aring:229, aelig:230, ccedil:231, egrave:232, eacute:233, ecirc:234, euml:235, igrave:236, iacute:237, icirc:238, iuml:239, eth:240, ntilde:241, ograve:242, oacute:243, ocirc:244, otilde:245, ouml:246, divide:247, oslash:248, ugrave:249, uacute:250, ucirc:251, uuml:252, yacute:253, thorn:254, yuml:255, OElig:338, oelig:339, Scaron:352, scaron:353, Yuml:376, fnof:402, circ:710, tilde:732, Alpha:913, Beta:914, Gamma:915, Delta:916, Epsilon:917, Zeta:918, Eta:919, Theta:920, Iota:921, Kappa:922, Lambda:923, Mu:924, Nu:925, Xi:926, Omicron:927, Pi:928, Rho:929, Sigma:931, Tau:932, Upsilon:933, Phi:934, Chi:935, Psi:936, Omega:937, alpha:945, beta:946, gamma:947, delta:948, epsilon:949, zeta:950, eta:951, theta:952, iota:953, kappa:954, lambda:955, mu:956, nu:957, xi:958, omicron:959, pi:960, rho:961, sigmaf:962, sigma:963, tau:964, upsilon:965, phi:966, chi:967, psi:968, omega:969, thetasym:977, upsih:978, piv:982, ensp:8194, emsp:8195, thinsp:8201, zwnj:8204, zwj:8205, lrm:8206, rlm:8207, ndash:8211, mdash:8212, lsquo:8216, rsquo:8217, sbquo:8218, ldquo:8220, rdquo:8221, bdquo:8222, dagger:8224, Dagger:8225, bull:8226, hellip:8230, permil:8240, prime:8242, Prime:8243, lsaquo:8249, rsaquo:8250, oline:8254, frasl:8260, euro:8364, image:8465, weierp:8472, real:8476, trade:8482, alefsym:8501, larr:8592, uarr:8593, rarr:8594, darr:8595, harr:8596, crarr:8629, lArr:8656, uArr:8657, rArr:8658, dArr:8659, hArr:8660, forall:8704, part:8706, exist:8707, empty:8709, nabla:8711, isin:8712, notin:8713, ni:8715, prod:8719, sum:8721, minus:8722, lowast:8727, radic:8730, prop:8733, infin:8734, ang:8736, and:8743, or:8744, cap:8745, cup:8746, int:8747, there4:8756, sim:8764, cong:8773, asymp:8776, ne:8800, equiv:8801, le:8804, ge:8805, sub:8834, sup:8835, nsub:8836, sube:8838, supe:8839, oplus:8853, otimes:8855, perp:8869, sdot:8901, lceil:8968, rceil:8969, lfloor:8970, rfloor:8971, lang:9001, rang:9002, loz:9674, spades:9824, clubs:9827, hearts:9829, diams:9830 };\n\nexports.htmlVoidElements = \&quot;area,base,br,col,command,embed,hr,img,input,keygen,link,meta,param,source,track,wbr\&quot;.split(\&quot;,\&quot;);\n\nexports.htmlBlockElements = \&quot;address,article,aside,audio,blockquote,canvas,dd,div,dl,fieldset,figcaption,figure,footer,form,h1,h2,h3,h4,h5,h6,header,hgroup,hr,li,noscript,ol,output,p,pre,section,table,tfoot,ul,video\&quot;.split(\&quot;,\&quot;);\n\nexports.htmlUnsafeElements = \&quot;script\&quot;.split(\&quot;,\&quot;);\n\n})();\n&quot;,
+            &quot;text&quot;: &quot;/*\\\ntitle: $:/core/modules/config.js\ntype: application/javascript\nmodule-type: config\n\nCore configuration constants\n\n\\*/\n(function(){\n\n/*jslint node: true, browser: true */\n/*global $tw: false */\n\&quot;use strict\&quot;;\n\nexports.preferences = {};\n\nexports.preferences.notificationDuration = 3 * 1000;\nexports.preferences.jsonSpaces = 4;\n\nexports.textPrimitives = {\n\tupperLetter: \&quot;[A-Z\\u00c0-\\u00d6\\u00d8-\\u00de\\u0150\\u0170]\&quot;,\n\tlowerLetter: \&quot;[a-z\\u00df-\\u00f6\\u00f8-\\u00ff\\u0151\\u0171]\&quot;,\n\tanyLetter:   \&quot;[A-Za-z0-9\\u00c0-\\u00d6\\u00d8-\\u00de\\u00df-\\u00f6\\u00f8-\\u00ff\\u0150\\u0170\\u0151\\u0171]\&quot;,\n\tblockPrefixLetters:\t\&quot;[A-Za-z0-9-_\\u00c0-\\u00d6\\u00d8-\\u00de\\u00df-\\u00f6\\u00f8-\\u00ff\\u0150\\u0170\\u0151\\u0171]\&quot;\n};\n\nexports.textPrimitives.unWikiLink = \&quot;~\&quot;;\n\nexports.htmlEntities = {quot:34, amp:38, apos:39, lt:60, gt:62, nbsp:160, iexcl:161, cent:162, pound:163, curren:164, yen:165, brvbar:166, sect:167, uml:168, copy:169, ordf:170, laquo:171, not:172, shy:173, reg:174, macr:175, deg:176, plusmn:177, sup2:178, sup3:179, acute:180, micro:181, para:182, middot:183, cedil:184, sup1:185, ordm:186, raquo:187, frac14:188, frac12:189, frac34:190, iquest:191, Agrave:192, Aacute:193, Acirc:194, Atilde:195, Auml:196, Aring:197, AElig:198, Ccedil:199, Egrave:200, Eacute:201, Ecirc:202, Euml:203, Igrave:204, Iacute:205, Icirc:206, Iuml:207, ETH:208, Ntilde:209, Ograve:210, Oacute:211, Ocirc:212, Otilde:213, Ouml:214, times:215, Oslash:216, Ugrave:217, Uacute:218, Ucirc:219, Uuml:220, Yacute:221, THORN:222, szlig:223, agrave:224, aacute:225, acirc:226, atilde:227, auml:228, aring:229, aelig:230, ccedil:231, egrave:232, eacute:233, ecirc:234, euml:235, igrave:236, iacute:237, icirc:238, iuml:239, eth:240, ntilde:241, ograve:242, oacute:243, ocirc:244, otilde:245, ouml:246, divide:247, oslash:248, ugrave:249, uacute:250, ucirc:251, uuml:252, yacute:253, thorn:254, yuml:255, OElig:338, oelig:339, Scaron:352, scaron:353, Yuml:376, fnof:402, circ:710, tilde:732, Alpha:913, Beta:914, Gamma:915, Delta:916, Epsilon:917, Zeta:918, Eta:919, Theta:920, Iota:921, Kappa:922, Lambda:923, Mu:924, Nu:925, Xi:926, Omicron:927, Pi:928, Rho:929, Sigma:931, Tau:932, Upsilon:933, Phi:934, Chi:935, Psi:936, Omega:937, alpha:945, beta:946, gamma:947, delta:948, epsilon:949, zeta:950, eta:951, theta:952, iota:953, kappa:954, lambda:955, mu:956, nu:957, xi:958, omicron:959, pi:960, rho:961, sigmaf:962, sigma:963, tau:964, upsilon:965, phi:966, chi:967, psi:968, omega:969, thetasym:977, upsih:978, piv:982, ensp:8194, emsp:8195, thinsp:8201, zwnj:8204, zwj:8205, lrm:8206, rlm:8207, ndash:8211, mdash:8212, lsquo:8216, rsquo:8217, sbquo:8218, ldquo:8220, rdquo:8221, bdquo:8222, dagger:8224, Dagger:8225, bull:8226, hellip:8230, permil:8240, prime:8242, Prime:8243, lsaquo:8249, rsaquo:8250, oline:8254, frasl:8260, euro:8364, image:8465, weierp:8472, real:8476, trade:8482, alefsym:8501, larr:8592, uarr:8593, rarr:8594, darr:8595, harr:8596, crarr:8629, lArr:8656, uArr:8657, rArr:8658, dArr:8659, hArr:8660, forall:8704, part:8706, exist:8707, empty:8709, nabla:8711, isin:8712, notin:8713, ni:8715, prod:8719, sum:8721, minus:8722, lowast:8727, radic:8730, prop:8733, infin:8734, ang:8736, and:8743, or:8744, cap:8745, cup:8746, int:8747, there4:8756, sim:8764, cong:8773, asymp:8776, ne:8800, equiv:8801, le:8804, ge:8805, sub:8834, sup:8835, nsub:8836, sube:8838, supe:8839, oplus:8853, otimes:8855, perp:8869, sdot:8901, lceil:8968, rceil:8969, lfloor:8970, rfloor:8971, lang:9001, rang:9002, loz:9674, spades:9824, clubs:9827, hearts:9829, diams:9830 };\n\nexports.htmlVoidElements = \&quot;area,base,br,col,command,embed,hr,img,input,keygen,link,meta,param,source,track,wbr\&quot;.split(\&quot;,\&quot;);\n\nexports.htmlBlockElements = \&quot;address,article,aside,audio,blockquote,canvas,dd,div,dl,fieldset,figcaption,figure,footer,form,h1,h2,h3,h4,h5,h6,header,hgroup,hr,li,noscript,ol,output,p,pre,section,table,tfoot,ul,video\&quot;.split(\&quot;,\&quot;);\n\nexports.htmlUnsafeElements = \&quot;script\&quot;.split(\&quot;,\&quot;);\n\n})();\n&quot;,
             &quot;title&quot;: &quot;$:/core/modules/config.js&quot;,
             &quot;type&quot;: &quot;application/javascript&quot;,
             &quot;module-type&quot;: &quot;config&quot;
@@ -9934,7 +9934,7 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 <div created="20160103183101233" modified="20160109114616416" tags="东方的花火 花势力 空属性" title="茨木华扇">
 <pre>&lt;!--茨华仙--&gt;
 &lt;!--包子仙--&gt;
-&lt;&lt;generalTable HANA008 花 茨木华扇 独臂有角的仙人 空 3 劝善、仙罡 桃花僧 ~DomotoLain hana008&gt;&gt;
+&lt;&lt;generalTable HANA008 花 茨木华扇 独臂有角的仙人 空 3 劝善、仙罡 桃花僧 DomotoLain hana008&gt;&gt;
 
 ''劝善''——''阶段技''。你可以选择一名有手牌的其他角色▶你令该角色将至少一张手牌交给一名其他角色，若这些牌的类别均相同，你摸一张牌。
 
@@ -9966,7 +9966,7 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 ''深秘''——①你可以将颜色相同的两张“鉴”当【闪】使用或打出。②你可以将颜色不同的两张“鉴”当【三粒天滴】使用。</pre>
 </div>
 <div created="20160103051445270" modified="20160112154305785" tags="东方的白章 风势力 空属性" title="宇佐见莲子">
-<pre>&lt;&lt;generalTable BANGAI001 风 宇佐见莲子 大空之弦 空 4 辨方 幻桜落 ~DomotoLain bangai001&gt;&gt;
+<pre>&lt;&lt;generalTable BANGAI001 风 宇佐见莲子 大空之弦 空 4 辨方 幻桜落 DomotoLain bangai001&gt;&gt;
 
 ''辨方''——当你使用【杀】对一名其他角色造成伤害后，或一名其他角色使用【杀】对你造成伤害后，你可以执行X次判定（X为你已损失的体力值与1中的较大值）：若结果为红色，你可以获取该角色的一张牌。</pre>
 </div>
@@ -9979,7 +9979,7 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 </div>
 <div created="20160105131303386" modified="20160116065302401" tags="雪势力 幻属性 异世界的金兰" title="羽濑川小鸠">
 <pre>&lt;!--孙鲁班--&gt;
-&lt;&lt;generalTable SNOW037 雪 羽濑川小鸠 自称的血族真祖 幻 4 矫誓、灵煌 ~CatCat44 桜沢いづみ snow037&gt;&gt;
+&lt;&lt;generalTable SNOW037 雪 羽濑川小鸠 自称的血族真祖 幻 4 矫誓、灵煌 CatCat44 桜沢いづみ snow037&gt;&gt;
 
 ''矫誓''——当你于出牌阶段内使用【杀】或黑色非延时类锦囊牌指定唯一的目标时，你可以令除其外的是你使用此牌的合法目标的一名其他角色选择一项：1.将一张牌交给你，若如此做，该角色代替你成为此牌的使用者；2.成为此牌的目标。每阶段限一次。
 
@@ -9995,7 +9995,7 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 <div created="20160103182525029" modified="20160109114535105" tags="东方的花火 空属性 花势力" title="永江衣玖">
 <pre>&lt;!--19--&gt;
 &lt;!--①⑨--&gt;
-&lt;&lt;generalTable HANA005 花 永江衣玖 暗海的绯之衣 空 4 霆舞、羽裳 幻桜落 ~DomotoLain hana005&gt;&gt;
+&lt;&lt;generalTable HANA005 花 永江衣玖 暗海的绯之衣 空 4 霆舞、羽裳 幻桜落 DomotoLain hana005&gt;&gt;
 
 ''霆舞''——当你于出牌阶段内对一名不处于连环状态的其他角色造成的雷属性伤害结算结束后，你可以判定▶若结果不为&lt;&lt;heart&gt;&gt;，你对一名该角色相邻的角色造成1点雷属性伤害。每阶段限两次。
 
@@ -10084,7 +10084,7 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 <pre>&lt;!--猫车--&gt;
 ★这个条目不是[[SP火焰猫燐]]
 
-&lt;&lt;generalTable KAZE015 风 火焰猫燐 华狱的轮祸 空 4 燃丧〈焰轮〉 幻桜落 ~DomotoLain kaze015&gt;&gt;
+&lt;&lt;generalTable KAZE015 风 火焰猫燐 华狱的轮祸 空 4 燃丧〈焰轮〉 幻桜落 DomotoLain kaze015&gt;&gt;
 
 ''燃丧''——''阶段技''。你可以与一名角色拼点→当你赢后，你获得于此回合内的〖''焰轮''〗〈①你可以将一张红色手牌当【灼狱业焰】使用。②你使用的【灼狱业焰】效果中的“//花色//”改为“//颜色//”。③当你使用【灼狱业焰】造成伤害后，你可以摸一张牌〉；当你没赢后，你于此回合内不能使用黑色锦囊牌。</pre>
 </div>
@@ -10750,7 +10750,7 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 ''慈航''——当你使用的【杀】被抵消时，你可以选择一项：1.弃置X张牌（X为目标已损失的体力值）▶令此【杀】依然生效；2.令目标摸X张牌（X为其体力值与5中的较小值）▶令此【杀】依然生效。</pre>
 </div>
 <div created="20160105131303386" modified="20160116104704568" tags="花势力 空属性 异世界的火种" title="佐仓千代">
-<pre>&lt;&lt;generalTable BLOOM049 花 佐仓千代 南照之绘扇 空 3 熏风、露华 沸治·克里夫 ~DomotoLain bloom049&gt;&gt;
+<pre>&lt;&lt;generalTable BLOOM049 花 佐仓千代 南照之绘扇 空 3 熏风、露华 沸治·克里夫 DomotoLain bloom049&gt;&gt;
 
 ''熏风''——你于出牌阶段内使用的第一张牌结算结束后，你可以摸一张牌，若如此做，你于此阶段内使用的第二张牌结算结束后，你弃置一张牌。
 
@@ -10873,7 +10873,7 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 </div>
 <div created="20160105131303386" modified="20160116050107673" tags="花势力 空属性 异世界的金兰" title="司波深雪">
 <pre>&lt;!--满宠--&gt;
-&lt;&lt;generalTable BLOOM027 花 司波深雪 冰雾的雪姬 空 3 冰焰、雪涟 ~SamRosen みわべさくら bloom027&gt;&gt;
+&lt;&lt;generalTable BLOOM027 花 司波深雪 冰雾的雪姬 空 3 冰焰、雪涟 SamRosen みわべさくら bloom027&gt;&gt;
 
 ''冰焰''——''阶段技''。你可以弃置至少一张手牌并选择一名其他角色，令该角色选择一项：1.弃置一张与这些牌类别均不同的手牌；2.将人物牌翻面，然后摸X张牌（X为你以此法弃置的牌的数量）。
 
@@ -11284,7 +11284,7 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 &lt;!--神四季映姬·亚玛萨那度--&gt;
 ★这个条目不是[[四季映姬]]或[[SP四季映姬]]
 
-&lt;&lt;generalTable KAMI006 神 四季映姬 荒镇的坤姬 空 3 彷魂、镜悟、轮狱 浪人兵法家 ~DomotoLain kami006&gt;&gt;
+&lt;&lt;generalTable KAMI006 神 四季映姬 荒镇的坤姬 空 3 彷魂、镜悟、轮狱 浪人兵法家 DomotoLain kami006&gt;&gt;
 
 ''彷魂''——摸牌阶段结束时，你可以弃置一张牌，你于此回合内拥有“缲”标记〈①你到其他角色的距离视为1；②你的【杀】视为【赤雾锁魂】〉。
 
@@ -11360,7 +11360,7 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 &lt;!--神紫妈sasfdsgshrahglrhdf--&gt;
 ★这个条目不是[[八云紫]]
 
-&lt;&lt;generalTable KAMI011 神 八云紫 创刻的幻界 空 4 虚境、灵殒（崩坏、散灵、心殇、禁恋）、朝霭〈神宝、浴火〉 幻桜落 ~DomotoLain kami011&gt;&gt;
+&lt;&lt;generalTable KAMI011 神 八云紫 创刻的幻界 空 4 虚境、灵殒（崩坏、散灵、心殇、禁恋）、朝霭〈神宝、浴火〉 幻桜落 DomotoLain kami011&gt;&gt;
 
 ''虚境''——①当你于回合外成为其他角色使用的黑色非延时类锦囊牌的目标后，你可以失去一项技能，摸一张牌，然后令该角色获得于你的回合结束前的〖''幻葬''〗和〖''暗月''〗。②当你于回合外成为你使用的【桃】或【酒】的目标后，你可以失去一项技能，摸一张牌，然后获得于你的回合结束前的〖''霁风''〗和〖''隙境''〗。
 
@@ -12227,7 +12227,7 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 &lt;!--紫妈reahrahfakuifaehfkckakc--&gt;
 ★这个条目不是[[神八云紫]]
 
-&lt;&lt;generalTable YUKI009 雪 八云紫 幻想的境界 空 4 灵压、黑幕 昂翼天使 ~DomotoLain yuki009&gt;&gt;
+&lt;&lt;generalTable YUKI009 雪 八云紫 幻想的境界 空 4 灵压、黑幕 昂翼天使 DomotoLain yuki009&gt;&gt;
 
 ''灵压''——当其他角色于你的回合内使用的红色牌结算结束后，你可以令该角色选择一项：1.令你摸一张牌；2.令你弃置其一张牌。
 
@@ -12251,7 +12251,7 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 <div created="20160103035608662" modified="20160109113703911" tags="空属性 东方的风语 风势力" title="八坂神奈子">
 <pre>&lt;!--神妈--&gt;
 &lt;!--毒瘤--&gt;
-&lt;&lt;generalTable KAZE008 风 八坂神奈子 山与湖的化身 空 3 神粥、天流、乾仪 妒天のPAD ~CapuraLin kaze008&gt;&gt;
+&lt;&lt;generalTable KAZE008 风 八坂神奈子 山与湖的化身 空 3 神粥、天流、乾仪 妒天のPAD CapuraLin kaze008&gt;&gt;
 
 ''神粥''——当你受到1点伤害后或你的人物牌翻至正面朝上后，你可以亮出牌堆顶的X张牌（X为角色数和5中的较小值），将其中一种类别的牌交给一名角色，然后将其余的牌置入弃牌堆。
 
@@ -12308,7 +12308,7 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 ''神道''——''锁定技''。若有“踏”，你拥有〖''知惠''〗和〖''眩惑''〗。</pre>
 </div>
 <div created="20160104040503044" modified="20160109112825172" tags="东方的雪园 雪势力 幻属性" title="稗田阿求">
-<pre>&lt;&lt;generalTable YUKI005 雪 稗田阿求 幻想乡的记忆 幻 3 墨迹、缘起 江山英魂 ~DomotoLain yuki005&gt;&gt;
+<pre>&lt;&lt;generalTable YUKI005 雪 稗田阿求 幻想乡的记忆 幻 3 墨迹、缘起 江山英魂 DomotoLain yuki005&gt;&gt;
 
 ''墨迹''——当你需要使用/打出【杀】或【闪】时，你可以将X张牌置于牌堆顶（X为你的体力值与2中的较小值）▶你视为使用/打出【杀】或【闪】。
 
@@ -12736,7 +12736,7 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 </div>
 <div created="20160106050337462" modified="20160109120128774" tags="东方的雪园 雪势力 空属性" title="娜兹玲">
 <pre>&lt;!--老鼠--&gt;
-&lt;&lt;generalTable YUKI014 雪 娜兹玲 小小贤将 空 4 窃宝 xyzbilliu ~DomotoLain yuki014&gt;&gt;
+&lt;&lt;generalTable YUKI014 雪 娜兹玲 小小贤将 空 4 窃宝 xyzbilliu DomotoLain yuki014&gt;&gt;
 
 ''窃宝''——①当一名角色对另一名角色使用【桃】时，你可以弃置一张【杀】▶令此【桃】对使用者以外的目标无效，若此【杀】为红色，你获取此【桃】。②当一名角色得到另一名角色的牌前，你可以弃置一张【杀】▶若此【杀】为：红色，你获取这些牌；黑色，将这些牌置入弃牌堆。</pre>
 </div>
@@ -12760,7 +12760,7 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 </div>
 <div created="20160104040739074" modified="20160109115402915" tags="东方的雪园 空属性 雪势力" title="橙">
 <pre>&lt;!--八云橙--&gt;
-&lt;&lt;generalTable YUKI006 雪 橙 凶兆的黑猫 空 4 遁甲 ~NoBravery 橙狼 yuki006&gt;&gt;
+&lt;&lt;generalTable YUKI006 雪 橙 凶兆的黑猫 空 4 遁甲 NoBravery 橙狼 yuki006&gt;&gt;
 
 ''遁甲''——出牌阶段限三次，你可以将一张【杀】当【心网密葬】使用→当目标因执行此【心网密葬】的效果而失去【闪】后，你对该角色造成1点伤害。</pre>
 </div>
@@ -12922,7 +12922,7 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 </div>
 <div created="20160105131303386" modified="20160116051237889" tags="花势力 空属性 异世界的金兰" title="莉雅丝·吉蒙里">
 <pre>&lt;!--陈群--&gt;
-&lt;&lt;generalTable BLOOM038 花 莉雅丝·吉蒙里 赤红的灭杀姬 空 3 定品、魔弈 ~ToJoanna みやま零 bloom038&gt;&gt;
+&lt;&lt;generalTable BLOOM038 花 莉雅丝·吉蒙里 赤红的灭杀姬 空 3 定品、魔弈 ToJoanna みやま零 bloom038&gt;&gt;
 
 ''定品''——出牌阶段，你可以弃置一张与你于此回合内使用或被弃置的牌类别均并非相同的手牌并选择一名已受伤的角色，令该角色判定，若结果为：黑色，其摸X张牌（X为其已损失的体力值），然后其于此回合内不是你发动〖''定品''〗的合法目标；红色，你将人物牌翻面。
 
@@ -12969,7 +12969,7 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 </div>
 <div created="20160105131303386" modified="20160116062324430" tags="雪势力 空属性 异世界的金兰" title="菲特·泰斯特罗莎·哈拉温">
 <pre>&lt;!--旧凌统--&gt;
-&lt;&lt;generalTable SNOW016 雪 菲特·泰斯特罗莎·哈拉温 爆裂的雷光 空 4 霓岚 ~ShadowLee ブレエド snow016&gt;&gt;
+&lt;&lt;generalTable SNOW016 雪 菲特·泰斯特罗莎·哈拉温 爆裂的雷光 空 4 霓岚 ShadowLee ブレエド snow016&gt;&gt;
 
 ''霓岚''——当你失去装备区里的牌后，你可以选择一项：1.视为使用雷【杀】（无距离限制）；2.对距离为1的一名角色造成1点雷属性伤害。</pre>
 </div>
@@ -13865,7 +13865,7 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 &lt;!--威震天--&gt;
 ★这个条目不是[[SP爱丽丝·玛嘉特洛伊德]]
 
-&lt;&lt;generalTable YUKI004 雪 爱丽丝·玛嘉特洛伊德 七色的人形使 空 4 战操 ~CoffeeNO加糖 spirtie yuki004&gt;&gt;
+&lt;&lt;generalTable YUKI004 雪 爱丽丝·玛嘉特洛伊德 七色的人形使 空 4 战操 CoffeeNO加糖 spirtie yuki004&gt;&gt;
 
 ''战操''——当你或你的攻击范围内的一名角色于你的回合外成为【杀】的目标时，你可以选择一项：1.失去1点体力▶令此【杀】对该角色无效→当此【杀】因结算完毕而置入弃牌堆前，你获取之；2.弃置一张非基本牌▶令此【杀】对该角色无效。</pre>
 </div>
@@ -13959,7 +13959,7 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 </div>
 <div created="20160105131303386" modified="20160116063546973" tags="雪势力 空属性 异世界的金兰" title="结城明日奈">
 <pre>&lt;!--旧韩当--&gt;
-&lt;&lt;generalTable SNOW021 雪 结城明日奈 杏林之烁剑 空 4 炫刃、解忧 ~ByArt Kyurin snow021&gt;&gt;
+&lt;&lt;generalTable SNOW021 雪 结城明日奈 杏林之烁剑 空 4 炫刃、解忧 ByArt Kyurin snow021&gt;&gt;
 
 &lt;&lt;ikxuanren&gt;&gt;
 
