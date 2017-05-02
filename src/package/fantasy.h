@@ -3,6 +3,14 @@
 
 #include "standard.h"
 
+class IbukiGourd : public Armor
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IbukiGourd(Card::Suit suit = Spade, int number = 1);
+};
+
 class IceSword : public Weapon
 {
     Q_OBJECT

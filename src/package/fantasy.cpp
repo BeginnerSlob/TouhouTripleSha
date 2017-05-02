@@ -3,6 +3,60 @@
 #include "engine.h"
 #include "client.h"
 
+class IbukiGourdSkill: public ArmorSkill
+{
+public:
+    IbukiGourdSkill(): ArmorSkill("ibuki_gourd")
+    {
+        events << CardAsked;
+    }
+
+    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (!ArmorSkill::triggerable(player) || !player->canDiscard(player, "h"))
+            return QStringList();
+        QString asked = data.toStringList().first();
+        if (asked == "jink")
+            return QStringList(objectName());
+
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        const Card *card = room->askForCard(player, ".", "@ibuki_gourd", data, objectName());
+        player->tag["IbukiGourd"] = QVariant::fromValue(card);
+        return card;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        player->drawCards(1, objectName());
+
+        const Card *card = player->tag["IbukiGourd"].value<const Card *>();
+        player->tag.remove("IbukiGourd");
+        if (card && card->getSuit() == Card::Spade) {
+            Jink *jink = new Jink(Card::NoSuit, 0);
+            jink->setSkillName(objectName());
+            room->provide(jink);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    int getEffectIndex(const ServerPlayer *, const Card *) const{
+        return -2;
+    }
+};
+
+IbukiGourd::IbukiGourd(Suit suit, int number)
+    : Armor(suit, number)
+{
+    setObjectName("ibuki_gourd");
+}
+
 class IceSwordSkill : public WeaponSkill
 {
 public:
@@ -953,7 +1007,7 @@ FantasyPackage::FantasyPackage()
     : Package("fantasy", Package::CardPack)
 {
     QList<Card *> cards;
-    cards //<< new NewArmor(Card::Spade, 1)
+    cards << new IbukiGourd()
           << new IceSword()
           //<< new NewTrick1(Card::Spade, 3)
           << new LureTiger(Card::Spade, 4)
@@ -1009,7 +1063,8 @@ FantasyPackage::FantasyPackage()
           << new Jink(Card::Diamond, 12)
           << new PurpleSong(Card::Diamond, 13);
 
-    skills << new IceSwordSkill
+    skills << new IbukiGourdSkill
+           << new IceSwordSkill
            << new LureTigerSkill << new LureTigerProhibit;
     related_skills.insertMulti("lure_tiger", "#lure_tiger");
     skills << new ThMengxuan
