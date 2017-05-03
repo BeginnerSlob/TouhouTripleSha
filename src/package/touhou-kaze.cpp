@@ -870,93 +870,114 @@ public:
     }
 };
 
-ThZhouhuaCard::ThZhouhuaCard(){
-    target_fixed = true;
-}
-
-void ThZhouhuaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    room->removePlayerMark(source, "@zhouhua");
-    room->addPlayerMark(source, "@zhouhuaused");
-
-    QStringList choices;
-    if (source->isWounded())
-        choices << "recover";
-    choices << "draw";
-    QString choice = room->askForChoice(source, "thzhouhua", choices.join("+"));
-    if (choice == "recover")
-        room->recover(source, RecoverStruct(source));
-    else
-        source->drawCards(2, "thzhouhua");
-
-    room->acquireSkill(source, "thhuaimie");
-}
-
-class ThZhouhua: public ZeroCardViewAsSkill {
+class ThZhouhua : public TriggerSkill
+{
 public:
-    ThZhouhua(): ZeroCardViewAsSkill("thzhouhua") {
+    ThZhouhua() : TriggerSkill("thzhouhua")
+    {
+        events << EventPhaseEnd;
         frequency = Limited;
         limit_mark = "@zhouhua";
     }
 
-    virtual const Card *viewAs() const{
-        return new ThZhouhuaCard;
+    virtual bool triggerable(const ServerPlayer *target, Room *room) const
+    {
+        return TriggerSkill::triggerable(target)
+                && target->aliveCount(false) < room->getPlayers().length()
+                && target->getMark("@zhouhua") > 0;
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const {
-        int alive = player->aliveCount();
-        int all = player->getSiblings().length() + 1;
-        if (alive <= all / 2)
-            return player->getMark("@zhouhua") > 0;
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->removePlayerMark(player, "@zhouhua");
+            room->addPlayerMark(player, "@zhouhuaused");
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        QStringList choices;
+        if (player->isWounded())
+            choices << "recover";
+        choices << "draw";
+        QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+        if (choice == "recover")
+            room->recover(player, RecoverStruct(player));
+        else
+            player->drawCards(2, objectName());
+
+        room->acquireSkill(player, "thhuaimie");
         return false;
     }
 };
 
-class ThHuaimie : public FilterSkill
+class ThHuaimie : public TriggerSkill
 {
 public:
-    ThHuaimie(): FilterSkill("thhuaimie")
+    ThHuaimie() : TriggerSkill("thhuaimie")
+    {
+        events << EventPhaseStart << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive) {
+                room->setPlayerMark(player, objectName(), 0);
+                room->detachSkillFromPlayer(player, "#thhuaimie", false, true);
+                room->filterCards(player, player->getCards("he"), true);
+            }
+            return QStringList();
+        }
+        if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Play)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->addPlayerMark(player, objectName(), 1);
+        if (!player->hasSkill("#thhuaimie", true)) {
+            room->acquireSkill(player, "#thhuaimie", false);
+            room->filterCards(player, player->getCards("he"), false);
+        }
+        return false;
+    }
+};
+
+class ThHuaimieFilter : public FilterSkill
+{
+public:
+    ThHuaimieFilter(): FilterSkill("#thhuaimie")
     {
     }
 
     virtual bool viewFilter(const Card *to_select) const
     {
-        return to_select->isBlack() && to_select->getTypeId() == Card::TypeTrick;
+        return to_select->getTypeId() == Card::TypeTrick;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
     {
         Slash *slash = new Slash(originalCard->getSuit(), originalCard->getNumber());
-        slash->setSkillName(objectName());
+        slash->setSkillName("thhuaimie");
         WrappedCard *card = Sanguosha->getWrappedCard(originalCard->getId());
         card->takeOver(slash);
         return card;
-    }
-};
-
-class ThHuaimieTrigger : public TriggerSkill
-{
-public:
-    ThHuaimieTrigger() : TriggerSkill("#thhuaimie")
-    {
-        events << ConfirmDamage;
-        frequency = Compulsory;
-        global = true;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer* &) const
-    {
-        DamageStruct damage = data.value<DamageStruct>();
-        if (!damage.card || !damage.card->isKindOf("Slash") || damage.card->getSkillName() != "thhuaimie")
-            return QStringList();
-        return QStringList(objectName());
-    }
-
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const
-    {
-        DamageStruct damage = data.value<DamageStruct>();
-        ++damage.damage;
-        data = QVariant::fromValue(damage);
-        return false;
     }
 };
 
@@ -2518,7 +2539,6 @@ TouhouKazePackage::TouhouKazePackage()
     addMetaObject<ThEnanCard>();
     addMetaObject<ThMicaiCard>();
     addMetaObject<ThQiaogongCard>();
-    addMetaObject<ThZhouhuaCard>();
     addMetaObject<ThQianyiCard>();
     addMetaObject<ThHuosuiCard>();
     addMetaObject<ThKunyiCard>();
@@ -2533,7 +2553,7 @@ TouhouKazePackage::TouhouKazePackage()
     addMetaObject<ThSangzhiCard>();
     addMetaObject<ThXinhuaCard>();
 
-    skills << new ThHuazhi << new ThMicaiGivenSkill << new ThHuaimie << new ThHuaimieTrigger
+    skills << new ThHuazhi << new ThMicaiGivenSkill << new ThHuaimie << new ThHuaimieFilter
            << new ThYanlun << new ThHeyu << new ThMaihuoShow << new ThXinhuaViewAsSkill;
     related_skills.insertMulti("thhuaimie", "#thhuaimie");
 }

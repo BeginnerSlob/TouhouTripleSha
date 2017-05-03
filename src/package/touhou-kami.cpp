@@ -30,8 +30,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        int n = qMin(5, room->alivePlayerCount());
-        QList<int> card_ids = room->getNCards(n, false);
+        QList<int> card_ids = room->getNCards(3, false);
         QList<int> copy = card_ids;
         CardMoveReason reason(CardMoveReason::S_REASON_TURNOVER, player->objectName(), objectName(), QString());
         CardsMoveStruct move(card_ids, NULL, Player::PlaceTable, reason);
@@ -585,7 +584,7 @@ void ThLeshiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &)
         room->addPlayerHistory(source, "ThunderSlash", 0);
         room->addPlayerHistory(source, "Analeptic", 0);
     }
-    source->drawCards(2);
+    source->drawCards(4, "thleshi");
 }
 
 class ThLeshi: public ZeroCardViewAsSkill {
@@ -1778,7 +1777,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (player && !player->isAlive() && player->hasSkill(objectName())) {
             DeathStruct death = data.value<DeathStruct>();
-            if (death.who == player)
+            if (death.who == player && death.damage && death.damage->from && death.damage->from != player)
                 return QStringList(objectName());
         }
         return QStringList();
@@ -1849,8 +1848,8 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
-        if (ask_who->askForSkillInvoke(objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -1859,8 +1858,6 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
         QStringList choices;
-        if (ask_who->isWounded())
-            choices << "recover";
         choices << "draw";
         if (ask_who->canDiscard(player, "he"))
             choices << "throw";
@@ -1868,10 +1865,19 @@ public:
         if (choice == "throw") {
             int card_id = room->askForCardChosen(ask_who, player, "he", objectName(), false, Card::MethodDiscard);
             room->throwCard(card_id, player, ask_who);
-        } else if (choice == "recover") {
-            room->recover(ask_who, RecoverStruct(ask_who));
         } else
             ask_who->drawCards(1, objectName());
+
+        bool can_recover = true;
+        foreach (ServerPlayer *p, room->getOtherPlayers(ask_who)) {
+            if (p->getHp() < ask_who->getHp()) {
+                can_recover = false;
+                break;
+            }
+        }
+        if (ask_who->isWounded() && can_recover && ask_who->askForSkillInvoke("thwunan_recover", "yes"))
+            room->recover(ask_who, RecoverStruct(ask_who));
+
         return false;
     }
 };

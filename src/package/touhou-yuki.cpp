@@ -2045,14 +2045,14 @@ public:
     }
 };
 
-ThLingdieCard::ThLingdieCard() {
+ThLingdieCard::ThLingdieCard()
+{
     will_throw = false;
+    handling_method = MethodNone;
 }
 
 void ThLingdieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *target = targets.first();
-    if (Sanguosha->getCard(subcards.first())->getSuit() != Heart)
-        room->setPlayerFlag(source, "ThLingdieDisabled");
     CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), QString());
     room->obtainCard(target, this, reason);
     QList<ServerPlayer *> victims;
@@ -2062,7 +2062,7 @@ void ThLingdieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
     }
     ServerPlayer *victim = NULL;
     if (!victims.isEmpty())
-        victim = room->askForPlayerChosen(target, victims, "thlingdie", "@thlingdie", true);
+        victim = room->askForPlayerChosen(target, victims, "thlingdie", "@thlingdie");
     if (victim) {
         LogMessage log;
         log.type = "$IkLingtongView";
@@ -2072,8 +2072,12 @@ void ThLingdieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
         room->sendLog(log, room->getOtherPlayers(target));
 
         room->showAllCards(victim, target);
-    } else
+    }
+
+    if (Sanguosha->getCard(subcards.first())->getSuit() == Heart)
         target->drawCards(1, "thlingdie");
+    else
+        room->setPlayerFlag(source, "ThLingdieDisabled");
 }
 
 class ThLingdieVS: public OneCardViewAsSkill {
@@ -2083,7 +2087,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasFlag("ThLingdieDisabled") && player->usedTimes("ThLingdieCard") < 3;
+        return !player->hasFlag("ThLingdieDisabled") && player->usedTimes("ThLingdieCard") < 2;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
