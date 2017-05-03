@@ -806,13 +806,13 @@ MoonSpear::MoonSpear(Suit suit, int number)
     setObjectName("moon_spear");
 }
 
-ShowWeakness::ShowWeakness(Card::Suit suit, int number)
+Reinforce::Reinforce(Card::Suit suit, int number)
     : SingleTargetTrick(suit, number)
 {
-    setObjectName("show_weakness");
+    setObjectName("reinforce");
 }
 
-bool ShowWeakness::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+bool Reinforce::targetFilter(const QList<const Player *> &targets, const Player *, const Player *Self) const
 {
     if (Self->hasFlag("ThChouceUse"))
         return targets.isEmpty();
@@ -820,18 +820,18 @@ bool ShowWeakness::targetFilter(const QList<const Player *> &targets, const Play
     return targets.length() < total_num;
 }
 
-void ShowWeakness::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+void Reinforce::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
     foreach (ServerPlayer *p, targets)
-        room->setEmotion(p, "effects/show_weakness");
+        room->setEmotion(p, "effects/reinforce");
     SingleTargetTrick::use(room, source, targets);
 }
 
-void ShowWeakness::onEffect(const CardEffectStruct &effect) const
+void Reinforce::onEffect(const CardEffectStruct &effect) const
 {
     effect.to->drawCards(3, objectName());
     Room *room = effect.from->getRoom();
-    if (!room->askForDiscard(effect.to, objectName(), 1, 1, true, true, "@show-weakness", "^BasicCard"))
+    if (!room->askForDiscard(effect.to, objectName(), 1, 1, true, true, "@reinforce", "^BasicCard"))
         room->askForDiscard(effect.to, objectName(), 2, 2, false, true);
 }
 
@@ -1028,6 +1028,78 @@ RenwangShield::RenwangShield(Suit suit, int number)
     : Armor(suit, number)
 {
     setObjectName("renwang_shield");
+}
+
+class ControlRodSkill : public WeaponSkill
+{
+public:
+    ControlRodSkill() : WeaponSkill("control_rod")
+    {
+        events << TargetSpecified << EventPhaseChanging << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (triggerEvent == TargetSpecified) {
+            if (!WeaponSkill::triggerable(player))
+                return QStringList();
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (!use.card->isKindOf("Slash") || use.to.isEmpty())
+                return QStringList();
+            return QStringList(objectName());
+        }
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to != Player::NotActive)
+                return QStringList();
+        } else if (triggerEvent == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player || player != room->getCurrent())
+                return QStringList();
+        }
+        QList<ServerPlayer *> players = room->getAllPlayers();
+        foreach (ServerPlayer *player, players) {
+            if (player->getMark(objectName()) == 0) continue;
+            room->removePlayerMark(player, "@skill_invalidity", player->getMark(objectName()));
+            player->setMark(objectName(), 0);
+
+            foreach (ServerPlayer *p, room->getAllPlayers())
+                room->filterCards(p, p->getCards("he"), false);
+            JsonArray args;
+            args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+            room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        QList<ServerPlayer *> tos;
+        foreach (ServerPlayer *p, use.to) {
+            if (player->askForSkillInvoke(objectName(), QVariant::fromValue(p))) {
+                room->setEmotion(player, "effects/weapon");
+                if (!tos.contains(p)) {
+                    p->addMark(objectName());
+                    room->addPlayerMark(p, "@skill_invalidity");
+                    tos << p;
+
+                    foreach (ServerPlayer *pl, room->getAllPlayers())
+                        room->filterCards(pl, pl->getCards("he"), true);
+                    JsonArray args;
+                    args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+                }
+            }
+        }
+        return false;
+    }
+};
+
+ControlRod::ControlRod(Suit suit, int number)
+    : Weapon(suit, number, 3)
+{
+    setObjectName("control_rod");
 }
 
 Drowning::Drowning(Suit suit, int number)
@@ -1233,12 +1305,12 @@ FantasyPackage::FantasyPackage()
           << new Peach(Card::Heart, 8)
           << new FireSlash(Card::Heart, 9)
           << new LureTiger(Card::Heart, 10)
-          << new ShowWeakness()
+          << new Reinforce()
           << new Lightning(Card::Heart, 12)
           << new BurningCamps()
           << new Breastplate()
           << new RenwangShield()
-          //<< new NewWeapon(Card::Club, 3)
+          << new ControlRod()
           << new KnownBoth(Card::Club, 4);
 
     OffensiveHorse *yicunshenmiaowan = new OffensiveHorse(Card::Club, 5);
@@ -1280,6 +1352,7 @@ FantasyPackage::FantasyPackage()
            << new MoonSpearSkill
            << new BreastplateSkill
            << new RenwangShieldSkill
+           << new ControlRodSkill
            << new DrowningFakeMoveSkill
            << new WoodenOxSkill << new WoodenOxTriggerSkill;
 

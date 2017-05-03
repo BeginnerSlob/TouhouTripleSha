@@ -62,10 +62,10 @@ return {
 	["@moon_spear"] = "你可以对攻击范围内的一名角色发动【人魂灯】",
 	["@moon-spear-jink"] = "【人魂灯】效果被触发，请打出一张【闪】",
 
-	["show_weakness"] = "贤石点金",
-	[":show_weakness"] = "锦囊牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：一名角色<br /><b>效果</b>：目标角色摸三张牌，然后选择一项：弃置一张非基本牌；或弃置两张牌。",
-	["illustrator:show_weakness"] = "暂无",
-	["@show-weakness"] = "请弃置一张非基本牌，或点“取消”弃置两张牌",
+	["reinforce"] = "贤石点金",
+	[":reinforce"] = "锦囊牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：一名角色<br /><b>效果</b>：目标角色摸三张牌，然后选择一项：弃置一张非基本牌；或弃置两张牌。",
+	["illustrator:reinforce"] = "暂无",
+	["@reinforce"] = "请弃置一张非基本牌，或点“取消”弃置两张牌",
 
 	["burning_camps"] = "血凤涅烟",
 	[":burning_camps"] = "锦囊牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：你的下家和与其势力属性相同且连续的角色<br /><b>效果</b>：每名目标角色受到由你造成的1点火焰伤害。",
@@ -79,6 +79,10 @@ return {
 	["renwang_shield"] = "龙鱼羽衣",
 	[":renwang_shield"] = "装备牌·防具<br /><b>防具技能</b>：锁定技，黑色的【杀】对你无效。",
 	["illustrator:renwang_shield"] = "寒极",
+
+	["control_rod"] = "核制御棒",
+	[":control_rod"] = "装备牌·武器<br /><b>攻击范围</b>：３<br /><b>武器技能</b>：当你使用【杀】指定一名角色为目标后，你可以令该角色的非锁定技无效，直到当前回合结束。",
+	["illustrator:control_rod"] = "暂无",
 
 	["yicunshenmiaowan"] = "一寸神妙碗",
 	["illustrator:yicunshenmiaowan"] = "暂无",
