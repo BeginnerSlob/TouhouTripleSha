@@ -69,7 +69,7 @@ return {
 	["#wind042"] = "华奢的夜兔",
 	["wind042"] = "神乐",--风 - 空 - 4血
 	["designer:wind042"] = "游卡桌游",
-	["illustrator:wind042"] = "hana's",
+	["illustrator:wind042"] = "千夜QYS3",
 	["ikbaoou"] = "暴殴",
 	[":ikbaoou"] = "其他角色的结束阶段开始时，若该角色于此回合内造成过伤害，你可以对其使用一张无视距离的【杀】。",
 	["@ikbaoou-slash"] = "你可以发动“暴殴”对 %dest 使用一张【杀】",
@@ -135,7 +135,7 @@ return {
 	["#bloom006"] = "夏日青空之影",
 	["bloom006"] = "神尾观铃",--花 - 空 - 3血
 	["designer:bloom006"] = "游卡桌游",
-	["illustrator:bloom006"] = "みわべさくら",
+	["illustrator:bloom006"] = "Mauve",
 	["iktiandu"] = "天妒",
 	[":iktiandu"] = "在你的判定牌生效后，你可以获得此牌。",
 	["ikyumeng"] = "羽梦",
@@ -212,7 +212,7 @@ return {
 	["#snow005"] = "满帆的年华",
 	["snow005"] = "冬海爱衣",--雪 - 空 - 3血
 	["designer:snow005"] = "游卡桌游",
-	["illustrator:snow005"] = "yamasan",
+	["illustrator:snow005"] = "カントク",
 	["ikguideng"] = "鬼灯",
 	[":ikguideng"] = "出牌阶段，你可展示一张手牌并将之交给一名其他角色，令该角色选择一项：展示所有手牌并弃置与此牌花色相同的所有牌；或失去1点体力。",
 	["ikguideng_discard:prompt"] = "你可以展示所有手牌并弃置所有 %arg 牌",
