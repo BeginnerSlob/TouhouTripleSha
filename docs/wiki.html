@@ -9629,13 +9629,31 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 </div>
 <div created="20170502123948769" modified="20170502124821964" tags="$:/tags/Macro" title="$:/表头宏">
 <pre>\define generalTable(number:&quot;&quot; kingdom:&quot;&quot; name:&quot;&quot; nickname:&quot;&quot; gender:&quot;&quot; maxHp:&quot;&quot; skills:&quot;&quot; designer:&quot;&quot; illustrator:&quot;&quot; lowerCaseNumber:&quot;&quot;)
-| 编号 | 势力 | 名称 | 称号 | 特殊属性 | 体力上限 | 技能 | 技能设计 | 绘师 |h
-| $number$ | $kingdom$ | $name$ | $nickname$ | $gender$属性 | $maxHp$ | $skills$ | $designer$ | $illustrator$ |
+<div align="center">
+
+| 编号 | 势力 | 名称 | 称号 | 特殊属性 | 体力上限 | 技能 |h
+| $number$ | $kingdom$ | $name$ | $nickname$ | $gender$属性 | $maxHp$ | $skills$ |
+
+| [img[../image/generals/card/$lowerCaseNumber$.jpg]] | !技能设计 |
+|~| $designer$ |
+|~| !绘师 |
+|~| $illustrator$ |
+
+</div>
 \end
 
 \define reihouTable(number:&quot;&quot; kingdom:&quot;&quot; name:&quot;&quot; nickname:&quot;&quot; skills:&quot;&quot; designer:&quot;&quot; illustrator:&quot;&quot; lowerCaseNumber:&quot;&quot;)
-| 编号 | 势力 | 名称 | 称号 | 技能 | 技能设计 | 绘师 |h
-| $number$ | $kingdom$ | $name$ | $nickname$ | $skills$ | $designer$ | $illustrator$ |
+<div align="center">
+
+| 编号 | 势力 | 名称 | 称号 | 技能 |h
+| $number$ | $kingdom$ | $name$ | $nickname$ | $skills$ |
+
+| [img[../image/generals/card/$lowerCaseNumber$.jpg]] | !技能设计 |
+|~| $designer$ |
+|~| !绘师 |
+|~| $illustrator$ |
+
+</div>
 \end</pre>
 </div>
 <div created="20161018121812331" modified="20161018121840505" tags="$:/tags/Macro" title="$:/搜索宏">
