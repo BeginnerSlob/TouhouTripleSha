@@ -138,6 +138,18 @@ public:
     Q_INVOKABLE MoonSpear(Card::Suit suit = Heart, int number = 4);
 };
 
+class ShowWeakness : public SingleTargetTrick
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ShowWeakness(Card::Suit suit = Heart, int number = 11);
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class BurningCamps : public AOE
 {
     Q_OBJECT

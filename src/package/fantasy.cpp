@@ -806,6 +806,35 @@ MoonSpear::MoonSpear(Suit suit, int number)
     setObjectName("moon_spear");
 }
 
+ShowWeakness::ShowWeakness(Card::Suit suit, int number)
+    : SingleTargetTrick(suit, number)
+{
+    setObjectName("show_weakness");
+}
+
+bool ShowWeakness::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    if (Self->hasFlag("ThChouceUse"))
+        return targets.isEmpty();
+    int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
+    return targets.length() < total_num;
+}
+
+void ShowWeakness::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
+    foreach (ServerPlayer *p, targets)
+        room->setEmotion(p, "effects/show_weakness");
+    SingleTargetTrick::use(room, source, targets);
+}
+
+void ShowWeakness::onEffect(const CardEffectStruct &effect) const
+{
+    effect.to->drawCards(3, objectName());
+    Room *room = effect.from->getRoom();
+    if (!room->askForDiscard(effect.to, objectName(), 1, 1, true, true, "@show-weakness", "^BasicCard"))
+        room->askForDiscard(effect.to, objectName(), 2, 2, false, true);
+}
+
 BurningCamps::BurningCamps(Card::Suit suit, int number)
     : AOE(suit, number)
 {
@@ -1204,7 +1233,7 @@ FantasyPackage::FantasyPackage()
           << new Peach(Card::Heart, 8)
           << new FireSlash(Card::Heart, 9)
           << new LureTiger(Card::Heart, 10)
-          //<< new ShowWeakness(Card::Heart, 11)
+          << new ShowWeakness()
           << new Lightning(Card::Heart, 12)
           << new BurningCamps()
           << new Breastplate()
