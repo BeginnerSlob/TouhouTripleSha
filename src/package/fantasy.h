@@ -138,12 +138,12 @@ public:
     Q_INVOKABLE MoonSpear(Card::Suit suit = Heart, int number = 4);
 };
 
-class ShowWeakness : public SingleTargetTrick
+class Reinforce : public SingleTargetTrick
 {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE ShowWeakness(Card::Suit suit = Heart, int number = 11);
+    Q_INVOKABLE Reinforce(Card::Suit suit = Heart, int number = 11);
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
@@ -177,6 +177,14 @@ class RenwangShield : public Armor
 
 public:
     Q_INVOKABLE RenwangShield(Card::Suit suit = Club, int number = 2);
+};
+
+class ControlRod : public Weapon
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ControlRod(Card::Suit suit = Club, int number = 3);
 };
 
 class Drowning : public AOE
