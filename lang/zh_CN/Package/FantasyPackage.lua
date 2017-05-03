@@ -62,6 +62,11 @@ return {
 	["@moon_spear"] = "你可以对攻击范围内的一名角色发动【人魂灯】",
 	["@moon-spear-jink"] = "【人魂灯】效果被触发，请打出一张【闪】",
 
+	["show_weakness"] = "贤石点金",
+	[":show_weakness"] = "锦囊牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：一名角色<br /><b>效果</b>：目标角色摸三张牌，然后选择一项：弃置一张非基本牌；或弃置两张牌。",
+	["illustrator:show_weakness"] = "暂无",
+	["@show-weakness"] = "请弃置一张非基本牌，或点“取消”弃置两张牌",
+
 	["burning_camps"] = "血凤涅烟",
 	[":burning_camps"] = "锦囊牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：你的下家和与其势力属性相同且连续的角色<br /><b>效果</b>：每名目标角色受到由你造成的1点火焰伤害。",
 	["illustrator:burning_camps"] = "藍空",
