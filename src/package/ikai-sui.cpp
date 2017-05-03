@@ -2644,6 +2644,21 @@ public:
                 log.to << victim;
                 room->sendLog(log);
                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, owner->objectName(), victim->objectName());
+            } else if (use.card->isKindOf("FeintAttack")) {
+                QList<ServerPlayer *> victims = room->getOtherPlayers(owner);
+                victims.removeOne(use.from);
+                if (!victims.isEmpty()) {
+                    ServerPlayer *victim = room->askForPlayerChosen(use.from, victims, objectName(), "@feint-attack:" + owner->objectName());
+                    use.to.first()->tag.remove("feintTarget");
+                    owner->tag["feintTarget"] = QVariant::fromValue(victim);
+
+                    LogMessage log;
+                    log.type = "#FeintAttackWest";
+                    log.from = use.from;
+                    log.to << victim;
+                    room->sendLog(log);
+                    room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, owner->objectName(), victim->objectName());
+                }
             }
 
             if (use.card->isKindOf("DelayedTrick"))

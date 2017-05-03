@@ -1470,7 +1470,7 @@ public:
 
             if (use.from) {
                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, use.from->objectName(), ask_who->objectName());
-                if (use.card->isKindOf("Collateral") && use.from->isAlive()) {
+                if (use.card->isKindOf("Collateral")) {
                     QList<ServerPlayer *> targets;
                     foreach (ServerPlayer *p, room->getOtherPlayers(ask_who))
                         if (ask_who->canSlash(p))
@@ -1490,7 +1490,30 @@ public:
                     } else {
                         ask_who->tag.remove("collateralVictim");
                         LogMessage log;
-                        log.type = "#CollateralSlash";
+                        log.type = "#CollateralNoSlash";
+                        log.from = ask_who;
+                        room->sendLog(log);
+                    }
+                } else if (use.card->isKindOf("FeintAttack")) {
+                    QList<ServerPlayer *> targets = room->getOtherPlayers(ask_who);
+                    targets.removeOne(use.from);
+                    if (!targets.isEmpty()) {
+                        ServerPlayer *target = room->askForPlayerChosen(use.from, targets, objectName(), "@feint-attack:" + ask_who->objectName());
+                        if (!target)
+                            target = targets.at(qrand() % targets.length());
+                        ask_who->tag["feintTarget"] = QVariant::fromValue(target);
+
+                        LogMessage log;
+                        log.type = "#FeintAttackWest";
+                        log.from = use.from;
+                        log.to << target;
+                        room->sendLog(log);
+                        room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, ask_who->objectName(), target->objectName());
+                    } else {
+                        ask_who->tag.remove("feintTarget");
+
+                        LogMessage log;
+                        log.type = "#FeintAttackNoWest";
                         log.from = ask_who;
                         room->sendLog(log);
                     }
@@ -1512,7 +1535,7 @@ public:
 
                     if (use.from) {
                         room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, use.from->objectName(), p->objectName());
-                        if (use.card->isKindOf("Collateral") && use.from->isAlive()) {
+                        if (use.card->isKindOf("Collateral")) {
                             QList<ServerPlayer *> targets;
                             foreach (ServerPlayer *player, room->getOtherPlayers(p))
                                 if (p->canSlash(player))
@@ -1534,6 +1557,29 @@ public:
 
                                 LogMessage log;
                                 log.type = "#CollateralNoSlash";
+                                log.from = p;
+                                room->sendLog(log);
+                            }
+                        } else if (use.card->isKindOf("FeintAttack")) {
+                            QList<ServerPlayer *> targets = room->getOtherPlayers(p);
+                            targets.removeOne(use.from);
+                            if (!targets.isEmpty()) {
+                                ServerPlayer *target = room->askForPlayerChosen(use.from, targets, objectName(), "@feint-attack:" + p->objectName());
+                                if (!target)
+                                    target = targets.at(qrand() % targets.length());
+                                p->tag["feintTarget"] = QVariant::fromValue(target);
+
+                                LogMessage log;
+                                log.type = "#FeintAttackWest";
+                                log.from = use.from;
+                                log.to << target;
+                                room->sendLog(log);
+                                room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, p->objectName(), target->objectName());
+                            } else {
+                                p->tag.remove("feintTarget");
+
+                                LogMessage log;
+                                log.type = "#FeintAttackNoWest";
                                 log.from = p;
                                 room->sendLog(log);
                             }
@@ -2103,14 +2149,22 @@ public:
 };
 
 #include "ikai-kin.h"
-class ThYongyeViewAsSkill: public ZeroCardViewAsSkill {
+class ThYongyeViewAsSkill : public ZeroCardViewAsSkill
+{
 public:
-    ThYongyeViewAsSkill(): ZeroCardViewAsSkill("thyongye") {
+    ThYongyeViewAsSkill() : ZeroCardViewAsSkill("thyongye")
+    {
         response_pattern = "@@thyongye!";
     }
 
-    virtual const Card *viewAs() const{
-        return new ExtraCollateralCard;
+    virtual const Card *viewAs() const
+    {
+        const Card *coll = Card::Parse(Self->property("extra_collateral").toString());
+        if (!coll) return false;
+        if (coll->isKindOf("Collateral"))
+            return new ExtraCollateralCard;
+        else
+            return new ExtraFeintAttackCard;
     }
 };
 
