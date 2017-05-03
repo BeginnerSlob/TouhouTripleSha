@@ -492,6 +492,69 @@ void KnownBoth::onEffect(const CardEffectStruct &effect) const
     room->showAllCards(effect.to, effect.from);
 }
 
+Rout::Rout(Card::Suit suit, int number)
+    : SingleTargetTrick(suit, number)
+{
+    setObjectName("rout");
+}
+
+bool Rout::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    if (Self->hasFlag("ThChouceUse"))
+        return SingleTargetTrick::targetFilter(targets, to_select, Self);
+    int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
+    if (targets.length() >= total_num || to_select == Self)
+        return false;
+
+    for (int i = 0; i < 4; ++ i) {
+        if (to_select->getEquip(i) && Self->canDiscard(to_select, to_select->getEquip(i)->getEffectiveId()))
+            return true;
+    }
+    return false;
+}
+
+void Rout::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
+    foreach (ServerPlayer *p, targets)
+        room->setEmotion(p, "effects/rout");
+    SingleTargetTrick::use(room, source, targets);
+}
+
+void Rout::onEffect(const CardEffectStruct &effect) const
+{
+    Room *room = effect.to->getRoom();
+    if (effect.from->isDead() || effect.to->isDead())
+        return;
+    QStringList choices;
+    if ((effect.to->getWeapon() && effect.from->canDiscard(effect.to, effect.to->getWeapon()->getEffectiveId()))
+            || (effect.to->getOffensiveHorse() && effect.from->canDiscard(effect.to, effect.to->getOffensiveHorse()->getEffectiveId())))
+        choices << "weapon";
+    if ((effect.to->getArmor() && effect.from->canDiscard(effect.to, effect.to->getArmor()->getEffectiveId()))
+            || (effect.to->getDefensiveHorse() && effect.from->canDiscard(effect.to, effect.to->getDefensiveHorse()->getEffectiveId())))
+        choices << "armor";
+    if (choices.isEmpty())
+        return;
+
+    QString choice = room->askForChoice(effect.from, objectName(), choices.join("+"), QVariant::fromValue(effect.to));
+    if (choice == "weapon") {
+        DummyCard *dummy = new DummyCard;
+        if (effect.to->getWeapon() && effect.from->canDiscard(effect.to, effect.to->getWeapon()->getEffectiveId()))
+            dummy->addSubcard(effect.to->getWeapon());
+        if (effect.to->getOffensiveHorse() && effect.from->canDiscard(effect.to, effect.to->getOffensiveHorse()->getEffectiveId()))
+            dummy->addSubcard(effect.to->getOffensiveHorse());
+        room->throwCard(dummy, effect.to, effect.from);
+        delete dummy;
+    } else if ("armor") {
+        DummyCard *dummy = new DummyCard;
+        if (effect.to->getArmor() && effect.from->canDiscard(effect.to, effect.to->getArmor()->getEffectiveId()))
+            dummy->addSubcard(effect.to->getArmor());
+        if (effect.to->getDefensiveHorse() && effect.from->canDiscard(effect.to, effect.to->getDefensiveHorse()->getEffectiveId()))
+            dummy->addSubcard(effect.to->getDefensiveHorse());
+        room->throwCard(dummy, effect.to, effect.from);
+        delete dummy;
+    }
+}
+
 JadeCard::JadeCard()
 {
 }
@@ -1128,12 +1191,12 @@ FantasyPackage::FantasyPackage()
           << new KnownBoth(Card::Spade, 8)
           << new Analeptic(Card::Spade, 9)
           << new Nullification(Card::Spade, 10)
-          //<< new NewTrick2(Card::Spade, 11)
+          << new Rout(Card::Spade, 11)
           << new Analeptic(Card::Spade, 12)
           << new Jade()
           << new PurpleSong(Card::Heart, 1)
           << new IronArmor()
-          //<< new NewTrick2(Card::Heart, 3)
+          << new Rout(Card::Heart, 3)
           << new MoonSpear()
           << new Jink(Card::Heart, 5)
           << new Jink(Card::Heart, 6)
@@ -1141,7 +1204,7 @@ FantasyPackage::FantasyPackage()
           << new Peach(Card::Heart, 8)
           << new FireSlash(Card::Heart, 9)
           << new LureTiger(Card::Heart, 10)
-          //<< new NewTrick3(Card::Heart, 11)
+          //<< new ShowWeakness(Card::Heart, 11)
           << new Lightning(Card::Heart, 12)
           << new BurningCamps()
           << new Breastplate()
