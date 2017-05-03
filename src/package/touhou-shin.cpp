@@ -1802,12 +1802,15 @@ class ThHuikuang : public TriggerSkill
 public:
     ThHuikuang() : TriggerSkill("thhuikuang")
     {
-        events << HpLost << HpRecover;
+        events << HpLost << HpRecover << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent e, Room *, ServerPlayer *p, QVariant &, ServerPlayer* &) const
+    virtual QStringList triggerable(TriggerEvent e, Room *r, ServerPlayer *p, QVariant &, ServerPlayer *&) const
     {
-        if (TriggerSkill::triggerable(p)) {
+        if (e == EventPhaseChanging) {
+            foreach (ServerPlayer *pl, r->getAlivePlayers())
+                r->setPlayerMark(pl, objectName(), 0);
+        } else if (TriggerSkill::triggerable(p)) {
             if (e == HpLost)
                 return QStringList(objectName());
             else if (e == HpRecover) {
@@ -1843,12 +1846,13 @@ public:
             CardMoveReason reason(CardMoveReason::S_REASON_DRAW, p->objectName(), objectName(), QString());
             CardsMoveStruct move(cards, p, Player::PlaceHand, reason);
             r->moveCardsAtomic(move, false);
-            if (p->askForSkillInvoke("thhuikuang_sa", "show")) {
+            if (p->getMark(objectName()) == 0 && p->askForSkillInvoke("thhuikuang_sa", "show")) {
+                r->addPlayerMark(p, objectName());
                 r->showCard(p, cards.first());
                 r->showCard(p, cards.last());
                 const Card *card1 = Sanguosha->getCard(cards.first());
                 const Card *card2 = Sanguosha->getCard(cards.last());
-                if (card1->sameColorWith(card2)) {
+                if (card1->isBlack() && card2->isBlack()) {
                     SavageAssault *sa = new SavageAssault(Card::NoSuit, 0);
                     sa->setSkillName("_thhuikuang");
                     if (sa->isAvailable(p) && !p->isCardLimited(sa, Card::MethodUse))
@@ -1872,12 +1876,14 @@ public:
                 delete card;
                 const Card *card1 = Sanguosha->getCard(cards.first());
                 const Card *card2 = Sanguosha->getCard(cards.last());
-                if (card1->sameColorWith(card2)) {
+                if (card1->isBlack() && card2->isBlack()) {
                     SavageAssault *sa = new SavageAssault(Card::NoSuit, 0);
                     sa->setSkillName("_thhuikuang");
-                    if (sa->isAvailable(p) && !p->isCardLimited(sa, Card::MethodUse) && p->askForSkillInvoke("thhuikuang_sa", "use"))
+                    if (sa->isAvailable(p) && !p->isCardLimited(sa, Card::MethodUse)
+                            && p->getMark(objectName()) == 0 && p->askForSkillInvoke("thhuikuang_sa", "use")) {
+                        r->addPlayerMark(p, objectName());
                         r->useCard(CardUseStruct(sa, p, QList<ServerPlayer *>()));
-                    else
+                    } else
                         delete sa;
                 }
             }
