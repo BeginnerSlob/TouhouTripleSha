@@ -817,10 +817,12 @@ private:
     }
 };
 
-ExtraCollateralCard::ExtraCollateralCard() {
+ExtraCollateralCard::ExtraCollateralCard()
+{
 }
 
-bool ExtraCollateralCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool ExtraCollateralCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
     const Card *coll = Card::Parse(Self->property("extra_collateral").toString());
     if (!coll) return false;
     QStringList tos = Self->property("extra_collateral_current_targets").toString().split("+");
@@ -832,13 +834,41 @@ bool ExtraCollateralCard::targetFilter(const QList<const Player *> &targets, con
         return coll->targetFilter(targets, to_select, Self);
 }
 
-void ExtraCollateralCard::onUse(Room *, const CardUseStruct &card_use) const{
+void ExtraCollateralCard::onUse(Room *, const CardUseStruct &card_use) const
+{
     Q_ASSERT(card_use.to.length() == 2);
     ServerPlayer *killer = card_use.to.first();
     ServerPlayer *victim = card_use.to.last();
 
     killer->setFlags("ExtraCollateralTarget");
     killer->tag["collateralVictim"] = QVariant::fromValue(victim);
+}
+
+ExtraFeintAttackCard::ExtraFeintAttackCard()
+{
+}
+
+bool ExtraFeintAttackCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    const Card *coll = Card::Parse(Self->property("extra_collateral").toString());
+    if (!coll) return false;
+    QStringList tos = Self->property("extra_collateral_current_targets").toString().split("+");
+
+    if (targets.isEmpty())
+        return !tos.contains(to_select->objectName())
+               && !Self->isProhibited(to_select, coll) && coll->targetFilter(targets, to_select, Self);
+    else
+        return coll->targetFilter(targets, to_select, Self);
+}
+
+void ExtraFeintAttackCard::onUse(Room *, const CardUseStruct &card_use) const
+{
+    Q_ASSERT(card_use.to.length() == 2);
+    ServerPlayer *killer = card_use.to.first();
+    ServerPlayer *victim = card_use.to.last();
+
+    killer->setFlags("ExtraCollateralTarget");
+    killer->tag["feintTarget"] = QVariant::fromValue(victim);
 }
 
 IkQizhiCard::IkQizhiCard() {
@@ -856,24 +886,34 @@ void IkQizhiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
         room->setPlayerCardLimitation(source, "use", "TrickCard", true);
 }
 
-class IkQizhiViewAsSkill: public ZeroCardViewAsSkill {
+class IkQizhiViewAsSkill : public ZeroCardViewAsSkill
+{
 public:
-    IkQizhiViewAsSkill(): ZeroCardViewAsSkill("ikqizhi") {
+    IkQizhiViewAsSkill() : ZeroCardViewAsSkill("ikqizhi")
+    {
     }
 
-    virtual bool isEnabledAtPlay(const Player *) const{
+    virtual bool isEnabledAtPlay(const Player *) const
+    {
         return false;
     }
 
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
+    {
         return pattern.startsWith("@@ikqizhi");
     }
 
-    virtual const Card *viewAs() const{
+    virtual const Card *viewAs() const
+    {
         QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
-        if (pattern.endsWith("!"))
-            return new ExtraCollateralCard;
-        else
+        if (pattern.endsWith("!")) {
+            const Card *coll = Card::Parse(Self->property("extra_collateral").toString());
+            if (!coll) return false;
+            if (coll->isKindOf("Collateral"))
+                return new ExtraCollateralCard;
+            else
+                return new ExtraFeintAttackCard;
+        } else
             return new IkQizhiCard;
     }
 };
@@ -952,7 +992,7 @@ public:
             return false;
         else if (choice == "add") {
             ServerPlayer *extra = NULL;
-            if (!use.card->isKindOf("Collateral"))
+            if (!use.card->isKindOf("Collateral") && !use.card->isKindOf("FeintAttack"))
                 extra = room->askForPlayerChosen(jianyong, available_targets, "ikqizhi", "@thyongye-add:::" + use.card->objectName());
             else {
                 QStringList tos;
@@ -972,15 +1012,24 @@ public:
                 }
                 if (extra == NULL) {
                     extra = available_targets.at(qrand() % available_targets.length() - 1);
-                    QList<ServerPlayer *> victims;
-                    foreach (ServerPlayer *p, room->getOtherPlayers(extra)) {
-                        if (extra->canSlash(p)
-                            && (!(p == jianyong && p->hasSkill("ikjingyou") && p->isLastHandCard(use.card, true)))) {
-                            victims << p;
+                    if (use.card->isKindOf("Collateral")) {
+                        QList<ServerPlayer *> victims;
+                        foreach (ServerPlayer *p, room->getOtherPlayers(extra)) {
+                            if (extra->canSlash(p)
+                                && (!(p == jianyong && p->hasSkill("ikjingyou") && p->isLastHandCard(use.card, true)))) {
+                                victims << p;
+                            }
                         }
+                        Q_ASSERT(!victims.isEmpty());
+                        extra->tag["collateralVictim"] = QVariant::fromValue(victims.at(qrand() % victims.length()));
+                    } else {
+                        QList<ServerPlayer *> victims = room->getOtherPlayers(extra);
+                        victims.removeOne(use.from);
+                        if (!victims.isEmpty())
+                            extra->tag["feintTarget"] = QVariant::fromValue(victims.at(qrand() % victims.length()));
+                        else
+                            extra->tag.remove("feintTarget");
                     }
-                    Q_ASSERT(!victims.isEmpty());
-                    extra->tag["collateralVictim"] = QVariant::fromValue(victims.at(qrand() % victims.length()));
                 }
             }
             use.to.append(extra);
@@ -1000,6 +1049,16 @@ public:
                 if (victim) {
                     LogMessage log;
                     log.type = "#CollateralSlash";
+                    log.from = jianyong;
+                    log.to << victim;
+                    room->sendLog(log);
+                    room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, extra->objectName(), victim->objectName());
+                }
+            } else if (use.card->isKindOf("FeintAttack")) {
+                ServerPlayer *victim = extra->tag["feintTarget"].value<ServerPlayer *>();
+                if (victim) {
+                    LogMessage log;
+                    log.type = "#FeintAttackWest";
                     log.from = jianyong;
                     log.to << victim;
                     room->sendLog(log);
@@ -4896,7 +4955,7 @@ public:
                         victims << p;
                 }
                 Q_ASSERT(!victims.isEmpty());
-                collateral_victim = room->askForPlayerChosen(player, victims, "ikjiaoshi_collateral", "@ikjiaoshi-collateral:" + target->objectName());
+                collateral_victim = room->askForPlayerChosen(player, victims, "ikjiaoshi", "@ikjiaoshi-collateral:" + target->objectName());
                 target->tag["collateralVictim"] = QVariant::fromValue(collateral_victim);
 
                 LogMessage log;
@@ -4904,6 +4963,26 @@ public:
                 log.from = player;
                 log.to << collateral_victim;
                 room->sendLog(log);
+            } else if (use.card->isKindOf("FeintAttack")) {
+                QList<ServerPlayer *> victims = room->getOtherPlayers(target);
+                victims.removeOne(use.from);
+                if (!victims.isEmpty()) {
+                    collateral_victim = room->askForPlayerChosen(player, victims, "ikjiaoshi", "@ikjiaoshi-feint-attack:" + target->objectName());
+                    target->tag["feintTarget"] = QVariant::fromValue(collateral_victim);
+
+                    LogMessage log;
+                    log.type = "#FeintAttackWest";
+                    log.from = player;
+                    log.to << collateral_victim;
+                    room->sendLog(log);
+                } else {
+                    target->tag.remove("feintTarget");
+
+                    LogMessage log;
+                    log.type = "#FeintAttackNoWest";
+                    log.from = player;
+                    room->sendLog(log);
+                }
             }
 
             bool extra_target = true;
@@ -4933,7 +5012,7 @@ public:
                 room->sendLog(log);
 
                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), target->objectName());
-                if (use.card->isKindOf("Collateral") && collateral_victim)
+                if ((use.card->isKindOf("Collateral") || use.card->isKindOf("FeintAttack")) && collateral_victim)
                     room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, target->objectName(), collateral_victim->objectName());
 
                 use.to.append(target);
@@ -5991,14 +6070,22 @@ public:
     }
 };
 
-class IkShangyeViewAsSkill: public ZeroCardViewAsSkill {
+class IkShangyeViewAsSkill : public ZeroCardViewAsSkill
+{
 public:
-    IkShangyeViewAsSkill(): ZeroCardViewAsSkill("ikshangye") {
+    IkShangyeViewAsSkill() : ZeroCardViewAsSkill("ikshangye")
+    {
         response_pattern = "@@ikshangye";
     }
 
-    virtual const Card *viewAs() const{
-        return new ExtraCollateralCard;
+    virtual const Card *viewAs() const
+    {
+        const Card *coll = Card::Parse(Self->property("extra_collateral").toString());
+        if (!coll) return false;
+        if (coll->isKindOf("Collateral"))
+            return new ExtraCollateralCard;
+        else
+            return new ExtraFeintAttackCard;
     }
 };
 
@@ -6013,13 +6100,19 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (!TriggerSkill::triggerable(player)) return QStringList();
         CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isBlack() && (use.card->isKindOf("ExNihilo") || use.card->isKindOf("Collateral"))) {
+        if (use.card->isBlack() && (use.card->isKindOf("ExNihilo") || use.card->isKindOf("Collateral") || use.card->isKindOf("FeintAttack"))) {
             if (use.card->isKindOf("ExNihilo")) {
                 foreach (ServerPlayer *p, room->getAlivePlayers()) {
                     if (!use.to.contains(p) && !room->isProhibited(player, p, use.card))
                         return QStringList(objectName());
                 }
             } else if (use.card->isKindOf("Collateral")) {
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    if (use.to.contains(p) || room->isProhibited(player, p, use.card)) continue;
+                    if (use.card->targetFilter(QList<const Player *>(), p, player))
+                        return QStringList(objectName());
+                }
+            } else if (use.card->isKindOf("FeintAttack")) {
                 foreach (ServerPlayer *p, room->getAlivePlayers()) {
                     if (use.to.contains(p) || room->isProhibited(player, p, use.card)) continue;
                     if (use.card->targetFilter(QList<const Player *>(), p, player))
@@ -6040,7 +6133,7 @@ public:
                     targets << p;
             }
             extra = room->askForPlayerChosen(player, targets, objectName(), "@thyongye-add:::" + use.card->objectName(), true);
-        } else if (use.card->isKindOf("Collateral")) {
+        } else if (use.card->isKindOf("Collateral") || use.card->isKindOf("FeintAttack")) {
             QStringList tos;
             foreach (ServerPlayer *t, use.to)
                 tos.append(t->objectName());
@@ -6089,6 +6182,16 @@ public:
                 if (victim) {
                     LogMessage log;
                     log.type = "#CollateralSlash";
+                    log.from = player;
+                    log.to << victim;
+                    room->sendLog(log);
+                    room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, extra->objectName(), victim->objectName());
+                }
+            } else if (use.card->isKindOf("FeintAttack")) {
+                ServerPlayer *victim = extra->tag["feintTarget"].value<ServerPlayer *>();
+                if (victim) {
+                    LogMessage log;
+                    log.type = "#FeintAttackWest";
                     log.from = player;
                     log.to << victim;
                     room->sendLog(log);
@@ -7025,6 +7128,7 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
     addMetaObject<ExtraCollateralCard>();
+    addMetaObject<ExtraFeintAttackCard>();
     addMetaObject<IkXianyuCard>();
     addMetaObject<IkXianyuSlashCard>();
     addMetaObject<IkQizhiCard>();

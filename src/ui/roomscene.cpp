@@ -1281,11 +1281,11 @@ void RoomScene::updateTargetsEnablity(const Card *card) {
         //====For IkMoyu=======================
         bool isCollateral = false;
         if (card) {
-            if (card->isKindOf("Collateral"))
+            if (card->isKindOf("Collateral") || card->isKindOf("FeintAttack"))
                 isCollateral = true;
             else if (card->isKindOf("IkMiceCard")) {
                 const IkMiceCard *ikmice_card = qobject_cast<const IkMiceCard *>(card);
-                isCollateral = (ikmice_card->getUserString() == "collateral");
+                isCollateral = (ikmice_card->getUserString() == "collateral" || ikmice_card->getUserString() == "feint_attack");
             }
         }
         bool prohibitFailure = Self->hasFlag("ThChouceUse") || (isCollateral && selected_targets.length() == 1);
@@ -2314,7 +2314,7 @@ void RoomScene::useSelectedCard() {
         dashboard->retractPileCards("wooden_ox");
         dashboard->retractPileCards("pokemon");
         if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
-            dashboard->retractPileCards("thbaochuipile");
+            dashboard->retractPileCards("currency");
     }
 }
 

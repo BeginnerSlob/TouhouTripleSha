@@ -678,6 +678,21 @@ void Card::onUse(Room *room, const CardUseStruct &use) const{
             log.from = card_use.to.first();
             room->sendLog(log);
         }
+    } else if (card_use.card->isKindOf("FeintAttack")) { // put it here for I don't wanna repeat these codes in Card::onUse
+        ServerPlayer *victim = card_use.to.first()->tag["feintTarget"].value<ServerPlayer *>();
+        if (victim) {
+            LogMessage log;
+            log.type = "#FeintAttackWest";
+            log.from = card_use.from;
+            log.to << victim;
+            room->sendLog(log);
+            room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, card_use.to.first()->objectName(), victim->objectName());
+        } else {
+            LogMessage log;
+            log.type = "#FeintAttackNoWest";
+            log.from = card_use.to.first();
+            room->sendLog(log);
+        }
     }
 
     QList<int> used_cards;

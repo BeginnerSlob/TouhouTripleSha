@@ -19,6 +19,20 @@ public:
     Q_INVOKABLE IceSword(Card::Suit suit = Spade, int number = 2);
 };
 
+class FeintAttack : public SingleTargetTrick
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE FeintAttack(Card::Suit suit, int number);
+    virtual bool isAvailable(const Player *player) const;
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class LureTiger : public TrickCard
 {
     Q_OBJECT

@@ -95,6 +95,117 @@ IceSword::IceSword(Suit suit, int number)
     setObjectName("ice_sword");
 }
 
+FeintAttack::FeintAttack(Card::Suit suit, int number)
+    : SingleTargetTrick(suit, number)
+{
+    setObjectName("feint_attack");
+}
+
+bool FeintAttack::isAvailable(const Player *player) const
+{
+    QList<const Card *> cards = player->getHandcards();
+    cards << player->getEquips();
+    int card_num = cards.length();
+    QList<int> subcards;
+    if (isVirtualCard()) {
+        if (getEffectiveId() != -1)
+            subcards << getSubcards();
+    } else
+        subcards << getId();
+    foreach (int id, subcards) {
+        foreach (const Card *c, cards) {
+            if (c->getEffectiveId() == id) {
+                -- card_num;
+                break;
+            }
+        }
+    }
+
+    return card_num > 0 && SingleTargetTrick::isAvailable(player);
+}
+
+bool FeintAttack::targetsFeasible(const QList<const Player *> &targets, const Player *) const
+{
+    return targets.length() == 2;
+}
+
+bool FeintAttack::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    if (!targets.isEmpty()) {
+        // @todo: fix this. We should probably keep the codes here, but change the code in
+        // roomscene such that if it is collateral, then targetFilter's result is overrode
+        Q_ASSERT(targets.length() <= 2);
+        if (targets.length() == 2) return false;
+        return to_select != Self;
+    } else {
+        if (!Self->hasFlag("ThChouceUse") && (Self->distanceTo(to_select) != 1))
+            return false;
+        return isAvailable(Self);
+    }
+    return false;
+}
+
+void FeintAttack::onUse(Room *room, const CardUseStruct &card_use) const
+{
+    CardUseStruct new_use = card_use;
+    if (card_use.to.length() == 2) {
+        ServerPlayer *killer = card_use.to.at(0);
+        ServerPlayer *victim = card_use.to.at(1);
+
+        new_use.to.removeAt(1);
+        killer->tag["feintTarget"] = QVariant::fromValue(victim);
+    }
+
+    SingleTargetTrick::onUse(room, new_use);
+}
+
+void FeintAttack::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
+    Q_ASSERT(targets.length() == 1);
+    ServerPlayer *killer = targets.first();
+    ServerPlayer *victim = killer->tag["feintTarget"].value<ServerPlayer *>();
+    room->setEmotion(killer, "effects/feint_attack");
+    if (victim) {
+        room->getThread()->delay(800);
+        room->setEmotion(victim, "effects/feint_attack_slash");
+    }
+
+    SingleTargetTrick::use(room, source, targets);
+}
+
+void FeintAttack::onEffect(const CardEffectStruct &effect) const{
+    ServerPlayer *source = effect.from;
+    Room *room = source->getRoom();
+    ServerPlayer *target = effect.to;
+    ServerPlayer *victim = effect.to->tag["feintTarget"].value<ServerPlayer *>();
+    effect.to->tag.remove("feintTarget");
+
+    if (source->isAlive() && !source->isNude()) {
+        const Card *card = room->askForCard(source, "..!", "feint-attack-effect:" + target->objectName(), QVariant(), Card::MethodNone);
+        if (!card)
+            card = source->getRandomHandCard();
+        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), objectName(), QString());
+        room->obtainCard(target, card, reason, false);
+        if (card) {
+            if (!target->isNude()) {
+                const Card *dummy = NULL;
+                if (target->getCardCount() <= 2) {
+                    Card *card = new DummyCard;
+                    card->addSubcards(target->getHandcards());
+                    card->addSubcards(target->getEquips());
+                    dummy = card;
+                } else {
+                    QString prompt = QString("feint-attack-give:%1:%2").arg(victim->objectName()).arg(source->objectName());
+                    dummy = room->askForExchange(target, objectName(), 2, 2, true, prompt);
+                }
+                CardMoveReason reason(CardMoveReason::S_REASON_GIVE, target->objectName(), victim->objectName(), objectName(), QString());
+                room->obtainCard(victim, dummy, reason, false);
+                delete dummy;
+            }
+        }
+    }
+}
+
 class LureTigerSkill : public TriggerSkill
 {
 public:
@@ -1009,7 +1120,7 @@ FantasyPackage::FantasyPackage()
     QList<Card *> cards;
     cards << new IbukiGourd()
           << new IceSword()
-          //<< new NewTrick1(Card::Spade, 3)
+          << new FeintAttack(Card::Spade, 3)
           << new LureTiger(Card::Spade, 4)
           << new Slash(Card::Spade, 5)
           << new Slash(Card::Spade, 6)
@@ -1059,7 +1170,7 @@ FantasyPackage::FantasyPackage()
           << new Jink(Card::Diamond, 8)
           << new Peach(Card::Diamond, 9)
           << new Jink(Card::Diamond, 10)
-          //<< new NewTrick1(Card::Diamond, 11)
+          << new FeintAttack(Card::Diamond, 11)
           << new Jink(Card::Diamond, 12)
           << new PurpleSong(Card::Diamond, 13);
 

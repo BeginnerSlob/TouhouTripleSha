@@ -11,6 +11,15 @@ return {
 	["illustrator:ice_sword"] = "寒极",
 	["ice_sword:yes"] = "你可以依次弃置其两张牌",
 
+	["feint_attack"] = "道忌宣谕",
+	[":feint_attack"] = "锦囊牌<br /><b>时机</b>：出牌阶段，若你除此牌外有其他牌<br /><b>目标</b>：你与其距离为1的一名角色<br /><b>效果</b>：你交给目标角色一张牌，然后令其将两张牌交给另一名由你指定的其他角色。",
+	["illustrator:feint_attack"] = "暂无",
+	["@feint-attack"] = "请选择 %src 给牌的目标",
+	["feint-attack-effect"] = "你使用了【道忌宣谕】，请将一张牌交给 %src",
+	["feint-attack-give"] = "%dest 使用了【道忌宣谕】，请将两张牌交给 %src",
+	["#FeintAttackWest"] = "%from 选择了给牌的目标 %to",
+	["#FeintAttackNoWest"] = "%from 没有可以给牌的目标",
+
 	["lure_tiger"] = "罔两空界",
 	[":lure_tiger"] = "锦囊牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：至多两名其他角色<br /><b>效果</b>：目标角色不计入距离和座次结算，不能使用牌且不能成为任何牌的目标直到回合结束。你摸一张牌。",
 	["illustrator:lure_tiger"] = "うき",
