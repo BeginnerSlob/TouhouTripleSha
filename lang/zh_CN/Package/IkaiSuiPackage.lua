@@ -59,7 +59,7 @@ return {
 	["#wind041"] = "巧月之灵",
 	["wind041"] = "夜夜",--风 - 幻 - 3血
 	["designer:wind041"] = "游卡桌游",
-	["illustrator:wind041"] = "NAbyssor",
+	["illustrator:wind041"] = "TID",
 	["ikwuyue"] = "舞月",
 	[":ikwuyue"] = "你的回合外，每当一名其他角色因弃置而失去牌时，若其中有基本牌，你可以摸一张牌，然后若你的手牌数大于三，你须弃置一张牌。",
 	["ikjuechong"] = "绝冲",
@@ -306,7 +306,7 @@ return {
 	["#snow032"] = "神眷之舞",
 	["snow032"] = "柊镜",--雪 - 幻 - 3血
 	["designer:snow032"] = "韩旭",
-	["illustrator:snow032"] = "みずしま",
+	["illustrator:snow032"] = "てぃんくる",
 	["ikqiwu"] = "祈舞",
 	[":ikqiwu"] = "弃牌阶段开始时，你可以将一张手牌面朝上置于你的人物牌上，称为“祈”。当你拥有三张“祈”时，须全部弃置之，并对一名空属性角色造成2点伤害，然后弃置其装备区的所有牌。",
 	["step"] = "踏",
@@ -418,7 +418,7 @@ return {
 	["luna017"] = "优克里伍德•海尔赛兹",--月 - 空 - 4血
 	["&luna017"] = "优克里伍德",
 	["designer:luna017"] = "韩旭",
-	["illustrator:luna017"] = "さくら小春",
+	["illustrator:luna017"] = "SiroTUB",
 	["ikchenyan"] = "谶言",
 	[":ikchenyan"] = "锁定技。摸牌阶段摸牌时，你额外摸X张牌；弃牌阶段开始时，你须弃置X+1张牌（X为场上的势力数，且至少为2）。",
 	["#IkChenyanGood"] = "%from 的“%arg2”被触发，额外摸了 %arg 张牌",
@@ -581,7 +581,7 @@ return {
 	["#luna052"] = "大食的空母",
 	["luna052"] = "赤城",--月 - 空 - 4血
 	["designer:luna052"] = "伴剑一生",
-	["illustrator:luna052"] = "colis",
+	["illustrator:luna052"] = "ユキ桜",
 	["ikhuisuo"] = "彗索",
 	[":ikhuisuo"] = "锁定技。你计算与体力值小于你的角色的距离时，无视除该角色外的其他角色及场上的坐骑牌。",
 	["ikcangliu"] = "苍流",
