@@ -34,7 +34,7 @@ return {
 	["#thjilanwen-draw"] = "疾岚（少摸一张牌）",
 	
 	["#kaze003"] = "天之八衢",
-	["kaze003"] = "姬海棠羽立",--风 - 空 - 3血
+	["kaze003"] = "姬海棠果",--风 - 空 - 3血
 	["designer:kaze003"] = "神·冥狐",
 	["illustrator:kaze003"] = "nyanya",
 	["cv:kaze003"] = "暂无",
