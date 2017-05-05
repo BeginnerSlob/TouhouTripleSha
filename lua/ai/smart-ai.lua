@@ -4584,6 +4584,7 @@ function getCardsNum(class_name, player, from)
 				if not card:isKindOf("Analeptic") then
 					spadewine = spadewine + 1
 				end
+				spadecard = spadecard + 1
 			end
 			if card:getSuit() == sgs.Card_Diamond and not card:isKindOf("Slash") then
 				diamondcard = diamondcard + 1
@@ -4648,6 +4649,8 @@ function getCardsNum(class_name, player, from)
 			return clubcard + num + (player:getHandcardNum() - shownum) * 0.65
 		elseif player:hasSkill("kofqingguo") then
 			return num + (player:getHandcardNum() - shownum) * 0.6 + player:getEquips():length()
+		elseif player:hasArmorEffect("ibuki_gourd") then
+			return num + spadecard + (player:getHandcardNum() - shownum) / 3
 		else
 			return num + (player:getHandcardNum() - shownum) * 0.6
 		end
@@ -4665,7 +4668,7 @@ function getCardsNum(class_name, player, from)
 		end
 	elseif class_name == "Analeptic" then
 		if player:hasSkill("jiuchi") then
-			return num + spadewine + (player:getHandcardNum() - shownum) / 3
+			return num + spadecard + (player:getHandcardNum() - shownum) / 3
 		elseif player:hasSkill("jiushi") then
 			return num + 1
 		elseif player:hasSkill("thsibao") then
@@ -6261,6 +6264,7 @@ dofile "lua/ai/debug-ai.lua"
 dofile "lua/ai/standard_cards-ai.lua"
 dofile "lua/ai/maneuvering-ai.lua"
 dofile "lua/ai/standard-ai.lua"
+dofile "lua/ai/fantasy-ai.lua"
 dofile "lua/ai/basara-ai.lua"
 dofile "lua/ai/boss-ai.lua"
 dofile "lua/ai/hulaoguan-ai.lua"
@@ -6275,7 +6279,7 @@ dofile "lua/ai/yjcm2013-ai.lua"
 dofile "lua/ai/bgm-ai.lua"
 dofile "lua/ai/nostalgia-ai.lua"
 
-local loaded = "standard|standard_cards|maneuvering"
+local loaded = "standard|standard_cards|maneuvering|fantasy"
 
 local ai_files = sgs.GetFileNames("lua/ai")
 

@@ -3,10 +3,10 @@
 #include "engine.h"
 #include "client.h"
 
-class IbukiGourdSkill: public ArmorSkill
+class IbukiGourdSkill : public ArmorSkill
 {
 public:
-    IbukiGourdSkill(): ArmorSkill("ibuki_gourd")
+    IbukiGourdSkill() : ArmorSkill("ibuki_gourd")
     {
         events << CardAsked;
     }
