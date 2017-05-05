@@ -569,29 +569,28 @@ end
 
 sgs.ai_choicemade_filter.cardChosen.thguiyu = sgs.ai_choicemade_filter.cardChosen.snatch
 
---酎华：限定技，出牌阶段，若存活角色数不大于游戏开始时的一半，你可以回复1点体力或摸两张牌，然后获得技能“坏灭”（锁定技，你的黑色锦囊牌均视为【杀】，且造成的伤害+1。）。
-local thzhouhua_skill = {}
-thzhouhua_skill.name = "thzhouhua"
-table.insert(sgs.ai_skills, thzhouhua_skill)
-thzhouhua_skill.getTurnUseCard = function(self)
-	local alive = self.room:alivePlayerCount()
-	local all = self.room:getPlayers():length()
-	if alive <= all / 2 and self.player:getMark("@zhouhua") > 0 then
-		return sgs.Card_Parse("@ThZhouhuaCard=.")
+--酎华：限定技。摸牌阶段结束时，若有已死亡的角色，你可以回复1点体力或摸两张牌，然后获得技能“坏灭”（出牌阶段开始时，你可以令你的锦囊牌均视为【杀】，直到回合结束。）。
+sgs.ai_skill_invoke.thzhouhua = function(self, data)
+	if not self:willSkipPlayPhase() and not self:isWounded() then
+		return false
 	end
-end
-
-sgs.ai_skill_use_func.ThZhouhuaCard = function(card, use, self)
-	use.card = card
+	return true
 end
 
 sgs.ai_skill_choice.thzhouhua = function(self, choice)
-	if self.player:getHp() < self.player:getMaxHp() - 1 then return "recover" end
+	if self.player:getLostHp() > 1 or (self:willSkipPlayPhase() and self.player:isWounded()) then
+		return "recover"
+	end
 	return "draw"
 end
 
---坏灭：锁定技，你的黑色锦囊牌均视为【杀】，且造成的伤害+1。
---SmartAI:hasHeavySlashDamage
+--坏灭：出牌阶段开始时，你可以令你的锦囊牌均视为【杀】，直到回合结束。
+sgs.ai_skill_invoke.thhuaimie = function(self, data)
+	if not self:getCard("Slash") or self:hasCrossbowEffect(player) or self.player:canSlashWithoutCrossbow() then
+		return self:slashIsAvailable()
+	end
+	return false
+end
 
 --神粥：每当你的人物牌翻至正面朝上时，或受到1点伤害后，你可以从牌堆顶亮出X张牌（X为存活角色的数量，且至多为5），将其中一种类别的牌交给一名角色，并将其余的置入弃牌堆。
 sgs.ai_skill_invoke.thshenzhou = true

@@ -328,7 +328,7 @@ local thleshi_skill = {}
 thleshi_skill.name = "thleshi"
 table.insert(sgs.ai_skills, thleshi_skill)
 thleshi_skill.getTurnUseCard = function(self)
-	if not self.player:hasUsed("ThLeshiCard") and not self:doNotDraw() then
+	if not self.player:hasUsed("ThLeshiCard") and not self:doNotDraw(self.player, 4) then
 		return sgs.Card_Parse("@ThLeshiCard=.")
 	end
 end
@@ -358,7 +358,9 @@ function SmartAI:doNotDraw(target, num, TrickCard)
 			end
 		end
 	end
-	if target:hasSkill("thyouli") then return target:getHandcardNum() + num > 4 end
+	if target:hasSkill("thyouli") then
+		return target:getHandcardNum() + num > 4 or (target:getHandcardNum() + num == 5 and target:getPile("mask"):length() > 0)
+	end
 	return false
 end
 
@@ -1269,26 +1271,21 @@ sgs.ai_playerchosen_intention.thzhaoai = -150
 sgs.ai_skill_invoke.thwunan = true
 
 sgs.ai_skill_choice.thwunan = function(self, choices, data)
-	if self:isWeak() and self.player:isWounded() then
-		return "recover"
-	end
 	local target = data:toPlayer()
 	local players = sgs.SPlayerList()
 	players:append(target)
+	choices = choices:split("+")
 	if target and target:isAlive() and self:isEnemy(target) then
-		if target:getHandcardNum() < 3 and self:findPlayerToDiscard("he", true, true, players) then
+		if target:getHandcardNum() < 3 and self:findPlayerToDiscard("he", true, true, players) and table.contains(choices, "discard") then
 			return "discard"
 		end
 	elseif target and target:isAlive() and self:isFriend(target) then
-		if self:findPlayerToDiscard("he", true, true, players) then
+		if self:findPlayerToDiscard("he", true, true, players) and table.contains(choices, "discard") then
 			return "discard"
 		end
 	end
-	if self.player:isWounded() then
-		return "recover"
-	end
 	if target then
-		if (self:getOverflow(target) <= 0 and self.player:canDiscard(target, "h")) or (target:hasEquip() and self.player:canDiscard(target, "e")) then
+		if (self:getOverflow(target) <= 0 and self.player:canDiscard(target, "h") and table.contains(choices, "discard")) or (target:hasEquip() and self.player:canDiscard(target, "e") and table.contains(choices, "discard")) then
 			return "discard"
 		end
 	end

@@ -1368,13 +1368,13 @@ end
 sgs.ai_use_priority.ThChuanshangCard = 0.01
 sgs.ai_card_intention.ThChuanshangCard = 60
 
---灵蝶：出牌阶段限三次，你可以将一张手牌交给一名其他角色，然后令该角色观看由其选择的另一名角色的手牌；或摸一张牌。若你以此法交给的手牌不为红桃，你此阶段不可以再发动“灵蝶”。
+--灵蝶：出牌阶段限两次，你可以将一张手牌交给一名其他角色，然后令该角色观看由其选择的另一名角色的手牌。若你以此法交给的手牌为红桃，该角色摸一张牌；若不为红桃，你此阶段不可以再发动“灵蝶”。
 local thlingdie_skill = {}
 thlingdie_skill.name = "thlingdie"
 table.insert(sgs.ai_skills, thlingdie_skill)
 thlingdie_skill.getTurnUseCard = function(self)
 	if self.player:hasFlag("ThLingdieDisabled") then return nil end
-	if self.player:usedTimes("ThLingdieCard") >= 3 then return nil end
+	if self.player:usedTimes("ThLingdieCard") >= 2 then return nil end
 	if self.player:isNude() then return nil end
 	return sgs.Card_Parse("@ThLingdieCard=.")
 end
@@ -1409,12 +1409,51 @@ sgs.ai_skill_use_func.ThLingdieCard = function(card, use, self)
 end
 
 sgs.ai_skill_playerchosen.thlingdie = function(self, targets)
-	return nil
+	self:sort(self.enemies, "handcard")
+	self.enemies = sgs.reverse(self.enemies)
+
+	for _, enemy in ipairs(self.enemies) do
+		if not enemy:isKongcheng() and self:objectiveLevel(enemy) > 0 
+				and (getKnownNum(enemy) ~= enemy:getHandcardNum()) then
+			use.card = card
+			if use.to then
+				use.to:append(enemy)
+			end
+			return
+		end
+	end
+	
+	local players = sgs.QList2Table(self.room:getOtherPlayers(self.player))
+	self:sort(players, "handcard")
+	players = sgs.reverse(players)
+	for _, p in ipairs(players) do
+		if not self:isFriend(p) then
+			if not p:isKongcheng() and self:objectiveLevel(p) > 0 
+					and (getKnownNum(p) ~= p:getHandcardNum()) then
+				use.card = card
+				if use.to then
+					use.to:append(p)
+				end
+				return
+			end
+		end
+	end
+
+	for _, p in ipairs(players) do
+		if not p:isKongcheng() and self:objectiveLevel(p) > 0 
+				and (getKnownNum(p) ~= p:getHandcardNum()) then
+			use.card = card
+			if use.to then
+				use.to:append(p)
+			end
+			return
+		end
+	end
 end
 
 sgs.ai_use_priority.ThLingdieCard = -10
 sgs.ai_card_intention.ThLingdieCard = -50
-sgs.ai_playerchosen_intention.thlingdie = 10
+sgs.ai_playerchosen_intention.thlingdie = 5
 
 --无寿：每当你受到一次伤害后，你可以将你的手牌补至四张。
 sgs.ai_skill_invoke.thwushou = true

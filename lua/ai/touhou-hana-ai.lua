@@ -816,7 +816,7 @@ sgs.ai_skill_use["@@thyachui"] = function(self, prompt)
 	local cardIds = {}
 	for var = 1, targets[1]:getLostHp() do
 		table.insert(cardIds, redcards[var]:getId())
-	end		
+	end
 	return "@ThYachuiCard=" .. table.concat(cardIds, "+") .. "->" .. targets[1]:objectName()
 end
 
@@ -828,10 +828,21 @@ sgs.ai_skill_invoke.thchunhen = true
 --遐攻:若你的装备区没有武器牌，你可以对与你距离2以内的角色使用【杀】。
 --无
 
---怪谈：每当你造成伤害，在结算后，你可以选择一种牌的类别，受到伤害的角色不能使用或打出该类别的牌，直到其再次受到一次伤害后，或其下一个回合的回合结束。
-sgs.ai_skill_invoke.thguaitan = function(self, data)
-	local target = data:toPlayer()
-	return self:isEnemy(target)
+--怪谈：每当你的牌因使用而置入弃牌堆，若该牌造成了伤害，你选择一至两名其他角色，然后依次为每名角色选择一种类别的牌，使其不能使用或打出该类别的牌，直到其再次受到一次伤害后，或其下一个回合的回合结束。
+sgs.ai_skill_use["@@thguaitan"] = function(self, prompt)
+	local targets = {}
+	self:sort(self.enemies, "defense")
+	for _, enemy in ipairs(self.enemies) do
+		if not enemy:isKongcheng() then
+			table.insert(targets, enemy:objectName())
+		end
+	end
+	if #targets > 1 then
+		return "@ThGuaitanCard=.->" .. targets[1] .. "+" .. targets[2]
+	elseif #targets == 1 then
+		return "@ThGuaitanCard=.->" .. targets[1]
+	end
+	return "."
 end
 
 sgs.ai_skill_choice.thguaitan = function(self, choices, data)
@@ -849,10 +860,24 @@ sgs.ai_skill_choice.thguaitan = function(self, choices, data)
 			t[card:getType()] = t[card:getType()] + 1
 		end
 	end
-	if knownNum < target:getHandcardNum() or t["basic"] ~= 0 then
+	if (knownNum < target:getHandcardNum() or t["basic"] ~= 0) and target:getMark("@guaitan_basic") == 0 then
 		return "BasicCard"
 	end
-	return t.trick >= t.equip and "TrickCard" or "EquipCard"
+	if t.trick < t.equip and target:getMark("@guaitan_equip") == 0 then
+		return "EquipCard"
+	elseif target:getMark("@guaitan_trick") == 0 then
+		return "TrickCard"
+	end
+	if target:getMark("@guaitan_basic") == 0 then
+		return "BasicCard"
+	end
+	if target:getMark("@guaitan_trick") == 0 then
+		return "TrickCard"
+	end
+	if target:getMark("@guaitan_equip") == 0 then
+		return "EquipCard"
+	end
+	return "BasicCard"
 end
 
 sgs.ai_need_damaged.thguaitan = function(self, attacker, player)
@@ -1105,28 +1130,17 @@ sgs.ai_view_as.thshijie = function(card, player, card_place)
 	end
 end
 
---圣贽：其他角色的回合开始时，你可弃置一张黑色手牌或“皿”并令该角色跳过此回合的一个阶段。若以此法跳过摸牌阶段，你失去1点体力；若以此法跳过出牌阶段，该角色回复1点体力。
+--圣贽：其他角色的回合开始时，你可以令其选择一项：弃置一张【三粒天滴】；或跳过此回合的一个由你指定的阶段，并对你造成1点伤害。
 sgs.thshengzhi_choice = ""
 
-sgs.ai_skill_use["@@thshengzhi"] = function(self, prompt, method)
-	local target = self.room:findPlayer(prompt:split(":")[2])
+sgs.ai_skill_invoke.thshengzhi = function(self, data)
+	local target = data:toPlayer()
 	if not target then
-		return "."
+		return false
 	end
-	local card
-	if not self.player:getPile("utensil"):isEmpty() then
-		card = self.player:getPile("utensil"):first()
-	elseif self.player:canDiscard(self.player, "h") then
-		local cards = sgs.QList2Table(self.player:getHandcards())
-		self:sortByKeepValue(cards)
-		for _, c in ipairs(cards) do
-			if c:isBlack() then
-				card = c:getEffectiveId()
-			end
-		end
+	if self:isWeak() then
+		return false
 	end
-	if not card then return "." end
-
 	if self:isEnemy(target) then
 		if not self:willSkipPlayPhase(target) then
 			local n = self:getOverflow(target)
@@ -1136,28 +1150,41 @@ sgs.ai_skill_use["@@thshengzhi"] = function(self, prompt, method)
 			if not target:isSkipped(sgs.Player_Discard) then
 				if n > 4 or (n > 2 and not target:isWounded()) then
 					sgs.thshengzhi_choice = "play"
-					return "@ThShengzhiCard=" .. card
+					return true
 				end
 			end
 		end
 		if not self:willSkipDrawPhase(target) then
 			if self.player:getHp() > 2 and (self:isWeak(target) or target:isKongcheng()) then
 				sgs.thshengzhi_choice = "draw"
-				return "@ThShengzhiCard=" .. card
+				return true
 			end
 		end
+	end
+	return false
+end
+
+sgs.ai_skill_cardask["@thshengzhi"] = function(self, data, pattern, target)
+	if self:isFriend(target) then
+		return "."
+	elseif sgs.thshengzhi_choice then
+		return self:getCardId("Nullification")
+	elseif not self:damageIsEffective(target, nil, self.player) then
+		return self:getCardId("Nullification")
 	end
 	return "."
 end
 
 sgs.ai_skill_choice.thshengzhi = function(self, choices, data)
-	if string.find(choices, sgs.thshengzhi_choice) then return sgs.thshengzhi_choice end
+	if string.find(choices, sgs.thshengzhi_choice) then
+		return sgs.thshengzhi_choice
+	end
 	local target = data:toPlayer()
 	if self:isFriend(target) and string.find(choices, "discard") then
 		return "discard"
-	elseif self:isEnemy(target) and not target:isWounded() and string.find(choices, "play") then
+	elseif self:isEnemy(target) and string.find(choices, "play") then
 		return "play"
-	elseif self:isEnemy(target) and not self:isWeak(self.player) and string.find(choices, "draw") then
+	elseif self:isEnemy(target) and string.find(choices, "draw") then
 		return "draw"
 	end
 	choices = choices:split("+")

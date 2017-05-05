@@ -3035,9 +3035,6 @@ function SmartAI:hasHeavySlashDamage(from, slash, to, return_value)
 	elseif from:getMark("drank") > 0 then
 		dmg = dmg + from:getMark("drank")
 	end
-	if (slash and slash:getSkillName() == "thhuaimie") then
-		dmg = dmg + 1
-	end
 	if not from:hasSkill("ikxuwu") and from:getMark("thshenyou") == 0 then
 		if from:hasFlag("nosluoyi") then dmg = dmg + 1 end
 		if from:getMark("@nude") > 0 then dmg = dmg + 1 end
