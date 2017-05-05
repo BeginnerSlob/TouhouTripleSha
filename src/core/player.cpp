@@ -879,7 +879,7 @@ bool Player::canSlash(const Player *other, const Card *slash, bool distance_limi
     if (isProhibited(other, THIS_SLASH, others))
         return false;
 
-    if (distance_limit)
+    if (distance_limit && getMark("ikelu_" + other->objectName()) == 0)
         return inMyAttackRange(other, rangefix - Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, this, THIS_SLASH));
     else
         return true;

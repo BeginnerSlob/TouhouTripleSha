@@ -929,13 +929,16 @@ public:
     }
 };
 
-class IkElu: public TriggerSkill {
+class IkElu : public TriggerSkill
+{
 public:
-    IkElu(): TriggerSkill("ikelu") {
+    IkElu() : TriggerSkill("ikelu")
+    {
         events << PreCardUsed << PreDamageDone << EventPhaseStart << CardFinished << ChoiceMade << EventPhaseChanging;
     }
 
-    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
         TriggerList skill_list;
         if (triggerEvent == PreCardUsed && player->hasFlag("IkEluLog") && data.canConvert<CardUseStruct>()) {
             room->broadcastSkillInvoke(objectName(), qrand() % 2 + 1);
@@ -972,7 +975,6 @@ public:
                     room->broadcastSkillInvoke(objectName(), 3);
                     room->addPlayerMark(current, "ikelu_" + player->objectName());
                     room->addPlayerMark(current, objectName());
-                    room->setFixedDistance(current, player, 1);
                 }
             }
         } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Play) {
@@ -987,10 +989,8 @@ public:
                 room->setPlayerMark(player, objectName(), 0);
                 foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                     if (player->getMark("ikelu_" + p->objectName()) > 0) {
-                        while (player->getMark("ikelu_" + p->objectName()) > 0) {
+                        while (player->getMark("ikelu_" + p->objectName()) > 0)
                             room->removePlayerMark(player, "ikelu_" + p->objectName());
-                            room->removeFixedDistance(player, p, 1);
-                        }
                     }
                 }
             }
@@ -4627,7 +4627,7 @@ public:
         ServerPlayer *owner = Sanguosha->currentRoom()->getCardOwner(to_select->getEffectiveId());
         if (!owner)
             return false;
-        return to_select->isKindOf("Jink");
+        return to_select->isKindOf("Jink") || to_select->isKindOf("NatureSlash");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
