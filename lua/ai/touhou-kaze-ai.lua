@@ -1707,7 +1707,7 @@ sgs.ai_skill_use_func.ThMaihuoCard = function(card, use, self)
 end
 
 sgs.ai_skill_suit.thmaihuo = function(self)
-	return sgs.Sanguosha:getCard(self.player:getTag("ThMaihuoCard"):toCard():getEffectiveId()):getSuitString()
+	return sgs.Sanguosha:getCard(self.player:getTag("ThMaihuoCard"):toInt()):getSuitString()
 end
 
 sgs.ai_card_intention.ThMaihuoCard = -70
