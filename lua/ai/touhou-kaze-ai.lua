@@ -1663,7 +1663,7 @@ sgs.ai_skill_invoke.thheyu = function(self, data)
 	return not self:isFriend(target) and not self:needToLoseHp(target, self.player, false, true) and not self:getDamagedEffects(target, self.player, false)
 end
 
---埋火：出牌阶段限一次，你可以选择一名其他角色并弃置一张手牌，若如此做，该角色可以展示至多三张花色各不相同的手牌，然后摸等量的牌。
+--埋火：阶段技。你可以将一张红色牌交给一名其他角色并选择一种花色，然后展示该角色全部的手牌，其中每有一张该花色的牌，该角色摸一张牌（至多摸三张）。
 local thmaihuo_skill = {}
 thmaihuo_skill.name = "thmaihuo"
 table.insert(sgs.ai_skills, thmaihuo_skill)
@@ -1676,13 +1676,17 @@ thmaihuo_skill.getTurnUseCard = function(self)
 		return
 	end
 	self:sortByKeepValue(cards)
-	return sgs.Card_Parse("@ThMaihuoCard=" .. cards[1]:getEffectiveId())
+	for _, c in ipairs(cards) do
+		if (c:isRed()) then
+			return sgs.Card_Parse("@ThMaihuoCard=" .. c:getEffectiveId())
+		end
+	end
 end
 
 sgs.ai_skill_use_func.ThMaihuoCard = function(card, use, self)
-	local targets={}
+	local targets = {}
 	for _, p in ipairs(self.friends_noself) do
-		if not self:willSkipPlayPhase(p) and not p:isKongcheng() then
+		if not self:willSkipPlayPhase(p) then
 			table.insert(targets, p)
 		end
 	end
@@ -1701,29 +1705,8 @@ sgs.ai_skill_use_func.ThMaihuoCard = function(card, use, self)
 	end
 end
 
-sgs.ai_skill_use["@@thmaihuov"] = function(self, prompt, method)
-	local show_table = {}
-	local suit = {}
-	local cards = sgs.QList2Table(self.player:getHandcards())
-	self:sortByKeepValue(cards)
-	if #cards == 0 then
-		return "."
-	end
-	for _, c in ipairs(cards) do
-		if suit[c:getSuitString()] then
-			continue
-		else
-			suit[c:getSuitString()] = true
-			table.insert(show_table, tostring(c:getId()))
-		end
-		if #show_table == 3 then
-			break
-		end
-	end
-	if #show_table == 0 then
-		return "."
-	end
-	return ("@ThMaihuoShowCard=%s"):format(table.concat(show_table, "+"))
+sgs.ai_skill_suit.thmaihuo = function(self)
+	return sgs.Sanguosha:getCard(self.player:getTag("ThMaihuoCard"):toCard():getEffectiveId()):getSuitString()
 end
 
 sgs.ai_card_intention.ThMaihuoCard = -70
