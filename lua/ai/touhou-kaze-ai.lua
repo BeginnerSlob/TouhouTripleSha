@@ -1657,11 +1657,12 @@ sgs.thyanxing_keep_value = {
 	NatureSlash = 6.4,
 }
 
---核狱：你每使用具属性伤害的【杀】造成一次伤害，在伤害结算后，你可以对受到该伤害的角色造成1点伤害。
-sgs.ai_skill_invoke.thheyu = function(self, data)
-	local target = data:toPlayer()
-	return not self:isFriend(target) and not self:needToLoseHp(target, self.player, false, true) and not self:getDamagedEffects(target, self.player, false)
-end
+--核狱：锁定技。你造成的火焰伤害+1。
+--maneuvering-ai.lua SmartAI:isGoodChainTarget
+--maneuvering-ai.lua SmartAI:useCardFireAttack
+--smart-ai.lua SmartAI:adjustUsePriority
+--smart-ai.lua SmartAI:hasHeavySlashDamage
+--standard_cards-ai.lua SmartAI:canAttack
 
 --埋火：阶段技。你可以将一张红色牌交给一名其他角色并选择一种花色，然后展示该角色全部的手牌，其中每有一张该花色的牌，该角色摸一张牌（至多摸三张）。
 local thmaihuo_skill = {}

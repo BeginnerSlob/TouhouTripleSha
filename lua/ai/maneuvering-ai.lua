@@ -352,6 +352,7 @@ function SmartAI:isGoodChainTarget(who, source, nature, damagecount, card)
 	elseif nature == sgs.DamageStruct_Fire then
 		if who:hasArmorEffect("vine") then damagecount = damagecount + 1 end
 		if who:getMark("@gale") > 0 then damagecount = damagecount + 1 end
+		if source:hasSkill("thheyu") then damagecount = damagecount + 1 end
 	elseif nature == sgs.DamageStruct_Thunder then
 		if who:hasSkill("thmingling") then damagecount = damagecount + 1 end
 	end
@@ -367,6 +368,7 @@ function SmartAI:isGoodChainTarget(who, source, nature, damagecount, card)
 		if dmg and nature == sgs.DamageStruct_Fire then
 			if target:hasArmorEffect("vine") then dmg = dmg + 1 end
 			if target:getMark("@gale") > 0 then dmg = dmg + 1 end
+			if source:hasSkill("thheyu") then dmg = dmg + 1 end
 		elseif dmg and nature == sgs.DamageStruct_Thunder then
 			if target:hasSkill("thmingling") then dmg = dmg + 1 end
 		end
@@ -745,6 +747,7 @@ function SmartAI:useCardFireAttack(fire_attack, use)
 		if not self.player:hasSkill("ikxuwu") and not self:hasSilverLionEffect(enemy) then
 			if enemy:hasArmorEffect("vine") then damage = damage + 1 end
 			if enemy:getMark("@gale") > 0 then damage = damage + 1 end
+			if self.player:hasSkill("thheyu") then damage = damage + 1 end
 		end
 		return self:objectiveLevel(enemy) > 3 and damage > 0 and not enemy:isKongcheng() and not self.room:isProhibited(self.player, enemy, fire_attack)
 				and self:damageIsEffective(enemy, sgs.DamageStruct_Fire, self.player) and not self:cantbeHurt(enemy, self.player, damage)
@@ -785,6 +788,7 @@ function SmartAI:useCardFireAttack(fire_attack, use)
 			local leastHP = 1
 			if self.player:hasArmorEffect("vine") then leastHP = leastHP + 1 end
 			if self.player:getMark("@gale") > 0 then leastHP = leastHP + 1 end
+			if self.player:hasSkill("thheyu") then leastHP = leastHP + 1 end
 			if self.player:getHp() > leastHP then
 				table.insert(targets, self.player)
 			elseif self:getCardsNum("Peach") + self:getCardsNum("Analeptic") > self.player:getHp() - leastHP then
@@ -815,6 +819,7 @@ function SmartAI:useCardFireAttack(fire_attack, use)
 		if not self:hasSilverLionEffect(enemy) then
 			if enemy:hasArmorEffect("vine") then damage = damage + 1 end
 			if enemy:getMark("@gale") > 0 then damage = damage + 1 end
+			if self.player:hasSkill("thheyu") > 0 then damage = damage + 1 end
 		end
 		if (not use.current_targets or not table.contains(use.current_targets, enemy:objectName()))
 			and not self.player:hasSkill("ikxuwu") and self:damageIsEffective(enemy, sgs.DamageStruct_Fire, self.player) and damage > 1 then

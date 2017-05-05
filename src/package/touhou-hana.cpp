@@ -2171,7 +2171,8 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
-        if (!player->canDiscard(player, "h") || !room->askForCard(player, "Nullification", "@thshengzhi")) {
+        if (!player->canDiscard(player, "h")
+                || !room->askForCard(player, "Nullification", "@thshengzhi:" + ask_who->objectName())) {
             QList<Player::Phase> phases = player->getPhases();
             QStringList choices;
             foreach (Player::Phase phase, phases) {

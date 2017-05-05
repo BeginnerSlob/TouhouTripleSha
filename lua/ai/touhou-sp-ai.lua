@@ -406,14 +406,16 @@ local findThHuanlongResult = function(self)
 		end
 	end
 	local n = self:getOverflow()
-	if n < 0 then
-		if self:getCardsNum("Slash") > 1 and table.contains(choices, "thhuanlong2") then
+	if n < -1 then
+		if table.contains(choices, "thhuanlong2") then
 			return "thhuanlong2"
-		elseif self:getCardsNum("Slash") == 0 and table.contains(choices, "thhuanlong3") then
+		elseif table.contains(choices, "thhuanlong3") then
 			return "thhuanlong3"
 		elseif table.contains(choices, "thhuanlong1") then
 			return "thhuanlong1"
 		end
+	elseif #choices == 1 then
+		return choices[1]
 	end
 	return "cancel"
 end

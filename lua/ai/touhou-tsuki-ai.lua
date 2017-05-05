@@ -822,7 +822,7 @@ sgs.ai_skill_invoke.thkuangxiang = function(self, data)
 	return false
 end
 
---恶戏：结束阶段开始时，你可以弃置一张手牌并选择两名有手牌的角色，这两名角色须同时展示一张手牌：若这两张牌点数不同，你获得其中一张牌，所展示的牌点数大的角色获得另一张牌；若点数相同，你须在此回合结束后进行一个额外的回合，且此额外的回合内你不可以发动“恶戏”。
+--恶戏：结束阶段开始时，你可以弃置一张牌并选择两名有手牌的角色，这两名角色须同时展示一张手牌：若这两张牌点数不同，你获得其中一张牌，所展示的牌点数大的角色获得另一张牌；若点数相同，你须在此回合结束后进行一个额外的回合，且此额外的回合内你不可以发动“恶戏”。
 sgs.ai_skill_use["@@thexi"] = function(self, prompt, method)
 	local cards = sgs.QList2Table(self.player:getHandcards())
 	self:sortByKeepValue(cards)
@@ -846,7 +846,7 @@ sgs.ai_skill_use["@@thexi"] = function(self, prompt, method)
 				end
 			end
 		end
-	end			
+	end	
 end
 
 sgs.ai_cardshow.thexi = function(self, requestor)

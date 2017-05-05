@@ -7,6 +7,7 @@ function SmartAI:canAttack(enemy, attacker, nature)
 	if nature == sgs.DamageStruct_Fire and not self:hasSilverLionEffect(enemy) then
 		if enemy:hasArmorEffect("vine") then damage = damage + 1 end
 		if enemy:getMark("@gale") > 0 then damage = damage + 1 end
+		if attacker:hasSkill("thheyu") then damage = damage + 1 end
 	end
 	if self:getDamagedEffects(enemy, attacker) or (self:needToLoseHp(enemy, attacker, false, true) and #self:getEnemies(attacker) > 1) or not sgs.isGoodTarget(enemy, self.enemies, self) then return false end
 	if self:objectiveLevel(enemy) <= 2 or self:cantbeHurt(enemy, self.player, damage) then return false end
