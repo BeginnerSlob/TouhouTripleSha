@@ -1975,34 +1975,33 @@ public:
     }
 };
 
-class ThHeyu: public TriggerSkill {
+class ThHeyu : public TriggerSkill
+{
 public:
-    ThHeyu(): TriggerSkill("thheyu") {
-        events << DamageComplete;
+    ThHeyu() : TriggerSkill("thheyu")
+    {
+        events << DamageCaused;
+        frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const {
-        DamageStruct damage = data.value<DamageStruct>();
-        if (!TriggerSkill::triggerable(damage.from))
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (!TriggerSkill::triggerable(player))
             return QStringList();
-        if (damage.card && damage.card->isKindOf("NatureSlash") && player->isAlive()) {
-            ask_who = damage.from;
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.nature == DamageStruct::Fire)
             return QStringList(objectName());
-        }
 
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
-        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
-        room->damage(DamageStruct(objectName(), ask_who, player));
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+        DamageStruct damage = data.value<DamageStruct>();
+        ++ damage.damage;
+        data = QVariant::fromValue(damage);
         return false;
     }
 };

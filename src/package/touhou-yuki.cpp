@@ -697,7 +697,7 @@ class ThDunjia: public OneCardViewAsSkill {
 public:
     ThDunjia(): OneCardViewAsSkill("thdunjia") {
         response_or_use = true;
-        filter_pattern = "Slash";
+        filter_pattern = "Slash,EquipCard";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{

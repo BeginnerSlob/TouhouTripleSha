@@ -1384,10 +1384,10 @@ public:
     }
 };
 
-class ThZheyinVS: public OneCardViewAsSkill
+class ThZheyinVS : public OneCardViewAsSkill
 {
 public:
-    ThZheyinVS(): OneCardViewAsSkill("thzheyin")
+    ThZheyinVS() : OneCardViewAsSkill("thzheyin")
     {
         response_pattern = "@@thzheyin";
         filter_pattern = ".|.|.|hand!";
@@ -1402,14 +1402,17 @@ public:
     }
 };
 
-class ThZheyin: public TriggerSkill {
+class ThZheyin : public TriggerSkill
+{
 public:
-    ThZheyin(): TriggerSkill("thzheyin") {
+    ThZheyin() : TriggerSkill("thzheyin")
+    {
         events << CardUsed << NullificationEffect << EventPhaseChanging;
         view_as_skill = new ThZheyinVS;
     }
 
-    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data) const
+    {
         TriggerList skill_list;
         if (triggerEvent == EventPhaseChanging) {
             if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
@@ -1437,7 +1440,8 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
         if (room->askForCard(ask_who, "@@thzheyin", "@thzheyin:" + player->objectName(), data, objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -1445,7 +1449,8 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
         if (!player->hasFlag("ThZheyin")) {
             room->setPlayerCardLimitation(player, "use", "TrickCard", false);
             room->setPlayerFlag(player, "ThZheyin");
@@ -1457,13 +1462,8 @@ public:
                 CardUseStruct use = data.value<CardUseStruct>();
                 use.nullified_list << "_ALL_TARGETS";
                 data = QVariant::fromValue(use);
-
-                player->obtainCard(use.card);
-
                 player->drawCards(1, objectName());
             } else {
-                const Card *card = data.value<const Card *>();
-                player->obtainCard(card);
                 player->drawCards(1, objectName());
                 return true;
             }

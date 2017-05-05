@@ -1939,7 +1939,7 @@ IkXunyuyouliCard::IkXunyuyouliCard()
 {
 }
 
-bool IkXunyuyouliCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+bool IkXunyuyouliCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const
 {
     return targets.length() < 3;
 }
