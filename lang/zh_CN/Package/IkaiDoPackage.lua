@@ -96,7 +96,7 @@ return {
 	["#bloom002"] = "壶中之天",
 	["bloom002"] = "丹特丽安",--花 - 空 - 3血
 	["designer:bloom002"] = "游卡桌游",
-	["illustrator:bloom002"] = "きゃら",
+	["illustrator:bloom002"] = "舘津テト",
 	["iktiansuo"] = "天锁",
 	[":iktiansuo"] = "每当一名角色的判定牌生效前，你可以打出一张牌代替之。",
 	["@iktiansuo-card"] = CommonTranslationTable["@askforretrial"],
@@ -262,7 +262,7 @@ return {
 	["#luna002"] = "坚强的心之光",
 	["luna002"] = "坂上智代",--月 - 空 - 4血
 	["designer:luna002"] = "游卡桌游",
-	["illustrator:luna002"] = "木子翔",
+	["illustrator:luna002"] = "白丝少年",
 	["ikwushuang"] = "无双",
 	[":ikwushuang"] = "锁定技。当你使用【杀】指定一名角色为目标后，该角色需连续使用两张【闪】才能抵消；与你进行【碎月绮斗】的角色每次需连续打出两张【杀】。",
 	["@ikwushuang-slash-1"] = "%src 对你【碎月绮斗】，你须连续打出两张【杀】",

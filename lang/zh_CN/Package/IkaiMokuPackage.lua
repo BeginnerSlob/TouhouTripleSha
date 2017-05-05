@@ -26,7 +26,7 @@ return {
 	["#wind010"] = "神风的不死鸟",
 	["wind010"] = "响",--风 - 空 - 3血
 	["designer:wind010"] = "游卡桌游",
-	["illustrator:wind010"] = "八城惺架",
+	["illustrator:wind010"] = "リン☆ユウ",
 	["ikfuhua"] = "缚华",
 	[":ikfuhua"] = "出牌阶段，你可以将一张梅花牌当【赤雾锁魂】使用或重铸。",
 	["iksuinie"] = "碎涅",

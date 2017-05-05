@@ -114,7 +114,7 @@ return {
 	["#wind052"] = "野春菊的别离",
 	["wind052"] = "曙",--风 - 空 - 5血
 	["designer:wind052"] = "凌天翼",
-	["illustrator:wind052"] = "画野朗",
+	["illustrator:wind052"] = "Scarletだんご",
 	["ikshangshishu"] = "殇蚀",
 	[":ikshangshishu"] = "摸牌阶段开始时，你可放弃摸牌，改为摸X张牌（X为已受伤的角色数），若如此做，当你于此回合内使用基本牌或锦囊牌时，你弃置一张牌。",
 	["#ikshangshishu"] = "殇蚀（弃牌）",
@@ -356,7 +356,7 @@ return {
 	["#snow044"] = "禁书目录",
 	["snow044"] = "茵蒂克丝",--雪 - 空 - 4血
 	["designer:snow044"] = "游卡桌游",
-	["illustrator:snow044"] = "NEO草野",
+	["illustrator:snow044"] = "左",
 	["iklunke"] = "轮刻",
 	[":iklunke"] = "阶段技。你可以选择一名人物牌没有横置的其他角色，然后横置该角色和你的人物牌。",
 	["ikcangmie"] = "苍灭",
