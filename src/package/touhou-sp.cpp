@@ -1347,7 +1347,7 @@ public:
     virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
         TriggerList skill_list;
         CardUseStruct use = data.value<CardUseStruct>();
-        if ((use.card->isKindOf("BasicCard") || use.card->isNDTrick()) && !use.card->isKindOf("ExNihilo") && use.card->getNumber() > 0) {
+        if ((use.card->isKindOf("BasicCard") || (use.card->isNDTrick() && use.card->isBlack())) && use.card->getNumber() > 0) {
             QList<int> ids;
             if (use.card->isVirtualCard())
                 ids = use.card->getSubcards();
