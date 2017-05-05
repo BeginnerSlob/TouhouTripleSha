@@ -607,15 +607,19 @@ public:
     }
 };
 
-class IkTianhua: public TriggerSkill {
+class IkTianhua : public TriggerSkill
+{
 public:
-    IkTianhua(): TriggerSkill("iktianhua") {
+    IkTianhua() : TriggerSkill("iktianhua")
+    {
         events << CardsMoveOneTime << EventPhaseChanging;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(player)) return QStringList();
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
         if (triggerEvent == CardsMoveOneTime) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (room->getCurrent() == player && player->getPhase() != Player::NotActive)
@@ -632,11 +636,12 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
         room->sendCompulsoryTriggerLog(player, objectName());
         if (triggerEvent == CardsMoveOneTime || data.value<PhaseChangeStruct>().to == Player::NotActive) {
             room->broadcastSkillInvoke(objectName(), qrand() % 2 + 1);
-            QList<int> card_ids = room->getNCards(5, false);
+            QList<int> card_ids = room->getNCards(3, false);
             QList<int> to_get;
             room->fillAG(card_ids, player);
             forever {
@@ -5315,8 +5320,17 @@ public:
 
         ikwuyu.removeAll(to_get);
 
-        if (red && player->isWounded())
-            room->recover(player, RecoverStruct(ask_who));
+        if (red) {
+            QStringList choices;
+            if (player->isWounded())
+                choices << "recover";
+            choices << "draw";
+            QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+            if (choice == "recover")
+                room->recover(player, RecoverStruct(ask_who));
+            else
+                player->drawCards(1, objectName());
+        }
         player->tag["IkWuyu"] = ikwuyu;
         return false;
     }

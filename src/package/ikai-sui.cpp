@@ -1935,15 +1935,17 @@ public:
     }
 };
 
-IkXunyuyouliCard::IkXunyuyouliCard() {
+IkXunyuyouliCard::IkXunyuyouliCard()
+{
 }
 
-bool IkXunyuyouliCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    int total = Self->getAliveSiblings().length() + 1;
-    return targets.length() < total / 2 - 1 && to_select != Self;
+bool IkXunyuyouliCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    return targets.length() < 3;
 }
 
-void IkXunyuyouliCard::onEffect(const CardEffectStruct &effect) const{
+void IkXunyuyouliCard::onEffect(const CardEffectStruct &effect) const
+{
     Room *room = effect.from->getRoom();
     QStringList choices;
     if (!effect.to->hasSkill("thfeiying"))
@@ -1960,30 +1962,36 @@ void IkXunyuyouliCard::onEffect(const CardEffectStruct &effect) const{
     room->acquireSkill(effect.to, choice);
 }
 
-class IkXunyuyouliViewAsSkill: public ZeroCardViewAsSkill {
+class IkXunyuyouliViewAsSkill : public ZeroCardViewAsSkill
+{
 public:
-    IkXunyuyouliViewAsSkill(): ZeroCardViewAsSkill("ikxunyuyouli") {
+    IkXunyuyouliViewAsSkill() : ZeroCardViewAsSkill("ikxunyuyouli")
+    {
         response_pattern = "@@ikxunyuyouli";
     }
 
-    virtual const Card *viewAs() const{
+    virtual const Card *viewAs() const
+    {
         return new IkXunyuyouliCard;
     }
 };
 
-class IkXunyuyouli: public TriggerSkill {
+class IkXunyuyouli : public TriggerSkill
+{
 public:
-    IkXunyuyouli(): TriggerSkill("ikxunyuyouli") {
+    IkXunyuyouli() : TriggerSkill("ikxunyuyouli")
+    {
         events << EventPhaseChanging << Death << EventPhaseStart;
         view_as_skill = new IkXunyuyouliViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
         if (triggerEvent == Death) {
             DeathStruct death = data.value<DeathStruct>();
             if (death.who != player || !player->hasSkill(objectName(), true))
                 return QStringList();
-            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            foreach (ServerPlayer *p, room->getAllPlayers()) {
                 if (p->property("ikxunyuyouli_from").toString() == player->objectName()) {
                     room->setPlayerProperty(p, "ikxunyuyouli_from", QVariant());
                     QString skill_name = p->tag["IkXunyuyouli_" + player->objectName()].toString();
@@ -1994,7 +2002,7 @@ public:
             }
         } else if (triggerEvent == EventPhaseStart) {
             if (player->getPhase() == Player::RoundStart) {
-                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                foreach (ServerPlayer *p, room->getAllPlayers()) {
                     if (p->property("ikxunyuyouli_from").toString() == player->objectName()) {
                         room->setPlayerProperty(p, "ikxunyuyouli_from", QVariant());
                         QString skill_name = p->tag["IkXunyuyouli_" + player->objectName()].toString();
@@ -2015,7 +2023,8 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         room->askForUseCard(player, "@@ikxunyuyouli", "@ikxunyuyouli");
         return false;
     }
