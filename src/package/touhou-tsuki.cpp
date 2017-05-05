@@ -720,7 +720,7 @@ public:
         }
         if (player->isDead()) return skill_list;
         foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
-            if (p->getMark(objectName()) >= 4)
+            if (p->getMark(objectName()) >= 3)
                 continue;
             skill_list.insert(p, QStringList(objectName()));
         }

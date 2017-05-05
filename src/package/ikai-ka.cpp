@@ -1015,12 +1015,18 @@ class IkYinchou : public TriggerSkill
 public:
     IkYinchou() : TriggerSkill("ikyinchou")
     {
-        events << CardFinished;
+        events << CardFinished << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *p, QVariant &d, ServerPlayer* &) const
+    virtual QStringList triggerable(TriggerEvent e, Room *r, ServerPlayer *p, QVariant &d, ServerPlayer *&) const
     {
-        if (TriggerSkill::triggerable(p) && !p->isKongcheng()) {
+        if (e == EventPhaseChanging) {
+            foreach (ServerPlayer *p, r->getAlivePlayers()) {
+                if (p->getMark(objectName()) > 0)
+                    p->setMark(objectName(), 0);
+            }
+        }
+        if (TriggerSkill::triggerable(p) && !p->isKongcheng() && p->getMark(objectName()) < 3) {
             CardUseStruct use = d.value<CardUseStruct>();
             if (use.card && use.card->getTypeId() == Card::TypeBasic) {
                 QStringList names;
@@ -1043,6 +1049,7 @@ public:
     {
         if (p->askForSkillInvoke(objectName())) {
             r->broadcastSkillInvoke(objectName());
+            p->addMark(objectName());
             return true;
         }
         return false;

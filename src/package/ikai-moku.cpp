@@ -3598,7 +3598,7 @@ public:
 class IkFusheng: public OneCardViewAsSkill {
 public:
     IkFusheng(): OneCardViewAsSkill("ikfusheng") {
-        filter_pattern = ".|spade|.|hand";
+        filter_pattern = ".|spade";
         response_or_use = true;
     }
 

@@ -5574,7 +5574,7 @@ IkShenchiCard::IkShenchiCard() {
 
 bool IkShenchiCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *Self) const{
     int n = Self->hasSkill("ikfansui") ? Self->getHp() : Self->getMaxHp();
-    return targets.length() < n;
+    return targets.length() < qMin(n, 3);
 }
 
 void IkShenchiCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const{
@@ -6861,6 +6861,7 @@ IkaiKinPackage::IkaiKinPackage()
     wind020->addRelateSkill("thheiguan");
 
     General *wind021 = new General(this, "wind021", "kaze");
+    wind021->addSkill("thxiagong");
     wind021->addSkill(new IkLiyao);
     wind021->addSkill(new IkLiyaoTargetMod);
     related_skills.insertMulti("ikliyao", "#ikliyao-target");
