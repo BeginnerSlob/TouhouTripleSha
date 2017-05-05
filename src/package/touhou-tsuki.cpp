@@ -1620,15 +1620,18 @@ public:
     }
 };
 
-ThExiCard::ThExiCard(){
+ThExiCard::ThExiCard()
+{
 }
 
-bool ThExiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool ThExiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
     if (targets.length() >= 2)
         return false;
 
     if (to_select == Self)
-        return Self->getHandcardNum() > 1;
+        return Self->getHandcardNum() > 1
+                || (!Self->isKongcheng() && !Self->getHandcards().contains(Sanguosha->getCard(getEffectiveId())));
     else
         return !to_select->isKongcheng();
 }
@@ -1679,7 +1682,7 @@ class ThExiViewAsSkill: public OneCardViewAsSkill {
 public:
     ThExiViewAsSkill(): OneCardViewAsSkill("thexi") {
         response_pattern = "@@thexi";
-        filter_pattern = ".|.|.|hand";
+        filter_pattern = ".!";
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{

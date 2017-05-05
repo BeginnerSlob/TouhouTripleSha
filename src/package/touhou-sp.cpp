@@ -779,20 +779,24 @@ public:
     }
 };
 
-class ThHuanlongViewAsSkill: public ViewAsSkill {
+class ThHuanlongViewAsSkill : public ViewAsSkill
+{
 public:
-    ThHuanlongViewAsSkill(): ViewAsSkill("thhuanlong") {
+    ThHuanlongViewAsSkill() : ViewAsSkill("thhuanlong")
+    {
         response_or_use = true;
     }
 
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const {
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
+    {
         if (selected.length() >= 2)
             return false;
         else
             return !to_select->isEquipped();
     }
 
-    virtual const Card *viewAs(const QList<const Card *> &cards) const {
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
         if (cards.length() != 2)
             return NULL;
         else {
@@ -803,23 +807,28 @@ public:
         }
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const {
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
         return player->hasFlag("thhuanlong") && Slash::IsAvailable(player);
     }
 
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
+    {
         return player->hasFlag("thhuanlong") && pattern == "slash";
     }
 };
 
-class ThHuanlong: public TriggerSkill {
+class ThHuanlong : public TriggerSkill
+{
 public:
-    ThHuanlong(): TriggerSkill("thhuanlong") {
+    ThHuanlong() : TriggerSkill("thhuanlong")
+    {
         events << EventPhaseStart << EventPhaseChanging;
         view_as_skill = new ThHuanlongViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
         if (triggerEvent == EventPhaseStart && TriggerSkill::triggerable(player) && player->getPhase() == Player::Play)
             return QStringList(objectName());
         if (triggerEvent == EventPhaseChanging) {
@@ -830,7 +839,8 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -847,11 +857,13 @@ public:
                 choices << "thhuanlong2";
             if (!player->hasFlag("thhuanlong"))
                 choices << "thhuanlong3";
-            if (choices.isEmpty()) break;
+            if (choices.isEmpty())
+                break;
             if (choices.length() < 3)
                 choices << "cancel";
             QString choice = room->askForChoice(player, "thhuanlong", choices.join("+"));
-            if (choice == "cancel") break;
+            if (choice == "cancel")
+                break;
             LogMessage log;
             log.type = "#ThHuanlong";
             log.from = player;
@@ -885,14 +897,17 @@ public:
     }
 
     virtual int getExtra(const Player *target) const {
-        int delta = 0;
+        int flags = 0;
         if (target->hasFlag("thhuanlong1"))
-            --delta;
+            ++ flags;
         if (target->hasFlag("thhuanlong2"))
-            --delta;
+            ++ flags;
         if (target->hasFlag("thhuanlong"))
-            --delta;
-        return delta;
+            ++ flags;
+        if (flags > 1)
+            return -2;
+        else
+            return 0;
     }
 };
 
