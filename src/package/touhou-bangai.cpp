@@ -916,19 +916,21 @@ public:
     }
 };
 
-class ThWeide: public TriggerSkill {
+class ThWeide : public TriggerSkill
+{
 public:
-    ThWeide(): TriggerSkill("thweide") {
-        events << DrawNCards;
+    ThWeide() : TriggerSkill("thweide")
+    {
+        events << EventPhaseStart;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
-        if (TriggerSkill::triggerable(player))
-            return QStringList(objectName());
-        return QStringList();
+    virtual bool triggerable(const ServerPlayer *player) const
+    {
+        return TriggerSkill::triggerable(player) && player->getPhase() == Player::Draw;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -936,7 +938,8 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         QList<int> card_ids = room->getNCards(2, false);
         room->fillAG(card_ids, player);
         player->tag["ThWeide"] = QVariant::fromValue(IntList2VariantList(card_ids));
@@ -967,7 +970,6 @@ public:
             }
         }
 
-        data = 0;
         return true;
     }
 };
