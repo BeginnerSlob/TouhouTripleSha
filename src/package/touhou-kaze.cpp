@@ -2007,68 +2007,50 @@ public:
     }
 };
 
-ThMaihuoShowCard::ThMaihuoShowCard(){
+ThMaihuoCard::ThMaihuoCard()
+{
     will_throw = false;
-    target_fixed = true;
     handling_method = MethodNone;
-    m_skillName = "thmaihuov";
 }
 
-void ThMaihuoShowCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    foreach (int id, subcards)
-        room->showCard(source, id);
-    source->drawCards(subcardsLength(), "thmaihuo");
-}
-
-class ThMaihuoShow: public ViewAsSkill{
-public:
-    ThMaihuoShow(): ViewAsSkill("thmaihuov") {
-        response_pattern = "@@thmaihuov";
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        if (to_select->isEquipped())
-            return false;
-        if (selected.isEmpty())
-            return true;
-        else if (selected.length() < 3) {
-            Card::Suit suit = to_select->getSuit();
-            foreach (const Card *c, selected) {
-                if (suit == c->getSuit())
-                    return false;
-            }
-            return true;
-        }
-        return false;
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        ThMaihuoShowCard *card = new ThMaihuoShowCard;
-        card->addSubcards(cards);
-        card->setSkillName("thmaihuov");
-        return card;
-    }
-};
-
-ThMaihuoCard::ThMaihuoCard() {
-}
-
-void ThMaihuoCard::onEffect(const CardEffectStruct &effect) const{
+void ThMaihuoCard::onEffect(const CardEffectStruct &effect) const
+{
     Room *room = effect.from->getRoom();
-    room->askForUseCard(effect.to, "@@thmaihuov", "@thmaihuov", -1, MethodNone);
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "thmaihuo", QString());
+    room->obtainCard(effect.to, this, reason);
+    Suit suit = room->askForSuit(effect.from, "thmaihuo");
+
+    LogMessage log;
+    log.type = "#ChooseSuit";
+    log.from = effect.from;
+    log.arg = Card::Suit2String(suit);
+    room->sendLog(log);
+
+    room->showAllCards(effect.to);
+    int n = 0;
+    foreach (const Card *c, effect.to->getHandcards()) {
+        if (c->getSuit() == suit)
+            ++ n;
+    }
+    if (n > 0)
+        effect.to->drawCards(qMin(n, 3), "thmaihuo");
 }
 
-class ThMaihuo: public OneCardViewAsSkill {
+class ThMaihuo : public OneCardViewAsSkill
+{
 public:
-    ThMaihuo(): OneCardViewAsSkill("thmaihuo") {
-        filter_pattern = ".|.|.|hand!";
+    ThMaihuo() : OneCardViewAsSkill("thmaihuo")
+    {
+        filter_pattern = ".|red";
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const {
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
         return !player->hasUsed("ThMaihuoCard");
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const {
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
         ThMaihuoCard *card = new ThMaihuoCard;
         card->addSubcard(originalCard);
         return card;
@@ -2548,13 +2530,12 @@ TouhouKazePackage::TouhouKazePackage()
     addMetaObject<ThSuilunCard>();
     addMetaObject<ThRansangCard>();
     addMetaObject<ThYanxingCard>();
-    addMetaObject<ThMaihuoShowCard>();
     addMetaObject<ThMaihuoCard>();
     addMetaObject<ThSangzhiCard>();
     addMetaObject<ThXinhuaCard>();
 
     skills << new ThHuazhi << new ThMicaiGivenSkill << new ThHuaimie << new ThHuaimieFilter
-           << new ThYanlun << new ThHeyu << new ThMaihuoShow << new ThXinhuaViewAsSkill;
+           << new ThYanlun << new ThHeyu << new ThXinhuaViewAsSkill;
     related_skills.insertMulti("thhuaimie", "#thhuaimie");
 }
 
