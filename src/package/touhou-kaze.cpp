@@ -2017,7 +2017,9 @@ void ThMaihuoCard::onEffect(const CardEffectStruct &effect) const
     Room *room = effect.from->getRoom();
     CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "thmaihuo", QString());
     room->obtainCard(effect.to, this, reason);
+    effect.from->tag["ThMaihuoCard"] = QVariant::fromValue(this); // for AI
     Suit suit = room->askForSuit(effect.from, "thmaihuo");
+    effect.from->tag.remove("ThMaihuoCard");
 
     LogMessage log;
     log.type = "#ChooseSuit";

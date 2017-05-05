@@ -1271,10 +1271,6 @@ sgs.ai_skill_use_func.ThKujieCard = function(card, use, self)
 	end
 end
 
-sgs.ai_skill_playerchosen.thkujie = function(self, targets)
-	return self:findPlayerToDraw(true, 1)
-end
-
 sgs.ai_use_priority.ThKujieCard = -1
 
 sgs.ai_card_intention.ThKujieCard = function(self, card, from, tos)
@@ -1286,8 +1282,6 @@ sgs.ai_card_intention.ThKujieCard = function(self, card, from, tos)
 		end
 	end
 end
-
-sgs.ai_playerchosen_intention.thkujie = -20
 
 --廕庇：当一名体力值不大于你的其他角色因伤害而扣减体力后，你可以令其回复等量的体力，然后伤害来源对你造成等量的同属性伤害。
 sgs.ai_skill_invoke.thyinbi = function(self, data)
