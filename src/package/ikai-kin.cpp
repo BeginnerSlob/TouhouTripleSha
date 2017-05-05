@@ -2214,13 +2214,16 @@ public:
     }
 };
 
-class IkPiaohu: public TriggerSkill {
+class IkPiaohu : public TriggerSkill
+{
 public:
-    IkPiaohu(): TriggerSkill("ikpiaohu") {
+    IkPiaohu() : TriggerSkill("ikpiaohu")
+    {
         events << TargetConfirming;
     }
 
-    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
         TriggerList skill_list;
         CardUseStruct use = data.value<CardUseStruct>();
 
@@ -2234,8 +2237,9 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
-        if (ask_who->canDiscard(ask_who, "he") && room->askForCard(ask_who, "^BasicCard", "@ikpiaohu:" + player->objectName(), data, objectName())) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        if (ask_who->canDiscard(ask_who, "he") && room->askForCard(ask_who, "..", "@ikpiaohu:" + player->objectName(), data, objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         } else if (!player->isChained() && !ask_who->isChained() && ask_who->askForSkillInvoke(objectName(), "chain:" + player->objectName())) {
@@ -2256,7 +2260,8 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
         CardUseStruct use = data.value<CardUseStruct>();
         use.to.removeOne(player);
         use.to.append(ask_who);
