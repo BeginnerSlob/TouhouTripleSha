@@ -149,21 +149,26 @@ public:
     }
 };
 
-class IkQiaoxia: public PhaseChangeSkill {
+class IkQiaoxia : public PhaseChangeSkill
+{
 public:
-    IkQiaoxia(): PhaseChangeSkill("ikqiaoxia") {
+    IkQiaoxia() : PhaseChangeSkill("ikqiaoxia")
+    {
     }
 
-    virtual bool triggerable(const ServerPlayer *ganfuren) const{
-        foreach (const Card *card, ganfuren->getHandcards())
+    virtual bool triggerable(const ServerPlayer *ganfuren) const
+    {
+        foreach (const Card *card, ganfuren->getHandcards()) {
             if (ganfuren->isJilei(card))
                 return false;
+        }
         return PhaseChangeSkill::triggerable(ganfuren)
-            && ganfuren->getPhase() == Player::Start
-            && !ganfuren->isKongcheng();
+                && ganfuren->getPhase() == Player::Start
+                && !ganfuren->isKongcheng();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -171,12 +176,22 @@ public:
         return false;
     }
 
-    virtual bool onPhaseChange(ServerPlayer *ganfuren) const{
+    virtual bool onPhaseChange(ServerPlayer *ganfuren) const
+    {
         Room *room = ganfuren->getRoom();
         int handcard_num = ganfuren->getHandcardNum();
         ganfuren->throwAllHandCards();
-        if (handcard_num >= ganfuren->getHp())
-            room->recover(ganfuren, RecoverStruct(ganfuren));
+        if (handcard_num >= ganfuren->getHp()) {
+            QStringList choices;
+            if (ganfuren->isWounded())
+                choices << "recover";
+            choices << "draw";
+            QString choice = room->askForChoice(ganfuren, objectName(), choices.join("+"));
+            if (choice == "recover")
+                room->recover(ganfuren, RecoverStruct(ganfuren));
+            else
+                ganfuren->drawCards(2, objectName());
+        }
         return false;
     }
 };
@@ -728,7 +743,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         player->drawCards(1, objectName());
-        if (player->getHandcardNum() > 3)
+        if (player->getHandcardNum() > 4)
             room->askForDiscard(player, objectName(), 1, 1, false, true);
         return false;
     }

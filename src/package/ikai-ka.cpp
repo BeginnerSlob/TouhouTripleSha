@@ -537,7 +537,7 @@ public:
                 foreach (ServerPlayer *p, room->getAlivePlayers())
                     room->setPlayerMark(p, objectName(), 0);
             }
-        } else if (player->getPhase() == Player::RoundStart && player->getHandcardNum() >= player->getHp()) {
+        } else if (player->getPhase() == Player::RoundStart && !player->isKongcheng()) {
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
                 if (!p->isKongcheng())
                     skill_list.insert(p, QStringList(objectName()));
@@ -2306,7 +2306,7 @@ void IkDuanniCard::onEffect(const CardEffectStruct &effect) const
     }
     QList<ServerPlayer *> targets;
     targets << effect.from;
-    if (effect.to->getHp() > effect.from->getHp() && !extras.isEmpty()) {
+    if (!extras.isEmpty()) {
         ServerPlayer *extra = room->askForPlayerChosen(effect.from, extras, "ikduanni", "@slash_extra_targets", true);
         targets << extra;
     }
@@ -2314,7 +2314,8 @@ void IkDuanniCard::onEffect(const CardEffectStruct &effect) const
     room->useCard(CardUseStruct(slash, effect.to, targets));
 }
 
-class IkDuanni : public ZeroCardViewAsSkill {
+class IkDuanni : public ZeroCardViewAsSkill
+{
 public:
     IkDuanni() : ZeroCardViewAsSkill("ikduanni")
     {
@@ -2331,7 +2332,8 @@ public:
     }
 };
 
-class IkZhangyi : public TriggerSkill {
+class IkZhangyi : public TriggerSkill
+{
 public:
     IkZhangyi() : TriggerSkill("ikzhangyi")
     {
