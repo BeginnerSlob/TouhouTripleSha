@@ -819,7 +819,7 @@ function SmartAI:useCardFireAttack(fire_attack, use)
 		if not self:hasSilverLionEffect(enemy) then
 			if enemy:hasArmorEffect("vine") then damage = damage + 1 end
 			if enemy:getMark("@gale") > 0 then damage = damage + 1 end
-			if self.player:hasSkill("thheyu") > 0 then damage = damage + 1 end
+			if self.player:hasSkill("thheyu") then damage = damage + 1 end
 		end
 		if (not use.current_targets or not table.contains(use.current_targets, enemy:objectName()))
 			and not self.player:hasSkill("ikxuwu") and self:damageIsEffective(enemy, sgs.DamageStruct_Fire, self.player) and damage > 1 then
