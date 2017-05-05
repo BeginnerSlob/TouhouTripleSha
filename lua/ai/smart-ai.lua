@@ -629,12 +629,12 @@ function SmartAI:adjustUsePriority(card, v)
 		if card:isKindOf("NatureSlash") then
 			if self.slashAvail == 1 then
 				v = v + 0.05
-				if self.player:hasSkill("thheyu") then
-					v = v + 0.1
-				end
 				if card:isKindOf("FireSlash") then
 					for _, enemy in ipairs(self.enemies) do
 						if enemy:hasArmorEffect("vine") or enemy:getMark("@gale") > 0 then v = v + 0.07 break end
+					end
+					if self.player:hasSkill("thheyu") then
+						v = v + 0.1
 					end
 				elseif card:isKindOf("ThunderSlash") then
 					for _, enemy in ipairs(self.enemies) do
@@ -3044,7 +3044,9 @@ function SmartAI:hasHeavySlashDamage(from, slash, to, return_value)
 		local guanyu = self.room:findPlayerBySkillName("zhongyi")
 		if guanyu and guanyu:getPile("loyal"):length() > 0 and self:isFriend(guanyu, from) and not is_friend then dmg = dmg + 1 end
 
-		if (to:hasArmorEffect("vine") or to:getMark("@gale") > 0) and fireSlash then dmg = dmg + 1 end
+		if to:hasArmorEffect("vine") and fireSlash then dmg = dmg + 1 end
+		if to:getMark("@gale") > 0 and fireSlash then dmg = dmg + 1 end
+		if from:hasSkill("thheyu") and fireSlash then dmg = dmg + 1 end
 		if from:hasWeapon("guding_blade") and slash and to:isKongcheng() then dmg = dmg + 1 end
 		if from:hasSkill("thluli") and to:getHp() >= from:getHp() and from:getHandcardNum() >= 3 and not is_friend then dmg = dmg + 1 end
 		if to:hasSkill("thluli") and from:getHp() >= to:getHp()

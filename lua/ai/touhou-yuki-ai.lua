@@ -503,20 +503,21 @@ thdunjia_skill.getTurnUseCard = function(self, inclusive)
 	self:sortByUseValue(cards, true)
 
 	for _, card in ipairs(cards) do
-		if card:isKindOf("Slash") and ((self:getUseValue(card) < sgs.ai_use_value.Dismantlement) or inclusive or self:getOverflow() > 0) then
+		if (card:isKindOf("Slash") or card:isKindOf("EquipCard")) and ((self:getUseValue(card) < sgs.ai_use_value.Dismantlement) or inclusive or self:getOverflow() > 0) then
 			local shouldUse = true
 
 			local dummy_use = { isDummy = true }
-			if self:getCardsNum("Slash") == 1 then
+			if card:isKindOf("Slash") and self:getCardsNum("Slash") == 1 then
 				self:useBasicCard(card, dummy_use)
-				if dummy_use.card then shouldUse = false end
+				if dummy_use.card then
+					shouldUse = false
+				end
 			end
 
 			if shouldUse then
 				slash_card = card
 				break
 			end
-
 		end
 	end
 
@@ -534,7 +535,7 @@ thdunjia_skill.getTurnUseCard = function(self, inclusive)
 end
 
 function sgs.ai_cardneed.thdunjia(to, card, self)
-	return card:isKindOf("Slash") and getKnownCard(to, self.player, "Slash", nil, "he") < 3
+	return (card:isKindOf("Slash") or card:isKindOf("EquipCard")) and getKnownCard(to, self.player, "Slash|EquipCard", nil, "he") < 3
 end
 
 --筹策:你于出牌阶段使用的第一张牌，或点数比你此阶段使用的前一张牌大的牌，可以无视合法性指定一名角色为目标。

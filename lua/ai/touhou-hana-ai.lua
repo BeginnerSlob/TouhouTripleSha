@@ -699,9 +699,7 @@ sgs.ai_skill_cardask["@thzheyin"] = function(self, data, pattern, target)
 	else
 		local use = data:toCardUse()
 		if (self:willSkipPlayPhase() and self:getOverflow() > 0) or self:getOverflow() > 2 then
-			if self:isFriend(target) and (use.card:isKindOf("LureTiger") or use.card:isKindOf("KnownBoth")) and getKnownCard(target, self.player, "TrickCard", true) == 0 then
-				return "$" .. dis:getEffectiveId()
-			elseif self:isEnemy(target) and (use.card:isKindOf("AOE") or use.card:isKindOf("Duel") or use.card:isKindOf("Snatch")) then
+			if self:isEnemy(target) and (use.card:isKindOf("AOE") or use.card:isKindOf("Duel") or use.card:isKindOf("Snatch")) then
 				return "$" .. dis:getEffectiveId()
 			end
 		end
