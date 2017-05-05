@@ -5710,6 +5710,40 @@ public:
     }
 };
 
+class IkLvdongTrigger : public TriggerSkill
+{
+public:
+    IkLvdongTrigger() : TriggerSkill("#iklvdong")
+    {
+        events << Pindian;
+        frequency = NotCompulsory;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const
+    {
+        TriggerList skill_list;
+        const Card *to_obtain = NULL;
+        PindianStruct *pindian = data.value<PindianStruct *>();
+        if (pindian->reason == "iklvdong" && TriggerSkill::triggerable(pindian->from)) {
+            if (pindian->from_number <= pindian->to_number)
+                to_obtain = pindian->to_card;
+            if (room->getCardPlace(to_obtain->getEffectiveId()) == Player::PlaceTable)
+                skill_list.insert(pindian->from, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const
+    {
+        room->sendCompulsoryTriggerLog(ask_who, "iklvdong");
+        PindianStruct *pindian = data.value<PindianStruct *>();
+        const Card *to_obtain = pindian->to_card;
+        ask_who->obtainCard(to_obtain);
+
+        return false;
+    }
+};
+
 class IkGuozai : public FilterSkill
 {
 public:
@@ -7077,6 +7111,8 @@ IkaiKinPackage::IkaiKinPackage()
 
     General *luna010 = new General(this, "luna010", "tsuki");
     luna010->addSkill(new IkLvdong);
+    luna010->addSkill(new IkLvdongTrigger);
+    related_skills.insertMulti("iklvdong", "#iklvdong");
     luna010->addSkill(new IkGuozai);
 
     General *luna013 = new General(this, "luna013", "tsuki", 3);

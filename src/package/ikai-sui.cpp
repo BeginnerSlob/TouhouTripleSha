@@ -4249,7 +4249,8 @@ bool IkYaoyinCard::targetFilter(const QList<const Player *> &targets, const Play
 
 void IkYaoyinCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     foreach (int id, subcards) {
-        if (Sanguosha->getCard(id)->isBlack()) {
+        const Card *c = Sanguosha->getCard(id);
+        if (c->isBlack() && c->getTypeId() != TypeEquip) {
             room->loseHp(source);
             break;
         }

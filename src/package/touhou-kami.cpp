@@ -177,25 +177,25 @@ class ThTianbao : public TriggerSkill
 {
 public:
     ThTianbao() : TriggerSkill("thtianbao") {
-        events << EventPhaseStart;
+        events << EventPhaseStart << GameStart;
         frequency = Compulsory;
         owner_only_skill = true;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const
+    virtual QStringList triggerable(TriggerEvent e, Room *, ServerPlayer *p, QVariant &, ServerPlayer *&) const
     {
-        return TriggerSkill::triggerable(target) && (target->getPhase() == Player::Start || target->getPhase() == Player::Finish);
-    }
-
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
-    {
-        room->sendCompulsoryTriggerLog(player, objectName());
-        room->broadcastSkillInvoke(objectName());
-        return true;
+        if (e == GameStart && TriggerSkill::triggerable(p))
+            return QStringList(objectName());
+        else if (e == EventPhaseStart && TriggerSkill::triggerable(p)
+                   && (p->getPhase() == Player::Start || p->getPhase() == Player::Finish))
+            return QStringList(objectName());
+        return QStringList();
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
         room->removeReihouCard(player);
 
         QStringList skills;
