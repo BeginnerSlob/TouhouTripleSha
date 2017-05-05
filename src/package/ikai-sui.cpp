@@ -6043,113 +6043,111 @@ public:
     }
 };
 
-IkCangliuSlash::IkCangliuSlash() {
+IkCangliuCard::IkCangliuCard()
+{
+    target_fixed = true;
+}
+
+void IkCangliuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+{
+    room->showAllCards(source);
+    bool flag = true;
+    foreach (const Card *card, source->getHandcards()) {
+        if (card->isKindOf("Slash")) {
+            flag = false;
+            break;
+        }
+    }
+    if (flag) {
+        room->setPlayerMark(source, "ikcangliu_handcardnum", source->getHandcardNum());
+        room->setPlayerMark(source, "IkCangliuInvoke", 1);
+        room->setPlayerMark(source, "ikcangliucount", 0);
+    }
+}
+
+IkCangliuSlash::IkCangliuSlash()
+{
     handling_method = MethodUse;
 }
 
-bool IkCangliuSlash::targetFixed() const{
+bool IkCangliuSlash::targetFixed() const
+{
     Slash *slash = new Slash(NoSuit, 0);
     slash->setSkillName("ikcangliu");
     slash->deleteLater();
     return slash->targetFixed();
 }
 
-bool IkCangliuSlash::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkCangliuSlash::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
     Slash *slash = new Slash(NoSuit, 0);
     slash->setSkillName("ikcangliu");
     slash->deleteLater();
     return slash->targetFilter(targets, to_select, Self);
 }
 
-bool IkCangliuSlash::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+bool IkCangliuSlash::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
+{
     Slash *slash = new Slash(NoSuit, 0);
     slash->setSkillName("ikcangliu");
     slash->deleteLater();
     return slash->targetsFeasible(targets, Self);
 }
 
-const Card *IkCangliuSlash::validate(CardUseStruct &use) const{
+const Card *IkCangliuSlash::validate(CardUseStruct &use) const
+{
     use.from->getRoom()->addPlayerMark(use.from, "ikcangliucount");
     Slash *slash = new Slash(NoSuit, 0);
     slash->setSkillName("ikcangliu");
     return slash;
 }
 
-const Card *IkCangliuSlash::validateInResponse(ServerPlayer *user) const{
+const Card *IkCangliuSlash::validateInResponse(ServerPlayer *user) const
+{
     user->getRoom()->addPlayerMark(user, "ikcangliucount");
     Slash *slash = new Slash(NoSuit, 0);
     slash->setSkillName("ikcangliu");
     return slash;
 }
 
-class IkCangliuVS : public ZeroCardViewAsSkill{
+class IkCangliuVS : public ZeroCardViewAsSkill
+{
 public:
-    IkCangliuVS() : ZeroCardViewAsSkill("ikcangliu"){
+    IkCangliuVS() : ZeroCardViewAsSkill("ikcangliu")
+    {
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const{
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        if (!player->hasUsed("IkCangliuCard"))
+            return new IkCangliuCard;
         return Slash::IsAvailable(player) && player->getMark("IkCangliuInvoke") > 0 && player->getMark("ikcangliucount") < 3;
     }
 
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
+    {
         return pattern == "slash" && player->getMark("IkCangliuInvoke") > 0 && player->getMark("ikcangliucount") < 3;
     }
 
-    virtual const Card *viewAs() const{
+    virtual const Card *viewAs() const
+    {
+        if (!Self->hasUsed("IkCangliuCard"))
+            return new IkCangliuCard;
         return new IkCangliuSlash;
     }
 };
 
-class IkCangliu: public PhaseChangeSkill{
+class IkCangliu : public TriggerSkill
+{
 public:
-    IkCangliu(): PhaseChangeSkill("ikcangliu") {
+    IkCangliu() : TriggerSkill("ikcangliu")
+    {
+        events << EventPhaseChanging << CardsMoveOneTime << Death;
         view_as_skill = new IkCangliuVS;
     }
-    
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return PhaseChangeSkill::triggerable(target)
-            && target->getPhase() == Player::Play
-            && !target->isKongcheng();
-    }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        if (player->askForSkillInvoke(objectName())) {
-            room->broadcastSkillInvoke(objectName(), qrand() % 2 + 1);
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool onPhaseChange(ServerPlayer *player) const{
-        Room *room = player->getRoom();
-        room->showAllCards(player);
-        bool flag = true;
-        foreach (const Card *card, player->getHandcards()) {
-            if (card->isKindOf("Slash")) {
-                flag = false;
-                break;
-            }
-        }
-        if (flag) {
-            room->setPlayerMark(player, "ikcangliu_handcardnum", player->getHandcardNum());
-            room->setPlayerMark(player, "IkCangliuInvoke", 1);
-            room->setPlayerMark(player, "ikcangliucount", 0);
-        }
-        return false;
-    }
-
-    virtual int getEffectIndex(const ServerPlayer *player, const Card *) const{
-        return player->getMark("ikcangliucount") + 2;
-    }
-};
-
-class IkCangliuClear: public TriggerSkill{
-public:
-    IkCangliuClear(): TriggerSkill("#ikcangliu-clear") {
-        events << EventPhaseChanging << CardsMoveOneTime << Death;
-    }
-
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
         if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to == Player::NotActive) {
@@ -6167,6 +6165,13 @@ public:
                 room->setPlayerMark(player, "IkCangliuInvoke", 0);
         }
         return QStringList();
+    }
+
+    virtual int getEffectIndex(const ServerPlayer *player, const Card *card) const
+    {
+        if (card->isKindOf("IkCangliuCard"))
+            return qrand() % 2 + 1;
+        return player->getMark("ikcangliucount") + 2;
     }
 };
 
@@ -6432,8 +6437,6 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *luna052 = new General(this, "luna052", "tsuki");
     luna052->addSkill(new Skill("ikhuisuo", Skill::Compulsory));
     luna052->addSkill(new IkCangliu);
-    luna052->addSkill(new IkCangliuClear);
-    related_skills.insertMulti("ikcangliu", "#ikcangliu-clear");
 
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
@@ -6466,6 +6469,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkKouzhuCard>();
     addMetaObject<IkJiaojinCard>();
     addMetaObject<IkSheqieCard>();
+    addMetaObject<IkCangliuCard>();
     addMetaObject<IkCangliuSlash>();
 
     skills << new IkAnshen << new IkAnshenRecord << new OthersNullifiedDistance
