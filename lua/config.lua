@@ -2,9 +2,9 @@
 -- and it is a little different from config.ini
 
 config = {
-	version = "v8.5a",
-	version_name = "东方绮符剧",
-	mod_name = "0314",
+	version = "v8.7",
+	version_name = "0507",
+	mod_name = "东方绮符剧",
 	big_font = 56,
 	small_font = 27,
 	tiny_font = 18,

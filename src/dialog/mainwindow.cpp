@@ -938,7 +938,7 @@ void MainWindow::on_actionAbout_GPLv3_triggered() {
 void MainWindow::checkUpdate()
 {
     static QNetworkAccessManager *qnam = new QNetworkAccessManager(this);
-    reply = qnam->get(QNetworkRequest(QUrl("http://ver.qsanguosha.org/UpdateInfoForTouhouTripleSha")));
+    reply = qnam->get(QNetworkRequest(QUrl("http://beginnerslob.github.io/TTSUpdate/UpdateInfo")));
     connect(reply, SIGNAL(finished()), this, SLOT(httpFinished()));
 }
 
@@ -962,7 +962,7 @@ void MainWindow::httpFinished()
                     has_new_version = true;
                 newVersionNumber = value;
             } else if (key == "UpdateDate") {
-                if (Sanguosha->getMODName() < value.right(4))
+                if (Sanguosha->getVersionName() < value.right(4))
                     has_new_version = true;
                 updateDate = value;
             } else if (key == "url") {
@@ -978,7 +978,7 @@ void MainWindow::httpFinished()
                     has_new_version = true;
                 newVersionNumber = value;
             } else if (key == "UpdateDate") {
-                if (Sanguosha->getMODName() < value.right(4))
+                if (Sanguosha->getVersionName() < value.right(4))
                     has_new_version = true;
                 updateDate = value;
             }
