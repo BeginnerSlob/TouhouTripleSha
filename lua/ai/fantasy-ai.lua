@@ -36,6 +36,102 @@ sgs.ai_skill_invoke.ice_sword = function(self, data)
 	end
 end
 
+function SmartAI:useCardFeintAttack(FeintAttack, use)
+	local fromList = sgs.QList2Table(self.room:getOtherPlayers(self.player))
+	local toList = sgs.QList2Table(self.room:getOtherPlayers(self.player))
+
+	self:sort(fromList, "defense")
+	self:sort(toList, "defense")
+
+	local n = nil
+	local final_enemy = nil
+	for _, enemy in ipairs(fromList) do
+		if (not use.current_targets or not table.contains(use.current_targets, enemy:objectName()))
+			and self:hasTrickEffective(FeintAttack, enemy)
+			and not enemy:hasSkills(sgs.lose_equip_skill)
+			and not self:needToThrowArmor(enemy)
+			and not (self:needKongcheng(enemy, true) and enemy:getHandcardNum() == 1)
+			and not enemy:isKongcheng()
+			and self:objectiveLevel(enemy) >= 0 then
+
+			for _, friend in ipairs(toList) do
+				if self:objectiveLevel(friend) < -3 and enemy:objectName() ~= friend:objectName() then
+					n = 1
+					final_enemy = friend
+					break
+				end
+			end
+
+			if not n then
+				for _, friend in ipairs(toList) do
+					if self:objectiveLevel(friend) >= -3 and self:objectiveLevel(friend) <= 0 and enemy:objectName() ~= friend:objectName() then
+						n = 1
+						final_enemy = friend
+						break
+					end
+				end
+			end
+
+			if n then
+				use.card = FeintAttack
+				if use.to then
+					use.to:append(enemy)
+					use.to:append(final_enemy)
+				end
+				return
+			end
+		end
+		n = nil
+	end
+
+	for _, friend in ipairs(fromList) do
+		if (not use.current_targets or not table.contains(use.current_targets, friend:objectName()))
+			and self:hasTrickEffective(FeintAttack, friend)
+			and ((friend:hasSkills(sgs.lose_equip_skill) and friend:hasEquip()) or (self:needKongcheng(friend, true) and friend:getHandcardNum() == 1) or friend:getOverflow() > 3)
+			and not enemy:isKongcheng()
+			and self:objectiveLevel(friend) < 0 then
+
+			for _, friend2 in ipairs(toList) do
+				if self:objectiveLevel(friend2) < -3 and friend:objectName() ~= friend2:objectName() then
+					use.card = FeintAttack
+					if use.to then
+						use.to:append(friend)
+						use.to:append(enemy)
+					end
+					return
+				end
+			end
+		end
+	end
+end
+
+sgs.ai_use_value.FeintAttack = 5.7
+sgs.ai_use_priority.FeintAttack = 2.75
+sgs.ai_keep_value.FeintAttack = 3.31
+
+sgs.ai_card_intention.FeintAttack = function(self, card, from, tos)
+	for _, p in ipairs(tos) do
+		local friend = p:getTag("feintTarget"):toPlayer()
+		if friend then
+			sgs.updateIntention(from, friend, -20)
+		end
+	end
+end
+
+sgs.ai_skill_cardask["feint-attack-effect"] = function(self, data, pattern, target)
+	local cards = sgs.QList2Table(self.player:getCards("he"))
+	if self:isFriend(target) then
+		local c, p = self:getCardNeedPlayer(cards, { target })
+		if p then
+			return c:toString()
+		end
+		self:sortByKeepValue(cards, true)
+		return "$" .. cards[1]:getEffectiveId()
+	end
+	self:sortByKeepValue(cards)
+	return "$" .. cards[1]:getEffectiveId()
+end
+
 function SmartAI:useCardLureTiger(LureTiger, use)
 	sgs.ai_use_priority.LureTiger = 4.9
 	if not LureTiger:isAvailable(self.player) then return end
@@ -377,6 +473,82 @@ end
 sgs.ai_use_value.KnownBoth = 5.5
 sgs.ai_keep_value.KnownBoth = 3.33
 
+function SmartAI:useCardRout(card, use)
+	local usecard = false
+	local targets = {}
+	local targets_num = 1 + sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_ExtraTarget, self.player, card)
+	if self.player:hasFlag("ThChouceUse") then
+		targets_num = 1
+	end
+
+	local addTarget = function(player)
+		if not table.contains(targets, player:objectName())
+			and (not use.current_targets or not table.contains(use.current_targets, player:objectName()))
+			and not (use.to and use.to:length() > 0 and player:hasSkill("danlao")) then
+			if not usecard then
+				use.card = card
+				usecard = true
+			end
+			table.insert(targets, player:objectName())
+			if usecard and use.to and use.to:length() < targets_num then
+				use.to:append(player)
+			end
+			if #targets == targets_num then return true end
+		end
+	end
+
+	local victims = self:findPlayerToDiscard("e", false, true, nil, true, "Weapon,Armor,Horse")
+	for _, p in ipairs(victims) do
+		if self:hasTrickEffective(card, p) then
+			addTarget(p)
+		end
+	end
+end
+
+sgs.ai_use_value.Rout = 5.6
+sgs.ai_use_priority.Rout = 4.4
+sgs.ai_keep_value.Rout = 3.18
+
+sgs.ai_skill_choice.rout = function(self, choices, data)
+	local target = data:toPlayer()
+	local id = self:askForCardChosen(target, "e", "", sgs.Card_MethodDiscard)
+	if target:getWeapon() and target:getWeapon():getEffectiveId() == id then
+		return "weapon"
+	end
+	if target:getArmor() and target:getArmor():getEffectiveId() == id then
+		return "armor"
+	end
+	if target:getOffensiveHorse() and target:getOffensiveHorse():getEffectiveId() == id then
+		return "weapon"
+	end
+	if target:getDefensiveHorse() and target:getDefensiveHorse():getEffectiveId() == id then
+		return "armor"
+	end
+	return string.find(choices, "weapon") and "weapon" or "armor"
+end
+
+sgs.ai_choicemade_filter.skillChoice.rout = function(self, player, promptlist)
+	local target = player:getTag("RoutTarget"):toPlayer()
+	if target then
+		local result =  promptlist[#promptlist]
+		if result == "weapon" then
+			if target:getWeapon() and self.player:canDiscard(target, target:getWeapon():getEffectiveId()) then
+				sgs.ai_choicemade_filter.cardChosen.snatch(self, player, {"cardChosen", "dismantlement", tostring(target:getWeapon():getEffectiveId()), self.player:objectName(), target:objectName()})
+			end
+			if target:getOffensiveHorse() and self.player:canDiscard(target, target:getOffensiveHorse():getEffectiveId()) then
+				sgs.ai_choicemade_filter.cardChosen.snatch(self, player, {"cardChosen", "dismantlement", tostring(target:getOffensiveHorse():getEffectiveId()), self.player:objectName(), target:objectName()})
+			end
+		elseif result == "armor" then
+			if target:getArmor() and self.player:canDiscard(target, target:getArmor():getEffectiveId()) then
+				sgs.ai_choicemade_filter.cardChosen.snatch(self, player, {"cardChosen", "dismantlement", tostring(target:getArmor():getEffectiveId()), self.player:objectName(), target:objectName()})
+			end
+			if target:getDefensiveHorse() and self.player:canDiscard(target, target:getDefensiveHorse():getEffectiveId()) then
+				sgs.ai_choicemade_filter.cardChosen.snatch(self, player, {"cardChosen", "dismantlement", tostring(target:getDefensiveHorse():getEffectiveId()), self.player:objectName(), target:objectName()})
+			end
+		end	
+	end
+end
+
 sgs.ai_view_as.jade = function(card, player, card_place)
 	local suit = card:getSuitString()
 	local number = card:getNumberString()
@@ -500,6 +672,44 @@ sgs.ai_playerchosen_intention.moon_spear = 80
 
 sgs.weapon_range.MoonSpear = 3
 sgs.ai_use_priority.MoonSpear = 2.635
+
+function SmartAI:useCardReinforce(card, use)
+	local target = self:findPlayerToDraw(true, 3, card)
+	if target then
+		use.card = card
+		if use.to then
+			use.to:append(target)
+		end
+	end
+end
+
+sgs.ai_skill_discard.reinforce = function(self, discard_num, min_num, optional, include_equip, pattern)
+	if pattern == "^BasicCard" then
+		local ret = self:askForDiscard("", discard_num, min_num, false, include_equip, pattern)
+		if #ret > 0 then
+			if not self:isValuableCard(ret[1]) then
+				return ret
+			else
+				local ret2 = self:askForDiscard("", 2, 2, false, true)
+				if #ret == 2 and not self:isValuableCard(ret2[1]) and not self:isValuableCard(ret2[2]) then
+					return {}
+				else
+					return ret
+				end
+			end
+		end
+	else
+		return self:askForDiscard("", discard_num, min_num, optional, include_equip, pattern)
+	end
+end
+
+sgs.ai_card_intention.Reinforce = -80
+
+sgs.ai_keep_value.Reinforce = 3.6
+sgs.ai_use_value.Reinforce = 10
+sgs.ai_use_priority.Reinforce = 9.3
+
+sgs.dynamic_value.benefit.Reinforce = true
 
 function SmartAI:useCardBurningCamps(card, use)
 	if not card:isAvailable(self.player) then return end
