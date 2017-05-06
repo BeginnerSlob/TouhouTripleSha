@@ -363,7 +363,7 @@ return {
 	["designer:luna001"] = "游卡桌游",
 	["illustrator:luna001"] = "星屑七号",
 	["ikfusheng"] = "腐生",
-	[":ikfusheng"] = "你可以将一张黑桃手牌当【酒】使用。",
+	[":ikfusheng"] = "你可以将一张黑桃牌当【酒】使用。",
 	["ikhuanbei"] = "幻呗",
 	[":ikhuanbei"] = "锁定技。你对幻属性角色、幻属性角色对你使用【杀】时，需连续使用两张【闪】才能抵消。",
 	["ikbenghuai"] = "崩坏",
