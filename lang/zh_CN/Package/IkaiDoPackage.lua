@@ -37,13 +37,13 @@ return {
 	["wind004"] = "七海千秋",--风 - 空 - 3血
 	["designer:wind004"] = "游卡桌游",
 	["illustrator:wind004"] = "天琊悲鸣",
-	["ikyuxi"] = "虚视",
-	[":ikyuxi"] = "准备阶段开始时，你可以观看牌堆顶的X张牌（X为存活角色的数量，且至多为5），将其中任意数量的牌以任意顺序置于牌堆顶，其余以任意顺序置于牌堆底。",
+	["ikxushi"] = "虚视",
+	[":ikxushi"] = "准备阶段开始时，你可以观看牌堆顶的X张牌（X为存活角色的数量，且至多为5），将其中任意数量的牌以任意顺序置于牌堆顶，其余以任意顺序置于牌堆底。",
 	["ikjingyou"] = "静幽",
 	[":ikjingyou"] = "锁定技。若你没有手牌，你不能成为【杀】或者【碎月绮斗】的目标。",
-	["#IkYuxiResult"] = "%from 的“<font color=\"yellow\"><b>虚视</b></font>”结果：%arg 上 %arg2 下",
-	["$IkYuxiTop"] = "置于牌堆顶的牌：%card",
-	["$IkYuxiBottom"] = "置于牌堆底的牌：%card",
+	["#IkXushiResult"] = "%from 的“<font color=\"yellow\"><b>虚视</b></font>”结果：%arg 上 %arg2 下",
+	["$IkXushiTop"] = "置于牌堆顶的牌：%card",
+	["$IkXushiBottom"] = "置于牌堆底的牌：%card",
 	
 	["#wind006"] = "亚瑟王",
 	["wind006"] = "阿尔托莉雅•潘德拉根",--风 - 空 - 4血
