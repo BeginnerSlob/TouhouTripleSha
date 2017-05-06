@@ -535,7 +535,9 @@ void Rout::onEffect(const CardEffectStruct &effect) const
     if (choices.isEmpty())
         return;
 
+    effect.from->tag["RoutTarget"] = QVariant::fromValue(effect.to); // for AI
     QString choice = room->askForChoice(effect.from, objectName(), choices.join("+"), QVariant::fromValue(effect.to));
+    effect.from->tag.remove("RoutTarget");
     if (choice == "weapon") {
         DummyCard *dummy = new DummyCard;
         if (effect.to->getWeapon() && effect.from->canDiscard(effect.to, effect.to->getWeapon()->getEffectiveId()))
