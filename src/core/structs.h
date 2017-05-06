@@ -96,11 +96,11 @@ struct CardUseStruct {
 class CardMoveReason {
 public:
     int m_reason;
-    QString m_playerId; // the cause (not the source) of the movement, such as "lusu" when "ikyijing", or "zhanghe" when "ikmancai"
+    QString m_playerId; // the cause (not the source) of the movement, such as "lusu" when "ikyuanjie", or "zhanghe" when "ikmancai"
     QString m_targetId; // To keep this structure lightweight, currently this is only used for UI purpose.
                         // It will be set to empty if multiple targets are involved. NEVER use it for trigger condition
                         // judgement!!! It will not accurately reflect the real reason.
-    QString m_skillName; // skill that triggers movement of the cards, such as "ikhuahuan", "ikyijing"
+    QString m_skillName; // skill that triggers movement of the cards, such as "ikhuahuan", "ikyuanjie"
     QString m_eventName; // additional arg such as "lebusishu" on top of "S_REASON_JUDGE"
     QVariant m_extraData; // additional data and will not be parsed to clients
     inline CardMoveReason() { m_reason = S_REASON_UNKNOWN; }

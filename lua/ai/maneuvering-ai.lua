@@ -257,7 +257,7 @@ function SmartAI:useCardSupplyShortage(card, use)
 		if self:objectiveLevel(enemy) < 3 then value = value - 10 end
 		if not enemy:faceUp() then value = value - 10 end
 		if enemy:hasSkills("keji|shensu|qingyi|thanbing") then value = value - enemy:getHandcardNum() end
-		if enemy:hasSkills("ikyuxi|xiuluo|tiandu|guidao|noszhenlie") then value = value - 5 end
+		if enemy:hasSkills("ikxushi|xiuluo|tiandu|guidao|noszhenlie") then value = value - 5 end
 		if self:needKongcheng(enemy) then value = value - 1 end
 		if enemy:getMark("@kuiwei") > 0 then value = value - 2 end
 		if not sgs.isGoodTarget(enemy, self.enemies, self) then value = value - 1 end

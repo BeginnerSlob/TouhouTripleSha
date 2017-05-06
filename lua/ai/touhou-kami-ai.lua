@@ -968,7 +968,7 @@ sgs.ai_skill_use["@@thtianxin"] = function(self, prompt, method)
 	end
 	if #use_cards > 0 then
 		if #use_cards == 1 then
-			sgs.thtianxin_choice = "ikyuxi"
+			sgs.thtianxin_choice = "ikxushi"
 			if not needGuanxing and needTiandu then
 				sgs.thtianxin_choice = "iktiandu"
 			end

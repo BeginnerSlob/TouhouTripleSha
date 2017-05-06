@@ -2823,9 +2823,9 @@ function SmartAI:useCardIndulgence(card, use)
 		if self:objectiveLevel(enemy) < 3 then value = value -10 end
 		if not enemy:faceUp() then value = value -10 end
 		if enemy:hasSkills("keji|shensu") then value = value - enemy:getHandcardNum() end
-		if enemy:hasSkills("ikyuxi|xiuluo") then value = value - 5 end
+		if enemy:hasSkills("ikxushi|xiuluo") then value = value - 5 end
 		if enemy:hasSkills("lirang") then value = value - 5 end
-		if enemy:hasSkills("ikchibao|nostuxi|noszhenlie|ikyuxi|qinyin|zongshi|tiandu|thzhiji|thchuiji") then value = value - 3 end
+		if enemy:hasSkills("ikchibao|nostuxi|noszhenlie|ikxushi|qinyin|zongshi|tiandu|thzhiji|thchuiji") then value = value - 3 end
 		if self:needBear(enemy) then value = value - 20 end
 		if not sgs.isGoodTarget(enemy, self.enemies, self) then value = value - 1 end
 		if getKnownCard(enemy, self.player, "Dismantlement", true) > 0 then value = value + 2 end
@@ -2873,7 +2873,7 @@ function SmartAI:willUseLightning(card)
 			if aplayer:hasSkill("hongyan") then hashy = true break end
 		end
 		for _, aplayer in ipairs(self.enemies) do
-			if aplayer:hasSkill("ikyuxi") or (aplayer:hasSkill("iklingshi") and hashy)
+			if aplayer:hasSkill("ikxushi") or (aplayer:hasSkill("iklingshi") and hashy)
 			or aplayer:hasSkill("xinzhan") then
 				if self:isFriend(self.room:findPlayer(aplayer:getNextAlive():objectName())) then return true end
 			end

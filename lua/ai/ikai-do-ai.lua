@@ -413,7 +413,7 @@ end
 --预悉：准备阶段开始时，你可以观看牌堆顶的X张牌（X为存活角色的数量，且至多为5），将其中任意数量的牌以任意顺序置于牌堆顶，其余以任意顺序置于牌堆底。
 dofile "lua/ai/guanxing-ai.lua"
 
-sgs.ai_skill_invoke.ikyuxi = true
+sgs.ai_skill_invoke.ikxushi = true
 
 --静幽：锁定技，若你没有手牌，你不能成为【杀】或者【碎月绮斗】的目标。
 --无

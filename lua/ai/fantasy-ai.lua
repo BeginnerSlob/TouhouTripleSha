@@ -449,9 +449,9 @@ function SmartAI:useCardPurpleSong(card, use)
 		if self:objectiveLevel(friend) < 3 then value = value - 10 end
 		if not friend:faceUp() then value = value - 10 end
 		if friend:hasSkills("keji|shensu|thanbing") then value = value - friend:getHandcardNum() end
-		if friend:hasSkills("ikyuxi|xiuluo") then value = value - 5 end
+		if friend:hasSkills("ikxushi|xiuluo") then value = value - 5 end
 		if friend:hasSkills("lirang") then value = value - 5 end
-		if friend:hasSkills("ikchibao|nostuxi|noszhenlie|ikyuxi|qinyin|zongshi|tiandu|thzhiji|thchuiji") then value = value - 3 end
+		if friend:hasSkills("ikchibao|nostuxi|noszhenlie|ikxushi|qinyin|zongshi|tiandu|thzhiji|thchuiji") then value = value - 3 end
 		if self:needBear(friend) then value = value - 20 end
 		value = value + (self.room:alivePlayerCount() - self:playerGetRound(friend)) / 2
 		return value
