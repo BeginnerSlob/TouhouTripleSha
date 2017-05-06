@@ -975,6 +975,7 @@ public:
                     room->broadcastSkillInvoke(objectName(), 3);
                     room->addPlayerMark(current, "ikelu_" + player->objectName());
                     room->addPlayerMark(current, objectName());
+                    room->insertAttackRangePair(current, player);
                 }
             }
         } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Play) {
@@ -988,9 +989,9 @@ public:
             if (player->getMark(objectName()) > 0) {
                 room->setPlayerMark(player, objectName(), 0);
                 foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                    if (player->getMark("ikelu_" + p->objectName()) > 0) {
-                        while (player->getMark("ikelu_" + p->objectName()) > 0)
-                            room->removePlayerMark(player, "ikelu_" + p->objectName());
+                    while (player->getMark("ikelu_" + p->objectName()) > 0) {
+                        room->removePlayerMark(player, "ikelu_" + p->objectName());
+                        room->removeAttackRangePair(player, p);
                     }
                 }
             }

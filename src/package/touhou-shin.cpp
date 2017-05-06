@@ -1852,7 +1852,7 @@ public:
                 r->showCard(p, cards.last());
                 const Card *card1 = Sanguosha->getCard(cards.first());
                 const Card *card2 = Sanguosha->getCard(cards.last());
-                if (card1->isBlack() && card2->isBlack()) {
+                if (card1->sameColorWith(card2)) {
                     SavageAssault *sa = new SavageAssault(Card::NoSuit, 0);
                     sa->setSkillName("_thhuikuang");
                     if (sa->isAvailable(p) && !p->isCardLimited(sa, Card::MethodUse))
@@ -1876,7 +1876,7 @@ public:
                 delete card;
                 const Card *card1 = Sanguosha->getCard(cards.first());
                 const Card *card2 = Sanguosha->getCard(cards.last());
-                if (card1->isBlack() && card2->isBlack()) {
+                if (card1->sameColorWith(card2)) {
                     SavageAssault *sa = new SavageAssault(Card::NoSuit, 0);
                     sa->setSkillName("_thhuikuang");
                     if (sa->isAvailable(p) && !p->isCardLimited(sa, Card::MethodUse)
