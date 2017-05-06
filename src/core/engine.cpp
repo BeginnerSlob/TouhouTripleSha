@@ -630,7 +630,7 @@ QString Engine::getVersion() const{
     if (mod_name == "official")
         return version_number;
     else
-        return QString("%1:%2").arg(version_number).arg(mod_name);
+        return QString("%1%2").arg(mod_name).arg(version_number);
 }
 
 QString Engine::getVersionName() const{
