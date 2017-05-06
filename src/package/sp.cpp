@@ -691,7 +691,7 @@ OLPackage::OLPackage()
     ol_madai->addSkill("ikmoguang");
 
     General *ol_wangyi = new General(this, "ol_wangyi", "wei", 3, false, true);
-    ol_wangyi->addSkill("ikjingshi");
+    ol_wangyi->addSkill("ikjueli");
     ol_wangyi->addSkill("ikfangsheng");
 
     addMetaObject<QingyiCard>();
@@ -738,7 +738,7 @@ TaiwanSPPackage::TaiwanSPPackage()
     tw_zhangfei->addSkill("ikyipao");
 
     General *tw_zhugeliang = new General(this, "tw_zhugeliang", "shu", 3, true, true); // TW SP 012
-    tw_zhugeliang->addSkill("ikyuxi");
+    tw_zhugeliang->addSkill("ikxushi");
     tw_zhugeliang->addSkill("ikjingyou");
 
     General *tw_zhaoyun = new General(this, "tw_zhaoyun", "shu", 4, true, true); // TW SP 006

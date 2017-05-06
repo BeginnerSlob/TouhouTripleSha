@@ -2344,10 +2344,10 @@ public:
     }
 };
 
-class IkZhangyi : public TriggerSkill
+class IkMeitong : public TriggerSkill
 {
 public:
-    IkZhangyi() : TriggerSkill("ikzhangyi")
+    IkMeitong() : TriggerSkill("ikmeitong")
     {
         events << TargetConfirming;
     }
@@ -2665,31 +2665,31 @@ public:
     }
 };
 
-IkShidaoCard::IkShidaoCard() {
+IkLixinCard::IkLixinCard() {
     will_throw = false;
     handling_method = Card::MethodNone;
 }
 
-bool IkShidaoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkLixinCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
         Card *card = NULL;
         if (!user_string.isEmpty()) {
             card = Sanguosha->cloneCard(user_string.split("+").first());
             card->addSubcards(subcards);
-            card->setSkillName("ikshidao");
+            card->setSkillName("iklixin");
         }
         return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
     } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
         return false;
     }
 
-    Card *card = Sanguosha->cloneCard(Self->tag.value("ikshidao").value<const Card *>()->objectName());
+    Card *card = Sanguosha->cloneCard(Self->tag.value("iklixin").value<const Card *>()->objectName());
     card->addSubcards(subcards);
-    card->setSkillName("ikshidao");
+    card->setSkillName("iklixin");
     return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
 }
 
-bool IkShidaoCard::targetFixed() const{
+bool IkLixinCard::targetFixed() const{
     if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
         const Card *card = NULL;
         if (!user_string.isEmpty())
@@ -2699,105 +2699,105 @@ bool IkShidaoCard::targetFixed() const{
         return true;
     }
 
-    const Card *card = Self->tag.value("ikshidao").value<const Card *>();
+    const Card *card = Self->tag.value("iklixin").value<const Card *>();
     return card && card->targetFixed();
 }
 
-bool IkShidaoCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+bool IkLixinCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
     if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
         Card *card = NULL;
         if (!user_string.isEmpty()) {
             card = Sanguosha->cloneCard(user_string.split("+").first());
             card->addSubcards(subcards);
-            card->setSkillName("ikshidao");
+            card->setSkillName("iklixin");
         }
         return card && card->targetsFeasible(targets, Self);
     } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
         return true;
     }
 
-    Card *card = Sanguosha->cloneCard(Self->tag.value("ikshidao").value<const Card *>()->objectName());
+    Card *card = Sanguosha->cloneCard(Self->tag.value("iklixin").value<const Card *>()->objectName());
     card->addSubcards(subcards);
-    card->setSkillName("ikshidao");
+    card->setSkillName("iklixin");
     return card && card->targetsFeasible(targets, Self);
 }
 
-const Card *IkShidaoCard::validate(CardUseStruct &card_use) const{
+const Card *IkLixinCard::validate(CardUseStruct &card_use) const{
     ServerPlayer *wenyang = card_use.from;
     Room *room = wenyang->getRoom();
 
-    QString to_ikshidao = user_string;
+    QString to_iklixin = user_string;
     if (user_string == "slash"
         && Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
-            QStringList ikshidao_list;
-            ikshidao_list << "slash";
+            QStringList iklixin_list;
+            iklixin_list << "slash";
             if (!ServerInfo.Extensions.contains("!maneuvering"))
-                ikshidao_list << "thunder_slash" << "fire_slash";
-            to_ikshidao = room->askForChoice(wenyang, "ikshidao_slash", ikshidao_list.join("+"));
+                iklixin_list << "thunder_slash" << "fire_slash";
+            to_iklixin = room->askForChoice(wenyang, "iklixin_slash", iklixin_list.join("+"));
     }
 
     QList<ServerPlayer *> targets;
     foreach (ServerPlayer *p, room->getOtherPlayers(wenyang)) {
-        if (!p->hasFlag("IkShidaoUsed"))
+        if (!p->hasFlag("IkLixinUsed"))
             targets << p;
     }
     if (targets.length() < 2)
-        room->setPlayerFlag(wenyang, "IkShidaoDisabled");
+        room->setPlayerFlag(wenyang, "IkLixinDisabled");
     if (!targets.isEmpty()) {
-        ServerPlayer *target = room->askForPlayerChosen(wenyang, targets, "ikshidao", "@ikshidao");
-        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, wenyang->objectName(), target->objectName(), "ikshidao", QString());
+        ServerPlayer *target = room->askForPlayerChosen(wenyang, targets, "iklixin", "@iklixin");
+        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, wenyang->objectName(), target->objectName(), "iklixin", QString());
         room->obtainCard(target, this, reason);
     } else
         return NULL;
 
-    Card *use_card = Sanguosha->cloneCard(to_ikshidao, NoSuit, 0);
-    use_card->setSkillName("ikshidao");
+    Card *use_card = Sanguosha->cloneCard(to_iklixin, NoSuit, 0);
+    use_card->setSkillName("iklixin");
     return use_card;
 }
 
-const Card *IkShidaoCard::validateInResponse(ServerPlayer *wenyang) const{
+const Card *IkLixinCard::validateInResponse(ServerPlayer *wenyang) const{
     Room *room = wenyang->getRoom();
 
-    QString to_ikshidao;
+    QString to_iklixin;
     if (user_string == "peach+analeptic") {
-        QStringList ikshidao_list;
-        ikshidao_list << "peach";
+        QStringList iklixin_list;
+        iklixin_list << "peach";
         if (!ServerInfo.Extensions.contains("!maneuvering"))
-            ikshidao_list << "analeptic";
-        to_ikshidao = room->askForChoice(wenyang, "ikshidao_saveself", ikshidao_list.join("+"));
+            iklixin_list << "analeptic";
+        to_iklixin = room->askForChoice(wenyang, "iklixin_saveself", iklixin_list.join("+"));
     } else if (user_string == "slash") {
-        QStringList ikshidao_list;
-        ikshidao_list << "slash";
+        QStringList iklixin_list;
+        iklixin_list << "slash";
         if (!ServerInfo.Extensions.contains("!maneuvering"))
-            ikshidao_list << "thunder_slash" << "fire_slash";
-        to_ikshidao = room->askForChoice(wenyang, "ikshidao_slash", ikshidao_list.join("+"));
+            iklixin_list << "thunder_slash" << "fire_slash";
+        to_iklixin = room->askForChoice(wenyang, "iklixin_slash", iklixin_list.join("+"));
     }
     else
-        to_ikshidao = user_string;
+        to_iklixin = user_string;
 
     QList<ServerPlayer *> targets;
     foreach (ServerPlayer *p, room->getOtherPlayers(wenyang)) {
-        if (!p->hasFlag("IkShidaoUsed"))
+        if (!p->hasFlag("IkLixinUsed"))
             targets << p;
     }
     if (targets.length() < 2)
-        room->setPlayerFlag(wenyang, "IkShidaoDisabled");
+        room->setPlayerFlag(wenyang, "IkLixinDisabled");
     if (!targets.isEmpty()) {
-        ServerPlayer *target = room->askForPlayerChosen(wenyang, targets, "ikshidao", "@ikshidao");
-        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, wenyang->objectName(), target->objectName(), "ikshidao", QString());
+        ServerPlayer *target = room->askForPlayerChosen(wenyang, targets, "iklixin", "@iklixin");
+        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, wenyang->objectName(), target->objectName(), "iklixin", QString());
         room->obtainCard(target, this, reason);
     } else
         return NULL;
 
-    Card *use_card = Sanguosha->cloneCard(to_ikshidao, NoSuit, 0);
-    use_card->setSkillName("ikshidao");
+    Card *use_card = Sanguosha->cloneCard(to_iklixin, NoSuit, 0);
+    use_card->setSkillName("iklixin");
     return use_card;
 }
 
-class IkShidaoVS : public ViewAsSkill
+class IkLixinVS : public ViewAsSkill
 {
 public:
-    IkShidaoVS() : ViewAsSkill("ikshidao")
+    IkLixinVS() : ViewAsSkill("iklixin")
     {
         owner_only_skill = true;
     }
@@ -2817,7 +2817,7 @@ public:
     {
         if (player->getCardCount() < 2)
             return false;
-        if (player->hasFlag("IkShidaoDisabled"))
+        if (player->hasFlag("IkLixinDisabled"))
             return false;
         if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE)
             return false;
@@ -2842,7 +2842,7 @@ public:
         if (cards.length() != 2)
             return NULL;
         if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
-            IkShidaoCard *tianyan_card = new IkShidaoCard;
+            IkLixinCard *tianyan_card = new IkLixinCard;
             QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
             if (pattern == "peach+analeptic" && Self->getMark("Global_PreventPeach") > 0)
                 pattern = "analeptic";
@@ -2851,9 +2851,9 @@ public:
             return tianyan_card;
         }
 
-        const Card *c = Self->tag["ikshidao"].value<const Card *>();
+        const Card *c = Self->tag["iklixin"].value<const Card *>();
         if (c) {
-            IkShidaoCard *card = new IkShidaoCard;
+            IkLixinCard *card = new IkLixinCard;
             card->setUserString(c->objectName());
             card->addSubcards(cards);
             return card;
@@ -2864,7 +2864,7 @@ public:
     virtual bool isEnabledAtPlay(const Player *player) const{
         if (player->getCardCount() < 2)
             return false;
-        if (player->hasFlag("IkShidaoDisabled"))
+        if (player->hasFlag("IkLixinDisabled"))
             return false;
         QList<const Card *> cards = player->getHandcards() + player->getEquips();
         Card::CardType type = cards.first()->getTypeId();
@@ -2876,28 +2876,28 @@ public:
 };
 
 #include "touhou-hana.h"
-class IkShidao : public TriggerSkill
+class IkLixin : public TriggerSkill
 {
 public:
-    IkShidao() : TriggerSkill("ikshidao")
+    IkLixin() : TriggerSkill("iklixin")
     {
         events << EventPhaseChanging;
-        view_as_skill = new IkShidaoVS;
+        view_as_skill = new IkLixinVS;
     }
 
     virtual QDialog *getDialog() const
     {
-        return ThMimengDialog::getInstance("ikshidao", true, false);
+        return ThMimengDialog::getInstance("iklixin", true, false);
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer* &) const
     {
         if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
             foreach (ServerPlayer *p, room->getAlivePlayers()) {
-                if (p->hasFlag("IkShidaoDisabled"))
-                    room->setPlayerFlag(p, "-IkShidaoDisabled");
-                if (p->hasFlag("IkShidaoUsed"))
-                    room->setPlayerFlag(p, "-IkShidaoUsed");
+                if (p->hasFlag("IkLixinDisabled"))
+                    room->setPlayerFlag(p, "-IkLixinDisabled");
+                if (p->hasFlag("IkLixinUsed"))
+                    room->setPlayerFlag(p, "-IkLixinUsed");
             }
         }
         return QStringList();
@@ -3124,9 +3124,9 @@ public:
     }
 };
 
-class IkHuaiji: public TriggerSkill {
+class IkWuming: public TriggerSkill {
 public:
-    IkHuaiji(): TriggerSkill("ikhuaiji") {
+    IkWuming(): TriggerSkill("ikwuming") {
         events << EventPhaseStart;
         frequency = Compulsory;
     }
@@ -3857,9 +3857,9 @@ public:
     }
 };
 
-class IkMuguang: public TriggerSkill {
+class IkRuoyung: public TriggerSkill {
 public:
-    IkMuguang(): TriggerSkill("ikmuguang") {
+    IkRuoyung(): TriggerSkill("ikruoyung") {
         events << DamageInflicted;
         frequency = Compulsory;
     }
@@ -4267,9 +4267,9 @@ public:
     }
 };
 
-class IkMiaoxiang: public TriggerSkill {
+class IkJilian: public TriggerSkill {
 public:
-    IkMiaoxiang(): TriggerSkill("ikmiaoxiang") {
+    IkJilian(): TriggerSkill("ikjilian") {
         events << Damaged;
     }
 
@@ -4287,7 +4287,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *owner) const{
-        if (room->askForCard(owner, "^BasicCard", "@ikmiaoxiang", data, objectName())) {
+        if (room->askForCard(owner, "^BasicCard", "@ikjilian", data, objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -5914,9 +5914,9 @@ public:
             if (n == 1 && !player->hasSkill("ikchenqing")) {
                 room->acquireSkill(player, "ikchenqing");
                 skills << "ikchenqing";
-            } else if (n == 4 && !player->hasSkill("ikyijing")) {
-                room->acquireSkill(player, "ikyijing");
-                skills << "ikyijing";
+            } else if (n == 4 && !player->hasSkill("ikyuanjie")) {
+                room->acquireSkill(player, "ikyuanjie");
+                skills << "ikyuanjie";
             } else if (n == 7 && !player->hasSkill("ikhunkao")) {
                 room->acquireSkill(player, "ikhunkao");
                 skills << "ikhunkao";
@@ -6154,7 +6154,7 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *bloom054 = new General(this, "bloom054", "hana", 3);
     bloom054->addSkill(new IkDuanni);
-    bloom054->addSkill(new IkZhangyi);
+    bloom054->addSkill(new IkMeitong);
 
     General *bloom056 = new General(this, "bloom056", "hana", 3);
     bloom056->addSkill(new IkSheji);
@@ -6167,7 +6167,7 @@ IkaiKaPackage::IkaiKaPackage()
     snow031->addSkill(new IkMiyao);
 
     General *snow034 = new General(this, "snow034", "yuki");
-    snow034->addSkill(new IkShidao);
+    snow034->addSkill(new IkLixin);
 
     General *snow035 = new General(this, "snow035", "yuki");
     snow035->addSkill(new IkShenshu);
@@ -6180,7 +6180,7 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *snow045 = new General(this, "snow045", "yuki");
     snow045->addSkill(new IkLvyan);
-    snow045->addSkill(new IkHuaiji);
+    snow045->addSkill(new IkWuming);
 
     General *snow046 = new General(this, "snow046", "yuki");
     snow046->addSkill(new IkLianxiao);
@@ -6208,7 +6208,7 @@ IkaiKaPackage::IkaiKaPackage()
     snow052->addSkill(new IkHuanlve);
     snow052->addSkill(new IkHuanlveTrigger);
     related_skills.insertMulti("ikhuanlve", "#ikhuanlve");
-    snow052->addSkill(new IkMuguang);
+    snow052->addSkill(new IkRuoyung);
     snow052->addRelateSkill("thjizhi");
     snow052->addRelateSkill("ikchilian");
 
@@ -6230,7 +6230,7 @@ IkaiKaPackage::IkaiKaPackage()
 
     General *luna031 = new General(this, "luna031", "tsuki", 3);
     luna031->addSkill(new IkQisi);
-    luna031->addSkill(new IkMiaoxiang);
+    luna031->addSkill(new IkJilian);
 
     General *luna032 = new General(this, "luna032", "tsuki", 3, false);
     luna032->addSkill(new IkJichang);
@@ -6326,7 +6326,7 @@ IkaiKaPackage::IkaiKaPackage()
     addMetaObject<IkQihunCard>();
     addMetaObject<IkLingchaCard>();
     addMetaObject<IkDuanniCard>();
-    addMetaObject<IkShidaoCard>();
+    addMetaObject<IkLixinCard>();
     addMetaObject<IkMingwangCard>();
     addMetaObject<IkLinghuiCard>();
     addMetaObject<IkXiaowuCard>();

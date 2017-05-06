@@ -370,9 +370,9 @@ public:
     }
 };
 
-class IkYuxi: public PhaseChangeSkill {
+class IkXushi: public PhaseChangeSkill {
 public:
-    IkYuxi(): PhaseChangeSkill("ikyuxi") {
+    IkXushi(): PhaseChangeSkill("ikxushi") {
         frequency = Frequent;
     }
 
@@ -391,7 +391,7 @@ public:
 
     virtual bool onPhaseChange(ServerPlayer *zhuge) const {
         Room *room = zhuge->getRoom();
-        QList<int> guanxing = room->getNCards(getIkYuxiNum(room));
+        QList<int> guanxing = room->getNCards(getIkXushiNum(room));
 
         LogMessage log;
         log.type = "$ViewDrawPile";
@@ -404,7 +404,7 @@ public:
         return false;
     }
 
-    virtual int getIkYuxiNum(Room *room) const{
+    virtual int getIkXushiNum(Room *room) const{
         return qMin(5, room->alivePlayerCount());
     }
 };
@@ -2927,7 +2927,7 @@ IkaiDoPackage::IkaiDoPackage()
     wind003->addRelateSkill("ikqingnang");
 
     General *wind004 = new General(this, "wind004", "kaze", 3);
-    wind004->addSkill(new IkYuxi);
+    wind004->addSkill(new IkXushi);
     wind004->addSkill(new IkJingyou);
 
     General *wind006 = new General(this, "wind006", "kaze");

@@ -1298,10 +1298,10 @@ ThTianxinCard::ThTianxinCard() {
 void ThTianxinCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const {
     source->setFlags("thtianxinUsed");
     if (subcardsLength() == 1) {
-        QString choice = room->askForChoice(source, "thtianxin", "ikyuxi+iktiandu");
+        QString choice = room->askForChoice(source, "thtianxin", "ikxushi+iktiandu");
         room->acquireSkill(source, choice);
     } else
-        room->handleAcquireDetachSkills(source, "ikyuxi|iktiandu");
+        room->handleAcquireDetachSkills(source, "ikxushi|iktiandu");
 };
 
 class ThTianxinViewAsSkill :public ViewAsSkill {
@@ -1338,7 +1338,7 @@ public:
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to == Player::NotActive) {
                 player->setFlags("-thtianxinUsed");
-                room->handleAcquireDetachSkills(player, "-ikyuxi|-iktiandu", true);
+                room->handleAcquireDetachSkills(player, "-ikxushi|-iktiandu", true);
             }
         }
         return QStringList();
