@@ -160,7 +160,7 @@ function SmartAI:useCardLureTiger(LureTiger, use)
 				break
 			end
 		end
-		if first then
+		if first and players:length() > 0 then
 			use.card = LureTiger
 			if use.to then
 				for _, p in sgs.qlist(players) do
