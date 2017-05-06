@@ -33,15 +33,15 @@ return {
 	["ikshijiu"] = "酾酒",
 	[":ikshijiu"] = "你可以将一张武器牌或非延时类锦囊牌当【酒】使用。",
 
-	["#wind004"] = "病弱的先知",
-	["wind004"] = "园城寺怜",--风 - 空 - 3血
+	["#wind004"] = "玩者论破",
+	["wind004"] = "七海千秋",--风 - 空 - 3血
 	["designer:wind004"] = "游卡桌游",
-	["illustrator:wind004"] = "小林立",
-	["ikyuxi"] = "预悉",
+	["illustrator:wind004"] = "天琊悲鸣",
+	["ikyuxi"] = "虚视",
 	[":ikyuxi"] = "准备阶段开始时，你可以观看牌堆顶的X张牌（X为存活角色的数量，且至多为5），将其中任意数量的牌以任意顺序置于牌堆顶，其余以任意顺序置于牌堆底。",
 	["ikjingyou"] = "静幽",
 	[":ikjingyou"] = "锁定技。若你没有手牌，你不能成为【杀】或者【碎月绮斗】的目标。",
-	["#IkYuxiResult"] = "%from 的“<font color=\"yellow\"><b>预悉</b></font>”结果：%arg 上 %arg2 下",
+	["#IkYuxiResult"] = "%from 的“<font color=\"yellow\"><b>虚视</b></font>”结果：%arg 上 %arg2 下",
 	["$IkYuxiTop"] = "置于牌堆顶的牌：%card",
 	["$IkYuxiBottom"] = "置于牌堆底的牌：%card",
 	
