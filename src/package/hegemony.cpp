@@ -230,7 +230,7 @@ HegemonyPackage::HegemonyPackage()
     heg_zhenji->addSkill("ikmengyang");
 
     General *heg_zhugeliang = new General(this, "heg_zhugeliang", "shu", 3, true, true); // SHU 004 G
-    heg_zhugeliang->addSkill("ikyuxi");
+    heg_zhugeliang->addSkill("ikxushi");
     heg_zhugeliang->addSkill("ikjingyou");
 
     General *heg_huangyueying = new General(this, "heg_huangyueying", "shu", 3, false, true); // SHU 007 G
