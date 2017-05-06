@@ -2199,13 +2199,15 @@ public:
     {
         if (player->getPhase() == Player::NotActive && !player->tag.value("ThDongxiLast").toStringList().isEmpty())
             player->tag.remove("ThDongxiLast");
-        else if (player->getPhase() == Player::Start && !player->tag.value("ThDongxi").toStringList().isEmpty())
+        else if (player->getPhase() == Player::Start)
             return QStringList(objectName());
         return QStringList();
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
+        if (player->tag.value("ThDongxi").toStringList().isEmpty())
+            return false;
         QStringList names = player->tag.value("ThDongxi").toStringList();
         player->tag.remove("ThDongxi");
         foreach (QString name, names)
