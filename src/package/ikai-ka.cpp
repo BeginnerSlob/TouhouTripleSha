@@ -3857,9 +3857,9 @@ public:
     }
 };
 
-class IkRuoyung: public TriggerSkill {
+class IkMuguang: public TriggerSkill {
 public:
-    IkRuoyung(): TriggerSkill("ikruoyung") {
+    IkMuguang(): TriggerSkill("ikmuguang") {
         events << DamageInflicted;
         frequency = Compulsory;
     }
@@ -6208,7 +6208,7 @@ IkaiKaPackage::IkaiKaPackage()
     snow052->addSkill(new IkHuanlve);
     snow052->addSkill(new IkHuanlveTrigger);
     related_skills.insertMulti("ikhuanlve", "#ikhuanlve");
-    snow052->addSkill(new IkRuoyung);
+    snow052->addSkill(new IkMuguang);
     snow052->addRelateSkill("thjizhi");
     snow052->addRelateSkill("ikchilian");
 
