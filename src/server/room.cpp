@@ -4811,7 +4811,7 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, Guanxing
 
     if (guanxing_type == GuanxingBothSides) {
         LogMessage log;
-        log.type = "#IkYuxiResult";
+        log.type = "#IkXushiResult";
         log.from = zhuge;
         log.arg = QString::number(top_cards.length());
         log.arg2 = QString::number(bottom_cards.length());
@@ -4820,14 +4820,14 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, Guanxing
 
     if (!top_cards.isEmpty()) {
         LogMessage log;
-        log.type = "$IkYuxiTop";
+        log.type = "$IkXushiTop";
         log.from = zhuge;
         log.card_str = IntList2StringList(top_cards).join("+");
         sendLog(log, zhuge);
     }
     if (!bottom_cards.isEmpty()) {
         LogMessage log;
-        log.type = "$IkYuxiBottom";
+        log.type = "$IkXushiBottom";
         log.from = zhuge;
         log.card_str = IntList2StringList(bottom_cards).join("+");
         sendLog(log, zhuge);

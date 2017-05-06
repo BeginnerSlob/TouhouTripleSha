@@ -614,7 +614,7 @@ end
 sgs.ai_skill_invoke.nosquanji = function(self, data)
 	local current = self.room:getCurrent()
 	if self:isFriend(current) then
-		if current:hasSkill("zhiji") and not current:hasSkill("ikyuxi") and current:getHandcardNum() == 1 then
+		if current:hasSkill("zhiji") and not current:hasSkill("ikxushi") and current:getHandcardNum() == 1 then
 			self.nosquanji_card = self:getMinCard(self.player):getId()
 			return true
 		end
@@ -765,7 +765,7 @@ sgs.ai_skill_playerchosen.nospaiyi = function(self, targets)
 	targets = sgs.QList2Table(targets)
 	self:sort(targets, "defense")
 	for _, target in ipairs(targets) do
-		if self:isEnemy(target) and target:hasSkill("zhiji") and not target:hasSkill("ikyuxi") and target:getHandcardNum() == 0 then
+		if self:isEnemy(target) and target:hasSkill("zhiji") and not target:hasSkill("ikxushi") and target:getHandcardNum() == 0 then
 			sgs.nosPaiyiTarget = target
 			sgs.nosPaiyiCard = nil
 			return target

@@ -103,7 +103,7 @@ QString Card::getNumberString() const{
 Card::Suit Card::getSuit() const{
     static QStringList no_suit_skills;
     if (no_suit_skills.isEmpty())
-        no_suit_skills << "ikshidao" << "_jnhuoji" << "_thmoji" << "rhhuanjie";
+        no_suit_skills << "iklixin" << "_jnhuoji" << "_thmoji" << "rhhuanjie";
     if (no_suit_skills.contains(m_skillName))
         return NoSuit;
     if (m_suit != NoSuit && m_suit != SuitToBeDecided)

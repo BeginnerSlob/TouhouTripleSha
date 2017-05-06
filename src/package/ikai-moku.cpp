@@ -703,7 +703,7 @@ public:
         return target->getPhase() == Player::Start
                && target->isAlive()
                && target->hasLordSkill("ikruoyu")
-               && target->getMark("@mugua") == 0;
+               && target->getMark("@ruoyu") == 0;
     }
 
     virtual bool onPhaseChange(ServerPlayer *liushan) const{
@@ -719,7 +719,7 @@ public:
 
         room->broadcastSkillInvoke(objectName());
 
-        room->setPlayerMark(liushan, "@mugua", 1);
+        room->setPlayerMark(liushan, "@ruoyu", 1);
         if (room->changeMaxHpForAwakenSkill(liushan, 1)) {
             room->recover(liushan, RecoverStruct(liushan));
             if (liushan->isLord())

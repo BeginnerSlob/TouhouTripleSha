@@ -2426,7 +2426,7 @@ function SmartAI:askForNullification(trick, from, to, positive, isHeg)
 		end
 
 		if self:isFriend(to) then
-			if not (to:hasSkill("ikyuxi") and global_room:alivePlayerCount() > 4) then
+			if not (to:hasSkill("ikxushi") and global_room:alivePlayerCount() > 4) then
 				if trick:isKindOf("Indulgence") and not to:isSkipped(sgs.Player_Play) then
 					if to:getPile("incantation"):length() > 0 then
 						local card = sgs.Sanguosha:getCard(to:getPile("incantation"):first())

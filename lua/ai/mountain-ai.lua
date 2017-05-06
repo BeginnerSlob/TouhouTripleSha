@@ -1036,7 +1036,7 @@ function sgs.ai_skill_choice.huashen(self, choices, data, xiaode_choice)
 
 		if self.player:getWeapon() and str:matchOne("qiangxi") then return "qiangxi" end
 
-		for _, askill in ipairs(("manjuan|xiansi|ikchibao|nostuxi|dimeng|haoshi|ikyuxi|ikzhiheng|qiaobian|qice|tanhu|noslijian|lijian|shelie|ikxunxun|ikmengyang|" ..
+		for _, askill in ipairs(("manjuan|xiansi|ikchibao|nostuxi|dimeng|haoshi|ikxushi|ikzhiheng|qiaobian|qice|tanhu|noslijian|lijian|shelie|ikxunxun|ikmengyang|" ..
 								"yongsi|dujin|shude|zhiyan|biyue|yingzi|nosyingzi|qingnang"):split("|")) do
 			if str:matchOne(askill) then return askill end
 		end

@@ -27,7 +27,7 @@ function askForShowGeneral(self, choices)
 
 	if self.room:alivePlayerCount() <= 3 then return "yes" end
 	if sgs.getValue(self.player) < 6 then return "no" end
-	local skills_to_show = "bazhen|yizhong|zaiqi|thfeiying|buqu|kuanggu|kofkuanggu|ikyuxi|ikmengyang|ikchibao|nostuxi|ikzhiheng|qiaobian|" ..
+	local skills_to_show = "bazhen|yizhong|zaiqi|thfeiying|buqu|kuanggu|kofkuanggu|ikxushi|ikmengyang|ikchibao|nostuxi|ikzhiheng|qiaobian|" ..
 							"longdan|liuli|longhun|shelie|luoying|anxian|yicong|wushuang|ikxuwu|niepan"
 	for _, player in ipairs(players) do
 		if player:hasSkills(skills_to_show) then return "yes" end
