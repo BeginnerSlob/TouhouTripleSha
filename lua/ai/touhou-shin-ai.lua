@@ -1022,11 +1022,16 @@ sgs.ai_skill_discard.thhuikuang = function(self)
 	local use = { isDummy = true }
 	self:useTrickCard(sa, use)
 	if not use.card then return {} end
-	local pattern = ".|black"
-	local ret = self:askForDiscard("", 1, 1, false, true, pattern)
+	local ret = self:askForDiscard("", 1, 1, false, true)
 	if #ret == 1 then
 		local c = sgs.Sanguosha:getCard(ret[1])
 		if not self:isValuableCard(c) then
+			local pattern = ".|"
+			if c:isRed() then
+				pattern = pattern .. "red"
+			else
+				pattern = pattern .. "black"
+			end
 			local ret2 = self:askForDiscard("", 2, 2, false, true, pattern)
 			if #ret2 == 2 then
 				if not self:isValuableCard(sgs.Sanguosha:getCard(ret2[2])) then
@@ -1052,7 +1057,7 @@ sgs.ai_skill_invoke.thhuikuang_sa = function(self, data)
 		if n < 2 then return false end
 		local a = cards:at(n - 1)
 		local b = cards:at(n - 2)
-		if a:isBlack() and b:isBlack() then
+		if a:sameColorWith(b) then
 			return true
 		end
 	end
