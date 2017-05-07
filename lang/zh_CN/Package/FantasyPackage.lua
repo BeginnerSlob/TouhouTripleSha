@@ -3,7 +3,7 @@ return {
 	
 	["ibuki_gourd"] = "伊吹瓢",
 	[":ibuki_gourd"] = "每当你需要使用或打出一张【闪】时，你可以弃置一张手牌，若如此做，你摸一张牌。若你以此法弃置了一张黑桃牌，视为你使用或打出了一张【闪】。",
-	["illustrator:ibuki_gourd"] = "暂无",
+	["illustrator:ibuki_gourd"] = "寒极",
 	["@ibuki_gourd"] = "你可以发动【伊吹瓢】弃置一张手牌",
 
 	["ice_sword"] = "寒氷剑",
@@ -13,7 +13,7 @@ return {
 
 	["feint_attack"] = "道忌宣谕",
 	[":feint_attack"] = "锦囊牌<br /><b>时机</b>：出牌阶段，若你除此牌外有其他牌<br /><b>目标</b>：你与其距离为1的一名角色<br /><b>效果</b>：你交给目标角色一张牌，然后令其将两张牌交给另一名由你指定的其他角色。",
-	["illustrator:feint_attack"] = "暂无",
+	["illustrator:feint_attack"] = "kirero",
 	["@feint-attack"] = "请选择 %src 给牌的目标",
 	["feint-attack-effect"] = "你使用了【道忌宣谕】，请将一张牌交给 %src",
 	["feint-attack-give"] = "%dest 使用了【道忌宣谕】，请将两张牌交给 %src",
@@ -38,7 +38,7 @@ return {
 
 	["rout"] = "木隐妖岚",
 	[":rout"] = "锦囊牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：一名装备区里有非宝物牌的其他角色<br /><b>效果</b>：你选择一项：弃置目标角色装备区中所有的武器牌和-1坐骑牌；或弃置目标角色装备区中所有的防具牌和+1坐骑牌。",
-	["illustrator:rout"] = "暂无",
+	["illustrator:rout"] = "カズ",
 	["rout:weapon"] = "弃置目标角色装备区中所有的武器牌和-1坐骑牌",
 	["rout:armor"] = "弃置目标角色装备区中所有的防具牌和+1坐骑牌",
 
@@ -64,7 +64,7 @@ return {
 
 	["reinforce"] = "贤石点金",
 	[":reinforce"] = "锦囊牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：一名角色<br /><b>效果</b>：目标角色摸三张牌，然后选择一项：弃置一张非基本牌；或弃置两张牌。",
-	["illustrator:reinforce"] = "暂无",
+	["illustrator:reinforce"] = "うき",
 	["@reinforce"] = "请弃置一张非基本牌，或点“取消”弃置两张牌",
 
 	["burning_camps"] = "血凤涅烟",
@@ -82,10 +82,10 @@ return {
 
 	["control_rod"] = "核制御棒",
 	[":control_rod"] = "装备牌·武器<br /><b>攻击范围</b>：３<br /><b>武器技能</b>：当你使用【杀】指定一名角色为目标后，你可以令该角色的非锁定技无效，直到当前回合结束。",
-	["illustrator:control_rod"] = "暂无",
+	["illustrator:control_rod"] = "寒极",
 
 	["yicunshenmiaowan"] = "一寸神妙碗",
-	["illustrator:yicunshenmiaowan"] = "暂无",
+	["illustrator:yicunshenmiaowan"] = "寒极",
 
 	["drowning"] = "荒波暴流",
 	[":drowning"] = "锦囊牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：所有其他角色<br /><b>效果</b>：每名目标角色需选择一项：1.令你弃置其装备区的一张牌；2.令你弃置其两张手牌；3.受到由你造成的1点伤害。",
