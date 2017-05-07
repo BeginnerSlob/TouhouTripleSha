@@ -5,6 +5,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsRotation>
 #include <QPropertyAnimation>
+#include <QFontDatabase>
 
 static QRectF ButtonRect(0, 0, 189, 46);
 
@@ -132,6 +133,15 @@ void Button::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
 
 QRectF Button::boundingRect() const{
     return QRectF(QPointF(), size);
+}
+
+QFont Button::defaultFont()
+{
+    int fontId = QFontDatabase::addApplicationFont("font/DroidSansFallback.ttf");
+    Q_ASSERT(fontId != -1);
+    QString fontName = QFontDatabase::applicationFontFamilies(fontId).at(0);
+    QFont font(fontName);
+    return font;
 }
 
 void Button::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {

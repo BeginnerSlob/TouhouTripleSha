@@ -3686,14 +3686,14 @@ public:
         if (player->isAlive())
             sib << player;
 
-        bool noround = true;
+        /*bool noround = true;
 
         foreach (const Player *p, sib) {
             if (p->getPhase() != Player::NotActive) {
                 noround = false;
                 break;
             }
-        }
+        }*/
 
         return true; // for DIY!!!!!!!
     }
@@ -3824,10 +3824,9 @@ public:
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer* &) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *&) const
     {
         if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             room->setTag("ikxinzuo", false);
         } else {
             ServerPlayer *current = room->getCurrent();

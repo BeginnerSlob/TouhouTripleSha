@@ -894,9 +894,9 @@ void Client::askForSkillInvoke(const QVariant &arg)
     setStatus(AskForSkillInvoke);
 }
 
-void Client::onPlayerMakeChoice() {
-    QString option = sender()->objectName();
-    replyToServer(S_COMMAND_MULTIPLE_CHOICE, QVariant(option));
+void Client::onPlayerMakeChoice(const QString &choice)
+{
+    replyToServer(S_COMMAND_MULTIPLE_CHOICE, choice);
     setStatus(NotActive);
 }
 
@@ -1319,7 +1319,7 @@ void Client::askForChoice(const QVariant &ask_str)
     QString skill_name = ask[0].toString();
     QStringList options = ask[1].toString().split("+");
     emit options_got(skill_name, options);
-    setStatus(ExecDialog);
+    setStatus(AskForChoice);
 }
 
 void Client::askForCardChosen(const QVariant &ask_str)

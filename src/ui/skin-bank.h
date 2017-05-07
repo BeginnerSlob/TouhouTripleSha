@@ -93,7 +93,8 @@ protected:
 
 class QSanRoomSkin: public IQSanComponentSkin {
 public:
-    struct RoomLayout {
+    struct RoomLayout
+    {
         int m_scenePadding;
         int m_roleBoxHeight;
         int m_chatTextBoxHeight;

@@ -19,6 +19,7 @@ class CardContainer;
 class GuanxingBox;
 class QSanButton;
 class QGroupBox;
+class ChooseOptionsBox;
 class BubbleChatBox;
 struct RoomLayout;
 
@@ -188,6 +189,11 @@ public slots:
     void doCancelButton();
     void doDiscardButton();
 
+    inline QPointF tableCenterPos()
+    {
+        return m_tableCenterPos;
+    }
+
     void setChatBoxVisibleSlot();
     void pause();
 
@@ -260,6 +266,8 @@ private:
     GuanxingBox *guanxing_box;
 
     QList<CardItem *> gongxin_items;
+
+    ChooseOptionsBox *m_chooseOptionsBox;
 
     ClientLogBox *log_box;
     QTextEdit *chat_box;

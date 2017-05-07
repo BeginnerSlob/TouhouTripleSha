@@ -6,6 +6,7 @@
 #include "distanceviewdialog.h"
 #include "playercarddialog.h"
 #include "choosegeneraldialog.h"
+#include "chooseoptionsbox.h"
 #include "window.h"
 #include "button.h"
 #include "cardcontainer.h"
@@ -143,7 +144,7 @@ RoomScene::RoomScene(QMainWindow *main_window)
     connect(ClientInstance, SIGNAL(generals_got(QStringList)), this, SLOT(chooseGeneral(QStringList)));
     connect(ClientInstance, SIGNAL(generals_viewed(QString, QStringList)), this, SLOT(viewGenerals(QString, QStringList)));
     connect(ClientInstance, SIGNAL(suits_got(QStringList)), this, SLOT(chooseSuit(QStringList)));
-    connect(ClientInstance, SIGNAL(options_got(QString, QStringList)), this, SLOT(chooseOption(QString, QStringList)));
+    connect(ClientInstance, &Client::options_got, this, &RoomScene::chooseOption);
     connect(ClientInstance, SIGNAL(cards_got(const ClientPlayer *, QString, QString, bool, Card::HandlingMethod, QList<int>)),
             this, SLOT(chooseCard(const ClientPlayer *, QString, QString, bool, Card::HandlingMethod, QList<int>)));
     connect(ClientInstance, SIGNAL(roles_got(QString, QStringList)), this, SLOT(chooseRole(QString, QStringList)));
@@ -187,6 +188,12 @@ RoomScene::RoomScene(QMainWindow *main_window)
 
     connect(ClientInstance, SIGNAL(guanxing(QList<int>, bool)), guanxing_box, SLOT(doGuanxing(QList<int>, bool)));
     guanxing_box->moveBy(-120, 0);
+
+    m_chooseOptionsBox = new ChooseOptionsBox;
+    m_chooseOptionsBox->hide();
+    addItem(m_chooseOptionsBox);
+    m_chooseOptionsBox->setZValue(30000.0);
+    m_chooseOptionsBox->moveBy(-120, 0);
 
     card_container = new CardContainer();
     card_container->hide();
@@ -963,6 +970,7 @@ void RoomScene::updateTable() {
     m_tablePile->adjustCards();
     card_container->setPos(m_tableCenterPos);
     guanxing_box->setPos(m_tableCenterPos);
+    m_chooseOptionsBox->setPos(m_tableCenterPos - QPointF(m_chooseOptionsBox->boundingRect().width() / 2, m_chooseOptionsBox->boundingRect().height() / 2));
     prompt_box->setPos(m_tableCenterPos);
     pausing_text->setPos(m_tableCenterPos - pausing_text->boundingRect().center());
     pausing_item->setRect(sceneRect());
@@ -1608,7 +1616,7 @@ void RoomScene::chooseKingdom(const QStringList &kingdoms) {
 }
 
 void RoomScene::chooseOption(const QString &skillName, const QStringList &options) {
-    QDialog *dialog = new QDialog;
+/*    QDialog *dialog = new QDialog;
     QVBoxLayout *layout = new QVBoxLayout;
     QString title = Sanguosha->translate(skillName);
     dialog->setWindowTitle(title);
@@ -1666,7 +1674,13 @@ void RoomScene::chooseOption(const QString &skillName, const QStringList &option
     dialog->setLayout(layout);
     Sanguosha->playSystemAudioEffect("pop-up");
     delete m_choiceDialog;
-    m_choiceDialog = dialog;
+    m_choiceDialog = dialog;*/
+    QApplication::alert(main_window);
+    if (!main_window->isActiveWindow())
+        Sanguosha->playSystemAudioEffect("pop-up");
+
+    m_chooseOptionsBox->setSkillName(skillName);
+    m_chooseOptionsBox->chooseOption(options);
 }
 
 void RoomScene::chooseCard(const ClientPlayer *player, const QString &flags, const QString &reason,
@@ -2506,7 +2520,8 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
                 guanxing_box->clear();
                 if (!card_container->retained())
                     card_container->clear();
-            }
+            } else if (oldStatus == Client::AskForChoice)
+                m_chooseOptionsBox->clear();
             prompt_box->disappear();
             ClientInstance->getPromptDoc()->clear();
 
@@ -2699,7 +2714,8 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
             break;
         }
     case Client::AskForGeneralTaken:
-    case Client::AskForArrangement: {
+    case Client::AskForArrangement:
+    case Client::AskForChoice: {
             ok_button->setEnabled(false);
             cancel_button->setEnabled(false);
             discard_button->setEnabled(false);

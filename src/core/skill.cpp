@@ -10,11 +10,12 @@
 #include <QFile>
 
 Skill::Skill(const QString &name, Frequency frequency)
-    : frequency(frequency), limit_mark(QString()), lord_skill(false), attached_lord_skill(false), owner_only_skill(false)
+    : frequency(frequency), limit_mark(QString()), owner_only_skill(false)
 {
     static QChar lord_symbol('$');
     static QChar attached_lord_symbol('&');
-
+    lord_skill = false;
+    attached_lord_skill = false;
     if (name.endsWith(lord_symbol)) {
         QString copy = name;
         copy.remove(lord_symbol);

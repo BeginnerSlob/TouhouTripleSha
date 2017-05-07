@@ -120,7 +120,9 @@ SOURCES += \
     src/scenario/chunxue-scenario.cpp \
     src/scenario/jianniang-scenario.cpp \
     src/breakpad/common/convert_UTF.c \
-    src/package/tenshi-reihou.cpp
+    src/package/tenshi-reihou.cpp \
+    src/ui/graphicsbox.cpp \
+    src/ui/chooseoptionsbox.cpp
 
 HEADERS += \
     src/client/aux-skills.h \
@@ -231,7 +233,9 @@ HEADERS += \
     src/package/touhou-story.h \
     src/scenario/chunxue-scenario.h \
     src/scenario/jianniang-scenario.h \
-    src/package/tenshi-reihou.h
+    src/package/tenshi-reihou.h \
+    src/ui/graphicsbox.h \
+    src/ui/chooseoptionsbox.h
 
 FORMS += \
     src/dialog/cardoverview.ui \
