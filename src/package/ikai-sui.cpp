@@ -2016,7 +2016,7 @@ public:
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to != Player::NotActive)
                 return QStringList();
-            if (!TriggerSkill::triggerable(player) || player->aliveCount() <= 3)
+            if (!TriggerSkill::triggerable(player))
                 return QStringList();
             return QStringList(objectName());
         }
