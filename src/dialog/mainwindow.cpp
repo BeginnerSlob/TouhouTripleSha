@@ -179,7 +179,7 @@ void MainWindow::gotoScene(QGraphicsScene *scene) {
 void MainWindow::on_actionExit_triggered() {
     QMessageBox::StandardButton result;
     result = QMessageBox::question(this,
-                                   tr("Sanguosha"),
+                                   tr("TouhouTripleSha"),
                                    tr("Are you sure to exit?"),
                                    QMessageBox::Ok | QMessageBox::Cancel);
     if (result == QMessageBox::Ok) {
