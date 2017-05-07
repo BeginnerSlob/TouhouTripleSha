@@ -1975,7 +1975,7 @@ TouhouShinPackage::TouhouShinPackage()
     shin015->addSkill(new ThTanguanTrigger);
     related_skills.insertMulti("thtanguan", "#thtanguan");
 
-    General *shin016 = new General(this, "shin016", "tsuki", 4, false);
+    General *shin016 = new General(this, "shin016", "tsuki", 3, false);
     shin016->addSkill(new ThYuancui);
     shin016->addSkill(new ThHuikuang);
 
