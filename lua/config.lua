@@ -3,8 +3,8 @@
 
 config = {
 	version = "v8.7",
-	version_name = "东方绮符剧",
-	mod_name = "0507",
+	version_name = "0507",
+	mod_name = "TouhouTripleSha",
 	big_font = 56,
 	small_font = 27,
 	tiny_font = 18,

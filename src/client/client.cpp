@@ -249,8 +249,8 @@ void Client::checkVersion(const QVariant &server_version)
     QString version_number, mod_name;
     if (version.contains(QChar(':'))) {
         QStringList texts = version.split(QChar(':'));
-        version_number = texts.value(0);
-        mod_name = texts.value(1);
+        version_number = texts.value(1);
+        mod_name = texts.value(0);
     } else {
         version_number = version;
         mod_name = "official";
