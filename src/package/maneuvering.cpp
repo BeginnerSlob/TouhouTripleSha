@@ -516,20 +516,6 @@ ManeuveringPackage::ManeuveringPackage()
           << new IronChain(Card::Spade, 11)
           << new IronChain(Card::Spade, 12)
           << new Nullification(Card::Spade, 13);
-   // club
-    cards << new SilverLion(Card::Club, 1)
-          << new Vine(Card::Club, 2)
-          << new Analeptic(Card::Club, 3)
-          << new SupplyShortage(Card::Club, 4)
-          << new ThunderSlash(Card::Club, 5)
-          << new ThunderSlash(Card::Club, 6)
-          << new ThunderSlash(Card::Club, 7)
-          << new ThunderSlash(Card::Club, 8)
-          << new Analeptic(Card::Club, 9)
-          << new IronChain(Card::Club, 10)
-          << new IronChain(Card::Club, 11)
-          << new IronChain(Card::Club, 12)
-          << new IronChain(Card::Club, 13);
 
      // heart
     cards << new Nullification(Card::Heart, 1)
@@ -545,6 +531,21 @@ ManeuveringPackage::ManeuveringPackage()
           << new Jink(Card::Heart, 11)
           << new Jink(Card::Heart, 12)
           << new Nullification(Card::Heart, 13);
+
+   // club
+    cards << new SilverLion(Card::Club, 1)
+          << new Vine(Card::Club, 2)
+          << new Analeptic(Card::Club, 3)
+          << new SupplyShortage(Card::Club, 4)
+          << new ThunderSlash(Card::Club, 5)
+          << new ThunderSlash(Card::Club, 6)
+          << new ThunderSlash(Card::Club, 7)
+          << new ThunderSlash(Card::Club, 8)
+          << new Analeptic(Card::Club, 9)
+          << new IronChain(Card::Club, 10)
+          << new IronChain(Card::Club, 11)
+          << new IronChain(Card::Club, 12)
+          << new IronChain(Card::Club, 13);
 
     // diamond
     cards << new Fan(Card::Diamond, 1)
@@ -562,7 +563,6 @@ ManeuveringPackage::ManeuveringPackage()
 
     DefensiveHorse *tianpanzhou = new DefensiveHorse(Card::Diamond, 13);
     tianpanzhou->setObjectName("tianpanzhou");
-
     cards << tianpanzhou;
 
     foreach (Card *card, cards)

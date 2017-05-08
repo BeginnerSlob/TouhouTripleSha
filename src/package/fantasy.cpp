@@ -1284,6 +1284,8 @@ FantasyPackage::FantasyPackage()
     : Package("fantasy", Package::CardPack)
 {
     QList<Card *> cards;
+
+    // spade
     cards << new IbukiGourd()
           << new IceSword()
           << new FeintAttack(Card::Spade, 3)
@@ -1296,8 +1298,10 @@ FantasyPackage::FantasyPackage()
           << new Nullification(Card::Spade, 10)
           << new Rout(Card::Spade, 11)
           << new Analeptic(Card::Spade, 12)
-          << new Jade()
-          << new PurpleSong(Card::Heart, 1)
+          << new Jade();
+
+     // heart
+    cards << new PurpleSong(Card::Heart, 1)
           << new IronArmor()
           << new Rout(Card::Heart, 3)
           << new MoonSpear()
@@ -1309,8 +1313,10 @@ FantasyPackage::FantasyPackage()
           << new LureTiger(Card::Heart, 10)
           << new Reinforce()
           << new Lightning(Card::Heart, 12)
-          << new BurningCamps()
-          << new Breastplate()
+          << new BurningCamps();
+
+   // club
+    cards << new Breastplate()
           << new RenwangShield()
           << new ControlRod()
           << new KnownBoth(Card::Club, 4);
@@ -1325,8 +1331,10 @@ FantasyPackage::FantasyPackage()
           << new Slash(Card::Club, 10)
           << new Slash(Card::Club, 11)
           << new ThunderSlash(Card::Club, 12)
-          << new Drowning()
-          << new Nullification(Card::Diamond, 1)
+          << new Drowning();
+
+    // diamond
+    cards << new Nullification(Card::Diamond, 1)
           << new Slash(Card::Diamond, 2)
           << new FireAttack(Card::Diamond, 3)
           << new WoodenOx()

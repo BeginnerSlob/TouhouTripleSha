@@ -1548,141 +1548,144 @@ StandardCardPackage::StandardCardPackage()
 {
     QList<Card *> cards;
 
-    cards << new Slash(Card::Spade, 7)
+    // spade
+    cards << new Duel(Card::Spade, 1)
+          << new Lightning(Card::Spade, 1)
+          << new DoubleSword
+          << new EightDiagram(Card::Spade)
+          << new Dismantlement(Card::Spade, 3)
+          << new Snatch(Card::Spade, 3)
+          << new Dismantlement(Card::Spade, 4)
+          << new Snatch(Card::Spade, 4)
+          << new Blade;
+
+    DefensiveHorse *zijing = new DefensiveHorse(Card::Spade, 5);
+    zijing->setObjectName("zijing");
+    cards << zijing
+          << new Indulgence(Card::Spade, 6)
+          << new QinggangSword
+          << new Slash(Card::Spade, 7)
+          << new SavageAssault(Card::Spade, 7)
           << new Slash(Card::Spade, 8)
           << new Slash(Card::Spade, 8)
           << new Slash(Card::Spade, 9)
           << new Slash(Card::Spade, 9)
           << new Slash(Card::Spade, 10)
           << new Slash(Card::Spade, 10)
+          << new Snatch(Card::Spade, 11)
+          << new Nullification(Card::Spade, 11)
+          << new Dismantlement(Card::Spade, 12)
+          << new Spear
+          << new SavageAssault(Card::Spade, 13);
 
-          << new Slash(Card::Club, 2)
-          << new Slash(Card::Club, 3)
-          << new Slash(Card::Club, 4)
-          << new Slash(Card::Club, 5)
-          << new Slash(Card::Club, 6)
-          << new Slash(Card::Club, 7)
-          << new Slash(Card::Club, 8)
-          << new Slash(Card::Club, 8)
-          << new Slash(Card::Club, 9)
-          << new Slash(Card::Club, 9)
-          << new Slash(Card::Club, 10)
-          << new Slash(Card::Club, 10)
-          << new Slash(Card::Club, 11)
-          << new Slash(Card::Club, 11)
+    OffensiveHorse *wuyuzhou = new OffensiveHorse(Card::Spade, 13);
+    wuyuzhou->setObjectName("wuyuzhou");
+    cards << wuyuzhou;
 
+     // heart
+    cards << new ArcheryAttack
+          << new GodSalvation
+          << new Jink(Card::Heart, 2)
+          << new Jink(Card::Heart, 2)
+          << new Peach(Card::Heart, 3)
+          << new AmazingGrace(Card::Heart, 3)
+          << new Peach(Card::Heart, 4)
+          << new AmazingGrace(Card::Heart, 4)
+          << new KylinBow;
+
+    OffensiveHorse *chanayakongxue = new OffensiveHorse(Card::Heart, 5);
+    chanayakongxue->setObjectName("chanayakongxue");
+    cards << chanayakongxue
+          << new Peach(Card::Heart, 6)
+          << new Indulgence(Card::Heart, 6)
+          << new Peach(Card::Heart, 7)
+          << new ExNihilo(Card::Heart, 7)
+          << new Peach(Card::Heart, 8)
+          << new ExNihilo(Card::Heart, 8)
+          << new Peach(Card::Heart, 9)
+          << new ExNihilo(Card::Heart, 9)
           << new Slash(Card::Heart, 10)
           << new Slash(Card::Heart, 10)
           << new Slash(Card::Heart, 11)
+          << new ExNihilo(Card::Heart, 11)
+          << new Peach(Card::Heart, 12)
+          << new Dismantlement(Card::Heart, 12)
+          << new Jink(Card::Heart, 13);
 
-          << new Slash(Card::Diamond, 4)
-          << new Slash(Card::Diamond, 6)
-          << new Slash(Card::Diamond, 7)
-          << new Slash(Card::Diamond, 8)
-          << new Slash(Card::Diamond, 9)
-          << new Slash(Card::Diamond, 10)
-          << new Slash(Card::Diamond, 13)
+    DefensiveHorse *kunshentianye = new DefensiveHorse(Card::Heart, 13);
+    kunshentianye->setObjectName("kunshentianye");
+    cards << kunshentianye;
 
-          << new Jink(Card::Heart, 2)
-          << new Jink(Card::Heart, 2)
-          << new Jink(Card::Heart, 13)
+   // club
+    cards << new Duel(Card::Club, 1)
+          << new Crossbow(Card::Club)
+          << new Slash(Card::Club, 2)
+          << new EightDiagram(Card::Club)
+          << new Slash(Card::Club, 3)
+          << new Dismantlement(Card::Club, 3)
+          << new Slash(Card::Club, 4)
+          << new Dismantlement(Card::Club, 4)
+          << new Slash(Card::Club, 5);
 
+    DefensiveHorse *yaoshi = new DefensiveHorse(Card::Club, 5);
+    yaoshi->setObjectName("yaoshi");
+    cards << yaoshi
+          << new Slash(Card::Club, 6)
+          << new Indulgence(Card::Club, 6)
+          << new Slash(Card::Club, 7)
+          << new SavageAssault(Card::Club, 7)
+          << new Slash(Card::Club, 8)
+          << new Slash(Card::Club, 8)
+          << new Slash(Card::Club, 9)
+          << new Slash(Card::Club, 9)
+          << new Slash(Card::Club, 10)
+          << new Slash(Card::Club, 10)
+          << new Slash(Card::Club, 11)
+          << new Slash(Card::Club, 11)
+          << new Collateral(Card::Club, 12)
+          << new Nullification(Card::Club, 12)
+          << new Collateral(Card::Club, 13)
+          << new Nullification(Card::Club, 13);
+
+
+    // diamond
+    cards << new Duel(Card::Diamond, 1)
+          << new Crossbow(Card::Diamond)
           << new Jink(Card::Diamond, 2)
           << new Jink(Card::Diamond, 2)
           << new Jink(Card::Diamond, 3)
+          << new Snatch(Card::Diamond, 3)
+          << new Slash(Card::Diamond, 4)
           << new Jink(Card::Diamond, 4)
           << new Jink(Card::Diamond, 5)
+          << new Axe
+          << new Slash(Card::Diamond, 6)
           << new Jink(Card::Diamond, 6)
+          << new Slash(Card::Diamond, 7)
           << new Jink(Card::Diamond, 7)
+          << new Slash(Card::Diamond, 8)
           << new Jink(Card::Diamond, 8)
+          << new Slash(Card::Diamond, 9)
           << new Jink(Card::Diamond, 9)
+          << new Slash(Card::Diamond, 10)
           << new Jink(Card::Diamond, 10)
           << new Jink(Card::Diamond, 11)
           << new Jink(Card::Diamond, 11)
-
-          << new Peach(Card::Heart, 3)
-          << new Peach(Card::Heart, 4)
-          << new Peach(Card::Heart, 6)
-          << new Peach(Card::Heart, 7)
-          << new Peach(Card::Heart, 8)
-          << new Peach(Card::Heart, 9)
-          << new Peach(Card::Heart, 12)
-
           << new Peach(Card::Diamond, 12)
-
-          << new Crossbow(Card::Club)
-          << new Crossbow(Card::Diamond)
-          << new DoubleSword
-          << new QinggangSword
-          << new Blade
-          << new Spear
-          << new Axe
           << new Halberd
-          << new KylinBow
+          << new Slash(Card::Diamond, 13);
 
-          << new EightDiagram(Card::Spade)
-          << new EightDiagram(Card::Club);
+    OffensiveHorse *chaoyaoguaifengjiang = new OffensiveHorse(Card::Diamond, 13);
+    chaoyaoguaifengjiang->setObjectName("chaoyaoguaifengjiang");
+    cards << chaoyaoguaifengjiang;
 
     skills << new DoubleSwordSkill << new QinggangSwordSkill
            << new BladeSkill << new SpearSkill << new AxeSkill
            << new KylinBowSkill << new EightDiagramSkill
            << new HalberdSkill;
-
     skills << new SpearEmotion;
     related_skills.insertMulti("spear", "#spear-emotion");
-
-    QList<Card *> horses;
-    horses << new DefensiveHorse(Card::Spade, 5)
-           << new DefensiveHorse(Card::Club, 5)
-           << new DefensiveHorse(Card::Heart, 13)
-           << new OffensiveHorse(Card::Heart, 5)
-           << new OffensiveHorse(Card::Spade, 13)
-           << new OffensiveHorse(Card::Diamond, 13);
-
-    horses.at(0)->setObjectName("zijing");
-    horses.at(1)->setObjectName("yaoshi");
-    horses.at(2)->setObjectName("kunshentianye");
-    horses.at(3)->setObjectName("chanayakongxue");
-    horses.at(4)->setObjectName("wuyuzhou");
-    horses.at(5)->setObjectName("chaoyaoguaifengjiang");
-
-    cards << horses;
-
     skills << new HorseSkill;
-
-    cards << new AmazingGrace(Card::Heart, 3)
-          << new AmazingGrace(Card::Heart, 4)
-          << new GodSalvation
-          << new SavageAssault(Card::Spade, 7)
-          << new SavageAssault(Card::Spade, 13)
-          << new SavageAssault(Card::Club, 7)
-          << new ArcheryAttack
-          << new Duel(Card::Spade, 1)
-          << new Duel(Card::Club, 1)
-          << new Duel(Card::Diamond, 1)
-          << new ExNihilo(Card::Heart, 7)
-          << new ExNihilo(Card::Heart, 8)
-          << new ExNihilo(Card::Heart, 9)
-          << new ExNihilo(Card::Heart, 11)
-          << new Snatch(Card::Spade, 3)
-          << new Snatch(Card::Spade, 4)
-          << new Snatch(Card::Spade, 11)
-          << new Snatch(Card::Diamond, 3)
-          << new Dismantlement(Card::Spade, 3)
-          << new Dismantlement(Card::Spade, 4)
-          << new Dismantlement(Card::Spade, 12)
-          << new Dismantlement(Card::Club, 3)
-          << new Dismantlement(Card::Club, 4)
-          << new Dismantlement(Card::Heart, 12)
-          << new Collateral(Card::Club, 12)
-          << new Collateral(Card::Club, 13)
-          << new Nullification(Card::Spade, 11)
-          << new Nullification(Card::Club, 12)
-          << new Nullification(Card::Club, 13)
-          << new Indulgence(Card::Spade, 6)
-          << new Indulgence(Card::Club, 6)
-          << new Indulgence(Card::Heart, 6)
-          << new Lightning(Card::Spade, 1);
 
     foreach (Card *card, cards)
         card->setParent(this);
