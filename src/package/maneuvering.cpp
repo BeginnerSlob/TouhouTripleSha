@@ -334,11 +334,11 @@ void FireAttack::onEffect(const CardEffectStruct &effect) const{
     room->showCard(effect.to, card->getEffectiveId());
 
     QString suit_str = card->getSuitString();
-    QString pattern = QString(".|%1").arg(suit_str);
+    QString pattern = QString(".|%1|.|hand").arg(suit_str);
     QString prompt = QString("@fire-attack:%1::%2").arg(effect.to->objectName()).arg(suit_str);
     if (effect.from->hasSkill("thyanlun")) {
         QString color_str = card->isRed() ? "red" : "black";
-        pattern = QString(".|%1").arg(color_str);
+        pattern = QString(".|%1|.|hand").arg(color_str);
         prompt = QString("@fire-attackex:%1::%2").arg(effect.to->objectName()).arg(color_str);
         room->notifySkillInvoked(effect.from, "thyanlun");
     }
@@ -346,6 +346,7 @@ void FireAttack::onEffect(const CardEffectStruct &effect) const{
         QString name = card->getClassName();
         if (name.endsWith("Slash"))
             name = "Slash";
+        name += "|.|.|hand";
         const Card *card_to_throw = room->askForCard(effect.from, pattern + "#" + name, prompt);
         if (card_to_throw)
             room->damage(DamageStruct(this, effect.from, effect.to, 1, DamageStruct::Fire));
