@@ -999,7 +999,9 @@ QString Room::askForChoice(ServerPlayer *player, const QString &skill_name, cons
     tryPause();
     notifyMoveFocus(player, S_COMMAND_MULTIPLE_CHOICE);
 
-    QStringList validChoices = choices.split("+");
+    QStringList validChoices;
+    foreach(const QString &choice, choices.split("|"))
+        validChoices.append(choice.split("+"));
     Q_ASSERT(!validChoices.isEmpty());
 
     AI *ai = player->getAI();

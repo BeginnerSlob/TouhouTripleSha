@@ -47,7 +47,7 @@ ChooseOptionsBox::ChooseOptionsBox()
 
 QRectF ChooseOptionsBox::boundingRect() const
 {
-    const int width = getButtonWidth()* (qMax(options.length(), 1)) + outerBlankWidth * 2 + (qMax(options.length(), 1) - 1) * interval;
+    const int width = getButtonWidth() * (qMax(options.length(), 1)) + outerBlankWidth * 2 + (qMax(options.length(), 1) - 1) * interval;
 
     int max = 0;
     foreach (const QString &str, options)
@@ -77,8 +77,7 @@ void ChooseOptionsBox::chooseOption(const QStringList &options)
         ++x;
         foreach (const QString &choice, option.split("+")) {
             ++y;
-            Button *button = new Button(translate(choice), QSizeF(buttonWidth,
-                defaultButtonHeight));
+            Button *button = new Button(translate(choice), QSizeF(buttonWidth, defaultButtonHeight), Config.UIFont);
             button->setObjectName(choice);
             buttons << button;
             button->setParentItem(this);
@@ -94,9 +93,7 @@ void ChooseOptionsBox::chooseOption(const QStringList &options)
             if (tooltip != original_tooltip)
                 button->setToolTip(QString("<font color=yellow>%2</font>")
                 .arg(tooltip));
-
         }
-
     }
 
     moveToCenter();
@@ -143,7 +140,7 @@ int ChooseOptionsBox::getButtonWidth() const
     if (options.isEmpty())
         return minButtonWidth;
 
-    QFontMetrics fontMetrics(Button::defaultFont());
+    QFontMetrics fontMetrics(Config.UIFont);
     int biggest = 0;
     foreach (const QString &section, options) {
         foreach (const QString &choice, section.split("+")) {

@@ -14,13 +14,12 @@ class Button: public QGraphicsObject{
 public:
     explicit Button(const QString &label, qreal scale = 1.0);
     explicit Button(const QString &label, const QSizeF &size);
+    explicit Button(const QString &label, const QSizeF &size, const QFont &font);
     ~Button();
     void setMute(bool mute);
     void setFont(const QFont &font);
 
     virtual QRectF boundingRect() const;
-
-    static QFont defaultFont();
 
 protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);

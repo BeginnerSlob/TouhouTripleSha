@@ -25,6 +25,14 @@ Button::Button(const QString &label, const QSizeF &size)
     init();
 }
 
+Button::Button(const QString &label, const QSizeF &size, const QFont &font)
+    : label(label), size(size), mute(true), font(font)
+{
+    title = QPixmap(size.toSize());
+    outimg = QImage(size.toSize(), QImage::Format_ARGB32);
+    init();
+}
+
 void Button::init() {
     setFlags(ItemIsFocusable);
 
@@ -133,15 +141,6 @@ void Button::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
 
 QRectF Button::boundingRect() const{
     return QRectF(QPointF(), size);
-}
-
-QFont Button::defaultFont()
-{
-    int fontId = QFontDatabase::addApplicationFont("font/DroidSansFallback.ttf");
-    Q_ASSERT(fontId != -1);
-    QString fontName = QFontDatabase::applicationFontFamilies(fontId).at(0);
-    QFont font(fontName);
-    return font;
 }
 
 void Button::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
