@@ -72,7 +72,6 @@ SOURCES += \
     src/core/room-state.cpp \
     src/core/wrapped-card.cpp \
     src/dialog/choosegeneraldialog.cpp \
-    src/dialog/playercarddialog.cpp \
     src/dialog/roleassigndialog.cpp \
     src/dialog/scenario-overview.cpp \
     src/package/bgm.cpp \
@@ -123,7 +122,8 @@ SOURCES += \
     src/package/tenshi-reihou.cpp \
     src/ui/graphicsbox.cpp \
     src/ui/chooseoptionsbox.cpp \
-    src/ui/playercardbox.cpp
+    src/ui/playercardbox.cpp \
+    src/ui/choosetriggerorderbox.cpp
 
 HEADERS += \
     src/client/aux-skills.h \
@@ -188,7 +188,6 @@ HEADERS += \
     src/core/room-state.h \
     src/core/wrapped-card.h \
     src/dialog/choosegeneraldialog.h \
-    src/dialog/playercarddialog.h \
     src/dialog/roleassigndialog.h \
     src/dialog/scenario-overview.h \
     src/package/bgm.h \
@@ -237,7 +236,8 @@ HEADERS += \
     src/package/tenshi-reihou.h \
     src/ui/graphicsbox.h \
     src/ui/chooseoptionsbox.h \
-    src/ui/playercardbox.h
+    src/ui/playercardbox.h \
+    src/ui/choosetriggerorderbox.h
 
 FORMS += \
     src/dialog/cardoverview.ui \

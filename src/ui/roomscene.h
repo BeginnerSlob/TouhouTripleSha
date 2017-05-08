@@ -20,6 +20,7 @@ class GuanxingBox;
 class QSanButton;
 class QGroupBox;
 class ChooseOptionsBox;
+class ChooseTriggerOrderBox;
 class PlayerCardBox;
 class BubbleChatBox;
 struct RoomLayout;
@@ -166,6 +167,7 @@ public slots:
     void chooseOrder(QSanProtocol::Game3v3ChooseOrderCommand reason);
     void chooseRole(const QString &scheme, const QStringList &roles);
     void chooseDirection();
+    void chooseTriggerOrder(const QString &reason, const QStringList &options, const bool optional);
 
     void bringToFront(QGraphicsItem *item);
     void arrangeSeats(const QList<const ClientPlayer *> &seats);
@@ -269,6 +271,8 @@ private:
     QList<CardItem *> gongxin_items;
 
     ChooseOptionsBox *m_chooseOptionsBox;
+
+    ChooseTriggerOrderBox *m_chooseTriggerOrderBox;
 
     PlayerCardBox *m_playerCardBox;
 

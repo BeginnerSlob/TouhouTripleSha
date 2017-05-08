@@ -4,9 +4,9 @@
 #include "engine.h"
 #include "cardoverview.h"
 #include "distanceviewdialog.h"
-#include "playercarddialog.h"
 #include "choosegeneraldialog.h"
 #include "chooseoptionsbox.h"
+#include "choosetriggerorderbox.h"
 #include "playercardbox.h"
 #include "window.h"
 #include "button.h"
@@ -151,6 +151,7 @@ RoomScene::RoomScene(QMainWindow *main_window)
     connect(ClientInstance, SIGNAL(directions_got()), this, SLOT(chooseDirection()));
     connect(ClientInstance, SIGNAL(orders_got(QSanProtocol::Game3v3ChooseOrderCommand)), this, SLOT(chooseOrder(QSanProtocol::Game3v3ChooseOrderCommand)));
     connect(ClientInstance, SIGNAL(kingdoms_got(QStringList)), this, SLOT(chooseKingdom(QStringList)));
+    connect(ClientInstance, &Client::triggers_got, this, &RoomScene::chooseTriggerOrder);
     connect(ClientInstance, SIGNAL(seats_arranged(QList<const ClientPlayer *>)), SLOT(arrangeSeats(QList<const ClientPlayer *>)));
     connect(ClientInstance, SIGNAL(status_changed(Client::Status, Client::Status)), this, SLOT(updateStatus(Client::Status, Client::Status)));
     connect(ClientInstance, SIGNAL(avatars_hiden()), this, SLOT(hideAvatars()));
@@ -194,6 +195,12 @@ RoomScene::RoomScene(QMainWindow *main_window)
     addItem(m_chooseOptionsBox);
     m_chooseOptionsBox->setZValue(30000.0);
     m_chooseOptionsBox->moveBy(-120, 0);
+
+    m_chooseTriggerOrderBox = new ChooseTriggerOrderBox;
+    m_chooseTriggerOrderBox->hide();
+    addItem(m_chooseTriggerOrderBox);
+    m_chooseTriggerOrderBox->setZValue(30000.0);
+    m_chooseTriggerOrderBox->moveBy(-120, 0);
 
     m_playerCardBox = new PlayerCardBox;
     m_playerCardBox->hide();
@@ -977,6 +984,7 @@ void RoomScene::updateTable() {
     card_container->setPos(m_tableCenterPos);
     guanxing_box->setPos(m_tableCenterPos);
     m_chooseOptionsBox->setPos(m_tableCenterPos - QPointF(m_chooseOptionsBox->boundingRect().width() / 2, m_chooseOptionsBox->boundingRect().height() / 2));
+    m_chooseTriggerOrderBox->setPos(m_tableCenterPos - QPointF(m_chooseTriggerOrderBox->boundingRect().width() / 2, m_chooseTriggerOrderBox->boundingRect().height() / 2));
     m_playerCardBox->setPos(m_tableCenterPos - QPointF(m_playerCardBox->boundingRect().width() / 2, m_playerCardBox->boundingRect().height() / 2));
     prompt_box->setPos(m_tableCenterPos);
     pausing_text->setPos(m_tableCenterPos - pausing_text->boundingRect().center());
@@ -1749,6 +1757,15 @@ void RoomScene::chooseDirection() {
     m_choiceDialog = dialog;
 }
 
+void RoomScene::chooseTriggerOrder(const QString &reason, const QStringList &options, const bool optional)
+{
+    QApplication::alert(main_window);
+    if (!main_window->isActiveWindow())
+        Sanguosha->playSystemAudioEffect("pop-up");
+
+    m_chooseTriggerOrderBox->chooseOption(reason, options, optional);
+}
+
 void RoomScene::toggleDiscards() {
     CardOverview *overview = new CardOverview;
     overview->setWindowTitle(tr("Discarded pile"));
@@ -2472,6 +2489,8 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
                     card_container->clear();
             } else if (oldStatus == Client::AskForChoice)
                 m_chooseOptionsBox->clear();
+            else if (oldStatus == Client::AskForTriggerOrder)
+                m_chooseTriggerOrderBox->clear();
             else if (oldStatus == Client::AskForCardChosen)
                 m_playerCardBox->clear();
             prompt_box->disappear();
@@ -2668,6 +2687,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
     case Client::AskForGeneralTaken:
     case Client::AskForArrangement:
     case Client::AskForChoice:
+    case Client::AskForTriggerOrder:
     case Client::AskForCardChosen: {
             ok_button->setEnabled(false);
             cancel_button->setEnabled(false);

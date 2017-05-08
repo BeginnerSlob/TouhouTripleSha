@@ -109,6 +109,7 @@ Client::Client(QObject *parent, const QString &filename)
     m_interactions[S_COMMAND_CHOOSE_ROLE_3V3] = &Client::askForRole3v3;
     m_interactions[S_COMMAND_SURRENDER] = &Client::askForSurrender;
     m_interactions[S_COMMAND_LUCK_CARD] = &Client::askForLuckCard;
+    m_interactions[S_COMMAND_TRIGGER_ORDER] = &Client::askForTriggerOrder;
 
     m_callbacks[S_COMMAND_FILL_AMAZING_GRACE] = &Client::fillAG;
     m_callbacks[S_COMMAND_TAKE_AMAZING_GRACE] = &Client::takeAG;
@@ -986,6 +987,12 @@ void Client::onPlayerChoosePlayer(const Player *player) {
     setStatus(NotActive);
 }
 
+void Client::onPlayerChooseTriggerOrder(const QString &choice)
+{
+    replyToServer(S_COMMAND_TRIGGER_ORDER, choice);
+    setStatus(NotActive);
+}
+
 void Client::trust() {
     notifyServer(S_COMMAND_TRUST);
 
@@ -1370,6 +1377,23 @@ void Client::askForDirection(const QVariant &) {
     setStatus(ExecDialog);
 }
 
+void Client::askForTriggerOrder(const QVariant &ask_str)
+{
+    JsonArray ask = ask_str.value<JsonArray>();
+    if (ask.size() != 3
+        || !isString(ask[0]) || !ask[1].canConvert<JsonArray>()
+        || !isBool(ask[2])) return;
+
+    QString reason = ask[0].toString();
+
+    QStringList choices;
+    tryParse(ask[1], choices);
+
+    bool optional = ask[2].toBool();
+
+    emit triggers_got(reason, choices, optional);
+    setStatus(AskForTriggerOrder);
+}
 
 void Client::setMark(const QVariant &mark_var)
 {

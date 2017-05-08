@@ -419,60 +419,69 @@ public:
     }
 };
 
-class IkYufeng: public TriggerSkill {
+class IkYufeng : public TriggerSkill
+{
 public:
-    IkYufeng(): TriggerSkill("ikyufeng") {
+    IkYufeng() : TriggerSkill("ikyufeng")
+    {
         events << TargetSpecified;
+        frequency = Frequent;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (!TriggerSkill::triggerable(player)) return QStringList();
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("Slash")) return QStringList(objectName());
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (TriggerSkill::triggerable(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash")) {
+                QStringList targets;
+                foreach(ServerPlayer *to, use.to)
+                    targets << to->objectName();
+                if (!targets.isEmpty())
+                    return QStringList(objectName() + "->" + targets.join("+"));
+            }
+        }
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *skill_target, QVariant &, ServerPlayer *player) const
+    {
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(skill_target))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *p, QVariant &data, ServerPlayer *player) const{
         CardUseStruct use = data.value<CardUseStruct>();
         QVariantList jink_list = player->tag["Jink_" + use.card->toString()].toList();
-        int index = 0;
-        QList<ServerPlayer *> tos;
-        foreach (ServerPlayer *p, use.to) {
-            if (!player->isAlive()) break;
-            if (player->askForSkillInvoke(objectName(), QVariant::fromValue(p))) {
-                room->broadcastSkillInvoke(objectName());
-                if (!tos.contains(p)) {
-                    p->addMark("ikyufeng");
-                    room->addPlayerMark(p, "@skill_invalidity");
-                    tos << p;
+        p->addMark("ikyufeng");
+        room->addPlayerMark(p, "@skill_invalidity");
 
-                    foreach (ServerPlayer *pl, room->getAllPlayers())
-                        room->filterCards(pl, pl->getCards("he"), true);
-                    JsonArray args;
-                    args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
-                    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
-                }
+        foreach (ServerPlayer *pl, room->getAllPlayers())
+            room->filterCards(pl, pl->getCards("he"), true);
+        JsonArray args;
+        args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 
-                JudgeStruct judge;
-                judge.pattern = ".";
-                judge.good = true;
-                judge.reason = objectName();
-                judge.who = player;
-                judge.play_animation = false;
+        JudgeStruct judge;
+        judge.pattern = ".";
+        judge.good = true;
+        judge.reason = objectName();
+        judge.who = player;
+        judge.play_animation = false;
 
-                room->judge(judge);
+        room->judge(judge);
 
-                if ((p->isAlive() && !p->canDiscard(p, "he"))
-                    || !room->askForCard(p, ".|" + judge.pattern, "@ikyufeng-discard:::" + judge.pattern, data, Card::MethodDiscard)) {
-                    LogMessage log;
-                    log.type = "#NoJink";
-                    log.from = p;
-                    room->sendLog(log);
-                    jink_list.replace(index, QVariant(0));
-                }
-            }
-            index++;
+        if ((p->isAlive() && !p->canDiscard(p, "he"))
+                || !room->askForCard(p, ".|" + judge.pattern, "@ikyufeng-discard:::" + judge.pattern, data, Card::MethodDiscard)) {
+            LogMessage log;
+            log.type = "#NoJink";
+            log.from = p;
+            room->sendLog(log);
+            jink_list.replace(use.to.indexOf(p), QVariant(0));
         }
+
         player->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
         return false;
     }

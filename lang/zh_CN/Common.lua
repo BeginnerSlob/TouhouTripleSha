@@ -23,8 +23,7 @@ CommonTranslationTable = {
 	["GeneralA"] = "主将",
 	["GeneralB"] = "副将",
 	["surrender:yes"] = "你可以立即认输结束游戏",
-	["TriggerOrder"] = "选择触发顺序",
-	["trigger_none"] = "不发动",
+	["GameRule:TriggerOrder"] = "选择技能的发动顺序",
 	["@dummy-slash"] = "请选择你使用【杀】的目标角色",
 	["@dummy-slash2"] = "请选择 %src 使用【杀】的目标角色",
 

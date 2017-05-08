@@ -355,6 +355,9 @@ public:
     QString askForGeneral(ServerPlayer *player, const QStringList &generals, QString default_choice = QString());
     QString askForGeneral(ServerPlayer *player, const QString &generals, QString default_choice = QString());
     const Card *askForSinglePeach(ServerPlayer *player, ServerPlayer *dying);
+    QString askForTriggerOrder(ServerPlayer *player, const QString &reason,
+                               QMap<const ServerPlayer *, QStringList> &skills,
+                               bool optional = true, const QVariant &data = QVariant());
     void addPlayerHistory(ServerPlayer *player, const QString &key, int times = 1);
 
     bool toggleReadyCommand(ServerPlayer *player, const QVariant &);
