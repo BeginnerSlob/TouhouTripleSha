@@ -20,6 +20,7 @@ class GuanxingBox;
 class QSanButton;
 class QGroupBox;
 class ChooseOptionsBox;
+class PlayerCardBox;
 class BubbleChatBox;
 struct RoomLayout;
 
@@ -268,6 +269,8 @@ private:
     QList<CardItem *> gongxin_items;
 
     ChooseOptionsBox *m_chooseOptionsBox;
+
+    PlayerCardBox *m_playerCardBox;
 
     ClientLogBox *log_box;
     QTextEdit *chat_box;

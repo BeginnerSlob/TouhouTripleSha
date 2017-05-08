@@ -505,29 +505,17 @@ public:
                     name_map["other_trick"] << obj_name;
             }
         }
-        if (name_map["basic"].isEmpty())
-            name_map.remove("basic");
-        else
-            name_map["basic"] << "cancel";
-        if (name_map["single_target_trick"].isEmpty())
-            name_map.remove("single_target_trick");
-        else
-            name_map["single_target_trick"] << "cancel";
-        if (name_map["other_trick"].isEmpty())
-            name_map.remove("other_trick");
-        else
-            name_map["other_trick"] << "cancel";
+        QStringList choices;
+        if (!name_map["basic"].isEmpty())
+            choices << name_map["basic"].join("+");
+        if (!name_map["single_target_trick"].isEmpty())
+            choices << name_map["single_target_trick"].join("+");
+        if (!name_map["other_trick"].isEmpty())
+            choices << name_map["other_trick"].join("+");
 
         room->sendCompulsoryTriggerLog(player, objectName());
 
-        QString obj_n = "cancel";
-        while (true) {
-            QString type = room->askForChoice(player, objectName(), name_map.keys().join("+"));
-            obj_n = room->askForChoice(player, objectName(), name_map[type].join("+"));
-            if (obj_n == "cancel")
-                continue;
-            break;
-        }
+        QString obj_n = room->askForChoice(player, objectName(), choices.join("|"));
 
         LogMessage log;
         log.type = "#RhHuanjie";
@@ -4448,7 +4436,7 @@ public:
 TenshiReihouPackage::TenshiReihouPackage()
     :Package("tenshi-reihou")
 {
-    General *reihou001 = new General(this, "reihou001", "rei", 4, true, true);
+    /*General *reihou001 = new General(this, "reihou001", "rei", 4, true, true);
     reihou001->addSkill(new RhDuanlong);
     reihou001->addSkill(new FakeMoveSkill("rhduanlong"));
     related_skills.insertMulti("rhduanlong", "#rhduanlong-fake-move");
@@ -4457,12 +4445,12 @@ TenshiReihouPackage::TenshiReihouPackage()
     related_skills.insertMulti("rhpohuang", "#rhpohuang-slash-ndl");
 
     General *reihou002 = new General(this, "reihou002", "rei", 4, true, true);
-    reihou002->addSkill(new RhRuyi);
+    reihou002->addSkill(new RhRuyi);*/
 
     General *reihou003 = new General(this, "reihou003", "rei", 4, true, true);
     reihou003->addSkill(new RhHuanjie);
 
-    General *reihou004 = new General(this, "reihou004", "rei", 4, true, true);
+    /*General *reihou004 = new General(this, "reihou004", "rei", 4, true, true);
     reihou004->addSkill(new RhHonghuang);
     reihou004->addSkill(new RhHonghuangTargetMod);
     related_skills.insertMulti("rhhonghuang", "#rhhonghuang");
@@ -4642,7 +4630,7 @@ TenshiReihouPackage::TenshiReihouPackage()
     related_skills.insertMulti("rhzhangchi", "#rhzhangchi");
 
     General *reihou049 = new General(this, "reihou049", "rei", 4, true, true);
-    reihou049->addSkill(new RhQiaozou);
+    reihou049->addSkill(new RhQiaozou);*/
 
     addMetaObject<RhDuanlongCard>();
     addMetaObject<RhRuyiCard>();

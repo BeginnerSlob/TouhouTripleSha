@@ -300,11 +300,12 @@ void Dashboard::_addHandCard(CardItem *card_item, bool prepend, const QString &f
     else
         m_handCards.append(card_item);
 
-    connect(card_item, SIGNAL(clicked()), this, SLOT(onCardItemClicked()));
-    connect(card_item, SIGNAL(double_clicked()), this, SLOT(onCardItemDoubleClicked()));
-    connect(card_item, SIGNAL(thrown()), this, SLOT(onCardItemThrown()));
-    connect(card_item, SIGNAL(enter_hover()), this, SLOT(onCardItemHover()));
-    connect(card_item, SIGNAL(leave_hover()), this, SLOT(onCardItemLeaveHover()));
+    connect(card_item, &CardItem::clicked, this, &Dashboard::onCardItemClicked);
+    connect(card_item, &CardItem::double_clicked, this, &Dashboard::onCardItemDoubleClicked);
+    connect(card_item, &CardItem::thrown, this, &Dashboard::onCardItemThrown);
+    connect(card_item, &CardItem::enter_hover, this, &Dashboard::onCardItemHover);
+    connect(card_item, &CardItem::leave_hover, this, &Dashboard::onCardItemLeaveHover);
+
 }
 
 void Dashboard::selectCard(const QString &pattern, bool forward, bool multiple) {
@@ -781,7 +782,8 @@ QList<CardItem *> Dashboard::cloneCardItems(QList<int> card_ids) {
     return result;
 }
 
-QList<CardItem *> Dashboard::removeHandCards(const QList<int> &card_ids) {
+QList<CardItem *> Dashboard::removeHandCards(const QList<int> &card_ids)
+{
     QList<CardItem *> result;
     CardItem *card_item = NULL;
     foreach (int card_id, card_ids) {

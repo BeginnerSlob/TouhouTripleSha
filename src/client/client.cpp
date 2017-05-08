@@ -1333,12 +1333,15 @@ void Client::askForCardChosen(const QVariant &ask_str)
     QString reason = ask[2].toString();
     bool handcard_visible = ask[3].toBool();
     Card::HandlingMethod method = (Card::HandlingMethod)ask[4].toInt();
+
     ClientPlayer *player = getPlayer(player_name);
     if (player == NULL) return;
+
     QList<int> disabled_ids;
     tryParse(ask[5], disabled_ids);
+
     emit cards_got(player, flags, reason, handcard_visible, method, disabled_ids);
-    setStatus(ExecDialog);
+    setStatus(AskForCardChosen);
 }
 
 

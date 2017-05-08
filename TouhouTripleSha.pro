@@ -122,7 +122,8 @@ SOURCES += \
     src/breakpad/common/convert_UTF.c \
     src/package/tenshi-reihou.cpp \
     src/ui/graphicsbox.cpp \
-    src/ui/chooseoptionsbox.cpp
+    src/ui/chooseoptionsbox.cpp \
+    src/ui/playercardbox.cpp
 
 HEADERS += \
     src/client/aux-skills.h \
@@ -235,7 +236,8 @@ HEADERS += \
     src/scenario/jianniang-scenario.h \
     src/package/tenshi-reihou.h \
     src/ui/graphicsbox.h \
-    src/ui/chooseoptionsbox.h
+    src/ui/chooseoptionsbox.h \
+    src/ui/playercardbox.h
 
 FORMS += \
     src/dialog/cardoverview.ui \

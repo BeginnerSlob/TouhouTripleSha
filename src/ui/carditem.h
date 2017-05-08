@@ -12,6 +12,7 @@
 
 class FilterSkill;
 class General;
+class QGraphicsDropShadowEffect;
 
 class CardItem: public QSanSelectableItem {
     Q_OBJECT
@@ -59,7 +60,9 @@ public:
         int tablePileClearTimeStamp;
     } m_uiHelper;
 
-    void clickItem() { emit clicked(); }
+    void clickItem() {
+        emit clicked();
+    }
 
 protected:
     void _initialize();
@@ -98,6 +101,7 @@ signals:
     void enter_hover();
     void leave_hover();
     void movement_animation_finished();
+    void hoverChanged(const bool &enter);
 };
 
 #endif

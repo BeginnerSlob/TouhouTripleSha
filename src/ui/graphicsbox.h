@@ -21,6 +21,7 @@
 #ifndef GRAPHICSBOX_H
 #define GRAPHICSBOX_H
 
+#include "skin-bank.h"
 #include <QGraphicsObject>
 
 class GraphicsBox : public QGraphicsObject

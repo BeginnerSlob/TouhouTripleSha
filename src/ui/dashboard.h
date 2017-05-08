@@ -135,6 +135,8 @@ public slots:
 #ifdef Q_OS_WIN
     void updateTimedProgressBar(time_t val, time_t max);
 #endif
+    void onCardItemHover();
+    void onCardItemLeaveHover();
 
 protected:
     void _createExtraButtons();
@@ -230,8 +232,6 @@ private slots:
     void onCardItemClicked();
     void onCardItemDoubleClicked();
     void onCardItemThrown();
-    void onCardItemHover();
-    void onCardItemLeaveHover();
     void onMarkChanged();
 
 signals:

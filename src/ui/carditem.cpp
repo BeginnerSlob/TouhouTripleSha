@@ -3,6 +3,7 @@
 #include "skill.h"
 #include "clientplayer.h"
 #include "settings.h"
+#include "roomscene.h"
 
 #include <cmath>
 #include <QPainter>
@@ -11,7 +12,7 @@
 #include <QFocusEvent>
 #include <QParallelAnimationGroup>
 #include <QPropertyAnimation>
-#include "roomscene.h"
+#include <QGraphicsDropShadowEffect>
 
 void CardItem::_initialize() {
     setFlag(QGraphicsItem::ItemIsMovable);

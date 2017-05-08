@@ -37,6 +37,7 @@ public:
         AskForGeneralTaken = 0x0D,
         AskForArrangement = 0x0E,
         AskForChoice = 0x0F,
+        AskForCardChosen = 0x11,
 
         RespondingUse = 0x11,
         RespondingForDiscard = 0x21,

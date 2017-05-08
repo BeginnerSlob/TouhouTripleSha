@@ -29,7 +29,8 @@ QRectF CardContainer::boundingRect() const{
     return _m_boundingRect;
 }
 
-void CardContainer::fillCards(const QList<int> &card_ids, const QList<int> &disabled_ids) {
+void CardContainer::fillCards(const QList<int> &card_ids, const QList<int> &disabled_ids)
+{
     QList<CardItem *> card_items;
     if (card_ids.isEmpty() && items.isEmpty())
         return;
@@ -84,7 +85,8 @@ void CardContainer::fillCards(const QList<int> &card_ids, const QList<int> &disa
         item->setOpacity(1.0);
         item->setHomeOpacity(1.0);
         item->setFlag(QGraphicsItem::ItemIsFocusable);
-        if (disabled_ids.contains(item->getCard()->getEffectiveId())) item->setEnabled(false);
+        if (disabled_ids.contains(item->getCard()->getEffectiveId()))
+            item->setEnabled(false);
         item->show();
     }
 }

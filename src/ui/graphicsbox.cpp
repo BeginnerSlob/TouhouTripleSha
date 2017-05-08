@@ -19,8 +19,8 @@
     *********************************************************************/
 
 #include "graphicsbox.h"
-#include "skin-bank.h"
 #include "roomscene.h"
+#include "ui-utils.h"
 
 #include <QGraphicsDropShadowEffect>
 #include <QPainter>
@@ -50,13 +50,18 @@ void GraphicsBox::paintGraphicsBoxStyle(QPainter *painter, const QString &boxTit
     const int h = rect.height();
     painter->drawRoundedRect(x, y, w, h, roundedRectRadius, roundedRectRadius);
     painter->drawRoundedRect(x, y, w, 27, roundedRectRadius, roundedRectRadius);
+    // font
     IQSanComponentSkin::QSanSimpleTextFont font;
-    font.m_vertical = false;
-    font.m_fontSize.setWidth(16);
-    font.m_fontSize.setHeight(16);
-    font.m_spacing = 0;
-    font.m_weight = 2;
-    font.m_color = QColor(228, 213, 160);
+    JsonArray array;
+    array << "DroidSansFallback";
+    JsonArray array2;
+    array2 << 16 << 16 << 0;
+    array << QVariant::fromValue(array2) << 2;
+    JsonArray array4;
+    array4 << 228 << 213 << 160 << 255;
+    array << QVariant::fromValue(array4);
+    font.tryParse(array);
+
     font.paintText(painter, QRect(x, y, w, 27), Qt::AlignCenter, boxTitle);
     painter->restore();
     painter->setPen(QColor(166, 150, 122));

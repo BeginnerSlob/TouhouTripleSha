@@ -1208,9 +1208,20 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
 }
 
 int Room::askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QString &flags, const QString &reason,
-                           bool handcard_visible, Card::HandlingMethod method, const QList<int> &disabled_ids) {
+                           bool handcard_visible, Card::HandlingMethod method, const QList<int> &disabled_ids)
+{
     tryPause();
     notifyMoveFocus(player, S_COMMAND_CHOOSE_CARD);
+
+    QList<const Card *> available = who->getCards(flags);
+    foreach (int id, disabled_ids) {
+        const Card *c = getCard(id);
+        if (c && available.contains(c))
+            available.removeOne(c);
+    }
+
+    if (available.isEmpty())
+        return Card::S_UNKNOWN_CARD_ID;
 
     if (handcard_visible && !who->isKongcheng()) {
         QList<int> handcards = who->handCards();
@@ -1220,12 +1231,14 @@ int Room::askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QStrin
         doNotify(player, S_COMMAND_SET_KNOWN_CARDS, args);
     }
     int card_id = Card::S_UNKNOWN_CARD_ID;
-    if (who != player && !handcard_visible
-        && (flags == "h"
-            || (flags == "he" && !who->hasEquip())
-            || (flags == "hej" && !who->hasEquip() && who->getJudgingArea().isEmpty())))
-        card_id = who->getRandomHandCardId();
-    else {
+    if (who != player && !handcard_visible && player->getAI()
+            && (flags == "h"
+                || (flags == "he" && !who->hasEquip())
+                || (flags == "hej" && !who->hasEquip() && who->getJudgingArea().isEmpty()))) {
+        do {
+            card_id = available.at(qrand() % available.length())->getEffectiveId();
+        } while (method == Card::MethodDiscard && !player->canDiscard(who, card_id));
+    } else {
         AI *ai = player->getAI();
         if (ai) {
             thread->delay();
