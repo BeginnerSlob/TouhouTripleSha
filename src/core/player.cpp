@@ -1181,7 +1181,8 @@ void Player::addZhenyaoTag(const Card *card) {
     this->tag["RhZhenyao"] = QVariant::fromValue(zhenyao);
 }
 
-void Player::copyFrom(Player *p) {
+void Player::copyFrom(Player *p)
+{
     Player *b = this;
     Player *a = p;
 
@@ -1197,6 +1198,7 @@ void Player::copyFrom(Player *p) {
     b->max_hp           = a->max_hp;
     b->kingdom          = a->kingdom;
     b->role             = a->role;
+    b->role_shown       = a->role_shown;
     b->seat             = a->seat;
     b->alive            = a->alive;
 
@@ -1208,6 +1210,7 @@ void Player::copyFrom(Player *p) {
     b->treasure         = a->treasure;
     b->face_up          = a->face_up;
     b->chained          = a->chained;
+    b->removed          = a->removed;
     b->judging_area     = QList<int>(a->judging_area);
     b->fixed_distance   = QMultiHash<const Player *, int>(a->fixed_distance);
     b->card_limitation  = QMap<Card::HandlingMethod, QStringList>(a->card_limitation);
