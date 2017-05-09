@@ -306,11 +306,7 @@ void ChooseTriggerOrderBox::clear()
     foreach(TriggerOptionButton *button, optionButtons)
         button->deleteLater();
 
-    foreach(GeneralButton *button, generalButtons)
-        button->deleteLater();
-
     optionButtons.clear();
-    generalButtons.clear();
 
     cancel->hide();
 

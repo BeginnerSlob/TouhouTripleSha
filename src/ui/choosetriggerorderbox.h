@@ -65,29 +65,6 @@ private:
     int width;
 };
 
-class GeneralButton : public QGraphicsObject
-{
-    Q_OBJECT
-    friend class ChooseTriggerOrderBox;
-
-signals:
-    void clicked();
-
-protected:
-    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *);
-    virtual QRectF boundingRect() const;
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-    virtual void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
-    virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
-
-private:
-    GeneralButton(QGraphicsObject *parent, const QString &general, const bool isHead);
-
-    QString generalName;
-    bool isHead;
-};
-
 class ChooseTriggerOrderBox : public GraphicsBox
 {
     Q_OBJECT
@@ -104,7 +81,6 @@ public slots:
 
 private:
     QList<TriggerOptionButton *> optionButtons;
-    QList<GeneralButton *> generalButtons;
     static const int top_dark_bar;
     static const int m_topBlankWidth;
     static const int bottom_blank_width;
