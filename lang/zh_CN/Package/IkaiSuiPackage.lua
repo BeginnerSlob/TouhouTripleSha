@@ -421,7 +421,7 @@ return {
 	["luna017"] = "优克里伍德•海尔赛兹",--月 - 空 - 4血
 	["&luna017"] = "优克里伍德",
 	["designer:luna017"] = "韩旭",
-	["illustrator:luna017"] = "SiroTUB",
+	["illustrator:luna017"] = "淺に春",
 	["ikchenyan"] = "谶言",
 	[":ikchenyan"] = "锁定技。摸牌阶段摸牌时，你额外摸X张牌；弃牌阶段开始时，你须弃置X+1张牌（X为场上的势力数，且至少为2）。",
 	["#IkChenyanGood"] = "%from 的“%arg2”被触发，额外摸了 %arg 张牌",
