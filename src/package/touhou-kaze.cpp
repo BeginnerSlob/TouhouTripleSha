@@ -883,6 +883,7 @@ public:
     virtual bool triggerable(const ServerPlayer *target, Room *room) const
     {
         return TriggerSkill::triggerable(target)
+                && target->getPhase() == Player::Draw
                 && target->aliveCount(false) < room->getPlayers().length()
                 && target->getMark("@zhouhua") > 0;
     }
