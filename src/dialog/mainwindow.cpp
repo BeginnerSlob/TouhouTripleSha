@@ -75,8 +75,8 @@ MainWindow::MainWindow(QWidget *parent)
     scene = NULL;
 
     connection_dialog = new ConnectionDialog(this);
-    connect(ui->actionStart_Game, SIGNAL(triggered()), connection_dialog, SLOT(exec()));
-    connect(connection_dialog, SIGNAL(accepted()), this, SLOT(startConnection()));
+    connect(ui->actionStart_Game, &QAction::triggered, connection_dialog, &ConnectionDialog::exec);
+    connect(connection_dialog, &ConnectionDialog::accepted, this, &MainWindow::startConnection);
 
     config_dialog = new ConfigDialog(this);
     connect(ui->actionConfigure, SIGNAL(triggered()), config_dialog, SLOT(show()));
@@ -250,8 +250,8 @@ void MainWindow::checkVersion(const QString &server_version, const QString &serv
 void MainWindow::startConnection() {
     Client *client = new Client(this);
 
-    connect(client, SIGNAL(version_checked(QString, QString)), SLOT(checkVersion(QString, QString)));
-    connect(client, SIGNAL(error_message(QString)), SLOT(networkError(QString)));
+    connect(client, &Client::version_checked, this, &MainWindow::checkVersion);
+    connect(client, &Client::error_message, this, &MainWindow::networkError);
 }
 
 void MainWindow::on_actionReplay_triggered() {

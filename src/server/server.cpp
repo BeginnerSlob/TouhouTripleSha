@@ -1326,7 +1326,7 @@ Server::Server(QObject *parent)
     current = NULL;
     if (!createNewRoom()) created_successfully = false;
 
-    connect(server, SIGNAL(new_connection(ClientSocket *)), this, SLOT(processNewConnection(ClientSocket *)));
+    connect(server, &NativeServerSocket::new_connection, this, &Server::processNewConnection);
 }
 
 void Server::broadcast(const QString &msg) {

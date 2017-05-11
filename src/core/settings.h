@@ -54,6 +54,7 @@ public:
     bool EnableLuckCard;
     ushort ServerPort;
     bool DisableLua;
+    bool EnableSql;
 
     // client side
     QString HostAddress;

@@ -129,11 +129,11 @@ void ConnectionDialog::on_clearHistoryButton_clicked() {
 void ConnectionDialog::on_detectLANButton_clicked() {
     UdpDetectorDialog *detector_dialog = new UdpDetectorDialog(this);
 #ifdef Q_OS_ANDROID
-    connect(detector_dialog, SIGNAL(address_chosen(QString)),
-            ui->hostLineEdit, SLOT(setText(QString)));
+    connect(detector_dialog, &UdpDetectorDialog::address_chosen,
+            ui->hostLineEdit, &QLineEdit::setText);
 #else
-    connect(detector_dialog, SIGNAL(address_chosen(QString)),
-            ui->hostComboBox->lineEdit(), SLOT(setText(QString)));
+    connect(detector_dialog, &UdpDetectorDialog::address_chosen,
+            ui->hostComboBox->lineEdit(), &QLineEdit::setText);
 #endif
 
     detector_dialog->exec();

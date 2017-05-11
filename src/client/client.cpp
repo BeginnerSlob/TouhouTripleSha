@@ -158,9 +158,9 @@ Client::Client(QObject *parent, const QString &filename)
 
         replayer = NULL;
 
-        connect(socket, SIGNAL(message_got(const char *)), recorder, SLOT(record(const char *)));
-        connect(socket, SIGNAL(message_got(const char *)), this, SLOT(processServerPacket(const char *)));
-        connect(socket, SIGNAL(error_message(QString)), this, SIGNAL(error_message(QString)));
+        connect(socket, &NativeClientSocket::message_got, recorder, &Recorder::record);
+        connect(socket, SIGNAL(message_got(const char *)), SLOT(processServerPacket(const char *)));
+        connect(socket, &NativeClientSocket::error_message, this, &Client::error_message);
         socket->connectToHost();
     }
 }
@@ -250,8 +250,8 @@ void Client::checkVersion(const QVariant &server_version)
     QString version_number, mod_name;
     if (version.contains(QChar(':'))) {
         QStringList texts = version.split(QChar(':'));
-        version_number = texts.value(1);
         mod_name = texts.value(0);
+        version_number = texts.value(1);
     } else {
         version_number = version;
         mod_name = "official";
