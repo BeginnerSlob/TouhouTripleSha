@@ -8,15 +8,16 @@
 #include "skin-bank.h"
 
 #include <QApplication>
-#include <QMessageBox>
 #include <QCheckBox>
 #include <QCommandLinkButton>
+#include <QDir>
+#include <QLabel>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QTextCursor>
+#include <QTextDocument>
 #include <QTimer>
 #include <QVBoxLayout>
-#include <QLineEdit>
-#include <QLabel>
-#include <QTextDocument>
-#include <QTextCursor>
 
 using namespace std;
 using namespace QSanProtocol;
@@ -1234,6 +1235,33 @@ void Client::gameOver(const QVariant &arg) {
 
         ClientPlayer *p = const_cast<ClientPlayer *>(player);
         p->setProperty("win", win);
+    }
+
+    if (Config.value("EnableAutoSaveRecord", false).toBool()) {
+        int human = 0;
+        foreach (const ClientPlayer *player, ClientInstance->getPlayers()) {
+            if (player == Self)
+                ++ human;
+            else if (player->getState() != "robot")
+                ++ human;
+        }
+        if (human > 1 || !Config.value("SaveNetworkOnly", false).toBool()) {
+            QString location = Config.value("ReplaySavePaths", "replays/").toString();
+            if (!location.startsWith(":")) {
+                location.replace("\\", "/");
+                if (!location.endsWith("/"))
+                    location.append("/");
+                if (!QDir(location).exists())
+                    QDir().mkdir(location);
+                location.append(QString("%1-%2-%3(%4)%5.txt")
+                                .arg(Sanguosha->getVersion())
+                                .arg(QDateTime::currentDateTime().toString("yyyyMMddhhmmss"))
+                                .arg(Sanguosha->translate(Self->getGeneralName()))
+                                .arg(Sanguosha->translate(Self->getRole()))
+                                .arg(Self->property("win").toBool() ? tr("Victory") : tr("Failure")));
+                save(location);
+            }
+        }
     }
 
     Sanguosha->unregisterRoom();

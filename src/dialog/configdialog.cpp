@@ -50,6 +50,15 @@ ConfigDialog::ConfigDialog(QWidget *parent)
     ui->superDragCheckBox->setChecked(Config.EnableSuperDrag);
     ui->bubbleChatBoxKeepSpinBox->setSuffix(tr(" millisecond"));
     ui->bubbleChatBoxKeepSpinBox->setValue(Config.BubbleChatBoxKeepTime);
+    // save replays
+    bool open = Config.value("EnableAutoSaveRecord", true).toBool();
+    ui->autoSaveReplaysCheckBox->setChecked(open);
+    ui->replaysLayout->setEnabled(open);
+    ui->replaysPathLineEdit->setText(Config.value("ReplaySavePaths", "replays/").toString());
+    if (open)
+        ui->saveNetworkOnlyCheckBox->setChecked(Config.value("SaveNetworkOnly", true).toBool());
+    else
+        ui->saveNetworkOnlyCheckBox->setChecked(false);
 
     connect(this, SIGNAL(accepted()), this, SLOT(saveConfig()));
 
@@ -175,6 +184,10 @@ void ConfigDialog::saveConfig() {
 
     Config.BubbleChatBoxKeepTime = ui->bubbleChatBoxKeepSpinBox->value();
     Config.setValue("BubbleChatBoxKeepTime", Config.BubbleChatBoxKeepTime);
+
+    Config.setValue("EnableAutoSaveRecord", ui->autoSaveReplaysCheckBox->isChecked());
+    Config.setValue("SaveNetworkOnly", ui->saveNetworkOnlyCheckBox->isChecked());
+    Config.setValue("ReplaySavePaths", ui->replaysPathLineEdit->text());
 
     if (RoomSceneInstance)
         RoomSceneInstance->updateVolumeConfig();

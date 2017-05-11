@@ -32,7 +32,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="envTab">
     <attribute name="title">
@@ -589,6 +589,71 @@
      </property>
      <property name="text">
       <string>Enable super-drag</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QWidget" name="verticalLayoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>150</y>
+       <width>441</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="replaysLayout">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_7">
+        <item>
+         <widget class="QLabel" name="replaysPathLabel">
+          <property name="text">
+           <string>Save path of replays</string>
+          </property>
+          <property name="buddy">
+           <cstring>bgPathLineEdit</cstring>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="saveNetworkOnlyCheckBox">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>Save network only</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="replaysPathLineEdit">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QCheckBox" name="autoSaveReplaysCheckBox">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>130</y>
+       <width>167</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Enable auto save replays</string>
      </property>
      <property name="checked">
       <bool>false</bool>

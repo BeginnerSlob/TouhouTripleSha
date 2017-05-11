@@ -15,15 +15,15 @@
 #include "miniscenarios.h"
 #include "lua.hpp"
 
-#include <QStringList>
-#include <QMessageBox>
-#include <QHostAddress>
-#include <QTimer>
-#include <QMetaEnum>
-#include <QTimerEvent>
 #include <QDateTime>
+#include <QDir>
 #include <QFile>
+#include <QHostAddress>
+#include <QMessageBox>
+#include <QMetaEnum>
 #include <QTextStream>
+#include <QTimer>
+#include <QTimerEvent>
 
 #ifdef QSAN_UI_LIBRARY_AVAILABLE
 #pragma message WARN("UI elements detected in server side!!!")
@@ -451,7 +451,8 @@ QStringList Room::aliveRoles(ServerPlayer *except) const{
     return roles;
 }
 
-void Room::gameOver(const QString &winner) {
+void Room::gameOver(const QString &winner, bool isSurrender)
+{
     QStringList all_roles;
     foreach (ServerPlayer *player, m_players) {
         all_roles << player->getRole();
@@ -464,6 +465,49 @@ void Room::gameOver(const QString &winner) {
         }
     }
 
+    // save game table---------
+    if (isNormalGameMode(ServerInfo.GameMode)) {
+        QString location = "etc/winrate/";
+        if (!QDir(location).exists())
+            QDir().mkdir(location);
+        QString name = Sanguosha->getVersion();
+        location += name;
+        location += ".csv";
+
+        QFile file(location);
+        if (!file.open(QIODevice::ReadWrite)) {
+            QMessageBox::warning(NULL, "1", "2");
+            return;
+        }
+
+        QStringList record;
+        QDateTime time = QDateTime::currentDateTime();
+        record << time.toString("yyyy-MM-dd hh:mm:ss")
+               << ServerInfo.GameMode;
+
+        QStringList winners = winner.split("+");
+        foreach (ServerPlayer *p, getAllPlayers(true)) {
+            QString state;
+            if (isSurrender && winner == ".")
+                state = "surrender";
+            else if (winner == ".")
+                state = "draw";
+            else {
+                if (winners.contains(p->getRole()) || winners.contains(p->objectName()))
+                    state = "win";
+                else
+                    state = "lose";
+            }
+            record << p->getGeneralName() << p->getRole() << state;
+        }
+
+        QTextStream stream(&file);
+        stream.seek(file.size());
+
+        stream << record.join(",") << "\n";
+        file.close();
+    }
+    // ------------------------
     game_finished = true;
 
     emit game_over(winner);
@@ -2384,20 +2428,13 @@ bool Room::processRequestCheat(ServerPlayer *player, const QVariant &arg)
 
 bool Room::makeSurrender(ServerPlayer *initiator) {
     bool loyalGiveup = true;
-    int loyalAlive = 0;
     bool renegadeGiveup = true;
-    int renegadeAlive = 0;
     bool rebelGiveup = true;
-    int rebelAlive = 0;
+    int surrender = false;
 
     // broadcast polling request
     QList<ServerPlayer *> playersAlive;
     foreach (ServerPlayer *player, m_players) {
-        QString playerRole = player->getRole();
-        if ((playerRole == "loyalist" || playerRole == "lord") && player->isAlive()) loyalAlive++;
-        else if (playerRole == "rebel" && player->isAlive()) rebelAlive++;
-        else if (playerRole == "renegade" && player->isAlive()) renegadeAlive++;
-
         if (player != initiator && player->isAlive() && player->isOnline()) {
             player->m_commandArgs = initiator->getGeneral()->objectName();
             playersAlive << player;
@@ -2414,35 +2451,25 @@ bool Room::makeSurrender(ServerPlayer *initiator) {
             result = player->getClientReply().toBool();
 
         QString playerRole = player->getRole();
-        if (playerRole == "loyalist" || playerRole == "lord") {
+        if (playerRole == "loyalist" || playerRole == "lord")
             loyalGiveup &= result;
-            if (player->isAlive()) loyalAlive++;
-        } else if (playerRole == "rebel") {
+        else if (playerRole == "rebel")
             rebelGiveup &= result;
-            if (player->isAlive()) rebelAlive++;
-        } else if (playerRole == "renegade") {
+        else if (playerRole == "renegade")
             renegadeGiveup &= result;
-            if (player->isAlive()) renegadeAlive++;
-        }
+        if (result)
+            ++ surrender;
     }
 
     // vote counting
     if (loyalGiveup && renegadeGiveup && !rebelGiveup)
-        gameOver("rebel");
+        gameOver("rebel", true);
     else if (loyalGiveup && !renegadeGiveup && rebelGiveup)
-        gameOver("renegade");
+        gameOver("renegade", true);
     else if (!loyalGiveup && renegadeGiveup && rebelGiveup)
-        gameOver("lord+loyalist");
-    else if (loyalGiveup && renegadeGiveup && rebelGiveup) {
-        // if everyone give up, then ensure that the initiator doesn't win.
-        QString playerRole = initiator->getRole();
-        if (playerRole == "lord" || playerRole == "loyalist")
-            gameOver(renegadeAlive >= rebelAlive ? "renegade" : "rebel");
-        else if (playerRole == "renegade")
-            gameOver(loyalAlive >= rebelAlive ? "loyalist+lord" : "rebel");
-        else if (playerRole == "rebel")
-            gameOver(renegadeAlive >= loyalAlive ? "renegade" : "loyalist+lord");
-    }
+        gameOver("lord+loyalist", true);
+    else if (surrender > playersAlive.length() / 2)
+        gameOver(".", true);
 
     m_surrenderRequestReceived = false;
 
