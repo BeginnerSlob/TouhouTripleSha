@@ -99,10 +99,10 @@ return {
 	["thqiongfa:discard"] = "弃置其指定的一名角色的一张牌",
 	["thqiongfa:cancel"] = "令其摸一张牌",
 	
-	["#bangai009"] = "至高的龙神",
-	["bangai009"] = "濑织津姬",--风 - 空 - 4血
+	["#bangai009"] = "魔闪的极星",
+	["bangai009"] = "魅魔",--风 - 空 - 4血
 	["designer:bangai009"] = "幻桜落",
-	["illustrator:bangai009"] = "藤原",
+	["illustrator:bangai009"] = "キリン",
 	["cv:bangai009"] = "暂无",
 	["thweide"] = "威德",
 	[":thweide"] = "摸牌阶段开始时，你可以放弃摸牌，改为观看牌堆顶的两张牌并交给一名角色，然后若该角色不为你且你已受伤，你可以获得一名其他角色的一张手牌。",
@@ -123,7 +123,7 @@ return {
 	["#bangai011"] = "神话的黄昏",
 	["bangai011"] = "神绮",--雪 - 空 - 3血
 	["designer:bangai011"] = "沸治·克里夫",
-	["illustrator:bangai011"] = "会帆",
+	["illustrator:bangai011"] = "音無空太",
 	["cv:bangai011"] = "暂无",
 	["thhuilun"] = "辉轮",
 	[":thhuilun"] = "锁定技。你的黑色【杀】均视为【桃】；你的红色【桃】均视为【杀】。",
@@ -133,11 +133,11 @@ return {
 	["thwangdao:discard"] = "弃置其两张牌",
 	["thwangdao:lose"] = "令其失去1点体力",
 	
-	["#bangai012"] = "高天原之主",
-	["bangai012"] = "天照",--月 - 空 - 4血
+	["#bangai012"] = "可能性梦幻宇宙",
+	["bangai012"] = "冈崎梦美",--月 - 空 - 4血
 	["designer:bangai012"] = "昂翼天使",
-	["illustrator:bangai012"] = "ms06s",
+	["illustrator:bangai012"] = "みや",
 	["cv:bangai012"] = "暂无",
-	["thsixiang"] = "四象",
+	["thsixiang"] = "空象",
 	[":thsixiang"] = "出牌阶段，你可以选择一项：<br />1. 弃置两张黑桃牌并令一名角色回复1点体力。<br />2. 弃置两张方块牌并弃置至多两名其他角色区域的各一张牌；<br />3. 弃置两张梅花牌并令一名其他角色摸两张牌；<br />4. 弃置两张红桃牌并令一名其他角色摸一张牌，然后弃置一张手牌，最后该角色将其人物牌翻面。",
 }
