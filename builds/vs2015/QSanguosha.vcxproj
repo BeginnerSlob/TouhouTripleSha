@@ -133,7 +133,7 @@
     <Link>
       <AdditionalDependencies>qtmaind.lib;Qt5Guid.lib;Qt5Networkd.lib;Qt5Cored.lib;Qt5Widgetsd.lib;ole32.lib;oleaut32.lib;user32.lib;gdi32.lib;advapi32.lib;..\..\lib\win\x86\fmodexL.lib;..\..\lib\win\x86\freetype_D.lib;..\..\lib\breakpad.lib;Qt5WinExtrasd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;.;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" /NODEFAULTLIB:"msvcrt.lib" "legacy_stdio_definitions.lib" %(AdditionalOptions)</AdditionalOptions>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreImportLibrary>true</IgnoreImportLibrary>
