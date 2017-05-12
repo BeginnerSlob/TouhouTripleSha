@@ -471,7 +471,8 @@ void Room::gameOver(const QString &winner, bool isSurrender)
         if (!QDir(location).exists())
             QDir().mkdir(location);
         QString name = Sanguosha->getVersion();
-        location += name;
+        QStringList version = Sanguosha->getVersionNumber().split(".");
+        location += version[0] + "." + version[1];
         location += ".csv";
 
         QFile file(location);
