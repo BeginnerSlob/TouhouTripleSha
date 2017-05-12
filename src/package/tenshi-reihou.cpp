@@ -2947,13 +2947,22 @@ class RhShenluo : public TriggerSkill
 public:
     RhShenluo() : TriggerSkill("rhshenluo")
     {
-        events << EventAcquireSkill << EventLoseSkill;
+        events << EventAcquireSkill << EventLoseSkill << Death;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
+        if (e == Death) {
+            if (data.value<DeathStruct>().who == player) {
+                ServerPlayer *p = player->tag[objectName()].value<ServerPlayer *>();
+                player->tag.remove(objectName());
+                if (p)
+                    room->setPlayerMark(p, objectName(), 0);
+            }
+            return QStringList();
+        }
         if (data.toString() == objectName()) {
-            if (triggerEvent == EventLoseSkill) {
+            if (e == EventLoseSkill) {
                 ServerPlayer *p = player->tag[objectName()].value<ServerPlayer *>();
                 player->tag.remove(objectName());
                 if (p)
