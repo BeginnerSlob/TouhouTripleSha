@@ -1253,7 +1253,7 @@ void Client::gameOver(const QVariant &arg) {
                     location.append("/");
                 if (!QDir(location).exists())
                     QDir().mkdir(location);
-                 location.append(QString("%1(%2)-%3-%4(%5)%6.txt")
+                location.append(QString("%1(%2)-%3-%4(%5)%6.txt")
                                 .arg(Sanguosha->getVersionNumber())
                                 .arg(Sanguosha->getVersionName())
                                 .arg(QDateTime::currentDateTime().toString("yyyyMMddhhmmss"))

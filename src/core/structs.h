@@ -416,6 +416,14 @@ struct CardResponseStruct {
     bool m_isRetrial;
 };
 
+struct VersionStruct
+{
+    VersionStruct();
+    QString versionNumber;
+    QString updateDate;
+    QString url;
+};
+
 enum TriggerEvent {
     NonTrigger,
 
@@ -531,6 +539,7 @@ Q_DECLARE_METATYPE(DeathStruct)
 Q_DECLARE_METATYPE(RecoverStruct)
 Q_DECLARE_METATYPE(PhaseChangeStruct)
 Q_DECLARE_METATYPE(CardResponseStruct)
+Q_DECLARE_METATYPE(VersionStruct)
 Q_DECLARE_METATYPE(const Card *)
 Q_DECLARE_METATYPE(ServerPlayer *)
 Q_DECLARE_METATYPE(JudgeStruct *)

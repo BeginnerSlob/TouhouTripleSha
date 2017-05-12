@@ -41,9 +41,9 @@ static bool callback(const wchar_t *, const wchar_t *id, void *, EXCEPTION_POINT
 #endif
 
 int main(int argc, char *argv[]) {
-    if (argc > 1 && strcmp(argv[1], "-server") == 0) {
+    if (argc > 1 && strcmp(argv[1], "-server") == 0)
         new QCoreApplication(argc, argv);
-    } else {
+    else {
         new QApplication(argc, argv);
 #ifndef Q_OS_ANDROID
         QCoreApplication::addLibraryPath(QCoreApplication::applicationDirPath() + "/plugins");
@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
     } else
         qApp->setFont(appFont);
 
-#if (defined Q_OS_WIN) || (defined Q_OS_Mac) || (defined Q_OS_LINUX)
+#if (defined Q_OS_WIN) || (defined Q_OS_MAC) || (defined Q_OS_LINUX)
     QFile winFile("qss/sanguosha.qss");
     if (winFile.open(QIODevice::ReadOnly)) {
         QTextStream winStream(&winFile);

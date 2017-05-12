@@ -11,6 +11,7 @@
 #include "pixmapanimation.h"
 #include "record-analysis.h"
 #include "audio.h"
+#include "structs.h"
 
 #include <qmath.h>
 #include <QGraphicsView>
@@ -945,63 +946,66 @@ void MainWindow::checkUpdate()
 
 void MainWindow::httpFinished()
 {
-    QString newVersionNumber, updateDate, downloadUrl;
-    QStringList avaliableVersion;
+    QMap<QString, VersionStruct> versions;
     bool has_new_version = false;
+    QString newest;
     while (!reply->atEnd()) {
         QString line = reply->readLine();
         line.remove('\n');
 
-        QStringList texts1 = line.split('=', QString::SkipEmptyParts);
-        QStringList texts2 = line.split(':', QString::SkipEmptyParts);
+        QStringList texts = line.split('=', QString::SkipEmptyParts);
 
-        if (texts1.size() == 2) {
-            QString key = texts1.at(0);
-            QString value = texts1.at(1);
-            if (key == "VersionNumber") {
-                if (Sanguosha->getVersionNumber() < value)
-                    has_new_version = true;
-                newVersionNumber = value;
-            } else if (key == "UpdateDate") {
-                if (Sanguosha->getVersionName() < value.right(4))
-                    has_new_version = true;
-                updateDate = value;
-            } else if (key == "url") {
-                downloadUrl = value;
-            } else if (key == "avaliable") {
-                avaliableVersion << value.split("|");
-            }
-        } else if (texts2.size() == 2) {
-            QString key = texts2.at(0);
-            QString value = texts2.at(1);
-            if (key == "VersionNumber") {
-                if (Sanguosha->getVersionNumber() < value)
-                    has_new_version = true;
-                newVersionNumber = value;
-            } else if (key == "UpdateDate") {
-                if (Sanguosha->getVersionName() < value.right(4))
-                    has_new_version = true;
-                updateDate = value;
+        if (texts.size() == 2) {
+            while (texts[0] == "avaliable") {
+                QString avaliableVersion = texts[1];
+                if (newest.isEmpty())
+                    newest = avaliableVersion;
+                versions[avaliableVersion] = VersionStruct();
+                while (!reply->atEnd()) {
+                    line = reply->readLine();
+                    line.remove('\n');
+                    texts = line.split('=', QString::SkipEmptyParts);
+                    if (texts.size() == 2) {
+                        QString key = texts.at(0);
+                        QString value = texts.at(1);
+                        if (key == "VersionNumber")
+                            versions[avaliableVersion].versionNumber = value;
+                        else if (key == "UpdateDate")
+                            versions[avaliableVersion].updateDate = value;
+                        else if (key == "url")
+                            versions[avaliableVersion].url = value;
+                        else
+                            break;
+                    }
+                }
             }
         }
     }
+
+    if (!newest.isEmpty()) {
+        if (versions[newest].versionNumber > Sanguosha->getVersionNumber()
+                || versions[newest].updateDate.right(4) > Sanguosha->getVersionName())
+            has_new_version = true;
+    }
+
     if (has_new_version) {
         setWindowTitle(tr("New Version Available") + "  " + windowTitle());
-        if (downloadUrl.isEmpty() || (!avaliableVersion.contains(Sanguosha->getVersionNumber()))) {
+        if (!versions.contains(Sanguosha->getVersionNumber()) || versions[Sanguosha->getVersionNumber()].url.isEmpty()) {
             QMessageBox::warning(this, tr("New Version Available"),
                                  tr("There is a new version for TouhouTripleSha<br/> \
                                      The version number is %1<br/> \
                                      Update date is %2<br/> \
                                      Please download it in our QQ Group<br/> \
                                      The Group number is 221093508<br/> \
-                                     Hope you enjoy this game").arg(newVersionNumber).arg(updateDate),
+                                     Hope you enjoy this game").arg(versions[newest].versionNumber).arg(versions[newest].updateDate),
                                  QMessageBox::Ok, QMessageBox::Ok);
         } else {
+            VersionStruct vs = versions[Sanguosha->getVersionNumber()];
             if (QMessageBox::question(this, tr("New Version Available"),
                                       tr("There is a new version for TouhouTripleSha<br/>"
                                          "The version number is %1<br/>"
                                          "Update date is %2<br/>"
-                                         "Would you wanna download now?").arg(newVersionNumber).arg(updateDate))
+                                         "Would you wanna download now?").arg(vs.versionNumber).arg(vs.updateDate))
                     == QMessageBox::Yes) {
                 QMessageBox::warning(this, tr("Tips"),
                                      tr("The new version will be downloading<br/>"
@@ -1009,7 +1013,7 @@ void MainWindow::httpFinished()
                                         "you can do any thing you want but DO NOT close the game<br/>"
                                         "otherwise the download will be canceled<br/>"
                                         "we will call a pop-up window if the download is finished."));
-                downloadNew(downloadUrl);
+                downloadNew(vs.url);
             }
         }
     }

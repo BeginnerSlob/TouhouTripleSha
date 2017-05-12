@@ -294,3 +294,8 @@ void CardUseStruct::parse(const QString &str, Room *room)
             to << room->findChild<ServerPlayer *>(target_name);
     }
 }
+
+VersionStruct::VersionStruct()
+    : versionNumber(QString()), updateDate(QString()), url(QString())
+{
+}
