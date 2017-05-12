@@ -1124,11 +1124,11 @@ public:
     }
 };
 
-ThSixiangCard::ThSixiangCard()
+ThKongxiangCard::ThKongxiangCard()
 {
 }
 
-bool ThSixiangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+bool ThKongxiangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
     Card::Suit suit = Sanguosha->getCard(getEffectiveId())->getSuit();
     if (suit == Card::Spade)
@@ -1139,7 +1139,7 @@ bool ThSixiangCard::targetFilter(const QList<const Player *> &targets, const Pla
         return targets.isEmpty() && to_select != Self;
 }
 
-void ThSixiangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+void ThKongxiangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
     Card::Suit suit = Sanguosha->getCard(getEffectiveId())->getSuit();
     ServerPlayer *target = NULL;
@@ -1152,8 +1152,8 @@ void ThSixiangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
         QList<CardsMoveStruct> moves;
         QMap<ServerPlayer *, int> match;
         foreach (ServerPlayer *p, targets) {
-            int card_id = room->askForCardChosen(source, p, "hej", "thsixiang", false, MethodDiscard);
-            CardMoveReason reason(CardMoveReason::S_REASON_DISMANTLE, source->objectName(), room->getCardPlace(card_id) == Player::PlaceDelayedTrick ? QString() : p->objectName(), "thsixiang", QString());
+            int card_id = room->askForCardChosen(source, p, "hej", "thkongxiang", false, MethodDiscard);
+            CardMoveReason reason(CardMoveReason::S_REASON_DISMANTLE, source->objectName(), room->getCardPlace(card_id) == Player::PlaceDelayedTrick ? QString() : p->objectName(), "thkongxiang", QString());
             moves << CardsMoveStruct(card_id, NULL, Player::DiscardPile, reason);
             match.insert(p, card_id);
         }
@@ -1173,14 +1173,14 @@ void ThSixiangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
     else if (suit == Card::Heart) {
         target->drawCards(1);
         if (target->canDiscard(target, "h"))
-            room->askForDiscard(target, "thsixiang", 1, 1);
+            room->askForDiscard(target, "thkongxiang", 1, 1);
         target->turnOver();
     }
 }
 
-class ThSixiang: public ViewAsSkill {
+class ThKongxiang: public ViewAsSkill {
 public:
-    ThSixiang(): ViewAsSkill("thsixiang") {
+    ThKongxiang(): ViewAsSkill("thkongxiang") {
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const {
@@ -1195,7 +1195,7 @@ public:
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const {
         if (cards.length() == 2) {
-            ThSixiangCard *card = new ThSixiangCard;
+            ThKongxiangCard *card = new ThKongxiangCard;
             card->addSubcards(cards);
             return card;
         } else
@@ -1260,7 +1260,7 @@ TouhouBangaiPackage::TouhouBangaiPackage()
     related_skills.insertMulti("thwangdao", "#thwangdao-fake-move");
 
     General *bangai012 = new General(this, "bangai012", "tsuki");
-    bangai012->addSkill(new ThSixiang);
+    bangai012->addSkill(new ThKongxiang);
 
     addMetaObject<ThMiqiCard>();
     addMetaObject<ThXumeiCard>();
@@ -1268,7 +1268,7 @@ TouhouBangaiPackage::TouhouBangaiPackage()
     addMetaObject<ThYuboCard>();
     addMetaObject<ThGuijuanCard>();
     addMetaObject<ThWangdaoCard>();
-    addMetaObject<ThSixiangCard>();
+    addMetaObject<ThKongxiangCard>();
 }
 
 ADD_PACKAGE(TouhouBangai)

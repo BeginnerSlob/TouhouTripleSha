@@ -616,16 +616,16 @@ end
 sgs.ai_card_intention.ThWangdaoCard = 50
 
 --四象：出牌阶段，你可以选择一项：1. 弃置两张黑桃牌并令一名角色回复1点体力。2. 弃置两张方块牌并弃置至多两名其他角色区域的各一张牌；3. 弃置两张梅花牌并令一名其他角色摸两张牌；4. 弃置两张红桃牌并令一名其他角色摸一张牌，然后弃置一张手牌，最后该角色将其人物牌翻面。
-local thsixiang_skill = {}
-thsixiang_skill.name = "thsixiang"
-table.insert(sgs.ai_skills, thsixiang_skill)
-thsixiang_skill.getTurnUseCard = function(self)
+local thkongxiang_skill = {}
+thkongxiang_skill.name = "thkongxiang"
+table.insert(sgs.ai_skills, thkongxiang_skill)
+thkongxiang_skill.getTurnUseCard = function(self)
 	if self.player:canDiscard(self.player, "he") and self.player:getCardCount() > 1 then
-		return sgs.Card_Parse("@ThSixiangCard=.")
+		return sgs.Card_Parse("@ThKongxiangCard=.")
 	end
 end
 
-sgs.ai_skill_use_func.ThSixiangCard = function(card, use, self)
+sgs.ai_skill_use_func.ThKongxiangCard = function(card, use, self)
 	local function getSiXiangTarget(str)
 		local to = sgs.SPlayerList()
 		if str == "spade" then
@@ -702,7 +702,7 @@ sgs.ai_skill_use_func.ThSixiangCard = function(card, use, self)
 	for str, ids in pairs(can_use) do
 		local to = getSiXiangTarget(str)
 		if to then
-			use.card = sgs.Card_Parse("@ThSixiangCard=" .. ids)
+			use.card = sgs.Card_Parse("@ThKongxiangCard=" .. ids)
 			if use.to then
 				use.to = to
 			end
@@ -711,7 +711,7 @@ sgs.ai_skill_use_func.ThSixiangCard = function(card, use, self)
 	end
 end
 
-sgs.ai_card_intention.ThSixiangCard = function(self, card, from, tos)
+sgs.ai_card_intention.ThKongxiangCard = function(self, card, from, tos)
 	local str = sgs.Sanguosha:getCard(card:getSubcards():first()):getSuitString()
 	for _, to in ipairs(tos) do
 		if str == "spade" then
@@ -726,5 +726,5 @@ sgs.ai_card_intention.ThSixiangCard = function(self, card, from, tos)
 	end
 end
 
-sgs.ai_use_priority.ThSixiangCard = 5
-sgs.ai_choicemade_filter.cardChosen.thsixiang = sgs.ai_choicemade_filter.cardChosen.snatch
+sgs.ai_use_priority.ThKongxiangCard = 5
+sgs.ai_choicemade_filter.cardChosen.thkongxiang = sgs.ai_choicemade_filter.cardChosen.snatch
