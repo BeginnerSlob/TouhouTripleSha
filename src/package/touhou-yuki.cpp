@@ -2070,9 +2070,10 @@ ThLingdieCard::ThLingdieCard()
     handling_method = MethodNone;
 }
 
-void ThLingdieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+void ThLingdieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
     ServerPlayer *target = targets.first();
-    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "thlingdie", QString());
     room->obtainCard(target, this, reason);
     QList<ServerPlayer *> victims;
     foreach (ServerPlayer *p, room->getOtherPlayers(target)) {

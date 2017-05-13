@@ -95,7 +95,7 @@ sgs.ai_skill_use_func.ThShenfengCard = function(card, use, self)
 		elseif b.target and not a.target then
 			return false
 		elseif a.target and b.target then
-			return a.value > b.value
+			return a.v > b.v
 		else
 			return true
 		end
