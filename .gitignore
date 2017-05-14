@@ -1,5 +1,7 @@
 debug/
 release/
+etc/winrate/
+replays/
 ui_*
 Makefile*
 object_script*
