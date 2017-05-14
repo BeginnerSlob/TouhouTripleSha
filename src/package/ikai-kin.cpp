@@ -908,7 +908,7 @@ public:
         QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
         if (pattern.endsWith("!")) {
             const Card *coll = Card::Parse(Self->property("extra_collateral").toString());
-            if (!coll) return false;
+            if (!coll) return NULL;
             if (coll->isKindOf("Collateral"))
                 return new ExtraCollateralCard;
             else
@@ -6119,7 +6119,7 @@ public:
     virtual const Card *viewAs() const
     {
         const Card *coll = Card::Parse(Self->property("extra_collateral").toString());
-        if (!coll) return false;
+        if (!coll) return NULL;
         if (coll->isKindOf("Collateral"))
             return new ExtraCollateralCard;
         else
