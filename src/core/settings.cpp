@@ -30,7 +30,7 @@ Settings::Settings()
 #ifdef Q_OS_WIN32
     : QSettings("config.ini", QSettings::IniFormat),
 #else
-    : QSettings("QSanguosha.org", "QSanguosha"),
+    : QSettings("TouhouTripleSha.org", "TouhouTripleSha"),
 #endif
                 Rect(-ViewWidth / 2, -ViewHeight / 2, ViewWidth, ViewHeight)
 {
@@ -117,7 +117,7 @@ void Settings::init() {
     UserName = value("USERNAME", qgetenv("USER")).toString();
 #endif
 
-    if (UserName == "Admin" || UserName == "Administrator")
+    if (UserName == "root" || UserName == "Administrator" || UserName.isEmpty())
         UserName = tr("TripleShaFans");
     ServerName = value("ServerName", tr("%1's touhoukifugeki").arg(UserName)).toString();
 
