@@ -125,6 +125,7 @@ public:
         room->sendLog(log);
         room->broadcastSkillInvoke(objectName());
 
+        room->setPlayerMark(player, "@layer", 0);
         room->addPlayerMark(player, "@erchong");
 
         if (room->changeMaxHpForAwakenSkill(player)) {
@@ -169,7 +170,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-            if (player->hasSkill("erchong", true) && player->getMark("@erchong") == 0)
+            if (p->hasSkill("therchong", true) && p->getMark("@erchong") == 0)
                 room->addPlayerMark(p, "@layer");
         }
         return false;

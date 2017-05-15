@@ -2393,7 +2393,7 @@ public:
         if (!use.from || use.from->isDead()
                 || !room->askForCard(use.from, ".Equip", "@rhyaozhang:" + player->objectName())) {
             use.nullified_list << player->objectName();
-            data = QVariant::fromValue(player);
+            data = QVariant::fromValue(use);
         }
         return false;
     }
@@ -2957,7 +2957,7 @@ public:
                 ServerPlayer *p = player->tag[objectName()].value<ServerPlayer *>();
                 player->tag.remove(objectName());
                 if (p)
-                    room->setPlayerMark(p, objectName(), 0);
+                    room->setPlayerMark(p, "@constellation", 0);
             }
             return QStringList();
         }
@@ -2966,7 +2966,7 @@ public:
                 ServerPlayer *p = player->tag[objectName()].value<ServerPlayer *>();
                 player->tag.remove(objectName());
                 if (p)
-                    room->setPlayerMark(p, objectName(), 0);
+                    room->setPlayerMark(p, "@constellation", 0);
             } else
                 return QStringList(objectName());
         }
