@@ -3356,7 +3356,8 @@ void RoomScene::fillTable(QTableWidget *table, const QList<const ClientPlayer *>
         table->resizeColumnToContents(i);
 }
 
-void RoomScene::killPlayer(const QString &who) {
+void RoomScene::killPlayer(const QString &who)
+{
     const General *general = NULL;
     m_roomMutex.lock();
     if (who == Self->objectName()) {

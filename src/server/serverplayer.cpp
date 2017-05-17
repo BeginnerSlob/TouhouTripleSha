@@ -1028,8 +1028,12 @@ void ServerPlayer::marshal(ServerPlayer *player) const{
 
     if (!getJudgingAreaID().isEmpty()) {
         CardsMoveStruct move;
-        foreach (int card_id, getJudgingAreaID())
+        foreach (int card_id, getJudgingAreaID()) {
+            WrappedCard *wrapped = qobject_cast<WrappedCard *>(room->getCard(card_id));
+            if (wrapped->isModified())
+                room->notifyUpdateCard(player, card_id, wrapped);
             move.card_ids << card_id;
+        }
         move.from_place = DrawPile;
         move.to_player_name = objectName();
         move.to_place = PlaceDelayedTrick;
@@ -1063,16 +1067,14 @@ void ServerPlayer::marshal(ServerPlayer *player) const{
     }
 
     foreach (QString mark_name, marks.keys()) {
-        //if (mark_name.startsWith("@")) {
-            int value = getMark(mark_name);
-            if (value > 0) {
-                JsonArray args;
-                args << objectName();
-                args << mark_name;
-                args << value;
-                room->doNotify(player, S_COMMAND_SET_MARK, args);
-            }
-        //}
+        int value = getMark(mark_name);
+        if (value > 0) {
+            JsonArray args;
+            args << objectName();
+            args << mark_name;
+            args << value;
+            room->doNotify(player, S_COMMAND_SET_MARK, args);
+        }
     }
 
     foreach(const Skill *skill, getVisibleSkillList(true, true)) {

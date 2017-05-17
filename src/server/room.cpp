@@ -1193,7 +1193,7 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
     if (card == NULL)
         return _askForNullification(trick, from, to, positive, aiHelper);
 
-    thread->delay(500);
+    thread->delay(1200);
 
     if (trick->isKindOf("ExNihilo")
         || trick->isKindOf("AmazingGrace")
@@ -3613,6 +3613,8 @@ void Room::marshal(ServerPlayer *player) {
         QVariant discard = toJsonArray(*m_discardPile);
         doNotify(player, S_COMMAND_SYNCHRONIZE_DISCARD_PILE, discard);
     }
+
+    updateStateItem();
 }
 
 void Room::startGame() {

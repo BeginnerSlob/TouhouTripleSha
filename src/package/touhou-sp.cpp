@@ -1841,13 +1841,16 @@ public:
     }
 };
 
-class ThLinyao: public TriggerSkill {
+class ThLinyao : public TriggerSkill
+{
 public:
-    ThLinyao(): TriggerSkill("thlinyao") {
+    ThLinyao() : TriggerSkill("thlinyao")
+    {
         events << CardAsked;
     }
 
-    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
         TriggerList skill_list;
         QString asked = data.toStringList().first();
         if (asked == "jink") {
@@ -1861,11 +1864,9 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
-        ask_who->tag["ThLinyaoTarget"] = QVariant::fromValue(player);
-        bool invoke = ask_who->askForSkillInvoke(objectName());
-        ask_who->tag.remove("ThLinyaoTarget");
-        if (invoke) {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
             ask_who->turnOver();
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -1873,7 +1874,8 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const
+    {
         Jink *jink = new Jink(Card::NoSuit, 0);
         jink->setSkillName("_thlinyao");
         room->provide(jink);

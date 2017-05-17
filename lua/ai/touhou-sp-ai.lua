@@ -807,8 +807,8 @@ end
 
 --凛要：每当一名其他角色需要使用或打出一张【闪】时，若你的人物牌背面朝上，你可以将你的人物牌翻面，视为该角色使用或打出了一张【闪】。
 sgs.ai_skill_invoke.thlinyao = function(self, data)
-	local target = self.player:getTag("ThLinyaoTarget"):toPlayer()
-	if self:isFriend(target) then
+	local target = data:toPlayer()
+	if target and self:isFriend(target) then
 		return true
 	end
 	return false
