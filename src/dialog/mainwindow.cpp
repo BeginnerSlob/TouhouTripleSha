@@ -13,21 +13,22 @@
 #include "audio.h"
 #include "structs.h"
 
-#include <qmath.h>
-#include <QGraphicsView>
-#include <QGraphicsItem>
-#include <QGraphicsPixmapItem>
-#include <QGraphicsTextItem>
-#include <QVariant>
-#include <QMessageBox>
-#include <QTime>
 #include <QCheckBox>
-#include <QFileDialog>
 #include <QDesktopServices>
+#include <QFileDialog>
+#include <QGraphicsItem>
+#include <QGraphicsTextItem>
+#include <QGraphicsPixmapItem>
+#include <QGraphicsView>
 #include <QLabel>
+#include <QMessageBox>
 #include <QProcess>
 #include <QSystemTrayIcon>
+#include <QTime>
 #include <QUrl>
+#include <QVariant>
+
+#include <QtMath>
 
 #ifdef Q_OS_WIN
 #include "Windows.h"
@@ -111,7 +112,7 @@ MainWindow::MainWindow(QWidget *parent)
             << ui->actionConfigure
             << ui->actionGeneral_Overview
             << ui->actionCard_Overview
-            << ui->actionScenario_Overview
+            << ui->actionViewData
             << ui->actionAbout;
 
     foreach (QAction *action, actions)
@@ -475,7 +476,11 @@ void MainWindow::on_actionAbout_triggered() {
     content.append(tr("Compilation time: %1 %2 <br/>").arg(date).arg(time));
 
     QString project_url = "https://github.com/BeginnerSlob/TouhouTripleSha";
+    QString home_page_url = "https://beginnerslob.github.com/TouhouTripleSha";
+    QString wiki_url = "https://beginnerslob.github.com/TouhouTripleSha/docs/wiki.html";
     content.append(tr("Source code: <a href='%1' style = \"color:#0072c1; \">%1</a> <br/>").arg(project_url));
+    content.append(tr("Home page: <a href='%1' style = \"color:#0072c1; \">%1</a> <br/>").arg(home_page_url));
+    content.append(tr("Wiki: <a href='%1' style = \"color:#0072c1; \">%1</a> <br/>").arg(wiki_url));
     content.append(tr("Tieba: TouhouTripleSha Ba"));
 
     Window *window = new Window(tr("About QSanguosha"), QSize(420, 570));
@@ -484,8 +489,8 @@ void MainWindow::on_actionAbout_triggered() {
 
     window->addContent(content);
     window->addCloseButton(tr("OK"));
-    window->shift(scene->inherits("RoomScene") ? scene->width() : 0,
-                  scene->inherits("RoomScene") ? scene->height() : 0);
+    window->shift(scene && scene->inherits("RoomScene") ? scene->width() : 0,
+                  scene && scene->inherits("RoomScene") ? scene->height() : 0);
 
     window->appear();
 }
@@ -638,6 +643,11 @@ void MainWindow::on_actionScenario_Overview_triggered()
 {
     ScenarioOverview *dialog = new ScenarioOverview(this);
     dialog->show();
+}
+
+void MainWindow::on_actionViewData_triggered()
+{
+    QDesktopServices::openUrl(QUrl("http://beginnerslob.github.com/TouhouTripleSha"));
 }
 
 BroadcastBox::BroadcastBox(Server *server, QWidget *parent)

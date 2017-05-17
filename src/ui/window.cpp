@@ -72,6 +72,8 @@ void Window::addContent(const QString &content) {
     content_item->setHtml(content);
     content_item->setDefaultTextColor(Qt::white);
     content_item->setTextWidth(size.width() - 30);
+    content_item->setTextInteractionFlags(content_item->textInteractionFlags() | Qt::TextBrowserInteraction);
+    content_item->setOpenExternalLinks(true);
 
     QFont *font = new QFont();
     font->setBold(true);

@@ -1,10 +1,10 @@
 #include <QApplication>
-
 #include <QCoreApplication>
-#include <QTranslator>
-#include <QDir>
-#include <cstring>
 #include <QDateTime>
+#include <QDir>
+#include <QTranslator>
+
+#include <cstring>
 
 #include "mainwindow.h"
 #include "settings.h"

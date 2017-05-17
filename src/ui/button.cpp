@@ -53,7 +53,7 @@ void Button::init() {
     de = new QGraphicsDropShadowEffect;
     de->setOffset(0);
     de->setBlurRadius(12);
-    de->setColor(QColor(255, 165, 0));
+    de->setColor(QColor(244, 242, 248));
 
     title_item->setGraphicsEffect(de);
 

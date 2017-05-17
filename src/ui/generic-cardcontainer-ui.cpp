@@ -316,7 +316,8 @@ void PlayerCardContainer::updatePile(const QString &pile_name) {
     if (!player) return;
 
     QString treasure_name;
-    if (player->getTreasure()) treasure_name = player->getTreasure()->objectName();
+    if (player->getTreasure())
+        treasure_name = player->getTreasure()->objectName();
 
     const QList<int> &pile = player->getPile(pile_name);
     if (pile.size() == 0) {
