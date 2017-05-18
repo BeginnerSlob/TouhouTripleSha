@@ -84,7 +84,7 @@ return {
 	[":control_rod"] = "装备牌·武器<br /><b>攻击范围</b>：３<br /><b>武器技能</b>：当你使用【杀】指定一名角色为目标后，你可以令该角色的非锁定技无效，直到当前回合结束。",
 	["illustrator:control_rod"] = "寒极",
 
-	["yicunshenmiaowan"] = "一寸神妙碗",
+	["yicunshenmiaowan"] = "一寸神妙椀",
 	["illustrator:yicunshenmiaowan"] = "寒极",
 
 	["drowning"] = "荒波暴流",
