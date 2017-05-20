@@ -5726,7 +5726,7 @@ public:
         if (pindian->reason == "iklvdong" && TriggerSkill::triggerable(pindian->from)) {
             if (pindian->from_number <= pindian->to_number)
                 to_obtain = pindian->to_card;
-            if (room->getCardPlace(to_obtain->getEffectiveId()) == Player::PlaceTable)
+            if (to_obtain && room->getCardPlace(to_obtain->getEffectiveId()) == Player::PlaceTable)
                 skill_list.insert(pindian->from, QStringList(objectName()));
         }
         return skill_list;
