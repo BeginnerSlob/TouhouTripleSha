@@ -55,7 +55,6 @@ jQuery(document).ready(function($){
 	    });
 		return false
 	});
-  
 	$(".main_menu a.templatemo_homeabout").click(function(){
 		$('#menu-container .about').fadeOut(1000, function(){
         $('#menu-container .homepage').fadeIn(1000);
@@ -80,20 +79,6 @@ jQuery(document).ready(function($){
 	$(".main_menu a.templatemo_page6").click(function(){    
     $('#menu-container .homepage').fadeOut(1000, function(){
         $('#menu-container .contact').fadeIn(1000);
-		loadScript();		
-	    });
-	});
-  
-  $(".main_menu a.templatemo_homeblabla").click(function(){
-		$('#menu-container .blabla').fadeOut(1000, function(){
-        $('#menu-container .homepage').fadeIn(1000);
-	    });
-		return false;
-	});
-	
-	$(".main_menu a.templatemo_page7").click(function(){    
-    $('#menu-container .homepage').fadeOut(1000, function(){
-        $('#menu-container .blabla').fadeIn(1000);
 		loadScript();		
 	    });
 	});
