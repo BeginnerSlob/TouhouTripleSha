@@ -21,17 +21,23 @@ return {
 	["illustrator:fan"] = "寒极",
 
 	["guding_blade"] = "蓬莱玉枝",
-	[":guding_blade"] = "装备牌·武器<br /><b>攻击范围</b>：２<br /><b>武器技能</b>：锁定技，当你使用【杀】对目标角色造成伤害时，若其没有手牌，此伤害+1。",
+	[":guding_blade"] = "装备牌·武器<br /><b>攻击范围</b>：２<br /><b>武器技能</b>：锁定技。当你使用【杀】对目标角色造成伤害时，若其没有手牌，此伤害+1。",
 	["illustrator:guding_blade"] = "寒极",
 	["#GudingBladeEffect"] = "%from 的【<font color=\"yellow\"><b>蓬莱玉枝</b></font>】效果被触发， %to 没有手牌，伤害从 %arg 增加至 %arg2",
 
+	["maid_suit"] = "夜岚女仆正装",
+	[":maid_suit"] = "装备牌·防具<br /><b>防具技能</b>：锁定技。当你受到牌造成的无属性伤害时，你摸一张牌。当你受到火焰伤害时，伤害来源选择回复1点体力或摸一张牌。",
+	["illustrator:maid_suit"] = "寒极",
+	["maid_suit:recover"] = "回复1点体力",
+	["maid_suit:draw"] = "摸一张牌",
+
 	["vine"] = "渡厄人形",
-	[":vine"] = "装备牌·防具<br /><b>防具技能</b>：锁定技，【百鬼夜行】、【魔闪花火】、【荒波暴流】和普通【杀】对你无效。当你受到火焰伤害时，此伤害+1。",
+	[":vine"] = "装备牌·防具<br /><b>防具技能</b>：锁定技。【百鬼夜行】、【魔闪花火】、【荒波暴流】和普通【杀】对你无效。当你受到火焰伤害时，此伤害+1。",
 	["illustrator:vine"] = "寒极",
 	["#VineDamage"] = "%from 的防具【<font color=\"yellow\"><b>渡厄人形</b></font>】效果被触发，火焰伤害由 %arg 点增加至 %arg2 点",
 
 	["silver_lion"] = "神道清茗",
-	[":silver_lion"] = "装备牌·防具<br /><b>防具技能</b>：锁定技，当你受到伤害时，若该伤害多于1点，则防止多余的伤害；当你失去装备区里的【神道清茗】时，你回复1点体力。",
+	[":silver_lion"] = "装备牌·防具<br /><b>防具技能</b>：锁定技。当你受到伤害时，若该伤害多于1点，则防止多余的伤害；当你失去装备区里的【神道清茗】时，你回复1点体力。",
 	["illustrator:silver_lion"] = "寒极",
 	["#SilverLion"] = "%from 的防具【%arg2】防止了 %arg 点伤害，减至 <font color=\"yellow\"><b>1</b></font> 点",
 

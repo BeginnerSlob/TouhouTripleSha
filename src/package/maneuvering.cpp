@@ -146,6 +146,56 @@ GudingBlade::GudingBlade(Suit suit, int number)
     setObjectName("guding_blade");
 }
 
+class MaidSuitSkill: public ArmorSkill {
+public:
+    MaidSuitSkill(): ArmorSkill("maid_suit") {
+        events << DamageInflicted;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (!ArmorSkill::triggerable(player))
+            return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.from && damage.from->isAlive() && damage.from->hasSkill("ikkongni"))
+            return QStringList();
+        if (damage.nature == DamageStruct::Normal && damage.card && damage.card->getTypeId() != Card::TypeSkill)
+            return QStringList(objectName());
+        if (damage.nature == DamageStruct::Fire && damage.from && damage.from->isAlive())
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, objectName(), false);
+        DamageStruct damage = data.value<DamageStruct>();
+        room->setEmotion(player, "effects/armor");
+        if (damage.nature == DamageStruct::Normal)
+            player->drawCards(1, objectName());
+        else if (damage.nature == DamageStruct::Fire) {
+            QStringList choices;
+            if (damage.from->isWounded())
+                choices << "recover";
+            choices << "draw";
+            QString choice = room->askForChoice(damage.from, objectName(), choices.join("+"));
+            if (choice == "recover")
+                room->recover(damage.from, RecoverStruct(player));
+            else
+                damage.from->drawCards(1, objectName());
+        }
+
+        return false;
+    }
+};
+
+MaidSuit::MaidSuit(Suit suit, int number)
+    : Armor(suit, number)
+{
+    setObjectName("maid_suit");
+}
+
 class VineSkill: public ArmorSkill {
 public:
     VineSkill(): ArmorSkill("vine") {
@@ -505,7 +555,7 @@ ManeuveringPackage::ManeuveringPackage()
 
     // spade
     cards << new GudingBlade(Card::Spade, 1)
-          << new Vine(Card::Spade, 2)
+          << new MaidSuit()
           << new Analeptic(Card::Spade, 3)
           << new ThunderSlash(Card::Spade, 4)
           << new ThunderSlash(Card::Spade, 5)
@@ -535,7 +585,7 @@ ManeuveringPackage::ManeuveringPackage()
 
    // club
     cards << new SilverLion(Card::Club, 1)
-          << new Vine(Card::Club, 2)
+          << new Vine()
           << new Analeptic(Card::Club, 3)
           << new SupplyShortage(Card::Club, 4)
           << new ThunderSlash(Card::Club, 5)
@@ -570,7 +620,8 @@ ManeuveringPackage::ManeuveringPackage()
         card->setParent(this);
 
     skills << new GudingBladeSkill << new FanSkill
-           << new VineSkill << new SilverLionSkill;
+           << new MaidSuitSkill << new VineSkill
+           << new SilverLionSkill;
 }
 
 ADD_PACKAGE(Maneuvering)

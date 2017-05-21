@@ -54,11 +54,18 @@ public:
     Q_INVOKABLE GudingBlade(Card::Suit suit, int number);
 };
 
+class MaidSuit: public Armor {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE MaidSuit(Card::Suit suit = Spade, int number = 2);
+};
+
 class Vine: public Armor {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE Vine(Card::Suit suit, int number);
+    Q_INVOKABLE Vine(Card::Suit suit = Club, int number = 2);
 };
 
 class SilverLion: public Armor {

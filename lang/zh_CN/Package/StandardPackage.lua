@@ -31,7 +31,7 @@ local t = {
 
 	["qinggang_sword"] = "楼观剑",
 	["illustrator:qinggang_sword"] = "寒极",
-	[":qinggang_sword"] = "装备牌·武器<br /><b>攻击范围</b>：２<br /><b>武器技能</b>：锁定技，当你使用【杀】指定一名角色为目标后，无视其防具。",
+	[":qinggang_sword"] = "装备牌·武器<br /><b>攻击范围</b>：２<br /><b>武器技能</b>：锁定技。当你使用【杀】指定一名角色为目标后，无视其防具。",
 
 	["blade"] = "离魂幽镰",
 	["illustrator:blade"] = "寒极",

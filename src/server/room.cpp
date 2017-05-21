@@ -2626,33 +2626,25 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign) {
     //int choice_count = qMin(max_choice, max_available);
 
     QStringList choices = Sanguosha->getRandomGenerals(total - existed.size(), existed);
-    int tenshi = qrand() % to_assign.length();
 
     foreach (ServerPlayer *player, to_assign) {
         player->clearSelected();
         int index = to_assign.indexOf(player);
         int choice_count = qMin(max_choice.at(index), max_available);
-        int hax_index = -1;
-        if (index == tenshi)
-            hax_index = qrand() % choice_count;
         for (int i = 0; i < choice_count; i++) {
             QString choice;
-            if (hax_index == i && choices.contains("kami002"))
-                choice = "kami002";
-            else {
-                forever {
-                    choice = player->findReasonable(choices, true);
-                    if (choice.isEmpty())
+            forever {
+                choice = player->findReasonable(choices, true);
+                if (choice.isEmpty())
+                    break;
+                if (i >= (getMode() == "03_1v1v1" ? 0 : 2))
+                    break;
+                else {
+                    const General *general = Sanguosha->getGeneral(choice);
+                    if (general && general->getPackage().startsWith("touhou"))
                         break;
-                    if (i >= (getMode() == "03_1v1v1" ? 0 : 2))
-                        break;
-                    else {
-                        const General *general = Sanguosha->getGeneral(choice);
-                        if (general && general->getPackage().startsWith("touhou"))
-                            break;
-                        else
-                            qShuffle(choices);
-                    }
+                    else
+                        qShuffle(choices);
                 }
             }
             if (choice.isEmpty())
