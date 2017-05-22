@@ -3762,7 +3762,7 @@ void RoomScene::showSkillInvocation(const QString &who, const QString &skill_nam
     if (!player->hasSkill(skill_name) && !player->hasEquipSkill(skill_name)) return;
     const Skill *skill = Sanguosha->getSkill(skill_name);
     if (skill && skill->inherits("SPConvertSkill")) return;
-    QString type = "#InvokeSkill";
+    QString type = player->hasEquipSkill(skill_name) ? "#InvokeEquipSkill" : "#InvokeSkill";
     QString from_general = player->objectName();
     QString arg = skill_name;
     log_box->appendLog(type, from_general, QStringList(), QString(), arg);

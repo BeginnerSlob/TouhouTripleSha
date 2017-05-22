@@ -457,9 +457,11 @@ const Card *GuhuoCard::validate(CardUseStruct &card_use) const{
 
         QList<ServerPlayer *> tos = card_use.to;
         foreach (ServerPlayer *to, tos) {
-            const ProhibitSkill *skill = room->isProhibited(card_use.from, to, use_card);
+            const Skill *skill = room->isProhibited(card_use.from, to, use_card);
             if (skill) {
-                if (skill->isVisible()) {
+                if (!skill->isVisible())
+                    skill = Sanguosha->getMainSkill(skill->objectName());
+                if (skill->isVisible() && to->hasSkill(skill->objectName())) {
                     LogMessage log;
                     log.type = "#SkillAvoid";
                     log.from = to;

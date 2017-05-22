@@ -910,7 +910,7 @@ void BurningCamps::onUse(Room *room, const CardUseStruct &card_use) const{
             if (skill) {
                 if (!skill->isVisible())
                     skill = Sanguosha->getMainSkill(skill->objectName());
-                if (skill->isVisible()) {
+                if (skill->isVisible() && player->hasSkill(skill->objectName())) {
                     LogMessage log;
                     log.type = "#SkillAvoid";
                     log.from = splayer;

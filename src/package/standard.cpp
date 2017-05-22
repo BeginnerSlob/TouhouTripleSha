@@ -162,7 +162,7 @@ void GlobalEffect::onUse(Room *room, const CardUseStruct &card_use) const{
             if (skill) {
                 if (!skill->isVisible())
                     skill = Sanguosha->getMainSkill(skill->objectName());
-                if (skill->isVisible()) {
+                if (skill->isVisible() && player->hasSkill(skill->objectName())) {
                     LogMessage log;
                     log.type = "#SkillAvoid";
                     log.from = player;
@@ -226,7 +226,7 @@ void AOE::onUse(Room *room, const CardUseStruct &card_use) const{
             if (skill) {
                 if (!skill->isVisible())
                     skill = Sanguosha->getMainSkill(skill->objectName());
-                if (skill->isVisible()) {
+                if (skill->isVisible() && player->hasSkill(skill->objectName())) {
                     LogMessage log;
                     log.type = "#SkillAvoid";
                     log.from = player;
@@ -368,9 +368,11 @@ void DelayedTrick::onNullified(ServerPlayer *target) const{
                 continue;
             }
 
-            const ProhibitSkill *skill = room->isProhibited(target, player, this);
+            const Skill *skill = room->isProhibited(target, player, this);
             if (skill) {
-                if (skill->isVisible()) {
+                if (!skill->isVisible())
+                    skill = Sanguosha->getMainSkill(skill->objectName());
+                if (skill->isVisible() && player->hasSkill(skill->objectName())) {
                     LogMessage log;
                     log.type = "#SkillAvoid";
                     log.from = player;

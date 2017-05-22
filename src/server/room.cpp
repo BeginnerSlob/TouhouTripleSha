@@ -5437,7 +5437,7 @@ void Room::sendLog(const LogMessage &log, ServerPlayer *player) {
 
 void Room::sendCompulsoryTriggerLog(ServerPlayer *player, const QString &skill_name, bool notify_skill) {
     LogMessage log;
-    log.type = "#TriggerSkill";
+    log.type = player->hasEquipSkill(skill_name) ? "#TriggerEquipSkill" : "#TriggerSkill";
     log.arg = skill_name;
     log.from = player;
     sendLog(log);
