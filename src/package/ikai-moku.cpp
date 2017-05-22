@@ -4795,7 +4795,6 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *caiwenji) const{
         if (room->askForCard(caiwenji, "..", "@ikhuiyao", data, objectName())) {
-            room->broadcastSkillInvoke(objectName());
             return true;
         }
         return false;
@@ -4814,21 +4813,25 @@ public:
         Card::Suit suit = (Card::Suit)(judge.pattern.toInt());
         switch (suit) {
         case Card::Heart: {
+                room->broadcastSkillInvoke(objectName(), 3);
                 room->recover(player, RecoverStruct(caiwenji));
 
                 break;
             }
         case Card::Diamond: {
+                room->broadcastSkillInvoke(objectName(), 1);
                 player->drawCards(2, objectName());
                 break;
             }
         case Card::Club: {
+                room->broadcastSkillInvoke(objectName(), 2);
                 if (damage.from && damage.from->isAlive())
                     room->askForDiscard(damage.from, "ikhuiyao", 2, 2, false, true);
 
                 break;
             }
         case Card::Spade: {
+                room->broadcastSkillInvoke(objectName(), 4);
                 if (damage.from && damage.from->isAlive())
                     damage.from->turnOver();
 

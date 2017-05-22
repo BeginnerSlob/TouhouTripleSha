@@ -147,21 +147,7 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
         } else if (emotion == "effects/rout") {
             pma->moveBy(pma->boundingRect().width() * 0.03, -pma->boundingRect().width() * 0.1);
         }
-/*
-        else if (emotion == "effects/amazing_grace") {
-            pma->moveBy(-pma->boundingRect().width() * 0.9,
-                        -pma->boundingRect().height() * 0.9);
-            pma->setScale(2.8);
-        } else if (emotion == "effects/drowning") {
-            pma->moveBy(-pma->boundingRect().width() * 0.15,
-                        -pma->boundingRect().height() * 0.15);
-            pma->setScale(1.3);
-        } else if (emotion == "effects/burning_camps") {
-            pma->moveBy(-pma->boundingRect().width() * 0.4,
-                        -pma->boundingRect().height() * 0.25);
-            pma->setScale(1.5);
-        }
-*/
+
         if (emotion != "effects/burning_camps")
             pma->moveBy((parent->boundingRect().width() - pma->boundingRect().width()) * 0.5,
                         (parent->boundingRect().height() - pma->boundingRect().height()) * 0.5);

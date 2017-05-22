@@ -2343,6 +2343,13 @@ public:
     {
         return !player->hasUsed("IkDuanniCard");
     }
+
+    virtual int getEffectIndex(const ServerPlayer *, const Card *card) const
+    {
+        if (card->isKindOf("Slash"))
+            return -2;
+        return -1;
+    }
 };
 
 class IkMeitong : public TriggerSkill
@@ -3095,14 +3102,17 @@ public:
     }
 };
 
-class IkLvyan: public TriggerSkill {
+class IkLvyan : public TriggerSkill
+{
 public:
-    IkLvyan(): TriggerSkill("iklvyan") {
+    IkLvyan() : TriggerSkill("iklvyan")
+    {
         events << SlashMissed;
         view_as_skill = new IkLvyanViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
         SlashEffectStruct effect = data.value<SlashEffectStruct>();
         if (TriggerSkill::triggerable(player) && effect.slash && effect.slash->getSkillName() == objectName()
             && effect.slash->subcardsLength() > 0)
@@ -3110,7 +3120,8 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -3118,7 +3129,8 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
         SlashEffectStruct effect = data.value<SlashEffectStruct>();
         player->drawCards(effect.slash->subcardsLength(), objectName());
         return false;
@@ -3142,10 +3154,13 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         room->sendCompulsoryTriggerLog(player, objectName());
         int delta = player->getHandcardNum() - 2;
-        if (delta < 0)
+        if (delta < 0) {
+            room->broadcastSkillInvoke(objectName(), 1);
             player->drawCards(-delta, objectName());
-        else
+        } else {
+            room->broadcastSkillInvoke(objectName(), 2);
             room->askForDiscard(player, objectName(), delta, delta);
+        }
         return false;
     }
 };

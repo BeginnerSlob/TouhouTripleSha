@@ -4968,13 +4968,16 @@ public:
     }
 };
 
-class IkNifa: public TriggerSkill {
+class IkNifa : public TriggerSkill
+{
 public:
-    IkNifa(): TriggerSkill("iknifa") {
+    IkNifa() : TriggerSkill("iknifa")
+    {
         events << CardsMoveOneTime;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *tianfeng, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *tianfeng, QVariant &data, ServerPlayer* &) const
+    {
         if (!TriggerSkill::triggerable(tianfeng)) return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (((move.from == tianfeng && move.from_places.contains(Player::PlaceHand))
@@ -4988,7 +4991,8 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *tianfeng, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *tianfeng, QVariant &, ServerPlayer *) const
+    {
         QList<ServerPlayer *> other_players = room->getOtherPlayers(tianfeng);
         QList<ServerPlayer *> targets;
         foreach (ServerPlayer *p, other_players) {
@@ -5004,7 +5008,8 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *tianfeng, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *tianfeng, QVariant &, ServerPlayer *) const
+    {
         ServerPlayer *to = tianfeng->tag["IkNifaTarget"].value<ServerPlayer *>();
         tianfeng->tag.remove("IkNifaTarget");
         if (to) {
@@ -5015,14 +5020,17 @@ public:
     }
 };
 
-class IkGuyi: public TriggerSkill {
+class IkGuyi : public TriggerSkill
+{
 public:
-    IkGuyi(): TriggerSkill("ikguyi") {
+    IkGuyi() : TriggerSkill("ikguyi")
+    {
         events << HpChanged << Death;
         frequency = Compulsory;
     }
 
-    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
         TriggerList skill_list;
         if (triggerEvent == HpChanged && player->isAlive()) {
             if (!data.isNull() && !data.canConvert<RecoverStruct>()) {
@@ -5050,12 +5058,14 @@ public:
         return skill_list;
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
-        room->broadcastSkillInvoke(objectName());
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
         room->sendCompulsoryTriggerLog(ask_who, objectName());
         if (triggerEvent == HpChanged) {
+            room->broadcastSkillInvoke(objectName(), 1);
             ask_who->drawCards(1, objectName());
         } else {
+            room->broadcastSkillInvoke(objectName(), 2);
             room->loseHp(ask_who);
         }
         return false;

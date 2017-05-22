@@ -2419,11 +2419,13 @@ public:
     }
 };
 
-IkQingguoCard::IkQingguoCard(){
+IkQingguoCard::IkQingguoCard()
+{
     mute = true;
 }
 
-bool IkQingguoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool IkQingguoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
     if (!to_select->isMale())
         return false;
 
@@ -2438,11 +2440,13 @@ bool IkQingguoCard::targetFilter(const QList<const Player *> &targets, const Pla
     return targets.length() < 2 && to_select != Self;
 }
 
-bool IkQingguoCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const{
+bool IkQingguoCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const
+{
     return targets.length() == 2;
 }
 
-void IkQingguoCard::onUse(Room *room, const CardUseStruct &card_use) const{
+void IkQingguoCard::onUse(Room *room, const CardUseStruct &card_use) const
+{
     CardUseStruct use = card_use;
     QVariant data = QVariant::fromValue(use);
     RoomThread *thread = room->getThread();
@@ -2467,7 +2471,8 @@ void IkQingguoCard::onUse(Room *room, const CardUseStruct &card_use) const{
     thread->trigger(CardFinished, room, use.from, data);
 }
 
-void IkQingguoCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const{
+void IkQingguoCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const
+{
     ServerPlayer *to = targets.at(0);
     ServerPlayer *from = targets.at(1);
 
