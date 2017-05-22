@@ -163,12 +163,14 @@ void FeintAttack::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
 {
     Q_ASSERT(targets.length() == 1);
     ServerPlayer *killer = targets.first();
-    ServerPlayer *victim = killer->tag["feintTarget"].value<ServerPlayer *>();
     room->setEmotion(killer, "effects/feint_attack");
+/*
+    ServerPlayer *victim = killer->tag["feintTarget"].value<ServerPlayer *>();
     if (victim) {
         room->getThread()->delay(800);
-        room->setEmotion(victim, "effects/feint_attack_slash");
+        room->setEmotion(victim, "effects/feint_attack_give");
     }
+*/
 
     SingleTargetTrick::use(room, source, targets);
 }
