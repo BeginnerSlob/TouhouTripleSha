@@ -1196,10 +1196,11 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
     thread->delay(1200);
 
     if (trick->isKindOf("ExNihilo")
-        || trick->isKindOf("AmazingGrace")
-        || trick->isKindOf("GodSalvation")
-        || trick->isKindOf("Nullification")
-        || trick->isKindOf("LureTiger"))
+            || trick->isKindOf("AmazingGrace")
+            || trick->isKindOf("GodSalvation")
+            || trick->isKindOf("Nullification")
+            || trick->isKindOf("LureTiger")
+            || trick->isKindOf("Reinforce"))
         setCardFlag(card, "Nullification2");
     else if (trick->isKindOf("DelayedTrick"))
         setCardFlag(card, "Nullification3");

@@ -61,11 +61,11 @@ void ServerPlayer::broadcastSkillInvoke(const Card *card) const{
                 index += 2;
             room->broadcastSkillInvoke("analeptic", isMale(), index);
         } else if (card->isKindOf("Nullification")) {
-            int index = 1;
+            int index = qrand() % 2 + 1;
             if (card->hasFlag("Nullification2"))
-                index = 2;
+                index += 2;
             else if (card->hasFlag("Nullification3"))
-                index = 3;
+                index += 4;
             room->broadcastSkillInvoke("nullification", isMale(), index);
         } else {
             if (card->getCommonEffectName().isNull())
