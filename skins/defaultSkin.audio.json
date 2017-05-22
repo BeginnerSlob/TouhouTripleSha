@@ -29,6 +29,18 @@
 	"playerAudioEffect-female-peach": ["audio/card/female/peach1.ogg", "audio/card/female/peach2.ogg", "audio/card/female/peach3.ogg", "audio/card/female/peach4.ogg"],
 	"playerAudioEffect-male-analeptic": ["audio/card/female/analeptic1.ogg", "audio/card/female/analeptic2.ogg", "audio/card/female/analeptic3.ogg", "audio/card/female/analeptic4.ogg"],
 	"playerAudioEffect-female-analeptic": ["audio/card/female/analeptic1.ogg", "audio/card/female/analeptic2.ogg", "audio/card/female/analeptic3.ogg", "audio/card/female/analeptic4.ogg"],
-	"playerAudioEffect-male-nullification": ["audio/card/female/nullification1.ogg", "audio/card/female/nullification2.ogg", "audio/card/female/nullification3.ogg"],
-	"playerAudioEffect-female-nullification": ["audio/card/female/nullification1.ogg", "audio/card/female/nullification2.ogg", "audio/card/female/nullification3.ogg"]
+	"playerAudioEffect-male-nullification": ["audio/card/female/nullification1.ogg", "audio/card/female/nullification2.ogg", "audio/card/female/nullification3.ogg", "audio/card/female/nullification4.ogg", "audio/card/female/nullification5.ogg", "audio/card/female/nullification6.ogg"],
+	"playerAudioEffect-female-nullification": ["audio/card/female/nullification1.ogg", "audio/card/female/nullification2.ogg", "audio/card/female/nullification3.ogg", "audio/card/female/nullification4.ogg", "audio/card/female/nullification5.ogg", "audio/card/female/nullification6.ogg"],
+	"playerAudioEffect-male-dismantlement": ["audio/card/female/dismantlement1.ogg", "audio/card/female/dismantlement2.ogg"],
+	"playerAudioEffect-female-dismantlement": ["audio/card/female/dismantlement1.ogg", "audio/card/female/dismantlement2.ogg"],
+	"playerAudioEffect-male-duel": ["audio/card/female/duel1.ogg", "audio/card/female/duel2.ogg"],
+	"playerAudioEffect-female-duel": ["audio/card/female/duel1.ogg", "audio/card/female/duel2.ogg"],
+	"playerAudioEffect-male-ex_nihilo": ["audio/card/female/ex_nihilo1.ogg", "audio/card/female/ex_nihilo2.ogg"],
+	"playerAudioEffect-female-ex_nihilo": ["audio/card/female/ex_nihilo1.ogg", "audio/card/female/ex_nihilo2.ogg"],
+	"playerAudioEffect-male-fire_attack": ["audio/card/female/fire_attack1.ogg", "audio/card/female/fire_attack2.ogg"],
+	"playerAudioEffect-female-fire_attack": ["audio/card/female/fire_attack1.ogg", "audio/card/female/fire_attack2.ogg"],
+	"playerAudioEffect-male-iron_chain": ["audio/card/female/iron_chain1.ogg", "audio/card/female/iron_chain2.ogg"],
+	"playerAudioEffect-female-iron_chain": ["audio/card/female/iron_chain1.ogg", "audio/card/female/iron_chain2.ogg"],
+	"playerAudioEffect-male-snatch": ["audio/card/female/snatch1.ogg", "audio/card/female/snatch2.ogg"],
+	"playerAudioEffect-female-snatch": ["audio/card/female/snatch1.ogg", "audio/card/female/snatch2.ogg"]
 }
