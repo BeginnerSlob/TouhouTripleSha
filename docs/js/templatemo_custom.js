@@ -69,6 +69,20 @@ jQuery(document).ready(function($){
 		return false;
 	});
 	
+	$(".main_menu a.templatemo_homenewnew").click(function(){
+		$('#menu-container .newnew').fadeOut(1000, function(){
+        $('#menu-container .homepage').fadeIn(1000);
+	    });
+		return false;
+	});
+	
+	$(".main_menu a.templatemo_page7").click(function(){    
+    $('#menu-container .homepage').fadeOut(1000, function(){
+        $('#menu-container .newnew').fadeIn(1000);
+	    });
+		return false
+	});
+	
 	$(".main_menu a.templatemo_homecontact").click(function(){
 		$('#menu-container .contact').fadeOut(1000, function(){
         $('#menu-container .homepage').fadeIn(1000);
