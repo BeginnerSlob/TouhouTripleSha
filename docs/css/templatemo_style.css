@@ -268,7 +268,7 @@ h3 {
 .resp-vtabs ul.templatemo_newtab li { padding: 0px; background: url(../images/templatemo_arrow_gap.png) no-repeat center right #724bc5; font-size: 24px; text-align: center; font-weight: normal; }
 .resp-vtabs ul.templatemo_newtab li.resp-tab-active { background: url(../images/templatemo_new_arrow.png) no-repeat center right #724bc5; border: 0px; padding: 0px; color: #ffffff;  }
 
-.resp-vtabs .templatemo_aboutcontainer, .resp-vtabs .templatemo_testicontainer	{  background: none; border-radius: 0px; border: 0px; }
+.resp-vtabs .templatemo_aboutcontainer, .resp-vtabs .templatemo_testicontainer, .resp-vtabs .templatemo_newtabcontainer {  background: none; border-radius: 0px; border: 0px; }
 h2.resp-accordion	{ color: #ffffff; }
 .resp-tabs-list li	{ color: #ffffff; }
 
@@ -277,6 +277,9 @@ h2.resp-accordion	{ color: #ffffff; }
  
 .templatemo_aboutcontainer h2.resp-accordion {
  background: #cc9933 !important; }
+
+.templatemo_newtabcontainer h2.resp-accordion {
+ background: #724bc5 !important; }
  
 /*----- Page Load ------*/
 
@@ -286,7 +289,7 @@ h2.resp-accordion	{ color: #ffffff; }
 	.templatemo_botgap	{ margin: 0px 0px 20px 0px; }
 	.templatemo_topgap, .templatemo_portfotopgap	{ margin-top: 20px; }
 	.templatemo_col37	{ float: left; width: 100%; }
-	.resp-vtabs .templatemo_aboutcontainer, .resp-vtabs .templatemo_testicontainer	{ width: 100%; }
+	.resp-vtabs .templatemo_aboutcontainer, .resp-vtabs .templatemo_testicontainer, .resp-vtabs .templatemo_newtabcontainer	{ width: 100%; }
 	.templatemo_aboutlinkwrapper{ display: none; }
 	.templatemo_aboutlinkwrapper1{  display: block; }
 	.templatemo_frame	{ padding: 0px 30px 30px 30px; }
@@ -326,7 +329,7 @@ h2.resp-accordion	{ color: #ffffff; }
 	.templatemo_form textarea { height: 120px; }
 	.templatemo_address { font-size: 12px; }
 	.templatemo_portfoliotext { width: 95%; padding: 15px ; font-size: 14px; }
-	.resp-vtabs .templatemo_aboutcontainer, .resp-vtabs .templatemo_testicontainer	{ width: 75%; }
+	.resp-vtabs .templatemo_aboutcontainer, .resp-vtabs .templatemo_testicontainer, .resp-vtabs .templatemo_newtabcontainer	{ width: 75%; }
 	.templatemo_leftgap_about	{ padding: 0px 0px 0px 6px; }
 	.templatemo_aboutlinkwrapper { width: 95.8%; float: left; background: #666666; text-align: center; display: block; }
 	.templatemo_aboutlinkwrapper1 {  display: none; }
@@ -361,7 +364,7 @@ h2.resp-accordion	{ color: #ffffff; }
 	.templatemo_form textarea { height: 150px; }
 	.templatemo_address { font-size: 14px; }
 	.templatemo_portfoliotext { width: 95%; padding: 30px; font-size: 16px; }
-	.resp-vtabs .templatemo_aboutcontainer, .resp-vtabs .templatemo_testicontainer	{ width: 75%; }
+	.resp-vtabs .templatemo_aboutcontainer, .resp-vtabs .templatemo_testicontainer, .resp-vtabs	.templatemo_newtabcontainer { width: 75%; }
 	.templatemo_leftgap_about	{ padding: 0px 0px 0px 10px; }
 	.resp-vtabs ul.templatemo_tab li, 
 	.resp-vtabs ul.templatemo_tab li.resp-tab-active, 
