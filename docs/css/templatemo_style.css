@@ -269,7 +269,7 @@ h3 {
 .resp-vtabs ul.templatemo_newtab li.resp-tab-active { background: url(../images/templatemo_new_arrow.png) no-repeat center right #724bc5; border: 0px; padding: 0px; color: #ffffff;  }
 
 .resp-vtabs .templatemo_aboutcontainer, .resp-vtabs .templatemo_testicontainer, .resp-vtabs .templatemo_newtabcontainer {  background: none; border-radius: 0px; border: 0px; }
-h2.resp-accordion	{ color: #ffffff; }
+h2.resp-accordion	{ color: #ffffff; font-family:Microsoft YaHei; }
 .resp-tabs-list li	{ color: #ffffff; }
 
 .templatemo_testicontainer h2.resp-accordion {
