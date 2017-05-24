@@ -212,9 +212,12 @@ QList<const TriggerSkill *> Engine::getGlobalTriggerSkills() const{
     return global_trigger_skills;
 }
 
-void Engine::addPackage(Package *package) {
-    if (packages.contains(package))
-        return;
+void Engine::addPackage(Package *package)
+{
+    foreach (const Package *p, packages) {
+        if (p->objectName() == package->objectName())
+            return;
+    }
 
     packages << package;
     package->setParent(this);
