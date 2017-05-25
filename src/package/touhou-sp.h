@@ -109,7 +109,7 @@ class ThFuhuaCard : public SkillCard
 
 public:
     Q_INVOKABLE ThFuhuaCard();
-
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
 #endif // TOUHOUSP_H
