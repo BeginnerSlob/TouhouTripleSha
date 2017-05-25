@@ -41,7 +41,7 @@ bool Skill::isAttachedLordSkill() const{
 
 bool Skill::shouldBeVisible(const Player *Self) const
 {
-    return Self != NULL;
+    return Self != NULL && Self->hasSkill(objectName());
 }
 
 bool Skill::isOwnerOnlySkill() const

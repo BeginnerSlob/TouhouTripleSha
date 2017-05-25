@@ -299,6 +299,7 @@ signals:
     void phase_changed();
     void owner_changed(bool owner);
     void removedChanged();
+    void rhshiguang_changed();
 };
 
 #endif

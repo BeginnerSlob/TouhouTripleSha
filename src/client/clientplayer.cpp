@@ -221,5 +221,8 @@ void ClientPlayer::setMark(const QString &mark, int value) {
 
     if (mark == "@qihuang")
         emit ikqihuang_invoked();
+
+    if (mark == "@time")
+        emit rhshiguang_changed();
 }
 
