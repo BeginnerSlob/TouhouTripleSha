@@ -2131,12 +2131,12 @@ public:
     {
     }
 
-    virtual QSrtingList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
     {
         if (PhaseChangeSkill::triggerable(player) && player->getPhase() == Player::Finish) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (p->inMyAttackRange(room->getLord()) && player->canDiscard(p, "he"))
-                    return QStringList(obejctName());
+                    return QStringList(objectName());
             }
         }
         return QStringList();
