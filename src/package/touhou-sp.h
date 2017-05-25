@@ -103,4 +103,13 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class ThFuhuaCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThFuhuaCard();
+
+};
+
 #endif // TOUHOUSP_H
