@@ -102,15 +102,15 @@ config = {
 	},
 
 	basara_ban = {
-		"dongzhuo",
+--[[		"dongzhuo",
 		"zuoci",
 		"shenzhugeliang",
 		"shenlvbu",
-		"bgm_lvmeng"
+		"bgm_lvmeng"]]
 	},
 
 	pairs_ban = {
-		"huatuo", "zuoci", "bgm_pangtong", "kof_nos_huatuo", "nos_huatuo",
+--[[		"huatuo", "zuoci", "bgm_pangtong", "kof_nos_huatuo", "nos_huatuo",
 		"simayi+zhenji", "simayi+dengai",
 		"xiahoudun+luxun", "xiahoudun+zhurong", "xiahoudun+zhangchunhua", "xiahoudun+nos_luxun", "xiahoudun+nos_zhangchunhua",
 		"caoren+shenlvbu", "caoren+caozhi", "caoren+bgm_diaochan", "caoren+bgm_caoren", "caoren+nos_caoren",
@@ -173,7 +173,7 @@ config = {
 		"nos_huanggai+nos_guanxingzhangbao",
 		"nos_luxun+nos_yuji", "nos_luxun+nos_guanxingzhangbao",
 		"nos_yuji+nos_zhangchunhua",
-		"nos_zhangchunhua+heg_luxun", "nos_zhangchunhua+nos_guanxingzhangbao",
+		"nos_zhangchunhua+heg_luxun", "nos_zhangchunhua+nos_guanxingzhangbao",]]
 	},
 	
 	couple_lord = "hana002",
@@ -223,23 +223,23 @@ config = {
 	},
 
 	bossmode_default_boss = {
-		"boss_chi+boss_mei+boss_wang+boss_liang",
+--[[		"boss_chi+boss_mei+boss_wang+boss_liang",
 		"boss_niutou+boss_mamian",
 		"boss_heiwuchang+boss_baiwuchang",
-		"boss_luocha+boss_yecha"
+		"boss_luocha+boss_yecha"]]
 	},
 
 	bossmode_endless_skills = {
-		"bossguimei", "bossdidong", "nosenyuan", "bossshanbeng+bossbeiming+huilei+bossmingbao",
+--[[		"bossguimei", "bossdidong", "nosenyuan", "bossshanbeng+bossbeiming+huilei+bossmingbao",
 		"bossluolei", "bossguihuo", "bossbaolian", "mengjin", "bossmanjia+bazhen",
 		"bossxiaoshou", "bossguiji", "fankui", "bosslianyu", "nosjuece",
 		"bosstaiping+shenwei", "bosssuoming", "bossxixing", "bossqiangzheng",
 		"bosszuijiu", "bossmodao", "bossqushou", "yizhong", "kuanggu",
-		"bossmojian", "bossdanshu", "shenji", "wushuang", "wansha"
+		"bossmojian", "bossdanshu", "shenji", "wushuang", "wansha"]]
 	},
 
 	bossmode_exp_skills = {
-		"mashu:15",
+--[[		"mashu:15",
 		"tannang:25",
 		"yicong:25",
 		"feiying:30",
@@ -280,22 +280,22 @@ config = {
 		"fenyong:85",
 		"kuanggu:85",
 		"yongsi:90",
-		"zhiheng:90",
+		"zhiheng:90",]]
 	},
 
 	jiange_defense_kingdoms = {
-		loyalist = "shu",
-		rebel = "wei",
+--[[		loyalist = "shu",
+		rebel = "wei",]]
 	},
 
 	jiange_defense_machine = {
-		wei = "jg_machine_tuntianchiwen+jg_machine_shihuosuanni+jg_machine_fudibian",
-		shu = "jg_machine_yunpingqinglong+jg_machine_jileibaihu",
+--[[		wei = "jg_machine_tuntianchiwen+jg_machine_shihuosuanni+jg_machine_fudibian",
+		shu = "jg_machine_yunpingqinglong+jg_machine_jileibaihu",]]
 	},
 
 	jiange_defense_soul = {
-		wei = "jg_soul_caozhen+jg_soul_simayi",
-		shu = "jg_soul_liubei+jg_soul_zhugeliang",
+--[[		wei = "jg_soul_caozhen+jg_soul_simayi",
+		shu = "jg_soul_liubei+jg_soul_zhugeliang",]]
 	},
 
 	members = {
@@ -304,6 +304,10 @@ config = {
 		"&nbsp;&nbsp;女王受·虫(Slob)<br/>"..
 		"&nbsp;&nbsp;狈耳萌特(萌特)<br/>"..
 		"&nbsp;&nbsp;广寒冰焰(IceFlame)<br/>"..
-		"&nbsp;&nbsp;nonescarlet(寒极)"
+		"&nbsp;&nbsp;nonescarlet(寒极)<br/>"..
+		"&nbsp;&nbsp;Leo<br/>"..
+		"&nbsp;&nbsp;莎墨<br/>"..
+		"&nbsp;&nbsp;同声异谱<br/>"..
+		"&nbsp;&nbsp;名和行年"
 	}
 }
