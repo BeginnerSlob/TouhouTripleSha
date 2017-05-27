@@ -56,6 +56,7 @@ Client::Client(QObject *parent, const QString &filename)
     m_callbacks[S_COMMAND_SET_MARK] = &Client::setMark;
     m_callbacks[S_COMMAND_LOG_SKILL] = &Client::log;
     m_callbacks[S_COMMAND_ATTACH_SKILL] = &Client::attachSkill;
+    m_callbacks[S_COMMAND_CHANGE_SKILL_STEP] = &Client::changeSkillStep;
     m_callbacks[S_COMMAND_MOVE_FOCUS] = &Client::moveFocus;
     m_callbacks[S_COMMAND_SET_EMOTION] = &Client::setEmotion;
     m_callbacks[S_COMMAND_INVOKE_SKILL] = &Client::skillInvoked;
@@ -1591,12 +1592,23 @@ void Client::showCard(const QVariant &show_str)
     emit card_shown(player_name, card_id);
 }
 
-void Client::attachSkill(const QVariant &skill) {
-    if (!isString(skill)) return;
-
+void Client::attachSkill(const QVariant &skill)
+{
+    if (!isString(skill))
+        return;
     QString skill_name = skill.toString();
     Self->acquireSkill(skill_name);
     emit skill_attached(skill_name);
+}
+
+void Client::changeSkillStep(const QVariant &skill)
+{
+    if (!isString(skill))
+        return;
+    QString skill_name = skill.toString();
+    if (!Self->hasSkill(skill_name, true))
+        return;
+    emit skill_step_changed(skill_name);
 }
 
 void Client::askForAssign(const QVariant &) {

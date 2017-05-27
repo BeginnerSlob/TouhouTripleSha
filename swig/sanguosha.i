@@ -985,7 +985,8 @@ public:
     bool isAttachedLordSkill() const;
     virtual bool shouldBeVisible(const Player *Self) const; // usually for attached skill
     bool isOwnerOnlySkill() const;
-    QString getDescription() const;
+    QString getDescription(int step = 0) const;
+    QString getNotice(int index) const;
     bool isVisible() const;
 
     virtual int getEffectIndex(const ServerPlayer *player, const Card *card) const;

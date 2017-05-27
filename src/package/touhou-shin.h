@@ -72,14 +72,4 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThNihuiEditCard: public SkillCard
-{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE ThNihuiEditCard();
-
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-};
-
 #endif // TOUHOUSHIN_H

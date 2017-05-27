@@ -560,7 +560,7 @@ QAbstractButton *IkShengzunDialog::createSkillButton(const QString &skill_name) 
 
     QCommandLinkButton *button = new QCommandLinkButton(Sanguosha->translate(skill_name));
     button->setObjectName(skill_name);
-    button->setToolTip(skill->getDescription());
+    button->setToolTip(skill->getDescription(Self->getSkillStep(skill_name)));
 
     group->addButton(button);
     return button;
@@ -1406,22 +1406,40 @@ public:
     }
 };
 
-class IkJueche: public PhaseChangeSkill {
+class IkJueche : public PhaseChangeSkill
+{
 public:
-    IkJueche(): PhaseChangeSkill("ikjueche") {
-        frequency = Compulsory;
+    IkJueche() : PhaseChangeSkill("ikjueche")
+    {
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
+    virtual Frequency getFrequency(const Player *player) const
+    {
+        if (player && player->getSkillStep(objectName()) == 1)
+            return NotFrequent;
+        return Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
         return PhaseChangeSkill::triggerable(target)
             && target->getPhase() == Player::Finish
             && target->getHp() > 0;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        room->sendCompulsoryTriggerLog(player, objectName());
-        room->broadcastSkillInvoke(objectName());
-        return true;
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (getFrequency(player) == Compulsory) {
+            room->sendCompulsoryTriggerLog(player, objectName());
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        } else {
+            if (player->askForSkillInvoke(objectName())) {
+                room->broadcastSkillInvoke(objectName());
+                return true;
+            }
+        }
+        return false;
     }
 
     virtual bool onPhaseChange(ServerPlayer *player) const{
@@ -1432,50 +1450,16 @@ public:
     }
 };
 
-class IkJuecheNotCompulsory: public IkJueche {
-public:
-    IkJuecheNotCompulsory(): IkJueche() {
-        setObjectName("ikjueche-edit");
-        frequency = NotFrequent;
-    }
-
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        if (player->askForSkillInvoke(objectName())) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
-        return false;
-    }
-};
-
-class IkJuecheInvalidity: public InvaliditySkill {
-public:
-    IkJuecheInvalidity(): InvaliditySkill("#ikjueche-inv") {
-    }
-
-    virtual bool isSkillValid(const Player *player, const Skill *skill) const{
-        if (player->getMark("@hewu") > 0)
-            return skill->objectName() != "ikjueche";
-        else
-            return skill->objectName() != "ikjueche-edit";
-    }
-};
-
 class IkHewu: public TriggerSkill {
 public:
     IkHewu(): TriggerSkill("ikhewu") {
-        events << Dying << GameStart;
+        events << Dying;
         frequency = Wake;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (triggerEvent == GameStart) {
-            if (player == NULL) {
-                JsonArray args;
-                args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
-                room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
-            }
-        } else if (TriggerSkill::triggerable(player) && player->getMark("@hewu") == 0) {
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (TriggerSkill::triggerable(player) && player->getMark("@hewu") == 0) {
             DyingStruct dying = data.value<DyingStruct>();
             if (dying.who == player && player->getHp() <= 0)
                 return QStringList(objectName());
@@ -1494,9 +1478,7 @@ public:
 
         room->addPlayerMark(player, "@hewu");
 
-        JsonArray args;
-        args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
-        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+        room->setPlayerProperty(player, "ikjueche_step", 1);
 
         if (room->changeMaxHpForAwakenSkill(player)) {
             room->recover(player, RecoverStruct(player, NULL, 2 - player->getHp()));
@@ -6273,9 +6255,6 @@ IkaiSuiPackage::IkaiSuiPackage()
 
     General *wind053 = new General(this, "wind053", "kaze");
     wind053->addSkill(new IkJueche);
-    wind053->addSkill(new IkJuecheNotCompulsory);
-    wind053->addSkill(new IkJuecheInvalidity);
-    related_skills.insertMulti("ikjueche", "#ikjueche-inv");
     wind053->addSkill(new IkHewu);
 
     General *wind054 = new General(this, "wind054", "kaze", 3, false);

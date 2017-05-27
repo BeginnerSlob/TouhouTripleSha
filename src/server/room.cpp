@@ -707,7 +707,7 @@ void Room::handleAcquireDetachSkills(ServerPlayer *player, const QStringList &sk
                 const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(skill);
                 thread->addTriggerSkill(trigger_skill);
             }
-            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty())
+            if (skill->getFrequency(player) == Skill::Limited && !skill->getLimitMark().isEmpty())
                 addPlayerMark(player, skill->getLimitMark());
 
             if (skill->isVisible()) {
@@ -889,7 +889,7 @@ bool Room::doNotify(ServerPlayer *player, int command, const char *arg)
 
 bool Room::doBroadcastNotify(const QList<ServerPlayer *> &players, int command, const char *arg)
 {
-    foreach(ServerPlayer *player, players)
+    foreach (ServerPlayer *player, players)
         doNotify(player, command, arg);
     return true;
 }
@@ -1001,7 +1001,7 @@ bool Room::askForSkillInvoke(ServerPlayer *player, const QString &skill_name, co
     if (ai) {
         invoked = ai->askForSkillInvoke(skill_name, data);
         const Skill *skill = Sanguosha->getSkill(skill_name);
-        if (invoked && !(skill && skill->getFrequency() == Skill::Frequent))
+        if (invoked && !(skill && skill->getFrequency(player) == Skill::Frequent))
             thread->delay();
     } else {
         QVariant skillCommand;
@@ -1815,7 +1815,8 @@ void Room::setPlayerFlag(ServerPlayer *player, const QString &flag) {
     broadcastProperty(player, "flags", flag);
 }
 
-void Room::setPlayerProperty(ServerPlayer *player, const char *property_name, const QVariant &value) {
+void Room::setPlayerProperty(ServerPlayer *player, const char *property_name, const QVariant &value)
+{
     player->setProperty(property_name, value);
     broadcastProperty(player, property_name);
 
@@ -1829,6 +1830,12 @@ void Room::setPlayerProperty(ServerPlayer *player, const char *property_name, co
 
     if (strcmp(property_name, "chained") == 0)
         thread->trigger(ChainStateChanged, this, player);
+
+    if (QString(property_name).endsWith("_step")) {
+        QString name = QString(property_name);
+        name.chop(5);
+        doNotify(player, S_COMMAND_CHANGE_SKILL_STEP, QVariant(name));
+    }
 }
 
 void Room::setPlayerMark(ServerPlayer *player, const QString &mark, int value) {
@@ -2109,7 +2116,7 @@ void Room::changeHero(ServerPlayer *player, const QString &new_general, bool ful
                  if (invokeStart && trigger->getTriggerEvents().contains(GameStart) && trigger->triggerable(player, this))
                      game_start << trigger;
             }
-            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty())
+            if (skill->getFrequency(player) == Skill::Limited && !skill->getLimitMark().isEmpty())
                 addPlayerMark(player, skill->getLimitMark());
             QVariant skill_name = skill->objectName();
             thread->trigger(EventAcquireSkill, this, player, skill_name);
@@ -3693,7 +3700,8 @@ bool Room::notifyProperty(ServerPlayer *playerToNotify, const ServerPlayer *prop
 bool Room::broadcastProperty(ServerPlayer *player, const char *property_name, const QString &value) {
     if (player == NULL) return false;
     QString real_value = value;
-    if (real_value.isNull()) real_value = player->property(property_name).toString();
+    if (real_value.isNull())
+        real_value = player->property(property_name).toString();
 
     if (strcmp(property_name, "role") == 0)
         player->setShownRole(true);
@@ -4405,7 +4413,7 @@ void Room::acquireSkill(ServerPlayer *player, const Skill *skill, bool open, boo
         const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(skill);
         thread->addTriggerSkill(trigger_skill);
     }
-    if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty())
+    if (skill->getFrequency(player) == Skill::Limited && !skill->getLimitMark().isEmpty())
         addPlayerMark(player, skill->getLimitMark());
 
     if (skill->isVisible()) {

@@ -29,7 +29,7 @@ public:
     bool isAttachedLordSkill() const;
     virtual bool shouldBeVisible(const Player *Self) const; // usually for attached skill
     bool isOwnerOnlySkill() const;
-    QString getDescription() const;
+    QString getDescription(int step = 0) const;
     QString getNotice(int index) const;
     bool isVisible() const;
 
@@ -38,7 +38,7 @@ public:
 
     void initMediaSource();
     void playAudioEffect(int index = -1, bool superpose = true) const;
-    Frequency getFrequency() const;
+    virtual Frequency getFrequency(const Player *player = NULL) const;
     QString getLimitMark() const;
     QStringList getSources() const;
 

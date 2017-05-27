@@ -51,7 +51,7 @@ TriggerOptionButton::TriggerOptionButton(QGraphicsObject *parent, const QString 
         realSkill = realSkill.split("->").first();
     const Skill *skill = Sanguosha->getSkill(realSkill);
     if (skill)
-        setToolTip(skill->getDescription());
+        setToolTip(skill->getDescription(ClientInstance->getPlayer(playerName)->getSkillStep(realSkill)));
 
     setAcceptedMouseButtons(Qt::LeftButton);
     setAcceptHoverEvents(true);

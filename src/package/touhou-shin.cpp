@@ -1629,62 +1629,6 @@ public:
     }
 };
 
-ThNihuiEditCard::ThNihuiEditCard()
-{
-    m_skillName = "thnihui-edit";
-    target_fixed = true;
-}
-
-void ThNihuiEditCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
-{
-    source->drawCards(1, "thnihui");
-    room->setPlayerMark(source, "thnihui", 0);
-    JsonArray args;
-    args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
-    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
-}
-
-class ThNihuiEdit : public ViewAsSkill
-{
-public:
-    ThNihuiEdit() : ViewAsSkill("thnihui-edit")
-    {
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
-    {
-        return selected.length() < 3 && !Self->isJilei(to_select);
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const
-    {
-        if (cards.length() == 3) {
-            Card *card = new ThNihuiEditCard;
-            card->addSubcards(cards);
-            return card;
-        }
-        return NULL;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const
-    {
-        return !player->hasUsed("ThNihuiCard") && !player->hasUsed("ThNihuiEditCard");
-    }
-};
-
-class ThNihuiInvalidity: public InvaliditySkill {
-public:
-    ThNihuiInvalidity(): InvaliditySkill("#thnihui-inv") {
-    }
-
-    virtual bool isSkillValid(const Player *player, const Skill *skill) const{
-        if (player->getMark("thnihui") != 0)
-            return skill->objectName() != "thnihui";
-        else
-            return skill->objectName() != "thnihui-edit";
-    }
-};
-
 class ThTanguan : public TriggerSkill
 {
 public:
@@ -1968,9 +1912,6 @@ TouhouShinPackage::TouhouShinPackage()
 
     General *shin015 = new General(this, "shin015", "yuki", 3);
     shin015->addSkill(new ThNihui);
-    shin015->addSkill(new ThNihuiEdit);
-    shin015->addSkill(new ThNihuiInvalidity);
-    related_skills.insertMulti("thnihui", "#thnihui-inv");
     shin015->addSkill(new ThTanguan);
     shin015->addSkill(new ThTanguanTrigger);
     related_skills.insertMulti("thtanguan", "#thtanguan");
@@ -1985,7 +1926,6 @@ TouhouShinPackage::TouhouShinPackage()
     addMetaObject<ThLiaoganCard>();
     addMetaObject<ThMuyuCard>();
     addMetaObject<ThNihuiCard>();
-    addMetaObject<ThNihuiEditCard>();
 
     skills << new ThBaochuiRecord;
 }

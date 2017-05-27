@@ -1051,7 +1051,7 @@ QString Player::getSkillDescription() const{
         if (skill->isAttachedLordSkill() || (!hasSkill(skill->objectName()) && !basara_list.contains(skill)))
             continue;
         QString skill_name = Sanguosha->translate(skill->objectName());
-        QString desc = skill->getDescription();
+        QString desc = skill->getDescription(getSkillStep(skill->objectName()));
         desc.replace("\n", "<br/>");
         description.append(QString("<b>%1</b>: %2 <br/> <br/>").arg(skill_name).arg(desc));
     }

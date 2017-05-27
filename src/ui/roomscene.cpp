@@ -225,6 +225,7 @@ RoomScene::RoomScene(QMainWindow *main_window)
 
     connect(ClientInstance, SIGNAL(skill_attached(QString)), this, SLOT(attachSkill(QString)));
     connect(ClientInstance, SIGNAL(skill_detached(QString)), this, SLOT(detachSkill(QString)));
+    connect(ClientInstance, &Client::skill_step_changed, this, &RoomScene::changeSkillStep);
 
     enemy_box = NULL;
     self_box = NULL;
@@ -2081,7 +2082,8 @@ void RoomScene::keepGetCardLog(const CardsMoveStruct &move) {
 }
 
 void RoomScene::addSkillButton(const Skill *skill) {
-    if (skill->inherits("SPConvertSkill")) return;
+    if (skill->inherits("SPConvertSkill"))
+        return;
     // check duplication
     QSanSkillButton *btn = dashboard->addSkillButton(skill->objectName());
     if (btn == NULL) {
@@ -2156,36 +2158,12 @@ void RoomScene::updateSkillButtons(bool isPrepare) {
         skill_list = Self->getVisibleSkillList(false, true);
     }
     foreach (const Skill *skill, skill_list) {
-        if (skill->objectName().endsWith("-edit")) {
-            if (Self->hasSkill(skill->objectName())) {
-                QString skill_name = skill->objectName();
-                skill_name.chop(5);
-                QSanSkillButton *btn = dashboard->getSkillDock()->removeSkillButtonByName(skill_name);
-                if (btn) {
-                    btn->hide();
-                    m_skillButtons.removeOne(btn);
-                }
-                const Skill *old_skill = Sanguosha->getSkill(skill_name);
-                if (skill_list.contains(old_skill))
-                    skill_list.removeOne(old_skill);
-            } else {
-                QString skill_name = skill->objectName();
-                QSanSkillButton *btn = dashboard->getSkillDock()->removeSkillButtonByName(skill_name);
-                if (btn) {
-                    btn->hide();
-                    m_skillButtons.removeOne(btn);
-                }
-                skill_list.removeOne(skill);
-            }
-        }
-    }
-    foreach (const Skill *skill, skill_list) {
         if (skill->isLordSkill()
-            && (Self->getRole() != "lord"
-                || ServerInfo.GameMode == "06_3v3"
-                || ServerInfo.GameMode == "06_XMode"
-                || ServerInfo.GameMode == "02_1v1"
-                || Config.value("WithoutLordskill", false).toBool()))
+                && (Self->getRole() != "lord"
+                    || ServerInfo.GameMode == "06_3v3"
+                    || ServerInfo.GameMode == "06_XMode"
+                    || ServerInfo.GameMode == "02_1v1"
+                    || Config.value("WithoutLordskill", false).toBool()))
             continue;
 
         addSkillButton(skill);
@@ -2469,7 +2447,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
             button->setEnabled(vsSkill->isAvailable(Self, reason, pattern) && !pattern.endsWith("!"));
         } else {
             const Skill *skill = button->getSkill();
-            if (skill->getFrequency() == Skill::Wake)
+            if (skill->getFrequency(Self) == Skill::Wake)
                 button->setEnabled(Self->getMark(skill->objectName()) > 0);
             else
                 button->setEnabled(false);
@@ -2716,7 +2694,8 @@ void RoomScene::onSkillDeactivated() {
     if (current) cancel_button->click();
 }
 
-void RoomScene::onSkillActivated() {
+void RoomScene::onSkillActivated()
+{
     QSanSkillButton *button = qobject_cast<QSanSkillButton *>(sender());
     const ViewAsSkill *skill = NULL;
     if (button)
@@ -3480,17 +3459,29 @@ void RoomScene::chooseSkillButton() {
     dialog->exec();
 }
 
-void RoomScene::attachSkill(const QString &skill_name) {
+void RoomScene::attachSkill(const QString &skill_name)
+{
     const Skill *skill = Sanguosha->getSkill(skill_name);
     if (skill)
         addSkillButton(skill);
 }
 
-void RoomScene::detachSkill(const QString &skill_name) {
+void RoomScene::detachSkill(const QString &skill_name)
+{
     QSanSkillButton *btn = dashboard->removeSkillButton(skill_name);
     if (btn == NULL) return;    //be care LordSkill and SPConvertSkill
     m_skillButtons.removeAll(btn);
     btn->deleteLater();
+}
+
+void RoomScene::changeSkillStep(const QString &skill_name)
+{
+    QSanInvokeSkillButton *btn = dashboard->getSkillDock()->getSkillButtonByName(skill_name);
+    if (btn) {
+        const Skill *skill = Sanguosha->getSkill(skill_name);
+        if (skill)
+            btn->setSkill(skill);
+    }
 }
 
 void RoomScene::viewDistance() {

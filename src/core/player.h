@@ -217,6 +217,10 @@ public:
     QStringList getAcquiredSkills() const;
     QStringList getExtraSkills() const;
     QString getSkillDescription() const;
+    inline int getSkillStep(const QString &skill_name) const
+    {
+        return property(QString("%1_step").arg(skill_name).toLatin1().constData()).toInt();
+    }
 
     virtual bool isProhibited(const Player *to, const Card *card, const QList<const Player *> &others = QList<const Player *>()) const;
     bool canSlashWithoutCrossbow(const Card *slash = NULL) const;

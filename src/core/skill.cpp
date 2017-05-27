@@ -49,12 +49,13 @@ bool Skill::isOwnerOnlySkill() const
     return owner_only_skill;
 }
 
-QString Skill::getDescription() const{
+QString Skill::getDescription(int step) const
+{
     bool normal_game = ServerInfo.DuringGame && isNormalGameMode(ServerInfo.GameMode);
-    QString name = QString("%1%2").arg(objectName()).arg(normal_game ? "_p" : "");
+    QString name = QString("%1%2%3").arg(objectName()).arg(step > 0 ? QString::number(step) : "").arg(normal_game ? "_p" : "");
     QString des_src = Sanguosha->translate(":" + name);
     if (normal_game && des_src.startsWith(":"))
-        des_src = Sanguosha->translate(":" + objectName());
+        des_src = Sanguosha->translate(":" + QString("%1%2").arg(objectName()).arg(step > 0 ? QString::number(step) : ""));
     if (des_src.startsWith(":"))
         return QString();
     if (des_src.startsWith("[NoAutoRep]"))
@@ -145,11 +146,13 @@ void Skill::playAudioEffect(int index, bool superpose) const{
     }
 }
 
-Skill::Frequency Skill::getFrequency() const{
+Skill::Frequency Skill::getFrequency(const Player *) const
+{
     return frequency;
 }
 
-QString Skill::getLimitMark() const{
+QString Skill::getLimitMark() const
+{
     return limit_mark;
 }
 

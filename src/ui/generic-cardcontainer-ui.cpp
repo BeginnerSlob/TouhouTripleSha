@@ -776,7 +776,7 @@ void PlayerCardContainer::startHuaShen(QString generalName, QString skillName, b
                                               Sanguosha->translate(skillName).left(2));
         if (!skillName.isEmpty()) {
             _m_extraSkillText->show();
-            _m_extraSkillBg->setToolTip(Sanguosha->getSkill(skillName)->getDescription());
+            _m_extraSkillBg->setToolTip(Sanguosha->getSkill(skillName)->getDescription(m_player->getSkillStep(skillName)));
         } else
             _m_extraSkillText->hide();
     }

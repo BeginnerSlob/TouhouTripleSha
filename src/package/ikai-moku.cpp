@@ -4274,8 +4274,8 @@ public:
                 foreach (const Skill *skill, general->getVisibleSkillList()) {
                     if (skill->isLordSkill()
                         || skill->isOwnerOnlySkill()
-                        || skill->getFrequency() == Skill::Limited
-                        || skill->getFrequency() == Skill::Wake)
+                        || skill->getFrequency(zuoci) == Skill::Limited
+                        || skill->getFrequency(zuoci) == Skill::Wake)
                         continue;
 
                     if (!skill_names.contains(skill->objectName())) {
@@ -4295,8 +4295,8 @@ public:
             foreach (const Skill *skill, general->getVisibleSkillList()) {
                 if (skill->isLordSkill()
                     || skill->isOwnerOnlySkill()
-                    || skill->getFrequency() == Skill::Limited
-                    || skill->getFrequency() == Skill::Wake)
+                    || skill->getFrequency(zuoci) == Skill::Limited
+                    || skill->getFrequency(zuoci) == Skill::Wake)
                     continue;
 
                 skill_names << skill->objectName();

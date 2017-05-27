@@ -127,7 +127,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
                 if (player->getGeneral()->getKingdom() == "kami" && player->getGeneralName() != "anjiang")
                     room->setPlayerProperty(player, "kingdom", room->askForKingdom(player));
                 foreach (const Skill *skill, player->getVisibleSkillList(false, true)) {
-                    if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()
+                    if (skill->getFrequency(player) == Skill::Limited && !skill->getLimitMark().isEmpty()
                         && (!skill->isLordSkill() || player->hasLordSkill(skill->objectName())))
                         room->addPlayerMark(player, skill->getLimitMark());
                 }

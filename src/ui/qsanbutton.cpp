@@ -42,7 +42,8 @@ QSanButton::QSanButton(const QString &groupName, const QString &buttonName, QGra
     setAcceptedMouseButtons(Qt::LeftButton);
 }
 
-void QSanButton::click() {
+void QSanButton::click()
+{
     if (isEnabled())
         _onMouseClick(true);
 }
@@ -185,7 +186,8 @@ void QSanSkillButton::_setSkillType(SkillType type) {
 }
 
 void QSanSkillButton::onMouseClick() {
-    if (_m_skill == NULL) return;
+    if (_m_skill == NULL)
+        return;
     if ((_m_style == S_STYLE_TOGGLE && isDown() && _m_emitActivateSignal) || _m_style == S_STYLE_PUSH) {
         emit skill_activated();
         emit skill_activated(_m_skill);
@@ -202,9 +204,10 @@ void QSanSkillButton::setSkill(const Skill *skill) {
      // such that sometimes the actual viewas skill is nested inside a trigger skill.
      // Since the trigger skill is not relevant, we flatten it before we create the button.
      _m_viewAsSkill = ViewAsSkill::parseViewAsSkill(_m_skill);
-     if (skill == NULL) skill = _m_skill;
+     if (skill == NULL)
+         skill = _m_skill;
 
-     Skill::Frequency freq = skill->getFrequency();
+     Skill::Frequency freq = skill->getFrequency(Self);
      if (freq == Skill::Frequent
          || (freq == Skill::NotFrequent && skill->inherits("TriggerSkill") && !skill->inherits("WeaponSkill")
              && !skill->inherits("ArmorSkill") && _m_viewAsSkill == NULL)) {
@@ -226,8 +229,8 @@ void QSanSkillButton::setSkill(const Skill *skill) {
 
          setStyle(QSanButton::S_STYLE_TOGGLE);
 
-         _m_emitDeactivateSignal = true;
          _m_emitActivateSignal = true;
+         _m_emitDeactivateSignal = true;
          _m_canEnable = true;
          _m_canDisable = true;
      } else if (freq == Skill::Wake) {
@@ -247,7 +250,7 @@ void QSanSkillButton::setSkill(const Skill *skill) {
          _m_canEnable = true;
          _m_canDisable = true;
      } else Q_ASSERT(false);
-     setToolTip(skill->getDescription());
+     setToolTip(skill->getDescription(Self->getSkillStep(skill->objectName())));
 
      Q_ASSERT((int)_m_skillType <= 5 && _m_state <= 3);
      _repaint();

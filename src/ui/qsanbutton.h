@@ -145,7 +145,8 @@ public:
     QSanSkillButton *addSkillButtonByName(const QString &skillName);
     inline QSanSkillButton *removeSkillButtonByName(const QString &skillName) {
         QSanInvokeSkillButton *button = getSkillButtonByName(skillName);
-        if (button != NULL) removeSkillButton(button);
+        if (button != NULL)
+            removeSkillButton(button);
         update();
         return button;
     }

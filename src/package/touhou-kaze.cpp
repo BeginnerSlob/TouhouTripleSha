@@ -2119,8 +2119,8 @@ public:
                     if (skill->isLordSkill()
                             || skill->isAttachedLordSkill()
                             || skill->isOwnerOnlySkill()
-                            || skill->getFrequency() == Skill::Limited
-                            || skill->getFrequency() == Skill::Wake)
+                            || skill->getFrequency(player) == Skill::Limited
+                            || skill->getFrequency(player) == Skill::Wake)
                         continue;
                     if (player->tag.value("ThDongxiLast").toStringList().contains(skill->objectName()))
                         continue;
@@ -2140,8 +2140,8 @@ public:
             foreach (const Skill *skill, p->getGeneral()->getVisibleSkillList()) {
                 if (skill->isLordSkill() || skill->isAttachedLordSkill()
                         || skill->isOwnerOnlySkill()
-                        || skill->getFrequency() == Skill::Limited
-                        || skill->getFrequency() == Skill::Wake)
+                        || skill->getFrequency(player) == Skill::Limited
+                        || skill->getFrequency(player) == Skill::Wake)
                     continue;
                 if (player->tag.value("ThDongxiLast").toStringList().contains(skill->objectName()))
                     continue;

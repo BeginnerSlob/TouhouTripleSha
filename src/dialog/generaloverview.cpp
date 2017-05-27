@@ -494,11 +494,8 @@ void GeneralOverview::on_tableWidget_itemSelectionChanged() {
 
     resetButtons();
 
-    foreach (const Skill *skill, skills) {
-        if (skill->objectName().endsWith("-edit"))
-            continue;
+    foreach (const Skill *skill, skills)
         addLines(skill, general);
-    }
 
     QString last_word = Sanguosha->translate("~" + general->objectName());
     if (last_word.startsWith("~") && general->objectName().contains("_"))
