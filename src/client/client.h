@@ -182,7 +182,7 @@ public:
     void revealGeneral(const QVariant &);
 
     void attachSkill(const QVariant &skill);
-    void changeSkillStep(const QVariant &skill);
+    void changeSkillStep(const QVariant &skill_str);
 
     inline virtual RoomState *getRoomState() { return &_m_roomState; }
     inline virtual Card *getCard(int cardId) const{ return _m_roomState.getCard(cardId); }
@@ -325,7 +325,7 @@ signals:
 
     void skill_attached(const QString &skill_name);
     void skill_detached(const QString &skill_name);
-    void skill_step_changed(const QString &skill_name);
+    void skill_step_changed(ClientPlayer *who, const QString &skill_name);
     void do_filter();
 
     void nullification_asked(bool asked);

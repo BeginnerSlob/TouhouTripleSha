@@ -1834,7 +1834,11 @@ void Room::setPlayerProperty(ServerPlayer *player, const char *property_name, co
     if (QString(property_name).endsWith("_step")) {
         QString name = QString(property_name);
         name.chop(5);
-        doNotify(player, S_COMMAND_CHANGE_SKILL_STEP, QVariant(name));
+
+        JsonArray args;
+        args << player->objectName();
+        args << name;
+        doBroadcastNotify(S_COMMAND_CHANGE_SKILL_STEP, args);
     }
 }
 

@@ -3474,13 +3474,22 @@ void RoomScene::detachSkill(const QString &skill_name)
     btn->deleteLater();
 }
 
-void RoomScene::changeSkillStep(const QString &skill_name)
+void RoomScene::changeSkillStep(ClientPlayer *who, const QString &skill_name)
 {
-    QSanInvokeSkillButton *btn = dashboard->getSkillDock()->getSkillButtonByName(skill_name);
-    if (btn) {
-        const Skill *skill = Sanguosha->getSkill(skill_name);
-        if (skill)
-            btn->setSkill(skill);
+    Photo *photo = name2photo[who->objectName()];
+    if (photo) {
+        photo->updateAvatar();
+    } else {
+        Q_ASSERT(who == Self);
+        if (who == Self) {
+            QSanInvokeSkillButton *btn = dashboard->getSkillDock()->getSkillButtonByName(skill_name);
+            if (btn) {
+                const Skill *skill = Sanguosha->getSkill(skill_name);
+                if (skill)
+                    btn->setSkill(skill);
+            }
+            dashboard->updateAvatar();
+        }
     }
 }
 

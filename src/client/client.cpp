@@ -1603,14 +1603,16 @@ void Client::attachSkill(const QVariant &skill)
     emit skill_attached(skill_name);
 }
 
-void Client::changeSkillStep(const QVariant &skill)
+void Client::changeSkillStep(const QVariant &skill_str)
 {
-    if (!isString(skill))
+    JsonArray args = skill_str.value<JsonArray>();
+    if (args.size() < 2)
         return;
-    QString skill_name = skill.toString();
-    if (!Self->hasSkill(skill_name, true))
+    ClientPlayer *who = getPlayer(args[0].toString());
+    QString skill_name = args[1].toString();
+    if (!who || !who->hasSkill(skill_name, true))
         return;
-    emit skill_step_changed(skill_name);
+    emit skill_step_changed(who, skill_name);
 }
 
 void Client::askForAssign(const QVariant &) {

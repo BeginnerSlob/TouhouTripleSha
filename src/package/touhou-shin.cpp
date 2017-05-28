@@ -1604,28 +1604,53 @@ ThNihuiCard::ThNihuiCard()
 
 void ThNihuiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
-    source->drawCards(3, "thnihui");
-    room->askForDiscard(source, "thnihui", 1, 1, false, true);
-    room->setPlayerMark(source, "thnihui", 1);
-    JsonArray args;
-    args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
-    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+    if (getUserString() == "1") {
+        source->drawCards(3, "thnihui");
+        room->askForDiscard(source, "thnihui", 1, 1, false, true);
+        room->setPlayerProperty(source, "thnihui_step", 1);
+    } else if (getUserString() == "2") {
+        source->drawCards(1, "thnihui");
+        room->setPlayerProperty(source, "thnihui_step", 0);
+    }
 }
 
-class ThNihui : public ZeroCardViewAsSkill
+class ThNihui : public ViewAsSkill
 {
 public:
-    ThNihui() : ZeroCardViewAsSkill("thnihui")
+    ThNihui() : ViewAsSkill("thnihui")
     {
     }
 
-    virtual const Card *viewAs() const {
-        return new ThNihuiCard;
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
+    {
+        if (Self->getSkillStep(objectName()) == 0)
+            return false;
+
+        return selected.length() < 3 && !Self->isJilei(to_select);
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        if (Self->getSkillStep(objectName()) == 0) {
+            if (cards.isEmpty()) {
+                ThNihuiCard *card = new ThNihuiCard;
+                card->setUserString("1");
+                return card;
+            }
+        } else {
+            if (cards.length() == 3) {
+                ThNihuiCard *card = new ThNihuiCard;
+                card->addSubcards(cards);
+                card->setUserString("2");
+                return card;
+            }
+        }
+        return NULL;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return !player->hasUsed("ThNihuiCard") && !player->hasUsed("ThNihuiEditCard");
+        return !player->hasUsed("ThNihuiCard");
     }
 };
 
