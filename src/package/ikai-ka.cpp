@@ -1231,7 +1231,7 @@ public:
             CardResponseStruct resp = data.value<CardResponseStruct>();
             if (resp.m_isUse)
                 use_card = resp.m_card;
-        } else if (triggerEvent == CardResponded) {
+        } else if (triggerEvent == CardUsed) {
             CardUseStruct use = data.value<CardUseStruct>();
             use_card = use.card;
         }
