@@ -24,7 +24,7 @@ const int Settings::S_MOVE_CARD_ANIMATION_DURATION = 600;
 const int Settings::S_JUDGE_ANIMATION_DURATION = 1200;
 const int Settings::S_JUDGE_LONG_DELAY = 800;
 
-const QString Settings::m_defaultMusicPath = "audio/bgm/1.ogg;audio/bgm/2.ogg;audio/bgm/3.ogg;audio/bgm/4.ogg;audio/bgm/5.ogg;audio/bgm/6.ogg;audio/bgm/7.ogg;audio/bgm/8.ogg;audio/bgm/9.ogg;audio/bgm/10.ogg;audio/bgm/11.ogg";
+const QString Settings::m_defaultMusicPath = "audio/bgm/1.ogg;audio/bgm/2.ogg;audio/bgm/3.ogg;audio/bgm/4.ogg;audio/bgm/5.ogg;audio/bgm/6.ogg;audio/bgm/7.ogg;audio/bgm/8.ogg;audio/bgm/9.ogg;audio/bgm/10.ogg;audio/bgm/11.ogg;audio/bgm/12.ogg";
 
 Settings::Settings()
 #ifdef Q_OS_WIN32
