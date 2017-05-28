@@ -2549,7 +2549,7 @@ bool Room::addRobotCommand(ServerPlayer *player, const QVariant &arg)
 
         const QString robot_name = tr("Computer %1").arg(QChar('A' + n));
         n++;
-        const QString robot_avatar = Sanguosha->getRandomGeneralName();
+        const QString robot_avatar = "story004";
         signup(robot, robot_name, robot_avatar, true);
 
         QString greeting = tr("Hello, I'm a robot").toUtf8().toBase64();

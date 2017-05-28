@@ -406,6 +406,8 @@ HulaopassPackage::HulaopassPackage()
     story003->addSkill(new ThHongdaoKeep);
     related_skills.insertMulti("thhongdao", "#thhongdao-keep");
 
+    General *story004 = new General(this, "story004", "kami", 4, true, true, true);
+
     addMetaObject<ThChayinCard>();
     addMetaObject<ThShenmieCard>();
 }
