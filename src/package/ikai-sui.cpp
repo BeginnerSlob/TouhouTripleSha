@@ -1674,8 +1674,10 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *yuejin) const{
-        if (!room->askForCard(player, "^BasicCard", "@ikbashou-discard"))
+        if (!room->askForCard(player, "EquipCard", "@ikbashou-discard"))
             room->damage(DamageStruct(objectName(), yuejin, player));
+        else
+            player->drawCards(1, objectName());
         return false;
     }
 };
