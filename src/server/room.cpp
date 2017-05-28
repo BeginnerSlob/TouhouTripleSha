@@ -2578,10 +2578,7 @@ bool Room::toggleReadyCommand(ServerPlayer *, const QVariant &) {
 
 void Room::signup(ServerPlayer *player, const QString &screen_name, const QString &avatar, bool is_robot) {
     player->setObjectName(generatePlayerName());
-    if (Sanguosha->getGeneral(avatar))
-        player->setProperty("avatar", avatar);
-    else
-        player->setProperty("avatar", "story004");
+    player->setProperty("avatar", avatar);
     player->setScreenName(screen_name);
 
     if (!is_robot) {
