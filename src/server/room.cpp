@@ -2532,7 +2532,7 @@ bool Room::addRobotCommand(ServerPlayer *player, const QVariant &arg)
     int n = 0;
     foreach (ServerPlayer *player, m_players) {
         if (player->getState() == "robot")
-            n++;
+            ++ n;
     }
 
     int add_num = arg.toInt();
@@ -2549,7 +2549,7 @@ bool Room::addRobotCommand(ServerPlayer *player, const QVariant &arg)
 
         const QString robot_name = tr("Computer %1").arg(QChar('A' + n));
         n++;
-        const QString robot_avatar = Sanguosha->getRandomGeneralName();
+        const QString robot_avatar = "robot";
         signup(robot, robot_name, robot_avatar, true);
 
         QString greeting = tr("Hello, I'm a robot").toUtf8().toBase64();

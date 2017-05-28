@@ -334,7 +334,7 @@ void Client::addPlayer(const QVariant &player_info)
         return;
 
     JsonArray info = player_info.value<JsonArray>();
-    if (info.size() < 3)
+    if (info.size() < 4)
         return;
 
     QString name = info[0].toString();
@@ -342,11 +342,13 @@ void Client::addPlayer(const QVariant &player_info)
     if (screen_name.length() > 8)
         screen_name = screen_name.left(8);
     QString avatar = info[2].toString();
+    QString state = info[3].toString();
 
     ClientPlayer *player = new ClientPlayer(this);
     player->setObjectName(name);
     player->setScreenName(screen_name);
     player->setProperty("avatar", avatar);
+    player->setProperty("state", state);
 
     players << player;
     ++alive_count;

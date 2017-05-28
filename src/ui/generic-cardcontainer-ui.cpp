@@ -221,6 +221,26 @@ void PlayerCardContainer::updateAvatar() {
                          _getPixmap(QSanRoomSkin::S_SKIN_KEY_GENDER, QString(QSanRoomSkin::S_SKIN_KEY_DEFAULT_SECOND)),
                          _getAvatarParent());
         }
+    } else if (m_player && m_player->getState() == "robot") {
+        _m_avatarArea->setToolTip(m_player->getSkillDescription());
+        QPixmap avatarIcon = _getAvatarIcon("robot");
+        _paintPixmap(_m_avatarIcon, _m_layout->m_avatarArea, avatarIcon, _getAvatarParent());
+        _paintPixmap(_m_handCardBg, _m_layout->m_handCardArea,
+                     _getPixmap(QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM, QString(QSanRoomSkin::S_SKIN_KEY_DEFAULT_SECOND)),
+                     _getAvatarParent());
+        _paintPixmap(_m_genderBg, _m_layout->m_genderArea,
+                     _getPixmap(QSanRoomSkin::S_SKIN_KEY_GENDER, QString(QSanRoomSkin::S_SKIN_KEY_DEFAULT_SECOND)),
+                     _getAvatarParent());
+    } else if (m_player) {
+        _m_avatarArea->setToolTip(m_player->getSkillDescription());
+        QPixmap avatarIcon = _getAvatarIcon(Sanguosha->getRandomGeneralName());
+        _paintPixmap(_m_avatarIcon, _m_layout->m_avatarArea, avatarIcon, _getAvatarParent());
+        _paintPixmap(_m_handCardBg, _m_layout->m_handCardArea,
+                     _getPixmap(QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM, QString(QSanRoomSkin::S_SKIN_KEY_DEFAULT_SECOND)),
+                     _getAvatarParent());
+        _paintPixmap(_m_genderBg, _m_layout->m_genderArea,
+                     _getPixmap(QSanRoomSkin::S_SKIN_KEY_GENDER, QString(QSanRoomSkin::S_SKIN_KEY_DEFAULT_SECOND)),
+                     _getAvatarParent());
     } else {
         _paintPixmap(_m_avatarIcon, _m_layout->m_avatarArea,
                      QSanRoomSkin::S_SKIN_KEY_BLANK_GENERAL, _getAvatarParent());
