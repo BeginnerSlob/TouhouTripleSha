@@ -122,11 +122,7 @@ void Settings::init() {
     ServerName = value("ServerName", tr("%1's touhoukifugeki").arg(UserName)).toString();
 
     HostAddress = value("HostAddress", "127.0.0.1").toString();
-    if (!Sanguosha->getGeneral((value("UserAvatar").toString())) 
-        || value("UserAvatar").toString() == "story004")
-        UserAvatar = "kaze001";
-    else
-        UserAvatar = value("UserAvatar", "kaze001").toString();
+    UserAvatar = value("UserAvatar", "kaze001").toString();
     HistoryIPs = value("HistoryIPs").toStringList();
     DetectorPort = value("DetectorPort", 9526u).toUInt();
     MaxCards = value("MaxCards", 15).toInt();
