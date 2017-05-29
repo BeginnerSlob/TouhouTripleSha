@@ -10,6 +10,8 @@ a {color:black;}
 th {color:rgb(51,102,255);background:white;}
 td,th {font-family:Microsoft YaHei;font-size:11pt;text-align:center;height:22px;border-right:1px solid black;}
 td.bottomline,th.bottomline {border-bottom:1px solid black;}
+tr.bottomlinerow td,tr.bottomlinerow th {border-bottom:1px solid black;}
+td.firstcol {border-bottom:1px solid black;background:white;}
 td {border-bottom:1px solid white;}
 
 tr:nth-child(2n+4) {background:rgb(255,255,255);}
@@ -32,19 +34,19 @@ tr:nth-child(2n+75) {background:rgb(228,228,228);}
 <body>
 
 <table>
-<tr>
-  <th class="bottomline" colspan=6">背景音乐一览</th>
+<tr class="bottomlinerow">
+  <th colspan=6">背景音乐一览</th>
+</tr>
+<tr class="bottomlinerow">
+  <th style="min-width:45px">文件</th>
+  <th style="min-width:340px">组曲原曲名</th>
+  <th style="min-width:197px">作者</th>
+  <th style="min-width:267px">专辑</th>
+  <th style="min-width:329px">东方原曲名</th>
+  <th style="min-width:44px">时长</th>
 </tr>
 <tr>
-  <th style="min-width:45px" class="bottomline">文件</th>
-  <th style="min-width:340px" class="bottomline">组曲原曲名</th>
-  <th style="min-width:197px" class="bottomline">作者</th>
-  <th style="min-width:267px" class="bottomline">专辑</th>
-  <th style="min-width:329px" class="bottomline">东方原曲名</th>
-  <th style="min-width:44px" class="bottomline">时长</th>
-</tr>
-<tr>
-  <td rowspan="5" class="bottomline" style="background:white">主</td>
+  <td rowspan="5" class="firstcol">主</td>
   <td>地霊達の起床</td>
   <td>まらしぃ</td>
   <td>幻想遊戯&lt;地&gt;</td>
@@ -72,15 +74,15 @@ tr:nth-child(2n+75) {background:rgb(228,228,228);}
   <td>シンデレラケージ～Kagome Kagome</td>
   <td>3:45</td>
 </tr>
-<tr>
-  <td class="bottomline">夏陽炎</td>
-  <td class="bottomline">Qlocks</td>
-  <td class="bottomline">天威夢方</td>
-  <td class="bottomline">紅楼～Eastern Dream</td>
-  <td class="bottomline">5:40</td>
+<tr class="bottomlinerow">
+  <td>夏陽炎</td>
+  <td>Qlocks</td>
+  <td>天威夢方</td>
+  <td>紅楼～Eastern Dream</td>
+  <td>5:40</td>
 </tr>
 <tr>
-  <td rowspan="6" class="bottomline" style="background:white">1</td>
+  <td rowspan="6" class="firstcol">1</td>
   <td>昼下がりの憂鬱</td>
   <td>みかん箱、Foxtail-Grass S.</td>
   <td>Pastoral Landscapetora</td>
@@ -115,15 +117,15 @@ tr:nth-child(2n+75) {background:rgb(228,228,228);}
   <td>蓬莱伝説</td>
   <td>2:32</td>
 </tr>
-<tr>
-  <td class="bottomline">後夜祭</td>
-  <td class="bottomline">Floating Cloud</td>
-  <td class="bottomline">幻想郷事変</td>
-  <td class="bottomline">悠久の蒸気机関</td>
-  <td class="bottomline">4:02</td>
+<tr class="bottomlinerow">
+  <td>後夜祭</td>
+  <td>Floating Cloud</td>
+  <td>幻想郷事変</td>
+  <td>悠久の蒸気机関</td>
+  <td>4:02</td>
 </tr>
 <tr>
-  <td rowspan="5" class="bottomline" style="background:white">2</td>
+  <td rowspan="5" class="firstcol">2</td>
   <td>日陰と帽子と風鈴と</td>
   <td>Foxtail-Grass Studio</td>
   <td>Remember*C～summer</td>
@@ -151,15 +153,15 @@ tr:nth-child(2n+75) {background:rgb(228,228,228);}
   <td>Bad Apple!! &amp; 花は幻想のままに</td>
   <td>3:09</td>
 </tr>
-<tr>
-  <td class="bottomline">Genesis Beyond the Starting</td>
-  <td class="bottomline">Falcom Sound Team Jdk</td>
-  <td class="bottomline">Ys Original Sound Track</td>
-  <td class="bottomline">原創曲</td>
-  <td class="bottomline">2:31</td>
+<tr class="bottomlinerow">
+  <td>Genesis Beyond the Starting</td>
+  <td>Falcom Sound Team Jdk</td>
+  <td>Ys Original Sound Track</td>
+  <td>原創曲</td>
+  <td>2:31</td>
 </tr>
 <tr>
-  <td rowspan="6" class="bottomline" style="background:white">3</td>
+  <td rowspan="6" class="firstcol">3</td>
   <td>幻想郷へのいざない</td>
   <td>Floating Cloud</td>
   <td>東方アイリッシュ</td>
@@ -194,15 +196,15 @@ tr:nth-child(2n+75) {background:rgb(228,228,228);}
   <td>芥川龍之介の河童～Candid Friend</td>
   <td>3:25</td>
 </tr>
-<tr>
-  <td class="bottomline">千年幻想郷～History of the Moon</td>
-  <td class="bottomline">Sensitive Heart</td>
-  <td class="bottomline">月射録～The Moon-shooter 　</td>
-  <td class="bottomline">千年幻想郷～History of the Moon</td>
-  <td class="bottomline">3:18</td>
+<tr class="bottomlinerow">
+  <td>千年幻想郷～History of the Moon</td>
+  <td>Sensitive Heart</td>
+  <td>月射録～The Moon-shooter 　</td>
+  <td>千年幻想郷～History of the Moon</td>
+  <td>3:18</td>
 </tr>
 <tr>
-  <td rowspan="5" class="bottomline" style="background:white">4</td>
+  <td rowspan="5" class="firstcol">4</td>
   <td>旧地獄街道を行く</td>
   <td>干瓢碁</td>
   <td>ニコニコ原曲</td>
@@ -230,15 +232,15 @@ tr:nth-child(2n+75) {background:rgb(228,228,228);}
   <td>少女さとり～3rd eye</td>
   <td>2:40</td>
 </tr>
-<tr>
-  <td class="bottomline">迎え火</td>
-  <td class="bottomline">Floating Cloud</td>
-  <td class="bottomline">幻想郷事変</td>
-  <td class="bottomline">蠢々秋月 &amp; 彼岸帰航 &amp; 懐かしき東方の血</td>
-  <td class="bottomline">5:38</td>
+<tr class="bottomlinerow">
+  <td>迎え火</td>
+  <td>Floating Cloud</td>
+  <td>幻想郷事変</td>
+  <td>蠢々秋月 &amp; 彼岸帰航 &amp; 懐かしき東方の血</td>
+  <td>5:38</td>
 </tr>
 <tr>
-  <td rowspan="5" class="bottomline" style="background:white">5</td>
+  <td rowspan="5" class="firstcol">5</td>
   <td>春の湊に</td>
   <td>Forest306</td>
   <td>東方阿漕宴</td>
@@ -266,15 +268,15 @@ tr:nth-child(2n+75) {background:rgb(228,228,228);}
   <td>六十年目の東方裁判～Fate of Sixty Years</td>
   <td>5:04</td>
 </tr>
-<tr>
-  <td class="bottomline">祭事</td>
-  <td class="bottomline">Floating Cloud</td>
-  <td class="bottomline">カーニバル</td>
-  <td class="bottomline">緋想天</td>
-  <td class="bottomline">3:58</td>
+<tr class="bottomlinerow">
+  <td>祭事</td>
+  <td>Floating Cloud</td>
+  <td>カーニバル</td>
+  <td>緋想天</td>
+  <td>3:58</td>
 </tr>
 <tr>
-  <td rowspan="6" class="bottomline" style="background:white">6</td>
+  <td rowspan="6" class="firstcol">6</td>
   <td>永却の螺旋～ウロボロスの輪</td>
   <td>流派未確定</td>
   <td>東方幻神録</td>
@@ -309,15 +311,15 @@ tr:nth-child(2n+75) {background:rgb(228,228,228);}
   <td>少女秘封倶楽部</td>
   <td>4:04</td>
 </tr>
-<tr>
-  <td class="bottomline">神は麓に風を吹かせる</td>
-  <td class="bottomline">Floating Cloud</td>
-  <td class="bottomline">幻想郷事変</td>
-  <td class="bottomline">少女が見た日本の原風景</td>
-  <td class="bottomline">3:20</td>
+<tr class="bottomlinerow">
+  <td>神は麓に風を吹かせる</td>
+  <td>Floating Cloud</td>
+  <td>幻想郷事変</td>
+  <td>少女が見た日本の原風景</td>
+  <td>3:20</td>
 </tr>
 <tr>
-  <td rowspan="5" class="bottomline" style="background:white">7</td>
+  <td rowspan="5" class="firstcol">7</td>
   <td>紅魔館で踊りましょう</td>
   <td>Floating Cloud</td>
   <td>東方アイリッシュ</td>
@@ -345,15 +347,15 @@ tr:nth-child(2n+75) {background:rgb(228,228,228);}
   <td>亡き王女の為のセプテット</td>
   <td>4:08</td>
 </tr>
-<tr>
-  <td class="bottomline">そして今日も紅魔館の扉は開く</td>
-  <td class="bottomline">Floating Cloud</td>
-  <td class="bottomline">東方アイリッシュ</td>
-  <td class="bottomline">紅楼～Eastern Dream</td>
-  <td class="bottomline">5:11</td>
+<tr class="bottomlinerow">
+  <td>そして今日も紅魔館の扉は開く</td>
+  <td>Floating Cloud</td>
+  <td>東方アイリッシュ</td>
+  <td>紅楼～Eastern Dream</td>
+  <td>5:11</td>
 </tr>
 <tr>
-  <td rowspan="6" class="bottomline" style="background:white">8</td>
+  <td rowspan="6" class="firstcol">8</td>
   <td>遠野幻想物語</td>
   <td>まらしぃ</td>
   <td>幻想遊戯&lt;集&gt;</td>
@@ -388,15 +390,15 @@ tr:nth-child(2n+75) {background:rgb(228,228,228);}
   <td>明日ハレの日、ケの昨日</td>
   <td>2:48</td>
 </tr>
-<tr>
-  <td class="bottomline">氷だらけのアイスコーヒー</td>
-  <td class="bottomline">Foxtail-Grass Studio</td>
-  <td class="bottomline">Remember*C～summer</td>
-  <td class="bottomline">衛星カフェテラス</td>
-  <td class="bottomline">3:37</td>
+<tr class="bottomlinerow">
+  <td>氷だらけのアイスコーヒー</td>
+  <td>Foxtail-Grass Studio</td>
+  <td>Remember*C～summer</td>
+  <td>衛星カフェテラス</td>
+  <td>3:37</td>
 </tr>
 <tr>
-  <td rowspan="5" class="bottomline" style="background:white">9</td>
+  <td rowspan="5" class="firstcol">9</td>
   <td>秋風月</td>
   <td>Foxtail-Grass Studio</td>
   <td>Lupinus 幻想写景&lt;風&gt;</td>
@@ -424,15 +426,15 @@ tr:nth-child(2n+75) {background:rgb(228,228,228);}
   <td>懐かしき东方の血</td>
   <td>5:02</td>
 </tr>
-<tr>
-  <td class="bottomline">Mysterious Road</td>
-  <td class="bottomline">Foxtail-Grass Studio</td>
-  <td class="bottomline">Lupinus 幻想写景&lt;風&gt;</td>
-  <td class="bottomline">運命のダークサイド</td>
-  <td class="bottomline">2:50</td>
+<tr class="bottomlinerow">
+  <td>Mysterious Road</td>
+  <td>Foxtail-Grass Studio</td>
+  <td>Lupinus 幻想写景&lt;風&gt;</td>
+  <td>運命のダークサイド</td>
+  <td>2:50</td>
 </tr>
 <tr>
-  <td rowspan="6" class="bottomline" style="background:white">10</td>
+  <td rowspan="6" class="firstcol">10</td>
   <td>原始の森</td>
   <td>Drop</td>
   <td>東方幻想奇談～闇色硝子</td>
@@ -467,15 +469,15 @@ tr:nth-child(2n+75) {background:rgb(228,228,228);}
   <td>ネイティブフェイス</td>
   <td>3:36</td>
 </tr>
-<tr>
-  <td class="bottomline">暮色蒼然</td>
-  <td class="bottomline">はちみつれもん</td>
-  <td class="bottomline">東方天楼華</td>
-  <td class="bottomline">暮色蒼然</td>
-  <td class="bottomline">3:12</td>
+<tr class="bottomlinerow">
+  <td>暮色蒼然</td>
+  <td>はちみつれもん</td>
+  <td>東方天楼華</td>
+  <td>暮色蒼然</td>
+  <td>3:12</td>
 </tr>
 <tr>
-  <td rowspan="6" class="bottomline" style="background:white">11</td>
+  <td rowspan="6" class="firstcol">11</td>
   <td>美しき幻想郷の夜明け～the Vision of Beautiful Dawn</td>
   <td>Unprepared Orchestra</td>
   <td>幻想郷は永遠に</td>
@@ -510,15 +512,15 @@ tr:nth-child(2n+75) {background:rgb(228,228,228);}
   <td>さくらさくら～Japanize Dream</td>
   <td>2:43</td>
 </tr>
-<tr>
-  <td class="bottomline">The Other Side</td>
-  <td class="bottomline">発热巫女～ず</td>
-  <td class="bottomline">The Lotus</td>
-  <td class="bottomline">彼岸歸航～Riverside View</td>
-  <td class="bottomline">4:41</td>
+<tr class="bottomlinerow">
+  <td>The Other Side</td>
+  <td>発热巫女～ず</td>
+  <td>The Lotus</td>
+  <td>彼岸歸航～Riverside View</td>
+  <td>4:41</td>
 </tr>
 <tr>
-  <td rowspan="5" class="bottomline" style="background:white">12</td>
+  <td rowspan="5" class="firstcol">12</td>
   <td>八百万の風が吹く</td>
   <td> Foxtail-Grass Studio</td>
   <td>かぜがたり。</td>
@@ -546,15 +548,15 @@ tr:nth-child(2n+75) {background:rgb(228,228,228);}
   <td>聖徳伝説～True Administrator</td>
   <td>3:48</td>
 </tr>
-<tr>
-  <td class="bottomline">恐るべき子供たち～Four Child</td>
-  <td class="bottomline">流派未階堂</td>
-  <td class="bottomline">胎動～Signs</td>
-  <td class="bottomline">輝く針の小人族～Little Princess</td>
-  <td class="bottomline">3:41</td>
+<tr class="bottomlinerow">
+  <td>恐るべき子供たち～Four Child</td>
+  <td>流派未階堂</td>
+  <td>胎動～Signs</td>
+  <td>輝く針の小人族～Little Princess</td>
+  <td>3:41</td>
 </tr>
 <tr>
-  <td rowspan="11" class="bottomline" style="background:white">艦</td>
+  <td rowspan="11" class="firstcol">艦</td>
   <td>海</td>
   <td>亀岡夏海</td>
   <td>艦響</td>
@@ -624,12 +626,12 @@ tr:nth-child(2n+75) {background:rgb(228,228,228);}
   <td>艦隊これくしょんOST</td>
   <td>1:56</td>
 </tr>
-<tr>
-  <td class="bottomline">支援艦隊到着</td>
-  <td class="bottomline">亀岡夏海</td>
-  <td class="bottomline">艦響</td>
-  <td class="bottomline">艦隊これくしょんOST</td>
-  <td class="bottomline">2:02</td>
+<tr class="bottomlinerow">
+  <td>支援艦隊到着</td>
+  <td>亀岡夏海</td>
+  <td>艦響</td>
+  <td>艦隊これくしょんOST</td>
+  <td>2:02</td>
 </tr>
 </table>
 

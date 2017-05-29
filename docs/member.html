@@ -10,6 +10,7 @@ a {color:black;}
 th {color:rgb(0,102,255);background:white;}
 td,th {font-family:Microsoft YaHei;font-size:11pt;text-align:center;height:22px;border-right:1px solid black;}
 td.bottomline,th.bottomline {border-bottom:1px solid black;}
+tr.bottomlinerow td,tr.bottomlinerow th {border-bottom:1px solid black;}
 td {border-bottom:1px solid white;}
 
 tr:nth-child(2n+3) {background:rgb(250,255,243);}
@@ -19,14 +20,14 @@ tr:nth-child(2n+4) {background:rgb(241,255,213);}
 <body>
 
 <table>
-<tr>
-  <th class="bottomline" colspan="5">东方绮符剧制作组成员</th>
+<tr class="bottomlinerow">
+  <th colspan="5">东方绮符剧制作组成员</th>
 </tr>
-<tr>
-  <th style="min-width:107px" class="bottomline">组员</th>
-  <th style="min-width:184px" class="bottomline">其他昵称</th>
-  <th style="min-width:462px" class="bottomline">分工</th>
-  <th style="min-width:337px" class="bottomline">个人主页</th>
+<tr class="bottomlinerow">
+  <th style="min-width:107px">组员</th>
+  <th style="min-width:184px">其他昵称</th>
+  <th style="min-width:462px">分工</th>
+  <th style="min-width:337px">个人主页</th>
 </tr>
 <tr>
   <td>小巫女莎莎</td>
@@ -94,11 +95,11 @@ tr:nth-child(2n+4) {background:rgb(241,255,213);}
   <td>测试</td>
   <td><a href=http://github.com/shamosha target=_blank>github.com/shamosha</a></td>
 </tr>
-<tr>
-  <td class="bottomline">星月</td>
-  <td class="bottomline">-</td>
-  <td class="bottomline">杂项</td>
-  <td class="bottomline"><a href=http://steamcommunity.com/id/abukumaXY target=_blank>steamcommunity.com/id/abukumaXY</a></td>
+<tr class="bottomlinerow">
+  <td>星月</td>
+  <td>-</td>
+  <td>杂项</td>
+  <td><a href=http://steamcommunity.com/id/abukumaXY target=_blank>steamcommunity.com/id/abukumaXY</a></td>
 </tr>
 </table>
 

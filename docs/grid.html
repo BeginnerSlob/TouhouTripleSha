@@ -10,6 +10,7 @@ a {color:black;}
 th {color:black;background:white;}
 td,th {font-family:Microsoft YaHei;font-size:11pt;text-align:center;height:22px;min-width:88px;}
 td.bottomline,th.bottomline {border-bottom:1px solid black;}
+tr.bottomlinerow td,tr.bottomlinerow th {border-bottom:1px solid black;}
 th,td:nth-child(4n+5) {border-right:1px solid black;}
 td {border-bottom:1px solid white;border-right:1px solid white;}
 th:nth-child(1) {min-width:30px;}
@@ -53,16 +54,17 @@ tr:nth-child(17) td:nth-child(n) {background:white;border-bottom:1px solid black
 <body>
 
 <table>
-<tr>
-  <th class="bottomline title" colspan="17">东方绮符剧游戏牌一览表</th>
+<tr class="bottomlinerow">
+  <th colspan="17" class="title">东方绮符剧游戏牌一览表</th>
+</tr>
+<tr class="bottomlinerow">
+  <th>点数</th>
+  <th colspan="4">黑桃</th>
+  <th colspan="4" class="red">红桃</th>
+  <th colspan="4">梅花</th>
+  <th colspan="4" class="red">方片</th>
 </tr>
 <tr>
-  <th class="bottomline">点数</th>
-  <th class="bottomline" colspan="4">黑桃</th>
-  <th class="bottomline red" colspan="4">红桃</th>
-  <th class="bottomline" colspan="4">梅花</th>
-  <th class="bottomline red" colspan="4">方片</th>
-</tr><tr>
   <th>1</th>
   <td class="delayedTrick">玄海仙鸣</td>
   <td class="damageTrick">碎月绮斗</td>
@@ -80,7 +82,8 @@ tr:nth-child(17) td:nth-child(n) {background:white;border-bottom:1px solid black
   <td class="damageTrick">碎月绮斗</td>
   <td class="weapon">八卦炉</td>
   <td class="specialTrick">三粒天滴</td>
-</tr><tr>
+</tr>
+<tr>
   <th>2</th>
   <td class="weapon">绯想剑</td>
   <td class="armor">净琉璃镜</td>
@@ -98,7 +101,8 @@ tr:nth-child(17) td:nth-child(n) {background:white;border-bottom:1px solid black
   <td class="jink">闪</td>
   <td class="peach">桃</td>
   <td class="slash">杀</td>
-</tr><tr>
+</tr>
+<tr>
   <th>3</th>
   <td class="dismantlementTrick">妙手探云</td>
   <td class="dismantlementTrick">心网密葬</td>
@@ -116,7 +120,8 @@ tr:nth-child(17) td:nth-child(n) {background:white;border-bottom:1px solid black
   <td class="jink">闪</td>
   <td class="peach">桃</td>
   <td class="damageTrick">灼狱业炎</td>
-</tr><tr>
+</tr>
+<tr>
   <th>4</th>
   <td class="dismantlementTrick">妙手探云</td>
   <td class="dismantlementTrick">心网密葬</td>
@@ -134,7 +139,8 @@ tr:nth-child(17) td:nth-child(n) {background:white;border-bottom:1px solid black
   <td class="jink">闪</td>
   <td class="slash">火杀</td>
   <td class="treasure">万宝槌</td>
-</tr><tr>
+</tr>
+<tr>
   <th>5</th>
   <td class="weapon">离魂幽镰</td>
   <td class="horse">紫境</td>
@@ -152,7 +158,8 @@ tr:nth-child(17) td:nth-child(n) {background:white;border-bottom:1px solid black
   <td class="jink">闪</td>
   <td class="slash">火杀</td>
   <td class="slash">火杀</td>
-</tr><tr>
+</tr>
+<tr>
   <th>6</th>
   <td class="weapon">楼观剑</td>
   <td class="delayedTrick">春雪幻梦</td>
@@ -170,7 +177,8 @@ tr:nth-child(17) td:nth-child(n) {background:white;border-bottom:1px solid black
   <td class="jink">闪</td>
   <td class="jink">闪</td>
   <td class="jink">闪</td>
-</tr><tr>
+</tr>
+<tr>
   <th>7</th>
   <td class="damageTrick">百鬼夜行</td>
   <td class="slash">杀</td>
@@ -188,7 +196,8 @@ tr:nth-child(17) td:nth-child(n) {background:white;border-bottom:1px solid black
   <td class="jink">闪</td>
   <td class="jink">闪</td>
   <td class="jink">闪</td>
-</tr><tr>
+</tr>
+<tr>
   <th>8</th>
   <td class="slash">杀</td>
   <td class="slash">杀</td>
@@ -206,7 +215,8 @@ tr:nth-child(17) td:nth-child(n) {background:white;border-bottom:1px solid black
   <td class="jink">闪</td>
   <td class="jink">闪</td>
   <td class="jink">闪</td>
-</tr><tr>
+</tr>
+<tr>
   <th>9</th>
   <td class="slash">杀</td>
   <td class="slash">杀</td>
@@ -224,7 +234,8 @@ tr:nth-child(17) td:nth-child(n) {background:white;border-bottom:1px solid black
   <td class="jink">闪</td>
   <td class="analeptic">酒</td>
   <td class="peach">桃</td>
-</tr><tr>
+</tr>
+<tr>
   <th>X</th>
   <td class="slash">杀</td>
   <td class="slash">杀</td>
@@ -242,7 +253,8 @@ tr:nth-child(17) td:nth-child(n) {background:white;border-bottom:1px solid black
   <td class="jink">闪</td>
   <td class="jink">闪</td>
   <td class="jink">闪</td>
-</tr><tr>
+</tr>
+<tr>
   <th>J</th>
   <td class="dismantlementTrick">妙手探云</td>
   <td class="specialTrick">三粒天滴</td>
@@ -260,7 +272,8 @@ tr:nth-child(17) td:nth-child(n) {background:white;border-bottom:1px solid black
   <td class="jink">闪</td>
   <td class="jink">闪</td>
   <td class="dismantlementTrick">木隐妖岚</td>
-</tr><tr>
+</tr>
+<tr>
   <th>Q</th>
   <td class="weapon">虹法贤书</td>
   <td class="dismantlementTrick">心网密葬</td>
@@ -278,27 +291,28 @@ tr:nth-child(17) td:nth-child(n) {background:white;border-bottom:1px solid black
   <td class="peach">桃</td>
   <td class="damageTrick">灼狱业焰</td>
   <td class="jink">闪</td>
-</tr><tr>
-  <th class="bottomline">K</th>
-  <td class="bottomline damageTrick">百鬼夜行</td>
-  <td class="bottomline horse">雾雨帚</td>
-  <td class="bottomline specialTrick">三粒天滴</td>
-  <td class="bottomline treasure">八坂琼曲玉</td>
-  <td class="bottomline jink">闪</td>
-  <td class="bottomline horse">坤神天叶</td>
-  <td class="bottomline specialTrick">三粒天滴</td>
-  <td class="bottomline damageTrick">血凤涅烟</td>
-  <td class="bottomline dismantlementTrick">断灵御剑</td>
-  <td class="bottomline specialTrick">三粒天滴</td>
-  <td class="bottomline specialTrick">赤雾锁魂</td>
-  <td class="bottomline damageTrick">荒波暴流</td>
-  <td class="bottomline slash">杀</td>
-  <td class="bottomline horse">超妖怪风桨</td>
-  <td class="bottomline horse">天磐舟</td>
-  <td class="bottomline delayedTrick">紫莲圣咏</td>
 </tr>
-<tr>
-  <td class="bottomline" colspan="17"></td>
+<tr class="bottomlinerow">
+  <th>K</th>
+  <td class="damageTrick">百鬼夜行</td>
+  <td class="horse">雾雨帚</td>
+  <td class="specialTrick">三粒天滴</td>
+  <td class="treasure">八坂琼曲玉</td>
+  <td class="jink">闪</td>
+  <td class="horse">坤神天叶</td>
+  <td class="specialTrick">三粒天滴</td>
+  <td class="damageTrick">血凤涅烟</td>
+  <td class="dismantlementTrick">断灵御剑</td>
+  <td class="specialTrick">三粒天滴</td>
+  <td class="specialTrick">赤雾锁魂</td>
+  <td class="damageTrick">荒波暴流</td>
+  <td class="slash">杀</td>
+  <td class="horse">超妖怪风桨</td>
+  <td class="horse">天磐舟</td>
+  <td class="delayedTrick">紫莲圣咏</td>
+</tr>
+<tr class="bottomlinerow">
+  <td colspan="17"></td>
 </tr>
 <tr>
   <th>例</th>
