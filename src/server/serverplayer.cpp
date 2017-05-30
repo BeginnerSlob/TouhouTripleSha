@@ -176,7 +176,8 @@ void ServerPlayer::clearPrivatePiles() {
     piles.clear();
 }
 
-void ServerPlayer::bury() {
+void ServerPlayer::bury()
+{
     clearFlags();
     clearHistory();
     throwAllCards();
@@ -184,9 +185,12 @@ void ServerPlayer::bury() {
     clearPrivatePiles();
 
     room->clearPlayerCardLimitation(this, false);
+    room->setPlayerProperty(this, "chained", false);
+    room->setPlayerProperty(this, "removed", false);
 }
 
-void ServerPlayer::throwAllCards() {
+void ServerPlayer::throwAllCards()
+{
     DummyCard *card = isKongcheng() ? new DummyCard : wholeHandCards();
     foreach (const Card *equip, getEquips())
         card->addSubcard(equip);

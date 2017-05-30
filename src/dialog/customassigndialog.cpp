@@ -1235,9 +1235,12 @@ void CustomAssignDialog::load() {
         else
             player_start_draw[name] = 4;
 
-        if (player["starter"] != QString()) starter = name;
-        if (player["chained"]!=QString()) player_chained[name] = true;
-        if (player["turned"]!=QString()) player_turned[name] = true;
+        if (player["starter"] != QString())
+            starter = name;
+        if (player["chained"] != QString())
+            player_chained[name] = true;
+        if (player["turned"] != QString())
+            player_turned[name] = true;
         if (player["nationality"] != QString()) {
             assign_nationality[name] = player["nationality"];
             set_nationality[name] = true;

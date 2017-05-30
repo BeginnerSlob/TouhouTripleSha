@@ -262,7 +262,8 @@ ServerPlayer *Room::getCurrentDyingPlayer() const{
     return who;
 }
 
-void Room::revivePlayer(ServerPlayer *player, bool sendlog) {
+void Room::revivePlayer(ServerPlayer *player, bool sendlog)
+{
     int turn = player->getMark("Global_TurnCount");
     player->setAlive(true);
     player->throwAllMarks(false);
@@ -317,7 +318,8 @@ void Room::updateStateItem() {
     doBroadcastNotify(S_COMMAND_UPDATE_STATE_ITEM, QVariant(roles));
 }
 
-void Room::killPlayer(ServerPlayer *victim, DamageStruct *reason) {
+void Room::killPlayer(ServerPlayer *victim, DamageStruct *reason)
+{
     ServerPlayer *killer = reason ? reason->from : NULL;
     QList<ServerPlayer *> players_with_victim = getAllPlayers();
 
