@@ -137,15 +137,19 @@ public:
     }
 };
 
-class ThErchongRecord: public TriggerSkill {
+class ThErchongRecord : public TriggerSkill
+{
 public:
-    ThErchongRecord(): TriggerSkill("#therchong-record") {
-        events << PreCardUsed << EventPhaseChanging << EventPhaseStart;
+    ThErchongRecord() : TriggerSkill("#therchong-record")
+    {
+        events << PreCardUsed << EventPhaseChanging << EventPhaseStart
+               << EventAcquireSkill << EventLoseSkill << EventMarksGot << EventMarksLost;
         frequency = Compulsory;
         global = true;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
         if (triggerEvent == PreCardUsed) {
             ServerPlayer *current = room->getCurrent();
             if (player == current && player->isAlive() && player->getPhase() != Player::NotActive) {
@@ -163,15 +167,34 @@ public:
                     return QStringList(objectName());
                 }
             }
-        } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::RoundStart)
+        } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::RoundStart) {
             room->setPlayerMark(player, "@layer", 0);
+        } else if (triggerEvent == EventAcquireSkill || triggerEvent == EventLoseSkill) {
+            if (data.toString() != "therchong")
+                return QStringList();
+            int mark_num = player->getMark("layer");
+            if (mark_num > 0) {
+                int num = triggerEvent == EventAcquireSkill ? mark_num : 0;
+                room->setPlayerMark(player, "@layer", num);
+            }
+        } else if (triggerEvent == EventMarksGot || triggerEvent == EventMarksLost) {
+            if (data.toString() != "@erchong")
+                return QStringList();
+            int mark_num = player->getMark("layer");
+            if (mark_num > 0) {
+                int num = triggerEvent == EventMarksLost ? mark_num : 0;
+                room->setPlayerMark(player, "@layer", num);
+            }
+        }
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-            if (p->hasSkill("therchong", true) && p->getMark("@erchong") == 0)
-                room->addPlayerMark(p, "@layer");
+            room->addPlayerMark(p, "layer");
+            if (p->hasSkill("therchong") && p->getMark("@erchong") == 0)
+                room->setPlayerMark(p, "@layer", p->getMark("layer"));
         }
         return false;
     }

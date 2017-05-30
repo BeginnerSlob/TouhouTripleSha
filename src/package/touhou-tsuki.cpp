@@ -2236,7 +2236,7 @@ public:
                     tos.append(t->objectName());
                 room->setPlayerProperty(player, "extra_collateral", use.card->toString());
                 room->setPlayerProperty(player, "extra_collateral_current_targets", tos.join("+"));
-                room->askForUseCard(player, "@@thyongye!", "@thyongye-add:::collateral");
+                room->askForUseCard(player, "@@thyongye!", "@thyongye-add:::" + use.card->objectName());
                 room->setPlayerProperty(player, "extra_collateral", QString());
                 room->setPlayerProperty(player, "extra_collateral_current_targets", QString("+"));
                 foreach (ServerPlayer *p, room->getOtherPlayers(player)) {

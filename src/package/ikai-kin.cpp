@@ -824,7 +824,8 @@ ExtraCollateralCard::ExtraCollateralCard()
 bool ExtraCollateralCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
     const Card *coll = Card::Parse(Self->property("extra_collateral").toString());
-    if (!coll) return false;
+    if (!coll)
+        return false;
     QStringList tos = Self->property("extra_collateral_current_targets").toString().split("+");
 
     if (targets.isEmpty())
@@ -1000,7 +1001,7 @@ public:
                     tos.append(t->objectName());
                 room->setPlayerProperty(jianyong, "extra_collateral", use.card->toString());
                 room->setPlayerProperty(jianyong, "extra_collateral_current_targets", tos.join("+"));
-                room->askForUseCard(jianyong, "@@ikqizhi!", "@thyongye-add:::collateral");
+                room->askForUseCard(jianyong, "@@ikqizhi!", "@thyongye-add:::" + use.card->objectName());
                 room->setPlayerProperty(jianyong, "extra_collateral", QString());
                 room->setPlayerProperty(jianyong, "extra_collateral_current_targets", QString("+"));
                 foreach (ServerPlayer *p, room->getOtherPlayers(jianyong)) {
@@ -6200,7 +6201,7 @@ public:
                 tos.append(t->objectName());
             room->setPlayerProperty(player, "extra_collateral", use.card->toString());
             room->setPlayerProperty(player, "extra_collateral_current_targets", tos.join("+"));
-            bool used = room->askForUseCard(player, "@@ikshangye", "@thyongye-add:::collateral");
+            bool used = room->askForUseCard(player, "@@ikshangye", "@thyongye-add:::" + use.card->objectName());
             room->setPlayerProperty(player, "extra_collateral", QString());
             room->setPlayerProperty(player, "extra_collateral_current_targets", QString());
             if (!used) return false;
@@ -6233,8 +6234,8 @@ public:
             log.type = "#ThYongyeAdd";
             log.from = player;
             log.to << extra;
-            log.arg = use.card->objectName();
-            log.arg2 = objectName();
+            log.arg = objectName();
+            log.card_str = use.card->toString();
             room->sendLog(log);
             room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), extra->objectName());
 

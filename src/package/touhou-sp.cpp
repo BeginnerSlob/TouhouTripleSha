@@ -5,6 +5,7 @@
 #include "engine.h"
 #include "maneuvering.h"
 #include "client.h"
+#include "ikai-kin.h"
 
 class ThFanshi: public OneCardViewAsSkill {
 public:
@@ -2276,6 +2277,193 @@ public:
     }
 };
 
+class ThYongjieViewAsSkill : public ZeroCardViewAsSkill
+{
+public:
+    ThYongjieViewAsSkill() : ZeroCardViewAsSkill("thyongjie")
+    {
+        response_pattern = "@@thyongjie";
+    }
+
+    virtual const Card *viewAs() const
+    {
+        const Card *coll = Card::Parse(Self->property("extra_collateral").toString());
+        if (!coll)
+            return NULL;
+        if (coll->isKindOf("Collateral"))
+            return new ExtraCollateralCard;
+        else
+            return new ExtraFeintAttackCard;
+    }
+};
+
+class ThYongjie : public TriggerSkill
+{
+public:
+    ThYongjie() : TriggerSkill("thyongjie")
+    {
+        events << TargetSpecified << PreCardUsed;
+        view_as_skill = new ThYongjieViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (e == PreCardUsed && TriggerSkill::triggerable(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isBlack() && use.from->getMark("@doom") > 0
+                    && (use.card->isKindOf("Collateral")
+                        || use.card->isKindOf("FeintAttack")
+                        || use.card->isKindOf("ExNihilo")))
+                return QStringList(objectName());
+        } else if (e == TargetSpecified && TriggerSkill::triggerable(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash") || (use.card->isNDTrick() && use.card->isBlack())) {
+                if (use.to.length() < player->getMark("@doom"))
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent e, Room *r, ServerPlayer *player, QVariant &d, ServerPlayer *) const
+    {
+        if (e == PreCardUsed) {
+            CardUseStruct use = d.value<CardUseStruct>();
+            for (int i = 0; i < player->getMark("@doom"); ++ i) {
+                ServerPlayer *extra = NULL;
+                if (use.card->isKindOf("ExNihilo")) {
+                    QList<ServerPlayer *> targets;
+                    foreach (ServerPlayer *p, r->getAlivePlayers()) {
+                        if (!use.to.contains(p) && !r->isProhibited(player, p, use.card))
+                            targets << p;
+                    }
+                    extra = r->askForPlayerChosen(player, targets, objectName(), "@thyongye-add:::" + use.card->objectName(), true);
+                } else if (use.card->isKindOf("Collateral") || use.card->isKindOf("FeintAttack")) {
+                    QStringList tos;
+                    foreach (ServerPlayer *t, use.to)
+                        tos.append(t->objectName());
+                    r->setPlayerProperty(player, "extra_collateral", use.card->toString());
+                    r->setPlayerProperty(player, "extra_collateral_current_targets", tos.join("+"));
+                    bool used = r->askForUseCard(player, "@@thyongjie", "@thyongye-add:::" + use.card->objectName());
+                    r->setPlayerProperty(player, "extra_collateral", QString());
+                    r->setPlayerProperty(player, "extra_collateral_current_targets", QString());
+                    if (!used) return false;
+                    foreach (ServerPlayer *p, r->getOtherPlayers(player)) {
+                        if (p->hasFlag("ExtraCollateralTarget")) {
+                            p->setFlags("-ExtraCollateralTarget");
+                            extra = p;
+                            break;
+                        }
+                    }
+                }
+                if (extra) {
+                    use.to.append(extra);
+                    r->sortByActionOrder(use.to);
+
+                    LogMessage log;
+                    log.type = "#ThYongyeAdd";
+                    log.from = player;
+                    log.to << extra;
+                    log.arg = objectName();
+                    log.card_str = use.card->toString();
+                    r->sendLog(log);
+                    r->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), extra->objectName());
+
+                    if (use.card->isKindOf("Collateral")) {
+                        ServerPlayer *victim = extra->tag["collateralVictim"].value<ServerPlayer *>();
+                        if (victim) {
+                            LogMessage log;
+                            log.type = "#CollateralSlash";
+                            log.from = player;
+                            log.to << victim;
+                            r->sendLog(log);
+                            r->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, extra->objectName(), victim->objectName());
+                        }
+                    } else if (use.card->isKindOf("FeintAttack")) {
+                        ServerPlayer *victim = extra->tag["feintTarget"].value<ServerPlayer *>();
+                        if (victim) {
+                            LogMessage log;
+                            log.type = "#FeintAttackWest";
+                            log.from = player;
+                            log.to << victim;
+                            r->sendLog(log);
+                            r->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, extra->objectName(), victim->objectName());
+                        }
+                    }
+                } else
+                    break;
+            }
+            d = QVariant::fromValue(use);
+            return false;
+        } else
+            return true;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+        room->setPlayerMark(player, "doom", 0);
+        player->loseAllMarks("@doom");
+        return false;
+    }
+};
+
+class ThYongjieTargetMod : public TargetModSkill
+{
+public:
+    ThYongjieTargetMod() : TargetModSkill("#thyongjie-tar")
+    {
+        frequency = NotCompulsory;
+        pattern = "Slash#TrickCard+^DelayedTrick+^Collateral+^FeintAttack+^ExNihilo|black";
+    }
+
+    virtual int getExtraTargetNum(const Player *from, const Card *) const
+    {
+        if (from->hasSkill("thyongjie"))
+            return from->getMark("@doom");
+        return 0;
+    }
+};
+
+class ThYongjieRecord : public TriggerSkill
+{
+public:
+    ThYongjieRecord() : TriggerSkill("#thyongjie-record")
+    {
+        events << PreDamageDone << EventAcquireSkill << EventLoseSkill;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (e == EventAcquireSkill || e == EventLoseSkill) {
+            if (data.toString() != "thyongjie")
+                return QStringList();
+            int num = player->getMark("doom");
+            if (num > 0) {
+                num = e == EventAcquireSkill ? num : 0;
+                room->setPlayerMark(player, "@doom", num);
+            }
+        } else {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.from && damage.from->isAlive())
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const
+    {
+        DamageStruct damage = data.value<DamageStruct>();
+        room->addPlayerMark(damage.from, "doom");
+        if (damage.from->hasSkill("thyongjie"))
+            room->setPlayerMark(damage.from, "@doom", damage.from->getMark("doom"));
+        return false;
+    }
+};
+
 TouhouSPPackage::TouhouSPPackage()
     :Package("touhou-sp")
 {
@@ -2367,12 +2555,19 @@ TouhouSPPackage::TouhouSPPackage()
     sp017->addSkill(new ThHuanling);
     sp017->addSkill(new ThYoukong);
 
-    General *sp018 = new General(this, "sp018", "hana",3);
+    General *sp018 = new General(this, "sp018", "hana", 3);
     sp018->addSkill(new ThGuanzhi);
     sp018->addSkill(new ThFuhua);
 
+    General *sp019 = new General(this, "sp019", "yuki");
+    sp019->addSkill(new ThYongjie);
+    sp019->addSkill(new ThYongjieTargetMod);
+    sp019->addSkill(new ThYongjieRecord);
+    related_skills.insertMulti("thyongye", "#thyongye-tar");
+    related_skills.insertMulti("thyongye", "#thyongye-record");
+
     /*General *sp999 = new General(this, "sp999", "te", 5, true, true);
-    sp999->addSkill("jibu");
+    sp999->addSkill("thjibu");
     sp999->addSkill(new Skill("thfeiniang", Skill::Compulsory));*/
 
     addMetaObject<ThYuduCard>();

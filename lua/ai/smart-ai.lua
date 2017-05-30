@@ -2221,10 +2221,10 @@ function SmartAI:askForSkillInvoke(skill_name, data)
 end
 
 function SmartAI:askForChoice(skill_name, choices, data)
-	if skill_name == "TriggerOrder" then
+	if skill_name == "GameRule:TriggerOrder" then
 		local t = choices:split("+")
-		if table.contains(t, "trigger_none") then
-			table.removeOne(t, "trigger_none")
+		if table.contains(t, "cancel") then
+			table.removeOne(t, "cancel")
 		end
 		return t[math.random(1, #t)]
 	end
