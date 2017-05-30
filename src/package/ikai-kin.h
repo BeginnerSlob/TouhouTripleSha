@@ -167,7 +167,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class IkDingpinCard: public SkillCard {
+class IkDingpinCard: public SkillCard
+{
     Q_OBJECT
 
 public:
