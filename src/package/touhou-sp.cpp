@@ -2525,7 +2525,7 @@ void ThHuanyaoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
             choices << name_map["other_trick"].join("+");
     }
 
-    QString obj_n = room->askForChoice(target, objectName(), choices.join("|"));
+    QString obj_n = room->askForChoice(target, "thhuanyao", choices.join("|"));
 
     LogMessage log;
     log.type = "#RhHuanjie";
@@ -2641,7 +2641,7 @@ public:
         frequency = Frequent;
     }
 
-    virtual bool cost(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         if (e == GameStart) {
             room->setPlayerProperty(player, "thzhouzhu_step", 1);
@@ -2654,7 +2654,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         QStringList choices;
         if (player->getSkillStep(objectName()) == 1)
