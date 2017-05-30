@@ -105,7 +105,7 @@ class Jade : public Treasure
     Q_OBJECT
 
 public:
-    Q_INVOKABLE Jade(Card::Suit suit = Spade, int number = 13);
+    Q_INVOKABLE Jade(Card::Suit suit = Diamond, int number = 13);
 
     virtual void onUninstall(ServerPlayer *player) const;
 };
@@ -135,7 +135,7 @@ class MoonSpear : public Weapon
     Q_OBJECT
 
 public:
-    Q_INVOKABLE MoonSpear(Card::Suit suit = Heart, int number = 4);
+    Q_INVOKABLE MoonSpear(Card::Suit suit = Spade, int number = 12);
 };
 
 class Reinforce : public SingleTargetTrick

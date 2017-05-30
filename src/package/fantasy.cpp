@@ -1292,21 +1292,21 @@ FantasyPackage::FantasyPackage()
           << new IceSword()
           << new Rout(Card::Spade, 3)
           << new Dismantlement(Card::Spade, 4)
-          << new Slash(Card::Spade, 5)
+          << new KnownBoth(Card::Spade, 5)
           << new Slash(Card::Spade, 6)
           << new Scroll()
-          << new KnownBoth(Card::Spade, 8)
+          << new Slash(Card::Spade, 8)
           << new Analeptic(Card::Spade, 9)
-          << new LureTiger(Card::Spade, 10)
+          << new ThunderSlash(Card::Spade, 10)
           << new FeintAttack(Card::Spade, 11)
-          << new Analeptic(Card::Spade, 12)
-          << new Jade();
+          << new MoonSpear()
+          << new PurpleSong(Card::Spade, 13);
 
      // heart
     cards << new PurpleSong(Card::Heart, 1)
           << new IronArmor()
           << new FeintAttack(Card::Heart, 3)
-          << new MoonSpear()
+          << new Peach(Card::Heart, 4)
           << new Jink(Card::Heart, 5)
           << new Jink(Card::Heart, 6)
           << new FireSlash(Card::Heart, 7)
@@ -1330,7 +1330,7 @@ FantasyPackage::FantasyPackage()
           << new Slash(Card::Club, 7)
           << new Slash(Card::Club, 8)
           << new ThunderSlash(Card::Club, 9)
-          << new ThunderSlash(Card::Club, 10)
+          << new LureTiger(Card::Club, 10)
           << new Slash(Card::Club, 11)
           << new Slash(Card::Club, 12)
           << new Drowning();
@@ -1348,7 +1348,7 @@ FantasyPackage::FantasyPackage()
           << new Jink(Card::Diamond, 10)
           << new Rout(Card::Diamond, 11)
           << new Jink(Card::Diamond, 12)
-          << new PurpleSong(Card::Diamond, 13);
+          << new Jade();
 
     skills << new IbukiGourdSkill
            << new IceSwordSkill
