@@ -238,10 +238,12 @@ QList<int> ServerPlayer::forceToDiscard(int discard_num, bool include_equip, boo
 
 int ServerPlayer::aliveCount(bool includeRemoved) const{
     int n = room->alivePlayerCount();
-    if (!includeRemoved)
-        foreach (ServerPlayer *p, room->getAllPlayers())
+    if (!includeRemoved) {
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (p->isRemoved())
-                n--;
+                -- n;
+        }
+    }
     return n;
 }
 

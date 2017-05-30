@@ -147,7 +147,7 @@ void Settings::init() {
 
     BubbleChatBoxKeepTime = value("BubbleChatboxKeepTime", 2000).toInt();
 
-    QStringList roles_ban, kof_ban, hulao_ban, xmode_ban, basara_ban, hegemony_ban, pairs_ban;
+    QStringList roles_ban, kof_ban, hulao_ban, xmode_ban, basara_ban, hegemony_ban, pairs_ban, cards_ban;
 
     roles_ban = GetConfigFromLuaState(lua, "roles_ban").toStringList();
     kof_ban = GetConfigFromLuaState(lua, "kof_ban").toStringList();
@@ -161,6 +161,7 @@ void Settings::init() {
             hegemony_ban << general;
     }
     pairs_ban = GetConfigFromLuaState(lua, "pairs_ban").toStringList();
+    cards_ban = GetConfigFromLuaState(lua, "cards_ban").toStringList();
 
     QStringList banlist = value("Banlist/Roles").toStringList();
     if (banlist.isEmpty()) {
@@ -170,12 +171,12 @@ void Settings::init() {
         setValue("Banlist/Roles", banlist);
     }
 
-    banlist = value("Banlist/1v1").toStringList();
+    banlist = value("Banlist/KOF").toStringList();
     if (banlist.isEmpty()) {
         foreach (QString ban_general, kof_ban)
             banlist << ban_general;
 
-        setValue("Banlist/1v1", banlist);
+        setValue("Banlist/KOF", banlist);
     }
 
     banlist = value("Banlist/Basara").toStringList();
@@ -199,6 +200,14 @@ void Settings::init() {
             banlist << ban_general;
 
         setValue("Banlist/Pairs", banlist);
+    }
+
+    banlist = value("Banlist/Cards").toStringList();
+    if (banlist.isEmpty()) {
+        foreach (QString ban_card, cards_ban)
+            banlist << ban_card;
+
+        setValue("Banlist/Cards", banlist);
     }
 
     QStringList forbid_packages = value("ForbidPackages").toStringList();

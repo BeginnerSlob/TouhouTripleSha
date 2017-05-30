@@ -49,7 +49,7 @@ void RoomThread1v1::run() {
         qShuffle(candidates);
         general_names = candidates.mid(0, total_num);
     } else {
-        QSet<QString> banset = Config.value("Banlist/1v1").toStringList().toSet();
+        QSet<QString> banset = Config.value("Banlist/KOF").toStringList().toSet();
         general_names = Sanguosha->getRandomGenerals(total_num, banset);
     }
 

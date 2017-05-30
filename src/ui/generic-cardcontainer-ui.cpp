@@ -562,7 +562,7 @@ void PlayerCardContainer::setPlayer(ClientPlayer *player) {
         connect(player, SIGNAL(pile_changed(QString)), this, SLOT(updatePile(QString)));
         connect(player, SIGNAL(role_changed(QString)), _m_roleComboBox, SLOT(fix(QString)));
         connect(player, SIGNAL(hp_changed()), this, SLOT(updateHp()));
-        connect(player, SIGNAL(removedChanged()), this, SLOT(onRemovedChanged()));
+        connect(player, &ClientPlayer::removedChanged, this, &PlayerCardContainer::onRemovedChanged);
 
         QTextDocument *textDoc = m_player->getMarkDoc();
         Q_ASSERT(_m_markItem);

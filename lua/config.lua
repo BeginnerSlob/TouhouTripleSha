@@ -59,7 +59,7 @@ config = {
 		"package:touhou-hana",
 		"package:touhou-yuki",
 		"package:touhou-tsuki",
-		"package:touhou-kishin",
+		"package:touhou-shin",
 		"package:touhou-sp",
 		"package:touhou-bangai",
 		"package:touhou-kami",
@@ -98,7 +98,7 @@ config = {
 	},
 
 	kof_ban = {
-		"sunquan",
+		"bangai007", "bangai008", "bangai009", "bloom001", "bloom007", "bloom008", "bloom013", "bloom014", "bloom015", "bloom016", "bloom019", "bloom020", "bloom021", "bloom022", "bloom024", "bloom029", "bloom030", "bloom032", "bloom033", "bloom036", "bloom041", "bloom043", "bloom048", "bloom050", "bloom052", "hana003", "hana007", "hana008", "hana011", "hana014", "hana018", "hana016", "kami001", "kami002", "kami003", "kami004", "kami005", "kami006", "kami007", "kami008", "kami009", "kami010", "kami011", "kami012", "kami013", "kami014", "kami015", "kami016", "kaze002", "kaze003", "kaze008", "kaze011", "kaze012", "kaze014", "kaze017", "shin003", "shin004", "shin007", "luna001", "luna004", "luna005", "luna007", "luna009", "luna013", "luna015", "luna019", "luna021", "luna024", "luna025", "luna026", "luna027", "luna028", "luna029", "luna031", "luna032", "luna033", "luna034", "luna040", "luna041", "luna043", "luna046", "luna049", "snow001", "snow003", "snow005", "snow009", "snow010", "snow011", "snow012", "snow014", "snow015", "snow017", "snow020", "snow021", "snow022", "snow023", "snow024", "snow026", "snow027", "snow028", "snow029", "snow030", "snow036", "snow037", "snow040", "snow041", "snow048", "snow051", "wind010", "wind012", "wind014", "wind016", "wind018", "wind022", "wind023", "wind024", "wind026", "wind029", "wind030", "wind034", "wind036", "wind041", "wind043", "wind046", "wind047", "wind048", "wind052", "wind053", "wind055", "shin014", "story002", "story003", "wind001", "wind005", "snow052", "snow058", sp002, sp008, sp010, sp011, sp016, "tsuki002", "tsuki003", "tsuki005", "tsuki006", "tsuki007", "tsuki010", "yuki009", "tsuki015", "tsuki016", "tsuki017", "tsuki018", "yuki010", "yuki011", "yuki013", "yuki015", "yuki016"
 	},
 
 	basara_ban = {
@@ -107,6 +107,9 @@ config = {
 		"shenzhugeliang",
 		"shenlvbu",
 		"bgm_lvmeng"]]
+	},
+
+	hegemony_ban = {
 	},
 
 	pairs_ban = {
@@ -174,6 +177,10 @@ config = {
 		"nos_luxun+nos_yuji", "nos_luxun+nos_guanxingzhangbao",
 		"nos_yuji+nos_zhangchunhua",
 		"nos_zhangchunhua+heg_luxun", "nos_zhangchunhua+nos_guanxingzhangbao",]]
+	},
+	
+	cards_ban = {
+		"KOF_Only,PurpleSong", "KOF_Only,FeintAttack"
 	},
 	
 	couple_lord = "hana002",

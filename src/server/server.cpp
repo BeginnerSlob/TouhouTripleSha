@@ -570,12 +570,12 @@ BanlistDialog::BanlistDialog(QWidget *parent, bool view)
     setMinimumWidth(455);
 
     if (ban_list.isEmpty())
-        ban_list << "Roles" << "1v1" << "Basara" << "Hegemony" << "Pairs" << "Cards";
+        ban_list << "Roles" << "KOF" << "Basara" << "Hegemony" << "Pairs" << "Cards";
     QVBoxLayout *layout = new QVBoxLayout;
 
     QTabWidget *tab = new QTabWidget;
     layout->addWidget(tab);
-    connect(tab, SIGNAL(currentChanged(int)), this, SLOT(switchTo(int)));
+    connect(tab, &QTabWidget::currentChanged, this, &BanlistDialog::switchTo);
 
     foreach (QString item, ban_list) {
         QWidget *apage = new QWidget;
@@ -610,20 +610,25 @@ BanlistDialog::BanlistDialog(QWidget *parent, bool view)
         tab->addTab(apage, Sanguosha->translate(item));
     }
 
+    QPushButton *restore = new QPushButton(tr("Restore to official"));
     QPushButton *add = new QPushButton(tr("Add ..."));
     QPushButton *remove = new QPushButton(tr("Remove"));
-    if (!view) add2nd = new QPushButton(tr("Add 2nd general ..."));
+    if (!view)
+        add2nd = new QPushButton(tr("Add 2nd general ..."));
     QPushButton *ok = new QPushButton(tr("OK"));
 
-    connect(ok, SIGNAL(clicked()), this, SLOT(accept()));
-    connect(this, SIGNAL(accepted()), this, SLOT(saveAll()));
-    connect(remove, SIGNAL(clicked()), this, SLOT(doRemoveButton()));
-    connect(add, SIGNAL(clicked()), this, SLOT(doAddButton()));
-    if (!view) connect(add2nd, SIGNAL(clicked()), this, SLOT(doAdd2ndButton()));
+    connect(restore, &QPushButton::clicked, this, &BanlistDialog::doRestoreButton);
+    connect(ok, &QPushButton::clicked, this, &BanlistDialog::accept);
+    connect(this, &BanlistDialog::accepted, this, &BanlistDialog::saveAll);
+    connect(remove, &QPushButton::clicked, this, &BanlistDialog::doRemoveButton);
+    connect(add, &QPushButton::clicked, this, &BanlistDialog::doAddButton);
+    if (!view)
+        connect(add2nd, &QPushButton::clicked, this, &BanlistDialog::doAdd2ndButton);
 
     QHBoxLayout *hlayout = new QHBoxLayout;
     hlayout->addStretch();
     if (!view) {
+        hlayout->addWidget(restore);
         hlayout->addWidget(add2nd);
         add2nd->hide();
         hlayout->addWidget(add);
@@ -693,6 +698,34 @@ void BanlistDialog::addPair(const QString &first, const QString &second) {
     QListWidgetItem *item = new QListWidgetItem(QString("%1 + %2").arg(trfirst, trsecond));
     item->setData(Qt::UserRole, QVariant::fromValue(QString("%1+%2").arg(first, second)));
     list->addItem(item);
+}
+
+void BanlistDialog::doRestoreButton() {
+    static QMap<QString, const char *> list_map;
+    if (list_map.isEmpty()) {
+        list_map.insert("Roles", "roles_ban");
+        list_map.insert("KOF", "kof_ban");
+        list_map.insert("Basara", "basara_ban");
+        list_map.insert("Hegemony", "hegemony_ban");
+        list_map.insert("Pairs", "pairs_ban");
+        list_map.insert("Cards", "cards_ban");
+    }
+    while (list->count() > 0) {
+        list->setCurrentRow(0);
+        doRemoveButton();
+    }
+    lua_State *lua = Sanguosha->getLuaState();
+    QStringList default_ban_list = GetConfigFromLuaState(lua, list_map[list->objectName()]).toStringList();
+    foreach (QString default_ban, default_ban_list) {
+        if (default_ban.startsWith("+")) {
+            default_ban.mid(1);
+            add2ndGeneral(default_ban);
+        } else if (default_ban.contains("+")) {
+            QStringList bans = default_ban.split("+");
+            addPair(bans.first(), bans.last());
+        } else
+            addGeneral(default_ban);
+    }
 }
 
 void BanlistDialog::doAddButton() {

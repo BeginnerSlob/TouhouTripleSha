@@ -61,6 +61,7 @@ private slots:
     void addGeneral(const QString &name);
     void add2ndGeneral(const QString &name);
     void addPair(const QString &first, const QString &second);
+    void doRestoreButton();
     void doAdd2ndButton();
     void doAddButton();
     void doRemoveButton();
