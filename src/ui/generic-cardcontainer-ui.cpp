@@ -611,11 +611,37 @@ void PlayerCardContainer::addDelayedTricks(QList<CardItem *> &tricks) {
         _paintPixmap(item, start, G_ROOM_SKIN.getCardJudgeIconPixmap(trick->getCard()->objectName()));
         trick->setHomeOpacity(0.0);
         trick->setHomePos(start.center());
-        const Card *card = Sanguosha->getEngineCard(trick->getCard()->getEffectiveId());
-        QString toolTip = QString("<b>%1 [</b><img src='image/system/log/%2.png' height = 12/><b>%3]</b>")
-                                  .arg(Sanguosha->translate(card->objectName()))
-                                  .arg(card->getSuitString())
-                                  .arg(card->getNumberString());
+        const Card *_trick = trick->getCard();
+        const Card *card = Sanguosha->getEngineCard(_trick->getEffectiveId());
+        QString toolTip = QString("<b>%1 [%2</b><img src='image/system/log/%3.png' height = 12/><b>%4]</b>")
+                                  .arg(Sanguosha->translate(_trick->objectName()))
+                                  .arg(card->objectName() != _trick->objectName() ? Sanguosha->translate(card->objectName()) : "")
+                                  .arg(_trick->getSuitString())
+                                  .arg(_trick->getNumberString());
+        toolTip.append("<br>");
+        toolTip.append(Sanguosha->translate(":" + _trick->objectName()));
+        if (Config.value("AutoSkillTypeColorReplacement", true).toBool()) {
+            QMap<QString, QColor> skilltype_color_map = Sanguosha->getSkillTypeColorMap();
+            foreach (QString skill_type, skilltype_color_map.keys()) {
+                QString type_name = Sanguosha->translate(skill_type);
+                QString color_name = skilltype_color_map[skill_type].name();
+                toolTip.replace(type_name, QString("<font color=%1><b>%2</b></font>").arg(color_name).arg(type_name));
+            }
+        }
+        if (Config.value("AutoSuitReplacement", true).toBool()) {
+            for (int i = 0; i <= 3; i++) {
+                Card::Suit suit = (Card::Suit)i;
+                QString suit_name = Sanguosha->translate(Card::Suit2String(suit));
+                QString suit_char = Sanguosha->translate(Card::Suit2String(suit) + "_char");
+                QString colored_suit_char;
+                if (i < 2)
+                    colored_suit_char = suit_char;
+                else
+                    colored_suit_char = QString("<font color=#FF0000>%1</font>").arg(suit_char);
+                toolTip.replace(suit_char, colored_suit_char);
+                toolTip.replace(suit_name, colored_suit_char);
+            }
+        }
         item->setToolTip(toolTip);
         _m_judgeCards.append(trick);
         _m_judgeIcons.append(item);

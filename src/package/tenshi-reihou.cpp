@@ -494,7 +494,7 @@ public:
             QString obj_name = card->objectName();
             if (obj_name.endsWith("slash"))
                 obj_name = "slash";
-            if (card->getType() == "basic") {
+            if (card->getTypeId() == Card::TypeBasic) {
                 if (!name_map["basic"].contains(obj_name))
                     name_map["basic"] << obj_name;
             } else if (card->isKindOf("SingleTargetTrick")) {

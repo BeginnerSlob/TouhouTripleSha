@@ -2464,6 +2464,220 @@ public:
     }
 };
 
+ThHuanyaoCard::ThHuanyaoCard()
+{
+    will_throw = false;
+    handling_method = MethodNone;
+}
+
+bool ThHuanyaoCard::targetFixed() const
+{
+    if (Self->getSkillStep("thhuanyao") == 2)
+        return true;
+    else
+        return false;
+}
+
+bool ThHuanyaoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    int dis = 998;
+    foreach (const Player *p, Self->getAliveSiblings()) {
+        int n = Self->distanceTo(p);
+        if (n != -1 && n < dis)
+            dis = n;
+    }
+    return targets.isEmpty() && Self->distanceTo(to_select) == dis && to_select != Self;
+}
+
+void ThHuanyaoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
+    room->showCard(source, getEffectiveId());
+    ServerPlayer *target = targets.isEmpty() ? source : targets.first();
+
+    QMap<QString, QStringList> name_map;
+    name_map["basic"] = QStringList();
+    name_map["single_target_trick"] = QStringList();
+    name_map["other_trick"] = QStringList();
+
+    QList<const Card *> cards = Sanguosha->findChildren<const Card *>();
+    foreach (const Card *card, cards) {
+        QString obj_name = card->objectName();
+        if (obj_name.endsWith("slash"))
+            obj_name = "slash";
+        if (card->getTypeId() == TypeBasic) {
+            if (!name_map["basic"].contains(obj_name))
+                name_map["basic"] << obj_name;
+        } else if (card->isKindOf("SingleTargetTrick")) {
+            if (!name_map["single_target_trick"].contains(obj_name))
+                name_map["single_target_trick"] << obj_name;
+        } else if (card->isNDTrick()) {
+            if (!name_map["other_trick"].contains(obj_name))
+                name_map["other_trick"] << obj_name;
+        }
+    }
+    QStringList choices;
+    if (!name_map["basic"].isEmpty())
+        choices << name_map["basic"].join("+");
+    if (source->getSkillStep("thhuanyao") > 0) {
+        if (!name_map["single_target_trick"].isEmpty())
+            choices << name_map["single_target_trick"].join("+");
+        if (!name_map["other_trick"].isEmpty())
+            choices << name_map["other_trick"].join("+");
+    }
+
+    QString obj_n = room->askForChoice(target, objectName(), choices.join("|"));
+
+    LogMessage log;
+    log.type = "#RhHuanjie";
+    log.from = target;
+    log.arg = obj_n;
+    room->sendLog(log);
+
+    room->setPlayerProperty(source, "thhuanyao", QString("%1->%2").arg(getEffectiveId()).arg(obj_n));
+}
+
+class ThHuanyaoVS : public OneCardViewAsSkill
+{
+public:
+    ThHuanyaoVS() : OneCardViewAsSkill("thhuanyao")
+    {
+    }
+
+    virtual bool viewFilter(const Card *to_select) const
+    {
+        if (Self->property("thhuanyao").toString().isEmpty())
+            return !to_select->isEquipped();
+        else {
+            QStringList map = Self->property("thhuanyao").toString().split("->");
+            return !to_select->isEquipped() && map.first().toInt() == to_select->getId();
+        }
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        if (Self->property("thhuanyao").toString().isEmpty()) {
+            Card *card = new ThHuanyaoCard;
+            card->addSubcard(originalCard);
+            return card;
+        } else {
+            QStringList map = Self->property("thhuanyao").toString().split("->");
+            Card *card = Sanguosha->cloneCard(map.last(), originalCard->getSuit(), originalCard->getNumber());
+            card->addSubcard(originalCard);
+            card->setSkillName("thhuanyao");
+            return card;
+        }
+        return NULL;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        if (player->property("thhuanyao").toString().isEmpty()) {
+            return !player->hasUsed("ThHuanyaoCard");
+        } else {
+            QStringList map = Self->property("thhuanyao").toString().split("->");
+            Card *card = Sanguosha->cloneCard(map.last());
+            card->setSkillName("thhuanyao");
+            card->deleteLater();
+            return card->isAvailable(player);
+        }
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
+    {
+        if (!player->property("thhuanyao").toString().isEmpty()) {
+            QStringList map = Self->property("thhuanyao").toString().split("->");
+            return pattern.contains(map.last());
+        }
+        return false;
+    }
+
+    virtual bool isEnabledAtNullification(const ServerPlayer *player) const
+    {
+        if (!player->property("thhuanyao").toString().isEmpty()) {
+            QStringList map = Self->property("thhuanyao").toString().split("->");
+            return map.last() == "nullification";
+        }
+        return false;
+    }
+};
+
+class ThHuanyao : public TriggerSkill
+{
+public:
+    ThHuanyao() : TriggerSkill("thhuanyao")
+    {
+        events << EventPhaseChanging;
+        view_as_skill = new ThHuanyaoVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (data.value<PhaseChangeStruct>().to == Player::NotActive)
+            room->setPlayerProperty(player, "thhuanyao", QString());
+        return QStringList();
+    }
+};
+
+class ThHuanyaoProhibit : public ProhibitSkill
+{
+public:
+    ThHuanyaoProhibit() : ProhibitSkill("#thhuanyao")
+    {
+        frequency = NotCompulsory;
+    }
+
+    virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &) const
+    {
+        return from == to && card->getSkillName() == "thhuanyao";
+    }
+};
+
+class ThZhouzhu : public TriggerSkill
+{
+public:
+    ThZhouzhu() : TriggerSkill("thzhouzhu")
+    {
+        events << Damaged << GameStart;
+        frequency = Frequent;
+    }
+
+    virtual bool cost(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        if (e == GameStart) {
+            room->setPlayerProperty(player, "thzhouzhu_step", 1);
+        } else {
+            if (player->askForSkillInvoke(objectName())) {
+                room->broadcastSkillInvoke(objectName());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        QStringList choices;
+        if (player->getSkillStep(objectName()) == 1)
+            choices << "change1";
+        if (player->getSkillStep(objectName()) == 2)
+            choices << "change2";
+        choices << "draw";
+        QString choice = "draw";
+        if (choices.length() > 1)
+            choice = room->askForChoice(player, objectName(), choices.join("+"));
+        if (choice == "change1") {
+            room->setPlayerProperty(player, "thzhouzhu_step", 2);
+            room->setPlayerProperty(player, "thhuanyao_step", 1);
+        } else if (choice == "change2") {
+            room->setPlayerProperty(player, "thzhouzhu_step", 3);
+            room->setPlayerProperty(player, "thhuanyao_step", 2);
+        } else
+            player->drawCards(1, objectName());
+
+        return false;
+    }
+};
+
 TouhouSPPackage::TouhouSPPackage()
     :Package("touhou-sp")
 {
@@ -2566,6 +2780,12 @@ TouhouSPPackage::TouhouSPPackage()
     related_skills.insertMulti("thyongye", "#thyongye-tar");
     related_skills.insertMulti("thyongye", "#thyongye-record");
 
+    General *sp020 = new General(this, "sp020", "tsuki", 3, false);
+    sp020->addSkill(new ThHuanyao);
+    sp020->addSkill(new ThHuanyaoProhibit);
+    related_skills.insertMulti("thhuanyao", "#thhuanyao");
+    sp020->addSkill(new ThZhouzhu);
+
     /*General *sp999 = new General(this, "sp999", "te", 5, true, true);
     sp999->addSkill("thjibu");
     sp999->addSkill(new Skill("thfeiniang", Skill::Compulsory));*/
@@ -2580,6 +2800,7 @@ TouhouSPPackage::TouhouSPPackage()
     addMetaObject<ThJingyuanspCard>();
     addMetaObject<ThFeihuCard>();
     addMetaObject<ThFuhuaCard>();
+    addMetaObject<ThHuanyaoCard>();
 }
 
 ADD_PACKAGE(TouhouSP)

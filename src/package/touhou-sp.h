@@ -112,4 +112,16 @@ public:
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
+class ThHuanyaoCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThHuanyaoCard();
+
+    virtual bool targetFixed() const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 #endif // TOUHOUSP_H

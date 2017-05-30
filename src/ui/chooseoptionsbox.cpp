@@ -92,7 +92,7 @@ void ChooseOptionsBox::chooseOption(const QStringList &options)
             connect(button, &Button::clicked, this, &ChooseOptionsBox::reply);
             if (tooltip != original_tooltip)
                 button->setToolTip(QString("<font color=black>%2</font>")
-                .arg(tooltip));
+                                   .arg(tooltip));
         }
     }
 
