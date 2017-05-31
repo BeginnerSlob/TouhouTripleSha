@@ -41,7 +41,7 @@ function SmartAI:findPlayerToChain(targets, chain_only)
 			end
 		end
 		
-		if (self.room:getTag("is_chained"):toInt() > 0 and damage.nature ~= sgs.DamageStruct_Normal) or damage.chain then
+		if damage.trigger_chain or damage.chain then
 			for i = index, all_players:length() - 1 do
 				if all_players:at(i):objectName() == damage.to:objectName() then
 					continue
