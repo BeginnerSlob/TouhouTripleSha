@@ -3895,7 +3895,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         int id = room->askForCardChosen(player, data.value<CardUseStruct>().to.first(), "h", objectName());
-        player->addToPile(objectName(), id);
+        player->addToPile("pokemon", id);
         return false;
     }
 };
