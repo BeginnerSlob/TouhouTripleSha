@@ -1413,6 +1413,7 @@ void Server::broadcast(const QString &msg)
 
     Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_SPEAK);
     packet.setMessageBody(args);
+
     foreach (Room *room, rooms)
         room->broadcastInvoke(&packet);
 }

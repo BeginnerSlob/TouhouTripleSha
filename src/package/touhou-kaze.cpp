@@ -1196,7 +1196,6 @@ void ThQianyiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     ServerPlayer *target = targets.first();
     room->removePlayerMark(source, "@qianyi");
     room->addPlayerMark(source, "@qianyiused");
-    //room->broadcastInvoke("animate", "lightbox:$kunyi");
 
     source->turnOver();
     QStringList choices;
@@ -1315,7 +1314,6 @@ void ThKunyiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
     ServerPlayer *target = targets.first();
     room->removePlayerMark(source, "@kunyi");
     room->addPlayerMark(source, "@kunyiused");
-    //room->broadcastInvoke("animate", "lightbox:$kunyi");
 
     source->turnOver();
     room->damage(DamageStruct("thkunyi", source, target));
