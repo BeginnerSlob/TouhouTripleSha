@@ -579,26 +579,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         player->addToPile("mask", room->drawCard());
-        player->setPhase(Player::Play);
-        room->broadcastProperty(player, "phase");
-        RoomThread *thread = room->getThread();
-        if (!thread->trigger(EventPhaseStart, room, player))
-            thread->trigger(EventPhaseProceeding, room, player);
-        thread->trigger(EventPhaseEnd, room, player);
-
-        QStringList lists;
-        lists << "BasicCard"
-              << "EquipCard"
-              << "TrickCard";
-        foreach (QString type, lists)
-            if (player->hasFlag("thjingyuan_" + type)) {
-                room->setPlayerFlag(player, "-thjingyuan_" + type);
-                room->removePlayerCardLimitation(player, "use", type + "$1");
-            }
-
-        player->setPhase(Player::Draw);
-        room->broadcastProperty(player, "phase");
-
+        room->askForUseCard(player, "^Jink+^Nullification|.|.|hand", "@thsuhu", -1, Card::MethodUse, false);
         return true;
     }
 };
@@ -650,10 +631,8 @@ void ThLeshiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &)
     log.from = source;
     log.arg = choice;
     room->sendLog(log);
-    if (source->hasFlag("thjingyuan_" + choice)) {
-        room->setPlayerFlag(source, "-thjingyuan_" + choice);
-        room->removePlayerCardLimitation(source, "use", choice + "$1");
-    }
+    if (source->hasUsed(choice))
+        room->addPlayerHistory(source, choice, 0);
     if (choice == "BasicCard") {
         room->addPlayerHistory(source, "Slash", 0);
         room->addPlayerHistory(source, "FireSlash", 0);
@@ -773,7 +752,7 @@ public:
     ThJingyuan()
         : TriggerSkill("thjingyuan")
     {
-        events << PreCardUsed << CardResponded;
+        events << PreCardUsed << PreCardResponded;
         frequency = Compulsory;
     }
 
@@ -789,8 +768,13 @@ public:
             if (response.m_isUse)
                 card = response.m_card;
         }
-        if (card && card->getTypeId() != Card::TypeSkill && card->getHandlingMethod() == Card::MethodUse)
-            return QStringList(objectName());
+        if (card && card->getTypeId() != Card::TypeSkill && card->getHandlingMethod() == Card::MethodUse) {
+            QString str = card->getType();
+            str[0] = str[0].toUpper();
+            str += "Card";
+            if (!player->hasUsed(str))
+                return QStringList(objectName());
+        }
         return QStringList();
     }
 
@@ -810,8 +794,7 @@ public:
         QString str = card->getType();
         str[0] = str[0].toUpper();
         str += "Card";
-        room->setPlayerFlag(player, "thjingyuan_" + str);
-        room->setPlayerCardLimitation(player, "use", str, true);
+        room->addPlayerHistory(player, str);
         return false;
     }
 };

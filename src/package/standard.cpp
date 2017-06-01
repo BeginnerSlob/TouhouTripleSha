@@ -19,6 +19,13 @@ Card::CardType BasicCard::getTypeId() const
     return TypeBasic;
 }
 
+bool BasicCard::isAvailable(const Player *player) const
+{
+    if (player->hasUsed("BasicCard"))
+        return false;
+    return Card::isAvailable(player);
+}
+
 TrickCard::TrickCard(Suit suit, int number)
     : Card(suit, number)
     , cancelable(true)
@@ -41,6 +48,13 @@ Card::CardType TrickCard::getTypeId() const
     return TypeTrick;
 }
 
+bool TrickCard::isAvailable(const Player *player) const
+{
+    if (player->hasUsed("TrickCard"))
+        return false;
+    return Card::isAvailable(player);
+}
+
 bool TrickCard::isCancelable(const CardEffectStruct &effect) const
 {
     Q_UNUSED(effect);
@@ -59,6 +73,8 @@ Card::CardType EquipCard::getTypeId() const
 
 bool EquipCard::isAvailable(const Player *player) const
 {
+    if (player->hasUsed("EquipCard"))
+        return false;
     if (player->hasFlag("ThChouceUse"))
         return Card::isAvailable(player);
     return !player->isProhibited(player, this) && Card::isAvailable(player);

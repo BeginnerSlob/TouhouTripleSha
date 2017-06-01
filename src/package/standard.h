@@ -34,6 +34,7 @@ public:
     }
     virtual QString getType() const;
     virtual CardType getTypeId() const;
+    virtual bool isAvailable(const Player *player) const;
 };
 
 class TrickCard : public Card
@@ -46,6 +47,7 @@ public:
 
     virtual QString getType() const;
     virtual CardType getTypeId() const;
+    virtual bool isAvailable(const Player *player) const;
     virtual bool isCancelable(const CardEffectStruct &effect) const;
 
 private:
