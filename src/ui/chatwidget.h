@@ -1,15 +1,16 @@
 #ifndef _CHAT_WIDGET_H
 #define _CHAT_WIDGET_H
 
-#include <QObject>
-#include <QIcon>
-#include <QPixmap>
 #include <QGraphicsObject>
-#include <QPushButton>
-#include <QGraphicsProxyWidget>
 #include <QGraphicsPixmapItem>
+#include <QGraphicsProxyWidget>
+#include <QIcon>
+#include <QObject>
+#include <QPixmap>
+#include <QPushButton>
 
-class MyPixmapItem: public QObject , public QGraphicsPixmapItem {
+class MyPixmapItem : public QObject, public QGraphicsPixmapItem
+{
     Q_OBJECT
 
 public:
@@ -33,15 +34,16 @@ private:
 
     int sizex;
     int sizey;
-    QList <QRect> faceboardPos;
-    QList <QRect> easytextPos;
-    QList <QString> easytext;
+    QList<QRect> faceboardPos;
+    QList<QRect> easytextPos;
+    QList<QString> easytext;
 
 signals:
     void my_pixmap_item_msg(QString);
 };
 
-class ChatWidget: public QGraphicsObject {
+class ChatWidget : public QGraphicsObject
+{
     Q_OBJECT
 
 public:
@@ -75,4 +77,3 @@ signals:
 };
 
 #endif
-

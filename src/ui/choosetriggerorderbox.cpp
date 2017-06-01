@@ -19,16 +19,16 @@
     *********************************************************************/
 
 #include "choosetriggerorderbox.h"
-#include "engine.h"
 #include "button.h"
-#include "skin-bank.h"
 #include "client.h"
 #include "clientplayer.h"
+#include "engine.h"
+#include "skin-bank.h"
 #include "timed-progressbar.h"
 
+#include <QGraphicsProxyWidget>
 #include <QGraphicsSceneMouseEvent>
 #include <QPropertyAnimation>
-#include <QGraphicsProxyWidget>
 
 static qreal initialOpacity = 0.8;
 static int optionButtonHeight = 40;
@@ -40,9 +40,11 @@ const int ChooseTriggerOrderBox::interval = 15;
 const int ChooseTriggerOrderBox::m_leftBlankWidth = 37;
 
 TriggerOptionButton::TriggerOptionButton(QGraphicsObject *parent, const QString &player, const QString &skillStr, const int width)
-    : QGraphicsObject(parent),
-    m_skillStr(skillStr), m_text(displayedTextOf(skillStr)),
-    playerName(player), width(width)
+    : QGraphicsObject(parent)
+    , m_skillStr(skillStr)
+    , m_text(displayedTextOf(skillStr))
+    , playerName(player)
+    , width(width)
 {
     QString realSkill = skillStr;
     if (realSkill.contains("'")) // "sgs1'songwei"
@@ -151,8 +153,7 @@ QString TriggerOptionButton::displayedTextOf(const QString &str)
         QString realSkill = skillName.split("->").first(); // "tieqi"
         QString targetObj = skillName.split("->").last().split("&").first(); // "sgs4"
         QString targetName = ClientInstance->getPlayer(targetObj)->getGeneral()->getTranslatedName();
-        text = tr("%1 (use upon %2)").arg(Sanguosha->translate(realSkill))
-                                     .arg(targetName);
+        text = tr("%1 (use upon %2)").arg(Sanguosha->translate(realSkill)).arg(targetName);
     }
     if (time > 1)
         //text += " " + tr("*") + time;
@@ -193,8 +194,10 @@ void TriggerOptionButton::needDisabled(bool disabled)
 }
 
 ChooseTriggerOrderBox::ChooseTriggerOrderBox()
-    : optional(true), m_minimumWidth(0),
-    cancel(new Button(tr("cancel"), 0.6)), progressBar(NULL)
+    : optional(true)
+    , m_minimumWidth(0)
+    , cancel(new Button(tr("cancel"), 0.6))
+    , progressBar(NULL)
 {
     cancel->hide();
     cancel->setParentItem(this);
@@ -220,10 +223,7 @@ QRectF ChooseTriggerOrderBox::boundingRect() const
 {
     int width = m_minimumWidth + m_leftBlankWidth * 2;
 
-    int height = m_topBlankWidth
-            + (options.size()) * optionButtonHeight
-            + (options.size() - 1) * interval
-            + bottom_blank_width;
+    int height = m_topBlankWidth + (options.size()) * optionButtonHeight + (options.size() - 1) * interval + bottom_blank_width;
 
     if (ServerInfo.OperationTimeout != 0)
         height += 12;
@@ -273,11 +273,9 @@ void ChooseTriggerOrderBox::chooseOption(const QString &reason, const QStringLis
     }
 
     if (optional) {
-        cancel->setPos((boundingRect().width() - cancel->boundingRect().width()) / 2,
-                       y + interval);
+        cancel->setPos((boundingRect().width() - cancel->boundingRect().width()) / 2, y + interval);
         cancel->show();
     }
-
 
     if (ServerInfo.OperationTimeout != 0) {
         if (!progressBar) {
@@ -303,7 +301,7 @@ void ChooseTriggerOrderBox::clear()
         progressBar = NULL;
     }
 
-    foreach(TriggerOptionButton *button, optionButtons)
+    foreach (TriggerOptionButton *button, optionButtons)
         button->deleteLater();
 
     optionButtons.clear();

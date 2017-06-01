@@ -2,21 +2,25 @@
 #include "engine.h"
 #include "wrapped-card.h"
 
-RoomState::~RoomState() {
+RoomState::~RoomState()
+{
     foreach (Card *card, m_cards.values())
         delete card;
     m_cards.clear();
 }
 
-Card *RoomState::getCard(int cardId) const{
+Card *RoomState::getCard(int cardId) const
+{
     if (!m_cards.contains(cardId))
         return NULL;
     return m_cards[cardId];
 }
 
-void RoomState::resetCard(int cardId) {
+void RoomState::resetCard(int cardId)
+{
     Card *newCard = Card::Clone(Sanguosha->getEngineCard(cardId));
-    if (newCard == NULL) return;
+    if (newCard == NULL)
+        return;
     newCard->setFlags(m_cards[cardId]->getFlags());
     newCard->tag = m_cards[cardId]->tag;
     m_cards[cardId]->copyEverythingFrom(newCard);
@@ -26,7 +30,8 @@ void RoomState::resetCard(int cardId) {
 }
 
 // Reset all cards, generals' states of the room instance
-void RoomState::reset() {
+void RoomState::reset()
+{
     foreach (WrappedCard *card, m_cards.values())
         delete card;
     m_cards.clear();
@@ -38,4 +43,3 @@ void RoomState::reset() {
         m_cards[i] = new WrappedCard(Card::Clone(clonedCard));
     }
 }
-

@@ -1,18 +1,20 @@
 #ifndef TOUHOUHANA_H
 #define TOUHOUHANA_H
 
-#include "package.h"
 #include "card.h"
+#include "package.h"
 #include "skill.h"
 
-class TouhouHanaPackage: public Package {
+class TouhouHanaPackage : public Package
+{
     Q_OBJECT
 
 public:
     TouhouHanaPackage();
 };
 
-class ThJiewuCard: public SkillCard{
+class ThJiewuCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -22,7 +24,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThWujianCard: public SkillCard{
+class ThWujianCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -32,7 +35,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThXihuaCard: public SkillCard{
+class ThXihuaCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -42,28 +46,27 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-#include <QGroupBox>
 #include <QAbstractButton>
 #include <QButtonGroup>
+#include <QCommandLinkButton>
 #include <QDialog>
+#include <QGroupBox>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QCommandLinkButton>
 
-class ThMimengDialog: public QDialog {
+class ThMimengDialog : public QDialog
+{
     Q_OBJECT
 
 public:
-    static ThMimengDialog *getInstance(const QString &object, bool left = true, bool right = true,
-                                       bool play_only = true, bool slash_combined = false, bool delayed_tricks = false);
+    static ThMimengDialog *getInstance(const QString &object, bool left = true, bool right = true, bool play_only = true, bool slash_combined = false, bool delayed_tricks = false);
 
 public slots:
     void popup();
     void selectCard(QAbstractButton *button);
 
 protected:
-    explicit ThMimengDialog(const QString &object, bool left = true, bool right = true,
-                            bool play_only = true, bool slash_combined = false, bool delayed_tricks = false);
+    explicit ThMimengDialog(const QString &object, bool left = true, bool right = true, bool play_only = true, bool slash_combined = false, bool delayed_tricks = false);
     virtual bool isButtonEnabled(const QString &button_name) const;
 
     QHash<QString, const Card *> map;
@@ -83,7 +86,8 @@ signals:
     void onButtonClick();
 };
 
-class ThMimengCard: public SkillCard{
+class ThMimengCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -97,7 +101,8 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
-class ThQuanshanGiveCard: public SkillCard{
+class ThQuanshanGiveCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -107,7 +112,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThQuanshanCard: public SkillCard{
+class ThQuanshanCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -117,7 +123,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThDuanzuiCard: public SkillCard{
+class ThDuanzuiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -127,7 +134,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class ThYachuiCard: public SkillCard{
+class ThYachuiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -137,7 +145,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThGuaitanCard: public SkillCard{
+class ThGuaitanCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -147,7 +156,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class ThDujiaCard: public SkillCard {
+class ThDujiaCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -155,7 +165,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThXianfaCard: public SkillCard {
+class ThXianfaCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -165,7 +176,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class ThLeishiCard: public SkillCard {
+class ThLeishiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -175,7 +187,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class ThLiuzhenCard: public SkillCard{
+class ThLiuzhenCard : public SkillCard
+{
     Q_OBJECT
 
 public:

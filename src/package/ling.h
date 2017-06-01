@@ -1,10 +1,11 @@
 #ifndef _LING_H
 #define _LING_H
 
-#include "package.h"
 #include "card.h"
+#include "package.h"
 
-class LingPackage: public Package {
+class LingPackage : public Package
+{
     Q_OBJECT
 
 public:

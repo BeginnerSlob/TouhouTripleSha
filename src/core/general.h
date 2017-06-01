@@ -6,12 +6,13 @@ class TriggerSkill;
 class Package;
 class QSize;
 
+#include <QMap>
 #include <QObject>
 #include <QSet>
-#include <QMap>
 #include <QStringList>
 
-class General: public QObject {
+class General : public QObject
+{
     Q_OBJECT
     Q_ENUMS(Gender)
     Q_PROPERTY(QString kingdom READ getKingdom CONSTANT)
@@ -23,8 +24,7 @@ class General: public QObject {
     Q_PROPERTY(bool hidden READ isHidden CONSTANT)
 
 public:
-    explicit General(Package *package, const QString &name, const QString &kingdom,
-                     int max_hp = 4, bool male = true, bool hidden = false, bool never_shown = false);
+    explicit General(Package *package, const QString &name, const QString &kingdom, int max_hp = 4, bool male = true, bool hidden = false, bool never_shown = false);
 
     // property getters/setters
     int getMaxHp() const;
@@ -36,7 +36,13 @@ public:
     bool isHidden() const;
     bool isTotallyHidden() const;
 
-    enum Gender { Sexless, Male, Female, Neuter };
+    enum Gender
+    {
+        Sexless,
+        Male,
+        Female,
+        Neuter
+    };
     Gender getGender() const;
     void setGender(Gender gender);
 
@@ -56,7 +62,10 @@ public:
 
     QString getTranslatedName() const;
 
-    inline QSet<QString> getExtraSkillSet() const{ return extra_set; }
+    inline QSet<QString> getExtraSkillSet() const
+    {
+        return extra_set;
+    }
 
 public slots:
     void lastWord() const;
@@ -74,4 +83,3 @@ private:
 };
 
 #endif
-

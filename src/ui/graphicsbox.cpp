@@ -35,7 +35,6 @@ GraphicsBox::GraphicsBox(const QString &title)
 
 GraphicsBox::~GraphicsBox()
 {
-
 }
 
 void GraphicsBox::paintGraphicsBoxStyle(QPainter *painter, const QString &boxTitle, const QRectF &rect)

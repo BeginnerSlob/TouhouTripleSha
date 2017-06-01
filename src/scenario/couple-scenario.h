@@ -5,7 +5,8 @@
 
 class ServerPlayer;
 
-class CoupleScenario: public Scenario {
+class CoupleScenario : public Scenario
+{
     Q_OBJECT
 
 public:
@@ -37,4 +38,3 @@ private:
 };
 
 #endif
-

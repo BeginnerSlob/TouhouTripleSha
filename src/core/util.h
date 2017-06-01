@@ -8,8 +8,8 @@ class QVariant;
 #include <QStringList>
 #include <QVariant>
 
-template<typename T>
-void qShuffle(QList<T> &list) {
+template <typename T> void qShuffle(QList<T> &list)
+{
     int i, n = list.length();
     for (i = 0; i < n; i++) {
         int r = qrand() % (n - i) + i;
@@ -33,4 +33,3 @@ bool isNormalGameMode(const QString &mode);
 static const int S_EQUIP_AREA_LENGTH = 5;
 
 #endif
-

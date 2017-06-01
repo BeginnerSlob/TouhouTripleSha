@@ -1,11 +1,12 @@
 #ifndef _WINDOW_H
 #define _WINDOW_H
 
-#include <QGraphicsScale>
-#include <QGraphicsObject>
 #include "button.h"
+#include <QGraphicsObject>
+#include <QGraphicsScale>
 
-class Window: public QGraphicsObject {
+class Window : public QGraphicsObject
+{
     Q_OBJECT
 
 public:
@@ -37,4 +38,3 @@ private:
 };
 
 #endif
-

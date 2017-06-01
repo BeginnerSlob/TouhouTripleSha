@@ -3,14 +3,16 @@
 
 #include "standard.h"
 
-class HegemonyPackage: public Package {
+class HegemonyPackage : public Package
+{
     Q_OBJECT
 
 public:
     HegemonyPackage();
 };
 
-class QingchengCard: public SkillCard {
+class QingchengCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -21,4 +23,3 @@ public:
 };
 
 #endif
-

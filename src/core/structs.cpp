@@ -1,16 +1,17 @@
 #include "structs.h"
-#include "protocol.h"
-#include "json.h"
 #include "exppattern.h"
+#include "json.h"
+#include "protocol.h"
 #include "room.h"
 
 bool CardsMoveStruct::tryParse(const QVariant &arg)
 {
     JsonArray args = arg.value<JsonArray>();
-    if (args.size() != 8) return false;
+    if (args.size() != 8)
+        return false;
 
-    if ((!JsonUtils::isNumber(args[0]) && !args[0].canConvert<JsonArray>()) ||
-        !JsonUtils::isNumberArray(args, 1, 2) || !JsonUtils::isStringArray(args, 3, 6)) return false;
+    if ((!JsonUtils::isNumber(args[0]) && !args[0].canConvert<JsonArray>()) || !JsonUtils::isNumberArray(args, 1, 2) || !JsonUtils::isStringArray(args, 3, 6))
+        return false;
 
     if (JsonUtils::isNumber(args[0])) {
         int size = args[0].toInt();
@@ -75,13 +76,28 @@ QVariant CardMoveReason::toVariant() const
 }
 
 DamageStruct::DamageStruct()
-    : from(NULL), to(NULL), card(NULL), damage(1), nature(Normal), chain(false), trigger_chain(false),
-    transfer(false), by_user(true), reason(QString()), transfer_reason(QString())
+    : from(NULL)
+    , to(NULL)
+    , card(NULL)
+    , damage(1)
+    , nature(Normal)
+    , chain(false)
+    , trigger_chain(false)
+    , transfer(false)
+    , by_user(true)
+    , reason(QString())
+    , transfer_reason(QString())
 {
 }
 
 DamageStruct::DamageStruct(const Card *card, ServerPlayer *from, ServerPlayer *to, int damage, DamageStruct::Nature nature)
-    : chain(false), trigger_chain(false), transfer(false), by_user(true), reason(QString()), transfer_reason(QString()), prevented(false)
+    : chain(false)
+    , trigger_chain(false)
+    , transfer(false)
+    , by_user(true)
+    , reason(QString())
+    , transfer_reason(QString())
+    , prevented(false)
 {
     this->card = card;
     this->from = from;
@@ -91,7 +107,13 @@ DamageStruct::DamageStruct(const Card *card, ServerPlayer *from, ServerPlayer *t
 }
 
 DamageStruct::DamageStruct(const QString &reason, ServerPlayer *from, ServerPlayer *to, int damage, DamageStruct::Nature nature)
-    : card(NULL), chain(false), trigger_chain(false), transfer(false), by_user(true), transfer_reason(QString()), prevented(false)
+    : card(NULL)
+    , chain(false)
+    , trigger_chain(false)
+    , transfer(false)
+    , by_user(true)
+    , transfer_reason(QString())
+    , prevented(false)
 {
     this->from = from;
     this->to = to;
@@ -110,32 +132,51 @@ QString DamageStruct::getReason() const
 }
 
 CardEffectStruct::CardEffectStruct()
-    : card(NULL), from(NULL), to(NULL), multiple(false), nullified(false)
+    : card(NULL)
+    , from(NULL)
+    , to(NULL)
+    , multiple(false)
+    , nullified(false)
 {
 }
 
 SlashEffectStruct::SlashEffectStruct()
-    : jink_num(1), slash(NULL), jink(NULL), from(NULL), to(NULL), drank(0), nature(DamageStruct::Normal), nullified(false)
+    : jink_num(1)
+    , slash(NULL)
+    , jink(NULL)
+    , from(NULL)
+    , to(NULL)
+    , drank(0)
+    , nature(DamageStruct::Normal)
+    , nullified(false)
 {
 }
 
 DyingStruct::DyingStruct()
-    : who(NULL), damage(NULL)
+    : who(NULL)
+    , damage(NULL)
 {
 }
 
 DeathStruct::DeathStruct()
-    : who(NULL), damage(NULL)
+    : who(NULL)
+    , damage(NULL)
 {
 }
 
 RecoverStruct::RecoverStruct(ServerPlayer *who, const Card *card, int recover)
-    : recover(recover), who(who), card(card)
+    : recover(recover)
+    , who(who)
+    , card(card)
 {
 }
 
 PindianStruct::PindianStruct()
-    : from(NULL), to(NULL), from_card(NULL), to_card(NULL), success(false)
+    : from(NULL)
+    , to(NULL)
+    , from_card(NULL)
+    , to_card(NULL)
+    , success(false)
 {
 }
 
@@ -145,9 +186,15 @@ bool PindianStruct::isSuccess() const
 }
 
 JudgeStruct::JudgeStruct()
-    : who(NULL), card(NULL), pattern("."), good(true), time_consuming(false),
-    negative(false), play_animation(true), retrial_by_response(NULL),
-    _m_result(TRIAL_RESULT_UNKNOWN)
+    : who(NULL)
+    , card(NULL)
+    , pattern(".")
+    , good(true)
+    , time_consuming(false)
+    , negative(false)
+    , play_animation(true)
+    , retrial_by_response(NULL)
+    , _m_result(TRIAL_RESULT_UNKNOWN)
 {
 }
 
@@ -183,12 +230,17 @@ bool JudgeStruct::isGood(const Card *card) const
 }
 
 PhaseChangeStruct::PhaseChangeStruct()
-    : from(Player::NotActive), to(Player::NotActive)
+    : from(Player::NotActive)
+    , to(Player::NotActive)
 {
 }
 
 CardUseStruct::CardUseStruct()
-    : card(NULL), from(NULL), m_isOwnerUse(true), m_addHistory(true), nullified_list(QStringList())
+    : card(NULL)
+    , from(NULL)
+    , m_isOwnerUse(true)
+    , m_addHistory(true)
+    , nullified_list(QStringList())
 {
 }
 
@@ -214,7 +266,7 @@ CardUseStruct::CardUseStruct(const Card *card, ServerPlayer *from, ServerPlayer 
 bool CardUseStruct::isValid(const QString &pattern) const
 {
     Q_UNUSED(pattern)
-        return card != NULL;
+    return card != NULL;
     /*if (card == NULL) return false;
     if (!card->getSkillName().isEmpty()) {
     bool validSkill = false;
@@ -296,6 +348,8 @@ void CardUseStruct::parse(const QString &str, Room *room)
 }
 
 VersionStruct::VersionStruct()
-    : versionNumber(QString()), updateDate(QString()), url(QString())
+    : versionNumber(QString())
+    , updateDate(QString())
+    , url(QString())
 {
 }

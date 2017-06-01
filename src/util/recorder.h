@@ -3,15 +3,16 @@
 
 #include "protocol.h"
 
-#include <QObject>
-#include <QTime>
-#include <QThread>
-#include <QMutex>
-#include <QSemaphore>
 #include <QImage>
 #include <QMap>
+#include <QMutex>
+#include <QObject>
+#include <QSemaphore>
+#include <QThread>
+#include <QTime>
 
-class Recorder: public QObject {
+class Recorder : public QObject
+{
     Q_OBJECT
 
 public:
@@ -32,7 +33,8 @@ private:
     QByteArray data;
 };
 
-class Replayer: public QThread {
+class Replayer : public QThread
+{
     Q_OBJECT
 
 public:
@@ -61,7 +63,8 @@ private:
     QMutex mutex;
     QSemaphore play_sem;
 
-    struct Pair {
+    struct Pair
+    {
         int elapsed;
         QString cmd;
     };
@@ -74,4 +77,3 @@ signals:
 };
 
 #endif
-

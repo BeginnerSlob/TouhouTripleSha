@@ -19,13 +19,13 @@
     *********************************************************************/
 
 #include "playercardbox.h"
-#include "clientplayer.h"
-#include "skin-bank.h"
-#include "engine.h"
 #include "carditem.h"
 #include "client.h"
-#include "timed-progressbar.h"
+#include "clientplayer.h"
+#include "engine.h"
 #include "roomscene.h"
+#include "skin-bank.h"
+#include "timed-progressbar.h"
 
 #include <QGraphicsProxyWidget>
 
@@ -45,14 +45,17 @@ const int PlayerCardBox::intervalBetweenRows = 5;
 const int PlayerCardBox::intervalBetweenCards = 3;
 
 PlayerCardBox::PlayerCardBox()
-    : player(NULL), progressBar(NULL),
-    rowCount(0), intervalsBetweenAreas(-1), intervalsBetweenRows(0), maxCardsInOneRow(0)
+    : player(NULL)
+    , progressBar(NULL)
+    , rowCount(0)
+    , intervalsBetweenAreas(-1)
+    , intervalsBetweenRows(0)
+    , maxCardsInOneRow(0)
 {
 }
 
-void PlayerCardBox::chooseCard(const QString &reason, const ClientPlayer *player,
-                               const QString &flags, bool handcardVisible,
-                               Card::HandlingMethod method, const QList<int> &disabledIds)
+void PlayerCardBox::chooseCard(const QString &reason, const ClientPlayer *player, const QString &flags, bool handcardVisible, Card::HandlingMethod method,
+                               const QList<int> &disabledIds)
 {
     nameRects.clear();
     rowCount = 0;
@@ -147,17 +150,13 @@ QRectF PlayerCardBox::boundingRect() const
     int width = verticalBlankWidth * 2 + placeNameAreaWidth + intervalBetweenNameAndCard;
 
     if (maxCardsInOneRow > maxCardNumberInOneRow / 2) {
-        width += cardWidth * maxCardNumberInOneRow / 2
-            + intervalBetweenCards * (maxCardNumberInOneRow / 2 - 1);
+        width += cardWidth * maxCardNumberInOneRow / 2 + intervalBetweenCards * (maxCardNumberInOneRow / 2 - 1);
     } else {
-        width += cardWidth * maxCardsInOneRow
-            + intervalBetweenCards * (maxCardsInOneRow - 1);
+        width += cardWidth * maxCardsInOneRow + intervalBetweenCards * (maxCardsInOneRow - 1);
     }
 
     int areaInterval = intervalBetweenAreas;
-    int height = topBlankWidth + bottomBlankWidth + cardHeight * rowCount
-        + intervalsBetweenAreas * qMax(areaInterval, 0)
-        + intervalsBetweenRows * intervalBetweenRows;
+    int height = topBlankWidth + bottomBlankWidth + cardHeight * rowCount + intervalsBetweenAreas * qMax(areaInterval, 0) + intervalsBetweenRows * intervalBetweenRows;
 
     if (ServerInfo.OperationTimeout != 0)
         height += 12;
@@ -170,7 +169,7 @@ void PlayerCardBox::paintLayout(QPainter *painter)
     if (nameRects.isEmpty())
         return;
 
-    foreach(const QRect &rect, nameRects)
+    foreach (const QRect &rect, nameRects)
         painter->drawRoundedRect(rect, 3, 3);
 
     // font
@@ -185,21 +184,15 @@ void PlayerCardBox::paintLayout(QPainter *painter)
     int index = 0;
 
     if (flags.contains(handcardFlag) && !player->isKongcheng()) {
-        font.paintText(painter, nameRects.at(index),
-            Qt::AlignCenter,
-            tr("Handcard area"));
+        font.paintText(painter, nameRects.at(index), Qt::AlignCenter, tr("Handcard area"));
         ++index;
     }
     if (flags.contains(equipmentFlag) && player->hasEquip()) {
-        font.paintText(painter, nameRects.at(index),
-            Qt::AlignCenter,
-            tr("Equip area"));
+        font.paintText(painter, nameRects.at(index), Qt::AlignCenter, tr("Equip area"));
         ++index;
     }
     if (flags.contains(judgingFlag) && !player->getJudgingArea().isEmpty()) {
-        font.paintText(painter, nameRects.at(index),
-            Qt::AlignCenter,
-            tr("Judging area"));
+        font.paintText(painter, nameRects.at(index), Qt::AlignCenter, tr("Judging area"));
     }
 }
 
@@ -213,7 +206,7 @@ void PlayerCardBox::clear()
         progressBarItem->deleteLater();
     }
 
-    foreach(CardItem *item, items)
+    foreach (CardItem *item, items)
         item->deleteLater();
     items.clear();
 
@@ -232,16 +225,13 @@ void PlayerCardBox::updateNumbers(const int &cardNumber)
         maxCardsInOneRow = cardNumber;
 
     const int cardHeight = G_COMMON_LAYOUT.m_cardNormalHeight;
-    const int y = topBlankWidth + rowCount * cardHeight
-        + intervalsBetweenAreas * intervalBetweenAreas
-        + intervalsBetweenRows * intervalBetweenRows;
+    const int y = topBlankWidth + rowCount * cardHeight + intervalsBetweenAreas * intervalBetweenAreas + intervalsBetweenRows * intervalBetweenRows;
 
     const int count = getRowCount(cardNumber);
     rowCount += count;
     intervalsBetweenRows += count - 1;
 
-    const int height = count * cardHeight
-        + (count - 1) * intervalsBetweenRows;
+    const int height = count * cardHeight + (count - 1) * intervalsBetweenRows;
 
     nameRects << QRect(verticalBlankWidth, y, placeNameAreaWidth, height);
 }
@@ -257,9 +247,7 @@ void PlayerCardBox::arrangeCards(const QList<const Card *> &cards, const QPoint 
         item->setParentItem(this);
         item->setFlag(ItemIsMovable, false);
         if (card)
-            item->setEnabled(!disabledIds.contains(card->getEffectiveId())
-                             && (method != Card::MethodDiscard
-                                 || Self->canDiscard(player, card->getEffectiveId())));
+            item->setEnabled(!disabledIds.contains(card->getEffectiveId()) && (method != Card::MethodDiscard || Self->canDiscard(player, card->getEffectiveId())));
         else
             item->setEnabled(true);
         connect(item, &CardItem::clicked, this, &PlayerCardBox::reply);
@@ -282,8 +270,7 @@ void PlayerCardBox::arrangeCards(const QList<const Card *> &cards, const QPoint 
         int count = qMin(maxCardNumberInOneRow, areaItems.size());
         double step = 0;
         if (count > 1) {
-            step = qMin((double)cardWidth + intervalBetweenCards,
-                (double)(maxWidth - cardWidth) / qMax(count - 1, 0));
+            step = qMin((double)cardWidth + intervalBetweenCards, (double)(maxWidth - cardWidth) / qMax(count - 1, 0));
         }
         for (int i = 0; i < count; ++i) {
             CardItem *item = areaItems.takeFirst();

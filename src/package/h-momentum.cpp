@@ -1,22 +1,26 @@
 #include "h-momentum.h"
-#include "general.h"
-#include "standard.h"
-#include "standard-equips.h"
-#include "maneuvering.h"
-#include "skill.h"
-#include "engine.h"
-#include "client.h"
-#include "serverplayer.h"
-#include "room.h"
 #include "ai.h"
+#include "client.h"
+#include "engine.h"
+#include "general.h"
+#include "maneuvering.h"
+#include "room.h"
+#include "serverplayer.h"
 #include "settings.h"
+#include "skill.h"
+#include "standard-equips.h"
+#include "standard.h"
 
-class Hengzheng: public PhaseChangeSkill {
+class Hengzheng : public PhaseChangeSkill
+{
 public:
-    Hengzheng(): PhaseChangeSkill("hengzheng") {
+    Hengzheng()
+        : PhaseChangeSkill("hengzheng")
+    {
     }
 
-    virtual bool onPhaseChange(ServerPlayer *dongzhuo) const{
+    virtual bool onPhaseChange(ServerPlayer *dongzhuo) const
+    {
         if (dongzhuo->getPhase() == Player::Draw && (dongzhuo->isKongcheng() || dongzhuo->getHp() <= 1)) {
             Room *room = dongzhuo->getRoom();
             if (room->askForSkillInvoke(dongzhuo, objectName())) {
@@ -33,8 +37,7 @@ public:
                     if (player->isAlive() && !player->isAllNude()) {
                         CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, dongzhuo->objectName());
                         int card_id = room->askForCardChosen(dongzhuo, player, "hej", objectName());
-                        room->obtainCard(dongzhuo, Sanguosha->getCard(card_id),
-                                         reason, room->getCardPlace(card_id) != Player::PlaceHand);
+                        room->obtainCard(dongzhuo, Sanguosha->getCard(card_id), reason, room->getCardPlace(card_id) != Player::PlaceHand);
                     }
                 }
 
@@ -47,21 +50,23 @@ public:
     }
 };
 
-class Baoling: public TriggerSkill {
+class Baoling : public TriggerSkill
+{
 public:
-    Baoling(): TriggerSkill("baoling") {
+    Baoling()
+        : TriggerSkill("baoling")
+    {
         events << EventPhaseEnd;
         frequency = Wake;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return TriggerSkill::triggerable(target)
-               && target->getPhase() == Player::Play
-               && target->getMark("baoling") == 0
-               && target->getMark("HengzhengUsed") >= 1;
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return TriggerSkill::triggerable(target) && target->getPhase() == Player::Play && target->getMark("baoling") == 0 && target->getMark("HengzhengUsed") >= 1;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
         room->notifySkillInvoked(player, objectName());
 
         LogMessage log;
@@ -90,7 +95,6 @@ public:
 HMomentumPackage::HMomentumPackage()
     : Package("h_momentum")
 {
-
     General *heg_madai = new General(this, "heg_madai", "shu", 4, true, true); // SHU 019
     heg_madai->addSkill("thjibu");
     heg_madai->addSkill("ikmoguang");

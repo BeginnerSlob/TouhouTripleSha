@@ -1,15 +1,16 @@
 #ifndef _WIND_H
 #define _WIND_H
 
-#include "package.h"
 #include "card.h"
+#include "package.h"
 
-#include <QGroupBox>
 #include <QAbstractButton>
 #include <QButtonGroup>
 #include <QDialog>
+#include <QGroupBox>
 
-class GuhuoCard: public SkillCard {
+class GuhuoCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -24,7 +25,8 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
-class GuhuoDialog: public QDialog {
+class GuhuoDialog : public QDialog
+{
     Q_OBJECT
 
 public:
@@ -50,7 +52,8 @@ signals:
 };
 
 #include "skill.h"
-class Jushou: public PhaseChangeSkill {
+class Jushou : public PhaseChangeSkill
+{
     Q_OBJECT
 
 public:
@@ -61,7 +64,8 @@ protected:
     virtual int getJushouDrawNum(ServerPlayer *caoren) const;
 };
 
-class WindPackage: public Package {
+class WindPackage : public Package
+{
     Q_OBJECT
 
 public:
@@ -69,4 +73,3 @@ public:
 };
 
 #endif
-

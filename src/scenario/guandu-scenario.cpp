@@ -1,38 +1,48 @@
-#include "scenario.h"
-#include "skill.h"
-#include "maneuvering.h"
 #include "guandu-scenario.h"
-#include "clientplayer.h"
 #include "client.h"
+#include "clientplayer.h"
 #include "engine.h"
 #include "ikai-do.h"
+#include "maneuvering.h"
+#include "scenario.h"
+#include "skill.h"
 
-ZhanShuangxiongCard::ZhanShuangxiongCard() {
+ZhanShuangxiongCard::ZhanShuangxiongCard()
+{
 }
 
-bool ZhanShuangxiongCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
+bool ZhanShuangxiongCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const
+{
     return targets.isEmpty() && to_select->getGeneralName() == "yanliangwenchou" && !to_select->isKongcheng();
 }
 
-void ZhanShuangxiongCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+void ZhanShuangxiongCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
     room->setTag("ZhanShuangxiong", true);
     source->pindian(targets.first(), "zhanshuangxiong");
 }
 
-class GreatYiji: public IkYumeng {
+class GreatYiji : public IkYumeng
+{
 public:
-    GreatYiji(): IkYumeng() {
+    GreatYiji()
+        : IkYumeng()
+    {
         setObjectName("greatyiji");
         n = 3;
     }
 };
 
-class DamageBeforePlay: public PhaseChangeSkill {
+class DamageBeforePlay : public PhaseChangeSkill
+{
 public:
-    DamageBeforePlay(): PhaseChangeSkill("damagebeforeplay") {
+    DamageBeforePlay()
+        : PhaseChangeSkill("damagebeforeplay")
+    {
     }
 
-    virtual bool onPhaseChange(ServerPlayer *target) const{
+    virtual bool onPhaseChange(ServerPlayer *target) const
+    {
         if (target->getPhase() == Player::Play) {
             DamageStruct damage;
             damage.to = target;
@@ -43,32 +53,42 @@ public:
     }
 };
 
-class ZhanShuangxiongViewAsSkill: public ZeroCardViewAsSkill {
+class ZhanShuangxiongViewAsSkill : public ZeroCardViewAsSkill
+{
 public:
-    ZhanShuangxiongViewAsSkill(): ZeroCardViewAsSkill("zhanshuangxiong") {
+    ZhanShuangxiongViewAsSkill()
+        : ZeroCardViewAsSkill("zhanshuangxiong")
+    {
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const{
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
         return !player->isKongcheng() && !player->hasUsed("ZhanShuangxiongCard");
     }
 
-    virtual const Card *viewAs() const{
+    virtual const Card *viewAs() const
+    {
         return new ZhanShuangxiongCard();
     }
 };
 
-class ZhanShuangxiong: public TriggerSkill {
+class ZhanShuangxiong : public TriggerSkill
+{
 public:
-    ZhanShuangxiong(): TriggerSkill("zhanshuangxiong") {
+    ZhanShuangxiong()
+        : TriggerSkill("zhanshuangxiong")
+    {
         events << Pindian;
         view_as_skill = new ZhanShuangxiongViewAsSkill;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
         return target != NULL;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const
+    {
         PindianStruct *pindian = data.value<PindianStruct *>();
         if (pindian->reason != objectName())
             return false;
@@ -87,10 +107,12 @@ public:
     }
 };
 
-SmallTuxiCard::SmallTuxiCard() {
+SmallTuxiCard::SmallTuxiCard()
+{
 }
 
-bool SmallTuxiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool SmallTuxiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
     if (!targets.isEmpty())
         return false;
 
@@ -100,41 +122,52 @@ bool SmallTuxiCard::targetFilter(const QList<const Player *> &targets, const Pla
     return !to_select->isKongcheng();
 }
 
-void SmallTuxiCard::onEffect(const CardEffectStruct &effect) const{
+void SmallTuxiCard::onEffect(const CardEffectStruct &effect) const
+{
     effect.from->getRoom()->broadcastSkillInvoke("ikchibao");
     NosTuxiCard::onEffect(effect);
 }
 
-class SmallTuxiViewAsSkill: public ZeroCardViewAsSkill {
+class SmallTuxiViewAsSkill : public ZeroCardViewAsSkill
+{
 public:
-    SmallTuxiViewAsSkill(): ZeroCardViewAsSkill("smalltuxi") {
+    SmallTuxiViewAsSkill()
+        : ZeroCardViewAsSkill("smalltuxi")
+    {
     }
 
-    virtual const Card *viewAs() const{
+    virtual const Card *viewAs() const
+    {
         return new SmallTuxiCard;
     }
 
-    virtual bool isEnabledAtPlay(const Player *) const{
+    virtual bool isEnabledAtPlay(const Player *) const
+    {
         return false;
     }
 
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
-        return  pattern == "@@smalltuxi";
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
+    {
+        return pattern == "@@smalltuxi";
     }
 };
 
-class SmallTuxi: public PhaseChangeSkill {
+class SmallTuxi : public PhaseChangeSkill
+{
 public:
-    SmallTuxi(): PhaseChangeSkill("smalltuxi") {
+    SmallTuxi()
+        : PhaseChangeSkill("smalltuxi")
+    {
         view_as_skill = new SmallTuxiViewAsSkill;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return target != NULL && target->getGeneralName() == "zhangliao"
-               && !target->getRoom()->getTag("BurnWuchao").toBool();
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return target != NULL && target->getGeneralName() == "zhangliao" && !target->getRoom()->getTag("BurnWuchao").toBool();
     }
 
-    virtual bool onPhaseChange(ServerPlayer *zhangliao) const{
+    virtual bool onPhaseChange(ServerPlayer *zhangliao) const
+    {
         if (zhangliao->getPhase() == Player::Draw) {
             Room *room = zhangliao->getRoom();
             bool can_invoke = false;
@@ -153,7 +186,8 @@ public:
     }
 };
 
-class GuanduRule: public ScenarioRule {
+class GuanduRule : public ScenarioRule
+{
 public:
     GuanduRule(Scenario *scenario)
         : ScenarioRule(scenario)
@@ -161,97 +195,100 @@ public:
         events << GameStart << DrawNCards << Damaged << GameOverJudge;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
         switch (triggerEvent) {
         case GameStart: {
-                player = room->getLord();
-                room->installEquip(player, "renwang_shield");
-                room->installEquip(player, "tianpanzhou");
+            player = room->getLord();
+            room->installEquip(player, "renwang_shield");
+            room->installEquip(player, "tianpanzhou");
 
-                ServerPlayer *caocao = room->findPlayer("caocao");
-                room->installEquip(caocao, "qinggang_sword");
-                room->installEquip(caocao, "kunshentianye");
+            ServerPlayer *caocao = room->findPlayer("caocao");
+            room->installEquip(caocao, "qinggang_sword");
+            room->installEquip(caocao, "kunshentianye");
 
-                ServerPlayer *liubei = room->findPlayer("liubei");
-                room->installEquip(liubei, "double_sword");
+            ServerPlayer *liubei = room->findPlayer("liubei");
+            room->installEquip(liubei, "double_sword");
 
-                ServerPlayer *guanyu = room->findPlayer("guanyu");
-                room->installEquip(guanyu, "blade");
-                room->installEquip(guanyu, "chanayakongxue");
-                room->acquireSkill(guanyu, "zhanshuangxiong");
+            ServerPlayer *guanyu = room->findPlayer("guanyu");
+            room->installEquip(guanyu, "blade");
+            room->installEquip(guanyu, "chanayakongxue");
+            room->acquireSkill(guanyu, "zhanshuangxiong");
 
+            ServerPlayer *zhangliao = room->findPlayer("nos_zhangliao");
+            room->handleAcquireDetachSkills(zhangliao, "-nostuxi|smalltuxi");
 
-                ServerPlayer *zhangliao = room->findPlayer("nos_zhangliao");
-                room->handleAcquireDetachSkills(zhangliao, "-nostuxi|smalltuxi");
-
-                break;
-            }
+            break;
+        }
         case DrawNCards: {
-                if (player->getPhase() == Player::Draw) {
-                    bool burned = room->getTag("BurnWuchao").toBool();
-                    if (!burned) {
-                        QString name = player->getGeneralName();
-                        if (name == "caocao" || name == "nos_guojia" || name == "guanyu")
-                            data = data.toInt() - 1;
-                    }
-                }
-                break;
-            }
-        case Damaged: {
+            if (player->getPhase() == Player::Draw) {
                 bool burned = room->getTag("BurnWuchao").toBool();
-                if (burned) return false;
-
-                DamageStruct damage = data.value<DamageStruct>();
-                if (player->getGeneralName() == "yuanshao" && damage.nature == DamageStruct::Fire
-                    && damage.from->getRoleEnum() == Player::Rebel) {
-                    room->setTag("BurnWuchao", true);
-
-                    QStringList tos;
-                    tos << "yuanshao" << "yanliangwenchou" << "zhenji" << "liubei";
-
-                    foreach (QString name, tos) {
-                        ServerPlayer *to = room->findPlayer(name);
-                        if (to == NULL || to->containsTrick("supply_shortage"))
-                            continue;
-
-                        int card_id = room->getCardFromPile("@ikkujie");
-                        if (card_id == -1)
-                            break;
-
-                        const Card *originalCard = Sanguosha->getCard(card_id);
-
-                        LogMessage log;
-                        log.type = "#BurnWuchao";
-                        log.from = to;
-                        log.card_str = originalCard->toString();
-                        room->sendLog(log);
-
-                        SupplyShortage *shortage = new SupplyShortage(originalCard->getSuit(), originalCard->getNumber());
-                        shortage->setSkillName("ikkujie");
-                        WrappedCard *card = Sanguosha->getWrappedCard(originalCard->getId());
-                        card->takeOver(shortage);
-                        room->broadcastUpdateCard(room->getPlayers(), card->getId(), card);
-                        room->moveCardTo(card, to, Player::PlaceDelayedTrick, true);
-                        shortage->deleteLater();
-                    }
+                if (!burned) {
+                    QString name = player->getGeneralName();
+                    if (name == "caocao" || name == "nos_guojia" || name == "guanyu")
+                        data = data.toInt() - 1;
                 }
-                break;
             }
+            break;
+        }
+        case Damaged: {
+            bool burned = room->getTag("BurnWuchao").toBool();
+            if (burned)
+                return false;
+
+            DamageStruct damage = data.value<DamageStruct>();
+            if (player->getGeneralName() == "yuanshao" && damage.nature == DamageStruct::Fire && damage.from->getRoleEnum() == Player::Rebel) {
+                room->setTag("BurnWuchao", true);
+
+                QStringList tos;
+                tos << "yuanshao"
+                    << "yanliangwenchou"
+                    << "zhenji"
+                    << "liubei";
+
+                foreach (QString name, tos) {
+                    ServerPlayer *to = room->findPlayer(name);
+                    if (to == NULL || to->containsTrick("supply_shortage"))
+                        continue;
+
+                    int card_id = room->getCardFromPile("@ikkujie");
+                    if (card_id == -1)
+                        break;
+
+                    const Card *originalCard = Sanguosha->getCard(card_id);
+
+                    LogMessage log;
+                    log.type = "#BurnWuchao";
+                    log.from = to;
+                    log.card_str = originalCard->toString();
+                    room->sendLog(log);
+
+                    SupplyShortage *shortage = new SupplyShortage(originalCard->getSuit(), originalCard->getNumber());
+                    shortage->setSkillName("ikkujie");
+                    WrappedCard *card = Sanguosha->getWrappedCard(originalCard->getId());
+                    card->takeOver(shortage);
+                    room->broadcastUpdateCard(room->getPlayers(), card->getId(), card);
+                    room->moveCardTo(card, to, Player::PlaceDelayedTrick, true);
+                    shortage->deleteLater();
+                }
+            }
+            break;
+        }
         case GameOverJudge: {
-                if (player->isLord()) {
-                    QStringList roles = room->aliveRoles(player);
-                    if (roles.length() == 2) {
-                        QString first = roles.at(0);
-                        QString second = roles.at(1);
-                        if (first == "renegade" && second == "renegade") {
-                            player->bury();
-                            room->gameOver("renegade");
-                            return true;
-                        }
+            if (player->isLord()) {
+                QStringList roles = room->aliveRoles(player);
+                if (roles.length() == 2) {
+                    QString first = roles.at(0);
+                    QString second = roles.at(1);
+                    if (first == "renegade" && second == "renegade") {
+                        player->bury();
+                        room->gameOver("renegade");
+                        return true;
                     }
                 }
-                break;
             }
+            break;
+        }
         default:
             break;
         }
@@ -264,29 +301,32 @@ GuanduScenario::GuanduScenario()
     : Scenario("guandu")
 {
     lord = "yuanshao";
-    loyalists << "yanliangwenchou" << "zhenji";
-    rebels << "caocao" << "nos_zhangliao" << "nos_guojia";
-    renegades << "liubei" << "guanyu";
+    loyalists << "yanliangwenchou"
+              << "zhenji";
+    rebels << "caocao"
+           << "nos_zhangliao"
+           << "nos_guojia";
+    renegades << "liubei"
+              << "guanyu";
 
     rule = new GuanduRule(this);
 
-    skills << new SmallTuxi
-           << new ZhanShuangxiong
-           << new GreatYiji
-           << new DamageBeforePlay;
+    skills << new SmallTuxi << new ZhanShuangxiong << new GreatYiji << new DamageBeforePlay;
 
     addMetaObject<ZhanShuangxiongCard>();
     addMetaObject<SmallTuxiCard>();
 }
 
-AI::Relation GuanduScenario::relationTo(const ServerPlayer *a, const ServerPlayer *b) const{
+AI::Relation GuanduScenario::relationTo(const ServerPlayer *a, const ServerPlayer *b) const
+{
     if (a->getRole() == "renegade" && b->getRole() == "renegade")
         return AI::Friend;
     else
         return AI::GetRelation(a, b);
 }
 
-void GuanduScenario::onTagSet(Room *room, const QString &) const{
+void GuanduScenario::onTagSet(Room *room, const QString &) const
+{
     bool zhanshuangxiong = room->getTag("ZhanShuangxiong").toBool();
     bool burnwuchao = room->getTag("BurnWuchao").toBool();
 

@@ -19,10 +19,10 @@
     *********************************************************************/
 
 #include "chooseoptionsbox.h"
-#include "engine.h"
 #include "button.h"
 #include "client.h"
 #include "clientstruct.h"
+#include "engine.h"
 #include "timed-progressbar.h"
 
 #include <QGraphicsProxyWidget>
@@ -91,8 +91,7 @@ void ChooseOptionsBox::chooseOption(const QStringList &options)
             }
             connect(button, &Button::clicked, this, &ChooseOptionsBox::reply);
             if (tooltip != original_tooltip)
-                button->setToolTip(QString("<font color=black>%2</font>")
-                                   .arg(tooltip));
+                button->setToolTip(QString("<font color=black>%2</font>").arg(tooltip));
         }
     }
 
@@ -106,7 +105,7 @@ void ChooseOptionsBox::chooseOption(const QStringList &options)
 
         QPointF pos;
         pos.setX(outerBlankWidth + (p.x() - 1) * (getButtonWidth() + interval));
-        pos.setY(topBlankWidth + defaultButtonHeight *(p.y() - 1) + (p.y() - 2) * interval + defaultButtonHeight / 2);
+        pos.setY(topBlankWidth + defaultButtonHeight * (p.y() - 1) + (p.y() - 2) * interval + defaultButtonHeight / 2);
 
         button->setPos(pos);
     }

@@ -3,10 +3,11 @@
 
 #include <QObject>
 #include <QString>
-#include <QUdpSocket>
 #include <QThread>
+#include <QUdpSocket>
 
-class Detector: public QObject {
+class Detector : public QObject
+{
     Q_OBJECT
 
 public slots:
@@ -17,7 +18,8 @@ signals:
     void detected(const QString &server_name, const QString &address);
 };
 
-class UdpDetector: public Detector {
+class UdpDetector : public Detector
+{
     Q_OBJECT
 
 public:
@@ -33,4 +35,3 @@ private:
 };
 
 #endif
-

@@ -1,16 +1,17 @@
 #include "configdialog.h"
-#include "ui_configdialog.h"
-#include "settings.h"
-#include "roomscene.h"
 #include "audio.h"
+#include "roomscene.h"
+#include "settings.h"
+#include "ui_configdialog.h"
 
-#include <QFileDialog>
-#include <QDesktopServices>
-#include <QFontDialog>
 #include <QColorDialog>
+#include <QDesktopServices>
+#include <QFileDialog>
+#include <QFontDialog>
 
 ConfigDialog::ConfigDialog(QWidget *parent)
-    : QDialog(parent), ui(new Ui::ConfigDialog)
+    : QDialog(parent)
+    , ui(new Ui::ConfigDialog)
 {
     ui->setupUi(this);
 
@@ -76,20 +77,20 @@ ConfigDialog::ConfigDialog(QWidget *parent)
     ui->textEditFontLineEdit->setPalette(palette);
 }
 
-void ConfigDialog::showFont(QLineEdit *lineedit, const QFont &font) {
+void ConfigDialog::showFont(QLineEdit *lineedit, const QFont &font)
+{
     lineedit->setFont(font);
     lineedit->setText(QString("%1 %2").arg(font.family()).arg(font.pointSize()));
 }
 
-ConfigDialog::~ConfigDialog() {
+ConfigDialog::~ConfigDialog()
+{
     delete ui;
 }
 
-void ConfigDialog::on_browseBgButton_clicked() {
-    QString filename = QFileDialog::getOpenFileName(this,
-                                                    tr("Select a background image"),
-                                                    "image/system/backdrop/",
-                                                    tr("Images (*.png *.bmp *.jpg)"));
+void ConfigDialog::on_browseBgButton_clicked()
+{
+    QString filename = QFileDialog::getOpenFileName(this, tr("Select a background image"), "image/system/backdrop/", tr("Images (*.png *.bmp *.jpg)"));
 
     if (!filename.isEmpty()) {
         QString app_path = QApplication::applicationDirPath();
@@ -104,7 +105,8 @@ void ConfigDialog::on_browseBgButton_clicked() {
     }
 }
 
-void ConfigDialog::on_resetBgButton_clicked() {
+void ConfigDialog::on_resetBgButton_clicked()
+{
     ui->bgPathLineEdit->clear();
 
     QString filename = "image/system/backdrop/default.jpg";
@@ -114,7 +116,8 @@ void ConfigDialog::on_resetBgButton_clicked() {
     emit bg_changed();
 }
 
-void ConfigDialog::saveConfig() {
+void ConfigDialog::saveConfig()
+{
     float volume = ui->bgmVolumeSlider->value() / 100.0;
 
     Audio::setBackgroundMusicVolume(volume);
@@ -150,14 +153,12 @@ void ConfigDialog::saveConfig() {
         Config.setValue("BackgroundMusic", newMusicPath);
         Audio::resetCustomBackgroundMusicFileName();
 
-        if (Config.EnableBgMusic && Audio::isBackgroundMusicPlaying()
-            && RoomSceneInstance != NULL && RoomSceneInstance->isGameStarted()) {
+        if (Config.EnableBgMusic && Audio::isBackgroundMusicPlaying() && RoomSceneInstance != NULL && RoomSceneInstance->isGameStarted()) {
             Audio::stopBackgroundMusic();
             Audio::playBackgroundMusic(newMusicPath, true);
         }
     } else {
-        if (Config.EnableBgMusic && NULL != RoomSceneInstance
-            && RoomSceneInstance->isGameStarted() && !Audio::isBackgroundMusicPlaying()) {
+        if (Config.EnableBgMusic && NULL != RoomSceneInstance && RoomSceneInstance->isGameStarted() && !Audio::isBackgroundMusicPlaying()) {
             Audio::playBackgroundMusic(currentMusicPath, true);
         }
     }
@@ -193,11 +194,9 @@ void ConfigDialog::saveConfig() {
         RoomSceneInstance->updateVolumeConfig();
 }
 
-void ConfigDialog::on_browseBgMusicButton_clicked() {
-    QStringList fileNames = QFileDialog::getOpenFileNames(this,
-        tr("Select a background music"),
-        "audio/system",
-        tr("Audio files (*.wav *.mp3 *.ogg)"));
+void ConfigDialog::on_browseBgMusicButton_clicked()
+{
+    QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Select a background music"), "audio/system", tr("Audio files (*.wav *.mp3 *.ogg)"));
     QString app_path = QApplication::applicationDirPath();
     app_path.replace("\\", "/");
     int app_path_len = app_path.length();
@@ -213,11 +212,13 @@ void ConfigDialog::on_browseBgMusicButton_clicked() {
     }
 }
 
-void ConfigDialog::on_resetBgMusicButton_clicked() {
+void ConfigDialog::on_resetBgMusicButton_clicked()
+{
     ui->bgMusicPathLineEdit->setText(Config.m_defaultMusicPath);
 }
 
-void ConfigDialog::on_changeAppFontButton_clicked() {
+void ConfigDialog::on_changeAppFontButton_clicked()
+{
     bool ok;
     QFont font = QFontDialog::getFont(&ok, Config.AppFont, this);
     if (ok) {
@@ -229,8 +230,8 @@ void ConfigDialog::on_changeAppFontButton_clicked() {
     }
 }
 
-
-void ConfigDialog::on_setTextEditFontButton_clicked() {
+void ConfigDialog::on_setTextEditFontButton_clicked()
+{
     bool ok;
     QFont font = QFontDialog::getFont(&ok, Config.UIFont, this);
     if (ok) {
@@ -242,7 +243,8 @@ void ConfigDialog::on_setTextEditFontButton_clicked() {
     }
 }
 
-void ConfigDialog::on_setTextEditColorButton_clicked() {
+void ConfigDialog::on_setTextEditColorButton_clicked()
+{
     QColor color = QColorDialog::getColor(Config.TextEditColor, this);
     if (color.isValid()) {
         Config.TextEditColor = color;
@@ -254,4 +256,3 @@ void ConfigDialog::on_setTextEditColorButton_clicked() {
         ui->textEditFontLineEdit->setPalette(palette);
     }
 }
-

@@ -1,34 +1,48 @@
 #ifndef _SPRITE_H
 #define _SPRITE_H
 
+#include <QEasingCurve>
+#include <QGraphicsEffect>
+#include <QGraphicsItem>
+#include <QMap>
 #include <QObject>
 #include <QTimer>
-#include <QGraphicsItem>
-#include <QGraphicsEffect>
-#include <QMap>
-#include <QEasingCurve>
 
 #include "qsan-selectable-item.h"
 
-class Sprite: public QObject, public QGraphicsPixmapItem {
+class Sprite : public QObject, public QGraphicsPixmapItem
+{
     Q_OBJECT
     Q_INTERFACES(QGraphicsItem)
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity)
     Q_PROPERTY(qreal scale READ scale WRITE setScale)
 
 public:
-    Sprite(QGraphicsItem *parent = NULL): QGraphicsPixmapItem(parent) {}
+    Sprite(QGraphicsItem *parent = NULL)
+        : QGraphicsPixmapItem(parent)
+    {
+    }
 };
 
-class QAnimatedEffect: public QGraphicsEffect {
+class QAnimatedEffect : public QGraphicsEffect
+{
     Q_OBJECT
     Q_PROPERTY(int index READ getIndex WRITE setIndex)
 
 public:
     void setStay(bool stay);
-    void reset() { index = 0; }
-    int getIndex() { return index; }
-    void setIndex(int ind)  { index = ind; }
+    void reset()
+    {
+        index = 0;
+    }
+    int getIndex()
+    {
+        return index;
+    }
+    void setIndex(int ind)
+    {
+        index = ind;
+    }
 
 protected:
     bool stay;
@@ -38,7 +52,8 @@ signals:
     void loop_finished();
 };
 
-class EffectAnimation: public QObject{
+class EffectAnimation : public QObject
+{
     Q_OBJECT
 
 public:
@@ -58,7 +73,8 @@ private:
     QMap<QGraphicsItem *, QAnimatedEffect *> registered;
 };
 
-class EmphasizeEffect: public QAnimatedEffect {
+class EmphasizeEffect : public QAnimatedEffect
+{
     Q_OBJECT
 
 public:
@@ -69,7 +85,8 @@ protected:
     virtual QRectF boundingRectFor(const QRectF &sourceRect) const;
 };
 
-class SentbackEffect: public QAnimatedEffect {
+class SentbackEffect : public QAnimatedEffect
+{
     Q_OBJECT
 
 public:
@@ -84,7 +101,8 @@ private:
     QImage *grayed;
 };
 
-class FadeEffect: public QAnimatedEffect {
+class FadeEffect : public QAnimatedEffect
+{
     Q_OBJECT
 
 public:
@@ -95,4 +113,3 @@ protected:
 };
 
 #endif
-

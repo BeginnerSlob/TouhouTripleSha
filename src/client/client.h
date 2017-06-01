@@ -1,18 +1,19 @@
 #ifndef _CLIENT_H
 #define _CLIENT_H
 
-#include "clientplayer.h"
 #include "card.h"
-#include "skill.h"
-#include "socket.h"
+#include "clientplayer.h"
 #include "clientstruct.h"
 #include "protocol.h"
+#include "skill.h"
+#include "socket.h"
 
 class Recorder;
 class Replayer;
 class QTextDocument;
 
-class Client: public QObject {
+class Client : public QObject
+{
     Q_OBJECT
     Q_PROPERTY(Client::Status status READ getStatus WRITE setStatus)
 
@@ -93,7 +94,7 @@ public:
     QTextDocument *getLinesDoc() const;
     QTextDocument *getPromptDoc() const;
 
-    typedef void (Client::*CallBack) (const QVariant &);
+    typedef void (Client::*CallBack)(const QVariant &);
 
     void checkVersion(const QVariant &server_version);
     void setup(const QVariant &setup_str);
@@ -184,23 +185,34 @@ public:
     void attachSkill(const QVariant &skill);
     void changeSkillStep(const QVariant &skill_str);
 
-    inline virtual RoomState *getRoomState() { return &_m_roomState; }
-    inline virtual Card *getCard(int cardId) const{ return _m_roomState.getCard(cardId); }
+    inline virtual RoomState *getRoomState()
+    {
+        return &_m_roomState;
+    }
+    inline virtual Card *getCard(int cardId) const
+    {
+        return _m_roomState.getCard(cardId);
+    }
 
-    inline void setCountdown(const QSanProtocol::Countdown &countdown) {
+    inline void setCountdown(const QSanProtocol::Countdown &countdown)
+    {
         m_mutexCountdown.lock();
         m_countdown = countdown;
         m_mutexCountdown.unlock();
     }
 
-    inline QSanProtocol::Countdown getCountdown() {
+    inline QSanProtocol::Countdown getCountdown()
+    {
         m_mutexCountdown.lock();
         QSanProtocol::Countdown countdown = m_countdown;
         m_mutexCountdown.unlock();
         return countdown;
     }
 
-    inline QList<int> getAvailableCards() const{ return available_cards; }
+    inline QList<int> getAvailableCards() const
+    {
+        return available_cards;
+    }
 
     // public fields
     bool m_isDiscardActionRefusable;
@@ -287,8 +299,7 @@ signals:
     void kingdoms_got(const QStringList &kingdoms);
     void suits_got(const QStringList &suits);
     void options_got(const QString &skillName, const QStringList &options);
-    void cards_got(const ClientPlayer *player, const QString &flags, const QString &reason, bool handcard_visible,
-                   Card::HandlingMethod method, QList<int> disabled_ids);
+    void cards_got(const ClientPlayer *player, const QString &flags, const QString &reason, bool handcard_visible, Card::HandlingMethod method, QList<int> disabled_ids);
     void roles_got(const QString &scheme, const QStringList &roles);
     void directions_got();
     void orders_got(QSanProtocol::Game3v3ChooseOrderCommand reason);
@@ -352,4 +363,3 @@ signals:
 extern Client *ClientInstance;
 
 #endif
-

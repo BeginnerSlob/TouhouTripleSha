@@ -1,17 +1,19 @@
 #ifndef TOUHOUKAMI_H
 #define TOUHOUKAMI_H
 
-#include "package.h"
 #include "card.h"
+#include "package.h"
 
-class TouhouKamiPackage : public Package{
+class TouhouKamiPackage : public Package
+{
     Q_OBJECT
 
 public:
     TouhouKamiPackage();
 };
 
-class ThShenfengCard: public SkillCard{
+class ThShenfengCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -21,7 +23,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThGugaoCard: public SkillCard{
+class ThGugaoCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -31,7 +34,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThLeshiCard: public SkillCard{
+class ThLeshiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -40,7 +44,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThJingwuCard: public SkillCard {
+class ThJingwuCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -50,7 +55,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThYouyaCard: public SkillCard{
+class ThYouyaCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -60,7 +66,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class ThJinluCard: public SkillCard{
+class ThJinluCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -69,7 +76,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class ThChuangxinCard: public SkillCard{
+class ThChuangxinCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -78,7 +86,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThTianxinCard: public SkillCard{
+class ThTianxinCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -87,7 +96,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThBaihunCard: public SkillCard{
+class ThBaihunCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -96,11 +106,12 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+#include <QButtonGroup>
+#include <QCommandLinkButton>
 #include <QDialog>
 #include <QVBoxLayout>
-#include <QCommandLinkButton>
-#include <QButtonGroup>
-class ThLingyunDialog: public QDialog {
+class ThLingyunDialog : public QDialog
+{
     Q_OBJECT
 
 public:
@@ -122,7 +133,8 @@ signals:
     void onButtonClick();
 };
 
-class ThLingyunCard: public SkillCard {
+class ThLingyunCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -135,14 +147,16 @@ public:
     virtual const Card *validate(CardUseStruct &card_use) const;
 };
 
-class ThBingzhangCard: public SkillCard{
+class ThBingzhangCard : public SkillCard
+{
     Q_OBJECT
 
 public:
     Q_INVOKABLE ThBingzhangCard();
 };
 
-class ThSiqiangCard: public SkillCard{
+class ThSiqiangCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -151,7 +165,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class ThJiefuCard: public SkillCard{
+class ThJiefuCard : public SkillCard
+{
     Q_OBJECT
 
 public:

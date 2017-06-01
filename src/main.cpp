@@ -6,15 +6,15 @@
 
 #include <cstring>
 
-#include "mainwindow.h"
-#include "settings.h"
-#include "banpair.h"
-#include "server.h"
 #include "audio.h"
+#include "banpair.h"
+#include "mainwindow.h"
+#include "server.h"
+#include "settings.h"
 
 #ifdef USE_BREAKPAD
-#include <client/windows/handler/exception_handler.h>
 #include <QProcess>
+#include <client/windows/handler/exception_handler.h>
 
 using namespace google_breakpad;
 
@@ -25,7 +25,7 @@ static bool callback(const wchar_t *, const wchar_t *id, void *, EXCEPTION_POINT
         memset(ID, 0, sizeof(ID));
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable: 4996)
+#pragma warning(disable : 4996)
 #endif
         wcstombs(ID, id, wcslen(id));
 #ifdef _MSC_VER
@@ -40,7 +40,8 @@ static bool callback(const wchar_t *, const wchar_t *id, void *, EXCEPTION_POINT
 }
 #endif
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     if (argc > 1 && strcmp(argv[1], "-server") == 0)
         new QCoreApplication(argc, argv);
     else {
@@ -89,9 +90,9 @@ int main(int argc, char *argv[]) {
             }
         }
 
-
         if (!found) {
-            QString m = QObject::tr("Game data not found, please download TouhouTripleSha PC version, and put the files and folders into /sdcard/Android/data/org.slob.TouhouTripleSha");
+            QString m
+                = QObject::tr("Game data not found, please download TouhouTripleSha PC version, and put the files and folders into /sdcard/Android/data/org.slob.TouhouTripleSha");
             puts(m.toLatin1().constData());
 
             return -2;
@@ -166,4 +167,3 @@ int main(int argc, char *argv[]) {
 
     return qApp->exec();
 }
-

@@ -1,16 +1,19 @@
 #include "general.h"
-#include "engine.h"
-#include "skill.h"
-#include "package.h"
 #include "client.h"
+#include "engine.h"
+#include "package.h"
+#include "skill.h"
 
-#include <QSize>
 #include <QFile>
+#include <QSize>
 
-General::General(Package *package, const QString &name, const QString &kingdom,
-                 int max_hp, bool male, bool hidden, bool never_shown)
-    : QObject(package), kingdom(kingdom), max_hp(max_hp), gender(male ? Male : Female),
-      hidden(hidden), never_shown(never_shown)
+General::General(Package *package, const QString &name, const QString &kingdom, int max_hp, bool male, bool hidden, bool never_shown)
+    : QObject(package)
+    , kingdom(kingdom)
+    , max_hp(max_hp)
+    , gender(male ? Male : Female)
+    , hidden(hidden)
+    , never_shown(never_shown)
 {
     static QChar lord_symbol('$');
     if (name.endsWith(lord_symbol)) {
@@ -24,48 +27,59 @@ General::General(Package *package, const QString &name, const QString &kingdom,
     }
 }
 
-int General::getMaxHp() const{
+int General::getMaxHp() const
+{
     return max_hp;
 }
 
-QString General::getKingdom() const{
+QString General::getKingdom() const
+{
     return kingdom;
 }
 
-bool General::isMale() const{
+bool General::isMale() const
+{
     return gender == Male;
 }
 
-bool General::isFemale() const{
+bool General::isFemale() const
+{
     return gender == Female;
 }
 
-bool General::isNeuter() const{
+bool General::isNeuter() const
+{
     return gender == Neuter;
 }
 
-void General::setGender(Gender gender) {
+void General::setGender(Gender gender)
+{
     this->gender = gender;
 }
 
-General::Gender General::getGender() const{
+General::Gender General::getGender() const
+{
     return gender;
 }
 
-bool General::isLord() const{
+bool General::isLord() const
+{
     return lord;
 }
 
-bool General::isHidden() const{
+bool General::isHidden() const
+{
     return hidden;
 }
 
-bool General::isTotallyHidden() const{
+bool General::isTotallyHidden() const
+{
     return never_shown;
 }
 
 #include <QMessageBox>
-void General::addSkill(Skill *skill) {
+void General::addSkill(Skill *skill)
+{
     if (!skill) {
         QMessageBox::warning(NULL, "", tr("Invalid skill added to general %1").arg(objectName()));
         return;
@@ -76,22 +90,24 @@ void General::addSkill(Skill *skill) {
     }
 }
 
-void General::addSkill(const QString &skill_name) {
+void General::addSkill(const QString &skill_name)
+{
     if (!skillname_list.contains(skill_name)) {
         extra_set.insert(skill_name);
         skillname_list << skill_name;
     }
 }
 
-bool General::hasSkill(const QString &skill_name) const{
+bool General::hasSkill(const QString &skill_name) const
+{
     return skillname_list.contains(skill_name);
 }
 
-QList<const Skill *> General::getSkillList() const{
+QList<const Skill *> General::getSkillList() const
+{
     QList<const Skill *> skills;
     foreach (QString skill_name, skillname_list) {
-        if (skill_name == "thjibu" && ServerInfo.DuringGame
-            && ServerInfo.GameMode == "02_1v1" && ServerInfo.GameRuleMode != "Classical")
+        if (skill_name == "thjibu" && ServerInfo.DuringGame && ServerInfo.GameMode == "02_1v1" && ServerInfo.GameRuleMode != "Classical")
             skill_name = "xiaoxi";
         const Skill *skill = Sanguosha->getSkill(skill_name);
         if (skill)
@@ -100,7 +116,8 @@ QList<const Skill *> General::getSkillList() const{
     return skills;
 }
 
-QList<const Skill *> General::getVisibleSkillList() const{
+QList<const Skill *> General::getVisibleSkillList() const
+{
     QList<const Skill *> skills;
     foreach (const Skill *skill, getSkillList()) {
         if (skill->isVisible())
@@ -110,11 +127,13 @@ QList<const Skill *> General::getVisibleSkillList() const{
     return skills;
 }
 
-QSet<const Skill *> General::getVisibleSkills() const{
+QSet<const Skill *> General::getVisibleSkills() const
+{
     return getVisibleSkillList().toSet();
 }
 
-QSet<const TriggerSkill *> General::getTriggerSkills() const{
+QSet<const TriggerSkill *> General::getTriggerSkills() const
+{
     QSet<const TriggerSkill *> skills;
     foreach (QString skill_name, skillname_list) {
         const TriggerSkill *skill = Sanguosha->getTriggerSkill(skill_name);
@@ -124,15 +143,18 @@ QSet<const TriggerSkill *> General::getTriggerSkills() const{
     return skills;
 }
 
-void General::addRelateSkill(const QString &skill_name) {
+void General::addRelateSkill(const QString &skill_name)
+{
     related_skills << skill_name;
 }
 
-QStringList General::getRelatedSkillNames() const{
+QStringList General::getRelatedSkillNames() const
+{
     return related_skills;
 }
 
-QString General::getPackage() const{
+QString General::getPackage() const
+{
     QObject *p = parent();
     if (p)
         return p->objectName();
@@ -140,7 +162,8 @@ QString General::getPackage() const{
         return QString(); // avoid null pointer exception;
 }
 
-QString General::getSkillDescription(bool include_name) const{
+QString General::getSkillDescription(bool include_name) const
+{
     QString description;
 
     foreach (const Skill *skill, getVisibleSkillList()) {
@@ -152,9 +175,7 @@ QString General::getSkillDescription(bool include_name) const{
 
     if (include_name) {
         QString color_str = Sanguosha->getKingdomColor(kingdom).name();
-        QString name = QString("<br/><font color=%1><b>%2-%3</b></font>").arg(color_str)
-                                                                         .arg(objectName().toUpper())
-                                                                         .arg(Sanguosha->translate(objectName()));
+        QString name = QString("<br/><font color=%1><b>%2-%3</b></font>").arg(color_str).arg(objectName().toUpper()).arg(Sanguosha->translate(objectName()));
         for (int i = 0; i < max_hp; i++)
             name.prepend("<img src='image/system/magatamas/4.png' height = 12/>");
         name.prepend(QString("<img src='image/kingdom/icon/%1.png'/>    ").arg(kingdom));
@@ -165,7 +186,8 @@ QString General::getSkillDescription(bool include_name) const{
     return description;
 }
 
-QString General::getTranslatedName() const{
+QString General::getTranslatedName() const
+{
     QString name = "&" + objectName();
     QString translated = Sanguosha->translate(name);
     if (translated == name)
@@ -173,7 +195,8 @@ QString General::getTranslatedName() const{
     return translated;
 }
 
-void General::lastWord() const{
+void General::lastWord() const
+{
     QString filename = QString("audio/death/%1.ogg").arg(objectName());
     bool fileExists = QFile::exists(filename);
     if (!fileExists) {
@@ -183,4 +206,3 @@ void General::lastWord() const{
     }
     Sanguosha->playAudioEffect(filename);
 }
-

@@ -1,17 +1,19 @@
 #ifndef TOUHOUSTORY_H
 #define TOUHOUSTORY_H
 
-#include "package.h"
 #include "card.h"
+#include "package.h"
 
-class HulaopassPackage : public Package{
+class HulaopassPackage : public Package
+{
     Q_OBJECT
 
 public:
     HulaopassPackage();
 };
 
-class ThChayinCard: public SkillCard {
+class ThChayinCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -21,11 +23,12 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+#include <QButtonGroup>
+#include <QCommandLinkButton>
 #include <QDialog>
 #include <QVBoxLayout>
-#include <QCommandLinkButton>
-#include <QButtonGroup>
-class ThShenmieDialog: public QDialog {
+class ThShenmieDialog : public QDialog
+{
     Q_OBJECT
 
 public:
@@ -47,7 +50,8 @@ signals:
     void onButtonClick();
 };
 
-class ThShenmieCard: public SkillCard {
+class ThShenmieCard : public SkillCard
+{
     Q_OBJECT
 
 public:

@@ -1,12 +1,13 @@
 #ifndef _GOD_H
 #define _GOD_H
 
-#include "package.h"
 #include "card.h"
+#include "package.h"
 #include "skill.h"
 #include "standard.h"
 
-class GodPackage: public Package {
+class GodPackage : public Package
+{
     Q_OBJECT
 
 public:
@@ -14,4 +15,3 @@ public:
 };
 
 #endif
-

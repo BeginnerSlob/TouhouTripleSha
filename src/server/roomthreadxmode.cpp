@@ -1,8 +1,8 @@
 #include "roomthreadxmode.h"
-#include "room.h"
 #include "engine.h"
-#include "settings.h"
 #include "generalselector.h"
+#include "room.h"
+#include "settings.h"
 
 #include <QDateTime>
 
@@ -15,7 +15,8 @@ RoomThreadXMode::RoomThreadXMode(Room *room)
     room->getRoomState()->reset();
 }
 
-void RoomThreadXMode::run() {
+void RoomThreadXMode::run()
+{
     // initialize the random seed for this thread
     qsrand(QTime(0, 0, 0).secsTo(QTime::currentTime()));
 
@@ -25,10 +26,14 @@ void RoomThreadXMode::run() {
 
     foreach (ServerPlayer *player, room->m_players) {
         switch (player->getRoleEnum()) {
-        case Player::Lord: warm_leader = player; break;
-        case Player::Renegade: cool_leader = player; break;
+        case Player::Lord:
+            warm_leader = player;
+            break;
+        case Player::Renegade:
+            cool_leader = player;
+            break;
         default:
-                break;
+            break;
         }
     }
 
@@ -77,11 +82,11 @@ void RoomThreadXMode::run() {
         }
         player->tag.remove("XModeBackup");
     }
-    startArrange(QList<ServerPlayer *>() << warm_leader << cool_leader,
-                 QList<QStringList>() << warm_backup << cool_backup);
+    startArrange(QList<ServerPlayer *>() << warm_leader << cool_leader, QList<QStringList>() << warm_backup << cool_backup);
 }
 
-void RoomThreadXMode::startArrange(QList<ServerPlayer *> &players, QList<QStringList> &to_arrange) {
+void RoomThreadXMode::startArrange(QList<ServerPlayer *> &players, QList<QStringList> &to_arrange)
+{
     room->tryPause();
     QList<ServerPlayer *> online;
     QList<int> online_index;
@@ -98,7 +103,8 @@ void RoomThreadXMode::startArrange(QList<ServerPlayer *> &players, QList<QString
             online_index << i;
         }
     }
-    if (online.isEmpty()) return;
+    if (online.isEmpty())
+        return;
 
     for (int i = 0; i < online.length(); i++) {
         ServerPlayer *player = online.at(i);
@@ -124,7 +130,8 @@ void RoomThreadXMode::startArrange(QList<ServerPlayer *> &players, QList<QString
     }
 }
 
-void RoomThreadXMode::arrange(ServerPlayer *player, const QStringList &arranged) {
+void RoomThreadXMode::arrange(ServerPlayer *player, const QStringList &arranged)
+{
     Q_ASSERT(arranged.length() == 3);
 
     if (!player->hasFlag("Global_XModeGeneralSelected")) {
@@ -139,7 +146,8 @@ void RoomThreadXMode::arrange(ServerPlayer *player, const QStringList &arranged)
     }
 }
 
-void RoomThreadXMode::assignRoles(const QStringList &roles, const QString &scheme) {
+void RoomThreadXMode::assignRoles(const QStringList &roles, const QString &scheme)
+{
     QStringList all_roles = roles;
     QStringList roleChoices = all_roles;
     roleChoices.removeDuplicates();
@@ -188,10 +196,15 @@ void RoomThreadXMode::assignRoles(const QStringList &roles, const QString &schem
 // Normal: choose team1 or team2
 // Random: assign role randomly
 // AllRoles: select roles directly
-void RoomThreadXMode::assignRoles(const QString &scheme) {
+void RoomThreadXMode::assignRoles(const QString &scheme)
+{
     QStringList roles;
-    roles << "lord" << "loyalist" << "rebel"
-          << "renegade" << "rebel" << "loyalist";
+    roles << "lord"
+          << "loyalist"
+          << "rebel"
+          << "renegade"
+          << "rebel"
+          << "loyalist";
 
     if (scheme == "Random") {
         qShuffle(roles);
@@ -201,8 +214,12 @@ void RoomThreadXMode::assignRoles(const QString &scheme) {
         assignRoles(roles, scheme);
     } else {
         QStringList all_roles;
-        all_roles << "leader1" << "guard1" << "guard2"
-                  << "leader2" << "guard2" << "guard1";
+        all_roles << "leader1"
+                  << "guard1"
+                  << "guard2"
+                  << "leader2"
+                  << "guard2"
+                  << "guard1";
         assignRoles(all_roles, scheme);
 
         QMap<QString, QString> map;
@@ -231,8 +248,7 @@ void RoomThreadXMode::assignRoles(const QString &scheme) {
         for (int i = 0; i < total; i++) {
             int next = (i + 1) % total;
             int next2 = (next + 1) % total;
-            if (players.at(i)->getRole().at(0) == players.at(next)->getRole().at(0)
-                && players.at(i)->getRole().at(0) == players.at(next2)->getRole().at(0)) {
+            if (players.at(i)->getRole().at(0) == players.at(next)->getRole().at(0) && players.at(i)->getRole().at(0) == players.at(next2)->getRole().at(0)) {
                 valid = false;
                 break;
             }
@@ -243,4 +259,3 @@ void RoomThreadXMode::assignRoles(const QString &scheme) {
     foreach (ServerPlayer *player, room->m_players)
         room->broadcastProperty(player, "role");
 }
-

@@ -1,22 +1,23 @@
 #ifndef _PHOTO_H
 #define _PHOTO_H
 
-#include "qsan-selectable-item.h"
-#include "player.h"
 #include "carditem.h"
+#include "player.h"
 #include "protocol.h"
+#include "qsan-selectable-item.h"
 
 #include "generic-cardcontainer-ui.h"
 #include "sprite.h"
+#include <QComboBox>
 #include <QGraphicsObject>
 #include <QPixmap>
-#include <QComboBox>
 
 class ClientPlayer;
 class RoleComboBox;
 class QPushButton;
 
-class Photo: public PlayerCardContainer {
+class Photo : public PlayerCardContainer
+{
     Q_OBJECT
 
 public:
@@ -31,7 +32,8 @@ public:
     void tremble();
     void showSkillName(const QString &skill_name);
 
-    enum FrameType {
+    enum FrameType
+    {
         S_FRAME_PLAYING,
         S_FRAME_RESPONDING,
         S_FRAME_SOS,
@@ -50,17 +52,50 @@ public slots:
     virtual void refresh(bool killed = false);
 
 protected:
-    inline virtual QGraphicsItem *_getEquipParent() { return _m_groupMain; }
-    inline virtual QGraphicsItem *_getDelayedTrickParent() { return _m_groupMain; }
-    inline virtual QGraphicsItem *_getAvatarParent() { return _m_groupMain; }
-    inline virtual QGraphicsItem *_getMarkParent() { return _m_floatingArea; }
-    inline virtual QGraphicsItem *_getPhaseParent() { return _m_groupMain; }
-    inline virtual QGraphicsItem *_getRoleComboBoxParent() { return _m_groupMain; }
-    inline virtual QGraphicsItem *_getProgressBarParent() { return this;}
-    inline virtual QGraphicsItem *_getFocusFrameParent() { return _m_groupMain; }
-    inline virtual QGraphicsItem *_getDeathIconParent() { return _m_groupDeath;}
-    virtual QGraphicsItem *_getPileParent() { return _m_groupMain; }
-    inline virtual QString getResourceKeyName() { return QSanRoomSkin::S_SKIN_KEY_PHOTO; }
+    inline virtual QGraphicsItem *_getEquipParent()
+    {
+        return _m_groupMain;
+    }
+    inline virtual QGraphicsItem *_getDelayedTrickParent()
+    {
+        return _m_groupMain;
+    }
+    inline virtual QGraphicsItem *_getAvatarParent()
+    {
+        return _m_groupMain;
+    }
+    inline virtual QGraphicsItem *_getMarkParent()
+    {
+        return _m_floatingArea;
+    }
+    inline virtual QGraphicsItem *_getPhaseParent()
+    {
+        return _m_groupMain;
+    }
+    inline virtual QGraphicsItem *_getRoleComboBoxParent()
+    {
+        return _m_groupMain;
+    }
+    inline virtual QGraphicsItem *_getProgressBarParent()
+    {
+        return this;
+    }
+    inline virtual QGraphicsItem *_getFocusFrameParent()
+    {
+        return _m_groupMain;
+    }
+    inline virtual QGraphicsItem *_getDeathIconParent()
+    {
+        return _m_groupDeath;
+    }
+    virtual QGraphicsItem *_getPileParent()
+    {
+        return _m_groupMain;
+    }
+    inline virtual QString getResourceKeyName()
+    {
+        return QSanRoomSkin::S_SKIN_KEY_PHOTO;
+    }
     virtual void _adjustComponentZValues(bool killed = false);
     bool _addCardItems(QList<CardItem *> &card_items, const CardsMoveStruct &moveInfo);
 
@@ -77,4 +112,3 @@ protected:
 };
 
 #endif
-

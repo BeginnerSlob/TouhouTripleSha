@@ -1,21 +1,24 @@
 #include "ling.h"
+#include "client.h"
+#include "engine.h"
 #include "general.h"
 #include "skill.h"
 #include "standard.h"
-#include "client.h"
-#include "engine.h"
 
-class Yishi: public TriggerSkill {
+class Yishi : public TriggerSkill
+{
 public:
-    Yishi(): TriggerSkill("yishi") {
+    Yishi()
+        : TriggerSkill("yishi")
+    {
         events << DamageCaused;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
         DamageStruct damage = data.value<DamageStruct>();
 
-        if (damage.card && damage.card->isKindOf("Slash")
-            && damage.by_user && !damage.chain && !damage.transfer && !damage.to->isAllNude()
+        if (damage.card && damage.card->isKindOf("Slash") && damage.by_user && !damage.chain && !damage.transfer && !damage.to->isAllNude()
             && player->askForSkillInvoke(objectName(), data)) {
             room->broadcastSkillInvoke(objectName(), 1);
             LogMessage log;
@@ -39,12 +42,16 @@ public:
     }
 };
 
-class Tannang: public DistanceSkill {
+class Tannang : public DistanceSkill
+{
 public:
-    Tannang(): DistanceSkill("tannang") {
+    Tannang()
+        : DistanceSkill("tannang")
+    {
     }
 
-    virtual int getCorrect(const Player *from, const Player *) const{
+    virtual int getCorrect(const Player *from, const Player *) const
+    {
         if (from->hasSkill(objectName()))
             return -from->getLostHp();
         else

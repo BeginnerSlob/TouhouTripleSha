@@ -4,27 +4,31 @@
 #else
 #include "ui_connectiondialog.h"
 #endif
-#include "settings.h"
-#include "engine.h"
 #include "detector.h"
+#include "engine.h"
+#include "settings.h"
 #include "skin-bank.h"
 
-#include <QMessageBox>
-#include <QTimer>
-#include <QRadioButton>
 #include <QBoxLayout>
+#include <QMessageBox>
+#include <QRadioButton>
+#include <QTimer>
 
 static const int ShrinkWidth = 285;
 static const int ExpandWidth = 826;
 
-void ConnectionDialog::hideAvatarList() {
-    if (!ui->avatarList->isVisible()) return;
+void ConnectionDialog::hideAvatarList()
+{
+    if (!ui->avatarList->isVisible())
+        return;
     ui->avatarList->hide();
     ui->avatarList->clear();
 }
 
-void ConnectionDialog::showAvatarList() {
-    if (ui->avatarList->isVisible()) return;
+void ConnectionDialog::showAvatarList()
+{
+    if (ui->avatarList->isVisible())
+        return;
     ui->avatarList->clear();
     QList<const General *> generals = Sanguosha->getGeneralList();
     foreach (const General *general, generals) {
@@ -36,7 +40,8 @@ void ConnectionDialog::showAvatarList() {
 }
 
 ConnectionDialog::ConnectionDialog(QWidget *parent)
-    : QDialog(parent), ui(new Ui::ConnectionDialog)
+    : QDialog(parent)
+    , ui(new Ui::ConnectionDialog)
 {
     ui->setupUi(this);
 
@@ -51,8 +56,7 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
 
     ui->connectButton->setFocus();
 
-    ui->avatarPixmap->setPixmap(G_ROOM_SKIN.getGeneralPixmap(Config.UserAvatar,
-                                QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE));
+    ui->avatarPixmap->setPixmap(G_ROOM_SKIN.getGeneralPixmap(Config.UserAvatar, QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE));
 
     hideAvatarList();
 
@@ -62,11 +66,13 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
     setFixedWidth(ShrinkWidth);
 }
 
-ConnectionDialog::~ConnectionDialog() {
+ConnectionDialog::~ConnectionDialog()
+{
     delete ui;
 }
 
-void ConnectionDialog::on_connectButton_clicked() {
+void ConnectionDialog::on_connectButton_clicked()
+{
     QString username = ui->nameLineEdit->text();
 
     if (username.isEmpty()) {
@@ -88,7 +94,8 @@ void ConnectionDialog::on_connectButton_clicked() {
     accept();
 }
 
-void ConnectionDialog::on_changeAvatarButton_clicked() {
+void ConnectionDialog::on_changeAvatarButton_clicked()
+{
     if (ui->avatarList->isVisible()) {
         QListWidgetItem *selected = ui->avatarList->currentItem();
         if (selected)
@@ -103,7 +110,8 @@ void ConnectionDialog::on_changeAvatarButton_clicked() {
     }
 }
 
-void ConnectionDialog::on_avatarList_itemDoubleClicked(QListWidgetItem *item) {
+void ConnectionDialog::on_avatarList_itemDoubleClicked(QListWidgetItem *item)
+{
     QString general_name = item->data(Qt::UserRole).toString();
     QPixmap avatar(G_ROOM_SKIN.getGeneralPixmap(general_name, QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE));
     ui->avatarPixmap->setPixmap(avatar);
@@ -114,7 +122,8 @@ void ConnectionDialog::on_avatarList_itemDoubleClicked(QListWidgetItem *item) {
     setFixedWidth(ShrinkWidth);
 }
 
-void ConnectionDialog::on_clearHistoryButton_clicked() {
+void ConnectionDialog::on_clearHistoryButton_clicked()
+{
 #ifdef Q_OS_ANDROID
     ui->hostLineEdit->clear();
 #else
@@ -126,14 +135,13 @@ void ConnectionDialog::on_clearHistoryButton_clicked() {
     Config.remove("HistoryIPs");
 }
 
-void ConnectionDialog::on_detectLANButton_clicked() {
+void ConnectionDialog::on_detectLANButton_clicked()
+{
     UdpDetectorDialog *detector_dialog = new UdpDetectorDialog(this);
 #ifdef Q_OS_ANDROID
-    connect(detector_dialog, &UdpDetectorDialog::address_chosen,
-            ui->hostLineEdit, &QLineEdit::setText);
+    connect(detector_dialog, &UdpDetectorDialog::address_chosen, ui->hostLineEdit, &QLineEdit::setText);
 #else
-    connect(detector_dialog, &UdpDetectorDialog::address_chosen,
-            ui->hostComboBox->lineEdit(), &QLineEdit::setText);
+    connect(detector_dialog, &UdpDetectorDialog::address_chosen, ui->hostComboBox->lineEdit(), &QLineEdit::setText);
 #endif
 
     detector_dialog->exec();
@@ -165,7 +173,8 @@ UdpDetectorDialog::UdpDetectorDialog(QDialog *parent)
     detect_button->click();
 }
 
-void UdpDetectorDialog::startDetection() {
+void UdpDetectorDialog::startDetection()
+{
     list->clear();
     detect_button->setEnabled(false);
 
@@ -176,14 +185,16 @@ void UdpDetectorDialog::startDetection() {
     detector->detect();
 }
 
-void UdpDetectorDialog::stopDetection() {
+void UdpDetectorDialog::stopDetection()
+{
     detect_button->setEnabled(true);
     detector->stop();
     delete detector;
     detector = NULL;
 }
 
-void UdpDetectorDialog::addServerAddress(const QString &server_name, const QString &address_) {
+void UdpDetectorDialog::addServerAddress(const QString &server_name, const QString &address_)
+{
     QString address = address_;
     if (address.startsWith("::ffff:"))
         address.remove(0, 7);
@@ -194,10 +205,10 @@ void UdpDetectorDialog::addServerAddress(const QString &server_name, const QStri
     list->addItem(item);
 }
 
-void UdpDetectorDialog::chooseAddress(QListWidgetItem *item) {
+void UdpDetectorDialog::chooseAddress(QListWidgetItem *item)
+{
     accept();
 
     QString address = item->data(Qt::UserRole).toString();
     emit address_chosen(address);
 }
-

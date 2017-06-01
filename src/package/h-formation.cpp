@@ -1,31 +1,39 @@
 #include "h-formation.h"
-#include "general.h"
-#include "standard.h"
-#include "standard-equips.h"
-#include "maneuvering.h"
-#include "skill.h"
-#include "engine.h"
-#include "client.h"
-#include "serverplayer.h"
-#include "room.h"
 #include "ai.h"
+#include "client.h"
+#include "engine.h"
+#include "general.h"
+#include "maneuvering.h"
+#include "room.h"
+#include "serverplayer.h"
 #include "settings.h"
+#include "skill.h"
+#include "standard-equips.h"
+#include "standard.h"
 
-class Ziliang: public TriggerSkill {
+class Ziliang : public TriggerSkill
+{
 public:
-    Ziliang(): TriggerSkill("ziliang") {
+    Ziliang()
+        : TriggerSkill("ziliang")
+    {
         events << Damaged;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
         return target != NULL;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
         foreach (ServerPlayer *dengai, room->getAllPlayers()) {
-            if (!TriggerSkill::triggerable(dengai) || !player->isAlive()) break;
-            if (dengai->getPile("assassinate").isEmpty()) continue;
-            if (!room->askForSkillInvoke(dengai, objectName(), data)) continue;
+            if (!TriggerSkill::triggerable(dengai) || !player->isAlive())
+                break;
+            if (dengai->getPile("assassinate").isEmpty())
+                continue;
+            if (!room->askForSkillInvoke(dengai, objectName(), data))
+                continue;
             room->fillAG(dengai->getPile("assassinate"), dengai);
             int id = room->askForAG(dengai, dengai->getPile("assassinate"), false, objectName());
             room->clearAG(dengai);
@@ -43,26 +51,31 @@ public:
     }
 };
 
-class Tianfu: public TriggerSkill {
+class Tianfu : public TriggerSkill
+{
 public:
-    Tianfu(): TriggerSkill("tianfu") {
+    Tianfu()
+        : TriggerSkill("tianfu")
+    {
         events << EventPhaseStart << EventPhaseChanging;
     }
 
-    virtual int getPriority(TriggerEvent) const{
+    virtual int getPriority(TriggerEvent) const
+    {
         return 4;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
         return target != NULL;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
         if (triggerEvent == EventPhaseStart && player->getPhase() == Player::RoundStart) {
             QList<ServerPlayer *> jiangweis = room->findPlayersBySkillName(objectName());
             foreach (ServerPlayer *jiangwei, jiangweis) {
-                if (jiangwei->isAlive() && (player == jiangwei || player->isAdjacentTo(jiangwei))
-                    && room->askForSkillInvoke(player, objectName(), QVariant::fromValue(jiangwei))) {
+                if (jiangwei->isAlive() && (player == jiangwei || player->isAdjacentTo(jiangwei)) && room->askForSkillInvoke(player, objectName(), QVariant::fromValue(jiangwei))) {
                     if (player != jiangwei) {
                         room->notifySkillInvoked(jiangwei, objectName());
                         LogMessage log;
@@ -78,7 +91,8 @@ public:
             }
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to != Player::NotActive) return false;
+            if (change.to != Player::NotActive)
+                return false;
             foreach (ServerPlayer *p, room->getAllPlayers()) {
                 if (p->getMark(objectName()) > 0) {
                     p->setMark(objectName(), 0);
@@ -90,15 +104,20 @@ public:
     }
 };
 
-class Yicheng: public TriggerSkill {
+class Yicheng : public TriggerSkill
+{
 public:
-    Yicheng(): TriggerSkill("yicheng") {
+    Yicheng()
+        : TriggerSkill("yicheng")
+    {
         events << TargetConfirmed;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
         CardUseStruct use = data.value<CardUseStruct>();
-        if (!use.card->isKindOf("Slash")) return false;
+        if (!use.card->isKindOf("Slash"))
+            return false;
         foreach (ServerPlayer *p, use.to) {
             if (room->askForSkillInvoke(player, objectName(), QVariant::fromValue(p))) {
                 p->drawCards(1, objectName());
@@ -112,17 +131,22 @@ public:
     }
 };
 
-class Qianhuan: public TriggerSkill {
+class Qianhuan : public TriggerSkill
+{
 public:
-    Qianhuan(): TriggerSkill("qianhuan") {
+    Qianhuan()
+        : TriggerSkill("qianhuan")
+    {
         events << Damaged << TargetConfirming;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
         return target != NULL;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
         if (triggerEvent == Damaged && player->isAlive()) {
             ServerPlayer *yuji = room->findPlayerBySkillName(objectName());
             if (yuji && room->askForSkillInvoke(player, objectName(), "choice:" + yuji->objectName())) {
@@ -156,9 +180,11 @@ public:
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->getTypeId() == Card::TypeEquip || use.card->getTypeId() == Card::TypeSkill)
                 return false;
-            if (use.to.length() != 1) return false;
+            if (use.to.length() != 1)
+                return false;
             ServerPlayer *yuji = room->findPlayerBySkillName(objectName());
-            if (!yuji || yuji->getPile("sorcery").isEmpty()) return false;
+            if (!yuji || yuji->getPile("sorcery").isEmpty())
+                return false;
             if (room->askForSkillInvoke(yuji, objectName(), data)) {
                 room->broadcastSkillInvoke(objectName());
                 room->notifySkillInvoked(yuji, objectName());

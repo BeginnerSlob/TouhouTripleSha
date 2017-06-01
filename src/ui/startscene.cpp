@@ -1,14 +1,15 @@
 #include "startscene.h"
-#include "engine.h"
-#include "audio.h"
 
-#include <QPropertyAnimation>
-#include <QParallelAnimationGroup>
-#include <QNetworkInterface>
-#include <QGraphicsDropShadowEffect>
-#include <QScrollBar>
+#include "audio.h"
+#include "engine.h"
+
 #include <QFile>
 #include <QFontDatabase>
+#include <QGraphicsDropShadowEffect>
+#include <QNetworkInterface>
+#include <QParallelAnimationGroup>
+#include <QPropertyAnimation>
+#include <QScrollBar>
 
 StartScene::StartScene()
 {
@@ -26,7 +27,8 @@ StartScene::StartScene()
     setFont(font);
 }
 
-StartScene::~StartScene() {
+StartScene::~StartScene()
+{
     delete logo;
     logo = NULL;
 
@@ -36,7 +38,8 @@ StartScene::~StartScene() {
     }
 }
 
-void StartScene::addButton(QAction *action) {
+void StartScene::addButton(QAction *action)
+{
     Button *button = new Button(action->text());
     button->setMute(false);
     button->setFont(font());
@@ -54,7 +57,8 @@ void StartScene::addButton(QAction *action) {
     buttons << button;
 }
 
-void StartScene::setServerLogBackground() {
+void StartScene::setServerLogBackground()
+{
     if (server_log) {
         // make its background the same as background, looks transparent
         QPalette palette;
@@ -63,7 +67,8 @@ void StartScene::setServerLogBackground() {
     }
 }
 
-void StartScene::switchToServer(Server *server) {
+void StartScene::switchToServer(Server *server)
+{
 #ifdef AUDIO_SUPPORT
     Audio::quit();
 #endif
@@ -105,7 +110,8 @@ void StartScene::switchToServer(Server *server) {
     update();
 }
 
-void StartScene::printServerInfo() {
+void StartScene::printServerInfo()
+{
     QStringList items;
     QList<QHostAddress> addresses = QNetworkInterface::allAddresses();
     foreach (QHostAddress address, addresses) {
@@ -130,9 +136,7 @@ void StartScene::printServerInfo() {
     server_log->append(tr("Binding port number is %1").arg(Config.ServerPort));
     server_log->append(tr("Game mode is %1").arg(Sanguosha->getModeName(Config.GameMode)));
     server_log->append(tr("Player count is %1").arg(Sanguosha->getPlayerCount(Config.GameMode)));
-    server_log->append(Config.OperationNoLimit ?
-                           tr("There is no time limit") :
-                           tr("Operation timeout is %1 seconds").arg(Config.OperationTimeout));
+    server_log->append(Config.OperationNoLimit ? tr("There is no time limit") : tr("Operation timeout is %1 seconds").arg(Config.OperationTimeout));
     server_log->append(Config.EnableCheat ? tr("Cheat is enabled") : tr("Cheat is disabled"));
     if (Config.EnableCheat)
         server_log->append(Config.FreeChoose ? tr("Free choose is enabled") : tr("Free choose is disabled"));
@@ -140,28 +144,29 @@ void StartScene::printServerInfo() {
     if (Config.Enable2ndGeneral) {
         QString scheme_str;
         switch (Config.MaxHpScheme) {
-        case 0: scheme_str = QString(tr("Sum - %1")).arg(Config.Scheme0Subtraction); break;
-        case 1: scheme_str = tr("Minimum"); break;
-        case 2: scheme_str = tr("Maximum"); break;
-        case 3: scheme_str = tr("Average"); break;
+        case 0:
+            scheme_str = QString(tr("Sum - %1")).arg(Config.Scheme0Subtraction);
+            break;
+        case 1:
+            scheme_str = tr("Minimum");
+            break;
+        case 2:
+            scheme_str = tr("Maximum");
+            break;
+        case 3:
+            scheme_str = tr("Average");
+            break;
         }
         server_log->append(tr("Secondary general is enabled, max hp scheme is %1").arg(scheme_str));
     } else
         server_log->append(tr("Seconardary general is disabled"));
 
-    server_log->append(Config.EnableSame ?
-                           tr("Same Mode is enabled") :
-                           tr("Same Mode is disabled"));
-    server_log->append(Config.EnableBasara ?
-                           tr("Basara Mode is enabled") :
-                           tr("Basara Mode is disabled"));
-    server_log->append(Config.EnableHegemony ?
-                           tr("Hegemony Mode is enabled") :
-                           tr("Hegemony Mode is disabled"));
+    server_log->append(Config.EnableSame ? tr("Same Mode is enabled") : tr("Same Mode is disabled"));
+    server_log->append(Config.EnableBasara ? tr("Basara Mode is enabled") : tr("Basara Mode is disabled"));
+    server_log->append(Config.EnableHegemony ? tr("Hegemony Mode is enabled") : tr("Hegemony Mode is disabled"));
 
     if (Config.EnableAI) {
         server_log->append(tr("This server is AI enabled, AI delay is %1 milliseconds").arg(Config.AIDelay));
     } else
         server_log->append(tr("This server is AI disabled"));
 }
-

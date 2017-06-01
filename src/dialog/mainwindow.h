@@ -1,21 +1,21 @@
 #ifndef _MAIN_WINDOW_H
 #define _MAIN_WINDOW_H
 
-#include "engine.h"
-#include "connectiondialog.h"
 #include "configdialog.h"
+#include "connectiondialog.h"
+#include "engine.h"
 
-#include <QMainWindow>
-#include <QSettings>
-#include <QComboBox>
 #include <QCheckBox>
-#include <QSpinBox>
-#include <QNetworkReply>
+#include <QComboBox>
 #include <QFile>
+#include <QMainWindow>
+#include <QNetworkReply>
 #include <QProgressBar>
+#include <QSettings>
+#include <QSpinBox>
 
 namespace Ui {
-    class MainWindow;
+class MainWindow;
 }
 
 class FitView;
@@ -27,7 +27,8 @@ class QToolButton;
 class QGroupBox;
 class RoomItem;
 
-class BroadcastBox: public QDialog {
+class BroadcastBox : public QDialog
+{
     Q_OBJECT
 
 public:
@@ -41,12 +42,14 @@ private:
     QTextEdit *text_edit;
 };
 
-class BackLoader {
+class BackLoader
+{
 public:
     static void preload();
 };
 
-class MainWindow: public QMainWindow {
+class MainWindow : public QMainWindow
+{
     Q_OBJECT
 
 public:
@@ -117,7 +120,7 @@ private slots:
     void httpReadyRead2();
 };
 
-class UpdateDialog: public QFrame
+class UpdateDialog : public QFrame
 {
     Q_OBJECT
 public:
@@ -139,4 +142,3 @@ private:
 };
 
 #endif
-

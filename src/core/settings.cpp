@@ -1,15 +1,15 @@
 #include "settings.h"
-#include "photo.h"
 #include "card.h"
 #include "engine.h"
+#include "photo.h"
 
-#include <QFontDatabase>
-#include <QStringList>
-#include <QFile>
-#include <QMessageBox>
 #include <QApplication>
-#include <QNetworkInterface>
 #include <QDateTime>
+#include <QFile>
+#include <QFontDatabase>
+#include <QMessageBox>
+#include <QNetworkInterface>
+#include <QStringList>
 
 Settings Config;
 
@@ -24,19 +24,23 @@ const int Settings::S_MOVE_CARD_ANIMATION_DURATION = 600;
 const int Settings::S_JUDGE_ANIMATION_DURATION = 1200;
 const int Settings::S_JUDGE_LONG_DELAY = 800;
 
-const QString Settings::m_defaultMusicPath = "audio/bgm/1.ogg;audio/bgm/2.ogg;audio/bgm/3.ogg;audio/bgm/4.ogg;audio/bgm/5.ogg;audio/bgm/6.ogg;audio/bgm/7.ogg;audio/bgm/8.ogg;audio/bgm/9.ogg;audio/bgm/10.ogg;audio/bgm/11.ogg;audio/bgm/12.ogg";
+const QString Settings::m_defaultMusicPath = "audio/bgm/1.ogg;audio/bgm/2.ogg;audio/bgm/3.ogg;audio/bgm/4.ogg;audio/bgm/5.ogg;audio/bgm/6.ogg;audio/bgm/7.ogg;audio/bgm/"
+                                             "8.ogg;audio/bgm/9.ogg;audio/bgm/10.ogg;audio/bgm/11.ogg;audio/bgm/12.ogg";
 
 Settings::Settings()
 #ifdef Q_OS_WIN32
-    : QSettings("config.ini", QSettings::IniFormat),
+    : QSettings("config.ini", QSettings::IniFormat)
+    ,
 #else
-    : QSettings("TouhouTripleSha.org", "TouhouTripleSha"),
+    : QSettings("TouhouTripleSha.org", "TouhouTripleSha")
+    ,
 #endif
-                Rect(-ViewWidth / 2, -ViewHeight / 2, ViewWidth, ViewHeight)
+    Rect(-ViewWidth / 2, -ViewHeight / 2, ViewWidth, ViewHeight)
 {
 }
 
-void Settings::init() {
+void Settings::init()
+{
     lua_State *lua = Sanguosha->getLuaState();
     if (!qApp->arguments().contains("-server")) {
         QString font_path = value("DefaultFontPath", "font/font.ttf").toString();
@@ -68,15 +72,37 @@ void Settings::init() {
 
     QStringList banpackagelist = value("BanPackages").toStringList();
     if (banpackagelist.isEmpty()) {
-        banpackagelist << "standard" << "wind" << "fire" << "thicket" << "mountain"
-                       << "god" << "Special3v3" << "Special1v1"
-                       << "assassins" << "sp-old" << "OL" << "Taiwan_sp" << "miscellaneous"
-                       << "BGM" << "BGMDIY" << "ling"
-                       << "hegemony" << "h_formation" << "h_momentum" << "hegemony_sp"
-                       << "nostal_standard" << "nostal_general" << "nostal_wind"
-                       << "nostal_yjcm" << "nostal_yjcm2013"
-                       << "test" << "GreenHand" << "GreenHandCard"
-                       << "New3v3Card" << "New3v3_2013Card" << "New1v1Card"
+        banpackagelist << "standard"
+                       << "wind"
+                       << "fire"
+                       << "thicket"
+                       << "mountain"
+                       << "god"
+                       << "Special3v3"
+                       << "Special1v1"
+                       << "assassins"
+                       << "sp-old"
+                       << "OL"
+                       << "Taiwan_sp"
+                       << "miscellaneous"
+                       << "BGM"
+                       << "BGMDIY"
+                       << "ling"
+                       << "hegemony"
+                       << "h_formation"
+                       << "h_momentum"
+                       << "hegemony_sp"
+                       << "nostal_standard"
+                       << "nostal_general"
+                       << "nostal_wind"
+                       << "nostal_yjcm"
+                       << "nostal_yjcm2013"
+                       << "test"
+                       << "GreenHand"
+                       << "GreenHandCard"
+                       << "New3v3Card"
+                       << "New3v3_2013Card"
+                       << "New1v1Card"
                        << "hulaopass";
     }
     setValue("BanPackages", banpackagelist);
@@ -212,7 +238,11 @@ void Settings::init() {
 
     QStringList forbid_packages = value("ForbidPackages").toStringList();
     if (forbid_packages.isEmpty()) {
-        forbid_packages << "GreenHandCard" << "New3v3Card" << "New3v3_2013Card" << "New1v1Card" << "hulaopass";
+        forbid_packages << "GreenHandCard"
+                        << "New3v3Card"
+                        << "New3v3_2013Card"
+                        << "New1v1Card"
+                        << "hulaopass";
         setValue("ForbidPackages", forbid_packages);
     }
 }

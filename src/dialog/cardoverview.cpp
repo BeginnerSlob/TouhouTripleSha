@@ -1,17 +1,18 @@
 #include "cardoverview.h"
-#include "ui_cardoverview.h"
+#include "client.h"
+#include "clientstruct.h"
 #include "engine.h"
 #include "settings.h"
-#include "clientstruct.h"
-#include "client.h"
 #include "skin-bank.h"
+#include "ui_cardoverview.h"
 
-#include <QMessageBox>
 #include <QFile>
+#include <QMessageBox>
 
 static CardOverview *Overview;
 
-CardOverview *CardOverview::getInstance(QWidget *main_window) {
+CardOverview *CardOverview::getInstance(QWidget *main_window)
+{
     if (Overview == NULL)
         Overview = new CardOverview(main_window);
 
@@ -19,7 +20,8 @@ CardOverview *CardOverview::getInstance(QWidget *main_window) {
 }
 
 CardOverview::CardOverview(QWidget *parent)
-    : QDialog(parent), ui(new Ui::CardOverview)
+    : QDialog(parent)
+    , ui(new Ui::CardOverview)
 {
     ui->setupUi(this);
 
@@ -39,10 +41,11 @@ CardOverview::CardOverview(QWidget *parent)
     ui->illustratorLineEdit->setText(Sanguosha->translate("DefaultIllustrator"));
 }
 
-void CardOverview::loadFromAll() {
+void CardOverview::loadFromAll()
+{
     int n = Sanguosha->getCardCount();
     ui->tableWidget->setRowCount(n);
-    for (int i = 0; i < n ;i++) {
+    for (int i = 0; i < n; i++) {
         const Card *card = Sanguosha->getEngineCard(i);
         addCard(i, card);
     }
@@ -56,7 +59,8 @@ void CardOverview::loadFromAll() {
     }
 }
 
-void CardOverview::loadFromList(const QList<const Card *> &list) {
+void CardOverview::loadFromList(const QList<const Card *> &list)
+{
     int n = list.length();
     ui->tableWidget->setRowCount(n);
     for (int i = 0; i < n; i++)
@@ -71,7 +75,8 @@ void CardOverview::loadFromList(const QList<const Card *> &list) {
     }
 }
 
-void CardOverview::addCard(int i, const Card *card) {
+void CardOverview::addCard(int i, const Card *card)
+{
     QString name = Sanguosha->translate(card->objectName());
     QIcon suit_icon = QIcon(QString("image/system/suit/%1.png").arg(card->getSuitString()));
     QString suit_str = Sanguosha->translate(card->getSuitString());
@@ -97,7 +102,8 @@ void CardOverview::addCard(int i, const Card *card) {
     ui->tableWidget->setItem(i, 5, package_item);
 }
 
-QString CardOverview::getIllustratorInfo(const QString &card_name) {
+QString CardOverview::getIllustratorInfo(const QString &card_name)
+{
     QString illustrator_text = Sanguosha->translate("illustrator:" + card_name);
     if (!illustrator_text.startsWith("illustrator:"))
         return illustrator_text;
@@ -105,11 +111,13 @@ QString CardOverview::getIllustratorInfo(const QString &card_name) {
         return Sanguosha->translate("DefaultIllustrator");
 }
 
-CardOverview::~CardOverview() {
+CardOverview::~CardOverview()
+{
     delete ui;
 }
 
-void CardOverview::on_tableWidget_itemSelectionChanged() {
+void CardOverview::on_tableWidget_itemSelectionChanged()
+{
     int row = ui->tableWidget->currentRow();
     int card_id = ui->tableWidget->item(row, 0)->data(Qt::UserRole).toInt();
     const Card *card = Sanguosha->getEngineCard(card_id);
@@ -121,7 +129,8 @@ void CardOverview::on_tableWidget_itemSelectionChanged() {
     ui->illustratorLineEdit->setText(getIllustratorInfo(card->objectName()));
 }
 
-void CardOverview::askCard() {
+void CardOverview::askCard()
+{
     if (!ServerInfo.EnableCheat)
         return;
 
@@ -136,11 +145,14 @@ void CardOverview::askCard() {
     }
 }
 
-void CardOverview::on_tableWidget_itemDoubleClicked(QTableWidgetItem *) {
-    if (Self) askCard();
+void CardOverview::on_tableWidget_itemDoubleClicked(QTableWidgetItem *)
+{
+    if (Self)
+        askCard();
 }
 
-void CardOverview::on_playAudioEffectButton_clicked() {
+void CardOverview::on_playAudioEffectButton_clicked()
+{
     int row = ui->tableWidget->currentRow();
     if (row >= 0) {
         int card_id = ui->tableWidget->item(row, 0)->data(Qt::UserRole).toInt();
@@ -157,4 +169,3 @@ void CardOverview::on_playAudioEffectButton_clicked() {
             Sanguosha->playAudioEffect(G_ROOM_SKIN.getPlayerAudioEffectPath(card->objectName(), false), false);
     }
 }
-

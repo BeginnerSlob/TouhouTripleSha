@@ -7,18 +7,20 @@
 #include "qsanbutton.h"
 #include "util.h"
 
-#include <QString>
-#include <QPixmap>
-#include <QHash>
-#include <QFont>
-#include <QPen>
-#include <QPainter>
-#include <QGraphicsPixmapItem>
 #include <QAbstractAnimation>
+#include <QFont>
+#include <QGraphicsPixmapItem>
+#include <QHash>
+#include <QPainter>
+#include <QPen>
+#include <QPixmap>
+#include <QString>
 
-class IQSanComponentSkin { // interface class
+class IQSanComponentSkin
+{ // interface class
 public:
-    class QSanSimpleTextFont {
+    class QSanSimpleTextFont
+    {
     public:
         int *m_fontFace;
         QSize m_fontSize;
@@ -37,7 +39,8 @@ public:
         static QHash<QString, int *> _m_fontBank;
     };
 
-    class QSanShadowTextFont: public QSanSimpleTextFont {
+    class QSanShadowTextFont : public QSanSimpleTextFont
+    {
     public:
         int m_shadowRadius;
         double m_shadowDecadeFactor;
@@ -50,7 +53,8 @@ public:
         void paintText(QGraphicsPixmapItem *item, QRect pos, Qt::Alignment align, const QString &text) const;
     };
 
-    class AnchoredRect {
+    class AnchoredRect
+    {
     public:
         QRect getTranslatedRect(QRect parentRect) const;
         QRect getTranslatedRect(QRect parentRect, QSize childSize) const;
@@ -66,8 +70,7 @@ public:
 
     static const char *S_SKIN_KEY_DEFAULT;
     static const char *S_SKIN_KEY_DEFAULT_SECOND;
-    bool load(const QString &layoutConfigFileName, const QString &imageConfigFileName,
-              const QString &audioConfigFileName, const QString &animationConfigFileName);
+    bool load(const QString &layoutConfigFileName, const QString &imageConfigFileName, const QString &audioConfigFileName, const QString &animationConfigFileName);
     QPixmap getPixmap(const QString &key, const QString &arg = QString(), bool cache = false) const;
     QPixmap getPixmapFileName(const QString &key) const;
     QPixmap getPixmapFromFileName(const QString &fileName, bool cache = false) const;
@@ -80,18 +83,16 @@ protected:
     virtual bool _loadLayoutConfig(const QVariant &config) = 0;
     virtual bool _loadImageConfig(const QVariant &config);
     virtual bool _loadAnimationConfig(const QVariant &config) = 0;
-    QString _readConfig(const QVariant &dictionary, const QString &key,
-                        const QString &defaultValue = QString()) const;
-    QString _readImageConfig(const QString &key, QRect &clipRegion, bool &clipping,
-                             QSize &newScale, bool &scaled,
-                             const QString &defaultValue = QString()) const;
+    QString _readConfig(const QVariant &dictionary, const QString &key, const QString &defaultValue = QString()) const;
+    QString _readImageConfig(const QString &key, QRect &clipRegion, bool &clipping, QSize &newScale, bool &scaled, const QString &defaultValue = QString()) const;
 
     JsonObject _m_imageConfig;
     JsonObject _m_audioConfig;
     JsonObject _m_animationConfig;
 };
 
-class QSanRoomSkin: public IQSanComponentSkin {
+class QSanRoomSkin : public IQSanComponentSkin
+{
 public:
     struct RoomLayout
     {
@@ -113,7 +114,8 @@ public:
         QSize m_maximumSceneSize10Player;
     };
 
-    struct PlayerCardContainerLayout {
+    struct PlayerCardContainerLayout
+    {
         int m_normalHeight;
         QRect m_boundingRect;
         QRect m_focusFrameArea;
@@ -188,7 +190,8 @@ public:
         QRect m_extraSkillTextArea;
     };
 
-    struct PhotoLayout: public PlayerCardContainerLayout {
+    struct PhotoLayout : public PlayerCardContainerLayout
+    {
         int m_normalWidth;
         QRect m_mainFrameArea;
         QRect m_cardMoveRegion;
@@ -199,7 +202,8 @@ public:
         QSanShadowTextFont m_skillNameFont;
     };
 
-    struct DashboardLayout: public PlayerCardContainerLayout {
+    struct DashboardLayout : public PlayerCardContainerLayout
+    {
         int m_leftWidth, m_rightWidth;
         int m_floatingAreaHeight;
         QSize m_buttonSetSize;
@@ -218,12 +222,11 @@ public:
         QColor m_skillTextColors[QSanButton::S_NUM_BUTTON_STATES * QSanInvokeSkillButton::S_NUM_SKILL_TYPES];
         QColor m_skillTextShadowColors[QSanButton::S_NUM_BUTTON_STATES * QSanInvokeSkillButton::S_NUM_SKILL_TYPES];
 
-        QSanShadowTextFont getSkillTextFont(QSanButton::ButtonState state,
-                                            QSanInvokeSkillButton::SkillType type,
-                                            QSanInvokeSkillButton::SkillButtonWidth width) const;
+        QSanShadowTextFont getSkillTextFont(QSanButton::ButtonState state, QSanInvokeSkillButton::SkillType type, QSanInvokeSkillButton::SkillButtonWidth width) const;
     };
 
-    struct CommonLayout {
+    struct CommonLayout
+    {
         // card related
         int m_cardNormalWidth;
         int m_cardNormalHeight;
@@ -253,7 +256,8 @@ public:
         QSize m_tinyAvatarSize;
     };
 
-    enum GeneralIconSize {
+    enum GeneralIconSize
+    {
         S_GENERAL_ICON_SIZE_TINY,
         S_GENERAL_ICON_SIZE_SMALL,
         S_GENERAL_ICON_SIZE_LARGE,
@@ -272,9 +276,7 @@ public:
 
     QString getButtonPixmapPath(const QString &groupName, const QString &buttonName, QSanButton::ButtonState state) const;
     QPixmap getButtonPixmap(const QString &groupName, const QString &buttonName, QSanButton::ButtonState state) const;
-    QPixmap getSkillButtonPixmap(QSanButton::ButtonState state,
-                                 QSanInvokeSkillButton::SkillType type,
-                                 QSanInvokeSkillButton::SkillButtonWidth width) const;
+    QPixmap getSkillButtonPixmap(QSanButton::ButtonState state, QSanInvokeSkillButton::SkillType type, QSanInvokeSkillButton::SkillButtonWidth width) const;
     QPixmap getCardMainPixmap(const QString &cardName, bool cache = false) const;
     QPixmap getCardSuitPixmap(Card::Suit suit) const;
     QPixmap getCardNumberPixmap(int point, bool isBlack) const;
@@ -287,8 +289,7 @@ public:
     QPixmap getProgressBarPixmap(int percentile) const;
 
     // Animations
-    QAbstractAnimation *createHuaShenAnimation(QPixmap &huashenAvatar, QPoint topLeft, QGraphicsItem *parent,
-                                               QGraphicsItem *&huashenItemCreated, bool anti = false) const;
+    QAbstractAnimation *createHuaShenAnimation(QPixmap &huashenAvatar, QPoint topLeft, QGraphicsItem *parent, QGraphicsItem *&huashenItemCreated, bool anti = false) const;
 
     // static consts
     // main keys
@@ -356,18 +357,20 @@ protected:
     virtual bool _loadAnimationConfig(const QVariant &animationConfig);
 };
 
-class QSanSkinScheme {
-// Why do we need another layer above room skin? Because we may add lobby, login interface
-// in the future; and we may need to assemble a set of different skins into a scheme.
+class QSanSkinScheme
+{
+    // Why do we need another layer above room skin? Because we may add lobby, login interface
+    // in the future; and we may need to assemble a set of different skins into a scheme.
 public:
     bool load(QVariant configs);
-    const QSanRoomSkin& getRoomSkin() const;
+    const QSanRoomSkin &getRoomSkin() const;
 
 protected:
     QSanRoomSkin _m_roomSkin;
 };
 
-class QSanSkinFactory {
+class QSanSkinFactory
+{
 public:
     static QSanSkinFactory &getInstance();
     static void destroyInstance();
@@ -380,7 +383,7 @@ public:
 
 protected:
     QSanSkinFactory(const char *fileName);
-    static QSanSkinFactory* _sm_singleton;
+    static QSanSkinFactory *_sm_singleton;
     QSanSkinScheme _sm_currentSkin;
     JsonObject _m_skinList;
     QString _m_skinName;
@@ -393,4 +396,3 @@ protected:
 #define G_COMMON_LAYOUT (G_ROOM_SKIN.getCommonLayout())
 
 #endif
-

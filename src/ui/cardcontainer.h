@@ -4,13 +4,14 @@
 class CardItem;
 class ClientPlayer;
 
-#include "qsan-selectable-item.h"
 #include "carditem.h"
 #include "generic-cardcontainer-ui.h"
+#include "qsan-selectable-item.h"
 
 #include <QStack>
 
-class CloseButton: public QSanSelectableItem {
+class CloseButton : public QSanSelectableItem
+{
     Q_OBJECT
 
 public:
@@ -24,7 +25,8 @@ signals:
     void clicked();
 };
 
-class CardContainer: public GenericCardContainer {
+class CardContainer : public GenericCardContainer
+{
     Q_OBJECT
 
 public:
@@ -68,7 +70,8 @@ signals:
     void item_gongxined(int card_id);
 };
 
-class GuanxingBox: public QSanSelectableItem {
+class GuanxingBox : public QSanSelectableItem
+{
     Q_OBJECT
 
 public:
@@ -92,4 +95,3 @@ private:
 };
 
 #endif
-

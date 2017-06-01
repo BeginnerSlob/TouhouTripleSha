@@ -1,18 +1,19 @@
 #ifndef _CONNECTION_DIALOG_H
 #define _CONNECTION_DIALOG_H
 
+#include <QButtonGroup>
+#include <QComboBox>
 #include <QDialog>
 #include <QListWidget>
-#include <QComboBox>
-#include <QButtonGroup>
 
 class UdpDetector;
 
 namespace Ui {
-    class ConnectionDialog;
+class ConnectionDialog;
 }
 
-class ConnectionDialog: public QDialog {
+class ConnectionDialog : public QDialog
+{
     Q_OBJECT
 
 public:
@@ -32,7 +33,8 @@ private slots:
     void on_connectButton_clicked();
 };
 
-class UdpDetectorDialog: public QDialog {
+class UdpDetectorDialog : public QDialog
+{
     Q_OBJECT
 
 public:
@@ -54,4 +56,3 @@ signals:
 };
 
 #endif
-

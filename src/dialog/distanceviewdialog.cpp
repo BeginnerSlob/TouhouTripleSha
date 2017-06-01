@@ -5,13 +5,15 @@
 #include "engine.h"
 #include "roomscene.h"
 
-#include <QFormLayout>
 #include <QComboBox>
+#include <QFormLayout>
 #include <QGroupBox>
 
-class DistanceViewDialogUI {
+class DistanceViewDialogUI
+{
 public:
-    DistanceViewDialogUI() {
+    DistanceViewDialogUI()
+    {
         from = new QComboBox;
         to = new QComboBox;
 
@@ -35,7 +37,8 @@ public:
                     break;
                 }
             }
-            if (!show_skill) continue;
+            if (!show_skill)
+                continue;
 
             QLineEdit *distance_edit = new QLineEdit;
             distance_edit->setObjectName(skill->objectName());
@@ -93,11 +96,13 @@ DistanceViewDialog::DistanceViewDialog(QWidget *parent)
     showDistance();
 }
 
-DistanceViewDialog::~DistanceViewDialog() {
+DistanceViewDialog::~DistanceViewDialog()
+{
     delete ui;
 }
 
-void DistanceViewDialog::showDistance() {
+void DistanceViewDialog::showDistance()
+{
     QString from_name = ui->from->itemData(ui->from->currentIndex()).toString();
     QString to_name = ui->to->itemData(ui->to->currentIndex()).toString();
 
@@ -116,13 +121,10 @@ void DistanceViewDialog::showDistance() {
         ui->left->setText(QString::number(left_distance));
 
         int min = qMin(left_distance, right_distance);
-        ui->min->setText(QString("min(%1, %2)=%3")
-            .arg(left_distance)
-            .arg(right_distance)
-            .arg(min));
+        ui->min->setText(QString("min(%1, %2)=%3").arg(left_distance).arg(right_distance).arg(min));
     }
 
-    foreach(QLineEdit *edit, ui->distance_edits) {
+    foreach (QLineEdit *edit, ui->distance_edits) {
         QString skill_name = edit->objectName();
         const Skill *skill = Sanguosha->getSkill(skill_name);
         const DistanceSkill *distance_skill = qobject_cast<const DistanceSkill *>(skill);
@@ -143,4 +145,3 @@ void DistanceViewDialog::showDistance() {
     else
         ui->final->setText(QString::number(from->distanceTo(to)));
 }
-

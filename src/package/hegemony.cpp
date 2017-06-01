@@ -1,42 +1,49 @@
 #include "hegemony.h"
-#include "skill.h"
 #include "client.h"
 #include "engine.h"
 #include "general.h"
 #include "room.h"
+#include "skill.h"
 #include "standard-skillcards.h"
 
-class Huoshui: public TriggerSkill {
+class Huoshui : public TriggerSkill
+{
 public:
-    Huoshui(): TriggerSkill("huoshui") {
-        events << EventPhaseStart << Death
-               << EventLoseSkill << EventAcquireSkill
-               << HpChanged << MaxHpChanged;
+    Huoshui()
+        : TriggerSkill("huoshui")
+    {
+        events << EventPhaseStart << Death << EventLoseSkill << EventAcquireSkill << HpChanged << MaxHpChanged;
         frequency = Compulsory;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
         return target != NULL;
     }
 
-    virtual int getPriority(TriggerEvent) const{
+    virtual int getPriority(TriggerEvent) const
+    {
         return 5;
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
         if (triggerEvent == EventPhaseStart) {
-            if (!TriggerSkill::triggerable(player)
-                || (player->getPhase() != Player::RoundStart && player->getPhase() != Player::NotActive)) return false;
+            if (!TriggerSkill::triggerable(player) || (player->getPhase() != Player::RoundStart && player->getPhase() != Player::NotActive))
+                return false;
         } else if (triggerEvent == Death) {
             DeathStruct death = data.value<DeathStruct>();
-            if (death.who != player || !player->hasSkill(objectName())) return false;
+            if (death.who != player || !player->hasSkill(objectName()))
+                return false;
         } else if (triggerEvent == EventLoseSkill) {
-            if (data.toString() != objectName() || player->getPhase() == Player::NotActive) return false;
+            if (data.toString() != objectName() || player->getPhase() == Player::NotActive)
+                return false;
         } else if (triggerEvent == EventAcquireSkill) {
             if (data.toString() != objectName() || !player->hasSkill(objectName()) || player->getPhase() == Player::NotActive)
                 return false;
         } else if (triggerEvent == MaxHpChanged || triggerEvent == HpChanged) {
-            if (!room->getCurrent() || !room->getCurrent()->hasSkill(objectName())) return false;
+            if (!room->getCurrent() || !room->getCurrent()->hasSkill(objectName()))
+                return false;
         }
 
         foreach (ServerPlayer *p, room->getAllPlayers())
@@ -49,12 +56,16 @@ public:
     }
 };
 
-class HuoshuiInvalidity: public InvaliditySkill {
+class HuoshuiInvalidity : public InvaliditySkill
+{
 public:
-    HuoshuiInvalidity(): InvaliditySkill("#huoshui-inv") {
+    HuoshuiInvalidity()
+        : InvaliditySkill("#huoshui-inv")
+    {
     }
 
-    virtual bool isSkillValid(const Player *player, const Skill *skill) const{
+    virtual bool isSkillValid(const Player *player, const Skill *skill) const
+    {
         if (player->getPhase() == Player::NotActive) {
             const Player *current = NULL;
             foreach (const Player *p, player->getAliveSiblings()) {
@@ -63,19 +74,20 @@ public:
                     break;
                 }
             }
-            if (current && current->hasSkill("huoshui")
-                && player->getHp() >= (player->getMaxHp() + 1) / 2 && !skill->isAttachedLordSkill())
+            if (current && current->hasSkill("huoshui") && player->getHp() >= (player->getMaxHp() + 1) / 2 && !skill->isAttachedLordSkill())
                 return false;
         }
         return true;
     }
 };
 
-QingchengCard::QingchengCard() {
+QingchengCard::QingchengCard()
+{
     handling_method = Card::MethodDiscard;
 }
 
-void QingchengCard::onUse(Room *room, const CardUseStruct &use) const{
+void QingchengCard::onUse(Room *room, const CardUseStruct &use) const
+{
     CardUseStruct card_use = use;
     ServerPlayer *player = card_use.from, *to = card_use.to.first();
 
@@ -132,21 +144,27 @@ void QingchengCard::onUse(Room *room, const CardUseStruct &use) const{
     thread->trigger(CardFinished, room, card_use.from, data);
 }
 
-bool QingchengCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool QingchengCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
     return targets.isEmpty() && to_select != Self;
 }
 
-class QingchengViewAsSkill: public OneCardViewAsSkill {
+class QingchengViewAsSkill : public OneCardViewAsSkill
+{
 public:
-    QingchengViewAsSkill(): OneCardViewAsSkill("qingcheng") {
+    QingchengViewAsSkill()
+        : OneCardViewAsSkill("qingcheng")
+    {
         filter_pattern = "EquipCard!";
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const{
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
         return player->canDiscard(player, "he");
     }
 
-    virtual const Card *viewAs(const Card *originalcard) const{
+    virtual const Card *viewAs(const Card *originalcard) const
+    {
         QingchengCard *first = new QingchengCard;
         first->addSubcard(originalcard->getId());
         first->setSkillName(objectName());
@@ -154,25 +172,32 @@ public:
     }
 };
 
-class Qingcheng: public TriggerSkill {
+class Qingcheng : public TriggerSkill
+{
 public:
-    Qingcheng(): TriggerSkill("qingcheng") {
+    Qingcheng()
+        : TriggerSkill("qingcheng")
+    {
         events << EventPhaseStart;
         view_as_skill = new QingchengViewAsSkill;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
         return target != NULL;
     }
 
-    virtual int getPriority(TriggerEvent) const{
+    virtual int getPriority(TriggerEvent) const
+    {
         return 6;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
         if (player->getPhase() == Player::RoundStart) {
             QStringList Qingchenglist = player->tag["Qingcheng"].toStringList();
-            if (Qingchenglist.isEmpty()) return false;
+            if (Qingchenglist.isEmpty())
+                return false;
             foreach (QString skill_name, Qingchenglist) {
                 room->setPlayerMark(player, "Qingcheng" + skill_name, 0);
                 if (player->hasSkill(skill_name)) {
@@ -195,12 +220,16 @@ public:
     }
 };
 
-class QingchengInvalidity: public InvaliditySkill {
+class QingchengInvalidity : public InvaliditySkill
+{
 public:
-    QingchengInvalidity(): InvaliditySkill("#qingcheng-inv") {
+    QingchengInvalidity()
+        : InvaliditySkill("#qingcheng-inv")
+    {
     }
 
-    virtual bool isSkillValid(const Player *player, const Skill *skill) const{
+    virtual bool isSkillValid(const Player *player, const Skill *skill) const
+    {
         return player->getMark("Qingcheng" + skill->objectName()) == 0;
     }
 };
@@ -208,7 +237,6 @@ public:
 HegemonyPackage::HegemonyPackage()
     : Package("hegemony")
 {
-
     General *heg_luxun = new General(this, "heg_luxun", "wu", 3); // WU 007 G
     heg_luxun->addSkill("ikyuanhe");
 
@@ -256,4 +284,3 @@ HegemonyPackage::HegemonyPackage()
 }
 
 ADD_PACKAGE(Hegemony)
-

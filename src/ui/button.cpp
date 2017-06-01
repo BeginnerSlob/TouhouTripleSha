@@ -1,16 +1,19 @@
 #include "button.h"
 #include "audio.h"
 
-#include <QPainter>
-#include <QGraphicsSceneMouseEvent>
-#include <QGraphicsRotation>
-#include <QPropertyAnimation>
 #include <QFontDatabase>
+#include <QGraphicsRotation>
+#include <QGraphicsSceneMouseEvent>
+#include <QPainter>
+#include <QPropertyAnimation>
 
 static QRectF ButtonRect(0, 0, 189, 46);
 
 Button::Button(const QString &label, qreal scale)
-    : label(label), size(ButtonRect.size() * scale), mute(true), font(Config.SmallFont)
+    : label(label)
+    , size(ButtonRect.size() * scale)
+    , mute(true)
+    , font(Config.SmallFont)
 {
     title = QPixmap(size.toSize());
     outimg = QImage(size.toSize(), QImage::Format_ARGB32);
@@ -18,7 +21,10 @@ Button::Button(const QString &label, qreal scale)
 }
 
 Button::Button(const QString &label, const QSizeF &size)
-    : label(label), size(size), mute(true), font(Config.SmallFont)
+    : label(label)
+    , size(size)
+    , mute(true)
+    , font(Config.SmallFont)
 {
     title = QPixmap(size.toSize());
     outimg = QImage(size.toSize(), QImage::Format_ARGB32);
@@ -26,14 +32,18 @@ Button::Button(const QString &label, const QSizeF &size)
 }
 
 Button::Button(const QString &label, const QSizeF &size, const QFont &font)
-    : label(label), size(size), mute(true), font(font)
+    : label(label)
+    , size(size)
+    , mute(true)
+    , font(font)
 {
     title = QPixmap(size.toSize());
     outimg = QImage(size.toSize(), QImage::Format_ARGB32);
     init();
 }
 
-void Button::init() {
+void Button::init()
+{
     setFlags(ItemIsFocusable);
 
     setAcceptHoverEvents(true);
@@ -85,7 +95,6 @@ void Button::init() {
             else if (y >= (th - pad))
                 y = h - (th - y);
 
-
             QRgb rgb = bgimg.pixel(x, y);
             outimg.setPixel(i, j, rgb);
         }
@@ -101,16 +110,19 @@ void Button::init() {
     timer_id = 0;
 }
 
-Button::~Button() {
+Button::~Button()
+{
     de->deleteLater();
     effect->deleteLater();
 }
 
-void Button::setMute(bool mute) {
+void Button::setMute(bool mute)
+{
     this->mute = mute;
 }
 
-void Button::setFont(const QFont &font) {
+void Button::setFont(const QFont &font)
+{
     this->font = font;
     title.fill(QColor(0, 0, 0, 0));
     QPainter pt(&title);
@@ -124,36 +136,46 @@ void Button::setFont(const QFont &font) {
 
 #include "engine.h"
 
-void Button::hoverEnterEvent(QGraphicsSceneHoverEvent *) {
+void Button::hoverEnterEvent(QGraphicsSceneHoverEvent *)
+{
     setFocus(Qt::MouseFocusReason);
-    if (!mute) Sanguosha->playSystemAudioEffect("button-hover", false);
-    if (!timer_id) timer_id = QObject::startTimer(40);
+    if (!mute)
+        Sanguosha->playSystemAudioEffect("button-hover", false);
+    if (!timer_id)
+        timer_id = QObject::startTimer(40);
 }
 
-void Button::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+void Button::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
     event->accept();
 }
 
-void Button::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
-    if (!mute) Sanguosha->playSystemAudioEffect("button-down", false);
+void Button::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
+{
+    if (!mute)
+        Sanguosha->playSystemAudioEffect("button-down", false);
     emit clicked();
 }
 
-QRectF Button::boundingRect() const{
+QRectF Button::boundingRect() const
+{
     return QRectF(QPointF(), size);
 }
 
-void Button::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void Button::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
     QRectF rect = boundingRect();
 
     painter->drawImage(rect, outimg);
     painter->fillRect(rect, QColor(255, 255, 255, glow * 10));
 }
 
-void Button::timerEvent(QTimerEvent *) {
+void Button::timerEvent(QTimerEvent *)
+{
     update();
     if (hasFocus()) {
-        if (glow < 5) glow++;
+        if (glow < 5)
+            glow++;
     } else {
         if (glow > 0)
             glow--;
@@ -163,4 +185,3 @@ void Button::timerEvent(QTimerEvent *) {
         }
     }
 }
-

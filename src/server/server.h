@@ -6,25 +6,26 @@ class QGroupBox;
 class QLabel;
 class QRadioButton;
 
-#include "socket.h"
-#include "detector.h"
 #include "clientstruct.h"
+#include "detector.h"
+#include "socket.h"
 
-#include <QDialog>
-#include <QLineEdit>
-#include <QSpinBox>
-#include <QCheckBox>
 #include <QButtonGroup>
+#include <QCheckBox>
 #include <QComboBox>
+#include <QDialog>
 #include <QLayoutItem>
+#include <QLineEdit>
 #include <QListWidget>
+#include <QMultiHash>
+#include <QSpinBox>
 #include <QSplitter>
 #include <QTabWidget>
-#include <QMultiHash>
 
 class Package;
 
-class Select3v3GeneralDialog: public QDialog {
+class Select3v3GeneralDialog : public QDialog
+{
     Q_OBJECT
 
 public:
@@ -42,14 +43,15 @@ private slots:
     void toggleCheck();
 };
 
-class BanlistDialog: public QDialog {
+class BanlistDialog : public QDialog
+{
     Q_OBJECT
 
 public:
     BanlistDialog(QWidget *parent, bool view = false);
 
 private:
-    QList<QListWidget *>lists;
+    QList<QListWidget *> lists;
     QListWidget *list;
     int item;
     QStringList ban_list;
@@ -70,7 +72,8 @@ private slots:
     void switchTo(int item);
 };
 
-class ServerDialog: public QDialog {
+class ServerDialog : public QDialog
+{
     Q_OBJECT
 
 public:
@@ -174,7 +177,8 @@ private slots:
 class Scenario;
 class ServerPlayer;
 
-class Server: public QObject {
+class Server : public QObject
+{
     Q_OBJECT
 
 public:
@@ -206,4 +210,3 @@ signals:
 };
 
 #endif
-

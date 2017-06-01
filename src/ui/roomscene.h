@@ -1,17 +1,17 @@
 #ifndef _ROOM_SCENE_H
 #define _ROOM_SCENE_H
 
-#include "photo.h"
-#include "dashboard.h"
-#include "table-pile.h"
-#include "card.h"
-#include "client.h"
 #include "aux-skills.h"
-#include "clientlogbox.h"
+#include "card.h"
 #include "chatwidget.h"
+#include "client.h"
+#include "clientlogbox.h"
+#include "dashboard.h"
+#include "photo.h"
+#include "qsanbutton.h"
 #include "skin-bank.h"
 #include "sprite.h"
-#include "qsanbutton.h"
+#include "table-pile.h"
 
 class Window;
 class Button;
@@ -25,23 +25,24 @@ class PlayerCardBox;
 class BubbleChatBox;
 struct RoomLayout;
 
-#include <QGraphicsScene>
-#include <QTableWidget>
-#include <QMainWindow>
-#include <QTextEdit>
-#include <QSpinBox>
 #include <QDialog>
-#include <QGraphicsWidget>
 #include <QGraphicsProxyWidget>
-#include <QThread>
+#include <QGraphicsScene>
+#include <QGraphicsWidget>
 #include <QHBoxLayout>
+#include <QMainWindow>
 #include <QMutex>
+#include <QSpinBox>
 #include <QStack>
+#include <QTableWidget>
+#include <QTextEdit>
+#include <QThread>
 #ifdef Q_OS_ANDROID
 #include <QToolTip>
 #endif
 
-class ScriptExecutor: public QDialog {
+class ScriptExecutor : public QDialog
+{
     Q_OBJECT
 
 public:
@@ -51,7 +52,8 @@ public slots:
     void doScript();
 };
 
-class DeathNoteDialog: public QDialog {
+class DeathNoteDialog : public QDialog
+{
     Q_OBJECT
 
 public:
@@ -64,7 +66,8 @@ private:
     QComboBox *killer, *victim;
 };
 
-class DamageMakerDialog: public QDialog {
+class DamageMakerDialog : public QDialog
+{
     Q_OBJECT
 
 public:
@@ -85,7 +88,8 @@ private slots:
     void disableSource();
 };
 
-class KOFOrderBox: public QGraphicsPixmapItem {
+class KOFOrderBox : public QGraphicsPixmapItem
+{
 public:
     KOFOrderBox(bool self, QGraphicsScene *scene);
     void revealGeneral(const QString &name);
@@ -96,7 +100,8 @@ private:
     int revealed;
 };
 
-class ReplayerControlBar: public QGraphicsObject{
+class ReplayerControlBar : public QGraphicsObject
+{
     Q_OBJECT
 
 public:
@@ -120,11 +125,17 @@ private:
     qreal speed;
 };
 
-class RoomScene: public QGraphicsScene {
+class RoomScene : public QGraphicsScene
+{
     Q_OBJECT
 
 public:
-    enum ShefuAskState { ShefuAskAll, ShefuAskNecessary, ShefuAskNone };
+    enum ShefuAskState
+    {
+        ShefuAskAll,
+        ShefuAskNecessary,
+        ShefuAskNone
+    };
 
     RoomScene(QMainWindow *main_window);
     ~RoomScene();
@@ -135,14 +146,29 @@ public:
     static void FillPlayerNames(QComboBox *ComboBox, bool add_none);
     void updateTable();
     void updateVolumeConfig();
-    inline QMainWindow *mainWindow() { return main_window; }
+    inline QMainWindow *mainWindow()
+    {
+        return main_window;
+    }
 
-    inline bool isCancelButtonEnabled() const{ return cancel_button != NULL && cancel_button->isEnabled(); }
-    inline void setIkGuihuoLog(const QString &log) { ikguihuo_log = log; }
+    inline bool isCancelButtonEnabled() const
+    {
+        return cancel_button != NULL && cancel_button->isEnabled();
+    }
+    inline void setIkGuihuoLog(const QString &log)
+    {
+        ikguihuo_log = log;
+    }
 
-    bool isGameStarted() const { return game_started; }
+    bool isGameStarted() const
+    {
+        return game_started;
+    }
 
-    inline Dashboard *getDashboard() { return dashboard; }
+    inline Dashboard *getDashboard()
+    {
+        return dashboard;
+    }
 
     // for Android privat->public
     void chooseSkillButton();
@@ -160,8 +186,7 @@ public slots:
     // choice dialog
     void chooseGeneral(const QStringList &generals);
     void chooseSuit(const QStringList &suits);
-    void chooseCard(const ClientPlayer *playerName, const QString &flags, const QString &reason,
-                    bool handcard_visible, Card::HandlingMethod method, QList<int> disabled_ids);
+    void chooseCard(const ClientPlayer *playerName, const QString &flags, const QString &reason, bool handcard_visible, Card::HandlingMethod method, QList<int> disabled_ids);
     void chooseKingdom(const QStringList &kingdoms);
     void chooseOption(const QString &skillName, const QStringList &options);
     void chooseOrder(QSanProtocol::Game3v3ChooseOrderCommand reason);
@@ -227,7 +252,7 @@ private:
     const QSanRoomSkin::RoomLayout *_m_roomLayout;
     const QSanRoomSkin::PhotoLayout *_m_photoLayout;
     const QSanRoomSkin::CommonLayout *_m_commonLayout;
-    const QSanRoomSkin* _m_roomSkin;
+    const QSanRoomSkin *_m_roomSkin;
     QGraphicsItem *_m_last_front_item;
     double _m_last_front_ZValue;
     GenericCardContainer *_getGenericCardContainer(Player::Place place, Player *player);
@@ -309,10 +334,20 @@ private:
     QPointF _m_lastMousePress;
 #endif
 
-    struct _MoveCardsClassifier {
-        inline _MoveCardsClassifier(const CardsMoveStruct &move) { m_card_ids = move.card_ids; }
-        inline bool operator ==(const _MoveCardsClassifier &other) const{ return m_card_ids == other.m_card_ids; }
-        inline bool operator <(const _MoveCardsClassifier &other) const{ return m_card_ids.first() < other.m_card_ids.first(); }
+    struct _MoveCardsClassifier
+    {
+        inline _MoveCardsClassifier(const CardsMoveStruct &move)
+        {
+            m_card_ids = move.card_ids;
+        }
+        inline bool operator==(const _MoveCardsClassifier &other) const
+        {
+            return m_card_ids == other.m_card_ids;
+        }
+        inline bool operator<(const _MoveCardsClassifier &other) const
+        {
+            return m_card_ids.first() < other.m_card_ids.first();
+        }
         QList<int> m_card_ids;
     };
 
@@ -447,4 +482,3 @@ signals:
 extern RoomScene *RoomSceneInstance;
 
 #endif
-

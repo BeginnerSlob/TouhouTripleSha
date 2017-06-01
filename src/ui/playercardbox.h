@@ -21,8 +21,8 @@
 #ifndef PLAYERCARDBOX_H
 #define PLAYERCARDBOX_H
 
-#include "graphicsbox.h"
 #include "card.h"
+#include "graphicsbox.h"
 #include "player.h"
 
 class ClientPlayer;
@@ -36,9 +36,7 @@ class PlayerCardBox : public GraphicsBox
 public:
     explicit PlayerCardBox();
 
-    void chooseCard(const QString &reason, const ClientPlayer *player,
-                    const QString &flags = "hej", bool handcardVisible = false,
-                    Card::HandlingMethod method = Card::MethodNone,
+    void chooseCard(const QString &reason, const ClientPlayer *player, const QString &flags = "hej", bool handcardVisible = false, Card::HandlingMethod method = Card::MethodNone,
                     const QList<int> &disabledIds = QList<int>());
     void clear();
     QRectF boundingRect() const;

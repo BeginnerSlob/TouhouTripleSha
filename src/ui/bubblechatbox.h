@@ -2,14 +2,15 @@
 #define _BUBBLE_CHAT_BOX_H
 
 #include <QGraphicsObject>
-#include <QTimer>
-#include <QTextOption>
-#include <QTextDocument>
 #include <QGraphicsTextItem>
+#include <QTextDocument>
+#include <QTextOption>
+#include <QTimer>
 
 class QPropertyAnimation;
 
-class BubbleChatBox: public QGraphicsObject {
+class BubbleChatBox : public QGraphicsObject
+{
     Q_OBJECT
 
 public:
@@ -27,7 +28,8 @@ protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
 private:
-    class BubbleChatLabel: public QGraphicsTextItem {
+    class BubbleChatLabel : public QGraphicsTextItem
+    {
     public:
         explicit BubbleChatLabel(QGraphicsItem *parent = 0);
         virtual QRectF boundingRect() const;
@@ -38,7 +40,6 @@ private:
     private:
         QRectF rect;
         QTextDocument *doc;
-
     };
 
     void updatePos();

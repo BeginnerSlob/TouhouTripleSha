@@ -1,8 +1,8 @@
 #ifndef TOUHOUSHIN_H
 #define TOUHOUSHIN_H
 
-#include "package.h"
 #include "card.h"
+#include "package.h"
 
 class TouhouShinPackage : public Package
 {
@@ -12,7 +12,7 @@ public:
     TouhouShinPackage();
 };
 
-class ThLuanshenCard: public SkillCard
+class ThLuanshenCard : public SkillCard
 {
     Q_OBJECT
 
@@ -22,7 +22,7 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThLianyingCard: public SkillCard
+class ThLianyingCard : public SkillCard
 {
     Q_OBJECT
 
@@ -51,7 +51,7 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class ThMuyuCard: public SkillCard
+class ThMuyuCard : public SkillCard
 {
     Q_OBJECT
 
@@ -62,7 +62,7 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class ThNihuiCard: public SkillCard
+class ThNihuiCard : public SkillCard
 {
     Q_OBJECT
 

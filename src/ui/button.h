@@ -3,12 +3,13 @@
 
 #include "settings.h"
 
-#include <QGraphicsObject>
 #include <QFont>
 #include <QFontMetrics>
 #include <QGraphicsDropShadowEffect>
+#include <QGraphicsObject>
 
-class Button: public QGraphicsObject{
+class Button : public QGraphicsObject
+{
     Q_OBJECT
 
 public:
@@ -50,4 +51,3 @@ signals:
 };
 
 #endif
-

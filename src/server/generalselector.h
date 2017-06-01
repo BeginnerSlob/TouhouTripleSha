@@ -1,14 +1,15 @@
 #ifndef _GENERAL_SELECTOR_H
 #define _GENERAL_SELECTOR_H
 
-#include <QObject>
-#include <QHash>
 #include <QGenericMatrix>
+#include <QHash>
+#include <QObject>
 
 class ServerPlayer;
 
 // singleton class
-class GeneralSelector: public QObject {
+class GeneralSelector : public QObject
+{
     Q_OBJECT
 
 public:
@@ -38,4 +39,3 @@ private:
 };
 
 #endif
-

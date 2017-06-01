@@ -5,11 +5,12 @@
 #include "qsan-selectable-item.h"
 #include "server.h"
 
-#include <QGraphicsScene>
 #include <QAction>
+#include <QGraphicsScene>
 #include <QTextEdit>
 
-class StartScene: public QGraphicsScene {
+class StartScene : public QGraphicsScene
+{
     Q_OBJECT
 
 public:
@@ -28,4 +29,3 @@ private:
 };
 
 #endif
-

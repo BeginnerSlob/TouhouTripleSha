@@ -3,12 +3,13 @@
 
 class Room;
 
-#include <QThread>
 #include <QSemaphore>
+#include <QThread>
 
 #include "serverplayer.h"
 
-class RoomThread3v3: public QThread {
+class RoomThread3v3 : public QThread
+{
     Q_OBJECT
 
 public:
@@ -33,4 +34,3 @@ private:
 };
 
 #endif
-

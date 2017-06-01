@@ -1,16 +1,20 @@
 #include "chunxue-scenario.h"
 
-#include "skill.h"
 #include "engine.h"
+#include "skill.h"
 #include "standard.h"
 
-class CxLinli: public DrawCardsSkill {
+class CxLinli : public DrawCardsSkill
+{
 public:
-    CxLinli(): DrawCardsSkill("cxlinli") {
+    CxLinli()
+        : DrawCardsSkill("cxlinli")
+    {
         frequency = Compulsory;
     }
 
-    virtual int getDrawNum(ServerPlayer *player, int n) const{
+    virtual int getDrawNum(ServerPlayer *player, int n) const
+    {
         Room *room = player->getRoom();
         room->notifySkillInvoked(player, objectName());
 
@@ -24,24 +28,32 @@ public:
     }
 };
 
-class CxLinliLord: public InvaliditySkill {
+class CxLinliLord : public InvaliditySkill
+{
 public:
-    CxLinliLord(): InvaliditySkill("cxlinli_lord") {
+    CxLinliLord()
+        : InvaliditySkill("cxlinli_lord")
+    {
     }
 
-    virtual bool isSkillValid(const Player *player, const Skill *skill) const{
+    virtual bool isSkillValid(const Player *player, const Skill *skill) const
+    {
         return player->getMark("ChunXueWu") == 0 || !(skill->objectName() == "thyoushang" || skill->objectName() == "thmanxiao");
     }
 };
 
-class CxQihuang: public TriggerSkill {
+class CxQihuang : public TriggerSkill
+{
 public:
-    CxQihuang(): TriggerSkill("cxqihuang") {
+    CxQihuang()
+        : TriggerSkill("cxqihuang")
+    {
         events << CardUsed;
         frequency = Wake;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&ask_who) const
+    {
         if (player->getGeneralName() == "hana002") {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card && (use.card->isKindOf("Snatch") || use.card->isKindOf("ThJiewuCard"))) {
@@ -56,7 +68,8 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
         room->doStory("$TouXinDao", 4000);
 
         LogMessage log;
@@ -72,14 +85,18 @@ public:
     }
 };
 
-class CxXuqu: public TriggerSkill {
+class CxXuqu : public TriggerSkill
+{
 public:
-    CxXuqu(): TriggerSkill("cxxuqu") {
+    CxXuqu()
+        : TriggerSkill("cxxuqu")
+    {
         events << TargetSpecified << Death;
         frequency = Wake;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&ask_who) const
+    {
         if (triggerEvent == TargetSpecified) {
             if (player->getRole() == "rebel" || player->getGeneralName() == "yuki004") {
                 CardUseStruct use = data.value<CardUseStruct>();
@@ -107,7 +124,8 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
         room->addPlayerMark(ask_who, "mingyufei");
         room->doStory("$MingYuFei", 4000);
 
@@ -127,37 +145,47 @@ public:
     }
 };
 
-CxQiuwenCard::CxQiuwenCard() {
+CxQiuwenCard::CxQiuwenCard()
+{
     target_fixed = true;
 }
 
-void CxQiuwenCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+void CxQiuwenCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+{
     room->doStory("$YouMingFa", 4000);
     room->setPlayerFlag(source, "CxQiuwenUsed");
     room->detachSkillFromPlayer(source, "cxqiuwen", true);
     room->setTag("YouMingFa", true);
 }
 
-class CxQiuwen: public ZeroCardViewAsSkill {
+class CxQiuwen : public ZeroCardViewAsSkill
+{
 public:
-    CxQiuwen(): ZeroCardViewAsSkill("cxqiuwen") {
+    CxQiuwen()
+        : ZeroCardViewAsSkill("cxqiuwen")
+    {
         frequency = Limited;
     }
 
-    virtual const Card *viewAs() const {
+    virtual const Card *viewAs() const
+    {
         return new CxQiuwenCard;
     }
 };
 
-class CxQiuwenTrigger: public TriggerSkill {
+class CxQiuwenTrigger : public TriggerSkill
+{
 public:
-    CxQiuwenTrigger(): TriggerSkill("#cxqiuwen") {
+    CxQiuwenTrigger()
+        : TriggerSkill("#cxqiuwen")
+    {
         events << PreCardUsed << TargetSpecified;
         global = true;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
         CardUseStruct use = data.value<CardUseStruct>();
         if (triggerEvent == TargetSpecified) {
             if (use.card->isKindOf("Slash") && player->hasFlag("CxQiuwenUsed"))
@@ -171,7 +199,8 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
         if (triggerEvent == TargetSpecified) {
             CardUseStruct use = data.value<CardUseStruct>();
             foreach (ServerPlayer *p, use.to.toSet())
@@ -187,27 +216,33 @@ public:
     }
 };
 
-class CxQiuwenTargetMod: public TargetModSkill {
+class CxQiuwenTargetMod : public TargetModSkill
+{
 public:
-    CxQiuwenTargetMod(): TargetModSkill("#cxqiuwen-tar") {
+    CxQiuwenTargetMod()
+        : TargetModSkill("#cxqiuwen-tar")
+    {
         frequency = Limited;
     }
 
-    virtual int getDistanceLimit(const Player *from, const Card *) const{
+    virtual int getDistanceLimit(const Player *from, const Card *) const
+    {
         if (from->hasFlag("CxQiuwenUsed"))
             return 1000;
         else
             return 0;
     }
 
-    virtual int getResidueNum(const Player *from, const Card *) const{
+    virtual int getResidueNum(const Player *from, const Card *) const
+    {
         if (from->hasFlag("CxQiuwenUsed"))
             return 1000;
         else
             return 0;
     }
 
-    virtual int getExtraTargetNum(const Player *from, const Card *) const{
+    virtual int getExtraTargetNum(const Player *from, const Card *) const
+    {
         if (from->hasFlag("CxQiuwenUsed"))
             return 1;
         else
@@ -215,14 +250,18 @@ public:
     }
 };
 
-class CxLiujing: public TriggerSkill {
+class CxLiujing : public TriggerSkill
+{
 public:
-    CxLiujing(): TriggerSkill("cxliujing") {
+    CxLiujing()
+        : TriggerSkill("cxliujing")
+    {
         events << DamageInflicted;
         frequency = Limited;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const {
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
         if (!TriggerSkill::triggerable(player))
             return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
@@ -231,7 +270,8 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         if (player->askForSkillInvoke(objectName())) {
             room->doStory("$KongGuanJian", 4000);
             room->broadcastSkillInvoke(objectName());
@@ -240,7 +280,8 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
         if (player->getHandcardNum() < 4)
             player->drawCards(4 - player->getHandcardNum(), objectName());
 
@@ -259,18 +300,22 @@ public:
     }
 };
 
-class CxWangwo: public PhaseChangeSkill {
+class CxWangwo : public PhaseChangeSkill
+{
 public:
-    CxWangwo(): PhaseChangeSkill("cxwangwo") {
+    CxWangwo()
+        : PhaseChangeSkill("cxwangwo")
+    {
         frequency = Wake;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return PhaseChangeSkill::triggerable(target)
-            && target->getPhase() == Player::Start;
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return PhaseChangeSkill::triggerable(target) && target->getPhase() == Player::Start;
     }
 
-    virtual bool onPhaseChange(ServerPlayer *player) const{
+    virtual bool onPhaseChange(ServerPlayer *player) const
+    {
         Room *room = player->getRoom();
         room->doStory("$MoRanYing", 4000);
 
@@ -287,14 +332,18 @@ public:
     }
 };
 
-class CxXianlin: public TriggerSkill {
+class CxXianlin : public TriggerSkill
+{
 public:
-    CxXianlin(): TriggerSkill("cxxianlin") {
+    CxXianlin()
+        : TriggerSkill("cxxianlin")
+    {
         events << Dying;
         frequency = Wake;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
         if (TriggerSkill::triggerable(player)) {
             DyingStruct dying = data.value<DyingStruct>();
             if (dying.who == player)
@@ -303,7 +352,8 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         room->doStory("$XianHuYan", 4000);
 
         LogMessage log;
@@ -334,14 +384,18 @@ public:
     }
 };
 
-class CxYongjie: public TriggerSkill {
+class CxYongjie : public TriggerSkill
+{
 public:
-    CxYongjie(): TriggerSkill("cxyongjie") {
+    CxYongjie()
+        : TriggerSkill("cxyongjie")
+    {
         events << Dying;
         frequency = Wake;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
         if (TriggerSkill::triggerable(player)) {
             DyingStruct dying = data.value<DyingStruct>();
             if (dying.who == player)
@@ -350,7 +404,8 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         room->doStory("$MiJinZhan", 4000);
 
         LogMessage log;
@@ -369,20 +424,26 @@ public:
     }
 };
 
-class CxChunzuiBase: public TriggerSkill {
+class CxChunzuiBase : public TriggerSkill
+{
 public:
     CxChunzuiBase(const QString &general_name, const QString &obtain_skill, const QString &wake)
-        : TriggerSkill("cxchunzui_" + general_name),
-          general_name(general_name), obtain_skill(obtain_skill), wake(wake) {
+        : TriggerSkill("cxchunzui_" + general_name)
+        , general_name(general_name)
+        , obtain_skill(obtain_skill)
+        , wake(wake)
+    {
         events << BuryVictim;
         frequency = Wake;
     }
 
-    virtual int getPriority(TriggerEvent) const{
+    virtual int getPriority(TriggerEvent) const
+    {
         return -4;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer* &ask_who) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *&ask_who) const
+    {
         DeathStruct death = data.value<DeathStruct>();
         if (death.who->getRole() == "rebel") {
             ServerPlayer *player = room->findPlayerBySkillName(objectName());
@@ -394,7 +455,8 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *player) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *player) const
+    {
         room->doLightbox("$ZaiMiGui_" + general_name, 4000);
 
         LogMessage log;
@@ -431,18 +493,23 @@ private:
     QString wake;
 };
 
-class CxJiushi: public TriggerSkill {
+class CxJiushi : public TriggerSkill
+{
 public:
-    CxJiushi(): TriggerSkill("cxjiushi") {
+    CxJiushi()
+        : TriggerSkill("cxjiushi")
+    {
         events << BuryVictim;
         frequency = Wake;
     }
 
-    virtual int getPriority(TriggerEvent) const{
+    virtual int getPriority(TriggerEvent) const
+    {
         return -4;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer* &ask_who) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *&ask_who) const
+    {
         DeathStruct death = data.value<DeathStruct>();
         if (death.who->getGeneralName() == "yuki007") {
             if (death.damage && TriggerSkill::triggerable(death.damage->from)) {
@@ -453,7 +520,8 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const
+    {
         room->doStory("$TianCeYun", 4000);
 
         LogMessage log;
@@ -483,19 +551,23 @@ public:
     }
 };
 
-class CxWangdie: public TriggerSkill {
+class CxWangdie : public TriggerSkill
+{
 public:
-    CxWangdie(): TriggerSkill("cxwangdie") {
+    CxWangdie()
+        : TriggerSkill("cxwangdie")
+    {
         events << EventMarksGot;
         frequency = Wake;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return TriggerSkill::triggerable(target)
-            && target->getMark("@bloom") == 1;
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return TriggerSkill::triggerable(target) && target->getMark("@bloom") == 1;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         room->doStory("$SanFenXiao", 4000);
 
         LogMessage log;
@@ -513,19 +585,23 @@ public:
     }
 };
 
-class CxKongnie: public TriggerSkill {
+class CxKongnie : public TriggerSkill
+{
 public:
-    CxKongnie(): TriggerSkill("cxkongnie") {
+    CxKongnie()
+        : TriggerSkill("cxkongnie")
+    {
         events << EventMarksGot;
         frequency = Wake;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return TriggerSkill::triggerable(target)
-            && target->getMark("@bloom") == 2;
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return TriggerSkill::triggerable(target) && target->getMark("@bloom") == 2;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         room->doStory("$WuFenXiao", 4000);
 
         LogMessage log;
@@ -543,19 +619,23 @@ public:
     }
 };
 
-class CxHuaxu: public TriggerSkill {
+class CxHuaxu : public TriggerSkill
+{
 public:
-    CxHuaxu(): TriggerSkill("cxhuaxu") {
+    CxHuaxu()
+        : TriggerSkill("cxhuaxu")
+    {
         events << EventMarksGot;
         frequency = Wake;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const{
-        return TriggerSkill::triggerable(target)
-            && target->getMark("@bloom") == 3;
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return TriggerSkill::triggerable(target) && target->getMark("@bloom") == 3;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         room->doStory("$BaFenXiao", 4000);
 
         LogMessage log;
@@ -597,14 +677,18 @@ public:
     }
 };
 
-class CxZhongyan: public TriggerSkill {
+class CxZhongyan : public TriggerSkill
+{
 public:
-    CxZhongyan(): TriggerSkill("cxzhongyan") {
+    CxZhongyan()
+        : TriggerSkill("cxzhongyan")
+    {
         events << GameOverJudge;
         frequency = Wake;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
+    {
         if (player->isLord() && player->isDead()) {
             int n = 0;
             foreach (ServerPlayer *p, room->getAlivePlayers()) {
@@ -619,7 +703,8 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         room->doStory("$ShenMengYin", 4000);
 
         LogMessage log;
@@ -659,7 +744,8 @@ public:
     }
 };
 
-class ChunxueRule: public ScenarioRule {
+class ChunxueRule : public ScenarioRule
+{
 public:
     ChunxueRule(Scenario *scenario)
         : ScenarioRule(scenario)
@@ -667,13 +753,15 @@ public:
         events << GameStart << BuryVictim;
     }
 
-    virtual int getPriority(TriggerEvent triggerEvent) const{
+    virtual int getPriority(TriggerEvent triggerEvent) const
+    {
         if (triggerEvent == BuryVictim)
             return -5;
         return ScenarioRule::getPriority(triggerEvent);
     }
 
-    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
         switch (triggerEvent) {
         case GameStart: {
             if (player == NULL) {
@@ -708,7 +796,7 @@ public:
             }
 
             break;
-                        }
+        }
         case BuryVictim: {
             DeathStruct death = data.value<DeathStruct>();
             if (death.who->getGeneralName() == "yuki003") {
@@ -720,7 +808,7 @@ public:
             }
 
             break;
-                         }
+        }
         default:
             break;
         }
@@ -733,39 +821,28 @@ ChunxueScenario::ChunxueScenario()
     : Scenario("chunxue")
 {
     lord = "kami007"; // kami007->yuki009
-    loyalists << "yuki003" << "yuki006"; // yuki006->yuki007
-    rebels << "yuki001" << "hana002" << "tsuki008";
-    renegades << "yuki004" << "yuki010"; // yuki010->sp011
+    loyalists << "yuki003"
+              << "yuki006"; // yuki006->yuki007
+    rebels << "yuki001"
+           << "hana002"
+           << "tsuki008";
+    renegades << "yuki004"
+              << "yuki010"; // yuki010->sp011
 
     rule = new ChunxueRule(this);
 
-    skills << new CxLinli
-           << new CxLinliLord
-           << new CxQihuang
-           << new CxXuqu
-           << new CxQiuwen
-           << new CxQiuwenTrigger
-           << new CxQiuwenTargetMod
-           << new CxLiujing
-           << new CxWangwo
-           << new CxXianlin
-           << new CxYongjie
-           << new CxChunzuiBase("hana002", "thhuaji", "genxing")
-           << new CxChunzuiBase("tsuki008", "thshennao", QString())
-           << new CxChunzuiBase("yuki004", "thhuilun", QString())
-           << new CxChunzuiBase("yuki001", "thmengsheng", "erchong")
-           << new CxJiushi
-           << new CxWangdie
-           << new CxKongnie
-           << new CxHuaxu
-           << new CxZhongyan;
+    skills << new CxLinli << new CxLinliLord << new CxQihuang << new CxXuqu << new CxQiuwen << new CxQiuwenTrigger << new CxQiuwenTargetMod << new CxLiujing << new CxWangwo
+           << new CxXianlin << new CxYongjie << new CxChunzuiBase("hana002", "thhuaji", "genxing") << new CxChunzuiBase("tsuki008", "thshennao", QString())
+           << new CxChunzuiBase("yuki004", "thhuilun", QString()) << new CxChunzuiBase("yuki001", "thmengsheng", "erchong") << new CxJiushi << new CxWangdie << new CxKongnie
+           << new CxHuaxu << new CxZhongyan;
     related_skills.insertMulti("cxqiuwen", "#cxqiuwen");
     related_skills.insertMulti("cxqiuwen", "#cxqiuwen-tar");
 
     addMetaObject<CxQiuwenCard>();
 }
 
-void ChunxueScenario::onTagSet(Room *room, const QString &key) const{
+void ChunxueScenario::onTagSet(Room *room, const QString &key) const
+{
     if (key == "TouXinDao") {
         ServerPlayer *ailisi = room->findPlayer("yuki004");
         if (ailisi)

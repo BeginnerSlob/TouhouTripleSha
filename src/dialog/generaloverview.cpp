@@ -1,18 +1,19 @@
 #include "generaloverview.h"
-#include "ui_generaloverview.h"
+#include "client.h"
+#include "clientstruct.h"
 #include "engine.h"
 #include "settings.h"
 #include "skin-bank.h"
-#include "clientstruct.h"
-#include "client.h"
+#include "ui_generaloverview.h"
 
+#include <QClipboard>
+#include <QCommandLinkButton>
+#include <QGroupBox>
 #include <QMessageBox>
 #include <QRadioButton>
-#include <QGroupBox>
-#include <QCommandLinkButton>
-#include <QClipboard>
 
-static QLayout *HLay(QWidget *left, QWidget *right) {
+static QLayout *HLay(QWidget *left, QWidget *right)
+{
     QHBoxLayout *layout = new QHBoxLayout;
     layout->addWidget(left);
     layout->addWidget(right);
@@ -29,11 +30,12 @@ GeneralSearch::GeneralSearch(GeneralOverview *parent)
     layout->addLayout(createButtonLayout());
     setLayout(layout);
 
-    connect(this, SIGNAL(search(bool, QString, QString, QStringList, QStringList, int, int, QStringList)),
-            parent, SLOT(startSearch(bool, QString, QString, QStringList, QStringList, int, int, QStringList)));
+    connect(this, SIGNAL(search(bool, QString, QString, QStringList, QStringList, int, int, QStringList)), parent,
+            SLOT(startSearch(bool, QString, QString, QStringList, QStringList, int, int, QStringList)));
 }
 
-QWidget *GeneralSearch::createInfoTab() {
+QWidget *GeneralSearch::createInfoTab()
+{
     QVBoxLayout *layout = new QVBoxLayout;
 
     include_hidden_checkbox = new QCheckBox;
@@ -176,7 +178,8 @@ QWidget *GeneralSearch::createInfoTab() {
     return widget;
 }
 
-QLayout *GeneralSearch::createButtonLayout() {
+QLayout *GeneralSearch::createButtonLayout()
+{
     QHBoxLayout *button_layout = new QHBoxLayout;
 
     QPushButton *clear_button = new QPushButton(tr("Clear"));
@@ -191,7 +194,8 @@ QLayout *GeneralSearch::createButtonLayout() {
     return button_layout;
 }
 
-void GeneralSearch::accept() {
+void GeneralSearch::accept()
+{
     QString nickname = nickname_edit->text();
     QString name = name_edit->text();
     QStringList genders;
@@ -215,7 +219,8 @@ void GeneralSearch::accept() {
     QDialog::accept();
 }
 
-void GeneralSearch::clearAll() {
+void GeneralSearch::clearAll()
+{
     include_hidden_checkbox->setChecked(true);
     nickname_edit->clear();
     name_edit->clear();
@@ -229,19 +234,22 @@ void GeneralSearch::clearAll() {
         button->setChecked(false);
 }
 
-void GeneralSearch::selectAllPackages() {
+void GeneralSearch::selectAllPackages()
+{
     foreach (QAbstractButton *button, package_buttons->buttons())
         button->setChecked(true);
 }
 
-void GeneralSearch::unselectAllPackages() {
+void GeneralSearch::unselectAllPackages()
+{
     foreach (QAbstractButton *button, package_buttons->buttons())
         button->setChecked(false);
 }
 
 static GeneralOverview *Overview;
 
-GeneralOverview *GeneralOverview::getInstance(QWidget *main_window) {
+GeneralOverview *GeneralOverview::getInstance(QWidget *main_window)
+{
     if (Overview == NULL)
         Overview = new GeneralOverview(main_window);
 
@@ -249,7 +257,8 @@ GeneralOverview *GeneralOverview::getInstance(QWidget *main_window) {
 }
 
 GeneralOverview::GeneralOverview(QWidget *parent)
-    : QDialog(parent), ui(new Ui::GeneralOverview)
+    : QDialog(parent)
+    , ui(new Ui::GeneralOverview)
 {
     ui->setupUi(this);
     origin_window_title = windowTitle();
@@ -278,7 +287,8 @@ GeneralOverview::GeneralOverview(QWidget *parent)
     connect(ui->returnButton, SIGNAL(clicked()), this, SLOT(fillAllGenerals()));
 }
 
-void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool init) {
+void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool init)
+{
     QList<const General *> copy_generals;
     foreach (const General *general, generals) {
         if (!general->isTotallyHidden())
@@ -307,7 +317,7 @@ void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool 
 
         QString nickname = Sanguosha->translate("#" + general_name);
         if (nickname.startsWith("#") && general_name.contains("_"))
-            nickname = Sanguosha->translate("#" +general_name.split("_").last());
+            nickname = Sanguosha->translate("#" + general_name.split("_").last());
         QTableWidgetItem *nickname_item;
         if (!nickname.startsWith("#"))
             nickname_item = new QTableWidgetItem(nickname);
@@ -370,7 +380,8 @@ void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool 
     ui->tableWidget->setCurrentItem(ui->tableWidget->item(0, 0));
 }
 
-void GeneralOverview::resetButtons() {
+void GeneralOverview::resetButtons()
+{
     QLayoutItem *child;
     while ((child = button_layout->takeAt(0))) {
         QWidget *widget = child->widget();
@@ -379,11 +390,13 @@ void GeneralOverview::resetButtons() {
     }
 }
 
-GeneralOverview::~GeneralOverview() {
+GeneralOverview::~GeneralOverview()
+{
     delete ui;
 }
 
-bool GeneralOverview::hasSkin(const QString &general_name) {
+bool GeneralOverview::hasSkin(const QString &general_name)
+{
     int skin_index = Config.value(QString("HeroSkin/%1").arg(general_name), 0).toInt();
     if (skin_index == 0) {
         Config.beginGroup("HeroSkin");
@@ -399,7 +412,8 @@ bool GeneralOverview::hasSkin(const QString &general_name) {
     return true;
 }
 
-QString GeneralOverview::getIllustratorInfo(const QString &general_name) {
+QString GeneralOverview::getIllustratorInfo(const QString &general_name)
+{
     int skin_index = Config.value(QString("HeroSkin/%1").arg(general_name), 0).toInt();
     QString suffix = (skin_index > 0) ? QString("_%1").arg(skin_index) : QString();
     QString illustrator_text = Sanguosha->translate(QString("illustrator:%1%2").arg(general_name).arg(suffix));
@@ -414,7 +428,8 @@ QString GeneralOverview::getIllustratorInfo(const QString &general_name) {
     }
 }
 
-void GeneralOverview::addLines(const Skill *skill, const General *general) {
+void GeneralOverview::addLines(const Skill *skill, const General *general)
+{
     QString skill_name = Sanguosha->translate(skill->objectName());
     QStringList sources = skill->getSources();
     QStringList new_sources;
@@ -459,7 +474,8 @@ void GeneralOverview::addLines(const Skill *skill, const General *general) {
     }
 }
 
-void GeneralOverview::addCopyAction(QCommandLinkButton *button) {
+void GeneralOverview::addCopyAction(QCommandLinkButton *button)
+{
     QAction *action = new QAction(button);
     action->setData(button->description());
     button->addAction(action);
@@ -469,7 +485,8 @@ void GeneralOverview::addCopyAction(QCommandLinkButton *button) {
     connect(action, SIGNAL(triggered()), this, SLOT(copyLines()));
 }
 
-void GeneralOverview::copyLines() {
+void GeneralOverview::copyLines()
+{
     QAction *action = qobject_cast<QAction *>(sender());
     if (action) {
         QClipboard *clipboard = QApplication::clipboard();
@@ -477,7 +494,8 @@ void GeneralOverview::copyLines() {
     }
 }
 
-void GeneralOverview::on_tableWidget_itemSelectionChanged() {
+void GeneralOverview::on_tableWidget_itemSelectionChanged()
+{
     int row = ui->tableWidget->currentRow();
     QString general_name = ui->tableWidget->item(row, 0)->data(Qt::UserRole).toString();
     const General *general = Sanguosha->getGeneral(general_name);
@@ -487,7 +505,8 @@ void GeneralOverview::on_tableWidget_itemSelectionChanged() {
     QList<const Skill *> skills = general->getVisibleSkillList();
     foreach (QString skill_name, general->getRelatedSkillNames()) {
         const Skill *skill = Sanguosha->getSkill(skill_name);
-        if (skill && skill->isVisible()) skills << skill;
+        if (skill && skill->isVisible())
+            skills << skill;
     }
 
     ui->skillTextEdit->clear();
@@ -539,7 +558,8 @@ void GeneralOverview::on_tableWidget_itemSelectionChanged() {
     ui->changeGeneral2Button->setEnabled(Self && Self->getGeneral2Name() != general->objectName());
 }
 
-void GeneralOverview::playAudioEffect() {
+void GeneralOverview::playAudioEffect()
+{
     QObject *button = sender();
     if (button) {
         QString source = button->objectName();
@@ -548,7 +568,8 @@ void GeneralOverview::playAudioEffect() {
     }
 }
 
-void GeneralOverview::askTransfiguration() {
+void GeneralOverview::askTransfiguration()
+{
     QPushButton *button = qobject_cast<QPushButton *>(sender());
     bool isSecondaryHero = (button && button->objectName() == ui->changeGeneral2Button->objectName());
     if (ServerInfo.EnableCheat && Self) {
@@ -562,13 +583,15 @@ void GeneralOverview::askTransfiguration() {
     }
 }
 
-void GeneralOverview::on_tableWidget_itemDoubleClicked(QTableWidgetItem *) {
+void GeneralOverview::on_tableWidget_itemDoubleClicked(QTableWidgetItem *)
+{
     if (ServerInfo.EnableCheat && Self) {
         askTransfiguration();
     }
 }
 
-void GeneralOverview::askChangeSkin() {
+void GeneralOverview::askChangeSkin()
+{
     int row = ui->tableWidget->currentRow();
     QString general_name = ui->tableWidget->item(row, 0)->data(Qt::UserRole).toString();
 
@@ -591,8 +614,9 @@ void GeneralOverview::askChangeSkin() {
     ui->illustratorLineEdit->setText(getIllustratorInfo(general_name));
 }
 
-void GeneralOverview::startSearch(bool include_hidden, const QString &nickname, const QString &name, const QStringList &genders,
-                                  const QStringList &kingdoms, int lower, int upper, const QStringList &packages) {
+void GeneralOverview::startSearch(bool include_hidden, const QString &nickname, const QString &name, const QStringList &genders, const QStringList &kingdoms, int lower, int upper,
+                                  const QStringList &packages)
+{
     QList<const General *> generals;
     foreach (const General *general, all_generals) {
         QString general_name = general->objectName();
@@ -646,7 +670,8 @@ void GeneralOverview::startSearch(bool include_hidden, const QString &nickname, 
     }
 }
 
-void GeneralOverview::fillAllGenerals() {
+void GeneralOverview::fillAllGenerals()
+{
     ui->returnButton->hide();
     setWindowTitle(origin_window_title);
     fillGenerals(all_generals, false);

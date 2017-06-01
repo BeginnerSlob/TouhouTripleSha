@@ -5,7 +5,8 @@
 
 class ServerPlayer;
 
-class IkTanyanCard: public SkillCard {
+class IkTanyanCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -44,7 +45,8 @@ public:
     void slash(Room *room, ServerPlayer *from, ServerPlayer *to) const;
 };
 
-class JnChunsuCard: public SkillCard {
+class JnChunsuCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -52,7 +54,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class JnAngongCard: public SkillCard {
+class JnAngongCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -60,7 +63,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class JnHuojiCard: public SkillCard {
+class JnHuojiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -74,7 +78,8 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
-class JnTaoxiCard: public SkillCard {
+class JnTaoxiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -82,7 +87,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class JianniangScenario: public Scenario {
+class JianniangScenario : public Scenario
+{
     Q_OBJECT
 
 public:

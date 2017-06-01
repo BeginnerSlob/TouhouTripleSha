@@ -1,47 +1,53 @@
 #ifndef _NOSTALGIA_H
 #define _NOSTALGIA_H
 
-#include "package.h"
 #include "card.h"
-#include "standard.h"
+#include "package.h"
 #include "standard-skillcards.h"
+#include "standard.h"
 
-class NostalGeneralPackage: public Package {
+class NostalGeneralPackage : public Package
+{
     Q_OBJECT
 
 public:
     NostalGeneralPackage();
 };
 
-class NostalStandardPackage: public Package {
+class NostalStandardPackage : public Package
+{
     Q_OBJECT
 
 public:
     NostalStandardPackage();
 };
 
-class NostalWindPackage: public Package {
+class NostalWindPackage : public Package
+{
     Q_OBJECT
 
 public:
     NostalWindPackage();
 };
 
-class NostalYJCMPackage: public Package {
+class NostalYJCMPackage : public Package
+{
     Q_OBJECT
 
 public:
     NostalYJCMPackage();
 };
 
-class NostalYJCM2013Package: public Package {
+class NostalYJCM2013Package : public Package
+{
     Q_OBJECT
 
 public:
     NostalYJCM2013Package();
 };
 
-class NosJujianCard: public SkillCard {
+class NosJujianCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -50,7 +56,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class NosXuanhuoCard: public SkillCard {
+class NosXuanhuoCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -59,7 +66,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class NosRenxinCard: public SkillCard {
+class NosRenxinCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -68,7 +76,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class NosYexinCard: public SkillCard {
+class NosYexinCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -77,7 +86,8 @@ public:
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
-class NosTuxiCard: public SkillCard {
+class NosTuxiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -86,7 +96,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class NosRendeCard: public SkillCard {
+class NosRendeCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -94,7 +105,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class NosFanjianCard: public SkillCard {
+class NosFanjianCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -103,4 +115,3 @@ public:
 };
 
 #endif
-

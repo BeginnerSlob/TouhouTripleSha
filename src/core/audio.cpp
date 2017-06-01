@@ -1,9 +1,9 @@
 #ifdef AUDIO_SUPPORT
 
 #include <QCache>
-#include <QTime>
-#include <QStringList>
 #include <QSet>
+#include <QStringList>
+#include <QTime>
 
 #include "audio.h"
 #include "fmod.h"
@@ -17,7 +17,8 @@ class Sound
 {
 public:
     explicit Sound(const QString &fileName, bool backgroundMusic = false)
-        : m_sound(NULL), m_channel(NULL)
+        : m_sound(NULL)
+        , m_channel(NULL)
     {
         FMOD_MODE mode = FMOD_DEFAULT;
         FMOD_SOUNDGROUP *soundGroup = EffectGroup;
@@ -26,8 +27,7 @@ public:
             soundGroup = BackgroundMusicGroup;
         }
 
-        FMOD_System_CreateSound(System, fileName.toLatin1(),
-            mode, NULL, &m_sound);
+        FMOD_System_CreateSound(System, fileName.toLatin1(), mode, NULL, &m_sound);
         FMOD_Sound_SetSoundGroup(m_sound, soundGroup);
         FMOD_System_Update(System);
     }
@@ -44,8 +44,7 @@ public:
             FMOD_Sound_SetMode(m_sound, FMOD_LOOP_NORMAL);
         }
 
-        FMOD_System_PlaySound(System, FMOD_CHANNEL_FREE,
-            m_sound, false, &m_channel);
+        FMOD_System_PlaySound(System, FMOD_CHANNEL_FREE, m_sound, false, &m_channel);
         FMOD_System_Update(System);
     }
 
@@ -78,18 +77,23 @@ private:
 class BackgroundMusicPlayList
 {
 public:
-    enum PlayOrder {
+    enum PlayOrder
+    {
         Sequential = 1,
         Shuffle = 2,
     };
 
-    explicit BackgroundMusicPlayList(const QStringList &fileNames,
-        BackgroundMusicPlayList::PlayOrder order = Sequential)
-        : m_fileNames(fileNames), m_order(order), m_index(-1)
+    explicit BackgroundMusicPlayList(const QStringList &fileNames, BackgroundMusicPlayList::PlayOrder order = Sequential)
+        : m_fileNames(fileNames)
+        , m_order(order)
+        , m_index(-1)
     {
     }
 
-    int count() const { return m_fileNames.size(); }
+    int count() const
+    {
+        return m_fileNames.size();
+    }
 
     bool operator==(const BackgroundMusicPlayList &other) const
     {
@@ -112,7 +116,10 @@ public:
             return false;
         }
     }
-    bool operator!=(const BackgroundMusicPlayList &other) const { return !(*this == other); }
+    bool operator!=(const BackgroundMusicPlayList &other) const
+    {
+        return !(*this == other);
+    }
 
     QString nextFileName()
     {
@@ -124,8 +131,7 @@ public:
             QString fileName = m_randomQueue.takeFirst();
             m_index = m_fileNames.indexOf(fileName);
             return fileName;
-        }
-        else {
+        } else {
             if (++m_index >= m_fileNames.size()) {
                 m_index = 0;
             }
@@ -152,7 +158,11 @@ private:
 class BackgroundMusicPlayer : public QObject
 {
 public:
-    BackgroundMusicPlayer() : m_timer(0), m_count(0) {}
+    BackgroundMusicPlayer()
+        : m_timer(0)
+        , m_count(0)
+    {
+    }
 
     void play(const QString &fileNames, bool random)
     {
@@ -161,8 +171,7 @@ public:
         }
 
         {
-            BackgroundMusicPlayList::PlayOrder playOrder
-                = random ? BackgroundMusicPlayList::Shuffle : BackgroundMusicPlayList::Sequential;
+            BackgroundMusicPlayList::PlayOrder playOrder = random ? BackgroundMusicPlayList::Shuffle : BackgroundMusicPlayList::Sequential;
             QScopedPointer<BackgroundMusicPlayList> playList(new BackgroundMusicPlayList(fileNames.split(";"), playOrder));
             if (!m_playList || (*m_playList != *playList)) {
                 m_playList.swap(playList);
@@ -185,7 +194,10 @@ public:
         }
     }
 
-    void shutdown() { m_sound.reset(); }
+    void shutdown()
+    {
+        m_sound.reset();
+    }
 
 protected:
     virtual void timerEvent(QTimerEvent *)
@@ -242,7 +254,7 @@ void Audio::quit()
         EffectGroup = NULL;
         BackgroundMusicGroup = NULL;
 
-        //QCache::clear»á×Ô¶¯deleteËùÓÐµÄSound¶ÔÏó
+        //QCache::clearï¿½ï¿½ï¿½Ô¶ï¿½deleteï¿½ï¿½ï¿½Ðµï¿½Soundï¿½ï¿½ï¿½ï¿½
         SoundCache.clear();
         backgroundMusicPlayer.shutdown();
 
@@ -251,15 +263,14 @@ void Audio::quit()
     }
 }
 
-void Audio::play(const QString &fileName, bool continuePlayWhenPlaying/* = false*/)
+void Audio::play(const QString &fileName, bool continuePlayWhenPlaying /* = false*/)
 {
     if (NULL != System) {
         Sound *sound = SoundCache[fileName];
         if (NULL == sound) {
             sound = new Sound(fileName);
             SoundCache.insert(fileName, sound);
-        }
-        else if (!continuePlayWhenPlaying && sound->isPlaying()) {
+        } else if (!continuePlayWhenPlaying && sound->isPlaying()) {
             return;
         }
 
@@ -277,7 +288,7 @@ void Audio::setBackgroundMusicVolume(float volume)
     FMOD_SoundGroup_SetVolume(BackgroundMusicGroup, volume);
 }
 
-void Audio::playBackgroundMusic(const QString &fileNames, bool random/* = false*/)
+void Audio::playBackgroundMusic(const QString &fileNames, bool random /* = false*/)
 {
     if (NULL != System) {
         if (!m_customBackgroundMusicFileName.isEmpty()) {
@@ -297,7 +308,8 @@ void Audio::stopBackgroundMusic()
     }
 }
 
-bool Audio::isBackgroundMusicPlaying() {
+bool Audio::isBackgroundMusicPlaying()
+{
     int numPlaying = 0;
     FMOD_SoundGroup_GetNumPlaying(BackgroundMusicGroup, &numPlaying);
     return numPlaying > 0;
@@ -321,9 +333,7 @@ QString Audio::getVersion()
     */
     unsigned int version = 0;
     if (NULL != System && FMOD_OK == FMOD_System_GetVersion(System, &version)) {
-        return QString("%1.%2.%3").arg((version & 0xFFFF0000) >> 16, 0, 16)
-            .arg((version & 0xFF00) >> 8, 2, 16, QChar('0'))
-            .arg((version & 0xFF), 2, 16, QChar('0'));
+        return QString("%1.%2.%3").arg((version & 0xFFFF0000) >> 16, 0, 16).arg((version & 0xFF00) >> 8, 2, 16, QChar('0')).arg((version & 0xFF), 2, 16, QChar('0'));
     }
 
     return "";

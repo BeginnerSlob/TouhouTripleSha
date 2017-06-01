@@ -1,6 +1,6 @@
 #include "magatamas-item.h"
-#include <QPropertyAnimation>
 #include <QParallelAnimationGroup>
+#include <QPropertyAnimation>
 
 MagatamasBoxItem::MagatamasBoxItem()
     : QGraphicsObject(NULL)
@@ -16,12 +16,14 @@ MagatamasBoxItem::MagatamasBoxItem(QGraphicsItem *parent)
     m_maxHp = 0;
 }
 
-void MagatamasBoxItem::setOrientation(Qt::Orientation orientation) {
+void MagatamasBoxItem::setOrientation(Qt::Orientation orientation)
+{
     m_orientation = orientation;
     _updateLayout();
 }
 
-void MagatamasBoxItem::_updateLayout() {
+void MagatamasBoxItem::_updateLayout()
+{
     int xStep, yStep;
     if (this->m_orientation == Qt::Horizontal) {
         xStep = m_iconSize.width();
@@ -33,7 +35,7 @@ void MagatamasBoxItem::_updateLayout() {
 
     for (int i = 0; i < 6; i++) {
         _icons[i] = G_ROOM_SKIN.getPixmap(QString(QSanRoomSkin::S_SKIN_KEY_MAGATAMAS).arg(QString::number(i)), QString(), true)
-                                          .scaled(m_iconSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+                        .scaled(m_iconSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     }
 
     for (int i = 1; i < 6; i++) {
@@ -45,17 +47,19 @@ void MagatamasBoxItem::_updateLayout() {
             bgSize.setWidth((yStep + 1) * i);
             bgSize.setHeight(m_iconSize.width());
         }
-        _bgImages[i] = G_ROOM_SKIN.getPixmap(QString(QSanRoomSkin::S_SKIN_KEY_MAGATAMAS_BG).arg(QString::number(i)))
-                                             .scaled(bgSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        _bgImages[i]
+            = G_ROOM_SKIN.getPixmap(QString(QSanRoomSkin::S_SKIN_KEY_MAGATAMAS_BG).arg(QString::number(i))).scaled(bgSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     }
 }
 
-void MagatamasBoxItem::setIconSize(QSize size) {
+void MagatamasBoxItem::setIconSize(QSize size)
+{
     m_iconSize = size;
     _updateLayout();
 }
 
-QRectF MagatamasBoxItem::boundingRect() const{
+QRectF MagatamasBoxItem::boundingRect() const
+{
     int buckets = qMin(m_maxHp, 4) + G_COMMON_LAYOUT.m_hpExtraSpaceHolder;
     if (m_orientation == Qt::Horizontal)
         return QRectF(0, 0, buckets * m_iconSize.width(), m_iconSize.height());
@@ -63,24 +67,29 @@ QRectF MagatamasBoxItem::boundingRect() const{
         return QRectF(0, 0, m_iconSize.width(), buckets * m_iconSize.height());
 }
 
-void MagatamasBoxItem::setHp(int hp) {
+void MagatamasBoxItem::setHp(int hp)
+{
     _doHpChangeAnimation(hp);
     m_hp = hp;
     update();
 }
 
-void MagatamasBoxItem::setAnchor(QPoint anchor, Qt::Alignment align) {
+void MagatamasBoxItem::setAnchor(QPoint anchor, Qt::Alignment align)
+{
     m_anchor = anchor;
     m_align = align;
 }
 
-void MagatamasBoxItem::setMaxHp(int maxHp) {
+void MagatamasBoxItem::setMaxHp(int maxHp)
+{
     m_maxHp = maxHp;
     _autoAdjustPos();
 }
 
-void MagatamasBoxItem::_autoAdjustPos() {
-    if (!anchorEnabled) return;
+void MagatamasBoxItem::_autoAdjustPos()
+{
+    if (!anchorEnabled)
+        return;
     QRectF rect = boundingRect();
     Qt::Alignment hAlign = m_align & Qt::AlignHorizontal_Mask;
     if (hAlign == Qt::AlignRight)
@@ -98,15 +107,18 @@ void MagatamasBoxItem::_autoAdjustPos() {
         setY(m_anchor.y());
 }
 
-void MagatamasBoxItem::update() {
+void MagatamasBoxItem::update()
+{
     _updateLayout();
     _autoAdjustPos();
     QGraphicsItem::update();
 }
 
 #include "sprite.h"
-void MagatamasBoxItem::_doHpChangeAnimation(int newHp) {
-    if (newHp >= m_hp) return;
+void MagatamasBoxItem::_doHpChangeAnimation(int newHp)
+{
+    if (newHp >= m_hp)
+        return;
 
     int width = m_imageArea.width();
     int height = m_imageArea.height();
@@ -152,10 +164,13 @@ void MagatamasBoxItem::_doHpChangeAnimation(int newHp) {
     }
 }
 
-void MagatamasBoxItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
-    if (m_maxHp <= 0) return;
+void MagatamasBoxItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
+    if (m_maxHp <= 0)
+        return;
     int imageIndex = qBound(0, m_hp, 4);
-    if (m_hp == m_maxHp) imageIndex = 4;
+    if (m_hp == m_maxHp)
+        imageIndex = 4;
 
     int xStep, yStep;
     if (this->m_orientation == Qt::Horizontal) {
@@ -202,4 +217,3 @@ void MagatamasBoxItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
         G_COMMON_LAYOUT.m_hpFont[imageIndex].paintText(painter, rect, Qt::AlignCenter, QString::number(m_maxHp));
     }
 }
-

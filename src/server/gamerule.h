@@ -3,12 +3,13 @@
 
 #include "skill.h"
 
-class GameRule: public TriggerSkill {
+class GameRule : public TriggerSkill
+{
     Q_OBJECT
 
 public:
     GameRule(QObject *parent);
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer* &) const;
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *&) const;
     virtual int getPriority(TriggerEvent triggerEvent) const;
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
 
@@ -20,7 +21,8 @@ private:
     QString getWinner(ServerPlayer *victim) const;
 };
 
-class HulaoPassMode: public GameRule {
+class HulaoPassMode : public GameRule
+{
     Q_OBJECT
 
 public:
@@ -28,7 +30,8 @@ public:
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
 };
 
-class BasaraMode: public GameRule {
+class BasaraMode : public GameRule
+{
     Q_OBJECT
 
 public:
@@ -42,4 +45,3 @@ public:
 };
 
 #endif
-

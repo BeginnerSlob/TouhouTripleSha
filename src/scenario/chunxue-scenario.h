@@ -1,10 +1,11 @@
 #ifndef _CHUNXUE_SCENARIO_H
 #define _CHUNXUE_SCENARIO_H
 
-#include "scenario.h"
 #include "card.h"
+#include "scenario.h"
 
-class CxQiuwenCard: public SkillCard{
+class CxQiuwenCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -13,7 +14,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ChunxueScenario : public Scenario {
+class ChunxueScenario : public Scenario
+{
     Q_OBJECT
 
 public:

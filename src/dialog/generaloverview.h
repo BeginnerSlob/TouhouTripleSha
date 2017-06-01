@@ -5,18 +5,19 @@ class General;
 class Skill;
 class QCommandLinkButton;
 
-#include <QDialog>
-#include <QTableWidgetItem>
 #include <QButtonGroup>
-#include <QVBoxLayout>
-#include <QLabel>
 #include <QCheckBox>
-#include <QSpinBox>
+#include <QDialog>
 #include <QGroupBox>
+#include <QLabel>
+#include <QSpinBox>
+#include <QTableWidgetItem>
+#include <QVBoxLayout>
 
 class GeneralOverview;
 
-class GeneralSearch: public QDialog {
+class GeneralSearch : public QDialog
+{
     Q_OBJECT
 
 public:
@@ -37,8 +38,8 @@ private:
     QButtonGroup *package_buttons;
 
 signals:
-    void search(bool include_hidden, const QString &nickname, const QString &name, const QStringList &genders,
-                const QStringList &kingdoms, int lower, int upper, const QStringList &packages);
+    void search(bool include_hidden, const QString &nickname, const QString &name, const QStringList &genders, const QStringList &kingdoms, int lower, int upper,
+                const QStringList &packages);
 
 protected:
     virtual void accept();
@@ -54,10 +55,11 @@ private slots:
 };
 
 namespace Ui {
-    class GeneralOverview;
+class GeneralOverview;
 }
 
-class GeneralOverview: public QDialog {
+class GeneralOverview : public QDialog
+{
     Q_OBJECT
 
 public:
@@ -82,8 +84,8 @@ private:
     QString getIllustratorInfo(const QString &general_name);
 
 public slots:
-    void startSearch(bool include_hidden, const QString &nickname, const QString &name, const QStringList &genders,
-                     const QStringList &kingdoms, int lower, int upper, const QStringList &packages);
+    void startSearch(bool include_hidden, const QString &nickname, const QString &name, const QStringList &genders, const QStringList &kingdoms, int lower, int upper,
+                     const QStringList &packages);
 
 private slots:
     void playAudioEffect();
@@ -96,4 +98,3 @@ private slots:
 };
 
 #endif
-

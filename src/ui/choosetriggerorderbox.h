@@ -33,7 +33,7 @@ class TriggerOptionButton : public QGraphicsObject
 {
     Q_OBJECT
 
-        friend class ChooseTriggerOrderBox;
+    friend class ChooseTriggerOrderBox;
 
 public:
     static QFont defaultFont();

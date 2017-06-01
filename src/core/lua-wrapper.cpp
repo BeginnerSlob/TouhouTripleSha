@@ -2,14 +2,17 @@
 #include "util.h"
 
 LuaTriggerSkill::LuaTriggerSkill(const char *name, Frequency frequency, const char *limit_mark)
-    : TriggerSkill(name), on_trigger(0), can_trigger(0)
+    : TriggerSkill(name)
+    , on_trigger(0)
+    , can_trigger(0)
 {
     this->frequency = frequency;
     this->limit_mark = QString(limit_mark);
     this->priority = 3;
 }
 
-int LuaTriggerSkill::getPriority(TriggerEvent triggerEvent) const{
+int LuaTriggerSkill::getPriority(TriggerEvent triggerEvent) const
+{
     if (priority_table.keys().contains(triggerEvent))
         return priority_table[triggerEvent];
     else
@@ -17,13 +20,19 @@ int LuaTriggerSkill::getPriority(TriggerEvent triggerEvent) const{
 }
 
 LuaProhibitSkill::LuaProhibitSkill(const char *name)
-    : ProhibitSkill(name), is_prohibited(0)
+    : ProhibitSkill(name)
+    , is_prohibited(0)
 {
 }
 
 LuaViewAsSkill::LuaViewAsSkill(const char *name, const char *response_pattern, bool response_or_use, const char *expand_pile)
-    : ViewAsSkill(name), view_filter(0), view_as(0), should_be_visible(0),
-      enabled_at_play(0), enabled_at_response(0), enabled_at_nullification(0)
+    : ViewAsSkill(name)
+    , view_filter(0)
+    , view_as(0)
+    , should_be_visible(0)
+    , enabled_at_play(0)
+    , enabled_at_response(0)
+    , enabled_at_nullification(0)
 {
     this->response_pattern = response_pattern;
     this->response_or_use = response_or_use;
@@ -31,22 +40,30 @@ LuaViewAsSkill::LuaViewAsSkill(const char *name, const char *response_pattern, b
 }
 
 LuaFilterSkill::LuaFilterSkill(const char *name)
-    : FilterSkill(name), view_filter(0), view_as(0)
+    : FilterSkill(name)
+    , view_filter(0)
+    , view_as(0)
 {
 }
 
 LuaDistanceSkill::LuaDistanceSkill(const char *name)
-    : DistanceSkill(name), correct_func(0)
+    : DistanceSkill(name)
+    , correct_func(0)
 {
 }
 
 LuaMaxCardsSkill::LuaMaxCardsSkill(const char *name)
-    : MaxCardsSkill(name), extra_func(0), fixed_func(0)
+    : MaxCardsSkill(name)
+    , extra_func(0)
+    , fixed_func(0)
 {
 }
 
 LuaTargetModSkill::LuaTargetModSkill(const char *name, const char *pattern)
-    : TargetModSkill(name), residue_func(0), distance_limit_func(0), extra_target_func(0)
+    : TargetModSkill(name)
+    , residue_func(0)
+    , distance_limit_func(0)
+    , extra_target_func(0)
 {
     this->pattern = pattern;
 }
@@ -60,8 +77,14 @@ static QHash<QString, const LuaSkillCard *> LuaSkillCards;
 static QHash<QString, QString> LuaSkillCardsSkillName;
 
 LuaSkillCard::LuaSkillCard(const char *name, const char *skillName)
-    : SkillCard(), filter(0), feasible(0),
-      about_to_use(0), on_use(0), on_effect(0), on_validate(0), on_validate_in_response(0)
+    : SkillCard()
+    , filter(0)
+    , feasible(0)
+    , about_to_use(0)
+    , on_use(0)
+    , on_effect(0)
+    , on_validate(0)
+    , on_validate_in_response(0)
 {
     if (name) {
         LuaSkillCards.insert(name, this);
@@ -73,7 +96,8 @@ LuaSkillCard::LuaSkillCard(const char *name, const char *skillName)
     }
 }
 
-LuaSkillCard *LuaSkillCard::clone() const{
+LuaSkillCard *LuaSkillCard::clone() const
+{
     LuaSkillCard *new_card = new LuaSkillCard(NULL, NULL);
 
     new_card->setObjectName(objectName());
@@ -95,7 +119,8 @@ LuaSkillCard *LuaSkillCard::clone() const{
     return new_card;
 }
 
-LuaSkillCard *LuaSkillCard::Parse(const QString &str) {
+LuaSkillCard *LuaSkillCard::Parse(const QString &str)
+{
     QRegExp rx("#(\\w+):(.*):(.*)");
     QRegExp e_rx("#(\\w*)\\[(\\w+):(.+)\\]:(.*):(.*)");
 
@@ -165,24 +190,32 @@ LuaSkillCard *LuaSkillCard::Parse(const QString &str) {
     return new_card;
 }
 
-QString LuaSkillCard::toString(bool hidden) const{
+QString LuaSkillCard::toString(bool hidden) const
+{
     Q_UNUSED(hidden);
-    return QString("#%1[%2:%3]:%4:%5").arg(objectName())
-           .arg(getSuitString()).arg(getNumberString())
-           .arg(subcardString()).arg(user_string);
+    return QString("#%1[%2:%3]:%4:%5").arg(objectName()).arg(getSuitString()).arg(getNumberString()).arg(subcardString()).arg(user_string);
 }
 
 LuaBasicCard::LuaBasicCard(Card::Suit suit, int number, const char *obj_name, const char *class_name, const char *subtype)
-    : BasicCard(suit, number), filter(0), feasible(0), available(0), about_to_use(0), on_use(0), on_effect(0)
+    : BasicCard(suit, number)
+    , filter(0)
+    , feasible(0)
+    , available(0)
+    , about_to_use(0)
+    , on_use(0)
+    , on_effect(0)
 {
     setObjectName(obj_name);
     this->class_name = class_name;
     this->subtype = subtype;
 }
 
-LuaBasicCard *LuaBasicCard::clone(Card::Suit suit, int number) const{
-    if (suit == Card::SuitToBeDecided) suit = this->getSuit();
-    if (number == -1) number = this->getNumber();
+LuaBasicCard *LuaBasicCard::clone(Card::Suit suit, int number) const
+{
+    if (suit == Card::SuitToBeDecided)
+        suit = this->getSuit();
+    if (number == -1)
+        number = this->getNumber();
     LuaBasicCard *new_card = new LuaBasicCard(suit, number, objectName().toStdString().c_str(), class_name.toStdString().c_str(), subtype.toStdString().c_str());
     new_card->subtype = subtype;
 
@@ -200,17 +233,27 @@ LuaBasicCard *LuaBasicCard::clone(Card::Suit suit, int number) const{
 }
 
 LuaTrickCard::LuaTrickCard(Card::Suit suit, int number, const char *obj_name, const char *class_name, const char *subtype)
-    : TrickCard(suit, number), filter(0), feasible(0), available(0), is_cancelable(0),
-      about_to_use(0), on_use(0), on_effect(0), on_nullified(0)
+    : TrickCard(suit, number)
+    , filter(0)
+    , feasible(0)
+    , available(0)
+    , is_cancelable(0)
+    , about_to_use(0)
+    , on_use(0)
+    , on_effect(0)
+    , on_nullified(0)
 {
     setObjectName(obj_name);
     this->class_name = class_name;
     this->subtype = subtype;
 }
 
-LuaTrickCard *LuaTrickCard::clone(Card::Suit suit, int number) const{
-    if (suit == Card::SuitToBeDecided) suit = this->getSuit();
-    if (number == -1) number = this->getNumber();
+LuaTrickCard *LuaTrickCard::clone(Card::Suit suit, int number) const
+{
+    if (suit == Card::SuitToBeDecided)
+        suit = this->getSuit();
+    if (number == -1)
+        number = this->getNumber();
     LuaTrickCard *new_card = new LuaTrickCard(suit, number, objectName().toStdString().c_str(), class_name.toStdString().c_str(), subtype.toStdString().c_str());
     new_card->subclass = subclass;
     new_card->subtype = subtype;
@@ -237,9 +280,12 @@ LuaWeapon::LuaWeapon(Card::Suit suit, int number, int range, const char *obj_nam
     this->class_name = class_name;
 }
 
-LuaWeapon *LuaWeapon::clone(Card::Suit suit, int number) const{
-    if (suit == Card::SuitToBeDecided) suit = this->getSuit();
-    if (number == -1) number = this->getNumber();
+LuaWeapon *LuaWeapon::clone(Card::Suit suit, int number) const
+{
+    if (suit == Card::SuitToBeDecided)
+        suit = this->getSuit();
+    if (number == -1)
+        number = this->getNumber();
     LuaWeapon *new_card = new LuaWeapon(suit, number, this->getRange(), objectName().toStdString().c_str(), class_name.toStdString().c_str());
 
     new_card->on_install = on_install;
@@ -255,9 +301,12 @@ LuaArmor::LuaArmor(Card::Suit suit, int number, const char *obj_name, const char
     this->class_name = class_name;
 }
 
-LuaArmor *LuaArmor::clone(Card::Suit suit, int number) const{
-    if (suit == Card::SuitToBeDecided) suit = this->getSuit();
-    if (number == -1) number = this->getNumber();
+LuaArmor *LuaArmor::clone(Card::Suit suit, int number) const
+{
+    if (suit == Card::SuitToBeDecided)
+        suit = this->getSuit();
+    if (number == -1)
+        number = this->getNumber();
     LuaArmor *new_card = new LuaArmor(suit, number, objectName().toStdString().c_str(), class_name.toStdString().c_str());
 
     new_card->on_install = on_install;
@@ -273,9 +322,12 @@ LuaTreasure::LuaTreasure(Card::Suit suit, int number, const char *obj_name, cons
     this->class_name = class_name;
 }
 
-LuaTreasure *LuaTreasure::clone(Card::Suit suit, int number) const{
-    if (suit == Card::SuitToBeDecided) suit = this->getSuit();
-    if (number == -1) number = this->getNumber();
+LuaTreasure *LuaTreasure::clone(Card::Suit suit, int number) const
+{
+    if (suit == Card::SuitToBeDecided)
+        suit = this->getSuit();
+    if (number == -1)
+        number = this->getNumber();
     LuaTreasure *new_card = new LuaTreasure(suit, number, objectName().toStdString().c_str(), class_name.toStdString().c_str());
 
     new_card->on_install = on_install;

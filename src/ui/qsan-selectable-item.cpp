@@ -1,12 +1,13 @@
 #include "qsan-selectable-item.h"
 #include "ui-utils.h"
 
-#include <QPainter>
 #include <QGraphicsColorizeEffect>
-#include <QMessageBox>
 #include <QImageReader>
+#include <QMessageBox>
+#include <QPainter>
 
-QSanSelectableItem::QSanSelectableItem(const QString &filename, bool center_as_origin) {
+QSanSelectableItem::QSanSelectableItem(const QString &filename, bool center_as_origin)
+{
     load(filename, center_as_origin);
     markable = false;
     marked = false;
@@ -14,22 +15,24 @@ QSanSelectableItem::QSanSelectableItem(const QString &filename, bool center_as_o
     _m_height = _m_mainPixmap.height();
 }
 
-bool QSanSelectableItem::load(const QString &filename, bool center_as_origin) {
+bool QSanSelectableItem::load(const QString &filename, bool center_as_origin)
+{
     return _load(filename, QSize(), false, center_as_origin);
 }
 
-bool QSanSelectableItem::load(const QString &filename, QSize size, bool center_as_origin) {
+bool QSanSelectableItem::load(const QString &filename, QSize size, bool center_as_origin)
+{
     return _load(filename, size, true, center_as_origin);
 }
 
-bool QSanSelectableItem::_load(const QString &filename, QSize size, bool useNewSize, bool center_as_origin) {
+bool QSanSelectableItem::_load(const QString &filename, QSize size, bool useNewSize, bool center_as_origin)
+{
     bool success = _m_mainPixmap.load(filename);
 
     if (!success) {
         QImageReader reader(filename);
         QString error_string = reader.errorString();
-        QString warning = tr("Can not load image %1[%2], error string is %3")
-                             .arg(filename).arg(metaObject()->className()).arg(error_string);
+        QString warning = tr("Can not load image %1[%2], error string is %3").arg(filename).arg(metaObject()->className()).arg(error_string);
         QMessageBox::warning(NULL, tr("Warning"), warning);
     } else {
         if (useNewSize) {
@@ -48,13 +51,15 @@ bool QSanSelectableItem::_load(const QString &filename, QSize size, bool useNewS
     return success;
 }
 
-void QSanSelectableItem::setPixmap(const QPixmap &pixmap) {
+void QSanSelectableItem::setPixmap(const QPixmap &pixmap)
+{
     _m_mainPixmap = pixmap;
     prepareGeometryChange();
 }
 
 QSanSelectableItem::QSanSelectableItem(bool center_as_origin)
-    : markable(false), marked(false)
+    : markable(false)
+    , marked(false)
 {
     if (center_as_origin) {
         resetTransform();
@@ -63,25 +68,30 @@ QSanSelectableItem::QSanSelectableItem(bool center_as_origin)
     _m_width = _m_height = 0;
 }
 
-QRectF QSanSelectableItem::boundingRect() const{
+QRectF QSanSelectableItem::boundingRect() const
+{
     return QRectF(0, 0, _m_width, _m_height);
 }
 
-void QSanSelectableItem::makeGray() {
+void QSanSelectableItem::makeGray()
+{
     QSanUiUtils::makeGray(_m_mainPixmap);
 }
 
-void QSanSelectableItem::scaleSmoothly(qreal ratio) {
+void QSanSelectableItem::scaleSmoothly(qreal ratio)
+{
     QTransform trans = transform();
     trans.scale(ratio, ratio);
     setTransform(trans);
 }
 
-void QSanSelectableItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void QSanSelectableItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
     painter->drawPixmap(QRect(0, 0, _m_width, _m_height), _m_mainPixmap);
 }
 
-QVariant QSanSelectableItem::itemChange(GraphicsItemChange change, const QVariant &value) {
+QVariant QSanSelectableItem::itemChange(GraphicsItemChange change, const QVariant &value)
+{
     if (change == ItemSelectedHasChanged) {
         if (value.toBool()) {
             QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect(this);
@@ -98,15 +108,18 @@ QVariant QSanSelectableItem::itemChange(GraphicsItemChange change, const QVarian
     return QGraphicsObject::itemChange(change, value);
 }
 
-bool QSanSelectableItem::isMarked() const{
+bool QSanSelectableItem::isMarked() const
+{
     return markable && marked;
 }
 
-bool QSanSelectableItem::isMarkable() const{
+bool QSanSelectableItem::isMarkable() const
+{
     return markable;
 }
 
-void QSanSelectableItem::mark(bool marked) {
+void QSanSelectableItem::mark(bool marked)
+{
     if (markable) {
         if (this->marked != marked) {
             this->marked = marked;
@@ -115,7 +128,7 @@ void QSanSelectableItem::mark(bool marked) {
     }
 }
 
-void QSanSelectableItem::setMarkable(bool markable) {
+void QSanSelectableItem::setMarkable(bool markable)
+{
     this->markable = markable;
 }
-

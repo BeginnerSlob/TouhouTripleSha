@@ -1,28 +1,33 @@
 #include "nativesocket.h"
+
 #include "settings.h"
 
-#include <QTcpSocket>
 #include <QRegExp>
 #include <QStringList>
+#include <QTcpSocket>
 #include <QUdpSocket>
 
-NativeServerSocket::NativeServerSocket() {
+NativeServerSocket::NativeServerSocket()
+{
     server = new QTcpServer(this);
     daemon = NULL;
     connect(server, SIGNAL(newConnection()), this, SLOT(processNewConnection()));
 }
 
-bool NativeServerSocket::listen() {
+bool NativeServerSocket::listen()
+{
     return server->listen(QHostAddress::Any, Config.ServerPort);
 }
 
-void NativeServerSocket::daemonize() {
+void NativeServerSocket::daemonize()
+{
     daemon = new QUdpSocket(this);
     daemon->bind(Config.ServerPort, QUdpSocket::ShareAddress);
     connect(daemon, SIGNAL(readyRead()), this, SLOT(processNewDatagram()));
 }
 
-void NativeServerSocket::processNewDatagram() {
+void NativeServerSocket::processNewDatagram()
+{
     while (daemon->hasPendingDatagrams()) {
         QHostAddress from;
         char ask_str[256];
@@ -35,7 +40,8 @@ void NativeServerSocket::processNewDatagram() {
     }
 }
 
-void NativeServerSocket::processNewConnection() {
+void NativeServerSocket::processNewConnection()
+{
     QTcpSocket *socket = server->nextPendingConnection();
     NativeClientSocket *connection = new NativeClientSocket(socket);
     emit new_connection(connection);
@@ -56,15 +62,16 @@ NativeClientSocket::NativeClientSocket(QTcpSocket *socket)
     init();
 }
 
-void NativeClientSocket::init() {
+void NativeClientSocket::init()
+{
     connect(socket, SIGNAL(disconnected()), this, SIGNAL(disconnected()));
     connect(socket, SIGNAL(readyRead()), this, SLOT(getMessage()));
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),
-            this, SLOT(raiseError(QAbstractSocket::SocketError)));
+    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(raiseError(QAbstractSocket::SocketError)));
     connect(socket, SIGNAL(connected()), this, SIGNAL(connected()));
 }
 
-void NativeClientSocket::connectToHost() {
+void NativeClientSocket::connectToHost()
+{
     QString address = "127.0.0.1";
     ushort port = 9527u;
 
@@ -81,7 +88,8 @@ void NativeClientSocket::connectToHost() {
     socket->connectToHost(address, port);
 }
 
-void NativeClientSocket::getMessage() {
+void NativeClientSocket::getMessage()
+{
     while (socket->canReadLine()) {
         buffer_t msg;
         socket->readLine(msg, sizeof(msg));
@@ -92,11 +100,13 @@ void NativeClientSocket::getMessage() {
     }
 }
 
-void NativeClientSocket::disconnectFromHost() {
+void NativeClientSocket::disconnectFromHost()
+{
     socket->disconnectFromHost();
 }
 
-void NativeClientSocket::send(const QString &message) {
+void NativeClientSocket::send(const QString &message)
+{
     socket->write(message.toLatin1());
     if (!message.endsWith("\n"))
         socket->write("\n");
@@ -106,11 +116,13 @@ void NativeClientSocket::send(const QString &message) {
     socket->flush();
 }
 
-bool NativeClientSocket::isConnected() const{
+bool NativeClientSocket::isConnected() const
+{
     return socket->state() == QTcpSocket::ConnectedState;
 }
 
-QString NativeClientSocket::peerName() const{
+QString NativeClientSocket::peerName() const
+{
     QString peer_name = socket->peerName();
     if (peer_name.isEmpty())
         peer_name = QString("%1:%2").arg(socket->peerAddress().toString()).arg(socket->peerPort());
@@ -118,27 +130,34 @@ QString NativeClientSocket::peerName() const{
     return peer_name;
 }
 
-QString NativeClientSocket::peerAddress() const{
+QString NativeClientSocket::peerAddress() const
+{
     return socket->peerAddress().toString();
 }
 
-void NativeClientSocket::raiseError(QAbstractSocket::SocketError socket_error) {
+void NativeClientSocket::raiseError(QAbstractSocket::SocketError socket_error)
+{
     // translate error message
     QString reason;
     switch (socket_error) {
     case QAbstractSocket::ConnectionRefusedError:
-        reason = tr("Connection was refused or timeout"); break;
+        reason = tr("Connection was refused or timeout");
+        break;
     case QAbstractSocket::RemoteHostClosedError:
-        reason = tr("Remote host close this connection"); break;
+        reason = tr("Remote host close this connection");
+        break;
     case QAbstractSocket::HostNotFoundError:
-        reason = tr("Host not found"); break;
+        reason = tr("Host not found");
+        break;
     case QAbstractSocket::SocketAccessError:
-        reason = tr("Socket access error"); break;
+        reason = tr("Socket access error");
+        break;
     case QAbstractSocket::NetworkError:
         return; // this error is ignored ...
-    default: reason = tr("Unknow error"); break;
+    default:
+        reason = tr("Unknow error");
+        break;
     }
 
     emit error_message(tr("Connection failed, error code = %1\n reason:\n %2").arg(socket_error).arg(reason));
 }
-

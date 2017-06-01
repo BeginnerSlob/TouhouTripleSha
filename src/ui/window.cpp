@@ -1,15 +1,17 @@
 #include "window.h"
-#include "settings.h"
-#include "button.h"
 
-#include <QPainter>
+#include "button.h"
+#include "settings.h"
+
+#include <QGraphicsDropShadowEffect>
 #include <QGraphicsRotation>
+#include <QPainter>
 #include <QParallelAnimationGroup>
 #include <QPropertyAnimation>
-#include <QGraphicsDropShadowEffect>
 
 Window::Window(const QString &title, const QSizeF &size, const QString &path)
-    : size(size), keep_when_disappear(false)
+    : size(size)
+    , keep_when_disappear(false)
 {
     setFlags(ItemIsMovable);
 
@@ -61,12 +63,14 @@ Window::Window(const QString &title, const QSizeF &size, const QString &path)
     setTitle(title);
 }
 
-Window::~Window() {
+Window::~Window()
+{
     delete bg;
     delete outimg;
 }
 
-void Window::addContent(const QString &content) {
+void Window::addContent(const QString &content)
+{
     QGraphicsTextItem *content_item = new QGraphicsTextItem(this);
     content_item->moveBy(15, 40);
     content_item->setHtml(content);
@@ -81,7 +85,8 @@ void Window::addContent(const QString &content) {
     content_item->setFont(*font);
 }
 
-Button *Window::addCloseButton(const QString &label) {
+Button *Window::addCloseButton(const QString &label)
+{
     Button *ok_button = new Button(label, 0.6);
     QFont font = Config.TinyFont;
     font.setBold(true);
@@ -96,27 +101,32 @@ Button *Window::addCloseButton(const QString &label) {
     return ok_button;
 }
 
-void Window::shift(int pos_x, int pos_y) {
+void Window::shift(int pos_x, int pos_y)
+{
     resetTransform();
     setTransform(QTransform::fromTranslate((pos_x - size.width()) / 2, (pos_y - size.height()) / 2), true);
 }
 
-void Window::keepWhenDisappear() {
+void Window::keepWhenDisappear()
+{
     keep_when_disappear = true;
 }
 
-QRectF Window::boundingRect() const{
+QRectF Window::boundingRect() const
+{
     return QRectF(QPointF(), size);
 }
 
-void Window::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void Window::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
     QRectF window_rect = boundingRect();
 
-    painter->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing |QPainter::SmoothPixmapTransform);
+    painter->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
     painter->drawImage(window_rect, *outimg);
 }
 
-void Window::appear() {
+void Window::appear()
+{
     QPropertyAnimation *scale_x = new QPropertyAnimation(scaleTransform, "xScale");
     QPropertyAnimation *scale_y = new QPropertyAnimation(scaleTransform, "yScale");
     QPropertyAnimation *opacity = new QPropertyAnimation(this, "opacity");
@@ -130,10 +140,10 @@ void Window::appear() {
     group->addAnimation(opacity);
 
     group->start(QAbstractAnimation::DeleteWhenStopped);
-
 }
 
-void Window::disappear() {
+void Window::disappear()
+{
     QPropertyAnimation *scale_x = new QPropertyAnimation(scaleTransform, "xScale");
     QPropertyAnimation *scale_y = new QPropertyAnimation(scaleTransform, "yScale");
     QPropertyAnimation *opacity = new QPropertyAnimation(this, "opacity");
@@ -152,7 +162,8 @@ void Window::disappear() {
         connect(group, SIGNAL(finished()), this, SLOT(deleteLater()));
 }
 
-void Window::setTitle(const QString &title) {
+void Window::setTitle(const QString &title)
+{
     QString style;
     style.append("font-size:18pt; ");
     style.append("color:#77c379; ");

@@ -1,15 +1,16 @@
 #ifndef _SCENARIO_H
 #define _SCENARIO_H
 
-#include "package.h"
 #include "ai.h"
+#include "package.h"
 
 class Room;
 class ScenarioRule;
 
 #include <QMap>
 
-class Scenario: public Package {
+class Scenario : public Package
+{
     Q_OBJECT
 
 public:
@@ -31,4 +32,3 @@ protected:
 };
 
 #endif
-

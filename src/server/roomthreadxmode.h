@@ -1,13 +1,14 @@
 #ifndef _ROOM_THREAD_XMODE_H
 #define _ROOM_THREAD_XMODE_H
 
-#include <QThread>
 #include <QStringList>
+#include <QThread>
 
 class Room;
 class ServerPlayer;
 
-class RoomThreadXMode: public QThread {
+class RoomThreadXMode : public QThread
+{
     Q_OBJECT
 
 public:

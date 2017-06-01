@@ -1,10 +1,11 @@
 #ifndef _STANDARD_SKILLCARDS_H
 #define _STANDARD_SKILLCARDS_H
 
-#include "skill.h"
 #include "card.h"
+#include "skill.h"
 
-class LianyingCard: public SkillCard {
+class LianyingCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -13,7 +14,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class YijiCard: public SkillCard {
+class YijiCard : public SkillCard
+{
     Q_OBJECT
 
 public:

@@ -1,21 +1,21 @@
 #ifndef _ENGINE_H
 #define _ENGINE_H
 
-#include "room-state.h"
 #include "card.h"
-#include "general.h"
-#include "skill.h"
-#include "package.h"
 #include "exppattern.h"
+#include "general.h"
+#include "package.h"
 #include "protocol.h"
+#include "room-state.h"
+#include "skill.h"
 #include "util.h"
 
 #include <QHash>
-#include <QStringList>
-#include <QMetaObject>
-#include <QThread>
 #include <QList>
+#include <QMetaObject>
 #include <QMutex>
+#include <QStringList>
+#include <QThread>
 
 class AI;
 class Scenario;
@@ -27,7 +27,8 @@ class LuaTreasure;
 
 struct lua_State;
 
-class Engine: public QObject {
+class Engine : public QObject
+{
     Q_OBJECT
 
 public:
@@ -167,7 +168,7 @@ private:
     QHash<QString, QString> luaTrickCard_className2objectName;
     QHash<QString, const LuaTrickCard *> luaTrickCards;
     QHash<QString, QString> luaWeapon_className2objectName;
-    QHash<QString, const LuaWeapon*> luaWeapons;
+    QHash<QString, const LuaWeapon *> luaWeapons;
     QHash<QString, QString> luaArmor_className2objectName;
     QHash<QString, const LuaArmor *> luaArmors;
     QHash<QString, QString> luaTreasure_className2objectName;
@@ -178,14 +179,13 @@ private:
     QStringList removed_hidden_generals;
     QStringList extra_default_lords;
     QStringList removed_default_lords;
-
 };
 
-static inline QVariant GetConfigFromLuaState(lua_State *L, const char *key) {
+static inline QVariant GetConfigFromLuaState(lua_State *L, const char *key)
+{
     return GetValueFromLuaState(L, "config", key);
 }
 
 extern Engine *Sanguosha;
 
 #endif
-

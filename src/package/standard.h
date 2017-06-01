@@ -1,11 +1,12 @@
 #ifndef _STANDARD_H
 #define _STANDARD_H
 
-#include "package.h"
 #include "card.h"
+#include "package.h"
 #include "skill.h"
 
-class StandardPackage: public Package {
+class StandardPackage : public Package
+{
     Q_OBJECT
 
 public:
@@ -13,23 +14,30 @@ public:
     void addGenerals();
 };
 
-class TestPackage: public Package {
+class TestPackage : public Package
+{
     Q_OBJECT
 
 public:
     TestPackage();
 };
 
-class BasicCard: public Card {
+class BasicCard : public Card
+{
     Q_OBJECT
 
 public:
-    BasicCard(Suit suit, int number): Card(suit, number) { handling_method = Card::MethodUse;}
+    BasicCard(Suit suit, int number)
+        : Card(suit, number)
+    {
+        handling_method = Card::MethodUse;
+    }
     virtual QString getType() const;
     virtual CardType getTypeId() const;
 };
 
-class TrickCard:public Card {
+class TrickCard : public Card
+{
     Q_OBJECT
 
 public:
@@ -44,12 +52,14 @@ private:
     bool cancelable;
 };
 
-class EquipCard: public Card {
+class EquipCard : public Card
+{
     Q_OBJECT
     Q_ENUMS(Location)
 
 public:
-    enum Location {
+    enum Location
+    {
         WeaponLocation,
         ArmorLocation,
         DefensiveHorseLocation,
@@ -57,7 +67,11 @@ public:
         TreasureLocation
     };
 
-    EquipCard(Suit suit, int number): Card(suit, number, true) { handling_method = MethodUse; }
+    EquipCard(Suit suit, int number)
+        : Card(suit, number, true)
+    {
+        handling_method = MethodUse;
+    }
 
     virtual QString getType() const;
     virtual CardType getTypeId() const;
@@ -72,17 +86,23 @@ public:
     virtual Location location() const = 0;
 };
 
-class GlobalEffect: public TrickCard {
+class GlobalEffect : public TrickCard
+{
     Q_OBJECT
 
 public:
-    Q_INVOKABLE GlobalEffect(Card::Suit suit, int number): TrickCard(suit, number) { target_fixed = true; }
+    Q_INVOKABLE GlobalEffect(Card::Suit suit, int number)
+        : TrickCard(suit, number)
+    {
+        target_fixed = true;
+    }
     virtual QString getSubtype() const;
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
     virtual bool isAvailable(const Player *player) const;
 };
 
-class GodSalvation: public GlobalEffect {
+class GodSalvation : public GlobalEffect
+{
     Q_OBJECT
 
 public:
@@ -92,7 +112,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class AmazingGrace: public GlobalEffect {
+class AmazingGrace : public GlobalEffect
+{
     Q_OBJECT
 
 public:
@@ -105,17 +126,23 @@ private:
     void clearRestCards(Room *room) const;
 };
 
-class AOE: public TrickCard {
+class AOE : public TrickCard
+{
     Q_OBJECT
 
 public:
-    AOE(Suit suit, int number): TrickCard(suit, number) { target_fixed = true; }
+    AOE(Suit suit, int number)
+        : TrickCard(suit, number)
+    {
+        target_fixed = true;
+    }
     virtual QString getSubtype() const;
     virtual bool isAvailable(const Player *player) const;
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
-class SavageAssault:public AOE {
+class SavageAssault : public AOE
+{
     Q_OBJECT
 
 public:
@@ -124,7 +151,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class ArcheryAttack: public AOE {
+class ArcheryAttack : public AOE
+{
     Q_OBJECT
 
 public:
@@ -133,17 +161,22 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class SingleTargetTrick: public TrickCard {
+class SingleTargetTrick : public TrickCard
+{
     Q_OBJECT
 
 public:
-    SingleTargetTrick(Suit suit, int number): TrickCard(suit, number) {}
+    SingleTargetTrick(Suit suit, int number)
+        : TrickCard(suit, number)
+    {
+    }
     virtual QString getSubtype() const;
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
 };
 
-class Collateral: public SingleTargetTrick {
+class Collateral : public SingleTargetTrick
+{
     Q_OBJECT
 
 public:
@@ -159,7 +192,8 @@ private:
     bool doCollateral(Room *room, ServerPlayer *killer, ServerPlayer *victim, const QString &prompt) const;
 };
 
-class ExNihilo: public SingleTargetTrick {
+class ExNihilo : public SingleTargetTrick
+{
     Q_OBJECT
 
 public:
@@ -170,7 +204,8 @@ public:
     virtual bool isAvailable(const Player *player) const;
 };
 
-class Duel: public SingleTargetTrick {
+class Duel : public SingleTargetTrick
+{
     Q_OBJECT
 
 public:
@@ -181,7 +216,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class DelayedTrick: public TrickCard {
+class DelayedTrick : public TrickCard
+{
     Q_OBJECT
 
 public:
@@ -201,7 +237,8 @@ private:
     bool movable;
 };
 
-class Indulgence: public DelayedTrick {
+class Indulgence : public DelayedTrick
+{
     Q_OBJECT
 
 public:
@@ -212,7 +249,8 @@ public:
     virtual void takeEffect(ServerPlayer *target) const;
 };
 
-class Disaster: public DelayedTrick {
+class Disaster : public DelayedTrick
+{
     Q_OBJECT
 
 public:
@@ -223,7 +261,8 @@ public:
     virtual bool isAvailable(const Player *player) const;
 };
 
-class Lightning: public Disaster {
+class Lightning : public Disaster
+{
     Q_OBJECT
 
 public:
@@ -235,7 +274,8 @@ public:
     virtual void takeEffect(ServerPlayer *target) const;
 };
 
-class Nullification: public SingleTargetTrick {
+class Nullification : public SingleTargetTrick
+{
     Q_OBJECT
 
 public:
@@ -245,7 +285,8 @@ public:
     virtual bool isAvailable(const Player *player) const;
 };
 
-class Weapon: public EquipCard {
+class Weapon : public EquipCard
+{
     Q_OBJECT
 
 public:
@@ -263,18 +304,23 @@ protected:
     int range;
 };
 
-class Armor: public EquipCard {
+class Armor : public EquipCard
+{
     Q_OBJECT
 
 public:
-    Armor(Suit suit, int number): EquipCard(suit, number) {}
+    Armor(Suit suit, int number)
+        : EquipCard(suit, number)
+    {
+    }
     virtual QString getSubtype() const;
 
     virtual Location location() const;
     virtual QString getCommonEffectName() const;
 };
 
-class Horse: public EquipCard {
+class Horse : public EquipCard
+{
     Q_OBJECT
 
 public:
@@ -291,11 +337,15 @@ private:
     int correct;
 };
 
-class Treasure: public EquipCard {
+class Treasure : public EquipCard
+{
     Q_OBJECT
 
 public:
-    Treasure(Suit suit, int number): EquipCard(suit, number) {}
+    Treasure(Suit suit, int number)
+        : EquipCard(suit, number)
+    {
+    }
     virtual QString getSubtype() const;
 
     virtual Location location() const;
@@ -303,7 +353,8 @@ public:
     virtual QString getCommonEffectName() const;
 };
 
-class OffensiveHorse: public Horse {
+class OffensiveHorse : public Horse
+{
     Q_OBJECT
 
 public:
@@ -311,7 +362,8 @@ public:
     virtual QString getSubtype() const;
 };
 
-class DefensiveHorse: public Horse {
+class DefensiveHorse : public Horse
+{
     Q_OBJECT
 
 public:
@@ -321,16 +373,29 @@ public:
 
 // cards of standard package
 
-class Slash: public BasicCard {
+class Slash : public BasicCard
+{
     Q_OBJECT
 
 public:
     Q_INVOKABLE Slash(Card::Suit suit, int number);
 
-    inline void setNature(DamageStruct::Nature nature) { this->nature = nature; }
-    inline DamageStruct::Nature getNature() const{ return nature; }
-    inline void addSpecificAssignee(const Player *player) { specific_assignee << player->objectName(); }
-    inline bool hasSpecificAssignee(const Player *player) const{ return specific_assignee.contains(player->objectName()); }
+    inline void setNature(DamageStruct::Nature nature)
+    {
+        this->nature = nature;
+    }
+    inline DamageStruct::Nature getNature() const
+    {
+        return nature;
+    }
+    inline void addSpecificAssignee(const Player *player)
+    {
+        specific_assignee << player->objectName();
+    }
+    inline bool hasSpecificAssignee(const Player *player) const
+    {
+        return specific_assignee.contains(player->objectName());
+    }
 
     virtual QString getSubtype() const;
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
@@ -349,7 +414,8 @@ protected:
     QStringList specific_assignee;
 };
 
-class Jink: public BasicCard {
+class Jink : public BasicCard
+{
     Q_OBJECT
 
 public:
@@ -358,7 +424,7 @@ public:
     virtual bool isAvailable(const Player *player) const;
 };
 
-class Peach: public BasicCard
+class Peach : public BasicCard
 {
     Q_OBJECT
 
@@ -374,7 +440,8 @@ public:
     virtual bool isAvailable(const Player *player) const;
 };
 
-class Snatch:public SingleTargetTrick {
+class Snatch : public SingleTargetTrick
+{
     Q_OBJECT
 
 public:
@@ -385,7 +452,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class Dismantlement: public SingleTargetTrick {
+class Dismantlement : public SingleTargetTrick
+{
     Q_OBJECT
 
 public:
@@ -397,4 +465,3 @@ public:
 };
 
 #endif
-

@@ -1,8 +1,8 @@
 #include "roomthread1v1.h"
-#include "room.h"
 #include "engine.h"
-#include "settings.h"
 #include "generalselector.h"
+#include "room.h"
+#include "settings.h"
 
 #include <QDateTime>
 
@@ -15,7 +15,8 @@ RoomThread1v1::RoomThread1v1(Room *room)
     room->getRoomState()->reset();
 }
 
-void RoomThread1v1::run() {
+void RoomThread1v1::run()
+{
     // initialize the random seed for this thread
     qsrand(QTime(0, 0, 0).secsTo(QTime::currentTime()));
     QString rule = Config.value("1v1/Rule", "2013").toString();
@@ -32,18 +33,49 @@ void RoomThread1v1::run() {
             foreach (const General *general, windpack->findChildren<const General *>())
                 candidates << general->objectName();
         } else {
-            candidates << "nos_caocao" << "nos_simayi" << "nos_xiahoudun" << "kof_nos_zhangliao"
-                       << "kof_nos_xuchu" << "nos_guojia" << "kof_zhenji" << "kof_xiahouyuan"
-                       << "nos_caoren" << "dianwei" << "kof_nos_guanyu" << "nos_zhangfei"
-                       << "zhugeliang" << "nos_zhaoyun" << "nos_machao" << "kof_nos_huangyueying"
-                       << "kof_huangzhong" << "kof_jiangwei" << "kof_menghuo" << "kof_zhurong"
-                       << "sunquan" << "nos_ganning" << "nos_huanggai" << "nos_zhouyu"
-                       << "nos_luxun" << "kof_sunshangxiang" << "sunjian" << "xiaoqiao"
-                       << "nos_lvbu" << "kof_nos_diaochan" << "yanliangwenchou" << "hejin";
+            candidates << "nos_caocao"
+                       << "nos_simayi"
+                       << "nos_xiahoudun"
+                       << "kof_nos_zhangliao"
+                       << "kof_nos_xuchu"
+                       << "nos_guojia"
+                       << "kof_zhenji"
+                       << "kof_xiahouyuan"
+                       << "nos_caoren"
+                       << "dianwei"
+                       << "kof_nos_guanyu"
+                       << "nos_zhangfei"
+                       << "zhugeliang"
+                       << "nos_zhaoyun"
+                       << "nos_machao"
+                       << "kof_nos_huangyueying"
+                       << "kof_huangzhong"
+                       << "kof_jiangwei"
+                       << "kof_menghuo"
+                       << "kof_zhurong"
+                       << "sunquan"
+                       << "nos_ganning"
+                       << "nos_huanggai"
+                       << "nos_zhouyu"
+                       << "nos_luxun"
+                       << "kof_sunshangxiang"
+                       << "sunjian"
+                       << "xiaoqiao"
+                       << "nos_lvbu"
+                       << "kof_nos_diaochan"
+                       << "yanliangwenchou"
+                       << "hejin";
             if (rule == "2013") {
-                candidates << "kof_nos_liubei" << "kof_weiyan" << "kof_nos_lvmeng" << "kof_nos_daqiao"
-                           << "nos_zhoutai" << "kof_nos_huatuo" << "nos_zhangjiao" << "pangde"
-                           << "niujin" << "hansui";
+                candidates << "kof_nos_liubei"
+                           << "kof_weiyan"
+                           << "kof_nos_lvmeng"
+                           << "kof_nos_daqiao"
+                           << "nos_zhoutai"
+                           << "kof_nos_huatuo"
+                           << "nos_zhangjiao"
+                           << "pangde"
+                           << "niujin"
+                           << "hansui";
             }
         }
         qShuffle(candidates);
@@ -60,7 +92,10 @@ void RoomThread1v1::run() {
         for (int i = 0; i < 4; i++)
             general_names[i + 6] = QString("x%1").arg(QString::number(i));
 
-        room->doBroadcastNotify(S_COMMAND_FILL_GENERAL, toJsonArray(known_list << "x0" << "x1" << "x2" << "x3"));
+        room->doBroadcastNotify(S_COMMAND_FILL_GENERAL, toJsonArray(known_list << "x0"
+                                                                               << "x1"
+                                                                               << "x2"
+                                                                               << "x3"));
     } else if (rule == "WZZZ") {
         room->doBroadcastNotify(S_COMMAND_FILL_GENERAL, toJsonArray(general_names));
     } else if (rule == "2013") {
@@ -70,8 +105,12 @@ void RoomThread1v1::run() {
         for (int i = 0; i < 6; i++)
             general_names[i + 6] = QString("x%1").arg(QString::number(i));
 
-        room->doBroadcastNotify(S_COMMAND_FILL_GENERAL, toJsonArray(known_list << "x0" << "x1" << "x2"
-                                                                               << "x3" << "x4" << "x5"));
+        room->doBroadcastNotify(S_COMMAND_FILL_GENERAL, toJsonArray(known_list << "x0"
+                                                                               << "x1"
+                                                                               << "x2"
+                                                                               << "x3"
+                                                                               << "x4"
+                                                                               << "x5"));
     }
 
     int index = qrand() % 2;
@@ -108,7 +147,8 @@ void RoomThread1v1::run() {
         startArrange(QList<ServerPlayer *>() << first << next);
 }
 
-void RoomThread1v1::askForTakeGeneral(ServerPlayer *player) {
+void RoomThread1v1::askForTakeGeneral(ServerPlayer *player)
+{
     room->tryPause();
 
     QString name;
@@ -134,11 +174,11 @@ void RoomThread1v1::askForTakeGeneral(ServerPlayer *player) {
     }
 }
 
-void RoomThread1v1::takeGeneral(ServerPlayer *player, const QString &name) {
+void RoomThread1v1::takeGeneral(ServerPlayer *player, const QString &name)
+{
     QString rule = Config.value("1v1/Rule", "2013").toString();
     QString group = player->isLord() ? "warm" : "cool";
-    room->doBroadcastNotify(room->getOtherPlayers(player, true), S_COMMAND_TAKE_GENERAL,
-                            JsonArray() << group << name << rule);
+    room->doBroadcastNotify(room->getOtherPlayers(player, true), S_COMMAND_TAKE_GENERAL, JsonArray() << group << name << rule);
 
     QRegExp unknown_rx("x(\\d)");
     QString general_name = name;
@@ -167,7 +207,8 @@ void RoomThread1v1::takeGeneral(ServerPlayer *player, const QString &name) {
     player->addToSelected(general_name);
 }
 
-void RoomThread1v1::startArrange(QList<ServerPlayer *> players) {
+void RoomThread1v1::startArrange(QList<ServerPlayer *> players)
+{
     room->tryPause();
     QList<ServerPlayer *> online = players;
     foreach (ServerPlayer *player, players) {
@@ -177,7 +218,8 @@ void RoomThread1v1::startArrange(QList<ServerPlayer *> players) {
             online.removeOne(player);
         }
     }
-    if (online.isEmpty()) return;
+    if (online.isEmpty())
+        return;
 
     foreach (ServerPlayer *player, online)
         player->m_commandArgs = QVariant();
@@ -198,7 +240,8 @@ void RoomThread1v1::startArrange(QList<ServerPlayer *> players) {
     }
 }
 
-void RoomThread1v1::askForFirstGeneral(QList<ServerPlayer *> players) {
+void RoomThread1v1::askForFirstGeneral(QList<ServerPlayer *> players)
+{
     room->tryPause();
     QList<ServerPlayer *> online = players;
     foreach (ServerPlayer *player, players) {
@@ -212,7 +255,8 @@ void RoomThread1v1::askForFirstGeneral(QList<ServerPlayer *> players) {
             online.removeOne(player);
         }
     }
-    if (online.isEmpty()) return;
+    if (online.isEmpty())
+        return;
 
     foreach (ServerPlayer *player, online)
         player->m_commandArgs = toJsonArray(player->getSelected());
@@ -238,7 +282,8 @@ void RoomThread1v1::askForFirstGeneral(QList<ServerPlayer *> players) {
     }
 }
 
-void RoomThread1v1::arrange(ServerPlayer *player, const QStringList &arranged) {
+void RoomThread1v1::arrange(ServerPlayer *player, const QStringList &arranged)
+{
     QString rule = Config.value("1v1/Rule", "2013").toString();
     Q_ASSERT(arranged.length() == ((rule == "2013") ? 6 : 3));
 
@@ -248,7 +293,7 @@ void RoomThread1v1::arrange(ServerPlayer *player, const QStringList &arranged) {
 
     foreach (QString general, arranged) {
         room->doNotify(player, S_COMMAND_REVEAL_GENERAL, JsonArray() << player->objectName() << general);
-        if (rule != "Classical") break;
+        if (rule != "Classical")
+            break;
     }
 }
-

@@ -1,38 +1,55 @@
 #ifndef _TIMED_PROGRESS_BAR_H
 #define _TIMED_PROGRESS_BAR_H
 
-#include <QProgressBar>
-#include <QTimerEvent>
-#include <QShowEvent>
-#include <QPaintEvent>
 #include <QMutex>
+#include <QPaintEvent>
+#include <QProgressBar>
+#include <QShowEvent>
+#include <QTimerEvent>
 
-class TimedProgressBar: public QProgressBar {
-Q_OBJECT
+class TimedProgressBar : public QProgressBar
+{
+    Q_OBJECT
 public:
     inline TimedProgressBar()
-        : m_hasTimer(false), m_autoHide(false), m_timer(0),
-          m_step(0), m_max(0), m_val(0), m_mutex(QMutex::Recursive)
+        : m_hasTimer(false)
+        , m_autoHide(false)
+        , m_timer(0)
+        , m_step(0)
+        , m_max(0)
+        , m_val(0)
+        , m_mutex(QMutex::Recursive)
     {
         this->setTextVisible(false);
     }
-    inline void setTimerEnabled(bool enabled) {
+    inline void setTimerEnabled(bool enabled)
+    {
         m_mutex.lock();
         m_hasTimer = enabled;
         m_mutex.unlock();
     }
-    inline void setCountdown(time_t maximum, time_t startVal = 0) {
+    inline void setCountdown(time_t maximum, time_t startVal = 0)
+    {
         m_mutex.lock();
         m_max = maximum;
         m_val = startVal;
         m_mutex.unlock();
     }
-    inline void setAutoHide(bool enabled) { m_autoHide = enabled; }
-    inline void setUpdateInterval(time_t step) { m_step = step; }
+    inline void setAutoHide(bool enabled)
+    {
+        m_autoHide = enabled;
+    }
+    inline void setUpdateInterval(time_t step)
+    {
+        m_step = step;
+    }
     virtual void show();
     virtual void hide();
 
-    bool hasTimer() const { return m_hasTimer; }
+    bool hasTimer() const
+    {
+        return m_hasTimer;
+    }
 
 signals:
     void timedOut();
@@ -50,12 +67,16 @@ protected:
 #include "protocol.h"
 #include "settings.h"
 
-class QSanCommandProgressBar: public TimedProgressBar {
+class QSanCommandProgressBar : public TimedProgressBar
+{
     Q_OBJECT
 
 public:
     QSanCommandProgressBar();
-    inline void setInstanceType(QSanProtocol::ProcessInstanceType type) { m_instanceType = type; }
+    inline void setInstanceType(QSanProtocol::ProcessInstanceType type)
+    {
+        m_instanceType = type;
+    }
     void setCountdown(QSanProtocol::CommandType command);
     void setCountdown(QSanProtocol::Countdown countdown);
 
@@ -65,4 +86,3 @@ protected:
 };
 
 #endif
-

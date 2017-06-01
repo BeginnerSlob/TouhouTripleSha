@@ -20,29 +20,32 @@ Mogara
 
 #include "json.h"
 
-#include <QStringList>
-#include <QFile>
-#include <QRect>
 #include <QColor>
+#include <QFile>
 #include <QJsonDocument>
+#include <QRect>
+#include <QStringList>
 
 JsonDocument::JsonDocument()
-    :valid(false)
+    : valid(false)
 {
 }
 
 JsonDocument::JsonDocument(const QVariant &var)
-    : value(var), valid(true)
+    : value(var)
+    , valid(true)
 {
 }
 
 JsonDocument::JsonDocument(const JsonArray &array)
-    : value(array), valid(true)
+    : value(array)
+    , valid(true)
 {
 }
 
 JsonDocument::JsonDocument(const JsonObject &object)
-    : value(object), valid(true)
+    : value(object)
+    , valid(true)
 {
 }
 
@@ -88,7 +91,7 @@ bool JsonUtils::isNumberArray(const QVariant &var, unsigned from, unsigned to)
 QVariant JsonUtils::toJsonArray(const QList<int> &intArray)
 {
     JsonArray json;
-    foreach(int number, intArray)
+    foreach (int number, intArray)
         json << number;
     return json;
 }
@@ -96,15 +99,15 @@ QVariant JsonUtils::toJsonArray(const QList<int> &intArray)
 QVariant JsonUtils::toJsonArray(const QStringList &stringArray)
 {
     JsonArray json;
-    foreach(const QString &string, stringArray)
+    foreach (const QString &string, stringArray)
         json << string;
     return json;
 }
 
-
 bool JsonUtils::tryParse(const QVariant &arg, int &result)
 {
-    if (!arg.canConvert<int>()) return false;
+    if (!arg.canConvert<int>())
+        return false;
     result = arg.toInt();
     return true;
 }
@@ -120,7 +123,8 @@ bool JsonUtils::tryParse(const QVariant &arg, double &result)
 
 bool JsonUtils::tryParse(const QVariant &arg, bool &result)
 {
-    if (!arg.canConvert<bool>()) return false;
+    if (!arg.canConvert<bool>())
+        return false;
     result = arg.toBool();
     return true;
 }
@@ -132,13 +136,12 @@ bool JsonUtils::tryParse(const QVariant &var, QStringList &list)
 
     JsonArray array = var.value<JsonArray>();
 
-    foreach(const QVariant &var, array)
-    {
+    foreach (const QVariant &var, array) {
         if (!var.canConvert<QString>())
             return false;
     }
 
-    foreach(const QVariant &var, array)
+    foreach (const QVariant &var, array)
         list << var.toString();
 
     return true;
@@ -151,13 +154,12 @@ bool JsonUtils::tryParse(const QVariant &var, QList<int> &list)
 
     JsonArray array = var.value<JsonArray>();
 
-    foreach(const QVariant &var, array)
-    {
+    foreach (const QVariant &var, array) {
         if (!var.canConvert<int>())
             return false;
     }
 
-    foreach(const QVariant &var, array)
+    foreach (const QVariant &var, array)
         list << var.toInt();
 
     return true;
@@ -165,7 +167,8 @@ bool JsonUtils::tryParse(const QVariant &var, QList<int> &list)
 
 bool JsonUtils::tryParse(const QVariant &arg, Qt::Alignment &align)
 {
-    if (!JsonUtils::isString(arg)) return false;
+    if (!JsonUtils::isString(arg))
+        return false;
     QString alignStr = arg.toString().toLower();
     if (alignStr.contains("left"))
         align = Qt::AlignLeft;
@@ -189,7 +192,8 @@ bool JsonUtils::tryParse(const QVariant &arg, QRect &result)
     if (!arg.canConvert<JsonArray>())
         return false;
     JsonArray args = arg.value<JsonArray>();
-    if (args.size() != 4) return false;
+    if (args.size() != 4)
+        return false;
 
     result.setLeft(args[0].toInt());
     result.setTop(args[1].toInt());
@@ -204,7 +208,8 @@ bool JsonUtils::tryParse(const QVariant &arg, QSize &result)
     if (!arg.canConvert<JsonArray>())
         return false;
     JsonArray args = arg.value<JsonArray>();
-    if (args.size() != 2) return false;
+    if (args.size() != 2)
+        return false;
     result.setWidth(args[0].toInt());
     result.setHeight(args[1].toInt());
     return true;
@@ -215,7 +220,8 @@ bool JsonUtils::tryParse(const QVariant &arg, QPoint &result)
     if (!arg.canConvert<JsonArray>())
         return false;
     JsonArray args = arg.value<JsonArray>();
-    if (args.size() != 2) return false;
+    if (args.size() != 2)
+        return false;
     result.setX(args[0].toInt());
     result.setY(args[1].toInt());
     return true;
@@ -226,7 +232,8 @@ bool JsonUtils::tryParse(const QVariant &arg, QColor &color)
     if (!arg.canConvert<JsonArray>())
         return false;
     JsonArray args = arg.value<JsonArray>();
-    if (args.size() < 3) return false;
+    if (args.size() < 3)
+        return false;
 
     color.setRed(args[0].toInt());
     color.setGreen(args[1].toInt());

@@ -1,8 +1,8 @@
 #include "cardcontainer.h"
-#include "clientplayer.h"
 #include "carditem.h"
-#include "engine.h"
 #include "client.h"
+#include "clientplayer.h"
+#include "engine.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
@@ -21,11 +21,13 @@ CardContainer::CardContainer()
     connect(close_button, SIGNAL(clicked()), this, SLOT(clear()));
 }
 
-void CardContainer::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void CardContainer::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
     painter->drawPixmap(0, 0, _m_background);
 }
 
-QRectF CardContainer::boundingRect() const{
+QRectF CardContainer::boundingRect() const
+{
     return _m_boundingRect;
 }
 
@@ -91,15 +93,18 @@ void CardContainer::fillCards(const QList<int> &card_ids, const QList<int> &disa
     }
 }
 
-bool CardContainer::_addCardItems(QList<CardItem *> &, const CardsMoveStruct &) {
+bool CardContainer::_addCardItems(QList<CardItem *> &, const CardsMoveStruct &)
+{
     return true;
 }
 
-bool CardContainer::retained() {
+bool CardContainer::retained()
+{
     return close_button != NULL && close_button->isVisible();
 }
 
-void CardContainer::clear() {
+void CardContainer::clear()
+{
     foreach (CardItem *item, items) {
         item->hide();
         item = NULL;
@@ -119,12 +124,14 @@ void CardContainer::clear() {
     }
 }
 
-void CardContainer::freezeCards(bool is_frozen) {
+void CardContainer::freezeCards(bool is_frozen)
+{
     foreach (CardItem *item, items)
         item->setFrozen(is_frozen);
 }
 
-QList<CardItem *> CardContainer::removeCardItems(const QList<int> &card_ids, Player::Place) {
+QList<CardItem *> CardContainer::removeCardItems(const QList<int> &card_ids, Player::Place)
+{
     QList<CardItem *> result;
     foreach (int card_id, card_ids) {
         CardItem *to_take = NULL;
@@ -134,7 +141,8 @@ QList<CardItem *> CardContainer::removeCardItems(const QList<int> &card_ids, Pla
                 break;
             }
         }
-        if (to_take == NULL) continue;
+        if (to_take == NULL)
+            continue;
 
         to_take->setEnabled(false);
 
@@ -149,7 +157,8 @@ QList<CardItem *> CardContainer::removeCardItems(const QList<int> &card_ids, Pla
     return result;
 }
 
-int CardContainer::getFirstEnabled() const{
+int CardContainer::getFirstEnabled() const
+{
     foreach (CardItem *card, items) {
         if (card->isEnabled())
             return card->getCard()->getId();
@@ -157,7 +166,8 @@ int CardContainer::getFirstEnabled() const{
     return -1;
 }
 
-void CardContainer::startChoose() {
+void CardContainer::startChoose()
+{
     close_button->hide();
     foreach (CardItem *item, items) {
         connect(item, SIGNAL(leave_hover()), this, SLOT(grabItem()));
@@ -165,8 +175,10 @@ void CardContainer::startChoose() {
     }
 }
 
-void CardContainer::startGongxin(const QList<int> &enabled_ids) {
-    if (enabled_ids.isEmpty()) return;
+void CardContainer::startGongxin(const QList<int> &enabled_ids)
+{
+    if (enabled_ids.isEmpty())
+        return;
     foreach (CardItem *item, items) {
         const Card *card = item->getCard();
         if (card && enabled_ids.contains(card->getEffectiveId()))
@@ -176,11 +188,13 @@ void CardContainer::startGongxin(const QList<int> &enabled_ids) {
     }
 }
 
-void CardContainer::addCloseButton() {
+void CardContainer::addCloseButton()
+{
     close_button->show();
 }
 
-void CardContainer::grabItem() {
+void CardContainer::grabItem()
+{
     CardItem *card_item = qobject_cast<CardItem *>(sender());
     if (card_item && !collidesWithItem(card_item)) {
         card_item->disconnect(this);
@@ -188,7 +202,8 @@ void CardContainer::grabItem() {
     }
 }
 
-void CardContainer::chooseItem() {
+void CardContainer::chooseItem()
+{
     CardItem *card_item = qobject_cast<CardItem *>(sender());
     if (card_item) {
         card_item->disconnect(this);
@@ -196,7 +211,8 @@ void CardContainer::chooseItem() {
     }
 }
 
-void CardContainer::gongxinItem() {
+void CardContainer::gongxinItem()
+{
     CardItem *card_item = qobject_cast<CardItem *>(sender());
     if (card_item) {
         emit item_gongxined(card_item->getCard()->getId());
@@ -211,15 +227,18 @@ CloseButton::CloseButton()
     setAcceptedMouseButtons(Qt::LeftButton);
 }
 
-void CloseButton::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+void CloseButton::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
     event->accept();
 }
 
-void CloseButton::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
+void CloseButton::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
+{
     emit clicked();
 }
 
-void CardContainer::view(const ClientPlayer *player) {
+void CardContainer::view(const ClientPlayer *player)
+{
     QList<int> card_ids;
     QList<const Card *> cards = player->getHandcards();
     foreach (const Card *card, cards)
@@ -235,7 +254,8 @@ GuanxingBox::GuanxingBox()
     setFlag(ItemIsMovable);
 }
 
-void GuanxingBox::doGuanxing(const QList<int> &card_ids, bool up_only) {
+void GuanxingBox::doGuanxing(const QList<int> &card_ids, bool up_only)
+{
     if (card_ids.isEmpty()) {
         clear();
         return;
@@ -266,9 +286,11 @@ void GuanxingBox::doGuanxing(const QList<int> &card_ids, bool up_only) {
     }
 }
 
-void GuanxingBox::adjust() {
+void GuanxingBox::adjust()
+{
     CardItem *item = qobject_cast<CardItem *>(sender());
-    if (item == NULL) return;
+    if (item == NULL)
+        return;
 
     up_items.removeOne(item);
     down_items.removeOne(item);
@@ -291,7 +313,8 @@ void GuanxingBox::adjust() {
     }
 }
 
-void GuanxingBox::clear() {
+void GuanxingBox::clear()
+{
     foreach (CardItem *card_item, up_items)
         card_item->deleteLater();
     foreach (CardItem *card_item, down_items)
@@ -303,7 +326,8 @@ void GuanxingBox::clear() {
     hide();
 }
 
-void GuanxingBox::reply() {
+void GuanxingBox::reply()
+{
     QList<int> up_cards, down_cards;
     foreach (CardItem *card_item, up_items)
         up_cards << card_item->getCard()->getId();
@@ -314,4 +338,3 @@ void GuanxingBox::reply() {
     ClientInstance->onPlayerReplyGuanxing(up_cards, down_cards);
     clear();
 }
-

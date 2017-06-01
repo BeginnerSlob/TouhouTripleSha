@@ -2,10 +2,10 @@
 #include "engine.h"
 #include "scenario.h"
 
+#include <QFile>
+#include <QHBoxLayout>
 #include <QListWidget>
 #include <QTextEdit>
-#include <QHBoxLayout>
-#include <QFile>
 #include <QTextStream>
 
 ScenarioOverview::ScenarioOverview(QWidget *parent)
@@ -29,7 +29,10 @@ ScenarioOverview::ScenarioOverview(QWidget *parent)
     setLayout(layout);
 
     QStringList names;
-    names << "Basara" << "KOF" << "Tripod" << "Hulaopass" << Sanguosha->getModScenarioNames();
+    names << "Basara"
+          << "KOF"
+          << "Tripod"
+          << "Hulaopass" << Sanguosha->getModScenarioNames();
     foreach (QString name, names) {
         QString text = Sanguosha->translate(name);
         QListWidgetItem *item = new QListWidgetItem(text, list);
@@ -42,7 +45,8 @@ ScenarioOverview::ScenarioOverview(QWidget *parent)
         loadContent(0);
 }
 
-void ScenarioOverview::loadContent(int row) {
+void ScenarioOverview::loadContent(int row)
+{
     QString name = list->item(row)->data(Qt::UserRole).toString();
     QString filename = QString("scenarios/%1.html").arg(name);
     QFile file(filename);
@@ -53,4 +57,3 @@ void ScenarioOverview::loadContent(int row) {
         content_box->setHtml(content);
     }
 }
-

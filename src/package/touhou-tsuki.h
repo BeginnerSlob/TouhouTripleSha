@@ -1,18 +1,20 @@
 #ifndef TOUHOUTSUKI_H
 #define TOUHOUTSUKI_H
 
-#include "package.h"
 #include "card.h"
+#include "package.h"
 #include "skill.h"
 
-class TouhouTsukiPackage: public Package {
+class TouhouTsukiPackage : public Package
+{
     Q_OBJECT
 
 public:
     TouhouTsukiPackage();
 };
 
-class ThYejunCard: public SkillCard {
+class ThYejunCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -22,7 +24,8 @@ public:
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
 };
 
-class ThJinguoCard: public SkillCard{
+class ThJinguoCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -45,7 +48,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThXushiCard: public SkillCard {
+class ThXushiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -55,7 +59,8 @@ public:
     virtual const Card *validate(CardUseStruct &cardUse) const;
 };
 
-class ThLianhuaCard: public SkillCard{
+class ThLianhuaCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -64,7 +69,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThShennaoCard: public SkillCard{
+class ThShennaoCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -74,7 +80,8 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
-class ThHeiguanCard: public SkillCard{
+class ThHeiguanCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -84,7 +91,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThKanyaoCard: public SkillCard{
+class ThKanyaoCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -93,7 +101,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThExiCard: public SkillCard{
+class ThExiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -104,7 +113,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThGuixuCard: public SkillCard {
+class ThGuixuCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -114,7 +124,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThShenbaoCard: public SkillCard {
+class ThShenbaoCard : public SkillCard
+{
     Q_OBJECT
 
 public:

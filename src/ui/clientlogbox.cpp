@@ -1,9 +1,9 @@
 #include "clientlogbox.h"
-#include "settings.h"
-#include "engine.h"
-#include "clientplayer.h"
 #include "client.h"
+#include "clientplayer.h"
+#include "engine.h"
 #include "roomscene.h"
+#include "settings.h"
 
 #include <QPalette>
 #include <QScrollBar>
@@ -21,9 +21,10 @@ ClientLogBox::ClientLogBox(QWidget *parent)
     }
 }
 
-void ClientLogBox::appendLog(const QString &type, const QString &from_general, const QStringList &tos,
-                             QString card_str, QString arg, QString arg2) {
-    if (Self->hasFlag("marshalling")) return;
+void ClientLogBox::appendLog(const QString &type, const QString &from_general, const QStringList &tos, QString card_str, QString arg, QString arg2)
+{
+    if (Self->hasFlag("marshalling"))
+        return;
 
     if (type == "$AppendSeparator") {
         append(QString(tr("<font color='%1'>------------------------------</font>")).arg(Config.TextEditColor.name()));
@@ -91,14 +92,17 @@ void ClientLogBox::appendLog(const QString &type, const QString &from_general, c
             RoomSceneInstance->showIndicator(from_general, to);
 
         const Card *card = Card::Parse(card_str);
-        if (card == NULL) return;
+        if (card == NULL)
+            return;
 
         QString card_name = card->getLogName();
         card_name = bold(card_name, Qt::yellow);
 
         QString reason = tr("using");
-        if (type.endsWith("_Resp")) reason = tr("playing");
-        if (type.endsWith("_Recast")) reason = tr("recasting");
+        if (type.endsWith("_Resp"))
+            reason = tr("playing");
+        if (type.endsWith("_Recast"))
+            reason = tr("recasting");
 
         if (card->isVirtualCard()) {
             QString skill_name = Sanguosha->translate(card->getSkillName());
@@ -142,7 +146,8 @@ void ClientLogBox::appendLog(const QString &type, const QString &from_general, c
         } else
             log = tr("%from %2 %1").arg(card_name).arg(reason);
 
-        if (!to.isEmpty()) log.append(tr(", target is %to"));
+        if (!to.isEmpty())
+            log.append(tr(", target is %to"));
     } else {
         log = Sanguosha->translate(type);
         const Card *card = Card::Parse(card_str);
@@ -172,24 +177,25 @@ void ClientLogBox::appendLog(const QString &type, const QString &from_general, c
         RoomSceneInstance->setIkGuihuoLog(final_log);
 }
 
-QString ClientLogBox::bold(const QString &str, QColor color) const{
+QString ClientLogBox::bold(const QString &str, QColor color) const
+{
     return QString("<font color='%1'><b>%2</b></font>").arg(color.name()).arg(str);
 }
 
-void ClientLogBox::appendLog(const QStringList &log_str) {
+void ClientLogBox::appendLog(const QStringList &log_str)
+{
     QString err_string = QString();
     if (log_str.length() != 6 || (!log_str.first().startsWith("$") && !log_str.first().startsWith("#"))) {
         err_string = tr("Log string is not well formatted: %1").arg(log_str.join(","));
         append(QString("<font color='%2'>%1</font>").arg(err_string).arg(Config.TextEditColor.name()));
         return;
     }
-    appendLog(log_str[0], log_str[1], log_str[2].isEmpty() ? QStringList() : log_str[2].split("+"),
-              log_str[3], log_str[4], log_str[5]);
+    appendLog(log_str[0], log_str[1], log_str[2].isEmpty() ? QStringList() : log_str[2].split("+"), log_str[3], log_str[4], log_str[5]);
 }
 
-QString ClientLogBox::append(const QString &text) {
+QString ClientLogBox::append(const QString &text)
+{
     QString to_append = QString("<p style=\"margin:3px 2px; line-height:120%;\">%1</p>").arg(text);
     QTextEdit::append(to_append);
     return to_append;
 }
-

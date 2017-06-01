@@ -1,19 +1,21 @@
 #ifndef IKAISUI_H
 #define IKAISUI_H
 
-#include "package.h"
 #include "card.h"
+#include "package.h"
 #include "skill.h"
 #include "standard.h"
 
-class IkaiSuiPackage : public Package{
+class IkaiSuiPackage : public Package
+{
     Q_OBJECT
 
 public:
     IkaiSuiPackage();
 };
 
-class IkXielunCard: public SkillCard {
+class IkXielunCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -23,13 +25,14 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-#include <QGroupBox>
 #include <QAbstractButton>
 #include <QButtonGroup>
 #include <QDialog>
+#include <QGroupBox>
 #include <QVBoxLayout>
 
-class IkShengzunDialog: public QDialog {
+class IkShengzunDialog : public QDialog
+{
     Q_OBJECT
 
 public:
@@ -50,7 +53,8 @@ signals:
     void onButtonClick();
 };
 
-class IkJuechongCard: public SkillCard {
+class IkJuechongCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -59,7 +63,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class IkXinhuiCard: public SkillCard {
+class IkXinhuiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -71,7 +76,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkMoqiCard: public SkillCard {
+class IkMoqiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -80,7 +86,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class IkTianbeiCard: public SkillCard {
+class IkTianbeiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -90,7 +97,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkDuanmengCard: public SkillCard {
+class IkDuanmengCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -99,7 +107,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class IkFanzhongCard: public SkillCard {
+class IkFanzhongCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -118,7 +127,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class IkXinbanCard: public SkillCard {
+class IkXinbanCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -129,7 +139,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkHuyinCard: public SkillCard {
+class IkHuyinCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -137,7 +148,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkXunyuyouliCard: public SkillCard {
+class IkXunyuyouliCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -147,7 +159,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkYaochengCard: public SkillCard {
+class IkYaochengCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -157,7 +170,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkHaobiCard: public SkillCard {
+class IkHaobiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -169,7 +183,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class IkZhiyuCard: public SkillCard {
+class IkZhiyuCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -178,7 +193,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class IkZhiyuBasicCard: public SkillCard {
+class IkZhiyuBasicCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -192,7 +208,8 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
-class IkFenxunCard: public SkillCard {
+class IkFenxunCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -202,7 +219,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkHongrouCard: public SkillCard {
+class IkHongrouCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -212,7 +230,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkTianyanCard: public SkillCard {
+class IkTianyanCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -226,7 +245,8 @@ public:
     virtual const Card *validate(CardUseStruct &cardUse) const;
 };
 
-class IkCangwuCard: public SkillCard {
+class IkCangwuCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -236,7 +256,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkLingzhouCard: public SkillCard {
+class IkLingzhouCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -245,7 +266,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class IkLingtongCard: public SkillCard {
+class IkLingtongCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -253,7 +275,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkLunkeCard: public SkillCard {
+class IkLunkeCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -263,7 +286,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkYaoyinCard: public SkillCard {
+class IkYaoyinCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -274,7 +298,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkHuangpoCard: public SkillCard {
+class IkHuangpoCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -284,19 +309,21 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkChenyan: public TriggerSkill {
+class IkChenyan : public TriggerSkill
+{
     Q_OBJECT
 
 public:
     IkChenyan();
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *yuanshu, QVariant &data, ServerPlayer* &) const;
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *yuanshu, QVariant &data, ServerPlayer *&) const;
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *yuanshu, QVariant &data, ServerPlayer *) const;
 
 protected:
     virtual int getKingdoms(ServerPlayer *yuanshu) const;
 };
 
-class IkBinglingCard: public SkillCard {
+class IkBinglingCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -306,7 +333,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkZhangeCard: public SkillCard {
+class IkZhangeCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -316,7 +344,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class IkFeishanCard: public SkillCard {
+class IkFeishanCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -325,7 +354,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkXincaoCard: public SkillCard {
+class IkXincaoCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -334,7 +364,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkKouzhuCard: public SkillCard {
+class IkKouzhuCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -343,7 +374,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class IkJiaojinCard: public SkillCard {
+class IkJiaojinCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -353,7 +385,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class IkSheqieCard: public SkillCard {
+class IkSheqieCard : public SkillCard
+{
     Q_OBJECT
 
 public:

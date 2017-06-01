@@ -1,8 +1,8 @@
 #ifndef TENSHIREIHOU_H
 #define TENSHIREIHOU_H
 
-#include "package.h"
 #include "card.h"
+#include "package.h"
 
 class RhDuanlongCard : public SkillCard
 {
@@ -14,7 +14,7 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class RhRuyiCard: public SkillCard
+class RhRuyiCard : public SkillCard
 {
     Q_OBJECT
 
@@ -29,7 +29,7 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
-class RhHuanjieCard: public SkillCard
+class RhHuanjieCard : public SkillCard
 {
     Q_OBJECT
 
@@ -44,7 +44,7 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
-class RhPujiuCard: public SkillCard
+class RhPujiuCard : public SkillCard
 {
     Q_OBJECT
 
@@ -81,10 +81,10 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-#include <QDialog>
 #include <QButtonGroup>
+#include <QDialog>
 #include <QVBoxLayout>
-class RhHaoqiangDialog: public QDialog
+class RhHaoqiangDialog : public QDialog
 {
     Q_OBJECT
 
@@ -107,7 +107,7 @@ signals:
     void onButtonClick();
 };
 
-class RhHaoqiangCard: public SkillCard
+class RhHaoqiangCard : public SkillCard
 {
     Q_OBJECT
 
@@ -143,7 +143,7 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class RhYoushengCard: public SkillCard
+class RhYoushengCard : public SkillCard
 {
     Q_OBJECT
 
@@ -178,7 +178,7 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class RhChenshengCard: public SkillCard
+class RhChenshengCard : public SkillCard
 {
     Q_OBJECT
 
@@ -225,6 +225,4 @@ public:
     TenshiReihouPackage();
 };
 
-
 #endif // TENSHIREIHOU_H
-

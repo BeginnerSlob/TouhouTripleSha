@@ -1,18 +1,20 @@
 #ifndef TOUHOUSP_H
 #define TOUHOUSP_H
 
-#include "package.h"
 #include "card.h"
+#include "package.h"
 #include "standard.h"
 
-class TouhouSPPackage: public Package{
+class TouhouSPPackage : public Package
+{
     Q_OBJECT
 
 public:
     TouhouSPPackage();
 };
 
-class ThYuduCard: public SkillCard {
+class ThYuduCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -26,7 +28,8 @@ public:
     virtual const Card *validate(CardUseStruct &cardUse) const;
 };
 
-class ThZhaoguoCard: public SkillCard{
+class ThZhaoguoCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -35,7 +38,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThLunminCard: public SkillCard{
+class ThLunminCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -44,7 +48,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThShushuCard: public SkillCard{
+class ThShushuCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -53,14 +58,16 @@ public:
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
-class ThFenglingCard: public SkillCard{
+class ThFenglingCard : public SkillCard
+{
     Q_OBJECT
 
 public:
     Q_INVOKABLE ThFenglingCard();
 };
 
-class ThYingshiCard: public SkillCard{
+class ThYingshiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
