@@ -4211,7 +4211,12 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
     {
         if (ask_who != player && !ask_who->isNude()) {
-            const Card *card = room->askForCard(ask_who, "..", "@rhdanshen:" + player->objectName(), data, Card::MethodNone);
+            const Card *card = room->askForCard(ask_who, "..!", "@rhdanshen:" + player->objectName(), data, Card::MethodNone);
+            if (!card) {
+                QList<const Card *> cards;
+                cards = ask_who->getCards("he");
+                card = cards.at(qrand() % cards.length());
+            }
             CardMoveReason reason(CardMoveReason::S_REASON_GIVE, ask_who->objectName(), player->objectName(), objectName(), QString());
             room->obtainCard(player, card, reason, false);
         }
