@@ -2693,7 +2693,7 @@ ThHuanyaoCard::ThHuanyaoCard()
 
 bool ThHuanyaoCard::targetFixed() const
 {
-    if (Self->getSkillStep("thhuanyao") == 2)
+    if (Self && Self->getSkillStep("thhuanyao") == 2)
         return true;
     else
         return false;
