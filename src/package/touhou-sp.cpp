@@ -2574,7 +2574,7 @@ public:
         if (player->property("thhuanyao").toString().isEmpty()) {
             return !player->hasUsed("ThHuanyaoCard");
         } else {
-            QStringList map = Self->property("thhuanyao").toString().split("->");
+            QStringList map = player->property("thhuanyao").toString().split("->");
             Card *card = Sanguosha->cloneCard(map.last());
             card->setSkillName("thhuanyao");
             card->deleteLater();
@@ -2585,7 +2585,7 @@ public:
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
     {
         if (!player->property("thhuanyao").toString().isEmpty()) {
-            QStringList map = Self->property("thhuanyao").toString().split("->");
+            QStringList map = player->property("thhuanyao").toString().split("->");
             return pattern.contains(map.last());
         }
         return false;
@@ -2594,7 +2594,7 @@ public:
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const
     {
         if (!player->property("thhuanyao").toString().isEmpty()) {
-            QStringList map = Self->property("thhuanyao").toString().split("->");
+            QStringList map = player->property("thhuanyao").toString().split("->");
             return map.last() == "nullification";
         }
         return false;
