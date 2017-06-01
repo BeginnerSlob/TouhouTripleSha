@@ -25,6 +25,8 @@
 #include <QTimer>
 #include <QTimerEvent>
 
+#include <QtMath>
+
 #ifdef QSAN_UI_LIBRARY_AVAILABLE
 #pragma message WARN("UI elements detected in server side!!!")
 #endif
@@ -472,16 +474,13 @@ void Room::gameOver(const QString &winner, bool isSurrender)
         QString location = "etc/winrate/";
         if (!QDir(location).exists())
             QDir().mkdir(location);
-        QString name = Sanguosha->getVersion();
         QStringList version = Sanguosha->getVersionNumber().split(".");
         location += version[0] + "." + version[1];
         location += ".csv";
 
         QFile file(location);
-        if (!file.open(QIODevice::ReadWrite)) {
-            QMessageBox::warning(NULL, "1", "2");
+        if (!file.open(QIODevice::ReadWrite))
             return;
-        }
 
         QStringList record;
         QDateTime time = QDateTime::currentDateTime();
@@ -2640,31 +2639,106 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign) {
     //int choice_count = qMin(max_choice, max_available);
 
     QStringList choices = Sanguosha->getRandomGenerals(total - existed.size(), existed);
+    QStringList touhou_choices;
+
+    if (isNormalGameMode(ServerInfo.GameMode)) {
+        forever {
+            int all_num = choices.length();
+            int sum_num = 0;
+            foreach (ServerPlayer *p, to_assign) {
+                int index = to_assign.indexOf(p);
+                sum_num += qMin(max_choice.at(index), max_available);
+            }
+            sum_num -= 2 * to_assign.length();
+
+            // Read Num
+            QString location = "etc/winrate/";
+            if (!QDir(location).exists())
+                QDir().mkdir(location);
+            QStringList version = Sanguosha->getVersionNumber().split(".");
+            location += version[0] + "." + version[1];
+            location += ".csv";
+
+            QFile file(location);
+            if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+                break;
+
+            QTextStream in(&file);
+            if (in.atEnd()) {
+                file.close();
+                break;
+            }
+
+            QMap<QString, int> count_map;
+            int appear_times = 0;
+            foreach (QString name, choices)
+                count_map[name] = 0;
+            while (!in.atEnd()) {
+                QString line = in.readLine();
+                line = line.trimmed();
+                if (line.isEmpty())
+                    continue;
+                QStringList _line = line.split(",");
+                if (_line.length() != 20 && _line.length() != 26)
+                    continue;
+                for (int i = 2; i < _line.length(); i += 3) {
+                    if (count_map.contains(_line[i])) {
+                        ++ count_map[_line[i]];
+                        ++ appear_times;
+                    }
+                }
+            }
+            QStringList new_choices = choices;
+            touhou_choices = choices;
+            foreach (QString name, count_map.keys()) {
+                qDebug() << name << all_num << count_map[name] << appear_times;
+                int add_num = qRound(qExp(1000 * ((qreal)1/all_num - (qreal)count_map[name]/appear_times))) - 1;
+                if (add_num > 0) {
+                    qDebug() << name << add_num;
+                    for (int i = 0; i < add_num; ++ i)
+                        new_choices << name;
+                }
+            }
+            qShuffle(new_choices);
+            choices.clear();
+            QString choice;
+            for (int i = 0; i < sum_num; i++) {
+                choice = getOwner()->findReasonable(new_choices, true);
+                if (choice.isEmpty())
+                    break;
+                choices << choice;
+                new_choices.removeAll(choice);
+                touhou_choices.removeOne(choice);
+            }
+            if (choice.isEmpty())
+                break;
+        }
+    }
 
     foreach (ServerPlayer *player, to_assign) {
         player->clearSelected();
         int index = to_assign.indexOf(player);
         int choice_count = qMin(max_choice.at(index), max_available);
         for (int i = 0; i < choice_count; i++) {
-            QString choice;
-            forever {
-                choice = player->findReasonable(choices, true);
+            if (i >= (getMode() == "03_1v1v1" ? 0 : 2)) {
+                QString choice = player->findReasonable(choices, true);
                 if (choice.isEmpty())
                     break;
-                if (i >= (getMode() == "03_1v1v1" ? 0 : 2))
+                player->addToSelected(choice);
+                choices.removeOne(choice);
+            } else {
+                QString choice = player->findReasonable(touhou_choices.isEmpty() ? choices : touhou_choices, true);
+                if (choice.isEmpty())
                     break;
-                else {
-                    const General *general = Sanguosha->getGeneral(choice);
-                    if (general && general->getPackage().startsWith("touhou"))
-                        break;
-                    else
-                        qShuffle(choices);
+                while (!Sanguosha->getGeneral(choice) || !Sanguosha->getGeneral(choice)->getPackage().startsWith("touhou")) {
+                    qShuffle(choices);
+                    choice = player->findReasonable(touhou_choices.isEmpty() ? choices : touhou_choices, true);
                 }
+                player->addToSelected(choice);
+                choices.removeOne(choice);
+                if (!touhou_choices.isEmpty())
+                    touhou_choices.removeOne(choice);
             }
-            if (choice.isEmpty())
-                break;
-            player->addToSelected(choice);
-            choices.removeOne(choice);
         }
     }
 }
