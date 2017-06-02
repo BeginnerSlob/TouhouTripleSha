@@ -2451,19 +2451,19 @@ public:
     {
         if (player->getPhase() == Player::NotActive && !player->tag.value("ThDongxiLast").toStringList().isEmpty())
             player->tag.remove("ThDongxiLast");
-        else if (player->getPhase() == Player::Start)
+        else if (player->getPhase() == Player::Start && !player->tag.value("ThDongxi").toStringList().isEmpty())
             return QStringList(objectName());
         return QStringList();
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        if (player->tag.value("ThDongxi").toStringList().isEmpty())
-            return false;
         QStringList names = player->tag.value("ThDongxi").toStringList();
         player->tag.remove("ThDongxi");
+        QStringList _names;
         foreach (QString name, names)
-            room->detachSkillFromPlayer(player, name, false, true);
+            _names << "-" + name;
+        room->handleAcquireDetachSkills(player, name, true);
 
         JsonArray args;
         args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;

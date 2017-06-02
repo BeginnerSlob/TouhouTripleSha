@@ -2266,12 +2266,14 @@ ThGuixuCard::ThGuixuCard()
 {
 }
 
-bool ThGuixuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const
+bool ThGuixuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
     if (!targets.isEmpty())
         return false;
     foreach (const Card *c, to_select->getJudgingArea()) {
         foreach (const Player *p, to_select->getAliveSiblings()) {
+            if (p == Self)
+                continue;
             if (!p->containsTrick(c->objectName()))
                 return true;
         }
@@ -2280,6 +2282,8 @@ bool ThGuixuCard::targetFilter(const QList<const Player *> &targets, const Playe
         const EquipCard *equip = to_select->getEquip(i);
         if (equip) {
             foreach (const Player *p, to_select->getAliveSiblings()) {
+                if (p == Self)
+                    continue;
                 if (!p->getEquip(i))
                     return true;
             }
@@ -2298,6 +2302,8 @@ void ThGuixuCard::use(Room *room, ServerPlayer *zhanghe, QList<ServerPlayer *> &
     foreach (const Card *c, from->getJudgingArea()) {
         bool disable = true;
         foreach (const Player *p, from->getAliveSiblings()) {
+            if (p == zhanghe)
+                continue;
             if (!p->containsTrick(c->objectName())) {
                 disable = false;
                 break;
@@ -2311,6 +2317,8 @@ void ThGuixuCard::use(Room *room, ServerPlayer *zhanghe, QList<ServerPlayer *> &
         if (equip) {
             bool disable = true;
             foreach (const Player *p, from->getAliveSiblings()) {
+                if (p == zhanghe)
+                    continue;
                 if (!p->getEquip(equip->location())) {
                     disable = false;
                     break;
@@ -2332,6 +2340,8 @@ void ThGuixuCard::use(Room *room, ServerPlayer *zhanghe, QList<ServerPlayer *> &
 
     QList<ServerPlayer *> tos;
     foreach (ServerPlayer *p, room->getAlivePlayers()) {
+        if (p == zhanghe)
+            continue;
         if (equip_index != -1) {
             if (p->getEquip(equip_index) == NULL)
                 tos << p;
