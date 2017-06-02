@@ -675,7 +675,7 @@ public:
         if (triggerEvent == EventPhaseStart) {
             if (player->getPhase() == Player::Play) {
                 foreach (ServerPlayer *xiahou, room->findPlayersBySkillName(objectName())) {
-                    if (!xiahou->canDiscard(xiahou, "he"))
+                    if (!xiahou->canDiscard(xiahou, "he") || xiahou != player || !xiahou->inMyAttackRange(player))
                         continue;
                     skill_list.insert(xiahou, QStringList(objectName()));
                 }

@@ -2522,18 +2522,20 @@ void IkDuanniCard::onEffect(const CardEffectStruct &effect) const
     Slash *slash = new Slash(SuitToBeDecided, -1);
     slash->addSubcard(card_id);
     slash->setSkillName("_ikduanni");
-    QList<ServerPlayer *> extras;
-    foreach (ServerPlayer *p, room->getOtherPlayers(effect.to)) {
-        if (p == effect.from)
-            continue;
-        if (effect.to->canSlash(p, slash, false))
-            extras << p;
-    }
     QList<ServerPlayer *> targets;
     targets << effect.from;
-    if (!extras.isEmpty()) {
-        ServerPlayer *extra = room->askForPlayerChosen(effect.from, extras, "ikduanni", "@slash_extra_targets", true);
-        targets << extra;
+    if (effect.to->getHp() >= effect.from->getHp()) {
+        QList<ServerPlayer *> extras;
+        foreach (ServerPlayer *p, room->getOtherPlayers(effect.to)) {
+            if (p == effect.from)
+                continue;
+            if (effect.to->canSlash(p, slash, false))
+                extras << p;
+        }
+        if (!extras.isEmpty()) {
+            ServerPlayer *extra = room->askForPlayerChosen(effect.from, extras, "ikduanni", "@slash_extra_targets", true);
+            targets << extra;
+        }
     }
     room->sortByActionOrder(targets);
     room->useCard(CardUseStruct(slash, effect.to, targets));
@@ -3264,15 +3266,25 @@ IkLinghuiCard::IkLinghuiCard()
 
 bool IkLinghuiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    if (Self->getMark("iklinghui") > 0)
+    if (Self->getMark("iklinghui") > 0) {
+        if (targets.isEmpty())
+            return to_select->getMark("iklinghui_target") > 0;
         return targets.length() < subcardsLength();
-    return targets.isEmpty() && to_select != Self;
+    }
+    return targets.isEmpty() && to_select->canDiscard(to_select, "h") && to_select != Self;
 }
 
 bool IkLinghuiCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
 {
-    if (Self->getMark("iklinghui") > 0)
-        return targets.length() == subcardsLength();
+    if (Self->getMark("iklinghui") > 0) {
+        if (targets.length() == subcardsLength()) {
+            foreach (const Player *p, targets) {
+                if (p->getMark("iklinghui_target") > 0)
+                    return true;
+            }
+        }
+        return false;
+    }
     return targets.length() == 1;
 }
 
@@ -3281,8 +3293,7 @@ void IkLinghuiCard::onEffect(const CardEffectStruct &effect) const
     if (effect.from->getMark("iklinghui") > 0) {
         effect.to->drawCards(2, "iklinghui");
     } else {
-        effect.to->drawCards(1, "iklinghui");
-        if (!effect.to->isKongcheng()) {
+        if (effect.to->canDiscard(effect.to, "h")) {
             Room *room = effect.from->getRoom();
             const Card *card = room->askForCard(effect.to, ".", "@iklinghui-discard");
             if (!card) {
@@ -3290,7 +3301,9 @@ void IkLinghuiCard::onEffect(const CardEffectStruct &effect) const
                 room->throwCard(card, effect.to);
             }
             room->setPlayerMark(effect.from, "iklinghui", card->getColor() + 1);
+            room->setPlayerMark(effect.to, "iklinghui_target", 1);
             room->askForUseCard(effect.from, "@@iklinghui", "@iklinghui", -1, Card::MethodDiscard, false);
+            room->setPlayerMark(effect.to, "iklinghui_target", 0);
             room->setPlayerMark(effect.from, "iklinghui", 0);
         }
     }
@@ -5117,14 +5130,21 @@ public:
     IkMoshan()
         : TriggerSkill("ikmoshan")
     {
-        events << BeforeCardsMove;
+        events << BeforeCardsMove << EventPhaseChanging;
         view_as_skill = new IkMoshanFilter;
         frequency = Compulsory;
         owner_only_skill = true;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
+        if (e == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    p->setMark("ikmoshan", 0);
+            }
+            return QStringList();
+        }
         if (TriggerSkill::triggerable(player) && !player->hasFlag("ikmoshan")) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.from != player)
@@ -5154,15 +5174,18 @@ public:
         player->setFlags("ikmoshan");
         room->obtainCard(target, player->getArmor(), reason);
         player->setFlags("-ikmoshan");
-        QList<ServerPlayer *> victims;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-            if (!p->isNude())
-                victims << p;
-        }
-        if (!victims.isEmpty()) {
-            ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName());
-            int id = room->askForCardChosen(player, victim, "he", objectName());
-            room->obtainCard(player, id, false);
+        if (player->getMark("ikmoshan") < 3) {
+            QList<ServerPlayer *> victims;
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (!p->isNude())
+                    victims << p;
+            }
+            if (!victims.isEmpty()) {
+                ServerPlayer *victim = room->askForPlayerChosen(player, victims, objectName());
+                int id = room->askForCardChosen(player, victim, "he", objectName());
+                room->obtainCard(player, id, false);
+                player->addMark("ikmoshan");
+            }
         }
         return false;
     }

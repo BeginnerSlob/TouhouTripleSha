@@ -612,7 +612,7 @@ public:
         TriggerList skill_list;
         if (player->getPhase() == Player::Play && !player->isKongcheng()) {
             foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
-                if (owner == player || owner->isKongcheng())
+                if (owner == player || owner->isKongcheng() || owner->getHandcardNum() > 3)
                     continue;
                 skill_list.insert(owner, QStringList(objectName()));
             }

@@ -549,8 +549,10 @@ public:
 
         room->addPlayerMark(player, "@mohun");
 
-        if (room->changeMaxHpForAwakenSkill(player))
+        if (room->changeMaxHpForAwakenSkill(player)) {
+            player->throwAllHandCards();
             room->acquireSkill(player, "thheiguan");
+        }
 
         return false;
     }

@@ -1816,8 +1816,8 @@ void ThLingyunDialog::popup()
     }
     QHash<QString, QString> skill_map;
     skill_map.insert("ex_nihilo", "ikbenghuai");
-    skill_map.insert("duel", "thsanling");
-    skill_map.insert("snatch", "ikxinshang");
+    skill_map.insert("fire_attack", "thsanling");
+    skill_map.insert("dismantlement", "ikxinshang");
     skill_map.insert("iron_chain", "ikjinlian");
 
     foreach (QString card, skill_map.keys()) {
@@ -2303,7 +2303,7 @@ public:
 
         DummyCard *dummy = new DummyCard;
         room->fillAG(card_ids, NULL);
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 2; i++) {
             int card_id = room->askForAG(player, card_ids, true, "thsisui");
             if (card_id == -1)
                 break;

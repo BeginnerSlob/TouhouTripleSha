@@ -928,6 +928,8 @@ bool ThMimengDialog::isButtonEnabled(const QString &button_name) const
         ban_list << "Jink"
                  << "Analeptic"
                  << "Peach";
+    if (object_name == "ikhuanlve")
+        ban_list << "Reinforce";
     if (allowings.isEmpty())
         return !ban_list.contains(card->getClassName()) && !Self->isCardLimited(card, Card::MethodUse, true) && card->isAvailable(Self);
     else {
