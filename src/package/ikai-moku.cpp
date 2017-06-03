@@ -4706,6 +4706,7 @@ public:
     IkHuanshen()
         : PhaseChangeSkill("ikhuanshen")
     {
+        frequency = Frequent;
     }
 
     static void playAudioEffect(ServerPlayer *zuoci, const QString &skill_name)

@@ -1,0 +1,3 @@
+
+general:select role:rebel 
+general:luna009 role:lord starter:true 
