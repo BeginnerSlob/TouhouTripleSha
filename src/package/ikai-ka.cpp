@@ -6724,7 +6724,7 @@ IkaiKaPackage::IkaiKaPackage()
     General *wind048 = new General(this, "wind048", "kaze");
     wind048->addSkill(new IkXizi);
 
-    General *wind050 = new General(this, "wind050", "kaze");
+    General *wind050 = new General(this, "wind050", "kaze", 4, false);
     wind050->addSkill(new IkDongzhao);
     wind050->addSkill(new IkDongzhaoTrigger);
     related_skills.insertMulti("ikdongzhao", "#ikdongzhao");
@@ -6782,7 +6782,7 @@ IkaiKaPackage::IkaiKaPackage()
     bloom049->addSkill(new IkLuhuaRecord);
     related_skills.insertMulti("ikluhua", "#ikluhua-record");
 
-    General *bloom052 = new General(this, "bloom052", "hana");
+    General *bloom052 = new General(this, "bloom052", "hana", 4, false);
     bloom052->addSkill(new IkLingcha);
     bloom052->addSkill(new IkLingchaTrigger);
     related_skills.insertMulti("iklingcha", "#iklingcha");
@@ -6812,7 +6812,7 @@ IkaiKaPackage::IkaiKaPackage()
     snow035->addSkill(new IkMingwang);
     snow035->addSkill(new IkQiyi);
 
-    General *snow036 = new General(this, "snow036", "yuki", 3);
+    General *snow036 = new General(this, "snow036", "yuki", 3, false);
     snow036->addSkill("ikmitu");
     snow036->addSkill(new IkLinghui);
 

@@ -2042,7 +2042,7 @@ TouhouShinPackage::TouhouShinPackage()
     shin005->addSkill(new ThNengwuClear);
     related_skills.insertMulti("thnengwu", "#thnengwu-clear");
 
-    General *shin006 = new General(this, "shin006", "hana", 3);
+    General *shin006 = new General(this, "shin006", "hana", 3, false);
     shin006->addSkill(new ThBaochui);
     shin006->addSkill(new ThBaochuiReturn);
     related_skills.insertMulti("thbaochui", "#thbaochui-return");
@@ -2059,7 +2059,7 @@ TouhouShinPackage::TouhouShinPackage()
     shin008->addSkill(new ThLianying);
     shin008->addSkill(new ThYuanxiao);
 
-    General *shin009 = new General(this, "shin009", "kaze", 3, false);
+    General *shin009 = new General(this, "shin009", "kaze", 3);
     shin009->addSkill(new ThWuyi);
     shin009->addSkill(new ThWuyiTargetMod);
     shin009->addSkill(new SlashNoDistanceLimitSkill("thwuyi"));

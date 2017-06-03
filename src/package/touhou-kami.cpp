@@ -2930,7 +2930,7 @@ TouhouKamiPackage::TouhouKamiPackage()
     kami007->addSkill(new ThManxiaoMaxCards);
     related_skills.insertMulti("thmanxiao", "#thmanxiao");
 
-    General *kami008 = new General(this, "kami008", "kami", 3);
+    General *kami008 = new General(this, "kami008", "kami", 3, false);
     kami008->addSkill(new ThJinlu);
     kami008->addSkill(new ThJinluTriggerSkill);
     related_skills.insertMulti("thjinlu", "#thjinlu");

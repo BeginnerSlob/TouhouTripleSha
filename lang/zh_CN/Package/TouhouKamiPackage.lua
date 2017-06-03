@@ -109,7 +109,7 @@ return {
 	["@bloom"] = "咲",
 	
 	["#kami008"] = "夫众生者悉皆杀",
-	["kami008"] = "神芙兰朵露•斯卡雷特",--神 - 空 - 4血
+	["kami008"] = "神芙兰朵露•斯卡雷特",--神 - 幻 - 4血
 	["&kami008"] = "神芙兰朵露",
 	["designer:kami008"] = "Danny",
 	["illustrator:kami008"] = "Dhiea",

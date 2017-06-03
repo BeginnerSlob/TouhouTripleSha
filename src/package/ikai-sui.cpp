@@ -7198,7 +7198,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     related_skills.insertMulti("ikmingzhen", "#ikmingzhen-inv");
     luna044->addSkill(new IkPianxiang);
 
-    General *luna050 = new General(this, "luna050", "tsuki");
+    General *luna050 = new General(this, "luna050", "tsuki", 4, false);
     luna050->addSkill(new IkTingmai);
     luna050->addSkill(new IkHuangzhen);
 

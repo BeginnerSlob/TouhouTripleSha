@@ -2825,7 +2825,7 @@ TouhouTsukiPackage::TouhouTsukiPackage()
     tsuki001->addSkill(new ThChiwu);
     tsuki001->addSkill(new ThYejun);
 
-    General *tsuki002 = new General(this, "tsuki002", "tsuki");
+    General *tsuki002 = new General(this, "tsuki002", "tsuki", 4, false);
     tsuki002->addSkill(new ThJinguo);
     tsuki002->addSkill(new FakeMoveSkill("thjinguo"));
     related_skills.insertMulti("thjinguo", "#thjinguo-fake-move");
