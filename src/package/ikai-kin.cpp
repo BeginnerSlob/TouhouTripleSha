@@ -3355,41 +3355,19 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *) const
     {
-        QStringList draw_num;
-        for (int i = 1; i <= target->getLostHp(); draw_num << QString::number(i++)) {
-        }
-        int num = room->askForChoice(target, "ikfangsheng_draw", draw_num.join("+")).toInt();
-        target->drawCards(num, objectName());
+        target->drawCards(target->getLostHp(), objectName());
         target->setMark(objectName(), 0);
         if (!target->isKongcheng()) {
             forever {
                 int n = target->getMark(objectName());
-                if (n < num && !target->isKongcheng()) {
-                    QList<int> handcards = target->handCards();
+                if (n < target->getLostHp() && !target->isKongcheng()) {
                     target->setFlags("IkFangshengUse");
-                    if (!room->askForYiji(target, handcards, objectName(), false, false, false, num - n)) {
+                    if (!room->askForYiji(target, target->handCards(), objectName(), false, false, true, target->getLostHp() - n)) {
                         target->setFlags("-IkFangshengUse");
                         break;
                     }
                 } else {
                     break;
-                }
-            }
-            // give the rest cards randomly
-            if (target->getMark(objectName()) < num && !target->isKongcheng()) {
-                int rest_num = num - target->getMark(objectName());
-                forever {
-                    QList<int> handcard_list = target->handCards();
-                    qShuffle(handcard_list);
-                    int give = qrand() % rest_num + 1;
-                    rest_num -= give;
-                    QList<int> to_give = handcard_list.length() < give ? handcard_list : handcard_list.mid(0, give);
-                    ServerPlayer *receiver = room->getOtherPlayers(target).at(qrand() % (target->aliveCount() - 1));
-                    DummyCard *dummy = new DummyCard(to_give);
-                    room->obtainCard(receiver, dummy, false);
-                    delete dummy;
-                    if (rest_num == 0 || target->isKongcheng())
-                        break;
                 }
             }
         }
