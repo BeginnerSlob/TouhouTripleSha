@@ -56,6 +56,46 @@
 // general names
 "avatarName-default": "image/generals/name/%1.png",
 
+// generals defined later will override default path and also previously defined generals
+"avatarName-kami001": "image/generals/name/kaze001.png", //东风谷早苗
+"avatarName-kami002": "image/generals/name/hana018.png", //比那名居天子
+"avatarName-kami003": "image/generals/name/yuki001.png", //博丽灵梦
+"avatarName-kami004": "image/generals/name/tsuki001.png", //蕾米莉亚·斯卡雷特
+"avatarName-kami005": "image/generals/name/shin005.png", //秦心
+"avatarName-kami006": "image/generals/name/hana009.png", //四季映姬
+"avatarName-kami007": "image/generals/name/yuki018.png", //西行寺幽幽子
+"avatarName-kami008": "image/generals/name/tsuki002.png", //芙兰朵露·斯卡雷特
+"avatarName-kami009": "image/generals/name/kaze018.png", //古明地觉
+"avatarName-kami010": "image/generals/name/hana014.png", //霍青娥
+"avatarName-kami011": "image/generals/name/yuki009.png", //八云紫
+"avatarName-kami012": "image/generals/name/tsuki018.png", //蓬莱山辉夜
+"avatarName-kami013": "image/generals/name/kaze009.png", //洩矢诹访子
+"avatarName-kami014": "image/generals/name/hana007.png", //封兽鵺
+"avatarName-kami015": "image/generals/name/yuki010.png", //琪露诺
+"avatarName-kami016": "image/generals/name/tsuki004.png", //因幡帝
+"avatarName-sp001": "image/generals/name/kaze001.png", //东风谷早苗
+"avatarName-sp002": "image/generals/name/hana007.png", //封兽鵺
+"avatarName-sp003": "image/generals/name/yuki002.png", //伊吹萃香
+"avatarName-sp004": "image/generals/name/tsuki005.png", //上白泽慧音
+"avatarName-sp005": "image/generals/name/kaze015.png", //火焰猫燐
+"avatarName-sp006": "image/generals/name/hana002.png", //雾雨魔理沙
+"avatarName-sp007": "image/generals/name/yuki001.png", //博丽灵梦
+"avatarName-sp008": "image/generals/name/tsuki003.png", //铃仙·优昙华院·稻叶
+"avatarName-sp009": "image/generals/name/kaze002.png", //射命丸文
+"avatarName-sp010": "image/generals/name/hana016.png", //物部布都
+"avatarName-sp011": "image/generals/name/yuki010.png", //琪露诺
+"avatarName-sp012": "image/generals/name/tsuki010.png", //露米娅
+"avatarName-sp013": "image/generals/name/kaze017.png", //古明地恋
+"avatarName-sp014": "image/generals/name/hana009.png", //四季映姬
+"avatarName-sp015": "image/generals/name/yuki004.png", //爱丽丝·玛嘉特洛伊德
+"avatarName-sp016": "image/generals/name/tsuki001.png", //蕾米莉亚·斯卡雷特
+"avatarName-sp017": "image/generals/name/kaze018.png", //古明地觉
+"avatarName-sp018": "image/generals/name/hana017.png", //丰聪耳神子
+"avatarName-sp019": "image/generals/name/yuki003.png", //魂魄妖梦
+"avatarName-sp020": "image/generals/name/tsuki015.png", //帕秋莉·诺蕾姬
+"avatarName-story002": "image/generals/name/yuki001.png", //博丽灵梦
+"avatarName-story003": "image/generals/name/yuki001.png", //博丽灵梦
+
 // general default directories
 "playerGeneralIcon-default-0": ["image/generals/avatar/%1.png", [63, 44, 154, 154], [40, 40]],
 "playerGeneralIcon-default-1": ["image/fullskin/generals/full/%1.png", [0, 0, 250, 311], [155, 193]],
