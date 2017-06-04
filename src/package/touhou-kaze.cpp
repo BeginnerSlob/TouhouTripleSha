@@ -1823,7 +1823,7 @@ public:
                     && move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
                     && player != move.from && player->getMark(objectName()) == 0) {
                     const Card *card = move.reason.m_extraData.value<const Card *>();
-                    if (card->hasFlag("thfuli"))
+                    if (card->hasFlag("thfuli") && card->getNumber() >= 2 && card->getNumber() <= 9)
                         return QStringList(objectName());
                 }
             }
