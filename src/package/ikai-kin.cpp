@@ -4518,39 +4518,56 @@ public:
     IkZhongqu()
         : TriggerSkill("ikzhongqu")
     {
-        events << Damage;
+        events << Damage << SlashMissed;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent e, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         if (TriggerSkill::triggerable(player)) {
-            DamageStruct damage = data.value<DamageStruct>();
-            if (damage.card && damage.card->isKindOf("Slash") && damage.to->isAlive())
+            if (e == Damage) {
+                DamageStruct damage = data.value<DamageStruct>();
+                if (damage.card && damage.card->isKindOf("Slash") && damage.to->isAlive())
+                    return QStringList(objectName());
+            } else if (e == SlashMissed)
                 return QStringList(objectName());
         }
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool cost(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        DamageStruct damage = data.value<DamageStruct>();
-        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(damage.to))) {
+        QVariant _data = QVariant();
+        if (e == Damage) {
+            DamageStruct damage = data.value<DamageStruct>();
+            _data = QVariant::fromValue(damage.to);
+        }
+        if (player->askForSkillInvoke(objectName(), _data)) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        DamageStruct damage = data.value<DamageStruct>();
-        damage.to->turnOver();
-        QString choice = room->askForChoice(player, objectName(), "drawHp+drawlossHp");
-        int x = damage.to->getHp();
-        if (choice == "drawlossHp")
-            x = damage.to->getLostHp();
-        damage.to->drawCards(x, objectName());
-
+        if (e == Damage) {
+            DamageStruct damage = data.value<DamageStruct>();
+            damage.to->turnOver();
+            if (damage.to->isAlive()) {
+                QStringList choices;
+                if (player->getHp() > 0)
+                    choices << "hp";
+                if (player->getLostHp() > 0)
+                    choices << "losehp";
+                QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+                int x = damage.to->getHp();
+                if (choice == "losehp")
+                    x = damage.to->getLostHp();
+                damage.to->drawCards(x, objectName());
+            }
+        } else {
+            player->drawCards(1, objectName());
+        }
         return false;
     }
 };

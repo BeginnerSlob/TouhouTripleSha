@@ -207,7 +207,9 @@ int Player::getAttackRange(bool include_weapon) const
         original_range = 10000; // Actually infinity
     int weapon_range = 0;
     if (include_weapon) {
-        if (!weapon && hasSkill("thsilian"))
+        if (!weapon && hasSkill("thdaojian"))
+            weapon_range = 2;
+        else if (!weapon && hasSkill("thsilian"))
             weapon_range = 3;
         else {
             WrappedCard *wp = weapon;
@@ -748,6 +750,8 @@ bool Player::hasWeapon(const QString &weapon_name) const
         return false;
 
     if (weapon == NULL && alive) {
+        if (weapon_name == "qinggang_sword" && hasSkill("thdaojian"))
+            return true;
         if (weapon_name == "blade" && hasSkill("thsilian"))
             return true;
     }
