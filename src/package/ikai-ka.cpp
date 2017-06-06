@@ -2534,7 +2534,8 @@ void IkDuanniCard::onEffect(const CardEffectStruct &effect) const
         }
         if (!extras.isEmpty()) {
             ServerPlayer *extra = room->askForPlayerChosen(effect.from, extras, "ikduanni", "@slash_extra_targets", true);
-            targets << extra;
+            if (extra)
+                targets << extra;
         }
     }
     room->sortByActionOrder(targets);
