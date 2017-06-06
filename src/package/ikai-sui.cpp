@@ -1932,7 +1932,7 @@ public:
         if (!room->askForCard(player, "EquipCard", "@ikbashou-discard"))
             room->damage(DamageStruct(objectName(), yuejin, player));
         else
-            player->drawCards(1, objectName());
+            yuejin->drawCards(1, objectName());
         return false;
     }
 };
