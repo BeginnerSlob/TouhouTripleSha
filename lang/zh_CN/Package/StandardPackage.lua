@@ -115,7 +115,7 @@ local t = {
 	["illustrator:dismantlement"] = "RainLan",
 
 	["collateral"] = "断灵御剑",
-	[":collateral"] = "锦囊牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：装备区里有武器牌且攻击范围内有使用【杀】的合理目标的一名其他角色<br /><b>效果</b>：目标角色需对其攻击范围内由你选择的一名合理的角色使用一张【杀】，否则将装备区里的武器牌交给你。",
+	[":collateral"] = "锦囊牌<br /><b>时机</b>：出牌阶段<br /><b>目标</b>：装备区里有武器牌且攻击范围内有使用【杀】的合法目标的一名其他角色<br /><b>效果</b>：目标角色需对其攻击范围内由你选择的一名合理的角色使用一张【杀】，否则将装备区里的武器牌交给你。",
 	["illustrator:collateral"] = "うき",
 	["collateral-slash"] = "%dest 使用了【断灵御剑】，请对 %src 使用一张【杀】",
 	["#CollateralSlash"] = "%from 选择了此【<font color=\"yellow\"><b>杀</b></font>】的目标 %to",
