@@ -3362,7 +3362,8 @@ public:
                 int n = target->getMark(objectName());
                 if (n < target->getLostHp() && !target->isKongcheng()) {
                     target->setFlags("IkFangshengUse");
-                    if (!room->askForYiji(target, target->handCards(), objectName(), false, false, true, target->getLostHp() - n)) {
+                    QList<int> hand_cards = target->handCards();
+                    if (!room->askForYiji(target, hand_cards, objectName(), false, false, true, target->getLostHp() - n)) {
                         target->setFlags("-IkFangshengUse");
                         break;
                     }
