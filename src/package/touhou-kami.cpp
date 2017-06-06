@@ -581,7 +581,15 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         player->addToPile("mask", room->drawCard());
-        room->askForUseCard(player, "^Jink+^Nullification|.|.|hand", "@thsuhu", -1, Card::MethodUse, false);
+
+        Player::Phase phase = player->getPhase();
+        player->setPhase(Player::Play);
+        CardUseStruct card_use;
+        room->activate(player, card_use);
+        player->setPhase(phase);
+        if (card_use.card != NULL)
+            room->useCard(card_use, false);
+
         return true;
     }
 };
