@@ -1951,8 +1951,8 @@ const Card *ThLingyunCard::validate(CardUseStruct &card_use) const
 
     QMap<QString, QString> map;
     map.insert("ex_nihilo", "ikbenghuai");
-    map.insert("duel", "thsanling");
-    map.insert("snatch", "ikxinshang");
+    map.insert("fire_attack", "thsanling");
+    map.insert("dismantlement", "ikxinshang");
     map.insert("iron_chain", "ikjinlian");
     if (!card_use.from->hasSkill(map[user_string]))
         room->acquireSkill(card_use.from, map[user_string]);
@@ -1989,8 +1989,8 @@ public:
     {
         QMap<QString, QString> map;
         map.insert("ex_nihilo", "ikbenghuai");
-        map.insert("duel", "thsanling");
-        map.insert("snatch", "ikxinshang");
+        map.insert("fire_attack", "thsanling");
+        map.insert("dismantlement", "ikxinshang");
         map.insert("iron_chain", "ikjinlian");
         bool can = false;
         foreach (QString card_name, map.keys()) {
