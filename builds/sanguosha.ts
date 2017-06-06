@@ -712,64 +712,64 @@
 <context>
     <name>ConnectionDialog</name>
     <message>
-        <location filename="../src/dialog/connectiondialog.ui" line="17"/>
-        <location filename="../src/dialog/connectiondialog.ui" line="29"/>
         <location filename="../src/dialog/connectiondialog_android.ui" line="17"/>
         <location filename="../src/dialog/connectiondialog_android.ui" line="29"/>
+        <location filename="../src/dialog/connectiondialog.ui" line="17"/>
+        <location filename="../src/dialog/connectiondialog.ui" line="29"/>
         <source>Connection setup</source>
         <translation>连接设置</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog.ui" line="76"/>
         <location filename="../src/dialog/connectiondialog_android.ui" line="76"/>
+        <location filename="../src/dialog/connectiondialog.ui" line="76"/>
         <source>Change avatar</source>
         <translation>修改头像</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog.ui" line="41"/>
         <location filename="../src/dialog/connectiondialog_android.ui" line="41"/>
+        <location filename="../src/dialog/connectiondialog.ui" line="41"/>
         <source>Avatar:</source>
         <translation>头像:</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog.ui" line="135"/>
         <location filename="../src/dialog/connectiondialog_android.ui" line="135"/>
+        <location filename="../src/dialog/connectiondialog.ui" line="135"/>
         <source>Host:</source>
         <translation>主机:</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog.ui" line="118"/>
         <location filename="../src/dialog/connectiondialog_android.ui" line="118"/>
+        <location filename="../src/dialog/connectiondialog.ui" line="118"/>
         <source>Name:</source>
         <translation>名称:</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog.ui" line="102"/>
         <location filename="../src/dialog/connectiondialog_android.ui" line="102"/>
+        <location filename="../src/dialog/connectiondialog.ui" line="102"/>
         <source>Clear history</source>
         <translation>清除历史记录</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog.ui" line="89"/>
         <location filename="../src/dialog/connectiondialog_android.ui" line="89"/>
+        <location filename="../src/dialog/connectiondialog.ui" line="89"/>
         <source>Detect LAN ...</source>
         <translation>探测局域网 ...</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog.ui" line="194"/>
         <location filename="../src/dialog/connectiondialog_android.ui" line="190"/>
+        <location filename="../src/dialog/connectiondialog.ui" line="194"/>
         <source>Connect</source>
         <translation>连接</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog.ui" line="207"/>
         <location filename="../src/dialog/connectiondialog_android.ui" line="203"/>
+        <location filename="../src/dialog/connectiondialog.ui" line="207"/>
         <source>Reconnection</source>
         <translation>断线重连</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog.ui" line="181"/>
         <location filename="../src/dialog/connectiondialog_android.ui" line="177"/>
+        <location filename="../src/dialog/connectiondialog.ui" line="181"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
