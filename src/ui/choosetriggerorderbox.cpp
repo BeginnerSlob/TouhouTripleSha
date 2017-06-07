@@ -154,7 +154,8 @@ QString TriggerOptionButton::displayedTextOf(const QString &str)
         QString targetObj = skillName.split("->").last().split("&").first(); // "sgs4"
         QString targetName = ClientInstance->getPlayer(targetObj)->getGeneral()->getTranslatedName();
         text = tr("%1 (use upon %2)").arg(Sanguosha->translate(realSkill)).arg(targetName);
-    }
+    } else if (skillName.contains("'")) // "sgs3'iksongwei"
+        text = Sanguosha->translate(skillName.split("'").last());
     if (time > 1)
         //text += " " + tr("*") + time;
         text += QString(" %1 %2").arg(tr("*")).arg(time);
