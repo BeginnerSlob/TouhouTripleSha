@@ -691,8 +691,14 @@ sgs.ai_skill_discard.reinforce = function(self, discard_num, min_num, optional, 
 				return ret
 			else
 				local ret2 = self:askForDiscard("", 2, 2, false, true)
-				if #ret == 2 and not self:isValuableCard(ret2[1]) and not self:isValuableCard(ret2[2]) then
-					return {}
+				if #ret2 == 2 and not self:isValuableCard(ret2[1]) and not self:isValuableCard(ret2[2]) then
+					if not sgs.Sanguosha:getCard(ret2[1]):isKindOf("BasicCard") then
+						return {ret2[1]}
+					elseif not sgs.Sanguosha:getCard(ret2[2]):isKindOf("BasicCard") then
+						return {ret2[2]}
+					else
+						return {}
+					end
 				else
 					return ret
 				end
