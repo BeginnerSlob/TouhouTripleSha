@@ -582,13 +582,21 @@ public:
     {
         player->addToPile("mask", room->drawCard());
 
-        Player::Phase phase = player->getPhase();
-        player->setPhase(Player::Play);
-        CardUseStruct card_use;
-        room->activate(player, card_use);
-        player->setPhase(phase);
-        if (card_use.card != NULL)
-            room->useCard(card_use, false);
+        if (player->isAlive()) {
+            room->getRoomState()->setCurrentCardUseReason(CardUseStruct::CARD_USE_REASON_RESPONSE_USE);
+            QStringList names;
+            foreach (const Card *card, Sanguosha->findChildren<const Card *>()) {
+                QString class_name = card->getClassName();
+                if (class_name.endsWith("Slash"))
+                    class_name = "Slash";
+                if (!names.contains(class_name) && card->isAvailable(player))
+                    names << class_name;
+            }
+            if (!names.isEmpty()) {
+                QString pattern = QString("%1|.|.|hand").arg(names.join(","));
+                room->askForUseCard(player, pattern, "@thsuhu");
+            }
+        }
 
         return true;
     }
