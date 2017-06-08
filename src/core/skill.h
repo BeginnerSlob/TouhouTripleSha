@@ -347,7 +347,7 @@ class DetachEffectSkill : public TriggerSkill
 public:
     DetachEffectSkill(const QString &skillname, const QString &pilename = QString());
 
-    virtual bool triggerable(const ServerPlayer *target) const;
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
     virtual void onSkillDetached(Room *room, ServerPlayer *player) const;
 

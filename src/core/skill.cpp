@@ -602,21 +602,24 @@ DetachEffectSkill::DetachEffectSkill(const QString &skillname, const QString &pi
 {
     events << EventLoseSkill;
     frequency = Compulsory;
+    global = true;
 }
 
-bool DetachEffectSkill::triggerable(const ServerPlayer *target) const
+TriggerList DetachEffectSkill::triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data) const
 {
-    return target != NULL;
-}
-
-bool DetachEffectSkill::trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
-{
-    if (data.toString() == name) {
+    TriggerList skill_list;
+    if (player && data.toString() == name) {
         if (!pile_name.isEmpty())
             player->clearOnePrivatePile(pile_name);
         else
-            onSkillDetached(room, player);
+            skill_list.insert(player, QStringList(objectName()));
     }
+    return skill_list;
+}
+
+bool DetachEffectSkill::trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+{
+    onSkillDetached(room, player);
     return false;
 }
 
