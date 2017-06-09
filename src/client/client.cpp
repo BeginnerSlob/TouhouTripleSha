@@ -1015,7 +1015,7 @@ void Client::askForNullification(const QVariant &arg)
 
     const Card *trick_card = Sanguosha->findChild<const Card *>(trick_name);
     if (Config.NeverNullifyMyTrick && source == Self) {
-        if (trick_card->isKindOf("SingleTargetTrick") || trick_card->isKindOf("IronChain")) {
+        if (trick_card->isKindOf("SingleTargetTrick")) {
             onPlayerResponseCard(NULL);
             return;
         }

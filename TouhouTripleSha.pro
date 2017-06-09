@@ -118,7 +118,6 @@ SOURCES += \
     src/package/touhou-story.cpp \
     src/scenario/chunxue-scenario.cpp \
     src/scenario/jianniang-scenario.cpp \
-    src/breakpad/common/convert_UTF.c \
     src/package/tenshi-reihou.cpp \
     src/ui/graphicsbox.cpp \
     src/ui/chooseoptionsbox.cpp \
@@ -295,24 +294,6 @@ win32-msvc*{
         !winrt:INCLUDEPATH += include/vld
     } else {
         QMAKE_LFLAGS_RELEASE = $$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
-        DEFINES += USE_BREAKPAD
-
-        SOURCES += src/breakpad/client/windows/crash_generation/client_info.cc \
-            src/breakpad/client/windows/crash_generation/crash_generation_client.cc \
-            src/breakpad/client/windows/crash_generation/crash_generation_server.cc \
-            src/breakpad/client/windows/crash_generation/minidump_generator.cc \
-            src/breakpad/client/windows/handler/exception_handler.cc \
-            src/breakpad/common/windows/guid_string.cc
-
-        HEADERS += src/breakpad/client/windows/crash_generation/client_info.h \
-            src/breakpad/client/windows/crash_generation/crash_generation_client.h \
-            src/breakpad/client/windows/crash_generation/crash_generation_server.h \
-            src/breakpad/client/windows/crash_generation/minidump_generator.h \
-            src/breakpad/client/windows/handler/exception_handler.h \
-            src/breakpad/common/windows/guid_string.h
-
-        INCLUDEPATH += src/breakpad
-        INCLUDEPATH += src/breakpad/client/windows
     }
 }
 win32-g++{

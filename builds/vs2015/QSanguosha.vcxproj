@@ -131,7 +131,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qtmaind.lib;Qt5Guid.lib;Qt5Networkd.lib;Qt5Cored.lib;Qt5Widgetsd.lib;ole32.lib;oleaut32.lib;user32.lib;gdi32.lib;advapi32.lib;..\..\lib\win\x86\fmodexL.lib;..\..\lib\win\x86\freetype_D.lib;..\..\lib\breakpad.lib;Qt5WinExtrasd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmaind.lib;Qt5Guid.lib;Qt5Networkd.lib;Qt5Cored.lib;Qt5Widgetsd.lib;ole32.lib;oleaut32.lib;user32.lib;gdi32.lib;advapi32.lib;..\..\lib\win\x86\fmodexL.lib;..\..\lib\win\x86\freetype_D.lib;Qt5WinExtrasd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;.;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" /NODEFAULTLIB:"msvcrt.lib" "legacy_stdio_definitions.lib" %(AdditionalOptions)</AdditionalOptions>
       <DataExecutionPrevention>true</DataExecutionPrevention>
@@ -184,7 +184,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qtmaind.lib;Qt5Guid.lib;Qt5Networkd.lib;Qt5Cored.lib;Qt5Widgetsd.lib;ole32.lib;oleaut32.lib;user32.lib;gdi32.lib;advapi32.lib;..\..\lib\win\x64\fmodexL.lib;..\..\lib\win\x64\freetype_D.lib;..\..\lib\breakpad.lib;Qt5WinExtrasd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmaind.lib;Qt5Guid.lib;Qt5Networkd.lib;Qt5Cored.lib;Qt5Widgetsd.lib;ole32.lib;oleaut32.lib;user32.lib;gdi32.lib;advapi32.lib;..\..\lib\win\x64\fmodexL.lib;..\..\lib\win\x64\freetype_D.lib;Qt5WinExtrasd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;.;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
       <DataExecutionPrevention>true</DataExecutionPrevention>
@@ -241,7 +241,7 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qtmain.lib;Qt5Gui.lib;Qt5Network.lib;Qt5Core.lib;Qt5Widgets.lib;ole32.lib;oleaut32.lib;user32.lib;gdi32.lib;advapi32.lib;..\..\lib\win\x86\fmodex.lib;..\..\lib\win\x86\freetype.lib;..\..\lib\breakpad.lib;Qt5WinExtras.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmain.lib;Qt5Gui.lib;Qt5Network.lib;Qt5Core.lib;Qt5Widgets.lib;ole32.lib;oleaut32.lib;user32.lib;gdi32.lib;advapi32.lib;..\..\lib\win\x86\fmodex.lib;..\..\lib\win\x86\freetype.lib;Qt5WinExtras.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;.;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
       <DataExecutionPrevention>true</DataExecutionPrevention>
@@ -301,7 +301,7 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qtmain.lib;Qt5Gui.lib;Qt5Network.lib;Qt5Core.lib;Qt5Widgets.lib;ole32.lib;oleaut32.lib;user32.lib;gdi32.lib;advapi32.lib;..\..\lib\win\x64\fmodex.lib;..\..\lib\win\x64\freetype.lib;..\..\lib\breakpad.lib;Qt5WinExtras.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmain.lib;Qt5Gui.lib;Qt5Network.lib;Qt5Core.lib;Qt5Widgets.lib;ole32.lib;oleaut32.lib;user32.lib;gdi32.lib;advapi32.lib;..\..\lib\win\x64\fmodex.lib;..\..\lib\win\x64\freetype.lib;Qt5WinExtras.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;.;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
       <DataExecutionPrevention>true</DataExecutionPrevention>
@@ -3221,9 +3221,6 @@
     <ResourceCompile Include="..\..\resource\icon.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="breakpad.vcxproj">
-      <Project>{3023a030-312f-4878-b6f2-47d149585081}</Project>
-    </ProjectReference>
     <ProjectReference Include="lua.vcxproj">
       <Project>{2cfd36b2-a793-499c-8521-9286dcb027f7}</Project>
     </ProjectReference>

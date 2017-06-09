@@ -184,5 +184,8 @@
     <ClCompile Include="..\..\src\lua\lctype.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\lua\lua.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

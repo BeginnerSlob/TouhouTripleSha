@@ -22,7 +22,6 @@
     <ProjectGuid>{ED0EA6EF-703C-3334-B884-72B72FA2B610}</ProjectGuid>
     <RootNamespace>QSanguosha</RootNamespace>
     <Keyword>Qt4VSv1.0</Keyword>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -83,14 +82,14 @@
   <PropertyGroup>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\Bin\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\Debug\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TouhouTripleSha</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">TouhouTripleSha</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">QSanguosha</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">QSanguosha</TargetName>
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</IgnoreImportLibrary>
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</IgnoreImportLibrary>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\Bin\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\Release\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TouhouTripleSha</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">TouhouTripleSha</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">QSanguosha</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">QSanguosha</TargetName>
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</IgnoreImportLibrary>
     <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</IgnoreImportLibrary>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
@@ -132,7 +131,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qtmaind.lib;Qt5Guid.lib;Qt5Networkd.lib;Qt5Cored.lib;Qt5Widgetsd.lib;ole32.lib;oleaut32.lib;user32.lib;gdi32.lib;advapi32.lib;..\..\lib\win\x86\fmodexL.lib;..\..\lib\win\x86\freetype_D.lib;..\..\lib\breakpad.lib;Qt5WinExtrasd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmaind.lib;Qt5Guid.lib;Qt5Networkd.lib;Qt5Cored.lib;Qt5Widgetsd.lib;ole32.lib;oleaut32.lib;user32.lib;gdi32.lib;advapi32.lib;..\..\lib\win\x86\fmodexL.lib;..\..\lib\win\x86\freetype_D.lib;Qt5WinExtrasd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;.;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" /NODEFAULTLIB:"msvcrt.lib" "legacy_stdio_definitions.lib" %(AdditionalOptions)</AdditionalOptions>
       <DataExecutionPrevention>true</DataExecutionPrevention>
@@ -158,9 +157,6 @@
     <PostBuildEvent>
       <Command>copy $(ProjectDir)..\sanguosha.qm $(ProjectDir)..\..\</Command>
     </PostBuildEvent>
-    <ProjectReference>
-      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
-    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -188,7 +184,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qtmaind.lib;Qt5Guid.lib;Qt5Networkd.lib;Qt5Cored.lib;Qt5Widgetsd.lib;ole32.lib;oleaut32.lib;user32.lib;gdi32.lib;advapi32.lib;..\..\lib\win\x64\fmodexL.lib;..\..\lib\win\x64\freetype_D.lib;..\..\lib\breakpad.lib;Qt5WinExtrasd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmaind.lib;Qt5Guid.lib;Qt5Networkd.lib;Qt5Cored.lib;Qt5Widgetsd.lib;ole32.lib;oleaut32.lib;user32.lib;gdi32.lib;advapi32.lib;..\..\lib\win\x64\fmodexL.lib;..\..\lib\win\x64\freetype_D.lib;Qt5WinExtrasd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;.;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
       <DataExecutionPrevention>true</DataExecutionPrevention>
@@ -214,9 +210,6 @@
     <PostBuildEvent>
       <Command>copy $(ProjectDir)..\sanguosha.qm $(ProjectDir)..\..\</Command>
     </PostBuildEvent>
-    <ProjectReference>
-      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
-    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -248,7 +241,7 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qtmain.lib;Qt5Gui.lib;Qt5Network.lib;Qt5Core.lib;Qt5Widgets.lib;ole32.lib;oleaut32.lib;user32.lib;gdi32.lib;advapi32.lib;..\..\lib\win\x86\fmodex.lib;..\..\lib\win\x86\freetype.lib;..\..\lib\breakpad.lib;Qt5WinExtras.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmain.lib;Qt5Gui.lib;Qt5Network.lib;Qt5Core.lib;Qt5Widgets.lib;ole32.lib;oleaut32.lib;user32.lib;gdi32.lib;advapi32.lib;..\..\lib\win\x86\fmodex.lib;..\..\lib\win\x86\freetype.lib;Qt5WinExtras.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;.;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
       <DataExecutionPrevention>true</DataExecutionPrevention>
@@ -278,9 +271,6 @@
     <PostBuildEvent>
       <Command>copy $(ProjectDir)..\sanguosha.qm $(ProjectDir)..\..\</Command>
     </PostBuildEvent>
-    <ProjectReference>
-      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
-    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -311,7 +301,7 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qtmain.lib;Qt5Gui.lib;Qt5Network.lib;Qt5Core.lib;Qt5Widgets.lib;ole32.lib;oleaut32.lib;user32.lib;gdi32.lib;advapi32.lib;..\..\lib\win\x64\fmodex.lib;..\..\lib\win\x64\freetype.lib;..\..\lib\breakpad.lib;Qt5WinExtras.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmain.lib;Qt5Gui.lib;Qt5Network.lib;Qt5Core.lib;Qt5Widgets.lib;ole32.lib;oleaut32.lib;user32.lib;gdi32.lib;advapi32.lib;..\..\lib\win\x64\fmodex.lib;..\..\lib\win\x64\freetype.lib;Qt5WinExtras.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;.;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
       <DataExecutionPrevention>true</DataExecutionPrevention>
@@ -340,9 +330,6 @@
     <PostBuildEvent>
       <Command>copy $(ProjectDir)..\sanguosha.qm $(ProjectDir)..\..\</Command>
     </PostBuildEvent>
-    <ProjectReference>
-      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
-    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\core\audio.cpp" />
@@ -3234,9 +3221,6 @@
     <ResourceCompile Include="..\..\resource\icon.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="breakpad.vcxproj">
-      <Project>{3023a030-312f-4878-b6f2-47d149585081}</Project>
-    </ProjectReference>
     <ProjectReference Include="lua.vcxproj">
       <Project>{2cfd36b2-a793-499c-8521-9286dcb027f7}</Project>
     </ProjectReference>
