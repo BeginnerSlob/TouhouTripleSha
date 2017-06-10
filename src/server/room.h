@@ -389,6 +389,7 @@ public:
     bool speakCommand(ServerPlayer *player, const QVariant &arg);
     bool trustCommand(ServerPlayer *player, const QVariant &arg);
     bool pauseCommand(ServerPlayer *player, const QVariant &arg);
+    bool checkPassword(ServerPlayer *player, const QVariant &arg);
     void processResponse(ServerPlayer *player, const QSanProtocol::Packet *arg);
     bool addRobotCommand(ServerPlayer *player, const QVariant &arg);
     void broadcastInvoke(const QSanProtocol::AbstractPacket *packet, ServerPlayer *except = NULL);

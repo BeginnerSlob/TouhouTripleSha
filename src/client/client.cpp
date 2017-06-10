@@ -39,6 +39,7 @@ Client::Client(QObject *parent, const QString &filename)
     m_isDisconnected = true;
 
     m_callbacks[S_COMMAND_CHECK_VERSION] = &Client::checkVersion;
+    m_callbacks[S_COMMAND_CHECK_PASSWORD] = &Client::checkPassword;
     m_callbacks[S_COMMAND_SETUP] = &Client::setup;
     m_callbacks[S_COMMAND_NETWORK_DELAY_TEST] = &Client::networkDelayTest;
     m_callbacks[S_COMMAND_ADD_PLAYER] = &Client::addPlayer;
@@ -273,6 +274,13 @@ void Client::checkVersion(const QVariant &server_version)
     }
 
     emit version_checked(version_number, mod_name);
+}
+
+void Client::checkPassword(const QVariant &)
+{
+    JsonArray args;
+    args << Config.UserName.toUtf8().toBase64() << Config.Password;
+    notifyServer(S_COMMAND_CHECK_PASSWORD, QVariant::fromValue(args));
 }
 
 void Client::setup(const QVariant &setup_json)

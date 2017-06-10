@@ -97,6 +97,7 @@ public:
     typedef void (Client::*CallBack)(const QVariant &);
 
     void checkVersion(const QVariant &server_version);
+    void checkPassword(const QVariant &);
     void setup(const QVariant &setup_str);
     void networkDelayTest(const QVariant &);
     void addPlayer(const QVariant &player_info);
@@ -290,6 +291,7 @@ private slots:
 
 signals:
     void version_checked(const QString &version_number, const QString &mod_name);
+    void password_checked(const QString &user_name, const QString &password);
     void server_connected();
     void error_message(const QString &msg);
     void player_added(ClientPlayer *new_player);

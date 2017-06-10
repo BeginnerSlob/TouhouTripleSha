@@ -10,6 +10,7 @@
 #include "skin-bank.h"
 
 #include <QBoxLayout>
+#include <QCryptographicHash>
 #include <QMessageBox>
 #include <QRadioButton>
 #include <QTimer>
@@ -81,6 +82,11 @@ void ConnectionDialog::on_connectButton_clicked()
     }
 
     Config.UserName = username;
+    QString password = ui->passwordLineEdit->text();
+    if (!password.isEmpty())
+        Config.Password = QString(QCryptographicHash::hash(password.toLatin1(), QCryptographicHash::Md5).toHex());
+    else
+        Config.Password = QString();
 #ifdef Q_OS_ANDROID
     Config.HostAddress = ui->hostLineEdit->text();
 #else

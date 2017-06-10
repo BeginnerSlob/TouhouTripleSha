@@ -64,7 +64,7 @@ NativeClientSocket::NativeClientSocket(QTcpSocket *socket)
 
 void NativeClientSocket::init()
 {
-    connect(socket, SIGNAL(disconnected()), this, SIGNAL(disconnected()));
+    connect(socket, &QTcpSocket::disconnected, this, &NativeClientSocket::disconnected);
     connect(socket, SIGNAL(readyRead()), this, SLOT(getMessage()));
     connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(raiseError(QAbstractSocket::SocketError)));
     connect(socket, SIGNAL(connected()), this, SIGNAL(connected()));

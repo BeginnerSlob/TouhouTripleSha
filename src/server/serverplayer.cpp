@@ -281,7 +281,7 @@ int ServerPlayer::getHandcardNum() const
 void ServerPlayer::setSocket(ClientSocket *socket)
 {
     if (socket) {
-        connect(socket, SIGNAL(disconnected()), this, SIGNAL(disconnected()));
+        connect(socket, &ClientSocket::disconnected, this, &ServerPlayer::disconnected);
         connect(socket, SIGNAL(message_got(const char *)), this, SLOT(getMessage(const char *)));
         connect(this, SIGNAL(message_ready(QString)), this, SLOT(sendMessage(QString)));
     } else {
@@ -360,7 +360,8 @@ QString ServerPlayer::findReasonable(const QStringList &generals, bool no_unreas
                     continue;
             }
 
-            if (Config.EnableHegemony && getGeneral() && getGeneral()->getKingdom() != Sanguosha->getGeneral(name)->getKingdom())
+            if (Config.EnableHegemony && getGeneral()
+                && getGeneral()->getKingdom() != Sanguosha->getGeneral(name)->getKingdom())
                 continue;
         }
         if (Config.EnableBasara) {
@@ -368,8 +369,8 @@ QString ServerPlayer::findReasonable(const QStringList &generals, bool no_unreas
             if (ban_list.contains(name))
                 continue;
         }
-        if (Config.GameMode.endsWith("p") || Config.GameMode.endsWith("pd") || Config.GameMode.endsWith("pz") || Config.GameMode.contains("_mini_")
-            || Config.GameMode == "custom_scenario") {
+        if (Config.GameMode.endsWith("p") || Config.GameMode.endsWith("pd") || Config.GameMode.endsWith("pz")
+            || Config.GameMode.contains("_mini_") || Config.GameMode == "custom_scenario") {
             QStringList ban_list = Config.value("Banlist/Roles").toStringList();
             if (ban_list.contains(name))
                 continue;
@@ -626,7 +627,8 @@ bool ServerPlayer::pindian(ServerPlayer *target, const QString &reason, const Ca
     //move_table_1.from = pindian_struct.from;
     move_table_1.to = NULL;
     move_table_1.to_place = Player::PlaceTable;
-    move_table_1.reason = CardMoveReason(CardMoveReason::S_REASON_PINDIAN, pindian_struct.from->objectName(), pindian_struct.to->objectName(), pindian_struct.reason, QString());
+    move_table_1.reason = CardMoveReason(CardMoveReason::S_REASON_PINDIAN, pindian_struct.from->objectName(),
+                                         pindian_struct.to->objectName(), pindian_struct.reason, QString());
 
     CardsMoveStruct move_table_2;
     move_table_2.card_ids << pindian_struct.to_card->getEffectiveId();
@@ -688,8 +690,8 @@ bool ServerPlayer::pindian(ServerPlayer *target, const QString &reason, const Ca
         move_discard_1.from = pindian_struct.from;
         move_discard_1.to = NULL;
         move_discard_1.to_place = Player::DiscardPile;
-        move_discard_1.reason
-            = CardMoveReason(CardMoveReason::S_REASON_PINDIAN, pindian_struct.from->objectName(), pindian_struct.to->objectName(), pindian_struct.reason, QString());
+        move_discard_1.reason = CardMoveReason(CardMoveReason::S_REASON_PINDIAN, pindian_struct.from->objectName(),
+                                               pindian_struct.to->objectName(), pindian_struct.reason, QString());
         moves.append(move_discard_1);
     }
 
@@ -1236,7 +1238,8 @@ void ServerPlayer::addToPile(const QString &pile_name, QList<int> card_ids, bool
     return addToPile(pile_name, card_ids, open, open_players, CardMoveReason());
 }
 
-void ServerPlayer::addToPile(const QString &pile_name, QList<int> card_ids, bool open, QList<ServerPlayer *> open_players, CardMoveReason reason)
+void ServerPlayer::addToPile(const QString &pile_name, QList<int> card_ids, bool open, QList<ServerPlayer *> open_players,
+                             CardMoveReason reason)
 {
     if (!open) {
         if (open_players.isEmpty()) {
@@ -1261,7 +1264,8 @@ void ServerPlayer::addToPile(const QString &pile_name, QList<int> card_ids, bool
     room->moveCardsAtomic(move, open);
 }
 
-void ServerPlayer::exchangeFreelyFromPrivatePile(const QString &skill_name, const QString &pile_name, int upperlimit, bool include_equip)
+void ServerPlayer::exchangeFreelyFromPrivatePile(const QString &skill_name, const QString &pile_name, int upperlimit,
+                                                 bool include_equip)
 {
     QList<int> pile = getPile(pile_name);
     if (pile.isEmpty())

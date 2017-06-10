@@ -105,6 +105,8 @@ void Room::initCallbacks()
     m_callbacks[S_COMMAND_TRUST] = &Room::trustCommand;
     m_callbacks[S_COMMAND_PAUSE] = &Room::pauseCommand;
 
+    m_callbacks[S_COMMAND_CHECK_PASSWORD] = &Room::checkPassword;
+
     //Client request
     m_callbacks[S_COMMAND_NETWORK_DELAY_TEST] = &Room::networkDelayTestCommand;
 }
@@ -2053,7 +2055,7 @@ ServerPlayer *Room::addSocket(ClientSocket *socket)
     player->setSocket(socket);
     m_players << player;
 
-    connect(player, SIGNAL(disconnected()), this, SLOT(reportDisconnection()));
+    connect(player, &ServerPlayer::disconnected, this, &Room::reportDisconnection);
     connect(player, SIGNAL(request_got(QString)), this, SLOT(processClientPacket(QString)));
 
     return player;
@@ -2567,6 +2569,64 @@ bool Room::pauseCommand(ServerPlayer *player, const QVariant &arg)
             m_waitCond.wakeAll();
     }
     return true;
+}
+
+bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
+{
+    JsonArray args = arg.value<JsonArray>();
+    if (args.size() != 2)
+        return false;
+    if (!isString(args[0]) || !isString(args[1]))
+        return false;
+
+    QString user_name = QString::fromUtf8(QByteArray::fromBase64(args[0].toString().toLatin1()));
+    QString password = args[1].toString();
+
+    // Compare PWD
+    QString location = "account/";
+    if (!QDir(location).exists())
+        QDir().mkdir(location);
+    location += "accounts.csv";
+
+    QFile file(location);
+    if (!file.open(QIODevice::ReadWrite))
+        return false;
+
+    // find old user
+    QTextStream in(&file);
+
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        line = line.trimmed();
+        if (line.isEmpty())
+            continue;
+        QStringList _line = line.split(",");
+        if (_line.length() != 2)
+            continue;
+        if (_line[0] == user_name) {
+            if (password == _line[1])
+                return true;
+
+            JsonArray args;
+            args << (int)S_GAME_DISCONNECT;
+            doNotify(player, S_COMMAND_LOG_EVENT, args);
+
+            return false;
+        }
+    }
+
+    // add new user
+    if (password.isEmpty()) {
+        file.close();
+        return true;
+    } else {
+        QTextStream stream(&file);
+        stream.seek(file.size());
+        qDebug() << "create!";
+        stream << QString("%1,%2").arg(user_name).arg(password) << "\n";
+        file.close();
+        return true;
+    }
 }
 
 bool Room::processRequestCheat(ServerPlayer *player, const QVariant &arg)

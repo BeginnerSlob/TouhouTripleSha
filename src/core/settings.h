@@ -60,6 +60,7 @@ public:
     // client side
     QString HostAddress;
     QString UserName;
+    QString Password;
     QString UserAvatar;
     QStringList HistoryIPs;
     ushort DetectorPort;

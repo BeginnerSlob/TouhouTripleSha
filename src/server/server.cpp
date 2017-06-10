@@ -538,7 +538,8 @@ void ServerDialog::updateButtonEnablility(QAbstractButton *button)
     if (!button)
         return;
 #ifdef QT_DEBUG
-    if (button->objectName().contains("scenario") || button->objectName().contains("mini") || button->objectName().contains("1v1") || button->objectName().contains("1v3")) {
+    if (button->objectName().contains("scenario") || button->objectName().contains("mini")
+        || button->objectName().contains("1v1") || button->objectName().contains("1v3")) {
         basara_checkbox->setChecked(false);
         basara_checkbox->setEnabled(false);
     } else {
@@ -708,7 +709,8 @@ void BanlistDialog::add2ndGeneral(const QString &name)
 
 void BanlistDialog::addPair(const QString &first, const QString &second)
 {
-    if (banned_items["Pairs"].contains(QString("%1+%2").arg(first, second)) || banned_items["Pairs"].contains(QString("%1+%2").arg(second, first)))
+    if (banned_items["Pairs"].contains(QString("%1+%2").arg(first, second))
+        || banned_items["Pairs"].contains(QString("%1+%2").arg(second, first)))
         return;
     banned_items["Pairs"].append(QString("%1+%2").arg(first, second));
     QString trfirst = Sanguosha->translate(first);
@@ -758,7 +760,8 @@ void BanlistDialog::doAddButton()
         if (!pattern.isEmpty())
             addGeneral(pattern);
     } else {
-        FreeChooseDialog *chooser = new FreeChooseDialog(this, (list->objectName() == "Pairs") ? FreeChooseDialog::Pair : FreeChooseDialog::Multi);
+        FreeChooseDialog *chooser
+            = new FreeChooseDialog(this, (list->objectName() == "Pairs") ? FreeChooseDialog::Pair : FreeChooseDialog::Multi);
         connect(chooser, SIGNAL(general_chosen(QString)), this, SLOT(addGeneral(QString)));
         connect(chooser, SIGNAL(pair_chosen(QString, QString)), this, SLOT(addPair(QString, QString)));
         chooser->exec();
@@ -1460,6 +1463,10 @@ void Server::processNewConnection(ClientSocket *socket)
     Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_CHECK_VERSION);
     packet.setMessageBody(QVariant(Sanguosha->getVersion()));
     socket->send(packet.toString());
+
+    Packet packet3(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_CHECK_PASSWORD);
+    packet3.setMessageBody(QVariant());
+    socket->send(packet3.toString());
 
     Packet packet2(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_SETUP);
     packet2.setMessageBody(QVariant(Sanguosha->getSetupString()));
