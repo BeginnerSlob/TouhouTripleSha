@@ -42,6 +42,7 @@ class ExtraCollateralCard : public SkillCard
 public:
     Q_INVOKABLE ExtraCollateralCard();
 
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
@@ -53,6 +54,7 @@ class ExtraFeintAttackCard : public SkillCard
 public:
     Q_INVOKABLE ExtraFeintAttackCard();
 
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
@@ -127,7 +129,8 @@ class IkJiaolian : public TriggerSkill
 
 public:
     IkJiaolian();
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &data, ServerPlayer *&) const;
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &data,
+                                    ServerPlayer *&) const;
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &, ServerPlayer *) const;
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *zhangchunhua, QVariant &, ServerPlayer *) const;
 
