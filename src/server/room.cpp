@@ -2586,6 +2586,50 @@ bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
     QString location = "account/";
     if (!QDir(location).exists())
         QDir().mkdir(location);
+/* sql
+    QSqlDatabase m_dbTest = QSqlDatabase::addDatabase("QSQLITE");
+    m_dbTest.setDatabaseName("account/accounts.db");
+    if (m_dbTest.open())
+        qDebug() << "database succeeded to open";
+    else
+        qDebug() << "database failed to open";
+
+    QSqlQuery query(m_dbTest);
+    query.exec("select count(*) from sqlite_master where type='table' and name='users'");
+    if (query.next()) {
+        qDebug() << "table does not exist";
+        query.exec("CREATE TABLE \"users\"([user_name] varchar(20) NOT NULL,[password] varchar(32) NOT NULL, Primary "
+                   "Key(user_name) ON CONFLICT Ignore);");
+    } else
+        qDebug() << "table exists";
+
+    query.exec(QString("SELECT * FROM users WHERE user_name='%1'").arg(user_name));
+    if (query.next()) {
+        if (password == query.value(1).toString()) {
+            m_dbTest.close();
+            return true;
+        }
+
+        JsonArray args;
+        args << (int)S_GAME_DISCONNECT;
+        doNotify(player, S_COMMAND_LOG_EVENT, args);
+
+        m_dbTest.close();
+        return false;
+    }
+
+    // add new user
+    if (password.isEmpty()) {
+        qDebug() << "guest";
+        m_dbTest.close();
+        return true;
+    } else {
+        qDebug() << "register";
+        query.exec(QString("INSERT INTO \"users\" VALUES('%1', '%2');").arg(user_name).arg(password));
+        m_dbTest.close();
+        return true;
+    }
+*/
     location += "accounts.csv";
 
     QFile file(location);
@@ -2595,16 +2639,18 @@ bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
     // find old user
     QTextStream in(&file);
 
+    int uid = 0;
     while (!in.atEnd()) {
         QString line = in.readLine();
         line = line.trimmed();
         if (line.isEmpty())
             continue;
         QStringList _line = line.split(",");
-        if (_line.length() != 2)
+        if (_line.length() != 3)
             continue;
-        if (_line[0] == user_name) {
-            if (password == _line[1])
+        ++ uid;
+        if (_line[1] == user_name) {
+            if (password == _line[2])
                 return true;
 
             JsonArray args;
@@ -2622,9 +2668,19 @@ bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
     } else {
         QTextStream stream(&file);
         stream.seek(file.size());
-        qDebug() << "create!";
-        stream << QString("%1,%2").arg(user_name).arg(password) << "\n";
+        stream << QString("%1,%2,%3").arg(uid).arg(user_name).arg(password) << "\n";
         file.close();
+
+        QFile file2(QString("account/%1_zhangong.csv").arg(uid));
+        if (!file2.open(QIODevice::ReadWrite))
+            return false;
+        file2.close();
+
+        QFile file3(QString("account/%1_zhanji.csv").arg(uid));
+        if (!file3.open(QIODevice::ReadWrite))
+            return false;
+        file3.close();
+
         return true;
     }
 }
