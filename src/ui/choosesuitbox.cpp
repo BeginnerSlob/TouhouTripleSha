@@ -19,12 +19,11 @@
     *********************************************************************/
 
 #include "choosesuitbox.h"
+#include "client.h"
+#include "clientstruct.h"
+#include "engine.h"
 #include "skin-bank.h"
 #include "timed-progressbar.h"
-#include "clientstruct.h"
-#include "client.h"
-#include "button.h"
-#include "engine.h"
 
 #include <QGraphicsProxyWidget>
 #include <QGraphicsSceneMouseEvent>
@@ -179,7 +178,8 @@ void ChooseSuitBox::chooseSuit(const QStringList &suits)
             progressBar->setTimerEnabled(true);
             progressBarItem = new QGraphicsProxyWidget(this);
             progressBarItem->setWidget(progressBar);
-            progressBarItem->setPos(boundingRect().center().x() - progressBarItem->boundingRect().width() / 2, boundingRect().height() - 20);
+            progressBarItem->setPos(boundingRect().center().x() - progressBarItem->boundingRect().width() / 2,
+                                    boundingRect().height() - 20);
             connect(progressBar, &QSanCommandProgressBar::timedOut, this, &ChooseSuitBox::reply);
         }
         progressBar->setCountdown(QSanProtocol::S_COMMAND_MULTIPLE_CHOICE);
@@ -203,7 +203,7 @@ void ChooseSuitBox::clear()
         progressBar = NULL;
     }
 
-    foreach(SuitOptionButton *button, buttons)
+    foreach (SuitOptionButton *button, buttons)
         button->deleteLater();
 
     buttons.clear();

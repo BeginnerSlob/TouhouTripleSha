@@ -3008,7 +3008,7 @@ void RoomScene::changeHp(const QString &who, int delta, DamageStruct::Nature nat
             return;
         }
 
-        QString damage_effect;
+        //QString damage_effect;
         QString from_general = ClientInstance->getPlayer(who)->objectName();
         log_box->appendLog("#GetHp", from_general, QStringList(), QString(), hp, maxhp);
         /*switch (delta) {

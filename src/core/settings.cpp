@@ -24,8 +24,9 @@ const int Settings::S_MOVE_CARD_ANIMATION_DURATION = 600;
 const int Settings::S_JUDGE_ANIMATION_DURATION = 1200;
 const int Settings::S_JUDGE_LONG_DELAY = 800;
 
-const QString Settings::m_defaultMusicPath = "audio/bgm/1.ogg;audio/bgm/2.ogg;audio/bgm/3.ogg;audio/bgm/4.ogg;audio/bgm/5.ogg;audio/bgm/6.ogg;audio/bgm/7.ogg;audio/bgm/"
-                                             "8.ogg;audio/bgm/9.ogg;audio/bgm/10.ogg;audio/bgm/11.ogg;audio/bgm/12.ogg";
+const QString Settings::m_defaultMusicPath = "audio/bgm/1.ogg;audio/bgm/2.ogg;audio/bgm/3.ogg;audio/bgm/4.ogg;audio/bgm/"
+                                             "5.ogg;audio/bgm/6.ogg;audio/bgm/7.ogg;audio/bgm/8.ogg;audio/bgm/9.ogg;audio/bgm/"
+                                             "10.ogg;audio/bgm/11.ogg;audio/bgm/12.ogg";
 
 Settings::Settings()
 #ifdef Q_OS_WIN32
@@ -43,13 +44,23 @@ void Settings::init()
 {
     lua_State *lua = Sanguosha->getLuaState();
     if (!qApp->arguments().contains("-server")) {
-        QString font_path = value("DefaultFontPath", "font/font.ttf").toString();
+        QVariant app_font = value("AppFont");
+        QVariant ui_font = value("UIFont");
+        QString font_path = value("DefaultFontPath", "font/wqy-microhei.ttc").toString();
         int font_id = QFontDatabase::addApplicationFont(font_path);
         if (font_id != -1) {
             QString font_family = QFontDatabase::applicationFontFamilies(font_id).first();
             BigFont.setFamily(font_family);
             SmallFont.setFamily(font_family);
             TinyFont.setFamily(font_family);
+            if (app_font == QVariant())
+                AppFont = QFont(font_family, 9);
+            else
+                AppFont = app_font.value<QFont>();
+            if (ui_font == QVariant())
+                UIFont = QFont(font_family, 9);
+            else
+                UIFont = ui_font.value<QFont>();
         } else
             QMessageBox::warning(NULL, tr("Warning"), tr("Font file %1 could not be loaded!").arg(font_path));
 
@@ -61,9 +72,8 @@ void Settings::init()
         TinyFont.setPixelSize(tiny_font);
 
         SmallFont.setWeight(QFont::Bold);
-
-        AppFont = value("AppFont", QApplication::font("QMainWindow")).value<QFont>();
-        UIFont = value("UIFont", QApplication::font("QTextEdit")).value<QFont>();
+        //AppFont = value("AppFont", QApplication::font("QMainWindow")).value<QFont>();
+        //UIFont = value("UIFont", QApplication::font("QTextEdit")).value<QFont>();
         TextEditColor = QColor(value("TextEditColor", "white").toString());
     }
 

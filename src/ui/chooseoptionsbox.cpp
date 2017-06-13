@@ -47,7 +47,8 @@ ChooseOptionsBox::ChooseOptionsBox()
 
 QRectF ChooseOptionsBox::boundingRect() const
 {
-    const int width = getButtonWidth() * (qMax(options.length(), 1)) + outerBlankWidth * 2 + (qMax(options.length(), 1) - 1) * interval;
+    const int width
+        = getButtonWidth() * (qMax(options.length(), 1)) + outerBlankWidth * 2 + (qMax(options.length(), 1) - 1) * interval;
 
     int max = 0;
     foreach (const QString &str, options)
@@ -118,7 +119,8 @@ void ChooseOptionsBox::chooseOption(const QStringList &options)
             progressBar->setTimerEnabled(true);
             progressBarItem = new QGraphicsProxyWidget(this);
             progressBarItem->setWidget(progressBar);
-            progressBarItem->setPos(boundingRect().center().x() - progressBarItem->boundingRect().width() / 2, boundingRect().height() - 20);
+            progressBarItem->setPos(boundingRect().center().x() - progressBarItem->boundingRect().width() / 2,
+                                    boundingRect().height() - 20);
             connect(progressBar, &QSanCommandProgressBar::timedOut, this, &ChooseOptionsBox::reply);
         }
         progressBar->setCountdown(QSanProtocol::S_COMMAND_MULTIPLE_CHOICE);

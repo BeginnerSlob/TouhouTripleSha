@@ -2638,6 +2638,7 @@ bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
 
     // find old user
     QTextStream in(&file);
+    in.setCodec("UTF-8");
 
     int uid = 0;
     while (!in.atEnd()) {
@@ -2651,6 +2652,7 @@ bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
         ++uid;
         if (_line[1] == user_name) {
             if (password == _line[2]) {
+                in.flush();
                 file.close();
                 return true;
             }
@@ -2659,10 +2661,12 @@ bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
             args << (int)S_GAME_DISCONNECT;
             doNotify(player, S_COMMAND_LOG_EVENT, args);
 
+            in.flush();
             file.close();
             return false;
         }
     }
+    in.flush();
 
     // add new user
     if (password.isEmpty()) {
@@ -2671,7 +2675,9 @@ bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
     } else {
         QTextStream stream(&file);
         stream.seek(file.size());
+        stream.setCodec("UTF-8");
         stream << QString("%1,%2,%3").arg(uid).arg(user_name).arg(password) << "\n";
+        stream.flush();
         file.close();
 
         QFile file2(QString("account/%1_zhangong.csv").arg(uid));
