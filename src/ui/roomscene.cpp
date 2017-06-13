@@ -285,14 +285,14 @@ RoomScene::RoomScene(QMainWindow *main_window)
     chat_edit->setMaxLength(500);
     chat_edit_widget = addWidget(chat_edit);
     chat_edit_widget->setObjectName("chat_edit_widget");
-    chat_edit_widget->setZValue(-2.0);
+    chat_edit_widget->setZValue(0.9);
     connect(chat_edit, &QLineEdit::returnPressed, this, &RoomScene::speak);
 #if QT_VERSION >= 0x040700
     chat_edit->setPlaceholderText(tr("Please enter text to chat ... "));
 #endif
 
     chat_widget = new ChatWidget();
-    chat_widget->setZValue(-2.1);
+    chat_widget->setZValue(0.7);
     addItem(chat_widget);
     connect(chat_widget, &ChatWidget::return_button_click, this, &RoomScene::speak);
     connect(chat_widget, &ChatWidget::chat_widget_msg, this, &RoomScene::appendChatEdit);

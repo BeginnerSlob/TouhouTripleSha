@@ -140,14 +140,14 @@ ChatWidget::ChatWidget()
 
     chat_face_board = new MyPixmapItem(QPixmap("image/system/chatface/faceboard.png"), this);
     chat_face_board->setSize(160, 180);
-    chat_face_board->setPos(-160 + 74, -180 - 1); // 24 + 24 + 24 + 2 = 74
+    chat_face_board->setPos(-160 + 74, -180 - 5); // 24 + 24 + 24 + 2 = 74
     chat_face_board->setZValue(10000);
     chat_face_board->setVisible(false);
     chat_face_board->itemName = "faceboard";
 
     easy_text_board = new MyPixmapItem(QPixmap("image/system/chatface/easytextboard.png"), this);
     easy_text_board->setSize(273, 222);
-    easy_text_board->setPos(-199, -223);
+    easy_text_board->setPos(-199, -227);
     easy_text_board->setZValue(10000);
     easy_text_board->setVisible(false);
     easy_text_board->itemName = "easytextboard";
