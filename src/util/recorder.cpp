@@ -17,18 +17,16 @@ Recorder::Recorder(QObject *parent)
     watch.start();
 }
 
-void Recorder::record(const char *line)
+void Recorder::recordLine(const QByteArray &line)
 {
-    recordLine(line);
-}
+    if (line.isEmpty())
+        return;
 
-void Recorder::recordLine(const QString &line)
-{
-    int elapsed = watch.elapsed();
-    if (line.endsWith("\n"))
-        data.append(QString("%1 %2").arg(elapsed).arg(line));
-    else
-        data.append(QString("%1 %2\n").arg(elapsed).arg(line));
+    data.append(QString::number(watch.elapsed()));
+    data.append(' ');
+    data.append(line);
+    if (!line.endsWith('\n'))
+        data.append('\n');
 }
 
 bool Recorder::save(const QString &filename) const
@@ -104,24 +102,13 @@ Replayer::Replayer(QObject *parent, const QString &filename)
     if (!device->open(QIODevice::ReadOnly | QIODevice::Text))
         return;
 
-    typedef char buffer_t[65535];
-
     while (!device->atEnd()) {
-        buffer_t line;
-        memset(line, 0, sizeof(buffer_t));
-        device->readLine(line, sizeof(buffer_t));
-
-        char *space = strchr(line, ' ');
-        if (space == NULL)
-            continue;
-
-        *space = '\0';
-        QString cmd = space + 1;
-        int elapsed = atoi(line);
+        QByteArray line = device->readLine();
+        int split = line.indexOf(' ');
 
         Pair pair;
-        pair.elapsed = elapsed;
-        pair.cmd = cmd;
+        pair.elapsed = line.left(split).toInt();
+        pair.cmd = line.mid(split + 1);
 
         pairs << pair;
     }
@@ -201,7 +188,7 @@ void Replayer::run()
 
         bool delayed = true;
         Packet packet;
-        if (packet.parse(pair.cmd.toLatin1().constData())) {
+        if (packet.parse(pair.cmd)) {
             if (nondelays.contains(packet.getCommandType()))
                 delayed = false;
         }

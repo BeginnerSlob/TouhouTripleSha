@@ -39,10 +39,11 @@ RoleComboBox::RoleComboBox(QGraphicsItem *parent)
     QSize size(S_ROLE_COMBO_BOX_WIDTH, S_ROLE_COMBO_BOX_HEIGHT);
     m_currentRole = new RoleComboBoxItem("unknown", index, size);
     m_currentRole->setParentItem(this);
-    connect(m_currentRole, SIGNAL(clicked()), this, SLOT(expand()));
+    connect(m_currentRole, &RoleComboBoxItem::clicked, this, &RoleComboBox::expand);
     if (ServerInfo.EnableHegemony)
         items << new RoleComboBoxItem("lord", index, size);
-    items << new RoleComboBoxItem("loyalist", index, size) << new RoleComboBoxItem("rebel", index, size) << new RoleComboBoxItem("renegade", index, size);
+    items << new RoleComboBoxItem("loyalist", index, size) << new RoleComboBoxItem("rebel", index, size)
+          << new RoleComboBoxItem("renegade", index, size);
     for (int i = 0; i < items.length(); i++) {
         RoleComboBoxItem *item = items.at(i);
         item->setPos(0, (i + 1) * (S_ROLE_COMBO_BOX_HEIGHT + S_ROLE_COMBO_BOX_GAP));
@@ -51,7 +52,7 @@ RoleComboBox::RoleComboBox(QGraphicsItem *parent)
     foreach (RoleComboBoxItem *item, items) {
         item->setParentItem(this);
         item->hide();
-        connect(item, SIGNAL(clicked()), this, SLOT(collapse()));
+        connect(item, &RoleComboBoxItem::clicked, this, &RoleComboBox::collapse);
     }
 }
 
@@ -69,8 +70,8 @@ QRectF RoleComboBox::boundingRect() const
 
 void RoleComboBox::collapse()
 {
-    disconnect(m_currentRole, SIGNAL(clicked()), this, SLOT(collapse()));
-    connect(m_currentRole, SIGNAL(clicked()), this, SLOT(expand()));
+    disconnect(m_currentRole, &RoleComboBoxItem::clicked, this, &RoleComboBox::collapse);
+    connect(m_currentRole, &RoleComboBoxItem::clicked, this, &RoleComboBox::expand);
     RoleComboBoxItem *clicked_item = qobject_cast<RoleComboBoxItem *>(sender());
     foreach (RoleComboBoxItem *item, items)
         item->hide();
@@ -82,7 +83,7 @@ void RoleComboBox::expand()
     foreach (RoleComboBoxItem *item, items)
         item->show();
     m_currentRole->setRole("unknown");
-    connect(m_currentRole, SIGNAL(clicked()), this, SLOT(collapse()));
+    connect(m_currentRole, &RoleComboBoxItem::clicked, this, &RoleComboBox::collapse);
 }
 
 void RoleComboBox::toggle()
@@ -100,8 +101,8 @@ void RoleComboBox::toggle()
 void RoleComboBox::fix(const QString &role)
 {
     if (_m_fixedRole.isNull()) {
-        disconnect(m_currentRole, SIGNAL(clicked()), this, SLOT(expand()));
-        connect(m_currentRole, SIGNAL(clicked()), this, SLOT(toggle()));
+        disconnect(m_currentRole, &RoleComboBoxItem::clicked, this, &RoleComboBox::expand);
+        connect(m_currentRole, &RoleComboBoxItem::clicked, this, &RoleComboBox::toggle);
     }
     m_currentRole->setRole(role);
     _m_fixedRole = role;

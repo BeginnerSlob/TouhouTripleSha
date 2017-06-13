@@ -26,7 +26,8 @@ public:
         if (triggerEvent == CardResponded && TriggerSkill::triggerable(zhangjiao)) {
             const Card *card_star = data.value<CardResponseStruct>().m_card;
             if (card_star->isKindOf("Jink")) {
-                ServerPlayer *target = room->askForPlayerChosen(zhangjiao, room->getAlivePlayers(), objectName(), "leiji-invoke", true, true);
+                ServerPlayer *target
+                    = room->askForPlayerChosen(zhangjiao, room->getAlivePlayers(), objectName(), "leiji-invoke", true, true);
                 if (target) {
                     room->broadcastSkillInvoke(objectName());
 
@@ -123,7 +124,8 @@ public:
                     foreach (const Card *judge, p->getJudgingArea()) {
                         if (judge->getTypeId() == Card::TypeSkill) {
                             const Card *real_card = Sanguosha->getEngineCard(judge->getEffectiveId());
-                            if (real_card->getTypeId() == Card::TypeEquip && player->canDiscard(p, real_card->getEffectiveId())) {
+                            if (real_card->getTypeId() == Card::TypeEquip
+                                && player->canDiscard(p, real_card->getEffectiveId())) {
                                 targets << p;
                                 break;
                             }
@@ -178,7 +180,7 @@ GuhuoDialog::GuhuoDialog(const QString &object, bool left, bool right)
         layout->addWidget(createRight());
     setLayout(layout);
 
-    connect(group, SIGNAL(buttonClicked(QAbstractButton *)), this, SLOT(selectCard(QAbstractButton *)));
+    connect(group, (void (QButtonGroup::*)(QAbstractButton *))(&QButtonGroup::buttonClicked), this, &GuhuoDialog::selectCard);
 }
 
 void GuhuoDialog::popup()
@@ -221,7 +223,8 @@ QGroupBox *GuhuoDialog::createLeft()
 
     QList<const Card *> cards = Sanguosha->findChildren<const Card *>();
     foreach (const Card *card, cards) {
-        if (card->getTypeId() == Card::TypeBasic && !map.contains(card->objectName()) && !ServerInfo.Extensions.contains("!" + card->getPackage())) {
+        if (card->getTypeId() == Card::TypeBasic && !map.contains(card->objectName())
+            && !ServerInfo.Extensions.contains("!" + card->getPackage())) {
             Card *c = Sanguosha->cloneCard(card->objectName());
             c->setParent(this);
             layout->addWidget(createButton(c));
@@ -252,7 +255,8 @@ QGroupBox *GuhuoDialog::createRight()
 
     QList<const Card *> cards = Sanguosha->findChildren<const Card *>();
     foreach (const Card *card, cards) {
-        if (card->isNDTrick() && !map.contains(card->objectName()) && !ServerInfo.Extensions.contains("!" + card->getPackage())) {
+        if (card->isNDTrick() && !map.contains(card->objectName())
+            && !ServerInfo.Extensions.contains("!" + card->getPackage())) {
             Card *c = Sanguosha->cloneCard(card->objectName());
             c->setSkillName(object_name);
             c->setParent(this);
@@ -382,7 +386,8 @@ bool GuhuoCard::guhuo(ServerPlayer *yuji) const
             moves.append(move);
             room->moveCardsAtomic(moves, true);
         } else {
-            room->moveCardTo(this, yuji, NULL, Player::DiscardPile, CardMoveReason(CardMoveReason::S_REASON_PUT, yuji->objectName(), QString(), "guhuo"), true);
+            room->moveCardTo(this, yuji, NULL, Player::DiscardPile,
+                             CardMoveReason(CardMoveReason::S_REASON_PUT, yuji->objectName(), QString(), "guhuo"), true);
         }
         foreach (ServerPlayer *player, players) {
             room->setEmotion(player, ".");
@@ -447,7 +452,8 @@ const Card *GuhuoCard::validate(CardUseStruct &card_use) const
     Room *room = yuji->getRoom();
 
     QString to_guhuo = user_string;
-    if (user_string == "slash" && Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+    if (user_string == "slash"
+        && Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
         QStringList guhuo_list;
         guhuo_list << "slash";
         if (!ServerInfo.Extensions.contains("!maneuvering"))
@@ -637,7 +643,7 @@ public:
             return NULL;
     }
 
-    virtual QDialog *getDialog() const
+    virtual SkillDialog *getDialog() const
     {
         return GuhuoDialog::getInstance("guhuo");
     }
@@ -739,7 +745,8 @@ public:
 
     virtual bool isSkillValid(const Player *player, const Skill *skill) const
     {
-        return skill->objectName() == "chanyuan" || !player->hasSkill("chanyuan") || player->getHp() != 1 || skill->isAttachedLordSkill();
+        return skill->objectName() == "chanyuan" || !player->hasSkill("chanyuan") || player->getHp() != 1
+            || skill->isAttachedLordSkill();
     }
 };
 

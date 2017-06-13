@@ -993,12 +993,12 @@ void Room::removeReihouCard(ServerPlayer *player, bool isYaodao)
 
 void Room::broadcastInvoke(const char *method, const QString &arg, ServerPlayer *except)
 {
-    broadcast(QString("%1 %2").arg(method).arg(arg), except);
+    broadcast(QString("%1 %2").arg(method).arg(arg).toLatin1(), except);
 }
 
 void Room::broadcastInvoke(const QSanProtocol::AbstractPacket *packet, ServerPlayer *except)
 {
-    broadcast(packet->toString(), except);
+    broadcast(packet->toJson(), except);
 }
 
 bool Room::getResult(ServerPlayer *player, time_t timeOut)
@@ -2056,7 +2056,7 @@ ServerPlayer *Room::addSocket(ClientSocket *socket)
     m_players << player;
 
     connect(player, &ServerPlayer::disconnected, this, &Room::reportDisconnection);
-    connect(player, SIGNAL(request_got(QString)), this, SLOT(processClientPacket(QString)));
+    connect(player, &ServerPlayer::request_got, this, &Room::processClientPacket);
 
     return player;
 }
@@ -2110,7 +2110,7 @@ const Scenario *Room::getScenario() const
     return scenario;
 }
 
-void Room::broadcast(const QString &message, ServerPlayer *except)
+void Room::broadcast(const QByteArray &message, ServerPlayer *except)
 {
     foreach (ServerPlayer *player, m_players) {
         if (player != except)
@@ -2579,14 +2579,14 @@ bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
     if (!isString(args[0]) || !isString(args[1]))
         return false;
 
-    QString user_name = QString::fromUtf8(QByteArray::fromBase64(args[0].toString().toLatin1()));
+    QString user_name = args[0].toString();
     QString password = args[1].toString();
 
     // Compare PWD
     QString location = "account/";
     if (!QDir(location).exists())
         QDir().mkdir(location);
-/* sql
+    /* sql
     QSqlDatabase m_dbTest = QSqlDatabase::addDatabase("QSQLITE");
     m_dbTest.setDatabaseName("account/accounts.db");
     if (m_dbTest.open())
@@ -2648,15 +2648,18 @@ bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
         QStringList _line = line.split(",");
         if (_line.length() != 3)
             continue;
-        ++ uid;
+        ++uid;
         if (_line[1] == user_name) {
-            if (password == _line[2])
+            if (password == _line[2]) {
+                file.close();
                 return true;
+            }
 
             JsonArray args;
             args << (int)S_GAME_DISCONNECT;
             doNotify(player, S_COMMAND_LOG_EVENT, args);
 
+            file.close();
             return false;
         }
     }
@@ -2766,10 +2769,10 @@ bool Room::processRequestSurrender(ServerPlayer *player, const QVariant &)
     return true;
 }
 
-void Room::processClientPacket(const QString &request)
+void Room::processClientPacket(const QByteArray &request)
 {
     Packet packet;
-    if (packet.parse(request.toLatin1().constData())) {
+    if (packet.parse(request)) {
         ServerPlayer *player = qobject_cast<ServerPlayer *>(sender());
         if (game_finished) {
             if (player && player->isOnline())
@@ -2779,7 +2782,7 @@ void Room::processClientPacket(const QString &request)
         if (packet.getPacketType() == S_TYPE_REPLY) {
             if (player == NULL)
                 return;
-            player->setClientReplyString(request);
+            player->setClientReplyString(request.constData());
             processResponse(player, &packet);
         } else if (packet.getPacketType() == S_TYPE_REQUEST || packet.getPacketType() == S_TYPE_NOTIFICATION) {
             CallBack callback = m_callbacks[packet.getCommandType()];
@@ -3124,20 +3127,20 @@ void Room::run()
         thread_3v3 = new RoomThread3v3(this);
         thread_3v3->start();
 
-        connect(thread_3v3, SIGNAL(finished()), this, SLOT(startGame()));
-        connect(thread_3v3, SIGNAL(finished()), thread_3v3, SLOT(deleteLater()));
+        connect(thread_3v3, &RoomThread3v3::finished, this, &Room::startGame);
+        connect(thread_3v3, &RoomThread3v3::finished, thread_3v3, &RoomThread3v3::deleteLater);
     } else if (mode == "06_XMode") {
         thread_xmode = new RoomThreadXMode(this);
         thread_xmode->start();
 
-        connect(thread_xmode, SIGNAL(finished()), this, SLOT(startGame()));
-        connect(thread_xmode, SIGNAL(finished()), thread_xmode, SLOT(deleteLater()));
+        connect(thread_xmode, &RoomThreadXMode::finished, this, &Room::startGame);
+        connect(thread_xmode, &RoomThreadXMode::finished, thread_xmode, &RoomThreadXMode::deleteLater);
     } else if (mode == "02_1v1") {
         thread_1v1 = new RoomThread1v1(this);
         thread_1v1->start();
 
-        connect(thread_1v1, SIGNAL(finished()), this, SLOT(startGame()));
-        connect(thread_1v1, SIGNAL(finished()), thread_1v1, SLOT(deleteLater()));
+        connect(thread_1v1, &RoomThread1v1::finished, this, &Room::startGame);
+        connect(thread_1v1, &RoomThread1v1::finished, thread_1v1, &RoomThread1v1::deleteLater);
     } else if (mode == "04_1v3") {
         ServerPlayer *lord = m_players.first();
         setPlayerProperty(lord, "general", "story002");
@@ -3327,18 +3330,18 @@ bool Room::_setPlayerGeneral(ServerPlayer *player, const QString &generalName, b
     return true;
 }
 
-bool Room::speakCommand(ServerPlayer *player, const QVariant &arg)
+bool Room::speakCommand(ServerPlayer *player, const QVariant &message)
 {
 #define _NO_BROADCAST_SPEAKING                     \
     {                                              \
         broadcast = false;                         \
         JsonArray nbbody;                          \
         nbbody << player->objectName();            \
-        nbbody << arg;                             \
+        nbbody << message;                         \
         doNotify(player, S_COMMAND_SPEAK, nbbody); \
     }
     bool broadcast = true;
-    QString sentence = QString::fromUtf8(QByteArray::fromBase64(arg.toString().toLatin1()));
+    QString sentence = message.toString();
     if (player && Config.EnableCheat) {
         if (sentence == ".BroadcastRoles") {
             _NO_BROADCAST_SPEAKING
@@ -3469,7 +3472,7 @@ bool Room::speakCommand(ServerPlayer *player, const QVariant &arg)
     if (broadcast) {
         JsonArray body;
         body << player->objectName();
-        body << arg;
+        body << message;
         doBroadcastNotify(S_COMMAND_SPEAK, body);
     }
     if (sentence.startsWith("/roll")) {
@@ -4056,7 +4059,7 @@ void Room::startGame()
     thread = new RoomThread(this);
     if (mode != "02_1v1" && mode != "06_3v3" && mode != "06_XMode")
         _m_roomState.reset();
-    connect(thread, SIGNAL(started()), this, SIGNAL(game_start()));
+    connect(thread, &RoomThread::started, this, &Room::game_start);
 
     if (!_virtual)
         thread->start();

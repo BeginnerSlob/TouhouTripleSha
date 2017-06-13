@@ -89,7 +89,7 @@ void Dashboard::showControlButtons()
 void Dashboard::showProgressBar(QSanProtocol::Countdown countdown)
 {
     _m_progressBar->setCountdown(countdown);
-    connect(_m_progressBar, SIGNAL(timedOut()), this, SIGNAL(progressBarTimedOut()));
+    connect(_m_progressBar, &QSanCommandProgressBar::timedOut, this, &Dashboard::progressBarTimedOut);
     _m_progressBar->show();
 #ifdef Q_OS_WIN
     if (_m_progressBar->hasTimer()) {
@@ -488,8 +488,8 @@ QSanSkillButton *Dashboard::addSkillButton(const QString &skillName)
             _m_equipSkillBtns[i] = new QSanInvokeSkillButton(this);
             _m_equipSkillBtns[i]->setSkill(skill);
             _m_equipSkillBtns[i]->setVisible(false);
-            connect(_m_equipSkillBtns[i], SIGNAL(clicked()), this, SLOT(_onEquipSelectChanged()));
-            connect(_m_equipSkillBtns[i], SIGNAL(enable_changed()), this, SLOT(_onEquipSelectChanged()));
+            connect(_m_equipSkillBtns[i], &QSanSkillButton::clicked, this, &Dashboard::_onEquipSelectChanged);
+            connect(_m_equipSkillBtns[i], &QSanSkillButton::enable_changed, this, &Dashboard::_onEquipSelectChanged);
             QSanSkillButton *btn = _m_equipSkillBtns[i];
             _mutexEquipAnim.unlock();
             return btn;
@@ -570,10 +570,10 @@ void Dashboard::_createExtraButtons()
 
     m_btnNoNullification->hide();
     m_btnShefu->hide();
-    connect(m_btnReverseSelection, SIGNAL(clicked()), this, SLOT(reverseSelection()));
-    connect(m_btnSortHandcard, SIGNAL(clicked()), this, SLOT(sortCards()));
-    connect(m_btnNoNullification, SIGNAL(clicked()), this, SLOT(cancelNullification()));
-    connect(m_btnShefu, SIGNAL(clicked()), this, SLOT(setShefuState()));
+    connect(m_btnReverseSelection, &QSanButton::clicked, this, &Dashboard::reverseSelection);
+    connect(m_btnSortHandcard, &QSanButton::clicked, this, &Dashboard::sortCards);
+    connect(m_btnNoNullification, &QSanButton::clicked, this, &Dashboard::cancelNullification);
+    connect(m_btnShefu, &QSanButton::clicked, this, &Dashboard::setShefuState);
 }
 
 void Dashboard::skillButtonActivated()
@@ -739,12 +739,12 @@ void Dashboard::_setEquipBorderAnimation(int index, bool turnOn)
     anim->setEndValue(newPos);
     anim->setDuration(200);
     _m_equipAnim[index]->addAnimation(anim);
-    connect(anim, SIGNAL(finished()), anim, SLOT(deleteLater()));
+    connect(anim, &QPropertyAnimation::finished, anim, &QPropertyAnimation::deleteLater);
     anim = new QPropertyAnimation(_m_equipRegions[index], "opacity");
     anim->setEndValue(255);
     anim->setDuration(200);
     _m_equipAnim[index]->addAnimation(anim);
-    connect(anim, SIGNAL(finished()), anim, SLOT(deleteLater()));
+    connect(anim, &QPropertyAnimation::finished, anim, &QPropertyAnimation::deleteLater);
     _m_equipAnim[index]->start();
 
     Q_ASSERT(_m_equipBorders[index]);
@@ -932,9 +932,9 @@ void Dashboard::sortCards()
     QAction *action3 = menu->addAction(tr("Sort by number"));
     action3->setData((int)ByNumber);
 
-    connect(action1, SIGNAL(triggered()), this, SLOT(beginSorting()));
-    connect(action2, SIGNAL(triggered()), this, SLOT(beginSorting()));
-    connect(action3, SIGNAL(triggered()), this, SLOT(beginSorting()));
+    connect(action1, &QAction::triggered, this, &Dashboard::beginSorting);
+    connect(action2, &QAction::triggered, this, &Dashboard::beginSorting);
+    connect(action3, &QAction::triggered, this, &Dashboard::beginSorting);
 
     QPointF posf = QCursor::pos();
     menu->popup(QPoint(posf.x(), posf.y()));
@@ -1033,9 +1033,9 @@ void Dashboard::setShefuState()
     action3->setCheckable(true);
     action3->setChecked(RoomSceneInstance->m_ShefuAskState == RoomScene::ShefuAskNone);
 
-    connect(action1, SIGNAL(triggered()), this, SLOT(changeShefuState()));
-    connect(action2, SIGNAL(triggered()), this, SLOT(changeShefuState()));
-    connect(action3, SIGNAL(triggered()), this, SLOT(changeShefuState()));
+    connect(action1, &QAction::triggered, this, &Dashboard::changeShefuState);
+    connect(action2, &QAction::triggered, this, &Dashboard::changeShefuState);
+    connect(action3, &QAction::triggered, this, &Dashboard::changeShefuState);
 
     QPointF posf = QCursor::pos();
     menu->popup(QPoint(posf.x(), posf.y()));
@@ -1105,7 +1105,7 @@ void Dashboard::startPending(const ViewAsSkill *skill)
 
     for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
         if (_m_equipCards[i] != NULL)
-            connect(_m_equipCards[i], SIGNAL(mark_changed()), this, SLOT(onMarkChanged()));
+            connect(_m_equipCards[i], &CardItem::mark_changed, this, &Dashboard::onMarkChanged);
     }
 
     updatePending();
@@ -1142,7 +1142,7 @@ void Dashboard::stopPending()
             equip->setMarkable(false);
             _m_equipRegions[i]->setOpacity(1.0);
             equip->setEnabled(false);
-            disconnect(equip, SIGNAL(mark_changed()));
+            disconnect(equip, &CardItem::mark_changed, this, &Dashboard::onMarkChanged);
         }
     }
     pendings.clear();

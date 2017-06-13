@@ -27,7 +27,7 @@ public:
     void setSocket(ClientSocket *socket);
     void invoke(const QSanProtocol::AbstractPacket *packet);
     QString reportHeader() const;
-    void unicast(const QString &message);
+    void unicast(const QByteArray &message);
     void drawCard(const Card *card);
     Room *getRoom() const;
     void broadcastSkillInvoke(const Card *card) const;
@@ -203,13 +203,13 @@ private:
     QVariant _m_clientResponse;
 
 private slots:
-    void getMessage(const char *message);
-    void sendMessage(const QString &message);
+    void getMessage(QByteArray request);
+    void sendMessage(const QByteArray &message);
 
 signals:
     void disconnected();
-    void request_got(const QString &request);
-    void message_ready(const QString &msg);
+    void request_got(const QByteArray &request);
+    void message_ready(const QByteArray &msg);
 };
 
 #endif

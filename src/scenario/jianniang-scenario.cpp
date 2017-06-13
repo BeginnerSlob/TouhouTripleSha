@@ -1629,7 +1629,7 @@ public:
         return false;
     }
 
-    virtual QDialog *getDialog() const
+    virtual SkillDialog *getDialog() const
     {
         return ThMimengDialog::getInstance("jnhuoji", true, false);
     }

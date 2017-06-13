@@ -4,11 +4,22 @@
 class Player;
 class Card;
 class ServerPlayer;
-class QDialog;
 
 #include "room.h"
 
 #include <QObject>
+#include <QDialog>
+
+class SkillDialog : public QDialog
+{
+    Q_OBJECT
+
+public slots:
+    virtual void popup() = 0;
+
+signals:
+    void onButtonClick();
+};
 
 class Skill : public QObject
 {
@@ -36,7 +47,8 @@ public:
     bool isVisible() const;
 
     virtual int getEffectIndex(const ServerPlayer *player, const Card *card) const;
-    virtual QDialog *getDialog() const;
+    virtual SkillDialog *getDialog() const;
+    virtual QDialog *getHuanshenDialog() const; // for ikhuanshen
 
     void initMediaSource();
     void playAudioEffect(int index = -1, bool superpose = true) const;

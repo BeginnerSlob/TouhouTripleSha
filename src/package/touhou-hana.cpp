@@ -917,7 +917,8 @@ ThMimengDialog::ThMimengDialog(const QString &object, bool left, bool right, boo
         layout->addWidget(createRight());
     setLayout(layout);
 
-    connect(group, SIGNAL(buttonClicked(QAbstractButton *)), this, SLOT(selectCard(QAbstractButton *)));
+    connect(group, (void (QButtonGroup::*)(QAbstractButton *))(&QButtonGroup::buttonClicked), this,
+            &ThMimengDialog::selectCard);
 }
 
 bool ThMimengDialog::isButtonEnabled(const QString &button_name) const
@@ -1269,7 +1270,7 @@ public:
             return NULL;
     }
 
-    virtual QDialog *getDialog() const
+    virtual SkillDialog *getDialog() const
     {
         return ThMimengDialog::getInstance("thmimeng");
     }

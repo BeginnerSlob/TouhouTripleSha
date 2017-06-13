@@ -205,7 +205,7 @@ QSanSkillButton::QSanSkillButton(QGraphicsItem *parent)
     _m_canDisable = true;
     _m_skill = NULL;
     _m_viewAsSkill = NULL;
-    connect(this, SIGNAL(clicked()), this, SLOT(onMouseClick()));
+    connect(this, &QSanSkillButton::clicked, this, &QSanSkillButton::onMouseClick);
     _m_skill = NULL;
 }
 
@@ -240,7 +240,8 @@ void QSanSkillButton::setSkill(const Skill *skill)
 
     Skill::Frequency freq = skill->getFrequency(Self);
     if (freq == Skill::Frequent
-        || (freq == Skill::NotFrequent && skill->inherits("TriggerSkill") && !skill->inherits("WeaponSkill") && !skill->inherits("ArmorSkill") && _m_viewAsSkill == NULL)) {
+        || (freq == Skill::NotFrequent && skill->inherits("TriggerSkill") && !skill->inherits("WeaponSkill")
+            && !skill->inherits("ArmorSkill") && _m_viewAsSkill == NULL)) {
         setStyle(QSanButton::S_STYLE_TOGGLE);
         setState(freq == Skill::Frequent ? QSanButton::S_STATE_DOWN : QSanButton::S_STATE_UP);
         _setSkillType(QSanInvokeSkillButton::S_SKILL_FREQUENT);
@@ -292,12 +293,15 @@ void QSanInvokeSkillButton::_repaint()
     for (int i = 0; i < (int)S_NUM_BUTTON_STATES; i++) {
         _m_bgPixmap[i] = G_ROOM_SKIN.getSkillButtonPixmap((ButtonState)i, _m_skillType, _m_enumWidth);
         Q_ASSERT(!_m_bgPixmap[i].isNull());
-        const IQSanComponentSkin::QSanShadowTextFont &font = G_DASHBOARD_LAYOUT.getSkillTextFont((ButtonState)i, _m_skillType, _m_enumWidth);
+        const IQSanComponentSkin::QSanShadowTextFont &font
+            = G_DASHBOARD_LAYOUT.getSkillTextFont((ButtonState)i, _m_skillType, _m_enumWidth);
         QPainter painter(&_m_bgPixmap[i]);
         QString skillName = Sanguosha->translate(_m_skill->objectName());
         if (_m_enumWidth != S_WIDTH_WIDE)
             skillName = skillName.left(2);
-        font.paintText(&painter, (ButtonState)i == S_STATE_DOWN ? G_DASHBOARD_LAYOUT.m_skillTextAreaDown[_m_enumWidth] : G_DASHBOARD_LAYOUT.m_skillTextArea[_m_enumWidth],
+        font.paintText(&painter,
+                       (ButtonState)i == S_STATE_DOWN ? G_DASHBOARD_LAYOUT.m_skillTextAreaDown[_m_enumWidth]
+                                                      : G_DASHBOARD_LAYOUT.m_skillTextArea[_m_enumWidth],
                        Qt::AlignCenter, skillName);
     }
     setSize(_m_bgPixmap[0].size());
@@ -315,8 +319,10 @@ QSanSkillButton *QSanInvokeSkillDock::addSkillButtonByName(const QString &skillN
 
     const Skill *skill = Sanguosha->getSkill(skillName);
     button->setSkill(skill);
-    connect(button, SIGNAL(skill_activated(const Skill *)), this, SIGNAL(skill_activated(const Skill *)));
-    connect(button, SIGNAL(skill_deactivated(const Skill *)), this, SIGNAL(skill_deactivated(const Skill *)));
+    connect(button, (void (QSanInvokeSkillButton::*)(const Skill *))(&QSanInvokeSkillButton::skill_activated), this,
+            &QSanInvokeSkillDock::skill_activated);
+    connect(button, (void (QSanInvokeSkillButton::*)(const Skill *))(&QSanInvokeSkillButton::skill_deactivated), this,
+            &QSanInvokeSkillDock::skill_deactivated);
     _m_buttons.append(button);
     update();
     return button;
@@ -394,7 +400,8 @@ void QSanInvokeSkillDock::update()
         if (lordskillNum > 0) x_ls++;
         if (lordskillNum > 3) x_ls++;*/
         for (int i = 0; i < rows /* + x_ls*/; i++) {
-            int rowTop = (RoomSceneInstance->m_skillButtonSank) ? (-rowH - 2 * (rows /* + x_ls*/ - i - 1)) : ((-rows /* - x_ls*/ + i) * rowH);
+            int rowTop = (RoomSceneInstance->m_skillButtonSank) ? (-rowH - 2 * (rows /* + x_ls*/ - i - 1))
+                                                                : ((-rows /* - x_ls*/ + i) * rowH);
             int btnWidth = _m_width / btnNum[i];
             for (int j = 0; j < btnNum[i]; j++) {
                 QSanInvokeSkillButton *button = all_buttons[m++];

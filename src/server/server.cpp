@@ -82,7 +82,7 @@ QWidget *ServerDialog::createBasicTab()
     timeout_spinbox->setSuffix(tr(" seconds"));
     nolimit_checkbox = new QCheckBox(tr("No limit"));
     nolimit_checkbox->setChecked(Config.OperationNoLimit);
-    connect(nolimit_checkbox, SIGNAL(toggled(bool)), timeout_spinbox, SLOT(setDisabled(bool)));
+    connect(nolimit_checkbox, &QCheckBox::toggled, timeout_spinbox, &QSpinBox::setDisabled);
 #ifdef Q_OS_ANDROID
     pile_swapping_label = new QLabel(tr("Pile-swapping limitation"));
     pile_swapping_label->setToolTip(tr("-1 means no limitations"));
@@ -97,7 +97,7 @@ QWidget *ServerDialog::createBasicTab()
     // add 1v1 banlist edit button
     QPushButton *edit_button = new QPushButton(tr("Banlist ..."));
     edit_button->setFixedWidth(100);
-    connect(edit_button, SIGNAL(clicked()), this, SLOT(edit1v1Banlist()));
+    connect(edit_button, &QPushButton::clicked, this, &ServerDialog::edit1v1Banlist);
 
     QFormLayout *form_layout = new QFormLayout;
     form_layout->addRow(tr("Server name"), server_name_edit);
@@ -257,10 +257,10 @@ QWidget *ServerDialog::createAdvancedTab()
     free_assign_self_checkbox->setEnabled(free_assign_checkbox->isChecked());
     free_assign_self_checkbox->setVisible(Config.EnableCheat);
 
-    connect(enable_cheat_checkbox, SIGNAL(toggled(bool)), free_choose_checkbox, SLOT(setVisible(bool)));
-    connect(enable_cheat_checkbox, SIGNAL(toggled(bool)), free_assign_checkbox, SLOT(setVisible(bool)));
-    connect(enable_cheat_checkbox, SIGNAL(toggled(bool)), free_assign_self_checkbox, SLOT(setVisible(bool)));
-    connect(free_assign_checkbox, SIGNAL(toggled(bool)), free_assign_self_checkbox, SLOT(setEnabled(bool)));
+    connect(enable_cheat_checkbox, &QCheckBox::toggled, free_choose_checkbox, &QCheckBox::setVisible);
+    connect(enable_cheat_checkbox, &QCheckBox::toggled, free_assign_checkbox, &QCheckBox::setVisible);
+    connect(enable_cheat_checkbox, &QCheckBox::toggled, free_assign_self_checkbox, &QCheckBox::setVisible);
+    connect(free_assign_checkbox, &QCheckBox::toggled, free_assign_self_checkbox, &QCheckBox::setEnabled);
 
 #ifndef Q_OS_ANDROID
     pile_swapping_label = new QLabel(tr("Pile-swapping limitation"));
@@ -324,21 +324,22 @@ QWidget *ServerDialog::createAdvancedTab()
     scheme0_subtraction_spinbox->setValue(Config.Scheme0Subtraction);
     scheme0_subtraction_spinbox->setVisible(max_hp_scheme_ComboBox->currentIndex() == 0);
 
-    connect(max_hp_scheme_ComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setMaxHpSchemeBox()));
+    connect(max_hp_scheme_ComboBox, &QComboBox::currentIndexChanged, this, &ServerDialog::setMaxHpSchemeBox);
 
     basara_checkbox = new QCheckBox(tr("Enable Basara"));
     basara_checkbox->setChecked(Config.EnableBasara);
 #endif
 
     updateButtonEnablility(mode_group->checkedButton());
-    connect(mode_group, SIGNAL(buttonClicked(QAbstractButton *)), this, SLOT(updateButtonEnablility(QAbstractButton *)));
+    connect(mode_group, (void (QButtonGroup::*)(QAbstractButton *))(&QButtonGroup::buttonClicked), this,
+            &ServerDialog::updateButtonEnablility);
 
 #ifdef QT_DEBUG
     hegemony_checkbox = new QCheckBox(tr("Enable Hegemony"));
     hegemony_checkbox->setChecked(Config.EnableBasara && Config.EnableHegemony);
     hegemony_checkbox->setEnabled(basara_checkbox->isChecked());
-    connect(basara_checkbox, SIGNAL(toggled(bool)), hegemony_checkbox, SLOT(setChecked(bool)));
-    connect(basara_checkbox, SIGNAL(toggled(bool)), hegemony_checkbox, SLOT(setEnabled(bool)));
+    connect(basara_checkbox, &QCheckBox::toggled, hegemony_checkbox, &QCheckBox::setChecked);
+    connect(basara_checkbox, &QCheckBox::toggled, hegemony_checkbox, &QCheckBox::setEnabled);
 
     hegemony_maxchoice_label = new QLabel(tr("Upperlimit for hegemony"));
     hegemony_maxchoice_spinbox = new QSpinBox;
@@ -358,7 +359,7 @@ QWidget *ServerDialog::createAdvancedTab()
 #endif
 
     QPushButton *detect_button = new QPushButton(tr("Detect my WAN IP"));
-    connect(detect_button, SIGNAL(clicked()), this, SLOT(onDetectButtonClicked()));
+    connect(detect_button, &QPushButton::clicked, this, &ServerDialog::onDetectButtonClicked);
 
     port_edit = new QLineEdit;
     port_edit->setText(QString::number(Config.ServerPort));
@@ -396,9 +397,9 @@ QWidget *ServerDialog::createAdvancedTab()
 
 #ifdef QT_DEBUG
     max_hp_label->setVisible(Config.Enable2ndGeneral);
-    connect(second_general_checkbox, SIGNAL(toggled(bool)), max_hp_label, SLOT(setVisible(bool)));
+    connect(second_general_checkbox, &QCheckBox::toggled, max_hp_label, &QLabel::setVisible);
     max_hp_scheme_ComboBox->setVisible(Config.Enable2ndGeneral);
-    connect(second_general_checkbox, SIGNAL(toggled(bool)), max_hp_scheme_ComboBox, SLOT(setVisible(bool)));
+    connect(second_general_checkbox, &QCheckBox::toggled, max_hp_scheme_ComboBox, &QComboBox::setVisible);
 
     if (Config.Enable2ndGeneral) {
         prevent_awaken_below3_checkbox->setVisible(max_hp_scheme_ComboBox->currentIndex() != 0);
@@ -409,17 +410,17 @@ QWidget *ServerDialog::createAdvancedTab()
         scheme0_subtraction_label->setVisible(false);
         scheme0_subtraction_spinbox->setVisible(false);
     }
-    connect(second_general_checkbox, SIGNAL(toggled(bool)), this, SLOT(setMaxHpSchemeBox()));
+    connect(second_general_checkbox, &QCheckBox::toggled, this, &ServerDialog::setMaxHpSchemeBox);
 
-    hegemony_maxchoice_label->setVisible(Config.EnableHegemony);
-    connect(hegemony_checkbox, SIGNAL(toggled(bool)), hegemony_maxchoice_label, SLOT(setVisible(bool)));
+        hegemony_maxchoice_label->setVisible(Config.EnableHegemony);
+    connect(hegemony_checkbox, &QCheckBox::toggled, hegemony_maxchoice_label, &QLabel::setVisible);
     hegemony_maxchoice_spinbox->setVisible(Config.EnableHegemony);
-    connect(hegemony_checkbox, SIGNAL(toggled(bool)), hegemony_maxchoice_spinbox, SLOT(setVisible(bool)));
+    connect(hegemony_checkbox, &QCheckBox::toggled, hegemony_maxchoice_spinbox, &QSpinBox::setVisible);
 
     hegemony_maxshown_label->setVisible(Config.EnableHegemony);
-    connect(hegemony_checkbox, SIGNAL(toggled(bool)), hegemony_maxshown_label, SLOT(setVisible(bool)));
+    connect(hegemony_checkbox, &QCheckBox::toggled, hegemony_maxshown_label, &QLabel::setVisible);
     hegemony_maxshown_spinbox->setVisible(Config.EnableHegemony);
-    connect(hegemony_checkbox, SIGNAL(toggled(bool)), hegemony_maxshown_spinbox, SLOT(setVisible(bool)));
+    connect(hegemony_checkbox, &QCheckBox::toggled, hegemony_maxshown_spinbox, &QSpinBox::setVisible);
 #endif
 
     return widget;
@@ -470,7 +471,7 @@ QWidget *ServerDialog::createMiscTab()
     ai_delay_ad_spinbox->setValue(Config.AIDelayAD);
     ai_delay_ad_spinbox->setSuffix(tr(" millisecond"));
     ai_delay_ad_spinbox->setEnabled(ai_delay_altered_checkbox->isChecked());
-    connect(ai_delay_altered_checkbox, SIGNAL(toggled(bool)), ai_delay_ad_spinbox, SLOT(setEnabled(bool)));
+    connect(ai_delay_altered_checkbox, &QCheckBox::toggled, ai_delay_ad_spinbox, &QSpinBox::setEnabled);
 
     layout->addWidget(ai_enable_checkbox);
     layout->addLayout(HLay(new QLabel(tr("AI delay")), ai_delay_spinbox));
@@ -520,7 +521,7 @@ QWidget *ServerDialog::createAiTab()
     ai_delay_ad_spinbox->setValue(Config.AIDelayAD);
     ai_delay_ad_spinbox->setSuffix(tr(" millisecond"));
     ai_delay_ad_spinbox->setEnabled(ai_delay_altered_checkbox->isChecked());
-    connect(ai_delay_altered_checkbox, SIGNAL(toggled(bool)), ai_delay_ad_spinbox, SLOT(setEnabled(bool)));
+    connect(ai_delay_altered_checkbox, &QCheckBox::toggled, ai_delay_ad_spinbox, &QSpinBox::setEnabled);
 
     layout->addWidget(ai_enable_checkbox);
     layout->addLayout(HLay(new QLabel(tr("AI delay")), ai_delay_spinbox));
@@ -762,8 +763,8 @@ void BanlistDialog::doAddButton()
     } else {
         FreeChooseDialog *chooser
             = new FreeChooseDialog(this, (list->objectName() == "Pairs") ? FreeChooseDialog::Pair : FreeChooseDialog::Multi);
-        connect(chooser, SIGNAL(general_chosen(QString)), this, SLOT(addGeneral(QString)));
-        connect(chooser, SIGNAL(pair_chosen(QString, QString)), this, SLOT(addPair(QString, QString)));
+        connect(chooser, &FreeChooseDialog::general_chosen, this, &BanlistDialog::addGeneral);
+        connect(chooser, &FreeChooseDialog::pair_chosen, this, &BanlistDialog::addPair);
         chooser->exec();
     }
 }
@@ -771,7 +772,7 @@ void BanlistDialog::doAddButton()
 void BanlistDialog::doAdd2ndButton()
 {
     FreeChooseDialog *chooser = new FreeChooseDialog(this, FreeChooseDialog::Multi);
-    connect(chooser, SIGNAL(general_chosen(QString)), this, SLOT(add2ndGeneral(QString)));
+    connect(chooser, &FreeChooseDialog::general_chosen, this, &BanlistDialog::add2ndGeneral);
     chooser->exec();
 }
 
@@ -882,8 +883,8 @@ QGroupBox *ServerDialog::create3v3Box()
     QRadioButton *extend = new QRadioButton(tr("Extension mode"));
     QPushButton *extend_edit_button = new QPushButton(tr("General selection ..."));
     extend_edit_button->setEnabled(false);
-    connect(extend, SIGNAL(toggled(bool)), extend_edit_button, SLOT(setEnabled(bool)));
-    connect(extend_edit_button, SIGNAL(clicked()), this, SLOT(select3v3Generals()));
+    connect(extend, &QRadioButton::toggled, extend_edit_button, &QPushButton::setEnabled);
+    connect(extend_edit_button, &QPushButton::clicked, this, &ServerDialog::select3v3Generals);
 
     exclude_disaster_checkbox = new QCheckBox(tr("Exclude disasters"));
     exclude_disaster_checkbox->setChecked(Config.value("3v3/ExcludeDisasters", true).toBool());
@@ -1064,7 +1065,7 @@ QGroupBox *ServerDialog::createGameModeBox()
         mini_scenes->setChecked(true);
 
     mini_scene_button = new QPushButton(tr("Custom Mini Scene"));
-    connect(mini_scenes, SIGNAL(clicked()), this, SLOT(doCustomAssign()));
+    connect(mini_scenes, &QRadioButton::clicked, this, &ServerDialog::doCustomAssign);
 
     mini_scene_button->setEnabled(mode_group->checkedButton() && mode_group->checkedButton()->objectName() == "mini");
 
@@ -1113,9 +1114,9 @@ QLayout *ServerDialog::createButtonLayout()
     button_layout->addWidget(server_button);
     button_layout->addWidget(cancel_button);
 
-    connect(console_button, SIGNAL(clicked()), this, SLOT(onConsoleButtonClicked()));
-    connect(server_button, SIGNAL(clicked()), this, SLOT(onServerButtonClicked()));
-    connect(cancel_button, SIGNAL(clicked()), this, SLOT(reject()));
+    connect(console_button, &QPushButton::clicked, this, &ServerDialog::onConsoleButtonClicked);
+    connect(server_button, &QPushButton::clicked, this, &ServerDialog::onServerButtonClicked);
+    connect(cancel_button, &QPushButton::clicked, this, &ServerDialog::reject);
 
     return button_layout;
 }
@@ -1154,7 +1155,7 @@ Select3v3GeneralDialog::Select3v3GeneralDialog(QDialog *parent)
     fillTabWidget();
 
     QPushButton *ok_button = new QPushButton(tr("OK"));
-    connect(ok_button, SIGNAL(clicked()), this, SLOT(accept()));
+    connect(ok_button, &QPushButton::clicked, this, &Select3v3GeneralDialog::accept);
     QHBoxLayout *hlayout = new QHBoxLayout;
     hlayout->addStretch();
     hlayout->addWidget(ok_button);
@@ -1164,7 +1165,7 @@ Select3v3GeneralDialog::Select3v3GeneralDialog(QDialog *parent)
     setLayout(layout);
     setMinimumWidth(550);
 
-    connect(this, SIGNAL(accepted()), this, SLOT(save3v3Generals()));
+    connect(this, &Select3v3GeneralDialog::accepted, this, &Select3v3GeneralDialog::save3v3Generals);
 }
 
 void Select3v3GeneralDialog::fillTabWidget()
@@ -1210,14 +1211,14 @@ void Select3v3GeneralDialog::fillListWidget(QListWidget *list, const Package *pa
     list->setContextMenuPolicy(Qt::ActionsContextMenu);
     list->setResizeMode(QListView::Adjust);
 
-    connect(action, SIGNAL(triggered()), this, SLOT(toggleCheck()));
+    connect(action, &QAction::triggered, this, &Select3v3GeneralDialog::toggleCheck);
 }
 
 void ServerDialog::doCustomAssign()
 {
     CustomAssignDialog *dialog = new CustomAssignDialog(this);
 
-    connect(dialog, SIGNAL(scenario_changed()), this, SLOT(setMiniCheckBox()));
+    connect(dialog, &CustomAssignDialog::scenario_changed, this, &ServerDialog::setMiniCheckBox);
     dialog->exec();
 }
 
@@ -1441,8 +1442,8 @@ Room *Server::createNewRoom()
     current = new_room;
     rooms.insert(current);
 
-    connect(current, SIGNAL(room_message(QString)), this, SIGNAL(server_message(QString)));
-    connect(current, SIGNAL(game_over(QString)), this, SLOT(gameOver()));
+    connect(current, &Room::room_message, this, &Server::server_message);
+    connect(current, &Room::game_over, this, &Server::gameOver);
 
     return current;
 }
@@ -1459,48 +1460,42 @@ void Server::processNewConnection(ClientSocket *socket)
             addresses.insert(addr);
     }
 
-    connect(socket, SIGNAL(disconnected()), this, SLOT(cleanup()));
+    connect(socket, &ClientSocket::disconnected, this, &Server::cleanup);
     Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_CHECK_VERSION);
     packet.setMessageBody(QVariant(Sanguosha->getVersion()));
-    socket->send(packet.toString());
+    socket->send(packet.toJson());
 
     Packet packet3(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_CHECK_PASSWORD);
     packet3.setMessageBody(QVariant());
-    socket->send(packet3.toString());
+    socket->send(packet3.toJson());
 
     Packet packet2(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_SETUP);
     packet2.setMessageBody(QVariant(Sanguosha->getSetupString()));
-    socket->send(packet2.toString());
+    socket->send(packet2.toJson());
 
     emit server_message(tr("%1 connected").arg(socket->peerName()));
 
-    connect(socket, SIGNAL(message_got(const char *)), this, SLOT(processRequest(const char *)));
+    connect(socket, &ClientSocket::message_got, this, &Server::processRequest);
 }
 
-static inline QString ConvertFromBase64(const QString &base64)
-{
-    QByteArray data = QByteArray::fromBase64(base64.toLatin1());
-    return QString::fromUtf8(data);
-}
-
-void Server::processRequest(const char *request)
+void Server::processRequest(const QByteArray &request)
 {
     ClientSocket *socket = qobject_cast<ClientSocket *>(sender());
-    socket->disconnect(this, SLOT(processRequest(const char *)));
+    socket->disconnect(socket, &ClientSocket::message_got, this, &Server::processRequest);
 
     Packet signup;
-    if (!signup.parse(request) || signup.getCommandType() != S_COMMAND_SIGN_UP) {
-        emit server_message(tr("Invalid signup string: %1").arg(request));
+    if (!signup.parse(request) || signup.getCommandType() != S_COMMAND_SIGNUP) {
+        emit server_message(tr("Invalid signup string: %1").arg(signup.toString()));
         QSanProtocol::Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_WARN);
         packet.setMessageBody("INVALID_FORMAT");
-        socket->send(packet.toString());
+        socket->send(packet.toJson());
         socket->disconnectFromHost();
         return;
     }
 
     const JsonArray &body = signup.getMessageBody().value<JsonArray>();
     bool reconnection_enabled = body[0].toBool();
-    QString screen_name = ConvertFromBase64(body[1].toString());
+    QString screen_name = body[1].toString();
     QString avatar = body[2].toString();
 
     if (reconnection_enabled) {

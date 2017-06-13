@@ -32,7 +32,7 @@ CardOverview::CardOverview(QWidget *parent)
     ui->tableWidget->setColumnWidth(4, 70);
 
     if (ServerInfo.EnableCheat)
-        connect(ui->getCardButton, SIGNAL(clicked()), this, SLOT(askCard()));
+        connect(ui->getCardButton, &QPushButton::clicked, this, &CardOverview::askCard);
     else
         ui->getCardButton->hide();
 

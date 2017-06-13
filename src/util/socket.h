@@ -26,13 +26,13 @@ class ClientSocket : public QObject
 public:
     virtual void connectToHost() = 0;
     virtual void disconnectFromHost() = 0;
-    virtual void send(const QString &message) = 0;
+    virtual void send(const QByteArray &message) = 0;
     virtual bool isConnected() const = 0;
     virtual QString peerName() const = 0;
     virtual QString peerAddress() const = 0;
 
 signals:
-    void message_got(const char *msg);
+    void message_got(const QByteArray &msg);
     void error_message(const QString &msg);
     void disconnected();
     void connected();

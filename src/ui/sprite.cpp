@@ -71,7 +71,7 @@ void EffectAnimation::effectOut(QGraphicsItem *map)
     QAnimatedEffect *effect = qobject_cast<QAnimatedEffect *>(map->graphicsEffect());
     if (effect) {
         effect->setStay(false);
-        connect(effect, SIGNAL(loop_finished()), this, SLOT(deleteEffect()));
+        connect(effect, &QAnimatedEffect::loop_finished, this, (void (EffectAnimation::*)())(&EffectAnimation::deleteEffect));
     }
 
     effect = registered.value(map);
@@ -109,7 +109,7 @@ EmphasizeEffect::EmphasizeEffect(bool stay, QObject *parent)
     index = 0;
     this->stay = stay;
     QPropertyAnimation *anim = new QPropertyAnimation(this, "index");
-    connect(anim, SIGNAL(valueChanged(QVariant)), this, SLOT(update()));
+    connect(anim, (void (QPropertyAnimation::*)())(&QPropertyAnimation::valueChanged), this, &EmphasizeEffect::update);
     anim->setEndValue(40);
     anim->setDuration((40 - index) * 5);
     anim->start(QAbstractAnimation::DeleteWhenStopped);
@@ -123,7 +123,8 @@ void EmphasizeEffect::draw(QPainter *painter)
 
     QPoint offset;
     QPixmap pixmap = sourcePixmap(Qt::LogicalCoordinates, &offset);
-    const QRectF target = boundingRect().adjusted(s.width() * scale - 1, s.height() * scale, -s.width() * scale, -s.height() * scale);
+    const QRectF target
+        = boundingRect().adjusted(s.width() * scale - 1, s.height() * scale, -s.width() * scale, -s.height() * scale);
     const QRectF source(s.width() * 0.1, s.height() * 0.1, s.width(), s.height());
 
     painter->setRenderHint(QPainter::SmoothPixmapTransform);
@@ -134,7 +135,8 @@ QRectF EmphasizeEffect::boundingRectFor(const QRectF &sourceRect) const
 {
     qreal scale = 0.1;
     QRectF rect(sourceRect);
-    rect.adjust(-sourceRect.width() * scale, -sourceRect.height() * scale, sourceRect.width() * scale, sourceRect.height() * scale);
+    rect.adjust(-sourceRect.width() * scale, -sourceRect.height() * scale, sourceRect.width() * scale,
+                sourceRect.height() * scale);
     return rect;
 }
 
@@ -146,8 +148,8 @@ void QAnimatedEffect::setStay(bool stay)
         anim->setEndValue(0);
         anim->setDuration(index * 5);
 
-        connect(anim, SIGNAL(finished()), this, SLOT(deleteLater()));
-        connect(anim, SIGNAL(valueChanged(QVariant)), this, SLOT(update()));
+        connect(anim, &QPropertyAnimation::finished, this, &QAnimatedEffect::deleteLater);
+        connect(anim, (void (QPropertyAnimation::*)())(&QPropertyAnimation::valueChanged), this, &QAnimatedEffect::update);
         anim->start(QAbstractAnimation::DeleteWhenStopped);
     }
 }
@@ -161,7 +163,7 @@ SentbackEffect::SentbackEffect(bool stay, QObject *parent)
     this->stay = stay;
 
     QPropertyAnimation *anim = new QPropertyAnimation(this, "index");
-    connect(anim, SIGNAL(valueChanged(QVariant)), this, SLOT(update()));
+    connect(anim, (void (QPropertyAnimation::*)())(&QPropertyAnimation::valueChanged), this, &SentbackEffect::update);
     anim->setEndValue(40);
     anim->setDuration((40 - index) * 5);
     anim->start(QAbstractAnimation::DeleteWhenStopped);
@@ -179,7 +181,8 @@ QRectF SentbackEffect::boundingRectFor(const QRectF &sourceRect) const
 {
     qreal scale = 0.05;
     QRectF rect(sourceRect);
-    rect.adjust(-sourceRect.width() * scale, -sourceRect.height() * scale, sourceRect.width() * scale, sourceRect.height() * scale);
+    rect.adjust(-sourceRect.width() * scale, -sourceRect.height() * scale, sourceRect.width() * scale,
+                sourceRect.height() * scale);
     return rect;
 }
 
@@ -221,7 +224,7 @@ FadeEffect::FadeEffect(bool stay, QObject *)
     this->stay = stay;
 
     QPropertyAnimation *anim = new QPropertyAnimation(this, "index");
-    connect(anim, SIGNAL(valueChanged(QVariant)), this, SLOT(update()));
+    connect(anim, (void (QPropertyAnimation::*)())(&QPropertyAnimation::valueChanged), this, &FadeEffect::update);
     anim->setEndValue(40);
     anim->setDuration((40 - index) * 5);
     anim->start(QAbstractAnimation::DeleteWhenStopped);

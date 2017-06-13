@@ -44,7 +44,7 @@ void StartScene::addButton(QAction *action)
     button->setMute(false);
     button->setFont(font());
 
-    connect(button, SIGNAL(clicked()), action, SLOT(trigger()));
+    connect(button, &Button::clicked, action, &QAction::trigger);
     addItem(button);
 
     QRectF rect = button->boundingRect();
@@ -106,7 +106,7 @@ void StartScene::switchToServer(Server *server)
     }
 
     printServerInfo();
-    connect(server, SIGNAL(server_message(QString)), server_log, SLOT(append(QString)));
+    connect(server, &Server::server_message, server_log, &QTextEdit::append);
     update();
 }
 

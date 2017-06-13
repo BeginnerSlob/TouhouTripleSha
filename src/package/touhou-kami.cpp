@@ -1849,7 +1849,8 @@ ThLingyunDialog::ThLingyunDialog()
 
     button_layout = new QVBoxLayout;
     setLayout(button_layout);
-    connect(group, SIGNAL(buttonClicked(QAbstractButton *)), this, SLOT(selectCard(QAbstractButton *)));
+    connect(group, (void (QButtonGroup::*)(QAbstractButton *))(&QButtonGroup::buttonClicked), this,
+            &ThLingyunDialog::selectCard);
 }
 
 void ThLingyunDialog::popup()
@@ -1984,7 +1985,7 @@ public:
         filter_pattern = ".!";
     }
 
-    virtual QDialog *getDialog() const
+    virtual SkillDialog *getDialog() const
     {
         return ThLingyunDialog::getInstance();
     }

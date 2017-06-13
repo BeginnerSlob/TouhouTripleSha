@@ -87,11 +87,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(connection_dialog, &ConnectionDialog::accepted, this, &MainWindow::startConnection);
 
     config_dialog = new ConfigDialog(this);
-    connect(ui->actionConfigure, SIGNAL(triggered()), config_dialog, SLOT(show()));
-    connect(config_dialog, SIGNAL(bg_changed()), this, SLOT(changeBackground()));
+    connect(ui->actionConfigure, &QAction::triggered, config_dialog, &ConfigDialog::show);
+    connect(config_dialog, &ConfigDialog::bg_changed, this, &MainWindow::changeBackground);
 
-    connect(ui->actionAbout_Qt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
-    connect(ui->actionAcknowledgement_2, SIGNAL(triggered()), this, SLOT(on_actionAcknowledgement_triggered()));
+    connect(ui->actionAbout_Qt, &QAction::triggered, qApp, &QApplication::aboutQt);
+    connect(ui->actionAcknowledgement_2, &QAction::triggered, this, &MainWindow::on_actionAcknowledgement_triggered);
 
     StartScene *start_scene = new StartScene;
 
@@ -127,8 +127,8 @@ MainWindow::MainWindow(QWidget *parent)
     addAction(ui->actionShow_Hide_Menu);
     addAction(ui->actionFullscreen);
 
-    connect(ui->actionRestart_Game, SIGNAL(triggered()), this, SLOT(startConnection()));
-    connect(ui->actionReturn_to_Main_Menu, SIGNAL(triggered()), this, SLOT(gotoStartScene()));
+    connect(ui->actionRestart_Game, &QAction::triggered, this, &MainWindow::startConnection);
+    connect(ui->actionReturn_to_Main_Menu, &QAction::triggered, this, &MainWindow::gotoStartScene);
 
     systray = NULL;
 }
@@ -210,7 +210,7 @@ void MainWindow::on_actionStart_Server_triggered()
         server->daemonize();
 
         ui->actionStart_Game->disconnect();
-        connect(ui->actionStart_Game, SIGNAL(triggered()), this, SLOT(startGameInAnotherInstance()));
+        connect(ui->actionStart_Game, &QAction::triggered, this, &MainWindow::startGameInAnotherInstance);
 
         StartScene *start_scene = qobject_cast<StartScene *>(scene);
         if (start_scene) {
@@ -237,7 +237,7 @@ void MainWindow::checkVersion(const QString &server_version, const QString &serv
 
     if (server_version == client_version) {
         client->signup();
-        connect(client, SIGNAL(server_connected()), SLOT(enterRoom()));
+        connect(client, &Client::server_connected, this, &MainWindow::enterRoom);
         return;
     }
 
@@ -282,7 +282,7 @@ void MainWindow::on_actionReplay_triggered()
     Config.setValue("LastReplayDir", last_dir);
 
     Client *client = new Client(this, filename);
-    connect(client, SIGNAL(server_connected()), SLOT(enterRoom()));
+    connect(client, &Client::server_connected, this, &MainWindow::enterRoom);
     client->signup();
 }
 
@@ -330,23 +330,23 @@ void MainWindow::enterRoom()
     ui->actionPause_Resume->setEnabled(true);
     ui->actionHide_Show_chat_box->setEnabled(true);
 
-    connect(ClientInstance, SIGNAL(surrender_enabled(bool)), ui->actionSurrender, SLOT(setEnabled(bool)));
+    connect(ClientInstance, &Client::surrender_enabled, ui->actionSurrender, &QAction::setEnabled);
 
-    connect(ui->actionView_Discarded, SIGNAL(triggered()), room_scene, SLOT(toggleDiscards()));
-    connect(ui->actionView_distance, SIGNAL(triggered()), room_scene, SLOT(viewDistance()));
-    connect(ui->actionServerInformation, SIGNAL(triggered()), room_scene, SLOT(showServerInformation()));
-    connect(ui->actionSurrender, SIGNAL(triggered()), room_scene, SLOT(surrender()));
-    connect(ui->actionSaveRecord, SIGNAL(triggered()), room_scene, SLOT(saveReplayRecord()));
-    connect(ui->actionPause_Resume, SIGNAL(triggered()), room_scene, SLOT(pause()));
-    connect(ui->actionHide_Show_chat_box, SIGNAL(triggered()), room_scene, SLOT(setChatBoxVisibleSlot()));
+    connect(ui->actionView_Discarded, &QAction::triggered, room_scene, &RoomScene::toggleDiscards);
+    connect(ui->actionView_distance, &QAction::triggered, room_scene, &RoomScene::viewDistance);
+    connect(ui->actionServerInformation, &QAction::triggered, room_scene, &RoomScene::showServerInformation);
+    connect(ui->actionSurrender, &QAction::triggered, room_scene, &RoomScene::surrender);
+    connect(ui->actionSaveRecord, &QAction::triggered, room_scene, &RoomScene::saveReplayRecord);
+    connect(ui->actionPause_Resume, &QAction::triggered, room_scene, &RoomScene::pause);
+    connect(ui->actionHide_Show_chat_box, &QAction::triggered, room_scene, &RoomScene::setChatBoxVisibleSlot);
 
     if (ServerInfo.EnableCheat) {
         ui->menuCheat->setEnabled(true);
 
-        connect(ui->actionDeath_note, SIGNAL(triggered()), room_scene, SLOT(makeKilling()));
-        connect(ui->actionDamage_maker, SIGNAL(triggered()), room_scene, SLOT(makeDamage()));
-        connect(ui->actionRevive_wand, SIGNAL(triggered()), room_scene, SLOT(makeReviving()));
-        connect(ui->actionExecute_script_at_server_side, SIGNAL(triggered()), room_scene, SLOT(doScript()));
+        connect(ui->actionDeath_note, &QAction::triggered, room_scene, &RoomScene::makeKilling);
+        connect(ui->actionDamage_maker, &QAction::triggered, room_scene, &RoomScene::makeDamage);
+        connect(ui->actionRevive_wand, &QAction::triggered, room_scene, &RoomScene::makeReviving);
+        connect(ui->actionExecute_script_at_server_side, &QAction::triggered, room_scene, &RoomScene::doScript);
     } else {
         ui->menuCheat->setEnabled(false);
         ui->actionDeath_note->disconnect();
@@ -356,9 +356,9 @@ void MainWindow::enterRoom()
         ui->actionExecute_script_at_server_side->disconnect();
     }
 
-    connect(room_scene, SIGNAL(restart()), this, SLOT(startConnection()));
-    connect(room_scene, SIGNAL(return_to_start()), this, SLOT(gotoStartScene()));
-    connect(room_scene, SIGNAL(game_over_dialog_rejected()), this, SLOT(enableDialogButtons()));
+    connect(room_scene, &RoomScene::restart, this, &MainWindow::startConnection);
+    connect(room_scene, &RoomScene::return_to_start, this, &MainWindow::gotoStartScene);
+    connect(room_scene, &RoomScene::game_over_dialog_rejected, this, &MainWindow::enableDialogButtons);
 
     gotoScene(room_scene);
 }
@@ -572,8 +572,8 @@ void MainWindow::on_actionMinimize_to_system_tray_triggered()
         systray = new QSystemTrayIcon(icon, this);
 
         QAction *appear = new QAction(tr("Show main window"), this);
-        connect(appear, SIGNAL(triggered()), this, SLOT(show()));
-        connect(appear, SIGNAL(triggered()), systray, SLOT(hide()));
+        connect(appear, &QAction::triggered, this, &MainWindow::show);
+        connect(appear, &QAction::triggered, systray, &QSystemTrayIcon::hide);
 
         QMenu *menu = new QMenu;
         menu->addAction(appear);
@@ -686,7 +686,7 @@ BroadcastBox::BroadcastBox(Server *server, QWidget *parent)
 
     setLayout(layout);
 
-    connect(ok_button, SIGNAL(clicked()), this, SLOT(accept()));
+    connect(ok_button, &QPushButton::clicked, this, &BroadcastBox::accept);
 }
 
 void BroadcastBox::accept()
@@ -968,7 +968,7 @@ void MainWindow::checkUpdate()
 {
     static QNetworkAccessManager *qnam = new QNetworkAccessManager(this);
     reply = qnam->get(QNetworkRequest(QUrl("http://update.kirito.moe/UpdateInfo")));
-    connect(reply, SIGNAL(finished()), this, SLOT(httpFinished()));
+    connect(reply, &QNetworkReply::finished, this, &MainWindow::httpFinished);
 }
 
 void MainWindow::httpFinished()
@@ -1083,9 +1083,9 @@ void MainWindow::downloadNew(QString url)
 
     static QNetworkAccessManager *qnam2 = new QNetworkAccessManager(this);
     reply2 = qnam2->get(QNetworkRequest(url2));
-    connect(reply2, SIGNAL(finished()), this, SLOT(httpFinished2()));
-    connect(reply2, SIGNAL(readyRead()), this, SLOT(httpReadyRead2()));
-    connect(reply2, SIGNAL(downloadProgress(qint64, qint64)), updateWindow, SLOT(updateDataReadProgress2(qint64, qint64)));
+    connect(reply2, &QNetworkReply::finished, this, &MainWindow::httpFinished2);
+    connect(reply2, &QNetworkReply::readyRead, this, &MainWindow::httpReadyRead2);
+    connect(reply2, &QNetworkReply::downloadProgress, updateWindow, &UpdateDialog::updateDataReadProgress2);
 }
 
 void MainWindow::httpFinished2()

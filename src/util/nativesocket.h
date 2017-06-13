@@ -34,7 +34,7 @@ public:
 
     virtual void connectToHost();
     virtual void disconnectFromHost();
-    virtual void send(const QString &message);
+    virtual void send(const QByteArray &message);
     virtual bool isConnected() const;
     virtual QString peerName() const;
     virtual QString peerAddress() const;

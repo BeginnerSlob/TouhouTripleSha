@@ -170,7 +170,12 @@ QStringList Skill::getSources() const
     return sources;
 }
 
-QDialog *Skill::getDialog() const
+SkillDialog *Skill::getDialog() const
+{
+    return NULL;
+}
+
+QDialog *Skill::getHuanshenDialog() const
 {
     return NULL;
 }

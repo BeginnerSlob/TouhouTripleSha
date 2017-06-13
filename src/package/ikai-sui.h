@@ -31,7 +31,7 @@ public:
 #include <QGroupBox>
 #include <QVBoxLayout>
 
-class IkShengzunDialog : public QDialog
+class IkShengzunDialog : public SkillDialog
 {
     Q_OBJECT
 
@@ -39,7 +39,7 @@ public:
     static IkShengzunDialog *getInstance();
 
 public slots:
-    void popup();
+    virtual void popup();
     void selectSkill(QAbstractButton *button);
 
 private:
@@ -48,9 +48,6 @@ private:
     QAbstractButton *createSkillButton(const QString &skill_name);
     QButtonGroup *group;
     QVBoxLayout *button_layout;
-
-signals:
-    void onButtonClick();
 };
 
 class IkJuechongCard : public SkillCard

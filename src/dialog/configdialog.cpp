@@ -26,7 +26,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 
     ui->enableLastWordCheckBox->setEnabled(Config.EnableEffects);
     ui->enableLastWordCheckBox->setChecked(Config.EnableLastWord);
-    connect(ui->enableEffectCheckBox, SIGNAL(toggled(bool)), ui->enableLastWordCheckBox, SLOT(setEnabled(bool)));
+    connect(ui->enableEffectCheckBox, &QCheckBox::toggled, ui->enableLastWordCheckBox, &QCheckBox::setEnabled);
 
     ui->enableBgMusicCheckBox->setChecked(Config.EnableBgMusic);
 
@@ -61,7 +61,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
     else
         ui->saveNetworkOnlyCheckBox->setChecked(false);
 
-    connect(this, SIGNAL(accepted()), this, SLOT(saveConfig()));
+    connect(this, &ConfigDialog::accepted, this, &ConfigDialog::saveConfig);
 
     QFont font = Config.AppFont;
     showFont(ui->appFontLineEdit, font);
@@ -90,7 +90,8 @@ ConfigDialog::~ConfigDialog()
 
 void ConfigDialog::on_browseBgButton_clicked()
 {
-    QString filename = QFileDialog::getOpenFileName(this, tr("Select a background image"), "image/system/backdrop/", tr("Images (*.png *.bmp *.jpg)"));
+    QString filename = QFileDialog::getOpenFileName(this, tr("Select a background image"), "image/system/backdrop/",
+                                                    tr("Images (*.png *.bmp *.jpg)"));
 
     if (!filename.isEmpty()) {
         QString app_path = QApplication::applicationDirPath();
@@ -153,12 +154,14 @@ void ConfigDialog::saveConfig()
         Config.setValue("BackgroundMusic", newMusicPath);
         Audio::resetCustomBackgroundMusicFileName();
 
-        if (Config.EnableBgMusic && Audio::isBackgroundMusicPlaying() && RoomSceneInstance != NULL && RoomSceneInstance->isGameStarted()) {
+        if (Config.EnableBgMusic && Audio::isBackgroundMusicPlaying() && RoomSceneInstance != NULL
+            && RoomSceneInstance->isGameStarted()) {
             Audio::stopBackgroundMusic();
             Audio::playBackgroundMusic(newMusicPath, true);
         }
     } else {
-        if (Config.EnableBgMusic && NULL != RoomSceneInstance && RoomSceneInstance->isGameStarted() && !Audio::isBackgroundMusicPlaying()) {
+        if (Config.EnableBgMusic && NULL != RoomSceneInstance && RoomSceneInstance->isGameStarted()
+            && !Audio::isBackgroundMusicPlaying()) {
             Audio::playBackgroundMusic(currentMusicPath, true);
         }
     }
@@ -196,7 +199,8 @@ void ConfigDialog::saveConfig()
 
 void ConfigDialog::on_browseBgMusicButton_clicked()
 {
-    QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Select a background music"), "audio/system", tr("Audio files (*.wav *.mp3 *.ogg)"));
+    QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Select a background music"), "audio/system",
+                                                          tr("Audio files (*.wav *.mp3 *.ogg)"));
     QString app_path = QApplication::applicationDirPath();
     app_path.replace("\\", "/");
     int app_path_len = app_path.length();

@@ -64,7 +64,8 @@ void OptionButton::mouseDoubleClickEvent(QMouseEvent *)
     emit double_clicked();
 }
 
-ChooseGeneralDialog::ChooseGeneralDialog(const QStringList &general_names, QWidget *parent, bool view_only, const QString &title)
+ChooseGeneralDialog::ChooseGeneralDialog(const QStringList &general_names, QWidget *parent, bool view_only,
+                                         const QString &title)
     : QDialog(parent)
 {
     m_freeChooseDialog = NULL;
@@ -122,8 +123,9 @@ ChooseGeneralDialog::ChooseGeneralDialog(const QStringList &general_names, QWidg
 
         if (!view_only) {
             mapper->setMapping(button, general->objectName());
-            connect(button, SIGNAL(double_clicked()), mapper, SLOT(map()));
-            connect(button, SIGNAL(double_clicked()), this, SLOT(accept()));
+            connect(button, (void (OptionButton::*)())(&OptionButton::double_clicked), mapper,
+                    (void (QSignalMapper::*)())(&QSignalMapper::map));
+            connect(button, &OptionButton::double_clicked, this, &ChooseGeneralDialog::accept);
         }
     }
 
@@ -137,14 +139,16 @@ ChooseGeneralDialog::ChooseGeneralDialog(const QStringList &general_names, QWidg
             if (party < 2)
                 buttons.at(index)->setEnabled(false);
             if (Self->getGeneral())
-                if (Self->getGeneral()->getKingdom() != general->getKingdom() || Self->getGeneralName() == general->objectName())
+                if (Self->getGeneral()->getKingdom() != general->getKingdom()
+                    || Self->getGeneralName() == general->objectName())
                     buttons.at(index)->setEnabled(false);
             index++;
         }
     }
 
     QLayout *layout = NULL;
-    const int columns = tooManyGenerals ? G_COMMON_LAYOUT.m_chooseGeneralBoxSwitchIconEachRowForTooManyGenerals : G_COMMON_LAYOUT.m_chooseGeneralBoxSwitchIconEachRow;
+    const int columns = tooManyGenerals ? G_COMMON_LAYOUT.m_chooseGeneralBoxSwitchIconEachRowForTooManyGenerals
+                                        : G_COMMON_LAYOUT.m_chooseGeneralBoxSwitchIconEachRow;
     if (generals.length() <= columns) {
         layout = new QHBoxLayout;
 
@@ -207,9 +211,11 @@ ChooseGeneralDialog::ChooseGeneralDialog(const QStringList &general_names, QWidg
 
     if (!view_only) {
         mapper->setMapping(this, default_name);
-        connect(this, SIGNAL(rejected()), mapper, SLOT(map()));
+        connect(this, (void (ChooseGeneralDialog::*)())(&ChooseGeneralDialog::rejected), mapper,
+                (void (QSignalMapper::*)())(&QSignalMapper::map));
 
-        connect(mapper, SIGNAL(mapped(QString)), ClientInstance, SLOT(onPlayerChooseGeneral(QString)));
+        connect(mapper, (void (QSignalMapper::*)(const QString &))(&QSignalMapper::mapped), ClientInstance,
+                &Client::onPlayerChooseGeneral);
     }
 
     QVBoxLayout *dialog_layout = new QVBoxLayout;
@@ -239,11 +245,12 @@ ChooseGeneralDialog::ChooseGeneralDialog(const QStringList &general_names, QWidg
         last_layout->addWidget(progress_bar);
     }
 
-    bool free_choose = ServerInfo.FreeChoose || ServerInfo.GameMode.startsWith("_mini_") || ServerInfo.GameMode == "custom_scenario";
+    bool free_choose
+        = ServerInfo.FreeChoose || ServerInfo.GameMode.startsWith("_mini_") || ServerInfo.GameMode == "custom_scenario";
 
     if (!view_only && free_choose) {
         QPushButton *free_choose_button = new QPushButton(tr("Free choose ..."));
-        connect(free_choose_button, SIGNAL(clicked()), this, SLOT(freeChoose()));
+        connect(free_choose_button, &QPushButton::clicked, this, &ChooseGeneralDialog::freeChoose);
         last_layout->addWidget(free_choose_button);
     }
 
@@ -268,10 +275,10 @@ void ChooseGeneralDialog::done(int result)
 
 void ChooseGeneralDialog::freeChoose()
 {
-    QDialog *dialog = new FreeChooseDialog(this);
+    FreeChooseDialog *dialog = new FreeChooseDialog(this);
 
-    connect(dialog, SIGNAL(accepted()), this, SLOT(accept()));
-    connect(dialog, SIGNAL(general_chosen(QString)), ClientInstance, SLOT(onPlayerChooseGeneral(QString)));
+    connect(dialog, &FreeChooseDialog::accepted, this, &ChooseGeneralDialog::accept);
+    connect(dialog, &FreeChooseDialog::general_chosen, ClientInstance, &Client::onPlayerChooseGeneral);
 
     m_freeChooseDialog = dialog;
 
@@ -305,15 +312,16 @@ FreeChooseDialog::FreeChooseDialog(QWidget *parent, ButtonGroupType type)
 
         if (!generals.isEmpty()) {
             QWidget *tab = createTab(generals);
-            tab_widget->addTab(tab, QIcon(G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_KINGDOM_ICON, kingdom)), Sanguosha->translate(kingdom));
+            tab_widget->addTab(tab, QIcon(G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_KINGDOM_ICON, kingdom)),
+                               Sanguosha->translate(kingdom));
         }
     }
 
     QPushButton *ok_button = new QPushButton(tr("OK"));
-    connect(ok_button, SIGNAL(clicked()), this, SLOT(chooseGeneral()));
+    connect(ok_button, &QPushButton::clicked, this, &FreeChooseDialog::chooseGeneral);
 
     QPushButton *cancel_button = new QPushButton(tr("Cancel"));
-    connect(cancel_button, SIGNAL(clicked()), this, SLOT(reject()));
+    connect(cancel_button, &QPushButton::clicked, this, &FreeChooseDialog::reject);
 
     QHBoxLayout *button_layout = new QHBoxLayout;
     button_layout->addStretch();
@@ -379,7 +387,8 @@ QWidget *FreeChooseDialog::createTab(const QList<const General *> &generals)
     for (int i = 0; i < generals.length(); i++) {
         const General *general = generals.at(i);
         QString general_name = general->objectName();
-        QString text = QString("%1[%2]").arg(Sanguosha->translate(general_name)).arg(Sanguosha->translate(general->getPackage()));
+        QString text
+            = QString("%1[%2]").arg(Sanguosha->translate(general_name)).arg(Sanguosha->translate(general->getPackage()));
 
         QAbstractButton *button;
         if (type == Exclusive)
@@ -407,9 +416,9 @@ QWidget *FreeChooseDialog::createTab(const QList<const General *> &generals)
 
     tab->setLayout(tablayout);
 
-    if (type == Pair) {
-        connect(group, SIGNAL(buttonClicked(QAbstractButton *)), this, SLOT(uncheckExtraButton(QAbstractButton *)));
-    }
+    if (type == Pair)
+        connect(group, (void (QButtonGroup::*)(QAbstractButton *))(&QButtonGroup::buttonClicked), this,
+                &FreeChooseDialog::uncheckExtraButton);
 
     return tab;
 }

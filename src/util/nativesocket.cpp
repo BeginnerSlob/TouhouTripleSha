@@ -11,7 +11,7 @@ NativeServerSocket::NativeServerSocket()
 {
     server = new QTcpServer(this);
     daemon = NULL;
-    connect(server, SIGNAL(newConnection()), this, SLOT(processNewConnection()));
+    connect(server, &QTcpServer::newConnection, this, &NativeServerSocket::processNewConnection);
 }
 
 bool NativeServerSocket::listen()
@@ -23,7 +23,7 @@ void NativeServerSocket::daemonize()
 {
     daemon = new QUdpSocket(this);
     daemon->bind(Config.ServerPort, QUdpSocket::ShareAddress);
-    connect(daemon, SIGNAL(readyRead()), this, SLOT(processNewDatagram()));
+    connect(daemon, &QUdpSocket::readyRead, this, &NativeServerSocket::processNewDatagram);
 }
 
 void NativeServerSocket::processNewDatagram()
@@ -65,9 +65,10 @@ NativeClientSocket::NativeClientSocket(QTcpSocket *socket)
 void NativeClientSocket::init()
 {
     connect(socket, &QTcpSocket::disconnected, this, &NativeClientSocket::disconnected);
-    connect(socket, SIGNAL(readyRead()), this, SLOT(getMessage()));
-    connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(raiseError(QAbstractSocket::SocketError)));
-    connect(socket, SIGNAL(connected()), this, SIGNAL(connected()));
+    connect(socket, &QTcpSocket::readyRead, this, &NativeClientSocket::getMessage);
+    connect(socket, (void (QTcpSocket::*)(QAbstractSocket::SocketError))(&QTcpSocket::error), this,
+            &NativeClientSocket::raiseError);
+    connect(socket, &QTcpSocket::connected, this, &NativeClientSocket::connected);
 }
 
 void NativeClientSocket::connectToHost()
@@ -91,10 +92,9 @@ void NativeClientSocket::connectToHost()
 void NativeClientSocket::getMessage()
 {
     while (socket->canReadLine()) {
-        buffer_t msg;
-        socket->readLine(msg, sizeof(msg));
+        QByteArray msg = socket->readLine();
 #ifndef QT_NO_DEBUG
-        printf("RX: %s", msg);
+        printf("RX: %s", msg.constData());
 #endif
         emit message_got(msg);
     }
@@ -105,13 +105,16 @@ void NativeClientSocket::disconnectFromHost()
     socket->disconnectFromHost();
 }
 
-void NativeClientSocket::send(const QString &message)
+void NativeClientSocket::send(const QByteArray &message)
 {
-    socket->write(message.toLatin1());
-    if (!message.endsWith("\n"))
+    if (message.isEmpty())
+        return;
+
+    socket->write(message);
+    if (!message.endsWith('\n'))
         socket->write("\n");
 #ifndef QT_NO_DEBUG
-    printf("TX: %s\n", message.toLatin1().constData());
+    printf("TX: %s\n", message.constData());
 #endif
     socket->flush();
 }

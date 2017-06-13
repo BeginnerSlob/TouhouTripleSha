@@ -103,12 +103,12 @@ void GenericCardContainer::_playMoveCardsAnimation(QList<CardItem *> &cards, boo
     QParallelAnimationGroup *animation = new QParallelAnimationGroup;
     foreach (CardItem *card_item, cards) {
         if (destroyCards)
-            connect(card_item, SIGNAL(movement_animation_finished()), this, SLOT(_destroyCard()));
+            connect(card_item, &CardItem::movement_animation_finished, this, &GenericCardContainer::_destroyCard);
         animation->addAnimation(card_item->getGoBackAnimation(true));
     }
 
-    connect(animation, SIGNAL(finished()), this, SLOT(_doUpdate()));
-    connect(animation, SIGNAL(finished()), this, SLOT(onAnimationFinished()));
+    connect(animation, &QParallelAnimationGroup::finished, this, &GenericCardContainer::_doUpdate);
+    connect(animation, &QParallelAnimationGroup::finished, this, &GenericCardContainer::onAnimationFinished);
     animation->start();
 }
 
@@ -593,23 +593,23 @@ void PlayerCardContainer::setPlayer(ClientPlayer *player)
 {
     this->m_player = player;
     if (player) {
-        connect(player, SIGNAL(general_changed()), this, SLOT(updateAvatar()));
-        connect(player, SIGNAL(general2_changed()), this, SLOT(updateSmallAvatar()));
+        connect(player, &ClientPlayer::general_changed, this, &PlayerCardContainer::updateAvatar);
+        connect(player, &ClientPlayer::general2_changed, this, &PlayerCardContainer::updateSmallAvatar);
         connect(player, &ClientPlayer::kingdom_changed, this, &PlayerCardContainer::updateAvatar);
-        connect(player, SIGNAL(state_changed()), this, SLOT(refresh()));
-        connect(player, SIGNAL(phase_changed()), this, SLOT(updatePhase()));
-        connect(player, SIGNAL(drank_changed()), this, SLOT(updateDrankState()));
-        connect(player, SIGNAL(action_taken()), this, SLOT(refresh()));
-        connect(player, SIGNAL(ikqihuang_invoked()), this, SLOT(updateIkQihuang()));
-        connect(player, SIGNAL(pile_changed(QString)), this, SLOT(updatePile(QString)));
-        connect(player, SIGNAL(role_changed(QString)), _m_roleComboBox, SLOT(fix(QString)));
-        connect(player, SIGNAL(hp_changed()), this, SLOT(updateHp()));
+        connect(player, &ClientPlayer::state_changed, this, (void (PlayerCardContainer::*)())(&PlayerCardContainer::refresh));
+        connect(player, &ClientPlayer::phase_changed, this, &PlayerCardContainer::updatePhase);
+        connect(player, &ClientPlayer::drank_changed, this, &PlayerCardContainer::updateDrankState);
+        connect(player, &ClientPlayer::action_taken, this, (void (PlayerCardContainer::*)())(&PlayerCardContainer::refresh));
+        connect(player, &ClientPlayer::ikqihuang_invoked, this, &PlayerCardContainer::updateIkQihuang);
+        connect(player, &ClientPlayer::pile_changed, this, &PlayerCardContainer::updatePile);
+        connect(player, &ClientPlayer::role_changed, _m_roleComboBox, &RoleComboBox::fix);
+        connect(player, &ClientPlayer::hp_changed, this, &PlayerCardContainer::updateHp);
         connect(player, &ClientPlayer::removedChanged, this, &PlayerCardContainer::onRemovedChanged);
 
         QTextDocument *textDoc = m_player->getMarkDoc();
         Q_ASSERT(_m_markItem);
         _m_markItem->setDocument(textDoc);
-        connect(textDoc, SIGNAL(contentsChanged()), this, SLOT(updateMarks()));
+        connect(textDoc, &QTextDocument::contentsChanged, this, &PlayerCardContainer::updateMarks);
     }
     updateAvatar();
     refresh();
@@ -746,7 +746,7 @@ void PlayerCardContainer::addEquips(QList<CardItem *> &equips)
         int index = (int)(equip_card->location());
         Q_ASSERT(_m_equipCards[index] == NULL);
         _m_equipCards[index] = equip;
-        connect(equip, SIGNAL(mark_changed()), this, SLOT(_onEquipSelectChanged()));
+        connect(equip, &CardItem::mark_changed, this, &PlayerCardContainer::_onEquipSelectChanged);
         equip->setHomeOpacity(0.0);
         equip->setHomePos(_m_layout->m_equipAreas[index].center());
         _m_equipRegions[index]->setToolTip(equip_card->getDescription());
@@ -764,12 +764,12 @@ void PlayerCardContainer::addEquips(QList<CardItem *> &equips)
         anim->setEndValue(_m_layout->m_equipAreas[index].topLeft());
         anim->setDuration(200);
         _m_equipAnim[index]->addAnimation(anim);
-        connect(anim, SIGNAL(finished()), anim, SLOT(deleteLater()));
+        connect(anim, &QPropertyAnimation::finished, anim, &QPropertyAnimation::deleteLater);
         anim = new QPropertyAnimation(_m_equipRegions[index], "opacity");
         anim->setEndValue(255);
         anim->setDuration(200);
         _m_equipAnim[index]->addAnimation(anim);
-        connect(anim, SIGNAL(finished()), anim, SLOT(deleteLater()));
+        connect(anim, &QPropertyAnimation::finished, anim, &QPropertyAnimation::deleteLater);
         _m_equipAnim[index]->start();
         _mutexEquipAnim.unlock();
 
@@ -802,12 +802,12 @@ QList<CardItem *> PlayerCardContainer::removeEquips(const QList<int> &cardIds)
         anim->setEndValue(_m_layout->m_equipAreas[index].topLeft() + QPoint(_m_layout->m_equipAreas[index].width() / 2, 0));
         anim->setDuration(200);
         _m_equipAnim[index]->addAnimation(anim);
-        connect(anim, SIGNAL(finished()), anim, SLOT(deleteLater()));
+        connect(anim, &QPropertyAnimation::finished, anim, &QPropertyAnimation::deleteLater);
         anim = new QPropertyAnimation(_m_equipRegions[index], "opacity");
         anim->setEndValue(0);
         anim->setDuration(200);
         _m_equipAnim[index]->addAnimation(anim);
-        connect(anim, SIGNAL(finished()), anim, SLOT(deleteLater()));
+        connect(anim, &QPropertyAnimation::finished, anim, &QPropertyAnimation::deleteLater);
         _m_equipAnim[index]->start();
         _mutexEquipAnim.unlock();
 

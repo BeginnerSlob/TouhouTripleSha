@@ -39,7 +39,7 @@ ScenarioOverview::ScenarioOverview(QWidget *parent)
         item->setData(Qt::UserRole, name);
     }
 
-    connect(list, SIGNAL(currentRowChanged(int)), this, SLOT(loadContent(int)));
+    connect(list, &QListWidget::currentRowChanged, this, &ScenarioOverview::loadContent);
 
     if (!names.isEmpty())
         loadContent(0);

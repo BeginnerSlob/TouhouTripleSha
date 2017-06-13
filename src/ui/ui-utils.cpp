@@ -119,7 +119,7 @@ QString QSanUiUtils::QSanFreeTypeFont::resolveFont(const QString &fontName)
     return result;
 }
 
-int *QSanUiUtils::QSanFreeTypeFont::loadFont(const QString &fontName)
+QSanUiUtils::QSanFreeTypeFont::QSanFont QSanUiUtils::QSanFreeTypeFont::loadFont(const QString &fontName)
 {
     if (!_ftLibInitialized && !_initLibrary())
         return NULL;

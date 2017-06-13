@@ -40,6 +40,7 @@ public:
         AskForChoice = 0x000F,
         AskForTriggerOrder = 0x0010,
         AskForCardChosen = 0x0011,
+        AskForSuit = 0x0012,
 
         RespondingUse = 0x0101,
         RespondingForDiscard = 0x0201,
@@ -236,6 +237,10 @@ public slots:
     void onPlayerChooseAG(int card_id);
     void onPlayerChoosePlayer(const Player *player);
     void onPlayerChooseTriggerOrder(const QString &choice);
+    void onPlayerChooseSuit(const QString &suit);
+    void onPlayerChooseKingdom();
+    void onPlayerChooseOrder();
+    void onPlayerChooseRole3v3();
     void trust();
     void addRobot(int num);
 
@@ -279,15 +284,10 @@ private:
     bool _getSingleCard(int card_id, CardsMoveStruct move);
 
 private slots:
-    void processServerPacket(const QString &cmd);
-    void processServerPacket(const char *cmd);
+    void processServerPacket(const QByteArray &cmd);
     bool processServerRequest(const QSanProtocol::Packet &packet);
     void notifyRoleChange(const QString &new_role);
-    void onPlayerChooseSuit();
-    void onPlayerChooseKingdom();
     void alertFocus();
-    void onPlayerChooseOrder();
-    void onPlayerChooseRole3v3();
 
 signals:
     void version_checked(const QString &version_number, const QString &mod_name);

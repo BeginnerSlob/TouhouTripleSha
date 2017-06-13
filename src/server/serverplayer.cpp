@@ -282,8 +282,8 @@ void ServerPlayer::setSocket(ClientSocket *socket)
 {
     if (socket) {
         connect(socket, &ClientSocket::disconnected, this, &ServerPlayer::disconnected);
-        connect(socket, SIGNAL(message_got(const char *)), this, SLOT(getMessage(const char *)));
-        connect(this, SIGNAL(message_ready(QString)), this, SLOT(sendMessage(QString)));
+        connect(socket, &ClientSocket::message_got, this, &ServerPlayer::getMessage);
+        connect(this, &ServerPlayer::message_ready, this, &ServerPlayer::sendMessage);
     } else {
         if (this->socket) {
             this->disconnect(this->socket);
@@ -292,22 +292,21 @@ void ServerPlayer::setSocket(ClientSocket *socket)
             this->socket->deleteLater();
         }
 
-        disconnect(this, SLOT(sendMessage(QString)));
+        disconnect(this, &ServerPlayer::message_ready, this, &ServerPlayer::sendMessage);
     }
 
     this->socket = socket;
 }
 
-void ServerPlayer::getMessage(const char *message)
+void ServerPlayer::getMessage(QByteArray request)
 {
-    QString request = message;
     if (request.endsWith("\n"))
         request.chop(1);
 
     emit request_got(request);
 }
 
-void ServerPlayer::unicast(const QString &message)
+void ServerPlayer::unicast(const QByteArray &message)
 {
     emit message_ready(message);
 
@@ -390,7 +389,7 @@ void ServerPlayer::clearSelected()
     selected.clear();
 }
 
-void ServerPlayer::sendMessage(const QString &message)
+void ServerPlayer::sendMessage(const QByteArray &message)
 {
     if (socket) {
 #ifndef QT_NO_DEBUG
@@ -402,7 +401,7 @@ void ServerPlayer::sendMessage(const QString &message)
 
 void ServerPlayer::invoke(const AbstractPacket *packet)
 {
-    unicast(packet->toString());
+    unicast(packet->toJson());
 }
 
 QString ServerPlayer::reportHeader() const

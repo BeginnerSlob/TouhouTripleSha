@@ -3,6 +3,7 @@
 
 #include "card.h"
 #include "package.h"
+#include "skill.h"
 
 class IkaiKaPackage : public Package
 {
@@ -49,7 +50,7 @@ public:
 #include <QCommandLinkButton>
 #include <QDialog>
 #include <QVBoxLayout>
-class SelectSuitDialog : public QDialog
+class SelectSuitDialog : public SkillDialog
 {
     Q_OBJECT
 
@@ -57,7 +58,7 @@ public:
     static SelectSuitDialog *getInstance();
 
 public slots:
-    void popup();
+    virtual void popup();
     void selectSuit(QAbstractButton *button);
 
 private:
@@ -65,9 +66,6 @@ private:
 
     QButtonGroup *group;
     QVBoxLayout *button_layout;
-
-signals:
-    void onButtonClick();
 };
 
 class IkHunkaoCard : public SkillCard
@@ -148,7 +146,7 @@ public:
 #include <QCommandLinkButton>
 #include <QDialog>
 #include <QVBoxLayout>
-class IkLingchaDialog : public QDialog
+class IkLingchaDialog : public SkillDialog
 {
     Q_OBJECT
 
@@ -156,7 +154,7 @@ public:
     static IkLingchaDialog *getInstance();
 
 public slots:
-    void popup();
+    virtual void popup();
     void selectCard(QAbstractButton *button);
 
 private:
@@ -166,9 +164,6 @@ private:
     QVBoxLayout *button_layout;
 
     QHash<QString, const Card *> map;
-
-signals:
-    void onButtonClick();
 };
 
 class IkLingchaCard : public SkillCard

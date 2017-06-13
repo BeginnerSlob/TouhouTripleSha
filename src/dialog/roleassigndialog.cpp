@@ -77,12 +77,14 @@ RoleAssignDialog::RoleAssignDialog(QWidget *parent)
     mainlayout->addLayout(layout);
     setLayout(mainlayout);
 
-    connect(role_ComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateRole(int)));
-    connect(list, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)), this, SLOT(updateRole(QListWidgetItem *)));
-    connect(moveUpButton, SIGNAL(clicked()), this, SLOT(moveUp()));
-    connect(moveDownButton, SIGNAL(clicked()), this, SLOT(moveDown()));
-    connect(okButton, SIGNAL(clicked()), this, SLOT(accept()));
-    connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
+    connect(role_ComboBox, (void (QComboBox::*)(int))(&QComboBox::currentIndexChanged), this,
+            (void (RoleAssignDialog::*)(int))(&RoleAssignDialog::updateRole));
+    connect(list, (void (QListWidget::*)(QListWidgetItem *))(&QListWidget::currentItemChanged), this,
+            (void (RoleAssignDialog::*)(QListWidgetItem *))(&RoleAssignDialog::updateRole));
+    connect(moveUpButton, &QPushButton::clicked, this, &RoleAssignDialog::moveUp);
+    connect(moveDownButton, &QPushButton::clicked, this, &RoleAssignDialog::moveDown);
+    connect(okButton, &QPushButton::clicked, this, &RoleAssignDialog::accept);
+    connect(cancelButton, &QPushButton::clicked, this, &RoleAssignDialog::reject);
 }
 
 void RoleAssignDialog::accept()

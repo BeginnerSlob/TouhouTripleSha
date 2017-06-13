@@ -241,7 +241,8 @@ public:
     Q_INVOKABLE GreatIkYeyanCard();
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self, int &maxVotes) const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self,
+                              int &maxVotes) const;
     virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
@@ -289,7 +290,7 @@ public:
     IkHuanshenDialog();
 
 public slots:
-    void popup();
+    virtual void popup();
 };
 
 class IkGuihuoCard : public SkillCard

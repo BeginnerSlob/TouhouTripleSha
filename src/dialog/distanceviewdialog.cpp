@@ -71,8 +71,8 @@ DistanceViewDialog::DistanceViewDialog(QWidget *parent)
     RoomScene::FillPlayerNames(ui->from, false);
     RoomScene::FillPlayerNames(ui->to, false);
 
-    connect(ui->from, SIGNAL(currentIndexChanged(int)), this, SLOT(showDistance()));
-    connect(ui->to, SIGNAL(currentIndexChanged(int)), this, SLOT(showDistance()));
+    connect(ui->from, (void (QComboBox::*)(int))(&QComboBox::currentIndexChanged), this, &DistanceViewDialog::showDistance);
+    connect(ui->to, (void (QComboBox::*)(int))(&QComboBox::currentIndexChanged), this, &DistanceViewDialog::showDistance);
 
     layout->addRow(tr("From"), ui->from);
     layout->addRow(tr("To"), ui->to);

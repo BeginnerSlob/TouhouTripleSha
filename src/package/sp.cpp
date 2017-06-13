@@ -346,7 +346,7 @@ public:
         return false;
     }
 
-    virtual QDialog *getDialog() const
+    virtual SkillDialog *getDialog() const
     {
         return ShefuDialog::getInstance("shefu");
     }

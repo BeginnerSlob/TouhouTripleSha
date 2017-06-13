@@ -7,6 +7,7 @@
 #include "cardoverview.h"
 #include "choosegeneraldialog.h"
 #include "chooseoptionsbox.h"
+#include "choosesuitbox.h"
 #include "choosetriggerorderbox.h"
 #include "distanceviewdialog.h"
 #include "engine.h"
@@ -92,7 +93,7 @@ RoomScene::RoomScene(QMainWindow *main_window)
     // create table pile
     m_tablePile = new TablePile;
     addItem(m_tablePile);
-    connect(ClientInstance, SIGNAL(card_used()), m_tablePile, SLOT(clear()));
+    connect(ClientInstance, &Client::card_used, m_tablePile, (void (TablePile::*)())(&TablePile::clear));
 
     // create dashboard
     dashboard = new Dashboard(createDashboardButtons());
@@ -101,18 +102,18 @@ RoomScene::RoomScene(QMainWindow *main_window)
     addItem(dashboard);
 
     dashboard->setPlayer(Self);
-    connect(Self, SIGNAL(general_changed()), dashboard, SLOT(updateAvatar()));
-    connect(Self, SIGNAL(general2_changed()), dashboard, SLOT(updateSmallAvatar()));
-    connect(Self, SIGNAL(rhshiguang_changed()), dashboard, SLOT(updateAvatar()));
-    connect(dashboard, SIGNAL(card_selected(const Card *)), this, SLOT(enableTargets(const Card *)));
-    connect(dashboard, SIGNAL(card_to_use()), this, SLOT(doOkButton()));
-    //connect(dashboard, SIGNAL(add_equip_skill(const Skill *, bool)), this, SLOT(addSkillButton(const Skill *, bool)));
-    //connect(dashboard, SIGNAL(remove_equip_skill(QString)), this, SLOT(detachSkill(QString)));
+    connect(Self, &ClientPlayer::general_changed, dashboard, &Dashboard::updateAvatar);
+    connect(Self, &ClientPlayer::general2_changed, dashboard, &Dashboard::updateSmallAvatar);
+    connect(Self, &ClientPlayer::rhshiguang_changed, dashboard, &Dashboard::updateAvatar);
+    connect(dashboard, &Dashboard::card_selected, this, &RoomScene::enableTargets);
+    connect(dashboard, &Dashboard::card_to_use, this, &RoomScene::doOkButton);
+    //connect(dashboard, &Dashboard::add_equip_skill, this, &RoomScene::addSkillButton);
+    //connect(dashboard, &Dashboard::remove_equip_skill, this, &RoomScene::detachSkill);
 
-    connect(Self, SIGNAL(pile_changed(QString)), dashboard, SLOT(updatePile(QString)));
+    connect(Self, &ClientPlayer::pile_changed, dashboard, &Dashboard::updatePile);
 
     // add role ComboBox
-    connect(Self, SIGNAL(role_changed(QString)), dashboard, SLOT(updateRole(QString)));
+    connect(Self, &ClientPlayer::role_changed, dashboard, &Dashboard::updateRole);
 
     m_replayControl = NULL;
     if (ClientInstance->getReplayer()) {
@@ -136,70 +137,61 @@ RoomScene::RoomScene(QMainWindow *main_window)
     change_general_menu = new QMenu(main_window);
     QAction *action = change_general_menu->addAction(tr("Change general ..."));
     FreeChooseDialog *general_changer = new FreeChooseDialog(main_window);
-    connect(action, SIGNAL(triggered()), general_changer, SLOT(exec()));
-    connect(general_changer, SIGNAL(general_chosen(QString)), this, SLOT(changeGeneral(QString)));
+    connect(action, &QAction::triggered, general_changer, &FreeChooseDialog::exec);
+    connect(general_changer, &FreeChooseDialog::general_chosen, this, &RoomScene::changeGeneral);
     to_change = NULL;
 
     m_add_robot_menu = new QMenu(main_window);
 
     // do signal-slot connections
-    connect(ClientInstance, SIGNAL(player_added(ClientPlayer *)), SLOT(addPlayer(ClientPlayer *)));
-    connect(ClientInstance, SIGNAL(player_removed(QString)), SLOT(removePlayer(QString)));
-    connect(ClientInstance, SIGNAL(generals_got(QStringList)), this, SLOT(chooseGeneral(QStringList)));
-    connect(ClientInstance, SIGNAL(generals_viewed(QString, QStringList)), this, SLOT(viewGenerals(QString, QStringList)));
-    connect(ClientInstance, SIGNAL(suits_got(QStringList)), this, SLOT(chooseSuit(QStringList)));
+    connect(ClientInstance, &Client::player_added, this, &RoomScene::addPlayer);
+    connect(ClientInstance, &Client::player_removed, this, &RoomScene::removePlayer);
+    connect(ClientInstance, &Client::generals_got, this, &RoomScene::chooseGeneral);
+    connect(ClientInstance, &Client::generals_viewed, this, &RoomScene::viewGenerals);
+    connect(ClientInstance, &Client::suits_got, this, &RoomScene::chooseSuit);
     connect(ClientInstance, &Client::options_got, this, &RoomScene::chooseOption);
     connect(ClientInstance, &Client::cards_got, this, &RoomScene::chooseCard);
-    connect(ClientInstance, SIGNAL(roles_got(QString, QStringList)), this, SLOT(chooseRole(QString, QStringList)));
-    connect(ClientInstance, SIGNAL(directions_got()), this, SLOT(chooseDirection()));
-    connect(ClientInstance, SIGNAL(orders_got(QSanProtocol::Game3v3ChooseOrderCommand)), this,
-            SLOT(chooseOrder(QSanProtocol::Game3v3ChooseOrderCommand)));
-    connect(ClientInstance, SIGNAL(kingdoms_got(QStringList)), this, SLOT(chooseKingdom(QStringList)));
+    connect(ClientInstance, &Client::roles_got, this, &RoomScene::chooseRole);
+    connect(ClientInstance, &Client::directions_got, this, &RoomScene::chooseDirection);
+    connect(ClientInstance, &Client::orders_got, this, &RoomScene::chooseOrder);
+    connect(ClientInstance, &Client::kingdoms_got, this, &RoomScene::chooseKingdom);
     connect(ClientInstance, &Client::triggers_got, this, &RoomScene::chooseTriggerOrder);
-    connect(ClientInstance, SIGNAL(seats_arranged(QList<const ClientPlayer *>)),
-            SLOT(arrangeSeats(QList<const ClientPlayer *>)));
-    connect(ClientInstance, SIGNAL(status_changed(Client::Status, Client::Status)), this,
-            SLOT(updateStatus(Client::Status, Client::Status)));
-    connect(ClientInstance, SIGNAL(avatars_hiden()), this, SLOT(hideAvatars()));
-    connect(ClientInstance, SIGNAL(hp_changed(QString, int, DamageStruct::Nature, bool)),
-            SLOT(changeHp(QString, int, DamageStruct::Nature, bool)));
-    connect(ClientInstance, SIGNAL(maxhp_changed(QString, int)), SLOT(changeMaxHp(QString, int)));
-    connect(ClientInstance, SIGNAL(pile_reset()), this, SLOT(resetPiles()));
+    connect(ClientInstance, &Client::seats_arranged, this, &RoomScene::arrangeSeats);
+    connect(ClientInstance, &Client::status_changed, this, &RoomScene::updateStatus);
+    connect(ClientInstance, &Client::avatars_hiden, this, &RoomScene::hideAvatars);
+    connect(ClientInstance, &Client::hp_changed, this, &RoomScene::changeHp);
+    connect(ClientInstance, &Client::maxhp_changed, this, &RoomScene::changeMaxHp);
+    connect(ClientInstance, &Client::pile_reset, this, &RoomScene::resetPiles);
     connect(ClientInstance, &Client::player_killed, this, &RoomScene::killPlayer);
-    connect(ClientInstance, SIGNAL(player_revived(QString)), this, SLOT(revivePlayer(QString)));
-    connect(ClientInstance, SIGNAL(card_shown(QString, int)), this, SLOT(showCard(QString, int)));
-    connect(ClientInstance, SIGNAL(gongxin(QList<int>, bool, QList<int>)), this,
-            SLOT(doGongxin(QList<int>, bool, QList<int>)));
-    connect(ClientInstance, SIGNAL(focus_moved(QStringList, QSanProtocol::Countdown)), this,
-            SLOT(moveFocus(QStringList, QSanProtocol::Countdown)));
-    connect(ClientInstance, SIGNAL(emotion_set(QString, QString)), this, SLOT(setEmotion(QString, QString)));
-    connect(ClientInstance, SIGNAL(skill_invoked(QString, QString)), this, SLOT(showSkillInvocation(QString, QString)));
-    connect(ClientInstance, SIGNAL(skill_acquired(const ClientPlayer *, QString)), this,
-            SLOT(acquireSkill(const ClientPlayer *, QString)));
-    connect(ClientInstance, SIGNAL(animated(int, QStringList)), this, SLOT(doAnimation(int, QStringList)));
-    connect(ClientInstance, SIGNAL(role_state_changed(QString)), this, SLOT(updateRoles(QString)));
-    connect(ClientInstance, SIGNAL(event_received(const QVariant)), this, SLOT(handleGameEvent(const QVariant)));
+    connect(ClientInstance, &Client::player_revived, this, &RoomScene::revivePlayer);
+    connect(ClientInstance, &Client::card_shown, this, &RoomScene::showCard);
+    connect(ClientInstance, &Client::gongxin, this, &RoomScene::doGongxin);
+    connect(ClientInstance, &Client::focus_moved, this, &RoomScene::moveFocus);
+    connect(ClientInstance, &Client::emotion_set, this, &RoomScene::setEmotion);
+    connect(ClientInstance, &Client::skill_invoked, this, &RoomScene::showSkillInvocation);
+    connect(ClientInstance, &Client::skill_acquired, this, &RoomScene::acquireSkill);
+    connect(ClientInstance, &Client::animated, this, &RoomScene::doAnimation);
+    connect(ClientInstance, &Client::role_state_changed, this, &RoomScene::updateRoles);
+    connect(ClientInstance, &Client::event_received, this, &RoomScene::handleGameEvent);
 
-    connect(ClientInstance, SIGNAL(game_started()), this, SLOT(onGameStart()));
-    connect(ClientInstance, SIGNAL(game_over()), this, SLOT(onGameOver()));
-    connect(ClientInstance, SIGNAL(standoff()), this, SLOT(onStandoff()));
+    connect(ClientInstance, &Client::game_started, this, &RoomScene::onGameStart);
+    connect(ClientInstance, &Client::game_over, this, &RoomScene::onGameOver);
+    connect(ClientInstance, &Client::standoff, this, &RoomScene::onStandoff);
 
-    connect(ClientInstance, SIGNAL(move_cards_lost(int, QList<CardsMoveStruct>)), this,
-            SLOT(loseCards(int, QList<CardsMoveStruct>)));
-    connect(ClientInstance, SIGNAL(move_cards_got(int, QList<CardsMoveStruct>)), this,
-            SLOT(getCards(int, QList<CardsMoveStruct>)));
+    connect(ClientInstance, &Client::move_cards_lost, this, &RoomScene::loseCards);
+    connect(ClientInstance, &Client::move_cards_got, this, &RoomScene::getCards);
 
-    connect(ClientInstance, SIGNAL(nullification_asked(bool)), dashboard, SLOT(controlNullificationButton(bool)));
+    connect(ClientInstance, &Client::nullification_asked, dashboard, &Dashboard::controlNullificationButton);
 
-    connect(ClientInstance, SIGNAL(assign_asked()), this, SLOT(startAssign()));
-    connect(ClientInstance, SIGNAL(start_in_xs()), this, SLOT(startInXs()));
+    connect(ClientInstance, &Client::assign_asked, this, &RoomScene::startAssign);
+    connect(ClientInstance, &Client::start_in_xs, this, &RoomScene::startInXs);
 
     guanxing_box = new GuanxingBox;
     guanxing_box->hide();
     addItem(guanxing_box);
     guanxing_box->setZValue(20000.0);
 
-    connect(ClientInstance, SIGNAL(guanxing(QList<int>, bool)), guanxing_box, SLOT(doGuanxing(QList<int>, bool)));
+    connect(ClientInstance, &Client::guanxing, guanxing_box, &GuanxingBox::doGuanxing);
     guanxing_box->moveBy(-120, 0);
 
     m_chooseOptionsBox = new ChooseOptionsBox;
@@ -220,23 +212,28 @@ RoomScene::RoomScene(QMainWindow *main_window)
     m_playerCardBox->setZValue(30000.0);
     m_playerCardBox->moveBy(-120, 0);
 
+    m_chooseSuitBox = new ChooseSuitBox;
+    m_chooseSuitBox->hide();
+    addItem(m_chooseSuitBox);
+    m_chooseSuitBox->setZValue(30000.0);
+    m_chooseSuitBox->moveBy(-120, 0);
+
     card_container = new CardContainer();
     card_container->hide();
     addItem(card_container);
     card_container->setZValue(9.0);
 
-    connect(card_container, SIGNAL(item_chosen(int)), ClientInstance, SLOT(onPlayerChooseAG(int)));
-    connect(card_container, SIGNAL(item_gongxined(int)), ClientInstance, SLOT(onPlayerReplyGongxin(int)));
+    connect(card_container, &CardContainer::item_chosen, ClientInstance, &Client::onPlayerChooseAG);
+    connect(card_container, &CardContainer::item_gongxined, ClientInstance, &Client::onPlayerReplyGongxin);
 
-    connect(ClientInstance, SIGNAL(ag_filled(QList<int>, QList<int>)), this, SLOT(fillCards(QList<int>, QList<int>)));
-    connect(ClientInstance, SIGNAL(ag_taken(ClientPlayer *, int, bool)), this,
-            SLOT(takeAmazingGrace(ClientPlayer *, int, bool)));
-    connect(ClientInstance, SIGNAL(ag_cleared()), card_container, SLOT(clear()));
+    connect(ClientInstance, &Client::ag_filled, this, &RoomScene::fillCards);
+    connect(ClientInstance, &Client::ag_taken, this, &RoomScene::takeAmazingGrace);
+    connect(ClientInstance, &Client::ag_cleared, card_container, &CardContainer::clear);
 
     card_container->moveBy(-120, 0);
 
-    connect(ClientInstance, SIGNAL(skill_attached(QString)), this, SLOT(attachSkill(QString)));
-    connect(ClientInstance, SIGNAL(skill_detached(QString)), this, SLOT(detachSkill(QString)));
+    connect(ClientInstance, &Client::skill_attached, this, &RoomScene::attachSkill);
+    connect(ClientInstance, &Client::skill_detached, this, &RoomScene::detachSkill);
     connect(ClientInstance, &Client::skill_step_changed, this, &RoomScene::changeSkillStep);
 
     enemy_box = NULL;
@@ -244,13 +241,12 @@ RoomScene::RoomScene(QMainWindow *main_window)
 
     if (ServerInfo.GameMode == "06_3v3" || ServerInfo.GameMode == "02_1v1" || ServerInfo.GameMode == "06_XMode") {
         if (ServerInfo.GameMode != "06_XMode") {
-            connect(ClientInstance, SIGNAL(generals_filled(QStringList)), this, SLOT(fillGenerals(QStringList)));
-            connect(ClientInstance, SIGNAL(general_asked()), this, SLOT(startGeneralSelection()));
-            connect(ClientInstance, SIGNAL(general_taken(QString, QString, QString)), this,
-                    SLOT(takeGeneral(QString, QString, QString)));
-            connect(ClientInstance, SIGNAL(general_recovered(int, QString)), this, SLOT(recoverGeneral(int, QString)));
+            connect(ClientInstance, &Client::generals_filled, this, &RoomScene::fillGenerals);
+            connect(ClientInstance, &Client::general_asked, this, &RoomScene::startGeneralSelection);
+            connect(ClientInstance, &Client::general_taken, this, &RoomScene::takeGeneral);
+            connect(ClientInstance, &Client::general_recovered, this, &RoomScene::recoverGeneral);
         }
-        connect(ClientInstance, SIGNAL(arrange_started(QString)), this, SLOT(startArrange(QString)));
+        connect(ClientInstance, &Client::arrange_started, this, &RoomScene::startArrange);
 
         arrange_button = NULL;
 
@@ -261,7 +257,7 @@ RoomScene::RoomScene(QMainWindow *main_window)
             enemy_box->hide();
             self_box->hide();
 
-            connect(ClientInstance, SIGNAL(general_revealed(bool, QString)), this, SLOT(revealGeneral(bool, QString)));
+            connect(ClientInstance, &Client::general_revealed, this, &RoomScene::revealGeneral);
         }
     }
 
@@ -273,9 +269,8 @@ RoomScene::RoomScene(QMainWindow *main_window)
     chat_box_widget->setObjectName("chat_box_widget");
     chat_box->setReadOnly(true);
     chat_box->setTextColor(Config.TextEditColor);
-    connect(ClientInstance, SIGNAL(line_spoken(QString)), chat_box, SLOT(append(QString)));
-    connect(ClientInstance, SIGNAL(player_speak(const QString &, const QString &)), this,
-            SLOT(showBubbleChatBox(const QString &, const QString &)));
+    connect(ClientInstance, &Client::line_spoken, chat_box, &QTextEdit::append);
+    connect(ClientInstance, &Client::player_speak, this, &RoomScene::showBubbleChatBox);
 
     QScrollBar *bar = chat_box->verticalScrollBar();
     QFile file("qss/scroll.qss");
@@ -291,16 +286,16 @@ RoomScene::RoomScene(QMainWindow *main_window)
     chat_edit_widget = addWidget(chat_edit);
     chat_edit_widget->setObjectName("chat_edit_widget");
     chat_edit_widget->setZValue(-2.0);
-    connect(chat_edit, SIGNAL(returnPressed()), this, SLOT(speak()));
+    connect(chat_edit, &QLineEdit::returnPressed, this, &RoomScene::speak);
 #if QT_VERSION >= 0x040700
     chat_edit->setPlaceholderText(tr("Please enter text to chat ... "));
 #endif
 
     chat_widget = new ChatWidget();
-    chat_widget->setZValue(-0.1);
+    chat_widget->setZValue(-2.1);
     addItem(chat_widget);
-    connect(chat_widget, SIGNAL(return_button_click()), this, SLOT(speak()));
-    connect(chat_widget, SIGNAL(chat_widget_msg(QString)), this, SLOT(appendChatEdit(QString)));
+    connect(chat_widget, &ChatWidget::return_button_click, this, &RoomScene::speak);
+    connect(chat_widget, &ChatWidget::chat_widget_msg, this, &RoomScene::appendChatEdit);
 
     if (ServerInfo.DisableChat)
         chat_edit_widget->hide();
@@ -314,7 +309,8 @@ RoomScene::RoomScene(QMainWindow *main_window)
     log_box_widget->setObjectName("log_box_widget");
     log_box_widget->setZValue(-1.0);
     log_box_widget->setParent(this);
-    connect(ClientInstance, SIGNAL(log_received(QStringList)), log_box, SLOT(appendLog(QStringList)));
+    connect(ClientInstance, &Client::log_received, log_box,
+            (void (ClientLogBox::*)(const QStringList &))(&ClientLogBox::appendLog));
 
     prompt_box = new Window(tr("QSanguosha"), QSize(480, 200));
     prompt_box->setOpacity(0);
@@ -379,9 +375,9 @@ RoomScene::RoomScene(QMainWindow *main_window)
         start_game->setPos(0, 0);
         start_game->hide();
 
-        connect(add_robot, SIGNAL(clicked()), this, SLOT(addRobot()));
-        connect(start_game, SIGNAL(clicked()), this, SLOT(fillRobots()));
-        connect(Self, SIGNAL(owner_changed(bool)), this, SLOT(showOwnerButtons(bool)));
+        connect(add_robot, &Button::clicked, this, &RoomScene::addRobot);
+        connect(start_game, &Button::clicked, this, &RoomScene::fillRobots);
+        connect(Self, &ClientPlayer::owner_changed, this, &RoomScene::showOwnerButtons);
     }
     return_to_main_menu = new Button(tr("Return to main menu"));
     return_to_main_menu->setParentItem(control_panel);
@@ -391,7 +387,7 @@ RoomScene::RoomScene(QMainWindow *main_window)
     return_to_main_menu->setPos(0, return_to_main_menu->boundingRect().height() + 10);
     return_to_main_menu->show();
 
-    connect(return_to_main_menu, SIGNAL(clicked()), this, SIGNAL(return_to_start()));
+    connect(return_to_main_menu, &Button::clicked, this, &RoomScene::return_to_start);
     control_panel->show();
 
     animations = new EffectAnimation();
@@ -434,7 +430,7 @@ RoomScene::RoomScene(QMainWindow *main_window)
     _m_holdTimer = new QTimer(this);
     _m_currentHoldItem = NULL;
     _m_lastMousePress = QPointF();
-    connect(_m_holdTimer, SIGNAL(timeout()), this, SLOT(onPressHoldTimeOut()));
+    connect(_m_holdTimer, &QTimer::timeout, this, &RoomScene::onPressHoldTimeOut);
 #endif
 }
 
@@ -673,15 +669,15 @@ QGraphicsItem *RoomScene::createDashboardButtons()
     cancel_button->setRect(G_DASHBOARD_LAYOUT.m_cancelButtonArea);
     discard_button = new QSanButton("platter", "discard", widget);
     discard_button->setRect(G_DASHBOARD_LAYOUT.m_discardButtonArea);
-    connect(ok_button, SIGNAL(clicked()), this, SLOT(doOkButton()));
-    connect(cancel_button, SIGNAL(clicked()), this, SLOT(doCancelButton()));
-    connect(discard_button, SIGNAL(clicked()), this, SLOT(doDiscardButton()));
+    connect(ok_button, &QSanButton::clicked, this, &RoomScene::doOkButton);
+    connect(cancel_button, &QSanButton::clicked, this, &RoomScene::doCancelButton);
+    connect(discard_button, &QSanButton::clicked, this, &RoomScene::doDiscardButton);
 
     trust_button = new QSanButton("platter", "trust", widget);
     trust_button->setStyle(QSanButton::S_STYLE_TOGGLE);
     trust_button->setRect(G_DASHBOARD_LAYOUT.m_trustButtonArea);
-    connect(trust_button, SIGNAL(clicked()), this, SLOT(trust()));
-    connect(Self, SIGNAL(state_changed()), this, SLOT(updateTrustButton()));
+    connect(trust_button, &QSanButton::clicked, this, &RoomScene::trust);
+    connect(Self, &ClientPlayer::state_changed, this, &RoomScene::updateTrustButton);
 
     // set them all disabled
     ok_button->setEnabled(false);
@@ -729,12 +725,12 @@ ReplayerControlBar::ReplayerControlBar(Dashboard *dashboard)
     widget->setPos(step * 4, 0);
 
     Replayer *replayer = ClientInstance->getReplayer();
-    connect(play, SIGNAL(clicked()), replayer, SLOT(toggle()));
-    connect(uniform, SIGNAL(clicked()), replayer, SLOT(uniform()));
-    connect(slow_down, SIGNAL(clicked()), replayer, SLOT(slowDown()));
-    connect(speed_up, SIGNAL(clicked()), replayer, SLOT(speedUp()));
-    connect(replayer, SIGNAL(elasped(int)), this, SLOT(setTime(int)));
-    connect(replayer, SIGNAL(speed_changed(qreal)), this, SLOT(setSpeed(qreal)));
+    connect(play, &QSanButton::clicked, replayer, &Replayer::toggle);
+    connect(uniform, &QSanButton::clicked, replayer, &Replayer::uniform);
+    connect(slow_down, &QSanButton::clicked, replayer, &Replayer::slowDown);
+    connect(speed_up, &QSanButton::clicked, replayer, &Replayer::speedUp);
+    connect(replayer, &Replayer::elasped, this, &ReplayerControlBar::setTime);
+    connect(replayer, &Replayer::speed_changed, this, &ReplayerControlBar::setSpeed);
 
     speed = replayer->getSpeed();
     setParentItem(dashboard);
@@ -1023,6 +1019,8 @@ void RoomScene::updateTable()
                                                                m_chooseTriggerOrderBox->boundingRect().height() / 2));
     m_playerCardBox->setPos(
         m_tableCenterPos - QPointF(m_playerCardBox->boundingRect().width() / 2, m_playerCardBox->boundingRect().height() / 2));
+    m_chooseSuitBox->setPos(
+        m_tableCenterPos - QPointF(m_chooseSuitBox->boundingRect().width() / 2, m_chooseSuitBox->boundingRect().height() / 2));
     prompt_box->setPos(m_tableCenterPos);
     pausing_text->setPos(m_tableCenterPos - pausing_text->boundingRect().center());
     pausing_item->setRect(sceneRect());
@@ -1121,11 +1119,11 @@ void RoomScene::arrangeSeats(const QList<const ClientPlayer *> &seats)
     // set item to player mapping
     if (item2player.isEmpty()) {
         item2player.insert(dashboard, Self);
-        connect(dashboard, SIGNAL(selected_changed()), this, SLOT(updateSelectedTargets()));
+        connect(dashboard, &Dashboard::selected_changed, this, &RoomScene::updateSelectedTargets);
         foreach (Photo *photo, photos) {
             item2player.insert(photo, photo->getPlayer());
-            connect(photo, SIGNAL(selected_changed()), this, SLOT(updateSelectedTargets()));
-            connect(photo, SIGNAL(enable_changed()), this, SLOT(onEnabledChange()));
+            connect(photo, &Photo::selected_changed, this, &RoomScene::updateSelectedTargets);
+            connect(photo, &Photo::enable_changed, this, &RoomScene::onEnabledChange);
         }
     }
 
@@ -1445,7 +1443,7 @@ void RoomScene::keyReleaseEvent(QKeyEvent *event)
         if (Self->hasSkill("ikhuanshen")) {
             const Skill *huashen_skill = Sanguosha->getSkill("ikhuanshen");
             if (huashen_skill) {
-                IkHuanshenDialog *dialog = qobject_cast<IkHuanshenDialog *>(huashen_skill->getDialog());
+                IkHuanshenDialog *dialog = qobject_cast<IkHuanshenDialog *>(huashen_skill->getHuanshenDialog());
                 if (dialog)
                     dialog->popup();
             }
@@ -1614,7 +1612,7 @@ void RoomScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
                                                                       .arg(ClientInstance->getPlayerName(player->objectName()))
                                                                       .arg(Sanguosha->translate(pile_name)));
                         action->setData(QString("%1.%2").arg(player->objectName()).arg(pile_name));
-                        connect(action, SIGNAL(triggered()), this, SLOT(showPlayerCards()));
+                        connect(action, &QAction::triggered, this, &RoomScene::showPlayerCards);
                     }
                 }
             }
@@ -1636,7 +1634,7 @@ void RoomScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
                     QMenu *submenu = known_cards->addMenu(ClientInstance->getPlayerName(player->objectName()));
                     QAction *action = submenu->addAction(tr("View in new dialog"));
                     action->setData(player->objectName());
-                    connect(action, SIGNAL(triggered()), this, SLOT(showPlayerCards()));
+                    connect(action, &QAction::triggered, this, &RoomScene::showPlayerCards);
 
                     submenu->addSeparator();
                     foreach (const Card *card, known) {
@@ -1649,9 +1647,9 @@ void RoomScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
         }
 
         QAction *distance = menu->addAction(tr("View distance"));
-        connect(distance, SIGNAL(triggered()), this, SLOT(viewDistance()));
+        connect(distance, &QAction::triggered, this, &RoomScene::viewDistance);
         QAction *discard = menu->addAction(tr("View Discard pile"));
-        connect(discard, SIGNAL(triggered()), this, SLOT(toggleDiscards()));
+        connect(discard, &QAction::triggered, this, &RoomScene::toggleDiscards);
 
         menu->popup(event->screenPos());
     } else if (ServerInfo.FreeChoose && arrange_button) {
@@ -1681,28 +1679,11 @@ void RoomScene::chooseGeneral(const QStringList &generals)
 
 void RoomScene::chooseSuit(const QStringList &suits)
 {
-    QDialog *dialog = new QDialog;
-    QVBoxLayout *layout = new QVBoxLayout;
+    QApplication::alert(main_window);
+    if (!main_window->isActiveWindow())
+        Sanguosha->playSystemAudioEffect("pop-up");
 
-    foreach (QString suit, suits) {
-        QCommandLinkButton *button = new QCommandLinkButton;
-        button->setIcon(QIcon(QString("image/system/suit/%1.png").arg(suit)));
-        button->setText(Sanguosha->translate(suit));
-        button->setObjectName(suit);
-
-        layout->addWidget(button);
-
-        connect(button, SIGNAL(clicked()), ClientInstance, SLOT(onPlayerChooseSuit()));
-        connect(button, SIGNAL(clicked()), dialog, SLOT(accept()));
-    }
-
-    connect(dialog, SIGNAL(rejected()), ClientInstance, SLOT(onPlayerChooseSuit()));
-
-    dialog->setObjectName(".");
-    dialog->setWindowTitle(tr("Please choose a suit"));
-    dialog->setLayout(layout);
-    delete m_choiceDialog;
-    m_choiceDialog = dialog;
+    m_chooseSuitBox->chooseSuit(suits);
 }
 
 void RoomScene::chooseKingdom(const QStringList &kingdoms)
@@ -1722,12 +1703,12 @@ void RoomScene::chooseKingdom(const QStringList &kingdoms)
 
         layout->addWidget(button);
 
-        connect(button, SIGNAL(clicked()), ClientInstance, SLOT(onPlayerChooseKingdom()));
-        connect(button, SIGNAL(clicked()), dialog, SLOT(accept()));
+        connect(button, &QCommandLinkButton::clicked, ClientInstance, &Client::onPlayerChooseKingdom);
+        connect(button, &QCommandLinkButton::clicked, dialog, &QDialog::accept);
     }
 
     dialog->setObjectName(".");
-    connect(dialog, SIGNAL(rejected()), ClientInstance, SLOT(onPlayerChooseKingdom()));
+    connect(dialog, &QDialog::rejected, ClientInstance, &Client::onPlayerChooseKingdom);
 
     dialog->setObjectName(".");
     dialog->setWindowTitle(tr("Please choose a kingdom"));
@@ -1779,11 +1760,11 @@ void RoomScene::chooseOrder(QSanProtocol::Game3v3ChooseOrderCommand reason)
     layout->addLayout(hlayout);
     dialog->setLayout(layout);
 
-    connect(warm_button, SIGNAL(clicked()), ClientInstance, SLOT(onPlayerChooseOrder()));
-    connect(cool_button, SIGNAL(clicked()), ClientInstance, SLOT(onPlayerChooseOrder()));
-    connect(warm_button, SIGNAL(clicked()), dialog, SLOT(accept()));
-    connect(cool_button, SIGNAL(clicked()), dialog, SLOT(accept()));
-    connect(dialog, SIGNAL(rejected()), ClientInstance, SLOT(onPlayerChooseOrder()));
+    connect(warm_button, &OptionButton::clicked, ClientInstance, &Client::onPlayerChooseOrder);
+    connect(cool_button, &OptionButton::clicked, ClientInstance, &Client::onPlayerChooseOrder);
+    connect(warm_button, &OptionButton::clicked, dialog, &QDialog::accept);
+    connect(cool_button, &OptionButton::clicked, dialog, &QDialog::accept);
+    connect(dialog, &QDialog::rejected, ClientInstance, &Client::onPlayerChooseOrder);
     delete m_choiceDialog;
     m_choiceDialog = dialog;
 }
@@ -1817,16 +1798,16 @@ void RoomScene::chooseRole(const QString &scheme, const QStringList &roles)
             button->setIcon(QIcon(QString("image/system/roles/%1.png").arg(role)));
         layout->addWidget(button);
         button->setObjectName(role);
-        connect(button, SIGNAL(clicked()), ClientInstance, SLOT(onPlayerChooseRole3v3()));
-        connect(button, SIGNAL(clicked()), dialog, SLOT(accept()));
+        connect(button, &QCommandLinkButton::clicked, ClientInstance, &Client::onPlayerChooseRole3v3);
+        connect(button, &QCommandLinkButton::clicked, dialog, &QDialog::accept);
     }
 
     QCommandLinkButton *abstain_button = new QCommandLinkButton(tr("Abstain"));
-    connect(abstain_button, SIGNAL(clicked()), dialog, SLOT(reject()));
+    connect(abstain_button, &QCommandLinkButton::clicked, dialog, &QDialog::reject);
     layout->addWidget(abstain_button);
 
     dialog->setObjectName("abstain");
-    connect(dialog, SIGNAL(rejected()), ClientInstance, SLOT(onPlayerChooseRole3v3()));
+    connect(dialog, &QDialog::rejected, ClientInstance, &Client::onPlayerChooseRole3v3);
 
     dialog->setLayout(layout);
     delete m_choiceDialog;
@@ -1856,11 +1837,13 @@ void RoomScene::chooseDirection()
     dialog->setLayout(layout);
 
     dialog->setObjectName("ccw");
+    /*
     connect(ccw_button, SIGNAL(clicked()), ClientInstance, SLOT(onPlayerMakeChoice()));
     connect(ccw_button, SIGNAL(clicked()), dialog, SLOT(accept()));
     connect(cw_button, SIGNAL(clicked()), ClientInstance, SLOT(onPlayerMakeChoice()));
     connect(cw_button, SIGNAL(clicked()), dialog, SLOT(accept()));
     connect(dialog, SIGNAL(rejected()), ClientInstance, SLOT(onPlayerMakeChoice()));
+    */
     delete m_choiceDialog;
     m_choiceDialog = dialog;
 }
@@ -2218,26 +2201,34 @@ void RoomScene::addSkillButton(const Skill *skill)
             // for IkZhiyu::getDialog
             btn = dashboard->getSkillDock()->getSkillButtonByName("ikzhiyu");
             Q_ASSERT(btn);
-            QDialog *dialog = main_window->findChild<QDialog *>("ikzhiyu");
+            SkillDialog *dialog = main_window->findChild<SkillDialog *>("ikzhiyu");
             if (dialog && skill->getDialog()) {
-                connect(btn, SIGNAL(skill_activated()), dialog, SLOT(popup()));
-                connect(btn, SIGNAL(skill_deactivated()), dialog, SLOT(reject()));
-                disconnect(btn, SIGNAL(skill_activated()), this, SLOT(onSkillActivated()));
-                connect(dialog, SIGNAL(onButtonClick()), this, SLOT(onSkillActivated()));
+                connect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_activated), dialog,
+                        &SkillDialog::popup); // ??????????????????????????????????????????????????????????????
+                connect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_deactivated), dialog, &SkillDialog::reject);
+                disconnect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_activated), this,
+                           &RoomScene::onSkillActivated);
+                connect(dialog, &SkillDialog::onButtonClick, this, &RoomScene::onSkillActivated);
             } else if (!dialog && skill->getDialog()) {
-                QDialog *skill_dialog = skill->getDialog();
+                SkillDialog *skill_dialog = skill->getDialog();
                 skill_dialog->setParent(main_window, Qt::Dialog);
-                connect(btn, SIGNAL(skill_activated()), skill_dialog, SLOT(popup()));
-                connect(btn, SIGNAL(skill_deactivated()), skill_dialog, SLOT(reject()));
-                disconnect(btn, SIGNAL(skill_activated()), this, SLOT(onSkillActivated()));
-                connect(skill_dialog, SIGNAL(onButtonClick()), this, SLOT(onSkillActivated()));
+                connect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_activated), skill_dialog,
+                        &SkillDialog::popup);
+                connect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_deactivated), skill_dialog,
+                        &SkillDialog::reject);
+                disconnect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_activated), this,
+                           &RoomScene::onSkillActivated);
+                connect(skill_dialog, &SkillDialog::onButtonClick, this, &RoomScene::onSkillActivated);
             } else if (!skill->getDialog()) {
-                QDialog *dialog = main_window->findChild<QDialog *>("ikzhiyu");
+                SkillDialog *dialog = main_window->findChild<SkillDialog *>("ikzhiyu");
                 if (dialog) {
-                    disconnect(btn, SIGNAL(skill_activated()), dialog, SLOT(popup()));
-                    disconnect(btn, SIGNAL(skill_deactivated()), dialog, SLOT(reject()));
-                    connect(btn, SIGNAL(skill_activated()), this, SLOT(onSkillActivated()));
-                    disconnect(dialog, SIGNAL(onButtonClick()), this, SLOT(onSkillActivated()));
+                    disconnect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_activated), dialog,
+                               &SkillDialog::popup);
+                    disconnect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_deactivated), dialog,
+                               &SkillDialog::reject);
+                    connect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_activated), this,
+                            &RoomScene::onSkillActivated);
+                    disconnect(dialog, &SkillDialog::onButtonClick, this, &RoomScene::onSkillActivated);
                 }
             }
         }
@@ -2245,21 +2236,23 @@ void RoomScene::addSkillButton(const Skill *skill)
     }
 
     if (btn->getViewAsSkill() != NULL && !m_replayControl) {
-        connect(btn, SIGNAL(skill_activated()), dashboard, SLOT(skillButtonActivated()));
-        connect(btn, SIGNAL(skill_activated()), this, SLOT(onSkillActivated()));
-        connect(btn, SIGNAL(skill_deactivated()), dashboard, SLOT(skillButtonDeactivated()));
-        connect(btn, SIGNAL(skill_deactivated()), this, SLOT(onSkillDeactivated()));
+        connect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_activated), dashboard,
+                &Dashboard::skillButtonActivated);
+        connect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_activated), this, &RoomScene::onSkillActivated);
+        connect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_deactivated), dashboard,
+                &Dashboard::skillButtonDeactivated);
+        connect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_deactivated), this, &RoomScene::onSkillDeactivated);
     }
 
-    QDialog *dialog = skill->getDialog();
+    SkillDialog *dialog = skill->getDialog();
     if (dialog && !m_replayControl) {
         dialog->setParent(main_window, Qt::Dialog);
-        connect(btn, SIGNAL(skill_activated()), dialog, SLOT(popup()));
-        connect(btn, SIGNAL(skill_deactivated()), dialog, SLOT(reject()));
-        disconnect(btn, SIGNAL(skill_activated()), this, SLOT(onSkillActivated()));
-        connect(dialog, SIGNAL(onButtonClick()), this, SLOT(onSkillActivated()));
+        connect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_activated), dialog, &SkillDialog::popup);
+        connect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_deactivated), dialog, &SkillDialog::reject);
+        disconnect(btn, (void (QSanSkillButton::*)())(&QSanSkillButton::skill_activated), this, &RoomScene::onSkillActivated);
+        connect(dialog, &SkillDialog::onButtonClick, this, &RoomScene::onSkillActivated);
         if (dialog->objectName() == "ikmice" || dialog->objectName() == "thmimeng")
-            connect(dialog, SIGNAL(onButtonClick()), dashboard, SLOT(selectAll()));
+            connect(dialog, &SkillDialog::onButtonClick, dashboard, &Dashboard::selectAll);
     }
 
     m_skillButtons.append(btn);
@@ -2618,6 +2611,8 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
             m_chooseTriggerOrderBox->clear();
         else if (oldStatus == Client::AskForCardChosen)
             m_playerCardBox->clear();
+        else if (oldStatus == Client::AskForSuit)
+            m_chooseSuitBox->clear();
         prompt_box->disappear();
         ClientInstance->getPromptDoc()->clear();
 
@@ -2812,6 +2807,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
     case Client::AskForArrangement:
     case Client::AskForChoice:
     case Client::AskForTriggerOrder:
+    case Client::AskForSuit:
     case Client::AskForCardChosen: {
         ok_button->setEnabled(false);
         cancel_button->setEnabled(false);
@@ -3139,7 +3135,7 @@ void RoomScene::onGameOver()
     fillTable(loser_table, loser_list);
 
     addRestartButton(dialog);
-    connect(dialog, SIGNAL(rejected()), this, SIGNAL(game_over_dialog_rejected()));
+    connect(dialog, &QDialog::rejected, this, &RoomScene::game_over_dialog_rejected);
     m_roomMutex.unlock();
     dialog->exec();
 }
@@ -3165,12 +3161,12 @@ void RoomScene::addRestartButton(QDialog *dialog)
     if (layout)
         layout->addLayout(hlayout);
 
-    connect(restart_button, SIGNAL(clicked()), dialog, SLOT(accept()));
-    connect(return_button, SIGNAL(clicked()), dialog, SLOT(accept()));
+    connect(restart_button, &QPushButton::clicked, dialog, &QDialog::accept);
+    connect(return_button, &QPushButton::clicked, dialog, &QDialog::accept);
 
-    connect(save_button, SIGNAL(clicked()), this, SLOT(saveReplayRecord()));
-    connect(restart_button, SIGNAL(clicked()), this, SIGNAL(restart()));
-    connect(return_button, SIGNAL(clicked()), this, SIGNAL(return_to_start()));
+    connect(save_button, &QPushButton::clicked, this, &RoomScene::saveReplayRecord);
+    connect(restart_button, &QPushButton::clicked, this, &RoomScene::restart);
+    connect(return_button, &QPushButton::clicked, this, &RoomScene::return_to_start);
 }
 
 void RoomScene::saveReplayRecord()
@@ -3207,8 +3203,8 @@ ScriptExecutor::ScriptExecutor(QWidget *parent)
 
     vlayout->addLayout(hlayout);
 
-    connect(ok_button, SIGNAL(clicked()), this, SLOT(accept()));
-    connect(this, SIGNAL(accepted()), this, SLOT(doScript()));
+    connect(ok_button, &QPushButton::clicked, this, &ScriptExecutor::accept);
+    connect(this, &ScriptExecutor::accepted, this, &ScriptExecutor::doScript);
 
     setLayout(vlayout);
 }
@@ -3239,7 +3235,7 @@ DeathNoteDialog::DeathNoteDialog(QWidget *parent)
     RoomScene::FillPlayerNames(victim, false);
 
     QPushButton *ok_button = new QPushButton(tr("OK"));
-    connect(ok_button, SIGNAL(clicked()), this, SLOT(accept()));
+    connect(ok_button, &QPushButton::clicked, this, &DeathNoteDialog::accept);
 
     QFormLayout *layout = new QFormLayout;
     layout->addRow(tr("Killer"), killer);
@@ -3285,7 +3281,7 @@ DamageMakerDialog::DamageMakerDialog(QWidget *parent)
     damage_point->setValue(1);
 
     QPushButton *ok_button = new QPushButton(tr("OK"));
-    connect(ok_button, SIGNAL(clicked()), this, SLOT(accept()));
+    connect(ok_button, &QPushButton::clicked, this, &DamageMakerDialog::accept);
     QHBoxLayout *hlayout = new QHBoxLayout;
     hlayout->addStretch();
     hlayout->addWidget(ok_button);
@@ -3300,7 +3296,8 @@ DamageMakerDialog::DamageMakerDialog(QWidget *parent)
 
     setLayout(layout);
 
-    connect(damage_nature, SIGNAL(currentIndexChanged(int)), this, SLOT(disableSource()));
+    connect(damage_nature, (void (QComboBox::*)(int))(&QComboBox::currentIndexChanged), this,
+            &DamageMakerDialog::disableSource);
 }
 
 void DamageMakerDialog::disableSource()
@@ -3395,7 +3392,7 @@ void RoomScene::doScript()
 void RoomScene::viewGenerals(const QString &reason, const QStringList &names)
 {
     QDialog *dialog = new ChooseGeneralDialog(names, main_window, true, Sanguosha->translate(reason));
-    connect(dialog, SIGNAL(rejected()), dialog, SLOT(deleteLater()));
+    connect(dialog, &QDialog::rejected, dialog, &QDialog::deleteLater);
     dialog->setParent(main_window, Qt::Dialog);
     dialog->show();
 }
@@ -3647,8 +3644,8 @@ void RoomScene::chooseSkillButton()
 
     foreach (QSanSkillButton *btn, enabled_buttons) {
         QCommandLinkButton *button = new QCommandLinkButton(Sanguosha->translate(btn->getSkill()->objectName()));
-        connect(button, SIGNAL(clicked()), btn, SLOT(click()));
-        connect(button, SIGNAL(clicked()), dialog, SLOT(accept()));
+        connect(button, &QCommandLinkButton::clicked, btn, &QSanSkillButton::click);
+        connect(button, &QCommandLinkButton::clicked, dialog, &QDialog::accept);
         layout->addWidget(button);
     }
 
@@ -3883,7 +3880,7 @@ void RoomScene::onGameStart()
         log_box->append(
             QString(tr("<font color='%1'>---------- Game Start ----------</font>").arg(Config.TextEditColor.name())));
 
-    connect(Self, SIGNAL(skill_state_changed(QString)), this, SLOT(skillStateChange(QString)));
+    connect(Self, &ClientPlayer::skill_state_changed, this, &RoomScene::skillStateChange);
     trust_button->setEnabled(true);
 #ifdef AUDIO_SUPPORT
     if (Config.EnableBgMusic) {
@@ -4040,7 +4037,7 @@ void RoomScene::doMovingAnimation(const QString &name, const QStringList &args)
     group->addAnimation(disappear);
 
     group->start(QAbstractAnimation::DeleteWhenStopped);
-    connect(group, SIGNAL(finished()), item, SLOT(deleteLater()));
+    connect(group, &QSequentialAnimationGroup::finished, item, &QSanSelectableItem::deleteLater);
 }
 
 void RoomScene::doAppearingAnimation(const QString &name, const QStringList &args)
@@ -4060,7 +4057,7 @@ void RoomScene::doAppearingAnimation(const QString &name, const QStringList &arg
     disappear->setDuration(1000);
 
     disappear->start(QAbstractAnimation::DeleteWhenStopped);
-    connect(disappear, SIGNAL(finished()), item, SLOT(deleteLater()));
+    connect(disappear, &QPropertyAnimation::finished, item, &QSanSelectableItem::deleteLater);
 }
 
 void RoomScene::doLightboxAnimation(const QString &, const QStringList &args)
@@ -4096,8 +4093,8 @@ void RoomScene::doLightboxAnimation(const QString &, const QStringList &args)
         appear->setDuration(duration);
         appear->start(QAbstractAnimation::DeleteWhenStopped);
 
-        connect(appear, SIGNAL(finished()), line, SLOT(deleteLater()));
-        connect(appear, SIGNAL(finished()), this, SLOT(removeLightBox()));
+        connect(appear, &QPropertyAnimation::finished, line, &QSanSelectableItem::deleteLater);
+        connect(appear, &QPropertyAnimation::finished, this, &RoomScene::removeLightBox);
     } else if (word.startsWith("anim=")) {
         if (word.contains("effects")) {
             if (Config.value("NoEffectsAnim", false).toBool())
@@ -4111,7 +4108,7 @@ void RoomScene::doLightboxAnimation(const QString &, const QStringList &args)
             pma->setZValue(20002.0);
             pma->moveBy(-sceneRect().width() * _m_roomLayout->m_infoPlaneWidthPercentage / 2,
                         -pma->boundingRect().height() * 0.1);
-            connect(pma, SIGNAL(finished()), this, SLOT(removeLightBox()));
+            connect(pma, &PixmapAnimation::finished, this, &RoomScene::removeLightBox);
         }
     } else {
         QFont font = Config.BigFont;
@@ -4132,7 +4129,7 @@ void RoomScene::doLightboxAnimation(const QString &, const QStringList &args)
         appear->setDuration(duration);
         appear->start(QAbstractAnimation::DeleteWhenStopped);
 
-        connect(appear, SIGNAL(finished()), this, SLOT(removeLightBox()));
+        connect(appear, &QPropertyAnimation::finished, this, &RoomScene::removeLightBox);
     }
 }
 
@@ -4434,7 +4431,7 @@ void RoomScene::startGeneralSelection()
 {
     foreach (CardItem *item, general_items) {
         item->setFlag(QGraphicsItem::ItemIsFocusable);
-        connect(item, SIGNAL(double_clicked()), this, SLOT(selectGeneral()));
+        connect(item, &CardItem::double_clicked, this, &RoomScene::selectGeneral);
     }
 }
 
@@ -4541,7 +4538,7 @@ void RoomScene::startArrange(const QString &to_arrange)
     foreach (CardItem *item, down_generals) {
         item->setFlag(QGraphicsItem::ItemIsFocusable);
         item->setAutoBack(false);
-        connect(item, SIGNAL(released()), this, SLOT(toggleArrange()));
+        connect(item, &CardItem::released, this, &RoomScene::toggleArrange);
     }
 
     QRect rect(0, 0, 80, 120);
@@ -4556,7 +4553,7 @@ void RoomScene::startArrange(const QString &to_arrange)
     arrange_button = new Button(tr("Complete"), 0.8);
     arrange_button->setParentItem(selector_box);
     arrange_button->setPos(600, 330);
-    connect(arrange_button, SIGNAL(clicked()), this, SLOT(finishArrange()));
+    connect(arrange_button, &Button::clicked, this, &RoomScene::finishArrange);
 }
 
 void RoomScene::toggleArrange()
@@ -4668,7 +4665,7 @@ void RoomScene::showPindianBox(const QString &from_name, int from_id, const QStr
 
     bringToFront(pindian_box);
     pindian_box->appear();
-    QTimer::singleShot(500, this, SLOT(doPindianAnimation()));
+    QTimer::singleShot(500, this, &RoomScene::doPindianAnimation);
 }
 
 void RoomScene::doPindianAnimation()
@@ -4679,7 +4676,7 @@ void RoomScene::doPindianAnimation()
     QString emotion = pindian_success ? "success" : "no-success";
     PixmapAnimation *pma = PixmapAnimation::GetPixmapAnimation(pindian_from_card, emotion);
     if (pma)
-        connect(pma, SIGNAL(finished()), pindian_box, SLOT(disappear()));
+        connect(pma, &PixmapAnimation::finished, pindian_box, &Window::disappear);
     else
         pindian_box->disappear();
 }
@@ -4814,7 +4811,7 @@ void RoomScene::addRobot()
         for (int i = 1; i <= left; i++) {
             QAction *action = menu->addAction(tr("%1 robots").arg(i));
             action->setData(i);
-            connect(action, SIGNAL(triggered()), this, SLOT(doAddRobotAction()));
+            connect(action, &QAction::triggered, this, &RoomScene::doAddRobotAction);
         }
 
         QPointF posf = QCursor::pos();

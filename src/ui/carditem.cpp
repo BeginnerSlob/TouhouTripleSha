@@ -168,7 +168,7 @@ QAbstractAnimation *CardItem::getGoBackAnimation(bool doFade, bool smoothTransit
         m_currentAnimation = goback;
     }
     m_animationMutex.unlock();
-    connect(m_currentAnimation, SIGNAL(finished()), this, SIGNAL(movement_animation_finished()));
+    connect(m_currentAnimation, &QAbstractAnimation::finished, this, &CardItem::movement_animation_finished);
     return m_currentAnimation;
 }
 
@@ -291,7 +291,8 @@ void CardItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     const Card *card = Sanguosha->getEngineCard(m_cardId);
     if (card) {
         painter->drawPixmap(G_COMMON_LAYOUT.m_cardSuitArea, G_ROOM_SKIN.getCardSuitPixmap(card->getSuit()));
-        painter->drawPixmap(G_COMMON_LAYOUT.m_cardNumberArea, G_ROOM_SKIN.getCardNumberPixmap(card->getNumber(), card->isBlack()));
+        painter->drawPixmap(G_COMMON_LAYOUT.m_cardNumberArea,
+                            G_ROOM_SKIN.getCardNumberPixmap(card->getNumber(), card->isBlack()));
         QRect rect = G_COMMON_LAYOUT.m_cardFootnoteArea;
         // Deal with stupid QT...
         if (_m_showFootnote)
@@ -316,5 +317,6 @@ void CardItem::setFootnote(const QString &desc)
     _m_footnoteImage = QImage(rect.size(), QImage::Format_ARGB32);
     _m_footnoteImage.fill(Qt::transparent);
     QPainter painter(&_m_footnoteImage);
-    font.paintText(&painter, QRect(QPoint(0, 0), rect.size()), (Qt::AlignmentFlag)((int)Qt::AlignHCenter | Qt::AlignBottom | Qt::TextWrapAnywhere), desc);
+    font.paintText(&painter, QRect(QPoint(0, 0), rect.size()),
+                   (Qt::AlignmentFlag)((int)Qt::AlignHCenter | Qt::AlignBottom | Qt::TextWrapAnywhere), desc);
 }

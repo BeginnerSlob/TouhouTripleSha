@@ -22,6 +22,7 @@ class QGroupBox;
 class ChooseOptionsBox;
 class ChooseTriggerOrderBox;
 class PlayerCardBox;
+class ChooseSuitBox;
 class BubbleChatBox;
 struct RoomLayout;
 
@@ -211,12 +212,15 @@ public slots:
     void makeReviving();
     void doScript();
     void viewGenerals(const QString &reason, const QStringList &names);
+    void viewDistance();
 
     void handleGameEvent(const QVariant &arg);
 
     void doOkButton();
     void doCancelButton();
     void doDiscardButton();
+
+    void removeLightBox();
 
     inline QPointF tableCenterPos()
     {
@@ -301,6 +305,8 @@ private:
     ChooseTriggerOrderBox *m_chooseTriggerOrderBox;
 
     PlayerCardBox *m_playerCardBox;
+
+    ChooseSuitBox *m_chooseSuitBox;
 
     ClientLogBox *log_box;
     QTextEdit *chat_box;
@@ -430,10 +436,8 @@ private slots:
     void addSkillButton(const Skill *skill);
 
     void resetPiles();
-    void removeLightBox();
 
     void showCard(const QString &player_name, int card_id);
-    void viewDistance();
 
     void speak();
 

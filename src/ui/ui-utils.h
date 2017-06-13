@@ -13,7 +13,9 @@ QImage produceShadow(const QImage &image, QColor shadowColor, int radius, double
 void makeGray(QPixmap &pixmap);
 
 namespace QSanFreeTypeFont {
-int *loadFont(const QString &fontPath);
+typedef int *QSanFont;
+
+QSanFont loadFont(const QString &fontPath);
 QString resolveFont(const QString &fontName);
 // @param painter
 //        Device to be painted on

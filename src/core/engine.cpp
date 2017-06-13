@@ -123,7 +123,7 @@ Engine::Engine()
     modes["10p"] = tr("10 players (1 renegade)");
     //modes["10pz"] = tr("10 players (0 renegade)");
 
-    connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(deleteLater()));
+    connect(qApp, &QApplication::aboutToQuit, this, &Engine::deleteLater);
 
     foreach (const Skill *skill, skills.values()) {
         Skill *mutable_skill = const_cast<Skill *>(skill);

@@ -201,7 +201,7 @@ private:
 
 private slots:
     void processNewConnection(ClientSocket *socket);
-    void processRequest(const char *request);
+    void processRequest(const QByteArray &request);
     void cleanup();
     void gameOver();
 

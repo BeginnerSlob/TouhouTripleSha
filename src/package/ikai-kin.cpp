@@ -2872,7 +2872,7 @@ public:
     {
     }
 
-    virtual QDialog *getDialog() const
+    virtual SkillDialog *getDialog() const
     {
         return ThMimengDialog::getInstance("ikmice", false);
     }
@@ -4244,7 +4244,7 @@ public:
         events << EventPhaseChanging;
     }
 
-    virtual QDialog *getDialog() const
+    virtual SkillDialog *getDialog() const
     {
         return IkQimoDialog::getInstance();
     }
@@ -6217,7 +6217,7 @@ public:
         events << EventPhaseChanging << CardAsked;
     }
 
-    QDialog *getDialog() const
+    virtual SkillDialog *getDialog() const
     {
         return ThMimengDialog::getInstance("ikyishen", true, false);
     }

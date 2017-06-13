@@ -62,7 +62,7 @@ void PixmapAnimation::start(bool permanent, int interval)
 {
     _m_timerId = startTimer(interval);
     if (!permanent)
-        connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
+        connect(this, &PixmapAnimation::finished, this, &PixmapAnimation::deleteLater);
 }
 
 void PixmapAnimation::stop()
@@ -148,20 +148,19 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
         pma->setZValue(20002.0);
         if (emotion.contains("weapon")) {
             pma->hide();
-            QTimer::singleShot(600, pma, SLOT(preStart()));
+            QTimer::singleShot(600, pma, &PixmapAnimation::preStart);
         } else if (emotion.contains("effects")) {
             if (parent->data(998).toString() == "light_box") {
                 pma->setZValue(20002.0);
                 if (emotion != "effects/burning_camps")
                     pma->moveBy(0, -pma->boundingRect().height() * 0.1);
-                connect(pma, SIGNAL(finished()), RoomSceneInstance, SLOT(removeLightBox()));
             }
             pma->hide();
-            QTimer::singleShot(33, pma, SLOT(preStart()));
+            QTimer::singleShot(33, pma, &PixmapAnimation::preStart);
         } else
             pma->startTimer(S_DEFAULT_INTERVAL);
 
-        connect(pma, SIGNAL(finished()), pma, SLOT(deleteLater()));
+        connect(pma, &PixmapAnimation::finished, pma, &PixmapAnimation::deleteLater);
         return pma;
     } else {
         delete pma;

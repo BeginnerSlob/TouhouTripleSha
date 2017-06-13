@@ -593,7 +593,8 @@ IkShengzunDialog::IkShengzunDialog()
 
     button_layout = new QVBoxLayout;
     setLayout(button_layout);
-    connect(group, SIGNAL(buttonClicked(QAbstractButton *)), this, SLOT(selectSkill(QAbstractButton *)));
+    connect(group, (void (QButtonGroup::*)(QAbstractButton *))(&QButtonGroup::buttonClicked), this,
+            &IkShengzunDialog::selectSkill);
 }
 
 void IkShengzunDialog::popup()
@@ -662,7 +663,7 @@ public:
         view_as_skill = new IkShengzunViewAsSkill;
     }
 
-    virtual QDialog *getDialog() const
+    virtual SkillDialog *getDialog() const
     {
         return IkShengzunDialog::getInstance();
     }
@@ -3295,7 +3296,7 @@ public:
         view_as_skill = new IkZhiyuViewAsSkill;
     }
 
-    virtual QDialog *getDialog() const
+    virtual SkillDialog *getDialog() const
     {
         if (Self->hasFlag("IkZhiyu1"))
             return ThMimengDialog::getInstance("ikzhiyu", true, false);
@@ -3494,7 +3495,7 @@ public:
         events << EventPhaseStart << PreCardUsed << EventPhaseChanging;
     }
 
-    virtual QDialog *getDialog() const
+    virtual SkillDialog *getDialog() const
     {
         return ThMimengDialog::getInstance(objectName(), true, true, false, false, true);
     }

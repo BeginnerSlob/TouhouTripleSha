@@ -30,8 +30,7 @@ GeneralSearch::GeneralSearch(GeneralOverview *parent)
     layout->addLayout(createButtonLayout());
     setLayout(layout);
 
-    connect(this, SIGNAL(search(bool, QString, QString, QStringList, QStringList, int, int, QStringList)), parent,
-            SLOT(startSearch(bool, QString, QString, QStringList, QStringList, int, int, QStringList)));
+    connect(this, &GeneralSearch::search, parent, &GeneralOverview::startSearch);
 }
 
 QWidget *GeneralSearch::createInfoTab()
@@ -142,9 +141,9 @@ QWidget *GeneralSearch::createInfoTab()
 
     QHBoxLayout *package_button_layout = new QHBoxLayout;
     select_all_button = new QPushButton(tr("Select All"));
-    connect(select_all_button, SIGNAL(clicked()), this, SLOT(selectAllPackages()));
+    connect(select_all_button, &QPushButton::clicked, this, &GeneralSearch::selectAllPackages);
     unselect_all_button = new QPushButton(tr("Unselect All"));
-    connect(unselect_all_button, SIGNAL(clicked()), this, SLOT(unselectAllPackages()));
+    connect(unselect_all_button, &QPushButton::clicked, this, &GeneralSearch::unselectAllPackages);
     package_button_layout->addWidget(select_all_button);
     package_button_layout->addWidget(unselect_all_button);
     package_button_layout->addStretch();
@@ -188,8 +187,8 @@ QLayout *GeneralSearch::createButtonLayout()
     button_layout->addWidget(clear_button);
     button_layout->addWidget(ok_button);
 
-    connect(ok_button, SIGNAL(clicked()), this, SLOT(accept()));
-    connect(clear_button, SIGNAL(clicked()), this, SLOT(clearAll()));
+    connect(ok_button, &QPushButton::clicked, this, &GeneralSearch::accept);
+    connect(clear_button, &QPushButton::clicked, this, &GeneralSearch::clearAll);
 
     return button_layout;
 }
@@ -273,18 +272,18 @@ GeneralOverview::GeneralOverview(QWidget *parent)
     if (ServerInfo.DuringGame && ServerInfo.EnableCheat) {
         ui->changeGeneralButton->show();
         ui->changeGeneral2Button->show();
-        connect(ui->changeGeneralButton, SIGNAL(clicked()), this, SLOT(askTransfiguration()));
-        connect(ui->changeGeneral2Button, SIGNAL(clicked()), this, SLOT(askTransfiguration()));
+        connect(ui->changeGeneralButton, &QPushButton::clicked, this, &GeneralOverview::askTransfiguration);
+        connect(ui->changeGeneral2Button, &QPushButton::clicked, this, &GeneralOverview::askTransfiguration);
     } else {
         ui->changeGeneralButton->hide();
         ui->changeGeneral2Button->hide();
     }
-    connect(ui->changeHeroSkinButton, SIGNAL(clicked()), this, SLOT(askChangeSkin()));
+    connect(ui->changeHeroSkinButton, &QPushButton::clicked, this, &GeneralOverview::askChangeSkin);
 
     general_search = new GeneralSearch(this);
-    connect(ui->searchButton, SIGNAL(clicked()), general_search, SLOT(show()));
+    connect(ui->searchButton, &QPushButton::clicked, general_search, &GeneralSearch::show);
     ui->returnButton->hide();
-    connect(ui->returnButton, SIGNAL(clicked()), this, SLOT(fillAllGenerals()));
+    connect(ui->returnButton, &QPushButton::clicked, this, &GeneralOverview::fillAllGenerals);
 }
 
 void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool init)
@@ -467,7 +466,7 @@ void GeneralOverview::addLines(const Skill *skill, const General *general)
             QString skill_line = Sanguosha->translate("$" + filename);
             button->setDescription(skill_line);
 
-            connect(button, SIGNAL(clicked()), this, SLOT(playAudioEffect()));
+            connect(button, &QCommandLinkButton::clicked, this, &GeneralOverview::playAudioEffect);
 
             addCopyAction(button);
         }
@@ -482,7 +481,7 @@ void GeneralOverview::addCopyAction(QCommandLinkButton *button)
     action->setText(tr("Copy lines"));
     button->setContextMenuPolicy(Qt::ActionsContextMenu);
 
-    connect(action, SIGNAL(triggered()), this, SLOT(copyLines()));
+    connect(action, &QAction::triggered, this, &GeneralOverview::copyLines);
 }
 
 void GeneralOverview::copyLines()
@@ -524,7 +523,7 @@ void GeneralOverview::on_tableWidget_itemSelectionChanged()
         QCommandLinkButton *death_button = new QCommandLinkButton(tr("Death"), last_word);
         button_layout->addWidget(death_button);
 
-        connect(death_button, SIGNAL(clicked()), general, SLOT(lastWord()));
+        connect(death_button, &QCommandLinkButton::clicked, general, &General::lastWord);
 
         addCopyAction(death_button);
     }

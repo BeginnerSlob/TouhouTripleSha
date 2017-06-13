@@ -4907,7 +4907,7 @@ public:
         return false;
     }
 
-    virtual QDialog *getDialog() const
+    virtual QDialog *getHuanshenDialog() const
     {
         static IkHuanshenDialog *dialog;
 
@@ -5340,7 +5340,7 @@ public:
             return NULL;
     }
 
-    virtual QDialog *getDialog() const
+    virtual SkillDialog *getDialog() const
     {
         return ThMimengDialog::getInstance("ikguihuo");
     }

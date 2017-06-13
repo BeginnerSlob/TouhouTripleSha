@@ -141,8 +141,8 @@ Client::Client(QObject *parent, const QString &filename)
         screen_name = screen_name.left(8);
     Self->setScreenName(screen_name);
     Self->setProperty("avatar", Config.UserAvatar);
-    connect(Self, SIGNAL(phase_changed()), this, SLOT(alertFocus()));
-    connect(Self, SIGNAL(role_changed(QString)), this, SLOT(notifyRoleChange(QString)));
+    connect(Self, &ClientPlayer::phase_changed, this, &Client::alertFocus);
+    connect(Self, &ClientPlayer::role_changed, this, &Client::notifyRoleChange);
 
     players << Self;
 
@@ -157,7 +157,7 @@ Client::Client(QObject *parent, const QString &filename)
         recorder = NULL;
 
         replayer = new Replayer(this, filename);
-        connect(replayer, SIGNAL(command_parsed(QString)), this, SLOT(processServerPacket(QString)));
+        connect(replayer, &Replayer::command_parsed, this, &Client::processServerPacket);
     } else {
         socket = new NativeClientSocket;
         recorder = new Recorder(this);
@@ -165,8 +165,8 @@ Client::Client(QObject *parent, const QString &filename)
 
         replayer = NULL;
 
-        connect(socket, &NativeClientSocket::message_got, recorder, &Recorder::record);
-        connect(socket, SIGNAL(message_got(const char *)), SLOT(processServerPacket(const char *)));
+        connect(socket, &NativeClientSocket::message_got, recorder, &Recorder::recordLine);
+        connect(socket, &ClientSocket::message_got, this, &Client::processServerPacket);
         connect(socket, &NativeClientSocket::error_message, this, &Client::error_message);
         socket->connectToHost();
     }
@@ -216,9 +216,9 @@ void Client::signup()
     else {
         JsonArray arg;
         arg << Config.value("EnableReconnection", false).toBool();
-        arg << QString(Config.UserName.toUtf8().toBase64());
+        arg << Config.UserName;
         arg << Config.UserAvatar;
-        notifyServer(S_COMMAND_SIGN_UP, arg);
+        notifyServer(S_COMMAND_SIGNUP, arg);
     }
 }
 
@@ -279,7 +279,7 @@ void Client::checkVersion(const QVariant &server_version)
 void Client::checkPassword(const QVariant &)
 {
     JsonArray args;
-    args << Config.UserName.toUtf8().toBase64() << Config.Password;
+    args << Config.UserName << Config.Password;
     notifyServer(S_COMMAND_CHECK_PASSWORD, QVariant::fromValue(args));
 }
 
@@ -307,14 +307,7 @@ void Client::disconnectFromHost()
     }
 }
 
-typedef char buffer_t[65535];
-
-void Client::processServerPacket(const QString &cmd)
-{
-    processServerPacket(cmd.toLatin1().data());
-}
-
-void Client::processServerPacket(const char *cmd)
+void Client::processServerPacket(const QByteArray &cmd)
 {
     if (m_isGameOver)
         return;
@@ -1098,8 +1091,7 @@ void Client::speakToServer(const QString &text)
     if (text.isEmpty())
         return;
 
-    QByteArray data = text.toUtf8().toBase64();
-    notifyServer(S_COMMAND_SPEAK, QVariant(data));
+    notifyServer(S_COMMAND_SPEAK, text);
 }
 
 void Client::addHistory(const QVariant &history)
@@ -1437,12 +1429,9 @@ void Client::askForGeneral(const QVariant &arg)
 void Client::askForSuit(const QVariant &)
 {
     QStringList suits;
-    suits << "spade"
-          << "club"
-          << "heart"
-          << "diamond";
+    suits << "spade" << "club" << "heart" << "diamond";
     emit suits_got(suits);
-    setStatus(ExecDialog);
+    setStatus(AskForSuit);
 }
 
 void Client::askForKingdom(const QVariant &)
@@ -1547,9 +1536,9 @@ void Client::setMark(const QVariant &mark_var)
     player->setMark(mark, value);
 }
 
-void Client::onPlayerChooseSuit()
+void Client::onPlayerChooseSuit(const QString &suit)
 {
-    replyToServer(S_COMMAND_CHOOSE_SUIT, QVariant(sender()->objectName()));
+    replyToServer(S_COMMAND_CHOOSE_SUIT, suit);
     setStatus(NotActive);
 }
 

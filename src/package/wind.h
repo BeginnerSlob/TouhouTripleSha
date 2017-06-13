@@ -3,6 +3,7 @@
 
 #include "card.h"
 #include "package.h"
+#include "skill.h"
 
 #include <QAbstractButton>
 #include <QButtonGroup>
@@ -25,7 +26,7 @@ public:
     virtual const Card *validateInResponse(ServerPlayer *user) const;
 };
 
-class GuhuoDialog : public QDialog
+class GuhuoDialog : public SkillDialog
 {
     Q_OBJECT
 
@@ -33,7 +34,7 @@ public:
     static GuhuoDialog *getInstance(const QString &object, bool left = true, bool right = true);
 
 public slots:
-    void popup();
+    virtual void popup();
     void selectCard(QAbstractButton *button);
 
 private:
@@ -46,9 +47,6 @@ private:
     QHash<QString, const Card *> map;
 
     QString object_name;
-
-signals:
-    void onButtonClick();
 };
 
 #include "skill.h"

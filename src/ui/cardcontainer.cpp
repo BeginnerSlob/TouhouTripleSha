@@ -18,7 +18,7 @@ CardContainer::CardContainer()
     close_button->setParentItem(this);
     close_button->setPos(517, 21);
     close_button->hide();
-    connect(close_button, SIGNAL(clicked()), this, SLOT(clear()));
+    connect(close_button, &CloseButton::clicked, this, &CardContainer::clear);
 }
 
 void CardContainer::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
@@ -170,8 +170,8 @@ void CardContainer::startChoose()
 {
     close_button->hide();
     foreach (CardItem *item, items) {
-        connect(item, SIGNAL(leave_hover()), this, SLOT(grabItem()));
-        connect(item, SIGNAL(double_clicked()), this, SLOT(chooseItem()));
+        connect(item, &CardItem::leave_hover, this, &CardContainer::grabItem);
+        connect(item, &CardItem::double_clicked, this, &CardContainer::chooseItem);
     }
 }
 
@@ -182,7 +182,7 @@ void CardContainer::startGongxin(const QList<int> &enabled_ids)
     foreach (CardItem *item, items) {
         const Card *card = item->getCard();
         if (card && enabled_ids.contains(card->getEffectiveId()))
-            connect(item, SIGNAL(double_clicked()), this, SLOT(gongxinItem()));
+            connect(item, &CardItem::double_clicked, this, &CardContainer::gongxinItem);
         else
             item->setEnabled(false);
     }
@@ -268,7 +268,7 @@ void GuanxingBox::doGuanxing(const QList<int> &card_ids, bool up_only)
         CardItem *card_item = new CardItem(Sanguosha->getCard(card_id));
         card_item->setAutoBack(false);
         card_item->setFlag(QGraphicsItem::ItemIsFocusable);
-        connect(card_item, SIGNAL(released()), this, SLOT(adjust()));
+        connect(card_item, &CardItem::released, this, &GuanxingBox::adjust);
 
         up_items << card_item;
         card_item->setParentItem(this);

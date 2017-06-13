@@ -386,7 +386,7 @@ public:
     void addPlayerHistory(ServerPlayer *player, const QString &key, int times = 1);
 
     bool toggleReadyCommand(ServerPlayer *player, const QVariant &);
-    bool speakCommand(ServerPlayer *player, const QVariant &arg);
+    bool speakCommand(ServerPlayer *player, const QVariant &message);
     bool trustCommand(ServerPlayer *player, const QVariant &arg);
     bool pauseCommand(ServerPlayer *player, const QVariant &arg);
     bool checkPassword(ServerPlayer *player, const QVariant &arg);
@@ -573,7 +573,7 @@ private:
     void assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign);
     void chooseGenerals(QList<ServerPlayer *> players = QList<ServerPlayer *>());
     AI *cloneAI(ServerPlayer *player);
-    void broadcast(const QString &message, ServerPlayer *except = NULL);
+    void broadcast(const QByteArray &message, ServerPlayer *except = NULL);
     void initCallbacks();
     QString askForOrder(ServerPlayer *player, const QString &default_choice);
     QString askForRole(ServerPlayer *player, const QStringList &roles, const QString &scheme);
@@ -602,7 +602,7 @@ private:
 
 private slots:
     void reportDisconnection();
-    void processClientPacket(const QString &packet);
+    void processClientPacket(const QByteArray &packet);
     void assignRoles();
     void startGame();
 
