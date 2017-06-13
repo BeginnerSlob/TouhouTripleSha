@@ -30,10 +30,10 @@
 #include <QPropertyAnimation>
 
 static qreal initialOpacity = 0.8;
-static int optionButtonHeight = 40;
+static int optionButtonHeight = 30;
 
 const int ChooseSuitBox::outerBlankWidth = 37;
-const int ChooseSuitBox::buttonWidth = 35;
+const int ChooseSuitBox::buttonWidth = 40;
 const int ChooseSuitBox::buttonHeight = 30;
 const int ChooseSuitBox::interval = 15;
 const int ChooseSuitBox::topBlankWidth = 42;
@@ -49,46 +49,21 @@ SuitOptionButton::SuitOptionButton(QGraphicsObject *parent, const QString &suit,
     setOpacity(initialOpacity);
 }
 
-QFont SuitOptionButton::defaultFont()
-{
-    return Config.UIFont;
-}
-
 void SuitOptionButton::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
     painter->setRenderHint(QPainter::HighQualityAntialiasing);
     painter->save();
-    painter->setBrush(Qt::black);
+    painter->setBrush(QBrush(QColor(0, 0, 0, 220)));
     painter->setPen(Sanguosha->getKingdomColor(Self->getGeneral()->getKingdom()));
     QRectF rect = boundingRect();
-    painter->drawRoundedRect(rect, 5, 5);
+    painter->drawRoundedRect(QRect(rect.left() - 5, rect.top(), rect.width() + 10, rect.height()), 5, 5);
     painter->restore();
 
     QPixmap pixmap = G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_HAND_CARD_SUIT, m_suit);
     pixmap = pixmap.scaledToHeight(optionButtonHeight, Qt::SmoothTransformation);
-    QRect pixmapRect(QPoint(0, (rect.height() - pixmap.height()) / 2), pixmap.size());
+    QRect pixmapRect(QPoint(((rect.width() - pixmap.width()) / 2), (rect.height() - pixmap.height()) / 2), pixmap.size());
     painter->setBrush(pixmap);
     painter->drawRect(pixmapRect);
-
-    QRect textArea(optionButtonHeight, 0, width - optionButtonHeight, optionButtonHeight);
-
-    IQSanComponentSkin::QSanShadowTextFont font;
-    JsonArray array;
-    array << "DroidSansFallback";
-    JsonArray array2;
-    array2 << 18 << 18 << 0;
-    array << QVariant::fromValue(array2) << 0;
-    JsonArray array4;
-    array4 << 255 << 255 << 255 << 255;
-    array << QVariant::fromValue(array4) << 1 << 10;
-    JsonArray array7;
-    array7 << 0 << 0;
-    JsonArray array8;
-    array8 << 50 << 50 << 50 << 200;
-    array << QVariant::fromValue(array7) << QVariant::fromValue(array8);
-    font.tryParse(array);
-
-    font.paintText(painter, textArea, Qt::AlignCenter, Sanguosha->translate(m_suit));
 }
 
 QRectF SuitOptionButton::boundingRect() const

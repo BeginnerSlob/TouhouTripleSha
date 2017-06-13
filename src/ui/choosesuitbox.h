@@ -33,9 +33,6 @@ class SuitOptionButton : public QGraphicsObject
 
     friend class ChooseSuitBox;
 
-public:
-    static QFont defaultFont();
-
 signals:
     void clicked();
     void hovered(bool entering);
