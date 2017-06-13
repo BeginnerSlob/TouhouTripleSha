@@ -73,8 +73,8 @@
     "horseImageArea": [0, 1, 140, 19],
     "horseSuitArea": [117, 2, 21, 17],
     "horsePointArea": [106, -4, 25, 25],
-    "equipPointFontBlack": ["font/font.ttf", [13, 13, 3], 20, [0, 0, 0, 255], 1, 1, [0, 0], [255, 255, 190, 128]],
-    "equipPointFontRed": ["font/font.ttf", [13, 13, 3], 20, [164, 0, 0, 255], 1, 1, [0, 0], [255, 255, 190, 128]],
+    "equipPointFontBlack": ["font/wqy-microhei.ttc", [13, 13, 3], 20, [0, 0, 0, 255], 1, 1, [0, 0], [255, 255, 190, 128]],
+    "equipPointFontRed": ["font/wqy-microhei.ttc", [13, 13, 3], 20, [164, 0, 0, 255], 1, 1, [0, 0], [255, 255, 190, 128]],
     "delayedTrickFirstRegion": [-10, 16, 28, 28],
     "delayedTrickStep": [0, 19],
     "roleComboBoxPos": [130, 1],
@@ -105,7 +105,7 @@
     "onlineStatusBgColor": [0, 0, 0, 0],
     "onlineStatusFont": ["SimSun",12, 0, [255, 255, 255, 255], 3, 10, [0, 0], [20, 20, 20, 155]],
     "skillNameArea": [33, 36, 300, 50],
-    "skillNameFont": ["font/font.ttf", 50, 0, [238, 255, 225, 255], 2, 20, [0, 0], [60, 66, 55, 210]],
+    "skillNameFont": ["font/wqy-microhei.ttc", 50, 0, [238, 255, 225, 255], 2, 20, [0, 0], [60, 66, 55, 210]],
     "progressBarArea": ["topLeft", "bottomLeft", [0, 10], [160, 12]],
     "progressBarHorizontal": true,
     "privatePileStartPos": [41, 27],
@@ -120,7 +120,7 @@
     "ikqihuangMaskColor": [255, 255, 255, 128],
     "deathEffectColor": [50, 50, 50, 255],
     "extraSkillArea": [101, 77, 56, 20],
-    "extraSkillFont": ["font/font.ttf", [16, 16, 3], 0, [255, 255, 255, 255], 2, 100, [0, 0], [102, 16, 120, 255]],
+    "extraSkillFont": ["font/wqy-microhei.ttc", [16, 16, 3], 0, [255, 255, 255, 255], 2, 100, [0, 0], [102, 16, 120, 255]],
     "extraSkillTextArea": [101, 74, 56, 20]
 },
 "dashboard":
@@ -141,8 +141,8 @@
     "horseImageArea": [0, 0, 149, 25],
     "horseSuitArea": [128, 5, 21, 17],
     "horsePointArea": [117, -5, 30, 30],
-    "equipPointFontBlack": ["font/font.ttf", [14, 14, 3], 20, [0, 0, 0, 255], 1, 0, [0, 0], [240, 240, 240, 200]],
-    "equipPointFontRed": ["font/font.ttf", [14, 14, 3], 20, [164, 0, 0, 255], 1, 0, [0, 0], [240, 240, 240, 200]], 
+    "equipPointFontBlack": ["font/wqy-microhei.ttc", [14, 14, 3], 20, [0, 0, 0, 255], 1, 0, [0, 0], [240, 240, 240, 200]],
+    "equipPointFontRed": ["font/wqy-microhei.ttc", [14, 14, 3], 20, [164, 0, 0, 255], 1, 0, [0, 0], [240, 240, 240, 200]], 
     "delayedTrickFirstRegion": [3, 3, 28, 28],
     "delayedTrickStep": [28, 0],
     // the width of the region to disperse cards when the cards are to be moved to the special pile. 
@@ -207,9 +207,9 @@
     "width": [134, 67, 45], 
     "textArea": [[20, -2, 112, 20], [22, -2, 44, 20], [9, -2, 40, 20]],
     "textAreaDown": [[21, -1, 112, 20], [23, -1, 44, 20], [10, -1, 40, 20]],
-    "textFont": [["font/font.ttf", [13, 13, 2], 50, [0, 0, 0, 255], 1, 1, [0, 0], [255, 255, 190, 128]],  // wide
-                 ["font/font.ttf", [13, 13, 1], 50, [0, 0, 0, 255], 1, 1, [0, 0], [255, 255, 190, 128]],  // medium
-                 ["font/font.ttf", [13, 13, 0], 50, [0, 0, 0, 255], 1, 1, [0, 0], [255, 255, 190, 128]]],  // narrow
+    "textFont": [["font/wqy-microhei.ttc", [13, 13, 2], 50, [0, 0, 0, 255], 1, 1, [0, 0], [255, 255, 190, 128]],  // wide
+                 ["font/wqy-microhei.ttc", [13, 13, 1], 50, [0, 0, 0, 255], 1, 1, [0, 0], [255, 255, 190, 128]],  // medium
+                 ["font/wqy-microhei.ttc", [13, 13, 0], 50, [0, 0, 0, 255], 1, 1, [0, 0], [255, 255, 190, 128]]],  // narrow
 
     // The following settings override the text color defined above
     // xxButtonColor = [normalColor, downColor, disabledColor, hoverColor]

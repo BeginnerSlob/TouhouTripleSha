@@ -19,12 +19,6 @@ StartScene::StartScene()
     addItem(logo);
 
     server_log = NULL;
-
-    // font
-    int fontId = QFontDatabase::addApplicationFont("font/home.ttf");
-    QString fzlb = QFontDatabase::applicationFontFamilies(fontId).at(0);
-    QFont font(fzlb, 23);
-    setFont(font);
 }
 
 StartScene::~StartScene()
@@ -42,7 +36,6 @@ void StartScene::addButton(QAction *action)
 {
     Button *button = new Button(action->text());
     button->setMute(false);
-    button->setFont(font());
 
     connect(button, &Button::clicked, action, &QAction::trigger);
     addItem(button);

@@ -13,8 +13,10 @@ Button::Button(const QString &label, qreal scale)
     : label(label)
     , size(ButtonRect.size() * scale)
     , mute(true)
-    , font(Config.SmallFont)
 {
+    int fontId = QFontDatabase::addApplicationFont("font/home.ttf");
+    QString fzlb = QFontDatabase::applicationFontFamilies(fontId).at(0);
+    font = QFont(fzlb, 23);
     title = QPixmap(size.toSize());
     outimg = QImage(size.toSize(), QImage::Format_ARGB32);
     init();
@@ -24,8 +26,10 @@ Button::Button(const QString &label, const QSizeF &size)
     : label(label)
     , size(size)
     , mute(true)
-    , font(Config.SmallFont)
 {
+    int fontId = QFontDatabase::addApplicationFont("font/home.ttf");
+    QString fzlb = QFontDatabase::applicationFontFamilies(fontId).at(0);
+    font = QFont(fzlb, 23);
     title = QPixmap(size.toSize());
     outimg = QImage(size.toSize(), QImage::Format_ARGB32);
     init();
