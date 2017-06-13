@@ -156,6 +156,7 @@ return {
 
 	["#wind059"] = "玲珑之恋",
 	["wind059"] = "由比滨结衣",--风 - 空 - 3血
+	["&wind059"] = "结衣",
 	["designer:wind059"] = "荼蘼",
 	["illustrator:wind059"] = "憂姫はぐれ",
 	["ikfengyuan"] = "逢源",
@@ -308,6 +309,7 @@ return {
 
 	["#bloom059"] = "华乐的悠风",
 	["bloom059"] = "高坂丽奈",--花 - 空 - 3血
+	["&bloom059"] = "丽奈",
 	["designer:bloom059"] = "韩旭",
 	["illustrator:bloom059"] = "Hiten",
 	["iksuzhong"] = "诉衷",
@@ -457,6 +459,7 @@ return {
 
 	["#snow059"] = "多闻的炼金师",
 	["snow059"] = "索菲•诺依恩缪拉",--雪 - 空 - 4血
+	["&snow059"] = "索菲",
 	["designer:snow059"] = "千幻",
 	["illustrator:snow059"] = "ゆーげん",
 	["ikhonglian"] = "虹炼",
@@ -648,6 +651,7 @@ return {
 
 	["#luna059"] = "雷动的彼方",
 	["luna059"] = "鸢泽美咲",--月 - 空 - 3血
+	["&luna059"] = "美咲",
 	["designer:luna059"] = "LXRivers",
 	["illustrator:luna059"] = "三嶋くろね",
 	["iktianqu"] = "天驱",
