@@ -5,6 +5,7 @@ return {
 
 	["#hana001"] = "四时的花之主",
 	["hana001"] = "风见幽香",--花 - 空 - 4血
+	["&hana001"] = "幽香",
 	["designer:hana001"] = "幻桜落",
 	["illustrator:hana001"] = "An2A",
 	["cv:hana001"] = "暂无",
@@ -17,6 +18,7 @@ return {
 	
 	["#hana002"] = "普通的魔法使",
 	["hana002"] = "雾雨魔理沙",--花 - 空 - 4血
+	["&hana002"] = "魔理沙",
 	["designer:hana002"] = "幻桜落",
 	["illustrator:hana002"] = "えふぇ",
 	["cv:hana002"] = "暂无",
@@ -34,6 +36,7 @@ return {
 	
 	["#hana003"] = "三途川的引路人",
 	["hana003"] = "小野塚小町",--花 - 幻 - 3血
+	["&hana003"] = "小町",
 	["designer:hana003"] = "幻桜落",
 	["illustrator:hana003"] = "カズ",
 	["cv:hana003"] = "暂无",
@@ -65,6 +68,7 @@ return {
 	
 	["#hana005"] = "暗海的绯之衣",
 	["hana005"] = "永江衣玖",--花 - 空 - 4血
+	["&hana005"] = "衣玖",
 	["designer:hana005"] = "幻桜落",
 	["illustrator:hana005"] = "DomotoLain",
 	["cv:hana005"] = "暂无",
@@ -75,6 +79,7 @@ return {
 	
 	["#hana006"] = "佐渡的狸妖",
 	["hana006"] = "二岩猯藏",--花 - 空 - 4血
+	["&hana006"] = "猯藏",
 	["designer:hana006"] = "昂翼天使",
 	["illustrator:hana006"] = "G.H",
 	["cv:hana006"] = "暂无",
@@ -85,6 +90,7 @@ return {
 	
 	["#hana007"] = "平安京的妖云",
 	["hana007"] = "封兽鵺",--花 - 幻 - 3血
+	["&hana007"] = "鵺",
 	["designer:hana007"] = "星野梦美",
 	["illustrator:hana007"] = "kaze",
 	["cv:hana007"] = "暂无",
@@ -97,6 +103,7 @@ return {
 	
 	["#hana008"] = "独臂有角的仙人",
 	["hana008"] = "茨木华扇",--花 - 空 - 3血
+	["&hana008"] = "华扇",
 	["designer:hana008"] = "桃花僧",
 	["illustrator:hana008"] = "DomotoLain",
 	["cv:hana008"] = "暂无",
@@ -111,6 +118,7 @@ return {
 	
 	["#hana009"] = "地狱的裁判长",
 	["hana009"] = "四季映姬",--花 - 空 - 4血
+	["&hana009"] = "映姬",
 	["designer:hana009"] = "笔枔",
 	["illustrator:hana009"] = "えふぇ",
 	["cv:hana009"] = "暂无",
@@ -146,6 +154,7 @@ return {
 	
 	["#hana012"] = "欢愉的遗忘之伞",
 	["hana012"] = "多多良小伞",--花 - 空 - 4血
+	["&hana012"] = "小伞",
 	["designer:hana012"] = "幻桜落",
 	["illustrator:hana012"] = "紅緒",
 	["cv:hana012"] = "暂无",
@@ -162,6 +171,7 @@ return {
 	
 	["#hana013"] = "忠实的死体",
 	["hana013"] = "宫古芳香",--花 - 空 - 3血
+	["&hana013"] = "芳香",
 	["designer:hana013"] = "幻桜落",
 	["illustrator:hana013"] = "KS",
 	["cv:hana013"] = "暂无",
@@ -175,6 +185,7 @@ return {
 	
 	["#hana014"] = "无理非道的仙人",
 	["hana014"] = "霍青娥",--花 - 幻 - 4血
+	["&hana014"] = "青娥",
 	["designer:hana014"] = "幻桜落",
 	["illustrator:hana014"] = "米白粕",
 	["cv:hana014"] = "暂无",
@@ -191,6 +202,7 @@ return {
 	
 	["#hana015"] = "神明末裔的亡灵",
 	["hana015"] = "苏我屠自古",--花 - 空 - 3血
+	["&hana015"] = "屠自古",
 	["designer:hana015"] = "幻桜落",
 	["illustrator:hana015"] = "いちやん",
 	["cv:hana015"] = "暂无",
@@ -204,6 +216,7 @@ return {
 	
 	["#hana016"] = "阴阳圣童女",
 	["hana016"] = "物部布都",--花 - 空 - 3血
+	["&hana016"] = "布都",
 	["designer:hana016"] = "昂翼天使",
 	["illustrator:hana016"] = "えふぇ",
 	["cv:hana016"] = "暂无",
@@ -216,6 +229,7 @@ return {
 	
 	["#hana017"] = "圣德道士",
 	["hana017"] = "丰聪耳神子",--花 - 空 - 7血
+	["&hana017"] = "神子",
 	["designer:hana017"] = "幻桜落",
 	["illustrator:hana017"] = "三日月沙羅",
 	["cv:hana017"] = "暂无",
@@ -232,6 +246,7 @@ return {
 	
 	["#hana018"] = "非想非非想之女",
 	["hana018"] = "比那名居天子",--花 - 空 - 4血
+	["&hana018"] = "天子",
 	["designer:hana018"] = "晓ャ绝对",
 	["illustrator:hana018"] = "国府田ハヤト",
 	["cv:hana018"] = "暂无",

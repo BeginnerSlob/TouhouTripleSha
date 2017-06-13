@@ -11,6 +11,7 @@ return {
 
 	["#story002"] = "梦想天生",
 	["story002"] = "魔王博丽灵梦",--神 - 空 - 8血
+	["&story002"] = "魔灵梦",
 	["designer:story002"] = "幻桜落",
 	["illustrator:story002"] = "Samail",
 	["cv:story002"] = "暂无",
@@ -25,6 +26,7 @@ return {
 
 	["#story003"] = "巫祖",
 	["story003"] = "魔王博丽灵梦",--神 - 空 - 4血
+	["&story003"] = "魔灵梦",
 	["designer:story003"] = "幻桜落",
 	["illustrator:story003"] = "manabi",
 	["cv:story003"] = "暂无",

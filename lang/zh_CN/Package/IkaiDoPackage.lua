@@ -6,6 +6,7 @@ return {
 --wind
 	["#wind001"] = "终焉之理",
 	["wind001"] = "鹿目圆香",--风 - 空 - 4血
+	["&wind001"] = "圆香",
 	["designer:wind001"] = "游卡桌游",
 	["illustrator:wind001"] = "わたあめ",
 	["ikshenai"] = "神爱",
@@ -35,6 +36,7 @@ return {
 
 	["#wind004"] = "玩者论破",
 	["wind004"] = "七海千秋",--风 - 空 - 3血
+	["&wind004"] = "千秋",
 	["designer:wind004"] = "游卡桌游",
 	["illustrator:wind004"] = "天琊悲鸣",
 	["ikxushi"] = "虚视",
@@ -47,7 +49,7 @@ return {
 	
 	["#wind006"] = "亚瑟王",
 	["wind006"] = "阿尔托莉雅•潘德拉根",--风 - 空 - 4血
-	["&wind006"] = "阿尔托莉雅",
+	["&wind006"] = "阿尔托",
 	--thjibu
 	["designer:wind006"] = "游卡桌游",
 	["illustrator:wind006"] = "konomi",
@@ -84,6 +86,7 @@ return {
 --bloom
 	["#bloom001"] = "玉润的千金",
 	["bloom001"] = "三千院凪",--花 - 空 - 4血
+	["&bloom001"] = "凪",
 	["designer:bloom001"] = "游卡桌游",
 	["illustrator:bloom001"] = "くらすけ",
 	["ikjiaoman"] = "娇蛮",
@@ -106,6 +109,7 @@ return {
 
 	["#bloom003"] = "半月夜的呢喃",
 	["bloom003"] = "秋庭里香",--花 - 空 - 4血
+	["&bloom003"] = "里香",
 	["designer:bloom003"] = "游卡桌游",
 	["illustrator:bloom003"] = "山本ケイジ",
 	["ikaoli"] = "傲戾",
@@ -116,6 +120,7 @@ return {
 
 	["#bloom004"] = "龙凤的雀士",
 	["bloom004"] = "松实宥＆松实玄",--花 - 空 - 4血
+	["&bloom004"] = "宥＆玄",
 	["designer:bloom004"] = "游卡桌游",
 	["illustrator:bloom004"] = "NAbyssor",
 	["ikchibao"] = "赤宝",
@@ -126,6 +131,7 @@ return {
 
 	["#bloom005"] = "高岭之花",
 	["bloom005"] = "葵喜美",--花 - 空 - 4血
+	["&bloom005"] = "喜美",
 	["designer:bloom005"] = "游卡桌游",
 	["illustrator:bloom005"] = "八永",
 	["ikluoyi"] = "裸衣",
@@ -134,6 +140,7 @@ return {
 
 	["#bloom006"] = "夏日青空之影",
 	["bloom006"] = "神尾观铃",--花 - 空 - 3血
+	["&bloom006"] = "观铃",
 	["designer:bloom006"] = "游卡桌游",
 	["illustrator:bloom006"] = "Mauve",
 	["iktiandu"] = "天妒",
@@ -143,6 +150,7 @@ return {
 
 	["#bloom007"] = "傲霜之蟹",
 	["bloom007"] = "战场原黑仪",--花 - 幻 - 3血
+	["&bloom007"] = "黑仪",
 	["designer:bloom007"] = "游卡桌游",
 	["illustrator:bloom007"] = "茶みらい",
 	["ikmengyang"] = "濛漾",
@@ -153,6 +161,7 @@ return {
 
 	["#bloom042"] = "链心的娇叶",
 	["bloom042"] = "稻叶姬子",--花 - 空 - 3血
+	["&bloom042"] = "姬子",
 	["designer:bloom042"] = "游卡桌游",
 	["illustrator:bloom042"] = "一葉モカ",
 	["ikxunxun"] = "恂恂",
@@ -174,6 +183,7 @@ return {
 
 	["#snow002"] = "茧居神探",
 	["snow002"] = "紫苑寺有子",--雪 - 空 - 4血
+	["&snow002"] = "有子",
 	["designer:snow002"] = "游卡桌游",
 	["illustrator:snow002"] = "岸田梅尔",
 	["ikkuipo"] = "窥破",
@@ -185,6 +195,7 @@ return {
 	
 	["#snow003"] = "棉被宇宙人",
 	["snow003"] = "藤和艾莉欧",--雪 - 空 - 4血
+	["&snow003"] = "艾莉欧",
 	["designer:snow003"] = "游卡桌游",
 	["illustrator:snow003"] = "スカイ",
 	["ikbiju"] = "闭居",
@@ -202,6 +213,7 @@ return {
 
 	["#snow004"] = "鬼畜的空间使",
 	["snow004"] = "白井黑子",--雪 - 空 - 4血
+	["&snow004"] = "黑子",
 	["designer:snow004"] = "游卡桌游",
 	["illustrator:snow004"] = "ペテン師",
 	["ikkurou"] = "苦肉",
@@ -211,6 +223,7 @@ return {
 
 	["#snow005"] = "满帆的年华",
 	["snow005"] = "冬海爱衣",--雪 - 空 - 3血
+	["&snow005"] = "爱衣",
 	["designer:snow005"] = "游卡桌游",
 	["illustrator:snow005"] = "カントク",
 	["ikguideng"] = "鬼灯",
@@ -232,6 +245,7 @@ return {
 
 	["#snow007"] = "暗黑的圣杯",
 	["snow007"] = "间桐樱",--雪 - 空 - 3血
+	["&snow007"] = "间桐",
 	["designer:snow007"] = "游卡桌游",
 	["illustrator:snow007"] = "猫厨",
 	["ikwujie"] = "无竭",
@@ -250,6 +264,7 @@ return {
 
 	["#snow042"] = "无口的女神",
 	["snow042"] = "绫波丽",--雪 - 空 - 4血
+	["&snow042"] = "丽",
 	["designer:snow042"] = "游卡桌游",
 	["illustrator:snow042"] = "九十i",
 	["ikziqiang"] = "自戕",
@@ -261,6 +276,7 @@ return {
 --luna
 	["#luna002"] = "坚强的心之光",
 	["luna002"] = "坂上智代",--月 - 空 - 4血
+	["&luna002"] = "智代",
 	["designer:luna002"] = "游卡桌游",
 	["illustrator:luna002"] = "白丝少年",
 	["ikwushuang"] = "无双",
@@ -290,6 +306,7 @@ return {
 
 	["#luna018"] = "默然的空之音",
 	["luna018"] = "筒隐月子",--月 - 空 - 3血
+	["&luna018"] = "月子",
 	["designer:luna018"] = "KayaK",
 	["illustrator:luna018"] = "カントク",
 	["ikzhuji"] = "祝祭",
@@ -299,6 +316,7 @@ return {
 
 	["#luna034"] = "禁断之缘",
 	["luna034"] = "春日野穹",--月 - 空 - 4血
+	["&luna034"] = "穹",
 	["designer:luna034"] = "游卡桌游",
 	["illustrator:luna034"] = "ちり",
 	["ikguijiao"] = "鬼娇",
@@ -310,6 +328,7 @@ return {
 	
 	["#luna042"] = "童话的魔女",
 	["luna042"] = "久远寺有珠",--月 - 空 - 3血
+	["&luna042"] = "有珠",
 	--ikhuichun
 	["designer:luna042"] = "游卡桌游",
 	["illustrator:luna042"] = "こやまひろかず",

@@ -34,6 +34,7 @@ return {
 
 	["#wind011"] = "灼烂的炎魔",
 	["wind011"] = "五河琴里",--风 - 空 - 3血
+	["&wind011"] = "琴里",
 	["designer:wind011"] = "游卡桌游",
 	["illustrator:wind011"] = "つなこ",
 	["ikjingnie"] = "净涅",
@@ -45,6 +46,7 @@ return {
 
 	["#wind012"] = "堕天的圣黑猫",
 	["wind012"] = "五更瑠璃",--风 - 空 - 4血
+	["&wind012"] = "瑠璃",
 	["designer:wind012"] = "游卡桌游",
 	["illustrator:wind012"] = "キムラダイスケ",
 	["iktiaoxin"] = "挑衅",
@@ -60,6 +62,7 @@ return {
 
 	["#wind013"] = "捣蛋万岁",
 	["wind013"] = "岁纳京子",--风 - 空 - 4血
+	["&wind013"] = "京子",
 	["designer:wind013"] = "游卡桌游",
 	["illustrator:wind013"] = "みわべさくら",
 	["ikhuoshou"] = "祸首",
@@ -89,6 +92,7 @@ return {
 
 	["#wind015"] = "绯色菖蒲",
 	["wind015"] = "星伽白雪",--风 - 幻 - 4血
+	["&wind015"] = "白雪",
 	["designer:wind015"] = "游卡桌游",
 	["illustrator:wind015"] = "暴力にゃ長",
 	["ikjugui"] = "巨鬼",
@@ -123,6 +127,7 @@ return {
 
 	["#wind030"] = "冷夜的花火",
 	["wind030"] = "灰原哀",--风 - 空 - 2血
+	["&wind030"] = "哀",
 	["designer:wind030"] = "游卡桌游",
 	["illustrator:wind030"] = "栗川鮫弥",
 	["ikjuejing"] = "绝境",
@@ -144,6 +149,7 @@ return {
 
 	["#bloom009"] = "白樱之华",
 	["bloom009"] = "桂雏菊",--花 - 空 - 4血
+	["&bloom009"] = "雏菊",
 	["designer:bloom009"] = "游卡桌游",
 	["illustrator:bloom009"] = "H2SO4",
 	["ikmancai"] = "曼才",
@@ -160,6 +166,7 @@ return {
 
 	["#bloom010"] = "汲血的死徒",
 	["bloom010"] = "弓塚五月",--花 - 空 - 4血
+	["&bloom010"] = "五月",
 	["designer:bloom010"] = "游卡桌游",
 	["illustrator:bloom010"] = "赤毛のUN",
 	["ikkujie"] = "枯界",
@@ -167,6 +174,7 @@ return {
 
 	["#bloom011"] = "轻国的帝王",
 	["bloom011"] = "泉此方",--花 - 空 - 4血
+	["&bloom011"] = "此方",
 	["designer:bloom011"] = "Danny",
 	["illustrator:bloom011"] = "虎顎かずや",
 	["ikzhaihun"] = "宅魂",
@@ -185,6 +193,7 @@ return {
 
 	["#bloom013"] = "云裳的巫女",
 	["bloom013"] = "姬宫千歌音",--花 - 空 - 3血
+	["&bloom013"] = "千歌音",
 	["designer:bloom013"] = "游卡桌游",
 	["illustrator:bloom013"] = "たくなま",
 	["ikyushen"] = "御神",
@@ -197,6 +206,7 @@ return {
 
 	["#bloom014"] = "世界之心",
 	["bloom014"] = "凉宫春日",--花 - 空 - 3血
+	["&bloom014"] = "春日",
 	["designer:bloom014"] = "游卡桌游",
 	["illustrator:bloom014"] = "cuteg",
 	["iktanwan"] = "叹惋",
@@ -209,6 +219,7 @@ return {
 
 	["#bloom015"] = "银月的舞姬",
 	["bloom015"] = "丽夏•麻绪",--花 - 空 - 4血
+	["&bloom015"] = "丽夏",
 	["designer:bloom015"] = "游卡桌游",
 	["illustrator:bloom015"] = "さとみ",
 	["ikyindie"] = "隠蝶",
@@ -224,9 +235,9 @@ return {
 	
 	["#bloom029"] = "军火巨枭",
 	["bloom029"] = "蔻蔻•海克梅迪亚",--花 - 空 - 3血
+	["&bloom029"] = "蔻蔻",
 	["designer:bloom029"] = "游卡桌游",
 	["illustrator:bloom029"] = "硯",
-	["&bloom029"] = "蔻蔻",
 	["ikyihuo"] = "易货",
 	[":ikyihuo"] = "其他角色的出牌阶段限一次，若你的装备区有装备牌或人物牌背面朝上，该角色可以选择一张手牌并令你观看之，你可以交给其一张装备牌，然后获得此牌并摸一张牌。",
 	["ikyihuov"] = "易货",
@@ -237,6 +248,7 @@ return {
 	
 	["#bloom030"] = "寡言的观察者",
 	["bloom030"] = "长门有希",--花 - 空 - 4血
+	["&bloom030"] = "有希",
 	["designer:bloom030"] = "游卡桌游",
 	["illustrator:bloom030"] = "poはるのいぶきkiki",
 	["ikrenjia"] = "忍枷",
@@ -251,6 +263,7 @@ return {
 --snow
 	["#snow009"] = "地狱之蝶",
 	["snow009"] = "阎魔爱",--雪 - 空 - 4血
+	["&snow009"] = "爱",
 	["designer:snow009"] = "游卡桌游",
 	["illustrator:snow009"] = "有河サトル",
 	["ikliangban"] = "良坂",
@@ -295,6 +308,7 @@ return {
 	
 	["#snow013"] = "紫阳之吻",
 	["snow013"] = "散华礼弥",--雪 - 空 - 4血
+	["&snow013"] = "礼弥",
 	["designer:snow013"] = "游卡桌游",
 	["illustrator:snow013"] = "秋の回忆亚",
 	["iksusheng"] = "苏生",
@@ -305,6 +319,7 @@ return {
 
 	["#snow014"] = "远方的苇莺",
 	["snow014"] = "远野秋叶",--雪 - 空 - 4血
+	["&snow014"] = "秋叶",
 	["designer:snow014"] = "游卡桌游",
 	["illustrator:snow014"] = "ここのび",
 	["ikheyi"] = "赫訳",
@@ -335,6 +350,7 @@ return {
 
 	["#snow029"] = "降乩引魂的市子",
 	["snow029"] = "恐山安娜",--雪 - 空 - 3血
+	["&snow029"] = "安娜",
 	["designer:snow029"] = "游卡桌游",
 	["illustrator:snow029"] = "映日紅",
 	["iklvejue"] = "略决",
@@ -375,6 +391,7 @@ return {
 
 	["#luna004"] = "辉煌的烈阳",
 	["luna004"] = "高町奈叶",--月 - 空 - 4血
+	["&luna004"] = "奈叶",
 	["designer:luna004"] = "游卡桌游",
 	["illustrator:luna004"] = "八城惺架",
 	["ikxinghuang"] = "星煌",
@@ -419,6 +436,7 @@ return {
 
 	["#luna009"] = "魔法使之契",
 	["luna009"] = "木之本樱",--月 - 空 - 3血
+	["&luna009"] = "木之本",
 	["designer:luna009"] = "游卡桌游",
 	["illustrator:luna009"] = "Nine",
 	["ikhuanshen"] = "幻身",
@@ -431,7 +449,7 @@ return {
 
 	["#luna011"] = "诡变的欺诈师",
 	["luna011"] = "塞蕾丝提雅•罗登贝克",--月 - 空 - 4血
-	["&luna011"] = "塞蕾丝提雅",
+	["&luna011"] = "塞蕾丝",
 	["designer:luna011"] = "游卡桌游",
 	["illustrator:luna011"] = "ちまり",
 	["ikguihuo"] = "诡惑",
@@ -449,6 +467,7 @@ return {
 
 	["#luna012"] = "宝石魔术的血脉",
 	["luna012"] = "远坂凛",--月 - 幻 - 3血
+	["&luna012"] = "凛",
 	["designer:luna012"] = "游卡桌游",
 	["illustrator:luna012"] = "しらび",
 	["ikhuiyao"] = "辉耀",
@@ -461,6 +480,7 @@ return {
 
 	["#luna014"] = "超电磁炮",
 	["luna014"] = "御坂美琴",--月 - 空 - 3血
+	["&luna014"] = "美琴",
 	["designer:luna014"] = "游卡桌游",
 	["illustrator:luna014"] = "三嶋くろね",
 	["ikleiji"] = "雷击",

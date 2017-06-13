@@ -5,6 +5,7 @@ return {
 	
 	["#bangai001"] = "大空之弦",
 	["bangai001"] = "宇佐见莲子",--风 - 空 - 4血
+	["&bangai001"] = "莲子",
 	["designer:bangai001"] = "幻桜落",
 	["illustrator:bangai001"] = "DomotoLain",
 	["cv:bangai001"] = "暂无",
@@ -49,7 +50,7 @@ return {
 	
 	["#bangai005"] = "朝霭的幻世",
 	["bangai005"] = "玛艾露贝莉•赫恩",--风 - 空 - 3血
-	["&bangai005"] = "玛艾露贝莉",
+	["&bangai005"] = "梅莉",
 	["designer:bangai005"] = "雷神之魂",
 	["illustrator:bangai005"] = "十誤一会",
 	["cv:bangai005"] = "暂无",
@@ -75,6 +76,7 @@ return {
 	
 	["#bangai007"] = "荒城的苍影",
 	["bangai007"] = "冴月麟",--雪 - 空 - 4血
+	["&bangai007"] = "麟",
 	["designer:bangai007"] = "幻桜落",
 	["illustrator:bangai007"] = "kaze",
 	["cv:bangai007"] = "暂无",
@@ -111,6 +113,7 @@ return {
 	
 	["#bangai010"] = "禁书的评者",
 	["bangai010"] = "本居小铃",--花 - 幻 - 3血
+	["&bangai010"] = "小铃",
 	["designer:bangai010"] = "xyzbilliu",
 	["illustrator:bangai010"] = "藤原",
 	["cv:bangai010"] = "暂无",
@@ -136,6 +139,7 @@ return {
 	
 	["#bangai012"] = "可能性梦幻宇宙",
 	["bangai012"] = "冈崎梦美",--月 - 空 - 4血
+	["&bangai012"] = "梦美",
 	["designer:bangai012"] = "昂翼天使",
 	["illustrator:bangai012"] = "みや",
 	["cv:bangai012"] = "暂无",

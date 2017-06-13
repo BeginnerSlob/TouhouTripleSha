@@ -19,6 +19,7 @@ return {
 
 	["#wind017"] = "鬼神的童谣",
 	["wind017"] = "宫崎和香",--风 - 空 - 3血
+	["&wind017"] = "和香",
 	["designer:wind017"] = "点点",
 	["illustrator:wind017"] = "和泉つばす",
 	["ikxinchao"] = "心抄",
@@ -71,6 +72,7 @@ return {
 
 	["#wind026"] = "残念的彼女",
 	["wind026"] = "柏崎星奈",--风 - 空 - 4血
+	["&wind026"] = "星奈",
 	["designer:wind026"] = "香蒲神殇",
 	["illustrator:wind026"] = "茶みらい",
 	["ikxianyu"] = "陷瑜",
@@ -82,6 +84,7 @@ return {
 
 	["#wind027"] = "追奇的千金",
 	["wind027"] = "千反田爱瑠",--风 - 空 - 3血
+	["&wind027"] = "爱瑠",
 	["designer:wind027"] = "Nocihoo",
 	["illustrator:wind027"] = "CiCi",
 	["ikqizhi"] = "奇志",
@@ -97,6 +100,7 @@ return {
 
 	["#wind028"] = "冰华之灵",
 	["wind028"] = "爱蜜莉雅",--风 - 空 - 4血
+	["&wind028"] = "爱蜜",
 	["designer:wind028"] = "昂翼天使",
 	["illustrator:wind028"] = "DanGo",
 	["ikhuanglun"] = "荒轮",
@@ -105,6 +109,7 @@ return {
 
 	["#wind031"] = "豪烈的庶风",
 	["wind031"] = "坂本美绪",--风 - 空 - 4血
+	["&wind031"] = "美绪",
 	--thjibu
 	["designer:wind031"] = "游卡桌游",
 	["illustrator:wind031"] = "TEL-O",
@@ -122,6 +127,7 @@ return {
 
 	["#wind037"] = "兄恋的风灵",
 	["wind037"] = "桐谷直叶",--风 - 空 - 4血
+	["&wind037"] = "直叶",
 	["designer:wind037"] = "WOLVES29",
 	["illustrator:wind037"] = "八城惺架",
 	["ikxuanren"] = "炫刃",
@@ -146,6 +152,7 @@ return {
 
 	["#wind039"] = "根源之始",
 	["wind039"] = "两仪式",--风 - 空 - 4血
+	["&wind039"] = "式",
 	["designer:wind039"] = "沸治·克里夫",
 	["illustrator:wind039"] = "Magicians",
 	["ikshensha"] = "神杀",
@@ -163,6 +170,7 @@ return {
 
 	["#wind056"] = "超高校级的绝望",
 	["wind056"] = "江之岛盾子",--风 - 空 - 4血
+	["&wind056"] = "盾子",
 	["designer:wind056"] = "列缺霹雳",
 	["illustrator:wind056"] = "hakusai",
 	["iksangjue"] = "丧绝",
@@ -171,6 +179,7 @@ return {
 
 	["#wind058"] = "苍色的神话",
 	["wind058"] = "园田海未",--风 - 幻 - 3血
+	["&wind058"] = "海未",
 	["designer:wind058"] = "淬毒",
 	["illustrator:wind058"] = "しがらき",
 	["ikganbi"] = "绀碧",
@@ -182,6 +191,7 @@ return {
 --bloom
 	["#bloom016"] = "锦心绣口",
 	["bloom016"] = "天野远子",--花 - 空 - 3血
+	["&bloom016"] = "远子",
 	["designer:bloom016"] = "狐耳魔师",
 	["illustrator:bloom016"] = "みやま零",
 	["ikshihua"] = "拾华",
@@ -191,6 +201,7 @@ return {
 
 	["#bloom017"] = "无存在感的主役",
 	["bloom017"] = "赤座灯里",--花 - 空 - 4血
+	["&bloom017"] = "灯里",
 	["designer:bloom017"] = "许坦",
 	["illustrator:bloom017"] = "bonkiru",
 	["ikzhuyan"] = "朱颜",
@@ -202,9 +213,9 @@ return {
 
 	["#bloom018"] = "零之魔法使",
 	["bloom018"] = "露易丝•拉•瓦利埃尔",--花 - 幻 - 3血
+	["&bloom018"] = "露易丝",
 	["designer:bloom018"] = "JZHIEI",
 	["illustrator:bloom018"] = "兎塚エイジ",
-	["&bloom018"] = "露易丝",
 	["ikxuwu"] = "虚无",
 	[":ikxuwu"] = "锁定技。你即将造成的伤害均视为失去体力。",
 	["ikjiaolian"] = "娇恋",
@@ -212,6 +223,7 @@ return {
 	
 	["#bloom019"] = "终末之血",
 	["bloom019"] = "桂言叶",--花 - 空 - 4血
+	["&bloom019"] = "言叶",
 	["designer:bloom019"] = "韩旭",
 	["illustrator:bloom019"] = "かろりー",
 	["ikbengshang"] = "崩殇",
@@ -237,6 +249,7 @@ return {
 	
 	["#bloom021"] = "绝灭的天使",
 	["bloom021"] = "鸢一折纸",--花 - 空 - 4血
+	["&bloom021"] = "折纸",
 	["designer:bloom021"] = "潜龙勿用",
 	["illustrator:bloom021"] = "和遥キナ",
 	["ikguanchong"] = "冠铳",
@@ -248,9 +261,9 @@ return {
 
 	["#bloom022"] = "奇迹的魔女",
 	["bloom022"] = "芙蕾德莉卡•贝伦卡斯泰露",--花 - 幻 - 3血
+	["&bloom022"] = "贝伦",
 	["designer:bloom022"] = "Virgopaladin",
 	["illustrator:bloom022"] = "RiE",
-	["&bloom022"] = "贝伦卡斯泰露",
 	["iklundao"] = "轮道",
 	[":iklundao"] = "在一名角色的判定牌生效前，你可以亮出牌堆顶的一张牌代替之。",
 	["ikxuanwu"] = "玄舞",
@@ -269,6 +282,7 @@ return {
 	
 	["#bloom026"] = "恶趣的千金",
 	["bloom026"] = "凉月奏",--花 - 空 - 4血
+	["&bloom026"] = "凉月",
 	["designer:bloom026"] = "五月Fy",
 	["illustrator:bloom026"] = "朝倉颯",
 	["ikjingce"] = "精策",
@@ -276,6 +290,7 @@ return {
 
 	["#bloom027"] = "冰雾的雪姬",
 	["bloom027"] = "司波深雪",--花 - 空 - 3血
+	["&bloom027"] = "深雪",
 	["designer:bloom027"] = "SamRosen",
 	["illustrator:bloom027"] = "ゆゆ",
 	["ikbingyan"] = "冰焰",
@@ -288,6 +303,7 @@ return {
 
 	["#bloom031"] = "白世之约",
 	["bloom031"] = "寄叶二号Ｂ型",--花 - 幻 - 3血
+	["&bloom031"] = "二Ｂ",
 	["designer:bloom031"] = "游卡桌游",
 	["illustrator:bloom031"] = "saberiii",
 	["ikfangsheng"] = "方圣",
@@ -297,6 +313,7 @@ return {
 
 	["#bloom037"] = "目隐的演绎者",
 	["bloom037"] = "小樱茉莉",--花 - 空 - 4血
+	["&bloom037"] = "茉莉",
 	["designer:bloom037"] = "世外高v狼",
 	["illustrator:bloom037"] = "cyawa",
 	["ikmuhe"] = "目合",
@@ -316,6 +333,7 @@ return {
 
 	["#bloom039"] = "时光的溯行者",
 	["bloom039"] = "晓美焰",--花 - 空 - 4血
+	["&bloom039"] = "焰",
 	["designer:bloom039"] = "浪人兵法家",
 	["illustrator:bloom039"] = "ファルまろ",
 	["ikhuaan"] = "华岸",
@@ -327,6 +345,7 @@ return {
 
 	["#bloom055"] = "甘兔之惠",
 	["bloom055"] = "香风智乃",--花 - 空 - 3血
+	["&bloom055"] = "智乃",
 	["designer:bloom055"] = "幽翎",
 	["illustrator:bloom055"] = "hakusai",
 	["ikqimo"] = "祈墨",
@@ -360,6 +379,7 @@ return {
 
 	["#snow017"] = "返魂的魔女",
 	["snow017"] = "右代宫缘寿",--雪 - 幻 - 3血
+	["&snow017"] = "缘寿",
 	["designer:snow017"] = "章鱼",
 	["illustrator:snow017"] = "vien",
 	["ikyuanfa"] = "源法",
@@ -370,6 +390,7 @@ return {
 
 	["#snow018"] = "香魂翩跹",
 	["snow018"] = "巴麻美",--雪 - 空 - 4血
+	["&snow018"] = "麻美",
 	["designer:snow018"] = "阿江",
 	["illustrator:snow018"] = "マルイノ",
 	["ikzhongqu"] = "终曲",
@@ -379,6 +400,7 @@ return {
 	
 	["#snow019"] = "超世之英魂",
 	["snow019"] = "黑岩舒",--雪 - 空 - 4血
+	["&snow019"] = "舒",
 	["designer:snow019"] = "仲达与孔明",
 	["illustrator:snow019"] = "聖",
 	["iklingpao"] = "灵炮",
@@ -392,6 +414,7 @@ return {
 
 	["#snow020"] = "未闻此花之名",
 	["snow020"] = "本间芽衣子",--雪 - 幻 - 3血
+	["&snow020"] = "芽衣子",
 	["designer:snow020"] = "Anais",
 	["illustrator:snow020"] = "TEL-O",
 	["ikanxu"] = "安恤",
@@ -403,6 +426,7 @@ return {
 
 	["#snow021"] = "杏林之烁剑",
 	["snow021"] = "结城明日奈",--雪 - 空 - 4血
+	["&snow021"] = "明日奈",
 	--ikxuanren
 	["designer:snow021"] = "ByArt",
 	["illustrator:snow021"] = "Kyurin",
@@ -415,14 +439,15 @@ return {
 
 	["#snow023"] = "绯樱的妖精",
 	["snow023"] = "艾露莎•斯卡雷特",--雪 - 空 - 4血
-	["designer:snow023"] = "游卡桌游",
 	["&snow023"] = "艾露莎",
+	["designer:snow023"] = "游卡桌游",
 	["illustrator:snow023"] = "ふつか",
 	["ikqianbian"] = "千变",
 	[":ikqianbian"] = "每当你失去一次装备区里的牌时，你可以依次弃置一至两名其他角色的共计两张牌，你以此法每弃置了一张非锦囊牌，你摸一张牌。",
 
 	["#snow024"] = "绯红的棉花糖",
 	["snow024"] = "樱野栗梦",--雪 - 空 - 4血
+	["&snow024"] = "栗梦",
 	["designer:snow024"] = "游卡桌游",
 	["illustrator:snow024"] = "狗神煌",
 	["cv:snow024"] = "暂无",
@@ -465,6 +490,7 @@ return {
 
 	["#snow028"] = "完璧之妹",
 	["snow028"] = "高坂桐乃",--雪 - 空 - 4血
+	["&snow028"] = "桐乃",
 	["designer:snow028"] = "迁迁婷婷",
 	["illustrator:snow028"] = "マロミ",
 	["cv:snow028"] = "暂无",
@@ -473,6 +499,7 @@ return {
 	
 	["#snow037"] = "自称的血族真祖",
 	["snow037"] = "羽濑川小鸠",--雪 - 幻 - 4血
+	["&snow037"] = "小鸠",
 	["designer:snow037"] = "CatCat44",
 	["illustrator:snow037"] = "桜沢いづみ",
 	["ikjiaoshi"] = "矫誓",
@@ -509,6 +536,7 @@ return {
 	
 	["#snow041"] = "冰凌的狙手",
 	["snow041"] = "朝田诗乃",--雪 - 空 - 4血
+	["&snow041"] = "诗乃",
 	["designer:snow041"] = "游卡桌游",
 	["illustrator:snow041"] = "ももこ",
 	["ikyoudan"] = "幽弹",
@@ -517,6 +545,7 @@ return {
 
 	["#snow056"] = "约定之名",
 	["snow056"] = "宫水三叶",--雪 - 空 - 4血
+	["&snow056"] = "三叶",
 	["designer:snow056"] = "凌风自舞",
 	["illustrator:snow056"] = "蜜葵ぽんず",
 	["ikyishen"] = "易身",
@@ -542,6 +571,7 @@ return {
 --luna
 	["#luna010"] = "无声的和绘",
 	["luna010"] = "立华奏",--月 - 空 - 4血
+	["&luna010"] = "立华",
 	["designer:luna010"] = "羽柴文理",
 	["illustrator:luna010"] = "館川まこ",
 	["iklvdong"] = "律动",
@@ -551,6 +581,7 @@ return {
 
 	["#luna013"] = "摇摆的命运",
 	["luna013"] = "牧濑红莉栖",--月 - 空 - 3血
+	["&luna013"] = "红莉栖",
 	["designer:luna013"] = "Kaycent",
 	["illustrator:luna013"] = "玖条イチソ",
 	["ikmingce"] = "明策",
@@ -565,6 +596,7 @@ return {
 
 	["#luna015"] = "艾罗芒阿先生",
 	["luna015"] = "和泉纱雾",--月 - 空 - 3血
+	["&luna015"] = "纱雾",
 	["designer:luna015"] = "点点",
 	["illustrator:luna015"] = "松うに",
 	["ikjianju"] = "茧居",
@@ -574,7 +606,7 @@ return {
 
 	["#luna016"] = "情殇的雷神",
 	["luna016"] = "伊诗塔尔•弗利吉",--月 - 空 - 6血
-	["&luna016"] = "伊诗塔尔",
+	["&luna016"] = "伊诗塔",
 	["designer:luna016"] = "小立",
 	["illustrator:luna016"] = "和泉つばす",
 	["ikxinshang"] = "心殇",
@@ -585,6 +617,7 @@ return {
 
 	["#luna027"] = "永续的祷歌",
 	["luna027"] = "楪祈",--月 - 空 - 3血
+	["&luna027"] = "祈",
 	["designer:luna027"] = "淬毒",
 	["illustrator:luna027"] = "玖条イチソ",
 	["ikjuece"] = "绝策",
@@ -597,6 +630,7 @@ return {
 
 	["#luna028"] = "狐嫁之咏",
 	["luna028"] = "镜音铃",--月 - 幻 - 3血
+	["&luna028"] = "铃",
 	["designer:luna028"] = "萌D",
 	["illustrator:luna028"] = "MIKO",
 	["ikrongxin"] = "融心",
@@ -608,6 +642,7 @@ return {
 
 	["#luna038"] = "魔性的王者",
 	["luna038"] = "宫永照",--月 - 空 - 3血
+	["&luna038"] = "照",
 	["designer:luna038"] = "精精神神",
 	["illustrator:luna038"] = "X布",
 	["iklianzhuang"] = "连庄",
@@ -617,6 +652,7 @@ return {
 
 	["#luna039"] = "踊踏的辉姬",
 	["luna039"] = "关谷鸣",--月 - 幻 - 3血
+	["&luna039"] = "鸣",
 	["designer:luna039"] = "Dream彼端",
 	["illustrator:luna039"] = "浜弓場双",
 	["iklanhuan"] = "阑幻",
@@ -635,9 +671,9 @@ return {
 
 	["#luna041"] = "灵炎的暗姬",
 	["luna041"] = "克蕾尔•露裘",--月 - 空 - 3血
+	["&luna041"] = "克蕾尔",
 	["designer:luna041"] = "游卡桌游",
 	["illustrator:luna041"] = "kazenokaze",
-	["&luna041"] = "克蕾尔",
 	["ikhuowu"] = "火舞",
 	[":ikhuowu"] = "结束阶段开始时，你可以对一名没有手牌的角色造成1点火焰伤害。",
 	["@ikhuowu"] = "你可以发动“火舞”<br/> <b>操作提示</b>: 选择一名没有手牌的角色→点击确定<br/>",

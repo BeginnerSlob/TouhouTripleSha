@@ -5,6 +5,7 @@ return {
 
 	["#yuki001"] = "乐园的巫女",
 	["yuki001"] = "博丽灵梦",--雪 - 空 - 4血
+	["&yuki001"] = "灵梦",
 	["designer:yuki001"] = "幻桜落",
 	["illustrator:yuki001"] = "えふぇ",
 	["cv:yuki001"] = "暂无",
@@ -28,6 +29,7 @@ return {
 
 	["#yuki002"] = "疏雨的百鬼夜行",
 	["yuki002"] = "伊吹萃香",--雪 - 空 - 4血
+	["&yuki002"] = "萃香",
 	["designer:yuki002"] = "数据流突袭者",
 	["illustrator:yuki002"] = "九十i",
 	["cv:yuki002"] = "暂无",
@@ -42,6 +44,7 @@ return {
 
 	["#yuki003"] = "半分幻的庭师",
 	["yuki003"] = "魂魄妖梦",--雪 - 空 - 4血
+	["&yuki003"] = "妖梦",
 	["designer:yuki003"] = "Why.",
 	["illustrator:yuki003"] = "橙狼",
 	["cv:yuki003"] = "暂无",
@@ -64,6 +67,7 @@ return {
 
 	["#yuki005"] = "幻想乡的记忆",
 	["yuki005"] = "稗田阿求",--雪 - 幻 - 3血
+	["&yuki005"] = "阿求",
 	["designer:yuki005"] = "江山英魂",
 	["illustrator:yuki005"] = "DomotoLain",
 	["cv:yuki005"] = "暂无",
@@ -85,6 +89,7 @@ return {
 
 	["#yuki007"] = "策士的九尾",
 	["yuki007"] = "八云蓝",--雪 - 空 - 3血
+	["&yuki007"] = "蓝",
 	["designer:yuki007"] = "淬毒",
 	["illustrator:yuki007"] = "橙狼",
 	["cv:yuki007"] = "暂无",
@@ -102,6 +107,7 @@ return {
 
 	["#yuki008"] = "法界之火",
 	["yuki008"] = "圣白莲",--雪 - 空 - 3血
+	["&yuki008"] = "白莲",
 	["designer:yuki008"] = "冬天吃雪糕",
 	["illustrator:yuki008"] = "えふぇ",
 	["cv:yuki008"] = "暂无",
@@ -112,6 +118,7 @@ return {
 
 	["#yuki009"] = "幻想的境界",
 	["yuki009"] = "八云紫",--雪 - 空 - 4血
+	["&yuki009"] = "紫",
 	["designer:yuki009"] = "昂翼天使",
 	["illustrator:yuki009"] = "DomotoLain",
 	["cv:yuki009"] = "暂无",
@@ -152,6 +159,7 @@ return {
 
 	["#yuki012"] = "平凡陈腐的山彦",
 	["yuki012"] = "幽谷响子",--雪 - 空 - 3血
+	["&yuki012"] = "响子",
 	["designer:yuki012"] = "仲达与孔明",
 	["illustrator:yuki012"] = "CUBE",
 	["cv:yuki012"] = "暂无",
@@ -164,7 +172,7 @@ return {
 
 	["#yuki013"] = "骚灵乐团",
 	["yuki013"] = "普莉茲姆利巴三姐妹",--雪 - 空 - 3血
-	["&yuki013"] = "骚灵三姐妹",
+	["&yuki013"] = "三姐妹",
 	["designer:yuki013"] = "绝顶油条",
 	["illustrator:yuki013"] = "ke-ta",
 	["cv:yuki013"] = "暂无",
@@ -186,6 +194,7 @@ return {
 
 	["#yuki015"] = "虎纹的毘沙门天",
 	["yuki015"] = "寅丸星",--雪 - 空 - 4血
+	["&yuki015"] = "星",
 	["designer:yuki015"] = "幻桜落",
 	["illustrator:yuki015"] = "山口真之介",
 	["cv:yuki015"] = "暂无",
@@ -206,6 +215,7 @@ return {
 	
 	["#yuki016"] = "宝船之御守",
 	["yuki016"] = "云居一轮",--雪 - 空 - 4血
+	["&yuki016"] = "一轮",
 	["designer:yuki016"] = "香蒲神殇",
 	["illustrator:yuki016"] = "閏月戈",
 	["cv:yuki016"] = "暂无",
@@ -219,6 +229,7 @@ return {
 
 	["#yuki017"] = "惨憺的大海原",
 	["yuki017"] = "村纱水蜜",--雪 - 空 - 4血
+	["&yuki017"] = "水蜜",
 	["designer:yuki017"] = "幻桜落",
 	["illustrator:yuki017"] = "ひそな",
 	["cv:yuki017"] = "暂无",
@@ -231,6 +242,7 @@ return {
 
 	["#yuki018"] = "天衣无缝的亡灵",
 	["yuki018"] = "西行寺幽幽子",--雪 - 幻 - 3血
+	["&yuki018"] = "幽幽子",
 	["designer:yuki018"] = "幻桜落",
 	["illustrator:yuki018"] = "6U",
 	["cv:yuki018"] = "暂无",

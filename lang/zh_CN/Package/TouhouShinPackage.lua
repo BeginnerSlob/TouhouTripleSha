@@ -5,6 +5,7 @@ return {
 	
 	["#shin001"] = "逆袭的天邪鬼",
 	["shin001"] = "鬼人正邪",--风 - 空 - 4血
+	["&shin001"] = "正邪",
 	["designer:shin001"] = "狐耳魔师",
 	["illustrator:shin001"] = "ひそな",
 	["cv:shin001"] = "暂无",
@@ -42,6 +43,7 @@ return {
 	
 	["#shin004"] = "幻想琉璃双镜",
 	["shin004"] = "九十九弁弁＆九十九八桥",--月 - 空 - 4血
+	["&shin004"] = "弁弁&八桥",
 	["designer:shin004"] = "桃花僧",
 	["illustrator:shin004"] = "えふぇ",
 	["cv:shin004"] = "暂无",
@@ -52,6 +54,7 @@ return {
 	
 	["#shin005"] = "丧心的假面",
 	["shin005"] = "秦心",--风 - 幻 - 3血
+	["&shin005"] = "心",
 	["designer:shin005"] = "幻桜落",
 	["illustrator:shin005"] = "kaze",
 	["cv:shin005"] = "暂无",
@@ -66,6 +69,7 @@ return {
 	
 	["#shin006"] = "小人的末裔",
 	["shin006"] = "少名针妙丸",--花 - 幻 - 3血
+	["&shin006"] = "针妙丸",
 	["designer:shin006"] = "军师祭酒",
 	["illustrator:shin006"] = "えふぇ",
 	["cv:shin006"] = "暂无",
@@ -79,6 +83,7 @@ return {
 	
 	["#shin007"] = "幻梦的演奏家",
 	["shin007"] = "堀川雷鼓",--雪 - 空 - 4血
+	["&shin007"] = "雷鼓",
 	["designer:shin007"] = "精精神神",
 	["illustrator:shin007"] = "Yuli",
 	["cv:shin007"] = "暂无",
@@ -87,6 +92,7 @@ return {
 	
 	["#shin008"] = "月下的独狼",
 	["shin008"] = "今泉影狼",--月 - 空 - 4血
+	["&shin008"] = "影狼",
 	["designer:shin008"] = "军师祭酒",
 	["illustrator:shin008"] = "いちやん",
 	["cv:shin008"] = "暂无",
@@ -112,6 +118,7 @@ return {
 
 	["#shin010"] = "丑诞的妖灵",
 	["shin010"] = "克劳恩皮丝",--花 - 空 - 3血
+	["&shin010"] = "克劳恩",
 	["designer:shin010"] = "昂翼天使",
 	["illustrator:shin010"] = "イチゼン",
 	["cv:shin010"] = "暂无",
@@ -147,6 +154,7 @@ return {
 
 	["#shin013"] = "现世的秘术师",
 	["shin013"] = "宇佐见堇子",--风 - 空 - 3血
+	["&shin013"] = "堇子",
 	["designer:shin013"] = "好孩子系我",
 	["illustrator:shin013"] = "榎吉",
 	["cv:shin013"] = "暂无",
@@ -171,6 +179,7 @@ return {
 
 	["#shin015"] = "片翼的白鹭",
 	["shin015"] = "稀神探女",--雪 - 空 - 3血
+	["&shin015"] = "探女",
 	["designer:shin015"] = "空照",
 	["illustrator:shin015"] = "kittona",
 	["cv:shin015"] = "暂无",

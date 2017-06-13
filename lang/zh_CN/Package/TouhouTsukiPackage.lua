@@ -5,7 +5,7 @@ return {
 
 	["#tsuki001"] = "永远的赤色幼月",
 	["tsuki001"] = "蕾米莉娅•斯卡雷特",--月 - 空 - 4血
-	["&tsuki001"] = "蕾米莉娅",
+	["&tsuki001"] = "蕾米",
 	["designer:tsuki001"] = "幻桜落",
 	["illustrator:tsuki001"] = "c7肘",
 	["cv:tsuki001"] = "暂无",
@@ -21,7 +21,7 @@ return {
 	
 	["#tsuki002"] = "恶魔之妹",
 	["tsuki002"] = "芙兰朵露•斯卡雷特",--月 - 幻 - 4血
-	["&tsuki002"] = "芙兰朵露",
+	["&tsuki002"] = "芙兰",
 	["designer:tsuki002"] = "幻桜落",
 	["illustrator:tsuki002"] = "幻騒アぽろ",
 	["cv:tsuki002"] = "暂无",
@@ -49,6 +49,7 @@ return {
 	
 	["#tsuki004"] = "幸运的白兔",
 	["tsuki004"] = "因幡帝",--月 - 幻 - 3血
+	["&tsuki004"] = "帝",
 	["designer:tsuki004"] = "幻桜落",
 	["illustrator:tsuki004"] = "すばち",
 	["cv:tsuki004"] = "暂无",
@@ -61,6 +62,7 @@ return {
 
 	["#tsuki005"] = "知识与历史的半兽",
 	["tsuki005"] = "上白泽慧音",--月 - 空 - 3血
+	["&tsuki005"] = "慧音",
 	["designer:tsuki005"] = "梁山丶呼延灼",
 	["illustrator:tsuki005"] = "にしもん",
 	["cv:tsuki005"] = "暂无",
@@ -72,6 +74,7 @@ return {
 	
 	["#tsuki006"] = "不死之烟",
 	["tsuki006"] = "藤原妹红",--月 - 空 - 3血
+	["&tsuki006"] = "妹红",
 	["designer:tsuki006"] = "幻桜落",
 	["illustrator:tsuki006"] = "saku",
 	["cv:tsuki006"] = "暂无",
@@ -84,6 +87,7 @@ return {
 	
 	["#tsuki007"] = "虹色的门番",
 	["tsuki007"] = "红美铃",--月 - 空 - 4血
+	["&tsuki007"] = "美铃",
 	["designer:tsuki007"] = "零度雨",
 	["illustrator:tsuki007"] = "えふぇ",
 	["cv:tsuki007"] = "暂无",
@@ -96,6 +100,7 @@ return {
 	
 	["#tsuki008"] = "完美潇洒的从者",
 	["tsuki008"] = "十六夜咲夜",--月 - 空 - 4血
+	["&tsuki008"] = "咲夜",
 	["designer:tsuki008"] = "scorpio",
 	["illustrator:tsuki008"] = "小D",
 	["cv:tsuki008"] = "暂无",
@@ -109,6 +114,7 @@ return {
 	
 	["#tsuki009"] = "宙古的大贤者",
 	["tsuki009"] = "八意永琳",--月 - 空 - 3血
+	["&tsuki009"] = "永琳",
 	["designer:tsuki009"] = "狐耳魔师",
 	["illustrator:tsuki009"] = "minusT",
 	["cv:tsuki009"] = "暂无",
@@ -194,6 +200,7 @@ return {
 	
 	["#tsuki016"] = "神灵依凭的月姬",
 	["tsuki016"] = "绵月依姬",--月 - 空 - 4血
+	["&tsuki016"] = "依姬",
 	["designer:tsuki016"] = "妒天のPAD",
 	["illustrator:tsuki016"] = "六羽田トモエ",
 	["cv:tsuki016"] = "暂无",
@@ -205,6 +212,7 @@ return {
 	
 	["#tsuki017"] = "海与山的境界",
 	["tsuki017"] = "绵月丰姬",--月 - 空 - 3血
+	["&tsuki017"] = "丰姬",
 	["designer:tsuki017"] = "鼓腚刀",
 	["illustrator:tsuki017"] = "時雨",
 	["cv:tsuki017"] = "暂无",
@@ -218,6 +226,7 @@ return {
 	
 	["#tsuki018"] = "永远与须臾的罪人",
 	["tsuki018"] = "蓬莱山辉夜",--月 - 空 - 3血
+	["&tsuki018"] = "辉夜",
 	["designer:tsuki018"] = "幻桜落",
 	["illustrator:tsuki018"] = "エミニャ",
 	["cv:tsuki018"] = "暂无",

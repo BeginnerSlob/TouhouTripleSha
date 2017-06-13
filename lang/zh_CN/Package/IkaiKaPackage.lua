@@ -48,6 +48,7 @@ return {
 
 	["#wind036"] = "蠕动之混沌",
 	["wind036"] = "奈亚拉托提普",--风 - 空 - 4血
+	["&wind036"] = "奈亚子",
 	["designer:wind036"] = "东郊易尘Noah",
 	["illustrator:wind036"] = "めたりかん",
 	["ikhunkao"] = "魂铐",
@@ -85,6 +86,7 @@ return {
 
 	["#wind050"] = "苦噬的百手姬",
 	["wind050"] = "德川樱",--风 - 幻 - 4血
+	["&wind050"] = "德川",
 	["designer:wind050"] = "名和行年",
 	["illustrator:wind050"] = "みやま零",
 	["ikdongzhao"] = "东照",
@@ -100,6 +102,7 @@ return {
 
 	["#wind057"] = "双面干物妹",
 	["wind057"] = "土间埋",--风 - 空 - 4血
+	["&wind057"] = "埋",
 	["designer:wind057"] = "好孩子系我",
 	["illustrator:wind057"] = "みかんのしる",
 	["ikyinchou"] = "隐筹",
@@ -108,6 +111,7 @@ return {
 --bloom
 	["#bloom032"] = "灭犽的元神灵",
 	["bloom032"] = "狮子神黑",--花 - 空 - 4血
+	["&bloom032"] = "黑",
 	["designer:bloom032"] = "沸治·克里夫",
 	["illustrator:bloom032"] = "かろりー",
 	["ikfengxing"] = "风行",
@@ -126,6 +130,7 @@ return {
 
 	["#bloom035"] = "天光的勇者",
 	["bloom035"] = "游佐恵美",--花 - 空 - 4血
+	["&bloom035"] = "恵美",
 	["designer:bloom035"] = "GODLASTER",
 	["illustrator:bloom035"] = "刃天",
 	["ikduduan"] = "独断",
@@ -144,6 +149,7 @@ return {
 
 	["#bloom045"] = "鸣露的策士",
 	["bloom045"] = "新子憧",--花 - 幻 - 4血
+	["&bloom045"] = "憧",
 	["designer:bloom045"] = "aisu9",
 	["illustrator:bloom045"] = "NAbyssor",
 	["ikdengpo"] = "登破",
@@ -174,6 +180,7 @@ return {
 
 	["#bloom049"] = "南照之绘扇",
 	["bloom049"] = "佐仓千代",--花 - 空 - 3血
+	["&bloom049"] = "千代",
 	["designer:bloom049"] = "沸治·克里夫",
 	["illustrator:bloom049"] = "DomotoLain",
 	["ikxunfeng"] = "熏风",
@@ -191,6 +198,7 @@ return {
 
 	["#bloom053"] = "鬼斩的妖剑",
 	["bloom053"] = "野井原绯鞠",--花 - 空 - 4血
+	["&bloom053"] = "绯鞠",
 	["designer:bloom053"] = "殇の腥",
 	["illustrator:bloom053"] = "refeia",
 	["ikmingshi"] = "铭侍",
@@ -208,6 +216,7 @@ return {
 
 	["#bloom056"] = "神笞的食监",
 	["bloom056"] = "薙切绘里奈",--花 - 空 - 3血
+	["&bloom056"] = "绘里奈",
 	["designer:bloom056"] = "世外高v狼",
 	["illustrator:bloom056"] = "クロエ",
 	["iksheji"] = "舌戟",
@@ -220,7 +229,7 @@ return {
 --snow
 	["#snow031"] = "兴国的公主",
 	["snow031"] = "梅露露琳丝•蕾蒂•阿鲁兹",--雪 - 空 - 3血
-	["&snow031"] = "梅露露琳丝",
+	["&snow031"] = "梅露露",
 	["designer:snow031"] = "昂翼天使",
 	["illustrator:snow031"] = "能義たか好",
 	["iklingyun"] = "灵运",
@@ -253,6 +262,7 @@ return {
 	
 	["#snow036"] = "天赐的艺术家",
 	["snow036"] = "椎名真白",--雪 - 幻 - 3血
+	["&snow036"] = "真白",
 	--ikmitu
 	["designer:snow036"] = "幻桜落",
 	["illustrator:snow036"] = "Noodle",
@@ -264,6 +274,7 @@ return {
 
 	["#snow045"] = "早终的剑豪",
 	["snow045"] = "冲田总司",--雪 - 空 - 4血
+	["&snow045"] = "总司",
 	["designer:snow045"] = "キ狐fツx狸ネ",
 	["illustrator:snow045"] = "ゆのひと",
 	["iklvyan"] = "律衍",
@@ -273,6 +284,7 @@ return {
 
 	["#snow046"] = "纯恋的白华",
 	["snow046"] = "濑名爱理",--雪 - 空 - 4血
+	["&snow046"] = "爱理",
 	["designer:snow046"] = "恶鬼16",
 	["illustrator:snow046"] = "和泉つばす",
 	["iklianxiao"] = "恋咲",
@@ -282,6 +294,7 @@ return {
 
 	["#snow048"] = "喧哄的问题儿",
 	["snow048"] = "三枝叶留佳",--雪 - 空 - 4血
+	["&snow048"] = "留佳",
 	["designer:snow048"] = "昂翼天使",
 	["illustrator:snow048"] = "NAbyssor",
 	["ikqile"] = "气乐",
@@ -297,6 +310,7 @@ return {
 
 	["#snow049"] = "掌中萌虎",
 	["snow049"] = "逢坂大河",--雪 - 空 - 4血
+	["&snow049"] = "大河",
 	["designer:snow049"] = "xyzbilliu",
 	["illustrator:snow049"] = "むりりん",
 	["ikxiaowu"] = "虓武",
@@ -374,6 +388,7 @@ return {
 
 	["#luna032"] = "星咏的歌姬",
 	["luna032"] = "初音未来",--月 - 幻 - 3血
+	["&luna032"] = "初音",
 	["designer:luna032"] = "东郊易尘Noah",
 	["illustrator:luna032"] = "NAbyssor",
 	["ikjichang"] = "激唱",
@@ -383,6 +398,7 @@ return {
 
 	["#luna033"] = "赤猫的琴手",
 	["luna033"] = "中野梓",--月 - 空 - 3血
+	["&luna033"] = "梓",
 	["designer:luna033"] = "离岛卷卷",
 	["illustrator:luna033"] = "nyoro",
 	["ikxianlv"] = "弦律",
@@ -393,6 +409,7 @@ return {
 
 	["#luna036"] = "水风的皇裔",
 	["luna036"] = "练红玉",--月 - 空 - 4血
+	["&luna036"] = "红玉",
 	["designer:luna036"] = "重剑无锋",
 	["illustrator:luna036"] = "せれれん",
 	["iklianwu"] = "涟巫",
@@ -413,6 +430,7 @@ return {
 
 	["#luna045"] = "赤色之绊",
 	["luna045"] = "千堂瑛里华",--月 - 空 - 4血
+	["&luna045"] = "瑛里华",
 	["designer:luna045"] = "jordan圣帝",
 	["illustrator:luna045"] = "べっかんこう",
 	["ikxieke"] = "血刻",
@@ -426,6 +444,7 @@ return {
 
 	["#luna046"] = "物静之恋",
 	["luna046"] = "小野寺小咲",--月 - 空 - 3血
+	["&luna046"] = "小咲",
 	["designer:luna046"] = "幻桜落",
 	["illustrator:luna046"] = "干物A太",
 	["iklunyao"] = "轮钥",
@@ -447,6 +466,7 @@ return {
 	
 	["#luna048"] = "幻银的月华",
 	["luna048"] = "月野兔",--月 - 空 - 4血
+	["&luna048"] = "月野",
 	["designer:luna048"] = "沸治·克里夫",
 	["illustrator:luna048"] = "Nardack",
 	["ikzhiwang"] = "织望",
@@ -456,6 +476,7 @@ return {
 
 	["#luna049"] = "末广之歌",
 	["luna049"] = "南小鸟",--月 - 空 - 3血
+	["&luna049"] = "小鸟",
 	["designer:luna049"] = "低调de洛沫",
 	["illustrator:luna049"] = "キチロク",
 	["ikhuanxian"] = "环弦",
@@ -469,6 +490,7 @@ return {
 	
 	["#luna051"] = "紫芍的缘业",
 	["luna051"] = "藤林杏",--月 - 空 - 4血
+	["&luna051"] = "杏",
 	["designer:luna051"] = "流水席",
 	["illustrator:luna051"] = "Haihovothan",
 	["ikkezhan"] = "恪瞻",
@@ -542,6 +564,7 @@ return {
 
 	["#luna058"] = "四月的谎言",
 	["luna058"] = "宫园薰",--月 - 空 - 4血
+	["&luna058"] = "薰",
 	["designer:luna058"] = "RP集散中心",
 	["illustrator:luna058"] = "カントク",
 	["ikjuexiang"] = "绝响",
