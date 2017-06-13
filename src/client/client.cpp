@@ -1928,7 +1928,7 @@ void Client::speak(const QVariant &speak_data)
     if (args.size() != 2 || !isString(args[0]) || !isString(args[1]))
         return;
     QString who = args[0].toString();
-    QString text = QString::fromUtf8(QByteArray::fromBase64(args[1].toString().toLatin1()));
+    QString text = args[1].toString();
 
     static const QString prefix("<img width=14 height=14 src='image/system/chatface/");
     static const QString suffix(".png'></img>");

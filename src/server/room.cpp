@@ -2496,7 +2496,7 @@ void Room::reportDisconnection()
             if (player->getState() != "robot") {
                 QString screen_name = player->screenName();
                 QString leaveStr = tr("<font color=#000000>Player <b>%1</b> left the game</font>").arg(screen_name);
-                speakCommand(player, leaveStr.toUtf8().toBase64());
+                speakCommand(player, leaveStr);
             }
 
             doBroadcastNotify(S_COMMAND_REMOVE_PLAYER, player->objectName());
@@ -2827,8 +2827,7 @@ bool Room::addRobotCommand(ServerPlayer *player, const QVariant &arg)
         const QString robot_avatar = "robot";
         signup(robot, robot_name, robot_avatar, true);
 
-        QString greeting = tr("Hello, I'm a robot").toUtf8().toBase64();
-        speakCommand(robot, greeting);
+        speakCommand(robot, tr("Hello, I'm a robot"));
 
         broadcastProperty(robot, "state");
     }
@@ -2874,7 +2873,7 @@ void Room::signup(ServerPlayer *player, const QString &screen_name, const QStrin
 
     if (!is_robot) {
         QString greetingStr = tr("<font color=#EEB422>Player <b>%1</b> joined the game</font>").arg(screen_name);
-        speakCommand(player, greetingStr.toUtf8().toBase64());
+        speakCommand(player, greetingStr);
         player->startNetworkDelayTest();
 
         // introduce all existing player to the new joined
@@ -3365,7 +3364,6 @@ bool Room::speakCommand(ServerPlayer *player, const QVariant &message)
         } else if (sentence == ".ShowHandCards") {
             _NO_BROADCAST_SPEAKING
             QString split("----------");
-            split = split.toUtf8().toBase64();
 
             JsonArray body;
             body << player->objectName();
@@ -3400,7 +3398,6 @@ bool Room::speakCommand(ServerPlayer *player, const QVariant &message)
                         foreach (const Card *card, p->getHandcards())
                             handcards << QString("<b>%1</b>").arg(Sanguosha->getEngineCard(card->getId())->getLogName());
                         QString hand = handcards.join(", ");
-                        hand = hand.toUtf8().toBase64();
 
                         JsonArray body;
                         body << p->objectName();
@@ -3423,7 +3420,6 @@ bool Room::speakCommand(ServerPlayer *player, const QVariant &message)
                             foreach (int id, p->getPile(pile_name))
                                 pile_cards << QString("<b>%1</b>").arg(Sanguosha->getEngineCard(id)->getLogName());
                             QString pile = pile_cards.join(", ");
-                            pile = pile.toUtf8().toBase64();
 
                             JsonArray body;
                             body << p->objectName();
@@ -3444,7 +3440,6 @@ bool Room::speakCommand(ServerPlayer *player, const QVariant &message)
                 foreach (QVariant name, huashens)
                     huashen_name << QString("<b>%1</b>").arg(Sanguosha->translate(name.toString()));
                 QString huashen = huashen_name.join(", ");
-                huashen = huashen.toUtf8().toBase64();
 
                 JsonArray body;
                 body << zuoci->objectName();
@@ -3481,8 +3476,8 @@ bool Room::speakCommand(ServerPlayer *player, const QVariant &message)
         body << message;
         doBroadcastNotify(S_COMMAND_SPEAK, body);
     }
-    if (sentence.startsWith("/roll")) {
-        QString str = QString::number(qrand() % 100 + 1).toUtf8().toBase64();
+    if (sentence == "/roll") {
+        QString str = QString::number(qrand() % 100 + 1);
         speakCommand(player, str);
     }
     return true;
@@ -6385,7 +6380,7 @@ bool Room::networkDelayTestCommand(ServerPlayer *player, const QVariant &)
     QString reportStr = tr("<font color=#EEB422>The network delay of player <b>%1</b> is %2 milliseconds.</font>")
                             .arg(player->screenName())
                             .arg(QString::number(delay));
-    speakCommand(player, reportStr.toUtf8().toBase64());
+    speakCommand(player, reportStr);
     return true;
 }
 

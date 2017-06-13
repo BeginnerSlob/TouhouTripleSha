@@ -1410,10 +1410,9 @@ Server::Server(QObject *parent)
 
 void Server::broadcast(const QString &msg)
 {
-    QString to_sent = msg.toUtf8().toBase64();
     JsonArray args;
     args << ".";
-    args << to_sent;
+    args << msg;
 
     Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_SPEAK);
     packet.setMessageBody(args);

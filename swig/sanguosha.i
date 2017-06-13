@@ -359,7 +359,7 @@ public:
 
 %extend ServerPlayer {
     void speak(const char *msg) {
-        QString str = QByteArray(msg).toBase64();
+        QString str = QByteArray(msg);
         $self->getRoom()->speakCommand($self, str);
     }
 };
