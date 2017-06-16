@@ -14,7 +14,6 @@
 #include <QRadioButton>
 #include <QSignalMapper>
 #include <QTabWidget>
-#include <QTimerEvent>
 #ifdef Q_OS_ANDROID
 #include <QToolTip>
 #endif

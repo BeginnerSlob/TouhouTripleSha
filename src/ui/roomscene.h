@@ -13,17 +13,18 @@
 #include "sprite.h"
 #include "table-pile.h"
 
-class Window;
+class BubbleChatBox;
 class Button;
 class CardContainer;
-class GuanxingBox;
-class QSanButton;
-class QGroupBox;
 class ChooseOptionsBox;
-class ChooseTriggerOrderBox;
-class PlayerCardBox;
 class ChooseSuitBox;
-class BubbleChatBox;
+class ChooseTriggerOrderBox;
+class GuanxingBox;
+class PlayerCardBox;
+class QGroupBox;
+class QSanButton;
+class QTimer;
+class Window;
 struct RoomLayout;
 
 #include <QDialog>
@@ -234,6 +235,8 @@ public slots:
     void doAddRobotAction();
     void fillRobots();
 
+    void onAutoSpeakTimeOut();
+
 #ifdef Q_OS_ANDROID
     void onPressHoldTimeOut();
 #endif
@@ -322,6 +325,7 @@ private:
 
     QMenu *m_add_robot_menu;
 
+    QTimer *_m_autoSpeakTimer;
     QMap<QString, BubbleChatBox *> bubbleChatBoxes;
 
     // for 3v3 & 1v1 mode

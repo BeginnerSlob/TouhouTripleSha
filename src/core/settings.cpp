@@ -24,6 +24,7 @@ const int Settings::S_MOVE_CARD_ANIMATION_DURATION = 600;
 const int Settings::S_JUDGE_ANIMATION_DURATION = 1200;
 const int Settings::S_JUDGE_LONG_DELAY = 800;
 
+const QString Settings::m_autoSpeakString = "BB prevent offline";
 const QString Settings::m_defaultMusicPath = "audio/bgm/1.ogg;audio/bgm/2.ogg;audio/bgm/3.ogg;audio/bgm/4.ogg;audio/bgm/"
                                              "5.ogg;audio/bgm/6.ogg;audio/bgm/7.ogg;audio/bgm/8.ogg;audio/bgm/9.ogg;audio/bgm/"
                                              "10.ogg;audio/bgm/11.ogg;audio/bgm/12.ogg";
@@ -127,7 +128,6 @@ void Settings::init()
 
     FreeChoose = EnableCheat && value("FreeChoose", false).toBool();
     ForbidSIMC = value("ForbidSIMC", false).toBool();
-    EnableSql = value("EnableSql", false).toBool();
     DisableChat = value("DisableChat", false).toBool();
     FreeAssignSelf = EnableCheat && value("FreeAssignSelf", false).toBool();
     Enable2ndGeneral = value("Enable2ndGeneral", false).toBool();
@@ -182,6 +182,8 @@ void Settings::init()
     BackgroundImage = value("BackgroundImage", "image/system/backdrop/default.jpg").toString();
 
     BubbleChatBoxKeepTime = value("BubbleChatboxKeepTime", 2000).toInt();
+
+    AutoSpeakWhenWaiting = value("AutoSpeakWhenWaiting", true).toBool();
 
     QStringList roles_ban, kof_ban, hulao_ban, xmode_ban, basara_ban, hegemony_ban, pairs_ban, cards_ban;
 

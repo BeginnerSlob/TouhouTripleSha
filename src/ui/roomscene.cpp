@@ -390,6 +390,10 @@ RoomScene::RoomScene(QMainWindow *main_window)
     connect(return_to_main_menu, &Button::clicked, this, &RoomScene::return_to_start);
     control_panel->show();
 
+    QTimer *_m_autoSpeakTimer = new QTimer(this);
+    _m_autoSpeakTimer->start(30000);
+    connect(_m_autoSpeakTimer, &QTimer::timeout, this, &RoomScene::onAutoSpeakTimeOut);
+
     animations = new EffectAnimation();
     animations->setParent(this);
 
@@ -1111,6 +1115,11 @@ void RoomScene::arrangeSeats(const QList<const ClientPlayer *> &seats)
         }
     }
     game_started = true;
+    if (_m_autoSpeakTimer && _m_autoSpeakTimer->isActive()) {
+        _m_autoSpeakTimer->stop();
+        delete _m_autoSpeakTimer;
+        _m_autoSpeakTimer = NULL;
+    }
     QParallelAnimationGroup *group = new QParallelAnimationGroup(this);
     updateTable();
 
@@ -3894,6 +3903,11 @@ void RoomScene::onGameStart()
     }
 #endif
     game_started = true;
+    if (_m_autoSpeakTimer && _m_autoSpeakTimer->isActive()) {
+        _m_autoSpeakTimer->stop();
+        delete _m_autoSpeakTimer;
+        _m_autoSpeakTimer = NULL;
+    }
 }
 
 void RoomScene::freeze()
@@ -4832,6 +4846,12 @@ void RoomScene::doAddRobotAction()
 void RoomScene::fillRobots()
 {
     ClientInstance->addRobot(-1);
+}
+
+void RoomScene::onAutoSpeakTimeOut()
+{
+    if (!game_started && Config.AutoSpeakWhenWaiting)
+        ClientInstance->speakToServer(Settings::m_autoSpeakString);
 }
 
 #ifdef Q_OS_ANDROID

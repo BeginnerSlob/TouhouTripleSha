@@ -16,7 +16,6 @@
 #include <QMessageBox>
 #include <QTextCursor>
 #include <QTextDocument>
-#include <QTimer>
 #include <QVBoxLayout>
 
 using namespace std;
@@ -1930,6 +1929,9 @@ void Client::speak(const QVariant &speak_data)
     QString who = args[0].toString();
     QString text = args[1].toString();
 
+    if (text == Settings::m_autoSpeakString) {
+        return;
+    }
     static const QString prefix("<img width=14 height=14 src='image/system/chatface/");
     static const QString suffix(".png'></img>");
     text = text.replace("<#", prefix).replace("#>", suffix);

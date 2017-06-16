@@ -22,8 +22,6 @@
 #include <QMessageBox>
 #include <QMetaEnum>
 #include <QTextStream>
-#include <QTimer>
-#include <QTimerEvent>
 
 #include <QtMath>
 
@@ -3347,7 +3345,12 @@ bool Room::speakCommand(ServerPlayer *player, const QVariant &message)
     }
     bool broadcast = true;
     QString sentence = message.toString();
-    if (player && Config.EnableCheat) {
+    if (sentence == Settings::m_autoSpeakString) {
+        JsonArray body2;
+        body2 << player->objectName();
+        body2 << message;
+        doNotify(player, S_COMMAND_SPEAK, body2);
+    } if (player && Config.EnableCheat) {
         if (sentence == ".BroadcastRoles") {
             _NO_BROADCAST_SPEAKING
             foreach (ServerPlayer *p, m_alivePlayers)

@@ -55,7 +55,6 @@ public:
     bool EnableLuckCard;
     ushort ServerPort;
     bool DisableLua;
-    bool EnableSql;
 
     // client side
     QString HostAddress;
@@ -82,6 +81,7 @@ public:
 
     QString BackgroundImage;
     int BubbleChatBoxKeepTime;
+    bool AutoSpeakWhenWaiting;
 
     // consts
     static const int S_SURRENDER_REQUEST_MIN_INTERVAL;
@@ -91,6 +91,7 @@ public:
     static const int S_JUDGE_ANIMATION_DURATION;
     static const int S_JUDGE_LONG_DELAY;
 
+    static const QString m_autoSpeakString;
     static const QString m_defaultMusicPath;
 };
 
