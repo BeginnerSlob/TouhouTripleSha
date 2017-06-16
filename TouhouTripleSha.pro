@@ -123,7 +123,8 @@ SOURCES += \
     src/ui/chooseoptionsbox.cpp \
     src/ui/playercardbox.cpp \
     src/ui/choosetriggerorderbox.cpp \
-    src/ui/choosesuitbox.cpp
+    src/ui/choosesuitbox.cpp \
+    src/package/achievement.cpp
 
 HEADERS += \
     src/client/aux-skills.h \
@@ -238,7 +239,8 @@ HEADERS += \
     src/ui/chooseoptionsbox.h \
     src/ui/playercardbox.h \
     src/ui/choosetriggerorderbox.h \
-    src/ui/choosesuitbox.h
+    src/ui/choosesuitbox.h \
+    src/package/achievement.h
 
 FORMS += \
     src/dialog/cardoverview.ui \

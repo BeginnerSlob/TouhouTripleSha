@@ -866,7 +866,8 @@ QString Client::setPromptList(const QStringList &texts)
 
 void Client::commandFormatWarning(const QString &str, const QRegExp &rx, const char *command)
 {
-    QString text = tr("The argument (%1) of command %2 does not conform the format %3").arg(str).arg(command).arg(rx.pattern());
+    QString text
+        = tr("The argument (%1) of command %2 does not conform the format %3").arg(str).arg(command).arg(rx.pattern());
     QMessageBox::warning(NULL, tr("Command format warning"), text);
 }
 
@@ -1028,8 +1029,9 @@ void Client::askForNullification(const QVariant &arg)
     }
 
     if (source == NULL) {
-        prompt_doc->setHtml(
-            tr("Do you want to use nullification to trick card %1 from %2?").arg(Sanguosha->translate(trick_card->objectName())).arg(getPlayerName(target_player->objectName())));
+        prompt_doc->setHtml(tr("Do you want to use nullification to trick card %1 from %2?")
+                                .arg(Sanguosha->translate(trick_card->objectName()))
+                                .arg(getPlayerName(target_player->objectName())));
     } else {
         prompt_doc->setHtml(tr("%1 used trick card %2 to %3 <br>Do you want to use nullification?")
                                 .arg(getPlayerName(source->objectName()))
@@ -1210,14 +1212,19 @@ void Client::setCardFlag(const QVariant &pattern_str)
 
 void Client::updatePileNum()
 {
-    QString pile_str = tr("Draw pile: <b>%1</b>, discard pile: <b>%2</b>, swap times: <b>%3</b>").arg(pile_num).arg(discarded_list.length()).arg(swap_pile);
-    lines_doc->setHtml(QString("<font color='%1'><p align = \"center\">" + pile_str + "</p></font>").arg(Config.TextEditColor.name()));
+    QString pile_str = tr("Draw pile: <b>%1</b>, discard pile: <b>%2</b>, swap times: <b>%3</b>")
+                           .arg(pile_num)
+                           .arg(discarded_list.length())
+                           .arg(swap_pile);
+    lines_doc->setHtml(
+        QString("<font color='%1'><p align = \"center\">" + pile_str + "</p></font>").arg(Config.TextEditColor.name()));
 }
 
 void Client::askForDiscard(const QVariant &reqvar)
 {
     JsonArray req = reqvar.value<JsonArray>();
-    if (req.size() < 6 || !isNumber(req[0]) || !isNumber(req[1]) || !isBool(req[2]) || !isBool(req[3]) || !isString(req[4]) || !isString(req[5])) {
+    if (req.size() < 6 || !isNumber(req[0]) || !isNumber(req[1]) || !isBool(req[2]) || !isBool(req[3]) || !isString(req[4])
+        || !isString(req[5])) {
         QMessageBox::warning(NULL, tr("Warning"), tr("Discard string is not well formatted!"));
         return;
     }
@@ -1258,7 +1265,8 @@ void Client::askForDiscard(const QVariant &reqvar)
 void Client::askForExchange(const QVariant &exchange)
 {
     JsonArray args = exchange.value<JsonArray>();
-    if (args.size() < 6 || !isNumber(args[0]) || !isNumber(args[1]) || !isBool(args[2]) || !isString(args[3]) || !isBool(args[4]) || !isString(args[5])) {
+    if (args.size() < 6 || !isNumber(args[0]) || !isNumber(args[1]) || !isBool(args[2]) || !isString(args[3])
+        || !isBool(args[4]) || !isString(args[5])) {
         QMessageBox::warning(NULL, tr("Warning"), tr("Exchange string is not well formatted!"));
         return;
     }
@@ -1428,7 +1436,10 @@ void Client::askForGeneral(const QVariant &arg)
 void Client::askForSuit(const QVariant &)
 {
     QStringList suits;
-    suits << "spade" << "club" << "heart" << "diamond";
+    suits << "spade"
+          << "club"
+          << "heart"
+          << "diamond";
     emit suits_got(suits);
     setStatus(AskForSuit);
 }
@@ -1628,7 +1639,8 @@ void Client::askForSinglePeach(const QVariant &arg)
         bool has_skill = false;
         foreach (const Skill *skill, Self->getVisibleSkillList(true, true)) {
             const ViewAsSkill *view_as_skill = ViewAsSkill::parseViewAsSkill(skill);
-            if (view_as_skill && view_as_skill->isAvailable(Self, CardUseStruct::CARD_USE_REASON_RESPONSE_USE, pattern.join("+"))) {
+            if (view_as_skill
+                && view_as_skill->isAvailable(Self, CardUseStruct::CARD_USE_REASON_RESPONSE_USE, pattern.join("+"))) {
                 has_skill = true;
                 break;
             }
@@ -1831,7 +1843,9 @@ void Client::askForYiji(const QVariant &ask_str)
         }
         setPromptList(texts);
     } else {
-        prompt_doc->setHtml(tr("Please distribute %1 cards %2 as you wish").arg(count).arg(m_isDiscardActionRefusable ? QString() : tr("to another player")));
+        prompt_doc->setHtml(tr("Please distribute %1 cards %2 as you wish")
+                                .arg(count)
+                                .arg(m_isDiscardActionRefusable ? QString() : tr("to another player")));
     }
 
     //@todo: use cards directly rather than the QString

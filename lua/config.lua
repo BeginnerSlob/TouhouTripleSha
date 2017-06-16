@@ -52,6 +52,8 @@ config = {
 		"IkaiKin",
 		"IkaiKa",
 		"Hulaopass",
+
+		"Achievement"
 	},
 
 	hulao_generals = {

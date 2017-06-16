@@ -390,7 +390,7 @@ RoomScene::RoomScene(QMainWindow *main_window)
     connect(return_to_main_menu, &Button::clicked, this, &RoomScene::return_to_start);
     control_panel->show();
 
-    QTimer *_m_autoSpeakTimer = new QTimer(this);
+    _m_autoSpeakTimer = new QTimer(this);
     _m_autoSpeakTimer->start(30000);
     connect(_m_autoSpeakTimer, &QTimer::timeout, this, &RoomScene::onAutoSpeakTimeOut);
 

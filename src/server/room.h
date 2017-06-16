@@ -307,6 +307,10 @@ public:
     QVariant getTag(const QString &key) const;
     void removeTag(const QString &key);
 
+    void setAchievementData(ServerPlayer *player, const QString &key, const QVariant &value, bool variable = true);
+    QVariant getAchievementData(ServerPlayer *player, const QString &key, bool variable = true) const;
+    void addAchievementData(ServerPlayer *player, const QString &key, int step = 1, bool variable = true);
+
     void setEmotion(ServerPlayer *target, const QString &emotion);
 
     Player::Place getCardPlace(int card_id) const;
@@ -556,6 +560,7 @@ private:
     bool has_provided;
 
     QVariantMap tag;
+    QVariantMap achievementMap;
     const Scenario *scenario;
 
     bool m_surrenderRequestReceived;

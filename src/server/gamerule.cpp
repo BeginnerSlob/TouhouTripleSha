@@ -17,8 +17,9 @@ GameRule::GameRule(QObject *)
     // a way to do it.
     //setParent(parent);
 
-    events << GameStart << TurnStart << EventPhaseProceeding << EventPhaseEnd << EventPhaseChanging << PreCardUsed << CardUsed << CardFinished << CardEffected << HpChanged
-           << EventLoseSkill << EventAcquireSkill << AskForPeaches << AskForPeachesDone << BuryVictim << GameOverJudge << SlashHit << SlashEffected << SlashProceed << ConfirmDamage
+    events << GameStart << TurnStart << EventPhaseProceeding << EventPhaseEnd << EventPhaseChanging << PreCardUsed << CardUsed
+           << CardFinished << CardEffected << HpChanged << EventLoseSkill << EventAcquireSkill << AskForPeaches
+           << AskForPeachesDone << BuryVictim << GameOverJudge << SlashHit << SlashEffected << SlashProceed << ConfirmDamage
            << DamageDone << DamageComplete << StartJudge << FinishRetrial << FinishJudge << ChoiceMade;
 }
 
@@ -125,7 +126,8 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
                 if (player->getGeneral()->getKingdom() == "kami" && player->getGeneralName() != "anjiang")
                     room->setPlayerProperty(player, "kingdom", room->askForKingdom(player));
                 foreach (const Skill *skill, player->getVisibleSkillList(false, true)) {
-                    if (skill->getFrequency(player) == Skill::Limited && !skill->getLimitMark().isEmpty() && (!skill->isLordSkill() || player->hasLordSkill(skill->objectName())))
+                    if (skill->getFrequency(player) == Skill::Limited && !skill->getLimitMark().isEmpty()
+                        && (!skill->isLordSkill() || player->hasLordSkill(skill->objectName())))
                         room->addPlayerMark(player, skill->getLimitMark());
                 }
             }
@@ -225,7 +227,8 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
                     room->setCardFlag(card_use.card, "PeachSelf");
             }
             card_use.from->broadcastSkillInvoke(card_use.card);
-            if (!card_use.card->getSkillName().isNull() && card_use.card->getSkillName(true) == card_use.card->getSkillName(false) && card_use.m_isOwnerUse
+            if (!card_use.card->getSkillName().isNull()
+                && card_use.card->getSkillName(true) == card_use.card->getSkillName(false) && card_use.m_isOwnerUse
                 && card_use.from->hasSkill(card_use.card->getSkillName()))
                 room->notifySkillInvoked(card_use.from, card_use.card->getSkillName());
         }
@@ -335,7 +338,8 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
 
             // coupling IkSishideng here to deal with complicated rule problems
             ServerPlayer *current = room->getCurrent();
-            if (current && current->isAlive() && current->getPhase() != Player::NotActive && current->hasSkill("iksishideng")) {
+            if (current && current->isAlive() && current->getPhase() != Player::NotActive
+                && current->hasSkill("iksishideng")) {
                 if (player != current && player != dying.who) {
                     player->setFlags("iksishideng");
                     room->addPlayerMark(player, "Global_PreventPeach");
@@ -544,13 +548,15 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
         if (!effect.to->isAlive())
             break;
         if (effect.jink_num == 1) {
-            const Card *jink = room->askForCard(effect.to, "jink", "slash-jink:" + slasher, data, Card::MethodUse, effect.from);
+            const Card *jink
+                = room->askForCard(effect.to, "jink", "slash-jink:" + slasher, data, Card::MethodUse, effect.from);
             room->slashResult(effect, room->isJinkEffected(effect.to, jink) ? jink : NULL);
         } else {
             DummyCard *jink = new DummyCard;
             const Card *asked_jink = NULL;
             for (int i = effect.jink_num; i > 0; i--) {
-                QString prompt = QString("@multi-jink%1:%2::%3").arg(i == effect.jink_num ? "-start" : QString()).arg(slasher).arg(i);
+                QString prompt
+                    = QString("@multi-jink%1:%2::%3").arg(i == effect.jink_num ? "-start" : QString()).arg(slasher).arg(i);
                 asked_jink = room->askForCard(effect.to, "jink", prompt, data, Card::MethodUse, effect.from);
                 if (!room->isJinkEffected(effect.to, asked_jink)) {
                     delete jink;
@@ -642,8 +648,10 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
         log.card_str = QString::number(judge->card->getEffectiveId());
         room->sendLog(log);
 
-        room->moveCardTo(judge->card, NULL, judge->who, Player::PlaceJudge,
-                         CardMoveReason(CardMoveReason::S_REASON_JUDGE, judge->who->objectName(), QString(), QString(), judge->reason), true);
+        room->moveCardTo(
+            judge->card, NULL, judge->who, Player::PlaceJudge,
+            CardMoveReason(CardMoveReason::S_REASON_JUDGE, judge->who->objectName(), QString(), QString(), judge->reason),
+            true);
         judge->updateResult();
         break;
     }
@@ -727,7 +735,8 @@ void GameRule::changeGeneral1v1(ServerPlayer *player) const
     room->addPlayerHistory(player, ".");
 
     QList<ServerPlayer *> notified = classical ? room->getOtherPlayers(player, true) : room->getPlayers();
-    room->doBroadcastNotify(notified, QSanProtocol::S_COMMAND_REVEAL_GENERAL, JsonArray() << player->objectName() << new_general);
+    room->doBroadcastNotify(notified, QSanProtocol::S_COMMAND_REVEAL_GENERAL,
+                            JsonArray() << player->objectName() << new_general);
 
     if (!player->faceUp())
         player->turnOver();
@@ -1127,7 +1136,8 @@ void BasaraMode::playerShowed(ServerPlayer *player) const
         foreach (ServerPlayer *p, room->getOtherPlayers(player))
             kingdom_roles[p->getKingdom()]++;
 
-        if (kingdom_roles[Sanguosha->getGeneral(names.first())->getKingdom()] >= Config.value("HegemonyMaxShown", 2).toInt() && player->getGeneralName() == "anjiang")
+        if (kingdom_roles[Sanguosha->getGeneral(names.first())->getKingdom()] >= Config.value("HegemonyMaxShown", 2).toInt()
+            && player->getGeneralName() == "anjiang")
             return;
     }
 

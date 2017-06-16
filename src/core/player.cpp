@@ -16,6 +16,7 @@ Player::Player(QObject *parent)
     , state("online")
     , seat(0)
     , alive(true)
+    , user_id(-1)
     , phase(NotActive)
     , weapon(NULL)
     , armor(NULL)
@@ -38,6 +39,16 @@ void Player::setScreenName(const QString &screen_name)
 QString Player::screenName() const
 {
     return screen_name;
+}
+
+void Player::setUserId(int uid)
+{
+    this->user_id = uid;
+}
+
+int Player::userId() const
+{
+    return user_id;
 }
 
 bool Player::isOwner() const
@@ -445,7 +456,8 @@ bool Player::hasSkill(const QString &skill_name, bool include_lose) const
     if (!include_lose) {
         if (!hasEquipSkill(skill_name)) {
             const Skill *skill = Sanguosha->getSkill(skill_name);
-            if (skill && skill_name != "thyanmeng" && skill_name != "thxuanyan" && !Sanguosha->correctSkillValidity(this, skill))
+            if (skill && skill_name != "thyanmeng" && skill_name != "thxuanyan"
+                && !Sanguosha->correctSkillValidity(this, skill))
                 return false;
         }
     }
@@ -775,7 +787,8 @@ bool Player::hasWeapon(const QString &weapon_name) const
 
 bool Player::hasArmorEffect(const QString &armor_name) const
 {
-    if (!tag["Qinggang"].toStringList().isEmpty() || getMark("Armor_Nullified") > 0 || getMark("Equips_Nullified_to_Yourself") > 0)
+    if (!tag["Qinggang"].toStringList().isEmpty() || getMark("Armor_Nullified") > 0
+        || getMark("Equips_Nullified_to_Yourself") > 0)
         return false;
 
     const Player *current = NULL;
@@ -943,7 +956,8 @@ bool Player::canDiscard(const Player *to, int card_id) const
     if (this->isDead() || to->isDead())
         return false;
     if (to->hasSkill("ikhugu") && this != to) {
-        if ((to->getWeapon() && card_id == to->getWeapon()->getEffectiveId()) || (to->getArmor() && card_id == to->getArmor()->getEffectiveId()))
+        if ((to->getWeapon() && card_id == to->getWeapon()->getEffectiveId())
+            || (to->getArmor() && card_id == to->getArmor()->getEffectiveId()))
             return false;
     } else if (this == to) {
         if (!getJudgingAreaID().contains(card_id) && isJilei(Sanguosha->getCard(card_id)))
@@ -1031,7 +1045,8 @@ QStringList Player::getMarkNames() const
     return marks.keys();
 }
 
-bool Player::canSlash(const Player *other, const Card *slash, bool distance_limit, int rangefix, const QList<const Player *> &others) const
+bool Player::canSlash(const Player *other, const Card *slash, bool distance_limit, int rangefix,
+                      const QList<const Player *> &others) const
 {
     if (!other->isAlive())
         return false;
@@ -1046,7 +1061,8 @@ bool Player::canSlash(const Player *other, const Card *slash, bool distance_limi
         return false;
 
     if (distance_limit)
-        return inMyAttackRange(other, rangefix - Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, this, THIS_SLASH));
+        return inMyAttackRange(other,
+                               rangefix - Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, this, THIS_SLASH));
     else
         return true;
 #undef THIS_SLASH
@@ -1189,7 +1205,8 @@ QList<const Skill *> Player::getSkillList(bool include_equip, bool visible_only,
         skill_list += extra_skills;
     foreach (QString skill_name, skill_list) {
         const Skill *skill = Sanguosha->getSkill(skill_name);
-        if (skill && !skillList.contains(skill) && (include_equip || !hasEquipSkill(skill->objectName())) && (!visible_only || skill->isVisible()))
+        if (skill && !skillList.contains(skill) && (include_equip || !hasEquipSkill(skill->objectName()))
+            && (!visible_only || skill->isVisible()))
             skillList << skill;
     }
 
@@ -1437,7 +1454,8 @@ QList<const Player *> Player::getAliveSiblings() const
 
 bool Player::isNostalGeneral(const Player *p, const QString &general_name)
 {
-    return p->getGeneralName() == "nos_" + general_name || (p->getGeneralName() != general_name && p->getGeneral2Name() == "nos_" + general_name);
+    return p->getGeneralName() == "nos_" + general_name
+        || (p->getGeneralName() != general_name && p->getGeneral2Name() == "nos_" + general_name);
 }
 
 void Player::setNext(Player *next)

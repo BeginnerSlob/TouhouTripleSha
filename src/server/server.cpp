@@ -324,7 +324,8 @@ QWidget *ServerDialog::createAdvancedTab()
     scheme0_subtraction_spinbox->setValue(Config.Scheme0Subtraction);
     scheme0_subtraction_spinbox->setVisible(max_hp_scheme_ComboBox->currentIndex() == 0);
 
-    connect(max_hp_scheme_ComboBox, &QComboBox::currentIndexChanged, this, &ServerDialog::setMaxHpSchemeBox);
+    connect(max_hp_scheme_ComboBox, (void (QComboBox::*)(int))(&QComboBox::currentIndexChanged), this,
+            &ServerDialog::setMaxHpSchemeBox);
 
     basara_checkbox = new QCheckBox(tr("Enable Basara"));
     basara_checkbox->setChecked(Config.EnableBasara);
@@ -412,7 +413,7 @@ QWidget *ServerDialog::createAdvancedTab()
     }
     connect(second_general_checkbox, &QCheckBox::toggled, this, &ServerDialog::setMaxHpSchemeBox);
 
-        hegemony_maxchoice_label->setVisible(Config.EnableHegemony);
+    hegemony_maxchoice_label->setVisible(Config.EnableHegemony);
     connect(hegemony_checkbox, &QCheckBox::toggled, hegemony_maxchoice_label, &QLabel::setVisible);
     hegemony_maxchoice_spinbox->setVisible(Config.EnableHegemony);
     connect(hegemony_checkbox, &QCheckBox::toggled, hegemony_maxchoice_spinbox, &QSpinBox::setVisible);

@@ -20,6 +20,7 @@ class Player : public QObject
     Q_OBJECT
 
     Q_PROPERTY(QString screenname READ screenName WRITE setScreenName)
+    Q_PROPERTY(int userid READ userId WRITE setUserId)
     Q_PROPERTY(int hp READ getHp WRITE setHp)
     Q_PROPERTY(int maxhp READ getMaxHp WRITE setMaxHp)
     Q_PROPERTY(QString kingdom READ getKingdom WRITE setKingdom)
@@ -83,6 +84,8 @@ public:
 
     void setScreenName(const QString &screen_name);
     QString screenName() const;
+    void setUserId(int uid);
+    int userId() const;
 
     // property setters/getters
     int getHp() const;
@@ -218,8 +221,10 @@ public:
     void setRemoved(bool removed);
     bool isRemoved() const;
 
-    bool canSlash(const Player *other, const Card *slash, bool distance_limit = true, int rangefix = 0, const QList<const Player *> &others = QList<const Player *>()) const;
-    bool canSlash(const Player *other, bool distance_limit = true, int rangefix = 0, const QList<const Player *> &others = QList<const Player *>()) const;
+    bool canSlash(const Player *other, const Card *slash, bool distance_limit = true, int rangefix = 0,
+                  const QList<const Player *> &others = QList<const Player *>()) const;
+    bool canSlash(const Player *other, bool distance_limit = true, int rangefix = 0,
+                  const QList<const Player *> &others = QList<const Player *>()) const;
     int getCardCount(bool include_equip = true, bool include_judging = false) const;
 
     QList<int> getPile(const QString &pile_name) const;
@@ -248,7 +253,8 @@ public:
         return property(QString("%1_step").arg(skill_name).toLatin1().constData()).toInt();
     }
 
-    virtual bool isProhibited(const Player *to, const Card *card, const QList<const Player *> &others = QList<const Player *>()) const;
+    virtual bool isProhibited(const Player *to, const Card *card,
+                              const QList<const Player *> &others = QList<const Player *>()) const;
     bool canSlashWithoutCrossbow(const Card *slash = NULL) const;
     virtual bool isLastHandCard(const Card *card, bool contain = false) const = 0;
 
@@ -312,6 +318,7 @@ private:
     QString state;
     int seat;
     bool alive;
+    int user_id;
 
     Phase phase;
     WrappedCard *weapon, *armor, *defensive_horse, *offensive_horse, *treasure;

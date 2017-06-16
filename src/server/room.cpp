@@ -2650,6 +2650,7 @@ bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
         ++uid;
         if (_line[1] == user_name) {
             if (password == _line[2]) {
+                player->setUserId(_line[0].toInt());
                 in.flush();
                 file.close();
                 return true;
@@ -2668,9 +2669,11 @@ bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
 
     // add new user
     if (password.isEmpty()) {
+        player->setUserId(-1);
         file.close();
         return true;
     } else {
+        player->setUserId(uid);
         QTextStream stream(&file);
         stream.seek(file.size());
         stream.setCodec("UTF-8");
@@ -2678,12 +2681,12 @@ bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
         stream.flush();
         file.close();
 
-        QFile file2(QString("account/%1_zhangong.csv").arg(uid));
+        QFile file2(QString("account/%1_achievement.csv").arg(uid));
         if (!file2.open(QIODevice::ReadWrite))
             return false;
         file2.close();
 
-        QFile file3(QString("account/%1_zhanji.csv").arg(uid));
+        QFile file3(QString("account/%1_records.csv").arg(uid));
         if (!file3.open(QIODevice::ReadWrite))
             return false;
         file3.close();
@@ -3350,7 +3353,8 @@ bool Room::speakCommand(ServerPlayer *player, const QVariant &message)
         body2 << player->objectName();
         body2 << message;
         doNotify(player, S_COMMAND_SPEAK, body2);
-    } if (player && Config.EnableCheat) {
+    }
+    if (player && Config.EnableCheat) {
         if (sentence == ".BroadcastRoles") {
             _NO_BROADCAST_SPEAKING
             foreach (ServerPlayer *p, m_alivePlayers)
@@ -4905,6 +4909,113 @@ QVariant Room::getTag(const QString &key) const
 void Room::removeTag(const QString &key)
 {
     tag.remove(key);
+}
+
+void Room::setAchievementData(ServerPlayer *player, const QString &key, const QVariant &value, bool variable)
+{
+    int uid = player->userId();
+    if (uid == -1)
+        return;
+    if (variable)
+        achievementMap.insert(QString("%1_%2").arg(player->objectName()).arg(key), value);
+    else {
+        QString location = QString("account/%1_achievement_%2.csv").arg(uid).arg(key);
+        QFile file(location);
+        if (!file.open(QIODevice::ReadWrite))
+            return;
+        QTextStream stream(&file);
+        while (!stream.atEnd()) {
+            QString line = stream.readLine();
+            if (line == value.toString()) {
+                stream.flush();
+                return;
+            }
+        }
+        stream.seek(file.size());
+        stream << value.toString() << "\n";
+        stream.flush();
+        file.close();
+        addAchievementData(player, key, 1, false);
+    }
+}
+
+QVariant Room::getAchievementData(ServerPlayer *player, const QString &key, bool variable) const
+{
+    int uid = player->userId();
+    if (uid == -1)
+        return QVariant();
+    if (variable)
+        return achievementMap.value(QString("%1_%2").arg(player->objectName()).arg(key));
+    else {
+        QString location = QString("account/%1_achievement_%2.csv").arg(uid).arg(key);
+        if (QFile::exists(location)) {
+            QFile file(location);
+            file.open(QIODevice::ReadWrite);
+            QTextStream stream(&file);
+            QString line = stream.readAll();
+            stream.flush();
+            file.close();
+            return line;
+        } else {
+            location = QString("account/%1_achievement.csv").arg(uid);
+            QFile file(location);
+            file.open(QIODevice::ReadWrite);
+            QTextStream stream(&file);
+            while (!stream.atEnd()) {
+                QString line = stream.readLine();
+                QStringList _line = line.split(",");
+                if (_line.length() != 4)
+                    continue;
+                if (_line[0] == key) {
+                    stream.flush();
+                    file.close();
+                    return _line[3];
+                }
+            }
+            stream.flush();
+            file.close();
+        }
+        return QVariant();
+    }
+}
+
+void Room::addAchievementData(ServerPlayer *player, const QString &key, int step, bool variable)
+{
+    int uid = player->userId();
+    if (uid == -1)
+        return;
+    if (variable) {
+        int data = getAchievementData(player, key).toInt();
+        data += step;
+        setAchievementData(player, key, data);
+    } else {
+        QString location = QString("account/%1_achievement.csv").arg(uid);
+        QFile file(location);
+        file.open(QIODevice::ReadWrite);
+        QTextStream stream(&file);
+        QStringList lines = stream.readAll().split("\n", QString::SkipEmptyParts);
+        qDebug() << lines;
+        stream.seek(0);
+        bool modified = false;
+        foreach (QString line, lines) {
+            qDebug() << line;
+            QStringList _line = line.split(",");
+            if (_line.length() != 4) {
+                stream << line << "\n";
+            } else if (_line[0] == key) {
+                int num = _line[3].toInt() + step;
+                stream << QString("%1,%2,%3,%4").arg(key).arg(_line[1]).arg(_line[2]).arg(num) << "\n";
+                modified = true;
+            } else
+                stream << line << "\n";
+        }
+        if (!modified) {
+            stream.seek(file.size());
+            stream << QString("%1,0,1990-01-01,%2").arg(key).arg(step) << "\n";
+        }
+        stream.flush();
+        file.close();
+    }
 }
 
 void Room::setEmotion(ServerPlayer *target, const QString &emotion)

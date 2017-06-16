@@ -120,7 +120,8 @@ ServerPlayer *RoomThread::find3v3Next(QList<ServerPlayer *> &first, QList<Server
     return room->askForPlayerChosen(first.first(), targets, "3v3-action", "@3v3-action");
 }
 
-void RoomThread::run3v3(QList<ServerPlayer *> &first, QList<ServerPlayer *> &second, GameRule *game_rule, ServerPlayer *current)
+void RoomThread::run3v3(QList<ServerPlayer *> &first, QList<ServerPlayer *> &second, GameRule *game_rule,
+                        ServerPlayer *current)
 {
     try {
         forever {
@@ -293,7 +294,8 @@ void RoomThread::actionHulaoPass(ServerPlayer *shenlvbu, QList<ServerPlayer *> l
     }
 }
 
-void RoomThread::_handleTurnBrokenHulaoPass(ServerPlayer *shenlvbu, QList<ServerPlayer *> league, GameRule *game_rule, int stage)
+void RoomThread::_handleTurnBrokenHulaoPass(ServerPlayer *shenlvbu, QList<ServerPlayer *> league, GameRule *game_rule,
+                                            int stage)
 {
     try {
         ServerPlayer *player = room->getCurrent();
@@ -525,7 +527,8 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                     if ((skill->objectName() == "game_rule" || skill->objectName() == "hulaopass_mode")
                         || (room->getScenario() && room->getScenario()->objectName() == skill->objectName())) {
                         room->tryPause();
-                        if (will_trigger.isEmpty() || skill->getDynamicPriority() == will_trigger.last()->getDynamicPriority()) {
+                        if (will_trigger.isEmpty()
+                            || skill->getDynamicPriority() == will_trigger.last()->getDynamicPriority()) {
                             will_trigger.append(skill);
                             trigger_who[NULL].append(skill->objectName()); // Don't assign game rule to some player.
                             rules.append(skill);
@@ -534,7 +537,8 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         triggered.prepend(skill);
                     } else {
                         room->tryPause();
-                        if (will_trigger.isEmpty() || skill->getDynamicPriority() == will_trigger.last()->getDynamicPriority()) {
+                        if (will_trigger.isEmpty()
+                            || skill->getDynamicPriority() == will_trigger.last()->getDynamicPriority()) {
                             TriggerList triggerSkillList = skill->triggerable(triggerEvent, room, target, data);
                             foreach (ServerPlayer *p, room->getAllPlayers(true)) {
                                 if (triggerSkillList.contains(p) && !triggerSkillList.value(p).isEmpty()) {
@@ -584,9 +588,11 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                             if (!trskill)
                                 trskill = Sanguosha->getTriggerSkill(skill.split("'").last()); // "sgs1'songwei"
                             if (!trskill)
-                                trskill = Sanguosha->getTriggerSkill(skill.split("->").first()); // "tieqi->sgs4+sgs8+sgs1+sgs2"
-                            if (trskill
-                                && (trskill->getFrequency(p) == Skill::Compulsory || trskill->getFrequency(p) == Skill::NotCompulsory || trskill->getFrequency(p) == Skill::Wake)) {
+                                trskill
+                                    = Sanguosha->getTriggerSkill(skill.split("->").first()); // "tieqi->sgs4+sgs8+sgs1+sgs2"
+                            if (trskill && (trskill->getFrequency(p) == Skill::Compulsory
+                                            || trskill->getFrequency(p) == Skill::NotCompulsory
+                                            || trskill->getFrequency(p) == Skill::Wake)) {
                                 has_compulsory = true;
                                 break;
                             }
@@ -597,11 +603,13 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         foreach (const QString &skill_name, who_skills) {
                             if (skill_name.contains("->")) { // "tieqi->sgs4+sgs8+sgs1+sgs2"
                                 QString realSkillName = skill_name.split("->").first(); // "tieqi"
-                                QStringList targets = skill_name.split("->").last().split("+"); // ["sgs4", "sgs8", "sgs1", "sgs2"]
+                                QStringList targets
+                                    = skill_name.split("->").last().split("+"); // ["sgs4", "sgs8", "sgs1", "sgs2"]
                                 int index = 1; // this index is for UI only
                                 bool cannotSkip = false;
                                 const TriggerSkill *trskill = Sanguosha->getTriggerSkill(realSkillName);
-                                if (trskill && (trskill->getFrequency(p) == Skill::Compulsory || trskill->getFrequency(p) == Skill::NotCompulsory
+                                if (trskill && (trskill->getFrequency(p) == Skill::Compulsory
+                                                || trskill->getFrequency(p) == Skill::NotCompulsory
                                                 || trskill->getFrequency(p) == Skill::Wake))
                                     cannotSkip = true;
                                 foreach (const QString &target, targets) {
@@ -628,8 +636,9 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         QString name;
                         foreach (const QString &sn, names) {
                             const TriggerSkill *skill = Sanguosha->getTriggerSkill(sn);
-                            if (skill && skill->isGlobal()
-                                && (skill->getFrequency(p) == Skill::Compulsory || skill->getFrequency(p) == Skill::NotCompulsory || skill->getFrequency(p) == Skill::Wake)) {
+                            if (skill && skill->isGlobal() && (skill->getFrequency(p) == Skill::Compulsory
+                                                               || skill->getFrequency(p) == Skill::NotCompulsory
+                                                               || skill->getFrequency(p) == Skill::Wake)) {
                                 name = sn;
                                 break;
                             }
@@ -647,7 +656,8 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                     if (n > 1) // default means one time.
                                         skillName_times = QString("%1*%2").arg(skillName).arg(n);
                                     if (skillName.contains("'")) { // "sgs1'songwei"
-                                        ServerPlayer *owner = room->findPlayer(skillName.split("'").first()); // someone such as Caopi
+                                        ServerPlayer *owner
+                                            = room->findPlayer(skillName.split("'").first()); // someone such as Caopi
                                         Q_ASSERT(owner);
                                         map[owner] << skillName_times;
                                     } else
@@ -752,7 +762,8 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                                 else {
                                                     QStringList targets_after = targets.mid(n + 1);
                                                     // remove the targets before triggered_target
-                                                    QString skill_after = QString("%1->%2").arg(skillName_copy).arg(targets_after.join("+"));
+                                                    QString skill_after
+                                                        = QString("%1->%2").arg(skillName_copy).arg(targets_after.join("+"));
                                                     trigger_who[p].replaceInStrings(skill, skill_after);
                                                 }
                                             }
@@ -774,7 +785,8 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                                     s = Sanguosha->getTriggerSkill(sn.split("'").last()); // "sgs1'songwei"
                                 if (!s)
                                     s = Sanguosha->getTriggerSkill(sn.split("->").first()); // "tieqi->sgs4+sgs8+sgs1+sgs2"
-                                if (s && (s->getFrequency(p) == Skill::Compulsory || s->getFrequency(p) == Skill::NotCompulsory || s->getFrequency(p) == Skill::Wake)) {
+                                if (s && (s->getFrequency(p) == Skill::Compulsory || s->getFrequency(p) == Skill::NotCompulsory
+                                          || s->getFrequency(p) == Skill::Wake)) {
                                     has_compulsory = true;
                                     break;
                                 }

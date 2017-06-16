@@ -72,8 +72,9 @@ public:
     {
         DamageStruct damage = data.value<DamageStruct>();
 
-        if (damage.card && damage.card->isKindOf("Slash") && damage.to->getMark("Equips_of_Others_Nullified_to_You") == 0 && !damage.to->isNude() && damage.by_user && !damage.chain
-            && !damage.transfer && player->askForSkillInvoke("ice_sword", data)) {
+        if (damage.card && damage.card->isKindOf("Slash") && damage.to->getMark("Equips_of_Others_Nullified_to_You") == 0
+            && !damage.to->isNude() && damage.by_user && !damage.chain && !damage.transfer
+            && player->askForSkillInvoke("ice_sword", data)) {
             room->setEmotion(player, "effects/weapon");
             if (damage.from->canDiscard(damage.to, "he")) {
                 int card_id = room->askForCardChosen(player, damage.to, "he", "ice_sword", false, Card::MethodDiscard);
@@ -186,10 +187,12 @@ void FeintAttack::onEffect(const CardEffectStruct &effect) const
     effect.to->tag.remove("feintTarget");
 
     if (source->isAlive() && !source->isNude()) {
-        const Card *card = room->askForCard(source, "..!", "feint-attack-effect:" + target->objectName(), QVariant(), Card::MethodNone);
+        const Card *card
+            = room->askForCard(source, "..!", "feint-attack-effect:" + target->objectName(), QVariant(), Card::MethodNone);
         if (!card)
             card = source->getRandomHandCard();
-        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), objectName(), QString());
+        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), objectName(),
+                              QString());
         room->obtainCard(target, card, reason, false);
         if (card) {
             if (!target->isNude()) {
@@ -203,7 +206,8 @@ void FeintAttack::onEffect(const CardEffectStruct &effect) const
                     QString prompt = QString("feint-attack-give:%1:%2").arg(victim->objectName()).arg(source->objectName());
                     dummy = room->askForExchange(target, objectName(), 2, 2, true, prompt);
                 }
-                CardMoveReason reason(CardMoveReason::S_REASON_GIVE, target->objectName(), victim->objectName(), objectName(), QString());
+                CardMoveReason reason(CardMoveReason::S_REASON_GIVE, target->objectName(), victim->objectName(), objectName(),
+                                      QString());
                 room->obtainCard(victim, dummy, reason, false);
                 delete dummy;
             }
@@ -222,7 +226,8 @@ public:
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
     {
         if (!player->hasFlag("LureTigerTurn"))
             return QStringList();
@@ -257,7 +262,8 @@ public:
 
     virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const
     {
-        return to->isRemoved() && (card->getTypeId() != Card::TypeSkill || card->isKindOf("IkMiceCard") || card->isKindOf("IkWudiCard") || card->isKindOf("IkMingwangCard"));
+        return to->isRemoved() && (card->getTypeId() != Card::TypeSkill || card->isKindOf("IkMiceCard")
+                                   || card->isKindOf("IkWudiCard") || card->isKindOf("IkMingwangCard"));
     }
 };
 
@@ -539,10 +545,12 @@ void Rout::onEffect(const CardEffectStruct &effect) const
         return;
     QStringList choices;
     if ((effect.to->getWeapon() && effect.from->canDiscard(effect.to, effect.to->getWeapon()->getEffectiveId()))
-        || (effect.to->getOffensiveHorse() && effect.from->canDiscard(effect.to, effect.to->getOffensiveHorse()->getEffectiveId())))
+        || (effect.to->getOffensiveHorse()
+            && effect.from->canDiscard(effect.to, effect.to->getOffensiveHorse()->getEffectiveId())))
         choices << "weapon";
     if ((effect.to->getArmor() && effect.from->canDiscard(effect.to, effect.to->getArmor()->getEffectiveId()))
-        || (effect.to->getDefensiveHorse() && effect.from->canDiscard(effect.to, effect.to->getDefensiveHorse()->getEffectiveId())))
+        || (effect.to->getDefensiveHorse()
+            && effect.from->canDiscard(effect.to, effect.to->getDefensiveHorse()->getEffectiveId())))
         choices << "armor";
     if (choices.isEmpty())
         return;
@@ -554,7 +562,8 @@ void Rout::onEffect(const CardEffectStruct &effect) const
         DummyCard *dummy = new DummyCard;
         if (effect.to->getWeapon() && effect.from->canDiscard(effect.to, effect.to->getWeapon()->getEffectiveId()))
             dummy->addSubcard(effect.to->getWeapon());
-        if (effect.to->getOffensiveHorse() && effect.from->canDiscard(effect.to, effect.to->getOffensiveHorse()->getEffectiveId()))
+        if (effect.to->getOffensiveHorse()
+            && effect.from->canDiscard(effect.to, effect.to->getOffensiveHorse()->getEffectiveId()))
             dummy->addSubcard(effect.to->getOffensiveHorse());
         room->throwCard(dummy, effect.to, effect.from);
         delete dummy;
@@ -562,7 +571,8 @@ void Rout::onEffect(const CardEffectStruct &effect) const
         DummyCard *dummy = new DummyCard;
         if (effect.to->getArmor() && effect.from->canDiscard(effect.to, effect.to->getArmor()->getEffectiveId()))
             dummy->addSubcard(effect.to->getArmor());
-        if (effect.to->getDefensiveHorse() && effect.from->canDiscard(effect.to, effect.to->getDefensiveHorse()->getEffectiveId()))
+        if (effect.to->getDefensiveHorse()
+            && effect.from->canDiscard(effect.to, effect.to->getDefensiveHorse()->getEffectiveId()))
             dummy->addSubcard(effect.to->getDefensiveHorse());
         room->throwCard(dummy, effect.to, effect.from);
         delete dummy;
@@ -745,7 +755,8 @@ public:
     virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &) const
     {
         if (to->hasArmorEffect(objectName()) && !from->hasSkill("ikkongni"))
-            return card->isKindOf("FireAttack") || card->isKindOf("BurningCamps") || card->isKindOf("IronChain") || (card->isKindOf("Slash") && card->isRed());
+            return card->isKindOf("FireAttack") || card->isKindOf("BurningCamps") || card->isKindOf("IronChain")
+                || (card->isKindOf("Slash") && card->isRed());
         return false;
     }
 };
@@ -765,7 +776,8 @@ public:
         events << CardUsed << CardResponded;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
     {
         if (!WeaponSkill::triggerable(player) || player->getPhase() != Player::NotActive)
             return QStringList();
@@ -781,7 +793,8 @@ public:
                 card = resp.m_card;
         }
 
-        if (card == NULL || !card->isBlack() || (card->getHandlingMethod() != Card::MethodUse && card->getHandlingMethod() != Card::MethodResponse))
+        if (card == NULL || !card->isBlack()
+            || (card->getHandlingMethod() != Card::MethodUse && card->getHandlingMethod() != Card::MethodResponse))
             return QStringList();
         foreach (ServerPlayer *tmp, room->getOtherPlayers(player))
             if (player->inMyAttackRange(tmp))
@@ -897,7 +910,8 @@ void BurningCamps::onUse(Room *room, const CardUseStruct &card_use) const
             }
             recast = all_prohibit;
         }
-        if (recast || (card_use.from->handCards().contains(getEffectiveId()) && card_use.from->askForSkillInvoke("alliance_recast", QVariant::fromValue(card_use)))) {
+        if (recast || (card_use.from->handCards().contains(getEffectiveId())
+                       && card_use.from->askForSkillInvoke("alliance_recast", QVariant::fromValue(card_use)))) {
             CardMoveReason reason(CardMoveReason::S_REASON_RECAST, card_use.from->objectName());
             reason.m_eventName = "alliance_recast";
             room->moveCardTo(card_use.card, card_use.from, NULL, Player::DiscardPile, reason);
@@ -965,7 +979,8 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         DamageStruct damage = data.value<DamageStruct>();
-        if (ArmorSkill::triggerable(player) && damage.damage >= player->getHp() && player->getArmor() && player->canDiscard(player, player->getArmor()->getEffectiveId()))
+        if (ArmorSkill::triggerable(player) && damage.damage >= player->getHp() && player->getArmor()
+            && player->canDiscard(player, player->getArmor()->getEffectiveId()))
             return QStringList(objectName());
         return QStringList();
     }
@@ -1056,7 +1071,8 @@ public:
         events << TargetSpecified << EventPhaseChanging << Death;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
     {
         if (triggerEvent == TargetSpecified) {
             if (!WeaponSkill::triggerable(player))
@@ -1203,7 +1219,8 @@ void WoodenOxCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
         const Card *treasure = source->getTreasure();
         if (treasure) {
             room->setEmotion(target, "effects/wooden_ox_move");
-            room->moveCardTo(treasure, source, target, Player::PlaceEquip, CardMoveReason(CardMoveReason::S_REASON_TRANSFER, source->objectName(), "wooden_ox", QString()));
+            room->moveCardTo(treasure, source, target, Player::PlaceEquip,
+                             CardMoveReason(CardMoveReason::S_REASON_TRANSFER, source->objectName(), "wooden_ox", QString()));
         }
     }
 }
@@ -1275,7 +1292,8 @@ public:
             const Card *card = Sanguosha->getEngineCard(move.card_ids[i]);
             if (card->objectName() == "wooden_ox") {
                 ServerPlayer *to = (ServerPlayer *)move.to;
-                if (to && to->getTreasure() && to->getTreasure()->objectName() == "wooden_ox" && move.to_place == Player::PlaceEquip) {
+                if (to && to->getTreasure() && to->getTreasure()->objectName() == "wooden_ox"
+                    && move.to_place == Player::PlaceEquip) {
                     QList<ServerPlayer *> p_list;
                     p_list << to;
                     to->addToPile("wooden_ox", player->getPile("wooden_ox"), false, p_list);
@@ -1307,34 +1325,38 @@ FantasyPackage::FantasyPackage()
     QList<Card *> cards;
 
     // spade
-    cards << new IbukiGourd() << new IceSword() << new Rout(Card::Spade, 3) << new Dismantlement(Card::Spade, 4) << new KnownBoth(Card::Spade, 5) << new Slash(Card::Spade, 6)
-          << new Scroll() << new Slash(Card::Spade, 8) << new Analeptic(Card::Spade, 9) << new ThunderSlash(Card::Spade, 10) << new FeintAttack(Card::Spade, 11) << new MoonSpear()
-          << new PurpleSong(Card::Spade, 13);
+    cards << new IbukiGourd() << new IceSword() << new Rout(Card::Spade, 3) << new Dismantlement(Card::Spade, 4)
+          << new KnownBoth(Card::Spade, 5) << new Slash(Card::Spade, 6) << new Scroll() << new Slash(Card::Spade, 8)
+          << new Analeptic(Card::Spade, 9) << new ThunderSlash(Card::Spade, 10) << new FeintAttack(Card::Spade, 11)
+          << new MoonSpear() << new PurpleSong(Card::Spade, 13);
 
     // heart
-    cards << new PurpleSong(Card::Heart, 1) << new IronArmor() << new FeintAttack(Card::Heart, 3) << new Peach(Card::Heart, 4) << new Jink(Card::Heart, 5)
-          << new Jink(Card::Heart, 6) << new FireSlash(Card::Heart, 7) << new Peach(Card::Heart, 8) << new Peach(Card::Heart, 9) << new LureTiger(Card::Heart, 10)
-          << new Reinforce() << new Lightning(Card::Heart, 12) << new BurningCamps();
+    cards << new PurpleSong(Card::Heart, 1) << new IronArmor() << new FeintAttack(Card::Heart, 3) << new Peach(Card::Heart, 4)
+          << new Jink(Card::Heart, 5) << new Jink(Card::Heart, 6) << new FireSlash(Card::Heart, 7) << new Peach(Card::Heart, 8)
+          << new Peach(Card::Heart, 9) << new LureTiger(Card::Heart, 10) << new Reinforce() << new Lightning(Card::Heart, 12)
+          << new BurningCamps();
 
     // club
     cards << new Breastplate() << new RenwangShield() << new ControlRod() << new KnownBoth(Card::Club, 4);
-
     OffensiveHorse *yicunshenmiaowan = new OffensiveHorse(Card::Club, 5);
     yicunshenmiaowan->setObjectName("yicunshenmiaowan");
-    cards << yicunshenmiaowan << new Snatch(Card::Club, 6) << new Slash(Card::Club, 7) << new Slash(Card::Club, 8) << new ThunderSlash(Card::Club, 9)
-          << new LureTiger(Card::Club, 10) << new Slash(Card::Club, 11) << new Slash(Card::Club, 12) << new Drowning();
+    cards << yicunshenmiaowan << new Snatch(Card::Club, 6) << new Slash(Card::Club, 7) << new Slash(Card::Club, 8)
+          << new ThunderSlash(Card::Club, 9) << new LureTiger(Card::Club, 10) << new Slash(Card::Club, 11)
+          << new Slash(Card::Club, 12) << new Drowning();
 
     // diamond
-    cards << new Nullification(Card::Diamond, 1) << new Slash(Card::Diamond, 2) << new FireAttack(Card::Diamond, 3) << new WoodenOx() << new FireSlash(Card::Diamond, 5)
-          << new Jink(Card::Diamond, 6) << new Jink(Card::Diamond, 7) << new Jink(Card::Diamond, 8) << new Peach(Card::Diamond, 9) << new Jink(Card::Diamond, 10)
+    cards << new Nullification(Card::Diamond, 1) << new Slash(Card::Diamond, 2) << new FireAttack(Card::Diamond, 3)
+          << new WoodenOx() << new FireSlash(Card::Diamond, 5) << new Jink(Card::Diamond, 6) << new Jink(Card::Diamond, 7)
+          << new Jink(Card::Diamond, 8) << new Peach(Card::Diamond, 9) << new Jink(Card::Diamond, 10)
           << new Rout(Card::Diamond, 11) << new Jink(Card::Diamond, 12) << new Jade();
 
     skills << new IbukiGourdSkill << new IceSwordSkill << new LureTigerSkill << new LureTigerProhibit;
     related_skills.insertMulti("lure_tiger", "#lure_tiger");
     skills << new ThMengxuan << new ScrollSkill << new ScrollTriggerSkill << new ScrollProhibit;
     related_skills.insertMulti("scroll_trigger", "#scroll");
-    skills << new JadeSkill << new JadeTriggerSkill << new PurpleSongSkill << new IronArmorSkill << new MoonSpearSkill << new BreastplateSkill << new RenwangShieldSkill
-           << new ControlRodSkill << new DrowningFakeMoveSkill << new WoodenOxSkill << new WoodenOxTriggerSkill;
+    skills << new JadeSkill << new JadeTriggerSkill << new PurpleSongSkill << new IronArmorSkill << new MoonSpearSkill
+           << new BreastplateSkill << new RenwangShieldSkill << new ControlRodSkill << new DrowningFakeMoveSkill
+           << new WoodenOxSkill << new WoodenOxTriggerSkill;
 
     foreach (Card *card, cards)
         card->setParent(this);
