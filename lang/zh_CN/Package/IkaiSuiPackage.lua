@@ -494,7 +494,7 @@ return {
 	["&snow055"] = "安吉拉",
 	["designer:snow055"] = "LXRivers",
 	["illustrator:snow055"] = "カントク",
-	["ikhuangpo"] = "荒破"
+	["ikhuangpo"] = "荒破",
 	[":ikhuangpo"] = "出牌阶段限两次，你可以将一名角色区域内的一张牌面朝上称为“荒”置于你的人物牌上。结束阶段开始时，这些角色获得其以此法置于你人物牌上的“荒”。",
 	["#ikhuangpo"] = "荒破（拿牌）",
 	["flap"] = "荒",
