@@ -87,7 +87,7 @@ function SmartAI:useCardFeintAttack(FeintAttack, use)
 	for _, friend in ipairs(fromList) do
 		if (not use.current_targets or not table.contains(use.current_targets, friend:objectName()))
 			and self:hasTrickEffective(FeintAttack, friend)
-			and ((friend:hasSkills(sgs.lose_equip_skill) and friend:hasEquip()) or (self:needKongcheng(friend, true) and friend:getHandcardNum() == 1) or friend:getOverflow() > 3)
+			and ((friend:hasSkills(sgs.lose_equip_skill) and friend:hasEquip()) or (self:needKongcheng(friend, true) and friend:getHandcardNum() == 1) or self:getOverflow(friend) > 3)
 			and not enemy:isKongcheng()
 			and self:objectiveLevel(friend) < 0 then
 
