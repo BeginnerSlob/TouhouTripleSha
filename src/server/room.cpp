@@ -4924,6 +4924,7 @@ void Room::setAchievementData(ServerPlayer *player, const QString &key, const QV
         if (!file.open(QIODevice::ReadWrite))
             return;
         QTextStream stream(&file);
+        stream.setCodec("UTF-8");
         while (!stream.atEnd()) {
             QString line = stream.readLine();
             if (line == value.toString()) {
@@ -4952,6 +4953,7 @@ QVariant Room::getAchievementData(ServerPlayer *player, const QString &key, bool
             QFile file(location);
             file.open(QIODevice::ReadWrite);
             QTextStream stream(&file);
+            stream.setCodec("UTF-8");
             QString line = stream.readAll();
             stream.flush();
             file.close();
@@ -4961,6 +4963,7 @@ QVariant Room::getAchievementData(ServerPlayer *player, const QString &key, bool
             QFile file(location);
             file.open(QIODevice::ReadWrite);
             QTextStream stream(&file);
+            stream.setCodec("UTF-8");
             while (!stream.atEnd()) {
                 QString line = stream.readLine();
                 QStringList _line = line.split(",");
@@ -4993,12 +4996,11 @@ void Room::addAchievementData(ServerPlayer *player, const QString &key, int step
         QFile file(location);
         file.open(QIODevice::ReadWrite);
         QTextStream stream(&file);
+        stream.setCodec("UTF-8");
         QStringList lines = stream.readAll().split("\n", QString::SkipEmptyParts);
-        qDebug() << lines;
         stream.seek(0);
         bool modified = false;
         foreach (QString line, lines) {
-            qDebug() << line;
             QStringList _line = line.split(",");
             if (_line.length() != 4) {
                 stream << line << "\n";
