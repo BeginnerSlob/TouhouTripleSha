@@ -4,7 +4,7 @@ class ArchieveSkill : public TriggerSkill
 {
 public:
     ArchieveSkill(QString objectName)
-        : TriggerSkill("#zhangong_" + objectName)
+        : TriggerSkill("#achievement_" + objectName)
     {
         key = objectName;
         frequency = Compulsory;

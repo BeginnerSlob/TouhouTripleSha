@@ -707,7 +707,9 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                         }
                         //-----------------------------------------------
 
+                        QStringList skill_rule = trigger_who[NULL];
                         trigger_who.clear();
+                        trigger_who[NULL] = skill_rule;
                         foreach (const TriggerSkill *skill, triggered) {
                             if ((skill->objectName() == "game_rule" || skill->objectName() == "hulaopass_mode")
                                 || (room->getScenario() && room->getScenario()->objectName() == skill->objectName())) {
