@@ -588,7 +588,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
                 break;
         }
 
-        QString winner = getWinner(player);
+        QString winner = room->getWinner(player);
         if (!winner.isNull()) {
             room->gameOver(winner);
             return true;
@@ -833,109 +833,6 @@ void GameRule::rewardAndPunish(ServerPlayer *killer, ServerPlayer *victim) const
         } else if (victim->getRole() == "loyalist" && killer->getRole() == "lord")
             killer->throwAllHandCardsAndEquips();
     }
-}
-
-QString GameRule::getWinner(ServerPlayer *victim) const
-{
-    Room *room = victim->getRoom();
-    QString winner;
-
-    if (room->getMode() == "03_1v1v1")
-        winner = victim->getNextAlive()->objectName();
-    else if (room->getMode() == "06_3v3") {
-        switch (victim->getRoleEnum()) {
-        case Player::Lord:
-            winner = "renegade+rebel";
-            break;
-        case Player::Renegade:
-            winner = "lord+loyalist";
-            break;
-        default:
-            break;
-        }
-    } else if (room->getMode() == "06_XMode") {
-        QString role = victim->getRole();
-        ServerPlayer *leader = victim->tag["XModeLeader"].value<ServerPlayer *>();
-        if (leader->tag["XModeBackup"].toStringList().isEmpty()) {
-            if (role.startsWith('r'))
-                winner = "lord+loyalist";
-            else
-                winner = "renegade+rebel";
-        }
-    } else if (Config.EnableHegemony) {
-        bool has_anjiang = false, has_diff_kingdoms = false;
-        QString init_kingdom;
-        foreach (ServerPlayer *p, room->getAlivePlayers()) {
-            if (!p->property("basara_generals").toString().isEmpty())
-                has_anjiang = true;
-
-            if (init_kingdom.isEmpty())
-                init_kingdom = p->getKingdom();
-            else if (init_kingdom != p->getKingdom())
-                has_diff_kingdoms = true;
-        }
-
-        if (!has_anjiang && !has_diff_kingdoms) {
-            QStringList winners;
-            QString aliveKingdom = room->getAlivePlayers().first()->getKingdom();
-            foreach (ServerPlayer *p, room->getPlayers()) {
-                if (p->isAlive())
-                    winners << p->objectName();
-                if (p->getKingdom() == aliveKingdom) {
-                    QStringList generals = p->property("basara_generals").toString().split("+");
-                    if (generals.size() && !Config.Enable2ndGeneral)
-                        continue;
-                    if (generals.size() > 1)
-                        continue;
-
-                    //if someone showed his kingdom before death,
-                    //he should be considered victorious as well if his kingdom survives
-                    winners << p->objectName();
-                }
-            }
-            winner = winners.join("+");
-        }
-        if (!winner.isNull()) {
-            foreach (ServerPlayer *player, room->getAllPlayers()) {
-                if (player->getGeneralName() == "anjiang") {
-                    QStringList generals = player->property("basara_generals").toString().split("+");
-                    room->changePlayerGeneral(player, generals.at(0));
-
-                    room->setPlayerProperty(player, "kingdom", player->getGeneral()->getKingdom());
-                    room->setPlayerProperty(player, "role", BasaraMode::getMappedRole(player->getKingdom()));
-
-                    generals.takeFirst();
-                    player->setProperty("basara_generals", generals.join("+"));
-                    room->notifyProperty(player, player, "basara_generals");
-                }
-                if (Config.Enable2ndGeneral && player->getGeneral2Name() == "anjiang") {
-                    QStringList generals = player->property("basara_generals").toString().split("+");
-                    room->changePlayerGeneral2(player, generals.at(0));
-                }
-            }
-        }
-    } else {
-        QStringList alive_roles = room->aliveRoles(victim);
-        switch (victim->getRoleEnum()) {
-        case Player::Lord: {
-            if (alive_roles.length() == 1 && alive_roles.first() == "renegade")
-                winner = room->getAlivePlayers().first()->objectName();
-            else
-                winner = "rebel";
-            break;
-        }
-        case Player::Rebel:
-        case Player::Renegade: {
-            if (!alive_roles.contains("rebel") && !alive_roles.contains("renegade"))
-                winner = "lord+loyalist";
-            break;
-        }
-        default:
-            break;
-        }
-    }
-
-    return winner;
 }
 
 HulaoPassMode::HulaoPassMode(QObject *parent)

@@ -6208,6 +6208,111 @@ void Room::retrial(const Card *card, ServerPlayer *player, JudgeStruct *judge, c
         thread->trigger(CardResponded, this, player, data);
 }
 
+QString Room::getWinner(ServerPlayer *victim)
+{
+    QString winner;
+
+    if (getMode() == "03_1v1v1")
+        winner = victim->getNextAlive()->objectName();
+    else if (getMode() == "06_3v3") {
+        switch (victim->getRoleEnum()) {
+        case Player::Lord:
+            winner = "renegade+rebel";
+            break;
+        case Player::Renegade:
+            winner = "lord+loyalist";
+            break;
+        default:
+            break;
+        }
+    } else if (getMode() == "06_XMode") {
+        QString role = victim->getRole();
+        ServerPlayer *leader = victim->tag["XModeLeader"].value<ServerPlayer *>();
+        if (leader->tag["XModeBackup"].toStringList().isEmpty()) {
+            if (role.startsWith('r'))
+                winner = "lord+loyalist";
+            else
+                winner = "renegade+rebel";
+        }
+    } else if (ServerInfo.EnableHegemony) {
+        bool has_anjiang = false, has_diff_kingdoms = false;
+        QString init_kingdom;
+        foreach (ServerPlayer *p, getAlivePlayers()) {
+            if (!p->property("basara_generals").toString().isEmpty())
+                has_anjiang = true;
+
+            if (init_kingdom.isEmpty())
+                init_kingdom = p->getKingdom();
+            else if (init_kingdom != p->getKingdom())
+                has_diff_kingdoms = true;
+        }
+
+        if (!has_anjiang && !has_diff_kingdoms) {
+            QStringList winners;
+            QString aliveKingdom = getAlivePlayers().first()->getKingdom();
+            foreach (ServerPlayer *p, getPlayers()) {
+                if (p->isAlive())
+                    winners << p->objectName();
+                if (p->getKingdom() == aliveKingdom) {
+                    QStringList generals = p->property("basara_generals").toString().split("+");
+                    if (generals.size() && !Config.Enable2ndGeneral)
+                        continue;
+                    if (generals.size() > 1)
+                        continue;
+
+                    //if someone showed his kingdom before death,
+                    //he should be considered victorious as well if his kingdom survives
+                    winners << p->objectName();
+                }
+            }
+            winner = winners.join("+");
+        }
+        if (!winner.isNull()) {
+            foreach (ServerPlayer *player, getAllPlayers()) {
+                if (player->getGeneralName() == "anjiang") {
+                    QStringList generals = player->property("basara_generals").toString().split("+");
+                    changePlayerGeneral(player, generals.at(0));
+
+                    setPlayerProperty(player, "kingdom", player->getGeneral()->getKingdom());
+                    setPlayerProperty(player, "role", BasaraMode::getMappedRole(player->getKingdom()));
+
+                    generals.takeFirst();
+                    player->setProperty("basara_generals", generals.join("+"));
+                    notifyProperty(player, player, "basara_generals");
+                }
+                if (Config.Enable2ndGeneral && player->getGeneral2Name() == "anjiang") {
+                    QStringList generals = player->property("basara_generals").toString().split("+");
+                    changePlayerGeneral2(player, generals.at(0));
+                }
+            }
+        }
+    } else {
+        QStringList alive_roles = aliveRoles(victim);
+        switch (victim->getRoleEnum()) {
+        case Player::Lord: {
+            if (alive_roles.length() == 1 && alive_roles.first() == "renegade")
+                winner = getAlivePlayers().first()->objectName();
+            else
+                winner = "rebel";
+            break;
+        }
+        case Player::Renegade: {
+            if (alive_roles.length() == 1 && alive_roles.first() == "lord")
+                victim->setProperty("1v1", true);
+        }
+        case Player::Rebel: {
+            if (!alive_roles.contains("rebel") && !alive_roles.contains("renegade"))
+                winner = "lord+loyalist";
+            break;
+        }
+        default:
+            break;
+        }
+    }
+
+    return winner;
+}
+
 int Room::askForRende(ServerPlayer *liubei, QList<int> &cards, const QString &skill_name, bool visible, bool optional,
                       int max_num, QList<ServerPlayer *> players, CardMoveReason reason, const QString &prompt,
                       bool notify_skill)
