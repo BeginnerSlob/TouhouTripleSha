@@ -21,7 +21,7 @@ return {
 	["wind017"] = "宫崎和香",--风 - 空 - 3血
 	["&wind017"] = "和香",
 	["designer:wind017"] = "点点",
-	["illustrator:wind017"] = "和泉つばす",
+	["illustrator:wind017"] = "目沙",
 	["ikxinchao"] = "心抄",
 	[":ikxinchao"] = "阶段技。你可以观看牌堆顶的三张牌，然后展示其中任意数量的红桃牌并获得之，将其余的以任意顺序置于牌堆顶。",
 	["ikshangshi"] = "殇逝",
@@ -634,7 +634,7 @@ return {
 	["luna016"] = "伊诗塔尔•弗利吉",--月 - 空 - 6血
 	["&luna016"] = "伊诗塔",
 	["designer:luna016"] = "小立",
-	["illustrator:luna016"] = "和泉つばす",
+	["illustrator:luna016"] = "バリ子",
 	["ikxinshang"] = "心殇",
 	[":ikxinshang"] = "锁定技。每当你受到一次非梅花的【杀】造成的伤害后，你须减少1点体力上限。",
 	["ikqilei"] = "悽雷",

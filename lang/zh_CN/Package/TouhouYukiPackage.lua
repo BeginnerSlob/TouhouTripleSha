@@ -133,7 +133,7 @@ return {
 	["#yuki010"] = "湖上的冰精",
 	["yuki010"] = "琪露诺",--雪 - 空 - 4血
 	["designer:yuki010"] = "昂翼天使",
-	["illustrator:yuki010"] = "橙狼",
+	["illustrator:yuki010"] = "エクレア",
 	["cv:yuki010"] = "暂无",
 	["thhanpo"] = "寒魄",
 	[":thhanpo"] = "锁定技。防止你对其他角色造成的火焰伤害，防止你受到的火焰伤害。",

@@ -478,7 +478,7 @@ return {
 	["luna049"] = "南小鸟",--月 - 空 - 3血
 	["&luna049"] = "小鸟",
 	["designer:luna049"] = "低调de洛沫",
-	["illustrator:luna049"] = "キチロク",
+	["illustrator:luna049"] = "永恒之舞MK_2",
 	["ikhuanxian"] = "环弦",
 	[":ikhuanxian"] = "每当你需要使用一张【闪】时，所有其他角色可以依次交给你一张牌，若没有角色交给你牌，视为你使用了一张【闪】。",
 	["@ikhuanxian-give"] = "%src 发动了“环弦”，你可以交给其一张牌",

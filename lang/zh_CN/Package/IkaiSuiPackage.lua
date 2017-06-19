@@ -158,7 +158,7 @@ return {
 	["wind059"] = "由比滨结衣",--风 - 空 - 3血
 	["&wind059"] = "结衣",
 	["designer:wind059"] = "荼蘼",
-	["illustrator:wind059"] = "憂姫はぐれ",
+	["illustrator:wind059"] = "Silain",
 	["ikfengyuan"] = "逢源",
 	[":ikfengyuan"] = "出牌阶段结束时，你可以令手牌数不等于体力值的一名角色弃置一张手牌或摸一张牌。然后若其手牌数等于体力值，你摸一张牌，且可以交给该角色一张牌。",
 	["ikmianlai"] = "眄睐",

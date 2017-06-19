@@ -214,7 +214,7 @@ return {
 	["tsuki017"] = "绵月丰姬",--月 - 空 - 3血
 	["&tsuki017"] = "丰姬",
 	["designer:tsuki017"] = "鼓腚刀",
-	["illustrator:tsuki017"] = "時雨",
+	["illustrator:tsuki017"] = "Saru",
 	["cv:tsuki017"] = "暂无",
 	["thtianque"] = "天阙",
 	[":thtianque"] = "每当你于出牌阶段使用一张牌时，若与你此阶段已使用的牌类别均不同，你摸一张牌。",
