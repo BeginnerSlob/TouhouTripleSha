@@ -1068,66 +1068,60 @@ public:
     ControlRodSkill()
         : WeaponSkill("control_rod")
     {
-        events << TargetSpecified << EventPhaseChanging << Death;
+        events << TargetSpecified;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
-                                    ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
-        if (triggerEvent == TargetSpecified) {
-            if (!WeaponSkill::triggerable(player))
-                return QStringList();
+        if (WeaponSkill::triggerable(player)) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (!use.card->isKindOf("Slash") || use.to.isEmpty())
-                return QStringList();
-            return QStringList(objectName());
-        }
-        if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to != Player::NotActive)
-                return QStringList();
-        } else if (triggerEvent == Death) {
-            DeathStruct death = data.value<DeathStruct>();
-            if (death.who != player || player != room->getCurrent())
-                return QStringList();
-        }
-        QList<ServerPlayer *> players = room->getAllPlayers();
-        foreach (ServerPlayer *player, players) {
-            if (player->getMark(objectName()) == 0)
-                continue;
-            room->removePlayerMark(player, "@skill_invalidity", player->getMark(objectName()));
-            player->setMark(objectName(), 0);
-
-            foreach (ServerPlayer *p, room->getAllPlayers())
-                room->filterCards(p, p->getCards("he"), false);
-            JsonArray args;
-            args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
-            room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+            if (use.card->isKindOf("Slash")) {
+                QStringList targets;
+                foreach (ServerPlayer *to, use.to) {
+                    if (to->getMark("Equips_of_Others_Nullified_to_You") > 0)
+                        continue;
+                    targets << to->objectName();
+                }
+                if (!targets.isEmpty())
+                    return QStringList(objectName() + "->" + targets.join("+"));
+            }
         }
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *skill_target, QVariant &, ServerPlayer *player) const
     {
-        CardUseStruct use = data.value<CardUseStruct>();
-        QList<ServerPlayer *> tos;
-        foreach (ServerPlayer *p, use.to) {
-            if (player->askForSkillInvoke(objectName(), QVariant::fromValue(p))) {
-                room->setEmotion(player, "effects/weapon");
-                if (!tos.contains(p)) {
-                    p->addMark(objectName());
-                    room->addPlayerMark(p, "@skill_invalidity");
-                    tos << p;
-
-                    foreach (ServerPlayer *pl, room->getAllPlayers())
-                        room->filterCards(pl, pl->getCards("he"), true);
-                    JsonArray args;
-                    args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
-                    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
-                }
-            }
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(skill_target))) {
+            room->setEmotion(player, "effects/weapon");
+            return true;
         }
         return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *p, QVariant &data, ServerPlayer *) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        QStringList cards = p->property("control_rod_use").toStringList();
+        cards << use.card->toString();
+        room->setPlayerProperty(p, "control_rod_use", QVariant::fromValue(cards));
+        return false;
+    }
+};
+
+class ControlRodInvaliditySkill : public InvaliditySkill
+{
+public:
+    ControlRodInvaliditySkill()
+        : InvaliditySkill("#control_rod")
+    {
+        frequency = NotCompulsory;
+    }
+
+    virtual bool isSkillValid(const Player *player, const Skill *skill) const
+    {
+        return player->property("control_rod_use").toStringList().isEmpty() || skill->getFrequency(player) == Skill::Compulsory
+            || skill->getFrequency(player) == Skill::Limited || skill->isLordSkill()
+            || skill->getFrequency(player) == Skill::Wake || skill->isOwnerOnlySkill();
     }
 };
 
@@ -1355,8 +1349,9 @@ FantasyPackage::FantasyPackage()
     skills << new ThMengxuan << new ScrollSkill << new ScrollTriggerSkill << new ScrollProhibit;
     related_skills.insertMulti("scroll_trigger", "#scroll");
     skills << new JadeSkill << new JadeTriggerSkill << new PurpleSongSkill << new IronArmorSkill << new MoonSpearSkill
-           << new BreastplateSkill << new RenwangShieldSkill << new ControlRodSkill << new DrowningFakeMoveSkill
-           << new WoodenOxSkill << new WoodenOxTriggerSkill;
+           << new BreastplateSkill << new RenwangShieldSkill << new ControlRodSkill << new ControlRodInvaliditySkill;
+    related_skills.insertMulti("control_rod", "#control_rod");
+    skills << new DrowningFakeMoveSkill << new WoodenOxSkill << new WoodenOxTriggerSkill;
 
     foreach (Card *card, cards)
         card->setParent(this);

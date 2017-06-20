@@ -610,10 +610,8 @@ void Room::slashEffect(const SlashEffectStruct &effect)
             setEmotion(effect.to, "skill_nullify");
         else
             effect.to->setFlags("-Global_NonSkillNullify");
-        if (effect.slash) {
-            effect.to->removeQinggangTag(effect.slash);
-            removePlayerMark(effect.to, "@repression");
-        }
+        if (effect.slash)
+            effect.to->slashSettlementFinished(effect.slash);
     }
 }
 
@@ -631,10 +629,9 @@ void Room::slashResult(const SlashEffectStruct &effect, const Card *jink)
             if (jink->getSkillName() != "eight_diagram")
                 setEmotion(effect.to, "jink");
         }
-        if (effect.slash) {
-            effect.to->removeQinggangTag(effect.slash);
-            removePlayerMark(effect.to, "@repression");
-        }
+        if (effect.slash)
+            effect.to->slashSettlementFinished(effect.slash);
+
         thread->trigger(SlashMissed, this, effect.from, data);
     }
 }
@@ -3841,11 +3838,9 @@ void Room::damage(const DamageStruct &data)
         damage_data = qdata.value<DamageStruct>();
     }
 
-#define REMOVE_QINGGANG_TAG                                        \
-    if (damage_data.card && damage_data.card->isKindOf("Slash")) { \
-        damage_data.to->removeQinggangTag(damage_data.card);       \
-        removePlayerMark(damage_data.to, "@repression");           \
-    }
+#define REMOVE_QINGGANG_TAG                                      \
+    if (damage_data.card && damage_data.card->isKindOf("Slash")) \
+        damage_data.to->slashSettlementFinished(damage_data.card);
 
     // Predamage
     if (thread->trigger(Predamage, this, damage_data.from, qdata)) {

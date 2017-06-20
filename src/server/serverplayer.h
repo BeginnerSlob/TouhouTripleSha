@@ -181,6 +181,9 @@ public:
     // static function
     static bool CompareByActionOrder(ServerPlayer *a, ServerPlayer *b);
 
+    // remove QinggangTag and BladeDisableShow
+    void slashSettlementFinished(const Card *slash);
+
 protected:
     //Synchronization helpers
     QSemaphore **semas;

@@ -1376,3 +1376,16 @@ bool ServerPlayer::CompareByActionOrder(ServerPlayer *a, ServerPlayer *b)
     Room *room = a->getRoom();
     return room->getFront(a, b) == a;
 }
+
+void ServerPlayer::slashSettlementFinished(const Card *slash)
+{
+    removeQinggangTag(slash);
+    room->removePlayerMark(this, "@repression");
+
+    QStringList control_rod_use = property("control_rod_use").toStringList();
+
+    if (control_rod_use.contains(slash->toString())) {
+        control_rod_use.removeAll(slash->toString());
+        room->setPlayerProperty(this, "control_rod_use", QVariant::fromValue(control_rod_use));
+    }
+}
