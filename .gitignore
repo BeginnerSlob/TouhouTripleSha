@@ -1,5 +1,6 @@
 debug/
 release/
+account/
 etc/winrate/
 replays/
 ui_*
@@ -34,6 +35,7 @@ Bin/
 /builds/*/*.user
 /builds/*/*.opensdf
 /builds/*/*/
+/builds/*/*.VC.db
 /sanguosha.ts
 /extensions
 card_intention.txt
