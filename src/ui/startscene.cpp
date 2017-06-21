@@ -86,7 +86,9 @@ void StartScene::switchToServer(Server *server)
     server_log->resize(700, 420);
     server_log->move(-400, -180);
     server_log->setFrameShape(QFrame::NoFrame);
-    server_log->setFont(QFont("Verdana", 12));
+    QFont server_log_font = Config.UIFont;
+    server_log_font.setPointSize(12);
+    server_log->setFont(server_log_font);
     server_log->setTextColor(Config.TextEditColor);
     setServerLogBackground();
     addWidget(server_log);
