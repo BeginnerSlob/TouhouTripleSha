@@ -19,6 +19,7 @@ Player::Player(QObject *parent)
     , seat(0)
     , alive(true)
     , user_id(-1)
+    , level(0)
     , phase(NotActive)
     , weapon(NULL)
     , armor(NULL)
@@ -49,6 +50,19 @@ void Player::setUserId(int uid)
 int Player::userId() const
 {
     return user_id;
+}
+
+void Player::setLevel(int level)
+{
+    if (this->level != level) {
+        this->level = level;
+        emit level_changed();
+    }
+}
+
+int Player::getLevel() const
+{
+    return level;
 }
 
 bool Player::isOwner() const

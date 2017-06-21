@@ -208,8 +208,10 @@ void PlayerCardContainer::updateAvatar()
     const General *general = NULL;
     if (m_player) {
         general = m_player->getAvatarGeneral();
-        _m_layout->m_screenNameFont.paintText(_m_screenNameItem, _m_layout->m_screenNameArea, Qt::AlignCenter,
-                                              m_player->screenName());
+        QString show_string = m_player->screenName();
+        if (m_player->userId() != -1)
+            show_string = QString("Lv.%1 %2").arg(m_player->getLevel()).arg(m_player->screenName());
+        _m_layout->m_screenNameFont.paintText(_m_screenNameItem, _m_layout->m_screenNameArea, Qt::AlignCenter, show_string);
     } else {
         _m_layout->m_screenNameFont.paintText(_m_screenNameItem, _m_layout->m_screenNameArea, Qt::AlignCenter, QString());
     }
@@ -595,6 +597,7 @@ void PlayerCardContainer::setPlayer(ClientPlayer *player)
     if (player) {
         connect(player, &ClientPlayer::general_changed, this, &PlayerCardContainer::updateAvatar);
         connect(player, &ClientPlayer::general2_changed, this, &PlayerCardContainer::updateSmallAvatar);
+        connect(player, &ClientPlayer::level_changed, this, &PlayerCardContainer::updateAvatar);
         connect(player, &ClientPlayer::kingdom_changed, this, &PlayerCardContainer::updateAvatar);
         connect(player, &ClientPlayer::state_changed, this, (void (PlayerCardContainer::*)())(&PlayerCardContainer::refresh));
         connect(player, &ClientPlayer::phase_changed, this, &PlayerCardContainer::updatePhase);

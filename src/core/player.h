@@ -21,6 +21,7 @@ class Player : public QObject
 
     Q_PROPERTY(QString screenname READ screenName WRITE setScreenName)
     Q_PROPERTY(int userid READ userId WRITE setUserId)
+    Q_PROPERTY(int level READ getLevel WRITE setLevel)
     Q_PROPERTY(int hp READ getHp WRITE setHp)
     Q_PROPERTY(int maxhp READ getMaxHp WRITE setMaxHp)
     Q_PROPERTY(QString kingdom READ getKingdom WRITE setKingdom)
@@ -86,6 +87,8 @@ public:
     QString screenName() const;
     void setUserId(int uid);
     int userId() const;
+    void setLevel(int level);
+    int getLevel() const;
 
     // property setters/getters
     int getHp() const;
@@ -319,6 +322,7 @@ private:
     int seat;
     bool alive;
     int user_id;
+    int level;
 
     Phase phase;
     WrappedCard *weapon, *armor, *defensive_horse, *offensive_horse, *treasure;
@@ -335,6 +339,7 @@ private:
 signals:
     void general_changed();
     void general2_changed();
+    void level_changed();
     void role_changed(const QString &new_role);
     void state_changed();
     void hp_changed();

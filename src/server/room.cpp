@@ -2566,6 +2566,31 @@ bool Room::pauseCommand(ServerPlayer *player, const QVariant &arg)
     return true;
 }
 
+static int GetLevelByExp(int exp) {
+    static QList<int> expList;
+    if (expList.isEmpty()) {
+        QFile file("account/level.csv");
+        if (!file.open(QIODevice::ReadOnly))
+            return 0;
+        QTextStream stream(&file);
+        while (!stream.atEnd()) {
+            QStringList list = stream.readLine().split(",");
+            if (list.length() != 2)
+                continue;
+            expList << list.first().toInt();
+        }
+        stream.flush();
+        file.close();
+    }
+
+    for (int i = 0; i < expList.length(); ++ i) {
+        if (exp >= expList[i])
+            continue;
+        return i;
+    }
+    return expList.length() - 1;
+}
+
 bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
 {
     JsonArray args = arg.value<JsonArray>();
@@ -2647,7 +2672,8 @@ bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
         ++uid;
         if (_line[1] == user_name) {
             if (password == _line[2]) {
-                player->setUserId(_line[0].toInt());
+                setPlayerProperty(player, "userid", _line[0].toInt());
+                setPlayerProperty(player, "level", GetLevelByExp(_line[9].toInt()));
                 in.flush();
                 file.close();
                 return true;
@@ -2666,11 +2692,12 @@ bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
 
     // add new user
     if (password.isEmpty()) {
-        player->setUserId(-1);
+        setPlayerProperty(player, "userid", -1);
         file.close();
         return true;
     } else {
-        player->setUserId(uid);
+        setPlayerProperty(player, "userid", uid);
+        setPlayerProperty(player, "level", GetLevelByExp(0));
         QTextStream stream(&file);
         stream.seek(file.size());
         stream.setCodec("UTF-8");

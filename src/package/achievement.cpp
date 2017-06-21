@@ -18,7 +18,6 @@ int AchieveSkill::getPriority(TriggerEvent) const
 
 void AchieveSkill::onGameOver(Room *, ServerPlayer *, QVariant &) const
 {
-    qDebug() << "return";
     return;
 }
 
@@ -133,7 +132,6 @@ public:
 
     virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &data) const
     {
-        qDebug() << "main";
         DeathStruct death = data.value<DeathStruct>();
         if (player->isOffline())
             player->setProperty("run", true);
@@ -208,7 +206,6 @@ public:
             foreach (const Skill *s, skills) {
                 if (s->inherits("AchieveSkill")) {
                     const AchieveSkill *as = qobject_cast<const AchieveSkill *>(s);
-                    qDebug() << as->objectName();
                     as->onGameOver(room, player, data);
                 }
             }
