@@ -15,7 +15,7 @@ StartScene::StartScene()
 {
     // game logo
     logo = new QSanSelectableItem("image/logo/logo.png", true);
-    logo->moveBy(0, -Config.Rect.height() / 4.8);
+    logo->moveBy(0, -Config.Rect.height() / 3.5);
     addItem(logo);
 
     server_log = NULL;
