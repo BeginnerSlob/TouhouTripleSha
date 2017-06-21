@@ -7,7 +7,7 @@
 "photoGender-default": "image/fullskin/system/gender/%1.png",
 "photoGender-default2": "image/fullskin/system/gender/male.png",
 "photoFaceTurnedMask": "image/generals/small/faceturned.png",
-"photoBlankGeneral": "image/generals/small/blank.png",
+"photoBlankGeneral": "image/fullskin/system/blank.png",
 "photoChain": "image/system/chain.png",
 "photoPhase0": "image/system/phase/round_start.png",
 "photoPhase1": "image/system/phase/start.png",
