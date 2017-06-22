@@ -14,7 +14,8 @@ public:
     virtual int getPriority(TriggerEvent) const;
     virtual void onGameOver(Room *, ServerPlayer *, QVariant &) const;
     void gainAchievement(ServerPlayer *player, Room *room) const;
-    QStringList getAchievementTranslations(QString _key = QString()) const;
+
+    static QStringList getAchievementTranslations(QString _key);
 
     QString key;
 };

@@ -1,5 +1,6 @@
 #include "roomscene.h"
 #include "audio.h"
+#include "achievement.h"
 #include "bubblechatbox.h"
 #include "button.h"
 #include "cardcontainer.h"
@@ -3408,24 +3409,19 @@ void RoomScene::viewGenerals(const QString &reason, const QStringList &names)
 
 void RoomScene::fillTable(QTableWidget *table, const QList<const ClientPlayer *> &players)
 {
-    table->setColumnCount(11);
+    table->setColumnCount(10);
     table->setRowCount(players.length());
     table->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-    RecAnalysis record(ClientInstance->getReplayPath());
-    QMap<QString, PlayerRecordStruct *> record_map = record.getRecordMap();
-
     static QStringList labels;
     if (labels.isEmpty()) {
-        labels << tr("General") << tr("Name") << tr("Alive");
+        labels << tr("Level") << tr("Name") << tr("General") << tr("Alive");
         if (ServerInfo.EnableHegemony)
             labels << tr("Nationality");
         else
             labels << tr("Role");
 
-        labels << tr("TurnCount");
-        labels << tr("Recover") << tr("Damage") << tr("Damaged") << tr("Kill") << tr("Designation");
-        labels << tr("Handcards");
+        labels << tr("Exp") << tr("Wen") << tr("Wu") << tr("Achievement") << tr("Handcards");
     }
     table->setHorizontalHeaderLabels(labels);
     table->setSelectionBehavior(QTableWidget::SelectRows);
@@ -3434,7 +3430,7 @@ void RoomScene::fillTable(QTableWidget *table, const QList<const ClientPlayer *>
         const ClientPlayer *player = players[i];
 
         QTableWidgetItem *item = new QTableWidgetItem;
-        item->setText(ClientInstance->getPlayerName(player->objectName()));
+        item->setText(QString::number(player->getLevel()));
         table->setItem(i, 0, item);
 
         item = new QTableWidgetItem;
@@ -3442,14 +3438,17 @@ void RoomScene::fillTable(QTableWidget *table, const QList<const ClientPlayer *>
         table->setItem(i, 1, item);
 
         item = new QTableWidgetItem;
+        item->setText(Sanguosha->translate(player->getGeneralName()));
+        table->setItem(i, 2, item);
+
+        item = new QTableWidgetItem;
         if (player->isAlive())
             item->setText(tr("Alive"));
         else
             item->setText(tr("Dead"));
-        table->setItem(i, 2, item);
+        table->setItem(i, 3, item);
 
         item = new QTableWidgetItem;
-
         if (ServerInfo.EnableHegemony) {
             QIcon icon(QString("image/kingdom/icon/%1.png").arg(player->getKingdom()));
             item->setIcon(icon);
@@ -3489,32 +3488,34 @@ void RoomScene::fillTable(QTableWidget *table, const QList<const ClientPlayer *>
         }
         if (!player->isAlive())
             item->setFlags(item->flags() & ~Qt::ItemIsEnabled);
-        table->setItem(i, 3, item);
-
-        item = new QTableWidgetItem;
-        item->setText(QString::number(player->getMark("Global_TurnCount")));
         table->setItem(i, 4, item);
 
-        PlayerRecordStruct *rec = record_map.value(player->objectName());
+        QStringList texts = player->property("gain").toString().split(",");
         item = new QTableWidgetItem;
-        item->setText(QString::number(rec->m_recover));
+        item->setText(texts[0]);
         table->setItem(i, 5, item);
 
         item = new QTableWidgetItem;
-        item->setText(QString::number(rec->m_damage));
+        item->setText(texts[1]);
         table->setItem(i, 6, item);
 
         item = new QTableWidgetItem;
-        item->setText(QString::number(rec->m_damaged));
+        item->setText(texts[2]);
         table->setItem(i, 7, item);
 
         item = new QTableWidgetItem;
-        item->setText(QString::number(rec->m_kill));
+        QStringList achieves;
+        if (texts.length() < 4 || texts[3].isEmpty())
+            achieves << tr("None");
+        else {
+            foreach (QString _key, texts[3].split("|")) {
+                QStringList trans = AchieveSkill::getAchievementTranslations(_key);
+                if (trans.length() == 2)
+                    achieves << trans[0];
+            }
+        }
+        item->setText(achieves.join(","));
         table->setItem(i, 8, item);
-
-        item = new QTableWidgetItem;
-        item->setText(rec->m_designation.join(", "));
-        table->setItem(i, 9, item);
 
         item = new QTableWidgetItem;
         QString handcards
@@ -3524,10 +3525,10 @@ void RoomScene::fillTable(QTableWidget *table, const QList<const ClientPlayer *>
         handcards.replace("<img src='image/system/log/club.png' height = 12/>", tr("Club"));
         handcards.replace("<img src='image/system/log/diamond.png' height = 12/>", tr("Diamond"));
         item->setText(handcards);
-        table->setItem(i, 10, item);
+        table->setItem(i, 9, item);
     }
 
-    for (int i = 2; i <= 10; i++)
+    for (int i = 0; i <= 9; i++)
         table->resizeColumnToContents(i);
 }
 

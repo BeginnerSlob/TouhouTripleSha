@@ -29,7 +29,7 @@ void AchieveSkill::gainAchievement(ServerPlayer *player, Room *room) const
     QStringList list = room->getAchievementData(player, "finished").toString().split("|");
     list << key;
     room->setAchievementData(player, "finished", list.join("|"));
-    QStringList translations = getAchievementTranslations();
+    QStringList translations = getAchievementTranslations(key);
     if (translations.length() == 2) {
         LogMessage log;
         log.type = "#GainAchievement";
@@ -73,10 +73,8 @@ void AchieveSkill::gainAchievement(ServerPlayer *player, Room *room) const
     file.close();
 }
 
-QStringList AchieveSkill::getAchievementTranslations(QString _key) const
+QStringList AchieveSkill::getAchievementTranslations(QString _key)
 {
-    if (_key.isEmpty())
-        _key = key;
     QString location = QString("account/achievement.csv");
     QFile file(location);
     file.open(QIODevice::ReadOnly);
@@ -268,9 +266,6 @@ public:
 
     void addPlayerRecord(Room *room, ServerPlayer *player, QStringList winners, QStringList alive_roles) const
     {
-        int uid = player->userId();
-        if (uid == -1)
-            return;
         QString role = player->getRole();
         bool is_escape = player->property("run").toBool();
         if (player->isAlive())
@@ -289,8 +284,8 @@ public:
         }
         int wen = room->getAchievementData(player, "wen").toInt();
         int wu = room->getAchievementData(player, "wu").toInt();
-        updatePlayerData(uid, role, is_win, is_escape, exp, wen, wu);
-        QStringList finished_achieve = room->getAchievementData(player, "finished").toString().split("|");
+        QString _finished_achieve = room->getAchievementData(player, "finished").toString();
+        QStringList finished_achieve = _finished_achieve.split("|");
         QStringList translated_achieve;
         foreach (QString _key, finished_achieve) {
             QStringList trans = getAchievementTranslations(_key);
@@ -299,15 +294,20 @@ public:
             translated_achieve << trans[0];
         }
         if (translated_achieve.isEmpty())
-            translated_achieve << tr("None");
+            translated_achieve << AchieveSkill::tr("None");
+        room->setPlayerProperty(player, "gain", QString("%1,%2,%3,%4").arg(exp).arg(wen).arg(wu).arg(_finished_achieve));
+        int uid = player->userId();
+        if (uid == -1)
+            return;
+        updatePlayerData(uid, role, is_win, is_escape, exp, wen, wu);
         QStringList line;
         line << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm");
         line << Sanguosha->translate(player->getGeneralName());
         line << Sanguosha->getModeName(room->getMode());
         line << Sanguosha->translate(role);
         line << QString::number(player->getMark("Global_TurnCount"));
-        line << (is_alive ? tr("Alive") : tr("Dead"));
-        line << (is_escape ? tr("Escape") : (is_draw ? tr("Standoff") : (is_win ? tr("Victory") : tr("Failure"))));
+        line << (is_alive ? AchieveSkill::tr("Alive") : AchieveSkill::tr("Dead"));
+        line << (is_escape ? AchieveSkill::tr("Escape") : (is_draw ? AchieveSkill::tr("Standoff") : (is_win ? AchieveSkill::tr("Victory") : AchieveSkill::tr("Failure"))));
         line << QString::number(exp);
         line << QString::number(wen);
         line << QString::number(wu);
