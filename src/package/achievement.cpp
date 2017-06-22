@@ -186,36 +186,49 @@ public:
     AchievementRecord()
         : AchieveSkill("record")
     {
-        events << GameOverJudge;
+        events << GameOverJudge << BeforeGameOver;
+        // only trigger BeforeGameOver when standoff/draw/surrender
         // other achieve skill cannot set to GameOverJudge in events, but set the trigger in AchieveSkill::onGameOver
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
     {
-        QString winner = room->getWinner(player);
-        if (!winner.isEmpty())
+        if (e == GameOverJudge) {
+            QString winner = room->getWinner(player);
+            if (!winner.isEmpty())
+                return QStringList(objectName());
+        } else if (e == BeforeGameOver)
             return QStringList(objectName());
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        const Package *package = Sanguosha->getPackage("achievement");
-        if (package) {
-            QList<const Skill *> skills = package->getSkills();
-            foreach (const Skill *s, skills) {
-                if (s->inherits("AchieveSkill")) {
-                    const AchieveSkill *as = qobject_cast<const AchieveSkill *>(s);
-                    as->onGameOver(room, player, data);
+        if (e == GameOverJudge) {
+            const Package *package = Sanguosha->getPackage("achievement");
+            if (package) {
+                QList<const Skill *> skills = package->getSkills();
+                foreach (const Skill *s, skills) {
+                    if (s->inherits("AchieveSkill")) {
+                        const AchieveSkill *as = qobject_cast<const AchieveSkill *>(s);
+                        as->onGameOver(room, player, data);
+                    }
                 }
             }
         }
-        QString winner = room->getWinner(player);
-        QStringList alive_roles = room->aliveRoles(player);
-        QStringList winners = winner.split("+");
-        foreach (ServerPlayer *p, room->getPlayers()) {
-            addPlayerRecord(room, p, winners, alive_roles);
+        QStringList winners;
+        QStringList alive_roles;
+        if (e == GameOverJudge) {
+            QString winner = room->getWinner(player);
+            winners = winner.split("+");
+            alive_roles = room->aliveRoles(player);
+        } else if (e == BeforeGameOver) {
+            QString winner = data.toString();
+            winners = winner.split("+");
+            alive_roles = room->aliveRoles();
         }
+        foreach (ServerPlayer *p, room->getPlayers())
+            addPlayerRecord(room, p, winners, alive_roles);
         return false;
     }
 
@@ -262,8 +275,18 @@ public:
         bool is_escape = player->property("run").toBool();
         if (player->isAlive())
             is_escape = player->isOffline();
+        bool is_draw = winners.contains(".");
         bool is_win = winners.contains(player->getRole()) || winners.contains(player->objectName());
-        int exp = is_escape ? 0 : getExp(room, player, winners, alive_roles);
+        bool is_alive = player->isAlive();
+        int exp = 0;
+        if (!is_escape) {
+            if (is_draw) {
+                exp += 5;
+                if (is_alive)
+                    exp += 1;
+            } else
+                exp = getExp(room, player, winners, alive_roles);
+        }
         int wen = room->getAchievementData(player, "wen").toInt();
         int wu = room->getAchievementData(player, "wu").toInt();
         updatePlayerData(uid, role, is_win, is_escape, exp, wen, wu);
@@ -283,8 +306,8 @@ public:
         line << Sanguosha->getModeName(room->getMode());
         line << Sanguosha->translate(role);
         line << QString::number(player->getMark("Global_TurnCount"));
-        line << (player->isAlive() ? tr("Alive") : tr("Dead"));
-        line << (is_escape ? tr("Escape") : (is_win ? tr("Victory") : tr("Failure")));
+        line << (is_alive ? tr("Alive") : tr("Dead"));
+        line << (is_escape ? tr("Escape") : (is_draw ? tr("Standoff") : (is_win ? tr("Victory") : tr("Failure"))));
         line << QString::number(exp);
         line << QString::number(wen);
         line << QString::number(wu);

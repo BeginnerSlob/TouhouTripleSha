@@ -1087,8 +1087,13 @@ void ServerPlayer::marshal(ServerPlayer *player) const
     if (isChained())
         room->notifyProperty(player, this, "chained");
 
+    if (isRemoved())
+        room->notifyProperty(player, this, "removed");
+
     room->notifyProperty(player, this, "gender");
-    room->notifyProperty(player, this, "removed");
+    room->notifyProperty(player, this, "state");
+    room->notifyProperty(player, this, "level");
+    room->notifyProperty(player, this, "userid");
 
     QList<ServerPlayer *> players;
     players << player;

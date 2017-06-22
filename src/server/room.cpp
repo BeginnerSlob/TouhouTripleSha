@@ -2117,6 +2117,8 @@ void Room::swapPile()
 {
     if (m_discardPile->isEmpty()) {
         // the standoff
+        QVariant _data = ".";
+        thread->trigger(BeforeGameOver, this, getOwner(), _data);
         gameOver(".");
     }
 
@@ -2126,8 +2128,11 @@ void Room::swapPile()
     int limit = Config.value("PileSwappingLimitation", 5).toInt() + 1;
     if (mode == "04_1v3")
         limit = 2;
-    if (limit > 0 && times == limit)
+    if (limit > 0 && times == limit) {
+        QVariant _data = ".";
+        thread->trigger(BeforeGameOver, this, getOwner(), _data);
         gameOver(".");
+    }
 
     qSwap(m_drawPile, m_discardPile);
 
@@ -2772,14 +2777,23 @@ bool Room::makeSurrender(ServerPlayer *initiator)
     }
 
     // vote counting
-    if (loyalGiveup && renegadeGiveup && !rebelGiveup)
+    if (loyalGiveup && renegadeGiveup && !rebelGiveup) {
+        QVariant _data = "rebel";
+        thread->trigger(BeforeGameOver, this, getOwner(), _data);
         gameOver("rebel", true);
-    else if (loyalGiveup && !renegadeGiveup && rebelGiveup)
+    } else if (loyalGiveup && !renegadeGiveup && rebelGiveup) {
+        QVariant _data = "renegade";
+        thread->trigger(BeforeGameOver, this, getOwner(), _data);
         gameOver("renegade", true);
-    else if (!loyalGiveup && renegadeGiveup && rebelGiveup)
+    } else if (!loyalGiveup && renegadeGiveup && rebelGiveup) {
+        QVariant _data = "lord+loyalist";
+        thread->trigger(BeforeGameOver, this, getOwner(), _data);
         gameOver("lord+loyalist", true);
-    else if (surrender > playersAlive.length() / 2)
+    } else if (surrender > playersAlive.length() / 2) {
+        QVariant _data = ".";
+        thread->trigger(BeforeGameOver, this, getOwner(), _data);
         gameOver(".", true);
+    }
 
     m_surrenderRequestReceived = false;
 
@@ -3999,8 +4013,6 @@ void Room::marshal(ServerPlayer *player)
 
         if (p->getGeneral2())
             notifyProperty(player, p, "general2");
-
-        notifyProperty(player, p, "state");
     }
 
     if (game_started) {

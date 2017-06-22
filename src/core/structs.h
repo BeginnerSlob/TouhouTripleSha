@@ -564,6 +564,8 @@ enum TriggerEvent
     ActionedReset, // For 3v3 only
     Debut, // For 1v1 only
 
+    BeforeGameOver, // For achievement only
+
     TurnBroken, // For the skill 'IkYinzhai'. Do not use it to trigger events
 
     NumOfEvents
