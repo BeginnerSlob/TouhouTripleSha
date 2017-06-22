@@ -2,7 +2,7 @@
 # Project created by QtCreator 2010-06-13T04:26:52
 # -------------------------------------------------
 TARGET = TouhouTripleSha
-QT += network widgets
+QT += network widgets opengl
 TEMPLATE = app
 CONFIG += audio
 win32: QT += winextras
@@ -285,6 +285,7 @@ macx{
 }
 
 LIBS += -L.
+DEFINES += USING_OPENGL
 win32-msvc*{
     DEFINES += _CRT_SECURE_NO_WARNINGS
     !contains(QMAKE_HOST.arch, x86_64) {

@@ -27,6 +27,10 @@
 #include <QTime>
 #include <QUrl>
 #include <QVariant>
+#if !defined(QT_NO_OPENGL) && defined(USING_OPENGL)
+#include <QGLFormat>
+#include <QOpenGLWidget>
+#endif
 
 #include <QtMath>
 
@@ -41,7 +45,17 @@ public:
         : QGraphicsView(scene)
     {
         setSceneRect(Config.Rect);
+#if !defined(QT_NO_OPENGL) && defined(USING_OPENGL)
+        if (QGLFormat::hasOpenGL()) {
+            QOpenGLWidget *widget = new QOpenGLWidget;
+            widget->makeCurrent();
+            setViewport(widget);
+        }
+#else
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
         setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+#endif
+#endif
         setRenderHints(QPainter::TextAntialiasing | QPainter::Antialiasing);
     }
 
