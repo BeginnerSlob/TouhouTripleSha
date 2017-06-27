@@ -276,7 +276,6 @@ public:
         int exp = 0;
         if (!is_escape) {
             if (is_draw) {
-                exp += 5;
                 if (is_alive)
                     exp += 1;
             } else
