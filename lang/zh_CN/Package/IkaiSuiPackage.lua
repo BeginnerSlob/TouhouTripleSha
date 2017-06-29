@@ -161,8 +161,13 @@ return {
 	["illustrator:wind059"] = "Silain",
 	["ikfengyuan"] = "逢源",
 	[":ikfengyuan"] = "出牌阶段结束时，你可以令手牌数不等于体力值的一名角色弃置一张手牌或摸一张牌。然后若其手牌数等于体力值，你摸一张牌，且可以交给该角色一张牌。",
+	["@ikfengyuan"] = "你可以发动“逢源”",
+	["ikfengyuan:discard"] = "弃置一张手牌",
+	["ikfengyuan:draw"] = "摸一张牌",
+	["@ikfengyuan-give"] = "你可以将一张牌交给 %src",
 	["ikmianlai"] = "眄睐",
 	[":ikmianlai"] = "当你成为一张除【断灵御剑】、【道忌宣谕】和【血凤涅烟】外的非延时类锦囊牌的目标时，你可以令一名其他角色也成为此牌的目标。",
+	["@ikmianlai"] = "你可以发动“眄睐”",
 
 	["#wind060"] = "混沌龙女仆",
 	["wind060"] = "朵露",--风 - 空 - 3血

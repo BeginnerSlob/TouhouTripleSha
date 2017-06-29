@@ -1898,6 +1898,150 @@ public:
     }
 };
 
+class IkFengyuan : public TriggerSkill
+{
+public:
+    IkFengyuan()
+        : TriggerSkill("ikfengyuan")
+    {
+        events << EventPhaseEnd;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
+    {
+        if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Play) {
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (p->getHp() != p->getHandcardNum())
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            if (p->getHp() != p->getHandcardNum())
+                targets << p;
+        }
+        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@ikfengyuan", true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["IkFengyuanTarget"] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        ServerPlayer *target = player->tag["IkFengyuanTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkFengyuanTarget");
+        if (target) {
+            QStringList choices;
+            if (target->canDiscard(target, "h"))
+                choices << "discard";
+            choices << "draw";
+            QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+            if (choice == "discard")
+                room->askForDiscard(target, objectName(), 1, 1);
+            else
+                target->drawCards(1, objectName());
+            if (target->getHp() == target->getHandcardNum()) {
+                player->drawCards(1, objectName());
+                if (player != target && !player->isNude()) {
+                    const Card *card = room->askForCard(player, "..", "@ikfengyuan-give:" + target->objectName(), QVariant(),
+                                                        Card::MethodNone);
+                    if (card) {
+                        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, player->objectName(), target->objectName(),
+                                              objectName(), QString());
+                        room->obtainCard(target, card, reason, false);
+                    }
+                }
+            }
+        }
+        return false;
+    }
+};
+
+class IkMianlai : public TriggerSkill
+{
+public:
+    IkMianlai()
+        : TriggerSkill("ikmianlai")
+    {
+        events << TargetConfirming;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (TriggerSkill::triggerable(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isNDTrick()
+                && !(use.card->isKindOf("Collateral") || use.card->isKindOf("FeintAttack")
+                     || use.card->isKindOf("BurningCamps"))) {
+                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                    if (use.to.contains(p))
+                        continue;
+                    if (use.from->isProhibited(p, use.card))
+                        continue;
+                    if (use.card->targetFixed())
+                        return QStringList(objectName());
+                    if (use.card->targetFilter(QList<const Player *>(), p, use.from))
+                        return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (use.to.contains(p))
+                continue;
+            if (use.from->isProhibited(p, use.card))
+                continue;
+            if (use.card->targetFixed())
+                targets << p;
+            else if (use.card->targetFilter(QList<const Player *>(), p, use.from))
+                targets << p;
+        }
+        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@ikmianlai", true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["IkMianlaiTarget"] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        ServerPlayer *target = player->tag["IkMianlaiTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkMianlaiTarget");
+        if (target) {
+            CardUseStruct use = data.value<CardUseStruct>();
+
+            LogMessage log;
+            log.type = "#BecomeTarget";
+            log.from = target;
+            log.card_str = use.card->toString();
+            room->sendLog(log);
+
+            room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, use.from->objectName(), target->objectName());
+
+            use.to.append(target);
+            room->sortByActionOrder(use.to);
+            data = QVariant::fromValue(use);
+        }
+        return false;
+    }
+};
+
 class IkBashou : public TriggerSkill
 {
 public:
@@ -7098,6 +7242,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     wind054->addSkill(new IkLinglongTreasure);
     related_skills.insertMulti("iklinglong", "#iklinglong-horse");
     related_skills.insertMulti("iklinglong", "#iklinglong-treasure");
+
+    General *wind059 = new General(this, "wind059", "kaze", 3);
+    wind059->addSkill(new IkFengyuan);
+    wind059->addSkill(new IkMianlai);
 
     General *bloom023 = new General(this, "bloom023", "hana");
     bloom023->addSkill(new IkBashou);
