@@ -2488,7 +2488,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         DamageStruct damage = data.value<DamageStruct>();
-        room->addPlayerMark(damage.from, "@thhua");
+        room->addPlayerMark(damage.from, "@comfort");
         room->setPlayerMark(damage.from, "thfuhua_" + player->objectName(), 1);
         QList<int> card_ids = VariantList2IntList(player->tag["ThFuhuaIds"].toList());
 
