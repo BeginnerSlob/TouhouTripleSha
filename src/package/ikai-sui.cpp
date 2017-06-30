@@ -7408,6 +7408,115 @@ public:
     }
 };
 
+class IkTianxia : public TriggerSkill
+{
+public:
+    IkTianxia()
+        : TriggerSkill("iktianxia")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        if (TriggerSkill::triggerable(target) && target->getPhase() == Player::Draw) {
+            foreach (const Player *p, target->getAliveSiblings()) {
+                if (p->distanceTo(target) == 1)
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        int n = qMin(room->alivePlayerCount(), 5);
+        player->gainMark("@far", n);
+        return true;
+    }
+};
+
+class IkTianxiaDistance : public DistanceSkill
+{
+public:
+    IkTianxiaDistance()
+        : DistanceSkill("#iktianxia")
+    {
+        frequency = NotCompulsory;
+    }
+
+    virtual int getCorrect(const Player *, const Player *to) const
+    {
+        return to->getMark("@far");
+    }
+};
+
+class IkYouer : public TriggerSkill
+{
+public:
+    IkYouer()
+        : TriggerSkill("ikyouer")
+    {
+        events << EventPhaseStart;
+        frequency = Compulsory;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        TriggerList skill_list;
+        if (player->getPhase() == Player::Finish) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p == player)
+                    continue;
+                if (!player->inMyAttackRange(p))
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        room->sendCompulsoryTriggerLog(ask_who, objectName());
+        room->broadcastSkillInvoke(objectName());
+        QStringList choices;
+        choices << "draw";
+        if (player->canDiscard(player, "he"))
+            choices << "discard";
+        QString choice = room->askForChoice(ask_who, objectName(), choices.join("+"));
+        if (choice == "discard")
+            room->askForDiscard(player, objectName(), 1, 1, false, true);
+        else
+            ask_who->drawCards(1, objectName());
+        ask_who->gainMark("@near");
+        return false;
+    }
+};
+
+class IkYouerDistance : public DistanceSkill
+{
+public:
+    IkYouerDistance()
+        : DistanceSkill("#ikyouer")
+    {
+        frequency = NotCompulsory;
+    }
+
+    virtual int getCorrect(const Player *, const Player *to) const
+    {
+        return -to->getMark("@near");
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     : Package("ikai-sui")
 {
@@ -7679,6 +7788,14 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *luna052 = new General(this, "luna052", "tsuki");
     luna052->addSkill(new Skill("ikhuisuo", Skill::Compulsory));
     luna052->addSkill(new IkCangliu);
+
+    General *luna059 = new General(this, "luna059", "tsuki", 3);
+    luna059->addSkill(new IkTianxia);
+    luna059->addSkill(new IkTianxiaDistance);
+    related_skills.insertMulti("iktianxia", "#iktianxia");
+    luna059->addSkill(new IkYouer);
+    luna059->addSkill(new IkYouerDistance);
+    related_skills.insertMulti("ikyouer", "#ikyouer");
 
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
