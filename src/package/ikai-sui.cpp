@@ -2042,6 +2042,115 @@ public:
     }
 };
 
+class IkChunsu : public DrawCardsSkill
+{
+public:
+    IkChunsu()
+        : DrawCardsSkill("ikchunsu")
+    {
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual int getDrawNum(ServerPlayer *player, int n) const
+    {
+        player->setFlags("ikchunsu");
+        return n + 2;
+    }
+};
+
+class IkChunsuPut : public TriggerSkill
+{
+public:
+    IkChunsuPut()
+        : TriggerSkill("#ikchunsu")
+    {
+        events << AfterDrawNCards << DamageCaused;
+        frequency = NotCompulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
+    {
+        if (triggerEvent == AfterDrawNCards && player->hasFlag("ikchunsu"))
+            return QStringList(objectName());
+        if (triggerEvent == DamageCaused && player && player->isAlive() && player->hasSkill("ikchunsu")
+            && !player->getPile("sincerity").isEmpty()) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.nature != DamageStruct::Thunder)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (triggerEvent == AfterDrawNCards) {
+            player->setFlags("-ikchunsu");
+            const Card *card = room->askForCard(player, ".!", "@ikchunsu-put", data, Card::MethodNone);
+            if (!card)
+                card = player->getRandomHandCard();
+            player->addToPile("sincerity", card);
+        } else {
+            room->sendCompulsoryTriggerLog(player, "ikchunsu");
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+};
+
+class IkYingzhi : public TriggerSkill
+{
+public:
+    IkYingzhi()
+        : TriggerSkill("ikyingzhi")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        TriggerList skill_list;
+        if (player->getPhase() == Player::Finish && player->isKongcheng()) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p->getPile("sincerity").isEmpty())
+                    continue;
+                skill_list.insert(p, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            QList<int> card_ids = ask_who->getPile("sincerity");
+            room->fillAG(card_ids, ask_who);
+            int card_id = room->askForAG(ask_who, card_ids, false, objectName());
+            room->clearAG(ask_who);
+            CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
+            room->throwCard(Sanguosha->getCard(card_id), reason, NULL);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        player->drawCards(2, objectName());
+        return false;
+    }
+};
+
 class IkBashou : public TriggerSkill
 {
 public:
@@ -4546,7 +4655,7 @@ public:
         room->fillAG(ids, player);
         int id = room->askForAG(player, ids, false, objectName());
         room->clearAG(player);
-        CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, player->objectName(), "iklingzhou", QString());
+        CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "iklingzhou", QString());
         room->throwCard(Sanguosha->getCard(id), reason, NULL);
 
         return false;
@@ -7593,6 +7702,12 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *wind059 = new General(this, "wind059", "kaze", 3);
     wind059->addSkill(new IkFengyuan);
     wind059->addSkill(new IkMianlai);
+
+    General *wind060 = new General(this, "wind060", "kaze", 3);
+    wind060->addSkill(new IkChunsu);
+    wind060->addSkill(new IkChunsuPut);
+    related_skills.insertMulti("ikchunsu", "#ikchunsu");
+    wind060->addSkill(new IkYingzhi);
 
     General *bloom023 = new General(this, "bloom023", "hana");
     bloom023->addSkill(new IkBashou);

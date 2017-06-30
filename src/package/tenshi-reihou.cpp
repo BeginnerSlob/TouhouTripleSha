@@ -3937,7 +3937,7 @@ RhXianmingCard::RhXianmingCard()
 
 void RhXianmingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
-    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, source->objectName(), "rhxianming", QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "rhxianming", QString());
     room->throwCard(this, reason, source);
 }
 

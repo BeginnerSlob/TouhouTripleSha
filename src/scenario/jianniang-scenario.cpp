@@ -1568,7 +1568,7 @@ const Card *JnHuojiCard::validate(CardUseStruct &card_use) const
         to_ikshidao = room->askForChoice(wenyang, "jnhuoji_slash", ikshidao_list.join("+"));
     }
 
-    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, wenyang->objectName(), "jnhuoji", QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "jnhuoji", QString());
     room->throwCard(this, reason, NULL);
 
     Card *use_card = Sanguosha->cloneCard(to_ikshidao, NoSuit, 0);
@@ -1598,7 +1598,7 @@ const Card *JnHuojiCard::validateInResponse(ServerPlayer *wenyang) const
     } else
         to_ikshidao = user_string;
 
-    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, wenyang->objectName(), "jnhuoji", QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "jnhuoji", QString());
     room->throwCard(this, reason, NULL);
 
     Card *use_card = Sanguosha->cloneCard(to_ikshidao, NoSuit, 0);
@@ -1749,7 +1749,7 @@ JnTaoxiCard::JnTaoxiCard()
 
 void JnTaoxiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
-    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, source->objectName(), "jntaoxi", QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "jntaoxi", QString());
     room->throwCard(this, reason, NULL);
     source->gainMark("@qianhang");
 }

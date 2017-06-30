@@ -185,7 +185,7 @@ void ServerPlayer::clearOnePrivatePile(QString pile_name)
     QList<int> &pile = piles[pile_name];
 
     DummyCard *dummy = new DummyCard(pile);
-    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, this->objectName());
+    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString());
     room->throwCard(dummy, reason, NULL);
     delete dummy;
     piles.remove(pile_name);
