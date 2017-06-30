@@ -3747,7 +3747,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         ServerPlayer *target = player->tag["IkSuzhongTarget"].value<ServerPlayer *>();
         player->tag.remove("IkSuzhongTarget");
@@ -3771,7 +3771,7 @@ public:
         return TriggerSkill::triggerable(target) && target->getPhase() == Player::Finish;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
@@ -5402,6 +5402,146 @@ public:
             }
         }
         return QStringList();
+    }
+};
+
+class IkHonglian : public TriggerSkill
+{
+public:
+    IkHonglian()
+        : TriggerSkill("ikhonglian")
+    {
+        events << GameStart << CardsMoveOneTime << EventAcquireSkill << EventLoseSkill;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
+    {
+        if (player == NULL)
+            return QStringList();
+        if (triggerEvent == EventLoseSkill) {
+            if (data.toString() == objectName()) {
+                QStringList honglian_skills = player->tag["IkHonglianSkills"].toStringList();
+                QStringList detachList;
+                foreach (QString skill_name, honglian_skills)
+                    detachList.append("-" + skill_name);
+                room->handleAcquireDetachSkills(player, detachList, true, true);
+                player->tag["IkHonglianSkills"] = QVariant();
+            }
+            return QStringList();
+        } else if (triggerEvent == EventAcquireSkill) {
+            if (data.toString() != objectName())
+                return QStringList();
+        } else if (triggerEvent == CardsMoveOneTime) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.to != player || move.to_place != Player::PlaceEquip)
+                return QStringList();
+            else if (move.from != player && !move.from_places.contains(Player::PlaceEquip))
+                return QStringList();
+        }
+
+        if (!player->isAlive() || !player->hasSkill(objectName(), true))
+            return QStringList();
+
+        acquired_skills.clear();
+        detached_skills.clear();
+        IkHonglianChange(room, player);
+        if (!acquired_skills.isEmpty() || !detached_skills.isEmpty())
+            room->handleAcquireDetachSkills(player, acquired_skills + detached_skills, true, true);
+        return QStringList();
+    }
+
+private:
+    void IkHonglianChange(Room *room, ServerPlayer *player) const
+    {
+        static QStringList skills;
+        if (skills.isEmpty())
+            skills << "ikxizi"
+                   << "ikchenhong"
+                   << "ikcangyou"
+                   << "ikganbi";
+        QSet<Card::Suit> suit_set;
+        foreach (const Card *c, player->getEquips())
+            suit_set << c->getSuit();
+        int n = suit_set.size();
+        QStringList honglian_skills = player->tag["IkHonglianSkills"].toStringList();
+        int index = 0;
+        foreach (QString skill, skills) {
+            if (index < n) {
+                if (!honglian_skills.contains(skill)) {
+                    room->notifySkillInvoked(player, "ikhonglian");
+                    acquired_skills.append(skill);
+                    honglian_skills << skill;
+                }
+            } else {
+                if (honglian_skills.contains(skill)) {
+                    detached_skills.append("-" + skill);
+                    honglian_skills.removeOne(skill);
+                }
+            }
+            ++index;
+        }
+        player->tag["IkHonglianSkills"] = QVariant::fromValue(honglian_skills);
+    }
+
+    mutable QStringList acquired_skills, detached_skills;
+};
+
+IkCaiyinCard::IkCaiyinCard()
+{
+}
+
+bool IkCaiyinCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    return targets.isEmpty() && !to_select->isKongcheng() && Self->inMyAttackRange(to_select);
+}
+
+void IkCaiyinCard::onEffect(const CardEffectStruct &effect) const
+{
+    Room *room = effect.from->getRoom();
+    int card_id = room->askForCardChosen(effect.from, effect.to, "h", "ikcaiyin");
+    room->showCard(effect.to, card_id);
+    if (Sanguosha->getCard(card_id)->isKindOf("Jink")) {
+        LogMessage log;
+        log.type = "$IkLingtongView";
+        log.from = effect.from;
+        log.to << effect.to;
+        log.arg = "iklingtong:handcards";
+        room->sendLog(log, room->getOtherPlayers(effect.from));
+
+        room->showAllCards(effect.to, effect.from);
+    } else {
+        LogMessage log;
+        log.type = "$IkLingtongView";
+        log.from = effect.to;
+        log.to << effect.from;
+        log.arg = "iklingtong:handcards";
+        room->sendLog(log, room->getOtherPlayers(effect.to));
+
+        room->showAllCards(effect.from, effect.to);
+    }
+}
+
+class IkCaiyin : public OneCardViewAsSkill
+{
+public:
+    IkCaiyin()
+        : OneCardViewAsSkill("ikcaiyin")
+    {
+        filter_pattern = "BasicCard|red!";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        Card *card = new IkCaiyinCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return player->canDiscard(player, "h") && !player->hasUsed("IkCaiyinCard");
     }
 };
 
@@ -7455,6 +7595,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     related_skills.insertMulti("ikhuangpo", "#ikhuangpo");
     snow055->addSkill(new IkYixiang);
 
+    General *snow059 = new General(this, "snow059", "yuki");
+    snow059->addSkill(new IkHonglian);
+    snow059->addSkill(new IkCaiyin);
+
     General *luna017 = new General(this, "luna017", "tsuki");
     luna017->addSkill(new IkChenyan);
     luna017->addSkill(new IkMoliao);
@@ -7560,6 +7704,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkLunkeCard>();
     addMetaObject<IkYaoyinCard>();
     addMetaObject<IkHuangpoCard>();
+    addMetaObject<IkCaiyinCard>();
     addMetaObject<IkBinglingCard>();
     addMetaObject<IkZhangeCard>();
     addMetaObject<IkFeishanCard>();
