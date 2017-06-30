@@ -3693,6 +3693,104 @@ public:
     }
 };
 
+class IkSuzhong : public TriggerSkill
+{
+public:
+    IkSuzhong()
+        : TriggerSkill("iksuzhong")
+    {
+        events << TargetSpecified << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive)
+                player->setMark(objectName(), 0);
+        } else if (TriggerSkill::triggerable(player) && player->getPhase() != Player::NotActive) {
+            ServerPlayer *current = room->getCurrent();
+            if (current == player) {
+                CardUseStruct use = data.value<CardUseStruct>();
+                if (use.card->getTypeId() != Card::TypeSkill && use.card->getTypeId() != Card::TypeEquip) {
+                    foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                        if (use.to.contains(p))
+                            continue;
+                        if (player->canDiscard(p, "he"))
+                            return QStringList(objectName());
+                    }
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            if (use.to.contains(p))
+                continue;
+            if (player->canDiscard(p, "he"))
+                targets << p;
+        }
+        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@iksuzhong", true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            int card_id = room->askForCardChosen(player, target, "he", objectName(), false, Card::MethodDiscard);
+            room->throwCard(card_id, target, player);
+            player->addMark(objectName());
+            player->tag["IkSuzhongTarget"] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        ServerPlayer *target = player->tag["IkSuzhongTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkSuzhongTarget");
+        if (target)
+            target->drawCards(1, objectName());
+        return false;
+    }
+};
+
+class IkYunhua : public TriggerSkill
+{
+public:
+    IkYunhua()
+        : TriggerSkill("ikyunhua")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return TriggerSkill::triggerable(target) && target->getPhase() == Player::Finish;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            player->drawCards(2, objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        int delta = player->getHandcardNum() - player->getMark("iksuzhong");
+        if (delta > 0) {
+            room->askForDiscard(player, objectName(), delta, delta);
+        }
+        return false;
+    }
+};
+
 IkFenxunCard::IkFenxunCard()
 {
 }
@@ -7303,6 +7401,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *bloom058 = new General(this, "bloom058", "hana", 3, false);
     bloom058->addSkill(new IkChenqing);
     bloom058->addSkill(new IkMojing);
+
+    General *bloom059 = new General(this, "bloom059", "hana", 3);
+    bloom059->addSkill(new IkSuzhong);
+    bloom059->addSkill(new IkYunhua);
 
     General *snow022 = new General(this, "snow022", "yuki");
     snow022->addSkill(new Skill("ikxindu", Skill::NotCompulsory));
