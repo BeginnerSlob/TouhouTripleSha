@@ -3900,6 +3900,78 @@ public:
     }
 };
 
+class IkYongye : public TriggerSkill
+{
+public:
+    IkYongye()
+        : TriggerSkill("ikyongye")
+    {
+        events << EventPhaseStart << Damaged;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
+    {
+        QStringList lists;
+        if (TriggerSkill::triggerable(player) && !player->isNude()) {
+            if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Finish)
+                lists << objectName();
+            else if (triggerEvent == Damaged) {
+                DamageStruct damage = data.value<DamageStruct>();
+                for (int i = 0; i < damage.damage; ++i)
+                    lists << objectName();
+            }
+        }
+        return lists;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        const Card *card = room->askForCard(player, "..", "@ikyongye", QVariant(), Card::MethodNone);
+        if (card) {
+            room->broadcastSkillInvoke(objectName());
+            room->notifySkillInvoked(player, objectName());
+
+            LogMessage log;
+            log.type = "#InvokeSkill";
+            log.from = player;
+            log.arg = objectName();
+            room->sendLog(log);
+
+            player->addToPile("page", card);
+        }
+        return true;
+    }
+};
+
+class IkYongyeDraw : public TriggerSkill
+{
+public:
+    IkYongyeDraw()
+        : TriggerSkill("#ikyongye")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return target && target->isAlive() && target->hasSkill("ikyongye") && target->getPhase() == Player::Start
+            && !target->getPile("page").isEmpty();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, "ikyongye");
+        QList<int> ids = player->getPile("page");
+        DummyCard dummy(ids);
+        CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "ikyongye", QString());
+        room->throwCard(&dummy, reason, NULL);
+        player->drawCards(2 * ids.length(), "ikyongye");
+        player->skip(Player::Judge);
+        return false;
+    }
+};
+
 IkFenxunCard::IkFenxunCard()
 {
 }
@@ -7769,6 +7841,11 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *bloom059 = new General(this, "bloom059", "hana", 3);
     bloom059->addSkill(new IkSuzhong);
     bloom059->addSkill(new IkYunhua);
+
+    General *bloom060 = new General(this, "bloom060", "hana");
+    bloom060->addSkill(new IkYongye);
+    bloom060->addSkill(new IkYongyeDraw);
+    related_skills.insertMulti("ikyongye", "#ikyongye");
 
     General *snow022 = new General(this, "snow022", "yuki");
     snow022->addSkill(new Skill("ikxindu", Skill::NotCompulsory));
