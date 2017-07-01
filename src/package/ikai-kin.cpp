@@ -6375,6 +6375,142 @@ public:
     }
 };
 
+IkJiebiPutCard::IkJiebiPutCard()
+{
+    will_throw = false;
+    target_fixed = true;
+    m_skillName = "ikjiebiv";
+    handling_method = MethodNone;
+}
+
+class IkJiebiViewAsSkill : public ViewAsSkill
+{
+public:
+    IkJiebiViewAsSkill()
+        : ViewAsSkill("ikjiebiv")
+    {
+        response_pattern = "@@ikjiebiv!";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *) const
+    {
+        return selected.length() < 3;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        if (!cards.isEmpty()) {
+            Card *card = new IkJiebiPutCard;
+            card->addSubcards(cards);
+            return card;
+        }
+        return NULL;
+    }
+};
+
+IkJiebiCard::IkJiebiCard()
+{
+}
+
+bool IkJiebiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    return targets.isEmpty() && !to_select->isNude() && to_select != Self;
+}
+
+void IkJiebiCard::onEffect(const CardEffectStruct &effect) const
+{
+    Room *room = effect.from->getRoom();
+    const Card *card = room->askForUseCard(effect.to, "@@ikjiebiv!", "@ikjiebi:" + effect.from->objectName(), -1, MethodNone);
+    if (!card) {
+        QList<const Card *> cards = effect.to->getCards("he");
+        card = cards.at(qrand() % cards.length());
+        room->addPlayerMark(effect.to, "@assist");
+        effect.to->addMark("ikjiebi_" + effect.from->objectName());
+        effect.from->addToPile("assist", card);
+    } else {
+        room->addPlayerMark(effect.to, "@assist", card->subcardsLength());
+        effect.to->addMark("ikjiebi_" + effect.from->objectName(), card->subcardsLength());
+        effect.from->addToPile("assist", card);
+    }
+}
+
+class IkJiebi : public ZeroCardViewAsSkill
+{
+public:
+    IkJiebi()
+        : ZeroCardViewAsSkill("ikjiebi")
+    {
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new IkJiebiCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("IkJiebiCard");
+    }
+};
+
+class IkJiebiGet : public TriggerSkill
+{
+public:
+    IkJiebiGet()
+        : TriggerSkill("#ikjiebi")
+    {
+        events << Death << EventPhaseStart;
+        frequency = NotCompulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
+    {
+        if (triggerEvent == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who == player && !player->getPile("assist").isEmpty()) {
+                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                    int n = p->getMark("ikjiebi_" + player->objectName());
+                    if (n > 0) {
+                        room->removePlayerMark(p, "@assist", n);
+                        p->setMark("ikjiebi_" + player->objectName(), 0);
+                    }
+                }
+            }
+        } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::RoundStart
+                   && !player->getPile("assist").isEmpty())
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, "ikjiebi");
+        room->broadcastSkillInvoke("ikjiebi");
+        QList<int> subcards = player->getPile("assist");
+        DummyCard dummy(subcards);
+        room->obtainCard(player, &dummy);
+
+        LogMessage log;
+        log.type = "$MoveCard";
+        log.from = player;
+        log.to << player;
+        log.card_str = IntList2StringList(subcards).join("+");
+        room->sendLog(log);
+
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            int n = p->getMark("ikjiebi_" + player->objectName());
+            if (n > 0) {
+                room->removePlayerMark(p, "@assist", n);
+                p->setMark("ikjiebi_" + player->objectName(), 0);
+                p->drawCards(n, "ikjiebi");
+            }
+        }
+
+        return false;
+    }
+};
+
 IkLvdongCard::IkLvdongCard()
 {
 }
@@ -8023,6 +8159,11 @@ IkaiKinPackage::IkaiKinPackage()
     snow058->addSkill(new IkFansui);
     snow058->addSkill(new IkShenchi);
 
+    General *snow060 = new General(this, "snow060", "yuki");
+    snow060->addSkill(new IkJiebi);
+    snow060->addSkill(new IkJiebiGet);
+    related_skills.insertMulti("ikjiebi", "#ikjiebi");
+
     General *luna010 = new General(this, "luna010", "tsuki");
     luna010->addSkill(new IkLvdong);
     luna010->addSkill(new IkLvdongTrigger);
@@ -8109,6 +8250,8 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkYishenCard>();
     addMetaObject<IkFansuiCard>();
     addMetaObject<IkShenchiCard>();
+    addMetaObject<IkJiebiPutCard>();
+    addMetaObject<IkJiebiCard>();
     addMetaObject<IkLvdongCard>();
     addMetaObject<IkMingceCard>();
     addMetaObject<IkFenshiCard>();
@@ -8117,7 +8260,7 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkYusuoCard>();
     addMetaObject<IkBengyanCard>();
 
-    skills << new IkXianyuSlashViewAsSkill << new IkZhuyi;
+    skills << new IkXianyuSlashViewAsSkill << new IkZhuyi << new IkJiebiViewAsSkill;
 }
 
 ADD_PACKAGE(IkaiKin)
