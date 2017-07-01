@@ -7698,6 +7698,89 @@ public:
     }
 };
 
+class IkChimo : public TriggerSkill
+{
+public:
+    IkChimo()
+        : TriggerSkill("ikchimo")
+    {
+        events << Damage << Damaged;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
+    {
+        DamageStruct damage = data.value<DamageStruct>();
+        if (triggerEvent == Damage && TriggerSkill::triggerable(player) && damage.nature == DamageStruct::Fire)
+            return QStringList(objectName());
+        else if (triggerEvent == Damaged && TriggerSkill::triggerable(player) && damage.nature == DamageStruct::Fire
+                 && player->getMark("@burn") > 0)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+        if (triggerEvent == Damage)
+            player->gainMark("@burn");
+        else
+            player->loseMark("@burn");
+        return false;
+    }
+};
+
+class IkBaohun : public MaxCardsSkill
+{
+public:
+    IkBaohun()
+        : MaxCardsSkill("ikbaohun")
+    {
+    }
+
+    virtual int getExtra(const Player *target) const
+    {
+        if (target->hasSkill(objectName()))
+            return -target->getMark("@burn");
+        return 0;
+    }
+};
+
+class IkBaohunTrigger : public TriggerSkill
+{
+public:
+    IkBaohunTrigger()
+        : TriggerSkill("#ikbaohun")
+    {
+        events << DamageCaused;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        DamageStruct damage = data.value<DamageStruct>();
+        if (player && player->isAlive() && player->hasSkill("ikbaohun") && damage.nature == DamageStruct::Normal)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, "ikbaohun");
+        room->broadcastSkillInvoke("ikbaohun");
+        DamageStruct damage = data.value<DamageStruct>();
+        int n = player->getMark("@burn");
+        if (player->getHp() < n) {
+            ++damage.damage;
+        } else {
+            damage.nature = DamageStruct::Fire;
+        }
+        data = qVariantFromValue(damage);
+        return false;
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     : Package("ikai-sui")
 {
@@ -7988,6 +8071,12 @@ IkaiSuiPackage::IkaiSuiPackage()
     luna059->addSkill(new IkYouer);
     luna059->addSkill(new IkYouerDistance);
     related_skills.insertMulti("ikyouer", "#ikyouer");
+
+    General *luna060 = new General(this, "luna060", "tsuki", 5);
+    luna060->addSkill(new IkChimo);
+    luna060->addSkill(new IkBaohun);
+    luna060->addSkill(new IkBaohunTrigger);
+    related_skills.insertMulti("ikbaohun", "#ikbaohun");
 
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
