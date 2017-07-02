@@ -306,7 +306,8 @@ public:
     QList<const Card *> getCards(const char *flags) const;
     DummyCard *wholeHandCards() const;
     bool hasNullification() const;
-    bool pindian(ServerPlayer *target, const char *reason, const Card *card1 = NULL);
+    bool pindian(ServerPlayer *target, const char *reason);
+    QList<bool> pindian(QList<ServerPlayer *> targets, const char *reason);
     void turnOver();
     void play(QList<Player::Phase> set_phases = QList<Player::Phase>());
     bool changePhase(Player::Phase from, Player::Phase to);
@@ -1222,8 +1223,7 @@ public:
                     bool is_preview = false, bool visible = false, bool optional = true, int max_num = -1,
                     QList<ServerPlayer *> players = QList<ServerPlayer *>(), CardMoveReason reason = CardMoveReason(),
                     const char *prompt = NULL, bool notify_skill = false);
-    const Card *askForPindian(ServerPlayer *player, ServerPlayer *from, ServerPlayer *to, const char *reason);
-    QList<const Card *> askForPindianRace(ServerPlayer *from, ServerPlayer *to, const char *reason);
+    PindianMap askForPindianRace(ServerPlayer *from, QList<ServerPlayer *> tos, const char *reason);
     ServerPlayer *askForPlayerChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets, const char *reason,
                                      const char *prompt = NULL, bool optional = false, bool notify_skill = false);
     QString askForGeneral(ServerPlayer *player, const QStringList &generals, char *default_choice = NULL);

@@ -2148,7 +2148,7 @@ void RhYarenCard::onEffect(const CardEffectStruct &effect) const
 {
     Room *room = effect.from->getRoom();
     room->addPlayerMark(effect.from, "rhyaren");
-    if (effect.from->pindian(effect.to, "rhyaren", NULL)) {
+    if (effect.from->pindian(effect.to, "rhyaren")) {
         effect.from->tag["RhYarenTarget"] = QVariant::fromValue(effect.to);
         room->setFixedDistance(effect.from, effect.to, 1);
     } else {

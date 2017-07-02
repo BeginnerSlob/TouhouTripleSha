@@ -6257,7 +6257,7 @@ bool IkFeishanCard::targetFilter(const QList<const Player *> &targets, const Pla
 void IkFeishanCard::onEffect(const CardEffectStruct &effect) const
 {
     Room *room = effect.from->getRoom();
-    bool success = effect.from->pindian(effect.to, "ikfeishan", NULL);
+    bool success = effect.from->pindian(effect.to, "ikfeishan");
     if (success) {
         Slash *slash = new Slash(Card::NoSuit, 0);
         slash->setSkillName("_ikfeishan");
@@ -6645,7 +6645,7 @@ void IkXincaoCard::onEffect(const CardEffectStruct &effect) const
     if (!targets.isEmpty()) {
         ServerPlayer *target
             = room->askForPlayerChosen(effect.from, targets, "ikxincao", "@ikxincao-pindian:" + effect.to->objectName());
-        effect.to->pindian(target, "ikxincao", NULL);
+        effect.to->pindian(target, "ikxincao");
     }
 }
 

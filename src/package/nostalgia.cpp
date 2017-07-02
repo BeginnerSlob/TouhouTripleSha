@@ -169,9 +169,11 @@ void NosXuanhuoCard::onEffect(const CardEffectStruct &effect) const
     room->obtainCard(effect.from, Sanguosha->getCard(card_id), reason, room->getCardPlace(card_id) != Player::PlaceHand);
 
     QList<ServerPlayer *> targets = room->getOtherPlayers(effect.to);
-    ServerPlayer *target = room->askForPlayerChosen(effect.from, targets, "nosxuanhuo", "@nosxuanhuo-give:" + effect.to->objectName());
+    ServerPlayer *target
+        = room->askForPlayerChosen(effect.from, targets, "nosxuanhuo", "@nosxuanhuo-give:" + effect.to->objectName());
     if (target != effect.from) {
-        CardMoveReason reason2(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), target->objectName(), "nosxuanhuo", QString());
+        CardMoveReason reason2(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), target->objectName(), "nosxuanhuo",
+                               QString());
         room->obtainCard(target, Sanguosha->getCard(card_id), reason2, false);
     }
 }
@@ -301,7 +303,8 @@ public:
             equip_index = static_cast<int>(equipcard->location());
 
             QList<CardsMoveStruct> exchangeMove;
-            CardsMoveStruct move1(equip, zhonghui, Player::PlaceEquip, CardMoveReason(CardMoveReason::S_REASON_ROB, zhonghui->objectName()));
+            CardsMoveStruct move1(equip, zhonghui, Player::PlaceEquip,
+                                  CardMoveReason(CardMoveReason::S_REASON_ROB, zhonghui->objectName()));
             exchangeMove.push_back(move1);
             if (zhonghui->getEquip(equip_index) != NULL) {
                 CardsMoveStruct move2(zhonghui->getEquip(equip_index)->getId(), NULL, Player::DiscardPile,
@@ -334,12 +337,13 @@ public:
 
         bool skip = false;
         foreach (ServerPlayer *zhonghui, room->getAllPlayers()) {
-            if (!TriggerSkill::triggerable(zhonghui) || zhonghui == player || zhonghui->isKongcheng() || zhonghui->getMark("nosbaijiang") > 0 || player->isKongcheng())
+            if (!TriggerSkill::triggerable(zhonghui) || zhonghui == player || zhonghui->isKongcheng()
+                || zhonghui->getMark("nosbaijiang") > 0 || player->isKongcheng())
                 continue;
 
             if (room->askForSkillInvoke(zhonghui, "nosquanji")) {
                 room->broadcastSkillInvoke(objectName(), 1);
-                if (zhonghui->pindian(player, objectName(), NULL)) {
+                if (zhonghui->pindian(player, objectName())) {
                     if (!skip) {
                         room->broadcastSkillInvoke(objectName(), 2);
                         player->skip(Player::Start);
@@ -366,7 +370,8 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const
     {
-        return PhaseChangeSkill::triggerable(target) && target->getMark("nosbaijiang") == 0 && target->getPhase() == Player::Start && target->getEquips().length() >= 3;
+        return PhaseChangeSkill::triggerable(target) && target->getMark("nosbaijiang") == 0
+            && target->getPhase() == Player::Start && target->getEquips().length() >= 3;
     }
 
     virtual bool onPhaseChange(ServerPlayer *zhonghui) const
@@ -495,7 +500,8 @@ public:
 
         const Card *card = Sanguosha->getCard(power);
 
-        ServerPlayer *target = room->askForPlayerChosen(zhonghui, room->getAlivePlayers(), "nospaiyi", "@nospaiyi-to:::" + card->objectName());
+        ServerPlayer *target
+            = room->askForPlayerChosen(zhonghui, room->getAlivePlayers(), "nospaiyi", "@nospaiyi-to:::" + card->objectName());
         CardMoveReason reason(CardMoveReason::S_REASON_TRANSFER, zhonghui->objectName(), "nospaiyi", QString());
 
         if (card->isKindOf("DelayedTrick")) {
@@ -535,7 +541,8 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const
     {
-        return PhaseChangeSkill::triggerable(target) && target->getMark("noszili") == 0 && target->getPhase() == Player::Start && target->getPile("nospower").length() >= 4;
+        return PhaseChangeSkill::triggerable(target) && target->getMark("noszili") == 0 && target->getPhase() == Player::Start
+            && target->getPile("nospower").length() >= 4;
     }
 
     virtual bool onPhaseChange(ServerPlayer *zhonghui) const
@@ -589,7 +596,8 @@ public:
             kingdomList.removeOne(old_kingdom);
             if (kingdomList.isEmpty())
                 return false;
-            QString kingdom = room->askForChoice(weiwudi, "nosguixin_kingdom", kingdomList.join("+"), QVariant::fromValue(to_modify));
+            QString kingdom
+                = room->askForChoice(weiwudi, "nosguixin_kingdom", kingdomList.join("+"), QVariant::fromValue(to_modify));
             room->setPlayerProperty(to_modify, "kingdom", kingdom);
 
             room->broadcastSkillInvoke(objectName(), index);
@@ -722,7 +730,8 @@ public:
         JudgeStruct *judge = data.value<JudgeStruct *>();
 
         QStringList prompt_list;
-        prompt_list << "@nosguicai-card" << judge->who->objectName() << objectName() << judge->reason << QString::number(judge->card->getEffectiveId());
+        prompt_list << "@nosguicai-card" << judge->who->objectName() << objectName() << judge->reason
+                    << QString::number(judge->card->getEffectiveId());
         QString prompt = prompt_list.join(":");
         const Card *card = room->askForCard(player, ".", prompt, data, Card::MethodResponse, judge->who, true);
         if (card) {

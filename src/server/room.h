@@ -20,6 +20,8 @@ struct LogMessage;
 #include <QWaitCondition>
 #include <qmutex.h>
 
+typedef QMap<ServerPlayer *, const Card *> PindianMap;
+
 class Room : public QThread
 {
     Q_OBJECT
@@ -380,8 +382,7 @@ public:
                     bool visible = false, bool optional = true, int max_num = -1,
                     QList<ServerPlayer *> players = QList<ServerPlayer *>(), CardMoveReason reason = CardMoveReason(),
                     const QString &prompt = QString(), bool notify_skill = false);
-    const Card *askForPindian(ServerPlayer *player, ServerPlayer *from, ServerPlayer *to, const QString &reason);
-    QList<const Card *> askForPindianRace(ServerPlayer *from, ServerPlayer *to, const QString &reason);
+    PindianMap askForPindianRace(ServerPlayer *from, QList<ServerPlayer *> tos, const QString &reason);
     ServerPlayer *askForPlayerChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets, const QString &reason,
                                      const QString &prompt = QString(), bool optional = false, bool notify_skill = false);
     QString askForGeneral(ServerPlayer *player, const QStringList &generals, QString default_choice = QString());

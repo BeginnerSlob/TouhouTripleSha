@@ -907,7 +907,7 @@ public:
     {
         DamageStruct damage = data.value<DamageStruct>();
         ServerPlayer *target = damage.to;
-        bool success = zhurong->pindian(target, "iklieren", NULL);
+        bool success = zhurong->pindian(target, "iklieren");
         if (!success)
             return false;
 
@@ -1929,7 +1929,7 @@ void IkYushenCard::use(Room *room, ServerPlayer *xunyu, QList<ServerPlayer *> &t
 {
     ServerPlayer *tiger = targets.first();
 
-    bool success = xunyu->pindian(tiger, "ikyushen", NULL);
+    bool success = xunyu->pindian(tiger, "ikyushen");
     if (success) {
         QList<ServerPlayer *> players = room->getOtherPlayers(tiger), wolves;
         foreach (ServerPlayer *player, players) {
@@ -3131,7 +3131,7 @@ bool IkJianlveCard::targetFilter(const QList<const Player *> &targets, const Pla
 
 void IkJianlveCard::use(Room *room, ServerPlayer *taishici, QList<ServerPlayer *> &targets) const
 {
-    bool success = taishici->pindian(targets.first(), "ikjianlve", NULL);
+    bool success = taishici->pindian(targets.first(), "ikjianlve");
     if (success) {
         room->setPlayerFlag(taishici, "IkJianlveSuccess");
         room->acquireSkill(taishici, "ikkongyun");
@@ -3429,7 +3429,7 @@ void IkBianshengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *
         return;
     }
 
-    source->pindian(sunce, "ikbiansheng_pindian", NULL);
+    source->pindian(sunce, "ikbiansheng_pindian");
     QList<ServerPlayer *> sunces;
     QList<ServerPlayer *> players = room->getOtherPlayers(source);
     foreach (ServerPlayer *p, players) {

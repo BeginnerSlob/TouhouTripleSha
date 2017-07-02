@@ -1021,7 +1021,7 @@ bool IkQizhiCard::targetFilter(const QList<const Player *> &targets, const Playe
 
 void IkQizhiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
-    bool success = source->pindian(targets.first(), "ikqizhi", NULL);
+    bool success = source->pindian(targets.first(), "ikqizhi");
     if (success)
         source->setFlags("IkQizhiSuccess");
     else
@@ -6523,7 +6523,7 @@ bool IkLvdongCard::targetFilter(const QList<const Player *> &targets, const Play
 void IkLvdongCard::onEffect(const CardEffectStruct &effect) const
 {
     Room *room = effect.from->getRoom();
-    if (effect.from->pindian(effect.to, "iklvdong", NULL)) {
+    if (effect.from->pindian(effect.to, "iklvdong")) {
         ServerPlayer *target = effect.to;
         effect.from->tag["IkLvdongTarget"] = QVariant::fromValue(target);
         room->setPlayerFlag(effect.from, "IkLvdongSuccess");
@@ -7330,7 +7330,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *fuhuanghou) const
     {
-        if (fuhuanghou->pindian(player, objectName(), NULL)) {
+        if (fuhuanghou->pindian(player, objectName())) {
             player->skip(Player::Play);
         } else {
             room->setFixedDistance(player, fuhuanghou, 1);

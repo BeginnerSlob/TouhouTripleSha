@@ -431,7 +431,8 @@ QString LuaAI::askForUseCard(const QString &pattern, const QString &prompt, cons
     return result;
 }
 
-QList<int> LuaAI::askForDiscard(const QString &reason, int discard_num, int min_num, bool optional, bool include_equip, const QString &pattern)
+QList<int> LuaAI::askForDiscard(const QString &reason, int discard_num, int min_num, bool optional, bool include_equip,
+                                const QString &pattern)
 {
     lua_State *L = room->getLuaState();
 
