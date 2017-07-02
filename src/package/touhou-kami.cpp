@@ -2177,7 +2177,7 @@ public:
         room->broadcastSkillInvoke(objectName());
         room->sendCompulsoryTriggerLog(player, objectName());
 
-        room->killPlayer(player, NULL);
+        room->killPlayer(player);
         return false;
     }
 };

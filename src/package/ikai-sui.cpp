@@ -4117,6 +4117,165 @@ public:
     }
 };
 
+IkZongtiCard::IkZongtiCard()
+{
+}
+
+bool IkZongtiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    return targets.length() < 3 && !to_select->isKongcheng() && to_select != Self;
+}
+
+void IkZongtiCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
+    source->pindian(targets, "ikzongti");
+}
+
+class IkZongti : public ZeroCardViewAsSkill
+{
+public:
+    IkZongti()
+        : ZeroCardViewAsSkill("ikzongti")
+    {
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new IkZongtiCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("IkZongtiCard") && !player->isKongcheng();
+    }
+};
+
+class IkZongtiTrigger : public TriggerSkill
+{
+public:
+    IkZongtiTrigger()
+        : TriggerSkill("#ikzongti")
+    {
+        events << Pindian << EventMarksGot;
+        frequency = NotCompulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
+    {
+        if (triggerEvent == EventMarksGot) {
+            QString mark = data.toString();
+            if (mark == "@twitter" && player->getMark(mark) >= 7)
+                return QStringList(objectName());
+        } else if (triggerEvent == Pindian) {
+            PindianStruct *pindian = data.value<PindianStruct *>();
+            if (pindian->reason == "ikzongti") {
+                return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                        ServerPlayer *) const
+    {
+        if (triggerEvent == EventMarksGot) {
+            room->sendCompulsoryTriggerLog(player, "ikzongti");
+            room->killPlayer(player);
+        } else {
+            PindianStruct *pindian = data.value<PindianStruct *>();
+            QList<ServerPlayer *> players;
+            if (pindian->from_number <= pindian->to_number) {
+                player->gainMark("@twitter");
+                players << player;
+            }
+            if (pindian->from_number >= pindian->to_number) {
+                players << pindian->to;
+            }
+            room->sortByActionOrder(players);
+            foreach (ServerPlayer *p, players) {
+                if (p->isAlive()) {
+                    if (player->isAlive()) {
+                        if (!p->canDiscard(p, "he")
+                            || !room->askForDiscard(p, "ikzongti", 1, 1, true, true,
+                                                    "@ikzongti-discard:" + player->objectName()))
+                            player->drawCards(1, "ikzongti");
+                    } else {
+                        if (p->canDiscard(p, "he"))
+                            room->askForDiscard(p, "ikzongti", 1, 1, false, true);
+                    }
+                }
+            }
+        }
+        return false;
+    }
+};
+
+class IkMingchong : public TriggerSkill
+{
+public:
+    IkMingchong()
+        : TriggerSkill("ikmingchong")
+    {
+        events << PindianVerifying;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const
+    {
+        TriggerList skill_list;
+        PindianStruct *pindian = data.value<PindianStruct *>();
+        if (TriggerSkill::triggerable(pindian->from) && pindian->reason == "ikzongti") {
+            int n = pindian->from->getMark("@twitter");
+            if (pindian->from_number == n && pindian->from->hasUsed("IkZongtiCard")) {
+                room->sendCompulsoryTriggerLog(pindian->from, objectName());
+                room->broadcastSkillInvoke(objectName());
+                room->addPlayerHistory(pindian->from, "IkZongtiCard", 0);
+            } else if (pindian->from_number < n)
+                skill_list.insert(pindian->from, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName(), data)) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const
+    {
+        PindianStruct *pindian = data.value<PindianStruct *>();
+        int n = ask_who->getMark("@twitter");
+        pindian->from_number = qMin(pindian->from_number + n, 13);
+        doIkMingchongLog(room, ask_who, pindian->from_number);
+        data = QVariant::fromValue(pindian);
+        return false;
+    }
+
+private:
+    QString getNumberString(int number) const
+    {
+        if (number == 10)
+            return "10";
+        else {
+            static const char *number_string = "-A23456789-JQK";
+            return QString(number_string[number]);
+        }
+    }
+
+    void doIkMingchongLog(Room *room, ServerPlayer *player, int number) const
+    {
+        LogMessage log;
+        log.type = "#IkMingchong";
+        log.from = player;
+        log.arg = getNumberString(number);
+        room->sendLog(log);
+    }
+};
+
 IkFenxunCard::IkFenxunCard()
 {
 }
@@ -8081,6 +8240,12 @@ IkaiSuiPackage::IkaiSuiPackage()
     bloom060->addSkill(new IkYongyeDraw);
     related_skills.insertMulti("ikyongye", "#ikyongye");
 
+    General *bloom061 = new General(this, "bloom061", "hana", 3);
+    bloom061->addSkill(new IkZongti);
+    bloom061->addSkill(new IkZongtiTrigger);
+    related_skills.insertMulti("ikzongti", "#ikzongti");
+    bloom061->addSkill(new IkMingchong);
+
     General *snow022 = new General(this, "snow022", "yuki");
     snow022->addSkill(new Skill("ikxindu", Skill::NotCompulsory));
     snow022->addSkill(new IkFenxun);
@@ -8245,6 +8410,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkHaobiCard>();
     addMetaObject<IkZhiyuCard>();
     addMetaObject<IkZhiyuBasicCard>();
+    addMetaObject<IkZongtiCard>();
     addMetaObject<IkFenxunCard>();
     addMetaObject<IkHongrouCard>();
     addMetaObject<IkTianyanCard>();
