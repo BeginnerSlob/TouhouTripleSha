@@ -2252,6 +2252,7 @@ public:
     {
         DamageStruct damage = data.value<DamageStruct>();
         room->recover(player, RecoverStruct(ask_who, NULL, damage.damage));
+        damage.trigger_chain = false;
         damage.to = ask_who;
         room->damage(damage);
         return false;
