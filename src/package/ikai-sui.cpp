@@ -4176,8 +4176,7 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
-                        ServerPlayer *) const
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         if (triggerEvent == EventMarksGot) {
             room->sendCompulsoryTriggerLog(player, "ikzongti");
@@ -6027,6 +6026,124 @@ public:
     virtual bool isEnabledAtPlay(const Player *player) const
     {
         return player->canDiscard(player, "h") && !player->hasUsed("IkCaiyinCard");
+    }
+};
+
+class IkPitai : public TriggerSkill
+{
+public:
+    IkPitai()
+        : TriggerSkill("ikpitai")
+    {
+        events << CardsMoveOneTime;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (TriggerSkill::triggerable(player) && !room->getTag("FirstRound").toBool()) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.to == player && move.to_place == Player::PlaceHand && move.card_ids.length() > 1) {
+                if (move.from != move.to)
+                    return QStringList(objectName());
+                else {
+                    int n = 0;
+                    foreach (Player::Place place, move.from_places) {
+                        if (place != Player::PlaceJudge && place != Player::PlaceHand && place != Player::PlaceEquip) {
+                            ++n;
+                            if (n > 1)
+                                return QStringList(objectName());
+                        }
+                    }
+                }
+            } else if (move.from == player && move.card_ids.length() > 1) {
+                int n = 0;
+                foreach (Player::Place place, move.from_places) {
+                    if (place == Player::PlaceHand || place == Player::PlaceEquip) {
+                        ++n;
+                        if (n > 1)
+                            return QStringList(objectName());
+                    }
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        ServerPlayer *target
+            = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@ikpitai", true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["IkPitaiTarget"] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        ServerPlayer *target = player->tag["IkPitaiTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkPitaiTarget");
+        if (target)
+            target->drawCards(1, objectName());
+        return false;
+    }
+};
+
+IkHuzhanCard::IkHuzhanCard()
+{
+}
+
+bool IkHuzhanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    return targets.isEmpty() && to_select->hasEquip() && to_select != Self;
+}
+
+void IkHuzhanCard::onEffect(const CardEffectStruct &effect) const
+{
+    Room *room = effect.from->getRoom();
+    effect.to->drawCards(1, objectName());
+
+    QStringList choices;
+    if (effect.from->canDiscard(effect.to, "e"))
+        choices << "discard";
+    choices << "obtain";
+    QString choice = room->askForChoice(effect.to, "ikhuzhan", choices.join("+"));
+    if (choice == "discard") {
+        int card_id = room->askForCardChosen(effect.from, effect.to, "e", "ikhuzhan", false, MethodDiscard);
+        room->throwCard(card_id, effect.to, effect.from);
+    } else {
+        DummyCard dummy;
+        dummy.addSubcards(effect.to->getEquips());
+        room->obtainCard(effect.to, &dummy);
+        room->damage(DamageStruct("ikhuzhan", effect.from, effect.to));
+    }
+}
+
+class IkHuzhan : public ZeroCardViewAsSkill
+{
+public:
+    IkHuzhan()
+        : ZeroCardViewAsSkill("ikhuzhan")
+    {
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new IkHuzhanCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        QStringList lists = Sanguosha->getRoleList(player->getGameMode());
+        int n = lists.count("rebel");
+        foreach (const Player *p, player->getSiblings()) {
+            if (p->isDead() && p->getRole() == "rebel")
+                --n;
+        }
+
+        return player->usedTimes("IkHuzhanCard") < n;
     }
 };
 
@@ -8299,6 +8416,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     snow059->addSkill(new IkHonglian);
     snow059->addSkill(new IkCaiyin);
 
+    General *snow061 = new General(this, "snow061", "yuki", 3);
+    snow061->addSkill(new IkPitai);
+    snow061->addSkill(new IkHuzhan);
+
     General *luna017 = new General(this, "luna017", "tsuki");
     luna017->addSkill(new IkChenyan);
     luna017->addSkill(new IkMoliao);
@@ -8421,6 +8542,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkYaoyinCard>();
     addMetaObject<IkHuangpoCard>();
     addMetaObject<IkCaiyinCard>();
+    addMetaObject<IkHuzhanCard>();
     addMetaObject<IkBinglingCard>();
     addMetaObject<IkZhangeCard>();
     addMetaObject<IkFeishanCard>();

@@ -103,8 +103,7 @@ public:
         if (triggerEvent == CardsMoveOneTime) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.to == player && move.from && move.from->isAlive() && move.from != move.to
-                && (move.to_place == Player::PlaceHand || move.to_place == Player::PlaceEquip)
-                && move.reason.m_reason != CardMoveReason::S_REASON_PREVIEWGIVE) {
+                && move.to_place == Player::PlaceHand) {
                 int n = 0;
                 foreach (Player::Place place, move.from_places) {
                     if (place == Player::PlaceHand || place == Player::PlaceEquip)
