@@ -2151,6 +2151,151 @@ public:
     }
 };
 
+IkQixinCard::IkQixinCard()
+{
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+bool IkQixinCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    return targets.isEmpty() && !to_select->hasFlag("IkQixinInvoked") && to_select != Self;
+}
+
+void IkQixinCard::onEffect(const CardEffectStruct &effect) const
+{
+    Room *room = effect.from->getRoom();
+    room->setPlayerFlag(effect.to, "IkQixinInvoked");
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "ikqixin",
+                          QString());
+    room->obtainCard(effect.to, this, reason);
+    if (effect.to->isWounded())
+        room->recover(effect.to, RecoverStruct(effect.from));
+    QList<ServerPlayer *> targets;
+    QList<ServerPlayer *> players = room->getOtherPlayers(effect.from);
+    foreach (ServerPlayer *p, players) {
+        if (!p->hasFlag("IkQixinInvoked"))
+            targets << p;
+    }
+    if (targets.isEmpty())
+        room->setPlayerFlag(effect.from, "ForbidIkQixin");
+}
+
+class IkQixinVS : public ViewAsSkill
+{
+public:
+    IkQixinVS()
+        : ViewAsSkill("ikqixin")
+    {
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
+    {
+        if (to_select->isEquipped())
+            return false;
+        int sum = 0;
+        foreach (const Card *c, selected)
+            sum += c->getNumber();
+        return sum + to_select->getNumber() <= 13;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        int sum = 0;
+        foreach (const Card *c, cards)
+            sum += c->getNumber();
+        if (sum == 13) {
+            Card *card = new IkQixinCard;
+            card->addSubcards(cards);
+            return card;
+        }
+        return NULL;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->isKongcheng() && !player->hasFlag("ForbidIkQixin");
+    }
+};
+
+class IkQixin : public TriggerSkill
+{
+public:
+    IkQixin()
+        : TriggerSkill("ikqixin")
+    {
+        events << EventPhaseChanging;
+        view_as_skill = new IkQixinVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        PhaseChangeStruct phase_change = data.value<PhaseChangeStruct>();
+        if (phase_change.from != Player::Play && phase_change.to != Player::Play)
+            return QStringList();
+        if (player->hasFlag("ForbidIkQixin"))
+            room->setPlayerFlag(player, "-ForbidIkQixin");
+        QList<ServerPlayer *> players = room->getOtherPlayers(player);
+        foreach (ServerPlayer *p, players) {
+            if (p->hasFlag("IkQixinInvoked"))
+                room->setPlayerFlag(p, "-IkQixinInvoked");
+        }
+        return QStringList();
+    }
+};
+
+class IkGuangyou : public TriggerSkill
+{
+public:
+    IkGuangyou()
+        : TriggerSkill("ikguangyou")
+    {
+        events << EventPhaseEnd;
+        frequency = Frequent;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return TriggerSkill::triggerable(target) && target->getPhase() == Player::Play && !target->hasUsed("IkQixinCard");
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        QString choice = room->askForChoice(player, objectName(), "add+draw");
+        if (choice == "add")
+            room->setPlayerFlag(player, objectName());
+        else
+            player->drawCards(player->getMaxHp(), objectName());
+        return false;
+    }
+};
+
+class IkGuangyouMax : public MaxCardsSkill
+{
+public:
+    IkGuangyouMax()
+        : MaxCardsSkill("#ikguangyou")
+    {
+        frequency = NotCompulsory;
+    }
+
+    virtual int getExtra(const Player *target) const
+    {
+        if (target->hasFlag("ikguangyou"))
+            return target->getMaxHp();
+        return 0;
+    }
+};
+
 class IkBashou : public TriggerSkill
 {
 public:
@@ -7864,6 +8009,12 @@ IkaiSuiPackage::IkaiSuiPackage()
     related_skills.insertMulti("ikchunsu", "#ikchunsu");
     wind060->addSkill(new IkYingzhi);
 
+    General *wind061 = new General(this, "wind061", "kaze", 3);
+    wind061->addSkill(new IkQixin);
+    wind061->addSkill(new IkGuangyou);
+    wind061->addSkill(new IkGuangyouMax);
+    related_skills.insertMulti("ikguangyou", "#ikguangyou");
+
     General *bloom023 = new General(this, "bloom023", "hana");
     bloom023->addSkill(new IkBashou);
 
@@ -8086,6 +8237,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkDuanmengCard>();
     addMetaObject<IkFanzhongCard>();
     addMetaObject<IkYuzhiCard>();
+    addMetaObject<IkQixinCard>();
     addMetaObject<IkXinbanCard>();
     addMetaObject<IkHuyinCard>();
     addMetaObject<IkXunyuyouliCard>();
