@@ -2673,13 +2673,13 @@ bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
         if (line.isEmpty())
             continue;
         QStringList _line = line.split(",");
-        if (_line.length() != 12)
+        if (_line.length() != 6)
             continue;
         ++uid;
         if (_line[1] == user_name) {
             if (password == _line[2]) {
                 setPlayerProperty(player, "userid", _line[0].toInt());
-                setPlayerProperty(player, "level", GetLevelByExp(_line[9].toInt()));
+                setPlayerProperty(player, "level", GetLevelByExp(_line[3].toInt()));
                 in.flush();
                 file.close();
                 return true;
@@ -2709,8 +2709,7 @@ bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
         stream.setCodec("UTF-8");
         QStringList lines;
         lines << QString::number(uid) << user_name << password << QString::number(0) << QString::number(0)
-              << QString::number(0) << QString::number(0) << QString::number(0) << QString::number(0) << QString::number(0)
-              << QString::number(0) << QString::number(0);
+              << QString::number(0);
         stream << lines.join(",") << "\n";
         stream.flush();
         file.close();

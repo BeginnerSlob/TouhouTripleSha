@@ -298,7 +298,7 @@ public:
         int uid = player->userId();
         if (uid == -1)
             return;
-        updatePlayerData(uid, role, is_win, is_escape, exp, wen, wu);
+        updatePlayerData(uid, exp, wen, wu);
         QStringList line;
         line << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm");
         line << Sanguosha->translate(player->getGeneralName());
@@ -323,7 +323,7 @@ public:
         file.close();
     }
 
-    void updatePlayerData(int uid, const QString &role, bool is_win, bool is_escape, int exp, int wen, int wu) const
+    void updatePlayerData(int uid, int exp, int wen, int wu) const
     {
         QString location = QString("account/accounts.csv");
         QFile file(location);
@@ -335,25 +335,12 @@ public:
         stream.seek(0);
         foreach (QString line, lines) {
             QStringList _line = line.split(",");
-            if (_line.length() != 12) {
+            if (_line.length() != 6) {
                 stream << line << "\n";
             } else if (_line[0] == QString::number(uid)) {
-                if (is_win) {
-                    if (role == "lord")
-                        _line[3] = QString::number(_line[3].toInt() + 1);
-                    else if (role == "loyalist")
-                        _line[4] = QString::number(_line[4].toInt() + 1);
-                    else if (role == "rebel")
-                        _line[5] = QString::number(_line[5].toInt() + 1);
-                    else if (role == "renegade")
-                        _line[6] = QString::number(_line[6].toInt() + 1);
-                }
-                if (is_escape)
-                    _line[7] = QString::number(_line[7].toInt() + 1);
-                _line[8] = QString::number(_line[8].toInt() + 1);
-                _line[9] = QString::number(_line[9].toInt() + exp);
-                _line[10] = QString::number(_line[10].toInt() + wen);
-                _line[11] = QString::number(_line[11].toInt() + wu);
+                _line[3] = QString::number(_line[3].toInt() + exp);
+                _line[4] = QString::number(_line[4].toInt() + wen);
+                _line[5] = QString::number(_line[5].toInt() + wu);
                 stream << _line.join(",") << "\n";
             } else
                 stream << line << "\n";
