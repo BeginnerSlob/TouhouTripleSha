@@ -1,6 +1,7 @@
 debug/
 release/
-account/
+account/accounts.csv
+account/*_*
 etc/winrate/
 replays/
 ui_*
