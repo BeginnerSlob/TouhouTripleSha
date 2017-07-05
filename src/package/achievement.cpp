@@ -306,7 +306,9 @@ public:
         line << Sanguosha->translate(role);
         line << QString::number(player->getMark("Global_TurnCount"));
         line << (is_alive ? AchieveSkill::tr("Alive") : AchieveSkill::tr("Dead"));
-        line << (is_escape ? AchieveSkill::tr("Escape") : (is_draw ? AchieveSkill::tr("Standoff") : (is_win ? AchieveSkill::tr("Victory") : AchieveSkill::tr("Failure"))));
+        line << (is_escape ? AchieveSkill::tr("Escape")
+                           : (is_draw ? AchieveSkill::tr("Standoff")
+                                      : (is_win ? AchieveSkill::tr("Victory") : AchieveSkill::tr("Failure"))));
         line << QString::number(exp);
         line << QString::number(wen);
         line << QString::number(wu);
@@ -350,6 +352,75 @@ public:
     }
 };
 
+class HFLY : public AchieveSkill
+{
+public:
+    HFLY()
+        : AchieveSkill("hfly")
+    {
+        events << PreDamageDone << CardFinished;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
+    {
+        if (triggerEvent == CardFinished) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            QVariant value = room->getAchievementData(player, key);
+            QVariantList v_list = value.toList();
+            QMap<QString, QStringList> map;
+            for (int i = 0; i < v_list.length(); ++i) {
+                QString s = v_list[i].toString();
+                ++i;
+                map[s] = v_list[i].toStringList();
+            }
+            if (!map.value(use.card->toString(), QStringList()).isEmpty())
+                map.remove(use.card->toString());
+            v_list.clear();
+            foreach (QString _key, map.keys()) {
+                v_list << _key;
+                v_list << QVariant::fromValue(map[_key]);
+            }
+            room->setAchievementData(player, key, QVariant::fromValue(v_list));
+        } else {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.from && damage.card && damage.card->isKindOf("BurningCamps")) {
+                QVariant value = room->getAchievementData(damage.from, key);
+                QVariantList v_list = value.toList();
+                QMap<QString, QStringList> map;
+                for (int i = 0; i < v_list.length(); ++i) {
+                    QString s = v_list[i].toString();
+                    ++i;
+                    map[s] = v_list[i].toStringList();
+                }
+                if (map.value(damage.card->toString(), QStringList()).isEmpty()) {
+                    map[damage.card->toString()] = QStringList();
+                    map[damage.card->toString()] << player->objectName();
+                } else {
+                    if (!map[damage.card->toString()].contains(player->objectName()))
+                        map[damage.card->toString()] << player->objectName();
+                }
+                v_list.clear();
+                foreach (QString _key, map.keys()) {
+                    v_list << _key;
+                    v_list << QVariant::fromValue(map[_key]);
+                }
+                room->setAchievementData(damage.from, key, QVariant::fromValue(v_list));
+                if (map[damage.card->toString()].length() == 6)
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const
+    {
+        DamageStruct damage = data.value<DamageStruct>();
+        gainAchievement(damage.from, room);
+        return false;
+    }
+};
+
 class TSQB : public AchieveSkill
 {
 public:
@@ -359,12 +430,13 @@ public:
         events << CardUsed << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data,
+                                    ServerPlayer *&) const
     {
         if (triggerEvent == EventPhaseChanging) {
             if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
                 foreach (ServerPlayer *p, room->getAlivePlayers())
-                    room->setAchievementData(p,key,0);
+                    room->setAchievementData(p, key, 0);
             }
             return QStringList(objectName());
         }
@@ -387,7 +459,7 @@ AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
-    skills << /*new HFLY <<*/ new TSQB;
+    skills << new HFLY << new TSQB;
 }
 
 ADD_PACKAGE(Achievement)
