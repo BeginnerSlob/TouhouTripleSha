@@ -438,7 +438,7 @@ public:
                 foreach (ServerPlayer *p, room->getAlivePlayers())
                     room->setAchievementData(p, key, 0);
             }
-            return QStringList(objectName());
+            return QStringList();
         }
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.card->isKindOf("Slash"))
@@ -448,8 +448,8 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        room->addAchievementData(player, key, 1, false);
-        if (room->getAchievementData(player, key, false) == 4)
+        room->addAchievementData(player, key, 1);
+        if (room->getAchievementData(player, key) == 4)
             gainAchievement(player, room);
         return false;
     }
