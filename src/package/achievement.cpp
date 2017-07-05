@@ -350,17 +350,24 @@ public:
     }
 };
 
-class NDXS : public AchieveSkill
+class TSQB : public AchieveSkill
 {
 public:
-    NDXS()
-        : AchieveSkill("ndxs")
+    TSQB()
+        : AchieveSkill("tsqb")
     {
-        events << CardUsed;
+        events << CardUsed << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *&) const
     {
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    room->setAchievementData(p,key,0);
+            }
+            return QStringList(objectName());
+        }
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.card->isKindOf("Slash"))
             return QStringList(objectName());
@@ -370,59 +377,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         room->addAchievementData(player, key, 1, false);
-        if (room->getAchievementData(player, key, false) == 3)
-            gainAchievement(player, room);
-        return false;
-    }
-};
-
-class GLGJSSY : public AchieveSkill
-{
-public:
-    GLGJSSY()
-        : AchieveSkill("glgjssy")
-    {
-        events << CardUsed;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *&) const
-    {
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("Slash"))
-            return QStringList(objectName());
-        return QStringList();
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
-    {
-        room->addAchievementData(player, key, 1, false);
-        if (room->getAchievementData(player, key, false) == 7)
-            gainAchievement(player, room);
-        return false;
-    }
-};
-
-class QYHFBQZ : public AchieveSkill
-{
-public:
-    QYHFBQZ()
-        : AchieveSkill("qyhfbqz")
-    {
-        events << CardUsed;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *&) const
-    {
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("Slash"))
-            return QStringList(objectName());
-        return QStringList();
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
-    {
-        room->addAchievementData(player, key, 1, false);
-        if (room->getAchievementData(player, key, false) == 7)
+        if (room->getAchievementData(player, key, false) == 4)
             gainAchievement(player, room);
         return false;
     }
@@ -432,7 +387,7 @@ AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
-    skills << new NDXS << new GLGJSSY << new QYHFBQZ;
+    skills << /*new HFLY <<*/ new TSQB;
 }
 
 ADD_PACKAGE(Achievement)
