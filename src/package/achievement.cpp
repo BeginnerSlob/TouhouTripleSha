@@ -42,7 +42,7 @@ void AchieveSkill::gainAchievement(ServerPlayer *player, Room *room) const
         log.arg = translations[1];
         room->sendLog(log);
     }
-    QString location = QString(ACCOUNT"%1_achievement.csv").arg(uid);
+    QString location = QString(ACCOUNT "%1_achievement.csv").arg(uid);
     QFile file(location);
     file.open(QIODevice::ReadWrite);
     QTextStream stream(&file);
@@ -77,7 +77,7 @@ void AchieveSkill::gainAchievement(ServerPlayer *player, Room *room) const
 
 QStringList AchieveSkill::getAchievementTranslations(QString _key)
 {
-    QString location = QString(ACCOUNT"achievement.csv");
+    QString location = QString(ACCOUNT "achievement.csv");
     QFile file(location);
     file.open(QIODevice::ReadOnly);
     QTextStream stream(&file);
@@ -315,7 +315,7 @@ public:
         line << QString::number(wen);
         line << QString::number(wu);
         line << translated_achieve.join(" ");
-        QString location = QString(ACCOUNT"%1_records.csv").arg(uid);
+        QString location = QString(ACCOUNT "%1_records.csv").arg(uid);
         QFile file(location);
         if (!file.open(QIODevice::ReadWrite))
             return;
@@ -329,7 +329,7 @@ public:
 
     void updatePlayerData(int uid, int exp, int wen, int wu) const
     {
-        QString location = QString(ACCOUNT"accounts.csv");
+        QString location = QString(ACCOUNT "accounts.csv");
         QFile file(location);
         if (!file.open(QIODevice::ReadWrite))
             return;
@@ -432,7 +432,8 @@ public:
         events << ChoiceMade << CardFinished;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
     {
         if (triggerEvent == CardFinished) {
             CardUseStruct use = data.value<CardUseStruct>();
@@ -489,6 +490,42 @@ public:
     }
 };
 
+class SSHAHX : public AchieveSkill
+{
+public:
+    SSHAHX()
+        : AchieveSkill("sshahx")
+    {
+        events << ChoiceMade;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        QStringList args = data.toString().split(":");
+        if (args[0] == "Nullification") {
+            if (args[1] == "LureTiger" || args[1] == "KnownBoth") {
+                QVariant _data = room->getAchievementData(player, key);
+                QStringList list = _data.toStringList();
+                if (!list.contains(args[1]))
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        QStringList args = data.toString().split(":");
+        QVariant _data = room->getAchievementData(player, key);
+        QStringList list = _data.toStringList();
+        list << args[1];
+        room->setAchievementData(player, key, QVariant::fromValue(list));
+        if (list.length() == 2)
+            gainAchievement(player, room);
+        return false;
+    }
+};
+
 class TSQB : public AchieveSkill
 {
 public:
@@ -527,7 +564,7 @@ AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
-    skills << new HFLY << new XQWBJFY << new YLHS << new TSQB;
+    skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new TSQB;
 }
 
 ADD_PACKAGE(Achievement)
