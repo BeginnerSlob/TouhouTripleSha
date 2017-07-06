@@ -1,6 +1,6 @@
 #include "roomscene.h"
-#include "audio.h"
 #include "achievement.h"
+#include "audio.h"
 #include "bubblechatbox.h"
 #include "button.h"
 #include "cardcontainer.h"
@@ -288,9 +288,7 @@ RoomScene::RoomScene(QMainWindow *main_window)
     chat_edit_widget->setObjectName("chat_edit_widget");
     chat_edit_widget->setZValue(0.9);
     connect(chat_edit, &QLineEdit::returnPressed, this, &RoomScene::speak);
-#if QT_VERSION >= 0x040700
     chat_edit->setPlaceholderText(tr("Please enter text to chat ... "));
-#endif
 
     chat_widget = new ChatWidget();
     chat_widget->setZValue(0.7);
@@ -3181,11 +3179,7 @@ void RoomScene::addRestartButton(QDialog *dialog)
 
 void RoomScene::saveReplayRecord()
 {
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    QString location = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
-#else
     QString location = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
-#endif
     QString filename = QFileDialog::getSaveFileName(main_window, tr("Save replay record"), location,
                                                     tr("Pure text replay file (*.txt);; Image replay file (*.png)"));
 

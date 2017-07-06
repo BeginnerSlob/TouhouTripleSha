@@ -2,7 +2,7 @@
 # Project created by QtCreator 2010-06-13T04:26:52
 # -------------------------------------------------
 TARGET = TouhouTripleSha
-QT += network widgets opengl
+QT += network widgets
 TEMPLATE = app
 CONFIG += audio
 win32: QT += winextras
@@ -285,7 +285,6 @@ macx{
 }
 
 LIBS += -L.
-DEFINES += USING_OPENGL
 win32-msvc*{
     DEFINES += _CRT_SECURE_NO_WARNINGS
     !contains(QMAKE_HOST.arch, x86_64) {
@@ -495,11 +494,6 @@ android:DEFINES += "\"l_getlocaledecpoint()='.'\""
         src/lua53alpha/lauxlib.h \
         src/lua53alpha/lapi.h
     INCLUDEPATH += src/lua53alpha
-}
-
-CONFIG(opengl){
-    QT += opengl
-    DEFINES += USING_OPENGL
 }
 
 TRANSLATIONS += builds/sanguosha.ts

@@ -27,10 +27,6 @@
 #include <QTime>
 #include <QUrl>
 #include <QVariant>
-#if !defined(QT_NO_OPENGL) && defined(USING_OPENGL)
-#include <QGLFormat>
-#include <QOpenGLWidget>
-#endif
 
 #include <QtMath>
 
@@ -45,16 +41,8 @@ public:
         : QGraphicsView(scene)
     {
         setSceneRect(Config.Rect);
-#if !defined(QT_NO_OPENGL) && defined(USING_OPENGL)
-        if (QGLFormat::hasOpenGL()) {
-            QOpenGLWidget *widget = new QOpenGLWidget;
-            widget->makeCurrent();
-            setViewport(widget);
-        }
-#else
 #if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
         setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-#endif
 #endif
         setRenderHints(QPainter::TextAntialiasing | QPainter::Antialiasing);
     }
@@ -77,7 +65,8 @@ public:
             return;
         } else if (scene()->inherits("StartScene")) {
             StartScene *start_scene = qobject_cast<StartScene *>(scene());
-            QRectF newSceneRect(-event->size().width() / 2, -event->size().height() / 2, event->size().width(), event->size().height());
+            QRectF newSceneRect(-event->size().width() / 2, -event->size().height() / 2, event->size().width(),
+                                event->size().height());
             start_scene->setSceneRect(newSceneRect);
             setSceneRect(start_scene->sceneRect());
             if (newSceneRect != start_scene->sceneRect())
@@ -125,8 +114,8 @@ MainWindow::MainWindow(QWidget *parent)
 #endif
 
     QList<QAction *> actions;
-    actions << ui->actionStart_Game << ui->actionStart_Server << ui->actionReplay << ui->actionConfigure << ui->actionGeneral_Overview << ui->actionCard_Overview
-            << ui->actionViewData << ui->actionAbout;
+    actions << ui->actionStart_Game << ui->actionStart_Server << ui->actionReplay << ui->actionConfigure
+            << ui->actionGeneral_Overview << ui->actionCard_Overview << ui->actionViewData << ui->actionAbout;
 
     foreach (QAction *action, actions)
         start_scene->addButton(action);
@@ -199,7 +188,8 @@ void MainWindow::gotoScene(QGraphicsScene *scene)
 void MainWindow::on_actionExit_triggered()
 {
     QMessageBox::StandardButton result;
-    result = QMessageBox::question(this, tr("TouhouTripleSha"), tr("Are you sure to exit?"), QMessageBox::Ok | QMessageBox::Cancel);
+    result = QMessageBox::question(this, tr("TouhouTripleSha"), tr("Are you sure to exit?"),
+                                   QMessageBox::Ok | QMessageBox::Cancel);
     if (result == QMessageBox::Ok) {
         delete systray;
         systray = NULL;
@@ -277,16 +267,13 @@ void MainWindow::startConnection()
 
 void MainWindow::on_actionReplay_triggered()
 {
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    QString location = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
-#else
     QString location = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
-#endif
     QString last_dir = Config.value("LastReplayDir").toString();
     if (!last_dir.isEmpty())
         location = last_dir;
 
-    QString filename = QFileDialog::getOpenFileName(this, tr("Select a replay file"), location, tr("Pure text replay file (*.txt);; Image replay file (*.png)"));
+    QString filename = QFileDialog::getOpenFileName(this, tr("Select a replay file"), location,
+                                                    tr("Pure text replay file (*.txt);; Image replay file (*.png)"));
 
     if (filename.isEmpty())
         return;
@@ -395,8 +382,8 @@ void MainWindow::gotoStartScene()
     StartScene *start_scene = new StartScene;
 
     QList<QAction *> actions;
-    actions << ui->actionStart_Game << ui->actionStart_Server << ui->actionReplay << ui->actionConfigure << ui->actionGeneral_Overview << ui->actionCard_Overview
-            << ui->actionScenario_Overview << ui->actionAbout;
+    actions << ui->actionStart_Game << ui->actionStart_Server << ui->actionReplay << ui->actionConfigure
+            << ui->actionGeneral_Overview << ui->actionCard_Overview << ui->actionScenario_Overview << ui->actionAbout;
 
     ui->actionStart_Game->setEnabled(true);
     ui->actionStart_Server->setEnabled(true);
@@ -489,7 +476,8 @@ void MainWindow::on_actionAbout_triggered()
     config = "debug";
 #endif
 
-    content.append(tr("Current version: %1 %2 (%3)<br/>").arg(Sanguosha->getVersion()).arg(config).arg(Sanguosha->getVersionName()));
+    content.append(
+        tr("Current version: %1 %2 (%3)<br/>").arg(Sanguosha->getVersion()).arg(config).arg(Sanguosha->getVersionName()));
 
     const char *date = __DATE__;
     const char *time = __TIME__;
@@ -509,7 +497,8 @@ void MainWindow::on_actionAbout_triggered()
 
     window->addContent(content);
     window->addCloseButton(tr("OK"));
-    window->shift(scene && scene->inherits("RoomScene") ? scene->width() : 0, scene && scene->inherits("RoomScene") ? scene->height() : 0);
+    window->shift(scene && scene->inherits("RoomScene") ? scene->width() : 0,
+                  scene && scene->inherits("RoomScene") ? scene->height() : 0);
 
     window->appear();
 }
@@ -662,7 +651,8 @@ void MainWindow::on_actionRole_assign_table_triggered()
 
     window->addContent(content);
     window->addCloseButton(tr("OK"));
-    window->shift(scene && scene->inherits("RoomScene") ? scene->width() : 0, scene && scene->inherits("RoomScene") ? scene->height() : 0);
+    window->shift(scene && scene->inherits("RoomScene") ? scene->width() : 0,
+                  scene && scene->inherits("RoomScene") ? scene->height() : 0);
     window->setZValue(32766);
 
     window->appear();
@@ -729,7 +719,8 @@ void MainWindow::on_actionAcknowledgement_triggered()
     Button *button = window->addCloseButton(tr("OK"));
     button->moveBy(-85, -35);
     window->setZValue(32766);
-    window->shift(scene && scene->inherits("RoomScene") ? scene->width() : 0, scene && scene->inherits("RoomScene") ? scene->height() : 0);
+    window->shift(scene && scene->inherits("RoomScene") ? scene->width() : 0,
+                  scene && scene->inherits("RoomScene") ? scene->height() : 0);
 
     window->appear();
 }
@@ -742,8 +733,9 @@ void MainWindow::on_actionAcknowledgement_triggered()
 
 void MainWindow::on_actionReplay_file_convert_triggered()
 {
-    QString filename = QFileDialog::getOpenFileName(this, tr("Please select a replay file"), Config.value("LastReplayDir").toString(),
-                                                    tr("Pure text replay file (*.txt);; Image replay file (*.png)"));
+    QString filename
+        = QFileDialog::getOpenFileName(this, tr("Please select a replay file"), Config.value("LastReplayDir").toString(),
+                                       tr("Pure text replay file (*.txt);; Image replay file (*.png)"));
 
     if (filename.isEmpty())
         return;
@@ -782,12 +774,9 @@ void MainWindow::on_actionReplay_file_convert_triggered()
 
 void MainWindow::on_actionRecord_analysis_triggered()
 {
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    QString location = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
-#else
     QString location = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
-#endif
-    QString filename = QFileDialog::getOpenFileName(this, tr("Load replay record"), location, tr("Pure text replay file (*.txt);; Image replay file (*.png)"));
+    QString filename = QFileDialog::getOpenFileName(this, tr("Load replay record"), location,
+                                                    tr("Pure text replay file (*.txt);; Image replay file (*.png)"));
 
     if (filename.isEmpty())
         return;
@@ -805,8 +794,8 @@ void MainWindow::on_actionRecord_analysis_triggered()
 
     static QStringList labels;
     if (labels.isEmpty()) {
-        labels << tr("ScreenName") << tr("General") << tr("Role") << tr("Living") << tr("WinOrLose") << tr("TurnCount") << tr("Recover") << tr("Damage") << tr("Damaged")
-               << tr("Kill") << tr("Designation");
+        labels << tr("ScreenName") << tr("General") << tr("Role") << tr("Living") << tr("WinOrLose") << tr("TurnCount")
+               << tr("Recover") << tr("Damage") << tr("Damaged") << tr("Kill") << tr("Designation");
     }
     table->setHorizontalHeaderLabels(labels);
     table->setSelectionBehavior(QTableWidget::SelectRows);
@@ -837,7 +826,8 @@ void MainWindow::on_actionRecord_analysis_triggered()
         table->setItem(i, 3, item);
 
         item = new QTableWidgetItem;
-        bool is_win = record->getRecordWinners().contains(rec->m_role) || record->getRecordWinners().contains(record_map.key(rec));
+        bool is_win
+            = record->getRecordWinners().contains(rec->m_role) || record->getRecordWinners().contains(record_map.key(rec));
         item->setText(is_win ? tr("Win") : tr("Lose"));
         table->setItem(i, 4, item);
 
@@ -929,7 +919,8 @@ void MainWindow::on_actionAbout_fmod_triggered()
     window->addContent(content);
     window->addCloseButton(tr("OK"));
     window->setZValue(32766);
-    window->shift(scene && scene->inherits("RoomScene") ? scene->width() : 0, scene && scene->inherits("RoomScene") ? scene->height() : 0);
+    window->shift(scene && scene->inherits("RoomScene") ? scene->width() : 0,
+                  scene && scene->inherits("RoomScene") ? scene->height() : 0);
 
     window->appear();
 }
@@ -953,15 +944,16 @@ void MainWindow::on_actionAbout_Lua_triggered()
     window->addContent(content);
     window->addCloseButton(tr("OK"));
     window->setZValue(32766);
-    window->shift(scene && scene->inherits("RoomScene") ? scene->width() : 0, scene && scene->inherits("RoomScene") ? scene->height() : 0);
+    window->shift(scene && scene->inherits("RoomScene") ? scene->width() : 0,
+                  scene && scene->inherits("RoomScene") ? scene->height() : 0);
 
     window->appear();
 }
 
 void MainWindow::on_actionAbout_GPLv3_triggered()
 {
-    QString content = tr(
-        "The GNU General Public License is the most widely used free software license, which guarantees end users the freedoms to use, study, share, and modify the software.");
+    QString content = tr("The GNU General Public License is the most widely used free software license, which guarantees end "
+                         "users the freedoms to use, study, share, and modify the software.");
     content.append("<p align='center'> <img src='image/logo/gplv3.png' /> </p> <br/>");
 
     QString address = "http://gplv3.fsf.org";
@@ -973,7 +965,8 @@ void MainWindow::on_actionAbout_GPLv3_triggered()
     window->addContent(content);
     window->addCloseButton(tr("OK"));
     window->setZValue(32766);
-    window->shift(scene && scene->inherits("RoomScene") ? scene->width() : 0, scene && scene->inherits("RoomScene") ? scene->height() : 0);
+    window->shift(scene && scene->inherits("RoomScene") ? scene->width() : 0,
+                  scene && scene->inherits("RoomScene") ? scene->height() : 0);
 
     window->appear();
 }
@@ -1024,7 +1017,8 @@ void MainWindow::httpFinished()
     }
 
     if (!newest.isEmpty()) {
-        if (versions[newest].versionNumber > Sanguosha->getVersionNumber() || versions[newest].updateDate.right(4) > Sanguosha->getVersionName())
+        if (versions[newest].versionNumber > Sanguosha->getVersionNumber()
+            || versions[newest].updateDate.right(4) > Sanguosha->getVersionName())
             has_new_version = true;
     }
 
@@ -1084,7 +1078,8 @@ void MainWindow::downloadNew(QString url)
 
     file = new QFile(fileName);
     if (!file->open(QIODevice::WriteOnly)) {
-        QMessageBox::information(this, tr("Download New Version"), tr("Unable to save the file %1: %2.").arg(fileName).arg(file->errorString()));
+        QMessageBox::information(this, tr("Download New Version"),
+                                 tr("Unable to save the file %1: %2.").arg(fileName).arg(file->errorString()));
         delete file;
         file = NULL;
         return;
