@@ -374,7 +374,8 @@ CustomAssignDialog::CustomAssignDialog(QWidget *parent)
     connect(before_next, &QCheckBox::toggled, this, &CustomAssignDialog::checkSingleTurnBox);
     connect(okButton, &QPushButton::clicked, this, &CustomAssignDialog::accept);
     connect(loadButton, &QPushButton::clicked, this, &CustomAssignDialog::load);
-    connect(saveButton, &QPushButton::clicked, this, (bool (CustomAssignDialog::*)())(&CustomAssignDialog::save));
+    connect(saveButton, (void (QPushButton::*)())(&QPushButton::clicked), this,
+            (bool (CustomAssignDialog::*)())(&CustomAssignDialog::save));
     connect(defaultLoadButton, &QPushButton::clicked, this, &CustomAssignDialog::load);
     connect(cancelButton, &QPushButton::clicked, this, &CustomAssignDialog::reject);
 }
@@ -1405,6 +1406,11 @@ void CustomAssignDialog::load()
     file.close();
 }
 
+bool CustomAssignDialog::save()
+{
+    return save(QString());
+}
+
 bool CustomAssignDialog::save(QString path)
 {
     if (starter.isEmpty()) {
@@ -1578,7 +1584,7 @@ bool CustomAssignDialog::save(QString path)
     }
 
     QString filename = path;
-    if (path.size() < 1)
+    if (path.isEmpty())
         filename = QFileDialog::getSaveFileName(this, tr("Save mini scenario settings"), "etc/customScenes/",
                                                 tr("Pure text replay file (*.txt)"));
 

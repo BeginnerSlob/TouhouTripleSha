@@ -69,7 +69,8 @@ private:
     QCheckBox *random_roles_box;
     QCheckBox *rest_in_DP_box;
     QCheckBox *ended_by_pile, *single_turn, *before_next;
-    QLabel *ended_by_pile_text, *ended_by_pile_text2, *single_turn_text, *single_turn_text2, *before_next_text, *before_next_text2;
+    QLabel *ended_by_pile_text, *ended_by_pile_text2, *single_turn_text, *single_turn_text2, *before_next_text,
+        *before_next_text2;
     QPushButton *extra_skill_set;
     QPushButton *move_list_up_button, *move_list_down_button;
     QCheckBox *move_list_check, *move_pile_check;
@@ -151,7 +152,8 @@ private slots:
     void on_list_itemSelectionChanged(QListWidgetItem *current);
 
     void load();
-    bool save(QString path = QString());
+    bool save();
+    bool save(QString path);
 
 public slots:
     void getChosenGeneral(QString general_name);
@@ -190,7 +192,8 @@ class CardAssignDialog : public QDialog
     Q_OBJECT
 
 public:
-    CardAssignDialog(QWidget *parent = 0, QString card_type = QString(), QString class_name = QString(), QList<int> excluded = QList<int>());
+    CardAssignDialog(QWidget *parent = 0, QString card_type = QString(), QString class_name = QString(),
+                     QList<int> excluded = QList<int>());
 
 private:
     void addCard(const Card *card);
