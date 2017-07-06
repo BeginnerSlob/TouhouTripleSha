@@ -423,6 +423,42 @@ public:
     }
 };
 
+class XQWBJFY : public AchieveSkill
+{
+public:
+    XQWBJFY()
+        : AchieveSkill("xqwbjfy")
+    {
+        events << ChoiceMade << CardFinished;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (triggerEvent == CardFinished) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Drowning"))
+                room->setAchievementData(player, key, 0);
+        } else {
+            QStringList args = data.toString().split(":");
+            if (args[0] == "cardChosen") {
+                if (args[1] == "drowning")
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        int value = room->getAchievementData(player, key).toInt();
+        ++value;
+        room->setAchievementData(player, key, value);
+        if (value == 8)
+            gainAchievement(player, room);
+        return false;
+    }
+};
+
 class TSQB : public AchieveSkill
 {
 public:
@@ -461,7 +497,7 @@ AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
-    skills << new HFLY << new TSQB;
+    skills << new HFLY << new XQWBJFY << new TSQB;
 }
 
 ADD_PACKAGE(Achievement)
