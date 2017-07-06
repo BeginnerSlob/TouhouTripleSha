@@ -21,6 +21,8 @@ void AchieveSkill::onGameOver(Room *, ServerPlayer *, QVariant &) const
     return;
 }
 
+#define ACCOUNT "account/docs/data/"
+
 void AchieveSkill::gainAchievement(ServerPlayer *player, Room *room) const
 {
     int uid = player->userId();
@@ -40,7 +42,7 @@ void AchieveSkill::gainAchievement(ServerPlayer *player, Room *room) const
         log.arg = translations[1];
         room->sendLog(log);
     }
-    QString location = QString("account/%1_achievement.csv").arg(uid);
+    QString location = QString(ACCOUNT"%1_achievement.csv").arg(uid);
     QFile file(location);
     file.open(QIODevice::ReadWrite);
     QTextStream stream(&file);
@@ -75,7 +77,7 @@ void AchieveSkill::gainAchievement(ServerPlayer *player, Room *room) const
 
 QStringList AchieveSkill::getAchievementTranslations(QString _key)
 {
-    QString location = QString("account/achievement.csv");
+    QString location = QString(ACCOUNT"achievement.csv");
     QFile file(location);
     file.open(QIODevice::ReadOnly);
     QTextStream stream(&file);
@@ -313,7 +315,7 @@ public:
         line << QString::number(wen);
         line << QString::number(wu);
         line << translated_achieve.join(" ");
-        QString location = QString("account/%1_records.csv").arg(uid);
+        QString location = QString(ACCOUNT"%1_records.csv").arg(uid);
         QFile file(location);
         if (!file.open(QIODevice::ReadWrite))
             return;
@@ -327,7 +329,7 @@ public:
 
     void updatePlayerData(int uid, int exp, int wen, int wu) const
     {
-        QString location = QString("account/accounts.csv");
+        QString location = QString(ACCOUNT"accounts.csv");
         QFile file(location);
         if (!file.open(QIODevice::ReadWrite))
             return;
