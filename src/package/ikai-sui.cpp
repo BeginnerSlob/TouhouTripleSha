@@ -5983,6 +5983,8 @@ bool IkCaiyinCard::targetFilter(const QList<const Player *> &targets, const Play
 
 void IkCaiyinCard::onEffect(const CardEffectStruct &effect) const
 {
+    if (!effect.to || effect.to->isDead() || effect.to->isKongcheng())
+        return;
     Room *room = effect.from->getRoom();
     int card_id = room->askForCardChosen(effect.from, effect.to, "h", "ikcaiyin");
     room->showCard(effect.to, card_id);
