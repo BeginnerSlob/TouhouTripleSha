@@ -6097,9 +6097,9 @@ IkHuzhanCard::IkHuzhanCard()
 {
 }
 
-bool IkHuzhanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+bool IkHuzhanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const
 {
-    return targets.isEmpty() && to_select->hasEquip() && to_select != Self;
+    return targets.isEmpty() && to_select->hasEquip();
 }
 
 void IkHuzhanCard::onEffect(const CardEffectStruct &effect) const
