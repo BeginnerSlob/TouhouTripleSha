@@ -526,6 +526,32 @@ public:
     }
 };
 
+class MDZM : public AchieveSkill
+{
+public:
+    MDZM()
+        : AchieveSkill("mdzm")
+    {
+        events << CardResponded;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *&) const
+    {
+        CardResponseStruct resp = data.value<CardResponseStruct>();
+        if (resp.m_card->isKindOf("Jink") && resp.m_isUse && resp.m_card->getSkillName() == "ibuki_gourd")
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->addAchievementData(player, key);
+        if (room->getAchievementData(player, key) == 2)
+            gainAchievement(player, room);
+        return false;
+    }
+};
+
 class TSQB : public AchieveSkill
 {
 public:
@@ -564,7 +590,7 @@ AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
-    skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new TSQB;
+    skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new TSQB;
 }
 
 ADD_PACKAGE(Achievement)
