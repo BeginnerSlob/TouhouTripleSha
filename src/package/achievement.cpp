@@ -459,6 +459,36 @@ public:
     }
 };
 
+class YLHS : public AchieveSkill
+{
+public:
+    YLHS()
+        : AchieveSkill("ylhs")
+    {
+        events << ChoiceMade;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        QStringList args = data.toString().split(":");
+        if (args[0] == "skillInvoke") {
+            if (args[1] == "breastplate" && args[2] == "yes") {
+                QVariant _data = room->getAchievementData(player, key);
+                DamageStruct damage = _data.value<DamageStruct>();
+                if (damage.damage > 1)
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        gainAchievement(player, room);
+        return false;
+    }
+};
+
 class TSQB : public AchieveSkill
 {
 public:
@@ -497,7 +527,7 @@ AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
-    skills << new HFLY << new XQWBJFY << new TSQB;
+    skills << new HFLY << new XQWBJFY << new YLHS << new TSQB;
 }
 
 ADD_PACKAGE(Achievement)

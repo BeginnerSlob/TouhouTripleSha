@@ -985,9 +985,12 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        return player->askForSkillInvoke(objectName());
+        room->setAchievementData(player, "ylhs", data);  // for Achievement
+        bool invoke = player->askForSkillInvoke(objectName());
+        room->setAchievementData(player, "ylhs", QVariant());
+        return invoke;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
