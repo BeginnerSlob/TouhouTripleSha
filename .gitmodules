@@ -1,0 +1,3 @@
+[submodule "TouhouTripleShaRecord"]
+	path = account
+	url = git@github.com:BeginnerSlob/TouhouTripleShaRecord.git
