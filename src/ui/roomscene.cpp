@@ -1671,15 +1671,21 @@ void RoomScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
 void RoomScene::chooseGeneral(const QStringList &generals)
 {
+    QStringList _generals = generals;
+    bool mute = false;
+    if (_generals.first() == "mute") {
+        _generals.removeAt(0);
+        mute = true;
+    }
     QApplication::alert(main_window);
-    if (!main_window->isActiveWindow())
+    if (!mute && !main_window->isActiveWindow())
         Sanguosha->playSystemAudioEffect("prelude");
 
     QDialog *dialog;
     if (generals.isEmpty())
         dialog = new FreeChooseDialog(main_window);
     else
-        dialog = new ChooseGeneralDialog(generals, main_window);
+        dialog = new ChooseGeneralDialog(_generals, main_window);
 
     delete m_choiceDialog;
     m_choiceDialog = dialog;

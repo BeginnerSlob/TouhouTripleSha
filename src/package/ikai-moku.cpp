@@ -4906,7 +4906,9 @@ public:
             general = hash[skill_name];
             Q_ASSERT(general != NULL);
         } else {
-            QString general_name = room->askForGeneral(zuoci, huashen_generals);
+            QStringList _huashen_generals = huashen_generals;
+            _huashen_generals.prepend("mute");
+            QString general_name = room->askForGeneral(zuoci, _huashen_generals);
             general = Sanguosha->getGeneral(general_name);
 
             foreach (const Skill *skill, general->getVisibleSkillList()) {
