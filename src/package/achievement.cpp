@@ -1217,13 +1217,48 @@ public:
     }
 };
 
+class NWSSSZQ : public AchieveSkill
+{
+public:
+    NWSSSZQ()
+        : AchieveSkill("nwssszq")
+    {
+    }
+
+    virtual bool triggerable(const ServerPlayer *) const
+    {
+        return false;
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
+    {
+        QStringList winners = room->getWinner(player).split(":");
+        foreach (ServerPlayer *p, room->getPlayers()) {
+            bool is_win = winners.contains(p->objectName()) || winners.contains(p->getRole());
+            onWinOrLose(room, p, is_win);
+        }
+    }
+
+    virtual void onWinOrLose(Room *room, ServerPlayer *player, bool is_win) const
+    {
+        if (is_win) {
+            room->addAchievementData(player, key, 1, false);
+            if (room->getAchievementData(player, key, false, false).toInt() == 10)
+                gainAchievement(player, room);
+        } else {
+            int n = room->getAchievementData(player, key, false, false).toInt();
+            room->addAchievementData(player, key, -n, false);
+        }
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
     skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB
            << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
-           << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM;
+           << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ;
 }
 
 ADD_PACKAGE(Achievement)
