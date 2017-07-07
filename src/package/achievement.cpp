@@ -607,6 +607,40 @@ public:
     }
 };
 
+class DJSB : public AchieveSkill
+{
+public:
+    DJSB()
+        : AchieveSkill("djsb")
+    {
+        events << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who == player) {
+            DamageStruct *damage = death.damage;
+            if (damage->card && damage->card->isKindOf("Lightning"))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        gainAchievement(player, room);
+        return false;
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.damage && death.damage->card && death.damage->card->isKindOf("Lightning"))
+            gainAchievement(player, room);
+    }
+};
+
 class TSQB : public AchieveSkill
 {
 public:
@@ -645,7 +679,7 @@ AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
-    skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new TSQB;
+    skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB;
 }
 
 ADD_PACKAGE(Achievement)
