@@ -1103,13 +1103,43 @@ public:
     }
 };
 
+class ALHAKB : public AchieveSkill
+{
+public:
+    ALHAKB()
+        : AchieveSkill("alhakb")
+    {
+        events << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who == player && room->getCurrent() == player && player->getPhase() != Player::NotActive)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        gainAchievement(player, room);
+        return false;
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
+    {
+        if (player && player == room->getCurrent() && player->getPhase() != Player::NotActive)
+            gainAchievement(player, room);
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
     skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB
            << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
-           << new ZLPCCZ << new GSTY << new WHKS;
+           << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB;
 }
 
 ADD_PACKAGE(Achievement)
