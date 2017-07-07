@@ -1163,13 +1163,41 @@ public:
     }
 };
 
+class RMSH : public AchieveSkill
+{
+public:
+    RMSH()
+        : AchieveSkill("rmsh")
+    {
+        events << GameStart;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
+    {
+        if (player) {
+            foreach (ServerPlayer *p, room->getPlayers()) {
+                if (p->isMale())
+                    return QStringList();
+            }
+            return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        gainAchievement(player, room);
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
     skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB
            << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
-           << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD;
+           << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH;
 }
 
 ADD_PACKAGE(Achievement)
