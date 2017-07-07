@@ -709,6 +709,11 @@ public:
         events << NonTrigger;
     }
 
+    virtual bool triggerable(const ServerPlayer *) const
+    {
+        return false;
+    }
+
     virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
     {
         QStringList winners = room->getWinner(player).split("+");
@@ -726,11 +731,6 @@ public:
             if (room->getAchievementData(player, key, false) == 10)
                 gainAchievement(player, room);
         }
-    }
-
-    virtual bool triggerable(const ServerPlayer *) const
-    {
-        return false;
     }
 };
 
@@ -782,12 +782,48 @@ public:
     }
 };
 
+class YDSPZ : public AchieveSkill
+{
+public:
+    YDSPZ()
+        : AchieveSkill("ydspz")
+    {
+        events << NonTrigger;
+    }
+
+    virtual bool triggerable(const ServerPlayer *) const
+    {
+        return false;
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
+    {
+        QStringList winners = room->getWinner(player).split("+");
+        if (!winners.isEmpty()) {
+            foreach (ServerPlayer *loyalist, room->getPlayers())
+                if (loyalist->getRole() == "loyalist" && (winners.contains(player->objectName()) || winners.contains("lord")))
+                    onWinOrLose(room, loyalist, true);
+        }
+    }
+
+    virtual void onWinOrLose(Room *room, ServerPlayer *player, bool is_win) const
+    {
+        if (is_win && player && player->getRole() == "loyalist") {
+            QStringList killed_roles = room->getAchievementData(player, "killed_roles").toStringList();
+            QStringList mode_lists = Sanguosha->getRoleList(player->getGameMode());
+            if (killed_roles.count("rebel") == mode_lists.count("rebel")
+                && killed_roles.count("renegade") == mode_lists.count("renegade"))
+                gainAchievement(player, room);
+        }
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
     skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB
-           << new GYDDW << new JJDDW;
+           << new GYDDW << new JJDDW << new YDSPZ;
 }
 
 ADD_PACKAGE(Achievement)
