@@ -12,7 +12,7 @@ public:
     Q_INVOKABLE AchieveSkill(QString objectName);
 
     virtual int getPriority(TriggerEvent) const;
-    virtual void onGameOver(Room *, ServerPlayer *, QVariant &) const;
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &data) const;
     void gainAchievement(ServerPlayer *player, Room *room) const;
 
     static QStringList getAchievementTranslations(QString _key);

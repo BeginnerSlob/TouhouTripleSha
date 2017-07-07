@@ -191,14 +191,16 @@ public:
         // other achieve skill cannot set to GameOverJudge in events, but set the trigger in AchieveSkill::onGameOver
     }
 
-    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         if (e == GameOverJudge) {
             QString winner = room->getWinner(player);
             if (!winner.isEmpty())
                 return QStringList(objectName());
-        } else if (e == BeforeGameOver)
-            return QStringList(objectName());
+        } else if (e == BeforeGameOver) {
+            if (!data.canConvert<DeathStruct>())
+                return QStringList(objectName());
+        }
         return QStringList();
     }
 
@@ -675,11 +677,40 @@ public:
     }
 };
 
+class GYDDW : public AchieveSkill
+{
+public:
+    GYDDW()
+        : AchieveSkill("gyddw")
+    {
+        events << NonTrigger;
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
+    {
+        QStringList winners = room->getWinner(player).split("+");
+        if (!winners.isEmpty()) {
+            ServerPlayer *lord = room->getLord();
+            if (lord && (winners.contains(lord->objectName()) || winners.contains("lord"))) {
+                room->addAchievementData(lord, key, 1, false);
+                if (room->getAchievementData(lord, key, false) == 10)
+                    gainAchievement(lord, room);
+            }
+        }
+    }
+
+    virtual bool triggerable(const ServerPlayer *) const
+    {
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
-    skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB;
+    skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB
+           << new GYDDW;
 }
 
 ADD_PACKAGE(Achievement)
