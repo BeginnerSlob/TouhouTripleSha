@@ -552,6 +552,32 @@ public:
     }
 };
 
+class NZDL : public AchieveSkill
+{
+public:
+    NZDL()
+        : AchieveSkill("nzdl")
+    {
+        events << CardsMoveOneTime;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.to == player && move.reason.m_skillName == "maid_suit")
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->addAchievementData(player, key);
+        if (room->getAchievementData(player, key).toInt() == 2)
+            gainAchievement(player, room);
+        return false;
+    }
+};
+
 class TSQB : public AchieveSkill
 {
 public:
@@ -590,7 +616,7 @@ AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
-    skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new TSQB;
+    skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new TSQB;
 }
 
 ADD_PACKAGE(Achievement)

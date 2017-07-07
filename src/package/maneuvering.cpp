@@ -66,7 +66,8 @@ void Analeptic::onUse(Room *room, const CardUseStruct &card_use) const
     CardUseStruct use = card_use;
     if (use.to.isEmpty())
         use.to << use.from;
-    if (use.from->hasFlag("Global_Dying") && Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY)
+    if (use.from->hasFlag("Global_Dying")
+        && Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY)
         room->setCardFlag(use.card, "analeptic_recover");
     BasicCard::onUse(room, use);
 }
@@ -106,8 +107,8 @@ public:
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
     {
-        return Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE && pattern == "slash"
-            && player->getMark("Equips_Nullified_to_Yourself") == 0;
+        return Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE
+            && pattern == "slash" && player->getMark("Equips_Nullified_to_Yourself") == 0;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
@@ -137,8 +138,8 @@ public:
     virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.card && damage.card->isKindOf("Slash") && damage.to->getMark("Equips_of_Others_Nullified_to_You") == 0 && damage.to->isKongcheng() && damage.by_user
-            && !damage.chain && !damage.transfer) {
+        if (damage.card && damage.card->isKindOf("Slash") && damage.to->getMark("Equips_of_Others_Nullified_to_You") == 0
+            && damage.to->isKongcheng() && damage.by_user && !damage.chain && !damage.transfer) {
             room->setEmotion(player, "effects/weapon");
 
             LogMessage log;
@@ -202,7 +203,7 @@ public:
             if (choice == "recover")
                 room->recover(damage.from, RecoverStruct(player));
             else
-                damage.from->drawCards(1, objectName());
+                damage.from->drawCards(1, objectName() + "_draw");
         }
 
         return false;
@@ -225,7 +226,8 @@ public:
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
     {
         if (!ArmorSkill::triggerable(player))
             return QStringList();
@@ -239,7 +241,8 @@ public:
             CardEffectStruct effect = data.value<CardEffectStruct>();
             if (effect.from && effect.from->hasSkill("ikkongni"))
                 return QStringList();
-            if (effect.card->isKindOf("SavageAssault") || effect.card->isKindOf("ArcheryAttack") || effect.card->isKindOf("Drowning"))
+            if (effect.card->isKindOf("SavageAssault") || effect.card->isKindOf("ArcheryAttack")
+                || effect.card->isKindOf("Drowning"))
                 return QStringList(objectName());
         } else if (triggerEvent == DamageInflicted) {
             DamageStruct damage = data.value<DamageStruct>();
@@ -311,7 +314,8 @@ public:
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
     {
         if (triggerEvent == DamageInflicted) {
             DamageStruct damage = data.value<DamageStruct>();
@@ -397,7 +401,8 @@ bool FireAttack::targetFilter(const QList<const Player *> &targets, const Player
     if (Self->hasFlag("ThChouceUse"))
         return targets.isEmpty();
     int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
-    return targets.length() < total_num && !to_select->isKongcheng() && (to_select != Self || !Self->isLastHandCard(this, true));
+    return targets.length() < total_num && !to_select->isKongcheng()
+        && (to_select != Self || !Self->isLastHandCard(this, true));
 }
 
 void FireAttack::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
@@ -463,7 +468,8 @@ bool IronChain::targetFilter(const QList<const Player *> &targets, const Player 
 
 bool IronChain::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
 {
-    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) && can_recast && !Self->hasFlag("ThChouceUse");
+    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) && can_recast
+        && !Self->hasFlag("ThChouceUse");
     QList<int> sub;
     if (isVirtualCard())
         sub = subcards;
@@ -590,24 +596,30 @@ ManeuveringPackage::ManeuveringPackage()
     QList<Card *> cards;
 
     // spade
-    cards << new GudingBlade(Card::Spade, 1) << new MaidSuit() << new Analeptic(Card::Spade, 3) << new ThunderSlash(Card::Spade, 4) << new ThunderSlash(Card::Spade, 5)
-          << new ThunderSlash(Card::Spade, 6) << new ThunderSlash(Card::Spade, 7) << new ThunderSlash(Card::Spade, 8) << new Analeptic(Card::Spade, 9)
-          << new SupplyShortage(Card::Spade, 10) << new IronChain(Card::Spade, 11) << new IronChain(Card::Spade, 12) << new Nullification(Card::Spade, 13);
+    cards << new GudingBlade(Card::Spade, 1) << new MaidSuit() << new Analeptic(Card::Spade, 3)
+          << new ThunderSlash(Card::Spade, 4) << new ThunderSlash(Card::Spade, 5) << new ThunderSlash(Card::Spade, 6)
+          << new ThunderSlash(Card::Spade, 7) << new ThunderSlash(Card::Spade, 8) << new Analeptic(Card::Spade, 9)
+          << new SupplyShortage(Card::Spade, 10) << new IronChain(Card::Spade, 11) << new IronChain(Card::Spade, 12)
+          << new Nullification(Card::Spade, 13);
 
     // heart
-    cards << new Nullification(Card::Heart, 1) << new FireAttack(Card::Heart, 2) << new FireAttack(Card::Heart, 3) << new FireSlash(Card::Heart, 4) << new Peach(Card::Heart, 5)
-          << new Peach(Card::Heart, 6) << new FireSlash(Card::Heart, 7) << new Jink(Card::Heart, 8) << new Jink(Card::Heart, 9) << new FireSlash(Card::Heart, 10)
-          << new Jink(Card::Heart, 11) << new Jink(Card::Heart, 12) << new Nullification(Card::Heart, 13);
+    cards << new Nullification(Card::Heart, 1) << new FireAttack(Card::Heart, 2) << new FireAttack(Card::Heart, 3)
+          << new FireSlash(Card::Heart, 4) << new Peach(Card::Heart, 5) << new Peach(Card::Heart, 6)
+          << new FireSlash(Card::Heart, 7) << new Jink(Card::Heart, 8) << new Jink(Card::Heart, 9)
+          << new FireSlash(Card::Heart, 10) << new Jink(Card::Heart, 11) << new Jink(Card::Heart, 12)
+          << new Nullification(Card::Heart, 13);
 
     // club
-    cards << new SilverLion(Card::Club, 1) << new Vine() << new Analeptic(Card::Club, 3) << new SupplyShortage(Card::Club, 4) << new ThunderSlash(Card::Club, 5)
-          << new ThunderSlash(Card::Club, 6) << new ThunderSlash(Card::Club, 7) << new ThunderSlash(Card::Club, 8) << new Analeptic(Card::Club, 9) << new IronChain(Card::Club, 10)
+    cards << new SilverLion(Card::Club, 1) << new Vine() << new Analeptic(Card::Club, 3) << new SupplyShortage(Card::Club, 4)
+          << new ThunderSlash(Card::Club, 5) << new ThunderSlash(Card::Club, 6) << new ThunderSlash(Card::Club, 7)
+          << new ThunderSlash(Card::Club, 8) << new Analeptic(Card::Club, 9) << new IronChain(Card::Club, 10)
           << new IronChain(Card::Club, 11) << new IronChain(Card::Club, 12) << new IronChain(Card::Club, 13);
 
     // diamond
-    cards << new Fan(Card::Diamond, 1) << new Peach(Card::Diamond, 2) << new Peach(Card::Diamond, 3) << new FireSlash(Card::Diamond, 4) << new FireSlash(Card::Diamond, 5)
-          << new Jink(Card::Diamond, 6) << new Jink(Card::Diamond, 7) << new Jink(Card::Diamond, 8) << new Analeptic(Card::Diamond, 9) << new Jink(Card::Diamond, 10)
-          << new Jink(Card::Diamond, 11) << new FireAttack(Card::Diamond, 12);
+    cards << new Fan(Card::Diamond, 1) << new Peach(Card::Diamond, 2) << new Peach(Card::Diamond, 3)
+          << new FireSlash(Card::Diamond, 4) << new FireSlash(Card::Diamond, 5) << new Jink(Card::Diamond, 6)
+          << new Jink(Card::Diamond, 7) << new Jink(Card::Diamond, 8) << new Analeptic(Card::Diamond, 9)
+          << new Jink(Card::Diamond, 10) << new Jink(Card::Diamond, 11) << new FireAttack(Card::Diamond, 12);
 
     DefensiveHorse *tianpanzhou = new DefensiveHorse(Card::Diamond, 13);
     tianpanzhou->setObjectName("tianpanzhou");
