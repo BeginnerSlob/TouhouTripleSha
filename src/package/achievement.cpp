@@ -578,6 +578,35 @@ public:
     }
 };
 
+class DBDJ : public AchieveSkill
+{
+public:
+    DBDJ()
+        : AchieveSkill("dbdj")
+    {
+        events << ChoiceMade;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *&) const
+    {
+        QStringList args = data.toString().split(":");
+        if (args[0] == "AGChosen" && args[1] == "amazing_grace") {
+            int id = args[2].toInt();
+            if (id != -1 && Sanguosha->getEngineCard(id)->isKindOf("Peach"))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->addAchievementData(player, key);
+        if (room->getAchievementData(player, key).toInt() == 2)
+            gainAchievement(player, room);
+        return false;
+    }
+};
+
 class TSQB : public AchieveSkill
 {
 public:
@@ -616,7 +645,7 @@ AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
-    skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new TSQB;
+    skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new TSQB;
 }
 
 ADD_PACKAGE(Achievement)
