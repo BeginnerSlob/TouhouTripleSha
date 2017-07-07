@@ -13,6 +13,7 @@ public:
 
     virtual int getPriority(TriggerEvent) const;
     virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &data) const;
+    virtual void onWinOrLose(Room *room, ServerPlayer *player, bool is_win) const;
     void gainAchievement(ServerPlayer *player, Room *room) const;
 
     static QStringList getAchievementTranslations(QString _key);
