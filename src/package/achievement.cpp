@@ -1004,12 +1004,86 @@ public:
     }
 };
 
+class ZLPCCZ : public AchieveSkill
+{
+public:
+    ZLPCCZ()
+        : AchieveSkill("zlpccz")
+    {
+        events << CardUsed << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data,
+                                    ServerPlayer *&) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    room->setAchievementData(p, key, 0);
+            }
+            return QStringList();
+        }
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("EquipCard"))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->addAchievementData(player, key, 1);
+        if (room->getAchievementData(player, key).toInt() == 5)
+            gainAchievement(player, room);
+        return false;
+    }
+};
+
+class GSTY : public AchieveSkill
+{
+public:
+    GSTY()
+        : AchieveSkill("gsty")
+    {
+        events << PreDamageDone;
+    }
+
+    virtual bool triggerable(const ServerPlayer *) const
+    {
+        return true;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        DamageStruct damage = data.value<DamageStruct>();
+        room->addAchievementData(player, key, damage.damage);
+        if (damage.from)
+            room->addAchievementData(damage.from, key, damage.damage);
+        return false;
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
+    {
+        QStringList winners = room->getWinner(player).split("+");
+        foreach (ServerPlayer *p, room->getPlayers()) {
+            if (winners.contains(p->objectName()) || winners.contains(p->getRole()))
+                onWinOrLose(room, p, true);
+        }
+    }
+
+    virtual void onWinOrLose(Room *room, ServerPlayer *player, bool is_win) const
+    {
+        if (is_win && room->getAchievementData(player, key).toInt() == 0)
+            gainAchievement(player, room);
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
     skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB
-           << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ;
+           << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
+           << new ZLPCCZ << new GSTY;
 }
 
 ADD_PACKAGE(Achievement)
