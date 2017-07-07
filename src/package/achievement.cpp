@@ -571,7 +571,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         room->addAchievementData(player, key);
-        if (room->getAchievementData(player, key) == 2)
+        if (room->getAchievementData(player, key).toInt() == 2)
             gainAchievement(player, room);
         return false;
     }
@@ -694,7 +694,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         room->addAchievementData(player, key, 1);
-        if (room->getAchievementData(player, key) == 4)
+        if (room->getAchievementData(player, key).toInt() == 4)
             gainAchievement(player, room);
         return false;
     }
@@ -706,7 +706,6 @@ public:
     GYDDW()
         : AchieveSkill("gyddw")
     {
-        events << NonTrigger;
     }
 
     virtual bool triggerable(const ServerPlayer *) const
@@ -728,7 +727,7 @@ public:
     {
         if (is_win && player && player == room->getLord()) {
             room->addAchievementData(player, key, 1, false);
-            if (room->getAchievementData(player, key, false) == 10)
+            if (room->getAchievementData(player, key, false, false) == 10)
                 gainAchievement(player, room);
         }
     }
@@ -788,7 +787,6 @@ public:
     YDSPZ()
         : AchieveSkill("ydspz")
     {
-        events << NonTrigger;
     }
 
     virtual bool triggerable(const ServerPlayer *) const
@@ -844,12 +842,57 @@ public:
     }
 };
 
+class FSLZ : public AchieveSkill
+{
+public:
+    FSLZ()
+        : AchieveSkill("fslz")
+    {
+    }
+
+    virtual bool triggerable(const ServerPlayer *) const
+    {
+        return false;
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
+    {
+        QStringList winners = room->getWinner(player).split(":");
+        foreach (ServerPlayer *p, room->getPlayers()) {
+            bool is_win = winners.contains(p->objectName()) || winners.contains(p->getRole());
+            onWinOrLose(room, p, is_win);
+        }
+    }
+
+    virtual void onWinOrLose(Room *room, ServerPlayer *player, bool is_win) const
+    {
+        if (is_win) {
+            bool update = false;
+            QStringList lists = room->getAchievementData(player, key, false).toString().split("\n", QString::SkipEmptyParts);
+            QString role = player->getRole();
+            if (!lists.contains(role)) {
+                lists << role;
+                room->setAchievementData(player, key, role, false);
+                update = true;
+            }
+            QString kingdom = player->getKingdom();
+            if (!lists.contains(kingdom)) {
+                lists << kingdom;
+                room->setAchievementData(player, key, kingdom, false);
+                update = true;
+            }
+            if (update && room->getAchievementData(player, key, false, false).toInt() == 8)
+                gainAchievement(player, room);
+        }
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
     skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB
-           << new GYDDW << new JJDDW << new YDSPZ << new DMHB;
+           << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ;
 }
 
 ADD_PACKAGE(Achievement)

@@ -312,7 +312,7 @@ public:
     void removeTag(const QString &key);
 
     void setAchievementData(ServerPlayer *player, const QString &key, const QVariant &value, bool variable = true);
-    QVariant getAchievementData(ServerPlayer *player, const QString &key, bool variable = true) const;
+    QVariant getAchievementData(ServerPlayer *player, const QString &key, bool variable = true, bool extra_data = true) const;
     void addAchievementData(ServerPlayer *player, const QString &key, int step = 1, bool variable = true);
 
     void setEmotion(ServerPlayer *target, const QString &emotion);

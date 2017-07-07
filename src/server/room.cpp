@@ -2577,7 +2577,7 @@ static int GetLevelByExp(int exp)
 {
     static QList<int> expList;
     if (expList.isEmpty()) {
-        QFile file(ACCOUNT"level.csv");
+        QFile file(ACCOUNT "level.csv");
         if (!file.open(QIODevice::ReadOnly))
             return 0;
         QTextStream stream(&file);
@@ -2716,12 +2716,12 @@ bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
         stream.flush();
         file.close();
 
-        QFile file2(QString(ACCOUNT"%1_achievement.csv").arg(uid));
+        QFile file2(QString(ACCOUNT "%1_achievement.csv").arg(uid));
         if (!file2.open(QIODevice::ReadWrite))
             return false;
         file2.close();
 
-        QFile file3(QString(ACCOUNT"%1_records.csv").arg(uid));
+        QFile file3(QString(ACCOUNT "%1_records.csv").arg(uid));
         if (!file3.open(QIODevice::ReadWrite))
             return false;
         file3.close();
@@ -4959,7 +4959,7 @@ void Room::setAchievementData(ServerPlayer *player, const QString &key, const QV
     if (variable)
         achievementMap.insert(QString("%1_%2").arg(player->objectName()).arg(key), value);
     else {
-        QString location = QString(ACCOUNT"%1_achievement_%2.csv").arg(uid).arg(key);
+        QString location = QString(ACCOUNT "%1_achievement_%2.csv").arg(uid).arg(key);
         QFile file(location);
         if (!file.open(QIODevice::ReadWrite))
             return;
@@ -4980,7 +4980,7 @@ void Room::setAchievementData(ServerPlayer *player, const QString &key, const QV
     }
 }
 
-QVariant Room::getAchievementData(ServerPlayer *player, const QString &key, bool variable) const
+QVariant Room::getAchievementData(ServerPlayer *player, const QString &key, bool variable, bool extra_data) const
 {
     int uid = player->userId();
     if (uid == -1)
@@ -4988,35 +4988,37 @@ QVariant Room::getAchievementData(ServerPlayer *player, const QString &key, bool
     if (variable)
         return achievementMap.value(QString("%1_%2").arg(player->objectName()).arg(key));
     else {
-        QString location = QString(ACCOUNT"%1_achievement_%2.csv").arg(uid).arg(key);
-        if (QFile::exists(location)) {
+        if (extra_data) {
+            QString location = QString(ACCOUNT "%1_achievement_%2.csv").arg(uid).arg(key);
             QFile file(location);
-            file.open(QIODevice::ReadWrite);
-            QTextStream stream(&file);
-            stream.setCodec("UTF-8");
-            QString line = stream.readAll();
-            stream.flush();
-            file.close();
-            return line;
-        } else {
-            location = QString(ACCOUNT"%1_achievement.csv").arg(uid);
-            QFile file(location);
-            file.open(QIODevice::ReadWrite);
-            QTextStream stream(&file);
-            stream.setCodec("UTF-8");
-            while (!stream.atEnd()) {
-                QString line = stream.readLine();
-                QStringList _line = line.split(",");
-                if (_line.length() != 4)
-                    continue;
-                if (_line[0] == key) {
-                    stream.flush();
-                    file.close();
-                    return _line[3];
-                }
+            if (file.open(QIODevice::ReadWrite)) {
+                QTextStream stream(&file);
+                stream.setCodec("UTF-8");
+                QString line = stream.readAll();
+                stream.flush();
+                file.close();
+                return line;
             }
-            stream.flush();
-            file.close();
+        } else {
+            QString location = QString(ACCOUNT "%1_achievement.csv").arg(uid);
+            QFile file(location);
+            if (file.open(QIODevice::ReadWrite)) {
+                QTextStream stream(&file);
+                stream.setCodec("UTF-8");
+                while (!stream.atEnd()) {
+                    QString line = stream.readLine();
+                    QStringList _line = line.split(",");
+                    if (_line.length() != 4)
+                        continue;
+                    if (_line[0] == key) {
+                        stream.flush();
+                        file.close();
+                        return _line[3];
+                    }
+                }
+                stream.flush();
+                file.close();
+            }
         }
         return QVariant();
     }
@@ -5032,7 +5034,7 @@ void Room::addAchievementData(ServerPlayer *player, const QString &key, int step
         data += step;
         setAchievementData(player, key, data);
     } else {
-        QString location = QString(ACCOUNT"%1_achievement.csv").arg(uid);
+        QString location = QString(ACCOUNT "%1_achievement.csv").arg(uid);
         QFile file(location);
         file.open(QIODevice::ReadWrite);
         QTextStream stream(&file);
