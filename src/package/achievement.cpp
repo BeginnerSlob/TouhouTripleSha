@@ -968,12 +968,48 @@ public:
     }
 };
 
+class ZJDFZ : public AchieveSkill
+{
+public:
+    ZJDFZ()
+        : AchieveSkill("zjdfz")
+    {
+    }
+
+    virtual bool triggerable(const ServerPlayer *) const
+    {
+        return false;
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
+    {
+        QStringList winners = room->getWinner(player).split(":");
+        foreach (ServerPlayer *p, room->getPlayers()) {
+            bool is_win = winners.contains(p->objectName()) || winners.contains(p->getRole());
+            if (is_win && p->getRole() == "renegade")
+                onWinOrLose(room, p, true);
+        }
+    }
+
+    virtual void onWinOrLose(Room *room, ServerPlayer *player, bool is_win) const
+    {
+        if (is_win && player->getRole() == "renegade") {
+            ServerPlayer *lord = room->getLord();
+            if (lord) {
+                QStringList list = room->getAchievementData(lord, "killed_roles").toStringList();
+                if (list.contains("loyalist"))
+                    gainAchievement(player, room);
+            }
+        }
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
     skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB
-           << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX;
+           << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ;
 }
 
 ADD_PACKAGE(Achievement)

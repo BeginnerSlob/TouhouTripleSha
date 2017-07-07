@@ -1451,6 +1451,7 @@ function SmartAI:objectiveLevel(player)
 		elseif target_role == "rebel" then return -2
 		else return 0 end
 	end
+	return 0
 end
 
 function SmartAI:isFriend(other, another)
