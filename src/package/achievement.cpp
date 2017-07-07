@@ -916,12 +916,35 @@ public:
     }
 };
 
+class GLGJSSY : public AchieveSkill
+{
+public:
+    GLGJSSY()
+        : AchieveSkill("glgjssy")
+    {
+        events << QuitDying;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return target->isAlive();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->addAchievementData(player, key);
+        if (room->getAchievementData(player, key).toInt() == 5)
+            gainAchievement(player, room);
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
     skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB
-           << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC;
+           << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY;
 }
 
 ADD_PACKAGE(Achievement)
