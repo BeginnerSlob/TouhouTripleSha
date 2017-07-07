@@ -818,12 +818,38 @@ public:
     }
 };
 
+class DMHB : public AchieveSkill
+{
+public:
+    DMHB()
+        : AchieveSkill("dmhb")
+    {
+        events << CardResponded;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *&) const
+    {
+        CardResponseStruct resp = data.value<CardResponseStruct>();
+        if (resp.m_card->isKindOf("Jink"))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->addAchievementData(player, key);
+        if (room->getAchievementData(player, key) == 10)
+            gainAchievement(player, room);
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
     skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB
-           << new GYDDW << new JJDDW << new YDSPZ;
+           << new GYDDW << new JJDDW << new YDSPZ << new DMHB;
 }
 
 ADD_PACKAGE(Achievement)
