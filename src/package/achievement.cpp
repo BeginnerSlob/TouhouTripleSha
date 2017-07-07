@@ -1133,13 +1133,43 @@ public:
     }
 };
 
+class DJYD : public AchieveSkill
+{
+public:
+    DJYD()
+        : AchieveSkill("djyd")
+    {
+        events << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who == player && player->getMark("Global_TurnCount") == 0)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        gainAchievement(player, room);
+        return false;
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
+    {
+        if (player && player->getMark("Global_TurnCount") == 0)
+            gainAchievement(player, room);
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
     skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB
            << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
-           << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB;
+           << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD;
 }
 
 ADD_PACKAGE(Achievement)
