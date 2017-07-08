@@ -1373,6 +1373,109 @@ public:
     }
 };
 
+class TJWDDR : public AchieveSkill
+{
+public:
+    TJWDDR()
+        : AchieveSkill("tjwddr")
+    {
+        events << Death << CardFinished;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
+    {
+        if (triggerEvent == CardFinished) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            QVariant value = room->getAchievementData(player, key);
+            QVariantList v_list = value.toList();
+            QMap<QString, QStringList> map;
+            for (int i = 0; i < v_list.length(); ++i) {
+                QString s = v_list[i].toString();
+                ++i;
+                map[s] = v_list[i].toStringList();
+            }
+            if (!map.value(use.card->toString(), QStringList()).isEmpty())
+                map.remove(use.card->toString());
+            v_list.clear();
+            foreach (QString _key, map.keys()) {
+                v_list << _key;
+                v_list << QVariant::fromValue(map[_key]);
+            }
+            room->setAchievementData(player, key, QVariant::fromValue(v_list));
+        } else {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who == player && death.damage) {
+                DamageStruct *damage = death.damage;
+                if (damage->card && damage->card->getTypeId() != Card::TypeSkill && damage->from) {
+                    QVariant value = room->getAchievementData(damage->from, key);
+                    QVariantList v_list = value.toList();
+                    QMap<QString, QStringList> map;
+                    for (int i = 0; i < v_list.length(); ++i) {
+                        QString s = v_list[i].toString();
+                        ++i;
+                        map[s] = v_list[i].toStringList();
+                    }
+                    if (map.value(damage->card->toString(), QStringList()).isEmpty()) {
+                        map[damage->card->toString()] = QStringList();
+                        map[damage->card->toString()] << player->objectName();
+                    } else {
+                        if (!map[damage->card->toString()].contains(player->objectName()))
+                            map[damage->card->toString()] << player->objectName();
+                    }
+                    v_list.clear();
+                    foreach (QString _key, map.keys()) {
+                        v_list << _key;
+                        v_list << QVariant::fromValue(map[_key]);
+                    }
+                    room->setAchievementData(damage->from, key, QVariant::fromValue(v_list));
+                    if (map[damage->card->toString()].length() == 3)
+                        return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        gainAchievement(death.damage->from, room);
+        return false;
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        DamageStruct *damage = death.damage;
+        if (damage && damage->card && damage->card->getTypeId() != Card::TypeSkill && damage->from) {
+            QVariant value = room->getAchievementData(damage->from, key);
+            QVariantList v_list = value.toList();
+            QMap<QString, QStringList> map;
+            for (int i = 0; i < v_list.length(); ++i) {
+                QString s = v_list[i].toString();
+                ++i;
+                map[s] = v_list[i].toStringList();
+            }
+            if (map.value(damage->card->toString(), QStringList()).isEmpty()) {
+                map[damage->card->toString()] = QStringList();
+                map[damage->card->toString()] << player->objectName();
+            } else {
+                if (!map[damage->card->toString()].contains(player->objectName()))
+                    map[damage->card->toString()] << player->objectName();
+            }
+            v_list.clear();
+            foreach (QString _key, map.keys()) {
+                v_list << _key;
+                v_list << QVariant::fromValue(map[_key]);
+            }
+            room->setAchievementData(damage->from, key, QVariant::fromValue(v_list));
+            if (map[damage->card->toString()].length() == 3)
+                gainAchievement(damage->from, room);
+        }
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -1380,7 +1483,7 @@ AchievementPackage::AchievementPackage()
     skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB
            << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
            << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX
-           << new MYDNL << new JDYZL << new SHWDDY;
+           << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR;
 }
 
 ADD_PACKAGE(Achievement)
