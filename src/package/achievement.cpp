@@ -34,6 +34,8 @@ void AchieveSkill::gainAchievement(ServerPlayer *player, Room *room) const
     if (uid == -1)
         return;
     QStringList list = room->getAchievementData(player, "finished").toString().split("|");
+    if (list.contains(key))
+        return;
     list << key;
     room->setAchievementData(player, "finished", list.join("|"));
     QStringList translations = getAchievementTranslations(key);
@@ -1252,13 +1254,43 @@ public:
     }
 };
 
+class LZZX : public AchieveSkill
+{
+public:
+    LZZX()
+        : AchieveSkill("lzzx")
+    {
+        events << ChoiceMade;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *&) const
+    {
+        QStringList args = data.toString().split(":");
+        if (args[0] == "cardResponded" && args[2].startsWith("@fire-attack"))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        QStringList args = data.toString().split(":");
+        if (args.last() == "_nil_") {
+            room->addAchievementData(player, key);
+            if (room->getAchievementData(player, key).toInt() == 3)
+                gainAchievement(player, room);
+        } else
+            room->setAchievementData(player, key, 0);
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
     skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB
            << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
-           << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ;
+           << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX;
 }
 
 ADD_PACKAGE(Achievement)
