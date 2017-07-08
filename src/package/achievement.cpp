@@ -1284,13 +1284,54 @@ public:
     }
 };
 
+class MYDNL : public AchieveSkill
+{
+public:
+    MYDNL()
+        : AchieveSkill("mydnl")
+    {
+        events << FinishJudge << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::Judge)
+                room->setAchievementData(player, key, 0);
+            else if (change.from == Player::Judge) {
+                if (room->getAchievementData(player, key).toInt() >= 2)
+                    gainAchievement(player, room);
+            }
+        } else {
+            JudgeStruct *judge = data.value<JudgeStruct *>();
+            if (player->getPhase() == Player::Judge && (judge->reason == "indulgence" || judge->reason == "supply_shortage"
+                                                        || judge->reason == "lightning" || judge->reason == "purple_song"))
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        JudgeStruct *judge = data.value<JudgeStruct *>();
+        if (judge->isBad())
+            room->addAchievementData(player, key);
+        else
+            room->setAchievementData(player, key, -998);
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
     skills << new AchievementMain << new WenGongWuGong << new AchievementRecord;
     skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB
            << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
-           << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX;
+           << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX
+           << new MYDNL;
 }
 
 ADD_PACKAGE(Achievement)
