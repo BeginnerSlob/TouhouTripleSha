@@ -1476,6 +1476,42 @@ public:
     }
 };
 
+class BWSDKLR : public AchieveSkill
+{
+public:
+    BWSDKLR()
+        : AchieveSkill("bwsdklr")
+    {
+        events << CardFinished << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data,
+                                    ServerPlayer *&) const
+    {
+        if (triggerEvent == CardFinished) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->getTypeId() != Card::TypeSkill) {
+                foreach (ServerPlayer *to, use.to)
+                    room->setAchievementData(to, key, -1);
+            }
+        } else if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const
+    {
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
+            room->addAchievementData(p, key);
+            if (room->getAchievementData(p, key).toInt() == 5)
+                gainAchievement(p, room);
+        }
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -1483,7 +1519,7 @@ AchievementPackage::AchievementPackage()
     skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB
            << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
            << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX
-           << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR;
+           << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR;
 }
 
 ADD_PACKAGE(Achievement)
