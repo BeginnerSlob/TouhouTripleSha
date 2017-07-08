@@ -909,11 +909,9 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const
     {
         DamageStruct damage = data.value<DamageStruct>();
-        for (int i = 0; i < damage.damage; ++i) {
-            room->addAchievementData(damage.from, key);
-            if (room->getAchievementData(damage.from, key).toInt() == 20)
-                gainAchievement(damage.from, room);
-        }
+        room->addAchievementData(damage.from, key, damage.damage);
+        if (room->getAchievementData(damage.from, key).toInt() >= 20)
+            gainAchievement(damage.from, room);
         return false;
     }
 };
@@ -1324,6 +1322,33 @@ public:
     }
 };
 
+class JDYZL : public AchieveSkill
+{
+public:
+    JDYZL()
+        : AchieveSkill("jdyzl")
+    {
+        events << PreDamageDone;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *&) const
+    {
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.nature == DamageStruct::Fire)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        DamageStruct damage = data.value<DamageStruct>();
+        room->addAchievementData(player, key, damage.damage);
+        if (room->getAchievementData(player, key).toInt() >= 5)
+            gainAchievement(player, room);
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -1331,7 +1356,7 @@ AchievementPackage::AchievementPackage()
     skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB
            << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
            << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX
-           << new MYDNL;
+           << new MYDNL << new JDYZL;
 }
 
 ADD_PACKAGE(Achievement)
