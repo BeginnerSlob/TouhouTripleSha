@@ -1349,6 +1349,30 @@ public:
     }
 };
 
+class SHWDDY : public AchieveSkill
+{
+public:
+    SHWDDY()
+        : AchieveSkill("shwddy")
+    {
+        events << CardUsed;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *&) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("JadeCard") && use.to.length() >= 3)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        gainAchievement(player, room);
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -1356,7 +1380,7 @@ AchievementPackage::AchievementPackage()
     skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB
            << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
            << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX
-           << new MYDNL << new JDYZL;
+           << new MYDNL << new JDYZL << new SHWDDY;
 }
 
 ADD_PACKAGE(Achievement)
