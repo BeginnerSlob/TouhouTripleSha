@@ -1512,6 +1512,36 @@ public:
     }
 };
 
+class JZTTXDY : public AchieveSkill
+{
+public:
+    JZTTXDY()
+        : AchieveSkill("jzttxdy")
+    {
+        events << CardsMoveOneTime;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.to == player && move.to_place == Player::PlaceEquip && player->getEquips().length() == 5)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        int n = 0;
+        foreach (const Card *c, player->getEquips()) {
+            if (c->getSuit() == Card::Spade)
+                ++n;
+        }
+        if (n == 5)
+            gainAchievement(player, room);
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -1519,7 +1549,7 @@ AchievementPackage::AchievementPackage()
     skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB
            << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
            << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX
-           << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR;
+           << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY;
 }
 
 ADD_PACKAGE(Achievement)
