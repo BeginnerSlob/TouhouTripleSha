@@ -987,7 +987,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        room->setAchievementData(player, "ylhs", data);  // for Achievement
+        room->setAchievementData(player, "ylhs", data); // for Achievement
         bool invoke = player->askForSkillInvoke(objectName());
         room->setAchievementData(player, "ylhs", QVariant());
         return invoke;

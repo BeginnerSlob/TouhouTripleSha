@@ -1,4 +1,5 @@
 #include "maneuvering.h"
+#include "achievement.h"
 #include "client.h"
 #include "engine.h"
 #include "general.h"
@@ -290,6 +291,14 @@ public:
             log.arg = QString::number(damage.damage);
             log.arg2 = QString::number(++damage.damage);
             room->sendLog(log);
+            room->addAchievementData(player, "pmdx");
+            if (room->getAchievementData(player, "pmdx").toInt() == 3) {
+                const TriggerSkill *s = Sanguosha->getTriggerSkill("#achievement_pmdx");
+                if (s && s->inherits("AchieveSkill")) {
+                    const AchieveSkill *as = qobject_cast<const AchieveSkill *>(s);
+                    as->gainAchievement(player, room);
+                }
+            }
 
             data = QVariant::fromValue(damage);
         }
