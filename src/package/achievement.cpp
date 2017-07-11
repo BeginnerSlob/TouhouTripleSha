@@ -1542,6 +1542,53 @@ public:
     }
 };
 
+class NDJSWD : public AchieveSkill
+{
+public:
+    NDJSWD()
+        : AchieveSkill("ndjswd")
+    {
+        events << CardsMoveOneTime << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    foreach (ServerPlayer *other, room->getOtherPlayers(p)) {
+                        QString _key = QString("%1_%2").arg(key).arg(other->objectName());
+                        room->setAchievementData(p, _key, 0);
+                    }
+                }
+            }
+            return QStringList();
+        }
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.from && move.to && move.to == player && move.to_place == Player::PlaceHand
+            && (move.from_places.contains(Player::PlaceDelayedTrick) || move.from_places.contains(Player::PlaceEquip)
+                || move.from_places.contains(Player::PlaceHand))) {
+            return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        QString _key = QString("%1_%2").arg(key).arg(move.from->objectName());
+        foreach (Player::Place place, move.from_places) {
+            if (place == Player::PlaceDelayedTrick || place == Player::PlaceEquip || place == Player::PlaceHand) {
+                room->addAchievementData(player, _key);
+                if (move.from->isAllNude() && room->getAchievementData(player, _key).toInt() >= 3)
+                    gainAchievement(player, room);
+            }
+        }
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -1549,7 +1596,7 @@ AchievementPackage::AchievementPackage()
     skills << new HFLY << new XQWBJFY << new YLHS << new SSHAHX << new MDZM << new NZDL << new DBDJ << new DJSB << new TSQB
            << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
            << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX
-           << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY;
+           << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY << new NDJSWD;
 }
 
 ADD_PACKAGE(Achievement)
