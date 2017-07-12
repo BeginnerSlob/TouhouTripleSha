@@ -1589,6 +1589,38 @@ public:
     }
 };
 
+class PDDDFL : public AchieveSkill
+{
+public:
+    PDDDFL()
+        : AchieveSkill("pdddfl")
+    {
+        events << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who == player && death.damage && death.damage->reason == "moon_spear" && death.damage->from)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        gainAchievement(death.damage->from, room);
+        return false;
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *, QVariant &data) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.damage && death.damage->reason == "moon_spear" && death.damage->from)
+            gainAchievement(death.damage->from, room);
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -1597,7 +1629,7 @@ AchievementPackage::AchievementPackage()
            << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
            << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX
            << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY << new NDJSWD
-           << new AchieveSkill("pmdx");
+           << new AchieveSkill("pmdx") << new PDDDFL;
 }
 
 ADD_PACKAGE(Achievement)
