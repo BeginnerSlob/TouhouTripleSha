@@ -4,6 +4,7 @@
 #include "engine.h"
 #include "lua-wrapper.h"
 #include "recorder.h"
+#include "room.h"
 #include "settings.h"
 #include "skill.h"
 #include "standard.h"

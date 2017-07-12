@@ -3,6 +3,7 @@
 #include "engine.h"
 #include "lua.hpp"
 #include "maneuvering.h"
+#include "room.h"
 #include "roomthread.h"
 #include "scenario.h"
 #include "serverplayer.h"

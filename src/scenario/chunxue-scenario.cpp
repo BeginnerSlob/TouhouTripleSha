@@ -1,6 +1,7 @@
 #include "chunxue-scenario.h"
 
 #include "engine.h"
+#include "room.h"
 #include "skill.h"
 #include "standard.h"
 

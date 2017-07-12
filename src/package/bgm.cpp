@@ -2,6 +2,7 @@
 #include "clientplayer.h"
 #include "engine.h"
 #include "ikai-do.h"
+#include "room.h"
 #include "settings.h"
 #include "skill.h"
 

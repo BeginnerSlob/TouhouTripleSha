@@ -4951,7 +4951,8 @@ void Room::removeTag(const QString &key)
     tag.remove(key);
 }
 
-void Room::setAchievementData(ServerPlayer *player, const QString &key, const QVariant &value, bool variable)
+void Room::setAchievementData(ServerPlayer *player, const QString &key, const QVariant &value, bool variable,
+                              AchieveSkill::WriteDataType write_type)
 {
     int uid = player->userId();
     if (uid == -1)
@@ -4963,20 +4964,30 @@ void Room::setAchievementData(ServerPlayer *player, const QString &key, const QV
         QFile file(location);
         if (!file.open(QIODevice::ReadWrite))
             return;
-        QTextStream stream(&file);
-        stream.setCodec("UTF-8");
-        while (!stream.atEnd()) {
-            QString line = stream.readLine();
-            if (line == value.toString()) {
-                stream.flush();
-                return;
+        if (write_type == AchieveSkill::FullFile) {
+            file.resize(0);
+            QTextStream stream(&file);
+            stream.setCodec("UTF-8");
+            QStringList strings = value.toStringList();
+            foreach (QString line, strings)
+                stream << line << "\n";
+            stream.flush();
+            file.close();
+        } else {
+            QTextStream stream(&file);
+            stream.setCodec("UTF-8");
+            while (!stream.atEnd()) {
+                QString line = stream.readLine();
+                if (line == value.toString()) {
+                    stream.flush();
+                    return;
+                }
             }
+            stream.seek(file.size());
+            stream << value.toString() << "\n";
+            stream.flush();
+            file.close();
         }
-        stream.seek(file.size());
-        stream << value.toString() << "\n";
-        stream.flush();
-        file.close();
-        addAchievementData(player, key, 1, false);
     }
 }
 

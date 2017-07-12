@@ -5,12 +5,15 @@
 #include "clientplayer.h"
 #include "clientstruct.h"
 #include "protocol.h"
+#include "room.h"
 #include "skill.h"
 #include "socket.h"
 
 class Recorder;
 class Replayer;
 class QTextDocument;
+
+struct lua_State;
 
 class Client : public QObject
 {
@@ -301,7 +304,8 @@ signals:
     void kingdoms_got(const QStringList &kingdoms);
     void suits_got(const QStringList &suits);
     void options_got(const QString &skillName, const QStringList &options);
-    void cards_got(const ClientPlayer *player, const QString &flags, const QString &reason, bool handcard_visible, Card::HandlingMethod method, QList<int> disabled_ids);
+    void cards_got(const ClientPlayer *player, const QString &flags, const QString &reason, bool handcard_visible,
+                   Card::HandlingMethod method, QList<int> disabled_ids);
     void roles_got(const QString &scheme, const QStringList &roles);
     void directions_got();
     void orders_got(QSanProtocol::Game3v3ChooseOrderCommand reason);

@@ -3,6 +3,7 @@
 #include "clientplayer.h"
 #include "engine.h"
 #include "maneuvering.h"
+#include "room.h"
 #include "server.h"
 #include "skill.h"
 #include "standard.h"
@@ -129,7 +130,8 @@ public:
                 }
             }
             data = QVariant::fromValue(damage);
-        } else if ((mode == "06_3v3" && triggerEvent == ActionedReset) || (mode != "06_3v3" && triggerEvent == EventPhaseStart)) {
+        } else if ((mode == "06_3v3" && triggerEvent == ActionedReset)
+                   || (mode != "06_3v3" && triggerEvent == EventPhaseStart)) {
             if (triggerEvent == EventPhaseStart && player->getPhase() != Player::RoundStart)
                 return false;
             if (player->getPile("loyal").length() > 0)
@@ -221,14 +223,17 @@ public:
                 if (!TriggerSkill::triggerable(lvbu))
                     continue;
                 if (room->getMode().startsWith("06_") || room->getMode().startsWith("04_")) {
-                    if (lvbu->getMark(objectName()) == 0 && lvbu->getMark("zhanshen_fight") == 0 && AI::GetRelation3v3(lvbu, player) == AI::Friend)
+                    if (lvbu->getMark(objectName()) == 0 && lvbu->getMark("zhanshen_fight") == 0
+                        && AI::GetRelation3v3(lvbu, player) == AI::Friend)
                         lvbu->addMark("zhanshen_fight");
                 } else {
-                    if (lvbu->getMark(objectName()) == 0 && lvbu->getMark("@fight") == 0 && room->askForSkillInvoke(player, objectName(), "mark:" + lvbu->objectName()))
+                    if (lvbu->getMark(objectName()) == 0 && lvbu->getMark("@fight") == 0
+                        && room->askForSkillInvoke(player, objectName(), "mark:" + lvbu->objectName()))
                         room->addPlayerMark(lvbu, "@fight");
                 }
             }
-        } else if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Start && player->getMark(objectName()) == 0 && player->isWounded()
+        } else if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Start
+                   && player->getMark(objectName()) == 0 && player->isWounded()
                    && (player->getMark("zhanshen_fight") > 0 || player->getMark("@fight") > 0)) {
             room->notifySkillInvoked(player, objectName());
 

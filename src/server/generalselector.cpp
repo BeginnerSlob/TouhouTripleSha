@@ -1,5 +1,6 @@
 #include "generalselector.h"
 #include "engine.h"
+#include "room.h"
 #include "serverplayer.h"
 
 #include <QFile>
@@ -39,9 +40,11 @@ QString GeneralSelector::selectFirst(ServerPlayer *player, const QStringList &ca
         const General *general = Sanguosha->getGeneral(candidate);
         if (role == "loyalist" && lord && (general->getKingdom() == lord->getKingdom() || general->getKingdom() == "kami"))
             value *= 1.04;
-        if (role == "rebel" && lord && lord->getGeneral() && lord->getGeneral()->hasSkill("xueyi") && general->getKingdom() == "qun")
+        if (role == "rebel" && lord && lord->getGeneral() && lord->getGeneral()->hasSkill("xueyi")
+            && general->getKingdom() == "qun")
             value *= 0.8;
-        if (role != "loyalist" && lord && lord->getGeneral() && lord->getGeneral()->hasSkill("shichou") && general->getKingdom() == "shu")
+        if (role != "loyalist" && lord && lord->getGeneral() && lord->getGeneral()->hasSkill("shichou")
+            && general->getKingdom() == "shu")
             value *= 0.1;
         QString key = QString("_:%1:%2").arg(candidate).arg(role);
         value *= qPow(1.1, first_general_table.value(key, 0.0));

@@ -1,14 +1,23 @@
 #ifndef ACHIEVEMENT_H
 #define ACHIEVEMENT_H
 
+class TriggerSkill;
+
 #include "package.h"
 #include "skill.h"
 
 class AchieveSkill : public TriggerSkill
 {
     Q_OBJECT
+    Q_ENUMS(WriteDataType)
 
 public:
+    enum WriteDataType
+    {
+        FullFile,
+        SingleLine,
+    };
+
     Q_INVOKABLE AchieveSkill(QString objectName);
 
     virtual int getPriority(TriggerEvent) const;

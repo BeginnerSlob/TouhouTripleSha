@@ -12,13 +12,14 @@ class TrickCard;
 struct lua_State;
 struct LogMessage;
 
+#include "achievement.h"
 #include "protocol.h"
 #include "room-state.h"
 #include "roomthread.h"
 #include "serverplayer.h"
+#include <QMutex>
 #include <QStack>
 #include <QWaitCondition>
-#include <qmutex.h>
 
 typedef QMap<ServerPlayer *, const Card *> PindianMap;
 
@@ -311,7 +312,8 @@ public:
     QVariant getTag(const QString &key) const;
     void removeTag(const QString &key);
 
-    void setAchievementData(ServerPlayer *player, const QString &key, const QVariant &value, bool variable = true);
+    void setAchievementData(ServerPlayer *player, const QString &key, const QVariant &value, bool variable = true,
+                            AchieveSkill::WriteDataType write_type = AchieveSkill::SingleLine);
     QVariant getAchievementData(ServerPlayer *player, const QString &key, bool variable = true, bool extra_data = true) const;
     void addAchievementData(ServerPlayer *player, const QString &key, int step = 1, bool variable = true);
 

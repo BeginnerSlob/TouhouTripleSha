@@ -1,14 +1,14 @@
 #ifndef _SKILL_H
 #define _SKILL_H
 
-class Player;
 class Card;
+class Player;
 class ServerPlayer;
 
-#include "room.h"
+#include "structs.h"
 
-#include <QObject>
 #include <QDialog>
+#include <QObject>
 
 class SkillDialog : public QDialog
 {
@@ -152,9 +152,12 @@ public:
     virtual bool triggerable(const ServerPlayer *target) const;
 
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&ask_who) const;
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&ask_who) const;
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                      ServerPlayer *ask_who = NULL) const;
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                        ServerPlayer *ask_who = NULL) const;
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
 
@@ -265,7 +268,8 @@ class ProhibitSkill : public Skill
 public:
     ProhibitSkill(const QString &name);
 
-    virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &others = QList<const Player *>()) const = 0;
+    virtual bool isProhibited(const Player *from, const Player *to, const Card *card,
+                              const QList<const Player *> &others = QList<const Player *>()) const = 0;
 };
 
 class DistanceSkill : public Skill
@@ -345,7 +349,8 @@ public:
     FakeMoveSkill(const QString &skillname);
 
     virtual int getPriority(TriggerEvent triggerEvent) const;
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const;
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const;
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
 
 private:

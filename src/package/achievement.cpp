@@ -1,5 +1,6 @@
 #include "achievement.h"
 #include "engine.h"
+#include "room.h"
 
 #include <QFile>
 
@@ -875,12 +876,14 @@ public:
             if (!lists.contains(role)) {
                 lists << role;
                 room->setAchievementData(player, key, role, false);
+                room->addAchievementData(player, key, 1, false);
                 update = true;
             }
             QString kingdom = player->getKingdom();
             if (!lists.contains(kingdom)) {
                 lists << kingdom;
                 room->setAchievementData(player, key, kingdom, false);
+                room->addAchievementData(player, key, 1, false);
                 update = true;
             }
             if (update && room->getAchievementData(player, key, false, false).toInt() == 8)
@@ -1621,6 +1624,58 @@ public:
     }
 };
 
+class FHFDFGJ : public AchieveSkill
+{
+public:
+    FHFDFGJ()
+        : AchieveSkill("fhfdfgj")
+    {
+        events << ChoiceMade;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *&) const
+    {
+        QStringList args = data.toString().split(":");
+        if (args[0] == "Nullification") {
+            if (args[1] == "Snatch" || args[1] == "FireAttack" || args[1] == "BurningCamps")
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        QStringList args = data.toString().split(":");
+        QVariant _data = room->getAchievementData(player, key, false);
+        QStringList list = _data.toString().split("\n", QString::SkipEmptyParts);
+        QMap<QString, int> times_map;
+        foreach (QString line, list) {
+            QStringList temp = line.split(",");
+            times_map[temp[0]] = temp[1].toInt();
+        }
+        if (times_map.isEmpty()) {
+            times_map["Steal"] = 0;
+            times_map["Fire"] = 0;
+        } else if (times_map["Steal"] == 10 && times_map["Fire"] == 10)
+            return false;
+        if (args[1] == "Snatch" && times_map["Steal"] < 10) {
+            ++times_map["Steal"];
+        } else if ((args[1] == "FireAttack" || args[1] == "BurningCamps") && times_map["Fire"] < 10) {
+            ++times_map["Fire"];
+        }
+        int n = room->getAchievementData(player, key, false, false).toInt();
+        if (times_map["Steal"] + times_map["Fire"] != n) {
+            n = times_map["Steal"] + times_map["Fire"] - n;
+            room->addAchievementData(player, key, n, false);
+        }
+        list.clear();
+        foreach (QString name, times_map.keys())
+            list << QString("%1,%2").arg(name).arg(times_map[name]);
+        room->setAchievementData(player, key, QVariant::fromValue(list), false, FullFile);
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -1629,7 +1684,7 @@ AchievementPackage::AchievementPackage()
            << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
            << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX
            << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY << new NDJSWD
-           << new AchieveSkill("pmdx") << new PDDDFL;
+           << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ;
 }
 
 ADD_PACKAGE(Achievement)
