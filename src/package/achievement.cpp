@@ -1690,7 +1690,7 @@ public:
         if (data.toString() == "Global_TurnCount" && player->getMark("Global_TurnCount") == 17) {
             QStringList shahu = Sanguosha->translate(key).split(",");
             foreach (QString s, shahu) {
-                if (player->getGeneralName().contains(s))
+                if (Sanguosha->translate(player->getGeneralName()).contains(s))
                     return QStringList(objectName());
             }
         }
