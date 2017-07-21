@@ -1676,6 +1676,47 @@ public:
     }
 };
 
+class SZBNQB : public AchieveSkill
+{
+public:
+    SZBNQB()
+        : AchieveSkill("szbnqb")
+    {
+        events << CardUsed << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data,
+                                    ServerPlayer *&) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    foreach (ServerPlayer *p2, room->getAlivePlayers())
+                        room->setAchievementData(p, key + "_" + p2->objectName(), 0);
+                }
+            }
+            return QStringList();
+        }
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("Rout"))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        foreach (ServerPlayer *to, use.to) {
+            QString s("%1_%2");
+            s.arg(key).arg(to->objectName());
+            room->addAchievementData(player, s);
+            if (room->getAchievementData(player, s).toInt() == 2)
+                gainAchievement(player, room);
+        }
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -1684,7 +1725,7 @@ AchievementPackage::AchievementPackage()
            << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
            << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX
            << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY << new NDJSWD
-           << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ;
+           << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SZBNQB;
 }
 
 ADD_PACKAGE(Achievement)
