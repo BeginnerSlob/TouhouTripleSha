@@ -3,4 +3,6 @@ return {
 	
 	["#GainAchievement"] = "恭喜 %arg 获得战功“%arg2”！",
 	["#AchievementDescription"] = "%arg",
+
+	["ssjnysq"] = "莎,胡",
 }

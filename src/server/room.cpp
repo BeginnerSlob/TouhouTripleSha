@@ -1934,7 +1934,13 @@ void Room::setPlayerProperty(ServerPlayer *player, const char *property_name, co
 
 void Room::setPlayerMark(ServerPlayer *player, const QString &mark, int value)
 {
+    int delta = value - player->getMark(mark);
     player->setMark(mark, value);
+    QVariant _mark = mark;
+    if (delta > 0)
+        thread->trigger(EventMarksGot, this, player, _mark);
+    else if (delta < 0)
+        thread->trigger(EventMarksLost, this, player, _mark);
 
     JsonArray args;
     args << player->objectName();

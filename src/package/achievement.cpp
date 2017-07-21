@@ -1676,6 +1676,34 @@ public:
     }
 };
 
+class SSJNYSQ : public AchieveSkill
+{
+public:
+    SSJNYSQ()
+        : AchieveSkill("ssjnysq")
+    {
+        events << EventMarksGot;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (data.toString() == "Global_TurnCount" && player->getMark("Global_TurnCount") == 17) {
+            QStringList shahu = Sanguosha->translate(key).split(",");
+            foreach (QString s, shahu) {
+                if (player->getGeneralName().contains(s))
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        gainAchievement(player, room);
+        return false;
+    }
+};
+
 class SZBNQB : public AchieveSkill
 {
 public:
@@ -1725,7 +1753,7 @@ AchievementPackage::AchievementPackage()
            << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
            << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX
            << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY << new NDJSWD
-           << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SZBNQB;
+           << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB;
 }
 
 ADD_PACKAGE(Achievement)
