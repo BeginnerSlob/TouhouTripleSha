@@ -1784,6 +1784,56 @@ public:
     }
 };
 
+class WYZSWZH : public AchieveSkill
+{
+public:
+    WYZSWZH()
+        : AchieveSkill("wyzswzh")
+    {
+        events << CardsMoveOneTime << PreDamageDone << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent te, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&aw) const
+    {
+        if (te == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    room->setAchievementData(p, key, 0);
+            }
+            return QStringList();
+        } else if (te == PreDamageDone) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.nature == DamageStruct::Thunder && damage.from)
+                return QStringList(objectName());
+            return QStringList();
+        }
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (player == move.to && move.reason.m_reason == CardMoveReason::S_REASON_RETRIAL) {
+            JudgeStruct *judge = move.reason.m_extraData.value<JudgeStruct *>();
+            if (judge && judge->reason == "lightning") {
+                const Card *card = Sanguosha->getCard(move.card_ids.first());
+                if (card->getSuit() == Card::Spade && card->getNumber() >= 2 && card->getNumber() <= 10) {
+                    aw = room->findPlayer(move.reason.m_playerId);
+                    return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent te, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const
+    {
+        if (te == PreDamageDone) {
+            DamageStruct damage = data.value<DamageStruct>();
+            room->addAchievementData(damage.from, key, damage.damage);
+            if (room->getAchievementData(damage.from, key).toInt() >= 3)
+                gainAchievement(damage.from, room);
+        } else
+            gainAchievement(ask_who, room);
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -1792,7 +1842,8 @@ AchievementPackage::AchievementPackage()
            << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
            << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX
            << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY << new NDJSWD
-           << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB << new HXXLYHJH;
+           << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB << new HXXLYHJH
+           << new WYZSWZH;
 }
 
 ADD_PACKAGE(Achievement)
