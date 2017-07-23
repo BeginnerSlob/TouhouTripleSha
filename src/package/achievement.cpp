@@ -14,17 +14,15 @@ AchieveSkill::AchieveSkill(QString objectName)
 
 int AchieveSkill::getPriority(TriggerEvent) const
 {
-    return 0;
+    return 9;
 }
 
 void AchieveSkill::onGameOver(Room *, ServerPlayer *, QVariant &) const
 {
-    return;
 }
 
 void AchieveSkill::onWinOrLose(Room *, ServerPlayer *, bool) const
 {
-    return;
 }
 
 #define ACCOUNT "account/docs/data/"
@@ -1175,21 +1173,23 @@ public:
         events << GameStart;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&ask_who) const
     {
-        if (player) {
+        if (player == NULL) {
             foreach (ServerPlayer *p, room->getPlayers()) {
                 if (p->isMale())
                     return QStringList();
             }
+            ask_who = room->getLord();
             return QStringList(objectName());
         }
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const
     {
-        gainAchievement(player, room);
+        foreach (ServerPlayer *p, room->getPlayers())
+            gainAchievement(p, room);
         return false;
     }
 };
@@ -1745,6 +1745,45 @@ public:
     }
 };
 
+class HXXLYHJH : public AchieveSkill
+{
+public:
+    HXXLYHJH()
+        : AchieveSkill("hxxlyhjh")
+    {
+        events << GameStart;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&ask_who) const
+    {
+        if (player == NULL) {
+            ask_who = room->getLord();
+            return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const
+    {
+        int sum = 0;
+        foreach (const General *g, Sanguosha->getGeneralList()) {
+            if (g->getPackage().startsWith("touhou"))
+                ++sum;
+        }
+        foreach (ServerPlayer *player, room->getPlayers()) {
+            QVariant data = room->getAchievementData(player, key, false);
+            QStringList list = data.toString().split("\n", QString::SkipEmptyParts);
+            if (list.contains(player->getGeneralName()))
+                return false;
+            room->setAchievementData(player, key, player->getGeneralName(), false);
+            room->addAchievementData(player, key, 1, false);
+            if (list.length() + 1 == sum)
+                gainAchievement(player, room);
+        }
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -1753,7 +1792,7 @@ AchievementPackage::AchievementPackage()
            << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
            << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX
            << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY << new NDJSWD
-           << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB;
+           << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB << new HXXLYHJH;
 }
 
 ADD_PACKAGE(Achievement)
