@@ -402,7 +402,12 @@ QString Card::toString(bool hidden) const
     if (!isVirtualCard())
         return QString::number(m_id);
     else
-        return QString("%1:%2[%3:%4]=%5").arg(objectName()).arg(m_skillName).arg(getSuitString()).arg(getNumberString()).arg(subcardString());
+        return QString("%1:%2[%3:%4]=%5")
+            .arg(objectName())
+            .arg(m_skillName)
+            .arg(getSuitString())
+            .arg(getNumberString())
+            .arg(subcardString());
 }
 
 QString Card::subcardString() const
@@ -757,7 +762,8 @@ void Card::onUse(Room *room, const CardUseStruct &use) const
         used_cards << card_use.card->getEffectiveId();
 
     if (card_use.card->getTypeId() != TypeSkill) {
-        CardMoveReason reason(CardMoveReason::S_REASON_USE, card_use.from->objectName(), QString(), card_use.card->getSkillName(), QString());
+        CardMoveReason reason(CardMoveReason::S_REASON_USE, card_use.from->objectName(), QString(),
+                              card_use.card->getSkillName(), QString());
         if (card_use.to.size() == 1)
             reason.m_targetId = card_use.to.first()->objectName();
         reason.m_extraData = QVariant::fromValue(card_use.card);
@@ -768,7 +774,8 @@ void Card::onUse(Room *room, const CardUseStruct &use) const
         room->moveCardsAtomic(moves, true);
         card_use.card = reason.m_extraData.value<const Card *>();
     } else if (card_use.card->willThrow()) {
-        CardMoveReason reason(CardMoveReason::S_REASON_THROW, card_use.from->objectName(), QString(), card_use.card->getSkillName(), QString());
+        CardMoveReason reason(CardMoveReason::S_REASON_THROW, card_use.from->objectName(), QString(),
+                              card_use.card->getSkillName(), QString());
         room->moveCardTo(this, card_use.from, NULL, Player::DiscardPile, reason, true);
     }
 
@@ -962,7 +969,11 @@ QString SkillCard::toString(bool hidden) const
 {
     QString str;
     if (!hidden)
-        str = QString("@%1[%2:%3]=%4").arg(metaObject()->className()).arg(getSuitString()).arg(getNumberString()).arg(subcardString());
+        str = QString("@%1[%2:%3]=%4")
+                  .arg(metaObject()->className())
+                  .arg(getSuitString())
+                  .arg(getNumberString())
+                  .arg(subcardString());
     else
         str = QString("@%1[no_suit:-]=.").arg(metaObject()->className());
 

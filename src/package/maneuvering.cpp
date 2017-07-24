@@ -151,6 +151,20 @@ public:
             log.arg2 = QString::number(++damage.damage);
             room->sendLog(log);
 
+            QStringList list
+                = room->getAchievementData(use.from, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
+            if (!list.contains("guding_blade")) {
+                room->setAchievementData(player, key, "guding_blade", false);
+                room->addAchievementData(player, key, 1, false);
+                if (room->getAchievementData(player, "jhsr", false, false).toInt() == 21) {
+                    const TriggerSkill *s = Sanguosha->getTriggerSkill("#achievement_jhsr");
+                    if (s && s->inherits("AchieveSkill")) {
+                        const AchieveSkill *as = qobject_cast<const AchieveSkill *>(s);
+                        as->gainAchievement(player, room);
+                    }
+                }
+            }
+
             data = QVariant::fromValue(damage);
         }
 

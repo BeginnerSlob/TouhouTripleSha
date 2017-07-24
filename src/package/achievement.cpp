@@ -1977,6 +1977,105 @@ public:
     }
 };
 
+class JHSR : public AchieveSkill
+{
+public:
+    JHSR()
+        : AchieveSkill("jhsr")
+    {
+        events << ChoiceMade << CardUsed;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        // ----weapon
+        QStringList list = room->getAchievementData(player, key, false).toString().split("\n", QString::SkipEmptyParts);
+        if (e == CardUsed) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            // fan
+            if (use.card && use.card->getSkillName() == "fan" && !list.contains("fan")) {
+                room->setAchievementData(player, key, "fan", false);
+                room->addAchievementData(player, key, 1, false);
+                if (room->getAchievementData(player, key, false, false).toInt() == 21)
+                    gainAchievement(player, room);
+            }
+            // spear
+            if (use.card && use.card->getSkillName() == "spear" && !list.contains("spear")) {
+                room->setAchievementData(player, key, "spear", false);
+                room->addAchievementData(player, key, 1, false);
+                if (room->getAchievementData(player, key, false, false).toInt() == 21)
+                    gainAchievement(player, room);
+            }
+        } else if (e == ChoiceMade) {
+            QStringList args = data.toString().split(":");
+            // fan
+            if (args.length() >= 3 && args[1] == "fan" && args[2] == "yes" && !list.contains("fan")) {
+                room->setAchievementData(player, key, "fan", false);
+                room->addAchievementData(player, key, 1, false);
+                if (room->getAchievementData(player, key, false, false).toInt() == 21)
+                    gainAchievement(player, room);
+                // double_sword
+            } else if (args.length() >= 3 && args[1] == "double_sword" && args[2] == "yes" && !list.contains("double_sword")) {
+                room->setAchievementData(player, key, "double_sword", false);
+                room->addAchievementData(player, key, 1, false);
+                if (room->getAchievementData(player, key, false, false).toInt() == 21)
+                    gainAchievement(player, room);
+                // ice_sword
+            } else if (args.length() >= 3 && args[1] == "ice_sword" && args[2] == "yes" && !list.contains("ice_sword")) {
+                room->setAchievementData(player, key, "ice_sword", false);
+                room->addAchievementData(player, key, 1, false);
+                if (room->getAchievementData(player, key, false, false).toInt() == 21)
+                    gainAchievement(player, room);
+                // kylin_bow
+            } else if (args.length() >= 3 && args[1] == "kylin_bow" && args[2] == "yes" && !list.contains("kylin_bow")) {
+                room->setAchievementData(player, key, "kylin_bow", false);
+                room->addAchievementData(player, key, 1, false);
+                if (room->getAchievementData(player, key, false, false).toInt() == 21)
+                    gainAchievement(player, room);
+                // moon_spear
+            } else if (args.length() >= 3 && args[1] == "moon_spear" && args[2] == "yes" && !list.contains("moon_spear")) {
+                room->setAchievementData(player, key, "moon_spear", false);
+                room->addAchievementData(player, key, 1, false);
+                if (room->getAchievementData(player, key, false, false).toInt() == 21)
+                    gainAchievement(player, room);
+                //axe
+            } else if (args.length() >= 5 && args[1] == "@axe" && args[4] != "_nil") {
+                room->setAchievementData(player, key, "axe", false);
+                room->addAchievementData(player, key, 1, false);
+                if (room->getAchievementData(player, key, false, false).toInt() == 21)
+                    gainAchievement(player, room);
+                // control_rod
+            } else if (args.length() >= 4 && args[1] == "control_rod" && args[3] == "yes" && !list.contains("control_rod")) {
+                room->setAchievementData(player, key, "control_rod", false);
+                room->addAchievementData(player, key, 1, false);
+                if (room->getAchievementData(player, key, false, false).toInt() == 21)
+                    gainAchievement(player, room);
+            }
+        }
+        // blade
+        // Slash::onUse
+
+        // qinggang_sword
+        // QinggangSwordSkill::effect
+
+        // guding_blade
+        // GudingBladeSkill::trigger
+
+        // ----armor
+        // vine
+        // eight_diagram
+        // renwang_sheild
+        // iron_lion
+        // maid_suit
+        // ibuki_gourd
+        // breastplate
+        // ----treasure
+        // jade
+        // scroll
+        // wooden_ox
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -1986,7 +2085,7 @@ AchievementPackage::AchievementPackage()
            << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX
            << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY << new NDJSWD
            << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB << new HXXLYHJH << new WYZSWZH
-           << new NJDZJCGDSPMBM << new WHHQ << new HYLDZZZD << new ZSYB;
+           << new NJDZJCGDSPMBM << new WHHQ << new HYLDZZZD << new ZSYB << new JHSR;
 }
 
 ADD_PACKAGE(Achievement)
