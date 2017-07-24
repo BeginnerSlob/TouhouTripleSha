@@ -1771,6 +1771,8 @@ public:
                 ++sum;
         }
         foreach (ServerPlayer *player, room->getPlayers()) {
+            if (!player->getGeneral()->getPackage().startsWith("touhou"))
+                continue;
             QVariant data = room->getAchievementData(player, key, false);
             QStringList list = data.toString().split("\n", QString::SkipEmptyParts);
             if (list.contains(player->getGeneralName()))
