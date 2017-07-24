@@ -1836,6 +1836,83 @@ public:
     }
 };
 
+class NJDZJCGDSPMBM : public AchieveSkill
+{
+public:
+    NJDZJCGDSPMBM()
+        : AchieveSkill("njdzjcgdspmbm")
+    {
+        events << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who == player && death.damage) {
+            DamageStruct *damage = death.damage;
+            if (damage && damage->from)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        ServerPlayer *player = death.damage->from;
+        room->addAchievementData(player, key, 1, false);
+        if (room->getAchievementData(player, key, false, false).toInt() == 100)
+            gainAchievement(player, room);
+        return false;
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *, QVariant &data) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        DamageStruct *damage = death.damage;
+        if (damage && damage->from) {
+            ServerPlayer *player = death.damage->from;
+            room->addAchievementData(player, key, 1, false);
+            if (room->getAchievementData(player, key, false, false).toInt() == 100)
+                gainAchievement(player, room);
+        }
+    }
+};
+
+class WHHQ : public AchieveSkill
+{
+public:
+    WHHQ() : AchieveSkill("whhq")
+    {
+        events << CardUsed;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("KnownBoth")) {
+            QStringList list = room->getAchievementData(player, key).toStringList();
+            if (list.length() < 3) {
+                foreach (ServerPlayer *to, use.to) {
+                    if (list.contains(to->objectName()))
+                        continue;
+                    list << to->objectName();
+                }
+                room->setAchievementData(player, key, QVariant::fromValue(list));
+                if (list.length() >= 3)
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        gainAchievement(player, room);
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -1844,8 +1921,8 @@ AchievementPackage::AchievementPackage()
            << new GYDDW << new JJDDW << new YDSPZ << new DMHB << new FSLZ << new CDSC << new GLGJSSY << new ZCYX << new ZJDFZ
            << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX
            << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY << new NDJSWD
-           << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB << new HXXLYHJH
-           << new WYZSWZH;
+           << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB << new HXXLYHJH << new WYZSWZH
+           << new NJDZJCGDSPMBM << new WHHQ;
 }
 
 ADD_PACKAGE(Achievement)
