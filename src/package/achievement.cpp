@@ -1882,7 +1882,8 @@ public:
 class WHHQ : public AchieveSkill
 {
 public:
-    WHHQ() : AchieveSkill("whhq")
+    WHHQ()
+        : AchieveSkill("whhq")
     {
         events << CardUsed;
     }
@@ -1913,6 +1914,62 @@ public:
     }
 };
 
+class HYLDZZZD : public AchieveSkill
+{
+public:
+    HYLDZZZD()
+        : AchieveSkill("hyldzzzd")
+    {
+        events << GameStart;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&ask_who) const
+    {
+        if (player == NULL) {
+            if (room->getMode() == "02_1v1") {
+                ask_who = room->getLord();
+                return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const
+    {
+        foreach (ServerPlayer *player, room->getPlayers())
+            gainAchievement(player, room);
+        return false;
+    }
+};
+
+class ZSYB : public AchieveSkill
+{
+public:
+    ZSYB()
+        : AchieveSkill("zsyb")
+    {
+        events << GameStart;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&ask_who) const
+    {
+        if (player == NULL) {
+            if (room->getMode() == "chunxue") {
+                ask_who = room->getLord();
+                return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const
+    {
+        foreach (ServerPlayer *player, room->getPlayers())
+            gainAchievement(player, room);
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -1922,7 +1979,7 @@ AchievementPackage::AchievementPackage()
            << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX
            << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY << new NDJSWD
            << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB << new HXXLYHJH << new WYZSWZH
-           << new NJDZJCGDSPMBM << new WHHQ;
+           << new NJDZJCGDSPMBM << new WHHQ << new HYLDZZZD << new ZSYB;
 }
 
 ADD_PACKAGE(Achievement)
