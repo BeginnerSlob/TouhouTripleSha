@@ -200,6 +200,13 @@ public:
     virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         if (e == GameOverJudge) {
+            if (room->getMode() == "02_1v1") {
+                QStringList list = player->tag["1v1Arrange"].toStringList();
+                QString rule = Config.value("1v1/Rule", "2013").toString();
+                if (list.length() > ((rule == "2013") ? 3 : 0))
+                    break;
+            }
+
             QString winner = room->getWinner(player);
             if (!winner.isEmpty())
                 return QStringList(objectName());
