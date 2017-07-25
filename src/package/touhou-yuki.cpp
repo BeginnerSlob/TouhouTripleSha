@@ -179,13 +179,16 @@ public:
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to == Player::NotActive) {
                 if (player->hasFlag("ThErchongSlash")) {
-                    foreach (ServerPlayer *p, room->getAlivePlayers())
+                    foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                        room->setPlayerMark(p, "layer", 0);
                         room->setPlayerMark(p, "@layer", 0);
+                    }
                 } else {
                     return QStringList(objectName());
                 }
             }
         } else if (triggerEvent == EventPhaseStart && player->getPhase() == Player::RoundStart) {
+            room->setPlayerMark(player, "layer", 0);
             room->setPlayerMark(player, "@layer", 0);
         } else if (triggerEvent == EventAcquireSkill || triggerEvent == EventLoseSkill) {
             if (data.toString() != "therchong")
