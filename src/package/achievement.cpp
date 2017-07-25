@@ -866,7 +866,7 @@ public:
 
     virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
     {
-        QStringList winners = room->getWinner(player).split(":");
+        QStringList winners = room->getWinner(player).split("+");
         foreach (ServerPlayer *p, room->getPlayers()) {
             bool is_win = winners.contains(p->objectName()) || winners.contains(p->getRole());
             onWinOrLose(room, p, is_win);
@@ -992,7 +992,7 @@ public:
 
     virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
     {
-        QStringList winners = room->getWinner(player).split(":");
+        QStringList winners = room->getWinner(player).split("+");
         foreach (ServerPlayer *p, room->getPlayers()) {
             bool is_win = winners.contains(p->objectName()) || winners.contains(p->getRole());
             if (is_win && p->getRole() == "renegade")
@@ -1243,7 +1243,7 @@ public:
 
     virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
     {
-        QStringList winners = room->getWinner(player).split(":");
+        QStringList winners = room->getWinner(player).split("+");
         foreach (ServerPlayer *p, room->getPlayers()) {
             bool is_win = winners.contains(p->objectName()) || winners.contains(p->getRole());
             onWinOrLose(room, p, is_win);
@@ -2188,7 +2188,8 @@ public:
     {
         DeathStruct death = data.value<DeathStruct>();
         if (death.who == player) {
-            if (player->getRole() == "loyalist" && death.damage && death.damage->from && death.damage->from->getRole() == "lord")
+            if (player->getRole() == "loyalist" && death.damage && death.damage->from
+                && death.damage->from->getRole() == "lord")
                 return QStringList(objectName());
         }
         return QStringList();
@@ -2202,6 +2203,94 @@ public:
     }
 };
 
+class RBZJ : public AchieveSkill
+{
+public:
+    RBZJ()
+        : AchieveSkill("rbzj")
+    {
+        events << PreDamageDone;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        DamageStruct damage = data.value<DamageStruct>();
+        if (!damage.card || !(damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))) {
+            if (room->getAchievementData(player, key).toInt() != -1)
+                room->setAchievementData(player, key, -1);
+            if (damage.from && room->getAchievementData(damage.from, key).toInt() != -1)
+                room->setAchievementData(damage.from, key, -1);
+        } else {
+            if (room->getAchievementData(player, key).toInt() == 0)
+                room->setAchievementData(player, key, 1);
+            if (damage.from && room->getAchievementData(damage.from, key).toInt() == 0)
+                room->setAchievementData(damage.from, key, 1);
+        }
+        return QStringList();
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
+    {
+        QStringList winners = room->getWinner(player).split("+");
+        foreach (ServerPlayer *p, room->getPlayers()) {
+            bool is_win = winners.contains(p->objectName()) || winners.contains(p->getRole());
+            onWinOrLose(room, p, is_win);
+        }
+    }
+
+    virtual void onWinOrLose(Room *room, ServerPlayer *player, bool is_win) const
+    {
+        if (is_win) {
+            if (room->getAchievementData(player, key).toInt() == 1)
+                gainAchievement(player, room);
+        }
+    }
+};
+
+class SSZZ : public AchieveSkill
+{
+public:
+    SSZZ()
+        : AchieveSkill("sszz")
+    {
+        events << PreDamageDone;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel"))) {
+            if (room->getAchievementData(player, key).toInt() != -1)
+                room->setAchievementData(player, key, -1);
+            if (damage.from && room->getAchievementData(damage.from, key).toInt() != -1)
+                room->setAchievementData(damage.from, key, -1);
+        } else {
+            if (room->getAchievementData(player, key).toInt() == 0)
+                room->setAchievementData(player, key, 1);
+            if (damage.from && room->getAchievementData(damage.from, key).toInt() == 0)
+                room->setAchievementData(damage.from, key, 1);
+        }
+        return QStringList();
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
+    {
+        QStringList winners = room->getWinner(player).split("+");
+        foreach (ServerPlayer *p, room->getPlayers()) {
+            bool is_win = winners.contains(p->objectName()) || winners.contains(p->getRole());
+            onWinOrLose(room, p, is_win);
+        }
+    }
+
+    virtual void onWinOrLose(Room *room, ServerPlayer *player, bool is_win) const
+    {
+        if (is_win) {
+            if (room->getAchievementData(player, key).toInt() == 1)
+                gainAchievement(player, room);
+        }
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -2211,7 +2300,8 @@ AchievementPackage::AchievementPackage()
            << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX
            << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY << new NDJSWD
            << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB << new HXXLYHJH << new WYZSWZH
-           << new NJDZJCGDSPMBM << new WHHQ << new HYLDZZZD << new ZSYB << new JHSR << new SLDJY << new BPZ << new BJDBZ;
+           << new NJDZJCGDSPMBM << new WHHQ << new HYLDZZZD << new ZSYB << new JHSR << new SLDJY << new BPZ << new BJDBZ
+           << new RBZJ << new SSZZ;
 }
 
 ADD_PACKAGE(Achievement)
