@@ -2175,6 +2175,33 @@ public:
     }
 };
 
+class BJDBZ : public AchieveSkill
+{
+public:
+    BJDBZ()
+        : AchieveSkill("bjdbz")
+    {
+        events << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who == player) {
+            if (player->getRole() == "loyalist" && death.damage && death.damage->from && death.damage->from->getRole() == "lord")
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        gainAchievement(death.damage->from, room);
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -2184,7 +2211,7 @@ AchievementPackage::AchievementPackage()
            << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX
            << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY << new NDJSWD
            << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB << new HXXLYHJH << new WYZSWZH
-           << new NJDZJCGDSPMBM << new WHHQ << new HYLDZZZD << new ZSYB << new JHSR << new SLDJY << new BPZ;
+           << new NJDZJCGDSPMBM << new WHHQ << new HYLDZZZD << new ZSYB << new JHSR << new SLDJY << new BPZ << new BJDBZ;
 }
 
 ADD_PACKAGE(Achievement)
