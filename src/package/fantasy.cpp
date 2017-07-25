@@ -658,7 +658,7 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         player->setFlags("-JadeDraw");
@@ -666,8 +666,23 @@ public:
             if (move.from_places[i] != Player::PlaceEquip)
                 continue;
             const Card *card = Sanguosha->getEngineCard(move.card_ids[i]);
-            if (card->objectName() == "jade")
+            if (card->objectName() == "jade") {
+                QStringList list
+                    = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
+                if (!list.contains("jade")) {
+                    room->setAchievementData(player, "jhsr", "jade", false);
+                    room->addAchievementData(player, "jhsr", 1, false);
+                    if (room->getAchievementData(player, "jhsr", false, false).toInt() == 21) {
+                        const TriggerSkill *s = Sanguosha->getTriggerSkill("#achievement_jhsr");
+                        if (s && s->inherits("AchieveSkill")) {
+                            const AchieveSkill *as = qobject_cast<const AchieveSkill *>(s);
+                            as->gainAchievement(player, room);
+                        }
+                    }
+                }
+
                 player->drawCards(1, "jade");
+            }
         }
 
         return false;
@@ -1052,6 +1067,19 @@ public:
         log.arg = objectName();
         log.arg2 = effect.slash->objectName();
         player->getRoom()->sendLog(log);
+
+        QStringList list = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
+        if (!list.contains("renwang_shield")) {
+            room->setAchievementData(player, "jhsr", "renwang_shield", false);
+            room->addAchievementData(player, "jhsr", 1, false);
+            if (room->getAchievementData(player, "jhsr", false, false).toInt() == 21) {
+                const TriggerSkill *s = Sanguosha->getTriggerSkill("#achievement_jhsr");
+                if (s && s->inherits("AchieveSkill")) {
+                    const AchieveSkill *as = qobject_cast<const AchieveSkill *>(s);
+                    as->gainAchievement(player, room);
+                }
+            }
+        }
 
         room->setEmotion(player, "effects/armor");
         effect.to->setFlags("Global_NonSkillNullify");

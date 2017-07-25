@@ -152,10 +152,10 @@ public:
             room->sendLog(log);
 
             QStringList list
-                = room->getAchievementData(use.from, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
+                = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
             if (!list.contains("guding_blade")) {
-                room->setAchievementData(player, key, "guding_blade", false);
-                room->addAchievementData(player, key, 1, false);
+                room->setAchievementData(player, "jhsr", "guding_blade", false);
+                room->addAchievementData(player, "jhsr", 1, false);
                 if (room->getAchievementData(player, "jhsr", false, false).toInt() == 21) {
                     const TriggerSkill *s = Sanguosha->getTriggerSkill("#achievement_jhsr");
                     if (s && s->inherits("AchieveSkill")) {
@@ -205,6 +205,20 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         room->sendCompulsoryTriggerLog(player, objectName(), false);
+
+        QStringList list = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
+        if (!list.contains("maid_suit")) {
+            room->setAchievementData(player, "jhsr", "maid_suit", false);
+            room->addAchievementData(player, "jhsr", 1, false);
+            if (room->getAchievementData(player, "jhsr", false, false).toInt() == 21) {
+                const TriggerSkill *s = Sanguosha->getTriggerSkill("#achievement_jhsr");
+                if (s && s->inherits("AchieveSkill")) {
+                    const AchieveSkill *as = qobject_cast<const AchieveSkill *>(s);
+                    as->gainAchievement(player, room);
+                }
+            }
+        }
+
         DamageStruct damage = data.value<DamageStruct>();
         room->setEmotion(player, "effects/armor");
         if (damage.nature == DamageStruct::Normal)
@@ -282,6 +296,20 @@ public:
             log.arg2 = effect.slash->objectName();
             room->sendLog(log);
 
+            QStringList list
+                = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
+            if (!list.contains("vine")) {
+                room->setAchievementData(player, "jhsr", "vine", false);
+                room->addAchievementData(player, "jhsr", 1, false);
+                if (room->getAchievementData(player, "jhsr", false, false).toInt() == 21) {
+                    const TriggerSkill *s = Sanguosha->getTriggerSkill("#achievement_jhsr");
+                    if (s && s->inherits("AchieveSkill")) {
+                        const AchieveSkill *as = qobject_cast<const AchieveSkill *>(s);
+                        as->gainAchievement(player, room);
+                    }
+                }
+            }
+
             effect.to->setFlags("Global_NonSkillNullify");
             return true;
         } else if (triggerEvent == CardEffected) {
@@ -294,6 +322,20 @@ public:
             log.arg2 = effect.card->objectName();
             room->sendLog(log);
 
+            QStringList list
+                = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
+            if (!list.contains("vine")) {
+                room->setAchievementData(player, "jhsr", "vine", false);
+                room->addAchievementData(player, "jhsr", 1, false);
+                if (room->getAchievementData(player, "jhsr", false, false).toInt() == 21) {
+                    const TriggerSkill *s = Sanguosha->getTriggerSkill("#achievement_jhsr");
+                    if (s && s->inherits("AchieveSkill")) {
+                        const AchieveSkill *as = qobject_cast<const AchieveSkill *>(s);
+                        as->gainAchievement(player, room);
+                    }
+                }
+            }
+
             effect.to->setFlags("Global_NonSkillNullify");
             return true;
         } else if (triggerEvent == DamageInflicted) {
@@ -305,6 +347,21 @@ public:
             log.arg = QString::number(damage.damage);
             log.arg2 = QString::number(++damage.damage);
             room->sendLog(log);
+
+            QStringList list
+                = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
+            if (!list.contains("vine")) {
+                room->setAchievementData(player, "jhsr", "vine", false);
+                room->addAchievementData(player, "jhsr", 1, false);
+                if (room->getAchievementData(player, "jhsr", false, false).toInt() == 21) {
+                    const TriggerSkill *s = Sanguosha->getTriggerSkill("#achievement_jhsr");
+                    if (s && s->inherits("AchieveSkill")) {
+                        const AchieveSkill *as = qobject_cast<const AchieveSkill *>(s);
+                        as->gainAchievement(player, room);
+                    }
+                }
+            }
+
             room->addAchievementData(player, "pmdx");
             if (room->getAchievementData(player, "pmdx").toInt() == 3) {
                 const TriggerSkill *s = Sanguosha->getTriggerSkill("#achievement_pmdx");
@@ -377,6 +434,20 @@ public:
             log.arg2 = objectName();
             room->sendLog(log);
 
+            QStringList list
+                = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
+            if (!list.contains("silver_lion")) {
+                room->setAchievementData(player, "jhsr", "silver_lion", false);
+                room->addAchievementData(player, "jhsr", 1, false);
+                if (room->getAchievementData(player, "jhsr", false, false).toInt() == 21) {
+                    const TriggerSkill *s = Sanguosha->getTriggerSkill("#achievement_jhsr");
+                    if (s && s->inherits("AchieveSkill")) {
+                        const AchieveSkill *as = qobject_cast<const AchieveSkill *>(s);
+                        as->gainAchievement(player, room);
+                    }
+                }
+            }
+
             damage.damage = 1;
             data = QVariant::fromValue(damage);
         } else {
@@ -388,6 +459,21 @@ public:
                 const Card *card = Sanguosha->getEngineCard(move.card_ids[i]);
                 if (card->objectName() == objectName()) {
                     room->setEmotion(player, "effects/armor_silver_lion");
+
+                    QStringList list
+                        = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
+                    if (!list.contains("silver_lion")) {
+                        room->setAchievementData(player, "jhsr", "silver_lion", false);
+                        room->addAchievementData(player, "jhsr", 1, false);
+                        if (room->getAchievementData(player, "jhsr", false, false).toInt() == 21) {
+                            const TriggerSkill *s = Sanguosha->getTriggerSkill("#achievement_jhsr");
+                            if (s && s->inherits("AchieveSkill")) {
+                                const AchieveSkill *as = qobject_cast<const AchieveSkill *>(s);
+                                as->gainAchievement(player, room);
+                            }
+                        }
+                    }
+
                     RecoverStruct recover;
                     recover.card = card;
                     room->recover(player, recover);

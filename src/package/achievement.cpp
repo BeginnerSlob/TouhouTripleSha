@@ -1,6 +1,7 @@
 #include "achievement.h"
 #include "engine.h"
 #include "room.h"
+#include "settings.h"
 
 #include <QFile>
 
@@ -204,7 +205,7 @@ public:
                 QStringList list = player->tag["1v1Arrange"].toStringList();
                 QString rule = Config.value("1v1/Rule", "2013").toString();
                 if (list.length() > ((rule == "2013") ? 3 : 0))
-                    break;
+                    return QStringList();
             }
 
             QString winner = room->getWinner(player);
@@ -2039,7 +2040,7 @@ public:
                 if (room->getAchievementData(player, key, false, false).toInt() == 21)
                     gainAchievement(player, room);
                 //axe
-            } else if (args.length() >= 5 && args[1] == "@axe" && args[4] != "_nil") {
+            } else if (args.length() >= 5 && args[1] == "@axe" && args[4] != "_nil" && !list.contains("axe")) {
                 room->setAchievementData(player, key, "axe", false);
                 room->addAchievementData(player, key, 1, false);
                 if (room->getAchievementData(player, key, false, false).toInt() == 21)
@@ -2062,17 +2063,66 @@ public:
         // GudingBladeSkill::trigger
 
         // ----armor
+        if (e == ChoiceMade) {
+            QStringList args = data.toString().split(":");
+            // eight_diagram
+            if (args.length() >= 3 && args[1] == "eight_diagram" && args[2] == "yes" && !list.contains("eight_diagram")) {
+                room->setAchievementData(player, key, "eight_diagram", false);
+                room->addAchievementData(player, key, 1, false);
+                if (room->getAchievementData(player, key, false, false).toInt() == 21)
+                    gainAchievement(player, room);
+            } else if (args.length() >= 4 && args[2] == "@ibuki_gourd" && args[3] != "_nil" && !list.contains("ibuki_gourd")) {
+                room->setAchievementData(player, key, "ibuki_gourd", false);
+                room->addAchievementData(player, key, 1, false);
+                if (room->getAchievementData(player, key, false, false).toInt() == 21)
+                    gainAchievement(player, room);
+                // breastplate
+            } else if (args.length() >= 3 && args[1] == "breastplate" && args[2] == "yes" && !list.contains("breastplate")) {
+                room->setAchievementData(player, key, "breastplate", false);
+                room->addAchievementData(player, key, 1, false);
+                if (room->getAchievementData(player, key, false, false).toInt() == 21)
+                    gainAchievement(player, room);
+            }
+        }
         // vine
-        // eight_diagram
-        // renwang_sheild
-        // iron_lion
+        // VineSkill::effect
+
+        // renwang_shield
+        // RenwangShieldSkill::effect
+
+        // silver_lion
+        // SilverLionSkill::effect
+
         // maid_suit
-        // ibuki_gourd
-        // breastplate
+        // MaidSuitSkill::effect
+
         // ----treasure
         // jade
-        // scroll
-        // wooden_ox
+        // JadeTriggerSkill::effect
+        if (e == CardUsed) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            // fan
+            if (use.card && use.card->getSkillName() == "jade" && !list.contains("jade")) {
+                room->setAchievementData(player, key, "jade", false);
+                room->addAchievementData(player, key, 1, false);
+                if (room->getAchievementData(player, key, false, false).toInt() == 21)
+                    gainAchievement(player, room);
+                // scroll
+            } else if (use.card && use.card->isKindOf("ScrollCard") && !list.contains("scroll")) {
+                room->setAchievementData(player, key, "scroll", false);
+                room->addAchievementData(player, key, 1, false);
+                if (room->getAchievementData(player, key, false, false).toInt() == 21)
+                    gainAchievement(player, room);
+                // wooden_ox
+            } else if (use.card && use.card->isKindOf("WoodenOxCard") && !list.contains("wooden_ox")) {
+                room->setAchievementData(player, key, "wooden_ox", false);
+                room->addAchievementData(player, key, 1, false);
+                if (room->getAchievementData(player, key, false, false).toInt() == 21)
+                    gainAchievement(player, room);
+            }
+        }
+
+        return QStringList();
     }
 };
 

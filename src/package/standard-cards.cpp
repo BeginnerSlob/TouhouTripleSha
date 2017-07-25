@@ -292,10 +292,10 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const
         log.to << use.to;
         room->sendLog(log);
 
-        QStringList list = room->getAchievementData(use.from, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
+        QStringList list = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
         if (!list.contains("blade")) {
-            room->setAchievementData(player, key, "blade", false);
-            room->addAchievementData(player, key, 1, false);
+            room->setAchievementData(player, "jhsr", "blade", false);
+            room->addAchievementData(player, "jhsr", 1, false);
             if (room->getAchievementData(player, "jhsr", false, false).toInt() == 21) {
                 const TriggerSkill *s = Sanguosha->getTriggerSkill("#achievement_jhsr");
                 if (s && s->inherits("AchieveSkill")) {
@@ -629,10 +629,10 @@ public:
             room->setEmotion(player, "effects/weapon");
         p->addQinggangTag(use.card);
 
-        QStringList list = room->getAchievementData(use.from, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
+        QStringList list = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
         if (!list.contains("qinggang_sword")) {
-            room->setAchievementData(player, key, "qinggang_sword", false);
-            room->addAchievementData(player, key, 1, false);
+            room->setAchievementData(player, "jhsr", "qinggang_sword", false);
+            room->addAchievementData(player, "jhsr", 1, false);
             if (room->getAchievementData(player, "jhsr", false, false).toInt() == 21) {
                 const TriggerSkill *s = Sanguosha->getTriggerSkill("#achievement_jhsr");
                 if (s && s->inherits("AchieveSkill")) {
