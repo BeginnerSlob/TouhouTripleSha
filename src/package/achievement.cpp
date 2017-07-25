@@ -2300,7 +2300,7 @@ public:
         events << Death;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&ask_who) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         DeathStruct death = data.value<DeathStruct>();
         if (death.who == player)
@@ -2308,7 +2308,7 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         room->addAchievementData(player, key, 1, false);
         if (room->getAchievementData(player, key, false, false).toInt() == 66)
@@ -2352,6 +2352,44 @@ public:
     }
 };
 
+class YMBKY : public AchieveSkill
+{
+public:
+    YMBKY()
+        : AchieveSkill("ymbky")
+    {
+        events << GameStart;
+    }
+    
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&ask_who) const
+    {
+        if (player == NULL) {
+            ask_who = room->getLord();
+            return QStringList(objectName());
+        }
+        return QStringList();
+    }
+    
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const
+    {
+        foreach (ServerPlayer *player, room->getAlivePlayers()) {
+            QString old_name = room->getAchievementData(player, key, false).toString().remove("\n");
+            QString new_name = player->getGeneralName();
+            if (new_name == old_name) {
+                room->addAchievementData(player, key, 1, false);
+                if (room->getAchievementData(player, key, false, false).toInt() == 3)
+                    gainAchievement(player, room);
+            } else {
+                room->setAchievementData(player, key, new_name, false, FullFile);
+                int delta = 1 - room->getAchievementData(player, key, false, false).toInt();
+                if (delta != 0)
+                    room->addAchievementData(player, key, delta, false);
+            }
+        }
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -2362,7 +2400,7 @@ AchievementPackage::AchievementPackage()
            << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY << new NDJSWD
            << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB << new HXXLYHJH << new WYZSWZH
            << new NJDZJCGDSPMBM << new WHHQ << new HYLDZZZD << new ZSYB << new JHSR << new SLDJY << new BPZ << new BJDBZ
-           << new RBZJ << new SSZZ << new AWJ << new JYDLDBYJ;
+           << new RBZJ << new SSZZ << new AWJ << new JYDLDBYJ << new YMBKY;
 }
 
 ADD_PACKAGE(Achievement)
