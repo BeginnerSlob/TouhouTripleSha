@@ -2126,6 +2126,32 @@ public:
     }
 };
 
+class SLDJY : public AchieveSkill
+{
+public:
+    SLDJY()
+        : AchieveSkill("sldjy")
+    {
+        events << CardUsed;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        QStringList list = room->getAchievementData(player, key).toStringList();
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->getTypeId() == Card::TypeTrick) {
+            QString obj = use.card->objectName();
+            if (!list.contains(obj)) {
+                list << obj;
+                room->setAchievementData(player, key, QVariant::fromValue(list));
+                if (list.length() == 23)
+                    gainAchievement(player, room);
+            }
+        }
+        return QStringList();
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -2135,7 +2161,7 @@ AchievementPackage::AchievementPackage()
            << new ZLPCCZ << new GSTY << new WHKS << new ALHAKB << new DJYD << new RMSH << new YYWM << new NWSSSZQ << new LZZX
            << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY << new NDJSWD
            << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB << new HXXLYHJH << new WYZSWZH
-           << new NJDZJCGDSPMBM << new WHHQ << new HYLDZZZD << new ZSYB << new JHSR;
+           << new NJDZJCGDSPMBM << new WHHQ << new HYLDZZZD << new ZSYB << new JHSR << new SLDJY;
 }
 
 ADD_PACKAGE(Achievement)

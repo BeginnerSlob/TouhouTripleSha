@@ -1167,6 +1167,9 @@ public:
     QVariant getTag(const char *key) const;
     void removeTag(const char *key);
 
+    QVariant getAchievementData(ServerPlayer *player, const char *key, bool variable = true, bool extra_data = true) const;
+    void addAchievementData(ServerPlayer *player, const char *key, int step = 1, bool variable = true);
+
     void setEmotion(ServerPlayer *target, const char *emotion);
 
     Player::Place getCardPlace(int card_id) const;
