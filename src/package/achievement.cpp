@@ -2291,6 +2291,67 @@ public:
     }
 };
 
+class AWJ : public AchieveSkill
+{
+public:
+    AWJ()
+        : AchieveSkill("awj")
+    {
+        events << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&ask_who) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who == player)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        room->addAchievementData(player, key, 1, false);
+        if (room->getAchievementData(player, key, false, false).toInt() == 66)
+            gainAchievement(player, room);
+        return false;
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
+    {
+        room->addAchievementData(player, key, 1, false);
+        if (room->getAchievementData(player, key, false, false).toInt() == 66)
+            gainAchievement(player, room);
+    }
+};
+
+class JYDLDBYJ : public AchieveSkill
+{
+public:
+    JYDLDBYJ()
+        : AchieveSkill("jydldbyj")
+    {
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
+    {
+        QStringList winners = room->getWinner(player).split("+");
+        foreach (ServerPlayer *p, room->getPlayers()) {
+            bool is_win = winners.contains(p->objectName()) || winners.contains(p->getRole());
+            if (is_win && p->getRole() == "renegade")
+                onWinOrLose(room, p, true);
+        }
+    }
+
+    virtual void onWinOrLose(Room *room, ServerPlayer *player, bool is_win) const
+    {
+        if (is_win && player->getRole() == "renegade") {
+            room->addAchievementData(player, key, 1, false);
+            if (room->getAchievementData(player, key, false, false).toInt() == 10)
+                gainAchievement(player, room);
+        }
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -2301,7 +2362,7 @@ AchievementPackage::AchievementPackage()
            << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY << new NDJSWD
            << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB << new HXXLYHJH << new WYZSWZH
            << new NJDZJCGDSPMBM << new WHHQ << new HYLDZZZD << new ZSYB << new JHSR << new SLDJY << new BPZ << new BJDBZ
-           << new RBZJ << new SSZZ;
+           << new RBZJ << new SSZZ << new AWJ << new JYDLDBYJ;
 }
 
 ADD_PACKAGE(Achievement)
