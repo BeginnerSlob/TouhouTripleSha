@@ -39,7 +39,8 @@ public:
 
     virtual bool isSkillValid(const Player *player, const Skill *skill) const
     {
-        return player->getMark("ChunXueWu") == 0 || !(skill->objectName() == "thyoushang" || skill->objectName() == "thmanxiao");
+        return player->getMark("ChunXueWu") == 0
+            || !(skill->objectName() == "thyoushang" || skill->objectName() == "thmanxiao");
     }
 };
 
@@ -96,7 +97,8 @@ public:
         frequency = Wake;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&ask_who) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&ask_who) const
     {
         if (triggerEvent == TargetSpecified) {
             if (player->getRole() == "rebel" || player->getGeneralName() == "yuki004") {
@@ -185,7 +187,8 @@ public:
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
     {
         CardUseStruct use = data.value<CardUseStruct>();
         if (triggerEvent == TargetSpecified) {
@@ -690,7 +693,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
     {
-        if (player->isLord() && player->isDead()) {
+        if (player->isLord() && player->isDead() && player->hasSkill(objectName())) {
             int n = 0;
             foreach (ServerPlayer *p, room->getAlivePlayers()) {
                 if (p->getRole() == "rebel")
@@ -832,10 +835,11 @@ ChunxueScenario::ChunxueScenario()
 
     rule = new ChunxueRule(this);
 
-    skills << new CxLinli << new CxLinliLord << new CxQihuang << new CxXuqu << new CxQiuwen << new CxQiuwenTrigger << new CxQiuwenTargetMod << new CxLiujing << new CxWangwo
-           << new CxXianlin << new CxYongjie << new CxChunzuiBase("hana002", "thhuaji", "genxing") << new CxChunzuiBase("tsuki008", "thshennao", QString())
-           << new CxChunzuiBase("yuki004", "thhuilun", QString()) << new CxChunzuiBase("yuki001", "thmengsheng", "erchong") << new CxJiushi << new CxWangdie << new CxKongnie
-           << new CxHuaxu << new CxZhongyan;
+    skills << new CxLinli << new CxLinliLord << new CxQihuang << new CxXuqu << new CxQiuwen << new CxQiuwenTrigger
+           << new CxQiuwenTargetMod << new CxLiujing << new CxWangwo << new CxXianlin << new CxYongjie
+           << new CxChunzuiBase("hana002", "thhuaji", "genxing") << new CxChunzuiBase("tsuki008", "thshennao", QString())
+           << new CxChunzuiBase("yuki004", "thhuilun", QString()) << new CxChunzuiBase("yuki001", "thmengsheng", "erchong")
+           << new CxJiushi << new CxWangdie << new CxKongnie << new CxHuaxu << new CxZhongyan;
     related_skills.insertMulti("cxqiuwen", "#cxqiuwen");
     related_skills.insertMulti("cxqiuwen", "#cxqiuwen-tar");
 
