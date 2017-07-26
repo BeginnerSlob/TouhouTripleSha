@@ -2544,6 +2544,28 @@ public:
     }
 };
 
+class YQPNZY : public AchieveSkill
+{
+public:
+    YQPNZY()
+        : AchieveSkill("yqpnzy")
+    {
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        if (player->isLord()) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.damage) {
+                ServerPlayer *from = death.damage->from;
+                if (from && from->getRole() == "rebel" && from == room->getCurrent() && from->getPhase() != Player::NotActive
+                    && from->getMark("Global_TurnCount") == 1)
+                    gainAchievement(from, room);
+            }
+        }
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -2555,7 +2577,7 @@ AchievementPackage::AchievementPackage()
            << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB << new HXXLYHJH << new WYZSWZH
            << new NJDZJCGDSPMBM << new WHHQ << new HYLDZZZD << new ZSYB << new JHSR << new SLDJY << new BPZ << new BJDBZ
            << new RBZJ << new SSZZ << new AWJ << new JYDLDBYJ << new YMBKY << new ZSWZGYDDF << new DSRSDF << new JSSSWYSGNK
-           << new XHMGSLDT;
+           << new XHMGSLDT << new YQPNZY;
 }
 
 ADD_PACKAGE(Achievement)
