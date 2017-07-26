@@ -2477,8 +2477,7 @@ public:
         events << Death;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data,
-                                    ServerPlayer *&ask_who) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         DeathStruct death = data.value<DeathStruct>();
         if (death.who == player) {
@@ -2488,7 +2487,7 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const
     {
         DeathStruct death = data.value<DeathStruct>();
         gainAchievement(death.damage->from, room);
@@ -2503,6 +2502,48 @@ public:
     }
 };
 
+class XHMGSLDT : public AchieveSkill
+{
+public:
+    XHMGSLDT()
+        : AchieveSkill("xhmgsldt")
+    {
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
+    {
+        QStringList winners = room->getWinner(player).split("+");
+        foreach (ServerPlayer *p, room->getPlayers()) {
+            bool is_win = winners.contains(p->objectName()) || winners.contains(p->getRole());
+            if (!is_win && !isHongmoguan(p))
+                onWinOrLose(room, p, false);
+        }
+    }
+
+    virtual void onWinOrLose(Room *room, ServerPlayer *player, bool is_win) const
+    {
+        if (!is_win && !isHongmoguan(player)) {
+            int n = 0;
+            foreach (ServerPlayer *p, room->getPlayers()) {
+                if (isHongmoguan(p))
+                    ++n;
+            }
+            if (n >= 4)
+                gainAchievement(player, room);
+        }
+    }
+
+    bool isHongmoguan(ServerPlayer *player) const
+    {
+        QStringList names = Sanguosha->translate(key).split(",");
+        foreach (QString name, names) {
+            if (Sanguosha->translate(player->getGeneralName()).contains(name))
+                return true;
+        }
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -2513,7 +2554,8 @@ AchievementPackage::AchievementPackage()
            << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY << new NDJSWD
            << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB << new HXXLYHJH << new WYZSWZH
            << new NJDZJCGDSPMBM << new WHHQ << new HYLDZZZD << new ZSYB << new JHSR << new SLDJY << new BPZ << new BJDBZ
-           << new RBZJ << new SSZZ << new AWJ << new JYDLDBYJ << new YMBKY << new ZSWZGYDDF << new DSRSDF << new JSSSWYSGNK;
+           << new RBZJ << new SSZZ << new AWJ << new JYDLDBYJ << new YMBKY << new ZSWZGYDDF << new DSRSDF << new JSSSWYSGNK
+           << new XHMGSLDT;
 }
 
 ADD_PACKAGE(Achievement)
