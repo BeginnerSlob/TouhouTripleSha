@@ -2566,6 +2566,195 @@ public:
     }
 };
 
+class JPBJZD : public AchieveSkill
+{
+public:
+    JPBJZD()
+        : AchieveSkill("jpbjzd")
+    {
+        events << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who == player) {
+            if (player == room->getCurrent() && player->getPhase() != Player::NotActive && death.damage && death.damage->from)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        gainAchievement(death.damage->from, room);
+        return false;
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        if (player == room->getCurrent() && player->getPhase() != Player::NotActive) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.damage && death.damage->from)
+                gainAchievement(death.damage->from, room);
+        }
+    }
+};
+
+class DSWJJ : public AchieveSkill
+{
+public:
+    DSWJJ()
+        : AchieveSkill("dswjj")
+    {
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
+    {
+        QStringList winners = room->getWinner(player).split("+");
+        foreach (ServerPlayer *p, room->getPlayers()) {
+            bool is_win = winners.contains(p->objectName()) || winners.contains(p->getRole());
+            if (is_win)
+                onWinOrLose(room, p, true);
+        }
+    }
+
+    virtual void onWinOrLose(Room *room, ServerPlayer *player, bool is_win) const
+    {
+        if (is_win && room->getAchievementData(player, key).toBool())
+            gainAchievement(player, room);
+    }
+};
+
+class SSSWJHHXXY : public AchieveSkill
+{
+public:
+    SSSWJHHXXY()
+        : AchieveSkill("ssswjhhxxy")
+    {
+        events << GameStart;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&ask_who) const
+    {
+        if (player == NULL) {
+            ask_who = room->getLord();
+            return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const
+    {
+        foreach (ServerPlayer *player, room->getAlivePlayers()) {
+            QStringList old_file
+                = room->getAchievementData(player, key, false).toString().split("\n", QString::SkipEmptyParts);
+            QList<QDate> dates;
+            QList<QStringList> names;
+            if (old_file.length() > 2) {
+                QStringList date_string = old_file.takeFirst().split(",");
+                foreach (QString s, date_string)
+                    dates << QDate::fromString(s, "yyyyMMdd");
+                foreach (QString s, old_file)
+                    names << s.split(",");
+                if (dates.length() != names.length()) {
+                    dates.clear();
+                    names.clear();
+                }
+            }
+            QDate today = QDate::currentDate();
+            if (dates.isEmpty()) {
+                dates << today;
+                QStringList today_name;
+                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                    if (checkScreenName(today_name, p))
+                        today_name << p->screenName();
+                }
+                names << today_name;
+                checkAchievement(names, player, room);
+            } else if (today == dates.last()) {
+                bool modify = false;
+                QStringList today_name = names.takeLast();
+                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                    if (checkScreenName(today_name, p)) {
+                        today_name << p->screenName();
+                        modify = true;
+                    }
+                }
+                names << today_name;
+                checkAchievement(names, player, room);
+            } else if (today == dates.last().addDays(1)) {
+                if (dates.length() == 3) {
+                    dates.removeFirst();
+                    names.removeFirst();
+                }
+                dates << today;
+                QStringList today_name;
+                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                    if (checkScreenName(today_name, p))
+                        today_name << p->screenName();
+                }
+                names << today_name;
+                checkAchievement(names, player, room);
+            } else {
+                dates.clear();
+                names.clear();
+                dates << today;
+                QStringList today_name;
+                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                    if (checkScreenName(today_name, p))
+                        today_name << p->screenName();
+                }
+                names << today_name;
+                checkAchievement(names, player, room);
+            }
+            QStringList new_file;
+            QStringList date_string;
+            foreach (QDate d, dates)
+                date_string << d.toString("yyyyMMdd");
+            new_file << date_string.join(",");
+            foreach (QStringList name, names)
+                new_file << name.join(",");
+            room->setAchievementData(player, key, QVariant::fromValue(new_file), false, FullFile);
+        }
+        return false;
+    }
+
+    bool checkScreenName(QStringList today_name, ServerPlayer *player) const
+    {
+        if (player->userId() == -1)
+            return false;
+        if (today_name.contains(player->screenName()))
+            return false;
+        return true;
+    }
+
+    void checkAchievement(QList<QStringList> names, ServerPlayer *player, Room *room) const
+    {
+        if (names.length() == 3) {
+            QStringList day3 = names[2], day2 = names[1], day1 = names[0];
+            int times = 1;
+            foreach (QString name, day3) {
+                int n = 1;
+                if (day2.contains(name)) {
+                    ++n;
+                    if (day1.contains(name))
+                        ++n;
+                }
+                if (n > times)
+                    times = n;
+            }
+            int delta = times - room->getAchievementData(player, key, false, false).toInt();
+            if (delta != 0) {
+                room->addAchievementData(player, key, delta, false);
+                if (delta > 0 && times == 3)
+                    gainAchievement(player, room);
+            }
+        }
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -2577,7 +2766,7 @@ AchievementPackage::AchievementPackage()
            << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB << new HXXLYHJH << new WYZSWZH
            << new NJDZJCGDSPMBM << new WHHQ << new HYLDZZZD << new ZSYB << new JHSR << new SLDJY << new BPZ << new BJDBZ
            << new RBZJ << new SSZZ << new AWJ << new JYDLDBYJ << new YMBKY << new ZSWZGYDDF << new DSRSDF << new JSSSWYSGNK
-           << new XHMGSLDT << new YQPNZY;
+           << new XHMGSLDT << new YQPNZY << new JPBJZD << new DSWJJ << new AchieveSkill("tssz") << new SSSWJHHXXY;
 }
 
 ADD_PACKAGE(Achievement)

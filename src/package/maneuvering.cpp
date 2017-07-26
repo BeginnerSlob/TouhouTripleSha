@@ -151,8 +151,7 @@ public:
             log.arg2 = QString::number(++damage.damage);
             room->sendLog(log);
 
-            QStringList list
-                = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
+            QStringList list = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
             if (!list.contains("guding_blade")) {
                 room->setAchievementData(player, "jhsr", "guding_blade", false);
                 room->addAchievementData(player, "jhsr", 1, false);
@@ -296,8 +295,7 @@ public:
             log.arg2 = effect.slash->objectName();
             room->sendLog(log);
 
-            QStringList list
-                = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
+            QStringList list = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
             if (!list.contains("vine")) {
                 room->setAchievementData(player, "jhsr", "vine", false);
                 room->addAchievementData(player, "jhsr", 1, false);
@@ -322,8 +320,7 @@ public:
             log.arg2 = effect.card->objectName();
             room->sendLog(log);
 
-            QStringList list
-                = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
+            QStringList list = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
             if (!list.contains("vine")) {
                 room->setAchievementData(player, "jhsr", "vine", false);
                 room->addAchievementData(player, "jhsr", 1, false);
@@ -333,6 +330,15 @@ public:
                         const AchieveSkill *as = qobject_cast<const AchieveSkill *>(s);
                         as->gainAchievement(player, room);
                     }
+                }
+            }
+
+            room->addAchievementData(player, "tssz");
+            if (room->getAchievementData(player, "tssz").toInt() == 3) {
+                const TriggerSkill *s = Sanguosha->getTriggerSkill("#achievement_tssz");
+                if (s && s->inherits("AchieveSkill")) {
+                    const AchieveSkill *as = qobject_cast<const AchieveSkill *>(s);
+                    as->gainAchievement(player, room);
                 }
             }
 
@@ -348,8 +354,7 @@ public:
             log.arg2 = QString::number(++damage.damage);
             room->sendLog(log);
 
-            QStringList list
-                = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
+            QStringList list = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
             if (!list.contains("vine")) {
                 room->setAchievementData(player, "jhsr", "vine", false);
                 room->addAchievementData(player, "jhsr", 1, false);
@@ -434,8 +439,7 @@ public:
             log.arg2 = objectName();
             room->sendLog(log);
 
-            QStringList list
-                = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
+            QStringList list = room->getAchievementData(player, "jhsr", false).toString().split("\n", QString::SkipEmptyParts);
             if (!list.contains("silver_lion")) {
                 room->setAchievementData(player, "jhsr", "silver_lion", false);
                 room->addAchievementData(player, "jhsr", 1, false);

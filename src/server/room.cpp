@@ -2767,11 +2767,14 @@ bool Room::makeSurrender(ServerPlayer *initiator)
 
     // collect polls
     foreach (ServerPlayer *player, playersAlive) {
-        bool result = false;
+        bool result = true;
         if (!player->m_isClientResponseReady || !isBool(player->getClientReply()))
             result = !player->isOnline();
         else
             result = player->getClientReply().toBool();
+
+        if (!result)
+            setAchievementData(player, "dswjj", true);
 
         QString playerRole = player->getRole();
         if (playerRole == "loyalist" || playerRole == "lord")
