@@ -2360,7 +2360,7 @@ public:
     {
         events << GameStart;
     }
-    
+
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&ask_who) const
     {
         if (player == NULL) {
@@ -2369,7 +2369,7 @@ public:
         }
         return QStringList();
     }
-    
+
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const
     {
         foreach (ServerPlayer *player, room->getAlivePlayers()) {
@@ -2390,6 +2390,84 @@ public:
     }
 };
 
+class ZSWZGYDDF : public AchieveSkill
+{
+public:
+    ZSWZGYDDF()
+        : AchieveSkill("zswzgyddf")
+    {
+        events << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who == player) {
+            foreach (const Card *c, player->getHandcards()) {
+                if (c->isKindOf("Peach"))
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        gainAchievement(player, room);
+        return false;
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
+    {
+        foreach (const Card *c, player->getHandcards()) {
+            if (c->isKindOf("Peach")) {
+                gainAchievement(player, room);
+                break;
+            }
+        }
+    }
+};
+
+class DSRSDF : public AchieveSkill
+{
+public:
+    DSRSDF()
+        : AchieveSkill("dsrsdf")
+    {
+        events << CardsMoveOneTime << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (e == EventPhaseChanging) {
+            foreach (ServerPlayer *p, room->getAlivePlayers())
+                room->setAchievementData(p, key, 0);
+        } else if (e == CardsMoveOneTime) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.to == player && room->getAchievementData(player, key).toInt() < 10) {
+                if (move.to_place == Player::PlaceHand)
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        for (int i = 0; i < move.card_ids.length(); ++i) {
+            if (move.from != player
+                || (move.from_places[i] != Player::PlaceHand && move.from_places[i] != Player::PlaceEquip)) {
+                room->addAchievementData(player, key);
+                if (room->getAchievementData(player, key).toInt() == 10) {
+                    gainAchievement(player, room);
+                }
+            }
+        }
+        return false;
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -2400,7 +2478,7 @@ AchievementPackage::AchievementPackage()
            << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY << new NDJSWD
            << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB << new HXXLYHJH << new WYZSWZH
            << new NJDZJCGDSPMBM << new WHHQ << new HYLDZZZD << new ZSYB << new JHSR << new SLDJY << new BPZ << new BJDBZ
-           << new RBZJ << new SSZZ << new AWJ << new JYDLDBYJ << new YMBKY;
+           << new RBZJ << new SSZZ << new AWJ << new JYDLDBYJ << new YMBKY << new ZSWZGYDDF << new DSRSDF;
 }
 
 ADD_PACKAGE(Achievement)
