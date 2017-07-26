@@ -2468,6 +2468,41 @@ public:
     }
 };
 
+class JSSSWYSGNK : public AchieveSkill
+{
+public:
+    JSSSWYSGNK()
+        : AchieveSkill("jssswysgnk")
+    {
+        events << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&ask_who) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who == player) {
+            if (player->getEquips().length() == 5 && death.damage && death.damage->from)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        gainAchievement(death.damage->from, room);
+        return false;
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        if (player->getEquips().length() == 5 && death.damage && death.damage->from)
+            gainAchievement(death.damage->from, room);
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -2478,7 +2513,7 @@ AchievementPackage::AchievementPackage()
            << new MYDNL << new JDYZL << new SHWDDY << new TJWDDR << new BWSDKLR << new JZTTXDY << new NDJSWD
            << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB << new HXXLYHJH << new WYZSWZH
            << new NJDZJCGDSPMBM << new WHHQ << new HYLDZZZD << new ZSYB << new JHSR << new SLDJY << new BPZ << new BJDBZ
-           << new RBZJ << new SSZZ << new AWJ << new JYDLDBYJ << new YMBKY << new ZSWZGYDDF << new DSRSDF;
+           << new RBZJ << new SSZZ << new AWJ << new JYDLDBYJ << new YMBKY << new ZSWZGYDDF << new DSRSDF << new JSSSWYSGNK;
 }
 
 ADD_PACKAGE(Achievement)
