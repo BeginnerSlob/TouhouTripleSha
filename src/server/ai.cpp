@@ -287,13 +287,14 @@ QString TrustAI::askForChoice(const QString &, const QString &choice, const QVar
     return choices.at(qrand() % choices.length());
 }
 
-QList<int> TrustAI::askForDiscard(const QString &, int, int min_num, bool optional, bool include_equip, const QString &pattern)
+QList<int> TrustAI::askForDiscard(const QString &reason, int, int min_num, bool optional, bool include_equip,
+                                  const QString &pattern)
 {
     QList<int> to_discard;
     if (optional)
         return to_discard;
     else
-        return self->forceToDiscard(min_num, include_equip, !self->hasFlag("Global_AIDiscardExchanging"), pattern);
+        return self->forceToDiscard(reason, min_num, include_equip, !self->hasFlag("Global_AIDiscardExchanging"), pattern);
 }
 
 const Card *TrustAI::askForNullification(const Card *, ServerPlayer *, ServerPlayer *, bool)

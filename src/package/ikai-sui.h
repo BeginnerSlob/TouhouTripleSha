@@ -433,6 +433,7 @@ class IkSheqieCard : public SkillCard
 
 public:
     Q_INVOKABLE IkSheqieCard();
+
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
@@ -460,6 +461,26 @@ public:
 
     virtual const Card *validate(CardUseStruct &card_use) const;
     virtual const Card *validateInResponse(ServerPlayer *user) const;
+};
+
+class IkLianzhenCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkLianzhenCard();
+
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class IkYouxiaCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkYouxiaCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
 #endif // IKAISUI_H

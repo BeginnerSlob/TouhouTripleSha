@@ -11,6 +11,7 @@ class DiscardSkill : public ViewAsSkill
 public:
     explicit DiscardSkill();
 
+    void setReason(const QString &reason);
     void setNum(int num);
     void setMinNum(int minnum);
     void setIncludeEquip(bool include_equip);
@@ -22,6 +23,7 @@ public:
 
 private:
     DummyCard *card;
+    QString reason;
     int num;
     int minnum;
     bool include_equip;

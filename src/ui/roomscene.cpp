@@ -2729,6 +2729,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         cancel_button->setEnabled(ClientInstance->m_isDiscardActionRefusable);
         discard_button->setEnabled(false);
 
+        discard_skill->setReason(ClientInstance->m_cardDiscardReason);
         discard_skill->setNum(ClientInstance->discard_num);
         discard_skill->setMinNum(ClientInstance->min_num);
         discard_skill->setIncludeEquip(ClientInstance->m_canDiscardEquip);

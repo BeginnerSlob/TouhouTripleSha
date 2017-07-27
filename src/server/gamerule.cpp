@@ -98,7 +98,14 @@ void GameRule::onPhaseProceed(ServerPlayer *player) const
         break;
     }
     case Player::Discard: {
-        int discard_num = player->getHandcardNum() - player->getMaxCards();
+        int skip_num = 0;
+        QList<int> skip_ids = VariantList2IntList(player->property("ignored_hands").toList());
+        foreach (int id, player->handCards()) {
+            if (skip_ids.contains(id))
+                ++skip_num;
+        }
+
+        int discard_num = player->getHandcardNum() - skip_num - player->getMaxCards();
         if (discard_num > 0)
             room->askForDiscard(player, "gamerule", discard_num, discard_num);
         break;

@@ -8204,6 +8204,188 @@ public:
     }
 };
 
+IkLianzhenCard::IkLianzhenCard()
+{
+    will_throw = false;
+    handling_method = MethodNone;
+}
+
+void IkLianzhenCard::onEffect(const CardEffectStruct &effect) const
+{
+    bool black = Sanguosha->getEngineCard(getEffectiveId())->isBlack();
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "iklianzhen",
+                          QString());
+    Room *room = effect.from->getRoom();
+    room->obtainCard(effect.to, this, reason);
+
+    if (black) {
+        QStringList choices;
+        choices << "draw";
+        if (effect.to->canDiscard(effect.to, "he") && effect.to->getCardCount() > 1)
+            choices << "discard";
+        QString choice = room->askForChoice(effect.to, "iklianzhen", choices.join("+"));
+        if (choice == "discard")
+            room->askForDiscard(effect.to, "iklianzhen", 2, 2, false, true);
+        else
+            effect.from->drawCards(2, "iklianzhen");
+    }
+}
+
+class IkLianzhen : public OneCardViewAsSkill
+{
+public:
+    IkLianzhen()
+        : OneCardViewAsSkill("iklianzhen")
+    {
+        filter_pattern = ".";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        Card *card = new IkLianzhenCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("IkLianzhenCard");
+    }
+};
+
+IkYouxiaCard::IkYouxiaCard()
+{
+    will_throw = false;
+    handling_method = MethodNone;
+    target_fixed = true;
+}
+
+void IkYouxiaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+{
+    foreach (int id, subcards)
+        room->showCard(source, id);
+
+    room->setPlayerProperty(source, "ignored_hands", IntList2VariantList(subcards));
+}
+
+class IkYouxiaVS : public ViewAsSkill
+{
+public:
+    IkYouxiaVS()
+        : ViewAsSkill("ikyouxia")
+    {
+        response_pattern = "@@ikyouxia";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const
+    {
+        return to_select->isBlack() && !to_select->isEquipped();
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        if (!cards.isEmpty()) {
+            Card *card = new IkYouxiaCard;
+            card->addSubcards(cards);
+            return card;
+        } else
+            return NULL;
+    }
+};
+
+class IkYouxia : public TriggerSkill
+{
+public:
+    IkYouxia()
+        : TriggerSkill("ikyouxia")
+    {
+        events << EventPhaseStart << BeforeCardsMove;
+        view_as_skill = new IkYouxiaVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (e == EventPhaseStart && TriggerSkill::triggerable(player) && player->getPhase() == Player::Discard
+            && !player->isKongcheng())
+            return QStringList(objectName());
+        else if (e == BeforeCardsMove && TriggerSkill::triggerable(player)) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (player == move.from && move.to && move.to != move.from && move.to_place == Player::PlaceHand) {
+                for (int i = 0; i < move.card_ids.length(); ++i) {
+                    int id = move.card_ids[i];
+                    Player::Place place = move.from_places[i];
+                    if (place != Player::PlaceHand && place != Player::PlaceEquip)
+                        continue;
+                    if (Sanguosha->getCard(id)->isBlack() && room->getCardOwner(id) == player
+                        && room->getCardPlace(id) == place)
+                        return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (e == EventPhaseStart)
+            room->askForUseCard(player, "@@ikyouxia", "@ikyouxia", -1, Card::MethodNone);
+        else if (e == BeforeCardsMove) {
+            if (player->askForSkillInvoke(objectName())) {
+                room->broadcastSkillInvoke(objectName());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        QList<int> blacks;
+        QList<int> disabled_ids;
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        for (int i = 0; i < move.card_ids.length(); ++i) {
+            int id = move.card_ids[i];
+            Player::Place place = move.from_places[i];
+            if (place != Player::PlaceHand && place != Player::PlaceEquip) {
+                disabled_ids << id;
+                continue;
+            }
+            if (Sanguosha->getCard(id)->isBlack() && room->getCardOwner(id) == player && room->getCardPlace(id) == place)
+                blacks << id;
+            else
+                disabled_ids << id;
+        }
+        if (blacks.isEmpty())
+            return false;
+        room->fillAG(move.card_ids, player, disabled_ids);
+        int id = room->askForAG(player, blacks, false, objectName());
+        room->clearAG(player);
+        if (id != -1) {
+            blacks.removeOne(id);
+            disabled_ids << id;
+            room->showCard(player, id);
+
+            ServerPlayer *target = (ServerPlayer *)move.to;
+            if (!target->hasFlag("IkYouxiaTarget")) {
+                room->setPlayerFlag(target, "IkYouxiaTarget");
+                room->setPlayerCardLimitation(target, "use,response", ".|.|.|hand", false);
+            }
+
+            while (!blacks.isEmpty()) {
+                room->fillAG(move.card_ids, player, disabled_ids);
+                int id = room->askForAG(player, blacks, true, objectName());
+                room->clearAG(player);
+                if (id == -1)
+                    break;
+                blacks.removeOne(id);
+                disabled_ids << id;
+                room->showCard(player, id);
+            }
+        }
+        return false;
+    }
+};
+
 IkaiSuiPackage::IkaiSuiPackage()
     : Package("ikai-sui")
 {
@@ -8517,6 +8699,10 @@ IkaiSuiPackage::IkaiSuiPackage()
     luna060->addSkill(new IkBaohunTrigger);
     related_skills.insertMulti("ikbaohun", "#ikbaohun");
 
+    General *luna061 = new General(this, "luna061", "tsuki", 3, false);
+    luna061->addSkill(new IkLianzhen);
+    luna061->addSkill(new IkYouxia);
+
     addMetaObject<IkXielunCard>();
     addMetaObject<IkJuechongCard>();
     addMetaObject<IkXinhuiCard>();
@@ -8554,6 +8740,8 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkSheqieCard>();
     addMetaObject<IkCangliuCard>();
     addMetaObject<IkCangliuSlash>();
+    addMetaObject<IkLianzhenCard>();
+    addMetaObject<IkYouxiaCard>();
 
     skills << new IkAnshen << new IkAnshenRecord << new OthersNullifiedDistance << new IkLinbuFilter << new IkBingling
            << new IkBinglingMaxCards;

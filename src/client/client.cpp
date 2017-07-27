@@ -1223,18 +1223,19 @@ void Client::updatePileNum()
 void Client::askForDiscard(const QVariant &reqvar)
 {
     JsonArray req = reqvar.value<JsonArray>();
-    if (req.size() < 6 || !isNumber(req[0]) || !isNumber(req[1]) || !isBool(req[2]) || !isBool(req[3]) || !isString(req[4])
-        || !isString(req[5])) {
+    if (req.size() < 7 || !isString(req[0]) || !isNumber(req[1]) || !isNumber(req[2]) || !isBool(req[3]) || !isBool(req[4])
+        || !isString(req[5]) || !isString(req[6])) {
         QMessageBox::warning(NULL, tr("Warning"), tr("Discard string is not well formatted!"));
         return;
     }
 
-    discard_num = req[0].toInt();
-    min_num = req[1].toInt();
-    m_isDiscardActionRefusable = req[2].toBool();
-    m_canDiscardEquip = req[3].toBool();
-    QString prompt = req[4].toString();
-    QString pattern = req[5].toString();
+    m_cardDiscardReason = req[0].toString();
+    discard_num = req[1].toInt();
+    min_num = req[2].toInt();
+    m_isDiscardActionRefusable = req[3].toBool();
+    m_canDiscardEquip = req[4].toBool();
+    QString prompt = req[5].toString();
+    QString pattern = req[6].toString();
     if (pattern.isEmpty())
         pattern = ".";
     m_cardDiscardPattern = pattern;

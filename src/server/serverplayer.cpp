@@ -238,7 +238,8 @@ bool ServerPlayer::askForSkillInvoke(const QString &skill_name, const QVariant &
     return room->askForSkillInvoke(this, skill_name, data);
 }
 
-QList<int> ServerPlayer::forceToDiscard(int discard_num, bool include_equip, bool is_discard, const QString &pattern)
+QList<int> ServerPlayer::forceToDiscard(const QString &reason, int discard_num, bool include_equip, bool is_discard,
+                                        const QString &pattern)
 {
     QList<int> to_discard;
 
@@ -251,6 +252,9 @@ QList<int> ServerPlayer::forceToDiscard(int discard_num, bool include_equip, boo
     ExpPattern exp_pattern(pattern);
 
     for (int i = 0; i < all_cards.length(); i++) {
+        QList<int> skip_ids = VariantList2IntList(property("ignored_hands").toList());
+        if (reason == "gamerule" && skip_ids.contains(all_cards.at(i)->getId()))
+            continue;
         if (!exp_pattern.match(this, all_cards.at(i)))
             continue;
         if (!is_discard || !isJilei(all_cards.at(i)))

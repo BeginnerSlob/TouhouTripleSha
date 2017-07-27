@@ -5333,8 +5333,9 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
         dummy->deleteLater();
         QList<int> jilei_list;
         QList<const Card *> handcards = player->getHandcards();
+        QList<int> skip_ids = VariantList2IntList(player->property("ignored_hands").toList());
         foreach (const Card *card, handcards) {
-            if (!player->isJilei(card) && exp_pattern.match(player, card))
+            if (!player->isJilei(card) && exp_pattern.match(player, card) && !skip_ids.contains(card->getId()))
                 dummy->addSubcard(card);
             else
                 jilei_list << card->getId();
@@ -5401,6 +5402,7 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
         to_discard = ai->askForDiscard(reason, discard_num, min_num, optional, include_equip, pattern);
     } else {
         JsonArray ask_str;
+        ask_str << reason;
         ask_str << discard_num;
         ask_str << min_num;
         ask_str << optional;
@@ -5416,7 +5418,7 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
             if (optional)
                 return false;
             // time is up, and the server choose the cards to discard
-            to_discard = player->forceToDiscard(discard_num, include_equip, true, pattern);
+            to_discard = player->forceToDiscard(reason, discard_num, include_equip, true, pattern);
         }
     }
 
@@ -5470,6 +5472,7 @@ const Card *Room::askForExchange(ServerPlayer *player, const QString &reason, in
         player->setFlags("-Global_AIDiscardExchanging");
     } else {
         JsonArray exchange_str;
+        exchange_str << reason;
         exchange_str << discard_num;
         exchange_str << min_num;
         exchange_str << include_equip;
@@ -5484,7 +5487,7 @@ const Card *Room::askForExchange(ServerPlayer *player, const QString &reason, in
             || !tryParse(clientReply, to_exchange)) {
             if (optional)
                 return NULL;
-            to_exchange = player->forceToDiscard(discard_num, include_equip, false, pattern);
+            to_exchange = player->forceToDiscard(reason, discard_num, include_equip, false, pattern);
         }
     }
 

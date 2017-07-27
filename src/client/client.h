@@ -220,6 +220,7 @@ public:
     }
 
     // public fields
+    QString m_cardDiscardReason;
     bool m_isDiscardActionRefusable;
     bool m_canDiscardEquip;
     QString m_cardDiscardPattern;

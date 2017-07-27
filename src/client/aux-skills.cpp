@@ -15,6 +15,11 @@ DiscardSkill::DiscardSkill()
     card->setParent(this);
 }
 
+void DiscardSkill::setReason(const QString &reason)
+{
+    this->reason = reason;
+}
+
 void DiscardSkill::setNum(int num)
 {
     this->num = num;
@@ -52,6 +57,10 @@ bool DiscardSkill::viewFilter(const QList<const Card *> &selected, const Card *c
         return false;
 
     if (is_discard && Self->isCardLimited(card, Card::MethodDiscard))
+        return false;
+
+    if (reason == "gamerule"
+        && VariantList2IntList(Self->property("ignored_hands").toList()).contains(card->getEffectiveId()))
         return false;
 
     return true;
