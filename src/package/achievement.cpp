@@ -2755,6 +2755,142 @@ public:
     }
 };
 
+class WNFS : public AchieveSkill
+{
+public:
+    WNFS()
+        : AchieveSkill("wnfs")
+    {
+        events << Death;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who == player) {
+            DamageStruct *damage = death.damage;
+            if (damage && damage->card && damage->card->isKindOf("Duel") && !damage->by_user && damage->from
+                && damage->from != player) {
+                return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const
+    {
+        gainAchievement(data.value<DeathStruct>().damage->from, room);
+        return false;
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        DamageStruct *damage = data.value<DeathStruct>().damage;
+        if (damage && damage->card && damage->card->isKindOf("Duel") && !damage->by_user && damage->from
+            && damage->from != player)
+            gainAchievement(damage->from, room);
+    }
+};
+
+class FSBTDCQ : public AchieveSkill
+{
+public:
+    FSBTDCQ()
+        : AchieveSkill("fsbtdcq")
+    {
+        events << Death << PreDamageDone << HpRecover;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (e == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who == player)
+                return QStringList(objectName());
+        } else if (e == PreDamageDone)
+            return QStringList(objectName());
+        else if (e == HpRecover)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (e == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            room->addAchievementData(player, key, 1, false);
+            if (room->getAchievementData(player, key, false, false).toInt() == 12450)
+                gainAchievement(player, room);
+            if (death.damage && death.damage->from) {
+                room->addAchievementData(death.damage->from, key, 1, false);
+                if (room->getAchievementData(death.damage->from, key, false, false).toInt() == 12450)
+                    gainAchievement(death.damage->from, room);
+            }
+        } else if (e == PreDamageDone) {
+            DamageStruct damage = data.value<DamageStruct>();
+            for (int i = 0; i < damage.damage; ++i) {
+                room->addAchievementData(player, key, 1, false);
+                if (room->getAchievementData(player, key, false, false).toInt() == 12450)
+                    gainAchievement(player, room);
+                if (damage.from) {
+                    room->addAchievementData(damage.from, key, 1, false);
+                    if (room->getAchievementData(damage.from, key, false, false).toInt() == 12450)
+                        gainAchievement(damage.from, room);
+                }
+            }
+        } else if (e == HpRecover) {
+            RecoverStruct recover = data.value<RecoverStruct>();
+            for (int i = 0; i < recover.recover; ++i) {
+                room->addAchievementData(player, key, 1, false);
+                if (room->getAchievementData(player, key, false, false).toInt() == 12450)
+                    gainAchievement(player, room);
+            }
+        }
+        return false;
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        room->addAchievementData(player, key, 1, false);
+        if (room->getAchievementData(player, key, false, false).toInt() == 12450)
+            gainAchievement(player, room);
+        DamageStruct *damage = data.value<DeathStruct>().damage;
+        if (damage && damage->from) {
+            room->addAchievementData(damage->from, key, 1, false);
+            if (room->getAchievementData(damage->from, key, false, false).toInt() == 12450)
+                gainAchievement(damage->from, room);
+        }
+    }
+};
+
+class BZBS : public AchieveSkill
+{
+public:
+    BZBS()
+        : AchieveSkill("bzbs")
+    {
+    }
+
+    virtual void onGameOver(Room *room, ServerPlayer *player, QVariant &) const
+    {
+        QStringList winners = room->getWinner(player).split("+");
+        foreach (ServerPlayer *p, room->getPlayers()) {
+            bool is_win = winners.contains(p->objectName()) || winners.contains(p->getRole());
+            if (is_win)
+                onWinOrLose(room, p, true);
+        }
+    }
+
+    virtual void onWinOrLose(Room *room, ServerPlayer *player, bool is_win) const
+    {
+        if (is_win) {
+            room->addAchievementData(player, key, 1, false);
+            if (room->getAchievementData(player, key, false, false).toInt() == 100)
+                gainAchievement(player, room);
+        }
+    }
+};
+
 AchievementPackage::AchievementPackage()
     : Package("achievement", SpecialPack)
 {
@@ -2766,7 +2902,8 @@ AchievementPackage::AchievementPackage()
            << new AchieveSkill("pmdx") << new PDDDFL << new FHFDFGJ << new SSJNYSQ << new SZBNQB << new HXXLYHJH << new WYZSWZH
            << new NJDZJCGDSPMBM << new WHHQ << new HYLDZZZD << new ZSYB << new JHSR << new SLDJY << new BPZ << new BJDBZ
            << new RBZJ << new SSZZ << new AWJ << new JYDLDBYJ << new YMBKY << new ZSWZGYDDF << new DSRSDF << new JSSSWYSGNK
-           << new XHMGSLDT << new YQPNZY << new JPBJZD << new DSWJJ << new AchieveSkill("tssz") << new SSSWJHHXXY;
+           << new XHMGSLDT << new YQPNZY << new JPBJZD << new DSWJJ << new AchieveSkill("tssz") << new SSSWJHHXXY << new WNFS
+           << new FSBTDCQ << new BZBS;
 }
 
 ADD_PACKAGE(Achievement)
