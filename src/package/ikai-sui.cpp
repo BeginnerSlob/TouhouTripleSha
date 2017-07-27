@@ -8265,7 +8265,7 @@ void IkYouxiaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     foreach (int id, subcards)
         room->showCard(source, id);
 
-    room->setPlayerProperty(source, "ignored_hands", IntList2VariantList(subcards));
+    room->setPlayerProperty(source, "ignored_hands", QVariant::fromValue(IntList2VariantList(subcards)));
 }
 
 class IkYouxiaVS : public ViewAsSkill
@@ -8299,7 +8299,7 @@ public:
     IkYouxia()
         : TriggerSkill("ikyouxia")
     {
-        events << EventPhaseStart << BeforeCardsMove;
+        events << EventPhaseStart << BeforeCardsMove << EventPhaseChanging;
         view_as_skill = new IkYouxiaVS;
     }
 
@@ -8319,6 +8319,17 @@ public:
                     if (Sanguosha->getCard(id)->isBlack() && room->getCardOwner(id) == player
                         && room->getCardPlace(id) == place)
                         return QStringList(objectName());
+                }
+            }
+        } else if (e == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            room->setPlayerProperty(player, "ignored_hands", QVariant());
+            if (change.to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                    if (p->hasFlag("IkYouxiaTarget")) {
+                        room->setPlayerFlag(p, "-IkYouxiaTarget");
+                        room->removePlayerCardLimitation(p, "use,response", ".|.|.|hand$0");
+                    }
                 }
             }
         }
