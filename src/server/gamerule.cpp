@@ -99,7 +99,7 @@ void GameRule::onPhaseProceed(ServerPlayer *player) const
     }
     case Player::Discard: {
         int skip_num = 0;
-        QList<int> skip_ids = VariantList2IntList(player->property("ignored_hands").toList());
+        QList<int> skip_ids = StringList2IntList(player->property("ignored_hands").toString().split("+"));
         foreach (int id, player->handCards()) {
             if (skip_ids.contains(id))
                 ++skip_num;

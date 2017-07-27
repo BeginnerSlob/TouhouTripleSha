@@ -8265,7 +8265,7 @@ void IkYouxiaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     foreach (int id, subcards)
         room->showCard(source, id);
 
-    room->setPlayerProperty(source, "ignored_hands", QVariant::fromValue(IntList2VariantList(subcards)));
+    room->setPlayerProperty(source, "ignored_hands", IntList2StringList(subcards).join("+"));
 }
 
 class IkYouxiaVS : public ViewAsSkill
@@ -8323,7 +8323,7 @@ public:
             }
         } else if (e == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            room->setPlayerProperty(player, "ignored_hands", QVariant());
+            room->setPlayerProperty(player, "ignored_hands", "");
             if (change.to == Player::NotActive) {
                 foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                     if (p->hasFlag("IkYouxiaTarget")) {

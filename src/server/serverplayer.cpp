@@ -252,7 +252,7 @@ QList<int> ServerPlayer::forceToDiscard(const QString &reason, int discard_num, 
     ExpPattern exp_pattern(pattern);
 
     for (int i = 0; i < all_cards.length(); i++) {
-        QList<int> skip_ids = VariantList2IntList(property("ignored_hands").toList());
+        QList<int> skip_ids = StringList2IntList(property("ignored_hands").toString().split("+"));
         if (reason == "gamerule" && skip_ids.contains(all_cards.at(i)->getId()))
             continue;
         if (!exp_pattern.match(this, all_cards.at(i)))

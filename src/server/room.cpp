@@ -5333,7 +5333,7 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
         dummy->deleteLater();
         QList<int> jilei_list;
         QList<const Card *> handcards = player->getHandcards();
-        QList<int> skip_ids = VariantList2IntList(player->property("ignored_hands").toList());
+        QList<int> skip_ids = StringList2IntList(player->property("ignored_hands").toString().split("+"));
         foreach (const Card *card, handcards) {
             if (!player->isJilei(card) && exp_pattern.match(player, card) && !skip_ids.contains(card->getId()))
                 dummy->addSubcard(card);

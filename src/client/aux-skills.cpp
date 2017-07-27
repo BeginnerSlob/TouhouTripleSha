@@ -60,7 +60,7 @@ bool DiscardSkill::viewFilter(const QList<const Card *> &selected, const Card *c
         return false;
 
     if (reason == "gamerule"
-        && VariantList2IntList(Self->property("ignored_hands").toList()).contains(card->getEffectiveId()))
+        && StringList2IntList(Self->property("ignored_hands").toString().split("+")).contains(card->getEffectiveId()))
         return false;
 
     return true;
