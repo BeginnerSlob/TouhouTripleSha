@@ -1668,7 +1668,7 @@ public:
 
             if (use.from) {
                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, use.from->objectName(), ask_who->objectName());
-                if (use.card->isKindOf("Collateral")) {
+                if (use.card->isKindOf("Collateral") && use.card->getSkillName() != "iksizhuo") {
                     QList<ServerPlayer *> targets;
                     foreach (ServerPlayer *p, room->getOtherPlayers(ask_who))
                         if (ask_who->canSlash(p))
@@ -1735,7 +1735,7 @@ public:
 
                     if (use.from) {
                         room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, use.from->objectName(), p->objectName());
-                        if (use.card->isKindOf("Collateral")) {
+                        if (use.card->isKindOf("Collateral") && use.card->getSkillName() != "iksizhuo") {
                             QList<ServerPlayer *> targets;
                             foreach (ServerPlayer *player, room->getOtherPlayers(p))
                                 if (p->canSlash(player))
@@ -2554,7 +2554,7 @@ public:
                 }
                 if (extra == NULL) {
                     extra = available_targets.at(qrand() % available_targets.length());
-                    if (use.card->isKindOf("Collateral")) {
+                    if (use.card->isKindOf("Collateral") && use.card->getSkillName() != "iksizhuo") {
                         QList<ServerPlayer *> victims;
                         foreach (ServerPlayer *p, room->getOtherPlayers(extra)) {
                             if (extra->canSlash(p)
@@ -2584,7 +2584,7 @@ public:
             room->sendLog(log);
             room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), extra->objectName());
 
-            if (use.card->isKindOf("Collateral")) {
+            if (use.card->isKindOf("Collateral") && use.card->getSkillName() != "iksizhuo") {
                 ServerPlayer *victim = extra->tag["collateralVictim"].value<ServerPlayer *>();
                 if (victim) {
                     LogMessage log;

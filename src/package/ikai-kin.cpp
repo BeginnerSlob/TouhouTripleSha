@@ -964,6 +964,8 @@ bool ExtraCollateralCard::targetFilter(const QList<const Player *> &targets, con
 
 void ExtraCollateralCard::onUse(Room *, const CardUseStruct &card_use) const
 {
+    if (card_use.to.length() == 1)
+        return;
     Q_ASSERT(card_use.to.length() == 2);
     ServerPlayer *killer = card_use.to.first();
     ServerPlayer *victim = card_use.to.last();
@@ -1173,7 +1175,7 @@ public:
                 }
                 if (extra == NULL) {
                     extra = available_targets.at(qrand() % available_targets.length() - 1);
-                    if (use.card->isKindOf("Collateral")) {
+                    if (use.card->isKindOf("Collateral") && use.card->getSkillName() != "iksizhuo") {
                         QList<ServerPlayer *> victims;
                         foreach (ServerPlayer *p, room->getOtherPlayers(extra)) {
                             if (extra->canSlash(p)
@@ -1205,7 +1207,7 @@ public:
             room->sendLog(log);
             room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, jianyong->objectName(), extra->objectName());
 
-            if (use.card->isKindOf("Collateral")) {
+            if (use.card->isKindOf("Collateral") && use.card->getSkillName() != "iksizhuo") {
                 ServerPlayer *victim = extra->tag["collateralVictim"].value<ServerPlayer *>();
                 if (victim) {
                     LogMessage log;
@@ -5806,7 +5808,7 @@ public:
         if (target) {
             // Collateral
             ServerPlayer *collateral_victim = NULL;
-            if (use.card->isKindOf("Collateral")) {
+            if (use.card->isKindOf("Collateral") && use.card->getSkillName() != "iksizhuo") {
                 QList<ServerPlayer *> victims;
                 foreach (ServerPlayer *p, room->getOtherPlayers(target)) {
                     if (target->canSlash(p))
@@ -5873,7 +5875,7 @@ public:
                 room->sendLog(log);
 
                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), target->objectName());
-                if ((use.card->isKindOf("Collateral") || use.card->isKindOf("FeintAttack")) && collateral_victim)
+                if (((use.card->isKindOf("Collateral") && use.card->getSkillName() != "iksizhuo") || use.card->isKindOf("FeintAttack")) && collateral_victim)
                     room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, target->objectName(), collateral_victim->objectName());
 
                 use.to.append(target);
@@ -7511,7 +7513,7 @@ public:
             room->sendLog(log);
             room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), extra->objectName());
 
-            if (use.card->isKindOf("Collateral")) {
+            if (use.card->isKindOf("Collateral") && use.card->getSkillName() != "iksizhuo") {
                 ServerPlayer *victim = extra->tag["collateralVictim"].value<ServerPlayer *>();
                 if (victim) {
                     LogMessage log;
@@ -8239,6 +8241,49 @@ public:
     }
 };
 
+IkSizhuoCard::IkSizhuoCard()
+{
+}
+
+bool IkSizhuoCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    if (!targets.isEmpty() || !to_select->inMyAttackRange(Self))
+        return false;
+    if (!Self->hasFlag("ThChouceUse") && (!to_select->getWeapon() || to_select == Self))
+        return false;
+    foreach (const Player *p, to_select->getAliveSiblings()) {
+        if (to_select->canSlash(p) && (!(p == Self && p->hasSkill("ikjingyou") && Self->isLastHandCard(this, true))))
+            return true;
+    }
+    return false;
+}
+
+const Card *IkSizhuoCard::validate(CardUseStruct &) const
+{
+    Collateral *collateral = new Collateral(NoSuit, 0);
+    collateral->setSkillName("iksizhuo");
+    return collateral;
+}
+
+class IkSizhuo : public ZeroCardViewAsSkill
+{
+public:
+    IkSizhuo()
+        : ZeroCardViewAsSkill("iksizhuo")
+    {
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new IkSizhuoCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return player->getHandcardNum() > player->getMaxHp() && !player->hasUsed("IkSizhuoCard");
+    }
+};
+
 IkaiKinPackage::IkaiKinPackage()
     : Package("ikai-kin")
 {
@@ -8558,6 +8603,10 @@ IkaiKinPackage::IkaiKinPackage()
     luna041->addSkill(new IkBengyanMark);
     related_skills.insertMulti("ikbengyan", "#ikbengyan");
 
+    General *luna062 = new General(this, "luna062", "tsuki");
+    luna062->addSkill(new IkSizhuo);
+    luna062->addSkill("ikjianju");
+
     addMetaObject<IkXinchaoCard>();
     addMetaObject<IkSishiCard>();
     addMetaObject<ExtraCollateralCard>();
@@ -8597,6 +8646,7 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkSulingCard>();
     addMetaObject<IkYusuoCard>();
     addMetaObject<IkBengyanCard>();
+    addMetaObject<IkSizhuoCard>();
 
     skills << new IkXianyuSlashViewAsSkill << new IkZhuyi << new IkJiebiViewAsSkill;
 }

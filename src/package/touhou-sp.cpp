@@ -2618,7 +2618,7 @@ public:
                     r->sendLog(log);
                     r->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), extra->objectName());
 
-                    if (use.card->isKindOf("Collateral")) {
+                    if (use.card->isKindOf("Collateral") && use.card->getSkillName() != "iksizhuo") {
                         ServerPlayer *victim = extra->tag["collateralVictim"].value<ServerPlayer *>();
                         if (victim) {
                             LogMessage log;

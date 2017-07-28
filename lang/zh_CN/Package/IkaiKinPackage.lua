@@ -728,6 +728,6 @@ return {
 	["illustrator:luna062"] = "トモセシュンサク",
 	["iksizhuo"] = "思拙",
 	[":iksizhuo"] = "阶段技。若你的手牌数大于你的体力上限，你可以视为对攻击范围内有你的一名角色使用一张由该角色选择【杀】的目标的【断灵御剑】。",
-	["ikjianju"] = "茧居",
-	[":ikjianju"] = "锁定技。你的手牌上限+X（X为场上的势力数）。",
+	["collateralex-slash"] = "%src 使用了【断灵御剑】，请使用一张【杀】",
+	--ikjianju
 }

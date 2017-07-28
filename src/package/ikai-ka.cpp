@@ -956,7 +956,7 @@ public:
                     p->tag.remove("IkDongzhao");
                     if (extra && extra->isAlive() && !use.to.contains(extra)) {
                         use.to << extra;
-                        if (use.card->isKindOf("Collateral")) {
+                        if (use.card->isKindOf("Collateral") && use.card->getSkillName() != "iksizhuo") {
                             QList<ServerPlayer *> victims;
                             foreach (ServerPlayer *p, r->getOtherPlayers(extra)) {
                                 if (extra->canSlash(p))
@@ -2669,7 +2669,7 @@ public:
                         continue;
                     if (use.from->getMark("iksheji_" + p->objectName()) > 0) {
                         use.to << p;
-                        if (use.card->isKindOf("Collateral")) {
+                        if (use.card->isKindOf("Collateral") && use.card->getSkillName() != "iksizhuo") {
                             QList<ServerPlayer *> victims;
                             foreach (ServerPlayer *p2, room->getOtherPlayers(p)) {
                                 if (p->canSlash(p2))

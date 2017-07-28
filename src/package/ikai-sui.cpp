@@ -3416,7 +3416,7 @@ public:
             if (use.card->isKindOf("Slash")) {
                 if (!use.from->canSlash(owner, use.card, false))
                     return false;
-            } else if (use.card->isKindOf("Collateral")) {
+            } else if (use.card->isKindOf("Collateral") && use.card->getSkillName() != "iksizhuo") {
                 QList<ServerPlayer *> victims;
                 foreach (ServerPlayer *p, room->getOtherPlayers(owner)) {
                     if (owner->canSlash(p))
