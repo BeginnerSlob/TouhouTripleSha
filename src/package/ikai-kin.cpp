@@ -2450,12 +2450,15 @@ public:
             int n = dummy->subcardsLength();
             if (n > 0) {
                 LogMessage log;
-                log.type = "#InvokeSkill";
+                log.type = "#DiscardCardWithSkill";
                 log.from = player;
                 log.arg = objectName();
+                log.card_str = IntList2StringList(dummy->getSubcards()).join("+");
                 room->sendLog(log);
 
-                room->throwCard(dummy, player);
+                CardMoveReason reason(CardMoveReason::S_REASON_THROW, player->objectName());
+                room->moveCardTo(dummy, player, NULL, Player::DiscardPile, reason, false);
+
                 room->addPlayerMark(player, objectName(), dummy->subcardsLength());
             }
             delete dummy;
@@ -6683,6 +6686,155 @@ public:
     }
 };
 
+class IkChijian : public TriggerSkill
+{
+public:
+    IkChijian()
+        : TriggerSkill("ikchijian")
+    {
+        events << EventPhaseChanging << EventPhaseEnd << CardsMoveOneTime;
+        frequency = Frequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (e == EventPhaseEnd && TriggerSkill::triggerable(player) && player->getPhase() == Player::Discard) {
+            QList<int> ids = VariantList2IntList(player->tag["IkChijian"].toList()).toSet().toList();
+            if (ids.length() == 2 && !Sanguosha->getCard(ids[0])->sameColorWith(Sanguosha->getCard(ids[1])))
+                return QStringList(objectName());
+        } else if (e == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::Discard)
+                player->tag.remove("IkChijian");
+        } else if (e == CardsMoveOneTime && player->getPhase() == Player::Discard) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from == player
+                && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
+                QList<int> ids = VariantList2IntList(player->tag["IkChijian"].toList());
+                ids << move.card_ids;
+                player->tag["IkChijian"] = QVariant::fromValue(IntList2VariantList(ids));
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        QStringList choices;
+        if (!player->isWounded())
+            choices << "recover";
+        choices << "draw";
+        QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+        if (choice == "recover")
+            room->recover(player, RecoverStruct(player));
+        else
+            player->drawCards(1, objectName());
+        return false;
+    }
+};
+
+IkZengguiCard::IkZengguiCard()
+{
+    will_throw = false;
+    handling_method = MethodNone;
+}
+
+bool IkZengguiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    return targets.isEmpty() && !to_select->isKongcheng() && !to_select->hasFlag("IkZengguiUsed") && to_select != Self;
+}
+
+void IkZengguiCard::onEffect(const CardEffectStruct &effect) const
+{
+    Room *room = effect.from->getRoom();
+    room->setPlayerFlag(effect.to, "IkZengguiUsed");
+    room->showCard(effect.from, getEffectiveId());
+
+    const Card *card = room->askForCard(effect.to, ".|.|.|hand!", "@ikzenggui:" + effect.from->objectName());
+    if (!card) {
+        card = effect.to->getRandomHandCard();
+        room->throwCard(card, effect.to);
+    }
+
+    room->setPlayerCardLimitation(effect.from, "use", QString(".|%1").arg(card->getSuitString()), true);
+
+    if (card->getSuit() == Card::Spade) {
+        room->loseHp(effect.to);
+        effect.from->turnOver();
+    }
+}
+
+class IkZengguiVS : public OneCardViewAsSkill
+{
+public:
+    IkZengguiVS()
+        : OneCardViewAsSkill("ikzenggui")
+    {
+    }
+
+    virtual bool viewFilter(const Card *to_select) const
+    {
+        if (!to_select->isAvailable(Self))
+            return false;
+        if (Self->isCardLimited(to_select, Card::MethodUse, true))
+            return false;
+        if (to_select->isEquipped())
+            return false;
+
+        return true;
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        Card *card = new IkZengguiCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        foreach (const Card *c, player->getHandcards()) {
+            if (!c->isAvailable(player))
+                continue;
+            if (player->isCardLimited(c, Card::MethodUse, true))
+                continue;
+            return true;
+        }
+        return false;
+    }
+};
+
+class IkZenggui : public TriggerSkill
+{
+public:
+    IkZenggui()
+        : TriggerSkill("ikzenggui")
+    {
+        events << EventPhaseChanging;
+        view_as_skill = new IkZengguiVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (p->hasFlag("IkZengguiUsed"))
+                    room->setPlayerFlag(p, "-IkZengguiUsed");
+            }
+        }
+        return QStringList();
+    }
+};
+
 IkLvdongCard::IkLvdongCard()
 {
 }
@@ -8344,6 +8496,10 @@ IkaiKinPackage::IkaiKinPackage()
     snow060->addSkill(new IkJiebiGet);
     related_skills.insertMulti("ikjiebi", "#ikjiebi");
 
+    General *snow062 = new General(this, "snow062", "yuki", 3, false);
+    snow062->addSkill(new IkChijian);
+    snow062->addSkill(new IkZenggui);
+
     General *luna010 = new General(this, "luna010", "tsuki");
     luna010->addSkill(new IkLvdong);
     luna010->addSkill(new IkLvdongTrigger);
@@ -8433,6 +8589,7 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkShenchiCard>();
     addMetaObject<IkJiebiPutCard>();
     addMetaObject<IkJiebiCard>();
+    addMetaObject<IkZengguiCard>();
     addMetaObject<IkLvdongCard>();
     addMetaObject<IkMingceCard>();
     addMetaObject<IkFenshiCard>();
