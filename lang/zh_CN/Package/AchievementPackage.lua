@@ -1,5 +1,7 @@
 return {
 	["achievement"] = "战功包",
+
+	["#DisableAchievement"] = "<font color=red><b>由于存在机器人或者开启了作弊，战功系统已被禁用！</b></font>",
 	
 	["#GainAchievement"] = "恭喜 %arg 获得战功“%arg2”！",
 	["#AchievementDescription"] = "%arg",

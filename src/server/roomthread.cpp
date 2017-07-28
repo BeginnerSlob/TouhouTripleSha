@@ -453,6 +453,11 @@ void RoomThread::run()
             }
         }
         constructTriggerTable();
+        if (room->getTag("DisableAchievement").toBool()) {
+            LogMessage log;
+            log.type = "#DisableAchievement";
+            room->sendLog(log);
+        }
         trigger(GameStart, (Room *)room, NULL);
         if (room->getMode() == "06_3v3") {
             run3v3(first, second, game_rule, first.first());

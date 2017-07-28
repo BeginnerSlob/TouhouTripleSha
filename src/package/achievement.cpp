@@ -30,6 +30,8 @@ void AchieveSkill::onWinOrLose(Room *, ServerPlayer *, bool) const
 
 void AchieveSkill::gainAchievement(ServerPlayer *player, Room *room) const
 {
+    if (room->getTag("DisableAchievement").toBool())
+        return;
     int uid = player->userId();
     if (uid == -1)
         return;
@@ -116,8 +118,10 @@ public:
         events << Death;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
+        if (room->getTag("DisableAchievement").toBool())
+            return QStringList();
         DeathStruct death = data.value<DeathStruct>();
         if (death.who == player)
             return QStringList(objectName());
@@ -159,9 +163,11 @@ public:
         events << DamageDone << EventPhaseProceeding;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data,
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
                                     ServerPlayer *&ask_who) const
     {
+        if (room->getTag("DisableAchievement").toBool())
+            return QStringList();
         if (triggerEvent == DamageDone) {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.from) {
@@ -200,6 +206,8 @@ public:
 
     virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
+        if (room->getTag("DisableAchievement").toBool())
+            return QStringList();
         if (e == GameOverJudge) {
             if (room->getMode() == "02_1v1") {
                 QStringList list = player->tag["1v1Arrange"].toStringList();

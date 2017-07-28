@@ -4104,7 +4104,11 @@ void Room::startGame()
     foreach (ServerPlayer *player, m_players) {
         if (player->getState() == "online")
             server->signupPlayer(player);
+        if (player->getState() == "robot")
+            tag["DisableAchievement"] = true;
     }
+    if (Config.EnableCheat)
+        tag["DisableAchievement"] = true;
 
     current = m_players.first();
 
@@ -4963,6 +4967,8 @@ void Room::removeTag(const QString &key)
 void Room::setAchievementData(ServerPlayer *player, const QString &key, const QVariant &value, bool variable,
                               AchieveSkill::WriteDataType write_type)
 {
+    if (tag["DisableAchievement"].toBool())
+        return;
     int uid = player->userId();
     if (uid == -1)
         return;
@@ -5002,6 +5008,8 @@ void Room::setAchievementData(ServerPlayer *player, const QString &key, const QV
 
 QVariant Room::getAchievementData(ServerPlayer *player, const QString &key, bool variable, bool extra_data) const
 {
+    if (tag["DisableAchievement"].toBool())
+        return QVariant();
     int uid = player->userId();
     if (uid == -1)
         return QVariant();
@@ -5046,6 +5054,8 @@ QVariant Room::getAchievementData(ServerPlayer *player, const QString &key, bool
 
 void Room::addAchievementData(ServerPlayer *player, const QString &key, int step, bool variable)
 {
+    if (tag["DisableAchievement"].toBool())
+        return;
     int uid = player->userId();
     if (uid == -1)
         return;

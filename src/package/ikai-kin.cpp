@@ -4332,6 +4332,16 @@ public:
             QStringList p = pattern.split("+");
             foreach (const QString &x, p) {
                 const Card *c = Sanguosha->cloneCard(x);
+
+                Card::HandlingMethod method
+                    = Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE
+                    ? Card::MethodResponse
+                    : Card::MethodUse;
+                if (Self->isCardLimited(c, method)) {
+                    delete c;
+                    continue;
+                }
+
                 QString us = c->getClassName();
                 if (c->isKindOf("Slash"))
                     us = "Slash";
@@ -5875,7 +5885,9 @@ public:
                 room->sendLog(log);
 
                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), target->objectName());
-                if (((use.card->isKindOf("Collateral") && use.card->getSkillName() != "iksizhuo") || use.card->isKindOf("FeintAttack")) && collateral_victim)
+                if (((use.card->isKindOf("Collateral") && use.card->getSkillName() != "iksizhuo")
+                     || use.card->isKindOf("FeintAttack"))
+                    && collateral_victim)
                     room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, target->objectName(), collateral_victim->objectName());
 
                 use.to.append(target);
