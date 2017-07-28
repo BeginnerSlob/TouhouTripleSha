@@ -1719,7 +1719,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
-        if (!TriggerSkill::triggerable(player))
+        if (!TriggerSkill::triggerable(player) || !player->hasSkill("thlingyun"))
             return QStringList();
         if (room->getCurrent() == player && player->getPhase() != Player::NotActive)
             return QStringList();

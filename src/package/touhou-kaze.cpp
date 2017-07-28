@@ -2473,9 +2473,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *&) const
     {
-        if (player->getPhase() == Player::NotActive && !player->tag.value("ThDongxiLast").toStringList().isEmpty())
-            player->tag.remove("ThDongxiLast");
-        else if (player->getPhase() == Player::Start)
+        if (player->getPhase() == Player::Start)
             return QStringList(objectName());
         return QStringList();
     }
