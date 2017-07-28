@@ -4275,6 +4275,107 @@ private:
     }
 };
 
+class IkShemou : public TriggerSkill
+{
+public:
+    IkShemou()
+        : TriggerSkill("ikshemou")
+    {
+        events << EventPhaseStart << CardsMoveOneTime;
+        frequency = Frequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (e == EventPhaseStart && TriggerSkill::triggerable(player) && player->getPhase() == Player::Play
+            && player->getMark("@plan") > 0)
+            return QStringList(objectName());
+        else if (e == CardsMoveOneTime) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from == player && move.reason.m_reason == CardMoveReason::S_REASON_THROW
+                && move.reason.m_eventName == "ikshemou" && move.from_places.contains(Player::PlaceEquip))
+                room->setPlayerFlag(player, "IkShemouEquip");
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            int n = qMin(4, player->getMark("@plan"));
+            player->drawCards(n, objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        int n = qMin(4, player->getMark("@plan"));
+        room->askForDiscard(player, objectName(), n, n, false, true);
+        if (player->hasFlag("IkShemouEquip")) {
+            room->setPlayerFlag(player, "-IkShemouEquip");
+
+            Slash *slash = new Slash(Card::NoSuit, 0);
+            slash->setSkillName("_ikshemou");
+            QList<ServerPlayer *> targets;
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (player->canSlash(p, slash))
+                    targets << p;
+            }
+
+            if (!targets.isEmpty()) {
+                ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@dummy-slash", true);
+                if (target)
+                    room->useCard(CardUseStruct(slash, player, target));
+                else
+                    delete slash;
+            } else
+                delete slash;
+        }
+        return false;
+    }
+};
+
+class IkShemouRecord : public TriggerSkill
+{
+public:
+    IkShemouRecord()
+        : TriggerSkill("#ikshemou")
+    {
+        events << EventPhaseChanging << EventAcquireSkill << EventLoseSkill;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (e == EventAcquireSkill || e == EventLoseSkill) {
+            if (data.toString() != "ikshemou")
+                return QStringList();
+            int num = player->getMark("plan");
+            if (num > 0) {
+                num = e == EventAcquireSkill ? num : 0;
+                room->setPlayerMark(player, "@plan", num);
+            }
+        } else {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->addPlayerMark(player, "plan");
+        if (player->hasSkill("ikshemou"))
+            room->setPlayerMark(player, "@plan", player->getMark("plan"));
+        return false;
+    }
+};
+
 IkFenxunCard::IkFenxunCard()
 {
 }
@@ -8557,6 +8658,11 @@ IkaiSuiPackage::IkaiSuiPackage()
     bloom061->addSkill(new IkZongtiTrigger);
     related_skills.insertMulti("ikzongti", "#ikzongti");
     bloom061->addSkill(new IkMingchong);
+
+    General *bloom062 = new General(this, "bloom062", "hana");
+    bloom062->addSkill(new IkShemou);
+    bloom062->addSkill(new IkShemouRecord);
+    related_skills.insertMulti("ikshemou", "#ikshemou");
 
     General *snow022 = new General(this, "snow022", "yuki");
     snow022->addSkill(new Skill("ikxindu", Skill::NotCompulsory));
