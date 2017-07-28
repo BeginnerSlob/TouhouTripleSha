@@ -1266,19 +1266,20 @@ void Client::askForDiscard(const QVariant &reqvar)
 void Client::askForExchange(const QVariant &exchange)
 {
     JsonArray args = exchange.value<JsonArray>();
-    if (args.size() < 6 || !isNumber(args[0]) || !isNumber(args[1]) || !isBool(args[2]) || !isString(args[3])
-        || !isBool(args[4]) || !isString(args[5])) {
+    if (args.size() < 7 || !isString(args[0]) || !isNumber(args[1]) || !isNumber(args[2]) || !isBool(args[3]) || !isString(args[4])
+        || !isBool(args[5]) || !isString(args[6])) {
         QMessageBox::warning(NULL, tr("Warning"), tr("Exchange string is not well formatted!"));
         return;
     }
 
-    discard_num = args[0].toInt();
-    min_num = args[1].toInt();
-    m_canDiscardEquip = args[2].toBool();
-    QString prompt = args[3].toString();
-    m_isDiscardActionRefusable = args[4].toBool();
+    m_cardDiscardReason = args[0].toString();
+    discard_num = args[1].toInt();
+    min_num = args[2].toInt();
+    m_canDiscardEquip = args[3].toBool();
+    QString prompt = args[4].toString();
+    m_isDiscardActionRefusable = args[5].toBool();
 
-    QString pattern = args[5].toString();
+    QString pattern = args[6].toString();
     if (pattern.isEmpty())
         pattern = ".";
     m_cardDiscardPattern = pattern;

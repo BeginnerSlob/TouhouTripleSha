@@ -2317,6 +2317,179 @@ public:
     }
 };
 
+IkShitieCard::IkShitieCard()
+{
+}
+
+bool IkShitieCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
+}
+
+void IkShitieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
+    ServerPlayer *target = targets.first();
+    int card_id = room->askForCardChosen(source, target, "h", "ikshitie");
+    room->obtainCard(source, card_id, false);
+
+    QStringList choices;
+    choices << "basic"
+            << "draw";
+    QString choice = room->askForChoice(target, "ikshitie", choices.join("+"));
+    if (choice == "basic") {
+        QList<int> card_ids = room->getNCards(2, false);
+        CardMoveReason reason(CardMoveReason::S_REASON_TURNOVER, target->objectName(), "ikshitie", QString());
+        room->moveCardsAtomic(CardsMoveStruct(card_ids, NULL, Player::PlaceTable, reason), true);
+
+        room->getThread()->delay();
+        room->getThread()->delay();
+
+        QList<int> basics, others;
+        foreach (int id, card_ids) {
+            if (Sanguosha->getCard(id)->getTypeId() == Card::TypeBasic)
+                basics << id;
+            else
+                others << id;
+        }
+        if (!basics.isEmpty()) {
+            DummyCard dummy(basics);
+            target->obtainCard(&dummy);
+        }
+        if (!others.isEmpty()) {
+            CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), "ikshitie", QString());
+            DummyCard dummy(others);
+            room->throwCard(&dummy, reason, NULL);
+        }
+    } else {
+        room->addPlayerMark(target, "@eat");
+    }
+}
+
+class IkShitie : public ZeroCardViewAsSkill
+{
+public:
+    IkShitie()
+        : ZeroCardViewAsSkill("ikshitie")
+    {
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new IkShitieCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("IkShitieCard");
+    }
+};
+
+class IkShitieTrigger : public DrawCardsSkill
+{
+public:
+    IkShitieTrigger()
+        : DrawCardsSkill("#ikshitie")
+    {
+        frequency = NotCompulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return target && target->isAlive() && target->getMark("@eat") > 0;
+    }
+
+    virtual int getDrawNum(ServerPlayer *player, int n) const
+    {
+        n += player->getMark("@eat");
+        player->getRoom()->setPlayerMark(player, "@eat", 0);
+        return n;
+    }
+};
+
+class IkLinbei : public TriggerSkill
+{
+public:
+    IkLinbei()
+        : TriggerSkill("iklinbei")
+    {
+        events << CardsMoveOneTime;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (TriggerSkill::triggerable(player)) {
+            ServerPlayer *current = room->getCurrent();
+            if (current == player && current->isAlive() && current->getPhase() != Player::NotActive) {
+                CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+                if (move.to == player && move.to_place == Player::PlaceHand) {
+                    foreach (int id, move.card_ids) {
+                        if (player->isJilei(Sanguosha->getCard(id), true))
+                            continue;
+                        if (room->getCardOwner(id) == player && room->getCardPlace(id) == Player::PlaceHand)
+                            return QStringList(objectName());
+                    }
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        QList<int> ids;
+        foreach (int id, move.card_ids) {
+            if (player->isJilei(Sanguosha->getCard(id), true))
+                continue;
+            if (room->getCardOwner(id) == player && room->getCardPlace(id) == Player::PlaceHand)
+                ids << id;
+        }
+        QString pattern = IntList2StringList(ids).join(",");
+        const Card *dummy = room->askForExchange(player, objectName(), ids.length(), 1, false, "@iklinbei", true, pattern);
+        if (dummy) {
+            int n = dummy->subcardsLength();
+            if (n > 0) {
+                LogMessage log;
+                log.type = "#InvokeSkill";
+                log.from = player;
+                log.arg = objectName();
+                room->sendLog(log);
+
+                room->throwCard(dummy, player);
+                room->addPlayerMark(player, objectName(), dummy->subcardsLength());
+            }
+            delete dummy;
+            if (n > 0)
+                return true;
+        }
+        return false;
+    }
+};
+
+class IkLinbeiDraw : public TriggerSkill
+{
+public:
+    IkLinbeiDraw()
+        : TriggerSkill("#iklinbei")
+    {
+        events << EventPhaseStart;
+        frequency = NotCompulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return target && target->isAlive() && target->getPhase() == Player::NotActive && target->getMark("iklinbei") > 0;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, "iklinbei");
+        player->drawCards(player->getMark("iklinbei"), "iklinbei");
+        room->setPlayerMark(player, "iklinbei", 0);
+        return false;
+    }
+};
+
 class IkShihua : public TriggerSkill
 {
 public:
@@ -8008,6 +8181,14 @@ IkaiKinPackage::IkaiKinPackage()
     wind058->addSkill(new IkGanbi);
     wind058->addSkill(new IkHuitao);
 
+    General *wind062 = new General(this, "wind062", "kaze", 3, false);
+    wind062->addSkill(new IkShitie);
+    wind062->addSkill(new IkShitieTrigger);
+    related_skills.insertMulti("ikshitie", "#ikshitie");
+    wind062->addSkill(new IkLinbei);
+    wind062->addSkill(new IkLinbeiDraw);
+    related_skills.insertMulti("iklinbei", "#iklinbei");
+
     General *bloom016 = new General(this, "bloom016", "hana", 3);
     bloom016->addSkill(new IkShihua);
     bloom016->addSkill(new IkJiushi);
@@ -8230,6 +8411,7 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkQizhiCard>();
     addMetaObject<IkZangyuCard>();
     addMetaObject<IkHuitaoCard>();
+    addMetaObject<IkShitieCard>();
     addMetaObject<IkJiushiCard>();
     addMetaObject<IkZhuyiCard>();
     addMetaObject<IkMiceCard>();

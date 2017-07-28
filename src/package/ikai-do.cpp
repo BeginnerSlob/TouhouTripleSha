@@ -1097,10 +1097,10 @@ public:
                 CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
                 if (!room->getTag("FirstRound").toBool() && player->getPhase() != Player::Draw && move.to == player
                     && move.to_place == Player::PlaceHand) {
-                    QList<int> ids;
-                    foreach (int id, move.card_ids)
+                    foreach (int id, move.card_ids) {
                         if (room->getCardOwner(id) == player && room->getCardPlace(id) == Player::PlaceHand)
                             return QStringList(objectName());
+                    }
                 }
             }
         }
