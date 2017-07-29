@@ -2660,7 +2660,7 @@ public:
                 = room->getAchievementData(player, key, false).toString().split("\n", QString::SkipEmptyParts);
             QList<QDate> dates;
             QList<QStringList> names;
-            if (old_file.length() > 2) {
+            if (old_file.length() > 1) {
                 QStringList date_string = old_file.takeFirst().split(",");
                 foreach (QString s, date_string)
                     dates << QDate::fromString(s, "yyyyMMdd");
