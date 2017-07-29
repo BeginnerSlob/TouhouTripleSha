@@ -2452,7 +2452,7 @@ public:
             int n = dummy->subcardsLength();
             if (n > 0) {
                 LogMessage log;
-                log.type = "#DiscardCardWithSkill";
+                log.type = "$DiscardCardWithSkill";
                 log.from = player;
                 log.arg = objectName();
                 log.card_str = IntList2StringList(dummy->getSubcards()).join("+");
