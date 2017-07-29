@@ -1151,8 +1151,6 @@ bool Collateral::targetsFeasible(const QList<const Player *> &targets, const Pla
 
 bool Collateral::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    if (!to_select->inMyAttackRange(Self))
-        return false;
     if (!targets.isEmpty()) {
         if (getSkillName() == "iksizhuo")
             return false;
@@ -1168,8 +1166,12 @@ bool Collateral::targetFilter(const QList<const Player *> &targets, const Player
             return false;
         return slashFrom->canSlash(to_select);
     } else {
-        if (!Self->hasFlag("ThChouceUse") && (!to_select->getWeapon() || to_select == Self))
-            return false;
+        if (!Self->hasFlag("ThChouceUse")) {
+            if (getSkillName() == "iksizhuo" && !to_select->inMyAttackRange(Self))
+                return false;
+            if (!to_select->getWeapon() || to_select == Self)
+                return false;
+        }
         foreach (const Player *p, to_select->getAliveSiblings()) {
             if (to_select->canSlash(p) && (!(p == Self && p->hasSkill("ikjingyou") && Self->isLastHandCard(this, true))))
                 return true;
