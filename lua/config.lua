@@ -3,7 +3,7 @@
 
 config = {
 	version = "v8.8",
-	version_name = "0728",
+	version_name = "0729",
 	mod_name = "TouhouTripleSha",
 	big_font = 56,
 	small_font = 27,
