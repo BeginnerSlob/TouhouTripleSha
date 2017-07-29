@@ -367,6 +367,15 @@ void Client::addPlayer(const QVariant &player_info)
     player->setScreenName(screen_name);
     player->setProperty("avatar", avatar);
     player->setProperty("state", state);
+    if (info.size() > 4) {
+        int userid = info[4].toInt();
+        player->setProperty("userid", userid);
+    }
+    if (info.size() > 5) {
+        int level = info[5].toInt();
+        if (level != 0)
+            player->setProperty("level", level);
+    }
 
     players << player;
     ++alive_count;

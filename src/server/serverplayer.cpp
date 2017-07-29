@@ -1076,12 +1076,16 @@ void ServerPlayer::introduceTo(ServerPlayer *player)
     QString screen_name = screenName().toUtf8().toBase64();
     QString avatar = property("avatar").toString();
     QString state = property("state").toString();
+    int userid = property("userid").toInt();
+    int level = property("level").toInt();
 
     JsonArray introduce_str;
     introduce_str << objectName();
     introduce_str << screen_name;
     introduce_str << avatar;
     introduce_str << state;
+    introduce_str << userid;
+    introduce_str << level;
 
     if (player)
         room->doNotify(player, S_COMMAND_ADD_PLAYER, introduce_str);
