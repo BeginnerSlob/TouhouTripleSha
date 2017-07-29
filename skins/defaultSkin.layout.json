@@ -188,7 +188,7 @@
     "privatePileStep": [0, 16],
     "privatePileButtonSize": [75, 16],
     "actionedIconRegion": [80, 37, 52, 21],
-    "saveMeIconRegion": [5, 15, 122, 50],
+    "saveMeIconRegion": [20, 15, 122, 50],
     "votesIconRegion": [50, 52, 50, 50],
     "chainedIconRegion": [8, 25, 134, 19],
     "deathIconRegion": ["center", "center", [0, 0], [157, 102]],
