@@ -2,7 +2,7 @@
 -- and it is a little different from config.ini
 
 config = {
-	version = "v8.8",
+	version = "v8.8.1",
 	version_name = "0729",
 	mod_name = "TouhouTripleSha",
 	big_font = 56,
