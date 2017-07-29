@@ -1132,9 +1132,9 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *p, QVariant &data, ServerPlayer *) const
     {
         CardUseStruct use = data.value<CardUseStruct>();
-        QStringList cards = p->property("control_rod_use").toStringList();
+        QStringList cards = p->property("control_rod_use").toString().split(" ");
         cards << use.card->toString();
-        room->setPlayerProperty(p, "control_rod_use", QVariant::fromValue(cards));
+        room->setPlayerProperty(p, "control_rod_use", cards.join(" "));
 
         JsonArray args;
         args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
@@ -1154,7 +1154,7 @@ public:
 
     virtual bool isSkillValid(const Player *player, const Skill *skill) const
     {
-        return player->property("control_rod_use").toStringList().isEmpty() || skill->getFrequency(player) == Skill::Compulsory
+        return player->property("control_rod_use").toString().isEmpty() || skill->getFrequency(player) == Skill::Compulsory
             || skill->getFrequency(player) == Skill::Limited || skill->isLordSkill()
             || skill->getFrequency(player) == Skill::Wake || skill->isOwnerOnlySkill();
     }
