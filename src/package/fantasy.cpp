@@ -1135,6 +1135,10 @@ public:
         QStringList cards = p->property("control_rod_use").toStringList();
         cards << use.card->toString();
         room->setPlayerProperty(p, "control_rod_use", QVariant::fromValue(cards));
+
+        JsonArray args;
+        args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
         return false;
     }
 };

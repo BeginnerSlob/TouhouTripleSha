@@ -1425,5 +1425,9 @@ void ServerPlayer::slashSettlementFinished(const Card *slash)
     if (control_rod_use.contains(slash->toString())) {
         control_rod_use.removeAll(slash->toString());
         room->setPlayerProperty(this, "control_rod_use", QVariant::fromValue(control_rod_use));
+
+        JsonArray args;
+        args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
     }
 }
