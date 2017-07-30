@@ -383,7 +383,7 @@ void MainWindow::gotoStartScene()
 
     QList<QAction *> actions;
     actions << ui->actionStart_Game << ui->actionStart_Server << ui->actionReplay << ui->actionConfigure
-            << ui->actionGeneral_Overview << ui->actionCard_Overview << ui->actionScenario_Overview << ui->actionAbout;
+            << ui->actionGeneral_Overview << ui->actionCard_Overview << ui->actionViewData << ui->actionAbout;
 
     ui->actionStart_Game->setEnabled(true);
     ui->actionStart_Server->setEnabled(true);

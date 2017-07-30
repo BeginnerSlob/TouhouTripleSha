@@ -2932,7 +2932,6 @@ void Room::signup(ServerPlayer *player, const QString &screen_name, const QStrin
     if (!is_robot) {
         QString greetingStr = tr("<font color=#EEB422>Player <b>%1</b> joined the game</font>").arg(screen_name);
         speakCommand(player, greetingStr);
-        player->startNetworkDelayTest();
 
         // introduce all existing player to the new joined
         foreach (ServerPlayer *p, m_players) {
@@ -3533,6 +3532,10 @@ bool Room::speakCommand(ServerPlayer *player, const QVariant &message)
             _NO_BROADCAST_SPEAKING
             pauseCommand(player, false);
         }
+    }
+    if (sentence == "ping") {
+        _NO_BROADCAST_SPEAKING
+        player->startNetworkDelayTest();
     }
     if (broadcast) {
         JsonArray body;
