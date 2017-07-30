@@ -2056,7 +2056,7 @@ ServerPlayer *Room::addSocket(ClientSocket *socket)
     player->setSocket(socket);
     m_players << player;
 
-    connect(player, &ServerPlayer::disconnected, this, &Room::reportDisconnection);
+    connect(player, &ServerPlayer::disconnected, this, (void (Room::*)())(&Room::reportDisconnection));
     connect(player, &ServerPlayer::request_got, this, &Room::processClientPacket);
 
     return player;
@@ -2476,10 +2476,14 @@ void Room::reportDisconnection()
     ServerPlayer *player = qobject_cast<ServerPlayer *>(sender());
     if (player == NULL)
         return;
-
     // send disconnection message to server log
     emit room_message(player->reportHeader() + tr("disconnected"));
 
+    reportDisconnection(player);
+}
+
+void Room::reportDisconnection(ServerPlayer *player)
+{
     // the 4 kinds of circumstances
     // 1. Just connected, with no object name : just remove it from player list
     // 2. Connected, with an object name : remove it, tell other clients and decrease signup_count
@@ -2693,9 +2697,9 @@ bool Room::checkPassword(ServerPlayer *player, const QVariant &arg)
                 return true;
             }
 
-            JsonArray args;
-            args << (int)S_GAME_DISCONNECT;
-            doNotify(player, S_COMMAND_LOG_EVENT, args);
+            emit room_message(player->reportHeader() + tr("wrongpassword"));
+            reportDisconnection(player);
+            player->deleteLater();
 
             in.flush();
             file.close();

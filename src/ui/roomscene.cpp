@@ -652,10 +652,6 @@ void RoomScene::handleGameEvent(const QVariant &arg)
             setEmotion(from_name, success ? "success" : "no-success");
         break;
     }
-    case S_GAME_DISCONNECT: {
-        QMessageBox::warning(NULL, tr("Warning"), tr("Password is wrong, confirm to return"));
-        emit return_to_start();
-    }
     default:
         break;
     }

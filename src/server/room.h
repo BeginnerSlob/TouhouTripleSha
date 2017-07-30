@@ -610,6 +610,9 @@ private:
                               _NullificationAiHelper helper);
     void _setupChooseGeneralRequestArgs(ServerPlayer *player);
 
+    // for Account
+    void reportDisconnection(ServerPlayer *player);
+
 private slots:
     void reportDisconnection();
     void processClientPacket(const QByteArray &packet);
