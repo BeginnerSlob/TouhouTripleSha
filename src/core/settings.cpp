@@ -156,6 +156,7 @@ void Settings::init()
     if (UserName == "root" || UserName == "Administrator" || UserName.isEmpty())
         UserName = tr("TripleShaFans");
     ServerName = value("ServerName", tr("%1's touhoukifugeki").arg(UserName)).toString();
+    DefaultPassword = value("DefaultPassword").toString();
 
     HostAddress = value("HostAddress", "127.0.0.1").toString();
     UserAvatar = value("UserAvatar", "kaze001").toString();

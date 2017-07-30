@@ -48,6 +48,7 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
 
     ui->nameLineEdit->setText(Config.UserName);
     ui->nameLineEdit->setMaxLength(8);
+    ui->passwordLineEdit->setText(Config.DefaultPassword);
 #ifdef Q_OS_ANDROID
     ui->nameLineEdit->setText(Config.HostAddress);
 #else
@@ -62,6 +63,15 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
     hideAvatarList();
 
     ui->reconnectionCheckBox->setChecked(Config.value("EnableReconnection", false).toBool());
+
+    LabelButton *passwordbutton = new LabelButton;
+    passwordbutton->setParent(this);
+    passwordbutton->setObjectName(ui->passwordLabel->objectName());
+    passwordbutton->setText(ui->passwordLabel->text());
+    passwordbutton->setGeometry(20, 53, 54, 20);
+    delete ui->passwordLabel;
+    ui->passwordLabel = passwordbutton;
+    connect(passwordbutton, &LabelButton::double_clicked, this, &ConnectionDialog::on_passwordLabel_doubleClicked);
 
     setFixedHeight(height());
     setFixedWidth(ShrinkWidth);
@@ -153,6 +163,23 @@ void ConnectionDialog::on_detectLANButton_clicked()
 #endif
 
     detector_dialog->exec();
+}
+
+void ConnectionDialog::on_passwordLabel_doubleClicked()
+{
+    if (ui->passwordLineEdit->text().isEmpty()) {
+        QMessageBox::warning(NULL, tr("Warning"), tr("Password is empty!"));
+        return;
+    }
+
+    if (QMessageBox::question(NULL, tr("Warning"),
+                              tr("If you do this, your password will be saved at config.ini under root.<br />"
+                                 "Are you sure?"))
+        == QMessageBox::Yes) {
+        Config.DefaultPassword = ui->passwordLineEdit->text();
+        Config.setValue("DefaultPassword", Config.DefaultPassword);
+        QMessageBox::warning(NULL, tr("Success"), tr("Password has been saved!"));
+    }
 }
 
 // -----------------------------------

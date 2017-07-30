@@ -60,6 +60,7 @@ public:
     QString HostAddress;
     QString UserName;
     QString Password;
+    QString DefaultPassword;
     QString UserAvatar;
     QStringList HistoryIPs;
     ushort DetectorPort;

@@ -2740,25 +2740,29 @@ public:
 
     void checkAchievement(QList<QStringList> names, ServerPlayer *player, Room *room) const
     {
-        if (names.length() == 3) {
-            QStringList day3 = names[2], day2 = names[1], day1 = names[0];
-            int times = 1;
-            foreach (QString name, day3) {
-                int n = 1;
-                if (day2.contains(name)) {
+        QStringList day1, day2, day3;
+        if (names.isEmpty())
+            day3 = names.takeLast();
+        if (names.isEmpty())
+            day2 = names.takeLast();
+        if (names.isEmpty())
+            day1 = names.takeLast();
+        int times = 0;
+        foreach (QString name, day3) {
+            int n = 1;
+            if (day2.contains(name)) {
+                ++n;
+                if (day1.contains(name))
                     ++n;
-                    if (day1.contains(name))
-                        ++n;
-                }
-                if (n > times)
-                    times = n;
             }
-            int delta = times - room->getAchievementData(player, key, false, false).toInt();
-            if (delta != 0) {
-                room->addAchievementData(player, key, delta, false);
-                if (delta > 0 && times == 3)
-                    gainAchievement(player, room);
-            }
+            if (n > times)
+                times = n;
+        }
+        int delta = times - room->getAchievementData(player, key, false, false).toInt();
+        if (delta != 0) {
+            room->addAchievementData(player, key, delta, false);
+            if (delta > 0 && times == 3)
+                gainAchievement(player, room);
         }
     }
 };

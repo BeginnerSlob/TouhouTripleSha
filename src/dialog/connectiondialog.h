@@ -1,6 +1,7 @@
 #ifndef _CONNECTION_DIALOG_H
 #define _CONNECTION_DIALOG_H
 
+#include "customassigndialog.h"
 #include <QButtonGroup>
 #include <QComboBox>
 #include <QDialog>
@@ -31,6 +32,7 @@ private slots:
     void on_avatarList_itemDoubleClicked(QListWidgetItem *item);
     void on_changeAvatarButton_clicked();
     void on_connectButton_clicked();
+    void on_passwordLabel_doubleClicked();
 };
 
 class UdpDetectorDialog : public QDialog
