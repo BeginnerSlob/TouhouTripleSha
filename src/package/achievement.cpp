@@ -1523,7 +1523,7 @@ public:
     {
         foreach (ServerPlayer *p, room->getAllPlayers()) {
             room->addAchievementData(p, key);
-            if (room->getAchievementData(p, key).toInt() == 5)
+            if (room->getAchievementData(p, key).toInt() == 11)
                 gainAchievement(p, room);
         }
         return false;
