@@ -224,6 +224,13 @@ void MainWindow::on_actionStart_Server_triggered()
         }
     } else {
         Config.HostAddress = "127.0.0.1";
+        QString password = Config.DefaultPassword;
+        if (!password.isEmpty()) {
+            QString md5 = QCryptographicHash::hash(password.toLatin1(), QCryptographicHash::Md5).toHex();
+            QByteArray prepend_append = QString("omega%1tts").arg(md5).toLatin1();
+            Config.Password = QCryptographicHash::hash(prepend_append, QCryptographicHash::Md5).toHex();
+        } else
+            Config.Password = QString();
         startConnection();
     }
 }

@@ -1,12 +1,12 @@
 #ifndef _CONNECTION_DIALOG_H
 #define _CONNECTION_DIALOG_H
 
-#include "customassigndialog.h"
 #include <QButtonGroup>
 #include <QComboBox>
 #include <QDialog>
 #include <QListWidget>
 
+class QGraphicsSceneMouseEvent;
 class UdpDetector;
 
 namespace Ui {
@@ -22,6 +22,7 @@ public:
     ~ConnectionDialog();
     void hideAvatarList();
     void showAvatarList();
+    virtual void mouseDoubleClickEvent(QMouseEvent *mouseEvent);
 
 private:
     Ui::ConnectionDialog *ui;
@@ -32,7 +33,6 @@ private slots:
     void on_avatarList_itemDoubleClicked(QListWidgetItem *item);
     void on_changeAvatarButton_clicked();
     void on_connectButton_clicked();
-    void on_passwordLabel_doubleClicked();
 };
 
 class UdpDetectorDialog : public QDialog

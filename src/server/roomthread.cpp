@@ -695,7 +695,7 @@ bool RoomThread::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *ta
                             result_skill = Sanguosha->getTriggerSkill(name);
                         }
 
-                        Q_ASSERT(skill_target && result_skill);
+                        Q_ASSERT(result_skill);
 
                         //----------------------------------------------- TriggerSkill::cost
                         already_triggered.append(name);
