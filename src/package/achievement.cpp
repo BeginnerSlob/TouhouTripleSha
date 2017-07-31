@@ -204,7 +204,7 @@ public:
         // other achieve skill cannot set to GameOverJudge in events, but set the trigger in AchieveSkill::onGameOver
     }
 
-    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
     {
         if (room->getTag("DisableAchievement").toBool())
             return QStringList();
@@ -219,10 +219,8 @@ public:
             QString winner = room->getWinner(player);
             if (!winner.isEmpty())
                 return QStringList(objectName());
-        } else if (e == BeforeGameOver) {
-            if (!data.canConvert<DeathStruct>())
-                return QStringList(objectName());
-        }
+        } else if (e == BeforeGameOver)
+            return QStringList(objectName());
         return QStringList();
     }
 
@@ -338,7 +336,8 @@ public:
         }
         if (translated_achieve.isEmpty())
             translated_achieve << AchieveSkill::tr("None");
-        room->setPlayerProperty(player, "gain", QString("%1,%2,%3,%4").arg(exp).arg(wen).arg(wu).arg(_finished_achieve));
+        QString gain_str = QString("%1,%2,%3,%4").arg(exp).arg(wen).arg(wu).arg(_finished_achieve);
+        room->setPlayerProperty(player, "gain", gain_str);
         int uid = player->userId();
         if (uid == -1)
             return;

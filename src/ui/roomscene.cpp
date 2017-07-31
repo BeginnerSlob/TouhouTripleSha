@@ -3488,6 +3488,10 @@ void RoomScene::fillTable(QTableWidget *table, const QList<const ClientPlayer *>
         table->setItem(i, 4, item);
 
         QStringList texts = player->property("gain").toString().split(",");
+        if (texts.length() < 3) {
+            texts.clear();
+            texts << "0" << "0" << "0";
+        }
         item = new QTableWidgetItem;
         item->setText(texts[0]);
         table->setItem(i, 5, item);
