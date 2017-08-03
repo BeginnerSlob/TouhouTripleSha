@@ -395,6 +395,8 @@ public:
     }
 };
 
+#undef ACCOUNT
+
 class HFLY : public AchieveSkill
 {
 public:
@@ -2681,13 +2683,10 @@ public:
                 names << today_name;
                 checkAchievement(names, player, room);
             } else if (today == dates.last()) {
-                bool modify = false;
                 QStringList today_name = names.takeLast();
                 foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                    if (checkScreenName(today_name, p)) {
+                    if (checkScreenName(today_name, p))
                         today_name << p->screenName();
-                        modify = true;
-                    }
                 }
                 names << today_name;
                 checkAchievement(names, player, room);
@@ -2740,11 +2739,11 @@ public:
     void checkAchievement(QList<QStringList> names, ServerPlayer *player, Room *room) const
     {
         QStringList day1, day2, day3;
-        if (names.isEmpty())
+        if (!names.isEmpty())
             day3 = names.takeLast();
-        if (names.isEmpty())
+        if (!names.isEmpty())
             day2 = names.takeLast();
-        if (names.isEmpty())
+        if (!names.isEmpty())
             day1 = names.takeLast();
         int times = 0;
         foreach (QString name, day3) {
