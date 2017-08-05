@@ -868,10 +868,10 @@ void PlayerCardContainer::startHuaShen(QString generalName, QString skillName, b
                                                                             _getAvatarParent(), _m_huashenOldNameItem, true);
             _m_huashenOldNameAnimation->start();
             if (m_player->isRemoved()) {
-                _m_huashenNameItem->hide();
+                _m_huashenOldNameItem->hide();
                 _m_avatarNameItem->show();
             } else {
-                _m_huashenNameItem->show();
+                _m_huashenOldNameItem->show();
                 _m_avatarNameItem->hide();
             }
         }

@@ -2951,18 +2951,18 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign)
             existed << player->getGeneralName();
     }
 
-    QList<int> max_choice;
+    QMap<ServerPlayer *, int> max_choice;
     if (getMode() == "03_1v1v1") {
-        for (int i = 0; i < to_assign.length(); ++i)
-            max_choice << 9;
+        foreach (ServerPlayer *p, to_assign)
+            max_choice.insert(p, 9);
     } else {
         foreach (ServerPlayer *p, to_assign) {
             if (p->getRole() == "loyalist")
-                max_choice << 10;
+                max_choice.insert(p, 10);
             else if (p->getRole() == "rebel")
-                max_choice << 8;
+                max_choice.insert(p, 8);
             else if (p->getRole() == "renegade")
-                max_choice << 12;
+                max_choice.insert(p, 12);
         }
     }
     int total = Sanguosha->getGeneralCount();
@@ -2971,14 +2971,53 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign)
 
     QStringList choices = Sanguosha->getRandomGenerals(total - existed.size(), existed);
     QStringList touhou_choices;
+    QMap<ServerPlayer *, QString> specified;
 
     if (isNormalGameMode(ServerInfo.GameMode)) {
+        foreach (ServerPlayer *p, to_assign) {
+            QString avatar = p->property("avatar").toString();
+
+            if (Sanguosha->getGeneral(avatar) && choices.contains(avatar)) {
+                bool same = false;
+                foreach (ServerPlayer *p2, to_assign) {
+                    if (p == p2)
+                        continue;
+                    if (p2->property("avatar").toString() == avatar) {
+                        same = true;
+                        break;
+                    }
+                }
+                if (same) {
+                    LogMessage log;
+                    log.type = "#SameSpecified";
+                    log.arg = avatar;
+                    sendLog(log, p);
+                    break;
+                }
+
+                bool success = (qrand() % 100) < p->getLevel();
+                if (success) {
+                    LogMessage log;
+                    log.type = "#SpecifyingSuccess";
+                    log.arg = avatar;
+                    sendLog(log, p);
+
+                    --max_choice[p];
+                    specified[p] = avatar;
+                    choices.removeOne(avatar);
+                } else {
+                    LogMessage log;
+                    log.type = "#SpecifyingFailed";
+                    log.arg = avatar;
+                    sendLog(log, p);
+                }
+            }
+        }
+
         forever {
             int sum_num = 0;
-            foreach (ServerPlayer *p, to_assign) {
-                int index = to_assign.indexOf(p);
-                sum_num += qMin(max_choice.at(index), max_available);
-            }
+            foreach (ServerPlayer *p, to_assign)
+                sum_num += qMin(max_choice[p], max_available);
             sum_num -= 2 * to_assign.length();
 
             // Read Num
@@ -3048,8 +3087,7 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign)
 
     foreach (ServerPlayer *player, to_assign) {
         player->clearSelected();
-        int index = to_assign.indexOf(player);
-        int choice_count = qMin(max_choice.at(index), max_available);
+        int choice_count = qMin(max_choice[player], max_available);
         for (int i = 0; i < choice_count; i++) {
             if (i >= (getMode() == "03_1v1v1" ? 0 : 2)) {
                 QString choice = player->findReasonable(choices, true);
@@ -3071,6 +3109,11 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign)
                     touhou_choices.removeOne(choice);
             }
         }
+    }
+
+    foreach (ServerPlayer *player, to_assign) {
+        if (!specified.value(player, QString()).isEmpty())
+            player->addToSelected(specified[player]);
     }
 }
 
