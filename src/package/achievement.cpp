@@ -2451,7 +2451,7 @@ public:
         if (e == EventPhaseChanging) {
             foreach (ServerPlayer *p, room->getAlivePlayers())
                 room->setAchievementData(p, key, 0);
-        } else if (e == CardsMoveOneTime) {
+        } else if (e == CardsMoveOneTime && !room->getTag("FirstRound").toBool()) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.to == player && room->getAchievementData(player, key).toInt() < 10) {
                 if (move.to_place == Player::PlaceHand)

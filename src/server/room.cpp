@@ -2975,14 +2975,15 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign)
 
     if (isNormalGameMode(ServerInfo.GameMode)) {
         foreach (ServerPlayer *p, to_assign) {
-            QString avatar = p->property("avatar").toString();
+            QString to = getTag(p->objectName() + "_specify").toString();
 
-            if (Sanguosha->getGeneral(avatar) && choices.contains(avatar)) {
+            if (Sanguosha->getGeneral(to) && choices.contains(to)) {
+                p->tag["DisableLuckCard"] = true;
                 bool same = false;
                 foreach (ServerPlayer *p2, to_assign) {
                     if (p == p2)
                         continue;
-                    if (p2->property("avatar").toString() == avatar) {
+                    if (getTag(p2->objectName() + "_specify").toString() == to) {
                         same = true;
                         break;
                     }
@@ -2990,7 +2991,7 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign)
                 if (same) {
                     LogMessage log;
                     log.type = "#SameSpecified";
-                    log.arg = avatar;
+                    log.arg = to;
                     sendLog(log, p);
                     break;
                 }
@@ -2999,16 +3000,16 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign)
                 if (success) {
                     LogMessage log;
                     log.type = "#SpecifyingSuccess";
-                    log.arg = avatar;
+                    log.arg = to;
                     sendLog(log, p);
 
                     --max_choice[p];
-                    specified[p] = avatar;
-                    choices.removeOne(avatar);
+                    specified[p] = to;
+                    choices.removeOne(to);
                 } else {
                     LogMessage log;
                     log.type = "#SpecifyingFailed";
-                    log.arg = avatar;
+                    log.arg = to;
                     sendLog(log, p);
                 }
             }
@@ -3580,6 +3581,17 @@ bool Room::speakCommand(ServerPlayer *player, const QVariant &message)
     if (sentence == "ping") {
         _NO_BROADCAST_SPEAKING
         player->startNetworkDelayTest();
+    } else if (sentence.startsWith("SpecifyGeneral=")) {
+        _NO_BROADCAST_SPEAKING
+        QString prop = sentence.mid(15);
+        setTag(player->objectName() + "_specify", prop);
+        if (Sanguosha->getGeneral(prop) && !game_started) {
+            QString message = tr("You have specified general %1").arg(Sanguosha->translate(prop));
+            JsonArray body;
+            body << player->objectName();
+            body << message;
+            doNotify(player, S_COMMAND_SPEAK, body);
+        }
     }
     if (broadcast) {
         JsonArray body;
@@ -5217,108 +5229,132 @@ void Room::askForLuckCard()
 {
     tryPause();
 
-    QList<ServerPlayer *> players;
+    QMap<ServerPlayer *, int> players;
+
+    //QList<ServerPlayer *> players;
     foreach (ServerPlayer *player, m_players) {
-        if (!player->getAI()) {
-            player->m_commandArgs = QVariant();
-            players << player;
-        }
-    }
-    if (players.isEmpty())
-        return;
-
-    Countdown countdown;
-    countdown.max = ServerInfo.getCommandTimeout(S_COMMAND_LUCK_CARD, S_CLIENT_INSTANCE);
-    countdown.type = Countdown::S_COUNTDOWN_USE_SPECIFIED;
-    notifyMoveFocus(players, S_COMMAND_LUCK_CARD, countdown);
-
-    doBroadcastRequest(players, S_COMMAND_LUCK_CARD);
-
-    QList<ServerPlayer *> used;
-    foreach (ServerPlayer *player, players) {
-        QVariant clientReply = player->getClientReply();
-        if (!player->m_isClientResponseReady || !isBool(clientReply) || !clientReply.toBool())
+        if (player->tag["DisableLuckCard"].toBool())
             continue;
-        used << player;
-    }
-    if (used.isEmpty())
-        return;
-
-    LogMessage log;
-    log.type = "#UseLuckCard";
-    foreach (ServerPlayer *player, used) {
-        log.from = player;
-        sendLog(log);
-    }
-
-    QList<int> draw_list;
-    foreach (ServerPlayer *player, used) {
-        draw_list << player->getHandcardNum();
-
-        CardMoveReason reason(CardMoveReason::S_REASON_PUT, player->objectName(), "luck_card", QString());
-        QList<CardsMoveStruct> moves;
-        CardsMoveStruct move;
-        move.from = player;
-        move.from_place = Player::PlaceHand;
-        move.to = NULL;
-        move.to_place = Player::DrawPile;
-        move.card_ids = player->handCards();
-        move.reason = reason;
-        moves.append(move);
-        moves = _breakDownCardMoves(moves);
-
-        QList<ServerPlayer *> tmp_list;
-        tmp_list.append(player);
-
-        notifyMoveCards(true, moves, false, tmp_list);
-        for (int j = 0; j < move.card_ids.size(); j++) {
-            int card_id = move.card_ids[j];
-            const Card *card = Sanguosha->getCard(card_id);
-            player->removeCard(card, Player::PlaceHand);
-        }
-
-        updateCardsOnLose(move);
-        for (int j = 0; j < move.card_ids.size(); j++)
-            setCardMapping(move.card_ids[j], NULL, Player::DrawPile);
-        updateCardsOnGet(move);
-
-        notifyMoveCards(false, moves, false, tmp_list);
-        for (int j = 0; j < move.card_ids.size(); j++) {
-            int card_id = move.card_ids[j];
-            m_drawPile->prepend(card_id);
+        if (!player->getAI()) {
+            int n = 1;
+            int level = player->getLevel();
+            if (level > 10)
+                ++n;
+            if (level > 25)
+                ++n;
+            if (level > 45)
+                ++n;
+            if (level > 70)
+                ++n;
+            player->m_commandArgs = QVariant();
+            players.insert(player, n);
         }
     }
-    qShuffle(*m_drawPile);
-    int index = -1;
-    foreach (ServerPlayer *player, used) {
-        index++;
-        QList<CardsMoveStruct> moves;
-        CardsMoveStruct move;
-        move.from = NULL;
-        move.from_place = Player::DrawPile;
-        move.to = player;
-        move.to_place = Player::PlaceHand;
-        move.card_ids = getNCards(draw_list.at(index), false);
-        moves.append(move);
-        moves = _breakDownCardMoves(moves);
 
-        notifyMoveCards(true, moves, false);
-        for (int j = 0; j < move.card_ids.size(); j++) {
-            int card_id = move.card_ids[j];
-            m_drawPile->removeOne(card_id);
+    while (!players.isEmpty()) {
+        Countdown countdown;
+        countdown.max = ServerInfo.getCommandTimeout(S_COMMAND_LUCK_CARD, S_CLIENT_INSTANCE);
+        countdown.type = Countdown::S_COUNTDOWN_USE_SPECIFIED;
+        QList<ServerPlayer *> to_notify = players.keys();
+        notifyMoveFocus(to_notify, S_COMMAND_LUCK_CARD, countdown);
+
+        doBroadcastRequest(to_notify, S_COMMAND_LUCK_CARD);
+
+        QList<ServerPlayer *> used;
+        foreach (ServerPlayer *player, to_notify) {
+            QVariant clientReply = player->getClientReply();
+            if (!player->m_isClientResponseReady || !isBool(clientReply) || !clientReply.toBool())
+                continue;
+            used << player;
+        }
+        if (used.isEmpty())
+            break;
+
+        LogMessage log;
+        log.type = "#UseLuckCard";
+        foreach (ServerPlayer *player, used) {
+            log.from = player;
+            sendLog(log);
         }
 
-        updateCardsOnLose(move);
-        for (int j = 0; j < move.card_ids.size(); j++)
-            setCardMapping(move.card_ids[j], player, Player::PlaceHand);
-        updateCardsOnGet(move);
+        QList<int> draw_list;
+        foreach (ServerPlayer *player, used) {
+            draw_list << player->getHandcardNum();
 
-        notifyMoveCards(false, moves, false);
-        for (int j = 0; j < move.card_ids.size(); j++) {
-            int card_id = move.card_ids[j];
-            const Card *card = Sanguosha->getCard(card_id);
-            player->addCard(card, Player::PlaceHand);
+            CardMoveReason reason(CardMoveReason::S_REASON_PUT, player->objectName(), "luck_card", QString());
+            QList<CardsMoveStruct> moves;
+            CardsMoveStruct move;
+            move.from = player;
+            move.from_place = Player::PlaceHand;
+            move.to = NULL;
+            move.to_place = Player::DrawPile;
+            move.card_ids = player->handCards();
+            move.reason = reason;
+            moves.append(move);
+            moves = _breakDownCardMoves(moves);
+
+            QList<ServerPlayer *> tmp_list;
+            tmp_list.append(player);
+
+            notifyMoveCards(true, moves, false, tmp_list);
+            for (int j = 0; j < move.card_ids.size(); j++) {
+                int card_id = move.card_ids[j];
+                const Card *card = Sanguosha->getCard(card_id);
+                player->removeCard(card, Player::PlaceHand);
+            }
+
+            updateCardsOnLose(move);
+            for (int j = 0; j < move.card_ids.size(); j++)
+                setCardMapping(move.card_ids[j], NULL, Player::DrawPile);
+            updateCardsOnGet(move);
+
+            notifyMoveCards(false, moves, false, tmp_list);
+            for (int j = 0; j < move.card_ids.size(); j++) {
+                int card_id = move.card_ids[j];
+                m_drawPile->prepend(card_id);
+            }
         }
+        qShuffle(*m_drawPile);
+        int index = -1;
+        foreach (ServerPlayer *player, used) {
+            index++;
+            QList<CardsMoveStruct> moves;
+            CardsMoveStruct move;
+            move.from = NULL;
+            move.from_place = Player::DrawPile;
+            move.to = player;
+            move.to_place = Player::PlaceHand;
+            move.card_ids = getNCards(draw_list.at(index), false);
+            moves.append(move);
+            moves = _breakDownCardMoves(moves);
+
+            notifyMoveCards(true, moves, false);
+            for (int j = 0; j < move.card_ids.size(); j++) {
+                int card_id = move.card_ids[j];
+                m_drawPile->removeOne(card_id);
+            }
+
+            updateCardsOnLose(move);
+            for (int j = 0; j < move.card_ids.size(); j++)
+                setCardMapping(move.card_ids[j], player, Player::PlaceHand);
+            updateCardsOnGet(move);
+
+            notifyMoveCards(false, moves, false);
+            for (int j = 0; j < move.card_ids.size(); j++) {
+                int card_id = move.card_ids[j];
+                const Card *card = Sanguosha->getCard(card_id);
+                player->addCard(card, Player::PlaceHand);
+            }
+        }
+
+        QMap<ServerPlayer *, int> new_map;
+        foreach (ServerPlayer *p, used) {
+            int n = players[p];
+            --n;
+            if (n > 0)
+                new_map.insert(p, n);
+        }
+        players = new_map;
     }
     doBroadcastNotify(S_COMMAND_UPDATE_PILE, QVariant(m_drawPile->length()));
 }
