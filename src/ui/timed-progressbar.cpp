@@ -57,6 +57,7 @@ void TimedProgressBar::timerEvent(QTimerEvent *)
     emit timerStep(val, m_max);
     if (doHide)
         hide();
+    update();
     if (emitTimeout)
         emit timedOut();
 }

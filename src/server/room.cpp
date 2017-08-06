@@ -1033,7 +1033,6 @@ bool Room::notifyMoveFocus(ServerPlayer *player)
     QList<ServerPlayer *> players;
     players.append(player);
     Countdown countdown;
-    countdown.type = Countdown::S_COUNTDOWN_NO_LIMIT;
     notifyMoveFocus(players, S_COMMAND_MOVE_FOCUS, countdown);
     return notifyMoveFocus(players, S_COMMAND_MOVE_FOCUS, countdown);
 }
@@ -1042,6 +1041,11 @@ bool Room::notifyMoveFocus(ServerPlayer *player, CommandType command)
 {
     QList<ServerPlayer *> players;
     players.append(player);
+    return notifyMoveFocus(players, command);
+}
+
+bool Room::notifyMoveFocus(const QList<ServerPlayer *> &players, CommandType command)
+{
     Countdown countdown;
     countdown.max = ServerInfo.getCommandTimeout(command, S_CLIENT_INSTANCE);
     countdown.type = Countdown::S_COUNTDOWN_USE_SPECIFIED;
@@ -2768,6 +2772,7 @@ bool Room::makeSurrender(ServerPlayer *initiator)
             playersAlive << player;
         }
     }
+    notifyMoveFocus(playersAlive, S_COMMAND_SURRENDER);
     doBroadcastRequest(playersAlive, S_COMMAND_SURRENDER);
 
     // collect polls
@@ -3150,6 +3155,7 @@ void Room::chooseGenerals(QList<ServerPlayer *> players)
     foreach (ServerPlayer *player, to_assign)
         _setupChooseGeneralRequestArgs(player);
 
+    notifyMoveFocus(to_assign, S_COMMAND_CHOOSE_GENERAL);
     doBroadcastRequest(to_assign, S_COMMAND_CHOOSE_GENERAL);
     foreach (ServerPlayer *player, to_assign) {
         if (player->getGeneral() != NULL)
@@ -3166,6 +3172,7 @@ void Room::chooseGenerals(QList<ServerPlayer *> players)
         foreach (ServerPlayer *player, to_assign)
             _setupChooseGeneralRequestArgs(player);
 
+        notifyMoveFocus(to_assign, S_COMMAND_CHOOSE_GENERAL);
         doBroadcastRequest(to_assign, S_COMMAND_CHOOSE_GENERAL);
         foreach (ServerPlayer *player, to_assign) {
             if (player->getGeneral2() != NULL)

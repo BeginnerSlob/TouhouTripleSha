@@ -3490,7 +3490,9 @@ void RoomScene::fillTable(QTableWidget *table, const QList<const ClientPlayer *>
         QStringList texts = player->property("gain").toString().split(",");
         if (texts.length() < 3) {
             texts.clear();
-            texts << "0" << "0" << "0";
+            texts << "0"
+                  << "0"
+                  << "0";
         }
         item = new QTableWidgetItem;
         item->setText(texts[0]);
@@ -3870,6 +3872,8 @@ void KOFOrderBox::killPlayer(const QString &general_name)
 
 void RoomScene::onGameStart()
 {
+    _cancelAllFocus();
+
     main_window->activateWindow();
     if (ServerInfo.GameMode.contains("_mini_")) {
         QString id = Config.GameMode;

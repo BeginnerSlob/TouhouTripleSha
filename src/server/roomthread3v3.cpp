@@ -13,6 +13,8 @@ using namespace JsonUtils;
 
 RoomThread3v3::RoomThread3v3(Room *room)
     : room(room)
+    , warm_leader(NULL)
+    , cool_leader(NULL)
 {
     room->getRoomState()->reset();
 }
@@ -174,6 +176,7 @@ void RoomThread3v3::run()
 void RoomThread3v3::askForTakeGeneral(ServerPlayer *player)
 {
     room->tryPause();
+    room->notifyMoveFocus(player, S_COMMAND_ASK_GENERAL);
 
     QString name;
     if (general_names.length() == 1 || player->getState() != "online")

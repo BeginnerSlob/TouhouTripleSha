@@ -217,6 +217,7 @@ public:
     // Notification functions
     bool notifyMoveFocus(ServerPlayer *player);
     bool notifyMoveFocus(ServerPlayer *player, QSanProtocol::CommandType command);
+    bool notifyMoveFocus(const QList<ServerPlayer *> &players, QSanProtocol::CommandType command);
     bool notifyMoveFocus(const QList<ServerPlayer *> &players, QSanProtocol::CommandType command,
                          QSanProtocol::Countdown countdown);
 

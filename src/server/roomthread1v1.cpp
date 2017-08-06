@@ -150,6 +150,7 @@ void RoomThread1v1::run()
 void RoomThread1v1::askForTakeGeneral(ServerPlayer *player)
 {
     room->tryPause();
+    room->notifyMoveFocus(player, S_COMMAND_ASK_GENERAL);
 
     QString name;
     if (general_names.length() == 1)
@@ -265,7 +266,8 @@ void RoomThread1v1::askForFirstGeneral(QList<ServerPlayer *> players)
 
     foreach (ServerPlayer *player, online) {
         QVariant clientReply = player->getClientReply();
-        if (player->m_isClientResponseReady && isString(clientReply) && player->getSelected().contains(clientReply.toString())) {
+        if (player->m_isClientResponseReady && isString(clientReply)
+            && player->getSelected().contains(clientReply.toString())) {
             QStringList arranged = player->getSelected();
             QString first_gen = clientReply.toString();
             arranged.removeOne(first_gen);
