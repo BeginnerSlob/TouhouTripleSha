@@ -221,6 +221,7 @@ return {
 	["illustrator:bloom056"] = "クロエ",
 	["iksheji"] = "舌戟",
 	[":iksheji"] = "其他角色的出牌阶段开始时，你可以与其拼点：若你赢，你选择一名角色，令当前回合角色于此回合内每使用一张基本牌或非延时类锦囊牌时均无视距离指定该角色为额外目标。",
+	["#IkShejiChoose"] = "%from 选择了 %to",
 	["@iksheji-collateral"] = "请选择【断灵御剑】 %src 使用【杀】的目标",
 	["@iksheji-feint-attack"] = "请选择【道忌宣谕】 %src 给牌的目标",
 	["ikpingwei"] = "平味",

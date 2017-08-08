@@ -2756,6 +2756,11 @@ public:
         bool success = ask_who->pindian(player, objectName());
         if (success) {
             ServerPlayer *target = room->askForPlayerChosen(ask_who, room->getAlivePlayers(), objectName());
+            LogMessage log;
+            log.type = "#IkShejiChoose";
+            log.from = ask_who;
+            log.to << target;
+            room->sendLog(log);
             player->addMark("iksheji_" + target->objectName());
             room->addPlayerMark(target, "@sheji");
         }
