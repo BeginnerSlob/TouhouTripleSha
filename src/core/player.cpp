@@ -171,6 +171,8 @@ void Player::setSeat(int seat)
 
 bool Player::isAdjacentTo(const Player *another) const
 {
+    if (isDead() || another->isDead())
+        return false;
     return getNextAlive() == another || another->getNextAlive() == this;
 }
 
