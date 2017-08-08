@@ -1233,9 +1233,11 @@ void Collateral::onEffect(const CardEffectStruct &effect) const
         return;
     }
 
-    QString prompt = QString("collateral-slash:%1:%2").arg(victim->objectName()).arg(source->objectName());
+    QString prompt;
     if (getSkillName() == "iksizhuo")
         prompt = QString("collateralex-slash:%1").arg(source->objectName());
+    else if (victim)
+        prompt = QString("collateral-slash:%1:%2").arg(victim->objectName()).arg(source->objectName());
 
     room->setPlayerFlag(source, "CollateralSource");
     room->setPlayerFlag(killer, "CollateralUsing");

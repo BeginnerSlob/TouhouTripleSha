@@ -307,7 +307,8 @@ void Engine::addPackage(Package *package)
         generals.insert(general->objectName(), general);
         if (isGeneralHidden(general->objectName()))
             continue;
-        if ((general->isLord() && !removed_default_lords.contains(general->objectName())) || extra_default_lords.contains(general->objectName()))
+        if ((general->isLord() && !removed_default_lords.contains(general->objectName()))
+            || extra_default_lords.contains(general->objectName()))
             lord_list << general->objectName();
     }
 
@@ -445,9 +446,12 @@ int Engine::getGeneralCount(bool include_banned, const QString &kingdom) const
         const General *general = itor.value();
         if (!kingdom.isEmpty() && general->getKingdom() != kingdom)
             continue;
+        if (isGeneralHidden(general->objectName()))
+            continue;
         if (getBanPackages().contains(general->getPackage()))
             isBanned = true;
-        else if ((isNormalGameMode(ServerInfo.GameMode) || ServerInfo.GameMode.contains("_mini_") || ServerInfo.GameMode == "custom_scenario")
+        else if ((isNormalGameMode(ServerInfo.GameMode) || ServerInfo.GameMode.contains("_mini_")
+                  || ServerInfo.GameMode == "custom_scenario")
                  && Config.value("Banlist/Roles").toStringList().contains(general->objectName()))
             isBanned = true;
         else if (ServerInfo.Enable2ndGeneral && BanPair::isBanned(general->objectName()))
@@ -532,7 +536,8 @@ bool Engine::isGeneralHidden(const QString &general_name) const
     const General *general = getGeneral(general_name);
     if (!general)
         return true;
-    return (general->isHidden() && !removed_hidden_generals.contains(general_name)) || extra_hidden_generals.contains(general_name);
+    return (general->isHidden() && !removed_hidden_generals.contains(general_name))
+        || extra_hidden_generals.contains(general_name);
 }
 
 WrappedCard *Engine::getWrappedCard(int cardId)
@@ -820,7 +825,8 @@ QString Engine::getSetupString() const
         mode = mode + Config.value("1v1/Rule", "2013").toString();
     else if (mode == "06_3v3")
         mode = mode + Config.value("3v3/OfficialRule", "2013").toString();
-    setup_items << server_name << mode << QString::number(timeout) << QString::number(Config.NullificationCountDown) << Sanguosha->getBanPackages().join("+") << flags;
+    setup_items << server_name << mode << QString::number(timeout) << QString::number(Config.NullificationCountDown)
+                << Sanguosha->getBanPackages().join("+") << flags;
 
     return setup_items.join(":");
 }
@@ -959,8 +965,8 @@ QStringList Engine::getLords(bool contain_banned) const
         if (!general_names.contains(lord))
             continue;
         if (!contain_banned) {
-            if (ServerInfo.GameMode.endsWith("p") || ServerInfo.GameMode.endsWith("pd") || ServerInfo.GameMode.endsWith("pz") || ServerInfo.GameMode.contains("_mini_")
-                || ServerInfo.GameMode == "custom_scenario")
+            if (ServerInfo.GameMode.endsWith("p") || ServerInfo.GameMode.endsWith("pd") || ServerInfo.GameMode.endsWith("pz")
+                || ServerInfo.GameMode.contains("_mini_") || ServerInfo.GameMode == "custom_scenario")
                 if (Config.value("Banlist/Roles", "").toStringList().contains(lord))
                     continue;
             if (Config.Enable2ndGeneral && BanPair::isBanned(lord))
@@ -1031,7 +1037,8 @@ QStringList Engine::getLimitedGeneralNames(const QString &kingdom) const
     while (itor.hasNext()) {
         itor.next();
         const General *gen = itor.value();
-        if ((kingdom.isEmpty() || gen->getKingdom() == kingdom) && !isGeneralHidden(gen->objectName()) && !getBanPackages().contains(gen->getPackage()))
+        if ((kingdom.isEmpty() || gen->getKingdom() == kingdom) && !isGeneralHidden(gen->objectName())
+            && !getBanPackages().contains(gen->getPackage()))
             general_names << itor.key();
     }
 
@@ -1059,7 +1066,8 @@ QStringList Engine::getRandomGenerals(int count, const QSet<QString> &ban_set, c
     if (Config.EnableHegemony)
         general_set = general_set.subtract(Config.value("Banlist/Hegemony", "").toStringList().toSet());
 
-    if (isNormalGameMode(ServerInfo.GameMode) || ServerInfo.GameMode.contains("_mini_") || ServerInfo.GameMode == "custom_scenario")
+    if (isNormalGameMode(ServerInfo.GameMode) || ServerInfo.GameMode.contains("_mini_")
+        || ServerInfo.GameMode == "custom_scenario")
         general_set.subtract(Config.value("Banlist/Roles", "").toStringList().toSet());
 
     all_generals = general_set.subtract(ban_set).toList();
@@ -1079,7 +1087,8 @@ QList<int> Engine::getRandomCards() const
     if (Config.GameMode == "06_3v3") {
         using_2012_3v3 = (Config.value("3v3/OfficialRule", "2013").toString() == "2012");
         using_2013_3v3 = (Config.value("3v3/OfficialRule", "2013").toString() == "2013");
-        exclude_disaters = !Config.value("3v3/UsingExtension", false).toBool() || Config.value("3v3/ExcludeDisasters", true).toBool();
+        exclude_disaters
+            = !Config.value("3v3/UsingExtension", false).toBool() || Config.value("3v3/ExcludeDisasters", true).toBool();
     }
 
     /*if (Config.GameMode == "04_1v3")
@@ -1119,8 +1128,8 @@ QList<int> Engine::getRandomCards() const
             continue;
         }
 
-        if (Config.GameMode == "06_3v3" && !Config.value("3v3/UsingExtension", false).toBool() && card->getPackage() != "standard_cards"
-            && card->getPackage() != "standard_ex_cards")
+        if (Config.GameMode == "06_3v3" && !Config.value("3v3/UsingExtension", false).toBool()
+            && card->getPackage() != "standard_cards" && card->getPackage() != "standard_ex_cards")
             continue;
         if (!getBanPackages().contains(card->getPackage()))
             list << card->getId();
@@ -1213,7 +1222,8 @@ const ViewAsSkill *Engine::getViewAsSkill(const QString &skill_name) const
         return NULL;
 }
 
-const ProhibitSkill *Engine::isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &others) const
+const ProhibitSkill *Engine::isProhibited(const Player *from, const Player *to, const Card *card,
+                                          const QList<const Player *> &others) const
 {
     // for IkXiashan ====================
     if (card->isKindOf("Slash") && from && from->hasSkill("ikxiashan"))

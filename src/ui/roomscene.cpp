@@ -330,6 +330,7 @@ RoomScene::RoomScene(QMainWindow *main_window)
     QFont qf = Config.SmallFont;
     qf.setPixelSize(21);
     qf.setStyleStrategy(QFont::PreferAntialias);
+    qf.setBold(false);
     prompt_box_widget->setFont(qf);
 
     addItem(prompt_box);
@@ -1990,7 +1991,7 @@ void RoomScene::loseCards(int moveId, QList<CardsMoveStruct> card_moves)
 QString RoomScene::_translateMovement(const CardsMoveStruct &move)
 {
     CardMoveReason reason = move.reason;
-    if (reason.m_reason == CardMoveReason::S_REASON_UNKNOWN)
+    if (reason.m_reason == CardMoveReason::S_REASON_UNKNOWN || reason.m_reason == CardMoveReason::S_REASON_DRAW)
         return QString();
     // ============================================
     if (move.from && move.card_ids.length() == 1 && move.to_place == Player::DrawPile

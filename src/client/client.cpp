@@ -1275,8 +1275,8 @@ void Client::askForDiscard(const QVariant &reqvar)
 void Client::askForExchange(const QVariant &exchange)
 {
     JsonArray args = exchange.value<JsonArray>();
-    if (args.size() < 7 || !isString(args[0]) || !isNumber(args[1]) || !isNumber(args[2]) || !isBool(args[3]) || !isString(args[4])
-        || !isBool(args[5]) || !isString(args[6])) {
+    if (args.size() < 7 || !isString(args[0]) || !isNumber(args[1]) || !isNumber(args[2]) || !isBool(args[3])
+        || !isString(args[4]) || !isBool(args[5]) || !isString(args[6])) {
         QMessageBox::warning(NULL, tr("Warning"), tr("Exchange string is not well formatted!"));
         return;
     }

@@ -2511,7 +2511,7 @@ void Room::reportDisconnection(ServerPlayer *player)
             if (player->getState() != "robot") {
                 QString screen_name = player->screenName();
                 QString leaveStr = tr("<font color=#000000>Player <b>%1</b> left the game</font>").arg(screen_name);
-                speakCommand(player, leaveStr);
+                speakCommand(NULL, leaveStr);
             }
 
             doBroadcastNotify(S_COMMAND_REMOVE_PLAYER, player->objectName());
@@ -2937,7 +2937,7 @@ void Room::signup(ServerPlayer *player, const QString &screen_name, const QStrin
 
     if (!is_robot) {
         QString greetingStr = tr("<font color=#EEB422>Player <b>%1</b> joined the game</font>").arg(screen_name);
-        speakCommand(player, greetingStr);
+        speakCommand(NULL, greetingStr);
 
         // introduce all existing player to the new joined
         foreach (ServerPlayer *p, m_players) {
@@ -3456,7 +3456,7 @@ bool Room::speakCommand(ServerPlayer *player, const QVariant &message)
     }
     bool broadcast = true;
     QString sentence = message.toString();
-    if (sentence == Settings::m_autoSpeakString) {
+    if (player && sentence == Settings::m_autoSpeakString) {
         JsonArray body2;
         body2 << player->objectName();
         body2 << message;
@@ -3585,10 +3585,11 @@ bool Room::speakCommand(ServerPlayer *player, const QVariant &message)
             pauseCommand(player, false);
         }
     }
-    if (sentence == "ping") {
+    if (player && sentence == "ping") {
         _NO_BROADCAST_SPEAKING
         player->startNetworkDelayTest();
-    } else if (sentence.startsWith("SpecifyGeneral=")) {
+    }
+    if (player && sentence.startsWith("SpecifyGeneral=")) {
         _NO_BROADCAST_SPEAKING
         QString prop = sentence.mid(15);
         setTag(player->objectName() + "_specify", prop);
@@ -3602,7 +3603,10 @@ bool Room::speakCommand(ServerPlayer *player, const QVariant &message)
     }
     if (broadcast) {
         JsonArray body;
-        body << player->objectName();
+        if (player)
+            body << player->objectName();
+        else
+            body << ".";
         body << message;
         doBroadcastNotify(S_COMMAND_SPEAK, body);
     }
@@ -6746,7 +6750,7 @@ bool Room::networkDelayTestCommand(ServerPlayer *player, const QVariant &)
     QString reportStr = tr("<font color=#EEB422>The network delay of player <b>%1</b> is %2 milliseconds.</font>")
                             .arg(player->screenName())
                             .arg(QString::number(delay));
-    speakCommand(player, reportStr);
+    speakCommand(NULL, reportStr);
     return true;
 }
 

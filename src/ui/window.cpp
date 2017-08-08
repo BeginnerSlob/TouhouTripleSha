@@ -2,6 +2,7 @@
 
 #include "button.h"
 #include "settings.h"
+#include "skin-bank.h"
 
 #include <QGraphicsDropShadowEffect>
 #include <QGraphicsRotation>
@@ -59,7 +60,7 @@ Window::Window(const QString &title, const QSizeF &size, const QString &path)
 
     this->setOpacity(0.0);
 
-    titleItem = new QGraphicsTextItem(this);
+    titleItem = new QGraphicsPixmapItem(this);
     setTitle(title);
 }
 
@@ -164,14 +165,17 @@ void Window::disappear()
 
 void Window::setTitle(const QString &title)
 {
-    QString style;
-    style.append("font-size:18pt; ");
-    style.append("color:#77c379; ");
-    style.append(QString("font-family: %1").arg(Config.SmallFont.family()));
+    IQSanComponentSkin::QSanSimpleTextFont font;
+    JsonArray array;
+    array << "DroidSansFallback";
+    JsonArray array2;
+    array2 << 16 << 16 << 0;
+    array << QVariant::fromValue(array2) << 2;
+    JsonArray array4;
+    array4 << 228 << 213 << 160 << 255;
+    array << QVariant::fromValue(array4);
+    font.tryParse(array);
 
-    QString content;
-    content.append(QString("<h style=\"%1\">%2</h>").arg(style).arg(title));
-
-    titleItem->setHtml(content);
-    titleItem->setPos(size.width() / 2 - titleItem->boundingRect().width() / 2, 10);
+    QRect rect(0, 20, boundingRect().width(), 30);
+    font.paintText(titleItem, rect, Qt::AlignCenter, title);
 }

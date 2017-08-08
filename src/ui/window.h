@@ -29,7 +29,7 @@ public slots:
     void disappear();
 
 private:
-    QGraphicsTextItem *titleItem;
+    QGraphicsPixmapItem *titleItem;
     QGraphicsScale *scaleTransform;
     QSizeF size;
     bool keep_when_disappear;
