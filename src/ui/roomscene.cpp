@@ -318,9 +318,7 @@ RoomScene::RoomScene(QMainWindow *main_window)
     prompt_box->setZValue(10);
     prompt_box->keepWhenDisappear();
 
-    prompt_box_widget = new QGraphicsTextItem(prompt_box);
-    prompt_box_widget->setParent(prompt_box);
-    prompt_box_widget->setPos(40, 45);
+    /*
     prompt_box_widget->setDefaultTextColor(Qt::white);
 
     QTextDocument *prompt_doc = ClientInstance->getPromptDoc();
@@ -332,7 +330,7 @@ RoomScene::RoomScene(QMainWindow *main_window)
     qf.setStyleStrategy(QFont::PreferAntialias);
     qf.setBold(false);
     prompt_box_widget->setFont(qf);
-
+*/
     addItem(prompt_box);
 
     QHBoxLayout *skill_dock_layout = new QHBoxLayout;
@@ -2574,6 +2572,37 @@ void RoomScene::doTimeout()
 
 void RoomScene::showPromptBox()
 {
+    delete prompt_box_widget;
+
+    prompt_box_widget = new QGraphicsPixmapItem(prompt_box);
+    //prompt_box_widget->setPos(40, 45);
+
+    IQSanComponentSkin::QSanShadowTextFont qsanfont;
+    JsonArray array;
+    array << "DroidSansFallback";
+    JsonArray array2;
+    array2 << 18 << 18 << 0;
+    array << QVariant::fromValue(array2) << 0;
+    JsonArray array4;
+    array4 << 255 << 255 << 255 << 255;
+    array << QVariant::fromValue(array4) << 1 << 10;
+    JsonArray array7;
+    array7 << 0 << 0;
+    JsonArray array8;
+    array8 << 50 << 50 << 50 << 200;
+    array << QVariant::fromValue(array7) << QVariant::fromValue(array8);
+    qsanfont.tryParse(array);
+
+    QString text = ClientInstance->getPromptDoc();
+    text.replace("<br>", "\n");
+    text.replace("<br/>", "\n");
+    text.replace("<br />", "\n");
+    qDebug() << "roomscene";
+    qDebug() << text;
+
+    QRect rect(40, 80, 400, 120);
+    qsanfont.paintText(prompt_box_widget, rect, Qt::AlignTop | Qt::AlignLeft, text);
+
     bringToFront(prompt_box);
     prompt_box->appear();
 }
@@ -2625,7 +2654,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         else if (oldStatus == Client::AskForSuit)
             m_chooseSuitBox->clear();
         prompt_box->disappear();
-        ClientInstance->getPromptDoc()->clear();
+        ClientInstance->clearPromptDoc();
 
         dashboard->disableAllCards();
         selected_targets.clear();

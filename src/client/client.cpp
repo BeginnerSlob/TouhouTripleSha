@@ -147,9 +147,7 @@ Client::Client(QObject *parent, const QString &filename)
 
     lines_doc = new QTextDocument(this);
 
-    prompt_doc = new QTextDocument(this);
-    prompt_doc->setTextWidth(350);
-    prompt_doc->setDefaultFont(QFont("SimHei"));
+    prompt_doc = QString();
 
     if (!filename.isEmpty()) {
         socket = NULL;
@@ -869,7 +867,9 @@ QString Client::setPromptList(const QStringList &texts)
         prompt.replace("%arg", arg);
     }
 
-    prompt_doc->setHtml(prompt);
+    prompt_doc = prompt;
+    qDebug() << "client";
+    qDebug() << prompt_doc;
     return prompt;
 }
 
@@ -917,9 +917,10 @@ void Client::askForCardOrUseCard(const QVariant &cardUsage)
         QString skill_name = rx.capturedTexts().at(1);
         const Skill *skill = Sanguosha->getSkill(skill_name);
         if (skill) {
-            QString text = prompt_doc->toHtml();
-            text.append(tr("<br/> <b>Notice</b>: %1<br/>").arg(skill->getNotice(index)));
-            prompt_doc->setHtml(text);
+            prompt_doc.append("\n");
+            prompt_doc.append(tr("Notice: %1").arg(skill->getNotice(index)));
+            qDebug() << "client";
+            qDebug() << prompt_doc;
         }
     }
 
@@ -958,12 +959,14 @@ void Client::askForSkillInvoke(const QVariant &arg)
 
     QString text;
     if (data.isEmpty()) {
-        text = tr("Do you want to invoke skill [%1] ?").arg(Sanguosha->translate(skill_name));
-        prompt_doc->setHtml(text);
+        prompt_doc = tr("Do you want to invoke skill [%1] ?").arg(Sanguosha->translate(skill_name));
+        qDebug() << "client";
+        qDebug() << prompt_doc;
     } else if (data.startsWith("playerdata:")) {
         QString name = getPlayerName(data.split(":").last());
-        text = tr("Do you want to invoke skill [%1] to %2 ?").arg(Sanguosha->translate(skill_name)).arg(name);
-        prompt_doc->setHtml(text);
+        prompt_doc = tr("Do you want to invoke skill [%1] to %2 ?").arg(Sanguosha->translate(skill_name)).arg(name);
+        qDebug() << "client";
+        qDebug() << prompt_doc;
     } else if (skill_name.startsWith("cv_")) {
         setPromptList(QStringList() << "@sp_convert" << QString() << QString() << data);
     } else {
@@ -987,14 +990,14 @@ void Client::askForSurrender(const QVariant &initiator)
     if (!isString(initiator))
         return;
 
-    QString text = tr("%1 initiated a vote for disadvataged side to claim "
-                      "capitulation. Click \"OK\" to surrender or \"Cancel\" to resist.")
-                       .arg(Sanguosha->translate(initiator.toString()));
-    text.append(tr("<br/> <b>Notice</b>: if all people on your side decides to surrender. "
-                   "You'll lose this game."));
+    QString prompt_doc = tr("%1 initiated a vote for disadvataged side to claim "
+                            "capitulation. Click \"OK\" to surrender or \"Cancel\" to resist.")
+                             .arg(Sanguosha->translate(initiator.toString()));
+    prompt_doc.append("\n");
+    prompt_doc.append(tr("Notice: if all people on your side decides to surrender. "
+                         "You'll lose this game."));
     skill_name = "surrender";
 
-    prompt_doc->setHtml(text);
     setStatus(AskForSkillInvoke);
 }
 
@@ -1002,7 +1005,9 @@ void Client::askForLuckCard(const QVariant &)
 {
     skill_to_invoke = "luck_card";
     skill_to_invoke_data = QString();
-    prompt_doc->setHtml(tr("Do you want to use the luck card?"));
+    prompt_doc = tr("Do you want to use the luck card?");
+    qDebug() << "client";
+    qDebug() << prompt_doc;
     setStatus(AskForSkillInvoke);
 }
 
@@ -1038,14 +1043,18 @@ void Client::askForNullification(const QVariant &arg)
     }
 
     if (source == NULL) {
-        prompt_doc->setHtml(tr("Do you want to use nullification to trick card %1 from %2?")
-                                .arg(Sanguosha->translate(trick_card->objectName()))
-                                .arg(getPlayerName(target_player->objectName())));
+        prompt_doc = tr("Do you want to use nullification to trick card %1 from %2?")
+                         .arg(Sanguosha->translate(trick_card->objectName()))
+                         .arg(getPlayerName(target_player->objectName()));
+        qDebug() << "client";
+        qDebug() << prompt_doc;
     } else {
-        prompt_doc->setHtml(tr("%1 used trick card %2 to %3 <br>Do you want to use nullification?")
-                                .arg(getPlayerName(source->objectName()))
-                                .arg(Sanguosha->translate(trick_name))
-                                .arg(getPlayerName(target_player->objectName())));
+        prompt_doc = tr("%1 used trick card %2 to %3 \nDo you want to use nullification?")
+                         .arg(getPlayerName(source->objectName()))
+                         .arg(Sanguosha->translate(trick_name))
+                         .arg(getPlayerName(target_player->objectName()));
+        qDebug() << "client";
+        qDebug() << prompt_doc;
     }
 
     _m_roomState.setCurrentCardUsePattern("nullification");
@@ -1168,8 +1177,10 @@ QTextDocument *Client::getLinesDoc() const
     return lines_doc;
 }
 
-QTextDocument *Client::getPromptDoc() const
+QString Client::getPromptDoc() const
 {
+    qDebug() << "client_ret";
+    qDebug() << prompt_doc;
     return prompt_doc;
 }
 
@@ -1258,7 +1269,9 @@ void Client::askForDiscard(const QVariant &reqvar)
             prompt.append("<br/>");
             prompt.append(tr("%1 %2 cards(s) are required at least").arg(min_num).arg(m_canDiscardEquip ? "" : tr("hand")));
         }
-        prompt_doc->setHtml(prompt);
+        prompt_doc = prompt;
+        qDebug() << "client";
+        qDebug() << prompt_doc;
     } else {
         QStringList texts = prompt.split(":");
         if (texts.length() < 4) {
@@ -1294,8 +1307,9 @@ void Client::askForExchange(const QVariant &exchange)
     m_cardDiscardPattern = pattern;
 
     if (prompt.isEmpty()) {
-        prompt = tr("Please give %1 cards to exchange").arg(discard_num);
-        prompt_doc->setHtml(prompt);
+        prompt_doc = tr("Please give %1 cards to exchange").arg(discard_num);
+    qDebug() << "client";
+    qDebug() << prompt_doc;
     } else {
         QStringList texts = prompt.split(":");
         if (texts.length() < 4) {
@@ -1640,11 +1654,15 @@ void Client::askForSinglePeach(const QVariant &arg)
     QStringList pattern;
     pattern << "peach";
     if (dying == Self) {
-        prompt_doc->setHtml(tr("You are dying, please provide %1 peach(es)(or analeptic) to save yourself").arg(peaches));
+        prompt_doc = tr("You are dying, please provide %1 peach(es)(or analeptic) to save yourself").arg(peaches);
+        qDebug() << "client";
+        qDebug() << prompt_doc;
         pattern << "analeptic";
     } else {
         QString dying_general = getPlayerName(dying->objectName());
-        prompt_doc->setHtml(tr("%1 is dying, please provide %2 peach(es) to save him").arg(dying_general).arg(peaches));
+        prompt_doc = tr("%1 is dying, please provide %2 peach(es) to save him").arg(dying_general).arg(peaches);
+        qDebug() << "client";
+        qDebug() << prompt_doc;
     }
     if (Self->getMark("Global_PreventPeach") > 0) {
         bool has_skill = false;
@@ -1678,7 +1696,9 @@ void Client::askForCardShow(const QVariant &requestor)
     if (!isString(requestor))
         return;
     QString name = Sanguosha->translate(requestor.toString());
-    prompt_doc->setHtml(tr("%1 request you to show one hand card").arg(name));
+    prompt_doc = tr("%1 request you to show one hand card").arg(name);
+    qDebug() << "client";
+    qDebug() << prompt_doc;
 
     _m_roomState.setCurrentCardUsePattern(".");
     setStatus(AskForShowOrPindian);
@@ -1825,11 +1845,15 @@ void Client::askForPindian(const QVariant &ask_str)
     if (!JsonUtils::isStringArray(ask, 0, 1))
         return;
     QString from = ask[0].toString();
-    if (from == Self->objectName())
-        prompt_doc->setHtml(tr("Please play a card for pindian"));
-    else {
+    if (from == Self->objectName()) {
+        prompt_doc = tr("Please play a card for pindian");
+        qDebug() << "client";
+        qDebug() << prompt_doc;
+    } else {
         QString requestor = getPlayerName(from);
-        prompt_doc->setHtml(tr("%1 ask for you to play a card to pindian").arg(requestor));
+        prompt_doc = tr("%1 ask for you to play a card to pindian").arg(requestor);
+        qDebug() << "client";
+        qDebug() << prompt_doc;
     }
     _m_roomState.setCurrentCardUsePattern(".");
     setStatus(AskForShowOrPindian);
@@ -1854,9 +1878,11 @@ void Client::askForYiji(const QVariant &ask_str)
         }
         setPromptList(texts);
     } else {
-        prompt_doc->setHtml(tr("Please distribute %1 cards %2 as you wish")
-                                .arg(count)
-                                .arg(m_isDiscardActionRefusable ? QString() : tr("to another player")));
+        prompt_doc = tr("Please distribute %1 cards %2 as you wish")
+                          .arg(count)
+                          .arg(m_isDiscardActionRefusable ? QString() : tr("to another player"));
+        qDebug() << "client";
+        qDebug() << prompt_doc;
     }
 
     //@todo: use cards directly rather than the QString
@@ -1899,7 +1925,9 @@ void Client::askForPlayerChosen(const QVariant &players)
         if (!description.isEmpty() && description != skill_name)
             text.append(tr("<br/> <b>Source</b>: %1<br/>").arg(description));
     }
-    prompt_doc->setHtml(text);
+    prompt_doc = text;
+    qDebug() << "client";
+    qDebug() << prompt_doc;
 
     setStatus(AskForPlayerChoose);
 }

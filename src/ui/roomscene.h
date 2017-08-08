@@ -317,7 +317,7 @@ private:
     QGraphicsProxyWidget *chat_box_widget;
     QGraphicsProxyWidget *log_box_widget;
     QGraphicsProxyWidget *chat_edit_widget;
-    QGraphicsTextItem *prompt_box_widget;
+    QGraphicsPixmapItem *prompt_box_widget;
     ChatWidget *chat_widget;
     QPixmap m_rolesBoxBackground;
     QGraphicsPixmapItem *m_rolesBox;

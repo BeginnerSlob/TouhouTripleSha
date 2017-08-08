@@ -96,7 +96,11 @@ public:
     QString getSkillNameToInvokeData() const;
 
     QTextDocument *getLinesDoc() const;
-    QTextDocument *getPromptDoc() const;
+    QString getPromptDoc() const;
+    inline void clearPromptDoc()
+    {
+        prompt_doc = QString();
+    }
 
     typedef void (Client::*CallBack)(const QVariant &);
 
@@ -271,7 +275,8 @@ private:
     QStringList ban_packages;
     Recorder *recorder;
     Replayer *replayer;
-    QTextDocument *lines_doc, *prompt_doc;
+    QTextDocument *lines_doc;
+    QString prompt_doc;
     int pile_num;
     QString skill_to_invoke;
     QString skill_to_invoke_data;
