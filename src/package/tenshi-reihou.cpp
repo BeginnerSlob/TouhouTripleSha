@@ -3928,46 +3928,46 @@ public:
     }
 };
 
-RhXianmingCard::RhXianmingCard()
+RhNajieCard::RhNajieCard()
 {
     target_fixed = true;
     will_throw = false;
     handling_method = MethodNone;
 }
 
-void RhXianmingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+void RhNajieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
-    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "rhxianming", QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "rhnajie", QString());
     room->throwCard(this, reason, source);
 }
 
-class RhXianmingVS : public OneCardViewAsSkill
+class RhNajieVS : public OneCardViewAsSkill
 {
 public:
-    RhXianmingVS()
-        : OneCardViewAsSkill("rhxianming")
+    RhNajieVS()
+        : OneCardViewAsSkill("rhnajie")
     {
         expand_pile = "tea";
         filter_pattern = ".|.|.|tea";
-        response_pattern = "@@rhxianming";
+        response_pattern = "@@rhnajie";
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
     {
-        Card *card = new RhXianmingCard;
+        Card *card = new RhNajieCard;
         card->addSubcard(originalCard);
         return card;
     }
 };
 
-class RhXianming : public TriggerSkill
+class RhNajie : public TriggerSkill
 {
 public:
-    RhXianming()
-        : TriggerSkill("rhxianming")
+    RhNajie()
+        : TriggerSkill("rhnajie")
     {
         events << EventAcquireSkill << TargetSpecified;
-        view_as_skill = new RhXianmingVS;
+        view_as_skill = new RhNajieVS;
     }
 
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
@@ -3993,7 +3993,7 @@ public:
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
     {
         if (triggerEvent == EventAcquireSkill) {
-            const Card *dummy = room->askForExchange(ask_who, objectName(), 998, 1, false, "@rhxianming-invoke", true);
+            const Card *dummy = room->askForExchange(ask_who, objectName(), 998, 1, false, "@rhnajie-invoke", true);
             if (dummy) {
                 room->sendCompulsoryTriggerLog(ask_who, objectName());
                 room->broadcastSkillInvoke(objectName());
@@ -4001,7 +4001,7 @@ public:
                 delete dummy;
             }
         } else if (triggerEvent == TargetSpecified)
-            return room->askForUseCard(ask_who, "@@rhxianming", "@rhxianming", -1, Card::MethodNone);
+            return room->askForUseCard(ask_who, "@@rhnajie", "@rhnajie", -1, Card::MethodNone);
 
         return false;
     }
@@ -4018,11 +4018,11 @@ public:
     }
 };
 
-class RhXianmingClear : public TriggerSkill
+class RhNajieClear : public TriggerSkill
 {
 public:
-    RhXianmingClear()
-        : TriggerSkill("#rhxianming")
+    RhNajieClear()
+        : TriggerSkill("#rhnajie")
     {
         events << EventLoseSkill;
         frequency = NotCompulsory;
@@ -4030,7 +4030,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
-        if (data.toString() == "rhxianming") {
+        if (data.toString() == "rhnajie") {
             if (!player->getPile("tea").isEmpty())
                 return QStringList(objectName());
         }
@@ -4039,7 +4039,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        room->sendCompulsoryTriggerLog(player, "rhxianming");
+        room->sendCompulsoryTriggerLog(player, "rhnajie");
         room->broadcastSkillInvoke(objectName());
         player->clearOnePrivatePile("tea");
         return false;
@@ -4748,9 +4748,9 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou043->addSkill(new RhChuilu);
 
     General *reihou044 = new General(this, "reihou044", "rei", 4, true, true);
-    reihou044->addSkill(new RhXianming);
-    reihou044->addSkill(new RhXianmingClear);
-    related_skills.insertMulti("rhxianming", "#rhxianming");
+    reihou044->addSkill(new RhNajie);
+    reihou044->addSkill(new RhNajieClear);
+    related_skills.insertMulti("rhnajie", "#rhnajie");
 
     General *reihou045 = new General(this, "reihou045", "rei", 4, true, true);
     reihou045->addSkill(new RhXiaozhang);
@@ -4785,7 +4785,7 @@ TenshiReihouPackage::TenshiReihouPackage()
     addMetaObject<RhYizhiCard>();
     addMetaObject<RhShiguangCard>();
     addMetaObject<RhChenshengCard>();
-    addMetaObject<RhXianmingCard>();
+    addMetaObject<RhNajieCard>();
     addMetaObject<RhXiaozhangCard>();
     addMetaObject<RhZhangchiCard>();
 

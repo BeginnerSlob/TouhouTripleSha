@@ -185,12 +185,12 @@ public:
     virtual const Card *validate(CardUseStruct &card_use) const;
 };
 
-class RhXianmingCard : public SkillCard
+class RhNajieCard : public SkillCard
 {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE RhXianmingCard();
+    Q_INVOKABLE RhNajieCard();
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
