@@ -764,10 +764,10 @@ public:
     {
         DeathStruct death = data.value<DeathStruct>();
         if (death.who == player) {
-            if (death.who->getRole() == "royalist")
+            if (death.who->getRole() == "loyalist")
                 return QStringList();
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                if (p->getRole() == "royalist")
+                if (p->getRole() == "loyalist")
                     return QStringList();
             }
             if (death.damage && death.damage->from && death.damage->from == room->getLord())
