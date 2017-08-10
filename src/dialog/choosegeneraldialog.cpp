@@ -7,6 +7,7 @@
 #include "skin-bank.h"
 
 #include <QCheckBox>
+#include <QFontDatabase>
 #include <QGridLayout>
 #include <QLabel>
 #include <QLineEdit>
@@ -33,8 +34,10 @@ OptionButton::OptionButton(QString icon_path, const QString &caption, QWidget *p
         setText(caption);
         setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 
-        QFont font = Config.SmallFont;
-        font.setPixelSize(Config.SmallFont.pixelSize() - 8);
+        int fontId = QFontDatabase::addApplicationFont("font/home.ttf");
+        QString fzlb = QFontDatabase::applicationFontFamilies(fontId).at(0);
+        QFont font = QFont(fzlb);
+        font.setPixelSize(19);
         setFont(font);
     }
 }
@@ -106,8 +109,15 @@ ChooseGeneralDialog::ChooseGeneralDialog(const QStringList &general_names, QWidg
     }
     foreach (const General *general, generals) {
         QString caption;
-        if (general != NULL)
-            caption = general->getTranslatedName();
+        if (general != NULL) {
+            caption = Sanguosha->translate(general->objectName());
+            if (caption.length() > 8) {
+                QString name = "&" + general->objectName();
+                QString translated = Sanguosha->translate(name);
+                if (translated != name)
+                    caption = translated;
+            }
+        }
         OptionButton *button = new OptionButton(QString(), caption);
         if (no_icon) {
             button->setIcon(QIcon("image/system/no-general-icon.png"));
