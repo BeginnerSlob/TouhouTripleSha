@@ -6020,9 +6020,8 @@ public:
                 return QStringList();
         } else if (triggerEvent == CardsMoveOneTime) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.to != player || move.to_place != Player::PlaceEquip)
-                return QStringList();
-            else if (move.from != player && !move.from_places.contains(Player::PlaceEquip))
+            if (!((move.to == player && move.to_place == Player::PlaceEquip)
+                  || (move.from == player && move.from_places.contains(Player::PlaceEquip))))
                 return QStringList();
         }
 
@@ -6033,7 +6032,7 @@ public:
         detached_skills.clear();
         IkHonglianChange(room, player);
         if (!acquired_skills.isEmpty() || !detached_skills.isEmpty())
-            room->handleAcquireDetachSkills(player, acquired_skills + detached_skills, true, true);
+            room->handleAcquireDetachSkills(player, acquired_skills + detached_skills, false, true);
         return QStringList();
     }
 
