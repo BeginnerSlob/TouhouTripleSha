@@ -169,13 +169,13 @@ void Window::setTitle(const QString &title)
     JsonArray array;
     array << "DroidSansFallback";
     JsonArray array2;
-    array2 << 25 << 25 << 0;
+    array2 << 16 << 16 << 0;
     array << QVariant::fromValue(array2) << 2;
     JsonArray array4;
     array4 << 228 << 213 << 160 << 255;
     array << QVariant::fromValue(array4);
     font.tryParse(array);
 
-    QRect rect(0, 20, boundingRect().width(), 40);
+    QRect rect(0, 20, boundingRect().width(), 30);
     font.paintText(titleItem, rect, Qt::AlignCenter, title);
 }
