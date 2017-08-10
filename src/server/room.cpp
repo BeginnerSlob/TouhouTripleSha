@@ -2775,6 +2775,7 @@ bool Room::makeSurrender(ServerPlayer *initiator)
     notifyMoveFocus(playersAlive, S_COMMAND_SURRENDER);
     doBroadcastRequest(playersAlive, S_COMMAND_SURRENDER);
 
+    QList<ServerPlayer *> refuse;
     // collect polls
     foreach (ServerPlayer *player, playersAlive) {
         bool result = true;
@@ -2784,7 +2785,7 @@ bool Room::makeSurrender(ServerPlayer *initiator)
             result = player->getClientReply().toBool();
 
         if (!result)
-            setAchievementData(player, "dswjj", true);
+            refuse << player;
 
         QString playerRole = player->getRole();
         if (playerRole == "loyalist" || playerRole == "lord")
@@ -2815,6 +2816,9 @@ bool Room::makeSurrender(ServerPlayer *initiator)
         thread->trigger(BeforeGameOver, this, getOwner(), _data);
         gameOver(".", true);
     }
+
+    foreach (ServerPlayer *p, refuse)
+        setAchievementData(p, "dswjj", true);
 
     m_surrenderRequestReceived = false;
 
