@@ -207,9 +207,9 @@
     "width": [134, 67, 45], 
     "textArea": [[19, -3, 112, 20], [21, -3, 44, 20], [8, -3, 40, 20]],
     "textAreaDown": [[20, -2, 112, 20], [22, -2, 44, 20], [9, -2, 40, 20]],
-    "textFont": [["font/home.ttf", [12, 12, 2], 50, [0, 0, 0, 255], 1, 1, [0, 0], [255, 255, 190, 128]],  // wide
-                 ["font/home.ttf", [12, 12, 1], 50, [0, 0, 0, 255], 1, 1, [0, 0], [255, 255, 190, 128]],  // medium
-                 ["font/home.ttf", [12, 12, 0], 50, [0, 0, 0, 255], 1, 1, [0, 0], [255, 255, 190, 128]]],  // narrow
+    "textFont": [["font/home.ttf", [16, 13, 2], 25, [0, 0, 0, 255], 1, 1, [0, 0], [255, 255, 190, 128]],  // wide
+                 ["font/home.ttf", [16, 13, 1], 25, [0, 0, 0, 255], 1, 1, [0, 0], [255, 255, 190, 128]],  // medium
+                 ["font/home.ttf", [16, 13, 0], 25, [0, 0, 0, 255], 1, 1, [0, 0], [255, 255, 190, 128]]],  // narrow
 
     // The following settings override the text color defined above
     // xxButtonColor = [normalColor, downColor, disabledColor, hoverColor]
