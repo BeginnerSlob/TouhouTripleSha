@@ -409,7 +409,8 @@ SelectSuitDialog::SelectSuitDialog()
 
     button_layout = new QVBoxLayout;
     setLayout(button_layout);
-    connect(group, (void (QButtonGroup::*)(QAbstractButton *))(&QButtonGroup::buttonClicked), this, &SelectSuitDialog::selectSuit);
+    connect(group, (void (QButtonGroup::*)(QAbstractButton *))(&QButtonGroup::buttonClicked), this,
+            &SelectSuitDialog::selectSuit);
 }
 
 void SelectSuitDialog::popup()
@@ -2185,7 +2186,8 @@ IkLingchaDialog::IkLingchaDialog()
 
     button_layout = new QVBoxLayout;
     setLayout(button_layout);
-    connect(group, (void (QButtonGroup::*)(QAbstractButton *))(&QButtonGroup::buttonClicked), this, &IkLingchaDialog::selectCard);
+    connect(group, (void (QButtonGroup::*)(QAbstractButton *))(&QButtonGroup::buttonClicked), this,
+            &IkLingchaDialog::selectCard);
 }
 
 void IkLingchaDialog::popup()
@@ -6239,12 +6241,16 @@ void IkSuyiCard::onEffect(const CardEffectStruct &effect) const
     Room *room = effect.from->getRoom();
     QStringList choices;
     choices << "draw";
-    if (effect.to->canDiscard(effect.to, "h"))
+    if (effect.from->canDiscard(effect.to, "h"))
         choices << "discard";
     QString choice = room->askForChoice(effect.from, "iksuyi", choices.join("+"));
-    if (choice == "discard")
-        room->askForDiscard(effect.to, "iksuyi", 1, 1);
-    else
+    if (choice == "discard") {
+        int card_id = room->askForCardChosen(effect.from, effect.to, "h", "iksuyi", false, MethodDiscard);
+        room->throwCard(Sanguosha->getCard(card_id),
+                        CardMoveReason(CardMoveReason::S_REASON_DISMANTLE, effect.from->objectName(), effect.to->objectName(),
+                                       "iksuyi", QString()),
+                        effect.to, effect.from);
+    } else
         effect.to->drawCards(1, "iksuyi");
 }
 
@@ -6830,7 +6836,7 @@ IkaiKaPackage::IkaiKaPackage()
     General *bloom034 = new General(this, "bloom034", "hana");
     bloom034->addSkill(new IkQizhong);
 
-    General *bloom035 = new General(this, "bloom035", "hana");
+    General *bloom035 = new General(this, "bloom035", "hana", 4, true, true);
     bloom035->addSkill(new IkDuduan);
     bloom035->addSkill(new IkDuduanMaxCards);
     related_skills.insertMulti("ikduduan", "#ikduduan");
@@ -6959,7 +6965,7 @@ IkaiKaPackage::IkaiKaPackage()
     General *luna033 = new General(this, "luna033", "tsuki", 3);
     luna033->addSkill(new IkXianlv);
 
-    General *luna036 = new General(this, "luna036", "tsuki");
+    General *luna036 = new General(this, "luna036", "tsuki", 4, true, true);
     luna036->addSkill(new IkLianwu);
     luna036->addSkill(new IkLianwuDistance);
     luna036->addSkill(new IkLianwuTargetMod);

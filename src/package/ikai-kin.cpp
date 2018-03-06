@@ -1593,6 +1593,40 @@ public:
     }
 };
 
+class IkXuanrenTrigger : public TriggerSkill
+{
+public:
+    IkXuanrenTrigger()
+        : TriggerSkill("#ikxuanren-trigger")
+    {
+        events << CardUsed << CardResponded;
+        frequency = NotCompulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *, ServerPlayer *, QVariant &d, ServerPlayer *&) const
+    {
+        const Card *card = NULL;
+        if (e == CardUsed) {
+            card = d.value<CardUseStruct>().card;
+        } else if (e == CardResponded) {
+            CardResponseStruct resp = data.value<CardResponseStruct>();
+            if (resp.m_isUse)
+                card = resp.m_card;
+        }
+        if (card && card->isKindOf("Slash") && card->getSkillName() == "ikxuanren" && card->isRed())
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, "ikxuanren");
+        player->drawCards(1, "ikxuanren");
+        return false;
+    }
+
+};
+
 class IkXuanrenTargetMod : public TargetModSkill
 {
 public:
@@ -8358,9 +8392,11 @@ IkaiKinPackage::IkaiKinPackage()
     wind032->addRelateSkill("ikchilian");
     wind032->addRelateSkill("ikyipao");
 
-    General *wind037 = new General(this, "wind037", "kaze");
+    General *wind037 = new General(this, "wind037", "kaze", 4, true, true);
     wind037->addSkill(new IkXuanren);
+    wind037->addSkill(new IkXuanrenTrigger);
     wind037->addSkill(new IkXuanrenTargetMod);
+    related_skills.insertMulti("ikxuanren", "#ikxuanren-trigger");
     related_skills.insertMulti("ikxuanren", "#ikxuanren-target");
     wind037->addSkill(new IkLanjian);
 
