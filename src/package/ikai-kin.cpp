@@ -1609,7 +1609,7 @@ public:
         if (e == CardUsed) {
             card = d.value<CardUseStruct>().card;
         } else if (e == CardResponded) {
-            CardResponseStruct resp = data.value<CardResponseStruct>();
+            CardResponseStruct resp = d.value<CardResponseStruct>();
             if (resp.m_isUse)
                 card = resp.m_card;
         }

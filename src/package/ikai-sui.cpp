@@ -2129,8 +2129,8 @@ public:
             }
         } else if (e == CardsMoveOneTime) {
             CardsMoveOneTimeStruct move = d.value<CardsMoveOneTimeStruct>();
-            if (move.from == player && move.from_places.contains(Player::PlaceHand) && move.is_last_handcard) {
-                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+            if (move.from == p && move.from_places.contains(Player::PlaceHand) && move.is_last_handcard) {
+                foreach (ServerPlayer *p, r->findPlayersBySkillName(objectName())) {
                     if (p->hasFlag("IkYingzhiUsed"))
                         continue;
                     if (p->getPile("sincerity").isEmpty())
@@ -3214,7 +3214,7 @@ public:
                     r->removePlayerMark(player, "@snow");
                 if (p->getMark("@snow") > 0) {
                     foreach (ServerPlayer *player, r->findPlayersBySkillName(objectName()))
-                        skill_list.insert(player, objectName());
+                        skill_list.insert(player, QStringList(objectName()));
                 }
             }
         } else if (p->getMark("@snow") > 0) {
@@ -3227,10 +3227,10 @@ public:
                     }
                 }
             } else if (e == Death) {
-                DeathStruct death = data.value<DeathStruct>();
+                DeathStruct death = d.value<DeathStruct>();
                 if (death.who->hasFlag("IkAoxueUsing")) {
                     r->setPlayerFlag(death.who, "-IkAoxueUsing");
-                    room->removeFixedDistance(p, death.who, 1);
+                    r->removeFixedDistance(p, death.who, 1);
                     r->removePlayerMark(death.who, "Armor_Nullified");
                 }
                 if (death.who == p) {
@@ -3247,11 +3247,12 @@ public:
         return skill_list;
     }
 
-    virtual bool effect(TriggerEvent, Room *r, ServerPlayer *p, QVariant &d, ServerPlayer *w) const
+    virtual bool effect(TriggerEvent, Room *r, ServerPlayer *p, QVariant &, ServerPlayer *w) const
     {
         r->setPlayerFlag(w, "IkAoxueUsing");
         r->setFixedDistance(p, w, 1);
         r->addPlayerMark(w, "Armor_Nullified");
+        return false;
     }
 };
 
