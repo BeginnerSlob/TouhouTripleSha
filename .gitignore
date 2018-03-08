@@ -13,7 +13,7 @@ config.ini
 swig/sanguosha_wrap.cxx
 records/*
 users.db
-doc/*.html
+docs/wiki.html_backup/*
 swig/*.bat
 .DS_Store
 liblua5.1.dylib
