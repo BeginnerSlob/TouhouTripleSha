@@ -1730,65 +1730,6 @@ public:
     }
 };
 
-IkYuzhiCard::IkYuzhiCard()
-{
-    target_fixed = true;
-}
-
-void IkYuzhiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
-{
-    int n = subcardsLength() * 2;
-    QList<int> card_ids = room->getNCards(n, false);
-    CardMoveReason reason1(CardMoveReason::S_REASON_TURNOVER, source->objectName(), "ikyuzhi", QString());
-    CardsMoveStruct move(card_ids, NULL, Player::PlaceTable, reason1);
-    room->moveCardsAtomic(move, true);
-    room->getThread()->delay();
-    room->getThread()->delay();
-
-    DummyCard get;
-    DummyCard thro;
-
-    foreach (int id, card_ids) {
-        if (Sanguosha->getCard(id)->isKindOf("TrickCard"))
-            get.addSubcard(id);
-        else
-            thro.addSubcard(id);
-    }
-
-    if (get.subcardsLength() > 0)
-        source->obtainCard(&get);
-
-    if (thro.subcardsLength() > 0) {
-        CardMoveReason reason2(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), "ikyuzhi", QString());
-        room->throwCard(&thro, reason2, NULL);
-    }
-}
-
-class IkYuzhiVS : public ViewAsSkill
-{
-public:
-    IkYuzhiVS()
-        : ViewAsSkill("ikyuzhi")
-    {
-        response_pattern = "@@ikyuzhi";
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const
-    {
-        return to_select->isKindOf("EquipCard") && !Self->isJilei(to_select);
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const
-    {
-        if (cards.length() == 0)
-            return NULL;
-
-        IkYuzhiCard *jq = new IkYuzhiCard;
-        jq->addSubcards(cards);
-        return jq;
-    }
-};
-
 class IkYuzhi : public TriggerSkill
 {
 public:
@@ -1796,7 +1737,7 @@ public:
         : TriggerSkill("ikyuzhi")
     {
         events << EventPhaseStart;
-        view_as_skill = new IkYuzhiVS;
+        frequency = Frequent;
     }
 
     virtual bool triggerable(const ServerPlayer *target) const
@@ -1806,10 +1747,43 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        if (!player->canDiscard(player, "he"))
-            return false;
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
 
-        return room->askForUseCard(player, "@@ikyuzhi", "@ikyuzhi", -1, Card::MethodDiscard);
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        QList<int> card_ids = room->getNCards(3, false);
+        CardMoveReason reason1(CardMoveReason::S_REASON_TURNOVER, player->objectName(), objectName(), QString());
+        CardsMoveStruct move(card_ids, NULL, Player::PlaceTable, reason1);
+        room->moveCardsAtomic(move, true);
+        room->getThread()->delay();
+        room->getThread()->delay();
+
+        DummyCard get;
+        DummyCard thro;
+
+        foreach (int id, card_ids) {
+            if (Sanguosha->getCard(id)->isKindOf("TrickCard"))
+                get.addSubcard(id);
+            else
+                thro.addSubcard(id);
+        }
+
+        if (get.subcardsLength() > 0) {
+            if (room->askForCard(player, ".Equip", "@ikyuzhi", QVariant(), objectName()))
+                player->obtainCard(&get);
+            else
+                thro.addSubcards(get.getSubcards());
+        }
+
+        if (thro.subcardsLength() > 0) {
+            CardMoveReason reason2(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), objectName(), QString());
+            room->throwCard(&thro, reason2, NULL);
+        }
     }
 };
 
@@ -8957,7 +8931,6 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkTianbeiCard>();
     addMetaObject<IkDuanmengCard>();
     addMetaObject<IkFanzhongCard>();
-    addMetaObject<IkYuzhiCard>();
     addMetaObject<IkQixinCard>();
     addMetaObject<IkXinbanCard>();
     addMetaObject<IkHuyinCard>();

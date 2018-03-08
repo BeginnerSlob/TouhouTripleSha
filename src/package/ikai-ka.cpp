@@ -171,7 +171,7 @@ IkJilunCard::IkJilunCard()
 
 bool IkJilunCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    return targets.isEmpty() && Self->canDiscard(to_select, "e") && Self->inMyAttackRange(to_select);
+    return targets.isEmpty() && Self->canDiscard(to_select, "e");
 }
 
 void IkJilunCard::onEffect(const CardEffectStruct &effect) const
