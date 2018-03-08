@@ -1784,6 +1784,7 @@ public:
             CardMoveReason reason2(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), objectName(), QString());
             room->throwCard(&thro, reason2, NULL);
         }
+        return false;
     }
 };
 
