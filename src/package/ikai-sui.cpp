@@ -5670,13 +5670,13 @@ public:
     {
         TriggerList skill_list;
         if (player->getPhase() == Player::Start && player->getHandcardNum() <= 1) {
-            foreach (ServerPlayer *p, room->findPlayerBySkillName(objectName()))
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
                 skill_list.insert(p, QStringList(objectName()));
         }
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
         if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
             room->broadcastSkillInvoke(objectName());

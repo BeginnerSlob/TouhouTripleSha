@@ -8345,7 +8345,7 @@ IkJunanCard::IkJunanCard()
     handling_method = MethodNone;
 }
 
-bool IkJunanCard::onEffect(const CardEffectStruct &effect) const
+void IkJunanCard::onEffect(const CardEffectStruct &effect) const
 {
     CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "ikjunan",
                           QString());
