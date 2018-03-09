@@ -3517,7 +3517,7 @@ public:
             if (use.card->isKindOf("Slash")) {
                 if (!use.from->canSlash(owner, use.card, false))
                     return false;
-            } else if (use.card->isKindOf("Collateral") && use.card->getSkillName() != "iksizhuo") {
+            } else if (use.card->isKindOf("Collateral")) {
                 QList<ServerPlayer *> victims;
                 foreach (ServerPlayer *p, room->getOtherPlayers(owner)) {
                     if (owner->canSlash(p))
@@ -5666,61 +5666,43 @@ public:
         events << EventPhaseStart;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
     {
+        TriggerList skill_list;
         if (player->getPhase() == Player::Start && player->getHandcardNum() <= 1) {
-            if (room->findPlayerBySkillName(objectName()))
-                return QStringList(objectName());
+            foreach (ServerPlayer *p, room->findPlayerBySkillName(objectName()))
+                skill_list.insert(p, QStringList(objectName()));
         }
-        return QStringList();
+        return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
     {
-        QList<ServerPlayer *> chenglais;
-        foreach (ServerPlayer *p, room->getAlivePlayers()) {
-            if (p->hasSkill(objectName()))
-                chenglais << p;
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
         }
-
-        while (!chenglais.isEmpty()) {
-            ServerPlayer *chenglai = room->askForPlayerChosen(player, chenglais, objectName(), "@ikyanhuo-to", true);
-            if (chenglai) {
-                room->broadcastSkillInvoke(objectName());
-                room->notifySkillInvoked(chenglai, objectName());
-                LogMessage log;
-                log.type = "#InvokeOthersSkill";
-                log.from = player;
-                log.to << chenglai;
-                log.arg = objectName();
-                room->sendLog(log);
-
-                effect(NonTrigger, room, player, data, chenglai);
-                chenglais.removeOne(chenglai);
-            } else
-                break;
-
-            if (player->getHandcardNum() > 1)
-                break;
-        }
-
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *chenglai) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
         player->drawCards(1, objectName());
         if (!player->isKongcheng()) {
             int n = player->getHandcardNum();
             DummyCard *dummy = player->wholeHandCards();
-            chenglai->obtainCard(dummy, false);
+            CardMoveReason reason1(CardMoveReason::S_REASON_GIVE, player->objectName(), ask_who->objectName(), objectName(),
+                                   QString());
+            room->obtainCard(ask_who, dummy, reason1, false);
             delete dummy;
-            if (chenglai != player) {
+            if (ask_who != player) {
                 const Card *card
-                    = room->askForExchange(chenglai, objectName(), n, n, true, "@ikyanhuo-return:" + player->objectName());
+                    = room->askForExchange(ask_who, objectName(), n, n, true, "@ikyanhuo-return:" + player->objectName());
                 if (!card)
                     return false;
-                player->obtainCard(card, false);
+                CardMoveReason reason2(CardMoveReason::S_REASON_GIVE, ask_who->objectName(), player->objectName(),
+                                       objectName(), QString());
+                room->obtainCard(player, card, reason2, false);
                 delete card;
             }
         }

@@ -1144,16 +1144,12 @@ bool Collateral::isAvailable(const Player *player) const
 
 bool Collateral::targetsFeasible(const QList<const Player *> &targets, const Player *) const
 {
-    if (getSkillName() == "iksizhuo")
-        return !targets.isEmpty();
     return targets.length() == 2;
 }
 
 bool Collateral::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
     if (!targets.isEmpty()) {
-        if (getSkillName() == "iksizhuo")
-            return false;
         // @todo: fix this. We should probably keep the codes here, but change the code in
         // roomscene such that if it is collateral, then targetFilter's result is overrode
         Q_ASSERT(targets.length() <= 2);
@@ -1167,8 +1163,6 @@ bool Collateral::targetFilter(const QList<const Player *> &targets, const Player
         return slashFrom->canSlash(to_select);
     } else {
         if (!Self->hasFlag("ThChouceUse")) {
-            if (getSkillName() == "iksizhuo" && !to_select->inMyAttackRange(Self))
-                return false;
             if (!to_select->getWeapon() || to_select == Self)
                 return false;
         }
@@ -1210,9 +1204,6 @@ void Collateral::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &ta
 
 bool Collateral::doCollateral(Room *room, ServerPlayer *killer, ServerPlayer *victim, const QString &prompt) const
 {
-    if (getSkillName() == "iksizhuo")
-        return room->askForUseCard(killer, "slash", prompt);
-
     bool useSlash = false;
     if (killer->canSlash(victim, NULL, false))
         useSlash = room->askForUseSlashTo(killer, victim, prompt);
@@ -1227,16 +1218,14 @@ void Collateral::onEffect(const CardEffectStruct &effect) const
     ServerPlayer *victim = effect.to->tag["collateralVictim"].value<ServerPlayer *>();
     effect.to->tag.remove("collateralVictim");
     CardMoveReason reason(CardMoveReason::S_REASON_GIVE, killer->objectName(), source->objectName(), objectName(), QString());
-    if (getSkillName() != "iksizhuo" && (!victim || victim->isDead())) {
+    if (!victim || victim->isDead()) {
         if (source->isAlive() && killer->isAlive() && killer->getWeapon())
             room->obtainCard(source, killer->getWeapon(), reason);
         return;
     }
 
     QString prompt;
-    if (getSkillName() == "iksizhuo")
-        prompt = QString("collateralex-slash:%1").arg(source->objectName());
-    else if (victim)
+    if (victim)
         prompt = QString("collateral-slash:%1:%2").arg(victim->objectName()).arg(source->objectName());
 
     room->setPlayerFlag(source, "CollateralSource");

@@ -6001,6 +6001,7 @@ IkaiMokuPackage::IkaiMokuPackage()
 
     General *wind009 = new General(this, "wind009", "kaze");
     wind009->addSkill(new IkKuanggu);
+    wind009->addSkill("thjibu");
 
     General *wind010 = new General(this, "wind010", "kaze", 3);
     wind010->addSkill(new IkFuhua);

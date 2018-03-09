@@ -4,8 +4,8 @@
 #include "card.h"
 #include "package.h"
 #include "skill.h"
-#include "touhou-hana.h"
 #include "standard.h"
+#include "touhou-hana.h"
 
 class IkaiKinPackage : public Package
 {
@@ -490,9 +490,19 @@ class IkSizhuoCard : public SkillCard
 public:
     Q_INVOKABLE IkSizhuoCard();
 
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual const Card *validate(CardUseStruct &cardUse) const;
 };
 
+class IkJunanCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkJunanCard();
+
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
 
 #endif // IKAIKIN_H

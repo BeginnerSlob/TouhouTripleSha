@@ -957,7 +957,7 @@ public:
                     p->tag.remove("IkDongzhao");
                     if (extra && extra->isAlive() && !use.to.contains(extra)) {
                         use.to << extra;
-                        if (use.card->isKindOf("Collateral") && use.card->getSkillName() != "iksizhuo") {
+                        if (use.card->isKindOf("Collateral")) {
                             QList<ServerPlayer *> victims;
                             foreach (ServerPlayer *p, r->getOtherPlayers(extra)) {
                                 if (extra->canSlash(p))
@@ -1489,7 +1489,7 @@ public:
     {
         if (triggerEvent == CardFinished && TriggerSkill::triggerable(player)) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (!use.card || !use.card->isBlack() || !use.card->isKindOf("Slash"))
+            if (!use.card || !use.card->isKindOf("Slash"))
                 return QStringList();
             foreach (ServerPlayer *to, use.to)
                 if (to->getMark("@speed") > 0)
@@ -2483,7 +2483,7 @@ public:
             if (move.from == player && move.to_place == Player::DiscardPile) {
                 foreach (int id, move.card_ids) {
                     const Card *card = Sanguosha->getCard(id);
-                    if (card->isKindOf("Jink") || card->isKindOf("Weapon"))
+                    if (card->isKindOf("Jink") || card->isKindOf("EquipCard"))
                         return QStringList(objectName());
                 }
             }
@@ -2497,7 +2497,7 @@ public:
         QList<int> ids, disabled_ids;
         foreach (int id, move.card_ids) {
             const Card *card = Sanguosha->getCard(id);
-            if (card->isKindOf("Jink") || card->isKindOf("Weapon"))
+            if (card->isKindOf("Jink") || card->isKindOf("EquipCard"))
                 ids << id;
             else
                 disabled_ids << id;
@@ -2671,7 +2671,7 @@ public:
                         continue;
                     if (use.from->getMark("iksheji_" + p->objectName()) > 0) {
                         use.to << p;
-                        if (use.card->isKindOf("Collateral") && use.card->getSkillName() != "iksizhuo") {
+                        if (use.card->isKindOf("Collateral")) {
                             QList<ServerPlayer *> victims;
                             foreach (ServerPlayer *p2, room->getOtherPlayers(p)) {
                                 if (p->canSlash(p2))
@@ -3529,11 +3529,15 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
-        QString choice = room->askForChoice(ask_who, objectName(), "draw+max");
-        if (choice == "draw")
-            player->drawCards(1, objectName());
+        QStringList choices;
+        choices << "draw";
+        if (player->canDiscard(player, "he"))
+            choices << "throw";
+        QString choice = room->askForChoice(ask_who, objectName(), choices.join("+"));
+        if (choice == "throw")
+            room->askForDiscard(player, objectName(), 1, 1, false, true);
         else
-            room->addPlayerMark(player, "iklianxiao_max");
+            player->drawCards(1, objectName());
         return false;
     }
 };
@@ -3559,26 +3563,12 @@ public:
                     p->setMark("iklianxiao", 1);
             }
         } else if (triggerEvent == EventPhaseChanging) {
-            foreach (ServerPlayer *p, room->getAlivePlayers())
-                p->setMark("iklianxiao", 0);
-            if (data.value<PhaseChangeStruct>().to == Player::NotActive)
-                room->setPlayerMark(player, "iklianxiao_max", 0);
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    p->setMark("iklianxiao", 0);
+            }
         }
         return QStringList();
-    }
-};
-
-class IkLianxiaoMaxCards : public MaxCardsSkill
-{
-public:
-    IkLianxiaoMaxCards()
-        : MaxCardsSkill("#iklianxiao-max")
-    {
-    }
-
-    virtual int getExtra(const Player *target) const
-    {
-        return -target->getMark("iklianxiao_max");
     }
 };
 
@@ -6911,9 +6901,7 @@ IkaiKaPackage::IkaiKaPackage()
     General *snow046 = new General(this, "snow046", "yuki");
     snow046->addSkill(new IkLianxiao);
     snow046->addSkill(new IkLianxiaoRecord);
-    snow046->addSkill(new IkLianxiaoMaxCards);
     related_skills.insertMulti("iklianxiao", "#iklianxiao-record");
-    related_skills.insertMulti("iklianxiao", "#iklianxiao-max");
 
     General *snow048 = new General(this, "snow048", "yuki");
     snow048->addSkill(new IkQile);

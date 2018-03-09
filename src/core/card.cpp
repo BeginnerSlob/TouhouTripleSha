@@ -722,7 +722,7 @@ void Card::onUse(Room *room, const CardUseStruct &use) const
     log.card_str = card_use.card->toString(hidden);
     room->sendLog(log);
 
-    if (card_use.card->isKindOf("Collateral") && card_use.card->getSkillName() != "iksizhuo") { // put it here for I don't wanna repeat these codes in Card::onUse
+    if (card_use.card->isKindOf("Collateral")) { // put it here for I don't wanna repeat these codes in Card::onUse
         ServerPlayer *victim = card_use.to.first()->tag["collateralVictim"].value<ServerPlayer *>();
         if (victim) {
             LogMessage log;
