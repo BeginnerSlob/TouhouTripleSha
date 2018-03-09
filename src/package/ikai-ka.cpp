@@ -3509,7 +3509,7 @@ public:
     virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
     {
         TriggerList skill_list;
-        if (player->getPhase() != Player::Play)
+        if (player->getPhase() != Player::Discard)
             return skill_list;
         foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
             if (owner->getMark(objectName()) == 0 && (owner->inMyAttackRange(player) || owner == player))
