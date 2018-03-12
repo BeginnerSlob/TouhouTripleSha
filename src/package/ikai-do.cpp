@@ -53,7 +53,7 @@ void IkShenaiCard::onEffect(const CardEffectStruct &effect) const
         if (!choices.isEmpty()) {
             QString card_name = room->askForChoice(effect.from, objectName(), choices.join("+"));
             if (card_name.contains("slash")) {
-                Slash *slash = Sanguosha->cloneCard(card_name);
+                Card *slash = Sanguosha->cloneCard(card_name);
                 slash->setSkillName("_ikshenai");
                 slash->deleteLater();
                 QList<ServerPlayer *> victims;
@@ -82,6 +82,11 @@ public:
     IkShenaiVS()
         : ViewAsSkill("ikshenai")
     {
+    }
+    
+    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const
+    {
+        return !to_select->isEquipped();
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
@@ -115,7 +120,7 @@ public:
         if (player->getMark(objectName()) > 0) {
             room->setPlayerMark(player, objectName(), 0);
             foreach (ServerPlayer *p, room->getOtherPlayers(player))
-                room->setPlayerMark(player, "IkShenaiUsed", 0);
+                room->setPlayerMark(p, "IkShenaiUsed", 0);
         }
         return QStringList();
     }
@@ -124,7 +129,7 @@ public:
 class IkShenaiTargetMod : public TargetModSkill
 {
 public:
-    IkWanmiTargetMod()
+    IkShenaiTargetMod()
         : TargetModSkill("#ikshenai-tar")
     {
         pattern = "BasicCard";

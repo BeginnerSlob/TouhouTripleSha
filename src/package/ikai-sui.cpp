@@ -1426,13 +1426,13 @@ public:
                         continue;
                     if (to->getMark("ikduanmeng_" + use.from->getKingdom()) > 0) {
                         if (to->tag["IkDuanmengKingdom"].toString() == use.from->getKingdom()) {
-                            if (!target_list[to])
+                            if (target_list.value(to, QStringList()).isEmpty())
                                 target_list[to] = QStringList();
                             target_list[to] << to->objectName();
                         }
                         foreach (ServerPlayer *p, room->getAllPlayers()) {
                             if (p->tag["IkDuanmengTarget"].value<ServerPlayer *>() == to) {
-                                if (!target_list[p])
+                                if (target_list.value(p, QStringList()).isEmpty())
                                     target_list[p] = QStringList();
                                 target_list[p] << to->objectName();
                             }
