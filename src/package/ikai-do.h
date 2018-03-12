@@ -19,7 +19,9 @@ class IkShenaiCard : public SkillCard
 
 public:
     Q_INVOKABLE IkShenaiCard();
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
 class IkXinqiCard : public SkillCard

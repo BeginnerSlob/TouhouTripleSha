@@ -1368,23 +1368,27 @@ public:
 
 IkDuanmengCard::IkDuanmengCard()
 {
-    target_fixed = true;
 }
 
-void IkDuanmengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+void IkDuanmengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
     QString kingdom = room->askForKingdom(source);
+    ServerPlayer *target = targets.first();
+    source->tag["IkDuanmengTarget"] = QVariant::fromValue(target);
+    source->tag["IkDuanmengKingdom"] = kingdom;
     room->setPlayerMark(source, "ikduanmeng_" + kingdom, 1);
     room->addPlayerMark(source, "@dream");
+    room->setPlayerMark(target, "ikduanmeng_" + kingdom, 1);
+    room->addPlayerMark(target, "@dream");
 }
 
-class IkDuanmengViewAsSkill : public OneCardViewAsSkill
+class IkDuanmeng : public OneCardViewAsSkill
 {
 public:
-    IkDuanmengViewAsSkill()
+    IkDuanmeng()
         : OneCardViewAsSkill("ikduanmeng")
     {
-        filter_pattern = "Slash";
+        filter_pattern = "Slash!";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
@@ -1400,14 +1404,14 @@ public:
     }
 };
 
-class IkDuanmeng : public TriggerSkill
+class IkDuanmengTrigger : public TriggerSkill
 {
 public:
-    IkDuanmeng()
-        : TriggerSkill("ikduanmeng")
+    IkDuanmengTrigger()
+        : TriggerSkill("#ikduanmeng")
     {
         events << TargetSpecified << EventPhaseStart;
-        view_as_skill = new IkDuanmengViewAsSkill;
+        frequency = NotCompulsory;
     }
 
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
@@ -1415,20 +1419,44 @@ public:
         TriggerList skill_list;
         if (triggerEvent == TargetSpecified) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->getTypeId() != Card::TypeSkill && use.card->isBlack())
+            if (use.card->getTypeId() != Card::TypeSkill && use.card->isBlack()) {
+                QMap<ServerPlayer *, QStringList> target_list;
                 foreach (ServerPlayer *to, use.to) {
                     if (to == use.from)
                         continue;
-                    if (to->getMark("ikduanmeng_" + use.from->getKingdom()) > 0)
-                        skill_list.insert(to, QStringList(objectName()));
+                    if (to->getMark("ikduanmeng_" + use.from->getKingdom()) > 0) {
+                        if (to->tag["IkDuanmengKingdom"].toString() == use.from->getKingdom()) {
+                            if (!target_list[to])
+                                target_list[to] = QStringList();
+                            target_list[to] << to->objectName();
+                        }
+                        foreach (ServerPlayer *p, room->getAllPlayers()) {
+                            if (p->tag["IkDuanmengTarget"].value<ServerPlayer *>() == to) {
+                                if (!target_list[p])
+                                    target_list[p] = QStringList();
+                                target_list[p] << to->objectName();
+                            }
+                        }
+                    }
                 }
+                if (!target_list.isEmpty()) {
+                    foreach (ServerPlayer *p, target_list.keys())
+                        skill_list.insert(p, QStringList(objectName() + "->" + target_list[p].join("+")));
+                }
+            }
         } else {
             if (player->getPhase() == Player::RoundStart) {
                 foreach (QString kingdom, Sanguosha->getKingdoms()) {
-                    QString markname = "ikduanmeng_" + kingdom;
-                    if (player->getMark(markname) > 0) {
-                        room->removePlayerMark(player, "@dream", player->getMark(markname));
-                        room->setPlayerMark(player, markname, 0);
+                    if (player->tag["IkDuanmengKingdom"].toString() == kingdom) {
+                        player->tag.remove("IkDuanmengKingdom");
+                        room->removePlayerMark(player, "@dream", 1);
+                        room->removePlayerMark(player, "ikduanmeng_" + kingdom, 1);
+                        ServerPlayer *target = player->tag["IkDuanmengTarget"].value<ServerPlayer *>();
+                        player->tag.remove("IkDuanmengTarget");
+                        if (target && target->isAlive()) {
+                            room->removePlayerMark(target, "@dream", 1);
+                            room->removePlayerMark(target, "ikduanmeng_" + kingdom, 1);
+                        }
                     }
                 }
             }
@@ -1436,18 +1464,10 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
-        if (player->askForSkillInvoke(objectName())) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *player) const
-    {
-        player->drawCards(2, objectName());
+        room->sendCompulsoryTriggerLog(ask_who, "ikduanmeng");
+        player->drawCards(1, "ikduanmeng");
         return false;
     }
 };
@@ -8629,6 +8649,8 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *wind046 = new General(this, "wind046", "kaze", 3);
     wind046->addSkill(new IkJingmu);
     wind046->addSkill(new IkDuanmeng);
+    wind046->addSkill(new IkDuanmengTrigger);
+    related_skills.insertMulti("ikduanmeng", "#ikduanmeng");
 
     General *wind049 = new General(this, "wind049", "kaze", 3);
     wind049->addSkill(new IkFanzhong);

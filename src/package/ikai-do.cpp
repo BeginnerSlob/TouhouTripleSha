@@ -12,31 +12,130 @@ IkShenaiCard::IkShenaiCard()
     target_fixed = true;
 }
 
-void IkShenaiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+bool IkShenaiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    QList<int> handCards = source->handCards();
-    if (room->askForRende(source, handCards, "ikshenai", false, true, -1, QList<ServerPlayer *>(), CardMoveReason(),
-                          "@ikshenai", false)
-        >= 2)
-        room->recover(source, RecoverStruct(source));
+    return targets.isEmpty() && to_select->getMark("IkShenaiUsed") == 0 && to_select != Self;
 }
 
-class IkShenai : public ZeroCardViewAsSkill
+void IkShenaiCard::onEffect(const CardEffectStruct &effect) const
+{
+    Room *room = effect.from->getRoom();
+    room->setPlayerMark(effect.to, "IkShenaiUsed", 1);
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "ikshenai", QString());
+    room->obtainCard(effect.to, this, reason, false);
+    room->addPlayerMark(effect.from, "ikshenai", subcardsLength());
+    if (effect.from->getMark("ikshenai") >= 2 && effect.from->getMark("ikshenai") - subcardsLength() < 2) {
+        QStringList choices;
+        // -- Slash
+        Slash *slash = new Slash(Card::NoSuit, 0);
+        slash->setSkillName("_ikshenai");
+        slash->deleteLater();
+        if (slash->isAvailable(effect.from)) {
+            choices << "slash";
+            if (!ServerInfo.Extensions.contains("!maneuvering"))
+                choices << "thunder_slash"
+                        << "fire_slash";
+        }
+        // -- Jink
+        // nothing
+        // -- Analeptic
+        Analeptic *anal = new Analeptic(Card::NoSuit, 0);
+        anal->setSkillName("_ikshenai");
+        anal->deleteLater();
+        if (anal->isAvailable(effect.from))
+            choices << "analeptic";
+        // -- Peach
+        Peach *peach = new Peach(Card::NoSuit, 0);
+        peach->setSkillName("_ikshenai");
+        peach->deleteLater();
+        if (peach->isAvailable(effect.from))
+            choices << "peach";
+        if (!choices.isEmpty()) {
+            QString card_name = room->askForChoice(effect.from, objectName(), choices.join("+"));
+            if (card_name.contains("slash")) {
+                Slash *slash = Sanguosha->cloneCard(card_name);
+                slash->setSkillName("_ikshenai");
+                slash->deleteLater();
+                QList<ServerPlayer *> victims;
+                foreach (ServerPlayer *p, room->getOtherPlayers(effect.from)) {
+                    if (effect.from->canSlash(p, slash))
+                        victims << p;
+                }
+                if (!victims.isEmpty()) {
+                    ServerPlayer *victim = room->askForPlayerChosen(effect.from, victims, "ikshenai", "@dummy-slash", true);
+                    if (victim)
+                        room->useCard(CardUseStruct(slash, effect.from, victim), false);
+                }
+            } else {
+                Card *card = Sanguosha->cloneCard(card_name);
+                card->setSkillName("_ikshenai");
+                card->deleteLater();
+                room->useCard(CardUseStruct(card, effect.from, effect.from), false);
+            }
+        }
+    }
+}
+
+class IkShenaiVS : public ViewAsSkill
 {
 public:
-    IkShenai()
-        : ZeroCardViewAsSkill("ikshenai")
+    IkShenaiVS()
+        : ViewAsSkill("ikshenai")
     {
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return !player->hasUsed("IkShenaiCard") && !player->isKongcheng();
+        return !player->isKongcheng();
     }
 
-    virtual const Card *viewAs() const
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
     {
-        return new IkShenaiCard;
+        if (cards.isEmpty())
+            return NULL;
+
+        Card *card = new IkShenaiCard;
+        card->addSubcards(cards);
+        return card;
+    }
+};
+
+class IkShenai : public TriggerSkill
+{
+public:
+    IkShenai()
+        : TriggerSkill("ikshenai")
+    {
+        events << EventPhaseChanging;
+        view_as_skill = new IkShenaiVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
+    {
+        if (player->getMark(objectName()) > 0) {
+            room->setPlayerMark(player, objectName(), 0);
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                room->setPlayerMark(player, "IkShenaiUsed", 0);
+        }
+        return QStringList();
+    }
+};
+
+class IkShenaiTargetMod : public TargetModSkill
+{
+public:
+    IkWanmiTargetMod()
+        : TargetModSkill("#ikshenai-tar")
+    {
+        pattern = "BasicCard";
+    }
+
+    virtual int getResidueNum(const Player *, const Card *card) const
+    {
+        if (card->getSkillName() == "ikshenai")
+            return 1000;
+        else
+            return 0;
     }
 };
 
@@ -3398,6 +3497,8 @@ IkaiDoPackage::IkaiDoPackage()
 {
     General *wind001 = new General(this, "wind001$", "kaze");
     wind001->addSkill(new IkShenai);
+    wind001->addSkill(new IkShenaiTargetMod);
+    related_skills.insertMulti("ikshenai", "#ikshenai-tar");
     wind001->addSkill(new IkXinqi);
 
     General *wind002 = new General(this, "wind002", "kaze");

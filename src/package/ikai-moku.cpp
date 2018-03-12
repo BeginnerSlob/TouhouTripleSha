@@ -1756,22 +1756,38 @@ public:
     }
 };
 
-class IkKujieTargetMod : public TargetModSkill
+class IkJieying : public TriggerSkill
 {
 public:
-    IkKujieTargetMod()
-        : TargetModSkill("#ikkujie-target")
+    IkJieying()
+        : TriggerSkill("ikjieying")
     {
-        pattern = "SupplyShortage";
+        events << EventPhaseSkipped;
+        frequency = Frequent;
     }
 
-    virtual int getDistanceLimit(const Player *from, const Card *) const
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
-        if (from->hasSkill("ikkujie"))
-            return 1;
-        else
-            return 0;
+        TriggerList skill_list;
+        Player::Phase phase = (Player::Phase)data.toInt();
+        if (phase == Player::Draw) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p == player)
+                    continue;
+                skill_list.insert(p, QStringList(objectName()));
+            }
+        }
+        return skill_list;
     }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        room->sendCompulsoryTriggerLog(ask_who, objectName());
+        ask_who->drawCards(1, objectName());
+        return false;
+    }
+
+    // SupplyShortage::targetFilter
 };
 
 class IkZhaihun : public TriggerSkill
@@ -6069,8 +6085,7 @@ IkaiMokuPackage::IkaiMokuPackage()
 
     General *bloom010 = new General(this, "bloom010", "hana");
     bloom010->addSkill(new IkKujie);
-    bloom010->addSkill(new IkKujieTargetMod);
-    related_skills.insertMulti("ikkujie", "#ikkujie-target");
+    bloom010->addSkill(new IkJieying);
 
     General *bloom011 = new General(this, "bloom011", "hana");
     bloom011->addSkill(new IkZhaihun);

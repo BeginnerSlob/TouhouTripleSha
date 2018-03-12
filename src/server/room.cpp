@@ -6466,6 +6466,7 @@ QString Room::getWinner(ServerPlayer *victim)
     return winner;
 }
 
+// SBliubei, no use's function
 int Room::askForRende(ServerPlayer *liubei, QList<int> &cards, const QString &skill_name, bool visible, bool optional,
                       int max_num, QList<ServerPlayer *> players, CardMoveReason reason, const QString &prompt,
                       bool notify_skill)

@@ -687,6 +687,8 @@ bool SupplyShortage::targetFilter(const QList<const Player *> &targets, const Pl
         return false;
 
     int distance_limit = 1 + Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, Self, this);
+    if (Self->hasSkill("ikjieying") && to_select->getHandcardNum() >= Self->getHandcardNum())
+        distance_limit += 10086;
     int rangefix = 0;
     if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
         rangefix += 1;
