@@ -3260,9 +3260,9 @@ public:
         frequency = NotCompulsory;
     }
 
-    virtual bool isProhibited(const Player *from, const Player *to, const Card *, const QList<const Player *> &) const
+    virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &) const
     {
-        return from->getMark("@snow") > 0 && !to->hasSkill("ikaoxue");
+        return card->isKindOf("Slash") && from->getMark("@snow") > 0 && !to->hasSkill("ikaoxue");
     }
 };
 
