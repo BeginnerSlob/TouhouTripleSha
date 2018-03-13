@@ -7869,17 +7869,14 @@ public:
         if (!TriggerSkill::triggerable(player))
             return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel")) && !damage.chain
-            && !damage.transfer && damage.by_user) {
-            if (!damage.to->hasSkill("thyanmeng") && !damage.to->hasSkill("thxuanyan")) {
-                foreach (const Skill *skill, damage.to->getVisibleSkillList()) {
-                    if (!skill->isAttachedLordSkill())
-                        return QStringList(objectName());
-                }
+        if (!damage.to->hasSkill("thyanmeng") && !damage.to->hasSkill("thxuanyan")) {
+            foreach (const Skill *skill, damage.to->getVisibleSkillList()) {
+                if (!skill->isAttachedLordSkill())
+                    return QStringList(objectName());
             }
-            if (damage.to->canDiscard(damage.to, "e"))
-                return QStringList(objectName());
         }
+        if (damage.to->canDiscard(damage.to, "e"))
+            return QStringList(objectName());
         return QStringList();
     }
 
