@@ -40,17 +40,6 @@ public:
     Q_INVOKABLE ThMumiCard();
 };
 
-class ThLiaoganCard : public SkillCard
-{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE ThLiaoganCard();
-
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual void onEffect(const CardEffectStruct &effect) const;
-};
-
 class ThMuyuCard : public SkillCard
 {
     Q_OBJECT

@@ -1832,14 +1832,7 @@ ThExiCard::ThExiCard()
 
 bool ThExiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    if (targets.length() >= 2)
-        return false;
-
-    if (to_select == Self)
-        return Self->getHandcardNum() > 1
-            || (!Self->isKongcheng() && !Self->getHandcards().contains(Sanguosha->getCard(getEffectiveId())));
-    else
-        return !to_select->isKongcheng();
+    return targets.length() < 2 && !to_select->isKongcheng();
 }
 
 bool ThExiCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const
@@ -1887,21 +1880,18 @@ void ThExiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
     }
 }
 
-class ThExiViewAsSkill : public OneCardViewAsSkill
+class ThExiViewAsSkill : public ZeroCardViewAsSkill
 {
 public:
     ThExiViewAsSkill()
-        : OneCardViewAsSkill("thexi")
+        : ZeroCardViewAsSkill("thexi")
     {
         response_pattern = "@@thexi";
-        filter_pattern = ".!";
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const
+    virtual const Card *viewAs() const
     {
-        Card *card = new ThExiCard;
-        card->addSubcard(originalCard);
-        return card;
+        return new ThExiCard;
     }
 };
 
@@ -1921,12 +1911,10 @@ public:
             player->setMark("exicount", 0);
             player->setFlags("Global_ThExiDisabled");
         } else if (player->getPhase() == Player::Finish && TriggerSkill::triggerable(player)
-                   && !player->hasFlag("Global_ThExiDisabled") && player->canDiscard(player, "he")) {
+                   && !player->hasFlag("Global_ThExiDisabled")) {
             int n = 0;
             foreach (ServerPlayer *p, room->getAllPlayers()) {
-                if (p == player && (p->getHandcardNum() > 1 || (p->hasEquip() && !p->isKongcheng())))
-                    ++n;
-                else if (p != player && !p->isKongcheng())
+                if (!p->isKongcheng())
                     ++n;
                 if (n > 1)
                     return QStringList(objectName());
@@ -1954,25 +1942,17 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         DyingStruct dying = data.value<DyingStruct>();
-        if (!TriggerSkill::triggerable(player) || dying.who != player || player->isKongcheng() || player->getHp() > 0)
-            return QStringList();
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-            if (!p->isKongcheng())
-                return QStringList(objectName());
-
+        if (TriggerSkill::triggerable(player) && dying.who != player && !player->isKongcheng() && !dying.who->isKongcheng()
+            && dying.who->getHp() <= 0 && dying.who->isAlive())
+            return QStringList(objectName());
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-            if (!p->isKongcheng())
-                targets << p;
-        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thxinglu", true, true);
-        if (target) {
+        DyingStruct dying = data.value<DyingStruct>();
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(dying.who))) {
             room->broadcastSkillInvoke(objectName());
-            player->tag["ThXingluTarget"] = QVariant::fromValue(target);
             return true;
         }
         return false;
@@ -1980,15 +1960,13 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        ServerPlayer *target = player->tag["ThXingluTarget"].value<ServerPlayer *>();
-        player->tag.remove("ThXingluTarget");
-        if (target) {
-            bool win = player->pindian(target, objectName());
-            if (win) {
-                RecoverStruct recover;
-                recover.who = player;
-                room->recover(player, recover);
-            }
+        DyingStruct dying = data.value<DyingStruct>();
+        ServerPlayer *target = dying.who;
+        bool win = player->pindian(target, objectName());
+        if (win) {
+            RecoverStruct recover;
+            recover.who = player;
+            room->recover(dying.who, recover);
         }
         return false;
     }

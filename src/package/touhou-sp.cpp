@@ -2369,12 +2369,66 @@ public:
     }
 };
 
-class ThGuanzhi : public PhaseChangeSkill
+ThGuanzhiCard::ThGuanzhiCard()
+{
+}
+
+bool ThGuanzhiCard::targetFilter(const QList<const Player *> &, const Player *to_select, const Player *Self) const
+{
+    const Player *lord = NULL;
+    if (Self->isLord())
+        lord = Self;
+    else {
+        foreach (const Player *p, Self->getAliveSiblings()) {
+            if (p->isLord()) {
+                lord = p;
+                break;
+            }
+        }
+    }
+    return lord && to_select->inMyAttackRange(lord) && Self->canDiscard(to_select, "he");
+}
+
+void ThGuanzhiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
+    foreach (ServerPlayer *p, targets) {
+        if (source->canDiscard(p, "he")) {
+            int card_id = room->askForCardChosen(source, p, "he", "thguanzhi", false, MethodDiscard);
+            room->throwCard(card_id, p, source);
+        }
+    }
+    room->drawCards(targets, 1, "thguanzhi");
+    foreach (ServerPlayer *p, targets) {
+        if (p->getHandcardNum() > room->getLord()->getHandcardNum()) {
+            source->drawCards(1, "thguanzhi");
+            break;
+        }
+    }
+}
+
+class ThGuanzhiVS : public ZeroCardViewAsSkill
+{
+public:
+    ThGuanzhiVS()
+        : ZeroCardViewAsSkill("thguanzhi")
+    {
+        response_pattern = "@@thguanzhi";
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new ThGuanzhiCard;
+    }
+};
+
+class ThGuanzhi : public TriggerSkill
 {
 public:
     ThGuanzhi()
-        : PhaseChangeSkill("thguanzhi")
+        : TriggerSkill("thguanzhi")
     {
+        events << EventPhaseStart;
+        view_as_skill = new ThGuanzhiVS;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
@@ -2390,33 +2444,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-            if (p->inMyAttackRange(room->getLord()) && player->canDiscard(p, "he"))
-                targets << p;
-        }
-        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thguanzhi", true, true);
-        if (target) {
-            room->broadcastSkillInvoke(objectName());
-            player->tag["ThGuanzhiTarget"] = QVariant::fromValue(target);
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool onPhaseChange(ServerPlayer *player) const
-    {
-        ServerPlayer *target = player->tag["ThGuanzhiTarget"].value<ServerPlayer *>();
-        player->tag.remove("ThGuanzhiTarget");
-        if (target) {
-            Room *room = player->getRoom();
-            int card_id = room->askForCardChosen(player, target, "he", objectName(), false, Card::MethodDiscard);
-            room->throwCard(card_id, target, player);
-            target->drawCards(1, objectName());
-            if (target->getHandcardNum() > room->getLord()->getHandcardNum())
-                player->drawCards(1, objectName());
-        }
-        return false;
+        return room->askForUseCard(player, "@@thguanzhi", "@thguanzhi");
     }
 };
 
@@ -3054,6 +3082,7 @@ TouhouSPPackage::TouhouSPPackage()
     addMetaObject<ThXuyouCard>();
     addMetaObject<ThJingyuanspCard>();
     addMetaObject<ThFeihuCard>();
+    addMetaObject<ThGuanzhiCard>();
     addMetaObject<ThFuhuaCard>();
     addMetaObject<ThHuanyaoCard>();
 }
