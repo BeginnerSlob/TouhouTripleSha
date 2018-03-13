@@ -1830,7 +1830,7 @@ ThExiCard::ThExiCard()
 {
 }
 
-bool ThExiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+bool ThExiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const
 {
     return targets.length() < 2 && !to_select->isKongcheng();
 }
@@ -1939,7 +1939,7 @@ public:
         events << Dying;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         DyingStruct dying = data.value<DyingStruct>();
         if (TriggerSkill::triggerable(player) && dying.who != player && !player->isKongcheng() && !dying.who->isKongcheng()
@@ -1958,7 +1958,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         DyingStruct dying = data.value<DyingStruct>();
         ServerPlayer *target = dying.who;
