@@ -388,6 +388,14 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class IkLihuiCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkLihuiCard();
+};
+
 class IkFeishanCard : public SkillCard
 {
     Q_OBJECT

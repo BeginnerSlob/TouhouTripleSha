@@ -2936,7 +2936,7 @@ public:
 TouhouSPPackage::TouhouSPPackage()
     : Package("touhou-sp")
 {
-    General *sp001 = new General(this, "sp001", "kaze");
+    General *sp001 = new General(this, "sp001", "kaze", 4, true, true);
     sp001->addSkill(new ThFanshi);
     sp001->addSkill(new ThJifeng);
 

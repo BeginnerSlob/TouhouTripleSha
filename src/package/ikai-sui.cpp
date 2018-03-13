@@ -6146,8 +6146,8 @@ private:
         if (skills.isEmpty())
             skills << "ikxizi"
                    << "ikchenhong"
-                   << "ikcangyou"
-                   << "ikganbi";
+                   << "ikganbi"
+                   << "ikcangyou";
         QSet<Card::Suit> suit_set;
         foreach (const Card *c, player->getEquips())
             suit_set << c->getSuit();
@@ -6189,9 +6189,10 @@ void IkCaiyinCard::onEffect(const CardEffectStruct &effect) const
     if (!effect.to || effect.to->isDead() || effect.to->isKongcheng())
         return;
     Room *room = effect.from->getRoom();
-    int card_id = room->askForCardChosen(effect.from, effect.to, "h", "ikcaiyin");
-    room->showCard(effect.to, card_id);
-    if (Sanguosha->getCard(card_id)->isKindOf("Jink")) {
+    int card_id = room->askForCardChosen(effect.from, effect.to, "h", "ikcaiyin", false, MethodDiscard);
+    const Card *card = Sanguosha->getCard(card_id);
+    room->throwCard(card_id, effect.to, effect.from);
+    if (card->isKindOf("Jink")) {
         LogMessage log;
         log.type = "$IkLingtongView";
         log.from = effect.from;
@@ -6553,19 +6554,55 @@ public:
     }
 };
 
+IkLihuiCard::IkLihuiCard()
+{
+    target_fixed = true;
+}
+
+class IkLihuiVS : public ViewAsSkill
+{
+public:
+    IkLihuiVS()
+        : ViewAsSkill("iklihui")
+    {
+        response_pattern = "@@iklihui";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const
+    {
+        return !to_select->isEquipped() && Self->canDiscard(Self, to_select->getEffectiveId());
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        if (cards.isEmpty())
+            return NULL;
+        Card *card = new IkLihuiCard;
+        card->addSubcards(cards);
+        card->setSkillName(objectName());
+        return card;
+    }
+};
+
 class IkLihui : public TriggerSkill
 {
 public:
     IkLihui()
         : TriggerSkill("iklihui")
     {
-        events << BeforeCardsMove;
+        events << BeforeCardsMove << EventPhaseStart;
+        view_as_skill = new IkLihuiVS;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *kongrong, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *kongrong, QVariant &data, ServerPlayer *&) const
     {
         if (!TriggerSkill::triggerable(kongrong))
             return QStringList();
+        if (e == EventPhaseStart) {
+            if (kongrong->getPhase() == Player::Discard && kongrong->canDiscard(kongrong, "h"))
+                return QStringList(objectName());
+            return QStringList();
+        }
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (move.from != kongrong)
             return QStringList();
@@ -6583,8 +6620,12 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *kongrong, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent e, Room *room, ServerPlayer *kongrong, QVariant &data, ServerPlayer *) const
     {
+        if (e == EventPhaseStart) {
+            room->askForUseCard(kongrong, "@@iklihui", "@iklihui", -1, Card::MethodDiscard);
+            return false;
+        }
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
 
         int i = 0;
@@ -8956,6 +8997,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkHuzhanCard>();
     addMetaObject<IkBinglingCard>();
     addMetaObject<IkZhangeCard>();
+    addMetaObject<IkLihuiCard>();
     addMetaObject<IkFeishanCard>();
     addMetaObject<IkXincaoCard>();
     addMetaObject<IkKouzhuCard>();

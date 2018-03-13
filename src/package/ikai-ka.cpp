@@ -3478,21 +3478,13 @@ public:
 
     virtual bool triggerable(const ServerPlayer *player) const
     {
-        return TriggerSkill::triggerable(player) && player->getPhase() == Player::Finish && player->getHandcardNum() != 2
-            && !player->isKongcheng();
+        return TriggerSkill::triggerable(player) && player->getPhase() == Player::Finish && player->getHandcardNum() == 1;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         room->sendCompulsoryTriggerLog(player, objectName());
-        int delta = player->getHandcardNum() - 2;
-        if (delta < 0) {
-            room->broadcastSkillInvoke(objectName(), 1);
-            player->drawCards(-delta, objectName());
-        } else {
-            room->broadcastSkillInvoke(objectName(), 2);
-            room->askForDiscard(player, objectName(), delta, delta);
-        }
+        player->drawCards(1, objectName());
         return false;
     }
 };

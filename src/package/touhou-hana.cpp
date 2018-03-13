@@ -928,7 +928,7 @@ bool ThMimengDialog::isButtonEnabled(const QString &button_name) const
     QStringList ban_list;
     if (object_name == "thmimeng")
         allowings = "slash+thunder_slash+fire_slash+jink+peach+analeptic"
-                    "+duel+fire_attack+savage_assault+collateral+iron_chain+dismantlement+nullification";
+                    "+duel+fire_attack+savage_assault+collateral+iron_chain+dismantlement+rout+nullification";
     if (object_name == "ikxieke" && Self->aliveCount() == 2)
         ban_list << "Jink"
                  << "Analeptic"
@@ -1320,7 +1320,9 @@ public:
             return true;
         } else {
             room->setPlayerFlag(player, "-thanyun");
-            player->drawCards(2);
+            player->drawCards(3, objectName());
+            if (player->canDiscard(player, "he"))
+                room->askForDiscard(player, objectName(), 1, 1, false, true);
         }
         return false;
     }
@@ -1497,7 +1499,17 @@ void ThDuanzuiCard::onEffect(const CardEffectStruct &effect) const
     int card_id = room->askForCardChosen(effect.from, effect.to, "h", objectName());
     room->showCard(effect.to, card_id);
     const Card *card = Sanguosha->getCard(card_id);
-    if (card->isKindOf("Slash")) {
+    if (card->isKindOf("Jink") || card->isKindOf("Peach")) {
+        CardUseStruct use;
+        use.from = effect.from;
+        use.to << effect.to;
+        Slash *use_card = new Slash(NoSuit, 0);
+        use_card->setSkillName("_thduanzui");
+        use_card->deleteLater();
+        use.card = use_card;
+        if (effect.from->canSlash(effect.to, use_card, false))
+            room->useCard(use);
+    } else {
         CardUseStruct use;
         use.from = effect.from;
         use.to << effect.to;
@@ -1508,18 +1520,8 @@ void ThDuanzuiCard::onEffect(const CardEffectStruct &effect) const
         use.card = use_card;
         if (!effect.from->isProhibited(effect.to, use_card))
             room->useCard(use);
-    } else if (card->isKindOf("Jink") || card->isKindOf("Peach")) {
-        CardUseStruct use;
-        use.from = effect.from;
-        use.to << effect.to;
-        Slash *use_card = new Slash(NoSuit, 0);
-        use_card->setSkillName("_thduanzui");
-        use_card->deleteLater();
-        use.card = use_card;
-        if (effect.from->canSlash(effect.to, use_card, false))
-            room->useCard(use);
     }
-};
+}
 
 class ThDuanzui : public ZeroCardViewAsSkill
 {

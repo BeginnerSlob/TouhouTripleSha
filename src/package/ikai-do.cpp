@@ -2876,18 +2876,13 @@ public:
         response_or_use = true;
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const
-    {
-        return !player->hasUsed("IkWudiCard");
-    }
-
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
     {
         if (selected.isEmpty())
             return !to_select->isEquipped();
         else if (selected.length() == 1) {
             const Card *card = selected.first();
-            return !to_select->isEquipped() && to_select->getSuit() == card->getSuit();
+            return !to_select->isEquipped() && to_select->sameColorWith(card);
         } else
             return false;
     }
@@ -2906,6 +2901,11 @@ public:
             }
         }
         return NULL;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("IkWudiCard");
     }
 };
 

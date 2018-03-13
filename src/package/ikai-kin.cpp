@@ -3705,7 +3705,7 @@ public:
     IkMuhe()
         : TriggerSkill("ikmuhe")
     {
-        events << CardResponded << EventPhaseStart << EventPhaseChanging;
+        events << CardUsed << CardResponded << EventPhaseStart << EventPhaseChanging;
     }
 
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
@@ -3716,6 +3716,14 @@ public:
         } else if (triggerEvent == CardResponded) {
             CardResponseStruct resp = data.value<CardResponseStruct>();
             if (resp.m_isUse && resp.m_card->isKindOf("Jink")) {
+                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                    if (p == player || (room->getCurrent() == p && p->getPhase() != Player::NotActive))
+                        skill_list.insert(p, QStringList(objectName()));
+                }
+            }
+        } else if (triggerEvent == CardUsed) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Peach")) {
                 foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
                     if (p == player || (room->getCurrent() == p && p->getPhase() != Player::NotActive))
                         skill_list.insert(p, QStringList(objectName()));
@@ -3743,7 +3751,7 @@ public:
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
-        if (triggerEvent == CardResponded) {
+        if (triggerEvent == CardResponded || triggerEvent == CardUsed) {
             QList<int> ids = room->getNCards(1, false);
             CardsMoveStruct move(
                 ids, ask_who, Player::PlaceTable,
