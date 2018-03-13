@@ -9,6 +9,8 @@
 
 IkShenaiCard::IkShenaiCard()
 {
+    will_throw = false;
+    handling_method = MethodNone;
     target_fixed = true;
 }
 
