@@ -2074,42 +2074,58 @@ public:
     ThWunan()
         : TriggerSkill("thwunan")
     {
-        events << CardUsed << HpRecover << Damaged << CardResponded << DamageCaused;
+        events << EventPhaseChanging << CardUsed << HpRecover << Damaged << CardResponded << DamageCaused;
     }
 
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
         TriggerList skill_list;
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    p->setMark(objectName(), 0);
+            }
+            return skill_list;
+        }
         if (player->isDead())
             return skill_list;
         if (triggerEvent == CardUsed) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("GodSalvation") || use.card->isKindOf("AmazingGrace"))
-                foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
-                    if (owner != player)
+            if (use.card->isKindOf("GodSalvation") || use.card->isKindOf("AmazingGrace")) {
+                foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
+                    if (owner != player && owner->getMark(objectName()) == 0)
                         skill_list.insert(owner, QStringList(objectName()));
+                }
+            }
         } else if (triggerEvent == HpRecover && player->hasFlag("Global_Dying") && player->getHp() >= 1) {
-            foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
-                if (owner != player)
+            foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
+                if (owner != player && owner->getMark(objectName()) == 0)
                     skill_list.insert(owner, QStringList(objectName()));
+            }
         } else if (triggerEvent == Damaged) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.nature == DamageStruct::Fire)
-                foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
-                    if (owner != player)
+            if (damage.nature == DamageStruct::Fire) {
+                foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
+                    if (owner != player && owner->getMark(objectName()) == 0)
                         skill_list.insert(owner, QStringList(objectName()));
+                }
+            }
         } else if (triggerEvent == CardResponded) {
             CardResponseStruct resp = data.value<CardResponseStruct>();
-            if (resp.m_card->isKindOf("Jink") && resp.m_card->getSkillName() == "eight_diagram")
-                foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
-                    if (owner != player)
+            if (resp.m_card->isKindOf("Jink") && resp.m_card->getSkillName() == "eight_diagram") {
+                foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
+                    if (owner != player && owner->getMark(objectName()) == 0)
                         skill_list.insert(owner, QStringList(objectName()));
+                }
+            }
         } else if (triggerEvent == DamageCaused) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.card && damage.card->isKindOf("Slash") && damage.to->isKongcheng())
-                foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
-                    if (owner != player)
+            if (damage.card && damage.card->isKindOf("Slash") && damage.to->isKongcheng()) {
+                foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
+                    if (owner != player && owner->getMark(objectName()) == 0)
                         skill_list.insert(owner, QStringList(objectName()));
+                }
+            }
         }
         return skill_list;
     }
@@ -2117,6 +2133,7 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
         if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            ask_who->addMark(objectName());
             room->broadcastSkillInvoke(objectName());
             return true;
         }

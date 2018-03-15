@@ -803,8 +803,10 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *&) const
     {
-        if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Discard
-            || player->getHandcardNum() == qMax(player->getHp(), 0))
+        if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Discard)
+            return QStringList();
+        int x = player->getHandcardNum() - qMax(player->getHp(), 0);
+        if (x==0 || x == -1)
             return QStringList();
         return QStringList(objectName());
     }
@@ -833,9 +835,9 @@ public:
             ServerPlayer *target = player->tag["ThQinshaoTarget"].value<ServerPlayer *>();
             player->tag.remove("ThQinshaoTarget");
             if (target)
-                target->drawCards(x);
+                target->drawCards(x, objectName());
         } else if (x < 0)
-            player->drawCards(-x);
+            player->drawCards(-x - 1, objectName());
 
         return false;
     }
@@ -1229,7 +1231,7 @@ void ThWangdaoCard::onEffect(const CardEffectStruct &effect) const
         room->removePlayerCardLimitation(effect.to, "use", pattern + "$0");
     }
     if (!slash) {
-        effect.to->obtainCard(this);
+        room->throwCard(this, effect.from);
         if (effect.from->canDiscard(effect.to, "he")
             && room->askForChoice(effect.from, "thwangdao", "discard+lose", QVariant::fromValue(effect.to)) == "discard") {
             room->setPlayerFlag(effect.to, "thwangdao_InTempMoving");

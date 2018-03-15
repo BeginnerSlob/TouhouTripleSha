@@ -1841,7 +1841,7 @@ public:
     {
         TriggerList skill_list;
         DamageStruct damage = data.value<DamageStruct>();
-        if (!player->isNude()) {
+        if (!player->isKongcheng()) {
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
                 if (player == p)
                     continue;
@@ -1865,7 +1865,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
-        int card_id = room->askForCardChosen(ask_who, player, "he", objectName());
+        int card_id = room->askForCardChosen(ask_who, player, "h", objectName());
         room->obtainCard(ask_who, card_id, false);
         player->drawCards(1, objectName());
         return false;

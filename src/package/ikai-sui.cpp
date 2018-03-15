@@ -4315,7 +4315,7 @@ public:
             room->sortByActionOrder(players);
             foreach (ServerPlayer *p, players) {
                 if (p->isAlive()) {
-                    if (player->isAlive()) {
+                    if (p != player && player->isAlive()) {
                         if (!p->canDiscard(p, "he")
                             || !room->askForDiscard(p, "ikzongti", 1, 1, true, true,
                                                     "@ikzongti-discard:" + player->objectName()))

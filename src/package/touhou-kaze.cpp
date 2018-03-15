@@ -1091,13 +1091,10 @@ public:
         if (!TriggerSkill::triggerable(player))
             return QStringList();
         QStringList skills;
-        if (triggerEvent == TurnedOver && player->faceUp()) {
+        if (triggerEvent == TurnedOver && player->faceUp())
             skills << objectName();
-        } else if (triggerEvent == Damaged) {
-            DamageStruct damage = data.value<DamageStruct>();
-            for (int i = 0; i < damage.damage; ++i)
-                skills << objectName();
-        }
+        else if (triggerEvent == Damaged)
+            skills << objectName();
         return skills;
     }
 

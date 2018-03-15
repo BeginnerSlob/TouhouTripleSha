@@ -2278,9 +2278,17 @@ ThGuixuCard::ThGuixuCard()
 
 bool ThGuixuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
+    QString color_str = Self->property("thguixu").toString();
+    Color color = Colorless;
+    if (color_str == "red")
+        color = Red;
+    else if (color_str == "black")
+        color = Black;
     if (!targets.isEmpty())
         return false;
     foreach (const Card *c, to_select->getJudgingArea()) {
+        if (c->getColor() != color)
+            continue;
         foreach (const Player *p, to_select->getAliveSiblings()) {
             if (p == Self)
                 continue;
@@ -2290,7 +2298,7 @@ bool ThGuixuCard::targetFilter(const QList<const Player *> &targets, const Playe
     }
     for (int i = 0; i < S_EQUIP_AREA_LENGTH; ++i) {
         const EquipCard *equip = to_select->getEquip(i);
-        if (equip) {
+        if (equip && equip->getColor() == color) {
             foreach (const Player *p, to_select->getAliveSiblings()) {
                 if (p == Self)
                     continue;
@@ -2308,15 +2316,23 @@ void ThGuixuCard::use(Room *room, ServerPlayer *zhanghe, QList<ServerPlayer *> &
     if (!from->hasEquip() && from->getJudgingArea().isEmpty())
         return;
 
+    QString color_str = zhanghe->property("thguixu").toString();
+    Color color = Colorless;
+    if (color_str == "red")
+        color = Red;
+    else if (color_str == "black")
+        color = Black;
     QList<int> disabled_ids;
     foreach (const Card *c, from->getJudgingArea()) {
         bool disable = true;
-        foreach (const Player *p, from->getAliveSiblings()) {
-            if (p == zhanghe)
-                continue;
-            if (!p->containsTrick(c->objectName())) {
-                disable = false;
-                break;
+        if (c->getColor() == color) {
+            foreach (ServerPlayer *p, room->getOtherPlayers(from)) {
+                if (p == zhanghe)
+                    continue;
+                if (!p->containsTrick(c->objectName())) {
+                    disable = false;
+                    break;
+                }
             }
         }
         if (disable)
@@ -2326,12 +2342,14 @@ void ThGuixuCard::use(Room *room, ServerPlayer *zhanghe, QList<ServerPlayer *> &
         const EquipCard *equip = from->getEquip(i);
         if (equip) {
             bool disable = true;
-            foreach (const Player *p, from->getAliveSiblings()) {
-                if (p == zhanghe)
-                    continue;
-                if (!p->getEquip(equip->location())) {
-                    disable = false;
-                    break;
+            if (equip->getColor() == color) {
+                foreach (ServerPlayer *p, room->getOtherPlayers(from)) {
+                    if (p == zhanghe)
+                        continue;
+                    if (!p->getEquip(equip->location())) {
+                        disable = false;
+                        break;
+                    }
                 }
             }
             if (disable)
@@ -2409,7 +2427,7 @@ public:
         } else if (triggerEvent == EventPhaseStart && TriggerSkill::triggerable(player)
                    && player->getPhase() == Player::Finish) {
             const Card *card = player->tag["ThGuixuRecord"].value<const Card *>();
-            if (card && card->getTypeId() == Card::TypeTrick)
+            if (card && card->getTypeId() == Card::TypeTrick && (card->isRed() || card->isBlack()))
                 return QStringList(objectName());
         }
         return QStringList();
@@ -2417,7 +2435,13 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
+        const Card *card = player->tag["ThGuixuRecord"].value<const Card *>();
+        if (card->isRed())
+            room->setPlayerProperty(player, "thguixu", "red");
+        else if (card->isBlack())
+            room->setPlayerProperty(player, "thguixu", "black");
         room->askForUseCard(player, "@@thguixu", "@thguixu", -1, Card::MethodNone);
+        room->setPlayerProperty(player, "thguixu", QVariant());
         return false;
     }
 };
