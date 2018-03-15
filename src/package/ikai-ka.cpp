@@ -6299,11 +6299,12 @@ public:
 IkQiansheCard::IkQiansheCard()
 {
     will_throw = false;
+    handling_method = MethodNone;
 }
 
 bool IkQiansheCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    return targets.isEmpty() && to_select->getHandcardNum() > Self->getHandcardNum();
+    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
 }
 
 void IkQiansheCard::onEffect(const CardEffectStruct &effect) const

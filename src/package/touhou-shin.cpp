@@ -1335,18 +1335,20 @@ public:
         events << EventPhaseStart << Death;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
-                                    ServerPlayer *&) const
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
+        TriggerList skill_list;
         if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Play) {
-            if (!player->getPile("frost").isEmpty())
-                return QStringList(objectName());
-            return QStringList();
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (!p->getPile("frost").isEmpty())
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+            return skill_list;
         }
         if (triggerEvent == Death) {
             DeathStruct death = data.value<DeathStruct>();
             if (death.who != player)
-                return QStringList();
+                return skill_list;
         }
         if ((triggerEvent == EventPhaseStart && player->getPhase() == Player::RoundStart) || triggerEvent == Death) {
             QList<ServerPlayer *> players = room->getAllPlayers();
@@ -1358,10 +1360,10 @@ public:
             }
         }
 
-        return QStringList();
+        return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const
     {
         ServerPlayer *target
             = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "@thliaogan", true, true);
@@ -1373,7 +1375,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const
     {
         ServerPlayer *target = player->tag["ThLiaoganTarget"].value<ServerPlayer *>();
         player->tag.remove("ThLiaoganTarget");

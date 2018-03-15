@@ -11,7 +11,6 @@ IkShenaiCard::IkShenaiCard()
 {
     will_throw = false;
     handling_method = MethodNone;
-    target_fixed = true;
 }
 
 bool IkShenaiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
