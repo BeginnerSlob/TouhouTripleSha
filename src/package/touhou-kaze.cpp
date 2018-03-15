@@ -1085,7 +1085,7 @@ public:
         events << TurnedOver << Damaged;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data,
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &,
                                     ServerPlayer *&) const
     {
         if (!TriggerSkill::triggerable(player))
