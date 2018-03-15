@@ -428,13 +428,10 @@ public:
 
     virtual const Card *viewAs(const Card *originalCard) const
     {
-        if (cards.length() == 1) {
-            Duel *card = new Duel(Card::SuitToBeDecided, -1);
-            card->addSubcard(originalCard);
-            card->setSkillName(objectName());
-            return card;
-        }
-        return NULL;
+        Duel *card = new Duel(Card::SuitToBeDecided, -1);
+        card->addSubcard(originalCard);
+        card->setSkillName(objectName());
+        return card;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
@@ -466,7 +463,7 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *xuchu, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         DamageStruct damage = data.value<DamageStruct>();
         LogMessage log;
