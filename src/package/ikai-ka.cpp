@@ -881,6 +881,47 @@ public:
     }
 };
 
+class IkCiyuan : public TriggerSkill
+{
+public:
+    IkCiyuan()
+        : TriggerSkill("ikciyuan")
+    {
+        events << EventPhaseStart;
+        frequency = Frequent;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        TriggerList skill_list;
+        if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Finish && player->getHandcardNum() < 2)
+            skill_list.insert(player, QStringList(objectName()));
+        else if (player->getPhase() == Player::Start)
+            foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
+                if (owner != player && owner->isKongcheng())
+                    skill_list.insert(owner, QStringList(objectName()));
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (player->getPhase() == Player::Finish)
+            ask_who->drawCards(2 - ask_who->getHandcardNum());
+        else
+            ask_who->drawCards(1);
+        return false;
+    }
+};
+
 IkDongzhaoCard::IkDongzhaoCard()
 {
 }
@@ -5217,7 +5258,7 @@ public:
         player->setFlags("ikmoshan");
         room->obtainCard(target, player->getArmor(), reason);
         player->setFlags("-ikmoshan");
-        if (player->getMark("ikmoshan") < 3) {
+        if (player->getMark("ikmoshan") == 0) {
             QList<ServerPlayer *> victims;
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (!p->isNude())
@@ -6792,8 +6833,9 @@ IkaiKaPackage::IkaiKaPackage()
     wind047->addSkill(new IkTianhua);
     wind047->addSkill(new IkHuangshi);
 
-    General *wind048 = new General(this, "wind048", "kaze");
+    General *wind048 = new General(this, "wind048", "kaze", 3);
     wind048->addSkill(new IkXizi);
+    wind048->addSkill(new IkCiyuan);
 
     General *wind050 = new General(this, "wind050", "kaze", 4, false);
     wind050->addSkill(new IkDongzhao);

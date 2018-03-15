@@ -5234,12 +5234,9 @@ public:
         frequency = NotCompulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *&) const
     {
-        if (!TriggerSkill::triggerable(player) || player->getPile("summon").isEmpty())
-            return QStringList();
-        DamageStruct damage = data.value<DamageStruct>();
-        if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel")))
+        if (TriggerSkill::triggerable(player) && !player->getPile("summon").isEmpty())
             return QStringList(objectName());
         return QStringList();
     }
@@ -8406,7 +8403,7 @@ public:
     virtual int getExtra(const Player *target) const
     {
         if (target->hasSkill(objectName()))
-            return -target->getMark("@burn");
+            return target->getMark("@burn");
         return 0;
     }
 };

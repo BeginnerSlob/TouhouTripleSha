@@ -879,35 +879,38 @@ public:
     IkLieren()
         : TriggerSkill("iklieren")
     {
-        events << Damage;
+        events << TargetSpecified;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *zhurong, QVariant &data, ServerPlayer *&) const
     {
         if (!TriggerSkill::triggerable(zhurong))
             return QStringList();
-        DamageStruct damage = data.value<DamageStruct>();
-        ServerPlayer *target = damage.to;
-        if (damage.card && (damage.card->isKindOf("Slash") || damage.card->isKindOf("Duel")) && !zhurong->isKongcheng()
-            && !target->isKongcheng() && !target->hasFlag("Global_DebutFlag") && !damage.chain && !damage.transfer)
-            return QStringList(objectName());
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("Slash") && !zhurong->isKongcheng()) {
+            QStringList targets;
+            foreach (ServerPlayer *to, use.to) {
+                if (!to->isKongcheng())
+                    targets << to->objectName();
+            }
+            if (!targets.isEmpty())
+                return QStringList(objectName() + "->" + targets.join("+"));
+        }
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *player) const
     {
-        if (player->askForSkillInvoke(objectName())) {
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(target))) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *zhurong, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *zhurong) const
     {
-        DamageStruct damage = data.value<DamageStruct>();
-        ServerPlayer *target = damage.to;
-        bool success = zhurong->pindian(target, "iklieren");
+        bool success = zhurong->pindian(target, objectName());
         if (!success)
             return false;
 
