@@ -542,7 +542,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
     {
         ask_who->drawCards(1, objectName());
         return false;
@@ -558,7 +558,7 @@ public:
         events << AskForRetrial;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         if (TriggerSkill::triggerable(player)) {
             JudgeStruct *judge = data.value<JudgeStruct *>();
@@ -585,7 +585,7 @@ public:
         room->fillAG(hand, player);
         int id = room->askForAG(player, hand, false, objectName());
         if (id == -1)
-            id = hand.at(rad() % hand.length());
+            id = hand.at(rand() % hand.length());
         room->retrial(Sanguosha->getCard(id), player, judge, objectName());
         return false;
     }

@@ -877,7 +877,7 @@ public:
             return true;
 
         CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, victim->objectName(), "thxihua", QString());
-        room->moveCardTo(card, owner, Player::PlaceTable, reason, true);
+        room->moveCardTo(Sanguosha->getCard(id), owner, Player::PlaceTable, reason, true);
         if (Sanguosha->getCard(id)->isKindOf("Slash")) {
             if (owner->canDiscard(victim, "h")) {
                 int card_id = room->askForCardChosen(owner, victim, "h", objectName(), false, Card::MethodDiscard);
