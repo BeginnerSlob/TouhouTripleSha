@@ -507,84 +507,29 @@ public:
     }
 };
 
-class ThXijing : public TriggerSkill
-{
-public:
-    ThXijing()
-        : TriggerSkill("thxijing")
-    {
-        events << CardsMoveOneTime;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
-    {
-        if (!TriggerSkill::triggerable(player) || (room->getCurrent() == player && player->getPhase() != Player::NotActive)
-            || player->isKongcheng() || player->hasFlag("thxijing_using"))
-            return QStringList();
-
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (move.from != player || move.to_place != Player::DiscardPile)
-            return QStringList();
-
-        for (int i = 0; i < move.card_ids.length(); i++) {
-            int id = move.card_ids[i];
-            if (move.from_places[i] != Player::PlaceJudge && move.from_places[i] != Player::PlaceSpecial
-                && !Sanguosha->getCard(id)->isKindOf("EquipCard") && room->getCardPlace(id) == Player::DiscardPile) {
-                return QStringList(objectName());
-            }
-        }
-        return QStringList();
-    }
-
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
-    {
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        for (int i = 0; i < move.card_ids.length(); i++) {
-            int id = move.card_ids[i];
-            if (move.from_places[i] != Player::PlaceJudge && move.from_places[i] != Player::PlaceSpecial
-                && !Sanguosha->getEngineCard(id)->isKindOf("EquipCard") && room->getCardPlace(id) == Player::DiscardPile) {
-                const Card *c = Sanguosha->getEngineCard(id);
-                QString prompt = "@thxijing:" + c->getSuitString() + ":" + c->getNumberString() + ":" + c->objectName();
-                QString pattern = ".";
-                if (c->isBlack())
-                    pattern = ".black";
-                else if (c->isRed())
-                    pattern = ".red";
-                const Card *card = room->askForCard(player, pattern, prompt, QVariant::fromValue(c), Card::MethodNone);
-
-                if (card) {
-                    room->setPlayerFlag(player, "thxijing_using");
-                    CardMoveReason reason(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
-                    room->throwCard(card, reason, player);
-                    room->setPlayerFlag(player, "-thxijing_using");
-                    room->obtainCard(player, Sanguosha->getCard(id));
-                }
-            }
-        }
-
-        return false;
-    }
-};
-
 class ThMengwei : public TriggerSkill
 {
 public:
     ThMengwei()
         : TriggerSkill("thmengwei")
     {
-        events << EventPhaseStart;
+        events << CardsShown;
         frequency = Frequent;
     }
 
-    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const
     {
         TriggerList skill_list;
-        if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Finish && player->getHandcardNum() < 2)
-            skill_list.insert(player, QStringList(objectName()));
-        else if (player->getPhase() == Player::Start)
-            foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName()))
-                if (owner != player && owner->isKongcheng())
-                    skill_list.insert(owner, QStringList(objectName()));
+        CardsShowStruct show = data.value<CardsShowStruct>();
+        if (show.viewer == NULL) {
+            foreach (int id, show.card_ids) {
+                if (room->getCardPlace(id) == Player::PlaceHand) {
+                    foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+                        skill_list.insert(p, QStringList(objectName()));
+                    break;
+                }
+            }
+        }
         return skill_list;
     }
 
@@ -599,10 +544,49 @@ public:
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
-        if (player->getPhase() == Player::Finish)
-            ask_who->drawCards(2 - ask_who->getHandcardNum());
-        else
-            ask_who->drawCards(1);
+        ask_who->drawCards(1, objectName());
+        return false;
+    }
+};
+
+class ThXijing : public TriggerSkill
+{
+public:
+    ThXijing()
+        : TriggerSkill("thxijing")
+    {
+        events << AskForRetrial;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (TriggerSkill::triggerable(player)) {
+            JudgeStruct *judge = data.value<JudgeStruct *>();
+            if (!judge->who->isKongcheng())
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName(), data)) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        JudgeStruct *judge = data.value<JudgeStruct *>();
+        QList<int> hand = judge->who->handCards();
+        room->showAllCards(judge->who);
+        room->fillAG(hand, player);
+        int id = room->askForAG(player, hand, false, objectName());
+        if (id == -1)
+            id = hand.at(rad() % hand.length());
+        room->retrial(Sanguosha->getCard(id), player, judge, objectName());
         return false;
     }
 };
