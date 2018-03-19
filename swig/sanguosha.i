@@ -559,6 +559,27 @@ struct CardsMoveOneTimeStruct {
     void removeCardIds(const QList<int> &to_remove);
 };
 
+struct CardsShowStruct
+{
+    inline CardsShowStruct()
+    {
+        this->card_ids = QList<int>();
+        this->from = NULL;
+        this->viewer = NULL;
+    }
+
+    QList<int> card_ids;
+    ServerPlayer *from;
+    ServerPlayer *viewer;
+
+    inline CardsShowStruct(ServerPlayer *viewer)
+    {
+        this->card_ids = QList<int>();
+        this->from = NULL;
+        this->viewer = viewer;
+    }
+};
+
 struct DyingStruct {
     DyingStruct();
 
@@ -706,6 +727,7 @@ enum TriggerEvent {
     CardResponded,
     BeforeCardsMove, // sometimes we need to record cards before the move
     CardsMoveOneTime,
+    CardsShown,
 
     PreCardUsed, // for AI to filter events only.
     CardUsed,

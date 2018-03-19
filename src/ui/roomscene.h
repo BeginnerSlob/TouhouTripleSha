@@ -441,7 +441,7 @@ private slots:
 
     void resetPiles();
 
-    void showCard(const QString &player_name, int card_id);
+    void showCard(const QString &player_name, QList<int> card_ids);
 
     void speak();
 

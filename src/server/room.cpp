@@ -6225,34 +6225,54 @@ void Room::sendCompulsoryTriggerLog(ServerPlayer *player, const QString &skill_n
 
 void Room::showCard(ServerPlayer *player, int card_id, ServerPlayer *only_viewer)
 {
-    if (getCardOwner(card_id) != player)
-        return;
+    QList<int> card_ids;
+    card_ids << card_id;
+    showCard(player, card_ids, only_viewer);
+}
+
+void Room::showCard(ServerPlayer *player, QList<int> card_ids, ServerPlayer *only_viewer)
+{
+    foreach (int card_id, card_ids) {
+        if (getCardOwner(card_id) != player)
+            return;
+    }
 
     tryPause();
     notifyMoveFocus(player);
     JsonArray show_arg;
     show_arg << player->objectName();
-    show_arg << card_id;
+    show_arg << QVariant::fromValue(IntList2VariantList(card_ids));
 
-    WrappedCard *card = Sanguosha->getWrappedCard(card_id);
-    bool modified = card->isModified();
     if (only_viewer) {
         QList<ServerPlayer *> players;
         players << only_viewer << player;
-        if (modified)
-            notifyUpdateCard(only_viewer, card_id, card);
-        else
-            notifyResetCard(only_viewer, card_id);
+        foreach (int card_id, card_ids) {
+            WrappedCard *card = Sanguosha->getWrappedCard(card_id);
+            bool modified = card->isModified();
+            if (modified)
+                notifyUpdateCard(only_viewer, card_id, card);
+            else
+                notifyResetCard(only_viewer, card_id);
+        }
         doBroadcastNotify(players, S_COMMAND_SHOW_CARD, show_arg);
     } else {
-        if (card_id > 0)
-            Sanguosha->getCard(card_id)->setFlags("visible");
-        if (modified)
-            broadcastUpdateCard(getOtherPlayers(player), card_id, card);
-        else
-            broadcastResetCard(getOtherPlayers(player), card_id);
+        foreach (int card_id, card_ids) {
+            WrappedCard *card = Sanguosha->getWrappedCard(card_id);
+            bool modified = card->isModified();
+            if (card_id > 0)
+                Sanguosha->getCard(card_id)->setFlags("visible");
+            if (modified)
+                broadcastUpdateCard(getOtherPlayers(player), card_id, card);
+            else
+                broadcastResetCard(getOtherPlayers(player), card_id);
+        }
         doBroadcastNotify(S_COMMAND_SHOW_CARD, show_arg);
     }
+    CardsShowStruct show = CardsShowStruct(only_viewer);
+    show.card_ids = card_ids;
+    show.from = player;
+    QVariant data = QVariant::fromValue(show);
+    thread->trigger(CardsShown, this, player, data);
 }
 
 void Room::showAllCards(ServerPlayer *player, ServerPlayer *to)

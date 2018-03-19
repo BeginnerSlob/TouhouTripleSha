@@ -1712,17 +1712,19 @@ void Client::alertFocus()
 void Client::showCard(const QVariant &show_str)
 {
     JsonArray show = show_str.value<JsonArray>();
-    if (show.size() != 2 || !isString(show[0]) || !isNumber(show[1]))
+    QList<int> card_ids;
+    if (show.size() != 2 || !isString(show[0]) || !tryParse(show[1], card_ids))
         return;
 
     QString player_name = show[0].toString();
-    int card_id = show[1].toInt();
 
     ClientPlayer *player = getPlayer(player_name);
-    if (player != Self)
-        player->addKnownHandCard(Sanguosha->getCard(card_id));
+    if (player != Self) {
+        foreach (int card_id, card_ids)
+            player->addKnownHandCard(Sanguosha->getCard(card_id));
+    }
 
-    emit card_shown(player_name, card_id);
+    emit card_shown(player_name, card_ids);
 }
 
 void Client::attachSkill(const QVariant &skill)

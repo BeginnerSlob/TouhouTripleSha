@@ -3619,10 +3619,8 @@ void RoomScene::takeAmazingGrace(ClientPlayer *taker, int card_id, bool move_car
         delete copy;
 }
 
-void RoomScene::showCard(const QString &player_name, int card_id)
+void RoomScene::showCard(const QString &player_name, QList<int> card_ids)
 {
-    QList<int> card_ids;
-    card_ids << card_id;
     const ClientPlayer *player = ClientInstance->getPlayer(player_name);
 
     GenericCardContainer *container = _getGenericCardContainer(Player::PlaceHand, (Player *)player);
@@ -3636,8 +3634,7 @@ void RoomScene::showCard(const QString &player_name, int card_id)
     card_items[0]->setFootnote(_translateMovement(move));
     m_tablePile->addCardItems(card_items, move);
 
-    QString card_str = QString::number(card_id);
-    log_box->appendLog("$ShowCard", player->objectName(), QStringList(), card_str);
+    log_box->appendLog("$ShowCard", player->objectName(), QStringList(), IntList2StringList(card_ids).join("+"));
 }
 
 void RoomScene::chooseSkillButton()

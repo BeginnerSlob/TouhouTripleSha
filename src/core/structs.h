@@ -319,6 +319,27 @@ struct CardsMoveStruct
     }
 };
 
+struct CardsShowStruct
+{
+    inline CardsShowStruct()
+    {
+        this->card_ids = QList<int>();
+        this->from = NULL;
+        this->viewer = NULL;
+    }
+
+    QList<int> card_ids;
+    ServerPlayer *from;
+    ServerPlayer *viewer;
+
+    inline CardsShowStruct(ServerPlayer *viewer)
+    {
+        this->card_ids = QList<int>();
+        this->from = NULL;
+        this->viewer = viewer;
+    }
+};
+
 struct DyingStruct
 {
     DyingStruct();
@@ -541,6 +562,7 @@ enum TriggerEvent
     CardResponded,
     BeforeCardsMove, // sometimes we need to record cards before the move
     CardsMoveOneTime,
+    CardsShown,
 
     PreCardUsed, // for AI to filter events only.
     CardUsed,
@@ -577,6 +599,7 @@ Q_DECLARE_METATYPE(SlashEffectStruct)
 Q_DECLARE_METATYPE(CardUseStruct)
 Q_DECLARE_METATYPE(CardsMoveStruct)
 Q_DECLARE_METATYPE(CardsMoveOneTimeStruct)
+Q_DECLARE_METATYPE(CardsShowStruct)
 Q_DECLARE_METATYPE(DyingStruct)
 Q_DECLARE_METATYPE(DeathStruct)
 Q_DECLARE_METATYPE(RecoverStruct)
