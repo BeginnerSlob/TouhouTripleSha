@@ -815,7 +815,7 @@ void ThXihuaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
         }
     }
 
-    source->clearOnePrivatePile("joke");
+    room->throwCard(this, NULL);
 }
 
 class ThXihua : public OneCardViewAsSkill
@@ -876,7 +876,8 @@ public:
         if (id == -1)
             return true;
 
-        room->showCard(owner, id);
+        CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, victim->objectName(), "thxihua", QString());
+        room->moveCardTo(card, owner, Player::PlaceTable, reason, true);
         if (Sanguosha->getCard(id)->isKindOf("Slash")) {
             if (owner->canDiscard(victim, "h")) {
                 int card_id = room->askForCardChosen(owner, victim, "h", objectName(), false, Card::MethodDiscard);

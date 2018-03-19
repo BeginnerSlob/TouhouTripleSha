@@ -3857,6 +3857,8 @@ void IkLingshiCard::onEffect(const CardEffectStruct &effect) const
         if (card_id == -1)
             return;
 
+        room->showCard(effect.to, card_id);
+
         QString result = room->askForChoice(effect.from, "iklingshi", "discard+put");
         effect.from->tag.remove("iklingshi");
         if (result == "discard") {

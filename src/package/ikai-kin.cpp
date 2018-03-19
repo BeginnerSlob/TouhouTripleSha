@@ -215,8 +215,6 @@ void IkXinchaoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
             room->doBroadcastNotify(QSanProtocol::S_COMMAND_UPDATE_PILE,
                                     QVariant(room->getDrawPile().length() + dummy->subcardsLength()));
             source->obtainCard(dummy);
-            foreach (int id, dummy->getSubcards())
-                room->showCard(source, id);
         }
         delete dummy;
     }

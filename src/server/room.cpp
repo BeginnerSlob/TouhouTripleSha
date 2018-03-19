@@ -6326,6 +6326,12 @@ void Room::showAllCards(ServerPlayer *player, ServerPlayer *to)
 
         doBroadcastNotify(getOtherPlayers(player), S_COMMAND_SHOW_ALL_CARDS, gongxinArgs);
     }
+
+    CardsShowStruct show = CardsShowStruct(to);
+    show.from = player;
+    show.card_ids = player->handCards();
+    QVariant data = QVariant::fromValue(show);
+    thread->trigger(CardsShown, this, player, data);
 }
 
 void Room::retrial(const Card *card, ServerPlayer *player, JudgeStruct *judge, const QString &skill_name, bool exchange)

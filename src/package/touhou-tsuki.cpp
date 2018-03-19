@@ -1834,13 +1834,17 @@ void ThExiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
     foreach (ServerPlayer *p, targets)
         cards << room->askForCardShow(p, source, "thexi");
 
-    room->showCard(targets[0], cards[0]->getId());
-    room->showCard(targets[1], cards[1]->getId());
+    CardMoveReason reason1(CardMoveReason::S_REASON_SHOW, targets[0]->objectName(), "thexi", QString());
+    CardMoveReason reason2(CardMoveReason::S_REASON_SHOW, targets[1]->objectName(), "thexi", QString());
+    room->moveCardTo(cards[0], targets[0], Player::PlaceTable, reason1, true);
+    room->moveCardTo(cards[1], targets[1], Player::PlaceTable, reason2, true);
     const Card *big, *small;
     ServerPlayer *target;
     if (cards[0]->getNumber() == cards[1]->getNumber()) {
         source->gainAnExtraTurn();
         source->addMark("exicount");
+        targets[0]->obtainCard(cards[0]);
+        targets[1]->obtainCard(cards[1]);
     } else {
         if (cards[0]->getNumber() > cards[1]->getNumber()) {
             big = cards[0];

@@ -2906,6 +2906,7 @@ public:
                         card = player->getCards("he").first();
                     }
                     to->obtainCard(card);
+                    room->showCard(to, card->getEffectiveId());
                     if (card->getTypeId() == Card::TypeEquip && room->getCardOwner(card->getEffectiveId()) == to
                         && !to->isLocked(card))
                         if (room->askForSkillInvoke(to, "ikbenhua_use", "use"))
@@ -7324,9 +7325,11 @@ public:
         }
         room->sortByActionOrder(chenlins);
         foreach (ServerPlayer *chenlin, chenlins) {
-            int card_id = chenlin->getPile("satire").first();
-            room->showCard(chenlin, card_id);
+            QList<int> card_ids = chenlin->getPile("satire");
+            int card_id = card_ids.first();
             const Card *cd = Sanguosha->getCard(card_id);
+            CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, player->objectName(), "ikkouzhu", QString());
+            room->moveCardTo(cd, NULL, Player::PlaceTable, reason, true);
             QString pattern;
             if (cd->isKindOf("BasicCard"))
                 pattern = "BasicCard";
@@ -7342,12 +7345,9 @@ public:
                 CardMoveReason reasonG(CardMoveReason::S_REASON_GIVE, player->objectName(), chenlin->objectName(), "ikkouzhu",
                                        QString());
                 room->obtainCard(chenlin, to_give, reasonG, false);
-                CardMoveReason reason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE, player->objectName(), "ikkouzhu",
-                                      QString());
-                room->obtainCard(player, cd, reason, false);
+                room->obtainCard(player, cd, true);
             } else {
-                CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
-                room->throwCard(cd, reason, NULL);
+                room->throwCard(cd, NULL);
                 room->loseHp(player);
             }
             room->removePlayerMark(player, "@kouzhu");
@@ -8500,9 +8500,7 @@ IkYouxiaCard::IkYouxiaCard()
 
 void IkYouxiaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
-    foreach (int id, subcards)
-        room->showCard(source, id);
-
+    room->showCard(source, subcards);
     room->setPlayerProperty(source, "ignored_hands", IntList2StringList(subcards).join("+"));
 }
 

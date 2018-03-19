@@ -4367,8 +4367,7 @@ void IkLihunCard::onEffect(const CardEffectStruct &effect) const
         const Card *dummy = room->askForExchange(effect.to, "iklihun", 998, 1, false, "@iklihun-showcard", false);
         if (!dummy)
             dummy = new DummyCard(QList<int>() << effect.to->getRandomHandCardId());
-        foreach (int id, dummy->getSubcards())
-            room->showCard(effect.to, id);
+        room->showCard(effect.to, dummy->getSubcards());
         QString choice = room->askForChoice(effect.from, "iklihun", "showcard+noshowcard");
         if (choice == "showcard") {
             room->obtainCard(effect.from, dummy);
@@ -6442,8 +6441,7 @@ void IkDaoleiCard::onEffect(const CardEffectStruct &effect) const
     QList<int> original_ids = effect.to->handCards();
     qShuffle(original_ids);
     QList<int> ids = original_ids.mid(0, n);
-    foreach (int id, ids)
-        room->showCard(effect.to, id);
+    room->showCard(effect.to, ids);
     bool spade = false;
     foreach (int id, ids) {
         const Card *card = Sanguosha->getCard(id);

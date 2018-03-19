@@ -16,8 +16,7 @@ ThLuanshenCard::ThLuanshenCard()
 
 void ThLuanshenCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
-    foreach (int id, getSubcards())
-        room->showCard(source, id);
+    room->showCard(source, subcards);
     ServerPlayer *target = targets.first();
     QStringList choices;
     if (target->canDiscard(target, "he") && target->getCardCount() >= subcardsLength())
@@ -954,7 +953,8 @@ public:
                     room->broadcastSkillInvoke(objectName());
 
                     int card_id = room->askForCardChosen(player, to, "h", objectName());
-                    room->obtainCard(player, card_id, true);
+                    room->obtainCard(player, card_id);
+                    room->showCard(player, card_id);
                     if (Sanguosha->getCard(card_id)->isRed()) {
                         LogMessage log;
                         log.type = "#NoJink";
@@ -1984,8 +1984,7 @@ public:
             r->moveCardsAtomic(move, false);
             if (p->getMark(objectName()) == 0 && p->askForSkillInvoke("thhuikuang_sa", "show")) {
                 r->addPlayerMark(p, objectName());
-                r->showCard(p, cards.first());
-                r->showCard(p, cards.last());
+                r->showCard(p, cards);
                 const Card *card1 = Sanguosha->getCard(cards.first());
                 const Card *card2 = Sanguosha->getCard(cards.last());
                 if (card1->sameColorWith(card2)) {
