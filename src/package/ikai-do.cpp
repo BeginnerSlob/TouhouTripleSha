@@ -52,7 +52,7 @@ void IkShenaiCard::onEffect(const CardEffectStruct &effect) const
         if (peach->isAvailable(effect.from))
             choices << "peach";
         if (!choices.isEmpty()) {
-            QString card_name = room->askForChoice(effect.from, objectName(), choices.join("+"));
+            QString card_name = room->askForChoice(effect.from, "ikshenai", choices.join("+"));
             if (card_name.contains("slash")) {
                 Card *slash = Sanguosha->cloneCard(card_name);
                 slash->setSkillName("_ikshenai");
