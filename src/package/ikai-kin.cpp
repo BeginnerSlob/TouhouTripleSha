@@ -2693,91 +2693,78 @@ public:
     }
 };
 
-class IkZhuyan : public TriggerSkill
-{
-public:
-    IkZhuyan()
-        : TriggerSkill("ikzhuyan")
-    {
-        events << SlashEffected;
-        frequency = Compulsory;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
-    {
-        if (TriggerSkill::triggerable(player) && player->getArmor() == NULL) {
-            SlashEffectStruct effect = data.value<SlashEffectStruct>();
-            if (effect.slash->isBlack() && effect.nature == DamageStruct::Normal)
-                return QStringList(objectName());
-        }
-        return QStringList();
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
-    {
-        room->broadcastSkillInvoke(objectName());
-        room->notifySkillInvoked(player, objectName());
-
-        SlashEffectStruct effect = data.value<SlashEffectStruct>();
-        LogMessage log;
-        log.type = "#SkillNullify";
-        log.from = player;
-        log.arg = objectName();
-        log.arg2 = effect.slash->objectName();
-        room->sendLog(log);
-
-        return true;
-    }
-};
-
-class IkPiaohu : public TriggerSkill
+class IkPiaohu : public PhaseChangeSkill
 {
 public:
     IkPiaohu()
-        : TriggerSkill("ikpiaohu")
+        : PhaseChangeSkill("ikpiaohu")
     {
-        events << TargetConfirming;
     }
 
-    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    virtual bool triggerable(const ServerPlayer *target) const
     {
-        TriggerList skill_list;
-        CardUseStruct use = data.value<CardUseStruct>();
-
-        if (use.card->isKindOf("Slash") && use.to.contains(player))
-            foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
-                if (owner == player || owner == use.from
-                    || (owner == room->getCurrent() && owner->getPhase() != Player::NotActive))
-                    continue;
-                if (use.from->canSlash(owner, use.card, false) && owner->inMyAttackRange(player))
-                    if (owner->canDiscard(owner, "he") || (!owner->isChained() && !player->isChained()))
-                        skill_list.insert(owner, QStringList(objectName()));
+        if (PhaseChangeSkill::triggerable(target) && target->getPhase() == Player::Start) {
+            if (target->getHandcardNum() > target->getHp() && target->canDiscard(target, "h"))
+                return true;
+            foreach (const Player *p, target->getAliveSiblings()) {
+                if (p->getHandcardNum() > p->getHp() && target->canDiscard(p, "h"))
+                    return true;
             }
-        return skill_list;
+        }
+        return false;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        if (ask_who->canDiscard(ask_who, "he")
-            && room->askForCard(ask_who, "..", "@ikpiaohu:" + player->objectName(), data, objectName())) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        } else if (!player->isChained() && !ask_who->isChained()
-                   && ask_who->askForSkillInvoke(objectName(), "chain:" + player->objectName())) {
-            room->broadcastSkillInvoke(objectName());
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            if (p->getHandcardNum() > p->getHp() && player->canDiscard(p, "h"))
+                targets << p;
+        }
 
-            QList<ServerPlayer *> p_list;
-            p_list << player << ask_who;
-            room->sortByActionOrder(p_list);
-            foreach (ServerPlayer *p, p_list)
-                if (!p->isChained()) {
-                    p->setChained(true);
-                    room->broadcastProperty(p, "chained");
-                    room->setEmotion(p, "effects/iron_chain");
-                    room->getThread()->trigger(ChainStateChanged, room, p);
-                }
+        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@ikpiaohu", true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["IkPiaohuTarget"] = QVariant::fromValue(target);
             return true;
         }
+        return false;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const
+    {
+        Room *room = player->getRoom();
+        ServerPlayer *target = player->tag["IkPiaohuTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkPiaohuTarget");
+        if (target) {
+            int n = target->getHandcardNum() - target->getHp();
+            if (n <= 0 || !player->canDiscard(target, "h"))
+                return false;
+            int not_equip = 0;
+            room->setPlayerFlag(target, "ikpiaohu_InTempMoving");
+            DummyCard *dummy = new DummyCard;
+            QList<int> card_ids;
+            for (int i = 0; i < n; i++) {
+                card_ids << room->askForCardChosen(player, target, "h", objectName(), false, Card::MethodDiscard);
+                const Card *card = Sanguosha->getCard(card_ids[i]);
+                if (!card->isKindOf("EquipCard"))
+                    ++not_equip;
+                dummy->addSubcard(card_ids[i]);
+                target->addToPile("#ikpiaohu", card_ids[i], false);
+                if (!player->canDiscard(target, "h"))
+                    break;
+            }
+            for (int i = 0; i < dummy->subcardsLength(); i++)
+                room->moveCardTo(Sanguosha->getCard(card_ids[i]), target, Player::PlaceHand, false);
+            room->setPlayerFlag(target, "-ikpiaohu_InTempMoving");
+            if (dummy->subcardsLength() > 0)
+                room->throwCard(dummy, target, player);
+            delete dummy;
+            if (not_equip == 0 || !player->canDiscard(player, "he") || player->getCardCount() < not_equip
+                || !room->askForDiscard(player, objectName(), not_equip, not_equip, true, true))
+                target->drawCards(n, objectName());
+        }
+
         return false;
     }
 
@@ -8610,7 +8597,6 @@ IkaiKinPackage::IkaiKinPackage()
     bloom016->addSkill(new IkJiushi);
 
     General *bloom017 = new General(this, "bloom017", "hana");
-    bloom017->addSkill(new IkZhuyan);
     bloom017->addSkill(new IkPiaohu);
 
     General *bloom018 = new General(this, "bloom018", "hana", 3, false);
