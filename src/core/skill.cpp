@@ -589,9 +589,10 @@ QStringList FakeMoveSkill::triggerable(TriggerEvent, Room *room, ServerPlayer *,
 {
     QString flag = QString("%1_InTempMoving").arg(name);
 
-    foreach (ServerPlayer *p, room->getAllPlayers())
+    foreach (ServerPlayer *p, room->getAllPlayers()) {
         if (p->hasFlag(flag))
             return QStringList(objectName());
+    }
     return QStringList();
 }
 

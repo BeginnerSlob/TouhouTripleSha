@@ -4763,10 +4763,10 @@ void IkGuanjuCard::swapEquip(ServerPlayer *first, ServerPlayer *second) const
     QList<CardsMoveStruct> exchangeMove;
     CardsMoveStruct move1(
         equips1, second, Player::PlaceEquip,
-        CardMoveReason(CardMoveReason::S_REASON_SWAP, first->objectName(), second->objectName(), "ikguanju", QString()));
+        CardMoveReason(CardMoveReason::S_REASON_MOVE_EQUIP, first->objectName(), second->objectName(), "ikguanju", QString()));
     CardsMoveStruct move2(
         equips2, first, Player::PlaceEquip,
-        CardMoveReason(CardMoveReason::S_REASON_SWAP, second->objectName(), first->objectName(), "ikguanju", QString()));
+        CardMoveReason(CardMoveReason::S_REASON_MOVE_EQUIP, second->objectName(), first->objectName(), "ikguanju", QString()));
     exchangeMove.push_back(move2);
     exchangeMove.push_back(move1);
     room->moveCardsAtomic(exchangeMove, false);
@@ -5357,15 +5357,10 @@ public:
                 targets << target;
         }
 
-        ServerPlayer *first = room->askForPlayerChosen(lingtong, targets, "ikqianbian");
-        ServerPlayer *second = NULL;
-        const Card *card1 = NULL, *card2 = NULL;
-        int first_id = -1;
-        int second_id = -1;
-        if (first != NULL) {
-            first_id = room->askForCardChosen(lingtong, first, "he", "ikqianbian", false, Card::MethodDiscard);
-            card1 = Sanguosha->getCard(first_id);
-            room->throwCard(first_id, first, lingtong);
+        ServerPlayer *target = room->askForPlayerChosen(lingtong, targets, "ikqianbian");
+        if (target != NULL) {
+            int card_id = room->askForCardChosen(lingtong, first, "he", "ikqianbian", false, Card::MethodDiscard);
+            room->throwCard(card_id, target, lingtong);
         }
         if (!lingtong->isAlive())
             return false;
@@ -5374,22 +5369,147 @@ public:
             if (lingtong->canDiscard(target, "he"))
                 targets << target;
         }
-        if (!targets.isEmpty())
-            second = room->askForPlayerChosen(lingtong, targets, "ikqianbian");
-        if (second != NULL) {
-            second_id = room->askForCardChosen(lingtong, second, "he", "ikqianbian", false, Card::MethodDiscard);
-            card2 = Sanguosha->getCard(second_id);
-            room->throwCard(second_id, second, lingtong);
+        if (!targets.isEmpty()) {
+            target = room->askForPlayerChosen(lingtong, targets, "ikqianbian");
+            if (target != NULL) {
+                int card_id = room->askForCardChosen(lingtong, target, "he", "ikqianbian", false, Card::MethodDiscard);
+                room->throwCard(card_id, target, lingtong);
+            }
         }
 
-        int n = 0;
-        if (card1 && !card1->isKindOf("TrickCard"))
-            n++;
-        if (card2 && !card2->isKindOf("TrickCard"))
-            n++;
-        lingtong->drawCards(n, objectName());
-
         return false;
+    }
+};
+
+IkHuanzhouCard::IkHuanzhouCard()
+{
+}
+
+bool IkHuanzhouCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const
+{
+    if (targets.isEmpty())
+        return to_select->hasEquip();
+
+    if (targets.length() == 1) {
+        foreach (const Card *card, targets.first()->getEquips()) {
+            const EquipCard *equip = qobject_cast<const EquipCard *>(card->getRealCard());
+            EquipCard::Location location = equip->location();
+            if (!to_select->getEquip(location))
+                return true;
+        }
+    }
+
+    return false;
+}
+
+bool IkHuanzhouCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const
+{
+    return targets.length() == 2;
+}
+
+void IkHuanzhouCard::onUse(Room *room, const CardUseStruct &card_use) const
+{
+    CardUseStruct use = card_use;
+    QVariant data = QVariant::fromValue(use);
+    RoomThread *thread = room->getThread();
+
+    thread->trigger(PreCardUsed, room, card_use.from, data);
+    use = data.value<CardUseStruct>();
+
+    room->broadcastSkillInvoke("ikhuanzhou");
+
+    LogMessage log;
+    log.from = use.from;
+    log.to << use.to;
+    log.type = "#UseCard";
+    log.card_str = toString();
+    room->sendLog(log);
+
+    thread->trigger(CardUsed, room, use.from, data);
+    use = data.value<CardUseStruct>();
+    thread->trigger(CardFinished, room, use.from, data);
+}
+
+void IkHuanzhouCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
+    if (source->getMark("@huanzhou") > 0) {
+        room->removePlayerMark(source, "@huanzhou");
+        room->removePlayerMark(source, "@huanzhouused");
+    }
+
+    ServerPlayer *from = targets.takeFirst();
+    ServerPlayer *to = targets.takeFirst();
+    room->setPlayerFlag(from, "ikhuanzhou_InTempMoving");
+
+    QStringList from_list = source->tag["IkHuanzhouFroms"].toStringList();
+    QStringList to_list = source->tag["IkHuanzhouTos"].toStringList();
+    QList<int> id_list = VariantList2IntList(source->tag["IkHuanzhouIds"].toList());
+
+    if (from_list.length() == to_list.length() && from_list.length() == id_list.length() && from_list.length() < 3) {
+        QList<int> disabled_ids;
+        bool can = false;
+        foreach (const Card *card, from->getEquips()) {
+            const EquipCard *equip = qobject_cast<const EquipCard *>(card->getRealCard());
+            EquipCard::Location location = equip->location();
+            if (!to->getEquip(location))
+                can = true;
+            else
+                disabled_ids << equip->getEffectiveId();
+        }
+
+        if (can) {
+            int id = room->askForCardChosen(source, from, "e", "ikhuanzhou", false, MethodNone, disabled_ids);
+            room->moveCardTo(Sanguosha->getCard(id), to, Player::PlaceEquip, true);
+            from_list << from->objectName();
+            to_list << to->objectName();
+            id_list << id;
+        }
+
+        room->setPlayerFlag(from, "-ikhuanzhou_InTempMoving");
+
+        source->tag["IkHuanzhouFroms"] = QVariant::fromValue(from_list);
+        source->tag["IkHuanzhouTos"] = QVariant::fromValue(to_list);
+        source->tag["IkHuanzhouIds"] = QVariant::fromValue(IntList2VariantList(id_list));
+
+        if (from_list.length() == 3 || !room->askForUseCard(source, "@@ikhuanzhou", "@ikhuanzhou")) {
+            source->tag.remove("IkHuanzhouFroms");
+            source->tag.remove("IkHuanzhouTos");
+            source->tag.remove("IkHuanzhouIds");
+            QList<CardsMoveStruct> moves;
+            for (int i = from_list.length() - 1; i >= 0; --i) {
+                ServerPlayer *from = room->findPlayer(from_list.at(i));
+                ServerPlayer *to = room->findPlayer(to_list.at(i));
+                int id = id_list.at(i);
+                room->setPlayerFlag(to, "ikhuanzhou_InTempMoving");
+                room->moveCardTo(Sanguosha->getCard(id), from, Player::PlaceEquip, true);
+                room->setPlayerFlag(to, "-ikhuanzhou_InTempMoving");
+                moves << CardsMoveStruct(id, to, Player::PlaceEquip,
+                                         CardMoveReason(CardMoveReason::S_REASON_MOVE_EQUIP, source->objectName(),
+                                                        to->objectName(), "ikhuanzhou", QString()));
+            }
+            room->moveCardsAtomic(moves, true);
+        }
+    }
+}
+
+class IkHuanzhou : public ZeroCardViewAsSkill
+{
+public:
+    IkHuanzhou()
+        : ZeroCardViewAsSkill("ikhuanzhou")
+    {
+        limit_mark = "@huanzhou";
+        response_pattern = "@@ikhuanzhou";
+    }
+
+    virtual bool viewAs() const
+    {
+        return new IkHuanzhouCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return player->getMark("@huanzhou") > 0;
     }
 };
 
@@ -8595,6 +8715,9 @@ IkaiKinPackage::IkaiKinPackage()
 
     General *snow023 = new General(this, "snow023", "yuki");
     snow023->addSkill(new IkQianbian);
+    snow023->addSkill(new IkHuanzhou);
+    snow023->addSkill(new FakeMoveSkill("ikhuanzhou"));
+    related_skills.insertMulti("ikhuanzhou", "#ikhuanzhou-fake-move");
 
     General *snow024 = new General(this, "snow024", "yuki");
     snow024->addSkill(new IkMengjing);
@@ -8725,6 +8848,7 @@ IkaiKinPackage::IkaiKinPackage()
     addMetaObject<IkXiaozuiCard>();
     addMetaObject<IkXiaozuiPeachCard>();
     addMetaObject<IkAnxuCard>();
+    addMetaObject<IkHuanzhouCard>();
     addMetaObject<IkMengjingCard>();
     addMetaObject<IkZhizhanCard>();
     addMetaObject<IkZongxuanCard>();

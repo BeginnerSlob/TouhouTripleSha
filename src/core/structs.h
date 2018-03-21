@@ -187,8 +187,9 @@ public:
 
     //subcategory of transfer
     static const int S_REASON_SWAP = 0x19; // exchange card for two players
-    static const int S_REASON_OVERRIDE = 0x29; // exchange cards from cards in game
-    static const int S_REASON_EXCHANGE_FROM_PILE = 0x39; // exchange cards from cards moved out of game (for ikqiyao only)
+    static const int S_REASON_MOVE_EQUIP = 0x29; // transfer card from placeequip to placeequip
+    static const int S_REASON_OVERRIDE = 0x39; // exchange cards from cards in game
+    static const int S_REASON_EXCHANGE_FROM_PILE = 0x49; // exchange cards from cards moved out of game (for ikqiyao only)
 
     //subcategory of put
     static const int S_REASON_NATURAL_ENTER = 0x1A; //  a card with no-owner move into discardpile
