@@ -5359,7 +5359,7 @@ public:
 
         ServerPlayer *target = room->askForPlayerChosen(lingtong, targets, "ikqianbian");
         if (target != NULL) {
-            int card_id = room->askForCardChosen(lingtong, first, "he", "ikqianbian", false, Card::MethodDiscard);
+            int card_id = room->askForCardChosen(lingtong, target, "he", "ikqianbian", false, Card::MethodDiscard);
             room->throwCard(card_id, target, lingtong);
         }
         if (!lingtong->isAlive())
@@ -5498,11 +5498,12 @@ public:
     IkHuanzhou()
         : ZeroCardViewAsSkill("ikhuanzhou")
     {
+        frequency = Limited;
         limit_mark = "@huanzhou";
         response_pattern = "@@ikhuanzhou";
     }
 
-    virtual bool viewAs() const
+    virtual const Card *viewAs() const
     {
         return new IkHuanzhouCard;
     }
