@@ -5372,13 +5372,22 @@ IkHuanzhouCard::IkHuanzhouCard()
 {
 }
 
-bool IkHuanzhouCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const
+bool IkHuanzhouCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    if (targets.isEmpty())
-        return to_select->hasEquip();
+    QList<int> moved = StringList2IntList(Self->property("ikhuanzhou").toString().split("+"));
+    if (targets.isEmpty()) {
+        if (to_select->hasEquip()) {
+            foreach (const Card *card, to_select->getEquips()) {
+                if (!moved.contains(card->getEffectiveId()))
+                    return true;
+            }
+        }
+    }
 
     if (targets.length() == 1) {
         foreach (const Card *card, targets.first()->getEquips()) {
+            if (moved.contains(card->getEffectiveId()))
+                continue;
             const EquipCard *equip = qobject_cast<const EquipCard *>(card->getRealCard());
             EquipCard::Location location = equip->location();
             if (!to_select->getEquip(location))
@@ -5421,7 +5430,7 @@ void IkHuanzhouCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *>
 {
     if (source->getMark("@huanzhou") > 0) {
         room->removePlayerMark(source, "@huanzhou");
-        room->removePlayerMark(source, "@huanzhouused");
+        room->addPlayerMark(source, "@huanzhouused");
     }
 
     ServerPlayer *from = targets.takeFirst();
@@ -5446,6 +5455,7 @@ void IkHuanzhouCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *>
 
         if (can) {
             int id = room->askForCardChosen(source, from, "e", "ikhuanzhou", false, MethodNone, disabled_ids);
+            to->addToPile("#ikhuanzhou", id, false);
             room->moveCardTo(Sanguosha->getCard(id), to, Player::PlaceEquip, true);
             from_list << from->objectName();
             to_list << to->objectName();
@@ -5458,6 +5468,7 @@ void IkHuanzhouCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *>
         source->tag["IkHuanzhouTos"] = QVariant::fromValue(to_list);
         source->tag["IkHuanzhouIds"] = QVariant::fromValue(IntList2VariantList(id_list));
 
+        room->setPlayerProperty(source, "ikhuanzhou", IntList2StringList(id_list).join("+"));
         if (from_list.length() == 3 || !room->askForUseCard(source, "@@ikhuanzhou", "@ikhuanzhou")) {
             source->tag.remove("IkHuanzhouFroms");
             source->tag.remove("IkHuanzhouTos");
@@ -5468,6 +5479,7 @@ void IkHuanzhouCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *>
                 ServerPlayer *to = room->findPlayer(to_list.at(i));
                 int id = id_list.at(i);
                 room->setPlayerFlag(to, "ikhuanzhou_InTempMoving");
+                from->addToPile("#ikhuanzhou", id, false);
                 room->moveCardTo(Sanguosha->getCard(id), from, Player::PlaceEquip, true);
                 room->setPlayerFlag(to, "-ikhuanzhou_InTempMoving");
                 moves << CardsMoveStruct(id, to, Player::PlaceEquip,
@@ -5476,6 +5488,8 @@ void IkHuanzhouCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *>
             }
             room->moveCardsAtomic(moves, true);
         }
+
+        room->setPlayerProperty(source, "ikhuanzhou", "");
     }
 }
 
