@@ -1708,7 +1708,7 @@ public:
                 }
             }
         } else {
-            foreach (ServerPlayer *p, room->getAllPlayers())
+            foreach (ServerPlayer *p, room->getAllPlayers()) {
                 if (p->isChained() && !use.to.contains(p)) {
                     room->addPlayerMark(p, "kuangxiang");
                     use.to << p;
@@ -1776,6 +1776,7 @@ public:
                         }
                     }
                 }
+            }
         }
 
         room->setTag("ThKuangxiangCard", QVariant::fromValue(use.card->toString()));
@@ -2602,7 +2603,6 @@ public:
         } else if (choice == "remove") {
             ServerPlayer *removed
                 = room->askForPlayerChosen(player, use.to, "thyongye", "@thyongye-remove:::" + use.card->objectName());
-            use.to.removeOne(removed);
 
             LogMessage log;
             log.type = "#ThYongyeRemove";
@@ -2611,6 +2611,8 @@ public:
             log.card_str = use.card->toString();
             log.arg = "thyongye";
             room->sendLog(log);
+
+            room->cancelTarget(use, removed);
         }
         data = QVariant::fromValue(use);
 

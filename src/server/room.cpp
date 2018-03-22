@@ -6387,6 +6387,13 @@ void Room::retrial(const Card *card, ServerPlayer *player, JudgeStruct *judge, c
         thread->trigger(CardResponded, this, player, data);
 }
 
+void Room::cancelTarget(CardUseStruct &card_use, ServerPlayer *who)
+{
+    card_use.to.removeOne(who);
+    QVariant data = QVariant::fromValue(card_use);
+    thread->trigger(TargetCanceled, this, who, data);
+}
+
 QString Room::getWinner(ServerPlayer *victim)
 {
     QString winner;

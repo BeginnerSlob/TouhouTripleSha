@@ -586,7 +586,7 @@ public:
                 foreach (ServerPlayer *p, room->getAlivePlayers())
                     room->setPlayerMark(p, objectName(), 0);
             }
-        } else if (player->getPhase() == Player::RoundStart && !player->isKongcheng()) {
+        } else if (player->getPhase() == Player::RoundStart) {
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
                 if (!p->isKongcheng())
                     skill_list.insert(p, QStringList(objectName()));

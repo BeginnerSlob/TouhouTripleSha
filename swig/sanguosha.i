@@ -735,6 +735,7 @@ enum TriggerEvent {
     TargetConfirming,
     TargetSpecified,
     TargetConfirmed,
+    TargetCanceled,
     CardEffect, // for AI to filter events only
     CardEffected,
     PostCardEffected,

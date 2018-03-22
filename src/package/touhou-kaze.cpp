@@ -63,6 +63,8 @@ public:
         : TriggerSkill("#thzhiji")
     {
         events << CardsMoveOneTime;
+        frequency = NotCompulsory;
+        global = true;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const

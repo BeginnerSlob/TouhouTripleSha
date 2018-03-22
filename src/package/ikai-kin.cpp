@@ -4622,17 +4622,35 @@ public:
     IkNilan()
         : TriggerSkill("iknilan")
     {
-        events << CardsMoveOneTime;
+        events << CardsMoveOneTime << EventPhaseEnd;
         frequency = Compulsory;
     }
 
-    virtual TriggerList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data) const
+    virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data) const
     {
         TriggerList skill_list;
         if (TriggerSkill::triggerable(player)) {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.from == player && move.from_places.contains(Player::PlaceEquip))
-                skill_list.insert(player, QStringList(objectName()));
+            if (triggerEvent == CardsMoveOneTime) {
+                CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+                if (move.from == player && move.from_places.contains(Player::PlaceEquip))
+                    skill_list.insert(player, QStringList(objectName()));
+            } else if (triggerEvent == EventPhaseEnd && player->getPhase() == Player::Discard) {
+                QVariantList v_list = player->tag["IkNilanList"].toList();
+                if (v_list.length() >= 2) {
+                    Card::Color color = Card::Colorless;
+                    bool same = true;
+                    foreach (QVariant v_id, v_list) {
+                        if (color == Card::Colorless)
+                            color = Sanguosha->getCard(v_id.toInt())->getColor();
+                        else if (color != Sanguosha->getCard(v_id.toInt())->getColor()) {
+                            same = false;
+                            break;
+                        }
+                    }
+                    if (same)
+                        skill_list.insert(player, QStringList(objectName()));
+                }
+            }
         }
         return skill_list;
     }
@@ -4679,6 +4697,38 @@ public:
         }
 
         return false;
+    }
+};
+
+class IkNilanRecord : public TriggerSkill
+{
+public:
+    IkNilanRecord()
+        : TriggerSkill("#iknilan")
+    {
+        events << CardsMoveOneTime;
+        frequency = NotCompulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (player->getPhase() == Player::Discard && move.from == player
+            && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
+            QVariantList QijiList = player->tag["IkNilanList"].toList();
+            foreach (int id, move.card_ids) {
+                int index = move.card_ids.indexOf(id);
+                if (!QijiList.contains(id) && move.from_places[index] == Player::PlaceHand)
+                    QijiList << id;
+            }
+            player->tag["IkNilanList"] = QijiList;
+        }
+
+        return QStringList();
     }
 };
 
