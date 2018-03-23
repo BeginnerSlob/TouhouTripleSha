@@ -1569,7 +1569,7 @@ void ThGelongCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     if (success) {
         const Card *card = NULL;
         if (!source->isKongcheng())
-            card = room->askForCard(source, ".", "@thgelonggive:" + source->objectName(), QVariant(), Card::MethodNone);
+            card = room->askForCard(source, ".", "@thgelonggive:" + target->objectName(), QVariant(), Card::MethodNone);
         if (card) {
             CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "thgelong",
                                   QString());
