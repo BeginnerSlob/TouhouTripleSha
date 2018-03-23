@@ -37,7 +37,7 @@ return {
 	["#hana003"] = "三途川的引路人",
 	["hana003"] = "小野塚小町",--花 - 幻 - 3血
 	["&hana003"] = "小町",
-	["designer:hana003"] = "幻桜落",
+	["designer:hana003"] = "同声异谱",
 	["illustrator:hana003"] = "カズ",
 	["cv:hana003"] = "暂无",
 	["thyuwu"] = "余无",
@@ -126,7 +126,7 @@ return {
 	["#hana010"] = "地上的彗星",
 	["hana010"] = "莉格露•奈特巴格",--花 - 空 - 4血
 	["&hana010"] = "莉格露",
-	["designer:hana010"] = "冰剑囚龙",
+	["designer:hana010"] = "永恒的须臾",
 	["illustrator:hana010"] = "くまだ",
 	["cv:hana010"] = "暂无",
 	["thzheyin"] = "蛰隐",

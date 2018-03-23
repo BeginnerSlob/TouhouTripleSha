@@ -38,7 +38,7 @@ return {
 	["#tsuki003"] = "晴岚的赤瞳",
 	["tsuki003"] = "铃仙•优昙华院•稻叶",--月 - 空 - 4血
 	["&tsuki003"] = "铃仙",
-	["designer:tsuki003"] = "幻桜落",
+	["designer:tsuki003"] = "同声异谱",
 	["illustrator:tsuki003"] = "多門結之",
 	["cv:tsuki003"] = "暂无",
 	["thkuangqi"] = "狂气",
@@ -87,7 +87,7 @@ return {
 	["#tsuki007"] = "虹色的门番",
 	["tsuki007"] = "红美铃",--月 - 空 - 4血
 	["&tsuki007"] = "美铃",
-	["designer:tsuki007"] = "零度雨",
+	["designer:tsuki007"] = "永恒的须臾",
 	["illustrator:tsuki007"] = "えふぇ",
 	["cv:tsuki007"] = "暂无",
 	["thxingmai"] = "星脉",

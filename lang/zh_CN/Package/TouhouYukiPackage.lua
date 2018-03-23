@@ -45,7 +45,7 @@ return {
 	["#yuki003"] = "半分幻的庭师",
 	["yuki003"] = "魂魄妖梦",--雪 - 空 - 4血
 	["&yuki003"] = "妖梦",
-	["designer:yuki003"] = "Why.",
+	["designer:yuki003"] = "同声异谱",
 	["illustrator:yuki003"] = "橙狼",
 	["cv:yuki003"] = "暂无",
 	["thshenzhan"] = "榊斩",

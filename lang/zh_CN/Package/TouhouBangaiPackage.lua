@@ -6,7 +6,7 @@ return {
 	["#bangai001"] = "大空之弦",
 	["bangai001"] = "宇佐见莲子",--风 - 空 - 4血
 	["&bangai001"] = "莲子",
-	["designer:bangai001"] = "幻桜落",
+	["designer:bangai001"] = "同声异谱",
 	["illustrator:bangai001"] = "DomotoLain",
 	["cv:bangai001"] = "暂无",
 	["thbianfang"] = "辨方",
@@ -55,7 +55,7 @@ return {
 	["#bangai005"] = "朝霭的幻世",
 	["bangai005"] = "玛艾露贝莉•赫恩",--风 - 空 - 3血
 	["&bangai005"] = "梅莉",
-	["designer:bangai005"] = "雷神之魂",
+	["designer:bangai005"] = "同声异谱",
 	["illustrator:bangai005"] = "十誤一会",
 	["cv:bangai005"] = "暂无",
 	["thmengwei"] = "梦违",
