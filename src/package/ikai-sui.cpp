@@ -129,6 +129,7 @@ public:
         : TriggerSkill("ikshushen")
     {
         events << HpRecover;
+        frequency = Frequent;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
@@ -144,11 +145,8 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        ServerPlayer *target
-            = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "@ikshushen", true, true);
-        if (target) {
+        if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
-            player->tag["IkShushenTarget"] = QVariant::fromValue(target);
             return true;
         }
         return false;
@@ -156,20 +154,24 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        ServerPlayer *target = player->tag["IkShushenTarget"].value<ServerPlayer *>();
-        player->tag.remove("IkShushenTarget");
+        QList<ServerPlayer *> targets = room->getOtherPlayers(player);
+        if (player->getHandcardNum() > player->getMaxHp())
+            targets << player;
+        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@ikshushen", true);
+
         if (target) {
-            QList<ServerPlayer *> targets;
-            targets << target;
-            if (target != player)
-                targets << player;
-            room->sortByActionOrder(targets);
-            room->drawCards(targets, 2, objectName());
-            foreach (ServerPlayer *p, targets) {
-                if (p->canDiscard(p, "he"))
-                    room->askForDiscard(p, objectName(), 1, 1, false, true);
+            if (target->getHandcardNum() > target->getMaxHp()
+                && (target == player
+                    || room->askForChoice(player, objectName(), "draw+turnover", QVariant::fromValue(target)) == "turnover"))
+                target->turnOver();
+            else {
+                QList<ServerPlayer *> targets;
+                targets << player << target;
+                room->sortByActionOrder(targets);
+                room->drawCards(targets, 1, objectName());
             }
-        }
+        } else
+            player->drawCards(1, objectName());
         return false;
     }
 };
@@ -3716,7 +3718,7 @@ const Card *IkZhiyuBasicCard::validateInResponse(ServerPlayer *wenyang) const
 
     Card *use_card = Sanguosha->cloneCard(to_iklixin);
     use_card->addSubcard(this);
-    use_card->setSkillName("ikxieke");
+    use_card->setSkillName("ikzhiyu");
     return use_card;
 }
 

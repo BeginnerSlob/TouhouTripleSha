@@ -4,9 +4,11 @@
 #include "clientplayer.h"
 #include "engine.h"
 #include "general.h"
+#include "maneuvering.h"
 #include "room.h"
 #include "skill.h"
 #include "standard.h"
+#include "touhou-hana.h"
 
 ThLuanshenCard::ThLuanshenCard()
 {
@@ -1550,6 +1552,116 @@ public:
     }
 };
 
+ThShenmiCard::ThShenmiCard()
+{
+    will_throw = false;
+}
+
+bool ThShenmiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = NULL;
+        if (!user_string.isEmpty()) {
+            card = Sanguosha->cloneCard(user_string.split("+").first());
+            card->addSubcards(subcards);
+            card->deleteLater();
+        }
+        return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
+    } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE)
+        return false;
+
+    Card *card = Sanguosha->cloneCard(user_string.split("+").first());
+    card->addSubcards(subcards);
+    card->deleteLater();
+    return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
+}
+
+bool ThShenmiCard::targetFixed() const
+{
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = NULL;
+        if (!user_string.isEmpty()) {
+            card = Sanguosha->cloneCard(user_string.split("+").first());
+            card->addSubcards(subcards);
+            card->deleteLater();
+        }
+        return card && card->targetFixed();
+    } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE)
+        return true;
+
+    Card *card = Sanguosha->cloneCard(user_string.split("+").first());
+    card->addSubcards(subcards);
+    card->deleteLater();
+    return card && card->targetFixed();
+}
+
+bool ThShenmiCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
+{
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = NULL;
+        if (!user_string.isEmpty()) {
+            card = Sanguosha->cloneCard(user_string.split("+").first());
+            card->addSubcards(subcards);
+            card->deleteLater();
+        }
+        return card && card->targetsFeasible(targets, Self);
+    } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE)
+        return false;
+
+    Card *card = Sanguosha->cloneCard(user_string.split("+").first());
+    card->addSubcards(subcards);
+    card->deleteLater();
+    return card && card->targetsFeasible(targets, Self);
+}
+
+const Card *ThShenmiCard::validate(CardUseStruct &card_use) const
+{
+    ServerPlayer *wenyang = card_use.from;
+    Room *room = wenyang->getRoom();
+
+    QString to_iklixin = user_string;
+    if (user_string == "slash" && Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        QStringList iklixin_list;
+        iklixin_list << "slash";
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
+            iklixin_list << "thunder_slash"
+                         << "fire_slash";
+        to_iklixin = room->askForChoice(wenyang, "thshenmi_slash", iklixin_list.join("+"));
+    }
+
+    Card *use_card = Sanguosha->cloneCard(to_iklixin);
+    use_card->addSubcards(subcards);
+    use_card->setSkillName("thshenmi");
+    return use_card;
+}
+
+const Card *ThShenmiCard::validateInResponse(ServerPlayer *wenyang) const
+{
+    Room *room = wenyang->getRoom();
+
+    QString to_iklixin;
+    if (user_string == "peach+analeptic") {
+        QStringList iklixin_list;
+        iklixin_list << "peach";
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
+            iklixin_list << "analeptic";
+        to_iklixin = room->askForChoice(wenyang, "thshenmi_saveself", iklixin_list.join("+"));
+    } else if (user_string == "slash") {
+        QStringList iklixin_list;
+        iklixin_list << "slash";
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
+            iklixin_list << "thunder_slash"
+                         << "fire_slash";
+        to_iklixin = room->askForChoice(wenyang, "thshenmi_slash", iklixin_list.join("+"));
+    } else
+        to_iklixin = user_string;
+
+    Card *use_card = Sanguosha->cloneCard(to_iklixin);
+    use_card->addSubcards(subcards);
+    use_card->setSkillName("thshenmi");
+    return use_card;
+}
+
 class ThShenmi : public ViewAsSkill
 {
 public:
@@ -1559,12 +1671,17 @@ public:
         expand_pile = "note";
     }
 
+    virtual SkillDialog *getDialog() const
+    {
+        return ThMimengDialog::getInstance("thshenmi", true, false);
+    }
+
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
     {
         if (!Self->getPile("note").contains(to_select->getId()))
             return false;
         QString pattern = Sanguosha->getCurrentCardUsePattern();
-        if (pattern == "jink")
+        if (pattern == "slash" || pattern == "jink" || pattern.contains("peach"))
             return selected.isEmpty() || to_select->sameColorWith(selected.first());
         if (pattern == "nullification")
             return selected.isEmpty() || !to_select->sameColorWith(selected.first());
@@ -1573,24 +1690,66 @@ public:
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const
     {
-        if (cards.length() == 2) {
-            if (cards.first()->sameColorWith(cards.last())) {
-                Jink *jink = new Jink(Card::SuitToBeDecided, -1);
-                jink->addSubcards(cards);
-                jink->setSkillName(objectName());
-                return jink;
-            } else {
-                Nullification *null = new Nullification(Card::SuitToBeDecided, -1);
-                null->addSubcards(cards);
-                null->setSkillName(objectName());
-                return null;
+        if (cards.length() != 2)
+            return NULL;
+
+        if (cards.first()->sameColorWith(cards.last())) {
+            if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE
+                || Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+                ThShenmiCard *tianyan_card = new ThShenmiCard;
+                QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+                if (pattern == "peach+analeptic" && Self->getMark("Global_PreventPeach") > 0)
+                    pattern = "analeptic";
+                tianyan_card->addSubcards(cards);
+                tianyan_card->setUserString(pattern);
+                return tianyan_card;
             }
+
+            const Card *c = Self->tag["thshenmi"].value<const Card *>();
+            if (c) {
+                ThShenmiCard *card = new ThShenmiCard;
+                card->addSubcards(cards);
+                card->setUserString(c->objectName());
+                return card;
+            }
+        } else {
+            Nullification *null = new Nullification(Card::SuitToBeDecided, -1);
+            null->addSubcards(cards);
+            null->setSkillName(objectName());
+            return null;
         }
         return NULL;
     }
 
-    virtual bool isEnabledAtPlay(const Player *) const
+    virtual bool isEnabledAtPlay(const Player *player) const
     {
+        QList<int> ids = player->getPile("note");
+        if (ids.length() <= 1)
+            return false;
+        else {
+            const Card *first = Sanguosha->getCard(ids.takeFirst());
+            foreach (int id, ids) {
+                if (!first->sameColorWith(Sanguosha->getCard(id)))
+                    return false;
+            }
+        }
+
+
+        Slash *slash = new Slash(Card::NoSuit, 0);
+        slash->deleteLater();
+        if (slash->isAvailable(player))
+            return true;
+
+        Peach *peach = new Peach(Card::NoSuit, 0);
+        peach->deleteLater();
+        if (peach->isAvailable(player))
+            return true;
+
+        Analeptic *analeptic = new Analeptic(Card::NoSuit, 0);
+        analeptic->deleteLater();
+        if (analeptic->isAvailable(player))
+            return true;
+
         return false;
     }
 
@@ -1602,7 +1761,9 @@ public:
             if (!ids.isEmpty()) {
                 foreach (int id, ids) {
                     if (first->sameColorWith(Sanguosha->getCard(id))) {
-                        if (pattern == "jink")
+                        if (pattern == "peach")
+                            return player->getMark("Global_PreventPeach") == 0;
+                        else if (pattern.contains("analeptic") || pattern == "jink" || pattern == "slash")
                             return true;
                         continue;
                     } else {
@@ -2114,6 +2275,7 @@ TouhouShinPackage::TouhouShinPackage()
     addMetaObject<ThLuanshenCard>();
     addMetaObject<ThLianyingCard>();
     addMetaObject<ThMumiCard>();
+    addMetaObject<ThShenmiCard>();
     addMetaObject<ThMuyuCard>();
     addMetaObject<ThNihuiCard>();
 

@@ -256,9 +256,7 @@ int Player::getAttackRange(bool include_weapon) const
             }
         }
     }
-    int extra_range = 0;
-    if (hasFlag("thhuanlong1"))
-        extra_range += 1;
+    int extra_range = getMark("thhuanlong1");
     if (hasLordSkill("thfeizhan")) {
         foreach (const Player *p, getAliveSiblings()) {
             if (p->getKingdom() == "hana")

@@ -926,17 +926,15 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
+        bool first = true;
         forever {
             QStringList choices;
-            if (!player->hasFlag("thhuanlong1"))
-                choices << "thhuanlong1";
-            if (!player->hasFlag("thhuanlong2"))
-                choices << "thhuanlong2";
+            choices << "thhuanlong1" << "thhuanlong2";
             if (!player->hasFlag("thhuanlong"))
                 choices << "thhuanlong3";
             if (choices.isEmpty())
                 break;
-            if (choices.length() < 3)
+            if (!first)
                 choices << "cancel";
             QString choice = room->askForChoice(player, "thhuanlong", choices.join("+"));
             if (choice == "cancel")
@@ -948,8 +946,12 @@ public:
             log.arg2 = choice.right(1);
             room->sendLog(log);
             if (choice == "thhuanlong3")
-                choice = "thhuanlong";
-            room->setPlayerFlag(player, choice);
+                room->setPlayerFlag(player, "thhuanlong");
+            else
+                room->addPlayerMark(player, choice);
+            if (player->getMaxCards() <= 0)
+                break;
+            first = false;
         }
         return false;
     }
@@ -965,10 +967,7 @@ public:
 
     virtual int getResidueNum(const Player *from, const Card *) const
     {
-        if (from->hasFlag("thhuanlong2"))
-            return 1;
-        else
-            return 0;
+        return from->getMark("thhuanlong2");
     }
 };
 
@@ -982,17 +981,10 @@ public:
 
     virtual int getExtra(const Player *target) const
     {
-        int flags = 0;
-        if (target->hasFlag("thhuanlong1"))
-            ++flags;
-        if (target->hasFlag("thhuanlong2"))
-            ++flags;
+        int n = target->getMark("thhuanlong1") + target->getMark("thhuanlong2");
         if (target->hasFlag("thhuanlong"))
-            ++flags;
-        if (flags > 1)
-            return -2;
-        else
-            return 0;
+            ++n;
+        return -n;
     }
 };
 

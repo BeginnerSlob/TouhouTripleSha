@@ -909,81 +909,190 @@ public:
     }
 };
 
-class ThCunjing : public TriggerSkill
+class ThXingmai : public TriggerSkill
 {
 public:
-    ThCunjing()
-        : TriggerSkill("thcunjing")
+    ThXingmai()
+        : TriggerSkill("thxingmai")
     {
-        events << SlashMissed;
+        events << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *&) const
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const
     {
-        if (!TriggerSkill::triggerable(player) || player->getWeapon() || !player->canDiscard(player, "he"))
-            return QStringList();
-        return QStringList(objectName());
+        TriggerList skill_list;
+        if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                QSet<ServerPlayer *> ps;
+                ps << p << room->findPlayer(p->getLastAlive()->objectName())
+                   << room->findPlayer(p->getNextAlive()->objectName());
+                int damage = 0, damaged = 0;
+                foreach (ServerPlayer *pl, ps) {
+                    damage += pl->getMark("thxingmai_damage");
+                    damaged += pl->getMark("thxingmai_damaged");
+                }
+                if ((p->faceUp() && damage > 1) || (!p->faceUp() && damaged > 1))
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+        }
+        return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const
     {
-        SlashEffectStruct effect = data.value<SlashEffectStruct>();
-        if (room->askForCard(player, "..", "@thcunjing:" + effect.to->objectName(), data, objectName())) {
+        if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *player) const
     {
-        SlashEffectStruct effect = data.value<SlashEffectStruct>();
-        LogMessage log;
-        log.type = "#ThCunjing";
-        log.from = player;
-        log.to << effect.to;
-        log.arg = objectName();
-        room->sendLog(log);
-        room->slashResult(effect, NULL);
+        player->turnOver();
+
+        if (!player->faceUp())
+            player->drawCards(2, objectName());
+
         return true;
+    }
+};
+
+class ThXingmaiRecord : public TriggerSkill
+{
+public:
+    ThXingmaiRecord()
+        : TriggerSkill("#thxingmai")
+    {
+        events << PreDamageDone << EventPhaseStart;
+        frequency = NotCompulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &,
+                                    ServerPlayer *&) const
+    {
+        if (triggerEvent == EventPhaseStart) {
+            if (player->getPhase() == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    p->setMark("thxingmai_damage", 0);
+                    p->setMark("thxingmai_damaged", 0);
+                }
+            }
+            return QStringList();
+        }
+        return QStringList(objectName());
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        DamageStruct damage = data.value<DamageStruct>();
+        player->addMark("thxingmai_damaged", damage.damage);
+        if (damage.from)
+            damage.from->addMark("thxingmai_damage", damage.damage);
+
+        return false;
     }
 };
 
 ThLianhuaCard::ThLianhuaCard()
 {
-    target_fixed = true;
+    will_throw = false;
 }
 
-void ThLianhuaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+bool ThLianhuaCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    QList<int> pile_ids = room->getNCards(1, false);
-    room->fillAG(pile_ids, source);
-    source->tag["ThLianhuaIds"] = QVariant::fromValue(IntList2VariantList(pile_ids)); // for AI
-    ServerPlayer *target = room->askForPlayerChosen(source, room->getAllPlayers(), "thlianhua");
-    source->tag.remove("ThLianhuaIds");
-    room->clearAG(source);
-
-    DummyCard *dummy = new DummyCard(pile_ids);
-    source->setFlags("Global_GongxinOperator");
-    target->obtainCard(dummy, false);
-    source->setFlags("-Global_GongxinOperator");
-    delete dummy;
+    Card *slash = Sanguosha->cloneCard("slash");
+    slash->addSubcards(subcards);
+    slash->setSkillName("thlianhua");
+    return slash->targetFilter(targets, to_select, Self);
 }
 
-class ThLianhua : public OneCardViewAsSkill
+bool ThLianhuaCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
+{
+    Card *slash = Sanguosha->cloneCard("slash");
+    slash->addSubcards(subcards);
+    slash->setSkillName("thlianhua");
+    return slash->targetsFeasible(targets, Self);
+}
+
+const Card *ThLianhuaCard::validate(CardUseStruct &cardUse) const
+{
+    cardUse.from->getRoom()->addPlayerMark(cardUse.from, "thlianhua");
+
+    Card *slash = Sanguosha->cloneCard("slash");
+    slash->addSubcards(subcards);
+    slash->setSkillName("thlianhua");
+    return slash;
+}
+
+const Card *ThLianhuaCard::validateInResponse(ServerPlayer *user) const
+{
+    user->getRoom()->addPlayerMark(user, "thlianhua");
+
+    Card *slash = Sanguosha->cloneCard("slash");
+    slash->addSubcards(subcards);
+    slash->setSkillName("thlianhua");
+    return slash;
+}
+
+class ThLianhuaVS : public ViewAsSkill
+{
+public:
+    ThLianhuaVS()
+        : ViewAsSkill("thlianhua")
+    {
+        response_or_use = true;
+        response_pattern = "@@thlianhua";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *) const
+    {
+        return selected.length() < Self->getMark("thlianhua") + 2;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        if (cards.length() == Self->getMark("thlianhua") + 2) {
+            Card *card = new ThLianhuaCard;
+            card->addSubcards(cards);
+            return card;
+        }
+        return NULL;
+    }
+};
+
+class ThLianhua : public TriggerSkill
 {
 public:
     ThLianhua()
-        : OneCardViewAsSkill("thlianhua")
+        : TriggerSkill("thlianhua")
     {
-        filter_pattern = "EquipCard!";
+        events << Damage << EventPhaseChanging;
+        view_as_skill = new ThLianhuaVS;
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
     {
-        Card *card = new ThLianhuaCard;
-        card->addSubcard(originalCard);
-        return card;
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    room->setPlayerMark(p, objectName(), 0);
+            }
+            return QStringList();
+        }
+
+        if (TriggerSkill::triggerable(player) && !player->hasFlag("Global_DebutFlag")) {
+            return QStringList(objectName());
+        }
+
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        return room->askForUseCard(player, "@@thlianhua", "@thlianhua");
     }
 };
 
@@ -2903,7 +3012,9 @@ TouhouTsukiPackage::TouhouTsukiPackage()
     tsuki006->addSkill(new ThYuhuo);
 
     General *tsuki007 = new General(this, "tsuki007", "tsuki");
-    tsuki007->addSkill(new ThCunjing);
+    tsuki007->addSkill(new ThXingmai);
+    tsuki007->addSkill(new ThXingmaiRecord);
+    related_skills.insertMulti("thxingmai", "#thxingmai");
     tsuki007->addSkill(new ThLianhua);
 
     General *tsuki008 = new General(this, "tsuki008", "tsuki");

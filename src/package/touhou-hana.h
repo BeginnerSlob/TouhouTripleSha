@@ -23,18 +23,18 @@ public:
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
-
-class ThWujianCard : public SkillCard
+/*
+class ThBianCard : public SkillCard
 {
     Q_OBJECT
 
 public:
-    Q_INVOKABLE ThWujianCard();
+    Q_INVOKABLE ThBianCard();
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+    virtual const Card *validate(CardUseStruct &card_use) const;
 };
-
+*/
 class ThXihuaCard : public SkillCard
 {
     Q_OBJECT

@@ -1478,13 +1478,16 @@ void Dismantlement::onEffect(const CardEffectStruct &effect) const
         }
     }
     // for ThDunjia ------------
-    bool invoke_dunjia = getSkillName() == "thdunjia" && Sanguosha->getCard(card_id)->isKindOf("Jink");
+    bool invoke_dunjia = getSkillName() == "thdunjia" && Sanguosha->getCard(card_id)->getTypeId() == Card::TypeBasic;
     // -------------------------
     room->throwCard(card_id, room->getCardPlace(card_id) == Player::PlaceDelayedTrick ? NULL : effect.to, effect.from);
     // for ThDunjia ------------
     if (invoke_dunjia) {
-        room->sendCompulsoryTriggerLog(effect.from, "thdunjia");
-        room->damage(DamageStruct("thdunjia", effect.from, effect.to));
+        int n = qMin(qAbs(effect.to->getEquips().length() - effect.from->getEquips().length()), 2);
+        if (n > 0) {
+            room->sendCompulsoryTriggerLog(effect.from, "thdunjia");
+            effect.from->drawCards(n, "thdunjia");
+        }
     }
     // -------------------------
     // for ThJianyue -----------

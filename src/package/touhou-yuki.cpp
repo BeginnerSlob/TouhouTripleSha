@@ -453,6 +453,82 @@ public:
     }
 };
 
+class ThShenzhan : public TriggerSkill
+{
+public:
+    ThShenzhan()
+        : TriggerSkill("thshenzhan")
+    {
+        events << Damage;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (TriggerSkill::triggerable(player) && !player->hasFlag("Global_DebutFlag") && player->getSlashCount() > 0) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card && damage.card->getTypeId() != Card::TypeSkill && damage.card->getTypeId() != Card::TypeBasic
+                && damage.to != player) {
+                return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+
+        room->addPlayerHistory(player, "Slash", 0);
+        room->addPlayerHistory(player, "FireSlash", 0);
+        room->addPlayerHistory(player, "ThunderSlash", 0);
+
+        return false;
+    }
+};
+
+class ThHunqieVS : public OneCardViewAsSkill
+{
+public:
+    ThHunqieVS()
+        : OneCardViewAsSkill("thhunqie")
+    {
+        filter_pattern = ".|black";
+        response_or_use = true;
+        response_pattern = "@@thhunqie";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        Slash *slash = new Slash(Card::SuitToBeDecided, -1);
+        slash->addSubcard(originalCard);
+        slash->setSkillName(objectName());
+        return slash;
+    }
+};
+
+class ThHunqie : public TriggerSkill
+{
+public:
+    ThHunqie()
+        : TriggerSkill("thhunqie")
+    {
+        events << EventPhaseEnd;
+        view_as_skill = new ThHunqieVS;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return TriggerSkill::triggerable(target) && target->getPhase() == Player::Play && target->getSlashCount() == 0;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        return room->askForUseCard(player, "@@thhunqie", "@thhunqie");
+    }
+};
+
 class ThDaojian : public TriggerSkill
 {
 public:
@@ -471,67 +547,6 @@ public:
         const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(Sanguosha->getSkill("qinggang_sword"));
         room->getThread()->addTriggerSkill(trigger_skill);
         return QStringList();
-    }
-};
-
-class ThCihang : public TriggerSkill
-{
-public:
-    ThCihang()
-        : TriggerSkill("thcihang")
-    {
-        events << SlashMissed;
-    }
-
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
-    {
-        if (player->askForSkillInvoke(objectName(), data)) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
-    {
-        SlashEffectStruct effect = data.value<SlashEffectStruct>();
-        if (effect.slash) {
-            QList<int> card_ids;
-            if (effect.slash->isVirtualCard())
-                card_ids = effect.slash->getSubcards();
-            else if (effect.slash->getEffectiveId() != -1)
-                card_ids << effect.slash->getEffectiveId();
-            if (!card_ids.isEmpty()) {
-                bool obtain = true;
-                foreach (int id, card_ids) {
-                    if (room->getCardPlace(id) != Player::PlaceTable) {
-                        obtain = false;
-                        break;
-                    }
-                }
-                if (obtain)
-                    room->obtainCard(player, effect.slash);
-            }
-        }
-        player->tag["ThCihangData"] = data; // for AI
-        QStringList choices;
-        if (player->canDiscard(player, "he"))
-            choices << "discard";
-        choices << "draw";
-        if (room->askForChoice(player, objectName(), choices.join("+"), QVariant::fromValue(effect.to)) == "discard") {
-            int x = effect.to->getLostHp();
-            if (x > 0)
-                room->askForDiscard(player, objectName(), x, x, false, true);
-        } else {
-            int x = qMin(effect.to->getHp(), 5);
-            if (x > 0)
-                effect.to->drawCards(x);
-        }
-        player->tag.remove("ThCihangData");
-
-        room->slashResult(effect, NULL);
-
-        return true;
     }
 };
 
@@ -839,12 +854,12 @@ public:
         : OneCardViewAsSkill("thdunjia")
     {
         response_or_use = true;
-        filter_pattern = "Slash,EquipCard";
+        filter_pattern = "EquipCard";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return player->usedTimes("ThDunjiaCard") < 3;
+        return !player->hasUsed("ThDunjiaCard");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
@@ -1811,7 +1826,7 @@ public:
         events << CardUsed << BeforeCardsMove;
     }
 
-    bool doQiebao(Room *room, ServerPlayer *player, QList<int> card_ids, bool discard, QVariant &data) const
+    bool doQiebao(Room *room, ServerPlayer *player, QList<int> card_ids, bool move, QVariant &data) const
     {
         const Card *card = room->askForCard(player, "slash", "@thqiebao", data, objectName());
         if (!card)
@@ -1821,20 +1836,12 @@ public:
             QList<CardsMoveStruct> exchangeMove;
             CardsMoveStruct qiebaoMove;
 
-            if (card->isRed()) {
+            if (move || card->isRed()) {
                 qiebaoMove.to = player;
                 qiebaoMove.to_place = Player::PlaceHand;
                 qiebaoMove.card_ids = card_ids;
                 exchangeMove.push_back(qiebaoMove);
                 room->moveCardsAtomic(exchangeMove, false);
-            } else if (discard) {
-                qiebaoMove.to = NULL;
-                qiebaoMove.to_place = Player::DiscardPile;
-                CardMoveReason reason(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
-                qiebaoMove.reason = reason;
-                qiebaoMove.card_ids = card_ids;
-                exchangeMove.push_back(qiebaoMove);
-                room->moveCardsAtomic(exchangeMove, true);
             }
         }
 
@@ -2644,8 +2651,9 @@ TouhouYukiPackage::TouhouYukiPackage()
     related_skills.insertMulti("thxugu", "#thxugu-slash-ndl");
 
     General *yuki003 = new General(this, "yuki003", "yuki");
+    yuki003->addSkill(new ThShenzhan);
+    yuki003->addSkill(new ThHunqie);
     yuki003->addSkill(new ThDaojian);
-    yuki003->addSkill(new ThCihang);
 
     General *yuki004 = new General(this, "yuki004", "yuki");
     yuki004->addSkill(new ThZhancao);
