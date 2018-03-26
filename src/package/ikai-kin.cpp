@@ -3830,7 +3830,7 @@ public:
         view_as_skill = new IkDingpinViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data,
                                     ServerPlayer *&) const
     {
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
