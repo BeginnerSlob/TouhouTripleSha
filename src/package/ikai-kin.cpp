@@ -2038,8 +2038,7 @@ void IkZangyuCard::onEffect(const CardEffectStruct &effect) const
     if (card) {
         room->showCard(effect.from, originalCard->getId());
         room->showCard(effect.to, card->getId());
-        if ((originalCard->isKindOf("Slash") && !card->isKindOf("Jink"))
-            || (!originalCard->isKindOf("Slash") && card->isKindOf("Jink"))) {
+        if (originalCard->isKindOf("Slash") ^ card->isKindOf("Jink")) {
             room->throwCard(originalCard, effect.from);
             if (!effect.from->canDiscard(effect.to, "he")
                 || room->askForChoice(effect.from, "ikzangyu", "damage+get") == "damage")
