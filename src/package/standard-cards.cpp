@@ -228,8 +228,6 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const
         QString name;
         if (player->hasSkill("ikyipao"))
             name = "ikyipao";
-        else if (player->hasSkill("ikcanyue") && player->getMark("ikcanyue") > 0)
-            name = "ikcanyue";
         if (!name.isEmpty()) {
             player->setFlags("-Global_MoreSlashInOneTurn");
             int index = qrand() % 2 + 1;

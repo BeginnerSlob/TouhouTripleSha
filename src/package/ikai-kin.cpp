@@ -2038,13 +2038,16 @@ void IkZangyuCard::onEffect(const CardEffectStruct &effect) const
     if (card) {
         room->showCard(effect.from, originalCard->getId());
         room->showCard(effect.to, card->getId());
-        if (originalCard->isKindOf("Slash") && !card->isKindOf("Jink")) {
+        if ((originalCard->isKindOf("Slash") && !card->isKindOf("Jink"))
+            || (!originalCard->isKindOf("Slash") && card->isKindOf("Jink"))) {
             room->throwCard(originalCard, effect.from);
-            room->damage(DamageStruct("ikzangyu", effect.from, effect.to));
-        } else if (!originalCard->isKindOf("Slash") && card->isKindOf("Jink")) {
-            room->throwCard(originalCard, effect.from);
-            int card_id = room->askForCardChosen(effect.from, effect.to, "he", "ikzangyu", false, MethodNone);
-            room->obtainCard(effect.from, card_id);
+            if (!effect.from->canDiscard(effect.to, "he")
+                || room->askForChoice(effect.from, "ikzangyu", "damage+get") == "damage")
+                room->damage(DamageStruct("ikzangyu", effect.from, effect.to));
+            else {
+                int card_id = room->askForCardChosen(effect.from, effect.to, "he", "ikzangyu", false, MethodNone);
+                room->obtainCard(effect.from, card_id, false);
+            }
         }
     }
 }
@@ -3793,11 +3796,12 @@ public:
     IkDingpinViewAsSkill()
         : OneCardViewAsSkill("ikdingpin")
     {
+        filter_pattern = ".|.|.|hand!";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        if (!player->canDiscard(player, "h") || player->getMark("ikdingpin") == 0xE)
+        if (!player->canDiscard(player, "h"))
             return false;
         if (!player->hasFlag("ikdingpin") && player->isWounded())
             return true;
@@ -3806,12 +3810,6 @@ public:
                 return true;
         }
         return false;
-    }
-
-    virtual bool viewFilter(const Card *to_select) const
-    {
-        return !to_select->isEquipped() && !Self->isJilei(to_select)
-            && (Self->getMark("ikdingpin") & (1 << int(to_select->getTypeId()))) == 0;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
@@ -3828,61 +3826,21 @@ public:
     IkDingpin()
         : TriggerSkill("ikdingpin")
     {
-        events << EventPhaseChanging << PreCardUsed << PreCardResponded << BeforeCardsMove;
+        events << EventPhaseChanging;
         view_as_skill = new IkDingpinViewAsSkill;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
                                     ServerPlayer *&) const
     {
-        if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive) {
-                foreach (ServerPlayer *p, room->getAllPlayers()) {
-                    if (p->hasFlag("ikdingpin"))
-                        room->setPlayerFlag(p, "-ikdingpin");
-                }
-                if (player->getMark("ikdingpin") > 0)
-                    room->setPlayerMark(player, "ikdingpin", 0);
-            }
-        } else {
-            if (!player->isAlive() || player->getPhase() == Player::NotActive)
-                return QStringList();
-            if (triggerEvent == PreCardUsed || triggerEvent == PreCardResponded) {
-                const Card *card = NULL;
-                if (triggerEvent == PreCardUsed) {
-                    card = data.value<CardUseStruct>().card;
-                } else {
-                    CardResponseStruct resp = data.value<CardResponseStruct>();
-                    if (resp.m_isUse)
-                        card = resp.m_card;
-                }
-                if (!card || card->getTypeId() == Card::TypeSkill)
-                    return QStringList();
-                recordIkDingpinCardType(room, player, card);
-            } else if (triggerEvent == BeforeCardsMove) {
-                CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-                if (player != move.from
-                    || ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) != CardMoveReason::S_REASON_DISCARD))
-                    return QStringList();
-                foreach (int id, move.card_ids) {
-                    const Card *c = Sanguosha->getCard(id);
-                    recordIkDingpinCardType(room, player, c);
-                }
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (change.to == Player::NotActive) {
+            foreach (ServerPlayer *p, room->getAllPlayers()) {
+                if (p->hasFlag("ikdingpin"))
+                    room->setPlayerFlag(p, "-ikdingpin");
             }
         }
         return QStringList();
-    }
-
-private:
-    void recordIkDingpinCardType(Room *room, ServerPlayer *player, const Card *card) const
-    {
-        if (player->getMark("ikdingpin") == 0xE)
-            return;
-        int typeID = (1 << int(card->getTypeId()));
-        int mark = player->getMark("ikdingpin");
-        if ((mark & typeID) == 0)
-            room->setPlayerMark(player, "ikdingpin", mark | typeID);
     }
 };
 

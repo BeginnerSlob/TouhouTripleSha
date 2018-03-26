@@ -1861,7 +1861,7 @@ public:
     IkFojiao()
         : OneCardViewAsSkill("ikfojiao")
     {
-        filter_pattern = ".|.|.|equipped";
+        filter_pattern = "EquipCard";
         response_or_use = true;
     }
 

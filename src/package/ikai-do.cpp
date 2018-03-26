@@ -22,7 +22,8 @@ void IkShenaiCard::onEffect(const CardEffectStruct &effect) const
 {
     Room *room = effect.from->getRoom();
     room->setPlayerMark(effect.to, "IkShenaiUsed", 1);
-    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "ikshenai", QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "ikshenai",
+                          QString());
     room->obtainCard(effect.to, this, reason, false);
     room->addPlayerMark(effect.from, "ikshenai", subcardsLength());
     if (effect.from->getMark("ikshenai") >= 2 && effect.from->getMark("ikshenai") - subcardsLength() < 2) {
@@ -84,7 +85,7 @@ public:
         : ViewAsSkill("ikshenai")
     {
     }
-    
+
     virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const
     {
         return !to_select->isEquipped();
@@ -2081,8 +2082,8 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const
     {
-        return TriggerSkill::triggerable(target) && target->getPhase() == Player::Finish && target->getMark("ikpojian") >= 4
-            && target->getMark("@pojian") == 0;
+        return TriggerSkill::triggerable(target) && target->getPhase() == Player::Start
+            && target->getHandcardNum() - target->getHp() >= 2 && target->getMark("@pojian") == 0;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
@@ -2093,102 +2094,14 @@ public:
         LogMessage log;
         log.type = "#IkPojianWake";
         log.from = player;
-        log.arg = QString::number(player->getMark("ikpojian"));
+        log.arg = QString::number(player->getHandcardNum() - player->getHp());
         log.arg2 = objectName();
         room->sendLog(log);
         room->addPlayerMark(player, "@pojian");
 
         room->changeMaxHpForAwakenSkill(player);
-        if (player->isWounded() && room->askForChoice(player, objectName(), "recover+draw") == "recover")
-            room->recover(player, RecoverStruct(player));
-        else
-            player->drawCards(1, objectName());
-
-        room->acquireSkill(player, "ikqinghua");
+        room->acquireSkill(player, "iklingshi");
         return false;
-    }
-};
-
-class IkPojianRecord : public TriggerSkill
-{
-public:
-    IkPojianRecord()
-        : TriggerSkill("#ikpojian-record")
-    {
-        events << PreCardUsed << CardResponded << EventPhaseStart;
-        frequency = Compulsory;
-        global = true;
-    }
-
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *lvmeng, QVariant &data,
-                                    ServerPlayer *&) const
-    {
-        if (triggerEvent == EventPhaseStart) {
-            if (lvmeng->getPhase() == Player::RoundStart)
-                lvmeng->setMark("ikpojian", 0);
-        } else {
-            const Card *card = NULL;
-            if (triggerEvent == PreCardUsed)
-                card = data.value<CardUseStruct>().card;
-            else {
-                CardResponseStruct resp = data.value<CardResponseStruct>();
-                if (resp.m_isUse)
-                    card = resp.m_card;
-            }
-            if (card && !card->isKindOf("EquipCard"))
-                return QStringList(objectName());
-        }
-        return QStringList();
-    }
-
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *lvmeng, QVariant &, ServerPlayer *) const
-    {
-        lvmeng->addMark("ikpojian");
-        return false;
-    }
-};
-
-IkQinghuaCard::IkQinghuaCard()
-{
-}
-
-bool IkQinghuaCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
-{
-    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
-}
-
-void IkQinghuaCard::onEffect(const CardEffectStruct &effect) const
-{
-    Room *room = effect.from->getRoom();
-    const Card *card = room->askForCardShow(effect.to, effect.from, "ikqinghua");
-    room->showCard(effect.to, card->getEffectiveId());
-    QString suit = card->getSuitString();
-    if (room->askForCard(effect.from, ".|" + suit, "@ikqinghua-discard:::" + suit)) {
-        room->throwCard(card, effect.to);
-        QList<ServerPlayer *> targets;
-        targets << effect.from << effect.to;
-        room->sortByActionOrder(targets);
-        foreach (ServerPlayer *p, targets)
-            room->recover(p, RecoverStruct(effect.from));
-    }
-}
-
-class IkQinghua : public ZeroCardViewAsSkill
-{
-public:
-    IkQinghua()
-        : ZeroCardViewAsSkill("ikqinghua")
-    {
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const
-    {
-        return !player->hasUsed("IkQinghuaCard");
-    }
-
-    virtual const Card *viewAs() const
-    {
-        return new IkQinghuaCard;
     }
 };
 
@@ -3591,9 +3504,7 @@ IkaiDoPackage::IkaiDoPackage()
     snow003->addSkill(new IkBijuRecord);
     related_skills.insertMulti("ikbiju", "#ikbiju-record");
     snow003->addSkill(new IkPojian);
-    snow003->addSkill(new IkPojianRecord);
-    related_skills.insertMulti("ikpojian", "#ikpojian-record");
-    snow003->addRelateSkill("ikqinghua");
+    snow003->addRelateSkill("iklingshi");
 
     General *snow004 = new General(this, "snow004", "yuki");
     snow004->addSkill(new IkKurou);
@@ -3633,7 +3544,7 @@ IkaiDoPackage::IkaiDoPackage()
     luna003->addSkill(new IkQingguo);
     luna003->addSkill(new IkBiyue);
 
-    General *luna006 = new General(this, "luna006", "tsuki", 3);
+    General *luna006 = new General(this, "luna006", "tsuki", 3, true, true);
     luna006->addSkill(new IkHuichun);
     luna006->addSkill(new IkQingnang);
 
@@ -3659,7 +3570,6 @@ IkaiDoPackage::IkaiDoPackage()
     addMetaObject<IkChibaoCard>();
     addMetaObject<IkZhihengCard>();
     addMetaObject<IkGuisiCard>();
-    addMetaObject<IkQinghuaCard>();
     addMetaObject<IkKurouCard>();
     addMetaObject<IkGuidengCard>();
     addMetaObject<IkWanmeiCard>();
@@ -3672,7 +3582,7 @@ IkaiDoPackage::IkaiDoPackage()
     addMetaObject<IkQingnangCard>();
     addMetaObject<IkYaogeCard>();
 
-    skills << new NonCompulsoryInvalidity << new IkXingyu << new IkQinghua;
+    skills << new NonCompulsoryInvalidity << new IkXingyu;
 
     patterns["."] = new ExpPattern(".|.|.|hand");
     patterns[".S"] = new ExpPattern(".|spade|.|hand");

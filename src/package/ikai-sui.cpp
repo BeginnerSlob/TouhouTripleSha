@@ -228,8 +228,11 @@ IkXielunCard::IkXielunCard()
 
 bool IkXielunCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    if (targets.length() >= Self->getLostHp())
+    if (targets.length() >= qMax(Self->getLostHp(), 1))
         return false;
+
+    if (Self->getMark("@jiuming") > 0)
+        return true;
 
     int range_fix = 0;
     if (Self->getWeapon() && Self->getWeapon()->getEffectiveId() == getEffectiveId()) {
@@ -238,23 +241,18 @@ bool IkXielunCard::targetFilter(const QList<const Player *> &targets, const Play
     } else if (Self->getOffensiveHorse() && Self->getOffensiveHorse()->getEffectiveId() == getEffectiveId())
         range_fix += 1;
 
-    return Self->getMark("@jiuming") > 0 || Self->inMyAttackRange(to_select, range_fix);
+    return Self->inMyAttackRange(to_select, range_fix);
 }
 
 void IkXielunCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
-    DamageStruct damage;
-    damage.from = source;
-    damage.reason = "ikxielun";
+    foreach (ServerPlayer *p, targets) {
+        if (!p->isChained())
+            room->setPlayerProperty(p, "chained", false);
+    }
 
-    foreach (ServerPlayer *p, targets) {
-        damage.to = p;
-        room->damage(damage);
-    }
-    foreach (ServerPlayer *p, targets) {
-        if (p->isAlive())
-            p->drawCards(1, "ikxielun");
-    }
+    ServerPlayer *target = room->askForPlayerChosen(source, targets, "ikxielun");
+    room->damage(DamageStruct("ikxielun", source, target, 1, DamageStruct::Fire));
 }
 
 class IkXielun : public OneCardViewAsSkill
@@ -268,7 +266,7 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return player->getLostHp() > 0 && player->canDiscard(player, "he") && !player->hasUsed("IkXielunCard");
+        return player->canDiscard(player, "he") && !player->hasUsed("IkXielunCard");
     }
 
     virtual const Card *viewAs(const Card *originalcard) const
@@ -280,71 +278,82 @@ public:
     }
 };
 
-class IkCanyue : public TargetModSkill
+class IkCanyue : public TriggerSkill
 {
 public:
     IkCanyue()
-        : TargetModSkill("ikcanyue")
+        : TriggerSkill("ikcanyue")
     {
-        frequency = NotCompulsory;
-    }
-
-    virtual int getResidueNum(const Player *from, const Card *) const
-    {
-        if (from->hasSkill(objectName()))
-            return from->getMark(objectName());
-        else
-            return 0;
-    }
-};
-
-class IkCanyueCount : public TriggerSkill
-{
-public:
-    IkCanyueCount()
-        : TriggerSkill("#ikcanyue-count")
-    {
-        events << SlashMissed << EventPhaseChanging;
+        events << Damage << EventPhaseChanging;
         frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
                                     ServerPlayer *&) const
     {
-        if (!player || player->isDead() || !player->hasSkill("ikcanyue"))
-            return QStringList();
-        if (triggerEvent == SlashMissed) {
-            if (player->getPhase() == Player::Play)
-                return QStringList(objectName());
-        } else if (triggerEvent == EventPhaseChanging) {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.from == Player::Play) {
-                if (player->getMark("ikcanyue") > 0)
-                    room->setPlayerMark(player, "ikcanyue", 0);
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAllPlayers()) {
+                    if (p->getMark("ikcanyue") > 0) {
+                        p->setMark("ikcanyue", 0);
+                        foreach (ServerPlayer *p1, room->getAllPlayers()) {
+                            int n = p->getMark("ikcanyue_" + p1->objectName());
+                            if (n > 0) {
+                                for (int i = 0; i < n; ++i) {
+                                    p->removeMark("ikcanyue_" + p1->objectName());
+                                    QStringList assignee_list
+                                        = p->property("extra_slash_specific_assignee").toString().split("+");
+                                    assignee_list.removeOne(p1->objectName());
+                                    room->setPlayerProperty(p, "extra_slash_specific_assignee", assignee_list.join("+"));
+                                }
+                            }
+                        }
+                    }
+                }
             }
+            return QStringList();
         }
-
+        if (TriggerSkill::triggerable(player)) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.to->isAlive() && damage.nature == DamageStruct::Fire)
+                return QStringList(objectName());
+        }
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        room->addPlayerMark(player, "ikcanyue");
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->broadcastSkillInvoke(objectName());
+
+        DamageStruct damage = data.value<DamageStruct>();
+        damage.to->drawCards(1, objectName());
+        player->setMark("ikcanyue", 1);
+        player->addMark("ikcanyue_" + damage.to->objectName());
+        QStringList assignee_list = player->property("extra_slash_specific_assignee").toString().split("+");
+        assignee_list << damage.to->objectName();
+        room->setPlayerProperty(player, "extra_slash_specific_assignee", assignee_list.join("+"));
+        if (player == damage.to && player->getPhase() != Player::NotActive)
+            room->setPlayerFlag(player, "ikcanyuedrink");
+
         return false;
     }
 };
 
-class IkCanyueClear : public DetachEffectSkill
+class IkCanyueTargetMod : public TargetModSkill
 {
 public:
-    IkCanyueClear()
-        : DetachEffectSkill("ikcanyue")
+    IkCanyueTargetMod()
+        : TargetModSkill("#ikcanyue")
     {
+        pattern = "Analeptic";
     }
 
-    virtual void onSkillDetached(Room *room, ServerPlayer *player) const
+    virtual int getResidueNum(const Player *from, const Card *) const
     {
-        room->setPlayerMark(player, "ikcanyue", 0);
+        if (from->hasFlag("ikcanyuedrink"))
+            return 998;
+        return 0;
     }
 };
 
@@ -2402,23 +2411,28 @@ void IkXinbanCard::onEffect(const CardEffectStruct &effect) const
     log.card_str = QString::number(card->getEffectiveId());
     room->sendLog(log);
 
-    if (card->isKindOf("Weapon")) {
-        QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *p, room->getAllPlayers()) {
-            if ((effect.to == p || effect.to->inMyAttackRange(p)) && caohong->canDiscard(p, "hej"))
-                targets << p;
-        }
-        if (!targets.isEmpty()) {
-            ServerPlayer *to_dismantle
-                = room->askForPlayerChosen(caohong, targets, "ikxinban", "@ikxinban-discard:" + effect.to->objectName());
-            int card_id = room->askForCardChosen(caohong, to_dismantle, "hej", "ikxinban", false, Card::MethodDiscard);
-            room->throwCard(Sanguosha->getCard(card_id), to_dismantle, caohong);
-        }
-    } else if (card->isKindOf("Armor")) {
-        effect.to->drawCards(2, "ikxinban");
-    } else if (card->isKindOf("Horse")) {
-        room->recover(effect.to, RecoverStruct(effect.from));
+    QStringList choices;
+    QList<ServerPlayer *> targets;
+    foreach (ServerPlayer *p, room->getAllPlayers()) {
+        if ((effect.to == p || effect.to->inMyAttackRange(p)) && caohong->canDiscard(p, "hej"))
+            targets << p;
     }
+    if (!targets.isEmpty())
+        choices << "discard";
+    choices << "draw";
+    if (caohong->canDiscard(effect.to, getEffectiveId()))
+        choices << "recover";
+    QString choice = room->askForChoice(caohong, "ikxinban", choices.join("+"));
+    if (choice == "discard") {
+        ServerPlayer *target
+            = room->askForPlayerChosen(caohong, targets, "ikxinban", "@ikxinban-discard:" + effect.to->objectName());
+        int card_id = room->askForCardChosen(caohong, target, "hej", "ikxinban", false, Card::MethodDiscard);
+        room->throwCard(card_id, target, caohong);
+    } else if (choice == "recover") {
+        room->throwCard(getEffectiveId(), effect.to, caohong);
+        room->recover(effect.to, RecoverStruct(effect.from));
+    } else
+        effect.to->drawCards(1, "ikxinban");
 }
 
 class IkXinban : public OneCardViewAsSkill
@@ -8649,10 +8663,8 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *wind023 = new General(this, "wind023", "kaze", 3, false);
     wind023->addSkill(new IkXielun);
     wind023->addSkill(new IkCanyue);
-    wind023->addSkill(new IkCanyueCount);
-    wind023->addSkill(new IkCanyueClear);
-    related_skills.insertMulti("ikcanyue", "#ikcanyue-count");
-    related_skills.insertMulti("ikcanyue", "#ikcanyue-clear");
+    wind023->addSkill(new IkCanyueTargetMod);
+    related_skills.insertMulti("ikcanyue", "#ikcanyue");
     wind023->addSkill(new IkJiuming);
     wind023->addSkill(new IkJiumingCount);
     related_skills.insertMulti("ikjiuming", "#ikjiuming-count");
@@ -8755,7 +8767,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     General *bloom041 = new General(this, "bloom041", "hana");
     bloom041->addSkill(new IkBenhua);
 
-    General *bloom043 = new General(this, "bloom043", "hana");
+    General *bloom043 = new General(this, "bloom043", "hana", 4, true, true);
     bloom043->addSkill(new IkYaocheng);
     bloom043->addSkill(new IkHaobi);
 
