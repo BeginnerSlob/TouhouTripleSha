@@ -1533,8 +1533,7 @@ public:
         log.arg = objectName();
         room->sendLog(log);
 
-        room->cancelTarget(use, player);
-        data = QVariant::fromValue(use);
+        room->cancelTarget(data, player);
 
         return false;
     }
@@ -2869,7 +2868,7 @@ TouhouHanaPackage::TouhouHanaPackage()
     hana009->addSkill(new SlashNoDistanceLimitSkill("thduanzui"));
     related_skills.insertMulti("thduanzui", "#thduanzui-slash-ndl");
 
-    General *hana010 = new General(this, "hana010", "hana");
+    General *hana010 = new General(this, "hana010", "hana", 3);
     hana010->addSkill(new ThZheyin);
     hana010->addSkill(new ThYingdeng);
 

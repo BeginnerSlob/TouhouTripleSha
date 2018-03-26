@@ -2709,6 +2709,7 @@ public:
                     room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, extra->objectName(), victim->objectName());
                 }
             }
+            data = QVariant::fromValue(use);
         } else if (choice == "remove") {
             ServerPlayer *removed
                 = room->askForPlayerChosen(player, use.to, "thyongye", "@thyongye-remove:::" + use.card->objectName());
@@ -2721,9 +2722,8 @@ public:
             log.arg = "thyongye";
             room->sendLog(log);
 
-            room->cancelTarget(use, removed);
+            room->cancelTarget(data, removed);
         }
-        data = QVariant::fromValue(use);
 
         return false;
     }

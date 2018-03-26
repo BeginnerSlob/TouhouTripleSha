@@ -127,7 +127,7 @@ public:
     void showAllCards(ServerPlayer *player, ServerPlayer *to = NULL);
     void retrial(const Card *card, ServerPlayer *player, JudgeStruct *judge, const QString &skill_name, bool exchange = false);
 
-    void cancelTarget(CardUseStruct &card_use, ServerPlayer *who);
+    void cancelTarget(QVariant &data, ServerPlayer *who);
 
     QString getWinner(ServerPlayer *victim);
 

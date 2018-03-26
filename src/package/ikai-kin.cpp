@@ -2767,16 +2767,6 @@ public:
 
         return false;
     }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
-    {
-        CardUseStruct use = data.value<CardUseStruct>();
-        use.to.removeOne(player);
-        use.to.append(ask_who);
-        room->sortByActionOrder(use.to);
-        data = QVariant::fromValue(use);
-        return false;
-    }
 };
 
 class IkXuwu : public TriggerSkill
@@ -8736,7 +8726,9 @@ IkaiKinPackage::IkaiKinPackage()
 
     General *snow016 = new General(this, "snow016", "yuki");
     snow016->addSkill(new IkNilan);
+    snow016->addSkill(new IkNilanRecord);
     snow016->addSkill(new SlashNoDistanceLimitSkill("iknilan"));
+    related_skills.insertMulti("iknilan", "#iknilan");
     related_skills.insertMulti("iknilan", "#iknilan-slash-ndl");
 
     General *snow017 = new General(this, "snow017", "yuki", 3, false);

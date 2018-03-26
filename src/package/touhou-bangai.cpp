@@ -56,13 +56,14 @@ public:
         events << CardsMoveOneTime;
         frequency = Frequent;
     }
+
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         if (TriggerSkill::triggerable(player)) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            ServerPlayer *from = (ServerPlayer *)move.from;
-            if (from == player && (room->getCurrent() != player || player->getPhase() == Player::NotActive)
-                && (move.from_places.contains(Player::PlaceHand) || move.to_place == Player::PlaceHand))
+            if ((room->getCurrent() != player || player->getPhase() == Player::NotActive)
+                && ((move.from == player && move.from_places.contains(Player::PlaceHand))
+                    || (move.to == player && move.to_place == Player::PlaceHand)))
                 return QStringList(objectName());
         }
         return QStringList();
