@@ -1372,13 +1372,14 @@ public:
         events << EventPhaseStart << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &,
-                                    ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
     {
-        if (triggerEvent == EventPhaseChanging) {
+        if (e == EventPhaseChanging) {
             foreach (ServerPlayer *p, room->getAlivePlayers()) {
                 if (p->getMark("thhanpotarget") > 0)
                     p->setMark("thhanpotarget", 0);
+                if (p->getMark("thhanpo") > 0)
+                    p->setMark("thhanpo", 0);
             }
             return QStringList();
         }
@@ -1401,7 +1402,7 @@ public:
         return false;
     }
 
-    virtual bool onPhaseChange(ServerPlayer *player) const
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         ServerPlayer *target = player->tag["ThHanpoTarget"].value<ServerPlayer *>();
         player->tag.remove("ThHanpoTarget");
@@ -1455,14 +1456,22 @@ public:
         frequency = NotCompulsory;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
     {
-        return target && target->isAlive() && target->getMark("thhanpo") > 1 && target->getPhase() == Player::Play;
+        if (player && player->isAlive() && player->getPhase() == Player::Play) {
+            QStringList objs;
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (p->getMark("thhanpo") > 1)
+                    objs << p->objectName();
+            }
+            if (!objs.isEmpty())
+                return QStringList(objectName() + "->" + objs.join("+"));
+        }
+        return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *owner) const
     {
-        ServerPlayer *owner = room->getCurrent();
         room->sendCompulsoryTriggerLog(owner, "thhanpo");
 
         player->turnOver();
@@ -1485,11 +1494,11 @@ void ThBingpuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
             continue;
 
         if (!room->askForCard(target, "jink", "@thbingpu:" + source->objectName(), QVariant(), MethodResponse)) {
-            int card_id = room->askForCardChosen(source, target, "he", objectName(), false, MethodDiscard);
+            int card_id = room->askForCardChosen(source, target, "he", "thbingpu", false, MethodDiscard);
             room->throwCard(card_id, target, source);
 
             if (!target->isNude()) {
-                card_id = room->askForCardChosen(source, target, "he", objectName(), false, MethodDiscard);
+                card_id = room->askForCardChosen(source, target, "he", "thbingpu", false, MethodDiscard);
                 room->throwCard(card_id, target, source);
             }
         }
