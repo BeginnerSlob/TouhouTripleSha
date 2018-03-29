@@ -251,8 +251,7 @@ public:
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data,
-                                    ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         if (player && player->isAlive() && player->hasSkill("ikfuhua")) {
             CardUseStruct use = data.value<CardUseStruct>();

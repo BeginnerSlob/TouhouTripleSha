@@ -1734,7 +1734,6 @@ public:
             }
         }
 
-
         Slash *slash = new Slash(Card::NoSuit, 0);
         slash->deleteLater();
         if (slash->isAvailable(player))

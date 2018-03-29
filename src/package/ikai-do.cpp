@@ -1136,7 +1136,7 @@ public:
         }
         return QStringList();
     }
-    
+
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         if (player->askForSkillInvoke(objectName())) {
@@ -1147,7 +1147,7 @@ public:
         }
         return false;
     }
-    
+
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         QList<int> ids, disabled_ids;
@@ -1160,7 +1160,7 @@ public:
                     disabled_ids << id;
             }
         }
-        
+
         room->fillAG(move.card_ids, player, disabled_ids);
         int id = room->askForAG(player, ids, false, objectName());
         room->clearAG(player);
