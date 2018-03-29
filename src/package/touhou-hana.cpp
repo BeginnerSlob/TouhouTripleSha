@@ -1628,7 +1628,8 @@ public:
         foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (p->getMark("thyingdengtarget") > 0) {
                 p->setMark("thyingdengtarget", 0);
-                targets << p;
+                if (use.card->targetFixed() || use.card->targetFilter(QList<const Player *>(), p, use.from))
+                    targets << p;
             }
         }
         if (!targets.isEmpty()) {

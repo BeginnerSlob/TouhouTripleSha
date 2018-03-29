@@ -61,7 +61,8 @@ public:
     {
         if (TriggerSkill::triggerable(player)) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if ((room->getCurrent() != player || player->getPhase() == Player::NotActive)
+            if (!room->getTag("FirstRound").toBool()
+                && (room->getCurrent() != player || player->getPhase() == Player::NotActive)
                 && ((move.from == player && move.from_places.contains(Player::PlaceHand))
                     || (move.to == player && move.to_place == Player::PlaceHand)))
                 return QStringList(objectName());

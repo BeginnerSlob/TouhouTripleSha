@@ -248,7 +248,7 @@ void IkXielunCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
 {
     foreach (ServerPlayer *p, targets) {
         if (!p->isChained())
-            room->setPlayerProperty(p, "chained", false);
+            room->setPlayerProperty(p, "chained", true);
     }
 
     ServerPlayer *target = room->askForPlayerChosen(source, targets, "ikxielun");

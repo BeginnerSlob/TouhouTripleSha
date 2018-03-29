@@ -1885,7 +1885,7 @@ public:
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const
     {
-        return player->getHandcardNum() > player->getHp() && !player->getEquips().isEmpty();
+        return player->isAlive() && player->getHandcardNum() > player->getHp();
     }
 };
 
