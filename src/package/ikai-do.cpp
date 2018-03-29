@@ -1148,7 +1148,7 @@ public:
         return false;
     }
     
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         QList<int> ids, disabled_ids;
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();

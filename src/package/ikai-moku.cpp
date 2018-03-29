@@ -199,7 +199,7 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         room->broadcastSkillInvoke(objectName());
         room->sendCompulsoryTriggerLog(player, objectName());
@@ -248,11 +248,11 @@ public:
         : TriggerSkill("#ikfuhua")
     {
         events << CardUsed;
-        Frequency = Compulsory;
+        frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data,
-                                    ServerPlayer *&ask_who) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
     {
         if (player && player->isAlive() && player->hasSkill("ikfuhua")) {
             CardUseStruct use = data.value<CardUseStruct>();
@@ -262,7 +262,7 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         room->sendCompulsoryTriggerLog(player, "ikfuhua");
         player->drawCards(1, "ikfuhua");
@@ -325,7 +325,7 @@ public:
         events << AskForPeaches;
         frequency = Limited;
         limit_mark = "@suinie";
-        view_as_skill = IkSuinieVS;
+        view_as_skill = new IkSuinieVS;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *pangtong, QVariant &data, ServerPlayer *&) const
