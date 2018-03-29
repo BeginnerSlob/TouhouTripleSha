@@ -30,7 +30,6 @@ public:
     Q_INVOKABLE IkSuinieCard();
 
     virtual void use(Room *room, ServerPlayer *pangtong, QList<ServerPlayer *> &targets) const;
-    virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
 class IkTiaoxinCard : public SkillCard
