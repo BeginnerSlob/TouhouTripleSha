@@ -1087,8 +1087,7 @@ public:
         events << TurnedOver << Damaged;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &,
-                                    ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *&) const
     {
         if (!TriggerSkill::triggerable(player))
             return QStringList();
@@ -2278,57 +2277,59 @@ public:
     }
 };
 
-ThMaihuoCard::ThMaihuoCard()
-{
-    will_throw = false;
-    handling_method = MethodNone;
-}
-
-void ThMaihuoCard::onEffect(const CardEffectStruct &effect) const
-{
-    Room *room = effect.from->getRoom();
-    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "thmaihuo",
-                          QString());
-    room->obtainCard(effect.to, this, reason);
-    effect.from->tag["ThMaihuoCard"] = QVariant::fromValue(getEffectiveId()); // for AI
-    Suit suit = room->askForSuit(effect.from, "thmaihuo");
-    effect.from->tag.remove("ThMaihuoCard");
-
-    LogMessage log;
-    log.type = "#ChooseSuit";
-    log.from = effect.from;
-    log.arg = Card::Suit2String(suit);
-    room->sendLog(log);
-
-    room->showAllCards(effect.to);
-    int n = 0;
-    foreach (const Card *c, effect.to->getHandcards()) {
-        if (c->getSuit() == suit)
-            ++n;
-    }
-    if (n > 0)
-        effect.to->drawCards(qMin(n, 3), "thmaihuo");
-}
-
-class ThMaihuo : public OneCardViewAsSkill
+class ThMaihuo : public TriggerSkill
 {
 public:
     ThMaihuo()
-        : OneCardViewAsSkill("thmaihuo")
+        : TriggerSkill("thmaihuo")
     {
-        filter_pattern = ".|red";
+        events << TargetSpecifying;
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
-        return !player->hasUsed("ThMaihuoCard");
+        if (TriggerSkill::triggerable(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->getTypeId() != Card::TypeSkill && use.card->getSuit() == Card::Heart) {
+                QStringList objs;
+                foreach (ServerPlayer *p, use.to)
+                    objs << p->objectName();
+                return QStringList(objectName() + "->" + objs.join("+"));
+            }
+        }
+        return QStringList();
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
-        ThMaihuoCard *card = new ThMaihuoCard;
-        card->addSubcard(originalCard);
-        return card;
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        Card::Suit suit = room->askForSuit(ask_who, objectName());
+
+        LogMessage log;
+        log.type = "#ChooseSuit";
+        log.from = ask_who;
+        log.arg = Card::Suit2String(suit);
+        room->sendLog(log);
+
+        if (!player->isKongcheng()) {
+            room->showAllCards(player);
+            int n = 0;
+            foreach (const Card *c, player->getHandcards()) {
+                if (c->getSuit() == suit)
+                    ++n;
+            }
+            if (n > 0)
+                player->drawCards(qMin(n, 3), objectName());
+        }
+        return false;
     }
 };
 
@@ -2856,7 +2857,6 @@ TouhouKazePackage::TouhouKazePackage()
     addMetaObject<ThSuilunCard>();
     addMetaObject<ThRansangCard>();
     addMetaObject<ThYanxingCard>();
-    addMetaObject<ThMaihuoCard>();
     addMetaObject<ThSangzhiCard>();
     addMetaObject<ThXinhuaCard>();
 

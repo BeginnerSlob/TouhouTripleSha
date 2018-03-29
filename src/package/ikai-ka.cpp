@@ -2593,20 +2593,20 @@ void IkDuanniCard::onEffect(const CardEffectStruct &effect) const
     slash->setSkillName("_ikduanni");
     QList<ServerPlayer *> targets;
     targets << effect.from;
-    if (effect.to->getHp() >= effect.from->getHp()) {
-        QList<ServerPlayer *> extras;
-        foreach (ServerPlayer *p, room->getOtherPlayers(effect.to)) {
-            if (p == effect.from)
-                continue;
-            if (effect.to->canSlash(p, slash, false))
-                extras << p;
-        }
-        if (!extras.isEmpty()) {
-            ServerPlayer *extra = room->askForPlayerChosen(effect.from, extras, "ikduanni", "@slash_extra_targets", true);
-            if (extra)
-                targets << extra;
-        }
+
+    QList<ServerPlayer *> extras;
+    foreach (ServerPlayer *p, room->getOtherPlayers(effect.to)) {
+        if (p == effect.from)
+            continue;
+        if (effect.to->canSlash(p, slash, false))
+            extras << p;
     }
+    if (!extras.isEmpty()) {
+        ServerPlayer *extra = room->askForPlayerChosen(effect.from, extras, "ikduanni", "@slash_extra_targets", true);
+        if (extra)
+            targets << extra;
+    }
+
     room->sortByActionOrder(targets);
     room->useCard(CardUseStruct(slash, effect.to, targets));
 }
@@ -5524,7 +5524,6 @@ public:
         : TriggerSkill("iklunyao")
     {
         events << BeforeCardsMove << EventPhaseChanging;
-        frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
@@ -5536,7 +5535,7 @@ public:
                     p->setMark(objectName(), 0);
             }
         } else {
-            if (!TriggerSkill::triggerable(player) || player->getMark(objectName()) >= 3)
+            if (!TriggerSkill::triggerable(player) || player->getMark(objectName()) > 0)
                 return QStringList();
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.from != player)
@@ -5553,11 +5552,18 @@ public:
         return QStringList();
     }
 
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            player->addMark(objectName());
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        room->sendCompulsoryTriggerLog(player, objectName());
-        room->broadcastSkillInvoke(objectName());
-        player->addMark(objectName());
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         QList<int> ids;
         int i = 0;

@@ -929,7 +929,8 @@ public:
         bool first = true;
         forever {
             QStringList choices;
-            choices << "thhuanlong1" << "thhuanlong2";
+            choices << "thhuanlong1"
+                    << "thhuanlong2";
             if (!player->hasFlag("thhuanlong"))
                 choices << "thhuanlong3";
             if (choices.isEmpty())
@@ -1505,41 +1506,38 @@ public:
     ThShushu()
         : TriggerSkill("thshushu")
     {
-        events << TargetConfirming;
+        events << TargetSpecifying << TargetConfirming;
         view_as_skill = new ThShushuViewAsSkill;
     }
 
-    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
     {
-        TriggerList skill_list;
-        CardUseStruct use = data.value<CardUseStruct>();
-        if ((use.card->isKindOf("BasicCard") || (use.card->isNDTrick() && use.card->isBlack())) && use.card->getNumber() > 0) {
-            QList<int> ids;
-            if (use.card->isVirtualCard())
-                ids = use.card->getSubcards();
-            else
-                ids << use.card->getEffectiveId();
-            if (ids.length() > 0) {
-                bool all_place_table = true;
-                foreach (int id, ids) {
-                    if (room->getCardPlace(id) != Player::PlaceTable) {
-                        all_place_table = false;
-                        break;
-                    }
-                }
-                if (all_place_table) {
-                    foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
-                        if (p->isNude())
-                            continue;
-                        int dis = p->distanceTo(player);
-                        if (dis >= 0 && dis <= 2)
-                            skill_list.insert(p, QStringList(objectName()));
+        if (TriggerSkill::triggerable(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (triggerEvent == TargetSpecifying || (triggerEvent == TargetConfirming && use.to.contains(player))) {
+                if ((use.card->isKindOf("BasicCard") || (use.card->isNDTrick() && use.card->isBlack()))
+                    && use.card->getNumber() > 0) {
+                    QList<int> ids;
+                    if (use.card->isVirtualCard())
+                        ids = use.card->getSubcards();
+                    else
+                        ids << use.card->getEffectiveId();
+                    if (ids.length() > 0) {
+                        bool all_place_table = true;
+                        foreach (int id, ids) {
+                            if (room->getCardPlace(id) != Player::PlaceTable) {
+                                all_place_table = false;
+                                break;
+                            }
+                        }
+                        if (all_place_table)
+                            return QStringList(objectName());
                     }
                 }
             }
         }
-
-        return skill_list;
+        return QStringList();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const

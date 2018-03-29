@@ -1107,6 +1107,82 @@ public:
     }
 };
 
+class IkZhimen : public TriggerSkill
+{
+public:
+    IkZhimen()
+        : TriggerSkill("ikzhimen")
+    {
+        events << BeforeCardsMove;
+        limit_mark = "@zhimen";
+        frequency = Limited;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (TriggerSkill::triggerable(player) && player->getMark("@zhimen") > 0) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.to_place == Player::DiscardPile) {
+                foreach (int id, move.card_ids) {
+                    if (Sanguosha->getEngineCard(id)->isKindOf("DelayedTrick")) {
+                        QString obj = Sanguosha->getEngineCard(id)->objectName();
+                        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                            if (!p->containsTrick(obj))
+                                return QStringList(objectName());
+                        }
+                    }
+                }
+            }
+        }
+        return QStringList();
+    }
+    
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            room->removePlayerMark(player, "@zhimen");
+            room->addPlayerMark(player, "@zhimenused");
+            return true;
+        }
+        return false;
+    }
+    
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        QList<int> ids, disabled_ids;
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.to_place == Player::DiscardPile) {
+            foreach (int id, move.card_ids) {
+                if (Sanguosha->getEngineCard(id)->isKindOf("DelayedTrick"))
+                    ids << id;
+                else
+                    disabled_ids << id;
+            }
+        }
+        
+        room->fillAG(move.card_ids, player, disabled_ids);
+        int id = room->askForAG(player, ids, false, objectName());
+        room->clearAG(player);
+
+        const Card *card = Sanguosha->getEngineCard(id);
+        QString dt = card->objectName();
+
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            if (p->containsTrick(dt))
+                continue;
+            targets << p;
+        }
+
+        Q_ASSERT(!targets.isEmpty());
+
+        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
+        room->moveCardTo(card, target, Player::PlaceDelayedTrick);
+        return false;
+    }
+};
+
 class IkAoli : public TriggerSkill
 {
 public:
@@ -3460,6 +3536,7 @@ IkaiDoPackage::IkaiDoPackage()
     General *bloom002 = new General(this, "bloom002", "hana", 3);
     bloom002->addSkill(new IkTiansuo);
     bloom002->addSkill(new IkHuanji);
+    bloom002->addSkill(new IkZhimen);
 
     General *bloom003 = new General(this, "bloom003", "hana");
     bloom003->addSkill(new IkAoli);

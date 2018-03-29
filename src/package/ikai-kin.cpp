@@ -7790,6 +7790,8 @@ public:
         TriggerList skill_list;
         if (triggerEvent == EventPhaseChanging) {
             if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                if (player->getMark("ikrongxinprohibit") > 0)
+                    room->setPlayerMark(player, "ikrongxinprohibit", 0);
                 if (player->getMark(objectName()) > 0) {
                     room->setPlayerMark(player, objectName(), 0);
                     foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
@@ -7824,13 +7826,28 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *fuhuanghou) const
     {
         if (fuhuanghou->pindian(player, objectName())) {
-            player->skip(Player::Play);
+            room->addPlayerMark(player, "ikrongxinprohibit");
         } else {
             room->setFixedDistance(player, fuhuanghou, 1);
             room->addPlayerMark(player, objectName());
             room->addPlayerMark(player, "ikrongxin_" + fuhuanghou->objectName());
         }
         return false;
+    }
+};
+
+class IkRongxinProhibit : public ProhibitSkill
+{
+public:
+    IkRongxinProhibit()
+        : ProhibitSkill("#ikrongxin")
+    {
+        frequency = NotCompulsory;
+    }
+
+    virtual bool isProhibited(const Player *from, const Player *to, const Card *, const QList<const Player *> &) const
+    {
+        return from->getMark("ikrongxinprohibit") > 0 && from != to;
     }
 };
 

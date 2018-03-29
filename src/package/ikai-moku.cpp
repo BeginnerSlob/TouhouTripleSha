@@ -190,7 +190,7 @@ public:
         bool ok = false;
         int recorded_damage = player->tag["InvokeIkKuanggu"].toInt(&ok);
         DamageStruct damage = data.value<DamageStruct>();
-        if (ok && recorded_damage > 0 && (player->isWounded() || !damage.card || !damage.card->isKindOf("Slash"))) {
+        if (ok && recorded_damage > 0) {
             QStringList skills;
             for (int i = 0; i < damage.damage; i++)
                 skills << objectName();
@@ -203,18 +203,16 @@ public:
     {
         room->broadcastSkillInvoke(objectName());
         room->sendCompulsoryTriggerLog(player, objectName());
-        DamageStruct damage = data.value<DamageStruct>();
 
         QStringList choices;
         if (player->isWounded())
             choices << "recover";
-        if (!damage.card || !damage.card->isKindOf("Slash"))
-            choices << "draw";
+        choices << "draw";
         QString choice = room->askForChoice(player, objectName(), choices.join("+"));
         if (choice == "recover")
             room->recover(player, RecoverStruct(player));
         else
-            player->drawCards(2);
+            player->drawCards(1, objectName());
         return false;
     }
 };
@@ -243,6 +241,81 @@ public:
     }
 };
 
+class IkFuhuaTrigger : public TriggerSkill
+{
+public:
+    IkFuhuaTrigger()
+        : TriggerSkill("#ikfuhua")
+    {
+        events << CardUsed;
+        Frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&ask_who) const
+    {
+        if (player && player->isAlive() && player->hasSkill("ikfuhua")) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("IronChain") && use.to.length() == 1)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        room->sendCompulsoryTriggerLog(player, "ikfuhua");
+        player->drawCards(1, "ikfuhua");
+        return false;
+    }
+};
+
+IkSuinieCard::IkSuinieCard()
+{
+    target_fixed = true;
+}
+
+void IkSuinieCard::use(Room *room, ServerPlayer *pangtong, QList<ServerPlayer *> &) const
+{
+    room->removePlayerMark(pangtong, "@suinie");
+    room->addPlayerMark(pangtong, "@suinieused");
+
+    QList<const Card *> tricks = pangtong->getJudgingArea();
+    foreach (const Card *trick, tricks) {
+        CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, pangtong->objectName());
+        room->throwCard(trick, reason, NULL);
+    }
+
+    if (!pangtong->faceUp())
+        pangtong->turnOver();
+
+    if (pangtong->isChained())
+        room->setPlayerProperty(pangtong, "chained", false);
+
+    pangtong->drawCards(3, objectName());
+
+    room->recover(pangtong, RecoverStruct(pangtong, NULL, 3 - pangtong->getHp()));
+}
+
+class IkSuinieVS : public ZeroCardViewAsSkill
+{
+public:
+    IkSuinieVS()
+        : ZeroCardViewAsSkill("iksuinie")
+    {
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new IkSuinieCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return player->getMark("@suinie") > 0;
+    }
+};
+
 class IkSuinie : public TriggerSkill
 {
 public:
@@ -252,6 +325,7 @@ public:
         events << AskForPeaches;
         frequency = Limited;
         limit_mark = "@suinie";
+        view_as_skill = IkSuinieVS;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *pangtong, QVariant &data, ServerPlayer *&) const
@@ -6026,6 +6100,8 @@ IkaiMokuPackage::IkaiMokuPackage()
 
     General *wind010 = new General(this, "wind010", "kaze", 3);
     wind010->addSkill(new IkFuhua);
+    wind010->addSkill(new IkFuhuaTrigger);
+    related_skills.insertMulti("ikfuhua", "#ikfuhua");
     wind010->addSkill(new IkSuinie);
     wind010->addRelateSkill("ikmopan");
 
@@ -6229,6 +6305,7 @@ IkaiMokuPackage::IkaiMokuPackage()
     related_skills.insertMulti("ikzhuohuo", "#@blaze-2");
 
     addMetaObject<IkHuanghunCard>();
+    addMetaObject<IkSuinieCard>();
     addMetaObject<IkTiaoxinCard>();
     addMetaObject<IkYoujiCard>();
     addMetaObject<IkLiefengCard>();
