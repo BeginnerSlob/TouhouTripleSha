@@ -7804,11 +7804,10 @@ public:
             }
             return skill_list;
         }
-        if (player->getPhase() != Player::RoundStart || player->isKongcheng())
-            return skill_list;
-        foreach (ServerPlayer *fuhuanghou, room->findPlayersBySkillName(objectName())) {
-            if (player != fuhuanghou && fuhuanghou->isWounded() && !fuhuanghou->isKongcheng()) {
-                skill_list.insert(fuhuanghou, QStringList(objectName()));
+        if (player->getPhase() == Player::RoundStart && !player->isKongcheng()) {
+            foreach (ServerPlayer *fuhuanghou, room->findPlayersBySkillName(objectName())) {
+                if (player != fuhuanghou && !fuhuanghou->isKongcheng())
+                    skill_list.insert(fuhuanghou, QStringList(objectName()));
             }
         }
         return skill_list;
@@ -8817,6 +8816,8 @@ IkaiKinPackage::IkaiKinPackage()
 
     General *luna028 = new General(this, "luna028", "tsuki", 3, false);
     luna028->addSkill(new IkRongxin);
+    luna028->addSkill(new IkRongxinProhibit);
+    related_skills.insertMulti("ikrongxin", "#ikrongxin");
     luna028->addSkill(new IkKehun);
 
     General *luna038 = new General(this, "luna038", "tsuki", 3);

@@ -1628,7 +1628,10 @@ public:
         foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (p->getMark("thyingdengtarget") > 0) {
                 p->setMark("thyingdengtarget", 0);
-                if (use.card->targetFixed() || use.card->targetFilter(QList<const Player *>(), p, use.from))
+                if (use.card->isKindOf("Slash")) {
+                    if (use.from->canSlash(p, use.card, false))
+                        targets << p;
+                } else if (!use.from->isProhibited(p, use.card))
                     targets << p;
             }
         }

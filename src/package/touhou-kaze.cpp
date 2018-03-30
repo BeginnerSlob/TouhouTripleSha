@@ -2290,27 +2290,28 @@ public:
     {
         if (TriggerSkill::triggerable(player)) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->getTypeId() != Card::TypeSkill && use.card->getSuit() == Card::Heart) {
-                QStringList objs;
-                foreach (ServerPlayer *p, use.to)
-                    objs << p->objectName();
-                return QStringList(objectName() + "->" + objs.join("+"));
+            if (use.card->getTypeId() != Card::TypeSkill && use.card->getSuit() == Card::Heart && use.to.length() == 1
+                && use.from != use.to.first()) {
+                return QStringList(objectName());
             }
         }
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+        if (player->askForSkillInvoke(objectName(), data)) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const
     {
+        CardUseStruct use = data.value<CardUseStruct>();
+        ServerPlayer *player = use.to.first();
+
         Card::Suit suit = room->askForSuit(ask_who, objectName());
 
         LogMessage log;

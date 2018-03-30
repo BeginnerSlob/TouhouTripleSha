@@ -1179,6 +1179,8 @@ public:
 
         ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
         room->moveCardTo(card, target, Player::PlaceDelayedTrick);
+        move.removeCardIds(QList<int>() << id);
+        data = QVariant::fromValue(move);
         return false;
     }
 };
