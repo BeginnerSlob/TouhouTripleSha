@@ -1854,7 +1854,13 @@ public:
 
     bool doQiebao(Room *room, ServerPlayer *player, QList<int> card_ids, bool move, QVariant &data) const
     {
-        const Card *card = room->askForCard(player, "slash", "@thqiebao", data, objectName());
+        QString prompt = "@thqiebao";
+        if (move) {
+            prompt += "move:%1:%2:%3";
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            prompt = prompt.arg(move.from->objectName()).arg(move.to->objectName()).arg(move.card_ids.length());
+        }
+        const Card *card = room->askForCard(player, "slash", prompt, data, objectName());
         if (!card)
             return false;
 
