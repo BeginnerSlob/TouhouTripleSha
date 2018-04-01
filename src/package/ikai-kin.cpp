@@ -3781,12 +3781,12 @@ void IkDingpinCard::onEffect(const CardEffectStruct &effect) const
 
     room->judge(judge);
 
-    if (judge.isGood()) {
-        room->setPlayerFlag(effect.to, "ikdingpin");
+    if (judge.isGood())
         effect.to->drawCards(effect.to->getLostHp(), "ikdingpin");
-    } else {
+    else
         effect.from->turnOver();
-    }
+
+    room->setPlayerFlag(effect.to, "ikdingpin");
 }
 
 class IkDingpinViewAsSkill : public OneCardViewAsSkill
