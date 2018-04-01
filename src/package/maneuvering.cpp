@@ -263,7 +263,7 @@ public:
             SlashEffectStruct effect = data.value<SlashEffectStruct>();
             if (effect.from && effect.from->hasSkill("ikkongni"))
                 return QStringList();
-            if (effect.nature == DamageStruct::Normal)
+            if (effect.slash->objectName() == "slash")
                 return QStringList(objectName());
         } else if (triggerEvent == CardEffected) {
             CardEffectStruct effect = data.value<CardEffectStruct>();

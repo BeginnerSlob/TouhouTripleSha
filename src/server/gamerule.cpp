@@ -583,7 +583,10 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
 
         if (effect.drank > 0)
             effect.to->setMark("SlashIsDrank", effect.drank);
-        room->damage(DamageStruct(effect.slash, effect.from, effect.to, 1, effect.nature));
+        DamageStruct::Nature nature = effect.nature;
+        if (effect.slash->hasFlag("rodusing"))
+            nature = DamageStruct::Fire;
+        room->damage(DamageStruct(effect.slash, effect.from, effect.to, 1, nature));
 
         break;
     }

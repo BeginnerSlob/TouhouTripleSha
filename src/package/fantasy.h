@@ -185,6 +185,8 @@ class ControlRod : public Weapon
 
 public:
     Q_INVOKABLE ControlRod(Card::Suit suit = Club, int number = 3);
+
+    virtual void onUninstall(ServerPlayer *player) const;
 };
 
 class Drowning : public AOE

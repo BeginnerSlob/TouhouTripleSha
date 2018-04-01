@@ -1419,15 +1419,4 @@ void ServerPlayer::slashSettlementFinished(const Card *slash)
 {
     removeQinggangTag(slash);
     room->removePlayerMark(this, "@repression");
-
-    QStringList control_rod_use = property("control_rod_use").toString().split(" ");
-
-    if (control_rod_use.contains(slash->toString())) {
-        control_rod_use.removeAll(slash->toString());
-        room->setPlayerProperty(this, "control_rod_use", control_rod_use.join(" "));
-
-        JsonArray args;
-        args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
-        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
-    }
 }
