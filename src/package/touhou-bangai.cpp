@@ -618,6 +618,7 @@ public:
         room->showAllCards(judge->who);
         room->fillAG(hand, player);
         int id = room->askForAG(player, hand, false, objectName());
+        room->clearAG(player);
         if (id == -1)
             id = hand.at(rand() % hand.length());
         room->retrial(Sanguosha->getCard(id), player, judge, objectName());
