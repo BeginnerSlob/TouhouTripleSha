@@ -725,7 +725,7 @@ bool PurpleSong::targetFilter(const QList<const Player *> &targets, const Player
 void PurpleSong::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
     Q_ASSERT(targets.length() == 1);
-    if (!targets.isEmpty)
+    if (!targets.isEmpty())
         room->setEmotion(targets.first(), "effects/purple_song");
     DelayedTrick::use(room, source, targets);
 }
@@ -747,7 +747,7 @@ public:
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &d, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
     {
         if (player->getPhase() == Player::NotActive) {
             foreach (ServerPlayer *p, room->getAllPlayers()) {

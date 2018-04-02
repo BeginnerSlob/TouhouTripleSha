@@ -675,7 +675,7 @@ SupplyShortage::SupplyShortage(Card::Suit suit, int number)
 void SupplyShortage::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
     Q_ASSERT(targets.length() == 1);
-    if (!targets.isEmpty)
+    if (!targets.isEmpty())
         room->setEmotion(targets.first(), "effects/supply_shortage");
     DelayedTrick::use(room, source, targets);
 }
