@@ -2434,6 +2434,7 @@ ThLingdieCard::ThLingdieCard()
 
 void ThLingdieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
+    Suit suit = Sanguosha->getCard(getEffectiveId())->getSuit();
     ServerPlayer *target = targets.first();
     CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "thlingdie", QString());
     room->obtainCard(target, this, reason);
@@ -2456,7 +2457,7 @@ void ThLingdieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
         room->showAllCards(victim, target);
     }
 
-    if (Sanguosha->getCard(subcards.first())->getSuit() == Heart)
+    if (suit == Heart)
         target->drawCards(1, "thlingdie");
     else
         room->setPlayerFlag(source, "ThLingdieDisabled");
