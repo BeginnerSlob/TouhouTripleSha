@@ -2290,8 +2290,7 @@ public:
     {
         if (TriggerSkill::triggerable(player)) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->getTypeId() != Card::TypeSkill && use.card->getSuit() == Card::Heart && use.to.length() == 1
-                && use.from != use.to.first()) {
+            if (use.card->getTypeId() != Card::TypeSkill && use.card->getSuit() == Card::Heart && use.to.length() == 1) {
                 return QStringList(objectName());
             }
         }
