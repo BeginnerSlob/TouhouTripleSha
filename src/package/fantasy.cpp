@@ -733,7 +733,7 @@ void PurpleSong::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &ta
 void PurpleSong::takeEffect(ServerPlayer *target) const
 {
     target->skip(Player::Discard);
-    target->getRoom()->addPlayerMark(target, "zilianshengyong");
+    target->addMark("zilianshengyong");
 }
 
 class PurpleSongSkill : public TriggerSkill
@@ -742,28 +742,19 @@ public:
     PurpleSongSkill()
         : TriggerSkill("purple_song")
     {
-        events << EventPhaseStart << EventPhaseChanging;
+        events << EventPhaseStart;
         global = true;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &d, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &d, ServerPlayer *&) const
     {
-        if (e == EventPhaseChanging) {
-            if (d.value<PhaseChangeStruct>().to == Player::NotActive) {
-                foreach (ServerPlayer *p, room->getAlivePlayers()) {
-                    if (p->getMark("zilianshengyong") > 0)
-                        room->setPlayerMark(p, "zilianshengyong", 0);
-                }
-            }
-            return QStringList();
-        }
-        if (player->getMark("zilianshengyong") == 0)
-            return QStringList();
         if (player->getPhase() == Player::NotActive) {
-            while (player->getMark("zilianshengyong") > 0) {
-                room->removePlayerMark(player, "zilianshengyong");
-                player->drawCards(2, objectName());
+            foreach (ServerPlayer *p, room->getAllPlayers()) {
+                while (p->getMark("zilianshengyong") > 0) {
+                    p->removeMark("zilianshengyong");
+                    p->drawCards(2, objectName());
+                }
             }
         }
 
