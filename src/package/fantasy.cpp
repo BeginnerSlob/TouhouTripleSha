@@ -165,8 +165,10 @@ void FeintAttack::onUse(Room *room, const CardUseStruct &card_use) const
 void FeintAttack::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
     Q_ASSERT(targets.length() == 1);
-    ServerPlayer *killer = targets.first();
-    room->setEmotion(killer, "effects/feint_attack");
+    if (!targets.isEmpty()) {
+        ServerPlayer *killer = targets.first();
+        room->setEmotion(killer, "effects/feint_attack");
+    }
     /*
     ServerPlayer *victim = killer->tag["feintTarget"].value<ServerPlayer *>();
     if (victim) {
@@ -723,7 +725,8 @@ bool PurpleSong::targetFilter(const QList<const Player *> &targets, const Player
 void PurpleSong::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
     Q_ASSERT(targets.length() == 1);
-    room->setEmotion(targets.first(), "effects/purple_song");
+    if (!targets.isEmpty)
+        room->setEmotion(targets.first(), "effects/purple_song");
     DelayedTrick::use(room, source, targets);
 }
 

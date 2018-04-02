@@ -1189,12 +1189,14 @@ void Collateral::onUse(Room *room, const CardUseStruct &card_use) const
 void Collateral::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
     Q_ASSERT(targets.length() == 1);
-    ServerPlayer *killer = targets.first();
-    ServerPlayer *victim = killer->tag["collateralVictim"].value<ServerPlayer *>();
-    room->setEmotion(killer, "effects/collateral");
-    if (victim) {
-        room->getThread()->delay(800);
-        room->setEmotion(victim, "effects/collateral_slash");
+    if (!targets.isEmpty()) {
+        ServerPlayer *killer = targets.first();
+        ServerPlayer *victim = killer->tag["collateralVictim"].value<ServerPlayer *>();
+        room->setEmotion(killer, "effects/collateral");
+        if (victim) {
+            room->getThread()->delay(800);
+            room->setEmotion(victim, "effects/collateral_slash");
+        }
     }
 
     SingleTargetTrick::use(room, source, targets);
@@ -1527,7 +1529,8 @@ bool Indulgence::targetFilter(const QList<const Player *> &targets, const Player
 void Indulgence::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
     Q_ASSERT(targets.length() == 1);
-    room->setEmotion(targets.first(), "effects/indulgence");
+    if (!targets.isEmpty())
+        room->setEmotion(targets.first(), "effects/indulgence");
     DelayedTrick::use(room, source, targets);
 }
 
