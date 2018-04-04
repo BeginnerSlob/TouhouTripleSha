@@ -897,7 +897,7 @@ void PlayerCardContainer::stopHuaShen()
     if (_m_huashenAnimation != NULL) {
         _m_huashenAnimation->stop();
         _m_huashenAnimation->deleteLater();
-        if (_m_huashenChangeName) {
+        if (_m_huashenNameAnimation != NULL && _m_huashenOldNameAnimation != NULL) {
             _m_huashenNameAnimation->stop();
             _m_huashenNameAnimation->deleteLater();
             _m_huashenOldNameAnimation->stop();
