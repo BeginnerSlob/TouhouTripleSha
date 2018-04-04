@@ -2238,12 +2238,17 @@ public:
         TriggerList skill_list;
         if (player->getPhase() == Player::NotActive) {
             foreach (ServerPlayer *p, room->getAllPlayers()) {
-                if (p->getMark("kujie-invoke") > 0) {
+                if (p->getMark("kujie-invoke") > 0 && p->isWounded()) {
                     QStringList skills;
                     for (int i = 0; i < p->getMark("kujie-invoke"); ++i)
                         skills << objectName();
                     skill_list.insert(p, skills);
                 }
+            }
+        } else if (player->getPhase() == Player::RoundStart) {
+            foreach (ServerPlayer *p, room->getAllPlayers()) {
+                if (p->getMark("kujie-invoke") > 0)
+                    room->setPlayerMark(p, "kujie-invoke", 0);
             }
         }
         return skill_list;
@@ -2251,10 +2256,8 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
     {
-        room->removePlayerMark(ask_who, "kujie-invoke");
         room->sendCompulsoryTriggerLog(ask_who, "thkujie");
-        if (ask_who->isWounded())
-            room->recover(ask_who, RecoverStruct(ask_who, NULL, 2));
+        room->recover(ask_who, RecoverStruct(ask_who, NULL, 2));
         return false;
     }
 };
