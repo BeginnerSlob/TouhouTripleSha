@@ -2685,11 +2685,11 @@ public:
     {
         events << CardUsed // IkHuiquan
                << EventPhaseStart // IkXushi
-               << CardsMoveOneTime; // ThXijing
+               << AskForRetrial; // ThXijing
         view_as_skill = new IkJilveViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data,
                                     ServerPlayer *&) const
     {
         if (!TriggerSkill::triggerable(player) || player->getMark("@fetter") == 0)
@@ -2701,21 +2701,10 @@ public:
         } else if (triggerEvent == EventPhaseStart) {
             if (player->getPhase() == Player::Start)
                 return QStringList(objectName());
-        } else if (triggerEvent == CardsMoveOneTime) {
-            if ((room->getCurrent() == player && player->getPhase() != Player::NotActive) || player->isKongcheng()
-                || player->hasFlag("thxijing_using"))
-                return QStringList();
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.from != player || move.to_place != Player::DiscardPile)
-                return QStringList();
-
-            for (int i = 0; i < move.card_ids.length(); i++) {
-                int id = move.card_ids[i];
-                if (move.from_places[i] != Player::PlaceJudge && move.from_places[i] != Player::PlaceSpecial
-                    && !Sanguosha->getCard(id)->isKindOf("EquipCard") && room->getCardPlace(id) == Player::DiscardPile) {
-                    return QStringList(objectName());
-                }
-            }
+        } else if (triggerEvent == AskForRetrial) {
+            JudgeStruct *judge = data.value<JudgeStruct *>();
+            if (!judge->who->isKongcheng())
+                return QStringList(objectName());
         }
         return QStringList();
     }
@@ -2746,37 +2735,17 @@ public:
                 player->loseMark("@fetter");
                 return true;
             }
-        } else if (triggerEvent == CardsMoveOneTime) {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            for (int i = 0; i < move.card_ids.length(); i++) {
-                int id = move.card_ids[i];
-                if (move.from_places[i] != Player::PlaceJudge && move.from_places[i] != Player::PlaceSpecial
-                    && !Sanguosha->getEngineCard(id)->isKindOf("EquipCard") && room->getCardPlace(id) == Player::DiscardPile) {
-                    const Card *c = Sanguosha->getEngineCard(id);
-                    QString prompt
-                        = "@thxijing:" + c->getSuitString() + ":" + QString::number(c->getNumber()) + ":" + c->objectName();
-                    QString pattern = ".";
-                    if (c->isBlack())
-                        pattern = ".black";
-                    else if (c->isRed())
-                        pattern = ".red";
-                    const Card *card = room->askForCard(player, pattern, prompt, QVariant(), Card::MethodNone);
+        } else if (triggerEvent == AskForRetrial) {
+            const TriggerSkill *xijing = Sanguosha->getTriggerSkill("thxijing");
+            if (xijing && xijing->cost(triggerEvent, room, player, data, player)) {
+                LogMessage log;
+                log.type = "#InvokeSkill";
+                log.from = player;
+                log.arg = objectName();
+                room->sendLog(log);
 
-                    if (card) {
-                        LogMessage log;
-                        log.type = "#InvokeSkill";
-                        log.from = player;
-                        log.arg = objectName();
-                        room->sendLog(log);
-
-                        player->loseMark("@fetter");
-                        room->setPlayerFlag(player, "thxijing_using");
-                        CardMoveReason reason(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
-                        room->throwCard(card, reason, player);
-                        room->setPlayerFlag(player, "-thxijing_using");
-                        room->obtainCard(player, Sanguosha->getCard(id));
-                    }
-                }
+                player->loseMark("@fetter");
+                return true;
             }
         }
         return false;
@@ -2792,6 +2761,10 @@ public:
             const TriggerSkill *guanxing = Sanguosha->getTriggerSkill("ikxushi");
             if (guanxing)
                 return guanxing->effect(triggerEvent, room, player, data, player);
+        } else if (triggerEvent == AskForRetrial) {
+            const TriggerSkill *xijing = Sanguosha->getTriggerSkill("thxijing");
+            if (xijing)
+                return xijing->effect(triggerEvent, room, player, data, player);
         }
 
         return false;
