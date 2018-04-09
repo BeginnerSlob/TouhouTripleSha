@@ -998,10 +998,10 @@ void MainWindow::httpFinished()
 
         if (texts.size() == 2) {
             while (texts[0] == "available") {
-                QString avaliableVersion = texts[1];
+                QString availableVersion = texts[1];
                 if (newest.isEmpty())
-                    newest = avaliableVersion;
-                versions[avaliableVersion] = VersionStruct();
+                    newest = availableVersion;
+                versions[availableVersion] = VersionStruct();
                 while (!reply->atEnd()) {
                     line = reply->readLine();
                     line.remove('\n');
@@ -1010,11 +1010,11 @@ void MainWindow::httpFinished()
                         QString key = texts.at(0);
                         QString value = texts.at(1);
                         if (key == "VersionNumber")
-                            versions[avaliableVersion].versionNumber = value;
+                            versions[availableVersion].versionNumber = value;
                         else if (key == "UpdateDate")
-                            versions[avaliableVersion].updateDate = value;
+                            versions[availableVersion].updateDate = value;
                         else if (key == "url")
-                            versions[avaliableVersion].url = value;
+                            versions[availableVersion].url = value;
                         else
                             break;
                     }

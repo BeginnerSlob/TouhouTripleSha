@@ -331,8 +331,8 @@ CustomAssignDialog::CustomAssignDialog(QWidget *parent)
     connect(list, &QListWidget::currentItemChanged, this, &CustomAssignDialog::on_list_itemSelectionChanged);
     connect(move_list_up_button, &QPushButton::clicked, this, &CustomAssignDialog::exchangeListItem);
     connect(move_list_down_button, &QPushButton::clicked, this, &CustomAssignDialog::exchangeListItem);
-    connect(move_list_check, &QCheckBox::toggled, this, &CustomAssignDialog::setMoveButtonAvaliable);
-    connect(move_pile_check, &QCheckBox::toggled, this, &CustomAssignDialog::setMoveButtonAvaliable);
+    connect(move_list_check, &QCheckBox::toggled, this, &CustomAssignDialog::setMoveButtonAvailable);
+    connect(move_pile_check, &QCheckBox::toggled, this, &CustomAssignDialog::setMoveButtonAvailable);
     connect(num_ComboBox, (void (QComboBox::*)(int))(&QComboBox::currentIndexChanged), this,
             &CustomAssignDialog::updateNumber);
     connect(general_label, &LabelButton::clicked, this, &CustomAssignDialog::doGeneralAssign);
@@ -906,7 +906,7 @@ void CustomAssignDialog::doGeneralAssign2()
     dialog->exec();
 }
 
-void CustomAssignDialog::setMoveButtonAvaliable(bool toggled)
+void CustomAssignDialog::setMoveButtonAvailable(bool toggled)
 {
     if (sender()->objectName() == "list check") {
         move_pile_check->setChecked(false);

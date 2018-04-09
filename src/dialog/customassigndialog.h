@@ -126,7 +126,7 @@ private slots:
     void setPlayerMarks(int value);
     void getPlayerMarks(int index);
     void setStarter(bool toggled);
-    void setMoveButtonAvaliable(bool toggled);
+    void setMoveButtonAvailable(bool toggled);
     void setNationality(int);
     void setNationalityEnable(bool toggled);
 
