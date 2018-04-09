@@ -997,7 +997,7 @@ void MainWindow::httpFinished()
         QStringList texts = line.split('=', QString::SkipEmptyParts);
 
         if (texts.size() == 2) {
-            while (texts[0] == "avaliable") {
+            while (texts[0] == "available") {
                 QString avaliableVersion = texts[1];
                 if (newest.isEmpty())
                     newest = avaliableVersion;
