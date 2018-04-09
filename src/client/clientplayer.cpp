@@ -189,7 +189,7 @@ void ClientPlayer::setFlags(const QString &flag)
 
 void ClientPlayer::setMark(const QString &mark, int value)
 {
-    if (marks[mark] == value && mark != "@substitute")
+    if (marks[mark] == value)
         return;
     marks[mark] = value;
 
@@ -227,16 +227,6 @@ void ClientPlayer::setMark(const QString &mark, int value)
             if (this != Self)
                 mark_text.append("<br>");
             text.append(mark_text);
-            if (key == "@substitute") {
-                QString hp_str = this->property("tishen_hp").toString();
-                if (hp_str.isEmpty())
-                    continue;
-                int tishen_hp = hp_str.toInt();
-                QString mark_text = QString("<img src='image/mark/%1.png' />%2").arg("@substitute_hp").arg(tishen_hp);
-                if (this != Self)
-                    mark_text.append("<br>");
-                text.append(mark_text);
-            }
         }
     }
 
