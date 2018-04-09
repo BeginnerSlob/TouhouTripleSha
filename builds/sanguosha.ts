@@ -2568,7 +2568,7 @@
         <translation>Lua 脚本错误</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="62"/>
+        <location filename="../src/main.cpp" line="66"/>
         <source>Game data not found, please download TouhouTripleSha PC version, and put the files and folders into /sdcard/Android/data/org.slob.TouhouTripleSha</source>
         <translation>游戏数据未找到，请下载东方绮符剧电脑版，然后将所有文件放到 /sdcard/Android/data/org.slob.TouhouTripleSha</translation>
     </message>
