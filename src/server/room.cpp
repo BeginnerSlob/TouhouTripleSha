@@ -981,7 +981,7 @@ void Room::removeReihouCard(ServerPlayer *player, bool isYaodao)
         args << player->objectName();
         args << player->getGeneralName();
         args << QString();
-        args << true;
+        args << false;
         doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
     }
     handleAcquireDetachSkills(player, skills, true, true);

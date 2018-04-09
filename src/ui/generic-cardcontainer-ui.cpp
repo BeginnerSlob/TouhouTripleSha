@@ -1043,7 +1043,7 @@ void PlayerCardContainer::_adjustComponentZValues(bool killed)
     _layUnder(_m_saveMeIcon);
     _layUnder(_m_phaseIcon);
     _layUnder(_m_smallAvatarNameItem);
-    if (!killed && _m_huashenChangeName) {
+    if (!killed && _m_huashenNameItem != NULL && _m_huashenOldNameItem != NULL) {
         _layUnder(_m_huashenNameItem);
         _layUnder(_m_huashenOldNameItem);
     }
