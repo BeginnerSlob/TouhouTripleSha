@@ -8577,7 +8577,7 @@ public:
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             room->setPlayerProperty(player, "ignored_hands", "");
             if (change.to == Player::NotActive) {
-                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                foreach (ServerPlayer *p, room->getAllPlayers()) {
                     if (p->hasFlag("IkYouxiaTarget")) {
                         room->setPlayerFlag(p, "-IkYouxiaTarget");
                         room->removePlayerCardLimitation(p, "use,response", ".|.|.|hand$0");
@@ -8604,46 +8604,24 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         QList<int> blacks;
-        QList<int> disabled_ids;
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         for (int i = 0; i < move.card_ids.length(); ++i) {
             int id = move.card_ids[i];
             Player::Place place = move.from_places[i];
-            if (place != Player::PlaceHand && place != Player::PlaceEquip) {
-                disabled_ids << id;
+            if (place != Player::PlaceHand && place != Player::PlaceEquip)
                 continue;
-            }
             if (Sanguosha->getCard(id)->isBlack() && room->getCardOwner(id) == player && room->getCardPlace(id) == place)
                 blacks << id;
-            else
-                disabled_ids << id;
         }
         if (blacks.isEmpty())
             return false;
-        room->fillAG(move.card_ids, player, disabled_ids);
-        int id = room->askForAG(player, blacks, false, objectName());
-        room->clearAG(player);
-        if (id != -1) {
-            blacks.removeOne(id);
-            disabled_ids << id;
-            room->showCard(player, id);
 
-            ServerPlayer *target = (ServerPlayer *)move.to;
-            if (!target->hasFlag("IkYouxiaTarget")) {
-                room->setPlayerFlag(target, "IkYouxiaTarget");
-                room->setPlayerCardLimitation(target, "use,response", ".|.|.|hand", false);
-            }
+        room->showCard(player, blacks);
 
-            while (!blacks.isEmpty()) {
-                room->fillAG(move.card_ids, player, disabled_ids);
-                int id = room->askForAG(player, blacks, true, objectName());
-                room->clearAG(player);
-                if (id == -1)
-                    break;
-                blacks.removeOne(id);
-                disabled_ids << id;
-                room->showCard(player, id);
-            }
+        ServerPlayer *target = (ServerPlayer *)move.to;
+        if (target && !target->hasFlag("IkYouxiaTarget")) {
+            room->setPlayerFlag(target, "IkYouxiaTarget");
+            room->setPlayerCardLimitation(target, "use,response", ".|.|.|hand", false);
         }
         return false;
     }
