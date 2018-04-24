@@ -66,13 +66,13 @@ void IkShenaiCard::onEffect(const CardEffectStruct &effect) const
                 if (!victims.isEmpty()) {
                     ServerPlayer *victim = room->askForPlayerChosen(effect.from, victims, "ikshenai", "@dummy-slash", true);
                     if (victim)
-                        room->useCard(CardUseStruct(slash, effect.from, victim), false);
+                        room->useCard(CardUseStruct(slash, effect.from, victim));
                 }
             } else {
                 Card *card = Sanguosha->cloneCard(card_name);
                 card->setSkillName("_ikshenai");
                 card->deleteLater();
-                room->useCard(CardUseStruct(card, effect.from, effect.from), false);
+                room->useCard(CardUseStruct(card, effect.from, effect.from));
             }
         }
     }
@@ -125,24 +125,6 @@ public:
                 room->setPlayerMark(p, "IkShenaiUsed", 0);
         }
         return QStringList();
-    }
-};
-
-class IkShenaiTargetMod : public TargetModSkill
-{
-public:
-    IkShenaiTargetMod()
-        : TargetModSkill("#ikshenai-tar")
-    {
-        pattern = "BasicCard";
-    }
-
-    virtual int getResidueNum(const Player *, const Card *card) const
-    {
-        if (card->getSkillName() == "ikshenai")
-            return 1000;
-        else
-            return 0;
     }
 };
 
@@ -3494,8 +3476,6 @@ IkaiDoPackage::IkaiDoPackage()
 {
     General *wind001 = new General(this, "wind001$", "kaze");
     wind001->addSkill(new IkShenai);
-    wind001->addSkill(new IkShenaiTargetMod);
-    related_skills.insertMulti("ikshenai", "#ikshenai-tar");
     wind001->addSkill(new IkXinqi);
 
     General *wind002 = new General(this, "wind002", "kaze");

@@ -909,8 +909,14 @@ public:
             return QStringList(objectName());
         if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive && player->hasFlag("thhuanlong"))
+            if (change.to == Player::NotActive) {
+                if (player->hasFlag("thhuanlong"))
                 room->setPlayerFlag(player, "-thhuanlong");
+                if (player->getMark("thhuanlong1") > 0)
+                    room->setPlayerMark(player, "thhuanlong1", 0);
+                if (player->getMark("thhuanlong2") > 0)
+                    room->setPlayerMark(player, "thhuanlong2", 0);
+            }
         }
         return QStringList();
     }

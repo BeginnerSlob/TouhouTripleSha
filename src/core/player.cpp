@@ -173,6 +173,8 @@ bool Player::isAdjacentTo(const Player *another) const
 {
     if (isDead() || another->isDead())
         return false;
+    if (isRemoved() || another->isRemoved())
+        return false;
     return getNextAlive() == another || another->getNextAlive() == this;
 }
 

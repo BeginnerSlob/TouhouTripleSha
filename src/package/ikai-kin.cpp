@@ -3481,7 +3481,7 @@ void IkBingyanCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targe
     if (!target->canDiscard(target, "h") || types.isEmpty()
         || !room->askForCard(target, types.join(",") + "|.|.|hand", "@ikbingyan-discard")) {
         target->turnOver();
-        target->drawCards(subcards.length(), "ikbingyan");
+        target->drawCards(subcardsLength(), "ikbingyan");
     }
 }
 
@@ -4652,13 +4652,18 @@ public:
     IkNilanRecord()
         : TriggerSkill("#iknilan")
     {
-        events << CardsMoveOneTime;
+        events << CardsMoveOneTime << EventPhaseChanging;
         frequency = NotCompulsory;
         global = true;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent e, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
+        if (e == EventPhaseChanging) {
+            player->tag.remove("IkNilanList");
+            return QStringList();
+        }
+
         if (!TriggerSkill::triggerable(player))
             return QStringList();
 

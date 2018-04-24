@@ -2862,7 +2862,6 @@ TouhouKazePackage::TouhouKazePackage()
 
     skills << new ThHuazhi << new ThMicaiGivenSkill << new ThHuaimie << new ThHuaimieFilter << new ThYanlun << new ThHeyu
            << new ThXinhuaViewAsSkill;
-    related_skills.insertMulti("thhuaimie", "#thhuaimie");
 }
 
 ADD_PACKAGE(TouhouKaze)
