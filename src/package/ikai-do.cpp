@@ -66,13 +66,13 @@ void IkShenaiCard::onEffect(const CardEffectStruct &effect) const
                 if (!victims.isEmpty()) {
                     ServerPlayer *victim = room->askForPlayerChosen(effect.from, victims, "ikshenai", "@dummy-slash", true);
                     if (victim)
-                        room->useCard(CardUseStruct(slash, effect.from, victim));
+                        room->useCard(CardUseStruct(slash, effect.from, victim), true);
                 }
             } else {
                 Card *card = Sanguosha->cloneCard(card_name);
                 card->setSkillName("_ikshenai");
                 card->deleteLater();
-                room->useCard(CardUseStruct(card, effect.from, effect.from));
+                room->useCard(CardUseStruct(card, effect.from, effect.from), true);
             }
         }
     }
