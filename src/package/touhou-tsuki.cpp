@@ -244,7 +244,7 @@ bool ThJinguoCard::targetFilter(const QList<const Player *> &targets, const Play
     if (subcardsLength() == 0)
         return false;
     else
-        return targets.isEmpty() && to_select != Self && !to_select->isNude();
+        return targets.isEmpty() && to_select != Self;
 }
 
 bool ThJinguoCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const
@@ -280,15 +280,8 @@ void ThJinguoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
         if (dummy->subcardsLength() > 0)
             source->obtainCard(dummy, false);
         dummy->deleteLater();
-        QStringList choices;
         if (target->isWounded())
-            choices << "recover";
-        choices << "draw";
-        QString choice = room->askForChoice(target, "thjinguo", choices.join("+"));
-        if (choice == "recover")
             room->recover(target, RecoverStruct(source));
-        else
-            target->drawCards(1, "thjinguo");
     }
 }
 
@@ -298,13 +291,14 @@ public:
     ThJinguoViewAsSkill()
         : ViewAsSkill("thjinguo")
     {
+        response_pattern = "@@thjinguo";
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
     {
         if (!selected.isEmpty())
             return false;
-        return !Self->isJilei(to_select) && to_select->getSuit() == Card::Heart && Self->getHandcards().contains(to_select);
+        return !Self->isJilei(to_select) && to_select->getSuit() == Card::Heart;
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const
@@ -312,11 +306,6 @@ public:
         ThJinguoCard *card = new ThJinguoCard;
         card->addSubcards(cards);
         return card;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const
-    {
-        return !player->hasUsed("ThJinguoCard");
     }
 };
 
@@ -326,34 +315,83 @@ public:
     ThJinguo()
         : TriggerSkill("thjinguo")
     {
-        events << EventPhaseChanging;
+        events << EventPhaseStart;
         view_as_skill = new ThJinguoViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual bool triggerable(const ServerPlayer *target) const
     {
-        if (!player->hasFlag("thjinguo"))
-            return QStringList();
-        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-        if (change.to == Player::NotActive)
-            room->detachSkillFromPlayer(player, "thxueyi", false, true);
-        return QStringList();
+        return TriggerSkill::triggerable(target) && target->getPhase() == Player::Play;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        return room->askForUseCard(player, "@@thjinguo", "@thjinguo", -1, Card::MethodDiscard);
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        player->addMark(objectName());
+        return false;
     }
 };
 
-class ThXueyi : public OneCardViewAsSkill
+class ThJinguoTrigger : public TriggerSkill
 {
 public:
-    ThXueyi()
+    ThJinguoTrigger()
+        : TriggerSkill("#thjinguo")
+    {
+        events << EventPhaseChanging << EventPhaseEnd;
+        view_as_skill = new ThJinguoViewAsSkill;
+        frequency = NotCompulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (e == EventPhaseEnd) {
+            if (player->getMark("thjinguo") > 0)
+                return QStringList(objectName());
+        } else if (player->hasFlag("thjinguo")) {
+            player->setFlags("-thjinguo");
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive)
+                room->detachSkillFromPlayer(player, "thxueyi", false, true);
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        player->setMark("thjinguo", 0);
+        if (!player->isKongcheng()) {
+            room->sendCompulsoryTriggerLog(player, "thjinguo");
+            room->showAllCards(player);
+            DummyCard dummy;
+            foreach (const Card *cd, player->getHandcards()) {
+                if (cd->getSuit() == Card::Heart)
+                    dummy.addSubcard(cd);
+            }
+            if (dummy.subcardsLength() > 0)
+                room->throwCard(&dummy, player);
+        }
+        return false;
+    }
+};
+
+class ThXueyiViewAsSkill : public OneCardViewAsSkill
+{
+public:
+    ThXueyiViewAsSkill()
         : OneCardViewAsSkill("thxueyi")
     {
         response_or_use = true;
-        filter_pattern = "^TrickCard|heart";
+        filter_pattern = ".|heart";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return !player->isNude();
+        return !player->hasFlag("ThXueyiUsed");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
@@ -362,6 +400,25 @@ public:
         le->addSubcard(originalCard);
         le->setSkillName(objectName());
         return le;
+    }
+};
+
+class ThXueyi : public TriggerSkill
+{
+public:
+    ThXueyi()
+        : TriggerSkill("thxueyi")
+    {
+        events << PreCardUsed;
+        view_as_skill = new ThXueyiViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("Indulgence") && use.card->getSkillName() == "thxueyi")
+            room->setPlayerFlag(player, "ThXueyiUsed");
+        return QStringList();
     }
 };
 
@@ -2989,7 +3046,9 @@ TouhouTsukiPackage::TouhouTsukiPackage()
     General *tsuki002 = new General(this, "tsuki002", "tsuki", 4, false);
     tsuki002->addSkill(new ThJinguo);
     tsuki002->addSkill(new FakeMoveSkill("thjinguo"));
+    tsuki002->addSkill(new ThJinguoTrigger);
     related_skills.insertMulti("thjinguo", "#thjinguo-fake-move");
+    related_skills.insertMulti("thjinguo", "#thjinguo");
     tsuki002->addSkill(new ThLianmi);
     tsuki002->addRelateSkill("thxueyi");
 

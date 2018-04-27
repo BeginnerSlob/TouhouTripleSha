@@ -24,7 +24,7 @@ public:
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             ServerPlayer *from = (ServerPlayer *)move.from;
             if (from && (room->getCurrent() != from || from->getPhase() == Player::NotActive) && from->isAdjacentTo(player)
-                && move.from_places.contains(Player::PlaceHand))
+                && move.from_places.contains(Player::PlaceHand) && player->getHandcardNum() <= from->getHandcardNum())
                 return QStringList(objectName());
         }
         return QStringList();
