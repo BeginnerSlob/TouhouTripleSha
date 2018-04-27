@@ -10,7 +10,7 @@ return {
 	["illustrator:bangai001"] = "DomotoLain",
 	["cv:bangai001"] = "暂无",
 	["thbianfang"] = "辨方",
-	[":thbianfang"] = "当你相邻的角色于其回合外失去手牌后，你可以摸一张牌。",
+	[":thbianfang"] = "当你相邻的角色于其回合外失去手牌后，若你的手牌数不大于该角色，你可以摸一张牌。",
 	["thzhishi"] = "知时",
 	[":thzhishi"] = "当你于回合外得到牌/失去手牌后，你可以亮出牌堆顶的一张牌，然后你将之置于牌堆顶或置入弃牌堆。",
 	["thzhishi:draw"] = "置于牌堆顶",
