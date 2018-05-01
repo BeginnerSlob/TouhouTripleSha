@@ -4624,37 +4624,6 @@ public:
     }
 };
 
-class OthersNullifiedDistance : public DistanceSkill
-{
-public:
-    OthersNullifiedDistance()
-        : DistanceSkill("others-nullified-distance")
-    {
-    }
-
-    virtual int getCorrect(const Player *from, const Player *to) const
-    {
-        int n = 0;
-        bool invoke = false, including_horse = false;
-        if (from->hasSkill("ikyixiang") && to->hasFlag("ikyixiang")) {
-            invoke = true;
-            including_horse = true;
-        }
-        if (invoke) {
-            int x = from->originalRightDistanceTo(to);
-            int y = from->aliveCount(false) - x;
-            n = 1 - qMin(x, y);
-            if (including_horse) {
-                if (from->getOffensiveHorse())
-                    ++n;
-                if (to->getDefensiveHorse())
-                    --n;
-            }
-        }
-        return n;
-    }
-};
-
 IkHongrouCard::IkHongrouCard()
 {
 }
@@ -6091,7 +6060,7 @@ public:
             }
         } else {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (TriggerSkill::triggerable(player) && player == move.from) {
+            if (TriggerSkill::triggerable(player) && player != move.from) {
                 if (move.from_places.contains(Player::PlaceHand) && move.is_last_handcard) {
                     ServerPlayer *current = room->getCurrent();
                     if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
@@ -8995,7 +8964,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkLianzhenCard>();
     addMetaObject<IkYouxiaCard>();
 
-    skills << new IkAnshen << new IkAnshenRecord << new OthersNullifiedDistance << new IkLinbuFilter << new IkBingling
+    skills << new IkAnshen << new IkAnshenRecord << new IkLinbuFilter << new IkBingling
            << new IkBinglingMaxCards;
     related_skills.insertMulti("ikanshen", "#ikanshen-record");
     related_skills.insertMulti("ikbingling", "#ikbingling-max-cards");
