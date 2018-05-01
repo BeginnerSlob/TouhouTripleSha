@@ -156,24 +156,21 @@ void ConnectionDialog::on_detectLANButton_clicked()
     detector_dialog->exec();
 }
 
-void ConnectionDialog::mouseDoubleClickEvent(QMouseEvent *mouse)
+void ConnectionDialog::on_recordPasswordButton_clicked()
 {
-    if (ui->passwordLabel->underMouse()) {
-        if (ui->passwordLineEdit->text().isEmpty()) {
-            QMessageBox::warning(NULL, tr("Warning"), tr("Password is empty!"));
-            return;
-        }
-
-        if (QMessageBox::question(NULL, tr("Warning"),
-                                  tr("If you do this, your password will be saved at config.ini under root.<br />"
-                                     "Are you sure?"))
-            == QMessageBox::Yes) {
-            Config.DefaultPassword = ui->passwordLineEdit->text();
-            Config.setValue("DefaultPassword", Config.DefaultPassword);
-            QMessageBox::warning(NULL, tr("Success"), tr("Password has been saved!"));
-        }
+    if (ui->passwordLineEdit->text().isEmpty()) {
+        QMessageBox::warning(NULL, tr("Warning"), tr("Password is empty!"));
+        return;
     }
-    QDialog::mouseDoubleClickEvent(mouse);
+
+    if (QMessageBox::question(NULL, tr("Warning"),
+                              tr("If you do this, your password will be saved at config.ini under root.<br />"
+                                 "Are you sure?"))
+        == QMessageBox::Yes) {
+        Config.DefaultPassword = ui->passwordLineEdit->text();
+        Config.setValue("DefaultPassword", Config.DefaultPassword);
+        QMessageBox::warning(NULL, tr("Success"), tr("Password has been saved!"));
+    }
 }
 
 // -----------------------------------

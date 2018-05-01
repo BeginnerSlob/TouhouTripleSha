@@ -779,13 +779,13 @@
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog_android.ui" line="135"/>
-        <location filename="../src/dialog/connectiondialog.ui" line="135"/>
+        <location filename="../src/dialog/connectiondialog.ui" line="141"/>
         <source>Host:</source>
         <translation>主机:</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog_android.ui" line="118"/>
-        <location filename="../src/dialog/connectiondialog.ui" line="118"/>
+        <location filename="../src/dialog/connectiondialog.ui" line="154"/>
         <source>Name:</source>
         <translation>名称:</translation>
     </message>
@@ -802,37 +802,42 @@
         <translation>探测局域网 ...</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog.ui" line="152"/>
+        <location filename="../src/dialog/connectiondialog.ui" line="115"/>
+        <source>Record Password</source>
+        <translation>保存密码</translation>
+    </message>
+    <message>
+        <location filename="../src/dialog/connectiondialog.ui" line="189"/>
+        <source>Fill to sign up...</source>
+        <translation>填写密码自动注册...</translation>
+    </message>
+    <message>
+        <location filename="../src/dialog/connectiondialog.ui" line="205"/>
         <source>Password:</source>
         <translation>密码:</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog.ui" line="168"/>
-        <source>Default is EMPTY!</source>
-        <translation>未注册请留空!</translation>
-    </message>
-    <message>
         <location filename="../src/dialog/connectiondialog_android.ui" line="190"/>
-        <location filename="../src/dialog/connectiondialog.ui" line="220"/>
+        <location filename="../src/dialog/connectiondialog.ui" line="257"/>
         <source>Connect</source>
         <translation>连接</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog_android.ui" line="203"/>
-        <location filename="../src/dialog/connectiondialog.ui" line="233"/>
+        <location filename="../src/dialog/connectiondialog.ui" line="270"/>
         <source>Reconnection</source>
         <translation>断线重连</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog_android.ui" line="177"/>
-        <location filename="../src/dialog/connectiondialog.ui" line="207"/>
+        <location filename="../src/dialog/connectiondialog.ui" line="244"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
         <location filename="../src/dialog/connectiondialog.cpp" line="81"/>
-        <location filename="../src/dialog/connectiondialog.cpp" line="163"/>
-        <location filename="../src/dialog/connectiondialog.cpp" line="167"/>
+        <location filename="../src/dialog/connectiondialog.cpp" line="162"/>
+        <location filename="../src/dialog/connectiondialog.cpp" line="166"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -842,22 +847,22 @@
         <translation>用户名不能为空!</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog.cpp" line="163"/>
+        <location filename="../src/dialog/connectiondialog.cpp" line="162"/>
         <source>Password is empty!</source>
         <translation>密码为空！</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog.cpp" line="168"/>
+        <location filename="../src/dialog/connectiondialog.cpp" line="167"/>
         <source>If you do this, your password will be saved at config.ini under root.&lt;br /&gt;Are you sure?</source>
         <translation>您将要把您的密码以明文的形式保存在根目录下的config.ini文件&lt;br /&gt;您确定吗？</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog.cpp" line="173"/>
+        <location filename="../src/dialog/connectiondialog.cpp" line="172"/>
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog.cpp" line="173"/>
+        <location filename="../src/dialog/connectiondialog.cpp" line="172"/>
         <source>Password has been saved!</source>
         <translation>密码已保存！</translation>
     </message>
@@ -2532,7 +2537,7 @@
 <context>
     <name>Player</name>
     <message>
-        <location filename="../src/core/player.cpp" line="1277"/>
+        <location filename="../src/core/player.cpp" line="1279"/>
         <source>No skills</source>
         <translation>无技能</translation>
     </message>
@@ -2881,39 +2886,39 @@
         <translation>&lt;font color=#EEB422&gt;玩家 &lt;b&gt;%1&lt;/b&gt; 加入了游戏&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="3601"/>
+        <location filename="../src/server/room.cpp" line="3613"/>
         <source>You have specified general %1</source>
         <translation>你已点将 %1</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="3630"/>
+        <location filename="../src/server/room.cpp" line="3642"/>
         <source>Unable to parse player</source>
         <translation>不可分析的玩家</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="3632"/>
+        <location filename="../src/server/room.cpp" line="3644"/>
         <source>Server is not waiting for reply from %1</source>
         <translation>服务器无法获取 %1 的响应</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="3635"/>
+        <location filename="../src/server/room.cpp" line="3647"/>
         <source>Reply command should be %1 instead of %2</source>
         <translation>应答指令应为 %1 而不是 %2</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="3638"/>
+        <location filename="../src/server/room.cpp" line="3650"/>
         <source>Reply serial should be %1 instead of %2</source>
         <translation>玩家序号应为 %1 而不是 %2</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="5233"/>
+        <location filename="../src/server/room.cpp" line="5245"/>
         <source>Card cannot be parsed:
  %1</source>
         <translation>卡牌字符串无法解析:
 %1</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="6789"/>
+        <location filename="../src/server/room.cpp" line="6803"/>
         <source>&lt;font color=#EEB422&gt;The network delay of player &lt;b&gt;%1&lt;/b&gt; is %2 milliseconds.&lt;/font&gt;</source>
         <translation>&lt;font color=#EEB422&gt;玩家 &lt;b&gt;%1&lt;/b&gt; 的网络延迟为 %2 毫秒&lt;/font&gt;</translation>
     </message>
@@ -2932,7 +2937,7 @@
         <location filename="../src/ui/roomscene.cpp" line="3355"/>
         <location filename="../src/ui/roomscene.cpp" line="3366"/>
         <location filename="../src/ui/roomscene.cpp" line="3381"/>
-        <location filename="../src/ui/roomscene.cpp" line="4269"/>
+        <location filename="../src/ui/roomscene.cpp" line="4270"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -2958,7 +2963,7 @@
     </message>
     <message>
         <location filename="../src/ui/roomscene.cpp" line="362"/>
-        <location filename="../src/ui/roomscene.cpp" line="4827"/>
+        <location filename="../src/ui/roomscene.cpp" line="4828"/>
         <source>Add robots</source>
         <translation>添加电脑</translation>
     </message>
@@ -2979,7 +2984,7 @@
     </message>
     <message>
         <location filename="../src/ui/roomscene.cpp" line="417"/>
-        <location filename="../src/ui/roomscene.cpp" line="4657"/>
+        <location filename="../src/ui/roomscene.cpp" line="4658"/>
         <source>pindian</source>
         <translation>拼点</translation>
     </message>
@@ -2995,7 +3000,7 @@
     </message>
     <message>
         <location filename="../src/ui/roomscene.cpp" line="1629"/>
-        <location filename="../src/ui/roomscene.cpp" line="3817"/>
+        <location filename="../src/ui/roomscene.cpp" line="3818"/>
         <source>Known cards</source>
         <translation>查看已知牌</translation>
     </message>
@@ -3181,7 +3186,7 @@
         <translation>获得成就</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="4830"/>
+        <location filename="../src/ui/roomscene.cpp" line="4831"/>
         <source>%1 robots</source>
         <translation>%1 名电脑</translation>
     </message>
@@ -3290,47 +3295,47 @@
         <translation>♦</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="3652"/>
+        <location filename="../src/ui/roomscene.cpp" line="3653"/>
         <source>Select skill</source>
         <translation>选择技能</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="3711"/>
+        <location filename="../src/ui/roomscene.cpp" line="3712"/>
         <source>This room does not allow chatting!</source>
         <translation>本房间禁止聊天！</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="3756"/>
+        <location filename="../src/ui/roomscene.cpp" line="3757"/>
         <source>&lt;font color=&apos;%1&apos;&gt;[%2] said: %3 &lt;/font&gt;</source>
         <translation>&lt;font color=&apos;%1&apos;&gt;[%2] 说: %3 &lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="3894"/>
+        <location filename="../src/ui/roomscene.cpp" line="3895"/>
         <source>&lt;font color=&apos;%1&apos;&gt;---------- Game Start ----------&lt;/font&gt;</source>
         <translation>&lt;font color=&apos;%1&apos;&gt;────────游戏开始────────&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="4255"/>
+        <location filename="../src/ui/roomscene.cpp" line="4256"/>
         <source>Server information</source>
         <translation>服务器信息</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="4269"/>
+        <location filename="../src/ui/roomscene.cpp" line="4270"/>
         <source>You can only initiate a surrender poll at your play phase!</source>
         <translation>只有在你的出牌阶段才能请求投降！</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="4274"/>
+        <location filename="../src/ui/roomscene.cpp" line="4275"/>
         <source>Surrender</source>
         <translation>投降</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="4274"/>
+        <location filename="../src/ui/roomscene.cpp" line="4275"/>
         <source>Are you sure to surrender ?</source>
         <translation>你真的要投降吗？</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="4571"/>
+        <location filename="../src/ui/roomscene.cpp" line="4572"/>
         <source>Complete</source>
         <translation>完成</translation>
     </message>
@@ -4271,12 +4276,12 @@ P = 你自己, R = 你所在的房间</translation>
 <context>
     <name>UdpDetectorDialog</name>
     <message>
-        <location filename="../src/dialog/connectiondialog.cpp" line="184"/>
+        <location filename="../src/dialog/connectiondialog.cpp" line="181"/>
         <source>Detect available server&apos;s addresses at LAN</source>
         <translation>在局域网内探测可用的服务器地址</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog.cpp" line="185"/>
+        <location filename="../src/dialog/connectiondialog.cpp" line="182"/>
         <source>Refresh</source>
         <translation>刷新</translation>
     </message>
