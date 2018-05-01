@@ -3631,7 +3631,8 @@ void RoomScene::showCard(const QString &player_name, QList<int> card_ids)
     move.from_place = Player::PlaceHand;
     move.to_place = Player::PlaceTable;
     move.reason = reason;
-    card_items[0]->setFootnote(_translateMovement(move));
+    foreach(CardItem *item, card_items)
+        item->setFootnote(_translateMovement(move));
     m_tablePile->addCardItems(card_items, move);
 
     log_box->appendLog("$ShowCard", player->objectName(), QStringList(), IntList2StringList(card_ids).join("+"));

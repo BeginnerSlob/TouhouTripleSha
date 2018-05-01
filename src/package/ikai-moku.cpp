@@ -1839,7 +1839,7 @@ public:
         : TriggerSkill("ikjieying")
     {
         events << EventPhaseSkipped;
-        frequency = Frequent;
+        frequency = Compulsory;
     }
 
     virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
