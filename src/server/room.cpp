@@ -2962,16 +2962,25 @@ void Room::assignGeneralsForPlayers(const QList<ServerPlayer *> &to_assign)
 
     QMap<ServerPlayer *, int> max_choice;
     if (getMode() == "03_1v1v1") {
-        foreach (ServerPlayer *p, to_assign)
-            max_choice.insert(p, 9);
+        int n = 9;
+        foreach (ServerPlayer *p, to_assign) {
+            if (p->getLevel() == 0)
+                max_choice.insert(p, n - 2);
+            else
+                max_choice.insert(p, n);
+        }
     } else {
         foreach (ServerPlayer *p, to_assign) {
+            int n = 0;
             if (p->getRole() == "loyalist")
-                max_choice.insert(p, 10);
+                n = 10;
             else if (p->getRole() == "rebel")
-                max_choice.insert(p, 8);
+                n = 8;
             else if (p->getRole() == "renegade")
-                max_choice.insert(p, 12);
+                n = 12;
+            if (p->getLevel() == 0)
+                n -= 2;
+            max_choice.insert(p, n);
         }
     }
     int total = Sanguosha->getGeneralCount();
@@ -3138,13 +3147,16 @@ void Room::chooseGenerals(QList<ServerPlayer *> players)
         the_lord = getLord();
         if (the_lord && players.contains(the_lord)) {
             QStringList lord_list;
-            if (the_lord->getState() == "robot")
+            if (the_lord->getState() == "robot") {
                 if (qrand() % 100 < nonlord_prob || Sanguosha->getLords().length() == 0)
                     lord_list = Sanguosha->getRandomGenerals(1);
                 else
                     lord_list = Sanguosha->getLords();
-            else
+            } else {
                 lord_list = Sanguosha->getRandomLords();
+                if (the_lord->getLevel() == 0)
+                    lord_list.mid(0, lord_list.length() - 2);
+            }
             QString general = askForGeneral(the_lord, lord_list);
             the_lord->setGeneralName(general);
 
@@ -5251,8 +5263,10 @@ void Room::askForLuckCard()
         if (player->tag["DisableLuckCard"].toBool())
             continue;
         if (!player->getAI()) {
-            int n = 1;
             int level = player->getLevel();
+            int n = 0;
+            if (level > 0)
+                ++n;
             if (level > 10)
                 ++n;
             if (level > 25)
