@@ -181,21 +181,20 @@ public:
         global = true;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *&) const
     {
-        DamageStruct damage = data.value<DamageStruct>();
-        ServerPlayer *owner = damage.from;
+        ServerPlayer *owner = room->getCurrent();
         if (owner && owner->getPhase() == Player::Play)
             return QStringList(objectName());
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         DamageStruct damage = data.value<DamageStruct>();
         player->addMark("thguaiqi", damage.damage);
         if (player->getMark("thguaiqi") > 1)
-            damage.from->setFlags("thguaiqi_invoke");
+            room->getCurrent()->setFlags("thguaiqi_invoke");
 
         return false;
     }
