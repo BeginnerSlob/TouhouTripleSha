@@ -1,5 +1,6 @@
 #include "configdialog.h"
 #include "audio.h"
+#include "choosegeneraldialog.h"
 #include "roomscene.h"
 #include "settings.h"
 #include "ui_configdialog.h"
@@ -60,6 +61,15 @@ ConfigDialog::ConfigDialog(QWidget *parent)
         ui->saveNetworkOnlyCheckBox->setChecked(Config.value("SaveNetworkOnly", true).toBool());
     else
         ui->saveNetworkOnlyCheckBox->setChecked(false);
+    open = Config.value("EnableAutoSpecifyGeneral", false).toBool();
+    ui->specifyGeneralCheckBox->setChecked(open);
+    ui->generalNameLineEdit->setEnabled(open);
+    ui->chooseGeneralButton->setEnabled(open);
+
+    connect(ui->specifyGeneralCheckBox, &QCheckBox::toggled, ui->generalNameLineEdit, &QLineEdit::setEnabled);
+    connect(ui->specifyGeneralCheckBox, &QCheckBox::toggled, ui->chooseGeneralButton, &QPushButton::setEnabled);
+
+    ui->generalNameLineEdit->setText(Config.value("AutoSpecifyGeneralName", "kaze001").toString());
 
     connect(this, &ConfigDialog::accepted, this, &ConfigDialog::saveConfig);
 
@@ -104,6 +114,13 @@ void ConfigDialog::on_browseBgButton_clicked()
 
         emit bg_changed();
     }
+}
+
+void ConfigDialog::on_chooseGeneralButton_clicked()
+{
+    FreeChooseDialog *choose_general = new FreeChooseDialog(this);
+    connect(choose_general, &FreeChooseDialog::general_chosen, this, &ConfigDialog::specifyGeneral);
+    choose_general->exec();
 }
 
 void ConfigDialog::on_resetBgButton_clicked()
@@ -193,8 +210,16 @@ void ConfigDialog::saveConfig()
     Config.setValue("SaveNetworkOnly", ui->saveNetworkOnlyCheckBox->isChecked());
     Config.setValue("ReplaySavePaths", ui->replaysPathLineEdit->text());
 
+    Config.setValue("EnableAutoSpecifyGeneral", ui->specifyGeneralCheckBox->isChecked());
+    Config.setValue("AutoSpecifyGeneralName", ui->generalNameLineEdit->text());
+
     if (RoomSceneInstance)
         RoomSceneInstance->updateVolumeConfig();
+}
+
+void ConfigDialog::specifyGeneral(const QString &general)
+{
+    ui->generalNameLineEdit->setText(general);
 }
 
 void ConfigDialog::on_browseBgMusicButton_clicked()

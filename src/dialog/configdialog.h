@@ -27,7 +27,9 @@ private slots:
     void on_browseBgMusicButton_clicked();
     void on_resetBgButton_clicked();
     void on_browseBgButton_clicked();
+    void on_chooseGeneralButton_clicked();
     void saveConfig();
+    void specifyGeneral(const QString &general);
 
 signals:
     void bg_changed();

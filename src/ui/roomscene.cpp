@@ -394,6 +394,12 @@ RoomScene::RoomScene(QMainWindow *main_window)
     _m_autoSpeakTimer->start(30000);
     connect(_m_autoSpeakTimer, &QTimer::timeout, this, &RoomScene::onAutoSpeakTimeOut);
 
+    if (Config.value("EnableAutoSpecifyGeneral", false).toBool()) {
+        QString str = "SpecifyGeneral=";
+        str += Config.value("AutoSpecifyGeneralName", "kaze001").toString();
+        ClientInstance->speakToServer(str);
+    }
+
     animations = new EffectAnimation();
     animations->setParent(this);
 
@@ -3631,7 +3637,7 @@ void RoomScene::showCard(const QString &player_name, QList<int> card_ids)
     move.from_place = Player::PlaceHand;
     move.to_place = Player::PlaceTable;
     move.reason = reason;
-    foreach(CardItem *item, card_items)
+    foreach (CardItem *item, card_items)
         item->setFootnote(_translateMovement(move));
     m_tablePile->addCardItems(card_items, move);
 

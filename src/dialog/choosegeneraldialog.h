@@ -36,7 +36,8 @@ class ChooseGeneralDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit ChooseGeneralDialog(const QStringList &general_names, QWidget *parent, bool view_only = false, const QString &title = QString());
+    explicit ChooseGeneralDialog(const QStringList &general_names, QWidget *parent, bool view_only = false,
+                                 const QString &title = QString());
 
 public slots:
     void done(int);
