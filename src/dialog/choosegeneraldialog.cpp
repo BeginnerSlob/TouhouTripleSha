@@ -211,12 +211,6 @@ ChooseGeneralDialog::ChooseGeneralDialog(const QStringList &general_names, QWidg
     }
 
     QString default_name = "random";
-    /*for (int i = 0; i < buttons.size(); i++) {
-        if (buttons.at(i)->isEnabled()) {
-            default_name = generals.at(i)->objectName();
-            break;
-        }
-    }*/
 
     if (!view_only) {
         mapper->setMapping(this, default_name);

@@ -3158,7 +3158,6 @@ void Room::chooseGenerals(QList<ServerPlayer *> players)
                     lord_list.mid(0, lord_list.length() - 2);
             }
             QString general = askForGeneral(the_lord, lord_list);
-            qDebug() << general;
             the_lord->setGeneralName(general);
 
             broadcastProperty(the_lord, "general", general);
@@ -3459,7 +3458,7 @@ bool Room::_setPlayerGeneral(ServerPlayer *player, const QString &generalName, b
     const General *general = Sanguosha->getGeneral(generalName);
     if (general == NULL)
         return false;
-    else if (!Config.FreeChoose && !player->getSelected().contains(generalName))
+    else if (!Config.FreeChoose && !player->getSelected().contains(generalName) && player->getMark("random") == 0)
         return false;
 
     if (isFirst) {
@@ -5277,9 +5276,9 @@ void Room::askForLuckCard()
             continue;
         if (!player->getAI()) {
             int level = player->getLevel();
-            int n = 0;
-            if (level > 0)
-                ++n;
+            if (level == 0)
+                continue;
+            int n = 1;
             if (level > 10)
                 ++n;
             if (level > 25)
