@@ -2,9 +2,9 @@
 -- and it is a little different from config.ini
 
 config = {
-	version = "v8.9.3",
-	resource_version = "v8.9.3.0",
-	version_name = "0427",
+	version = "v8.9.4",
+	resources_version = "v8.9.4.0",
+	version_name = "0502",
 	mod_name = "TouhouTripleSha",
 	big_font = 56,
 	small_font = 27,
