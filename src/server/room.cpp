@@ -3158,6 +3158,7 @@ void Room::chooseGenerals(QList<ServerPlayer *> players)
                     lord_list.mid(0, lord_list.length() - 2);
             }
             QString general = askForGeneral(the_lord, lord_list);
+            qDebug() << general;
             the_lord->setGeneralName(general);
 
             broadcastProperty(the_lord, "general", general);
@@ -3436,9 +3437,20 @@ QString Room::_chooseDefaultGeneral(ServerPlayer *player) const
         Q_ASSERT(false);
         return QString();
     } else {
-        GeneralSelector *selector = GeneralSelector::getInstance();
-        QString choice = selector->selectFirst(player, player->getSelected());
-        return choice;
+        if (player->getLevel() == 0) {
+            GeneralSelector *selector = GeneralSelector::getInstance();
+            QString choice = selector->selectFirst(player, player->getSelected());
+            return choice;
+        }
+        QSet<QString> existed;
+        foreach (ServerPlayer *player, m_players) {
+            if (player->getGeneral())
+                existed << player->getGeneralName();
+            if (player->getGeneral2())
+                existed << player->getGeneral2Name();
+        }
+        player->addMark("random");
+        return Sanguosha->getRandomGenerals(1, existed).first();
     }
 }
 
@@ -5276,6 +5288,10 @@ void Room::askForLuckCard()
                 ++n;
             if (level > 70)
                 ++n;
+            if (player->getMark("random") > 0)
+                --n;
+            if (n < 0)
+                n = 0;
             player->m_commandArgs = QVariant();
             players.insert(player, n);
         }
@@ -5970,12 +5986,26 @@ QString Room::askForGeneral(ServerPlayer *player, const QStringList &generals, Q
 {
     tryPause();
     notifyMoveFocus(player, S_COMMAND_CHOOSE_GENERAL);
+    bool random = false;
 
     if (generals.length() == 1)
         return generals.first();
 
-    if (default_choice.isEmpty())
-        default_choice = generals.at(qrand() % generals.length());
+    if (default_choice.isEmpty()) {
+        if (player->getLevel() == 0)
+            default_choice = generals.at(qrand() % generals.length());
+        else {
+            QSet<QString> existed;
+            foreach (ServerPlayer *player, m_players) {
+                if (player->getGeneral())
+                    existed << player->getGeneralName();
+                if (player->getGeneral2())
+                    existed << player->getGeneral2Name();
+            }
+            default_choice = Sanguosha->getRandomGenerals(1, existed).first();
+            random = true;
+        }
+    }
 
     if (player->isOnline()) {
         QVariant options = toJsonArray(generals);
@@ -5983,9 +6013,12 @@ QString Room::askForGeneral(ServerPlayer *player, const QStringList &generals, Q
 
         QVariant clientResponse = player->getClientReply();
         bool free = Config.FreeChoose || mode.startsWith("_mini_") || mode == "custom_scenario";
-        if (!success || !isString(clientResponse) || (!free && !generals.contains(clientResponse.toString())))
+        if (!success || !isString(clientResponse) || (!free && !generals.contains(clientResponse.toString()))
+            || !Sanguosha->getGeneral(clientResponse.toString())) {
+            if (random)
+                player->addMark("random");
             return default_choice;
-        else
+        } else
             return clientResponse.toString();
     }
 
