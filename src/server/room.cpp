@@ -3604,6 +3604,11 @@ bool Room::speakCommand(ServerPlayer *player, const QVariant &message)
     if (player && sentence == "ping") {
         _NO_BROADCAST_SPEAKING
         player->startNetworkDelayTest();
+    } else if (player && sentence == "/roll") {
+        _NO_BROADCAST_SPEAKING
+        int num = qrand() % 100 + 1;
+        QString str = tr("<font color=#EEB422><b>%1</b> rolled <b>%2</b></font>").arg(player->screenName()).arg(num);
+        speakCommand(NULL, str);
     }
     if (player && sentence.startsWith("SpecifyGeneral=")) {
         _NO_BROADCAST_SPEAKING
@@ -3625,10 +3630,6 @@ bool Room::speakCommand(ServerPlayer *player, const QVariant &message)
             body << ".";
         body << message;
         doBroadcastNotify(S_COMMAND_SPEAK, body);
-    }
-    if (sentence == "/roll") {
-        QString str = QString::number(qrand() % 100 + 1);
-        speakCommand(player, str);
     }
     return true;
 #undef _NO_BROADCAST_SPEAKING
