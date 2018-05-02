@@ -4079,12 +4079,22 @@ public:
     IkGuichan()
         : TriggerSkill("ikguichan")
     {
-        events << Death;
+        events << Death << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent e, Room *r, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
-        if (player && player->isDead() && player->hasSkill(objectName())) {
+        if (e == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                if (!player->hasFlag("ikguichan")) {
+                    QString str = player->tag["IkGuichanSuit"].toString();
+                    if (!str.isEmpty()) {
+                        player->tag.remove("IkGuichanSuit");
+                        r->removePlayerCardLimitation(player, "use,response", ".|" + str + "$0");
+                    }
+                }
+            }
+        } else if (player && player->isDead() && player->hasSkill(objectName())) {
             DeathStruct death = data.value<DeathStruct>();
             if (death.who == player)
                 return QStringList(objectName());
@@ -4110,7 +4120,15 @@ public:
         log.from = player;
         log.arg = suit_str;
         room->sendLog(log);
-        foreach (ServerPlayer *p, room->getAllPlayers())
+        QList<ServerPlayer *> players = room->getAllPlayers();
+        ServerPlayer *current = room->getCurrent();
+        if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
+            players.removeOne(current);
+            current->setFlags("ikguichan");
+            current->tag["IkGuichanSuit"] = suit_str;
+            room->setPlayerCardLimitation(current, "use,response", ".|" + suit_str, false);
+        }
+        foreach (ServerPlayer *p, players)
             room->setPlayerCardLimitation(p, "use,response", ".|" + suit_str, true);
         return false;
     }
