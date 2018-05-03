@@ -5290,7 +5290,7 @@ void Room::askForLuckCard()
             if (player->getMark("random") > 0)
                 --n;
             if (n < 0)
-                n = 0;
+                continue;
             player->m_commandArgs = QVariant();
             players.insert(player, n);
         }
