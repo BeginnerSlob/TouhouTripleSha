@@ -9620,9 +9620,9 @@ Error message and password prompt
 </div>
 <div created="20180503014605144" modified="20180503014707413" tags="$:/tags/Macro" title="$:/更新历史宏">
 <pre>\define revealContent(id:&quot;&quot; titleHide:&quot;&quot; titleShow:&quot;&quot; text:&quot;&quot;)
-&lt;$reveal type=&quot;nomatch&quot; state=&quot;$:/state/$id$&quot; text=&quot;show&quot;&gt;
+&lt;$reveal type=&quot;nomatch&quot; state=&quot;$:/temp/$id$&quot; text=&quot;show&quot;&gt;
 
-&lt;$button class=&quot;tc-btn-invisible&quot; set=&quot;$:/state/$id$&quot; setTo=&quot;show&quot;&gt;
+&lt;$button class=&quot;tc-btn-invisible&quot; set=&quot;$:/temp/$id$&quot; setTo=&quot;show&quot;&gt;
 
 $titleHide$
 
@@ -9630,9 +9630,9 @@ $titleHide$
 
 &lt;/$reveal&gt;
 
-&lt;$reveal type=&quot;match&quot; state=&quot;$:/state/$id$&quot; text=&quot;show&quot;&gt;
+&lt;$reveal type=&quot;match&quot; state=&quot;$:/temp/$id$&quot; text=&quot;show&quot;&gt;
 
-&lt;$button class=&quot;tc-btn-invisible&quot; set=&quot;$:/state/$id$&quot; setTo=&quot;hide&quot;&gt;
+&lt;$button class=&quot;tc-btn-invisible&quot; set=&quot;$:/temp/$id$&quot; setTo=&quot;hide&quot;&gt;
 
 $titleShow$
 
@@ -9650,7 +9650,7 @@ $text$
 \end
 
 \define detail(id:&quot;&quot; id2:&quot;&quot; text:&quot;&quot;)
-&lt;&lt;revealContent &quot;&quot;&quot;$id$$id2$&quot;&quot;&quot; &quot;!!!''详细▸''&quot; &quot;!!!''详细▾''&quot; &quot;&quot;&quot;$text$&quot;&quot;&quot;&gt;&gt;
+&lt;&lt;revealContent &quot;&quot;&quot;$id$$id2$&quot;&quot;&quot; &quot;!!!详细▸&quot; &quot;!!!详细▾&quot; &quot;&quot;&quot;$text$&quot;&quot;&quot;&gt;&gt;
 \end</pre>
 </div>
 <div created="20160103075912063" modified="20160108012417725" tags="$:/tags/Macro" title="$:/花色宏">
